@@ -7,9 +7,9 @@
  */
 
 // Shader Compiler
+// Note: ShaderType is exported from rendering module to avoid duplicates
 export {
   ShaderCompiler,
-  ShaderType,
   ShaderTarget,
   type CompileError,
   type CompileWarning,
@@ -27,13 +27,14 @@ export {
 } from './ShaderChunkRegistry';
 
 // Shader Chunk Cache
+// Note: CacheStats is exported from rendering module to avoid duplicates
 export {
   ShaderChunkCache,
-  type CachedChunk,
-  type CacheStats
+  type CachedChunk
 } from './ShaderChunkCache';
 
 // GLSL Code Generator
+// Note: ShaderGraph is exported from rendering module to avoid duplicates
 export {
   GLSLCodeGenerator,
   type GLSLOutput,
@@ -42,19 +43,18 @@ export {
   type VaryingDescriptor,
   type TextureSampler,
   type PrecisionQualifier,
-  type ShaderGraph,
   type ShaderGraphNode,
   type TemplateParams
 } from './GLSLCodeGenerator';
 
 // WGSL Code Generator
+// Note: ShaderStage is exported from rendering module to avoid duplicates
 export {
   WGSLCodeGenerator,
   type WGSLOutput,
   type BindingLayout,
   type BindGroup,
   type Binding,
-  ShaderStage,
   type EntryPoints,
   type WorkgroupSize,
   type StorageBuffer,

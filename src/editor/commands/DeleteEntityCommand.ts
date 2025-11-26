@@ -5,8 +5,9 @@
 
 import { BaseCommand } from './Command';
 import { Entity } from '../../ecs/Entity';
-import { Scene } from '../../scene/Scene';
-import { Transform } from '../../components/Transform';
+import { World } from '../../ecs/World';
+import { HierarchyComponent } from '../../ecs/components/HierarchyComponent';
+import { NameComponent } from '../../ecs/components/NameComponent';
 
 /**
  * Serialized entity data for restoration

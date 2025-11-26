@@ -9,9 +9,6 @@ import {
     ProfileMarker,
     ScopeMarker,
     CounterMarker,
-    CounterName,
-    MarkerCategory,
-    MarkerColor,
     ProfilerOverlay,
     FrameGraph,
     FlameGraph,
@@ -20,11 +17,22 @@ import {
     JSONExporter,
     GPUProfiler,
     MemoryProfiler,
-    MemoryPressureLevel,
     ProfileMethod,
+    ProfileAsyncMethod,
     scoped,
     scopedAsync
 } from './index';
+import type {
+    CounterName,
+    MarkerCategory,
+    MarkerColor,
+    MemoryPressureLevel
+} from './index';
+
+// Import enums directly from their source files since they're exported as types in index
+import { CounterName as CounterNameEnum } from './markers/CounterMarker';
+import { MarkerCategory as MarkerCategoryEnum, MarkerColor as MarkerColorEnum } from './markers/ProfileMarker';
+import { MemoryPressureLevel as MemoryPressureLevelEnum } from './MemoryProfiler';
 
 /**
  * Example 1: Basic Profiling
@@ -80,25 +88,25 @@ export function hierarchicalProfilingExample() {
 
         // Top-level frame marker
         ProfileMarker.begin('Frame', {
-            category: MarkerCategory.CUSTOM,
-            color: MarkerColor.WHITE
+            category: MarkerCategoryEnum.CUSTOM,
+            color: MarkerColorEnum.WHITE
         });
 
         // Update phase
         ProfileMarker.begin('Update', {
-            category: MarkerCategory.CUSTOM,
-            color: MarkerColor.GREEN
+            category: MarkerCategoryEnum.CUSTOM,
+            color: MarkerColorEnum.GREEN
         });
 
-        ProfileMarker.begin('Physics', { category: MarkerCategory.PHYSICS });
+        ProfileMarker.begin('Physics', { category: MarkerCategoryEnum.PHYSICS });
         updatePhysics();
         ProfileMarker.end('Physics');
 
-        ProfileMarker.begin('Animation', { category: MarkerCategory.ANIMATION });
+        ProfileMarker.begin('Animation', { category: MarkerCategoryEnum.ANIMATION });
         updateAnimations();
         ProfileMarker.end('Animation');
 
-        ProfileMarker.begin('AI', { category: MarkerCategory.AI });
+        ProfileMarker.begin('AI', { category: MarkerCategoryEnum.AI });
         updateAI();
         ProfileMarker.end('AI');
 
@@ -106,19 +114,19 @@ export function hierarchicalProfilingExample() {
 
         // Render phase
         ProfileMarker.begin('Render', {
-            category: MarkerCategory.RENDERING,
-            color: MarkerColor.BLUE
+            category: MarkerCategoryEnum.RENDERING,
+            color: MarkerColorEnum.BLUE
         });
 
-        ProfileMarker.begin('Shadow Pass', { category: MarkerCategory.RENDERING });
+        ProfileMarker.begin('Shadow Pass', { category: MarkerCategoryEnum.RENDERING });
         renderShadows();
         ProfileMarker.end('Shadow Pass');
 
-        ProfileMarker.begin('Main Pass', { category: MarkerCategory.RENDERING });
+        ProfileMarker.begin('Main Pass', { category: MarkerCategoryEnum.RENDERING });
         renderMain();
         ProfileMarker.end('Main Pass');
 
-        ProfileMarker.begin('Post Processing', { category: MarkerCategory.RENDERING });
+        ProfileMarker.begin('Post Processing', { category: MarkerCategoryEnum.RENDERING });
         renderPostProcess();
         ProfileMarker.end('Post Processing');
 
@@ -194,9 +202,9 @@ export function counterTrackingExample() {
         ProfileMarker.begin('Render');
 
         for (const object of getVisibleObjects()) {
-            CounterMarker.increment(CounterName.DRAW_CALLS);
-            CounterMarker.increment(CounterName.TRIANGLES, object.triangleCount);
-            CounterMarker.increment(CounterName.VERTICES, object.vertexCount);
+            CounterMarker.increment(CounterNameEnum.DRAW_CALLS);
+            CounterMarker.increment(CounterNameEnum.TRIANGLES, object.triangleCount);
+            CounterMarker.increment(CounterNameEnum.VERTICES, object.vertexCount);
 
             drawObject(object);
         }
@@ -204,8 +212,8 @@ export function counterTrackingExample() {
         ProfileMarker.end('Render');
 
         // Get counter values
-        const drawCalls = CounterMarker.get(CounterName.DRAW_CALLS);
-        const triangles = CounterMarker.get(CounterName.TRIANGLES);
+        const drawCalls = CounterMarker.get(CounterNameEnum.DRAW_CALLS);
+        const triangles = CounterMarker.get(CounterNameEnum.TRIANGLES);
 
         console.log(`Draw Calls: ${drawCalls}, Triangles: ${triangles}`);
 
@@ -218,7 +226,7 @@ export function counterTrackingExample() {
 
     // Check statistics after some time
     setTimeout(() => {
-        const stats = CounterMarker.getStatistics(CounterName.DRAW_CALLS);
+        const stats = CounterMarker.getStatistics(CounterNameEnum.DRAW_CALLS);
         console.log(`Average draw calls: ${stats.average.toFixed(0)}`);
         console.log(`Max draw calls: ${stats.max}`);
     }, 5000);
@@ -298,12 +306,12 @@ export function memoryProfilingExample() {
     function gameLoop() {
         const pressure = memProfiler.getMemoryPressure();
 
-        if (pressure === MemoryPressureLevel.HIGH) {
+        if (pressure === MemoryPressureLevelEnum.HIGH) {
             console.warn('High memory pressure! Reducing quality...');
             reduceQuality();
         }
 
-        if (pressure === MemoryPressureLevel.CRITICAL) {
+        if (pressure === MemoryPressureLevelEnum.CRITICAL) {
             console.error('Critical memory pressure! Unloading assets...');
             unloadAssets();
             memProfiler.suggestGarbageCollection();
@@ -532,37 +540,85 @@ export function jsonExportExample() {
 }
 
 /**
- * Example 11: Decorator Usage
+ * Example 11: Class-Based Profiling
+ *
+ * Note: Decorator usage requires 'experimentalDecorators' in tsconfig.json
+ * This example shows manual profiling approach that works without decorators.
  */
 export class RendererExample {
-    @ProfileMethod({ category: MarkerCategory.RENDERING })
+    public render(): void {
+        ProfileMarker.begin('RendererExample.render', { category: MarkerCategoryEnum.RENDERING });
+        this.renderShadows();
+        this.renderMain();
+        this.renderPostProcess();
+        ProfileMarker.end('RendererExample.render');
+    }
+
+    private renderShadows(): void {
+        ProfileMarker.begin('RendererExample.renderShadows', { category: MarkerCategoryEnum.RENDERING });
+        // Shadow rendering code
+        ProfileMarker.end('RendererExample.renderShadows');
+    }
+
+    private renderMain(): void {
+        ProfileMarker.begin('RendererExample.renderMain', { category: MarkerCategoryEnum.RENDERING });
+        // Main rendering code
+        ProfileMarker.end('RendererExample.renderMain');
+    }
+
+    private renderPostProcess(): void {
+        ProfileMarker.begin('RendererExample.renderPostProcess', { category: MarkerCategoryEnum.RENDERING });
+        // Post-processing code
+        ProfileMarker.end('RendererExample.renderPostProcess');
+    }
+
+    public async loadTexture(path: string): Promise<void> {
+        ProfileMarker.begin('RendererExample.loadTexture', { category: MarkerCategoryEnum.LOADING });
+        // Async loading code
+        await new Promise(resolve => setTimeout(resolve, 100));
+        ProfileMarker.end('RendererExample.loadTexture');
+    }
+}
+
+/**
+ * Example 11b: Decorator Usage (Commented Out)
+ *
+ * To use decorators, add to tsconfig.json compilerOptions:
+ * "experimentalDecorators": true
+ *
+ * Then uncomment this example:
+ */
+/*
+export class RendererExampleWithDecorators {
+    @ProfileMethod({ category: MarkerCategoryEnum.RENDERING })
     public render(): void {
         this.renderShadows();
         this.renderMain();
         this.renderPostProcess();
     }
 
-    @ProfileMethod({ category: MarkerCategory.RENDERING })
+    @ProfileMethod({ category: MarkerCategoryEnum.RENDERING })
     private renderShadows(): void {
         // Shadow rendering code
     }
 
-    @ProfileMethod({ category: MarkerCategory.RENDERING })
+    @ProfileMethod({ category: MarkerCategoryEnum.RENDERING })
     private renderMain(): void {
         // Main rendering code
     }
 
-    @ProfileMethod({ category: MarkerCategory.RENDERING })
+    @ProfileMethod({ category: MarkerCategoryEnum.RENDERING })
     private renderPostProcess(): void {
         // Post-processing code
     }
 
-    @ProfileMethod({ category: MarkerCategory.LOADING })
+    @ProfileAsyncMethod({ category: MarkerCategoryEnum.LOADING })
     public async loadTexture(path: string): Promise<void> {
         // Async loading code
         await new Promise(resolve => setTimeout(resolve, 100));
     }
 }
+*/
 
 /**
  * Example 12: Performance Comparison
@@ -629,7 +685,7 @@ function updateAnimations() { /* ... */ }
 function updateAI() { /* ... */ }
 function loadTextures() { return Promise.resolve(); }
 function loadModels() { return Promise.resolve(); }
-function getVisibleObjects() { return []; }
+function getVisibleObjects(): Array<{ triangleCount: number; vertexCount: number }> { return []; }
 function drawObject(obj: any) { /* ... */ }
 function reduceQuality() { /* ... */ }
 function unloadAssets() { /* ... */ }

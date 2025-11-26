@@ -57,6 +57,12 @@ class MeshComponent implements IComponent {
     this.material = options.material ?? null;
     this.visible = true;
   }
+
+  reset(): void {
+    this.geometry = null;
+    this.material = null;
+    this.visible = true;
+  }
 }
 
 /**
@@ -74,6 +80,13 @@ class CameraComponent implements IComponent {
     this.far = options.far ?? 1000;
     this.aspect = options.aspect ?? 16 / 9;
   }
+
+  reset(): void {
+    this.fov = 60;
+    this.near = 0.1;
+    this.far = 1000;
+    this.aspect = 16 / 9;
+  }
 }
 
 /**
@@ -86,6 +99,11 @@ class DirectionalLightComponent implements IComponent {
   constructor(options: { intensity?: number; color?: { r: number; g: number; b: number } } = {}) {
     this.intensity = options.intensity ?? 1.0;
     this.color = options.color ?? { r: 1, g: 1, b: 1 };
+  }
+
+  reset(): void {
+    this.intensity = 1.0;
+    this.color = { r: 1, g: 1, b: 1 };
   }
 }
 
@@ -112,22 +130,23 @@ class BoxGeometry {
  * Simple Physics System for testing
  */
 class SimplePhysicsSystem extends System {
+  readonly query = { all: [TransformComponent, RigidBodyComponent] };
   private gravity = new Vector3(0, -9.81, 0);
 
   constructor() {
-    super('SimplePhysicsSystem', 100);
+    super({ name: 'SimplePhysicsSystem', priority: 100 });
   }
 
   update(context: SystemContext): void {
     if (!this.world) return;
 
     // Simple Euler integration for testing
-    const entities = this.world.entityManager.getAllEntities();
-    for (const entity of entities) {
-      const transform = this.world.getComponent(entity, TransformComponent);
-      const rigidbody = this.world.getComponent(entity, RigidBodyComponent);
+    const query = this.getQuery();
+    query.forEach((entity, components) => {
+      const transform = components[0] as TransformComponent;
+      const rigidbody = components[1] as RigidBodyComponent;
 
-      if (transform && rigidbody && rigidbody.type === 'dynamic') {
+      if (rigidbody.type === 'dynamic') {
         // Apply gravity
         rigidbody.applyForce(this.gravity.scale(rigidbody.mass));
 
@@ -148,7 +167,7 @@ class SimplePhysicsSystem extends System {
           rigidbody.velocity.y = 0;
         }
       }
-    }
+    });
   }
 }
 
@@ -156,27 +175,28 @@ class SimplePhysicsSystem extends System {
  * Render System for testing
  */
 class SimpleRenderSystem extends System {
+  readonly query = { all: [MeshComponent, TransformComponent] };
   private renderCount = 0;
 
   constructor() {
-    super('SimpleRenderSystem', 1000);
+    super({ name: 'SimpleRenderSystem', priority: 1000 });
   }
 
   update(context: SystemContext): void {
     if (!this.world) return;
 
     // Count visible meshes
-    const entities = this.world.entityManager.getAllEntities();
     let visibleCount = 0;
 
-    for (const entity of entities) {
-      const mesh = this.world.getComponent(entity, MeshComponent);
-      const transform = this.world.getComponent(entity, TransformComponent);
+    const query = this.getQuery();
+    query.forEach((entity, components) => {
+      const mesh = components[0] as MeshComponent;
+      const transform = components[1] as TransformComponent;
 
-      if (mesh && transform && mesh.visible) {
+      if (mesh.visible) {
         visibleCount++;
       }
-    }
+    });
 
     this.renderCount++;
   }
@@ -298,21 +318,23 @@ describe('E2E: Complete Game Loop', () => {
 
     // Create system that applies forces
     class ForceSystem extends System {
+      readonly query = { all: [RigidBodyComponent] };
+
       constructor() {
-        super('ForceSystem', 50);
+        super({ name: 'ForceSystem', priority: 50 });
       }
 
       update(context: SystemContext): void {
         if (!this.world) return;
 
-        const entities = this.world.entityManager.getAllEntities();
-        for (const e of entities) {
-          const rb = this.world.getComponent(e, RigidBodyComponent);
-          if (rb && rb.type === 'dynamic') {
+        const query = this.getQuery();
+        query.forEach((entity, components) => {
+          const rb = components[0] as RigidBodyComponent;
+          if (rb.type === 'dynamic') {
             // Apply rightward force
             rb.applyForce(new Vector3(100, 0, 0));
           }
-        }
+        });
       }
     }
 
@@ -373,12 +395,10 @@ describe('E2E: Complete Game Loop', () => {
 
     // Verify remaining entities still work
     let count = 0;
-    const allEntities = engine.world.entityManager.getAllEntities();
-    for (const entity of allEntities) {
-      if (engine.world.hasComponent(entity, TransformComponent)) {
-        count++;
-      }
-    }
+    const query = engine.world.getQuery({ all: [TransformComponent] });
+    query.forEach(() => {
+      count++;
+    });
 
     expect(count).toBe(500);
   });
@@ -493,15 +513,17 @@ describe('E2E: Complete Game Loop', () => {
     let destroyCalled = false;
 
     class LifecycleTestSystem extends System {
+      readonly query = { all: [] };
+
       constructor() {
-        super('LifecycleTestSystem', 100);
+        super({ name: 'LifecycleTestSystem', priority: 100 });
       }
 
-      onInit(): void {
+      override onInit(): void {
         initCalled = true;
       }
 
-      onStart(): void {
+      override onStart(): void {
         startCalled = true;
       }
 
@@ -509,11 +531,11 @@ describe('E2E: Complete Game Loop', () => {
         updateCalled = true;
       }
 
-      onStop(): void {
+      override onStop(): void {
         stopCalled = true;
       }
 
-      onDestroy(): void {
+      override onDestroy(): void {
         destroyCalled = true;
       }
     }
@@ -556,10 +578,11 @@ describe('E2E: Complete Game Loop', () => {
     let destroyedCount = 0;
 
     class SpawnDestroySystem extends System {
+      readonly query = { all: [TransformComponent] };
       private frameCount = 0;
 
       constructor() {
-        super('SpawnDestroySystem', 100);
+        super({ name: 'SpawnDestroySystem', priority: 100 });
       }
 
       update(context: SystemContext): void {
@@ -567,29 +590,30 @@ describe('E2E: Complete Game Loop', () => {
 
         this.frameCount++;
 
-        const entities = this.world.entityManager.getAllEntities();
-
         // On frame 1, spawn 5 new entities
         if (this.frameCount === 1) {
           for (let i = 0; i < 5; i++) {
-            const newEntity = this.world.defer.createEntity();
-            this.world.defer.addComponent(newEntity, new TransformComponent());
+            const newEntity = this.world.createEntity();
+            this.world.addComponent(newEntity, new TransformComponent());
             spawnedCount++;
           }
-          this.world.executeCommands();
         }
 
         // On frame 2, destroy 3 entities
         if (this.frameCount === 2) {
           let count = 0;
-          for (const entity of entities) {
+          const query = this.getQuery();
+          const entitiesToDestroy: Entity[] = [];
+          query.forEach((entity) => {
             if (count < 3) {
-              this.world.defer.destroyEntity(entity);
-              destroyedCount++;
+              entitiesToDestroy.push(entity);
               count++;
             }
+          });
+          for (const entity of entitiesToDestroy) {
+            this.world.destroyEntity(entity);
+            destroyedCount++;
           }
-          this.world.executeCommands();
         }
       }
     }

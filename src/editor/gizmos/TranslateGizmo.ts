@@ -5,12 +5,23 @@
 
 import { IGizmo, GizmoManager } from './GizmoManager';
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
-import { Camera } from '../../components/Camera';
+import { Transform } from '../../math/Transform';
+import { Camera } from '../../rendering/camera/Camera';
 import { Vector3 } from '../../math/Vector3';
 import { Ray } from '../../math/Ray';
 import { Plane } from '../../math/Plane';
 import { Color } from '../../math/Color';
+
+// TODO: Gizmos need access to World/ComponentManager to get components from entities
+// For now, using a placeholder interface
+interface EntityWithTransform {
+  getComponent(type: typeof Transform): Transform | undefined;
+}
+
+// Type guard to check if entity has the component methods
+function hasComponentMethods(entity: Entity): entity is Entity & EntityWithTransform {
+  return typeof (entity as any).getComponent === 'function';
+}
 
 /**
  * Axis identifier
@@ -184,9 +195,11 @@ export class TranslateGizmo implements IGizmo {
     // Store initial positions
     this.initialPositions.clear();
     this.targets.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        this.initialPositions.set(entity, transform.position.clone());
+      if (hasComponentMethods(entity)) {
+        const transform = entity.getComponent(Transform);
+        if (transform) {
+          this.initialPositions.set(entity, transform.position.clone());
+        }
       }
     });
 
@@ -219,11 +232,13 @@ export class TranslateGizmo implements IGizmo {
 
       // Apply translation to all targets
       this.targets.forEach(entity => {
-        const transform = entity.getComponent(Transform);
-        const initialPos = this.initialPositions.get(entity);
-        if (transform && initialPos) {
-          transform.position.copy(initialPos).add(delta);
-          transform.markDirty();
+        if (hasComponentMethods(entity)) {
+          const transform = entity.getComponent(Transform);
+          const initialPos = this.initialPositions.get(entity);
+          if (transform && initialPos) {
+            transform.position.copy(initialPos).add(delta);
+            transform.markDirty();
+          }
         }
       });
 
@@ -292,9 +307,43 @@ export class TranslateGizmo implements IGizmo {
    * Checks if ray intersects an axis
    */
   private rayIntersectsAxis(ray: Ray, pivot: Vector3, axis: Vector3, size: number, threshold: number): boolean {
-    const axisEnd = pivot.clone().add(axis.clone().multiplyScalar(this.axisLength * size));
-    const distance = ray.distanceToSegment(pivot, axisEnd);
+    const axisEnd = pivot.clone().add(axis.clone().scale(this.axisLength * size));
+    const distance = this.rayDistanceToSegment(ray, pivot, axisEnd);
     return distance < threshold;
+  }
+
+  /**
+   * Calculates the distance from a ray to a line segment
+   */
+  private rayDistanceToSegment(ray: Ray, segmentStart: Vector3, segmentEnd: Vector3): number {
+    const segmentDir = segmentEnd.sub(segmentStart);
+    const segmentLength = segmentDir.length();
+
+    if (segmentLength < 0.0001) {
+      return ray.distanceToPoint(segmentStart);
+    }
+
+    const segmentDirNorm = segmentDir.scale(1 / segmentLength);
+    const rayToSegmentStart = segmentStart.sub(ray.origin);
+
+    const rayDotSegment = ray.direction.dot(segmentDirNorm);
+    const denom = 1 - rayDotSegment * rayDotSegment;
+
+    if (Math.abs(denom) < 0.0001) {
+      // Ray and segment are parallel
+      return ray.distanceToPoint(segmentStart);
+    }
+
+    const rayParam = (rayToSegmentStart.dot(ray.direction) - rayToSegmentStart.dot(segmentDirNorm) * rayDotSegment) / denom;
+    const segmentParam = (rayToSegmentStart.dot(segmentDirNorm) - rayToSegmentStart.dot(ray.direction) * rayDotSegment) / denom;
+
+    const clampedRayParam = Math.max(0, rayParam);
+    const clampedSegmentParam = Math.max(0, Math.min(segmentLength, segmentParam));
+
+    const rayPoint = ray.at(clampedRayParam);
+    const segmentPoint = segmentStart.add(segmentDirNorm.scale(clampedSegmentParam));
+
+    return rayPoint.distanceTo(segmentPoint);
   }
 
   /**
@@ -308,14 +357,16 @@ export class TranslateGizmo implements IGizmo {
     size: number,
     threshold: number
   ): boolean {
-    const normal = new Vector3().crossVectors(axis1, axis2).normalize();
-    const plane = new Plane(normal, pivot);
-    const intersection = ray.intersectPlane(plane);
+    const normal = axis1.cross(axis2).normalize();
+    const constant = -normal.dot(pivot);
+    const plane = new Plane(normal, constant);
+    const intersectionResult = ray.intersectPlane(plane);
+    const intersection = intersectionResult ? intersectionResult.point : null;
 
     if (!intersection) return false;
 
     // Check if within plane bounds
-    const localPos = intersection.clone().sub(pivot);
+    const localPos = intersection.sub(pivot);
     const dot1 = localPos.dot(axis1);
     const dot2 = localPos.dot(axis2);
 
@@ -332,32 +383,35 @@ export class TranslateGizmo implements IGizmo {
     const yAxis = new Vector3(0, 1, 0).applyQuaternion(orientation);
     const zAxis = new Vector3(0, 0, 1).applyQuaternion(orientation);
 
-    let plane: Plane;
+    let planeNormal: Vector3;
 
     switch (axis) {
       case Axis.X:
-        plane = new Plane(yAxis, pivot);
+        planeNormal = yAxis;
         break;
       case Axis.Y:
-        plane = new Plane(xAxis, pivot);
+        planeNormal = xAxis;
         break;
       case Axis.Z:
-        plane = new Plane(yAxis, pivot);
+        planeNormal = yAxis;
         break;
       case Axis.XY:
-        plane = new Plane(zAxis, pivot);
+        planeNormal = zAxis;
         break;
       case Axis.XZ:
-        plane = new Plane(yAxis, pivot);
+        planeNormal = yAxis;
         break;
       case Axis.YZ:
-        plane = new Plane(xAxis, pivot);
+        planeNormal = xAxis;
         break;
       default:
         return pivot.clone();
     }
 
-    return ray.intersectPlane(plane) || pivot.clone();
+    const constant = -planeNormal.dot(pivot);
+    const plane = new Plane(planeNormal, constant);
+    const result = ray.intersectPlane(plane);
+    return result ? result.point : pivot.clone();
   }
 
   /**

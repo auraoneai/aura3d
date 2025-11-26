@@ -97,7 +97,7 @@ export interface SerializedTree {
  */
 export class BTSerializer {
   /** Custom node type registry for extension */
-  private nodeRegistry: Map<string, new (...args: unknown[]) => BTNode>;
+  private nodeRegistry: Map<string, new (...args: any[]) => BTNode>;
 
   /** Custom action function registry */
   private actionRegistry: Map<string, (...args: unknown[]) => NodeStatus>;
@@ -162,7 +162,7 @@ export class BTSerializer {
    * @param typeName - Type name (used in serialization)
    * @param nodeClass - Node class constructor
    */
-  registerNodeType(typeName: string, nodeClass: new (...args: unknown[]) => BTNode): void {
+  registerNodeType(typeName: string, nodeClass: new (...args: any[]) => BTNode): void {
     this.nodeRegistry.set(typeName, nodeClass);
   }
 

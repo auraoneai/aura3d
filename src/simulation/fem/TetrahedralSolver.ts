@@ -129,10 +129,10 @@ export class TetrahedralSolver {
       if (this.config.useCorotationalFEM) {
         const polar = this.polarDecomposition(F);
         rotation = polar.rotation;
-        strain = polar.rotation.transpose().multiply(F).sub(Matrix3.identity());
+        strain = Matrix3.subtract(polar.rotation.transpose().multiply(F), Matrix3.identity());
       } else {
         rotation = Matrix3.identity();
-        strain = F.sub(Matrix3.identity());
+        strain = Matrix3.subtract(F, Matrix3.identity());
       }
 
       const stress = this.computeStress(strain);
@@ -140,13 +140,14 @@ export class TetrahedralSolver {
       const P = rotation.multiply(stress);
 
       const Dm_inv = this.mesh.getInvRestMatrix(tetIdx);
-      const H = P.multiply(Dm_inv.transpose()).scale(-tet.restVolume);
+      const H = P.multiply(Dm_inv.transpose()).multiplyScalar(-tet.restVolume);
 
       const [v0, v1, v2, v3] = tet.vertices;
 
-      const f1 = new Vector3(H.m11, H.m21, H.m31);
-      const f2 = new Vector3(H.m12, H.m22, H.m32);
-      const f3 = new Vector3(H.m13, H.m23, H.m33);
+      const He = H.elements;
+      const f1 = new Vector3(He[0], He[1], He[2]);
+      const f2 = new Vector3(He[3], He[4], He[5]);
+      const f3 = new Vector3(He[6], He[7], He[8]);
       const f0 = f1.add(f2).add(f3).scale(-1);
 
       this.mesh.applyForceToVertex(v0, f0);
@@ -160,19 +161,22 @@ export class TetrahedralSolver {
    * Computes stress from strain using linear elasticity.
    */
   private computeStress(strain: Matrix3): Matrix3 {
-    const traceStrain = strain.m11 + strain.m22 + strain.m33;
+    const e = strain.elements;
+    const traceStrain = e[0] + e[4] + e[8];
 
-    const m11 = 2 * this.mu * strain.m11 + this.lambda * traceStrain;
-    const m22 = 2 * this.mu * strain.m22 + this.lambda * traceStrain;
-    const m33 = 2 * this.mu * strain.m33 + this.lambda * traceStrain;
-    const m12 = 2 * this.mu * strain.m12;
-    const m13 = 2 * this.mu * strain.m13;
-    const m21 = 2 * this.mu * strain.m21;
-    const m23 = 2 * this.mu * strain.m23;
-    const m31 = 2 * this.mu * strain.m31;
-    const m32 = 2 * this.mu * strain.m32;
+    const m11 = 2 * this.mu * e[0] + this.lambda * traceStrain;
+    const m22 = 2 * this.mu * e[4] + this.lambda * traceStrain;
+    const m33 = 2 * this.mu * e[8] + this.lambda * traceStrain;
+    const m12 = 2 * this.mu * e[3];
+    const m13 = 2 * this.mu * e[6];
+    const m21 = 2 * this.mu * e[1];
+    const m23 = 2 * this.mu * e[7];
+    const m31 = 2 * this.mu * e[2];
+    const m32 = 2 * this.mu * e[5];
 
-    return new Matrix3(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+    const result = new Matrix3();
+    result.set(m11, m12, m13, m21, m22, m23, m31, m32, m33);
+    return result;
   }
 
   /**
@@ -184,15 +188,19 @@ export class TetrahedralSolver {
 
     for (let iter = 0; iter < 10; iter++) {
       const Rinv = R.invert();
+      if (!Rinv) {
+        break;
+      }
       const RinvT = Rinv.transpose();
 
-      const update = R.add(RinvT).scale(0.5);
+      const update = Matrix3.add(R, RinvT).multiplyScalar(0.5);
 
-      const diff = update.sub(R);
+      const diff = Matrix3.subtract(update, R);
+      const de = diff.elements;
       const diffNorm = Math.sqrt(
-        diff.m11 * diff.m11 + diff.m12 * diff.m12 + diff.m13 * diff.m13 +
-        diff.m21 * diff.m21 + diff.m22 * diff.m22 + diff.m23 * diff.m23 +
-        diff.m31 * diff.m31 + diff.m32 * diff.m32 + diff.m33 * diff.m33
+        de[0] * de[0] + de[3] * de[3] + de[6] * de[6] +
+        de[1] * de[1] + de[4] * de[4] + de[7] * de[7] +
+        de[2] * de[2] + de[5] * de[5] + de[8] * de[8]
       );
 
       R = update;
@@ -203,7 +211,7 @@ export class TetrahedralSolver {
     }
 
     if (R.determinant() < 0) {
-      R = R.scale(-1);
+      R = R.multiplyScalar(-1);
     }
 
     const S = R.transpose().multiply(F);
@@ -414,7 +422,7 @@ export class TetrahedralSolver {
 
     for (let i = 0; i < this.mesh.getVertexCount(); i++) {
       const vertex = this.mesh.getVertex(i);
-      energy += 0.5 * vertex.mass * vertex.velocity.lengthSq();
+      energy += 0.5 * vertex.mass * vertex.velocity.lengthSquared();
     }
 
     return energy;
@@ -430,15 +438,16 @@ export class TetrahedralSolver {
       const tet = this.mesh.getTetrahedron(tetIdx);
       const F = this.mesh.getDeformationGradient(tetIdx);
 
-      const strain = F.sub(Matrix3.identity());
-      const traceStrain = strain.m11 + strain.m22 + strain.m33;
+      const strain = Matrix3.subtract(F, Matrix3.identity());
+      const e = strain.elements;
+      const traceStrain = e[0] + e[4] + e[8];
 
       const traceStrainSq = traceStrain * traceStrain;
 
       const strainNormSq =
-        strain.m11 * strain.m11 + strain.m12 * strain.m12 + strain.m13 * strain.m13 +
-        strain.m21 * strain.m21 + strain.m22 * strain.m22 + strain.m23 * strain.m23 +
-        strain.m31 * strain.m31 + strain.m32 * strain.m32 + strain.m33 * strain.m33;
+        e[0] * e[0] + e[3] * e[3] + e[6] * e[6] +
+        e[1] * e[1] + e[4] * e[4] + e[7] * e[7] +
+        e[2] * e[2] + e[5] * e[5] + e[8] * e[8];
 
       const tetEnergy = tet.restVolume * (0.5 * this.lambda * traceStrainSq + this.mu * strainNormSq);
 

@@ -131,6 +131,13 @@ export class SizeModule implements IParticleModule {
   private readonly _random: Random = new Random();
 
   /**
+   * Helper to evaluate 1D spline curve
+   */
+  private evaluateSpline(spline: Spline, t: number): number {
+    return spline.getPoint(t).y;
+  }
+
+  /**
    * Create a new size module.
    *
    * @param config - Module configuration
@@ -173,9 +180,8 @@ export class SizeModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._sizeCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._sizeCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -189,9 +195,8 @@ export class SizeModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._sizeXCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._sizeXCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -205,9 +210,8 @@ export class SizeModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._sizeYCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._sizeYCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -221,9 +225,8 @@ export class SizeModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._sizeZCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._sizeZCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -235,7 +238,7 @@ export class SizeModule implements IParticleModule {
   initializeParticle(particle: Particle, system: ParticleSystem): void {
     // Apply random size range
     if (this.randomSizeMin !== this.randomSizeMax) {
-      const randomScale = this._random.range(this.randomSizeMin, this.randomSizeMax);
+      const randomScale = this._random.nextRange(this.randomSizeMin, this.randomSizeMax);
       particle.size.multiplyScalar(randomScale);
       particle.startSize.multiplyScalar(randomScale);
     }
@@ -256,22 +259,22 @@ export class SizeModule implements IParticleModule {
     if (this.useSeparateAxes) {
       // Separate axis curves
       if (this._sizeXCurve) {
-        const xScale = this._sizeXCurve.evaluate(particle.normalizedAge);
+        const xScale = this.evaluateSpline(this._sizeXCurve, particle.normalizedAge);
         particle.size.x = particle.startSize.x * xScale;
       }
 
       if (this._sizeYCurve) {
-        const yScale = this._sizeYCurve.evaluate(particle.normalizedAge);
+        const yScale = this.evaluateSpline(this._sizeYCurve, particle.normalizedAge);
         particle.size.y = particle.startSize.y * yScale;
       }
 
       if (this._sizeZCurve) {
-        const zScale = this._sizeZCurve.evaluate(particle.normalizedAge);
+        const zScale = this.evaluateSpline(this._sizeZCurve, particle.normalizedAge);
         particle.size.z = particle.startSize.z * zScale;
       }
     } else if (this._sizeCurve) {
       // Uniform size curve
-      const sizeScale = this._sizeCurve.evaluate(particle.normalizedAge);
+      const sizeScale = this.evaluateSpline(this._sizeCurve, particle.normalizedAge);
       particle.size.multiplyScalar(sizeScale);
     }
 
@@ -299,7 +302,7 @@ export class SizeModule implements IParticleModule {
     if (!this._sizeCurve) {
       return 1.0;
     }
-    return this._sizeCurve.evaluate(time);
+    return this.evaluateSpline(this._sizeCurve, time);
   }
 
   /**
@@ -312,7 +315,7 @@ export class SizeModule implements IParticleModule {
     if (!this._sizeXCurve) {
       return 1.0;
     }
-    return this._sizeXCurve.evaluate(time);
+    return this.evaluateSpline(this._sizeXCurve, time);
   }
 
   /**
@@ -325,7 +328,7 @@ export class SizeModule implements IParticleModule {
     if (!this._sizeYCurve) {
       return 1.0;
     }
-    return this._sizeYCurve.evaluate(time);
+    return this.evaluateSpline(this._sizeYCurve, time);
   }
 
   /**
@@ -338,6 +341,6 @@ export class SizeModule implements IParticleModule {
     if (!this._sizeZCurve) {
       return 1.0;
     }
-    return this._sizeZCurve.evaluate(time);
+    return this.evaluateSpline(this._sizeZCurve, time);
   }
 }

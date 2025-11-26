@@ -210,7 +210,7 @@ export class HiZCulling {
   private config: HiZCullingConfig;
 
   /** Hi-Z texture (mipmap chain) */
-  private hiZTexture: WebGLTexture | null = null;
+  private _hiZTexture: WebGLTexture | null = null;
 
   /** Framebuffer for downsampling */
   private downsampleFramebuffer: WebGLFramebuffer | null = null;
@@ -294,7 +294,7 @@ export class HiZCulling {
    * @param depthTexture - Source depth texture
    */
   buildHiZ(depthTexture: WebGLTexture): void {
-    if (!this.gl || !this.downsampleShader || !this.hiZTexture) {
+    if (!this.gl || !this.downsampleShader || !this._hiZTexture) {
       throw new Error('HiZCulling not initialized');
     }
 
@@ -320,7 +320,7 @@ export class HiZCulling {
         this.gl.FRAMEBUFFER,
         this.gl.COLOR_ATTACHMENT0,
         this.gl.TEXTURE_2D,
-        this.hiZTexture,
+        this._hiZTexture,
         level + 1
       );
 
@@ -335,7 +335,7 @@ export class HiZCulling {
       if (level === 0) {
         this.gl.bindTexture(this.gl.TEXTURE_2D, depthTexture);
       } else {
-        this.gl.bindTexture(this.gl.TEXTURE_2D, this.hiZTexture);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this._hiZTexture);
       }
 
       // Draw full-screen quad
@@ -361,7 +361,7 @@ export class HiZCulling {
    * @returns True if occluded (not visible)
    */
   testOccluded(bounds: Box3, viewProjection: Matrix4): boolean {
-    if (!this.gl || !this.hiZTexture) {
+    if (!this.gl || !this._hiZTexture) {
       return false;
     }
 
@@ -422,9 +422,10 @@ export class HiZCulling {
    *
    * @param boundsBuffer - Buffer containing bounding boxes
    * @param count - Number of bounds to test
+   * @param viewProjection - View-projection matrix for projection
    * @returns Visibility buffer (1 = visible, 0 = occluded)
    */
-  async testOccludedGPU(boundsBuffer: WebGLBuffer, count: number): Promise<Uint32Array> {
+  async testOccludedGPU(boundsBuffer: WebGLBuffer, count: number, viewProjection: Matrix4): Promise<Uint32Array> {
     if (!this.gl) {
       throw new Error('HiZCulling not initialized');
     }
@@ -432,54 +433,26 @@ export class HiZCulling {
     const visibility = new Uint32Array(count);
     const startTime = performance.now();
 
-    // Check if we have WebGPU compute capability
-    if (this.gpuDevice && this.occlusionComputePipeline) {
-      // WebGPU compute path - bind and dispatch
-      const commandEncoder = this.gpuDevice.createCommandEncoder();
-      const passEncoder = commandEncoder.beginComputePass();
+    // CPU fallback - read bounds from GPU and test on CPU
+    // Note: WebGPU compute path would be implemented here if available
+    const boundsData = new Float32Array(count * 8); // min xyz pad max xyz pad
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, boundsBuffer);
+    this.gl.getBufferSubData(this.gl.ARRAY_BUFFER, 0, boundsData);
 
-      passEncoder.setPipeline(this.occlusionComputePipeline);
-      passEncoder.setBindGroup(0, this.occlusionBindGroup!);
-      passEncoder.dispatchWorkgroups(Math.ceil(count / 256));
-      passEncoder.end();
-
-      // Copy results to staging buffer
-      commandEncoder.copyBufferToBuffer(
-        this.visibilityGPUBuffer!,
-        0,
-        this.readbackBuffer!,
-        0,
-        count * 4
+    for (let i = 0; i < count; i++) {
+      const offset = i * 8;
+      const bounds = new Box3(
+        new Vector3(boundsData[offset]!, boundsData[offset + 1]!, boundsData[offset + 2]!),
+        new Vector3(boundsData[offset + 4]!, boundsData[offset + 5]!, boundsData[offset + 6]!)
       );
 
-      this.gpuDevice.queue.submit([commandEncoder.finish()]);
-
-      // Read back results
-      await this.readbackBuffer!.mapAsync(GPUMapMode.READ);
-      const mappedRange = this.readbackBuffer!.getMappedRange();
-      visibility.set(new Uint32Array(mappedRange));
-      this.readbackBuffer!.unmap();
-    } else {
-      // CPU fallback - read bounds from GPU and test on CPU
-      const boundsData = new Float32Array(count * 8); // min xyz pad max xyz pad
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, boundsBuffer);
-      this.gl.getBufferSubData(this.gl.ARRAY_BUFFER, 0, boundsData);
-
-      for (let i = 0; i < count; i++) {
-        const offset = i * 8;
-        const bounds = new Box3(
-          new Vector3(boundsData[offset], boundsData[offset + 1], boundsData[offset + 2]),
-          new Vector3(boundsData[offset + 4], boundsData[offset + 5], boundsData[offset + 6])
-        );
-
-        const occluded = this.testOccluded(bounds);
-        visibility[i] = occluded ? 0 : 1;
-      }
+      const occluded = this.testOccluded(bounds, viewProjection);
+      visibility[i] = occluded ? 0 : 1;
     }
 
     const testTime = performance.now() - startTime;
     this.stats.testTime = testTime;
-    this.stats.batchTested = count;
+    this.stats.tested += count;
     logger.debug(`Hi-Z GPU test: ${count} objects in ${testTime.toFixed(2)}ms`);
 
     return visibility;
@@ -512,7 +485,7 @@ export class HiZCulling {
 
     for (const corner of corners) {
       // Transform to clip space
-      const clipPos = viewProjection.multiplyVector4(new Vector3(corner.x, corner.y, corner.z));
+      const clipPos = viewProjection.multiplyVector4(new Vector4(corner.x, corner.y, corner.z, 1.0));
 
       // Check if behind camera
       if (clipPos.w <= 0) {
@@ -559,8 +532,8 @@ export class HiZCulling {
   private createHiZTexture(): void {
     if (!this.gl) return;
 
-    this.hiZTexture = this.gl.createTexture();
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.hiZTexture);
+    this._hiZTexture = this.gl.createTexture();
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this._hiZTexture);
 
     // Set texture parameters
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST_MIPMAP_NEAREST);
@@ -663,7 +636,7 @@ export class HiZCulling {
    * Gets Hi-Z texture.
    */
   get hiZTexture(): WebGLTexture | null {
-    return this.hiZTexture;
+    return this._hiZTexture;
   }
 
   /**
@@ -673,8 +646,8 @@ export class HiZCulling {
     this.config.depthResolution = new Vector2(width, height);
 
     // Recreate texture
-    if (this.hiZTexture && this.gl) {
-      this.gl.deleteTexture(this.hiZTexture);
+    if (this._hiZTexture && this.gl) {
+      this.gl.deleteTexture(this._hiZTexture);
       this.createHiZTexture();
     }
 
@@ -686,7 +659,7 @@ export class HiZCulling {
    */
   dispose(): void {
     if (this.gl) {
-      this.gl.deleteTexture(this.hiZTexture);
+      this.gl.deleteTexture(this._hiZTexture);
       this.gl.deleteFramebuffer(this.downsampleFramebuffer);
       this.gl.deleteProgram(this.downsampleShader);
       this.gl.deleteProgram(this.occlusionTestShader);
@@ -694,7 +667,7 @@ export class HiZCulling {
       this.gl.deleteBuffer(this.readbackBuffer);
     }
 
-    this.hiZTexture = null;
+    this._hiZTexture = null;
     this.downsampleFramebuffer = null;
     this.downsampleShader = null;
     this.occlusionTestShader = null;

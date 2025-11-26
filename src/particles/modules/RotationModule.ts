@@ -127,6 +127,13 @@ export class RotationModule implements IParticleModule {
   private readonly _random: Random = new Random();
 
   /**
+   * Helper to evaluate 1D spline curve
+   */
+  private evaluateSpline(spline: Spline, t: number): number {
+    return spline.getPoint(t).y;
+  }
+
+  /**
    * Create a new rotation module.
    *
    * @param config - Module configuration
@@ -182,9 +189,8 @@ export class RotationModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._rotationCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._rotationCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -198,9 +204,8 @@ export class RotationModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._rotationXCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._rotationXCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -214,9 +219,8 @@ export class RotationModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._rotationYCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._rotationYCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -230,9 +234,8 @@ export class RotationModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._rotationZCurve = new Spline(times, values, SplineType.CatmullRom);
+    const curvePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._rotationZCurve = new Spline(curvePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -245,22 +248,22 @@ export class RotationModule implements IParticleModule {
     if (this.rotation3D) {
       // 3D rotation
       particle.rotation.set(
-        this._random.range(this.initialRotation3DMin.x, this.initialRotation3DMax.x),
-        this._random.range(this.initialRotation3DMin.y, this.initialRotation3DMax.y),
-        this._random.range(this.initialRotation3DMin.z, this.initialRotation3DMax.z)
+        this._random.nextRange(this.initialRotation3DMin.x, this.initialRotation3DMax.x),
+        this._random.nextRange(this.initialRotation3DMin.y, this.initialRotation3DMax.y),
+        this._random.nextRange(this.initialRotation3DMin.z, this.initialRotation3DMax.z)
       );
 
       particle.angularVelocity.set(
-        this._random.range(this.angularVelocity3DMin.x, this.angularVelocity3DMax.x),
-        this._random.range(this.angularVelocity3DMin.y, this.angularVelocity3DMax.y),
-        this._random.range(this.angularVelocity3DMin.z, this.angularVelocity3DMax.z)
+        this._random.nextRange(this.angularVelocity3DMin.x, this.angularVelocity3DMax.x),
+        this._random.nextRange(this.angularVelocity3DMin.y, this.angularVelocity3DMax.y),
+        this._random.nextRange(this.angularVelocity3DMin.z, this.angularVelocity3DMax.z)
       );
     } else {
       // 2D rotation (Z axis only)
-      const rotation = this._random.range(this.initialRotationMin, this.initialRotationMax);
+      const rotation = this._random.nextRange(this.initialRotationMin, this.initialRotationMax);
       particle.rotation.set(0, 0, rotation);
 
-      const angularVelocity = this._random.range(this.angularVelocityMin, this.angularVelocityMax);
+      const angularVelocity = this._random.nextRange(this.angularVelocityMin, this.angularVelocityMax);
       particle.angularVelocity.set(0, 0, angularVelocity);
     }
 
@@ -279,19 +282,19 @@ export class RotationModule implements IParticleModule {
     if (this.rotation3D) {
       // 3D rotation curves
       if (this._rotationXCurve) {
-        particle.rotation.x = this._rotationXCurve.evaluate(particle.normalizedAge);
+        particle.rotation.x = this.evaluateSpline(this._rotationXCurve, particle.normalizedAge);
       }
 
       if (this._rotationYCurve) {
-        particle.rotation.y = this._rotationYCurve.evaluate(particle.normalizedAge);
+        particle.rotation.y = this.evaluateSpline(this._rotationYCurve, particle.normalizedAge);
       }
 
       if (this._rotationZCurve) {
-        particle.rotation.z = this._rotationZCurve.evaluate(particle.normalizedAge);
+        particle.rotation.z = this.evaluateSpline(this._rotationZCurve, particle.normalizedAge);
       }
     } else if (this._rotationCurve) {
       // 2D rotation curve
-      particle.rotation.z = this._rotationCurve.evaluate(particle.normalizedAge);
+      particle.rotation.z = this.evaluateSpline(this._rotationCurve, particle.normalizedAge);
     }
 
     // Note: Angular velocity is applied in Particle.update()
@@ -307,7 +310,7 @@ export class RotationModule implements IParticleModule {
     if (!this._rotationCurve) {
       return 0;
     }
-    return this._rotationCurve.evaluate(time);
+    return this.evaluateSpline(this._rotationCurve, time);
   }
 
   /**
@@ -320,7 +323,7 @@ export class RotationModule implements IParticleModule {
     if (!this._rotationXCurve) {
       return 0;
     }
-    return this._rotationXCurve.evaluate(time);
+    return this.evaluateSpline(this._rotationXCurve, time);
   }
 
   /**
@@ -333,7 +336,7 @@ export class RotationModule implements IParticleModule {
     if (!this._rotationYCurve) {
       return 0;
     }
-    return this._rotationYCurve.evaluate(time);
+    return this.evaluateSpline(this._rotationYCurve, time);
   }
 
   /**
@@ -346,6 +349,6 @@ export class RotationModule implements IParticleModule {
     if (!this._rotationZCurve) {
       return 0;
     }
-    return this._rotationZCurve.evaluate(time);
+    return this.evaluateSpline(this._rotationZCurve, time);
   }
 }

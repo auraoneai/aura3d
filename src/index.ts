@@ -382,7 +382,8 @@ export { ClearFlags } from './types';
  * renderer.render(scene, camera);
  * ```
  */
-// Re-export rendering module, excluding items that will be re-exported from other modules
+// Re-export rendering module
+// Note: Some items like PerformanceWarning may conflict with core module
 export * from './rendering';
 
 // ============================================================================

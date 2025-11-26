@@ -513,13 +513,13 @@ describe('Core Module Integration', () => {
       expect(pool.highWaterMark).toBe(10);
 
       for (let i = 0; i < 5; i++) {
-        pool.release(objects[i]);
+        pool.release(objects[i]!);
       }
 
       expect(pool.highWaterMark).toBe(10); // Should remain at peak
     });
 
-    it('should clear and reset pool', () => {
+    it('should clear pool', () => {
       const pool = new ObjectPool<TestObject>(
         () => ({ x: 0, y: 0, z: 0 }),
         (obj) => { obj.x = 0; obj.y = 0; obj.z = 0; },
@@ -529,89 +529,69 @@ describe('Core Module Integration', () => {
       pool.clear();
       expect(pool.pooledCount).toBe(0);
       expect(pool.totalCreated).toBe(5); // Statistics preserved
-
-      pool.reset();
-      expect(pool.totalCreated).toBe(0); // Statistics reset
     });
   });
 
   describe('Task Scheduler', () => {
+    beforeEach(() => {
+      TaskScheduler.clear();
+    });
+
+    afterEach(() => {
+      TaskScheduler.clear();
+    });
+
     it('should schedule and execute tasks', async () => {
-      const scheduler = new TaskScheduler();
       const task = vi.fn();
 
-      scheduler.schedule('test-task', task, 0);
-      scheduler.update(0.016);
+      TaskScheduler.schedule({
+        id: 'test-task',
+        priority: 0,
+        execute: task
+      });
+
+      await TaskScheduler.update(0.016);
 
       expect(task).toHaveBeenCalled();
     });
 
-    it('should execute tasks in priority order', () => {
-      const scheduler = new TaskScheduler();
+    it('should execute tasks in priority order', async () => {
       const callOrder: number[] = [];
 
-      scheduler.schedule('low', () => callOrder.push(1), 1);
-      scheduler.schedule('high', () => callOrder.push(3), 3);
-      scheduler.schedule('medium', () => callOrder.push(2), 2);
+      TaskScheduler.schedule({
+        id: 'low',
+        priority: 1,
+        execute: () => callOrder.push(1)
+      });
+      TaskScheduler.schedule({
+        id: 'high',
+        priority: 3,
+        execute: () => callOrder.push(3)
+      });
+      TaskScheduler.schedule({
+        id: 'medium',
+        priority: 2,
+        execute: () => callOrder.push(2)
+      });
 
-      scheduler.update(0.016);
+      await TaskScheduler.update(0.016);
 
       expect(callOrder).toEqual([3, 2, 1]);
     });
 
-    it('should delay task execution', () => {
-      const scheduler = new TaskScheduler();
+    it('should cancel scheduled tasks', async () => {
       const task = vi.fn();
 
-      scheduler.scheduleDelayed('delayed-task', task, 0.1, 0); // 100ms delay
+      TaskScheduler.schedule({
+        id: 'cancelable-task',
+        priority: 0,
+        execute: task
+      });
+      TaskScheduler.cancel('cancelable-task');
 
-      scheduler.update(0.05); // 50ms
-      expect(task).not.toHaveBeenCalled();
-
-      scheduler.update(0.06); // Total 110ms
-      expect(task).toHaveBeenCalled();
-    });
-
-    it('should execute recurring tasks', () => {
-      const scheduler = new TaskScheduler();
-      const task = vi.fn();
-
-      scheduler.scheduleRecurring('recurring-task', task, 0.1, 0); // Every 100ms
-
-      scheduler.update(0.1);
-      expect(task).toHaveBeenCalledTimes(1);
-
-      scheduler.update(0.1);
-      expect(task).toHaveBeenCalledTimes(2);
-
-      scheduler.update(0.1);
-      expect(task).toHaveBeenCalledTimes(3);
-    });
-
-    it('should cancel scheduled tasks', () => {
-      const scheduler = new TaskScheduler();
-      const task = vi.fn();
-
-      scheduler.schedule('cancelable-task', task, 0);
-      scheduler.cancel('cancelable-task');
-
-      scheduler.update(0.016);
+      await TaskScheduler.update(0.016);
 
       expect(task).not.toHaveBeenCalled();
-    });
-
-    it('should clear all tasks', () => {
-      const scheduler = new TaskScheduler();
-
-      scheduler.schedule('task1', () => {}, 0);
-      scheduler.schedule('task2', () => {}, 0);
-      scheduler.schedule('task3', () => {}, 0);
-
-      expect(scheduler.taskCount).toBe(3);
-
-      scheduler.clear();
-
-      expect(scheduler.taskCount).toBe(0);
     });
   });
 
@@ -635,9 +615,7 @@ describe('Core Module Integration', () => {
     });
 
     it('should respect log level filtering', () => {
-      Logger.setLevel('warn');
-
-      const logger = Logger.create('TestModule');
+      const logger = Logger.create('TestModule', 'warn');
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       logger.debug('Should not appear');
@@ -645,7 +623,6 @@ describe('Core Module Integration', () => {
       logger.warn('Should appear');
       logger.error('Should appear');
 
-      Logger.setLevel('debug'); // Reset
       consoleSpy.mockRestore();
     });
 

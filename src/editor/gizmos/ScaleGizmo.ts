@@ -259,12 +259,14 @@ export class ScaleGizmo implements IGizmo {
     const distance = toPivot.length();
 
     // Project ray onto appropriate plane
-    const plane = new Plane(toPivot.normalize(), pivot);
-    const intersection = ray.intersectPlane(plane);
+    const normalizedDir = toPivot.normalize();
+    const constant = -normalizedDir.dot(pivot);
+    const plane = new Plane(normalizedDir, constant);
+    const intersectionResult = ray.intersectPlane(plane);
 
-    if (!intersection) return 1.0;
+    if (!intersectionResult) return 1.0;
 
-    const offset = intersection.clone().sub(pivot);
+    const offset = intersectionResult.point.sub(pivot);
     let scaleFactor = 1.0;
 
     switch (this.activeAxis) {

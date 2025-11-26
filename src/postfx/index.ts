@@ -7,9 +7,9 @@
  */
 
 // Core chain and context
+// Note: PostProcessEffect is exported from rendering module to avoid duplicates
 export {
   PostProcessChain,
-  type PostProcessEffect,
   type PostProcessPreset,
   type RenderContext,
   type ChainStats,
@@ -43,9 +43,9 @@ export {
 } from './TAAPassController';
 
 // Tone mapping and color
+// Note: ToneMappingOperator is exported from rendering module to avoid duplicates
 export {
   ToneMappingController,
-  type ToneMappingOperator,
   type ToneMappingSettings,
   type ExposureHistogram,
   type ToneMappingPreset,
@@ -65,9 +65,9 @@ export {
   type BloomPreset,
 } from './BloomController';
 
+// Note: BokehShape is exported from rendering module to avoid duplicates
 export {
   DOFController,
-  type BokehShape,
   type DOFSettings,
   type DOFPreset,
 } from './DOFController';

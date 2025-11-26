@@ -267,7 +267,7 @@ export class GizmoManager {
     });
 
     if (count > 0) {
-      center.divideScalar(count);
+      center.scaleInPlace(1 / count);
     }
 
     return center;

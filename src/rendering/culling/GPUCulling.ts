@@ -458,8 +458,9 @@ export class GPUCulling {
     const bufferData = this.packInstanceData(instances);
 
     // Upload to GPU
-    this.gl.bindBuffer(this.gl.SHADER_STORAGE_BUFFER, this.instanceBuffer);
-    this.gl.bufferData(this.gl.SHADER_STORAGE_BUFFER, bufferData, this.gl.DYNAMIC_DRAW);
+    // Note: WebGL2 doesn't have SHADER_STORAGE_BUFFER, use ARRAY_BUFFER instead
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, bufferData, this.gl.DYNAMIC_DRAW);
 
     logger.debug(`Uploaded ${instances.length} instances to GPU`);
   }
@@ -472,36 +473,36 @@ export class GPUCulling {
 
     // Instance buffer
     this.instanceBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.SHADER_STORAGE_BUFFER, this.instanceBuffer);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
     this.gl.bufferData(
-      this.gl.SHADER_STORAGE_BUFFER,
+      this.gl.ARRAY_BUFFER,
       this.config.maxInstances * 128, // 128 bytes per instance
       this.gl.DYNAMIC_DRAW
     );
 
     // Draw command buffer
     this.drawCommandBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.SHADER_STORAGE_BUFFER, this.drawCommandBuffer);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.drawCommandBuffer);
     this.gl.bufferData(
-      this.gl.SHADER_STORAGE_BUFFER,
+      this.gl.ARRAY_BUFFER,
       this.config.maxDrawCommands * 20, // 20 bytes per command
       this.gl.DYNAMIC_DRAW
     );
 
     // Visible instance buffer
     this.visibleInstanceBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.SHADER_STORAGE_BUFFER, this.visibleInstanceBuffer);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.visibleInstanceBuffer);
     this.gl.bufferData(
-      this.gl.SHADER_STORAGE_BUFFER,
+      this.gl.ARRAY_BUFFER,
       this.config.maxInstances * 4, // 4 bytes per index
       this.gl.DYNAMIC_DRAW
     );
 
     // Counter buffer
     this.counterBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.SHADER_STORAGE_BUFFER, this.counterBuffer);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.counterBuffer);
     this.gl.bufferData(
-      this.gl.SHADER_STORAGE_BUFFER,
+      this.gl.ARRAY_BUFFER,
       4, // Single uint
       this.gl.DYNAMIC_DRAW
     );
@@ -655,10 +656,11 @@ export class GPUCulling {
   private bindBuffers(): void {
     if (!this.gl) return;
 
-    this.gl.bindBufferBase(this.gl.SHADER_STORAGE_BUFFER, 0, this.instanceBuffer);
-    this.gl.bindBufferBase(this.gl.SHADER_STORAGE_BUFFER, 1, this.drawCommandBuffer);
-    this.gl.bindBufferBase(this.gl.SHADER_STORAGE_BUFFER, 2, this.visibleInstanceBuffer);
-    this.gl.bindBufferBase(this.gl.SHADER_STORAGE_BUFFER, 3, this.counterBuffer);
+    // WebGL2 uses TRANSFORM_FEEDBACK_BUFFER for output buffers
+    this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 0, this.instanceBuffer);
+    this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 1, this.drawCommandBuffer);
+    this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 2, this.visibleInstanceBuffer);
+    this.gl.bindBufferBase(this.gl.TRANSFORM_FEEDBACK_BUFFER, 3, this.counterBuffer);
   }
 
   /**
@@ -674,7 +676,7 @@ export class GPUCulling {
       planeData[i * 4 + 0] = planes[i]!.normal.x;
       planeData[i * 4 + 1] = planes[i]!.normal.y;
       planeData[i * 4 + 2] = planes[i]!.normal.z;
-      planeData[i * 4 + 3] = planes[i]!.distance;
+      planeData[i * 4 + 3] = planes[i]!.constant;
     }
 
     const loc = this.gl.getUniformLocation(this.computeShader, 'u_frustumPlanes');
@@ -705,8 +707,8 @@ export class GPUCulling {
     if (!this.gl || !this.counterBuffer) return;
 
     const zero = new Uint32Array([0]);
-    this.gl.bindBuffer(this.gl.SHADER_STORAGE_BUFFER, this.counterBuffer);
-    this.gl.bufferSubData(this.gl.SHADER_STORAGE_BUFFER, 0, zero);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.counterBuffer);
+    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, zero);
   }
 
   /**
@@ -749,7 +751,7 @@ export class GPUCulling {
     this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, this.counterBuffer);
     this.gl.getBufferSubData(this.gl.COPY_READ_BUFFER, 0, data);
 
-    return data[0];
+    return data[0] ?? 0;
   }
 
   /**

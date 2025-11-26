@@ -61,19 +61,20 @@ class HealthComponent implements IComponent {
  * Simple movement system for benchmarking
  */
 class MovementSystem extends System {
-  update(context: SystemContext): void {
-    const query = context.world.query([TransformComponent, VelocityComponent]);
+  query = [TransformComponent, VelocityComponent];
 
-    for (const entity of query.entities()) {
-      const transform = context.world.getComponent(entity, TransformComponent);
-      const velocity = context.world.getComponent(entity, VelocityComponent);
+  update(context: SystemContext): void {
+    const query = this.getQuery();
+
+    query.forEach((entity, components) => {
+      const [transform, velocity] = components as [TransformComponent, VelocityComponent];
 
       if (transform && velocity) {
         transform.position.x += velocity.x * context.deltaTime;
         transform.position.y += velocity.y * context.deltaTime;
         transform.position.z += velocity.z * context.deltaTime;
       }
-    }
+    });
   }
 }
 
@@ -81,16 +82,18 @@ class MovementSystem extends System {
  * Simple health regeneration system for benchmarking
  */
 class HealthRegenSystem extends System {
-  update(context: SystemContext): void {
-    const query = context.world.query([HealthComponent]);
+  query = [HealthComponent];
 
-    for (const entity of query.entities()) {
-      const health = context.world.getComponent(entity, HealthComponent);
+  update(context: SystemContext): void {
+    const query = this.getQuery();
+
+    query.forEach((entity, components) => {
+      const [health] = components as [HealthComponent];
 
       if (health && health.current < health.max) {
         health.current = Math.min(health.max, health.current + 10 * context.deltaTime);
       }
-    }
+    });
   }
 }
 
@@ -234,10 +237,10 @@ describe('Query Benchmarks', () => {
     }
 
     // Benchmark
-    const query = world.query([TransformComponent]);
-    for (const entity of query.entities()) {
-      world.getComponent(entity, TransformComponent);
-    }
+    const query = world.createQuery({ all: [TransformComponent] });
+    query.forEach((entity, components) => {
+      const [transform] = components as [TransformComponent];
+    });
   });
 
   bench('Query iteration (100K entities, two components)', () => {
@@ -251,11 +254,10 @@ describe('Query Benchmarks', () => {
     }
 
     // Benchmark
-    const query = world.query([TransformComponent, VelocityComponent]);
-    for (const entity of query.entities()) {
-      world.getComponent(entity, TransformComponent);
-      world.getComponent(entity, VelocityComponent);
-    }
+    const query = world.createQuery({ all: [TransformComponent, VelocityComponent] });
+    query.forEach((entity, components) => {
+      const [transform, velocity] = components as [TransformComponent, VelocityComponent];
+    });
   });
 
   bench('Query iteration (100K entities, three components)', () => {
@@ -270,12 +272,10 @@ describe('Query Benchmarks', () => {
     }
 
     // Benchmark
-    const query = world.query([TransformComponent, VelocityComponent, HealthComponent]);
-    for (const entity of query.entities()) {
-      world.getComponent(entity, TransformComponent);
-      world.getComponent(entity, VelocityComponent);
-      world.getComponent(entity, HealthComponent);
-    }
+    const query = world.createQuery({ all: [TransformComponent, VelocityComponent, HealthComponent] });
+    query.forEach((entity, components) => {
+      const [transform, velocity, health] = components as [TransformComponent, VelocityComponent, HealthComponent];
+    });
   });
 
   bench('Filtered query (100K entities, 50% match)', () => {
@@ -291,11 +291,10 @@ describe('Query Benchmarks', () => {
     }
 
     // Benchmark
-    const query = world.query([TransformComponent, VelocityComponent]);
-    for (const entity of query.entities()) {
-      world.getComponent(entity, TransformComponent);
-      world.getComponent(entity, VelocityComponent);
-    }
+    const query = world.createQuery({ all: [TransformComponent, VelocityComponent] });
+    query.forEach((entity, components) => {
+      const [transform, velocity] = components as [TransformComponent, VelocityComponent];
+    });
   });
 
   bench('Multiple concurrent queries (100K entities)', () => {
@@ -310,20 +309,19 @@ describe('Query Benchmarks', () => {
     }
 
     // Benchmark - simulate multiple systems querying
-    const query1 = world.query([TransformComponent]);
-    const query2 = world.query([TransformComponent, VelocityComponent]);
-    const query3 = world.query([HealthComponent]);
+    const query1 = world.createQuery({ all: [TransformComponent] });
+    const query2 = world.createQuery({ all: [TransformComponent, VelocityComponent] });
+    const query3 = world.createQuery({ all: [HealthComponent] });
 
-    for (const entity of query1.entities()) {
-      world.getComponent(entity, TransformComponent);
-    }
-    for (const entity of query2.entities()) {
-      world.getComponent(entity, TransformComponent);
-      world.getComponent(entity, VelocityComponent);
-    }
-    for (const entity of query3.entities()) {
-      world.getComponent(entity, HealthComponent);
-    }
+    query1.forEach((entity, components) => {
+      const [transform] = components as [TransformComponent];
+    });
+    query2.forEach((entity, components) => {
+      const [transform, velocity] = components as [TransformComponent, VelocityComponent];
+    });
+    query3.forEach((entity, components) => {
+      const [health] = components as [HealthComponent];
+    });
   });
 });
 

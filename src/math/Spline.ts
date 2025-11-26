@@ -789,9 +789,9 @@ export class Spline {
    */
   private catmullRomCentripetal(p0: Vector3, p1: Vector3, p2: Vector3, p3: Vector3, t: number): Vector3 {
     const pow = 0.5;
-    const dt0 = Math.pow(Vector3.distanceSquared(p0, p1), pow);
-    const dt1 = Math.pow(Vector3.distanceSquared(p1, p2), pow);
-    const dt2 = Math.pow(Vector3.distanceSquared(p2, p3), pow);
+    let dt0 = Math.pow(Vector3.distanceSquared(p0, p1), pow);
+    let dt1 = Math.pow(Vector3.distanceSquared(p1, p2), pow);
+    let dt2 = Math.pow(Vector3.distanceSquared(p2, p3), pow);
 
     if (dt1 < 1e-10) dt1 = 1.0;
     if (dt0 < 1e-10) dt0 = dt1;
@@ -805,10 +805,10 @@ export class Spline {
     const c2 = p1.scale(-3).add(p2.scale(3)).sub(t1.scale(2)).sub(t2);
     const c3 = p1.scale(2).sub(p2.scale(2)).add(t1).add(t2);
 
-    const t2 = t * t;
-    const t3 = t2 * t;
+    const tSquared = t * t;
+    const tCubed = tSquared * t;
 
-    return c0.add(c1.scale(t)).add(c2.scale(t2)).add(c3.scale(t3));
+    return c0.add(c1.scale(t)).add(c2.scale(tSquared)).add(c3.scale(tCubed));
   }
 
   /**
@@ -816,9 +816,9 @@ export class Spline {
    */
   private catmullRomChordal(p0: Vector3, p1: Vector3, p2: Vector3, p3: Vector3, t: number, tension: number): Vector3 {
     const pow = tension;
-    const dt0 = Math.pow(Vector3.distanceSquared(p0, p1), pow);
-    const dt1 = Math.pow(Vector3.distanceSquared(p1, p2), pow);
-    const dt2 = Math.pow(Vector3.distanceSquared(p2, p3), pow);
+    let dt0 = Math.pow(Vector3.distanceSquared(p0, p1), pow);
+    let dt1 = Math.pow(Vector3.distanceSquared(p1, p2), pow);
+    let dt2 = Math.pow(Vector3.distanceSquared(p2, p3), pow);
 
     if (dt1 < 1e-10) dt1 = 1.0;
     if (dt0 < 1e-10) dt0 = dt1;
@@ -832,10 +832,10 @@ export class Spline {
     const c2 = p1.scale(-3).add(p2.scale(3)).sub(t1.scale(2)).sub(t2);
     const c3 = p1.scale(2).sub(p2.scale(2)).add(t1).add(t2);
 
-    const t2 = t * t;
-    const t3 = t2 * t;
+    const tSquared = t * t;
+    const tCubed = tSquared * t;
 
-    return c0.add(c1.scale(t)).add(c2.scale(t2)).add(c3.scale(t3));
+    return c0.add(c1.scale(t)).add(c2.scale(tSquared)).add(c3.scale(tCubed));
   }
 
   /**

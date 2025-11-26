@@ -5,13 +5,22 @@
 
 import { IGizmo, GizmoManager } from './GizmoManager';
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
-import { Camera } from '../../components/Camera';
+import { Transform } from '../../math/Transform';
+import { Camera } from '../../rendering/camera/Camera';
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
 import { Ray } from '../../math/Ray';
 import { Plane } from '../../math/Plane';
 import { Color } from '../../math/Color';
+
+// TODO: Gizmos need access to World/ComponentManager to get components from entities
+interface EntityWithTransform {
+  getComponent(type: typeof Transform): Transform | undefined;
+}
+
+function hasComponentMethods(entity: Entity): entity is Entity & EntityWithTransform {
+  return typeof (entity as any).getComponent === 'function';
+}
 
 /**
  * Rotation axis identifier
@@ -123,8 +132,9 @@ export class RotateGizmo implements IGizmo {
     if (Math.abs(normal.dot(tangent)) > 0.9) {
       tangent.set(0, 1, 0);
     }
-    tangent.crossVectors(normal, tangent).normalize();
-    const bitangent = new Vector3().crossVectors(normal, tangent).normalize();
+    const crossResult = normal.cross(tangent).normalize();
+    tangent.copy(crossResult);
+    const bitangent = normal.cross(tangent).normalize();
 
     // Draw ring as series of line segments
     const points: Vector3[] = [];
@@ -240,20 +250,23 @@ export class RotateGizmo implements IGizmo {
     // Store initial rotations
     this.initialRotations.clear();
     this.targets.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        this.initialRotations.set(entity, transform.rotation.clone());
+      if (hasComponentMethods(entity)) {
+        const transform = entity.getComponent(Transform);
+        if (transform) {
+          this.initialRotations.set(entity, transform.rotation.clone());
+        }
       }
     });
 
     // Calculate start angle
     const orientation = this.manager.getOrientation();
     const normal = this.getAxisNormal(this.activeAxis, orientation);
-    const plane = new Plane(normal, pivot);
-    const intersection = ray.intersectPlane(plane);
+    const constant = -normal.dot(pivot);
+    const plane = new Plane(normal, constant);
+    const intersectionResult = ray.intersectPlane(plane);
 
-    if (intersection) {
-      const localPos = intersection.clone().sub(pivot);
+    if (intersectionResult) {
+      const localPos = intersectionResult.point.sub(pivot);
       this.dragStartAngle = Math.atan2(localPos.y, localPos.x);
       this.currentAngle = this.dragStartAngle;
     }
@@ -274,11 +287,12 @@ export class RotateGizmo implements IGizmo {
       // Calculate current angle
       const orientation = this.manager.getOrientation();
       const normal = this.getAxisNormal(this.activeAxis, orientation);
-      const plane = new Plane(normal, pivot);
-      const intersection = ray.intersectPlane(plane);
+      const constant = -normal.dot(pivot);
+      const plane = new Plane(normal, constant);
+      const intersectionResult = ray.intersectPlane(plane);
 
-      if (intersection) {
-        const localPos = intersection.clone().sub(pivot);
+      if (intersectionResult) {
+        const localPos = intersectionResult.point.sub(pivot);
         this.currentAngle = Math.atan2(localPos.y, localPos.x);
 
         let angleDelta = this.currentAngle - this.dragStartAngle;
@@ -293,12 +307,14 @@ export class RotateGizmo implements IGizmo {
 
         // Apply rotation to all targets
         this.targets.forEach(entity => {
-          const transform = entity.getComponent(Transform);
-          const initialRotation = this.initialRotations.get(entity);
+          if (hasComponentMethods(entity)) {
+            const transform = entity.getComponent(Transform);
+            const initialRotation = this.initialRotations.get(entity);
 
-          if (transform && initialRotation) {
-            transform.rotation.copy(initialRotation).multiply(rotationQuat);
-            transform.markDirty();
+            if (transform && initialRotation) {
+              transform.rotation.copy(initialRotation).multiply(rotationQuat);
+              transform.markDirty();
+            }
           }
         });
       }
@@ -363,12 +379,13 @@ export class RotateGizmo implements IGizmo {
    * Checks if ray intersects a rotation ring
    */
   private rayIntersectsRing(ray: Ray, center: Vector3, normal: Vector3, radius: number, threshold: number): boolean {
-    const plane = new Plane(normal, center);
-    const intersection = ray.intersectPlane(plane);
+    const constant = -normal.dot(center);
+    const plane = new Plane(normal, constant);
+    const intersectionResult = ray.intersectPlane(plane);
 
-    if (!intersection) return false;
+    if (!intersectionResult) return false;
 
-    const distance = intersection.distanceTo(center);
+    const distance = intersectionResult.point.distanceTo(center);
     return Math.abs(distance - radius) < threshold;
   }
 

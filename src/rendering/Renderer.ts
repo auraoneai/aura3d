@@ -6,8 +6,6 @@
  */
 
 import { GPUDevice, GPUBackendType } from './gpu/GPUDevice';
-import { WebGPUBackend } from './gpu/WebGPUBackend';
-import { WebGL2Backend } from './gpu/WebGL2Backend';
 import { Camera } from './camera/Camera';
 import { Scene } from './scene/Scene';
 import { RenderGraph } from './pipeline/RenderGraph';
@@ -226,12 +224,17 @@ export class Renderer {
         maxDirectional: 4,
         maxPoint: 128,
         maxSpot: 64,
+        maxArea: 16,
+        maxProbes: 8,
         maxShadowCasters: 8,
+        enforced: false,
       },
     });
 
-    this.shadowMapper = new ShadowMapper(device, {
-      atlasSize: this.settings.maxShadowResolution,
+    this.shadowMapper = new ShadowMapper({
+      atlasWidth: this.settings.maxShadowResolution,
+      atlasHeight: this.settings.maxShadowResolution,
+      maxShadowMaps: 32,
     });
 
     this.renderGraph = new RenderGraph({
@@ -270,23 +273,11 @@ export class Renderer {
     // Create device
     let device: GPUDevice;
 
-    try {
-      if (backend === RendererBackend.WebGPU || backend === RendererBackend.Auto) {
-        logger.info('Attempting to create WebGPU backend...');
-        device = await WebGPUBackend.create(canvas);
-        logger.info('WebGPU backend created successfully');
-      } else {
-        throw new Error('WebGL2 fallback requested');
-      }
-    } catch (error) {
-      if (backend === RendererBackend.WebGPU) {
-        throw new Error('WebGPU backend required but not available');
-      }
-
-      logger.warn('WebGPU not available, falling back to WebGL2', error);
-      device = await WebGL2Backend.create(canvas);
-      logger.info('WebGL2 backend created successfully');
-    }
+    // Create device using GPUDevice factory
+    device = await GPUDevice.create({
+      canvas,
+      preferredBackend: backend === RendererBackend.WebGPU ? 'webgpu' : backend === RendererBackend.WebGL2 ? 'webgl2' : 'auto',
+    });
 
     // Create full config with defaults
     const fullConfig: Required<RendererConfig> = {
@@ -337,7 +328,7 @@ export class Renderer {
       this.hdrTarget = RenderTarget.createColorTarget(
         this.renderWidth,
         this.renderHeight,
-        TextureFormat.RGBA16Float,
+        TextureFormat.RGBA16F,
         this.config.msaaSamples
       );
     }
@@ -346,7 +337,7 @@ export class Renderer {
     this.backbuffer = RenderTarget.createColorTarget(
       this.renderWidth,
       this.renderHeight,
-      TextureFormat.RGBA8UnormSrgb,
+      TextureFormat.RGBA8,
       1
     );
 
@@ -393,9 +384,6 @@ export class Renderer {
     this.gBufferPass = new GBufferPass({
       width: this.renderWidth,
       height: this.renderHeight,
-      enableNormals: true,
-      enableMetallic: true,
-      enableRoughness: true,
     });
     this.renderGraph.addPass(this.gBufferPass);
 
@@ -403,7 +391,6 @@ export class Renderer {
     this.lightingPass = new LightingPass({
       width: this.renderWidth,
       height: this.renderHeight,
-      lightManager: this.lightManager,
     });
     this.renderGraph.addPass(this.lightingPass);
 
@@ -429,15 +416,14 @@ export class Renderer {
     // Shadow pass
     if (this.settings.shadowQuality !== 'off') {
       this.shadowPass = new ShadowPass({
-        shadowMapper: this.shadowMapper,
+        resolution: this.settings.maxShadowResolution,
       });
       this.renderGraph.addPass(this.shadowPass);
     }
 
     // Skybox pass
     this.skyboxPass = new SkyboxPass({
-      width: this.renderWidth,
-      height: this.renderHeight,
+      type: 0, // SkyboxType.Cubemap
     });
     this.renderGraph.addPass(this.skyboxPass);
 
@@ -473,13 +459,29 @@ export class Renderer {
     const deltaTime = Time.deltaTime || 0.016; // Fallback to 60 FPS if Time not initialized
     this.lightManager.update(deltaTime);
 
-    // Cull lights
-    const visibleLights = this.lightManager.cullLights(camera);
+    // Cull lights - create camera info object with required properties
+    const cameraInfo = {
+      position: camera.transform.worldPosition,
+      viewMatrix: camera.viewMatrix,
+      projectionMatrix: camera.projectionMatrix,
+      fov: camera.fov,
+      aspect: camera.aspect,
+      near: camera.near,
+      far: camera.far,
+    };
+    const visibleLights = this.lightManager.cullLights(cameraInfo);
 
     // Prepare shadows
     if (this.shadowPass && this.settings.shadowQuality !== 'off') {
-      const shadowData = this.lightManager.prepareShadows(visibleLights, camera);
-      this.shadowMapper.update(shadowData);
+      const cameraInfoWithForward = {
+        position: camera.transform.worldPosition,
+        viewMatrix: camera.viewMatrix,
+        projectionMatrix: camera.projectionMatrix,
+        fov: camera.fov,
+        aspect: camera.aspect,
+        forward: camera.transform.forward,
+      };
+      this.lightManager.prepareShadows(visibleLights, cameraInfoWithForward);
     }
 
     // Execute render graph
@@ -496,7 +498,10 @@ export class Renderer {
       if (this.profiler) {
         this.profiler.beginPass('Post Process');
       }
-      this.postProcessStack.render(this.hdrTarget.colorTextures[0], 0.016);
+      const colorAttachment = this.hdrTarget.getColorAttachment(0);
+      if (colorAttachment) {
+        this.postProcessStack.render(colorAttachment, 0.016);
+      }
       if (this.profiler) {
         this.profiler.endPass();
       }
@@ -587,7 +592,7 @@ export class Renderer {
       frameTime: this.lastFrameTime,
       drawCalls: frameStats?.drawCalls ?? 0,
       triangles: frameStats?.triangles ?? 0,
-      lights: this.lightManager.getLightCount(),
+      lights: this.lightManager.getLights().length,
       memoryUsed: memoryUsage.used,
     };
   }

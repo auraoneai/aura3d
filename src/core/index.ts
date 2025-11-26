@@ -80,6 +80,28 @@ export * from './ObjectPool';
 export * from './Panic';
 export * from './Random';
 export * from './IdGenerator';
-export * from './EngineConfig';
 export * from './TaskScheduler';
 export * from './Diagnostics';
+
+// Export EngineConfig but exclude types that conflict with rendering module enums
+export type {
+  PhysicsSolver,
+  AudioDistanceModel,
+  NetworkTransport,
+  RenderingConfig,
+  PhysicsConfig,
+  AudioConfig,
+  NetworkConfig,
+  AIConfig,
+  FeatureFlags,
+  EngineConfig,
+} from './EngineConfig';
+export {
+  createDefaultConfig,
+  getPresetConfig,
+  mergeConfigs,
+  detectOptimalConfig,
+  validateConfig,
+  serializeConfig,
+  deserializeConfig,
+} from './EngineConfig';
