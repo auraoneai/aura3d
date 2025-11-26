@@ -1,0 +1,59 @@
+{
+  "name": "g3d",
+  "version": "5.0.0",
+  "description": "G3D 5.0 - High-performance TypeScript-first 3D game engine for modern web browsers",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+    "typecheck:strict": "tsc --noEmit --strict",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui",
+    "test:bench": "vitest bench",
+    "verify-tests": "tsx scripts/verify-tests.ts",
+    "coverage-report": "tsx scripts/coverage-report.ts",
+    "lint": "echo 'No linter configured yet'"
+  },
+  "keywords": [
+    "3d",
+    "game-engine",
+    "webgl",
+    "webgpu",
+    "typescript",
+    "ecs",
+    "rendering",
+    "physics",
+    "animation"
+  ],
+  "author": "G3D Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/webxr": "^0.5.24",
+    "@vitest/coverage-istanbul": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "@webgpu/types": "^0.1.66",
+    "glob": "^13.0.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

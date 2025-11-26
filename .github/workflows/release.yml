@@ -1,0 +1,183 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 5.0.1)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run all checks
+        run: |
+          pnpm typecheck
+          pnpm test:coverage
+          pnpm build
+
+  build-release:
+    name: Build Release Artifacts
+    runs-on: ubuntu-latest
+    needs: [validate]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Create tarball
+        run: |
+          mkdir -p release
+          tar -czf release/g3d-${{ github.ref_name }}.tar.gz dist/
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-artifacts
+          path: |
+            dist/
+            release/
+          retention-days: 30
+
+  publish-npm:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: [build-release]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  create-github-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [build-release, publish-npm]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release-artifacts
+          path: ./artifacts
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -z "${{ github.event.inputs.version }}" ]; then
+            VERSION=${{ github.ref_name }}
+          else
+            VERSION="v${{ github.event.inputs.version }}"
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+          PREV_TAG=$(git describe --abbrev=0 --tags ${VERSION}^ 2>/dev/null || echo "")
+
+          if [ -z "$PREV_TAG" ]; then
+            CHANGELOG="Initial release of G3D 5.0"
+          else
+            CHANGELOG=$(git log ${PREV_TAG}..${VERSION} --pretty=format:"- %s (%h)" --no-merges)
+          fi
+
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.changelog.outputs.VERSION }}
+          name: G3D ${{ steps.changelog.outputs.VERSION }}
+          body: |
+            # G3D ${{ steps.changelog.outputs.VERSION }}
+
+            ## Changes
+            ${{ steps.changelog.outputs.CHANGELOG }}
+
+            ## Installation
+            ```bash
+            npm install g3d@${{ steps.changelog.outputs.VERSION }}
+            # or
+            pnpm add g3d@${{ steps.changelog.outputs.VERSION }}
+            ```
+
+            ## Documentation
+            See [README.md](https://github.com/${{ github.repository }}/blob/${{ steps.changelog.outputs.VERSION }}/README.md) for full documentation.
+          files: |
+            artifacts/release/*.tar.gz
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
