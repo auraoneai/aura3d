@@ -224,25 +224,26 @@ export async function waitForCondition(
  * expect(system.updateCount).toBe(10);
  * ```
  */
-export function createTestSystem(name: string = 'TestSystem', priority: number = 100) {
+export function createTestSystem(name: string = 'TestSystem', priority: number = 100): System & { updateCount: number; fixedUpdateCount: number; lateUpdateCount: number } {
   class TestSystem extends System {
+    readonly query = [];
     updateCount = 0;
     fixedUpdateCount = 0;
     lateUpdateCount = 0;
 
     constructor() {
-      super(name, priority);
+      super({ name, priority });
     }
 
-    update(context: SystemContext): void {
+    override update(context: SystemContext): void {
       this.updateCount++;
     }
 
-    fixedUpdate(context: SystemContext): void {
+    override fixedUpdate(context: SystemContext): void {
       this.fixedUpdateCount++;
     }
 
-    lateUpdate(context: SystemContext): void {
+    override lateUpdate(context: SystemContext): void {
       this.lateUpdateCount++;
     }
   }

@@ -1,5 +1,5 @@
 import { UIElement } from './UIElement';
-import { Transitions, EasingFunction } from './styling/Transitions';
+import { Transitions, UIEasingFunction as EasingFunction } from './styling/Transitions';
 import { Logger } from '../core/Logger';
 
 const logger = Logger.create('UIAnimator');
@@ -26,9 +26,9 @@ export enum SlideDirection {
 }
 
 /**
- * Animation configuration.
+ * UI animation configuration.
  */
-export interface AnimationConfig {
+export interface UIAnimationConfig {
   /**
    * Animation type.
    */
@@ -80,7 +80,7 @@ export interface AnimationConfig {
  */
 interface ActiveAnimation {
   element: UIElement;
-  config: AnimationConfig;
+  config: UIAnimationConfig;
   startTime: number;
   startValues: {
     alpha?: number;
@@ -231,7 +231,7 @@ export class UIAnimator {
    * @param config - Animation configuration
    * @returns Animation ID
    */
-  static animate(element: UIElement, config: AnimationConfig): string {
+  static animate(element: UIElement, config: UIAnimationConfig): string {
     const id = `anim_${this.animationIdCounter++}`;
 
     const animation: ActiveAnimation = {
@@ -347,7 +347,7 @@ export class UIAnimator {
    */
   private static captureStartValues(
     element: UIElement,
-    config: AnimationConfig
+    config: UIAnimationConfig
   ): ActiveAnimation['startValues'] {
     const values: ActiveAnimation['startValues'] = {};
 

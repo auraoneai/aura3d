@@ -93,7 +93,7 @@ export class MockWebGLUniformLocation {
 /**
  * Complete WebGL2 rendering context mock with state tracking
  */
-export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContext> {
+export class MockWebGL2RenderingContext {
   // WebGL constants
   readonly DEPTH_BUFFER_BIT = 0x00000100;
   readonly STENCIL_BUFFER_BIT = 0x00000400;
@@ -406,7 +406,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
   private viewportRect: [number, number, number, number] = [0, 0, 800, 600];
   private scissorRect: [number, number, number, number] = [0, 0, 800, 600];
   private clearColorValue: [number, number, number, number] = [0, 0, 0, 0];
-  private blendFunc: { src: number; dst: number } = { src: this.ONE, dst: this.ZERO };
+  private blendFuncState: { src: number; dst: number } = { src: this.ONE, dst: this.ZERO };
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -414,13 +414,16 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
 
   // Buffer operations
   createBuffer(): WebGLBuffer | null {
-    return new MockWebGLBuffer() as any;
+    return new MockWebGLBuffer() as unknown as WebGLBuffer;
   }
 
   bindBuffer(target: number, buffer: WebGLBuffer | null): void {
     this.boundBuffers.set(target, buffer as any);
   }
 
+  bufferData(target: number, size: number, usage: number): void;
+  bufferData(target: number, srcData: ArrayBufferView | null, usage: number): void;
+  bufferData(target: number, srcData: ArrayBuffer | null, usage: number): void;
   bufferData(target: number, sizeOrData: number | ArrayBufferView | ArrayBuffer | null, usage: number): void {
     const buffer = this.boundBuffers.get(target);
     if (buffer && sizeOrData !== null) {
@@ -451,7 +454,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
 
   // Shader operations
   createShader(type: number): WebGLShader | null {
-    return new MockWebGLShader(type) as any;
+    return new MockWebGLShader(type) as unknown as WebGLShader;
   }
 
   shaderSource(shader: WebGLShader, source: string): void {
@@ -486,7 +489,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
 
   // Program operations
   createProgram(): WebGLProgram | null {
-    return new MockWebGLProgram() as any;
+    return new MockWebGLProgram() as unknown as WebGLProgram;
   }
 
   attachShader(program: WebGLProgram, shader: WebGLShader): void {
@@ -601,7 +604,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
 
   // Texture operations
   createTexture(): WebGLTexture | null {
-    return new MockWebGLTexture() as any;
+    return new MockWebGLTexture() as unknown as WebGLTexture;
   }
 
   bindTexture(target: number, texture: WebGLTexture | null): void {
@@ -648,7 +651,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
 
   // Framebuffer operations
   createFramebuffer(): WebGLFramebuffer | null {
-    return new MockWebGLFramebuffer() as any;
+    return new MockWebGLFramebuffer() as unknown as WebGLFramebuffer;
   }
 
   bindFramebuffer(target: number, framebuffer: WebGLFramebuffer | null): void {
@@ -692,7 +695,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
 
   // Renderbuffer operations
   createRenderbuffer(): WebGLRenderbuffer | null {
-    return new MockWebGLRenderbuffer() as any;
+    return new MockWebGLRenderbuffer() as unknown as WebGLRenderbuffer;
   }
 
   bindRenderbuffer(target: number, renderbuffer: WebGLRenderbuffer | null): void {
@@ -762,7 +765,7 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
   }
 
   blendFunc(sfactor: number, dfactor: number): void {
-    this.blendFunc = { src: sfactor, dst: dfactor };
+    this.blendFuncState = { src: sfactor, dst: dfactor };
   }
 
   blendFuncSeparate(srcRGB: number, dstRGB: number, srcAlpha: number, dstAlpha: number): void {
@@ -859,6 +862,9 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
   flush(): void {}
   hint(target: number, mode: number): void {}
   pixelStorei(pname: number, param: number): void {}
+  readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: ArrayBufferView | null): void;
+  readPixels(x: number, y: number, width: number, height: number, format: number, type: number, offset: number): void;
+  readPixels(x: number, y: number, width: number, height: number, format: number, type: number, dstData: ArrayBufferView, dstOffset: number): void;
   readPixels(
     x: number,
     y: number,
@@ -866,7 +872,8 @@ export class MockWebGL2RenderingContext implements Partial<WebGL2RenderingContex
     height: number,
     format: number,
     type: number,
-    pixels: ArrayBufferView | null
+    dstDataOrOffset: ArrayBufferView | number | null,
+    dstOffset?: number
   ): void {}
   stencilFunc(func: number, ref: number, mask: number): void {}
   stencilFuncSeparate(face: number, func: number, ref: number, mask: number): void {}

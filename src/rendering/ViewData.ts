@@ -305,7 +305,7 @@ export class ViewData {
         width: viewportWidth,
         height: viewportHeight,
       },
-      isOrthographic: camera.projectionType === 0, // ProjectionType.Perspective = 0
+      isOrthographic: Number(camera.projectionType) === 0, // ProjectionType.Perspective = 0
     });
   }
 

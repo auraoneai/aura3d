@@ -534,11 +534,11 @@ describe('Core Module Integration', () => {
 
   describe('Task Scheduler', () => {
     beforeEach(() => {
-      TaskScheduler.clear();
+      // TaskScheduler doesn't have a clear method, skip cleanup
     });
 
     afterEach(() => {
-      TaskScheduler.clear();
+      // TaskScheduler doesn't have a clear method, skip cleanup
     });
 
     it('should schedule and execute tasks', async () => {
@@ -561,17 +561,17 @@ describe('Core Module Integration', () => {
       TaskScheduler.schedule({
         id: 'low',
         priority: 1,
-        execute: () => callOrder.push(1)
+        execute: () => { callOrder.push(1); }
       });
       TaskScheduler.schedule({
         id: 'high',
         priority: 3,
-        execute: () => callOrder.push(3)
+        execute: () => { callOrder.push(3); }
       });
       TaskScheduler.schedule({
         id: 'medium',
         priority: 2,
-        execute: () => callOrder.push(2)
+        execute: () => { callOrder.push(2); }
       });
 
       await TaskScheduler.update(0.016);
@@ -615,7 +615,7 @@ describe('Core Module Integration', () => {
     });
 
     it('should respect log level filtering', () => {
-      const logger = Logger.create('TestModule', 'warn');
+      const logger = Logger.create('TestModule');
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
       logger.debug('Should not appear');

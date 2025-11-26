@@ -358,7 +358,11 @@ export class ShaderLibrary implements IDisposable {
       fragment: fragSource
     };
 
-    return this.createShader(name, source, options.defines);
+    const shader = this.createShader(name, source, options.defines);
+    if (!shader) {
+      throw new Error(`Failed to create shader: ${name}`);
+    }
+    return shader;
   }
 
   /**

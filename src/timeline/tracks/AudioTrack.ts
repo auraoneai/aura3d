@@ -357,7 +357,7 @@ export class AudioTrack extends Track<AudioClip> {
     /**
      * Serialize to JSON
      */
-    public toJSON(): any {
+    public override toJSON(): any {
         const json = super.toJSON();
         json.masterVolume = this.masterVolume;
         json.masterPitch = this.masterPitch;

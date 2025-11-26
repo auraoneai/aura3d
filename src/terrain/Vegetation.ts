@@ -350,7 +350,7 @@ export class Vegetation {
         // Align to normal if needed
         if (layer.alignToNormal && !layer.randomRotation) {
           const up = Vector3.up();
-          rotation = Quaternion.fromToRotation(up, normal);
+          rotation = Quaternion.fromUnitVectors(up, normal);
         }
 
         // Random scale

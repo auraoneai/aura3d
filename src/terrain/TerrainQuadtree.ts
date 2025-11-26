@@ -185,8 +185,7 @@ export class TerrainQuadtree {
 
     if (!this._root) return [];
 
-    const cameraPos = new Vector3();
-    camera.transform.getWorldPosition(cameraPos);
+    const cameraPos = camera.transform.worldPosition;
 
     const visibleChunks: TerrainChunk[] = [];
 
@@ -302,7 +301,7 @@ export class TerrainQuadtree {
     const halfHeight = height / 2;
 
     const min = node.bounds.min;
-    const center = node.bounds.getCenter();
+    const center = node.bounds.center;
 
     node.children = [];
 
@@ -356,7 +355,7 @@ export class TerrainQuadtree {
     visibleChunks: TerrainChunk[]
   ): void {
     // Calculate distance to camera
-    const nodeCenter = node.bounds.getCenter();
+    const nodeCenter = node.bounds.center;
     node.distanceToCamera = cameraPos.distanceTo(nodeCenter);
 
     // Frustum culling

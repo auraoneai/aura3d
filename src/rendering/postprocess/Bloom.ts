@@ -484,7 +484,7 @@ export class Bloom extends PostProcessEffect {
   /**
    * Called when quality changes.
    */
-  override protected onQualityChanged(): void {
+  protected override onQualityChanged(): void {
     // Adjust iterations based on quality
     switch (this.quality) {
       case EffectQuality.Low:

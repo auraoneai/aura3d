@@ -159,13 +159,17 @@ export class TetrahedralMesh {
     const e2 = p2.sub(p0);
     const e3 = p3.sub(p0);
 
-    const restMatrix = new Matrix3(
+    const restMatrix = new Matrix3().set(
       e1.x, e2.x, e3.x,
       e1.y, e2.y, e3.y,
       e1.z, e2.z, e3.z
     );
 
-    return restMatrix.invert();
+    const invMatrix = restMatrix.invert();
+    if (!invMatrix) {
+      throw new Error('Failed to invert rest matrix');
+    }
+    return invMatrix;
   }
 
   /**
@@ -185,7 +189,7 @@ export class TetrahedralMesh {
       const e2 = p2.sub(p0);
       const e3 = p3.sub(p0);
 
-      const deformedMatrix = new Matrix3(
+      const deformedMatrix = new Matrix3().set(
         e1.x, e2.x, e3.x,
         e1.y, e2.y, e3.y,
         e1.z, e2.z, e3.z

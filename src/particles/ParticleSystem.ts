@@ -576,7 +576,7 @@ export class ParticleSystem {
 
     // Update stats
     this.stats.aliveCount = this._particles.length;
-    this.stats.pooledCount = this._pool.available;
+    this.stats.pooledCount = this._pool.pooledCount;
     this.stats.peakCount = Math.max(this.stats.peakCount, this._particles.length);
     this.stats.emissionRate = deltaTime > 0 ? this._frameEmitCount / deltaTime : 0;
     this.stats.updateTime = performance.now() - this._updateStartTime;

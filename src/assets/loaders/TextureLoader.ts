@@ -1,4 +1,4 @@
-import { Asset, AssetOptions } from '../Asset';
+import { Asset, AssetOptions, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -39,7 +39,7 @@ export enum TextureCompression {
 /**
  * Texture metadata
  */
-export interface TextureMetadata {
+export interface TextureMetadata extends AssetMetadata {
   /** Texture width in pixels */
   width: number;
   /** Texture height in pixels */
@@ -67,8 +67,8 @@ export class TextureAsset extends Asset {
   /**
    * Gets the texture metadata
    */
-  override get metadata(): TextureMetadata | null {
-    return this.textureMetadata;
+  override get metadata(): Readonly<AssetMetadata> {
+    return this.textureMetadata || {};
   }
 
   /**

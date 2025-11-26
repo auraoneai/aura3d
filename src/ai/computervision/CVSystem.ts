@@ -4,7 +4,7 @@ import { InferenceEngine } from './InferenceEngine';
 import { ImageClassifier } from './ImageClassifier';
 import { ObjectDetector } from './ObjectDetector';
 import { PoseEstimator } from './PoseEstimator';
-import { SceneAnalyzer } from './SceneAnalyzer';
+import { SceneAnalyzer, SceneAnalysisResult } from './SceneAnalyzer';
 import { ObjectTracker } from './ObjectTracker';
 
 /**
@@ -320,7 +320,7 @@ export interface CVResults {
   classification?: Array<{ label: string; confidence: number }>;
   detection?: Array<{ label: string; confidence: number; bbox: number[] }>;
   poses?: Array<{ keypoints: Array<{ x: number; y: number; confidence: number }> }>;
-  scene?: { segments: number[][]; labels: string[] };
+  scene?: SceneAnalysisResult;
 }
 
 /**

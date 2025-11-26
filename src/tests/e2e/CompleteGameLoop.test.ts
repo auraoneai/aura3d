@@ -593,8 +593,8 @@ describe('E2E: Complete Game Loop', () => {
         // On frame 1, spawn 5 new entities
         if (this.frameCount === 1) {
           for (let i = 0; i < 5; i++) {
-            const newEntity = this.world.createEntity();
-            this.world.addComponent(newEntity, new TransformComponent());
+            const newEntity = (this.world as any).createEntity();
+            (this.world as any).addComponent(newEntity, new TransformComponent());
             spawnedCount++;
           }
         }
@@ -603,7 +603,7 @@ describe('E2E: Complete Game Loop', () => {
         if (this.frameCount === 2) {
           let count = 0;
           const query = this.getQuery();
-          const entitiesToDestroy: Entity[] = [];
+          const entitiesToDestroy: number[] = [];
           query.forEach((entity) => {
             if (count < 3) {
               entitiesToDestroy.push(entity);
@@ -611,7 +611,7 @@ describe('E2E: Complete Game Loop', () => {
             }
           });
           for (const entity of entitiesToDestroy) {
-            this.world.destroyEntity(entity);
+            (this.world as any).destroyEntity(entity);
             destroyedCount++;
           }
         }

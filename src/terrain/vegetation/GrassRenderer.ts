@@ -215,8 +215,7 @@ export class GrassRenderer {
   private _performCulling(camera: Camera): void {
     // In a real implementation, this would use GPU compute shader for culling
     // For now, simple distance-based culling
-    const cameraPos = new Vector3();
-    camera.transform.getWorldPosition(cameraPos);
+    const cameraPos = camera.transform.worldPosition;
 
     this._visibleCount = 0;
 
@@ -224,8 +223,7 @@ export class GrassRenderer {
     const maxDistSq = maxDist * maxDist;
 
     for (const instance of this._instances) {
-      const pos = new Vector3();
-      instance.transform.decompose(pos, null as any, null as any);
+      const pos = instance.transform.getPosition();
 
       const distSq = cameraPos.distanceToSquared(pos);
 

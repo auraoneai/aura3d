@@ -577,9 +577,8 @@ export class BTPrioritySelector extends BTComposite {
 
   override clone(): BTNode {
     const cloned = super.clone() as BTPrioritySelector;
-    (cloned as { priorities: Map<BTNode, (context: BehaviorContext) => number> }).priorities = new Map(
-      this.priorities
-    );
+    // Copy priorities map to the cloned instance
+    cloned.priorities = new Map(this.priorities);
     return cloned;
   }
 }

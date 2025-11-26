@@ -119,7 +119,7 @@ export class BuoyancyForces {
 
           const buoyancy = this.calculateSmokeBuoyancy(smokeDensity, temperature);
 
-          if (buoyancy.lengthSq() > 1e-6) {
+          if (buoyancy.lengthSquared() > 1e-6) {
             const currentVelocity = velocityField.getVelocity(i, j, k);
             const newVelocity = currentVelocity.add(buoyancy.scale(dt));
             velocityField.setVelocity(i, j, k, newVelocity);
@@ -153,7 +153,7 @@ export class BuoyancyForces {
           const temperature = getTemperature(i, j, k);
           const buoyancy = this.calculateThermalBuoyancy(temperature);
 
-          if (buoyancy.lengthSq() > 1e-6) {
+          if (buoyancy.lengthSquared() > 1e-6) {
             const currentVelocity = velocityField.getVelocity(i, j, k);
             const newVelocity = currentVelocity.add(buoyancy.scale(dt));
             velocityField.setVelocity(i, j, k, newVelocity);
@@ -189,7 +189,7 @@ export class BuoyancyForces {
           if (density > 0.001) {
             const buoyancy = this.calculateDensityBuoyancy(density);
 
-            if (buoyancy.lengthSq() > 1e-6) {
+            if (buoyancy.lengthSquared() > 1e-6) {
               const currentVelocity = velocityField.getVelocity(i, j, k);
               const newVelocity = currentVelocity.add(buoyancy.scale(dt));
               velocityField.setVelocity(i, j, k, newVelocity);

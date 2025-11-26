@@ -125,7 +125,7 @@ export class IdGenerator {
    */
   static nextUUID(): string {
     // Try to use crypto API for better randomness
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
       return this.generateUUIDWithCrypto();
     }
     // Fallback to Math.random

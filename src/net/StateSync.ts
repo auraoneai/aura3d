@@ -6,7 +6,7 @@
 
 import { Logger } from '../core/Logger';
 import { NetworkId } from './NetworkEntity';
-import { BinarySerializer } from './NetworkMessage';
+import { NetworkBinarySerializer as BinarySerializer } from './NetworkMessage';
 
 const logger = Logger.create('StateSync');
 

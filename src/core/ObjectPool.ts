@@ -21,7 +21,7 @@
  */
 export class ObjectPool<T> {
   private readonly factory: () => T;
-  private readonly reset: (obj: T) => void;
+  private readonly resetFn: (obj: T) => void;
   private readonly maxSize?: number;
 
   private pool: T[] = [];
@@ -34,20 +34,20 @@ export class ObjectPool<T> {
    * Creates a new object pool.
    *
    * @param factory Function that creates new instances of T
-   * @param reset Function that resets an object to its initial state
+   * @param resetFn Function that resets an object to its initial state
    * @param initialSize Number of objects to pre-create (default: 0)
    * @param maxSize Maximum pool size limit (default: unlimited)
-   * @param debugMode Enable double-release and use-after-release detection (default: NODE_ENV !== 'production')
+   * @param debugMode Enable double-release and use-after-release detection (default: false in browser)
    */
   constructor(
     factory: () => T,
-    reset: (obj: T) => void,
+    resetFn: (obj: T) => void,
     initialSize: number = 0,
     maxSize?: number,
-    debugMode: boolean = typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production'
+    debugMode: boolean = false
   ) {
     this.factory = factory;
-    this.reset = reset;
+    this.resetFn = resetFn;
     this.maxSize = maxSize;
 
     if (debugMode) {
@@ -106,7 +106,7 @@ export class ObjectPool<T> {
       this.activeObjects.delete(obj);
     }
 
-    this.reset(obj);
+    this.resetFn(obj);
 
     if (this.maxSize === undefined || this.pool.length < this.maxSize) {
       this.pool.push(obj);
@@ -163,7 +163,7 @@ export class ObjectPool<T> {
 
     while (this.pool.length < actualTarget) {
       const obj = this.factory();
-      this.reset(obj);
+      this.resetFn(obj);
       this.pool.push(obj);
       this._totalCreated++;
     }

@@ -7,10 +7,10 @@
 import { Vector3 } from '../math/Vector3';
 import { Color } from '../math/Color';
 import { Camera } from '../rendering/camera/Camera';
-import { GPUDevice, GPUBackendType } from '../rendering/gpu/GPUDevice';
+import { GPUDevice, GPUBackendType, BufferUsage } from '../rendering/gpu/GPUDevice';
 import { GPUBuffer, GPUBufferDescriptor } from '../rendering/gpu/GPUBuffer';
 import { GPUTexture } from '../rendering/gpu/GPUTexture';
-import { Shader } from '../rendering/shader/Shader';
+import { Shader, ShaderOptions } from '../rendering/shader/Shader';
 import { Logger } from '../core/Logger';
 
 const logger = Logger.create('GPUParticles');
@@ -211,7 +211,7 @@ export class GPUParticles {
   constructor(device: GPUDevice, config: GPUParticlesConfig = {}) {
     this._device = device;
     this.maxParticles = config.maxParticles ?? 100000;
-    this.useComputeShader = config.useComputeShader ?? device.backend === GPUBackendType.WebGPU;
+    this.useComputeShader = config.useComputeShader ?? (device.getCapabilities().backend === GPUBackendType.WebGPU);
     this.useGPUSorting = config.useGPUSorting ?? true;
 
     // Default emitter
@@ -267,8 +267,8 @@ export class GPUParticles {
     // Double-buffered particle data
     const particleBufferDesc: GPUBufferDescriptor = {
       size: this.maxParticles * particleSize,
-      usage: 'storage',
-      dynamic: true,
+      usage: BufferUsage.Storage | BufferUsage.CopyDst,
+      label: 'ParticleData',
     };
 
     this._particleBuffers = [
@@ -284,23 +284,25 @@ export class GPUParticles {
 
     this._deadIndicesBuffer = this._device.createBuffer({
       size: this.maxParticles * 4,
-      usage: 'storage',
-      dynamic: true,
+      usage: BufferUsage.Storage | BufferUsage.CopyDst,
+      label: 'DeadIndices',
     });
-    this._deadIndicesBuffer.setData(deadIndices);
+    if (this._deadIndicesBuffer) {
+      this._deadIndicesBuffer.write(deadIndices);
+    }
 
     // Alive indices buffer
     this._aliveIndicesBuffer = this._device.createBuffer({
       size: this.maxParticles * 4,
-      usage: 'storage',
-      dynamic: true,
+      usage: BufferUsage.Storage | BufferUsage.CopyDst,
+      label: 'AliveIndices',
     });
 
     // Indirect draw buffer
     this._indirectBuffer = this._device.createBuffer({
       size: 20, // 5 uint32s
-      usage: 'indirect',
-      dynamic: true,
+      usage: BufferUsage.Indirect | BufferUsage.CopyDst,
+      label: 'IndirectDraw',
     });
 
     // Sort buffers (for radix sort)
@@ -308,13 +310,13 @@ export class GPUParticles {
       this._sortBuffers = [
         this._device.createBuffer({
           size: this.maxParticles * 8, // key + value
-          usage: 'storage',
-          dynamic: true,
+          usage: BufferUsage.Storage | BufferUsage.CopyDst,
+          label: 'SortBuffer0',
         }),
         this._device.createBuffer({
           size: this.maxParticles * 8,
-          usage: 'storage',
-          dynamic: true,
+          usage: BufferUsage.Storage | BufferUsage.CopyDst,
+          label: 'SortBuffer1',
         }),
       ];
     }
@@ -372,8 +374,11 @@ export class GPUParticles {
       }
     `;
 
-    // Create shader from source
-    return Shader.fromSource(this._device, 'GPUParticleEmission', source, 'compute');
+    // Create shader from source (placeholder - compute shaders need different creation)
+    return new Shader({
+      name: 'GPUParticleEmission',
+      source: { vertex: '', fragment: '', compute: source },
+    });
   }
 
   /**
@@ -434,7 +439,10 @@ export class GPUParticles {
       }
     `;
 
-    return Shader.fromSource(this._device, 'GPUParticleSimulation', source, 'compute');
+    return new Shader({
+      name: 'GPUParticleSimulation',
+      source: { vertex: '', fragment: '', compute: source },
+    });
   }
 
   /**
@@ -452,15 +460,18 @@ export class GPUParticles {
       }
     `;
 
-    return Shader.fromSource(this._device, 'GPUParticleSort', source, 'compute');
+    return new Shader({
+      name: 'GPUParticleSort',
+      source: { vertex: '', fragment: '', compute: source },
+    });
   }
 
   /**
    * Create render shader.
    */
   private async createRenderShader(): Promise<Shader> {
-    const source = `
-      // Particle rendering shader
+    const vertexSource = `
+      // Particle rendering shader - vertex
       @vertex
       fn vs_main(
         @builtin(vertex_index) vertexIndex: u32,
@@ -468,14 +479,20 @@ export class GPUParticles {
       ) -> VertexOutput {
         // Billboard vertex shader
       }
+    `;
 
+    const fragmentSource = `
+      // Particle rendering shader - fragment
       @fragment
       fn fs_main(input: VertexOutput) -> @location(0) vec4<f32> {
         // Particle fragment shader
       }
     `;
 
-    return Shader.fromSource(this._device, 'GPUParticleRender', source, 'vertex');
+    return new Shader({
+      name: 'GPUParticleRender',
+      source: { vertex: vertexSource, fragment: fragmentSource },
+    });
   }
 
   /**
@@ -592,7 +609,7 @@ export class GPUParticles {
       for (let i = 0; i < this.maxParticles; i++) {
         deadIndices[i] = i;
       }
-      this._deadIndicesBuffer.setData(deadIndices);
+      this._deadIndicesBuffer.write(deadIndices);
     }
   }
 

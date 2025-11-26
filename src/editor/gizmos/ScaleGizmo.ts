@@ -5,12 +5,21 @@
 
 import { IGizmo, GizmoManager } from './GizmoManager';
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
-import { Camera } from '../../components/Camera';
+import { Transform } from '../../math/Transform';
+import { Camera } from '../../rendering/camera/Camera';
 import { Vector3 } from '../../math/Vector3';
 import { Ray } from '../../math/Ray';
 import { Plane } from '../../math/Plane';
 import { Color } from '../../math/Color';
+
+// TODO: Gizmos need access to World/ComponentManager to get components from entities
+interface EntityWithTransform {
+  getComponent(type: typeof Transform): Transform | undefined;
+}
+
+function hasComponentMethods(entity: Entity): entity is Entity & EntityWithTransform {
+  return typeof (entity as any).getComponent === 'function';
+}
 
 /**
  * Scale axis identifier
@@ -193,9 +202,11 @@ export class ScaleGizmo implements IGizmo {
     // Store initial scales
     this.initialScales.clear();
     this.targets.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        this.initialScales.set(entity, transform.scale.clone());
+      if (hasComponentMethods(entity)) {
+        const transform = entity.getComponent(Transform);
+        if (transform) {
+          this.initialScales.set(entity, transform.scale.clone());
+        }
       }
     });
 
@@ -300,6 +311,8 @@ export class ScaleGizmo implements IGizmo {
    */
   private applyScale(scaleFactor: number): void {
     this.targets.forEach(entity => {
+      if (!hasComponentMethods(entity)) return;
+
       const transform = entity.getComponent(Transform);
       const initialScale = this.initialScales.get(entity);
 
@@ -335,7 +348,7 @@ export class ScaleGizmo implements IGizmo {
           break;
       }
 
-      transform.markDirty();
+      // Transform is automatically marked dirty when scale is modified
     });
   }
 

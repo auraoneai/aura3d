@@ -35,7 +35,7 @@ export type {
 
 export {
   AssetCache,
-  EvictionPolicy
+  AssetEvictionPolicy
 } from './AssetCache';
 export type {
   CacheOptions,

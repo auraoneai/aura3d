@@ -18,8 +18,9 @@ export interface MeshVertex {
 
 /**
  * Simple 2D vector for UV coordinates.
+ * Not exported to avoid conflict with math.Vector2
  */
-export interface Vector2 {
+interface Vector2 {
   x: number;
   y: number;
 }

@@ -1,4 +1,4 @@
-import { Asset } from '../Asset';
+import { Asset, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -39,7 +39,7 @@ export interface MeshGeometry {
 /**
  * Mesh metadata
  */
-export interface MeshMetadata {
+export interface MeshMetadata extends AssetMetadata {
   /** Number of vertices */
   vertexCount: number;
   /** Number of triangles */
@@ -67,8 +67,8 @@ export class MeshAsset extends Asset {
   /**
    * Gets the mesh metadata
    */
-  override get metadata(): MeshMetadata | null {
-    return this.meshMetadata;
+  override get metadata(): Readonly<MeshMetadata> {
+    return this.meshMetadata || {} as MeshMetadata;
   }
 
   /**

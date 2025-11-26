@@ -300,14 +300,18 @@ export class ShadowMapper {
    */
   private preparePointLightShadow(
     light: PointLight,
-    camera: { position: Vector3; forward: Vector3; fov: number }
+    camera: { position: Vector3; viewMatrix: Matrix4; projectionMatrix: Matrix4; fov: number; aspect: number }
   ): ShadowRenderData | null {
     const resolution = this.getShadowResolution(light.shadowConfig.quality);
+
+    // Extract forward direction from view matrix (negated Z-axis)
+    const viewElements = camera.viewMatrix.elements;
+    const cameraForward = new Vector3(-viewElements[2], -viewElements[6], -viewElements[10]).normalize();
 
     // Determine which cubemap faces to render
     const facesToRender = light.calculateVisibleShadowFaces(
       camera.position,
-      camera.forward,
+      cameraForward,
       camera.fov
     );
 

@@ -315,7 +315,7 @@ export class PlayableMixer<T = any> extends Playable<T> {
     /**
      * Add an input and return its index
      */
-    public addInput(playable: any, weight: number = 1.0): number {
+    public override addInput(playable: any, weight: number = 1.0): number {
         const index = super.addInput(playable);
         this.setInputWeight(index, weight);
         return index;

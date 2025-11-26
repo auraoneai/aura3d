@@ -62,7 +62,7 @@ export {
 
 export {
   Transitions,
-  EasingFunction,
+  UIEasingFunction,
 } from './Transitions';
 export type {
   TransitionConfig,

@@ -54,10 +54,33 @@ export type {
 } from './sph/FluidRenderer';
 
 // Cloth Simulation (PBD)
-export * from './cloth';
+export { ClothSimulation } from './cloth';
+export type { ClothConfig, WindConfig } from './cloth';
+export {
+  PBDSolver,
+  DistanceConstraint as ClothDistanceConstraint,
+  BendingConstraint,
+  CollisionConstraint
+} from './cloth';
+export type { PBDSolverConfig, IPBDConstraint } from './cloth';
+export { ClothCollisionSystem } from './cloth';
+export type { CollisionInfo } from './cloth';
+export { ClothTearingSystem } from './cloth';
+export type { TearingConfig, TearEvent } from './cloth';
 
 // Soft Body Simulation
-export * from './softbody';
+export { SoftBody } from './softbody';
+export type {
+  SoftBodyParticle,
+  Tetrahedron as SoftBodyTetrahedron,
+  DistanceConstraint as SoftBodyDistanceConstraint,
+  RigidAttachment,
+  SoftBodyConfig,
+} from './softbody';
+export { SoftBodySolver, MaterialModel as SoftBodyMaterialModel, SolverMethod } from './softbody';
+export type { MaterialParameters as SoftBodyMaterialParameters, SolverConfig } from './softbody';
+export { TetMeshGenerator } from './softbody';
+export type { TetMesh, TetGenConfig } from './softbody';
 
 // Fracture Simulation
 export * from './fracture';
@@ -69,4 +92,11 @@ export * from './fire';
 export * from './smoke';
 
 // FEM (Finite Element Method)
-export * from './fem';
+export { TetrahedralSolver } from './fem';
+export type { FEMSolverConfig } from './fem';
+export { TetrahedralMesh } from './fem';
+export type {
+  Tetrahedron as FEMTetrahedron,
+  TetrahedralVertex,
+  TetrahedralMaterial,
+} from './fem';

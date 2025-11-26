@@ -87,7 +87,7 @@ export {
   SlideDirection
 } from './UIAnimator';
 export type {
-  AnimationConfig,
+  UIAnimationConfig,
 } from './UIAnimator';
 
 export {

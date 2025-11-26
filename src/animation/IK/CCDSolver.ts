@@ -7,6 +7,7 @@
 
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
+import { Matrix4 } from '../../math/Matrix4';
 import { Skeleton } from '../Skeleton';
 
 /**
@@ -190,10 +191,10 @@ export class CCDSolver {
     rotation = Quaternion.identity().slerp(rotation, this.damping);
 
     const parentWorld = bone.parentIndex >= 0
-      ? skeleton['worldMatrices'][bone.parentIndex]
-      : new (require('../../math/Matrix4').Matrix4)();
+      ? skeleton.getWorldMatrixByIndex(bone.parentIndex) ?? new Matrix4()
+      : new Matrix4();
 
-    const parentRot = parentWorld.getRotation();
+    const parentRot = parentWorld.getRotation() as Quaternion;
     const worldRot = parentRot.multiply(bone.rotation);
     const newWorldRot = rotation.multiply(worldRot);
     const newLocalRot = parentRot.invert().multiply(newWorldRot);

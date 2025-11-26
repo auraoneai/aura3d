@@ -468,7 +468,7 @@ export class Mesh {
     }
 
     // Clear submesh references
-    this._subMeshes = [];
+    this.submeshes = [];
   }
 
   /** GPU vertex buffer reference */

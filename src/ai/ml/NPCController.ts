@@ -80,7 +80,7 @@ export class NPCController {
   private value: ValueNetwork | null = null;
   private readonly featureExtractor: FeatureExtractor;
   private readonly modelManager: ModelManager;
-  private readonly config: Required<NPCControllerConfig>;
+  private readonly config: Omit<Required<NPCControllerConfig>, 'valueModel'> & { valueModel?: ModelInfo };
   private lastUpdateTime: number = 0;
   private currentAction: NPCAction = {};
   private initialized: boolean = false;

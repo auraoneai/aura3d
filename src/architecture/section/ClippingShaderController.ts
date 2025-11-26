@@ -5,7 +5,7 @@
  */
 
 import { Vector3 } from '../../math';
-import { Shader, ShaderProgram } from '../../rendering';
+import { Shader } from '../../rendering';
 import { SectionPlane } from './SectionPlane';
 import { IClippingPlaneUniform } from './SectionTypes';
 
@@ -247,7 +247,7 @@ export class ClippingShaderController {
    * Update shader uniforms
    * @param shader - Shader program to update
    */
-  public updateUniforms(shader: ShaderProgram): void {
+  public updateUniforms(shader: Shader): void {
     if (this.needsUpdate) {
       this.updateUniformData();
     }

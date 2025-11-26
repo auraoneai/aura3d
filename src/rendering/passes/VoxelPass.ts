@@ -516,16 +516,19 @@ export class VoxelPass extends RenderPass {
       // Build mask for this slice
       for (let j = 0; j < size; j++) {
         for (let i = 0; i < size; i++) {
-          const pos = new Vector3();
-          pos.setComponent(u, i);
-          pos.setComponent(v, j);
-          pos.setComponent(w, d);
+          const posArray = [0, 0, 0];
+          posArray[u] = i;
+          posArray[v] = j;
+          posArray[w] = d;
+          const pos = new Vector3(posArray[0], posArray[1], posArray[2]);
 
           const voxel = this.getVoxelInChunk(chunk, pos);
+          const neighborArray = [pos.x, pos.y, pos.z];
+          neighborArray[w] += (direction % 2 === 0 ? 1 : -1);
           const neighbor = this.getVoxelInChunk(chunk, new Vector3(
-            pos.getComponent(u),
-            pos.getComponent(v),
-            pos.getComponent(w) + (direction % 2 === 0 ? 1 : -1)
+            neighborArray[0],
+            neighborArray[1],
+            neighborArray[2]
           ));
 
           // Add to mask if face is visible
@@ -564,10 +567,11 @@ export class VoxelPass extends RenderPass {
             }
 
             // Create quad
-            const pos = new Vector3();
-            pos.setComponent(u, i);
-            pos.setComponent(v, j);
-            pos.setComponent(w, d + (direction % 2 === 0 ? 1 : 0));
+            const quadPosArray = [0, 0, 0];
+            quadPosArray[u] = i;
+            quadPosArray[v] = j;
+            quadPosArray[w] = d + (direction % 2 === 0 ? 1 : 0);
+            const pos = new Vector3(quadPosArray[0], quadPosArray[1], quadPosArray[2]);
 
             quads.push({
               position: pos,
@@ -784,14 +788,14 @@ export class VoxelPass extends RenderPass {
     const base = quad.position.clone();
 
     for (let i = 0; i < 4; i++) {
-      const corner = base.clone();
+      const cornerArray = [base.x, base.y, base.z];
       const du = (i === 1 || i === 2) ? quad.width : 0;
       const dv = (i === 2 || i === 3) ? quad.height : 0;
 
-      corner.setComponent(u, corner.getComponent(u) + du);
-      corner.setComponent(v, corner.getComponent(v) + dv);
+      cornerArray[u] += du;
+      cornerArray[v] += dv;
 
-      corners.push(corner);
+      corners.push(new Vector3(cornerArray[0], cornerArray[1], cornerArray[2]));
     }
 
     return corners;

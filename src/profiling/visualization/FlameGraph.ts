@@ -57,8 +57,8 @@ export interface FlameGraphConfig {
  */
 export class FlameGraph {
     private container: HTMLElement;
-    private canvas: HTMLCanvasElement;
-    private ctx: CanvasRenderingContext2D;
+    private canvas!: HTMLCanvasElement;
+    private ctx!: CanvasRenderingContext2D;
     private searchInput: HTMLInputElement | null = null;
 
     private width: number;

@@ -66,7 +66,8 @@ export class SPHFluidFramework {
     this.spatialGrid = new SpatialGrid(config.smoothingRadius, config.bounds);
 
     Logger.info(
-      `SPHFluidFramework initialized (${useGPU ? 'GPU' : 'CPU'} mode), ` +
+      'SPHFluidFramework',
+      `Initialized (${useGPU ? 'GPU' : 'CPU'} mode), ` +
       `solver=${config.solver}, h=${config.smoothingRadius}, ` +
       `restDensity=${config.restDensity}`
     );
@@ -74,7 +75,7 @@ export class SPHFluidFramework {
 
   public addParticle(position: Vec3, velocity: Vec3 = new Vec3(0, 0, 0)): number {
     if (this.particleCount >= this.capacity) {
-      Logger.warn('SPH particle capacity reached');
+      Logger.warn('SPHFluidFramework', 'SPH particle capacity reached');
       return -1;
     }
 
@@ -114,7 +115,7 @@ export class SPHFluidFramework {
       }
     }
 
-    Logger.info(`Added ${count} SPH particles in box`);
+    Logger.info('SPHFluidFramework', `Added ${count} SPH particles in box`);
     return count;
   }
 
@@ -528,7 +529,7 @@ export class SPHFluidFramework {
           this.predictedVelocities[pIdx + 2] - this.predictedVelocities[nIdx + 2]
         );
 
-        divergence += this.masses[j] * Vec3.dot(velDiff, gradW);
+        divergence += this.masses[j] * velDiff.dot(gradW);
       }
 
       const alpha = 0.5;
@@ -700,6 +701,6 @@ export class SPHFluidFramework {
     this.particleCount = 0;
     this.time = 0;
     this.spatialGrid.clear();
-    Logger.info('SPHFluidFramework reset');
+    Logger.info('SPHFluidFramework', 'SPHFluidFramework reset');
   }
 }

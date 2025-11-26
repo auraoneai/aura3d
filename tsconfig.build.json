@@ -1,0 +1,36 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    /* Emit Options */
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+
+    /* Module Resolution */
+    "moduleResolution": "bundler",
+
+    /* Optimization */
+    "removeComments": false,
+    "importHelpers": false,
+    "downlevelIteration": false,
+
+    /* Type Checking - Inherit strict settings from base */
+    "skipLibCheck": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    "**/*.bench.ts",
+    "**/__tests__/**",
+    "tests/**",
+    "src/tests/**",
+    "scripts/**"
+  ]
+}

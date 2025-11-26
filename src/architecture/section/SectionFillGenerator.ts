@@ -5,7 +5,9 @@
  */
 
 import { Vector3, Matrix4 } from '../../math';
-import { Mesh, BufferGeometry } from '../../core';
+import { Mesh } from '../../rendering/geometry/Mesh';
+import { VertexBuffer, IndexBuffer } from '../../rendering';
+import { VertexFormat } from '../../rendering/geometry/VertexFormat';
 import { Material } from '../../materials';
 import { SectionPlane } from './SectionPlane';
 import { ISectionCutGeometry, ISectionBounds } from './SectionTypes';
@@ -76,14 +78,11 @@ export class SectionFillGenerator {
    * Generate section geometry for a single mesh
    * @param mesh - Mesh to section
    * @param plane - Section plane
+   * @param worldMatrix - Optional world transformation matrix (defaults to identity)
    * @returns Section cut geometry or null
    */
-  public generateMeshSection(mesh: Mesh, plane: SectionPlane): ISectionCutGeometry | null {
-    const geometry = mesh.geometry;
-    if (!geometry) return null;
-
-    const worldMatrix = mesh.transform.getWorldMatrix();
-    const edges = this.extractIntersectionEdges(geometry, plane, worldMatrix);
+  public generateMeshSection(mesh: Mesh, plane: SectionPlane, worldMatrix: Matrix4 = new Matrix4()): ISectionCutGeometry | null {
+    const edges = this.extractIntersectionEdges(mesh, plane, worldMatrix);
 
     if (edges.length === 0) return null;
 
@@ -105,30 +104,30 @@ export class SectionFillGenerator {
     return {
       vertices: polygon,
       edges: edgeIndices,
-      material: mesh.material,
-      objectId: mesh.id
+      material: undefined,
+      objectId: mesh.name
     };
   }
 
   /**
    * Extract intersection edges from geometry
-   * @param geometry - Input geometry
+   * @param mesh - Input mesh
    * @param plane - Section plane
    * @param worldMatrix - World transformation matrix
    * @returns Array of intersection edges
    */
   private extractIntersectionEdges(
-    geometry: BufferGeometry,
+    mesh: Mesh,
     plane: SectionPlane,
     worldMatrix: Matrix4
   ): Edge[] {
     const edges: Edge[] = [];
-    const positions = geometry.getAttribute('position');
-    const indices = geometry.getIndices();
+    const positions = mesh.vertexBuffer.data;
+    const indices = mesh.indexBuffer.data;
 
     if (!positions || !indices) return edges;
 
-    const positionArray = positions.array as Float32Array;
+    const positionArray = positions as Float32Array;
     const indexArray = indices as Uint32Array;
 
     // Process each triangle
@@ -211,12 +210,14 @@ export class SectionFillGenerator {
     xAxis = yAxis.cross(normal).normalize();
 
     // Build transformation matrix
-    return new Matrix4().set(
+    const matrix = new Matrix4().set(
       xAxis.x, yAxis.x, normal.x, origin.x,
       xAxis.y, yAxis.y, normal.y, origin.y,
       xAxis.z, yAxis.z, normal.z, origin.z,
       0, 0, 0, 1
-    ).invert();
+    );
+    const inverted = matrix.invert();
+    return inverted || matrix;
   }
 
   /**
@@ -305,9 +306,6 @@ export class SectionFillGenerator {
    * @returns Mesh with fill geometry
    */
   public createFillMesh(section: ISectionCutGeometry, material?: Material): Mesh {
-    const mesh = new Mesh();
-    const geometry = new BufferGeometry();
-
     // Triangulate polygon
     const triangles = this.triangulatePolygon(section.vertices);
 
@@ -324,11 +322,17 @@ export class SectionFillGenerator {
       indices.push(baseIndex, baseIndex + 1, baseIndex + 2);
     }
 
-    geometry.setAttribute('position', new Float32Array(vertices), 3);
-    geometry.setIndices(new Uint32Array(indices));
+    // Create vertex buffer with P3 format (position only)
+    const format = VertexFormat.P3();
+    const vertexCount = vertices.length / 3;
+    const vertexBuffer = new VertexBuffer(format, vertexCount);
+    vertexBuffer.data.set(new Float32Array(vertices));
 
-    mesh.geometry = geometry;
-    mesh.material = material || section.material;
+    // Create index buffer
+    const indexBuffer = IndexBuffer.fromArray(indices);
+
+    // Create mesh
+    const mesh = new Mesh(vertexBuffer, indexBuffer);
 
     return mesh;
   }

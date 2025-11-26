@@ -314,7 +314,7 @@ export class ActivationTrack extends Track<ActivationClip> {
     /**
      * Serialize to JSON
      */
-    public toJSON(): any {
+    public override toJSON(): any {
         const json = super.toJSON();
         json.defaultTargetId = this.defaultTargetId;
         return json;

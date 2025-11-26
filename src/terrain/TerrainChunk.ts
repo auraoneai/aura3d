@@ -10,7 +10,7 @@ import { Box3 } from '../math/Box3';
 import { Mesh } from '../rendering/geometry/Mesh';
 import { VertexBuffer } from '../rendering/geometry/VertexBuffer';
 import { IndexBuffer, PrimitiveTopology } from '../rendering/geometry/IndexBuffer';
-import { VertexFormat, VertexAttribute, VertexAttributeType } from '../rendering/geometry/VertexFormat';
+import { VertexFormat, VertexAttribute, VertexAttributeType, VertexAttributeSemantic } from '../rendering/geometry/VertexFormat';
 import { Heightmap } from './Heightmap';
 import { Logger } from '../core/Logger';
 
@@ -146,7 +146,7 @@ export class TerrainChunk {
    * @returns Center position
    */
   get center(): Vector3 {
-    return this.bounds.getCenter();
+    return this.bounds.center;
   }
 
   /**
@@ -161,10 +161,26 @@ export class TerrainChunk {
 
     // Create vertex format with position, normal, UV, and tangent
     const format = new VertexFormat([
-      new VertexAttribute('position', VertexAttributeType.Float32, 3),
-      new VertexAttribute('normal', VertexAttributeType.Float32, 3),
-      new VertexAttribute('texCoord0', VertexAttributeType.Float32, 2),
-      new VertexAttribute('tangent', VertexAttributeType.Float32, 4),
+      {
+        semantic: VertexAttributeSemantic.Position,
+        type: VertexAttributeType.Float3,
+        offset: 0
+      },
+      {
+        semantic: VertexAttributeSemantic.Normal,
+        type: VertexAttributeType.Float3,
+        offset: 12
+      },
+      {
+        semantic: VertexAttributeSemantic.TexCoord0,
+        type: VertexAttributeType.Float2,
+        offset: 24
+      },
+      {
+        semantic: VertexAttributeSemantic.Tangent,
+        type: VertexAttributeType.Float4,
+        offset: 32
+      },
     ]);
 
     // Calculate vertex and index counts
@@ -174,7 +190,7 @@ export class TerrainChunk {
 
     // Create buffers
     const vertices = new VertexBuffer(format, vertexCount);
-    const indices = new IndexBuffer(indexCount, PrimitiveTopology.TriangleList);
+    const indices = new IndexBuffer(indexCount, undefined, undefined, PrimitiveTopology.TriangleList);
 
     // Generate vertices
     this._generateVertices(vertices, effectiveRes, skipFactor);
@@ -267,11 +283,11 @@ export class TerrainChunk {
         // Set UV coordinates (0-1 across chunk)
         const u = x / (resolution - 1);
         const v = z / (resolution - 1);
-        buffer.setTexCoord0(vertexIndex, u, v);
+        buffer.setTexCoord(vertexIndex, u, v);
 
         // Calculate tangent (for normal mapping)
         const tangent = new Vector3(1, 0, 0); // Simplified, points in X direction
-        buffer.setAttribute(vertexIndex, 'tangent', tangent.x, tangent.y, tangent.z, 1);
+        buffer.setTangent(vertexIndex, tangent.x, tangent.y, tangent.z, 1);
 
         vertexIndex++;
       }

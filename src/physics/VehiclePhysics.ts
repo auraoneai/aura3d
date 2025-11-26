@@ -107,9 +107,9 @@ interface WheelState {
 }
 
 /**
- * Engine configuration.
+ * Vehicle engine configuration.
  */
-export interface EngineConfig {
+export interface VehicleEngineConfig {
   /** Peak torque in Nm */
   peakTorque: number;
 
@@ -209,7 +209,7 @@ export interface VehiclePhysicsConfig {
   wheels: WheelConfig[];
 
   /** Engine configuration */
-  engine: EngineConfig;
+  engine: VehicleEngineConfig;
 
   /** Transmission configuration */
   transmission: TransmissionConfig;

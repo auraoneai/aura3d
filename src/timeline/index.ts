@@ -23,8 +23,34 @@ export * from './tracks';
 // Playables
 export * from './playables';
 
-// Signals
-export * from './signals';
+// Signals (excluding types that conflict with tracks)
+export {
+    SignalAsset as SignalAssetClass,
+    createSignalAsset,
+    createParameter,
+    ParameterType
+} from './signals/SignalAsset';
+export type {
+    SignalSchema,
+    ParameterDefinition
+} from './signals/SignalAsset';
+export {
+    SignalEmitter,
+    SignalEmitterCollection
+} from './signals/SignalEmitter';
+export type {
+    EmissionRecord,
+    EmitterConfig
+} from './signals/SignalEmitter';
+export {
+    SignalReceiver,
+    createSignalReceiver
+} from './signals/SignalReceiver';
+export type {
+    ReceiverConfig,
+    SignalCallback as SignalCallbackType,
+    SignalFilter
+} from './signals/SignalReceiver';
 
 // Re-export commonly used types and utilities
 import { TimelineSystem } from './TimelineSystem';

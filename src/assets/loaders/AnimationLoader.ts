@@ -1,4 +1,4 @@
-import { Asset } from '../Asset';
+import { Asset, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -54,7 +54,7 @@ export interface AnimationChannel {
 /**
  * Animation clip metadata
  */
-export interface AnimationMetadata {
+export interface AnimationMetadata extends AssetMetadata {
   /** Animation name */
   name: string;
   /** Duration in seconds */
@@ -84,8 +84,8 @@ export class AnimationAsset extends Asset {
   /**
    * Gets the animation metadata
    */
-  override get metadata(): AnimationMetadata | null {
-    return this.animationMetadata;
+  override get metadata(): Readonly<AnimationMetadata> {
+    return this.animationMetadata || {} as AnimationMetadata;
   }
 
   /**

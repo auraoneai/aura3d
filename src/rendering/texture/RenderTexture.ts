@@ -1,12 +1,15 @@
 import { Logger } from '../../core/Logger';
 import { Texture, TextureDescriptor, TextureFormat, TextureFilter, TextureWrap } from './Texture';
 
+// Re-export TextureFormat for convenience
+export { TextureFormat } from './Texture';
+
 const logger = Logger.create('RenderTexture');
 
 /**
  * Render texture descriptor for render-to-texture operations.
  */
-export interface RenderTextureDescriptor extends Omit<TextureDescriptor, 'mipLevels'> {
+export interface RenderTextureDescriptor extends Omit<TextureDescriptor, 'mipLevels' | 'depth'> {
   /** Enable depth buffer (default: false) */
   depth?: boolean;
   /** Depth format (default: Depth24) */

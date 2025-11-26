@@ -167,7 +167,7 @@ export class TerrainLOD {
    * @param viewportHeight - Viewport height in pixels
    */
   updateCamera(camera: Camera, viewportWidth: number, viewportHeight: number): void {
-    camera.transform.getWorldPosition(this._cameraPosition);
+    this._cameraPosition.copy(camera.transform.worldPosition);
     this._viewportWidth = viewportWidth;
     this._viewportHeight = viewportHeight;
     // Note: Camera.fov would need to be exposed, using default for now
@@ -183,7 +183,7 @@ export class TerrainLOD {
    */
   selectLOD(position: Vector3, camera: Camera): LODSelection {
     // Update camera info
-    camera.transform.getWorldPosition(this._cameraPosition);
+    this._cameraPosition.copy(camera.transform.worldPosition);
 
     // Calculate distance
     const distance = this._cameraPosition.distanceTo(position);

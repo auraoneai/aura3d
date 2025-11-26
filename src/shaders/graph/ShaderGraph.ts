@@ -114,7 +114,10 @@ export class ShaderGraph {
     }
 
     // Remove all edges connected to this node
-    this.edges = this.edges.filter((edge) => !edge.isConnectedToNode(id));
+    const edgesToRemove = this.edges.filter((edge) => edge.isConnectedToNode(id));
+    for (const edge of edgesToRemove) {
+      this.disconnect(edge);
+    }
 
     // Remove node
     this.nodes.delete(id);
@@ -446,14 +449,14 @@ export class ShaderGraph {
         // Generate output from connected input
         const inputEdges = this.getInputEdges(outputNode.id);
         if (inputEdges.length > 0) {
-          const colorInput = inputEdges.find(e => e.to.portName === 'color');
+          const colorInput = inputEdges.find(e => e.to.inputName === 'color');
           if (colorInput) {
-            const sourceVar = `node_${colorInput.from.nodeId.replace(/-/g, '_')}_${colorInput.from.portName}`;
+            const sourceVar = `node_${colorInput.from.nodeId.replace(/-/g, '_')}_${colorInput.from.outputName}`;
             lines.push(`  gl_FragColor = ${sourceVar};`);
           } else {
             // Default to first connected input
             const edge = inputEdges[0];
-            const sourceVar = `node_${edge.from.nodeId.replace(/-/g, '_')}_${edge.from.portName}`;
+            const sourceVar = `node_${edge.from.nodeId.replace(/-/g, '_')}_${edge.from.outputName}`;
             lines.push(`  gl_FragColor = vec4(${sourceVar}, 1.0);`);
           }
         } else {
@@ -549,7 +552,7 @@ export class ShaderGraph {
             allConstant = false;
             break;
           }
-          inputValues.set(edge.to.portName, sourceNode.properties?.value);
+          inputValues.set(edge.to.inputName, sourceNode.getProperty('value'));
         }
 
         if (allConstant && inputValues.size > 0) {
@@ -557,13 +560,12 @@ export class ShaderGraph {
           const result = this.evaluateConstantOperation(node.type, inputValues);
 
           if (result !== undefined) {
-            // Replace node with constant
-            node.type = 'constant';
-            node.properties = { ...node.properties, value: result };
+            // Replace node with constant (by setting property)
+            node.setProperty('value', result);
 
             // Remove input edges (constants have no inputs)
             for (const edge of inputEdges) {
-              this.removeEdge(edge.id);
+              this.disconnect(edge.id);
             }
 
             foldCount++;

@@ -414,9 +414,10 @@ export class MemorySystem {
       }
 
       // Age-based pruning if enabled
+      // Note: CRITICAL memories are already filtered out above
       if (this.config.enableAgePruning) {
         const age = now - memory.createdTime;
-        if (age > this.config.maxAge && memory.importance !== MemoryImportance.CRITICAL) {
+        if (age > this.config.maxAge) {
           toForget.push(id);
         }
       }

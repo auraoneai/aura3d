@@ -291,7 +291,7 @@ export class AssetReference<T extends Asset = Asset> {
     return new AssetReference<T>(this.url, {
       type: this.type,
       autoLoad: this.autoLoad,
-      assetManager: this.assetManager
+      assetManager: this.assetManager ?? undefined
     });
   }
 

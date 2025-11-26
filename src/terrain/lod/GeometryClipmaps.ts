@@ -121,8 +121,7 @@ export class GeometryClipmaps {
    * @param camera - Active camera
    */
   update(camera: Camera): void {
-    const cameraPos = new Vector3();
-    camera.transform.getWorldPosition(cameraPos);
+    const cameraPos = camera.transform.worldPosition;
 
     this._cameraPosition.set(cameraPos.x, cameraPos.z);
 

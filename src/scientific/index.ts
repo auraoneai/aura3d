@@ -46,8 +46,7 @@ export type {
 } from './field/FieldManager';
 
 export {
-    ColorMap,
-    MarchingCubesTables
+    ColorMap
 } from './field/ColorMap';
 export type {
     RGB,

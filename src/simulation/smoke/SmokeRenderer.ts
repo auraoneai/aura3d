@@ -171,8 +171,8 @@ export class SmokeRenderer {
       1.0 / rayDirection.z
     );
 
-    const t1 = new Vector3(0, 0, 0).sub(rayOrigin).multiply(invDir);
-    const t2 = bounds.sub(rayOrigin).multiply(invDir);
+    const t1 = new Vector3(0, 0, 0).sub(rayOrigin).mul(invDir);
+    const t2 = bounds.sub(rayOrigin).mul(invDir);
 
     const tmin = Vector3.min(t1, t2);
     const tmax = Vector3.max(t1, t2);

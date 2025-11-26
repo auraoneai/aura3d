@@ -350,13 +350,55 @@ export class AnimationClip extends Animation {
       throw new Error('Split time must be within clip duration');
     }
 
-    const before = this.trim(0, time);
-    const after = this.trim(time, this.duration);
+    const beforeClip = new AnimationClip({
+      name: `${this.name}_before`,
+      duration: time,
+      sampleRate: this.sampleRate,
+      wrapMode: this.wrapMode,
+      loop: this.loop
+    });
 
-    before.name = `${this.name}_before`;
-    after.name = `${this.name}_after`;
+    const afterClip = new AnimationClip({
+      name: `${this.name}_after`,
+      duration: this.duration - time,
+      sampleRate: this.sampleRate,
+      wrapMode: this.wrapMode,
+      loop: this.loop
+    });
 
-    return [before, after];
+    // Copy channels for before clip
+    for (const channel of this.getAllChannels()) {
+      const track = channel.track;
+      const newTrack = new AnimationTrack(track.name, track.valueType, track.wrapMode);
+
+      for (const kf of track.getKeyframes()) {
+        if (kf.time <= time) {
+          newTrack.addKeyframe(kf.time, kf.value, kf.interpolation, kf.inTangent, kf.outTangent);
+        }
+      }
+
+      if (newTrack.keyframeCount > 0) {
+        beforeClip.addChannel(channel.target, channel.type, newTrack);
+      }
+    }
+
+    // Copy channels for after clip
+    for (const channel of this.getAllChannels()) {
+      const track = channel.track;
+      const newTrack = new AnimationTrack(track.name, track.valueType, track.wrapMode);
+
+      for (const kf of track.getKeyframes()) {
+        if (kf.time >= time) {
+          newTrack.addKeyframe(kf.time - time, kf.value, kf.interpolation, kf.inTangent, kf.outTangent);
+        }
+      }
+
+      if (newTrack.keyframeCount > 0) {
+        afterClip.addChannel(channel.target, channel.type, newTrack);
+      }
+    }
+
+    return [beforeClip, afterClip];
   }
 
   /**
@@ -437,8 +479,9 @@ export class AnimationClip extends Animation {
       const blendEnd = offset;
 
       // Scale keyframes in blend region for smooth transition
-      for (const track of combined.tracks) {
-        for (const keyframe of track.keyframes) {
+      for (const channel of combined.getAllChannels()) {
+        const track = channel.track;
+        for (const keyframe of track.getKeyframes()) {
           if (keyframe.time >= blendStart && keyframe.time < blendEnd) {
             // Apply fade-out weight to first clip's tail
             const blendT = (keyframe.time - blendStart) / blendDuration;

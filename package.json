@@ -3,20 +3,65 @@
   "version": "5.0.0",
   "description": "G3D 5.0 - High-performance TypeScript-first 3D game engine for modern web browsers",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "browser": "./dist/browser/index.min.js",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/cjs/index.cjs"
+      }
+    },
+    "./math": {
+      "import": "./dist/esm/math/index.js",
+      "require": "./dist/cjs/math/index.cjs"
+    },
+    "./ecs": {
+      "import": "./dist/esm/ecs/index.js",
+      "require": "./dist/cjs/ecs/index.cjs"
+    },
+    "./rendering": {
+      "import": "./dist/esm/rendering/index.js",
+      "require": "./dist/cjs/rendering/index.cjs"
+    },
+    "./physics": {
+      "import": "./dist/esm/physics/index.js",
+      "require": "./dist/cjs/physics/index.cjs"
+    },
+    "./animation": {
+      "import": "./dist/esm/animation/index.js",
+      "require": "./dist/cjs/animation/index.cjs"
+    },
+    "./audio": {
+      "import": "./dist/esm/audio/index.js",
+      "require": "./dist/cjs/audio/index.cjs"
+    },
+    "./ai": {
+      "import": "./dist/esm/ai/index.js",
+      "require": "./dist/cjs/ai/index.cjs"
     }
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
   "scripts": {
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
     "typecheck:strict": "tsc --noEmit --strict",
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "build:types": "tsc -p tsconfig.build.json --emitDeclarationOnly",
+    "build:clean": "rm -rf dist && pnpm build",
+    "build:verify": "tsx scripts/build.ts",
     "clean": "rm -rf dist",
     "test": "vitest",
     "test:watch": "vitest --watch",
@@ -25,7 +70,8 @@
     "test:bench": "vitest bench",
     "verify-tests": "tsx scripts/verify-tests.ts",
     "coverage-report": "tsx scripts/coverage-report.ts",
-    "lint": "echo 'No linter configured yet'"
+    "lint": "echo 'No linter configured yet'",
+    "prepublishOnly": "pnpm build:clean && pnpm test"
   },
   "keywords": [
     "3d",
@@ -47,9 +93,18 @@
     "@vitest/ui": "^4.0.14",
     "@webgpu/types": "^0.1.66",
     "glob": "^13.0.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.20.6",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0"
+  },
+  "peerDependencies": {
+    "@webgpu/types": ">=0.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@webgpu/types": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=18.0.0",

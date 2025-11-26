@@ -212,7 +212,9 @@ export class ScriptCompiler {
         if (this._compiledCache.size >= this._maxCacheSize) {
             // Remove oldest entry
             const firstKey = this._compiledCache.keys().next().value;
-            this._compiledCache.delete(firstKey);
+            if (firstKey !== undefined) {
+                this._compiledCache.delete(firstKey);
+            }
         }
 
         this._compiledCache.set(hash, compiled);

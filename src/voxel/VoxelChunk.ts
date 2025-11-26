@@ -1,5 +1,5 @@
-import { Vector3 } from '../../math/Vector3';
-import { Logger } from '../../core/Logger';
+import { Vector3 } from '../math/Vector3';
+import { Logger } from '../core/Logger';
 import { VoxelData, VoxelMaterial } from './VoxelData';
 
 /**

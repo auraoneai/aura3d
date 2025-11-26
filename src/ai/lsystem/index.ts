@@ -64,8 +64,7 @@ export type {
   MeshGeneratorConfig,
   GeneratedMesh,
   MeshVertex,
-  MeshFace,
-  Vector2
+  MeshFace
 } from './LSystemMeshGenerator';
 
 export { GrammarLibrary } from './GrammarLibrary';

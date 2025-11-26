@@ -12,8 +12,9 @@ export class AssertionError extends Error {
     this.name = 'AssertionError';
 
     // Maintains proper stack trace for where the error was thrown (V8 only)
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, AssertionError);
+    const ErrorWithCapture = Error as typeof Error & { captureStackTrace?: (error: Error, constructor: Function) => void };
+    if (ErrorWithCapture.captureStackTrace) {
+      ErrorWithCapture.captureStackTrace(this, AssertionError);
     }
   }
 }

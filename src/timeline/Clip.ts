@@ -269,7 +269,7 @@ export class Clip<T = any> {
             name: this.name + '_clone',
             startTime: this.startTime,
             duration: this.duration,
-            asset: this.asset,
+            asset: this.asset ?? undefined,
             easeInDuration: this.easeInDuration,
             easeOutDuration: this.easeOutDuration,
             easeInCurve: this.easeInCurve,

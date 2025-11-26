@@ -1,4 +1,4 @@
-import { Asset } from '../Asset';
+import { Asset, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -110,7 +110,7 @@ export interface SceneDefinition {
 /**
  * Scene metadata
  */
-export interface SceneMetadata {
+export interface SceneMetadata extends AssetMetadata {
   /** Scene name */
   name: string;
   /** Number of nodes */
@@ -142,8 +142,8 @@ export class SceneAsset extends Asset {
   /**
    * Gets the scene metadata
    */
-  override get metadata(): SceneMetadata | null {
-    return this.sceneMetadata;
+  override get metadata(): Readonly<AssetMetadata> {
+    return this.sceneMetadata || {};
   }
 
   /**

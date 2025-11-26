@@ -377,7 +377,7 @@ export class AnimationTrack extends Track<AnimationClip> {
     /**
      * Serialize to JSON
      */
-    public toJSON(): any {
+    public override toJSON(): any {
         const json = super.toJSON();
         json.targetId = this.targetId;
         json.avatarMask = this.avatarMask;

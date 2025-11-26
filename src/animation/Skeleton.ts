@@ -446,6 +446,30 @@ export class Skeleton {
   }
 
   /**
+   * Gets world matrix for a bone by index.
+   *
+   * @param index - Bone index
+   * @returns World matrix or undefined if index out of bounds
+   *
+   * @example
+   * ```typescript
+   * const spineWorld = skeleton.getWorldMatrixByIndex(1);
+   * if (spineWorld) {
+   *   const worldPos = spineWorld.getPosition();
+   * }
+   * ```
+   */
+  getWorldMatrixByIndex(index: number): Matrix4 | undefined {
+    if (index < 0 || index >= this.worldMatrices.length) return undefined;
+
+    if (this.dirty) {
+      this.update();
+    }
+
+    return this.worldMatrices[index];
+  }
+
+  /**
    * Gets local matrix for a bone by name.
    *
    * @param name - Bone name

@@ -34,8 +34,9 @@ export enum PlaybackState {
 export class AnimationAction {
   /**
    * Animation clip being played.
+   * @internal This can be reassigned for pool recycling.
    */
-  readonly animation: Animation;
+  animation: Animation;
 
   /**
    * Current playback state.

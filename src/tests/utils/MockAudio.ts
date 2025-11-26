@@ -411,7 +411,6 @@ export class MockAudioListener {
  */
 export class MockAudioContext {
   readonly sampleRate: number = 44100;
-  readonly currentTime: number = 0;
   readonly destination: MockAudioDestinationNode;
   readonly listener: MockAudioListener;
   state: AudioContextState = 'running';

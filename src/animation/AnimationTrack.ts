@@ -556,7 +556,7 @@ export class AnimationTrack<T = any> {
 
       case InterpolationMode.CUBIC:
         // Hermite cubic interpolation using tangents
-        return this.cubicHermiteInterpolate(v0, v1, t, kf0.outTangent, kf1.inTangent);
+        return this.cubicHermiteInterpolate(v0, v1, t, undefined, undefined);
 
       default:
         return this.cloneValue(v0);

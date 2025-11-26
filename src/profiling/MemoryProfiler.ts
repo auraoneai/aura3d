@@ -460,7 +460,7 @@ export class MemoryProfiler {
         textureMemory: number;
         bufferMemory: number;
         totalTrackedMemory: number;
-        leakDetection: ReturnType<typeof this.detectMemoryLeaks>;
+        leakDetection: ReturnType<MemoryProfiler['detectMemoryLeaks']>;
     } {
         return {
             current: this.getCurrentMemoryInfo(),

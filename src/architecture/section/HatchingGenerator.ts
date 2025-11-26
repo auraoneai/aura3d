@@ -5,7 +5,11 @@
  */
 
 import { Vector3, Vector2 } from '../../math';
-import { BufferGeometry } from '../../core';
+import { Mesh } from '../../rendering/geometry/Mesh';
+import { VertexBuffer } from '../../rendering/geometry/VertexBuffer';
+import { IndexBuffer } from '../../rendering/geometry/IndexBuffer';
+import { VertexFormat, VertexAttributeType, VertexAttributeSemantic } from '../../rendering/geometry/VertexFormat';
+import { PrimitiveTopology, IndexType } from '../../rendering/geometry/IndexBuffer';
 import { ISectionCutGeometry, IHatchingPattern, LineStyle } from './SectionTypes';
 import { HATCH_PATTERNS, getHatchPattern } from './SectionConfig';
 
@@ -320,10 +324,9 @@ export class HatchingGenerator {
   /**
    * Create renderable geometry from hatch lines
    * @param lines - Hatch lines
-   * @returns Buffer geometry
+   * @returns Mesh geometry
    */
-  public createHatchingGeometry(lines: HatchLine[]): BufferGeometry {
-    const geometry = new BufferGeometry();
+  public createHatchingGeometry(lines: HatchLine[]): Mesh {
     const vertices: number[] = [];
     const indices: number[] = [];
     const lineWeights: number[] = [];
@@ -340,11 +343,34 @@ export class HatchingGenerator {
       vertexIndex += 2;
     }
 
-    geometry.setAttribute('position', new Float32Array(vertices), 3);
-    geometry.setAttribute('lineWeight', new Float32Array(lineWeights), 1);
-    geometry.setIndices(new Uint32Array(indices));
+    // Create vertex format (stride is calculated automatically, 16 bytes = 3 floats + 1 float)
+    const format = new VertexFormat([
+      { semantic: VertexAttributeSemantic.Position, type: VertexAttributeType.Float3, offset: 0 },
+      { semantic: VertexAttributeSemantic.Custom0, type: VertexAttributeType.Float, offset: 12 }
+    ]);
 
-    return geometry;
+    // Interleave vertex data
+    const interleavedData: number[] = [];
+    for (let i = 0; i < vertices.length / 3; i++) {
+      interleavedData.push(
+        vertices[i * 3],
+        vertices[i * 3 + 1],
+        vertices[i * 3 + 2],
+        lineWeights[i]
+      );
+    }
+
+    // Create buffers
+    const vertexCount = vertices.length / 3;
+    const vertexBuffer = new VertexBuffer(format, vertexCount);
+    const data = vertexBuffer.data;
+    for (let i = 0; i < interleavedData.length; i++) {
+      data[i] = interleavedData[i];
+    }
+
+    const indexBuffer = IndexBuffer.fromArray(indices, IndexType.UInt32, PrimitiveTopology.LineList);
+
+    return new Mesh(vertexBuffer, indexBuffer, 'HatchingGeometry');
   }
 
   /**

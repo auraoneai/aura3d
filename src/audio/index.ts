@@ -64,6 +64,4 @@ export {
   AudioSourceComponent,
   AudioListenerComponent
 } from './AudioSystem';
-export type {
-  TransformComponent
-} from './AudioSystem';
+// Note: TransformComponent is exported from './ecs', not re-exported here to avoid conflicts

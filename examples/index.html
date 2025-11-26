@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G3D 5.0 Examples Gallery</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 3rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: 1.1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.75rem 1.5rem;
+      border: 2px solid #667eea;
+      background: white;
+      color: #667eea;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+    }
+
+    .filter-btn:hover {
+      background: #667eea;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .filter-btn.active {
+      background: #667eea;
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    .examples-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    .example-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .example-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+
+    .example-card.hidden {
+      display: none;
+    }
+
+    .card-image {
+      width: 100%;
+      height: 220px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-image::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80px;
+      height: 80px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+    }
+
+    .card-image::after {
+      content: '▶';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 2rem;
+      opacity: 0.8;
+    }
+
+    .card-content {
+      padding: 1.5rem;
+    }
+
+    .card-category {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: #333;
+    }
+
+    .card-description {
+      color: #666;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .card-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .feature-tag {
+      padding: 0.3rem 0.8rem;
+      background: #f0f0f0;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #555;
+    }
+
+    .footer {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 2rem;
+      text-align: center;
+      margin-top: 4rem;
+      color: #666;
+    }
+
+    .footer a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2rem;
+      }
+
+      .examples-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-bar {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-content">
+      <h1>G3D 5.0 Examples</h1>
+      <p class="subtitle">Interactive demonstrations of the G3D game engine capabilities</p>
+      <div class="filter-bar">
+        <button class="filter-btn active" data-category="all">All Examples</button>
+        <button class="filter-btn" data-category="games">Games</button>
+        <button class="filter-btn" data-category="simulation">Simulation</button>
+        <button class="filter-btn" data-category="visualization">Visualization</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="examples-grid" id="examplesGrid"></div>
+  </div>
+
+  <div class="footer">
+    <p>&copy; 2025 G3D Game Engine | <a href="https://github.com/g3d/g3d">GitHub</a> | <a href="https://g3d.dev/docs">Documentation</a></p>
+  </div>
+
+  <script>
+    const examples = [
+      {
+        id: 'fps-game',
+        title: 'FPS Game',
+        category: 'games',
+        description: 'First-person shooter with physics-based weapons, enemy AI, and multiplayer support.',
+        features: ['Physics', 'AI', 'Networking', 'Audio'],
+        path: './fps-game/index.html'
+      },
+      {
+        id: 'racing-game',
+        title: 'Racing Game',
+        category: 'games',
+        description: 'High-speed racing with realistic vehicle physics, multiple tracks, and time trials.',
+        features: ['Vehicle Physics', 'Terrain', 'Particles', 'Post-FX'],
+        path: './racing-game/index.html'
+      },
+      {
+        id: 'platformer',
+        title: '3D Platformer',
+        category: 'games',
+        description: 'Character-based platformer with smooth movement, collectibles, and dynamic camera.',
+        features: ['Animation', 'Camera', 'Physics', 'UI'],
+        path: './platformer/index.html'
+      },
+      {
+        id: 'space-shooter',
+        title: 'Space Shooter',
+        category: 'games',
+        description: 'Space combat game with procedural asteroids, weapon systems, and enemy waves.',
+        features: ['Procedural', 'Particles', 'Audio', 'Input'],
+        path: './space-shooter/index.html'
+      },
+      {
+        id: 'physics-sandbox',
+        title: 'Physics Sandbox',
+        category: 'simulation',
+        description: 'Interactive physics playground with rigid bodies, constraints, and real-time manipulation.',
+        features: ['Physics', 'Debug', 'Input', 'UI'],
+        path: './physics-sandbox/index.html'
+      },
+      {
+        id: 'voxel-world',
+        title: 'Voxel World',
+        category: 'simulation',
+        description: 'Minecraft-style voxel engine with chunk streaming, greedy meshing, and terrain generation.',
+        features: ['Voxels', 'Procedural', 'Meshing', 'Streaming'],
+        path: './voxel-world/index.html'
+      },
+      {
+        id: 'arch-viz',
+        title: 'Architectural Visualization',
+        category: 'visualization',
+        description: 'Photorealistic architectural walkthrough with PBR materials and interactive sections.',
+        features: ['PBR', 'Lighting', 'Camera', 'Materials'],
+        path: './arch-viz/index.html'
+      }
+    ];
+
+    const grid = document.getElementById('examplesGrid');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    function renderExamples(category = 'all') {
+      grid.innerHTML = '';
+      examples
+        .filter(ex => category === 'all' || ex.category === category)
+        .forEach(example => {
+          const card = document.createElement('div');
+          card.className = 'example-card';
+          card.innerHTML = `
+            <div class="card-image"></div>
+            <div class="card-content">
+              <span class="card-category">${example.category}</span>
+              <h3 class="card-title">${example.title}</h3>
+              <p class="card-description">${example.description}</p>
+              <div class="card-features">
+                ${example.features.map(f => `<span class="feature-tag">${f}</span>`).join('')}
+              </div>
+            </div>
+          `;
+          card.addEventListener('click', () => {
+            window.location.href = example.path;
+          });
+          grid.appendChild(card);
+        });
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderExamples(btn.dataset.category);
+      });
+    });
+
+    renderExamples();
+  </script>
+</body>
+</html>

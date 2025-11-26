@@ -7,9 +7,9 @@
 import { BaseAnalyticsProvider, IAnalyticsProvider } from './AnalyticsProvider';
 
 /**
- * Batching configuration
+ * Batching provider configuration
  */
-export interface BatchingConfig {
+export interface ProviderBatchingConfig {
   /** Maximum batch size */
   maxBatchSize: number;
   /** Maximum wait time before flush (ms) */
@@ -25,7 +25,7 @@ export interface BatchingConfig {
 /**
  * Default configuration
  */
-const DEFAULT_CONFIG: BatchingConfig = {
+const DEFAULT_CONFIG: ProviderBatchingConfig = {
   maxBatchSize: 50,
   maxWaitTime: 30000, // 30 seconds
   compress: false,
@@ -50,7 +50,7 @@ interface BatchedEvent {
  */
 export class BatchingProvider extends BaseAnalyticsProvider {
   private wrappedProvider: IAnalyticsProvider;
-  private config: BatchingConfig;
+  private config: ProviderBatchingConfig;
   private eventQueue: BatchedEvent[] = [];
   private batchTimer: number | null = null;
   private totalEventsSent: number = 0;
@@ -58,7 +58,7 @@ export class BatchingProvider extends BaseAnalyticsProvider {
 
   constructor(
     provider: IAnalyticsProvider,
-    config?: Partial<BatchingConfig>,
+    config?: Partial<ProviderBatchingConfig>,
     debug: boolean = false
   ) {
     super(debug);

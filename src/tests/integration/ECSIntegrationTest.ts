@@ -40,7 +40,7 @@ interface TestResult {
 /**
  * Test suite class for ECS integration testing
  */
-export class ECSIntegrationTest {
+class ECSIntegrationTest {
   private results: TestResult[] = [];
   private world: World | null = null;
 
@@ -206,14 +206,14 @@ export class ECSIntegrationTest {
     // Get component
     const retrieved = world.getComponent(entity, Position);
     this.assert(retrieved !== undefined, 'Should retrieve Position component');
-    this.assert(retrieved!.x === 10, 'Position x should be 10');
-    this.assert(retrieved!.y === 20, 'Position y should be 20');
-    this.assert(retrieved!.z === 30, 'Position z should be 30');
+    this.assert((retrieved as any).x === 10, 'Position x should be 10');
+    this.assert((retrieved as any).y === 20, 'Position y should be 20');
+    this.assert((retrieved as any).z === 30, 'Position z should be 30');
 
     // Modify component
-    retrieved!.x = 100;
+    (retrieved as any).x = 100;
     const modified = world.getComponent(entity, Position);
-    this.assert(modified!.x === 100, 'Modified component should have x = 100');
+    this.assert((modified as any).x === 100, 'Modified component should have x = 100');
 
     // Add second component
     const velocity = new Velocity(1, 2, 3);
@@ -230,7 +230,7 @@ export class ECSIntegrationTest {
     const newPosition = new Position(50, 60, 70);
     world.setComponent(entity, newPosition);
     const updated = world.getComponent(entity, Position);
-    this.assert(updated!.x === 50, 'Set component should update x to 50');
+    this.assert((updated as any).x === 50, 'Set component should update x to 50');
 
     world.destroy();
   }
@@ -307,7 +307,7 @@ export class ECSIntegrationTest {
 
     // Create test systems
     class SystemA extends System {
-      query = { all: [Position] } as QueryDescriptor;
+      readonly query = { all: [Position] } as QueryDescriptor;
 
       update(context: SystemContext): void {
         executionOrder.push('A');
@@ -315,8 +315,11 @@ export class ECSIntegrationTest {
     }
 
     class SystemB extends System {
-      priority = 10;
-      query = { all: [Position] } as QueryDescriptor;
+      readonly query = { all: [Position] } as QueryDescriptor;
+
+      constructor() {
+        super({ priority: 10 });
+      }
 
       update(context: SystemContext): void {
         executionOrder.push('B');
@@ -324,8 +327,11 @@ export class ECSIntegrationTest {
     }
 
     class SystemC extends System {
-      priority = -10;
-      query = { all: [Position] } as QueryDescriptor;
+      readonly query = { all: [Position] } as QueryDescriptor;
+
+      constructor() {
+        super({ priority: -10 });
+      }
 
       update(context: SystemContext): void {
         executionOrder.push('C');
@@ -366,13 +372,13 @@ export class ECSIntegrationTest {
     const lifecycle: string[] = [];
 
     class TestSystem extends System {
-      query = { all: [Position] } as QueryDescriptor;
+      readonly query = { all: [Position] } as QueryDescriptor;
 
-      onInit(): void {
+      override onInit(): void {
         lifecycle.push('init');
       }
 
-      onStart(): void {
+      override onStart(): void {
         lifecycle.push('start');
       }
 
@@ -380,11 +386,11 @@ export class ECSIntegrationTest {
         lifecycle.push('update');
       }
 
-      onStop(): void {
+      override onStop(): void {
         lifecycle.push('stop');
       }
 
-      onDestroy(): void {
+      override onDestroy(): void {
         lifecycle.push('destroy');
       }
     }
@@ -677,10 +683,13 @@ export class ECSIntegrationTest {
     let fixedUpdateCount = 0;
 
     class PhysicsSystem extends System {
-      query = { all: [Position] } as QueryDescriptor;
-      priority = SystemPriorities.PHYSICS;
+      readonly query = { all: [Position] } as QueryDescriptor;
 
-      fixedUpdate(context: SystemContext): void {
+      constructor() {
+        super({ priority: SystemPriorities.PHYSICS });
+      }
+
+      override fixedUpdate(context: SystemContext): void {
         fixedUpdateCount++;
         this.assert(context.fixedDeltaTime === 1 / 60, 'Fixed delta time should be 1/60');
       }
@@ -721,14 +730,17 @@ export class ECSIntegrationTest {
     let lateUpdateCount = 0;
 
     class CameraSystem extends System {
-      query = { all: [Position] } as QueryDescriptor;
-      priority = SystemPriorities.LATE;
+      readonly query = { all: [Position] } as QueryDescriptor;
+
+      constructor() {
+        super({ priority: SystemPriorities.LATE });
+      }
 
       update(context: SystemContext): void {
         // Regular update
       }
 
-      lateUpdate(context: SystemContext): void {
+      override lateUpdate(context: SystemContext): void {
         lateUpdateCount++;
       }
     }
@@ -846,7 +858,7 @@ export class ECSIntegrationTest {
     const Velocity = (globalThis as any).VelocityComponent;
 
     class MovementSystem extends System {
-      query = { all: [Position, Velocity] } as QueryDescriptor;
+      readonly query = { all: [Position, Velocity] } as QueryDescriptor;
 
       update(context: SystemContext): void {
         const query = this.getQuery();

@@ -21,8 +21,10 @@ export class PanicError extends Error {
     this.context = context;
     this.timestamp = Date.now();
 
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, PanicError);
+    // Maintains proper stack trace for where the error was thrown (V8 only)
+    const ErrorWithCapture = Error as typeof Error & { captureStackTrace?: (error: Error, constructor: Function) => void };
+    if (ErrorWithCapture.captureStackTrace) {
+      ErrorWithCapture.captureStackTrace(this, PanicError);
     }
   }
 }

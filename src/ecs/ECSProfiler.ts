@@ -1271,10 +1271,6 @@ export const Profile = {
    * ```
    */
   begin(name: string): void {
-    if (process.env.NODE_ENV === 'production') {
-      return;
-    }
-
     this.scopes.set(name, performance.now());
   },
 
@@ -1291,10 +1287,6 @@ export const Profile = {
    * ```
    */
   end(name: string): void {
-    if (process.env.NODE_ENV === 'production') {
-      return;
-    }
-
     const startTime = this.scopes.get(name);
     if (startTime === undefined) {
       console.warn(`Profile.end('${name}') called without matching begin()`);
@@ -1323,10 +1315,6 @@ export const Profile = {
    * ```
    */
   scope<T>(name: string, fn: () => T): T {
-    if (process.env.NODE_ENV === 'production') {
-      return fn();
-    }
-
     this.begin(name);
     try {
       return fn();

@@ -485,7 +485,7 @@ export class OcclusionCuller {
   private _generateHiZGPU(): void {
     if (!this._gpuResources.device || !this._gpuResources.computePipeline) {
       // Fall back to CPU implementation when GPU resources unavailable
-      this._generateHiZCPU();
+      this._generateHiZSoftware();
       return;
     }
 
@@ -494,13 +494,13 @@ export class OcclusionCuller {
 
     // Dispatch compute shader for each mipmap level
     // Uses max filter to preserve maximum depth values
-    for (let level = 1; level < this._levels; level++) {
+    for (let level = 1; level < this._config.mipLevels; level++) {
       const passEncoder = commandEncoder.beginComputePass();
       passEncoder.setPipeline(this._gpuResources.computePipeline);
       passEncoder.setBindGroup(0, this._gpuResources.bindGroup);
 
-      const mipWidth = Math.max(1, this._width >> level);
-      const mipHeight = Math.max(1, this._height >> level);
+      const mipWidth = Math.max(1, this._config.width >> level);
+      const mipHeight = Math.max(1, this._config.height >> level);
       const workgroupsX = Math.ceil(mipWidth / 8);
       const workgroupsY = Math.ceil(mipHeight / 8);
 

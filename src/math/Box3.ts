@@ -131,6 +131,16 @@ export class Box3 {
   }
 
   /**
+   * Gets the center point of the bounding box (method version).
+   * Returns (0, 0, 0) for empty boxes.
+   *
+   * @returns Center point of the box
+   */
+  getCenter(): Vector3 {
+    return this.center;
+  }
+
+  /**
    * Gets the size (dimensions) of the bounding box.
    * Returns (0, 0, 0) for empty boxes.
    *

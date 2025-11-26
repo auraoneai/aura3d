@@ -79,12 +79,12 @@ export class RemoteConfig {
     activated: false
   };
   private defaultValues: Map<string, any> = new Map();
-  private fetchConfig: FetchConfig;
+  private config: FetchConfig;
   private readonly STORAGE_KEY = 'g3d_remote_config';
 
   constructor(cloudManager: CloudManager, fetchConfig?: Partial<FetchConfig>) {
     this.cloudManager = cloudManager;
-    this.fetchConfig = { ...DEFAULT_FETCH_CONFIG, ...fetchConfig };
+    this.config = { ...DEFAULT_FETCH_CONFIG, ...fetchConfig };
     this.loadFromStorage();
   }
 
@@ -105,7 +105,7 @@ export class RemoteConfig {
   public async fetchConfig(): Promise<void> {
     // Check minimum fetch interval
     const timeSinceLastFetch = Date.now() - this.state.lastFetch;
-    if (timeSinceLastFetch < this.fetchConfig.minimumFetchInterval) {
+    if (timeSinceLastFetch < this.config.minimumFetchInterval) {
       console.log('[RemoteConfig] Skipping fetch (too soon)');
       return;
     }
@@ -277,7 +277,7 @@ export class RemoteConfig {
    */
   public isCacheExpired(): boolean {
     const age = Date.now() - this.state.lastFetch;
-    return age > this.fetchConfig.cacheExpiration;
+    return age > this.config.cacheExpiration;
   }
 
   /**

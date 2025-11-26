@@ -9,7 +9,7 @@ import { Blackboard } from './Blackboard';
 /**
  * State transition condition function.
  */
-export type TransitionCondition = (blackboard: Blackboard) => boolean;
+export type AIAITransitionCondition = (blackboard: Blackboard) => boolean;
 
 /**
  * State transition definition.
@@ -18,7 +18,7 @@ export interface StateTransition {
   /** Target state ID */
   targetState: string;
   /** Transition condition */
-  condition: TransitionCondition;
+  condition: AIAITransitionCondition;
   /** Transition priority (higher = checked first) */
   priority: number;
 }
@@ -117,7 +117,7 @@ export class State {
    */
   addTransition(
     targetState: string,
-    condition: TransitionCondition,
+    condition: AIAITransitionCondition,
     priority: number = 0
   ): this {
     this.transitions.push({ targetState, condition, priority });

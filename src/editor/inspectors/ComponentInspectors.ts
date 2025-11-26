@@ -4,9 +4,9 @@
  */
 
 import { IComponentInspector, InspectorRegistry } from './InspectorRegistry';
-import { Component } from '../../ecs/Component';
+import { IComponent } from '../../ecs/Component';
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
+import { Transform } from '../../math/Transform';
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
 
@@ -16,7 +16,7 @@ import { Quaternion } from '../../math/Quaternion';
 export class TransformInspector implements IComponentInspector {
   public componentType = Transform;
 
-  public render(component: Component, entity: Entity): HTMLElement {
+  public render(component: IComponent, entity: Entity): HTMLElement {
     const transform = component as Transform;
     const container = document.createElement('div');
     container.className = 'inspector-transform';
@@ -32,19 +32,17 @@ export class TransformInspector implements IComponentInspector {
       transform.position,
       (newValue) => {
         transform.position.copy(newValue);
-        transform.markDirty();
       }
     );
     container.appendChild(positionGroup);
 
     // Rotation (as Euler angles)
-    const eulerAngles = transform.rotation.toEulerAngles();
+    const eulerAngles = transform.rotation.toEuler();
     const rotationGroup = this.createVector3Field(
       'Rotation',
       eulerAngles,
       (newValue) => {
-        transform.rotation.setFromEuler(newValue.x, newValue.y, newValue.z);
-        transform.markDirty();
+        transform.rotation = Quaternion.fromEuler(newValue.x, newValue.y, newValue.z);
       },
       true // Convert to degrees
     );
@@ -56,7 +54,6 @@ export class TransformInspector implements IComponentInspector {
       transform.scale,
       (newValue) => {
         transform.scale.copy(newValue);
-        transform.markDirty();
       }
     );
     container.appendChild(scaleGroup);
@@ -128,9 +125,9 @@ export class TransformInspector implements IComponentInspector {
  * Material inspector (placeholder for Material component)
  */
 export class MaterialInspector implements IComponentInspector {
-  public componentType = Component; // Would be Material
+  public componentType: any = Object; // Would be Material
 
-  public render(component: Component, entity: Entity): HTMLElement {
+  public render(component: IComponent, entity: Entity): HTMLElement {
     const container = document.createElement('div');
     container.className = 'inspector-material';
 
@@ -258,9 +255,9 @@ export class MaterialInspector implements IComponentInspector {
  * Light inspector (placeholder for Light component)
  */
 export class LightInspector implements IComponentInspector {
-  public componentType = Component; // Would be Light
+  public componentType: any = Object; // Would be Light
 
-  public render(component: Component, entity: Entity): HTMLElement {
+  public render(component: IComponent, entity: Entity): HTMLElement {
     const container = document.createElement('div');
     container.className = 'inspector-light';
 
@@ -377,9 +374,9 @@ export class LightInspector implements IComponentInspector {
  * Camera inspector (placeholder for Camera component)
  */
 export class CameraInspector implements IComponentInspector {
-  public componentType = Component; // Would be Camera
+  public componentType: any = Object; // Would be Camera
 
-  public render(component: Component, entity: Entity): HTMLElement {
+  public render(component: IComponent, entity: Entity): HTMLElement {
     const container = document.createElement('div');
     container.className = 'inspector-camera';
 

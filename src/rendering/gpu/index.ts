@@ -320,7 +320,7 @@ export { WebGL2Device, createWebGL2Device } from './WebGL2Backend';
 export async function createGPUDevice(
   canvas: HTMLCanvasElement,
   preferWebGPU = true
-): Promise<GPUDevice | null> {
+): Promise<import('./GPUDevice').GPUDevice | null> {
   const { createWebGPUDevice } = await import('./WebGPUBackend');
   const { createWebGL2Device } = await import('./WebGL2Backend');
 

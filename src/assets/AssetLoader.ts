@@ -259,7 +259,7 @@ export class AssetLoader {
 
         // Perform load
         const asset = await this.loadWithTimeout<T>(
-          loader,
+          loader as IAssetLoader<T>,
           url,
           options
         );

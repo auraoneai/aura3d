@@ -237,7 +237,7 @@ export class TranslateGizmo implements IGizmo {
           const initialPos = this.initialPositions.get(entity);
           if (transform && initialPos) {
             transform.position.copy(initialPos).add(delta);
-            transform.markDirty();
+            // Transform is automatically marked dirty when position is modified
           }
         }
       });

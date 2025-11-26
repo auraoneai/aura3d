@@ -1,4 +1,4 @@
-import { Asset } from '../Asset';
+import { Asset, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -31,7 +31,7 @@ export enum ShaderType {
 /**
  * Shader metadata
  */
-export interface ShaderMetadata {
+export interface ShaderMetadata extends AssetMetadata {
   /** Shader language */
   language: ShaderLanguage;
   /** Shader type */
@@ -66,8 +66,8 @@ export class ShaderAsset extends Asset {
   /**
    * Gets the shader metadata
    */
-  override get metadata(): ShaderMetadata | null {
-    return this.shaderMetadata;
+  override get metadata(): Readonly<AssetMetadata> {
+    return this.shaderMetadata || {};
   }
 
   /**

@@ -480,7 +480,10 @@ export class TAA extends PostProcessEffect {
     this.resolveShader.setUniform('uHistoryFrame', this.historyBuffer.getColorTexture());
     // In real implementation, would use motion vector buffer
     // this.resolveShader.setUniform('uVelocityTexture', velocityBuffer);
-    this.resolveShader.setUniform('uDepthTexture', input.getDepthTexture());
+    const depthTexture = input.getDepthTexture();
+    if (depthTexture) {
+      this.resolveShader.setUniform('uDepthTexture', depthTexture);
+    }
     this.resolveShader.setUniform('uBlendFactor', blendFactor);
     this.resolveShader.setUniform('uVelocityWeighting', velocityWeighting);
     this.resolveShader.setUniform('uNeighborhoodClamping', neighborhoodClamping);

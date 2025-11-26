@@ -83,6 +83,10 @@ export interface ShadowMapDescriptor {
   cascadeIndex?: number;
   /** Cubemap face index (for omnidirectional) */
   faceIndex?: number;
+  /** Light position (for point/omnidirectional lights) */
+  lightPosition?: Vector3;
+  /** Light range (for point/omnidirectional lights) */
+  range?: number;
 }
 
 /**

@@ -17,6 +17,7 @@ import {
   BufferUsage,
   TextureUsage,
   TextureFormat,
+  TextureDimension,
   IndexFormat,
   VertexFormat,
   CompareFunction,
@@ -307,8 +308,10 @@ class WebGL2Texture extends GPUTexture {
   }
 
   protected createViewInternal(descriptor?: GPUTextureViewDescriptor): GPUTextureView {
+    // Generate a unique ID for the view by using current timestamp + random value
+    const viewId = Date.now() + Math.floor(Math.random() * 1000000);
     return new WebGL2TextureView(
-      this.device.generateResourceId(),
+      viewId,
       this,
       descriptor
     );
@@ -327,12 +330,10 @@ class WebGL2Texture extends GPUTexture {
 
   private getGLTarget(): number {
     switch (this.dimension) {
-      case 'texture-2d':
+      case TextureDimension.D2:
         return this.gl.TEXTURE_2D;
-      case '3d':
+      case TextureDimension.D3:
         return this.gl.TEXTURE_3D;
-      case 'cube':
-        return this.gl.TEXTURE_CUBE_MAP;
       default:
         return this.gl.TEXTURE_2D;
     }
@@ -790,12 +791,12 @@ class WebGL2CommandEncoder extends GPUCommandEncoder {
       this.gl.blitFramebuffer(
         source.origin?.x ?? 0,
         source.origin?.y ?? 0,
-        (source.origin?.x ?? 0) + copySize.width,
-        (source.origin?.y ?? 0) + (copySize.height ?? 1),
+        (source.origin?.x ?? 0) + _copySize.width,
+        (source.origin?.y ?? 0) + (_copySize.height ?? 1),
         destination.origin?.x ?? 0,
         destination.origin?.y ?? 0,
-        (destination.origin?.x ?? 0) + copySize.width,
-        (destination.origin?.y ?? 0) + (copySize.height ?? 1),
+        (destination.origin?.x ?? 0) + _copySize.width,
+        (destination.origin?.y ?? 0) + (_copySize.height ?? 1),
         this.gl.COLOR_BUFFER_BIT,
         this.gl.NEAREST
       );
@@ -1027,7 +1028,7 @@ export class WebGL2Device extends GPUDevice {
     }
 
     const target =
-      descriptor.dimension === '3d' ? this.gl.TEXTURE_3D : this.gl.TEXTURE_2D;
+      descriptor.dimension === TextureDimension.D3 ? this.gl.TEXTURE_3D : this.gl.TEXTURE_2D;
 
     this.gl.bindTexture(target, texture);
 

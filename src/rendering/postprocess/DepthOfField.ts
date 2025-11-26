@@ -494,7 +494,12 @@ export class DepthOfField extends PostProcessEffect {
 
     // Pass 1: Calculate CoC
     this.cocShader.bind();
-    this.cocShader.setUniform('uDepthTexture', input.getDepthTexture());
+    const depthTexture = input.getDepthTexture();
+    if (!depthTexture) {
+      logger.warn('Depth texture not available for DoF effect');
+      return;
+    }
+    this.cocShader.setUniform('uDepthTexture', depthTexture);
     this.cocShader.setUniform('uFocusDistance', focusDistance);
     this.cocShader.setUniform('uFocalLength', focalLength);
     this.cocShader.setUniform('uFStop', fStop);
@@ -547,7 +552,7 @@ export class DepthOfField extends PostProcessEffect {
   /**
    * Called when quality changes.
    */
-  override protected onQualityChanged(): void {
+  protected override onQualityChanged(): void {
     switch (this.quality) {
       case EffectQuality.Low:
         this.sampleCount = 8;

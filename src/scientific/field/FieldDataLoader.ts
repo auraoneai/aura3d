@@ -348,7 +348,7 @@ export class FieldDataLoader {
      */
     public saveRaw(field: FieldData): ArrayBuffer {
         if (field instanceof ScalarFieldData) {
-            return field.data.buffer;
+            return field.data.buffer as ArrayBuffer;
         } else {
             const vectorField = field as VectorFieldData;
             const data = new Float32Array(field.size * 3);

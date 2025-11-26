@@ -8,9 +8,9 @@
 export {
   NetworkManager,
   NetworkMode,
-  TransportType,
-  BinarySerializer
+  TransportType
 } from './NetworkManager';
+// Note: BinarySerializer not exported to avoid conflict with serialization module
 export type {
   SessionInfo,
   PlayerInfo,
@@ -123,12 +123,12 @@ export type {
 
 export {
   TypeRegistry,
-  Serializer,
-  JSONSerializer
+  NetworkSerializer,
+  JSONNetworkSerializer
 } from './Serialization';
 export type {
   Serializable,
-  TypeSerializer,
+  TypeNetworkSerializer,
   TypeDeserializer
 } from './Serialization';
 

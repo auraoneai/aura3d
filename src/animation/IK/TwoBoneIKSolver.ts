@@ -7,6 +7,7 @@
 
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
+import { Matrix4 } from '../../math/Matrix4';
 import { Skeleton } from '../Skeleton';
 
 /**
@@ -180,11 +181,11 @@ export class TwoBoneIKSolver {
     const targetDir = targetPos.sub(rootPos).normalize();
 
     const parentWorld = rootBone.parentIndex >= 0
-      ? skeleton['worldMatrices'][rootBone.parentIndex]
-      : new (require('../../math/Matrix4').Matrix4)();
+      ? skeleton.getWorldMatrixByIndex(rootBone.parentIndex) ?? new Matrix4()
+      : new Matrix4();
 
-    const parentRot = parentWorld.getRotation();
-    const parentRotInv = parentRot.invert();
+    const parentRot = parentWorld.getRotation() as Quaternion;
+    const parentRotInv = parentRot.conjugate();
 
     const currentDir = new Vector3(0, this.upperLength, 0);
     const rootRotation = Quaternion.fromUnitVectors(currentDir.normalize(), targetDir);

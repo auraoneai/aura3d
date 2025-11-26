@@ -7,6 +7,7 @@
 
 import { Vector3 } from '../math/Vector3';
 import { Quaternion } from '../math/Quaternion';
+import { Matrix4 } from '../math/Matrix4';
 import { Ray } from '../math/Ray';
 import { Skeleton } from './Skeleton';
 import { TwoBoneIKSolver } from './IK/TwoBoneIKSolver';
@@ -239,7 +240,7 @@ export class FootIKSolver {
       state.isGrounded = true;
     } else {
       state.targetPosition = footPos;
-      state.targetRotation = footWorld.getRotation();
+      state.targetRotation = footWorld.getRotation() as Quaternion;
       state.isGrounded = false;
     }
 
@@ -307,10 +308,10 @@ export class FootIKSolver {
 
     const footBone = skeleton.getBoneByIndex(footIndex)!;
     const parentWorld = footBone.parentIndex >= 0
-      ? skeleton['worldMatrices'][footBone.parentIndex]
-      : new (require('../math/Matrix4').Matrix4)();
+      ? skeleton.getWorldMatrixByIndex(footBone.parentIndex) ?? new Matrix4()
+      : new Matrix4();
 
-    const parentRot = parentWorld.getRotation();
+    const parentRot = parentWorld.getRotation() as Quaternion;
     const localRotation = parentRot.invert().multiply(state.rotation);
 
     footBone.rotation.copy(footBone.rotation.slerp(localRotation, this.weight));

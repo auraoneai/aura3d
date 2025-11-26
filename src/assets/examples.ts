@@ -10,11 +10,15 @@ import {
   AssetBundle,
   AssetReference,
   GLTFLoader,
+  GLTFAsset,
   OBJLoader,
+  OBJAsset,
   ImageLoader,
+  ImageAsset,
   AudioLoader,
+  AudioAsset,
   LoadPriority,
-  EvictionPolicy,
+  AssetEvictionPolicy,
   ReferenceType
 } from './index';
 
@@ -59,7 +63,7 @@ export async function example2_CachingAndMemory() {
   const manager = new AssetManager({
     cache: {
       maxMemory: 256 * 1024 * 1024, // 256MB
-      evictionPolicy: EvictionPolicy.LRU,
+      evictionPolicy: AssetEvictionPolicy.LRU,
       autoMonitor: true,
       monitorInterval: 5000
     }
@@ -300,7 +304,7 @@ export async function example8_GLTFLoading() {
   manager.registerLoader(gltfLoader);
 
   // Load glTF model
-  const asset = await manager.load('models/robot.gltf');
+  const asset = await manager.load('models/robot.gltf') as GLTFAsset;
   const data = asset.getData();
 
   if (!data) return;
@@ -346,7 +350,7 @@ export async function example9_OBJLoading() {
   manager.registerLoader(new OBJLoader());
 
   // Load OBJ model
-  const asset = await manager.load('models/spaceship.obj');
+  const asset = await manager.load('models/spaceship.obj') as OBJAsset;
   const data = asset.getData();
 
   if (!data) return;
@@ -397,7 +401,7 @@ export async function example10_ImageLoading() {
   manager.registerLoader(imageLoader);
 
   // Load image
-  const asset = await manager.load('textures/brick-wall.png');
+  const asset = await manager.load('textures/brick-wall.png') as ImageAsset;
   const data = asset.getData();
 
   if (!data) return;
@@ -435,7 +439,7 @@ export async function example11_AudioLoading() {
     onProgress: (loaded, total) => {
       console.log(`Loading audio: ${(loaded / total * 100).toFixed(1)}%`);
     }
-  });
+  }) as AudioAsset;
 
   const data = asset.getData();
 
@@ -478,7 +482,7 @@ export async function example13_CompleteScene() {
   const manager = new AssetManager({
     cache: {
       maxMemory: 512 * 1024 * 1024,
-      evictionPolicy: EvictionPolicy.LRU
+      evictionPolicy: AssetEvictionPolicy.LRU
     },
     enableBackgroundLoading: true
   });
@@ -547,7 +551,7 @@ export async function example14_Streaming() {
   manager.registerLoader(streamingAudioLoader);
 
   // Load large audio file with streaming
-  const music = await manager.load('audio/soundtrack.mp3');
+  const music = await manager.load('audio/soundtrack.mp3') as AudioAsset;
   console.log(`Streaming audio loaded (${music.duration.toFixed(1)}s)`);
 
   // The audio can start playing while still loading

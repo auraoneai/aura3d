@@ -766,7 +766,10 @@ export class GPUCulling {
       const offset = i * stride;
 
       // Transform matrix (16 floats)
-      inst.transform.toArray(buffer, offset);
+      const matrixArray = inst.transform.toArray();
+      for (let j = 0; j < 16; j++) {
+        buffer[offset + j] = matrixArray[j]!;
+      }
 
       // Bounding sphere (4 floats)
       buffer[offset + 16] = inst.boundingSphere.center.x;

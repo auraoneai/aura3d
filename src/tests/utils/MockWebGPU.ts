@@ -58,9 +58,28 @@ export class MockGPUTexture {
   readonly usage: GPUTextureUsageFlags;
 
   constructor(descriptor: GPUTextureDescriptor) {
-    this.width = descriptor.size.width;
-    this.height = (descriptor.size as any).height || 1;
-    this.depthOrArrayLayers = (descriptor.size as any).depthOrArrayLayers || 1;
+    let width: number;
+    let height: number;
+    let depthOrArrayLayers: number;
+
+    const size = descriptor.size as any;
+    if (typeof size === 'number') {
+      width = size;
+      height = 1;
+      depthOrArrayLayers = 1;
+    } else if (Array.isArray(size)) {
+      width = size[0];
+      height = size[1] ?? 1;
+      depthOrArrayLayers = size[2] ?? 1;
+    } else {
+      width = size.width;
+      height = size.height ?? 1;
+      depthOrArrayLayers = size.depthOrArrayLayers ?? 1;
+    }
+
+    this.width = width;
+    this.height = height;
+    this.depthOrArrayLayers = depthOrArrayLayers;
     this.mipLevelCount = descriptor.mipLevelCount || 1;
     this.sampleCount = descriptor.sampleCount || 1;
     this.dimension = descriptor.dimension || '2d';
@@ -124,7 +143,7 @@ export class MockGPUBindGroupLayout {
   readonly entries: readonly GPUBindGroupLayoutEntry[];
 
   constructor(descriptor: GPUBindGroupLayoutDescriptor) {
-    this.entries = descriptor.entries;
+    this.entries = Array.from(descriptor.entries);
   }
 
   get label(): string {
@@ -143,7 +162,7 @@ export class MockGPUBindGroup {
 
   constructor(descriptor: GPUBindGroupDescriptor) {
     this.layout = descriptor.layout as any;
-    this.entries = descriptor.entries;
+    this.entries = Array.from(descriptor.entries);
   }
 
   get label(): string {
@@ -182,8 +201,8 @@ export class MockGPUShaderModule {
 
   async getCompilationInfo(): Promise<GPUCompilationInfo> {
     return {
-      messages: []
-    } as GPUCompilationInfo;
+      messages: [] as any
+    } as unknown as GPUCompilationInfo;
   }
 
   get label(): string {

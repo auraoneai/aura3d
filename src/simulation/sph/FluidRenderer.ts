@@ -40,6 +40,7 @@ export class FluidRenderer {
     this.colorBuffer = new Float32Array(pixelCount * 4);
 
     Logger.info(
+      'FluidRenderer',
       `FluidRenderer initialized: ${config.screenWidth}x${config.screenHeight}, ` +
       `particleRadius=${config.particleRadius}`
     );
@@ -55,7 +56,7 @@ export class FluidRenderer {
     this.normalTexture = this.createTexture(gl, this.config.screenWidth, this.config.screenHeight);
     this.smoothDepthTexture = this.createTexture(gl, this.config.screenWidth, this.config.screenHeight);
 
-    Logger.info('FluidRenderer WebGL resources initialized');
+    Logger.info('FluidRenderer', 'FluidRenderer WebGL resources initialized');
   }
 
   private createTexture(
@@ -304,7 +305,7 @@ export class FluidRenderer {
           this.normalBuffer[nIdx + 2]
         );
 
-        const ndotl = Math.max(0, Vec3.dot(normal, lightDirection));
+        const ndotl = Math.max(0, normal.dot(lightDirection));
 
         const diffuse = new Vec3(
           this.config.colorDiffuse.x * lightColor.x * ndotl,
@@ -317,7 +318,7 @@ export class FluidRenderer {
           lightDirection
         );
         const viewDir = new Vec3(0, 0, 1);
-        const specFactor = Math.pow(Math.max(0, Vec3.dot(reflectDir, viewDir)), this.config.shininess);
+        const specFactor = Math.pow(Math.max(0, reflectDir.dot(viewDir)), this.config.shininess);
 
         const specular = new Vec3(
           this.config.colorSpecular.x * lightColor.x * specFactor,
@@ -413,7 +414,7 @@ export class FluidRenderer {
       this.smoothDepthTexture = this.createTexture(this.gl, width, height);
     }
 
-    Logger.info(`FluidRenderer resized to ${width}x${height}`);
+    Logger.info('FluidRenderer', `FluidRenderer resized to ${width}x${height}`);
   }
 
   public dispose(): void {
@@ -430,6 +431,6 @@ export class FluidRenderer {
     this.smoothDepthTexture = null;
     this.gl = null;
 
-    Logger.info('FluidRenderer disposed');
+    Logger.info('FluidRenderer', 'FluidRenderer disposed');
   }
 }

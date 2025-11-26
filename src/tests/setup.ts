@@ -40,7 +40,7 @@ function setupWebGLMocks(): void {
       return mockCanvas._mockWebGLContext;
     }
     // Fall back to original implementation if available
-    return originalGetContext ? originalGetContext.call(this, contextId, options) : null;
+    return originalGetContext ? (originalGetContext as any).call(this, contextId, options) : null;
   };
 }
 
@@ -143,8 +143,9 @@ function setupAudioMocks(): void {
   if (typeof AudioContext === 'undefined') {
     (global as any).AudioContext = MockAudioContext;
   }
-  if (typeof webkitAudioContext === 'undefined') {
-    (global as any).webkitAudioContext = MockAudioContext;
+  // Note: webkitAudioContext is not a standard type, but some browsers may have it
+  if (typeof (window as any)?.webkitAudioContext === 'undefined' && typeof window !== 'undefined') {
+    (window as any).webkitAudioContext = MockAudioContext;
   }
 }
 

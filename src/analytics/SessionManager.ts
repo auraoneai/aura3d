@@ -449,7 +449,7 @@ export class SessionManager {
       this.lastActivityTime = sessionData.lastActivityTime;
       this.startSessionTimer();
 
-      return { ...this.currentSession };
+      return { ...this.currentSession } as Session;
     } catch (error) {
       console.warn('Failed to load persisted session:', error);
       return null;

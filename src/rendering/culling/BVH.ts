@@ -643,7 +643,7 @@ export class BVH {
 
     // Test ray against node bounds
     const intersection = ray.intersectBox(node.bounds);
-    if (!intersection || intersection.distance > maxDistance) {
+    if (!intersection || intersection.t > maxDistance) {
       return;
     }
 
@@ -652,8 +652,8 @@ export class BVH {
       for (const object of node.objects) {
         this._stats.totalObjectTests++;
         const hit = ray.intersectBox(object.bounds);
-        if (hit && hit.distance <= maxDistance) {
-          callback(object, hit.distance, hit.point);
+        if (hit && hit.t <= maxDistance) {
+          callback(object, hit.t, hit.point);
         }
       }
     } else {

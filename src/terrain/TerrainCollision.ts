@@ -92,6 +92,7 @@ export class TerrainCollision {
     this._terrainSize = config.terrainSize.clone();
     this._terrainPosition = config.terrainPosition.clone();
     this._heightScale = config.heightScale;
+    this._bounds = new Box3();
 
     this._updateBounds();
   }

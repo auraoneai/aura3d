@@ -695,7 +695,7 @@ export class Material {
       },
       textures: { ...this.textures },
       state: { ...this.state },
-      shaderVariant: this.shaderVariant,
+      shaderVariant: this.shaderVariant ?? undefined,
     });
 
     return cloned;
@@ -738,7 +738,7 @@ export class Material {
         envMap: this.textures.envMap?.id || null,
       },
       state: this.state,
-      shaderVariant: this.shaderVariant,
+      shaderVariant: this.shaderVariant ?? undefined,
     };
   }
 

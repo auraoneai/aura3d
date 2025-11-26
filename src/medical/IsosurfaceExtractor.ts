@@ -98,7 +98,7 @@ export class IsosurfaceExtractor {
 
     // Smooth normals if requested
     if (smoothNormals && !useGradientNormals) {
-      normalArray = this.computeSmoothNormals(vertexArray);
+      normalArray = this.computeSmoothNormals(vertexArray) as Float32Array<ArrayBuffer>;
     }
 
     // Generate indices (sequential for now)

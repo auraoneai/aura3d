@@ -5,12 +5,24 @@
 
 import { IGizmo, GizmoManager } from './GizmoManager';
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
-import { Camera } from '../../components/Camera';
+import { Transform } from '../../math/Transform';
+import { Camera } from '../../rendering/camera/Camera';
 import { Vector3 } from '../../math/Vector3';
-import { Bounds } from '../../math/Bounds';
+import { Box3 } from '../../math/Box3';
 import { Ray } from '../../math/Ray';
 import { Color } from '../../math/Color';
+
+// TODO: Gizmos need access to World/ComponentManager to get components from entities
+interface EntityWithTransform {
+  getComponent(type: typeof Transform): Transform | undefined;
+}
+
+function hasComponentMethods(entity: Entity): entity is Entity & EntityWithTransform {
+  return typeof (entity as any).getComponent === 'function';
+}
+
+// Box3 is the actual bounding box class
+type Bounds = Box3;
 
 /**
  * Bounds handle type
@@ -134,17 +146,19 @@ export class BoundsGizmo implements IGizmo {
     const points: Vector3[] = [];
 
     this.targets.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        // For now, just use transform position
-        // In a full implementation, this would calculate actual mesh bounds
-        points.push(transform.position.clone());
+      if (hasComponentMethods(entity)) {
+        const transform = entity.getComponent(Transform);
+        if (transform) {
+          // For now, just use transform position
+          // In a full implementation, this would calculate actual mesh bounds
+          points.push(transform.position.clone());
+        }
       }
     });
 
     if (points.length === 0) return null;
 
-    return Bounds.fromPoints(points);
+    return Box3.fromPoints(points);
   }
 
   /**
@@ -293,9 +307,11 @@ export class BoundsGizmo implements IGizmo {
     // Store initial positions
     this.initialPositions.clear();
     this.targets.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        this.initialPositions.set(entity, transform.position.clone());
+      if (hasComponentMethods(entity)) {
+        const transform = entity.getComponent(Transform);
+        if (transform) {
+          this.initialPositions.set(entity, transform.position.clone());
+        }
       }
     });
 

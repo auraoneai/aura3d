@@ -79,25 +79,25 @@ export type {
 } from './GPUProfiler';
 
 export {
-    MemoryProfiler
+    MemoryProfiler,
+    MemoryPressureLevel
 } from './MemoryProfiler';
 export type {
     MemoryProfilerConfig,
     MemorySnapshot,
-    AllocationEvent,
-    MemoryPressureLevel
+    AllocationEvent
 } from './MemoryProfiler';
 
 // Markers
 export {
     ProfileMarker,
     ProfileMethod,
-    ProfileAsyncMethod
+    ProfileAsyncMethod,
+    MarkerCategory
 } from './markers/ProfileMarker';
 export type {
     ProfileMarkerConfig,
-    MarkerColor,
-    MarkerCategory
+    MarkerColor
 } from './markers/ProfileMarker';
 
 export {
@@ -115,10 +115,10 @@ export {
 
 export {
     CounterMarker,
-    ScopedCounter
+    ScopedCounter,
+    CounterName
 } from './markers/CounterMarker';
 export type {
-    CounterName,
     CounterDataPoint,
     CounterStatistics
 } from './markers/CounterMarker';

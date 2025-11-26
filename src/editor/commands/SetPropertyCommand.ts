@@ -5,7 +5,8 @@
 
 import { BaseCommand } from './Command';
 import { Entity } from '../../ecs/Entity';
-import { Component } from '../../ecs/Component';
+import { IComponent } from '../../ecs/Component';
+import { World } from '../../ecs/World';
 
 /**
  * Property path parser for nested property access
@@ -154,16 +155,18 @@ class PropertyPath {
 export class SetPropertyCommand extends BaseCommand {
   public description: string;
   private entities: Entity[];
-  private componentType: new (...args: any[]) => Component;
+  private componentType: new (...args: any[]) => IComponent;
   private propertyPath: string;
   private newValue: any;
   private oldValues: Map<Entity, any> = new Map();
   private path: PropertyPath;
   private mergeTimeMs: number = 100;
   private lastExecuteTime: number = 0;
+  private world: World;
 
   /**
    * Creates a set property command
+   * @param world - World instance for component access
    * @param entities - Entity or entities to modify
    * @param componentType - Component class
    * @param propertyPath - Property path (e.g., 'position.x' or 'materials[0].color')
@@ -171,14 +174,16 @@ export class SetPropertyCommand extends BaseCommand {
    * @param description - Optional custom description
    */
   constructor(
+    world: World,
     entities: Entity | Entity[],
-    componentType: new (...args: any[]) => Component,
+    componentType: new (...args: any[]) => IComponent,
     propertyPath: string,
     newValue: any,
     description?: string
   ) {
     super();
 
+    this.world = world;
     this.entities = Array.isArray(entities) ? entities : [entities];
     this.componentType = componentType;
     this.propertyPath = propertyPath;
@@ -187,7 +192,7 @@ export class SetPropertyCommand extends BaseCommand {
 
     // Capture old values
     this.entities.forEach(entity => {
-      const component = entity.getComponent(componentType);
+      const component = this.world.getComponent(entity, componentType);
       if (component) {
         const oldValue = this.path.getValue(component);
         this.oldValues.set(entity, PropertyPath.cloneValue(oldValue));
@@ -206,9 +211,9 @@ export class SetPropertyCommand extends BaseCommand {
   /**
    * Executes the property change
    */
-  public execute(): void {
+  override execute(): void {
     this.entities.forEach(entity => {
-      const component = entity.getComponent(this.componentType);
+      const component = this.world.getComponent(entity, this.componentType);
       if (!component) return;
 
       this.path.setValue(component, PropertyPath.cloneValue(this.newValue));
@@ -228,9 +233,9 @@ export class SetPropertyCommand extends BaseCommand {
   /**
    * Undoes the property change
    */
-  public undo(): void {
+  override undo(): void {
     this.entities.forEach(entity => {
-      const component = entity.getComponent(this.componentType);
+      const component = this.world.getComponent(entity, this.componentType);
       const oldValue = this.oldValues.get(entity);
 
       if (!component || oldValue === undefined) return;
@@ -250,7 +255,7 @@ export class SetPropertyCommand extends BaseCommand {
   /**
    * Checks if this command can be merged with another
    */
-  public canMerge(other: BaseCommand): boolean {
+  override canMerge(other: BaseCommand): boolean {
     if (!(other instanceof SetPropertyCommand)) {
       return false;
     }
@@ -287,7 +292,7 @@ export class SetPropertyCommand extends BaseCommand {
   /**
    * Merges another command into this one
    */
-  public merge(other: BaseCommand): void {
+  override merge(other: BaseCommand): void {
     if (!(other instanceof SetPropertyCommand)) {
       throw new Error('Cannot merge with non-SetPropertyCommand');
     }
@@ -301,10 +306,10 @@ export class SetPropertyCommand extends BaseCommand {
   /**
    * Validates the command
    */
-  public validate(): boolean {
+  override validate(): boolean {
     // Check all entities have the component
     const valid = this.entities.every(entity =>
-      entity.hasComponent(this.componentType)
+      this.world.hasComponent(entity, this.componentType)
     );
 
     if (!valid) {
@@ -318,7 +323,7 @@ export class SetPropertyCommand extends BaseCommand {
   /**
    * Gets the memory size of this command
    */
-  public getSize(): number {
+  override getSize(): number {
     return 1 + this.entities.length;
   }
 
@@ -328,12 +333,12 @@ export class SetPropertyCommand extends BaseCommand {
   public serialize(): any {
     return {
       type: 'SetPropertyCommand',
-      entities: this.entities.map(e => e.id),
+      entities: this.entities,
       componentType: this.componentType.name,
       propertyPath: this.propertyPath,
       newValue: this.serializeValue(this.newValue),
       oldValues: Array.from(this.oldValues.entries()).map(([entity, value]) => ({
-        entityId: entity.id,
+        entityId: entity,
         value: this.serializeValue(value)
       }))
     };
@@ -380,12 +385,13 @@ export class SetPropertyCommand extends BaseCommand {
  */
 export class SetBooleanCommand extends SetPropertyCommand {
   constructor(
+    world: World,
     entities: Entity | Entity[],
-    componentType: new (...args: any[]) => Component,
+    componentType: new (...args: any[]) => IComponent,
     propertyPath: string,
     value: boolean
   ) {
-    super(entities, componentType, propertyPath, value);
+    super(world, entities, componentType, propertyPath, value);
     this.description = `${value ? 'Enable' : 'Disable'} ${componentType.name}.${propertyPath}`;
   }
 }
@@ -398,24 +404,25 @@ export class SetNumberCommand extends SetPropertyCommand {
   private max?: number;
 
   constructor(
+    world: World,
     entities: Entity | Entity[],
-    componentType: new (...args: any[]) => Component,
+    componentType: new (...args: any[]) => IComponent,
     propertyPath: string,
     value: number,
     min?: number,
     max?: number
   ) {
-    super(entities, componentType, propertyPath, value);
+    super(world, entities, componentType, propertyPath, value);
     this.min = min;
     this.max = max;
   }
 
-  public validate(): boolean {
+  override validate(): boolean {
     if (!super.validate()) {
       return false;
     }
 
-    const value = this.newValue as number;
+    const value = (this as any).newValue as number;
 
     if (this.min !== undefined && value < this.min) {
       console.warn(`Value ${value} is below minimum ${this.min}`);

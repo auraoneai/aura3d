@@ -4,14 +4,23 @@
  */
 
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
+import { Transform } from '../../math/Transform';
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
-import { Camera } from '../../components/Camera';
+import { Camera } from '../../rendering/camera/Camera';
 import { TranslateGizmo } from './TranslateGizmo';
 import { RotateGizmo } from './RotateGizmo';
 import { ScaleGizmo } from './ScaleGizmo';
 import { BoundsGizmo } from './BoundsGizmo';
+
+// TODO: Gizmos need access to World/ComponentManager to get components from entities
+interface EntityWithTransform {
+  getComponent(type: typeof Transform): Transform | undefined;
+}
+
+function hasComponentMethods(entity: Entity): entity is Entity & EntityWithTransform {
+  return typeof (entity as any).getComponent === 'function';
+}
 
 /**
  * Gizmo type enumeration
@@ -259,10 +268,12 @@ export class GizmoManager {
     let count = 0;
 
     this.targetEntities.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        center.add(transform.position);
-        count++;
+      if (hasComponentMethods(entity)) {
+        const transform = entity.getComponent(Transform);
+        if (transform) {
+          center.addInPlace(transform.position);
+          count++;
+        }
       }
     });
 
@@ -278,7 +289,7 @@ export class GizmoManager {
    */
   private calculateActivePivot(): Vector3 {
     const activeEntity = this.targetEntities[this.targetEntities.length - 1];
-    if (activeEntity) {
+    if (activeEntity && hasComponentMethods(activeEntity)) {
       const transform = activeEntity.getComponent(Transform);
       if (transform) {
         return transform.position.clone();
@@ -297,7 +308,7 @@ export class GizmoManager {
 
     // Local space - use active entity's rotation
     const activeEntity = this.targetEntities[this.targetEntities.length - 1];
-    if (activeEntity) {
+    if (activeEntity && hasComponentMethods(activeEntity)) {
       const transform = activeEntity.getComponent(Transform);
       if (transform) {
         return transform.rotation.clone();

@@ -208,6 +208,14 @@
  * ```
  */
 
+// Import types and classes needed for helper functions
+import { SectionPlane as _SectionPlane } from './section/SectionPlane';
+import { SectionPlaneHelper as _SectionPlaneHelper } from './section/SectionPlaneHelper';
+import { SectionManager as _SectionManager } from './section/SectionManager';
+import { HatchingGenerator as _HatchingGenerator } from './section/HatchingGenerator';
+import type { IHatchingPattern } from './section/SectionTypes';
+import { MaterialCutStyle as _MaterialCutStyle } from './section/SectionTypes';
+
 // Section system exports
 export * from './section';
 
@@ -281,35 +289,31 @@ export function createSectionSetup(options: {
   showHelper?: boolean;
   helperExtent?: number;
 }): {
-  manager: import('./section/SectionManager').SectionManager;
-  plane: import('./section/SectionPlane').SectionPlane;
-  helper?: import('./section/SectionPlaneHelper').SectionPlaneHelper;
+  manager: _SectionManager;
+  plane: _SectionPlane;
+  helper?: _SectionPlaneHelper;
 } {
-  const { SectionManager } = require('./section/SectionManager');
-  const { SectionPlane } = require('./section/SectionPlane');
-  const { SectionPlaneHelper } = require('./section/SectionPlaneHelper');
-
-  let plane: any;
+  let plane: _SectionPlane;
 
   switch (options.type) {
     case 'horizontal':
-      plane = SectionPlane.createHorizontal(options.position, options.name);
+      plane = _SectionPlane.createHorizontal(options.position, options.name);
       break;
     case 'vertical-x':
-      plane = SectionPlane.createVertical('x', options.position, options.name);
+      plane = _SectionPlane.createVertical('x', options.position, options.name);
       break;
     case 'vertical-y':
-      plane = SectionPlane.createVertical('y', options.position, options.name);
+      plane = _SectionPlane.createVertical('y', options.position, options.name);
       break;
   }
 
-  const manager = new SectionManager();
+  const manager = new _SectionManager();
   manager.addSection(options.name || 'section', plane);
   manager.enable(options.name || 'section');
 
-  let helper: any;
+  let helper: _SectionPlaneHelper | undefined;
   if (options.showHelper !== false) {
-    helper = new SectionPlaneHelper(plane, {
+    helper = new _SectionPlaneHelper(plane, {
       extent: options.helperExtent
     });
   }
@@ -330,10 +334,9 @@ export function createSectionSetup(options: {
  * ```
  */
 export function createMaterialPattern(
-  materialType: import('./section/SectionTypes').MaterialCutStyle,
+  materialType: _MaterialCutStyle,
   scale: number = 1.0
-): import('./section/SectionTypes').IHatchingPattern {
-  const { HatchingGenerator } = require('./section/HatchingGenerator');
-  const generator = new HatchingGenerator();
+): IHatchingPattern {
+  const generator = new _HatchingGenerator();
   return generator.createPattern(materialType, { scale });
 }

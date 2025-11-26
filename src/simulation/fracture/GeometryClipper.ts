@@ -142,7 +142,7 @@ export class GeometryClipper {
     for (let i = 0; i < mesh.vertexCount; i++) {
       mesh.vertexBuffer.getPosition(i, pos);
       mesh.vertexBuffer.getNormal(i, normal);
-      mesh.vertexBuffer.getTexCoord(i, 0, uv);
+      mesh.vertexBuffer.getTexCoord(i, uv);
 
       vertices.push({
         position: new Vector3(pos[0], pos[1], pos[2]),

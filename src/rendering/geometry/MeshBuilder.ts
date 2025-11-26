@@ -44,7 +44,7 @@ export class MeshBuilder {
   /** Accumulated vertices */
   private vertices: BuilderVertex[];
   /** Accumulated indices */
-  private indices: number[];
+  private _indices: number[];
   /** Current vertex being built */
   private currentVertex: BuilderVertex;
   /** Primitive topology */
@@ -71,7 +71,7 @@ export class MeshBuilder {
   constructor(format: VertexFormat) {
     this.format = format;
     this.vertices = [];
-    this.indices = [];
+    this._indices = [];
     this.currentVertex = { position: [0, 0, 0] };
     this.topology = PrimitiveTopology.TriangleList;
     this.deduplicateVertices = true;
@@ -93,7 +93,7 @@ export class MeshBuilder {
    */
   begin(topology: PrimitiveTopology = PrimitiveTopology.TriangleList): this {
     this.vertices = [];
-    this.indices = [];
+    this._indices = [];
     this.topology = topology;
     this.vertexMap.clear();
     return this;
@@ -286,7 +286,7 @@ export class MeshBuilder {
    * ```
    */
   triangle(i0: number, i1: number, i2: number): this {
-    this.indices.push(i0, i1, i2);
+    this._indices.push(i0, i1, i2);
     return this;
   }
 
@@ -305,8 +305,8 @@ export class MeshBuilder {
    * ```
    */
   quad(i0: number, i1: number, i2: number, i3: number): this {
-    this.indices.push(i0, i1, i2);
-    this.indices.push(i0, i2, i3);
+    this._indices.push(i0, i1, i2);
+    this._indices.push(i0, i2, i3);
     return this;
   }
 
@@ -322,7 +322,7 @@ export class MeshBuilder {
    * ```
    */
   indices(indices: number[]): this {
-    this.indices.push(...indices);
+    this._indices.push(...indices);
     return this;
   }
 
@@ -380,7 +380,7 @@ export class MeshBuilder {
     }
 
     // Create index buffer
-    const indexBuffer = IndexBuffer.fromArray(this.indices, undefined, this.topology);
+    const indexBuffer = IndexBuffer.fromArray(this._indices, undefined, this.topology);
 
     // Create mesh
     const mesh = new Mesh(vertexBuffer, indexBuffer, name);
@@ -402,10 +402,10 @@ export class MeshBuilder {
     }
 
     // Accumulate face normals
-    for (let i = 0; i < this.indices.length; i += 3) {
-      const i0 = this.indices[i];
-      const i1 = this.indices[i + 1];
-      const i2 = this.indices[i + 2];
+    for (let i = 0; i < this._indices.length; i += 3) {
+      const i0 = this._indices[i];
+      const i1 = this._indices[i + 1];
+      const i2 = this._indices[i + 2];
 
       const v0 = this.vertices[i0];
       const v1 = this.vertices[i1];
@@ -473,10 +473,10 @@ export class MeshBuilder {
     }
 
     // Compute tangents for each triangle
-    for (let i = 0; i < this.indices.length; i += 3) {
-      const i0 = this.indices[i];
-      const i1 = this.indices[i + 1];
-      const i2 = this.indices[i + 2];
+    for (let i = 0; i < this._indices.length; i += 3) {
+      const i0 = this._indices[i];
+      const i1 = this._indices[i + 1];
+      const i2 = this._indices[i + 2];
 
       const v0 = this.vertices[i0];
       const v1 = this.vertices[i1];

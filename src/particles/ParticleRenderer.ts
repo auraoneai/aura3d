@@ -10,12 +10,12 @@ import { Quaternion } from '../math/Quaternion';
 import { Camera } from '../rendering/camera/Camera';
 import { Material } from '../rendering/material/Material';
 import { Mesh } from '../rendering/geometry/Mesh';
-import { VertexBuffer, VertexBufferDescriptor } from '../rendering/geometry/VertexBuffer';
+import { VertexBuffer } from '../rendering/geometry/VertexBuffer';
 import { IndexBuffer } from '../rendering/geometry/IndexBuffer';
 import { VertexFormat } from '../rendering/geometry/VertexFormat';
 import { Texture } from '../rendering/texture/Texture';
 import { GPUBuffer, GPUBufferDescriptor } from '../rendering/gpu/GPUBuffer';
-import { GPUDevice } from '../rendering/gpu/GPUDevice';
+import { GPUDevice, BufferUsage } from '../rendering/gpu/GPUDevice';
 import { Particle } from './Particle';
 import { ParticleSystem } from './ParticleSystem';
 
@@ -289,8 +289,7 @@ export class ParticleRenderer {
   private createInstanceBuffer(device: GPUDevice): GPUBuffer {
     const descriptor: GPUBufferDescriptor = {
       size: this.maxInstances * 16 * 4, // 16 floats * 4 bytes
-      usage: 'vertex',
-      dynamic: true,
+      usage: BufferUsage.Vertex,
     };
     return device.createBuffer(descriptor);
   }
@@ -419,7 +418,7 @@ export class ParticleRenderer {
     }
 
     // Upload instance data
-    this._instanceBuffer.setData(this._instanceData);
+    this._instanceBuffer.write(this._instanceData);
 
     // Draw instanced
     // device.drawInstanced(this._billboardMesh, particles.length);
@@ -479,7 +478,7 @@ export class ParticleRenderer {
 
     // Apply rotation
     if (particle.rotation.z !== 0) {
-      const rotation = Matrix4.makeRotationZ(particle.rotation.z);
+      const rotation = Matrix4.rotationZ(particle.rotation.z);
       matrix.multiply(rotation);
     }
 

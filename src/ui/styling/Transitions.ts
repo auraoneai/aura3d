@@ -1,7 +1,7 @@
 /**
- * Easing function types for transitions and animations.
+ * UI easing function types for transitions and animations.
  */
-export enum EasingFunction {
+export enum UIEasingFunction {
   Linear = 'linear',
   EaseIn = 'easeIn',
   EaseOut = 'easeOut',
@@ -35,7 +35,7 @@ export interface TransitionConfig {
   /**
    * Easing function.
    */
-  easing: EasingFunction;
+  easing: UIEasingFunction;
 
   /**
    * Delay before transition starts in milliseconds.
@@ -92,32 +92,32 @@ export class Transitions {
   }) {
     this.fast = config?.fast ?? {
       duration: 150,
-      easing: EasingFunction.EaseOut,
+      easing: UIEasingFunction.EaseOut,
     };
 
     this.normal = config?.normal ?? {
       duration: 250,
-      easing: EasingFunction.EaseInOut,
+      easing: UIEasingFunction.EaseInOut,
     };
 
     this.slow = config?.slow ?? {
       duration: 400,
-      easing: EasingFunction.EaseInOut,
+      easing: UIEasingFunction.EaseInOut,
     };
 
     this.fade = config?.fade ?? {
       duration: 200,
-      easing: EasingFunction.EaseIn,
+      easing: UIEasingFunction.EaseIn,
     };
 
     this.slide = config?.slide ?? {
       duration: 300,
-      easing: EasingFunction.EaseOut,
+      easing: UIEasingFunction.EaseOut,
     };
 
     this.scale = config?.scale ?? {
       duration: 200,
-      easing: EasingFunction.EaseInOutBack,
+      easing: UIEasingFunction.EaseInOutBack,
     };
   }
 
@@ -153,62 +153,62 @@ export class Transitions {
    * @param t - Time value in range [0, 1]
    * @returns Eased value in range [0, 1]
    */
-  static evaluate(easing: EasingFunction, t: number): number {
+  static evaluate(easing: UIEasingFunction, t: number): number {
     t = Math.max(0, Math.min(1, t));
 
     switch (easing) {
-      case EasingFunction.Linear:
+      case UIEasingFunction.Linear:
         return t;
 
-      case EasingFunction.EaseIn:
+      case UIEasingFunction.EaseIn:
         return t * t;
 
-      case EasingFunction.EaseOut:
+      case UIEasingFunction.EaseOut:
         return t * (2 - t);
 
-      case EasingFunction.EaseInOut:
+      case UIEasingFunction.EaseInOut:
         return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
-      case EasingFunction.EaseInQuad:
+      case UIEasingFunction.EaseInQuad:
         return t * t;
 
-      case EasingFunction.EaseOutQuad:
+      case UIEasingFunction.EaseOutQuad:
         return t * (2 - t);
 
-      case EasingFunction.EaseInOutQuad:
+      case UIEasingFunction.EaseInOutQuad:
         return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 
-      case EasingFunction.EaseInCubic:
+      case UIEasingFunction.EaseInCubic:
         return t * t * t;
 
-      case EasingFunction.EaseOutCubic:
+      case UIEasingFunction.EaseOutCubic:
         return (--t) * t * t + 1;
 
-      case EasingFunction.EaseInOutCubic:
+      case UIEasingFunction.EaseInOutCubic:
         return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
 
-      case EasingFunction.EaseInQuart:
+      case UIEasingFunction.EaseInQuart:
         return t * t * t * t;
 
-      case EasingFunction.EaseOutQuart:
+      case UIEasingFunction.EaseOutQuart:
         return 1 - (--t) * t * t * t;
 
-      case EasingFunction.EaseInOutQuart:
+      case UIEasingFunction.EaseInOutQuart:
         return t < 0.5 ? 8 * t * t * t * t : 1 - 8 * (--t) * t * t * t;
 
-      case EasingFunction.EaseInBack: {
+      case UIEasingFunction.EaseInBack: {
         const c1 = 1.70158;
         const c3 = c1 + 1;
         return c3 * t * t * t - c1 * t * t;
       }
 
-      case EasingFunction.EaseOutBack: {
+      case UIEasingFunction.EaseOutBack: {
         const c1 = 1.70158;
         const c3 = c1 + 1;
         return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
       }
 
-      case EasingFunction.EaseInOutBack: {
+      case UIEasingFunction.EaseInOutBack: {
         const c1 = 1.70158;
         const c2 = c1 * 1.525;
         return t < 0.5
@@ -216,17 +216,17 @@ export class Transitions {
           : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
       }
 
-      case EasingFunction.EaseInElastic: {
+      case UIEasingFunction.EaseInElastic: {
         const c4 = (2 * Math.PI) / 3;
         return t === 0 ? 0 : t === 1 ? 1 : -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * c4);
       }
 
-      case EasingFunction.EaseOutElastic: {
+      case UIEasingFunction.EaseOutElastic: {
         const c4 = (2 * Math.PI) / 3;
         return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
       }
 
-      case EasingFunction.EaseInOutElastic: {
+      case UIEasingFunction.EaseInOutElastic: {
         const c5 = (2 * Math.PI) / 4.5;
         return t === 0
           ? 0

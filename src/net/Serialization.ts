@@ -39,7 +39,7 @@ export interface Serializable {
 /**
  * Type serializer function signature.
  */
-export type TypeSerializer<T = any> = (
+export type TypeNetworkSerializer<T = any> = (
   value: T,
   view: DataView,
   offset: number
@@ -61,8 +61,8 @@ interface TypeMetadata<T = any> {
   id: number;
   /** Type name */
   name: string;
-  /** Serializer function */
-  serializer: TypeSerializer<T>;
+  /** NetworkSerializer function */
+  serializer: TypeNetworkSerializer<T>;
   /** Deserializer function */
   deserializer: TypeDeserializer<T>;
   /** Fixed size in bytes (0 = variable size) */
@@ -106,7 +106,7 @@ export class TypeRegistry {
    * Registers a new type with the registry.
    *
    * @param name - Type name
-   * @param serializer - Serializer function
+   * @param serializer - NetworkSerializer function
    * @param deserializer - Deserializer function
    * @param fixedSize - Fixed size in bytes (0 for variable size)
    * @returns Type ID
@@ -133,7 +133,7 @@ export class TypeRegistry {
    */
   static register<T>(
     name: string,
-    serializer: TypeSerializer<T>,
+    serializer: TypeNetworkSerializer<T>,
     deserializer: TypeDeserializer<T>,
     fixedSize: number = 0
   ): number {
@@ -251,10 +251,10 @@ export class TypeRegistry {
 }
 
 /**
- * Advanced serialization utilities.
+ * Advanced network serialization utilities.
  * Provides helpers for common serialization patterns.
  */
-export class Serializer {
+export class NetworkSerializer {
   /**
    * Serializes a string with length prefix.
    *
@@ -326,14 +326,14 @@ export class Serializer {
    * Serializes an array with type information.
    *
    * @param array - Array to serialize
-   * @param elementSerializer - Function to serialize each element
+   * @param elementNetworkSerializer - Function to serialize each element
    * @param view - DataView to write to
    * @param offset - Offset to start writing
    * @returns Number of bytes written
    *
    * @example
    * ```typescript
-   * const bytesWritten = Serializer.writeArray(
+   * const bytesWritten = NetworkSerializer.writeArray(
    *   numbers,
    *   (n, v, o) => { v.setFloat32(o, n, true); return 4; },
    *   view,
@@ -343,7 +343,7 @@ export class Serializer {
    */
   static writeArray<T>(
     array: T[],
-    elementSerializer: (item: T, view: DataView, offset: number) => number,
+    elementNetworkSerializer: (item: T, view: DataView, offset: number) => number,
     view: DataView,
     offset: number
   ): number {
@@ -353,7 +353,7 @@ export class Serializer {
 
     // Write elements
     for (const item of array) {
-      const bytesWritten = elementSerializer(item, view, currentOffset);
+      const bytesWritten = elementNetworkSerializer(item, view, currentOffset);
       currentOffset += bytesWritten;
     }
 
@@ -370,7 +370,7 @@ export class Serializer {
    *
    * @example
    * ```typescript
-   * const [numbers, bytesRead] = Serializer.readArray(
+   * const [numbers, bytesRead] = NetworkSerializer.readArray(
    *   (v, o) => [v.getFloat32(o, true), 4],
    *   view,
    *   offset
@@ -402,16 +402,16 @@ export class Serializer {
    * Serializes a Map with type information.
    *
    * @param map - Map to serialize
-   * @param keySerializer - Function to serialize keys
-   * @param valueSerializer - Function to serialize values
+   * @param keyNetworkSerializer - Function to serialize keys
+   * @param valueNetworkSerializer - Function to serialize values
    * @param view - DataView to write to
    * @param offset - Offset to start writing
    * @returns Number of bytes written
    */
   static writeMap<K, V>(
     map: Map<K, V>,
-    keySerializer: (key: K, view: DataView, offset: number) => number,
-    valueSerializer: (value: V, view: DataView, offset: number) => number,
+    keyNetworkSerializer: (key: K, view: DataView, offset: number) => number,
+    valueNetworkSerializer: (value: V, view: DataView, offset: number) => number,
     view: DataView,
     offset: number
   ): number {
@@ -421,10 +421,10 @@ export class Serializer {
 
     // Write entries
     for (const [key, value] of map) {
-      const keyBytes = keySerializer(key, view, currentOffset);
+      const keyBytes = keyNetworkSerializer(key, view, currentOffset);
       currentOffset += keyBytes;
 
-      const valueBytes = valueSerializer(value, view, currentOffset);
+      const valueBytes = valueNetworkSerializer(value, view, currentOffset);
       currentOffset += valueBytes;
     }
 
@@ -495,7 +495,7 @@ export class Serializer {
  * JSON serializer for complex objects.
  * Provides JSON serialization as an alternative to binary for debugging or compatibility.
  */
-export class JSONSerializer {
+export class JSONNetworkSerializer {
   /**
    * Serializes an object to JSON bytes.
    *
@@ -504,7 +504,7 @@ export class JSONSerializer {
    *
    * @example
    * ```typescript
-   * const buffer = JSONSerializer.serialize({ x: 1, y: 2 });
+   * const buffer = JSONNetworkSerializer.serialize({ x: 1, y: 2 });
    * ```
    */
   static serialize(obj: any): ArrayBuffer {
@@ -521,7 +521,7 @@ export class JSONSerializer {
    *
    * @example
    * ```typescript
-   * const obj = JSONSerializer.deserialize(buffer);
+   * const obj = JSONNetworkSerializer.deserialize(buffer);
    * ```
    */
   static deserialize<T = any>(buffer: ArrayBuffer): T {
@@ -534,21 +534,21 @@ export class JSONSerializer {
 // Register built-in types
 TypeRegistry.register(
   'string',
-  Serializer.writeString,
-  Serializer.readString
+  NetworkSerializer.writeString,
+  NetworkSerializer.readString
 );
 
 TypeRegistry.register(
   'Vector3',
-  Serializer.writeVector3,
-  Serializer.readVector3,
+  NetworkSerializer.writeVector3,
+  NetworkSerializer.readVector3,
   12
 );
 
 TypeRegistry.register(
   'boolean',
-  Serializer.writeBoolean,
-  Serializer.readBoolean,
+  NetworkSerializer.writeBoolean,
+  NetworkSerializer.readBoolean,
   1
 );
 

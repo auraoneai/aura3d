@@ -157,7 +157,7 @@ export class ClothCollisionSystem {
           );
 
           if (collision) {
-            collision.friction = this.friction * collider.material.friction;
+            collision.friction = this.friction * collider.material.dynamicFriction;
             collisions.push(collision);
           }
         }
@@ -334,7 +334,7 @@ export class ClothCollisionSystem {
     const localPos = this.transformPoint(position, invTransform);
 
     // Get box half extents
-    const extents = box.halfExtents;
+    const extents = box.extents;
 
     // Find closest point on box
     const closestPoint = new Vector3(

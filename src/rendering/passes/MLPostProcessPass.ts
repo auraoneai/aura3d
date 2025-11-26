@@ -364,6 +364,7 @@ export class MLPostProcessPass extends RenderPass {
   private async loadTensorFlowModel(descriptor: MLModelDescriptor): Promise<void> {
     try {
       // Dynamic import of TensorFlow.js
+      // @ts-ignore - Optional dependency
       const tf = await import('@tensorflow/tfjs');
 
       // Set backend preference based on device capabilities
@@ -398,6 +399,7 @@ export class MLPostProcessPass extends RenderPass {
   private async loadONNXModel(descriptor: MLModelDescriptor): Promise<void> {
     try {
       // Dynamic import of ONNX Runtime Web
+      // @ts-ignore - Optional dependency
       const ort = await import('onnxruntime-web');
 
       // Configure execution providers

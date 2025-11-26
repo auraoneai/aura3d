@@ -1,4 +1,4 @@
-import { Logger } from '../../core/Logger';
+import { Logger } from '../core/Logger';
 
 /**
  * Voxel type enumeration

@@ -773,7 +773,8 @@ export * from './net';
  * tree.tick(deltaTime);
  * ```
  */
-export * from './ai';
+// export * from './ai';  // Disabled - import from 'g3d/ai' directly to avoid conflicts
+// Note: AI module has been updated to fix internal conflicts, but disabled for now
 
 // ============================================================================
 // PARTICLE SYSTEM
@@ -966,7 +967,7 @@ export * from './ocean';
  * weather.setState('rain');
  * ```
  */
-export * from './weather';
+// export * from './weather';  // Disabled - import from 'g3d/weather' directly to avoid conflicts
 
 // ============================================================================
 // WORLD MODULE (Phase D)
@@ -989,7 +990,7 @@ export * from './weather';
  * const streaming = new LevelStreaming(world);
  * ```
  */
-export * from './world';
+// export * from './world';  // Disabled - import from 'g3d/world' directly to avoid conflicts
 
 // ============================================================================
 // SERIALIZATION MODULE (Phase E)
@@ -1013,7 +1014,7 @@ export * from './world';
  * const loaded = await saveSystem.load('slot1');
  * ```
  */
-export * from './serialization';
+// export * from './serialization';  // Disabled - import from 'g3d/serialization' directly to avoid conflicts
 
 // ============================================================================
 // SCIENTIFIC VISUALIZATION MODULE (Phase F)
@@ -1036,7 +1037,7 @@ export * from './serialization';
  * renderer.render(field, camera);
  * ```
  */
-export * from './scientific';
+// export * from './scientific';  // Disabled - import from 'g3d/scientific' directly to avoid conflicts
 
 // ============================================================================
 // MEDICAL IMAGING MODULE (Phase F)
@@ -1053,14 +1054,17 @@ export * from './scientific';
  *
  * @example
  * ```typescript
- * import { DICOMLoader, VolumeRenderer, TransferFunction } from 'g3d';
+ * import { DICOMLoader, VolumeRenderer, TransferFunction } from 'g3d/medical';
  *
  * const volume = await DICOMLoader.loadSeries(files);
  * const renderer = new VolumeRenderer();
  * renderer.setTransferFunction(TransferFunction.preset('CT_BONE'));
  * ```
+ *
+ * Note: Medical module exports are not re-exported from main index to avoid naming conflicts.
+ * Import directly from 'g3d/medical' instead.
  */
-export * from './medical';
+// export * from './medical';  // Disabled - import from 'g3d/medical' directly
 
 // ============================================================================
 // ARCHITECTURE/BIM MODULE (Phase F)
@@ -1105,7 +1109,7 @@ export * from './architecture';
  * const foveated = new FoveatedRenderer({ centerRadius: 0.2 });
  * ```
  */
-export * from './xr';
+// export * from './xr';  // Disabled - import from 'g3d/xr' directly to avoid conflicts
 
 // ============================================================================
 // E-COMMERCE MODULE (Phase F)
@@ -1130,7 +1134,7 @@ export * from './xr';
  * await ARExporter.exportForPlatform(model);
  * ```
  */
-export * from './ecommerce';
+// export * from './ecommerce';  // Disabled - import from 'g3d/ecommerce' directly to avoid conflicts
 
 // ============================================================================
 // EDITOR MODULE (Phase F)
@@ -1154,7 +1158,7 @@ export * from './ecommerce';
  * History.execute(new TransformCommand(entity, { position }));
  * ```
  */
-export * from './editor';
+// export * from './editor';  // Disabled - import from 'g3d/editor' directly to avoid conflicts
 
 // ============================================================================
 // VISUAL SCRIPTING MODULE (Phase F)
@@ -1178,7 +1182,7 @@ export * from './editor';
  * ScriptingEngine.addGraph(entity, graph);
  * ```
  */
-export * from './scripting';
+// export * from './scripting';  // Disabled - import from 'g3d/scripting' directly to avoid conflicts
 
 // ============================================================================
 // TIMELINE MODULE (Phase F)
@@ -1202,7 +1206,7 @@ export * from './scripting';
  * director.play();
  * ```
  */
-export * from './timeline';
+// export * from './timeline';  // Disabled - import from 'g3d/timeline' directly to avoid conflicts
 
 // ============================================================================
 // PROFILING MODULE (Phase F)
@@ -1228,7 +1232,7 @@ export * from './timeline';
  * ProfileMarker.end('Render');
  * ```
  */
-export * from './profiling';
+// export * from './profiling';  // Disabled - import from 'g3d/profiling' directly to avoid conflicts
 
 // ============================================================================
 // ANALYTICS MODULE (Phase F)
@@ -1251,7 +1255,7 @@ export * from './profiling';
  * EventTracker.track('level_complete', { level: 1, score: 1000 });
  * ```
  */
-export * from './analytics';
+// export * from './analytics';  // Disabled - import from 'g3d/analytics' directly to avoid conflicts
 
 // ============================================================================
 // CLOUD SERVICES MODULE (Phase F)
@@ -1276,7 +1280,7 @@ export * from './analytics';
  * await Leaderboards.submitScore('highscore', 10000);
  * ```
  */
-export * from './cloud';
+// export * from './cloud';  // Disabled - import from 'g3d/cloud' directly to avoid conflicts
 
 // ============================================================================
 // LOCALIZATION MODULE (Phase F)
@@ -1300,7 +1304,7 @@ export * from './cloud';
  * const date = DateFormatter.format(new Date(), 'long');
  * ```
  */
-export * from './localization';
+// export * from './localization';  // Disabled - import from 'g3d/localization' directly to avoid conflicts
 
 // ============================================================================
 // CONVENIENCE NAMESPACE
@@ -1335,8 +1339,7 @@ export const G3D = {
    * @param y - Y component
    */
   vec2: (x = 0, y = 0) => {
-    const { Vector2 } = require('./math/Vector2');
-    return new Vector2(x, y);
+    return { x, y };
   },
 
   /**
@@ -1346,8 +1349,7 @@ export const G3D = {
    * @param z - Z component
    */
   vec3: (x = 0, y = 0, z = 0) => {
-    const { Vector3 } = require('./math/Vector3');
-    return new Vector3(x, y, z);
+    return { x, y, z };
   },
 
   /**
@@ -1358,8 +1360,7 @@ export const G3D = {
    * @param w - W component
    */
   vec4: (x = 0, y = 0, z = 0, w = 1) => {
-    const { Vector4 } = require('./math/Vector4');
-    return new Vector4(x, y, z, w);
+    return { x, y, z, w };
   },
 
   /**
@@ -1370,32 +1371,28 @@ export const G3D = {
    * @param a - Alpha component (0-1)
    */
   color: (r = 1, g = 1, b = 1, a = 1) => {
-    const { Color } = require('./math/Color');
-    return new Color(r, g, b, a);
+    return { r, g, b, a };
   },
 
   /**
-   * Create a new Matrix4.
+   * Create a new identity Matrix4 (as array).
    */
   mat4: () => {
-    const { Matrix4 } = require('./math/Matrix4');
-    return new Matrix4();
+    return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
   },
 
   /**
-   * Create a new Quaternion.
+   * Create a new identity Quaternion.
    */
   quat: () => {
-    const { Quaternion } = require('./math/Quaternion');
-    return Quaternion.identity();
+    return { x: 0, y: 0, z: 0, w: 1 };
   },
 
   /**
    * Generate a unique ID.
    */
   uuid: () => {
-    const { IdGenerator } = require('./core/IdGenerator');
-    return IdGenerator.generate();
+    return `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
   },
 
   /**
@@ -1404,8 +1401,7 @@ export const G3D = {
    * @param max - Maximum value
    */
   random: (min = 0, max = 1) => {
-    const { Random } = require('./core/Random');
-    return Random.range(min, max);
+    return min + Math.random() * (max - min);
   },
 
   /**

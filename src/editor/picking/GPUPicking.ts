@@ -3,12 +3,22 @@
  * @module editor/picking/GPUPicking
  */
 
-import { Scene } from '../../scene/Scene';
-import { Entity } from '../../ecs/Entity';
-import { Camera } from '../../components/Camera';
+import { Scene, Entity } from '../../world/Scene';
+import { Camera } from '../../rendering/camera/Camera';
 import { Vector3 } from '../../math/Vector3';
 import { Color } from '../../math/Color';
-import { PickResult } from './PickingSystem';
+
+/**
+ * GPU picking result interface
+ */
+interface PickResult {
+  /** Picked entity */
+  entity: Entity;
+  /** Hit position in world space */
+  position: Vector3;
+  /** Distance from camera */
+  distance: number;
+}
 
 /**
  * GPU-based picking using unique color rendering.
@@ -81,8 +91,8 @@ export class GPUPicking {
     this.entityIdMap.clear();
     this.nextId = 1;
 
-    const entities = this.scene.getEntities();
-    entities.forEach(entity => {
+    const entities = this.scene.getAllEntities();
+    entities.forEach((entity: Entity) => {
       this.entityIdMap.set(this.nextId, entity);
       (entity as any).__pickingId = this.nextId;
       this.nextId++;
@@ -215,7 +225,7 @@ export class GPUPicking {
    */
   public update(deltaTime: number): void {
     // Check if entities have changed
-    const entities = this.scene.getEntities();
+    const entities = this.scene.getAllEntities();
     if (entities.length !== this.entityIdMap.size) {
       this.registerEntities();
     }

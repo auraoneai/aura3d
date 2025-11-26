@@ -253,19 +253,21 @@ export class Serializer {
       const refId = context.refCounter++;
 
       switch (data.$type) {
-        case 'Date':
+        case 'Date': {
           const date = new Date(data.value);
-          context.refs.set(refId, date);
+          (context.refs as any).set(refId, date);
           return date;
+        }
 
-        case 'RegExp':
+        case 'RegExp': {
           const regexp = new RegExp(data.source, data.flags);
-          context.refs.set(refId, regexp);
+          (context.refs as any).set(refId, regexp);
           return regexp;
+        }
 
-        case 'Map':
+        case 'Map': {
           const map = new Map();
-          context.refs.set(refId, map);
+          (context.refs as any).set(refId, map);
           for (const [k, v] of data.entries) {
             map.set(
               this.deserializeValue(k, context),
@@ -273,19 +275,22 @@ export class Serializer {
             );
           }
           return map;
+        }
 
-        case 'Set':
+        case 'Set': {
           const set = new Set();
-          context.refs.set(refId, set);
+          (context.refs as any).set(refId, set);
           for (const v of data.values) {
             set.add(this.deserializeValue(v, context));
           }
           return set;
+        }
 
-        case 'ArrayBuffer':
+        case 'ArrayBuffer': {
           const buffer = new Uint8Array(data.data).buffer;
-          context.refs.set(refId, buffer);
+          (context.refs as any).set(refId, buffer);
           return buffer;
+        }
 
         case 'Uint8Array':
         case 'Uint16Array':
@@ -294,27 +299,28 @@ export class Serializer {
         case 'Int16Array':
         case 'Int32Array':
         case 'Float32Array':
-        case 'Float64Array':
+        case 'Float64Array': {
           const TypedArrayConstructor = (globalThis as any)[data.$type];
           if (TypedArrayConstructor) {
             const typedArray = new TypedArrayConstructor(data.data);
-            context.refs.set(refId, typedArray);
+            (context.refs as any).set(refId, typedArray);
             return typedArray;
           }
           return null;
+        }
 
-        default:
+        default: {
           const serializer = this.typeSerializers.get(data.$type);
           if (serializer) {
             const instance = serializer.deserialize(data.data);
-            context.refs.set(refId, instance);
+            (context.refs as any).set(refId, instance);
             return instance;
           }
 
           const constructor = this.typeConstructors.get(data.$type);
           if (constructor) {
             const instance = new constructor();
-            context.refs.set(refId, instance);
+            (context.refs as any).set(refId, instance);
 
             if (typeof instance.deserialize === 'function') {
               instance.deserialize(data.data);
@@ -327,6 +333,7 @@ export class Serializer {
 
           logger.warn(`Unknown type: ${data.$type}`);
           return data.data;
+        }
       }
     }
 

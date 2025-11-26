@@ -329,8 +329,8 @@ export class StreamlineIntegrator {
         // Create orthogonal basis
         const n = normal.normalize();
         const up = Math.abs(n.y) < 0.999 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0);
-        const u = Vector3.cross(up, n).normalize();
-        const v = Vector3.cross(n, u).normalize();
+        const u = up.cross(n).normalize();
+        const v = n.cross(u).normalize();
 
         for (let j = 0; j < countV; j++) {
             for (let i = 0; i < countU; i++) {

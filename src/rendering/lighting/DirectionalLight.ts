@@ -407,7 +407,7 @@ export class DirectionalLight extends Light {
     const farHeight = 2 * tanHalfFov * far;
     const farWidth = farHeight * aspect;
 
-    const invView = viewMatrix.invert();
+    const invView = viewMatrix.invert()!;
 
     const corners: Vector3[] = [
       // Near plane

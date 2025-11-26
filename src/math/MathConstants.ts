@@ -254,3 +254,11 @@ export function toRadians(degrees: number): number {
 export function toDegrees(radians: number): number {
   return radians * MathConstants.RAD_TO_DEG;
 }
+
+// Standalone exports for convenience
+export const EPSILON = MathConstants.EPSILON;
+export const TWO_PI = MathConstants.TWO_PI;
+export const HALF_PI = MathConstants.HALF_PI;
+export const PI = MathConstants.PI;
+export const DEG_TO_RAD = MathConstants.DEG_TO_RAD;
+export const RAD_TO_DEG = MathConstants.RAD_TO_DEG;

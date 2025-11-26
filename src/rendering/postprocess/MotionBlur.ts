@@ -415,7 +415,10 @@ export class MotionBlur extends PostProcessEffect {
     this.blurShader.setUniform('uTexture', input.getColorTexture());
     // this.blurShader.setUniform('uVelocityTexture', velocityBuffer);
     this.blurShader.setUniform('uNeighborMaxTexture', this.neighborMaxTexture.getColorTexture());
-    this.blurShader.setUniform('uDepthTexture', input.getDepthTexture());
+    const depthTexture = input.getDepthTexture();
+    if (depthTexture) {
+      this.blurShader.setUniform('uDepthTexture', depthTexture);
+    }
     this.blurShader.setUniform('uIntensity', this.intensity);
     this.blurShader.setUniform('uMaxBlurDistance', maxBlurDistance);
     this.blurShader.setUniform('uSampleCount', this.sampleCount);
@@ -443,7 +446,7 @@ export class MotionBlur extends PostProcessEffect {
   /**
    * Called when quality changes.
    */
-  override protected onQualityChanged(): void {
+  protected override onQualityChanged(): void {
     switch (this.quality) {
       case EffectQuality.Low:
         this.sampleCount = 8;

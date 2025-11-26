@@ -1,10 +1,10 @@
-import { Logger } from '../../core/Logger';
+import { Logger } from '../core/Logger';
 import { VoxelChunk } from './VoxelChunk';
 
 /**
  * Light type enumeration
  */
-export enum LightType {
+export enum VoxelLightType {
   Sunlight = 0,
   BlockLight = 1
 }
@@ -193,7 +193,7 @@ export class VoxelLighting {
     }
 
     // Propagate sunlight
-    this.propagateLight(chunk, queue, LightType.Sunlight);
+    this.propagateLight(chunk, queue, VoxelLightType.Sunlight);
   }
 
   /**
@@ -217,13 +217,13 @@ export class VoxelLighting {
     }
 
     // Propagate block light
-    this.propagateLight(chunk, queue, LightType.BlockLight);
+    this.propagateLight(chunk, queue, VoxelLightType.BlockLight);
   }
 
   /**
    * Propagates light using flood-fill algorithm
    */
-  private propagateLight(chunk: VoxelChunk, queue: LightNode[], lightType: LightType): void {
+  private propagateLight(chunk: VoxelChunk, queue: LightNode[], lightType: VoxelLightType): void {
     const size = chunk.getSize();
     const visited = new Set<number>();
 
@@ -238,7 +238,7 @@ export class VoxelLighting {
       visited.add(index);
 
       // Set light value
-      if (lightType === LightType.Sunlight) {
+      if (lightType === VoxelLightType.Sunlight) {
         this.setSunlight(chunk, x, y, z, light);
       } else {
         this.setBlockLight(chunk, x, y, z, light);
@@ -268,12 +268,12 @@ export class VoxelLighting {
           continue;
         }
 
-        const currentLight = lightType === LightType.Sunlight
+        const currentLight = lightType === VoxelLightType.Sunlight
           ? this.getSunlight(chunk, nx, ny, nz)
           : this.getBlockLight(chunk, nx, ny, nz);
 
         // Special case for sunlight going down
-        const newLight = (lightType === LightType.Sunlight && ny < y)
+        const newLight = (lightType === VoxelLightType.Sunlight && ny < y)
           ? light
           : light - 1;
 
@@ -287,12 +287,12 @@ export class VoxelLighting {
   /**
    * Removes light at a position and propagates the removal
    */
-  public removeLight(chunk: VoxelChunk, x: number, y: number, z: number, lightType: LightType): void {
+  public removeLight(chunk: VoxelChunk, x: number, y: number, z: number, lightType: VoxelLightType): void {
     const size = chunk.getSize();
     const removeQueue: LightNode[] = [];
     const addQueue: LightNode[] = [];
 
-    const initialLight = lightType === LightType.Sunlight
+    const initialLight = lightType === VoxelLightType.Sunlight
       ? this.getSunlight(chunk, x, y, z)
       : this.getBlockLight(chunk, x, y, z);
 
@@ -304,7 +304,7 @@ export class VoxelLighting {
       const { x: cx, y: cy, z: cz, light } = node;
 
       // Clear light value
-      if (lightType === LightType.Sunlight) {
+      if (lightType === VoxelLightType.Sunlight) {
         this.setSunlight(chunk, cx, cy, cz, 0);
       } else {
         this.setBlockLight(chunk, cx, cy, cz, 0);
@@ -329,7 +329,7 @@ export class VoxelLighting {
           continue;
         }
 
-        const neighborLight = lightType === LightType.Sunlight
+        const neighborLight = lightType === VoxelLightType.Sunlight
           ? this.getSunlight(chunk, nx, ny, nz)
           : this.getBlockLight(chunk, nx, ny, nz);
 
@@ -350,8 +350,8 @@ export class VoxelLighting {
    */
   public updateVoxel(chunk: VoxelChunk, x: number, y: number, z: number): void {
     // Remove existing light
-    this.removeLight(chunk, x, y, z, LightType.Sunlight);
-    this.removeLight(chunk, x, y, z, LightType.BlockLight);
+    this.removeLight(chunk, x, y, z, VoxelLightType.Sunlight);
+    this.removeLight(chunk, x, y, z, VoxelLightType.BlockLight);
 
     // Re-propagate from neighbors
     const size = chunk.getSize();
@@ -379,13 +379,13 @@ export class VoxelLighting {
       }
     }
 
-    this.propagateLight(chunk, queue, LightType.Sunlight);
+    this.propagateLight(chunk, queue, VoxelLightType.Sunlight);
 
     // Check if new voxel is emissive
     const voxel = chunk.getVoxel(x, y, z);
     if (voxel && voxel.emissive > 0) {
       const lightValue = Math.floor(voxel.emissive * this.maxBlockLight);
-      this.propagateLight(chunk, [{ x, y, z, light: lightValue }], LightType.BlockLight);
+      this.propagateLight(chunk, [{ x, y, z, light: lightValue }], VoxelLightType.BlockLight);
     }
   }
 

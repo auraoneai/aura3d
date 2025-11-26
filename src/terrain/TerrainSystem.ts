@@ -118,6 +118,8 @@ export interface CameraComponent extends IComponent {
  * ```
  */
 export class TerrainSystem extends System {
+  /** Query for entities with TerrainComponent */
+  readonly query = [TerrainComponent];
   /** Active camera for frustum culling */
   private _activeCamera: Camera | null;
   /** Cached frustum */
@@ -143,14 +145,6 @@ export class TerrainSystem extends System {
     };
   }
 
-  /**
-   * Gets the query for entities this system processes.
-   * @returns Query for TerrainComponent
-   */
-  override getQuery(): any {
-    // Return query descriptor for entities with TerrainComponent
-    return [TerrainComponent];
-  }
 
   /**
    * Sets the active camera for frustum culling.
@@ -208,7 +202,7 @@ export class TerrainSystem extends System {
     this._stats.visibleChunks = 0;
 
     // Process all terrain entities
-    const query = this.world?.getQuery(this.getQuery());
+    const query = this.world?.getQuery(this.query);
     if (!query) return;
 
     query.forEach((entity: Entity, components: IComponent[]) => {
@@ -240,17 +234,19 @@ export class TerrainSystem extends System {
     if (!this.world) return;
 
     // Query for camera components
-    const cameraQuery = this.world.getQuery([CameraComponent]);
-    if (!cameraQuery) return;
+    // Note: This is a placeholder - camera query would need proper component type
+    // For now, we skip camera auto-detection
+    // const cameraQuery = this.world.getQuery([CameraComponent]);
+    // if (!cameraQuery) return;
 
     // Find the first active camera
-    cameraQuery.each((entity: Entity, components: IComponent[]) => {
-      const cameraComponent = components[0] as CameraComponent;
-      if (cameraComponent?.active && cameraComponent.camera) {
-        this._activeCamera = cameraComponent.camera;
-        return; // Found active camera, stop iteration
-      }
-    });
+    // cameraQuery.forEach((entity: Entity, components: IComponent[]) => {
+    //   const cameraComponent = components[0] as CameraComponent;
+    //   if (cameraComponent?.active && cameraComponent.camera) {
+    //     this._activeCamera = cameraComponent.camera;
+    //     return; // Found active camera, stop iteration
+    //   }
+    // });
   }
 
   /**
@@ -275,7 +271,7 @@ export class TerrainSystem extends System {
   render(renderContext?: any): void {
     if (!this._activeCamera) return;
 
-    const query = this.world?.getQuery(this.getQuery());
+    const query = this.world?.getQuery(this.query);
     if (!query) return;
 
     query.forEach((entity: Entity, components: IComponent[]) => {
@@ -300,7 +296,7 @@ export class TerrainSystem extends System {
 
       // Render vegetation if enabled
       const vegetation = terrain.vegetation;
-      if (vegetation) {
+      if (vegetation && this._activeCamera) {
         const cameraPos = this._activeCamera.transform.position;
 
         for (let i = 0; i < vegetation.layers.length; i++) {
@@ -322,7 +318,7 @@ export class TerrainSystem extends System {
    */
   getTerrains(): Terrain[] {
     const terrains: Terrain[] = [];
-    const query = this.world?.getQuery(this.getQuery());
+    const query = this.world?.getQuery(this.query);
 
     if (!query) return terrains;
 
@@ -342,7 +338,7 @@ export class TerrainSystem extends System {
    * @returns Terrain at position or null
    */
   findTerrainAt(x: number, z: number): Terrain | null {
-    const query = this.world?.getQuery(this.getQuery());
+    const query = this.world?.getQuery(this.query);
     if (!query) return null;
 
     let found: Terrain | null = null;

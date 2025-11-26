@@ -189,7 +189,7 @@ export class ProceduralAnimationSystem {
       anim.time += deltaTime;
 
       const boneIndex = skeleton.getBoneIndex(anim.config.boneName);
-      if (boneIndex === -1) continue;
+      if (boneIndex === -1) return;
 
       const bone = skeleton.getBoneByIndex(boneIndex)!;
 

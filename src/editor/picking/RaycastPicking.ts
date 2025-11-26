@@ -3,13 +3,12 @@
  * @module editor/picking/RaycastPicking
  */
 
-import { Scene } from '../../scene/Scene';
+import { World } from '../../ecs/World';
 import { Entity } from '../../ecs/Entity';
-import { Camera } from '../../components/Camera';
-import { Transform } from '../../components/Transform';
+import { TransformComponent } from '../../ecs/components/TransformComponent';
 import { Vector3 } from '../../math/Vector3';
 import { Ray } from '../../math/Ray';
-import { Bounds } from '../../math/Bounds';
+import { Box3 as Bounds } from '../../math/Box3';
 import { PickResult } from './PickingSystem';
 
 /**
@@ -37,24 +36,27 @@ interface BVHNode {
  * ```
  */
 export class RaycastPicking {
-  private scene: Scene;
+  private world: World;
   private bvh: BVHNode | null = null;
   private needsRebuild: boolean = true;
 
   /**
    * Creates a raycast picking system
-   * @param scene - Scene to pick from
+   * @param world - World to pick from
    */
-  constructor(scene: Scene) {
-    this.scene = scene;
+  constructor(world: World) {
+    this.world = world;
   }
 
   /**
    * Builds a BVH acceleration structure
    */
   private buildBVH(): void {
-    const entities = this.scene.getEntities().filter(e => {
-      return e.hasComponent(Transform) && e.enabled;
+    // Get all entities with TransformComponent
+    const entities: Entity[] = [];
+    const query = this.world.createQuery({ all: [TransformComponent] });
+    query.forEach((entity) => {
+      entities.push(entity);
     });
 
     this.bvh = this.buildBVHRecursive(entities, 0);
@@ -80,8 +82,8 @@ export class RaycastPicking {
     // Split entities
     const axis = depth % 3; // Cycle through X, Y, Z
     const sorted = [...entities].sort((a, b) => {
-      const posA = a.getComponent(Transform)?.position;
-      const posB = b.getComponent(Transform)?.position;
+      const posA = this.world.getComponent(a, TransformComponent)?.position;
+      const posB = this.world.getComponent(b, TransformComponent)?.position;
       if (!posA || !posB) return 0;
 
       const valueA = axis === 0 ? posA.x : (axis === 1 ? posA.y : posA.z);
@@ -108,7 +110,7 @@ export class RaycastPicking {
     const points: Vector3[] = [];
 
     entities.forEach(entity => {
-      const transform = entity.getComponent(Transform);
+      const transform = this.world.getComponent(entity, TransformComponent);
       if (transform) {
         points.push(transform.position.clone());
         // In a full implementation, would use actual mesh bounds
@@ -116,21 +118,24 @@ export class RaycastPicking {
     });
 
     if (points.length === 0) {
-      return new Bounds(new Vector3(), new Vector3());
+      return new Bounds();
     }
 
-    return Bounds.fromPoints(points);
+    const bounds = new Bounds();
+    bounds.setFromPoints(points);
+    return bounds;
   }
 
   /**
    * Picks an entity at screen coordinates
    * @param x - Screen X coordinate
    * @param y - Screen Y coordinate
-   * @param camera - Camera to pick with
+   * @param cameraPosition - Camera position
+   * @param cameraRotation - Camera rotation quaternion
    * @returns Pick result or null
    */
-  public pick(x: number, y: number, camera: Camera): PickResult | null {
-    const ray = this.screenToRay(x, y, camera);
+  public pick(x: number, y: number, cameraPosition: Vector3, cameraRotation?: any): PickResult | null {
+    const ray = this.screenToRay(x, y, cameraPosition, cameraRotation);
     return this.pickWithRay(ray);
   }
 
@@ -159,11 +164,12 @@ export class RaycastPicking {
    * Picks all entities along a ray
    * @param x - Screen X coordinate
    * @param y - Screen Y coordinate
-   * @param camera - Camera to pick with
+   * @param cameraPosition - Camera position
+   * @param cameraRotation - Camera rotation quaternion
    * @returns Array of all hits sorted by distance
    */
-  public pickAll(x: number, y: number, camera: Camera): PickResult[] {
-    const ray = this.screenToRay(x, y, camera);
+  public pickAll(x: number, y: number, cameraPosition: Vector3, cameraRotation?: any): PickResult[] {
+    const ray = this.screenToRay(x, y, cameraPosition, cameraRotation);
 
     if (this.needsRebuild) {
       this.buildBVH();
@@ -254,7 +260,7 @@ export class RaycastPicking {
    * @returns Pick result or null
    */
   private intersectEntity(ray: Ray, entity: Entity): PickResult | null {
-    const transform = entity.getComponent(Transform);
+    const transform = this.world.getComponent(entity, TransformComponent);
     if (!transform) return null;
 
     // Simple sphere intersection for now
@@ -290,10 +296,11 @@ export class RaycastPicking {
    * Creates a ray from screen coordinates
    * @param x - Screen X coordinate
    * @param y - Screen Y coordinate
-   * @param camera - Camera to use
+   * @param cameraPosition - Camera position
+   * @param cameraRotation - Camera rotation quaternion
    * @returns Ray in world space
    */
-  private screenToRay(x: number, y: number, camera: Camera): Ray {
+  private screenToRay(x: number, y: number, cameraPosition: Vector3, cameraRotation?: any): Ray {
     const viewportWidth = 800; // Would come from actual viewport
     const viewportHeight = 600;
 
@@ -302,11 +309,13 @@ export class RaycastPicking {
     const ndcY = -(y / viewportHeight) * 2 + 1;
 
     // Create ray from camera
-    const origin = camera.transform.position.clone();
+    const origin = cameraPosition.clone();
     const direction = new Vector3(ndcX, ndcY, -1);
 
-    // Transform by camera rotation
-    direction.applyQuaternion(camera.transform.rotation);
+    // Transform by camera rotation if provided
+    if (cameraRotation && typeof direction.applyQuaternion === 'function') {
+      direction.applyQuaternion(cameraRotation);
+    }
     direction.normalize();
 
     return new Ray(origin, direction);

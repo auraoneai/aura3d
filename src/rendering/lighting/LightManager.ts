@@ -9,6 +9,8 @@
 import { Vector3 } from '../../math/Vector3';
 import { Matrix4 } from '../../math/Matrix4';
 import { Frustum } from '../../math/Frustum';
+import { Box3 } from '../../math/Box3';
+import { Sphere } from '../../math/Sphere';
 import { Logger } from '../../core/Logger';
 import { Light, LightType } from './Light';
 import { DirectionalLight } from './DirectionalLight';
@@ -415,7 +417,7 @@ export class LightManager {
     }
 
     const viewProj = camera.projectionMatrix.multiply(camera.viewMatrix);
-    this.cachedFrustum.setFromMatrix(viewProj);
+    this.cachedFrustum.setFromProjectionMatrix(viewProj);
 
     return this.cachedFrustum;
   }

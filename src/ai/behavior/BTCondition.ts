@@ -248,7 +248,7 @@ export class BTIsTrue extends BTNode {
     this.tickCount++;
     this.lastTickTime = Date.now();
 
-    const value = context.blackboard.get(this.key, false);
+    const value = context.blackboard.get(this.key);
     this.status = value === true ? NodeStatus.SUCCESS : NodeStatus.FAILURE;
     return this.status;
   }
@@ -286,7 +286,7 @@ export class BTIsFalse extends BTNode {
     this.tickCount++;
     this.lastTickTime = Date.now();
 
-    const value = context.blackboard.get(this.key, true);
+    const value = context.blackboard.get(this.key);
     this.status = value === false ? NodeStatus.SUCCESS : NodeStatus.FAILURE;
     return this.status;
   }

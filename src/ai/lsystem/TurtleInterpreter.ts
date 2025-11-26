@@ -1,5 +1,6 @@
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
+import { Matrix4 } from '../../math/Matrix4';
 import { Logger } from '../../core/Logger';
 
 /**
@@ -280,8 +281,20 @@ export class TurtleInterpreter {
     const right = up.clone().cross(forward).normalize();
     const realUp = forward.clone().cross(right).normalize();
 
+    // Build rotation matrix from basis vectors
+    const matrix = new Matrix4();
+    matrix.elements[0] = right.x;
+    matrix.elements[1] = right.y;
+    matrix.elements[2] = right.z;
+    matrix.elements[4] = realUp.x;
+    matrix.elements[5] = realUp.y;
+    matrix.elements[6] = realUp.z;
+    matrix.elements[8] = forward.x;
+    matrix.elements[9] = forward.y;
+    matrix.elements[10] = forward.z;
+
     // Convert to quaternion
-    return Quaternion.fromRotationMatrix(right, realUp, forward);
+    return Quaternion.fromRotationMatrix(matrix);
   }
 
   /**

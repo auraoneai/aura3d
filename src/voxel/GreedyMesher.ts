@@ -1,4 +1,4 @@
-import { Logger } from '../../core/Logger';
+import { Logger } from '../core/Logger';
 import { VoxelChunk, ChunkMeshData } from './VoxelChunk';
 import { VoxelMaterial } from './VoxelData';
 

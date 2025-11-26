@@ -696,7 +696,7 @@ class ParticleEmitter {
         p.size = this.evaluateCurve(this.config.sizeOverLife, t) * this.config.size;
 
         // Update color over life
-        p.color = Color.lerp(this.config.startColor, this.config.endColor, t);
+        p.color = this.config.startColor.lerp(this.config.endColor, t);
 
         if (p.life > 0) {
           this.aliveCount++;

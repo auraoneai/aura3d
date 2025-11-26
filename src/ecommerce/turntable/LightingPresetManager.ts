@@ -23,7 +23,7 @@
  */
 
 import { Vector3 } from '../../math/Vector3';
-import { Color } from '../../graphics/Color';
+import { Color } from '../../math/Color';
 
 export interface LightConfig {
   color: [number, number, number];

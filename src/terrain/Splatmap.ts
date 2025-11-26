@@ -449,7 +449,7 @@ export class Splatmap {
           width: img.width,
           height: img.height,
           format: SplatmapFormat.RGBA8,
-          data: imageData.data,
+          data: new Uint8Array(imageData.data),
           layerCount,
         });
 

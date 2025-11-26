@@ -380,12 +380,12 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * @example
    * ```typescript
    * const caps = device.getCapabilities();
-   * if (caps.supportsCompute) {
+   * if (caps.features.has(GPUFeature.Compute)) {
    *   console.log('Compute shaders available');
    * }
    * ```
    */
-  abstract getCapabilities(): DeviceCapabilities;
+  abstract override getCapabilities(): GPUCapabilities;
 
   /**
    * Creates a GPU buffer.
@@ -402,7 +402,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * });
    * ```
    */
-  abstract createBuffer(desc: BufferDesc): any;
+  abstract override createBuffer(desc: BufferDesc): any;
 
   /**
    * Creates a GPU texture.
@@ -421,7 +421,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * });
    * ```
    */
-  abstract createTexture(desc: TextureDesc): any;
+  abstract override createTexture(desc: TextureDesc): any;
 
   /**
    * Creates a GPU sampler.
@@ -442,7 +442,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * });
    * ```
    */
-  abstract createSampler(desc: SamplerDesc): any;
+  abstract override createSampler(desc: SamplerDesc): any;
 
   /**
    * Creates a shader module.
@@ -523,7 +523,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * device.submit([commandBuffer]);
    * ```
    */
-  abstract createCommandEncoder(label?: string): any;
+  abstract override createCommandEncoder(label?: string): any;
 
   /**
    * Submits command buffers to the GPU for execution.
@@ -535,7 +535,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * device.submit([commandBuffer1, commandBuffer2]);
    * ```
    */
-  abstract submit(commandBuffers: any[]): void;
+  abstract override submit(commandBuffers: any[]): void;
 
   /**
    * Waits for all pending GPU operations to complete.
@@ -579,7 +579,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * }
    * ```
    */
-  abstract getCurrentTexture(): any | null;
+  abstract override getCurrentTexture(): any | null;
 
   /**
    * Presents the current frame to the screen.
@@ -589,7 +589,7 @@ export abstract class RenderDevice extends BaseGPUDevice {
    * device.present();
    * ```
    */
-  abstract present(): void;
+  abstract override present(): void;
 
   /**
    * Writes data to a GPU buffer.
@@ -622,7 +622,9 @@ export abstract class RenderDevice extends BaseGPUDevice {
 
     // WebGPU implementation
     if (this.gpuDevice && buffer.gpuBuffer) {
-      this.gpuDevice.queue.writeBuffer(buffer.gpuBuffer, offset, data);
+      // Cast to BufferSource which is compatible with GPUAllowSharedBufferSource
+      const bufferSource = data as BufferSource;
+      this.gpuDevice.queue.writeBuffer(buffer.gpuBuffer, offset, bufferSource);
       return;
     }
 
@@ -664,9 +666,11 @@ export abstract class RenderDevice extends BaseGPUDevice {
 
     // WebGPU implementation
     if (this.gpuDevice && texture.gpuTexture) {
+      // Cast to BufferSource which is compatible with GPUAllowSharedBufferSource
+      const bufferSource = data as BufferSource;
       this.gpuDevice.queue.writeTexture(
         { texture: texture.gpuTexture },
-        data,
+        bufferSource,
         { bytesPerRow: width * 4, rowsPerImage: height },
         { width, height }
       );

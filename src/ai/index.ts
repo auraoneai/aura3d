@@ -164,7 +164,7 @@ export {
 
 export type {
   StateTransition,
-  TransitionCondition,
+  AIAITransitionCondition,
 } from './StateMachine';
 
 // Perception
@@ -198,13 +198,40 @@ export * from './navigation';
 export * from './behavior';
 
 // Phase D: Finite State Machines
-export * from './fsm';
+// Note: fsm exports a type ComparisonOperator that conflicts with behavior's enum ComparisonOperator
+// Users should import directly from './ai/fsm' if they need the FSM version
+export {
+  StateMachine as FSMStateMachine,
+  State as FSMState,
+  Transition as FSMTransition,
+  StateCondition,
+  HierarchicalFSM,
+} from './fsm';
+export type { LogicalOperator } from './fsm';
 
 // Phase D: Steering Behaviors
-export * from './steering';
+// Note: Some exports conflict with earlier modules, so they're renamed with 'Steering' prefix
+export {
+  SteeringBehavior as SteeringBehaviorBase,
+  Arrive,
+  Flee,
+  Pursuit,
+  Evade,
+  Wander,
+  Seek,
+  Flock,
+  Formation as SteeringFormation,
+  FormationType as SteeringFormationType,
+  ObstacleAvoidance as SteeringObstacleAvoidance,
+  WallAvoidance,
+  SteeringPipeline,
+  BlendMode,
+  Deceleration,
+} from './steering';
+export type { Neighbor, FormationSlot, Obstacle, Wall } from './steering';
 
 // Phase D: Perception System
-export * from './perception';
+export * from './Perception';
 
 // Phase D: Planning (GOAP, HTN, UtilityAI)
 export * from './planning';

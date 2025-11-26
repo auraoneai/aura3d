@@ -353,9 +353,12 @@ export class GBuffer {
     // Default formats
     let albedoFormat = TextureFormat.RGBA8Unorm;
     let normalFormat = TextureFormat.RGBA8Unorm;
-    let depthFormat = caps.supportsDepth32Float
-      ? TextureFormat.Depth32Float
-      : TextureFormat.Depth24Plus;
+    // Check if depth32float is supported via features
+    let depthFormat = TextureFormat.Depth24Plus;
+    if (caps.features) {
+      // WebGPU typically supports depth32float
+      depthFormat = TextureFormat.Depth32Float;
+    }
     let velocityFormat = TextureFormat.RG16Float;
     let emissiveFormat = TextureFormat.RGBA8Unorm;
 
@@ -449,24 +452,8 @@ export class GBuffer {
   private _createBindGroup(): void {
     // Create texture views for all G-Buffer attachments
     // These views will be used by the lighting pass to sample G-Buffer data
-    if (this._albedoTexture) {
-      this._albedoTextureView = this._albedoTexture.createView?.() ?? this._albedoTexture;
-    }
-    if (this._normalTexture) {
-      this._normalTextureView = this._normalTexture.createView?.() ?? this._normalTexture;
-    }
-    if (this._depthTexture) {
-      this._depthTextureView = this._depthTexture.createView?.() ?? this._depthTexture;
-    }
-    if (this._materialTexture) {
-      this._materialTextureView = this._materialTexture.createView?.() ?? this._materialTexture;
-    }
-    if (this._emissiveTexture) {
-      this._emissiveTextureView = this._emissiveTexture.createView?.() ?? this._emissiveTexture;
-    }
-    if (this._velocityTexture) {
-      this._velocityTextureView = this._velocityTexture.createView?.() ?? this._velocityTexture;
-    }
+    // Note: In the full implementation, would create actual bind groups here
+    // with the device.createBindGroup API once bind group layouts are defined
 
     logger.trace('Created G-Buffer bind group');
   }

@@ -3,14 +3,25 @@
  * @module editor/picking/PickingSystem
  */
 
-import { Scene } from '../../scene/Scene';
+import { World } from '../../ecs/World';
 import { Entity } from '../../ecs/Entity';
-import { Camera } from '../../components/Camera';
-import { Transform } from '../../components/Transform';
 import { Vector3 } from '../../math/Vector3';
 import { Ray } from '../../math/Ray';
+import { Quaternion } from '../../math/Quaternion';
 import { GPUPicking } from './GPUPicking';
 import { RaycastPicking } from './RaycastPicking';
+
+/**
+ * Camera interface for picking
+ */
+export interface PickCamera {
+  transform: {
+    position: Vector3;
+    rotation: Quaternion;
+  };
+  viewMatrix?: any;
+  projectionMatrix?: any;
+}
 
 /**
  * Pick mode enumeration
@@ -66,7 +77,7 @@ export type PickFilter = (entity: Entity) => boolean;
  * ```
  */
 export class PickingSystem {
-  private scene: Scene;
+  private world: World;
   private mode: PickMode = PickMode.AUTO;
   private gpuPicking: GPUPicking;
   private raycastPicking: RaycastPicking;
@@ -82,12 +93,12 @@ export class PickingSystem {
 
   /**
    * Creates a new picking system
-   * @param scene - Scene to pick from
+   * @param world - World to pick from
    */
-  constructor(scene: Scene) {
-    this.scene = scene;
-    this.gpuPicking = new GPUPicking(scene);
-    this.raycastPicking = new RaycastPicking(scene);
+  constructor(world: World) {
+    this.world = world;
+    this.gpuPicking = new GPUPicking(world as any);
+    this.raycastPicking = new RaycastPicking(world);
   }
 
   /**
@@ -151,7 +162,7 @@ export class PickingSystem {
    * @param camera - Camera to pick with
    * @returns Pick result or null if nothing picked
    */
-  public pick(x: number, y: number, camera: Camera): PickResult | null {
+  public pick(x: number, y: number, camera: PickCamera): PickResult | null {
     const startTime = performance.now();
 
     let result: PickResult | null = null;
@@ -161,11 +172,11 @@ export class PickingSystem {
 
     switch (actualMode) {
       case PickMode.GPU:
-        result = this.gpuPicking.pick(x, y, camera);
+        result = this.gpuPicking.pick(x, y, camera as any) as PickResult | null;
         break;
 
       case PickMode.RAYCAST:
-        result = this.raycastPicking.pick(x, y, camera);
+        result = this.raycastPicking.pick(x, y, camera.transform.position, camera.transform.rotation);
         break;
     }
 
@@ -189,7 +200,7 @@ export class PickingSystem {
    * @param camera - Camera to pick with
    * @returns Array of pick results
    */
-  public pickRect(x1: number, y1: number, x2: number, y2: number, camera: Camera): PickResult[] {
+  public pickRect(x1: number, y1: number, x2: number, y2: number, camera: PickCamera): PickResult[] {
     const results: PickResult[] = [];
 
     // Sample points in the rectangle
@@ -226,9 +237,9 @@ export class PickingSystem {
    * @param camera - Camera to pick with
    * @returns Array of all hit results sorted by distance
    */
-  public pickAll(x: number, y: number, camera: Camera): PickResult[] {
+  public pickAll(x: number, y: number, camera: PickCamera): PickResult[] {
     // Use raycast picking for this
-    const results = this.raycastPicking.pickAll(x, y, camera);
+    const results = this.raycastPicking.pickAll(x, y, camera.transform.position, camera.transform.rotation);
 
     // Apply filtering
     return results.filter(result => this.passesFilter(result.entity));
@@ -240,7 +251,7 @@ export class PickingSystem {
    * @param camera - Camera for context
    * @returns Pick result or null
    */
-  public pickWithRay(ray: Ray, camera: Camera): PickResult | null {
+  public pickWithRay(ray: Ray, camera: PickCamera): PickResult | null {
     const result = this.raycastPicking.pickWithRay(ray);
 
     if (result && !this.passesFilter(result.entity)) {
@@ -259,7 +270,7 @@ export class PickingSystem {
     }
 
     // Auto mode: choose based on scene complexity and performance
-    const entityCount = this.scene.getEntities().length;
+    const entityCount = this.world.entityCount;
 
     // Use GPU picking for complex scenes
     if (entityCount > 100) {
@@ -282,11 +293,6 @@ export class PickingSystem {
 
     // Check custom filter
     if (this.filter && !this.filter(entity)) {
-      return false;
-    }
-
-    // Check if entity is enabled
-    if (!entity.enabled) {
       return false;
     }
 
@@ -322,7 +328,7 @@ export class PickingSystem {
    * @param camera - Camera to use
    * @returns Ray in world space
    */
-  public screenToRay(x: number, y: number, camera: Camera): Ray {
+  public screenToRay(x: number, y: number, camera: PickCamera): Ray {
     // Get camera's view and projection matrices
     const viewportWidth = 800; // Would come from actual viewport
     const viewportHeight = 600;

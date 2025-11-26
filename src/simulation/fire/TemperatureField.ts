@@ -257,7 +257,8 @@ export class TemperatureField {
             (k + 0.5) * this.cellSize
           );
 
-          const distSq = cellCenter.sub(position).lengthSq();
+          const diff = cellCenter.sub(position);
+          const distSq = diff.lengthSquared();
 
           if (distSq < radiusSq) {
             const falloff = 1.0 - Math.sqrt(distSq) / radius;

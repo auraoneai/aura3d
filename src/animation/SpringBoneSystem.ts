@@ -357,7 +357,8 @@ export class SpringBoneSystem {
       const currentDir = currentPositions[i + 1].sub(currentPositions[i]).normalize();
 
       const worldMat = skeleton['worldMatrices'][boneIndex];
-      const worldRot = worldMat.getRotation();
+      const worldRotData = worldMat.getRotation();
+      const worldRot = new Quaternion(worldRotData.x, worldRotData.y, worldRotData.z, worldRotData.w);
       const localUp = new Vector3(0, 1, 0);
       const qv = new Quaternion(localUp.x, localUp.y, localUp.z, 0);
       const qResult = worldRot.multiply(qv).multiply(worldRot.conjugate());
@@ -366,9 +367,10 @@ export class SpringBoneSystem {
       if (currentDir.lengthSquared() > 0.0001 && boneWorldDir.lengthSquared() > 0.0001) {
         const rotation = Quaternion.fromUnitVectors(boneWorldDir, currentDir);
 
-        const parentRot = bone.parentIndex >= 0
+        const parentRotData = bone.parentIndex >= 0
           ? skeleton['worldMatrices'][bone.parentIndex].getRotation()
-          : Quaternion.identity();
+          : { x: 0, y: 0, z: 0, w: 1 };
+        const parentRot = new Quaternion(parentRotData.x, parentRotData.y, parentRotData.z, parentRotData.w);
 
         const newWorldRot = rotation.multiply(worldRot);
         const newLocalRot = parentRot.invert().multiply(newWorldRot);

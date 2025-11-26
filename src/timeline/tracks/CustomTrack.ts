@@ -62,7 +62,7 @@ export class CustomClip<T = any> extends Clip<T> {
     /**
      * Extended JSON serialization
      */
-    public toJSON(): any {
+    public override toJSON(): any {
         const json = super.toJSON();
         return {
             ...json,
@@ -92,7 +92,7 @@ export class CustomTrack<TClip extends CustomClip = CustomClip> extends Track<TC
     public customType: string;
 
     /** Optional processing callback */
-    public processCallback: ((track: CustomTrack, time: number, deltaTime: number) => any) | null;
+    public processCallback: ((track: CustomTrack, time: number, deltaTime: number) => any) | undefined;
 
     /** Custom state */
     protected _customState: Map<string, any>;
@@ -100,7 +100,7 @@ export class CustomTrack<TClip extends CustomClip = CustomClip> extends Track<TC
     constructor(config: CustomTrackConfig = {}) {
         super(config.customType || 'custom', config);
         this.customType = config.customType || 'custom';
-        this.processCallback = config.processCallback || null;
+        this.processCallback = config.processCallback;
         this._customState = new Map();
     }
 
@@ -180,7 +180,7 @@ export class CustomTrack<TClip extends CustomClip = CustomClip> extends Track<TC
     /**
      * Override to implement custom initialization
      */
-    public initialize(): void {
+    public override initialize(): void {
         super.initialize();
         this.onInitialize();
     }
@@ -195,7 +195,7 @@ export class CustomTrack<TClip extends CustomClip = CustomClip> extends Track<TC
     /**
      * Override to implement custom disposal
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.onDispose();
         this._customState.clear();
         super.dispose();
@@ -232,7 +232,7 @@ export class CustomTrack<TClip extends CustomClip = CustomClip> extends Track<TC
     /**
      * Serialize to JSON with custom data
      */
-    public toJSON(): any {
+    public override toJSON(): any {
         const json = super.toJSON();
         return {
             ...json,
@@ -288,7 +288,7 @@ export class NumericValueTrack extends CustomTrack {
     /**
      * Process and interpolate numeric values
      */
-    public process(time: number, deltaTime: number): number | null {
+    public override process(time: number, deltaTime: number): number | null {
         const activeClips = this.getClipsAtTime(time);
 
         if (activeClips.length === 0) {
@@ -324,7 +324,7 @@ export class NumericValueTrack extends CustomTrack {
     /**
      * Clone track
      */
-    public clone(): NumericValueTrack {
+    public override clone(): NumericValueTrack {
         const track = new NumericValueTrack({
             name: this.name + '_clone',
             muted: this.muted,
@@ -334,7 +334,7 @@ export class NumericValueTrack extends CustomTrack {
         });
 
         for (const clip of this._clips) {
-            track.addClip(clip.clone());
+            track.addClip(clip.clone() as CustomClip);
         }
 
         return track;
@@ -361,7 +361,7 @@ export class ColorTrack extends CustomTrack {
     /**
      * Process and interpolate colors
      */
-    public process(time: number, deltaTime: number): Color | null {
+    public override process(time: number, deltaTime: number): Color | null {
         const activeClips = this.getClipsAtTime(time);
 
         if (activeClips.length === 0) {
@@ -414,7 +414,7 @@ export class ColorTrack extends CustomTrack {
     /**
      * Clone track
      */
-    public clone(): ColorTrack {
+    public override clone(): ColorTrack {
         const track = new ColorTrack({
             name: this.name + '_clone',
             muted: this.muted,
@@ -424,7 +424,7 @@ export class ColorTrack extends CustomTrack {
         });
 
         for (const clip of this._clips) {
-            track.addClip(clip.clone());
+            track.addClip(clip.clone() as CustomClip);
         }
 
         return track;

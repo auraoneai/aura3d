@@ -1,5 +1,5 @@
-import { Vector3 } from '../../math/Vector3';
-import { Logger } from '../../core/Logger';
+import { Vector3 } from '../math/Vector3';
+import { Logger } from '../core/Logger';
 import { VoxelChunk, ChunkState } from './VoxelChunk';
 import { VoxelMaterial } from './VoxelData';
 import { ChunkMeshBuilder } from './ChunkMeshBuilder';
@@ -297,8 +297,8 @@ export class VoxelWorld {
 
     // Load in order of distance
     loaded.sort((a, b) => {
-      const distA = a.distance(centerChunk);
-      const distB = b.distance(centerChunk);
+      const distA = a.distanceTo(centerChunk);
+      const distB = b.distanceTo(centerChunk);
       return distA - distB;
     });
 
@@ -320,7 +320,7 @@ export class VoxelWorld {
 
     for (const [_key, chunk] of this.chunks) {
       const pos = chunk.getPosition();
-      const distance = pos.distance(centerChunk);
+      const distance = pos.distanceTo(centerChunk);
 
       if (distance > this.unloadDistance) {
         toUnload.push(pos);
@@ -341,8 +341,8 @@ export class VoxelWorld {
 
     // Sort by distance
     dirtyChunks.sort((a, b) => {
-      const distA = a.getCenter().distance(this.centerPosition);
-      const distB = b.getCenter().distance(this.centerPosition);
+      const distA = a.getCenter().distanceTo(this.centerPosition);
+      const distB = b.getCenter().distanceTo(this.centerPosition);
       return distA - distB;
     });
 

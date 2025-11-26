@@ -1,0 +1,30 @@
+{
+  "name": "@g3d/example-arch-viz",
+  "version": "1.0.0",
+  "description": "G3D Architectural Visualization Example - Professional photorealistic rendering showcase",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "g3d": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
+  },
+  "keywords": [
+    "g3d",
+    "architectural-visualization",
+    "pbr",
+    "rendering",
+    "realtime",
+    "webgl",
+    "webgpu"
+  ]
+}

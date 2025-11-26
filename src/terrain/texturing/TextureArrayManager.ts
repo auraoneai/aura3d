@@ -88,7 +88,7 @@ export class TextureArrayManager {
       width: cfg.width,
       height: cfg.height,
       format: cfg.format as any,
-      mipLevelCount: cfg.generateMipmaps ? Math.floor(Math.log2(Math.max(cfg.width, cfg.height))) + 1 : 1,
+      mipLevels: cfg.generateMipmaps ? Math.floor(Math.log2(Math.max(cfg.width, cfg.height))) + 1 : 1,
     });
 
     this._arrays.set(name, textureArray);

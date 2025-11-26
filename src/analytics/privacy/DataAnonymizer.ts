@@ -106,7 +106,7 @@ export class DataAnonymizer {
    * Anonymize data object
    */
   public anonymizeData<T extends Record<string, any>>(data: T): T {
-    const anonymized = { ...data };
+    const anonymized = { ...data } as any;
 
     for (const [key, value] of Object.entries(anonymized)) {
       // Check if field should be redacted
@@ -146,7 +146,7 @@ export class DataAnonymizer {
       }
     }
 
-    return anonymized;
+    return anonymized as T;
   }
 
   /**

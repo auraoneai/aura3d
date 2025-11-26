@@ -529,7 +529,7 @@ export class CameraTrack extends Track<CameraClip> {
     /**
      * Serialize to JSON
      */
-    public toJSON(): any {
+    public override toJSON(): any {
         const json = super.toJSON();
         json.defaultFov = this.defaultFov;
         return json;

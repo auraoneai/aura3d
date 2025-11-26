@@ -245,7 +245,7 @@ export class SectionPlane implements ISectionPlane {
    * @param angle - Rotation angle in radians
    */
   public rotateAroundAxis(axis: Vector3, angle: number): this {
-    const rotation = Matrix4.createRotationAxis(axis.normalize(), angle);
+    const rotation = Matrix4.rotationAxis(axis.normalize(), angle);
     this.normal = rotation.transformVector(this.normal).normalize();
     return this;
   }
@@ -261,7 +261,7 @@ export class SectionPlane implements ISectionPlane {
     const planePoint = this.getPoint();
 
     // Rotate normal
-    const rotation = Matrix4.createRotationAxis(axis.normalize(), angle);
+    const rotation = Matrix4.rotationAxis(axis.normalize(), angle);
     this.normal = rotation.transformVector(this.normal).normalize();
 
     // Rotate plane point around given point

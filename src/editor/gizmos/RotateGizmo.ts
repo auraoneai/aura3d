@@ -313,7 +313,7 @@ export class RotateGizmo implements IGizmo {
 
             if (transform && initialRotation) {
               transform.rotation.copy(initialRotation).multiply(rotationQuat);
-              transform.markDirty();
+              // Transform is automatically marked dirty when rotation is modified
             }
           }
         });

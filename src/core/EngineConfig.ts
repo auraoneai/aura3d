@@ -418,7 +418,6 @@ export function getPresetConfig(preset: QualityPreset): Partial<EngineConfig> {
         anisotropicFiltering: 0,
         resolutionWidth: 0,
         resolutionHeight: 0,
-        backend: 'auto',
       },
       physics: {
         enabled: true,
@@ -590,13 +589,13 @@ export function mergeConfigs(
       if (override !== undefined && override !== null) {
         if (typeof override === 'object' && !Array.isArray(override) && !(override instanceof HTMLCanvasElement)) {
           // Deep merge for nested objects
-          merged[key as keyof EngineConfig] = {
+          (merged as any)[key] = {
             ...(base[key as keyof EngineConfig] as object),
             ...override,
-          } as any;
+          };
         } else {
           // Direct assignment for primitives and arrays
-          merged[key as keyof EngineConfig] = override as any;
+          (merged as any)[key] = override;
         }
       }
     }
@@ -631,7 +630,7 @@ export function detectOptimalConfig(): Partial<EngineConfig> {
   const deviceMemory = (navigator as any).deviceMemory || 4; // GB, default to 4GB
 
   // Detect hardware concurrency
-  const cores = navigator.hardwareCurrency || 4;
+  const cores = navigator.hardwareConcurrency || 4;
 
   // Detect battery status if available
   let isLowPower = false;

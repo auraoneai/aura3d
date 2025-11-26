@@ -9,7 +9,7 @@ export { FieldData } from './FieldData';
 export type { ScalarFieldData, VectorFieldData } from './FieldData';
 export { FieldManager } from './FieldManager';
 export type { FieldType, FieldEntry, FieldManagerOptions, ProgressCallback } from './FieldManager';
-export { ColorMap, MarchingCubesTables } from './ColorMap';
+export { ColorMap } from './ColorMap';
 export type { RGB, RGBA, ColorStop } from './ColorMap';
 export {
     ScalarFieldRenderer

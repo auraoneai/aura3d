@@ -14,7 +14,7 @@ import {
 } from './Material';
 import type { RenderDevice } from '../rendering/RenderDevice';
 import type { RenderContext } from '../rendering/RenderContext';
-import type { ShaderProgram } from '../shaders/ShaderLibrary';
+import { ShaderProgram } from './Material';
 import { Vector2 } from '../math/Vector2';
 import { Color } from '../math/Color';
 

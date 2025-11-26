@@ -5,6 +5,7 @@
  */
 
 import { Color } from '../../math/Color';
+import { Vector3 } from '../../math/Vector3';
 import { Spline, SplineType } from '../../math/Spline';
 import { IParticleModule, ParticleSystem } from '../ParticleSystem';
 import { Particle } from '../Particle';
@@ -143,6 +144,13 @@ export class ColorModule implements IParticleModule {
   private static readonly _tempColor = new Color();
 
   /**
+   * Helper to evaluate 1D spline curve
+   */
+  private evaluateSpline(spline: Spline, t: number): number {
+    return spline.getPoint(t).y;
+  }
+
+  /**
    * Create a new color module.
    *
    * @param config - Module configuration
@@ -192,17 +200,16 @@ export class ColorModule implements IParticleModule {
 
     // Build splines
     if (this._gradientStops.length >= 2) {
-      const times = this._gradientStops.map((s) => s.time);
-      const r = this._gradientStops.map((s) => s.color.r);
-      const g = this._gradientStops.map((s) => s.color.g);
-      const b = this._gradientStops.map((s) => s.color.b);
-      const a = this._gradientStops.map((s) => s.color.a);
+      const rPoints = this._gradientStops.map((s) => new Vector3(s.time, s.color.r, 0));
+      const gPoints = this._gradientStops.map((s) => new Vector3(s.time, s.color.g, 0));
+      const bPoints = this._gradientStops.map((s) => new Vector3(s.time, s.color.b, 0));
+      const aPoints = this._gradientStops.map((s) => new Vector3(s.time, s.color.a, 0));
 
       this._colorSplines = [
-        new Spline(times, r, SplineType.CatmullRom),
-        new Spline(times, g, SplineType.CatmullRom),
-        new Spline(times, b, SplineType.CatmullRom),
-        new Spline(times, a, SplineType.CatmullRom),
+        new Spline(rPoints, SplineType.CATMULL_ROM),
+        new Spline(gPoints, SplineType.CATMULL_ROM),
+        new Spline(bPoints, SplineType.CATMULL_ROM),
+        new Spline(aPoints, SplineType.CATMULL_ROM),
       ];
     } else {
       this._colorSplines = null;
@@ -237,7 +244,7 @@ export class ColorModule implements IParticleModule {
   initializeParticle(particle: Particle, system: ParticleSystem): void {
     // Random between two colors
     if (this.randomBetweenColors) {
-      const t = this._random.value();
+      const t = this._random.next();
       particle.startColor.copy(this.randomColorA).lerp(this.randomColorB, t);
       particle.color.copy(particle.startColor);
     }
@@ -258,10 +265,10 @@ export class ColorModule implements IParticleModule {
   updateParticle(particle: Particle, deltaTime: number, system: ParticleSystem): void {
     // Color gradient
     if (this._colorSplines) {
-      particle.color.r = this._colorSplines[0].evaluate(particle.normalizedAge);
-      particle.color.g = this._colorSplines[1].evaluate(particle.normalizedAge);
-      particle.color.b = this._colorSplines[2].evaluate(particle.normalizedAge);
-      particle.color.a = this._colorSplines[3].evaluate(particle.normalizedAge);
+      particle.color.r = this.evaluateSpline(this._colorSplines[0], particle.normalizedAge);
+      particle.color.g = this.evaluateSpline(this._colorSplines[1], particle.normalizedAge);
+      particle.color.b = this.evaluateSpline(this._colorSplines[2], particle.normalizedAge);
+      particle.color.a = this.evaluateSpline(this._colorSplines[3], particle.normalizedAge);
     }
 
     // Color by speed
@@ -305,10 +312,10 @@ export class ColorModule implements IParticleModule {
       return out.set(1, 1, 1, 1);
     }
 
-    out.r = this._colorSplines[0].evaluate(time);
-    out.g = this._colorSplines[1].evaluate(time);
-    out.b = this._colorSplines[2].evaluate(time);
-    out.a = this._colorSplines[3].evaluate(time);
+    out.r = this.evaluateSpline(this._colorSplines[0], time);
+    out.g = this.evaluateSpline(this._colorSplines[1], time);
+    out.b = this.evaluateSpline(this._colorSplines[2], time);
+    out.a = this.evaluateSpline(this._colorSplines[3], time);
 
     return out;
   }

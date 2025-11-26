@@ -142,14 +142,14 @@ const BuildInfo = {
    * When true, enables debug features, verbose logging, and development tools.
    * Set to false in production builds.
    */
-  IS_DEVELOPMENT: typeof __DEV__ !== 'undefined' ? __DEV__ : process.env.NODE_ENV !== 'production',
+  IS_DEVELOPMENT: typeof __DEV__ !== 'undefined' ? __DEV__ : false,
 
   /**
    * Production mode flag.
    * When true, enables optimizations and strips assertions and debug code.
    * Set to true in production builds.
    */
-  IS_PRODUCTION: typeof __DEV__ !== 'undefined' ? !__DEV__ : process.env.NODE_ENV === 'production',
+  IS_PRODUCTION: typeof __DEV__ !== 'undefined' ? !__DEV__ : true,
 } as const;
 
 // Type declarations for build-time injected globals

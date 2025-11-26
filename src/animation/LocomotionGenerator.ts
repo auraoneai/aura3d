@@ -292,7 +292,8 @@ export class LocomotionGenerator {
     const footBone = skeleton.getBoneByIndex(footIndex)!;
 
     const targetDir = hipToFoot.normalize();
-    const hipRot = hipWorld.getRotation();
+    const hipRotData = hipWorld.getRotation();
+    const hipRot = new Quaternion(hipRotData.x, hipRotData.y, hipRotData.z, hipRotData.w);
     const localDown = new Vector3(0, -1, 0);
     const qv = new Quaternion(localDown.x, localDown.y, localDown.z, 0);
     const qResult = hipRot.multiply(qv).multiply(hipRot.conjugate());
@@ -300,11 +301,16 @@ export class LocomotionGenerator {
 
     if (currentDir.lengthSquared() > 0.0001) {
       const rotation = Quaternion.fromUnitVectors(currentDir, targetDir);
-      const parentRot = hipBone.parentIndex >= 0
-        ? skeleton['worldMatrices'][hipBone.parentIndex].getRotation()
-        : Quaternion.identity();
+      let parentRot: Quaternion;
+      if (hipBone.parentIndex >= 0) {
+        const parentRotData = skeleton['worldMatrices'][hipBone.parentIndex].getRotation();
+        parentRot = new Quaternion(parentRotData.x, parentRotData.y, parentRotData.z, parentRotData.w);
+      } else {
+        parentRot = Quaternion.identity();
+      }
 
-      const localRotation = parentRot.invert().multiply(rotation).multiply(hipBone.rotation);
+      const parentInv = parentRot.invert();
+      const localRotation = parentInv.multiply(rotation).multiply(hipBone.rotation);
       hipBone.rotation = hipBone.rotation.slerp(localRotation, 0.5);
     }
   }

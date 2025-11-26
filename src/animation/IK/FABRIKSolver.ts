@@ -353,9 +353,9 @@ export class FABRIKSolver {
       if (currentDir.lengthSquared() > 0.0001 && targetDir.lengthSquared() > 0.0001) {
         const rotation = Quaternion.fromUnitVectors(currentDir, targetDir);
 
-        const parentRot = bone.parentIndex >= 0
-          ? skeleton['worldMatrices'][bone.parentIndex].getRotation()
-          : Quaternion.identity();
+        const parentRot = (bone.parentIndex >= 0
+          ? skeleton.getWorldMatrixByIndex(bone.parentIndex)?.getRotation()
+          : Quaternion.identity()) as Quaternion ?? Quaternion.identity();
 
         const localRotation = parentRot.invert().multiply(rotation).multiply(bone.rotation);
         bone.rotation.copy(bone.rotation.slerp(localRotation, this.weight));

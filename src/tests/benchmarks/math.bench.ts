@@ -86,7 +86,7 @@ describe('Vector3 Benchmarks', () => {
 
   bench('Vector3 multiply components (1M ops)', () => {
     for (let i = 0; i < 1_000_000; i++) {
-      v1.multiply(v2);
+      Vector3.multiply(v1, v2);
     }
   });
 
@@ -242,7 +242,7 @@ describe('Quaternion Benchmarks', () => {
 
   bench('Quaternion inverse (100K ops)', () => {
     for (let i = 0; i < 100_000; i++) {
-      q1.inverse();
+      q1.invert();
     }
   });
 

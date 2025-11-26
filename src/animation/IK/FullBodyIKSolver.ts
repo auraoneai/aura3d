@@ -361,7 +361,8 @@ export class FullBodyIKSolver {
 
     const toTarget = this.headTarget.position.sub(headPos).normalize();
 
-    const headRot = headWorld.getRotation();
+    const headRotData = headWorld.getRotation();
+    const headRot = new Quaternion(headRotData.x, headRotData.y, headRotData.z, headRotData.w);
     const localForward = Vector3.forward();
     const qv = new Quaternion(localForward.x, localForward.y, localForward.z, 0);
     const qResult = headRot.multiply(qv).multiply(headRot.conjugate());
@@ -369,11 +370,16 @@ export class FullBodyIKSolver {
 
     const rotation = Quaternion.fromUnitVectors(currentForward, toTarget);
 
-    const parentRot = headBone.parentIndex >= 0
-      ? skeleton['worldMatrices'][headBone.parentIndex].getRotation()
-      : Quaternion.identity();
+    let parentRot: Quaternion;
+    if (headBone.parentIndex >= 0) {
+      const parentRotData = skeleton['worldMatrices'][headBone.parentIndex].getRotation();
+      parentRot = new Quaternion(parentRotData.x, parentRotData.y, parentRotData.z, parentRotData.w);
+    } else {
+      parentRot = Quaternion.identity();
+    }
 
-    const localRotation = parentRot.invert().multiply(rotation).multiply(headBone.rotation);
+    const parentInv = parentRot.invert();
+    const localRotation = parentInv.multiply(rotation).multiply(headBone.rotation);
 
     headBone.rotation.copy(
       headBone.rotation.slerp(localRotation, this.headTarget.weight * this.weight)

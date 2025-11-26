@@ -1,0 +1,30 @@
+{
+  "name": "@g3d/example-space-shooter",
+  "version": "1.0.0",
+  "description": "Complete space shooter example for G3D 5.0 demonstrating particles, audio, scoring, and enemy AI",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "serve": "python -m http.server 8000"
+  },
+  "keywords": [
+    "g3d",
+    "game",
+    "space-shooter",
+    "example",
+    "particles",
+    "canvas",
+    "typescript"
+  ],
+  "author": "G3D Team",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "g3d": "workspace:*"
+  }
+}

@@ -265,7 +265,7 @@ export abstract class Light {
    * ```
    */
   constructor(type: LightType) {
-    this.id = IdGenerator.generate();
+    this.id = IdGenerator.next('light');
     this.type = type;
     this.color = new Color(1, 1, 1);
     this.intensity = 1.0;

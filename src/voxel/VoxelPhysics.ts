@@ -1,5 +1,5 @@
-import { Vector3 } from '../../math/Vector3';
-import { Logger } from '../../core/Logger';
+import { Vector3 } from '../math/Vector3';
+import { Logger } from '../core/Logger';
 import { VoxelChunk } from './VoxelChunk';
 
 /**
@@ -334,7 +334,7 @@ export class VoxelPhysics {
             worldPos[2] + 0.5
           );
 
-          const distSquared = center.distanceSquared(voxelCenter);
+          const distSquared = Vector3.distanceSquared(center, voxelCenter);
           if (distSquared <= radiusSquared) {
             return true;
           }
@@ -422,7 +422,7 @@ export class VoxelPhysics {
     }
 
     if (collisionCount > 0) {
-      return totalPenetration.divideScalar(collisionCount);
+      return totalPenetration.scale(1 / collisionCount);
     }
 
     return new Vector3(0, 0, 0);

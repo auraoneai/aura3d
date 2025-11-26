@@ -208,9 +208,9 @@ export class VelocityModule implements IParticleModule {
       return;
     }
 
-    const times = points.map((p) => p.time);
-    const values = points.map((p) => p.value);
-    this._velocityCurve = new Spline(times, values, SplineType.CatmullRom);
+    // Convert time/value pairs to Vector3 points for Spline
+    const splinePoints = points.map((p) => new Vector3(p.time, p.value, 0));
+    this._velocityCurve = new Spline(splinePoints, SplineType.CATMULL_ROM);
   }
 
   /**
@@ -239,7 +239,7 @@ export class VelocityModule implements IParticleModule {
     }
 
     // Apply speed
-    const speed = this.speed * (1 + (this._random.value() - 0.5) * 2 * this.speedRandomness);
+    const speed = this.speed * (1 + (this._random.next() - 0.5) * 2 * this.speedRandomness);
     velocity.normalize().multiplyScalar(speed);
 
     // Inherit emitter velocity
@@ -264,7 +264,9 @@ export class VelocityModule implements IParticleModule {
   updateParticle(particle: Particle, deltaTime: number, system: ParticleSystem): void {
     // Apply velocity curve
     if (this._velocityCurve) {
-      const curveValue = this._velocityCurve.evaluate(particle.normalizedAge);
+      // Sample the curve at normalized age (time is x-coordinate, value is y-coordinate)
+      const curvePoint = this._velocityCurve.getPoint(particle.normalizedAge);
+      const curveValue = curvePoint.y;
       const targetVelocity = VelocityModule._tempVector1.copy(particle.startVelocity);
       targetVelocity.multiplyScalar(curveValue);
       particle.velocity.copy(targetVelocity);
@@ -299,9 +301,9 @@ export class VelocityModule implements IParticleModule {
     // Apply randomness
     if (this.directionRandomness > 0) {
       const random = VelocityModule._tempVector2.set(
-        this._random.range(-1, 1),
-        this._random.range(-1, 1),
-        this._random.range(-1, 1)
+        this._random.nextRange(-1, 1),
+        this._random.nextRange(-1, 1),
+        this._random.nextRange(-1, 1)
       );
       random.normalize().multiplyScalar(this.directionRandomness);
       out.add(random).normalize();
@@ -330,9 +332,9 @@ export class VelocityModule implements IParticleModule {
     // Apply randomness
     if (this.directionRandomness > 0) {
       const random = VelocityModule._tempVector2.set(
-        this._random.range(-1, 1),
-        this._random.range(-1, 1),
-        this._random.range(-1, 1)
+        this._random.nextRange(-1, 1),
+        this._random.nextRange(-1, 1),
+        this._random.nextRange(-1, 1)
       );
       random.normalize().multiplyScalar(this.directionRandomness);
       out.add(random).normalize();
@@ -344,8 +346,8 @@ export class VelocityModule implements IParticleModule {
    */
   private generateRandomVelocity(out: Vector3): void {
     // Random direction on unit sphere
-    const theta = this._random.range(0, Math.PI * 2);
-    const phi = Math.acos(this._random.range(-1, 1));
+    const theta = this._random.nextRange(0, Math.PI * 2);
+    const phi = Math.acos(this._random.nextRange(-1, 1));
 
     out.set(
       Math.sin(phi) * Math.cos(theta),
@@ -381,6 +383,7 @@ export class VelocityModule implements IParticleModule {
     if (!this._velocityCurve) {
       return 1.0;
     }
-    return this._velocityCurve.evaluate(time);
+    // Sample the curve and return the y-coordinate (value)
+    return this._velocityCurve.getPoint(time).y;
   }
 }

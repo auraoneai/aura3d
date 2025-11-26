@@ -128,4 +128,4 @@ export {
   TerrainSystem,
   TerrainComponent,
 } from './TerrainSystem';
-export type { CameraComponent } from './TerrainSystem';
+// Note: CameraComponent not re-exported here to avoid conflict with rendering module

@@ -5,10 +5,11 @@
  */
 
 import { Entity } from '../ecs/Entity';
-import { Component } from '../ecs/Component';
+import { IComponent } from '../ecs/Component';
 import { Vector3 } from '../math/Vector3';
-import { Bounds } from '../math/Bounds';
-import { Transform } from '../components/Transform';
+import { Box3 as Bounds } from '../math/Box3';
+import { TransformComponent } from '../ecs/components/TransformComponent';
+import { World } from '../ecs/World';
 
 /**
  * Selection change event
@@ -56,6 +57,15 @@ export class SelectionManager {
   private activeEntity: Entity | null = null;
   private listeners: Map<string, Set<Function>> = new Map();
   private locked: boolean = false;
+  private world: World | null = null;
+
+  /**
+   * Sets the world instance for component access
+   * @param world - World instance
+   */
+  public setWorld(world: World): void {
+    this.world = world;
+  }
 
   /**
    * Gets all selected entities
@@ -261,31 +271,33 @@ export class SelectionManager {
    * @param componentType - Component class
    * @returns Entities with the component
    */
-  public filterByComponent<T extends Component>(
+  public filterByComponent<T extends IComponent>(
     componentType: new (...args: any[]) => T
   ): Entity[] {
-    return this.filter(entity => entity.hasComponent(componentType));
+    if (!this.world) return [];
+    return this.filter(entity => this.world!.hasComponent(entity, componentType));
   }
 
   /**
    * Checks if all selected entities have a component
    * @param componentType - Component class
    */
-  public allHaveComponent<T extends Component>(
+  public allHaveComponent<T extends IComponent>(
     componentType: new (...args: any[]) => T
   ): boolean {
-    if (this.isEmpty()) return false;
-    return this.getSelection().every(entity => entity.hasComponent(componentType));
+    if (this.isEmpty() || !this.world) return false;
+    return this.getSelection().every(entity => this.world!.hasComponent(entity, componentType));
   }
 
   /**
    * Checks if any selected entity has a component
    * @param componentType - Component class
    */
-  public anyHasComponent<T extends Component>(
+  public anyHasComponent<T extends IComponent>(
     componentType: new (...args: any[]) => T
   ): boolean {
-    return this.getSelection().some(entity => entity.hasComponent(componentType));
+    if (!this.world) return false;
+    return this.getSelection().some(entity => this.world!.hasComponent(entity, componentType));
   }
 
   /**
@@ -293,13 +305,13 @@ export class SelectionManager {
    * @returns Combined bounds or null if no selection
    */
   public getBounds(): Bounds | null {
-    if (this.isEmpty()) return null;
+    if (this.isEmpty() || !this.world) return null;
 
     const entities = this.getSelection();
     const points: Vector3[] = [];
 
     entities.forEach(entity => {
-      const transform = entity.getComponent(Transform);
+      const transform = this.world!.getComponent(entity, TransformComponent);
       if (transform) {
         points.push(transform.position.clone());
       }
@@ -307,7 +319,9 @@ export class SelectionManager {
 
     if (points.length === 0) return null;
 
-    return Bounds.fromPoints(points);
+    const bounds = new Bounds();
+    bounds.setFromPoints(points);
+    return bounds;
   }
 
   /**
@@ -316,7 +330,8 @@ export class SelectionManager {
    */
   public getCenter(): Vector3 | null {
     const bounds = this.getBounds();
-    return bounds ? bounds.center : null;
+    if (!bounds) return null;
+    return bounds.center;
   }
 
   /**
@@ -325,7 +340,7 @@ export class SelectionManager {
    * @returns Pivot position or null
    */
   public getPivot(mode: 'center' | 'active' | 'individual' = 'center'): Vector3 | null {
-    if (this.isEmpty()) return null;
+    if (this.isEmpty() || !this.world) return null;
 
     switch (mode) {
       case 'center':
@@ -333,7 +348,7 @@ export class SelectionManager {
 
       case 'active':
         if (this.activeEntity) {
-          const transform = this.activeEntity.getComponent(Transform);
+          const transform = this.world.getComponent(this.activeEntity, TransformComponent);
           return transform ? transform.position.clone() : null;
         }
         return this.getCenter();
@@ -353,17 +368,20 @@ export class SelectionManager {
    */
   public selectChildren(): void {
     if (this.locked) return;
-    if (this.isEmpty()) return;
+    if (this.isEmpty() || !this.world) return;
 
     const current = this.getSelection();
     const children: Entity[] = [];
 
-    current.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform) {
-        transform.children.forEach(childTransform => {
-          children.push(childTransform.entity);
-        });
+    // Note: TransformComponent uses parentEntity for hierarchy
+    // To find children, we need to iterate all entities and check their parent
+    // This is a simplified implementation - a real one would cache parent-child relationships
+    const allEntities = Array.from({ length: this.world.entityCount }, (_, i) => i + 1);
+
+    allEntities.forEach(candidateEntity => {
+      const transform = this.world!.getComponent(candidateEntity, TransformComponent);
+      if (transform && current.includes(transform.parentEntity)) {
+        children.push(candidateEntity);
       }
     });
 
@@ -377,15 +395,15 @@ export class SelectionManager {
    */
   public selectParents(): void {
     if (this.locked) return;
-    if (this.isEmpty()) return;
+    if (this.isEmpty() || !this.world) return;
 
     const current = this.getSelection();
     const parents: Entity[] = [];
 
     current.forEach(entity => {
-      const transform = entity.getComponent(Transform);
-      if (transform && transform.parent) {
-        parents.push(transform.parent.entity);
+      const transform = this.world!.getComponent(entity, TransformComponent);
+      if (transform && transform.parentEntity !== 0) {
+        parents.push(transform.parentEntity);
       }
     });
 

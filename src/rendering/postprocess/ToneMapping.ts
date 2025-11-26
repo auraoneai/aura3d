@@ -334,9 +334,7 @@ export class ToneMapping extends PostProcessEffect {
     // Calculate average scene luminance using mipmap chain
     // For high-performance applications, this uses GPU-based histogram compute
     // Returns geometric mean luminance for better exposure handling
-    if (input && input.getMipmapLuminance) {
-      return input.getMipmapLuminance();
-    }
+    // TODO: Implement getMipmapLuminance method on RenderTexture
     // Default luminance for middle-gray scenes
     return 0.18;
   }

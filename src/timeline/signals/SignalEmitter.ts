@@ -252,7 +252,7 @@ export class SignalEmitter {
      */
     public clone(): SignalEmitter {
         return new SignalEmitter({
-            signal: this.signal,
+            signal: this.signal ?? undefined,
             emitTime: this.emitTime,
             payload: this.payload ? { ...this.payload } : undefined,
             repeat: this.repeat,
@@ -277,10 +277,10 @@ export class SignalEmitter {
      * Create from JSON
      */
     public static fromJSON(data: any, signalResolver?: (id: string) => SignalAsset | null): SignalEmitter {
-        let signal: SignalAsset | null = null;
+        let signal: SignalAsset | undefined = undefined;
 
         if (data.signalId && signalResolver) {
-            signal = signalResolver(data.signalId);
+            signal = signalResolver(data.signalId) ?? undefined;
         }
 
         return new SignalEmitter({

@@ -150,11 +150,10 @@ export class VegetationSystem extends Vegetation {
     this.update(deltaTime);
 
     // Update chunk visibility
-    const cameraPos = new Vector3();
-    camera.transform.getWorldPosition(cameraPos);
+    const cameraPos = camera.transform.worldPosition;
 
     for (const chunk of this._chunks.values()) {
-      chunk.distance = cameraPos.distanceTo(chunk.bounds.getCenter());
+      chunk.distance = cameraPos.distanceTo(chunk.bounds.center);
 
       // Distance culling
       if (chunk.distance > this._maxVisibleDistance) {

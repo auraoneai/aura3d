@@ -7,6 +7,7 @@ export class SpatialGrid {
   private particlePositions: Float32Array;
   private particleCount: number;
   private bounds: { min: Vec3; max: Vec3 };
+  private logger: Logger;
 
   constructor(cellSize: number, bounds: { min: Vec3; max: Vec3 }) {
     this.cellSize = cellSize;
@@ -14,8 +15,9 @@ export class SpatialGrid {
     this.particlePositions = new Float32Array(0);
     this.particleCount = 0;
     this.bounds = bounds;
+    this.logger = new Logger('SpatialGrid');
 
-    Logger.info(
+    this.logger.info(
       `SpatialGrid initialized with cellSize=${cellSize}, ` +
       `bounds=[${bounds.min.x},${bounds.min.y},${bounds.min.z}] to ` +
       `[${bounds.max.x},${bounds.max.y},${bounds.max.z}]`

@@ -1,0 +1,17 @@
+fps-game/
+├── index.html                 (76 lines)    - HTML entry point with loading screen
+├── README.md                  (310 lines)   - Complete documentation
+├── IMPLEMENTATION.md          (354 lines)   - Technical implementation details
+├── package.json               (33 lines)    - Project configuration
+├── tsconfig.json              (27 lines)    - TypeScript configuration
+├── vite.config.ts             (23 lines)    - Vite build configuration
+├── .gitignore                 (22 lines)    - Git ignore rules
+└── src/
+    ├── main.ts                (348 lines)   - Game entry point & loop
+    ├── Player.ts              (502 lines)   - First-person controller
+    ├── Weapon.ts              (431 lines)   - Weapon system
+    ├── Enemy.ts               (654 lines)   - AI enemy with behavior tree
+    ├── Level.ts               (503 lines)   - Procedural level generator
+    └── HUD.ts                 (481 lines)   - Heads-up display
+
+TOTAL: 3,764 lines across 12 files

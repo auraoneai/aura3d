@@ -4,8 +4,6 @@
  * @module ai/Blackboard
  */
 
-import { EventBus } from '../core/EventBus';
-
 /**
  * Blackboard value types.
  */
@@ -74,7 +72,7 @@ export class Blackboard {
   private data: Map<string, BlackboardEntry>;
 
   /** Event bus for change notifications */
-  private eventBus: EventBus;
+  private eventBus: Map<string, Array<(event: BlackboardChangeEvent) => void>>;
 
   /** Version counter for optimistic updates */
   private version: number;
@@ -87,7 +85,7 @@ export class Blackboard {
   constructor(parent: Blackboard | null = null) {
     this.parent = parent;
     this.data = new Map();
-    this.eventBus = new EventBus();
+    this.eventBus = new Map();
     this.version = 0;
   }
 
@@ -291,7 +289,21 @@ export class Blackboard {
    * ```
    */
   onChange(key: string, callback: (event: BlackboardChangeEvent) => void): () => void {
-    return this.eventBus.on(`change:${key}`, callback);
+    const eventName = `change:${key}`;
+    if (!this.eventBus.has(eventName)) {
+      this.eventBus.set(eventName, []);
+    }
+    this.eventBus.get(eventName)!.push(callback);
+
+    return () => {
+      const handlers = this.eventBus.get(eventName);
+      if (handlers) {
+        const index = handlers.indexOf(callback);
+        if (index !== -1) {
+          handlers.splice(index, 1);
+        }
+      }
+    };
   }
 
   /**
@@ -308,7 +320,21 @@ export class Blackboard {
    * ```
    */
   onAnyChange(callback: (event: BlackboardChangeEvent) => void): () => void {
-    return this.eventBus.on('change', callback);
+    const eventName = 'change';
+    if (!this.eventBus.has(eventName)) {
+      this.eventBus.set(eventName, []);
+    }
+    this.eventBus.get(eventName)!.push(callback);
+
+    return () => {
+      const handlers = this.eventBus.get(eventName);
+      if (handlers) {
+        const index = handlers.indexOf(callback);
+        if (index !== -1) {
+          handlers.splice(index, 1);
+        }
+      }
+    };
   }
 
   /**
@@ -323,8 +349,27 @@ export class Blackboard {
       timestamp: Date.now(),
     };
 
-    this.eventBus.emit(`change:${key}`, event);
-    this.eventBus.emit('change', event);
+    const keyHandlers = this.eventBus.get(`change:${key}`);
+    if (keyHandlers) {
+      for (const handler of keyHandlers) {
+        try {
+          handler(event);
+        } catch (error) {
+          console.error(`Error in blackboard change handler for key '${key}':`, error);
+        }
+      }
+    }
+
+    const anyHandlers = this.eventBus.get('change');
+    if (anyHandlers) {
+      for (const handler of anyHandlers) {
+        try {
+          handler(event);
+        } catch (error) {
+          console.error(`Error in blackboard change handler:`, error);
+        }
+      }
+    }
   }
 
   /**

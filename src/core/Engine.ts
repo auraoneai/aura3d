@@ -894,4 +894,4 @@ export class Engine {
   }
 }
 
-export type { EngineConfig };
+// EngineConfig is already exported from './EngineConfig'

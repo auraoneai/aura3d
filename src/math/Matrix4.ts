@@ -19,6 +19,8 @@ interface Quaternion {
   w: number;
   normalize(): Quaternion;
   conjugate?(): Quaternion;
+  multiply?(q: Quaternion): Quaternion;
+  invert?(): Quaternion;
 }
 
 /**
@@ -372,7 +374,19 @@ export class Matrix4 {
       z = 0.25 * s;
     }
 
-    const rotation: Quaternion = { x, y, z, w };
+    const rotation: Quaternion = {
+      x,
+      y,
+      z,
+      w,
+      normalize: function() {
+        const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        if (len > 0) {
+          this.x /= len; this.y /= len; this.z /= len; this.w /= len;
+        }
+        return this;
+      }
+    };
 
     return { position, rotation, scale };
   }
@@ -961,7 +975,19 @@ export class Matrix4 {
       z = 0.25 * s;
     }
 
-    return { x, y, z, w };
+    return {
+      x,
+      y,
+      z,
+      w,
+      normalize: function() {
+        const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        if (len > 0) {
+          this.x /= len; this.y /= len; this.z /= len; this.w /= len;
+        }
+        return this;
+      }
+    };
   }
 
   /**
@@ -1073,6 +1099,25 @@ export class Matrix4 {
     e[1] = values[4]; e[5] = values[5]; e[9] = values[6]; e[13] = values[7];
     e[2] = values[8]; e[6] = values[9]; e[10] = values[10]; e[14] = values[11];
     e[3] = values[12]; e[7] = values[13]; e[11] = values[14]; e[15] = values[15];
+
+    return this;
+  }
+
+  /**
+   * Sets this matrix from three basis vectors (columns of the rotation matrix).
+   *
+   * @param xAxis - X axis basis vector (right)
+   * @param yAxis - Y axis basis vector (up)
+   * @param zAxis - Z axis basis vector (forward)
+   * @returns this matrix for chaining
+   */
+  setFromBasis(xAxis: Vector3, yAxis: Vector3, zAxis: Vector3): this {
+    const e = this.elements;
+
+    e[0] = xAxis.x; e[4] = yAxis.x; e[8] = zAxis.x; e[12] = 0;
+    e[1] = xAxis.y; e[5] = yAxis.y; e[9] = zAxis.y; e[13] = 0;
+    e[2] = xAxis.z; e[6] = yAxis.z; e[10] = zAxis.z; e[14] = 0;
+    e[3] = 0;       e[7] = 0;       e[11] = 0;       e[15] = 1;
 
     return this;
   }
@@ -1202,30 +1247,28 @@ export class Matrix4 {
    * Performs full 4D matrix-vector multiplication.
    *
    * @param v - Vector4 to multiply
-   * @returns New transformed Vector4
+   * @returns New transformed Vector4-like object with x, y, z, w properties
    *
    * @example
    * ```typescript
    * const m = Matrix4.translation(1, 2, 3);
-   * const v = new Vector4(0, 0, 0, 1);
-   * const result = m.multiplyVector4(v); // (1, 2, 3, 1)
+   * const v = { x: 0, y: 0, z: 0, w: 1 };
+   * const result = m.multiplyVector4(v); // { x: 1, y: 2, z: 3, w: 1 }
    * ```
    */
-  multiplyVector4(v: import('./Vector4').Vector4): import('./Vector4').Vector4 {
+  multiplyVector4(v: { x: number; y: number; z: number; w: number }): { x: number; y: number; z: number; w: number } {
     const e = this.elements;
     const x = v.x;
     const y = v.y;
     const z = v.z;
     const w = v.w;
 
-    const { Vector4 } = require('./Vector4');
-
-    return new Vector4(
-      e[0] * x + e[4] * y + e[8] * z + e[12] * w,
-      e[1] * x + e[5] * y + e[9] * z + e[13] * w,
-      e[2] * x + e[6] * y + e[10] * z + e[14] * w,
-      e[3] * x + e[7] * y + e[11] * z + e[15] * w
-    );
+    return {
+      x: e[0] * x + e[4] * y + e[8] * z + e[12] * w,
+      y: e[1] * x + e[5] * y + e[9] * z + e[13] * w,
+      z: e[2] * x + e[6] * y + e[10] * z + e[14] * w,
+      w: e[3] * x + e[7] * y + e[11] * z + e[15] * w
+    };
   }
 
   /**
@@ -1465,7 +1508,7 @@ export class Matrix4 {
    * const m = Matrix4.compose(pos, rot, scale);
    * ```
    */
-  static compose(position: Vector3, rotation: { x: number; y: number; z: number; w: number }, scale: Vector3): Matrix4 {
+  static compose(position: Vector3, rotation: Quaternion, scale: Vector3): Matrix4 {
     return new Matrix4().compose(position, rotation, scale);
   }
 

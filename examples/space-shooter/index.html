@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G3D Space Shooter - Advanced 3D Shooter Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    #game-canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      cursor: crosshair;
+    }
+
+    #loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      z-index: 1000;
+    }
+
+    #loading h1 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      color: #00ffff;
+      text-shadow: 0 0 20px #00ffff;
+    }
+
+    #loading-bar {
+      width: 400px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    #loading-progress {
+      height: 100%;
+      background: linear-gradient(90deg, #00ffff, #0080ff);
+      width: 0%;
+      transition: width 0.3s;
+      box-shadow: 0 0 10px #00ffff;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game-canvas"></canvas>
+
+  <div id="loading">
+    <h1>SPACE SHOOTER</h1>
+    <div id="loading-bar">
+      <div id="loading-progress"></div>
+    </div>
+    <p id="loading-text" style="margin-top: 10px;">Loading...</p>
+  </div>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>

@@ -232,7 +232,10 @@ export class RenderSystem extends System {
 
     // Query all entities with components
     // In a real implementation, would use actual ECS queries
-    const entities = this.world.entityManager.getAliveEntities();
+    const entities: Entity[] = [];
+    this.world.entityManager.forEachEntity(entity => {
+      entities.push(entity);
+    });
 
     for (const entity of entities) {
       // Extract mesh component
@@ -298,9 +301,6 @@ export class RenderSystem extends System {
         transform.scale.y,
         transform.scale.z
       );
-
-      // Mark transform dirty
-      node.transform.markDirty();
     }
   }
 
@@ -311,17 +311,21 @@ export class RenderSystem extends System {
     const lightManager = this.renderer.getLightManager();
 
     // Update lights
-    lightManager.clear();
+    lightManager.clearLights();
     for (const { light, entity } of this.renderScene.lights) {
       // Sync light transform
       const transform = this.world.entityManager.getComponent(entity, TransformComponent);
       if (transform) {
-        light.position = new Vector3(
-          transform.position.x,
-          transform.position.y,
-          transform.position.z
-        );
+        // Update position for point and spot lights
+        if (light instanceof PointLight || light instanceof SpotLight) {
+          light.position = new Vector3(
+            transform.position.x,
+            transform.position.y,
+            transform.position.z
+          );
+        }
 
+        // Update direction for directional and spot lights
         if (light instanceof DirectionalLight || light instanceof SpotLight) {
           // Calculate direction from rotation
           const rotation = new Quaternion(
@@ -377,32 +381,32 @@ export class RenderSystem extends System {
 
   /**
    * Gets mesh component from entity via entity manager query.
+   * Note: In full implementation, these would be actual component classes
+   * registered with ComponentRegistry. For now, returns null as placeholder.
    */
   private getMeshComponent(entity: Entity): MeshComponent | null {
-    if (!this.world?.entityManager) {
-      return null;
-    }
-    return this.world.entityManager.getComponent<MeshComponent>(entity, 'MeshComponent') ?? null;
+    // Would use actual component class: this.world.entityManager.getComponent(entity, MeshComponentClass)
+    return null;
   }
 
   /**
    * Gets camera component from entity via entity manager query.
+   * Note: In full implementation, these would be actual component classes
+   * registered with ComponentRegistry. For now, returns null as placeholder.
    */
   private getCameraComponent(entity: Entity): CameraComponent | null {
-    if (!this.world?.entityManager) {
-      return null;
-    }
-    return this.world.entityManager.getComponent<CameraComponent>(entity, 'CameraComponent') ?? null;
+    // Would use actual component class: this.world.entityManager.getComponent(entity, CameraComponentClass)
+    return null;
   }
 
   /**
    * Gets light component from entity via entity manager query.
+   * Note: In full implementation, these would be actual component classes
+   * registered with ComponentRegistry. For now, returns null as placeholder.
    */
   private getLightComponent(entity: Entity): LightComponent | null {
-    if (!this.world?.entityManager) {
-      return null;
-    }
-    return this.world.entityManager.getComponent<LightComponent>(entity, 'LightComponent') ?? null;
+    // Would use actual component class: this.world.entityManager.getComponent(entity, LightComponentClass)
+    return null;
   }
 
   /**

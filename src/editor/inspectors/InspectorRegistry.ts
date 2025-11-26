@@ -3,14 +3,14 @@
  * @module editor/inspectors/InspectorRegistry
  */
 
-import { Component } from '../../ecs/Component';
+import type { IComponent } from '../../ecs/Component';
 import { Entity } from '../../ecs/Entity';
 
 /**
  * Field editor function type
  */
 export type FieldEditor = (
-  component: Component,
+  component: IComponent,
   fieldName: string,
   value: any,
   onChange: (newValue: any) => void
@@ -21,16 +21,16 @@ export type FieldEditor = (
  */
 export interface IComponentInspector {
   /** Component type this inspector handles */
-  componentType: new (...args: any[]) => Component;
+  componentType: new (...args: any[]) => IComponent;
 
   /** Renders the inspector UI */
-  render(component: Component, entity: Entity): HTMLElement;
+  render(component: IComponent, entity: Entity): HTMLElement;
 
   /** Updates the inspector with new data */
-  update?(component: Component): void;
+  update?(component: IComponent): void;
 
   /** Validates component data */
-  validate?(component: Component): boolean;
+  validate?(component: IComponent): boolean;
 
   /** Disposes of inspector resources */
   dispose?(): void;
@@ -82,7 +82,7 @@ export class InspectorRegistryManager {
   private inspectors: Map<string, IComponentInspector> = new Map();
   private fieldEditors: Map<string, FieldEditor> = new Map();
   private propertyDrawers: Map<string, IPropertyDrawer> = new Map();
-  private inspectorCache: Map<Component, HTMLElement> = new Map();
+  private inspectorCache: Map<IComponent, HTMLElement> = new Map();
 
   /**
    * Registers a component inspector
@@ -97,7 +97,7 @@ export class InspectorRegistryManager {
    * Unregisters a component inspector
    * @param componentType - Component class
    */
-  public unregisterInspector(componentType: new (...args: any[]) => Component): void {
+  public unregisterInspector(componentType: new (...args: any[]) => IComponent): void {
     const typeName = componentType.name;
     const inspector = this.inspectors.get(typeName);
 
@@ -114,7 +114,7 @@ export class InspectorRegistryManager {
    * @returns Inspector or undefined
    */
   public getInspector(
-    componentType: new (...args: any[]) => Component
+    componentType: new (...args: any[]) => IComponent
   ): IComponentInspector | undefined {
     return this.inspectors.get(componentType.name);
   }
@@ -123,7 +123,7 @@ export class InspectorRegistryManager {
    * Checks if an inspector is registered for a component type
    * @param componentType - Component class
    */
-  public hasInspector(componentType: new (...args: any[]) => Component): boolean {
+  public hasInspector(componentType: new (...args: any[]) => IComponent): boolean {
     return this.inspectors.has(componentType.name);
   }
 
@@ -133,7 +133,7 @@ export class InspectorRegistryManager {
    * @param entity - Entity the component belongs to
    * @returns Inspector UI element or null
    */
-  public renderInspector(component: Component, entity: Entity): HTMLElement | null {
+  public renderInspector(component: IComponent, entity: Entity): HTMLElement | null {
     const inspector = this.getInspector(component.constructor as any);
 
     if (!inspector) {
@@ -149,7 +149,7 @@ export class InspectorRegistryManager {
   /**
    * Renders a default inspector for components without custom inspectors
    */
-  private renderDefaultInspector(component: Component, entity: Entity): HTMLElement {
+  private renderDefaultInspector(component: IComponent, entity: Entity): HTMLElement {
     const container = document.createElement('div');
     container.className = 'inspector-default';
 
@@ -171,7 +171,7 @@ export class InspectorRegistryManager {
   /**
    * Gets all inspectable properties of a component
    */
-  private getComponentProperties(component: Component): Array<{ name: string; value: any }> {
+  private getComponentProperties(component: IComponent): Array<{ name: string; value: any }> {
     const properties: Array<{ name: string; value: any }> = [];
     const proto = Object.getPrototypeOf(component);
 
@@ -216,7 +216,7 @@ export class InspectorRegistryManager {
   /**
    * Renders a field with appropriate editor
    */
-  private renderField(component: Component, fieldName: string, value: any): HTMLElement {
+  private renderField(component: IComponent, fieldName: string, value: any): HTMLElement {
     const container = document.createElement('div');
     container.className = 'inspector-field';
 
@@ -324,7 +324,7 @@ export class InspectorRegistryManager {
    * Updates a cached inspector
    * @param component - Component to update
    */
-  public updateInspector(component: Component): void {
+  public updateInspector(component: IComponent): void {
     const inspector = this.getInspector(component.constructor as any);
     if (inspector && inspector.update) {
       inspector.update(component);

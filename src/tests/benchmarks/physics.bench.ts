@@ -15,46 +15,7 @@ import { CollisionFilter } from '../../physics/CollisionDetection';
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
 import { Matrix4 } from '../../math/Matrix4';
-
-/**
- * Simple box shape for benchmarking
- */
-class BoxShape {
-  size: Vector3;
-
-  constructor(size: Vector3) {
-    this.size = size;
-  }
-
-  computeAABB(transform: Matrix4): AABB {
-    const center = transform.getPosition();
-    const halfExtents = this.size.scale(0.5);
-    return {
-      min: center.sub(halfExtents),
-      max: center.add(halfExtents)
-    };
-  }
-}
-
-/**
- * Simple sphere shape for benchmarking
- */
-class SphereShape {
-  radius: number;
-
-  constructor(radius: number) {
-    this.radius = radius;
-  }
-
-  computeAABB(transform: Matrix4): AABB {
-    const center = transform.getPosition();
-    const r = new Vector3(this.radius, this.radius, this.radius);
-    return {
-      min: center.sub(r),
-      max: center.add(r)
-    };
-  }
-}
+import { BoxShape } from '../../physics/shapes/BoxShape';
 
 describe('Rigid Body Benchmarks', () => {
   bench('Create 1K rigid bodies', () => {
@@ -187,7 +148,7 @@ describe('Broad Phase Benchmarks', () => {
     let intersections = 0;
     for (let i = 0; i < aabbs.length; i++) {
       for (let j = i + 1; j < aabbs.length; j++) {
-        if (AABBUtils.intersects(aabbs[i], aabbs[j])) {
+        if (AABBUtils.overlaps(aabbs[i], aabbs[j])) {
           intersections++;
         }
       }
@@ -261,7 +222,7 @@ describe('Broad Phase Benchmarks', () => {
         if (aabbs[j].min.x > aabbs[i].max.x) break;
 
         // Check Y and Z axes
-        if (AABBUtils.intersects(aabbs[i], aabbs[j])) {
+        if (AABBUtils.overlaps(aabbs[i], aabbs[j])) {
           pairs.push([aabbs[i].body, aabbs[j].body]);
         }
       }
@@ -296,7 +257,7 @@ describe('Narrow Phase Benchmarks', () => {
 
     let collisions = 0;
     for (let i = 0; i < 100_000; i++) {
-      if (AABBUtils.intersects(boxA, boxB)) {
+      if (AABBUtils.overlaps(boxA, boxB)) {
         collisions++;
       }
     }
@@ -574,6 +535,7 @@ describe('Collision Filtering Benchmarks', () => {
     const colliders: Collider[] = [];
     for (let i = 0; i < 10_000; i++) {
       const collider = new Collider({
+        shape: new BoxShape(new Vector3(1, 1, 1)),
         layer: i % 3,
         layerMask: 0xFF
       });

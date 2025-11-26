@@ -260,7 +260,7 @@ export class Particle implements IPoolable {
     }
 
     // Apply acceleration to velocity
-    if (!this.acceleration.isZero()) {
+    if (this.acceleration.lengthSquared() > 0) {
       Particle._tempVector1.copy(this.acceleration).multiplyScalar(deltaTime);
       this.velocity.add(Particle._tempVector1);
     }
@@ -272,13 +272,13 @@ export class Particle implements IPoolable {
     }
 
     // Apply velocity to position
-    if (!this.velocity.isZero()) {
+    if (this.velocity.lengthSquared() > 0) {
       Particle._tempVector1.copy(this.velocity).multiplyScalar(deltaTime);
       this.position.add(Particle._tempVector1);
     }
 
     // Apply angular velocity to rotation
-    if (!this.angularVelocity.isZero()) {
+    if (this.angularVelocity.lengthSquared() > 0) {
       Particle._tempVector1.copy(this.angularVelocity).multiplyScalar(deltaTime);
       this.rotation.add(Particle._tempVector1);
     }
@@ -357,7 +357,7 @@ export class Particle implements IPoolable {
    * @returns The stored value or default
    */
   getCustomData<T = any>(key: string, defaultValue?: T): T {
-    return this.customData[key] !== undefined ? this.customData[key] : defaultValue;
+    return this.customData[key] !== undefined ? this.customData[key] : defaultValue!;
   }
 
   /**

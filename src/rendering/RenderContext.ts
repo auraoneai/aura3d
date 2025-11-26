@@ -615,7 +615,7 @@ export class RenderContext {
       const age = this.frameIndex - entry.lastUsedFrame;
 
       if (!entry.inUse && age > this.MAX_TEXTURE_AGE) {
-        this.device.destroy(entry.texture);
+        entry.texture.destroy();
         toRemove.push(i);
       }
     }
@@ -657,7 +657,7 @@ export class RenderContext {
   dispose(): void {
     // Dispose all temporary textures
     for (const entry of this._temporaryTextures) {
-      this.device.destroy(entry.texture);
+      entry.texture.destroy();
     }
     this._temporaryTextures = [];
 

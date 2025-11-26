@@ -204,11 +204,11 @@ export class CloudManager {
     }
 
     const url = `${this.config.apiEndpoint}${endpoint}`;
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'X-API-Key': this.config.apiKey,
       'X-App-ID': this.config.appId,
-      ...options.headers
+      ...(options.headers as Record<string, string> || {})
     };
 
     // Add auth token if available

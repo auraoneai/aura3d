@@ -120,7 +120,7 @@ export class EventBus {
     // Handle wildcard subscriptions
     if (eventName === '*') {
       const wildcardHandler = {
-        handler: handler as (event: string, data: any) => void,
+        handler: handler as unknown as (event: string, data: any) => void,
         priority,
       };
       this.wildcardHandlers.push(wildcardHandler);
@@ -340,7 +340,7 @@ export class EventBus {
     // Handle wildcard unsubscribe
     if (eventName === '*') {
       const index = this.wildcardHandlers.findIndex(
-        (reg) => reg.handler === handler
+        (reg) => reg.handler === (handler as unknown as (event: string, data: any) => void)
       );
       if (index !== -1) {
         this.wildcardHandlers.splice(index, 1);

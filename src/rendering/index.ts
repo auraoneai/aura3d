@@ -448,7 +448,7 @@ export {
 export type {
   ProfileSample,
   FrameStats,
-  PerformanceWarning,
+  PerformanceWarning as RenderPerformanceWarning,  // Renamed to avoid conflict with core.PerformanceWarning
   ProfilerConfig,
 } from './RenderProfiler';
 

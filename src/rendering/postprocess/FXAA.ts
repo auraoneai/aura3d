@@ -392,7 +392,7 @@ export class FXAA extends PostProcessEffect {
   /**
    * Called when quality changes.
    */
-  override protected onQualityChanged(): void {
+  protected override onQualityChanged(): void {
     // Map quality to preset
     switch (this.quality) {
       case EffectQuality.Low:

@@ -1,4 +1,4 @@
-import { Asset } from '../Asset';
+import { Asset, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -72,7 +72,7 @@ export interface MaterialDefinition {
 /**
  * Material metadata
  */
-export interface MaterialMetadata {
+export interface MaterialMetadata extends AssetMetadata {
   /** Material name */
   name: string;
   /** Whether material is transparent */
@@ -100,8 +100,8 @@ export class MaterialAsset extends Asset {
   /**
    * Gets the material metadata
    */
-  override get metadata(): MaterialMetadata | null {
-    return this.materialMetadata;
+  override get metadata(): Readonly<MaterialMetadata> {
+    return this.materialMetadata || {} as MaterialMetadata;
   }
 
   /**

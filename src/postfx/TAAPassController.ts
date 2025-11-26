@@ -9,7 +9,9 @@
 
 import type { PostProcessEffect, RenderContext } from './PostProcessChain';
 import { Vector2 } from '../math/Vector2';
-import { logger } from '../core/Logger';
+import { Logger } from '../core/Logger';
+
+const logger = Logger.create('TAAPassController');
 
 /**
  * Jitter pattern for TAA sampling

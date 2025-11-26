@@ -53,7 +53,7 @@ export class ConsoleSink implements LogSink {
    * Creates a new console sink.
    * @param useColors - Whether to use ANSI color codes (default: true for Node.js, false for browser)
    */
-  constructor(useColors: boolean = typeof process !== 'undefined') {
+  constructor(useColors: boolean = typeof globalThis !== 'undefined' && typeof (globalThis as any).process !== 'undefined') {
     this.useColors = useColors;
     this.levelColors = new Map([
       [LogLevel.TRACE, '\x1b[90m'],     // Gray

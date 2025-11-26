@@ -87,9 +87,9 @@ export class SoftBodySolver {
   config: Required<SolverConfig>;
 
   /** Lamé's first parameter */
-  private lambda: number;
+  private lambda!: number;
   /** Lamé's second parameter (shear modulus) */
-  private mu: number;
+  private mu!: number;
 
   constructor(config: SolverConfig = {}) {
     this.config = {

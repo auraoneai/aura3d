@@ -466,9 +466,9 @@ export class MessageQueue {
 }
 
 /**
- * Utility for binary serialization of common data types.
+ * Utility for binary serialization of common data types in network messages.
  */
-export class BinarySerializer {
+export class NetworkBinarySerializer {
   /**
    * Writes a UTF-8 string to a DataView.
    * Format: length (2 bytes) + UTF-8 bytes

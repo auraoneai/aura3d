@@ -7,7 +7,10 @@
  * @module postfx/MLPostProcessController
  */
 
+import { Logger } from '../core/Logger';
 import type { PostProcessEffect, RenderContext } from './PostProcessChain';
+
+const logger = Logger.create('MLPostProcessController');
 
 /**
  * ML effect type
@@ -57,6 +60,16 @@ export interface MLModel {
    * Output resolution
    */
   outputSize?: { width: number; height: number };
+
+  /**
+   * Model format (tfjs, onnx, etc.)
+   */
+  format?: string;
+
+  /**
+   * Backend used for inference
+   */
+  backend?: string;
 }
 
 /**
@@ -471,6 +484,7 @@ export class MLPostProcessController implements PostProcessEffect {
     try {
       if (format === 'tfjs' || format === 'tensorflow') {
         // TensorFlow.js model loading
+        // @ts-ignore - Optional dependency
         const tf = await import('@tensorflow/tfjs');
         await tf.ready();
 
@@ -480,6 +494,7 @@ export class MLPostProcessController implements PostProcessEffect {
 
       } else if (format === 'onnx') {
         // ONNX Runtime model loading
+        // @ts-ignore - Optional dependency
         const ort = await import('onnxruntime-web');
 
         model.model = await ort.InferenceSession.create(model.url, {

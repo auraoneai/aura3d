@@ -6,9 +6,9 @@
 
 import { Logger } from '../../core/Logger';
 import { PostProcessEffect, EffectQuality, TextureSpec } from './PostProcessEffect';
-import { RenderTexture, RenderTextureDescriptor, TextureFormat } from '../texture/RenderTexture';
+import { RenderTexture, RenderTextureDescriptor } from '../texture/RenderTexture';
 import { Shader, ShaderSource } from '../shader/Shader';
-import { TextureFilter, TextureWrap, Texture, TextureDescriptor } from '../texture/Texture';
+import { TextureFilter, TextureWrap, Texture, TextureDescriptor, TextureFormat } from '../texture/Texture';
 import { Vector2, Vector3, Vector4 } from '../../math';
 import { Matrix4 } from '../../math/Matrix4';
 
@@ -498,11 +498,17 @@ ${kernelStr}
     const width = input.getWidth();
     const height = input.getHeight();
 
+    const depthTexture = input.getDepthTexture();
+
     // Pass 1: Calculate SSAO
     this.ssaoShader.bind();
-    this.ssaoShader.setUniform('uDepthTexture', input.getDepthTexture());
+    if (depthTexture) {
+      this.ssaoShader.setUniform('uDepthTexture', depthTexture);
+    }
     // Note: In real implementation, would need normal buffer from G-buffer
-    this.ssaoShader.setUniform('uNoiseTexture', this.noiseTexture);
+    if (this.noiseTexture) {
+      this.ssaoShader.setUniform('uNoiseTexture', this.noiseTexture);
+    }
     this.ssaoShader.setUniform('uProjection', this.projectionMatrix);
     // this.ssaoShader.setUniform('uInverseProjection', this.projectionMatrix.invert());
     this.ssaoShader.setUniform('uNoiseScale', new Vector2(width / 4.0, height / 4.0));
@@ -515,7 +521,9 @@ ${kernelStr}
     // Pass 2: Horizontal blur
     this.blurHShader.bind();
     this.blurHShader.setUniform('uTexture', this.ssaoTexture.getColorTexture());
-    this.blurHShader.setUniform('uDepthTexture', input.getDepthTexture());
+    if (depthTexture) {
+      this.blurHShader.setUniform('uDepthTexture', depthTexture);
+    }
     this.blurHShader.setUniform('uTexelSize', new Vector2(1.0 / width, 1.0 / height));
     this.blurHShader.setUniform('uBlurRadius', blurRadius);
     this.renderQuad(this.blurTexture);
@@ -523,7 +531,9 @@ ${kernelStr}
     // Pass 3: Vertical blur
     this.blurVShader.bind();
     this.blurVShader.setUniform('uTexture', this.blurTexture.getColorTexture());
-    this.blurVShader.setUniform('uDepthTexture', input.getDepthTexture());
+    if (depthTexture) {
+      this.blurVShader.setUniform('uDepthTexture', depthTexture);
+    }
     this.blurVShader.setUniform('uTexelSize', new Vector2(1.0 / width, 1.0 / height));
     this.blurVShader.setUniform('uBlurRadius', blurRadius);
     this.renderQuad(output);
@@ -549,7 +559,7 @@ ${kernelStr}
   /**
    * Called when quality changes.
    */
-  override protected onQualityChanged(): void {
+  protected override onQualityChanged(): void {
     // Adjust sample count based on quality
     switch (this.quality) {
       case EffectQuality.Low:

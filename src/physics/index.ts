@@ -63,7 +63,12 @@ export * from './CollisionPair';
 export * from './Constraint';
 
 // Raycasting
-export * from './Raycast';
+// Rename exports to avoid conflicts with math.Ray and animation.RaycastHit
+export {
+  Ray as PhysicsRay,
+  Raycast
+} from './Raycast';
+export type { RaycastHit as PhysicsRaycastHit } from './Raycast';
 
 // ECS integration
 export * from './PhysicsSystem';

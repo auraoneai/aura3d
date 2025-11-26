@@ -242,7 +242,11 @@ export class Pathfinder {
   constructor(navMesh: NavMesh) {
     this.navMesh = navMesh;
     this.pathCache = new Map();
-    this.nodePool = new ObjectPool(() => new PathNode(-1), 512);
+    this.nodePool = new ObjectPool(
+      () => new PathNode(-1),
+      (node) => { node.reset(); },
+      512
+    );
     this.openSet = new PriorityQueue();
     this.closedSet = new Set();
   }

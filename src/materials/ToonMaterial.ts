@@ -15,8 +15,18 @@ import {
 } from './Material';
 import type { RenderDevice } from '../rendering/RenderDevice';
 import type { RenderContext } from '../rendering/RenderContext';
-import type { ShaderProgram } from '../shaders/ShaderLibrary';
 import { Vector2 } from '../math/Vector2';
+
+/**
+ * Shader program descriptor for material shaders.
+ */
+interface ShaderProgram {
+  id: string;
+  vertexSource: string;
+  fragmentSource: string;
+  uniforms: { name: string; type: string }[];
+  attributes: { name: string; type: string; location: number }[];
+}
 import { Color } from '../math/Color';
 
 /**

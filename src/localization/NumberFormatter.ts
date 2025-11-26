@@ -200,7 +200,7 @@ export class NumberFormatter {
    * Format range
    */
   public formatRange(start: number, end: number): string {
-    if (typeof Intl.NumberFormat.prototype.formatRange === 'function') {
+    if (typeof (Intl.NumberFormat.prototype as any).formatRange === 'function') {
       try {
         const formatter = new Intl.NumberFormat(this.locale) as any;
         return formatter.formatRange(start, end);

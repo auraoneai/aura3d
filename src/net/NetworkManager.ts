@@ -8,7 +8,7 @@ import { EventBus } from '../core/EventBus';
 import { Logger } from '../core/Logger';
 import { WebSocketTransport, ConnectionState } from './WebSocketTransport';
 import { WebRTCTransport, RTCConnectionState } from './WebRTCTransport';
-import { NetworkMessage, MessageType, MessageRegistry, MessagePriority } from './NetworkMessage';
+import { NetworkMessage, MessageType, MessageRegistry, MessagePriority, NetworkBinarySerializer as BinarySerializer } from './NetworkMessage';
 import { NetworkEntityRegistry, PlayerId, NetworkId } from './NetworkEntity';
 import { NetworkTime } from './NetworkTime';
 import { RPCSystem, RPCInvocation } from './RPCSystem';
@@ -646,6 +646,5 @@ export class NetworkManager {
   }
 }
 
-// Re-export BinarySerializer for convenience
-import { BinarySerializer } from './NetworkMessage';
-export { BinarySerializer };
+// Note: NetworkBinarySerializer not re-exported here to avoid naming conflicts with serialization module
+// Import directly from './NetworkMessage' if needed

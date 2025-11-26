@@ -39,7 +39,7 @@ export { ChunkMeshBuilder, MeshStrategy } from './ChunkMeshBuilder';
 export type { MeshOptions } from './ChunkMeshBuilder';
 
 // Lighting
-export { VoxelLighting, LightType } from './VoxelLighting';
+export { VoxelLighting, VoxelLightType } from './VoxelLighting';
 
 // Destruction
 export { VoxelDestructionSystem, DestructionMode } from './VoxelDestructionSystem';

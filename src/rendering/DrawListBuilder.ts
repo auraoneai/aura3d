@@ -204,7 +204,7 @@ export class DrawListBuilder {
       mesh,
       material,
       transform: transform.clone(),
-      sortKey: this._encodeSortKey(layer, depth, material.id ?? 0, mesh.id, false),
+      sortKey: this._encodeSortKey(layer, depth, Number(material.id ?? 0), mesh.id, false),
       distance: depth,
       layer,
     };
@@ -238,7 +238,7 @@ export class DrawListBuilder {
       mesh,
       material,
       transform: transform.clone(),
-      sortKey: this._encodeSortKey(layer, distance, material.id ?? 0, mesh.id, true),
+      sortKey: this._encodeSortKey(layer, distance, Number(material.id ?? 0), mesh.id, true),
       distance,
       layer,
     };

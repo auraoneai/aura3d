@@ -212,9 +212,9 @@ export class ForceModule implements IParticleModule {
    */
   private updateWindRandomness(): void {
     const randomOffset = ForceModule._tempVector1.set(
-      this._random.range(-1, 1),
-      this._random.range(-1, 1),
-      this._random.range(-1, 1)
+      this._random.nextRange(-1, 1),
+      this._random.nextRange(-1, 1),
+      this._random.nextRange(-1, 1)
     );
     randomOffset.multiplyScalar(this.windRandomness);
 
@@ -240,7 +240,7 @@ export class ForceModule implements IParticleModule {
     }
 
     // Apply wind
-    if (!this.wind.isZero() || this.windRandomness > 0) {
+    if (this.wind.lengthSquared() > 0 || this.windRandomness > 0) {
       const windForce = ForceModule._tempVector2.copy(this._currentWind);
       force.add(windForce);
     }
@@ -258,7 +258,7 @@ export class ForceModule implements IParticleModule {
     }
 
     // Apply force to particle
-    if (!force.isZero()) {
+    if (force.lengthSquared() > 0) {
       particle.applyForce(force);
     }
 

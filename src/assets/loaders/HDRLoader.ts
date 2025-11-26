@@ -1,4 +1,4 @@
-import { Asset } from '../Asset';
+import { Asset, AssetMetadata } from '../Asset';
 import { IAssetLoader, LoadOptions } from '../AssetLoader';
 import { Logger } from '../../core/Logger';
 
@@ -19,7 +19,7 @@ export enum HDRFormat {
 /**
  * HDR metadata
  */
-export interface HDRMetadata {
+export interface HDRMetadata extends AssetMetadata {
   /** Image width */
   width: number;
   /** Image height */
@@ -49,8 +49,8 @@ export class HDRAsset extends Asset {
   /**
    * Gets the HDR metadata
    */
-  override get metadata(): HDRMetadata | null {
-    return this.hdrMetadata;
+  override get metadata(): Readonly<HDRMetadata> {
+    return this.hdrMetadata || {} as HDRMetadata;
   }
 
   /**

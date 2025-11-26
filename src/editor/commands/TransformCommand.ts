@@ -6,9 +6,10 @@
 
 import { ICommand, BaseCommand } from './Command';
 import { Entity } from '../../ecs/Entity';
-import { Transform } from '../../components/Transform';
+import { TransformComponent } from '../../ecs/components/TransformComponent';
 import { Vector3 } from '../../math/Vector3';
 import { Quaternion } from '../../math/Quaternion';
+import { World } from '../../ecs/World';
 
 /**
  * Transform change data
@@ -56,28 +57,32 @@ export class TransformCommand extends BaseCommand {
   private oldStates: Map<Entity, TransformState> = new Map();
   private newChanges: TransformChange;
   private mergeTimeMs: number = 100; // Time window for merging
+  private world: World;
 
   private lastExecuteTime: number = 0;
 
   /**
    * Creates a transform command
+   * @param world - World instance for component access
    * @param entities - Entity or array of entities to transform
    * @param changes - Transform changes to apply
    * @param description - Optional custom description
    */
   constructor(
+    world: World,
     entities: Entity | Entity[],
     changes: TransformChange,
     description?: string
   ) {
     super();
 
+    this.world = world;
     this.entities = Array.isArray(entities) ? entities : [entities];
     this.newChanges = changes;
 
     // Capture old states
     this.entities.forEach(entity => {
-      const transform = entity.getComponent(Transform);
+      const transform = this.world.getComponent(entity, TransformComponent);
       if (transform) {
         this.oldStates.set(entity, {
           position: transform.position.clone(),
@@ -110,9 +115,9 @@ export class TransformCommand extends BaseCommand {
   /**
    * Executes the transform
    */
-  public execute(): void {
+  override execute(): void {
     this.entities.forEach(entity => {
-      const transform = entity.getComponent(Transform);
+      const transform = this.world.getComponent(entity, TransformComponent);
       if (!transform) return;
 
       if (this.newChanges.position) {
@@ -127,7 +132,7 @@ export class TransformCommand extends BaseCommand {
         transform.scale.copy(this.newChanges.scale);
       }
 
-      transform.markDirty();
+      transform.setDirty();
     });
 
     this.lastExecuteTime = Date.now();
@@ -136,9 +141,9 @@ export class TransformCommand extends BaseCommand {
   /**
    * Undoes the transform
    */
-  public undo(): void {
+  override undo(): void {
     this.entities.forEach(entity => {
-      const transform = entity.getComponent(Transform);
+      const transform = this.world.getComponent(entity, TransformComponent);
       const oldState = this.oldStates.get(entity);
 
       if (!transform || !oldState) return;
@@ -146,14 +151,14 @@ export class TransformCommand extends BaseCommand {
       transform.position.copy(oldState.position);
       transform.rotation.copy(oldState.rotation);
       transform.scale.copy(oldState.scale);
-      transform.markDirty();
+      transform.setDirty();
     });
   }
 
   /**
    * Checks if this command can be merged with another
    */
-  public canMerge(other: ICommand): boolean {
+  override canMerge(other: ICommand): boolean {
     if (!(other instanceof TransformCommand)) {
       return false;
     }
@@ -185,7 +190,7 @@ export class TransformCommand extends BaseCommand {
   /**
    * Merges another transform command into this one
    */
-  public merge(other: ICommand): void {
+  override merge(other: ICommand): void {
     if (!(other instanceof TransformCommand)) {
       throw new Error('Cannot merge with non-TransformCommand');
     }
@@ -221,15 +226,15 @@ export class TransformCommand extends BaseCommand {
   /**
    * Validates the command
    */
-  public validate(): boolean {
+  override validate(): boolean {
     // Check that all entities have Transform component
-    return this.entities.every(entity => entity.hasComponent(Transform));
+    return this.entities.every(entity => this.world.hasComponent(entity, TransformComponent));
   }
 
   /**
    * Gets the memory size of this command
    */
-  public getSize(): number {
+  override getSize(): number {
     // Base size + 3 vectors per entity (old state) + changes
     return 1 + this.entities.length * 3;
   }
@@ -240,14 +245,14 @@ export class TransformCommand extends BaseCommand {
   public serialize(): any {
     return {
       type: 'TransformCommand',
-      entities: this.entities.map(e => e.id),
+      entities: this.entities,
       changes: {
         position: this.newChanges.position?.toArray(),
         rotation: this.newChanges.rotation?.toArray(),
         scale: this.newChanges.scale?.toArray()
       },
       oldStates: Array.from(this.oldStates.entries()).map(([entity, state]) => ({
-        entityId: entity.id,
+        entityId: entity,
         position: state.position.toArray(),
         rotation: state.rotation.toArray(),
         scale: state.scale.toArray()
@@ -260,8 +265,8 @@ export class TransformCommand extends BaseCommand {
  * Specialized command for position-only transforms
  */
 export class PositionCommand extends TransformCommand {
-  constructor(entities: Entity | Entity[], position: Vector3, description?: string) {
-    super(entities, { position }, description || 'Move');
+  constructor(world: World, entities: Entity | Entity[], position: Vector3, description?: string) {
+    super(world, entities, { position }, description || 'Move');
   }
 }
 
@@ -269,8 +274,8 @@ export class PositionCommand extends TransformCommand {
  * Specialized command for rotation-only transforms
  */
 export class RotationCommand extends TransformCommand {
-  constructor(entities: Entity | Entity[], rotation: Quaternion, description?: string) {
-    super(entities, { rotation }, description || 'Rotate');
+  constructor(world: World, entities: Entity | Entity[], rotation: Quaternion, description?: string) {
+    super(world, entities, { rotation }, description || 'Rotate');
   }
 }
 
@@ -278,7 +283,7 @@ export class RotationCommand extends TransformCommand {
  * Specialized command for scale-only transforms
  */
 export class ScaleCommand extends TransformCommand {
-  constructor(entities: Entity | Entity[], scale: Vector3, description?: string) {
-    super(entities, { scale }, description || 'Scale');
+  constructor(world: World, entities: Entity | Entity[], scale: Vector3, description?: string) {
+    super(world, entities, { scale }, description || 'Scale');
   }
 }

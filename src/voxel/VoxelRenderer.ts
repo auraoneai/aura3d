@@ -1,6 +1,6 @@
-import { Vector3 } from '../../math/Vector3';
-import { Matrix4 } from '../../math/Matrix4';
-import { Logger } from '../../core/Logger';
+import { Vector3 } from '../math/Vector3';
+import { Matrix4 } from '../math/Matrix4';
+import { Logger } from '../core/Logger';
 import { VoxelChunk, ChunkState } from './VoxelChunk';
 
 /**
@@ -199,11 +199,12 @@ export class VoxelRenderer {
    */
   public cullByDistance(chunks: VoxelChunk[], cameraPosition: Vector3): VoxelChunk[] {
     const visibleChunks: VoxelChunk[] = [];
-    const maxDistanceSquared = (this.renderDistance * chunk.getSize()) ** 2;
+    const chunkSize = chunks.length > 0 ? chunks[0]!.getSize() : 16;
+    const maxDistanceSquared = (this.renderDistance * chunkSize) ** 2;
 
     for (const chunk of chunks) {
       const center = chunk.getCenter();
-      const distanceSquared = cameraPosition.distanceSquared(center);
+      const distanceSquared = Vector3.distanceSquared(cameraPosition, center);
 
       if (distanceSquared <= maxDistanceSquared) {
         visibleChunks.push(chunk);
@@ -218,8 +219,8 @@ export class VoxelRenderer {
    */
   public sortByDistance(chunks: VoxelChunk[], cameraPosition: Vector3): VoxelChunk[] {
     return chunks.sort((a, b) => {
-      const distA = cameraPosition.distanceSquared(a.getCenter());
-      const distB = cameraPosition.distanceSquared(b.getCenter());
+      const distA = Vector3.distanceSquared(cameraPosition, a.getCenter());
+      const distB = Vector3.distanceSquared(cameraPosition, b.getCenter());
       return distA - distB;
     });
   }
@@ -229,8 +230,8 @@ export class VoxelRenderer {
    */
   public sortFarToNear(chunks: VoxelChunk[], cameraPosition: Vector3): VoxelChunk[] {
     return chunks.sort((a, b) => {
-      const distA = cameraPosition.distanceSquared(a.getCenter());
-      const distB = cameraPosition.distanceSquared(b.getCenter());
+      const distA = Vector3.distanceSquared(cameraPosition, a.getCenter());
+      const distB = Vector3.distanceSquared(cameraPosition, b.getCenter());
       return distB - distA;
     });
   }
@@ -248,7 +249,7 @@ export class VoxelRenderer {
     for (let i = 0; i < sorted.length; i += batchSize) {
       const batchChunks = sorted.slice(i, Math.min(i + batchSize, sorted.length));
       const centerChunk = batchChunks[Math.floor(batchChunks.length / 2)]!;
-      const distance = cameraPosition.distance(centerChunk.getCenter());
+      const distance = Vector3.distance(cameraPosition, centerChunk.getCenter());
 
       batches.push({
         chunks: batchChunks,
@@ -356,7 +357,7 @@ export class VoxelRenderer {
    * Calculates LOD level based on distance
    */
   public calculateLOD(chunk: VoxelChunk, cameraPosition: Vector3): number {
-    const distance = cameraPosition.distance(chunk.getCenter());
+    const distance = Vector3.distance(cameraPosition, chunk.getCenter());
     const chunkSize = chunk.getSize();
 
     const lod0Distance = chunkSize * 4;

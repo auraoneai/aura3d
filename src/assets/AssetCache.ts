@@ -1,9 +1,9 @@
 import { Asset, AssetLoadState } from './Asset';
 
 /**
- * Cache eviction policy
+ * Asset cache eviction policy
  */
-export enum EvictionPolicy {
+export enum AssetEvictionPolicy {
   /** Least Recently Used */
   LRU = 'lru',
   /** Least Frequently Used */
@@ -57,7 +57,7 @@ export interface CacheOptions {
   /** Maximum memory budget in bytes (default: 512MB) */
   maxMemory?: number;
   /** Eviction policy (default: LRU) */
-  evictionPolicy?: EvictionPolicy;
+  evictionPolicy?: AssetEvictionPolicy;
   /** Maximum number of assets to cache (default: unlimited) */
   maxEntries?: number;
   /** Enable automatic memory monitoring */
@@ -78,7 +78,7 @@ export interface CacheOptions {
  * ```typescript
  * const cache = new AssetCache({
  *   maxMemory: 512 * 1024 * 1024, // 512MB
- *   evictionPolicy: EvictionPolicy.LRU,
+ *   evictionPolicy: AssetEvictionPolicy.LRU,
  *   autoMonitor: true
  * });
  *
@@ -124,7 +124,7 @@ export class AssetCache<T extends Asset = Asset> {
   constructor(options: CacheOptions = {}) {
     this.options = {
       maxMemory: options.maxMemory || 512 * 1024 * 1024, // 512MB
-      evictionPolicy: options.evictionPolicy || EvictionPolicy.LRU,
+      evictionPolicy: options.evictionPolicy || AssetEvictionPolicy.LRU,
       maxEntries: options.maxEntries || Infinity,
       autoMonitor: options.autoMonitor !== false,
       monitorInterval: options.monitorInterval || 5000
@@ -270,16 +270,16 @@ export class AssetCache<T extends Asset = Asset> {
     let victimId: string | null = null;
 
     switch (this.options.evictionPolicy) {
-      case EvictionPolicy.LRU:
+      case AssetEvictionPolicy.LRU:
         victimId = this.findLRUVictim();
         break;
-      case EvictionPolicy.LFU:
+      case AssetEvictionPolicy.LFU:
         victimId = this.findLFUVictim();
         break;
-      case EvictionPolicy.FIFO:
+      case AssetEvictionPolicy.FIFO:
         victimId = this.findFIFOVictim();
         break;
-      case EvictionPolicy.NONE:
+      case AssetEvictionPolicy.NONE:
         return;
     }
 

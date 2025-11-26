@@ -8,7 +8,17 @@
 
 import type { RenderDevice } from '../rendering/RenderDevice';
 import type { RenderContext } from '../rendering/RenderContext';
-import type { ShaderProgram } from '../shaders/ShaderLibrary';
+
+/**
+ * Shader program descriptor for material shaders.
+ */
+export interface ShaderProgram {
+  id: string;
+  vertexSource: string;
+  fragmentSource: string;
+  uniforms: { name: string; type: string }[];
+  attributes: { name: string; type: string; location: number }[];
+}
 
 /**
  * Render queue priorities determining draw order
