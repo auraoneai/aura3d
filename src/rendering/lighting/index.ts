@@ -139,6 +139,8 @@ export {
   CascadeSplitScheme,
 } from './DirectionalLight';
 
+export { AmbientLight } from './AmbientLight';
+
 export type {
   CascadeConfig,
   AtmosphericScattering,

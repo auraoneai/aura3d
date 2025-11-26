@@ -10,7 +10,8 @@ import { Collision, CollisionManifold } from './Collision';
 import { CollisionPair } from './CollisionPair';
 import { Constraint } from './Constraint';
 import { Matrix4 } from '../math/Matrix4';
-import { AABBUtils } from './Collider';
+import { AABBUtils, Collider } from './Collider';
+import { RaycastHit } from './Raycast';
 
 /**
  * Collision event data.
@@ -301,6 +302,109 @@ export class PhysicsWorld {
    */
   addEventListener(event: 'collisionenter', callback: (event: CollisionEvent) => void): void {
     this.onCollisionEnter.push(callback);
+  }
+
+  /**
+   * Performs a raycast from start to end point.
+   *
+   * @param start - Ray start position
+   * @param end - Ray end position
+   * @param layerMask - Optional layer mask for filtering
+   * @returns RaycastHit if collision found, null otherwise
+   */
+  raycast(start: Vector3, end: Vector3, layerMask: number = 0xFFFFFFFF): RaycastHit | null {
+    const direction = end.sub(start);
+    const maxDistance = direction.length();
+
+    if (maxDistance < 0.0001) return null;
+
+    const normalizedDir = direction.normalize();
+    let closestHit: RaycastHit | null = null;
+    let closestDistance = maxDistance;
+
+    for (const body of this.bodies) {
+      for (const collider of body.colliders) {
+        // Check layer mask
+        if ((layerMask & (1 << collider.layer)) === 0) continue;
+
+        // Get AABB for broad phase
+        const worldMatrix = body.getWorldMatrix();
+        const aabb = collider.getAABB(worldMatrix);
+
+        // Ray-AABB intersection test
+        const hit = this.rayAABBIntersection(start, normalizedDir, aabb, closestDistance);
+        if (hit !== null && hit.distance < closestDistance) {
+          closestDistance = hit.distance;
+          closestHit = {
+            point: start.add(normalizedDir.scale(hit.distance)),
+            normal: hit.normal,
+            distance: hit.distance,
+            collider: collider,
+            rigidBody: body
+          };
+        }
+      }
+    }
+
+    return closestHit;
+  }
+
+  /**
+   * Ray-AABB intersection test.
+   */
+  private rayAABBIntersection(
+    origin: Vector3,
+    direction: Vector3,
+    aabb: { min: Vector3; max: Vector3 },
+    maxDistance: number
+  ): { distance: number; normal: Vector3 } | null {
+    let tmin = 0;
+    let tmax = maxDistance;
+    let hitNormal = new Vector3(0, 1, 0);
+
+    // X axis
+    if (Math.abs(direction.x) < 0.0001) {
+      if (origin.x < aabb.min.x || origin.x > aabb.max.x) return null;
+    } else {
+      const invD = 1 / direction.x;
+      let t1 = (aabb.min.x - origin.x) * invD;
+      let t2 = (aabb.max.x - origin.x) * invD;
+      let normal = new Vector3(-1, 0, 0);
+      if (t1 > t2) { [t1, t2] = [t2, t1]; normal = new Vector3(1, 0, 0); }
+      if (t1 > tmin) { tmin = t1; hitNormal = normal; }
+      tmax = Math.min(tmax, t2);
+      if (tmin > tmax) return null;
+    }
+
+    // Y axis
+    if (Math.abs(direction.y) < 0.0001) {
+      if (origin.y < aabb.min.y || origin.y > aabb.max.y) return null;
+    } else {
+      const invD = 1 / direction.y;
+      let t1 = (aabb.min.y - origin.y) * invD;
+      let t2 = (aabb.max.y - origin.y) * invD;
+      let normal = new Vector3(0, -1, 0);
+      if (t1 > t2) { [t1, t2] = [t2, t1]; normal = new Vector3(0, 1, 0); }
+      if (t1 > tmin) { tmin = t1; hitNormal = normal; }
+      tmax = Math.min(tmax, t2);
+      if (tmin > tmax) return null;
+    }
+
+    // Z axis
+    if (Math.abs(direction.z) < 0.0001) {
+      if (origin.z < aabb.min.z || origin.z > aabb.max.z) return null;
+    } else {
+      const invD = 1 / direction.z;
+      let t1 = (aabb.min.z - origin.z) * invD;
+      let t2 = (aabb.max.z - origin.z) * invD;
+      let normal = new Vector3(0, 0, -1);
+      if (t1 > t2) { [t1, t2] = [t2, t1]; normal = new Vector3(0, 0, 1); }
+      if (t1 > tmin) { tmin = t1; hitNormal = normal; }
+      tmax = Math.min(tmax, t2);
+      if (tmin > tmax) return null;
+    }
+
+    return { distance: tmin, normal: hitNormal };
   }
 
   /**

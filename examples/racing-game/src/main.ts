@@ -13,8 +13,9 @@
 
 import { Engine, EngineConfig } from 'g3d';
 import { Vector3, Quaternion } from 'g3d';
-import { Scene, Camera } from 'g3d';
-import { DirectionalLight, AmbientLight } from 'g3d';
+import { Scene, SceneNode, Camera } from 'g3d';
+import { DirectionalLight } from 'g3d';
+import { GeometryGenerator } from 'g3d';
 import { PhysicsWorld } from 'g3d';
 import { InputManager, Keyboard } from 'g3d';
 import { AudioContext } from 'g3d';
@@ -37,6 +38,7 @@ class RacingGame {
   private physics!: PhysicsWorld;
   private input!: InputManager;
   private audio!: AudioContext;
+  private directionalLight!: DirectionalLight;
 
   // Game objects
   private track!: Track;
@@ -134,25 +136,23 @@ class RacingGame {
     this.scene = new Scene('RaceScene');
 
     // Add directional light (sun)
-    const sun = new DirectionalLight({
-      color: new Color(1, 0.95, 0.9),
-      intensity: 3.0,
-      castShadows: true,
-      shadowMapSize: 2048
-    });
-    sun.setPosition(new Vector3(50, 100, 50));
-    sun.lookAt(new Vector3(0, 0, 0));
-    this.scene.addLight(sun);
+    // Direction from position (50, 100, 50) to origin normalized
+    const sunDirection = new Vector3(-50, -100, -50).normalize();
+    this.directionalLight = new DirectionalLight(
+      sunDirection,
+      new Color(1, 0.95, 0.9),
+      3.0
+    );
+    this.directionalLight.setShadowsEnabled(true);
+    // Note: In a full implementation, lights would be added to a renderer's light manager
 
-    // Add ambient light
-    const ambient = new AmbientLight({
-      color: new Color(0.5, 0.6, 0.7),
-      intensity: 0.4
-    });
-    this.scene.addLight(ambient);
+    // Configure ambient light via environment
+    this.scene.environment.ambientColor = new Color(0.5, 0.6, 0.7);
+    this.scene.environment.ambientIntensity = 0.4;
 
     // Add sky
-    this.scene.setSkyColor(new Color(0.4, 0.6, 0.9));
+    this.scene.environment.clearColor = new Color(0.4, 0.6, 0.9);
+    this.scene.environment.skybox = { type: 'color', color: new Color(0.4, 0.6, 0.9) };
 
     // Add ground plane
     this.createGround();
@@ -168,16 +168,12 @@ class RacingGame {
       metallic: 0.0
     });
 
-    const groundGeometry = GeometryGenerator.createPlane(
-      new Vector3(1000, 0, 1000),
-      10,
-      10
-    );
+    const groundGeometry = GeometryGenerator.plane(1000, 1000, 10, 10);
 
     const groundNode = new SceneNode('Ground');
     groundNode.setMesh(groundGeometry);
     groundNode.setMaterial(groundMaterial);
-    this.scene.addNode(groundNode);
+    this.scene.add(groundNode);
   }
 
   /**
@@ -277,11 +273,11 @@ class RacingGame {
       roughness: 0.2
     });
 
-    const playerMesh = GeometryGenerator.createBox(new Vector3(1.2, 0.6, 2.5));
+    const playerMesh = GeometryGenerator.box(1.2, 0.6, 2.5);
     const playerNode = new SceneNode('PlayerVehicle');
     playerNode.setMesh(playerMesh);
     playerNode.setMaterial(playerMaterial);
-    this.scene.addNode(playerNode);
+    this.scene.add(playerNode);
 
     // AI vehicles (red)
     this.aiVehicles.forEach((vehicle, index) => {
@@ -291,11 +287,11 @@ class RacingGame {
         roughness: 0.2
       });
 
-      const aiMesh = GeometryGenerator.createBox(new Vector3(1.2, 0.6, 2.5));
+      const aiMesh = GeometryGenerator.box(1.2, 0.6, 2.5);
       const aiNode = new SceneNode(`AIVehicle${index}`);
       aiNode.setMesh(aiMesh);
       aiNode.setMaterial(aiMaterial);
-      this.scene.addNode(aiNode);
+      this.scene.add(aiNode);
     });
   }
 
@@ -601,13 +597,13 @@ class RacingGame {
    */
   private render(): void {
     // Update vehicle mesh transforms
-    const playerNode = this.scene.getNode('PlayerVehicle');
+    const playerNode = this.scene.findByName('PlayerVehicle');
     if (playerNode) {
       playerNode.setTransform(this.playerVehicle.meshTransform);
     }
 
     this.aiVehicles.forEach((vehicle, index) => {
-      const aiNode = this.scene.getNode(`AIVehicle${index}`);
+      const aiNode = this.scene.findByName(`AIVehicle${index}`);
       if (aiNode) {
         aiNode.setTransform(vehicle.meshTransform);
       }

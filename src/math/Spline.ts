@@ -271,6 +271,38 @@ export class Spline {
   }
 
   /**
+   * Gets the curvature at parameter t.
+   * Curvature measures how quickly the curve changes direction.
+   *
+   * @param t - Parameter in range [0, 1]
+   * @returns Curvature value (higher = sharper turn)
+   *
+   * @example
+   * ```typescript
+   * const spline = Spline.fromCatmullRom([
+   *   new Vector3(0, 0, 0),
+   *   new Vector3(1, 1, 0),
+   *   new Vector3(2, 0, 0)
+   * ]);
+   * const curvature = spline.getCurvature(0.5);
+   * ```
+   */
+  getCurvature(t: number): number {
+    const delta = 0.0001;
+    const t1 = Math.max(t - delta, 0);
+    const t2 = Math.min(t + delta, 1);
+
+    const tangent1 = this.getTangent(t1);
+    const tangent2 = this.getTangent(t2);
+
+    // Curvature is the rate of change of tangent direction
+    const dTangent = tangent2.sub(tangent1);
+    const curvature = dTangent.length() / (2 * delta);
+
+    return curvature;
+  }
+
+  /**
    * Gets the Frenet frame (tangent, normal, binormal) at parameter t.
    * The Frenet frame forms an orthonormal basis useful for extrusion and mesh generation.
    *

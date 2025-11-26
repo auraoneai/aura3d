@@ -69,3 +69,17 @@ export { Ray } from './Ray';
 export { Frustum } from './Frustum';
 export { Transform } from './Transform';
 export { Spline, SplineType } from './Spline';
+
+/**
+ * CatmullRomSpline is a type alias for Spline.
+ * Use Spline.fromCatmullRom() factory method or create a Spline with SplineType.CATMULL_ROM.
+ *
+ * @example
+ * ```typescript
+ * const spline = Spline.fromCatmullRom(points, 0.5);
+ * // or
+ * const spline = new CatmullRomSpline(points);
+ * spline.type = SplineType.CATMULL_ROM;
+ * ```
+ */
+export { Spline as CatmullRomSpline } from './Spline';

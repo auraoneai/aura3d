@@ -71,6 +71,7 @@
  */
 
 // Core module barrel export
+export * from './Engine';
 export * from './BuildInfo';
 export * from './Assert';
 export * from './Logger';

@@ -40,7 +40,7 @@ interface BuilderVertex {
  */
 export class MeshBuilder {
   /** Vertex format for the mesh */
-  private readonly format: VertexFormat;
+  private format: VertexFormat | null;
   /** Accumulated vertices */
   private vertices: BuilderVertex[];
   /** Accumulated indices */
@@ -57,19 +57,25 @@ export class MeshBuilder {
   private generateTangents: boolean;
   /** Vertex hash map for deduplication */
   private vertexMap: Map<string, number>;
+  /** Track whether normals were set */
+  private hasNormals: boolean;
+  /** Track whether UVs were set */
+  private hasUVs: boolean;
 
   /**
    * Creates a new mesh builder.
    *
-   * @param format - Vertex format
+   * @param format - Optional vertex format. If not provided, format will be inferred from the data.
    *
    * @example
    * ```typescript
    * const builder = new MeshBuilder(VertexFormat.P3N3T2());
+   * // or without format (will be inferred):
+   * const builder = new MeshBuilder();
    * ```
    */
-  constructor(format: VertexFormat) {
-    this.format = format;
+  constructor(format?: VertexFormat) {
+    this.format = format ?? null;
     this.vertices = [];
     this._indices = [];
     this.currentVertex = { position: [0, 0, 0] };
@@ -78,6 +84,8 @@ export class MeshBuilder {
     this.generateNormals = false;
     this.generateTangents = false;
     this.vertexMap = new Map();
+    this.hasNormals = false;
+    this.hasUVs = false;
   }
 
   /**
@@ -327,6 +335,83 @@ export class MeshBuilder {
   }
 
   /**
+   * Sets all vertices from an array of Vector3.
+   *
+   * @param vertices - Array of Vector3 positions
+   * @returns This builder for chaining
+   *
+   * @example
+   * ```typescript
+   * builder.setVertices([new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 1, 0)]);
+   * ```
+   */
+  setVertices(vertices: Vector3[]): this {
+    for (const v of vertices) {
+      this.currentVertex = { position: [v.x, v.y, v.z] };
+      this.vertices.push({ ...this.currentVertex });
+    }
+    this.currentVertex = { position: [0, 0, 0] };
+    return this;
+  }
+
+  /**
+   * Sets all normals from an array of Vector3.
+   * Must be called after setVertices and arrays must have same length.
+   *
+   * @param normals - Array of Vector3 normals
+   * @returns This builder for chaining
+   *
+   * @example
+   * ```typescript
+   * builder.setNormals([Vector3.up(), Vector3.up(), Vector3.up()]);
+   * ```
+   */
+  setNormals(normals: Vector3[]): this {
+    for (let i = 0; i < normals.length && i < this.vertices.length; i++) {
+      const n = normals[i];
+      this.vertices[i].normal = [n.x, n.y, n.z];
+    }
+    this.hasNormals = true;
+    return this;
+  }
+
+  /**
+   * Sets all texture coordinates from a flat array of numbers.
+   *
+   * @param channel - UV channel (0-3)
+   * @param uvs - Flat array of UV coordinates [u0, v0, u1, v1, ...]
+   * @returns This builder for chaining
+   *
+   * @example
+   * ```typescript
+   * builder.setUVs(0, [0, 0, 1, 0, 1, 1, 0, 1]);
+   * ```
+   */
+  setUVs(channel: number, uvs: number[]): this {
+    for (let i = 0; i < uvs.length / 2 && i < this.vertices.length; i++) {
+      this.vertices[i].texCoord = [uvs[i * 2], uvs[i * 2 + 1]];
+    }
+    this.hasUVs = true;
+    return this;
+  }
+
+  /**
+   * Sets all indices from an array.
+   *
+   * @param indices - Array of indices
+   * @returns This builder for chaining
+   *
+   * @example
+   * ```typescript
+   * builder.setIndices([0, 1, 2, 0, 2, 3]);
+   * ```
+   */
+  setIndices(indices: number[]): this {
+    this._indices = [...indices];
+    return this;
+  }
+
+  /**
    * Builds the final mesh from accumulated data.
    *
    * @param name - Optional name for the mesh
@@ -340,6 +425,21 @@ export class MeshBuilder {
   build(name: string = 'Mesh'): Mesh {
     if (this.vertices.length === 0) {
       throw new Error('Cannot build mesh with no vertices');
+    }
+
+    // Infer format if not provided
+    if (!this.format) {
+      if (this.hasNormals && this.hasUVs) {
+        this.format = VertexFormat.P3N3T2();
+      } else if (this.hasNormals) {
+        this.format = VertexFormat.P3N3();
+      } else if (this.hasUVs) {
+        // Position + TexCoord (no built-in format, create one)
+        this.format = VertexFormat.P3N3T2(); // Use full format for safety
+      } else {
+        // Position only - use P3N3 as minimum
+        this.format = VertexFormat.P3N3();
+      }
     }
 
     // Generate normals if requested and missing
@@ -454,7 +554,7 @@ export class MeshBuilder {
    * Requires texture coordinates and normals.
    */
   private computeTangents(): void {
-    if (!this.format.hasAttribute(VertexAttributeSemantic.TexCoord0)) {
+    if (!this.format || !this.format.hasAttribute(VertexAttributeSemantic.TexCoord0)) {
       return; // Need UVs for tangent computation
     }
 

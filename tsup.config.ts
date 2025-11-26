@@ -16,7 +16,7 @@ export default defineConfig([
     outExtension: () => ({ js: '.js' }),
     tsconfig: 'tsconfig.build.json',
     platform: 'browser',
-    external: ['@webgpu/types', '@types/webxr'],
+    external: ['@webgpu/types', '@types/webxr', '@dimforge/rapier3d', '@tensorflow/tfjs', 'onnxruntime-web'],
     esbuildOptions(options) {
       options.chunkNames = 'chunks/[name]-[hash]';
       options.mangleProps = undefined;
@@ -37,7 +37,7 @@ export default defineConfig([
     outExtension: () => ({ js: '.cjs' }),
     tsconfig: 'tsconfig.build.json',
     platform: 'neutral',
-    external: ['@webgpu/types', '@types/webxr'],
+    external: ['@webgpu/types', '@types/webxr', '@dimforge/rapier3d', '@tensorflow/tfjs', 'onnxruntime-web'],
     esbuildOptions(options) {
       options.keepNames = true;
     },
@@ -55,7 +55,7 @@ export default defineConfig([
     outExtension: () => ({ js: '.min.js' }),
     tsconfig: 'tsconfig.build.json',
     platform: 'browser',
-    external: [],
+    external: ['@dimforge/rapier3d', '@tensorflow/tfjs', 'onnxruntime-web'],
     esbuildOptions(options) {
       options.banner = {
         js: `/**

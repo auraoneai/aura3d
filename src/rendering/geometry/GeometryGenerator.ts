@@ -778,4 +778,23 @@ export class GeometryGenerator {
 
     return builder.build('Pyramid');
   }
+
+  // ============================================
+  // Aliases for common naming conventions
+  // ============================================
+
+  /** Alias for box() */
+  static createBox = GeometryGenerator.box;
+  /** Alias for sphere() */
+  static createSphere = GeometryGenerator.sphere;
+  /** Alias for cylinder() */
+  static createCylinder = GeometryGenerator.cylinder;
+  /** Alias for cone() */
+  static createCone = GeometryGenerator.cone;
+  /** Alias for plane() */
+  static createPlane = GeometryGenerator.plane;
+  /** Alias for torus() */
+  static createTorus = GeometryGenerator.torus;
+  /** Alias for capsule() */
+  static createCapsule = GeometryGenerator.capsule;
 }

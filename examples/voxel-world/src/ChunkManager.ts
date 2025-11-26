@@ -251,7 +251,7 @@ export class ChunkManager {
       const chunk = this.world.getChunk(pos.x, pos.y, pos.z);
       if (chunk && chunk.isMeshDirty()) {
         // Get LOD level
-        const distance = pos.distance(this.lastCenterChunk);
+        const distance = pos.distanceTo(this.lastCenterChunk);
         const lodLevel = this.getLODLevel(distance);
 
         // Build mesh with appropriate quality

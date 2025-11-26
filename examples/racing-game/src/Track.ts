@@ -70,11 +70,9 @@ export class Track {
     const controlPoints = this.createTrackControlPoints();
 
     // Create centerline spline
-    this.centerline = new CatmullRomSpline({
-      points: controlPoints,
-      closed: true,
-      tension: 0.5
-    });
+    this.centerline = new CatmullRomSpline(controlPoints);
+    this.centerline.closed = true;
+    this.centerline.tension = 0.5;
 
     // Set start position (first point on track)
     this.startPosition = this.centerline.getPoint(0);

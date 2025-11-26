@@ -110,5 +110,10 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@8.15.0"
+  "packageManager": "pnpm@8.15.0",
+  "dependencies": {
+    "@dimforge/rapier3d": "^0.19.3",
+    "@tensorflow/tfjs": "^4.22.0",
+    "onnxruntime-web": "^1.23.2"
+  }
 }

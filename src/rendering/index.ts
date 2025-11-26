@@ -759,6 +759,7 @@ export {
   DirectionalLight,
   CascadeSplitScheme,
 } from './lighting/DirectionalLight';
+export { AmbientLight } from './lighting/AmbientLight';
 export type {
   CascadeConfig as DirectionalCascadeConfig,
   AtmosphericScattering,

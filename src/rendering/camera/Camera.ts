@@ -271,6 +271,37 @@ export class Camera {
   }
 
   /**
+   * Sets the camera position.
+   * @param position - New position
+   * @returns this for chaining
+   */
+  setPosition(position: Vector3): this {
+    this.transform.position.copy(position);
+    this._viewDirty = true;
+    return this;
+  }
+
+  /**
+   * Gets the camera position.
+   * @returns Current position
+   */
+  getPosition(): Vector3 {
+    return this.transform.position.clone();
+  }
+
+  /**
+   * Makes the camera look at a target point.
+   * @param target - Target position to look at
+   * @param up - Up vector (default: Vector3.up())
+   * @returns this for chaining
+   */
+  lookAt(target: Vector3, up: Vector3 = Vector3.up()): this {
+    this.transform.lookAt(target, up);
+    this._viewDirty = true;
+    return this;
+  }
+
+  /**
    * Gets the projection type.
    * @returns Current projection type
    */

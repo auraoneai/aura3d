@@ -229,6 +229,16 @@ export class Scene {
   }
 
   /**
+   * Alias for add() - adds a node to the scene.
+   *
+   * @param node - Node to add
+   * @returns This scene for chaining
+   */
+  addNode(node: SceneNode): this {
+    return this.add(node);
+  }
+
+  /**
    * Removes a node from the scene.
    *
    * @param node - Node to remove

@@ -1107,6 +1107,79 @@ export class Quaternion {
   }
 
   /**
+   * Creates a quaternion that rotates to look in the specified direction.
+   * Similar to Unity's Quaternion.LookRotation.
+   *
+   * @param forward - The direction to look at (will be normalized)
+   * @param up - The up vector (default: Vector3.up())
+   * @returns New quaternion representing the look rotation
+   *
+   * @example
+   * ```typescript
+   * const forward = new Vector3(1, 0, 0);
+   * const q = Quaternion.lookRotation(forward, Vector3.up());
+   * ```
+   */
+  static lookRotation(forward: Vector3, up: Vector3 = Vector3.up()): Quaternion {
+    const fwd = forward.normalize();
+
+    // Handle edge case where forward is parallel to up
+    let right: Vector3;
+    if (Math.abs(fwd.dot(up)) > 0.9999) {
+      // Forward is nearly parallel to up, use a different reference
+      const altUp = Math.abs(fwd.y) < 0.9 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0);
+      right = fwd.cross(altUp).normalize();
+    } else {
+      right = fwd.cross(up).normalize();
+    }
+
+    const correctedUp = right.cross(fwd).normalize();
+
+    // Build rotation matrix elements
+    const m00 = right.x;
+    const m01 = correctedUp.x;
+    const m02 = -fwd.x;
+    const m10 = right.y;
+    const m11 = correctedUp.y;
+    const m12 = -fwd.y;
+    const m20 = right.z;
+    const m21 = correctedUp.z;
+    const m22 = -fwd.z;
+
+    // Convert rotation matrix to quaternion
+    const trace = m00 + m11 + m22;
+    const q = new Quaternion();
+
+    if (trace > 0) {
+      const s = 0.5 / Math.sqrt(trace + 1.0);
+      q.w = 0.25 / s;
+      q.x = (m21 - m12) * s;
+      q.y = (m02 - m20) * s;
+      q.z = (m10 - m01) * s;
+    } else if (m00 > m11 && m00 > m22) {
+      const s = 2.0 * Math.sqrt(1.0 + m00 - m11 - m22);
+      q.w = (m21 - m12) / s;
+      q.x = 0.25 * s;
+      q.y = (m01 + m10) / s;
+      q.z = (m02 + m20) / s;
+    } else if (m11 > m22) {
+      const s = 2.0 * Math.sqrt(1.0 + m11 - m00 - m22);
+      q.w = (m02 - m20) / s;
+      q.x = (m01 + m10) / s;
+      q.y = 0.25 * s;
+      q.z = (m12 + m21) / s;
+    } else {
+      const s = 2.0 * Math.sqrt(1.0 + m22 - m00 - m11);
+      q.w = (m10 - m01) / s;
+      q.x = (m02 + m20) / s;
+      q.y = (m12 + m21) / s;
+      q.z = 0.25 * s;
+    }
+
+    return q.normalize();
+  }
+
+  /**
    * Creates a quaternion from a rotation matrix.
    *
    * @param m - 4x4 rotation matrix

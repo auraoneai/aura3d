@@ -8,7 +8,7 @@ import { Vector3 } from '../math/Vector3';
 import { Quaternion } from '../math/Quaternion';
 import { Matrix4 } from '../math/Matrix4';
 import { Matrix3 } from '../math/Matrix3';
-import { Collider } from './Collider';
+import { Collider, IShape } from './Collider';
 
 /**
  * Rigid body type enum.
@@ -47,6 +47,14 @@ export class RigidBody {
   rotation: Quaternion;
   linearVelocity: Vector3;
   angularVelocity: Vector3;
+
+  /** Alias for linearVelocity for convenience */
+  get velocity(): Vector3 {
+    return this.linearVelocity;
+  }
+  set velocity(v: Vector3) {
+    this.linearVelocity = v;
+  }
   mass: number;
   inverseMass: number;
   inertia: Matrix3;
@@ -90,8 +98,37 @@ export class RigidBody {
     this.torqueAccumulator = Vector3.zero();
   }
 
-  addCollider(collider: Collider): void {
-    this.colliders.push(collider);
+  addCollider(colliderOrShapeOrConfig: Collider | IShape | { shape: IShape; friction?: number; restitution?: number; isTrigger?: boolean }): void {
+    // If it's already a Collider instance with getAABB method, use directly
+    if (colliderOrShapeOrConfig instanceof Collider) {
+      this.colliders.push(colliderOrShapeOrConfig);
+      return;
+    }
+
+    // If it's a config object with shape property, create a Collider from it
+    if ('shape' in colliderOrShapeOrConfig && colliderOrShapeOrConfig.shape) {
+      const config = colliderOrShapeOrConfig as { shape: IShape; friction?: number; restitution?: number; isTrigger?: boolean };
+      const collider = new Collider({
+        shape: config.shape,
+        isTrigger: config.isTrigger
+      });
+      // Apply friction/restitution to material if provided
+      if (config.friction !== undefined) {
+        collider.material.staticFriction = config.friction;
+        collider.material.dynamicFriction = config.friction;
+      }
+      if (config.restitution !== undefined) {
+        collider.material.restitution = config.restitution;
+      }
+      this.colliders.push(collider);
+      return;
+    }
+
+    // If it's an IShape (has type property for ShapeType), wrap it in a Collider
+    if ('type' in colliderOrShapeOrConfig) {
+      const collider = new Collider({ shape: colliderOrShapeOrConfig as IShape });
+      this.colliders.push(collider);
+    }
   }
 
   removeCollider(collider: Collider): void {
@@ -122,6 +159,23 @@ export class RigidBody {
     this.wakeUp();
   }
 
+  /** Alias for applyForce with point parameter */
+  applyForceAtPoint(force: Vector3, point: Vector3): void {
+    this.applyForce(force, point);
+  }
+
+  /** Alias for applyImpulse with point parameter */
+  applyImpulseAtPoint(impulse: Vector3, point: Vector3): void {
+    this.applyImpulse(impulse, point);
+  }
+
+  /** Apply torque to rotate the body */
+  applyTorque(torque: Vector3): void {
+    if (this.type !== BodyType.Dynamic) return;
+    this.torqueAccumulator.addInPlace(torque);
+    this.wakeUp();
+  }
+
   setMass(mass: number): void {
     this.mass = mass;
     this.inverseMass = this.type === BodyType.Dynamic && mass > 0 ? 1.0 / mass : 0;
@@ -131,6 +185,55 @@ export class RigidBody {
     this.inertia.setFromMatrix4(inertia);
     const inv = this.inertia.invert();
     if (inv) this.inverseInertia.copy(inv);
+  }
+
+  setPosition(position: Vector3): this {
+    this.position.copy(position);
+    this.wakeUp();
+    return this;
+  }
+
+  getPosition(): Vector3 {
+    return this.position.clone();
+  }
+
+  setRotation(rotation: Quaternion): this {
+    this.rotation = rotation;
+    this.wakeUp();
+    return this;
+  }
+
+  getRotation(): Quaternion {
+    return this.rotation;
+  }
+
+  setVelocity(velocity: Vector3): this {
+    this.linearVelocity.copy(velocity);
+    this.wakeUp();
+    return this;
+  }
+
+  getVelocity(): Vector3 {
+    return this.linearVelocity.clone();
+  }
+
+  getLinearVelocity(): Vector3 {
+    return this.linearVelocity.clone();
+  }
+
+  /** Alias for setVelocity for common naming convention */
+  setLinearVelocity(velocity: Vector3): this {
+    return this.setVelocity(velocity);
+  }
+
+  setAngularVelocity(angularVelocity: Vector3): this {
+    this.angularVelocity.copy(angularVelocity);
+    this.wakeUp();
+    return this;
+  }
+
+  getAngularVelocity(): Vector3 {
+    return this.angularVelocity.clone();
   }
 
   getWorldMatrix(): Matrix4 {

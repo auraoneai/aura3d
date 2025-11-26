@@ -156,6 +156,18 @@ export class SceneNode {
   layerMask: number = 0xFFFFFFFF;
 
   /**
+   * Attached mesh for rendering (optional convenience property).
+   * For more complex scenarios, use the component system.
+   */
+  mesh: any = null;
+
+  /**
+   * Attached material for rendering (optional convenience property).
+   * For more complex scenarios, use the component system.
+   */
+  material: any = null;
+
+  /**
    * Static counter for generating unique IDs.
    */
   private static _nextId: number = 1;
@@ -241,6 +253,42 @@ export class SceneNode {
    */
   set worldPosition(position: Vector3) {
     this.transform.worldPosition = position;
+  }
+
+  /**
+   * Sets the local position of this node.
+   * Convenience method for transform.position.set().
+   *
+   * @param position - Position to set
+   * @returns This node for chaining
+   */
+  setPosition(position: Vector3): this {
+    this.transform.position.copy(position);
+    return this;
+  }
+
+  /**
+   * Sets the local scale of this node.
+   * Convenience method for transform.scale.set().
+   *
+   * @param scale - Scale to set
+   * @returns This node for chaining
+   */
+  setScale(scale: Vector3): this {
+    this.transform.scale.copy(scale);
+    return this;
+  }
+
+  /**
+   * Sets the local rotation of this node.
+   * Convenience method for transform.rotation assignment.
+   *
+   * @param rotation - Rotation to set
+   * @returns This node for chaining
+   */
+  setRotation(rotation: Quaternion): this {
+    this.transform.rotation = rotation;
+    return this;
   }
 
   /**
@@ -592,6 +640,30 @@ export class SceneNode {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Sets the mesh for this node.
+   * Convenience method for simple use cases - for complex scenarios use components.
+   *
+   * @param mesh - The mesh to attach
+   * @returns This node for chaining
+   */
+  setMesh(mesh: any): this {
+    this.mesh = mesh;
+    return this;
+  }
+
+  /**
+   * Sets the material for this node.
+   * Convenience method for simple use cases - for complex scenarios use components.
+   *
+   * @param material - The material to attach
+   * @returns This node for chaining
+   */
+  setMaterial(material: any): this {
+    this.material = material;
+    return this;
   }
 
   /**

@@ -373,6 +373,86 @@ export class Engine {
   }
 
   /**
+   * Registers an event listener (EventEmitter-style API).
+   *
+   * @param event - Event name ('update', 'fixedUpdate', 'lateUpdate', 'init', 'start', 'stop', 'pause', 'resume', 'destroy')
+   * @param callback - Callback function
+   * @returns this for chaining
+   */
+  on(event: string, callback: Function): this {
+    switch (event) {
+      case 'update':
+        this._events.onUpdate = callback as (deltaTime: number) => void;
+        break;
+      case 'fixedUpdate':
+        this._events.onFixedUpdate = callback as (fixedDeltaTime: number) => void;
+        break;
+      case 'lateUpdate':
+        this._events.onLateUpdate = callback as (deltaTime: number) => void;
+        break;
+      case 'init':
+        this._events.onInit = callback as (engine: Engine) => void;
+        break;
+      case 'start':
+        this._events.onStart = callback as (engine: Engine) => void;
+        break;
+      case 'stop':
+        this._events.onStop = callback as (engine: Engine) => void;
+        break;
+      case 'pause':
+        this._events.onPause = callback as (engine: Engine) => void;
+        break;
+      case 'resume':
+        this._events.onResume = callback as (engine: Engine) => void;
+        break;
+      case 'destroy':
+        this._events.onDestroy = callback as (engine: Engine) => void;
+        break;
+    }
+    return this;
+  }
+
+  /**
+   * Removes an event listener.
+   *
+   * @param event - Event name
+   * @param callback - Callback function (optional, removes all if not provided)
+   * @returns this for chaining
+   */
+  off(event: string, callback?: Function): this {
+    switch (event) {
+      case 'update':
+        this._events.onUpdate = null;
+        break;
+      case 'fixedUpdate':
+        this._events.onFixedUpdate = null;
+        break;
+      case 'lateUpdate':
+        this._events.onLateUpdate = null;
+        break;
+      case 'init':
+        this._events.onInit = null;
+        break;
+      case 'start':
+        this._events.onStart = null;
+        break;
+      case 'stop':
+        this._events.onStop = null;
+        break;
+      case 'pause':
+        this._events.onPause = null;
+        break;
+      case 'resume':
+        this._events.onResume = null;
+        break;
+      case 'destroy':
+        this._events.onDestroy = null;
+        break;
+    }
+    return this;
+  }
+
+  /**
    * Gets the variable delta time in seconds.
    */
   get deltaTime(): number {

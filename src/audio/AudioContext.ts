@@ -149,6 +149,15 @@ export class AudioContext {
    * ```
    */
   public async initialize(config?: AudioContextConfig): Promise<void> {
+    return this._initialize(config);
+  }
+
+  /** Alias for initialize() for common naming convention */
+  public async init(config?: AudioContextConfig): Promise<void> {
+    return this._initialize(config);
+  }
+
+  private async _initialize(config?: AudioContextConfig): Promise<void> {
     if (this.initialized) {
       return;
     }

@@ -53,7 +53,7 @@ export class SectionPlaneHelper extends SceneNode {
   private planeOpacity: number;
   private gridColor: Color;
   private gridSpacing: number;
-  private mesh: Mesh | null = null;
+  override mesh: Mesh | null = null;
 
   /**
    * Create a new section plane helper
