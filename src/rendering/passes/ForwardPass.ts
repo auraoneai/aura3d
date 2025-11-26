@@ -21,6 +21,8 @@ import { UniformBuffer, UniformBufferDescriptor, UniformLayout, UniformType } fr
 import { Camera } from '../camera/Camera';
 import { Logger } from '../../core/Logger';
 import { Color } from '../../math/Color';
+import { Vector3 } from '../../math/Vector3';
+import { Matrix4 } from '../../math/Matrix4';
 
 const logger = Logger.create('ForwardPass');
 
@@ -41,9 +43,7 @@ export interface ForwardPassConfig {
 
 /**
  * Forward rendering vertex shader.
- * Note: Currently unused but kept for future implementation.
  */
-/*
 const FORWARD_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
@@ -77,13 +77,10 @@ void main() {
   gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
 }
 `;
-*/
 
 /**
  * Forward rendering fragment shader with PBR lighting.
- * Note: Currently unused but kept for future implementation.
  */
-/*
 const FORWARD_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
@@ -230,7 +227,6 @@ void main() {
   o_color = vec4(color, albedo.a);
 }
 `;
-*/
 
 /**
  * Forward rendering pass for transparent and special materials.
@@ -264,6 +260,12 @@ export class ForwardPass extends RenderPass {
 
   /** Depth pre-pass target */
   private depthPrePassTarget: RenderTarget | null = null;
+
+  /** WebGL context */
+  private gl: WebGL2RenderingContext | null = null;
+
+  /** Current camera */
+  private camera: Camera | null = null;
 
   /** Statistics */
   private stats = {
@@ -313,9 +315,39 @@ export class ForwardPass extends RenderPass {
 
   /**
    * Sets up forward pass resources.
+   *
+   * @param gl - WebGL2 rendering context (optional, for shader compilation)
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up ForwardPass');
+
+    // Store GL context if provided
+    if (gl) {
+      this.gl = gl;
+    }
+
+    // Create forward PBR shader
+    if (this.gl) {
+      const maxLights = this.config.maxLightsPerObject || 8;
+      this.shader = new Shader({
+        name: 'ForwardPBR',
+        source: {
+          vertex: FORWARD_VERTEX_SHADER,
+          fragment: FORWARD_FRAGMENT_SHADER,
+        },
+        defines: {
+          MAX_LIGHTS: maxLights,
+        },
+        gl: this.gl,
+      });
+
+      if (!this.shader.isReady) {
+        logger.error('Failed to compile forward shader:', this.shader.getErrors());
+        this.shader = null;
+      } else {
+        logger.info('Forward PBR shader compiled successfully');
+      }
+    }
 
     // Create camera uniform buffer
     const cameraUBODesc: UniformBufferDescriptor = {
@@ -356,9 +388,14 @@ export class ForwardPass extends RenderPass {
    * @param renderQueue - Queue containing transparent objects
    * @param renderTarget - Target to render to
    */
-  execute(renderQueue: RenderQueue, _renderTarget: RenderTarget): void {
+  execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
     if (renderQueue.isEmpty) {
       logger.trace('ForwardPass: empty queue, skipping');
+      return;
+    }
+
+    if (!this.gl || !this.shader) {
+      logger.warn('ForwardPass: GL context or shader not available, skipping');
       return;
     }
 
@@ -377,15 +414,122 @@ export class ForwardPass extends RenderPass {
     // Sort queue back-to-front for correct alpha blending
     renderQueue.sort();
 
+    // Note: Framebuffer binding should be handled by the rendering backend
+    // renderTarget would typically be bound via gl.bindFramebuffer() by the pipeline
+    // For now, we assume the target is already bound or will be bound externally
+
+    // Setup GL state for transparent rendering
+    this.gl!.enable(this.gl!.DEPTH_TEST);
+    this.gl!.depthFunc(this.gl!.LEQUAL);
+    this.gl!.depthMask(false); // Don't write depth for transparents
+
     // Enable alpha blending
-    // (Graphics backend would set blend state here)
+    this.gl!.enable(this.gl!.BLEND);
+    this.gl!.blendFunc(this.gl!.SRC_ALPHA, this.gl!.ONE_MINUS_SRC_ALPHA);
+    this.gl!.blendEquation(this.gl!.FUNC_ADD);
+
+    // Bind forward shader
+    this.shader!.bind();
+
+    // Set camera uniforms
+    if (this.camera) {
+      this.shader!.setUniform('u_viewMatrix', this.camera.viewMatrix);
+      this.shader!.setUniform('u_projectionMatrix', this.camera.projectionMatrix);
+      this.shader!.setUniform('u_cameraPosition', this.camera.transform.worldPosition);
+    }
 
     // Render transparent objects
-    renderQueue.forEach((_entry) => {
-      // Bind material and render
+    renderQueue.forEach((entry) => {
+      const drawCall = entry.drawCall;
+
+      // Set model matrix uniform
+      // Note: In full implementation, would extract from drawCall or material
+      // For now, we assume the shader will use default transforms
+
+      // Set material properties
+      // Note: In full implementation, would bind material textures and uniforms
+      // This would include:
+      // - Albedo texture and color
+      // - Normal map
+      // - Metallic/Roughness maps
+      // - Emission properties
+
+      // Set default material properties for demonstration
+      this.shader!.setUniform('u_albedo', new Color(1, 1, 1, 0.5));
+      this.shader!.setUniform('u_metallic', 0.0);
+      this.shader!.setUniform('u_roughness', 0.5);
+      this.shader!.setUniform('u_ao', 1.0);
+      this.shader!.setUniform('u_emission', new Vector3(0, 0, 0));
+      this.shader!.setUniform('u_emissionIntensity', 0.0);
+      this.shader!.setUniform('u_alphaCutoff', 0.5);
+
+      // Set light count (placeholder - would come from light manager)
+      this.shader!.setUniform('u_lightCount', 0);
+
+      // Execute draw call
+      if (drawCall.isIndexed()) {
+        // Indexed draw
+        const indexBufferBinding = drawCall.indexBuffer;
+        if (!indexBufferBinding) {
+          logger.warn('Indexed draw call missing index buffer');
+          return;
+        }
+
+        const indexFormat = indexBufferBinding.format === 0
+          ? this.gl!.UNSIGNED_SHORT
+          : this.gl!.UNSIGNED_INT;
+
+        if (drawCall.instanceCount > 1) {
+          // Instanced indexed draw
+          this.gl!.drawElementsInstanced(
+            this.gl!.TRIANGLES,
+            drawCall.indexCount,
+            indexFormat,
+            drawCall.firstIndex * (indexFormat === this.gl!.UNSIGNED_SHORT ? 2 : 4),
+            drawCall.instanceCount
+          );
+        } else {
+          // Regular indexed draw
+          this.gl!.drawElements(
+            this.gl!.TRIANGLES,
+            drawCall.indexCount,
+            indexFormat,
+            drawCall.firstIndex * (indexFormat === this.gl!.UNSIGNED_SHORT ? 2 : 4)
+          );
+        }
+      } else {
+        // Non-indexed draw
+        if (drawCall.instanceCount > 1) {
+          // Instanced draw
+          this.gl!.drawArraysInstanced(
+            this.gl!.TRIANGLES,
+            drawCall.firstVertex,
+            drawCall.vertexCount,
+            drawCall.instanceCount
+          );
+        } else {
+          // Regular draw
+          this.gl!.drawArrays(
+            this.gl!.TRIANGLES,
+            drawCall.firstVertex,
+            drawCall.vertexCount
+          );
+        }
+      }
+
       this.stats.drawCalls++;
       this.stats.transparentObjects++;
     });
+
+    // Restore GL state
+    this.gl!.depthMask(true);
+    this.gl!.disable(this.gl!.BLEND);
+
+    // Unbind shader
+    this.shader!.unbind();
+
+    // Note: Framebuffer unbinding should be handled by the rendering backend
+    // renderTarget would typically be unbound via gl.bindFramebuffer(gl.FRAMEBUFFER, null) externally
 
     logger.trace(`ForwardPass complete: ${this.stats.drawCalls} draws, ${this.stats.transparentObjects} transparent`);
   }
@@ -434,6 +578,8 @@ export class ForwardPass extends RenderPass {
    * @param camera - Active camera
    */
   updateCamera(camera: Camera): void {
+    this.camera = camera;
+
     if (this.cameraUBO) {
       this.cameraUBO.setMat4('viewMatrix', camera.viewMatrix);
       this.cameraUBO.setMat4('projectionMatrix', camera.projectionMatrix);

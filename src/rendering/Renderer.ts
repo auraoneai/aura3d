@@ -5,7 +5,8 @@
  * Manages the complete rendering pipeline from scene setup to final presentation.
  */
 
-import { GPUDevice, GPUBackendType } from './gpu/GPUDevice';
+import { GPUDevice, GPUBackendType, GPUFeature } from './gpu/GPUDevice';
+import { WebGL2Device } from './gpu/WebGL2Backend';
 import { Camera } from './camera/Camera';
 import { Scene } from './scene/Scene';
 import { RenderGraph } from './pipeline/RenderGraph';
@@ -271,16 +272,31 @@ export class Renderer {
     const height = config.height ?? canvas.height;
     const pixelRatio = config.pixelRatio ?? (typeof window !== 'undefined' ? window.devicePixelRatio : 1);
 
-    // Create device
+    // Create GPU device based on backend preference
     let device: GPUDevice;
 
-    // Create device - GPUDevice is abstract, use a concrete backend
-    // For now, create a minimal device implementation
-    device = {
-      getCapabilities: () => ({ backend: 'webgl2' as GPUBackendType }),
-      present: () => {},
-      dispose: () => {},
-    } as any as GPUDevice;
+    // Try to create the appropriate backend
+    if (backend === RendererBackend.WebGPU || backend === RendererBackend.Auto) {
+      // TODO: Try WebGPU first if available
+      // For now, fall through to WebGL2
+    }
+
+    // Create WebGL2 context and device
+    const gl = canvas.getContext('webgl2', {
+      alpha: false,
+      depth: true,
+      stencil: true,
+      antialias: config.msaaSamples ? config.msaaSamples > 1 : false,
+      premultipliedAlpha: true,
+      preserveDrawingBuffer: false,
+      powerPreference: 'high-performance',
+    });
+
+    if (!gl) {
+      throw new Error('WebGL2 is not supported in this browser');
+    }
+
+    device = new WebGL2Device(gl, canvas);
 
     // Create full config with defaults
     const fullConfig: Required<RendererConfig> = {
@@ -448,6 +464,20 @@ export class Renderer {
 
     // Update frame counter
     this.frameCount++;
+
+    // Clear the canvas with the scene's background color
+    const device = this.device as any;
+    if (device.getGL) {
+      const gl = device.getGL() as WebGL2RenderingContext;
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, this.width, this.height);
+      // Use a dark sky blue color for the background
+      const bgColor = { r: 0.1, g: 0.15, b: 0.25, a: 1 };
+      gl.clearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+      gl.clearDepth(1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      gl.enable(gl.DEPTH_TEST);
+    }
 
     // Begin profiling
     if (this.profiler) {

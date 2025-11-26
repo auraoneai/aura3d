@@ -610,7 +610,9 @@ class RacingGame {
     });
 
     // Render scene
-    this.engine.renderer.render(this.scene, this.camera);
+    if (this.engine.renderer) {
+      this.engine.renderer.render(this.scene, this.camera);
+    }
   }
 }
 

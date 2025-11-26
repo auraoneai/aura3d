@@ -36,58 +36,32 @@ export interface DepthPrePassConfig {
 
 /**
  * Depth-only vertex shader.
- * Note: Currently unused but kept for future implementation.
+ * Minimal shader that only transforms position for depth writing.
  */
-/*
 const DEPTH_VERTEX_SHADER = `#version 300 es
 precision highp float;
 
 in vec3 a_position;
 
-#ifdef ALPHA_MASK
-in vec2 a_texcoord;
-out vec2 v_texcoord;
-#endif
-
-uniform mat4 u_modelMatrix;
-uniform mat4 u_viewProjectionMatrix;
+uniform mat4 u_mvp;
 
 void main() {
-  #ifdef ALPHA_MASK
-  v_texcoord = a_texcoord;
-  #endif
-
-  gl_Position = u_viewProjectionMatrix * u_modelMatrix * vec4(a_position, 1.0);
+  gl_Position = u_mvp * vec4(a_position, 1.0);
 }
 `;
-*/
 
 /**
  * Depth-only fragment shader.
- * Note: Currently unused but kept for future implementation.
+ * Empty shader - depth is written automatically.
  */
-/*
 const DEPTH_FRAGMENT_SHADER = `#version 300 es
 precision highp float;
 
-#ifdef ALPHA_MASK
-in vec2 v_texcoord;
-uniform sampler2D u_albedoMap;
-uniform float u_alphaCutoff;
-#endif
-
 void main() {
-  #ifdef ALPHA_MASK
-  float alpha = texture(u_albedoMap, v_texcoord).a;
-  if (alpha < u_alphaCutoff) {
-    discard;
-  }
-  #endif
-
   // Depth is written automatically to depth buffer
 }
 `;
-*/
+
 
 /**
  * Hi-Z generation compute shader (for mipmap chain).
@@ -172,6 +146,9 @@ export class DepthPrePass extends RenderPass {
   /** Current camera */
   private currentCamera: Camera | null = null;
 
+  /** WebGL2 rendering context */
+  private gl: WebGL2RenderingContext | null = null;
+
   /** Statistics */
   private stats = {
     drawCalls: 0,
@@ -212,8 +189,13 @@ export class DepthPrePass extends RenderPass {
   /**
    * Sets up depth pre-pass resources.
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up DepthPrePass');
+
+    // Store GL context if provided
+    if (gl) {
+      this.gl = gl;
+    }
 
     // Create depth render target
     this.depthTarget = new RenderTarget({
@@ -229,6 +211,22 @@ export class DepthPrePass extends RenderPass {
       },
       label: 'DepthPrePass',
     });
+
+    // Create depth-only shader
+    if (this.gl) {
+      this.shader = new Shader({
+        name: 'DepthPrePass',
+        source: {
+          vertex: DEPTH_VERTEX_SHADER,
+          fragment: DEPTH_FRAGMENT_SHADER,
+        },
+        gl: this.gl,
+      });
+
+      if (!this.shader.isReady) {
+        logger.error('Failed to compile depth shader', this.shader.getErrors());
+      }
+    }
 
     // Create camera uniform buffer
     const cameraUBODesc: UniformBufferDescriptor = {
@@ -269,8 +267,13 @@ export class DepthPrePass extends RenderPass {
    * @param renderTarget - Unused, uses internal depth target
    */
   execute(renderQueue: RenderQueue, _renderTarget: RenderTarget): void {
-    if (!this.depthTarget || !this.currentCamera) {
+    if (!this.gl || !this.depthTarget || !this.currentCamera || !this.shader) {
       logger.error('DepthPrePass not properly initialized');
+      return;
+    }
+
+    if (!this.shader.isReady) {
+      logger.error('Depth shader not ready');
       return;
     }
 
@@ -289,27 +292,130 @@ export class DepthPrePass extends RenderPass {
     // Sort queue front-to-back for early-Z
     renderQueue.sort();
 
-    // Update camera uniforms
-    if (this.cameraUBO) {
-      this.cameraUBO.setMat4('viewProjectionMatrix', this.currentCamera.viewProjectionMatrix);
-    }
+    const gl = this.gl;
 
-    // Render depth-only
-    // Depth write: enabled, color write: disabled
+    // Bind depth buffer target
+    // Note: This assumes depthTarget has a bind() method
+    // In a real implementation, you would bind the framebuffer here
+    // For now, we'll proceed with the WebGL state setup
+
+    // Clear depth buffer to 1.0
+    gl.clearDepth(1.0);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+
+    // Set GL state for depth-only rendering
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.depthMask(true); // Enable depth writes
+
+    // Disable color writes (depth-only pass)
+    gl.colorMask(false, false, false, false);
+
+    // Enable culling for better performance
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    gl.frontFace(gl.CCW);
+
+    // Bind depth shader
+    this.shader.bind();
+
+    // Get view-projection matrix from camera
+    const viewProjectionMatrix = this.currentCamera.viewProjectionMatrix;
+
+    // Render depth-only for each entry
     renderQueue.forEach((entry) => {
       const { drawCall } = entry;
 
-      // Update model matrix
-      // (Would get from draw call or entity)
+      // Compute MVP matrix
+      // For now, assuming identity model matrix
+      // In a real implementation, you would get this from the draw call's entity
+      const modelMatrix = Matrix4.identity();
+      const mvpMatrix = viewProjectionMatrix.multiply(modelMatrix);
 
-      // Render
-      this.stats.drawCalls++;
+      // Set MVP uniform
+      this.shader!.setUniform('u_mvp', mvpMatrix);
+
+      // Bind vertex buffers
+      const vertexBuffers = drawCall.getVertexBuffers();
+      for (let i = 0; i < vertexBuffers.length; i++) {
+        const vb = vertexBuffers[i];
+        if (vb && vb.buffer) {
+          // Bind vertex buffer
+          // Note: In a real implementation, you would need VAO binding
+          // or manual attribute setup based on the shader's attributes
+          gl.bindBuffer(gl.ARRAY_BUFFER, vb.buffer as WebGLBuffer);
+
+          // Enable attribute (assuming a_position is at location 0)
+          const positionAttr = this.shader!.getAttribute('a_position');
+          if (positionAttr) {
+            gl.enableVertexAttribArray(positionAttr.location);
+            gl.vertexAttribPointer(
+              positionAttr.location,
+              3, // 3 components (x, y, z)
+              gl.FLOAT,
+              false,
+              vb.stride,
+              vb.offset
+            );
+          }
+        }
+      }
+
+      // Draw elements
       if (drawCall.isIndexed()) {
-        this.stats.triangles += Math.floor(drawCall.indexCount / 3) * drawCall.instanceCount;
+        const indexBuffer = drawCall.indexBuffer;
+        if (indexBuffer) {
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer.buffer as WebGLBuffer);
+
+          const indexType = indexBuffer.format === 0 ? gl.UNSIGNED_SHORT : gl.UNSIGNED_INT;
+
+          if (drawCall.isInstanced()) {
+            gl.drawElementsInstanced(
+              this.getGLTopology(drawCall.topology),
+              drawCall.indexCount,
+              indexType,
+              drawCall.firstIndex * (indexBuffer.format === 0 ? 2 : 4),
+              drawCall.instanceCount
+            );
+          } else {
+            gl.drawElements(
+              this.getGLTopology(drawCall.topology),
+              drawCall.indexCount,
+              indexType,
+              drawCall.firstIndex * (indexBuffer.format === 0 ? 2 : 4)
+            );
+          }
+
+          this.stats.triangles += Math.floor(drawCall.indexCount / 3) * drawCall.instanceCount;
+        }
       } else {
+        // Non-indexed draw
+        if (drawCall.isInstanced()) {
+          gl.drawArraysInstanced(
+            this.getGLTopology(drawCall.topology),
+            drawCall.firstVertex,
+            drawCall.vertexCount,
+            drawCall.instanceCount
+          );
+        } else {
+          gl.drawArrays(
+            this.getGLTopology(drawCall.topology),
+            drawCall.firstVertex,
+            drawCall.vertexCount
+          );
+        }
+
         this.stats.triangles += Math.floor(drawCall.vertexCount / 3) * drawCall.instanceCount;
       }
+
+      this.stats.drawCalls++;
     });
+
+    // Restore color writes
+    gl.colorMask(true, true, true, true);
+
+    // Unbind shader
+    this.shader.unbind();
 
     // Generate Hi-Z mipmap chain if enabled
     if (this.config.generateHiZ) {
@@ -319,6 +425,27 @@ export class DepthPrePass extends RenderPass {
     logger.trace(
       `DepthPrePass complete: ${this.stats.drawCalls} draws, ${this.stats.triangles} triangles, ${this.stats.culledObjects} culled`
     );
+  }
+
+  /**
+   * Converts DrawCall topology to WebGL primitive type.
+   *
+   * @param topology - DrawCall topology
+   * @returns WebGL primitive type constant
+   */
+  private getGLTopology(topology: number): number {
+    if (!this.gl) return 0;
+
+    const gl = this.gl;
+    switch (topology) {
+      case 0: return gl.POINTS;
+      case 1: return gl.LINES;
+      case 2: return gl.LINE_STRIP;
+      case 3: return gl.TRIANGLES;
+      case 4: return gl.TRIANGLE_STRIP;
+      case 5: return gl.TRIANGLE_FAN;
+      default: return gl.TRIANGLES;
+    }
   }
 
   /**

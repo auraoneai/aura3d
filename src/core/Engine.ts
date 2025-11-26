@@ -12,6 +12,8 @@ import { World } from '../ecs/World';
 import { Time } from './Time';
 import { EventBus } from './EventBus';
 import { Logger } from './Logger';
+import { Renderer, RendererConfig, RendererBackend, RenderMode } from '../rendering/Renderer';
+import { QualityPreset } from '../rendering/RenderSettings';
 
 /**
  * Configuration options for engine initialization.
@@ -213,6 +215,11 @@ export class Engine {
   private _canvas: HTMLCanvasElement | null;
 
   /**
+   * Renderer instance for GPU rendering.
+   */
+  private _renderer: Renderer | null = null;
+
+  /**
    * Logger instance for engine logging.
    */
   private readonly logger = Logger.create('Engine');
@@ -363,6 +370,14 @@ export class Engine {
    */
   get canvas(): HTMLCanvasElement | null {
     return this._canvas;
+  }
+
+  /**
+   * Gets the renderer instance.
+   * Returns null if no canvas was provided or renderer hasn't been initialized.
+   */
+  get renderer(): Renderer | null {
+    return this._renderer;
   }
 
   /**
@@ -528,6 +543,23 @@ export class Engine {
     Time.reset();
 
     this._world.init();
+
+    // Initialize renderer if canvas is provided
+    if (this._canvas) {
+      try {
+        this._renderer = await Renderer.create({
+          canvas: this._canvas,
+          backend: RendererBackend.Auto,
+          renderMode: RenderMode.Forward,
+          quality: QualityPreset.High,
+          enableProfiling: this._config.enableProfiling ?? false
+        });
+        this.logger.info('Renderer initialized');
+      } catch (error) {
+        this.logger.warn('Failed to initialize renderer', error);
+        // Continue without renderer - headless mode
+      }
+    }
 
     this.setupVisibilityHandling();
 
@@ -743,6 +775,12 @@ export class Engine {
     }
 
     this.cleanupVisibilityHandling();
+
+    // Dispose renderer
+    if (this._renderer) {
+      this._renderer.dispose();
+      this._renderer = null;
+    }
 
     this._world.destroy();
 

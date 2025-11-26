@@ -231,6 +231,9 @@ export class ShadowPass extends RenderPass {
   /** Uniform buffer for shadow matrices */
   private shadowUBO: UniformBuffer | null = null;
 
+  /** WebGL2 context */
+  private gl: WebGL2RenderingContext | null = null;
+
   /** Shadow atlas (if enabled) */
   private shadowAtlas: RenderTarget | null = null;
 
@@ -291,6 +294,9 @@ export class ShadowPass extends RenderPass {
   setup(): void {
     logger.debug('Setting up ShadowPass');
 
+    // Get WebGL2 context (would be passed from renderer in a real implementation)
+    // For now, we'll get it when execute() is called
+
     if (this.config.useShadowAtlas) {
       // Create shadow atlas
       this.shadowAtlas = new RenderTarget({
@@ -345,6 +351,42 @@ export class ShadowPass extends RenderPass {
   }
 
   /**
+   * Initializes the GL context and creates shaders.
+   * Should be called before execute() with a valid GL context.
+   *
+   * @param gl - WebGL2 rendering context
+   */
+  initializeGL(gl: WebGL2RenderingContext): void {
+    if (this.gl === gl && this.shader && this.omniShader) {
+      return; // Already initialized
+    }
+
+    this.gl = gl;
+
+    // Create standard shadow shader
+    this.shader = new Shader({
+      name: 'ShadowDepth',
+      source: {
+        vertex: SHADOW_VERTEX_SHADER,
+        fragment: SHADOW_FRAGMENT_SHADER,
+      },
+      gl: this.gl,
+    });
+
+    // Create omnidirectional shadow shader
+    this.omniShader = new Shader({
+      name: 'OmniShadow',
+      source: {
+        vertex: OMNI_SHADOW_VERTEX_SHADER,
+        fragment: OMNI_SHADOW_FRAGMENT_SHADER,
+      },
+      gl: this.gl,
+    });
+
+    logger.debug('Shadow shaders initialized');
+  }
+
+  /**
    * Executes the shadow pass.
    * Renders shadow maps for all shadow-casting lights.
    *
@@ -357,6 +399,17 @@ export class ShadowPass extends RenderPass {
       return;
     }
 
+    // Ensure GL context is available
+    if (!this.gl) {
+      logger.error('ShadowPass: GL context not initialized. Call initializeGL() first.');
+      return;
+    }
+
+    if (!this.shader || !this.shader.isReady) {
+      logger.error('ShadowPass: Shadow shader not ready');
+      return;
+    }
+
     // Reset statistics
     this.stats.shadowMapsRendered = 0;
     this.stats.cascadesRendered = 0;
@@ -364,26 +417,164 @@ export class ShadowPass extends RenderPass {
 
     logger.trace(`ShadowPass: rendering ${this.shadowMaps.length} shadow maps`);
 
+    const gl = this.gl;
+
     // Render each shadow map
     for (let i = 0; i < this.shadowMaps.length; i++) {
       const shadowMap = this.shadowMaps[i];
       const target = this.shadowTargets[i];
 
-      if (!target) continue;
+      if (!target) {
+        logger.warn(`ShadowPass: No render target for shadow map ${i}`);
+        continue;
+      }
 
-      // Update shadow uniforms
-      if (this.shadowUBO) {
-        this.shadowUBO.setMat4('lightViewProjection', shadowMap.lightViewProjection);
+      // Get shadow map framebuffer
+      const depthAttachment = target.getDepthStencilAttachment();
+      if (!depthAttachment || !depthAttachment.texture) {
+        logger.warn(`ShadowPass: No depth attachment for shadow map ${i}`);
+        continue;
+      }
+
+      // Bind shadow map framebuffer
+      const framebuffer = this.getOrCreateFramebuffer(target);
+      if (!framebuffer) {
+        logger.warn(`ShadowPass: Failed to create framebuffer for shadow map ${i}`);
+        continue;
+      }
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+      gl.viewport(0, 0, target.width, target.height);
+
+      // Clear depth to 1.0
+      gl.clearDepth(1.0);
+      gl.clear(gl.DEPTH_BUFFER_BIT);
+
+      // Set GL state for depth-only rendering
+      gl.enable(gl.DEPTH_TEST);
+      gl.depthFunc(gl.LESS);
+      gl.depthMask(true);
+
+      // Disable color writes for depth-only pass
+      gl.colorMask(false, false, false, false);
+
+      // Optionally enable culling
+      gl.enable(gl.CULL_FACE);
+      gl.cullFace(gl.BACK);
+
+      // Select appropriate shader based on shadow map type
+      const activeShader = shadowMap.type === ShadowMapType.Omnidirectional ? this.omniShader : this.shader;
+
+      if (!activeShader || !activeShader.isReady) {
+        logger.warn(`ShadowPass: Shader not ready for shadow map ${i}`);
+        continue;
+      }
+
+      // Bind shadow shader
+      activeShader.bind();
+
+      // Set light view-projection matrix uniform
+      activeShader.setUniform('u_lightViewProjection', shadowMap.lightViewProjection);
+
+      // Set omnidirectional-specific uniforms if needed
+      if (shadowMap.type === ShadowMapType.Omnidirectional && shadowMap.lightPosition && shadowMap.range) {
+        activeShader.setUniform('u_lightPosition', shadowMap.lightPosition);
+        activeShader.setUniform('u_farPlane', shadowMap.range);
       }
 
       // Render shadow casters
       renderQueue.forEach((entry) => {
-        // Cull objects outside shadow frustum
-        // (Would check bounds against shadow frustum here)
+        const { drawCall } = entry;
 
-        // Render depth only
-        this.stats.drawCalls++;
+        // Cull objects outside shadow frustum
+        // (Would check bounds against shadow frustum here for optimization)
+
+        // Get model matrix from draw call user data (if available)
+        // In a real implementation, this would come from the entity's transform
+        const modelMatrix = (drawCall.userData as any)?.modelMatrix || Matrix4.identity();
+        activeShader.setUniform('u_modelMatrix', modelMatrix);
+
+        // Bind vertex buffers
+        const vertexBuffers = drawCall.getVertexBuffers();
+        for (let slot = 0; slot < vertexBuffers.length; slot++) {
+          const vb = vertexBuffers[slot];
+          if (vb && vb.buffer) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, vb.buffer as WebGLBuffer);
+
+            // Enable position attribute (location 0)
+            if (slot === 0) {
+              const posAttr = activeShader.getAttribute('a_position');
+              if (posAttr) {
+                gl.enableVertexAttribArray(posAttr.location);
+                gl.vertexAttribPointer(
+                  posAttr.location,
+                  3, // vec3 position
+                  gl.FLOAT,
+                  false,
+                  vb.stride,
+                  vb.offset
+                );
+              }
+            }
+          }
+        }
+
+        // Bind index buffer and draw
+        const indexBuffer = drawCall.indexBuffer;
+        if (indexBuffer && indexBuffer.buffer) {
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer.buffer as WebGLBuffer);
+
+          const indexType = indexBuffer.format === 0 ? gl.UNSIGNED_SHORT : gl.UNSIGNED_INT;
+          const indexSize = indexBuffer.format === 0 ? 2 : 4;
+
+          // Draw indexed geometry
+          if (drawCall.instanceCount > 1) {
+            gl.drawElementsInstanced(
+              gl.TRIANGLES,
+              drawCall.indexCount,
+              indexType,
+              drawCall.firstIndex * indexSize,
+              drawCall.instanceCount
+            );
+          } else {
+            gl.drawElements(
+              gl.TRIANGLES,
+              drawCall.indexCount,
+              indexType,
+              drawCall.firstIndex * indexSize
+            );
+          }
+
+          this.stats.drawCalls++;
+        } else if (drawCall.vertexCount > 0) {
+          // Draw non-indexed geometry
+          if (drawCall.instanceCount > 1) {
+            gl.drawArraysInstanced(
+              gl.TRIANGLES,
+              drawCall.firstVertex,
+              drawCall.vertexCount,
+              drawCall.instanceCount
+            );
+          } else {
+            gl.drawArrays(
+              gl.TRIANGLES,
+              drawCall.firstVertex,
+              drawCall.vertexCount
+            );
+          }
+
+          this.stats.drawCalls++;
+        }
+
+        // Disable vertex attributes
+        const posAttr = activeShader.getAttribute('a_position');
+        if (posAttr) {
+          gl.disableVertexAttribArray(posAttr.location);
+        }
       });
+
+      // Unbind shader
+      activeShader.unbind();
 
       this.stats.shadowMapsRendered++;
 
@@ -392,9 +583,69 @@ export class ShadowPass extends RenderPass {
       }
     }
 
+    // Restore GL state
+    gl.colorMask(true, true, true, true);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
     logger.trace(
       `ShadowPass complete: ${this.stats.shadowMapsRendered} maps, ${this.stats.cascadesRendered} cascades, ${this.stats.drawCalls} draws`
     );
+  }
+
+  /**
+   * Gets or creates a WebGL framebuffer for a render target.
+   * Caches framebuffers to avoid recreation.
+   *
+   * @param target - Render target
+   * @returns WebGL framebuffer or null
+   */
+  private framebufferCache = new WeakMap<RenderTarget, WebGLFramebuffer>();
+
+  private getOrCreateFramebuffer(target: RenderTarget): WebGLFramebuffer | null {
+    if (!this.gl) return null;
+
+    // Check cache
+    const cached = this.framebufferCache.get(target);
+    if (cached) return cached;
+
+    const gl = this.gl;
+
+    // Create new framebuffer
+    const framebuffer = gl.createFramebuffer();
+    if (!framebuffer) {
+      logger.error('Failed to create framebuffer');
+      return null;
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+    // Attach depth texture
+    const depthAttachment = target.getDepthStencilAttachment();
+    if (depthAttachment && depthAttachment.texture) {
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.DEPTH_ATTACHMENT,
+        gl.TEXTURE_2D,
+        depthAttachment.texture as WebGLTexture,
+        0
+      );
+    }
+
+    // Check framebuffer completeness
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      logger.error(`Framebuffer incomplete: ${status}`);
+      gl.deleteFramebuffer(framebuffer);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      return null;
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // Cache framebuffer
+    this.framebufferCache.set(target, framebuffer);
+
+    return framebuffer;
   }
 
   /**
@@ -402,6 +653,19 @@ export class ShadowPass extends RenderPass {
    */
   cleanup(): void {
     logger.debug('Cleaning up ShadowPass');
+
+    // Clean up cached framebuffers
+    // Note: WeakMap doesn't expose iteration, but framebuffers will be GC'd when targets are disposed
+    // We'll manually clean up the ones we know about
+    if (this.gl) {
+      for (const target of this.shadowTargets) {
+        const fb = this.framebufferCache.get(target);
+        if (fb) {
+          this.gl.deleteFramebuffer(fb);
+        }
+      }
+    }
+    this.framebufferCache = new WeakMap();
 
     for (const target of this.shadowTargets) {
       target.dispose();
@@ -425,6 +689,7 @@ export class ShadowPass extends RenderPass {
 
     this.shadowMaps.length = 0;
     this.shadowUBO = null;
+    this.gl = null;
 
     logger.info('ShadowPass cleanup complete');
   }

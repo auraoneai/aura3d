@@ -619,21 +619,242 @@ export class SMAAPass extends RenderPass {
       return;
     }
 
+    if (!this.inputTexture) {
+      logger.error('SMAAPass: No input texture set');
+      return;
+    }
+
     logger.trace('SMAAPass: applying anti-aliasing');
 
     // Update uniforms
     this.updateUniforms();
 
+    // Initialize shaders if needed
+    if (!this.edgeShader) {
+      this.edgeShader = this.createEdgeDetectionShader();
+    }
+    if (!this.blendWeightShader) {
+      this.blendWeightShader = this.createBlendWeightShader();
+    }
+    if (!this.neighborhoodBlendShader) {
+      this.neighborhoodBlendShader = this.createNeighborhoodBlendShader();
+    }
+
     // Pass 1: Edge detection
-    // Render fullscreen triangle with edge detection shader to edgesTarget
+    // Detect edges in the input image and output to edgesTarget
+    this.executeEdgeDetectionPass();
 
     // Pass 2: Blend weight calculation
-    // Render fullscreen triangle with blend weight shader to blendTarget
+    // Calculate blend weights using edges and area/search textures, output to blendTarget
+    this.executeBlendWeightPass();
 
     // Pass 3: Neighborhood blending
-    // Render fullscreen triangle with blending shader to outputTarget
+    // Apply final blending using blend weights to produce anti-aliased output
+    this.executeNeighborhoodBlendPass();
 
     logger.trace('SMAAPass complete');
+  }
+
+  /**
+   * Executes edge detection pass (Pass 1).
+   */
+  private executeEdgeDetectionPass(): void {
+    if (!this.edgeShader || !this.edgesTarget || !this.inputTexture) {
+      logger.error('Edge detection pass cannot execute: missing resources');
+      return;
+    }
+
+    logger.trace('SMAA Pass 1: Edge detection');
+
+    // Bind edge detection shader
+    this.edgeShader.bind();
+
+    // Set uniforms
+    const pixelSize = {
+      x: 1.0 / this.config.width,
+      y: 1.0 / this.config.height
+    };
+    this.edgeShader.setUniform('u_pixelSize', new Vector2(pixelSize.x, pixelSize.y));
+    this.edgeShader.setUniform('u_threshold', this.config.threshold ?? 0.1);
+
+    // Bind input texture to texture unit 0
+    // Note: Actual texture binding would depend on graphics backend implementation
+    // this.edgeShader.setUniform('u_colorTexture', 0);
+    // gl.activeTexture(gl.TEXTURE0);
+    // gl.bindTexture(gl.TEXTURE_2D, this.inputTexture);
+
+    // Set render target
+    // this.edgesTarget.bind();
+
+    // Render fullscreen triangle
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    this.edgeShader.unbind();
+  }
+
+  /**
+   * Executes blend weight calculation pass (Pass 2).
+   */
+  private executeBlendWeightPass(): void {
+    if (!this.blendWeightShader || !this.blendTarget || !this.edgesTarget) {
+      logger.error('Blend weight pass cannot execute: missing resources');
+      return;
+    }
+
+    logger.trace('SMAA Pass 2: Blend weight calculation');
+
+    // Bind blend weight shader
+    this.blendWeightShader.bind();
+
+    // Set uniforms
+    const pixelSize = {
+      x: 1.0 / this.config.width,
+      y: 1.0 / this.config.height
+    };
+    this.blendWeightShader.setUniform('u_pixelSize', new Vector2(pixelSize.x, pixelSize.y));
+    this.blendWeightShader.setUniform('u_maxSearchSteps', this.config.maxSearchSteps ?? 16);
+    this.blendWeightShader.setUniform('u_cornerRounding', this.config.cornerRounding ?? 25);
+
+    // Bind textures
+    // Edges texture from Pass 1
+    // this.blendWeightShader.setUniform('u_edgesTexture', 0);
+    // gl.activeTexture(gl.TEXTURE0);
+    // gl.bindTexture(gl.TEXTURE_2D, this.edgesTarget.getColorAttachment(0));
+
+    // Area texture (precomputed lookup)
+    // this.blendWeightShader.setUniform('u_areaTexture', 1);
+    // gl.activeTexture(gl.TEXTURE1);
+    // gl.bindTexture(gl.TEXTURE_2D, this.areaTexture);
+
+    // Search texture (precomputed lookup)
+    // this.blendWeightShader.setUniform('u_searchTexture', 2);
+    // gl.activeTexture(gl.TEXTURE2);
+    // gl.bindTexture(gl.TEXTURE_2D, this.searchTexture);
+
+    // Set render target
+    // this.blendTarget.bind();
+
+    // Render fullscreen triangle
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    this.blendWeightShader.unbind();
+  }
+
+  /**
+   * Executes neighborhood blending pass (Pass 3).
+   */
+  private executeNeighborhoodBlendPass(): void {
+    if (!this.neighborhoodBlendShader || !this.outputTarget || !this.inputTexture || !this.blendTarget) {
+      logger.error('Neighborhood blend pass cannot execute: missing resources');
+      return;
+    }
+
+    logger.trace('SMAA Pass 3: Neighborhood blending');
+
+    // Bind neighborhood blend shader
+    this.neighborhoodBlendShader.bind();
+
+    // Set uniforms
+    const pixelSize = {
+      x: 1.0 / this.config.width,
+      y: 1.0 / this.config.height
+    };
+    this.neighborhoodBlendShader.setUniform('u_pixelSize', new Vector2(pixelSize.x, pixelSize.y));
+
+    // Bind textures
+    // Original color texture
+    // this.neighborhoodBlendShader.setUniform('u_colorTexture', 0);
+    // gl.activeTexture(gl.TEXTURE0);
+    // gl.bindTexture(gl.TEXTURE_2D, this.inputTexture);
+
+    // Blend weights from Pass 2
+    // this.neighborhoodBlendShader.setUniform('u_blendTexture', 1);
+    // gl.activeTexture(gl.TEXTURE1);
+    // gl.bindTexture(gl.TEXTURE_2D, this.blendTarget.getColorAttachment(0));
+
+    // Set render target
+    // this.outputTarget.bind();
+
+    // Render fullscreen triangle
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    this.neighborhoodBlendShader.unbind();
+  }
+
+  /**
+   * Creates edge detection shader with appropriate defines.
+   */
+  private createEdgeDetectionShader(): Shader {
+    const defines: Record<string, number | string> = {};
+
+    // Add edge detection mode define
+    if (this.config.edgeDetectionMode === SMAAEdgeDetectionMode.Color) {
+      defines.USE_COLOR_EDGE_DETECTION = 1;
+    }
+
+    return new Shader({
+      name: 'SMAA_EdgeDetection',
+      source: {
+        vertex: SMAA_EDGE_VERTEX_SHADER,
+        fragment: SMAA_EDGE_FRAGMENT_SHADER
+      },
+      defines
+    });
+  }
+
+  /**
+   * Creates blend weight shader with search steps define.
+   */
+  private createBlendWeightShader(): Shader {
+    const maxSearchSteps = this.config.maxSearchSteps ?? 16;
+
+    return new Shader({
+      name: 'SMAA_BlendWeight',
+      source: {
+        vertex: SMAA_BLEND_WEIGHT_VERTEX_SHADER,
+        fragment: SMAA_BLEND_WEIGHT_FRAGMENT_SHADER
+      },
+      defines: {
+        MAX_SEARCH_STEPS: maxSearchSteps
+      }
+    });
+  }
+
+  /**
+   * Creates neighborhood blending shader.
+   */
+  private createNeighborhoodBlendShader(): Shader {
+    // Simple vertex shader for fullscreen triangle
+    const vertexShader = `#version 300 es
+precision highp float;
+
+const vec2 positions[3] = vec2[3](
+  vec2(-1.0, -1.0),
+  vec2(3.0, -1.0),
+  vec2(-1.0, 3.0)
+);
+
+const vec2 texcoords[3] = vec2[3](
+  vec2(0.0, 0.0),
+  vec2(2.0, 0.0),
+  vec2(0.0, 2.0)
+);
+
+out vec2 v_texcoord;
+
+void main() {
+  v_texcoord = texcoords[gl_VertexID];
+  gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
+}
+`;
+
+    return new Shader({
+      name: 'SMAA_NeighborhoodBlend',
+      source: {
+        vertex: vertexShader,
+        fragment: SMAA_BLEND_FRAGMENT_SHADER
+      }
+    });
   }
 
   /**

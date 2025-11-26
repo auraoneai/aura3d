@@ -485,12 +485,32 @@ export class ParticlePass extends RenderPass {
       this.sortParticles();
     }
 
+    // Bind output framebuffer
+    this.bindRenderTarget(renderTarget);
+
+    // Setup GL state for particle rendering
+    this.setupGLState();
+
+    // Bind particle shader
+    this.gl.useProgram(this.shader);
+
+    // Setup camera uniforms (would normally come from camera)
+    this.setupCameraUniforms();
+
+    // Bind depth buffer for soft particles
+    if (this.config.enableSoftParticles) {
+      this.bindDepthTexture(renderTarget);
+    }
+
     // Render all emitters
     this.renderEmitters();
 
+    // Restore GL state
+    this.restoreGLState();
+
     this.frameCount++;
 
-    logger.trace(`ParticlePass: ${this.stats.emitters} emitters, ${this.stats.particles} particles`);
+    logger.trace(`ParticlePass: ${this.stats.emitters} emitters, ${this.stats.particles} particles, ${this.stats.drawCalls} draws`);
   }
 
   /**
@@ -593,28 +613,294 @@ export class ParticlePass extends RenderPass {
   }
 
   /**
+   * Binds render target framebuffer.
+   */
+  private bindRenderTarget(renderTarget: RenderTarget): void {
+    if (!this.gl) return;
+
+    // In full implementation, would bind WebGL framebuffer
+    // For now, assume we're rendering to default framebuffer or a pre-bound FBO
+    const viewport = renderTarget.getViewport();
+    this.gl.viewport(viewport.x, viewport.y, viewport.width, viewport.height);
+  }
+
+  /**
+   * Sets up GL state for particle rendering.
+   */
+  private setupGLState(): void {
+    if (!this.gl) return;
+
+    // Enable blending for particles
+    this.gl.enable(this.gl.BLEND);
+
+    // Enable depth testing but disable depth writes
+    this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.depthMask(false);
+
+    // Disable face culling (particles are billboards)
+    this.gl.disable(this.gl.CULL_FACE);
+
+    // Default blend mode (will be changed per emitter)
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+  }
+
+  /**
+   * Restores GL state after particle rendering.
+   */
+  private restoreGLState(): void {
+    if (!this.gl) return;
+
+    // Restore depth writes
+    this.gl.depthMask(true);
+
+    // Disable blending
+    this.gl.disable(this.gl.BLEND);
+
+    // Re-enable face culling
+    this.gl.enable(this.gl.CULL_FACE);
+  }
+
+  /**
+   * Sets up camera uniforms for particle shader.
+   */
+  private setupCameraUniforms(): void {
+    if (!this.gl || !this.shader) return;
+
+    // In full implementation, would extract from camera
+    // For now, use placeholder identity matrices and vectors
+    const viewMatrix = Matrix4.identity();
+    const projectionMatrix = Matrix4.identity();
+    const cameraPosition = new Vector3(0, 0, 5);
+    const cameraRight = new Vector3(1, 0, 0);
+    const cameraUp = new Vector3(0, 1, 0);
+
+    // Set matrix uniforms
+    const viewLoc = this.gl.getUniformLocation(this.shader, 'u_viewMatrix');
+    const projLoc = this.gl.getUniformLocation(this.shader, 'u_projectionMatrix');
+    const camPosLoc = this.gl.getUniformLocation(this.shader, 'u_cameraPosition');
+    const camRightLoc = this.gl.getUniformLocation(this.shader, 'u_cameraRight');
+    const camUpLoc = this.gl.getUniformLocation(this.shader, 'u_cameraUp');
+
+    if (viewLoc) this.gl.uniformMatrix4fv(viewLoc, false, viewMatrix.toArray());
+    if (projLoc) this.gl.uniformMatrix4fv(projLoc, false, projectionMatrix.toArray());
+    if (camPosLoc) this.gl.uniform3f(camPosLoc, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    if (camRightLoc) this.gl.uniform3f(camRightLoc, cameraRight.x, cameraRight.y, cameraRight.z);
+    if (camUpLoc) this.gl.uniform3f(camUpLoc, cameraUp.x, cameraUp.y, cameraUp.z);
+  }
+
+  /**
+   * Binds depth texture for soft particles.
+   */
+  private bindDepthTexture(renderTarget: RenderTarget): void {
+    if (!this.gl || !this.shader) return;
+
+    const depthAttachment = renderTarget.getDepthStencilAttachment();
+    if (!depthAttachment) {
+      logger.warn('Soft particles enabled but no depth attachment available');
+      return;
+    }
+
+    // Bind depth texture to texture unit 1
+    this.gl.activeTexture(this.gl.TEXTURE1);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, depthAttachment.texture as WebGLTexture);
+
+    // Set depth texture uniform
+    const depthTexLoc = this.gl.getUniformLocation(this.shader, 'u_depthTexture');
+    if (depthTexLoc) this.gl.uniform1i(depthTexLoc, 1);
+
+    // Set soft particle uniforms
+    const enableSoftLoc = this.gl.getUniformLocation(this.shader, 'u_enableSoftParticles');
+    const softDistLoc = this.gl.getUniformLocation(this.shader, 'u_softParticleDistance');
+    const screenSizeLoc = this.gl.getUniformLocation(this.shader, 'u_screenSize');
+
+    if (enableSoftLoc) this.gl.uniform1i(enableSoftLoc, 1);
+    if (softDistLoc) this.gl.uniform1f(softDistLoc, this.config.softParticleDistance);
+    if (screenSizeLoc) this.gl.uniform2f(screenSizeLoc, renderTarget.width, renderTarget.height);
+  }
+
+  /**
+   * Sets blend mode based on particle blend mode.
+   */
+  private setBlendMode(mode: ParticleBlendMode): void {
+    if (!this.gl) return;
+
+    switch (mode) {
+      case ParticleBlendMode.Alpha:
+        // Standard alpha blending
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+        break;
+
+      case ParticleBlendMode.Additive:
+        // Additive blending (for glows, fire, etc.)
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+        break;
+
+      case ParticleBlendMode.Multiply:
+        // Multiplicative blending (for darkening effects)
+        this.gl.blendFunc(this.gl.DST_COLOR, this.gl.ZERO);
+        break;
+
+      case ParticleBlendMode.Subtract:
+        // Subtractive blending
+        this.gl.blendEquation(this.gl.FUNC_REVERSE_SUBTRACT);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+        break;
+    }
+  }
+
+  /**
    * Sorts particles by distance to camera.
    */
   private sortParticles(): void {
-    // In full implementation, sort all particles across emitters
-    // Can use GPU sorting for better performance
+    // In full implementation:
+    // 1. Calculate camera position
+    // 2. Sort all particles by distance to camera (back-to-front for alpha blending)
+    // 3. Can use GPU-based sorting (bitonic sort, etc.) for better performance
+    // 4. Or sort particles within each emitter and then merge
+
+    // For now, just sort emitters by distance to camera
+    const cameraPosition = new Vector3(0, 0, 5);
+    const emitterArray = Array.from(this.emitters.values());
+
+    emitterArray.sort((a, b) => {
+      const distA = a.getConfig().position.distanceTo(cameraPosition);
+      const distB = b.getConfig().position.distanceTo(cameraPosition);
+      return distB - distA; // Back-to-front
+    });
   }
 
   /**
    * Renders all particle emitters.
    */
   private renderEmitters(): void {
-    // In full implementation:
-    // 1. For each emitter
-    // 2. Set blend mode
-    // 3. Bind emitter instance buffer
-    // 4. Draw instanced (quad mesh with particle instances)
+    if (!this.gl || !this.shader || !this.quadVertexBuffer || !this.quadIndexBuffer) return;
 
+    // Bind quad vertex buffer (shared by all particles)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.quadVertexBuffer);
+
+    // Setup vertex attributes for quad
+    const posLoc = this.gl.getAttribLocation(this.shader, 'a_vertexPosition');
+    const texLoc = this.gl.getAttribLocation(this.shader, 'a_vertexTexcoord');
+
+    if (posLoc >= 0) {
+      this.gl.enableVertexAttribArray(posLoc);
+      this.gl.vertexAttribPointer(posLoc, 2, this.gl.FLOAT, false, 16, 0);
+    }
+
+    if (texLoc >= 0) {
+      this.gl.enableVertexAttribArray(texLoc);
+      this.gl.vertexAttribPointer(texLoc, 2, this.gl.FLOAT, false, 16, 8);
+    }
+
+    // Bind quad index buffer
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.quadIndexBuffer);
+
+    // Render each emitter
     for (const emitter of this.emitters.values()) {
       const aliveCount = emitter.getAliveCount();
-      if (aliveCount > 0) {
+      if (aliveCount === 0) continue;
+
+      const config = emitter.getConfig();
+
+      // Set blend mode
+      this.setBlendMode(config.blendMode);
+
+      // Set billboard mode
+      const billboardLoc = this.gl.getUniformLocation(this.shader, 'u_billboardMode');
+      if (billboardLoc) {
+        const modeIndex = this.getBillboardModeIndex(config.billboardMode);
+        this.gl.uniform1i(billboardLoc, modeIndex);
+      }
+
+      // Set texture atlas
+      const atlasLoc = this.gl.getUniformLocation(this.shader, 'u_textureAtlas');
+      if (atlasLoc) {
+        const atlas = config.textureAtlas ?? new Vector2(1, 1);
+        this.gl.uniform2f(atlasLoc, atlas.x, atlas.y);
+      }
+
+      // Bind particle texture
+      this.gl.activeTexture(this.gl.TEXTURE0);
+      if (config.texture) {
+        this.gl.bindTexture(this.gl.TEXTURE_2D, config.texture);
+      } else {
+        // Use white texture as fallback
+        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+      }
+
+      const texLoc = this.gl.getUniformLocation(this.shader, 'u_particleTexture');
+      if (texLoc) this.gl.uniform1i(texLoc, 0);
+
+      // Bind instance buffer with particle data
+      const instanceBuffer = emitter.getInstanceBuffer();
+      if (instanceBuffer) {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, instanceBuffer);
+
+        // Setup instance attributes
+        this.setupInstanceAttributes();
+
+        // Draw instanced
+        this.gl.drawElementsInstanced(
+          this.gl.TRIANGLES,
+          6, // 6 indices for quad (2 triangles)
+          this.gl.UNSIGNED_SHORT,
+          0,
+          aliveCount
+        );
+
         this.stats.drawCalls++;
       }
+    }
+
+    // Cleanup: disable vertex attrib arrays
+    if (posLoc >= 0) this.gl.disableVertexAttribArray(posLoc);
+    if (texLoc >= 0) this.gl.disableVertexAttribArray(texLoc);
+  }
+
+  /**
+   * Sets up instance attributes for particle data.
+   */
+  private setupInstanceAttributes(): void {
+    if (!this.gl || !this.shader) return;
+
+    // Instance attributes are interleaved in the buffer:
+    // position (vec3), velocity (vec3), size (float), rotation (float),
+    // color (vec4), life (float), userData (vec4)
+
+    const stride = (3 + 3 + 1 + 1 + 4 + 1 + 4) * 4; // 17 floats * 4 bytes
+    let offset = 0;
+
+    const attrs = [
+      { name: 'a_instancePosition', size: 3 },
+      { name: 'a_instanceVelocity', size: 3 },
+      { name: 'a_instanceSize', size: 1 },
+      { name: 'a_instanceRotation', size: 1 },
+      { name: 'a_instanceColor', size: 4 },
+      { name: 'a_instanceLife', size: 1 },
+      { name: 'a_instanceUserData', size: 4 },
+    ];
+
+    for (const attr of attrs) {
+      const loc = this.gl.getAttribLocation(this.shader, attr.name);
+      if (loc >= 0) {
+        this.gl.enableVertexAttribArray(loc);
+        this.gl.vertexAttribPointer(loc, attr.size, this.gl.FLOAT, false, stride, offset);
+        this.gl.vertexAttribDivisor(loc, 1); // Advance once per instance
+      }
+      offset += attr.size * 4;
+    }
+  }
+
+  /**
+   * Gets billboard mode index for shader.
+   */
+  private getBillboardModeIndex(mode: BillboardMode): number {
+    switch (mode) {
+      case BillboardMode.Camera: return 0;
+      case BillboardMode.Velocity: return 1;
+      case BillboardMode.Horizontal: return 2;
+      case BillboardMode.None: return 3;
+      default: return 0;
     }
   }
 
@@ -754,7 +1040,55 @@ class ParticleEmitter {
    * Updates instance buffer with particle data.
    */
   private updateInstanceBuffer(): void {
-    // In full implementation, pack particle data into buffer
+    // Pack particle data into buffer for GPU
+    // Buffer layout: position (vec3), velocity (vec3), size (float), rotation (float),
+    //                color (vec4), life (float), userData (vec4)
+    // Total: 17 floats per particle
+
+    const floatsPerParticle = 17;
+    const bufferData = new Float32Array(this.config.maxParticles * floatsPerParticle);
+
+    let writeIndex = 0;
+    for (let i = 0; i < this.config.maxParticles; i++) {
+      const p = this.particles[i];
+
+      // Position (vec3)
+      bufferData[writeIndex++] = p.position.x;
+      bufferData[writeIndex++] = p.position.y;
+      bufferData[writeIndex++] = p.position.z;
+
+      // Velocity (vec3)
+      bufferData[writeIndex++] = p.velocity.x;
+      bufferData[writeIndex++] = p.velocity.y;
+      bufferData[writeIndex++] = p.velocity.z;
+
+      // Size (float)
+      bufferData[writeIndex++] = p.size;
+
+      // Rotation (float)
+      bufferData[writeIndex++] = p.rotation;
+
+      // Color (vec4)
+      bufferData[writeIndex++] = p.color.r;
+      bufferData[writeIndex++] = p.color.g;
+      bufferData[writeIndex++] = p.color.b;
+      bufferData[writeIndex++] = p.color.a;
+
+      // Life (float)
+      bufferData[writeIndex++] = p.life;
+
+      // User data (vec4)
+      bufferData[writeIndex++] = p.userData.x;
+      bufferData[writeIndex++] = p.userData.y;
+      bufferData[writeIndex++] = p.userData.z;
+      bufferData[writeIndex++] = p.userData.w;
+    }
+
+    // In full implementation, upload to GPU buffer
+    // if (this.instanceBuffer && gl) {
+    //   gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
+    //   gl.bufferSubData(gl.ARRAY_BUFFER, 0, bufferData);
+    // }
   }
 
   /**
@@ -800,5 +1134,12 @@ class ParticleEmitter {
    */
   getConfig(): ParticleEmitterConfig {
     return this.config;
+  }
+
+  /**
+   * Gets instance buffer (GPU buffer containing particle data).
+   */
+  getInstanceBuffer(): WebGLBuffer | null {
+    return this.instanceBuffer;
   }
 }

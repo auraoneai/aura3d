@@ -571,7 +571,7 @@ Check out the [examples directory](../examples/) for more complete examples:
 
 - [Architecture Overview](./architecture.md)
 - [API Quick Reference](./api-quick-reference.md)
-- [Integration Report](../INTEGRATION_REPORT.md)
+- [Integration Report](../../INTEGRATION_REPORT.md)
 - [GitHub Repository](https://github.com/g3d/g3d)
 - [Discord Community](https://discord.gg/g3d)
 - [Official Website](https://g3d.dev)

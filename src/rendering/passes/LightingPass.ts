@@ -565,6 +565,12 @@ export class LightingPass extends RenderPass {
     logger.info(`Created LightingPass: max lights: ${this.config.maxLights}`);
   }
 
+  /** Fullscreen triangle VAO */
+  private fullscreenVAO: WebGLVertexArrayObject | null = null;
+
+  /** WebGL context */
+  private gl: WebGL2RenderingContext | null = null;
+
   /**
    * Sets up the lighting pass resources.
    */
@@ -595,6 +601,41 @@ export class LightingPass extends RenderPass {
     };
     this.lightsUBO = new UniformBuffer(lightsUBODesc);
 
+    // Build shader defines based on configuration
+    const defines: Record<string, number | string> = {
+      MAX_LIGHTS: this.config.maxLights ?? 64,
+    };
+
+    if (this.config.enableShadows) {
+      defines.ENABLE_SHADOWS = 1;
+      defines.SHADOW_FILTER_SIZE = this.config.shadowFilterSize ?? 3;
+    }
+
+    if (this.config.enableIBL) {
+      defines.ENABLE_IBL = 1;
+    }
+
+    // Create deferred lighting shader
+    this.shader = new Shader({
+      name: 'DeferredLighting',
+      source: {
+        vertex: LIGHTING_VERTEX_SHADER,
+        fragment: LIGHTING_FRAGMENT_SHADER,
+      },
+      defines,
+      gl: this.gl ?? undefined,
+    });
+
+    // Create fullscreen triangle VAO (note: the shader uses gl_VertexID, so no vertex buffer needed)
+    if (this.gl) {
+      this.fullscreenVAO = this.gl.createVertexArray();
+      if (this.fullscreenVAO) {
+        this.gl.bindVertexArray(this.fullscreenVAO);
+        // No vertex attributes needed - shader uses gl_VertexID
+        this.gl.bindVertexArray(null);
+      }
+    }
+
     logger.info('LightingPass setup complete');
   }
 
@@ -606,7 +647,7 @@ export class LightingPass extends RenderPass {
    * @param renderTarget - Target to render lighting result
    */
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
-    if (!this.currentCamera || !this.shader || !this.lightsUBO) {
+    if (!this.currentCamera || !this.shader || !this.lightsUBO || !this.gl) {
       logger.error('LightingPass not properly initialized');
       return;
     }
@@ -617,8 +658,53 @@ export class LightingPass extends RenderPass {
 
     logger.trace(`LightingPass: processing ${this.lights.length} lights`);
 
-    // Bind GBuffer textures
-    // (Implementation depends on graphics backend)
+    // Bind output framebuffer (if available via RenderTarget/RenderTexture)
+    // Note: RenderTarget is abstract and may not have getFramebuffer directly
+    // In a full implementation, this would be handled by the graphics backend
+    if ('getFramebuffer' in renderTarget && typeof (renderTarget as any).getFramebuffer === 'function') {
+      const framebuffer = (renderTarget as any).getFramebuffer();
+      if (framebuffer !== undefined) {
+        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
+      }
+    }
+
+    // Set viewport
+    this.gl.viewport(0, 0, this.config.width, this.config.height);
+
+    // Disable depth testing and depth writes for fullscreen pass
+    this.gl.disable(this.gl.DEPTH_TEST);
+    this.gl.depthMask(false);
+
+    // Disable blending (we're replacing, not blending)
+    this.gl.disable(this.gl.BLEND);
+
+    // Bind the deferred lighting shader
+    this.shader.bind();
+
+    // Bind GBuffer textures to samplers
+    if (this.gbufferTextures.albedoMetallic) {
+      this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.albedoMetallic as WebGLTexture);
+      this.shader.setUniform('u_albedoMetallic', 0);
+    }
+
+    if (this.gbufferTextures.normalRoughnessAO) {
+      this.gl.activeTexture(this.gl.TEXTURE1);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.normalRoughnessAO as WebGLTexture);
+      this.shader.setUniform('u_normalRoughnessAO', 1);
+    }
+
+    if (this.gbufferTextures.emission) {
+      this.gl.activeTexture(this.gl.TEXTURE2);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.emission as WebGLTexture);
+      this.shader.setUniform('u_emission', 2);
+    }
+
+    if (this.gbufferTextures.depth) {
+      this.gl.activeTexture(this.gl.TEXTURE3);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.depth as WebGLTexture);
+      this.shader.setUniform('u_depth', 3);
+    }
 
     // Update camera uniforms
     if (this.cameraUBO) {
@@ -626,11 +712,68 @@ export class LightingPass extends RenderPass {
       this.cameraUBO.setMat4('inverseViewProjection', this.currentCamera.inverseViewProjectionMatrix!);
     }
 
+    // Set camera uniforms via shader
+    this.shader.setUniform('u_cameraPosition', this.currentCamera.transform.worldPosition);
+    if (this.currentCamera.inverseViewProjectionMatrix) {
+      this.shader.setUniform('u_inverseViewProjection', this.currentCamera.inverseViewProjectionMatrix);
+    }
+
     // Update lights uniform buffer
     this.updateLightsUBO();
 
-    // Draw fullscreen triangle
-    // (Implementation depends on graphics backend)
+    // Set light count uniform
+    this.shader.setUniform('u_lightCount', this.lights.length);
+
+    // Set light uniforms (pack lights into uniform arrays)
+    for (let i = 0; i < this.lights.length; i++) {
+      const light = this.lights[i];
+
+      // Pack light data into vec4s as defined in the shader
+      this.shader.setUniform(`u_lights[${i}].positionType`, new Vector4(
+        light.position.x,
+        light.position.y,
+        light.position.z,
+        light.type
+      ));
+
+      this.shader.setUniform(`u_lights[${i}].directionRange`, new Vector4(
+        light.direction.x,
+        light.direction.y,
+        light.direction.z,
+        light.range
+      ));
+
+      this.shader.setUniform(`u_lights[${i}].colorIntensity`, new Vector4(
+        light.color.r,
+        light.color.g,
+        light.color.b,
+        light.intensity
+      ));
+
+      this.shader.setUniform(`u_lights[${i}].spotAngles`, new Vector4(
+        light.innerConeAngle,
+        light.outerConeAngle,
+        light.shadowMapIndex,
+        light.shadowBias
+      ));
+    }
+
+    // Bind fullscreen triangle VAO and draw
+    if (this.fullscreenVAO) {
+      this.gl.bindVertexArray(this.fullscreenVAO);
+    }
+
+    // Draw fullscreen triangle (3 vertices, no index buffer)
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+
+    // Unbind VAO
+    if (this.fullscreenVAO) {
+      this.gl.bindVertexArray(null);
+    }
+
+    // Restore depth test state
+    this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.depthMask(true);
 
     logger.trace(`LightingPass complete: ${this.stats.lightsProcessed} lights processed`);
   }
@@ -646,11 +789,25 @@ export class LightingPass extends RenderPass {
       this.shader = null;
     }
 
+    if (this.fullscreenVAO && this.gl) {
+      this.gl.deleteVertexArray(this.fullscreenVAO);
+      this.fullscreenVAO = null;
+    }
+
     this.lightsUBO = null;
     this.cameraUBO = null;
     this.lights.length = 0;
 
     logger.info('LightingPass cleanup complete');
+  }
+
+  /**
+   * Sets the WebGL context for rendering.
+   *
+   * @param gl - WebGL2 rendering context
+   */
+  setContext(gl: WebGL2RenderingContext): void {
+    this.gl = gl;
   }
 
   /**

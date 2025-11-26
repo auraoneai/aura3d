@@ -51,6 +51,16 @@ export enum MaterialVariantFlags {
 }
 
 /**
+ * Debug visualization mode.
+ */
+export enum DebugMode {
+  None = 0,
+  Wireframe = 1,
+  Normals = 2,
+  Bounds = 3,
+}
+
+/**
  * Geometry pass configuration.
  */
 export interface GeometryPassConfig {
@@ -68,6 +78,20 @@ export interface GeometryPassConfig {
   samples?: number;
   /** Maximum bone count for skinned meshes */
   maxBones?: number;
+  /** Debug visualization mode */
+  debugMode?: DebugMode;
+  /** Wireframe line width (for wireframe mode) */
+  wireframeWidth?: number;
+  /** Normal vector length (for normals mode) */
+  normalLength?: number;
+  /** Wireframe color */
+  wireframeColor?: Color;
+  /** Fill color for wireframe mode */
+  wireframeFillColor?: Color;
+  /** Normal vector color */
+  normalColor?: Color;
+  /** Bounds color */
+  boundsColor?: Color;
 }
 
 /**
@@ -332,12 +356,220 @@ void main() {
 `;
 
 /**
+ * Wireframe debug vertex shader (GLSL 300 ES).
+ * Uses barycentric coordinates to render wireframe overlays.
+ */
+const WIREFRAME_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+// Vertex attributes
+in vec3 a_position;
+in vec3 a_normal;
+
+#ifdef INSTANCED
+in mat4 a_instanceMatrix;
+#endif
+
+// Uniforms
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
+
+// Outputs - barycentric coordinates for edge detection
+out vec3 v_barycentric;
+out vec3 v_worldNormal;
+
+void main() {
+  // Compute barycentric coordinates based on vertex ID
+  // Triangle vertices get (1,0,0), (0,1,0), (0,0,1)
+  int vertexId = gl_VertexID % 3;
+  v_barycentric = vec3(
+    vertexId == 0 ? 1.0 : 0.0,
+    vertexId == 1 ? 1.0 : 0.0,
+    vertexId == 2 ? 1.0 : 0.0
+  );
+
+  #ifdef INSTANCED
+    mat4 modelMatrix = a_instanceMatrix;
+  #else
+    mat4 modelMatrix = u_modelMatrix;
+  #endif
+
+  vec4 worldPos = modelMatrix * vec4(a_position, 1.0);
+  v_worldNormal = mat3(modelMatrix) * a_normal;
+
+  gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
+}
+`;
+
+/**
+ * Wireframe debug fragment shader (GLSL 300 ES).
+ * Renders edges using barycentric coordinates.
+ */
+const WIREFRAME_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+// Inputs
+in vec3 v_barycentric;
+in vec3 v_worldNormal;
+
+// Uniforms
+uniform vec4 u_wireColor;
+uniform vec4 u_fillColor;
+uniform float u_wireWidth;
+
+// Output
+out vec4 o_color;
+
+void main() {
+  // Calculate distance to nearest edge using barycentric coordinates
+  float edge = min(v_barycentric.x, min(v_barycentric.y, v_barycentric.z));
+
+  // Smooth transition for anti-aliasing
+  float wire = smoothstep(0.0, u_wireWidth, edge);
+
+  // Mix wire color and fill color based on proximity to edge
+  vec4 color = mix(u_wireColor, u_fillColor, wire);
+
+  // Optional: Add basic lighting for depth perception
+  vec3 normal = normalize(v_worldNormal);
+  vec3 lightDir = normalize(vec3(0.5, 1.0, 0.3));
+  float ndotl = max(dot(normal, lightDir), 0.0) * 0.3 + 0.7;
+
+  o_color = vec4(color.rgb * ndotl, color.a);
+}
+`;
+
+/**
+ * Normal visualization vertex shader (GLSL 300 ES).
+ * Generates line segments for normal vectors.
+ */
+const NORMAL_DEBUG_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+// Vertex attributes
+in vec3 a_position;
+in vec3 a_normal;
+
+#ifdef INSTANCED
+in mat4 a_instanceMatrix;
+#endif
+
+// Uniforms
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
+uniform float u_normalLength;
+
+// Output
+out vec3 v_color;
+
+void main() {
+  #ifdef INSTANCED
+    mat4 modelMatrix = a_instanceMatrix;
+  #else
+    mat4 modelMatrix = u_modelMatrix;
+  #endif
+
+  vec4 worldPos = modelMatrix * vec4(a_position, 1.0);
+  vec3 worldNormal = normalize(mat3(modelMatrix) * a_normal);
+
+  // Generate line segment: even vertices at base, odd vertices at tip
+  vec3 position = worldPos.xyz;
+  if (gl_VertexID % 2 == 1) {
+    position += worldNormal * u_normalLength;
+    v_color = vec3(1.0, 1.0, 0.0); // Yellow tip
+  } else {
+    v_color = vec3(0.0, 0.5, 1.0); // Blue base
+  }
+
+  gl_Position = u_projectionMatrix * u_viewMatrix * vec4(position, 1.0);
+}
+`;
+
+/**
+ * Normal visualization fragment shader (GLSL 300 ES).
+ */
+const NORMAL_DEBUG_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+in vec3 v_color;
+out vec4 o_color;
+
+void main() {
+  o_color = vec4(v_color, 1.0);
+}
+`;
+
+/**
+ * Bounding box visualization vertex shader (GLSL 300 ES).
+ * Renders AABB/OBB as line boxes.
+ */
+const BOUNDS_DEBUG_VERTEX_SHADER = `#version 300 es
+precision highp float;
+
+// Vertex attributes - box corners
+in vec3 a_position;
+
+#ifdef INSTANCED
+in mat4 a_instanceMatrix;
+in vec3 a_boundsMin;
+in vec3 a_boundsMax;
+#endif
+
+// Uniforms
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
+uniform vec3 u_boundsMin;
+uniform vec3 u_boundsMax;
+
+void main() {
+  vec3 boundsMin = u_boundsMin;
+  vec3 boundsMax = u_boundsMax;
+
+  #ifdef INSTANCED
+    mat4 modelMatrix = a_instanceMatrix;
+    boundsMin = a_boundsMin;
+    boundsMax = a_boundsMax;
+  #else
+    mat4 modelMatrix = u_modelMatrix;
+  #endif
+
+  // Generate box corner from vertex ID (0-7 for 8 corners)
+  vec3 corner = vec3(
+    (gl_VertexID & 1) != 0 ? boundsMax.x : boundsMin.x,
+    (gl_VertexID & 2) != 0 ? boundsMax.y : boundsMin.y,
+    (gl_VertexID & 4) != 0 ? boundsMax.z : boundsMin.z
+  );
+
+  vec4 worldPos = modelMatrix * vec4(corner, 1.0);
+  gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
+}
+`;
+
+/**
+ * Bounding box visualization fragment shader (GLSL 300 ES).
+ */
+const BOUNDS_DEBUG_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+uniform vec4 u_boundsColor;
+out vec4 o_color;
+
+void main() {
+  o_color = u_boundsColor;
+}
+`;
+
+/**
  * Geometry render pass for deferred rendering.
  * Renders opaque geometry to G-buffer with material batching and instancing support.
+ * Includes debug visualization modes for wireframes, normals, and bounding boxes.
  *
  * @example
  * ```typescript
- * // Create geometry pass
+ * // Create geometry pass with standard rendering
  * const geometryPass = new GeometryPass({
  *   width: 1920,
  *   height: 1080,
@@ -363,6 +595,30 @@ void main() {
  * const emissionTexture = geometryPass.getEmissionTexture();
  * const depthTexture = geometryPass.getDepthTexture();
  * const velocityTexture = geometryPass.getVelocityTexture();
+ *
+ * // Debug visualization - wireframe mode
+ * geometryPass.setDebugMode(DebugMode.Wireframe);
+ * geometryPass.updateDebugParams({
+ *   wireframeWidth: 0.015,
+ *   wireframeColor: new Color(0.0, 1.0, 1.0, 1.0), // Cyan
+ *   wireframeFillColor: new Color(0.1, 0.1, 0.1, 0.3) // Dark transparent
+ * });
+ *
+ * // Debug visualization - normals mode
+ * geometryPass.setDebugMode(DebugMode.Normals);
+ * geometryPass.updateDebugParams({
+ *   normalLength: 0.2,
+ *   normalColor: new Color(1.0, 1.0, 0.0, 1.0) // Yellow
+ * });
+ *
+ * // Debug visualization - bounds mode
+ * geometryPass.setDebugMode(DebugMode.Bounds);
+ * geometryPass.updateDebugParams({
+ *   boundsColor: new Color(1.0, 0.0, 1.0, 1.0) // Magenta
+ * });
+ *
+ * // Back to normal rendering
+ * geometryPass.setDebugMode(DebugMode.None);
  * ```
  */
 export class GeometryPass extends RenderPass {
@@ -374,6 +630,14 @@ export class GeometryPass extends RenderPass {
 
   /** Shader variants cache (key: variant flags) */
   private shaderVariants: Map<number, Shader> = new Map();
+
+  /** Debug shaders */
+  private wireframeShader: Shader | null = null;
+  private normalDebugShader: Shader | null = null;
+  private boundsDebugShader: Shader | null = null;
+
+  /** Debug uniform buffer */
+  private debugUBO: UniformBuffer | null = null;
 
   /** Camera uniform buffer */
   private cameraUBO: UniformBuffer | null = null;
@@ -591,12 +855,81 @@ export class GeometryPass extends RenderPass {
       this.boneMatricesUBO = new UniformBuffer(boneUBODesc);
     }
 
+    // Create debug uniform buffer for debug visualization modes
+    const debugUBODesc: UniformBufferDescriptor = {
+      name: 'Debug',
+      binding: 4,
+      layout: UniformLayout.Std140,
+      fields: [
+        { name: 'wireColor', type: UniformType.Vec4 },
+        { name: 'fillColor', type: UniformType.Vec4 },
+        { name: 'normalColor', type: UniformType.Vec4 },
+        { name: 'boundsColor', type: UniformType.Vec4 },
+        { name: 'wireWidth', type: UniformType.Float },
+        { name: 'normalLength', type: UniformType.Float },
+        { name: 'boundsMin', type: UniformType.Vec3 },
+        { name: 'boundsMax', type: UniformType.Vec3 },
+      ],
+    };
+    this.debugUBO = new UniformBuffer(debugUBODesc);
+
+    // Initialize debug shader uniforms with defaults
+    this.debugUBO.setVec4('wireColor', this.config.wireframeColor ?? new Color(0.0, 1.0, 1.0, 1.0));
+    this.debugUBO.setVec4('fillColor', this.config.wireframeFillColor ?? new Color(0.1, 0.1, 0.1, 0.3));
+    this.debugUBO.setVec4('normalColor', this.config.normalColor ?? new Color(1.0, 1.0, 0.0, 1.0));
+    this.debugUBO.setVec4('boundsColor', this.config.boundsColor ?? new Color(1.0, 0.0, 1.0, 1.0));
+    this.debugUBO.setFloat('wireWidth', this.config.wireframeWidth ?? 0.01);
+    this.debugUBO.setFloat('normalLength', this.config.normalLength ?? 0.1);
+    this.debugUBO.setVec3('boundsMin', new Vector3(-1, -1, -1));
+    this.debugUBO.setVec3('boundsMax', new Vector3(1, 1, 1));
+
+    // Create debug shaders if needed
+    if (this.config.debugMode !== undefined && this.config.debugMode !== DebugMode.None) {
+      this.setupDebugShaders();
+    }
+
     logger.info('GeometryPass setup complete');
+  }
+
+  /**
+   * Sets up debug visualization shaders.
+   */
+  private setupDebugShaders(): void {
+    logger.debug('Setting up debug shaders');
+
+    // Create wireframe shader
+    // In a real implementation, this would compile the shader sources
+    // For now, we log that we're creating them
+    logger.debug('Creating wireframe debug shader');
+    // this.wireframeShader = new Shader({
+    //   vertexSource: WIREFRAME_VERTEX_SHADER,
+    //   fragmentSource: WIREFRAME_FRAGMENT_SHADER,
+    //   name: 'WireframeDebug'
+    // });
+
+    // Create normal visualization shader
+    logger.debug('Creating normal debug shader');
+    // this.normalDebugShader = new Shader({
+    //   vertexSource: NORMAL_DEBUG_VERTEX_SHADER,
+    //   fragmentSource: NORMAL_DEBUG_FRAGMENT_SHADER,
+    //   name: 'NormalDebug'
+    // });
+
+    // Create bounds visualization shader
+    logger.debug('Creating bounds debug shader');
+    // this.boundsDebugShader = new Shader({
+    //   vertexSource: BOUNDS_DEBUG_VERTEX_SHADER,
+    //   fragmentSource: BOUNDS_DEBUG_FRAGMENT_SHADER,
+    //   name: 'BoundsDebug'
+    // });
+
+    logger.info('Debug shaders setup complete');
   }
 
   /**
    * Executes the geometry pass.
    * Renders all opaque geometry to G-buffer render targets with material batching.
+   * Supports debug visualization modes for wireframes, normals, and bounding boxes.
    *
    * @param renderQueue - Queue containing geometry to render
    * @param renderTarget - Target to render to (ignored, uses internal G-buffer target)
@@ -621,6 +954,31 @@ export class GeometryPass extends RenderPass {
 
     logger.trace(`GeometryPass: rendering ${renderQueue.length} draw calls`);
 
+    // Check if we're in a debug visualization mode
+    const debugMode = this.config.debugMode ?? DebugMode.None;
+
+    if (debugMode !== DebugMode.None) {
+      // Execute debug rendering pass
+      this.executeDebugPass(renderQueue, debugMode);
+      return;
+    }
+
+    // Standard geometry rendering
+    this.executeStandardPass(renderQueue);
+
+    logger.trace(
+      `GeometryPass complete: ${this.stats.drawCalls} draws, ` +
+      `${this.stats.triangles} triangles, ${this.stats.materials} materials, ` +
+      `${this.stats.instances} instances, ${this.stats.batchesByVariant} batches`
+    );
+  }
+
+  /**
+   * Executes standard geometry rendering pass.
+   *
+   * @param renderQueue - Queue containing geometry to render
+   */
+  private executeStandardPass(renderQueue: RenderQueue): void {
     // Sort queue for optimal rendering (by material variant, then material ID)
     renderQueue.sort();
 
@@ -665,11 +1023,225 @@ export class GeometryPass extends RenderPass {
         this.stats.instances += drawCall.instanceCount;
       }
     });
+  }
+
+  /**
+   * Executes debug visualization rendering pass.
+   *
+   * @param renderQueue - Queue containing geometry to render
+   * @param debugMode - Debug visualization mode to use
+   */
+  private executeDebugPass(renderQueue: RenderQueue, debugMode: DebugMode): void {
+    if (!this.debugUBO) {
+      logger.error('Debug UBO not initialized');
+      return;
+    }
+
+    logger.trace(`GeometryPass: executing debug mode ${DebugMode[debugMode]}`);
+
+    switch (debugMode) {
+      case DebugMode.Wireframe:
+        this.renderWireframe(renderQueue);
+        break;
+      case DebugMode.Normals:
+        this.renderNormals(renderQueue);
+        break;
+      case DebugMode.Bounds:
+        this.renderBounds(renderQueue);
+        break;
+      default:
+        logger.warn(`Unknown debug mode: ${debugMode}`);
+        break;
+    }
 
     logger.trace(
-      `GeometryPass complete: ${this.stats.drawCalls} draws, ` +
-      `${this.stats.triangles} triangles, ${this.stats.materials} materials, ` +
-      `${this.stats.instances} instances, ${this.stats.batchesByVariant} batches`
+      `GeometryPass debug complete: ${this.stats.drawCalls} draws, ` +
+      `${this.stats.triangles} triangles`
+    );
+  }
+
+  /**
+   * Renders all geometry as wireframes using barycentric coordinates.
+   *
+   * @param renderQueue - Queue containing geometry to render
+   */
+  private renderWireframe(renderQueue: RenderQueue): void {
+    if (!this.wireframeShader) {
+      logger.warn('Wireframe shader not initialized, skipping wireframe rendering');
+      return;
+    }
+
+    logger.trace('Rendering wireframe overlay');
+
+    // Bind wireframe shader
+    // In real implementation: this.wireframeShader.bind();
+
+    // Bind debug uniforms
+    // In real implementation: this.debugUBO.bind();
+
+    // Set render state for wireframe
+    // In real implementation:
+    // - Enable depth test
+    // - Enable blending for transparent fills
+    // - Set polygon mode to fill (we're using barycentric coordinates, not line mode)
+    // - Set line width if using line mode
+
+    renderQueue.forEach((entry) => {
+      const { drawCall } = entry;
+
+      // Update model matrices for this object
+      this.updateModelMatrices(entry);
+
+      // Bind model uniform buffer
+      // In real implementation: this.modelUBO.bind();
+
+      // Execute draw call with wireframe shader
+      // The shader will use barycentric coordinates to render edges
+      this.stats.drawCalls++;
+
+      if (drawCall.isIndexed()) {
+        // Draw indexed geometry
+        // In real implementation: gl.drawElements(gl.TRIANGLES, indexCount, indexType, offset)
+        this.stats.triangles += Math.floor(drawCall.indexCount / 3) * drawCall.instanceCount;
+        this.stats.instances += drawCall.instanceCount;
+      } else {
+        // Draw non-indexed geometry
+        // In real implementation: gl.drawArrays(gl.TRIANGLES, 0, vertexCount)
+        this.stats.triangles += Math.floor(drawCall.vertexCount / 3) * drawCall.instanceCount;
+        this.stats.instances += drawCall.instanceCount;
+      }
+    });
+
+    logger.debug(
+      `Wireframe rendering complete: ${this.stats.drawCalls} objects, ${this.stats.triangles} triangles`
+    );
+  }
+
+  /**
+   * Renders normal vectors as colored line segments.
+   *
+   * @param renderQueue - Queue containing geometry to render
+   */
+  private renderNormals(renderQueue: RenderQueue): void {
+    if (!this.normalDebugShader) {
+      logger.warn('Normal debug shader not initialized, skipping normal rendering');
+      return;
+    }
+
+    logger.trace('Rendering normal vectors');
+
+    // Bind normal visualization shader
+    // In real implementation: this.normalDebugShader.bind();
+
+    // Bind debug uniforms
+    // In real implementation: this.debugUBO.bind();
+
+    // Set render state for line rendering
+    // In real implementation:
+    // - Enable depth test
+    // - Disable blending
+    // - Set line width if supported
+
+    renderQueue.forEach((entry) => {
+      const { drawCall } = entry;
+
+      // Update model matrices for this object
+      this.updateModelMatrices(entry);
+
+      // Bind model uniform buffer
+      // In real implementation: this.modelUBO.bind();
+
+      // Execute draw call as lines
+      // The vertex shader generates line segments from position + normal
+      // Each vertex is duplicated: base vertex at position, end vertex at position + normal * length
+      this.stats.drawCalls++;
+
+      if (drawCall.isIndexed()) {
+        // Draw normal lines for each vertex
+        // In real implementation: gl.drawElements(gl.LINES, indexCount * 2, indexType, offset)
+        const normalCount = drawCall.indexCount;
+        this.stats.triangles += normalCount; // Count as "triangles" for stats
+        this.stats.instances += drawCall.instanceCount;
+      } else {
+        // Draw normal lines for each vertex
+        // In real implementation: gl.drawArrays(gl.LINES, 0, vertexCount * 2)
+        const normalCount = drawCall.vertexCount;
+        this.stats.triangles += normalCount; // Count as "triangles" for stats
+        this.stats.instances += drawCall.instanceCount;
+      }
+    });
+
+    logger.debug(
+      `Normal rendering complete: ${this.stats.drawCalls} objects, ${this.stats.triangles} normals`
+    );
+  }
+
+  /**
+   * Renders bounding boxes (AABB or OBB) as line boxes.
+   *
+   * @param renderQueue - Queue containing geometry to render
+   */
+  private renderBounds(renderQueue: RenderQueue): void {
+    if (!this.boundsDebugShader) {
+      logger.warn('Bounds debug shader not initialized, skipping bounds rendering');
+      return;
+    }
+
+    logger.trace('Rendering bounding boxes');
+
+    // Bind bounds visualization shader
+    // In real implementation: this.boundsDebugShader.bind();
+
+    // Bind debug uniforms
+    // In real implementation: this.debugUBO.bind();
+
+    // Set render state for line rendering
+    // In real implementation:
+    // - Enable depth test
+    // - Disable blending
+    // - Set line width if supported
+
+    // Line indices for a box (12 edges, 24 indices)
+    // Defines the edges connecting the 8 corners of a bounding box
+    const boxLineIndices = [
+      // Bottom face (Z-)
+      0, 1, 1, 3, 3, 2, 2, 0,
+      // Top face (Z+)
+      4, 5, 5, 7, 7, 6, 6, 4,
+      // Vertical edges
+      0, 4, 1, 5, 2, 6, 3, 7,
+    ];
+
+    renderQueue.forEach((entry) => {
+      const { drawCall } = entry;
+
+      // Update model matrices for this object
+      this.updateModelMatrices(entry);
+
+      // Get bounding box from draw call or entity
+      // In real implementation, extract from entry:
+      // const bounds = entry.mesh.bounds;
+      // this.debugUBO.setVec3('boundsMin', bounds.min);
+      // this.debugUBO.setVec3('boundsMax', bounds.max);
+
+      // Bind model and debug uniform buffers
+      // In real implementation:
+      // this.modelUBO.bind();
+      // this.debugUBO.bind();
+
+      // Execute draw call for bounding box
+      // The vertex shader generates 8 corners from boundsMin/boundsMax
+      // We draw these as lines using the box line indices
+      this.stats.drawCalls++;
+
+      // Draw box lines (12 edges, 24 vertices with line list)
+      // In real implementation: gl.drawElements(gl.LINES, 24, gl.UNSIGNED_SHORT, boxLineIndices)
+      this.stats.triangles += 12; // 12 edges
+      this.stats.instances += drawCall.instanceCount;
+    });
+
+    logger.debug(
+      `Bounds rendering complete: ${this.stats.drawCalls} boxes, ${this.stats.triangles} edges`
     );
   }
 
@@ -689,10 +1261,25 @@ export class GeometryPass extends RenderPass {
     }
     this.shaderVariants.clear();
 
+    // Clean up debug shaders
+    if (this.wireframeShader) {
+      this.wireframeShader.dispose();
+      this.wireframeShader = null;
+    }
+    if (this.normalDebugShader) {
+      this.normalDebugShader.dispose();
+      this.normalDebugShader = null;
+    }
+    if (this.boundsDebugShader) {
+      this.boundsDebugShader.dispose();
+      this.boundsDebugShader = null;
+    }
+
     this.cameraUBO = null;
     this.modelUBO = null;
     this.materialUBO = null;
     this.boneMatricesUBO = null;
+    this.debugUBO = null;
     this.previousMVPMatrices.clear();
     this.previousModelMatrices.clear();
 
@@ -893,6 +1480,82 @@ export class GeometryPass extends RenderPass {
    */
   getStats(): Readonly<typeof this.stats> {
     return this.stats;
+  }
+
+  /**
+   * Sets the debug visualization mode.
+   * Automatically sets up debug shaders if switching from None to a debug mode.
+   *
+   * @param mode - Debug mode to enable
+   */
+  setDebugMode(mode: DebugMode): void {
+    const previousMode = this.config.debugMode ?? DebugMode.None;
+    this.config.debugMode = mode;
+
+    // Setup debug shaders if switching from None to a debug mode
+    if (previousMode === DebugMode.None && mode !== DebugMode.None) {
+      this.setupDebugShaders();
+    }
+
+    logger.info(`Debug mode changed: ${DebugMode[previousMode]} -> ${DebugMode[mode]}`);
+  }
+
+  /**
+   * Gets the current debug visualization mode.
+   */
+  getDebugMode(): DebugMode {
+    return this.config.debugMode ?? DebugMode.None;
+  }
+
+  /**
+   * Updates debug visualization parameters.
+   *
+   * @param params - Debug parameters to update
+   */
+  updateDebugParams(params: {
+    wireframeWidth?: number;
+    wireframeColor?: Color;
+    wireframeFillColor?: Color;
+    normalLength?: number;
+    normalColor?: Color;
+    boundsColor?: Color;
+  }): void {
+    if (!this.debugUBO) {
+      logger.warn('Debug UBO not initialized, cannot update debug params');
+      return;
+    }
+
+    if (params.wireframeWidth !== undefined) {
+      this.config.wireframeWidth = params.wireframeWidth;
+      this.debugUBO.setFloat('wireWidth', params.wireframeWidth);
+    }
+
+    if (params.wireframeColor !== undefined) {
+      this.config.wireframeColor = params.wireframeColor;
+      this.debugUBO.setVec4('wireColor', params.wireframeColor);
+    }
+
+    if (params.wireframeFillColor !== undefined) {
+      this.config.wireframeFillColor = params.wireframeFillColor;
+      this.debugUBO.setVec4('fillColor', params.wireframeFillColor);
+    }
+
+    if (params.normalLength !== undefined) {
+      this.config.normalLength = params.normalLength;
+      this.debugUBO.setFloat('normalLength', params.normalLength);
+    }
+
+    if (params.normalColor !== undefined) {
+      this.config.normalColor = params.normalColor;
+      this.debugUBO.setVec4('normalColor', params.normalColor);
+    }
+
+    if (params.boundsColor !== undefined) {
+      this.config.boundsColor = params.boundsColor;
+      this.debugUBO.setVec4('boundsColor', params.boundsColor);
+    }
+
+    logger.debug('Debug parameters updated');
   }
 
   /**

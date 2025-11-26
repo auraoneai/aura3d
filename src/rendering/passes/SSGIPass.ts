@@ -800,23 +800,124 @@ export class SSGIPass extends RenderPass {
       return;
     }
 
+    if (!this.gbufferTextures.albedoMetallic || !this.gbufferTextures.normalRoughnessAO ||
+        !this.gbufferTextures.depth || !this.sceneColorTexture) {
+      logger.error('SSGIPass: missing required input textures');
+      return;
+    }
+
     logger.trace('SSGIPass: computing global illumination');
+
+    // Create shaders if needed
+    if (!this.rayTracingShader) {
+      this.createRayTracingShader();
+    }
+
+    if (this.config.enableDenoising && !this.denoisingShader) {
+      this.createDenoisingShader();
+    }
+
+    if (!this.rayTracingShader) {
+      logger.error('SSGIPass: failed to create ray tracing shader');
+      return;
+    }
 
     // Update uniforms
     this.updateUniforms();
 
-    // Ray tracing pass
-    // (Render fullscreen triangle with ray tracing shader)
+    // Pass 1: Ray tracing pass - compute SSGI
+    // In a real implementation, the graphics backend would:
+    // 1. Bind this.ssgiTarget as the render target
+    // 2. Set viewport to target dimensions
+    // 3. Bind this.rayTracingShader
+    // 4. Set all uniforms below
+    // 5. Draw fullscreen triangle (3 vertices, no index buffer)
 
-    // Denoising pass if enabled
-    if (this.config.enableDenoising && this.denoisedTarget && this.denoisingShader) {
-      // Apply bilateral filter
+    if (this.rayTracingShader) {
+      this.rayTracingShader.bind();
+
+      // Bind G-buffer textures
+      this.rayTracingShader.setUniform('u_albedoMetallic', this.gbufferTextures.albedoMetallic);
+      this.rayTracingShader.setUniform('u_normalRoughnessAO', this.gbufferTextures.normalRoughnessAO);
+      this.rayTracingShader.setUniform('u_depth', this.gbufferTextures.depth);
+      this.rayTracingShader.setUniform('u_sceneColor', this.sceneColorTexture);
+
+      // Bind temporal textures if enabled
+      if (this.config.enableTemporal && this.previousGITarget && this.velocityTexture) {
+        const previousGIAttachment = this.previousGITarget.getColorAttachment(0);
+        if (previousGIAttachment) {
+          this.rayTracingShader.setUniform('u_velocity', this.velocityTexture);
+          this.rayTracingShader.setUniform('u_previousGI', previousGIAttachment);
+        }
+      }
+
+      // Bind camera uniforms
+      this.rayTracingShader.setUniform('u_cameraPosition', this.currentCamera.transform.worldPosition);
+      this.rayTracingShader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
+      this.rayTracingShader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
+      if (this.currentCamera.inverseViewProjectionMatrix) {
+        this.rayTracingShader.setUniform('u_inverseViewProjection', this.currentCamera.inverseViewProjectionMatrix);
+      }
+      if (this.currentCamera.inverseProjectionMatrix) {
+        this.rayTracingShader.setUniform('u_inverseProjection', this.currentCamera.inverseProjectionMatrix);
+      }
+      this.rayTracingShader.setUniform('u_resolution', new Vector2(this.config.width, this.config.height));
+      this.rayTracingShader.setUniform('u_nearFar', new Vector2(this.currentCamera.near, this.currentCamera.far));
+
+      // Bind SSGI parameters
+      this.rayTracingShader.setUniform('u_numSamples', this.config.numSamples ?? 4);
+      this.rayTracingShader.setUniform('u_maxDistance', this.config.maxDistance ?? 50.0);
+      this.rayTracingShader.setUniform('u_numSteps', this.config.numSteps ?? 16);
+      this.rayTracingShader.setUniform('u_thickness', this.config.thickness ?? 0.5);
+      this.rayTracingShader.setUniform('u_intensity', this.config.intensity ?? 1.0);
+      this.rayTracingShader.setUniform('u_numBounces', this.config.numBounces ?? 1);
+      this.rayTracingShader.setUniform('u_temporalBlendFactor', this.config.temporalBlendFactor ?? 0.9);
+      this.rayTracingShader.setUniform('u_frameIndex', this.frameIndex);
+
+      // Draw fullscreen triangle (vertex shader generates positions from gl_VertexID)
+      // Backend would: gl.drawArrays(gl.TRIANGLES, 0, 3)
+      this.drawFullscreenTriangle();
     }
 
-    // Swap temporal buffers if enabled
+    // Pass 2: Denoising pass if enabled
+    let finalGITarget = this.ssgiTarget;
+    if (this.config.enableDenoising && this.denoisedTarget && this.denoisingShader) {
+      // In a real implementation, the graphics backend would:
+      // 1. Bind this.denoisedTarget as the render target
+      // 2. Set viewport to target dimensions
+      // 3. Bind this.denoisingShader
+      // 4. Set all uniforms below
+      // 5. Draw fullscreen triangle
+
+      this.denoisingShader.bind();
+
+      // Bind inputs
+      const giInputAttachment = this.ssgiTarget.getColorAttachment(0);
+      if (giInputAttachment) {
+        this.denoisingShader.setUniform('u_giInput', giInputAttachment);
+      }
+      this.denoisingShader.setUniform('u_normalRoughnessAO', this.gbufferTextures.normalRoughnessAO);
+      this.denoisingShader.setUniform('u_depth', this.gbufferTextures.depth);
+      this.denoisingShader.setUniform('u_resolution', new Vector2(
+        this.config.useHalfResolution ? Math.floor(this.config.width / 2) : this.config.width,
+        this.config.useHalfResolution ? Math.floor(this.config.height / 2) : this.config.height
+      ));
+      this.denoisingShader.setUniform('u_radius', this.config.denoisingRadius ?? 2);
+
+      // Draw fullscreen triangle
+      // Backend would: gl.drawArrays(gl.TRIANGLES, 0, 3)
+      this.drawFullscreenTriangle();
+
+      finalGITarget = this.denoisedTarget;
+    }
+
+    // Copy to output if needed (or swap temporal buffers)
     if (this.config.enableTemporal && this.previousGITarget) {
-      const outputTarget = this.config.enableDenoising ? this.denoisedTarget : this.ssgiTarget;
-      // Copy current to previous
+      // Swap current and previous for temporal accumulation
+      const temp = this.previousGITarget;
+      this.previousGITarget = finalGITarget;
+      // Note: In a real implementation, we would copy finalGITarget to previousGITarget
+      // rather than swapping, but this serves as a placeholder for the temporal logic
     }
 
     // Update statistics
@@ -824,12 +925,77 @@ export class SSGIPass extends RenderPass {
     this.stats.raysTraced =
       this.stats.samplesPerPixel *
       (this.config.useHalfResolution
-        ? (this.config.width / 2) * (this.config.height / 2)
+        ? Math.floor(this.config.width / 2) * Math.floor(this.config.height / 2)
         : this.config.width * this.config.height);
 
     this.frameIndex++;
 
     logger.trace('SSGIPass complete');
+  }
+
+  /**
+   * Creates the ray tracing shader with appropriate defines.
+   */
+  private createRayTracingShader(): void {
+    const defines: { [key: string]: string | number } = {
+      MAX_SAMPLES: this.config.numSamples ?? 4,
+      MAX_STEPS: this.config.numSteps ?? 16,
+    };
+
+    if (this.config.enableTemporal) {
+      defines.ENABLE_TEMPORAL = 1;
+    }
+
+    if (this.config.numBounces && this.config.numBounces > 1) {
+      defines.MULTI_BOUNCE = 1;
+    }
+
+    const source: ShaderSource = {
+      vertex: SSGI_VERTEX_SHADER,
+      fragment: SSGI_FRAGMENT_SHADER,
+    };
+
+    this.rayTracingShader = new Shader({
+      name: 'SSGI_RayTracing',
+      source,
+      defines,
+    });
+
+    logger.debug('Created SSGI ray tracing shader');
+  }
+
+  /**
+   * Creates the denoising shader.
+   */
+  private createDenoisingShader(): void {
+    const defines: { [key: string]: string | number } = {
+      DENOISE_RADIUS: this.config.denoisingRadius ?? 2,
+    };
+
+    const source: ShaderSource = {
+      vertex: SSGI_VERTEX_SHADER,
+      fragment: SSGI_DENOISE_SHADER,
+    };
+
+    this.denoisingShader = new Shader({
+      name: 'SSGI_Denoise',
+      source,
+      defines,
+    });
+
+    logger.debug('Created SSGI denoising shader');
+  }
+
+  /**
+   * Draws a fullscreen triangle using vertex shader-generated positions.
+   * The vertex shader uses gl_VertexID to generate a large triangle covering the screen.
+   */
+  private drawFullscreenTriangle(): void {
+    // The vertex shader generates positions from gl_VertexID, so we just draw 3 vertices
+    // This is a common technique for fullscreen passes - no vertex buffer needed
+    // In a real implementation, this would call the graphics backend's draw command
+    // For now, this is a placeholder for the actual rendering logic
+    logger.trace('Drawing fullscreen triangle for SSGI');
   }
 
   /**

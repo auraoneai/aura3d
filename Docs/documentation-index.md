@@ -87,7 +87,7 @@ This document provides a comprehensive index of all documentation created for th
 ## User Guide Documentation
 
 ### 4. Getting Started Guide
-**Location**: `/Users/gurbakshchahal/G3D/docs/getting-started.md`
+**Location**: `/Users/gurbakshchahal/G3D/Docs/guides/getting-started.md`
 **Lines**: 606
 **Purpose**: Step-by-step tutorial for beginners
 
@@ -104,7 +104,7 @@ This document provides a comprehensive index of all documentation created for th
 ---
 
 ### 5. API Quick Reference
-**Location**: `/Users/gurbakshchahal/G3D/docs/api-quick-reference.md`
+**Location**: `/Users/gurbakshchahal/G3D/Docs/guides/api-quick-reference.md`
 **Lines**: 966
 **Purpose**: Quick reference for commonly used APIs
 
@@ -128,7 +128,7 @@ This document provides a comprehensive index of all documentation created for th
 ---
 
 ### 6. Architecture Guide
-**Location**: `/Users/gurbakshchahal/G3D/docs/architecture.md`
+**Location**: `/Users/gurbakshchahal/G3D/Docs/guides/architecture.md`
 **Lines**: 879
 **Purpose**: Deep dive into engine architecture and design
 
@@ -274,14 +274,14 @@ Located in `/Users/gurbakshchahal/G3D/docs/`:
 
 **Start here**:
 1. Read [README.md](../README.md) for project overview
-2. Follow [docs/getting-started.md](../docs/getting-started.md) tutorial
-3. Use [docs/api-quick-reference.md](../docs/api-quick-reference.md) as reference
+2. Follow [guides/getting-started.md](./guides/getting-started.md) tutorial
+3. Use [guides/api-quick-reference.md](./guides/api-quick-reference.md) as reference
 
 ### For Developers
 
 **Start here**:
-1. Read [docs/architecture.md](./architecture.md) for system design
-2. Review [docs/api-quick-reference.md](./api-quick-reference.md) for APIs
+1. Read [guides/architecture.md](./guides/architecture.md) for system design
+2. Review [guides/api-quick-reference.md](./guides/api-quick-reference.md) for APIs
 3. Check [Integration Report](./reports/integration/integration-report.md) for integration details
 4. Explore technical reports for specific systems
 
@@ -408,9 +408,11 @@ All documentation is generated from:
 │
 └── docs/
     ├── index.md                          # Documentation hub
-    ├── getting-started.md                # Tutorial
-    ├── api-quick-reference.md            # API reference
-    ├── architecture.md                   # Architecture guide
+    ├── guides/
+    │   ├── getting-started.md            # Tutorial
+    │   ├── api-quick-reference.md       # API reference
+    │   ├── architecture.md               # Architecture guide
+    │   └── testing-guide.md             # Testing guide
     │
     └── PRD-Final-*.md                    # Planning documents (12 files)
 ```

@@ -251,11 +251,48 @@ export class ChromaticAberrationPass extends RenderPass {
       return;
     }
 
-    // Update uniforms
+    logger.trace('ChromaticAberrationPass: Applying chromatic aberration effect');
+
+    // Update uniforms with current configuration
     this.updateUniforms();
 
-    // Render fullscreen triangle with chromatic aberration shader
-    // (Implementation depends on graphics backend)
+    // Create shader if not already initialized
+    if (!this.shader) {
+      this.shader = this.createShader();
+      if (!this.shader) {
+        logger.error('Failed to create chromatic aberration shader');
+        return;
+      }
+    }
+
+    // Bind shader program
+    this.shader.bind();
+
+    // Bind input texture to texture unit 0
+    // Note: Texture binding is typically handled by the graphics backend
+    // For now, we use setUniform to set the sampler unit
+    this.shader.setUniform('u_inputTexture', 0);
+
+    // Set uniform values
+    this.shader.setUniform('u_intensity', this.config.intensity ?? 0.5);
+    this.shader.setUniform('u_offsetR', this.config.offsetR ?? new Vector2(-0.003, 0));
+    this.shader.setUniform('u_offsetG', this.config.offsetG ?? new Vector2(0, 0));
+    this.shader.setUniform('u_offsetB', this.config.offsetB ?? new Vector2(0.003, 0));
+    this.shader.setUniform('u_distortion', this.config.distortion ?? 0.0);
+    this.shader.setUniform('u_useRadialFalloff', this.config.useRadialFalloff ? 1 : 0);
+
+    // Bind output target framebuffer
+    // Note: Direct framebuffer binding would require GL context: gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer)
+    // This is typically handled by the graphics backend
+
+    // Draw fullscreen triangle
+    // Vertex shader uses gl_VertexID to generate positions and UVs
+    // No vertex buffer needed
+    this.drawFullscreenTriangle();
+
+    // Unbind output target framebuffer
+    // Note: Direct framebuffer unbinding would require GL context: gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    // This is typically handled by the graphics backend
 
     logger.trace('ChromaticAberrationPass complete');
   }
@@ -309,6 +346,137 @@ export class ChromaticAberrationPass extends RenderPass {
    */
   setDistortion(distortion: number): void {
     this.config.distortion = Math.max(-1, Math.min(1, distortion));
+  }
+
+  /**
+   * Creates the chromatic aberration shader.
+   */
+  private createShader(): Shader | null {
+    logger.debug('Creating chromatic aberration shader');
+
+    const vertexShader = `#version 300 es
+precision highp float;
+
+// Fullscreen triangle using gl_VertexID
+const vec2 positions[3] = vec2[3](
+  vec2(-1.0, -1.0),
+  vec2(3.0, -1.0),
+  vec2(-1.0, 3.0)
+);
+
+const vec2 texcoords[3] = vec2[3](
+  vec2(0.0, 0.0),
+  vec2(2.0, 0.0),
+  vec2(0.0, 2.0)
+);
+
+out vec2 v_texcoord;
+
+void main() {
+  v_texcoord = texcoords[gl_VertexID];
+  gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
+}
+`;
+
+    const fragmentShader = `#version 300 es
+precision highp float;
+
+in vec2 v_texcoord;
+
+uniform sampler2D u_inputTexture;
+uniform float u_intensity;
+uniform vec2 u_offsetR;
+uniform vec2 u_offsetG;
+uniform vec2 u_offsetB;
+uniform float u_distortion;
+uniform int u_useRadialFalloff;
+
+layout(location = 0) out vec4 o_color;
+
+/**
+ * Applies barrel/pincushion distortion to UV coordinates.
+ */
+vec2 applyDistortion(vec2 uv, float amount) {
+  vec2 center = vec2(0.5);
+  vec2 dir = uv - center;
+  float dist = length(dir);
+
+  // Radial distortion formula
+  float distortion = 1.0 + amount * dist * dist;
+  return center + dir * distortion;
+}
+
+/**
+ * Calculates radial falloff based on distance from center.
+ * Returns higher values toward screen edges.
+ */
+float getRadialFalloff(vec2 uv) {
+  vec2 center = vec2(0.5);
+  float dist = length(uv - center);
+  // Normalize distance to [0, 1] range (diagonal distance is ~0.707)
+  return dist * 1.414;
+}
+
+void main() {
+  vec2 uv = v_texcoord;
+
+  // Apply lens distortion if enabled
+  if (abs(u_distortion) > 0.001) {
+    uv = applyDistortion(uv, u_distortion);
+  }
+
+  // Calculate radial falloff factor
+  float radialFactor = (u_useRadialFalloff != 0) ? getRadialFalloff(v_texcoord) : 1.0;
+  float falloff = radialFactor * u_intensity;
+
+  // Calculate direction from center for chromatic aberration
+  vec2 center = vec2(0.5);
+  vec2 dir = uv - center;
+  float dist = length(dir);
+
+  // Apply radial chromatic aberration
+  // Red channel shifts outward, blue shifts inward
+  vec2 redOffset = dir * falloff * dist + u_offsetR * falloff;
+  vec2 greenOffset = u_offsetG * falloff;
+  vec2 blueOffset = -dir * falloff * dist + u_offsetB * falloff;
+
+  // Sample each color channel with offset
+  float r = texture(u_inputTexture, uv + redOffset).r;
+  float g = texture(u_inputTexture, uv + greenOffset).g;
+  float b = texture(u_inputTexture, uv + blueOffset).b;
+
+  // Get alpha from center sample
+  float a = texture(u_inputTexture, uv).a;
+
+  o_color = vec4(r, g, b, a);
+}
+`;
+
+    try {
+      const shader = new Shader({
+        name: 'ChromaticAberration',
+        source: {
+          vertex: vertexShader,
+          fragment: fragmentShader,
+        },
+      });
+
+      return shader;
+    } catch (error) {
+      logger.error('Failed to compile chromatic aberration shader:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Draws a fullscreen triangle using gl_VertexID.
+   * No vertex buffer needed - positions generated in vertex shader.
+   */
+  private drawFullscreenTriangle(): void {
+    // In a real implementation, this would call:
+    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+    // For now, this is a placeholder that depends on the graphics backend
+    logger.trace('Drawing fullscreen triangle');
   }
 
   /**

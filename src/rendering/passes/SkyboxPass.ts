@@ -386,6 +386,45 @@ export class SkyboxPass extends RenderPass {
   }
 
   /**
+   * Creates the appropriate shader based on skybox type.
+   */
+  private createShader(): void {
+    let fragmentShader: string;
+    let shaderName: string;
+
+    // Select fragment shader based on skybox type
+    switch (this.config.type) {
+      case SkyboxType.Cubemap:
+        fragmentShader = SKYBOX_CUBEMAP_FRAGMENT;
+        shaderName = 'SkyboxCubemap';
+        break;
+      case SkyboxType.Procedural:
+        fragmentShader = SKYBOX_PROCEDURAL_FRAGMENT;
+        shaderName = 'SkyboxProcedural';
+        break;
+      case SkyboxType.Solid:
+        fragmentShader = SKYBOX_SOLID_FRAGMENT;
+        shaderName = 'SkyboxSolid';
+        break;
+      default:
+        logger.error(`Unknown skybox type: ${this.config.type}`);
+        return;
+    }
+
+    // Create shader (without GL context, will be compiled later when context is available)
+    this.shader = new Shader({
+      name: shaderName,
+      source: {
+        vertex: SKYBOX_VERTEX_SHADER,
+        fragment: fragmentShader,
+      },
+      defines: this.config.type === SkyboxType.Procedural ? { PROCEDURAL_SKY: 1 } : {},
+    });
+
+    logger.debug(`Created ${shaderName} shader`);
+  }
+
+  /**
    * Executes the skybox pass.
    * Renders skybox using vertex-only geometry (no vertex buffer required).
    *
@@ -400,13 +439,26 @@ export class SkyboxPass extends RenderPass {
 
     logger.trace('Executing SkyboxPass');
 
+    // Create shader on first use if needed
+    if (!this.shader) {
+      this.createShader();
+      if (!this.shader) {
+        logger.error('Failed to create skybox shader');
+        return;
+      }
+    }
+
+    // Bind the render target framebuffer
+    // (Graphics backend would bind framebuffer here)
+
     // Update uniforms
     this.uniformBuffer.setMat4('viewMatrix', this.currentCamera.viewMatrix);
     this.uniformBuffer.setMat4('projectionMatrix', this.currentCamera.projectionMatrix);
 
     if (this.config.type === SkyboxType.Cubemap) {
       this.uniformBuffer.setFloat('exposure', this.config.exposure ?? 1.0);
-      // Bind cubemap texture
+      // Bind cubemap texture to texture unit 0
+      // (Graphics backend would bind texture here)
     } else if (this.config.type === SkyboxType.Procedural && this.config.atmosphereParams) {
       const params = this.config.atmosphereParams;
       this.uniformBuffer.setVec3('sunDirection', params.sunDirection);
@@ -421,8 +473,48 @@ export class SkyboxPass extends RenderPass {
       this.uniformBuffer.setVec4('solidColor', color as any);
     }
 
-    // Draw skybox cube (36 vertices from shader)
-    // Depth test: LEQUAL, depth write: disabled
+    // Set GL state for skybox rendering:
+    // - Enable depth test with LEQUAL (allows z=1.0 to pass)
+    // - Disable depth write (skybox doesn't write to depth buffer)
+    // - Disable face culling (or use CW culling for inside-out cube)
+    // (Graphics backend would set these states here)
+
+    // Bind skybox shader
+    if (this.shader && this.shader.isReady) {
+      this.shader.bind();
+
+      // Upload uniforms to shader
+      this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
+      this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
+
+      if (this.config.type === SkyboxType.Cubemap) {
+        this.shader.setUniform('u_exposure', this.config.exposure ?? 1.0);
+        // Bind cubemap texture to sampler
+      } else if (this.config.type === SkyboxType.Procedural && this.config.atmosphereParams) {
+        const params = this.config.atmosphereParams;
+        this.shader.setUniform('u_sunDirection', params.sunDirection);
+        this.shader.setUniform('u_rayleighCoefficient', params.rayleighCoefficient);
+        this.shader.setUniform('u_mieCoefficient', params.mieCoefficient);
+        this.shader.setUniform('u_rayleighScaleHeight', params.rayleighScaleHeight);
+        this.shader.setUniform('u_mieScaleHeight', params.mieScaleHeight);
+        this.shader.setUniform('u_sunIntensity', params.sunIntensity);
+        this.shader.setUniform('u_density', params.density);
+      } else if (this.config.type === SkyboxType.Solid) {
+        const color = this.config.solidColor ?? new Color(0.5, 0.7, 1.0, 1.0);
+        this.shader.setUniform('u_solidColor', color);
+      }
+
+      // Draw skybox cube (36 vertices from vertex shader positions array)
+      // gl.drawArrays(gl.TRIANGLES, 0, 36);
+      // (Graphics backend would issue draw call here)
+
+      this.shader.unbind();
+    }
+
+    // Restore GL state
+    // - Re-enable depth write
+    // - Reset depth func to default (LESS)
+    // (Graphics backend would restore states here)
 
     logger.trace('SkyboxPass complete');
   }

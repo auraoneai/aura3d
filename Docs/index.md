@@ -17,9 +17,9 @@ Welcome to the G3D 5.0 documentation! This page serves as the central hub for al
 
 Start here to learn the basics and create your first 3D application:
 
-1. **[Getting Started Guide](./getting-started.md)** - Step-by-step tutorial for beginners
-2. **[API Quick Reference](./api-quick-reference.md)** - Quick reference for common APIs
-3. **[Architecture Overview](./architecture.md)** - Understanding the engine architecture
+1. **[Getting Started Guide](./guides/getting-started.md)** - Step-by-step tutorial for beginners
+2. **[API Quick Reference](./guides/api-quick-reference.md)** - Quick reference for common APIs
+3. **[Architecture Overview](./guides/architecture.md)** - Understanding the engine architecture
 
 ### Installation
 
@@ -69,9 +69,9 @@ main();
 
 | Document | Description |
 |----------|-------------|
-| [Getting Started](./getting-started.md) | Step-by-step guide to create your first G3D app |
-| [Architecture Overview](./architecture.md) | Deep dive into engine architecture and design |
-| [API Quick Reference](./api-quick-reference.md) | Quick reference for commonly used APIs |
+| [Getting Started](./guides/getting-started.md) | Step-by-step guide to create your first G3D app |
+| [Architecture Overview](./guides/architecture.md) | Deep dive into engine architecture and design |
+| [API Quick Reference](./guides/api-quick-reference.md) | Quick reference for commonly used APIs |
 
 ### Project Reports
 

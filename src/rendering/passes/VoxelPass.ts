@@ -355,8 +355,60 @@ export class VoxelPass extends RenderPass {
     // Remesh dirty chunks
     this.remeshDirtyChunks();
 
-    // Render chunks
-    this.renderChunks();
+    // Enable shader program
+    this.gl.useProgram(this.shader);
+
+    // Set up rendering state
+    this.gl.enable(this.gl.DEPTH_TEST);
+    this.gl.depthFunc(this.gl.LEQUAL);
+
+    if (this.config.enableBackfaceCulling) {
+      this.gl.enable(this.gl.CULL_FACE);
+      this.gl.cullFace(this.gl.BACK);
+    } else {
+      this.gl.disable(this.gl.CULL_FACE);
+    }
+
+    // Get uniform locations
+    const u_modelMatrix = this.gl.getUniformLocation(this.shader, 'u_modelMatrix');
+    const u_viewMatrix = this.gl.getUniformLocation(this.shader, 'u_viewMatrix');
+    const u_projectionMatrix = this.gl.getUniformLocation(this.shader, 'u_projectionMatrix');
+    const u_sunDirection = this.gl.getUniformLocation(this.shader, 'u_sunDirection');
+    const u_sunColor = this.gl.getUniformLocation(this.shader, 'u_sunColor');
+    const u_ambientColor = this.gl.getUniformLocation(this.shader, 'u_ambientColor');
+    const u_aoIntensity = this.gl.getUniformLocation(this.shader, 'u_aoIntensity');
+
+    // Set global uniforms (would come from camera/scene in full implementation)
+    const viewMatrix = Matrix4.identity();
+    const projectionMatrix = Matrix4.identity();
+
+    this.gl.uniformMatrix4fv(u_viewMatrix, false, viewMatrix.elements);
+    this.gl.uniformMatrix4fv(u_projectionMatrix, false, projectionMatrix.elements);
+
+    // Set lighting uniforms
+    const sunDirection = new Vector3(0.5, 1.0, 0.3).normalize();
+    this.gl.uniform3f(u_sunDirection, sunDirection.x, sunDirection.y, sunDirection.z);
+    this.gl.uniform3f(u_sunColor, 1.0, 0.98, 0.95); // Warm sunlight
+    this.gl.uniform3f(u_ambientColor, 0.4, 0.45, 0.5); // Cool ambient
+    this.gl.uniform1f(u_aoIntensity, this.config.aoIntensity);
+
+    // Get attribute locations
+    const a_position = this.gl.getAttribLocation(this.shader, 'a_position');
+    const a_normal = this.gl.getAttribLocation(this.shader, 'a_normal');
+    const a_color = this.gl.getAttribLocation(this.shader, 'a_color');
+    const a_ao = this.gl.getAttribLocation(this.shader, 'a_ao');
+
+    // Render visible chunks
+    this.renderChunksWithMesh(u_modelMatrix, a_position, a_normal, a_color, a_ao);
+
+    // Cleanup state
+    this.gl.disableVertexAttribArray(a_position);
+    this.gl.disableVertexAttribArray(a_normal);
+    this.gl.disableVertexAttribArray(a_color);
+    this.gl.disableVertexAttribArray(a_ao);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+    this.gl.useProgram(null);
 
     logger.trace(`VoxelPass: ${this.stats.chunksRendered} chunks, ${this.stats.quadsRendered} quads`);
   }
@@ -701,9 +753,29 @@ export class VoxelPass extends RenderPass {
       ))
     );
 
+    // Create WebGL buffers
+    let vertexBuffer: WebGLBuffer | null = null;
+    let indexBuffer: WebGLBuffer | null = null;
+
+    if (this.gl && vertices.length > 0) {
+      // Create and populate vertex buffer
+      vertexBuffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+
+      // Create and populate index buffer
+      indexBuffer = this.gl.createBuffer();
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+      this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
+
+      // Unbind buffers
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+    }
+
     return {
-      vertexBuffer: null, // In full implementation, create WebGL buffer
-      indexBuffer: null,
+      vertexBuffer,
+      indexBuffer,
       vertexCount: vertices.length / 10,
       indexCount: indices.length,
       bounds,
@@ -711,22 +783,85 @@ export class VoxelPass extends RenderPass {
   }
 
   /**
-   * Renders all visible chunks.
+   * Renders all visible chunks with full WebGL mesh rendering.
+   */
+  private renderChunksWithMesh(
+    u_modelMatrix: WebGLUniformLocation | null,
+    a_position: number,
+    a_normal: number,
+    a_color: number,
+    a_ao: number
+  ): void {
+    if (!this.gl) return;
+
+    let chunksRendered = 0;
+    let quadsRendered = 0;
+    let processedChunks = 0;
+
+    // Iterate through all chunks with meshes
+    for (const [key, chunk] of this.chunks) {
+      const mesh = this.chunkMeshes.get(key);
+
+      if (!mesh || !mesh.vertexBuffer || !mesh.indexBuffer) {
+        continue; // Skip chunks without valid meshes
+      }
+
+      // Frustum culling (in full implementation, would check against camera frustum)
+      // For now, render all chunks up to maxChunksPerFrame limit
+      if (processedChunks >= this.config.maxChunksPerFrame) {
+        break;
+      }
+
+      // Set model matrix (chunk world position)
+      const modelMatrix = Matrix4.translation(chunk.position.x, chunk.position.y, chunk.position.z);
+      this.gl.uniformMatrix4fv(u_modelMatrix, false, modelMatrix.elements);
+
+      // Bind vertex buffer
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.vertexBuffer);
+
+      // Set up vertex attributes
+      // Vertex format: position(3) + normal(3) + color(3) + ao(1) = 10 floats per vertex
+      const stride = 10 * Float32Array.BYTES_PER_ELEMENT;
+
+      this.gl.enableVertexAttribArray(a_position);
+      this.gl.vertexAttribPointer(a_position, 3, this.gl.FLOAT, false, stride, 0);
+
+      this.gl.enableVertexAttribArray(a_normal);
+      this.gl.vertexAttribPointer(a_normal, 3, this.gl.FLOAT, false, stride, 3 * Float32Array.BYTES_PER_ELEMENT);
+
+      this.gl.enableVertexAttribArray(a_color);
+      this.gl.vertexAttribPointer(a_color, 3, this.gl.FLOAT, false, stride, 6 * Float32Array.BYTES_PER_ELEMENT);
+
+      this.gl.enableVertexAttribArray(a_ao);
+      this.gl.vertexAttribPointer(a_ao, 1, this.gl.FLOAT, false, stride, 9 * Float32Array.BYTES_PER_ELEMENT);
+
+      // Bind index buffer
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+
+      // Draw chunk mesh
+      this.gl.drawElements(this.gl.TRIANGLES, mesh.indexCount, this.gl.UNSIGNED_SHORT, 0);
+
+      chunksRendered++;
+      quadsRendered += mesh.indexCount / 6; // 6 indices per quad (2 triangles)
+      processedChunks++;
+    }
+
+    this.stats.chunksRendered = chunksRendered;
+    this.stats.quadsRendered = quadsRendered;
+  }
+
+  /**
+   * Renders all visible chunks (legacy method for compatibility).
    */
   private renderChunks(): void {
-    // In full implementation:
-    // 1. Frustum cull chunks
-    // 2. Sort by distance (front to back)
-    // 3. Render each chunk mesh
-    // 4. Update statistics
-
+    // This method is now a placeholder
+    // Actual rendering is done in renderChunksWithMesh
     let chunksRendered = 0;
     let quadsRendered = 0;
 
     for (const [key, mesh] of this.chunkMeshes) {
-      // Frustum culling would go here
       chunksRendered++;
-      quadsRendered += mesh.indexCount / 6; // 6 indices per quad
+      quadsRendered += mesh.indexCount / 6;
     }
 
     this.stats.chunksRendered = chunksRendered;
@@ -737,8 +872,77 @@ export class VoxelPass extends RenderPass {
    * Creates shader programs.
    */
   private createShaders(): void {
-    // In full implementation, compile and link shaders
+    if (!this.gl) {
+      logger.error('Cannot create shaders: WebGL context not initialized');
+      return;
+    }
+
     logger.debug('Creating voxel shaders');
+
+    // Compile vertex shader
+    const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+    if (!vertexShader) {
+      logger.error('Failed to create vertex shader');
+      return;
+    }
+
+    this.gl.shaderSource(vertexShader, VOXEL_VERTEX_SHADER);
+    this.gl.compileShader(vertexShader);
+
+    if (!this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS)) {
+      const info = this.gl.getShaderInfoLog(vertexShader);
+      logger.error(`Vertex shader compilation failed: ${info}`);
+      this.gl.deleteShader(vertexShader);
+      return;
+    }
+
+    // Compile fragment shader
+    const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+    if (!fragmentShader) {
+      logger.error('Failed to create fragment shader');
+      this.gl.deleteShader(vertexShader);
+      return;
+    }
+
+    this.gl.shaderSource(fragmentShader, VOXEL_FRAGMENT_SHADER);
+    this.gl.compileShader(fragmentShader);
+
+    if (!this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS)) {
+      const info = this.gl.getShaderInfoLog(fragmentShader);
+      logger.error(`Fragment shader compilation failed: ${info}`);
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    // Link shader program
+    this.shader = this.gl.createProgram();
+    if (!this.shader) {
+      logger.error('Failed to create shader program');
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    this.gl.attachShader(this.shader, vertexShader);
+    this.gl.attachShader(this.shader, fragmentShader);
+    this.gl.linkProgram(this.shader);
+
+    if (!this.gl.getProgramParameter(this.shader, this.gl.LINK_STATUS)) {
+      const info = this.gl.getProgramInfoLog(this.shader);
+      logger.error(`Shader program linking failed: ${info}`);
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+      this.gl.deleteProgram(this.shader);
+      this.shader = null;
+      return;
+    }
+
+    // Clean up shaders (they're now part of the program)
+    this.gl.deleteShader(vertexShader);
+    this.gl.deleteShader(fragmentShader);
+
+    logger.info('Voxel shaders created successfully');
   }
 
   /**

@@ -622,13 +622,61 @@ export class VolumetricLightingPass extends RenderPass {
       return;
     }
 
+    if (!this.depthTexture) {
+      logger.warn('VolumetricLightingPass: no depth texture set, skipping');
+      return;
+    }
+
     logger.trace('VolumetricLightingPass: ray marching volume');
+
+    // Compile shader on first use
+    if (!this.shader) {
+      this.compileShader();
+      if (!this.shader) {
+        logger.error('VolumetricLightingPass: failed to compile shader');
+        return;
+      }
+    }
+
+    // Get GL context from render target
+    const gl = this.getGLContext();
+    if (!gl) {
+      logger.error('VolumetricLightingPass: no GL context available');
+      return;
+    }
+
+    // Bind volumetric framebuffer
+    const framebuffer = (this.volumetricTarget as any).framebuffer;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer || null);
+
+    // Clear to transparent
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Disable depth test and blending for fullscreen pass
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.BLEND);
+
+    // Bind shader
+    this.shader.bind();
 
     // Update uniforms
     this.updateUniforms();
 
-    // Render fullscreen triangle
-    // (Implementation depends on graphics backend)
+    // Bind textures
+    this.bindTextures(gl);
+
+    // Update lights if we have any
+    if (this.lights.length > 0 && this.lightsUBO) {
+      this.updateLightsUBO();
+    }
+
+    // Draw fullscreen triangle
+    // Uses vertex shader's built-in fullscreen triangle (3 vertices)
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     // Swap temporal buffers if enabled
     if (this.config.enableTemporal && this.previousVolumetricTarget) {
@@ -751,11 +799,194 @@ export class VolumetricLightingPass extends RenderPass {
   }
 
   /**
+   * Compiles the volumetric lighting shader.
+   */
+  private compileShader(): void {
+    logger.debug('Compiling volumetric lighting shader');
+
+    const gl = this.getGLContext();
+    if (!gl) {
+      logger.error('Cannot compile shader: no GL context');
+      return;
+    }
+
+    // Build shader defines
+    const defines: { [key: string]: string | number } = {
+      MAX_LIGHTS: 16,
+      MAX_STEPS: Math.max(64, this.config.numSteps ?? 32),
+    };
+
+    // Add shadow support if shadow map is set
+    if (this.shadowMapTexture) {
+      defines.USE_SHADOWS = 1;
+    }
+
+    // Add temporal support if enabled
+    if (this.config.enableTemporal) {
+      defines.ENABLE_TEMPORAL = 1;
+    }
+
+    try {
+      this.shader = new Shader({
+        name: 'VolumetricLighting',
+        source: {
+          vertex: VOLUMETRIC_VERTEX_SHADER,
+          fragment: VOLUMETRIC_FRAGMENT_SHADER,
+        },
+        defines,
+        gl,
+      });
+
+      logger.info('Volumetric lighting shader compiled successfully');
+    } catch (error) {
+      logger.error('Failed to compile volumetric lighting shader:', error);
+      this.shader = null;
+    }
+  }
+
+  /**
+   * Gets the WebGL context from the render target.
+   */
+  private getGLContext(): WebGL2RenderingContext | null {
+    // Try to get from volumetric target
+    if (this.volumetricTarget) {
+      const context = (this.volumetricTarget as any).gl;
+      if (context) return context;
+    }
+
+    // Fallback: try to get from global window
+    if (typeof window !== 'undefined' && (window as any).g3dGLContext) {
+      return (window as any).g3dGLContext;
+    }
+
+    return null;
+  }
+
+  /**
+   * Binds all required textures for volumetric rendering.
+   */
+  private bindTextures(gl: WebGL2RenderingContext): void {
+    if (!this.shader) return;
+
+    // Bind depth texture (texture unit 0)
+    if (this.depthTexture) {
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.depthTexture as WebGLTexture);
+      this.shader.setUniform('u_depth', 0);
+    }
+
+    // Bind shadow map (texture unit 1)
+    if (this.shadowMapTexture) {
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, this.shadowMapTexture as WebGLTexture);
+      this.shader.setUniform('u_shadowMap0', 1);
+
+      if (this.shadowMatrix) {
+        this.shader.setUniform('u_shadowMatrix0', this.shadowMatrix);
+      }
+    }
+
+    // Bind previous frame for temporal reprojection (texture unit 2)
+    if (this.config.enableTemporal && this.previousVolumetricTarget) {
+      const previousTexture = this.previousVolumetricTarget.getColorAttachment(0);
+      if (previousTexture) {
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, previousTexture as WebGLTexture);
+        this.shader.setUniform('u_previousVolume', 2);
+      }
+    }
+  }
+
+  /**
+   * Updates the lights uniform buffer.
+   */
+  private updateLightsUBO(): void {
+    if (!this.lightsUBO) return;
+
+    // Update light count
+    this.lightsUBO.setInt('lightCount', this.lights.length);
+
+    // Update individual lights
+    // Note: In a real implementation, we'd need to properly structure
+    // the light data as a uniform buffer array. For now, we assume
+    // lights are passed via shader uniforms directly.
+    if (this.shader) {
+      for (let i = 0; i < this.lights.length && i < 16; i++) {
+        const light = this.lights[i];
+        const prefix = `u_lights[${i}]`;
+
+        this.shader.setUniform(`${prefix}.positionType`, [
+          light.positionType.x,
+          light.positionType.y,
+          light.positionType.z,
+          light.positionType.w,
+        ]);
+
+        this.shader.setUniform(`${prefix}.directionRange`, [
+          light.directionRange.x,
+          light.directionRange.y,
+          light.directionRange.z,
+          light.directionRange.w,
+        ]);
+
+        this.shader.setUniform(`${prefix}.colorIntensity`, [
+          light.colorIntensity.x,
+          light.colorIntensity.y,
+          light.colorIntensity.z,
+          light.colorIntensity.w,
+        ]);
+
+        this.shader.setUniform(`${prefix}.spotAngles`, [
+          light.spotAngles.x,
+          light.spotAngles.y,
+          light.spotAngles.z,
+          light.spotAngles.w,
+        ]);
+      }
+
+      // Set light count in shader
+      this.shader.setUniform('u_lightCount', this.lights.length);
+    }
+  }
+
+  /**
    * Updates uniform buffer.
    */
   private updateUniforms(): void {
-    if (!this.uniformsUBO || !this.currentCamera) return;
+    if (!this.uniformsUBO || !this.currentCamera || !this.shader) return;
 
+    // Update camera uniforms via shader
+    this.shader.setUniform('u_cameraPosition', this.currentCamera.transform.worldPosition);
+    this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
+    this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
+    this.shader.setUniform('u_inverseViewProjection', this.currentCamera.inverseViewProjectionMatrix!);
+
+    if (this.config.enableTemporal && this.previousViewProjectionMatrix) {
+      this.shader.setUniform('u_previousViewProjection', this.previousViewProjectionMatrix);
+    }
+
+    this.shader.setUniform('u_nearFar', [
+      this.currentCamera.near,
+      this.currentCamera.far,
+    ]);
+
+    // Update volumetric parameters
+    this.shader.setUniform('u_numSteps', this.config.numSteps ?? 32);
+    this.shader.setUniform('u_fogDensity', this.config.fogDensity ?? 0.02);
+    this.shader.setUniform('u_fogColor', [
+      this.config.fogColor?.r ?? 0.5,
+      this.config.fogColor?.g ?? 0.6,
+      this.config.fogColor?.b ?? 0.7,
+    ]);
+    this.shader.setUniform('u_fogHeightStart', this.config.fogHeightStart ?? 0.0);
+    this.shader.setUniform('u_fogHeightFalloff', this.config.fogHeightFalloff ?? 0.1);
+    this.shader.setUniform('u_scattering', this.config.scattering ?? 1.0);
+    this.shader.setUniform('u_extinction', this.config.extinction ?? 0.5);
+    this.shader.setUniform('u_anisotropy', this.config.anisotropy ?? 0.3);
+    this.shader.setUniform('u_maxDistance', this.config.maxDistance ?? 200.0);
+    this.shader.setUniform('u_temporalBlendFactor', this.config.temporalBlendFactor ?? 0.9);
+
+    // Also update the UBO for systems that use it
     this.uniformsUBO.setVec3('cameraPosition', this.currentCamera.transform.worldPosition);
     this.uniformsUBO.setMat4('viewMatrix', this.currentCamera.viewMatrix);
     this.uniformsUBO.setMat4('projectionMatrix', this.currentCamera.projectionMatrix);

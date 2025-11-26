@@ -860,6 +860,11 @@ export class WebGL2Device extends GPUDevice {
     });
   }
 
+  /** Get the raw WebGL2 context for direct operations */
+  getGL(): WebGL2RenderingContext {
+    return this.gl;
+  }
+
   private loadExtensions(): void {
     const extensions = [
       'EXT_color_buffer_float',

@@ -20,6 +20,8 @@ import { Shader } from '../shader/Shader';
 import { UniformBuffer, UniformBufferDescriptor, UniformLayout, UniformType } from '../shader/UniformBuffer';
 import { Logger } from '../../core/Logger';
 import { Color } from '../../math/Color';
+import { Vector2 } from '../../math/Vector2';
+import { Vector3 } from '../../math/Vector3';
 
 const logger = Logger.create('FilmGrainPass');
 
@@ -45,11 +47,139 @@ export interface FilmGrainConfig {
   grainColor?: Color;
 }
 
-// Film grain vertex shader.
-// Note: Currently unused but kept for future implementation - shader code removed to fix TS6133
+/**
+ * Film grain vertex shader.
+ * Renders fullscreen triangle for post-process effect.
+ */
+const FILM_GRAIN_VERTEX_SHADER = `#version 300 es
+precision highp float;
 
-// Film grain fragment shader.
-// Note: Currently unused but kept for future implementation - shader code removed to fix TS6133
+const vec2 positions[3] = vec2[3](
+  vec2(-1.0, -1.0),
+  vec2(3.0, -1.0),
+  vec2(-1.0, 3.0)
+);
+
+const vec2 texcoords[3] = vec2[3](
+  vec2(0.0, 0.0),
+  vec2(2.0, 0.0),
+  vec2(0.0, 2.0)
+);
+
+out vec2 v_texcoord;
+
+void main() {
+  v_texcoord = texcoords[gl_VertexID];
+  gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);
+}
+`;
+
+/**
+ * Film grain fragment shader.
+ * Applies animated film grain overlay with luminance-based response.
+ */
+const FILM_GRAIN_FRAGMENT_SHADER = `#version 300 es
+precision highp float;
+
+in vec2 v_texcoord;
+
+uniform sampler2D u_inputTexture;
+uniform float u_intensity;
+uniform float u_grainSize;
+uniform int u_useLuminanceResponse;
+uniform float u_luminancePower;
+uniform int u_useColoredGrain;
+uniform vec3 u_grainColor;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+layout(location = 0) out vec4 o_color;
+
+/**
+ * Generates pseudo-random noise value.
+ * Based on classic noise function with temporal variation.
+ */
+float noise(vec2 uv) {
+  return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+/**
+ * Generates animated noise with temporal offset.
+ */
+float animatedNoise(vec2 uv, float time) {
+  // Add time-based offset for animation
+  vec2 offset = vec2(time * 0.1, time * 0.07);
+  return noise(uv + offset);
+}
+
+/**
+ * Calculates luminance from RGB color.
+ */
+float getLuminance(vec3 color) {
+  return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
+/**
+ * Generates colored grain (simulates color film grain).
+ */
+vec3 generateColoredGrain(vec2 uv, float time) {
+  // Generate noise for each color channel with slight offsets
+  float grainR = animatedNoise(uv + vec2(0.0, 0.0), time);
+  float grainG = animatedNoise(uv + vec2(0.1, 0.2), time);
+  float grainB = animatedNoise(uv + vec2(0.2, 0.1), time);
+
+  vec3 grain = vec3(grainR, grainG, grainB);
+  // Convert from [0, 1] to [-1, 1] range
+  grain = grain * 2.0 - 1.0;
+
+  // Apply color tint
+  grain *= u_grainColor;
+
+  return grain;
+}
+
+void main() {
+  // Sample input color
+  vec4 color = texture(u_inputTexture, v_texcoord);
+
+  // Calculate UV coordinates scaled by grain size
+  vec2 grainUV = v_texcoord * u_resolution / u_grainSize;
+
+  // Generate grain
+  vec3 grain;
+  if (u_useColoredGrain != 0) {
+    // Colored grain (RGB channels vary independently)
+    grain = generateColoredGrain(grainUV, u_time);
+  } else {
+    // Monochrome grain
+    float grainValue = animatedNoise(grainUV, u_time);
+    // Convert from [0, 1] to [-1, 1] range
+    grainValue = grainValue * 2.0 - 1.0;
+    grain = vec3(grainValue);
+  }
+
+  // Calculate grain amount based on luminance
+  float grainAmount = u_intensity;
+
+  if (u_useLuminanceResponse != 0) {
+    // Calculate luminance of current pixel
+    float luminance = getLuminance(color.rgb);
+
+    // Apply luminance-based response curve
+    // Less grain in highlights, more in darks
+    float luminanceResponse = pow(1.0 - luminance, u_luminancePower);
+    grainAmount *= luminanceResponse;
+  }
+
+  // Apply film grain overlay
+  color.rgb += grain * grainAmount;
+
+  // Clamp to valid color range
+  color.rgb = clamp(color.rgb, 0.0, 1.0);
+
+  o_color = color;
+}
+`;
 
 /**
  * Film Grain post-process pass.
@@ -162,6 +292,15 @@ export class FilmGrainPass extends RenderPass {
       label: 'FilmGrain_Output',
     });
 
+    // Create film grain shader
+    this.shader = new Shader({
+      name: 'FilmGrain_Shader',
+      source: {
+        vertex: FILM_GRAIN_VERTEX_SHADER,
+        fragment: FILM_GRAIN_FRAGMENT_SHADER,
+      },
+    });
+
     // Create uniforms buffer
     const uniformsDesc: UniformBufferDescriptor = {
       name: 'FilmGrainUniforms',
@@ -190,7 +329,7 @@ export class FilmGrainPass extends RenderPass {
    * @param renderTarget - Output target
    */
   execute(_renderQueue: RenderQueue, _renderTarget: RenderTarget): void {
-    if (!this.outputTarget || !this.uniformsUBO || !this.inputTexture) {
+    if (!this.outputTarget || !this.uniformsUBO || !this.inputTexture || !this.shader) {
       logger.error('FilmGrainPass not properly initialized');
       return;
     }
@@ -201,8 +340,26 @@ export class FilmGrainPass extends RenderPass {
     // Update uniforms
     this.updateUniforms();
 
-    // Render fullscreen triangle with film grain shader
-    // (Implementation depends on graphics backend)
+    // Bind shader
+    this.shader.bind();
+
+    // Set uniform values using setUniform
+    this.shader.setUniform('u_inputTexture', this.inputTexture as WebGLTexture);
+    this.shader.setUniform('u_intensity', this.config.intensity ?? 0.1);
+    this.shader.setUniform('u_grainSize', this.config.grainSize ?? 2.0);
+    this.shader.setUniform('u_useLuminanceResponse', this.config.useLuminanceResponse ? 1 : 0);
+    this.shader.setUniform('u_luminancePower', this.config.luminancePower ?? 2.0);
+    this.shader.setUniform('u_useColoredGrain', this.config.useColoredGrain ? 1 : 0);
+    this.shader.setUniform('u_grainColor', new Vector3(
+      this.config.grainColor?.r ?? 1,
+      this.config.grainColor?.g ?? 1,
+      this.config.grainColor?.b ?? 1
+    ));
+    this.shader.setUniform('u_time', this.time);
+    this.shader.setUniform('u_resolution', new Vector2(this.config.width, this.config.height));
+
+    // Unbind shader
+    this.shader.unbind();
 
     logger.trace('FilmGrainPass complete');
   }
@@ -274,16 +431,13 @@ export class FilmGrainPass extends RenderPass {
     this.uniformsUBO.setInt('useLuminanceResponse', this.config.useLuminanceResponse ? 1 : 0);
     this.uniformsUBO.setFloat('luminancePower', this.config.luminancePower ?? 2.0);
     this.uniformsUBO.setInt('useColoredGrain', this.config.useColoredGrain ? 1 : 0);
-    this.uniformsUBO.setVec3('grainColor', {
-      x: this.config.grainColor?.r ?? 1,
-      y: this.config.grainColor?.g ?? 1,
-      z: this.config.grainColor?.b ?? 1
-    } as any);
+    this.uniformsUBO.setVec3('grainColor', new Vector3(
+      this.config.grainColor?.r ?? 1,
+      this.config.grainColor?.g ?? 1,
+      this.config.grainColor?.b ?? 1
+    ));
     this.uniformsUBO.setFloat('time', this.time);
-    this.uniformsUBO.setVec2('resolution', {
-      x: this.config.width,
-      y: this.config.height
-    } as any);
+    this.uniformsUBO.setVec2('resolution', new Vector2(this.config.width, this.config.height));
   }
 
   /**

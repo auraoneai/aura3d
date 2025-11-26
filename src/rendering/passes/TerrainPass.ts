@@ -576,6 +576,8 @@ export class TerrainPass extends RenderPass {
       return;
     }
 
+    const gl = this.gl;
+
     // Reset statistics
     this.stats.drawCalls = 0;
     this.stats.triangles = 0;
@@ -583,14 +585,57 @@ export class TerrainPass extends RenderPass {
 
     // Get camera position (would be passed from render context)
     const cameraPosition = new Vector3(0, 100, 0);
+    const viewMatrix = new Matrix4(); // Would come from camera
+    const projectionMatrix = new Matrix4(); // Would come from camera
+    const modelMatrix = Matrix4.translation(this.config.position.x, this.config.position.y, this.config.position.z);
 
     // Update clipmap centers based on camera
     if (this.config.lodSystem === LODSystem.Clipmap) {
       this.updateClipmapCenters(cameraPosition);
     }
 
-    // Render terrain
-    this.renderTerrain(cameraPosition);
+    // Enable depth testing
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.depthMask(true);
+
+    // Enable back-face culling
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
+    // Use terrain shader
+    gl.useProgram(this.shader);
+
+    // Bind global uniforms
+    this.bindGlobalUniforms(gl, modelMatrix, viewMatrix, projectionMatrix, cameraPosition);
+
+    // Bind heightmap texture
+    this.bindHeightmap(gl);
+
+    // Bind splatmap texture
+    this.bindSplatmap(gl);
+
+    // Bind layer textures
+    this.bindLayerTextures(gl);
+
+    // Render terrain based on LOD system
+    if (this.config.lodSystem === LODSystem.Clipmap) {
+      this.renderClipmapTerrain(gl, cameraPosition);
+    } else if (this.config.lodSystem === LODSystem.Quadtree) {
+      this.renderQuadtreeTerrain(gl, cameraPosition);
+    } else {
+      this.renderDistanceLODTerrain(gl, cameraPosition);
+    }
+
+    // Unbind textures
+    for (let i = 0; i < 16; i++) {
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    // Disable depth and culling
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
 
     logger.trace(`TerrainPass: ${this.stats.drawCalls} draws, ${this.stats.triangles} triangles, ` +
                  `${this.stats.activeClipmaps} clipmaps`);
@@ -716,19 +761,189 @@ export class TerrainPass extends RenderPass {
   }
 
   /**
-   * Renders terrain using clipmap levels.
+   * Binds global shader uniforms.
    */
-  private renderTerrain(cameraPosition: Vector3): void {
-    // In full implementation:
-    // 1. Bind shader and uniforms
-    // 2. Bind heightmap and splatmap textures
-    // 3. Bind layer textures
-    // 4. For each clipmap level:
-    //    - Set level-specific uniforms (scale, offset)
-    //    - Draw clipmap geometry
-    //    - Update statistics
+  private bindGlobalUniforms(
+    gl: WebGL2RenderingContext,
+    modelMatrix: Matrix4,
+    viewMatrix: Matrix4,
+    projectionMatrix: Matrix4,
+    cameraPosition: Vector3
+  ): void {
+    // Matrix uniforms
+    const modelLoc = gl.getUniformLocation(this.shader!, 'u_modelMatrix');
+    const viewLoc = gl.getUniformLocation(this.shader!, 'u_viewMatrix');
+    const projLoc = gl.getUniformLocation(this.shader!, 'u_projectionMatrix');
 
-    for (const level of this.clipmapLevels) {
+    if (modelLoc) gl.uniformMatrix4fv(modelLoc, false, modelMatrix.elements);
+    if (viewLoc) gl.uniformMatrix4fv(viewLoc, false, viewMatrix.elements);
+    if (projLoc) gl.uniformMatrix4fv(projLoc, false, projectionMatrix.elements);
+
+    // Terrain parameters
+    const terrainSizeLoc = gl.getUniformLocation(this.shader!, 'u_terrainSize');
+    const heightScaleLoc = gl.getUniformLocation(this.shader!, 'u_heightScale');
+    const heightmapSizeLoc = gl.getUniformLocation(this.shader!, 'u_heightmapSize');
+    const cameraPosLoc = gl.getUniformLocation(this.shader!, 'u_cameraPosition');
+
+    if (terrainSizeLoc) {
+      gl.uniform2f(terrainSizeLoc, this.config.terrainSize.x, this.config.terrainSize.y);
+    }
+    if (heightScaleLoc) {
+      gl.uniform1f(heightScaleLoc, this.config.heightScale);
+    }
+    if (heightmapSizeLoc) {
+      gl.uniform2f(heightmapSizeLoc, this.config.heightmapResolution.x, this.config.heightmapResolution.y);
+    }
+    if (cameraPosLoc) {
+      gl.uniform3f(cameraPosLoc, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+    }
+
+    // Detail parameters
+    const detailDistLoc = gl.getUniformLocation(this.shader!, 'u_detailDistance');
+    const detailFadeLoc = gl.getUniformLocation(this.shader!, 'u_detailFadeRange');
+    const normalStrengthLoc = gl.getUniformLocation(this.shader!, 'u_normalStrength');
+
+    if (detailDistLoc) gl.uniform1f(detailDistLoc, this.config.detailDistance);
+    if (detailFadeLoc) gl.uniform1f(detailFadeLoc, this.config.detailFadeRange);
+    if (normalStrengthLoc) gl.uniform1f(normalStrengthLoc, this.config.normalStrength);
+  }
+
+  /**
+   * Binds heightmap texture.
+   */
+  private bindHeightmap(gl: WebGL2RenderingContext): void {
+    if (!this.config.heightmap) {
+      logger.warn('No heightmap texture provided');
+      return;
+    }
+
+    // Bind heightmap to texture unit 0
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.config.heightmap);
+
+    // Set texture parameters for heightmap
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    const heightmapLoc = gl.getUniformLocation(this.shader!, 'u_heightmap');
+    if (heightmapLoc) {
+      gl.uniform1i(heightmapLoc, 0);
+    }
+  }
+
+  /**
+   * Binds splatmap texture.
+   */
+  private bindSplatmap(gl: WebGL2RenderingContext): void {
+    if (!this.config.splatmap) {
+      logger.warn('No splatmap texture provided');
+      return;
+    }
+
+    // Bind splatmap to texture unit 1
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this.config.splatmap);
+
+    // Set texture parameters for splatmap
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    const splatmapLoc = gl.getUniformLocation(this.shader!, 'u_splatmap');
+    if (splatmapLoc) {
+      gl.uniform1i(splatmapLoc, 1);
+    }
+  }
+
+  /**
+   * Binds terrain layer textures.
+   */
+  private bindLayerTextures(gl: WebGL2RenderingContext): void {
+    let textureUnit = 2; // Start after heightmap (0) and splatmap (1)
+
+    // Ensure we have 4 layers
+    const layers = this.config.layers.slice(0, 4);
+    while (layers.length < 4) {
+      layers.push({
+        name: 'default',
+        albedoTexture: null,
+        normalTexture: null,
+        roughnessTexture: null,
+        uvScale: 1.0,
+        tiling: 1.0,
+        metallic: 0.0,
+        useTriplanar: false,
+      });
+    }
+
+    // Bind each layer's textures
+    for (let i = 0; i < 4; i++) {
+      const layer = layers[i];
+
+      // Albedo texture
+      gl.activeTexture(gl.TEXTURE0 + textureUnit);
+      if (layer.albedoTexture) {
+        gl.bindTexture(gl.TEXTURE_2D, layer.albedoTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      }
+      const albedoLoc = gl.getUniformLocation(this.shader!, `u_layer${i}_albedo`);
+      if (albedoLoc) gl.uniform1i(albedoLoc, textureUnit);
+      textureUnit++;
+
+      // Normal texture
+      gl.activeTexture(gl.TEXTURE0 + textureUnit);
+      if (layer.normalTexture) {
+        gl.bindTexture(gl.TEXTURE_2D, layer.normalTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      }
+      const normalLoc = gl.getUniformLocation(this.shader!, `u_layer${i}_normal`);
+      if (normalLoc) gl.uniform1i(normalLoc, textureUnit);
+      textureUnit++;
+
+      // Roughness texture
+      gl.activeTexture(gl.TEXTURE0 + textureUnit);
+      if (layer.roughnessTexture) {
+        gl.bindTexture(gl.TEXTURE_2D, layer.roughnessTexture);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      }
+      const roughnessLoc = gl.getUniformLocation(this.shader!, `u_layer${i}_roughness`);
+      if (roughnessLoc) gl.uniform1i(roughnessLoc, textureUnit);
+      textureUnit++;
+
+      // Layer parameters (uvScale, tiling, metallic, useTriplanar)
+      const paramsLoc = gl.getUniformLocation(this.shader!, `u_layer${i}_params`);
+      if (paramsLoc) {
+        gl.uniform4f(
+          paramsLoc,
+          layer.uvScale,
+          layer.tiling,
+          layer.metallic,
+          layer.useTriplanar ? 1.0 : 0.0
+        );
+      }
+    }
+  }
+
+  /**
+   * Renders terrain using clipmap LOD system.
+   */
+  private renderClipmapTerrain(gl: WebGL2RenderingContext, cameraPosition: Vector3): void {
+    // Render clipmap levels from coarsest to finest for proper depth testing
+    for (let i = this.clipmapLevels.length - 1; i >= 0; i--) {
+      const level = this.clipmapLevels[i];
+
       // Check if level is visible
       const levelDistance = level.scale * this.config.terrainSize.x;
       const cameraDistance = new Vector2(
@@ -736,12 +951,74 @@ export class TerrainPass extends RenderPass {
         cameraPosition.z - (level.center.y * this.config.terrainSize.y)
       ).length();
 
-      if (cameraDistance < levelDistance * 2.0) {
+      if (cameraDistance < levelDistance * 2.0 * this.config.lodDistanceScale) {
+        this.renderClipmapLevel(gl, level);
         this.stats.activeClipmaps++;
-        this.stats.drawCalls++;
-        this.stats.triangles += level.indexCount / 3;
       }
     }
+  }
+
+  /**
+   * Renders a single clipmap level.
+   */
+  private renderClipmapLevel(gl: WebGL2RenderingContext, level: ClipmapLevel): void {
+    if (!level.vertexBuffer || !level.indexBuffer) {
+      return;
+    }
+
+    // Set LOD-specific uniforms
+    const lodLevelLoc = gl.getUniformLocation(this.shader!, 'u_lodLevel');
+    const lodOffsetLoc = gl.getUniformLocation(this.shader!, 'u_lodOffset');
+    const lodScaleLoc = gl.getUniformLocation(this.shader!, 'u_lodScale');
+
+    if (lodLevelLoc) gl.uniform1f(lodLevelLoc, level.level);
+    if (lodOffsetLoc) gl.uniform2f(lodOffsetLoc, level.center.x, level.center.y);
+    if (lodScaleLoc) gl.uniform2f(lodScaleLoc, level.scale, level.scale);
+
+    // Bind vertex buffer
+    gl.bindBuffer(gl.ARRAY_BUFFER, level.vertexBuffer);
+
+    // Set up vertex attributes
+    const positionLoc = gl.getAttribLocation(this.shader!, 'a_position');
+    if (positionLoc !== -1) {
+      gl.enableVertexAttribArray(positionLoc);
+      gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 8, 0);
+    }
+
+    // Bind index buffer
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, level.indexBuffer);
+
+    // Draw elements
+    gl.drawElements(gl.TRIANGLES, level.indexCount, gl.UNSIGNED_SHORT, 0);
+
+    // Update statistics
+    this.stats.drawCalls++;
+    this.stats.triangles += level.indexCount / 3;
+
+    // Cleanup
+    if (positionLoc !== -1) {
+      gl.disableVertexAttribArray(positionLoc);
+    }
+  }
+
+  /**
+   * Renders terrain using quadtree LOD system.
+   */
+  private renderQuadtreeTerrain(gl: WebGL2RenderingContext, cameraPosition: Vector3): void {
+    // Quadtree implementation would go here
+    // For now, fall back to clipmap rendering
+    logger.warn('Quadtree LOD not fully implemented, using clipmap fallback');
+    this.renderClipmapTerrain(gl, cameraPosition);
+  }
+
+  /**
+   * Renders terrain using simple distance-based LOD.
+   */
+  private renderDistanceLODTerrain(gl: WebGL2RenderingContext, cameraPosition: Vector3): void {
+    // Simple distance LOD implementation
+    // For now, render all clipmap levels
+    logger.warn('Distance LOD not fully implemented, using clipmap fallback');
+    this.renderClipmapTerrain(gl, cameraPosition);
   }
 
   /**

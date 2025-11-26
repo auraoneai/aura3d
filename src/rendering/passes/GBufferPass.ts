@@ -381,8 +381,13 @@ export class GBufferPass extends RenderPass {
    * Sets up the GBuffer pass resources.
    * Creates render targets, shaders, and uniform buffers.
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up GBufferPass');
+
+    // Store GL context if provided
+    if (gl) {
+      this.gl = gl;
+    }
 
     // Create GBuffer render target
     this.gbufferTarget = new RenderTarget({
@@ -417,6 +422,33 @@ export class GBufferPass extends RenderPass {
       },
       label: 'GBuffer',
     });
+
+    // Create GBuffer shader
+    if (this.gl) {
+      const defines: Record<string, number | string> = {};
+
+      // Add preprocessor defines based on config
+      if (this.config.useOctahedronNormals) {
+        defines['USE_OCTAHEDRON_NORMALS'] = 1;
+      }
+      if (this.config.enableVelocityBuffer) {
+        defines['ENABLE_VELOCITY'] = 1;
+      }
+
+      this.shader = new Shader({
+        name: 'GBuffer',
+        source: {
+          vertex: GBUFFER_VERTEX_SHADER,
+          fragment: GBUFFER_FRAGMENT_SHADER,
+        },
+        defines,
+        gl: this.gl,
+      });
+
+      if (!this.shader.isReady) {
+        logger.error('Failed to compile GBuffer shader', this.shader.getErrors());
+      }
+    }
 
     // Create camera uniform buffer
     const cameraUBODesc: UniformBufferDescriptor = {
@@ -457,8 +489,13 @@ export class GBufferPass extends RenderPass {
    * @param renderTarget - Target to render to (ignored, uses internal GBuffer target)
    */
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
-    if (!this.gbufferTarget || !this.cameraUBO || !this.modelUBO) {
+    if (!this.gl || !this.gbufferTarget || !this.shader || !this.currentCamera) {
       logger.error('GBufferPass not properly initialized');
+      return;
+    }
+
+    if (!this.shader.isReady) {
+      logger.error('GBuffer shader not ready');
       return;
     }
 
@@ -477,6 +514,38 @@ export class GBufferPass extends RenderPass {
     // Sort queue for optimal rendering
     renderQueue.sort();
 
+    const gl = this.gl;
+
+    // Bind GBuffer framebuffer
+    // Note: In a real implementation, bind the actual WebGL framebuffer
+    // For now, we assume rendering to the default framebuffer or a bound FBO
+
+    // Clear GBuffer attachments
+    const clearColor = this.clearValues.colors?.[0] ?? Color.black();
+    gl.clearColor(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+    gl.clearDepth(1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+    // Set GL state for GBuffer rendering
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.depthMask(true); // Enable depth writes
+
+    // Disable blending for GBuffer (opaque geometry only)
+    gl.disable(gl.BLEND);
+
+    // Enable backface culling
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    gl.frontFace(gl.CCW);
+
+    // Bind GBuffer shader
+    this.shader.bind();
+
+    // Set camera uniforms
+    this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
+    this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
+
     // Execute draw calls
     let lastMaterialId = -1;
     let lastShader: unknown = null;
@@ -484,30 +553,137 @@ export class GBufferPass extends RenderPass {
     renderQueue.forEach((entry) => {
       const { drawCall, pipelineState, shaderProgram, materialId } = entry;
 
-      // Bind shader if changed
+      // Bind shader if changed (currently we only use the GBuffer shader)
       if (shaderProgram !== lastShader) {
-        // Bind shader program
         lastShader = shaderProgram;
         this.stats.materials++;
       }
 
       // Update material uniforms if changed
       if (materialId !== lastMaterialId) {
-        // Bind material textures and properties
+        // Set default material properties
+        // In a real implementation, get these from the material
+        this.shader!.setUniform('u_albedo', new Color(1.0, 1.0, 1.0, 1.0));
+        this.shader!.setUniform('u_metallic', 0.0);
+        this.shader!.setUniform('u_roughness', 0.5);
+        this.shader!.setUniform('u_ao', 1.0);
+        this.shader!.setUniform('u_emission', new Vector3(0.0, 0.0, 0.0));
+        this.shader!.setUniform('u_emissionIntensity', 0.0);
+        this.shader!.setUniform('u_normalScale', 1.0);
+        this.shader!.setUniform('u_alphaCutoff', 0.5);
+
+        // TODO: Bind material textures (albedo, normal, metallic-roughness, AO, emission)
+        // In a real implementation, you would:
+        // 1. Get the material from materialId
+        // 2. Bind each texture to the appropriate texture unit
+        // 3. Set the corresponding sampler uniforms
+
         lastMaterialId = materialId;
       }
 
-      // Update model matrices
-      // (In real implementation, get from draw call or entity)
+      // Update model matrix
+      // For now, assuming identity model matrix
+      // In a real implementation, get this from the draw call's entity/transform
+      const modelMatrix = Matrix4.identity();
+      this.shader!.setUniform('u_modelMatrix', modelMatrix);
 
-      // Execute draw call
-      this.stats.drawCalls++;
+      // Calculate normal matrix (inverse transpose of model matrix)
+      const normalMatrix = modelMatrix.clone().invert()?.transpose() ?? Matrix4.identity();
+      this.shader!.setUniform('u_normalMatrix', normalMatrix);
+
+      // Set velocity uniforms if enabled
+      if (this.config.enableVelocityBuffer) {
+        const currentMVP = this.currentCamera!.viewProjectionMatrix.multiply(modelMatrix);
+        const previousMVP = this.previousMVPMatrices.get(materialId) ?? currentMVP;
+        this.shader!.setUniform('u_previousModelViewProjection', previousMVP);
+        this.previousMVPMatrices.set(materialId, currentMVP.clone());
+      }
+
+      // Bind vertex buffers
+      const vertexBuffers = drawCall.getVertexBuffers();
+      for (let i = 0; i < vertexBuffers.length; i++) {
+        const vb = vertexBuffers[i];
+        if (vb && vb.buffer) {
+          gl.bindBuffer(gl.ARRAY_BUFFER, vb.buffer as WebGLBuffer);
+
+          // Bind attributes based on slot
+          // Slot 0: position (a_position)
+          // Slot 1: normal (a_normal)
+          // Slot 2: texcoord (a_texcoord)
+          // Slot 3: tangent (a_tangent)
+          const attrNames = ['a_position', 'a_normal', 'a_texcoord', 'a_tangent'];
+          const attrSizes = [3, 3, 2, 4]; // Component counts
+
+          if (i < attrNames.length) {
+            const attr = this.shader!.getAttribute(attrNames[i]);
+            if (attr) {
+              gl.enableVertexAttribArray(attr.location);
+              gl.vertexAttribPointer(
+                attr.location,
+                attrSizes[i],
+                gl.FLOAT,
+                false,
+                vb.stride,
+                vb.offset
+              );
+            }
+          }
+        }
+      }
+
+      // Draw elements or arrays
       if (drawCall.isIndexed()) {
-        this.stats.triangles += Math.floor(drawCall.indexCount / 3) * drawCall.instanceCount;
+        const indexBuffer = drawCall.indexBuffer;
+        if (indexBuffer) {
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer.buffer as WebGLBuffer);
+
+          const indexType = indexBuffer.format === 0 ? gl.UNSIGNED_SHORT : gl.UNSIGNED_INT;
+          const indexSize = indexBuffer.format === 0 ? 2 : 4;
+
+          if (drawCall.isInstanced()) {
+            gl.drawElementsInstanced(
+              gl.TRIANGLES,
+              drawCall.indexCount,
+              indexType,
+              drawCall.firstIndex * indexSize,
+              drawCall.instanceCount
+            );
+          } else {
+            gl.drawElements(
+              gl.TRIANGLES,
+              drawCall.indexCount,
+              indexType,
+              drawCall.firstIndex * indexSize
+            );
+          }
+
+          this.stats.triangles += Math.floor(drawCall.indexCount / 3) * drawCall.instanceCount;
+        }
       } else {
+        // Non-indexed draw
+        if (drawCall.isInstanced()) {
+          gl.drawArraysInstanced(
+            gl.TRIANGLES,
+            drawCall.firstVertex,
+            drawCall.vertexCount,
+            drawCall.instanceCount
+          );
+        } else {
+          gl.drawArrays(
+            gl.TRIANGLES,
+            drawCall.firstVertex,
+            drawCall.vertexCount
+          );
+        }
+
         this.stats.triangles += Math.floor(drawCall.vertexCount / 3) * drawCall.instanceCount;
       }
+
+      this.stats.drawCalls++;
     });
+
+    // Unbind shader
+    this.shader.unbind();
 
     logger.trace(
       `GBufferPass complete: ${this.stats.drawCalls} draws, ${this.stats.triangles} triangles, ${this.stats.materials} materials`

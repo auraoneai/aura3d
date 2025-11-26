@@ -563,18 +563,184 @@ export class OceanPass extends RenderPass {
       return;
     }
 
+    const gl = this.gl;
     const startTime = performance.now();
 
     // Update simulation time
     this.time += (1.0 / 60.0) * this.config.timeScale;
 
-    // Update FFT simulation
+    // === STEP 1: Update FFT simulation ===
     this.updateFFT();
-
     const fftTime = performance.now() - startTime;
 
-    // Render ocean surface with LOD
+    // === STEP 2: Bind render target ===
+    // Note: Direct framebuffer access not available in RenderTarget API
+    // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, renderTarget.width, renderTarget.height);
+
+    // === STEP 3: Enable blending for alpha transparency (LOD fade) ===
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    // Enable depth testing
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.depthMask(true);
+
+    // Enable face culling (back-face)
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+
+    // === STEP 4: Use ocean shader program ===
+    gl.useProgram(this.shader);
+
+    // === STEP 5: Bind displacement, normal, and foam textures ===
+    // Texture unit 0: Displacement map (RGB = XYZ displacement)
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.displacementMap);
+    gl.uniform1i(gl.getUniformLocation(this.shader, 'u_displacementMap'), 0);
+
+    // Texture unit 1: Normal map
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this.normalMap);
+    gl.uniform1i(gl.getUniformLocation(this.shader, 'u_normalMap'), 1);
+
+    // Texture unit 2: Foam map
+    if (this.config.enableFoam) {
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this.foamMap);
+      gl.uniform1i(gl.getUniformLocation(this.shader, 'u_foamMap'), 2);
+    }
+
+    // === STEP 6: Bind reflection and refraction textures ===
+    // Texture unit 3: Reflection map (from previous reflection pass)
+    if (this.config.enableReflections) {
+      gl.activeTexture(gl.TEXTURE3);
+      // In full implementation, bind actual reflection texture from RenderTarget
+      // gl.bindTexture(gl.TEXTURE_2D, renderTarget.getReflectionTexture());
+      gl.uniform1i(gl.getUniformLocation(this.shader, 'u_reflectionMap'), 3);
+    }
+
+    // Texture unit 4: Refraction map (from previous scene render)
+    if (this.config.enableRefractions) {
+      gl.activeTexture(gl.TEXTURE4);
+      // In full implementation, bind actual refraction texture from RenderTarget
+      // gl.bindTexture(gl.TEXTURE_2D, renderTarget.getRefractionTexture());
+      gl.uniform1i(gl.getUniformLocation(this.shader, 'u_refractionMap'), 4);
+    }
+
+    // Texture unit 5: Depth map (for underwater fog and depth calculations)
+    gl.activeTexture(gl.TEXTURE5);
+    // In full implementation, bind depth texture
+    // gl.bindTexture(gl.TEXTURE_2D, renderTarget.getDepthTexture());
+    gl.uniform1i(gl.getUniformLocation(this.shader, 'u_depthMap'), 5);
+
+    // Texture unit 6: Caustics map (if enabled)
+    if (this.config.enableCaustics) {
+      gl.activeTexture(gl.TEXTURE6);
+      // In full implementation, bind caustics texture
+      // gl.bindTexture(gl.TEXTURE_2D, this.causticsMap);
+      gl.uniform1i(gl.getUniformLocation(this.shader, 'u_causticsMap'), 6);
+    }
+
+    // === STEP 7: Set ocean simulation parameters ===
+    gl.uniform1f(gl.getUniformLocation(this.shader, 'u_patchSize'), this.config.patchSize);
+    gl.uniform1f(gl.getUniformLocation(this.shader, 'u_time'), this.time);
+
+    // === STEP 8: Set ocean material parameters ===
+    // Choppiness affects horizontal displacement
+    const choppiness = this.config.choppiness;
+    gl.uniform1f(gl.getUniformLocation(this.shader, 'u_choppiness'), choppiness);
+
+    // Foam threshold (displacement derivative threshold for foam generation)
+    gl.uniform1f(gl.getUniformLocation(this.shader, 'u_foamThreshold'), this.config.foamThreshold);
+
+    // Water absorption color (Beer's law for underwater light absorption)
+    const absorption = this.config.absorptionColor;
+    gl.uniform3f(
+      gl.getUniformLocation(this.shader, 'u_waterAbsorption'),
+      absorption.r,
+      absorption.g,
+      absorption.b
+    );
+
+    // Water scattering color (subsurface scattering)
+    const scattering = this.config.scatteringColor;
+    gl.uniform3f(
+      gl.getUniformLocation(this.shader, 'u_waterScattering'),
+      scattering.r,
+      scattering.g,
+      scattering.b
+    );
+
+    // === STEP 9: Set camera and scene parameters ===
+    // In full implementation, get from render context
+    // const camera = renderQueue.getCamera();
+    // const cameraPos = camera.getPosition();
+    // gl.uniform3f(gl.getUniformLocation(this.shader, 'u_cameraPosition'),
+    //              cameraPos.x, cameraPos.y, cameraPos.z);
+
+    // Sun direction and color for specular highlights
+    // const sun = renderQueue.getSun();
+    // gl.uniform3f(gl.getUniformLocation(this.shader, 'u_sunDirection'),
+    //              sun.direction.x, sun.direction.y, sun.direction.z);
+    // gl.uniform3f(gl.getUniformLocation(this.shader, 'u_sunColor'),
+    //              sun.color.r, sun.color.g, sun.color.b);
+
+    // Screen size for reflection/refraction UV calculations
+    gl.uniform2f(
+      gl.getUniformLocation(this.shader, 'u_screenSize'),
+      renderTarget.width,
+      renderTarget.height
+    );
+
+    // Underwater flag
+    // const underwater = cameraPos.y < 0.0;
+    // gl.uniform1i(gl.getUniformLocation(this.shader, 'u_underwater'), underwater ? 1 : 0);
+
+    // === STEP 10: Set transformation matrices ===
+    // In full implementation, get from camera
+    // const viewMatrix = camera.getViewMatrix();
+    // const projectionMatrix = camera.getProjectionMatrix();
+    // gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, 'u_viewMatrix'),
+    //                     false, viewMatrix.elements);
+    // gl.uniformMatrix4fv(gl.getUniformLocation(this.shader, 'u_projectionMatrix'),
+    //                     false, projectionMatrix.elements);
+
+    // === STEP 11: Set Gerstner wave parameters (if enabled) ===
+    if (this.config.gerstnerWaves.length > 0) {
+      const waveCount = Math.min(this.config.gerstnerWaves.length, 8);
+      gl.uniform1i(gl.getUniformLocation(this.shader, 'u_gerstnerWaveCount'), waveCount);
+
+      for (let i = 0; i < waveCount; i++) {
+        const wave = this.config.gerstnerWaves[i];
+
+        // Wave parameters: amplitude, direction.xy, frequency
+        gl.uniform4f(
+          gl.getUniformLocation(this.shader, `u_gerstnerWaves[${i}]`),
+          wave.amplitude,
+          wave.direction.x,
+          wave.direction.y,
+          wave.frequency
+        );
+
+        // Wave params: steepness, speed, phase, unused
+        gl.uniform4f(
+          gl.getUniformLocation(this.shader, `u_gerstnerParams[${i}]`),
+          wave.steepness,
+          wave.speed,
+          1.0, // phase multiplier
+          0.0  // unused
+        );
+      }
+    }
+
+    // === STEP 12: Render ocean surface with LOD ===
     this.renderOceanSurface();
+
+    // === STEP 13: Cleanup state ===
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.useProgram(null);
 
     const renderTime = performance.now() - startTime - fftTime;
 
@@ -582,7 +748,8 @@ export class OceanPass extends RenderPass {
     this.stats.fftTime = fftTime;
     this.stats.renderTime = renderTime;
 
-    logger.trace(`OceanPass: FFT ${fftTime.toFixed(2)}ms, Render ${renderTime.toFixed(2)}ms`);
+    logger.trace(`OceanPass: FFT ${fftTime.toFixed(2)}ms, Render ${renderTime.toFixed(2)}ms, ` +
+                 `${this.stats.triangles} tris`);
   }
 
   /**
@@ -838,16 +1005,131 @@ export class OceanPass extends RenderPass {
    * Renders ocean surface with LOD.
    */
   private renderOceanSurface(): void {
-    // In full implementation:
-    // 1. For each LOD level
-    // 2. Calculate patch positions based on camera
-    // 3. Render patches with appropriate LOD
-    // 4. Blend between LOD levels
-
-    this.stats.triangles = 0;
-    for (const mesh of this.lodMeshes) {
-      this.stats.triangles += mesh.indexCount / 3;
+    if (!this.gl || !this.shader) {
+      return;
     }
+
+    const gl = this.gl;
+    this.stats.triangles = 0;
+
+    // === LOD-based ocean rendering ===
+    // Render multiple ocean patches at different LOD levels based on distance from camera
+
+    // In full implementation, get camera position from render context
+    // const cameraPos = renderQueue.getCamera().getPosition();
+    // For now, use placeholder camera position
+    const cameraPos = new Vector3(0, 10, 0);
+
+    // Calculate number of patches per LOD level
+    // Each LOD level covers a ring around the camera
+    const patchesPerLOD = [
+      16, // LOD 0: 16 patches (4x4 grid around camera) - highest detail
+      24, // LOD 1: 24 patches (ring around LOD 0) - medium detail
+      32, // LOD 2: 32 patches (ring around LOD 1) - lower detail
+      40, // LOD 3: 40 patches (ring around LOD 2) - lowest detail
+    ];
+
+    // Render each LOD level
+    for (let lod = 0; lod < Math.min(this.config.lodLevels, this.lodMeshes.length); lod++) {
+      const mesh = this.lodMeshes[lod];
+
+      if (!mesh.vertexBuffer || !mesh.indexBuffer) {
+        continue;
+      }
+
+      // Set LOD level uniform
+      gl.uniform1f(gl.getUniformLocation(this.shader, 'u_lodLevel'), lod);
+
+      // Bind vertex buffer
+      gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertexBuffer);
+
+      // Setup vertex attributes
+      const stride = 4 * 4; // 2 floats for position + 2 floats for texcoord = 4 floats * 4 bytes
+      const positionLoc = gl.getAttribLocation(this.shader, 'a_position');
+      const texcoordLoc = gl.getAttribLocation(this.shader, 'a_texcoord');
+
+      if (positionLoc >= 0) {
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, stride, 0);
+      }
+
+      if (texcoordLoc >= 0) {
+        gl.enableVertexAttribArray(texcoordLoc);
+        gl.vertexAttribPointer(texcoordLoc, 2, gl.FLOAT, false, stride, 2 * 4);
+      }
+
+      // Bind index buffer
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indexBuffer);
+
+      // Calculate patch scale for this LOD level
+      // Each LOD level has larger patches (less tessellation but covers more area)
+      const lodScale = Math.pow(this.config.lodScale, lod);
+      const patchWorldSize = this.config.patchSize * lodScale;
+
+      // Calculate number of patches to render at this LOD level
+      const patchCount = lod < patchesPerLOD.length ? patchesPerLOD[lod] : 40;
+      const patchesPerSide = Math.ceil(Math.sqrt(patchCount));
+
+      // Render a grid of patches centered on camera
+      const halfPatches = Math.floor(patchesPerSide / 2);
+
+      for (let py = -halfPatches; py <= halfPatches; py++) {
+        for (let px = -halfPatches; px <= halfPatches; px++) {
+          // Calculate patch world position
+          // Snap to patch grid to reduce popping
+          const patchX = Math.floor(cameraPos.x / patchWorldSize) * patchWorldSize + px * patchWorldSize;
+          const patchZ = Math.floor(cameraPos.z / patchWorldSize) * patchWorldSize + py * patchWorldSize;
+
+          // Calculate distance from camera to patch center
+          const dx = patchX - cameraPos.x;
+          const dz = patchZ - cameraPos.z;
+          const distanceToCamera = Math.sqrt(dx * dx + dz * dz);
+
+          // Calculate LOD distance ranges
+          const lodMinDistance = lod === 0 ? 0 : this.config.patchSize * Math.pow(this.config.lodScale, lod - 1) * 2;
+          const lodMaxDistance = this.config.patchSize * Math.pow(this.config.lodScale, lod) * 2;
+
+          // Skip patches outside this LOD's distance range
+          if (distanceToCamera < lodMinDistance || distanceToCamera > lodMaxDistance * 1.5) {
+            continue;
+          }
+
+          // Create model matrix for this patch
+          const modelMatrix = new Matrix4();
+          modelMatrix.setTranslation(patchX, 0, patchZ);
+
+          // Scale patch to world size
+          const scaleMatrix = Matrix4.scale(lodScale, 1, lodScale);
+          modelMatrix.multiplyInPlace(scaleMatrix);
+
+          // Set model matrix uniform
+          const modelMatrixLoc = gl.getUniformLocation(this.shader, 'u_modelMatrix');
+          if (modelMatrixLoc) {
+            gl.uniformMatrix4fv(modelMatrixLoc, false, modelMatrix.elements);
+          }
+
+          // Draw the patch
+          gl.drawElements(gl.TRIANGLES, mesh.indexCount, gl.UNSIGNED_INT, 0);
+
+          // Update triangle count
+          this.stats.triangles += mesh.indexCount / 3;
+        }
+      }
+
+      // Disable vertex attributes
+      if (positionLoc >= 0) {
+        gl.disableVertexAttribArray(positionLoc);
+      }
+      if (texcoordLoc >= 0) {
+        gl.disableVertexAttribArray(texcoordLoc);
+      }
+    }
+
+    // Cleanup
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    logger.trace(`Rendered ocean surface: ${this.stats.triangles} triangles across ${this.config.lodLevels} LOD levels`);
   }
 
   /**

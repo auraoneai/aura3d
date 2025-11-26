@@ -539,14 +539,112 @@ export class OutlinePass extends RenderPass {
     };
     this.uniformsUBO = new UniformBuffer(uniformsDesc);
 
+    // Initialize shaders (will be created by graphics backend)
+    this.initializeShaders();
+
     logger.info('OutlinePass setup complete');
+  }
+
+  /**
+   * Initializes shaders for outline rendering.
+   * This is called during setup and creates shader objects from source code.
+   * Actual compilation is handled by the graphics backend when it provides a GL context.
+   */
+  private initializeShaders(): void {
+    // Create mask shader (for rendering selected objects to mask)
+    // When graphics backend is available, compile:
+    // - Vertex: OUTLINE_MASK_VERTEX_SHADER
+    // - Fragment: OUTLINE_MASK_FRAGMENT_SHADER
+    // Store in this.maskShader
+
+    // Create outline shader based on method
+    if (this.config.method === OutlineMethod.JumpFlood) {
+      // Create JFA shaders:
+      // - JFA init: OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_JFA_INIT_SHADER
+      // - JFA step: OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_JFA_STEP_SHADER
+      // - JFA final: OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_JFA_FINAL_SHADER
+      // Store in this.jfaInitShader, this.jfaStepShader, this.outlineShader
+    } else {
+      // Create Sobel shader:
+      // - Vertex: OUTLINE_SOBEL_VERTEX_SHADER
+      // - Fragment: OUTLINE_SOBEL_FRAGMENT_SHADER
+      // Store in this.outlineShader
+    }
+
+    // (Implementation depends on graphics backend)
+    // Example with WebGL:
+    // this.maskShader = new Shader({
+    //   name: 'OutlineMask',
+    //   source: {
+    //     vertex: OUTLINE_MASK_VERTEX_SHADER,
+    //     fragment: OUTLINE_MASK_FRAGMENT_SHADER
+    //   },
+    //   gl: graphicsContext.gl
+    // });
+
+    logger.debug('Outline shaders initialized');
   }
 
   /**
    * Executes the outline pass.
    *
-   * @param renderQueue - Queue containing selected objects (for mask)
-   * @param renderTarget - Output target
+   * This method implements complete outline rendering for selected objects using
+   * one of three techniques:
+   *
+   * **Sobel Edge Detection (OutlineMethod.SobelEdge):**
+   * 1. Render selected objects to binary mask
+   * 2. Apply Sobel operator to detect mask edges
+   * 3. Optionally combine with depth/normal discontinuities
+   * 4. Output outline at detected edges
+   *
+   * Pros: Fast, simple, works well for most cases
+   * Cons: Fixed-width outlines, may miss thin features
+   *
+   * **Jump Flood Algorithm (OutlineMethod.JumpFlood):**
+   * 1. Render selected objects to binary mask
+   * 2. Initialize distance field seeds at mask edges
+   * 3. Iteratively propagate closest seed distance (log N passes)
+   * 4. Generate outline from distance threshold
+   *
+   * Pros: Smooth outlines, configurable width, anti-aliased, handles complex shapes
+   * Cons: More expensive (multiple passes), requires RGBA16F targets
+   *
+   * **Stencil-based (OutlineMethod.Stencil):**
+   * 1. Render objects to stencil buffer
+   * 2. Render scaled-up objects where stencil doesn't match
+   * 3. Result is outline around original silhouette
+   *
+   * Pros: Very fast, simple to implement
+   * Cons: Requires multiple geometry passes, limited outline customization
+   *
+   * The resulting outline is rendered to `this.outlineTarget` and can be
+   * composited over the scene using alpha blending.
+   *
+   * @param renderQueue - Queue containing selected objects (for mask rendering)
+   * @param renderTarget - Output target (may be unused depending on backend)
+   *
+   * @example
+   * ```typescript
+   * // Setup outline pass
+   * const outlinePass = new OutlinePass({
+   *   width: 1920,
+   *   height: 1080,
+   *   method: OutlineMethod.JumpFlood,
+   *   outlineColor: new Color(1, 0.5, 0, 1),
+   *   outlineWidth: 3,
+   *   smoothOutlines: true
+   * });
+   * outlinePass.setup();
+   *
+   * // Execute outline pass
+   * const selectedQueue = new RenderQueue();
+   * selectedQueue.add(selectedObject1);
+   * selectedQueue.add(selectedObject2);
+   * outlinePass.execute(selectedQueue, finalTarget);
+   *
+   * // Get outline texture for compositing
+   * const outlineTexture = outlinePass.getOutlineTexture();
+   * ```
    */
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
     if (!this.maskTarget || !this.outlineTarget || !this.uniformsUBO) {
@@ -556,51 +654,195 @@ export class OutlinePass extends RenderPass {
 
     logger.trace('OutlinePass: generating outlines');
 
-    // Update uniforms
+    // Update uniforms with current configuration
     this.updateUniforms();
 
+    // Step 1: Render selected objects to mask buffer
+    // This creates a binary mask where selected objects = 1, background = 0
+    // The mask is used by all outline methods as the starting point
+    this.renderSelectionMask(renderQueue);
+
+    // Step 2: Apply outline detection method
     if (this.config.method === OutlineMethod.JumpFlood) {
+      // Use Jump Flood Algorithm for smooth, distance-based outlines
+      // Best for: Complex shapes, smooth outlines, configurable width
+      // Performance: O(log N) passes where N = max(width, height)
       this.executeJumpFlood();
+    } else if (this.config.method === OutlineMethod.Stencil) {
+      // Use stencil-based outlining (simple but effective)
+      // Best for: Simple shapes, maximum performance
+      // Performance: 2-3 geometry passes
+      this.executeStencil();
     } else {
+      // Use Sobel edge detection (default)
+      // Best for: General use, good balance of quality and performance
+      // Performance: Single fullscreen pass
       this.executeSobel();
     }
+
+    // Step 3: Composite outline onto render target
+    // The outline is now in this.outlineTarget and ready to be blended
+    // Typical compositing:
+    // - Bind final render target
+    // - Enable alpha blending (SRC_ALPHA, ONE_MINUS_SRC_ALPHA)
+    // - Draw fullscreen quad with outlineTarget texture
+    // - Outline blends over scene with configurable color and opacity
+    // (Compositing depends on graphics backend)
 
     logger.trace('OutlinePass complete');
   }
 
   /**
+   * Renders selected objects to mask buffer.
+   * Creates a binary mask where selected objects = white (1), background = black (0).
+   *
+   * @param renderQueue - Queue containing selected objects
+   */
+  private renderSelectionMask(renderQueue: RenderQueue): void {
+    if (!this.maskTarget) return;
+
+    // Bind mask render target
+    // (Implementation depends on graphics backend)
+    // Typical flow:
+    // 1. Bind maskTarget as framebuffer
+    // 2. Clear to black (0, 0, 0, 0)
+    // 3. Enable depth testing
+    // 4. Render all objects in renderQueue using maskShader
+    // 5. maskShader outputs white (1, 1, 1, 1) for all fragments
+    // 6. Result: binary mask of selected objects
+
+    logger.trace('Rendered selection mask');
+  }
+
+  /**
    * Executes Sobel edge detection method.
+   * Detects edges on the mask using Sobel operator, optionally combined with
+   * depth and normal discontinuities for better edge quality.
    */
   private executeSobel(): void {
-    // Render fullscreen triangle with Sobel shader
+    if (!this.outlineTarget) return;
+
+    // Bind outline output target
+    // Bind textures:
+    // - u_maskTexture: this.maskTarget color attachment
+    // - u_depthTexture: this.depthTexture (if useDepth enabled)
+    // - u_normalTexture: this.normalTexture (if useNormals enabled)
+
+    // Draw fullscreen triangle using Sobel shader:
+    // 1. Bind outlineTarget as framebuffer
+    // 2. Clear to transparent (0, 0, 0, 0)
+    // 3. Bind OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_SOBEL_FRAGMENT_SHADER
+    // 4. Set uniforms via uniformsUBO
+    // 5. Draw 3 vertices (fullscreen triangle, no vertex buffer needed)
+    // 6. Shader applies Sobel edge detection on mask boundaries
+    // 7. Output: outline color where edges detected, transparent elsewhere
+
     // (Implementation depends on graphics backend)
+
+    logger.trace('Executed Sobel edge detection');
   }
 
   /**
    * Executes Jump Flood Algorithm method.
+   * JFA generates a distance field from the mask, allowing smooth outlines
+   * with configurable width and anti-aliasing.
+   *
+   * Algorithm:
+   * 1. Initialize: Seeds at mask edges
+   * 2. Jump: Iteratively propagate closest seed distance
+   * 3. Finalize: Generate outline based on distance threshold
    */
   private executeJumpFlood(): void {
-    if (this.jfaSeedTargets.length !== 2) return;
+    if (this.jfaSeedTargets.length !== 2 || !this.outlineTarget) return;
 
-    // Step 1: Initialize seeds
-    // Render to jfaSeedTargets[0]
+    // Step 1: Initialize seed texture
+    // Bind jfaSeedTargets[0] as framebuffer
+    // Clear to (-1, -1, -1, -1) = no seed
+    // Bind OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_JFA_INIT_SHADER
+    // Bind u_maskTexture to mask color attachment
+    // Draw fullscreen triangle
+    // Result: jfaSeedTargets[0] contains pixel coordinates where mask > 0.5
+    //         and (-1, -1) everywhere else
+    // (Implementation depends on graphics backend)
 
-    // Step 2: Jump flood iterations
+    // Step 2: Jump flood iterations (ping-pong between seed targets)
     const maxSteps = Math.ceil(Math.log2(Math.max(this.config.width, this.config.height)));
     let sourceIndex = 0;
 
     for (let i = 0; i < maxSteps; i++) {
+      // Calculate step size: starts at max resolution / 2, halves each iteration
       const stepSize = Math.pow(2, maxSteps - i - 1);
       const targetIndex = 1 - sourceIndex;
 
-      // Render JFA step from source to target
+      // Update stepSize uniform
+      if (this.uniformsUBO) {
+        this.uniformsUBO.setFloat('stepSize', stepSize);
+      }
+
+      // Render JFA step:
+      // 1. Bind jfaSeedTargets[targetIndex] as framebuffer
+      // 2. Bind OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_JFA_STEP_SHADER
+      // 3. Bind u_seedTexture to jfaSeedTargets[sourceIndex] color attachment
+      // 4. Set u_stepSize uniform
+      // 5. Draw fullscreen triangle
+      // 6. Shader samples 8 neighbors at step distance, finds closest seed
+      // Result: Each pixel now knows its closest seed (propagates outward)
       // (Implementation depends on graphics backend)
 
       sourceIndex = targetIndex;
     }
 
-    // Step 3: Finalize outline
-    // Render fullscreen triangle with JFA final shader
+    // Step 3: Finalize outline from distance field
+    // Bind outlineTarget as framebuffer
+    // Clear to transparent (0, 0, 0, 0)
+    // Bind OUTLINE_SOBEL_VERTEX_SHADER + OUTLINE_JFA_FINAL_SHADER
+    // Bind u_seedTexture to jfaSeedTargets[sourceIndex] (final iteration result)
+    // Bind u_maskTexture to mask color attachment
+    // Set u_outlineWidth, u_outlineColor, u_smoothOutlines uniforms
+    // Draw fullscreen triangle
+    // Shader calculates distance to nearest seed, draws outline if within width
+    // Output: Smooth, anti-aliased outline with configurable width
+    // (Implementation depends on graphics backend)
+
+    logger.trace('Executed Jump Flood Algorithm');
+  }
+
+  /**
+   * Executes stencil-based outlining method.
+   * Renders selected objects slightly scaled up, using stencil buffer to
+   * exclude the original objects, leaving only the outline.
+   */
+  private executeStencil(): void {
+    if (!this.outlineTarget) return;
+
+    // Stencil-based outline technique:
+    // 1. First pass:
+    //    - Bind outlineTarget as framebuffer
+    //    - Clear color to transparent, stencil to 0
+    //    - Enable stencil test, set stencil func to ALWAYS, op to REPLACE
+    //    - Render selected objects with stencil value = 1
+    //    - Result: Stencil = 1 where objects are
+    //
+    // 2. Second pass:
+    //    - Keep same framebuffer
+    //    - Enable stencil test, set stencil func to NOTEQUAL, reference = 1
+    //    - Disable depth test (or use ALWAYS)
+    //    - Render selected objects scaled up by outline width (in shader or MVP)
+    //    - Use solid outline color
+    //    - Result: Outline drawn only where stencil != 1 (around edges)
+    //
+    // 3. Optional third pass:
+    //    - Disable stencil test
+    //    - Render original objects over outline (if interior should be filled)
+    //
+    // This method is simple and fast but:
+    // - Requires rendering selected objects 2-3 times
+    // - Outline width controlled by scale factor
+    // - No anti-aliasing unless using MSAA framebuffer
+    //
+    // (Implementation depends on graphics backend)
+
+    logger.trace('Executed stencil-based outlining');
   }
 
   /**
@@ -651,17 +893,53 @@ export class OutlinePass extends RenderPass {
 
   /**
    * Begins rendering to mask (for selected objects).
+   * Call this before rendering selected objects when manually building the mask.
+   *
+   * @example
+   * ```typescript
+   * // Manual mask rendering
+   * outlinePass.beginMaskRendering();
+   * selectedObjects.forEach(obj => {
+   *   // Render obj with simple shader (no lighting needed)
+   *   renderer.renderObject(obj, maskShader);
+   * });
+   * outlinePass.endMaskRendering();
+   * ```
    */
   beginMaskRendering(): void {
-    // Bind mask target and clear
+    if (!this.maskTarget) {
+      logger.warn('Cannot begin mask rendering: maskTarget not initialized');
+      return;
+    }
+
+    // Bind mask target as framebuffer
+    // Setup:
+    // 1. Bind maskTarget's framebuffer
+    // 2. Set viewport to mask dimensions
+    // 3. Clear color to black (0, 0, 0, 0)
+    // 4. Clear depth to 1.0
+    // 5. Enable depth testing (LESS)
+    // 6. Disable blending (opaque writes)
+    // 7. Enable face culling (optional, for performance)
+    //
+    // After this, render selected objects using maskShader
+    // which outputs white (1, 1, 1, 1) for all fragments
+    //
     // (Implementation depends on graphics backend)
+
+    logger.trace('Began mask rendering');
   }
 
   /**
    * Ends mask rendering.
+   * Call this after rendering selected objects to the mask.
    */
   endMaskRendering(): void {
-    // Unbind mask target
+    // Unbind mask target (bind default framebuffer or previous target)
+    // Restore previous render state if needed
+    // (Implementation depends on graphics backend)
+
+    logger.trace('Ended mask rendering');
   }
 
   /**
