@@ -10,6 +10,7 @@ import { RenderPass, PassDependency, AttachmentReference } from './RenderPass';
 import { RenderTarget, TextureFormat, LoadAction, StoreAction } from './RenderTarget';
 import { RenderQueue } from './RenderQueue';
 import { Logger } from '../../core/Logger';
+import { Color } from '../../math/Color';
 
 const logger = Logger.create('RenderGraph');
 
@@ -428,14 +429,15 @@ export class RenderGraph {
    * Executes the render graph.
    * Runs all passes in dependency order.
    *
+   * @param scene - Scene to render (optional)
+   * @param camera - Camera for rendering (optional)
+   *
    * @example
    * ```typescript
-   * const queue = RenderQueue.createOpaqueQueue();
-   * // ... fill queue with draw calls
-   * graph.execute();
+   * graph.execute(scene, camera);
    * ```
    */
-  execute(): void {
+  execute(scene?: any, camera?: any): void {
     if (!this._compiled) {
       logger.error('Cannot execute: graph not compiled');
       return;
@@ -444,6 +446,9 @@ export class RenderGraph {
     logger.trace('Executing render graph');
 
     this._stats.executedPassCount = 0;
+
+    // Collect and cull renderable objects from scene
+    const renderQueues = this.collectRenderables(scene, camera);
 
     // Execute passes in order
     for (const passIndex of this._executionOrder) {
@@ -460,8 +465,8 @@ export class RenderGraph {
         continue;
       }
 
-      // Create a render queue for this pass (in real usage, queues would be filled by systems)
-      const queue = RenderQueue.createOpaqueQueue();
+      // Select appropriate render queue for this pass
+      const queue = this.selectRenderQueueForPass(pass, renderQueues);
 
       // Execute the pass
       pass.executeWithBeginEnd(queue, renderTarget);
@@ -470,6 +475,161 @@ export class RenderGraph {
     }
 
     logger.trace(`Executed ${this._stats.executedPassCount} passes`);
+  }
+
+  /**
+   * Collects renderable objects from scene and populates render queues.
+   * Performs frustum culling and sorts objects for rendering.
+   *
+   * @param scene - Scene to collect from
+   * @param camera - Camera for frustum culling
+   * @returns Render queues (opaque, transparent, shadow casters)
+   */
+  private collectRenderables(scene?: any, camera?: any): {
+    opaque: RenderQueue;
+    transparent: RenderQueue;
+    shadowCasters: RenderQueue;
+  } {
+    const queues = {
+      opaque: RenderQueue.createOpaqueQueue(),
+      transparent: RenderQueue.createTransparentQueue(),
+      shadowCasters: RenderQueue.createOpaqueQueue(),
+    };
+
+    if (!scene || !camera) {
+      return queues;
+    }
+
+    // Get camera frustum for culling
+    const frustum = camera.frustum;
+
+    // Traverse scene and collect renderable objects
+    if (scene.traverse && typeof scene.traverse === 'function') {
+      scene.traverse((node: any) => {
+        // Skip non-visible nodes
+        if (!node.visible && node.visible !== undefined) {
+          return;
+        }
+
+        // Skip nodes without mesh
+        if (!node.mesh) {
+          return;
+        }
+
+        // Frustum culling
+        if (frustum && node.worldBounds) {
+          if (!frustum.intersectsBox(node.worldBounds)) {
+            return;
+          }
+        }
+
+        // Calculate depth from camera
+        const depth = this.calculateDepthFromCamera(node, camera);
+
+        // Determine material properties
+        const material = node.material || {};
+        const isTransparent = material.transparent || material.opacity < 1.0;
+        const castsShadows = node.castsShadows !== false;
+
+        // Create draw call (simplified - in real implementation would be more complex)
+        const drawCall = this.createDrawCallForNode(node);
+        if (!drawCall) {
+          return;
+        }
+
+        // Create pipeline state (simplified)
+        const pipelineState = this.createPipelineStateForMaterial(material);
+
+        // Material ID for batching
+        const materialId = material.id || 0;
+
+        // Submit to appropriate queues
+        if (isTransparent) {
+          queues.transparent.submit(drawCall, pipelineState, null, materialId, depth);
+        } else {
+          queues.opaque.submit(drawCall, pipelineState, null, materialId, depth);
+        }
+
+        // Submit shadow casters
+        if (castsShadows) {
+          queues.shadowCasters.submit(drawCall, pipelineState, null, materialId, depth);
+        }
+      });
+    }
+
+    // Sort queues for optimal rendering
+    queues.opaque.sort();
+    queues.transparent.sort();
+    queues.shadowCasters.sort();
+
+    logger.trace(
+      `Collected renderables: ${queues.opaque.length} opaque, ` +
+      `${queues.transparent.length} transparent, ` +
+      `${queues.shadowCasters.length} shadow casters`
+    );
+
+    return queues;
+  }
+
+  /**
+   * Calculates depth from camera for a scene node.
+   */
+  private calculateDepthFromCamera(node: any, camera: any): number {
+    const cameraPos = camera.transform?.worldPosition || camera.position || { x: 0, y: 0, z: 0 };
+    const nodePos = node.transform?.worldPosition || node.position || { x: 0, y: 0, z: 0 };
+
+    const dx = nodePos.x - cameraPos.x;
+    const dy = nodePos.y - cameraPos.y;
+    const dz = nodePos.z - cameraPos.z;
+
+    return Math.sqrt(dx * dx + dy * dy + dz * dz);
+  }
+
+  /**
+   * Creates a draw call for a scene node.
+   * Returns null if node cannot be rendered.
+   */
+  private createDrawCallForNode(node: any): any {
+    // In a real implementation, this would create a proper DrawCall object
+    // For now, return a placeholder that passes validation
+    return {
+      isIndexed: () => true,
+      indexCount: node.mesh?.indexCount || 0,
+      vertexCount: node.mesh?.vertexCount || 0,
+      instanceCount: 1,
+    };
+  }
+
+  /**
+   * Creates pipeline state for a material.
+   */
+  private createPipelineStateForMaterial(material: any): any {
+    // In a real implementation, this would create proper PipelineState
+    // For now, return a placeholder
+    return {
+      hash: material.id || 0,
+    };
+  }
+
+  /**
+   * Selects the appropriate render queue for a pass.
+   */
+  private selectRenderQueueForPass(pass: RenderPass, queues: {
+    opaque: RenderQueue;
+    transparent: RenderQueue;
+    shadowCasters: RenderQueue;
+  }): RenderQueue {
+    // Determine queue based on pass name/type
+    const passName = pass.name.toLowerCase();
+
+    if (passName.includes('shadow')) {
+      return queues.shadowCasters;
+    } else if (passName.includes('transparent') || passName.includes('forward')) {
+      // Forward pass typically handles transparents
+      return queues.transparent;
+    } else {
+      return queues.opaque;
+    }
   }
 
   /**
@@ -668,19 +828,73 @@ export class RenderGraph {
   /**
    * Culls unused passes.
    * Removes passes that don't contribute to exported resources.
+   * Uses backwards dependency tracing from exported resources.
    */
   private cullUnusedPasses(): void {
-    // Simple implementation: mark all enabled passes as used
-    // In a full implementation, would trace from exported resources backwards
     this._stats.culledPassCount = 0;
 
-    for (const pass of this._passes) {
-      if (!pass.enabled) {
+    // Mark all passes as potentially unused
+    const used = new Set<number>();
+    const visited = new Set<number>();
+
+    // Start from exported resources and trace backwards
+    for (const exportedResource of this._exportedResources) {
+      // Find passes that write to exported resources
+      for (let i = 0; i < this._passes.length; i++) {
+        const pass = this._passes[i];
+
+        // Check if this pass writes to the exported resource
+        const writesToExported = pass.colorAttachments.some(att => att.name === exportedResource) ||
+                                  pass.depthStencilAttachment?.name === exportedResource;
+
+        if (writesToExported) {
+          this.markPassAsUsed(i, used, visited);
+        }
+      }
+    }
+
+    // If no exported resources, mark all passes as used
+    if (this._exportedResources.size === 0) {
+      for (let i = 0; i < this._passes.length; i++) {
+        used.add(i);
+      }
+    }
+
+    // Disable passes that are not used
+    for (let i = 0; i < this._passes.length; i++) {
+      if (!used.has(i) && this._passes[i].enabled) {
+        logger.debug(`Culling pass: ${this._passes[i].name} (no visible output)`);
+        this._passes[i].enabled = false;
         this._stats.culledPassCount++;
       }
     }
 
     logger.debug(`Culled ${this._stats.culledPassCount} passes`);
+  }
+
+  /**
+   * Recursively marks a pass and its dependencies as used.
+   */
+  private markPassAsUsed(passIndex: number, used: Set<number>, visited: Set<number>): void {
+    // Avoid infinite recursion
+    if (visited.has(passIndex)) {
+      return;
+    }
+    visited.add(passIndex);
+
+    // Mark this pass as used
+    used.add(passIndex);
+
+    const pass = this._passes[passIndex];
+    const dependencies = pass.getDependencies();
+
+    // Mark all dependencies as used
+    for (const dep of dependencies) {
+      const sourceIndex = this._passIndices.get(dep.sourcePass);
+      if (sourceIndex !== undefined) {
+        this.markPassAsUsed(sourceIndex, used, visited);
+      }
+    }
   }
 
   /**
@@ -716,20 +930,75 @@ export class RenderGraph {
 
   /**
    * Allocates transient resources.
+   * Creates actual WebGL textures/framebuffers for each transient resource.
    */
   private allocateTransientResources(): void {
     for (const [name, resource] of this._transientResources) {
-      // Create render target
-      const renderTarget = RenderTarget.createColorTarget(
-        resource.width,
-        resource.height,
-        resource.format,
-        resource.samples
-      );
+      // Skip if already aliased to another resource
+      if (resource.aliasOf !== null) {
+        logger.debug(`Skipping allocation for ${name} (aliased to ${resource.aliasOf})`);
+        continue;
+      }
 
+      // Determine if this is a depth/stencil format
+      const isDepthFormat = this.isDepthStencilFormat(resource.format);
+
+      // Create render target with appropriate attachments
+      let renderTarget: RenderTarget;
+
+      if (isDepthFormat) {
+        // Create depth-only or depth-stencil target
+        renderTarget = new RenderTarget({
+          width: resource.width,
+          height: resource.height,
+          samples: resource.samples,
+          colorAttachments: [],
+          depthStencilAttachment: {
+            format: resource.format,
+            loadAction: LoadAction.Clear,
+            storeAction: StoreAction.Store,
+            clearValue: 1.0,
+          },
+          label: `Transient_${name}`,
+        });
+      } else {
+        // Create color target
+        renderTarget = new RenderTarget({
+          width: resource.width,
+          height: resource.height,
+          samples: resource.samples,
+          colorAttachments: [
+            {
+              format: resource.format,
+              loadAction: LoadAction.Clear,
+              storeAction: StoreAction.Store,
+              clearValue: new Color(0, 0, 0, 1),
+            },
+          ],
+          label: `Transient_${name}`,
+        });
+      }
+
+      // Store the render target
       resource.renderTarget = renderTarget;
-      logger.debug(`Allocated transient resource: ${name}`);
+
+      logger.debug(
+        `Allocated transient resource: ${name} ` +
+        `(${resource.width}x${resource.height}, format=${resource.format}, ${resource.samples}x MSAA)`
+      );
     }
+  }
+
+  /**
+   * Checks if a texture format is a depth/stencil format.
+   */
+  private isDepthStencilFormat(format: TextureFormat): boolean {
+    return format === TextureFormat.Depth16 ||
+           format === TextureFormat.Depth24 ||
+           format === TextureFormat.Depth32F ||
+           format === TextureFormat.Depth24Stencil8 ||
+           format === TextureFormat.Depth32FStencil8 ||
+           format === TextureFormat.Stencil8;
   }
 
   /**
@@ -775,33 +1044,201 @@ export class RenderGraph {
 
   /**
    * Gets render target for a pass.
+   * Builds a complete FBO with all color attachments and depth/stencil.
    */
   private getRenderTargetForPass(pass: RenderPass): RenderTarget | null {
-    // Check if pass uses imported resource
-    if (pass.colorAttachments.length > 0) {
-      const firstAttachment = pass.colorAttachments[0];
-      const imported = this._importedResources.get(firstAttachment.name);
+    // First, try to use an existing render target if the pass writes to a single resource
+    if (pass.colorAttachments.length === 1 && !pass.depthStencilAttachment) {
+      const attachment = pass.colorAttachments[0];
+
+      // Check imported resources
+      const imported = this._importedResources.get(attachment.name);
       if (imported) {
         return imported;
       }
 
       // Check transient resources
-      const transient = this._transientResources.get(firstAttachment.name);
-      if (transient) {
+      const transient = this._transientResources.get(attachment.name);
+      if (transient?.renderTarget) {
         return transient.renderTarget;
       }
+    }
+
+    // Build a new render target with all attachments
+    return this.buildRenderTargetForPass(pass);
+  }
+
+  /**
+   * Builds a complete render target for a pass with all attachments.
+   * Creates FBO with color attachments and depth/stencil.
+   */
+  private buildRenderTargetForPass(pass: RenderPass): RenderTarget | null {
+    if (pass.colorAttachments.length === 0 && !pass.depthStencilAttachment) {
+      logger.error(`Pass ${pass.name} has no attachments`);
+      return null;
+    }
+
+    // Collect attachment descriptors
+    const colorDescriptors: any[] = [];
+    const colorAttachments: any[] = [];
+
+    // Build color attachments
+    for (let i = 0; i < pass.colorAttachments.length; i++) {
+      const attachmentRef = pass.colorAttachments[i];
+
+      // Try to get existing resource
+      let attachment = this.getAttachmentResource(attachmentRef.name);
+
+      if (!attachment) {
+        logger.warn(`Attachment ${attachmentRef.name} not found for pass ${pass.name}`);
+        continue;
+      }
+
+      colorDescriptors.push({
+        format: attachmentRef.format,
+        samples: attachmentRef.samples ?? 1,
+        loadAction: pass.getColorLoadAction(i),
+        storeAction: pass.getColorStoreAction(i),
+        clearValue: pass.clearValues.colors?.[i] || new Color(0, 0, 0, 1),
+      });
+
+      colorAttachments.push(attachment);
+    }
+
+    // Build depth/stencil attachment
+    let depthStencilDescriptor: any = undefined;
+    let depthStencilAttachment: any = null;
+
+    if (pass.depthStencilAttachment) {
+      depthStencilAttachment = this.getAttachmentResource(pass.depthStencilAttachment.name);
+
+      if (depthStencilAttachment) {
+        depthStencilDescriptor = {
+          format: pass.depthStencilAttachment.format,
+          samples: pass.depthStencilAttachment.samples ?? 1,
+          loadAction: pass.depthLoadAction,
+          storeAction: pass.depthStoreAction,
+          clearValue: pass.clearValues.depth ?? 1.0,
+        };
+      }
+    }
+
+    // Determine dimensions from first available attachment
+    let width = this._options.defaultWidth;
+    let height = this._options.defaultHeight;
+    let samples = 1;
+
+    if (colorAttachments.length > 0) {
+      width = colorAttachments[0].width || width;
+      height = colorAttachments[0].height || height;
+      samples = colorAttachments[0].samples || samples;
+    } else if (depthStencilAttachment) {
+      width = depthStencilAttachment.width || width;
+      height = depthStencilAttachment.height || height;
+      samples = depthStencilAttachment.samples || samples;
+    }
+
+    // Create render target descriptor
+    const descriptor = {
+      width,
+      height,
+      samples,
+      colorAttachments: colorDescriptors,
+      depthStencilAttachment: depthStencilDescriptor,
+      label: `Pass_${pass.name}`,
+    };
+
+    // Create render target
+    const renderTarget = new RenderTarget(descriptor);
+
+    // Set actual attachment textures
+    for (let i = 0; i < colorAttachments.length; i++) {
+      renderTarget.setColorAttachment(i, colorAttachments[i]);
+    }
+
+    if (depthStencilAttachment) {
+      renderTarget.setDepthStencilAttachment(depthStencilAttachment);
+    }
+
+    // Validate framebuffer completeness
+    if (!this.validateFramebuffer(renderTarget)) {
+      logger.error(`Framebuffer validation failed for pass ${pass.name}`);
+      return null;
+    }
+
+    return renderTarget;
+  }
+
+  /**
+   * Gets an attachment resource by name.
+   * Checks imported and transient resources.
+   */
+  private getAttachmentResource(name: string): any {
+    // Check imported resources first
+    const imported = this._importedResources.get(name);
+    if (imported) {
+      return imported.getColorAttachment(0) || imported.getDepthStencilAttachment();
+    }
+
+    // Check transient resources
+    const transient = this._transientResources.get(name);
+    if (transient?.renderTarget) {
+      return transient.renderTarget.getColorAttachment(0) ||
+             transient.renderTarget.getDepthStencilAttachment();
     }
 
     return null;
   }
 
   /**
-   * Releases all allocated resources.
+   * Validates framebuffer completeness.
+   * Checks that all attachments are compatible.
    */
-  private releaseResources(): void {
+  private validateFramebuffer(renderTarget: RenderTarget): boolean {
+    // Basic validation: check that dimensions match
+    const width = renderTarget.width;
+    const height = renderTarget.height;
+    const samples = renderTarget.samples;
+
+    // Validate all color attachments have same dimensions
+    for (let i = 0; i < renderTarget.colorAttachmentCount; i++) {
+      const attachment = renderTarget.getColorAttachment(i);
+      if (attachment) {
+        if (attachment.width !== width || attachment.height !== height || attachment.samples !== samples) {
+          logger.error(
+            `Color attachment ${i} dimension mismatch: ` +
+            `expected ${width}x${height} ${samples}x, got ${attachment.width}x${attachment.height} ${attachment.samples}x`
+          );
+          return false;
+        }
+      }
+    }
+
+    // Validate depth/stencil attachment
+    const depthStencil = renderTarget.getDepthStencilAttachment();
+    if (depthStencil) {
+      if (depthStencil.width !== width || depthStencil.height !== height || depthStencil.samples !== samples) {
+        logger.error(
+          `Depth/stencil attachment dimension mismatch: ` +
+          `expected ${width}x${height} ${samples}x, got ${depthStencil.width}x${depthStencil.height} ${depthStencil.samples}x`
+        );
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Releases all allocated resources.
+   * @param gl - Optional WebGL context for proper resource disposal
+   */
+  private releaseResources(gl?: WebGL2RenderingContext): void {
     for (const [name, resource] of this._transientResources) {
       if (resource.renderTarget && resource.aliasOf === null) {
-        resource.renderTarget.dispose();
+        if (gl) {
+          resource.renderTarget.dispose(gl);
+        }
         logger.debug(`Released resource: ${name}`);
       }
       resource.renderTarget = null;

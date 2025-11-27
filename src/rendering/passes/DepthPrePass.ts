@@ -295,9 +295,15 @@ export class DepthPrePass extends RenderPass {
     const gl = this.gl;
 
     // Bind depth buffer target
-    // Note: This assumes depthTarget has a bind() method
-    // In a real implementation, you would bind the framebuffer here
-    // For now, we'll proceed with the WebGL state setup
+    if (this.depthTarget && 'getFramebuffer' in this.depthTarget) {
+      const framebuffer = (this.depthTarget as any).getFramebuffer?.();
+      if (framebuffer !== undefined) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
+      }
+    }
+
+    // Set viewport
+    gl.viewport(0, 0, this.config.width, this.config.height);
 
     // Clear depth buffer to 1.0
     gl.clearDepth(1.0);
@@ -361,6 +367,7 @@ export class DepthPrePass extends RenderPass {
         }
       }
 
+      // *** ACTUAL DRAW CALL: Render depth-only for early-Z ***
       // Draw elements
       if (drawCall.isIndexed()) {
         const indexBuffer = drawCall.indexBuffer;
@@ -408,14 +415,23 @@ export class DepthPrePass extends RenderPass {
         this.stats.triangles += Math.floor(drawCall.vertexCount / 3) * drawCall.instanceCount;
       }
 
+      // Disable vertex attributes
+      const posAttr = this.shader!.getAttribute('a_position');
+      if (posAttr) {
+        gl.disableVertexAttribArray(posAttr.location);
+      }
+
       this.stats.drawCalls++;
     });
+
+    // Unbind shader
+    this.shader.unbind();
 
     // Restore color writes
     gl.colorMask(true, true, true, true);
 
-    // Unbind shader
-    this.shader.unbind();
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     // Generate Hi-Z mipmap chain if enabled
     if (this.config.generateHiZ) {

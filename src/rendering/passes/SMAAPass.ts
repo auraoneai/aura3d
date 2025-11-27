@@ -452,6 +452,9 @@ export class SMAAPass extends RenderPass {
   /** Uniforms buffer */
   private uniformsUBO: UniformBuffer | null = null;
 
+  /** WebGL2 rendering context */
+  private gl: WebGL2RenderingContext | null = null;
+
   /**
    * Creates a new SMAA pass.
    *
@@ -614,7 +617,7 @@ export class SMAAPass extends RenderPass {
    * @param renderTarget - Output target
    */
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
-    if (!this.edgesTarget || !this.blendTarget || !this.outputTarget || !this.uniformsUBO) {
+    if (!this.edgesTarget || !this.blendTarget || !this.outputTarget || !this.uniformsUBO || !this.gl) {
       logger.error('SMAAPass not properly initialized');
       return;
     }
@@ -640,16 +643,18 @@ export class SMAAPass extends RenderPass {
       this.neighborhoodBlendShader = this.createNeighborhoodBlendShader();
     }
 
+    if (!this.edgeShader || !this.blendWeightShader || !this.neighborhoodBlendShader) {
+      logger.error('SMAAPass: Failed to create shaders');
+      return;
+    }
+
     // Pass 1: Edge detection
-    // Detect edges in the input image and output to edgesTarget
     this.executeEdgeDetectionPass();
 
     // Pass 2: Blend weight calculation
-    // Calculate blend weights using edges and area/search textures, output to blendTarget
     this.executeBlendWeightPass();
 
     // Pass 3: Neighborhood blending
-    // Apply final blending using blend weights to produce anti-aliased output
     this.executeNeighborhoodBlendPass();
 
     logger.trace('SMAAPass complete');
@@ -659,132 +664,164 @@ export class SMAAPass extends RenderPass {
    * Executes edge detection pass (Pass 1).
    */
   private executeEdgeDetectionPass(): void {
-    if (!this.edgeShader || !this.edgesTarget || !this.inputTexture) {
+    if (!this.edgeShader || !this.edgesTarget || !this.inputTexture || !this.gl || !this.edgeShader.isReady) {
       logger.error('Edge detection pass cannot execute: missing resources');
       return;
     }
 
     logger.trace('SMAA Pass 1: Edge detection');
 
+    const gl = this.gl;
+    const edgesFramebuffer = (this.edgesTarget as any).getFramebuffer();
+
+    // Bind edge detection framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, edgesFramebuffer || null);
+    gl.viewport(0, 0, this.edgesTarget.width, this.edgesTarget.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Disable depth test for fullscreen pass
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+    gl.disable(gl.BLEND);
+
     // Bind edge detection shader
     this.edgeShader.bind();
 
     // Set uniforms
-    const pixelSize = {
-      x: 1.0 / this.config.width,
-      y: 1.0 / this.config.height
-    };
-    this.edgeShader.setUniform('u_pixelSize', new Vector2(pixelSize.x, pixelSize.y));
+    const pixelSize = new Vector2(1.0 / this.config.width, 1.0 / this.config.height);
+    this.edgeShader.setUniform('u_pixelSize', pixelSize);
     this.edgeShader.setUniform('u_threshold', this.config.threshold ?? 0.1);
 
-    // Bind input texture to texture unit 0
-    // Note: Actual texture binding would depend on graphics backend implementation
-    // this.edgeShader.setUniform('u_colorTexture', 0);
-    // gl.activeTexture(gl.TEXTURE0);
-    // gl.bindTexture(gl.TEXTURE_2D, this.inputTexture);
-
-    // Set render target
-    // this.edgesTarget.bind();
+    // Bind input texture
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.inputTexture as WebGLTexture);
+    this.edgeShader.setUniform('u_colorTexture', 0);
 
     // Render fullscreen triangle
-    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    this.edgeShader.unbind();
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
   /**
    * Executes blend weight calculation pass (Pass 2).
    */
   private executeBlendWeightPass(): void {
-    if (!this.blendWeightShader || !this.blendTarget || !this.edgesTarget) {
+    if (!this.blendWeightShader || !this.blendTarget || !this.edgesTarget || !this.gl || !this.blendWeightShader.isReady) {
       logger.error('Blend weight pass cannot execute: missing resources');
       return;
     }
 
     logger.trace('SMAA Pass 2: Blend weight calculation');
 
+    const gl = this.gl;
+    const blendFramebuffer = (this.blendTarget as any).getFramebuffer();
+
+    // Bind blend weight framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, blendFramebuffer || null);
+    gl.viewport(0, 0, this.blendTarget.width, this.blendTarget.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     // Bind blend weight shader
     this.blendWeightShader.bind();
 
     // Set uniforms
-    const pixelSize = {
-      x: 1.0 / this.config.width,
-      y: 1.0 / this.config.height
-    };
-    this.blendWeightShader.setUniform('u_pixelSize', new Vector2(pixelSize.x, pixelSize.y));
+    const pixelSize = new Vector2(1.0 / this.config.width, 1.0 / this.config.height);
+    this.blendWeightShader.setUniform('u_pixelSize', pixelSize);
     this.blendWeightShader.setUniform('u_maxSearchSteps', this.config.maxSearchSteps ?? 16);
     this.blendWeightShader.setUniform('u_cornerRounding', this.config.cornerRounding ?? 25);
 
-    // Bind textures
-    // Edges texture from Pass 1
-    // this.blendWeightShader.setUniform('u_edgesTexture', 0);
-    // gl.activeTexture(gl.TEXTURE0);
-    // gl.bindTexture(gl.TEXTURE_2D, this.edgesTarget.getColorAttachment(0));
+    // Bind edges texture from Pass 1
+    gl.activeTexture(gl.TEXTURE0);
+    const edgesAttachment = this.edgesTarget.getColorAttachment(0);
+    if (edgesAttachment) {
+      gl.bindTexture(gl.TEXTURE_2D, edgesAttachment as WebGLTexture);
+      this.blendWeightShader.setUniform('u_edgesTexture', 0);
+    }
 
-    // Area texture (precomputed lookup)
-    // this.blendWeightShader.setUniform('u_areaTexture', 1);
-    // gl.activeTexture(gl.TEXTURE1);
-    // gl.bindTexture(gl.TEXTURE_2D, this.areaTexture);
+    // Bind area texture (precomputed lookup)
+    if (this.areaTexture) {
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, this.areaTexture as WebGLTexture);
+      this.blendWeightShader.setUniform('u_areaTexture', 1);
+    }
 
-    // Search texture (precomputed lookup)
-    // this.blendWeightShader.setUniform('u_searchTexture', 2);
-    // gl.activeTexture(gl.TEXTURE2);
-    // gl.bindTexture(gl.TEXTURE_2D, this.searchTexture);
-
-    // Set render target
-    // this.blendTarget.bind();
+    // Bind search texture (precomputed lookup)
+    if (this.searchTexture) {
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this.searchTexture as WebGLTexture);
+      this.blendWeightShader.setUniform('u_searchTexture', 2);
+    }
 
     // Render fullscreen triangle
-    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    this.blendWeightShader.unbind();
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
   /**
    * Executes neighborhood blending pass (Pass 3).
    */
   private executeNeighborhoodBlendPass(): void {
-    if (!this.neighborhoodBlendShader || !this.outputTarget || !this.inputTexture || !this.blendTarget) {
+    if (!this.neighborhoodBlendShader || !this.outputTarget || !this.inputTexture || !this.blendTarget || !this.gl || !this.neighborhoodBlendShader.isReady) {
       logger.error('Neighborhood blend pass cannot execute: missing resources');
       return;
     }
 
     logger.trace('SMAA Pass 3: Neighborhood blending');
 
+    const gl = this.gl;
+    const outputFramebuffer = (this.outputTarget as any).getFramebuffer();
+
+    // Bind output framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer || null);
+    gl.viewport(0, 0, this.outputTarget.width, this.outputTarget.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     // Bind neighborhood blend shader
     this.neighborhoodBlendShader.bind();
 
     // Set uniforms
-    const pixelSize = {
-      x: 1.0 / this.config.width,
-      y: 1.0 / this.config.height
-    };
-    this.neighborhoodBlendShader.setUniform('u_pixelSize', new Vector2(pixelSize.x, pixelSize.y));
+    const pixelSize = new Vector2(1.0 / this.config.width, 1.0 / this.config.height);
+    this.neighborhoodBlendShader.setUniform('u_pixelSize', pixelSize);
 
-    // Bind textures
-    // Original color texture
-    // this.neighborhoodBlendShader.setUniform('u_colorTexture', 0);
-    // gl.activeTexture(gl.TEXTURE0);
-    // gl.bindTexture(gl.TEXTURE_2D, this.inputTexture);
+    // Bind original color texture
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.inputTexture as WebGLTexture);
+    this.neighborhoodBlendShader.setUniform('u_colorTexture', 0);
 
-    // Blend weights from Pass 2
-    // this.neighborhoodBlendShader.setUniform('u_blendTexture', 1);
-    // gl.activeTexture(gl.TEXTURE1);
-    // gl.bindTexture(gl.TEXTURE_2D, this.blendTarget.getColorAttachment(0));
-
-    // Set render target
-    // this.outputTarget.bind();
+    // Bind blend weights from Pass 2
+    gl.activeTexture(gl.TEXTURE1);
+    const blendAttachment = this.blendTarget.getColorAttachment(0);
+    if (blendAttachment) {
+      gl.bindTexture(gl.TEXTURE_2D, blendAttachment as WebGLTexture);
+      this.neighborhoodBlendShader.setUniform('u_blendTexture', 1);
+    }
 
     // Render fullscreen triangle
-    // gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 
-    this.neighborhoodBlendShader.unbind();
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // Restore state
+    gl.enable(gl.DEPTH_TEST);
   }
 
   /**
    * Creates edge detection shader with appropriate defines.
    */
-  private createEdgeDetectionShader(): Shader {
+  private createEdgeDetectionShader(): Shader | null {
+    if (!this.gl) {
+      logger.error('Cannot create edge detection shader without GL context');
+      return null;
+    }
+
     const defines: Record<string, number | string> = {};
 
     // Add edge detection mode define
@@ -798,14 +835,20 @@ export class SMAAPass extends RenderPass {
         vertex: SMAA_EDGE_VERTEX_SHADER,
         fragment: SMAA_EDGE_FRAGMENT_SHADER
       },
-      defines
+      defines,
+      gl: this.gl
     });
   }
 
   /**
    * Creates blend weight shader with search steps define.
    */
-  private createBlendWeightShader(): Shader {
+  private createBlendWeightShader(): Shader | null {
+    if (!this.gl) {
+      logger.error('Cannot create blend weight shader without GL context');
+      return null;
+    }
+
     const maxSearchSteps = this.config.maxSearchSteps ?? 16;
 
     return new Shader({
@@ -816,14 +859,20 @@ export class SMAAPass extends RenderPass {
       },
       defines: {
         MAX_SEARCH_STEPS: maxSearchSteps
-      }
+      },
+      gl: this.gl
     });
   }
 
   /**
    * Creates neighborhood blending shader.
    */
-  private createNeighborhoodBlendShader(): Shader {
+  private createNeighborhoodBlendShader(): Shader | null {
+    if (!this.gl) {
+      logger.error('Cannot create neighborhood blend shader without GL context');
+      return null;
+    }
+
     // Simple vertex shader for fullscreen triangle
     const vertexShader = `#version 300 es
 precision highp float;
@@ -853,7 +902,8 @@ void main() {
       source: {
         vertex: vertexShader,
         fragment: SMAA_BLEND_FRAGMENT_SHADER
-      }
+      },
+      gl: this.gl
     });
   }
 
@@ -863,18 +913,18 @@ void main() {
   cleanup(): void {
     logger.debug('Cleaning up SMAAPass');
 
-    if (this.edgesTarget) {
-      this.edgesTarget.dispose();
+    if (this.edgesTarget && this.gl) {
+      this.edgesTarget.dispose(this.gl);
       this.edgesTarget = null;
     }
 
-    if (this.blendTarget) {
-      this.blendTarget.dispose();
+    if (this.blendTarget && this.gl) {
+      this.blendTarget.dispose(this.gl);
       this.blendTarget = null;
     }
 
-    if (this.outputTarget) {
-      this.outputTarget.dispose();
+    if (this.outputTarget && this.gl) {
+      this.outputTarget.dispose(this.gl);
       this.outputTarget = null;
     }
 
@@ -894,8 +944,18 @@ void main() {
     }
 
     this.uniformsUBO = null;
+    this.gl = null;
 
     logger.info('SMAAPass cleanup complete');
+  }
+
+  /**
+   * Sets the WebGL context for rendering.
+   *
+   * @param gl - WebGL2 rendering context
+   */
+  setContext(gl: WebGL2RenderingContext): void {
+    this.gl = gl;
   }
 
   /**
@@ -944,19 +1004,24 @@ void main() {
    * Resizes the SMAA targets.
    */
   resize(width: number, height: number): void {
+    if (!this.gl) {
+      logger.warn('Cannot resize SMAA targets without GL context');
+      return;
+    }
+
     this.config.width = width;
     this.config.height = height;
 
     if (this.edgesTarget) {
-      this.edgesTarget.resize(width, height);
+      this.edgesTarget.resize(this.gl, width, height);
     }
 
     if (this.blendTarget) {
-      this.blendTarget.resize(width, height);
+      this.blendTarget.resize(this.gl, width, height);
     }
 
     if (this.outputTarget) {
-      this.outputTarget.resize(width, height);
+      this.outputTarget.resize(this.gl, width, height);
     }
   }
 

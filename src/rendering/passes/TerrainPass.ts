@@ -547,11 +547,17 @@ export class TerrainPass extends RenderPass {
   /**
    * Sets up terrain pass resources.
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up TerrainPass');
 
-    // Note: In full implementation, would initialize WebGL context here
-    // this.gl = getWebGL2Context();
+    // Initialize WebGL context
+    if (gl) {
+      this.gl = gl;
+    } else {
+      logger.warn('No WebGL context provided to TerrainPass.setup()');
+      // In a real implementation, would get context from Engine
+      return;
+    }
 
     // Create clipmap levels
     if (this.config.lodSystem === LODSystem.Clipmap) {
@@ -697,6 +703,11 @@ export class TerrainPass extends RenderPass {
    * Creates geometry for a clipmap level.
    */
   private createClipmapGeometry(level: ClipmapLevel): void {
+    if (!this.gl) {
+      logger.error('Cannot create clipmap geometry: WebGL context not initialized');
+      return;
+    }
+
     const N = level.resolution;
     const vertices: number[] = [];
     const indices: number[] = [];
@@ -735,9 +746,23 @@ export class TerrainPass extends RenderPass {
 
     level.indexCount = indices.length;
 
-    // In full implementation, create WebGL buffers
-    // level.vertexBuffer = createBuffer(gl, vertices);
-    // level.indexBuffer = createBuffer(gl, indices);
+    // Create WebGL vertex buffer
+    level.vertexBuffer = this.gl.createBuffer();
+    if (level.vertexBuffer) {
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, level.vertexBuffer);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+    }
+
+    // Create WebGL index buffer
+    level.indexBuffer = this.gl.createBuffer();
+    if (level.indexBuffer) {
+      this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, level.indexBuffer);
+      this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
+    }
+
+    // Unbind buffers
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
 
     logger.debug(`Clipmap level ${level.level}: ${vertices.length / 2} vertices, ${indices.length / 3} triangles`);
   }
@@ -1025,8 +1050,77 @@ export class TerrainPass extends RenderPass {
    * Creates shader programs.
    */
   private createShaders(): void {
-    // In full implementation, compile and link shaders
+    if (!this.gl) {
+      logger.error('Cannot create shaders: WebGL context not initialized');
+      return;
+    }
+
     logger.debug('Creating terrain shaders');
+
+    // Compile vertex shader
+    const vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+    if (!vertexShader) {
+      logger.error('Failed to create vertex shader');
+      return;
+    }
+
+    this.gl.shaderSource(vertexShader, TERRAIN_VERTEX_SHADER);
+    this.gl.compileShader(vertexShader);
+
+    if (!this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS)) {
+      const info = this.gl.getShaderInfoLog(vertexShader);
+      logger.error(`Terrain vertex shader compilation failed: ${info}`);
+      this.gl.deleteShader(vertexShader);
+      return;
+    }
+
+    // Compile fragment shader
+    const fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+    if (!fragmentShader) {
+      logger.error('Failed to create fragment shader');
+      this.gl.deleteShader(vertexShader);
+      return;
+    }
+
+    this.gl.shaderSource(fragmentShader, TERRAIN_FRAGMENT_SHADER);
+    this.gl.compileShader(fragmentShader);
+
+    if (!this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS)) {
+      const info = this.gl.getShaderInfoLog(fragmentShader);
+      logger.error(`Terrain fragment shader compilation failed: ${info}`);
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    // Link shader program
+    this.shader = this.gl.createProgram();
+    if (!this.shader) {
+      logger.error('Failed to create terrain shader program');
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    this.gl.attachShader(this.shader, vertexShader);
+    this.gl.attachShader(this.shader, fragmentShader);
+    this.gl.linkProgram(this.shader);
+
+    if (!this.gl.getProgramParameter(this.shader, this.gl.LINK_STATUS)) {
+      const info = this.gl.getProgramInfoLog(this.shader);
+      logger.error(`Terrain shader program linking failed: ${info}`);
+      this.gl.deleteShader(vertexShader);
+      this.gl.deleteShader(fragmentShader);
+      this.gl.deleteProgram(this.shader);
+      this.shader = null;
+      return;
+    }
+
+    // Clean up shaders (they're now part of the program)
+    this.gl.deleteShader(vertexShader);
+    this.gl.deleteShader(fragmentShader);
+
+    logger.info('Terrain shaders created successfully');
   }
 
   /**

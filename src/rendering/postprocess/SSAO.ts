@@ -264,8 +264,8 @@ export class SSAO extends PostProcessEffect {
         uniform float uRadius;
         uniform float uBias;
         uniform float uMaxDistance;
-        uniform int uSampleCount;
 
+        const int SAMPLE_COUNT = ${this.sampleCount};
         const vec3 samples[${this.sampleCount}] = vec3[](
 ${kernelStr}
         );
@@ -297,7 +297,7 @@ ${kernelStr}
 
           // Calculate occlusion
           float occlusion = 0.0;
-          for (int i = 0; i < uSampleCount; i++) {
+          for (int i = 0; i < SAMPLE_COUNT; i++) {
             // Get sample position
             vec3 samplePos = TBN * samples[i];
             samplePos = position + samplePos * uRadius;
@@ -316,7 +316,7 @@ ${kernelStr}
             occlusion += (samplePosition.z >= samplePos.z + uBias ? 1.0 : 0.0) * rangeCheck;
           }
 
-          occlusion = 1.0 - (occlusion / float(uSampleCount));
+          occlusion = 1.0 - (occlusion / float(SAMPLE_COUNT));
           fragColor = vec4(vec3(occlusion), 1.0);
         }
       `,
@@ -515,7 +515,6 @@ ${kernelStr}
     this.ssaoShader.setUniform('uRadius', radius);
     this.ssaoShader.setUniform('uBias', bias);
     this.ssaoShader.setUniform('uMaxDistance', maxDistance);
-    this.ssaoShader.setUniform('uSampleCount', this.sampleCount);
     this.renderQuad(this.ssaoTexture);
 
     // Pass 2: Horizontal blur

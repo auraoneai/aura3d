@@ -40,3 +40,11 @@ export type {
   ShaderUniform,
   ShaderSource,
 } from './ShaderMaterial';
+
+export {
+  StandardPBRMaterial,
+} from './StandardPBRMaterial';
+
+export type {
+  StandardPBRMaterialDescriptor,
+} from './StandardPBRMaterial';

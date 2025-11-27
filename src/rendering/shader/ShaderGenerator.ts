@@ -559,9 +559,328 @@ void main() {
     vertexCtx: GenerationContext,
     fragmentCtx: GenerationContext
   ): void {
-    // This is a simplified implementation
-    // A full implementation would handle all node types
-    logger.debug(`Generating code for node: ${node.id} (${node.type})`);
+    // Determine which context to use based on node type
+    const isVertexNode = this.isVertexShaderNode(node);
+    const ctx = isVertexNode ? vertexCtx : fragmentCtx;
+
+    // Get inputs from connections
+    const inputs = this.getNodeInputs(node, graph, ctx);
+
+    // Generate output variable name
+    const outputVar = this.generateVarName(ctx);
+    ctx.nodeOutputs.set(node.id, outputVar);
+
+    switch (node.type) {
+      case ShaderNodeType.Attribute:
+        this.generateAttributeNode(node, ctx, outputVar);
+        break;
+
+      case ShaderNodeType.Uniform:
+        this.generateUniformNode(node, ctx, outputVar);
+        break;
+
+      case ShaderNodeType.Varying:
+        this.generateVaryingNode(node, vertexCtx, fragmentCtx, outputVar);
+        break;
+
+      case ShaderNodeType.Constant:
+        this.generateConstantNode(node, ctx, outputVar);
+        break;
+
+      case ShaderNodeType.Add:
+        this.generateBinaryOpNode(node, ctx, outputVar, inputs, '+');
+        break;
+
+      case ShaderNodeType.Subtract:
+        this.generateBinaryOpNode(node, ctx, outputVar, inputs, '-');
+        break;
+
+      case ShaderNodeType.Multiply:
+        this.generateBinaryOpNode(node, ctx, outputVar, inputs, '*');
+        break;
+
+      case ShaderNodeType.Divide:
+        this.generateBinaryOpNode(node, ctx, outputVar, inputs, '/');
+        break;
+
+      case ShaderNodeType.Dot:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'dot');
+        break;
+
+      case ShaderNodeType.Cross:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'cross');
+        break;
+
+      case ShaderNodeType.Normalize:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'normalize');
+        break;
+
+      case ShaderNodeType.Length:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'length');
+        break;
+
+      case ShaderNodeType.Pow:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'pow');
+        break;
+
+      case ShaderNodeType.Clamp:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'clamp');
+        break;
+
+      case ShaderNodeType.Mix:
+        this.generateFunctionNode(node, ctx, outputVar, inputs, 'mix');
+        break;
+
+      case ShaderNodeType.Texture2D:
+        this.generateTextureNode(node, ctx, outputVar, inputs, 'texture');
+        break;
+
+      case ShaderNodeType.TextureCube:
+        this.generateTextureNode(node, ctx, outputVar, inputs, 'texture');
+        break;
+
+      case ShaderNodeType.Split:
+        this.generateSplitNode(node, ctx, outputVar, inputs);
+        break;
+
+      case ShaderNodeType.Combine:
+        this.generateCombineNode(node, ctx, outputVar, inputs);
+        break;
+
+      case ShaderNodeType.Custom:
+        this.generateCustomNode(node, ctx, outputVar, inputs);
+        break;
+
+      default:
+        logger.warn(`Unsupported node type: ${node.type}`);
+    }
+  }
+
+  /**
+   * Check if node should be in vertex shader
+   */
+  private isVertexShaderNode(node: ShaderNode): boolean {
+    return node.type === ShaderNodeType.Attribute ||
+           (node.params?.stage === 'vertex');
+  }
+
+  /**
+   * Get input variables for a node
+   */
+  private getNodeInputs(
+    node: ShaderNode,
+    graph: ShaderGraph,
+    ctx: GenerationContext
+  ): Map<string, string> {
+    const inputs = new Map<string, string>();
+
+    for (const conn of graph.connections) {
+      if (conn.to === node.id) {
+        const inputVar = ctx.nodeOutputs.get(conn.from);
+        if (inputVar) {
+          inputs.set(conn.toInput, inputVar);
+        }
+      }
+    }
+
+    return inputs;
+  }
+
+  /**
+   * Generate unique variable name
+   */
+  private generateVarName(ctx: GenerationContext): string {
+    return `v${ctx.varCounter++}`;
+  }
+
+  /**
+   * Generate attribute node
+   */
+  private generateAttributeNode(node: ShaderNode, ctx: GenerationContext, outputVar: string): void {
+    const name = node.params?.name || 'a_attribute';
+    const type = node.params?.type || 'vec3';
+
+    ctx.attributes.set(name, type);
+    ctx.declarations.push(`${type} ${outputVar} = ${name};`);
+  }
+
+  /**
+   * Generate uniform node
+   */
+  private generateUniformNode(node: ShaderNode, ctx: GenerationContext, outputVar: string): void {
+    const name = node.params?.name || 'u_uniform';
+    const type = node.params?.type || 'vec3';
+
+    ctx.uniforms.set(name, type);
+    ctx.declarations.push(`${type} ${outputVar} = ${name};`);
+  }
+
+  /**
+   * Generate varying node
+   */
+  private generateVaryingNode(
+    node: ShaderNode,
+    vertexCtx: GenerationContext,
+    fragmentCtx: GenerationContext,
+    outputVar: string
+  ): void {
+    const name = node.params?.name || 'v_varying';
+    const type = node.params?.type || 'vec3';
+
+    vertexCtx.varyings.set(name, type);
+    fragmentCtx.varyings.set(name, type);
+
+    // In vertex shader, assign to varying
+    vertexCtx.statements.push(`${name} = ${outputVar};`);
+
+    // In fragment shader, read from varying
+    fragmentCtx.declarations.push(`${type} ${outputVar} = ${name};`);
+  }
+
+  /**
+   * Generate constant node
+   */
+  private generateConstantNode(node: ShaderNode, ctx: GenerationContext, outputVar: string): void {
+    const value = node.params?.value || '0.0';
+    const type = node.params?.type || 'float';
+
+    ctx.declarations.push(`${type} ${outputVar} = ${type}(${value});`);
+  }
+
+  /**
+   * Generate binary operation node
+   */
+  private generateBinaryOpNode(
+    node: ShaderNode,
+    ctx: GenerationContext,
+    outputVar: string,
+    inputs: Map<string, string>,
+    op: string
+  ): void {
+    const inputA = inputs.get('a') || '0.0';
+    const inputB = inputs.get('b') || '0.0';
+    const type = node.params?.outputType || 'auto';
+
+    if (type === 'auto') {
+      ctx.declarations.push(`auto ${outputVar} = ${inputA} ${op} ${inputB};`);
+    } else {
+      ctx.declarations.push(`${type} ${outputVar} = ${inputA} ${op} ${inputB};`);
+    }
+  }
+
+  /**
+   * Generate function call node
+   */
+  private generateFunctionNode(
+    node: ShaderNode,
+    ctx: GenerationContext,
+    outputVar: string,
+    inputs: Map<string, string>,
+    funcName: string
+  ): void {
+    const args: string[] = [];
+
+    // Get arguments in order
+    const argOrder = node.params?.argOrder || ['a', 'b', 'c'];
+    for (const argName of argOrder) {
+      const inputVar = inputs.get(argName);
+      if (inputVar) {
+        args.push(inputVar);
+      }
+    }
+
+    const type = node.params?.outputType || 'auto';
+    const argsStr = args.join(', ');
+
+    if (type === 'auto') {
+      ctx.declarations.push(`auto ${outputVar} = ${funcName}(${argsStr});`);
+    } else {
+      ctx.declarations.push(`${type} ${outputVar} = ${funcName}(${argsStr});`);
+    }
+  }
+
+  /**
+   * Generate texture sample node
+   */
+  private generateTextureNode(
+    node: ShaderNode,
+    ctx: GenerationContext,
+    outputVar: string,
+    inputs: Map<string, string>,
+    funcName: string
+  ): void {
+    const sampler = inputs.get('sampler') || node.params?.sampler || 'u_texture';
+    const uv = inputs.get('uv') || 'v_texcoord';
+    const type = node.params?.outputType || 'vec4';
+
+    ctx.declarations.push(`${type} ${outputVar} = ${funcName}(${sampler}, ${uv});`);
+  }
+
+  /**
+   * Generate split/swizzle node
+   */
+  private generateSplitNode(
+    node: ShaderNode,
+    ctx: GenerationContext,
+    outputVar: string,
+    inputs: Map<string, string>
+  ): void {
+    const input = inputs.get('input') || 'vec4(0.0)';
+    const swizzle = node.params?.swizzle || 'xyz';
+    const type = node.params?.outputType || 'vec3';
+
+    ctx.declarations.push(`${type} ${outputVar} = ${input}.${swizzle};`);
+  }
+
+  /**
+   * Generate combine/constructor node
+   */
+  private generateCombineNode(
+    node: ShaderNode,
+    ctx: GenerationContext,
+    outputVar: string,
+    inputs: Map<string, string>
+  ): void {
+    const args: string[] = [];
+    const components = node.params?.components || ['x', 'y', 'z', 'w'];
+
+    for (const comp of components) {
+      const inputVar = inputs.get(comp);
+      if (inputVar) {
+        args.push(inputVar);
+      }
+    }
+
+    const type = node.params?.outputType || 'vec4';
+    const argsStr = args.join(', ');
+
+    ctx.declarations.push(`${type} ${outputVar} = ${type}(${argsStr});`);
+  }
+
+  /**
+   * Generate custom code node
+   */
+  private generateCustomNode(
+    node: ShaderNode,
+    ctx: GenerationContext,
+    outputVar: string,
+    inputs: Map<string, string>
+  ): void {
+    if (!node.code) {
+      logger.warn(`Custom node ${node.id} has no code`);
+      return;
+    }
+
+    // Replace input placeholders
+    let code = node.code;
+    for (const [name, varName] of inputs) {
+      code = code.replace(new RegExp(`\\$\\{${name}\\}`, 'g'), varName);
+    }
+
+    // Replace output placeholder
+    code = code.replace(/\$\{output\}/g, outputVar);
+
+    ctx.statements.push(code);
   }
 
   /**

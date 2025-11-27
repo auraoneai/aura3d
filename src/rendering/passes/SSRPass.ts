@@ -545,6 +545,9 @@ export class SSRPass extends RenderPass {
   /** Frame counter for temporal jitter */
   private frameIndex: number = 0;
 
+  /** WebGL2 rendering context */
+  private gl: WebGL2RenderingContext | null = null;
+
   /** Statistics */
   private stats = {
     raysTraced: 0,
@@ -740,17 +743,18 @@ export class SSRPass extends RenderPass {
       defines.USE_ENVIRONMENT_MAP = 1;
     }
 
-    // Note: In a real implementation, this would create the shader using the Shader class
-    // For now, we document the shader creation structure
-    // this.shader = new Shader({
-    //   name: 'SSR',
-    //   source: {
-    //     vertex: SSR_VERTEX_SHADER,
-    //     fragment: SSR_FRAGMENT_SHADER
-    //   },
-    //   defines: defines,
-    //   gl: this.gl
-    // });
+    // Create SSR shader with GL context if available
+    if (this.gl) {
+      this.shader = new Shader({
+        name: 'SSR',
+        source: {
+          vertex: SSR_VERTEX_SHADER,
+          fragment: SSR_FRAGMENT_SHADER
+        },
+        defines: defines,
+        gl: this.gl
+      });
+    }
 
     logger.info('SSRPass setup complete');
   }
@@ -762,7 +766,7 @@ export class SSRPass extends RenderPass {
    * @param renderTarget - Output target
    */
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
-    if (!this.ssrTarget || !this.uniformsUBO || !this.currentCamera) {
+    if (!this.ssrTarget || !this.uniformsUBO || !this.currentCamera || !this.gl) {
       logger.error('SSRPass not properly initialized');
       return;
     }
@@ -773,127 +777,143 @@ export class SSRPass extends RenderPass {
       return;
     }
 
+    // Create shader if not initialized
+    if (!this.shader && this.gl) {
+      const defines: { [key: string]: string | number } = {
+        MAX_STEPS: this.config.maxSteps ?? 32,
+        BINARY_SEARCH_STEPS: this.config.binarySearchSteps ?? 8,
+      };
+
+      if (this.config.enableTemporal) {
+        defines.ENABLE_TEMPORAL = 1;
+      }
+
+      if (this.config.enableStochastic) {
+        defines.ENABLE_STOCHASTIC = 1;
+      }
+
+      if (this.environmentMap) {
+        defines.USE_ENVIRONMENT_MAP = 1;
+      }
+
+      this.shader = new Shader({
+        name: 'SSR',
+        source: {
+          vertex: SSR_VERTEX_SHADER,
+          fragment: SSR_FRAGMENT_SHADER
+        },
+        defines: defines,
+        gl: this.gl
+      });
+    }
+
+    if (!this.shader || !this.shader.isReady) {
+      logger.error('SSR shader not ready');
+      return;
+    }
+
     logger.trace('SSRPass: tracing screen-space reflections');
 
     // Update uniforms with current camera and settings
     this.updateUniforms();
 
-    // ==========================
-    // BEGIN SSR RENDERING
-    // ==========================
+    const gl = this.gl;
+    const framebuffer = (this.ssrTarget as any).getFramebuffer();
 
-    // Step 1: Bind output framebuffer (SSR target)
-    // In a real implementation, this would be:
-    // this.ssrTarget.bind();
-    // gl.viewport(0, 0, this.ssrTarget.width, this.ssrTarget.height);
-    // gl.clear(gl.COLOR_BUFFER_BIT);
+    // Bind output framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer || null);
+    gl.viewport(0, 0, this.ssrTarget.width, this.ssrTarget.height);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
-    // Step 2: Bind SSR shader program
-    // In a real implementation:
-    // if (!this.shader || !this.shader.isReady()) {
-    //   logger.error('SSR shader not ready');
-    //   return;
-    // }
-    // this.shader.bind();
+    // Disable depth testing for fullscreen pass
+    gl.disable(gl.DEPTH_TEST);
+    gl.disable(gl.CULL_FACE);
+    gl.disable(gl.BLEND);
 
-    // Step 3: Bind input textures (G-buffer and scene color)
-    // The shader expects these texture units:
-    // - Texture Unit 0: albedoMetallic (u_albedoMetallic)
-    // - Texture Unit 1: normalRoughnessAO (u_normalRoughnessAO)
-    // - Texture Unit 2: depth (u_depth)
-    // - Texture Unit 3: sceneColor (u_sceneColor)
-    // - Texture Unit 4: hiZBuffer (u_hiZBuffer) - optional
-    // - Texture Unit 5: previousSSR (u_previousSSR) - if temporal enabled
-    // - Texture Unit 6: environmentMap (u_environmentMap) - if available
+    // Bind SSR shader
+    this.shader.bind();
 
-    // In a real implementation:
-    // gl.activeTexture(gl.TEXTURE0);
-    // gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.albedoMetallic);
-    // this.shader.setUniform('u_albedoMetallic', 0);
-    //
-    // gl.activeTexture(gl.TEXTURE1);
-    // gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.normalRoughnessAO);
-    // this.shader.setUniform('u_normalRoughnessAO', 1);
-    //
-    // gl.activeTexture(gl.TEXTURE2);
-    // gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.depth);
-    // this.shader.setUniform('u_depth', 2);
-    //
-    // gl.activeTexture(gl.TEXTURE3);
-    // gl.bindTexture(gl.TEXTURE_2D, this.sceneColorTexture);
-    // this.shader.setUniform('u_sceneColor', 3);
+    // Bind G-buffer textures
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.albedoMetallic as WebGLTexture);
+    this.shader.setUniform('u_albedoMetallic', 0);
 
-    // Bind Hi-Z buffer if available (for accelerated ray marching)
-    // if (this.hiZBuffer) {
-    //   gl.activeTexture(gl.TEXTURE4);
-    //   gl.bindTexture(gl.TEXTURE_2D, this.hiZBuffer.getColorAttachment(0));
-    //   this.shader.setUniform('u_hiZBuffer', 4);
-    // }
+    gl.activeTexture(gl.TEXTURE1);
+    gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.normalRoughnessAO as WebGLTexture);
+    this.shader.setUniform('u_normalRoughnessAO', 1);
+
+    gl.activeTexture(gl.TEXTURE2);
+    gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.depth as WebGLTexture);
+    this.shader.setUniform('u_depth', 2);
+
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, this.sceneColorTexture as WebGLTexture);
+    this.shader.setUniform('u_sceneColor', 3);
+
+    // Bind Hi-Z buffer if available
+    if (this.hiZBuffer) {
+      gl.activeTexture(gl.TEXTURE4);
+      const hiZAttachment = this.hiZBuffer.getColorAttachment(0);
+      if (hiZAttachment) {
+        gl.bindTexture(gl.TEXTURE_2D, hiZAttachment as WebGLTexture);
+        this.shader.setUniform('u_hiZBuffer', 4);
+      }
+    }
 
     // Bind previous frame for temporal reprojection
-    // if (this.config.enableTemporal && this.previousSSRTarget) {
-    //   gl.activeTexture(gl.TEXTURE5);
-    //   gl.bindTexture(gl.TEXTURE_2D, this.previousSSRTarget.getColorAttachment(0));
-    //   this.shader.setUniform('u_previousSSR', 5);
-    // }
+    if (this.config.enableTemporal && this.previousSSRTarget) {
+      gl.activeTexture(gl.TEXTURE5);
+      const previousAttachment = this.previousSSRTarget.getColorAttachment(0);
+      if (previousAttachment) {
+        gl.bindTexture(gl.TEXTURE_2D, previousAttachment as WebGLTexture);
+        this.shader.setUniform('u_previousSSR', 5);
+      }
+    }
 
     // Bind environment map for fallback reflections
-    // if (this.environmentMap) {
-    //   gl.activeTexture(gl.TEXTURE6);
-    //   gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.environmentMap);
-    //   this.shader.setUniform('u_environmentMap', 6);
-    // }
+    if (this.environmentMap) {
+      gl.activeTexture(gl.TEXTURE6);
+      gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.environmentMap as WebGLTexture);
+      this.shader.setUniform('u_environmentMap', 6);
+    }
 
-    // Step 4: Set camera and SSR uniforms
-    // These uniforms are already set in this.uniformsUBO via updateUniforms()
-    // In a real implementation, we would upload the UBO:
-    // this.uniformsUBO.upload();
-    // this.uniformsUBO.bind(0); // Bind to binding point 0
+    // Set camera uniforms
+    this.shader.setUniform('u_cameraPosition', this.currentCamera.transform.worldPosition);
+    this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
+    this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
 
-    // Alternatively, set individual uniforms directly on the shader:
-    // this.shader.setUniform('u_cameraPosition', this.currentCamera.transform.worldPosition);
-    // this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
-    // this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
-    // this.shader.setUniform('u_inverseViewProjection', this.currentCamera.inverseViewProjectionMatrix);
-    // this.shader.setUniform('u_inverseProjection', this.currentCamera.inverseProjectionMatrix);
-    // this.shader.setUniform('u_resolution', new Vector2(this.config.width, this.config.height));
-    // this.shader.setUniform('u_nearFar', new Vector2(this.currentCamera.near, this.currentCamera.far));
-    // this.shader.setUniform('u_maxSteps', this.config.maxSteps ?? 32);
-    // this.shader.setUniform('u_thickness', this.config.thickness ?? 0.5);
-    // this.shader.setUniform('u_maxDistance', this.config.maxDistance ?? 100.0);
-    // this.shader.setUniform('u_binarySearchSteps', this.config.binarySearchSteps ?? 8);
-    // this.shader.setUniform('u_fadeDistance', this.config.fadeDistance ?? 50.0);
-    // this.shader.setUniform('u_temporalBlendFactor', this.config.temporalBlendFactor ?? 0.9);
-    // this.shader.setUniform('u_frameIndex', this.frameIndex);
+    if (this.currentCamera.inverseViewProjectionMatrix) {
+      this.shader.setUniform('u_inverseViewProjection', this.currentCamera.inverseViewProjectionMatrix);
+    }
 
-    // if (this.config.enableTemporal && this.previousViewProjectionMatrix) {
-    //   this.shader.setUniform('u_previousViewProjection', this.previousViewProjectionMatrix);
-    // }
+    if (this.currentCamera.inverseProjectionMatrix) {
+      this.shader.setUniform('u_inverseProjection', this.currentCamera.inverseProjectionMatrix);
+    }
 
-    // Step 5: Draw fullscreen triangle
-    // The vertex shader uses gl_VertexID to generate a fullscreen triangle
-    // without needing a vertex buffer. This is a common optimization for
-    // post-process effects.
-    //
-    // In a real implementation:
-    // gl.disable(gl.DEPTH_TEST);
-    // gl.disable(gl.CULL_FACE);
-    // gl.disable(gl.BLEND);
-    //
-    // // Draw 3 vertices (fullscreen triangle covering the clip space)
-    // gl.drawArrays(gl.TRIANGLES, 0, 3);
-    //
-    // // Restore state
-    // gl.enable(gl.DEPTH_TEST);
+    // Set SSR parameters
+    this.shader.setUniform('u_resolution', new Vector2(this.config.width, this.config.height));
+    this.shader.setUniform('u_nearFar', new Vector2(this.currentCamera.near, this.currentCamera.far));
+    this.shader.setUniform('u_maxSteps', this.config.maxSteps ?? 32);
+    this.shader.setUniform('u_thickness', this.config.thickness ?? 0.5);
+    this.shader.setUniform('u_maxDistance', this.config.maxDistance ?? 100.0);
+    this.shader.setUniform('u_binarySearchSteps', this.config.binarySearchSteps ?? 8);
+    this.shader.setUniform('u_fadeDistance', this.config.fadeDistance ?? 50.0);
+    this.shader.setUniform('u_temporalBlendFactor', this.config.temporalBlendFactor ?? 0.9);
+    this.shader.setUniform('u_frameIndex', this.frameIndex);
 
-    // Step 6: Unbind resources
-    // In a real implementation:
-    // this.shader.unbind();
-    // this.ssrTarget.unbind();
+    if (this.config.enableTemporal && this.previousViewProjectionMatrix) {
+      this.shader.setUniform('u_previousViewProjection', this.previousViewProjectionMatrix);
+    }
 
-    // ==========================
-    // END SSR RENDERING
-    // ==========================
+    // Draw fullscreen triangle
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // Restore state
+    gl.enable(gl.DEPTH_TEST);
 
     // Update statistics
     const raysPerPixel = this.config.stochasticSamples ?? 1;
@@ -905,18 +925,15 @@ export class SSRPass extends RenderPass {
       : this.config.height;
     this.stats.raysTraced = targetWidth * targetHeight * raysPerPixel;
 
-    // Estimate hit rate (would be calculated from actual rendering in real implementation)
-    // Typical SSR hit rates range from 30-70% depending on scene geometry and camera angle
-    this.stats.hitRate = 0.5; // Placeholder
+    // Estimate hit rate (would be calculated from actual rendering)
+    this.stats.hitRate = 0.5;
 
     // Swap temporal buffers if enabled
-    // This allows the next frame to use current frame's results for temporal filtering
     if (this.config.enableTemporal && this.previousSSRTarget) {
-      // Swap current and previous targets
       [this.ssrTarget, this.previousSSRTarget] = [this.previousSSRTarget, this.ssrTarget];
     }
 
-    // Increment frame counter for temporal jitter and animation
+    // Increment frame counter
     this.frameIndex++;
 
     logger.trace('SSRPass complete', {
@@ -932,18 +949,18 @@ export class SSRPass extends RenderPass {
   cleanup(): void {
     logger.debug('Cleaning up SSRPass');
 
-    if (this.ssrTarget) {
-      this.ssrTarget.dispose();
+    if (this.ssrTarget && this.gl) {
+      this.ssrTarget.dispose(this.gl);
       this.ssrTarget = null;
     }
 
-    if (this.hiZBuffer) {
-      this.hiZBuffer.dispose();
+    if (this.hiZBuffer && this.gl) {
+      this.hiZBuffer.dispose(this.gl);
       this.hiZBuffer = null;
     }
 
-    if (this.previousSSRTarget) {
-      this.previousSSRTarget.dispose();
+    if (this.previousSSRTarget && this.gl) {
+      this.previousSSRTarget.dispose(this.gl);
       this.previousSSRTarget = null;
     }
 
@@ -958,8 +975,18 @@ export class SSRPass extends RenderPass {
     }
 
     this.uniformsUBO = null;
+    this.gl = null;
 
     logger.info('SSRPass cleanup complete');
+  }
+
+  /**
+   * Sets the WebGL context for rendering.
+   *
+   * @param gl - WebGL2 rendering context
+   */
+  setContext(gl: WebGL2RenderingContext): void {
+    this.gl = gl;
   }
 
   /**
@@ -1040,6 +1067,11 @@ export class SSRPass extends RenderPass {
    * Resizes the SSR targets.
    */
   resize(width: number, height: number): void {
+    if (!this.gl) {
+      logger.warn('Cannot resize SSR targets without GL context');
+      return;
+    }
+
     this.config.width = width;
     this.config.height = height;
 
@@ -1047,11 +1079,11 @@ export class SSRPass extends RenderPass {
     const targetHeight = this.config.useHalfResolution ? Math.floor(height / 2) : height;
 
     if (this.ssrTarget) {
-      this.ssrTarget.resize(targetWidth, targetHeight);
+      this.ssrTarget.resize(this.gl, targetWidth, targetHeight);
     }
 
     if (this.previousSSRTarget) {
-      this.previousSSRTarget.resize(targetWidth, targetHeight);
+      this.previousSSRTarget.resize(this.gl, targetWidth, targetHeight);
     }
   }
 

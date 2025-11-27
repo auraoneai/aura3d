@@ -14,6 +14,7 @@ import { Vector3, Quaternion, Matrix4 } from 'g3d';
 import { CatmullRomSpline } from 'g3d';
 import { GeometryGenerator, MeshBuilder } from 'g3d';
 import { Scene, SceneNode } from 'g3d';
+import { StandardPBRMaterial, Color } from 'g3d';
 
 export interface CheckpointData {
   position: Vector3;
@@ -200,11 +201,16 @@ export class Track {
       normals.push(Vector3.up());
       uvs.push(1, t * 10);
 
-      // Create quad faces
+      // Create quad faces (CCW winding when viewed from above)
+      // Vertex layout per segment: index = i*2 for left edge, i*2+1 for right edge
+      // base = left0, base+1 = right0, base+2 = left1 (next seg), base+3 = right1 (next seg)
+      // CCW from +Y: left0 -> right0 -> right1 -> left1
       if (i < trackSegments) {
         const base = i * 2;
+        // Triangle 1: left0 -> right0 -> left1 (CCW from above)
         indices.push(base, base + 1, base + 2);
-        indices.push(base + 2, base + 1, base + 3);
+        // Triangle 2: right0 -> right1 -> left1 (CCW from above)
+        indices.push(base + 1, base + 3, base + 2);
       }
     }
 
@@ -216,6 +222,13 @@ export class Track {
     const mesh = meshBuilder.build();
     this.trackMesh = new SceneNode('TrackMesh');
     this.trackMesh.setMesh(mesh);
+
+    // Dark asphalt material for track
+    const trackMaterial = new StandardPBRMaterial('TrackMaterial');
+    trackMaterial.albedo = new Color(0.15, 0.15, 0.18);  // Dark asphalt
+    trackMaterial.roughness = 0.8;
+    trackMaterial.metallic = 0.0;
+    this.trackMesh.setMaterial(trackMaterial);
 
     scene.addNode(this.trackMesh);
 
@@ -285,6 +298,14 @@ export class Track {
       const barrierMesh = meshBuilder.build();
       const barrierNode = new SceneNode(`Barrier_${side > 0 ? 'Right' : 'Left'}`);
       barrierNode.setMesh(barrierMesh);
+
+      // Red/white barrier material
+      const barrierMaterial = new StandardPBRMaterial(`BarrierMaterial_${side}`);
+      barrierMaterial.albedo = side > 0 ? new Color(1, 0.2, 0.2) : new Color(1, 1, 1);  // Red or white
+      barrierMaterial.roughness = 0.7;
+      barrierMaterial.metallic = 0.0;
+      barrierNode.setMaterial(barrierMaterial);
+
       scene.addNode(barrierNode);
 
       this.boundaryNodes.push(barrierNode);
@@ -338,17 +359,27 @@ export class Track {
   private createTreeMesh(): SceneNode {
     const tree = new SceneNode('Tree');
 
-    // Trunk (cylinder)
-    const trunk = GeometryGenerator.createCylinder(0.3, 0.3, 3, 8);
+    // Trunk (cylinder) - brown
+    // cylinder(radius, height, radialSegments, heightSegments)
+    const trunk = GeometryGenerator.cylinder(0.3, 3, 8, 1);
     const trunkNode = new SceneNode('Trunk');
     trunkNode.setMesh(trunk);
     trunkNode.setPosition(new Vector3(0, 1.5, 0));
+    const trunkMaterial = new StandardPBRMaterial('TrunkMaterial');
+    trunkMaterial.albedo = new Color(0.4, 0.25, 0.1);  // Brown bark
+    trunkMaterial.roughness = 0.9;
+    trunkNode.setMaterial(trunkMaterial);
 
-    // Foliage (sphere)
-    const foliage = GeometryGenerator.createSphere(2, 16, 16);
+    // Foliage (sphere) - green
+    // sphere(radius, widthSegments, heightSegments)
+    const foliage = GeometryGenerator.sphere(2, 16, 16);
     const foliageNode = new SceneNode('Foliage');
     foliageNode.setMesh(foliage);
     foliageNode.setPosition(new Vector3(0, 4, 0));
+    const foliageMaterial = new StandardPBRMaterial('FoliageMaterial');
+    foliageMaterial.albedo = new Color(0.1, 0.5, 0.15);  // Dark green
+    foliageMaterial.roughness = 0.8;
+    foliageNode.setMaterial(foliageMaterial);
 
     tree.addChild(trunkNode);
     tree.addChild(foliageNode);
@@ -364,7 +395,8 @@ export class Track {
 
     // Create tiered seating
     for (let tier = 0; tier < 5; tier++) {
-      const box = GeometryGenerator.createBox(new Vector3(20, 1, 3));
+      // box(width, height, depth)
+      const box = GeometryGenerator.box(20, 1, 3);
       const tierNode = new SceneNode(`Tier_${tier}`);
       tierNode.setMesh(box);
       tierNode.setPosition(new Vector3(0, tier * 1.5, -tier * 2));
@@ -384,7 +416,8 @@ export class Track {
   private addPitBuilding(scene: Scene): void {
     const pitBuilding = new SceneNode('PitBuilding');
 
-    const building = GeometryGenerator.createBox(new Vector3(30, 4, 8));
+    // box(width, height, depth)
+    const building = GeometryGenerator.box(30, 4, 8);
     pitBuilding.setMesh(building);
 
     const pitPos = this.startPosition.add(new Vector3(15, 2, 0));
@@ -431,7 +464,8 @@ export class Track {
     // Stack tires
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 2; col++) {
-        const tire = GeometryGenerator.createTorus(0.5, 0.2, 16, 16);
+        // torus(radius, tubeRadius, radialSegments, tubularSegments)
+        const tire = GeometryGenerator.torus(0.5, 0.2, 16, 32);
         const tireNode = new SceneNode(`Tire_${row}_${col}`);
         tireNode.setMesh(tire);
         tireNode.setPosition(new Vector3(col * 1.2, row * 0.4, 0));

@@ -519,6 +519,26 @@ export class GBufferPass extends RenderPass {
     // Bind GBuffer framebuffer
     // Note: In a real implementation, bind the actual WebGL framebuffer
     // For now, we assume rendering to the default framebuffer or a bound FBO
+    if (this.gbufferTarget && 'getFramebuffer' in this.gbufferTarget) {
+      const framebuffer = (this.gbufferTarget as any).getFramebuffer?.();
+      if (framebuffer !== undefined) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
+      }
+    }
+
+    // Set viewport
+    gl.viewport(0, 0, this.config.width, this.config.height);
+
+    // Setup MRT (Multiple Render Targets) for GBuffer
+    // Attachment 0: Albedo + Metallic
+    // Attachment 1: Normal + Roughness + AO
+    // Attachment 2: Emission
+    const drawBuffers = [
+      gl.COLOR_ATTACHMENT0,
+      gl.COLOR_ATTACHMENT1,
+      gl.COLOR_ATTACHMENT2
+    ];
+    gl.drawBuffers(drawBuffers);
 
     // Clear GBuffer attachments
     const clearColor = this.clearValues.colors?.[0] ?? Color.black();
@@ -631,6 +651,7 @@ export class GBufferPass extends RenderPass {
         }
       }
 
+      // *** ACTUAL DRAW CALL: Render geometry to GBuffer MRT ***
       // Draw elements or arrays
       if (drawCall.isIndexed()) {
         const indexBuffer = drawCall.indexBuffer;
@@ -679,11 +700,23 @@ export class GBufferPass extends RenderPass {
         this.stats.triangles += Math.floor(drawCall.vertexCount / 3) * drawCall.instanceCount;
       }
 
+      // Disable vertex attributes
+      const attrNames = ['a_position', 'a_normal', 'a_texcoord', 'a_tangent'];
+      for (let i = 0; i < attrNames.length; i++) {
+        const attr = this.shader!.getAttribute(attrNames[i]);
+        if (attr) {
+          gl.disableVertexAttribArray(attr.location);
+        }
+      }
+
       this.stats.drawCalls++;
     });
 
     // Unbind shader
     this.shader.unbind();
+
+    // Unbind framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     logger.trace(
       `GBufferPass complete: ${this.stats.drawCalls} draws, ${this.stats.triangles} triangles, ${this.stats.materials} materials`
@@ -696,8 +729,8 @@ export class GBufferPass extends RenderPass {
   cleanup(): void {
     logger.debug('Cleaning up GBufferPass');
 
-    if (this.gbufferTarget) {
-      this.gbufferTarget.dispose();
+    if (this.gbufferTarget && this.gl) {
+      this.gbufferTarget.dispose(this.gl);
       this.gbufferTarget = null;
     }
 
@@ -709,6 +742,7 @@ export class GBufferPass extends RenderPass {
     this.cameraUBO = null;
     this.modelUBO = null;
     this.previousMVPMatrices.clear();
+    this.gl = null;
 
     logger.info('GBufferPass cleanup complete');
   }
@@ -770,8 +804,8 @@ export class GBufferPass extends RenderPass {
     this.config.width = width;
     this.config.height = height;
 
-    if (this.gbufferTarget) {
-      this.gbufferTarget.resize(width, height);
+    if (this.gbufferTarget && this.gl) {
+      this.gbufferTarget.resize(this.gl, width, height);
     }
   }
 

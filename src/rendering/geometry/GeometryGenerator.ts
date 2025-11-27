@@ -113,7 +113,10 @@ export class GeometryGenerator {
           const i2 = i0 + (su + 1);
           const i3 = i2 + 1;
 
-          builder.quad(i0, i1, i3, i2);
+          // CCW winding when viewed from normal direction
+          // i0=bottom-left, i1=bottom-right, i2=top-left, i3=top-right
+          // CCW: bottom-left -> top-left -> top-right -> bottom-right = i0, i2, i3, i1
+          builder.quad(i0, i2, i3, i1);
         }
       }
 
@@ -227,7 +230,8 @@ export class GeometryGenerator {
         const first = lat * (widthSegments + 1) + lon;
         const second = first + widthSegments + 1;
 
-        builder.quad(first, first + 1, second + 1, second);
+        // CCW winding when viewed from outside (normal direction)
+        builder.quad(first, second, second + 1, first + 1);
       }
     }
 
@@ -291,7 +295,8 @@ export class GeometryGenerator {
         const first = y * (radialSegments + 1) + x;
         const second = first + radialSegments + 1;
 
-        builder.quad(first, first + 1, second + 1, second);
+        // CCW winding when viewed from outside (normal direction)
+        builder.quad(first, second, second + 1, first + 1);
       }
     }
 
@@ -406,7 +411,8 @@ export class GeometryGenerator {
         const first = y * (radialSegments + 1) + x;
         const second = first + radialSegments + 1;
 
-        builder.quad(first, first + 1, second + 1, second);
+        // CCW winding when viewed from outside (normal direction)
+        builder.quad(first, second, second + 1, first + 1);
       }
     }
 
@@ -497,7 +503,8 @@ export class GeometryGenerator {
         const first = j * (tubularSegments + 1) + i;
         const second = first + tubularSegments + 1;
 
-        builder.quad(first, first + 1, second + 1, second);
+        // CCW winding when viewed from outside (normal direction)
+        builder.quad(first, second, second + 1, first + 1);
       }
     }
 
@@ -556,7 +563,10 @@ export class GeometryGenerator {
         const first = iz * (widthSegments + 1) + ix;
         const second = first + widthSegments + 1;
 
-        builder.quad(first, first + 1, second + 1, second);
+        // Winding order: CCW when viewed from above (positive Y)
+        // first=far-left (0), first+1=far-right (1), second=near-left (2), second+1=near-right (3)
+        // CCW from +Y: need to go counter-clockwise = far-left -> near-left -> near-right -> far-right
+        builder.quad(first, second, second + 1, first + 1);
       }
     }
 
@@ -729,7 +739,8 @@ export class GeometryGenerator {
         const first = lat * (radialSegments + 1) + lon;
         const second = first + radialSegments + 1;
 
-        builder.quad(first, first + 1, second + 1, second);
+        // CCW winding when viewed from outside (normal direction)
+        builder.quad(first, second, second + 1, first + 1);
       }
     }
 

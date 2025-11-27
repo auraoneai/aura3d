@@ -139,6 +139,16 @@ export class ShadowMapper {
   private atlasTextureId: number | null;
 
   /**
+   * Shadow FBO for rendering to atlas.
+   */
+  private shadowFBO: WebGLFramebuffer | null;
+
+  /**
+   * Light space matrices for shadow sampling.
+   */
+  private lightSpaceMatrices: Map<string, Matrix4> | null;
+
+  /**
    * Creates a new ShadowMapper instance.
    *
    * @param config - Shadow map configuration
@@ -180,6 +190,8 @@ export class ShadowMapper {
     ];
     this.frameIndex = 0;
     this.atlasTextureId = null;
+    this.shadowFBO = null;
+    this.lightSpaceMatrices = null;
   }
 
   /**
@@ -628,6 +640,218 @@ export class ShadowMapper {
    */
   setAtlasTextureId(id: number): void {
     this.atlasTextureId = id;
+  }
+
+  /**
+   * Renders shadow maps for all shadow-casting lights.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param scene - Scene to render from light's perspective
+   * @param shadowData - Shadow render data from prepareShadows()
+   * @param depthShader - Depth-only shader program
+   *
+   * @example
+   * ```typescript
+   * const shadowData = shadowMapper.prepareShadows(lights, camera, frameIndex);
+   * shadowMapper.renderShadowMaps(gl, scene, shadowData, depthShader);
+   * ```
+   */
+  renderShadowMaps(
+    gl: WebGL2RenderingContext,
+    scene: { root: any },
+    shadowData: ShadowRenderData[],
+    depthShader: {
+      bind: () => void;
+      setUniform: (name: string, value: any) => void;
+    }
+  ): void {
+    // Create shadow atlas FBO if not exists
+    if (!this.shadowFBO) {
+      this.shadowFBO = gl.createFramebuffer();
+
+      // Create shadow atlas depth texture
+      const depthTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, depthTexture);
+      gl.texImage2D(
+        gl.TEXTURE_2D,
+        0,
+        gl.DEPTH_COMPONENT32F,
+        this.config.atlasWidth,
+        this.config.atlasHeight,
+        0,
+        gl.DEPTH_COMPONENT,
+        gl.FLOAT,
+        null
+      );
+
+      // Set texture parameters for PCF
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
+
+      this.atlasTextureId = depthTexture as any;
+
+      // Attach to FBO
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFBO);
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.DEPTH_ATTACHMENT,
+        gl.TEXTURE_2D,
+        depthTexture,
+        0
+      );
+
+      // Check FBO completeness
+      const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+      if (status !== gl.FRAMEBUFFER_COMPLETE) {
+        logger.error(`Shadow FBO incomplete: ${status}`);
+        return;
+      }
+    }
+
+    // Bind shadow atlas FBO
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFBO);
+
+    // Save current viewport
+    const savedViewport = gl.getParameter(gl.VIEWPORT);
+
+    // Disable color writes (depth only)
+    gl.colorMask(false, false, false, false);
+
+    // Enable depth test and write
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
+    gl.depthFunc(gl.LEQUAL);
+
+    // Enable backface culling to reduce peter panning
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.FRONT); // Cull front faces for shadow maps
+
+    // Bind depth shader
+    depthShader.bind();
+
+    // Render each shadow map
+    for (const data of shadowData) {
+      const light = data.light;
+
+      // Render each viewport (cascade/cubemap face)
+      for (let i = 0; i < data.viewProjectionMatrices.length; i++) {
+        const viewport = data.viewports[i];
+        const viewProjMatrix = data.viewProjectionMatrices[i];
+
+        // Set viewport to shadow map region in atlas
+        const x = Math.floor(viewport.x * this.config.atlasWidth);
+        const y = Math.floor(viewport.y * this.config.atlasHeight);
+        const width = Math.floor(viewport.width * this.config.atlasWidth);
+        const height = Math.floor(viewport.height * this.config.atlasHeight);
+
+        gl.viewport(x, y, width, height);
+
+        // Clear depth for this region
+        gl.enable(gl.SCISSOR_TEST);
+        gl.scissor(x, y, width, height);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+        gl.disable(gl.SCISSOR_TEST);
+
+        // Upload light view-projection matrix
+        depthShader.setUniform('u_lightViewProjection', viewProjMatrix);
+
+        // Store light space matrix for shader use
+        if (!this.lightSpaceMatrices) {
+          this.lightSpaceMatrices = new Map();
+        }
+
+        const key = light instanceof DirectionalLight
+          ? `directional_${light.id}_${i}`
+          : light instanceof PointLight
+          ? `point_${light.id}_${i}`
+          : `spot_${light.id}`;
+
+        this.lightSpaceMatrices.set(key, viewProjMatrix);
+
+        // Render scene from light's perspective (depth only)
+        this.renderSceneDepth(gl, scene.root, depthShader, viewProjMatrix);
+      }
+    }
+
+    // Restore state
+    gl.cullFace(gl.BACK);
+    gl.colorMask(true, true, true, true);
+    gl.viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3]);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+  /**
+   * Renders scene depth-only from light's perspective.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param node - Scene node to render
+   * @param shader - Depth shader
+   * @param lightViewProj - Light's view-projection matrix
+   */
+  private renderSceneDepth(
+    gl: WebGL2RenderingContext,
+    node: any,
+    shader: { setUniform: (name: string, value: any) => void },
+    lightViewProj: Matrix4
+  ): void {
+    if (!node.visible) return;
+
+    // Get node's world transform
+    const worldMatrix = node.getWorldMatrix ? node.getWorldMatrix() : node.worldMatrix;
+
+    if (worldMatrix) {
+      // Upload model matrix
+      shader.setUniform('u_modelMatrix', worldMatrix);
+
+      // Calculate MVP for depth rendering
+      const mvp = lightViewProj.multiply(worldMatrix);
+      shader.setUniform('u_mvpMatrix', mvp);
+    }
+
+    // Render node's geometry if it has any
+    if (node.geometry && node.geometry.draw) {
+      node.geometry.draw(gl);
+    } else if (node.mesh && node.mesh.draw) {
+      node.mesh.draw(gl);
+    }
+
+    // Recursively render children
+    if (node.children) {
+      for (const child of node.children) {
+        this.renderSceneDepth(gl, child, shader, lightViewProj);
+      }
+    }
+  }
+
+  /**
+   * Gets light space matrix for a specific light.
+   *
+   * @param lightId - Light ID
+   * @param cascadeIndex - Cascade index (for directional lights)
+   * @param faceIndex - Cubemap face index (for point lights)
+   * @returns Light space matrix or null
+   */
+  getLightSpaceMatrix(
+    lightId: number,
+    cascadeIndex: number = -1,
+    faceIndex: number = -1
+  ): Matrix4 | null {
+    if (!this.lightSpaceMatrices) return null;
+
+    let key: string;
+    if (cascadeIndex >= 0) {
+      key = `directional_${lightId}_${cascadeIndex}`;
+    } else if (faceIndex >= 0) {
+      key = `point_${lightId}_${faceIndex}`;
+    } else {
+      key = `spot_${lightId}`;
+    }
+
+    return this.lightSpaceMatrices.get(key) || null;
   }
 
   /**

@@ -682,4 +682,145 @@ export class ShaderMaterial {
 
     return value;
   }
+
+  /**
+   * Applies (binds) this material to the GPU, uploading all uniforms and textures.
+   * This is the critical method that performs actual GPU operations.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param program - Shader program to bind uniforms to
+   *
+   * @example
+   * ```typescript
+   * const gl = renderer.getDevice().getGL();
+   * material.apply(gl, material.getProgram());
+   * // Material is now active, draw calls will use these uniforms
+   * ```
+   */
+  apply(gl: WebGL2RenderingContext, program: WebGLProgram): void {
+    let textureUnit = 0;
+
+    // Upload all uniforms
+    for (const [name, uniform] of this.uniforms) {
+      const location = gl.getUniformLocation(program, name);
+      if (!location) {
+        continue; // Uniform doesn't exist in shader or was optimized out
+      }
+
+      const { type, value } = uniform;
+
+      // Handle different uniform types
+      switch (type) {
+        case UniformType.Float:
+          if (typeof value === 'number') {
+            gl.uniform1f(location, value);
+          }
+          break;
+
+        case UniformType.Vec2:
+          if (value instanceof Vector2) {
+            gl.uniform2f(location, value.x, value.y);
+          } else if (Array.isArray(value) || value instanceof Float32Array) {
+            gl.uniform2fv(location, value);
+          }
+          break;
+
+        case UniformType.Vec3:
+          if (value instanceof Vector3) {
+            gl.uniform3f(location, value.x, value.y, value.z);
+          } else if (Array.isArray(value) || value instanceof Float32Array) {
+            gl.uniform3fv(location, value);
+          }
+          break;
+
+        case UniformType.Vec4:
+          if (value instanceof Vector4) {
+            gl.uniform4f(location, value.x, value.y, value.z, value.w);
+          } else if (value instanceof Color) {
+            gl.uniform4f(location, value.r, value.g, value.b, value.a);
+          } else if (Array.isArray(value) || value instanceof Float32Array) {
+            gl.uniform4fv(location, value);
+          }
+          break;
+
+        case UniformType.Int:
+          if (typeof value === 'number') {
+            gl.uniform1i(location, Math.floor(value));
+          }
+          break;
+
+        case UniformType.IVec2:
+          if (Array.isArray(value)) {
+            gl.uniform2i(location, Math.floor(value[0]), Math.floor(value[1]));
+          }
+          break;
+
+        case UniformType.IVec3:
+          if (Array.isArray(value)) {
+            gl.uniform3i(
+              location,
+              Math.floor(value[0]),
+              Math.floor(value[1]),
+              Math.floor(value[2])
+            );
+          }
+          break;
+
+        case UniformType.IVec4:
+          if (Array.isArray(value)) {
+            gl.uniform4i(
+              location,
+              Math.floor(value[0]),
+              Math.floor(value[1]),
+              Math.floor(value[2]),
+              Math.floor(value[3])
+            );
+          }
+          break;
+
+        case UniformType.Bool:
+          if (typeof value === 'boolean') {
+            gl.uniform1i(location, value ? 1 : 0);
+          }
+          break;
+
+        case UniformType.Mat3:
+          if (value instanceof Matrix3) {
+            gl.uniformMatrix3fv(location, false, value.elements);
+          } else if (value instanceof Float32Array) {
+            gl.uniformMatrix3fv(location, false, value);
+          }
+          break;
+
+        case UniformType.Mat4:
+          if (value instanceof Matrix4) {
+            gl.uniformMatrix4fv(location, false, value.elements);
+          } else if (value instanceof Float32Array) {
+            gl.uniformMatrix4fv(location, false, value);
+          }
+          break;
+
+        case UniformType.Sampler2D:
+        case UniformType.SamplerCube:
+          if (value instanceof Texture) {
+            const glTexture = value.getGLTexture();
+            if (glTexture) {
+              gl.activeTexture(gl.TEXTURE0 + textureUnit);
+              const target =
+                type === UniformType.SamplerCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+              gl.bindTexture(target, glTexture);
+              gl.uniform1i(location, textureUnit);
+              textureUnit++;
+            }
+          }
+          break;
+
+        default:
+          logger.warn(`Unknown uniform type: ${type} for ${name}`);
+      }
+    }
+
+    this.uniformsDirty = false;
+    logger.trace(`ShaderMaterial ${this.name} applied to GPU (${this.uniforms.size} uniforms)`);
+  }
 }

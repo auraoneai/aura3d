@@ -414,19 +414,35 @@ export class ForwardPass extends RenderPass {
     // Sort queue back-to-front for correct alpha blending
     renderQueue.sort();
 
-    // Note: Framebuffer binding should be handled by the rendering backend
-    // renderTarget would typically be bound via gl.bindFramebuffer() by the pipeline
-    // For now, we assume the target is already bound or will be bound externally
+    const gl = this.gl;
+
+    // Bind render target framebuffer
+    if ('getFramebuffer' in renderTarget && typeof (renderTarget as any).getFramebuffer === 'function') {
+      const framebuffer = (renderTarget as any).getFramebuffer();
+      if (framebuffer !== undefined) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
+      }
+    }
+
+    // Set viewport
+    const width = this.config.width;
+    const height = this.config.height;
+    gl.viewport(0, 0, width, height);
 
     // Setup GL state for transparent rendering
-    this.gl!.enable(this.gl!.DEPTH_TEST);
-    this.gl!.depthFunc(this.gl!.LEQUAL);
-    this.gl!.depthMask(false); // Don't write depth for transparents
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL);
+    gl.depthMask(false); // Don't write depth for transparents
 
     // Enable alpha blending
-    this.gl!.enable(this.gl!.BLEND);
-    this.gl!.blendFunc(this.gl!.SRC_ALPHA, this.gl!.ONE_MINUS_SRC_ALPHA);
-    this.gl!.blendEquation(this.gl!.FUNC_ADD);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.blendEquation(gl.FUNC_ADD);
+
+    // Enable face culling
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
+    gl.frontFace(gl.CCW);
 
     // Bind forward shader
     this.shader!.bind();
@@ -444,7 +460,12 @@ export class ForwardPass extends RenderPass {
 
       // Set model matrix uniform
       // Note: In full implementation, would extract from drawCall or material
-      // For now, we assume the shader will use default transforms
+      const modelMatrix = Matrix4.identity();
+      this.shader!.setUniform('u_modelMatrix', modelMatrix);
+
+      // Calculate normal matrix
+      const normalMatrix = modelMatrix.clone().invert()?.transpose() ?? Matrix4.identity();
+      this.shader!.setUniform('u_normalMatrix', normalMatrix);
 
       // Set material properties
       // Note: In full implementation, would bind material textures and uniforms
@@ -466,7 +487,35 @@ export class ForwardPass extends RenderPass {
       // Set light count (placeholder - would come from light manager)
       this.shader!.setUniform('u_lightCount', 0);
 
-      // Execute draw call
+      // Bind vertex buffers
+      const vertexBuffers = drawCall.getVertexBuffers();
+      for (let i = 0; i < vertexBuffers.length; i++) {
+        const vb = vertexBuffers[i];
+        if (vb && vb.buffer) {
+          gl.bindBuffer(gl.ARRAY_BUFFER, vb.buffer as WebGLBuffer);
+
+          // Bind attributes based on slot
+          const attrNames = ['a_position', 'a_normal', 'a_texcoord', 'a_tangent'];
+          const attrSizes = [3, 3, 2, 4]; // Component counts
+
+          if (i < attrNames.length) {
+            const attr = this.shader!.getAttribute(attrNames[i]);
+            if (attr) {
+              gl.enableVertexAttribArray(attr.location);
+              gl.vertexAttribPointer(
+                attr.location,
+                attrSizes[i],
+                gl.FLOAT,
+                false,
+                vb.stride,
+                vb.offset
+              );
+            }
+          }
+        }
+      }
+
+      // *** ACTUAL DRAW CALL: Execute indexed or non-indexed draw ***
       if (drawCall.isIndexed()) {
         // Indexed draw
         const indexBufferBinding = drawCall.indexBuffer;
@@ -475,45 +524,57 @@ export class ForwardPass extends RenderPass {
           return;
         }
 
-        const indexFormat = indexBufferBinding.format === 0
-          ? this.gl!.UNSIGNED_SHORT
-          : this.gl!.UNSIGNED_INT;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferBinding.buffer as WebGLBuffer);
+
+        const indexFormat = indexBufferBinding.format === 0 ? gl.UNSIGNED_SHORT : gl.UNSIGNED_INT;
+        const indexSize = indexBufferBinding.format === 0 ? 2 : 4;
 
         if (drawCall.instanceCount > 1) {
           // Instanced indexed draw
-          this.gl!.drawElementsInstanced(
-            this.gl!.TRIANGLES,
+          gl.drawElementsInstanced(
+            gl.TRIANGLES,
             drawCall.indexCount,
             indexFormat,
-            drawCall.firstIndex * (indexFormat === this.gl!.UNSIGNED_SHORT ? 2 : 4),
+            drawCall.firstIndex * indexSize,
             drawCall.instanceCount
           );
         } else {
           // Regular indexed draw
-          this.gl!.drawElements(
-            this.gl!.TRIANGLES,
+          gl.drawElements(
+            gl.TRIANGLES,
             drawCall.indexCount,
             indexFormat,
-            drawCall.firstIndex * (indexFormat === this.gl!.UNSIGNED_SHORT ? 2 : 4)
+            drawCall.firstIndex * indexSize
           );
         }
       } else {
         // Non-indexed draw
         if (drawCall.instanceCount > 1) {
           // Instanced draw
-          this.gl!.drawArraysInstanced(
-            this.gl!.TRIANGLES,
+          gl.drawArraysInstanced(
+            gl.TRIANGLES,
             drawCall.firstVertex,
             drawCall.vertexCount,
             drawCall.instanceCount
           );
         } else {
           // Regular draw
-          this.gl!.drawArrays(
-            this.gl!.TRIANGLES,
+          gl.drawArrays(
+            gl.TRIANGLES,
             drawCall.firstVertex,
             drawCall.vertexCount
           );
+        }
+      }
+
+      // Disable vertex attributes
+      for (let i = 0; i < vertexBuffers.length; i++) {
+        const attrNames = ['a_position', 'a_normal', 'a_texcoord', 'a_tangent'];
+        if (i < attrNames.length) {
+          const attr = this.shader!.getAttribute(attrNames[i]);
+          if (attr) {
+            gl.disableVertexAttribArray(attr.location);
+          }
         }
       }
 
@@ -521,15 +582,13 @@ export class ForwardPass extends RenderPass {
       this.stats.transparentObjects++;
     });
 
-    // Restore GL state
-    this.gl!.depthMask(true);
-    this.gl!.disable(this.gl!.BLEND);
-
     // Unbind shader
     this.shader!.unbind();
 
-    // Note: Framebuffer unbinding should be handled by the rendering backend
-    // renderTarget would typically be unbound via gl.bindFramebuffer(gl.FRAMEBUFFER, null) externally
+    // Restore GL state
+    gl.depthMask(true);
+    gl.disable(gl.BLEND);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     logger.trace(`ForwardPass complete: ${this.stats.drawCalls} draws, ${this.stats.transparentObjects} transparent`);
   }

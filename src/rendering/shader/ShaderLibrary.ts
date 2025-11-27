@@ -13,6 +13,364 @@ import { ShaderLanguage } from './ShaderChunks';
 const logger = Logger.create('ShaderLibrary');
 
 /**
+ * Default PBR vertex shader
+ */
+export const DEFAULT_PBR_VERTEX = `#version 300 es
+precision highp float;
+
+// Attributes
+in vec3 a_position;
+in vec3 a_normal;
+in vec2 a_texcoord;
+in vec4 a_tangent;
+
+// Uniforms
+uniform mat4 u_modelMatrix;
+uniform mat4 u_viewMatrix;
+uniform mat4 u_projectionMatrix;
+uniform mat3 u_normalMatrix;
+
+// Varyings
+out vec3 v_worldPosition;
+out vec3 v_normal;
+out vec2 v_texcoord;
+out mat3 v_TBN;
+
+void main() {
+  // Transform position to world space
+  vec4 worldPos = u_modelMatrix * vec4(a_position, 1.0);
+  v_worldPosition = worldPos.xyz;
+
+  // Transform normal to world space
+  v_normal = normalize(u_normalMatrix * a_normal);
+
+  // Pass through texture coordinates
+  v_texcoord = a_texcoord;
+
+  // Calculate TBN matrix for normal mapping
+  vec3 T = normalize(u_normalMatrix * a_tangent.xyz);
+  vec3 N = v_normal;
+  vec3 B = cross(N, T) * a_tangent.w;
+  v_TBN = mat3(T, B, N);
+
+  // Transform to clip space
+  gl_Position = u_projectionMatrix * u_viewMatrix * worldPos;
+}
+`;
+
+/**
+ * Default PBR fragment shader with Cook-Torrance BRDF
+ */
+export const DEFAULT_PBR_FRAGMENT = `#version 300 es
+precision highp float;
+
+// Mathematical constants
+const float PI = 3.14159265359;
+const float EPSILON = 1e-6;
+
+// Varyings
+in vec3 v_worldPosition;
+in vec3 v_normal;
+in vec2 v_texcoord;
+in mat3 v_TBN;
+
+// Camera
+uniform vec3 u_cameraPosition;
+
+// Material textures
+uniform sampler2D u_albedoMap;
+uniform sampler2D u_normalMap;
+uniform sampler2D u_metallicRoughnessMap;
+uniform sampler2D u_aoMap;
+uniform sampler2D u_emissiveMap;
+
+// Material properties
+uniform vec4 u_albedo;
+uniform float u_metallic;
+uniform float u_roughness;
+uniform float u_aoStrength;
+uniform vec3 u_emissive;
+
+// Lighting
+#ifndef MAX_LIGHTS
+#define MAX_LIGHTS 4
+#endif
+
+uniform int u_numLights;
+uniform vec3 u_lightPositions[MAX_LIGHTS];
+uniform vec3 u_lightColors[MAX_LIGHTS];
+uniform float u_lightIntensities[MAX_LIGHTS];
+
+// IBL
+uniform samplerCube u_irradianceMap;
+uniform samplerCube u_prefilterMap;
+uniform sampler2D u_brdfLUT;
+uniform float u_iblIntensity;
+
+// Shadows
+#ifdef USE_SHADOWS
+uniform sampler2DShadow u_shadowMap;
+uniform mat4 u_lightSpaceMatrix;
+uniform vec2 u_shadowMapSize;
+#endif
+
+// Tonemapping
+uniform float u_exposure;
+
+// Feature flags
+#ifndef USE_NORMAL_MAP
+#define USE_NORMAL_MAP 1
+#endif
+
+#ifndef USE_METALLIC_ROUGHNESS_MAP
+#define USE_METALLIC_ROUGHNESS_MAP 1
+#endif
+
+#ifndef USE_AO_MAP
+#define USE_AO_MAP 1
+#endif
+
+#ifndef USE_EMISSIVE_MAP
+#define USE_EMISSIVE_MAP 1
+#endif
+
+#ifndef USE_IBL
+#define USE_IBL 1
+#endif
+
+#ifndef USE_TONEMAPPING
+#define USE_TONEMAPPING 1
+#endif
+
+// Output
+out vec4 fragColor;
+
+// Utility functions
+float saturate(float x) {
+  return clamp(x, 0.0, 1.0);
+}
+
+vec3 saturate(vec3 x) {
+  return clamp(x, 0.0, 1.0);
+}
+
+// Fresnel-Schlick approximation
+vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+  return F0 + (1.0 - F0) * pow(saturate(1.0 - cosTheta), 5.0);
+}
+
+// Fresnel-Schlick with roughness for IBL
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
+  return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(saturate(1.0 - cosTheta), 5.0);
+}
+
+// GGX/Trowbridge-Reitz normal distribution function
+float distributionGGX(vec3 N, vec3 H, float roughness) {
+  float a = roughness * roughness;
+  float a2 = a * a;
+  float NdotH = max(dot(N, H), 0.0);
+  float NdotH2 = NdotH * NdotH;
+
+  float num = a2;
+  float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+  denom = PI * denom * denom;
+
+  return num / max(denom, EPSILON);
+}
+
+// Schlick-GGX geometry function
+float geometrySchlickGGX(float NdotV, float roughness) {
+  float r = (roughness + 1.0);
+  float k = (r * r) / 8.0;
+
+  float num = NdotV;
+  float denom = NdotV * (1.0 - k) + k;
+
+  return num / max(denom, EPSILON);
+}
+
+// Smith's method for geometry obstruction
+float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
+  float NdotV = max(dot(N, V), 0.0);
+  float NdotL = max(dot(N, L), 0.0);
+  float ggx2 = geometrySchlickGGX(NdotV, roughness);
+  float ggx1 = geometrySchlickGGX(NdotL, roughness);
+
+  return ggx1 * ggx2;
+}
+
+#ifdef USE_SHADOWS
+// PCF shadow sampling
+float sampleShadowPCF(vec3 shadowCoord) {
+  float shadow = 0.0;
+  vec2 texelSize = 1.0 / u_shadowMapSize;
+
+  for(int x = -1; x <= 1; x++) {
+    for(int y = -1; y <= 1; y++) {
+      vec2 offset = vec2(float(x), float(y)) * texelSize;
+      shadow += texture(u_shadowMap, shadowCoord + vec3(offset, 0.0));
+    }
+  }
+
+  return shadow / 9.0;
+}
+#endif
+
+// ACES Filmic tonemapping
+vec3 tonemapACES(vec3 color) {
+  const float a = 2.51;
+  const float b = 0.03;
+  const float c = 2.43;
+  const float d = 0.59;
+  const float e = 0.14;
+  return saturate((color * (a * color + b)) / (color * (c * color + d) + e));
+}
+
+// sRGB conversion
+vec3 linearToSRGB(vec3 linear) {
+  vec3 sRGB_lo = linear * 12.92;
+  vec3 sRGB_hi = pow(linear, vec3(1.0 / 2.4)) * 1.055 - 0.055;
+  return mix(sRGB_hi, sRGB_lo, step(linear, vec3(0.0031308)));
+}
+
+void main() {
+  // Sample albedo
+  vec3 albedo = texture(u_albedoMap, v_texcoord).rgb * u_albedo.rgb;
+  float alpha = texture(u_albedoMap, v_texcoord).a * u_albedo.a;
+
+  // Sample and apply normal map
+  vec3 N;
+#if USE_NORMAL_MAP
+  vec3 tangentNormal = texture(u_normalMap, v_texcoord).xyz * 2.0 - 1.0;
+  N = normalize(v_TBN * tangentNormal);
+#else
+  N = normalize(v_normal);
+#endif
+
+  // Sample metallic-roughness
+  float metallic;
+  float roughness;
+#if USE_METALLIC_ROUGHNESS_MAP
+  vec2 metallicRoughness = texture(u_metallicRoughnessMap, v_texcoord).bg;
+  metallic = metallicRoughness.x * u_metallic;
+  roughness = metallicRoughness.y * u_roughness;
+#else
+  metallic = u_metallic;
+  roughness = u_roughness;
+#endif
+
+  // Sample ambient occlusion
+  float ao;
+#if USE_AO_MAP
+  ao = texture(u_aoMap, v_texcoord).r;
+  ao = mix(1.0, ao, u_aoStrength);
+#else
+  ao = 1.0;
+#endif
+
+  // View direction
+  vec3 V = normalize(u_cameraPosition - v_worldPosition);
+
+  // Calculate F0 (surface reflection at zero incidence)
+  vec3 F0 = vec3(0.04);
+  F0 = mix(F0, albedo, metallic);
+
+  // Direct lighting accumulator
+  vec3 Lo = vec3(0.0);
+
+  // Calculate direct lighting from all lights
+  for (int i = 0; i < MAX_LIGHTS; i++) {
+    if (i >= u_numLights) break;
+
+    // Light direction
+    vec3 L = normalize(u_lightPositions[i] - v_worldPosition);
+    vec3 H = normalize(V + L);
+
+    // Light attenuation (inverse square law)
+    float distance = length(u_lightPositions[i] - v_worldPosition);
+    float attenuation = 1.0 / (distance * distance);
+    vec3 radiance = u_lightColors[i] * u_lightIntensities[i] * attenuation;
+
+    // Cook-Torrance BRDF
+    float NDF = distributionGGX(N, H, roughness);
+    float G = geometrySmith(N, V, L, roughness);
+    vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
+
+    // Specular component
+    vec3 numerator = NDF * G * F;
+    float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+    vec3 specular = numerator / max(denominator, EPSILON);
+
+    // Energy conservation
+    vec3 kS = F;
+    vec3 kD = vec3(1.0) - kS;
+    kD *= 1.0 - metallic;
+
+    // Add to outgoing radiance
+    float NdotL = max(dot(N, L), 0.0);
+    Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+  }
+
+#ifdef USE_SHADOWS
+  // Apply shadows
+  vec4 shadowCoord = u_lightSpaceMatrix * vec4(v_worldPosition, 1.0);
+  shadowCoord.xyz /= shadowCoord.w;
+  shadowCoord.xyz = shadowCoord.xyz * 0.5 + 0.5;
+
+  if (shadowCoord.z < 1.0) {
+    float shadow = sampleShadowPCF(shadowCoord.xyz);
+    Lo *= shadow;
+  }
+#endif
+
+  // Ambient lighting (IBL)
+  vec3 ambient;
+#if USE_IBL
+  vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+
+  // Diffuse IBL
+  vec3 kS = F;
+  vec3 kD = 1.0 - kS;
+  kD *= 1.0 - metallic;
+
+  vec3 irradiance = texture(u_irradianceMap, N).rgb;
+  vec3 diffuse = irradiance * albedo;
+
+  // Specular IBL
+  const float MAX_REFLECTION_LOD = 4.0;
+  vec3 R = reflect(-V, N);
+  vec3 prefilteredColor = textureLod(u_prefilterMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+  vec2 brdf = texture(u_brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+  vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+  ambient = (kD * diffuse + specular) * ao * u_iblIntensity;
+#else
+  // Simple ambient
+  ambient = vec3(0.03) * albedo * ao;
+#endif
+
+  // Combine lighting
+  vec3 color = ambient + Lo;
+
+  // Add emissive
+#if USE_EMISSIVE_MAP
+  vec3 emissive = texture(u_emissiveMap, v_texcoord).rgb * u_emissive;
+  color += emissive;
+#else
+  color += u_emissive;
+#endif
+
+  // Tone mapping
+#if USE_TONEMAPPING
+  color = tonemapACES(color * u_exposure);
+  color = linearToSRGB(color);
+#endif
+
+  fragColor = vec4(color, alpha);
+}
+`;
+
+/**
  * Shader variant key (defines hash)
  */
 type VariantKey = string;

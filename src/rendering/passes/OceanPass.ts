@@ -527,11 +527,17 @@ export class OceanPass extends RenderPass {
   /**
    * Sets up ocean pass resources.
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up OceanPass');
 
-    // Note: In full implementation, would initialize WebGL context here
-    // this.gl = getWebGL2Context();
+    // Initialize WebGL context
+    if (gl) {
+      this.gl = gl;
+    } else {
+      logger.warn('No WebGL context provided to OceanPass.setup()');
+      // In a real implementation, would get context from Engine
+      return;
+    }
 
     // Create FFT spectrum textures
     this.createSpectrumTextures();
@@ -808,8 +814,46 @@ export class OceanPass extends RenderPass {
    * Creates FFT spectrum textures.
    */
   private createSpectrumTextures(): void {
-    // In full implementation, create floating-point textures for FFT
+    if (!this.gl) {
+      logger.error('Cannot create spectrum textures: WebGL context not initialized');
+      return;
+    }
+
     logger.debug('Creating FFT spectrum textures');
+
+    const N = this.config.fftResolution;
+    const gl = this.gl;
+
+    // Helper to create floating-point texture
+    const createFloatTexture = (): WebGLTexture | null => {
+      const texture = gl.createTexture();
+      if (!texture) return null;
+
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, N, N, 0, gl.RGBA, gl.FLOAT, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+
+      return texture;
+    };
+
+    // Create textures for FFT pipeline
+    this.h0Texture = createFloatTexture();        // Initial spectrum H0(k)
+    this.htTexture = createFloatTexture();        // Time-evolved spectrum H(k,t)
+    this.dxTexture = createFloatTexture();        // X displacement
+    this.dyTexture = createFloatTexture();        // Y displacement (height)
+    this.dzTexture = createFloatTexture();        // Z displacement
+
+    // Create output textures for spatial domain
+    this.displacementMap = createFloatTexture();  // Combined XYZ displacement
+    this.normalMap = createFloatTexture();        // Normal map
+    this.foamMap = createFloatTexture();          // Foam intensity
+
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    logger.info(`Created FFT textures: ${N}x${N}`);
   }
 
   /**
@@ -892,36 +936,68 @@ export class OceanPass extends RenderPass {
    * Updates time-evolved spectrum H(t).
    */
   private updateSpectrum(): void {
-    // In full implementation, use compute shader to:
+    if (!this.gl || !this.fftFramebuffer) return;
+
+    // Simplified implementation: In a full implementation, use compute shader to:
     // H(k, t) = H0(k) * exp(i * omega(k) * t) + conj(H0(-k)) * exp(-i * omega(k) * t)
     // where omega(k) = sqrt(g * |k|)
+
+    // For now, we'll use the initial spectrum as-is
+    // A production implementation would use a compute shader or transform feedback
   }
 
   /**
    * Performs 2D FFT on spectrum.
    */
   private performFFT(): void {
-    // In full implementation:
-    // 1. Horizontal FFT pass
-    // 2. Vertical FFT pass
+    if (!this.gl || !this.fftFramebuffer) return;
+
+    // Simplified implementation: In a full FFT implementation:
+    // 1. Horizontal FFT pass (using fftHorizontalShader)
+    // 2. Vertical FFT pass (using fftVerticalShader)
     // Result is displacement field in spatial domain
+
+    // For now, use a simplified approach with pre-computed displacement
+    // A production implementation would use Cooley-Tukey FFT on GPU
   }
 
   /**
    * Generates normal map from displacement gradient.
    */
   private generateNormalMap(): void {
-    // Calculate normal via central differences:
+    if (!this.gl || !this.fftFramebuffer || !this.normalMap) return;
+
+    // Simplified implementation: Calculate normal via central differences:
     // normal = normalize((-dh/dx, 1, -dh/dz))
+
+    // Bind framebuffer and render to normal map texture
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fftFramebuffer);
+    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.normalMap, 0);
+
+    // In production, would render a full-screen quad with a shader that samples
+    // the displacement map and computes normals via finite differences
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
   }
 
   /**
    * Generates foam map from wave curvature.
    */
   private generateFoamMap(): void {
-    // Foam based on Jacobian determinant (wave breaking):
+    if (!this.gl || !this.fftFramebuffer || !this.foamMap) return;
+
+    // Simplified implementation: Foam based on Jacobian determinant (wave breaking):
     // J = (1 + dDx/dx) * (1 + dDz/dz) - (dDx/dz) * (dDz/dx)
     // Foam where J < threshold
+
+    // Bind framebuffer and render to foam map texture
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fftFramebuffer);
+    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0, this.gl.TEXTURE_2D, this.foamMap, 0);
+
+    // In production, would compute Jacobian from displacement derivatives
+    // and generate foam where the determinant indicates wave breaking
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
   }
 
   /**
@@ -947,6 +1023,16 @@ export class OceanPass extends RenderPass {
     indexBuffer: WebGLBuffer | null;
     indexCount: number;
   } {
+    if (!this.gl) {
+      logger.error('Cannot create plane mesh: WebGL context not initialized');
+      return {
+        vertexBuffer: null,
+        indexBuffer: null,
+        indexCount: 0,
+      };
+    }
+
+    const gl = this.gl;
     const vertices: number[] = [];
     const indices: number[] = [];
 
@@ -977,10 +1063,27 @@ export class OceanPass extends RenderPass {
       }
     }
 
-    // In full implementation, create WebGL buffers
+    // Create WebGL vertex buffer
+    const vertexBuffer = gl.createBuffer();
+    if (vertexBuffer) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    }
+
+    // Create WebGL index buffer
+    const indexBuffer = gl.createBuffer();
+    if (indexBuffer) {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
+    }
+
+    // Unbind buffers
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
     return {
-      vertexBuffer: null,
-      indexBuffer: null,
+      vertexBuffer,
+      indexBuffer,
       indexCount: indices.length,
     };
   }
@@ -989,16 +1092,116 @@ export class OceanPass extends RenderPass {
    * Creates shader programs.
    */
   private createShaders(): void {
-    // In full implementation, compile and link shaders
+    if (!this.gl) {
+      logger.error('Cannot create shaders: WebGL context not initialized');
+      return;
+    }
+
     logger.debug('Creating ocean shaders');
+
+    const gl = this.gl;
+
+    // Compile vertex shader
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    if (!vertexShader) {
+      logger.error('Failed to create ocean vertex shader');
+      return;
+    }
+
+    gl.shaderSource(vertexShader, OCEAN_VERTEX_SHADER);
+    gl.compileShader(vertexShader);
+
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+      const info = gl.getShaderInfoLog(vertexShader);
+      logger.error(`Ocean vertex shader compilation failed: ${info}`);
+      gl.deleteShader(vertexShader);
+      return;
+    }
+
+    // Compile fragment shader
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    if (!fragmentShader) {
+      logger.error('Failed to create ocean fragment shader');
+      gl.deleteShader(vertexShader);
+      return;
+    }
+
+    gl.shaderSource(fragmentShader, OCEAN_FRAGMENT_SHADER);
+    gl.compileShader(fragmentShader);
+
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+      const info = gl.getShaderInfoLog(fragmentShader);
+      logger.error(`Ocean fragment shader compilation failed: ${info}`);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    // Link shader program
+    this.shader = gl.createProgram();
+    if (!this.shader) {
+      logger.error('Failed to create ocean shader program');
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    gl.attachShader(this.shader, vertexShader);
+    gl.attachShader(this.shader, fragmentShader);
+    gl.linkProgram(this.shader);
+
+    if (!gl.getProgramParameter(this.shader, gl.LINK_STATUS)) {
+      const info = gl.getProgramInfoLog(this.shader);
+      logger.error(`Ocean shader program linking failed: ${info}`);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      gl.deleteProgram(this.shader);
+      this.shader = null;
+      return;
+    }
+
+    // Clean up shaders
+    gl.deleteShader(vertexShader);
+    gl.deleteShader(fragmentShader);
+
+    logger.info('Ocean shaders created successfully');
   }
 
   /**
    * Creates framebuffers for FFT.
    */
   private createFramebuffers(): void {
-    // In full implementation, create FBO for FFT passes
+    if (!this.gl) {
+      logger.error('Cannot create framebuffers: WebGL context not initialized');
+      return;
+    }
+
     logger.debug('Creating FFT framebuffers');
+
+    const gl = this.gl;
+
+    // Create framebuffer for FFT passes
+    this.fftFramebuffer = gl.createFramebuffer();
+
+    if (!this.fftFramebuffer) {
+      logger.error('Failed to create FFT framebuffer');
+      return;
+    }
+
+    // Test framebuffer completeness by attaching a texture
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fftFramebuffer);
+    if (this.displacementMap) {
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.displacementMap, 0);
+    }
+
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      logger.error(`FFT framebuffer is incomplete: ${status}`);
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    logger.info('FFT framebuffer created successfully');
   }
 
   /**

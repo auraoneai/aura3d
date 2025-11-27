@@ -14,7 +14,7 @@
  */
 
 import { Vector3, Quaternion, Matrix4 } from 'g3d';
-import { PhysicsWorld, RigidBody, BoxShape } from 'g3d';
+import { PhysicsWorld, RigidBody, BoxShape, BodyType } from 'g3d';
 import { ParticleSystem, ParticleEmitter } from 'g3d';
 import { AudioSource, AudioClip } from 'g3d';
 
@@ -83,7 +83,7 @@ export class Vehicle {
 
     // Create physics body
     this.body = new RigidBody({
-      type: 'dynamic',
+      type: BodyType.Dynamic,
       mass: config.mass,
       position: config.position,
       angularDamping: 0.5,
@@ -142,44 +142,75 @@ export class Vehicle {
    * Update vehicle physics
    */
   public update(deltaTime: number, physics: PhysicsWorld): void {
-    // Update wheel ground detection
-    this.updateWheelGroundContact(physics);
+    // SIMPLE ARCADE PHYSICS - bypass complex simulation
+    this.simpleArcadeUpdate(deltaTime);
 
-    // Apply suspension forces
-    this.applySuspensionForces(deltaTime);
-
-    // Calculate speed and direction
-    this.updateVelocity();
-
-    // Apply engine force
-    this.applyEngineForce(deltaTime);
-
-    // Apply braking
-    this.applyBraking(deltaTime);
-
-    // Apply steering
-    this.applySteering(deltaTime);
-
-    // Apply aerodynamic drag
-    this.applyDrag(deltaTime);
-
-    // Update wheel rotation for visuals
-    this.updateWheelRotation(deltaTime);
-
-    // Update engine RPM
+    // Update engine RPM for HUD
     this.updateEngineRPM(deltaTime);
 
     // Update nitro
     this.updateNitro(deltaTime);
 
-    // Update particle effects
-    this.updateParticles(deltaTime);
-
-    // Update audio
-    this.updateAudio();
-
     // Update mesh transform for rendering
     this.updateMeshTransform();
+  }
+
+  /**
+   * Simple arcade-style vehicle movement
+   */
+  private simpleArcadeUpdate(deltaTime: number): void {
+    const pos = this.body.getPosition();
+    const rot = this.body.getRotation();
+
+    // Get forward direction from rotation
+    const forward = new Vector3(0, 0, -1).applyQuaternion(rot);
+
+    // Acceleration
+    const accelForce = this.config.acceleration * deltaTime;
+    const maxSpeed = this.config.maxSpeed / 3.6; // Convert km/h to m/s
+
+    if (this.throttle > 0) {
+      this.currentSpeed += accelForce * this.throttle;
+      if (this.nitroActive) {
+        this.currentSpeed += accelForce * 0.5; // Nitro boost
+      }
+    }
+
+    if (this.brake > 0) {
+      this.currentSpeed -= this.config.brakeForce * deltaTime * this.brake;
+    }
+
+    // Friction/drag
+    this.currentSpeed *= 0.99;
+
+    // Clamp speed
+    this.currentSpeed = Math.max(-maxSpeed * 0.3, Math.min(maxSpeed, this.currentSpeed));
+
+    // Steering (only when moving)
+    if (Math.abs(this.currentSpeed) > 0.5) {
+      const steerSpeed = this.config.steerSpeed * deltaTime;
+      const steerAmount = this.steer * steerSpeed * (this.currentSpeed > 0 ? 1 : -1);
+
+      // Reduce steering at high speed
+      const speedFactor = 1 - Math.abs(this.currentSpeed) / maxSpeed * 0.5;
+
+      // Create rotation around Y axis
+      const yaw = this.steerAngle + steerAmount * speedFactor;
+      this.steerAngle = yaw;
+
+      // Apply rotation
+      const newRot = Quaternion.fromEuler(0, yaw, 0);
+      this.body.setRotation(newRot);
+    }
+
+    // Move forward
+    const movement = forward.scale(this.currentSpeed * deltaTime);
+    const newPos = pos.add(movement);
+    newPos.y = 0.5; // Keep car above ground
+    this.body.setPosition(newPos);
+
+    // Update RPM based on speed
+    this.currentRPM = 1000 + Math.abs(this.currentSpeed) / maxSpeed * 6000;
   }
 
   /**

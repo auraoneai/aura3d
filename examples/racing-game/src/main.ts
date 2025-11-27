@@ -87,21 +87,28 @@ class RacingGame {
     this.createVehicles();
 
     // Setup race manager
+    console.log('[init] Setting up race manager...');
     this.setupRaceManager();
 
     // Setup input
+    console.log('[init] Setting up input...');
     this.setupInput();
+    this.setupDirectKeyboard();  // Direct keyboard bypass
 
     // Setup audio
+    console.log('[init] Setting up audio...');
     await this.setupAudio();
 
     // Create HUD
+    console.log('[init] Creating HUD...');
     this.createHUD();
 
     // Setup camera
+    console.log('[init] Setting up camera...');
     this.setupCamera();
 
     // Hide loading screen
+    console.log('[init] Hiding loading screen...');
     this.hideLoadingScreen();
 
     console.log('Game initialized successfully!');
@@ -116,8 +123,15 @@ class RacingGame {
       throw new Error('Canvas not found');
     }
 
+    // CRITICAL: Set canvas pixel dimensions (not just CSS size)
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    console.log(`Canvas sized to ${canvas.width}x${canvas.height}`);
+
     const config: EngineConfig = {
       canvas,
+      width: canvas.width,
+      height: canvas.height,
       targetFPS: 60,
       fixedTimestep: 1 / 60,
       maxSubSteps: 8,
@@ -159,21 +173,50 @@ class RacingGame {
   }
 
   /**
-   * Create ground plane
+   * Create ground plane with multiple layers for visual depth
    */
   private createGround(): void {
-    const groundMaterial = new StandardPBRMaterial({
-      baseColor: new Color(0.2, 0.5, 0.2),
-      roughness: 0.9,
-      metallic: 0.0
-    });
+    // Main grass ground - bright green for visibility
+    const groundMaterial = new StandardPBRMaterial('GroundMaterial');
+    groundMaterial.albedo = new Color(0.25, 0.55, 0.2);  // Bright grass green
+    groundMaterial.roughness = 0.95;
+    groundMaterial.metallic = 0.0;
 
-    const groundGeometry = GeometryGenerator.plane(1000, 1000, 10, 10);
+    // Use a smaller, closer ground plane for better visibility
+    const groundGeometry = GeometryGenerator.plane(500, 500, 4, 4);
 
     const groundNode = new SceneNode('Ground');
     groundNode.setMesh(groundGeometry);
     groundNode.setMaterial(groundMaterial);
+    // Position ground slightly below y=0 to avoid z-fighting with track
+    groundNode.setPosition(new Vector3(0, -0.05, 0));
     this.scene.add(groundNode);
+    console.log('Ground plane created at y=-0.05');
+
+    // Add a track road surface - dark asphalt
+    const trackSurfaceMaterial = new StandardPBRMaterial('TrackSurfaceMaterial');
+    trackSurfaceMaterial.albedo = new Color(0.15, 0.15, 0.18);  // Dark asphalt
+    trackSurfaceMaterial.roughness = 0.8;
+    trackSurfaceMaterial.metallic = 0.0;
+
+    // Create a simple oval track surface
+    const trackWidth = 15;
+    const trackRadius = 100;
+    const trackSegments = 64;
+
+    // Generate track mesh using a custom loop (circular track with width)
+    // For now, add a simpler ground marker at start position
+    const startMarkerGeom = GeometryGenerator.box(trackWidth, 0.1, 30);
+    const startMarkerNode = new SceneNode('StartLine');
+    startMarkerNode.setMesh(startMarkerGeom);
+    const startMaterial = new StandardPBRMaterial('StartLineMaterial');
+    startMaterial.albedo = new Color(1.0, 1.0, 1.0);  // White start line
+    startMaterial.roughness = 0.6;
+    startMaterial.metallic = 0.0;
+    startMarkerNode.setMaterial(startMaterial);
+    startMarkerNode.setPosition(new Vector3(trackRadius, 0.02, 0));  // At track start
+    this.scene.add(startMarkerNode);
+    console.log('Start line marker created');
   }
 
   /**
@@ -263,36 +306,197 @@ class RacingGame {
   }
 
   /**
+   * Create a car-shaped mesh with body, cabin, and wheels
+   */
+  private createCarMesh(name: string, bodyColor: Color): SceneNode {
+    const carNode = new SceneNode(name);
+
+    // Car body material - metallic paint finish with proper PBR values
+    const bodyMaterial = new StandardPBRMaterial(`${name}_BodyMaterial`);
+    bodyMaterial.albedo = bodyColor;
+    bodyMaterial.metallic = 0.9;   // Very high metallic for metallic car paint
+    bodyMaterial.roughness = 0.15; // Very low roughness for glossy showroom finish
+
+    // Main body - lower section (wide and flat)
+    const bodyLower = GeometryGenerator.box(2.4, 0.5, 4.8);
+    carNode.setMesh(bodyLower);
+    carNode.setMaterial(bodyMaterial);
+    carNode.transform.position.y = 0.35; // Position so bottom is near ground
+
+    // Add cabin (upper section) as child node
+    const cabinMaterial = new StandardPBRMaterial(`${name}_CabinMaterial`);
+    cabinMaterial.albedo = new Color(0.05, 0.05, 0.08); // Very dark glass
+    cabinMaterial.metallic = 0.1;
+    cabinMaterial.roughness = 0.05; // Super smooth glass
+
+    const cabinMesh = GeometryGenerator.box(1.8, 0.5, 2.0);
+    const cabinNode = new SceneNode(`${name}_Cabin`);
+    cabinNode.setMesh(cabinMesh);
+    cabinNode.setMaterial(cabinMaterial);
+    cabinNode.transform.position.set(0, 0.5, -0.2);
+    carNode.addChild(cabinNode);
+
+    // Add front hood as child node
+    const hoodMaterial = new StandardPBRMaterial(`${name}_HoodMaterial`);
+    hoodMaterial.albedo = bodyColor;
+    hoodMaterial.metallic = 0.95; // Slightly more metallic
+    hoodMaterial.roughness = 0.12;
+
+    const hoodMesh = GeometryGenerator.box(2.0, 0.2, 1.5);
+    const hoodNode = new SceneNode(`${name}_Hood`);
+    hoodNode.setMesh(hoodMesh);
+    hoodNode.setMaterial(hoodMaterial);
+    hoodNode.transform.position.set(0, 0.35, 1.4);
+    carNode.addChild(hoodNode);
+
+    // Add rear spoiler
+    const spoilerMaterial = new StandardPBRMaterial(`${name}_SpoilerMaterial`);
+    spoilerMaterial.albedo = new Color(0.1, 0.1, 0.1);
+    spoilerMaterial.metallic = 0.3;
+    spoilerMaterial.roughness = 0.4;
+
+    const spoilerMesh = GeometryGenerator.box(2.2, 0.08, 0.2);
+    const spoilerNode = new SceneNode(`${name}_Spoiler`);
+    spoilerNode.setMesh(spoilerMesh);
+    spoilerNode.setMaterial(spoilerMaterial);
+    spoilerNode.transform.position.set(0, 0.75, -2.0);
+    carNode.addChild(spoilerNode);
+
+    // Add wheels (4 cylinders)
+    const wheelMaterial = new StandardPBRMaterial(`${name}_WheelMaterial`);
+    wheelMaterial.albedo = new Color(0.05, 0.05, 0.05);
+    wheelMaterial.metallic = 0.0;
+    wheelMaterial.roughness = 0.85; // Rubber-like
+
+    const wheelPositions = [
+      { x: -1.0, y: -0.1, z: 1.4 },   // Front left
+      { x: 1.0, y: -0.1, z: 1.4 },    // Front right
+      { x: -1.0, y: -0.1, z: -1.3 },  // Rear left
+      { x: 1.0, y: -0.1, z: -1.3 },   // Rear right
+    ];
+
+    wheelPositions.forEach((pos, i) => {
+      const wheelMesh = GeometryGenerator.cylinder(0.35, 0.25, 16, 1);
+      const wheelNode = new SceneNode(`${name}_Wheel${i}`);
+      wheelNode.setMesh(wheelMesh);
+      wheelNode.setMaterial(wheelMaterial);
+      wheelNode.transform.position.set(pos.x, pos.y, pos.z);
+      wheelNode.setRotation(Quaternion.fromEuler(0, 0, Math.PI / 2));
+      carNode.addChild(wheelNode);
+    });
+
+    console.log(`[CAR DEBUG] Created detailed car mesh: ${name} with ${carNode.children.length} child nodes`);
+
+    return carNode;
+  }
+
+  /**
+   * DEPRECATED: Complex car mesh with child nodes - keeping for reference
+   */
+  private createCarMeshDetailed(name: string, bodyColor: Color): SceneNode {
+    const carNode = new SceneNode(name);
+
+    const bodyMaterial = new StandardPBRMaterial(`${name}_BodyMaterial`);
+    bodyMaterial.albedo = bodyColor;
+    bodyMaterial.metallic = 0.85;
+    bodyMaterial.roughness = 0.2;
+
+    const bodyMesh = GeometryGenerator.box(2.0, 0.5, 4.0);
+    const bodyNode = new SceneNode(`${name}_Body`);
+    bodyNode.setMesh(bodyMesh);
+    bodyNode.setMaterial(bodyMaterial);
+    bodyNode.setPosition(new Vector3(0, 0.3, 0));
+    carNode.addChild(bodyNode);
+
+    // Cabin (upper part) - sleek racing car look
+    const cabinMaterial = new StandardPBRMaterial(`${name}_CabinMaterial`);
+    cabinMaterial.albedo = new Color(0.1, 0.1, 0.1);  // Dark glass
+    cabinMaterial.metallic = 0.3;
+    cabinMaterial.roughness = 0.1;
+
+    const cabinMesh = GeometryGenerator.box(1.6, 0.5, 1.8);
+    const cabinNode = new SceneNode(`${name}_Cabin`);
+    cabinNode.setMesh(cabinMesh);
+    cabinNode.setMaterial(cabinMaterial);
+    cabinNode.setPosition(new Vector3(0, 0.75, -0.3));
+    carNode.addChild(cabinNode);
+
+    // Hood (front section) - angled
+    const hoodMaterial = new StandardPBRMaterial(`${name}_HoodMaterial`);
+    hoodMaterial.albedo = bodyColor;
+    hoodMaterial.metallic = 0.9;
+    hoodMaterial.roughness = 0.15;
+
+    const hoodMesh = GeometryGenerator.box(1.8, 0.3, 1.2);
+    const hoodNode = new SceneNode(`${name}_Hood`);
+    hoodNode.setMesh(hoodMesh);
+    hoodNode.setMaterial(hoodMaterial);
+    hoodNode.setPosition(new Vector3(0, 0.55, 1.3));
+    carNode.addChild(hoodNode);
+
+    // Rear spoiler
+    const spoilerMaterial = new StandardPBRMaterial(`${name}_SpoilerMaterial`);
+    spoilerMaterial.albedo = new Color(0.2, 0.2, 0.2);
+    spoilerMaterial.metallic = 0.5;
+    spoilerMaterial.roughness = 0.3;
+
+    const spoilerMesh = GeometryGenerator.box(2.2, 0.1, 0.3);
+    const spoilerNode = new SceneNode(`${name}_Spoiler`);
+    spoilerNode.setMesh(spoilerMesh);
+    spoilerNode.setMaterial(spoilerMaterial);
+    spoilerNode.setPosition(new Vector3(0, 1.0, -1.8));
+    carNode.addChild(spoilerNode);
+
+    // Wheels (4 cylinders)
+    const wheelMaterial = new StandardPBRMaterial(`${name}_WheelMaterial`);
+    wheelMaterial.albedo = new Color(0.1, 0.1, 0.1);
+    wheelMaterial.metallic = 0.2;
+    wheelMaterial.roughness = 0.8;
+
+    const wheelPositions = [
+      new Vector3(-0.9, 0, 1.2),   // Front left
+      new Vector3(0.9, 0, 1.2),    // Front right
+      new Vector3(-0.9, 0, -1.2),  // Rear left
+      new Vector3(0.9, 0, -1.2),   // Rear right
+    ];
+
+    wheelPositions.forEach((pos, i) => {
+      // cylinder(radius, height, radialSegments, heightSegments)
+      const wheelMesh = GeometryGenerator.cylinder(0.35, 0.3, 16, 1);
+      const wheelNode = new SceneNode(`${name}_Wheel${i}`);
+      wheelNode.setMesh(wheelMesh);
+      wheelNode.setMaterial(wheelMaterial);
+      wheelNode.setPosition(pos);
+      wheelNode.setRotation(Quaternion.fromEuler(0, 0, Math.PI / 2));
+      carNode.addChild(wheelNode);
+    });
+
+    return carNode;
+  }
+
+  /**
    * Create visual meshes for vehicles
    */
   private createVehicleMeshes(): void {
-    // Player vehicle (blue)
-    const playerMaterial = new StandardPBRMaterial({
-      baseColor: new Color(0, 0.5, 1),
-      metallic: 0.8,
-      roughness: 0.2
-    });
-
-    const playerMesh = GeometryGenerator.box(1.2, 0.6, 2.5);
-    const playerNode = new SceneNode('PlayerVehicle');
-    playerNode.setMesh(playerMesh);
-    playerNode.setMaterial(playerMaterial);
+    // Player vehicle (blue racing car)
+    const playerNode = this.createCarMesh('PlayerVehicle', new Color(0.1, 0.4, 1.0));
     this.scene.add(playerNode);
+    console.log('Player vehicle mesh added to scene');
 
-    // AI vehicles (red)
+    // AI vehicles with different colors
+    const aiColors = [
+      new Color(1, 0.15, 0.15),   // Red
+      new Color(1, 0.6, 0),       // Orange
+      new Color(0.9, 0.9, 0),     // Yellow
+      new Color(0.6, 0.1, 0.9),   // Purple
+      new Color(0.1, 0.9, 0.5),   // Teal
+    ];
+
     this.aiVehicles.forEach((vehicle, index) => {
-      const aiMaterial = new StandardPBRMaterial({
-        baseColor: new Color(1, 0, 0),
-        metallic: 0.8,
-        roughness: 0.2
-      });
-
-      const aiMesh = GeometryGenerator.box(1.2, 0.6, 2.5);
-      const aiNode = new SceneNode(`AIVehicle${index}`);
-      aiNode.setMesh(aiMesh);
-      aiNode.setMaterial(aiMaterial);
+      const aiNode = this.createCarMesh(`AIVehicle${index}`, aiColors[index % aiColors.length]);
       this.scene.add(aiNode);
     });
+    console.log(`${this.aiVehicles.length} AI vehicle meshes added to scene`);
   }
 
   /**
@@ -323,10 +527,8 @@ class RacingGame {
       this.hud.showResults(results);
     });
 
-    // Start race after 2 seconds
-    setTimeout(() => {
-      this.raceManager.startRace();
-    }, 2000);
+    // Start race immediately
+    this.raceManager.startRace();
   }
 
   /**
@@ -381,11 +583,16 @@ class RacingGame {
    * Setup audio system
    */
   private async setupAudio(): Promise<void> {
-    this.audio = new AudioContext();
-    await this.audio.init();
-
-    // In a real game, you would load actual audio files
-    console.log('Audio system initialized (using synthetic sounds)');
+    try {
+      this.audio = new AudioContext();
+      // Don't await - audio init can hang waiting for user gesture
+      this.audio.init().catch(err => {
+        console.warn('Audio init failed (will retry on user interaction):', err);
+      });
+      console.log('Audio system initialized (using synthetic sounds)');
+    } catch (err) {
+      console.warn('Audio setup failed:', err);
+    }
   }
 
   /**
@@ -400,11 +607,22 @@ class RacingGame {
    */
   private setupCamera(): void {
     this.camera = new Camera();
-    this.camera.setPerspective(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    // Convert 75 degrees to radians (FOV in radians)
+    const fovRadians = 75 * Math.PI / 180;
+    this.camera.setPerspective(fovRadians, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    // Set initial camera position behind the player
+    const vehiclePos = this.playerVehicle.getStats().position;
+    this.cameraTarget = vehiclePos.add(new Vector3(0, 5, 15));
+    this.camera.setPosition(this.cameraTarget);
+    this.camera.lookAt(vehiclePos);
+
+    console.log(`Camera setup: FOV=${fovRadians.toFixed(3)}rad, pos=${this.cameraTarget.toString()}`);
 
     // Handle window resize
     window.addEventListener('resize', () => {
-      this.camera.setPerspective(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const fov = 75 * Math.PI / 180;
+      this.camera.setPerspective(fov, window.innerWidth / window.innerHeight, 0.1, 1000);
     });
   }
 
@@ -448,17 +666,20 @@ class RacingGame {
     // Update physics
     this.physics.step(deltaTime);
 
-    // Only update vehicles during race
-    if (this.raceManager.getState() === RaceState.Racing) {
+    // Update vehicles (allow driving during countdown too for responsiveness)
+    const raceState = this.raceManager.getState();
+    if (raceState === RaceState.Racing || raceState === RaceState.Countdown) {
       // Update player vehicle
       this.playerVehicle.update(deltaTime, this.physics);
 
-      // Update AI vehicles
-      this.aiVehicles.forEach((vehicle, index) => {
-        const allVehicles = [this.playerVehicle, ...this.aiVehicles];
-        this.aiDrivers[index].update(deltaTime, allVehicles);
-        vehicle.update(deltaTime, this.physics);
-      });
+      // Update AI vehicles (only during actual racing)
+      if (raceState === RaceState.Racing) {
+        this.aiVehicles.forEach((vehicle, index) => {
+          const allVehicles = [this.playerVehicle, ...this.aiVehicles];
+          this.aiDrivers[index].update(deltaTime, allVehicles);
+          vehicle.update(deltaTime, this.physics);
+        });
+      }
     }
 
     // Update race manager
@@ -471,47 +692,64 @@ class RacingGame {
     this.hud.update(deltaTime);
   }
 
+  // Direct keyboard state (bypassing broken InputManager)
+  private keys: { [key: string]: boolean } = {};
+
+  /**
+   * Setup direct keyboard listeners
+   */
+  private setupDirectKeyboard(): void {
+    window.addEventListener('keydown', (e) => {
+      this.keys[e.code] = true;
+      console.log('Key down:', e.code);
+    });
+    window.addEventListener('keyup', (e) => {
+      this.keys[e.code] = false;
+    });
+    console.log('Direct keyboard input enabled');
+  }
+
   /**
    * Update input controls
    */
   private updateInput(): void {
-    const throttle = this.input.getAction('gameplay', 'throttle');
-    const brake = this.input.getAction('gameplay', 'brake');
-    const steerLeft = this.input.getAction('gameplay', 'steerLeft');
-    const steerRight = this.input.getAction('gameplay', 'steerRight');
-    const handbrake = this.input.getAction('gameplay', 'handbrake');
-    const nitro = this.input.getAction('gameplay', 'nitro');
-    const camera = this.input.getAction('gameplay', 'camera');
-    const reset = this.input.getAction('gameplay', 'reset');
-
-    // Throttle/Brake
-    this.controls.throttle = throttle?.isPressed ? 1 : 0;
-    this.controls.brake = brake?.isPressed ? 1 : 0;
+    // Use direct keyboard state
+    this.controls.throttle = (this.keys['KeyW'] || this.keys['ArrowUp']) ? 1 : 0;
+    this.controls.brake = (this.keys['KeyS'] || this.keys['ArrowDown']) ? 1 : 0;
 
     // Steering
     let steer = 0;
-    if (steerLeft?.isPressed) steer -= 1;
-    if (steerRight?.isPressed) steer += 1;
+    if (this.keys['KeyA'] || this.keys['ArrowLeft']) steer -= 1;
+    if (this.keys['KeyD'] || this.keys['ArrowRight']) steer += 1;
     this.controls.steer = steer;
 
     // Handbrake
-    this.controls.handbrake = handbrake?.isPressed || false;
+    this.controls.handbrake = !!this.keys['Space'];
 
     // Nitro
-    this.controls.nitro = nitro?.isPressed || false;
+    this.controls.nitro = !!(this.keys['ShiftLeft'] || this.keys['ShiftRight']);
 
-    // Camera toggle
-    if (camera?.wasPressed) {
+    // Camera toggle (on key down, not held)
+    if (this.keys['KeyC']) {
+      this.keys['KeyC'] = false; // Prevent repeat
       this.cycleCameraMode();
     }
 
     // Reset vehicle
-    if (reset?.wasPressed) {
+    if (this.keys['KeyR']) {
+      this.keys['KeyR'] = false; // Prevent repeat
       this.resetPlayerVehicle();
+      console.log('Vehicle reset!');
     }
 
-    // Apply controls to player vehicle
-    if (this.raceManager.getState() === RaceState.Racing) {
+    // Debug: log controls if any are active
+    if (this.controls.throttle || this.controls.brake || this.controls.steer !== 0) {
+      console.log(`Controls: throttle=${this.controls.throttle}, brake=${this.controls.brake}, steer=${this.controls.steer}`);
+    }
+
+    // Apply controls to player vehicle (allow during countdown too)
+    const state = this.raceManager.getState();
+    if (state === RaceState.Racing || state === RaceState.Countdown) {
       this.playerVehicle.setControls(
         this.controls.throttle,
         this.controls.brake,
@@ -548,64 +786,63 @@ class RacingGame {
     const vehiclePos = this.playerVehicle.getStats().position;
     const vehicleRot = this.playerVehicle.getStats().rotation;
 
-    let targetPos: Vector3;
-    let lookAtPos: Vector3;
-
-    switch (this.cameraMode) {
-      case 'chase':
-        // Chase camera behind vehicle
-        const backOffset = new Vector3(0, 3, 8).applyQuaternion(vehicleRot);
-        targetPos = vehiclePos.add(backOffset);
-        lookAtPos = vehiclePos.add(new Vector3(0, 1, 0));
-        break;
-
-      case 'hood':
-        // Hood camera
-        const hoodOffset = new Vector3(0, 1.5, 1).applyQuaternion(vehicleRot);
-        targetPos = vehiclePos.add(hoodOffset);
-        lookAtPos = vehiclePos.add(new Vector3(0, 1, -10).applyQuaternion(vehicleRot));
-        break;
-
-      case 'bumper':
-        // Bumper camera
-        const bumperOffset = new Vector3(0, 0.8, 2.5).applyQuaternion(vehicleRot);
-        targetPos = vehiclePos.add(bumperOffset);
-        lookAtPos = vehiclePos.add(new Vector3(0, 0.8, -10).applyQuaternion(vehicleRot));
-        break;
-
-      case 'orbit':
-        // Orbiting camera
-        const time = Date.now() / 1000;
-        const radius = 15;
-        const orbitX = Math.cos(time * 0.5) * radius;
-        const orbitZ = Math.sin(time * 0.5) * radius;
-        targetPos = vehiclePos.add(new Vector3(orbitX, 8, orbitZ));
-        lookAtPos = vehiclePos;
-        break;
-    }
+    // Simple chase camera - always behind and above the vehicle
+    // Position camera 10 units behind and 5 units above vehicle
+    const forward = new Vector3(0, 0, -1).applyQuaternion(vehicleRot);
+    const cameraOffset = forward.scale(-10).add(new Vector3(0, 5, 0));
+    const targetPos = vehiclePos.add(cameraOffset);
+    const lookAtPos = vehiclePos.add(new Vector3(0, 1, 0));
 
     // Smooth camera movement
-    const smoothFactor = 10 * deltaTime;
+    const smoothFactor = Math.min(5 * deltaTime, 1);
     this.cameraTarget = this.cameraTarget.lerp(targetPos, smoothFactor);
 
     this.camera.setPosition(this.cameraTarget);
     this.camera.lookAt(lookAtPos);
   }
 
+  // Frame counter for debug logging
+  private frameCount: number = 0;
+
   /**
    * Render scene
    */
   private render(): void {
+    this.frameCount++;
+
     // Update vehicle mesh transforms
     const playerNode = this.scene.findByName('PlayerVehicle');
     if (playerNode) {
-      playerNode.setTransform(this.playerVehicle.meshTransform);
+      // Get vehicle position directly and set it on the node
+      const pos = this.playerVehicle.getStats().position;
+      const rot = this.playerVehicle.getStats().rotation;
+      playerNode.setPosition(pos);
+      playerNode.setRotation(rot);
+
+      // Force update world matrices for all children
+      playerNode.transform.updateWorldMatrix(true);
+
+      // Debug log first few frames
+      if (this.frameCount <= 3) {
+        console.log(`[RENDER DEBUG] Frame ${this.frameCount}: PlayerVehicle pos=(${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}, ${pos.z.toFixed(2)})`);
+        console.log(`[RENDER DEBUG] PlayerVehicle children:`, playerNode.children.length);
+        playerNode.children.forEach((child: any) => {
+          const worldPos = child.transform.worldPosition;
+          console.log(`[RENDER DEBUG]   Child: ${child.name}, hasMesh: ${!!child.mesh}, worldPos: (${worldPos.x.toFixed(2)}, ${worldPos.y.toFixed(2)}, ${worldPos.z.toFixed(2)})`);
+        });
+      }
+    } else if (this.frameCount === 1) {
+      console.error('[RENDER DEBUG] PlayerVehicle node NOT FOUND in scene!');
     }
 
     this.aiVehicles.forEach((vehicle, index) => {
       const aiNode = this.scene.findByName(`AIVehicle${index}`);
       if (aiNode) {
-        aiNode.setTransform(vehicle.meshTransform);
+        const pos = vehicle.getStats().position;
+        const rot = vehicle.getStats().rotation;
+        aiNode.setPosition(pos);
+        aiNode.setRotation(rot);
+        aiNode.transform.updateWorldMatrix(true);
       }
     });
 

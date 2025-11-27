@@ -323,11 +323,17 @@ export class VoxelPass extends RenderPass {
   /**
    * Sets up voxel pass resources.
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up VoxelPass');
 
-    // Note: In full implementation, would initialize WebGL context here
-    // this.gl = getWebGL2Context();
+    // Initialize WebGL context
+    if (gl) {
+      this.gl = gl;
+    } else {
+      logger.warn('No WebGL context provided to VoxelPass.setup()');
+      // In a real implementation, would get context from Engine
+      return;
+    }
 
     // Create shaders
     this.createShaders();

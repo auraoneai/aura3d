@@ -659,7 +659,7 @@ float sampleShadowVSM(sampler2D shadowMap, vec3 shadowCoord, float minVariance) 
 }
 
 // Poisson disk sampling for soft shadows
-const vec2 poissonDisk[16] = vec2[](
+const vec2 poissonDisk[16] = vec2[16](
   vec2(-0.94201624, -0.39906216),
   vec2(0.94558609, -0.76890725),
   vec2(-0.094184101, -0.92938870),

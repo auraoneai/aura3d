@@ -440,11 +440,17 @@ export class ParticlePass extends RenderPass {
   /**
    * Sets up particle pass resources.
    */
-  setup(): void {
+  setup(gl?: WebGL2RenderingContext): void {
     logger.debug('Setting up ParticlePass');
 
-    // Note: In full implementation, would initialize WebGL context here
-    // this.gl = getWebGL2Context();
+    // Initialize WebGL context
+    if (gl) {
+      this.gl = gl;
+    } else {
+      logger.warn('No WebGL context provided to ParticlePass.setup()');
+      // In a real implementation, would get context from Engine
+      return;
+    }
 
     // Create quad mesh
     this.createQuadMesh();
@@ -586,6 +592,13 @@ export class ParticlePass extends RenderPass {
    * Creates quad mesh for particles.
    */
   private createQuadMesh(): void {
+    if (!this.gl) {
+      logger.error('Cannot create quad mesh: WebGL context not initialized');
+      return;
+    }
+
+    const gl = this.gl;
+
     const vertices = new Float32Array([
       // Position (xy), Texcoord (uv)
       -0.5, -0.5, 0.0, 0.0,
@@ -599,17 +612,104 @@ export class ParticlePass extends RenderPass {
       0, 2, 3,
     ]);
 
-    // In full implementation, create WebGL buffers
-    // this.quadVertexBuffer = createBuffer(gl, vertices);
-    // this.quadIndexBuffer = createBuffer(gl, indices);
+    // Create vertex buffer
+    this.quadVertexBuffer = gl.createBuffer();
+    if (this.quadVertexBuffer) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.quadVertexBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+    }
+
+    // Create index buffer
+    this.quadIndexBuffer = gl.createBuffer();
+    if (this.quadIndexBuffer) {
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.quadIndexBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+    }
+
+    // Unbind buffers
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+    logger.debug('Created particle quad mesh');
   }
 
   /**
    * Creates shader programs.
    */
   private createShaders(): void {
-    // In full implementation, compile and link shaders
+    if (!this.gl) {
+      logger.error('Cannot create shaders: WebGL context not initialized');
+      return;
+    }
+
     logger.debug('Creating particle shaders');
+
+    const gl = this.gl;
+
+    // Compile vertex shader
+    const vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    if (!vertexShader) {
+      logger.error('Failed to create particle vertex shader');
+      return;
+    }
+
+    gl.shaderSource(vertexShader, PARTICLE_VERTEX_SHADER);
+    gl.compileShader(vertexShader);
+
+    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+      const info = gl.getShaderInfoLog(vertexShader);
+      logger.error(`Particle vertex shader compilation failed: ${info}`);
+      gl.deleteShader(vertexShader);
+      return;
+    }
+
+    // Compile fragment shader
+    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    if (!fragmentShader) {
+      logger.error('Failed to create particle fragment shader');
+      gl.deleteShader(vertexShader);
+      return;
+    }
+
+    gl.shaderSource(fragmentShader, PARTICLE_FRAGMENT_SHADER);
+    gl.compileShader(fragmentShader);
+
+    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+      const info = gl.getShaderInfoLog(fragmentShader);
+      logger.error(`Particle fragment shader compilation failed: ${info}`);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    // Link shader program
+    this.shader = gl.createProgram();
+    if (!this.shader) {
+      logger.error('Failed to create particle shader program');
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      return;
+    }
+
+    gl.attachShader(this.shader, vertexShader);
+    gl.attachShader(this.shader, fragmentShader);
+    gl.linkProgram(this.shader);
+
+    if (!gl.getProgramParameter(this.shader, gl.LINK_STATUS)) {
+      const info = gl.getProgramInfoLog(this.shader);
+      logger.error(`Particle shader program linking failed: ${info}`);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      gl.deleteProgram(this.shader);
+      this.shader = null;
+      return;
+    }
+
+    // Clean up shaders
+    gl.deleteShader(vertexShader);
+    gl.deleteShader(fragmentShader);
+
+    logger.info('Particle shaders created successfully');
   }
 
   /**
@@ -802,6 +902,9 @@ export class ParticlePass extends RenderPass {
 
       const config = emitter.getConfig();
 
+      // Upload particle data to GPU
+      emitter.uploadToGPU(this.gl);
+
       // Set blend mode
       this.setBlendMode(config.blendMode);
 
@@ -828,8 +931,8 @@ export class ParticlePass extends RenderPass {
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
       }
 
-      const texLoc = this.gl.getUniformLocation(this.shader, 'u_particleTexture');
-      if (texLoc) this.gl.uniform1i(texLoc, 0);
+      const textureLoc = this.gl.getUniformLocation(this.shader, 'u_particleTexture');
+      if (textureLoc) this.gl.uniform1i(textureLoc, 0);
 
       // Bind instance buffer with particle data
       const instanceBuffer = emitter.getInstanceBuffer();
@@ -931,6 +1034,9 @@ class ParticleEmitter {
   /** Instance buffer (GPU) */
   private instanceBuffer: WebGLBuffer | null = null;
 
+  /** Buffer data (CPU-side cache) */
+  private bufferData: Float32Array | null = null;
+
   constructor(config: ParticleEmitterConfig) {
     this.config = config;
 
@@ -945,8 +1051,23 @@ class ParticleEmitter {
    * Sets up GPU resources.
    */
   setup(gl: WebGL2RenderingContext): void {
-    // Create instance buffer
-    // this.instanceBuffer = createBuffer(gl, ...);
+    // Create instance buffer (will be populated in updateInstanceBuffer)
+    this.instanceBuffer = gl.createBuffer();
+
+    if (!this.instanceBuffer) {
+      logger.error('Failed to create particle instance buffer');
+      return;
+    }
+
+    // Allocate buffer space (17 floats per particle)
+    const floatsPerParticle = 17;
+    const bufferSize = this.config.maxParticles * floatsPerParticle * Float32Array.BYTES_PER_ELEMENT;
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, bufferSize, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    logger.debug(`Created instance buffer for ${this.config.maxParticles} particles`);
   }
 
   /**
@@ -1084,11 +1205,21 @@ class ParticleEmitter {
       bufferData[writeIndex++] = p.userData.w;
     }
 
-    // In full implementation, upload to GPU buffer
-    // if (this.instanceBuffer && gl) {
-    //   gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
-    //   gl.bufferSubData(gl.ARRAY_BUFFER, 0, bufferData);
-    // }
+    // Store buffer data for later upload (actual upload happens when rendering)
+    this.bufferData = bufferData;
+  }
+
+  /**
+   * Uploads instance buffer data to GPU.
+   */
+  uploadToGPU(gl: WebGL2RenderingContext): void {
+    if (!this.instanceBuffer || !this.bufferData) {
+      return;
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.instanceBuffer);
+    gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.bufferData);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
   }
 
   /**

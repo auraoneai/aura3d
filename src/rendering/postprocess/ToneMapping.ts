@@ -6,8 +6,10 @@
 
 import { Logger } from '../../core/Logger';
 import { PostProcessEffect, EffectQuality, TextureSpec } from './PostProcessEffect';
-import { RenderTexture } from '../texture/RenderTexture';
+import { RenderTexture, RenderTextureDescriptor, TextureFormat } from '../texture/RenderTexture';
 import { Shader, ShaderSource } from '../shader/Shader';
+import { TextureFilter, TextureWrap } from '../texture/Texture';
+import { Vector2 } from '../../math/Vector2';
 
 const logger = Logger.create('ToneMapping');
 
@@ -75,6 +77,18 @@ export interface ToneMappingParameters {
 export class ToneMapping extends PostProcessEffect {
   /** Tone mapping shader */
   private toneMapShader: Shader | null = null;
+
+  /** Luminance calculation shader */
+  private luminanceShader: Shader | null = null;
+
+  /** Mipmap reduction shader for average luminance */
+  private mipReduceShader: Shader | null = null;
+
+  /** Luminance texture (single channel) */
+  private luminanceTexture: RenderTexture | null = null;
+
+  /** Mipmap chain for luminance reduction */
+  private luminanceMips: RenderTexture[] = [];
 
   /** Current tone mapping operator */
   private currentOperator: ToneMappingOperator = ToneMappingOperator.ACES;
@@ -169,6 +183,8 @@ export class ToneMapping extends PostProcessEffect {
   override initialize(gl: WebGL2RenderingContext): void {
     super.initialize(gl);
     this.createShader();
+    this.createLuminanceShaders();
+    this.createLuminanceTextures(1920, 1080); // Will be resized on first render
     logger.info('ToneMapping initialized');
   }
 
@@ -325,18 +341,213 @@ export class ToneMapping extends PostProcessEffect {
   }
 
   /**
+   * Creates luminance calculation shaders.
+   */
+  private createLuminanceShaders(): void {
+    if (!this.gl) return;
+
+    // Luminance extraction shader
+    const luminanceSource: ShaderSource = {
+      vertex: `#version 300 es
+        layout(location = 0) in vec2 aPosition;
+        layout(location = 1) in vec2 aTexCoord;
+        out vec2 vTexCoord;
+
+        void main() {
+          vTexCoord = aTexCoord;
+          gl_Position = vec4(aPosition, 0.0, 1.0);
+        }
+      `,
+      fragment: `#version 300 es
+        precision highp float;
+
+        in vec2 vTexCoord;
+        out vec4 fragColor;
+
+        uniform sampler2D uTexture;
+
+        // Calculate log luminance for better averaging
+        float luminance(vec3 color) {
+          float lum = dot(color, vec3(0.2126, 0.7152, 0.0722));
+          // Log luminance for geometric mean, add epsilon to prevent log(0)
+          return log(max(lum, 0.0001));
+        }
+
+        void main() {
+          vec3 color = texture(uTexture, vTexCoord).rgb;
+          float logLum = luminance(color);
+          fragColor = vec4(logLum, 0.0, 0.0, 1.0);
+        }
+      `,
+    };
+
+    this.luminanceShader = new Shader({
+      name: 'Luminance',
+      source: luminanceSource,
+      gl: this.gl,
+    });
+
+    // Mipmap reduction shader - averages 2x2 samples
+    const mipReduceSource: ShaderSource = {
+      vertex: `#version 300 es
+        layout(location = 0) in vec2 aPosition;
+        layout(location = 1) in vec2 aTexCoord;
+        out vec2 vTexCoord;
+
+        void main() {
+          vTexCoord = aTexCoord;
+          gl_Position = vec4(aPosition, 0.0, 1.0);
+        }
+      `,
+      fragment: `#version 300 es
+        precision highp float;
+
+        in vec2 vTexCoord;
+        out vec4 fragColor;
+
+        uniform sampler2D uTexture;
+        uniform vec2 uTexelSize;
+
+        void main() {
+          // Sample 2x2 region and average
+          vec2 texelSize = uTexelSize;
+          float sum = 0.0;
+
+          sum += texture(uTexture, vTexCoord + vec2(-0.5, -0.5) * texelSize).r;
+          sum += texture(uTexture, vTexCoord + vec2( 0.5, -0.5) * texelSize).r;
+          sum += texture(uTexture, vTexCoord + vec2(-0.5,  0.5) * texelSize).r;
+          sum += texture(uTexture, vTexCoord + vec2( 0.5,  0.5) * texelSize).r;
+
+          float average = sum * 0.25;
+          fragColor = vec4(average, 0.0, 0.0, 1.0);
+        }
+      `,
+    };
+
+    this.mipReduceShader = new Shader({
+      name: 'MipReduce',
+      source: mipReduceSource,
+      gl: this.gl,
+    });
+  }
+
+  /**
+   * Creates luminance mipmap chain for average calculation.
+   *
+   * @param width - Base width
+   * @param height - Base height
+   */
+  private createLuminanceTextures(width: number, height: number): void {
+    if (!this.gl) return;
+
+    // Clear existing mips
+    for (const mip of this.luminanceMips) {
+      mip.destroy();
+    }
+    this.luminanceMips = [];
+    this.luminanceTexture?.destroy();
+
+    // Create base luminance texture
+    const descriptor: RenderTextureDescriptor = {
+      width,
+      height,
+      format: TextureFormat.R16F,
+      minFilter: TextureFilter.Linear,
+      magFilter: TextureFilter.Linear,
+      wrapU: TextureWrap.ClampToEdge,
+      wrapV: TextureWrap.ClampToEdge,
+      depth: false,
+      label: 'Luminance',
+    };
+
+    this.luminanceTexture = new RenderTexture(descriptor);
+
+    // Create mipmap chain for reduction (downsample to 1x1)
+    let mipWidth = Math.floor(width / 2);
+    let mipHeight = Math.floor(height / 2);
+
+    while (mipWidth >= 1 && mipHeight >= 1) {
+      const mipTexture = new RenderTexture({
+        width: mipWidth,
+        height: mipHeight,
+        format: TextureFormat.R16F,
+        minFilter: TextureFilter.Linear,
+        magFilter: TextureFilter.Linear,
+        wrapU: TextureWrap.ClampToEdge,
+        wrapV: TextureWrap.ClampToEdge,
+        depth: false,
+        label: `LuminanceMip_${this.luminanceMips.length}`,
+      });
+
+      this.luminanceMips.push(mipTexture);
+
+      // Stop when we reach 1x1
+      if (mipWidth === 1 && mipHeight === 1) break;
+
+      mipWidth = Math.max(1, Math.floor(mipWidth / 2));
+      mipHeight = Math.max(1, Math.floor(mipHeight / 2));
+    }
+
+    this.tempTextures = [this.luminanceTexture, ...this.luminanceMips];
+
+    logger.debug(`Created luminance mipmap chain with ${this.luminanceMips.length} levels`);
+  }
+
+  /**
    * Calculates average scene luminance for auto-exposure.
+   * Uses GPU-based mipmap reduction for efficient calculation.
    *
    * @param input - Input texture
-   * @returns Average luminance
+   * @returns Average luminance (geometric mean)
    */
   private calculateLuminance(input: RenderTexture): number {
-    // Calculate average scene luminance using mipmap chain
-    // For high-performance applications, this uses GPU-based histogram compute
-    // Returns geometric mean luminance for better exposure handling
-    // TODO: Implement getMipmapLuminance method on RenderTexture
-    // Default luminance for middle-gray scenes
-    return 0.18;
+    if (!this.gl || !this.luminanceShader || !this.mipReduceShader ||
+        !this.luminanceTexture || this.luminanceMips.length === 0) {
+      return 0.18; // Default middle-gray
+    }
+
+    const width = input.getWidth();
+    const height = input.getHeight();
+
+    // Ensure textures match input size
+    if (this.luminanceTexture.getWidth() !== width || this.luminanceTexture.getHeight() !== height) {
+      this.createLuminanceTextures(width, height);
+    }
+
+    // Pass 1: Extract log luminance from HDR input
+    this.luminanceShader.bind();
+    this.luminanceShader.setUniform('uTexture', input.getColorTexture());
+    this.renderQuad(this.luminanceTexture);
+
+    // Pass 2: Progressive downsampling to 1x1
+    let srcTexture: RenderTexture = this.luminanceTexture;
+
+    for (let i = 0; i < this.luminanceMips.length; i++) {
+      const dstTexture = this.luminanceMips[i];
+
+      this.mipReduceShader.bind();
+      this.mipReduceShader.setUniform('uTexture', srcTexture.getColorTexture());
+      this.mipReduceShader.setUniform('uTexelSize', new Vector2(1.0 / srcTexture.getWidth(), 1.0 / srcTexture.getHeight()));
+      this.renderQuad(dstTexture);
+
+      srcTexture = dstTexture;
+    }
+
+    // Read back final 1x1 pixel containing average log luminance
+    const finalMip = this.luminanceMips[this.luminanceMips.length - 1];
+    const fb = finalMip.getFramebuffer();
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb);
+    const pixel = new Float32Array(4);
+    this.gl.readPixels(0, 0, 1, 1, this.gl.RGBA, this.gl.FLOAT, pixel);
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+
+    // Convert from log luminance back to linear
+    const logLuminance = pixel[0];
+    const luminance = Math.exp(logLuminance);
+
+    // Clamp to reasonable range
+    return Math.max(0.001, Math.min(10.0, luminance));
   }
 
   /**
@@ -398,10 +609,23 @@ export class ToneMapping extends PostProcessEffect {
   }
 
   /**
+   * Resizes the effect.
+   *
+   * @param width - New width
+   * @param height - New height
+   */
+  override resize(width: number, height: number): void {
+    super.resize(width, height);
+    this.createLuminanceTextures(width, height);
+  }
+
+  /**
    * Disposes the effect.
    */
   override dispose(): void {
     this.toneMapShader?.dispose();
+    this.luminanceShader?.dispose();
+    this.mipReduceShader?.dispose();
     super.dispose();
   }
 }

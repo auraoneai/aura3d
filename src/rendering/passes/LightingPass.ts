@@ -647,8 +647,18 @@ export class LightingPass extends RenderPass {
    * @param renderTarget - Target to render lighting result
    */
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
-    if (!this.currentCamera || !this.shader || !this.lightsUBO || !this.gl) {
+    if (!this.currentCamera || !this.shader || !this.lightsUBO) {
       logger.error('LightingPass not properly initialized');
+      return;
+    }
+
+    if (!this.gl) {
+      logger.error('LightingPass: GL context not initialized');
+      return;
+    }
+
+    if (!this.shader.isReady) {
+      logger.error('LightingPass: Shader not ready');
       return;
     }
 
@@ -658,51 +668,60 @@ export class LightingPass extends RenderPass {
 
     logger.trace(`LightingPass: processing ${this.lights.length} lights`);
 
+    const gl = this.gl;
+
     // Bind output framebuffer (if available via RenderTarget/RenderTexture)
     // Note: RenderTarget is abstract and may not have getFramebuffer directly
     // In a full implementation, this would be handled by the graphics backend
     if ('getFramebuffer' in renderTarget && typeof (renderTarget as any).getFramebuffer === 'function') {
       const framebuffer = (renderTarget as any).getFramebuffer();
       if (framebuffer !== undefined) {
-        this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
       }
     }
 
     // Set viewport
-    this.gl.viewport(0, 0, this.config.width, this.config.height);
+    gl.viewport(0, 0, this.config.width, this.config.height);
+
+    // Clear to black (in case there are gaps in coverage)
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
 
     // Disable depth testing and depth writes for fullscreen pass
-    this.gl.disable(this.gl.DEPTH_TEST);
-    this.gl.depthMask(false);
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
 
     // Disable blending (we're replacing, not blending)
-    this.gl.disable(this.gl.BLEND);
+    gl.disable(gl.BLEND);
+
+    // Disable culling for fullscreen quad
+    gl.disable(gl.CULL_FACE);
 
     // Bind the deferred lighting shader
     this.shader.bind();
 
     // Bind GBuffer textures to samplers
     if (this.gbufferTextures.albedoMetallic) {
-      this.gl.activeTexture(this.gl.TEXTURE0);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.albedoMetallic as WebGLTexture);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.albedoMetallic as WebGLTexture);
       this.shader.setUniform('u_albedoMetallic', 0);
     }
 
     if (this.gbufferTextures.normalRoughnessAO) {
-      this.gl.activeTexture(this.gl.TEXTURE1);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.normalRoughnessAO as WebGLTexture);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.normalRoughnessAO as WebGLTexture);
       this.shader.setUniform('u_normalRoughnessAO', 1);
     }
 
     if (this.gbufferTextures.emission) {
-      this.gl.activeTexture(this.gl.TEXTURE2);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.emission as WebGLTexture);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.emission as WebGLTexture);
       this.shader.setUniform('u_emission', 2);
     }
 
     if (this.gbufferTextures.depth) {
-      this.gl.activeTexture(this.gl.TEXTURE3);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.gbufferTextures.depth as WebGLTexture);
+      gl.activeTexture(gl.TEXTURE3);
+      gl.bindTexture(gl.TEXTURE_2D, this.gbufferTextures.depth as WebGLTexture);
       this.shader.setUniform('u_depth', 3);
     }
 
@@ -758,22 +777,26 @@ export class LightingPass extends RenderPass {
       ));
     }
 
-    // Bind fullscreen triangle VAO and draw
+    // Bind fullscreen triangle VAO
     if (this.fullscreenVAO) {
-      this.gl.bindVertexArray(this.fullscreenVAO);
+      gl.bindVertexArray(this.fullscreenVAO);
     }
 
-    // Draw fullscreen triangle (3 vertices, no index buffer)
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 3);
+    // *** ACTUAL DRAW CALL: Render fullscreen triangle (3 vertices, no index buffer) ***
+    // The vertex shader uses gl_VertexID to generate positions, so no vertex buffer is needed
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
 
     // Unbind VAO
     if (this.fullscreenVAO) {
-      this.gl.bindVertexArray(null);
+      gl.bindVertexArray(null);
     }
 
-    // Restore depth test state
-    this.gl.enable(this.gl.DEPTH_TEST);
-    this.gl.depthMask(true);
+    // Unbind shader
+    this.shader.unbind();
+
+    // Restore GL state
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
 
     logger.trace(`LightingPass complete: ${this.stats.lightsProcessed} lights processed`);
   }

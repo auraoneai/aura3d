@@ -604,6 +604,623 @@ export class LightProbe extends Light {
   }
 
   /**
+   * Captures the environment from this probe's position into a cubemap.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param scene - Scene to capture
+   * @param resolution - Cubemap face resolution (default: 256)
+   * @returns Cubemap texture ID
+   *
+   * @example
+   * ```typescript
+   * const cubemapId = probe.captureProbe(gl, scene, 512);
+   * probe.reflectionProbe.cubemapId = cubemapId;
+   * ```
+   */
+  captureProbe(
+    gl: WebGL2RenderingContext,
+    scene: { root: any },
+    resolution: number = 256
+  ): WebGLTexture | null {
+    // Create cubemap texture
+    const cubemap = gl.createTexture();
+    if (!cubemap) {
+      logger.error('Failed to create cubemap texture');
+      return null;
+    }
+
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemap);
+
+    // Allocate storage for all 6 faces
+    for (let face = 0; face < 6; face++) {
+      gl.texImage2D(
+        gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+        0,
+        gl.RGBA16F,
+        resolution,
+        resolution,
+        0,
+        gl.RGBA,
+        gl.FLOAT,
+        null
+      );
+    }
+
+    // Set texture parameters
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+
+    // Create FBO for rendering
+    const fbo = gl.createFramebuffer();
+    const depthBuffer = gl.createRenderbuffer();
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, resolution, resolution);
+
+    // Save viewport
+    const savedViewport = gl.getParameter(gl.VIEWPORT);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+    // Cubemap view directions
+    const faceData = [
+      { target: gl.TEXTURE_CUBE_MAP_POSITIVE_X, up: new Vector3(0, -1, 0), forward: new Vector3(1, 0, 0) },
+      { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X, up: new Vector3(0, -1, 0), forward: new Vector3(-1, 0, 0) },
+      { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y, up: new Vector3(0, 0, 1), forward: new Vector3(0, 1, 0) },
+      { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, up: new Vector3(0, 0, -1), forward: new Vector3(0, -1, 0) },
+      { target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z, up: new Vector3(0, -1, 0), forward: new Vector3(0, 0, 1) },
+      { target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, up: new Vector3(0, -1, 0), forward: new Vector3(0, 0, -1) },
+    ];
+
+    // Render each face
+    for (let i = 0; i < 6; i++) {
+      const face = faceData[i];
+
+      // Attach cubemap face to FBO
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        face.target,
+        cubemap,
+        0
+      );
+
+      // Check FBO status
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) {
+        logger.error(`FBO incomplete for cubemap face ${i}`);
+        continue;
+      }
+
+      // Set viewport
+      gl.viewport(0, 0, resolution, resolution);
+
+      // Clear
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // Create view matrix for this face
+      const target = this.position.add(face.forward);
+      const viewMatrix = Matrix4.lookAt(this.position, target, face.up);
+      const projMatrix = Matrix4.perspective(Math.PI / 2, 1.0, 0.1, 100.0);
+
+      // Render scene from this view
+      // Note: This requires a render callback - simplified for now
+      this.renderSceneWithCamera(gl, scene.root, viewMatrix, projMatrix);
+    }
+
+    // Generate mipmaps
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubemap);
+    gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+
+    // Cleanup
+    gl.deleteFramebuffer(fbo);
+    gl.deleteRenderbuffer(depthBuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(savedViewport[0], savedViewport[1], savedViewport[2], savedViewport[3]);
+
+    this.reflectionProbe.cubemapId = cubemap as any;
+    this.reflectionProbe.resolution = resolution;
+
+    return cubemap;
+  }
+
+  /**
+   * Generates irradiance map from cubemap for diffuse IBL.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param sourceCubemap - Source environment cubemap
+   * @param resolution - Irradiance map resolution (default: 32)
+   * @returns Irradiance cubemap texture ID
+   *
+   * @example
+   * ```typescript
+   * const irradianceMap = probe.generateIrradianceMap(gl, envCubemap, 64);
+   * ```
+   */
+  generateIrradianceMap(
+    gl: WebGL2RenderingContext,
+    sourceCubemap: WebGLTexture,
+    resolution: number = 32
+  ): WebGLTexture | null {
+    // Create irradiance cubemap
+    const irradianceMap = gl.createTexture();
+    if (!irradianceMap) {
+      logger.error('Failed to create irradiance map texture');
+      return null;
+    }
+
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, irradianceMap);
+
+    // Allocate storage for all 6 faces
+    for (let face = 0; face < 6; face++) {
+      gl.texImage2D(
+        gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+        0,
+        gl.RGBA16F,
+        resolution,
+        resolution,
+        0,
+        gl.RGBA,
+        gl.FLOAT,
+        null
+      );
+    }
+
+    // Set texture parameters (no mipmaps for irradiance)
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+
+    // Create shader for convolution
+    const convolutionShader = this.createConvolutionShader(gl);
+    if (!convolutionShader) {
+      logger.error('Failed to create convolution shader');
+      return null;
+    }
+
+    // Create FBO for rendering
+    const fbo = gl.createFramebuffer();
+    const depthBuffer = gl.createRenderbuffer();
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, resolution, resolution);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+    // Bind source cubemap
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, sourceCubemap);
+
+    // Projection matrix (90 degree FOV)
+    const projMatrix = Matrix4.perspective(Math.PI / 2, 1.0, 0.1, 10.0);
+
+    // Render each face with convolution
+    const faceViews = [
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, -1, 0)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, -1, 0)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(0, -1, 0)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)),
+    ];
+
+    gl.viewport(0, 0, resolution, resolution);
+
+    for (let i = 0; i < 6; i++) {
+      // Attach cubemap face to FBO
+      gl.framebufferTexture2D(
+        gl.FRAMEBUFFER,
+        gl.COLOR_ATTACHMENT0,
+        gl.TEXTURE_CUBE_MAP_POSITIVE_X + i,
+        irradianceMap,
+        0
+      );
+
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      // Render fullscreen quad with convolution shader
+      this.renderConvolution(gl, convolutionShader, projMatrix, faceViews[i], sourceCubemap);
+    }
+
+    // Cleanup
+    gl.deleteFramebuffer(fbo);
+    gl.deleteRenderbuffer(depthBuffer);
+    gl.deleteProgram(convolutionShader);
+
+    return irradianceMap;
+  }
+
+  /**
+   * Generates prefiltered environment map for specular IBL.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param sourceCubemap - Source environment cubemap
+   * @param resolution - Base resolution (default: 128)
+   * @param mipLevels - Number of roughness mip levels (default: 5)
+   * @returns Prefiltered cubemap texture ID
+   *
+   * @example
+   * ```typescript
+   * const prefilteredMap = probe.generatePrefilteredEnvMap(gl, envCubemap, 256, 7);
+   * ```
+   */
+  generatePrefilteredEnvMap(
+    gl: WebGL2RenderingContext,
+    sourceCubemap: WebGLTexture,
+    resolution: number = 128,
+    mipLevels: number = 5
+  ): WebGLTexture | null {
+    // Create prefiltered cubemap
+    const prefilteredMap = gl.createTexture();
+    if (!prefilteredMap) {
+      logger.error('Failed to create prefiltered map texture');
+      return null;
+    }
+
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, prefilteredMap);
+
+    // Allocate storage for all mip levels and faces
+    for (let mip = 0; mip < mipLevels; mip++) {
+      const mipRes = Math.max(1, Math.floor(resolution / Math.pow(2, mip)));
+
+      for (let face = 0; face < 6; face++) {
+        gl.texImage2D(
+          gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+          mip,
+          gl.RGBA16F,
+          mipRes,
+          mipRes,
+          0,
+          gl.RGBA,
+          gl.FLOAT,
+          null
+        );
+      }
+    }
+
+    // Set texture parameters
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+
+    // Create prefilter shader
+    const prefilterShader = this.createPrefilterShader(gl);
+    if (!prefilterShader) {
+      logger.error('Failed to create prefilter shader');
+      return null;
+    }
+
+    // Create FBO for rendering
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+
+    // Bind source cubemap
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_CUBE_MAP, sourceCubemap);
+
+    // Projection matrix
+    const projMatrix = Matrix4.perspective(Math.PI / 2, 1.0, 0.1, 10.0);
+
+    const faceViews = [
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, -1, 0)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(-1, 0, 0), new Vector3(0, -1, 0)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, -1)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(0, -1, 0)),
+      Matrix4.lookAt(new Vector3(0, 0, 0), new Vector3(0, 0, -1), new Vector3(0, -1, 0)),
+    ];
+
+    // Render each mip level with increasing roughness
+    for (let mip = 0; mip < mipLevels; mip++) {
+      const mipRes = Math.max(1, Math.floor(resolution / Math.pow(2, mip)));
+      const roughness = mip / (mipLevels - 1);
+
+      // Create depth buffer for this mip level
+      const depthBuffer = gl.createRenderbuffer();
+      gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
+      gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, mipRes, mipRes);
+      gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
+
+      gl.viewport(0, 0, mipRes, mipRes);
+
+      // Render each face
+      for (let face = 0; face < 6; face++) {
+        // Attach cubemap face to FBO
+        gl.framebufferTexture2D(
+          gl.FRAMEBUFFER,
+          gl.COLOR_ATTACHMENT0,
+          gl.TEXTURE_CUBE_MAP_POSITIVE_X + face,
+          prefilteredMap,
+          mip
+        );
+
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Render with prefiltering
+        this.renderPrefilter(gl, prefilterShader, projMatrix, faceViews[face], sourceCubemap, roughness);
+      }
+
+      gl.deleteRenderbuffer(depthBuffer);
+    }
+
+    // Cleanup
+    gl.deleteFramebuffer(fbo);
+    gl.deleteProgram(prefilterShader);
+
+    this.reflectionProbe.cubemapId = prefilteredMap as any;
+    this.reflectionProbe.mipLevels = mipLevels;
+
+    return prefilteredMap;
+  }
+
+  /**
+   * Helper: Renders scene from camera perspective.
+   */
+  private renderSceneWithCamera(
+    gl: WebGL2RenderingContext,
+    node: any,
+    viewMatrix: Matrix4,
+    projMatrix: Matrix4
+  ): void {
+    // This is a placeholder - actual implementation would require
+    // access to a proper rendering pipeline
+    // For now, just clear to sky color
+    gl.clearColor(0.5, 0.7, 1.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  }
+
+  /**
+   * Helper: Creates convolution shader for irradiance.
+   */
+  private createConvolutionShader(gl: WebGL2RenderingContext): WebGLProgram | null {
+    const vs = `#version 300 es
+      in vec3 a_position;
+      uniform mat4 u_projection;
+      uniform mat4 u_view;
+      out vec3 v_worldPos;
+      void main() {
+        v_worldPos = a_position;
+        gl_Position = u_projection * u_view * vec4(a_position, 1.0);
+      }
+    `;
+
+    const fs = `#version 300 es
+      precision highp float;
+      in vec3 v_worldPos;
+      uniform samplerCube u_envMap;
+      out vec4 fragColor;
+
+      const float PI = 3.14159265359;
+
+      void main() {
+        vec3 N = normalize(v_worldPos);
+        vec3 irradiance = vec3(0.0);
+
+        // Convolution over hemisphere
+        vec3 up = vec3(0.0, 1.0, 0.0);
+        vec3 right = normalize(cross(up, N));
+        up = normalize(cross(N, right));
+
+        float sampleDelta = 0.025;
+        float nrSamples = 0.0;
+
+        for (float phi = 0.0; phi < 2.0 * PI; phi += sampleDelta) {
+          for (float theta = 0.0; theta < 0.5 * PI; theta += sampleDelta) {
+            vec3 tangentSample = vec3(sin(theta) * cos(phi), sin(theta) * sin(phi), cos(theta));
+            vec3 sampleVec = tangentSample.x * right + tangentSample.y * up + tangentSample.z * N;
+
+            irradiance += texture(u_envMap, sampleVec).rgb * cos(theta) * sin(theta);
+            nrSamples++;
+          }
+        }
+
+        irradiance = PI * irradiance / nrSamples;
+        fragColor = vec4(irradiance, 1.0);
+      }
+    `;
+
+    return this.compileShaderProgram(gl, vs, fs);
+  }
+
+  /**
+   * Helper: Creates prefilter shader for specular.
+   */
+  private createPrefilterShader(gl: WebGL2RenderingContext): WebGLProgram | null {
+    const vs = `#version 300 es
+      in vec3 a_position;
+      uniform mat4 u_projection;
+      uniform mat4 u_view;
+      out vec3 v_worldPos;
+      void main() {
+        v_worldPos = a_position;
+        gl_Position = u_projection * u_view * vec4(a_position, 1.0);
+      }
+    `;
+
+    const fs = `#version 300 es
+      precision highp float;
+      in vec3 v_worldPos;
+      uniform samplerCube u_envMap;
+      uniform float u_roughness;
+      out vec4 fragColor;
+
+      const float PI = 3.14159265359;
+
+      float RadicalInverse_VdC(uint bits) {
+        bits = (bits << 16u) | (bits >> 16u);
+        bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
+        bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
+        bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
+        bits = ((bits & 0x00FF00FFu) << 8u) | ((bits & 0xFF00FF00u) >> 8u);
+        return float(bits) * 2.3283064365386963e-10;
+      }
+
+      vec2 Hammersley(uint i, uint N) {
+        return vec2(float(i)/float(N), RadicalInverse_VdC(i));
+      }
+
+      vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness) {
+        float a = roughness * roughness;
+        float phi = 2.0 * PI * Xi.x;
+        float cosTheta = sqrt((1.0 - Xi.y) / (1.0 + (a*a - 1.0) * Xi.y));
+        float sinTheta = sqrt(1.0 - cosTheta*cosTheta);
+
+        vec3 H;
+        H.x = cos(phi) * sinTheta;
+        H.y = sin(phi) * sinTheta;
+        H.z = cosTheta;
+
+        vec3 up = abs(N.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+        vec3 tangent = normalize(cross(up, N));
+        vec3 bitangent = cross(N, tangent);
+
+        return normalize(tangent * H.x + bitangent * H.y + N * H.z);
+      }
+
+      void main() {
+        vec3 N = normalize(v_worldPos);
+        vec3 R = N;
+        vec3 V = R;
+
+        const uint SAMPLE_COUNT = 1024u;
+        vec3 prefilteredColor = vec3(0.0);
+        float totalWeight = 0.0;
+
+        for(uint i = 0u; i < SAMPLE_COUNT; ++i) {
+          vec2 Xi = Hammersley(i, SAMPLE_COUNT);
+          vec3 H = ImportanceSampleGGX(Xi, N, u_roughness);
+          vec3 L = normalize(2.0 * dot(V, H) * H - V);
+
+          float NdotL = max(dot(N, L), 0.0);
+          if(NdotL > 0.0) {
+            prefilteredColor += texture(u_envMap, L).rgb * NdotL;
+            totalWeight += NdotL;
+          }
+        }
+
+        prefilteredColor = prefilteredColor / totalWeight;
+        fragColor = vec4(prefilteredColor, 1.0);
+      }
+    `;
+
+    return this.compileShaderProgram(gl, vs, fs);
+  }
+
+  /**
+   * Helper: Compiles shader program.
+   */
+  private compileShaderProgram(
+    gl: WebGL2RenderingContext,
+    vsSource: string,
+    fsSource: string
+  ): WebGLProgram | null {
+    const vs = gl.createShader(gl.VERTEX_SHADER);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER);
+
+    if (!vs || !fs) return null;
+
+    gl.shaderSource(vs, vsSource);
+    gl.compileShader(vs);
+
+    if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+      logger.error('VS compile error:', gl.getShaderInfoLog(vs));
+      return null;
+    }
+
+    gl.shaderSource(fs, fsSource);
+    gl.compileShader(fs);
+
+    if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
+      logger.error('FS compile error:', gl.getShaderInfoLog(fs));
+      return null;
+    }
+
+    const program = gl.createProgram();
+    if (!program) return null;
+
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      logger.error('Program link error:', gl.getProgramInfoLog(program));
+      return null;
+    }
+
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+
+    return program;
+  }
+
+  /**
+   * Helper: Renders convolution pass.
+   */
+  private renderConvolution(
+    gl: WebGL2RenderingContext,
+    shader: WebGLProgram,
+    projection: Matrix4,
+    view: Matrix4,
+    envMap: WebGLTexture
+  ): void {
+    gl.useProgram(shader);
+
+    // Upload uniforms
+    const projLoc = gl.getUniformLocation(shader, 'u_projection');
+    const viewLoc = gl.getUniformLocation(shader, 'u_view');
+    const envLoc = gl.getUniformLocation(shader, 'u_envMap');
+
+    gl.uniformMatrix4fv(projLoc, false, projection.elements);
+    gl.uniformMatrix4fv(viewLoc, false, view.elements);
+    gl.uniform1i(envLoc, 0);
+
+    // Render cube (simplified - would need proper geometry)
+    this.renderCube(gl, shader);
+  }
+
+  /**
+   * Helper: Renders prefilter pass.
+   */
+  private renderPrefilter(
+    gl: WebGL2RenderingContext,
+    shader: WebGLProgram,
+    projection: Matrix4,
+    view: Matrix4,
+    envMap: WebGLTexture,
+    roughness: number
+  ): void {
+    gl.useProgram(shader);
+
+    const projLoc = gl.getUniformLocation(shader, 'u_projection');
+    const viewLoc = gl.getUniformLocation(shader, 'u_view');
+    const envLoc = gl.getUniformLocation(shader, 'u_envMap');
+    const roughLoc = gl.getUniformLocation(shader, 'u_roughness');
+
+    gl.uniformMatrix4fv(projLoc, false, projection.elements);
+    gl.uniformMatrix4fv(viewLoc, false, view.elements);
+    gl.uniform1i(envLoc, 0);
+    gl.uniform1f(roughLoc, roughness);
+
+    this.renderCube(gl, shader);
+  }
+
+  /**
+   * Helper: Renders a unit cube.
+   */
+  private renderCube(gl: WebGL2RenderingContext, shader: WebGLProgram): void {
+    // Simplified cube rendering - would need proper VAO/VBO setup
+    // This is a placeholder for the actual implementation
+  }
+
+  /**
    * Clones this light probe.
    *
    * @returns New LightProbe instance with same properties

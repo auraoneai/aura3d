@@ -198,6 +198,11 @@ export class LightManager {
   private cachedFrustum: Frustum | null;
 
   /**
+   * Uniform Buffer Object for light data.
+   */
+  private lightUBO: WebGLBuffer | null;
+
+  /**
    * Creates a new LightManager instance.
    *
    * @param config - Manager configuration
@@ -253,6 +258,7 @@ export class LightManager {
     this.lights = new Set();
     this.frameIndex = 0;
     this.cachedFrustum = null;
+    this.lightUBO = null;
   }
 
   /**
@@ -590,6 +596,81 @@ export class LightManager {
       data: data.slice(0, offset),
       byteSize: offset * 4,
     };
+  }
+
+  /**
+   * Uploads packed light data to the GPU.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param shader - Shader program to upload uniforms to
+   * @param lightBuffer - Packed light buffer from packLightData()
+   *
+   * @example
+   * ```typescript
+   * const lightBuffer = manager.packLightData(visibleLights);
+   * manager.uploadToGPU(gl, shader, lightBuffer);
+   * ```
+   */
+  uploadToGPU(
+    gl: WebGL2RenderingContext,
+    shader: { setUniform: (name: string, value: any) => void },
+    lightBuffer: GPULightBuffer
+  ): void {
+    // Upload light count
+    shader.setUniform('u_lightCount', lightBuffer.counts.directional +
+                                      lightBuffer.counts.point +
+                                      lightBuffer.counts.spot +
+                                      lightBuffer.counts.area);
+    shader.setUniform('u_directionalLightCount', lightBuffer.counts.directional);
+    shader.setUniform('u_pointLightCount', lightBuffer.counts.point);
+    shader.setUniform('u_spotLightCount', lightBuffer.counts.spot);
+    shader.setUniform('u_areaLightCount', lightBuffer.counts.area);
+    shader.setUniform('u_probeCount', lightBuffer.counts.probes);
+
+    // Upload structured light data arrays
+    // Extract data from packed buffer for structured arrays
+    let offset = 16; // Skip header
+
+    // Arrays for structured upload
+    const positions: number[] = [];
+    const colors: number[] = [];
+    const intensities: number[] = [];
+    const types: number[] = [];
+    const directions: number[] = [];
+    const ranges: number[] = [];
+    const spotAngles: number[] = [];
+
+    const totalLights = lightBuffer.counts.directional +
+                        lightBuffer.counts.point +
+                        lightBuffer.counts.spot +
+                        lightBuffer.counts.area;
+
+    // Parse packed data back into arrays
+    // Note: This is a simplified approach - ideally the packing should be restructured
+    // For now, we'll upload the entire packed buffer as a uniform buffer
+
+    // Try to use UBO if available
+    const uboLocation = gl.getUniformBlockIndex(shader as any, 'LightData');
+    if (uboLocation !== gl.INVALID_INDEX) {
+      // Create or update UBO
+      if (!this.lightUBO) {
+        this.lightUBO = gl.createBuffer();
+      }
+
+      gl.bindBuffer(gl.UNIFORM_BUFFER, this.lightUBO);
+      gl.bufferData(gl.UNIFORM_BUFFER, lightBuffer.data, gl.DYNAMIC_DRAW);
+      gl.bindBufferBase(gl.UNIFORM_BUFFER, 0, this.lightUBO);
+      gl.uniformBlockBinding(shader as any, uboLocation, 0);
+    } else {
+      // Fallback: upload as individual uniforms
+      // This assumes a specific packing format - may need adjustment based on actual shader
+      shader.setUniform('u_lightData', lightBuffer.data);
+    }
+
+    // Upload shadow data if available
+    if (this.shadowMapper.getAtlasTextureId()) {
+      shader.setUniform('u_shadowMap', this.shadowMapper.getAtlasTextureId());
+    }
   }
 
   /**

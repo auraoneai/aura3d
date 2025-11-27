@@ -424,6 +424,12 @@ export class SkyboxPass extends RenderPass {
     logger.debug(`Created ${shaderName} shader`);
   }
 
+  /** WebGL2 rendering context */
+  private gl: WebGL2RenderingContext | null = null;
+
+  /** Skybox VAO (for vertex-only rendering) */
+  private skyboxVAO: WebGLVertexArrayObject | null = null;
+
   /**
    * Executes the skybox pass.
    * Renders skybox using vertex-only geometry (no vertex buffer required).
@@ -434,6 +440,11 @@ export class SkyboxPass extends RenderPass {
   execute(renderQueue: RenderQueue, renderTarget: RenderTarget): void {
     if (!this.currentCamera || !this.uniformBuffer) {
       logger.error('SkyboxPass not properly initialized');
+      return;
+    }
+
+    if (!this.gl) {
+      logger.error('SkyboxPass: GL context not initialized. Call setContext() first.');
       return;
     }
 
@@ -448,8 +459,20 @@ export class SkyboxPass extends RenderPass {
       }
     }
 
+    if (!this.shader.isReady) {
+      logger.error('SkyboxPass: Shader not ready');
+      return;
+    }
+
+    const gl = this.gl;
+
     // Bind the render target framebuffer
-    // (Graphics backend would bind framebuffer here)
+    if ('getFramebuffer' in renderTarget && typeof (renderTarget as any).getFramebuffer === 'function') {
+      const framebuffer = (renderTarget as any).getFramebuffer();
+      if (framebuffer !== undefined) {
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer as WebGLFramebuffer | null);
+      }
+    }
 
     // Update uniforms
     this.uniformBuffer.setMat4('viewMatrix', this.currentCamera.viewMatrix);
@@ -457,8 +480,6 @@ export class SkyboxPass extends RenderPass {
 
     if (this.config.type === SkyboxType.Cubemap) {
       this.uniformBuffer.setFloat('exposure', this.config.exposure ?? 1.0);
-      // Bind cubemap texture to texture unit 0
-      // (Graphics backend would bind texture here)
     } else if (this.config.type === SkyboxType.Procedural && this.config.atmosphereParams) {
       const params = this.config.atmosphereParams;
       this.uniformBuffer.setVec3('sunDirection', params.sunDirection);
@@ -473,48 +494,72 @@ export class SkyboxPass extends RenderPass {
       this.uniformBuffer.setVec4('solidColor', color as any);
     }
 
-    // Set GL state for skybox rendering:
-    // - Enable depth test with LEQUAL (allows z=1.0 to pass)
-    // - Disable depth write (skybox doesn't write to depth buffer)
-    // - Disable face culling (or use CW culling for inside-out cube)
-    // (Graphics backend would set these states here)
+    // Set GL state for skybox rendering
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LEQUAL); // Allow z=1.0 to pass (skybox at far plane)
+    gl.depthMask(false); // Don't write to depth buffer
+    gl.disable(gl.CULL_FACE); // Render both faces or cull front faces for inside-out cube
+    gl.disable(gl.BLEND);
 
     // Bind skybox shader
-    if (this.shader && this.shader.isReady) {
-      this.shader.bind();
+    this.shader.bind();
 
-      // Upload uniforms to shader
-      this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
-      this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
+    // Upload uniforms to shader
+    this.shader.setUniform('u_viewMatrix', this.currentCamera.viewMatrix);
+    this.shader.setUniform('u_projectionMatrix', this.currentCamera.projectionMatrix);
 
-      if (this.config.type === SkyboxType.Cubemap) {
-        this.shader.setUniform('u_exposure', this.config.exposure ?? 1.0);
-        // Bind cubemap texture to sampler
-      } else if (this.config.type === SkyboxType.Procedural && this.config.atmosphereParams) {
-        const params = this.config.atmosphereParams;
-        this.shader.setUniform('u_sunDirection', params.sunDirection);
-        this.shader.setUniform('u_rayleighCoefficient', params.rayleighCoefficient);
-        this.shader.setUniform('u_mieCoefficient', params.mieCoefficient);
-        this.shader.setUniform('u_rayleighScaleHeight', params.rayleighScaleHeight);
-        this.shader.setUniform('u_mieScaleHeight', params.mieScaleHeight);
-        this.shader.setUniform('u_sunIntensity', params.sunIntensity);
-        this.shader.setUniform('u_density', params.density);
-      } else if (this.config.type === SkyboxType.Solid) {
-        const color = this.config.solidColor ?? new Color(0.5, 0.7, 1.0, 1.0);
-        this.shader.setUniform('u_solidColor', color);
+    if (this.config.type === SkyboxType.Cubemap) {
+      this.shader.setUniform('u_exposure', this.config.exposure ?? 1.0);
+      // Bind cubemap texture to sampler
+      if (this.config.cubemapTexture) {
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.config.cubemapTexture as WebGLTexture);
+        this.shader.setUniform('u_skybox', 0);
       }
-
-      // Draw skybox cube (36 vertices from vertex shader positions array)
-      // gl.drawArrays(gl.TRIANGLES, 0, 36);
-      // (Graphics backend would issue draw call here)
-
-      this.shader.unbind();
+    } else if (this.config.type === SkyboxType.Procedural && this.config.atmosphereParams) {
+      const params = this.config.atmosphereParams;
+      this.shader.setUniform('u_sunDirection', params.sunDirection);
+      this.shader.setUniform('u_rayleighCoefficient', params.rayleighCoefficient);
+      this.shader.setUniform('u_mieCoefficient', params.mieCoefficient);
+      this.shader.setUniform('u_rayleighScaleHeight', params.rayleighScaleHeight);
+      this.shader.setUniform('u_mieScaleHeight', params.mieScaleHeight);
+      this.shader.setUniform('u_sunIntensity', params.sunIntensity);
+      this.shader.setUniform('u_density', params.density);
+    } else if (this.config.type === SkyboxType.Solid) {
+      const color = this.config.solidColor ?? new Color(0.5, 0.7, 1.0, 1.0);
+      this.shader.setUniform('u_solidColor', color);
     }
 
+    // Create VAO if not already created
+    if (!this.skyboxVAO) {
+      this.skyboxVAO = gl.createVertexArray();
+      if (this.skyboxVAO) {
+        gl.bindVertexArray(this.skyboxVAO);
+        // No vertex attributes needed - shader uses gl_VertexID and hardcoded positions
+        gl.bindVertexArray(null);
+      }
+    }
+
+    // Bind skybox VAO
+    if (this.skyboxVAO) {
+      gl.bindVertexArray(this.skyboxVAO);
+    }
+
+    // *** ACTUAL DRAW CALL: Render skybox cube (36 vertices from vertex shader positions array) ***
+    // The vertex shader uses gl_VertexID to index into a hardcoded positions array
+    gl.drawArrays(gl.TRIANGLES, 0, 36);
+
+    // Unbind VAO
+    if (this.skyboxVAO) {
+      gl.bindVertexArray(null);
+    }
+
+    // Unbind shader
+    this.shader.unbind();
+
     // Restore GL state
-    // - Re-enable depth write
-    // - Reset depth func to default (LESS)
-    // (Graphics backend would restore states here)
+    gl.depthMask(true);
+    gl.depthFunc(gl.LESS);
 
     logger.trace('SkyboxPass complete');
   }
@@ -530,9 +575,24 @@ export class SkyboxPass extends RenderPass {
       this.shader = null;
     }
 
+    if (this.skyboxVAO && this.gl) {
+      this.gl.deleteVertexArray(this.skyboxVAO);
+      this.skyboxVAO = null;
+    }
+
     this.uniformBuffer = null;
+    this.gl = null;
 
     logger.info('SkyboxPass cleanup complete');
+  }
+
+  /**
+   * Sets the WebGL context for rendering.
+   *
+   * @param gl - WebGL2 rendering context
+   */
+  setContext(gl: WebGL2RenderingContext): void {
+    this.gl = gl;
   }
 
   /**

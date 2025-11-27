@@ -25,6 +25,7 @@ import {
   CullMode,
   FrontFace,
   PrimitiveTopology,
+  StencilOperation,
 } from './GPUDevice';
 import { GPUBuffer, GPUBufferDescriptor, MapMode, MemoryHint } from './GPUBuffer';
 import { GPUTexture, GPUTextureDescriptor, GPUTextureView, GPUTextureViewDescriptor } from './GPUTexture';
@@ -113,20 +114,25 @@ class WebGL2Buffer extends GPUBuffer {
     this.gl.bindBuffer(target, null);
   }
 
-  protected async readInternal(_offset: number, _size: number): Promise<ArrayBuffer> {
-    // WebGL2 doesn't support direct buffer reads
-    // This would require a sync point which is very slow
-    throw new Error('Buffer reads are not efficiently supported in WebGL2');
+  protected async readInternal(offset: number, size: number): Promise<ArrayBuffer> {
+    const target = this.getGLTarget();
+    this.gl.bindBuffer(target, this.glBuffer);
+
+    const data = new Uint8Array(size);
+    this.gl.getBufferSubData(target, offset, data);
+
+    this.gl.bindBuffer(target, null);
+    return data.buffer;
   }
 
-  protected async mapInternal(mode: MapMode, _offset: number, size: number): Promise<ArrayBuffer> {
-    // WebGL2 doesn't support mapped buffers
-    // Emulate by creating a local copy
+  protected async mapInternal(mode: MapMode, offset: number, size: number): Promise<ArrayBuffer> {
     if (mode === MapMode.Write) {
       this.mappedData = new ArrayBuffer(size);
       return this.mappedData;
+    } else if (mode === MapMode.Read) {
+      return this.readInternal(offset, size);
     } else {
-      throw new Error('Read mapping is not supported in WebGL2');
+      throw new Error('Read-write mapping is not supported in WebGL2');
     }
   }
 
@@ -359,6 +365,16 @@ class WebGL2Sampler extends GPUSampler {
 }
 
 /**
+ * WebGL2 stencil face state.
+ */
+interface WebGL2StencilFaceState {
+  compare: CompareFunction;
+  failOp: StencilOperation;
+  depthFailOp: StencilOperation;
+  passOp: StencilOperation;
+}
+
+/**
  * WebGL2 pipeline state.
  */
 interface WebGL2PipelineState {
@@ -370,6 +386,11 @@ interface WebGL2PipelineState {
   depthTest: boolean;
   depthWrite: boolean;
   depthCompare: CompareFunction;
+  stencilTest: boolean;
+  stencilFront: WebGL2StencilFaceState;
+  stencilBack: WebGL2StencilFaceState;
+  stencilReadMask: number;
+  stencilWriteMask: number;
   blendEnabled: boolean;
   blendSrcRGB: BlendFactor;
   blendDstRGB: BlendFactor;
@@ -410,6 +431,14 @@ class WebGL2Pipeline extends GPUPipeline {
 class WebGL2RenderPassEncoder extends RenderPassEncoder {
   private currentPipeline: WebGL2Pipeline | null = null;
   private boundVertexBuffers: Map<number, WebGL2Buffer> = new Map();
+  private activeTextureUnit: number = 0;
+  private boundTextures: Map<number, WebGLTexture | null> = new Map();
+  private boundSamplers: Map<number, WebGLSampler | null> = new Map();
+  private stencilReference: number = 0;
+  private stencilReadMask: number = 0xFFFFFFFF;
+  private stencilWriteMask: number = 0xFFFFFFFF;
+  private occlusionQueries: Map<number, WebGLQuery> = new Map();
+  private currentOcclusionQuery: WebGLQuery | null = null;
 
   constructor(
     private gl: WebGL2RenderingContext,
@@ -452,6 +481,47 @@ class WebGL2RenderPassEncoder extends RenderPassEncoder {
     }
 
     this.gl.depthMask(state.depthWrite);
+
+    // Set stencil state
+    if (state.stencilTest) {
+      this.gl.enable(this.gl.STENCIL_TEST);
+
+      this.stencilReadMask = state.stencilReadMask;
+      this.stencilWriteMask = state.stencilWriteMask;
+
+      this.gl.stencilMaskSeparate(this.gl.FRONT, state.stencilWriteMask);
+      this.gl.stencilMaskSeparate(this.gl.BACK, state.stencilWriteMask);
+
+      this.gl.stencilFuncSeparate(
+        this.gl.FRONT,
+        compareFunctionToGL(state.stencilFront.compare, this.gl),
+        this.stencilReference,
+        state.stencilReadMask
+      );
+
+      this.gl.stencilFuncSeparate(
+        this.gl.BACK,
+        compareFunctionToGL(state.stencilBack.compare, this.gl),
+        this.stencilReference,
+        state.stencilReadMask
+      );
+
+      this.gl.stencilOpSeparate(
+        this.gl.FRONT,
+        stencilOperationToGL(state.stencilFront.failOp, this.gl),
+        stencilOperationToGL(state.stencilFront.depthFailOp, this.gl),
+        stencilOperationToGL(state.stencilFront.passOp, this.gl)
+      );
+
+      this.gl.stencilOpSeparate(
+        this.gl.BACK,
+        stencilOperationToGL(state.stencilBack.failOp, this.gl),
+        stencilOperationToGL(state.stencilBack.depthFailOp, this.gl),
+        stencilOperationToGL(state.stencilBack.passOp, this.gl)
+      );
+    } else {
+      this.gl.disable(this.gl.STENCIL_TEST);
+    }
 
     // Set blend state
     if (state.blendEnabled) {
@@ -508,9 +578,73 @@ class WebGL2RenderPassEncoder extends RenderPassEncoder {
   /** Currently bound index format */
   private currentIndexFormat: IndexFormat = IndexFormat.Uint16;
 
-  setBindGroup(_index: number, _bindGroup: any, _dynamicOffsets?: number[]): void {
-    // WebGL2 bind groups are emulated through direct uniform/texture binding
-    logger.warn('Bind groups not yet implemented for WebGL2');
+  setBindGroup(index: number, bindGroup: any, dynamicOffsets?: number[]): void {
+    if (!bindGroup || !bindGroup.entries) {
+      return;
+    }
+
+    let dynamicOffsetIndex = 0;
+
+    for (const entry of bindGroup.entries) {
+      const binding = entry.binding;
+
+      if ('buffer' in entry.resource) {
+        const buffer = entry.resource.buffer as WebGL2Buffer;
+        const offset = entry.resource.offset ?? 0;
+        const size = entry.resource.size ?? buffer.size;
+
+        const dynamicOffset = dynamicOffsets && dynamicOffsetIndex < dynamicOffsets.length
+          ? dynamicOffsets[dynamicOffsetIndex++]
+          : 0;
+
+        const finalOffset = offset + dynamicOffset;
+
+        this.gl.bindBufferRange(
+          this.gl.UNIFORM_BUFFER,
+          binding,
+          buffer.glBuffer,
+          finalOffset,
+          size
+        );
+      } else if ('texture' in entry.resource) {
+        const textureView = entry.resource.texture as WebGL2TextureView;
+        const texture = textureView.texture as WebGL2Texture;
+
+        const textureUnit = index * 16 + binding;
+
+        if (this.activeTextureUnit !== textureUnit) {
+          this.gl.activeTexture(this.gl.TEXTURE0 + textureUnit);
+          this.activeTextureUnit = textureUnit;
+        }
+
+        const target = texture.dimension === TextureDimension.D3
+          ? this.gl.TEXTURE_3D
+          : this.gl.TEXTURE_2D;
+
+        if (this.boundTextures.get(textureUnit) !== texture.glTexture) {
+          this.gl.bindTexture(target, texture.glTexture);
+          this.boundTextures.set(textureUnit, texture.glTexture);
+        }
+
+        if (this.currentPipeline) {
+          const location = this.gl.getUniformLocation(
+            this.currentPipeline.state.program,
+            `texture_${binding}`
+          );
+          if (location) {
+            this.gl.uniform1i(location, textureUnit);
+          }
+        }
+      } else if ('sampler' in entry.resource) {
+        const sampler = entry.resource.sampler as WebGL2Sampler;
+        const textureUnit = index * 16 + binding;
+
+        if (this.boundSamplers.get(textureUnit) !== sampler.glSampler) {
+          this.gl.bindSampler(textureUnit, sampler.glSampler);
+          this.boundSamplers.set(textureUnit, sampler.glSampler);
+        }
+      }
+    }
   }
 
   draw(vertexCount: number, instanceCount = 1, firstVertex = 0, _firstInstance = 0): void {
@@ -587,17 +721,48 @@ class WebGL2RenderPassEncoder extends RenderPassEncoder {
     }
   }
 
-  setStencilReference(_reference: number): void {
-    // WebGL2 stencil reference is set with stencilFunc
-    logger.warn('Stencil reference not fully supported in WebGL2');
+  setStencilReference(reference: number): void {
+    this.stencilReference = reference;
+
+    if (this.currentPipeline && this.currentPipeline.state.stencilTest) {
+      const state = this.currentPipeline.state;
+
+      this.gl.stencilFuncSeparate(
+        this.gl.FRONT,
+        compareFunctionToGL(state.stencilFront.compare, this.gl),
+        reference,
+        this.stencilReadMask
+      );
+
+      this.gl.stencilFuncSeparate(
+        this.gl.BACK,
+        compareFunctionToGL(state.stencilBack.compare, this.gl),
+        reference,
+        this.stencilReadMask
+      );
+    }
   }
 
-  beginOcclusionQuery(_queryIndex: number): void {
-    logger.warn('Occlusion queries not yet implemented for WebGL2');
+  beginOcclusionQuery(queryIndex: number): void {
+    let query = this.occlusionQueries.get(queryIndex);
+    if (!query) {
+      query = this.gl.createQuery();
+      if (!query) {
+        logger.error('Failed to create occlusion query');
+        return;
+      }
+      this.occlusionQueries.set(queryIndex, query);
+    }
+
+    this.currentOcclusionQuery = query;
+    this.gl.beginQuery(this.gl.ANY_SAMPLES_PASSED, query);
   }
 
   endOcclusionQuery(): void {
-    logger.warn('Occlusion queries not yet implemented for WebGL2');
+    if (this.currentOcclusionQuery) {
+      this.gl.endQuery(this.gl.ANY_SAMPLES_PASSED);
+      this.currentOcclusionQuery = null;
+    }
   }
 
   executeBundles(_bundles: any[]): void {
@@ -723,37 +888,125 @@ class WebGL2CommandEncoder extends GPUCommandEncoder {
   }
 
   copyBufferToBuffer(
-    _source: GPUBuffer,
-    _sourceOffset: number,
-    _destination: GPUBuffer,
-    _destinationOffset: number,
-    _size: number
+    source: GPUBuffer,
+    sourceOffset: number,
+    destination: GPUBuffer,
+    destinationOffset: number,
+    size: number
   ): void {
     this.commands.push(() => {
+      const srcBuffer = source as WebGL2Buffer;
+      const dstBuffer = destination as WebGL2Buffer;
 
-      // WebGL2 doesn't have direct buffer-to-buffer copy
-      // Use transform feedback or pixel buffer objects as workaround
-      logger.warn('Buffer-to-buffer copy not efficiently implemented for WebGL2');
+      this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, srcBuffer.glBuffer);
+      this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, dstBuffer.glBuffer);
+
+      this.gl.copyBufferSubData(
+        this.gl.COPY_READ_BUFFER,
+        this.gl.COPY_WRITE_BUFFER,
+        sourceOffset,
+        destinationOffset,
+        size
+      );
+
+      this.gl.bindBuffer(this.gl.COPY_READ_BUFFER, null);
+      this.gl.bindBuffer(this.gl.COPY_WRITE_BUFFER, null);
     });
   }
 
   copyBufferToTexture(
-    _source: BufferCopyView,
-    _destination: TextureCopyView,
-    _copySize: Extent3D
+    source: BufferCopyView,
+    destination: TextureCopyView,
+    copySize: Extent3D
   ): void {
     this.commands.push(() => {
-      logger.warn('Buffer-to-texture copy not yet implemented for WebGL2');
+      const srcBuffer = source.buffer as WebGL2Buffer;
+      const dstTexture = destination.texture as WebGL2Texture;
+
+      const target = dstTexture.dimension === TextureDimension.D3
+        ? this.gl.TEXTURE_3D
+        : this.gl.TEXTURE_2D;
+
+      this.gl.bindTexture(target, dstTexture.glTexture);
+      this.gl.bindBuffer(this.gl.PIXEL_UNPACK_BUFFER, srcBuffer.glBuffer);
+
+      const glFormat = formatToGLFormat(dstTexture.format, this.gl);
+      const glType = formatToGLType(dstTexture.format, this.gl);
+
+      const offset = source.offset ?? 0;
+      const mipLevel = destination.mipLevel ?? 0;
+
+      if (target === this.gl.TEXTURE_2D) {
+        this.gl.texSubImage2D(
+          target,
+          mipLevel,
+          destination.origin?.x ?? 0,
+          destination.origin?.y ?? 0,
+          copySize.width,
+          copySize.height ?? 1,
+          glFormat,
+          glType,
+          offset
+        );
+      } else if (target === this.gl.TEXTURE_3D) {
+        this.gl.texSubImage3D(
+          target,
+          mipLevel,
+          destination.origin?.x ?? 0,
+          destination.origin?.y ?? 0,
+          destination.origin?.z ?? 0,
+          copySize.width,
+          copySize.height ?? 1,
+          copySize.depth ?? 1,
+          glFormat,
+          glType,
+          offset
+        );
+      }
+
+      this.gl.bindBuffer(this.gl.PIXEL_UNPACK_BUFFER, null);
+      this.gl.bindTexture(target, null);
     });
   }
 
   copyTextureToTexture(
-    _source: TextureCopyView,
-    _destination: BufferCopyView,
-    _copySize: Extent3D
+    source: TextureCopyView,
+    destination: BufferCopyView,
+    copySize: Extent3D
   ): void {
     this.commands.push(() => {
-      logger.warn('Texture-to-buffer copy not yet implemented for WebGL2');
+      const srcTexture = source.texture as WebGL2Texture;
+      const dstBuffer = destination.buffer as WebGL2Buffer;
+
+      const fbo = this.gl.createFramebuffer();
+      this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, fbo);
+
+      this.gl.framebufferTexture2D(
+        this.gl.READ_FRAMEBUFFER,
+        this.gl.COLOR_ATTACHMENT0,
+        this.gl.TEXTURE_2D,
+        srcTexture.glTexture,
+        source.mipLevel ?? 0
+      );
+
+      this.gl.bindBuffer(this.gl.PIXEL_PACK_BUFFER, dstBuffer.glBuffer);
+
+      const glFormat = formatToGLFormat(srcTexture.format, this.gl);
+      const glType = formatToGLType(srcTexture.format, this.gl);
+
+      this.gl.readPixels(
+        source.origin?.x ?? 0,
+        source.origin?.y ?? 0,
+        copySize.width,
+        copySize.height ?? 1,
+        glFormat,
+        glType,
+        destination.offset ?? 0
+      );
+
+      this.gl.bindBuffer(this.gl.PIXEL_PACK_BUFFER, null);
+      this.gl.bindFramebuffer(this.gl.READ_FRAMEBUFFER, null);
+      this.gl.deleteFramebuffer(fbo);
     });
   }
 
@@ -812,18 +1065,58 @@ class WebGL2CommandEncoder extends GPUCommandEncoder {
     });
   }
 
-  writeTimestamp(_querySet: any, _queryIndex: number): void {
-    logger.warn('Timestamp queries not supported in WebGL2');
+  writeTimestamp(querySet: any, queryIndex: number): void {
+    this.commands.push(() => {
+      const ext = this.device.getExtension('EXT_disjoint_timer_query_webgl2');
+      if (!ext) {
+        logger.warn('Timestamp queries not supported: EXT_disjoint_timer_query_webgl2 not available');
+        return;
+      }
+
+      let query = this.device.getTimestampQuery(queryIndex);
+      if (!query) {
+        query = this.gl.createQuery();
+        if (!query) {
+          logger.error('Failed to create timestamp query');
+          return;
+        }
+        this.device.setTimestampQuery(queryIndex, query);
+      }
+
+      ext.queryCounterEXT(query, ext.TIMESTAMP_EXT);
+    });
   }
 
   resolveQuerySet(
-    _querySet: any,
-    _firstQuery: number,
-    _queryCount: number,
-    _destination: GPUBuffer,
-    _destinationOffset: number
+    querySet: any,
+    firstQuery: number,
+    queryCount: number,
+    destination: GPUBuffer,
+    destinationOffset: number
   ): void {
-    logger.warn('Query resolution not supported in WebGL2');
+    this.commands.push(() => {
+      const dstBuffer = destination as WebGL2Buffer;
+      const results = new BigUint64Array(queryCount);
+
+      for (let i = 0; i < queryCount; i++) {
+        const query = this.device.getTimestampQuery(firstQuery + i);
+        if (query) {
+          const available = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT_AVAILABLE);
+          if (available) {
+            const result = this.gl.getQueryParameter(query, this.gl.QUERY_RESULT);
+            results[i] = BigInt(result);
+          }
+        }
+      }
+
+      const target = dstBuffer.usage & BufferUsage.Index
+        ? this.gl.ELEMENT_ARRAY_BUFFER
+        : this.gl.ARRAY_BUFFER;
+
+      this.gl.bindBuffer(target, dstBuffer.glBuffer);
+      this.gl.bufferSubData(target, destinationOffset, results);
+      this.gl.bindBuffer(target, null);
+    });
   }
 
   protected finishInternal(): any {
@@ -845,6 +1138,7 @@ export class WebGL2Device extends GPUDevice {
   private capabilities: GPUCapabilities;
   private extensions: Map<string, any> = new Map();
   private currentTexture: GPUTexture | null = null;
+  private timestampQueries: Map<number, WebGLQuery> = new Map();
 
   constructor(
     private gl: WebGL2RenderingContext,
@@ -865,6 +1159,21 @@ export class WebGL2Device extends GPUDevice {
     return this.gl;
   }
 
+  /** Get an extension by name */
+  getExtension(name: string): any {
+    return this.extensions.get(name);
+  }
+
+  /** Get a timestamp query by index */
+  getTimestampQuery(index: number): WebGLQuery | null {
+    return this.timestampQueries.get(index) ?? null;
+  }
+
+  /** Set a timestamp query by index */
+  setTimestampQuery(index: number, query: WebGLQuery): void {
+    this.timestampQueries.set(index, query);
+  }
+
   private loadExtensions(): void {
     const extensions = [
       'EXT_color_buffer_float',
@@ -873,6 +1182,7 @@ export class WebGL2Device extends GPUDevice {
       'WEBGL_compressed_texture_etc',
       'WEBGL_compressed_texture_astc',
       'OES_texture_float_linear',
+      'EXT_disjoint_timer_query_webgl2',
     ];
 
     for (const name of extensions) {
@@ -1141,6 +1451,21 @@ export class WebGL2Device extends GPUDevice {
       depthTest: descriptor.depthStencil?.depthCompare !== undefined,
       depthWrite: descriptor.depthStencil?.depthWriteEnabled ?? false,
       depthCompare: descriptor.depthStencil?.depthCompare ?? CompareFunction.Less,
+      stencilTest: descriptor.depthStencil?.stencilFront !== undefined || descriptor.depthStencil?.stencilBack !== undefined,
+      stencilFront: {
+        compare: descriptor.depthStencil?.stencilFront?.compare ?? CompareFunction.Always,
+        failOp: descriptor.depthStencil?.stencilFront?.failOp ?? StencilOperation.Keep,
+        depthFailOp: descriptor.depthStencil?.stencilFront?.depthFailOp ?? StencilOperation.Keep,
+        passOp: descriptor.depthStencil?.stencilFront?.passOp ?? StencilOperation.Keep,
+      },
+      stencilBack: {
+        compare: descriptor.depthStencil?.stencilBack?.compare ?? CompareFunction.Always,
+        failOp: descriptor.depthStencil?.stencilBack?.failOp ?? StencilOperation.Keep,
+        depthFailOp: descriptor.depthStencil?.stencilBack?.depthFailOp ?? StencilOperation.Keep,
+        passOp: descriptor.depthStencil?.stencilBack?.passOp ?? StencilOperation.Keep,
+      },
+      stencilReadMask: descriptor.depthStencil?.stencilReadMask ?? 0xFFFFFFFF,
+      stencilWriteMask: descriptor.depthStencil?.stencilWriteMask ?? 0xFFFFFFFF,
       blendEnabled: descriptor.fragment?.targets[0]?.blend !== undefined,
       blendSrcRGB: descriptor.fragment?.targets[0]?.blend?.color.srcFactor ?? BlendFactor.One,
       blendDstRGB: descriptor.fragment?.targets[0]?.blend?.color.dstFactor ?? BlendFactor.Zero,
@@ -1373,6 +1698,29 @@ function vertexFormatToGL(
       return { size: 4, type: gl.UNSIGNED_BYTE, normalized: true };
     default:
       return { size: 4, type: gl.FLOAT, normalized: false };
+  }
+}
+
+function stencilOperationToGL(op: StencilOperation, gl: WebGL2RenderingContext): number {
+  switch (op) {
+    case StencilOperation.Keep:
+      return gl.KEEP;
+    case StencilOperation.Zero:
+      return gl.ZERO;
+    case StencilOperation.Replace:
+      return gl.REPLACE;
+    case StencilOperation.Invert:
+      return gl.INVERT;
+    case StencilOperation.IncrementClamp:
+      return gl.INCR;
+    case StencilOperation.DecrementClamp:
+      return gl.DECR;
+    case StencilOperation.IncrementWrap:
+      return gl.INCR_WRAP;
+    case StencilOperation.DecrementWrap:
+      return gl.DECR_WRAP;
+    default:
+      return gl.KEEP;
   }
 }
 

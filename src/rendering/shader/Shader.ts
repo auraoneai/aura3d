@@ -185,6 +185,12 @@ export class Shader implements IDisposable {
   /** Uniform value cache to avoid redundant uploads */
   private uniformCache: Map<string, any>;
 
+  /** Texture unit tracking to avoid redundant binds */
+  private textureUnits: Map<string, number>;
+
+  /** Next available texture unit */
+  private nextTextureUnit: number;
+
   /** Whether shader is compiled and ready */
   private ready: boolean;
 
@@ -216,6 +222,8 @@ export class Shader implements IDisposable {
     this.uniforms = new Map();
     this.attributes = new Map();
     this.uniformCache = new Map();
+    this.textureUnits = new Map();
+    this.nextTextureUnit = 0;
     this.ready = false;
     this.errors = [];
     this.disposed = false;
@@ -566,7 +574,12 @@ export class Shader implements IDisposable {
 
     // Set uniform based on type
     if (typeof value === 'number') {
-      this.gl.uniform1f(uniform.location, value);
+      // Determine if this is an integer or float uniform based on uniform type
+      if (uniform.type === 'int' || uniform.type === 'bool') {
+        this.gl.uniform1i(uniform.location, value);
+      } else {
+        this.gl.uniform1f(uniform.location, value);
+      }
     } else if (value instanceof Vector2) {
       this.gl.uniform2f(uniform.location, value.x, value.y);
     } else if (value instanceof Vector3) {
@@ -580,8 +593,12 @@ export class Shader implements IDisposable {
     } else if (value instanceof Matrix4) {
       this.gl.uniformMatrix4fv(uniform.location, false, value.elements);
     } else if (Array.isArray(value)) {
-      // Handle arrays
-      this.gl.uniform1fv(uniform.location, value);
+      // Handle arrays - determine type from uniform
+      if (uniform.type.startsWith('int') || uniform.type.startsWith('bool')) {
+        this.gl.uniform1iv(uniform.location, value);
+      } else {
+        this.gl.uniform1fv(uniform.location, value);
+      }
     } else if (value instanceof Float32Array) {
       this.gl.uniform1fv(uniform.location, value);
     } else if (value instanceof Int32Array) {
@@ -590,6 +607,135 @@ export class Shader implements IDisposable {
 
     // Cache value
     this.uniformCache.set(name, value);
+  }
+
+  /**
+   * Set an integer uniform value
+   *
+   * @param name - Uniform name
+   * @param value - Integer value
+   */
+  setUniformInt(name: string, value: number): void {
+    this.setUniform1i(name, value);
+  }
+
+  /**
+   * Set a single integer uniform (alias for setUniformInt)
+   *
+   * @param name - Uniform name
+   * @param value - Integer value
+   */
+  setUniform1i(name: string, value: number): void {
+    if (!this.gl || !this.ready) return;
+
+    const uniform = this.uniforms.get(name);
+    if (!uniform || !uniform.location) {
+      logger.warn(`Uniform not found: ${name} in shader ${this.name}`);
+      return;
+    }
+
+    this.gl.uniform1i(uniform.location, value);
+    this.uniformCache.set(name, value);
+  }
+
+  /**
+   * Set an integer array uniform
+   *
+   * @param name - Uniform name
+   * @param value - Integer array
+   */
+  setUniformIntArray(name: string, value: number[] | Int32Array): void {
+    if (!this.gl || !this.ready) return;
+
+    const uniform = this.uniforms.get(name);
+    if (!uniform || !uniform.location) {
+      logger.warn(`Uniform not found: ${name} in shader ${this.name}`);
+      return;
+    }
+
+    this.gl.uniform1iv(uniform.location, value);
+    this.uniformCache.set(name, value);
+  }
+
+  /**
+   * Set a texture uniform
+   *
+   * @param name - Uniform name
+   * @param texture - WebGL texture
+   * @param textureUnit - Optional texture unit (auto-assigned if not provided)
+   */
+  setTexture(name: string, texture: WebGLTexture, textureUnit?: number): void {
+    if (!this.gl || !this.ready) return;
+
+    const uniform = this.uniforms.get(name);
+    if (!uniform || !uniform.location) {
+      logger.warn(`Uniform not found: ${name} in shader ${this.name}`);
+      return;
+    }
+
+    // Auto-assign texture unit if not provided
+    let unit = textureUnit;
+    if (unit === undefined) {
+      // Check if we already have a unit assigned to this uniform
+      if (this.textureUnits.has(name)) {
+        unit = this.textureUnits.get(name)!;
+      } else {
+        // Assign next available unit
+        unit = this.nextTextureUnit++;
+        this.textureUnits.set(name, unit);
+      }
+    }
+
+    // Determine texture target from uniform type
+    let target: number;
+    switch (uniform.type) {
+      case 'sampler2D':
+      case 'sampler2DShadow':
+        target = this.gl.TEXTURE_2D;
+        break;
+      case 'samplerCube':
+        target = this.gl.TEXTURE_CUBE_MAP;
+        break;
+      case 'sampler3D':
+        target = this.gl.TEXTURE_3D;
+        break;
+      default:
+        logger.warn(`Unsupported sampler type: ${uniform.type}`);
+        return;
+    }
+
+    // Activate texture unit and bind texture
+    this.gl.activeTexture(this.gl.TEXTURE0 + unit);
+    this.gl.bindTexture(target, texture);
+
+    // Set sampler uniform to texture unit index
+    this.gl.uniform1i(uniform.location, unit);
+
+    // Cache the texture and unit
+    this.uniformCache.set(name, { texture, unit });
+  }
+
+  /**
+   * Bind a uniform buffer object to a uniform block
+   *
+   * @param blockName - Uniform block name
+   * @param buffer - Uniform buffer object
+   * @param bindingPoint - Binding point index
+   */
+  setUniformBlock(blockName: string, buffer: WebGLBuffer, bindingPoint: number): void {
+    if (!this.gl || !this.program || !this.ready) return;
+
+    const blockIndex = this.gl.getUniformBlockIndex(this.program, blockName);
+    if (blockIndex === this.gl.INVALID_INDEX) {
+      logger.warn(`Uniform block not found: ${blockName} in shader ${this.name}`);
+      return;
+    }
+
+    // Bind the uniform block to the binding point
+    this.gl.uniformBlockBinding(this.program, blockIndex, bindingPoint);
+
+    // Bind the buffer to the binding point
+    this.gl.bindBufferBase(this.gl.UNIFORM_BUFFER, bindingPoint, buffer);
   }
 
   /**
@@ -639,6 +785,8 @@ export class Shader implements IDisposable {
   updateDefines(defines: DefinesMap): boolean {
     this.defines = { ...this.defines, ...defines };
     this.uniformCache.clear();
+    this.textureUnits.clear();
+    this.nextTextureUnit = 0;
     return this.compile();
   }
 
@@ -651,6 +799,8 @@ export class Shader implements IDisposable {
   reload(source: ShaderSource): boolean {
     this.source = source;
     this.uniformCache.clear();
+    this.textureUnits.clear();
+    this.nextTextureUnit = 0;
     return this.compile();
   }
 
@@ -701,6 +851,8 @@ export class Shader implements IDisposable {
     this.uniforms.clear();
     this.attributes.clear();
     this.uniformCache.clear();
+    this.textureUnits.clear();
+    this.nextTextureUnit = 0;
     this.ready = false;
     this.disposed = true;
 

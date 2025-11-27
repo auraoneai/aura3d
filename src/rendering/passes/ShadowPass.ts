@@ -519,6 +519,7 @@ export class ShadowPass extends RenderPass {
           }
         }
 
+        // *** ACTUAL DRAW CALL: Render depth-only to shadow map ***
         // Bind index buffer and draw
         const indexBuffer = drawCall.indexBuffer;
         if (indexBuffer && indexBuffer.buffer) {
@@ -585,6 +586,8 @@ export class ShadowPass extends RenderPass {
 
     // Restore GL state
     gl.colorMask(true, true, true, true);
+
+    // Unbind framebuffer (restore default framebuffer)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
     logger.trace(

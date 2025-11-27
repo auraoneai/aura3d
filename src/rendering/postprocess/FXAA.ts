@@ -187,6 +187,9 @@ export class FXAA extends PostProcessEffect {
         uniform int uSearchSteps;
         uniform float uSearchThreshold;
 
+        // Use constant for max iterations to avoid driver issues with dynamic loops
+        const int MAX_SEARCH_STEPS = 32;
+
         // Luminance calculation
         float luminance(vec3 color) {
           return dot(color, vec3(0.299, 0.587, 0.114));
@@ -278,10 +281,12 @@ export class FXAA extends PostProcessEffect {
           bool doneN = abs(lumaEndN) >= gradientScaled;
           bool doneP = abs(lumaEndP) >= gradientScaled;
 
-          // Edge search loop
+          // Edge search loop (use min to clamp to actual search steps)
+          int searchSteps = min(uSearchSteps, MAX_SEARCH_STEPS);
+
           if (!doneN) {
-            for (int i = 0; i < uSearchSteps; i++) {
-              if (!doneN) {
+            for (int i = 0; i < MAX_SEARCH_STEPS; i++) {
+              if (!doneN && i < searchSteps) {
                 posN -= offNP;
                 lumaEndN = luminance(texture(uTexture, posN).rgb) - lumaLocalAverage;
                 doneN = abs(lumaEndN) >= gradientScaled;
@@ -290,8 +295,8 @@ export class FXAA extends PostProcessEffect {
           }
 
           if (!doneP) {
-            for (int i = 0; i < uSearchSteps; i++) {
-              if (!doneP) {
+            for (int i = 0; i < MAX_SEARCH_STEPS; i++) {
+              if (!doneP && i < searchSteps) {
                 posP += offNP;
                 lumaEndP = luminance(texture(uTexture, posP).rgb) - lumaLocalAverage;
                 doneP = abs(lumaEndP) >= gradientScaled;

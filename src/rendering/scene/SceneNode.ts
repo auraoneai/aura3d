@@ -292,6 +292,31 @@ export class SceneNode {
   }
 
   /**
+   * Sets the transform from a Matrix4.
+   * Decomposes the matrix into position, rotation, and scale.
+   *
+   * @param matrix - Matrix4 to set transform from
+   * @returns This node for chaining
+   */
+  setTransform(matrix: any): this {
+    // Decompose matrix into position, rotation, scale
+    if (matrix && typeof matrix.decompose === 'function') {
+      const pos = { x: 0, y: 0, z: 0 };
+      const rot = { x: 0, y: 0, z: 0, w: 1 };
+      const scl = { x: 1, y: 1, z: 1 };
+      matrix.decompose(pos, rot, scl);
+      this.transform.position.set(pos.x, pos.y, pos.z);
+      this.transform.rotation = new Quaternion(rot.x, rot.y, rot.z, rot.w);
+      this.transform.scale.set(scl.x, scl.y, scl.z);
+    } else if (matrix && matrix.elements) {
+      // Direct matrix - extract position from last column
+      const e = matrix.elements;
+      this.transform.position.set(e[12], e[13], e[14]);
+    }
+    return this;
+  }
+
+  /**
    * Gets the world rotation of this node.
    */
   get worldRotation(): Quaternion {

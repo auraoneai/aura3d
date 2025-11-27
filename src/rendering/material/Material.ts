@@ -667,6 +667,208 @@ export class Material {
   }
 
   /**
+   * Binds material to GPU, uploading uniforms and textures.
+   * This is where the actual GPU data upload happens.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param program - Shader program to bind to
+   *
+   * @example
+   * ```typescript
+   * const gl = renderer.getDevice().getGL();
+   * const program = shader.getProgram();
+   * material.bind(gl, program);
+   * // Now draw calls will use this material's properties
+   * ```
+   */
+  bind(gl: WebGL2RenderingContext, program: WebGLProgram): void {
+    // Pack uniforms if dirty
+    if (this.uniformsDirty) {
+      this.packUniforms();
+    }
+
+    // Upload PBR properties as individual uniforms
+    const albedoLoc = gl.getUniformLocation(program, 'u_albedo');
+    if (albedoLoc) {
+      gl.uniform3f(
+        albedoLoc,
+        this.properties.albedo.r,
+        this.properties.albedo.g,
+        this.properties.albedo.b
+      );
+    }
+
+    const metallicLoc = gl.getUniformLocation(program, 'u_metallic');
+    if (metallicLoc) {
+      gl.uniform1f(metallicLoc, this.properties.metallic);
+    }
+
+    const roughnessLoc = gl.getUniformLocation(program, 'u_roughness');
+    if (roughnessLoc) {
+      gl.uniform1f(roughnessLoc, this.properties.roughness);
+    }
+
+    const aoLoc = gl.getUniformLocation(program, 'u_ao');
+    if (aoLoc) {
+      gl.uniform1f(aoLoc, this.properties.ao);
+    }
+
+    const emissionLoc = gl.getUniformLocation(program, 'u_emission');
+    if (emissionLoc) {
+      gl.uniform3f(
+        emissionLoc,
+        this.properties.emission.r,
+        this.properties.emission.g,
+        this.properties.emission.b
+      );
+    }
+
+    const emissionIntensityLoc = gl.getUniformLocation(program, 'u_emissionIntensity');
+    if (emissionIntensityLoc) {
+      gl.uniform1f(emissionIntensityLoc, this.properties.emissionIntensity);
+    }
+
+    // Upload texture flags and bind textures
+    let textureUnit = 0;
+
+    // Albedo map
+    const hasAlbedoMapLoc = gl.getUniformLocation(program, 'u_hasAlbedoMap');
+    if (hasAlbedoMapLoc) {
+      gl.uniform1i(hasAlbedoMapLoc, this.textures.albedoMap ? 1 : 0);
+    }
+    if (this.textures.albedoMap) {
+      const glTexture = this.textures.albedoMap.getGLTexture();
+      if (glTexture) {
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        const albedoMapLoc = gl.getUniformLocation(program, 'u_albedoMap');
+        if (albedoMapLoc) {
+          gl.uniform1i(albedoMapLoc, textureUnit);
+        }
+        textureUnit++;
+      }
+    }
+
+    // Normal map
+    const hasNormalMapLoc = gl.getUniformLocation(program, 'u_hasNormalMap');
+    if (hasNormalMapLoc) {
+      gl.uniform1i(hasNormalMapLoc, this.textures.normalMap ? 1 : 0);
+    }
+    if (this.textures.normalMap) {
+      const glTexture = this.textures.normalMap.getGLTexture();
+      if (glTexture) {
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        const normalMapLoc = gl.getUniformLocation(program, 'u_normalMap');
+        if (normalMapLoc) {
+          gl.uniform1i(normalMapLoc, textureUnit);
+        }
+        textureUnit++;
+      }
+    }
+
+    // Metallic-Roughness map
+    const hasMRMapLoc = gl.getUniformLocation(program, 'u_hasMetallicRoughnessMap');
+    if (hasMRMapLoc) {
+      gl.uniform1i(hasMRMapLoc, this.textures.metallicRoughnessMap ? 1 : 0);
+    }
+    if (this.textures.metallicRoughnessMap) {
+      const glTexture = this.textures.metallicRoughnessMap.getGLTexture();
+      if (glTexture) {
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        const mrMapLoc = gl.getUniformLocation(program, 'u_metallicRoughnessMap');
+        if (mrMapLoc) {
+          gl.uniform1i(mrMapLoc, textureUnit);
+        }
+        textureUnit++;
+      }
+    }
+
+    // AO map
+    const hasAOMapLoc = gl.getUniformLocation(program, 'u_hasAOMap');
+    if (hasAOMapLoc) {
+      gl.uniform1i(hasAOMapLoc, this.textures.aoMap ? 1 : 0);
+    }
+    if (this.textures.aoMap) {
+      const glTexture = this.textures.aoMap.getGLTexture();
+      if (glTexture) {
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        const aoMapLoc = gl.getUniformLocation(program, 'u_aoMap');
+        if (aoMapLoc) {
+          gl.uniform1i(aoMapLoc, textureUnit);
+        }
+        textureUnit++;
+      }
+    }
+
+    // Emission map
+    const hasEmissionMapLoc = gl.getUniformLocation(program, 'u_hasEmissionMap');
+    if (hasEmissionMapLoc) {
+      gl.uniform1i(hasEmissionMapLoc, this.textures.emissionMap ? 1 : 0);
+    }
+    if (this.textures.emissionMap) {
+      const glTexture = this.textures.emissionMap.getGLTexture();
+      if (glTexture) {
+        gl.activeTexture(gl.TEXTURE0 + textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, glTexture);
+        const emissionMapLoc = gl.getUniformLocation(program, 'u_emissionMap');
+        if (emissionMapLoc) {
+          gl.uniform1i(emissionMapLoc, textureUnit);
+        }
+        textureUnit++;
+      }
+    }
+
+    // Set render state
+    this.applyRenderState(gl);
+
+    logger.trace(`Material ${this.name} bound to GPU`);
+  }
+
+  /**
+   * Applies render state to WebGL context.
+   *
+   * @param gl - WebGL2 rendering context
+   */
+  private applyRenderState(gl: WebGL2RenderingContext): void {
+    // Apply culling
+    if (this.state.cullMode === CullMode.None) {
+      gl.disable(gl.CULL_FACE);
+    } else {
+      gl.enable(gl.CULL_FACE);
+      gl.cullFace(
+        this.state.cullMode === CullMode.Back ? gl.BACK : gl.FRONT
+      );
+    }
+
+    // Apply depth test
+    const depthFuncMap: Record<string, number> = {
+      [DepthTest.Never]: gl.NEVER,
+      [DepthTest.Less]: gl.LESS,
+      [DepthTest.Equal]: gl.EQUAL,
+      [DepthTest.LessEqual]: gl.LEQUAL,
+      [DepthTest.Greater]: gl.GREATER,
+      [DepthTest.NotEqual]: gl.NOTEQUAL,
+      [DepthTest.GreaterEqual]: gl.GEQUAL,
+      [DepthTest.Always]: gl.ALWAYS,
+    };
+    gl.depthFunc(depthFuncMap[this.state.depthTest] || gl.LESS);
+
+    // Apply depth write
+    gl.depthMask(this.state.depthWrite);
+
+    // Apply alpha blending
+    if (this.state.alphaMode === AlphaMode.Blend) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    } else {
+      gl.disable(gl.BLEND);
+    }
+  }
+
+  /**
    * Clones this material.
    * Creates a shallow copy with shared textures but independent properties.
    *

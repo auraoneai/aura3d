@@ -122,6 +122,9 @@ interface EngineEvents {
   /** Called after all updates each frame */
   onLateUpdate: ((deltaTime: number) => void) | null;
 
+  /** Called for rendering each frame */
+  onRender: (() => void) | null;
+
   /** Called when engine is destroyed */
   onDestroy: ((engine: Engine) => void) | null;
 }
@@ -321,6 +324,7 @@ export class Engine {
       onUpdate: null,
       onFixedUpdate: null,
       onLateUpdate: null,
+      onRender: null,
       onDestroy: null
     };
 
@@ -423,6 +427,9 @@ export class Engine {
       case 'destroy':
         this._events.onDestroy = callback as (engine: Engine) => void;
         break;
+      case 'render':
+        this._events.onRender = callback as () => void;
+        break;
     }
     return this;
   }
@@ -462,6 +469,9 @@ export class Engine {
         break;
       case 'destroy':
         this._events.onDestroy = null;
+        break;
+      case 'render':
+        this._events.onRender = null;
         break;
     }
     return this;
@@ -868,6 +878,15 @@ export class Engine {
     }
 
     this._world.lateUpdate(deltaTime);
+
+    // Render phase - called after all updates
+    if (this._events.onRender) {
+      try {
+        this._events.onRender();
+      } catch (error) {
+        this.logger.error('Error in onRender callback', error);
+      }
+    }
   }
 
   /**

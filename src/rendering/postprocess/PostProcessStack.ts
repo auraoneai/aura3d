@@ -202,22 +202,45 @@ export class PostProcessStack {
    * @param priority - Effect priority (lower = earlier, default: auto)
    * @param enabled - Whether effect starts enabled (default: true)
    *
+   * Recommended effect order (priority values):
+   * - SSAO: 100 (early, needs depth/normals)
+   * - TAA: 200 (before bloom/post)
+   * - Bloom: 300 (HDR effect)
+   * - ToneMapping: 400 (HDR to LDR conversion)
+   * - FXAA: 500 (after tone mapping, LDR)
+   *
    * @example
    * ```typescript
    * // Add with default priority
    * stack.addEffect(new Bloom());
    *
    * // Add with custom priority (run early)
-   * stack.addEffect(new SSAO(), 10);
+   * stack.addEffect(new SSAO(), 100);
    *
    * // Add but start disabled
    * stack.addEffect(new DepthOfField(), 100, false);
    * ```
    */
   addEffect(effect: PostProcessEffect, priority?: number, enabled: boolean = true): void {
-    // Auto-assign priority if not specified
+    // Auto-assign priority based on effect type if not specified
     if (priority === undefined) {
-      priority = this.effects.length * 100;
+      const name = effect.getName();
+
+      // Assign smart defaults based on effect type
+      if (name === 'SSAO') {
+        priority = 100;
+      } else if (name === 'TAA') {
+        priority = 200;
+      } else if (name === 'Bloom') {
+        priority = 300;
+      } else if (name === 'ToneMapping') {
+        priority = 400;
+      } else if (name === 'FXAA') {
+        priority = 500;
+      } else {
+        // Default: add at end
+        priority = this.effects.length * 100 + 600;
+      }
     }
 
     const entry: EffectEntry = {
