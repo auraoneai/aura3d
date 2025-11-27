@@ -26,6 +26,8 @@ import { Track } from './Track';
 import { AIDriver, AIDifficulty } from './AIDriver';
 import { RaceManager, RaceState } from './RaceManager';
 import { RacingHUD } from './RacingHUD';
+import { ProceduralCarBuilder, CAR_STYLES } from './ProceduralCarBuilder';
+import { ProceduralTextureGenerator, CarPaintPresets } from './ProceduralTextureGenerator';
 
 /**
  * Main Racing Game class
@@ -327,9 +329,9 @@ class RacingGame {
 
     // Add cabin (upper section) as child node
     const cabinMaterial = new StandardPBRMaterial(`${name}_CabinMaterial`);
-    cabinMaterial.albedo = new Color(0.05, 0.05, 0.08); // Very dark glass
-    cabinMaterial.metallic = 0.1;
-    cabinMaterial.roughness = 0.05; // Super smooth glass
+    cabinMaterial.albedo = new Color(0.15, 0.18, 0.22); // Dark tinted glass - more visible
+    cabinMaterial.metallic = 0.2;
+    cabinMaterial.roughness = 0.15; // Smooth glass
 
     const cabinMesh = GeometryGenerator.box(1.8, 0.5, 2.0);
     const cabinNode = new SceneNode(`${name}_Cabin`);
@@ -341,8 +343,8 @@ class RacingGame {
     // Add front hood as child node
     const hoodMaterial = new StandardPBRMaterial(`${name}_HoodMaterial`);
     hoodMaterial.albedo = bodyColor;
-    hoodMaterial.metallic = 0.95; // Slightly more metallic
-    hoodMaterial.roughness = 0.12;
+    hoodMaterial.metallic = 0.45; // Moderate metallic - visible without env map
+    hoodMaterial.roughness = 0.30;
 
     const hoodMesh = GeometryGenerator.box(2.0, 0.2, 1.5);
     const hoodNode = new SceneNode(`${name}_Hood`);
@@ -477,28 +479,64 @@ class RacingGame {
   }
 
   /**
-   * Create visual meshes for vehicles
+   * Create visual meshes for vehicles using procedural car builder
    */
   private createVehicleMeshes(): void {
-    // Player vehicle (blue racing car)
-    const playerNode = this.createCarMesh('PlayerVehicle', new Color(0.1, 0.4, 1.0));
-    this.scene.add(playerNode);
-    console.log('Player vehicle mesh added to scene');
+    console.log('[createVehicleMeshes] Creating detailed procedural car models...');
 
-    // AI vehicles with different colors
-    const aiColors = [
-      new Color(1, 0.15, 0.15),   // Red
-      new Color(1, 0.6, 0),       // Orange
-      new Color(0.9, 0.9, 0),     // Yellow
-      new Color(0.6, 0.1, 0.9),   // Purple
-      new Color(0.1, 0.9, 0.5),   // Teal
+    // Player vehicle - Blue Supercar with metallic paint
+    const playerColor = new Color(0.1, 0.4, 1.0);
+    const playerNode = ProceduralCarBuilder.createSupercar('PlayerVehicle', playerColor);
+
+    // Optional: Add textures to player car (if texture system is working)
+    try {
+      const playerPaintTexture = CarPaintPresets.createMetallicBlue();
+      const playerNormalMap = ProceduralTextureGenerator.createPaintNormalMap();
+      // Note: Textures would need to be applied to materials here if texture system is fully integrated
+      console.log('[createVehicleMeshes] Generated player car textures');
+    } catch (err) {
+      console.warn('[createVehicleMeshes] Texture generation failed, using solid colors:', err);
+    }
+
+    this.scene.add(playerNode);
+    console.log('[createVehicleMeshes] Player vehicle (Supercar) mesh added to scene');
+
+    // AI vehicles with different car types and colors
+    const aiConfigs = [
+      { name: 'AIVehicle0', color: new Color(1, 0.15, 0.15), type: 'sports' },      // Red Sports Car
+      { name: 'AIVehicle1', color: new Color(1, 0.6, 0), type: 'muscle' },          // Orange Muscle Car
+      { name: 'AIVehicle2', color: new Color(0.95, 0.85, 0.1), type: 'rally' },     // Yellow Rally Car
+      { name: 'AIVehicle3', color: new Color(0.6, 0.1, 0.9), type: 'supercar' },    // Purple Supercar
+      { name: 'AIVehicle4', color: new Color(0.1, 0.85, 0.7), type: 'sports' },     // Teal Sports Car
     ];
 
     this.aiVehicles.forEach((vehicle, index) => {
-      const aiNode = this.createCarMesh(`AIVehicle${index}`, aiColors[index % aiColors.length]);
+      const config = aiConfigs[index % aiConfigs.length];
+      let aiNode: SceneNode;
+
+      // Create different car types for variety
+      switch (config.type) {
+        case 'sports':
+          aiNode = ProceduralCarBuilder.createSportsCar(config.name, config.color);
+          break;
+        case 'muscle':
+          aiNode = ProceduralCarBuilder.createMuscleCar(config.name, config.color);
+          break;
+        case 'rally':
+          aiNode = ProceduralCarBuilder.createRallyCar(config.name, config.color);
+          break;
+        case 'supercar':
+          aiNode = ProceduralCarBuilder.createSupercar(config.name, config.color);
+          break;
+        default:
+          aiNode = ProceduralCarBuilder.createSportsCar(config.name, config.color);
+      }
+
       this.scene.add(aiNode);
+      console.log(`[createVehicleMeshes] AI vehicle ${index} (${config.type}) added: ${config.name}`);
     });
-    console.log(`${this.aiVehicles.length} AI vehicle meshes added to scene`);
+
+    console.log(`[createVehicleMeshes] All ${this.aiVehicles.length + 1} detailed car models created successfully`);
   }
 
   /**

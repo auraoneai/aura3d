@@ -138,3 +138,13 @@ export type {
   DebugOverlayConfig,
   PerformanceStats,
 } from './DebugOverlayPass';
+
+// SSAO Pass - Screen-space ambient occlusion
+export {
+  SSAOPass,
+  SSAOQuality,
+} from './SSAOPass';
+
+export type {
+  SSAOPassConfig,
+} from './SSAOPass';

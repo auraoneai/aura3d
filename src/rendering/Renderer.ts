@@ -18,12 +18,17 @@ import { RenderProfiler } from './RenderProfiler';
 import { LightManager } from './lighting/LightManager';
 import { ShadowMapper } from './lighting/ShadowMapper';
 import { PostProcessStack } from './postprocess/PostProcessStack';
+import { Bloom } from './postprocess/Bloom';
+import { EffectQuality } from './postprocess/PostProcessEffect';
+import { RenderTexture, RenderTextureDescriptor } from './texture/RenderTexture';
+import { TextureFilter, TextureWrap } from './texture/Texture';
 import { GBufferPass } from './passes/GBufferPass';
 import { LightingPass } from './passes/LightingPass';
 import { ShadowPass } from './passes/ShadowPass';
 import { ForwardPass } from './passes/ForwardPass';
 import { SkyboxPass } from './passes/SkyboxPass';
 import { DepthPrePass } from './passes/DepthPrePass';
+import { SSAOPass } from './passes/SSAOPass';
 import { Logger } from '../core/Logger';
 import { Time } from '../core/Time';
 import { Vector3 } from '../math/Vector3';
@@ -178,6 +183,7 @@ export class Renderer {
   private depthPrePass: DepthPrePass | null = null;
   private shadowPass: ShadowPass | null = null;
   private gBufferPass: GBufferPass | null = null;
+  private ssaoPass: SSAOPass | null = null;
   private lightingPass: LightingPass | null = null;
   private forwardPass: ForwardPass | null = null;
   private skyboxPass: SkyboxPass | null = null;
@@ -185,6 +191,10 @@ export class Renderer {
   // Render targets
   private backbuffer: RenderTarget | null = null;
   private hdrTarget: RenderTarget | null = null;
+
+  // Post-processing textures
+  private postProcessInput: RenderTexture | null = null;
+  private postProcessOutput: RenderTexture | null = null;
 
   // State
   private width: number;
@@ -342,6 +352,9 @@ export class Renderer {
     this.renderGraph.build();
     this.renderGraph.compile();
 
+    // Initialize post-processing stack
+    this.initializePostProcessing();
+
     logger.info('Renderer initialized successfully');
   }
 
@@ -368,6 +381,72 @@ export class Renderer {
     );
 
     logger.debug('Render targets created');
+  }
+
+  /**
+   * Initializes the post-processing stack with effects.
+   */
+  private initializePostProcessing(): void {
+    const device = this.device as any;
+    if (!device.getGL) {
+      logger.warn('Cannot initialize post-processing: No GL context');
+      return;
+    }
+
+    const gl = device.getGL() as WebGL2RenderingContext;
+
+    // Create post-process stack
+    this.postProcessStack = new PostProcessStack({
+      width: this.renderWidth,
+      height: this.renderHeight,
+      hdr: this.config.hdr,
+      quality: this.settings.quality,
+    });
+
+    // Initialize the stack with GL context
+    this.postProcessStack.initialize(gl);
+
+    // Add effects in the correct order:
+    // 1. Bloom (HDR effect, runs on HDR buffer)
+    // 2. ToneMapping (HDR to LDR conversion)
+    // 3. FXAA (LDR anti-aliasing, runs after tone mapping)
+
+    // Import post-process effects
+    const { Bloom } = require('./postprocess/Bloom');
+    const { ToneMapping, ToneMappingOperator } = require('./postprocess/ToneMapping');
+    const { FXAA, FXAAPreset } = require('./postprocess/FXAA');
+
+    // Add Bloom effect (priority 300)
+    const bloom = new Bloom({
+      threshold: 1.0,
+      knee: 0.5,
+      intensity: 0.8,
+      radius: 1.0,
+      iterations: 5,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(bloom);
+
+    // Add Tone Mapping effect (priority 400)
+    const toneMapping = new ToneMapping({
+      operator: ToneMappingOperator.ACES,
+      exposure: 1.0,
+      autoExposure: false,
+      gamma: 2.2,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(toneMapping);
+
+    // Add FXAA effect (priority 500)
+    const fxaa = new FXAA({
+      preset: FXAAPreset.High,
+      edgeThreshold: 0.125,
+      subpixelQuality: 0.75,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(fxaa);
+
+    logger.info('Post-processing stack initialized with Bloom, ToneMapping, and FXAA');
   }
 
   /**
@@ -472,6 +551,72 @@ export class Renderer {
       height: this.renderHeight,
     });
     this.renderGraph.addPass(this.forwardPass);
+  }
+
+  /**
+   * Initializes the post-processing stack with effects.
+   */
+  private initializePostProcessing(): void {
+    if (!this.config.hdr) {
+      logger.info('Post-processing disabled (HDR not enabled)');
+      return;
+    }
+
+    const device = this.device as any;
+    if (!device.getGL) {
+      logger.warn('Post-processing requires WebGL2 backend');
+      return;
+    }
+
+    const gl = device.getGL() as WebGL2RenderingContext;
+
+    // Create render textures for post-processing ping-pong
+    const texDesc: RenderTextureDescriptor = {
+      width: this.renderWidth,
+      height: this.renderHeight,
+      format: TextureFormat.RGBA16F,
+      minFilter: TextureFilter.Linear,
+      magFilter: TextureFilter.Linear,
+      wrapU: TextureWrap.ClampToEdge,
+      wrapV: TextureWrap.ClampToEdge,
+      depth: false,
+    };
+
+    this.postProcessInput = new RenderTexture({
+      ...texDesc,
+      label: 'PostProcessInput',
+    });
+
+    this.postProcessOutput = new RenderTexture({
+      ...texDesc,
+      label: 'PostProcessOutput',
+    });
+
+    // Create post-process stack
+    this.postProcessStack = new PostProcessStack({
+      width: this.renderWidth,
+      height: this.renderHeight,
+      hdr: true,
+      quality: EffectQuality.High,
+    });
+
+    // Initialize with GL context
+    this.postProcessStack.initialize(gl);
+
+    // Add Bloom effect
+    const bloom = new Bloom({
+      threshold: 1.0,
+      knee: 0.5,
+      intensity: 0.8,
+      radius: 1.0,
+      iterations: 5,
+      enabled: true,
+      quality: EffectQuality.High,
+    });
+
+    this.postProcessStack.addEffect(bloom);
+
+    logger.info('Post-processing stack initialized with Bloom effect');
   }
 
   /**
@@ -580,7 +725,37 @@ export class Renderer {
       }
     }
 
-    // Render scene meshes directly (bypasses render graph for now)
+    // Determine if we should render to texture for post-processing
+    const usePostProcessing = this.postProcessStack && this.postProcessInput && this.postProcessOutput;
+
+    if (usePostProcessing) {
+      // Render scene to offscreen texture for post-processing
+      const device = this.device as any;
+      if (device.getGL) {
+        const gl = device.getGL() as WebGL2RenderingContext;
+        const fb = this.postProcessInput!.getFramebuffer();
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+        gl.viewport(0, 0, this.postProcessInput!.getWidth(), this.postProcessInput!.getHeight());
+
+        // Clear offscreen buffer
+        const bgColor = { r: 0.4, g: 0.6, b: 0.9, a: 1 };
+        gl.clearColor(bgColor.r, bgColor.g, bgColor.b, bgColor.a);
+        gl.clearDepth(1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+        // Render sky gradient to offscreen texture
+        this.renderSkyGradient(gl);
+
+        // Enable depth testing and face culling
+        gl.enable(gl.DEPTH_TEST);
+        gl.depthFunc(gl.LEQUAL);
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK);
+        gl.frontFace(gl.CCW);
+      }
+    }
+
+    // Render scene meshes
     if (this.profiler) {
       this.profiler.beginPass('Scene Meshes');
     }
@@ -592,16 +767,12 @@ export class Renderer {
     // DEBUG: Disabled - winding order fixed, scene renders correctly
     // this.renderDebugTest(scene, camera);
 
-    // Post-processing
-    if (this.postProcessStack && this.hdrTarget) {
+    // Post-processing: Apply bloom and other effects
+    if (usePostProcessing) {
       if (this.profiler) {
         this.profiler.beginPass('Post Process');
       }
-      const colorAttachment = this.hdrTarget.getColorAttachment(0);
-      if (colorAttachment) {
-        // Cast to RenderTexture for post-processing
-        this.postProcessStack.render(colorAttachment as any, 0.016);
-      }
+      this.applyPostProcessing(deltaTime);
       if (this.profiler) {
         this.profiler.endPass();
       }
@@ -629,6 +800,96 @@ export class Renderer {
     // In a real implementation, would blit to canvas
     this.device.present();
   }
+
+  /**
+   * Applies post-processing effects to the rendered scene.
+   * Creates a temporary HDR render texture, captures the current framebuffer,
+   * and applies Bloom, ToneMapping, and FXAA in sequence.
+   *
+   * @param deltaTime - Delta time for effect animations
+   */
+  private applyPostProcessing(deltaTime: number): void {
+    if (!this.postProcessStack) {
+      return;
+    }
+
+    const device = this.device as any;
+    if (!device.getGL) {
+      return;
+    }
+
+    const gl = device.getGL() as WebGL2RenderingContext;
+
+    // Import RenderTexture dynamically
+    const { RenderTexture, TextureFormat: RTTextureFormat } = require('./texture/RenderTexture');
+    const { TextureFilter, TextureWrap } = require('./texture/Texture');
+
+    // Create temporary HDR input texture
+    // This captures the current framebuffer contents
+    const inputTexture = new RenderTexture({
+      width: this.renderWidth,
+      height: this.renderHeight,
+      format: this.config.hdr ? RTTextureFormat.RGBA16F : RTTextureFormat.RGBA8,
+      minFilter: TextureFilter.Linear,
+      magFilter: TextureFilter.Linear,
+      wrapU: TextureWrap.ClampToEdge,
+      wrapV: TextureWrap.ClampToEdge,
+      depth: false,
+      label: 'PostProcess_Input',
+    });
+
+    // Create output texture for final result
+    const outputTexture = new RenderTexture({
+      width: this.renderWidth,
+      height: this.renderHeight,
+      format: RTTextureFormat.RGBA8,
+      minFilter: TextureFilter.Linear,
+      magFilter: TextureFilter.Linear,
+      wrapU: TextureWrap.ClampToEdge,
+      wrapV: TextureWrap.ClampToEdge,
+      depth: false,
+      label: 'PostProcess_Output',
+    });
+
+    // Copy current framebuffer to input texture
+    const inputFB = inputTexture.getFramebuffer();
+    if (inputFB) {
+      // Bind and copy
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, inputFB);
+      gl.blitFramebuffer(
+        0, 0, this.renderWidth, this.renderHeight,
+        0, 0, this.renderWidth, this.renderHeight,
+        gl.COLOR_BUFFER_BIT,
+        gl.NEAREST
+      );
+    }
+
+    // Apply post-processing stack
+    // The stack will ping-pong between internal textures and output to outputTexture
+    this.postProcessStack.render(inputTexture, deltaTime, outputTexture);
+
+    // Copy the final result back to the default framebuffer
+    const outputFB = outputTexture.getFramebuffer();
+    if (outputFB) {
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, outputFB);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+      gl.blitFramebuffer(
+        0, 0, this.renderWidth, this.renderHeight,
+        0, 0, this.renderWidth, this.renderHeight,
+        gl.COLOR_BUFFER_BIT,
+        gl.NEAREST
+      );
+    }
+
+    // Reset to default framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    // Clean up temporary textures
+    inputTexture.destroy();
+    outputTexture.destroy();
+  }
+
 
   /**
    * Resizes the renderer.
@@ -1006,13 +1267,15 @@ export class Renderer {
       // Strong diffuse ambient - this is key for non-metallic surfaces
       vec3 diffuse = ambientColor * albedo * kD * 1.5;
 
-      // Specular ambient based on reflection direction
+      // Specular ambient based on reflection direction - boosted for metallic visibility
       vec3 R = reflect(-V, N);
-      float specFactor = max(R.y * 0.5 + 0.5, 0.0) * (1.0 - roughness * 0.8);
-      vec3 specular = mix(horizonColor, skyColor, clamp(R.y, 0.0, 1.0)) * F * specFactor * 0.4;
+      float specFactor = max(R.y * 0.5 + 0.5, 0.0) * (1.0 - roughness * 0.6);
+      // Stronger specular for metallic surfaces to compensate for lack of env map
+      vec3 specularColor = mix(horizonColor, skyColor, clamp(R.y, 0.0, 1.0));
+      vec3 specular = specularColor * F * specFactor * (0.6 + metallic * 0.8);
 
-      // Ensure minimum ambient visibility
-      vec3 minAmbient = albedo * 0.1;
+      // Ensure minimum ambient visibility - especially important for metallic surfaces
+      vec3 minAmbient = albedo * (0.15 + metallic * 0.2);
 
       return max(diffuse + specular, minAmbient) * u_envIntensity;
     }
