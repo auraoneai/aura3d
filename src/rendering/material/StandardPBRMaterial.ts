@@ -504,7 +504,7 @@ export class StandardPBRMaterial extends Material {
    *
    * @returns Cloned material
    */
-  clone(): StandardPBRMaterial {
+  override clone(): StandardPBRMaterial {
     const baseMaterial = super.clone();
     const cloned = new StandardPBRMaterial({
       name: `${this.name}_Clone`,

@@ -55,6 +55,34 @@ export enum GBufferAttachment {
 }
 
 /**
+ * Texture binding information for a single G-Buffer attachment.
+ */
+export interface TextureBindingInfo {
+  /** The texture resource (WebGLTexture or GPUTexture) */
+  texture: any;
+  /** The texture unit index for WebGL2 binding */
+  unit: number;
+  /** The binding slot for WebGPU bind groups */
+  binding: number;
+}
+
+/**
+ * Complete binding information for all G-Buffer attachments.
+ */
+export interface GBufferBindingInfo {
+  /** Albedo texture binding */
+  albedo: TextureBindingInfo;
+  /** Normal texture binding */
+  normal: TextureBindingInfo;
+  /** Depth texture binding */
+  depth: TextureBindingInfo;
+  /** Velocity texture binding (optional) */
+  velocity?: TextureBindingInfo;
+  /** Emissive texture binding (optional) */
+  emissive?: TextureBindingInfo;
+}
+
+/**
  * Geometry buffer for deferred rendering.
  * Stores surface properties in multiple render targets for lighting pass.
  *
@@ -150,6 +178,11 @@ export class GBuffer {
    * Bind group for lighting pass access.
    */
   private _bindGroup: any = null;
+
+  /**
+   * Texture binding information for WebGL2/WebGPU.
+   */
+  private _bindingInfo: GBufferBindingInfo | null = null;
 
   /**
    * Whether the G-Buffer is initialized.
@@ -312,6 +345,14 @@ export class GBuffer {
   }
 
   /**
+   * Gets the texture binding information for manual binding.
+   * @returns Binding information or null if not initialized
+   */
+  get bindingInfo(): GBufferBindingInfo | null {
+    return this._bindingInfo;
+  }
+
+  /**
    * Gets the G-Buffer width.
    * @returns Width in pixels
    */
@@ -447,15 +488,69 @@ export class GBuffer {
    * the G-Buffer textures. This method creates texture views for all G-Buffer
    * attachments that can be bound to the lighting shader.
    *
+   * For WebGL2: Prepares texture unit assignments for manual binding
+   * For WebGPU: Would create actual bind groups (future implementation)
+   *
    * @private
    */
   private _createBindGroup(): void {
-    // Create texture views for all G-Buffer attachments
-    // These views will be used by the lighting pass to sample G-Buffer data
-    // Note: In the full implementation, would create actual bind groups here
-    // with the device.createBindGroup API once bind group layouts are defined
+    if (!this._device) {
+      logger.warn('Cannot create bind group: device not initialized');
+      return;
+    }
 
-    logger.trace('Created G-Buffer bind group');
+    // Prepare binding information for all G-Buffer textures
+    // Texture units are assigned sequentially starting from 0
+    let nextUnit = 0;
+
+    this._bindingInfo = {
+      albedo: {
+        texture: this._albedoTexture,
+        unit: nextUnit++,
+        binding: 0,
+      },
+      normal: {
+        texture: this._normalTexture,
+        unit: nextUnit++,
+        binding: 1,
+      },
+      depth: {
+        texture: this._depthTexture,
+        unit: nextUnit++,
+        binding: 2,
+      },
+    };
+
+    // Add optional textures if enabled
+    if (this._config.enableVelocity && this._velocityTexture) {
+      this._bindingInfo.velocity = {
+        texture: this._velocityTexture,
+        unit: nextUnit++,
+        binding: 3,
+      };
+    }
+
+    if (this._config.enableEmissive && this._emissiveTexture) {
+      this._bindingInfo.emissive = {
+        texture: this._emissiveTexture,
+        unit: nextUnit++,
+        binding: 4,
+      };
+    }
+
+    // For WebGPU, we would create an actual bind group here
+    // For now, store the binding info for WebGL2 manual binding
+    this._bindGroup = this._bindingInfo;
+
+    logger.debug(
+      `Created G-Buffer bind group with ${nextUnit} textures ` +
+        `(albedo=${this._bindingInfo.albedo.unit}, ` +
+        `normal=${this._bindingInfo.normal.unit}, ` +
+        `depth=${this._bindingInfo.depth.unit}` +
+        (this._bindingInfo.velocity ? `, velocity=${this._bindingInfo.velocity.unit}` : '') +
+        (this._bindingInfo.emissive ? `, emissive=${this._bindingInfo.emissive.unit}` : '') +
+        ')'
+    );
   }
 
   /**
@@ -494,6 +589,139 @@ export class GBuffer {
   }
 
   /**
+   * Binds all G-Buffer textures for use in the lighting pass.
+   *
+   * This method binds each G-Buffer texture to its assigned texture unit
+   * so that lighting shaders can sample from them. Must be called before
+   * rendering the lighting pass.
+   *
+   * WebGL2: Binds textures to sequential texture units starting from the base unit
+   * WebGPU: Uses bind groups (would be handled differently)
+   *
+   * @param gl - WebGL2 rendering context (required for WebGL2 backend)
+   * @param baseUnit - Base texture unit offset (default: 0)
+   *
+   * @example
+   * ```typescript
+   * // In lighting pass, before drawing:
+   * const gl = device.gl;
+   * if (gl) {
+   *   gbuffer.bindForLighting(gl);
+   *   // Now draw fullscreen quad with lighting shader
+   *   // Shader can sample from:
+   *   //   uniform sampler2D u_gbuffer_albedo;   // unit 0
+   *   //   uniform sampler2D u_gbuffer_normal;   // unit 1
+   *   //   uniform sampler2D u_gbuffer_depth;    // unit 2
+   *   //   ...etc
+   * }
+   * ```
+   */
+  bindForLighting(gl?: WebGL2RenderingContext, baseUnit: number = 0): void {
+    if (!this._initialized || !this._bindingInfo) {
+      logger.warn('Cannot bind for lighting: GBuffer not initialized');
+      return;
+    }
+
+    // If GL context provided, bind textures to WebGL2 texture units
+    if (gl) {
+      // Helper to extract WebGLTexture from texture object
+      const getGLTexture = (texture: any): WebGLTexture | null => {
+        if (!texture) return null;
+        // Handle both raw WebGLTexture and wrapped texture objects
+        return texture.glTexture ?? texture;
+      };
+
+      // Bind albedo texture
+      const albedoTex = getGLTexture(this._bindingInfo.albedo.texture);
+      if (albedoTex) {
+        gl.activeTexture(gl.TEXTURE0 + baseUnit + this._bindingInfo.albedo.unit);
+        gl.bindTexture(gl.TEXTURE_2D, albedoTex);
+      }
+
+      // Bind normal texture
+      const normalTex = getGLTexture(this._bindingInfo.normal.texture);
+      if (normalTex) {
+        gl.activeTexture(gl.TEXTURE0 + baseUnit + this._bindingInfo.normal.unit);
+        gl.bindTexture(gl.TEXTURE_2D, normalTex);
+      }
+
+      // Bind depth texture
+      const depthTex = getGLTexture(this._bindingInfo.depth.texture);
+      if (depthTex) {
+        gl.activeTexture(gl.TEXTURE0 + baseUnit + this._bindingInfo.depth.unit);
+        gl.bindTexture(gl.TEXTURE_2D, depthTex);
+      }
+
+      // Bind velocity texture if enabled
+      if (this._bindingInfo.velocity) {
+        const velocityTex = getGLTexture(this._bindingInfo.velocity.texture);
+        if (velocityTex) {
+          gl.activeTexture(gl.TEXTURE0 + baseUnit + this._bindingInfo.velocity.unit);
+          gl.bindTexture(gl.TEXTURE_2D, velocityTex);
+        }
+      }
+
+      // Bind emissive texture if enabled
+      if (this._bindingInfo.emissive) {
+        const emissiveTex = getGLTexture(this._bindingInfo.emissive.texture);
+        if (emissiveTex) {
+          gl.activeTexture(gl.TEXTURE0 + baseUnit + this._bindingInfo.emissive.unit);
+          gl.bindTexture(gl.TEXTURE_2D, emissiveTex);
+        }
+      }
+
+      logger.trace('G-Buffer textures bound for lighting pass');
+    } else {
+      // For WebGPU, bind groups would be set on the render pass encoder
+      // The caller should use the bindGroup property directly
+      logger.trace('G-Buffer bind group ready for WebGPU lighting pass');
+    }
+  }
+
+  /**
+   * Unbinds all G-Buffer textures from their texture units.
+   *
+   * This is optional cleanup - useful to prevent state leakage between passes.
+   * Not strictly required as subsequent texture binds will override.
+   *
+   * @param gl - WebGL2 rendering context
+   * @param baseUnit - Base texture unit offset (default: 0)
+   *
+   * @example
+   * ```typescript
+   * // After lighting pass:
+   * gbuffer.unbindFromLighting(gl);
+   * ```
+   */
+  unbindFromLighting(gl?: WebGL2RenderingContext, baseUnit: number = 0): void {
+    if (!this._initialized || !this._bindingInfo || !gl) {
+      return;
+    }
+
+    // Unbind all texture units used by G-Buffer
+    const units = [
+      this._bindingInfo.albedo.unit,
+      this._bindingInfo.normal.unit,
+      this._bindingInfo.depth.unit,
+    ];
+
+    if (this._bindingInfo.velocity) {
+      units.push(this._bindingInfo.velocity.unit);
+    }
+
+    if (this._bindingInfo.emissive) {
+      units.push(this._bindingInfo.emissive.unit);
+    }
+
+    for (const unit of units) {
+      gl.activeTexture(gl.TEXTURE0 + baseUnit + unit);
+      gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
+    logger.trace('G-Buffer textures unbound from lighting pass');
+  }
+
+  /**
    * Disposes of the G-Buffer and releases all resources.
    *
    * @example
@@ -509,6 +737,7 @@ export class GBuffer {
     this._destroyTextures();
 
     this._bindGroup = null;
+    this._bindingInfo = null;
     this._device = null;
     this._formats = null;
     this._initialized = false;

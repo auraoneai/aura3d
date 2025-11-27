@@ -311,11 +311,13 @@ class RacingGame {
   private createCarMesh(name: string, bodyColor: Color): SceneNode {
     const carNode = new SceneNode(name);
 
-    // Car body material - metallic paint finish with proper PBR values
+    // Car body material - visible metallic paint finish
+    // NOTE: Reduced metallic from 0.9 to 0.4 for visibility without environment maps
+    // Once IBL/environment cubemaps are implemented, increase to 0.8-0.9 for realistic car paint
     const bodyMaterial = new StandardPBRMaterial(`${name}_BodyMaterial`);
     bodyMaterial.albedo = bodyColor;
-    bodyMaterial.metallic = 0.9;   // Very high metallic for metallic car paint
-    bodyMaterial.roughness = 0.15; // Very low roughness for glossy showroom finish
+    bodyMaterial.metallic = 0.4;   // Moderate metallic - visible without env map
+    bodyMaterial.roughness = 0.35; // Moderate roughness for diffuse visibility
 
     // Main body - lower section (wide and flat)
     const bodyLower = GeometryGenerator.box(2.4, 0.5, 4.8);

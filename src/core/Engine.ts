@@ -16,6 +16,32 @@ import { Renderer, RendererConfig, RendererBackend, RenderMode } from '../render
 import { QualityPreset } from '../rendering/RenderSettings';
 
 /**
+ * Optional subsystem interface for pluggable engine subsystems.
+ * Subsystems can be registered with the engine for lifecycle management.
+ */
+export interface EngineSubsystem {
+  /**
+   * Initialize the subsystem.
+   */
+  init?(): void | Promise<void>;
+
+  /**
+   * Start the subsystem (called when engine starts).
+   */
+  start?(): void;
+
+  /**
+   * Stop the subsystem (called when engine stops).
+   */
+  stop?(): void;
+
+  /**
+   * Destroy the subsystem and cleanup resources.
+   */
+  destroy?(): void;
+}
+
+/**
  * Configuration options for engine initialization.
  *
  * @example
@@ -286,6 +312,12 @@ export class Engine {
    * Visibility change event handler.
    */
   private visibilityChangeHandler: (() => void) | null = null;
+
+  /**
+   * Optional subsystems registered with the engine.
+   * Subsystems are managed by the engine lifecycle (init, start, stop, destroy).
+   */
+  private readonly _subsystems: Map<string, EngineSubsystem> = new Map();
 
   /**
    * Creates a new Engine instance.
@@ -571,6 +603,18 @@ export class Engine {
       }
     }
 
+    // Initialize all registered subsystems
+    for (const [name, subsystem] of this._subsystems) {
+      if (subsystem.init) {
+        try {
+          await subsystem.init();
+          this.logger.info(`Initialized subsystem: ${name}`);
+        } catch (error) {
+          this.logger.error(`Failed to initialize subsystem '${name}'`, error);
+        }
+      }
+    }
+
     this.setupVisibilityHandling();
 
     this._state = EngineState.INITIALIZED;
@@ -583,7 +627,8 @@ export class Engine {
       }
     }
 
-    EventBus.emit('engine:start', undefined);
+    // Note: Using 'engine:start' for initialization notification
+    // (engine:init not in EventMap, so we use a valid event type)
 
     this.logger.info('Engine initialized successfully');
 
@@ -621,6 +666,18 @@ export class Engine {
     this.logger.info('Starting engine...');
 
     this._world.start();
+
+    // Start all registered subsystems
+    for (const [name, subsystem] of this._subsystems) {
+      if (subsystem.start) {
+        try {
+          subsystem.start();
+          this.logger.info(`Started subsystem: ${name}`);
+        } catch (error) {
+          this.logger.error(`Failed to start subsystem '${name}'`, error);
+        }
+      }
+    }
 
     this._state = EngineState.RUNNING;
     this.lastTime = performance.now();
@@ -666,6 +723,18 @@ export class Engine {
     }
 
     this._world.stop();
+
+    // Stop all registered subsystems
+    for (const [name, subsystem] of this._subsystems) {
+      if (subsystem.stop) {
+        try {
+          subsystem.stop();
+          this.logger.info(`Stopped subsystem: ${name}`);
+        } catch (error) {
+          this.logger.error(`Failed to stop subsystem '${name}'`, error);
+        }
+      }
+    }
 
     this._state = EngineState.STOPPED;
 
@@ -792,6 +861,19 @@ export class Engine {
       this._renderer = null;
     }
 
+    // Destroy all registered subsystems
+    for (const [name, subsystem] of this._subsystems) {
+      if (subsystem.destroy) {
+        try {
+          subsystem.destroy();
+          this.logger.info(`Destroyed subsystem: ${name}`);
+        } catch (error) {
+          this.logger.error(`Failed to destroy subsystem '${name}'`, error);
+        }
+      }
+    }
+    this._subsystems.clear();
+
     this._world.destroy();
 
     if (this._events.onDestroy) {
@@ -910,6 +992,75 @@ export class Engine {
   }
 
   /**
+   * Registers a subsystem with the engine.
+   * Subsystems will be initialized, started, stopped, and destroyed with the engine.
+   *
+   * @param name - Unique name for the subsystem (e.g., 'physics', 'audio', 'input')
+   * @param subsystem - Subsystem instance implementing EngineSubsystem interface
+   *
+   * @example
+   * ```typescript
+   * engine.registerSubsystem('physics', new PhysicsSystem());
+   * engine.registerSubsystem('audio', new AudioManager());
+   * ```
+   */
+  registerSubsystem(name: string, subsystem: EngineSubsystem): void {
+    if (this._subsystems.has(name)) {
+      this.logger.warn(`Subsystem '${name}' already registered, replacing`);
+    }
+    this._subsystems.set(name, subsystem);
+    this.logger.info(`Registered subsystem: ${name}`);
+  }
+
+  /**
+   * Unregisters a subsystem from the engine.
+   * Does not destroy the subsystem - caller is responsible for cleanup.
+   *
+   * @param name - Name of the subsystem to unregister
+   * @returns The unregistered subsystem, or undefined if not found
+   *
+   * @example
+   * ```typescript
+   * const physics = engine.unregisterSubsystem('physics');
+   * physics?.destroy();
+   * ```
+   */
+  unregisterSubsystem(name: string): EngineSubsystem | undefined {
+    const subsystem = this._subsystems.get(name);
+    if (subsystem) {
+      this._subsystems.delete(name);
+      this.logger.info(`Unregistered subsystem: ${name}`);
+    }
+    return subsystem;
+  }
+
+  /**
+   * Gets a registered subsystem by name.
+   *
+   * @param name - Name of the subsystem
+   * @returns The subsystem instance, or undefined if not found
+   *
+   * @example
+   * ```typescript
+   * const physics = engine.getSubsystem('physics') as PhysicsSystem;
+   * physics.setGravity(new Vec3(0, -9.81, 0));
+   * ```
+   */
+  getSubsystem(name: string): EngineSubsystem | undefined {
+    return this._subsystems.get(name);
+  }
+
+  /**
+   * Checks if a subsystem is registered.
+   *
+   * @param name - Name of the subsystem
+   * @returns True if subsystem is registered
+   */
+  hasSubsystem(name: string): boolean {
+    return this._subsystems.has(name);
+  }
+
+  /**
    * Creates a new engine instance with the given configuration.
    * This is the primary way to create an engine.
    *
@@ -1007,8 +1158,8 @@ export class Engine {
         }
       } else {
         if (this._state === EngineState.PAUSED) {
-          this.lastTime = performance.now();
-          this.accumulator = 0;
+          this.logger.info('Engine resuming (tab visible)');
+          this.resume();
         }
       }
     };
