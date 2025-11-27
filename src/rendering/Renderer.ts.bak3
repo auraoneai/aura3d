@@ -11,7 +11,7 @@ import { Camera } from './camera/Camera';
 import { Scene } from './scene/Scene';
 import { SceneNode } from './scene/SceneNode';
 import { RenderGraph } from './pipeline/RenderGraph';
-import { RenderTarget, TextureFormat as RTTextureFormat } from './pipeline/RenderTarget';
+import { RenderTarget, TextureFormat } from './pipeline/RenderTarget';
 import { RenderSettings, QualityPreset } from './RenderSettings';
 import { ResourceManager } from './ResourceManager';
 import { RenderProfiler } from './RenderProfiler';
@@ -21,7 +21,7 @@ import { PostProcessStack } from './postprocess/PostProcessStack';
 import { Bloom } from './postprocess/Bloom';
 import { EffectQuality } from './postprocess/PostProcessEffect';
 import { RenderTexture, RenderTextureDescriptor } from './texture/RenderTexture';
-import { TextureFilter, TextureWrap, TextureFormat } from './texture/Texture';
+import { TextureFilter, TextureWrap } from './texture/Texture';
 import { GBufferPass } from './passes/GBufferPass';
 import { LightingPass } from './passes/LightingPass';
 import { ShadowPass } from './passes/ShadowPass';
@@ -365,7 +365,7 @@ export class Renderer {
       this.hdrTarget = RenderTarget.createColorTarget(
         this.renderWidth,
         this.renderHeight,
-        RTTextureFormat.RGBA16F,
+        TextureFormat.RGBA16F,
         this.config.msaaSamples
       );
     }
@@ -374,7 +374,7 @@ export class Renderer {
     this.backbuffer = RenderTarget.createColorTarget(
       this.renderWidth,
       this.renderHeight,
-      RTTextureFormat.RGBA8,
+      TextureFormat.RGBA8,
       1
     );
 
@@ -384,6 +384,68 @@ export class Renderer {
   /**
    * Initializes the post-processing stack with effects.
    */
+  private initializePostProcessing(): void {
+    const device = this.device as any;
+    if (!device.getGL) {
+      logger.warn('Cannot initialize post-processing: No GL context');
+      return;
+    }
+
+    const gl = device.getGL() as WebGL2RenderingContext;
+
+    // Create post-process stack
+    this.postProcessStack = new PostProcessStack({
+      width: this.renderWidth,
+      height: this.renderHeight,
+      hdr: this.config.hdr,
+      quality: this.settings.quality,
+    });
+
+    // Initialize the stack with GL context
+    this.postProcessStack.initialize(gl);
+
+    // Add effects in the correct order:
+    // 1. Bloom (HDR effect, runs on HDR buffer)
+    // 2. ToneMapping (HDR to LDR conversion)
+    // 3. FXAA (LDR anti-aliasing, runs after tone mapping)
+
+    // Import post-process effects
+    const { Bloom } = require('./postprocess/Bloom');
+    const { ToneMapping, ToneMappingOperator } = require('./postprocess/ToneMapping');
+    const { FXAA, FXAAPreset } = require('./postprocess/FXAA');
+
+    // Add Bloom effect (priority 300)
+    const bloom = new Bloom({
+      threshold: 1.0,
+      knee: 0.5,
+      intensity: 0.8,
+      radius: 1.0,
+      iterations: 5,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(bloom);
+
+    // Add Tone Mapping effect (priority 400)
+    const toneMapping = new ToneMapping({
+      operator: ToneMappingOperator.ACES,
+      exposure: 1.0,
+      autoExposure: false,
+      gamma: 2.2,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(toneMapping);
+
+    // Add FXAA effect (priority 500)
+    const fxaa = new FXAA({
+      preset: FXAAPreset.High,
+      edgeThreshold: 0.125,
+      subpixelQuality: 0.75,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(fxaa);
+
+    logger.info('Post-processing stack initialized with Bloom, ToneMapping, and FXAA');
+  }
 
   /**
    * Sets up the render graph with passes.

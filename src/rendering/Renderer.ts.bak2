@@ -11,7 +11,7 @@ import { Camera } from './camera/Camera';
 import { Scene } from './scene/Scene';
 import { SceneNode } from './scene/SceneNode';
 import { RenderGraph } from './pipeline/RenderGraph';
-import { RenderTarget, TextureFormat as RTTextureFormat } from './pipeline/RenderTarget';
+import { RenderTarget, TextureFormat } from './pipeline/RenderTarget';
 import { RenderSettings, QualityPreset } from './RenderSettings';
 import { ResourceManager } from './ResourceManager';
 import { RenderProfiler } from './RenderProfiler';
@@ -19,15 +19,18 @@ import { LightManager } from './lighting/LightManager';
 import { ShadowMapper } from './lighting/ShadowMapper';
 import { PostProcessStack } from './postprocess/PostProcessStack';
 import { Bloom } from './postprocess/Bloom';
+import { ToneMapping, ToneMappingOperator } from './postprocess/ToneMapping';
+import { FXAA, FXAAPreset } from './postprocess/FXAA';
 import { EffectQuality } from './postprocess/PostProcessEffect';
 import { RenderTexture, RenderTextureDescriptor } from './texture/RenderTexture';
-import { TextureFilter, TextureWrap, TextureFormat } from './texture/Texture';
+import { TextureFilter, TextureWrap } from './texture/Texture';
 import { GBufferPass } from './passes/GBufferPass';
 import { LightingPass } from './passes/LightingPass';
 import { ShadowPass } from './passes/ShadowPass';
 import { ForwardPass } from './passes/ForwardPass';
 import { SkyboxPass } from './passes/SkyboxPass';
 import { DepthPrePass } from './passes/DepthPrePass';
+import { SSAOPass } from './passes/SSAOPass';
 import { Logger } from '../core/Logger';
 import { Time } from '../core/Time';
 import { Vector3 } from '../math/Vector3';
@@ -182,6 +185,7 @@ export class Renderer {
   private depthPrePass: DepthPrePass | null = null;
   private shadowPass: ShadowPass | null = null;
   private gBufferPass: GBufferPass | null = null;
+  private ssaoPass: SSAOPass | null = null;
   private lightingPass: LightingPass | null = null;
   private forwardPass: ForwardPass | null = null;
   private skyboxPass: SkyboxPass | null = null;
@@ -365,7 +369,7 @@ export class Renderer {
       this.hdrTarget = RenderTarget.createColorTarget(
         this.renderWidth,
         this.renderHeight,
-        RTTextureFormat.RGBA16F,
+        TextureFormat.RGBA16F,
         this.config.msaaSamples
       );
     }
@@ -374,16 +378,37 @@ export class Renderer {
     this.backbuffer = RenderTarget.createColorTarget(
       this.renderWidth,
       this.renderHeight,
-      RTTextureFormat.RGBA8,
+      TextureFormat.RGBA8,
       1
     );
 
     logger.debug('Render targets created');
   }
 
-  /**
-   * Initializes the post-processing stack with effects.
-   */
+    this.postProcessStack.addEffect(bloom);
+
+    // Add Tone Mapping effect (priority 400)
+    const toneMapping = new ToneMapping({
+      operator: ToneMappingOperator.ACES,
+      exposure: 1.0,
+      autoExposure: false,
+      gamma: 2.2,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(toneMapping);
+
+    // Add FXAA effect (priority 500)
+    const fxaa = new FXAA({
+      preset: FXAAPreset.High,
+      edgeThreshold: 0.125,
+      subpixelQuality: 0.75,
+      enabled: true,
+    });
+    this.postProcessStack.addEffect(fxaa);
+
+    logger.info('Post-processing stack initialized with Bloom, ToneMapping, and FXAA');
+  }
+
 
   /**
    * Sets up the render graph with passes.
@@ -434,6 +459,29 @@ export class Renderer {
       height: this.renderHeight,
     });
     this.renderGraph.addPass(this.gBufferPass);
+
+    // SSAO pass (after G-Buffer, before lighting)
+    if (this.settings.ssaoEnabled !== false) {
+      this.ssaoPass = new SSAOPass({
+        width: this.renderWidth,
+        height: this.renderHeight,
+        sampleCount: 16,
+        radius: 0.5,
+        intensity: 1.0,
+        bias: 0.025,
+        blurRadius: 4.0,
+        enabled: true,
+      });
+      this.renderGraph.addPass(this.ssaoPass);
+
+      // Initialize SSAO pass with GL context
+      const device = this.device as any;
+      if (device.getGL) {
+        const gl = device.getGL() as WebGL2RenderingContext;
+        this.ssaoPass.setContext(gl);
+        this.ssaoPass.setup();
+      }
+    }
 
     // Lighting pass
     this.lightingPass = new LightingPass({
@@ -489,71 +537,6 @@ export class Renderer {
     this.renderGraph.addPass(this.forwardPass);
   }
 
-  /**
-   * Initializes the post-processing stack with effects.
-   */
-  private initializePostProcessing(): void {
-    if (!this.config.hdr) {
-      logger.info('Post-processing disabled (HDR not enabled)');
-      return;
-    }
-
-    const device = this.device as any;
-    if (!device.getGL) {
-      logger.warn('Post-processing requires WebGL2 backend');
-      return;
-    }
-
-    const gl = device.getGL() as WebGL2RenderingContext;
-
-    // Create render textures for post-processing ping-pong
-    const texDesc: RenderTextureDescriptor = {
-      width: this.renderWidth,
-      height: this.renderHeight,
-      format: TextureFormat.RGBA16F,
-      minFilter: TextureFilter.Linear,
-      magFilter: TextureFilter.Linear,
-      wrapU: TextureWrap.ClampToEdge,
-      wrapV: TextureWrap.ClampToEdge,
-      depth: false,
-    };
-
-    this.postProcessInput = new RenderTexture({
-      ...texDesc,
-      label: 'PostProcessInput',
-    });
-
-    this.postProcessOutput = new RenderTexture({
-      ...texDesc,
-      label: 'PostProcessOutput',
-    });
-
-    // Create post-process stack
-    this.postProcessStack = new PostProcessStack({
-      width: this.renderWidth,
-      height: this.renderHeight,
-      hdr: true,
-      quality: EffectQuality.High,
-    });
-
-    // Initialize with GL context
-    this.postProcessStack.initialize(gl);
-
-    // Add Bloom effect
-    const bloom = new Bloom({
-      threshold: 1.0,
-      knee: 0.5,
-      intensity: 0.8,
-      radius: 1.0,
-      iterations: 5,
-      enabled: true,
-      quality: EffectQuality.High,
-    });
-
-    this.postProcessStack.addEffect(bloom);
-
-    logger.info('Post-processing stack initialized with Bloom effect');
-  }
 
   /**
    * Renders a frame.
@@ -738,6 +721,47 @@ export class Renderer {
   }
 
   /**
+   * Applies post-processing effects to the rendered scene.
+   * Scene has already been rendered to postProcessInput texture.
+   * Applies effects and blits the result to screen.
+   *
+   * @param deltaTime - Delta time for effect animations
+   */
+  private applyPostProcessing(deltaTime: number): void {
+    if (!this.postProcessStack || !this.postProcessInput || !this.postProcessOutput) {
+      return;
+    }
+
+    const device = this.device as any;
+    if (!device.getGL) {
+      return;
+    }
+
+    const gl = device.getGL() as WebGL2RenderingContext;
+
+    // Apply post-processing stack (Bloom, etc.)
+    // This processes postProcessInput through all effects and outputs to postProcessOutput
+    const finalTexture = this.postProcessStack.render(this.postProcessInput, deltaTime, this.postProcessOutput);
+
+    // Blit the final post-processed result to the screen
+    const outputFB = finalTexture.getFramebuffer();
+    if (outputFB) {
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, outputFB);
+      gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+      gl.blitFramebuffer(
+        0, 0, this.renderWidth, this.renderHeight,
+        0, 0, gl.canvas.width, gl.canvas.height,
+        gl.COLOR_BUFFER_BIT,
+        gl.LINEAR
+      );
+    }
+
+    // Reset to default framebuffer
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  }
+
+
+  /**
    * Resizes the renderer.
    *
    * @param width - New width
@@ -768,6 +792,14 @@ export class Renderer {
     // Resize post-processing
     if (this.postProcessStack) {
       this.postProcessStack.resize(this.renderWidth, this.renderHeight);
+    }
+
+    // Resize post-processing textures
+    if (this.postProcessInput) {
+      this.postProcessInput.resize(this.renderWidth, this.renderHeight);
+    }
+    if (this.postProcessOutput) {
+      this.postProcessOutput.resize(this.renderWidth, this.renderHeight);
     }
   }
 
@@ -2195,6 +2227,16 @@ export class Renderer {
 
     if (this.postProcessStack) {
       this.postProcessStack.dispose();
+    }
+
+    // Dispose post-processing textures
+    if (this.postProcessInput) {
+      this.postProcessInput.destroy();
+      this.postProcessInput = null;
+    }
+    if (this.postProcessOutput) {
+      this.postProcessOutput.destroy();
+      this.postProcessOutput = null;
     }
 
     // Dispose device

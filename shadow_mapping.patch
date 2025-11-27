@@ -1,0 +1,76 @@
+diff --git a/src/rendering/Renderer.ts b/src/rendering/Renderer.ts
+index xxx..yyy 100644
+--- a/src/rendering/Renderer.ts
++++ b/src/rendering/Renderer.ts
+@@ -979,6 +979,79 @@ export class Renderer {
+     return this.renderGraph;
+   }
+
++  /**
++   * Registers a light with the light manager.
++   *
++   * @param light - Light to register
++   */
++  registerLight(light: any): void {
++    this.lightManager.addLight(light);
++    logger.info(`Light registered: ${(light as any).type} (id: ${(light as any).id})`);
++  }
++
++  /**
++   * Removes a light from the light manager.
++   *
++   * @param light - Light to remove
++   */
++  removeLight(light: any): void {
++    this.lightManager.removeLight(light);
++    logger.info(`Light removed: ${(light as any).type} (id: ${(light as any).id})`);
++  }
++
++  /**
++   * Calculates light space matrix for shadow mapping from a directional light.
++   * Creates an orthographic projection that covers the scene bounds.
++   *
++   * @param lightDirection - Direction of the light (normalized)
++   * @param sceneBounds - Optional scene bounds, defaults to a standard area
++   * @returns Light space view-projection matrix
++   */
++  private calculateLightSpaceMatrix(lightDirection: Vector3, sceneBounds?: { min: Vector3; max: Vector3 }): Matrix4 {
++    // Use default scene bounds if not provided (assume racing game scene near origin)
++    const bounds = sceneBounds || {
++      min: new Vector3(-200, -10, -200),
++      max: new Vector3(200, 50, 200)
++    };
++
++    // Calculate scene center
++    const center = new Vector3(
++      (bounds.min.x + bounds.max.x) * 0.5,
++      (bounds.min.y + bounds.max.y) * 0.5,
++      (bounds.min.z + bounds.max.z) * 0.5
++    );
++
++    // Calculate scene extent and radius
++    const extent = new Vector3(
++      bounds.max.x - bounds.min.x,
++      bounds.max.y - bounds.min.y,
++      bounds.max.z - bounds.min.z
++    );
++    const radius = Math.sqrt(extent.x * extent.x + extent.y * extent.y + extent.z * extent.z) * 0.5;
++
++    // Position light far enough to cover entire scene
++    const lightDistance = radius * 2;
++    const lightPosition = center.sub(lightDirection.scale(lightDistance));
++
++    // Create view matrix looking from light position to scene center
++    const lightView = Matrix4.lookAt(lightPosition, center, Vector3.up());
++
++    // Create orthographic projection covering the scene
++    const size = radius;
++    const lightProjection = Matrix4.orthographic(-size, size, -size, size, 0.1, lightDistance * 2 + radius);
++
++    // Combine into light space matrix
++    return lightProjection.multiply(lightView);
++  }
++
+   // =============================================================================
+   // PBR VERTEX SHADER - Full physically-based rendering pipeline
+   // =============================================================================

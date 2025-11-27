@@ -365,7 +365,7 @@ export class Renderer {
       this.hdrTarget = RenderTarget.createColorTarget(
         this.renderWidth,
         this.renderHeight,
-        RTTextureFormat.RGBA16F,
+        TextureFormat.RGBA16F,
         this.config.msaaSamples
       );
     }
@@ -374,7 +374,7 @@ export class Renderer {
     this.backbuffer = RenderTarget.createColorTarget(
       this.renderWidth,
       this.renderHeight,
-      RTTextureFormat.RGBA8,
+      TextureFormat.RGBA8,
       1
     );
 

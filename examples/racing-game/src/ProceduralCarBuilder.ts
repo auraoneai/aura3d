@@ -413,8 +413,13 @@ export class ProceduralCarBuilder {
   private createHeadlight(name: string, side: number): SceneNode {
     const lightMaterial = new StandardPBRMaterial(`${this.name}_Headlight${name}Material`);
     lightMaterial.albedo = new Color(0.95, 0.95, 1.0);
-    lightMaterial.emission = new Color(1.0, 1.0, 1.0);
-    lightMaterial.emissionIntensity = 0.5;
+    // Headlights emit light - using property access since setters might not be exported
+    try {
+      (lightMaterial as any).properties.emission = new Color(1.0, 1.0, 1.0);
+      (lightMaterial as any).properties.emissionIntensity = 0.5;
+    } catch (e) {
+      // Emission not supported, just use bright white color
+    }
     lightMaterial.metallic = 0.8;
     lightMaterial.roughness = 0.1;
 

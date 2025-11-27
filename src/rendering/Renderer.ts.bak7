@@ -510,7 +510,7 @@ export class Renderer {
     const texDesc: RenderTextureDescriptor = {
       width: this.renderWidth,
       height: this.renderHeight,
-      format: TextureFormat.RGBA16F,
+      format: RTTextureFormat.RGBA16F,
       minFilter: TextureFilter.Linear,
       magFilter: TextureFilter.Linear,
       wrapU: TextureWrap.ClampToEdge,

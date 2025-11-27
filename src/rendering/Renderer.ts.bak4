@@ -11,7 +11,7 @@ import { Camera } from './camera/Camera';
 import { Scene } from './scene/Scene';
 import { SceneNode } from './scene/SceneNode';
 import { RenderGraph } from './pipeline/RenderGraph';
-import { RenderTarget, TextureFormat as RTTextureFormat } from './pipeline/RenderTarget';
+import { RenderTarget, TextureFormat } from './pipeline/RenderTarget';
 import { RenderSettings, QualityPreset } from './RenderSettings';
 import { ResourceManager } from './ResourceManager';
 import { RenderProfiler } from './RenderProfiler';
@@ -21,7 +21,7 @@ import { PostProcessStack } from './postprocess/PostProcessStack';
 import { Bloom } from './postprocess/Bloom';
 import { EffectQuality } from './postprocess/PostProcessEffect';
 import { RenderTexture, RenderTextureDescriptor } from './texture/RenderTexture';
-import { TextureFilter, TextureWrap, TextureFormat } from './texture/Texture';
+import { TextureFilter, TextureWrap } from './texture/Texture';
 import { GBufferPass } from './passes/GBufferPass';
 import { LightingPass } from './passes/LightingPass';
 import { ShadowPass } from './passes/ShadowPass';
@@ -365,7 +365,7 @@ export class Renderer {
       this.hdrTarget = RenderTarget.createColorTarget(
         this.renderWidth,
         this.renderHeight,
-        RTTextureFormat.RGBA16F,
+        TextureFormat.RGBA16F,
         this.config.msaaSamples
       );
     }
@@ -374,7 +374,7 @@ export class Renderer {
     this.backbuffer = RenderTarget.createColorTarget(
       this.renderWidth,
       this.renderHeight,
-      RTTextureFormat.RGBA8,
+      TextureFormat.RGBA8,
       1
     );
 

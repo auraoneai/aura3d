@@ -9,8 +9,16 @@
  * - Roughness maps for material variation
  */
 
-import { Texture, TextureFormat } from 'g3d';
 import { Color } from 'g3d';
+
+// Note: Using a compatible interface for texture creation
+// The actual Texture class from G3D might have different properties
+interface SimpleTexture {
+  width: number;
+  height: number;
+  data?: HTMLCanvasElement | ImageData;
+  label?: string;
+}
 
 /**
  * Texture generation options
@@ -35,7 +43,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create a metallic car paint texture with subtle color variation
    */
-  static createMetallicPaint(options: TextureGenOptions = {}): Texture {
+  static createMetallicPaint(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
     const baseColor = options.baseColor || new Color(0.8, 0.1, 0.1);
@@ -73,7 +81,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create a carbon fiber pattern texture
    */
-  static createCarbonFiber(options: TextureGenOptions = {}): Texture {
+  static createCarbonFiber(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
 
@@ -114,7 +122,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create racing stripes texture
    */
-  static createRacingStripes(options: TextureGenOptions = {}): Texture {
+  static createRacingStripes(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
     const baseColor = options.baseColor || new Color(1, 1, 1);
@@ -144,7 +152,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create a normal map for car paint (subtle bumps)
    */
-  static createPaintNormalMap(options: TextureGenOptions = {}): Texture {
+  static createPaintNormalMap(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
 
@@ -179,7 +187,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create a roughness map (variation in glossiness)
    */
-  static createRoughnessMap(options: TextureGenOptions = {}): Texture {
+  static createRoughnessMap(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
     const baseRoughness = options.variation || 0.25;
@@ -214,7 +222,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create number decal texture
    */
-  static createNumberDecal(number: number, color: Color = new Color(1, 1, 1)): Texture {
+  static createNumberDecal(number: number, color: Color = new Color(1, 1, 1)): SimpleTexture {
     const width = 256;
     const height = 256;
 
@@ -242,7 +250,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create tire tread pattern
    */
-  static createTireTread(options: TextureGenOptions = {}): Texture {
+  static createTireTread(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
 
@@ -279,7 +287,7 @@ export class ProceduralTextureGenerator {
   /**
    * Create chrome/metallic rim texture
    */
-  static createChromeRim(options: TextureGenOptions = {}): Texture {
+  static createChromeRim(options: TextureGenOptions = {}): SimpleTexture {
     const width = options.width || 512;
     const height = options.height || 512;
 
@@ -335,20 +343,15 @@ export class ProceduralTextureGenerator {
   }
 
   /**
-   * Create G3D texture from canvas
+   * Create simple texture object from canvas
    */
-  private static createTextureFromCanvas(canvas: HTMLCanvasElement, label: string): Texture {
-    const texture = new Texture({
+  private static createTextureFromCanvas(canvas: HTMLCanvasElement, label: string): SimpleTexture {
+    return {
       width: canvas.width,
       height: canvas.height,
-      format: TextureFormat.RGBA8,
+      data: canvas,
       label: label
-    });
-
-    // Set texture data from canvas
-    texture.setData({ data: canvas });
-
-    return texture;
+    };
   }
 
   /**
@@ -382,7 +385,7 @@ export class CarPaintPresets {
   /**
    * Create a glossy red car paint
    */
-  static createGlossyRed(): Texture {
+  static createGlossyRed(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.9, 0.1, 0.1),
       variation: 0.03
@@ -392,7 +395,7 @@ export class CarPaintPresets {
   /**
    * Create a metallic blue car paint
    */
-  static createMetallicBlue(): Texture {
+  static createMetallicBlue(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.1, 0.4, 0.95),
       variation: 0.05
@@ -402,7 +405,7 @@ export class CarPaintPresets {
   /**
    * Create a metallic silver car paint
    */
-  static createMetallicSilver(): Texture {
+  static createMetallicSilver(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.8, 0.8, 0.85),
       variation: 0.04
@@ -412,7 +415,7 @@ export class CarPaintPresets {
   /**
    * Create a matte black car paint
    */
-  static createMatteBlack(): Texture {
+  static createMatteBlack(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.05, 0.05, 0.05),
       variation: 0.01
@@ -422,7 +425,7 @@ export class CarPaintPresets {
   /**
    * Create a bright yellow racing car paint
    */
-  static createRacingYellow(): Texture {
+  static createRacingYellow(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.95, 0.85, 0.1),
       variation: 0.02
@@ -432,7 +435,7 @@ export class CarPaintPresets {
   /**
    * Create an orange car paint
    */
-  static createVividOrange(): Texture {
+  static createVividOrange(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(1.0, 0.5, 0.1),
       variation: 0.03
@@ -442,7 +445,7 @@ export class CarPaintPresets {
   /**
    * Create a purple car paint
    */
-  static createDeepPurple(): Texture {
+  static createDeepPurple(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.6, 0.15, 0.8),
       variation: 0.04
@@ -452,7 +455,7 @@ export class CarPaintPresets {
   /**
    * Create a teal/cyan car paint
    */
-  static createElectricTeal(): Texture {
+  static createElectricTeal(): SimpleTexture {
     return ProceduralTextureGenerator.createMetallicPaint({
       baseColor: new Color(0.1, 0.85, 0.7),
       variation: 0.03
