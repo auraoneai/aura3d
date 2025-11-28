@@ -455,6 +455,9 @@ export class SMAAPass extends RenderPass {
   /** WebGL2 rendering context */
   private gl: WebGL2RenderingContext | null = null;
 
+  /** Fullscreen triangle VAO (required by WebGL2 even when using gl_VertexID) */
+  private fullscreenVAO: WebGLVertexArrayObject | null = null;
+
   /**
    * Creates a new SMAA pass.
    *
@@ -607,7 +610,24 @@ export class SMAAPass extends RenderPass {
     this.areaTexture = this.createAreaTexture();
     this.searchTexture = this.createSearchTexture();
 
+    // Create fullscreen VAO (required by WebGL2 even when using gl_VertexID)
+    this.createFullscreenVAO();
+
     logger.info('SMAAPass setup complete');
+  }
+
+  /**
+   * Creates fullscreen triangle VAO (no vertex buffer needed).
+   */
+  private createFullscreenVAO(): void {
+    if (!this.gl) return;
+
+    const gl = this.gl;
+    this.fullscreenVAO = gl.createVertexArray();
+
+    // Note: Vertex shader uses gl_VertexID, so no vertex buffer needed
+    gl.bindVertexArray(this.fullscreenVAO);
+    gl.bindVertexArray(null);
   }
 
   /**
@@ -698,8 +718,10 @@ export class SMAAPass extends RenderPass {
     gl.bindTexture(gl.TEXTURE_2D, this.inputTexture as WebGLTexture);
     this.edgeShader.setUniform('u_colorTexture', 0);
 
-    // Render fullscreen triangle
+    // Render fullscreen triangle (must bind VAO first - WebGL2 requirement)
+    gl.bindVertexArray(this.fullscreenVAO);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
 
     // Unbind framebuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -756,8 +778,10 @@ export class SMAAPass extends RenderPass {
       this.blendWeightShader.setUniform('u_searchTexture', 2);
     }
 
-    // Render fullscreen triangle
+    // Render fullscreen triangle (must bind VAO first - WebGL2 requirement)
+    gl.bindVertexArray(this.fullscreenVAO);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
 
     // Unbind framebuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -803,8 +827,10 @@ export class SMAAPass extends RenderPass {
       this.neighborhoodBlendShader.setUniform('u_blendTexture', 1);
     }
 
-    // Render fullscreen triangle
+    // Render fullscreen triangle (must bind VAO first - WebGL2 requirement)
+    gl.bindVertexArray(this.fullscreenVAO);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
 
     // Unbind framebuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -941,6 +967,11 @@ void main() {
     if (this.neighborhoodBlendShader) {
       this.neighborhoodBlendShader.dispose();
       this.neighborhoodBlendShader = null;
+    }
+
+    if (this.fullscreenVAO && this.gl) {
+      this.gl.deleteVertexArray(this.fullscreenVAO);
+      this.fullscreenVAO = null;
     }
 
     this.uniformsUBO = null;

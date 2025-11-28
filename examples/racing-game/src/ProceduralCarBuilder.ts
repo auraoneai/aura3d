@@ -140,8 +140,8 @@ export class ProceduralCarBuilder {
   private createBody(): SceneNode {
     const bodyMaterial = new StandardPBRMaterial(`${this.name}_BodyMaterial`);
     bodyMaterial.albedo = this.bodyColor;
-    bodyMaterial.metallic = 0.6;
-    bodyMaterial.roughness = 0.25;
+    bodyMaterial.metallic = 0.4;    // Car paint - clearcoated, not pure metal
+    bodyMaterial.roughness = 0.2;   // Glossy paint finish
 
     // Main body - wider, lower, more aerodynamic
     const bodyGeom = GeometryGenerator.box(
@@ -166,9 +166,9 @@ export class ProceduralCarBuilder {
    */
   private createCabin(): SceneNode {
     const glassMaterial = new StandardPBRMaterial(`${this.name}_GlassMaterial`);
-    glassMaterial.albedo = new Color(0.15, 0.20, 0.25, 0.8);
-    glassMaterial.metallic = 0.3;
-    glassMaterial.roughness = 0.05; // Very smooth glass
+    glassMaterial.albedo = new Color(0.08, 0.1, 0.15, 0.85);  // Dark tinted glass
+    glassMaterial.metallic = 0.0;   // Glass is dielectric, not metallic
+    glassMaterial.roughness = 0.1;  // Smooth
 
     // Cabin is narrower and positioned back from front
     const cabinWidth = this.style.width * 0.85;
@@ -194,8 +194,8 @@ export class ProceduralCarBuilder {
   private createHood(): SceneNode {
     const bodyMaterial = new StandardPBRMaterial(`${this.name}_HoodMaterial`);
     bodyMaterial.albedo = this.bodyColor;
-    bodyMaterial.metallic = 0.65;
-    bodyMaterial.roughness = 0.2; // Slightly smoother than body
+    bodyMaterial.metallic = 0.45;   // Slightly shinier than body
+    bodyMaterial.roughness = 0.15;  // Glossy
 
     const hoodWidth = this.style.width * 0.92;
     const hoodHeight = this.style.height * 0.25;
@@ -220,8 +220,8 @@ export class ProceduralCarBuilder {
   private createRear(): SceneNode {
     const bodyMaterial = new StandardPBRMaterial(`${this.name}_RearMaterial`);
     bodyMaterial.albedo = this.bodyColor;
-    bodyMaterial.metallic = 0.6;
-    bodyMaterial.roughness = 0.25;
+    bodyMaterial.metallic = 0.4;    // Match body
+    bodyMaterial.roughness = 0.2;   // Glossy
 
     const rearWidth = this.style.width * 0.95;
     const rearHeight = this.style.height * 0.3;
@@ -286,11 +286,11 @@ export class ProceduralCarBuilder {
     tireNode.setRotation(Quaternion.fromEuler(0, 0, Math.PI / 2)); // Rotate to face outward
     wheelNode.addChild(tireNode);
 
-    // Rim (metallic)
+    // Rim (brushed aluminum)
     const rimMaterial = new StandardPBRMaterial(`${this.name}_RimMaterial`);
-    rimMaterial.albedo = new Color(0.7, 0.7, 0.75);
-    rimMaterial.metallic = 0.9;
-    rimMaterial.roughness = 0.15; // Shiny metal
+    rimMaterial.albedo = new Color(0.8, 0.8, 0.85);   // Light silver
+    rimMaterial.metallic = 0.9;     // Metallic
+    rimMaterial.roughness = 0.2;    // Slightly rough for brushed look
 
     const rimGeom = GeometryGenerator.cylinder(radius * 0.7, width * 0.5, 16, 1);
     const rimNode = new SceneNode(`${this.name}_Rim_${name}`);

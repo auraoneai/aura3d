@@ -151,20 +151,31 @@ class RacingGame {
   private async setupScene(): Promise<void> {
     this.scene = new Scene('RaceScene');
 
-    // Add directional light (sun)
-    // Direction from position (50, 100, 50) to origin normalized
-    const sunDirection = new Vector3(-50, -100, -50).normalize();
+    // Add directional light (sun) - DRAMATIC CONTRAST for AAA 3D shading
+    // Light from front-left and above - creates good NdotL on car faces visible from behind
+    // More horizontal angle to light vertical car faces better
+    const sunDirection = new Vector3(0.5, -0.7, -0.5).normalize(); // High sun angle
     this.directionalLight = new DirectionalLight(
       sunDirection,
-      new Color(1, 0.95, 0.9),
-      3.0
+      new Color(1, 0.98, 0.92),  // Warm daylight
+      50.0  // High intensity - will be scaled by NdotL in shader
     );
     this.directionalLight.setShadowsEnabled(true);
-    // Note: In a full implementation, lights would be added to a renderer's light manager
+
+    // CRITICAL: Register light with renderer's light manager for PBR shader
+    if (this.engine && this.engine.renderer) {
+      const lightManager = this.engine.renderer.getLightManager();
+      lightManager.addLight(this.directionalLight);
+      console.log('[Light] Registered DirectionalLight with intensity 50.0, direction:', sunDirection);
+      console.log('[Light] Light type:', this.directionalLight.type);
+      console.log('[Light] Light getEffectiveIntensity:', this.directionalLight.getEffectiveIntensity());
+    } else {
+      console.warn('[Light] Could not register light - renderer not ready');
+    }
 
     // Configure ambient light via environment
     this.scene.environment.ambientColor = new Color(0.5, 0.6, 0.7);
-    this.scene.environment.ambientIntensity = 0.4;
+    this.scene.environment.ambientIntensity = 0.4;  // Balanced ambient
 
     // Add sky
     this.scene.environment.clearColor = new Color(0.4, 0.6, 0.9);
@@ -178,11 +189,13 @@ class RacingGame {
    * Create ground plane with multiple layers for visual depth
    */
   private createGround(): void {
-    // Main grass ground - bright green for visibility
-    const groundMaterial = new StandardPBRMaterial('GroundMaterial');
-    groundMaterial.albedo = new Color(0.25, 0.55, 0.2);  // Bright grass green
-    groundMaterial.roughness = 0.95;
-    groundMaterial.metallic = 0.0;
+    // Main grass ground - richer, darker green for more contrast
+    const groundMaterial = new StandardPBRMaterial({
+      name: 'GroundMaterial',
+      albedo: new Color(0.15, 0.4, 0.12),  // Deeper grass green
+      roughness: 0.9,
+      metallic: 0.0,
+    });
 
     // Use a smaller, closer ground plane for better visibility
     const groundGeometry = GeometryGenerator.plane(500, 500, 4, 4);
@@ -313,83 +326,160 @@ class RacingGame {
   private createCarMesh(name: string, bodyColor: Color): SceneNode {
     const carNode = new SceneNode(name);
 
-    // Car body material - visible metallic paint finish
-    // NOTE: Reduced metallic from 0.9 to 0.4 for visibility without environment maps
-    // Once IBL/environment cubemaps are implemented, increase to 0.8-0.9 for realistic car paint
-    const bodyMaterial = new StandardPBRMaterial(`${name}_BodyMaterial`);
-    bodyMaterial.albedo = bodyColor;
-    bodyMaterial.metallic = 0.4;   // Moderate metallic - visible without env map
-    bodyMaterial.roughness = 0.35; // Moderate roughness for diffuse visibility
+    // Car body material - Quality car paint (not pure metal)
+    const bodyMaterial = new StandardPBRMaterial({
+      name: `${name}_BodyMaterial`,
+      albedo: bodyColor,
+      metallic: 0.4,     // Car paint is NOT highly metallic - it's clearcoated
+      roughness: 0.2,    // Glossy but not mirror
+    });
+
+    // SCALE: Make car 1.5x larger for better visibility
+    const scale = 1.5;
 
     // Main body - lower section (wide and flat)
-    const bodyLower = GeometryGenerator.box(2.4, 0.5, 4.8);
+    const bodyLower = GeometryGenerator.box(2.4 * scale, 0.5 * scale, 4.8 * scale);
     carNode.setMesh(bodyLower);
     carNode.setMaterial(bodyMaterial);
-    carNode.transform.position.y = 0.35; // Position so bottom is near ground
+    carNode.transform.position.y = 0.35 * scale; // Position so bottom is near ground
 
-    // Add cabin (upper section) as child node
-    const cabinMaterial = new StandardPBRMaterial(`${name}_CabinMaterial`);
-    cabinMaterial.albedo = new Color(0.15, 0.18, 0.22); // Dark tinted glass - more visible
-    cabinMaterial.metallic = 0.2;
-    cabinMaterial.roughness = 0.15; // Smooth glass
+    // Add cabin (upper section) as child node - tinted glass
+    const cabinMaterial = new StandardPBRMaterial({
+      name: `${name}_CabinMaterial`,
+      albedo: new Color(0.05, 0.08, 0.12),  // Dark tinted glass
+      metallic: 0.0,   // Glass is not metallic
+      roughness: 0.1,  // Smooth
+    });
 
-    const cabinMesh = GeometryGenerator.box(1.8, 0.5, 2.0);
+    const cabinMesh = GeometryGenerator.box(1.8 * scale, 0.5 * scale, 2.0 * scale);
     const cabinNode = new SceneNode(`${name}_Cabin`);
     cabinNode.setMesh(cabinMesh);
     cabinNode.setMaterial(cabinMaterial);
-    cabinNode.transform.position.set(0, 0.5, -0.2);
+    cabinNode.transform.position.set(0, 0.5 * scale, -0.2 * scale);
     carNode.addChild(cabinNode);
 
     // Add front hood as child node
-    const hoodMaterial = new StandardPBRMaterial(`${name}_HoodMaterial`);
-    hoodMaterial.albedo = bodyColor;
-    hoodMaterial.metallic = 0.45; // Moderate metallic - visible without env map
-    hoodMaterial.roughness = 0.30;
+    const hoodMaterial = new StandardPBRMaterial({
+      name: `${name}_HoodMaterial`,
+      albedo: bodyColor,
+      metallic: 0.45,   // Slightly shinier than body
+      roughness: 0.15,  // Glossy
+    });
 
-    const hoodMesh = GeometryGenerator.box(2.0, 0.2, 1.5);
+    const hoodMesh = GeometryGenerator.box(2.0 * scale, 0.2 * scale, 1.5 * scale);
     const hoodNode = new SceneNode(`${name}_Hood`);
     hoodNode.setMesh(hoodMesh);
     hoodNode.setMaterial(hoodMaterial);
-    hoodNode.transform.position.set(0, 0.35, 1.4);
+    hoodNode.transform.position.set(0, 0.35 * scale, 1.4 * scale);
     carNode.addChild(hoodNode);
 
-    // Add rear spoiler
-    const spoilerMaterial = new StandardPBRMaterial(`${name}_SpoilerMaterial`);
-    spoilerMaterial.albedo = new Color(0.1, 0.1, 0.1);
-    spoilerMaterial.metallic = 0.3;
-    spoilerMaterial.roughness = 0.4;
+    // Add rear spoiler - carbon fiber look
+    const spoilerMaterial = new StandardPBRMaterial({
+      name: `${name}_SpoilerMaterial`,
+      albedo: new Color(0.02, 0.02, 0.02),
+      metallic: 0.1,
+      roughness: 0.5,
+    });
 
-    const spoilerMesh = GeometryGenerator.box(2.2, 0.08, 0.2);
+    const spoilerMesh = GeometryGenerator.box(2.2 * scale, 0.08 * scale, 0.2 * scale);
     const spoilerNode = new SceneNode(`${name}_Spoiler`);
     spoilerNode.setMesh(spoilerMesh);
     spoilerNode.setMaterial(spoilerMaterial);
-    spoilerNode.transform.position.set(0, 0.75, -2.0);
+    spoilerNode.transform.position.set(0, 0.75 * scale, -2.0 * scale);
     carNode.addChild(spoilerNode);
 
-    // Add wheels (4 cylinders)
-    const wheelMaterial = new StandardPBRMaterial(`${name}_WheelMaterial`);
-    wheelMaterial.albedo = new Color(0.05, 0.05, 0.05);
-    wheelMaterial.metallic = 0.0;
-    wheelMaterial.roughness = 0.85; // Rubber-like
+    // Add wheels (4 cylinders) - rubber tires with alloy rims
+    const wheelMaterial = new StandardPBRMaterial({
+      name: `${name}_WheelMaterial`,
+      albedo: new Color(0.02, 0.02, 0.02),
+      metallic: 0.0,
+      roughness: 0.9,  // Matte rubber
+    });
+
+    // Rim material - shiny chrome
+    const rimMaterial = new StandardPBRMaterial({
+      name: `${name}_RimMaterial`,
+      albedo: new Color(0.9, 0.9, 0.95),
+      metallic: 0.95,
+      roughness: 0.1,
+    });
 
     const wheelPositions = [
-      { x: -1.0, y: -0.1, z: 1.4 },   // Front left
-      { x: 1.0, y: -0.1, z: 1.4 },    // Front right
-      { x: -1.0, y: -0.1, z: -1.3 },  // Rear left
-      { x: 1.0, y: -0.1, z: -1.3 },   // Rear right
+      { x: -1.0 * scale, y: -0.1 * scale, z: 1.4 * scale },   // Front left
+      { x: 1.0 * scale, y: -0.1 * scale, z: 1.4 * scale },    // Front right
+      { x: -1.0 * scale, y: -0.1 * scale, z: -1.3 * scale },  // Rear left
+      { x: 1.0 * scale, y: -0.1 * scale, z: -1.3 * scale },   // Rear right
     ];
 
     wheelPositions.forEach((pos, i) => {
-      const wheelMesh = GeometryGenerator.cylinder(0.35, 0.25, 16, 1);
+      // Tire
+      const wheelMesh = GeometryGenerator.cylinder(0.35 * scale, 0.25 * scale, 16, 1);
       const wheelNode = new SceneNode(`${name}_Wheel${i}`);
       wheelNode.setMesh(wheelMesh);
       wheelNode.setMaterial(wheelMaterial);
       wheelNode.transform.position.set(pos.x, pos.y, pos.z);
       wheelNode.setRotation(Quaternion.fromEuler(0, 0, Math.PI / 2));
       carNode.addChild(wheelNode);
+
+      // Rim (smaller cylinder inside)
+      const rimMesh = GeometryGenerator.cylinder(0.25 * scale, 0.26 * scale, 12, 1);
+      const rimNode = new SceneNode(`${name}_Rim${i}`);
+      rimNode.setMesh(rimMesh);
+      rimNode.setMaterial(rimMaterial);
+      rimNode.transform.position.set(pos.x, pos.y, pos.z);
+      rimNode.setRotation(Quaternion.fromEuler(0, 0, Math.PI / 2));
+      carNode.addChild(rimNode);
     });
 
-    console.log(`[CAR DEBUG] Created detailed car mesh: ${name} with ${carNode.children.length} child nodes`);
+    // Add HEADLIGHTS (emissive glowing)
+    const headlightMaterial = new StandardPBRMaterial({
+      name: `${name}_HeadlightMaterial`,
+      albedo: new Color(0.9, 0.95, 1.0),  // Slightly blue-white
+      metallic: 0.0,
+      roughness: 0.1,
+      emission: new Color(1.0, 0.98, 0.9),
+      emissionIntensity: 3.0,  // Glowing
+    });
+
+    const headlightPositions = [
+      { x: -0.7 * scale, y: 0.15 * scale, z: 2.3 * scale },  // Left
+      { x: 0.7 * scale, y: 0.15 * scale, z: 2.3 * scale },   // Right
+    ];
+
+    headlightPositions.forEach((pos, i) => {
+      const lightMesh = GeometryGenerator.box(0.3 * scale, 0.15 * scale, 0.08 * scale);
+      const lightNode = new SceneNode(`${name}_Headlight${i}`);
+      lightNode.setMesh(lightMesh);
+      lightNode.setMaterial(headlightMaterial);
+      lightNode.transform.position.set(pos.x, pos.y, pos.z);
+      carNode.addChild(lightNode);
+    });
+
+    // Add TAILLIGHTS (red emissive)
+    const taillightMaterial = new StandardPBRMaterial({
+      name: `${name}_TaillightMaterial`,
+      albedo: new Color(1.0, 0.1, 0.1),  // Red
+      metallic: 0.0,
+      roughness: 0.1,
+      emission: new Color(1.0, 0.0, 0.0),
+      emissionIntensity: 2.0,
+    });
+
+    const taillightPositions = [
+      { x: -0.8 * scale, y: 0.25 * scale, z: -2.35 * scale },  // Left
+      { x: 0.8 * scale, y: 0.25 * scale, z: -2.35 * scale },   // Right
+    ];
+
+    taillightPositions.forEach((pos, i) => {
+      const lightMesh = GeometryGenerator.box(0.35 * scale, 0.12 * scale, 0.06 * scale);
+      const lightNode = new SceneNode(`${name}_Taillight${i}`);
+      lightNode.setMesh(lightMesh);
+      lightNode.setMaterial(taillightMaterial);
+      lightNode.transform.position.set(pos.x, pos.y, pos.z);
+      carNode.addChild(lightNode);
+    });
+
+    console.log(`[CAR DEBUG] Created detailed car mesh: ${name} with ${carNode.children.length} child nodes (inc. lights)`);
 
     return carNode;
   }
@@ -742,6 +832,70 @@ class RacingGame {
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
       console.log('Key down:', e.code);
+
+      // Debug mode controls (0-9 keys for modes 0-9, F1-F10 for modes 10-19)
+      const modeNames: { [key: number]: string } = {
+        0: 'Normal PBR',
+        1: 'Normals (RGB)',
+        2: 'Albedo only',
+        3: 'Metallic (grayscale)',
+        4: 'Roughness (grayscale)',
+        5: 'Direct lighting Lo',
+        6: 'Light count (R=0,G=1,B=2+)',
+        7: 'NdotL (Lambert term)',
+        8: 'Light direction (RGB)',
+        9: 'Raw Lo (scaled)',
+        10: 'Simple Lambert (no PBR)',
+        11: 'Pure NdotL grayscale',
+        12: 'NdotL color bands',
+        13: 'Pure Lambert shading',
+        14: 'Lo vs Lambert split',
+        15: 'SIMPLE SHADING (ultimate test)',
+        16: 'POSITION AS COLOR (tests varying pipeline)',
+        17: 'RAW NORMAL ATTRIBUTE (a_normal direct)',
+        18: 'TEXCOORD AS COLOR (tests attribute 2)',
+        19: 'MAGENTA IF NORMAL ZERO (zero detection)'
+      };
+
+      let mode = -1;
+      if (e.code.startsWith('Digit')) {
+        mode = parseInt(e.code.replace('Digit', ''));
+      } else if (e.code === 'F1') {
+        mode = 10;
+        e.preventDefault(); // Prevent browser help
+      } else if (e.code === 'F2') {
+        mode = 11;
+        e.preventDefault();
+      } else if (e.code === 'F3') {
+        mode = 12;
+        e.preventDefault();
+      } else if (e.code === 'F4') {
+        mode = 13;
+        e.preventDefault();
+      } else if (e.code === 'F5') {
+        mode = 14;
+        e.preventDefault();
+      } else if (e.code === 'F6') {
+        mode = 15;
+        e.preventDefault();
+      } else if (e.code === 'F7') {
+        mode = 16;
+        e.preventDefault();
+      } else if (e.code === 'F8') {
+        mode = 17;
+        e.preventDefault();
+      } else if (e.code === 'F9') {
+        mode = 18;
+        e.preventDefault();
+      } else if (e.code === 'F10') {
+        mode = 19;
+        e.preventDefault();
+      }
+
+      if (mode >= 0) {
+        this.engine.renderer.setDebugMode(mode);
+        console.log(`Debug mode ${mode}: ${modeNames[mode] || 'Unknown'}`);
+      }
     });
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
@@ -826,12 +980,12 @@ class RacingGame {
     const vehiclePos = this.playerVehicle.getStats().position;
     const vehicleRot = this.playerVehicle.getStats().rotation;
 
-    // Simple chase camera - always behind and above the vehicle
-    // Position camera 10 units behind and 5 units above vehicle
+    // Chase camera - closer to vehicle for better visibility
+    // Position camera 6 units behind and 3 units above vehicle
     const forward = new Vector3(0, 0, -1).applyQuaternion(vehicleRot);
-    const cameraOffset = forward.scale(-10).add(new Vector3(0, 5, 0));
+    const cameraOffset = forward.scale(-6).add(new Vector3(0, 3, 0));
     const targetPos = vehiclePos.add(cameraOffset);
-    const lookAtPos = vehiclePos.add(new Vector3(0, 1, 0));
+    const lookAtPos = vehiclePos.add(new Vector3(0, 0.8, 0));
 
     // Smooth camera movement
     const smoothFactor = Math.min(5 * deltaTime, 1);

@@ -548,6 +548,9 @@ export class SSRPass extends RenderPass {
   /** WebGL2 rendering context */
   private gl: WebGL2RenderingContext | null = null;
 
+  /** Fullscreen triangle VAO (required by WebGL2 even when using gl_VertexID) */
+  private fullscreenVAO: WebGLVertexArrayObject | null = null;
+
   /** Statistics */
   private stats = {
     raysTraced: 0,
@@ -756,7 +759,24 @@ export class SSRPass extends RenderPass {
       });
     }
 
+    // Create fullscreen VAO (required by WebGL2 even when using gl_VertexID)
+    this.createFullscreenVAO();
+
     logger.info('SSRPass setup complete');
+  }
+
+  /**
+   * Creates fullscreen triangle VAO (no vertex buffer needed).
+   */
+  private createFullscreenVAO(): void {
+    if (!this.gl) return;
+
+    const gl = this.gl;
+    this.fullscreenVAO = gl.createVertexArray();
+
+    // Note: Vertex shader uses gl_VertexID, so no vertex buffer needed
+    gl.bindVertexArray(this.fullscreenVAO);
+    gl.bindVertexArray(null);
   }
 
   /**
@@ -906,8 +926,10 @@ export class SSRPass extends RenderPass {
       this.shader.setUniform('u_previousViewProjection', this.previousViewProjectionMatrix);
     }
 
-    // Draw fullscreen triangle
+    // Draw fullscreen triangle (must bind VAO first - WebGL2 requirement)
+    gl.bindVertexArray(this.fullscreenVAO);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
 
     // Unbind framebuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -972,6 +994,11 @@ export class SSRPass extends RenderPass {
     if (this.hiZShader) {
       this.hiZShader.dispose();
       this.hiZShader = null;
+    }
+
+    if (this.fullscreenVAO && this.gl) {
+      this.gl.deleteVertexArray(this.fullscreenVAO);
+      this.fullscreenVAO = null;
     }
 
     this.uniformsUBO = null;

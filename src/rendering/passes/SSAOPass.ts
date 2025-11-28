@@ -19,7 +19,7 @@
  */
 
 import { RenderPass, RenderPassDescriptor } from '../pipeline/RenderPass';
-import { RenderTarget, TextureFormat, LoadAction, StoreAction } from '../pipeline/RenderTarget';
+import { RenderTarget, LoadAction, StoreAction, TextureFormat } from '../pipeline/RenderTarget';
 import { RenderQueue } from '../pipeline/RenderQueue';
 import { Logger } from '../../core/Logger';
 import { Color } from '../../math/Color';
@@ -413,7 +413,7 @@ export class SSAOPass extends RenderPass {
       colorAttachments: [
         {
           name: 'ssaoOcclusion',
-          format: TextureFormat.R8,
+          format: TextureFormat.RGBA8, // Using RGBA8 (R channel for occlusion)
         },
       ],
       clearValues: {

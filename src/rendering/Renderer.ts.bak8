@@ -206,11 +206,7 @@ export class Renderer {
 
   // Simple scene rendering
   private simpleShaderProgram: WebGLProgram | null = null;
-  private meshGPUBuffers: Map<Mesh, { vao: WebGLVertexArrayObject; vbo: WebGLBuffer; ibo: WebGLBuffer; indexCount: number; indexType: number; vertexCount: number }> = new Map();
-
-  // Debug mode: 0=normal PBR, 1=normals, 2=albedo, 3=metallic, 4=roughness, 5=Lo, 6=light count, 7=NdotL, 8=light dir, 9=raw Lo
-  // 17=raw normal attribute (no transformation), 19=magenta if normal is zero
-  private currentDebugMode: number = 0; // Normal PBR rendering
+  private meshGPUBuffers: Map<Mesh, { vao: WebGLVertexArrayObject; vbo: WebGLBuffer; ibo: WebGLBuffer; indexCount: number }> = new Map();
 
   /**
    * Private constructor. Use Renderer.create() instead.
@@ -519,7 +515,7 @@ export class Renderer {
       magFilter: TextureFilter.Linear,
       wrapU: TextureWrap.ClampToEdge,
       wrapV: TextureWrap.ClampToEdge,
-      depth: true,  // CRITICAL: Need depth buffer for 3D scene rendering
+      depth: false,
     };
 
     this.postProcessInput = new RenderTexture({
@@ -531,11 +527,6 @@ export class Renderer {
       ...texDesc,
       label: 'PostProcessOutput',
     });
-
-    // CRITICAL: Create WebGL framebuffers for the RenderTextures
-    // RenderTexture only stores the framebuffer handle - we must create and attach it
-    this.createRenderTextureFramebuffer(gl, this.postProcessInput);
-    this.createRenderTextureFramebuffer(gl, this.postProcessOutput);
 
     // Create post-process stack
     this.postProcessStack = new PostProcessStack({
@@ -562,22 +553,6 @@ export class Renderer {
     this.postProcessStack.addEffect(bloom);
 
     logger.info('Post-processing stack initialized with Bloom effect');
-  }
-
-  /**
-   * Sets the debug rendering mode.
-   * @param mode - Debug mode (0=normal PBR, 1=normals, 2=albedo, 3=metallic, 4=roughness, 5=Lo, 6=light count, 7=NdotL, 8=light dir, 9=raw Lo)
-   */
-  setDebugMode(mode: number): void {
-    this.currentDebugMode = mode;
-    console.log(`[Renderer] Debug mode set to ${mode}`);
-  }
-
-  /**
-   * Gets the current debug mode.
-   */
-  getDebugMode(): number {
-    return this.currentDebugMode;
   }
 
   /**
@@ -763,150 +738,6 @@ export class Renderer {
   }
 
   /**
-   * Applies post-processing effects to the rendered scene.
-   * Scene has already been rendered to postProcessInput texture.
-   * Applies effects and blits the result to screen.
-   *
-   * @param deltaTime - Delta time for effect animations
-   */
-  private applyPostProcessing(deltaTime: number): void {
-    if (!this.postProcessStack || !this.postProcessInput || !this.postProcessOutput) {
-      return;
-    }
-
-    const device = this.device as any;
-    if (!device.getGL) {
-      return;
-    }
-
-    const gl = device.getGL() as WebGL2RenderingContext;
-
-    // ALWAYS blit from the scene render target to screen
-    // This ensures we see something even if post-processing fails
-    const sceneFB = this.postProcessInput.getFramebuffer();
-
-    if (!sceneFB) {
-      logger.error('PostProcessInput has no framebuffer - cannot blit to screen');
-      return;
-    }
-
-    // Log once per session
-    if (this.frameCount === 1) {
-      logger.info(`Blitting from postProcessInput FBO to screen: ${this.renderWidth}x${this.renderHeight} -> ${gl.canvas.width}x${gl.canvas.height}`);
-    }
-
-    // Blit scene render target directly to screen (bypassing broken post-process effects for now)
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, sceneFB);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-    gl.blitFramebuffer(
-      0, 0, this.renderWidth, this.renderHeight,
-      0, 0, gl.canvas.width, gl.canvas.height,
-      gl.COLOR_BUFFER_BIT,
-      gl.LINEAR
-    );
-
-    // Check for GL errors
-    const error = gl.getError();
-    if (error !== gl.NO_ERROR && this.frameCount <= 3) {
-      const errorNames: Record<number, string> = {
-        [gl.INVALID_ENUM]: 'INVALID_ENUM',
-        [gl.INVALID_VALUE]: 'INVALID_VALUE',
-        [gl.INVALID_OPERATION]: 'INVALID_OPERATION',
-        [gl.INVALID_FRAMEBUFFER_OPERATION]: 'INVALID_FRAMEBUFFER_OPERATION',
-        [gl.OUT_OF_MEMORY]: 'OUT_OF_MEMORY',
-      };
-      logger.error(`GL error during blit: ${errorNames[error] || error}`);
-    }
-
-    // Reset to default framebuffer
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  }
-
-  /**
-   * Creates a WebGL framebuffer for a RenderTexture and attaches color/depth textures.
-   * RenderTexture only stores the handle - this method creates and configures the FBO.
-   *
-   * @param gl - WebGL2 context
-   * @param renderTexture - RenderTexture to create framebuffer for
-   */
-  private createRenderTextureFramebuffer(gl: WebGL2RenderingContext, renderTexture: RenderTexture): void {
-    // Create framebuffer
-    const fbo = gl.createFramebuffer();
-    if (!fbo) {
-      logger.error(`Failed to create framebuffer for ${renderTexture.label}`);
-      return;
-    }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-
-    // Get the color texture and its WebGL handle
-    const colorTexture = renderTexture.getColorTexture();
-    let glColorTexture = colorTexture.getGLTexture();
-
-    // Create the WebGL texture if it doesn't exist
-    if (!glColorTexture) {
-      const newTex = gl.createTexture();
-      gl.bindTexture(gl.TEXTURE_2D, newTex);
-
-      // Get dimensions
-      const width = renderTexture.getWidth();
-      const height = renderTexture.getHeight();
-
-      // Use RGBA16F for HDR
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, width, height, 0, gl.RGBA, gl.FLOAT, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-      // Store the texture handle in the Texture object
-      colorTexture.setGLTexture(newTex);
-      glColorTexture = newTex;
-    }
-
-    // Attach color texture to framebuffer
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, glColorTexture, 0);
-
-    // Attach depth buffer if enabled
-    if (renderTexture.hasDepthBuffer()) {
-      const depthTexture = renderTexture.getDepthTexture();
-      let glDepthTexture = depthTexture ? depthTexture.getGLTexture() : null;
-
-      if (!glDepthTexture) {
-        // Create depth renderbuffer instead of texture (simpler and more compatible)
-        const depthBuffer = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, depthBuffer);
-        gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, renderTexture.getWidth(), renderTexture.getHeight());
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthBuffer);
-      } else {
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, glDepthTexture, 0);
-      }
-    }
-
-    // Check framebuffer completeness
-    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
-    if (status !== gl.FRAMEBUFFER_COMPLETE) {
-      const statusNames: Record<number, string> = {
-        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
-        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
-        [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
-        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
-      };
-      logger.error(`Framebuffer incomplete for ${renderTexture.label}: ${statusNames[status] || status}`);
-    } else {
-      logger.info(`Created framebuffer for ${renderTexture.label} (${renderTexture.getWidth()}x${renderTexture.getHeight()})`);
-    }
-
-    // Store the framebuffer in the RenderTexture
-    renderTexture.setFramebuffer(fbo);
-
-    // Reset state
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.bindTexture(gl.TEXTURE_2D, null);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-  }
-
-  /**
    * Resizes the renderer.
    *
    * @param width - New width
@@ -1044,7 +875,7 @@ export class Renderer {
 
     // Vertex attributes
     layout(location = 0) in vec3 a_position;
-    layout(location = 1) in vec3 a_normal;  // Back to location 1
+    layout(location = 1) in vec3 a_normal;
     layout(location = 2) in vec2 a_texCoord;
     layout(location = 3) in vec4 a_tangent;
 
@@ -1058,8 +889,6 @@ export class Renderer {
     // Outputs to fragment shader
     out vec3 v_worldPosition;
     out vec3 v_worldNormal;
-    out vec3 v_rawNormal;  // DEBUG: Pass raw attribute directly
-    out vec4 v_rawTangent; // DEBUG: Pass raw tangent attribute
     out vec2 v_texCoord;
     out vec4 v_shadowCoord;
     out mat3 v_TBN;
@@ -1069,10 +898,6 @@ export class Renderer {
       // World space position
       vec4 worldPos = u_modelMatrix * vec4(a_position, 1.0);
       v_worldPosition = worldPos.xyz;
-
-      // Pass raw attributes directly for debugging (no transformation)
-      v_rawNormal = a_normal;    // location 1
-      v_rawTangent = a_tangent;  // location 3
 
       // World space normal
       v_worldNormal = normalize(u_normalMatrix * a_normal);
@@ -1108,8 +933,6 @@ export class Renderer {
     // Inputs from vertex shader
     in vec3 v_worldPosition;
     in vec3 v_worldNormal;
-    in vec3 v_rawNormal;  // DEBUG: Raw attribute from vertex shader
-    in vec4 v_rawTangent; // DEBUG: Raw tangent attribute
     in vec2 v_texCoord;
     in vec4 v_shadowCoord;
     in mat3 v_TBN;
@@ -1163,9 +986,6 @@ export class Renderer {
     uniform float u_envIntensity;
     uniform float u_exposure;
 
-    // Debug mode: 0=normal, 1=show normals, 2=show albedo only
-    uniform int u_debugMode;
-
     out vec4 fragColor;
 
     // ==========================================================================
@@ -1194,10 +1014,9 @@ export class Renderer {
 
     // Geometry Function (Schlick-GGX)
     // Accounts for self-shadowing of microfacets
-    // FIXED: Use correct k formula for DIRECT lighting: k = roughness² / 2
-    // (Previously used IBL formula k = (roughness+1)² / 8 which was wrong)
     float GeometrySchlickGGX(float NdotV, float roughness) {
-      float k = (roughness * roughness) / 2.0;  // Direct lighting formula
+      float r = roughness + 1.0;
+      float k = (r * r) / 8.0;
       return NdotV / (NdotV * (1.0 - k) + k);
     }
 
@@ -1224,33 +1043,6 @@ export class Renderer {
     // ==========================================================================
     // SHADOW MAPPING - PCF Soft Shadows
     // ==========================================================================
-
-    // Procedural ground shadow - fakes shadow by darkening ground near y=0
-    // This provides instant visual feedback without full shadow mapping
-    float ProceduralGroundShadow(vec3 worldPos, vec3 normal) {
-      // Only apply shadow to surfaces facing up (ground-like)
-      float upFacing = max(dot(normal, vec3(0.0, 1.0, 0.0)), 0.0);
-      if (upFacing < 0.5) return 0.0;
-
-      // Shadow intensity based on height - objects close to ground are in shadow
-      float groundHeight = 0.0;
-      float heightAboveGround = worldPos.y - groundHeight;
-
-      // Objects very close to ground (y < 5) cast shadow onto ground
-      // This creates the illusion of contact shadows
-      float shadowRange = 8.0;
-      float shadowIntensity = 0.0;
-
-      if (heightAboveGround >= 0.0 && heightAboveGround < 0.2) {
-        // This IS the ground - darken based on distance to nearby objects
-        // Use a simple distance-based falloff from origin (where car/objects are)
-        float distFromOrigin = length(worldPos.xz);
-        // Darken in a radius around origin (where objects typically are)
-        shadowIntensity = smoothstep(15.0, 2.0, distFromOrigin) * 0.4;
-      }
-
-      return shadowIntensity;
-    }
 
     float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
       if (u_hasShadowMap == 0) return 0.0;
@@ -1285,75 +1077,53 @@ export class Renderer {
     }
 
     // ==========================================================================
-    // IMAGE-BASED LIGHTING (IBL) - Balanced High-Quality Environment
+    // IMAGE-BASED LIGHTING (IBL) - Procedural Sky Ambient
     // ==========================================================================
 
     vec3 IBL(vec3 N, vec3 V, vec3 albedo, float metallic, float roughness, vec3 F0) {
-      // IBL - REDUCED ambient to let direct lighting shine
-      // The direct lighting should provide the main shading contrast
+      // Enhanced procedural hemisphere lighting for realistic ambient
+      // Uses a tri-color gradient (sky, horizon, ground) for natural outdoor lighting
 
-      // Environment colors - MUTED to not overwhelm direct light
-      vec3 skyZenith = vec3(0.15, 0.25, 0.5);      // Dimmer blue sky
-      vec3 skyHorizon = vec3(0.3, 0.35, 0.45);     // Dimmer horizon
-      vec3 sunGlowColor = vec3(1.0, 0.95, 0.85);   // Warm sun
-      vec3 groundColor = vec3(0.05, 0.06, 0.04);   // Very dark ground
+      // Colors tuned for outdoor daylight scene
+      vec3 skyColor = vec3(0.6, 0.8, 1.0);      // Bright blue sky
+      vec3 horizonColor = vec3(0.9, 0.85, 0.75); // Warm bright horizon
+      vec3 groundColor = vec3(0.35, 0.3, 0.25);  // Warm ground bounce
+      vec3 sunGlowColor = vec3(1.0, 0.95, 0.8);  // Sun glow direction
 
-      // Reflection direction
-      vec3 R = reflect(-V, N);
+      // Blend based on normal direction
+      float upFactor = dot(N, vec3(0.0, 1.0, 0.0));
+      float skyBlend = clamp(upFactor, 0.0, 1.0);
+      float groundBlend = clamp(-upFactor, 0.0, 1.0);
+      float horizonBlend = 1.0 - abs(upFactor);
 
-      // Build environment color from reflection direction
-      float RdotUp = R.y;
-      float skyGradient = clamp(RdotUp * 0.5 + 0.5, 0.0, 1.0);
+      // Strong tri-color ambient with emphasis on sky
+      vec3 ambientColor = skyColor * skyBlend * 1.2 +
+                         groundColor * groundBlend * 0.8 +
+                         horizonColor * horizonBlend * 0.6;
 
-      // Smooth sky gradient
-      vec3 envColor = mix(skyHorizon, skyZenith, pow(skyGradient, 1.5));
+      // Add sun glow direction for extra warmth
+      float sunFactor = max(dot(N, normalize(vec3(0.5, 0.5, 0.5))), 0.0);
+      ambientColor += sunGlowColor * sunFactor * 0.3;
 
-      // Ground reflection blend - darker for contrast
-      if (RdotUp < 0.0) {
-        float groundFactor = clamp(-RdotUp, 0.0, 1.0);
-        envColor = mix(skyHorizon * 0.3, groundColor, groundFactor * groundFactor);
-      }
-
-      // Sun hotspot - direction TO the light (opposite of light direction)
-      // Light points (0.6, -0.5, -0.6), so sunDir = (-0.6, 0.5, 0.6) normalized
-      vec3 sunDir = normalize(vec3(-0.6, 0.5, 0.6));
-      float sunDot = max(dot(R, sunDir), 0.0);
-
-      // Sharp sun reflection
-      float sunPower = mix(16.0, 256.0, 1.0 - roughness);
-      float sunSpec = pow(sunDot, sunPower);
-      float sunStrength = 1.5 * (1.0 - roughness * 0.3);
-      envColor += sunGlowColor * sunSpec * sunStrength;
-
-      // Fresnel
-      float NdotV = max(dot(N, V), 0.001);
+      // PBR-correct ambient with Fresnel
+      float NdotV = max(dot(N, V), 0.0);
       vec3 F = FresnelSchlickRoughness(NdotV, F0, roughness);
-
-      // Energy conservation
       vec3 kD = (1.0 - F) * (1.0 - metallic);
 
-      // EXTREME MINIMAL hemisphere diffuse ambient - direct light MUST dominate
-      float NdotUp = dot(N, vec3(0.0, 1.0, 0.0));
-      vec3 skyAmbient = skyHorizon * 0.03;       // Almost nothing
-      vec3 groundAmbient = groundColor * 0.01;   // Nearly black for down-facing
-      float hemiFactor = NdotUp * 0.5 + 0.5;
-      hemiFactor = pow(hemiFactor, 0.8);         // Steeper curve for more contrast
-      vec3 ambientHemi = mix(groundAmbient, skyAmbient, hemiFactor);
-      vec3 diffuse = ambientHemi * albedo * kD;
+      // Strong diffuse ambient - this is key for non-metallic surfaces
+      vec3 diffuse = ambientColor * albedo * kD * 1.5;
 
-      // Specular - environment reflections (DRASTICALLY reduced)
-      float specStrength = (1.0 - roughness * 0.7) * 0.2;  // Very low
-      vec3 specular = envColor * F * specStrength;
+      // Specular ambient based on reflection direction - boosted for metallic visibility
+      vec3 R = reflect(-V, N);
+      float specFactor = max(R.y * 0.5 + 0.5, 0.0) * (1.0 - roughness * 0.6);
+      // Stronger specular for metallic surfaces to compensate for lack of env map
+      vec3 specularColor = mix(horizonColor, skyColor, clamp(R.y, 0.0, 1.0));
+      vec3 specular = specularColor * F * specFactor * (0.6 + metallic * 0.8);
 
-      // Fresnel edge glow - minimal
-      float edgeFresnel = pow(1.0 - NdotV, 4.0);
-      vec3 edgeGlow = skyHorizon * edgeFresnel * 0.05 * (1.0 - roughness * 0.5);
-      specular += edgeGlow;
+      // Ensure minimum ambient visibility - especially important for metallic surfaces
+      vec3 minAmbient = albedo * (0.15 + metallic * 0.2);
 
-      // Clearcoat-like extra reflection - disabled for now
-      // We need direct lighting to dominate first
-
-      return (diffuse + specular) * u_envIntensity;
+      return max(diffuse + specular, minAmbient) * u_envIntensity;
     }
 
     // ==========================================================================
@@ -1440,13 +1210,16 @@ export class Renderer {
       // Calculate NdotV once - needed for specular calculations in all lighting paths
       float NdotV = max(dot(N, V), 0.001); // Clamp to small positive to avoid artifacts
 
-      // Fallback lights when LightManager is empty - strong directional for visible shading
+      // P0 FIX #31: Hardcoded fallback lights - only used when LightManager has no lights
+      // This ensures scenes always have some lighting even without registered lights
       if (u_lightCount == 0) {
-        // MAIN SUN - Strong directional key light for visible face contrast
-        vec3 sunDirection = normalize(vec3(-0.4, -0.8, -0.3));  // High sun angle, more from side
-        vec3 sunColor = vec3(1.0, 0.98, 0.95);  // Warm daylight
-        float sunIntensity = 5.0;  // Strong for visible directional shading
+        // Main directional light (sun) - hardcoded fallback
+        // Direction points FROM the light source
+        vec3 sunDirection = normalize(vec3(-0.4, -0.8, -0.4));
+        vec3 sunColor = vec3(1.0, 0.98, 0.92);
+        float sunIntensity = 3.0;
 
+        // Light direction is opposite of sun direction (towards the light)
         vec3 L = normalize(-sunDirection);
         vec3 H = normalize(V + L);
 
@@ -1455,44 +1228,41 @@ export class Renderer {
         float VdotH = max(dot(V, H), 0.0);
 
         if (NdotL > 0.0) {
-          // Cook-Torrance BRDF
+          // Cook-Torrance BRDF components
           float D = DistributionGGX(N, H, roughness);
           float G = GeometrySmith(N, V, L, roughness);
           vec3 F = FresnelSchlick(VdotH, F0);
 
+          // Specular BRDF
           vec3 numerator = D * G * F;
           float denominator = 4.0 * NdotV * NdotL + EPSILON;
           vec3 specular = numerator / denominator;
 
+          // Diffuse BRDF (Lambert)
           vec3 kS = F;
           vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
           vec3 diffuse = kD * albedo / PI;
 
+          // Combine
           vec3 radiance = sunColor * sunIntensity;
           Lo += (diffuse + specular) * radiance * NdotL;
         }
 
-        // FILL LIGHT - From opposite side for softer shadows (weaker)
-        vec3 fillDir = normalize(vec3(0.6, 0.2, 0.7));  // From camera-right
+        // Fill light (sky bounce from above-left)
+        vec3 fillDir = normalize(vec3(0.3, 0.7, -0.3));
         float fillNdotL = max(dot(N, fillDir), 0.0);
-        vec3 fillColor = vec3(0.4, 0.5, 0.7);  // Cool fill
-        float fillIntensity = 1.0;
+        vec3 fillColor = vec3(0.5, 0.6, 0.8) * 0.8; // Cool blue
+        Lo += albedo * fillColor * fillNdotL * (1.0 - metallic) / PI;
 
-        if (fillNdotL > 0.0) {
-          vec3 fillH = normalize(V + fillDir);
-          float fillVdotH = max(dot(V, fillH), 0.0);
-          vec3 fillF = FresnelSchlick(fillVdotH, F0);
-          float fillD = DistributionGGX(N, fillH, roughness);
-          float fillG = GeometrySmith(N, V, fillDir, roughness);
-          vec3 fillSpec = (fillD * fillG * fillF) / (4.0 * NdotV * fillNdotL + EPSILON);
-          vec3 fillDiff = (vec3(1.0) - fillF) * (1.0 - metallic) * albedo / PI;
-          Lo += (fillDiff + fillSpec) * fillColor * fillIntensity * fillNdotL;
-        }
+        // Ground bounce (subtle warm light from below)
+        vec3 groundDir = normalize(vec3(0.0, 1.0, 0.0));
+        float groundNdotL = max(dot(N, groundDir), 0.0);
+        vec3 groundColor = vec3(0.3, 0.25, 0.2) * 0.3;
+        Lo += albedo * groundColor * groundNdotL * (1.0 - metallic) / PI;
 
-        // RIM LIGHT - Edge highlight for depth
-        float rimFactor = pow(1.0 - NdotV, 3.0);
-        vec3 rimColor = vec3(0.6, 0.7, 0.9);
-        Lo += rimColor * rimFactor * 0.4 * (1.0 - roughness);
+        // Rim lighting for visual depth
+        float rimFactor = pow(1.0 - NdotV, 4.0);
+        Lo += vec3(0.4, 0.45, 0.5) * rimFactor * 0.15;
       }
 
       // Process additional lights from uniform array
@@ -1503,8 +1273,7 @@ export class Renderer {
         vec3 lightRadiance;
 
         if (u_lightTypes[i] == 0) {
-          // Directional light - direction stored as "direction light travels" (FROM sun TO surface)
-          // L should point FROM surface TO light, so we NEGATE to point toward sun
+          // Directional light
           lightL = normalize(-u_lightDirections[i]);
           lightRadiance = u_lightColors[i] * u_lightIntensities[i];
         } else if (u_lightTypes[i] == 1) {
@@ -1519,104 +1288,39 @@ export class Renderer {
         }
 
         float lightNdotL = max(dot(N, lightL), 0.0);
-
-        // FIXED: Full PBR with proper energy conservation
-        // Only compute if surface faces the light
         if (lightNdotL > 0.0) {
           vec3 lightH = normalize(V + lightL);
+          float lightNdotH = max(dot(N, lightH), 0.0);
           float lightVdotH = max(dot(V, lightH), 0.0);
 
-          // Fresnel term - determines specular vs diffuse split
-          vec3 lightF = FresnelSchlick(lightVdotH, F0);
-
-          // Energy conservation: kD = (1 - F) * (1 - metallic)
-          // Metals have no diffuse, dielectrics reflect less when Fresnel is high
-          vec3 kD = (vec3(1.0) - lightF) * (1.0 - metallic);
-
-          // Diffuse with energy conservation
-          vec3 lightDiffuse = kD * albedo / PI;
-
-          // Specular (Cook-Torrance BRDF)
+          // Full PBR for each light
           float lightD = DistributionGGX(N, lightH, roughness);
           float lightG = GeometrySmith(N, V, lightL, roughness);
-          vec3 lightSpec = (lightD * lightG * lightF) / (4.0 * NdotV * lightNdotL + EPSILON);
+          vec3 lightF = FresnelSchlick(lightVdotH, F0);
 
-          // Combine diffuse + specular
-          Lo += (lightDiffuse + lightSpec) * lightRadiance * lightNdotL;
+          vec3 lightSpec = (lightD * lightG * lightF) / (4.0 * NdotV * lightNdotL + EPSILON);
+          vec3 lightKD = (vec3(1.0) - lightF) * (1.0 - metallic);
+          vec3 lightDiff = lightKD * albedo / PI;
+
+          Lo += (lightDiff + lightSpec) * lightRadiance * lightNdotL;
         }
       }
 
       // =======================================================================
       // AMBIENT / IBL
       // =======================================================================
-      // Simple ambient term - provides base illumination for unlit areas
-      // Using a slight blue-ish tint for sky bounce light
-      // REDUCED ambient to increase directional lighting contrast
-      vec3 ambientColor = vec3(0.08, 0.09, 0.12);  // Much darker ambient
-      vec3 ambient = ambientColor * albedo * ao;
+      vec3 ambient = IBL(N, V, albedo, metallic, roughness, F0) * ao;
 
       // =======================================================================
-      // COMBINE - Key to achieving proper PBR look
+      // COMBINE
       // =======================================================================
-      // The balance between ambient and Lo determines the contrast
-      // Lo should dominate for lit surfaces, ambient fills shadows
+      vec3 color = ambient + Lo + emission;
 
-      // *** DIAGNOSTIC: Test basic Lambert vs full PBR ***
-      // If Lo is near-zero or uniform, this will show why
-
-      // Simple Lambert test using fallback light direction
-      vec3 testLightDir = normalize(vec3(-0.4, -0.8, -0.3));
-      vec3 testL = normalize(-testLightDir);
-      float testNdotL = max(dot(N, testL), 0.0);
-
-      // Lambert shading: pure NdotL * albedo gives clear face contrast
-      vec3 lambertDirect = albedo * testNdotL * 3.0; // Boost for visibility
-
-      // Use Lo from full PBR, but compare to simple Lambert
-      // If Lo is flat but lambertDirect varies, the PBR math has issues
-      vec3 scaledLo = Lo * 0.7;
-
-      // SWITCH: Use this line for Lambert-only (debug), comment for PBR
-      // vec3 color = ambient + lambertDirect + emission; // LAMBERT ONLY
-
-      // =========================================================================
-      // DIAGNOSTIC: Replace PBR Lo with simple Lambert to verify the issue
-      // =========================================================================
-      // The PBR Lo might have issues with kD or the diffuse calculation
-      // Use simple Lambert that we KNOW works (from debug mode 15)
-
-      // PRIMARY SUN LIGHT - Strong key light for visible 3D shading
-      vec3 sunDir = normalize(vec3(0.5, 0.9, 0.4));  // High sun, slightly to the right
-      float sunNdotL = max(dot(N, sunDir), 0.0);
-      vec3 sunColor = vec3(1.0, 0.98, 0.92);  // Warm daylight
-      vec3 sunContrib = albedo * sunNdotL * sunColor * 3.5;
-
-      // FILL LIGHT - Softer light from opposite side to fill shadows
-      vec3 fillDir = normalize(vec3(-0.3, 0.4, -0.5));
-      float fillNdotL = max(dot(N, fillDir), 0.0);
-      vec3 fillColor = vec3(0.5, 0.6, 0.8);  // Cool fill
-      vec3 fillContrib = albedo * fillNdotL * fillColor * 0.8;
-
-      // RIM LIGHT - Edge highlight for depth separation
-      float rimFactor = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-      vec3 rimColor = vec3(0.7, 0.8, 1.0);
-      vec3 rimContrib = rimColor * rimFactor * 0.5 * (1.0 - roughness);
-
-      // SPECULAR HIGHLIGHT - Adds glossy reflection on car paint
-      vec3 H = normalize(sunDir + V);
-      float spec = pow(max(dot(N, H), 0.0), 32.0 * (1.0 - roughness * 0.8));
-      vec3 specContrib = sunColor * spec * 0.4 * (1.0 - roughness);
-
-      // COMBINE ALL LIGHTING
-      vec3 color = ambient + sunContrib + fillContrib + rimContrib + specContrib + emission;
-
-      // Apply procedural ground shadow for surfaces near ground level
-      // DISABLED for debugging
-      // float groundShadow = ProceduralGroundShadow(v_worldPosition, N);
-      // color *= (1.0 - groundShadow);
-
-      // REMOVED: The "minimum visibility" hack was flattening contrast
-      // Let dark areas stay dark - that's what creates the 3D illusion
+      // Ensure we have some minimum visibility - add a base ambient if too dark
+      float luminance = dot(color, vec3(0.299, 0.587, 0.114));
+      if (luminance < 0.05) {
+        color += albedo * 0.15; // Add some ambient to prevent pure black
+      }
 
       // =======================================================================
       // HDR TONE MAPPING & GAMMA CORRECTION
@@ -1631,201 +1335,7 @@ export class Renderer {
       // Gamma correction (linear to sRGB)
       color = pow(color, vec3(1.0 / 2.2));
 
-      // =======================================================================
-      // COLOR GRADING - Enhanced contrast for visible face shading
-      // =======================================================================
-
-      // INCREASED contrast boost for visible face differentiation
-      color = (color - 0.5) * 1.3 + 0.5;
-
-      // Saturation boost
-      float gray = dot(color, vec3(0.299, 0.587, 0.114));
-      color = mix(vec3(gray), color, 1.15); // 15% more saturated
-
-      // Clamp to valid range
-      color = clamp(color, 0.0, 1.0);
-
-      // Debug output modes
-      if (u_debugMode == 1) {
-        // Show world-space normals as colors (map [-1,1] to [0,1])
-        fragColor = vec4(N * 0.5 + 0.5, 1.0);
-        return;
-      } else if (u_debugMode == 2) {
-        // Show albedo only (no lighting)
-        fragColor = vec4(pow(albedo, vec3(1.0/2.2)), 1.0);
-        return;
-      } else if (u_debugMode == 3) {
-        // Show metallic as grayscale
-        fragColor = vec4(vec3(metallic), 1.0);
-        return;
-      } else if (u_debugMode == 4) {
-        // Show roughness as grayscale
-        fragColor = vec4(vec3(roughness), 1.0);
-        return;
-      } else if (u_debugMode == 5) {
-        // Show direct lighting (Lo) only - tone mapped for visibility
-        vec3 loVis = ACESFilm(Lo);
-        loVis = pow(loVis, vec3(1.0 / 2.2));
-        fragColor = vec4(loVis, 1.0);
-        return;
-      } else if (u_debugMode == 6) {
-        // Show light count as color: red=0, green=1, blue=2+
-        if (u_lightCount == 0) {
-          fragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red = no lights
-        } else if (u_lightCount == 1) {
-          fragColor = vec4(0.0, 1.0, 0.0, 1.0); // Green = 1 light
-        } else {
-          fragColor = vec4(0.0, 0.0, 1.0, 1.0); // Blue = 2+ lights
-        }
-        return;
-      } else if (u_debugMode == 7) {
-        // DEBUG: Show world normal Y component directly
-        // Surfaces facing up should be GREEN, facing down should be BLACK
-        // Horizontal surfaces (car hood) should be bright green
-        float normalY = N.y * 0.5 + 0.5; // Map from [-1,1] to [0,1]
-        fragColor = vec4(0.0, normalY, 0.0, 1.0); // Green channel = Y
-        return;
-      } else if (u_debugMode == 8) {
-        // DEBUG: Show light direction from uniform as RGB
-        // R = x, G = y, B = z (mapped from [-1,1] to [0,1])
-        if (u_lightCount > 0) {
-          vec3 dir = u_lightDirections[0];
-          fragColor = vec4(dir * 0.5 + 0.5, 1.0);
-        } else {
-          fragColor = vec4(1.0, 0.0, 1.0, 1.0); // Magenta = no light
-        }
-        return;
-      } else if (u_debugMode == 9) {
-        // DEBUG: Show raw Lo * 10 (no tone mapping) to see actual contribution
-        vec3 loRaw = clamp(Lo * 0.1, 0.0, 1.0); // Scale down to see range
-        fragColor = vec4(loRaw, 1.0);
-        return;
-      } else if (u_debugMode == 10) {
-        // DEBUG MODE 10: SIMPLE LAMBERT SHADING - No PBR, no tone mapping
-        // This is the most basic lighting test: NdotL * albedo
-        // Light direction from first uniform light (or fallback)
-        vec3 simpleL;
-        if (u_lightCount > 0) {
-          simpleL = normalize(-u_lightDirections[0]);
-        } else {
-          simpleL = normalize(vec3(0.5, 0.8, 0.3)); // Default up-right
-        }
-        float simpleNdotL = max(dot(N, simpleL), 0.0);
-        vec3 simpleLambert = albedo * simpleNdotL + vec3(0.1) * albedo; // Lambert + small ambient
-        fragColor = vec4(pow(simpleLambert, vec3(1.0/2.2)), 1.0); // Gamma correct
-        return;
-      } else if (u_debugMode == 11) {
-        // DEBUG MODE 11: Pure NdotL as grayscale (no albedo, no ambient)
-        vec3 testL;
-        if (u_lightCount > 0) {
-          testL = normalize(-u_lightDirections[0]);
-        } else {
-          testL = normalize(vec3(0.5, 0.8, 0.3)); // Default up-right
-        }
-        float testNdotL = max(dot(N, testL), 0.0);
-        fragColor = vec4(vec3(testNdotL), 1.0);
-        return;
-      } else if (u_debugMode == 12) {
-        // DEBUG MODE 12: Color-code by NdotL value
-        // BLACK = 0 (perpendicular/backfacing)
-        // RED = 0-0.3 (grazing angle)
-        // YELLOW = 0.3-0.6 (moderate angle)
-        // GREEN = 0.6-0.9 (good angle)
-        // WHITE = 0.9-1.0 (nearly facing light)
-        vec3 gradL = normalize(vec3(0.5, 0.8, 0.3));
-        float gradNdotL = max(dot(N, gradL), 0.0);
-        vec3 gradColor;
-        if (gradNdotL < 0.01) {
-          gradColor = vec3(0.0); // BLACK - backfacing
-        } else if (gradNdotL < 0.3) {
-          gradColor = vec3(1.0, 0.0, 0.0); // RED - grazing
-        } else if (gradNdotL < 0.6) {
-          gradColor = vec3(1.0, 1.0, 0.0); // YELLOW - moderate
-        } else if (gradNdotL < 0.9) {
-          gradColor = vec3(0.0, 1.0, 0.0); // GREEN - good
-        } else {
-          gradColor = vec3(1.0); // WHITE - direct
-        }
-        fragColor = vec4(gradColor, 1.0);
-        return;
-      } else if (u_debugMode == 13) {
-        // DEBUG MODE 13: Pure Lambert shading (no PBR, no tone mapping)
-        // Uses the lambertDirect value computed before this point
-        // Should show clear face contrast if normals work
-        vec3 pureL = normalize(vec3(0.4, 0.8, 0.3));
-        float pureNdotL = max(dot(N, pureL), 0.0);
-        vec3 pureLambert = albedo * pureNdotL + vec3(0.1) * albedo; // Lambert + ambient
-        pureLambert = pow(pureLambert, vec3(1.0/2.2)); // Gamma correct only
-        fragColor = vec4(pureLambert, 1.0);
-        return;
-      } else if (u_debugMode == 14) {
-        // DEBUG MODE 14: Show Lo vs Lambda comparison
-        // Left half = Lo (PBR), Right half = Lambert
-        // Should help identify if PBR is computing weird values
-        vec3 compL = normalize(vec3(0.4, 0.8, 0.3));
-        float compNdotL = max(dot(N, compL), 0.0);
-        vec3 compLambert = albedo * compNdotL * 2.0;
-
-        // Tone map both for fair comparison
-        vec3 compLo = ACESFilm(Lo);
-        compLambert = ACESFilm(compLambert);
-
-        // Split screen: left = PBR Lo, right = Lambert
-        if (gl_FragCoord.x < 640.0) {
-          fragColor = vec4(pow(compLo, vec3(1.0/2.2)), 1.0);
-        } else {
-          fragColor = vec4(pow(compLambert, vec3(1.0/2.2)), 1.0);
-        }
-        return;
-      } else if (u_debugMode == 15) {
-        // DEBUG MODE 15: SIMPLE SHADING - Bypass ALL PBR, use basic Lambert
-        // This is the ultimate test: if this looks good, PBR is broken
-        vec3 simpleL = normalize(vec3(0.4, 0.8, 0.3));
-        float simpleNdotL = max(dot(N, simpleL), 0.0);
-
-        // Very simple: ambient + diffuse
-        vec3 simpleAmbient = albedo * 0.15;
-        vec3 simpleDiffuse = albedo * simpleNdotL * 0.85;
-        vec3 simpleColor = simpleAmbient + simpleDiffuse;
-
-        // Simple gamma correction only
-        fragColor = vec4(pow(simpleColor, vec3(1.0/2.2)), 1.0);
-        return;
-      } else if (u_debugMode == 16) {
-        // DEBUG MODE 16: POSITION AS COLOR
-        // Uses v_worldPosition (derived from a_position) as color
-        // This tests if the varying pipeline works at all
-        // Expected: RAINBOW colors across the scene (different positions = different colors)
-        // If this shows varied colors but mode 1 is flat, then a_normal is specifically broken
-        vec3 posNorm = fract(v_worldPosition * 0.1); // Scale and wrap to 0-1
-        fragColor = vec4(posNorm, 1.0);
-        return;
-      } else if (u_debugMode == 17) {
-        // DEBUG MODE 17: RAW NORMAL ATTRIBUTE
-        // Uses v_rawNormal which is a_normal passed through WITHOUT any transformation
-        // Expected: Different colors per face (red, green, blue based on normal direction)
-        // If this is flat gray (0.5, 0.5, 0.5), then a_normal itself is receiving zeros/uniform values
-        fragColor = vec4(v_rawNormal * 0.5 + 0.5, 1.0);
-        return;
-      } else if (u_debugMode == 18) {
-        // DEBUG MODE 18: TEXCOORD AS COLOR
-        // Uses v_texCoord to verify that attribute 2 works
-        // Expected: Gradient across UV space (if UVs are correct)
-        fragColor = vec4(v_texCoord, 0.0, 1.0);
-        return;
-      } else if (u_debugMode == 19) {
-        // DEBUG MODE 19: FLAT MAGENTA IF NORMAL IS ZERO
-        // If v_rawNormal is all zeros, output magenta; otherwise output the normal
-        float normLen = length(v_rawNormal);
-        if (normLen < 0.001) {
-          fragColor = vec4(1.0, 0.0, 1.0, 1.0); // MAGENTA = normal is zero!
-        } else {
-          fragColor = vec4(v_rawNormal * 0.5 + 0.5, 1.0); // Normal as color
-        }
-        return;
-      }
-
-      // PROPER PBR OUTPUT
+      // PROPER PBR OUTPUT - normals confirmed working
       fragColor = vec4(color, 1.0);
     }
   `;
@@ -1875,9 +1385,6 @@ export class Renderer {
       'u_modelMatrix', 'u_viewMatrix', 'u_projectionMatrix', 'u_normalMatrix', 'u_lightSpaceMatrix',
       // Material uniforms
       'u_albedo', 'u_metallic', 'u_roughness', 'u_ao', 'u_emission', 'u_emissionIntensity',
-      // Texture samplers (FIXED: these were missing, causing textures to not bind)
-      'u_albedoMap', 'u_normalMap', 'u_metallicRoughnessMap', 'u_aoMap', 'u_emissionMap',
-      'u_envMap', 'u_shadowMap',
       // Texture flags
       'u_hasAlbedoMap', 'u_hasNormalMap', 'u_hasMetallicRoughnessMap', 'u_hasAOMap',
       'u_hasEmissionMap', 'u_hasEnvMap', 'u_hasShadowMap',
@@ -1887,8 +1394,6 @@ export class Renderer {
       'u_shadowBias', 'u_shadowIntensity',
       // Environment
       'u_envIntensity', 'u_exposure',
-      // Debug
-      'u_debugMode',
       // Light count
       'u_lightCount',
     ];
@@ -1914,7 +1419,7 @@ export class Renderer {
   /**
    * Gets or creates GPU buffers for a mesh.
    */
-  private getMeshBuffers(gl: WebGL2RenderingContext, mesh: Mesh): { vao: WebGLVertexArrayObject; vbo: WebGLBuffer; ibo: WebGLBuffer; indexCount: number; indexType: number; vertexCount: number } | null {
+  private getMeshBuffers(gl: WebGL2RenderingContext, mesh: Mesh): { vao: WebGLVertexArrayObject; vbo: WebGLBuffer; ibo: WebGLBuffer; indexCount: number } | null {
     const cached = this.meshGPUBuffers.get(mesh);
     if (cached) return cached;
 
@@ -1955,28 +1460,6 @@ export class Renderer {
       const componentCount = this.getComponentCount(normAttr.type);
       gl.enableVertexAttribArray(1);
       gl.vertexAttribPointer(1, componentCount, gl.FLOAT, false, stride, normAttr.offset);
-      // DEBUG: Log the actual WebGL call parameters
-      console.log(`[GL ATTRIB] vertexAttribPointer(1, ${componentCount}, FLOAT, false, ${stride}, ${normAttr.offset})`);
-
-      // DEBUG: Log first few normals from the actual buffer data
-      const data = mesh.vertexBuffer.data;
-      const normalOffset = normAttr.offset / 4; // Convert byte offset to float offset
-      const strideFloats = stride / 4;
-      const vertCount = Math.min(6, mesh.vertexCount); // Log more vertices to see different faces
-      console.log(`[NORMAL DEBUG] ==== Mesh "${mesh.name}" ====`);
-      console.log(`[NORMAL DEBUG] Format: stride=${stride}, normalOffset=${normAttr.offset}, type=${normAttr.type}`);
-      console.log(`[NORMAL DEBUG] Buffer size: ${data.length} floats, ${mesh.vertexCount} vertices`);
-      for (let i = 0; i < vertCount; i++) {
-        const baseOffset = i * strideFloats + normalOffset;
-        const nx = data[baseOffset];
-        const ny = data[baseOffset + 1];
-        const nz = data[baseOffset + 2];
-        // Also log position for context
-        const px = data[i * strideFloats];
-        const py = data[i * strideFloats + 1];
-        const pz = data[i * strideFloats + 2];
-        console.log(`[NORMAL DEBUG] v${i}: pos=(${px.toFixed(2)}, ${py.toFixed(2)}, ${pz.toFixed(2)}) normal=(${nx.toFixed(3)}, ${ny.toFixed(3)}, ${nz.toFixed(3)})`);
-      }
     } else {
       // No normals in mesh - set default up vector as constant attribute
       gl.disableVertexAttribArray(1);
@@ -1996,18 +1479,13 @@ export class Renderer {
     }
 
     // Tangent (location 3) - needed for normal mapping
-    // DEBUG: Log all attribute semantics to diagnose tangent detection
-    console.log(`[TANGENT DEBUG] Mesh "${mesh.name}" attributes:`, format.attributes.map(a => ({ semantic: a.semantic, type: typeof a.semantic, offset: a.offset })));
     const tanAttr = format.attributes.find(a => a.semantic === 'TANGENT');
-    console.log(`[TANGENT DEBUG] Found tanAttr:`, tanAttr);
     if (tanAttr) {
       const componentCount = this.getComponentCount(tanAttr.type);
-      console.log(`[TANGENT DEBUG] Enabling tangent attribute at location 3, components=${componentCount}, offset=${tanAttr.offset}`);
       gl.enableVertexAttribArray(3);
       gl.vertexAttribPointer(3, componentCount, gl.FLOAT, false, stride, tanAttr.offset);
     } else {
       // No tangents - set default
-      console.log(`[TANGENT DEBUG] NO TANGENT FOUND - using default (1,0,0,1)`);
       gl.disableVertexAttribArray(3);
       gl.vertexAttrib4f(3, 1.0, 0.0, 0.0, 1.0); // Default tangent along X
     }
@@ -2018,38 +1496,7 @@ export class Renderer {
 
     gl.bindVertexArray(null);
 
-    // Determine WebGL index type from mesh's IndexBuffer type
-    const indexTypeStr = mesh.indexBuffer.indexType;
-    const glIndexType = indexTypeStr === 'uint32' ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT;
-
-    // P0 FIX: Validate max index doesn't exceed vertex count (prevents GL_INVALID_OPERATION)
-    const indexData = mesh.indexBuffer.data;
-    let maxIndex = 0;
-    if (indexTypeStr === 'uint32') {
-      const indices = new Uint32Array(indexData.buffer, indexData.byteOffset, indexData.byteLength / 4);
-      for (let i = 0; i < indices.length; i++) {
-        if (indices[i] > maxIndex) maxIndex = indices[i];
-      }
-    } else {
-      const indices = new Uint16Array(indexData.buffer, indexData.byteOffset, indexData.byteLength / 2);
-      for (let i = 0; i < indices.length; i++) {
-        if (indices[i] > maxIndex) maxIndex = indices[i];
-      }
-    }
-    // Track if mesh has valid indices
-    const hasValidIndices = maxIndex < mesh.vertexCount;
-    if (!hasValidIndices) {
-      logger.error(`[GPU BUFFER ERROR] Mesh "${mesh.name}" has index ${maxIndex} but only ${mesh.vertexCount} vertices! Skipping this mesh.`);
-    }
-
-    const result = {
-      vao,
-      vbo,
-      ibo,
-      indexCount: hasValidIndices ? mesh.indexBuffer.indexCount : 0, // Set to 0 to skip drawing
-      indexType: glIndexType,
-      vertexCount: mesh.vertexCount
-    };
+    const result = { vao, vbo, ibo, indexCount: mesh.indexBuffer.indexCount };
     this.meshGPUBuffers.set(mesh, result);
 
     // Log detailed vertex format info for debugging
@@ -2068,14 +1515,11 @@ export class Renderer {
    * Gets component count from vertex attribute type.
    */
   private getComponentCount(type: string | number): number {
-    // Handle string-based type names (e.g., 'float32x2', 'float32x3', 'float32x4')
+    // Handle string-based type names
     if (typeof type === 'string') {
-      // Check for xN suffix which indicates component count
-      if (type.endsWith('x2')) return 2;
-      if (type.endsWith('x3')) return 3;
-      if (type.endsWith('x4')) return 4;
-      // For types without x suffix (e.g., 'float32'), it's a single component
-      if (type.includes('float') && !type.includes('x')) return 1;
+      if (type.includes('2')) return 2;
+      if (type.includes('3')) return 3;
+      if (type.includes('4')) return 4;
       return 3; // Default to 3
     }
     // Handle numeric types (Float2=2, Float3=3, Float4=4)
@@ -2139,13 +1583,14 @@ export class Renderer {
     gl.uniform1i(getUniform('u_lightCount'), Math.max(lightCount, 1));
 
     if (lightCount === 0) {
-      // Default directional sun light - balanced for good PBR without overexposure
+      // No lights in scene - add strong default sun light coming from front-top-right
+      // Direction must be normalized: (0.4, -0.8, 0.4) normalized = (0.42, -0.84, 0.42)
       gl.uniform3f(getUniform('u_lightPositions[0]'), 100, 200, 100);
-      gl.uniform3f(getUniform('u_lightColors[0]'), 1.0, 0.98, 0.95); // Warm daylight
-      gl.uniform1f(getUniform('u_lightIntensities[0]'), 3.5); // Balanced intensity
+      gl.uniform3f(getUniform('u_lightColors[0]'), 1.0, 0.98, 0.92); // Warm sunlight
+      gl.uniform1f(getUniform('u_lightIntensities[0]'), 5.0); // Strong sun
       gl.uniform1i(getUniform('u_lightTypes[0]'), 0); // Directional
-      // High sun angle for good shadows and highlights
-      gl.uniform3f(getUniform('u_lightDirections[0]'), 0.3, -0.8, 0.5);
+      // Normalized direction pointing down and slightly forward
+      gl.uniform3f(getUniform('u_lightDirections[0]'), 0.42, -0.84, 0.42);
       gl.uniform1f(getUniform('u_lightRanges[0]'), 1000.0);
       gl.uniform1f(getUniform('u_spotAngles[0]'), 0.0);
       gl.uniform1i(getUniform('u_lightCount'), 1);
@@ -2154,18 +1599,12 @@ export class Renderer {
       for (let i = 0; i < lightCount; i++) {
         const light = allLights[i] as any;
         const pos = light.transform?.worldPosition || light.position || { x: 0, y: 10, z: 0 };
-        const color = light.getEffectiveColor?.() || light.color || { r: 1, g: 1, b: 1 };
-        // Use getEffectiveIntensity for proper physical unit conversion
-        const intensity = light.getEffectiveIntensity?.() ?? light.intensity ?? 1.0;
+        const color = light.color || { r: 1, g: 1, b: 1 };
+        const intensity = light.intensity ?? 1.0;
         const lightType = light.type === 'directional' ? 0 : light.type === 'point' ? 1 : 2;
         const dir = light.direction || { x: 0, y: -1, z: 0 };
         const range = light.range ?? 100.0;
         const spotAngle = light.spotAngle ?? Math.PI / 4;
-
-        // Log light data on first frame
-        if (this.frameCount === 1) {
-          logger.info(`[LIGHT ${i}] type=${light.type}(${lightType}) dir=(${dir.x?.toFixed(2)},${dir.y?.toFixed(2)},${dir.z?.toFixed(2)}) intensity=${intensity.toFixed(2)} color=(${color.r?.toFixed(2)},${color.g?.toFixed(2)},${color.b?.toFixed(2)})`);
-        }
 
         gl.uniform3f(getUniform(`u_lightPositions[${i}]`), pos.x, pos.y, pos.z);
         gl.uniform3f(getUniform(`u_lightColors[${i}]`), color.r, color.g, color.b);
@@ -2187,13 +1626,10 @@ export class Renderer {
     gl.uniform1f(getUniform('u_shadowBias'), 0.001);
     gl.uniform1f(getUniform('u_shadowIntensity'), 0.7);
 
-    // Environment settings - balanced for proper tone mapping
+    // Environment settings
     gl.uniform1i(getUniform('u_hasEnvMap'), 0); // Will enable when IBL implemented
-    gl.uniform1f(getUniform('u_envIntensity'), 1.0); // Standard ambient intensity
-    gl.uniform1f(getUniform('u_exposure'), 1.0); // Standard exposure
-
-    // Debug mode: 0=normal PBR, 1=show normals, 2=show albedo, 3=metallic, 4=roughness, 5=direct lighting only, 6=light count
-    gl.uniform1i(getUniform('u_debugMode'), this.currentDebugMode); // Debug mode (0=normal PBR)
+    gl.uniform1f(getUniform('u_envIntensity'), 1.0);
+    gl.uniform1f(getUniform('u_exposure'), 1.0);
 
     // Texture flags (default: no textures)
     gl.uniform1i(getUniform('u_hasAlbedoMap'), 0);
@@ -2251,9 +1687,7 @@ export class Renderer {
       }
 
       if (!mesh.vertexBuffer || !mesh.indexBuffer) {
-        if (isVehicleNode || this.frameCount <= 3) {
-          logger.error(`*** MISSING BUFFERS *** Node ${node.name} has mesh but missing vertexBuffer=${!!mesh.vertexBuffer}, indexBuffer=${!!mesh.indexBuffer}`);
-        }
+        logger.warn(`Node ${node.name} has mesh but missing buffers`);
         return;
       }
       if (this.frameCount === 1) {
@@ -2297,34 +1731,30 @@ export class Renderer {
       if (node.material) {
         const mat = node.material as any;
         // StandardPBRMaterial stores properties in mat.properties, but some materials
-        // have them directly on mat (via direct assignment like mat.albedo = color).
-        // IMPORTANT: Check direct properties FIRST since they represent explicit user overrides,
-        // then fall back to mat.properties which contains defaults.
-        const props = mat.properties || {};
+        // have them directly on mat. Check both locations.
+        const props = mat.properties || mat;
 
-        // Albedo/base color - check DIRECT properties first (user overrides), then nested defaults
-        // This handles the case where code does: material.albedo = new Color(...)
-        const color = mat.albedo || mat.baseColor || mat.color || props.albedo || props.baseColor;
+        // Albedo/base color - check nested and direct locations
+        const color = props.albedo || props.baseColor || mat.albedo || mat.baseColor || mat.color;
         if (color) {
           albedo = [color.r ?? 0.8, color.g ?? 0.8, color.b ?? 0.8];
         }
 
-        // PBR properties - check DIRECT properties first (user overrides), then nested defaults
-        // Direct assignment: material.metallic = 0.5 takes priority over defaults
-        const metallicVal = mat.metallic ?? props.metallic;
-        const roughnessVal = mat.roughness ?? props.roughness;
-        const aoVal = mat.ao ?? props.ao;
+        // PBR properties - check both locations with nullish coalescing
+        const metallicVal = props.metallic ?? mat.metallic;
+        const roughnessVal = props.roughness ?? mat.roughness;
+        const aoVal = props.ao ?? mat.ao;
 
         if (metallicVal !== undefined) metallic = metallicVal;
         if (roughnessVal !== undefined) roughness = roughnessVal;
         if (aoVal !== undefined) ao = aoVal;
 
-        // Emission - check DIRECT properties first (user overrides), then nested defaults
-        const emissionColor = mat.emission || mat.emissive || props.emission || props.emissive;
+        // Emission - check nested and direct locations
+        const emissionColor = props.emission || props.emissive || mat.emission || mat.emissive;
         if (emissionColor) {
           emission = [emissionColor.r ?? 0, emissionColor.g ?? 0, emissionColor.b ?? 0];
         }
-        const emIntensity = mat.emissionIntensity ?? mat.emissiveIntensity ?? props.emissionIntensity ?? props.emissiveIntensity;
+        const emIntensity = props.emissionIntensity ?? props.emissiveIntensity ?? mat.emissionIntensity ?? mat.emissiveIntensity;
         if (emIntensity !== undefined) emissionIntensity = emIntensity;
 
         // Log material properties on first few frames to verify they're being read
@@ -2418,103 +1848,10 @@ export class Renderer {
         }
       }
 
-      // === DIRECT ATTRIBUTE SETUP (VAO STILL REQUIRED) ===
-      // WebGL2 REQUIRES a VAO to be bound before any draw call
-      // We bind the VAO first, then manually set up attributes each frame
-      // Note: mesh already declared above (line ~2038)
-      if (mesh && mesh.vertexBuffer) {
-        const format = mesh.vertexBuffer.format;
-        const stride = format.stride;
-
-        // CRITICAL: WebGL2 requires VAO to be bound before any draw call
-        gl.bindVertexArray(buffers.vao);
-
-        // Bind VBO directly
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vbo);
-
-        // Re-setup position (location 0)
-        const posAttr = format.attributes.find((a: any) => a.semantic === 'POSITION');
-        if (posAttr) {
-          gl.enableVertexAttribArray(0);
-          gl.vertexAttribPointer(0, 3, gl.FLOAT, false, stride, posAttr.offset);
-        }
-
-        // Re-setup normal (location 1)
-        const normAttr = format.attributes.find((a: any) => a.semantic === 'NORMAL');
-        if (normAttr) {
-          gl.enableVertexAttribArray(1);
-          gl.vertexAttribPointer(1, 3, gl.FLOAT, false, stride, normAttr.offset);
-          if (this.frameCount <= 3 && meshCount < 3) {
-            console.log(`[NORMAL ATTR] ${mesh.name}: found NORMAL at offset ${normAttr.offset}, stride ${stride}`);
-            // Dump all attributes for debugging
-            console.log(`[ATTRS] All attributes for ${mesh.name}:`, format.attributes.map((a: any) => `${a.semantic}@${a.offset}`).join(', '));
-          }
-        } else {
-          // CRITICAL: If no normals in vertex buffer, provide default up normal
-          gl.disableVertexAttribArray(1);
-          gl.vertexAttrib3f(1, 0.0, 1.0, 0.0); // Default up normal
-          if (this.frameCount <= 3 && meshCount < 3) {
-            console.log(`[NORMAL ATTR] ${mesh.name}: NO NORMAL attribute! Using default (0,1,0)`);
-            // Dump all attributes for debugging
-            console.log(`[ATTRS] All attributes for ${mesh.name}:`, format.attributes.map((a: any) => `${a.semantic}@${a.offset}`).join(', '));
-          }
-        }
-
-        // Re-setup texcoord (location 2)
-        const texAttr = format.attributes.find((a: any) => a.semantic === 'TEXCOORD_0');
-        if (texAttr) {
-          gl.enableVertexAttribArray(2);
-          gl.vertexAttribPointer(2, 2, gl.FLOAT, false, stride, texAttr.offset);
-        }
-
-        // Re-setup tangent (location 3)
-        const tanAttr = format.attributes.find((a: any) => a.semantic === 'TANGENT');
-        if (tanAttr) {
-          gl.enableVertexAttribArray(3);
-          gl.vertexAttribPointer(3, 4, gl.FLOAT, false, stride, tanAttr.offset);
-        } else {
-          gl.disableVertexAttribArray(3);
-          gl.vertexAttrib4f(3, 1.0, 0.0, 0.0, 1.0);
-        }
-
-        // Bind IBO directly
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.ibo);
-
-        // Skip meshes with no valid indices (set to 0 during validation)
-        if (buffers.indexCount === 0) {
-          if (this.frameCount <= 3) {
-            console.log(`[DRAW SKIP] ${mesh.name}: indexCount=0, skipping`);
-          }
-          return;
-        }
-
-        // Validate before drawing (only log first few frames to avoid spam)
-        if (this.frameCount <= 3) {
-          const indexTypeStr = buffers.indexType === gl.UNSIGNED_INT ? 'UINT32' : 'UINT16';
-          console.log(`[DRAW] ${mesh.name}: ${buffers.indexCount} indices (${indexTypeStr}), ${buffers.vertexCount} vertices`);
-        }
-
-        // Draw using correct index type from mesh
-        gl.drawElements(gl.TRIANGLES, buffers.indexCount, buffers.indexType, 0);
-
-        // Unbind VAO
-        gl.bindVertexArray(null);
-
-        // Log once per mesh type
-        if (this.frameCount === 1 && mesh.name) {
-          console.log(`[DRAW] Drew ${mesh.name} with stride=${stride}, normAttr=${!!normAttr}, indexType=${buffers.indexType === gl.UNSIGNED_INT ? 'UINT32' : 'UINT16'}`);
-        }
-      } else {
-        // Fallback to VAO if mesh not available
-        // Skip meshes with no valid indices
-        if (buffers.indexCount === 0) {
-          return;
-        }
-        gl.bindVertexArray(buffers.vao);
-        // Use correct index type from cached buffers
-        gl.drawElements(gl.TRIANGLES, buffers.indexCount, buffers.indexType, 0);
-        gl.bindVertexArray(null);
-      }
+      // Bind VAO and draw
+      gl.bindVertexArray(buffers.vao);
+      gl.drawElements(gl.TRIANGLES, buffers.indexCount, gl.UNSIGNED_SHORT, 0);
+      gl.bindVertexArray(null);
 
       meshCount++;
     });
