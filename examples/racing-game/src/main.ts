@@ -157,8 +157,8 @@ class RacingGame {
     const sunDirection = new Vector3(0.5, -0.7, -0.5).normalize(); // High sun angle
     this.directionalLight = new DirectionalLight(
       sunDirection,
-      new Color(1, 0.98, 0.92),  // Warm daylight
-      50.0  // High intensity - will be scaled by NdotL in shader
+      new Color(1.0, 0.95, 0.85),  // Warm sunlight
+      80.0  // High intensity for AAA specular highlights
     );
     this.directionalLight.setShadowsEnabled(true);
 
@@ -330,8 +330,8 @@ class RacingGame {
     const bodyMaterial = new StandardPBRMaterial({
       name: `${name}_BodyMaterial`,
       albedo: bodyColor,
-      metallic: 0.4,     // Car paint is NOT highly metallic - it's clearcoated
-      roughness: 0.2,    // Glossy but not mirror
+      metallic: 0.2,     // Car paint - low metallic, glossy clearcoat finish
+      roughness: 0.3,    // Glossy car paint
     });
 
     // SCALE: Make car 1.5x larger for better visibility
@@ -362,8 +362,8 @@ class RacingGame {
     const hoodMaterial = new StandardPBRMaterial({
       name: `${name}_HoodMaterial`,
       albedo: bodyColor,
-      metallic: 0.45,   // Slightly shinier than body
-      roughness: 0.15,  // Glossy
+      metallic: 0.25,   // Slightly more metallic than body
+      roughness: 0.25,  // Slightly glossier than body
     });
 
     const hoodMesh = GeometryGenerator.box(2.0 * scale, 0.2 * scale, 1.5 * scale);
@@ -575,7 +575,8 @@ class RacingGame {
     console.log('[createVehicleMeshes] Creating detailed procedural car models...');
 
     // Player vehicle - Blue Supercar with metallic paint
-    const playerColor = new Color(0.1, 0.4, 1.0);
+    // Bright saturated blue for visibility and testing
+    const playerColor = new Color(0.15, 0.35, 0.9);  // Brighter blue for better visibility
     const playerNode = ProceduralCarBuilder.createSupercar('PlayerVehicle', playerColor);
 
     // Optional: Add textures to player car (if texture system is working)
@@ -591,13 +592,13 @@ class RacingGame {
     this.scene.add(playerNode);
     console.log('[createVehicleMeshes] Player vehicle (Supercar) mesh added to scene');
 
-    // AI vehicles with different car types and colors
+    // AI vehicles with different car types and colors (linear space, darker for proper PBR)
     const aiConfigs = [
-      { name: 'AIVehicle0', color: new Color(1, 0.15, 0.15), type: 'sports' },      // Red Sports Car
-      { name: 'AIVehicle1', color: new Color(1, 0.6, 0), type: 'muscle' },          // Orange Muscle Car
-      { name: 'AIVehicle2', color: new Color(0.95, 0.85, 0.1), type: 'rally' },     // Yellow Rally Car
-      { name: 'AIVehicle3', color: new Color(0.6, 0.1, 0.9), type: 'supercar' },    // Purple Supercar
-      { name: 'AIVehicle4', color: new Color(0.1, 0.85, 0.7), type: 'sports' },     // Teal Sports Car
+      { name: 'AIVehicle0', color: new Color(0.6, 0.05, 0.05), type: 'sports' },      // Red Sports Car
+      { name: 'AIVehicle1', color: new Color(0.7, 0.25, 0.02), type: 'muscle' },      // Orange Muscle Car
+      { name: 'AIVehicle2', color: new Color(0.7, 0.6, 0.03), type: 'rally' },        // Yellow Rally Car
+      { name: 'AIVehicle3', color: new Color(0.3, 0.05, 0.5), type: 'supercar' },     // Purple Supercar
+      { name: 'AIVehicle4', color: new Color(0.05, 0.5, 0.4), type: 'sports' },       // Teal Sports Car
     ];
 
     this.aiVehicles.forEach((vehicle, index) => {

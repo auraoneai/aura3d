@@ -357,33 +357,57 @@ export class ShadowPass extends RenderPass {
    * @param gl - WebGL2 rendering context
    */
   initializeGL(gl: WebGL2RenderingContext): void {
-    if (this.gl === gl && this.shader && this.omniShader) {
+    // Check if already initialized with this GL context
+    const shadersReady = this.gl === gl && this.shader && this.omniShader;
+    const targetsReady = this.shadowTargets.every(t => t.getDepthStencilAttachment() !== null) ||
+                         (this.shadowAtlas && this.shadowAtlas.getDepthStencilAttachment() !== null);
+
+    if (shadersReady && targetsReady) {
       return; // Already initialized
     }
 
     this.gl = gl;
 
-    // Create standard shadow shader
-    this.shader = new Shader({
-      name: 'ShadowDepth',
-      source: {
-        vertex: SHADOW_VERTEX_SHADER,
-        fragment: SHADOW_FRAGMENT_SHADER,
-      },
-      gl: this.gl,
-    });
+    // Create standard shadow shader (if not already created)
+    if (!this.shader) {
+      this.shader = new Shader({
+        name: 'ShadowDepth',
+        source: {
+          vertex: SHADOW_VERTEX_SHADER,
+          fragment: SHADOW_FRAGMENT_SHADER,
+        },
+        gl: this.gl,
+      });
+    }
 
-    // Create omnidirectional shadow shader
-    this.omniShader = new Shader({
-      name: 'OmniShadow',
-      source: {
-        vertex: OMNI_SHADOW_VERTEX_SHADER,
-        fragment: OMNI_SHADOW_FRAGMENT_SHADER,
-      },
-      gl: this.gl,
-    });
+    // Create omnidirectional shadow shader (if not already created)
+    if (!this.omniShader) {
+      this.omniShader = new Shader({
+        name: 'OmniShadow',
+        source: {
+          vertex: OMNI_SHADOW_VERTEX_SHADER,
+          fragment: OMNI_SHADOW_FRAGMENT_SHADER,
+        },
+        gl: this.gl,
+      });
+    }
 
-    logger.debug('Shadow shaders initialized');
+    // Create WebGL resources for all shadow render targets
+    if (this.shadowAtlas && !this.shadowAtlas.getDepthStencilAttachment()) {
+      this.shadowAtlas.create(gl);
+      logger.debug('Created shadow atlas WebGL resources');
+    }
+
+    for (let i = 0; i < this.shadowTargets.length; i++) {
+      const target = this.shadowTargets[i];
+      // Only create if not already created
+      if (!target.getDepthStencilAttachment()) {
+        target.create(gl);
+        logger.debug(`Created shadow target ${i} WebGL resources`);
+      }
+    }
+
+    logger.debug('Shadow shaders and render targets initialized');
   }
 
   /**
@@ -494,37 +518,21 @@ export class ShadowPass extends RenderPass {
         const modelMatrix = (drawCall.userData as any)?.modelMatrix || Matrix4.identity();
         activeShader.setUniform('u_modelMatrix', modelMatrix);
 
-        // Bind vertex buffers
-        const vertexBuffers = drawCall.getVertexBuffers();
-        for (let slot = 0; slot < vertexBuffers.length; slot++) {
-          const vb = vertexBuffers[slot];
-          if (vb && vb.buffer) {
-            gl.bindBuffer(gl.ARRAY_BUFFER, vb.buffer as WebGLBuffer);
-
-            // Enable position attribute (location 0)
-            if (slot === 0) {
-              const posAttr = activeShader.getAttribute('a_position');
-              if (posAttr) {
-                gl.enableVertexAttribArray(posAttr.location);
-                gl.vertexAttribPointer(
-                  posAttr.location,
-                  3, // vec3 position
-                  gl.FLOAT,
-                  false,
-                  vb.stride,
-                  vb.offset
-                );
-              }
-            }
-          }
+        // CRITICAL FIX: Get VAO from user data and bind it
+        // WebGL2 REQUIRES VAO to be bound before any draw call
+        const vao = (drawCall.userData as any)?.vao;
+        if (!vao) {
+          logger.warn('ShadowPass: Draw call missing VAO in userData, skipping');
+          return;
         }
 
+        // Bind the VAO - this sets up all vertex attributes and index buffer automatically
+        gl.bindVertexArray(vao);
+
         // *** ACTUAL DRAW CALL: Render depth-only to shadow map ***
-        // Bind index buffer and draw
+        // The VAO already has the index buffer bound, so we can draw directly
         const indexBuffer = drawCall.indexBuffer;
         if (indexBuffer && indexBuffer.buffer) {
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer.buffer as WebGLBuffer);
-
           const indexType = indexBuffer.format === 0 ? gl.UNSIGNED_SHORT : gl.UNSIGNED_INT;
           const indexSize = indexBuffer.format === 0 ? 2 : 4;
 
@@ -567,11 +575,8 @@ export class ShadowPass extends RenderPass {
           this.stats.drawCalls++;
         }
 
-        // Disable vertex attributes
-        const posAttr = activeShader.getAttribute('a_position');
-        if (posAttr) {
-          gl.disableVertexAttribArray(posAttr.location);
-        }
+        // Unbind VAO to prevent state corruption
+        gl.bindVertexArray(null);
       });
 
       // Unbind shader
@@ -586,6 +591,9 @@ export class ShadowPass extends RenderPass {
 
     // Restore GL state
     gl.colorMask(true, true, true, true);
+
+    // CRITICAL: Unbind VAO to prevent state corruption in subsequent renders
+    gl.bindVertexArray(null);
 
     // Unbind framebuffer (restore default framebuffer)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -637,7 +645,16 @@ export class ShadowPass extends RenderPass {
     // Check framebuffer completeness
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
-      logger.error(`Framebuffer incomplete: ${status}`);
+      const statusNames: Record<number, string> = {
+        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
+        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE',
+      };
+      logger.error(`Shadow framebuffer incomplete: ${statusNames[status] || status} (0x${status.toString(16)})`);
+      logger.error(`  - Target size: ${target.width}x${target.height}`);
+      logger.error(`  - Depth attachment: ${depthAttachment ? 'OK' : 'NULL'}`);
       gl.deleteFramebuffer(framebuffer);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       return null;
@@ -670,13 +687,15 @@ export class ShadowPass extends RenderPass {
     }
     this.framebufferCache = new WeakMap();
 
+    // Dispose render targets with GL context
+    const gl = this.gl;
     for (const target of this.shadowTargets) {
-      target.dispose();
+      target.dispose(gl ?? undefined);
     }
     this.shadowTargets.length = 0;
 
     if (this.shadowAtlas) {
-      this.shadowAtlas.dispose();
+      this.shadowAtlas.dispose(gl ?? undefined);
       this.shadowAtlas = null;
     }
 

@@ -33,6 +33,9 @@ import { Time } from '../core/Time';
 import { Vector3 } from '../math/Vector3';
 import { Matrix4 } from '../math/Matrix4';
 import { Mesh } from './geometry/Mesh';
+import { RenderQueue, RenderQueueType, RenderQueueEntry } from './pipeline/RenderQueue';
+import { DrawCall } from './pipeline/DrawCall';
+import { PipelineState } from './pipeline/PipelineState';
 
 const logger = Logger.create('Renderer');
 
@@ -210,7 +213,7 @@ export class Renderer {
 
   // Debug mode: 0=normal PBR, 1=normals, 2=albedo, 3=metallic, 4=roughness, 5=Lo, 6=light count, 7=NdotL, 8=light dir, 9=raw Lo
   // 17=raw normal attribute (no transformation), 19=magenta if normal is zero
-  private currentDebugMode: number = 0; // Normal PBR rendering
+  private currentDebugMode: number = 0; // Normal PBR mode - now that Lambert works, fixing PBR
 
   /**
    * Private constructor. Use Renderer.create() instead.
@@ -422,6 +425,7 @@ export class Renderer {
       this.shadowPass = new ShadowPass({
         resolution: this.settings.maxShadowResolution,
       });
+      this.shadowPass.setup(); // Create render targets and resources
       this.renderGraph.addPass(this.shadowPass);
 
       // P0 FIX #5: Initialize ShadowPass GL context
@@ -469,6 +473,7 @@ export class Renderer {
       this.shadowPass = new ShadowPass({
         resolution: this.settings.maxShadowResolution,
       });
+      this.shadowPass.setup(); // Create render targets and resources
       this.renderGraph.addPass(this.shadowPass);
 
       // P0 FIX #5: Initialize ShadowPass GL context
@@ -678,11 +683,53 @@ export class Renderer {
       // P0 FIX #29: Store the shadow data result instead of discarding it
       const shadowData = this.lightManager.prepareShadows(visibleLights, cameraInfoWithForward);
 
-      // P0 FIX #28: Shadow pass execution requires RenderQueue/RenderTarget
-      // Full integration pending - prepareShadows() data now available for future use
+      // P0 FIX #28: Shadow pass execution - NOW ENABLED
       if (shadowData && shadowData.length > 0) {
-        // Shadow data is prepared; full render integration pending
-        // this.shadowPass.execute() requires RenderQueue, not Scene
+        // Clear previous shadow maps
+        this.shadowPass.clearShadowMaps();
+
+        // Add shadow maps for each shadow-casting light
+        for (const shadow of shadowData) {
+          for (let i = 0; i < shadow.viewProjectionMatrices.length; i++) {
+            const lightVP = shadow.viewProjectionMatrices[i];
+            const shadowMapIndex = this.shadowPass.getShadowMaps().length;
+
+            // Add shadow map to the pass (it will manage the descriptor internally)
+            // We'll use the ShadowPass's addDirectionalShadowMap as a template
+            // but we need to add the shadow map descriptor directly
+            (this.shadowPass as any).shadowMaps.push({
+              type: 0, // ShadowMapType.Standard
+              lightViewProjection: lightVP,
+              bias: 0.005,
+            });
+          }
+        }
+
+        // Build a render queue from scene objects for shadow casting
+        const shadowQueue = this.buildShadowCasterQueue(scene, camera);
+
+        // Create a dummy render target (ShadowPass uses its own internal targets)
+        const dummyTarget = new RenderTarget({
+          width: this.settings.maxShadowResolution,
+          height: this.settings.maxShadowResolution,
+          samples: 1,
+          colorAttachments: [],
+          depthStencilAttachment: {
+            format: RTTextureFormat.Depth32F,
+            loadAction: 0, // LoadAction.Clear
+            storeAction: 1, // StoreAction.Store
+            clearValue: 1.0,
+          },
+          label: 'ShadowDummy',
+        });
+
+        // Execute shadow pass to render shadow maps
+        this.shadowPass.execute(shadowQueue, dummyTarget);
+
+        // Log shadow rendering
+        if (this.frameCount === 1) {
+          logger.info(`Shadow pass executed: ${shadowData.length} shadow casters, ${this.shadowPass.getShadowMaps().length} shadow maps`);
+        }
       }
     }
 
@@ -695,7 +742,29 @@ export class Renderer {
       if (device.getGL) {
         const gl = device.getGL() as WebGL2RenderingContext;
         const fb = this.postProcessInput!.getFramebuffer();
+
+        if (!fb) {
+          logger.error('PostProcessInput framebuffer is null - cannot render scene');
+          return;
+        }
+
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+        // CRITICAL: Check framebuffer completeness before rendering
+        const fbStatus = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+        if (fbStatus !== gl.FRAMEBUFFER_COMPLETE) {
+          const statusNames: Record<number, string> = {
+            [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+            [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
+            [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
+            [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+            [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE',
+          };
+          logger.error(`PostProcessInput framebuffer is incomplete: ${statusNames[fbStatus] || fbStatus} (0x${fbStatus.toString(16)})`);
+          gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          return;
+        }
+
         gl.viewport(0, 0, this.postProcessInput!.getWidth(), this.postProcessInput!.getHeight());
 
         // Clear offscreen buffer
@@ -781,21 +850,13 @@ export class Renderer {
 
     const gl = device.getGL() as WebGL2RenderingContext;
 
-    // ALWAYS blit from the scene render target to screen
-    // This ensures we see something even if post-processing fails
+    // Direct blit approach - bypassing PostProcessStack to avoid framebuffer issues
     const sceneFB = this.postProcessInput.getFramebuffer();
-
     if (!sceneFB) {
       logger.error('PostProcessInput has no framebuffer - cannot blit to screen');
       return;
     }
 
-    // Log once per session
-    if (this.frameCount === 1) {
-      logger.info(`Blitting from postProcessInput FBO to screen: ${this.renderWidth}x${this.renderHeight} -> ${gl.canvas.width}x${gl.canvas.height}`);
-    }
-
-    // Blit scene render target directly to screen (bypassing broken post-process effects for now)
     gl.bindFramebuffer(gl.READ_FRAMEBUFFER, sceneFB);
     gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
     gl.blitFramebuffer(
@@ -804,19 +865,6 @@ export class Renderer {
       gl.COLOR_BUFFER_BIT,
       gl.LINEAR
     );
-
-    // Check for GL errors
-    const error = gl.getError();
-    if (error !== gl.NO_ERROR && this.frameCount <= 3) {
-      const errorNames: Record<number, string> = {
-        [gl.INVALID_ENUM]: 'INVALID_ENUM',
-        [gl.INVALID_VALUE]: 'INVALID_VALUE',
-        [gl.INVALID_OPERATION]: 'INVALID_OPERATION',
-        [gl.INVALID_FRAMEBUFFER_OPERATION]: 'INVALID_FRAMEBUFFER_OPERATION',
-        [gl.OUT_OF_MEMORY]: 'OUT_OF_MEMORY',
-      };
-      logger.error(`GL error during blit: ${errorNames[error] || error}`);
-    }
 
     // Reset to default framebuffer
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -891,8 +939,12 @@ export class Renderer {
         [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
         [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
         [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE',
       };
-      logger.error(`Framebuffer incomplete for ${renderTexture.label}: ${statusNames[status] || status}`);
+      logger.error(`Framebuffer incomplete for ${renderTexture.label}: ${statusNames[status] || status} (0x${status.toString(16)})`);
+      logger.error(`  - Size: ${renderTexture.getWidth()}x${renderTexture.getHeight()}`);
+      logger.error(`  - Has depth: ${renderTexture.hasDepthBuffer()}`);
+      logger.error(`  - Color texture: ${glColorTexture ? 'OK' : 'NULL'}`);
     } else {
       logger.info(`Created framebuffer for ${renderTexture.label} (${renderTexture.getWidth()}x${renderTexture.getHeight()})`);
     }
@@ -1132,15 +1184,15 @@ export class Renderer {
     uniform int u_hasEnvMap;
     uniform int u_hasShadowMap;
 
-    // Texture samplers - sampler2D only (no cubemaps until IBL textures are loaded)
+    // Texture samplers
     uniform sampler2D u_albedoMap;
     uniform sampler2D u_normalMap;
     uniform sampler2D u_metallicRoughnessMap;
     uniform sampler2D u_aoMap;
     uniform sampler2D u_emissionMap;
     uniform sampler2D u_shadowMap;
-    // Note: samplerCube uniforms for envMap/irradianceMap removed to avoid WebGL
-    // sampler type conflicts. IBL will use procedural sky until cubemaps are implemented.
+
+    // IBL uses procedural sky only - no cubemap samplers to avoid texture type conflicts
 
     // Lighting uniforms
     uniform vec3 u_lightPositions[8];
@@ -1289,17 +1341,14 @@ export class Renderer {
     // ==========================================================================
 
     vec3 IBL(vec3 N, vec3 V, vec3 albedo, float metallic, float roughness, vec3 F0) {
-      // IBL - REDUCED ambient to let direct lighting shine
-      // The direct lighting should provide the main shading contrast
-
-      // Environment colors - MUTED to not overwhelm direct light
-      vec3 skyZenith = vec3(0.15, 0.25, 0.5);      // Dimmer blue sky
-      vec3 skyHorizon = vec3(0.3, 0.35, 0.45);     // Dimmer horizon
-      vec3 sunGlowColor = vec3(1.0, 0.95, 0.85);   // Warm sun
-      vec3 groundColor = vec3(0.05, 0.06, 0.04);   // Very dark ground
-
       // Reflection direction
       vec3 R = reflect(-V, N);
+
+      // Procedural sky environment (no cubemaps to avoid texture type conflicts)
+      vec3 skyZenith = vec3(0.15, 0.25, 0.5);      // Blue sky
+      vec3 skyHorizon = vec3(0.3, 0.35, 0.45);     // Horizon
+      vec3 sunGlowColor = vec3(1.0, 0.95, 0.85);   // Warm sun
+      vec3 groundColor = vec3(0.05, 0.06, 0.04);   // Dark ground
 
       // Build environment color from reflection direction
       float RdotUp = R.y;
@@ -1308,22 +1357,27 @@ export class Renderer {
       // Smooth sky gradient
       vec3 envColor = mix(skyHorizon, skyZenith, pow(skyGradient, 1.5));
 
-      // Ground reflection blend - darker for contrast
+      // Ground reflection blend
       if (RdotUp < 0.0) {
         float groundFactor = clamp(-RdotUp, 0.0, 1.0);
         envColor = mix(skyHorizon * 0.3, groundColor, groundFactor * groundFactor);
       }
 
-      // Sun hotspot - direction TO the light (opposite of light direction)
-      // Light points (0.6, -0.5, -0.6), so sunDir = (-0.6, 0.5, 0.6) normalized
+      // Sun hotspot - REDUCED to avoid washing out colors
       vec3 sunDir = normalize(vec3(-0.6, 0.5, 0.6));
       float sunDot = max(dot(R, sunDir), 0.0);
-
-      // Sharp sun reflection
       float sunPower = mix(16.0, 256.0, 1.0 - roughness);
       float sunSpec = pow(sunDot, sunPower);
-      float sunStrength = 1.5 * (1.0 - roughness * 0.3);
+      float sunStrength = 0.3 * (1.0 - roughness * 0.5);  // Much reduced sun hotspot
       envColor += sunGlowColor * sunSpec * sunStrength;
+
+      // Procedural irradiance (hemisphere lighting)
+      float NdotUp = dot(N, vec3(0.0, 1.0, 0.0));
+      vec3 skyAmbient = skyHorizon * 0.03;
+      vec3 groundAmbient = groundColor * 0.01;
+      float hemiFactor = NdotUp * 0.5 + 0.5;
+      hemiFactor = pow(hemiFactor, 0.8);
+      vec3 irradiance = mix(groundAmbient, skyAmbient, hemiFactor);
 
       // Fresnel
       float NdotV = max(dot(N, V), 0.001);
@@ -1332,26 +1386,12 @@ export class Renderer {
       // Energy conservation
       vec3 kD = (1.0 - F) * (1.0 - metallic);
 
-      // EXTREME MINIMAL hemisphere diffuse ambient - direct light MUST dominate
-      float NdotUp = dot(N, vec3(0.0, 1.0, 0.0));
-      vec3 skyAmbient = skyHorizon * 0.03;       // Almost nothing
-      vec3 groundAmbient = groundColor * 0.01;   // Nearly black for down-facing
-      float hemiFactor = NdotUp * 0.5 + 0.5;
-      hemiFactor = pow(hemiFactor, 0.8);         // Steeper curve for more contrast
-      vec3 ambientHemi = mix(groundAmbient, skyAmbient, hemiFactor);
-      vec3 diffuse = ambientHemi * albedo * kD;
+      // Diffuse IBL
+      vec3 diffuse = irradiance * albedo * kD;
 
-      // Specular - environment reflections (DRASTICALLY reduced)
-      float specStrength = (1.0 - roughness * 0.7) * 0.2;  // Very low
-      vec3 specular = envColor * F * specStrength;
-
-      // Fresnel edge glow - minimal
-      float edgeFresnel = pow(1.0 - NdotV, 4.0);
-      vec3 edgeGlow = skyHorizon * edgeFresnel * 0.05 * (1.0 - roughness * 0.5);
-      specular += edgeGlow;
-
-      // Clearcoat-like extra reflection - disabled for now
-      // We need direct lighting to dominate first
+      // Specular IBL (heavily reduced to preserve albedo color)
+      // For car paint, we want color to dominate over reflections
+      vec3 specular = envColor * F * 0.08;
 
       return (diffuse + specular) * u_envIntensity;
     }
@@ -1420,8 +1460,9 @@ export class Renderer {
         emission = texture(u_emissionMap, v_texCoord).rgb * u_emissionIntensity;
       }
 
-      // Normal mapping
-      vec3 N = normalize(v_worldNormal);
+      // Normal mapping - USE RAW NORMAL since it works in debug mode 15/17
+      // v_worldNormal uses normalMatrix which may have issues
+      vec3 N = normalize(v_rawNormal);
       if (u_hasNormalMap == 1) {
         vec3 normalSample = texture(u_normalMap, v_texCoord).rgb * 2.0 - 1.0;
         N = normalize(v_TBN * normalSample);
@@ -1433,182 +1474,150 @@ export class Renderer {
       vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
       // =======================================================================
-      // DIRECT LIGHTING - Full Cook-Torrance PBR BRDF
+      // DIRECT LIGHTING - AAA-Quality PBR with Cook-Torrance BRDF
       // =======================================================================
       vec3 Lo = vec3(0.0);
 
-      // Calculate NdotV once - needed for specular calculations in all lighting paths
-      float NdotV = max(dot(N, V), 0.001); // Clamp to small positive to avoid artifacts
+      // Calculate NdotV once - needed for specular calculations
+      float NdotV = max(dot(N, V), 0.001);
 
-      // Fallback lights when LightManager is empty - strong directional for visible shading
+      // =======================================================================
+      // AMBIENT LIGHTING - Hemisphere ambient for realistic shadow fill
+      // =======================================================================
+      // Sky-ground hemisphere ambient - critical for AAA look
+      vec3 skyColor = vec3(0.5, 0.6, 0.8);    // Brighter blue sky
+      vec3 groundColor = vec3(0.2, 0.18, 0.15); // Warmer ground bounce
+      float hemisphereBlend = N.y * 0.5 + 0.5;
+      vec3 hemisphereAmbient = mix(groundColor, skyColor, hemisphereBlend);
+
+      // Ambient occlusion and base ambient - increased from 0.15 to 0.25
+      vec3 ambient = albedo * hemisphereAmbient * 0.25 * ao;
+
+      // Add rim lighting for 3D pop at grazing angles
+      vec3 F_ambient = FresnelSchlickRoughness(NdotV, F0, roughness);
+      vec3 kD_ambient = (1.0 - F_ambient) * (1.0 - metallic);
+      ambient *= kD_ambient;
+
+      // Add subtle rim light for car silhouette pop
+      float rimFactor = 1.0 - NdotV;
+      rimFactor = pow(rimFactor, 3.0) * 0.3;
+      ambient += skyColor * rimFactor * (1.0 - roughness);
+
+      // =======================================================================
+      // FALLBACK SUN LIGHT (when no lights in scene) - AAA intensity
+      // =======================================================================
       if (u_lightCount == 0) {
-        // MAIN SUN - Strong directional key light for visible face contrast
-        vec3 sunDirection = normalize(vec3(-0.4, -0.8, -0.3));  // High sun angle, more from side
-        vec3 sunColor = vec3(1.0, 0.98, 0.95);  // Warm daylight
-        float sunIntensity = 5.0;  // Strong for visible directional shading
+        vec3 sunDir = normalize(vec3(0.5, 0.7, 0.4));
+        vec3 sunColor = vec3(1.0, 0.95, 0.9);
+        float sunIntensity = 8.0; // Boosted for dramatic AAA specular
 
-        vec3 L = normalize(-sunDirection);
-        vec3 H = normalize(V + L);
-
-        float NdotL = max(dot(N, L), 0.0);
+        float NdotL = max(dot(N, sunDir), 0.0);
+        vec3 H = normalize(V + sunDir);
         float NdotH = max(dot(N, H), 0.0);
         float VdotH = max(dot(V, H), 0.0);
 
-        if (NdotL > 0.0) {
-          // Cook-Torrance BRDF
-          float D = DistributionGGX(N, H, roughness);
-          float G = GeometrySmith(N, V, L, roughness);
-          vec3 F = FresnelSchlick(VdotH, F0);
+        // Fresnel
+        vec3 F = FresnelSchlick(VdotH, F0);
 
-          vec3 numerator = D * G * F;
-          float denominator = 4.0 * NdotV * NdotL + EPSILON;
-          vec3 specular = numerator / denominator;
+        // Energy-conserving diffuse
+        vec3 kD = (1.0 - F) * (1.0 - metallic);
+        vec3 diffuse = kD * albedo / PI;
 
-          vec3 kS = F;
-          vec3 kD = (vec3(1.0) - kS) * (1.0 - metallic);
-          vec3 diffuse = kD * albedo / PI;
+        // Cook-Torrance specular
+        float D = DistributionGGX(N, H, roughness);
+        float G = GeometrySmith(N, V, sunDir, roughness);
+        vec3 specular = (D * G * F) / (4.0 * NdotV * NdotL + EPSILON);
 
-          vec3 radiance = sunColor * sunIntensity;
-          Lo += (diffuse + specular) * radiance * NdotL;
-        }
-
-        // FILL LIGHT - From opposite side for softer shadows (weaker)
-        vec3 fillDir = normalize(vec3(0.6, 0.2, 0.7));  // From camera-right
-        float fillNdotL = max(dot(N, fillDir), 0.0);
-        vec3 fillColor = vec3(0.4, 0.5, 0.7);  // Cool fill
-        float fillIntensity = 1.0;
-
-        if (fillNdotL > 0.0) {
-          vec3 fillH = normalize(V + fillDir);
-          float fillVdotH = max(dot(V, fillH), 0.0);
-          vec3 fillF = FresnelSchlick(fillVdotH, F0);
-          float fillD = DistributionGGX(N, fillH, roughness);
-          float fillG = GeometrySmith(N, V, fillDir, roughness);
-          vec3 fillSpec = (fillD * fillG * fillF) / (4.0 * NdotV * fillNdotL + EPSILON);
-          vec3 fillDiff = (vec3(1.0) - fillF) * (1.0 - metallic) * albedo / PI;
-          Lo += (fillDiff + fillSpec) * fillColor * fillIntensity * fillNdotL;
-        }
-
-        // RIM LIGHT - Edge highlight for depth
-        float rimFactor = pow(1.0 - NdotV, 3.0);
-        vec3 rimColor = vec3(0.6, 0.7, 0.9);
-        Lo += rimColor * rimFactor * 0.4 * (1.0 - roughness);
+        Lo = (diffuse + specular) * sunColor * sunIntensity * NdotL;
       }
 
-      // Process additional lights from uniform array
+      // =======================================================================
+      // SCENE LIGHTS - Full PBR with proper intensity scaling
+      // =======================================================================
       for (int i = 0; i < 8; ++i) {
         if (i >= u_lightCount) break;
 
-        vec3 lightL;
-        vec3 lightRadiance;
+        vec3 L;
+        vec3 radiance;
 
         if (u_lightTypes[i] == 0) {
-          // Directional light - direction stored as "direction light travels" (FROM sun TO surface)
-          // L should point FROM surface TO light, so we NEGATE to point toward sun
-          lightL = normalize(-u_lightDirections[i]);
-          lightRadiance = u_lightColors[i] * u_lightIntensities[i];
+          // Directional light
+          L = normalize(-u_lightDirections[i]);
+          // CRITICAL: Scale intensity for AAA-quality specular highlights
+          // Input intensities ~80 map to radiance ~12.0 for dramatic specular
+          float scaledIntensity = u_lightIntensities[i] * 0.15;
+          radiance = u_lightColors[i] * scaledIntensity;
         } else if (u_lightTypes[i] == 1) {
           // Point light
           vec3 lightVec = u_lightPositions[i] - v_worldPosition;
           float dist = length(lightVec);
-          lightL = normalize(lightVec);
+          L = normalize(lightVec);
           float atten = PointLightAttenuation(dist, u_lightRanges[i]);
-          lightRadiance = u_lightColors[i] * u_lightIntensities[i] * atten;
+          float scaledIntensity = u_lightIntensities[i] * 0.15 * atten;
+          radiance = u_lightColors[i] * scaledIntensity;
         } else {
           continue;
         }
 
-        float lightNdotL = max(dot(N, lightL), 0.0);
+        float NdotL = max(dot(N, L), 0.0);
 
-        // FIXED: Full PBR with proper energy conservation
-        // Only compute if surface faces the light
-        if (lightNdotL > 0.0) {
-          vec3 lightH = normalize(V + lightL);
-          float lightVdotH = max(dot(V, lightH), 0.0);
+        if (NdotL > 0.0) {
+          vec3 H = normalize(V + L);
+          float NdotH = max(dot(N, H), 0.0);
+          float VdotH = max(dot(V, H), 0.0);
 
-          // Fresnel term - determines specular vs diffuse split
-          vec3 lightF = FresnelSchlick(lightVdotH, F0);
+          // Fresnel - creates realistic metallic/dielectric split
+          vec3 F = FresnelSchlick(VdotH, F0);
 
-          // Energy conservation: kD = (1 - F) * (1 - metallic)
-          // Metals have no diffuse, dielectrics reflect less when Fresnel is high
-          vec3 kD = (vec3(1.0) - lightF) * (1.0 - metallic);
+          // Energy conservation: metals have no diffuse
+          vec3 kD = (1.0 - F) * (1.0 - metallic);
 
-          // Diffuse with energy conservation
-          vec3 lightDiffuse = kD * albedo / PI;
+          // Lambert diffuse (energy conserving)
+          vec3 diffuse = kD * albedo / PI;
 
-          // Specular (Cook-Torrance BRDF)
-          float lightD = DistributionGGX(N, lightH, roughness);
-          float lightG = GeometrySmith(N, V, lightL, roughness);
-          vec3 lightSpec = (lightD * lightG * lightF) / (4.0 * NdotV * lightNdotL + EPSILON);
+          // Cook-Torrance specular BRDF
+          float D = DistributionGGX(N, H, roughness);
+          float G = GeometrySmith(N, V, L, roughness);
+          vec3 specular = (D * G * F) / (4.0 * NdotV * NdotL + EPSILON);
 
-          // Combine diffuse + specular
-          Lo += (lightDiffuse + lightSpec) * lightRadiance * lightNdotL;
+          Lo += (diffuse + specular) * radiance * NdotL;
         }
       }
 
       // =======================================================================
-      // AMBIENT / IBL
+      // ENVIRONMENT REFLECTIONS - Strong for AAA car paint look
       // =======================================================================
-      // Simple ambient term - provides base illumination for unlit areas
-      // Using a slight blue-ish tint for sky bounce light
-      // REDUCED ambient to increase directional lighting contrast
-      vec3 ambientColor = vec3(0.08, 0.09, 0.12);  // Much darker ambient
-      vec3 ambient = ambientColor * albedo * ao;
+      vec3 R = reflect(-V, N);
+      vec3 envReflection = vec3(0.0);
+
+      {
+        // Procedural sky reflection with sun hotspot - DRAMATICALLY BOOSTED for AAA car paint
+        float skyFactor = max(R.y * 0.5 + 0.5, 0.0);
+        vec3 skyReflect = mix(vec3(0.5, 0.55, 0.6), vec3(0.8, 0.9, 1.0), skyFactor);
+
+        // DRAMATIC sun reflection hotspot - key for AAA car paint look
+        vec3 sunDir = normalize(vec3(0.5, 0.7, 0.4));
+        float sunDotR = max(dot(R, sunDir), 0.0);
+        // Sharper falloff for glossy materials, softer for rough
+        float sunPower = mix(16.0, 512.0, 1.0 - roughness);
+        float sunReflect = pow(sunDotR, sunPower);
+        // Very strong sun hotspot - this is what creates the "shine" on car paint
+        skyReflect += vec3(1.0, 0.98, 0.9) * sunReflect * 5.0;
+
+        // Fresnel for environment - stronger at grazing angles (critical for car paint)
+        vec3 F_env = FresnelSchlickRoughness(NdotV, F0, roughness);
+
+        // Metallic surfaces get MUCH stronger reflections - this is key for car paint
+        float metallicBoost = mix(1.0, 2.5, metallic); // Metals reflect more
+        float glossBoost = (1.0 - roughness * roughness); // Glossy = more reflection
+        float envStrength = glossBoost * metallicBoost * 1.2; // Base strength 1.2 (was 0.8)
+        envReflection = skyReflect * F_env * envStrength * u_envIntensity;
+      }
 
       // =======================================================================
-      // COMBINE - Key to achieving proper PBR look
-      // =======================================================================
-      // The balance between ambient and Lo determines the contrast
-      // Lo should dominate for lit surfaces, ambient fills shadows
-
-      // *** DIAGNOSTIC: Test basic Lambert vs full PBR ***
-      // If Lo is near-zero or uniform, this will show why
-
-      // Simple Lambert test using fallback light direction
-      vec3 testLightDir = normalize(vec3(-0.4, -0.8, -0.3));
-      vec3 testL = normalize(-testLightDir);
-      float testNdotL = max(dot(N, testL), 0.0);
-
-      // Lambert shading: pure NdotL * albedo gives clear face contrast
-      vec3 lambertDirect = albedo * testNdotL * 3.0; // Boost for visibility
-
-      // Use Lo from full PBR, but compare to simple Lambert
-      // If Lo is flat but lambertDirect varies, the PBR math has issues
-      vec3 scaledLo = Lo * 0.7;
-
-      // SWITCH: Use this line for Lambert-only (debug), comment for PBR
-      // vec3 color = ambient + lambertDirect + emission; // LAMBERT ONLY
-
-      // =========================================================================
-      // DIAGNOSTIC: Replace PBR Lo with simple Lambert to verify the issue
-      // =========================================================================
-      // The PBR Lo might have issues with kD or the diffuse calculation
-      // Use simple Lambert that we KNOW works (from debug mode 15)
-
-      // PRIMARY SUN LIGHT - Strong key light for visible 3D shading
-      vec3 sunDir = normalize(vec3(0.5, 0.9, 0.4));  // High sun, slightly to the right
-      float sunNdotL = max(dot(N, sunDir), 0.0);
-      vec3 sunColor = vec3(1.0, 0.98, 0.92);  // Warm daylight
-      vec3 sunContrib = albedo * sunNdotL * sunColor * 3.5;
-
-      // FILL LIGHT - Softer light from opposite side to fill shadows
-      vec3 fillDir = normalize(vec3(-0.3, 0.4, -0.5));
-      float fillNdotL = max(dot(N, fillDir), 0.0);
-      vec3 fillColor = vec3(0.5, 0.6, 0.8);  // Cool fill
-      vec3 fillContrib = albedo * fillNdotL * fillColor * 0.8;
-
-      // RIM LIGHT - Edge highlight for depth separation
-      float rimFactor = pow(1.0 - max(dot(N, V), 0.0), 3.0);
-      vec3 rimColor = vec3(0.7, 0.8, 1.0);
-      vec3 rimContrib = rimColor * rimFactor * 0.5 * (1.0 - roughness);
-
-      // SPECULAR HIGHLIGHT - Adds glossy reflection on car paint
-      vec3 H = normalize(sunDir + V);
-      float spec = pow(max(dot(N, H), 0.0), 32.0 * (1.0 - roughness * 0.8));
-      vec3 specContrib = sunColor * spec * 0.4 * (1.0 - roughness);
-
       // COMBINE ALL LIGHTING
-      vec3 color = ambient + sunContrib + fillContrib + rimContrib + specContrib + emission;
+      // =======================================================================
+      vec3 color = ambient + Lo + envReflection + emission;
 
       // Apply procedural ground shadow for surfaces near ground level
       // DISABLED for debugging
@@ -1619,30 +1628,24 @@ export class Renderer {
       // Let dark areas stay dark - that's what creates the 3D illusion
 
       // =======================================================================
-      // HDR TONE MAPPING & GAMMA CORRECTION
+      // HDR POST-PROCESSING - AAA Quality Tone Mapping
       // =======================================================================
 
-      // Exposure adjustment
-      color *= u_exposure;
+      // 1. Apply exposure (slightly increased for car paint pop)
+      color *= u_exposure * 1.2;
 
-      // ACES Filmic tone mapping
+      // 2. ACES Filmic Tone Mapping - industry standard for AAA games
+      // Preserves highlights while maintaining rich shadows
       color = ACESFilm(color);
 
-      // Gamma correction (linear to sRGB)
+      // 3. Gamma correction to sRGB
       color = pow(color, vec3(1.0 / 2.2));
 
-      // =======================================================================
-      // COLOR GRADING - Enhanced contrast for visible face shading
-      // =======================================================================
+      // 4. Slight saturation boost for vibrant car colors
+      float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
+      color = mix(vec3(luminance), color, 1.15);
 
-      // INCREASED contrast boost for visible face differentiation
-      color = (color - 0.5) * 1.3 + 0.5;
-
-      // Saturation boost
-      float gray = dot(color, vec3(0.299, 0.587, 0.114));
-      color = mix(vec3(gray), color, 1.15); // 15% more saturated
-
-      // Clamp to valid range
+      // 5. Final clamp
       color = clamp(color, 0.0, 1.0);
 
       // Debug output modes
@@ -1778,14 +1781,15 @@ export class Renderer {
         }
         return;
       } else if (u_debugMode == 15) {
-        // DEBUG MODE 15: SIMPLE SHADING - Bypass ALL PBR, use basic Lambert
-        // This is the ultimate test: if this looks good, PBR is broken
-        vec3 simpleL = normalize(vec3(0.4, 0.8, 0.3));
-        float simpleNdotL = max(dot(N, simpleL), 0.0);
+        // DEBUG MODE 15: SIMPLE SHADING using RAW NORMAL (bypasses normal matrix)
+        // Uses v_rawNormal directly since we KNOW it works from debug mode 17
+        vec3 rawN = normalize(v_rawNormal);
+        vec3 simpleL = normalize(vec3(0.4, 0.8, 0.3)); // Light from upper-right-front
+        float simpleNdotL = max(dot(rawN, simpleL), 0.0);
 
-        // Very simple: ambient + diffuse
-        vec3 simpleAmbient = albedo * 0.15;
-        vec3 simpleDiffuse = albedo * simpleNdotL * 0.85;
+        // Very simple: ambient + diffuse using albedo color
+        vec3 simpleAmbient = albedo * 0.2;
+        vec3 simpleDiffuse = albedo * simpleNdotL * 0.8;
         vec3 simpleColor = simpleAmbient + simpleDiffuse;
 
         // Simple gamma correction only
@@ -1877,7 +1881,7 @@ export class Renderer {
       'u_albedo', 'u_metallic', 'u_roughness', 'u_ao', 'u_emission', 'u_emissionIntensity',
       // Texture samplers (FIXED: these were missing, causing textures to not bind)
       'u_albedoMap', 'u_normalMap', 'u_metallicRoughnessMap', 'u_aoMap', 'u_emissionMap',
-      'u_envMap', 'u_shadowMap',
+      'u_shadowMap',
       // Texture flags
       'u_hasAlbedoMap', 'u_hasNormalMap', 'u_hasMetallicRoughnessMap', 'u_hasAOMap',
       'u_hasEmissionMap', 'u_hasEnvMap', 'u_hasShadowMap',
@@ -2083,6 +2087,96 @@ export class Renderer {
   }
 
   /**
+   * Builds a render queue for shadow casters from the scene.
+   * Collects all opaque mesh objects that should cast shadows.
+   *
+   * @param scene - Scene to collect objects from
+   * @param camera - Camera for depth sorting
+   * @returns RenderQueue containing shadow caster draw calls
+   */
+  private buildShadowCasterQueue(scene: Scene, camera: Camera): RenderQueue {
+    const queue = new RenderQueue(RenderQueueType.Opaque);
+    const device = this.device as any;
+
+    if (!device.getGL) {
+      logger.warn('buildShadowCasterQueue: No GL context');
+      return queue;
+    }
+
+    const gl = device.getGL() as WebGL2RenderingContext;
+
+    // Traverse scene and collect mesh objects
+    scene.traverse((node: SceneNode) => {
+      const mesh = (node as any).mesh;
+      if (!mesh || !mesh.indexBuffer || mesh.indexBuffer.indexCount === 0) {
+        return;
+      }
+
+      // Get or create GPU buffers for this mesh
+      let gpuBuffers = this.meshGPUBuffers.get(mesh);
+      if (!gpuBuffers) {
+        const buffers = this.getMeshBuffers(gl, mesh);
+        if (!buffers) {
+          return;
+        }
+        gpuBuffers = buffers;
+      }
+
+      if (gpuBuffers.indexCount === 0) {
+        return;
+      }
+
+      // Create a draw call for this mesh
+      const drawCall = new DrawCall();
+      drawCall.indexCount = gpuBuffers.indexCount;
+      drawCall.instanceCount = 1;
+      drawCall.firstIndex = 0;
+      drawCall.baseVertex = 0;
+      drawCall.firstInstance = 0;
+
+      // Store mesh data in draw call user data
+      drawCall.userData = {
+        mesh: mesh,
+        modelMatrix: node.transform?.worldMatrix || Matrix4.identity(),
+        vao: gpuBuffers.vao,
+        vbo: gpuBuffers.vbo,
+        ibo: gpuBuffers.ibo,
+      };
+
+      // Set vertex buffer on draw call (position data)
+      // For shadow pass, we only need position attribute (location 0)
+      const vertexStride = mesh.vertexBuffer.format.stride;
+      const posAttr = mesh.vertexBuffer.format.attributes.find((a: any) => a.semantic === 'POSITION');
+      if (posAttr) {
+        drawCall.setVertexBuffer(0, gpuBuffers.vbo, posAttr.offset, vertexStride);
+      }
+
+      // Set index buffer on draw call using setIndexBuffer method
+      drawCall.setIndexBuffer(
+        gpuBuffers.ibo,
+        0, // offset
+        gpuBuffers.indexType === gl.UNSIGNED_SHORT ? 0 : 1 // format: 0=UInt16, 1=UInt32
+      );
+
+      // Create a basic pipeline state (depth-only rendering for shadows)
+      const pipelineState = PipelineState.opaque();
+
+      // Calculate depth from camera for sorting
+      const worldPos = node.transform?.worldPosition || new Vector3(0, 0, 0);
+      const camPos = camera.transform.worldPosition;
+      const depth = worldPos.distanceTo(camPos);
+
+      // Submit to queue
+      queue.submit(drawCall, pipelineState, null as any, 0, depth);
+    });
+
+    // Sort the queue for optimal rendering
+    queue.sort();
+
+    return queue;
+  }
+
+  /**
    * Renders all meshes in the scene using full PBR Cook-Torrance BRDF.
    */
   private renderSceneMeshes(scene: Scene, camera: Camera): void {
@@ -2125,9 +2219,19 @@ export class Renderer {
       logger.info(`Projection matrix [0,0]=${projElements[0].toFixed(4)}, [5]=${projElements[5].toFixed(4)}, [10]=${projElements[10].toFixed(4)}, [11]=${projElements[11].toFixed(4)}`);
     }
 
-    // Set default light space matrix (identity for now - will be updated with shadow mapping)
-    const identityMatrix = new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
-    gl.uniformMatrix4fv(getUniform('u_lightSpaceMatrix'), false, identityMatrix);
+    // Set light space matrix from shadow pass (or identity if no shadows)
+    if (this.shadowPass && this.shadowPass.getShadowMaps().length > 0) {
+      const shadowMaps = this.shadowPass.getShadowMaps();
+      const firstShadowMap = shadowMaps[0];
+      gl.uniformMatrix4fv(getUniform('u_lightSpaceMatrix'), false, firstShadowMap.lightViewProjection.elements);
+
+      if (this.frameCount === 1) {
+        logger.info('Light space matrix set from shadow map');
+      }
+    } else {
+      const identityMatrix = new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
+      gl.uniformMatrix4fv(getUniform('u_lightSpaceMatrix'), false, identityMatrix);
+    }
 
     // ==========================================================================
     // SETUP LIGHTING - Use lights from LightManager (P0 FIX #65)
@@ -2135,21 +2239,21 @@ export class Renderer {
     const allLights = this.lightManager.getLights();
     const lightCount = Math.min(allLights.length, 8);
 
-    // Set light count
-    gl.uniform1i(getUniform('u_lightCount'), Math.max(lightCount, 1));
+    // DEBUG: Log light count on first few frames
+    if (this.frameCount <= 3) {
+      logger.info(`[LIGHT DEBUG] Frame ${this.frameCount}: LightManager has ${allLights.length} lights, using ${lightCount}`);
+      allLights.forEach((light: any, i: number) => {
+        const intensity = light.getEffectiveIntensity?.() ?? light.intensity ?? 1.0;
+        logger.info(`  Light[${i}]: type=${light.type}, intensity=${intensity}`);
+      });
+    }
 
+    // Set light count - let shader handle fallback when no lights
     if (lightCount === 0) {
-      // Default directional sun light - balanced for good PBR without overexposure
-      gl.uniform3f(getUniform('u_lightPositions[0]'), 100, 200, 100);
-      gl.uniform3f(getUniform('u_lightColors[0]'), 1.0, 0.98, 0.95); // Warm daylight
-      gl.uniform1f(getUniform('u_lightIntensities[0]'), 3.5); // Balanced intensity
-      gl.uniform1i(getUniform('u_lightTypes[0]'), 0); // Directional
-      // High sun angle for good shadows and highlights
-      gl.uniform3f(getUniform('u_lightDirections[0]'), 0.3, -0.8, 0.5);
-      gl.uniform1f(getUniform('u_lightRanges[0]'), 1000.0);
-      gl.uniform1f(getUniform('u_spotAngles[0]'), 0.0);
-      gl.uniform1i(getUniform('u_lightCount'), 1);
+      // NO LIGHTS from LightManager - use shader's built-in simple Lambert fallback
+      gl.uniform1i(getUniform('u_lightCount'), 0);
     } else {
+      gl.uniform1i(getUniform('u_lightCount'), lightCount);
       // Upload actual lights from LightManager
       for (let i = 0; i < lightCount; i++) {
         const light = allLights[i] as any;
@@ -2181,19 +2285,37 @@ export class Renderer {
     // GLOBAL RENDERING SETTINGS
     // ==========================================================================
 
-    // P0 FIX #2: Check if shadow map exists instead of hardcoding to 0
-    const hasShadowMap = this.shadowPass && this.shadowMapper ? 1 : 0;
+    // P0 FIX #2: Check if shadow map exists and bind shadow map texture
+    const hasShadowMap = this.shadowPass && this.shadowPass.getShadowMaps().length > 0 ? 1 : 0;
     gl.uniform1i(getUniform('u_hasShadowMap'), hasShadowMap);
     gl.uniform1f(getUniform('u_shadowBias'), 0.001);
     gl.uniform1f(getUniform('u_shadowIntensity'), 0.7);
 
-    // Environment settings - balanced for proper tone mapping
-    gl.uniform1i(getUniform('u_hasEnvMap'), 0); // Will enable when IBL implemented
-    gl.uniform1f(getUniform('u_envIntensity'), 1.0); // Standard ambient intensity
-    gl.uniform1f(getUniform('u_exposure'), 1.0); // Standard exposure
+    // Bind shadow map texture if available
+    if (hasShadowMap && this.shadowPass) {
+      const shadowMapTexture = this.shadowPass.getShadowMapTexture(0);
+      if (shadowMapTexture) {
+        const textureAttachment = shadowMapTexture as any;
+        if (textureAttachment.texture) {
+          gl.activeTexture(gl.TEXTURE5); // Use texture unit 5 for shadow map
+          gl.bindTexture(gl.TEXTURE_2D, textureAttachment.texture as WebGLTexture);
+          gl.uniform1i(getUniform('u_shadowMap'), 5);
+
+          if (this.frameCount === 1) {
+            logger.info('Shadow map texture bound to texture unit 5');
+          }
+        }
+      }
+    }
+
+    // IBL uses procedural sky only (cubemap samplers removed to avoid texture type conflicts)
+    // The shader's IBL function uses procedural sky without any cubemap sampling
+    gl.uniform1i(getUniform('u_hasEnvMap'), 0); // Always 0 - procedural sky only
+    gl.uniform1f(getUniform('u_envIntensity'), 1.5); // Strong environment for AAA reflections
+    gl.uniform1f(getUniform('u_exposure'), 1.2); // Slightly boosted for vibrant colors
 
     // Debug mode: 0=normal PBR, 1=show normals, 2=show albedo, 3=metallic, 4=roughness, 5=direct lighting only, 6=light count
-    gl.uniform1i(getUniform('u_debugMode'), this.currentDebugMode); // Debug mode (0=normal PBR)
+    gl.uniform1i(getUniform('u_debugMode'), this.currentDebugMode); // Normal PBR rendering
 
     // Texture flags (default: no textures)
     gl.uniform1i(getUniform('u_hasAlbedoMap'), 0);
@@ -2328,9 +2450,14 @@ export class Renderer {
         if (emIntensity !== undefined) emissionIntensity = emIntensity;
 
         // Log material properties on first few frames to verify they're being read
-        if (this.frameCount <= 3 && metallicVal !== undefined) {
-          logger.info(`[MATERIAL] ${node.name}: albedo=(${albedo[0].toFixed(2)},${albedo[1].toFixed(2)},${albedo[2].toFixed(2)}), metallic=${metallic.toFixed(2)}, roughness=${roughness.toFixed(2)}`);
+        if (this.frameCount <= 3 && node.name && (node.name.includes('Vehicle') || node.name.includes('Body') || node.name.includes('Hood') || node.name.includes('Rear'))) {
+          logger.info(`[MATERIAL READ] ${node.name}: mat.metallic=${mat.metallic}, mat.roughness=${mat.roughness}, result metallic=${metallic.toFixed(2)}, roughness=${roughness.toFixed(2)}`);
         }
+      }
+
+      // DEBUG: Log material values for vehicle nodes before upload - expanded matching
+      if (this.frameCount <= 3 && node.name && (node.name.includes('Body') || node.name.includes('Hood') || node.name.includes('Rear') || node.name.includes('Wheel') || node.name.includes('Cabin'))) {
+        logger.info(`[UPLOAD] ${node.name}: albedo=(${albedo[0].toFixed(2)},${albedo[1].toFixed(2)},${albedo[2].toFixed(2)}), metallic=${metallic.toFixed(2)}, roughness=${roughness.toFixed(2)}, hasMat=${!!node.material}`);
       }
 
       // Upload material uniforms
@@ -2343,8 +2470,11 @@ export class Renderer {
 
       // ==========================================================================
       // TEXTURE BINDING - Bind material textures to texture units
+      // TEXTURE UNIT ALLOCATION:
+      // Units 0-4: Material textures (albedo, normal, metallicRoughness, ao, emission)
+      // Unit 5: Shadow map (2D texture)
+      // Units 6-7: IBL cubemaps (environment, irradiance)
       // ==========================================================================
-      let textureUnit = 0;
 
       // Reset texture flags to 0 for this material
       gl.uniform1i(getUniform('u_hasAlbedoMap'), 0);
@@ -2357,63 +2487,58 @@ export class Renderer {
         const mat = node.material as any;
         const textures = mat.textures;
 
-        // Albedo map
+        // Albedo map - TEXTURE UNIT 0
         if (textures?.albedoMap) {
           const glTexture = textures.albedoMap.getGLTexture?.();
           if (glTexture) {
-            gl.activeTexture(gl.TEXTURE0 + textureUnit);
+            gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, glTexture);
-            gl.uniform1i(getUniform('u_albedoMap'), textureUnit);
+            gl.uniform1i(getUniform('u_albedoMap'), 0);
             gl.uniform1i(getUniform('u_hasAlbedoMap'), 1);
-            textureUnit++;
           }
         }
 
-        // Normal map
+        // Normal map - TEXTURE UNIT 1
         if (textures?.normalMap) {
           const glTexture = textures.normalMap.getGLTexture?.();
           if (glTexture) {
-            gl.activeTexture(gl.TEXTURE0 + textureUnit);
+            gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, glTexture);
-            gl.uniform1i(getUniform('u_normalMap'), textureUnit);
+            gl.uniform1i(getUniform('u_normalMap'), 1);
             gl.uniform1i(getUniform('u_hasNormalMap'), 1);
-            textureUnit++;
           }
         }
 
-        // Metallic-Roughness map
+        // Metallic-Roughness map - TEXTURE UNIT 2
         if (textures?.metallicRoughnessMap) {
           const glTexture = textures.metallicRoughnessMap.getGLTexture?.();
           if (glTexture) {
-            gl.activeTexture(gl.TEXTURE0 + textureUnit);
+            gl.activeTexture(gl.TEXTURE2);
             gl.bindTexture(gl.TEXTURE_2D, glTexture);
-            gl.uniform1i(getUniform('u_metallicRoughnessMap'), textureUnit);
+            gl.uniform1i(getUniform('u_metallicRoughnessMap'), 2);
             gl.uniform1i(getUniform('u_hasMetallicRoughnessMap'), 1);
-            textureUnit++;
           }
         }
 
-        // AO map
+        // AO map - TEXTURE UNIT 3
         if (textures?.aoMap) {
           const glTexture = textures.aoMap.getGLTexture?.();
           if (glTexture) {
-            gl.activeTexture(gl.TEXTURE0 + textureUnit);
+            gl.activeTexture(gl.TEXTURE3);
             gl.bindTexture(gl.TEXTURE_2D, glTexture);
-            gl.uniform1i(getUniform('u_aoMap'), textureUnit);
+            gl.uniform1i(getUniform('u_aoMap'), 3);
             gl.uniform1i(getUniform('u_hasAOMap'), 1);
-            textureUnit++;
           }
         }
 
-        // Emission map
+        // Emission map - TEXTURE UNIT 4
         if (textures?.emissionMap) {
           const glTexture = textures.emissionMap.getGLTexture?.();
           if (glTexture) {
-            gl.activeTexture(gl.TEXTURE0 + textureUnit);
+            gl.activeTexture(gl.TEXTURE4);
             gl.bindTexture(gl.TEXTURE_2D, glTexture);
-            gl.uniform1i(getUniform('u_emissionMap'), textureUnit);
+            gl.uniform1i(getUniform('u_emissionMap'), 4);
             gl.uniform1i(getUniform('u_hasEmissionMap'), 1);
-            textureUnit++;
           }
         }
       }

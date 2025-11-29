@@ -707,6 +707,19 @@ export class SSAOPass extends RenderPass {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.ssaoFramebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.ssaoTexture, 0);
 
+    // CRITICAL: Check SSAO framebuffer completeness
+    let status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      const statusNames: Record<number, string> = {
+        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
+        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE',
+      };
+      logger.error(`SSAO framebuffer incomplete: ${statusNames[status] || status} (0x${status.toString(16)})`);
+    }
+
     // Blur intermediate texture
     this.blurTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.blurTexture);
@@ -720,6 +733,19 @@ export class SSAOPass extends RenderPass {
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.blurFramebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.blurTexture, 0);
 
+    // CRITICAL: Check blur framebuffer completeness
+    status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      const statusNames: Record<number, string> = {
+        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
+        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE',
+      };
+      logger.error(`SSAO blur framebuffer incomplete: ${statusNames[status] || status} (0x${status.toString(16)})`);
+    }
+
     // Final blurred texture
     this.finalTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.finalTexture);
@@ -732,6 +758,19 @@ export class SSAOPass extends RenderPass {
     this.finalFramebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.finalFramebuffer);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.finalTexture, 0);
+
+    // CRITICAL: Check final framebuffer completeness
+    status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    if (status !== gl.FRAMEBUFFER_COMPLETE) {
+      const statusNames: Record<number, string> = {
+        [gl.FRAMEBUFFER_INCOMPLETE_ATTACHMENT]: 'INCOMPLETE_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT]: 'MISSING_ATTACHMENT',
+        [gl.FRAMEBUFFER_INCOMPLETE_DIMENSIONS]: 'INCOMPLETE_DIMENSIONS',
+        [gl.FRAMEBUFFER_UNSUPPORTED]: 'UNSUPPORTED',
+        [gl.FRAMEBUFFER_INCOMPLETE_MULTISAMPLE]: 'INCOMPLETE_MULTISAMPLE',
+      };
+      logger.error(`SSAO final framebuffer incomplete: ${statusNames[status] || status} (0x${status.toString(16)})`);
+    }
 
     gl.bindTexture(gl.TEXTURE_2D, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

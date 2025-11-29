@@ -140,8 +140,8 @@ export class ProceduralCarBuilder {
   private createBody(): SceneNode {
     const bodyMaterial = new StandardPBRMaterial(`${this.name}_BodyMaterial`);
     bodyMaterial.albedo = this.bodyColor;
-    bodyMaterial.metallic = 0.4;    // Car paint - clearcoated, not pure metal
-    bodyMaterial.roughness = 0.2;   // Glossy paint finish
+    bodyMaterial.metallic = 0.7;    // Car paint - high metallic for AAA clearcoat look
+    bodyMaterial.roughness = 0.15;  // Very glossy paint finish
 
     // Main body - wider, lower, more aerodynamic
     const bodyGeom = GeometryGenerator.box(
@@ -194,8 +194,8 @@ export class ProceduralCarBuilder {
   private createHood(): SceneNode {
     const bodyMaterial = new StandardPBRMaterial(`${this.name}_HoodMaterial`);
     bodyMaterial.albedo = this.bodyColor;
-    bodyMaterial.metallic = 0.45;   // Slightly shinier than body
-    bodyMaterial.roughness = 0.15;  // Glossy
+    bodyMaterial.metallic = 0.8;    // High metallic for reflective hood
+    bodyMaterial.roughness = 0.1;   // Very glossy for visible reflections
 
     const hoodWidth = this.style.width * 0.92;
     const hoodHeight = this.style.height * 0.25;
@@ -220,8 +220,8 @@ export class ProceduralCarBuilder {
   private createRear(): SceneNode {
     const bodyMaterial = new StandardPBRMaterial(`${this.name}_RearMaterial`);
     bodyMaterial.albedo = this.bodyColor;
-    bodyMaterial.metallic = 0.4;    // Match body
-    bodyMaterial.roughness = 0.2;   // Glossy
+    bodyMaterial.metallic = 0.75;   // High metallic for AAA look
+    bodyMaterial.roughness = 0.12;  // Very glossy
 
     const rearWidth = this.style.width * 0.95;
     const rearHeight = this.style.height * 0.3;
@@ -389,7 +389,7 @@ export class ProceduralCarBuilder {
   private createMirror(name: string, side: number): SceneNode {
     const mirrorMaterial = new StandardPBRMaterial(`${this.name}_Mirror${name}Material`);
     mirrorMaterial.albedo = this.bodyColor;
-    mirrorMaterial.metallic = 0.6;
+    mirrorMaterial.metallic = 0.25;
     mirrorMaterial.roughness = 0.3;
 
     const mirrorSize = 0.12;

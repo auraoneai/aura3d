@@ -614,6 +614,15 @@ export class SkyboxPass extends RenderPass {
   }
 
   /**
+   * Gets the cubemap texture.
+   *
+   * @returns Cubemap texture or undefined
+   */
+  getCubemapTexture(): unknown {
+    return this.config.cubemapTexture;
+  }
+
+  /**
    * Sets the atmosphere parameters for procedural sky.
    *
    * @param params - Atmosphere parameters

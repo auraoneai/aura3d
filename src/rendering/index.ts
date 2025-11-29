@@ -700,6 +700,10 @@ export { SkyboxPass, SkyboxType } from './passes/SkyboxPass';
 export type { SkyboxPassConfig, AtmosphereParams } from './passes/SkyboxPass';
 export { DepthPrePass } from './passes/DepthPrePass';
 export type { DepthPrePassConfig } from './passes/DepthPrePass';
+export { SSAOPass, SSAOQuality } from './passes/SSAOPass';
+export type { SSAOPassConfig } from './passes/SSAOPass';
+export { BloomPass, BloomPassQuality } from './passes/BloomPass';
+export type { BloomPassConfig } from './passes/BloomPass';
 
 // ============================================================================
 // Scene Graph

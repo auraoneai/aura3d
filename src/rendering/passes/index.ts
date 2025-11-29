@@ -148,3 +148,13 @@ export {
 export type {
   SSAOPassConfig,
 } from './SSAOPass';
+
+// Bloom Pass - HDR bloom post-processing
+export {
+  BloomPass,
+  BloomPassQuality,
+} from './BloomPass';
+
+export type {
+  BloomPassConfig,
+} from './BloomPass';
