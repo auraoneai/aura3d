@@ -671,6 +671,7 @@ export * from './audio';
  * ```
  */
 export * from './assets';
+export { ProceduralTextures } from './assets/ProceduralTextures';
 
 // ============================================================================
 // USER INTERFACE

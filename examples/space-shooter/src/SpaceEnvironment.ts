@@ -3,7 +3,7 @@
  * Scrolling starfield, nebula backgrounds, and space dust particles
  */
 
-import { ProceduralTextureGenerator } from '../../shared/ProceduralAssets';
+import { ProceduralTextures } from 'g3d';
 
 interface Star {
   x: number;
@@ -60,11 +60,11 @@ export class SpaceEnvironment {
   private initBackgroundLayers(): void {
     // Generate high-quality starfield textures
     // Layer 1: Distant stars and nebulae (slow)
-    const tex1 = ProceduralTextureGenerator.createStarfieldFace(1024, 0);
+    const tex1 = ProceduralTextures.createStarfieldFace(1024, 0);
     this.bgLayer1 = tex1.data;
 
     // Layer 2: Brighter, closer stars (medium speed)
-    const tex2 = ProceduralTextureGenerator.createStarfieldFace(1024, 1);
+    const tex2 = ProceduralTextures.createStarfieldFace(1024, 1);
     this.bgLayer2 = tex2.data;
   }
 

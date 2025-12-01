@@ -1,11 +1,11 @@
 /**
- * Procedural Assets Library
+ * Procedural Textures
  * 
- * A centralized collection of procedural texture and geometry generators
- * to provide "AAA" quality assets to all examples without external dependencies.
+ * A centralized collection of procedural texture generators
+ * to provide high-quality assets without external dependencies.
  */
 
-import { Color, Vector2 } from 'g3d';
+import { Color } from '../math/Color';
 
 // Interface for texture data compatible with G3D texture creation
 export interface TextureData {
@@ -19,11 +19,15 @@ export interface TextureData {
  * Procedural Texture Generator
  * Generates high-quality PBR textures (Albedo, Normal, Roughness, Metalness)
  */
-export class ProceduralTextureGenerator {
+export class ProceduralTextures {
   
   // --- UTILITIES ---
 
   private static createCanvas(width: number, height: number): HTMLCanvasElement {
+    if (typeof document === 'undefined') {
+        // Handle headless/test environments if necessary, or throw
+        throw new Error("ProceduralTextures requires a DOM environment (document).");
+    }
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -120,12 +124,19 @@ export class ProceduralTextureGenerator {
 
   /**
    * Normal Map from Height (Simple Sobel-like)
+   * Note: Requires heightMap data, simulated here for demo
    */
-  static createNormalFromHeight(heightMap: Float32Array, width: number, height: number): TextureData {
+  static createNormalFromHeight(heightMap: Float32Array | null, width: number, height: number): TextureData {
     const canvas = this.createCanvas(width, height);
     const ctx = canvas.getContext('2d')!;
     const imgData = ctx.createImageData(width, height);
     const data = imgData.data;
+
+    // Generate a dummy heightmap if null
+    const map = heightMap || new Float32Array(width * height);
+    if (!heightMap) {
+        for(let i=0; i<map.length; i++) map[i] = Math.random();
+    }
 
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
@@ -137,8 +148,8 @@ export class ProceduralTextureGenerator {
         const y1 = Math.min(y + 1, height - 1);
         const y0 = Math.max(y - 1, 0);
 
-        const dx = (heightMap[y * width + x1] - heightMap[y * width + x0]) * 2.0; // Scale bump
-        const dy = (heightMap[y1 * width + x] - heightMap[y0 * width + x]) * 2.0;
+        const dx = (map[y * width + x1] - map[y * width + x0]) * 2.0; // Scale bump
+        const dy = (map[y1 * width + x] - map[y0 * width + x]) * 2.0;
         const dz = 1.0;
 
         // Normalize
@@ -187,7 +198,7 @@ export class ProceduralTextureGenerator {
   }
 
   /**
-   * Sci-Fi Panel (Albedo + Emissive)
+   * Sci-Fi Panel (Albedo)
    */
   static createSciFiPanel(width = 512, height = 512): TextureData {
     const canvas = this.createCanvas(width, height);
