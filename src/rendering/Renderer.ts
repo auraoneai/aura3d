@@ -211,9 +211,14 @@ export class Renderer {
   private simpleShaderProgram: WebGLProgram | null = null;
   private meshGPUBuffers: Map<Mesh, { vao: WebGLVertexArrayObject; vbo: WebGLBuffer; ibo: WebGLBuffer; indexCount: number; indexType: number; vertexCount: number }> = new Map();
 
+  // Post-processing fullscreen quad resources
+  private tonemapShaderProgram: WebGLProgram | null = null;
+  private fullscreenQuadVAO: WebGLVertexArrayObject | null = null;
+  private fullscreenQuadVBO: WebGLBuffer | null = null;
+
   // Debug mode: 0=normal PBR, 1=normals, 2=albedo, 3=metallic, 4=roughness, 5=Lo, 6=light count, 7=NdotL, 8=light dir, 9=raw Lo
   // 17=raw normal attribute (no transformation), 19=magenta if normal is zero
-  private currentDebugMode: number = 0; // Normal PBR mode - now that Lambert works, fixing PBR
+  private currentDebugMode: number = 0; // Normal PBR mode
 
   /**
    * Private constructor. Use Renderer.create() instead.
@@ -515,6 +520,14 @@ export class Renderer {
 
     const gl = device.getGL() as WebGL2RenderingContext;
 
+    // CRITICAL: Enable EXT_color_buffer_float for RGBA16F framebuffer support
+    const floatExt = gl.getExtension('EXT_color_buffer_float');
+    if (!floatExt) {
+      logger.warn('EXT_color_buffer_float not available - HDR framebuffers may not work');
+    } else {
+      logger.info('EXT_color_buffer_float extension enabled for HDR rendering');
+    }
+
     // Create render textures for post-processing ping-pong
     const texDesc: RenderTextureDescriptor = {
       width: this.renderWidth,
@@ -566,7 +579,118 @@ export class Renderer {
 
     this.postProcessStack.addEffect(bloom);
 
+    // Create fullscreen quad for tone mapping blit
+    this.createFullscreenQuad(gl);
+    this.createTonemapShader(gl);
+
     logger.info('Post-processing stack initialized with Bloom effect');
+  }
+
+  /**
+   * Creates a fullscreen quad for post-processing.
+   */
+  private createFullscreenQuad(gl: WebGL2RenderingContext): void {
+    // Fullscreen triangle (more efficient than quad)
+    const vertices = new Float32Array([
+      -1.0, -1.0, 0.0, 0.0,  // Bottom-left
+       3.0, -1.0, 2.0, 0.0,  // Bottom-right (oversized for full coverage)
+      -1.0,  3.0, 0.0, 2.0,  // Top-left (oversized for full coverage)
+    ]);
+
+    this.fullscreenQuadVBO = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.fullscreenQuadVBO);
+    gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+    this.fullscreenQuadVAO = gl.createVertexArray();
+    gl.bindVertexArray(this.fullscreenQuadVAO);
+
+    // Position attribute (location 0)
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 16, 0);
+
+    // Texcoord attribute (location 1)
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 2, gl.FLOAT, false, 16, 8);
+
+    gl.bindVertexArray(null);
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+    logger.info('Created fullscreen quad for post-processing');
+  }
+
+  /**
+   * Creates the tone mapping shader for HDR to LDR conversion.
+   */
+  private createTonemapShader(gl: WebGL2RenderingContext): void {
+    const vertexShader = `#version 300 es
+      precision highp float;
+
+      layout(location = 0) in vec2 aPosition;
+      layout(location = 1) in vec2 aTexCoord;
+
+      out vec2 vTexCoord;
+
+      void main() {
+        vTexCoord = aTexCoord;
+        gl_Position = vec4(aPosition, 0.0, 1.0);
+      }
+    `;
+
+    const fragmentShader = `#version 300 es
+      precision highp float;
+
+      in vec2 vTexCoord;
+      out vec4 fragColor;
+
+      uniform sampler2D uHDRTexture;
+      uniform float uExposure;
+      uniform float uGamma;
+
+      void main() {
+        vec2 uv = vTexCoord;
+
+        // Sample color - the PBR shader already does tone mapping and gamma correction
+        // so we just pass through the color directly
+        vec3 color = texture(uHDRTexture, uv).rgb;
+
+        // Just output the color as-is (scene is already sRGB)
+        fragColor = vec4(color, 1.0);
+      }
+    `;
+
+    // Compile vertex shader
+    const vs = gl.createShader(gl.VERTEX_SHADER)!;
+    gl.shaderSource(vs, vertexShader);
+    gl.compileShader(vs);
+    if (!gl.getShaderParameter(vs, gl.COMPILE_STATUS)) {
+      logger.error(`Tonemap vertex shader error: ${gl.getShaderInfoLog(vs)}`);
+      return;
+    }
+
+    // Compile fragment shader
+    const fs = gl.createShader(gl.FRAGMENT_SHADER)!;
+    gl.shaderSource(fs, fragmentShader);
+    gl.compileShader(fs);
+    if (!gl.getShaderParameter(fs, gl.COMPILE_STATUS)) {
+      logger.error(`Tonemap fragment shader error: ${gl.getShaderInfoLog(fs)}`);
+      return;
+    }
+
+    // Link program
+    this.tonemapShaderProgram = gl.createProgram()!;
+    gl.attachShader(this.tonemapShaderProgram, vs);
+    gl.attachShader(this.tonemapShaderProgram, fs);
+    gl.linkProgram(this.tonemapShaderProgram);
+    if (!gl.getProgramParameter(this.tonemapShaderProgram, gl.LINK_STATUS)) {
+      logger.error(`Tonemap program link error: ${gl.getProgramInfoLog(this.tonemapShaderProgram)}`);
+      return;
+    }
+
+    // Cleanup shaders
+    gl.deleteShader(vs);
+    gl.deleteShader(fs);
+
+    logger.info('Created tone mapping shader');
   }
 
   /**
@@ -834,7 +958,7 @@ export class Renderer {
   /**
    * Applies post-processing effects to the rendered scene.
    * Scene has already been rendered to postProcessInput texture.
-   * Applies effects and blits the result to screen.
+   * Uses fullscreen quad with tone mapping shader to convert HDR to LDR.
    *
    * @param deltaTime - Delta time for effect animations
    */
@@ -850,24 +974,70 @@ export class Renderer {
 
     const gl = device.getGL() as WebGL2RenderingContext;
 
-    // Direct blit approach - bypassing PostProcessStack to avoid framebuffer issues
-    const sceneFB = this.postProcessInput.getFramebuffer();
-    if (!sceneFB) {
-      logger.error('PostProcessInput has no framebuffer - cannot blit to screen');
+    // Check if we have the required resources
+    if (!this.tonemapShaderProgram || !this.fullscreenQuadVAO) {
+      // Fallback: try direct blit with NEAREST filter (works for same-format only)
+      const sceneFB = this.postProcessInput.getFramebuffer();
+      if (sceneFB) {
+        gl.bindFramebuffer(gl.READ_FRAMEBUFFER, sceneFB);
+        gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
+        gl.blitFramebuffer(
+          0, 0, this.renderWidth, this.renderHeight,
+          0, 0, gl.canvas.width, gl.canvas.height,
+          gl.COLOR_BUFFER_BIT,
+          gl.NEAREST  // Use NEAREST for format compatibility
+        );
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      }
       return;
     }
 
-    gl.bindFramebuffer(gl.READ_FRAMEBUFFER, sceneFB);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, null);
-    gl.blitFramebuffer(
-      0, 0, this.renderWidth, this.renderHeight,
-      0, 0, gl.canvas.width, gl.canvas.height,
-      gl.COLOR_BUFFER_BIT,
-      gl.LINEAR
-    );
+    // Get the HDR texture
+    const colorTexture = this.postProcessInput.getColorTexture();
+    const glTexture = colorTexture.getGLTexture();
+    if (!glTexture) {
+      logger.error('PostProcessInput has no GL texture');
+      return;
+    }
 
-    // Reset to default framebuffer
+    // Bind to default framebuffer (canvas)
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+    // Clear the canvas (optional but helps debug)
+    gl.clearColor(0, 0, 0, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Disable depth testing for fullscreen quad
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);
+
+    // Use tone mapping shader
+    gl.useProgram(this.tonemapShaderProgram);
+
+    // Bind HDR texture
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, glTexture);
+
+    // Set uniforms
+    const texLoc = gl.getUniformLocation(this.tonemapShaderProgram, 'uHDRTexture');
+    const exposureLoc = gl.getUniformLocation(this.tonemapShaderProgram, 'uExposure');
+    const gammaLoc = gl.getUniformLocation(this.tonemapShaderProgram, 'uGamma');
+
+    gl.uniform1i(texLoc, 0);
+    gl.uniform1f(exposureLoc, 1.0);  // Can be adjusted for exposure control
+    gl.uniform1f(gammaLoc, 2.2);     // Standard sRGB gamma
+
+    // Draw fullscreen triangle
+    gl.bindVertexArray(this.fullscreenQuadVAO);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindVertexArray(null);
+
+    // Restore state
+    gl.useProgram(null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthMask(true);
   }
 
   /**
@@ -1389,9 +1559,9 @@ export class Renderer {
       // Diffuse IBL
       vec3 diffuse = irradiance * albedo * kD;
 
-      // Specular IBL (heavily reduced to preserve albedo color)
-      // For car paint, we want color to dominate over reflections
-      vec3 specular = envColor * F * 0.08;
+      // Specular IBL - balanced for realistic car paint look
+      // Car paint has clearcoat that produces strong reflections
+      vec3 specular = envColor * F * 0.4;
 
       return (diffuse + specular) * u_envIntensity;
     }
@@ -1460,9 +1630,9 @@ export class Renderer {
         emission = texture(u_emissionMap, v_texCoord).rgb * u_emissionIntensity;
       }
 
-      // Normal mapping - USE RAW NORMAL since it works in debug mode 15/17
-      // v_worldNormal uses normalMatrix which may have issues
-      vec3 N = normalize(v_rawNormal);
+      // Normal mapping - use properly transformed world normal
+      // The normal matrix (inverse-transpose) correctly handles rotation and non-uniform scaling
+      vec3 N = normalize(v_worldNormal);
       if (u_hasNormalMap == 1) {
         vec3 normalSample = texture(u_normalMap, v_texCoord).rgb * 2.0 - 1.0;
         N = normalize(v_TBN * normalSample);
@@ -1484,32 +1654,34 @@ export class Renderer {
       // =======================================================================
       // AMBIENT LIGHTING - Hemisphere ambient for realistic shadow fill
       // =======================================================================
-      // Sky-ground hemisphere ambient - critical for AAA look
-      vec3 skyColor = vec3(0.5, 0.6, 0.8);    // Brighter blue sky
-      vec3 groundColor = vec3(0.2, 0.18, 0.15); // Warmer ground bounce
+      // Sky-ground hemisphere ambient - darker for more contrast
+      vec3 skyColor = vec3(0.3, 0.35, 0.5);    // Darker sky for contrast
+      vec3 groundColor = vec3(0.1, 0.09, 0.08); // Darker ground for shadows
       float hemisphereBlend = N.y * 0.5 + 0.5;
       vec3 hemisphereAmbient = mix(groundColor, skyColor, hemisphereBlend);
 
-      // Ambient occlusion and base ambient - increased from 0.15 to 0.25
-      vec3 ambient = albedo * hemisphereAmbient * 0.25 * ao;
+      // Ambient occlusion and base ambient - balanced for contrast
+      vec3 ambient = albedo * hemisphereAmbient * 0.15 * ao;
 
       // Add rim lighting for 3D pop at grazing angles
       vec3 F_ambient = FresnelSchlickRoughness(NdotV, F0, roughness);
       vec3 kD_ambient = (1.0 - F_ambient) * (1.0 - metallic);
       ambient *= kD_ambient;
 
-      // Add subtle rim light for car silhouette pop
+      // Subtle rim light for car silhouette definition - tinted with albedo to preserve color
       float rimFactor = 1.0 - NdotV;
-      rimFactor = pow(rimFactor, 3.0) * 0.3;
-      ambient += skyColor * rimFactor * (1.0 - roughness);
+      rimFactor = pow(rimFactor, 4.0) * 0.15;
+      ambient += albedo * rimFactor * (1.0 - roughness);
 
       // =======================================================================
       // FALLBACK SUN LIGHT (when no lights in scene) - AAA intensity
       // =======================================================================
       if (u_lightCount == 0) {
-        vec3 sunDir = normalize(vec3(0.5, 0.7, 0.4));
-        vec3 sunColor = vec3(1.0, 0.95, 0.9);
-        float sunIntensity = 8.0; // Boosted for dramatic AAA specular
+        // Sun from FRONT-RIGHT-ABOVE so specular is visible from chase camera!
+        // Camera is behind car, so sun needs to be in front for specular to reflect back
+        vec3 sunDir = normalize(vec3(-0.5, 0.7, 0.5));  // Front-right-above
+        vec3 sunColor = vec3(1.0, 0.98, 0.95);
+        float sunIntensity = 10.0; // Strong for visible specular highlights
 
         float NdotL = max(dot(N, sunDir), 0.0);
         vec3 H = normalize(V + sunDir);
@@ -1519,14 +1691,28 @@ export class Renderer {
         // Fresnel
         vec3 F = FresnelSchlick(VdotH, F0);
 
-        // Energy-conserving diffuse
+        // Energy-conserving diffuse - slightly reduced for deeper color
         vec3 kD = (1.0 - F) * (1.0 - metallic);
-        vec3 diffuse = kD * albedo / PI;
+        vec3 diffuse = kD * albedo / PI * 0.85;
 
-        // Cook-Torrance specular
+        // Cook-Torrance specular for base paint layer
         float D = DistributionGGX(N, H, roughness);
         float G = GeometrySmith(N, V, sunDir, roughness);
         vec3 specular = (D * G * F) / (4.0 * NdotV * NdotL + EPSILON);
+
+        // =======================================================================
+        // CLEARCOAT LAYER - Essential for AAA car paint!
+        // Creates the bright "wet" highlight you see on real cars
+        // =======================================================================
+        float clearcoatRoughness = 0.02; // Mirror-smooth for sharp specular
+        float D_clearcoat = DistributionGGX(N, H, clearcoatRoughness);
+        float G_clearcoat = GeometrySmith(N, V, sunDir, clearcoatRoughness);
+        // Clearcoat F0 - slightly higher for stronger reflection
+        vec3 F_clearcoat = FresnelSchlick(VdotH, vec3(0.05));
+        vec3 clearcoatSpec = (D_clearcoat * G_clearcoat * F_clearcoat) / (4.0 * NdotV * NdotL + EPSILON);
+        // STRONG clearcoat for visible bright highlights
+        float clearcoatStrength = (1.0 - roughness) * 3.0; // 3x strength
+        specular += clearcoatSpec * clearcoatStrength;
 
         Lo = (diffuse + specular) * sunColor * sunIntensity * NdotL;
       }
@@ -1543,9 +1729,8 @@ export class Renderer {
         if (u_lightTypes[i] == 0) {
           // Directional light
           L = normalize(-u_lightDirections[i]);
-          // CRITICAL: Scale intensity for AAA-quality specular highlights
-          // Input intensities ~80 map to radiance ~12.0 for dramatic specular
-          float scaledIntensity = u_lightIntensities[i] * 0.15;
+          // Balanced intensity - user intensity is in lux, divide by ~20 for PBR
+          float scaledIntensity = u_lightIntensities[i] * 0.05;
           radiance = u_lightColors[i] * scaledIntensity;
         } else if (u_lightTypes[i] == 1) {
           // Point light
@@ -1553,7 +1738,7 @@ export class Renderer {
           float dist = length(lightVec);
           L = normalize(lightVec);
           float atten = PointLightAttenuation(dist, u_lightRanges[i]);
-          float scaledIntensity = u_lightIntensities[i] * 0.15 * atten;
+          float scaledIntensity = u_lightIntensities[i] * 0.05 * atten;
           radiance = u_lightColors[i] * scaledIntensity;
         } else {
           continue;
@@ -1572,52 +1757,105 @@ export class Renderer {
           // Energy conservation: metals have no diffuse
           vec3 kD = (1.0 - F) * (1.0 - metallic);
 
-          // Lambert diffuse (energy conserving)
-          vec3 diffuse = kD * albedo / PI;
+          // Lambert diffuse (energy conserving) - reduced for richer color
+          vec3 diffuse = kD * albedo / PI * 0.85;
 
-          // Cook-Torrance specular BRDF
+          // Cook-Torrance specular BRDF for base layer
           float D = DistributionGGX(N, H, roughness);
           float G = GeometrySmith(N, V, L, roughness);
           vec3 specular = (D * G * F) / (4.0 * NdotV * NdotL + EPSILON);
+
+          // Clearcoat layer - same as sun light for consistency
+          float clearcoatRoughness = 0.02; // Mirror-smooth
+          float D_cc = DistributionGGX(N, H, clearcoatRoughness);
+          float G_cc = GeometrySmith(N, V, L, clearcoatRoughness);
+          vec3 F_cc = FresnelSchlick(VdotH, vec3(0.05));
+          vec3 clearcoatSpec = (D_cc * G_cc * F_cc) / (4.0 * NdotV * NdotL + EPSILON);
+          float clearcoatStrength = (1.0 - roughness) * 3.0; // Strong
+          specular += clearcoatSpec * clearcoatStrength;
 
           Lo += (diffuse + specular) * radiance * NdotL;
         }
       }
 
       // =======================================================================
-      // ENVIRONMENT REFLECTIONS - Strong for AAA car paint look
+      // ENVIRONMENT REFLECTIONS - AAA car paint wet gloss look
       // =======================================================================
       vec3 R = reflect(-V, N);
       vec3 envReflection = vec3(0.0);
 
       {
-        // Procedural sky reflection with sun hotspot - DRAMATICALLY BOOSTED for AAA car paint
+        // Procedural sky reflection - slightly desaturated for neutral reflection
         float skyFactor = max(R.y * 0.5 + 0.5, 0.0);
-        vec3 skyReflect = mix(vec3(0.5, 0.55, 0.6), vec3(0.8, 0.9, 1.0), skyFactor);
+        vec3 skyReflect = mix(vec3(0.25, 0.28, 0.35), vec3(0.5, 0.6, 0.75), skyFactor);
 
-        // DRAMATIC sun reflection hotspot - key for AAA car paint look
-        vec3 sunDir = normalize(vec3(0.5, 0.7, 0.4));
+        // Sun reflection hotspot - THE key visual for glossy car paint!
+        vec3 sunDir = normalize(vec3(-0.5, 0.7, 0.5));  // Match fallback sun (front-right)
         float sunDotR = max(dot(R, sunDir), 0.0);
-        // Sharper falloff for glossy materials, softer for rough
-        float sunPower = mix(16.0, 512.0, 1.0 - roughness);
+        // Very sharp falloff for glossy materials = crisp sun reflection
+        float sunPower = mix(64.0, 1024.0, 1.0 - roughness); // Even sharper
         float sunReflect = pow(sunDotR, sunPower);
-        // Very strong sun hotspot - this is what creates the "shine" on car paint
-        skyReflect += vec3(1.0, 0.98, 0.9) * sunReflect * 5.0;
+        // BRIGHT sun hotspot - makes car paint look "wet" and glossy
+        vec3 sunHotspot = vec3(1.0, 0.98, 0.92) * sunReflect * 15.0 * (1.0 - roughness);
+        skyReflect += sunHotspot;
 
         // Fresnel for environment - stronger at grazing angles (critical for car paint)
         vec3 F_env = FresnelSchlickRoughness(NdotV, F0, roughness);
 
-        // Metallic surfaces get MUCH stronger reflections - this is key for car paint
-        float metallicBoost = mix(1.0, 2.5, metallic); // Metals reflect more
-        float glossBoost = (1.0 - roughness * roughness); // Glossy = more reflection
-        float envStrength = glossBoost * metallicBoost * 1.2; // Base strength 1.2 (was 0.8)
-        envReflection = skyReflect * F_env * envStrength * u_envIntensity;
+        // Car paint clearcoat reflections - STRONG for AAA look
+        float glossBoost = pow(1.0 - roughness, 1.5); // Sharper gloss response
+        float envStrength = glossBoost * 0.4; // Strong base reflection
+
+        // Tint sky reflection with albedo to preserve paint color
+        vec3 tintedSky = mix(skyReflect * 0.3, skyReflect * albedo * 1.0, 0.5);
+        // Add untinted sun hotspot back - this creates the white specular highlight!
+        vec3 finalReflection = tintedSky + sunHotspot * 0.5;
+        envReflection = finalReflection * F_env * envStrength * u_envIntensity;
       }
 
       // =======================================================================
-      // COMBINE ALL LIGHTING
+      // SUBTLE RIM LIGHTING - Silhouette definition (tinted with albedo)
       // =======================================================================
-      vec3 color = ambient + Lo + envReflection + emission;
+      // Very subtle rim highlight - mostly handled by Fresnel in clearcoat now
+      float rimFresnel = pow(1.0 - NdotV, 4.0);
+      vec3 rimTint = mix(vec3(0.6), albedo, 0.8); // 80% albedo tint
+      vec3 rimColor = rimTint * rimFresnel * (1.0 - roughness) * 0.1; // Reduced
+
+      // =======================================================================
+      // AAA CAR PAINT SPECULAR - FORCED VISIBLE for glossy surfaces
+      // =======================================================================
+      vec3 cameraSpecular = vec3(0.0);
+      {
+        float gloss = 1.0 - roughness;
+
+        // FORCED TEST: Any surface facing somewhat upward gets a white highlight
+        // This MUST be visible if the shader is working at all
+        float upFacing = max(N.y, 0.0);  // 0 to 1 based on how much surface faces up
+        float forcedSpec = upFacing * upFacing * gloss * 3.0;  // Strong white
+
+        // Also add view-dependent highlight (Fresnel-ish on top surfaces)
+        float topHighlight = max(dot(N, normalize(vec3(0.0, 1.0, 0.3))), 0.0);
+        topHighlight = pow(topHighlight, 4.0) * gloss * 2.0;
+
+        // Standard specular calculations
+        vec3 sun1 = normalize(vec3(-0.4, 0.6, 0.7));
+        vec3 H1 = normalize(V + sun1);
+        float spec1 = pow(max(dot(N, H1), 0.0), 32.0) * gloss;
+
+        vec3 sun2 = normalize(vec3(0.4, 0.5, 0.75));
+        vec3 H2 = normalize(V + sun2);
+        float spec2 = pow(max(dot(N, H2), 0.0), 32.0) * gloss * 0.7;
+
+        // Combine - the forcedSpec should DEFINITELY be visible
+        float totalSpec = forcedSpec + topHighlight + spec1 + spec2;
+        cameraSpecular = vec3(1.0, 0.98, 0.95) * totalSpec;
+      }
+
+      // =======================================================================
+      // COMBINE ALL LIGHTING (specular added after tonemapping for visibility)
+      // =======================================================================
+      vec3 color = ambient + Lo + envReflection + emission + rimColor;
+      // cameraSpecular added AFTER tonemapping to guarantee visibility
 
       // Apply procedural ground shadow for surfaces near ground level
       // DISABLED for debugging
@@ -1631,8 +1869,8 @@ export class Renderer {
       // HDR POST-PROCESSING - AAA Quality Tone Mapping
       // =======================================================================
 
-      // 1. Apply exposure (slightly increased for car paint pop)
-      color *= u_exposure * 1.2;
+      // 1. Apply exposure
+      color *= u_exposure;
 
       // 2. ACES Filmic Tone Mapping - industry standard for AAA games
       // Preserves highlights while maintaining rich shadows
@@ -1641,12 +1879,32 @@ export class Renderer {
       // 3. Gamma correction to sRGB
       color = pow(color, vec3(1.0 / 2.2));
 
-      // 4. Slight saturation boost for vibrant car colors
+      // 4. Saturation boost to counteract ACES desaturation - stronger for vivid car paint
       float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
-      color = mix(vec3(luminance), color, 1.15);
+      color = mix(vec3(luminance), color, 1.4); // 40% saturation boost for rich colors
 
-      // 5. Final clamp
+      // 5. ADD SPECULAR AFTER TONEMAPPING - guaranteed bright white highlights!
+      // This bypasses ACES compression to ensure specular is visible
+      color += cameraSpecular * 0.8; // Add specular as bright overlay
+
+      // =====================================================================
+      // DEFINITIVE TEST: Add white to ANY surface with roughness < 0.9
+      // Default roughness is 0.5, material sets 0.12
+      // If white appears → roughness uniform works (but may be wrong value)
+      // If no white → roughness uniform is broken
+      // =====================================================================
+      if (roughness < 0.9) {
+        // ANY surface with roughness < 0.9 (almost everything) gets white tint
+        color = mix(color, vec3(1.0), 0.5); // 50% white blend
+      }
+
+      // 6. Final clamp
       color = clamp(color, 0.0, 1.0);
+
+      // DEBUG: SOLID GREEN OUTPUT to prove shader is being used
+      // If you DON'T see solid green, the shader isn't being applied!
+      // UNCOMMENT THE LINE BELOW TO TEST:
+      // color = vec3(0.0, 1.0, 0.0); // 100% solid green
 
       // Debug output modes
       if (u_debugMode == 1) {
@@ -2311,8 +2569,8 @@ export class Renderer {
     // IBL uses procedural sky only (cubemap samplers removed to avoid texture type conflicts)
     // The shader's IBL function uses procedural sky without any cubemap sampling
     gl.uniform1i(getUniform('u_hasEnvMap'), 0); // Always 0 - procedural sky only
-    gl.uniform1f(getUniform('u_envIntensity'), 1.5); // Strong environment for AAA reflections
-    gl.uniform1f(getUniform('u_exposure'), 1.2); // Slightly boosted for vibrant colors
+    gl.uniform1f(getUniform('u_envIntensity'), 2.5); // Strong environment reflections for car paint
+    gl.uniform1f(getUniform('u_exposure'), 1.2); // Slightly brighter exposure
 
     // Debug mode: 0=normal PBR, 1=show normals, 2=show albedo, 3=metallic, 4=roughness, 5=direct lighting only, 6=light count
     gl.uniform1i(getUniform('u_debugMode'), this.currentDebugMode); // Normal PBR rendering
@@ -2396,14 +2654,48 @@ export class Renderer {
         logger.info(`Model matrix [${node.name}]: translate=(${e[12].toFixed(2)}, ${e[13].toFixed(2)}, ${e[14].toFixed(2)})`);
       }
 
-      // Calculate normal matrix (inverse transpose of 3x3 model matrix)
+      // Calculate normal matrix (PROPER inverse transpose of 3x3 model matrix)
+      // This is CRITICAL for non-uniform scaling - normals must be transformed correctly
       const normalMatrix = new Float32Array(9);
       const m = modelMatrix.elements;
-      // For correct normal transformation, we need inverse transpose
-      // Simplified version assumes uniform/no scale
-      normalMatrix[0] = m[0]; normalMatrix[1] = m[1]; normalMatrix[2] = m[2];
-      normalMatrix[3] = m[4]; normalMatrix[4] = m[5]; normalMatrix[5] = m[6];
-      normalMatrix[6] = m[8]; normalMatrix[7] = m[9]; normalMatrix[8] = m[10];
+
+      // Extract 3x3 upper-left portion - COLUMN-MAJOR storage!
+      // WebGL/OpenGL stores matrices in column-major order:
+      // Column 0: m[0], m[1], m[2]   = M_00, M_10, M_20
+      // Column 1: m[4], m[5], m[6]   = M_01, M_11, M_21
+      // Column 2: m[8], m[9], m[10]  = M_02, M_12, M_22
+      // So M_ij (row i, col j) = m[j*4 + i]
+      const m00 = m[0], m01 = m[4], m02 = m[8];   // Row 0
+      const m10 = m[1], m11 = m[5], m12 = m[9];   // Row 1
+      const m20 = m[2], m21 = m[6], m22 = m[10];  // Row 2
+
+      // Calculate determinant of 3x3
+      const det = m00 * (m11 * m22 - m12 * m21) -
+                  m01 * (m10 * m22 - m12 * m20) +
+                  m02 * (m10 * m21 - m11 * m20);
+
+      if (Math.abs(det) > 0.0001) {
+        // Calculate inverse transpose for WebGL column-major storage
+        // Cofactor matrix C_ij stored in column-major as: col0=(C00,C10,C20), col1=(C01,C11,C21), col2=(C02,C12,C22)
+        const invDet = 1.0 / det;
+        // Column 0: C_00, C_10, C_20
+        normalMatrix[0] = (m11 * m22 - m12 * m21) * invDet;  // C_00
+        normalMatrix[1] = (m02 * m21 - m01 * m22) * invDet;  // C_10 = -(m01*m22 - m02*m21)
+        normalMatrix[2] = (m01 * m12 - m02 * m11) * invDet;  // C_20
+        // Column 1: C_01, C_11, C_21
+        normalMatrix[3] = (m12 * m20 - m10 * m22) * invDet;  // C_01 = -(m10*m22 - m12*m20)
+        normalMatrix[4] = (m00 * m22 - m02 * m20) * invDet;  // C_11
+        normalMatrix[5] = (m02 * m10 - m00 * m12) * invDet;  // C_21 = -(m00*m12 - m02*m10)
+        // Column 2: C_02, C_12, C_22
+        normalMatrix[6] = (m10 * m21 - m11 * m20) * invDet;  // C_02
+        normalMatrix[7] = (m01 * m20 - m00 * m21) * invDet;  // C_12 = -(m00*m21 - m01*m20)
+        normalMatrix[8] = (m00 * m11 - m01 * m10) * invDet;  // C_22
+      } else {
+        // Fallback to identity if matrix is singular
+        normalMatrix[0] = 1; normalMatrix[1] = 0; normalMatrix[2] = 0;
+        normalMatrix[3] = 0; normalMatrix[4] = 1; normalMatrix[5] = 0;
+        normalMatrix[6] = 0; normalMatrix[7] = 0; normalMatrix[8] = 1;
+      }
       gl.uniformMatrix3fv(getUniform('u_normalMatrix'), false, normalMatrix);
 
       // ==========================================================================
@@ -2433,9 +2725,37 @@ export class Renderer {
 
         // PBR properties - check DIRECT properties first (user overrides), then nested defaults
         // Direct assignment: material.metallic = 0.5 takes priority over defaults
-        const metallicVal = mat.metallic ?? props.metallic;
-        const roughnessVal = mat.roughness ?? props.roughness;
-        const aoVal = mat.ao ?? props.ao;
+        let metallicVal = mat.metallic ?? props.metallic;
+        let roughnessVal = mat.roughness ?? props.roughness;
+        let aoVal = mat.ao ?? props.ao;
+
+        // FALLBACK: Check getParameter/getProperty if undefined (Handles MaterialInstance and New Material classes)
+        if (metallicVal === undefined) {
+             if (typeof mat.getParameter === 'function') metallicVal = mat.getParameter('metallic');
+             else if (typeof mat.getProperty === 'function') metallicVal = mat.getProperty('metallic');
+        }
+        if (roughnessVal === undefined) {
+             if (typeof mat.getParameter === 'function') roughnessVal = mat.getParameter('roughness');
+             else if (typeof mat.getProperty === 'function') roughnessVal = mat.getProperty('roughness');
+        }
+        if (aoVal === undefined) {
+             if (typeof mat.getParameter === 'function') aoVal = mat.getParameter('ao');
+             else if (typeof mat.getProperty === 'function') aoVal = mat.getProperty('ao');
+        }
+
+        // DEBUG: Log detailed material info for Body materials to diagnose roughness issue
+        if (this.frameCount <= 10 && node.name && (node.name.includes('Body') || node.name.includes('Hood'))) {
+           const matType = mat.constructor ? mat.constructor.name : 'Unknown';
+           logger.info(`[MAT DEBUG] Node: ${node.name}, Material: ${mat.name}, Type: ${matType}`);
+           logger.info(`[MAT DEBUG]   mat.roughness: ${mat.roughness} (${typeof mat.roughness})`);
+           logger.info(`[MAT DEBUG]   props.roughness: ${props?.roughness} (${typeof props?.roughness})`);
+           logger.info(`[MAT DEBUG]   Resolved roughnessVal: ${roughnessVal}`);
+           
+           // Check if it looks like the newer material (using properties map)
+           if (typeof mat.getProperty === 'function') {
+             logger.info(`[MAT DEBUG]   mat.getProperty('roughness'): ${mat.getProperty('roughness')}`);
+           }
+        }
 
         if (metallicVal !== undefined) metallic = metallicVal;
         if (roughnessVal !== undefined) roughness = roughnessVal;

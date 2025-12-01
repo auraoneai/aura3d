@@ -690,17 +690,8 @@ export class Transform {
     this._localMatrix.compose(this._position, this._rotation, this._scale);
     this._localMatrixDirty = false;
 
-    if (this._hasNonUniformScaleInHierarchy()) {
-      const scaleVariance = Math.max(
-        Math.abs(this._scale.x - this._scale.y),
-        Math.abs(this._scale.y - this._scale.z),
-        Math.abs(this._scale.z - this._scale.x)
-      );
-
-      if (scaleVariance > 0.01) {
-        console.warn('Transform: Non-uniform scale detected. May cause skewing artifacts in child transforms.');
-      }
-    }
+    // Note: Non-uniform scale is intentionally allowed for shapes like wheel arches, spoiler wings, etc.
+    // The warning was removed as it was flooding the console during normal rendering.
   }
 
   /**

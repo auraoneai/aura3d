@@ -12,8 +12,7 @@
  * - Day/night cycle
  */
 
-import { Vector3 } from '../../../src/math/Vector3';
-import { VoxelWorld } from '../../../src/voxel/VoxelWorld';
+import { Vector3, VoxelWorld } from 'g3d';
 import { TerrainGenerator } from './TerrainGenerator';
 import { ChunkManager } from './ChunkManager';
 import { VoxelPlayer, PlayerInput, PlayerMode } from './VoxelPlayer';

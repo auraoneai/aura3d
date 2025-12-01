@@ -1,13 +1,19 @@
 import { defineConfig } from 'vite';
+import path from 'path';
 
 export default defineConfig({
-  root: '.',
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
+  resolve: {
+    alias: {
+      'g3d': path.resolve(__dirname, '../../src/index.ts')
+    }
   },
   server: {
-    port: 3000,
-    open: true,
+    port: 3002,
+    open: true
   },
+  build: {
+    target: 'es2020',
+    outDir: 'dist',
+    sourcemap: true
+  }
 });

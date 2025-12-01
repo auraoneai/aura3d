@@ -213,6 +213,7 @@ class PhysicsSandbox {
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     this.renderGrid(ctx);
+    this.renderShadows(ctx); // Render shadows first
     this.renderBodies(ctx);
     this.renderConstraints(ctx);
     this.renderGizmos(ctx);
@@ -245,42 +246,143 @@ class PhysicsSandbox {
     }
   }
 
-  private renderBodies(ctx: CanvasRenderingContext2D): void {
+  private renderShadows(ctx: CanvasRenderingContext2D): void {
     for (const body of this.physicsWorld.bodies) {
+      if (body.type === BodyType.Static) continue;
+      
+      const visual = this.visualBodies.get(body);
+      if (!visual) continue;
+      
+      const pos = body.position;
+      if (pos.y < -5) continue; // Too far down
+
+      const size = visual.size || new Vector3(1, 1, 1);
+      const shadowY = 0.01; // Slightly above ground
+      
+      // Simple blob shadow
+      const shadowPos = this.worldToScreen(new Vector3(pos.x, shadowY, pos.z));
+      
+      // Scale shadow by height
+      const heightFactor = Math.max(0, 1 - (pos.y / 10));
+      const w = size.x * 40 * heightFactor;
+      const h = size.z * 40 * heightFactor; // Use Z for depth
+      
+      ctx.save();
+      ctx.translate(shadowPos.x, shadowPos.y);
+      ctx.scale(1, 0.5); // Flatten perspective
+      ctx.fillStyle = `rgba(0, 0, 0, ${0.3 * heightFactor})`;
+      ctx.beginPath();
+      ctx.arc(0, 0, Math.max(w, h)/2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  private renderBodies(ctx: CanvasRenderingContext2D): void {
+    // Sort bodies by distance to camera for painter's algorithm
+    const sortedBodies = [...this.physicsWorld.bodies].sort((a, b) => {
+        const distA = a.position.distanceTo(this.camera.position);
+        const distB = b.position.distanceTo(this.camera.position);
+        return distB - distA;
+    });
+
+    for (const body of sortedBodies) {
       const visual = this.visualBodies.get(body);
       if (!visual) continue;
 
-      const screenPos = this.worldToScreen(body.position);
       const size = visual.size || new Vector3(1, 1, 1);
       const color = visual.color || new Color(0.8, 0.8, 0.8, 1);
-
       const isSelected = this.controller.isSelected(body);
       const isSleeping = body.isSleeping;
 
-      ctx.save();
-      ctx.translate(screenPos.x, screenPos.y);
-
-      if (isSelected) {
-        ctx.strokeStyle = '#00ff00';
-        ctx.lineWidth = 3;
-      } else if (isSleeping) {
-        ctx.strokeStyle = 'rgba(100, 100, 150, 0.5)';
-        ctx.lineWidth = 1;
-      } else {
-        ctx.strokeStyle = `rgba(${color.r * 255}, ${color.g * 255}, ${color.b * 255}, ${color.a})`;
-        ctx.lineWidth = 2;
+      // Vertices of a cube
+      const w = size.x / 2;
+      const h = size.y / 2;
+      const d = size.z / 2;
+      
+      // Local vertices
+      const localVerts = [
+          new Vector3(-w, -h, d), new Vector3(w, -h, d), new Vector3(w, h, d), new Vector3(-w, h, d), // Front
+          new Vector3(-w, -h, -d), new Vector3(w, -h, -d), new Vector3(w, h, -d), new Vector3(-w, h, -d) // Back
+      ];
+      
+      // Transform vertices to world then screen
+      // Note: Rotation is simplified here, ideally apply quaternion
+      // Assuming simple rotation for demo or just position translation if rotation complex
+      // Actually, let's apply rotation if possible. G3D RigidBody likely has rotation (Quaternion)
+      // but main.ts imports Vector3 only? No, imports RigidBody.
+      
+      // Create a simple rotation matrix or just translate for now to ensure stability
+      const worldVerts = localVerts.map(v => {
+          // Apply body rotation? RigidBody usually has quaternion or matrix.
+          // Assuming body.rotation is Vector3 (Euler) or Quaternion. 
+          // Based on physics engine, let's assume we just translate for now to keep it robust
+          // (Implementing full 3D rotation matrix in 2D canvas render loop is heavy)
+          return v.add(body.position);
+      });
+      
+      const screenVerts = worldVerts.map(v => this.worldToScreen(v));
+      
+      // Faces (indices)
+      const faces = [
+          [0, 1, 2, 3], // Front
+          [1, 5, 6, 2], // Right
+          [5, 4, 7, 6], // Back
+          [4, 0, 3, 7], // Left
+          [3, 2, 6, 7], // Top
+          [4, 5, 1, 0]  // Bottom
+      ];
+      
+      // Draw faces
+      // Simple normal based lighting?
+      // Or just stroke and fill
+      
+      const baseColor = isSleeping ? new Color(0.2, 0.2, 0.3) : color;
+      
+      ctx.lineWidth = isSelected ? 2 : 1;
+      ctx.strokeStyle = isSelected ? '#00ff00' : `rgba(255,255,255,0.5)`;
+      
+      // Simple painter sort for faces? Not perfect but ok for convex box
+      // Actually, just drawing them in order usually works ok for cubes if we check normals
+      // But for this demo, just drawing all with alpha works "okay" or wireframe
+      
+      // Let's draw solid with fixed lighting order
+      // Top, then sides
+      
+      for(let i=0; i<faces.length; i++) {
+          const face = faces[i];
+          // Check normal z? (2D cross product of screen verts)
+          const v0 = screenVerts[face[0]];
+          const v1 = screenVerts[face[1]];
+          const v2 = screenVerts[face[2]];
+          
+          // Cross product z component
+          const cp = (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
+          
+          if (cp < 0) continue; // Backface cull
+          
+          ctx.beginPath();
+          ctx.moveTo(v0.x, v0.y);
+          for(let j=1; j<4; j++) {
+              const v = screenVerts[face[j]];
+              ctx.lineTo(v.x, v.y);
+          }
+          ctx.closePath();
+          
+          // Shading based on face index
+          let shade = 1.0;
+          if (i === 4) shade = 1.2; // Top brighter
+          if (i === 5) shade = 0.4; // Bottom darker
+          if (i === 1 || i === 3) shade = 0.8; // Sides
+          
+          const r = Math.min(255, Math.floor(baseColor.r * 255 * shade));
+          const g = Math.min(255, Math.floor(baseColor.g * 255 * shade));
+          const b = Math.min(255, Math.floor(baseColor.b * 255 * shade));
+          
+          ctx.fillStyle = `rgba(${r},${g},${b}, ${baseColor.a})`;
+          ctx.fill();
+          ctx.stroke();
       }
-
-      const w = size.x * 20;
-      const h = size.y * 20;
-      ctx.fillStyle = isSleeping
-        ? 'rgba(50, 50, 80, 0.6)'
-        : `rgba(${color.r * 200}, ${color.g * 200}, ${color.b * 200}, 0.7)`;
-
-      ctx.fillRect(-w / 2, -h / 2, w, h);
-      ctx.strokeRect(-w / 2, -h / 2, w, h);
-
-      ctx.restore();
     }
   }
 

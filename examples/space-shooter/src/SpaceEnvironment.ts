@@ -3,6 +3,8 @@
  * Scrolling starfield, nebula backgrounds, and space dust particles
  */
 
+import { ProceduralTextureGenerator } from '../../shared/ProceduralAssets';
+
 interface Star {
   x: number;
   y: number;
@@ -38,18 +40,37 @@ export class SpaceEnvironment {
   private dustParticles: DustParticle[] = [];
 
   private nebulaOffset: number = 0;
+  
+  // High-quality background layers
+  private bgLayer1: HTMLCanvasElement | null = null;
+  private bgLayer2: HTMLCanvasElement | null = null;
+  private bgOffset1: number = 0;
+  private bgOffset2: number = 0;
 
   constructor(canvasWidth: number, canvasHeight: number) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
 
+    this.initBackgroundLayers();
     this.initStars();
     this.initNebulae();
     this.initDust();
   }
 
+  private initBackgroundLayers(): void {
+    // Generate high-quality starfield textures
+    // Layer 1: Distant stars and nebulae (slow)
+    const tex1 = ProceduralTextureGenerator.createStarfieldFace(1024, 0);
+    this.bgLayer1 = tex1.data;
+
+    // Layer 2: Brighter, closer stars (medium speed)
+    const tex2 = ProceduralTextureGenerator.createStarfieldFace(1024, 1);
+    this.bgLayer2 = tex2.data;
+  }
+
   private initStars(): void {
-    for (let i = 0; i < 200; i++) {
+    // Reduced count since we have background layers now
+    for (let i = 0; i < 50; i++) {
       this.stars.push({
         x: Math.random() * this.canvasWidth,
         y: Math.random() * this.canvasHeight,
@@ -95,6 +116,14 @@ export class SpaceEnvironment {
   }
 
   public update(deltaTime: number): void {
+    // Scroll background layers
+    this.bgOffset1 += deltaTime * 10; // Slow scroll
+    this.bgOffset2 += deltaTime * 25; // Medium scroll
+
+    // Wrap offsets
+    if (this.bgLayer1) this.bgOffset1 %= this.bgLayer1.height;
+    if (this.bgLayer2) this.bgOffset2 %= this.bgLayer2.height;
+
     for (const star of this.stars) {
       star.y += star.speed * deltaTime;
 
@@ -139,6 +168,14 @@ export class SpaceEnvironment {
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, this.canvasWidth, this.canvasHeight);
 
+    // Render high-quality background layers (tiled)
+    if (this.bgLayer1) {
+      this.renderTiledLayer(ctx, this.bgLayer1, this.bgOffset1, 0.5);
+    }
+    if (this.bgLayer2) {
+      this.renderTiledLayer(ctx, this.bgLayer2, this.bgOffset2, 0.8); // Brighter
+    }
+
     for (const nebula of this.nebulae) {
       const gradient = ctx.createRadialGradient(
         nebula.x,
@@ -164,6 +201,7 @@ export class SpaceEnvironment {
 
     ctx.globalAlpha = 1;
 
+    // Render remaining individual stars (foreground)
     for (const star of this.stars) {
       const brightness = 0.5 + star.z * 0.5;
       ctx.fillStyle = `rgba(255, 255, 255, ${brightness})`;
@@ -190,5 +228,28 @@ export class SpaceEnvironment {
         particle.size
       );
     }
+  }
+
+  private renderTiledLayer(ctx: CanvasRenderingContext2D, image: HTMLCanvasElement, scrollY: number, opacity: number) {
+    ctx.globalAlpha = opacity;
+    
+    const cols = Math.ceil(this.canvasWidth / image.width) + 1;
+    const rows = Math.ceil(this.canvasHeight / image.height) + 1;
+    
+    // Calculate starting Y to handle smooth scrolling wrap
+    const startY = scrollY % image.height;
+
+    for (let col = 0; col < cols; col++) {
+      for (let row = -1; row < rows; row++) {
+        const x = col * image.width;
+        const y = (row * image.height) + startY;
+        
+        // Optimization: only draw if visible
+        if (y + image.height > 0 && y < this.canvasHeight) {
+           ctx.drawImage(image, x, y);
+        }
+      }
+    }
+    ctx.globalAlpha = 1.0;
   }
 }

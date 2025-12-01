@@ -223,10 +223,10 @@ export class Track {
     this.trackMesh = new SceneNode('TrackMesh');
     this.trackMesh.setMesh(mesh);
 
-    // Dark asphalt material for track
+    // Asphalt material for track - lighter gray for better visibility
     const trackMaterial = new StandardPBRMaterial('TrackMaterial');
-    trackMaterial.albedo = new Color(0.15, 0.15, 0.18);  // Dark asphalt
-    trackMaterial.roughness = 0.8;
+    trackMaterial.albedo = new Color(0.35, 0.35, 0.38);  // Medium gray asphalt - visible against grass
+    trackMaterial.roughness = 0.75;
     trackMaterial.metallic = 0.0;
     this.trackMesh.setMaterial(trackMaterial);
 
@@ -393,12 +393,19 @@ export class Track {
   private addGrandstand(scene: Scene, position: Vector3, rotation: Quaternion): void {
     const grandstand = new SceneNode('Grandstand');
 
+    // Grandstand material - concrete look
+    const grandstandMaterial = new StandardPBRMaterial('GrandstandMaterial');
+    grandstandMaterial.albedo = new Color(0.6, 0.6, 0.65);  // Light concrete gray
+    grandstandMaterial.roughness = 0.85;
+    grandstandMaterial.metallic = 0.0;
+
     // Create tiered seating
     for (let tier = 0; tier < 5; tier++) {
       // box(width, height, depth)
       const box = GeometryGenerator.box(20, 1, 3);
       const tierNode = new SceneNode(`Tier_${tier}`);
       tierNode.setMesh(box);
+      tierNode.setMaterial(grandstandMaterial);
       tierNode.setPosition(new Vector3(0, tier * 1.5, -tier * 2));
       grandstand.addChild(tierNode);
     }
@@ -419,6 +426,13 @@ export class Track {
     // box(width, height, depth)
     const building = GeometryGenerator.box(30, 4, 8);
     pitBuilding.setMesh(building);
+
+    // Pit building material - white/light gray
+    const pitMaterial = new StandardPBRMaterial('PitBuildingMaterial');
+    pitMaterial.albedo = new Color(0.9, 0.9, 0.92);  // Light gray/white building
+    pitMaterial.roughness = 0.7;
+    pitMaterial.metallic = 0.1;
+    pitBuilding.setMaterial(pitMaterial);
 
     const pitPos = this.startPosition.add(new Vector3(15, 2, 0));
     pitBuilding.setPosition(pitPos);
@@ -461,6 +475,12 @@ export class Track {
   private createTireBarrier(): SceneNode {
     const barrier = new SceneNode('TireBarrier');
 
+    // Tire material - black rubber
+    const tireMaterial = new StandardPBRMaterial('TireBarrierMaterial');
+    tireMaterial.albedo = new Color(0.08, 0.08, 0.08);  // Black rubber
+    tireMaterial.roughness = 0.95;
+    tireMaterial.metallic = 0.0;
+
     // Stack tires
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 2; col++) {
@@ -468,6 +488,7 @@ export class Track {
         const tire = GeometryGenerator.torus(0.5, 0.2, 16, 32);
         const tireNode = new SceneNode(`Tire_${row}_${col}`);
         tireNode.setMesh(tire);
+        tireNode.setMaterial(tireMaterial);
         tireNode.setPosition(new Vector3(col * 1.2, row * 0.4, 0));
         tireNode.setRotation(Quaternion.fromEuler(Math.PI / 2, 0, 0));
         barrier.addChild(tireNode);

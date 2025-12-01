@@ -250,3 +250,6 @@ Run the racing game and verify:
 - Shadow maps are configured but actual depth rendering requires additional work
 - This fix enables the shadow mapping pipeline but may require further tuning for optimal quality
 - Cascade shadow maps are not yet implemented (single shadow map only)
+
+
+

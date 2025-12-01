@@ -151,14 +151,14 @@ class RacingGame {
   private async setupScene(): Promise<void> {
     this.scene = new Scene('RaceScene');
 
-    // Add directional light (sun) - DRAMATIC CONTRAST for AAA 3D shading
-    // Light from front-left and above - creates good NdotL on car faces visible from behind
-    // More horizontal angle to light vertical car faces better
-    const sunDirection = new Vector3(0.5, -0.7, -0.5).normalize(); // High sun angle
+    // Add directional light (sun) - POSITIONED FOR CHASE CAMERA SPECULAR
+    // Light traveling from BEHIND camera toward car - creates highlights on rear surfaces
+    // Direction is where light TRAVELS: from behind-above toward -Z hits rear-facing surfaces
+    const sunDirection = new Vector3(0.2, -0.6, -0.8).normalize(); // Light from behind camera
     this.directionalLight = new DirectionalLight(
       sunDirection,
-      new Color(1.0, 0.95, 0.85),  // Warm sunlight
-      80.0  // High intensity for AAA specular highlights
+      new Color(1.0, 0.98, 0.95),  // Warm sunlight
+      50.0  // Moderate intensity - balanced for PBR
     );
     this.directionalLight.setShadowsEnabled(true);
 
@@ -190,12 +190,11 @@ class RacingGame {
    */
   private createGround(): void {
     // Main grass ground - richer, darker green for more contrast
-    const groundMaterial = new StandardPBRMaterial({
-      name: 'GroundMaterial',
-      albedo: new Color(0.15, 0.4, 0.12),  // Deeper grass green
-      roughness: 0.9,
-      metallic: 0.0,
-    });
+    // FIX: Use Legacy API (properties set on instance) instead of constructor object
+    const groundMaterial = new StandardPBRMaterial('GroundMaterial');
+    groundMaterial.albedo = new Color(0.15, 0.4, 0.12);  // Deeper grass green
+    groundMaterial.roughness = 0.9;
+    groundMaterial.metallic = 0.0;
 
     // Use a smaller, closer ground plane for better visibility
     const groundGeometry = GeometryGenerator.plane(500, 500, 4, 4);
@@ -209,6 +208,7 @@ class RacingGame {
     console.log('Ground plane created at y=-0.05');
 
     // Add a track road surface - dark asphalt
+    // FIX: Use Legacy API
     const trackSurfaceMaterial = new StandardPBRMaterial('TrackSurfaceMaterial');
     trackSurfaceMaterial.albedo = new Color(0.15, 0.15, 0.18);  // Dark asphalt
     trackSurfaceMaterial.roughness = 0.8;
@@ -224,10 +224,13 @@ class RacingGame {
     const startMarkerGeom = GeometryGenerator.box(trackWidth, 0.1, 30);
     const startMarkerNode = new SceneNode('StartLine');
     startMarkerNode.setMesh(startMarkerGeom);
+    
+    // FIX: Use Legacy API
     const startMaterial = new StandardPBRMaterial('StartLineMaterial');
     startMaterial.albedo = new Color(1.0, 1.0, 1.0);  // White start line
     startMaterial.roughness = 0.6;
     startMaterial.metallic = 0.0;
+    
     startMarkerNode.setMaterial(startMaterial);
     startMarkerNode.setPosition(new Vector3(trackRadius, 0.02, 0));  // At track start
     this.scene.add(startMarkerNode);
@@ -327,12 +330,11 @@ class RacingGame {
     const carNode = new SceneNode(name);
 
     // Car body material - Quality car paint (not pure metal)
-    const bodyMaterial = new StandardPBRMaterial({
-      name: `${name}_BodyMaterial`,
-      albedo: bodyColor,
-      metallic: 0.2,     // Car paint - low metallic, glossy clearcoat finish
-      roughness: 0.3,    // Glossy car paint
-    });
+    // FIX: Use Legacy API (properties set on instance)
+    const bodyMaterial = new StandardPBRMaterial(`${name}_BodyMaterial`);
+    bodyMaterial.albedo = bodyColor;
+    bodyMaterial.metallic = 0.2;     // Car paint - low metallic, glossy clearcoat finish
+    bodyMaterial.roughness = 0.3;    // Glossy car paint
 
     // SCALE: Make car 1.5x larger for better visibility
     const scale = 1.5;
@@ -344,12 +346,11 @@ class RacingGame {
     carNode.transform.position.y = 0.35 * scale; // Position so bottom is near ground
 
     // Add cabin (upper section) as child node - tinted glass
-    const cabinMaterial = new StandardPBRMaterial({
-      name: `${name}_CabinMaterial`,
-      albedo: new Color(0.05, 0.08, 0.12),  // Dark tinted glass
-      metallic: 0.0,   // Glass is not metallic
-      roughness: 0.1,  // Smooth
-    });
+    // FIX: Use Legacy API
+    const cabinMaterial = new StandardPBRMaterial(`${name}_CabinMaterial`);
+    cabinMaterial.albedo = new Color(0.05, 0.08, 0.12);  // Dark tinted glass
+    cabinMaterial.metallic = 0.0;   // Glass is not metallic
+    cabinMaterial.roughness = 0.1;  // Smooth
 
     const cabinMesh = GeometryGenerator.box(1.8 * scale, 0.5 * scale, 2.0 * scale);
     const cabinNode = new SceneNode(`${name}_Cabin`);
@@ -359,12 +360,11 @@ class RacingGame {
     carNode.addChild(cabinNode);
 
     // Add front hood as child node
-    const hoodMaterial = new StandardPBRMaterial({
-      name: `${name}_HoodMaterial`,
-      albedo: bodyColor,
-      metallic: 0.25,   // Slightly more metallic than body
-      roughness: 0.25,  // Slightly glossier than body
-    });
+    // FIX: Use Legacy API
+    const hoodMaterial = new StandardPBRMaterial(`${name}_HoodMaterial`);
+    hoodMaterial.albedo = bodyColor;
+    hoodMaterial.metallic = 0.25;   // Slightly more metallic than body
+    hoodMaterial.roughness = 0.25;  // Slightly glossier than body
 
     const hoodMesh = GeometryGenerator.box(2.0 * scale, 0.2 * scale, 1.5 * scale);
     const hoodNode = new SceneNode(`${name}_Hood`);
@@ -374,12 +374,11 @@ class RacingGame {
     carNode.addChild(hoodNode);
 
     // Add rear spoiler - carbon fiber look
-    const spoilerMaterial = new StandardPBRMaterial({
-      name: `${name}_SpoilerMaterial`,
-      albedo: new Color(0.02, 0.02, 0.02),
-      metallic: 0.1,
-      roughness: 0.5,
-    });
+    // FIX: Use Legacy API
+    const spoilerMaterial = new StandardPBRMaterial(`${name}_SpoilerMaterial`);
+    spoilerMaterial.albedo = new Color(0.02, 0.02, 0.02);
+    spoilerMaterial.metallic = 0.1;
+    spoilerMaterial.roughness = 0.5;
 
     const spoilerMesh = GeometryGenerator.box(2.2 * scale, 0.08 * scale, 0.2 * scale);
     const spoilerNode = new SceneNode(`${name}_Spoiler`);
@@ -389,20 +388,18 @@ class RacingGame {
     carNode.addChild(spoilerNode);
 
     // Add wheels (4 cylinders) - rubber tires with alloy rims
-    const wheelMaterial = new StandardPBRMaterial({
-      name: `${name}_WheelMaterial`,
-      albedo: new Color(0.02, 0.02, 0.02),
-      metallic: 0.0,
-      roughness: 0.9,  // Matte rubber
-    });
+    // FIX: Use Legacy API
+    const wheelMaterial = new StandardPBRMaterial(`${name}_WheelMaterial`);
+    wheelMaterial.albedo = new Color(0.02, 0.02, 0.02);
+    wheelMaterial.metallic = 0.0;
+    wheelMaterial.roughness = 0.9;  // Matte rubber
 
     // Rim material - shiny chrome
-    const rimMaterial = new StandardPBRMaterial({
-      name: `${name}_RimMaterial`,
-      albedo: new Color(0.9, 0.9, 0.95),
-      metallic: 0.95,
-      roughness: 0.1,
-    });
+    // FIX: Use Legacy API
+    const rimMaterial = new StandardPBRMaterial(`${name}_RimMaterial`);
+    rimMaterial.albedo = new Color(0.9, 0.9, 0.95);
+    rimMaterial.metallic = 0.95;
+    rimMaterial.roughness = 0.1;
 
     const wheelPositions = [
       { x: -1.0 * scale, y: -0.1 * scale, z: 1.4 * scale },   // Front left
@@ -432,14 +429,13 @@ class RacingGame {
     });
 
     // Add HEADLIGHTS (emissive glowing)
-    const headlightMaterial = new StandardPBRMaterial({
-      name: `${name}_HeadlightMaterial`,
-      albedo: new Color(0.9, 0.95, 1.0),  // Slightly blue-white
-      metallic: 0.0,
-      roughness: 0.1,
-      emission: new Color(1.0, 0.98, 0.9),
-      emissionIntensity: 3.0,  // Glowing
-    });
+    // FIX: Use Legacy API
+    const headlightMaterial = new StandardPBRMaterial(`${name}_HeadlightMaterial`);
+    headlightMaterial.albedo = new Color(0.9, 0.95, 1.0);  // Slightly blue-white
+    headlightMaterial.metallic = 0.0;
+    headlightMaterial.roughness = 0.1;
+    headlightMaterial.emission = new Color(1.0, 0.98, 0.9);
+    headlightMaterial.emissionIntensity = 3.0;  // Glowing
 
     const headlightPositions = [
       { x: -0.7 * scale, y: 0.15 * scale, z: 2.3 * scale },  // Left
@@ -456,14 +452,13 @@ class RacingGame {
     });
 
     // Add TAILLIGHTS (red emissive)
-    const taillightMaterial = new StandardPBRMaterial({
-      name: `${name}_TaillightMaterial`,
-      albedo: new Color(1.0, 0.1, 0.1),  // Red
-      metallic: 0.0,
-      roughness: 0.1,
-      emission: new Color(1.0, 0.0, 0.0),
-      emissionIntensity: 2.0,
-    });
+    // FIX: Use Legacy API
+    const taillightMaterial = new StandardPBRMaterial(`${name}_TaillightMaterial`);
+    taillightMaterial.albedo = new Color(1.0, 0.1, 0.1);  // Red
+    taillightMaterial.metallic = 0.0;
+    taillightMaterial.roughness = 0.1;
+    taillightMaterial.emission = new Color(1.0, 0.0, 0.0);
+    taillightMaterial.emissionIntensity = 2.0;
 
     const taillightPositions = [
       { x: -0.8 * scale, y: 0.25 * scale, z: -2.35 * scale },  // Left
@@ -574,9 +569,9 @@ class RacingGame {
   private createVehicleMeshes(): void {
     console.log('[createVehicleMeshes] Creating detailed procedural car models...');
 
-    // Player vehicle - Blue Supercar with metallic paint
-    // Bright saturated blue for visibility and testing
-    const playerColor = new Color(0.15, 0.35, 0.9);  // Brighter blue for better visibility
+    // Player vehicle - Ferrari Red Supercar with metallic paint
+    // Bright saturated red for maximum visibility against blue sky
+    const playerColor = new Color(0.85, 0.1, 0.1);  // Ferrari red for contrast
     const playerNode = ProceduralCarBuilder.createSupercar('PlayerVehicle', playerColor);
 
     // Optional: Add textures to player car (if texture system is working)

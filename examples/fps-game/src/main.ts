@@ -86,8 +86,31 @@ class FPSGame {
     private score = 0;
     private wave = 1;
     private enemiesRemaining = 0;
+    
+    // Rendering
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private width: number = 0;
+    private height: number = 0;
 
-    constructor() {}
+    constructor() {
+        this.canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+        if (!this.canvas) {
+            this.canvas = document.createElement('canvas');
+            this.canvas.id = 'gameCanvas';
+            document.body.prepend(this.canvas);
+        }
+        this.ctx = this.canvas.getContext('2d')!;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+    }
+    
+    private resize(): void {
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.canvas.width = this.width;
+        this.canvas.height = this.height;
+    }
 
     /**
      * Initialize the game
@@ -298,6 +321,98 @@ class FPSGame {
             { x: 0, y: 1, z: 0 }
         );
     }
+    
+    /**
+     * Render the game world (Software 2.5D)
+     */
+    render(): void {
+        // Clear screen
+        this.ctx.fillStyle = '#000000';
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        
+        if (!this.player) return;
+
+        const playerPos = this.player.getPosition();
+        const playerForward = this.player.getForward();
+        const playerAngle = Math.atan2(playerForward.z, playerForward.x);
+        
+        // Draw Sky/Floor
+        const horizon = this.height / 2;
+        
+        // Sky
+        const skyGrad = this.ctx.createLinearGradient(0, 0, 0, horizon);
+        skyGrad.addColorStop(0, '#1a1a3a');
+        skyGrad.addColorStop(1, '#4a4a6a');
+        this.ctx.fillStyle = skyGrad;
+        this.ctx.fillRect(0, 0, this.width, horizon);
+        
+        // Floor
+        const floorGrad = this.ctx.createLinearGradient(0, horizon, 0, this.height);
+        floorGrad.addColorStop(0, '#2a2a2a');
+        floorGrad.addColorStop(1, '#0a0a0a');
+        this.ctx.fillStyle = floorGrad;
+        this.ctx.fillRect(0, horizon, this.width, horizon);
+
+        // Render Rooms (Simplified Floor Grid)
+        this.ctx.save();
+        // Translate to center screen
+        this.ctx.translate(this.width/2, this.height/2);
+        
+        // Simple top-down minimap-like render in perspective? 
+        // No, let's do a simple 3D point projection for enemies and room centers
+        
+        const fov = 75 * Math.PI / 180;
+        const scale = this.height / (2 * Math.tan(fov / 2));
+        
+        // Draw Enemies
+        // Sort by distance
+        const sortedEnemies = [...this.enemies].sort((a, b) => {
+            const distA = this.dist(playerPos, a.getPosition());
+            const distB = this.dist(playerPos, b.getPosition());
+            return distB - distA;
+        });
+        
+        for(const enemy of sortedEnemies) {
+            const ePos = enemy.getPosition();
+            // Relative position
+            const dx = ePos.x - playerPos.x;
+            const dy = ePos.y - playerPos.y; // Height diff
+            const dz = ePos.z - playerPos.z;
+            
+            // Rotate to player view
+            // x' = x cos - z sin
+            // z' = x sin + z cos
+            // We need rotation relative to player Angle.
+            // playerAngle is orientation. We want to rotate world by -playerAngle + PI/2 (forward is usually +Z or something)
+            // Let's assume playerForward is the Z axis in view space
+            
+            // View space rotation
+            const cos = Math.cos(-playerAngle + Math.PI/2);
+            const sin = Math.sin(-playerAngle + Math.PI/2);
+            
+            const rx = dx * cos - dz * sin;
+            const rz = dx * sin + dz * cos;
+            
+            if (rz > 0.1) {
+                const screenX = (rx / rz) * scale;
+                const screenY = -(dy / rz) * scale; // -y because canvas y is down
+                const size = (1.0 / rz) * scale; // Enemy height ~ 1.0
+                
+                this.ctx.fillStyle = '#ff0000';
+                this.ctx.fillRect(screenX - size/2, screenY - size/2, size, size);
+                
+                // Health bar
+                this.ctx.fillStyle = '#00ff00';
+                this.ctx.fillRect(screenX - size/2, screenY - size/2 - 5, size * (enemy.getHealth()/100), 3);
+            }
+        }
+        
+        this.ctx.restore();
+    }
+    
+    private dist(a: Vector3, b: Vector3): number {
+        return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2 + (a.z-b.z)**2);
+    }
 
     /**
      * Update loading progress bar
@@ -335,6 +450,7 @@ async function main() {
         lastTime = currentTime;
 
         game.update(deltaTime);
+        game.render();
 
         requestAnimationFrame(gameLoop);
     }

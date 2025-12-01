@@ -329,51 +329,139 @@ class ArchVizApplication {
   }
 
   /**
-   * Render a single mesh
+   * Render a single mesh with 3D geometry
    */
   private renderMesh(mesh: any, cameraState: any, lightingState: any, time: number): void {
     if (!this.ctx) return;
 
-    // Project 3D position to 2D screen space
-    const screenPos = this.projectToScreen(mesh.position, cameraState);
+    const geometry = mesh.geometry;
+    const vertices = geometry.vertices;
+    const indices = geometry.indices;
+    const uv = geometry.uvs;
+    
+    // Transform and project all vertices
+    const projectedVerts: { x: number, y: number, z: number, u: number, v: number }[] = [];
+    
+    // World transform (simple translation/rotation only supported for now in this demo)
+    // Note: Real engine uses matrices, here we simulate for the demo
+    const pos = mesh.position;
+    
+    for (let i = 0; i < vertices.length; i += 3) {
+      // Local vertex
+      const vx = vertices[i];
+      const vy = vertices[i + 1];
+      const vz = vertices[i + 2];
+      
+      // World vertex (Rotation not fully implemented in this simple loop, just position)
+      // Ideally use Matrix4 from G3D logic, but keeping it simple for canvas demo
+      const wx = vx + pos.x;
+      const wy = vy + pos.y;
+      const wz = vz + pos.z;
+      
+      const screen = this.projectToScreen(new Vector3(wx, wy, wz), cameraState);
+      
+      // Capture UVs (2 per vertex)
+      const uIndex = (i / 3) * 2;
+      const u = uv[uIndex];
+      const v = uv[uIndex+1];
 
-    if (!screenPos) return;
+      if (screen) {
+        projectedVerts.push({ x: screen.x, y: screen.y, z: screen.z, u, v });
+      } else {
+        projectedVerts.push({ x: 0, y: 0, z: -1, u: 0, v: 0 }); // Culled
+      }
+    }
 
-    // Calculate lighting
+    // Render triangles
+    // Simple lighting
     const lightDir = lightingState.sunPosition.clone().normalize();
     const lightIntensity = lightingState.sunIntensity;
-
-    // Get material color
     const material = mesh.material;
-    const baseColor = material.albedo;
+    
+    // Setup texture if available
+    let pattern: CanvasPattern | null = null;
+    if (material.albedoTexture) {
+        pattern = this.ctx.createPattern(material.albedoTexture, 'repeat');
+    }
 
-    // Simple lighting calculation
-    const lighting = Math.max(0.2, lightIntensity * 0.3);
+    // Process faces (triangles)
+    for (let i = 0; i < indices.length; i += 3) {
+      const idx0 = indices[i];
+      const idx1 = indices[i+1];
+      const idx2 = indices[i+2];
+      
+      const v0 = projectedVerts[idx0];
+      const v1 = projectedVerts[idx1];
+      const v2 = projectedVerts[idx2];
+      
+      // Skip if any vertex clipped
+      if (v0.z < 0 || v1.z < 0 || v2.z < 0) continue;
+      
+      // Backface culling (check winding order 2D cross product)
+      const ax = v1.x - v0.x;
+      const ay = v1.y - v0.y;
+      const bx = v2.x - v0.x;
+      const by = v2.y - v0.y;
+      
+      if ((ax * by - ay * bx) <= 0) continue;
 
-    // Apply material color with lighting
-    const r = Math.floor(baseColor.r * 255 * lighting);
-    const g = Math.floor(baseColor.g * 255 * lighting);
-    const b = Math.floor(baseColor.b * 255 * lighting);
-
-    // Calculate size based on distance
-    const distance = mesh.position.distanceTo(cameraState.position);
-    const scale = Math.max(10, 500 / distance);
-
-    // Draw as a simple shape
-    this.ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-    this.ctx.strokeStyle = `rgb(${r * 0.8}, ${g * 0.8}, ${b * 0.8})`;
-    this.ctx.lineWidth = 1;
-
-    this.ctx.beginPath();
-    this.ctx.arc(screenPos.x, screenPos.y, scale, 0, Math.PI * 2);
-    this.ctx.fill();
-    this.ctx.stroke();
+      // Face normal for flat shading (in world space, roughly)
+      // Reconstruct triangle normal
+      const p0 = new Vector3(vertices[idx0*3], vertices[idx0*3+1], vertices[idx0*3+2]);
+      const p1 = new Vector3(vertices[idx1*3], vertices[idx1*3+1], vertices[idx1*3+2]);
+      const p2 = new Vector3(vertices[idx2*3], vertices[idx2*3+1], vertices[idx2*3+2]);
+      
+      const e1 = p1.sub(p0);
+      const e2 = p2.sub(p0);
+      const normal = e1.cross(e2).normalize();
+      
+      // N dot L
+      const ndotl = Math.max(0, normal.dot(lightDir));
+      const ambient = 0.3;
+      const brightness = Math.min(1, ambient + ndotl * lightIntensity);
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(v0.x, v0.y);
+      this.ctx.lineTo(v1.x, v1.y);
+      this.ctx.lineTo(v2.x, v2.y);
+      this.ctx.closePath();
+      
+      if (pattern) {
+          // Simple texture mapping (just fill) - accurate affine mapping is hard in 2D canvas
+          // We simulate shading by drawing a semi-transparent black layer over texture
+          this.ctx.fillStyle = pattern;
+          
+          // Scale texture matrix? For now default
+          this.ctx.save();
+          // Clip to triangle
+          this.ctx.clip();
+          this.ctx.fill();
+          
+          // Apply shading shadow
+          this.ctx.fillStyle = `rgba(0,0,0, ${1 - brightness})`;
+          this.ctx.fill();
+          this.ctx.restore();
+          
+      } else {
+          // Solid color shading
+          const base = material.albedo;
+          const r = Math.floor(base.r * 255 * brightness);
+          const g = Math.floor(base.g * 255 * brightness);
+          const b = Math.floor(base.b * 255 * brightness);
+          this.ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+          this.ctx.fill();
+      }
+      
+      // Wireframe overlay for tech look
+      this.ctx.strokeStyle = `rgba(0,0,0,0.1)`;
+      this.ctx.stroke();
+    }
   }
 
   /**
    * Project 3D point to screen space
    */
-  private projectToScreen(worldPos: Vector3, cameraState: any): { x: number; y: number } | null {
+  private projectToScreen(worldPos: Vector3, cameraState: any): { x: number; y: number, z: number } | null {
     // Simple perspective projection
     const relPos = worldPos.clone().sub(cameraState.position);
 
@@ -396,7 +484,7 @@ class ArchVizApplication {
     const screenX = this.width / 2 + (x / z) * scale;
     const screenY = this.height / 2 - (y / z) * scale;
 
-    return { x: screenX, y: screenY };
+    return { x: screenX, y: screenY, z };
   }
 
   /**

@@ -262,3 +262,6 @@ The PostProcessStack is now fully integrated into the G3D rendering pipeline. Th
 - ✅ Uses proper texture formats and filtering
 
 The implementation follows the architecture defined in PostProcessStack.ts and provides a solid foundation for adding more post-processing effects in the future.
+
+
+

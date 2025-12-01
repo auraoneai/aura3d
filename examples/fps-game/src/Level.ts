@@ -478,6 +478,20 @@ export class Level {
     }
 
     /**
+     * Get all rooms
+     */
+    getRooms(): Room[] {
+        return this.rooms;
+    }
+
+    /**
+     * Get all corridors
+     */
+    getCorridors(): Corridor[] {
+        return this.corridors;
+    }
+
+    /**
      * Calculate distance between two points
      */
     private distanceBetween(a: Vector3, b: Vector3): number {

@@ -196,3 +196,6 @@ sphere.material = new StandardPBRMaterial({
 ✅ No runtime errors expected
 
 The implementation is production-ready and fully integrated into the G3D rendering pipeline.
+
+
+

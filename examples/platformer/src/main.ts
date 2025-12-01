@@ -25,7 +25,8 @@ import { ThirdPersonCamera } from './ThirdPersonCamera';
 import { LevelBuilder } from './LevelBuilder';
 import { GameManager } from './GameManager';
 import { Platform } from './Platform';
-import { Collectible } from './Collectible';
+import { Collectible, CollectibleType } from './Collectible';
+import { PlatformType } from './Platform';
 
 /**
  * Main game class orchestrating all game systems
@@ -42,12 +43,23 @@ class PlatformerGame {
   private platforms: Platform[] = [];
   private collectibles: Collectible[] = [];
   private timeElapsed: number = 0;
+  
+  // Rendering
+  private ctx: CanvasRenderingContext2D;
+  private width: number;
+  private height: number;
 
   constructor() {
     const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
     if (!canvas) {
       throw new Error('Canvas element not found');
     }
+    
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    canvas.width = this.width;
+    canvas.height = this.height;
+    this.ctx = canvas.getContext('2d')!;
 
     this.engine = Engine.create({
       canvas,
@@ -97,6 +109,8 @@ class PlatformerGame {
 
     this.engine.events.onUpdate = (dt: number) => this.update(dt);
     this.engine.events.onFixedUpdate = (dt: number) => this.fixedUpdate(dt);
+    // Hook render
+    this.engine.events.onRender = () => this.render();
 
     this.gameManager.startGame();
   }
@@ -222,6 +236,84 @@ class PlatformerGame {
     this.checkCheckpoints();
 
     this.updateUI();
+  }
+  
+  /**
+   * Render the scene
+   */
+  private render(): void {
+      // Clear
+      this.ctx.fillStyle = '#87CEEB'; // Sky blue
+      this.ctx.fillRect(0, 0, this.width, this.height);
+      
+      // Ground plane grid
+      // ... (simplified)
+      
+      // Render platforms
+      for (const platform of this.platforms) {
+          this.renderBox(platform.position, platform.size, this.getPlatformColor(platform.type), platform.rotation);
+      }
+      
+      // Render collectibles
+      for (const collectible of this.collectibles) {
+          if (!collectible.collected) {
+             const color = collectible.type === CollectibleType.Coin ? '#FFD700' : '#00FFFF';
+             this.renderBox(collectible.position, new Vector3(0.5, 0.5, 0.5), color, Quaternion.identity()); // Simple box for coin
+          }
+      }
+      
+      // Render player
+      this.renderBox(this.player.position, new Vector3(1, 2, 1), '#FF0000', this.player.rotation);
+  }
+  
+  private getPlatformColor(type: PlatformType): string {
+      switch(type) {
+          case PlatformType.Static: return '#666666';
+          case PlatformType.Moving: return '#4444FF';
+          case PlatformType.Bouncy: return '#FF69B4';
+          case PlatformType.Falling: return '#A52A2A';
+          case PlatformType.Disappearing: return '#88CC88';
+          default: return '#AAAAAA';
+      }
+  }
+  
+  private renderBox(pos: Vector3, size: Vector3, color: string, rot: Quaternion): void {
+      // Simple perspective projection helper
+      // Ideally share this logic with FPSGame logic but duplicate here for speed
+      
+      const camPos = this.camera.position;
+      const camTarget = this.camera.target; // Or calculate forward
+      const camUp = new Vector3(0, 1, 0);
+      
+      const forward = camTarget.sub(camPos).normalize();
+      const right = forward.cross(camUp).normalize();
+      const up = right.cross(forward).normalize();
+      
+      // Check if behind
+      const relPos = pos.sub(camPos);
+      const dist = relPos.dot(forward);
+      
+      if (dist < 1) return;
+      
+      // Project center
+      const x = relPos.dot(right);
+      const y = relPos.dot(up);
+      
+      const fov = 60 * Math.PI / 180;
+      const scale = this.height / (2 * Math.tan(fov/2));
+      
+      const screenX = this.width/2 + (x/dist) * scale;
+      const screenY = this.height/2 - (y/dist) * scale;
+      
+      const screenSize = (size.y / dist) * scale;
+      
+      this.ctx.fillStyle = color;
+      // Draw simple rect centered
+      this.ctx.fillRect(screenX - screenSize/2, screenY - screenSize/2, screenSize, screenSize);
+      
+      // Wireframe
+      this.ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      this.ctx.strokeRect(screenX - screenSize/2, screenY - screenSize/2, screenSize, screenSize);
   }
 
   /**

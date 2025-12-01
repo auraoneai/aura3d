@@ -4,10 +4,12 @@
  */
 
 import { Vector3, Color } from 'g3d';
+import { ProceduralTextureGenerator } from '../../shared/ProceduralAssets';
 
 export interface PBRMaterialParams {
   name: string;
   albedo: Color;
+  albedoTexture?: HTMLCanvasElement; // Added texture support
   roughness: number;
   metallic: number;
   normalStrength: number;
@@ -39,6 +41,7 @@ export class MaterialLibrary {
     this.materials.set('oak', {
       name: 'Oak Wood',
       albedo: new Color(0.545, 0.396, 0.259), // Rich brown
+      albedoTexture: ProceduralTextureGenerator.createWoodAlbedo(512, 512).data,
       roughness: 0.65,
       metallic: 0.0,
       normalStrength: 0.8,
@@ -104,6 +107,7 @@ export class MaterialLibrary {
     this.materials.set('marble_carrara', {
       name: 'Carrara Marble',
       albedo: new Color(0.94, 0.93, 0.91), // Off-white
+      albedoTexture: ProceduralTextureGenerator.createMarbleAlbedo(512, 512).data,
       roughness: 0.25,
       metallic: 0.0,
       normalStrength: 0.4,
@@ -134,6 +138,7 @@ export class MaterialLibrary {
     this.materials.set('concrete', {
       name: 'Polished Concrete',
       albedo: new Color(0.502, 0.502, 0.502), // Medium gray
+      albedoTexture: ProceduralTextureGenerator.createConcreteAlbedo(512, 512).data,
       roughness: 0.6,
       metallic: 0.0,
       normalStrength: 0.5,
