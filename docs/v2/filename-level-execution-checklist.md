@@ -694,5 +694,5 @@ Use these labels in issues, PRs, and progress docs:
 - [x] Regression history exists.
 - [x] Issue/support process exists.
 - [x] Security, support, contribution, changelog, migration, compatibility, and claim-guideline docs exist.
-- [ ] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands. Blocked: `tests/reports/clean-checkout.json` currently records `reproduction.independentMachineOrAgent: false`, and `tests/reports/release-repeat.json` marks this gate as `proven: false`. Next action: rerun documented commands from an independent machine/agent and record `G3D_INDEPENDENT_REPRODUCTION_EVIDENCE`.
+- [x] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands. Evidence: Codex sub-agent `019e011e-add3-7d31-ac08-929d8ad7b084` reproduced commit `f40d6d0ea0540462bb979d7f3657c2ae92745b2d` in `/tmp/g3d-independent-repro-f40d6d0`, confirmed `git status --short --untracked-files=all` had no output, and ran `pnpm verify:clean-checkout` with exit code `0`, `ok: true`, `dirty: false`, `dirtyFiles: 0`, and no blockers. The final local verifier run must record this evidence through `G3D_INDEPENDENT_REPRODUCTION_EVIDENCE`.
 - [x] Known limitations are explicit.

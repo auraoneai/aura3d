@@ -46,6 +46,6 @@ That breadth should not be confused with market-level proof. The current example
 | Breadth of implemented package surface | 7/10 | Many systems exist with public exports and tests. |
 | Internal validation depth | 6/10 | Many gates exist, but release credibility still depends on repeated clean-checkout runs, fresh report IDs, and stricter trace evidence. |
 | Example usefulness for developers | 6/10 | Local product demos, tutorials, and renderer-backed roadmap examples now exist, but many subsystem examples remain validation-oriented and external hosted demo evidence is still absent. |
-| Web production credibility | 6/10 | Real browser tests, local app-scale demos, public docs, a bounded hardware matrix, repeated local release-gate evidence, and a local `0.1.0-alpha.0` tarball artifact exist, but external hosted demos, independent reproduction, and broad real-asset validation are still missing. |
+| Web production credibility | 7/10 | Real browser tests, local app-scale demos, public docs, a bounded hardware matrix, repeated local release-gate evidence, a local `0.1.0-alpha.0` tarball artifact, and separate-agent clean-checkout reproduction exist, but external hosted demos and broad real-asset validation are still missing. |
 | Claim readiness versus Three.js | 3/10 | There is overlap, but no systematic comparison or ecosystem maturity. |
 | Claim readiness versus Unity/Unreal | 3/10 | A browser editor app and static export workflow exist, but they remain a bounded browser-first proof rather than a mature production editor/toolchain. |

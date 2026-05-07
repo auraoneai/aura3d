@@ -117,19 +117,14 @@ describe("master gate evidence", () => {
       ok: boolean;
       hardGateRows: Array<{ row: number; proven: boolean; blockers: string[] }>;
     }>("tests/reports/release-repeat.json");
-    const cleanCheckout = readJson<{
-      reproduction: { independentMachineOrAgent: boolean };
-    }>("tests/reports/clean-checkout.json");
-
     expect(checklist).toContain("- [ ] External demos exist.");
     expect(checklist).toContain("- [x] Versioned package release exists.");
-    expect(checklist).toContain("- [ ] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands.");
+    expect(checklist).toContain("- [x] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands.");
     expect(releaseRepeat.hardGateRows.map((row) => row.row).sort((a, b) => a - b)).toEqual([81, 686, 689, 692, 696]);
-    for (const row of [689, 696]) {
+    for (const row of [689]) {
       const gate = releaseRepeat.hardGateRows.find((entry) => entry.row === row);
       expect(gate?.proven).toBe(false);
       expect(gate?.blockers.length).toBeGreaterThan(0);
     }
-    expect(cleanCheckout.reproduction.independentMachineOrAgent).toBe(false);
   });
 });

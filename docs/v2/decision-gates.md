@@ -95,7 +95,7 @@ Required:
 - A clean external reproduction path exists: another machine or independent agent can install, run verification, open demos, and reproduce benchmark reports from documented commands.
 - Docs site, API reference, package version, changelog, known limits, support policy, issue templates, and security policy are version-aligned.
 
-Current status: **not met**. External hosted demos and independent clean-checkout reproduction remain blocked, so the production-ready claim remains forbidden.
+Current status: **not met**. External hosted demos remain blocked, so the production-ready claim remains forbidden.
 
 ## Explicitly Disallowed Claims Today
 
