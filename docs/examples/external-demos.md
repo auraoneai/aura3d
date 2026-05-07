@@ -12,6 +12,28 @@ Galileo3D currently has checked-in local product examples, but this repository d
 
 These can be served from a local checkout and are verified by browser, visual, and performance tests. They do not satisfy the production-ready checklist row `External demos exist` because that row requires externally hosted/openable demos with durable URLs and verification that those URLs load outside the local development server.
 
+## Static Export Artifact
+
+The three required demos can be bundled for static hosting with:
+
+```sh
+pnpm build:external-demos
+```
+
+The command writes a deployable static bundle under:
+
+```text
+release-artifacts/external-demos/0.1.0-alpha.0/
+```
+
+It also writes:
+
+```text
+tests/reports/external-demo-static-export.json
+```
+
+That export artifact is build readiness only. It still does not satisfy the production-ready checklist until the exported pages are deployed to durable public HTTPS URLs and validated through `pnpm verify:external-demos`.
+
 ## Required Evidence To Mark External Demos
 
 - Public URL for each externally hosted demo.

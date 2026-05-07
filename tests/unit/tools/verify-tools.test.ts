@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -17,6 +17,7 @@ import { validateFinalDemos } from "../../../tools/final-demo-validation/index.j
 import { createCleanCheckoutReport } from "../../../tools/clean-checkout-verification/index.js";
 import { scanDocContradictions } from "../../../tools/doc-contradiction-scan/index.js";
 import { validateVersionedRelease } from "../../../tools/versioned-release-verification/index.js";
+import { buildExternalDemoExport } from "../../../tools/external-demo-export/index.js";
 
 function fixtureRoot(): string {
   return mkdtempSync(join(tmpdir(), "g3d-tools-"));
@@ -573,6 +574,27 @@ describe("verification tools", () => {
     expect(broken.ok).toBe(false);
     expect(broken.violations.some((violation) => /sha256/.test(violation))).toBe(true);
   });
+
+  it("external demo exporter builds the three required deployable static demo pages", async () => {
+    const outputDir = join(fixtureRoot(), "external-demos");
+    const report = await buildExternalDemoExport(process.cwd(), outputDir);
+
+    expect(report).toMatchObject({
+      ok: true,
+      command: "pnpm build:external-demos"
+    });
+    expect(report.demos.map((demo) => demo.id).sort()).toEqual([
+      "architecture-viewer",
+      "game-slice",
+      "product-configurator"
+    ]);
+    for (const demo of report.demos) {
+      expect(demo.bytes).toBeGreaterThan(1000);
+      expect(existsSync(join(process.cwd(), demo.outputHtml))).toBe(true);
+      expect(existsSync(join(process.cwd(), demo.outputScript))).toBe(true);
+      expect(readFileSync(join(process.cwd(), demo.outputHtml), "utf8")).toContain("./main.js");
+    }
+  }, 30_000);
 
   it("source cleanliness verifier rejects production backup, copy, and marker files while allowing docs and tests", () => {
     const clean = fixtureRoot();

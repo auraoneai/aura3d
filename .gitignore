@@ -264,6 +264,7 @@ site/
 # Build artifacts
 *.wasm
 *.wasm.map
+release-artifacts/external-demos/
 
 # Generated files
 *.generated.ts
@@ -321,4 +322,3 @@ test-data/
 !tsconfig.json
 !.npmrc
 !.pnpmfile.cjs
-

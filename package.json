@@ -52,6 +52,7 @@
     "test:browser": "playwright test tests/browser",
     "test:visual": "node --experimental-strip-types tools/visual-baseline/index.ts",
     "build": "tsc -p tsconfig.build.json && node --experimental-strip-types tools/finalize-dist/index.ts",
+    "build:external-demos": "node --experimental-strip-types tools/external-demo-export/index.ts",
     "verify:architecture": "node --experimental-strip-types tools/verify-architecture/index.ts",
     "verify:boundaries": "node --experimental-strip-types tools/verify-boundaries/index.ts",
     "verify:exports": "node --experimental-strip-types tools/verify-exports/index.ts",
