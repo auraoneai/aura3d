@@ -78,7 +78,7 @@ Use these labels in issues, PRs, and progress docs:
 
 ### Done Criteria
 
-- [ ] `pnpm verify:release` passes three consecutive times from a clean checkout. Blocked: `tests/reports/clean-checkout.json` currently has `ok: false`, `git.dirty: true`, and `dirtyFileCount: 1405`; `tests/reports/release-repeat.json` records row 81 as `proven: false`. `tests/reports/` is now ignored so generated release reports do not dirty a future clean validation worktree. Next action: run `pnpm verify:release:repeat` from a clean checkout after the intended state is committed.
+- [x] `pnpm verify:release` passes three consecutive times from a clean checkout. Evidence: `pnpm verify:release:repeat` passed three full release runs on commit `35aba0ea5d12ac25b17728cb9ce855372f0b74f1`; `tests/reports/release-repeat.json` records row 81 as `proven: true`, all three runs have `ok: true`, no failed commands, and clean-checkout evidence for each run.
 - [x] `pnpm verify:trace` fails against a fixture with stale generated evidence.
 - [x] `docs/completion-audit.md`, `docs/implementation-plan-final.md`, and `docs/v2/decision-gates.md` agree on status.
 - [x] No final report is green if a required upstream report is stale or failed.
@@ -684,7 +684,7 @@ Use these labels in issues, PRs, and progress docs:
 
 ### Before "Production Ready"
 
-- [ ] Release gate passes repeatedly. Blocked: `tests/reports/release-repeat.json` has `ok: false` and marks this gate as `proven: false` because repeated runs did not prove a clean checkout. Next action: generate three passing `pnpm verify:release` runs from a clean checkout.
+- [x] Release gate passes repeatedly. Evidence: `tests/reports/release-repeat.json` has `ok: true` after three consecutive full `pnpm verify:release` runs from a clean checkout; hard gate row 686 is `proven: true` with no blockers.
 - [x] Browser/hardware matrix exists.
 - [x] Asset corpus report exists.
 - [ ] External demos exist. Blocked: `docs/examples/external-demos.md` records no externally hosted or independently openable public demo URLs, `docs/examples/external-demo-urls.json` has no public demo entries, and `tests/reports/release-repeat.json` marks this gate as `proven: false`. Next action: deploy durable public demo URLs, record them in `docs/examples/external-demo-urls.json`, run `pnpm verify:external-demos`, and add public-URL browser/screenshot artifacts.
