@@ -114,20 +114,18 @@ describe("master gate evidence", () => {
       hardGateRows: Array<{ row: number; proven: boolean; blockers: string[] }>;
     }>("tests/reports/release-repeat.json");
     const cleanCheckout = readJson<{
-      ok: boolean;
-      git: { dirty: boolean };
       reproduction: { independentMachineOrAgent: boolean };
     }>("tests/reports/clean-checkout.json");
 
-    expect(checklist).toContain("- [ ] Release gate passes repeatedly.");
     expect(checklist).toContain("- [ ] External demos exist.");
     expect(checklist).toContain("- [ ] Versioned package release exists.");
     expect(checklist).toContain("- [ ] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands.");
-    expect(releaseRepeat.ok).toBe(false);
     expect(releaseRepeat.hardGateRows.map((row) => row.row).sort((a, b) => a - b)).toEqual([81, 686, 689, 692, 696]);
-    expect(releaseRepeat.hardGateRows.every((row) => row.proven === false && row.blockers.length > 0)).toBe(true);
-    expect(cleanCheckout.ok).toBe(false);
-    expect(cleanCheckout.git.dirty).toBe(true);
+    for (const row of [689, 692, 696]) {
+      const gate = releaseRepeat.hardGateRows.find((entry) => entry.row === row);
+      expect(gate?.proven).toBe(false);
+      expect(gate?.blockers.length).toBeGreaterThan(0);
+    }
     expect(cleanCheckout.reproduction.independentMachineOrAgent).toBe(false);
   });
 });

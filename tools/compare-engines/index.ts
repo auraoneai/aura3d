@@ -177,6 +177,9 @@ async function main(): Promise<void> {
     report = withBrowserEvidence(report, browserEvidence);
     writeJson("tests/reports/comparison-threejs.json", filterReport(report, "threejs"));
     writeJson("tests/reports/comparison-babylon.json", filterReport(report, "babylon"));
+  }
+
+  if (process.argv.includes("--write-docs")) {
     writeMarkdown("docs/benchmarks/threejs-comparison.md", createMarkdown(filterReport(report, "threejs"), "Three.js"));
     writeMarkdown("docs/benchmarks/babylon-comparison.md", createMarkdown(filterReport(report, "babylon"), "Babylon.js"));
   }

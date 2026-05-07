@@ -1,6 +1,6 @@
 # Galileo3D vs Three.js Benchmark Scaffold
 
-Generated: 2026-05-07T05:41:00.073Z
+Generated: 2026-05-07T05:49:31.087Z
 
 This document is intentionally limited to reproducible benchmark scaffolding. It verifies that Galileo3D and Three.js scene definitions use the same procedural assets, render resolution, camera path, lighting intent, warmup policy, measurement window, and workload shape, then captures a bounded Playwright Chromium WebGL2 microbenchmark plus esbuild browser bundle artifacts. It does not claim a runtime performance win.
 

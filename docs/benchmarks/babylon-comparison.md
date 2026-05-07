@@ -1,6 +1,6 @@
 # Galileo3D vs Babylon.js Benchmark Scaffold
 
-Generated: 2026-05-07T05:41:00.073Z
+Generated: 2026-05-07T05:49:31.087Z
 
 This document is intentionally limited to reproducible benchmark scaffolding. It verifies that Galileo3D and Babylon.js scene definitions use the same procedural assets, render resolution, camera path, lighting intent, warmup policy, measurement window, and workload shape, then captures a bounded Playwright Chromium WebGL2 microbenchmark plus esbuild browser bundle artifacts. It does not claim a runtime performance win.
 
@@ -31,7 +31,7 @@ Pinned versions in the generated JSON: Galileo3D 0.0.0-rebuild, Three.js 0.165.0
 | Scene | Equivalent scaffold | Galileo browser frame median ms | Babylon.js browser frame median ms | Galileo executed/requested draw calls | Galileo bundle bytes | Galileo scene source bytes |
 |---|---:|---:|---:|---:|---:|---:|
 | product-configurator | yes | 0 | 0 | 4 / 4 | 246654 | 566 |
-| large-scene | yes | 0 | 0.1 | 256 / 1200 | 246650 | 563 |
+| large-scene | yes | 0 | 0 | 256 / 1200 | 246650 | 563 |
 | skinned-characters | yes | 0 | 0 | 64 / 64 | 246669 | 581 |
 
 ## glTF Compatibility Linkage
