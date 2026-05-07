@@ -414,25 +414,45 @@ describe("verification tools", () => {
   });
 
   it("clean-checkout verification records git, package manager, OS, browser, GPU, and run ID fields", () => {
-    const report = createCleanCheckoutReport(process.cwd());
-    expect(report.releaseRunId).toBeTruthy();
-    expect(Array.isArray(report.blockers)).toBe(true);
-    expect(report.git).toHaveProperty("sha");
-    expect(typeof report.git.dirty).toBe("boolean");
-    expect(Array.isArray(report.git.dirtyFiles)).toBe(true);
-    expect(report.ok).toBe(!report.git.dirty);
-    expect(report.packageManager.pnpmVersion).toBeTruthy();
-    expect(report.environment.nodeVersion).toBe(process.version);
-    expect(report.environment.platform).toBe(process.platform);
-    expect(report.browser).toHaveProperty("playwrightVersion");
-    expect(report.gpu).toMatchObject({
-      available: false,
-      renderer: null,
-      vendor: null
-    });
-    expect(report.reproduction.cleanCheckout).toBe(!report.git.dirty);
-    expect(report.reproduction.independentMachineOrAgent).toBe(false);
-    expect(report.reproduction.blockers.join(" ")).toMatch(/Independent/i);
+    const previousIndependent = process.env.G3D_INDEPENDENT_REPRODUCTION;
+    const previousEvidence = process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
+
+    delete process.env.G3D_INDEPENDENT_REPRODUCTION;
+    delete process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
+
+    try {
+      const report = createCleanCheckoutReport(process.cwd());
+      expect(report.releaseRunId).toBeTruthy();
+      expect(Array.isArray(report.blockers)).toBe(true);
+      expect(report.git).toHaveProperty("sha");
+      expect(typeof report.git.dirty).toBe("boolean");
+      expect(Array.isArray(report.git.dirtyFiles)).toBe(true);
+      expect(report.ok).toBe(!report.git.dirty);
+      expect(report.packageManager.pnpmVersion).toBeTruthy();
+      expect(report.environment.nodeVersion).toBe(process.version);
+      expect(report.environment.platform).toBe(process.platform);
+      expect(report.browser).toHaveProperty("playwrightVersion");
+      expect(report.gpu).toMatchObject({
+        available: false,
+        renderer: null,
+        vendor: null
+      });
+      expect(report.reproduction.cleanCheckout).toBe(!report.git.dirty);
+      expect(report.reproduction.independentMachineOrAgent).toBe(false);
+      expect(report.reproduction.blockers.join(" ")).toMatch(/Independent/i);
+    } finally {
+      if (previousIndependent === undefined) {
+        delete process.env.G3D_INDEPENDENT_REPRODUCTION;
+      } else {
+        process.env.G3D_INDEPENDENT_REPRODUCTION = previousIndependent;
+      }
+
+      if (previousEvidence === undefined) {
+        delete process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
+      } else {
+        process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE = previousEvidence;
+      }
+    }
   }, 15_000);
 
   it("final demo validator requires browser, visual, interaction, and performance evidence", () => {
