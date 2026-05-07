@@ -1,4 +1,5 @@
 import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderDeviceDiagnostics, type RenderItem } from "@galileo3d/rendering";
+import { Scene } from "@galileo3d/scene";
 
 type DemoStatus = {
   id: string;
@@ -50,6 +51,7 @@ async function run(): Promise<void> {
   let diagnostics: RenderDeviceDiagnostics | undefined;
   let lastFrame = performance.now();
   let frameMs = 0;
+  let running = true;
 
   const renderer = await Renderer.create({
     backend: "webgl2",
@@ -60,6 +62,7 @@ async function run(): Promise<void> {
     antialias: true,
     preserveDrawingBuffer: true,
   });
+  const scene = createLitScene(canvas);
 
   const setVariant = (index: number) => {
     activeVariant = index % variants.length;
@@ -75,10 +78,12 @@ async function run(): Promise<void> {
   canvas.addEventListener("pointerdown", () => setVariant(activeVariant + 1));
 
   const render = (time: number) => {
+    if (!running) return;
     const variant = variants[activeVariant];
     frameMs = frameMs * 0.85 + (time - lastFrame) * 0.15;
     lastFrame = time;
-    diagnostics = renderer.render(buildRenderItems(variant));
+    renderer.resize(canvas.width, canvas.height);
+    diagnostics = renderer.render({ scene, renderItems: buildRenderItems(variant) });
 
     window.__GALILEO3D_PRODUCT_DEMO__ = {
       id: "product-configurator",
@@ -96,11 +101,15 @@ async function run(): Promise<void> {
       },
     };
     status.textContent = JSON.stringify(window.__GALILEO3D_PRODUCT_DEMO__, null, 2);
-    requestAnimationFrame(render);
+    if (running) requestAnimationFrame(render);
   };
 
   requestAnimationFrame(render);
-  window.addEventListener("beforeunload", () => renderer.dispose());
+  window.addEventListener("pagehide", () => {
+    running = false;
+    window.removeEventListener("resize", resize);
+    renderer.dispose();
+  }, { once: true });
 }
 
 function buildRenderItems(variant: (typeof variants)[number]): RenderItem[] {
@@ -116,16 +125,19 @@ function buildRenderItems(variant: (typeof variants)[number]): RenderItem[] {
         emissiveStrength: 0.7,
         renderState: { cullMode: "none" },
       }),
+      modelMatrix: modelMatrix(-0.18, 0.02, 0, 0.72, 0.72, 0.72),
       label: "configurable-product-body",
     },
     {
-      geometry: Geometry.litCube(0.86),
+      geometry: Geometry.litCube(1),
       material: new PBRMaterial({ name: "trim", baseColor: [0.92, 0.88, 0.74, 1], metallic: 0.8, roughness: 0.22, renderState: { cullMode: "none" } }),
+      modelMatrix: modelMatrix(0.42, -0.24, 0, 0.34, 0.18, 0.22),
       label: "product-trim",
     },
     {
-      geometry: Geometry.cube(0.22),
+      geometry: Geometry.cube(1),
       material: new UnlitMaterial({ name: "status-led", color: [0.2, 0.86, 1, 1], renderState: { cullMode: "none" } }),
+      modelMatrix: modelMatrix(0.2, 0.34, 0, 0.1, 0.1, 0.1),
       label: "product-status-led",
     },
     {
@@ -137,6 +149,33 @@ function buildRenderItems(variant: (typeof variants)[number]): RenderItem[] {
       label: "product-baseline",
     },
   ];
+}
+
+function createLitScene(canvas: HTMLCanvasElement): Scene {
+  const scene = new Scene();
+  const camera = scene.createPerspectiveCamera({ name: "product-camera", fovYRadians: Math.PI / 4, aspect: canvas.width / canvas.height, near: 0.1, far: 20 });
+  camera.transform.setPosition(0, 0, 4.2);
+  scene.root.addChild(camera);
+  const key = scene.createLight("directional", "product-key");
+  key.intensity = 2.6;
+  key.color = [1, 0.92, 0.78];
+  scene.root.addChild(key);
+  const fill = scene.createLight("point", "product-fill");
+  fill.intensity = 1.7;
+  fill.range = 8;
+  fill.color = [0.35, 0.76, 1];
+  fill.transform.setPosition(-1.8, 1.4, 2.6);
+  scene.root.addChild(fill);
+  return scene;
+}
+
+function modelMatrix(tx: number, ty: number, tz: number, sx: number, sy: number, sz: number): Float32Array {
+  return new Float32Array([
+    sx, 0, 0, 0,
+    0, sy, 0, 0,
+    0, 0, sz, 0,
+    tx, ty, tz, 1,
+  ]);
 }
 
 function createShell(): { canvas: HTMLCanvasElement; status: HTMLElement; swatches: HTMLButtonElement[] } {

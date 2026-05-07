@@ -3,6 +3,7 @@ import { AudioSystem } from "@galileo3d/audio";
 import { InputSnapshot, InputSystem } from "@galileo3d/input";
 import { PhysicsWorld, Shape } from "@galileo3d/physics";
 import { Geometry, PBRMaterial, ParticleEmitter, ParticleSystem, Renderer, UnlitMaterial, type RenderDeviceDiagnostics, type RenderItem } from "@galileo3d/rendering";
+import { Scene } from "@galileo3d/scene";
 
 type DemoStatus = {
   id: string;
@@ -93,12 +94,15 @@ async function run(): Promise<void> {
   let lastFrame: number | undefined;
   let frameMs = 0;
   let diagnostics: RenderDeviceDiagnostics | undefined;
+  let running = true;
+  const scene = createLitScene(canvas);
   canvas.addEventListener("pointerdown", () => {
     interactions += 1;
     player.velocity[1] = 1.8;
   });
 
   const render = (time: number) => {
+    if (!running) return;
     const elapsedMs = lastFrame === undefined ? 16.67 : Math.max(1, time - lastFrame);
     const dt = Math.min(1 / 30, elapsedMs / 1000);
     frameMs = frameMs * 0.85 + elapsedMs * 0.15;
@@ -115,7 +119,8 @@ async function run(): Promise<void> {
     mixer.update(dt);
 
     const pickupScale = Number((mixer.getValue("pickup.scale") ?? 1));
-    diagnostics = renderer.render(buildRenderItems(player.position[0], pickupScale));
+    renderer.resize(canvas.width, canvas.height);
+    diagnostics = renderer.render({ scene, renderItems: buildRenderItems(player.position[0], pickupScale) });
 
     window.__GALILEO3D_GAME_DEMO__ = {
       id: "game-slice",
@@ -134,15 +139,17 @@ async function run(): Promise<void> {
       },
     };
     status.textContent = JSON.stringify(window.__GALILEO3D_GAME_DEMO__, null, 2);
-    requestAnimationFrame(render);
+    if (running) requestAnimationFrame(render);
   };
 
   requestAnimationFrame(render);
-  window.addEventListener("beforeunload", () => {
+  window.addEventListener("pagehide", () => {
+    running = false;
+    window.removeEventListener("resize", resize);
     input.dispose();
     void audio.dispose();
     renderer.dispose();
-  });
+  }, { once: true });
 }
 
 function buildRenderItems(playerX: number, pickupScale: number): RenderItem[] {
@@ -150,11 +157,13 @@ function buildRenderItems(playerX: number, pickupScale: number): RenderItem[] {
     {
       geometry: Geometry.litCube(0.48),
       material: new PBRMaterial({ name: "player", baseColor: [0.2, 0.76, 1, 1], roughness: 0.34, metallic: 0.18, emissiveColor: [0.02, 0.18, 0.36], emissiveStrength: 1.0, renderState: { cullMode: "none" } }),
+      modelMatrix: modelMatrix(Math.max(-0.55, Math.min(0.55, playerX * 0.45)), -0.1, 0, 0.55, 0.55, 0.55),
       label: `player-${playerX.toFixed(2)}`,
     },
     {
       geometry: Geometry.uvSphere(0.26 * pickupScale, 16, 8),
       material: new PBRMaterial({ name: "pickup", baseColor: [1, 0.76, 0.22, 1], roughness: 0.26, metallic: 0.2, emissiveColor: [0.9, 0.5, 0.08], emissiveStrength: 1.4, renderState: { cullMode: "none" } }),
+      modelMatrix: modelMatrix(0.48, 0.22, 0, 1, 1, 1),
       label: "animated-pickup",
     },
     {
@@ -176,6 +185,33 @@ function buildRenderItems(playerX: number, pickupScale: number): RenderItem[] {
       label: "arena-floor",
     },
   ];
+}
+
+function createLitScene(canvas: HTMLCanvasElement): Scene {
+  const scene = new Scene();
+  const camera = scene.createPerspectiveCamera({ name: "game-camera", fovYRadians: Math.PI / 4, aspect: canvas.width / canvas.height, near: 0.1, far: 24 });
+  camera.transform.setPosition(0, 0, 4.6);
+  scene.root.addChild(camera);
+  const key = scene.createLight("directional", "game-key");
+  key.intensity = 2.5;
+  key.color = [1, 0.92, 0.75];
+  scene.root.addChild(key);
+  const fill = scene.createLight("point", "game-fill");
+  fill.intensity = 1.8;
+  fill.range = 8;
+  fill.color = [0.3, 0.78, 1];
+  fill.transform.setPosition(-1.8, 1.3, 2.6);
+  scene.root.addChild(fill);
+  return scene;
+}
+
+function modelMatrix(tx: number, ty: number, tz: number, sx: number, sy: number, sz: number): Float32Array {
+  return new Float32Array([
+    sx, 0, 0, 0,
+    0, sy, 0, 0,
+    0, 0, sz, 0,
+    tx, ty, tz, 1,
+  ]);
 }
 
 function createShell(): { canvas: HTMLCanvasElement; status: HTMLElement } {

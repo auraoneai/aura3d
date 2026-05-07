@@ -1,4 +1,5 @@
 import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderDeviceDiagnostics, type RenderItem } from "@galileo3d/rendering";
+import { Scene } from "@galileo3d/scene";
 
 type Zone = {
   name: string;
@@ -68,6 +69,8 @@ async function run(): Promise<void> {
   let lastFrame = performance.now();
   let frameMs = 0;
   let diagnostics: RenderDeviceDiagnostics | undefined;
+  let running = true;
+  const scene = createLitScene(canvas);
 
   canvas.addEventListener("pointerdown", (event) => {
     const thirds = canvas.clientWidth / zones.length;
@@ -76,9 +79,11 @@ async function run(): Promise<void> {
   });
 
   const render = (time: number) => {
+    if (!running) return;
     frameMs = frameMs * 0.85 + (time - lastFrame) * 0.15;
     lastFrame = time;
-    diagnostics = renderer.render(buildRenderItems(selectedZoneIndex));
+    renderer.resize(canvas.width, canvas.height);
+    diagnostics = renderer.render({ scene, renderItems: buildRenderItems(selectedZoneIndex) });
     const zone = zones[selectedZoneIndex];
 
     window.__GALILEO3D_ARCHITECTURE_DEMO__ = {
@@ -101,18 +106,23 @@ async function run(): Promise<void> {
       },
     };
     status.textContent = JSON.stringify(window.__GALILEO3D_ARCHITECTURE_DEMO__, null, 2);
-    requestAnimationFrame(render);
+    if (running) requestAnimationFrame(render);
   };
 
   requestAnimationFrame(render);
-  window.addEventListener("beforeunload", () => renderer.dispose());
+  window.addEventListener("pagehide", () => {
+    running = false;
+    window.removeEventListener("resize", resize);
+    renderer.dispose();
+  }, { once: true });
 }
 
 function buildRenderItems(selectedZoneIndex: number): RenderItem[] {
   const items: RenderItem[] = [
     {
-      geometry: Geometry.litCube(1.85),
+      geometry: Geometry.litCube(1),
       material: new PBRMaterial({ name: "floor-slab", baseColor: [0.35, 0.42, 0.46, 1], roughness: 0.82, metallic: 0.02, renderState: { cullMode: "none" } }),
+      modelMatrix: modelMatrix(0, -0.58, 0, 1.45, 0.12, 0.35),
       label: "floor-slab",
     },
   ];
@@ -130,6 +140,7 @@ function buildRenderItems(selectedZoneIndex: number): RenderItem[] {
         emissiveStrength: selected ? 1.2 : 0.35,
         renderState: { cullMode: "none" },
       }),
+      modelMatrix: modelMatrix(-0.48 + index * 0.48, -0.1 + index * 0.08, 0, selected ? 0.55 : 0.42, selected ? 0.58 : 0.42, selected ? 0.42 : 0.34),
       label: `${zone.name}-mass`,
     });
   });
@@ -146,6 +157,33 @@ function buildRenderItems(selectedZoneIndex: number): RenderItem[] {
   });
 
   return items;
+}
+
+function createLitScene(canvas: HTMLCanvasElement): Scene {
+  const scene = new Scene();
+  const camera = scene.createPerspectiveCamera({ name: "architecture-camera", fovYRadians: Math.PI / 4, aspect: canvas.width / canvas.height, near: 0.1, far: 30 });
+  camera.transform.setPosition(0, 0, 5.1);
+  scene.root.addChild(camera);
+  const key = scene.createLight("directional", "architecture-key");
+  key.intensity = 2.4;
+  key.color = [1, 0.95, 0.84];
+  scene.root.addChild(key);
+  const fill = scene.createLight("point", "architecture-fill");
+  fill.intensity = 1.4;
+  fill.range = 9;
+  fill.color = [0.5, 0.74, 1];
+  fill.transform.setPosition(-2.2, 1.6, 3);
+  scene.root.addChild(fill);
+  return scene;
+}
+
+function modelMatrix(tx: number, ty: number, tz: number, sx: number, sy: number, sz: number): Float32Array {
+  return new Float32Array([
+    sx, 0, 0, 0,
+    0, sy, 0, 0,
+    0, 0, sz, 0,
+    tx, ty, tz, 1,
+  ]);
 }
 
 function createShell(): { canvas: HTMLCanvasElement; status: HTMLElement } {

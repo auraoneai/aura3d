@@ -70,7 +70,9 @@ async function runShowcase(): Promise<void> {
   window.addEventListener("resize", resize);
 
   const scene = new Scene();
-  scene.createPerspectiveCamera({ name: "showcase-camera", aspect: canvas.width / canvas.height });
+  const camera = scene.createPerspectiveCamera({ name: "showcase-camera", aspect: canvas.width / canvas.height, fovYRadians: Math.PI / 4, near: 0.1, far: 30 });
+  camera.transform.setPosition(0, 0, 5.2);
+  scene.root.addChild(camera);
   const sun = scene.createLight("directional", "showcase-sun");
   sun.intensity = 1.9;
   sun.color = [1, 0.95, 0.86];
@@ -309,22 +311,44 @@ async function runShowcase(): Promise<void> {
       {
         geometry: Geometry.litCube(1),
         material: material.metal,
+        modelMatrix: modelMatrix({
+          translate: [0.54, -0.08, 0],
+          rotate: [0.48, time * -0.54, 0.22],
+          scale: [0.38, 0.38, 0.38],
+        }),
+        normalMatrix: normalMatrix(0.48, time * -0.54, 0.22),
         label: "metallic-pbr-cube",
       },
       {
         geometry: Geometry.texturedCube(1),
         material: material.normal,
+        modelMatrix: modelMatrix({
+          translate: [0.77, -0.48, 0],
+          rotate: [0.54, time * -0.78, 0.12],
+          scale: [0.24, 0.24, 0.24],
+        }),
+        normalMatrix: normalMatrix(0.54, time * -0.78, 0.12),
         label: "normal-mapped-pbr-reactor",
       },
       {
         geometry: Geometry.litCube(1),
         material: material.swarm,
+        modelMatrix: modelMatrix({
+          translate: [0, 0, 0],
+          rotate: [0, 0, 0],
+          scale: [1, 1, 1],
+        }),
         instanceTransforms: createPhysicsInstanceMatrices(physicsBodies, time),
         label: "physics-instanced-pbr-cubes",
       },
       {
         geometry: Geometry.texturedCube(1),
         material: material.gltf,
+        modelMatrix: modelMatrix({
+          translate: [-0.78, -0.56, 0],
+          rotate: [0.22, time * 0.55, 0.08],
+          scale: [0.22, 0.22, 0.22],
+        }),
         label: "inline-gltf-textured-cube",
       },
       {
@@ -335,6 +359,12 @@ async function runShowcase(): Promise<void> {
       {
         geometry: Geometry.uvSphere(0.74, 64, 32),
         material: material.hero,
+        modelMatrix: modelMatrix({
+          translate: [-0.18, -0.03, 0],
+          rotate: [0, 0, 0],
+          scale: [0.62 * aspectCompensation, 0.62, 0.62],
+        }),
+        normalMatrix: normalMatrix(0, 0, 0),
         label: "high-resolution-pbr-sphere",
       },
     ];

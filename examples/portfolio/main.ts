@@ -206,17 +206,9 @@ function installStyles(): void {
     .section-head p { margin: 0; color: var(--muted); line-height: 1.55; }
     .grid { max-width: 92rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr)); gap: 1rem; }
     .card { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; overflow: hidden; display: grid; min-height: 26rem; }
-    .preview { height: 9.5rem; padding: 1rem; background: #0a0f14; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
-    .stage { width: 100%; height: 100%; position: relative; transform: perspective(680px) rotateX(58deg) rotateZ(-30deg); transform-origin: center; }
-    .floor { position: absolute; inset: 20% 4% 4%; border: 1px solid rgba(97,213,255,0.45); background: linear-gradient(135deg, rgba(97,213,255,0.08), rgba(136,224,162,0.08)); }
-    .shape { position: absolute; border: 1px solid rgba(255,255,255,0.24); box-shadow: 0 16px 34px rgba(0,0,0,0.34); }
-    .shape.one { left: 16%; top: 26%; width: 24%; height: 32%; background: linear-gradient(135deg, var(--cyan), #1655ff); }
-    .shape.two { left: 44%; top: 18%; width: 19%; height: 45%; background: linear-gradient(135deg, var(--yellow), var(--orange)); }
-    .shape.three { left: 66%; top: 38%; width: 16%; height: 24%; background: linear-gradient(135deg, var(--pink), #8257ff); }
-    .spark { position: absolute; width: 0.42rem; height: 0.42rem; background: var(--pink); }
-    .spark.a { left: 28%; top: 68%; }
-    .spark.b { left: 54%; top: 70%; background: var(--cyan); }
-    .spark.c { left: 72%; top: 62%; background: var(--yellow); }
+    .preview { height: 10.5rem; background: #030609; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+    .preview img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; background: #030609; }
+    .preview::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03); }
     .body { padding: 1rem; display: grid; align-content: start; gap: 0.8rem; }
     .tier { width: fit-content; color: #071017; background: var(--green); font-weight: 800; font-size: 0.76rem; padding: 0.28rem 0.45rem; }
     .card h3 { margin: 0; font-size: 1.22rem; letter-spacing: 0; }
@@ -291,16 +283,8 @@ function render(): void {
 function renderCard(example: PortfolioExample): string {
   return `
     <article class="card" data-example-id="${example.id}">
-      <div class="preview" aria-hidden="true">
-        <div class="stage">
-          <div class="floor"></div>
-          <div class="shape one"></div>
-          <div class="shape two"></div>
-          <div class="shape three"></div>
-        </div>
-        <div class="spark a"></div>
-        <div class="spark b"></div>
-        <div class="spark c"></div>
+      <div class="preview">
+        <img src="./portfolio/screenshots/${example.id}.png" alt="${example.title} rendered preview" loading="lazy" decoding="async" />
       </div>
       <div class="body">
         <span class="tier">${example.tier}</span>
