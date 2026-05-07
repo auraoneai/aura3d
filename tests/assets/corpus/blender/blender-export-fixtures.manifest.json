@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "blender-export-fixtures-v1",
+  "sourceName": "Khronos Vulkan Samples Assets",
+  "sourceRepository": "https://github.com/KhronosGroup/Vulkan-Samples-Assets",
+  "sourceRevision": "8db8ce9c528330f0b1261b07531b009732b08731",
+  "sourceReadme": "https://github.com/KhronosGroup/Vulkan-Samples-Assets#readme",
+  "sourceEvidence": "The upstream README identifies primitives and terrain as converted to glTF using the Blender exporter; the checked-in fixtures also contain Blender generator metadata.",
+  "fixtures": [
+    {
+      "id": "vulkan-primitives-blender-export",
+      "name": "Vulkan Samples Primitives",
+      "path": "tests/assets/corpus/blender/vulkan-samples/primitives.gltf",
+      "upstreamPath": "scenes/primitives/primitives.gltf",
+      "sourceSha256": "171a3473d137021e88fe3621a99333d8cc2d9a0f9d1a9bed1235642e6de28a73",
+      "license": "Apache-2.0",
+      "expectedGeneratorPattern": "Blender",
+      "tags": ["blender-export", "primitives", "materials", "embedded-buffer"]
+    },
+    {
+      "id": "vulkan-terrain-blender-export",
+      "name": "Vulkan Samples Terrain",
+      "path": "tests/assets/corpus/blender/vulkan-samples/terrain.gltf",
+      "upstreamPath": "scenes/terrain/terrain.gltf",
+      "sourceSha256": "972e70501fac000610f5704e99bb1fc4fc600d5a0aff2f5af58b1cee834682c0",
+      "license": "Apache-2.0",
+      "expectedGeneratorPattern": "Blender",
+      "tags": ["blender-export", "terrain", "material", "embedded-buffer"]
+    },
+    {
+      "id": "vulkan-teapot-blender-export",
+      "name": "Vulkan Samples Teapot",
+      "path": "tests/assets/corpus/blender/vulkan-samples/teapot.gltf",
+      "upstreamPath": "scenes/teapot.gltf",
+      "sourceSha256": "633c15fce68aee90eff05015418c8a80a94fc623157cfaf31a5afa83b780afea",
+      "license": "Apache-2.0",
+      "expectedGeneratorPattern": "Blender",
+      "tags": ["blender-export", "mesh", "material", "embedded-buffer"]
+    }
+  ]
+}

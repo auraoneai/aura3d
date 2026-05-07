@@ -1,0 +1,16 @@
+{
+  "name": "@galileo3d/editor",
+  "version": "0.0.0-rebuild",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@galileo3d/editor-runtime": "workspace:*"
+  }
+}

@@ -40,6 +40,7 @@ coverage/
 .nyc_output/
 *.lcov
 .vitest/
+tests/reports/
 test-results/
 playwright-report/
 test-results.xml
@@ -320,5 +321,4 @@ test-data/
 !tsconfig.json
 !.npmrc
 !.pnpmfile.cjs
-
 

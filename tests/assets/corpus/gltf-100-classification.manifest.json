@@ -1,0 +1,3229 @@
+{
+  "schemaVersion": "gltf-corpus-v1",
+  "generatedFrom": {
+    "name": "Khronos glTF Sample Assets",
+    "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+    "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf"
+  },
+  "classificationScope": "Pinned 100-entry GLB classification corpus. This is source classification evidence, not loader/render validation.",
+  "assets": [
+    {
+      "id": "abeautiful-game",
+      "name": "A Beautiful Game",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ABeautifulGame/glTF-Binary/ABeautifulGame.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ABeautifulGame/glTF-Binary/ABeautifulGame.glb",
+        "sha256": "bd7133b4b322aae97c589b8839dae8155ad2546acb35ae32a127e722a959d007"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "A Beautiful Game is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "alpha-blend-mode-test",
+      "name": "Alpha Blend Mode Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AlphaBlendModeTest/glTF-Binary/AlphaBlendModeTest.glb",
+        "sha256": "37c3577d143071b42dd46e9d942b157837eb25c6340112171d7faecaa987b14e"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "animated-colors-cube",
+      "name": "Animated Colors Cube",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnimatedColorsCube/glTF-Binary/AnimatedColorsCube.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimatedColorsCube/glTF-Binary/AnimatedColorsCube.glb",
+        "sha256": "995bb9db5bd011b64bc9fc2235c60e5455e2931e509db5e715b4d20afc5ba71e"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Animated Colors Cube is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "animated-morph-cube",
+      "name": "Animated Morph Cube",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnimatedMorphCube/glTF-Binary/AnimatedMorphCube.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimatedMorphCube/glTF-Binary/AnimatedMorphCube.glb",
+        "sha256": "214ee56160a50dbf22543a1d66dbf860986e87f0efac3d89feac1359d0e6aeab"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "animation-pointer-uvs",
+      "name": "AnimationPointerUVs",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnimationPointerUVs/glTF-Binary/AnimationPointerUVs.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnimationPointerUVs/glTF-Binary/AnimationPointerUVs.glb",
+        "sha256": "a4a25ab261e62bd298f5601813a099bc329513047b47b912a515db0b740b4534"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "AnimationPointerUVs is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "anisotropy-barn-lamp",
+      "name": "Anisotropy Barn Lamp",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnisotropyBarnLamp/glTF-Binary/AnisotropyBarnLamp.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyBarnLamp/glTF-Binary/AnisotropyBarnLamp.glb",
+        "sha256": "0e728826c30bd6f3a18a0911db9f5f9ddc2dafa8e20bf9c3312c9625d1e32a24"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Anisotropy Barn Lamp is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "anisotropy-disc-test",
+      "name": "Anisotropy Disc Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnisotropyDiscTest/glTF-Binary/AnisotropyDiscTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyDiscTest/glTF-Binary/AnisotropyDiscTest.glb",
+        "sha256": "649b47c896f078fa56070f0ddaf07c57d6a7d109324acdd7d9f2d6748d9842ec"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Anisotropy Disc Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "anisotropy-rotation-test",
+      "name": "Anisotropy Rotation Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnisotropyRotationTest/glTF-Binary/AnisotropyRotationTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyRotationTest/glTF-Binary/AnisotropyRotationTest.glb",
+        "sha256": "8f6a45e69b1304cde2eb55edfd700cb3e73692be38d6f0ae146c41029a907e90"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Anisotropy Rotation Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "anisotropy-strength-test",
+      "name": "Anisotropy Strength Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AnisotropyStrengthTest/glTF-Binary/AnisotropyStrengthTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AnisotropyStrengthTest/glTF-Binary/AnisotropyStrengthTest.glb",
+        "sha256": "306321ff8214727b145188ceb56d96d2882b393d0b596fa089fd20b07e959834"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Anisotropy Strength Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "antique-camera",
+      "name": "Antique Camera",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AntiqueCamera/glTF-Binary/AntiqueCamera.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AntiqueCamera/glTF-Binary/AntiqueCamera.glb",
+        "sha256": "ae89695479ad997f09ebea8060a5ad01312ad8fe7ffb92f73b4e895109feecd2"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "issues",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Antique Camera is classified from pinned source metadata: upstream issue-tagged sample needs focused regression validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "attenuation-test",
+      "name": "Attenuation Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/AttenuationTest/glTF-Binary/AttenuationTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AttenuationTest/glTF-Binary/AttenuationTest.glb",
+        "sha256": "7ca161b7f8a9e4b2ac1f7f75816b5848bb31f3b4c226c4cb731b487c8809b756"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Attenuation Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "avocado",
+      "name": "Avocado",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Avocado/glTF-Binary/Avocado.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Avocado/glTF-Binary/Avocado.glb",
+        "sha256": "ccc9c3ce56423720b09399c2351537207cd5a65f859f9e6e2f30922762f3abd4"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "barramundi-fish",
+      "name": "Barramundi Fish",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BarramundiFish/glTF-Binary/BarramundiFish.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BarramundiFish/glTF-Binary/BarramundiFish.glb",
+        "sha256": "ecc3bafb6b00f2c8b810863c388e3768a7b7ea0d0335e8cb8c574c266e571f4a"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "boom-box",
+      "name": "Boom Box",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BoomBox/glTF-Binary/BoomBox.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoomBox/glTF-Binary/BoomBox.glb",
+        "sha256": "f8b918445ebdd006768232205a62f5182d2208ca57f84c6ccc084943c0bc8f15"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "box",
+      "name": "Box",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Box/glTF-Binary/Box.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb",
+        "sha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "box-animated",
+      "name": "Box Animated",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BoxAnimated/glTF-Binary/BoxAnimated.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxAnimated/glTF-Binary/BoxAnimated.glb",
+        "sha256": "ad0d18d9a21df0d7c2bd3890e60ce69d60d39a55d9b82bacea7e77ac9e583839"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "box-interleaved",
+      "name": "Box with interleaved position and normal attributes",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BoxInterleaved/glTF-Binary/BoxInterleaved.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxInterleaved/glTF-Binary/BoxInterleaved.glb",
+        "sha256": "b2ae631f118f1d13f829cdf9d9dc0fe7cb582de20b8c51d17f81f77a1cbf290c"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "box-textured",
+      "name": "Box Textured",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BoxTextured/glTF-Binary/BoxTextured.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxTextured/glTF-Binary/BoxTextured.glb",
+        "sha256": "b510eca2e2ef33f62f9ed57d6e7ce2d10ebb2bdebc4a8e59d347719ba81abdf4"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "issues",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Box Textured is classified from pinned source metadata: upstream issue-tagged sample needs focused regression validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "box-textured-non-power-of-two",
+      "name": "Box Textured not 2^N",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BoxTexturedNonPowerOfTwo/glTF-Binary/BoxTexturedNonPowerOfTwo.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxTexturedNonPowerOfTwo/glTF-Binary/BoxTexturedNonPowerOfTwo.glb",
+        "sha256": "624621d7885bb418ac64e99c994b45634a32c87caeefae67b06c5c0531c57115"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "issues",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Box Textured not 2^N is classified from pinned source metadata: upstream issue-tagged sample needs focused regression validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "box-vertex-colors",
+      "name": "Box Vertex Colors",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BoxVertexColors/glTF-Binary/BoxVertexColors.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoxVertexColors/glTF-Binary/BoxVertexColors.glb",
+        "sha256": "9c48227f33b0ba2fbcf23b98ebf60d1c8ae0c6e6c5281e0aa3cc58affee10382"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "brain-stem",
+      "name": "BrainStem",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/BrainStem/glTF-Binary/BrainStem.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BrainStem/glTF-Binary/BrainStem.glb",
+        "sha256": "ddda3a53b5c9771f992463034a430340ba2bac571e5869c723f7cba4976e9174"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "car-concept",
+      "name": "Car Concept",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CarConcept/glTF-Binary/CarConcept.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CarConcept/glTF-Binary/CarConcept.glb",
+        "sha256": "c272098089d78c5cd9fd9f24ff50ee8acf8d932c55f2d55fc10adb6c8998966b"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Car Concept is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "carbon-fibre",
+      "name": "Carbon Fibre Ball",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CarbonFibre/glTF-Binary/CarbonFibre.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CarbonFibre/glTF-Binary/CarbonFibre.glb",
+        "sha256": "2def0763e86c723bccdf6ad234f4f858c678f2f2c3beee7fd1f003a1881c656e"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Carbon Fibre Ball is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "cesium-man",
+      "name": "Cesium Man",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+        "sha256": "b7001eaeea8254bd44773bcd247e78696d94169388fbb2a1800fc69434e777d9"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "issues",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Cesium Man is classified from pinned source metadata: upstream issue-tagged sample needs focused regression validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "cesium-milk-truck",
+      "name": "Cesium Milk Truck",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+        "sha256": "09371b34608116de5842d23abe260bf11acf3e1554daf334a647eb566eee5c49"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "issues",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Cesium Milk Truck is classified from pinned source metadata: upstream issue-tagged sample needs focused regression validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "chair-damask-purplegold",
+      "name": "Chair Damask Purplegold",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ChairDamaskPurplegold/glTF-Binary/ChairDamaskPurplegold.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ChairDamaskPurplegold/glTF-Binary/ChairDamaskPurplegold.glb",
+        "sha256": "9862ff753f25ca6738bf5924afbfde01b794fae73db3f94bcd8cdc7cc570d9bb"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Chair Damask Purplegold is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "chronograph-watch",
+      "name": "Chronograph Watch",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ChronographWatch/glTF-Binary/ChronographWatch.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ChronographWatch/glTF-Binary/ChronographWatch.glb",
+        "sha256": "8e875fcd83efb433afed9ef1c18b2c2b2e075e2bf48371cadfd2a3cf529f1aef"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Chronograph Watch is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "clear-coat-car-paint",
+      "name": "Clear Coat Car Paint",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ClearCoatCarPaint/glTF-Binary/ClearCoatCarPaint.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearCoatCarPaint/glTF-Binary/ClearCoatCarPaint.glb",
+        "sha256": "4d4b32f2ef6d341191f6b6d6834f2b192762c878cd25d44e6b4b14514cd4be93"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Clear Coat Car Paint is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "clear-coat-test",
+      "name": "KHR_materials_clearcoat Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ClearCoatTest/glTF-Binary/ClearCoatTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearCoatTest/glTF-Binary/ClearCoatTest.glb",
+        "sha256": "c3a1cbe318cd043b937130af4eb83ec2ea0b03613387b1b7d769dfab4ac15948"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "KHR_materials_clearcoat Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "clearcoat-wicker",
+      "name": "Clearcoat Wicker",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ClearcoatWicker/glTF-Binary/ClearcoatWicker.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ClearcoatWicker/glTF-Binary/ClearcoatWicker.glb",
+        "sha256": "f162b0cd7f8e6b7cef211eec57762165a78039676b8592ce1f965e2ddb34e843"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Clearcoat Wicker is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "commercial-refrigerator",
+      "name": "Commercial Refrigerator",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CommercialRefrigerator/glTF-Binary/CommercialRefrigerator.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CommercialRefrigerator/glTF-Binary/CommercialRefrigerator.glb",
+        "sha256": "ef8da8b144e650c277ac953e6d9e50ac1689ff1ee88c2c5bd9551ae8bccb6065"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Commercial Refrigerator is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-alpha-coverage",
+      "name": "Compare Alpha Coverage",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareAlphaCoverage/glTF-Binary/CompareAlphaCoverage.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareAlphaCoverage/glTF-Binary/CompareAlphaCoverage.glb",
+        "sha256": "c61a2aa562b4dae987c246202d1a1d20a36a8cc92d38e10c2dc89adc403b0e6c"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-ambient-occlusion",
+      "name": "Compare Ambient Occlusion",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareAmbientOcclusion/glTF-Binary/CompareAmbientOcclusion.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareAmbientOcclusion/glTF-Binary/CompareAmbientOcclusion.glb",
+        "sha256": "abdbb1427ccfa0bb12308d0e796a4d82640d8a4898e0ab8599cd379ef255df45"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-anisotropy",
+      "name": "Compare Anisotropy",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareAnisotropy/glTF-Binary/CompareAnisotropy.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareAnisotropy/glTF-Binary/CompareAnisotropy.glb",
+        "sha256": "5b4d9c7e99f85054983697112bab468c344b8984feb7299702ea6c93ddab292e"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Anisotropy is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-base-color",
+      "name": "Compare Base Color",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareBaseColor/glTF-Binary/CompareBaseColor.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareBaseColor/glTF-Binary/CompareBaseColor.glb",
+        "sha256": "1fd21e793652874eaa20e9c3723c508c4f1039bf8d84c09e4d0998b97691f77b"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-clearcoat",
+      "name": "Compare Clearcoat",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareClearcoat/glTF-Binary/CompareClearcoat.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareClearcoat/glTF-Binary/CompareClearcoat.glb",
+        "sha256": "9dc6879f797c7dd9dd1322dc6a392ff66952855f329ac5239b9c58a68f804a88"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Clearcoat is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-dispersion",
+      "name": "Compare Dispersion",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareDispersion/glTF-Binary/CompareDispersion.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareDispersion/glTF-Binary/CompareDispersion.glb",
+        "sha256": "1c3eff819615d7e6d06e605f728907006eb6c36ef2ead53cc328e65d38a215c4"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Dispersion is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-emissive-strength",
+      "name": "Compare Emissive Strength",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareEmissiveStrength/glTF-Binary/CompareEmissiveStrength.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareEmissiveStrength/glTF-Binary/CompareEmissiveStrength.glb",
+        "sha256": "e40d8e1d98345ae16211814bab097307c8710f1ae4f9399fe14e01049f3e7bd8"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Emissive Strength is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-ior",
+      "name": "Compare IOR",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareIor/glTF-Binary/CompareIor.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareIor/glTF-Binary/CompareIor.glb",
+        "sha256": "3588b4b522d2a756809b337353c017a412b9e38793b60355fdc6eb162b360019"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare IOR is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-iridescence",
+      "name": "Compare Iridescence",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareIridescence/glTF-Binary/CompareIridescence.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareIridescence/glTF-Binary/CompareIridescence.glb",
+        "sha256": "abda6e8bcb13ad04534c90bc4ce9b21e80f2d8b74ac4d911800269f0009ff073"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Iridescence is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-metallic",
+      "name": "Compare Metallic",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareMetallic/glTF-Binary/CompareMetallic.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareMetallic/glTF-Binary/CompareMetallic.glb",
+        "sha256": "5b57f1358c886fa33736c07adad0a76e693a6cf1d7f1bae4b70533b5de119b78"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-normal",
+      "name": "Compare Normal",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareNormal/glTF-Binary/CompareNormal.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareNormal/glTF-Binary/CompareNormal.glb",
+        "sha256": "076ab65c1ed62ad3097766c0dc74e41783e5f44a0711f9b2755bde892ec5075f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-roughness",
+      "name": "Compare Roughness",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareRoughness/glTF-Binary/CompareRoughness.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareRoughness/glTF-Binary/CompareRoughness.glb",
+        "sha256": "6b47b85d117f2e1951546e9a46bffa6cb91c8436441a1ec913feaac0f646f5b3"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-sheen",
+      "name": "Compare Sheen",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareSheen/glTF-Binary/CompareSheen.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareSheen/glTF-Binary/CompareSheen.glb",
+        "sha256": "70b6ab5ba8006aa71079b567783a81cfe778a11cca8abc44c45e5e0b1f4252cc"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Sheen is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-specular",
+      "name": "Compare Specular",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareSpecular/glTF-Binary/CompareSpecular.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareSpecular/glTF-Binary/CompareSpecular.glb",
+        "sha256": "57ea169e0b9b4a4ea1cb27980226974d0da25897445c9f29c3c817698dd923d8"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Specular is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-transmission",
+      "name": "Compare Transmission",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareTransmission/glTF-Binary/CompareTransmission.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareTransmission/glTF-Binary/CompareTransmission.glb",
+        "sha256": "012a3ace61050f4aef77b416c56b3f8f313e1fa68c9040ce3d5037f67eea484f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Transmission is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "compare-volume",
+      "name": "Compare Volume",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CompareVolume/glTF-Binary/CompareVolume.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CompareVolume/glTF-Binary/CompareVolume.glb",
+        "sha256": "cb88f5dd70c1c2700e2a28caa5b612f4b6e8c34183d6261c681727d8bafdf7d2"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "pbrtest",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Compare Volume is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "corset",
+      "name": "Corset",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Corset/glTF-Binary/Corset.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Corset/glTF-Binary/Corset.glb",
+        "sha256": "9582c0dc0dee813be77f60e6ddf7213987c7e11497bf3cc66fd7b18957ae0d26"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "cube-visibility",
+      "name": "CubeVisibility",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CubeVisibility/glTF-Binary/CubeVisibility.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CubeVisibility/glTF-Binary/CubeVisibility.glb",
+        "sha256": "a4a2863c99bf6f2f008558c995ad176979f920bd235190970fb02e1142faac41"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "damaged-helmet",
+      "name": "Damaged Helmet",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
+        "sha256": "a1e3b04de97b11de564ce6e53b95f02954a297f0008183ac63a4f5974f6b32d8"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "showcase",
+        "testing",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Damaged Helmet is classified from pinned source metadata: showcase model needs rendered-scene validation before compatibility claims; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "diffuse-transmission-plant",
+      "name": "Diffuse Transmission Plant",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DiffuseTransmissionPlant/glTF-Binary/DiffuseTransmissionPlant.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DiffuseTransmissionPlant/glTF-Binary/DiffuseTransmissionPlant.glb",
+        "sha256": "1748be8847e24bdd5cb6c5ac2bfd0afe8f11efc4f85091148550555e47c7ee83"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Diffuse Transmission Plant is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "diffuse-transmission-teacup",
+      "name": "Diffuse Transmission Teacup",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DiffuseTransmissionTeacup/glTF-Binary/DiffuseTransmissionTeacup.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DiffuseTransmissionTeacup/glTF-Binary/DiffuseTransmissionTeacup.glb",
+        "sha256": "d4f567186fea262819aac6664cb9d7cef7f4600406038046771a69e10363935b"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Diffuse Transmission Teacup is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "diffuse-transmission-test",
+      "name": "DiffuseTransmissionTest",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DiffuseTransmissionTest/glTF-Binary/DiffuseTransmissionTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DiffuseTransmissionTest/glTF-Binary/DiffuseTransmissionTest.glb",
+        "sha256": "cac9152a1215177c479f33cc0f5d1b64f92010311d2316dc42dde87fa505e282"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "video",
+        "written"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "DiffuseTransmissionTest is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "directional-light",
+      "name": "Directional Light",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DirectionalLight/glTF-Binary/DirectionalLight.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DirectionalLight/glTF-Binary/DirectionalLight.glb",
+        "sha256": "82e50feb151203f431a3b43985e9f4b2a54131b61a7a8677954922630d90f3de"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "dispersion-test",
+      "name": "Dispersion Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DispersionTest/glTF-Binary/DispersionTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DispersionTest/glTF-Binary/DispersionTest.glb",
+        "sha256": "bbac38386632b5a7a27289737963314c2f92095074dfdf0e8c0c1c25270b3e37"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Dispersion Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "dragon-attenuation",
+      "name": "Dragon Attenuation",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonAttenuation/glTF-Binary/DragonAttenuation.glb",
+        "sha256": "ec97df715d4207c0e39b60c329db43032872794df60e1279b7652314cf0a999e"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Dragon Attenuation is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "dragon-dispersion",
+      "name": "Dragon Dispersion",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/DragonDispersion/glTF-Binary/DragonDispersion.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DragonDispersion/glTF-Binary/DragonDispersion.glb",
+        "sha256": "4656f3c0fd3fe3f2b69831dfbf1a33b66ca8ce51d5e46efd277f96b37de0b706"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Dragon Dispersion is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "duck",
+      "name": "Duck",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Duck/glTF-Binary/Duck.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Duck/glTF-Binary/Duck.glb",
+        "sha256": "65bf938f54d6073e619e76e007820bbf980cdc3dc0daec0d94830ffc4ae54ab5"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "emissive-strength-test",
+      "name": "Emissive Strength Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/EmissiveStrengthTest/glTF-Binary/EmissiveStrengthTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/EmissiveStrengthTest/glTF-Binary/EmissiveStrengthTest.glb",
+        "sha256": "074898ec4c3636230faffe0cacac7403c3f6135db61f943da28ffaa88ca2a39f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Emissive Strength Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "fox",
+      "name": "Fox",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Fox/glTF-Binary/Fox.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Fox/glTF-Binary/Fox.glb",
+        "sha256": "d97044e701822bac5a62696459b27d7b375aada5de8574ed4362edbba94771f7"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "glam-velvet-sofa",
+      "name": "GlamVelvetSofa",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/GlamVelvetSofa/glTF-Binary/GlamVelvetSofa.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/GlamVelvetSofa/glTF-Binary/GlamVelvetSofa.glb",
+        "sha256": "67202c74a1a33377771f162dc7fad612a6c9bd51ee15124c488e9851d9ac5266"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "GlamVelvetSofa is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "glass-broken-window",
+      "name": "Glass Broken Window",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/GlassBrokenWindow/glTF-Binary/GlassBrokenWindow.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/GlassBrokenWindow/glTF-Binary/GlassBrokenWindow.glb",
+        "sha256": "66c4261fc0f5fe77f11a4f457b61774e5c7f43f9a382b49720cef0e128738416"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Glass Broken Window is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "glass-hurricane-candle-holder",
+      "name": "Glass Hurricane Candle Holder",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/GlassHurricaneCandleHolder/glTF-Binary/GlassHurricaneCandleHolder.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/GlassHurricaneCandleHolder/glTF-Binary/GlassHurricaneCandleHolder.glb",
+        "sha256": "add23791ee6f5f550b94a21232a323720c92c20d280f4f7d19cf954234f0b7b8"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase",
+        "video",
+        "written"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Glass Hurricane Candle Holder is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "glass-vase-flowers",
+      "name": "Glass Vase with Flowers",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/GlassVaseFlowers/glTF-Binary/GlassVaseFlowers.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/GlassVaseFlowers/glTF-Binary/GlassVaseFlowers.glb",
+        "sha256": "430c9937664cfc74299205dcc388e4269bb688817f3d3866ef35aab71e93b852"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Glass Vase with Flowers is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "iortest-grid",
+      "name": "IORTestGrid",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/IORTestGrid/glTF-Binary/IORTestGrid.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IORTestGrid/glTF-Binary/IORTestGrid.glb",
+        "sha256": "863cf24d0e48892ec830a7c712e4eb8bf5c0fd6cc2ae2f34d213b216f0bd6c12"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "IORTestGrid is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "interpolation-test",
+      "name": "Interpolation Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/InterpolationTest/glTF-Binary/InterpolationTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/InterpolationTest/glTF-Binary/InterpolationTest.glb",
+        "sha256": "a86eb331b4a083715e75fe19a1f747eac5692d5b9ff120f1eaa457c23ba72bca"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "iridescence-abalone",
+      "name": "IridescenceAbalone",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/IridescenceAbalone/glTF-Binary/IridescenceAbalone.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceAbalone/glTF-Binary/IridescenceAbalone.glb",
+        "sha256": "d15ab000d3b04f177e101b2a36aacbf1c99490fc9bfe3868d481d75736946bab"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "IridescenceAbalone is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "iridescence-lamp",
+      "name": "Iridescence Lamp",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceLamp/glTF-Binary/IridescenceLamp.glb",
+        "sha256": "17cfdc79ec9e38fadb28db159734c5f9592ca423977b546e5057e350ba29ff13"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Iridescence Lamp is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "iridescence-suzanne",
+      "name": "Iridescence Suzanne",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/IridescenceSuzanne/glTF-Binary/IridescenceSuzanne.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescenceSuzanne/glTF-Binary/IridescenceSuzanne.glb",
+        "sha256": "866762602d60a0942b7608bfabf4e8686a29033636224f4b55c5e56abe8abf8f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Iridescence Suzanne is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "iridescent-dish-with-olives",
+      "name": "Iridescent Dish with Olives",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/IridescentDishWithOlives/glTF-Binary/IridescentDishWithOlives.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/IridescentDishWithOlives/glTF-Binary/IridescentDishWithOlives.glb",
+        "sha256": "1540b4a36b790a907f4824cfe848ba481b3da3cc8070172b7b3ba178f78a7ed1"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Iridescent Dish with Olives is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "lantern",
+      "name": "Lantern",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Lantern/glTF-Binary/Lantern.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Lantern/glTF-Binary/Lantern.glb",
+        "sha256": "a79458c4b02d695187a952f23a63b8bf278e7bc3d316a3c2a314f2d6974181f1"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "light-visibility",
+      "name": "LightVisibility",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/LightVisibility/glTF-Binary/LightVisibility.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/LightVisibility/glTF-Binary/LightVisibility.glb",
+        "sha256": "0295dadb5467f4b24d2ebe255c2957446e83c1eea5510e23f22fcedc96330267"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "lights-punctual-lamp",
+      "name": "Lamp with Punctual Lights",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/LightsPunctualLamp/glTF-Binary/LightsPunctualLamp.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/LightsPunctualLamp/glTF-Binary/LightsPunctualLamp.glb",
+        "sha256": "b9a95cd0e17dea5284117e54807b49b746960038457a31a0011b9344acc11104"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Lamp with Punctual Lights is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "materials-variants-shoe",
+      "name": "Materials Variants Shoe",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MaterialsVariantsShoe/glTF-Binary/MaterialsVariantsShoe.glb",
+        "sha256": "e1d7cb190382111e5a5b37b51e9a7f007f7eb2ab1b6185e0188e8d0a0d1265a7"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase",
+        "written"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Materials Variants Shoe is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "metal-rough-spheres",
+      "name": "Metal-Rough Spheres",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheres/glTF-Binary/MetalRoughSpheres.glb",
+        "sha256": "450c05557b0823a10835e32c05caf77a7b175eba94516555c1c9bb084f563f01"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "metal-rough-spheres-no-textures",
+      "name": "Metal-Rough Spheres (textureless)",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MetalRoughSpheresNoTextures/glTF-Binary/MetalRoughSpheresNoTextures.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MetalRoughSpheresNoTextures/glTF-Binary/MetalRoughSpheresNoTextures.glb",
+        "sha256": "5e677f260ec0f366967a6e9545de2f3dab2a160e307b9bcb9d050cd2028f63f8"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "morph-primitives-test",
+      "name": "Morph-Primitives Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MorphPrimitivesTest/glTF-Binary/MorphPrimitivesTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MorphPrimitivesTest/glTF-Binary/MorphPrimitivesTest.glb",
+        "sha256": "2a5ed6470aca41edc813ef5b7eecf2af53264d8e0ab9e6f32156d54245ca18cf"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "morph-stress-test",
+      "name": "Morph Stress Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MorphStressTest/glTF-Binary/MorphStressTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MorphStressTest/glTF-Binary/MorphStressTest.glb",
+        "sha256": "005f1d9dd938c553a506d6bf3d21830fc3f2ec3a199d9332e9a625baf7342bef"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "mosquito-in-amber",
+      "name": "Mosquito In Amber",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MosquitoInAmber/glTF-Binary/MosquitoInAmber.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MosquitoInAmber/glTF-Binary/MosquitoInAmber.glb",
+        "sha256": "1c0b49000650e8a8c00d69bc8d64e46d33527871a47d74e4f2278887325cc35f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Mosquito In Amber is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "multi-uvtest",
+      "name": "MultiUV Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/MultiUVTest/glTF-Binary/MultiUVTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/MultiUVTest/glTF-Binary/MultiUVTest.glb",
+        "sha256": "f5352cced402b595ab7f1e4971852fbf33cef8d22351e45caafb072e31d5008a"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "negative-scale-test",
+      "name": "Negative Scale Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/NegativeScaleTest/glTF-Binary/NegativeScaleTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NegativeScaleTest/glTF-Binary/NegativeScaleTest.glb",
+        "sha256": "ea8c41fd0630f03adcf7a5c06bf86d7b850fa510b6f07cc51eb1fccc205a50f2"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "node-performance-test",
+      "name": "NodePerformanceTest",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/NodePerformanceTest/glTF-Binary/NodePerformanceTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NodePerformanceTest/glTF-Binary/NodePerformanceTest.glb",
+        "sha256": "81eec3b14b8ed25068448ffdc824528d03f1e844b20e017f5c3aab3f076b1fb8"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "normal-tangent-mirror-test",
+      "name": "Normal-Tangent Mirror Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/NormalTangentMirrorTest/glTF-Binary/NormalTangentMirrorTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NormalTangentMirrorTest/glTF-Binary/NormalTangentMirrorTest.glb",
+        "sha256": "31ce5f3c873fc55531a17ccacf001e3d1d482a508695aa826fa79cc196e0ce78"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "normal-tangent-test",
+      "name": "Normal-Tangent Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/NormalTangentTest/glTF-Binary/NormalTangentTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/NormalTangentTest/glTF-Binary/NormalTangentTest.glb",
+        "sha256": "5ac0932355ae1ea05a7485eeddcc3f1fbe56c678e00b519075feced80e9e9d6a"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "orientation-test",
+      "name": "Orientation Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/OrientationTest/glTF-Binary/OrientationTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/OrientationTest/glTF-Binary/OrientationTest.glb",
+        "sha256": "a91cf448f37de06ab61bc615e123692dd29ac185e6c69e1fdbf1cf53e41045b2"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "playset-light-test",
+      "name": "PlaysetLightTest",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/PlaysetLightTest/glTF-Binary/PlaysetLightTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/PlaysetLightTest/glTF-Binary/PlaysetLightTest.glb",
+        "sha256": "69bce5a89553139d0cb804213929009689178e977ec3839f7bf08d235d612371"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "external",
+        "test"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "point-light-intensity-test",
+      "name": "Point Light Intensity Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/PointLightIntensityTest/glTF-Binary/PointLightIntensityTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/PointLightIntensityTest/glTF-Binary/PointLightIntensityTest.glb",
+        "sha256": "025ea8e44840a88ded75fe0665f693a14558d345c2955b054aec4edbaa23a341"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Point Light Intensity Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "pot-of-coals",
+      "name": "PotOfCoals",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/PotOfCoals/glTF-Binary/PotOfCoals.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/PotOfCoals/glTF-Binary/PotOfCoals.glb",
+        "sha256": "fac3323e77309413e96285e3ee86dd92ef5e797325e173aa180ba6472aba58ed"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "PotOfCoals is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "pot-of-coals-animation-pointer",
+      "name": "Pot of Coals Animation Pointer",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/PotOfCoalsAnimationPointer/glTF-Binary/PotOfCoalsAnimationPointer.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/PotOfCoalsAnimationPointer/glTF-Binary/PotOfCoalsAnimationPointer.glb",
+        "sha256": "eb370d1aa20e997cdd67f3be5590b80ab0d2292dda7fa01bd10b6414a182ad5f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Pot of Coals Animation Pointer is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "recursive-skeletons",
+      "name": "Recursive Skeletons",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/RecursiveSkeletons/glTF-Binary/RecursiveSkeletons.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/RecursiveSkeletons/glTF-Binary/RecursiveSkeletons.glb",
+        "sha256": "15fb11ee4d3b31735efe7dc776a31e8fa67568ea148a3315442970303675b641"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "issues",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Recursive Skeletons is classified from pinned source metadata: upstream issue-tagged sample needs focused regression validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "rigged-figure",
+      "name": "Rigged Figure",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/RiggedFigure/glTF-Binary/RiggedFigure.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/RiggedFigure/glTF-Binary/RiggedFigure.glb",
+        "sha256": "d6be85417d3e256861ee733eea6916093a7af7c79c16366181fd8abcaeb38cf5"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "rigged-simple",
+      "name": "Rigged Simple",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/RiggedSimple/glTF-Binary/RiggedSimple.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/RiggedSimple/glTF-Binary/RiggedSimple.glb",
+        "sha256": "3a79dabb67bb0cd598a18d08b954d9d357c27c30672f82ef5d3f4e7fe6ca3401"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "scattering-skull",
+      "name": "Skull",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/ScatteringSkull/glTF-Binary/ScatteringSkull.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/ScatteringSkull/glTF-Binary/ScatteringSkull.glb",
+        "sha256": "339eafce3fdbc4175ed4798addba7d0c175cb0dab316e9d91abc053422050a00"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "pass",
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "sheen-chair",
+      "name": "Sheen Chair",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SheenChair/glTF-Binary/SheenChair.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SheenChair/glTF-Binary/SheenChair.glb",
+        "sha256": "f0af2a2b102d28d540236306ae19f8fb36842df76bd38cf76f063f9bd2853399"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase",
+        "video"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Sheen Chair is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims; video texture behavior is outside current renderer compatibility proof.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "sheen-test-grid",
+      "name": "SheenTestGrid",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SheenTestGrid/glTF-Binary/SheenTestGrid.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SheenTestGrid/glTF-Binary/SheenTestGrid.glb",
+        "sha256": "b3d82dde0ae6b93bef1a8085ec05540b21139f9917bfe771135c5aed9ba1c101"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "SheenTestGrid is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "sheen-wood-leather-sofa",
+      "name": "Sheen Wood Leather Sofa",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SheenWoodLeatherSofa/glTF-Binary/SheenWoodLeatherSofa.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SheenWoodLeatherSofa/glTF-Binary/SheenWoodLeatherSofa.glb",
+        "sha256": "5349e042ad41e695e89f1110230c4ee0c75b2bc62ef830c7016be6ecf665bfb6"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Sheen Wood Leather Sofa is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "simple-instancing",
+      "name": "Simple Instancing",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SimpleInstancing/glTF-Binary/SimpleInstancing.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SimpleInstancing/glTF-Binary/SimpleInstancing.glb",
+        "sha256": "1c9425627481346a8c226118f7000db7cd7f80198e9f54331f8b664d16726f3f"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Simple Instancing is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "spec-gloss-vs-metal-rough",
+      "name": "SpecGlossVsMetalRough",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SpecGlossVsMetalRough/glTF-Binary/SpecGlossVsMetalRough.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SpecGlossVsMetalRough/glTF-Binary/SpecGlossVsMetalRough.glb",
+        "sha256": "0152bf46e1239e3f0e5ab63651b219d9b78c4d1f3d21b25a53f918da2f3d21a6"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "SpecGlossVsMetalRough is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "specular-silk-pouf",
+      "name": "Specular Silk Pouf",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SpecularSilkPouf/glTF-Binary/SpecularSilkPouf.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SpecularSilkPouf/glTF-Binary/SpecularSilkPouf.glb",
+        "sha256": "a028bc6a7ac8981044fba414c1de633ac775b53602ad386f8ece74aec81d1006"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "extension",
+        "external",
+        "showcase"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Specular Silk Pouf is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation; showcase model needs rendered-scene validation before compatibility claims.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "specular-test",
+      "name": "Specular Test",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/SpecularTest/glTF-Binary/SpecularTest.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/SpecularTest/glTF-Binary/SpecularTest.glb",
+        "sha256": "cf789c68c3ab4b74877da3c5992c612c213f9c901ed4fafbf9be362f434e48d9"
+      },
+      "format": "glb",
+      "tags": [
+        "classification-100",
+        "core",
+        "extension",
+        "external",
+        "testing"
+      ],
+      "license": "Khronos glTF Sample Assets license metadata; review upstream model-specific terms before product use",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ASSET_100_CORPUS_CLASSIFICATION_WARNING",
+          "severity": "warning",
+          "message": "Specular Test is classified from pinned source metadata: extension coverage needs feature-specific importer and visual validation.",
+          "nextAction": "Run this asset through importer, renderer, visual, and external-loader validation before using it as compatibility or superiority evidence."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    }
+  ]
+}

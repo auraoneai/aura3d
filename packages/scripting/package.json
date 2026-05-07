@@ -1,0 +1,13 @@
+{
+  "name": "@galileo3d/scripting",
+  "version": "0.0.0-rebuild",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
+}

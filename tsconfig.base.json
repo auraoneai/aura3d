@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@galileo3d/math": ["packages/math/src/index.ts"],
+      "@galileo3d/core": ["packages/core/src/index.ts"],
+      "@galileo3d/scene": ["packages/scene/src/index.ts"],
+      "@galileo3d/ecs": ["packages/ecs/src/index.ts"],
+      "@galileo3d/rendering": ["packages/rendering/src/index.ts"],
+      "@galileo3d/physics": ["packages/physics/src/index.ts"],
+      "@galileo3d/animation": ["packages/animation/src/index.ts"],
+      "@galileo3d/assets": ["packages/assets/src/index.ts"],
+      "@galileo3d/input": ["packages/input/src/index.ts"],
+      "@galileo3d/audio": ["packages/audio/src/index.ts"],
+      "@galileo3d/scripting": ["packages/scripting/src/index.ts"],
+      "@galileo3d/editor-runtime": ["packages/editor-runtime/src/index.ts"],
+      "@galileo3d/editor": ["packages/editor/src/index.ts"],
+      "@galileo3d/debug": ["packages/debug/src/index.ts"],
+      "@galileo3d/test-utils": ["packages/test-utils/src/index.ts"]
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "id": "procedural-product",
+      "kind": "procedural",
+      "triangles": 6144,
+      "materials": 3,
+      "textures": 0,
+      "notes": "Shared deterministic product placeholder until external glTF product asset is approved."
+    },
+    {
+      "id": "procedural-architecture",
+      "kind": "procedural",
+      "triangles": 24000,
+      "materials": 5,
+      "textures": 0,
+      "notes": "Shared deterministic building massing placeholder."
+    },
+    {
+      "id": "procedural-game-slice",
+      "kind": "procedural",
+      "triangles": 9600,
+      "materials": 4,
+      "textures": 0,
+      "notes": "Shared deterministic gameplay placeholder with physics, animation, particles, and audio-state metrics."
+    }
+  ]
+}

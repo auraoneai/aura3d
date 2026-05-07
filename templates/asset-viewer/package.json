@@ -1,0 +1,15 @@
+{
+  "name": "galileo3d-asset-viewer-template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@galileo3d/assets": "0.0.0-rebuild",
+    "typescript": "^5.8.3",
+    "vite": "^5.4.0"
+  },
+  "devDependencies": {}
+}

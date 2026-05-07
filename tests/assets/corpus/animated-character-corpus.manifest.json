@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "gltf-corpus-v1",
+  "generatedFrom": {
+    "name": "Khronos glTF Sample Assets",
+    "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+    "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf"
+  },
+  "assets": [
+    {
+      "id": "cesium-man",
+      "name": "Cesium Man",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CesiumMan/glTF-Binary/CesiumMan.glb",
+        "sha256": "b7001eaeea8254bd44773bcd247e78696d94169388fbb2a1800fc69434e777d9"
+      },
+      "format": "glb",
+      "tags": ["animation", "external", "skinned-character", "texture"],
+      "license": "CC-BY-4.0-with-trademark-limitations",
+      "expectedStatus": "warn",
+      "expectedDiagnostics": [
+        {
+          "code": "ANIMATION_CORPUS_TRADEMARK_LIMIT",
+          "severity": "warning",
+          "message": "The external Cesium Man sample includes Cesium logo or trademark markings.",
+          "nextAction": "Use this fixture only as importer and renderer evidence; do not ship it as Galileo3D product art."
+        }
+      ],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    },
+    {
+      "id": "fox",
+      "name": "Fox",
+      "source": {
+        "repository": "https://github.com/KhronosGroup/glTF-Sample-Assets",
+        "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
+        "path": "Models/Fox/glTF-Binary/Fox.glb",
+        "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Fox/glTF-Binary/Fox.glb",
+        "sha256": "d97044e701822bac5a62696459b27d7b375aada5de8574ed4362edbba94771f7"
+      },
+      "format": "glb",
+      "tags": ["animation", "external", "skinned-character"],
+      "license": "CC-BY-4.0",
+      "expectedStatus": "pass",
+      "expectedDiagnostics": [],
+      "importSettings": {
+        "animationImport": "all",
+        "colorSpace": "srgb",
+        "mipmaps": "preserve",
+        "normals": "preserve",
+        "tangents": "generate-if-missing"
+      }
+    }
+  ]
+}

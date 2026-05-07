@@ -1,0 +1,12 @@
+{
+  "name": "@galileo3d/benchmark-babylon",
+  "private": true,
+  "type": "module",
+  "benchmarkEngine": {
+    "name": "babylonjs",
+    "version": "7.16.1"
+  },
+  "devDependencies": {
+    "@babylonjs/core": "7.16.1"
+  }
+}

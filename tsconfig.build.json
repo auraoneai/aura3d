@@ -1,36 +1,20 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    /* Emit Options */
-    "noEmit": false,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "./dist",
-
-    /* Module Resolution */
-    "moduleResolution": "bundler",
-
-    /* Optimization */
-    "removeComments": false,
-    "importHelpers": false,
-    "downlevelIteration": false,
-
-    /* Type Checking - Inherit strict settings from base */
-    "skipLibCheck": true
+    "rootDir": ".",
+    "outDir": "dist",
+    "noEmitOnError": true
   },
   "include": [
-    "src/**/*.ts"
+    "packages/*/src/**/*.ts",
+    "tests/unit/**/*.ts",
+    "tests/integration/**/*.ts",
+    "tests/performance/**/*.ts",
+    "tests/visual/**/*.ts",
+    "tools/**/*.ts",
+    "vitest.config.ts",
+    "playwright.config.ts",
+    "eslint.config.js"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.test.ts",
-    "**/*.spec.ts",
-    "**/*.bench.ts",
-    "**/__tests__/**",
-    "tests/**",
-    "src/tests/**",
-    "scripts/**"
-  ]
+  "exclude": ["dist", "node_modules"]
 }

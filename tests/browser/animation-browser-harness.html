@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Galileo3D Animation Browser Harness</title>
+  </head>
+  <body>
+    <canvas id="frame-a" width="96" height="96"></canvas>
+    <canvas id="frame-b" width="96" height="96"></canvas>
+    <canvas id="crossfade" width="96" height="96"></canvas>
+    <canvas id="additive" width="96" height="96"></canvas>
+    <canvas id="skinned" width="96" height="96"></canvas>
+    <canvas id="external-character-a" width="128" height="128"></canvas>
+    <canvas id="external-character-b" width="128" height="128"></canvas>
+    <canvas id="skeleton" width="160" height="96"></canvas>
+    <section aria-label="Animation controls">
+      <canvas id="controls" width="96" height="96"></canvas>
+      <button id="anim-play" type="button">Play</button>
+      <button id="anim-pause" type="button">Pause</button>
+      <label>
+        Scrub
+        <input id="anim-scrub" type="range" min="0" max="1" step="0.01" value="0.25" />
+      </label>
+      <label>
+        Speed
+        <input id="anim-speed" type="range" min="0.25" max="2" step="0.25" value="1" />
+      </label>
+      <label>
+        Loop
+        <select id="anim-loop">
+          <option value="repeat">Repeat</option>
+          <option value="once">Once</option>
+          <option value="pingpong">Ping-pong</option>
+        </select>
+      </label>
+      <button id="anim-crossfade" type="button">Crossfade</button>
+    </section>
+    <script type="module" src="./animation-browser-harness.ts"></script>
+  </body>
+</html>

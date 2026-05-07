@@ -1,0 +1,12 @@
+{
+  "name": "@galileo3d/benchmark-threejs",
+  "private": true,
+  "type": "module",
+  "benchmarkEngine": {
+    "name": "three",
+    "version": "0.165.0"
+  },
+  "devDependencies": {
+    "three": "0.165.0"
+  }
+}
