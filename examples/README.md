@@ -1,41 +1,27 @@
-# Galileo3D Examples
+# Galileo3D Example Portfolio
 
-These examples are split into validation examples and product-style proof slices. Each example imports package-level Galileo3D APIs only and exposes browser smoke state for automated checks.
+Open `examples/index.html` first. It is the user-facing portfolio for the current engine capability slice.
 
-Run an example with a TypeScript-aware dev server rooted at the repository root, then open the example `index.html` path. Browser tests under `tests/browser` verify the example files and smoke metadata.
+The old numbered validation examples are no longer presented as the portfolio because they are narrow test fixtures. They still exist in the repo only to keep legacy PRD and release-gate evidence reproducible until those rows are migrated to stronger examples.
 
-## Validation Examples
+## Best Current Examples
 
-Validation examples are narrow system checks. They exist to keep public APIs, browser smoke tests, and visual checks tied to real files without implying product readiness.
+| Example | What it shows |
+|---|---|
+| `11-showcase-world` | Combined WebGL2/PBR showcase with geometry, lights, physics, particles, input, audio state, editor-runtime selection, and glTF metrics. |
+| `product-configurator` | Renderer-backed product UI with material variants, pointer interaction, PBR/unlit render items, and diagnostics. |
+| `architecture-viewer` | Architectural zone selection, measurement metadata, PBR render items, and renderer diagnostics. |
+| `game-slice` | Runtime loop across rendering, physics, animation, input, particles, and audio state. |
+| `asset-viewer` | Public asset APIs loading a real external glTF/GLB model and creating render resources. |
+| `pbr-camera-comparison` | Bounded WebGL2 PBR scene rendered next to a same-page Three.js reference. |
+| `pbr-material-lab` | Current PBR/environment-lighting material evidence and known PBR limits. |
+| `rendering-large-scene` | WebGL2 large-scene harness for thousands of static meshes and instances. |
+| `physics-sandbox` | Interactive renderer-backed physics sandbox with debug layers. |
+| `postprocess-lab` | RenderGraph ordering for tone mapping, bloom, and FXAA-style passes. |
+| `shadow-lab` | Shadow-pass and cascade metadata diagnostics. |
+| `animation-state-machine` | Runtime animation state/mixer behavior. |
+| `editor-authored-project` | Checked-in static project exported from editor-runtime workflows. |
 
-- `00-basic-triangle`: renderer bootstrap.
-- `01-basic-scene`: scene graph and transforms.
-- `02-materials-pbr`: material parameters and PBR slice.
-- `03-shadows`: shadow slice.
-- `04-physics-stack`: physics integration slice.
-- `05-animation-character`: animation slice.
-- `06-asset-gltf`: glTF loader and asset manager slice.
-- `07-input-controls`: input and camera controls slice.
-- `08-audio-spatial`: audio runtime slice.
-- `09-editor-runtime`: editor-runtime model slice.
-- `10-particles`: particle runtime slice.
-- `material-lab`: WebGL2 material matrix slice.
-- `pbr-material-lab`: WebGL2 PBR environment-lighting slice.
-- `pbr-camera-comparison`: WebGL2 perspective-camera PBR slice next to a same-page Three.js reference scene.
-- `postprocess-lab`: render-graph postprocess ordering for tone mapping, bloom, and FXAA.
-- `shadow-lab`: WebGL2 shadow-pass and cascade metadata slice.
-- `root-motion`: root-motion extraction applied to scene-style and ECS-style runtime targets.
-- `asset-viewer`: real external glTF/GLB loading through public asset and rendering APIs.
+## Claim Boundary
 
-## Product-Style Proof Slices
-
-Product-style examples are renderer-backed browser app slices with domain-specific UI and interactions. They are not benchmark proof, production app proof, or evidence for broad competitive claims.
-
-- `product-configurator`: WebGL2 material variant interaction.
-- `architecture-viewer`: WebGL2 architectural zone selection and measurement metadata.
-- `game-slice`: WebGL2 game loop slice across input, physics, animation, particles, and audio state.
-- `editor-app`: pointer to the browser editor application under `apps/editor`.
-
-## Flagship Showcase
-
-- `11-showcase-world`: optional combined showcase that uses public rendering, scene, physics, animation, glTF asset, input, audio, editor runtime, and particle APIs in one richer browser scene.
+These examples show the strongest current checked-in capability. They do not make Galileo3D production-ready, broadly better than Three.js, or a Unity/Unreal replacement for the web.
