@@ -100,6 +100,12 @@ async function run(): Promise<void> {
     interactions += 1;
     player.velocity[1] = 1.8;
   });
+  canvas.addEventListener("keydown", (event) => {
+    if (event.code !== "Space") return;
+    event.preventDefault();
+    interactions += 1;
+    player.velocity[1] = 1.8;
+  });
 
   const render = (time: number) => {
     if (!running) return;
@@ -110,7 +116,6 @@ async function run(): Promise<void> {
 
     const snapshot = input.update();
     if (snapshot.keys.has("Space")) {
-      interactions += 1;
       player.velocity[1] = 1.8;
     }
     input.endFrame();

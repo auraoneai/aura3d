@@ -59,8 +59,8 @@ test.describe("example portfolio", () => {
     expect(visibleCards).toEqual([...portfolioExamples]);
     expect(state?.hiddenValidationExamples).toContain("00-basic-triangle");
     expect(state?.hiddenValidationExamples).toContain("10-particles");
-    await expect(page.getByRole("heading", { name: "Web 3D Engine Examples" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Current Engine Proofs" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Open Example" })).toHaveCount(portfolioExamples.length);
-    await expect(page.getByText(/Not claimed: production-ready/)).toBeVisible();
+    await expect(page.getByText(/Not true yet: production-ready/)).toBeVisible();
   });
 });

@@ -1,8 +1,11 @@
 import { AssetManager, GLTFLoader, createGLTFRenderResources, type GLTFAsset, type GLTFRenderResources } from "@galileo3d/assets";
-import { drawGrid, installExampleStyles } from "../shared/exampleHarness.js";
+import { Renderer, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { installExampleStyles } from "../shared/exampleHarness.js";
 
 const KHRONOS_BOX_GLB =
   "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb";
+const KHRONOS_DAMAGED_HELMET_GLTF =
+  "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF/DamagedHelmet.gltf";
 
 interface AssetViewerResult {
   readonly status: "ready" | "error";
@@ -15,6 +18,8 @@ interface AssetViewerResult {
   readonly sceneCount?: number;
   readonly renderGeometryCount?: number;
   readonly renderMaterialCount?: number;
+  readonly renderer?: "webgl2";
+  readonly diagnostics?: RenderDeviceDiagnostics;
   readonly bounds?: {
     readonly min: readonly [number, number, number];
     readonly max: readonly [number, number, number];
@@ -59,7 +64,7 @@ async function boot(): Promise<void> {
       <span>Model</span>
       <select name="model" data-testid="asset-viewer-model">
         <option value="inline">Inline Triangle</option>
-        <option value="external">Khronos Box GLB</option>
+        <option value="external">Damaged Helmet glTF</option>
         <option value="custom">Custom URL</option>
       </select>
     </label>
@@ -90,6 +95,15 @@ async function boot(): Promise<void> {
   const manager = new AssetManager({ retries: 1, retryDelayMs: 50 });
   manager.register(new GLTFLoader());
   let loaded: { readonly handle: Awaited<ReturnType<AssetManager["load"]>>; readonly resources: GLTFRenderResources } | undefined;
+  const renderer = await Renderer.create({
+    backend: "webgl2",
+    canvas,
+    width: canvas.width,
+    height: canvas.height,
+    clearColor: [0.016, 0.02, 0.026, 1],
+    antialias: true,
+    preserveDrawingBuffer: true
+  });
 
   const load = async (kind: "inline" | "external" | "custom", url: string) => {
     try {
@@ -100,10 +114,10 @@ async function boot(): Promise<void> {
       const handle = await manager.load<GLTFAsset>(url, { type: "gltf" });
       const resources = await createGLTFRenderResources(handle.value, { imageDecoder: decodePlaceholderImage });
       loaded = { handle, resources };
-      const result = summarize(kind, url, handle.value, resources);
+      const diagnostics = renderLoadedAsset(canvas, renderer, resources, handle.value);
+      const result = summarize(kind, url, handle.value, resources, diagnostics);
       publish(result);
       status.textContent = JSON.stringify(result, null, 2);
-      drawAssetSummary(canvas, result);
     } catch (error) {
       const result: AssetViewerResult = {
         status: "error",
@@ -113,25 +127,25 @@ async function boot(): Promise<void> {
       };
       publish(result);
       status.textContent = JSON.stringify(result, null, 2);
-      drawError(canvas, result.error ?? "Asset load failed");
     }
   };
 
   controls.addEventListener("submit", (event) => {
     event.preventDefault();
     const kind = select.value as "inline" | "external" | "custom";
-    const url = kind === "inline" ? createInlineTriangleGltfUrl() : kind === "external" ? KHRONOS_BOX_GLB : input.value.trim();
+    const url = kind === "inline" ? createInlineTriangleGltfUrl() : kind === "external" ? KHRONOS_DAMAGED_HELMET_GLTF : input.value.trim();
     input.value = url;
     void load(kind, url);
   });
 
   select.addEventListener("change", () => {
-    input.value = select.value === "inline" ? createInlineTriangleGltfUrl() : select.value === "external" ? KHRONOS_BOX_GLB : input.value;
+    input.value = select.value === "inline" ? createInlineTriangleGltfUrl() : select.value === "external" ? KHRONOS_DAMAGED_HELMET_GLTF : input.value;
   });
 
   window.addEventListener("beforeunload", () => {
     loaded?.resources.dispose();
     if (loaded) void manager.release(loaded.handle);
+    renderer.dispose();
   });
 
   await load(initial.kind, initial.url);
@@ -141,12 +155,18 @@ function resolveInitialModel(): { readonly kind: "inline" | "external" | "custom
   const params = new URLSearchParams(window.location.search);
   const model = params.get("model");
   const url = params.get("url");
-  if (model === "external") return { kind: "external", url: url ?? KHRONOS_BOX_GLB };
+  if (model === "external") return { kind: "external", url: url ?? KHRONOS_DAMAGED_HELMET_GLTF };
   if (model === "custom" && url) return { kind: "custom", url };
   return { kind: "inline", url: createInlineTriangleGltfUrl() };
 }
 
-function summarize(kind: "inline" | "external" | "custom", url: string, asset: GLTFAsset, resources: GLTFRenderResources): AssetViewerResult {
+function summarize(
+  kind: "inline" | "external" | "custom",
+  url: string,
+  asset: GLTFAsset,
+  resources: GLTFRenderResources,
+  diagnostics: RenderDeviceDiagnostics
+): AssetViewerResult {
   const firstMesh = asset.meshes[0];
   return {
     status: "ready",
@@ -159,6 +179,8 @@ function summarize(kind: "inline" | "external" | "custom", url: string, asset: G
     sceneCount: asset.scenes.length,
     renderGeometryCount: resources.geometryLibrary.size,
     renderMaterialCount: resources.materialLibrary.size,
+    renderer: "webgl2",
+    diagnostics,
     bounds: firstMesh?.geometry.bounds,
     publicApis: ["AssetManager", "GLTFLoader", "createGLTFRenderResources"]
   };
@@ -168,44 +190,47 @@ function publish(result: AssetViewerResult): void {
   window.__GALILEO3D_ASSET_VIEWER__ = result;
 }
 
-function drawAssetSummary(canvas: HTMLCanvasElement, result: AssetViewerResult): void {
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Asset viewer canvas 2D context is unavailable.");
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  drawGrid(context, canvas, 48);
+function renderLoadedAsset(
+  canvas: HTMLCanvasElement,
+  renderer: Renderer,
+  resources: GLTFRenderResources,
+  asset: GLTFAsset
+): RenderDeviceDiagnostics {
+  renderer.resize(canvas.width, canvas.height);
+  const scene = resources.scene;
+  const bounds = asset.meshes[0]?.geometry.bounds;
+  const spanX = Math.max(0.1, (bounds?.max[0] ?? 0.5) - (bounds?.min[0] ?? -0.5));
+  const spanY = Math.max(0.1, (bounds?.max[1] ?? 0.5) - (bounds?.min[1] ?? -0.5));
+  const spanZ = Math.max(0.1, (bounds?.max[2] ?? 0.5) - (bounds?.min[2] ?? -0.5));
+  const distance = Math.max(3.2, Math.max(spanX, spanY, spanZ) * 2.8);
 
-  const min = result.bounds?.min ?? [-0.5, -0.5, 0];
-  const max = result.bounds?.max ?? [0.5, 0.5, 0];
-  const spanX = Math.max(0.001, max[0] - min[0]);
-  const spanY = Math.max(0.001, max[1] - min[1]);
-  const scale = Math.min(canvas.width * 0.42 / spanX, canvas.height * 0.42 / spanY);
-  const width = Math.max(80, spanX * scale);
-  const height = Math.max(80, spanY * scale);
-  const x = canvas.width * 0.5 - width * 0.5;
-  const y = canvas.height * 0.46 - height * 0.5;
+  const camera = scene.createPerspectiveCamera({
+    name: "asset-viewer-camera",
+    fovYRadians: Math.PI / 4,
+    aspect: canvas.width / canvas.height,
+    near: 0.01,
+    far: distance * 8
+  });
+  camera.transform.setPosition(0, 0, distance);
+  scene.root.addChild(camera);
 
-  context.fillStyle = result.sourceKind === "external" ? "#72d6a3" : "#8db6ff";
-  context.fillRect(x, y, width, height);
-  context.strokeStyle = "#eef2f6";
-  context.lineWidth = 2;
-  context.strokeRect(x, y, width, height);
+  const key = scene.createLight("directional", "asset-viewer-key");
+  key.intensity = 2.4;
+  key.color = [1, 0.94, 0.82];
+  scene.root.addChild(key);
 
-  context.fillStyle = "#eef2f6";
-  context.font = "20px ui-sans-serif, system-ui, sans-serif";
-  context.fillText(`${result.meshCount ?? 0} mesh / ${result.vertexCount ?? 0} vertices`, 32, 48);
-  context.font = "15px ui-sans-serif, system-ui, sans-serif";
-  context.fillText(`${result.sourceKind ?? "model"} via ${result.publicApis?.join(" + ") ?? "public APIs"}`, 32, 78);
-}
+  const fill = scene.createLight("point", "asset-viewer-fill");
+  fill.intensity = 1.4;
+  fill.range = distance * 3;
+  fill.color = [0.42, 0.72, 1];
+  fill.transform.setPosition(-distance * 0.45, distance * 0.35, distance * 0.55);
+  scene.root.addChild(fill);
 
-function drawError(canvas: HTMLCanvasElement, message: string): void {
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Asset viewer canvas 2D context is unavailable.");
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = "#101820";
-  context.fillRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = "#ff9a8a";
-  context.font = "18px ui-sans-serif, system-ui, sans-serif";
-  context.fillText(message.slice(0, 96), 32, 64);
+  return renderer.render({
+    scene,
+    geometryLibrary: resources.geometryLibrary,
+    materialLibrary: resources.materialLibrary
+  });
 }
 
 function decodePlaceholderImage() {

@@ -2,7 +2,7 @@ type PortfolioExample = {
   readonly id: string;
   readonly title: string;
   readonly href: string;
-  readonly tier: "Flagship" | "Product" | "Renderer" | "Runtime" | "Editor" | "Assets";
+  readonly tier: "Combined Proof" | "Renderer Proof" | "Runtime Proof" | "Editor Proof" | "Asset Proof";
   readonly summary: string;
   readonly systems: readonly string[];
   readonly proof: string;
@@ -37,59 +37,59 @@ const hiddenValidationExamples = [
 const examples: PortfolioExample[] = [
   {
     id: "showcase-world",
-    title: "Showcase World",
+    title: "Combined Primitive Scene",
     href: "./11-showcase-world/index.html",
-    tier: "Flagship",
-    summary: "A combined scene using WebGL2 rendering, PBR materials, lights, physics bodies, particles, input metrics, audio state, editor-runtime selection, and a glTF mesh in one browser page.",
+    tier: "Combined Proof",
+    summary: "A combined primitive scene using WebGL2 rendering, PBR-ish materials, lights, physics counters, particles, input metrics, audio state, editor-runtime selection, and a tiny glTF mesh.",
     systems: ["WebGL2", "PBR", "Lighting", "Physics", "Particles", "Input", "Audio", "Editor runtime", "glTF"],
     proof: "Browser and visual reports validate ready state, render items, particles, physics bodies, glTF mesh count, and nonblank WebGL pixels.",
-    caveat: "Still a bounded showcase slice, not production parity with Three.js or a Unity/Unreal replacement.",
+    caveat: "This is primitive rendering evidence. It is not a flagship visual demo, not Three.js parity, and not Unity/Unreal for the web.",
   },
   {
     id: "product-configurator",
-    title: "Product Configurator",
+    title: "Material Variant Primitive",
     href: "./product-configurator/index.html",
-    tier: "Product",
-    summary: "Renderer-backed product UI with material variant controls, PBR/unlit render items, pointer interaction, and live diagnostics.",
+    tier: "Renderer Proof",
+    summary: "Renderer-backed material variant controls on procedural geometry, with pointer interaction and live diagnostics.",
     systems: ["WebGL2", "PBR materials", "Variant UI", "Pointer input", "Diagnostics"],
     proof: "Product browser tests cover ready state, renderer-backed output, pointer cycling, swatch selection, draw calls, and visual/performance product reports.",
-    caveat: "Uses procedural demo assets; commercial glTF product assets remain future work.",
+    caveat: "This is not a product configurator yet. It lacks real product assets, model hierarchy, annotations, camera tools, and polished rendering.",
   },
   {
     id: "architecture-viewer",
-    title: "Architecture Viewer",
+    title: "Procedural Zone Picker",
     href: "./architecture-viewer/index.html",
-    tier: "Product",
-    summary: "Architectural zone viewer with selectable spaces, measurement metadata, PBR floor/zone render items, and frame diagnostics.",
+    tier: "Renderer Proof",
+    summary: "Procedural massing blocks with selectable zones, measurement metadata, PBR render items, and frame diagnostics.",
     systems: ["WebGL2", "PBR", "Picking-style interaction", "Measurements", "Diagnostics"],
     proof: "Product browser tests validate zone selection, measurements, draw calls, renderer-backed output, and nonblank WebGL pixels.",
-    caveat: "Current scene is procedural massing, not a heavy BIM/glTF production model.",
+    caveat: "This is not an architecture viewer yet. It has no BIM import, real building asset, orbit camera, floor plan tools, or production materials.",
   },
   {
     id: "game-slice",
-    title: "Game Slice",
+    title: "Runtime Loop Primitive",
     href: "./game-slice/index.html",
-    tier: "Product",
-    summary: "Small playable runtime slice combining renderer, physics, animation, input, particles, and audio state in a single loop.",
+    tier: "Runtime Proof",
+    summary: "Small runtime loop combining renderer, physics, animation, input, particles, and audio state with primitive shapes.",
     systems: ["WebGL2", "Physics", "Animation mixer", "Particles", "Keyboard/pointer input", "Audio state"],
     proof: "Browser tests validate pointer and keyboard interaction while physics bodies, particles, audio state, and draw calls update.",
-    caveat: "This is a compact game loop proof, not a complete game framework or level pipeline.",
+    caveat: "This is not a game slice yet. It lacks real assets, gameplay systems, camera, level tools, lighting polish, and animation content.",
   },
   {
     id: "asset-viewer",
-    title: "Asset Viewer",
-    href: "./asset-viewer/index.html",
-    tier: "Assets",
-    summary: "Public asset APIs load a real external glTF/GLB model and expose loader metadata plus render-resource creation.",
+    title: "glTF Loader Render Proof",
+    href: "./asset-viewer/index.html?model=external",
+    tier: "Asset Proof",
+    summary: "Public asset APIs load glTF/GLB models, create render resources, and submit the loaded scene through the WebGL2 renderer.",
     systems: ["glTF/GLB", "Asset manager", "Render resources", "Metadata diagnostics"],
     proof: "Browser tests load a pinned Khronos model through the asset viewer and verify public API metadata and render resources.",
-    caveat: "Broader drag/drop, material inspection, animation playback, and large corpus UX remain future work.",
+    caveat: "This is a loader/render proof, not a finished asset viewer. It still needs real inspection tools, thumbnails, animation playback, and broad model-corpus polish.",
   },
   {
     id: "pbr-camera-comparison",
     title: "PBR Camera Comparison",
     href: "./pbr-camera-comparison/index.html",
-    tier: "Renderer",
+    tier: "Renderer Proof",
     summary: "Same-page bounded Galileo3D WebGL2 PBR scene next to a Three.js reference scene for claim-bounded visual comparison.",
     systems: ["Perspective camera", "PBR", "Environment approximation", "Three.js reference", "Screenshot diff"],
     proof: "PBR comparison reports retain Galileo/reference/diff screenshots, scene descriptor hash, semantic checks, and claim-boundary exclusions.",
@@ -99,7 +99,7 @@ const examples: PortfolioExample[] = [
     id: "pbr-material-lab",
     title: "PBR Material Lab",
     href: "./pbr-material-lab/index.html",
-    tier: "Renderer",
+    tier: "Renderer Proof",
     summary: "Material lab for the current PBR slice, environment-map uniforms, roughness behavior, and bounded BRDF modulation.",
     systems: ["PBR", "Environment texture", "Material matrix", "Diagnostics"],
     proof: "PBR environment validation checks material-lab evidence and known unsupported production-PBR claims.",
@@ -109,7 +109,7 @@ const examples: PortfolioExample[] = [
     id: "rendering-large-scene",
     title: "Large Scene Harness",
     href: "./rendering-large-scene/index.html",
-    tier: "Renderer",
+    tier: "Renderer Proof",
     summary: "WebGL2 harness for thousands of static meshes and instances through the Galileo3D renderer.",
     systems: ["WebGL2", "Large scene", "Instancing", "Frame diagnostics"],
     proof: "Browser tests validate 5,000 static meshes and 10,000 instances through the renderer path.",
@@ -119,7 +119,7 @@ const examples: PortfolioExample[] = [
     id: "physics-sandbox",
     title: "Physics Sandbox",
     href: "./physics-sandbox/index.html",
-    tier: "Runtime",
+    tier: "Runtime Proof",
     summary: "Interactive renderer-backed physics sandbox with debug layers and live physics diagnostics.",
     systems: ["Physics world", "Rigid bodies", "Debug draw", "WebGL2", "Pointer interaction"],
     proof: "Browser tests validate interactivity, WebGL2 rendering, physics debug lines, and runtime state.",
@@ -129,7 +129,7 @@ const examples: PortfolioExample[] = [
     id: "postprocess-lab",
     title: "Postprocess Lab",
     href: "./postprocess-lab/index.html",
-    tier: "Renderer",
+    tier: "Renderer Proof",
     summary: "RenderGraph ordering demo for tone mapping, bloom, and FXAA-style postprocess passes.",
     systems: ["RenderGraph", "Tone mapping", "Bloom", "FXAA", "Readback"],
     proof: "Visual and unit coverage checks ordered postprocess behavior and deterministic readback.",
@@ -139,7 +139,7 @@ const examples: PortfolioExample[] = [
     id: "shadow-lab",
     title: "Shadow Lab",
     href: "./shadow-lab/index.html",
-    tier: "Renderer",
+    tier: "Renderer Proof",
     summary: "Shadow-pass and cascade metadata lab for current directional shadow ownership and diagnostics.",
     systems: ["Shadow pass", "Directional light", "Cascade metadata", "Debug diagnostics"],
     proof: "Shadow browser/unit/visual tests cover projected shadows, caster handling, and cascade split ownership.",
@@ -149,7 +149,7 @@ const examples: PortfolioExample[] = [
     id: "animation-state-machine",
     title: "Animation State Machine",
     href: "./animation-state-machine/index.html",
-    tier: "Runtime",
+    tier: "Runtime Proof",
     summary: "Animation runtime page for clips, state transitions, mixer behavior, and visible runtime state.",
     systems: ["Animation mixer", "State machine", "Runtime diagnostics"],
     proof: "Animation unit and browser evidence cover mixer, clips, blend/state behavior, and render integration slices.",
@@ -159,7 +159,7 @@ const examples: PortfolioExample[] = [
     id: "editor-authored-project",
     title: "Editor-Authored Static Project",
     href: "./editor-authored-project/index.html",
-    tier: "Editor",
+    tier: "Editor Proof",
     summary: "Checked-in exported project produced through editor-runtime workflows and runnable without loading the editor app.",
     systems: ["Editor runtime", "Project serialization", "Static export", "Browser smoke"],
     proof: "Integration and browser tests replay the project operation log and load the exported static runtime.",
@@ -238,25 +238,24 @@ function render(): void {
   main.innerHTML = `
     <section class="hero">
       <div class="hero-inner">
-        <p class="eyebrow">Galileo3D Current Capability Portfolio</p>
-        <h1>Web 3D Engine Examples</h1>
+        <p class="eyebrow">Galileo3D Current Truth Page</p>
+        <h1>Current Engine Proofs</h1>
         <p class="hero-copy">
-          This page intentionally hides the old numbered validation slices and surfaces the strongest current examples:
-          renderer-backed product demos, PBR comparison scenes, large-scene rendering, physics, assets, editor export,
-          and runtime systems. These examples show the current maximum capability without claiming broad Three.js,
-          Unity, or Unreal parity.
+          This page shows what the checked-in engine can actually demonstrate today. These are proof slices:
+          primitive WebGL2 rendering, bounded PBR experiments, glTF loading, physics/runtime state, and editor-runtime export evidence.
+          They are not polished product demos and they do not prove Three.js superiority or Unity/Unreal-style web authoring.
         </p>
         <div class="claim-strip">
-          <span>Current: verified internal web 3D engine slices</span>
-          <span>Allowed: bounded WebGL2/PBR and workflow evidence</span>
-          <span>Not claimed: production-ready, Unity/Unreal replacement, broad Three.js superiority</span>
+          <span>Current: verified primitive engine proof slices</span>
+          <span>Allowed: bounded WebGL2/PBR/glTF/runtime evidence</span>
+          <span>Not true yet: production-ready, Unity/Unreal replacement, broad Three.js superiority</span>
         </div>
       </div>
     </section>
     <section class="main">
       <div class="section-head">
-        <h2>Portfolio</h2>
-        <p>Open these pages first when evaluating what the engine can actually do today.</p>
+        <h2>Proofs</h2>
+        <p>Open these pages first when evaluating the current engine. Treat the names as subsystem checks, not finished apps.</p>
       </div>
       <div class="grid">
         ${examples.map(renderCard).join("")}
