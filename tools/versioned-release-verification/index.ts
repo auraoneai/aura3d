@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -49,6 +50,7 @@ export function validateVersionedRelease(root = process.cwd(), manifestPath = de
     artifact.createdAt &&
     (artifact.type !== "tarball" || artifact.sha256)
   );
+  const artifactFileViolations = artifacts.flatMap((artifact) => validateArtifactFile(root, artifact));
   const violations = [
     ...(versionReady ? [] : [`Package version is ${packageVersion ?? "unreadable"}; expected a deliberate non-0.0.0-rebuild version.`]),
     ...(packagePrivate === false ? [] : ["Root package is private or unreadable; versioned package release evidence requires private=false."]),
@@ -56,7 +58,8 @@ export function validateVersionedRelease(root = process.cwd(), manifestPath = de
     ...(manifestVersionMatches ? [] : [`Release artifact manifest version ${manifest?.version ?? "missing"} does not match package version ${packageVersion ?? "missing"}.`]),
     ...(artifacts.length > 0 ? [] : ["No release artifacts are recorded."]),
     ...(artifactVersionsMatch ? [] : ["At least one release artifact version does not match package.json."]),
-    ...(artifactsConcrete ? [] : ["At least one release artifact is missing type, name, version, pathOrUrl, createdAt, or tarball sha256."])
+    ...(artifactsConcrete ? [] : ["At least one release artifact is missing type, name, version, pathOrUrl, createdAt, or tarball sha256."]),
+    ...artifactFileViolations
   ];
   return {
     ok: violations.length === 0,
@@ -107,6 +110,18 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isArtifactType(value: unknown): value is NonNullable<ReleaseArtifactEntry["type"]> {
   return value === "registry" || value === "tarball" || value === "git-tag" || value === "provenance" || value === "docs-site";
+}
+
+function validateArtifactFile(root: string, artifact: ReleaseArtifactEntry): readonly string[] {
+  if (artifact.type !== "tarball" || !artifact.pathOrUrl) return [];
+  if (/^https?:\/\//i.test(artifact.pathOrUrl)) return [];
+  const path = join(root, artifact.pathOrUrl);
+  if (!existsSync(path)) return [`Tarball artifact is missing: ${artifact.pathOrUrl}.`];
+  if (!artifact.sha256) return [`Tarball artifact ${artifact.pathOrUrl} is missing sha256.`];
+  const actualSha256 = createHash("sha256").update(readFileSync(path)).digest("hex");
+  return actualSha256 === artifact.sha256
+    ? []
+    : [`Tarball artifact ${artifact.pathOrUrl} sha256 ${actualSha256} does not match manifest ${artifact.sha256}.`];
 }
 
 function writeReport(root: string, report: VersionedReleaseReport): void {

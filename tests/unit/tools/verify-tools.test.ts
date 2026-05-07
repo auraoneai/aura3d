@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
@@ -15,6 +16,7 @@ import { verifySourceCleanliness } from "../../../tools/verify-source-cleanlines
 import { validateFinalDemos } from "../../../tools/final-demo-validation/index.js";
 import { createCleanCheckoutReport } from "../../../tools/clean-checkout-verification/index.js";
 import { scanDocContradictions } from "../../../tools/doc-contradiction-scan/index.js";
+import { validateVersionedRelease } from "../../../tools/versioned-release-verification/index.js";
 
 function fixtureRoot(): string {
   return mkdtempSync(join(tmpdir(), "g3d-tools-"));
@@ -503,6 +505,53 @@ describe("verification tools", () => {
       ok: false,
       reason: "ok=true, browserChecks=2"
     });
+  });
+
+  it("versioned release verifier requires a concrete tarball with matching sha256", () => {
+    const root = fixtureRoot();
+    const artifactPath = join(root, "release-artifacts", "engine.tgz");
+    mkdirSync(join(root, "release-artifacts"), { recursive: true });
+    mkdirSync(join(root, "docs"), { recursive: true });
+    writeFileSync(join(root, "package.json"), JSON.stringify({
+      name: "@galileo3d/engine",
+      version: "0.1.0-alpha.0",
+      private: false
+    }));
+    writeFileSync(artifactPath, "package bytes");
+    const sha256 = createHash("sha256").update("package bytes").digest("hex");
+    writeFileSync(join(root, "docs", "release-artifacts.json"), JSON.stringify({
+      version: "0.1.0-alpha.0",
+      artifacts: [
+        {
+          type: "tarball",
+          name: "@galileo3d/engine",
+          version: "0.1.0-alpha.0",
+          pathOrUrl: "release-artifacts/engine.tgz",
+          sha256,
+          createdAt: "2026-05-07T00:00:00.000Z"
+        }
+      ]
+    }));
+
+    expect(validateVersionedRelease(root)).toMatchObject({ ok: true, artifactCount: 1 });
+
+    writeFileSync(join(root, "docs", "release-artifacts.json"), JSON.stringify({
+      version: "0.1.0-alpha.0",
+      artifacts: [
+        {
+          type: "tarball",
+          name: "@galileo3d/engine",
+          version: "0.1.0-alpha.0",
+          pathOrUrl: "release-artifacts/engine.tgz",
+          sha256: "bad",
+          createdAt: "2026-05-07T00:00:00.000Z"
+        }
+      ]
+    }));
+
+    const broken = validateVersionedRelease(root);
+    expect(broken.ok).toBe(false);
+    expect(broken.violations.some((violation) => /sha256/.test(violation))).toBe(true);
   });
 
   it("source cleanliness verifier rejects production backup, copy, and marker files while allowing docs and tests", () => {

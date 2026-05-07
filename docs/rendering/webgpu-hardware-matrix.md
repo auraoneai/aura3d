@@ -1,6 +1,6 @@
 # WebGPU Hardware Matrix
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 Galileo3D separates real WebGPU evidence from injected adapter evidence. Browser tests that use injected adapters prove the renderer contract, fallback behavior, and submission shape. They do not prove hardware support.
 

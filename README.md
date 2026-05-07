@@ -1,6 +1,6 @@
 # Galileo3D
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 Galileo3D is an experimental TypeScript web 3D engine prototype. The current repository contains verified subsystem slices, browser examples, product-style validation demos, and v2 release-readiness documentation.
 

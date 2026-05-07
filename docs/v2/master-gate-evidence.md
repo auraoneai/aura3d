@@ -1,8 +1,8 @@
 # Master Gate Evidence
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
-This page maps selected master checklist rows to artifacts that can be objectively checked in this repository. It does not assert production readiness, a published package release, independent clean-checkout success, or superiority over another engine.
+This page maps selected master checklist rows to artifacts that can be objectively checked in this repository. It does not assert production readiness, public registry publication, external demo hosting, or broad superiority over another engine.
 
 ## Rows With Objective Evidence
 
@@ -14,7 +14,8 @@ This page maps selected master checklist rows to artifacts that can be objective
 | Asset corpus report exists | `docs/assets/asset-corpus-report.md`, `tests/reports/gltf-corpus.json`, `tests/reports/gltf-100-classification.json` | Pinned 17-entry loader-compatibility corpus plus 100-entry source-classification corpus with SHA-256 hashes; not a 100-asset loader/render/visual compatibility matrix. |
 | Comparative benchmark reports exist | `docs/benchmarks/threejs-comparison.md`, `docs/benchmarks/babylon-comparison.md`, `tests/reports/comparison-threejs.json`, `tests/reports/comparison-babylon.json` | Scaffold equivalence, capped Playwright Chromium WebGL2 microbenchmark timings, measured esbuild benchmark bundles, pinned environment/dependency metadata, audit screenshots, glTF corpus linkage, pinned external loader import evidence, and category coverage only. `claimUsable` remains false for broad competitive claims, but `supportedNicheClaims` allows only the exact checked-in scaffold bundle-size wording. Rendered production-scene parity, release bundles, visual loader-output parity, broader device review, and independent review are still missing. |
 | Public docs and API reference exist | `docs/site-map.md`, `docs/api/README.md`, `docs/api/public-api.md`, `tools/api-docs/index.ts`, `tests/unit/tools/api-docs.test.ts` | Generated entrypoint export reference, not full symbol-level API prose. |
-| Version alignment for package metadata, docs site, changelog, issue/support process, security policy, and compatibility matrix | `package.json`, `packages/*/package.json`, `docs/site-map.md`, `CHANGELOG.md`, `SUPPORT.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `.github/ISSUE_TEMPLATE/feature_request.yml`, `SECURITY.md`, `docs/compatibility.md`, `docs/release-checklist.md`, `docs/release-process.md`, `tools/docs-version-alignment/index.ts` | `pnpm verify:docs-version` passed locally for version `0.0.0-rebuild`; this proves version-string alignment only and is not evidence of a published package release. |
+| Version alignment for package metadata, docs site, changelog, issue/support process, security policy, and compatibility matrix | `package.json`, `packages/*/package.json`, `docs/site-map.md`, `CHANGELOG.md`, `SUPPORT.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `.github/ISSUE_TEMPLATE/feature_request.yml`, `SECURITY.md`, `docs/compatibility.md`, `docs/release-checklist.md`, `docs/release-process.md`, `tools/docs-version-alignment/index.ts` | `pnpm verify:docs-version` passed locally for version `0.1.0-alpha.0`; this proves version-string alignment only and is not evidence of a published package release. |
+| Versioned package release exists | `package.json`, `docs/release-artifacts.json`, `release-artifacts/galileo3d-engine-0.1.0-alpha.0.tgz`, `tools/versioned-release-verification/index.ts`, `tests/reports/versioned-release.json` | Local alpha tarball artifact only; not public npm registry publication and not production readiness. The verifier checks `private: false`, manifest version alignment, artifact metadata, tarball existence, and SHA-256. |
 | New developer basic app path exists | `docs/tutorials/basic-app.md`, `templates/vite-vanilla`, `templates/react`, `templates/vue`, `templates/svelte`, `tools/template-verification/index.ts`, `tests/templates/template-verification.test.ts`, `tests/reports/template-verification.json` | Starter templates are verified from fresh temporary app copies with external npm dependencies and sanitized local Galileo runtime artifacts. This is not a public registry-install or package-release claim. |
 | Regression history exists | `tests/reports/release-repeat.json`, `tests/reports/final-release-verification.json` | Records repeated release-gate runs and current final verification. The repeat report now includes `hardGateRows` for rows 81, 686, 689, 692, and 696 so blockers remain explicit instead of being inferred from green-looking local artifacts. This row is evidence history, not a package-release or production-readiness claim. |
 | Issue/support process exists | `SUPPORT.md`, `.github/ISSUE_TEMPLATE/bug_report.yml`, `.github/ISSUE_TEMPLATE/feature_request.yml`, `tests/unit/tools/governance-docs.test.ts` | Repository issue process only; no service-level agreement. |
@@ -26,15 +27,13 @@ This page maps selected master checklist rows to artifacts that can be objective
 
 The following rows remain unmarked unless a separate worker proves them with stronger evidence:
 
-- release gate passes repeatedly;
 - external demos exist;
-- versioned package release exists;
 - independent clean-checkout reproduction succeeds on another machine or agent from documented commands.
 
-`tests/reports/release-repeat.json` is useful regression history, but this page does not use it to mark the repeated release-gate row because that row has a stricter release claim and the current instruction explicitly keeps it out of scope.
+`tests/reports/release-repeat.json` now proves rows 81 and 686 for repeated local release-gate evidence. That still does not prove production readiness without the remaining external demo, package-release, and independent-reproduction gates.
 
 `tests/reports/clean-checkout.json` must have `ok: true`, `git.dirty: false`, and `reproduction.cleanCheckout: true` before it can support rows 81 or 686. Dirty workspace evidence is a blocker, not a passing clean-checkout artifact. Row 696 additionally requires `reproduction.independentMachineOrAgent: true` with recorded evidence from outside this current workspace.
 
-`package.json` currently uses version `0.0.0-rebuild`, so the package-release row remains blocked until there is a deliberate versioned release artifact or publication record. This repository must not treat a local build or package metadata alignment as a published/versioned release.
+`package.json` currently uses version `0.1.0-alpha.0`, and `docs/release-artifacts.json` records a local alpha tarball artifact. This is package-release evidence only for the checked alpha artifact; it is not a public registry publication or production-readiness claim.
 
 `docs/examples/external-demos.md` records why local product examples do not mark the external demo row: no public hosted demo URLs or public-URL browser artifacts are checked in.

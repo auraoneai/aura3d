@@ -1,15 +1,15 @@
 # Release Process
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 ## Purpose
 
-This document defines the package publishing and semantic-versioning process for Galileo3D v2 governance. It applies to version `0.0.0-rebuild`.
+This document defines the package publishing and semantic-versioning process for Galileo3D v2 governance. It applies to version `0.1.0-alpha.0`.
 
 ## Versioning Policy
 
-- `0.0.0-rebuild` is an internal rebuild version and must not be described as production-ready.
-- Before a public developer preview, choose an explicit prerelease version such as `0.1.0-alpha.0`.
+- `0.1.0-alpha.0` is an alpha developer-preview artifact version and must not be described as production-ready.
+- Before a stable public release, choose an explicit semver version and update the changelog, migration notes, compatibility matrix, and claim registry together.
 - Breaking public API changes require a changelog entry and migration note.
 - Strong public claims remain blocked unless `docs/v2/claim-registry.md` permits the exact wording.
 
@@ -57,6 +57,6 @@ For independent clean-checkout reproduction, `tests/reports/clean-checkout.json`
 - Do not publish if any final report has a stale or mismatched release-run ID.
 - Do not publish if `pnpm verify:claims` fails.
 - Do not publish if release notes contain unregistered public claims.
-- Do not treat `0.0.0-rebuild`, a local `dist/` build, or package metadata alignment as a versioned package release.
+- Do not treat a local `dist/` build or package metadata alignment as a versioned package release.
 - The versioned release gate requires `pnpm verify:versioned-release`, which reads `docs/release-artifacts.json` and writes `tests/reports/versioned-release.json`.
 - Versioned release evidence requires a deliberate non-`0.0.0-rebuild` package version, `private: false`, matching artifact versions, and at least one concrete artifact or publication record.

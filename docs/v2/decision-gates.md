@@ -20,7 +20,7 @@ Required:
 - Performance budgets report min, median, max, warmup, attempts, and environment class.
 - The Priority 0 checklist in [Filename-Level Execution Checklist](./filename-level-execution-checklist.md) is complete.
 
-Current status: **not met**. A local pass is only necessary evidence; this gate requires repeated clean-checkout runs, report freshness checks, trace strictness, documented workspace state, and claim-registry enforcement.
+Current status: **met for local internal release-candidate evidence**. `pnpm verify:release:repeat` has passed three full release runs from a clean checkout, trace is strict, report freshness is enforced, and the claim registry blocks unsupported public claims. This is still not production readiness.
 
 ## Gate B: Developer Preview
 
@@ -36,7 +36,7 @@ Required:
 - Package publishing or local package consumption is documented.
 - A starter template exists.
 
-Current status: **not met**.
+Current status: **met for developer-preview documentation and local package consumption**. Public API docs, getting-started docs, learning examples, starter templates, known limits, release process docs, and the local `0.1.0-alpha.0` package artifact exist. This is not a stable public registry release.
 
 ## Gate C: Better-Than-Three.js In A Defined Niche
 
@@ -56,7 +56,7 @@ Required:
 - The claim statement names the exact niche, measured advantage, unsupported areas, benchmark versions, browser/device matrix, and date of evidence.
 - No raw renderer-performance claim is made unless Galileo3D wins the same scene on the same hardware/browser/settings with raw data attached.
 
-Current status: **not met**.
+Current status: **met only for the exact registered niche claims**. The allowed claims are limited to checked-in scaffold bundle-size evidence and the higher-level TypeScript workflow niche. Broad "better than Three.js" wording, raw renderer-performance claims, visual parity, ecosystem maturity, and production PBR parity remain blocked.
 
 ## Gate D: Unity/Unreal-Competitive For Browser-First Apps
 
@@ -75,7 +75,7 @@ Required:
 - At least one app is authored through the browser editor from template creation through import, placement, material edit, script/behavior setup, play mode, static export, and exported-site browser smoke test.
 - The Unity/Unreal comparison is explicitly limited to browser-first TypeScript workflows and lists where Unity/Unreal remain stronger.
 
-Current status: **not met**.
+Current status: **met only for the browser-first TypeScript workflow claim**. The editor workflow, static export, editor-authored app, and browser-first limitation evidence are complete. This does not support a general Unity/Unreal replacement claim.
 
 ## Gate E: Production Credibility
 
@@ -95,7 +95,7 @@ Required:
 - A clean external reproduction path exists: another machine or independent agent can install, run verification, open demos, and reproduce benchmark reports from documented commands.
 - Docs site, API reference, package version, changelog, known limits, support policy, issue templates, and security policy are version-aligned.
 
-Current status: **not met**.
+Current status: **not met**. External hosted demos and independent clean-checkout reproduction remain blocked, so the production-ready claim remains forbidden.
 
 ## Explicitly Disallowed Claims Today
 

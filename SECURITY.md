@@ -1,10 +1,10 @@
 # Security Policy
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 ## Supported Security Scope
 
-Galileo3D is currently an internal experimental rebuild package. Security handling applies to the source tree, verification tooling, examples, package metadata, and generated release artifacts for version `0.0.0-rebuild`.
+Galileo3D is currently an internal experimental rebuild package. Security handling applies to the source tree, verification tooling, examples, package metadata, and generated release artifacts for version `0.1.0-alpha.0`.
 
 ## Reporting A Vulnerability
 

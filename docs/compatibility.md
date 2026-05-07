@@ -1,10 +1,10 @@
 # Compatibility Matrix
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 ## Current Compatibility Status
 
-This matrix records the governance baseline for version `0.0.0-rebuild`. It is not a production support guarantee.
+This matrix records the governance baseline for version `0.1.0-alpha.0`. It is not a production support guarantee.
 
 | Surface | Current documented state |
 |---|---|
@@ -18,5 +18,5 @@ This matrix records the governance baseline for version `0.0.0-rebuild`. It is n
 ## Compatibility Rules
 
 - Do not claim broad browser or device compatibility without a current hardware/browser matrix report.
-- Do not claim production support for `0.0.0-rebuild`.
+- Do not claim production support for `0.1.0-alpha.0`.
 - Public compatibility wording must follow `docs/v2/claim-registry.md`.

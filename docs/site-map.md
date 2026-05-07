@@ -1,6 +1,6 @@
 # Galileo3D Docs Site Map
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 This file is the deployment manifest for the current documentation set. A docs deployment must include these pages and example targets for the same package version.
 

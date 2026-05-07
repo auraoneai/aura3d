@@ -33,6 +33,9 @@ describe("master gate evidence", () => {
       "docs/api/public-api.md",
       "tests/reports/release-repeat.json",
       "tests/reports/final-release-verification.json",
+      "docs/release-artifacts.json",
+      "release-artifacts/galileo3d-engine-0.1.0-alpha.0.tgz",
+      "tests/reports/versioned-release.json",
       "SUPPORT.md",
       ".github/ISSUE_TEMPLATE/bug_report.yml",
       ".github/ISSUE_TEMPLATE/feature_request.yml",
@@ -44,7 +47,8 @@ describe("master gate evidence", () => {
     }
 
     expect(evidence).toContain("does not assert production readiness");
-    expect(evidence).toContain("does not use it to mark the repeated release-gate row");
+    expect(evidence).toContain("not public npm registry publication");
+    expect(evidence).toContain("not production readiness");
   });
 
   it("keeps comparison reports as scaffold evidence, not superiority evidence", () => {
@@ -118,10 +122,10 @@ describe("master gate evidence", () => {
     }>("tests/reports/clean-checkout.json");
 
     expect(checklist).toContain("- [ ] External demos exist.");
-    expect(checklist).toContain("- [ ] Versioned package release exists.");
+    expect(checklist).toContain("- [x] Versioned package release exists.");
     expect(checklist).toContain("- [ ] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands.");
     expect(releaseRepeat.hardGateRows.map((row) => row.row).sort((a, b) => a - b)).toEqual([81, 686, 689, 692, 696]);
-    for (const row of [689, 692, 696]) {
+    for (const row of [689, 696]) {
       const gate = releaseRepeat.hardGateRows.find((entry) => entry.row === row);
       expect(gate?.proven).toBe(false);
       expect(gate?.blockers.length).toBeGreaterThan(0);

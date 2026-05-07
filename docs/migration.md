@@ -1,10 +1,10 @@
 # Migration Notes
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 ## Current Migration Status
 
-Galileo3D version `0.0.0-rebuild` is an internal rebuild version. There is not yet a public stable API with compatibility guarantees.
+Galileo3D version `0.1.0-alpha.0` is an internal rebuild version. There is not yet a public stable API with compatibility guarantees.
 
 ## Migration Policy
 

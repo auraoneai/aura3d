@@ -690,7 +690,7 @@ Use these labels in issues, PRs, and progress docs:
 - [ ] External demos exist. Blocked: `docs/examples/external-demos.md` records no externally hosted or independently openable public demo URLs, `docs/examples/external-demo-urls.json` has no public demo entries, and `tests/reports/release-repeat.json` marks this gate as `proven: false`. Next action: deploy durable public demo URLs, record them in `docs/examples/external-demo-urls.json`, run `pnpm verify:external-demos`, and add public-URL browser/screenshot artifacts.
 - [x] Comparative benchmark reports exist.
 - [x] Public docs and API reference exist.
-- [ ] Versioned package release exists. Blocked: `package.json` is still `0.0.0-rebuild` and `private: true`; `docs/release-artifacts.json` contains no release artifacts; `docs/release-process.md` says this must not be treated as a versioned package release. Next action: create a deliberate non-`0.0.0-rebuild` release artifact or publication record after release gates pass, set `private: false`, record artifacts in `docs/release-artifacts.json`, and run `pnpm verify:versioned-release`.
+- [x] Versioned package release exists. Evidence: `package.json` is `0.1.0-alpha.0` with `private: false`; `release-artifacts/galileo3d-engine-0.1.0-alpha.0.tgz` was created from the runtime-only package manifest; `docs/release-artifacts.json` records the tarball path and SHA-256 `a644039a2871784a1dbe014f29c932c6107c4c041532fcbe4a457f37535bd24e`; `pnpm verify:versioned-release` passed and the verifier checks that the tarball exists with a matching SHA-256.
 - [x] Regression history exists.
 - [x] Issue/support process exists.
 - [x] Security, support, contribution, changelog, migration, compatibility, and claim-guideline docs exist.

@@ -1,10 +1,10 @@
 # Support Policy
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 ## Current Support Level
 
-Galileo3D is an experimental TypeScript web 3D engine prototype. Support for version `0.0.0-rebuild` is limited to repository issues, reproducible test cases, and documentation updates.
+Galileo3D is an experimental TypeScript web 3D engine prototype. Support for version `0.1.0-alpha.0` is limited to repository issues, reproducible test cases, and documentation updates.
 
 ## Where To Ask For Help
 

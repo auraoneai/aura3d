@@ -1,6 +1,6 @@
 # External Demo Status
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 Galileo3D currently has checked-in local product examples, but this repository does not contain evidence of externally hosted or independently openable public demo URLs.
 

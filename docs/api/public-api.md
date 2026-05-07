@@ -13,24 +13,24 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@galileo3d/animation` | `0.0.0-rebuild` | `packages/animation/src/index.ts` | 15 |
-| `@galileo3d/assets` | `0.0.0-rebuild` | `packages/assets/src/index.ts` | 46 |
-| `@galileo3d/audio` | `0.0.0-rebuild` | `packages/audio/src/index.ts` | 18 |
-| `@galileo3d/core` | `0.0.0-rebuild` | `packages/core/src/index.ts` | 13 |
-| `@galileo3d/debug` | `0.0.0-rebuild` | `packages/debug/src/index.ts` | 26 |
-| `@galileo3d/ecs` | `0.0.0-rebuild` | `packages/ecs/src/index.ts` | 18 |
-| `@galileo3d/editor` | `0.0.0-rebuild` | `packages/editor/src/index.ts` | 1 |
-| `@galileo3d/editor-runtime` | `0.0.0-rebuild` | `packages/editor-runtime/src/index.ts` | 34 |
-| `@galileo3d/input` | `0.0.0-rebuild` | `packages/input/src/index.ts` | 31 |
-| `@galileo3d/math` | `0.0.0-rebuild` | `packages/math/src/index.ts` | 16 |
-| `@galileo3d/physics` | `0.0.0-rebuild` | `packages/physics/src/index.ts` | 11 |
-| `@galileo3d/rendering` | `0.0.0-rebuild` | `packages/rendering/src/index.ts` | 102 |
-| `@galileo3d/scene` | `0.0.0-rebuild` | `packages/scene/src/index.ts` | 16 |
-| `@galileo3d/scripting` | `0.0.0-rebuild` | `packages/scripting/src/index.ts` | 15 |
+| `@galileo3d/animation` | `0.1.0-alpha.0` | `packages/animation/src/index.ts` | 15 |
+| `@galileo3d/assets` | `0.1.0-alpha.0` | `packages/assets/src/index.ts` | 46 |
+| `@galileo3d/audio` | `0.1.0-alpha.0` | `packages/audio/src/index.ts` | 18 |
+| `@galileo3d/core` | `0.1.0-alpha.0` | `packages/core/src/index.ts` | 13 |
+| `@galileo3d/debug` | `0.1.0-alpha.0` | `packages/debug/src/index.ts` | 26 |
+| `@galileo3d/ecs` | `0.1.0-alpha.0` | `packages/ecs/src/index.ts` | 18 |
+| `@galileo3d/editor` | `0.1.0-alpha.0` | `packages/editor/src/index.ts` | 1 |
+| `@galileo3d/editor-runtime` | `0.1.0-alpha.0` | `packages/editor-runtime/src/index.ts` | 34 |
+| `@galileo3d/input` | `0.1.0-alpha.0` | `packages/input/src/index.ts` | 31 |
+| `@galileo3d/math` | `0.1.0-alpha.0` | `packages/math/src/index.ts` | 16 |
+| `@galileo3d/physics` | `0.1.0-alpha.0` | `packages/physics/src/index.ts` | 11 |
+| `@galileo3d/rendering` | `0.1.0-alpha.0` | `packages/rendering/src/index.ts` | 102 |
+| `@galileo3d/scene` | `0.1.0-alpha.0` | `packages/scene/src/index.ts` | 16 |
+| `@galileo3d/scripting` | `0.1.0-alpha.0` | `packages/scripting/src/index.ts` | 15 |
 
 ## @galileo3d/animation
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -56,7 +56,7 @@ export * from "./ECSAnimationBridge.js";
 
 ## @galileo3d/assets
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -113,7 +113,7 @@ export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
 
 ## @galileo3d/audio
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -142,7 +142,7 @@ export { ReverbEffect } from "./effects/Reverb";
 
 ## @galileo3d/core
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -166,7 +166,7 @@ export * from "./ResourceScope.js";
 
 ## @galileo3d/debug
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -203,7 +203,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @galileo3d/ecs
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -232,7 +232,7 @@ export * from "./components/TagComponent.js";
 
 ## @galileo3d/editor
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/editor/package.json`
 - Public entrypoint: `packages/editor/src/index.ts`
 
@@ -244,7 +244,7 @@ export * from "@galileo3d/editor-runtime";
 
 ## @galileo3d/editor-runtime
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -289,7 +289,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @galileo3d/input
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -331,7 +331,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @galileo3d/math
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -358,7 +358,7 @@ export * from "./Random.js";
 
 ## @galileo3d/physics
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -380,7 +380,7 @@ export * from "./PhysicsDebugDraw.js";
 
 ## @galileo3d/rendering
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -493,7 +493,7 @@ export * from "./effects/ParticleSystem.js";
 
 ## @galileo3d/scene
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -520,7 +520,7 @@ export * from "./SceneSerializer.js";
 
 ## @galileo3d/scripting
 
-- Version: `0.0.0-rebuild`
+- Version: `0.1.0-alpha.0`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 

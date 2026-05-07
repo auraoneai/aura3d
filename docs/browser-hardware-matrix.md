@@ -1,6 +1,6 @@
 # Browser And Hardware Matrix
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 This matrix records the browser and hardware evidence currently present in this repository. It is a release-gate evidence index, not a production compatibility guarantee.
 

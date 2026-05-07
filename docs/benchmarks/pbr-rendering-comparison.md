@@ -1,6 +1,6 @@
 # PBR Rendering Comparison
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 This report documents the narrow rendered PBR comparison slice for Galileo3D v2.
 

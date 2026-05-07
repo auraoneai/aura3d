@@ -1,10 +1,10 @@
 # Public Claim Guidelines
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 ## Rule
 
-All public claim language for Galileo3D version `0.0.0-rebuild` must be allowed by `docs/v2/claim-registry.md`.
+All public claim language for Galileo3D version `0.1.0-alpha.0` must be allowed by `docs/v2/claim-registry.md`.
 
 This applies to:
 

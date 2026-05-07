@@ -1,6 +1,6 @@
 # Asset Corpus Report
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 This page summarizes the checked-in asset corpus report used by the current external-claim gates. It is a bounded compatibility report, not a production asset guarantee.
 

@@ -1,6 +1,6 @@
 # Basic App From A Starter Template
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 This path is for a new developer who wants a minimal browser app without reading source tests. It uses the checked starter templates and the same WebGL2 renderer entrypoint verified by `pnpm verify:templates`.
 
@@ -31,7 +31,7 @@ Each template contains:
 
 ## Install And Build
 
-The current repository version is `0.0.0-rebuild`. The package is not published as a public registry release, so `pnpm verify:templates` uses local built package artifacts for the Galileo runtime package while installing framework and Vite dependencies from npm.
+The current repository version is `0.1.0-alpha.0`. The package is not published as a public registry release, so `pnpm verify:templates` uses local built package artifacts for the Galileo runtime package while installing framework and Vite dependencies from npm.
 
 For repository validation, run:
 

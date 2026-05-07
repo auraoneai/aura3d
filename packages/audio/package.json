@@ -1,6 +1,6 @@
 {
   "name": "@galileo3d/audio",
-  "version": "0.0.0-rebuild",
+  "version": "0.1.0-alpha.0",
   "type": "module",
   "exports": {
     ".": {

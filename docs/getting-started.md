@@ -1,6 +1,6 @@
 # Getting Started
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 This guide is the top-level entry point for using the current Galileo3D prototype without reading source tests first.
 

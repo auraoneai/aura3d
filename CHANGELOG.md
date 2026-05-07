@@ -1,10 +1,10 @@
 # Changelog
 
-Version: 0.0.0-rebuild
+Version: 0.1.0-alpha.0
 
 All notable changes for Galileo3D are tracked here. This project follows source-controlled release notes until a public package release process is approved.
 
-## 0.0.0-rebuild
+## 0.1.0-alpha.0
 
 ### Governance
 
@@ -14,5 +14,5 @@ All notable changes for Galileo3D are tracked here. This project follows source-
 
 ### Release Status
 
-- `0.0.0-rebuild` is an internal experimental rebuild version.
+- `0.1.0-alpha.0` is an internal experimental rebuild version.
 - A release candidate requires current report JSON files generated from the same release-run ID and a passing final release verifier.
