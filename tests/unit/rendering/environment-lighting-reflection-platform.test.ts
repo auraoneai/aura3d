@@ -120,10 +120,12 @@ describe("lighting rig platform helpers", () => {
       "sun",
       "industrial",
       "urban-neon",
+      "product-detail",
       "product-shot"
     ]);
 
     const product = createLightingRig({ preset: "product-shot", intensityScale: 1.5 });
+    const productDetail = createLightingRig({ preset: "product-detail" });
     const sun = createLightingRig({ preset: "sun", shadows: false });
 
     expect(product.lights).toHaveLength(3);
@@ -145,6 +147,19 @@ describe("lighting rig platform helpers", () => {
     expect(product.diagnostics.unsupportedFeatures).toContain("rectangular-area-light");
     expect(product.diagnostics.disclosures.join(" ")).toMatch(/IES photometric profiles are unsupported/i);
     expect(product.diagnostics.claimBoundary).toMatch(/true area lights/i);
+    expect(productDetail.lights.map((light) => light.id)).toEqual([
+      "product-detail-key",
+      "product-detail-cool-edge",
+      "product-detail-warm-edge",
+      "product-detail-fill"
+    ]);
+    expect(productDetail.softboxes.map((softbox) => softbox.id)).toEqual([
+      "product-detail-key-strip",
+      "product-detail-cool-rim",
+      "product-detail-fill-card"
+    ]);
+    expect(productDetail.lights.find((light) => light.id === "product-detail-fill")?.intensity).toBeLessThan(0.2);
+    expect(productDetail.diagnostics.unsupportedFeatures).toContain("rectangular-area-light");
 
     expect(sun.diagnostics.shadowCastingLightCount).toBe(0);
     expect(sun.diagnostics.softboxProxyCount).toBe(0);

@@ -50,23 +50,24 @@ export interface DataGalaxyCompositionProfile {
 }
 
 export const DATA_GALAXY_MIN_PARTICLES = 4000;
-export const DATA_GALAXY_SHOWCASE_PARTICLES = 12000;
+export const DATA_GALAXY_SHOWCASE_PARTICLES = 6000;
 export const DATA_GALAXY_DEFAULT_PARTICLES = DATA_GALAXY_SHOWCASE_PARTICLES;
 export const DATA_GALAXY_STRESS_PARTICLES = 24000;
 export const DATA_GALAXY_MAX_PARTICLES = 50000;
 
-const DATA_GALAXY_BUDGET_LADDER_SEGMENTS = 12;
+const DATA_GALAXY_BUDGET_LADDER_SEGMENTS = 6;
+export const DATA_GALAXY_TELEMETRY_RING_SEGMENTS = 20;
 const DATA_GALAXY_LAYER_WEIGHTS = [
-  { name: "primary", weight: 0.54 },
-  { name: "vortex", weight: 0.23 },
-  { name: "network", weight: 0.15 },
-  { name: "wave", weight: 0 }
+  { name: "primary", weight: 0.92 },
+  { name: "vortex", weight: 0.035 },
+  { name: "network", weight: 0.03 },
+  { name: "wave", weight: 0.015 }
 ] as const;
 
 const DATA_GALAXY_DENSITY_TIERS = [
   { threshold: DATA_GALAXY_MAX_PARTICLES, label: "50k stress", mode: "stress" },
   { threshold: DATA_GALAXY_STRESS_PARTICLES, label: "24k stress", mode: "stress" },
-  { threshold: DATA_GALAXY_SHOWCASE_PARTICLES, label: "12k showcase", mode: "showcase" },
+  { threshold: DATA_GALAXY_SHOWCASE_PARTICLES, label: "6k showcase", mode: "showcase" },
   { threshold: DATA_GALAXY_MIN_PARTICLES, label: "4k interactive", mode: "interactive" }
 ] as const satisfies readonly { readonly threshold: number; readonly label: string; readonly mode: DataGalaxyBudgetMode }[];
 
@@ -87,9 +88,9 @@ export function createDataGalaxyBudgetPlan(options: DataGalaxyBudgetOptions): Da
   const networkCount = layerCount(layeredBudget.layers, "network");
   const waveCount = layerCount(layeredBudget.layers, "wave");
   const detail = overlayDetailForParticleCount(effectiveParticles);
-  const telemetryRingCount = effectiveParticles >= DATA_GALAXY_STRESS_PARTICLES
+  const telemetryRingCount = layeredBudget.mode === "stress"
     ? effectiveParticles >= DATA_GALAXY_MAX_PARTICLES ? 5 : 4
-    : effectiveParticles >= DATA_GALAXY_SHOWCASE_PARTICLES ? 2 : 1;
+    : 0;
 
   return {
     requestedParticles,
@@ -103,51 +104,51 @@ export function createDataGalaxyBudgetPlan(options: DataGalaxyBudgetOptions): Da
     nativeGpuComputeDispatches: 0,
     overlay: {
       detail,
-      sparkPoints: Math.round(520 * detail),
-      coreSparkPoints: Math.round(180 * detail),
-      focalClusterPoints: Math.round(220 * detail),
-      trailSegments: Math.round(240 * detail),
-      connectionSegments: options.connections ? Math.round(110 * detail) : 0,
-      contourSegments: Math.round(150 * detail),
+      sparkPoints: Math.round(260 * detail),
+      coreSparkPoints: Math.round(96 * detail),
+      focalClusterPoints: Math.round(180 * detail),
+      trailSegments: Math.round(110 * detail),
+      connectionSegments: options.connections ? Math.round(44 * detail) : 0,
+      contourSegments: Math.round(56 * detail),
       telemetryRingCount,
-      telemetryRingSegments: telemetryRingCount * 28,
-      budgetLadderSegments: DATA_GALAXY_BUDGET_LADDER_SEGMENTS
+      telemetryRingSegments: telemetryRingCount * DATA_GALAXY_TELEMETRY_RING_SEGMENTS,
+      budgetLadderSegments: layeredBudget.mode === "stress" ? DATA_GALAXY_BUDGET_LADDER_SEGMENTS : 0
     }
   };
 }
 
 export function createDataGalaxyCompositionProfile(plan: DataGalaxyBudgetPlan): DataGalaxyCompositionProfile {
-  const stressScale = plan.mode === "stress" ? 0.88 : 1;
-  const focalScale = plan.mode === "showcase" ? 1.62 : plan.mode === "interactive" ? 1.08 : 1;
-  const supportScale = plan.mode === "showcase" ? 1.2 : 1;
+  const stressScale = plan.mode === "stress" ? 0.86 : 1;
+  const focalScale = plan.mode === "showcase" ? 1.72 : plan.mode === "interactive" ? 0.78 : 0.9;
+  const supportScale = plan.mode === "showcase" ? 0.12 : 0.68;
   return {
     primary: {
-      position: [0, 0.04, -0.04],
-      scale: [0.3 * focalScale * stressScale, 0.3 * focalScale * stressScale, 0.3 * focalScale * stressScale]
+      position: [0, 0.04, 0.02],
+      scale: [0.28 * focalScale * stressScale, 0.25 * focalScale * stressScale, 0.28 * focalScale * stressScale]
     },
     vortex: {
-      position: [0.24, 0.14, -0.22],
-      scale: [0.2 * supportScale * stressScale, 0.2 * supportScale * stressScale, 0.2 * supportScale * stressScale]
+      position: plan.mode === "showcase" ? [0.2, 0.14, -0.16] : [0.42, 0.12, -0.36],
+      scale: [0.18 * supportScale * stressScale, 0.18 * supportScale * stressScale, 0.18 * supportScale * stressScale]
     },
     network: {
-      position: [-0.6, -0.06, 0.36],
-      scale: [0.13 * supportScale * stressScale, 0.13 * supportScale * stressScale, 0.13 * supportScale * stressScale]
+      position: plan.mode === "showcase" ? [-0.22, -0.06, 0.18] : [-0.48, -0.08, 0.34],
+      scale: [0.14 * supportScale * stressScale, 0.14 * supportScale * stressScale, 0.14 * supportScale * stressScale]
     },
     wave: {
-      position: [0.56, -0.22, 0.42],
+      position: plan.mode === "showcase" ? [0.08, -0.18, 0.24] : [0.62, -0.24, 0.46],
       scale: [0.12 * supportScale * stressScale, 0.1 * supportScale * stressScale, 0.12 * supportScale * stressScale]
     },
-    boundsMin: plan.mode === "showcase" ? [-1.18, -0.78, -0.96] : [-1.42, -0.94, -1.1],
-    boundsMax: plan.mode === "showcase" ? [1.2, 0.88, 0.94] : [1.42, 1.02, 1.08],
-    telemetryBars: plan.mode !== "interactive",
-    evidenceLabelBudget: plan.mode === "stress" ? 14 : plan.mode === "showcase" ? 12 : 10
+    boundsMin: plan.mode === "showcase" ? [-0.72, -0.54, -0.62] : [-1.28, -0.9, -1.0],
+    boundsMax: plan.mode === "showcase" ? [0.72, 0.68, 0.62] : [1.28, 0.96, 1.0],
+    telemetryBars: plan.mode === "stress",
+    evidenceLabelBudget: plan.mode === "stress" ? 14 : plan.mode === "showcase" ? 10 : 9
   };
 }
 
 function overlayDetailForParticleCount(total: number): number {
   if (total >= DATA_GALAXY_MAX_PARTICLES) return 0.32;
   if (total >= DATA_GALAXY_STRESS_PARTICLES) return 0.24;
-  if (total >= DATA_GALAXY_SHOWCASE_PARTICLES) return 0.36;
+  if (total >= DATA_GALAXY_SHOWCASE_PARTICLES) return 0.12;
   return 0.04;
 }
 

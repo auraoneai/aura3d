@@ -7,6 +7,7 @@ export type LightingRigPreset =
   | "sun"
   | "industrial"
   | "urban-neon"
+  | "product-detail"
   | "product-shot";
 
 export type LightingRigUnsupportedFeature =
@@ -100,7 +101,7 @@ export function createLightingRig(options: LightingRigOptions = {}): LightingRig
 }
 
 export function listLightingRigPresets(): readonly LightingRigPreset[] {
-  return ["key-fill-rim", "studio-softbox", "sun", "industrial", "urban-neon", "product-shot"];
+  return ["key-fill-rim", "studio-softbox", "sun", "industrial", "urban-neon", "product-detail", "product-shot"];
 }
 
 function lightingRigDescriptors(preset: LightingRigPreset): readonly LightingRigLightDescriptor[] {
@@ -127,6 +128,13 @@ function lightingRigDescriptors(preset: LightingRigPreset): readonly LightingRig
         light("neon-key", "spot", "key", [0.42, 0.86, 1], 1.05, [-3, 4, 2.5], [0.5, -0.68, -0.54], 10, Math.PI / 5, 0.55, true, "Neon key is a colored spot helper, not emissive GI."),
         light("neon-magenta", "point", "accent", [1, 0.2, 0.66], 0.75, [3.2, 2.1, -1.2], [-1, -0.2, 0.1], 6, 0, 0, false, "Neon accent does not bounce light globally."),
         light("neon-rim", "directional", "rim", [0.64, 0.72, 1], 0.4, [1, 5, -5], [-0.2, -0.44, 0.88], 0, 0, 0, false, "Rim is a direct-light approximation.")
+      ];
+    case "product-detail":
+      return [
+        light("product-detail-key", "directional", "key", [1, 0.9, 0.78], 1.48, [-4.8, 3.3, 3.2], [0.7, -0.48, -0.52], 0, 0, 0, true, "Product detail key is a low glancing directional softbox approximation for normal/AO inspection."),
+        light("product-detail-cool-edge", "spot", "rim", [0.64, 0.78, 1], 1.15, [2.9, 2.6, -3.6], [-0.42, -0.34, 0.84], 8, Math.PI / 5.5, 0.38, false, "Cool edge strip is a bounded spot helper for product silhouette separation."),
+        light("product-detail-warm-edge", "point", "accent", [1, 0.55, 0.28], 0.54, [-2.4, 1.1, -1.2], [0.3, -0.18, 0.72], 4.8, 0, 0, false, "Warm practical accent adds bounded hue separation; it is not emissive bounce or GI."),
+        light("product-detail-fill", "directional", "fill", [0.48, 0.56, 0.68], 0.16, [4.2, 2.4, 3.6], [-0.68, -0.34, -0.64], 0, 0, 0, false, "Low fill preserves product material contrast.")
       ];
     case "product-shot":
       return [
@@ -156,6 +164,12 @@ function lightingRigSoftboxes(preset: LightingRigPreset): readonly LightingRigSo
         softbox("product-key-softbox", "key", [1, 0.95, 0.88], 1.55, [-3.2, 3.8, 3.1], [0.52, -0.64, -0.56], [2.4, 1.35], ["product-key"], "Product key softbox proxy; renderer still receives direct light descriptors."),
         softbox("product-fill-card", "fill", [0.7, 0.78, 0.9], 0.32, [3.1, 2.2, 2.4], [-0.68, -0.46, -0.57], [1.65, 1.0], ["product-fill"], "Low-intensity fill card proxy for product studio reports."),
         softbox("product-rim-strip", "rim", [0.85, 0.92, 1], 0.78, [0.5, 2.8, -3.7], [-0.08, -0.36, 0.93], [1.85, 0.38], ["product-rim"], "Rear strip proxy for product edge separation; not GI or area-light shading.")
+      ];
+    case "product-detail":
+      return [
+        softbox("product-detail-key-strip", "key", [1, 0.9, 0.78], 1.48, [-4.0, 2.7, 2.7], [0.7, -0.48, -0.52], [1.9, 0.58], ["product-detail-key"], "Low glancing key strip proxy for product material inspection; renderer still receives direct lights."),
+        softbox("product-detail-cool-rim", "rim", [0.64, 0.78, 1], 1.15, [2.5, 2.3, -3.0], [-0.42, -0.34, 0.84], [1.55, 0.34], ["product-detail-cool-edge"], "Cool rim proxy for edge separation; not GI or physical area lighting."),
+        softbox("product-detail-fill-card", "fill", [0.48, 0.56, 0.68], 0.16, [3.2, 2.0, 2.7], [-0.68, -0.34, -0.64], [1.3, 0.9], ["product-detail-fill"], "Low fill proxy keeps material contrast bounded.")
       ];
     default:
       return [];
@@ -244,7 +258,7 @@ function unsupportedFeaturesForRig(
 ): readonly LightingRigUnsupportedFeature[] {
   if (!includeUnsupportedDiagnostics) return [];
   const base: LightingRigUnsupportedFeature[] = ["ies-photometric-profile", "contact-shadow-map", "global-illumination"];
-  if (preset === "studio-softbox" || preset === "product-shot") base.unshift("rectangular-area-light");
+  if (preset === "studio-softbox" || preset === "product-shot" || preset === "product-detail") base.unshift("rectangular-area-light");
   if (preset === "sun") base.push("cascaded-shadow-map");
   return base;
 }

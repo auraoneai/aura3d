@@ -86,6 +86,7 @@ export interface GLTFRenderResources {
   readonly geometryLibrary: ReadonlyMap<string, Geometry>;
   readonly materialLibrary: ReadonlyMap<string, Material>;
   readonly renderableBindings: readonly GLTFRenderableBinding[];
+  readonly materialFidelityDiagnostics: readonly GLTFRenderResourceMaterialFidelityDiagnostic[];
   readonly morphTargetLibrary: ReadonlyMap<string, readonly MorphTargetDelta[]>;
   readonly textureLibrary: ReadonlyMap<string, Texture>;
   readonly bounds: CameraFrameBounds;
@@ -107,6 +108,25 @@ export interface GLTFRenderableBinding {
   readonly materialVariants: readonly GLTFMaterialVariantMappingAsset[];
   readonly skinned: boolean;
   readonly instanced: boolean;
+}
+
+export type GLTFRenderResourceMaterialFidelityIssue =
+  | "unsupported-texcoord-set"
+  | "generated-tangent-uv-mismatch";
+
+export interface GLTFRenderResourceMaterialFidelityDiagnostic {
+  readonly issue: GLTFRenderResourceMaterialFidelityIssue;
+  readonly slot: TexturedPBRTextureSlot;
+  readonly texCoord: number;
+  readonly renderedTexCoord: number;
+  readonly nodeName: string;
+  readonly geometryKey: string;
+  readonly materialKey: string;
+  readonly sourceMaterialName: string;
+  readonly sourceMaterialIndex?: number;
+  readonly sourceMeshIndex?: number;
+  readonly primitiveIndex?: number;
+  readonly detail: string;
 }
 
 export interface GLTFMaterialOverrideQuery {
@@ -159,6 +179,12 @@ export interface GLTFRenderResourceDiagnostics {
   readonly drawItems: number;
   readonly skinnedDrawItems: number;
   readonly texturedDrawItems: number;
+  readonly baseColorTextureDrawItems: number;
+  readonly colorBearingTextureDrawItems: number;
+  readonly surfaceDetailTextureDrawItems: number;
+  readonly effectiveTextureBackedDrawItems: number;
+  readonly unsupportedTexCoordDrawItems: number;
+  readonly generatedTangentUvMismatchDrawItems: number;
   readonly texturedSkinnedDrawItems: number;
   readonly untexturedSkinnedDrawItems: number;
   readonly fallbackWhiteDrawItems: number;
@@ -168,6 +194,9 @@ export interface GLTFRenderResourceDiagnostics {
   readonly textureCount: number;
   readonly textureBackedMaterialNames: readonly string[];
   readonly textureSlotDiagnostics: readonly GLTFRenderResourceTextureSlotDiagnostic[];
+  readonly textureContributionDiagnostics: readonly GLTFRenderResourceTextureContributionDiagnostic[];
+  readonly suppressedTextureSlotDiagnostics: readonly GLTFRenderResourceTextureContributionDiagnostic[];
+  readonly materialFidelityDiagnostics: readonly GLTFRenderResourceMaterialFidelityDiagnostic[];
   readonly shaderActiveTextureSlotDiagnostics: readonly GLTFRenderResourceTextureSlotDiagnostic[];
   readonly shaderInactiveTextureSlotDiagnostics: readonly GLTFRenderResourceTextureSlotDiagnostic[];
   readonly fallbackWhiteMaterialNames: readonly string[];
@@ -184,6 +213,12 @@ export interface GLTFRenderResourceTextureSlotDiagnostic {
   readonly drawItems: number;
   readonly materialNames: readonly string[];
   readonly labels: readonly string[];
+}
+
+export type GLTFRenderResourceTextureContribution = "color-bearing" | "surface-detail" | "suppressed";
+
+export interface GLTFRenderResourceTextureContributionDiagnostic extends GLTFRenderResourceTextureSlotDiagnostic {
+  readonly contribution: GLTFRenderResourceTextureContribution;
 }
 
 type GLTFTextureColorSpace = "srgb" | "linear";
@@ -411,12 +446,14 @@ export async function createGLTFRenderResources(
   }
   const bounds = computeGLTFRenderResourceBounds(scene, geometryLibrary, morphTargetLibrary);
   const renderableBindings = createGLTFRenderableBindings(asset, scene);
+  const materialFidelityDiagnostics = createGLTFMaterialFidelityDiagnostics(asset, renderableBindings, options.materialVariant);
 
   return {
     scene,
     geometryLibrary,
     materialLibrary,
     renderableBindings,
+    materialFidelityDiagnostics,
     morphTargetLibrary,
     textureLibrary,
     bounds,
@@ -483,6 +520,57 @@ function createGLTFRenderableBindings(
   });
 }
 
+function createGLTFMaterialFidelityDiagnostics(
+  asset: GLTFAsset,
+  bindings: readonly GLTFRenderableBinding[],
+  materialVariant: string | undefined
+): readonly GLTFRenderResourceMaterialFidelityDiagnostic[] {
+  const diagnostics: GLTFRenderResourceMaterialFidelityDiagnostic[] = [];
+  const meshByGeometry = new Map(asset.meshes.map((mesh) => [mesh.name, mesh]));
+  for (const binding of bindings) {
+    const mesh = meshByGeometry.get(binding.geometryKey);
+    if (!mesh) continue;
+    const material = materialForMesh(asset, mesh, materialVariant);
+    if (!material) continue;
+    for (const { slot, info, tangentSpace } of materialTextureInfosBySlot(material)) {
+      const renderedTexCoord = renderTexCoord(info.texCoord);
+      if (info.texCoord > 1) {
+        diagnostics.push({
+          issue: "unsupported-texcoord-set",
+          slot,
+          texCoord: info.texCoord,
+          renderedTexCoord,
+          ...materialFidelityBindingFields(binding),
+          detail: `glTF ${slot} texture requests TEXCOORD_${info.texCoord}, but current WebGL render resources only bind TEXCOORD_0 and TEXCOORD_1; the shader samples TEXCOORD_${renderedTexCoord}.`
+        });
+      }
+      if (tangentSpace && mesh.tangents.length === 0 && info.texCoord > 0) {
+        diagnostics.push({
+          issue: "generated-tangent-uv-mismatch",
+          slot,
+          texCoord: info.texCoord,
+          renderedTexCoord,
+          ...materialFidelityBindingFields(binding),
+          detail: `glTF ${slot} texture samples TEXCOORD_${info.texCoord}, but generated tangents are derived from TEXCOORD_0 when source tangents are absent.`
+        });
+      }
+    }
+  }
+  return diagnostics;
+}
+
+function materialFidelityBindingFields(binding: GLTFRenderableBinding): Omit<GLTFRenderResourceMaterialFidelityDiagnostic, "issue" | "slot" | "texCoord" | "renderedTexCoord" | "detail"> {
+  return {
+    nodeName: binding.nodeName,
+    geometryKey: binding.geometryKey,
+    materialKey: binding.materialKey,
+    sourceMaterialName: binding.sourceMaterialName,
+    ...(binding.sourceMaterialIndex !== undefined ? { sourceMaterialIndex: binding.sourceMaterialIndex } : {}),
+    ...(binding.sourceMeshIndex !== undefined ? { sourceMeshIndex: binding.sourceMeshIndex } : {}),
+    ...(binding.primitiveIndex !== undefined ? { primitiveIndex: binding.primitiveIndex } : {})
+  };
+}
+
 function collectGLTFMaterialOverrideTargets(
   bindings: readonly GLTFRenderableBinding[],
   materialLibrary: ReadonlyMap<string, Material>,
@@ -547,12 +635,14 @@ export function createGLTFRenderSource(
 }
 
 export function createGLTFRenderResourceDiagnostics(
-  resources: Pick<GLTFRenderResources, "scene" | "geometryLibrary" | "materialLibrary"> & Partial<Pick<GLTFRenderResources, "textureLibrary">>,
+  resources: Pick<GLTFRenderResources, "scene" | "geometryLibrary" | "materialLibrary"> & Partial<Pick<GLTFRenderResources, "textureLibrary" | "materialFidelityDiagnostics">>,
   options: GLTFRenderResourceDiagnosticsOptions = {}
 ): GLTFRenderResourceDiagnostics {
   const label = options.label ?? "gltf-render-resources";
   const textureBackedMaterialNames = new Set<string>();
   const textureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
+  const textureContributionDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
+  const suppressedTextureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
   const shaderActiveTextureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
   const shaderInactiveTextureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
   const fallbackWhiteMaterialNames = new Set<string>();
@@ -565,6 +655,10 @@ export function createGLTFRenderResourceDiagnostics(
   let drawItems = 0;
   let skinnedDrawItems = 0;
   let texturedDrawItems = 0;
+  let baseColorTextureDrawItems = 0;
+  let colorBearingTextureDrawItems = 0;
+  let surfaceDetailTextureDrawItems = 0;
+  let effectiveTextureBackedDrawItems = 0;
   let texturedSkinnedDrawItems = 0;
   let missingGeometryDrawItems = 0;
   let missingMaterialDrawItems = 0;
@@ -599,13 +693,30 @@ export function createGLTFRenderResourceDiagnostics(
       texturedDrawItems += 1;
       textureBackedMaterialNames.add(material.name);
     }
+    let hasEffectiveBaseColorTexture = false;
+    let hasColorBearingTexture = false;
+    let hasSurfaceDetailTexture = false;
     for (const [slot] of validTextureSlots) {
       addTextureSlotDiagnostic(textureSlotDiagnostics, slot, material.name, itemLabel);
-      const shaderSlotMap = materialSamplesTextureSlot(material, slot)
-        ? shaderActiveTextureSlotDiagnostics
-        : shaderInactiveTextureSlotDiagnostics;
+      const shaderActive = materialSamplesTextureSlot(material, slot);
+      const shaderSlotMap = shaderActive ? shaderActiveTextureSlotDiagnostics : shaderInactiveTextureSlotDiagnostics;
       addTextureSlotDiagnostic(shaderSlotMap, slot, material.name, itemLabel);
+      const contribution = shaderActive ? textureContributionForSlot(material, slot) : "suppressed";
+      if (contribution === "color-bearing") {
+        hasColorBearingTexture = true;
+        if (slot === "baseColor") hasEffectiveBaseColorTexture = true;
+        addTextureContributionDiagnostic(textureContributionDiagnostics, contribution, slot, material.name, itemLabel);
+      } else if (contribution === "surface-detail") {
+        hasSurfaceDetailTexture = true;
+        addTextureContributionDiagnostic(textureContributionDiagnostics, contribution, slot, material.name, itemLabel);
+      } else {
+        addTextureContributionDiagnostic(suppressedTextureSlotDiagnostics, contribution, slot, material.name, itemLabel);
+      }
     }
+    if (hasEffectiveBaseColorTexture) baseColorTextureDrawItems += 1;
+    if (hasColorBearingTexture) colorBearingTextureDrawItems += 1;
+    if (hasSurfaceDetailTexture) surfaceDetailTextureDrawItems += 1;
+    if (hasColorBearingTexture || hasSurfaceDetailTexture) effectiveTextureBackedDrawItems += 1;
     if (isSkinned && hasBaseColorTexture) texturedSkinnedDrawItems += 1;
     if (isSkinned && !hasBaseColorTexture) untexturedSkinnedLabels.push(itemLabel);
     if (isFallbackWhiteRuntimeMaterial(material)) {
@@ -620,6 +731,12 @@ export function createGLTFRenderResourceDiagnostics(
     drawItems,
     skinnedDrawItems,
     texturedDrawItems,
+    baseColorTextureDrawItems,
+    colorBearingTextureDrawItems,
+    surfaceDetailTextureDrawItems,
+    effectiveTextureBackedDrawItems,
+    unsupportedTexCoordDrawItems: countDistinctMaterialFidelityDrawItems(resources.materialFidelityDiagnostics, "unsupported-texcoord-set"),
+    generatedTangentUvMismatchDrawItems: countDistinctMaterialFidelityDrawItems(resources.materialFidelityDiagnostics, "generated-tangent-uv-mismatch"),
     texturedSkinnedDrawItems,
     untexturedSkinnedDrawItems: untexturedSkinnedLabels.length,
     fallbackWhiteDrawItems: fallbackWhiteLabels.length,
@@ -636,6 +753,9 @@ export function createGLTFRenderResourceDiagnostics(
         materialNames: [...diagnostics.materialNames].sort(),
         labels: [...diagnostics.labels].sort()
       })),
+    textureContributionDiagnostics: mapTextureContributionDiagnostics(textureContributionDiagnostics),
+    suppressedTextureSlotDiagnostics: mapTextureContributionDiagnostics(suppressedTextureSlotDiagnostics),
+    materialFidelityDiagnostics: resources.materialFidelityDiagnostics ?? [],
     shaderActiveTextureSlotDiagnostics: [...shaderActiveTextureSlotDiagnostics.entries()]
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([slot, diagnostics]) => ({
@@ -684,6 +804,82 @@ function addTextureSlotDiagnostic(
   diagnostics.labels.push(itemLabel);
 }
 
+function addTextureContributionDiagnostic(
+  diagnosticsByContributionSlot: Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>,
+  contribution: GLTFRenderResourceTextureContribution,
+  slot: TexturedPBRTextureSlot,
+  materialName: string,
+  itemLabel: string
+): void {
+  addTextureSlotDiagnostic(diagnosticsByContributionSlot, `${contribution}:${slot}` as TexturedPBRTextureSlot, materialName, itemLabel);
+}
+
+function mapTextureContributionDiagnostics(
+  diagnosticsByContributionSlot: Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>
+): readonly GLTFRenderResourceTextureContributionDiagnostic[] {
+  return [...diagnosticsByContributionSlot.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([key, diagnostics]) => {
+      const [contribution, slot] = key.split(":") as [GLTFRenderResourceTextureContribution, TexturedPBRTextureSlot];
+      return {
+        contribution,
+        slot,
+        drawItems: diagnostics.drawItems,
+        materialNames: [...diagnostics.materialNames].sort(),
+        labels: [...diagnostics.labels].sort()
+      };
+    });
+}
+
+function countDistinctMaterialFidelityDrawItems(
+  diagnostics: readonly GLTFRenderResourceMaterialFidelityDiagnostic[] | undefined,
+  issue: GLTFRenderResourceMaterialFidelityIssue
+): number {
+  if (!diagnostics) return 0;
+  const labels = new Set<string>();
+  for (const diagnostic of diagnostics) {
+    if (diagnostic.issue !== issue) continue;
+    labels.add(`${diagnostic.nodeName}:${diagnostic.geometryKey}:${diagnostic.materialKey}`);
+  }
+  return labels.size;
+}
+
+function textureContributionForSlot(
+  material: Material,
+  slot: TexturedPBRTextureSlot
+): GLTFRenderResourceTextureContribution {
+  switch (slot) {
+    case "baseColor":
+    case "diffuseTransmissionColor":
+    case "specularColor":
+    case "sheenColor":
+      return "color-bearing";
+    case "emissive":
+      return materialHasEmissiveContribution(material) ? "color-bearing" : "suppressed";
+    case "normal":
+      return numericMaterialParameter(material, "u_normalScale", 1) > 0.001 ? "surface-detail" : "suppressed";
+    case "occlusion":
+      return numericMaterialParameter(material, "u_occlusionStrength", 1) > 0.001 ? "surface-detail" : "suppressed";
+    default:
+      return "surface-detail";
+  }
+}
+
+function numericMaterialParameter(material: Material, name: string, fallback: number): number {
+  const value = material.getParameter(name);
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function materialHasEmissiveContribution(material: Material): boolean {
+  const strength = numericMaterialParameter(material, "u_emissiveStrength", 1);
+  const color = material.getParameter("u_emissiveColor");
+  if (strength <= 0.001) return false;
+  if ((Array.isArray(color) || ArrayBuffer.isView(color)) && color.length >= 3) {
+    return Math.max(Number(color[0]) || 0, Number(color[1]) || 0, Number(color[2]) || 0) > 0.001;
+  }
+  return true;
+}
+
 function materialSamplesTextureSlot(material: Material, slot: TexturedPBRTextureSlot): boolean {
   if (material.shaderKey !== DEFAULT_TEXTURED_PBR_SHADER_NAME) return true;
   return isTexturedPbrTextureSlotShaderActive(slot, material.shaderVariant);
@@ -702,9 +898,15 @@ function materialHasValidTextureBinding(material: Material, textureParameter: st
 
 function isFallbackWhiteRuntimeMaterial(material: Material): boolean {
   const baseColor = material.getParameter("u_baseColor");
+  const metallic = numericMaterialParameter(material, "u_metallic", 0);
+  const roughness = numericMaterialParameter(material, "u_roughness", 1);
+  const transmission = numericMaterialParameter(material, "u_transmissionFactor", 0)
+    + numericMaterialParameter(material, "u_diffuseTransmissionFactor", 0);
   const hasTexture = materialHasValidTextureBinding(material, "u_baseColorTexture", "u_baseColorTextureEnabled")
     || materialHasValidTextureBinding(material, "u_texture", "u_textureEnabled");
   return !hasTexture
+    && transmission <= 0.001
+    && !(metallic >= 0.9 && roughness <= 0.25)
     && (Array.isArray(baseColor) || ArrayBuffer.isView(baseColor))
     && baseColor.length >= 4
     && baseColor[0] >= 0.98
@@ -1063,27 +1265,39 @@ function usedRenderTexCoordSets(material: GLTFMaterialAsset | undefined): Readon
 }
 
 function materialTextureInfos(material: GLTFMaterialAsset): readonly GLTFResolvedTextureInfo[] {
+  return materialTextureInfosBySlot(material).map(({ info }) => info);
+}
+
+function materialTextureInfosBySlot(material: GLTFMaterialAsset): readonly {
+  readonly slot: TexturedPBRTextureSlot;
+  readonly info: GLTFResolvedTextureInfo;
+  readonly tangentSpace: boolean;
+}[] {
   return [
-    material.baseColorTexture,
-    material.metallicRoughnessTexture,
-    material.normalTexture,
-    material.occlusionTexture,
-    material.emissiveTexture,
-    material.clearcoat?.texture,
-    material.clearcoat?.roughnessTexture,
-    material.clearcoat?.normalTexture,
-    material.transmission?.texture,
-    material.diffuseTransmission?.texture,
-    material.diffuseTransmission?.colorTexture,
-    material.volume?.thicknessTexture,
-    material.specular?.texture,
-    material.specular?.colorTexture,
-    material.sheen?.colorTexture,
-    material.sheen?.roughnessTexture,
-    material.anisotropy?.texture,
-    material.iridescence?.texture,
-    material.iridescence?.thicknessTexture
-  ].filter((info): info is GLTFResolvedTextureInfo => info !== undefined);
+    material.baseColorTexture ? { slot: "baseColor", info: material.baseColorTexture, tangentSpace: false } : undefined,
+    material.metallicRoughnessTexture ? { slot: "metallicRoughness", info: material.metallicRoughnessTexture, tangentSpace: false } : undefined,
+    material.normalTexture ? { slot: "normal", info: material.normalTexture, tangentSpace: true } : undefined,
+    material.occlusionTexture ? { slot: "occlusion", info: material.occlusionTexture, tangentSpace: false } : undefined,
+    material.emissiveTexture ? { slot: "emissive", info: material.emissiveTexture, tangentSpace: false } : undefined,
+    material.clearcoat?.texture ? { slot: "clearcoat", info: material.clearcoat.texture, tangentSpace: false } : undefined,
+    material.clearcoat?.roughnessTexture ? { slot: "clearcoatRoughness", info: material.clearcoat.roughnessTexture, tangentSpace: false } : undefined,
+    material.clearcoat?.normalTexture ? { slot: "clearcoatNormal", info: material.clearcoat.normalTexture, tangentSpace: true } : undefined,
+    material.transmission?.texture ? { slot: "transmission", info: material.transmission.texture, tangentSpace: false } : undefined,
+    material.diffuseTransmission?.texture ? { slot: "diffuseTransmission", info: material.diffuseTransmission.texture, tangentSpace: false } : undefined,
+    material.diffuseTransmission?.colorTexture ? { slot: "diffuseTransmissionColor", info: material.diffuseTransmission.colorTexture, tangentSpace: false } : undefined,
+    material.volume?.thicknessTexture ? { slot: "volumeThickness", info: material.volume.thicknessTexture, tangentSpace: false } : undefined,
+    material.specular?.texture ? { slot: "specular", info: material.specular.texture, tangentSpace: false } : undefined,
+    material.specular?.colorTexture ? { slot: "specularColor", info: material.specular.colorTexture, tangentSpace: false } : undefined,
+    material.sheen?.colorTexture ? { slot: "sheenColor", info: material.sheen.colorTexture, tangentSpace: false } : undefined,
+    material.sheen?.roughnessTexture ? { slot: "sheenRoughness", info: material.sheen.roughnessTexture, tangentSpace: false } : undefined,
+    material.anisotropy?.texture ? { slot: "anisotropy", info: material.anisotropy.texture, tangentSpace: false } : undefined,
+    material.iridescence?.texture ? { slot: "iridescence", info: material.iridescence.texture, tangentSpace: false } : undefined,
+    material.iridescence?.thicknessTexture ? { slot: "iridescenceThickness", info: material.iridescence.thicknessTexture, tangentSpace: false } : undefined
+  ].filter((entry): entry is {
+    readonly slot: TexturedPBRTextureSlot;
+    readonly info: GLTFResolvedTextureInfo;
+    readonly tangentSpace: boolean;
+  } => entry !== undefined);
 }
 
 function materialNeedsNormals(material: GLTFMaterialAsset | undefined): boolean {
@@ -1311,7 +1525,8 @@ function createDefaultGLTFMaterial(mesh: GLTFMeshAsset, options: { readonly inst
 }
 
 function renderStateForGLTFMaterial(material: GLTFMaterialAsset): Partial<RenderState> {
-  const blend = material.alphaMode === "BLEND";
+  const transmissive = (material.transmission?.factor ?? 0) > 0 || (material.diffuseTransmission?.factor ?? 0) > 0;
+  const blend = material.alphaMode === "BLEND" || transmissive;
   return {
     cullMode: material.doubleSided ? "none" : "back",
     blend,
@@ -1339,9 +1554,7 @@ function createNormalSamplerForInfo(asset: GLTFAsset, info: GLTFResolvedTextureI
 
 function renderNormalMapScale(asset: GLTFAsset, info: (GLTFResolvedTextureInfo & { readonly scale: number }) | undefined): number | undefined {
   if (!info) return undefined;
-  const texture = asset.textures[info.texture];
-  const scale = info.scale;
-  return usesNearestSampler(texture) ? Math.min(scale, 0.1) : scale;
+  return info.scale;
 }
 
 function createNormalMapSampler(texture: GLTFTextureAsset | undefined): Sampler {

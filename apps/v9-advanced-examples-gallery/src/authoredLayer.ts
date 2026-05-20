@@ -13,7 +13,6 @@ import {
   type GLTFRenderResources,
   type V6GLTFRenderMetadata
 } from "@galileo3d/assets";
-import { createProductShowcaseLayout } from "@galileo3d/product-studio";
 import { TextureBinding, type Material, type RenderItem } from "@galileo3d/rendering";
 import { composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
 import {
@@ -26,6 +25,7 @@ import type { ControlValues } from "./sceneBuilderPrimitives";
 import type { DemoId } from "./metadata";
 import {
   applyProductConfiguratorRuntimeMaterialControls,
+  createProductConfiguratorShowcaseLayout,
   explodedProductPartOffset,
   productConfiguratorImportedMaterialControlPlan,
   productConfiguratorFocusOffset,
@@ -101,6 +101,10 @@ export interface AuthoredMaterialDiagnostic {
   readonly drawItems: number;
   readonly skinnedDrawItems: number;
   readonly texturedDrawItems: number;
+  readonly baseColorTextureDrawItems: number;
+  readonly colorBearingTextureDrawItems: number;
+  readonly surfaceDetailTextureDrawItems: number;
+  readonly effectiveTextureBackedDrawItems: number;
   readonly texturedSkinnedDrawItems: number;
   readonly untexturedSkinnedDrawItems: number;
   readonly fallbackWhiteDrawItems: number;
@@ -131,8 +135,23 @@ export interface AuthoredMaterialDiagnostic {
     readonly materialNames: readonly string[];
     readonly labels: readonly string[];
   }[];
+  readonly textureContributionDiagnostics: readonly {
+    readonly contribution: string;
+    readonly slot: string;
+    readonly drawItems: number;
+    readonly materialNames: readonly string[];
+    readonly labels: readonly string[];
+  }[];
+  readonly suppressedTextureSlotDiagnostics: readonly {
+    readonly contribution: string;
+    readonly slot: string;
+    readonly drawItems: number;
+    readonly materialNames: readonly string[];
+    readonly labels: readonly string[];
+  }[];
   readonly excludedNodeCount: number;
   readonly excludedNodeSample: readonly string[];
+  readonly excludedNodeSemanticRoles: readonly string[];
   readonly fallbackWhiteLabels: readonly string[];
   readonly textureBackedMaterialNames: readonly string[];
   readonly untexturedSkinnedLabels: readonly string[];
@@ -156,6 +175,10 @@ export interface AuthoredAssetProvenanceDiagnostic {
   readonly acceptableAsFocalHero: boolean;
   readonly textureBacked?: boolean;
   readonly generatedNoTexture?: boolean;
+  readonly semanticRoles?: readonly string[];
+  readonly supportScaffoldRoles?: readonly string[];
+  readonly defaultExcludedRoles?: readonly string[];
+  readonly textureBackedFocalMaterials?: readonly string[];
   readonly knownLimitations: readonly string[];
 }
 
@@ -183,6 +206,7 @@ interface AuthoredInstanceConfig {
   readonly explodeParts?: boolean;
   readonly includeNodePattern?: RegExp;
   readonly excludeNodePattern?: RegExp;
+  readonly excludeNodeSemanticRoles?: readonly string[];
 }
 
 interface LoadedAssetRecord {
@@ -193,12 +217,7 @@ interface LoadedAssetRecord {
   error?: string;
 }
 
-const PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT = createProductShowcaseLayout([
-  { assetId: "chronograph-watch", slot: "left-detail", materialVariantControl: "watchVariant", defaultMaterialVariant: "Midnight Gold" },
-  { assetId: "car-concept", slot: "hero", materialVariantControl: "carVariant", defaultMaterialVariant: "Carmine Candy" },
-  { assetId: "sunglasses-khronos", slot: "left-transparent" },
-  { assetId: "materials-variants-shoe", slot: "right-variant", materialVariantControl: "shoeVariant", defaultMaterialVariant: "beach" }
-]);
+const PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT = createProductConfiguratorShowcaseLayout();
 
 function productShowcaseConfig(assetId: AuthoredAssetCandidateId): Omit<AuthoredInstanceConfig, "assetId" | "label" | "turntable" | "explodeParts"> {
   const item = PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT.items.find((entry) => entry.assetId === assetId);
@@ -318,14 +337,25 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
   "data-galaxy": [
     {
       assetId: "data-galaxy-core-blender",
-      label: "authored AI data galaxy core",
-      position: [0, -1.02, 0],
+      label: "generated support data galaxy core",
+      position: [0.68, -0.54, 0.44],
       scale: [1, 1, 1],
-      targetHeight: 1.78,
+      targetHeight: 0.16,
       yawRadians: -0.12,
       turntable: true,
       turntableSpeedRadiansPerSecond: 0.16,
-      excludeNodePattern: /authored data galaxy platform/i
+      excludeNodePattern: /authored data galaxy platform/i,
+      excludeNodeSemanticRoles: [
+        "focal-core",
+        "formation-control",
+        "connection-loom",
+        "analytics-panel",
+        "decorative-pylon",
+        "support-platform",
+        "floor-trace",
+        "debug-axis",
+        "support-scaffold"
+      ]
     }
   ],
   "product-configurator": [
@@ -685,6 +715,10 @@ function authoredAssetProvenanceDiagnostic(candidate: AuthoredAssetCandidateReco
     acceptableAsFocalHero: provenance?.acceptableAsFocalHero ?? candidate.visualRole === "hero product",
     ...(typeof provenance?.textureBacked === "boolean" ? { textureBacked: provenance.textureBacked } : {}),
     ...(typeof provenance?.generatedNoTexture === "boolean" ? { generatedNoTexture: provenance.generatedNoTexture } : {}),
+    ...(provenance?.semanticRoles ? { semanticRoles: provenance.semanticRoles } : {}),
+    ...(provenance?.supportScaffoldRoles ? { supportScaffoldRoles: provenance.supportScaffoldRoles } : {}),
+    ...(provenance?.defaultExcludedRoles ? { defaultExcludedRoles: provenance.defaultExcludedRoles } : {}),
+    ...(provenance?.textureBackedFocalMaterials ? { textureBackedFocalMaterials: provenance.textureBackedFocalMaterials } : {}),
     knownLimitations: candidate.knownLimitations
   };
 }
@@ -973,6 +1007,8 @@ function collectImportedItems(
   const missingGeometryLabels: string[] = [];
   const missingMaterialLabels: string[] = [];
   const excludedNodeSample: string[] = [];
+  const excludedNodeSemanticRoles = new Set<string>();
+  const excludedSemanticRoleSet = new Set(config.excludeNodeSemanticRoles ?? []);
   let skinnedDrawItems = 0;
   let texturedDrawItems = 0;
   let texturedSkinnedDrawItems = 0;
@@ -994,10 +1030,13 @@ function collectImportedItems(
   pipeline.resources.scene.updateWorldTransforms();
   for (const { node, renderable } of pipeline.resources.scene.collectRenderables()) {
     const includedByPolicy = config.includeNodePattern ? config.includeNodePattern.test(node.name) : true;
-    const excludedByPolicy = config.excludeNodePattern?.test(node.name) === true;
+    const semanticRole = gltfNodeSemanticRole(node);
+    const excludedByPolicy = config.excludeNodePattern?.test(node.name) === true
+      || (semanticRole !== undefined && excludedSemanticRoleSet.has(semanticRole));
     if (!includedByPolicy || excludedByPolicy) {
       excludedNodeCount += 1;
       if (excludedNodeSample.length < 16) excludedNodeSample.push(node.name);
+      if (semanticRole !== undefined) excludedNodeSemanticRoles.add(semanticRole);
       continue;
     }
     const geometry = pipeline.resources.geometryLibrary.get(renderable.geometry);
@@ -1018,7 +1057,21 @@ function collectImportedItems(
       || materialHasTexture(material, "u_normalTexture", "u_normalTextureEnabled")
       || materialHasTexture(material, "u_metallicRoughnessTexture", "u_metallicRoughnessTextureEnabled")
       || materialHasTexture(material, "u_occlusionTexture", "u_occlusionTextureEnabled")
-      || materialHasTexture(material, "u_emissiveTexture", "u_emissiveTextureEnabled");
+      || materialHasTexture(material, "u_emissiveTexture", "u_emissiveTextureEnabled")
+      || materialHasTexture(material, "u_clearcoatTexture", "u_clearcoatTextureEnabled")
+      || materialHasTexture(material, "u_clearcoatRoughnessTexture", "u_clearcoatRoughnessTextureEnabled")
+      || materialHasTexture(material, "u_clearcoatNormalTexture", "u_clearcoatNormalTextureEnabled")
+      || materialHasTexture(material, "u_transmissionTexture", "u_transmissionTextureEnabled")
+      || materialHasTexture(material, "u_diffuseTransmissionTexture", "u_diffuseTransmissionTextureEnabled")
+      || materialHasTexture(material, "u_diffuseTransmissionColorTexture", "u_diffuseTransmissionColorTextureEnabled")
+      || materialHasTexture(material, "u_volumeThicknessTexture", "u_volumeThicknessTextureEnabled")
+      || materialHasTexture(material, "u_specularTexture", "u_specularTextureEnabled")
+      || materialHasTexture(material, "u_specularColorTexture", "u_specularColorTextureEnabled")
+      || materialHasTexture(material, "u_sheenColorTexture", "u_sheenColorTextureEnabled")
+      || materialHasTexture(material, "u_sheenRoughnessTexture", "u_sheenRoughnessTextureEnabled")
+      || materialHasTexture(material, "u_anisotropyTexture", "u_anisotropyTextureEnabled")
+      || materialHasTexture(material, "u_iridescenceTexture", "u_iridescenceTextureEnabled")
+      || materialHasTexture(material, "u_iridescenceThicknessTexture", "u_iridescenceThicknessTextureEnabled");
     if (isSkinned) skinnedDrawItems += 1;
     if (hasAnyTexture) {
       texturedDrawItems += 1;
@@ -1058,6 +1111,10 @@ function collectImportedItems(
       drawItems: items.length,
       skinnedDrawItems,
       texturedDrawItems,
+      baseColorTextureDrawItems: renderResourceDiagnostics.baseColorTextureDrawItems,
+      colorBearingTextureDrawItems: renderResourceDiagnostics.colorBearingTextureDrawItems,
+      surfaceDetailTextureDrawItems: renderResourceDiagnostics.surfaceDetailTextureDrawItems,
+      effectiveTextureBackedDrawItems: renderResourceDiagnostics.effectiveTextureBackedDrawItems,
       texturedSkinnedDrawItems,
       untexturedSkinnedDrawItems: untexturedSkinnedLabels.length,
       fallbackWhiteDrawItems,
@@ -1076,10 +1133,13 @@ function collectImportedItems(
       materialControlTargetMaterialKeys: materialControlPlan.targetMaterialKeys,
       materialControlTargetSourceMaterials: materialControlPlan.targetSourceMaterials,
       ...(materialControlPlan.limitation ? { materialControlLimitation: materialControlPlan.limitation } : {}),
+      textureContributionDiagnostics: renderResourceDiagnostics.textureContributionDiagnostics,
+      suppressedTextureSlotDiagnostics: renderResourceDiagnostics.suppressedTextureSlotDiagnostics,
       shaderActiveTextureSlotDiagnostics: renderResourceDiagnostics.shaderActiveTextureSlotDiagnostics,
       shaderInactiveTextureSlotDiagnostics: renderResourceDiagnostics.shaderInactiveTextureSlotDiagnostics,
       excludedNodeCount,
       excludedNodeSample,
+      excludedNodeSemanticRoles: [...excludedNodeSemanticRoles].sort(),
       fallbackWhiteLabels,
       textureBackedMaterialNames: [...textureBackedMaterialNames].sort(),
       untexturedSkinnedLabels,
@@ -1087,6 +1147,17 @@ function collectImportedItems(
       missingMaterialLabels
     }
   };
+}
+
+function gltfNodeSemanticRole(node: { readonly userData?: Record<string, unknown> }): string | undefined {
+  const direct = node.userData?.g3d_semantic_role;
+  if (typeof direct === "string" && direct.length > 0) return direct;
+  const extras = node.userData?.gltfExtras;
+  if (extras && typeof extras === "object" && !Array.isArray(extras)) {
+    const role = (extras as Record<string, unknown>).g3d_semantic_role;
+    if (typeof role === "string" && role.length > 0) return role;
+  }
+  return undefined;
 }
 
 interface NodeNameParent {

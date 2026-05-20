@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 test.describe("Product configurator same-asset reference harness", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   let server: ExampleDevServer;
 
@@ -29,8 +29,38 @@ test.describe("Product configurator same-asset reference harness", () => {
       document.body.replaceChildren();
       document.body.style.margin = "0";
       document.body.style.background = "#05070a";
+      window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = ["spec:import:start"];
       void import("/tests/browser/product-configurator-reference-harness.js")
-        .then((module) => module.runProductConfiguratorReferenceHarness());
+        .then((module) => {
+          window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), "spec:import:done"];
+          return module.runProductConfiguratorReferenceHarness();
+        })
+        .catch((error) => {
+          window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), `spec:import:error:${error instanceof Error ? error.message : String(error)}`];
+          window.__G3D_PRODUCT_REFERENCE__ = {
+            schema: "g3d-product-configurator-reference-harness/v1",
+            status: "error",
+            claim: "same-original-product-glb-reference-outside-advanced-gallery",
+            galleryUiBypassed: true,
+            dpr: { viewportCssPixels: { width: 640, height: 480 } },
+            renderer: { backend: "webgl2", fixedCameraPreset: "product-hero", fixedLighting: "studio-small-08-hdr-plus-product-directional" },
+            assets: [],
+            summary: {
+              originalAssetIds: [],
+              allOriginalAssetUrlsLoaded: false,
+              allAssetsRendered: false,
+              allAssetsMaterialBacked: false,
+              allAssetsTextureBacked: false,
+              allAssetsReadyForCapture: false,
+              totalMaterials: 0,
+              totalTextures: 0,
+              totalDrawCalls: 0,
+              totalNonBlackPixels: 0,
+              materialVariants: []
+            },
+            error: error instanceof Error ? error.stack ?? error.message : String(error)
+          } as ProductReferenceReport;
+        });
     });
 
     try {
@@ -40,10 +70,11 @@ test.describe("Product configurator same-asset reference harness", () => {
           return report?.status === "ready" || report?.status === "error";
         },
         undefined,
-        { timeout: 75_000 }
+        { timeout: 150_000 }
       );
     } catch (error) {
-      throw new Error(`Product reference harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      const progress = await page.evaluate(() => window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []);
+      throw new Error(`Product reference harness did not report ready/error. Progress:\n${progress.join("\n") || "(none captured)"}\nPage errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
     const report = await page.evaluate(() => window.__G3D_PRODUCT_REFERENCE__) as ProductReferenceReport;
@@ -88,9 +119,18 @@ test.describe("Product configurator same-asset reference harness", () => {
       expect(asset?.diagnostics.textureCount ?? 0, `${id} texture count`).toBeGreaterThan(0);
       expect(asset?.diagnostics.drawCalls ?? 0, `${id} draw calls`).toBeGreaterThan(0);
       expect(asset?.diagnostics.lastError, `${id} renderer error`).toBeNull();
+      expect(asset?.renderResources.drawItems ?? 0, `${id} render-resource draw items`).toBeGreaterThan(0);
+      expect(asset?.renderResources.effectiveTextureBackedDrawItems ?? 0, `${id} effective texture-backed draw items`).toBeGreaterThan(0);
+      expect(asset?.renderResources.fallbackWhiteDrawItems ?? 0, `${id} fallback-white render resources: ${(asset?.renderResources.fallbackWhiteLabels ?? []).join(", ")}`).toBe(0);
+      expect(asset?.renderResources.missingGeometryDrawItems ?? 0, `${id} missing render-resource geometry`).toBe(0);
+      expect(asset?.renderResources.missingMaterialDrawItems ?? 0, `${id} missing render-resource materials`).toBe(0);
+      expect(asset?.renderResources.unsupportedTexCoordDrawItems ?? 0, `${id} unsupported TEXCOORD_2+ render fallback`).toBe(0);
+      expect(asset?.renderResources.generatedTangentUvMismatchDrawItems ?? 0, `${id} generated tangent / UV mismatch fallback`).toBe(0);
+      expect(Array.isArray(asset?.renderResources.materialFidelityDiagnostics), `${id} material fidelity diagnostics`).toBe(true);
       expect(asset?.pixels.nonBlackPixels ?? 0, `${id} visible pixels`).toBeGreaterThan(1000);
       expect(asset?.pixels.uniqueColorBuckets ?? 0, `${id} color variety`).toBeGreaterThan(8);
       expect(asset?.materials.length ?? 0, `${id} material report`).toBe(asset?.diagnostics.materialCount);
+      expect(asset?.runtimeMaterials.length ?? 0, `${id} runtime material report`).toBeGreaterThan(0);
       expect((asset?.textureSlots.length ?? 0) + (asset?.materialFeatures.length ?? 0), `${id} material/texture feature diagnostics`).toBeGreaterThan(0);
     }
 
@@ -101,6 +141,43 @@ test.describe("Product configurator same-asset reference harness", () => {
     expect(report.summary.materialVariants.some((entry) => entry.assetId === "car-concept" && entry.variants.length > 0)).toBe(true);
     expect(report.summary.materialVariants.some((entry) => entry.assetId === "chronograph-watch" && entry.variants.length > 0)).toBe(true);
     expect(report.summary.materialVariants.some((entry) => entry.assetId === "materials-variants-shoe" && entry.variants.length > 0)).toBe(true);
+
+    const car = byId.get("car-concept");
+    const carGlass = car?.runtimeMaterials.find((material) => material.name === "Glass");
+    expect(carGlass, "car Glass runtime material").toBeDefined();
+    expect(carGlass?.renderState.blend, "car glass must render as blended transmission material").toBe(true);
+    expect(carGlass?.renderState.depthWrite, "car glass must not depth-write over the cabin/paint").toBe(false);
+    expect(carGlass?.uniforms.transmissionFactor ?? 0, "car glass transmission uniform").toBeGreaterThan(0.99);
+    expect(car?.carRegionAcceptance.map((entry) => entry.id).sort(), "car crop-region material proofs").toEqual([
+      "contact-grounding",
+      "front-bumper-paint",
+      "hood-paint",
+      "windshield-roof-glass"
+    ]);
+    const failedCarRegions = (car?.carRegionAcceptance ?? [])
+      .filter((region) => !region.pass)
+      .map((region) => ({
+        id: region.id,
+        kind: region.kind,
+        pixels: region.pixels,
+        thresholds: region.thresholds,
+        screenRegion: region.screenRegion
+      }));
+    expect(failedCarRegions, `car crop-region failures: ${JSON.stringify(failedCarRegions)}`).toEqual([]);
+
+    const materialAcceptance = report.assets.flatMap((asset) => asset.materialAcceptance.map((entry) => [asset.id, entry] as const));
+    expect(materialAcceptance.map(([assetId, entry]) => `${assetId}:${entry.id}`).sort()).toEqual([
+      "car-concept:car-carmine-paint",
+      "car-concept:car-glass",
+      "chronograph-watch:watch-glass-face",
+      "sunglasses-khronos:sunglasses-lenses"
+    ]);
+    for (const [assetId, acceptance] of materialAcceptance) {
+      expect(
+        acceptance.pass,
+        `${assetId} ${acceptance.id} failed material acceptance with pixels ${JSON.stringify(acceptance.pixels)} and runtime materials ${acceptance.runtimeMaterialNames.join(", ")}`
+      ).toBe(true);
+    }
   });
 });
 
@@ -157,6 +234,92 @@ interface ProductReferenceAssetReport {
     readonly used: readonly string[];
   };
   readonly materials: readonly unknown[];
+  readonly runtimeMaterials: readonly ProductReferenceRuntimeMaterialReport[];
+  readonly materialAcceptance: readonly ProductReferenceMaterialAcceptanceReport[];
+  readonly carRegionAcceptance: readonly ProductReferenceCarRegionAcceptanceReport[];
   readonly textureSlots: readonly string[];
   readonly materialFeatures: readonly string[];
+  readonly renderResources: {
+    readonly drawItems: number;
+    readonly texturedDrawItems: number;
+    readonly baseColorTextureDrawItems: number;
+    readonly colorBearingTextureDrawItems: number;
+    readonly surfaceDetailTextureDrawItems: number;
+    readonly effectiveTextureBackedDrawItems: number;
+    readonly unsupportedTexCoordDrawItems: number;
+    readonly generatedTangentUvMismatchDrawItems: number;
+    readonly fallbackWhiteDrawItems: number;
+    readonly fallbackWhiteLabels: readonly string[];
+    readonly fallbackWhiteMaterialNames: readonly string[];
+    readonly missingGeometryDrawItems: number;
+    readonly missingMaterialDrawItems: number;
+    readonly materialFidelityDiagnostics: readonly unknown[];
+  };
+}
+
+interface ProductReferenceRuntimeMaterialReport {
+  readonly key: string;
+  readonly name: string;
+  readonly renderState: {
+    readonly blend: boolean;
+    readonly depthWrite: boolean;
+    readonly cullMode: string;
+  };
+  readonly uniforms: {
+    readonly metallic?: number;
+    readonly roughness?: number;
+    readonly normalScale?: number;
+    readonly clearcoatFactor?: number;
+    readonly clearcoatRoughnessFactor?: number;
+    readonly transmissionFactor?: number;
+    readonly transmissionFallbackEnergy?: number;
+    readonly specularFactor?: number;
+  };
+}
+
+interface ProductReferenceMaterialAcceptanceReport {
+  readonly id: string;
+  readonly kind: "paint" | "glass";
+  readonly sourceMaterialNamePattern: string;
+  readonly runtimeMaterialNames: readonly string[];
+  readonly pass: boolean;
+  readonly thresholds: Record<string, number>;
+  readonly pixels: {
+    readonly nonBlackPixels: number;
+    readonly averageLuma: number;
+    readonly maxLuma: number;
+    readonly uniqueColorBuckets: number;
+    readonly redPaintCoverage: number;
+    readonly meanRedDominance: number;
+    readonly isolatedHighlightRatio: number;
+    readonly grayWhiteCoverage: number;
+    readonly washedGrayWhiteRatio: number;
+  };
+}
+
+interface ProductReferenceCarRegionAcceptanceReport {
+  readonly id: "hood-paint" | "front-bumper-paint" | "windshield-roof-glass" | "contact-grounding";
+  readonly kind: "paint" | "glass" | "grounding";
+  readonly selection: "asset-relative-camera-proof";
+  readonly screenRegion: { readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number };
+  readonly pass: boolean;
+  readonly thresholds: Record<string, number>;
+  readonly camera: unknown;
+  readonly drawCalls: number;
+  readonly lastError: string | null;
+  readonly pixels: {
+    readonly nonBlackPixels: number;
+    readonly averageLuma: number;
+    readonly maxLuma: number;
+    readonly uniqueColorBuckets: number;
+    readonly redPaintCoverage: number;
+    readonly meanRedDominance: number;
+    readonly isolatedHighlightRatio: number;
+    readonly grayWhiteCoverage: number;
+    readonly washedGrayWhiteRatio: number;
+    readonly localLumaNoise: number;
+    readonly brightSpeckleRatio: number;
+    readonly contactDarkPixelRatio: number;
+    readonly contactContrast: number;
+  };
 }

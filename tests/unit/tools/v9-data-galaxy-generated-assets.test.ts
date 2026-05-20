@@ -32,11 +32,28 @@ type GeneratedAssetManifest = {
     readonly meshCount: number;
     readonly nodeCount: number;
     readonly textureBackedMaterialCount: number;
+    readonly semanticRoleCounts?: Record<string, number>;
+    readonly scaffoldRoleNodeCount?: number;
+  };
+  readonly semanticRoles?: {
+    readonly description: string;
+    readonly roleCounts: Record<string, number>;
+    readonly exportedRoleCounts: Record<string, number>;
+    readonly focalRoles: readonly string[];
+    readonly supportScaffoldRoles: readonly string[];
+    readonly defaultExcludedRoles: readonly string[];
+    readonly focalDrawItems: number;
+    readonly supportScaffoldDrawItems: number;
+    readonly defaultExcludedDrawItems: number;
+    readonly textureBackedFocalMaterials: readonly string[];
+    readonly textureBackedSupportMaterials: readonly string[];
   };
   readonly materials?: Record<string, number | readonly string[]>;
+  readonly batching?: Record<string, string | boolean>;
   readonly supportTruth?: {
     readonly role: string;
     readonly cannotReplace: readonly string[];
+    readonly routeExclusionsMayApply?: readonly string[];
   };
   readonly acceptanceBoundary: string;
   readonly limitations: readonly string[];
@@ -50,6 +67,8 @@ type GlbInspection = {
   readonly nodeCount: number;
   readonly textureBackedMaterialCount: number;
   readonly materialNames: readonly string[];
+  readonly semanticRoleCounts: Record<string, number>;
+  readonly scaffoldRoleNodeCount: number;
 };
 
 describe("v9 Data Galaxy generated asset manifests", () => {
@@ -101,18 +120,17 @@ describe("v9 Data Galaxy generated asset manifests", () => {
     const exported = inspectGlb(resolve(manifest.outputs.glb.path));
 
     expect(exported).toMatchObject({
-      materialCount: 11,
+      materialCount: 9,
       textureCount: 3,
       imageCount: 3,
-      meshCount: 149,
-      nodeCount: 154,
+      meshCount: 20,
+      nodeCount: 25,
       textureBackedMaterialCount: 3
     });
     expect(exported.materialNames).toEqual(expect.arrayContaining([
-      "deep graphite observatory deck",
       "cyan neural emission",
       "translucent cyan vector glass",
-      "black ceramic data housing"
+      "deep blue inference emission"
     ]));
     expect(manifest.counts.textureImages).toBe(exported.imageCount);
     expect(manifest.counts.textureBackedMaterials).toBe(exported.textureBackedMaterialCount);
@@ -128,11 +146,34 @@ describe("v9 Data Galaxy generated asset manifests", () => {
       imageCount: exported.imageCount,
       meshCount: exported.meshCount,
       nodeCount: exported.nodeCount,
-      textureBackedMaterialCount: exported.textureBackedMaterialCount
+      textureBackedMaterialCount: exported.textureBackedMaterialCount,
+      semanticRoleCounts: exported.semanticRoleCounts,
+      scaffoldRoleNodeCount: exported.scaffoldRoleNodeCount
     });
     expect(manifest.materials?.textureCount).toBe(exported.textureCount);
     expect(manifest.materials?.textureBackedMaterialCount).toBe(exported.textureBackedMaterialCount);
     expect(manifest.counts.materials).toBeGreaterThan(exported.materialCount);
+    expect(manifest.semanticRoles?.description).toContain("opaque batching preserves role boundaries");
+    expect(manifest.semanticRoles?.focalRoles).toEqual(["focal-core", "semantic-cluster"]);
+    expect(manifest.semanticRoles?.supportScaffoldRoles).toEqual([]);
+    expect(manifest.semanticRoles?.defaultExcludedRoles).toEqual([]);
+    expect(manifest.semanticRoles?.exportedRoleCounts).toEqual(exported.semanticRoleCounts);
+    expect(manifest.semanticRoles?.roleCounts["focal-core"]).toBeGreaterThan(0);
+    expect(manifest.semanticRoles?.roleCounts["semantic-cluster"]).toBeGreaterThan(0);
+    expect(manifest.semanticRoles?.roleCounts["signal-bead"]).toBeGreaterThan(0);
+    expect(manifest.semanticRoles?.roleCounts["semantic-cluster"]).toBeLessThanOrEqual(12);
+    expect(manifest.exportedGlb?.scaffoldRoleNodeCount).toBe(0);
+    expect(manifest.semanticRoles?.focalDrawItems).toBe(6);
+    expect(manifest.semanticRoles?.supportScaffoldDrawItems).toBe(0);
+    expect(manifest.semanticRoles?.defaultExcludedDrawItems).toBe(0);
+    expect(manifest.semanticRoles?.textureBackedFocalMaterials).toEqual([
+      "cyan neural emission",
+      "violet model-state emission",
+      "amber anomaly emission"
+    ]);
+    expect(manifest.semanticRoles?.textureBackedSupportMaterials).toEqual([]);
+    expect(manifest.batching?.semanticRolePreservation).toContain("g3d_semantic_role");
+    expect(manifest.supportTruth?.routeExclusionsMayApply?.join("\n")).toContain("source-pruned before GLB export");
   });
 
   it("keeps the deep-space HDR manifest scoped to background evidence only", () => {
@@ -197,6 +238,14 @@ function inspectGlb(path: string): GlbInspection {
   const meshes = arrayOfRecords(json?.meshes);
   const nodes = arrayOfRecords(json?.nodes);
   const textureBackedMaterialCount = materials.filter((material) => materialReferencesTexture(material)).length;
+  const semanticRoleCounts: Record<string, number> = {};
+  for (const node of nodes) {
+    const role = recordOfUnknown(node.extras)?.g3d_semantic_role;
+    if (typeof role !== "string") continue;
+    semanticRoleCounts[role] = (semanticRoleCounts[role] ?? 0) + 1;
+  }
+  const scaffoldRoleNodeCount = ["support-platform", "floor-trace", "debug-axis", "decorative-pylon", "support-scaffold"]
+    .reduce((total, role) => total + (semanticRoleCounts[role] ?? 0), 0);
   return {
     materialCount: materials.length,
     textureCount: textures.length,
@@ -207,6 +256,9 @@ function inspectGlb(path: string): GlbInspection {
     materialNames: materials
       .map((material) => typeof material.name === "string" ? material.name : "")
       .filter((name) => name.length > 0)
+    ,
+    semanticRoleCounts,
+    scaffoldRoleNodeCount
   };
 }
 
@@ -222,6 +274,12 @@ function materialReferencesTexture(material: Record<string, unknown>): boolean {
     || hasTextureInfo(material.occlusionTexture)
     || hasTextureInfo(material.emissiveTexture)
     || hasTextureInfo(material.extensions);
+}
+
+function recordOfUnknown(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : undefined;
 }
 
 function hasTextureInfo(value: unknown): boolean {

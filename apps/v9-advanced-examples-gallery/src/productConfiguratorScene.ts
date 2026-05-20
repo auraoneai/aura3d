@@ -17,22 +17,29 @@ export function buildProductConfiguratorScene(r: Resources, time: number, state:
   const bodyMat = productBodyMaterial(finish);
   const accentMat = productAccentMaterial(finish, focusPart);
   const lightingControl = String(state.controls.lighting ?? "studio");
+  const lightingPreset = lightingControl === "inspection" ? "product-detail" : "product-shot";
   const lightingIntensity = lightingControl === "inspection"
     ? 1.18
     : lightingControl === "environment"
       ? 1.02
       : 1.08;
   const productLighting = createLightingRig({
-    preset: "product-shot",
+    preset: lightingPreset,
     intensityScale: lightingIntensity,
     shadows: false
   });
   const stage = createEnvironmentStage({
     preset: "indoor-studio",
-    size: 3.25,
-    floorY: -0.95,
+    size: 2.72,
+    floorY: -0.9,
     studioTone: "product-premium",
     includeGroundGrid: false,
+    contactGrounding: {
+      label: "product showcase support",
+      casterRadius: 0.46,
+      receiverDistance: 0.16,
+      opacity: 0.26
+    },
     timeSeconds: time
   });
   if (!stage.lighting.proceduralMap) {
@@ -88,30 +95,30 @@ export function buildProductConfiguratorScene(r: Resources, time: number, state:
     ], activeHotspot ? [0.065, 0.065, 0.065] : [0.04, 0.04, 0.04], [0, 0, 0], activeHotspot ? "selected hotspot fallback" : "hotspot"));
   });
   items.push(...stage.items);
-  const turntableTickCount = 56;
+  const turntableTickCount = 0;
   for (let i = 0; i < turntableTickCount; i += 1) {
     const a = (i / turntableTickCount) * Math.PI * 2;
-    const radiusX = 1.72;
-    const radiusZ = 0.92;
+    const radiusX = 1.38;
+    const radiusZ = 0.72;
     items.push(item(r, "lineX", i % 4 === 0 ? "transparentAmber" : "wire", [
       Math.cos(a) * radiusX,
-      -0.906,
+      -0.862,
       0.1 + Math.sin(a) * radiusZ
-    ], [i % 4 === 0 ? 0.17 : 0.1, 1, 1], [0, -a, 0], "product turntable tick"));
+    ], [i % 6 === 0 ? 0.1 : 0.055, 1, 1], [0, -a, 0], "product turntable tick"));
   }
   const cleanedItems = removeProductConfiguratorProceduralArtifacts({ items }).items;
   return frame([...cleanedItems], bounds([-2.18, -1.12, -1.24], [2.18, 1.18, 1.34]), productLighting.collectedLights, productEnvironment, {
     bloom: { threshold: 0.44, intensity: 0.24, radius: 3.2 },
     colorGrade: { contrast: 1.14, saturation: 1.02 },
     fxaa: true
-  }, [...PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS, "reusable product-shot LightingRig", ...stage.systems], [
+  }, [...PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS, `reusable ${lightingPreset} LightingRig`, ...stage.systems], [
     ...PRODUCT_CONFIGURATOR_ROUTE_LIMITATIONS,
     productLighting.diagnostics.claimBoundary,
     ...productLighting.diagnostics.disclosures,
     ...stage.limitations
   ], [
     ...PRODUCT_CONFIGURATOR_DIAGNOSTIC_LABELS,
-    "LightingRig product-shot"
+    `LightingRig ${lightingPreset}`
   ], parts.length);
 }
 

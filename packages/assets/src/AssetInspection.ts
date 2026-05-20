@@ -659,6 +659,28 @@ function createGLTFInspectionWarnings(
         "Fix the glTF primitive geometry binding or report the exact unsupported primitive before counting this asset as render-ready."
       );
     }
+    if (renderResources.unsupportedTexCoordDrawItems > 0) {
+      const labels = renderResources.materialFidelityDiagnostics
+        .filter((diagnostic) => diagnostic.issue === "unsupported-texcoord-set")
+        .slice(0, 6)
+        .map((diagnostic) => `${diagnostic.nodeName}:${diagnostic.slot}:TEXCOORD_${diagnostic.texCoord}->TEXCOORD_${diagnostic.renderedTexCoord}`);
+      push(
+        "GLTF_RENDER_RESOURCE_TEXCOORD_DOWNGRADED",
+        `Render resources downgrade ${renderResources.unsupportedTexCoordDrawItems} draw item(s) that reference TEXCOORD_2 or higher: ${labels.join(", ")}.`,
+        "Bind and sample the authored texture coordinate set before counting this material as full glTF texture parity."
+      );
+    }
+    if (renderResources.generatedTangentUvMismatchDrawItems > 0) {
+      const labels = renderResources.materialFidelityDiagnostics
+        .filter((diagnostic) => diagnostic.issue === "generated-tangent-uv-mismatch")
+        .slice(0, 6)
+        .map((diagnostic) => `${diagnostic.nodeName}:${diagnostic.slot}:TEXCOORD_${diagnostic.texCoord}`);
+      push(
+        "GLTF_RENDER_RESOURCE_TANGENT_UV_MISMATCH",
+        `Render resources generated tangent space from TEXCOORD_0 for ${renderResources.generatedTangentUvMismatchDrawItems} draw item(s) with normal-map slots on another coordinate set: ${labels.join(", ")}.`,
+        "Use authored tangents or generate tangents from the sampled normal-map coordinate set before treating the normal/clearcoat normal response as faithful."
+      );
+    }
   }
 
   return warnings;

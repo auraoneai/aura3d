@@ -149,6 +149,7 @@ export const DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT = "transm
 export const DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT = "specular-sheen-anisotropy-textures";
 export const DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT = "iridescence-textures";
 export const DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT = "clearcoat-transmission-volume-textures";
+export const DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT = "clearcoat-specular-textures";
 export const DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT = "specular-sheen-anisotropy-iridescence-textures";
 export const DEFAULT_DEPTH_SHADER_NAME = "galileo3d/depth";
 export const DEFAULT_DEPTH_SHADER_MARKER = "@galileo3d-shader:depth-v1";
@@ -846,7 +847,7 @@ vec3 g3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   vec3 sampledSpecular = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.05, 0.82, clampedRoughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
 vec3 g3dPbrEncodeOutput(vec3 linearColor) {
@@ -1644,7 +1645,7 @@ vec3 g3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   vec3 sampledSpecular = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.05, 0.82, clampedRoughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
 vec3 g3dPbrEncodeOutput(vec3 linearColor) {
@@ -1711,10 +1712,11 @@ void main() {
     variants: [
       { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, defines: { G3D_PBR_CLEARCOAT_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
       { name: DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { G3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
+      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, defines: { G3D_PBR_SPECULAR_TEXTURES: true, G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
       { name: DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, defines: { G3D_PBR_IRIDESCENCE_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
       { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, defines: { G3D_PBR_CLEARCOAT_TEXTURES: true, G3D_PBR_TRANSMISSION_VOLUME_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
-      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, defines: { G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, G3D_PBR_IRIDESCENCE_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } }
+      { name: DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, defines: { G3D_PBR_CLEARCOAT_TEXTURES: true, G3D_PBR_SPECULAR_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } },
+      { name: DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, defines: { G3D_PBR_SPECULAR_TEXTURES: true, G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES: true, G3D_PBR_IRIDESCENCE_TEXTURES: true, G3D_PBR_DISABLE_TRANSMISSION_BACKDROP: true } }
     ],
     vertex: `#version 300 es
 // ${DEFAULT_TEXTURED_PBR_SHADER_MARKER}
@@ -1832,6 +1834,7 @@ uniform vec2 u_pointShadowTexelSize;
 uniform float u_pointShadowPcfSampleCount;
 uniform vec4 u_pointShadowPcfSamples[32];
 uniform sampler2D u_baseColorTexture;
+uniform float u_baseColorTextureEnabled;
 uniform vec2 u_baseColorTextureOffset;
 uniform vec2 u_baseColorTextureScale;
 uniform float u_baseColorTextureRotation;
@@ -1845,18 +1848,21 @@ uniform float u_normalTextureTexCoord;
 uniform vec2 u_normalTextureWrap;
 uniform float u_normalTextureEnabled;
 uniform sampler2D u_emissiveTexture;
+uniform float u_emissiveTextureEnabled;
 uniform vec2 u_emissiveTextureOffset;
 uniform vec2 u_emissiveTextureScale;
 uniform float u_emissiveTextureRotation;
 uniform float u_emissiveTextureTexCoord;
 uniform vec2 u_emissiveTextureWrap;
 uniform sampler2D u_metallicRoughnessTexture;
+uniform float u_metallicRoughnessTextureEnabled;
 uniform vec2 u_metallicRoughnessTextureOffset;
 uniform vec2 u_metallicRoughnessTextureScale;
 uniform float u_metallicRoughnessTextureRotation;
 uniform float u_metallicRoughnessTextureTexCoord;
 uniform vec2 u_metallicRoughnessTextureWrap;
 uniform sampler2D u_occlusionTexture;
+uniform float u_occlusionTextureEnabled;
 uniform vec2 u_occlusionTextureOffset;
 uniform vec2 u_occlusionTextureScale;
 uniform float u_occlusionTextureRotation;
@@ -1910,7 +1916,7 @@ uniform float u_volumeThicknessTextureRotation;
 uniform float u_volumeThicknessTextureTexCoord;
 uniform vec2 u_volumeThicknessTextureWrap;
 #endif
-#ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
+#ifdef G3D_PBR_SPECULAR_TEXTURES
 uniform sampler2D u_specularTexture;
 uniform vec2 u_specularTextureOffset;
 uniform vec2 u_specularTextureScale;
@@ -1923,6 +1929,8 @@ uniform vec2 u_specularColorTextureScale;
 uniform float u_specularColorTextureRotation;
 uniform float u_specularColorTextureTexCoord;
 uniform vec2 u_specularColorTextureWrap;
+#endif
+#ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
 uniform sampler2D u_sheenColorTexture;
 uniform vec2 u_sheenColorTextureOffset;
 uniform vec2 u_sheenColorTextureScale;
@@ -2139,7 +2147,7 @@ vec3 g3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   vec3 sampledSpecular = g3dTexturedPbrDecodeEnvironmentSample(g3dTexturedPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
-  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.05, 0.82, clampedRoughness);
+  sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
 vec3 g3dTexturedPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
@@ -2173,18 +2181,18 @@ vec3 g3dTexturedPbrExtensionDirectLight(
   float nDotV = max(g3dSaturate(dot(N, V)), G3D_EPSILON);
   float nDotH = g3dSaturate(dot(N, H));
   float vDotH = g3dSaturate(dot(V, H));
-  float clearcoatRough = clamp(clearcoatRoughness, 0.02, 1.0);
+  float clearcoatRough = clamp(clearcoatRoughness, 0.18, 1.0);
   vec3 clearcoatF = g3dFresnelSchlick(vec3(0.04), vDotH);
   float clearcoatD = g3dDistributionGGX(nDotH, clearcoatRough);
   float clearcoatG = g3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
-  vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.28;
+  vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;
   float sheenStrength = (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - vDotH), 5.0);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.32;
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.18;
   vec3 anisotropyAxis = normalize(vec3(cos(anisotropyRotation), 0.0, sin(anisotropyRotation)));
   float anisotropyBand = pow(abs(dot(H, anisotropyAxis)), mix(28.0, 6.0, clearcoatRough));
-  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.12);
+  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);
   vec3 iridescenceColor = g3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.65;
+  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.22;
   return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
 }
 vec3 g3dTexturedPbrExtensionEnvironmentLight(
@@ -2203,13 +2211,13 @@ vec3 g3dTexturedPbrExtensionEnvironmentLight(
   float iridescenceThicknessMaximum
 ) {
   float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
-  vec3 clearcoatF = g3dFresnelSchlickRoughness(vec3(0.04), nDotV, clamp(clearcoatRoughness, 0.02, 1.0));
-  vec3 clearcoatLobe = specularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0) * 0.18;
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - nDotV), 5.0) * 0.22;
+  vec3 clearcoatF = g3dFresnelSchlickRoughness(vec3(0.04), nDotV, clamp(clearcoatRoughness, 0.18, 1.0));
+  vec3 clearcoatLobe = specularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0) * 0.08;
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - nDotV), 5.0) * 0.12;
   float anisotropyBand = 0.5 + 0.5 * cos(anisotropyRotation * 2.0);
-  vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.04, 0.14, anisotropyBand);
+  vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
   vec3 iridescenceColor = g3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.5;
+  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.18;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
 void main() {
@@ -2229,9 +2237,11 @@ void main() {
   vec2 diffuseTransmissionColorUv = g3dTexturedPbrUv(u_diffuseTransmissionColorTextureTexCoord, u_diffuseTransmissionColorTextureOffset, u_diffuseTransmissionColorTextureScale, u_diffuseTransmissionColorTextureRotation);
   vec2 volumeThicknessUv = g3dTexturedPbrUv(u_volumeThicknessTextureTexCoord, u_volumeThicknessTextureOffset, u_volumeThicknessTextureScale, u_volumeThicknessTextureRotation);
 #endif
-#ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
+#ifdef G3D_PBR_SPECULAR_TEXTURES
   vec2 specularUv = g3dTexturedPbrUv(u_specularTextureTexCoord, u_specularTextureOffset, u_specularTextureScale, u_specularTextureRotation);
   vec2 specularColorUv = g3dTexturedPbrUv(u_specularColorTextureTexCoord, u_specularColorTextureOffset, u_specularColorTextureScale, u_specularColorTextureRotation);
+#endif
+#ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
   vec2 sheenColorUv = g3dTexturedPbrUv(u_sheenColorTextureTexCoord, u_sheenColorTextureOffset, u_sheenColorTextureScale, u_sheenColorTextureRotation);
   vec2 sheenRoughnessUv = g3dTexturedPbrUv(u_sheenRoughnessTextureTexCoord, u_sheenRoughnessTextureOffset, u_sheenRoughnessTextureScale, u_sheenRoughnessTextureRotation);
   vec2 anisotropyUv = g3dTexturedPbrUv(u_anisotropyTextureTexCoord, u_anisotropyTextureOffset, u_anisotropyTextureScale, u_anisotropyTextureRotation);
@@ -2241,11 +2251,12 @@ void main() {
   vec2 iridescenceThicknessUv = g3dTexturedPbrUv(u_iridescenceThicknessTextureTexCoord, u_iridescenceThicknessTextureOffset, u_iridescenceThicknessTextureScale, u_iridescenceThicknessTextureRotation);
 #endif
   vec4 baseColorSample = texture(u_baseColorTexture, g3dTexturedPbrWrapUv(baseColorUv, u_baseColorTextureWrap));
-  vec4 texturedBase = vec4(g3dTexturedPbrDecodeSrgb(baseColorSample.rgb), baseColorSample.a) * u_baseColor * v_vertexColor;
+  vec4 decodedBaseColor = vec4(g3dTexturedPbrDecodeSrgb(baseColorSample.rgb), baseColorSample.a);
+  vec4 texturedBase = mix(u_baseColor, u_baseColor * decodedBaseColor, step(0.5, u_baseColorTextureEnabled)) * v_vertexColor;
   vec4 metallicRoughnessSample = texture(u_metallicRoughnessTexture, g3dTexturedPbrWrapUv(metallicRoughnessUv, u_metallicRoughnessTextureWrap));
-  float roughness = clamp(u_roughness * metallicRoughnessSample.g, 0.0, 1.0);
-  float metallic = clamp(u_metallic * metallicRoughnessSample.b, 0.0, 1.0);
-  float occlusion = mix(1.0, texture(u_occlusionTexture, g3dTexturedPbrWrapUv(occlusionUv, u_occlusionTextureWrap)).r, clamp(u_occlusionStrength, 0.0, 1.0));
+  float roughness = mix(u_roughness, clamp(u_roughness * metallicRoughnessSample.g, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
+  float metallic = mix(u_metallic, clamp(u_metallic * metallicRoughnessSample.b, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
+  float occlusion = mix(1.0, mix(1.0, texture(u_occlusionTexture, g3dTexturedPbrWrapUv(occlusionUv, u_occlusionTextureWrap)).r, clamp(u_occlusionStrength, 0.0, 1.0)), step(0.5, u_occlusionTextureEnabled));
   vec3 geometryNormal = normalize(v_normal);
   vec3 mappedNormal = mix(geometryNormal, g3dTexturedPbrNormal(geometryNormal, v_tangent, g3dTexturedPbrWrapUv(normalUv, u_normalTextureWrap)), step(0.5, u_normalTextureEnabled));
   if (!gl_FrontFacing) mappedNormal = -mappedNormal;
@@ -2253,11 +2264,12 @@ void main() {
   float clearcoatNormalBoost = max(0.25, 1.0 - clamp(u_clearcoatNormalScale, 0.0, 1.0) * 0.12);
 #ifdef G3D_PBR_CLEARCOAT_TEXTURES
   vec3 clearcoatNormalSample = texture(u_clearcoatNormalTexture, g3dTexturedPbrWrapUv(clearcoatNormalUv, u_clearcoatNormalTextureWrap)).xyz * 2.0 - 1.0;
-  clearcoatNormalDirection = g3dTexturedPbrApplyNormalSample(geometryNormal, v_tangent, clearcoatNormalSample, u_clearcoatNormalScale);
+  vec3 sampledClearcoatNormal = g3dTexturedPbrApplyNormalSample(geometryNormal, v_tangent, clearcoatNormalSample, u_clearcoatNormalScale);
+  clearcoatNormalDirection = normalize(mix(geometryNormal, sampledClearcoatNormal, 0.42));
   clearcoatNormalBoost *= max(0.25, clearcoatNormalSample.z);
 #endif
   float clearcoat = clamp(u_clearcoatFactor * clearcoatNormalBoost, 0.0, 1.0);
-  float clearcoatRoughness = clamp(u_clearcoatRoughnessFactor, 0.0, 1.0);
+  float clearcoatRoughness = max(clamp(u_clearcoatRoughnessFactor, 0.0, 1.0), 0.18);
   float transmission = clamp(u_transmissionFactor, 0.0, 1.0);
   float diffuseTransmission = clamp(u_diffuseTransmissionFactor, 0.0, 1.0);
   vec3 diffuseTransmissionColor = clamp(u_diffuseTransmissionColorFactor, vec3(0.0), vec3(1.0));
@@ -2273,6 +2285,7 @@ void main() {
 #ifdef G3D_PBR_CLEARCOAT_TEXTURES
   clearcoat = clamp(clearcoat * texture(u_clearcoatTexture, g3dTexturedPbrWrapUv(clearcoatUv, u_clearcoatTextureWrap)).r, 0.0, 1.0);
   clearcoatRoughness = clamp(clearcoatRoughness * texture(u_clearcoatRoughnessTexture, g3dTexturedPbrWrapUv(clearcoatRoughnessUv, u_clearcoatRoughnessTextureWrap)).g, 0.0, 1.0);
+  clearcoatRoughness = max(clearcoatRoughness, 0.16 + (1.0 - clearcoatNormalBoost) * 0.12);
 #endif
 #ifdef G3D_PBR_TRANSMISSION_VOLUME_TEXTURES
   transmission = clamp(transmission * texture(u_transmissionTexture, g3dTexturedPbrWrapUv(transmissionUv, u_transmissionTextureWrap)).r, 0.0, 1.0);
@@ -2280,9 +2293,11 @@ void main() {
   diffuseTransmissionColor *= g3dTexturedPbrDecodeSrgb(texture(u_diffuseTransmissionColorTexture, g3dTexturedPbrWrapUv(diffuseTransmissionColorUv, u_diffuseTransmissionColorTextureWrap)).rgb);
   volumeThickness *= texture(u_volumeThicknessTexture, g3dTexturedPbrWrapUv(volumeThicknessUv, u_volumeThicknessTextureWrap)).g;
 #endif
-#ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
+#ifdef G3D_PBR_SPECULAR_TEXTURES
   specular = clamp(specular * texture(u_specularTexture, g3dTexturedPbrWrapUv(specularUv, u_specularTextureWrap)).a, 0.0, 1.0);
   specularColor *= g3dTexturedPbrDecodeSrgb(texture(u_specularColorTexture, g3dTexturedPbrWrapUv(specularColorUv, u_specularColorTextureWrap)).rgb);
+#endif
+#ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
   sheenColor *= g3dTexturedPbrDecodeSrgb(texture(u_sheenColorTexture, g3dTexturedPbrWrapUv(sheenColorUv, u_sheenColorTextureWrap)).rgb);
   sheenRoughness = clamp(sheenRoughness * texture(u_sheenRoughnessTexture, g3dTexturedPbrWrapUv(sheenRoughnessUv, u_sheenRoughnessTextureWrap)).a, 0.0, 1.0);
   anisotropy = clamp(anisotropy * texture(u_anisotropyTexture, g3dTexturedPbrWrapUv(anisotropyUv, u_anisotropyTextureWrap)).b, 0.0, 1.0);
@@ -2318,8 +2333,9 @@ void main() {
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   float environmentNdotV = clamp(dot(mappedNormal, viewDirection), 0.0, 1.0);
   vec2 environmentBrdf = mix(vec2(1.0, 0.0), texture(u_environmentBrdfLutTexture, vec2(environmentNdotV, roughness)).rg, step(0.0001, u_environmentBrdfLutEnabled));
-  vec3 extensionEnvironmentSpecular = g3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.02, 1.0));
-  vec3 shaded = g3dTexturedPbrDecodeSrgb(texture(u_emissiveTexture, g3dTexturedPbrWrapUv(emissiveUv, u_emissiveTextureWrap)).rgb) * u_emissiveColor * u_emissiveStrength + g3dPbrEnvironmentLightSplitSum(
+  vec3 extensionEnvironmentSpecular = g3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0));
+  vec3 emissiveSample = g3dTexturedPbrDecodeSrgb(texture(u_emissiveTexture, g3dTexturedPbrWrapUv(emissiveUv, u_emissiveTextureWrap)).rgb);
+  vec3 shaded = u_emissiveColor * u_emissiveStrength * mix(vec3(1.0), emissiveSample, step(0.5, u_emissiveTextureEnabled)) + g3dPbrEnvironmentLightSplitSum(
     mappedNormal,
     viewDirection,
     g3dTexturedPbrEnvironmentDiffuseInput(mappedNormal) * occlusion,

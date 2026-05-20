@@ -48,6 +48,10 @@ export interface AuthoredAssetProvenance {
   readonly acceptableAsFocalHero: boolean;
   readonly textureBacked?: boolean;
   readonly generatedNoTexture?: boolean;
+  readonly semanticRoles?: readonly string[];
+  readonly supportScaffoldRoles?: readonly string[];
+  readonly defaultExcludedRoles?: readonly string[];
+  readonly textureBackedFocalMaterials?: readonly string[];
 }
 
 export interface AuthoredAssetCandidate {
@@ -874,15 +878,37 @@ export const AUTHORED_ASSET_CANDIDATES = [
       supportOnly: true,
       acceptableAsFocalHero: false,
       textureBacked: true,
-      generatedNoTexture: false
+      generatedNoTexture: false,
+      semanticRoles: [
+        "focal-core",
+        "semantic-cluster",
+        "signal-bead"
+      ],
+      supportScaffoldRoles: [],
+      defaultExcludedRoles: [
+        "focal-core",
+        "formation-control",
+        "connection-loom",
+        "analytics-panel",
+        "decorative-pylon",
+        "support-platform",
+        "floor-trace",
+        "debug-axis",
+        "support-scaffold"
+      ],
+      textureBackedFocalMaterials: [
+        "cyan neural emission",
+        "violet model-state emission",
+        "amber anomaly emission"
+      ]
     },
     knownLimitations: [
       "This is a static authored GLB fixture for the AI data-galaxy composition with embedded generated data-glyph textures on key materials; it remains support-only and does not add native GPU particle compute.",
-      "Runtime particles, formations, and attractor motion still come from the G3D point-geometry route."
+      "Default showcase excludes the generated focal/scaffold roles so the route-owned particle/data-core system carries the hero image; the GLB remains tiny support/provenance evidence."
     ],
     acceptanceFocus: [
-      "Central translucent AI core, layered orbital rings, semantic cluster frames, attractor pylons, analytics panels, connection corridors, and grid traces give the particle field a designed subject.",
-      "The particle simulation remains dense and animated around authored scene structure.",
+      "Generated semantic clusters and signal beads may support the data route, but generated focal-core rings/bars/scaffold roles cannot dominate the default hero.",
+      "The particle/data-core system remains the default focal subject while the generated support GLB stays disclosed.",
       "The route continues to document CPU particle limits rather than claiming GPGPU particle parity."
     ]
   },

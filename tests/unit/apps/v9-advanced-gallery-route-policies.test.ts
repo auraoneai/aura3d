@@ -7,6 +7,7 @@ import {
   applyGalleryRoutePostprocessPolicy,
   composeGalleryRouteRenderItems,
   maxCanvasBackingEdgeForRoute,
+  rendererEnvironmentLightingCompositionOptionsForRoute,
   routeReceivesWaterRipples,
   usesProductConfiguratorHotspotPicking,
   visibleProceduralItemsForRoute
@@ -59,6 +60,15 @@ describe("v9 advanced gallery route policies", () => {
     });
   });
 
+  it("keeps renderer environment-lighting composition floors in route policy instead of main orchestration", () => {
+    expect(rendererEnvironmentLightingCompositionOptionsForRoute("product-configurator")).toEqual({
+      minimumEnvironmentMapIntensity: 0.78,
+      minimumEnvironmentMapSpecularIntensity: 0.76
+    });
+    expect(rendererEnvironmentLightingCompositionOptionsForRoute("data-galaxy")).toEqual({});
+    expect(rendererEnvironmentLightingCompositionOptionsForRoute("reactor-post")).toEqual({});
+  });
+
   it("centralizes named route hero camera policies outside main orchestration", () => {
     const product = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "product-configurator",
@@ -66,9 +76,9 @@ describe("v9 advanced gallery route policies", () => {
       time: 10,
       authored: readyAuthored()
     }));
-    expect(product.paddingRatio).toBe(0.008);
+    expect(product.paddingRatio).toBe(0.012);
     expect(product.pitchRadians).toBeCloseTo(-0.13 + Math.cos(1.6) * 0.004, 6);
-    expect(product.bounds).toEqual({ min: [-1.56, -1.0, -0.76], max: [1.48, 0.58, 0.92] });
+    expect(product.bounds).toEqual({ min: [-1.36, -1.02, -0.84], max: [1.36, 0.5, 0.94] });
 
     const data = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "data-galaxy",
@@ -76,9 +86,9 @@ describe("v9 advanced gallery route policies", () => {
       time: 10,
       authored: loadingAuthored()
     }));
-    expect(data.pitchRadians).toBe(-0.08);
-    expect(data.paddingRatio).toBe(0.018);
-    expect(data.bounds).toEqual({ min: [-1.22, -0.78, -1.0], max: [1.24, 0.88, 1.0] });
+    expect(data.pitchRadians).toBe(-0.12);
+    expect(data.paddingRatio).toBe(0.014);
+    expect(data.bounds).toEqual({ min: [-0.32, -0.3, -0.3], max: [0.34, 0.38, 0.34] });
 
     const fog = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "fog-cathedral",

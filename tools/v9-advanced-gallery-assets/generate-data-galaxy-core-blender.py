@@ -69,6 +69,8 @@ def exported_glb_counts(path):
             "meshCount": 0,
             "nodeCount": 0,
             "textureBackedMaterialCount": 0,
+            "semanticRoleCounts": {},
+            "scaffoldRoleNodeCount": 0,
         }
     data = path.read_bytes()
     if data[:4] != b"glTF":
@@ -86,15 +88,43 @@ def exported_glb_counts(path):
     if gltf is None:
         raise ValueError(f"{path} does not contain a GLB JSON chunk")
     materials = gltf.get("materials", [])
+    nodes = gltf.get("nodes", [])
+    semantic_counts = exported_semantic_role_counts(nodes)
     texture_backed_materials = sum(1 for material in materials if material_references_texture(material))
     return {
         "materialCount": len(materials),
         "textureCount": len(gltf.get("textures", [])),
         "imageCount": len(gltf.get("images", [])),
         "meshCount": len(gltf.get("meshes", [])),
-        "nodeCount": len(gltf.get("nodes", [])),
+        "nodeCount": len(nodes),
         "textureBackedMaterialCount": texture_backed_materials,
+        "semanticRoleCounts": semantic_counts,
+        "scaffoldRoleNodeCount": sum(semantic_counts.get(role, 0) for role in scaffold_semantic_roles()),
     }
+
+
+def exported_semantic_role_counts(nodes):
+    counts = {role: 0 for role in SEMANTIC_ROLE_ORDER}
+    for node in nodes:
+        role = None
+        if isinstance(node, dict):
+            if not isinstance(node.get("mesh"), int):
+                continue
+            extras = node.get("extras")
+            if isinstance(extras, dict) and isinstance(extras.get("g3d_semantic_role"), str):
+                role = extras["g3d_semantic_role"]
+            elif isinstance(node.get("name"), str):
+                name = node["name"]
+                if name.startswith("batched "):
+                    for candidate in SEMANTIC_ROLE_ORDER:
+                        if name.startswith(f"batched {candidate} "):
+                            role = candidate
+                            break
+                if role is None:
+                    role = semantic_role_for_name(name)
+        if role:
+            counts[role] = counts.get(role, 0) + 1
+    return {role: counts.get(role, 0) for role in SEMANTIC_ROLE_ORDER if counts.get(role, 0) > 0}
 
 
 def material_references_texture(value):
@@ -105,6 +135,113 @@ def material_references_texture(value):
     if isinstance(value, list):
         return any(material_references_texture(child) for child in value)
     return False
+
+
+SEMANTIC_ROLE_ORDER = [
+    "focal-core",
+    "semantic-cluster",
+    "formation-control",
+    "connection-loom",
+    "analytics-panel",
+    "decorative-pylon",
+    "support-platform",
+    "floor-trace",
+    "debug-axis",
+    "signal-bead",
+    "support-scaffold",
+]
+
+
+def semantic_role_for_name(name):
+    text = name.lower()
+    if any(token in text for token in [
+        "platform",
+        "floor",
+        "density contour",
+        "axis",
+        "luminous spine",
+        "formation",
+        "connection loom",
+        "connection corridor",
+        "intercluster",
+        "gravity beam",
+        "pylon",
+        "analytics panel",
+        "analytics plate",
+        "panel micro bar",
+        "hex rail",
+        "upper spoke",
+        "lower spoke",
+        "relay core ingress",
+        "relay cluster egress",
+        "floor audit link",
+        "transfer corridor",
+    ]):
+        return "support-scaffold"
+    if any(token in text for token in ["central translucent data core", "central faceted ai data core", "inner amber anomaly kernel", "layered orbital data ring", "curated orbiting datum"]):
+        return "focal-core"
+    if "authored semantic cluster" in text or "semantic relay" in text:
+        return "semantic-cluster"
+    if "formation" in text:
+        return "formation-control"
+    if any(token in text for token in ["connection loom", "connection corridor", "intercluster", "gravity beam"]):
+        return "connection-loom"
+    if "analytics panel" in text or "panel micro bar" in text:
+        return "analytics-panel"
+    if "pylon" in text:
+        return "decorative-pylon"
+    if "platform" in text or "observatory deck" in text:
+        return "support-platform"
+    if "floor" in text or "density contour" in text:
+        return "floor-trace"
+    if "axis" in text or "luminous spine" in text:
+        return "debug-axis"
+    if "signal bead" in text or "packet" in text:
+        return "signal-bead"
+    return "support-scaffold"
+
+
+def tag_semantic_role(obj):
+    role = semantic_role_for_name(obj.name)
+    obj["g3d_semantic_role"] = role
+    obj["g3d_acceptance_role"] = "support-only" if role != "focal-core" else "generated focal-context support"
+    obj["g3d_generated_asset_id"] = "data-galaxy-core-blender"
+    return obj
+
+
+def semantic_role_counts(objects):
+    counts = {role: 0 for role in SEMANTIC_ROLE_ORDER}
+    for obj in objects:
+        role = obj.get("g3d_semantic_role") or semantic_role_for_name(obj.name)
+        counts[role] = counts.get(role, 0) + 1
+    return {role: counts.get(role, 0) for role in SEMANTIC_ROLE_ORDER if counts.get(role, 0) > 0}
+
+
+def scaffold_semantic_roles():
+    return ["support-platform", "floor-trace", "debug-axis", "decorative-pylon", "support-scaffold"]
+
+
+def default_excluded_semantic_roles():
+    return [
+        "formation-control",
+        "connection-loom",
+        "analytics-panel",
+        "decorative-pylon",
+        "support-platform",
+        "floor-trace",
+        "debug-axis",
+        "support-scaffold",
+    ]
+
+
+def prune_default_excluded_source_geometry():
+    excluded = set(default_excluded_semantic_roles())
+    for obj in list(bpy.context.scene.objects):
+        if obj.type != "MESH":
+            continue
+        role = obj.get("g3d_semantic_role") or semantic_role_for_name(obj.name)
+        if role in excluded:
+            bpy.data.objects.remove(obj, do_unlink=True)
 
 
 def clear_scene():
@@ -195,6 +332,7 @@ def cube(name, loc, scale, material, bevel_width=0.016, rot=(0, 0, 0)):
     bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
+    tag_semantic_role(obj)
     obj.dimensions = scale_g3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
@@ -212,6 +350,7 @@ def sphere(name, loc, radius, material, segments=48, ring_count=24):
     )
     obj = bpy.context.object
     obj.name = name
+    tag_semantic_role(obj)
     assign(obj, material)
     obj.modifiers.new("authored weighted normals", "WEIGHTED_NORMAL")
     return obj
@@ -221,17 +360,19 @@ def ico(name, loc, radius, material, subdivisions=2):
     bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=subdivisions, radius=radius, location=loc_g3d(loc))
     obj = bpy.context.object
     obj.name = name
+    tag_semantic_role(obj)
     assign(obj, material)
     obj.modifiers.new("authored weighted normals", "WEIGHTED_NORMAL")
     return obj
 
 
 def batch_meshes_by_material():
-    """Export-time draw-call batching for static authored galaxy structures."""
+    """Export-time draw-call batching while preserving semantic ownership."""
     groups = {}
     for obj in list(bpy.context.scene.objects):
         if obj.type != "MESH" or not obj.data.materials:
             continue
+        tag_semantic_role(obj)
         material = obj.data.materials[0]
         authored_alpha = float(material.get("authored_alpha", 1.0))
         # G3D sorts transparent renderables per object. Joining distant glass
@@ -240,9 +381,10 @@ def batch_meshes_by_material():
         if authored_alpha < 0.999 or material.blend_method == "BLEND":
             obj["g3d_transparency_sort_unit"] = "kept separate for renderer alpha sorting"
             continue
-        groups.setdefault(material.name, []).append(obj)
+        role = obj.get("g3d_semantic_role") or semantic_role_for_name(obj.name)
+        groups.setdefault((role, material.name), []).append(obj)
 
-    for material_name, objects in groups.items():
+    for (role, material_name), objects in groups.items():
         if len(objects) < 2:
             continue
         bpy.ops.object.select_all(action="DESELECT")
@@ -256,7 +398,10 @@ def batch_meshes_by_material():
                     pass
         bpy.context.view_layer.objects.active = objects[0]
         bpy.ops.object.join()
-        bpy.context.object.name = f"batched {material_name}"
+        bpy.context.object.name = f"batched {role} {material_name}"
+        bpy.context.object["g3d_semantic_role"] = role
+        bpy.context.object["g3d_acceptance_role"] = "support-only" if role != "focal-core" else "generated focal-context support"
+        bpy.context.object["g3d_generated_asset_id"] = "data-galaxy-core-blender"
 
 
 def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0)):
@@ -269,6 +414,7 @@ def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0)):
     )
     obj = bpy.context.object
     obj.name = name
+    tag_semantic_role(obj)
     assign(obj, material)
     obj.modifiers.new("authored weighted normals", "WEIGHTED_NORMAL")
     return obj
@@ -285,6 +431,7 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0), major_segments=160, 
     )
     obj = bpy.context.object
     obj.name = name
+    tag_semantic_role(obj)
     assign(obj, material)
     obj.modifiers.new("authored weighted normals", "WEIGHTED_NORMAL")
     return obj
@@ -298,6 +445,7 @@ def cylinder_between(name, a, b, radius, material, vertices=12):
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=direction.length, location=mid)
     obj = bpy.context.object
     obj.name = name
+    tag_semantic_role(obj)
     obj.rotation_euler = direction.to_track_quat("Z", "Y").to_euler()
     assign(obj, material)
     obj.modifiers.new("authored weighted normals", "WEIGHTED_NORMAL")
@@ -504,15 +652,15 @@ def make_scene():
     cube("positive z axis luminous spine", (0, -0.08, 3.75), (0.055, 0.035, 0.72), amber, 0.004)
     cylinder("vertical inference axis", (0, 1.55, 0), 0.028, 3.85, white, 18)
 
-    sphere("central translucent data core shell", (0, 0.88, 0), 0.88, glass_cyan, 64, 32)
-    ico("central faceted AI data core", (0, 0.88, 0), 0.56, cyan, 3)
-    sphere("inner amber anomaly kernel", (0.12, 0.91, -0.08), 0.2, amber, 32, 16)
+    sphere("central translucent data core shell", (0, 0.82, 0), 0.56, glass_cyan, 64, 32)
+    ico("central faceted AI data core", (0, 0.82, 0), 0.34, cyan, 3)
+    sphere("inner amber anomaly kernel", (0.08, 0.84, -0.06), 0.12, amber, 32, 16)
     for idx, (y, major, minor, material, tilt) in enumerate([
-        (0.44, 1.38, 0.018, cyan, 90),
-        (0.72, 1.78, 0.014, violet, 78),
-        (1.04, 1.18, 0.016, blue, 102),
-        (1.34, 2.08, 0.012, amber, 66),
-        (1.66, 0.92, 0.014, cyan, 114),
+        (0.54, 0.72, 0.012, cyan, 90),
+        (0.72, 0.92, 0.01, violet, 78),
+        (0.92, 0.62, 0.011, blue, 102),
+        (1.1, 1.05, 0.009, amber, 66),
+        (1.24, 0.5, 0.01, cyan, 114),
     ]):
         torus(
             f"layered orbital data ring {idx:02d}",
@@ -525,8 +673,8 @@ def make_scene():
 
     for i in range(24):
         a = i * math.tau / 24
-        radius = 1.05 + (i % 7) * 0.18
-        y = 0.36 + (i % 9) * 0.16
+        radius = 0.52 + (i % 7) * 0.08
+        y = 0.46 + (i % 9) * 0.09
         material = [cyan, blue, violet, white, amber][i % 5]
         sphere(
             f"curated orbiting datum {i:02d}",
@@ -538,19 +686,19 @@ def make_scene():
         )
 
     cluster_centers = [
-        (-2.85, 0.82, -1.9),
-        (-2.95, 1.02, 1.86),
-        (2.78, 0.92, -1.72),
-        (2.95, 1.12, 1.94),
+        (-1.28, 0.7, -0.84),
+        (-1.34, 0.82, 0.82),
+        (1.2, 0.74, -0.76),
+        (1.34, 0.86, 0.84),
     ]
     cluster_tops = []
     for i, center in enumerate(cluster_centers):
         accent = [glass_cyan, glass_violet, glass_amber][i % 3]
         node = [cyan, violet, amber, blue, white, cyan][i]
-        top = make_cluster_frame(f"authored semantic cluster {i:02d}", center, 0.72 + (i % 2) * 0.16, rail, accent, node, phase=i * 0.41)
+        top = make_cluster_frame(f"authored semantic cluster {i:02d}", center, 0.36 + (i % 2) * 0.06, rail, accent, node, phase=i * 0.41)
         cluster_tops.append(top)
-        cylinder_between(f"primary connection corridor core to cluster {i:02d}", (0, 0.92, 0), center, 0.018, [cyan, violet, blue][i % 3])
-        cylinder_between(f"secondary faint connection corridor {i:02d}", (0, 1.36, 0), top, 0.009, accent)
+        cylinder_between(f"primary connection corridor core to cluster {i:02d}", (0, 0.86, 0), center, 0.01, [cyan, violet, blue][i % 3])
+        cylinder_between(f"secondary faint connection corridor {i:02d}", (0, 1.02, 0), top, 0.005, accent)
 
     make_formation_control_glyphs(materials)
     make_connection_loom(materials, cluster_centers, cluster_tops)
@@ -601,10 +749,10 @@ def make_scene():
             minor_segments=6,
         )
 
-    for i in range(32):
+    for i in range(18):
         a = i * 0.61
-        r = 2.0 + (i % 12) * 0.22
-        y = 0.28 + (i % 10) * 0.18
+        r = 1.06 + (i % 9) * 0.08
+        y = 0.38 + (i % 8) * 0.1
         material = [cyan, blue, violet, white, amber][(i * 2) % 5]
         sphere(f"authored galaxy signal bead {i:02d}", (math.cos(a) * r, y, math.sin(a * 0.91) * r * 0.82), 0.018 + (i % 4) * 0.006, material, 12, 6)
 
@@ -650,6 +798,7 @@ def make_scene():
 
 def export():
     bpy.context.preferences.filepaths.save_version = 0
+    prune_default_excluded_source_geometry()
     batch_meshes_by_material()
     bpy.ops.wm.save_as_mainfile(filepath=str(OUT_DIR / "data-galaxy-core-blender.blend"))
     bpy.ops.export_scene.gltf(
@@ -658,6 +807,7 @@ def export():
         export_lights=True,
         export_cameras=True,
         export_apply=True,
+        export_extras=True,
     )
 
 
@@ -668,6 +818,12 @@ def write_metadata():
     materials = list(bpy.data.materials)
     texture_count = count_texture_images()
     texture_backed_materials = count_texture_backed_materials(materials)
+    semantic_counts = semantic_role_counts(mesh_objects)
+    scaffold_roles = [role for role in scaffold_semantic_roles() if semantic_counts.get(role, 0) > 0]
+    scaffold_count = sum(semantic_counts.get(role, 0) for role in scaffold_roles)
+    focal_count = semantic_counts.get("focal-core", 0)
+    default_excluded_roles = [role for role in default_excluded_semantic_roles() if semantic_counts.get(role, 0) > 0]
+    default_excluded_count = sum(semantic_counts.get(role, 0) for role in default_excluded_roles)
     exported_counts = exported_glb_counts(OUT)
     transparent = [material.name for material in materials if float(material.get("authored_alpha", 1.0)) < 1.0]
     emissive = []
@@ -720,15 +876,9 @@ def write_metadata():
         "acceptanceBoundary": "This generated GLB includes embedded generated data-glyph textures on key materials, but it is still support-only and must not be used as premium focal hero proof until current-route screenshots pass human visual review and runtime diagnostics support that scoped claim.",
         "authoredElements": [
             "material-joined static mesh batches",
-            "central translucent data core",
-            "layered orbital rings",
-            "semantic cluster frames",
-            "formation control glyphs",
-            "central connection loom",
-            "outer attractor pylons",
-            "floating translucent analytics panels",
-            "axes and floor grid",
-            "connection corridors",
+            "generated support data core",
+            "small semantic seed clusters",
+            "embedded generated data-glyph emission materials",
             "emissive signal beads"
         ],
         "counts": {
@@ -747,8 +897,28 @@ def write_metadata():
             "exportedTextureBackedMaterials": exported_counts["textureBackedMaterialCount"],
             "transparentMaterials": len(transparent),
             "emissiveMaterials": len(emissive),
+            "semanticFocalDrawItems": focal_count,
+            "semanticSupportScaffoldDrawItems": scaffold_count,
+            "semanticDefaultExcludedDrawItems": default_excluded_count,
         },
         "exportedGlb": exported_counts,
+        "semanticRoles": {
+            "description": "Roles are assigned before export and opaque batching preserves role boundaries by joining objects by (semantic role, material), not by material alone.",
+            "roleCounts": semantic_counts,
+            "exportedRoleCounts": exported_counts.get("semanticRoleCounts", {}),
+            "focalRoles": ["focal-core", "semantic-cluster"],
+            "supportScaffoldRoles": scaffold_roles,
+            "defaultExcludedRoles": default_excluded_roles,
+            "focalDrawItems": focal_count,
+            "supportScaffoldDrawItems": scaffold_count,
+            "defaultExcludedDrawItems": default_excluded_count,
+            "textureBackedFocalMaterials": [
+                "cyan neural emission",
+                "violet model-state emission",
+                "amber anomaly emission",
+            ],
+            "textureBackedSupportMaterials": [],
+        },
         "materials": {
             "materialCount": len(materials),
             "textureCount": texture_count,
@@ -757,7 +927,8 @@ def write_metadata():
             "emissiveMaterialNames": emissive,
         },
         "batching": {
-            "staticMeshStrategy": "Opaque objects are joined by first material before GLB export; transparent objects remain separate render-sort units for G3D alpha correctness.",
+            "staticMeshStrategy": "Opaque objects are joined by semantic role and first material before GLB export; transparent objects remain separate render-sort units for G3D alpha correctness.",
+            "semanticRolePreservation": "Opaque batching preserves source ownership by grouping on (g3d_semantic_role, material); support scaffold and focal-core meshes cannot collapse into one material-only batch.",
             "runtimeParticleStrategy": "Dense particles are generated by the TypeScript route as point buffers; trail/link overlays are batched line geometry.",
             "nativeGpuComputeParticles": False,
         },
@@ -769,7 +940,7 @@ def write_metadata():
                 "native GPU-compute particle implementation",
             ],
             "routeExclusionsMayApply": [
-                "The default Data Galaxy route may exclude platform/floor scaffold nodes from focal framing; that exclusion is route composition, not source-asset acceptance.",
+                "Default scaffold/control-room roles are source-pruned before GLB export; any route exclusion is a backwards-compatible stale-fixture guard, not source-asset acceptance.",
             ],
         },
         "limitations": [
@@ -788,7 +959,7 @@ def write_metadata():
         "- `data-galaxy-core-blender.glb`\n"
         "- `data-galaxy-core-blender.blend`\n"
         "- `manifest.json`\n\n"
-        "The fixture is intentionally route-scoped and contains a central AI data core, semantic cluster frames, formation control glyphs, a central connection loom, attractor pylons, layered rings, translucent analytics panels, axes/grid elements, connection corridors, and emissive detail.\n\n"
+        "The fixture is intentionally route-scoped and source-prunes scaffold-like platforms, axes, control glyphs, pylons, panels, spokes, rails, and corridors before export. The remaining GLB is compact generated support context with a small data core, semantic seed clusters, and emissive detail.\n\n"
         "Support-only truth:\n\n"
         "- It is generated procedural Blender output with embedded generated data-glyph textures on key materials.\n"
         "- It is not accepted as premium focal hero proof and cannot replace accepted current-route visual review evidence.\n"

@@ -31,6 +31,7 @@ import {
   applyGalleryRoutePostprocessPolicy,
   composeGalleryRouteRenderItems,
   maxCanvasBackingEdgeForRoute,
+  rendererEnvironmentLightingCompositionOptionsForRoute,
   routeReceivesWaterRipples,
   usesProductConfiguratorHotspotPicking,
   visibleProceduralItemsForRoute
@@ -901,12 +902,12 @@ function resolveRendererEnvironmentBackground(demoId: string): RendererEnvironme
 }
 
 function resolveRendererEnvironmentLighting(
-  demoId: string,
+  demoId: DemoDefinition["id"],
   fallback: EnvironmentLightingOptions
 ): EnvironmentLightingOptions {
   const state = rendererEnvironmentBackgrounds.get(demoId);
   if (!state?.environment?.lighting) return fallback;
-  return composeEnvironmentLighting(fallback, state.environment.lighting, rendererEnvironmentLightingCompositionOptions(demoId));
+  return composeEnvironmentLighting(fallback, state.environment.lighting, rendererEnvironmentLightingCompositionOptionsForRoute(demoId));
 }
 
 function resolveRendererEnvironmentLightingEvidence(
@@ -917,16 +918,6 @@ function resolveRendererEnvironmentLightingEvidence(
   const state = rendererEnvironmentBackgrounds.get(demoId);
   if (!state?.environment) return null;
   return createRendererEnvironmentLightingEvidence(state.definition, state.environment, diagnostics, activeLighting);
-}
-
-function rendererEnvironmentLightingCompositionOptions(
-  demoId: string
-): Parameters<typeof composeEnvironmentLighting>[2] {
-  if (demoId !== "product-configurator") return {};
-  return {
-    minimumEnvironmentMapIntensity: 0.78,
-    minimumEnvironmentMapSpecularIntensity: 0.76
-  };
 }
 
 async function loadRendererEnvironmentBackground(state: RendererEnvironmentBackgroundLoadState): Promise<void> {

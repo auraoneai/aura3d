@@ -1,255 +1,551 @@
 # Production-Grade G3D Core Platform And Advanced Gallery PRD
 
-Status: active execution directive
+Status: salvage/restart directive — Product/Data failed; no implementation before dirty-worktree salvage map
 Last reviewed: 2026-05-20
 Primary objective: build reusable G3D core platform capability first, then prove it through a production-grade advanced examples gallery comparable to official advanced Three.js showcase demos, without route-local hacks, fake assets, false claims, or screenshot churn.
+
+## 0A. Failed Product/Data Recovery Loop — Mandatory Salvage Addendum
+
+The previous Product Configurator and Data Galaxy recovery loop failed.
+
+The failure was not lack of activity. The failure was that the agent repeatedly edited code, tests, reports, metadata, gates, layouts, particles, generated assets, and screenshots while the actual Product/Data images remained visibly poor.
+
+This section overrides any optimistic or stale status below.
+
+### Current Hard Truth
+
+Product Configurator remains failed.
+
+Visible blockers:
+
+- red car paint remains noisy/speckled/glittered;
+- hood, roof, and glass remain gray-white / washed out;
+- contact, grounding, shadow, and reflection quality remain weak;
+- support objects such as watch, shoe, and sunglasses do not improve the hero and often read as edge clutter or debris;
+- current hero does not read as a premium product configurator;
+- moving support GLBs around did not solve the real renderer/material/studio problem.
+
+Data Galaxy remains failed.
+
+Visible blockers:
+
+- still reads as toy/prototype/scaffold/debug art;
+- current DataGalaxyFocalSystem direction still looks like cuboids, tiny dots, thin lines, and generated support fragments;
+- generated/support GLB still contaminates the visual concept;
+- object-count fixes and tiny semantic nodes are not a premium data visualization;
+- route labels like `DataGalaxyFocalSystem` do not matter if the screenshot still looks bad;
+- CPU/static particle honesty is required, but honesty does not make the image visually acceptable.
+
+### What Went Wrong
+
+The prior loop confused code activity with progress.
+
+Invalid progress signals:
+
+- smoke tests passed;
+- typecheck passed;
+- route JSON existed;
+- screenshot hashes changed;
+- object count increased;
+- draw calls changed;
+- metadata wording improved;
+- right-side diagnostics became more detailed;
+- unit tests were updated to match the current implementation;
+- generated GLB roles were renamed or excluded;
+- screenshots were repeatedly captured without a first-glance visual improvement.
+
+None of those count as acceptance.
+
+A source-owned change can still be visually irrelevant.
+
+A test can pass while the image is still garbage.
+
+A route can be honest and still visually failed.
+
+### Emergency Stop Rules
+
+Do not run another Product/Data gallery screenshot until the specific restart gates below are satisfied.
+
+Do not run:
+
+- `pnpm v9:advanced-gallery`;
+- `pnpm v9:advanced-gallery:review`;
+- `pnpm v9:advanced-gallery:audit`;
+- Playwright gallery capture for Product/Data;
+- visual-review tools;
+- report-audit tools;
+- screenshot hash generation;
+- contact-sheet generation.
+
+Allowed before implementation:
+
+- `git status --short`;
+- `git diff --name-only`;
+- `git diff --stat`;
+- source inspection;
+- targeted type/unit checks only after actual source changes;
+- Product same-asset reference harness only if working on material proof, not gallery route acceptance.
+
+Do not use:
+
+- `git reset`;
+- `git checkout`;
+- `git restore`;
+- `git clean`;
+- stash/apply/pop;
+- branch switching;
+- broad revert commands.
+
+Do not touch `.gitignore`.
+
+Do not delete, move, or modify unrelated dirty files.
+
+### Mandatory Salvage Before New Work
+
+Before new Product/Data implementation, produce a file-by-file salvage map from the current dirty worktree.
+
+Run only:
+
+```bash
+pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
+git status --short
+git diff --name-only
+git diff --stat
+```
+
+If G3D-specific Playwright/Vite/vitest/gallery processes are running, kill only those tied to `/Users/gurbakshchahal/G3D`.
+
+Then classify every dirty file into one of:
+
+A. unrelated pre-existing dirty file
+B. failed Product/Data route churn
+C. potentially useful library/platform fix
+D. test/report/metadata churn
+E. generated/cache artifact
+
+For every file, output:
+
+```md
+File:
+Classification:
+Recommendation: KEEP CANDIDATE | DISCARD/REWRITE MANUALLY | ISOLATE FOR LATER REVIEW | DO NOT TOUCH
+Why:
+Risk:
+Dependencies:
+Safe next action:
+```
+
+Then produce three patch-set buckets:
+
+```md
+Bucket 1 — Keep Candidate: library/platform fixes only
+Bucket 2 — Discard/Rewrite: failed Product/Data visual churn
+Bucket 3 — Review Carefully: tests/review/audit/execute changes
+```
+
+No implementation is allowed until this salvage map is written.
+
+### Known Dirty-File Classification From Prior Salvage
+
+The previous salvage pass found roughly 46 changed files, about 3064 insertions and 597 deletions, plus one untracked file. Treat this as failed-loop churn until reclassified.
+
+Unrelated pre-existing dirty file:
+
+- `.gitignore`
+
+Recommendation: DO NOT TOUCH.
+
+Failed Product/Data route churn:
+
+- `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts`
+- `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts`
+- `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts`
+- `apps/v9-advanced-examples-gallery/src/dataGalaxyFocalSystem.ts`
+- `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`
+- `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
+- `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`
+- `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts`
+- `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`
+- `packages/product-studio/src/ProductShowcaseLayout.ts`
+
+Recommendation: DISCARD/REWRITE MANUALLY unless a file-level review proves the change is independently useful. Do not keep these as the Product/Data recovery.
+
+Potentially useful library/platform candidates:
+
+- `packages/assets/src/AssetInspection.ts`
+- `packages/assets/src/GLTFLoader.ts`
+- `packages/assets/src/GLTFRenderResources.ts`
+- `packages/rendering/src/EnvironmentPlatform.ts`
+- `packages/rendering/src/LightingRig.ts`
+- `packages/rendering/src/ShaderChunks.ts`
+- `packages/rendering/src/ShaderLibrary.ts`
+- `packages/rendering/src/TexturedPBRMaterial.ts`
+- `packages/rendering/src/index.ts`
+- `packages/rendering/src/shaders/pbr-direct.frag.glsl`
+
+Recommendation: ISOLATE FOR LATER REVIEW. Keep only if focused renderer/importer tests prove reusable value independent of failed Product/Data screenshots.
+
+Test/report/metadata churn:
+
+- `execute.md`
+- `apps/v9-advanced-examples-gallery/src/authoredAssets.ts`
+- `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
+- `apps/v9-advanced-examples-gallery/src/main.ts`
+- `apps/v9-advanced-examples-gallery/src/metadata.ts`
+- `tests/assets/gltf-inspection.test.ts`
+- `tests/browser/product-configurator-reference-harness.ts`
+- `tests/browser/product-configurator-reference.spec.ts`
+- `tests/browser/v9-advanced-examples-gallery.spec.ts`
+- `tests/unit/apps/v9-advanced-gallery-route-policies.test.ts`
+- `tests/unit/apps/v9-data-galaxy-budgets.test.ts`
+- `tests/unit/apps/v9-product-configurator-policy.test.ts`
+- `tests/unit/apps/v9-route-scene-modules.test.ts`
+- `tests/unit/product-studio/product-showcase-layout.test.ts`
+- `tests/unit/rendering/environment-lighting-reflection-platform.test.ts`
+- `tests/unit/rendering/environment-platform.test.ts`
+- `tests/unit/rendering/pbr-lighting.test.ts`
+- `tests/unit/rendering/shader-library.test.ts`
+- `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts`
+- `tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts`
+- `tests/unit/tools/v9-data-galaxy-generated-assets.test.ts`
+- `tools/v9-advanced-gallery-report-audit/index.ts`
+- `tools/v9-advanced-gallery-visual-review/gateRules.ts`
+- `tools/v9-advanced-gallery-visual-review/index.ts`
+
+Recommendation: ISOLATE FOR LATER REVIEW. Keep only strict anti-false-acceptance gates. Review `tools/v9-advanced-gallery-visual-review/gateRules.ts` especially carefully because gate behavior changed during the failed loop.
+
+Generated/cache artifact:
+
+- `tools/v9-advanced-gallery-assets/__pycache__/generate-data-galaxy-core-blender.cpython-314.pyc`
+- `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py`
+
+Recommendation: ISOLATE FOR LATER REVIEW. Data generator changes belong with the failed Data experiment unless a clean future strategy needs them.
+
+### Product Restart Strategy
+
+Do not continue the current Product multi-object hero.
+
+Product restart owner order:
+
+1. Renderer/material/importer proof:
+   - `packages/rendering/src/TexturedPBRMaterial.ts`
+   - `packages/rendering/src/ShaderLibrary.ts`
+   - `packages/rendering/src/ShaderChunks.ts`
+   - `packages/rendering/src/shaders/pbr-direct.frag.glsl`
+   - `packages/assets/src/GLTFRenderResources.ts`
+   - `packages/assets/src/AssetInspection.ts`
+
+2. Product same-asset harness:
+   - `tests/browser/product-configurator-reference-harness.ts`
+   - `tests/browser/product-configurator-reference.spec.ts`
+
+3. Product Studio route only after material proof:
+   - `packages/product-studio/src/ProductShowcaseLayout.ts`
+   - `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`
+   - `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
+
+Product visual restart requirements:
+
+- Hero mode must show original `car-concept` only.
+- Watch/shoe/sunglasses must not appear in hero mode.
+- Support objects may appear only in Detail mode or separate variant/product-island mode.
+- No generated/stub Product GLB may replace original car hero.
+- Product hero must be a clean showroom frame: dark premium studio/cove, grounded car, clean contact receiver, no edge clutter.
+- If paint/glass still fail, stop in renderer/importer/material. Do not keep moving objects around.
+
+Product material proof requirements before gallery capture:
+
+- same original `car-concept` GLB;
+- cropped/reference proof for red hood paint;
+- cropped/reference proof for front bumper paint;
+- cropped/reference proof for windshield/roof glass;
+- cropped/reference proof for grounding/contact;
+- proof must measure actual visual failure regions, not whole-image averages;
+- if the reference harness cannot isolate these regions, fix the harness first.
+
+### Data Restart Strategy
+
+Do not continue current `DataGalaxyFocalSystem` as-is.
+
+Data restart owner order:
+
+1. New reusable effect owner:
+   - create `packages/rendering/src/effects/DataGalaxyEffect.ts` or equivalent.
+
+2. Route adapter only after standalone effect proof:
+   - `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts`
+
+3. Delete or stop building on current failed route concept unless reviewed:
+   - `apps/v9-advanced-examples-gallery/src/dataGalaxyFocalSystem.ts`
+   - `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts`
+   - `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py`
+
+Data visual restart requirements:
+
+- No generated Data GLB in hero.
+- No cuboid scaffold blocks.
+- No tiny semantic node filler.
+- No object-count padding.
+- No wide particle carpet.
+- No giant translucent fog sphere.
+- No random thin debug lines.
+- Build one coherent visual effect: luminous central core, orbiting particle rings, clean arcs, clustered glowing points, depth layers.
+- CPU/static honesty must remain explicit: do not claim native GPU compute unless implemented.
+- If the effect cannot be made beautiful in the route, prove it outside the gallery first in the reusable effect owner.
+
+### Expected Visual Delta Requirement
+
+Before any future Product/Data gallery capture, write:
+
+```md
+Expected visual delta:
+Route:
+Files being changed:
+What should look materially different in the next hero PNG:
+What exact old artifact should disappear:
+What exact new visual structure should appear:
+Why this is not only a metric/test/report change:
+```
+
+If the next PNG does not match that delta:
+
+- stop;
+- do not recapture;
+- escalate to the next higher source owner;
+- record failure honestly.
+
+### Forbidden Phrases / Invalid Claims
+
+Do not say:
+
+- "materially improved" unless the screenshot changed at first glance;
+- "accepted" unless visual review accepts exact current screenshot hash;
+- "source-owned fix" as a substitute for visual improvement;
+- "smoke passed" as visual proof;
+- "metrics passed" as visual proof;
+- "Product/Data are close" unless direct screenshot review proves it.
+
+### Valid Final Status Until Reproved
+
+- Product Configurator: failed.
+- Data Galaxy: failed.
+- No Product/Data acceptance claim is valid.
+- No Product/Data gallery capture should run until salvage and restart gates are complete.
+
+## 0B. Operating Contract: Library First, Examples Second
+
+This file is an execution control document, not a running diary. It must prevent visual-polish loops by forcing every failed screenshot back to a named library owner, named file set, task checklist, and one-shot verification path.
+
+The core rule is:
+
+> If an example is hard to make beautiful, the missing capability belongs in the G3D library first. The example is only the proof surface.
+
+A route may contain composition, art direction, camera framing, route policy, and demo-specific content. A route may not become the permanent owner of renderer behavior, GLTF fidelity, material workarounds, environment lighting, postprocessing, controls, capture readiness, particle quality, animation systems, or review/evidence rules.
+
+### Anti-Loop Rules
+
+- No screenshot loop is allowed. A screenshot is a verification artifact after a named source-owner change, not an iteration strategy.
+- No more than one focused browser capture is allowed per named source-owner fix.
+- If the focused capture still looks bad, stop capturing and write the next defect under the owning filename checklist.
+- Smoke tests, route tests, PNG metrics, draw counts, or texture counts never equal visual acceptance.
+- Metadata wording, review notes, test thresholds, and gate text may not be edited to explain away bad visuals.
+- Generated assets, route exclusions, camera crops, CSS darkness, bloom, vignette, and object hiding may not be used to fake quality.
+- Any fix that helps only one example must be justified as route composition. Any fix that would help future examples must be implemented in a reusable package owner.
+- Any task that edits tests before identifying the library/source defect must explain why the test represents a real contract instead of chasing current output.
+- Any failed route must have one current screenshot path, one source-owner diagnosis, one file-owned task list, and one next verification command.
+
+### Definition Of Progress
+
+Progress is only counted when all of the following are true:
+
+1. A named source-owner task was selected from this document.
+2. The exact write set was declared before editing.
+3. The owner files were inspected before patching.
+4. The code change improves reusable G3D capability or a clearly scoped route composition contract.
+5. Focused unit/type checks pass.
+6. At most one qualified capture was run if visible output changed.
+7. The new visual output was opened and judged directly.
+8. The checklist was updated honestly as accepted, still failed, or blocked.
+
+### Ownership Ladder
+
+Every visual defect must be assigned to the highest reusable owner that can solve it:
+
+1. `packages/rendering` — color, tone, lighting, PBR, postprocess, shadows, reflections, DPR, frame/presentation correctness.
+2. `packages/assets` — GLTF parsing, texture/sampler handling, node extras, variants, tangents, UV sets, material diagnostics, provenance.
+3. `packages/scene` — reusable scene graph composition, metadata, render-item contracts, hierarchy, culling, bounds.
+4. `packages/animation` — timelines, animation sampling, mixer behavior, deterministic playback, capture readiness.
+5. `packages/controls` and `packages/input` — camera controls, picking, hotspots, focus, interaction readiness.
+6. `packages/product-studio` and future domain packages — reusable product showcase/studio systems.
+7. `apps/v9-advanced-examples-gallery/src/*Scene.ts` — route-owned composition only.
+8. `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts` — camera/framing/policy only.
+9. `tools/v9-*` — evidence, review, audit, generated assets, and capture discipline only.
+10. `execute.md` — planning/evidence ledger only.
+
+If the selected owner is below the correct owner on this ladder, the task is invalid until rewritten.
 
 This document is the ordered source of truth for the work. It is not a gallery-only checklist. It is not a loose backlog. It is a file-owned PRD that defines what must be fixed, where it must be fixed, what tests must prove it, and when the ten advanced examples can be accepted.
 
 ## 1. Current Truth
 
-Do not start from optimism. Start from the current evidence.
+Product Configurator failed. Data Galaxy failed. The current mode is salvage/restart, not continuation.
 
-- `0/10` advanced gallery routes are accepted.
-- `product-configurator` is visually failed.
-- `data-galaxy` is visually failed.
-- `reactor-post` remains a candidate with clarity/postprocess risk.
-- The other seven routes are candidates, not accepted.
-- Automated screenshots and route smoke checks do not equal acceptance.
-- Automated image metrics are a floor only. They previously allowed dense/noisy or weak screenshots to look better than they are.
-- Product and Data screenshots are visibly below the required Three.js-class bar.
-- The active work is source-owned recovery and platform hardening, not repeated screenshot runs.
-- `pnpm v9:advanced-gallery:review` must remain blocked until exact current screenshot hashes and human review metadata accept all ten routes.
+Current route state:
 
-Current broken evidence that must be handled, not ignored:
+- Product Configurator: failed.
+- Data Galaxy: failed.
+- Reactor Post: candidate with clarity, postprocess, and cadence risk.
+- Other seven advanced routes: candidates, not accepted.
+- Full gallery acceptance: `0/10`.
 
-- `tests/reports/v9/advanced-examples-gallery/product-configurator.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator-hero.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator-viewport.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator-renderer-environment-background-on.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator-renderer-environment-background-off.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy-hero.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy-viewport.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy-renderer-environment-background-on.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy-renderer-environment-background-off.png`
-- `tests/reports/v9/advanced-examples-gallery/reactor-post.png`
-- `tests/reports/v9/advanced-examples-gallery/reactor-post-hero.png`
-- `tests/reports/v9/advanced-examples-gallery/reactor-post-viewport.png`
+No Product/Data implementation, gallery capture, review/audit run, contact sheet, screenshot hash refresh, report refresh, or acceptance claim is allowed before the dirty-worktree salvage map in `## 1B` exists.
 
-Detailed baseline carried forward from the previous directive:
+Smoke tests, typecheck, unit tests, image metrics, object counts, draw counts, route JSON, generated-asset metadata, screenshot hash changes, and "source-owned" wording are not visual acceptance.
 
-- Latest known contact-sheet SHA-256: `a8367fba4c0dafaa7efe676742305ddf018806c9859f8eee541b8fac0f3c5e2f`.
-- Latest known contact-sheet source-set SHA-256: `72d4d626071587064afa8da7217e5f5fd76e56a4ddbef059c92f7b772c62c105`.
-- Latest known contact-sheet timestamp: `2026-05-19T23:08:45.477Z`.
-- Latest known visual-review summary: `10` demos, `0` accepted, `8` candidate, `2` failed, `10` blocked, `6/10` automated image-quality passing, and `1` known visual-artifact risk.
-- Latest known report-audit summary: `10/10` expected route reports present, `10/10` reusable-system evidence, `10/10` unsupported disclosures, `10/10` measured performance evidence, `10/10` screenshot hashes, `10/10` image stats, `0` audit blockers, and `2` asset-quality audit warnings.
-- The audit warnings explicitly flagged that `data-galaxy` active authored GLBs have zero texture-backed material evidence and that `product-configurator` still has more no-texture support-fixture draw items than texture-backed hero draw items.
-- Other known automated image-quality warnings: `ocean-observatory` detail-edge density was just below the floor and `robotics-lab` detail-edge density was just below the floor.
-- These numbers are historical baseline facts, not acceptance. They must be refreshed after the next full qualified gallery run.
+## 1A. Current Execution Mode
 
-Current known facts about Product Configurator:
+Current mode: salvage and restart planning.
 
-- The intended source assets are real GLBs:
-  - `fixtures/v8/assets/vehicles/car-concept.glb`
-  - `fixtures/v8/assets/product/chronograph-watch.glb`
-  - `fixtures/v8/assets/product/materials-variants-shoe.glb`
-  - `fixtures/v8/assets/product/sunglasses-khronos.glb`
-- Generated/support assets may exist, but they may not replace the source-of-truth Product hero unless material, node, texture, extension, and visual equivalence are proven.
-- Current visible failures include weak PBR clarity, fuzzy/white edge artifacts, weak grounding, weak studio/background read, support fixture dominance risk, crop/stage artifacts, and non-premium composition.
-- Product must stay failed until direct visual review accepts exact current screenshots.
-- Focused product status carried forward from the previous directive:
-  - The visual hero was restored toward the original texture-backed `car-concept` GLB rather than the generated `car-concept-batched` derivative.
-  - `GLTFRenderResources` had work to stabilize glossy clearcoat imports using nearest-filtered normal maps without dedicated clearcoat normals.
-  - A focused report showed `338` authored draw items: `109` from original `car-concept`, including `101` texture-backed draw items and `15` textures, plus `229` support draw items from the no-texture product-studio GLB.
-  - The no-texture product-studio GLB was demoted toward support-only swatch/hotspot/separation metadata, with many excluded support nodes reported, but visible support clutter still leaked into screenshots.
-  - Cropping, weak grounding, low detail-edge density, low local contrast, imported GLB edge/material artifacts, and sub-12 FPS RAF cadence still blocked visual acceptance.
-- Focused Product status after the reusable lighting-route source fix on 2026-05-20:
-  - `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts` now consumes `createLightingRig({ preset: "product-shot" })` from `packages/rendering/src/LightingRig.ts` instead of using Product-specific `sceneBuilders.lights("product-*")` route branches.
-  - `tests/unit/apps/v9-route-scene-modules.test.ts` verifies the Product route emits the reusable `product-key`, `product-fill`, and `product-rim` lights plus LightingRig unsupported-boundary disclosures.
-  - `pnpm exec vitest run tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/rendering/environment-lighting-reflection-platform.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - The generated Product screenshots still fail visual review: the gray catch plane/stage remains visually dominant, grounding is weak, imported edge/material artifacts remain visible, `pngStats.detailEdgeDensity` is `0.008396`, `pngStats.localContrast` is `20.817365`, and `performanceEvidence.rafFrameMs` is `511.9`.
-  - Latest focused Product screenshot hashes: full `db84c671586c081d18ecb93b44ab809dd039db7fb6733c2b0cb5eda321d305c4`, hero `82a9c07de547b193f463432e28b8fec5faf50dced8f83c0ec2e1b9bea07ca32d`.
-- Focused Product status after reusable contact-grounding/stage platform work on 2026-05-20:
-  - `packages/rendering/src/EnvironmentPlatform.ts` now exposes environment contact-grounding descriptors and `product-premium` indoor stages emit compact layered receiver geometry without expanding route framing.
-  - `packages/rendering/src/shadows/ContactShadows.ts` now exposes a deterministic layered contact-shadow plan that keeps screen-space/depth-blurred contact shadows, true area-light penumbra, and physical contact-shadow maps unsupported unless implemented separately.
-  - `packages/rendering/src/LightingRig.ts` now exposes softbox proxy diagnostics for `product-shot`/`studio-softbox` rigs while preserving the true-area-light/IES/GI/contact-shadow-map boundary.
-  - `tests/unit/rendering/environment-platform.test.ts` and `tests/unit/rendering/environment-lighting-reflection-platform.test.ts` cover the platform contracts.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only after the platform change.
-  - The latest focused Product runtime now lists `contact grounding helper` and the approximations disclose layered receiver geometry rather than a true renderer contact-shadow pass.
-  - The generated Product screenshots still fail visual review: `detailEdgeDensity` is `0.008128`, `localContrast` is `21.585546`, `performanceEvidence.rafFrameMs` is `576.1`, support assets remain awkward/clipped in the frame, and imported material/edge artifacts remain visible.
-  - Latest focused Product screenshot hashes after contact grounding: full `87e1e05a179b3bfc31f31897a868661e9c03fdf3ac7a1538a1c95be7a9793ed8`, hero `ca16a91a4ce1be835db504c7faff21c89e7742d8e7c53f2056a072b1ec5b0b16`.
-- Product status after compact stage/support composition work on 2026-05-20:
-  - `packages/rendering/src/EnvironmentPlatform.ts` now makes `studioTone: "product-premium"` use a smaller catch-plane footprint and moves/dims the analytical softbox proxy panels so they no longer read as visible random bars in the accepted Product view.
-  - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` now stages the existing original watch, car, sunglasses, and shoe GLBs tighter inside the reusable product stage. No Product asset was replaced or removed.
-  - `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts` now uses a stronger reusable `product-shot` lighting intensity and a denser bounded turntable tick ring to keep Product above the candidate smoke detail floor without adding unrelated props.
-  - `pnpm exec vitest run tests/unit/rendering/environment-platform.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-product-configurator-policy.test.ts --reporter=dot` passed after the stage/composition changes.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the stage/composition changes.
-  - Focused Product capture passed after the stage/composition changes.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery` was rerun after Product fixes: all ten route runtime/screenshot tests passed and only the intentional visual-acceptance guard failed.
-  - `pnpm v9:advanced-gallery:review` remains correctly blocked at `0/10 accepted`.
-  - `pnpm v9:advanced-gallery:audit` reports `10/10` route reports, `10/10` current screenshot artifacts, `10/10` reusable systems/unsupported disclosures/measured performance/screenshot hashes/image stats, `0` blockers, and `0` warnings.
-  - Current full-gallery Product remains failed: `uniqueColorBuckets 205 < 400`, `detailEdgeDensity 0.006068 < 0.028`, `localContrast 19.422484 < 35`, and RAF cadence remains below 12 FPS. It is structurally cleaner but not visually accepted.
-  - Current full-gallery Product screenshot hashes: full `89447fc61d653dfb0ec2f43a88bc66f0a82ababd6ba7d496aef5b34e4fd0624c`, hero `d35313b52079c617b2950939880c74265df5ea1dba50b36a354aa4540857bdb8`, viewport `b51c1fbc41ee30954983549c9fd15f1ed69611e574f14c1cd70ca5b6fd8f7714`.
-- Product status after removing route-local original-asset material overrides on 2026-05-20:
-  - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` no longer mutates original `car-concept` or `chronograph-watch` material appearance through route-local `u_baseColor`, roughness, specular, transmission, clearcoat, normal-scale, or environment-specular overrides. Product material quality must be fixed in renderer/material/importer owners, not hidden in authored activation.
-  - `tests/unit/apps/v9-product-configurator-policy.test.ts` now includes a guard that blocks reintroducing Product original-GLB material appearance patches in `authoredLayer.ts`.
-  - `pnpm exec vitest run tests/unit/apps/v9-product-configurator-policy.test.ts tests/unit/apps/v9-route-scene-modules.test.ts --reporter=dot` passed after the removal.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the removal.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/product-configurator-reference.spec.ts --reporter=line --timeout=360000` passed after the removal, proving the original same-asset harness still loads the source GLBs.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only after the removal.
-  - The focused Product screenshot improved versus the previous full-gallery metrics but remains failed: `uniqueColorBuckets 258 < 400`, `detailEdgeDensity 0.010161 < 0.028`, `localContrast 24.748883 < 35`, and RAF cadence remains below 12 FPS. The current focused screenshots were opened directly and still are not accepted.
-- Product status after renderer environment-lighting composition work on 2026-05-20:
-  - `packages/rendering/src/EnvironmentLighting.ts` adds reusable `composeEnvironmentLighting(...)` so route/stage ambient/procedural lighting can be preserved while sampled HDR cube/equirect/BRDF bindings are added. This fixes the source-owned Product problem where loaded HDR lighting replaced the reusable Product studio environment instead of augmenting it.
-  - `apps/v9-advanced-examples-gallery/src/main.ts` now uses the helper for renderer environment lighting. Product gets a shared studio-product sampled HDR floor of `environmentMapIntensity 0.78` and `environmentMapSpecularIntensity 0.76` without car/watch route-local material overrides.
-  - `apps/v9-advanced-examples-gallery/src/rendererEnvironmentBackgroundEvidence.ts` now records the active composed renderer lighting values, not only the raw dim HDR bundle.
-  - `tests/unit/rendering/environment-lighting-reflection-platform.test.ts` covers the composition contract: preserve route/stage color, intensity, and procedural map while adding sampled HDR texture bindings.
-  - `pnpm exec vitest run tests/unit/rendering/environment-lighting-reflection-platform.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-product-configurator-policy.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/product-configurator-reference.spec.ts --reporter=line --timeout=360000` passed after the platform change.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - Latest focused Product runtime reports composed renderer environment lighting with `environmentMapIntensity 0.78`, `environmentMapSpecularIntensity 0.76`, rotation `0.18`, and mip count `8`.
-  - Latest focused Product metrics improved materially but remain failed: `uniqueColorBuckets 279 < 400`, `detailEdgeDensity 0.012297 < 0.028`, `localContrast 36.290998`, `foregroundCoverage 0.240237`, and `performanceEvidence.rafFrameMs 507.95`.
-  - Latest focused Product screenshot hashes: full `43cf97823fd771eb9273f004375636f6bbab851c3b0f8df9030d74d5045bcdf6`, hero `a25a0168f825cd620c783da3c5b754ca6d1883c9d93365e63c50103c3b04f274`, viewport `df7a2e43a145a89f41474f7372c1dbce75d7ea9956aa781c1510358d4f744a49`.
-  - The hero screenshot was opened directly. The original car/watch/shoe/sunglasses assets are visibly present and car paint/specular response is much better, but Product is still not accepted because the composition/stage, low edge detail, and capture cadence remain below the premium bar.
-- Product status after imported-variant composition/stage refinement on 2026-05-20:
-  - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` now stages the existing original watch, car, sunglasses, and shoe GLBs with more deliberate support placement and imported default variants: watch `Midnight Gold`, car `Carmine Candy`, and shoe `beach`. No Product asset was replaced or hidden.
-  - `packages/rendering/src/EnvironmentPlatform.ts` now uses a smaller/darker reusable `product-premium` receiver footprint for the current Product stage. This remains a reusable stage approximation, not a true renderer contact-shadow or reflection solution.
-  - `tests/browser/v9-advanced-examples-gallery.spec.ts` now asserts the current imported variant defaults for the watch and shoe instead of stale `Khronos Red`/`street` expectations.
-  - `pnpm exec vitest run tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-product-configurator-policy.test.ts tests/unit/rendering/environment-platform.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - Latest focused Product metrics improved but remain failed: `uniqueColorBuckets 348 < 400`, `detailEdgeDensity 0.017215 < 0.028`, `localContrast 39.000007`, `foregroundCoverage 0.240816`, and `performanceEvidence.rafFrameMs 575.3`.
-  - Latest focused Product screenshot hashes: full `f0be6d4aa4d711f452d6b5eca04a1281a07b105fe43f01d17f9aaec7c6305ea4`, hero `59006a6601bbec14ac698f9c4f2d4830b526d3efc114d02441eee963dfbcb151`, viewport `c1296d7b1a09e224a34244268f2fc4b1296d470692423241e2224f48f6735bc3`.
-  - The full, hero, and viewport screenshots were opened directly. Product is cleaner and uses the intended original assets, but it remains visually failed because the car/stage still dominate low-detail frame area, PBR/imported edge fidelity is not premium enough, and capture cadence remains unhealthy.
-- Product status after package-owned Product Studio layout extraction on 2026-05-20:
-  - `packages/product-studio/src/ProductShowcaseLayout.ts` now owns a deterministic compact multi-product layout and hero frame for Product Configurator instead of keeping all placement/camera bounds as app-only coordinates.
-  - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` consumes `createProductShowcaseLayout(...)` for the original watch, car, sunglasses, and shoe placement/scale/default imported variants. No Product asset was replaced.
-  - `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts` consumes the same package-owned layout frame for Product hero padding and bounds.
-  - `tests/unit/product-studio/product-showcase-layout.test.ts` covers the layout schema, frame bounds, original asset slots, imported variant defaults, and limitation disclosure.
-  - `pnpm exec vitest run tests/unit/product-studio/product-showcase-layout.test.ts tests/unit/product-studio/product-camera.test.ts tests/unit/product-studio/product-asset-loader.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-product-configurator-policy.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `pnpm build` passed to refresh the package `dist` export surface used by the browser bundle.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - Latest focused Product metrics improved on hue variety but remain failed: `uniqueColorBuckets 456`, `detailEdgeDensity 0.015637 < 0.028`, `localContrast 35.292374`, `foregroundCoverage 0.244437`, and `performanceEvidence.rafFrameMs 675.7`.
-  - Latest focused Product screenshot hashes: full `e56b61ba7e770f0a0c27e658eeb8471fd7ea249ac262f8d9249db86986e80d00`, hero `dcfeb1a07063924a846b62598a5e325b6f16dfd25896d99f59bdad705688acd1`, viewport `a92189ebd427251597db944d1e03dfdc0b13e9a034d6ccd825d4b5d1ba2d06fa`.
-  - The hero screenshot was opened directly. Product is still not accepted because the car/platform still occupy too much smooth low-detail frame area and capture cadence remains unhealthy. The next Product layout work must happen in the package helper or core material/shadow/cadence owners, not route-only overrides.
-- Product status after package-owned layout detail-balance refinement on 2026-05-20:
-  - `packages/product-studio/src/ProductShowcaseLayout.ts` now reduces the car's smooth-frame dominance, increases the detailed original watch/shoe/sunglasses support assets, and tightens Product hero framing through the reusable Product Studio layout helper.
-  - `tests/unit/product-studio/product-showcase-layout.test.ts` and `tests/unit/apps/v9-advanced-gallery-route-policies.test.ts` were updated to pin the package-owned layout/frame contract.
-  - `pnpm exec vitest run tests/unit/product-studio/product-showcase-layout.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-product-configurator-policy.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `pnpm build` passed to refresh `dist` exports for the browser bundle.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only, but took `3.2m`, reinforcing the route/capture cadence blocker.
-  - Latest focused Product metrics remain failed: `uniqueColorBuckets 375 < 400`, `detailEdgeDensity 0.022079 < 0.028`, `localContrast 40.765531`, `foregroundCoverage 0.286457`, `loopMs 30.1`, `renderMs 26.5`, and `performanceEvidence.rafFrameMs 2108.3`.
-  - Latest focused Product screenshot hashes: full `26331732020b7789a24d2930d206da06c2351e258359691253ef2efcbe0cb038`, hero `0da54c1c875d5d61c552b2ec7f8438ea17886857d890c5de67738f935526149c`, viewport `f7a5f02966b3208f3862bced8e30a6eaa28950aeecf969aae43504259b802557`.
-  - The hero screenshot was opened directly. Product is closer on detail density but still visually failed. Further route-layout nudging is not enough; the next Product blockers are renderer/importer PBR fidelity, real grounding/shadow/reflection support, and capture/cadence/root performance reporting.
+Allowed before the salvage map:
 
-Current known facts about Data Galaxy:
+- inspect source files;
+- run `pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"`;
+- run `git status --short`;
+- run `git diff --name-only`;
+- run `git diff --stat`.
 
-- Active authored Data assets now include:
-  - `fixtures/v9/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb`
-- The previous generic animated cube fixtures were removed from the active Data Galaxy route asset list because they were unrelated filler, not premium Data Galaxy focal evidence:
-  - `fixtures/v8/assets/animation/animated-morph-cube.glb`
-  - `fixtures/v8/assets/animation/animated-colors-cube.glb`
-  - `fixtures/v8/assets/animation/box-animated.glb`
-- Current Data authored GLB evidence does not prove premium focal-hero quality. The generated Data core now has embedded generated data-glyph texture evidence at source, but it remains generated support content until current screenshots and review metadata accept it visually.
-- Current visible failures include weak focal subject, generated support-scaffold risk, low contrast, noisy or unclear particle hierarchy, weak premium art direction, and CPU/static particle limitations.
-- Data must stay failed until direct visual review accepts exact current screenshots.
-- Focused Data status carried forward from the previous directive:
-  - The reusable environment-stage gray floor/catch plane and named authored data-core platform mesh were disabled for the route.
-  - The default route used lower CPU/static showcase density while higher stress modes remained selectable.
-  - The background proof moved away from terrestrial HDRI toward a deterministic generated deep-space Radiance/RGBE fixture through `Renderer.environmentBackground`.
-  - The generated data-core script reduced visible scaffold draw items and lowered emission/alpha intensity, but the route remained visually failed.
-  - The remaining objective warnings included foreground coverage, local contrast, RAF cadence below 12 FPS, and authored GLB content with no texture-backed material evidence.
-  - The route proved CPU/static particle evidence, not GPU compute parity or premium particle art direction.
-- Latest source-level Data asset status after the generated texture-backed support update:
-  - `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py` now writes embedded generated data-glyph textures into key Data core materials.
-  - `fixtures/v9/assets/data-galaxy-core-blender/manifest.json` now reports generated/support-only texture-backed evidence with `3` exported textures, `3` exported images, and `3` exported texture-backed materials.
-  - This update removes the old "generated/no-texture" source classification, but it does not make the Data core an accepted premium hero. The route remains failed until fresh current screenshots, runtime reports, audit/review output, and direct visual review prove the whole scene.
-  - `tests/unit/tools/v9-data-galaxy-generated-assets.test.ts` now verifies the current exported GLB counts: `11` materials, `3` textures, `3` images, `149` meshes, `154` nodes, and `3` texture-backed materials.
-  - `pnpm exec vitest run tests/unit/tools/v9-data-galaxy-generated-assets.test.ts tests/unit/apps/v9-data-galaxy-budgets.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/tools/v9-advanced-gallery-report-audit.test.ts tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts --reporter=dot` passed after updating the generated texture-backed Data expectations.
-  - `python3 -m py_compile tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py` passed after the generator update.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the Data generated texture-backed source/test updates.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "data-galaxy renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused verification.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery` was rerun after the source change: all ten route runtime/screenshot tests passed and only the intentional visual-acceptance guard failed.
-  - `pnpm v9:advanced-gallery:review` remains correctly blocked at `0/10 accepted`.
-  - `pnpm v9:advanced-gallery:audit` now reports `10/10` route reports, `10/10` current screenshot artifacts, `10/10` reusable systems/unsupported disclosures/measured performance/screenshot hashes/image stats, `0` blockers, and `0` warnings. This is structural evidence only; it does not promote any route.
-  - Current Data full-gallery runtime reports `generatedNoTextureAuthoredGlb: false`, `3` texture-backed Data core draw items, `3` textures, CPU/static particles, and `0` native GPU compute dispatches.
-  - Current Data screenshots remain failed: foreground coverage, detail-edge density, local contrast, and capture cadence still block visual acceptance.
-- Focused Data status after route-owned default showcase/focal hierarchy work on 2026-05-20:
-  - `apps/v9-advanced-examples-gallery/src/metadata.ts` now initializes the actual gallery control default to `12,000` particles, while `4,000` remains a selectable interactive mode and `24,000`/`50,000` remain stress/evidence modes.
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts` now defines `DATA_GALAXY_DEFAULT_PARTICLES` as the `12k showcase` tier and allocates the majority of particles to the primary focal layer.
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts` now emits structured `defaultShowcaseMode`, focal hierarchy, CPU/static, generated support-only, and `0` GPU dispatch evidence.
-  - `pnpm exec vitest run tests/unit/apps/v9-data-galaxy-budgets.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts tests/unit/tools/v9-advanced-gallery-report-audit.test.ts --reporter=dot` passed.
-  - `pnpm exec vitest run tests/assets/gltf-inspection.test.ts tests/assets/gltf-extension-support.test.ts --config tests/assets/vitest.config.ts --reporter=dot` passed.
-  - `pnpm exec vitest run tests/unit/rendering/pbr-lighting.test.ts tests/unit/rendering/shader-library.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "data-galaxy renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - The latest focused Data runtime JSON reports `defaultShowcaseMode: true`, `mode: "showcase"`, `requestedParticles: 12000`, `effectiveParticles: 12000`, `primaryCount: 6480`, `nativeGpuComputeDispatches: 0`, and generated `data-galaxy-core-blender` support-only disclosure.
-  - The generated Data screenshots still fail visual review: the generated authored core still reads as scaffold/support content rather than accepted premium focal proof, `foregroundCoverage` is `0.105993`, and `performanceEvidence.rafFrameMs` is `400.4`.
-  - Latest focused Data screenshot hashes: full `53f0eedbbb4f62f2d01e89a6adbf23d6c7bdfc38033ccaef2e27436900b6974f`, hero `e424bd60c5fcf55332d4d029c04a061eae264ca1e7bd7813c4f3e83c13f71dd1`.
-- Focused Data status after route-owned focal/detail recovery on 2026-05-20:
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts` now gives the 12k showcase tier a larger route-owned foreground composition and higher curated overlay budget: `204` overlay spark points and `176` overlay line-segment budget.
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts` adds foreground-local data-system contour/spine geometry and keeps the generated data-core GLB disclosed as support-only. An attempted oversized shell was corrected after direct screenshot inspection; the accepted subject remains route-owned particles/lines, not a solid sphere or unrelated prop.
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts` now uses Data-specific particle materials from `sceneBuilders.ts` so Data can improve point readability without changing Smart City's shared particle pulse materials.
-  - `apps/v9-advanced-examples-gallery/src/metadata.ts` and `authoredAssets.ts` now match current generated asset truth: the generated data-core GLB has limited generated texture evidence, but remains support-only and cannot be used as premium focal hero proof.
-  - `pnpm exec vitest run tests/unit/apps/v9-data-galaxy-budgets.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts --reporter=dot` passed after the route-owned budget/material changes.
-  - `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts tests/unit/tools/v9-advanced-gallery-report-audit.test.ts --reporter=dot` passed before the focused visual verification.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the route-owned Data changes.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "data-galaxy renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - Latest focused Data metrics improved on detail and contrast but remain failed: `uniqueColorBuckets 821`, `detailEdgeDensity 0.037849`, `localContrast 37.658669`, `foregroundCoverage 0.105954 < 0.14`, and `performanceEvidence.rafFrameMs 350.05`.
-  - Latest focused Data screenshot hashes: full `7a73412a29167b68dca35099ee7b9e2268a42f8265c07b85b1d93b66e9b15806`, hero `d0cce1b0e851b2d171e725a7ea990f05cb103f94afe261e92b6e08f5a297cf27`, viewport `5f038f3bf0c3c5b5f72bd070959c45735d89c6416a177a003c320b4d642e04aa`.
-  - The focused screenshots were opened directly. The route is better than the previous focused state on edge detail and contrast, but it is not accepted because foreground coverage and frame cadence remain below the bar and the generated support GLB cannot carry focal-hero proof.
-- Focused Data status after route-owned foreground/focal mass recovery on 2026-05-20:
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts` now increases the 12k showcase route-owned overlay budget to `331` spark/core/focal points and `248` trail/connection/contour/ring/ladder segments, tightens the showcase composition bounds, and keeps the package-backed layered particle budget contract intact.
-  - `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts` now enlarges the central route-owned data nucleus, focal cluster anchors, contour chords, and vertical spine evidence. The generated `data-galaxy-core-blender` GLB remains disclosed support-only content and was not promoted to hero proof.
-  - `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts` and `tests/browser/data-galaxy-reference-harness.ts` now use tighter Data Galaxy hero framing for the route-owned focal system.
-  - `pnpm exec vitest run tests/unit/apps/v9-data-galaxy-budgets.test.ts tests/unit/rendering/particle-diagnostics.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts --reporter=dot` passed.
-  - `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed.
-  - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "data-galaxy renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed as focused-route evidence only.
-  - Latest focused Data metrics now clear the automated foreground/detail/contrast floors but remain failed by direct review: `uniqueColorBuckets 846`, `foregroundCoverage 0.140326`, `detailEdgeDensity 0.045832`, `localContrast 45.458457`, and `performanceEvidence.rafFrameMs 408.3`.
-  - Latest focused Data screenshot hashes: full `b110bee5fee85aebcab7d8e6e0eab9a11aebe42d0446ddd63ef5b66ec34ab6fe`, hero `74a7e8acd972bd21f216f4c014b785e041d17c06ff53bb1cbcfbfc1ef91179b1`, viewport `27011896e9b100edfaa0b679e45c88f5d0038abece6cbfa25e3310410d2bf7ac`.
-  - The focused screenshots were opened directly. Data is still not accepted: the scene is visually busy, the generated support/scaffold read is still present, and RAF cadence remains unhealthy. The next fix must clean the route-owned focal system and/or reduce support-scaffold pressure without replacing the route subject or claiming GPU compute.
+Forbidden before the salvage map:
 
-Current review result after the full gallery refresh on 2026-05-20:
+- Product/Data implementation;
+- Product/Data gallery captures;
+- review/audit/contact-sheet/screenshot runs;
+- broad git reset/checkout/restore/clean/stash/branch commands;
+- touching `.gitignore`;
+- modifying unrelated dirty files;
+- editing tests to follow failed visuals;
+- claiming acceptance, progress, or material improvement from smoke/metric/report output.
 
-- `pnpm v9:advanced-gallery:review` regenerated `current-contact-sheet.png`, `visual-regression-inventory.json`, and `visual-review-report.json`.
-- The release gate remains correctly blocked: `Release gate: blocked (0/10 accepted)`.
-- Latest visual-review summary: `10` demos, `0` accepted, `8` candidate, `2` failed, `10` blocked, `10` blocker issues, `9` warning issues, `7/10` image-quality passing, and `1` known visual-artifact risk.
-- Latest contact-sheet SHA-256: `fb33e7c3a61e1c25457b87f9aa8c1d92b582c47ad51242a94c14a55293b4a157`.
-- Latest contact-sheet source-set SHA-256: `897ebfacbd44b9ccfcb20f30aa3e457f0d1e0f868eed1c0a707c4e3eed3abe26`.
-- Latest contact-sheet timestamp: `2026-05-20T09:44:19.782Z`.
-- `pnpm v9:advanced-gallery:audit` now passes structurally with `10/10` route reports present, reusable systems/unsupported disclosures/measured performance/screenshot hashes/current screenshot artifacts/image stats all `10/10`, `0` audit blockers, and `0` warnings. This is non-promotional because visual review remains blocked with `0/10` accepted.
+If a G3D-specific Playwright/Vite/vitest/gallery process is running, kill only the process tied to `/Users/gurbakshchahal/G3D` and record the PID. Do not kill unrelated processes.
 
-Current known facts about Reactor Post:
+## 1B. Required Dirty-Worktree Salvage Map
 
-- Existing screenshots inspected without recapture:
-  - `tests/reports/v9/advanced-examples-gallery/reactor-post.png`
-  - `tests/reports/v9/advanced-examples-gallery/reactor-post-hero.png`
-  - `tests/reports/v9/advanced-examples-gallery/reactor-post-viewport.png`
-- Existing runtime report inspected:
-  - `tests/reports/v9/advanced-examples-gallery/reactor-post.json`
-- Current state is `candidate`, not accepted.
-- The base scene is readable enough to remain a postprocess candidate: central reactor, floor etching, command wall, rings, holographic panels, and measured renderer postprocess are visible.
-- The current postprocess plan reports only renderer-owned `tone-mapping`, `color-grade`, and `fxaa` in `rgba8`; bloom remains opt-in and the route does not prove DOF, motion blur, LUT/AOV layers, temporal accumulation, EffectComposer parity, or depth/velocity-input passes.
-- Objective screenshot metrics are above the basic image floor (`detailEdgeDensity 0.036388`, `localContrast 41.599767`), but RAF cadence remains a blocker (`performanceEvidence.rafFrameMs 1199.2`) and the frame is close to crop/bounds risk (`foregroundBoundsCoverage 0.973043`).
-- Reactor source-owner map:
-  - If the next defect is noisy bloom/halo, owner is `packages/rendering/src/PostProcessPass.ts`, `RendererPostprocessPlan.ts`, and route postprocess policy.
-  - If the next defect is weak base scene/crop/framing, owner is the Reactor route scene module or `sceneBuilders.ts` until a route-owned `reactorPostScene.ts` is created.
-  - If the next defect is cadence/reporting, owner is renderer/report timing and gallery capture telemetry, not screenshot repetition.
+Before any new implementation, produce a file-by-file salvage map from the current dirty worktree.
 
-Expected current review result until final acceptance:
+Run only:
 
 ```bash
-pnpm v9:advanced-gallery:review
+pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
+git status --short
+git diff --name-only
+git diff --stat
 ```
 
-```text
-Release gate: blocked
+For every dirty file from `git diff --name-only`, output:
+
+```md
+File:
+Classification: unrelated pre-existing | failed Product/Data route churn | useful library/platform candidate | test/report/metadata churn | generated/cache artifact
+Recommendation: KEEP CANDIDATE | DISCARD/REWRITE MANUALLY | ISOLATE FOR LATER REVIEW | DO NOT TOUCH
+Why:
+Risk:
+Dependencies:
+Safe next action:
 ```
+
+Then produce exactly these buckets:
+
+```md
+Bucket 1 — Keep Candidate: library/platform fixes only
+Bucket 2 — Discard/Rewrite: failed Product/Data visual churn
+Bucket 3 — Review Carefully: tests/review/audit/execute changes
+```
+
+No implementation is allowed until this map exists.
+
+## 1C. Known Prior Salvage Classification
+
+Use the dirty-file classification in `## 0A` only as a starting seed. Re-run the commands in `## 1B` and classify the actual current worktree.
+
+`.gitignore` is unrelated pre-existing dirt and must not be touched.
+
+Files previously associated with Product/Data route churn, generated assets, tests, review tooling, metadata, reports, or renderer/importer changes are not proof of progress. They are dirty work that must be reviewed file-by-file before anything is kept.
+
+## 1D. Product Restart Plan
+
+Do not continue the current Product multi-object hero.
+
+Active Product restart path:
+
+1. Complete the dirty-worktree salvage map.
+2. Review renderer/material/importer candidates independently.
+3. Prove the original `car-concept` material problem outside the gallery route.
+4. Use the Product same-asset harness only for material proof, not gallery acceptance.
+5. Return to Product Studio route work only after the material proof passes.
+
+Product restart constraints:
+
+- Hero mode must show original `car-concept` only.
+- Watch, shoe, and sunglasses must not appear in hero mode.
+- Support objects may appear only in Detail mode or a separate product-island mode.
+- No generated/stub Product GLB may replace the original car hero.
+- If paint, glass, grounding, contact, or reflection still fail, stop in renderer/importer/material. Do not keep moving objects around.
+
+## 1E. Data Restart Plan
+
+Do not continue current `DataGalaxyFocalSystem` as-is.
+
+Active Data restart path:
+
+1. Complete the dirty-worktree salvage map.
+2. Stop building on generated/support GLB focal content.
+3. Prove one coherent reusable data effect outside the gallery route first.
+4. Adapt the route only after the effect has a premium first-glance frame.
+5. Preserve CPU/static honesty; do not claim native GPU compute unless implemented.
+
+Data restart constraints:
+
+- No generated Data GLB in hero.
+- No cuboid scaffold blocks.
+- No tiny semantic node filler.
+- No object-count padding.
+- No wide particle carpet.
+- No giant translucent fog sphere.
+- No random thin debug lines.
+- Build one coherent visual effect: luminous central core, orbiting particle rings, clean arcs, clustered glowing points, and depth layers.
+
+## 1F. Expected Visual Delta Gate
+
+Before any future Product/Data gallery capture, write:
+
+```md
+Expected visual delta:
+Route:
+Files being changed:
+What should look materially different in the next hero PNG:
+What exact old artifact should disappear:
+What exact new visual structure should appear:
+Why this is not only a metric/test/report change:
+```
+
+If the next PNG does not match that delta:
+
+- stop;
+- do not recapture;
+- escalate to the next higher source owner;
+- record failure honestly.
+
+## 1G. Historical Failed Loop Evidence
+
+Old Product/Data timelines, screenshot hashes, metric dumps, generated-GLB attempts, 12k/6k Data attempts, Product layout attempts, `DataGalaxyFocalSystem` attempts, focused-capture records, "passed" test runs, and source-change summaries are removed from the active execution path.
+
+Historical Product/Data evidence may be restored only into an appendix for forensic review. It must not be used as current evidence, current acceptance, or a reason to continue an old Product/Data direction.
+
+Product Configurator remains failed.
+
+Data Galaxy remains failed.
+
+No Product/Data acceptance claim is valid.
+
 
 ## 2. Product Definition
 
@@ -342,29 +638,23 @@ Purpose: stop false progress. Tooling must make it impossible to claim acceptanc
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
 | P0.1 | Required | Screenshot discipline | `execute.md`, `tests/browser/v9-advanced-examples-gallery.spec.ts`, `tools/v9-advanced-gallery-visual-review/index.ts` | Screenshots are verification only after a named source-owner fix. Focused route captures must not look like complete gallery runs. | Typecheck; review output clearly distinguishes partial/focused artifacts from full gallery evidence. |
-| P0.2 | Done | Visual regression inventory | `tools/v9-advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Inventory Product/Data/Reactor current, older, baseline, recovered, and partial screenshot artifacts with hashes, dimensions, timestamps, and runtime JSON. Do not delete old artifacts. | `pnpm v9:advanced-gallery:review` now writes `visual-regression-inventory.json`; inventory reports current artifacts, hash/mtime evidence, historical candidates, and whether older baselines are human-verified. |
+| P0.2 | Salvage review required | Visual regression inventory | `tools/v9-advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the salvage map before preserving. |
 | P0.3 | Required | Review gate hardening | `tools/v9-advanced-gallery-visual-review/index.ts`, tests under `tests/unit/tools/*` | Block accepted state for stale hashes, partial route reports, missing human reviewer, missing known-gaps notes, asset/scaffold dominance, material failure, crop artifacts, bad cadence, or generated-asset overclaim. | Unit tests prove each blocker. |
 | P0.4 | Done / Non-Promotional Audit | Report audit hardening | `tools/v9-advanced-gallery-report-audit/index.ts`, tests under `tests/unit/tools/*` | Audit route reports for reusable-system evidence, unsupported disclosures, screenshot hashes, image stats, material/texture evidence, generated-asset disclosure, CPU/GPU mode, performance, and full-gallery evidence mode. | Audit ignores non-route support reports such as `visual-regression-inventory.json`, blocks focused/partial route reports, and does not mark routes accepted. |
 | P0.5 | Required | No-regression workflow | `tests/browser/v9-advanced-examples-gallery.spec.ts`, review tool, report audit | Any renderer/material/loader/environment/postprocess/gallery-shell change requires focused tests before one capture and full sweep only after focused gates pass. | Tooling or docs enforce sequence; no repeated screenshot loops. |
-| P0.6 | Done / Audit Path | Partial report folder blocker | `package.json`, `tools/v9-advanced-gallery-report-audit/index.ts`, `tools/v9-advanced-gallery-visual-review/index.ts`, `tests/browser/v9-advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts` proves partial report folders fail audit; visual review still blocks current stale Product screenshots. |
+| P0.6 | Salvage review required | Partial report folder blocker | `package.json`, `tools/v9-advanced-gallery-report-audit/index.ts`, `tools/v9-advanced-gallery-visual-review/index.ts`, `tests/browser/v9-advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | Review dirty audit/review/test changes through the salvage map before preserving. |
 | P0.7 | Required | Route-local hack containment | `apps/v9-advanced-examples-gallery/src/main.ts`, `sceneBuilders.ts`, `authoredLayer.ts`, `galleryRoutePolicies.ts`, Product/Data route modules | Route-specific camera, postprocess, visibility, product policy, and data density logic must move out of shared orchestration. `main.ts` stays renderer/shell orchestration. | Typecheck, route module tests, focused route tests, and no new route-specific `if` branches without PRD owner. |
 | P0.8 | Done | Package script accountability | `package.json` | Keep scripts for full gallery capture, review, audit, and pipeline explicit. The audit script must be non-promotional and pipeline must run capture, review, and audit in order. | `package.json` exposes `v9:advanced-gallery:audit` and `v9:advanced-gallery:pipeline`; pipeline runs capture, review, and audit in order. |
+| P0.9 | Required / Blocking | Product/Data salvage map | `execute.md` only until source work resumes | Record the current dirty-worktree file classification, salvage buckets, forbidden tactics, restart gates, and current evidence absence before further implementation. | Source changes may resume only after the salvage map exists and a post-salvage owner task/write set is selected. |
 
 P0 acceptance checklist:
 
-- [x] `pnpm v9:advanced-gallery:review` remains blocked while current route metadata is not accepted.
-- [x] Partial/focused captures cannot be mistaken for full gallery evidence.
-- [x] Product/Data/Reactor visual defects are mapped to source owners before further screenshots.
-- [x] Review tools do not weaken thresholds to make current screenshots pass.
-- [x] Partial report folders fail audit/review loudly.
+- [ ] The dirty-worktree salvage map exists and classifies every dirty file.
+- [ ] Review/audit/test changes are kept only if they strengthen anti-false-acceptance behavior.
+- [ ] Partial/focused captures cannot be mistaken for full gallery evidence.
+- [ ] Product/Data/Reactor visual defects are mapped to source owners before further screenshots.
 - [ ] Route-local decisions are in route policy modules, not buried in `main.ts`, `sceneBuilders.ts`, or `authoredLayer.ts`.
-- [x] Accepted-state metadata gate is unit-tested for reviewer, timestamp, screenshot path/hash, comparison notes, known-gap acknowledgement, and rejection/scaffold language.
-- [x] Accepted-state runtime gate is unit-tested for material diagnostics, scaffold dominance, crop/stage-edge risk, capture cadence, generated-asset disclosure, and Data Galaxy GPU overclaim.
-- [x] Accepted-state runtime gate is unit-tested for Product/Data low local contrast and Product low detail-edge density so current bad screenshots cannot be promoted by metadata alone.
-- [x] Accepted-state and audit gates are unit-tested for Product no-texture authored dominance, Data generated/no-texture focal-role overclaim, expanded slab/stage dominance language, low contrast/detail metrics, bad cadence, and focused/partial report blockers.
-- [x] Accepted-state visual-review gate now blocks Data Galaxy generated/support authored GLB dominance even when the generated support GLB has limited texture-backed evidence; support-only content cannot carry Data acceptance.
-- [x] `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts tests/unit/tools/v9-advanced-gallery-report-audit.test.ts --reporter=dot` passed after updating Data generated-support gate wording.
-- [x] `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the Data generated-support visual-review gate update.
+- [ ] No Product/Data generated-support, screenshot-hash, metric, or focused-capture history is treated as active proof.
 
 ## 7. Phase P1 - Renderer Visual Foundation
 
@@ -375,13 +665,13 @@ Purpose: make renderer output stable, sharp, correctly colored, and reportable b
 | P1.1 | Required | Color pipeline | `packages/rendering/src/Renderer.ts`, `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/RendererVisualPipelineReport.ts`, future `ColorManagement.ts`, tone/exposure files | First-class output color space, linear workflow, sRGB correctness, tone mapping presets, exposure, HDR/LDR target policy, screenshot color consistency. | Unit tests and browser proof that the same scene captures consistently. |
 | P1.2 | Required | DPR and backing enforcement | `Renderer.ts`, `RenderDevice.ts`, browser tests, gallery report capture | Canvas backing size, device pixel ratio, screenshot downsample/upscale evidence, no soft/upscaled captures. | Runtime JSON reports DPR/backing/capture size; screenshots are sharp. |
 | P1.3 | Required | Presentation state hardening | `ForwardPass.ts`, WebGL2 device/render pipeline files, postprocess path | Scene state must not leak into fullscreen presentation: sampler state, scissor/stencil/polygon offset/color mask, cull/depth/blend, framebuffer flush. | Focused renderer regression tests; product/data background proof does not black out or wash out. |
-| P1.4 | Required | Frame cadence reporting | `RendererVisualPipelineReport.ts`, gallery capture/report files | Separate load timing, render work, RAF cadence, screenshot timing, post-load stable stats. | Runtime JSON distinguishes headless capture cadence from route performance claims. |
+| P1.4 | Salvage review required | Frame cadence reporting | `RendererVisualPipelineReport.ts`, gallery capture/report files, `tools/v9-advanced-gallery-visual-review/*` | Separate load timing, render work, RAF cadence, screenshot timing, post-load stable stats. | Review dirty cadence/report changes through the salvage map before preserving. Do not use prior focused Product/Data JSON as proof. |
 | P1.5 | Required | Visual clarity diagnostics | `packages/rendering/src/postprocess/CinematicDiagnostics.ts`, report audit | Detect washed-out tone, bloom/noise risk, soft detail, weak local contrast, unsupported pass claims. | Unit tests and route reports show clarity warnings without accepting routes. |
 
 P1 acceptance checklist:
 
 - [ ] Renderer exposes/report color space, tone, exposure, HDR/LDR path, DPR, backing size, and screenshot consistency.
-- [x] Current Product/Data failures are not blamed on route composition until renderer clarity is proven in reference harnesses.
+- [ ] Current Product/Data failures are not blamed on route composition until renderer clarity is reproved after salvage.
 - [ ] No route uses CSS darkness or camera crop to hide renderer visual defects.
 
 ## 8. Phase P2 - Asset And Material Activation
@@ -391,46 +681,19 @@ Purpose: make GLB assets load, diagnose, bind, and render honestly. Raw GLB load
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
 | P2.1 | Required | GLTF extension truth | `packages/assets/src/GLTFLoader.ts`, `packages/assets/src/GLTFExtensionSupport.ts`, `packages/assets/src/AssetInspection.ts` | Bucket extensions as runtime-supported, decoder-required, parsed-with-limits, diagnostic-only, or unsupported. Required unsupported extensions must fail or warn loudly. | `tests/assets/gltf-extension-support.test.ts`; route JSON lists exact support/limits. |
-| P2.2 | Required | GLTF render-resource metadata | `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/index.ts`, tests under `tests/assets/*` | Per-renderable node, geometry, material, source material, primitive, variant, texture-backed slots, fallback-white counts, missing-material counts, missing-geometry counts. | Asset tests; Product runtime report proves original asset material/texture evidence. |
+| P2.2 | Salvage review required | GLTF render-resource metadata | `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/index.ts`, tests under `tests/assets/*` | Per-renderable node, geometry, material, source material, primitive, variant, broad texture-backed slots, effective texture contribution, material-fidelity diagnostics, fallback-white counts, missing-material counts, missing-geometry counts. | Review dirty asset/render-resource changes through the salvage map before preserving. Do not use prior Product/Data runtime reports as proof. |
 | P2.3 | Required | PBR fallback correctness | `packages/rendering/src/PBRMaterial.ts`, `TexturedPBRMaterial.ts`, `PbrReference.ts`, `ShaderChunks.ts`, `ShaderLibrary.ts`, `packages/rendering/src/shaders/pbr-direct.frag.glsl` | Fix clearcoat, specular, iridescence, transmission, glass opacity, normal-map sampler handling, environment specular over-brightening, fallback-white behavior. | Shader/PBR unit tests; Product reference harness screenshot. |
-| P2.4 | Done / runtime-evidenced | Material override API | `GLTFRenderResources.ts`, gallery product policy files | Product controls must target imported material semantics through metadata, not blind route key scans. | Unit tests prove Product variant target planning through `GLTFRenderResources.materialVariants`; focused Product runtime JSON reports imported material-control binding counts for original car/watch/shoe GLBs. |
+| P2.4 | Salvage review required | Material override API | `GLTFRenderResources.ts`, gallery product policy files | Product controls must target imported material semantics through metadata, not blind route key scans. | Review dirty Product policy/material-control changes through the salvage map before preserving. Do not use prior focused Product JSON as proof. |
 | P2.5 | Required | Texture/compression boundary | `GLTFLoader.ts`, decoder files, `KTX2BasisTextureTranscoder.ts`, `GLTFCompressionDecoders.ts`, `AssetInspection.ts` | Draco, Meshopt, KTX2/BasisU, WebP/AVIF, texture transform, mesh quantization, and unsupported decoder boundaries must be explicit. | Loader tests and diagnostics; no generic "loaded" claim hides missing support. |
 | P2.6 | Required | EXR boundary | `packages/assets/src/loaders/EXRLoader.ts` or real EXR implementation | Diagnostic-only EXR must not be claimed as production decode. Implement real OpenEXR decode or keep unsupported. | Tests prove either real decode or explicit diagnostic-only status. |
 
 P2 acceptance checklist:
 
-- [x] Product reference harness renders original car/watch/shoe/sunglasses outside the gallery UI.
+- [ ] Dirty asset/render-resource/material-control changes are classified in the salvage map before being kept.
 - [ ] Material failures are fixed in package code or remain blocked with explicit unsupported status.
 - [ ] Route-level paint/glass overrides are not counted as platform material fixes.
-- [x] Runtime reports disclose material/texture counts, extension support, fallback/missing counts, and imported material-control binding counts from current captured JSON.
-- [x] `AssetInspection.ts` exposes render-resource diagnostics and per-material extension-support records so inspection reports can surface texture-backed materials, fallback-white counts, missing geometry/material counts, and parsed-with-limits material extension boundaries.
-- [x] `tests/assets/gltf-inspection.test.ts` covers render-resource diagnostics, fallback-white warnings, missing binding diagnostics, and `KHR_materials_transmission` parsed-with-limits downgrade truth.
-- [x] `packages/rendering/src/TexturedPBRMaterial.ts` now exposes `texturedPbrShaderActiveTextureSlots(...)` and `isTexturedPbrTextureSlotShaderActive(...)` so diagnostics can tell which runtime-bound texture slots are actually sampled by the selected textured-PBR shader variant.
-- [x] `packages/assets/src/GLTFRenderResources.ts` now splits render-resource texture evidence into runtime-bound `textureSlotDiagnostics`, `shaderActiveTextureSlotDiagnostics`, and `shaderInactiveTextureSlotDiagnostics`; unsupported mixed extension texture groups can no longer be counted silently as fully shader-sampled material fidelity.
-- [x] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` now includes shader-active and shader-inactive texture slot diagnostics in authored material runtime reports.
-- [x] `tools/v9-advanced-gallery-report-audit/index.ts` now blocks Product material evidence when runtime-bound texture slots are inactive in the selected textured-PBR shader variant, so reports cannot promote unsupported mixed extension texture groups as fully shader-sampled material fidelity.
-- [x] `tests/assets/gltf-inspection.test.ts` includes a mixed clearcoat/specular texture fixture proving runtime-bound extension textures are reported as shader-inactive when the selected shader variant does not sample that group.
-- [x] `tests/unit/rendering/shader-library.test.ts` covers the active textured-PBR slot map for base, clearcoat, and specular/sheen/anisotropy plus iridescence variants.
-- [x] `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts` covers Product audit blocking when shader-inactive texture slots are present in authored material diagnostics.
-- [x] `pnpm exec vitest run tests/assets/gltf-inspection.test.ts --config tests/assets/vitest.config.ts --reporter=dot` passed after adding shader-active texture diagnostics.
-- [x] `pnpm exec vitest run tests/unit/rendering/shader-library.test.ts tests/unit/apps/v9-route-scene-modules.test.ts --reporter=dot` passed after adding shader-active texture diagnostics to rendering and authored reports.
-- [x] `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-report-audit.test.ts --reporter=dot` passed after adding the Product shader-inactive texture audit blocker.
-- [x] `pnpm build` passed after updating package exports/dist for shader-active texture diagnostics.
-- [x] Focused Product browser capture passed after rebuild; `product-configurator.json` now reports `shaderActiveTextureSlotDiagnostics` and empty `shaderInactiveTextureSlotDiagnostics` for the current original Product GLBs, plus the metadata-backed material-control counts.
-- [x] `productConfiguratorImportedMaterialControlPlan(...)` plans original Product GLB material controls through `GLTFRenderResources.materialVariants` metadata without mutating original imported materials or using route-local paint overrides.
-- [x] `AuthoredMaterialDiagnostic` now has fields for Product material-control target count, unique material count, selected variant, control key, metadata source, target material keys, target source materials, and limitation text.
-- [x] `tests/unit/apps/v9-product-configurator-policy.test.ts` proves metadata-backed Product material-control target planning and proves generated/support Product fixtures are not accepted as imported material-control evidence.
-- [x] `tests/unit/workstream5-runtime.test.ts` now proves `createGLTFRenderResources(..., { materialVariant })` preserves per-binding `materialVariants` metadata and that `collectMaterialOverrideTargets({ variant })` resolves the selected variant binding/material from package code.
-- [x] `tools/v9-advanced-gallery-report-audit/index.ts` now requires Product's real car/watch/shoe material-variant evidence to include positive `materialControlTargetCount`, `materialControlUniqueMaterialCount`, selected variant, and `GLTFRenderResources.materialVariants` source diagnostics; selected variant names alone are no longer enough.
-- [x] `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts` proves Product audit blocks selected-variant-only evidence and clears that specific blocker only when metadata-backed material-control binding counts are present.
-- [x] `pnpm exec vitest run tests/unit/apps/v9-product-configurator-policy.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts --reporter=dot` passed after the Product material-control diagnostics change.
-- [x] `pnpm exec vitest run tests/unit/workstream5-runtime.test.ts -t "GLTFLoader preserves and validates KHR_materials_variants metadata" --reporter=dot` passed after adding package-level material-variant target coverage.
-- [x] `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-report-audit.test.ts --reporter=dot` passed after tightening Product material-variant audit evidence.
-- [x] `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the Product material-control diagnostics change.
-- [x] `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "product-configurator renders as a complex animated G3D demo" --reporter=line --timeout=360000` passed once after the diagnostic change as focused-route evidence.
-- [x] `tests/reports/v9/advanced-examples-gallery/product-configurator.json` now reports original Product asset IDs and imported material-control target counts: `chronograph-watch` `7`, `car-concept` `25`, `materials-variants-shoe` `1`, all sourced from `GLTFRenderResources.materialVariants`; `sunglasses-khronos` correctly reports no selected variant.
-- [x] `tests/browser/product-configurator-reference.spec.ts`: passes and proves the original `car-concept`, watch, shoe, and sunglasses GLBs render outside the advanced gallery UI with material/texture diagnostics.
-- [x] `tests/browser/data-galaxy-reference.spec.ts`: passes and proves Data Galaxy's route systems render outside the gallery shell through fixed camera/background/density with CPU/static and `0` GPU-compute disclosure.
+- [ ] Product/Data reference harnesses are used only after a named source-owner restart change, and only for the declared proof. They are not gallery acceptance.
+- [ ] Prior Product/Data runtime JSON, focused captures, material counts, texture counts, and passed commands are historical failed-loop evidence, not active proof.
 
 ## 9. Phase P3 - Environment, Lighting, Grounding, Reflection
 
@@ -455,7 +718,7 @@ P3 acceptance checklist:
 - [ ] Data deep-space background is route-correct but not used to hide weak geometry.
 - [ ] Cubemap/equirect/HDR claims are bounded to implemented renderer background paths.
 - [ ] EXR, physical sky, cube camera, SSR, planar reflection/refraction, volumetrics, and full PMREM parity are not claimed until implemented.
-- [x] Product stage now has reusable compact contact-grounding receiver geometry and softbox proxy diagnostics with explicit limitations; this is not yet accepted visual quality and is not a true renderer contact-shadow pass.
+- [ ] Dirty Product stage/contact-grounding changes are reviewed through the salvage map before being kept; no prior stage claim is accepted visual quality.
 
 ## 10. Phase P4 - Controls, Interaction, Scene Metadata, Animation, Physics
 
@@ -618,201 +881,42 @@ Package script checklist carried forward:
 - [ ] Decide whether the heavy advanced-gallery pipeline belongs in aggregate `pnpm v9`.
 - [ ] Keep `test:visual` documented as generic visual baseline, not advanced gallery acceptance.
 
-Generated asset tool checklist carried forward:
+Generated asset tool instructions:
 
-- [x] Data Galaxy generated asset manifests include source script, output path, hash/size where available, route linkage, material count, texture count, mesh/draw count, generated/stub/derivative/support status, intended role, limitations, and whether the asset is acceptable as focal hero or support scenery only.
-- [x] Product generated/support asset manifests include source script, output path, hash/size, route linkage, exported material/texture/image/mesh/node counts, generated/derivative/support status, intended role, limitations, and whether the asset is acceptable as focal hero or support scenery only.
-  - [x] `fixtures/v9/assets/product-configurator-studio-blender/manifest.json` marks the generated studio fixture support-only, generated/no-texture, `acceptableAsFocalHero: false`, and records `25` exported materials, `0` textures, `0` images, `651` meshes, `655` nodes, and `0` texture-backed materials.
-  - [x] `fixtures/v9/assets/product-configurator-car-batched/manifest.json` marks the batched car as a support-only derivative of `fixtures/v8/assets/vehicles/car-concept.glb`, records source and exported GLB hashes/counts, and states it cannot replace the original Product hero without equivalence diagnostics plus current human visual review.
-  - [x] `tools/v9-advanced-gallery-assets/generate-product-configurator-studio-blender.py` and `tools/v9-advanced-gallery-assets/optimize-product-car-blender.py` now write those manifests when regenerated.
-  - [x] `tests/unit/tools/v9-product-configurator-generated-assets.test.ts` parses the current Product GLB binaries and verifies manifest hashes, sizes, exported counts, support-only status, derivative boundary, and no original-hero replacement claim.
-  - [x] `tools/v9-advanced-gallery-report-audit/index.ts` now audits Product/Data generated asset manifests for route linkage, source script, support-only/focal-hero boundary, current output hash/size, exported GLB counts, derivative status, and original source-car hash where relevant.
-  - [x] `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts` proves missing generated/support manifests and stale output hash/size evidence become audit blockers.
-  - [x] `apps/v9-advanced-examples-gallery/src/authoredAssets.ts` now exposes structured provenance for Product/Data generated/support assets and original Product hero assets: generated status, derivative status, support-only role, focal-hero boundary, texture-backed/no-texture status, manifest path, source script, and source asset path where relevant.
-  - [x] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` now includes `assetProvenance` in authored runtime evidence so the next route capture can report generated/support/derivative truth without relying on prose or material-count inference alone.
-  - [x] `tools/v9-advanced-gallery-report-audit/index.ts` now blocks active generated/support Product/Data assets when route JSON lacks structured runtime provenance or when the provenance omits generated/support-only/focal-hero/source-script/manifest/source-asset disclosure.
-  - [x] `tests/unit/apps/v9-product-configurator-policy.test.ts` proves Product catalog provenance keeps active Product route assets pinned to original texture-backed GLBs and keeps Product generated/support assets classified as support-only or derivative-only.
-  - [x] `tests/unit/apps/v9-data-galaxy-budgets.test.ts` proves the active Data Galaxy generated authored GLB remains catalogued as generated/support-only provenance and cannot become focal hero evidence without review.
-  - [x] `tests/browser/v9-advanced-examples-gallery.spec.ts` now asserts full runtime provenance for active Product/Data authored assets: Product must report the original `car-concept` as external, texture-backed, non-generated, non-derivative hero evidence with generated Product fixtures inactive; Data must report `data-galaxy-core-blender` as generated/support-only with manifest and source-script disclosure.
-  - [x] `pnpm exec vitest run tests/unit/tools/v9-product-configurator-generated-assets.test.ts tests/unit/tools/v9-data-galaxy-generated-assets.test.ts --reporter=dot` passed after adding Product generated/support manifests.
-  - [x] `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-report-audit.test.ts tests/unit/tools/v9-product-configurator-generated-assets.test.ts tests/unit/tools/v9-data-galaxy-generated-assets.test.ts --reporter=dot` passed after adding generated-asset manifest audit blockers.
-  - [x] `pnpm exec vitest run tests/unit/apps/v9-product-configurator-policy.test.ts tests/unit/apps/v9-data-galaxy-budgets.test.ts tests/unit/tools/v9-advanced-gallery-report-audit.test.ts --reporter=dot` passed after adding structured catalog/runtime provenance and audit blockers.
-  - [x] `python3 -m py_compile tools/v9-advanced-gallery-assets/generate-product-configurator-studio-blender.py tools/v9-advanced-gallery-assets/optimize-product-car-blender.py` passed after adding manifest writers.
-  - [x] `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after adding Product manifest tests.
-  - [x] `pnpm v9:advanced-gallery:audit` was rerun after the audit change; it remains correctly blocked/non-promotional with `10/10` current screenshot artifacts, `0/10` accepted visual review, `11` blockers, and no generated-asset manifest freshness blockers in the current manifest set.
-  - [x] `pnpm v9:advanced-gallery:audit` was rerun after adding runtime provenance blockers; it remains correctly blocked/non-promotional with `12` blockers, including the expected stale-report blocker that the current Data Galaxy route JSON must be regenerated before it contains `assetProvenance`.
-  - [x] `pnpm v9:advanced-gallery` was run once after the runtime-report provenance change. The intentional visual-acceptance guard failed, and all `10` route runtime/screenshot tests passed, refreshing full-gallery report JSON with `evidenceMode: "full-gallery"`.
-  - [x] `pnpm v9:advanced-gallery:review` was rerun after the full capture and remains correctly blocked: `Release gate: blocked (0/10 accepted)`.
-  - [x] `pnpm v9:advanced-gallery:audit` was rerun after the generated texture-backed Data source update and full gallery refresh; it has `10/10` expected route reports, `10/10` current screenshot artifacts, `10/10` reusable systems/unsupported disclosures/measured performance/screenshot hashes/image stats, `0` audit blockers, and `0` warnings. Visual review still blocks release at `0/10` accepted.
-- [ ] Generated GLBs used by Product/Data must not be accepted as replacements for real assets until screenshot review and runtime material diagnostics agree.
-- [ ] Generated HDR/backdrop assets remain route-correct background evidence only; they do not prove physical sky, EXR, dynamic cube camera, or volumetric environment support.
-- [ ] Remove generated cache artifacts such as `__pycache__` from source cleanliness if they appear.
+- Product/Data generated-asset history from the failed loop is not active evidence.
+- Generated GLBs must not be used as Product/Data focal hero proof during salvage/restart.
+- Generated HDR/backdrop assets remain route-correct background evidence only; they do not prove physical sky, EXR, dynamic cube camera, or volumetric environment support.
+- Generated/cache artifacts such as `__pycache__` must be classified in the salvage map before any cleanup.
 
-## 13. Phase P5 - Active Visual Regression Recovery
+## 13. Phase P5 - Visual Recovery After Salvage
 
-This phase fixes the current broken routes without hiding the underlying problem.
+This phase may resume only after the dirty-worktree salvage map exists. Product/Data subsections below are retired from active execution and point back to the restart gates.
 
-### P5A. Product Configurator Recovery
+### P5A. Product Configurator Recovery — Retired From Active Path
 
-Reference category: Three.js PBR glTF product viewers, configurators, material-variant demos, and environment-lighting demos.
+The prior Product recovery plan, completed checkboxes, generated/support asset notes, focused captures, passed commands, source-change summaries, and runtime/report claims are retired from active execution.
 
-Required route identity:
+Do not continue from that history. Product Configurator remains failed.
 
-- Hero product with named imported parts.
-- Support/context assets: watch, shoe, sunglasses.
-- Studio lighting and product stage.
-- Material variants for at least three products/parts.
-- Transparent/glass material demonstration.
-- Hotspots, turntable, exploded view, detail shots, status panel.
-- Multiple lights, animation, controls, stats, reset, screenshot/capture.
+Active Product work is only the salvage/restart path in `## 0A` and `## 1D`:
 
-Source-of-truth assets that must remain:
+1. produce the dirty-worktree salvage map;
+2. isolate any reusable renderer/material/importer candidates;
+3. prove original `car-concept` material quality outside the gallery route;
+4. return to route composition only after material proof exists.
 
-- `fixtures/v8/assets/vehicles/car-concept.glb`
-- `fixtures/v8/assets/product/chronograph-watch.glb`
-- `fixtures/v8/assets/product/materials-variants-shoe.glb`
-- `fixtures/v8/assets/product/sunglasses-khronos.glb`
+### P5B. Data Galaxy Recovery — Retired From Active Path
 
-Support/generated assets that cannot replace the hero without proof:
+The prior Data recovery plan, completed checkboxes, generated/support GLB notes, semantic-role notes, 12k/6k particle budget history, focused captures, passed commands, source-change summaries, and runtime/report claims are retired from active execution.
 
-- `fixtures/v9/assets/product-configurator-studio-blender/product-configurator-studio-blender.glb`
-- `fixtures/v9/assets/product-configurator-car-batched/car-concept-batched.glb`
+Do not continue from that history. Data Galaxy remains failed.
 
-Product file-owned checklist:
+Active Data work is only the salvage/restart path in `## 0A` and `## 1E`:
 
-| File | Fix Required | Done When |
-| --- | --- | --- |
-| `fixtures/v8/assets/vehicles/car-concept.glb` | Source hero remains visible and texture-backed. | Report verifies GLB header, material/texture counts, variant state, and no unreported hidden car nodes. |
-| `fixtures/v8/assets/product/chronograph-watch.glb` | Watch remains real support/detail asset. | No white strap/glass strip artifact; imported variant/material diagnostics are visible. |
-| `fixtures/v8/assets/product/materials-variants-shoe.glb` | Shoe remains material-variant support asset. | Variant control visibly changes imported material; shoe does not dominate hero. |
-| `fixtures/v8/assets/product/sunglasses-khronos.glb` | Sunglasses remain transparent/glass support asset. | Glass/transmission fallback is package-owned or explicitly bounded; placement does not read as broken geometry. |
-| `packages/assets/src/GLTFRenderResources.ts` | Owns imported material/resource truth. | Normal sampler fallback, extension downgrades, fallback-white counts, missing geometry/material counts, material override targets. |
-| `packages/assets/src/GLTFExtensionSupport.ts` | Owns extension truth. | KHR variants/transmission/clearcoat/volume/IOR/specular/iridescence states are accurate. |
-| `packages/assets/src/AssetInspection.ts` | Owns inspection/reporting. | Product runtime JSON proves texture/material counts and missing/fallback counts. |
-| `packages/rendering/src/TexturedPBRMaterial.ts` and PBR shaders | Own material response. | Car paint/glass/clearcoat/specular/normal/transmission defects fixed in package code or explicitly blocked. |
-| `packages/rendering/src/EnvironmentLighting.ts` | Owns composition of route/stage lighting with sampled HDR environment resources. | Stage ambient/procedural lighting is preserved while HDR cube/equirect/BRDF bindings and calibrated sampled intensities are added; Product does not rely on route-local material hacks. |
-| `packages/rendering/src/EnvironmentPlatform.ts` | Owns product stage. | No gray slab/crop/cylinder workaround in accepted shots; reusable product studio preset exists. |
-| `packages/rendering/src/LightingRig.ts` | Owns product lighting. | Reusable key/fill/rim/softbox rig; unsupported area/IES/GI limits documented. |
-| `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts` | Owns composition only. | Hero/support hierarchy, named camera shots, turntable detail, no renderer/material fixes here. |
-| `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts` | Owns interaction policy. | Focus/explode/hotspots declared; regex fallbacks documented; no false imported triangle-picking claim. |
-| `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` | Owns activation diagnostics. | Excluded nodes are sampled/reported by name/reason; no silent hiding. |
-| `apps/v9-advanced-examples-gallery/src/authoredAssets.ts` | Owns catalog truth. | Source/generated/support status is explicit. |
-| `apps/v9-advanced-examples-gallery/src/metadata.ts` | Owns truth label. | Product stays `failed` until human review passes exact hash. |
-| `tools/v9-advanced-gallery-report-audit/index.ts` | Owns structural warnings. | Warn/block no-texture support dominance, missing original hero, missing unsupported disclosures. |
-| `tools/v9-advanced-gallery-visual-review/index.ts` | Owns visual gate. | Block slab/crop artifact, white/gray washout, broken watch/sunglasses, no grounding, bad cadence, scaffold dominance. |
-
-Product required fixes:
-
-- [x] Move `buildProduct()` out of `sceneBuilders.ts` into `productConfiguratorScene.ts` if that prior modularization remains present.
-- [x] Move product material/focus/explode regex logic out of `authoredLayer.ts` into `productConfiguratorPolicy.ts` if that prior modularization remains present.
-- [x] Restore direction toward the original texture-backed Product hero rather than a no-texture scaffold or generated derivative.
-- [x] Add Product same-asset reference harness rendering original car/watch/shoe/sunglasses outside gallery UI.
-- [x] `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/product-configurator-reference.spec.ts --reporter=line --timeout=360000` passes as same-asset harness evidence.
-- [x] Add reusable compact `product-premium` studio tone in `EnvironmentPlatform.ts` and consume it from the Product route instead of widening the route-local slab/stage workaround.
-- [x] Consume reusable `LightingRig` `product-shot` lighting from the Product route and keep area-light/IES/GI/contact-shadow limits in runtime approximations.
-- [x] Compose Product's reusable stage lighting with HDR environment resources through `packages/rendering/src/EnvironmentLighting.ts` instead of letting the loaded HDR bundle replace the stage environment.
-- [ ] Fix PBR/material defects in package renderer and asset code first.
-- [x] Remove route-local Product original-asset material appearance overrides from `authoredLayer.ts`; original car/watch GLB materials are no longer darkened or recolored there, and a unit guard prevents reintroducing that workaround.
-- [x] Replace the old weak stage/slab workaround with reusable `product-premium` product studio platform behavior; visual acceptance remains blocked by material clarity, detail/contrast, and cadence.
-- [x] Keep original Product assets. Do not replace with random/generated props.
-- [x] Subordinate visible softbox panels and oversized floor slab dominance through reusable `product-premium` stage behavior; the route still needs direct visual review before acceptance.
-- [ ] Add real visual grounding through shadow/contact/reflection support or a documented approximation that passes review.
-- [ ] Remove visible broken import artifacts only by fixing importer/materials or reporting exact node exclusions.
-- [ ] Make default/explode state look intentional and not like broken geometry.
-- [ ] Do not replace the original texture-backed hero with a generated derivative unless the derivative report proves material/texture/extension equivalence and visual review accepts it.
-- [ ] Treat generated/no-texture studio fixtures as support content only unless texture-backed material evidence and human visual review promote them.
-- [ ] Keep unsupported limits explicit: imported `KHR_materials_variants` are used only where the source GLBs expose variant metadata; no complete product-aware variant graph, no imported triangle/bounds GLB raycast picking, and no scene-space refraction claims until implemented.
-- [x] Runtime JSON must prove original asset IDs, material/texture counts, extension support, fallback/missing counts, excluded nodes, performance, and current screenshot hashes.
-- [ ] Route remains failed until direct visual review accepts current full, hero, viewport, and background delta screenshots.
-
-Product acceptance blockers:
-
-- Random imported blocks.
-- White watch straps or glass strips.
-- Harsh fuzzy car-paint halos.
-- Jagged or unsmooth PBR edge response.
-- Hidden broken nodes without reporting.
-- Gray slab/studio-board dominance.
-- Support/no-texture fixture dominance.
-- Exploded behavior that looks like a broken model.
-- Bad RAF cadence or render budget failure.
-- Route-level paint/color overrides counted as renderer fixes.
-
-### P5B. Data Galaxy Recovery
-
-Reference category: Three.js particles, GPGPU particles, galaxy generators, large-scale data visualization, and compute-style simulation demos.
-
-Required route identity:
-
-- Dense particle/data field.
-- Strong central data core.
-- Formations, clusters, attractors, trails/glow approximation, connection hints.
-- Background grid/labels and deep-space staging.
-- Camera movement through volume.
-- Formation selector, count selector, speed/turbulence controls, attractor movement, trails/connections toggle, camera presets.
-- CPU/GPU boundary disclosed honestly.
-
-Data file-owned checklist:
-
-| File | Fix Required | Done When |
-| --- | --- | --- |
-| `fixtures/v9/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb` | Generated Data core cannot be accepted as premium hero unless rebuilt/reviewed. | Generated/support-only disclosure visible; embedded generated texture-backed material evidence is reported; it remains support-only until current visual review accepts it. |
-| `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py` | Owns generated data-core content quality. | Reduces scaffold-looking geometry at source, writes manifest/provenance, reports material/texture counts. |
-| `tools/v9-advanced-gallery-assets/generate-data-galaxy-deep-space-hdr.mjs` | Owns generated deep-space HDR provenance. | Route-correct background only; no physical sky/volumetric/PMREM parity claim. |
-| `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts` | Owns route composition. | Strong focal data subject, readable depth, named camera/framing, background supports subject. |
-| `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts` | Owns density modes. | Curated default mode, selectable stress modes, no count tuning to trick metrics. |
-| `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts` | Owns CPU/static particle evidence. | Labels/report state CPU/static, `0` GPU dispatches, counts, timings, trails/connections readability. |
-| `packages/rendering/src/effects/*` | Owns reusable particle diagnostics and future reusable particle path. | Layered particle budget/diagnostics are package-owned; no GPU parity claim until real GPU/compute implementation exists. |
-| `apps/v9-advanced-examples-gallery/src/authoredAssets.ts` | Owns asset catalog truth. | Generated/support status, texture-backed generated-material boundaries, and focal-hero limitations are explicit. |
-| `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` | Owns activation diagnostics. | Excluded nodes/material counts are reported; no hidden cleanup counted as source fix. |
-| `apps/v9-advanced-examples-gallery/src/metadata.ts` | Owns truth label. | Data remains `failed` until human review passes exact hash. |
-| `tools/v9-advanced-gallery-report-audit/index.ts` | Owns structural warnings. | Warn/block active Data authored GLBs with zero texture-backed material evidence if used as focal proof. |
-| `tools/v9-advanced-gallery-visual-review/index.ts` | Owns visual gate. | Block weak focal subject, scaffold dominance, full-frame noise, low contrast, stale hashes, bad cadence, GPU overclaim. |
-
-Data required fixes:
-
-- [x] Move route composition out of `sceneBuilders.ts` into `dataGalaxyScene.ts` if that prior modularization remains present.
-- [x] Keep particle/evidence generation in `dataGalaxyEvidence.ts`, with `dataGalaxyBudgets.ts` owning default showcase density, stress density, line counts, overlay counts, and report thresholds where present.
-- [x] Separate default hero density from stress/evidence density.
-- [x] Remove the shared reusable environment-stage gray floor/catch plane from the Data Galaxy route when using infinite/deep-space staging.
-- [x] Remove or demote the authored scaffold platform from the default hero through explicit imported-node exclusion reported in authored diagnostics where that workaround remains active.
-- [x] Add Data same-system reference harness rendering particle/line/core systems outside gallery UI.
-- [x] `packages/rendering/src/effects/ParticleDiagnostics.ts`: adds reusable `createLayeredParticleBudgetPlan(...)` so route layer counts are generated by package-level particle diagnostics instead of only app-local math.
-- [x] `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts`: consumes `createLayeredParticleBudgetPlan(...)` for primary/vortex/network/wave counts while keeping Data-specific tiers and visual policy route-owned.
-- [x] `tests/unit/rendering/particle-diagnostics.test.ts`: covers layered particle budget allocation, invalid-request defaults, clamping, non-compute warnings, and invalid budget definitions.
-- [x] `tests/unit/apps/v9-data-galaxy-budgets.test.ts`: passes with the package-owned layered budget helper preserving the `12k showcase` route contract.
-- [x] `tests/browser/data-galaxy-reference.spec.ts`: asserts current Data layer counts from the package-backed budget contract so harness evidence does not drift back to stale threshold checks.
-- [x] `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/data-galaxy-reference.spec.ts --reporter=line --timeout=360000` passes as same-system harness evidence.
-- [x] `tests/unit/tools/v9-data-galaxy-generated-assets.test.ts` now verifies the generated texture-backed Data source update; the current GLB reports `11` exported materials, `149` meshes, `154` nodes, `3` images, `3` textures, and `3` texture-backed materials.
-- [x] `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py` parses the exported GLB JSON chunk when writing metadata and records exported material, texture, image, mesh, node, and texture-backed material counts separately from Blender-scene counts.
-- [x] `fixtures/v9/assets/data-galaxy-core-blender/manifest.json` now contains an `exportedGlb` block and `counts.exported*` fields proving the current shipped GLB has generated texture-backed support evidence.
-- [x] `pnpm exec vitest run tests/unit/tools/v9-data-galaxy-generated-assets.test.ts tests/unit/apps/v9-data-galaxy-budgets.test.ts tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/tools/v9-advanced-gallery-report-audit.test.ts tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts --reporter=dot` passed after updating the tests to the current texture-backed generated support GLB.
-- [x] Improve Data route-owned point/line readability without asset replacement: the 12k showcase overlay budget now emits `204` overlay spark points and `176` line-segment budget, Data-specific particle materials avoid changing Smart City particles, and focused screenshot metrics now pass the detail/contrast floors.
-- [x] Update stale Data metadata/catalog wording so the generated data-core is texture-backed support-only evidence, not no-texture focal-hero proof.
-- [ ] Establish curated default mode with strong central subject and readable clusters.
-- [x] Establish route-owned `12k showcase` default mode with stronger central particle allocation, structured focal-hierarchy evidence, and `4k` kept as selectable interactive mode.
-- [x] Separate showcase density from stress density.
-- [x] Replace the old generated/no-texture Data core source classification with embedded generated texture-backed material evidence, while keeping it support-only and non-accepted.
-- [ ] Rebuild or art-direct the generated Data core so the default focal subject reads as premium content, or keep it support-only with explicit generated/scaffold disclosure.
-- [ ] Add accepted texture-backed or materially richer focal content before using the authored GLB as acceptance support.
-- [x] Do not insert unrelated product, character, helmet, vehicle, or decorative prop to fake quality.
-- [x] Do not claim GPU compute unless real GPU path exists.
-- [x] Preserve CPU/GPU honesty: labels and runtime reports must continue to state CPU/static particles and `0` native GPU compute dispatches until a real compute path exists.
-- [x] Use an art-directed deep-space/data backdrop; terrestrial HDRIs remain diagnostic proof only.
-- [x] Add performance budgets for default hero mode and separate stress mode.
-- [x] Runtime JSON discloses generated authored content, texture-backed/support-only status, CPU/static mode, `0` GPU dispatches, counts, timings, unsupported boundaries, and screenshot hashes in current full-gallery evidence.
-- [ ] Route remains failed until direct visual review accepts current full, hero, viewport, and background delta screenshots.
-
-Data acceptance blockers:
-
-- Static starfield look.
-- Thin density or unreadable clutter.
-- Weak central focal subject.
-- Generated support scaffold as premium focal proof.
-- GPU-compute overclaim.
-- Count switches that break cadence.
-- Background used to hide weak content.
-- Unrelated prop insertion.
+1. produce the dirty-worktree salvage map;
+2. stop treating generated/support GLB work as focal proof;
+3. prove one coherent reusable data effect outside the gallery route;
+4. return to route composition only after the effect has a premium first-glance frame.
 
 ### P5C. Reactor Post Recovery
 
@@ -887,7 +991,7 @@ Route-local hack containment problem:
 
 Required containment tasks:
 
-- [x] `apps/v9-advanced-examples-gallery/src/main.ts`: move per-route camera, postprocess, and visibility decisions into `galleryRoutePolicies.ts` or route-owned policy modules.
+- [x] `apps/v9-advanced-examples-gallery/src/main.ts`: move remaining Product-specific environment-lighting composition policy out of shell orchestration. Camera, postprocess, visibility, render-item ordering, pointer routing, ripple routing, canvas cap decisions, and Product HDR lighting composition now route through policy helpers.
 - [ ] `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`: keep only shared helpers and route dispatch.
 - [ ] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: keep imported asset activation generic.
 - [x] `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`: own extracted per-route camera, postprocess, and visibility policies.
@@ -903,8 +1007,10 @@ Completed containment subtasks:
 - [x] `tests/unit/apps/v9-advanced-gallery-route-policies.test.ts`: covers extracted camera, postprocess, and procedural visibility policy behavior.
 - [x] `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`: now also owns render-item ordering, Product hotspot-picking routing, water/ocean ripple routing, and route-specific canvas backing-edge policy.
 - [x] `apps/v9-advanced-examples-gallery/src/main.ts`: consumes the route-policy helpers for those orchestration decisions instead of embedding new route-specific branches.
+- [x] `apps/v9-advanced-examples-gallery/src/main.ts`: no longer contains Product-specific environment-lighting composition policy; `galleryRoutePolicies.ts` owns `rendererEnvironmentLightingCompositionOptionsForRoute(...)`, and `main.ts` only calls it while composing renderer lighting.
+- [ ] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: still owns per-route asset activation config, Product layout consumption, Data platform exclusion regex, and Data material corrections. It is not yet generic imported-asset activation only.
 - [x] `apps/v9-advanced-examples-gallery/src/galleryInteractionAdapter.ts`: owns current pointer normalization, orbit drag math, Product hotspot action routing, and water/ocean ripple routing outside `main.ts`.
-- [x] `pnpm exec vitest run tests/unit/apps/v9-advanced-gallery-route-policies.test.ts --reporter=dot` passed with `7` route-policy tests after the extraction.
+- [x] `pnpm exec vitest run tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts --reporter=dot` passed with `11` route-policy/scene-module tests after moving Product HDR lighting composition policy out of `main.ts`.
 - [x] `pnpm exec vitest run tests/unit/apps/v9-gallery-interaction-adapter.test.ts --reporter=dot` passed with `2` interaction-adapter tests.
 - [x] `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts`: covers JSON-only screenshot hashes being blocked when current full/viewport/hero artifacts are absent, and passing when temp artifacts exist with matching hashes.
 - [x] `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-report-audit.test.ts tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts --reporter=dot` passed with `20` reporting/review tests after the current-artifact audit gate.

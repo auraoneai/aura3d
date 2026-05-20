@@ -2,6 +2,7 @@ import { Material, type MaterialUniformDescriptor, type RenderState } from "./Ma
 import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { Sampler } from "./Sampler";
 import {
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT,
@@ -251,9 +252,12 @@ const TRANSMISSION_VOLUME_TEXTURE_SLOTS: readonly TexturedPBRTextureSlot[] = [
   "volumeThickness"
 ];
 
-const SPECULAR_SHEEN_ANISOTROPY_TEXTURE_SLOTS: readonly TexturedPBRTextureSlot[] = [
+const SPECULAR_TEXTURE_SLOTS: readonly TexturedPBRTextureSlot[] = [
   "specular",
-  "specularColor",
+  "specularColor"
+];
+
+const SHEEN_ANISOTROPY_TEXTURE_SLOTS: readonly TexturedPBRTextureSlot[] = [
   "sheenColor",
   "sheenRoughness",
   "anisotropy"
@@ -268,7 +272,8 @@ export function texturedPbrShaderActiveTextureSlots(shaderVariant?: string): rea
   const slots = new Set<TexturedPBRTextureSlot>(BASE_TEXTURED_PBR_SHADER_TEXTURE_SLOTS);
   if (
     shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT ||
-    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT ||
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT
   ) {
     for (const slot of CLEARCOAT_TEXTURE_SLOTS) slots.add(slot);
   }
@@ -280,9 +285,16 @@ export function texturedPbrShaderActiveTextureSlots(shaderVariant?: string): rea
   }
   if (
     shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT ||
+    shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT ||
+    shaderVariant === DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT
+  ) {
+    for (const slot of SPECULAR_TEXTURE_SLOTS) slots.add(slot);
+  }
+  if (
+    shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT ||
     shaderVariant === DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT
   ) {
-    for (const slot of SPECULAR_SHEEN_ANISOTROPY_TEXTURE_SLOTS) slots.add(slot);
+    for (const slot of SHEEN_ANISOTROPY_TEXTURE_SLOTS) slots.add(slot);
   }
   if (
     shaderVariant === DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT ||
@@ -455,6 +467,7 @@ export class TexturedPBRMaterial extends Material {
           expectedColorSpace: "srgb",
           transform: options.baseColorTextureTransform
         }),
+        u_baseColorTextureEnabled: options.baseColorTexture ? 1 : 0,
         u_baseColorTextureOffset: options.baseColorTextureTransform?.offset ?? [0, 0],
         u_baseColorTextureScale: options.baseColorTextureTransform?.scale ?? [1, 1],
         u_baseColorTextureRotation: options.baseColorTextureTransform?.rotation ?? 0,
@@ -483,6 +496,7 @@ export class TexturedPBRMaterial extends Material {
           expectedColorSpace: "linear",
           transform: options.metallicRoughnessTextureTransform
         }),
+        u_metallicRoughnessTextureEnabled: options.metallicRoughnessTexture ? 1 : 0,
         u_metallicRoughnessTextureOffset: options.metallicRoughnessTextureTransform?.offset ?? [0, 0],
         u_metallicRoughnessTextureScale: options.metallicRoughnessTextureTransform?.scale ?? [1, 1],
         u_metallicRoughnessTextureRotation: options.metallicRoughnessTextureTransform?.rotation ?? 0,
@@ -496,6 +510,7 @@ export class TexturedPBRMaterial extends Material {
           expectedColorSpace: "linear",
           transform: options.occlusionTextureTransform
         }),
+        u_occlusionTextureEnabled: options.occlusionTexture ? 1 : 0,
         u_occlusionTextureOffset: options.occlusionTextureTransform?.offset ?? [0, 0],
         u_occlusionTextureScale: options.occlusionTextureTransform?.scale ?? [1, 1],
         u_occlusionTextureRotation: options.occlusionTextureTransform?.rotation ?? 0,
@@ -510,6 +525,7 @@ export class TexturedPBRMaterial extends Material {
           expectedColorSpace: "srgb",
           transform: options.emissiveTextureTransform
         }),
+        u_emissiveTextureEnabled: options.emissiveTexture ? 1 : 0,
         u_emissiveTextureOffset: options.emissiveTextureTransform?.offset ?? [0, 0],
         u_emissiveTextureScale: options.emissiveTextureTransform?.scale ?? [1, 1],
         u_emissiveTextureRotation: options.emissiveTextureTransform?.rotation ?? 0,
@@ -761,6 +777,7 @@ export class TexturedPBRMaterial extends Material {
         { name: "u_lightCount", kind: "float" },
         { name: "u_lightData", kind: "any" },
         { name: "u_baseColorTexture", kind: "texture2d" },
+        { name: "u_baseColorTextureEnabled", kind: "float" },
         { name: "u_baseColorTextureOffset", kind: "vec2" },
         { name: "u_baseColorTextureScale", kind: "vec2" },
         { name: "u_baseColorTextureRotation", kind: "float" },
@@ -775,12 +792,14 @@ export class TexturedPBRMaterial extends Material {
         { name: "u_normalTextureEnabled", kind: "float" },
         { name: "u_normalScale", kind: "float" },
         { name: "u_metallicRoughnessTexture", kind: "texture2d" },
+        { name: "u_metallicRoughnessTextureEnabled", kind: "float" },
         { name: "u_metallicRoughnessTextureOffset", kind: "vec2" },
         { name: "u_metallicRoughnessTextureScale", kind: "vec2" },
         { name: "u_metallicRoughnessTextureRotation", kind: "float" },
         { name: "u_metallicRoughnessTextureTexCoord", kind: "float" },
         { name: "u_metallicRoughnessTextureWrap", kind: "vec2" },
         { name: "u_occlusionTexture", kind: "texture2d" },
+        { name: "u_occlusionTextureEnabled", kind: "float" },
         { name: "u_occlusionTextureOffset", kind: "vec2" },
         { name: "u_occlusionTextureScale", kind: "vec2" },
         { name: "u_occlusionTextureRotation", kind: "float" },
@@ -788,6 +807,7 @@ export class TexturedPBRMaterial extends Material {
         { name: "u_occlusionTextureWrap", kind: "vec2" },
         { name: "u_occlusionStrength", kind: "float" },
         { name: "u_emissiveTexture", kind: "texture2d" },
+        { name: "u_emissiveTextureEnabled", kind: "float" },
         { name: "u_emissiveTextureOffset", kind: "vec2" },
         { name: "u_emissiveTextureScale", kind: "vec2" },
         { name: "u_emissiveTextureRotation", kind: "float" },
@@ -927,15 +947,18 @@ function texturedPbrShaderVariant(options: TexturedPBRMaterialOptions): string |
     options.diffuseTransmissionColorTexture ||
     options.volumeThicknessTexture
   );
-  const hasSpecularSheenAnisotropyTextures = Boolean(
-    options.specularTexture ||
-    options.specularColorTexture ||
+  const hasSpecularTextures = Boolean(options.specularTexture || options.specularColorTexture);
+  const hasSheenAnisotropyTextures = Boolean(
     options.sheenColorTexture ||
     options.sheenRoughnessTexture ||
     options.anisotropyTexture
   );
+  const hasSpecularSheenAnisotropyTextures = hasSpecularTextures || hasSheenAnisotropyTextures;
   const hasIridescenceTextures = Boolean(options.iridescenceTexture || options.iridescenceThicknessTexture);
 
+  if (hasClearcoatTextures && hasSpecularTextures && !hasTransmissionVolumeTextures) {
+    return DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT;
+  }
   if (hasClearcoatTextures && hasTransmissionVolumeTextures) {
     return DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT;
   }

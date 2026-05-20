@@ -2,6 +2,7 @@ import {
   type Bounds3,
   type CollectedLight,
   createEnvironmentStage,
+  type EnvironmentStage,
   createParticleBatchDiagnostics,
   Geometry,
   type InstancedPBRMaterial,
@@ -10,7 +11,9 @@ import {
   summarizeParticleBatchDiagnostics,
   type RenderItem,
   type RendererPostProcessOptions,
-  type UnlitMaterial
+  type UnlitMaterial,
+  VertexBuffer,
+  VertexFormat
 } from "@galileo3d/rendering";
 import { DirectionalLight, PointLight } from "@galileo3d/scene";
 import type { GalleryState, Resources, SceneFrame } from "./sceneBuilderPrimitives";
@@ -24,6 +27,7 @@ import {
   type DataGalaxyRuntimeEvidence
 } from "./dataGalaxyEvidence";
 import { DATA_GALAXY_DEFAULT_PARTICLES, createDataGalaxyBudgetPlan, createDataGalaxyCompositionProfile } from "./dataGalaxyBudgets";
+import { createDataGalaxyFocalSystem } from "./dataGalaxyFocalSystem";
 
 export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryState): SceneFrame {
   const requestedParticles = Number(state.controls.particles ?? DATA_GALAXY_DEFAULT_PARTICLES);
@@ -65,6 +69,7 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     connections,
     pointer: state.pointer
   });
+  const overlayRevision = Math.floor(time * Math.max(1, speed) * 12);
   const evidence = createDataGalaxyEvidence({
     time,
     requestedParticles: count,
@@ -85,13 +90,7 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     pointer: state.pointer,
     geometryStats: geometryEvidence
   }, geometryEvidence, evidence);
-  const environmentStage = createEnvironmentStage({
-    preset: "deep-space",
-    size: 4.4,
-    includeStageShell: false,
-    includeGroundGrid: false,
-    timeSeconds: time
-  });
+  const environmentStage = getDataGalaxyEnvironmentStage(r);
   const environmentLighting: SceneFrame["environment"] = {
     color: environmentStage.lighting.color,
     intensity: environmentStage.lighting.intensity,
@@ -104,29 +103,34 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     { geometry: networkPoints, material: mat(r, "dataParticleWarm"), modelMatrix: modelMatrix(composition.network.position, composition.network.scale, [0.08, time * 0.06 * speed, -0.04]), label: "warm agent cluster layer" },
     { geometry: wavePoints, material: mat(r, "dataParticleGreen"), modelMatrix: modelMatrix(composition.wave.position, composition.wave.scale, [time * 0.06 * speed, 0, 0.12]), label: "green wave particle layer" }
   ];
-  appendDataGalaxyGeometryEvidence(r, items, geometryEvidence);
-  appendDataGalaxyAttractorSolids(r, items, geometryEvidence.attractors, time, speed);
+  appendDataGalaxyGeometryEvidence(r, items, geometryEvidence, overlayRevision);
+  if (budget.mode === "stress") appendDataGalaxyAttractorSolids(r, items, geometryEvidence.attractors, time, speed);
   if (composition.telemetryBars) appendDataGalaxyTelemetryBars(r, items, time, speed);
   appendEvidencePayload(r, items, evidence);
+  const focalSystem = createDataGalaxyFocalSystem(r, time, speed, budget.mode);
+  items.push(...focalSystem.items);
   return dataGalaxyFrame(items, bounds(composition.boundsMin, composition.boundsMax), dataGalaxyLights(), environmentLighting, runtimeEvidence, {
     bloom: false,
     colorGrade: { contrast: 1.2, saturation: 1.08 },
     fxaa: true
-  }, ["reusable deep-space environment stage", ...environmentStage.systems, "route-owned focal data hierarchy", "default showcase CPU/static density", "separated CPU point-cloud layers", "batched inference spark buffers", "formation controls", "bounded attractor evidence", "connection graph", ...evidence.animatedSystems], [
+  }, ["reusable deep-space environment stage", ...environmentStage.systems, "route-owned focal data hierarchy", ...focalSystem.animatedSystems, "default showcase CPU/static density", "separated CPU point-cloud layers", "batched inference spark buffers", "formation controls", "bounded attractor evidence", "connection graph", ...evidence.animatedSystems], [
     ...environmentStage.limitations,
+    ...focalSystem.approximations,
     ...summarizeParticleBatchDiagnostics(diagnostics),
     `Data Galaxy budget mode is ${budget.mode}: requested ${Math.round(budget.requestedParticles).toLocaleString("en-US")} particles, rendering ${Math.round(budget.effectiveParticles).toLocaleString("en-US")} CPU/static points with ${budget.nativeGpuComputeDispatches} native GPU compute dispatches`,
     runtimeEvidence.focalHierarchy.centralSubject,
     runtimeEvidence.focalHierarchy.primaryLayerRole,
     runtimeEvidence.focalHierarchy.authoredGlbRole,
     `${Math.round(geometryEvidence.pointCount).toLocaleString("en-US")} overlay sparks and ${Math.round(geometryEvidence.lineSegmentCount).toLocaleString("en-US")} trail/link/ring segments`,
-    `${geometryEvidence.drawBatches} dynamic overlay Geometry.points/lineSegments draws replace per-spark render objects`,
+    `${geometryEvidence.drawBatches} cached overlay vertex-buffer draws replace per-frame Geometry.points/lineSegments allocation and per-spark render objects`,
+    "Deep-space environment stage geometry/material resources are cached for the route instead of recreated every frame; star drift is intentionally frozen until a renderer-owned animated background path exists.",
     "The authored Data Galaxy GLB layer is real imported generated support scenery with embedded generated data-glyph textures on key materials; it is not accepted premium focal-hero content.",
     ...evidence.approximations
   ], [
     "Env preset deep-space",
     `Mode ${budget.mode}`,
     runtimeEvidence.budget.defaultShowcaseMode ? "Default showcase" : "Explicit count",
+    ...focalSystem.labels,
     "Particles",
     "Formation",
     "Attractors",
@@ -138,6 +142,21 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     `Rendered ${Math.round(budget.effectiveParticles).toLocaleString("en-US")}`,
     ...evidence.metrics
   ].slice(0, composition.evidenceLabelBudget));
+}
+
+function getDataGalaxyEnvironmentStage(r: Resources): EnvironmentStage {
+  const key = "data-galaxy:deep-space:size=4.4:stage-shell=false:ground-grid=false";
+  const cached = r.environmentStages.get(key);
+  if (cached) return cached;
+  const stage = createEnvironmentStage({
+    preset: "deep-space",
+    size: 4.4,
+    includeStageShell: false,
+    includeGroundGrid: false,
+    timeSeconds: 0
+  });
+  r.environmentStages.set(key, stage);
+  return stage;
 }
 
 function dataGalaxyFrame(
@@ -182,32 +201,32 @@ function getPointCloud(r: Resources, formation: string, count: number, turbulenc
     if (formation === "sphere") {
       const theta = u * Math.PI * 2;
       const phi = Math.acos(2 * v - 1);
-      const radius = 1.2 + w * 3.2;
+      const radius = 0.16 + w * 0.72;
       x = Math.sin(phi) * Math.cos(theta) * radius;
       y = Math.cos(phi) * radius;
       z = Math.sin(phi) * Math.sin(theta) * radius;
     } else if (formation === "wave") {
-      x = (u - 0.5) * 8;
-      z = (v - 0.5) * 8;
-      y = Math.sin(x * 1.6 + z * 0.7) * 0.9 + (w - 0.5) * turbulence;
+      x = -0.72 + u * 1.44;
+      z = -0.32 + v * 0.64;
+      y = Math.sin(x * 2.8 + z * 1.2) * 0.16 + (w - 0.5) * turbulence * 0.12;
     } else if (formation === "network") {
-      const cluster = Math.floor(u * 8);
-      const a = cluster * 0.785;
-      x = Math.cos(a) * 3 + (v - 0.5) * turbulence;
-      z = Math.sin(a) * 3 + (w - 0.5) * turbulence;
-      y = (hash01(cluster * 17) - 0.5) * 3 + (u - 0.5) * turbulence;
+      const cluster = Math.floor(u * 5);
+      const a = cluster * Math.PI * 2 / 5;
+      x = Math.cos(a) * 0.52 + (v - 0.5) * turbulence * 0.18;
+      z = Math.sin(a) * 0.44 + (w - 0.5) * turbulence * 0.16;
+      y = (hash01(cluster * 17) - 0.5) * 0.46 + (u - 0.5) * turbulence * 0.14;
     } else if (formation === "vortex") {
       const a = u * Math.PI * 12;
-      const radius = 0.2 + v * 4;
+      const radius = 0.08 + v * 0.68;
       x = Math.cos(a) * radius;
       z = Math.sin(a) * radius;
-      y = (u - 0.5) * 5 + Math.sin(a) * turbulence;
+      y = (u - 0.5) * 0.82 + Math.sin(a) * turbulence * 0.12;
     } else {
       const a = u * Math.PI * 10;
-      const radius = Math.sqrt(v) * 4.8;
+      const radius = Math.sqrt(v) * 0.88;
       x = Math.cos(a) * radius;
-      z = Math.sin(a) * radius * 0.55;
-      y = (w - 0.5) * 1.8 + Math.sin(radius * 2) * 0.24 * turbulence;
+      z = Math.sin(a) * radius * 0.82;
+      y = (w - 0.5) * 0.48 + Math.sin(radius * 2) * 0.12 * turbulence;
     }
     positions.push([x, y, z]);
   }
@@ -278,15 +297,47 @@ function bool(value: unknown, fallback = false): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
 
-function appendDataGalaxyGeometryEvidence(r: Resources, items: RenderItem[], evidence: DataGalaxyGeometryEvidence): void {
+function appendDataGalaxyGeometryEvidence(r: Resources, items: RenderItem[], evidence: DataGalaxyGeometryEvidence, revision: number): void {
   for (const group of evidence.pointGroups) {
     if (group.positions.length === 0) continue;
-    items.push({ geometry: Geometry.points(group.positions), material: mat(r, group.material), label: group.label });
+    items.push({
+      geometry: dataGalaxyOverlayGeometry(r, `points:${group.label}`, "points", group.positions, revision),
+      material: mat(r, group.material),
+      label: group.label
+    });
   }
   for (const group of evidence.lineGroups) {
     if (group.positions.length < 2) continue;
-    items.push({ geometry: Geometry.lineSegments(group.positions), material: mat(r, group.material), label: group.label });
+    items.push({
+      geometry: dataGalaxyOverlayGeometry(r, `lines:${group.label}`, "lines", group.positions, revision),
+      material: mat(r, group.material),
+      label: group.label
+    });
   }
+}
+
+const DATA_GALAXY_OVERLAY_BOUNDS = bounds([-1.35, -1.1, -1.05], [1.35, 1.1, 1.05]);
+
+function dataGalaxyOverlayGeometry(
+  r: Resources,
+  key: string,
+  topology: "points" | "lines",
+  positions: readonly Vec3[],
+  revision: number
+): Geometry {
+  const cacheKey = `${key}:${topology}:${positions.length}`;
+  let geometry = r.dataGalaxyOverlayGeometries.get(cacheKey);
+  if (!geometry) {
+    geometry = new Geometry(new VertexBuffer(VertexFormat.P3, positions.length), null, topology, DATA_GALAXY_OVERLAY_BOUNDS);
+    r.dataGalaxyOverlayGeometries.set(cacheKey, geometry);
+  }
+  const revisionState = geometry as Geometry & { __dataGalaxyRevision?: number };
+  if (revisionState.__dataGalaxyRevision === revision) return geometry;
+  positions.forEach((position, index) => {
+    geometry!.vertexBuffer.setAttribute(index, "position", position);
+  });
+  revisionState.__dataGalaxyRevision = revision;
+  return geometry;
 }
 
 function appendDataGalaxyAttractorSolids(r: Resources, items: RenderItem[], attractors: readonly Vec3[], time: number, speed: number): void {

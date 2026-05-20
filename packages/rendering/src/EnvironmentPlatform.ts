@@ -612,7 +612,7 @@ function createStageShell(
   const premiumStudio = preset === "indoor-studio" && (studioTone === "premium-dark" || studioTone === "product-premium");
   const productPremiumStudio = preset === "indoor-studio" && studioTone === "product-premium";
   const floorScale: Vec3 = productPremiumStudio
-    ? [size * 1.02, 0.03, size * 0.66]
+    ? [size * 0.54, 0.018, size * 0.32]
     : premiumStudio
     ? [size * 1.78, 0.052, size * 1.22]
     : [size * 1.65, 0.06, size * 1.65];
@@ -624,7 +624,7 @@ function createStageShell(
     : [size * 1.65, size * 0.74, 0.08];
   const floor = new PBRMaterial({
     name: `${preset} environment floor`,
-    baseColor: [...(productPremiumStudio ? ([palette.floor[0] * 0.72, palette.floor[1] * 0.72, palette.floor[2] * 0.72] as Rgb) : palette.floor), 1],
+    baseColor: [...(productPremiumStudio ? ([palette.floor[0] * 0.22, palette.floor[1] * 0.22, palette.floor[2] * 0.22] as Rgb) : palette.floor), 1],
     roughness: premiumStudio ? 0.68 : preset === "indoor-studio" ? 0.54 : 0.62,
     metallic: preset === "urban-city" || preset === "industrial-warehouse" ? 0.14 : 0.02,
     environmentColor: palette.ambient,
@@ -643,7 +643,7 @@ function createStageShell(
   const floorItem: RenderItem = {
     geometry: premiumStudio ? Geometry.cylinder({ radius: 0.5, height: 1, segments: 96 }) : Geometry.litCube(1),
     material: floor,
-    modelMatrix: trs([0, floorY - floorScale[1] * 0.5 - 0.005, productPremiumStudio ? 0.02 : 0.04], floorScale),
+    modelMatrix: trs([0, floorY - floorScale[1] * 0.5 - 0.005, productPremiumStudio ? 0.08 : 0.04], floorScale),
     includeInAutoFrame: false,
     label: `${preset} floor/catch plane`
   };
@@ -753,7 +753,7 @@ function createStageContactGrounding(
   const defaultProductGrounding = preset === "indoor-studio" && studioTone === "product-premium";
   if (requestedMode === "auto" && !defaultProductGrounding) return undefined;
   const options: EnvironmentContactGroundingOptions = typeof input === "object" ? input : {};
-  const casterRadius = positive(options.casterRadius ?? size * (defaultProductGrounding ? 0.28 : 0.34), "contact grounding casterRadius");
+  const casterRadius = positive(options.casterRadius ?? size * (defaultProductGrounding ? 0.18 : 0.34), "contact grounding casterRadius");
   const receiverDistance = positive(options.receiverDistance ?? size * 0.075, "contact grounding receiverDistance");
   const label = options.label ?? `${preset} product grounding`;
   const plan = createV4ContactShadowPlan({

@@ -1,6 +1,11 @@
 import { hash01, type Vec3 } from "./math";
 import { clampUnit, type EvidenceInstanceBatch, type EvidenceSingleItem, type RouteEvidencePayload } from "./advancedRouteEvidence";
-import { DATA_GALAXY_DEFAULT_PARTICLES, createDataGalaxyBudgetPlan, type DataGalaxyOverlayBudget } from "./dataGalaxyBudgets";
+import {
+  DATA_GALAXY_DEFAULT_PARTICLES,
+  DATA_GALAXY_TELEMETRY_RING_SEGMENTS,
+  createDataGalaxyBudgetPlan,
+  type DataGalaxyOverlayBudget
+} from "./dataGalaxyBudgets";
 
 export type DataGalaxyFormation = "galaxy" | "sphere" | "vortex" | "network" | "wave";
 
@@ -204,8 +209,8 @@ export function createDataGalaxyRuntimeEvidence(
         + particleBudget.overlay.budgetLadderSegments
     },
     focalHierarchy: {
-      centralSubject: "bright CPU/static data nucleus with route-generated shell and orbit bars",
-      primaryLayerRole: "majority particle allocation is staged as the foreground focal galaxy mass",
+      centralSubject: "bright CPU/static data nucleus with a route-owned solid core, nested shells, and subordinate support clusters",
+      primaryLayerRole: "majority particle allocation is compressed around the foreground focal data core instead of full-frame noise",
       supportLayerRole: "vortex, network, and wave layers are smaller secondary context clusters",
       authoredGlbRole: "generated texture-backed data-galaxy-core-blender remains disclosed support-only content"
     },
@@ -238,9 +243,10 @@ export function createDataGalaxyGeometryEvidence(options: DataGalaxyEvidenceOpti
     requestedParticles: options.requestedParticles,
     connections: options.connections
   });
-  const pointGroups = createOverlayPointGroups(options.time, speed, turbulence, formation, budget.overlay, options.pointer);
+  const diagnosticOverlays = budget.mode === "stress";
+  const pointGroups = createOverlayPointGroups(options.time, speed, turbulence, formation, budget.overlay, options.pointer, diagnosticOverlays);
   const attractors = createAttractorPositions(options.time, speed, options.pointer);
-  const lineGroupResult = createOverlayLineGroups(options.time, speed, turbulence, formation, options.connections, attractors, budget.overlay, budget.effectiveParticles);
+  const lineGroupResult = createOverlayLineGroups(options.time, speed, turbulence, formation, options.connections, attractors, budget.overlay, budget.effectiveParticles, diagnosticOverlays);
   const pointCount = pointGroups.reduce((sum, group) => sum + group.positions.length, 0);
   const lineSegmentCount = lineGroupResult.groups.reduce((sum, group) => sum + group.segments, 0);
 
@@ -269,7 +275,8 @@ function createOverlayPointGroups(
   turbulence: number,
   formation: DataGalaxyFormation,
   overlay: DataGalaxyOverlayBudget,
-  pointer: { readonly x: number; readonly y: number } | undefined
+  pointer: { readonly x: number; readonly y: number } | undefined,
+  diagnosticAttractors: boolean
 ): DataGalaxyPointGroup[] {
   const groups: Record<string, Vec3[]> = {
     dataParticle: [],
@@ -278,14 +285,14 @@ function createOverlayPointGroups(
     dataParticleGreen: []
   };
   const pointerAttractor = pointerAttractorPosition(pointer);
-  const sparkCount = overlay.sparkPoints;
+  const sparkCount = diagnosticAttractors ? overlay.sparkPoints : 0;
   const coreSparkCount = overlay.coreSparkPoints;
   const focalClusterCount = overlay.focalClusterPoints;
 
   for (let i = 0; i < sparkCount; i += 1) {
     const band = i % 5;
     const angle = i * 2.399 + time * (0.24 + band * 0.026) * speed;
-    const radius = 0.18 + Math.sqrt(hash01(i * 41)) * (0.78 + turbulence * 0.22);
+    const radius = 0.1 + Math.sqrt(hash01(i * 41)) * (0.34 + turbulence * 0.08);
     const position = pullToward(
       tokenPositionForFormation(i, angle, radius, turbulence, formation),
       pointerAttractor,
@@ -303,8 +310,8 @@ function createOverlayPointGroups(
 
   for (let i = 0; i < coreSparkCount; i += 1) {
     const angle = i * 2.399 + time * (0.52 + (i % 4) * 0.018) * speed;
-    const radius = 0.08 + hash01(i * 53) * 0.84;
-    const y = (hash01(i * 23) - 0.5) * 0.68 + Math.sin(angle * 1.9) * 0.06;
+    const radius = 0.04 + hash01(i * 53) * 0.34;
+    const y = (hash01(i * 23) - 0.5) * 0.34 + Math.sin(angle * 1.9) * 0.035;
     groups[i % 5 === 0 ? "dataParticleWarm" : i % 2 === 0 ? "dataParticle" : "dataParticleViolet"]!.push([
       Math.cos(angle) * radius,
       y,
@@ -313,21 +320,28 @@ function createOverlayPointGroups(
   }
 
   for (let i = 0; i < focalClusterCount; i += 1) {
-    const angle = i * 2.399 + time * (0.34 + (i % 7) * 0.014) * speed;
-    const shell = 0.24 + Math.sqrt(hash01(i * 97)) * 0.74;
-    const verticalBand = (i % 13) / 12 - 0.5;
-    const y = verticalBand * 0.84 + Math.sin(angle * 1.7 + i * 0.13) * 0.055;
+    const centers: readonly Vec3[] = [
+      [-0.18, -0.04, 0.18],
+      [0.2, 0.12, -0.16],
+      [-0.22, 0.14, -0.18]
+    ];
+    const center = centers[i % centers.length]!;
+    const angle = i * 2.399 + time * (0.28 + (i % 7) * 0.01) * speed;
+    const shell = 0.025 + Math.sqrt(hash01(i * 97)) * 0.075;
+    const y = center[1] + (hash01(i * 31) - 0.5) * 0.08 + Math.sin(angle * 1.7 + i * 0.13) * 0.018;
     const pulse = 0.82 + Math.sin(time * 0.7 * speed + i * 0.31) * 0.1;
     const point: Vec3 = [
-      Math.cos(angle) * shell * pulse,
+      center[0] + Math.cos(angle) * shell * pulse,
       y,
-      Math.sin(angle) * shell * 0.72
+      center[2] + Math.sin(angle) * shell * 0.72
     ];
     groups[i % 9 === 0 ? "dataParticleWarm" : i % 4 === 0 ? "dataParticleViolet" : "dataParticle"]!.push(point);
   }
 
-  for (const attractor of createAttractorPositions(time, speed, pointer)) {
-    groups.dataParticleWarm.push(attractor);
+  if (diagnosticAttractors) {
+    for (const attractor of createAttractorPositions(time, speed, pointer)) {
+      groups.dataParticleWarm.push(attractor);
+    }
   }
 
   return [
@@ -346,7 +360,8 @@ function createOverlayLineGroups(
   connections: boolean,
   attractors: readonly Vec3[],
   overlay: DataGalaxyOverlayBudget,
-  requestedParticles: number
+  requestedParticles: number,
+  diagnosticOverlays: boolean
 ): {
   readonly groups: DataGalaxyLineGroup[];
   readonly trailSegmentCount: number;
@@ -361,12 +376,39 @@ function createOverlayLineGroups(
   const telemetryLines: Vec3[] = [];
   const contourLines: Vec3[] = [];
   const budgetLines: Vec3[] = [];
-  const trailCount = overlay.trailSegments;
+  const trailCount = diagnosticOverlays ? overlay.trailSegments : Math.min(overlay.trailSegments, 8);
+
+  if (!diagnosticOverlays) {
+    addArc(cyanTrail, [0, 0.02, 0], 0.28, 0.2, 0.025, time * 0.18 * speed, Math.PI * 0.74, Math.min(7, Math.max(4, trailCount)));
+    addArc(violetTrail, [-0.16, 0.05, -0.1], 0.18, 0.13, 0.02, time * -0.14 * speed + 1.1, Math.PI * 0.46, 4);
+    if (connections) {
+      addSegment(connectionLines, [-0.18, -0.04, 0.18], [0, 0.02, 0]);
+      addSegment(connectionLines, [0, 0.02, 0], [0.2, 0.12, -0.16]);
+      addSegment(connectionLines, [-0.22, 0.14, -0.18], [0.02, 0.04, -0.02]);
+    }
+    addSegment(amberTrail, [0.2, 0.12, -0.16], [0.11, 0.08, -0.08]);
+    addSegment(violetTrail, [-0.22, 0.14, -0.18], [-0.08, 0.08, -0.08]);
+
+    const groups: DataGalaxyLineGroup[] = [
+      toLineGroup("transparentCyan", "intentional core orbit arcs", cyanTrail),
+      toLineGroup("transparentCyan", "short violet model-state trails", violetTrail),
+      toLineGroup("transparentAmber", "short amber cluster transfer trails", amberTrail)
+    ];
+    if (connections) {
+      groups.splice(1, 0, toLineGroup("transparentCyan", "short intentional cluster transfer links", connectionLines));
+    }
+    return {
+      groups: groups.filter((group) => group.segments > 0),
+      trailSegmentCount: cyanTrail.length / 2 + violetTrail.length / 2 + amberTrail.length / 2,
+      connectionSegmentCount: connectionLines.length / 2,
+      telemetryRingSegmentCount: 0
+    };
+  }
 
   for (let i = 0; i < trailCount; i += 1) {
     const band = i % 6;
     const angle = i * 2.399 + time * (0.26 + band * 0.018) * speed;
-    const radius = 0.22 + Math.sqrt(hash01(i * 37)) * (0.86 + turbulence * 0.2);
+    const radius = 0.12 + Math.sqrt(hash01(i * 37)) * (0.36 + turbulence * 0.08);
     const head = tokenPositionForFormation(i, angle, radius, turbulence, formation);
     const tail = tokenPositionForFormation(i, angle - 0.11 - band * 0.012, radius * (0.95 - band * 0.006), turbulence, formation);
     addSegment(i % 9 === 0 ? amberTrail : i % 4 === 0 ? violetTrail : cyanTrail, tail, head);
@@ -374,52 +416,56 @@ function createOverlayLineGroups(
 
   let connectionSegmentCount = 0;
   if (connections) {
-    const connectionCount = overlay.connectionSegments;
+    const connectionCount = diagnosticOverlays ? overlay.connectionSegments : Math.min(overlay.connectionSegments, 5);
     for (let i = 0; i < connectionCount; i += 1) {
-      const source = tokenPositionForFormation(i * 5, i * 0.41 + time * 0.08 * speed, 0.34 + (i % 9) * 0.055, turbulence * 0.7, formation);
+      const source = tokenPositionForFormation(i * 5, i * 0.41 + time * 0.08 * speed, 0.16 + (i % 9) * 0.025, turbulence * 0.7, formation);
       const targetAngle = i * 1.17 + time * 0.045 * speed;
       const target: Vec3 = [
-        Math.cos(targetAngle) * (0.58 + (i % 5) * 0.075),
-        Math.sin(i * 0.37 + time * 0.08 * speed) * 0.34,
-        Math.sin(targetAngle) * (0.48 + (i % 7) * 0.055)
+        Math.cos(targetAngle) * (0.26 + (i % 5) * 0.03),
+        Math.sin(i * 0.37 + time * 0.08 * speed) * 0.16,
+        Math.sin(targetAngle) * (0.22 + (i % 7) * 0.026)
       ];
       addSegment(connectionLines, source, target);
       connectionSegmentCount += 1;
     }
   }
 
-  for (let i = 0; i < attractors.length; i += 1) {
-    const attractor = attractors[i]!;
-    addSegment(attractorLines, attractor, [attractor[0] * 0.32, attractor[1] * 0.18, attractor[2] * 0.32]);
+  if (diagnosticOverlays) {
+    for (let i = 0; i < attractors.length; i += 1) {
+      const attractor = attractors[i]!;
+      addSegment(attractorLines, attractor, [attractor[0] * 0.32, attractor[1] * 0.18, attractor[2] * 0.32]);
+    }
   }
 
   let telemetryRingSegmentCount = 0;
-  const telemetryRingCount = overlay.telemetryRingCount;
+  const telemetryRingCount = diagnosticOverlays ? overlay.telemetryRingCount : 0;
   for (let ring = 0; ring < telemetryRingCount; ring += 1) {
-    const y = -0.64 + ring * 0.07;
-    const radiusX = 0.54 + ring * 0.04 + Math.sin(ring * 0.91) * 0.045;
+    const y = -0.52 + ring * 0.06;
+    const radiusX = 0.44 + ring * 0.035 + Math.sin(ring * 0.91) * 0.035;
     const radiusZ = radiusX * (formation === "sphere" ? 0.88 : 0.64);
-    const segments = 28;
+    const segments = DATA_GALAXY_TELEMETRY_RING_SEGMENTS;
     addEllipseRing(telemetryLines, radiusX, radiusZ, y, segments, time * 0.16 * speed + ring * 0.22);
     telemetryRingSegmentCount += segments;
   }
 
-  const contourCount = overlay.contourSegments;
+  const contourCount = diagnosticOverlays ? overlay.contourSegments : Math.min(overlay.contourSegments, 6);
   for (let i = 0; i < contourCount; i += 1) {
     const t = i / contourCount;
     const angle = i * 0.299 + time * 0.09 * speed;
-    const radius = 0.2 + t * (0.92 + turbulence * 0.18);
+    const radius = 0.1 + t * (0.38 + turbulence * 0.06);
     const start = tokenPositionForFormation(i, angle, radius, turbulence * 0.55, formation);
     const end = tokenPositionForFormation(i, angle + 0.03 + (i % 5) * 0.003, radius + 0.02, turbulence * 0.55, formation);
     addSegment(contourLines, start, end);
   }
 
-  const tier = Math.min(1, Math.max(0, (requestedParticles - 4000) / (50000 - 4000)));
-  for (let i = 0; i < overlay.budgetLadderSegments; i += 1) {
-    const normalized = overlay.budgetLadderSegments <= 1 ? 0 : i / (overlay.budgetLadderSegments - 1);
-    const x = -0.72 + i * 0.13;
-    const height = 0.035 + normalized * 0.22 * (0.35 + tier * 0.65);
-    addSegment(budgetLines, [x, -0.82, 0.88], [x, -0.82 + height, 0.88]);
+  if (diagnosticOverlays) {
+    const tier = Math.min(1, Math.max(0, (requestedParticles - 4000) / (50000 - 4000)));
+    for (let i = 0; i < overlay.budgetLadderSegments; i += 1) {
+      const normalized = overlay.budgetLadderSegments <= 1 ? 0 : i / (overlay.budgetLadderSegments - 1);
+      const x = -0.72 + i * 0.13;
+      const height = 0.035 + normalized * 0.22 * (0.35 + tier * 0.65);
+      addSegment(budgetLines, [x, -0.82, 0.88], [x, -0.82 + height, 0.88]);
+    }
   }
 
   const groups: DataGalaxyLineGroup[] = [
@@ -448,10 +494,10 @@ function createAttractorPositions(time: number, speed: number, pointer: { readon
   const attractors: Vec3[] = [];
   for (let i = 0; i < 5; i += 1) {
     const angle = time * (0.27 + i * 0.032) * speed + i * Math.PI * 0.2;
-    const radius = 0.68 + (i % 4) * 0.16;
+    const radius = 0.36 + (i % 4) * 0.08;
     attractors.push([
       Math.cos(angle) * radius,
-      Math.sin(angle * 0.7 + i * 0.2) * 0.48,
+      Math.sin(angle * 0.7 + i * 0.2) * 0.28,
       Math.sin(angle) * radius * 0.78
     ]);
   }
@@ -459,127 +505,39 @@ function createAttractorPositions(time: number, speed: number, pointer: { readon
   return attractors;
 }
 
-function createCoreEvidence(time: number, speed: number, formation: DataGalaxyFormation): EvidenceSingleItem[] {
+function createCoreEvidence(time: number, speed: number, _formation: DataGalaxyFormation): EvidenceSingleItem[] {
   return [
     {
-      geometry: "sphere",
-      material: "violetGlow",
-      label: `${formation} data core evidence`,
-      position: [0, 0, 0],
-      scale: [0.72, 0.72, 0.72],
-      rotation: [0, time * speed, 0]
-    },
-    {
-      geometry: "sphere",
-      material: "transparentCyan",
-      label: "focal inference cluster shell",
-      position: [0, 0.02, 0],
-      scale: [0.64, 0.64, 0.64],
-      rotation: [0.14, -time * 0.32 * speed, 0.08]
-    },
-    {
-      geometry: "sphere",
+      geometry: "cube",
       material: "cyanGlow",
       label: "bright central inference nucleus",
-      position: [0, 0.03, 0],
-      scale: [0.42, 0.42, 0.42],
+      position: [0, 0.02, 0],
+      scale: [0.08, 0.16, 0.08],
       rotation: [0.08, time * 0.8 * speed, -0.06]
     },
     {
-      geometry: "sphere",
+      geometry: "cube",
       material: "cyanGlow",
       label: "foreground focal data cluster anchor",
-      position: [-0.34, -0.08, 0.38],
-      scale: [0.18, 0.18, 0.18],
+      position: [-0.2, -0.03, 0.16],
+      scale: [0.04, 0.08, 0.04],
       rotation: [0.04, time * 0.62 * speed, 0.18]
     },
     {
-      geometry: "sphere",
+      geometry: "cube",
       material: "amberGlow",
       label: "warm secondary attractor cluster anchor",
-      position: [0.42, 0.16, -0.28],
-      scale: [0.15, 0.15, 0.15],
+      position: [0.22, 0.08, -0.14],
+      scale: [0.034, 0.068, 0.034],
       rotation: [-0.08, -time * 0.52 * speed, 0.1]
     },
     {
-      geometry: "sphere",
+      geometry: "cube",
       material: "violetGlow",
       label: "violet background model-state cluster anchor",
-      position: [-0.52, 0.18, -0.34],
-      scale: [0.14, 0.14, 0.14],
+      position: [-0.24, 0.1, -0.16],
+      scale: [0.03, 0.06, 0.03],
       rotation: [0.12, time * 0.44 * speed, -0.08]
-    },
-    {
-      geometry: "cube",
-      material: "transparentCyan",
-      label: "focal inference orbit bar",
-      position: [0, 0.02, 0],
-      scale: [1.36, 0.028, 0.028],
-      rotation: [0.12, time * 0.54 * speed, 0.04]
-    },
-    {
-      geometry: "cube",
-      material: "transparentAmber",
-      label: "focal attractor orbit bar",
-      position: [0, -0.02, 0],
-      scale: [0.028, 0.028, 1.28],
-      rotation: [-0.08, -time * 0.46 * speed, 0.12]
-    },
-    {
-      geometry: "cube",
-      material: "transparentCyan",
-      label: "orthogonal inference orbit bar",
-      position: [0, 0.01, 0],
-      scale: [0.026, 0.026, 1.22],
-      rotation: [0.34, time * 0.36 * speed + 1.1, -0.18]
-    },
-    {
-      geometry: "cube",
-      material: "transparentAmber",
-      label: "foreground data-system contour chord",
-      position: [-0.12, 0.12, 0.32],
-      scale: [1.16, 0.024, 0.024],
-      rotation: [0.24, -time * 0.28 * speed + 0.52, 0.2]
-    },
-    {
-      geometry: "cube",
-      material: "transparentCyan",
-      label: "foreground data-system contour chord",
-      position: [0.16, -0.06, 0.24],
-      scale: [0.024, 0.024, 1.12],
-      rotation: [-0.18, time * 0.3 * speed + 0.94, -0.24]
-    },
-    {
-      geometry: "cube",
-      material: "transparentAmber",
-      label: "central data-system vertical spine",
-      position: [-0.16, 0.08, 0.08],
-      scale: [0.034, 0.74, 0.034],
-      rotation: [0.16, time * 0.22 * speed, 0.32]
-    },
-    {
-      geometry: "cube",
-      material: "transparentCyan",
-      label: "central data-system vertical spine",
-      position: [0.18, -0.02, -0.1],
-      scale: [0.03, 0.66, 0.03],
-      rotation: [-0.24, -time * 0.18 * speed + 0.42, -0.18]
-    },
-    {
-      geometry: "cube",
-      material: "transparentAmber",
-      label: "performance budget readout anchor",
-      position: [0, -0.92, 0.18],
-      scale: [1.1, 0.02, 0.02],
-      rotation: [0, time * 0.16 * speed, 0]
-    },
-    {
-      geometry: "cube",
-      material: "transparentCyan",
-      label: "formation readout spine",
-      position: [0.08, 0.86, -0.08],
-      scale: [0.04, 0.56, 0.04],
-      rotation: [0.16, time * 0.1 * speed, 0.16]
     }
   ];
 }
@@ -618,8 +576,9 @@ function tokenPositionForFormation(i: number, angle: number, radius: number, tur
     const phase = x * 1.8 + angle;
     return [x, Math.sin(phase) * (0.36 + turbulence * 0.3), z + Math.cos(phase) * 0.08];
   }
-  const y = (hash01(i * 17) - 0.5) * (0.82 + turbulence * 0.64) + Math.sin(angle * 1.2) * 0.08;
-  return [Math.cos(angle) * radius, y, Math.sin(angle) * radius * 0.76];
+  const compactRadius = radius * 0.62;
+  const y = (hash01(i * 17) - 0.5) * (0.72 + turbulence * 0.42) + Math.sin(angle * 1.2) * 0.12;
+  return [Math.cos(angle) * compactRadius, y, Math.sin(angle) * compactRadius * 0.86];
 }
 
 function pointerAttractorPosition(pointer: { readonly x: number; readonly y: number } | undefined): Vec3 {
@@ -645,6 +604,22 @@ function addEllipseRing(target: Vec3[], radiusX: number, radiusZ: number, y: num
       [Math.cos(a) * radiusX, y + Math.sin(a * 2.0 + phase) * 0.018, Math.sin(a) * radiusZ],
       [Math.cos(b) * radiusX, y + Math.sin(b * 2.0 + phase) * 0.018, Math.sin(b) * radiusZ]
     );
+  }
+}
+
+function addArc(target: Vec3[], center: Vec3, radiusX: number, radiusZ: number, yTilt: number, start: number, sweep: number, segments: number): void {
+  for (let i = 0; i < segments; i += 1) {
+    const a = start + sweep * i / segments;
+    const b = start + sweep * (i + 1) / segments;
+    addSegment(target, [
+      center[0] + Math.cos(a) * radiusX,
+      center[1] + Math.sin(a) * yTilt,
+      center[2] + Math.sin(a) * radiusZ
+    ], [
+      center[0] + Math.cos(b) * radiusX,
+      center[1] + Math.sin(b) * yTilt,
+      center[2] + Math.sin(b) * radiusZ
+    ]);
   }
 }
 

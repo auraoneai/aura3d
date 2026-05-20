@@ -18,7 +18,7 @@ import {
 import {
   DEFAULT_PBR_SHADER_NAME,
   DEFAULT_SKINNED_LIT_SHADER_NAME,
-  DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_SHADER_NAME,
   Geometry,
   MockRenderDevice,
@@ -77,11 +77,19 @@ describe("glTF asset inspection", () => {
       expect(report.renderResources).toMatchObject({
         drawItems: 1,
         texturedDrawItems: 1,
+        baseColorTextureDrawItems: 1,
+        colorBearingTextureDrawItems: 1,
+        surfaceDetailTextureDrawItems: 0,
+        effectiveTextureBackedDrawItems: 1,
         fallbackWhiteDrawItems: 0,
         missingGeometryDrawItems: 0,
         missingMaterialDrawItems: 0,
         textureBackedMaterialNames: ["inspection-material"]
       });
+      expect(report.renderResources.textureContributionDiagnostics).toEqual([
+        expect.objectContaining({ contribution: "color-bearing", slot: "baseColor", drawItems: 1 })
+      ]);
+      expect(report.renderResources.suppressedTextureSlotDiagnostics).toEqual([]);
       expect(report.animations[0]).toMatchObject({
         name: "inspection-animation",
         duration: 1,
@@ -236,7 +244,59 @@ describe("glTF asset inspection", () => {
     }
   });
 
-  it("preserves glossy clearcoat roughness while smoothing and damping nearest normal-map samplers", async () => {
+  it("reports render-resource material fidelity limits for unsupported texcoords and generated tangent UV mismatches", async () => {
+    const asset = await new GLTFLoader().load(
+      { url: createMaterialFidelityTexcoordGltfUrl(), type: "gltf" },
+      new LoadContext()
+    );
+    const resources = await createGLTFRenderResources(asset, {
+      imageDecoder: async (): Promise<DecodedGLTFImage> => ({
+        width: 1,
+        height: 1,
+        colorSpace: "srgb",
+        data: new Uint8Array([255, 255, 255, 255])
+      })
+    });
+
+    try {
+      const report = inspectGLTFAsset(asset, resources);
+
+      expect(report.renderResources).toMatchObject({
+        drawItems: 1,
+        unsupportedTexCoordDrawItems: 1,
+        generatedTangentUvMismatchDrawItems: 1
+      });
+      expect(report.renderResources.materialFidelityDiagnostics).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          issue: "unsupported-texcoord-set",
+          slot: "baseColor",
+          texCoord: 2,
+          renderedTexCoord: 0,
+          nodeName: "material-fidelity-node",
+          geometryKey: "material-fidelity-mesh",
+          materialKey: "material-fidelity-material"
+        }),
+        expect.objectContaining({
+          issue: "generated-tangent-uv-mismatch",
+          slot: "normal",
+          texCoord: 1,
+          renderedTexCoord: 1,
+          nodeName: "material-fidelity-node",
+          geometryKey: "material-fidelity-mesh",
+          materialKey: "material-fidelity-material"
+        })
+      ]));
+      expect(report.warnings.map((warning) => warning.code)).toEqual(expect.arrayContaining([
+        "ASSET_VIEWER_MULTI_UV_RENDER_FALLBACK",
+        "GLTF_RENDER_RESOURCE_TEXCOORD_DOWNGRADED",
+        "GLTF_RENDER_RESOURCE_TANGENT_UV_MISMATCH"
+      ]));
+    } finally {
+      resources.dispose();
+    }
+  });
+
+  it("preserves glossy clearcoat roughness and authored normal strength while smoothing nearest normal-map samplers", async () => {
     const asset = await new GLTFLoader().load(
       { url: createGlossyClearcoatNormalGltfUrl(), type: "gltf" },
       new LoadContext()
@@ -253,7 +313,7 @@ describe("glTF asset inspection", () => {
     try {
       const material = resources.materialLibrary.get("glossy-clearcoat-normal");
       const normalTexture = material?.getParameter("u_normalTexture");
-      expect(material?.getParameter("u_normalScale")).toBe(0.1);
+      expect(material?.getParameter("u_normalScale")).toBe(0.8);
       expect(material?.getParameter("u_clearcoatRoughnessFactor")).toBe(0);
       expect(normalTexture).toMatchObject({
         sampler: {
@@ -287,15 +347,21 @@ describe("glTF asset inspection", () => {
       const diagnostics = createGLTFRenderResourceDiagnostics(resources);
 
       expect(material?.shaderKey).toBe(DEFAULT_TEXTURED_PBR_SHADER_NAME);
-      expect(material?.shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT);
+      expect(material?.shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT);
+      expect(diagnostics).toMatchObject({
+        texturedDrawItems: 1,
+        baseColorTextureDrawItems: 0,
+        colorBearingTextureDrawItems: 0,
+        surfaceDetailTextureDrawItems: 1,
+        effectiveTextureBackedDrawItems: 1
+      });
       expect(diagnostics.textureSlotDiagnostics.map((entry) => entry.slot)).toEqual(["clearcoat", "specular"]);
-      expect(diagnostics.shaderActiveTextureSlotDiagnostics.map((entry) => entry.slot)).toEqual(["clearcoat"]);
-      expect(diagnostics.shaderInactiveTextureSlotDiagnostics).toEqual([{
-        slot: "specular",
-        drawItems: 1,
-        materialNames: ["mixed-clearcoat-specular"],
-        labels: ["mixed-extension-node:mixed-extension-mesh"]
-      }]);
+      expect(diagnostics.textureContributionDiagnostics.map((entry) => `${entry.contribution}:${entry.slot}`)).toEqual([
+        "surface-detail:clearcoat",
+        "surface-detail:specular"
+      ]);
+      expect(diagnostics.shaderActiveTextureSlotDiagnostics.map((entry) => entry.slot)).toEqual(["clearcoat", "specular"]);
+      expect(diagnostics.shaderInactiveTextureSlotDiagnostics).toEqual([]);
     } finally {
       resources.dispose();
     }
@@ -454,10 +520,11 @@ describe("glTF asset inspection", () => {
     try {
       const material = resources.materialLibrary.get("transmission-glass");
       expect(material).toBeTruthy();
-      expect(material?.renderState.blend).toBe(false);
-      expect(material?.renderState.depthWrite).toBe(true);
+      expect(material?.renderState.blend).toBe(true);
+      expect(material?.renderState.depthWrite).toBe(false);
       expect(material?.getParameter("u_transmissionFactor")).toBe(1);
       expect(material?.getParameter("u_transmissionFallbackEnergy")).toBe(0.08);
+      expect(createGLTFRenderResourceDiagnostics(resources).fallbackWhiteDrawItems).toBe(0);
     } finally {
       resources.dispose();
     }
@@ -560,6 +627,58 @@ function createTexturedMorphAnimationGltfUrl(): string {
       channels: [{ sampler: 0, target: { node: 0, path: "translation" } }]
     }],
     scenes: [{ name: "inspection-scene", nodes: [0] }],
+    scene: 0
+  };
+  return `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
+}
+
+function createMaterialFidelityTexcoordGltfUrl(): string {
+  const positions = floatBytes([-0.5, -0.5, 0, 0.5, -0.5, 0, 0, 0.5, 0]);
+  const texcoords0 = floatBytes([0, 1, 1, 1, 0.5, 0]);
+  const texcoords1 = floatBytes([0, 0, 0.75, 0, 0.25, 0.75]);
+  const texcoords2 = floatBytes([0.1, 0.9, 0.9, 0.9, 0.5, 0.1]);
+  const indices = uint16Bytes([0, 1, 2]);
+  const buffer = concatBytes(positions, texcoords0, texcoords1, texcoords2, indices);
+  const offsets = byteOffsets([positions, texcoords0, texcoords1, texcoords2, indices]);
+  const imageDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPj/HwAEAQH/0bRJsgAAAABJRU5ErkJggg==";
+  const gltf = {
+    asset: { version: "2.0", generator: "Galileo3D material fidelity texcoord fixture" },
+    buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
+    bufferViews: [
+      { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
+      { buffer: 0, byteOffset: offsets[1], byteLength: texcoords0.byteLength },
+      { buffer: 0, byteOffset: offsets[2], byteLength: texcoords1.byteLength },
+      { buffer: 0, byteOffset: offsets[3], byteLength: texcoords2.byteLength },
+      { buffer: 0, byteOffset: offsets[4], byteLength: indices.byteLength }
+    ],
+    accessors: [
+      { bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [-0.5, -0.5, 0], max: [0.5, 0.5, 0] },
+      { bufferView: 1, componentType: 5126, count: 3, type: "VEC2" },
+      { bufferView: 2, componentType: 5126, count: 3, type: "VEC2" },
+      { bufferView: 3, componentType: 5126, count: 3, type: "VEC2" },
+      { bufferView: 4, componentType: 5123, count: 3, type: "SCALAR" }
+    ],
+    images: [{ name: "material-fidelity-image", uri: imageDataUri }],
+    textures: [{ name: "material-fidelity-texture", source: 0 }],
+    materials: [{
+      name: "material-fidelity-material",
+      pbrMetallicRoughness: {
+        baseColorTexture: { index: 0, texCoord: 2 },
+        metallicFactor: 0,
+        roughnessFactor: 1
+      },
+      normalTexture: { index: 0, texCoord: 1, scale: 1 }
+    }],
+    meshes: [{
+      name: "material-fidelity-mesh",
+      primitives: [{
+        attributes: { POSITION: 0, TEXCOORD_0: 1, TEXCOORD_1: 2, TEXCOORD_2: 3 },
+        indices: 4,
+        material: 0
+      }]
+    }],
+    nodes: [{ name: "material-fidelity-node", mesh: 0 }],
+    scenes: [{ name: "material-fidelity-scene", nodes: [0] }],
     scene: 0
   };
   return `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;

@@ -29,12 +29,26 @@ export interface VisualReviewAcceptedRuntimeGateInput extends VisualReviewMetada
     readonly localContrast?: number;
   };
   readonly dataGalaxyEvidence?: DataGalaxyRuntimeGateEvidence;
+  readonly performanceEvidence?: VisualReviewPerformanceEvidence;
+}
+
+export interface VisualReviewPerformanceEvidence {
+  readonly acceptanceUsesRafFrameMs?: boolean;
+  readonly loopMs?: number;
+  readonly renderMs?: number;
+  readonly budgetMs?: number;
+  readonly loopWithinBudget?: boolean;
+  readonly renderWithinBudget?: boolean;
 }
 
 export interface MaterialDiagnosticGateEvidence {
   readonly assetId?: string;
   readonly drawItems?: number;
   readonly texturedDrawItems?: number;
+  readonly baseColorTextureDrawItems?: number;
+  readonly colorBearingTextureDrawItems?: number;
+  readonly surfaceDetailTextureDrawItems?: number;
+  readonly effectiveTextureBackedDrawItems?: number;
   readonly fallbackWhiteDrawItems?: number;
   readonly missingGeometryDrawItems?: number;
   readonly missingMaterialDrawItems?: number;
@@ -111,7 +125,7 @@ export function acceptedRuntimeEvidenceBlockers(input: VisualReviewAcceptedRunti
 
   const blockers: string[] = [];
   const reviewText = [input.notes, ...input.knownGaps, ...(input.runtime?.approximations ?? [])].join("\n");
-  blockers.push(...acceptedCadenceBlockers(input.demoId, input.runtime));
+  blockers.push(...acceptedCadenceBlockers(input.demoId, input.runtime, input.performanceEvidence));
   blockers.push(...acceptedMaterialBlockers(input.demoId, input.authored));
   blockers.push(...acceptedScaffoldDominanceBlockers(input.demoId, input.authored, input.dataGalaxyEvidence ?? input.runtime?.dataGalaxyEvidence, reviewText));
   blockers.push(...acceptedCropArtifactBlockers(input.demoId, input.pngStats, reviewText));
@@ -129,12 +143,25 @@ export function isValidIsoTimestamp(value: string): boolean {
   return Number.isFinite(timestamp) && new Date(timestamp).toISOString() === value;
 }
 
-function acceptedCadenceBlockers(demoId: string, runtime: VisualReviewAcceptedRuntimeGateInput["runtime"]): string[] {
+function acceptedCadenceBlockers(
+  demoId: string,
+  runtime: VisualReviewAcceptedRuntimeGateInput["runtime"],
+  performanceEvidence: VisualReviewAcceptedRuntimeGateInput["performanceEvidence"]
+): string[] {
   const blockers: string[] = [];
   const fps = runtime?.fps;
   const frameMs = runtime?.frameMs;
   if (!isFiniteNumber(fps)) blockers.push(`${demoId} accepted review is missing finite runtime FPS cadence evidence.`);
   if (!isFiniteNumber(frameMs)) blockers.push(`${demoId} accepted review is missing finite runtime frameMs cadence evidence.`);
+  if (performanceEvidence?.acceptanceUsesRafFrameMs === false) {
+    if (performanceEvidence.loopWithinBudget !== true) {
+      blockers.push(`${demoId} accepted review measured loop work ${performanceEvidence.loopMs ?? "missing"}ms is not within the ${performanceEvidence.budgetMs ?? "missing"}ms presentation budget.`);
+    }
+    if (performanceEvidence.renderWithinBudget !== true) {
+      blockers.push(`${demoId} accepted review measured render work ${performanceEvidence.renderMs ?? "missing"}ms is not within the ${performanceEvidence.budgetMs ?? "missing"}ms presentation budget.`);
+    }
+    return blockers;
+  }
   if (isFiniteNumber(fps) && fps < 12) blockers.push(`${demoId} accepted review FPS cadence ${fps} is below the 12 FPS presentation floor.`);
   if (isFiniteNumber(frameMs) && frameMs > 1000 / 12) blockers.push(`${demoId} accepted review frameMs cadence ${frameMs} exceeds the 12 FPS presentation ceiling.`);
   return blockers;
@@ -153,6 +180,27 @@ function acceptedMaterialBlockers(demoId: string, authored: VisualReviewAccepted
   if (fallbackWhite > 0) blockers.push(`${demoId} accepted authored GLB evidence still has ${fallbackWhite} fallback/default white material draw items.`);
   if (missingGeometry > 0) blockers.push(`${demoId} accepted authored GLB evidence still has ${missingGeometry} missing geometry draw items.`);
   if (missingMaterial > 0) blockers.push(`${demoId} accepted authored GLB evidence still has ${missingMaterial} missing material draw items.`);
+  if (demoId === "product-configurator") {
+    const nonStudioDiagnostics = diagnostics.filter((diagnostic) =>
+      diagnostic.assetId !== "product-configurator-studio-blender"
+      && !/studio|support|scaffold/i.test(diagnostic.assetId ?? "")
+      && finiteOrZero(diagnostic.drawItems) > 0
+    );
+    const missingEffectiveDiagnostics = nonStudioDiagnostics
+      .filter((diagnostic) => diagnostic.effectiveTextureBackedDrawItems === undefined)
+      .map((diagnostic) => diagnostic.assetId ?? "unknown");
+    const effectiveDrawItems = nonStudioDiagnostics.reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.effectiveTextureBackedDrawItems), 0);
+    const colorBearingDrawItems = nonStudioDiagnostics.reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.colorBearingTextureDrawItems), 0);
+    if (authoredDrawItems > 0 && missingEffectiveDiagnostics.length > 0) {
+      blockers.push(`product-configurator accepted review is missing effective texture-contribution diagnostics for non-studio product GLBs (${missingEffectiveDiagnostics.join(", ")}); broad texturedDrawItems cannot carry acceptance.`);
+    }
+    if (nonStudioDiagnostics.length > 0 && effectiveDrawItems <= 0) {
+      blockers.push("product-configurator accepted review has no effective texture-backed non-studio product material evidence; broad texture bindings cannot carry acceptance.");
+    }
+    if (nonStudioDiagnostics.length > 0 && colorBearingDrawItems <= 0) {
+      blockers.push("product-configurator accepted review has no color-bearing texture contribution on non-studio product GLBs; scalar/detail-only texture bindings cannot carry acceptance.");
+    }
+  }
   return blockers;
 }
 
@@ -186,6 +234,12 @@ function acceptedScaffoldDominanceBlockers(
     const generatedDrawItems = diagnostics
       .filter((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender" || /generated|scaffold|core-blender/i.test(diagnostic.assetId ?? ""))
       .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.drawItems), 0);
+    const generatedTexturedDrawItems = diagnostics
+      .filter((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender" || /generated|scaffold|core-blender/i.test(diagnostic.assetId ?? ""))
+      .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.texturedDrawItems), 0);
+    const generatedEffectiveTextureDrawItems = diagnostics
+      .filter((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender" || /generated|scaffold|core-blender/i.test(diagnostic.assetId ?? ""))
+      .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.effectiveTextureBackedDrawItems), 0);
     const disclosedAsProceduralSupport = /\b(procedural|particle)\b/i.test(reviewText) && /\b(support-only|support only|not.*premium|not.*hero|generated|texture-backed support|support fixture)\b/i.test(reviewText);
     const generatedDisclosure = dataGalaxyEvidence?.authoredAssetDisclosure;
     if (generatedDrawItems / totalDrawItems > 0.5 && !disclosedAsProceduralSupport) {
@@ -193,6 +247,15 @@ function acceptedScaffoldDominanceBlockers(
     }
     if (generatedDrawItems / totalDrawItems > 0.5) {
       blockers.push(`data-galaxy accepted review has generated/support authored draw-item dominance (${generatedDrawItems}/${totalDrawItems}); support-only authored GLBs must stay subordinate to particle/data-system proof.`);
+    }
+    if (generatedDrawItems > 0 && generatedTexturedDrawItems > 0 && generatedEffectiveTextureDrawItems <= 0) {
+      blockers.push(`data-galaxy accepted review has generated authored GLB broad texture bindings (${generatedTexturedDrawItems} draw items) but zero effective texture-contribution draw items.`);
+    }
+    if (generatedDisclosure?.premiumTextureBackedAuthoredHero === false
+      && generatedDisclosure.supportOnlyUntilVisualReview === true
+      && generatedDrawItems / totalDrawItems > 0.5
+      && generatedEffectiveTextureDrawItems / Math.max(1, generatedDrawItems) < 0.1) {
+      blockers.push(`data-galaxy accepted review has generated support GLB dominance (${generatedDrawItems}/${totalDrawItems}) while only ${generatedEffectiveTextureDrawItems} draw items have effective texture contribution.`);
     }
     if (generatedDisclosure?.generatedNoTextureAuthoredGlb === true
       && generatedDisclosure.premiumTextureBackedAuthoredHero === false

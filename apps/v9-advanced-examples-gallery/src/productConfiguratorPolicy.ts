@@ -1,5 +1,6 @@
 import type { GLTFRenderResources } from "@galileo3d/assets";
 import type { Material } from "@galileo3d/rendering";
+import { createProductShowcaseLayout, type ProductShowcaseLayout, type ProductShowcaseSlotInput } from "@galileo3d/product-studio";
 
 export const PRODUCT_CONFIGURATOR_ROUTE_ID = "product-configurator" as const;
 
@@ -67,6 +68,17 @@ export const PRODUCT_CONFIGURATOR_GENERATED_FIXTURE_ASSET_IDS = [
   PRODUCT_CONFIGURATOR_STUDIO_ASSET_ID,
   "car-concept-batched"
 ] as const;
+
+export const PRODUCT_CONFIGURATOR_SHOWCASE_SLOTS: readonly ProductShowcaseSlotInput[] = [
+  { assetId: "chronograph-watch", slot: "left-detail", materialVariantControl: "watchVariant", defaultMaterialVariant: "Midnight Gold" },
+  { assetId: "car-concept", slot: "hero", materialVariantControl: "carVariant", defaultMaterialVariant: "Carmine Candy" },
+  { assetId: "sunglasses-khronos", slot: "left-transparent" },
+  { assetId: "materials-variants-shoe", slot: "right-variant", materialVariantControl: "shoeVariant", defaultMaterialVariant: "beach" }
+];
+
+export function createProductConfiguratorShowcaseLayout(): ProductShowcaseLayout {
+  return createProductShowcaseLayout(PRODUCT_CONFIGURATOR_SHOWCASE_SLOTS);
+}
 
 const ZERO_OFFSET: readonly [number, number, number] = [0, 0, 0];
 

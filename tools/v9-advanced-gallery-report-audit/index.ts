@@ -134,6 +134,10 @@ interface AuthoredEvidence {
       readonly materialControlSelectedVariant?: string;
       readonly materialControlControlKey?: string;
       readonly texturedDrawItems?: number;
+      readonly baseColorTextureDrawItems?: number;
+      readonly colorBearingTextureDrawItems?: number;
+      readonly surfaceDetailTextureDrawItems?: number;
+      readonly effectiveTextureBackedDrawItems?: number;
       readonly textureBackedMaterialNames?: readonly string[];
       readonly shaderInactiveTextureSlotDiagnostics?: readonly {
         readonly slot?: string;
@@ -154,6 +158,10 @@ interface AuthoredEvidence {
     readonly acceptableAsFocalHero?: boolean;
     readonly textureBacked?: boolean;
     readonly generatedNoTexture?: boolean;
+    readonly semanticRoles?: readonly string[];
+    readonly supportScaffoldRoles?: readonly string[];
+    readonly defaultExcludedRoles?: readonly string[];
+    readonly textureBackedFocalMaterials?: readonly string[];
   }[];
 }
 
@@ -233,6 +241,9 @@ interface RouteAudit {
     readonly fallbackWhiteDrawItems: number;
     readonly missingResourceDrawItems: number;
     readonly textureBackedDrawItems: number;
+    readonly effectiveTextureBackedDrawItems: number;
+    readonly colorBearingTextureDrawItems: number;
+    readonly baseColorTextureDrawItems: number;
     readonly textureBackedAssetCount: number;
   };
   readonly specializedEvidence: readonly string[];
@@ -584,6 +595,12 @@ function auditAuthored(authored: AuthoredEvidence | undefined): RouteAudit["auth
   const animationDiagnostics = authored?.animationDiagnostics ?? [];
   const materialDiagnostics = authored?.materialDiagnostics ?? [];
   const texturedDiagnostics = materialDiagnostics.filter((diagnostic) => finiteOrZero(diagnostic.texturedDrawItems) > 0);
+  const effectiveTextureBackedDrawItems = materialDiagnostics.reduce((sum, diagnostic) =>
+    sum + finiteOrZero(diagnostic.effectiveTextureBackedDrawItems), 0);
+  const colorBearingTextureDrawItems = materialDiagnostics.reduce((sum, diagnostic) =>
+    sum + finiteOrZero(diagnostic.colorBearingTextureDrawItems), 0);
+  const baseColorTextureDrawItems = materialDiagnostics.reduce((sum, diagnostic) =>
+    sum + finiteOrZero(diagnostic.baseColorTextureDrawItems), 0);
   return {
     status: authored?.status,
     assetCount: authored?.assetIds?.length ?? authored?.assets?.length ?? 0,
@@ -596,6 +613,9 @@ function auditAuthored(authored: AuthoredEvidence | undefined): RouteAudit["auth
     missingResourceDrawItems: materialDiagnostics.reduce((sum, diagnostic) =>
       sum + finiteOrZero(diagnostic.missingGeometryDrawItems) + finiteOrZero(diagnostic.missingMaterialDrawItems), 0),
     textureBackedDrawItems: materialDiagnostics.reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.texturedDrawItems), 0),
+    effectiveTextureBackedDrawItems,
+    colorBearingTextureDrawItems,
+    baseColorTextureDrawItems,
     textureBackedAssetCount: texturedDiagnostics.length
   };
 }
@@ -604,6 +624,9 @@ function assetQualityWarnings(routeId: string, authored: AuthoredEvidence | unde
   const materialDiagnostics = authored?.materialDiagnostics ?? [];
   if (materialDiagnostics.length === 0) return [];
   const texturedDiagnostics = materialDiagnostics.filter((diagnostic) => finiteOrZero(diagnostic.texturedDrawItems) > 0);
+  const effectiveTexturedDiagnostics = materialDiagnostics.filter((diagnostic) =>
+    effectiveTextureDrawItems(diagnostic) > 0
+  );
   const untexturedDiagnostics = materialDiagnostics.filter((diagnostic) =>
     finiteOrZero(diagnostic.drawItems) > 0 && finiteOrZero(diagnostic.texturedDrawItems) <= 0
   );
@@ -613,15 +636,28 @@ function assetQualityWarnings(routeId: string, authored: AuthoredEvidence | unde
     if (realProductTextured.length === 0) {
       warnings.push("product-configurator has no texture-backed non-studio hero GLB evidence; no-texture support fixtures must not be treated as premium product proof");
     }
+    const realProductEffectiveTextured = effectiveTexturedDiagnostics.filter((diagnostic) => diagnostic.assetId !== "product-configurator-studio-blender");
+    if (realProductEffectiveTextured.length === 0) {
+      warnings.push("product-configurator has no effective texture-contribution evidence for non-studio product GLBs; any-texture counts are not enough to prove premium material recovery");
+    }
     const studio = materialDiagnostics.find((diagnostic) => diagnostic.assetId === "product-configurator-studio-blender");
     if (studio && finiteOrZero(studio.drawItems) > 0) {
       warnings.push("product-configurator still has active no-texture product-studio scaffold draw items; this must not be treated as premium product proof");
     }
   }
-  if (routeId === "data-galaxy" && texturedDiagnostics.length === 0 && untexturedDiagnostics.length > 0) {
-    warnings.push("data-galaxy active authored GLBs have draw items but zero texture-backed material evidence; this remains scaffold/sample content rather than premium asset proof");
+  if (routeId === "data-galaxy" && effectiveTexturedDiagnostics.length === 0 && untexturedDiagnostics.length > 0) {
+    warnings.push("data-galaxy active authored GLBs have draw items but zero effective texture-contribution evidence; this remains scaffold/sample content rather than premium asset proof");
+  } else if (routeId === "data-galaxy" && effectiveTexturedDiagnostics.length === 0 && texturedDiagnostics.length > 0) {
+    warnings.push("data-galaxy active authored GLBs bind texture slots but report zero effective color/detail texture contribution; broad texturedDrawItems are not premium authored-content proof");
   }
   return warnings;
+}
+
+function effectiveTextureDrawItems(
+  diagnostic: NonNullable<AuthoredEvidence["materialDiagnostics"]>[number]
+): number {
+  const reported = finiteOrZero(diagnostic.effectiveTextureBackedDrawItems);
+  return reported > 0 ? reported : finiteOrZero(diagnostic.texturedDrawItems);
 }
 
 function assetQualityBlockers(routeId: string, authored: AuthoredEvidence | undefined, report: RouteReport | undefined): string[] {
@@ -659,6 +695,28 @@ function assetQualityBlockers(routeId: string, authored: AuthoredEvidence | unde
     if (noTextureDrawItems / totalDrawItems > 0.25) {
       blockers.push(`product-configurator no-texture authored draw items dominate Product evidence (${noTextureDrawItems}/${totalDrawItems}); support/no-texture fixtures cannot carry acceptance`);
     }
+    const missingContributionDiagnostics = materialDiagnostics
+      .filter((diagnostic) =>
+        diagnostic.assetId !== "product-configurator-studio-blender"
+        && finiteOrZero(diagnostic.drawItems) > 0
+        && diagnostic.effectiveTextureBackedDrawItems === undefined
+      )
+      .map((diagnostic) => diagnostic.assetId ?? "unknown");
+    if (missingContributionDiagnostics.length > 0) {
+      blockers.push(`product-configurator non-studio product GLBs lack effective texture-contribution diagnostics (${missingContributionDiagnostics.join(", ")}); broad texturedDrawItems cannot be used as recovery evidence`);
+    }
+    const nonStudioEffectiveDrawItems = materialDiagnostics
+      .filter((diagnostic) => diagnostic.assetId !== "product-configurator-studio-blender")
+      .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.effectiveTextureBackedDrawItems), 0);
+    const nonStudioColorBearingDrawItems = materialDiagnostics
+      .filter((diagnostic) => diagnostic.assetId !== "product-configurator-studio-blender")
+      .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.colorBearingTextureDrawItems), 0);
+    if (nonStudioEffectiveDrawItems <= 0) {
+      blockers.push("product-configurator lacks effective texture-contribution diagnostics for non-studio product GLBs; Product cannot be promoted from broad any-texture counts alone");
+    }
+    if (nonStudioColorBearingDrawItems <= 0) {
+      blockers.push("product-configurator lacks color-bearing texture diagnostics for non-studio product GLBs; imported texture-backed assets are not yet proving visible product material contribution");
+    }
   }
 
   if (routeId === "data-galaxy") {
@@ -670,11 +728,23 @@ function assetQualityBlockers(routeId: string, authored: AuthoredEvidence | unde
     const generatedTexturedDrawItems = materialDiagnostics
       .filter((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender" || /generated|scaffold|core-blender/i.test(diagnostic.assetId ?? ""))
       .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.texturedDrawItems), 0);
+    const generatedEffectiveTextureDrawItems = materialDiagnostics
+      .filter((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender" || /generated|scaffold|core-blender/i.test(diagnostic.assetId ?? ""))
+      .reduce((sum, diagnostic) => sum + finiteOrZero(diagnostic.effectiveTextureBackedDrawItems), 0);
     if (generatedNoTextureDisclosure && generatedDrawItems / totalDrawItems > 0.5) {
       blockers.push(`data-galaxy generated/no-texture authored draw items dominate evidence (${generatedDrawItems}/${totalDrawItems}); support-only GLBs must stay subordinate to particle/data-system proof`);
     }
+    if (evidence?.authoredAssetDisclosure?.premiumTextureBackedAuthoredHero === false
+      && evidence?.authoredAssetDisclosure?.supportOnlyUntilVisualReview === true
+      && generatedDrawItems / totalDrawItems > 0.5
+      && generatedEffectiveTextureDrawItems / Math.max(1, generatedDrawItems) < 0.1) {
+      blockers.push(`data-galaxy generated support GLB dominates authored evidence (${generatedDrawItems}/${totalDrawItems}) while only ${generatedEffectiveTextureDrawItems} draw items have effective texture contribution; it cannot be used as premium focal proof`);
+    }
     if (!generatedNoTextureDisclosure && generatedDrawItems > 0 && generatedTexturedDrawItems <= 0) {
       blockers.push(`data-galaxy generated authored GLB is disclosed as texture-backed but reports 0 textured draw items (${generatedDrawItems} generated draw items)`);
+    }
+    if (generatedDrawItems > 0 && generatedTexturedDrawItems > 0 && generatedEffectiveTextureDrawItems <= 0) {
+      blockers.push(`data-galaxy generated authored GLB binds ${generatedTexturedDrawItems} broad texture draw items but reports 0 effective texture-contribution draw items; scalar/diagnostic texture bindings cannot carry premium focal proof`);
     }
     const authoredRole = evidence?.focalHierarchy?.authoredGlbRole ?? "";
     if (evidence?.authoredAssetDisclosure?.generatedNoTextureAuthoredGlb === true
@@ -782,6 +852,10 @@ function generatedAssetManifestBlockers(routeId: string): string[] {
       }
     }
 
+    if (requirement.id === "data-galaxy-core-blender") {
+      blockers.push(...dataGalaxySemanticManifestBlockers(manifest, prefix));
+    }
+
     if (requirement.expectedSourceAssetPath) {
       const sourceAsset = getRecord(source, "sourceAsset");
       if (getString(sourceAsset, "path") !== requirement.expectedSourceAssetPath) {
@@ -797,6 +871,49 @@ function generatedAssetManifestBlockers(routeId: string): string[] {
         blockers.push(`${prefix} supportTruth does not state it cannot replace the original source GLB`);
       }
     }
+  }
+  return blockers;
+}
+
+function dataGalaxySemanticManifestBlockers(manifest: Record<string, unknown>, prefix: string): string[] {
+  const blockers: string[] = [];
+  const semanticRoles = getRecord(manifest, "semanticRoles");
+  if (!semanticRoles) return [`${prefix} lacks semanticRoles ownership counts`];
+  const roleCounts = getRecord(semanticRoles, "roleCounts");
+  const exportedRoleCounts = getRecord(semanticRoles, "exportedRoleCounts");
+  const requiredRoles = ["focal-core", "semantic-cluster", "signal-bead"];
+  for (const role of requiredRoles) {
+    if (!isFiniteNumber(roleCounts?.[role]) || (roleCounts?.[role] as number) <= 0) {
+      blockers.push(`${prefix} semanticRoles.roleCounts lacks ${role}`);
+    }
+    if (!isFiniteNumber(exportedRoleCounts?.[role]) || (exportedRoleCounts?.[role] as number) <= 0) {
+      blockers.push(`${prefix} semanticRoles.exportedRoleCounts lacks ${role}`);
+    }
+  }
+  const supportScaffoldRoles = stringList(semanticRoles.supportScaffoldRoles);
+  const defaultExcludedRoles = stringList(semanticRoles.defaultExcludedRoles);
+  const removedScaffoldRoles = ["formation-control", "connection-loom", "analytics-panel", "decorative-pylon", "support-platform", "floor-trace", "debug-axis", "support-scaffold"];
+  for (const role of removedScaffoldRoles) {
+    if (isFiniteNumber(roleCounts?.[role]) && (roleCounts?.[role] as number) > 0) {
+      blockers.push(`${prefix} semanticRoles.roleCounts still contains scaffold/support role ${role}`);
+    }
+    if (isFiniteNumber(exportedRoleCounts?.[role]) && (exportedRoleCounts?.[role] as number) > 0) {
+      blockers.push(`${prefix} semanticRoles.exportedRoleCounts still contains scaffold/support role ${role}`);
+    }
+    if (supportScaffoldRoles.includes(role)) blockers.push(`${prefix} semanticRoles.supportScaffoldRoles should not include source-pruned role ${role}`);
+    if (defaultExcludedRoles.includes(role)) blockers.push(`${prefix} semanticRoles.defaultExcludedRoles should not include source-pruned role ${role}`);
+  }
+  if (!getString(getRecord(manifest, "batching"), "semanticRolePreservation")?.includes("g3d_semantic_role")) {
+    blockers.push(`${prefix} batching.semanticRolePreservation must explain g3d_semantic_role preservation`);
+  }
+  const focalDrawItems = getNumber(semanticRoles, "focalDrawItems");
+  const supportScaffoldDrawItems = getNumber(semanticRoles, "supportScaffoldDrawItems");
+  const defaultExcludedDrawItems = getNumber(semanticRoles, "defaultExcludedDrawItems");
+  if (!isFiniteNumber(focalDrawItems) || focalDrawItems <= 0) blockers.push(`${prefix} semanticRoles lacks positive focalDrawItems`);
+  if (!isFiniteNumber(supportScaffoldDrawItems) || supportScaffoldDrawItems !== 0) blockers.push(`${prefix} semanticRoles.supportScaffoldDrawItems must be 0 after source pruning`);
+  if (!isFiniteNumber(defaultExcludedDrawItems) || defaultExcludedDrawItems !== 0) blockers.push(`${prefix} semanticRoles.defaultExcludedDrawItems must be 0 after source pruning`);
+  if (stringList(semanticRoles.textureBackedFocalMaterials).length <= 0) {
+    blockers.push(`${prefix} semanticRoles lacks textureBackedFocalMaterials`);
   }
   return blockers;
 }
@@ -827,6 +944,21 @@ function generatedAssetRuntimeProvenanceBlockers(routeId: string, authored: Auth
     }
     if (expectedManifest?.requireGeneratedNoTexture === false && entry.textureBacked !== true) {
       blockers.push(`${assetId} runtime provenance must disclose textureBacked: true`);
+    }
+    if (assetId === "data-galaxy-core-blender") {
+      if (!entry.semanticRoles?.includes("focal-core") || !entry.semanticRoles.includes("semantic-cluster") || !entry.semanticRoles.includes("signal-bead")) {
+        blockers.push(`${assetId} runtime provenance must disclose semanticRoles including focal-core`);
+      }
+      for (const role of ["formation-control", "connection-loom", "analytics-panel", "decorative-pylon", "support-platform", "floor-trace", "debug-axis", "support-scaffold"]) {
+        if (entry.supportScaffoldRoles?.includes(role)) blockers.push(`${assetId} runtime provenance still exposes source-pruned support role ${role}`);
+        if (entry.defaultExcludedRoles?.includes(role)) blockers.push(`${assetId} runtime provenance still exposes source-pruned default-excluded role ${role}`);
+      }
+      if ((entry.defaultExcludedRoles?.length ?? 0) !== 0) {
+        blockers.push(`${assetId} runtime provenance defaultExcludedRoles must be empty after source pruning`);
+      }
+      if ((entry.textureBackedFocalMaterials?.length ?? 0) <= 0) {
+        blockers.push(`${assetId} runtime provenance must disclose textureBackedFocalMaterials`);
+      }
     }
     if (expectedManifest?.requireDerivative === true) {
       if (entry.derivative !== true) blockers.push(`${assetId} runtime provenance must mark derivative: true`);
@@ -957,7 +1089,8 @@ function hasProductConfiguratorMaterialVariantEvidence(authored: AuthoredEvidenc
   const hasTextureBackedAsset = (assetId: string, minimumTexturedDrawItems: number): boolean =>
     diagnostics.some((diagnostic) =>
       diagnostic.assetId === assetId
-      && (finiteOrZero(diagnostic.texturedDrawItems) >= minimumTexturedDrawItems || finiteOrZero(diagnostic.textureCount) > 0)
+      && (effectiveTextureDrawItems(diagnostic) >= minimumTexturedDrawItems || finiteOrZero(diagnostic.textureCount) > 0)
+      && (finiteOrZero(diagnostic.colorBearingTextureDrawItems) > 0 || finiteOrZero(diagnostic.textureCount) > 0)
       && finiteOrZero(diagnostic.fallbackWhiteDrawItems) === 0
       && finiteOrZero(diagnostic.missingGeometryDrawItems) === 0
       && finiteOrZero(diagnostic.missingMaterialDrawItems) === 0

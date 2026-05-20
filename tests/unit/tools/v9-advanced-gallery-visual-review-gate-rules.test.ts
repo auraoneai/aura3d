@@ -69,6 +69,50 @@ describe("V9 advanced gallery visual review gate rules", () => {
     expect(blockers).toContain("product-configurator accepted review frameMs cadence 250 exceeds the 12 FPS presentation ceiling.");
   });
 
+  it("allows accepted runtime cadence to use measured loop/render work when RAF frameMs is explicitly non-acceptance evidence", () => {
+    const blockers = acceptedRuntimeEvidenceBlockers({
+      ...validAcceptedMetadata,
+      demoId: "data-galaxy",
+      runtime: {
+        fps: 4,
+        frameMs: 250
+      },
+      performanceEvidence: {
+        acceptanceUsesRafFrameMs: false,
+        loopMs: 17.7,
+        renderMs: 14.8,
+        budgetMs: 34,
+        loopWithinBudget: true,
+        renderWithinBudget: true
+      }
+    });
+
+    expect(blockers).not.toContain("data-galaxy accepted review FPS cadence 4 is below the 12 FPS presentation floor.");
+    expect(blockers).not.toContain("data-galaxy accepted review frameMs cadence 250 exceeds the 12 FPS presentation ceiling.");
+  });
+
+  it("blocks accepted runtime evidence when measured loop/render work is outside the presentation budget", () => {
+    const blockers = acceptedRuntimeEvidenceBlockers({
+      ...validAcceptedMetadata,
+      demoId: "product-configurator",
+      runtime: {
+        fps: 24,
+        frameMs: 40
+      },
+      performanceEvidence: {
+        acceptanceUsesRafFrameMs: false,
+        loopMs: 48,
+        renderMs: 42,
+        budgetMs: 34,
+        loopWithinBudget: false,
+        renderWithinBudget: false
+      }
+    });
+
+    expect(blockers).toContain("product-configurator accepted review measured loop work 48ms is not within the 34ms presentation budget.");
+    expect(blockers).toContain("product-configurator accepted review measured render work 42ms is not within the 34ms presentation budget.");
+  });
+
   it("blocks accepted authored material evidence with fallback or missing resources", () => {
     const blockers = acceptedRuntimeEvidenceBlockers({
       ...validAcceptedMetadata,
@@ -116,13 +160,38 @@ describe("V9 advanced gallery visual review gate rules", () => {
         assetIds: ["product-configurator-studio-blender", "car-concept"],
         materialDiagnostics: [
           { assetId: "product-configurator-studio-blender", drawItems: 52, texturedDrawItems: 0 },
-          { assetId: "car-concept", drawItems: 48, texturedDrawItems: 48 }
+          {
+            assetId: "car-concept",
+            drawItems: 48,
+            texturedDrawItems: 48,
+            colorBearingTextureDrawItems: 24,
+            effectiveTextureBackedDrawItems: 48
+          }
         ]
       }
     });
 
     expect(blockers).toContain("product-configurator accepted review has support/scaffold draw-item dominance (52/100); generated studio support cannot carry product acceptance.");
     expect(blockers).toContain("product-configurator accepted review has no-texture authored draw-item dominance (52/100); support/no-texture fixtures cannot carry product acceptance.");
+  });
+
+  it("blocks accepted Product Configurator when texture proof is broad-only", () => {
+    const blockers = acceptedRuntimeEvidenceBlockers({
+      ...validAcceptedMetadata,
+      demoId: "product-configurator",
+      runtime: { fps: 24, frameMs: 40 },
+      authored: {
+        drawItems: 48,
+        assetIds: ["car-concept"],
+        materialDiagnostics: [
+          { assetId: "car-concept", drawItems: 48, texturedDrawItems: 48 }
+        ]
+      }
+    });
+
+    expect(blockers).toContain("product-configurator accepted review is missing effective texture-contribution diagnostics for non-studio product GLBs (car-concept); broad texturedDrawItems cannot carry acceptance.");
+    expect(blockers).toContain("product-configurator accepted review has no effective texture-backed non-studio product material evidence; broad texture bindings cannot carry acceptance.");
+    expect(blockers).toContain("product-configurator accepted review has no color-bearing texture contribution on non-studio product GLBs; scalar/detail-only texture bindings cannot carry acceptance.");
   });
 
   it("blocks accepted Data Galaxy when generated scaffold dominance lacks a support-only boundary", () => {
@@ -135,7 +204,13 @@ describe("V9 advanced gallery visual review gate rules", () => {
         assetIds: ["data-galaxy-core-blender"],
         materialDiagnostics: [
           { assetId: "data-galaxy-core-blender", drawItems: 70, texturedDrawItems: 0 },
-          { assetId: "texture-backed-data-core", drawItems: 30, texturedDrawItems: 30 }
+          {
+            assetId: "texture-backed-data-core",
+            drawItems: 30,
+            texturedDrawItems: 30,
+            colorBearingTextureDrawItems: 30,
+            effectiveTextureBackedDrawItems: 30
+          }
         ]
       },
       dataGalaxyEvidence: {
@@ -166,7 +241,13 @@ describe("V9 advanced gallery visual review gate rules", () => {
         assetIds: ["data-galaxy-core-blender"],
         materialDiagnostics: [
           { assetId: "data-galaxy-core-blender", drawItems: 2, texturedDrawItems: 0 },
-          { assetId: "texture-backed-data-core", drawItems: 8, texturedDrawItems: 8 }
+          {
+            assetId: "texture-backed-data-core",
+            drawItems: 8,
+            texturedDrawItems: 8,
+            colorBearingTextureDrawItems: 8,
+            effectiveTextureBackedDrawItems: 8
+          }
         ]
       },
       dataGalaxyEvidence: {
@@ -197,8 +278,14 @@ describe("V9 advanced gallery visual review gate rules", () => {
         drawItems: 100,
         assetIds: ["data-galaxy-core-blender"],
         materialDiagnostics: [
-          { assetId: "data-galaxy-core-blender", drawItems: 70, texturedDrawItems: 3 },
-          { assetId: "texture-backed-data-core", drawItems: 30, texturedDrawItems: 30 }
+          { assetId: "data-galaxy-core-blender", drawItems: 70, texturedDrawItems: 3, effectiveTextureBackedDrawItems: 3 },
+          {
+            assetId: "texture-backed-data-core",
+            drawItems: 30,
+            texturedDrawItems: 30,
+            colorBearingTextureDrawItems: 30,
+            effectiveTextureBackedDrawItems: 30
+          }
         ]
       },
       dataGalaxyEvidence: {
@@ -217,7 +304,44 @@ describe("V9 advanced gallery visual review gate rules", () => {
     });
 
     expect(blockers).toContain("data-galaxy accepted review has generated/support authored draw-item dominance (70/100); support-only authored GLBs must stay subordinate to particle/data-system proof.");
+    expect(blockers).toContain("data-galaxy accepted review has generated support GLB dominance (70/100) while only 3 draw items have effective texture contribution.");
     expect(blockers.join("\n")).not.toContain("generated/no-texture authored GLB as focal");
+  });
+
+  it("blocks accepted Data Galaxy when generated support GLB has broad texture bindings but no effective contribution", () => {
+    const blockers = acceptedRuntimeEvidenceBlockers({
+      ...validAcceptedMetadata,
+      demoId: "data-galaxy",
+      notes: "Accepted against a comparable Three.js particle reference with bounded unsupported CPU/static limits and generated support-only procedural context.",
+      runtime: { fps: 24, frameMs: 40 },
+      authored: {
+        drawItems: 100,
+        assetIds: ["data-galaxy-core-blender"],
+        materialDiagnostics: [
+          { assetId: "data-galaxy-core-blender", drawItems: 70, texturedDrawItems: 3 },
+          {
+            assetId: "texture-backed-data-core",
+            drawItems: 30,
+            texturedDrawItems: 30,
+            colorBearingTextureDrawItems: 30,
+            effectiveTextureBackedDrawItems: 30
+          }
+        ]
+      },
+      dataGalaxyEvidence: {
+        updateMode: "static-geometry",
+        gpuBackend: { supported: false, backend: "none", nativeGpuComputeDispatches: 0 },
+        authoredAssetDisclosure: {
+          activeGeneratedAssetIds: ["data-galaxy-core-blender"],
+          generatedNoTextureAuthoredGlb: false,
+          premiumTextureBackedAuthoredHero: false,
+          supportOnlyUntilVisualReview: true
+        }
+      }
+    });
+
+    expect(blockers).toContain("data-galaxy accepted review has generated authored GLB broad texture bindings (3 draw items) but zero effective texture-contribution draw items.");
+    expect(blockers).toContain("data-galaxy accepted review has generated support GLB dominance (70/100) while only 0 draw items have effective texture contribution.");
   });
 
   it("blocks accepted crop and stage-edge artifact risk", () => {

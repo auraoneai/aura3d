@@ -174,7 +174,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     visualReview: {
       status: "failed",
       screenshot: "tests/reports/v9/advanced-examples-gallery/data-galaxy.png",
-      notes: "Still failed, but the reusable environment-stage floor/catch plane and the authored data-core platform mesh are now removed from the default route, and the default particle control uses the route-owned 12k showcase density while 4k remains a selectable interactive mode and 24k/50k remain stress/evidence modes. The route remains useful evidence for CPU particle generation, authored GLB loading, and honest GPU-compute limits, but it is not a showcase-quality image until it has a stronger focal subject, texture-backed or higher-fidelity authored content, better foreground/contrast, healthier capture cadence, and screenshot proof against premium Three.js particle references."
+      notes: "Still failed, but the reusable environment-stage floor/catch plane and the authored data-core platform mesh are removed from the default route, and the default particle control uses a route-owned 6k curated showcase density while 4k remains a selectable interactive mode and 24k/50k remain stress/evidence modes. The route remains useful evidence for CPU particle generation, authored GLB loading, and honest GPU-compute limits, but it is not accepted until the image itself has a strong focal subject, texture-backed or higher-fidelity authored content, readable foreground/contrast, healthy capture cadence, and screenshot proof against premium Three.js particle references."
     },
     subtitle: "Dense data-particle visualization with formations, attractors, trails, connection hints, and camera flight.",
     threeCategory: "Particles / GPGPU particles / galaxy generators",
@@ -187,7 +187,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     acceptance: ["Dense dynamic particle volume", "multiple formations", "performance impact visible when count changes", "default screenshots must not read as full-frame noisy clutter", "visible background must be art-directed for data/space rather than a terrestrial HDRI"],
     controls: [
       { key: "formation", label: "Formation", kind: "select", value: "galaxy", options: ["galaxy", "sphere", "wave", "network", "vortex"] },
-      { key: "particles", label: "Particles", kind: "select", value: "12000", options: ["4000", "12000", "24000", "50000"] },
+      { key: "particles", label: "Particles", kind: "select", value: "6000", options: ["4000", "6000", "24000", "50000"] },
       { key: "speed", label: "Speed", kind: "range", min: 0.1, max: 3, step: 0.05, value: 1 },
       { key: "turbulence", label: "Turbulence", kind: "range", min: 0, max: 2, step: 0.05, value: 0.7 },
       { key: "connections", label: "Connections", kind: "toggle", value: true }

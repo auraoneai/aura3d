@@ -9,6 +9,7 @@ import {
   DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP,
   DEFAULT_SKINNED_LIT_SHADER_NAME,
   DEFAULT_TEXTURED_PBR_SHADER_NAME,
+  DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT,
@@ -1047,6 +1048,8 @@ describe("PBR material and direct light contracts", () => {
     expect(new TexturedPBRMaterial({ sheenColorTexture: srgbPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ iridescenceTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), transmissionTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT);
+    expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), specularTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT);
+    expect(new TexturedPBRMaterial({ clearcoatTexture: linearPixel(), sheenColorTexture: srgbPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ specularTexture: linearPixel(), iridescenceTexture: linearPixel() }).shaderVariant).toBe(DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT);
     expect(new TexturedPBRMaterial({ baseColorTexture: srgbPixel() }).shaderVariant).toBeUndefined();
   });

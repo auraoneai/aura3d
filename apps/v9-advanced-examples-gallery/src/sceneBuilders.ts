@@ -149,10 +149,10 @@ export function createResources(): Resources {
 	    particleWarm: unlit("particleWarm", [1, 0.74, 0.28, 0.78], true, 1.95, true),
 	    particleViolet: unlit("particleViolet", [0.66, 0.44, 1, 0.78], true, 1.9, true),
 	    particleGreen: unlit("particleGreen", [0.26, 0.96, 0.64, 0.7], true, 1.75, true),
-    dataParticle: unlit("dataParticle", [0.46, 0.96, 1, 0.94], true, 3.0, true),
-    dataParticleWarm: unlit("dataParticleWarm", [1, 0.76, 0.24, 0.9], true, 2.65, true),
-    dataParticleViolet: unlit("dataParticleViolet", [0.72, 0.48, 1, 0.88], true, 2.55, true),
-    dataParticleGreen: unlit("dataParticleGreen", [0.32, 1, 0.68, 0.84], true, 2.4, true),
+    dataParticle: unlit("dataParticle", [0.52, 0.98, 1, 0.62], true, 1.25, true),
+    dataParticleWarm: unlit("dataParticleWarm", [1, 0.72, 0.24, 0.68], true, 1.4, true),
+    dataParticleViolet: unlit("dataParticleViolet", [0.72, 0.48, 1, 0.58], true, 1.25, true),
+    dataParticleGreen: unlit("dataParticleGreen", [0.32, 1, 0.68, 0.56], true, 1.2, true),
     beam: unlit("beam", [1, 0.78, 0.48, 0.14], true),
     fogVeil: unlit("fogVeil", [0.62, 0.72, 0.72, 0.065], true),
     fogShadow: unlit("fogShadow", [0.07, 0.1, 0.11, 0.16], true),
@@ -168,7 +168,9 @@ export function createResources(): Resources {
       lineX: Geometry.lineSegments([[-0.5, 0, 0], [0.5, 0, 0]])
     },
     material,
-    pointClouds: new Map()
+    pointClouds: new Map(),
+    dataGalaxyOverlayGeometries: new Map(),
+    environmentStages: new Map()
   };
 }
 

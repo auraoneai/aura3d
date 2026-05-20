@@ -11,7 +11,7 @@ describe("product showcase layout", () => {
     ]);
 
     expect(layout.schema).toBe("g3d-product-showcase-layout/v1");
-    expect(layout.mode).toBe("compact-multi-product");
+    expect(layout.mode).toBe("hero-product-with-secondary-detail");
     expect(layout.items.map((item) => item.assetId)).toEqual([
       "chronograph-watch",
       "car-concept",
@@ -20,24 +20,27 @@ describe("product showcase layout", () => {
     ]);
     expect(layout.items.find((item) => item.slot === "hero")).toMatchObject({
       assetId: "car-concept",
-      targetHeight: 0.6,
+      targetHeight: 0.86,
       defaultMaterialVariant: "Carmine Candy"
     });
     expect(layout.items.find((item) => item.slot === "left-detail")).toMatchObject({
       assetId: "chronograph-watch",
-      targetHeight: 0.72,
+      targetHeight: 0.24,
+      position: [-2.28, -0.86, -0.72],
       defaultMaterialVariant: "Midnight Gold"
     });
     expect(layout.items.find((item) => item.slot === "right-variant")).toMatchObject({
       assetId: "materials-variants-shoe",
-      targetHeight: 0.58,
+      targetHeight: 0.24,
+      position: [2.34, -0.86, 0.58],
       defaultMaterialVariant: "beach"
     });
     expect(layout.frame).toEqual({
-      boundsMin: [-1.56, -1, -0.76],
-      boundsMax: [1.48, 0.58, 0.92],
-      heroPaddingRatio: 0.008
+      boundsMin: [-1.36, -1.02, -0.84],
+      boundsMax: [1.36, 0.5, 0.94],
+      heroPaddingRatio: 0.012
     });
+    expect(layout.limitations.join(" ")).toContain("secondary products remain loaded but are kept outside the default hero frame");
     expect(layout.limitations.join(" ")).toContain("does not infer a semantic part graph");
   });
 });

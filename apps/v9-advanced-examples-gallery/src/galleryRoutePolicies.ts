@@ -1,15 +1,10 @@
-import { createProductShowcaseLayout } from "@galileo3d/product-studio";
-import type { CameraFrameBounds, RendererPostProcessOptions, RenderItem } from "@galileo3d/rendering";
+import type { CameraFrameBounds, EnvironmentLightingCompositionOptions, RendererPostProcessOptions, RenderItem } from "@galileo3d/rendering";
 import type { AuthoredAssetRuntimeState } from "./authoredLayer";
 import type { ControlValues, SceneFrame } from "./sceneBuilderPrimitives";
 import type { DemoDefinition } from "./metadata";
+import { createProductConfiguratorShowcaseLayout } from "./productConfiguratorPolicy";
 
-const PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT = createProductShowcaseLayout([
-  { assetId: "chronograph-watch", slot: "left-detail", materialVariantControl: "watchVariant", defaultMaterialVariant: "Midnight Gold" },
-  { assetId: "car-concept", slot: "hero", materialVariantControl: "carVariant", defaultMaterialVariant: "Carmine Candy" },
-  { assetId: "sunglasses-khronos", slot: "left-transparent" },
-  { assetId: "materials-variants-shoe", slot: "right-variant", materialVariantControl: "shoeVariant", defaultMaterialVariant: "beach" }
-]);
+const PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT = createProductConfiguratorShowcaseLayout();
 
 export interface GalleryRouteCameraPolicyInput {
   readonly demoId: DemoDefinition["id"];
@@ -64,9 +59,9 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     paddingRatio = PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT.frame.heroPaddingRatio;
   }
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
-    yawRadians = -0.22 + Math.sin(input.time * 0.12) * 0.01;
-    pitchRadians = -0.08;
-    paddingRatio = 0.018;
+    yawRadians = -0.22 + Math.sin(input.time * 0.12) * 0.006;
+    pitchRadians = -0.12;
+    paddingRatio = 0.014;
   }
   if (input.demoId === "smart-city" && input.cameraPreset === "hero") {
     yawRadians = -0.72;
@@ -99,7 +94,7 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     };
   }
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
-    bounds = { min: [-1.22, -0.78, -1.0], max: [1.24, 0.88, 1.0] };
+    bounds = { min: [-0.32, -0.3, -0.3], max: [0.34, 0.38, 0.34] };
   }
   if (input.demoId === "reactor-post" && input.cameraPreset === "hero" && authoredReady) {
     bounds = { min: [-2.82, -0.6, -2.88], max: [2.82, 2.32, 2.16] };
@@ -151,6 +146,16 @@ export function applyGalleryRoutePostprocessPolicy(
   if (demoId !== "reactor-post") return false;
   if (controls.bloom !== true) return { ...value, targetFormat: "rgba8", bloom: false };
   return { ...value, bloom: value.bloom };
+}
+
+export function rendererEnvironmentLightingCompositionOptionsForRoute(
+  demoId: DemoDefinition["id"]
+): EnvironmentLightingCompositionOptions {
+  if (demoId !== "product-configurator") return {};
+  return {
+    minimumEnvironmentMapIntensity: 0.78,
+    minimumEnvironmentMapSpecularIntensity: 0.76
+  };
 }
 
 function boundedGalleryFxaa(
@@ -350,7 +355,6 @@ function filterByLabel(items: readonly RenderItem[], predicate: (label: string) 
 
 function productConfiguratorStageLabel(label: string): boolean {
   return label.startsWith("indoor-studio ")
-    || label === "product turntable tick"
     || label === "product-studio floor"
     || label === "product-studio backdrop";
 }

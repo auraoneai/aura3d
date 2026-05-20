@@ -154,7 +154,7 @@ vec3 g3dApplyAdvancedPbrLobes(
   float iridescenceThicknessMaximum,
   float dispersion
 ) {
-  float clearcoatRoughness = clamp(clearcoatRoughnessFactor, 0.0, 1.0);
+  float clearcoatRoughness = max(clamp(clearcoatRoughnessFactor, 0.0, 1.0), 0.18);
   float clearcoat = clamp(clearcoatFactor, 0.0, 1.0);
   float transmission = clamp(transmissionFactor, 0.0, 1.0);
   float diffuseTransmission = clamp(diffuseTransmissionFactor, 0.0, 1.0) * (1.0 - transmission);
@@ -171,19 +171,19 @@ vec3 g3dApplyAdvancedPbrLobes(
   float fallbackEnergy = clamp(transmissionFallbackEnergy, 0.0, 1.0);
   // The WebGL fallback has no scene-color refraction; keep clear glass from turning into a bright white plate.
   float fallbackTransmissionEnergy = mix(1.0, fallbackEnergy, transmission);
-  float fallbackSpecularEnergy = mix(1.0, max(fallbackEnergy < 0.079 ? clamp(fallbackEnergy * 8.0, 0.0, 1.0) : fallbackEnergy, 0.35), transmission);
+  float fallbackSpecularEnergy = mix(1.0, max(fallbackEnergy < 0.079 ? clamp(fallbackEnergy * 8.0, 0.0, 1.0) : fallbackEnergy, 0.18), transmission);
   float thickIorTransmissionLift = mix(1.0, 1.28, iorBoost * transmission * smoothstep(0.45, 1.0, volumeThickness));
   transmitted *= fallbackTransmissionEnergy * thickIorTransmissionLift;
   float iorF0 = pow((max(ior, 1.0) - 1.0) / (max(ior, 1.0) + 1.0), 2.0);
-  float specularGloss = pow(1.0 - clamp(clearcoatRoughnessFactor, 0.0, 1.0), 2.0);
+  float specularGloss = pow(1.0 - clearcoatRoughness, 2.0);
   vec3 specularLobe = clamp(specularColorFactor, vec3(0.0), vec3(1.0))
     * specular
     * fallbackSpecularEnergy
     * transmission
-    * (0.028 + iorF0 * 0.9 + transmission * 0.075)
-    * (0.42 + specularGloss * 0.58);
+    * (0.018 + iorF0 * 0.46 + transmission * 0.04)
+    * (0.3 + specularGloss * 0.42);
   float clearcoatGloss = pow(1.0 - clearcoatRoughness, 2.0);
-  vec3 clearcoatLobe = vec3(clearcoat * (0.04 + iorBoost * 0.08) * (0.35 + clearcoatGloss * 0.65));
+  vec3 clearcoatLobe = vec3(clearcoat * (0.022 + iorBoost * 0.045) * (0.28 + clearcoatGloss * 0.42));
   float sheenGloss = pow(1.0 - sheenRoughness, 2.0);
   vec3 sheenLobe = sheenColorFactor * sheen * (0.05 + sheenGloss * 0.18);
   float anisotropy = clamp(anisotropyStrength, 0.0, 1.0);
@@ -198,10 +198,9 @@ vec3 g3dApplyAdvancedPbrLobes(
   float dispersionAmount = clamp(dispersion / 100.0, 0.0, 1.0);
   vec3 dispersionTint = mix(vec3(1.0), vec3(1.04, 0.98, 0.94), dispersionAmount * transmission);
   float sheenEnergy = max(max(sheenLobe.r, sheenLobe.g), sheenLobe.b);
-  float layerEnergy = clamp(clearcoat * 0.22 + sheenEnergy * 0.55 + anisotropy * 0.08 + iridescence * 0.08, 0.0, 0.62);
+  float layerEnergy = clamp(clearcoat * 0.08 + sheenEnergy * 0.26 + anisotropy * 0.035 + iridescence * 0.03, 0.0, 0.28);
   vec3 layeredBase = transmitted * dispersionTint * (1.0 - layerEnergy);
-  vec3 extensionLobes = specularLobe + sheenLobe + clearcoatLobe + anisotropyLobe + iridescenceLobe;
-  return max(vec3(0.0), layeredBase + extensionLobes);
+  return max(vec3(0.0), layeredBase);
 }
 vec3 g3dPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
   float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
@@ -234,18 +233,18 @@ vec3 g3dPbrExtensionDirectLight(
   float nDotV = max(g3dSaturate(dot(N, V)), G3D_EPSILON);
   float nDotH = g3dSaturate(dot(N, H));
   float vDotH = g3dSaturate(dot(V, H));
-  float clearcoatRough = clamp(clearcoatRoughness, 0.02, 1.0);
+  float clearcoatRough = clamp(clearcoatRoughness, 0.18, 1.0);
   vec3 clearcoatF = g3dFresnelSchlick(vec3(0.04), vDotH);
   float clearcoatD = g3dDistributionGGX(nDotH, clearcoatRough);
   float clearcoatG = g3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
-  vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.28;
+  vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;
   float sheenStrength = (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - vDotH), 5.0);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.32;
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.18;
   vec3 anisotropyAxis = normalize(vec3(cos(anisotropyRotation), 0.0, sin(anisotropyRotation)));
   float anisotropyBand = pow(abs(dot(H, anisotropyAxis)), mix(28.0, 6.0, clearcoatRough));
-  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.12);
+  vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);
   vec3 iridescenceColor = g3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.65;
+  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.22;
   return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
 }
 vec3 g3dPbrExtensionEnvironmentLight(
@@ -264,13 +263,13 @@ vec3 g3dPbrExtensionEnvironmentLight(
   float iridescenceThicknessMaximum
 ) {
   float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
-  float clearcoatGloss = pow(1.0 - clamp(clearcoatRoughness, 0.0, 1.0), 2.0);
-  vec3 clearcoatLobe = specularRadiance * clamp(clearcoat, 0.0, 1.0) * (0.025 + clearcoatGloss * 0.11);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - nDotV), 5.0) * 0.22;
+  float clearcoatGloss = pow(1.0 - clamp(clearcoatRoughness, 0.18, 1.0), 2.0);
+  vec3 clearcoatLobe = specularRadiance * clamp(clearcoat, 0.0, 1.0) * (0.018 + clearcoatGloss * 0.055);
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - nDotV), 5.0) * 0.12;
   float anisotropyBand = 0.5 + 0.5 * cos(anisotropyRotation * 2.0);
-  vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.04, 0.14, anisotropyBand);
+  vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
   vec3 iridescenceColor = g3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 1.5) * 0.28;
+  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 1.5) * 0.1;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
 uniform vec4 u_baseColor;

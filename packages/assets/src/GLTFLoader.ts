@@ -114,6 +114,7 @@ interface GLTFNode {
   readonly scale?: readonly [number, number, number];
   readonly rotation?: readonly [number, number, number, number];
   readonly matrix?: readonly number[];
+  readonly extras?: Readonly<Record<string, unknown>>;
   readonly extensions?: {
     readonly KHR_lights_punctual?: {
       readonly light: number;
@@ -3747,12 +3748,17 @@ function createSceneNodeForGLTFNode(
   if (source.camera !== undefined && source.extensions?.KHR_lights_punctual?.light !== undefined) {
     throw new Error(`glTF node ${nodeIndex} cannot combine camera and KHR_lights_punctual light`);
   }
+  let node: SceneNode;
   if (source.camera !== undefined) {
-    return createCameraNodeForGLTFNode(scene, source, nodeIndex, nodeName, cameras);
+    node = createCameraNodeForGLTFNode(scene, source, nodeIndex, nodeName, cameras);
+    applyGLTFNodeMetadata(node, source, nodeIndex);
+    return node;
   }
   const lightIndex = source.extensions?.KHR_lights_punctual?.light;
   if (lightIndex === undefined) {
-    return scene.createNode(nodeName);
+    node = scene.createNode(nodeName);
+    applyGLTFNodeMetadata(node, source, nodeIndex);
+    return node;
   }
   if (!Number.isInteger(lightIndex) || lightIndex < 0) {
     throw new RangeError(`glTF node ${nodeIndex} KHR_lights_punctual.light must be a non-negative integer`);
@@ -3761,17 +3767,27 @@ function createSceneNodeForGLTFNode(
   if (!light) {
     throw new Error(`glTF node ${nodeIndex} references missing punctual light ${lightIndex}`);
   }
-  const node = scene.createLight(light.type, nodeName);
-  node.color = [...light.color];
-  node.intensity = light.intensity;
-  if (node instanceof PointLight) {
-    node.range = light.range ?? 10;
-  } else if (node instanceof SpotLight) {
-    node.range = light.range ?? 10;
-    node.angle = light.spot?.outerConeAngle ?? Math.PI / 4;
-    node.penumbra = spotPenumbra(light.spot?.innerConeAngle ?? 0, node.angle);
+  const lightNode = scene.createLight(light.type, nodeName);
+  lightNode.color = [...light.color];
+  lightNode.intensity = light.intensity;
+  if (lightNode instanceof PointLight) {
+    lightNode.range = light.range ?? 10;
+  } else if (lightNode instanceof SpotLight) {
+    lightNode.range = light.range ?? 10;
+    lightNode.angle = light.spot?.outerConeAngle ?? Math.PI / 4;
+    lightNode.penumbra = spotPenumbra(light.spot?.innerConeAngle ?? 0, lightNode.angle);
   }
-  return node;
+  applyGLTFNodeMetadata(lightNode, source, nodeIndex);
+  return lightNode;
+}
+
+function applyGLTFNodeMetadata(node: SceneNode, source: GLTFNode, nodeIndex: number): void {
+  node.userData.gltfNodeIndex = nodeIndex;
+  if (!source.extras) return;
+  node.userData.gltfExtras = { ...source.extras };
+  for (const [key, value] of Object.entries(source.extras)) {
+    if (key.startsWith("g3d_")) node.userData[key] = value;
+  }
 }
 
 function createCameraNodeForGLTFNode(

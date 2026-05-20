@@ -173,8 +173,8 @@ describe("environment stage helpers", () => {
     expect(contactLayers.every((item) => item.includeInAutoFrame === false)).toBe(true);
     expect((productFloor?.modelMatrix?.[0] ?? 0)).toBeLessThan(standardFloor?.modelMatrix?.[0] ?? Number.POSITIVE_INFINITY);
     expect((productFloor?.modelMatrix?.[10] ?? 0)).toBeLessThan(standardFloor?.modelMatrix?.[10] ?? Number.POSITIVE_INFINITY);
-    expect((productFloor?.modelMatrix?.[0] ?? 0)).toBeCloseTo(3.25 * 1.02, 5);
-    expect((productFloor?.modelMatrix?.[10] ?? 0)).toBeCloseTo(3.25 * 0.66, 5);
+    expect((productFloor?.modelMatrix?.[0] ?? 0)).toBeCloseTo(3.25 * 0.54, 5);
+    expect((productFloor?.modelMatrix?.[10] ?? 0)).toBeCloseTo(3.25 * 0.32, 5);
     expect((contactLayers[0]?.modelMatrix?.[0] ?? 0)).toBeLessThan(productFloor?.modelMatrix?.[0] ?? Number.POSITIVE_INFINITY);
     expect((contactLayers[0]?.modelMatrix?.[10] ?? 0)).toBeLessThan(productFloor?.modelMatrix?.[10] ?? Number.POSITIVE_INFINITY);
     expect((contactLayers[0]?.material as PBRMaterial | undefined)?.renderState.blend).toBe(true);

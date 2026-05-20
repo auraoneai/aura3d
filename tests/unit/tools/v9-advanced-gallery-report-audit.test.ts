@@ -98,6 +98,10 @@ describe("V9 advanced gallery report audit", () => {
               assetId: "car-concept-batched",
               drawItems: 105,
               texturedDrawItems: 97,
+              baseColorTextureDrawItems: 8,
+              colorBearingTextureDrawItems: 8,
+              surfaceDetailTextureDrawItems: 97,
+              effectiveTextureBackedDrawItems: 97,
               fallbackWhiteDrawItems: 0,
               missingGeometryDrawItems: 0,
               missingMaterialDrawItems: 0,
@@ -152,7 +156,7 @@ describe("V9 advanced gallery report audit", () => {
       const outputPath = join(reportDir, "reusable-systems-disclosure-audit.json");
       const audit = JSON.parse(readFileSync(outputPath, "utf8")) as AuditReport;
       expect(audit.warnings.join("\n")).toContain("product-configurator still has active no-texture product-studio scaffold draw items");
-      expect(audit.warnings.join("\n")).toContain("data-galaxy active authored GLBs have draw items but zero texture-backed material evidence");
+      expect(audit.warnings.join("\n")).toContain("data-galaxy active authored GLBs have draw items but zero effective texture-contribution evidence");
       expect(audit.blockers.join("\n")).toContain("product-configurator support/scaffold draw items dominate authored evidence (229/334)");
       expect(audit.blockers.join("\n")).toContain("product-configurator no-texture authored draw items dominate Product evidence (229/334)");
       expect(audit.blockers.join("\n")).toContain("data-galaxy generated/no-texture authored draw items dominate evidence (10/11)");
@@ -662,6 +666,10 @@ function productAuthoredEvidence(options: {
         assetId: "chronograph-watch",
         drawItems: 19,
         texturedDrawItems: 10,
+        baseColorTextureDrawItems: 3,
+        colorBearingTextureDrawItems: 3,
+        surfaceDetailTextureDrawItems: 10,
+        effectiveTextureBackedDrawItems: 10,
         textureCount: 3,
         fallbackWhiteDrawItems: 0,
         missingGeometryDrawItems: 0,
@@ -672,6 +680,10 @@ function productAuthoredEvidence(options: {
         assetId: "car-concept",
         drawItems: 109,
         texturedDrawItems: 101,
+        baseColorTextureDrawItems: 9,
+        colorBearingTextureDrawItems: 9,
+        surfaceDetailTextureDrawItems: 101,
+        effectiveTextureBackedDrawItems: 101,
         textureCount: 15,
         fallbackWhiteDrawItems: 0,
         missingGeometryDrawItems: 0,
@@ -690,6 +702,10 @@ function productAuthoredEvidence(options: {
         assetId: "sunglasses-khronos",
         drawItems: 8,
         texturedDrawItems: 2,
+        baseColorTextureDrawItems: 1,
+        colorBearingTextureDrawItems: 1,
+        surfaceDetailTextureDrawItems: 2,
+        effectiveTextureBackedDrawItems: 2,
         textureCount: 1,
         fallbackWhiteDrawItems: 0,
         missingGeometryDrawItems: 0,
@@ -699,6 +715,10 @@ function productAuthoredEvidence(options: {
         assetId: "materials-variants-shoe",
         drawItems: 1,
         texturedDrawItems: 1,
+        baseColorTextureDrawItems: 1,
+        colorBearingTextureDrawItems: 1,
+        surfaceDetailTextureDrawItems: 0,
+        effectiveTextureBackedDrawItems: 1,
         textureCount: 1,
         fallbackWhiteDrawItems: 0,
         missingGeometryDrawItems: 0,
@@ -730,6 +750,18 @@ function dataGalaxyAuthoredEvidenceWithProvenance(): Record<string, unknown> {
       acceptableAsFocalHero: false,
       textureBacked: true,
       generatedNoTexture: false,
+      semanticRoles: [
+        "focal-core",
+        "semantic-cluster",
+        "signal-bead"
+      ],
+      supportScaffoldRoles: [],
+      defaultExcludedRoles: [],
+      textureBackedFocalMaterials: [
+        "cyan neural emission",
+        "violet model-state emission",
+        "amber anomaly emission"
+      ],
       knownLimitations: [
         "Generated texture-backed support-only authored GLB."
       ]

@@ -216,6 +216,10 @@ interface AuthoredMaterialDiagnosticEvidence {
   readonly drawItems?: number;
   readonly skinnedDrawItems?: number;
   readonly texturedDrawItems?: number;
+  readonly baseColorTextureDrawItems?: number;
+  readonly colorBearingTextureDrawItems?: number;
+  readonly surfaceDetailTextureDrawItems?: number;
+  readonly effectiveTextureBackedDrawItems?: number;
   readonly texturedSkinnedDrawItems?: number;
   readonly untexturedSkinnedDrawItems?: number;
   readonly fallbackWhiteDrawItems?: number;
@@ -292,7 +296,15 @@ async function main(): Promise<void> {
       pngStats: pngStats ? {
         foregroundBoundsCoverage: getNumber(pngStats, "foregroundBoundsCoverage")
       } : undefined,
-      dataGalaxyEvidence: readDataGalaxyRuntimeGateEvidence(getRecord(runtimeReport, "dataGalaxyEvidence"))
+      dataGalaxyEvidence: readDataGalaxyRuntimeGateEvidence(getRecord(runtimeReport, "dataGalaxyEvidence")),
+      performanceEvidence: performance ? {
+        acceptanceUsesRafFrameMs: performance.acceptanceUsesRafFrameMs,
+        loopMs: performance.loopMs,
+        renderMs: performance.renderMs,
+        budgetMs: performance.budgetMs,
+        loopWithinBudget: performance.loopWithinBudget,
+        renderWithinBudget: performance.renderWithinBudget
+      } : undefined
     }),
     ...runtimeBlockers(demo.id, runtime, authored, motion, pngStats, performance),
     ...rendererEnvironmentBackgroundVisualDeltaBlockers(demo.id, rendererEnvironmentBackgroundVisualDelta),
@@ -995,22 +1007,29 @@ function authoredRuntimeBlockers(demoId: string, authored: JsonRecord | undefine
   if (demoId === "product-configurator") {
     const authoredDrawItems = getNumber(authored, "drawItems") ?? materialDiagnostics.reduce((total, diagnostic) => total + (getNumber(diagnostic, "drawItems") ?? 0), 0);
     const texturedDrawItems = materialDiagnostics.reduce((total, diagnostic) => total + (getNumber(diagnostic, "texturedDrawItems") ?? 0), 0);
-    const nonStudioTexturedDrawItems = materialDiagnostics.reduce((total, diagnostic) => {
+    const nonStudioEffectiveDrawItems = materialDiagnostics.reduce((total, diagnostic) => {
       if (getString(diagnostic, "assetId") === "product-configurator-studio-blender") return total;
-      return total + (getNumber(diagnostic, "texturedDrawItems") ?? 0);
+      return total + (getNumber(diagnostic, "effectiveTextureBackedDrawItems") ?? 0);
+    }, 0);
+    const nonStudioColorBearingDrawItems = materialDiagnostics.reduce((total, diagnostic) => {
+      if (getString(diagnostic, "assetId") === "product-configurator-studio-blender") return total;
+      return total + (getNumber(diagnostic, "colorBearingTextureDrawItems") ?? 0);
     }, 0);
     if (authoredDrawItems > 0 && texturedDrawItems <= 0) {
       blockers.push("product-configurator has authored product geometry but zero texture-backed material draw items; this cannot be promoted as a premium PBR configurator screenshot.");
     }
-    if (authoredDrawItems > 0 && nonStudioTexturedDrawItems <= 0) {
-      blockers.push("product-configurator has no texture-backed non-studio hero GLB evidence; support/scaffold GLBs cannot carry premium product-configurator acceptance.");
+    if (authoredDrawItems > 0 && nonStudioEffectiveDrawItems <= 0) {
+      blockers.push("product-configurator has no effective texture-backed non-studio hero GLB evidence; support/scaffold or broad texture bindings cannot carry premium product-configurator acceptance.");
+    }
+    if (authoredDrawItems > 0 && nonStudioColorBearingDrawItems <= 0) {
+      blockers.push("product-configurator has no color-bearing non-studio product texture evidence; scalar/detail-only texture bindings cannot carry premium product-configurator acceptance.");
     }
   }
   if (demoId === "data-galaxy") {
     const authoredDrawItems = getNumber(authored, "drawItems") ?? materialDiagnostics.reduce((total, diagnostic) => total + (getNumber(diagnostic, "drawItems") ?? 0), 0);
-    const texturedDrawItems = materialDiagnostics.reduce((total, diagnostic) => total + (getNumber(diagnostic, "texturedDrawItems") ?? 0), 0);
-    if (authoredDrawItems > 0 && texturedDrawItems <= 0) {
-      blockers.push("data-galaxy active authored GLBs have zero texture-backed material draw items; this route cannot be accepted as premium showcase content until the focal subject is high-fidelity or the claim is strictly procedural-particle only.");
+    const effectiveDrawItems = materialDiagnostics.reduce((total, diagnostic) => total + (getNumber(diagnostic, "effectiveTextureBackedDrawItems") ?? 0), 0);
+    if (authoredDrawItems > 0 && effectiveDrawItems <= 0) {
+      blockers.push("data-galaxy active authored GLBs have zero effective texture-contribution draw items; this route cannot be accepted as premium showcase content until the focal subject is high-fidelity or the claim is strictly procedural-particle only.");
     }
   }
   return blockers;
@@ -1367,6 +1386,10 @@ function readMaterialDiagnostics(authored: JsonRecord): readonly AuthoredMateria
     drawItems: getNumber(diagnostic, "drawItems"),
     skinnedDrawItems: getNumber(diagnostic, "skinnedDrawItems"),
     texturedDrawItems: getNumber(diagnostic, "texturedDrawItems"),
+    baseColorTextureDrawItems: getNumber(diagnostic, "baseColorTextureDrawItems"),
+    colorBearingTextureDrawItems: getNumber(diagnostic, "colorBearingTextureDrawItems"),
+    surfaceDetailTextureDrawItems: getNumber(diagnostic, "surfaceDetailTextureDrawItems"),
+    effectiveTextureBackedDrawItems: getNumber(diagnostic, "effectiveTextureBackedDrawItems"),
     texturedSkinnedDrawItems: getNumber(diagnostic, "texturedSkinnedDrawItems"),
     untexturedSkinnedDrawItems: getNumber(diagnostic, "untexturedSkinnedDrawItems"),
     fallbackWhiteDrawItems: getNumber(diagnostic, "fallbackWhiteDrawItems"),
@@ -1386,6 +1409,8 @@ function readGateMaterialDiagnostics(authored: JsonRecord): readonly {
   readonly assetId?: string;
   readonly drawItems?: number;
   readonly texturedDrawItems?: number;
+  readonly colorBearingTextureDrawItems?: number;
+  readonly effectiveTextureBackedDrawItems?: number;
   readonly fallbackWhiteDrawItems?: number;
   readonly missingGeometryDrawItems?: number;
   readonly missingMaterialDrawItems?: number;
@@ -1394,6 +1419,8 @@ function readGateMaterialDiagnostics(authored: JsonRecord): readonly {
     assetId: getString(diagnostic, "assetId"),
     drawItems: getNumber(diagnostic, "drawItems"),
     texturedDrawItems: getNumber(diagnostic, "texturedDrawItems"),
+    colorBearingTextureDrawItems: getNumber(diagnostic, "colorBearingTextureDrawItems"),
+    effectiveTextureBackedDrawItems: getNumber(diagnostic, "effectiveTextureBackedDrawItems"),
     fallbackWhiteDrawItems: getNumber(diagnostic, "fallbackWhiteDrawItems"),
     missingGeometryDrawItems: getNumber(diagnostic, "missingGeometryDrawItems"),
     missingMaterialDrawItems: getNumber(diagnostic, "missingMaterialDrawItems")

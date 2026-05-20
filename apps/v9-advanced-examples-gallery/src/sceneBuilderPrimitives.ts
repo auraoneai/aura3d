@@ -6,6 +6,7 @@ import {
   UnlitMaterial,
   type Bounds3,
   type CollectedLight,
+  type EnvironmentStage,
   type RenderItem,
   type RendererPostProcessOptions
 } from "@galileo3d/rendering";
@@ -72,6 +73,8 @@ export interface Resources {
   };
   readonly material: Record<string, Material | PBRMaterial | UnlitMaterial | InstancedPBRMaterial>;
   readonly pointClouds: Map<string, Geometry>;
+  readonly dataGalaxyOverlayGeometries: Map<string, Geometry>;
+  readonly environmentStages: Map<string, EnvironmentStage>;
 }
 
 export function item(

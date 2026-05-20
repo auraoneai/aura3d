@@ -12,6 +12,7 @@ import { readV6PngStats } from "../../tools/v6-report-bridge/pngStats";
 type DemoId = typeof DEMO_DEFINITIONS[number]["id"];
 const DEMO_IDS: readonly DemoId[] = DEMO_DEFINITIONS.map((demo) => demo.id);
 const evidenceMode = process.env.G3D_ADVANCED_GALLERY_EVIDENCE_MODE === "full-gallery" ? "full-gallery" : "focused-route";
+const ADVANCED_GALLERY_FULL_REPORT_DIR = "tests/reports/v9/advanced-examples-gallery";
 
 interface AdvancedGalleryRuntime {
   readonly status: "loading" | "ready" | "running" | "error";
@@ -136,6 +137,10 @@ interface AdvancedGalleryRuntime {
       readonly acceptableAsFocalHero?: boolean;
       readonly textureBacked?: boolean;
       readonly generatedNoTexture?: boolean;
+      readonly semanticRoles?: readonly string[];
+      readonly supportScaffoldRoles?: readonly string[];
+      readonly defaultExcludedRoles?: readonly string[];
+      readonly textureBackedFocalMaterials?: readonly string[];
       readonly knownLimitations?: readonly string[];
     }[];
     readonly materialDiagnostics: readonly {
@@ -145,12 +150,19 @@ interface AdvancedGalleryRuntime {
       readonly drawItems: number;
       readonly skinnedDrawItems: number;
       readonly texturedDrawItems: number;
+      readonly baseColorTextureDrawItems?: number;
+      readonly colorBearingTextureDrawItems?: number;
+      readonly surfaceDetailTextureDrawItems?: number;
+      readonly effectiveTextureBackedDrawItems?: number;
       readonly texturedSkinnedDrawItems: number;
       readonly untexturedSkinnedDrawItems: number;
       readonly fallbackWhiteDrawItems: number;
       readonly renderableBindingCount: number;
       readonly materialOverrideTargetCount: number;
       readonly materialOverrideSource: "GLTFRenderResources.collectMaterialOverrideTargets" | "not-applicable";
+      readonly excludedNodeCount?: number;
+      readonly excludedNodeSample?: readonly string[];
+      readonly excludedNodeSemanticRoles?: readonly string[];
       readonly fallbackWhiteLabels: readonly string[];
       readonly textureBackedMaterialNames: readonly string[];
       readonly untexturedSkinnedLabels: readonly string[];
@@ -334,10 +346,13 @@ test.describe("V9 advanced examples gallery", () => {
         assertMeasuredPerformanceEvidence(demo, runtimeAfterMotion);
         expect(motion.changedRatio, `${demo} visible motion changed ratio`).toBeGreaterThan(minimumMotionRatio(demo));
 
-        const screenshotPath = `tests/reports/v9/advanced-examples-gallery/${demo}.png`;
-        const viewportScreenshotPath = `tests/reports/v9/advanced-examples-gallery/${demo}-viewport.png`;
-        const heroScreenshotPath = `tests/reports/v9/advanced-examples-gallery/${demo}-hero.png`;
-        mkdirSync(join(process.cwd(), "tests/reports/v9/advanced-examples-gallery"), { recursive: true });
+        const reportDir = evidenceMode === "full-gallery"
+          ? ADVANCED_GALLERY_FULL_REPORT_DIR
+          : `${ADVANCED_GALLERY_FULL_REPORT_DIR}/focused/${demo}`;
+        const screenshotPath = `${reportDir}/${demo}.png`;
+        const viewportScreenshotPath = `${reportDir}/${demo}-viewport.png`;
+        const heroScreenshotPath = `${reportDir}/${demo}-hero.png`;
+        mkdirSync(join(process.cwd(), reportDir), { recursive: true });
         let nextCaptureFrame = runtimeAfterMotion.frameCount + 1;
         const fullCaptureReadiness = await captureScreenshot(page, demo, "full", nextCaptureFrame, { path: screenshotPath, fullPage: true });
         nextCaptureFrame = fullCaptureReadiness.frameCount + 1;
@@ -368,13 +383,13 @@ test.describe("V9 advanced examples gallery", () => {
           expect(stats.localContrast).toBeGreaterThan(8);
         }
         nextCaptureFrame = heroCaptureReadiness.frameCount + 1;
-        const rendererEnvironmentBackgroundVisualDeltaEvidence = await captureRendererEnvironmentBackgroundVisualDeltaEvidence(page, demo, nextCaptureFrame);
+        const rendererEnvironmentBackgroundVisualDeltaEvidence = await captureRendererEnvironmentBackgroundVisualDeltaEvidence(page, demo, nextCaptureFrame, reportDir);
         if (rendererEnvironmentBackgroundVisualDeltaEvidence) nextCaptureFrame = rendererEnvironmentBackgroundVisualDeltaEvidence.backgroundOnCaptureReadiness.frameCount + 1;
-        const rendererFogVisualDeltaEvidence = await captureRendererFogVisualDeltaEvidence(page, demo, nextCaptureFrame);
+        const rendererFogVisualDeltaEvidence = await captureRendererFogVisualDeltaEvidence(page, demo, nextCaptureFrame, reportDir);
         await expect(page.locator("#loading")).toBeHidden();
 
         writeFileSync(
-          `tests/reports/v9/advanced-examples-gallery/${demo}.json`,
+          `${reportDir}/${demo}.json`,
           `${JSON.stringify({
             schema: "g3d-v9-advanced-gallery-route-report/v1",
             capturedAt: new Date().toISOString(),
@@ -757,14 +772,15 @@ function assertRendererEnvironmentFogRuntime(demo: DemoId, runtime: AdvancedGall
 async function captureRendererEnvironmentBackgroundVisualDeltaEvidence(
   page: Page,
   demo: DemoId,
-  minimumFrameCount: number
+  minimumFrameCount: number,
+  reportDir: string
 ): Promise<RendererEnvironmentBackgroundVisualDeltaEvidence | null> {
   if (!isRendererEnvironmentBackgroundRoute(demo)) return null;
   const runtime = await readRuntime(page);
   assertRendererEnvironmentBackgroundRuntime(demo, runtime);
   if (!runtime.environmentBackground) throw new Error(`${demo} missing renderer environment background evidence before visual-delta capture.`);
 
-  const basePath = `tests/reports/v9/advanced-examples-gallery/${demo}`;
+  const basePath = `${reportDir}/${demo}`;
   const backgroundOffPath = `${basePath}-renderer-environment-background-off.png`;
   const backgroundOnPath = `${basePath}-renderer-environment-background-on.png`;
   const minimumChangedRatio = demo === "data-galaxy" ? 0.0012 : 0.0006;
@@ -821,14 +837,15 @@ async function setRendererEnvironmentBackgroundProofMode(page: Page, mode: Rende
 async function captureRendererFogVisualDeltaEvidence(
   page: Page,
   demo: DemoId,
-  minimumFrameCount: number
+  minimumFrameCount: number,
+  reportDir: string
 ): Promise<RendererFogVisualDeltaEvidence | null> {
   if (demo !== "fog-cathedral" && demo !== "robotics-lab") return null;
   const runtime = await readRuntime(page);
   assertRendererEnvironmentFogRuntime(demo, runtime);
   if (!runtime.environmentFog) throw new Error(`${demo} missing renderer fog evidence before visual-delta capture.`);
 
-  const basePath = `tests/reports/v9/advanced-examples-gallery/${demo}`;
+  const basePath = `${reportDir}/${demo}`;
   const fogOffPath = `${basePath}-renderer-fog-off.png`;
   const fogOnPath = `${basePath}-renderer-fog-on.png`;
   const minimumChangedRatio = demo === "fog-cathedral" ? 0.0015 : 0.00035;
@@ -1130,7 +1147,12 @@ function assertAuthoredRouteRuntime(demo: DemoId, runtime: AdvancedGalleryRuntim
 	      && diagnostic.enabled === true
 	      && diagnostic.angularVelocityRadiansPerSecond > 0
 	    ), `${demo} authored car turntable transform evidence`).toBe(true);
-	    expect(diagnostics.some((diagnostic) => diagnostic.assetId === "car-concept" && diagnostic.texturedDrawItems >= 80), `${demo} texture-backed car diagnostics`).toBe(true);
+	    expect(diagnostics.some((diagnostic) =>
+	      diagnostic.assetId === "car-concept"
+	      && diagnostic.texturedDrawItems >= 80
+	      && (diagnostic.effectiveTextureBackedDrawItems ?? 0) >= 80
+	      && (diagnostic.colorBearingTextureDrawItems ?? 0) > 0
+	    ), `${demo} texture-backed car diagnostics`).toBe(true);
 	    expect(diagnostics.some((diagnostic) => diagnostic.assetId === "chronograph-watch" && diagnostic.drawItems > 0 && diagnostic.textureCount > 0), `${demo} texture-backed watch diagnostics`).toBe(true);
 	    expect(diagnostics.some((diagnostic) => diagnostic.assetId === "materials-variants-shoe" && diagnostic.drawItems > 0 && diagnostic.textureCount > 0), `${demo} texture-backed shoe diagnostics`).toBe(true);
 	    expect((authored?.materialVariants ?? []).some((variant) => variant.assetId === "car-concept" && variant.selected === "Carmine Candy"), `${demo} car material variant evidence`).toBe(true);
@@ -1149,8 +1171,14 @@ function assertAuthoredRouteRuntime(demo: DemoId, runtime: AdvancedGalleryRuntim
       supportOnly: true,
       acceptableAsFocalHero: false,
       textureBacked: true,
-      generatedNoTexture: false
+      generatedNoTexture: false,
+      semanticRoles: expect.arrayContaining(["focal-core", "semantic-cluster", "signal-bead"]),
+      supportScaffoldRoles: [],
+      defaultExcludedRoles: expect.arrayContaining(["focal-core", "support-scaffold", "debug-axis"]),
+      textureBackedFocalMaterials: expect.arrayContaining(["cyan neural emission"])
     });
+    const dataCoreDiagnostics = authored?.materialDiagnostics.find((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender");
+    expect(dataCoreDiagnostics?.excludedNodeSemanticRoles, `${demo} generated support scaffold semantic exclusions`).toEqual(expect.arrayContaining(["focal-core"]));
   }
 }
 

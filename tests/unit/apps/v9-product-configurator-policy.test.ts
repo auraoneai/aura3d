@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import {
   applyProductConfiguratorRuntimeMaterialControls,
+  createProductConfiguratorShowcaseLayout,
   explodedProductPartOffset,
   focusPartForProductConfiguratorImportedLabel,
   isGeneratedProductConfiguratorFixtureAssetId,
@@ -55,6 +56,7 @@ describe("v9 product configurator policy", () => {
 
   it("pins the active product route to original texture-backed product GLBs", () => {
     const ids = configuredAuthoredAssetIdsForDemo("product-configurator");
+    const layout = createProductConfiguratorShowcaseLayout();
 
     expect(ids).toEqual([
       "chronograph-watch",
@@ -62,6 +64,12 @@ describe("v9 product configurator policy", () => {
       "sunglasses-khronos",
       "materials-variants-shoe"
     ]);
+    expect(layout.items.map((item) => item.assetId)).toEqual(ids);
+    expect(layout.items.find((item) => item.assetId === "car-concept")?.targetHeight).toBe(0.86);
+    expect(layout.items.find((item) => item.assetId === "chronograph-watch")?.position).toEqual([-2.28, -0.86, -0.72]);
+    expect(layout.items.find((item) => item.assetId === "sunglasses-khronos")?.targetHeight).toBe(0.11);
+    expect(layout.items.find((item) => item.assetId === "materials-variants-shoe")?.position).toEqual([2.34, -0.86, 0.58]);
+    expect(layout.frame.heroPaddingRatio).toBe(0.012);
     expect(ids.every(isProductConfiguratorOriginalProductAssetId)).toBe(true);
     expect(ids.some(isGeneratedProductConfiguratorFixtureAssetId)).toBe(false);
 
