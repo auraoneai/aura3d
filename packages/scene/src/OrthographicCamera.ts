@@ -12,7 +12,10 @@ export interface OrthographicCameraOptions {
   near?: number;
   far?: number;
   zoom?: number;
+  resizeMode?: OrthographicResizeMode;
 }
+
+export type OrthographicResizeMode = "fit-vertical" | "fit-horizontal" | "preserve-frustum";
 
 export class OrthographicCamera extends Camera {
   left: number;
@@ -22,6 +25,7 @@ export class OrthographicCamera extends Camera {
   near: number;
   far: number;
   zoom: number;
+  resizeMode: OrthographicResizeMode;
 
   constructor(options: OrthographicCameraOptions = {}) {
     super(options.name ?? "OrthographicCamera", options.id);
@@ -32,6 +36,7 @@ export class OrthographicCamera extends Camera {
     this.near = options.near ?? 0.1;
     this.far = options.far ?? 1000;
     this.zoom = options.zoom ?? 1;
+    this.resizeMode = options.resizeMode ?? "fit-vertical";
     this.projectionMatrix = this.computeProjectionMatrix();
   }
 
@@ -42,9 +47,27 @@ export class OrthographicCamera extends Camera {
 
   resize(width: number, height: number): void {
     if (width <= 0 || height <= 0) throw new ValidationError("CAMERA_RESIZE", "Orthographic resize dimensions must be positive.");
+    const aspect = width / height;
+    const centerX = (this.left + this.right) / 2;
+    const centerY = (this.bottom + this.top) / 2;
+    const halfWidth = (this.right - this.left) / 2;
     const halfHeight = (this.top - this.bottom) / 2;
-    const halfWidth = halfHeight * (width / height);
-    this.left = -halfWidth;
-    this.right = halfWidth;
+    if (this.resizeMode === "fit-horizontal") {
+      const resizedHalfHeight = halfWidth / aspect;
+      this.bottom = centerY - resizedHalfHeight;
+      this.top = centerY + resizedHalfHeight;
+    } else if (this.resizeMode === "preserve-frustum") {
+      const resizedHalfWidth = Math.max(halfWidth, halfHeight * aspect);
+      const resizedHalfHeight = Math.max(halfHeight, halfWidth / aspect);
+      this.left = centerX - resizedHalfWidth;
+      this.right = centerX + resizedHalfWidth;
+      this.bottom = centerY - resizedHalfHeight;
+      this.top = centerY + resizedHalfHeight;
+    } else {
+      const resizedHalfWidth = halfHeight * aspect;
+      this.left = centerX - resizedHalfWidth;
+      this.right = centerX + resizedHalfWidth;
+    }
+    this.updateCameraMatrices();
   }
 }

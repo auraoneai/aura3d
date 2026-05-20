@@ -1,25 +1,81 @@
 # Engine Lifecycle
 
-Galileo3D applications are expected to make lifecycle ownership explicit. The app creates runtime objects, advances them from its loop or test harness, records diagnostics, and disposes browser resources when the view is torn down.
+Version: `0.1.0-alpha.0`
 
-## Startup Boundary
+Galileo3D applications should make ownership explicit: create browser resources deliberately, advance systems from a known loop, collect diagnostics, and dispose GPU/audio/listener resources when the view unmounts.
 
-Startup usually has three steps:
+## Startup
 
-1. Create or locate the host browser surface, such as a `<canvas>`.
-2. Create package-level systems through public APIs, for example `Renderer.create(...)`, `PhysicsWorld`, `AssetManager`, or editor runtime objects.
-3. Load or construct scene content, then render or step the systems from an application-owned loop.
+Typical startup has four steps:
 
-The renderer does not own the whole page. Framework templates should keep DOM lifecycle, routing, and hot reload in the framework layer while Galileo3D owns graphics resources attached to the canvas.
+1. Create or locate the host surface, usually a `<canvas>`.
+2. Create app/runtime systems with public APIs such as `createG3DApp(...)`, `G3DRenderer.create(...)`, `Renderer.create(...)`, `AssetManager`, or `PhysicsWorld`.
+3. Load or construct scene content.
+4. Render once for a deterministic preview or start an application-owned frame loop.
 
-## Frame Boundary
+High-level app path:
 
-A typical frame updates input, simulation, animation, scene transforms, and rendering in that order. Tests and examples may use one-shot rendering for deterministic smoke checks, but interactive apps should keep timing and scheduling in application code or the core engine loop.
+```ts
+import { createG3DApp } from "@galileo3d/engine";
 
-## Disposal Boundary
+const app = await createG3DApp({ canvas, quality: "balanced" });
+await app.renderWorkflow("scene-showcase", { preset: "gallery" });
+```
 
-Browser GPU and audio resources must be treated as finite. Dispose renderer resources, release loaded assets, and remove event listeners when a component unmounts or an editor preview is recreated.
+Direct runtime path:
 
-## Current Limits
+```ts
+import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
 
-Lifecycle hardening is not a production claim yet. Context-loss recovery, long-running hot reload cycles, and device recreation remain tracked by the v2 checklist and `docs/known-limits.md`.
+const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
+const scene = new G3DScene();
+renderer.render(scene);
+```
+
+## Frame Ownership
+
+Interactive apps normally update in this order:
+
+1. input;
+2. fixed-step simulation or physics;
+3. animation sampling;
+4. scene transforms and bounds;
+5. render submission;
+6. diagnostics and UI.
+
+Galileo3D exposes pieces of this loop, but your app still owns UI state, route changes, framework hooks, and data loading.
+
+## Disposal
+
+Browser GPU memory is not reclaimed just because JavaScript objects are unreachable. Dispose the runtime that created GPU resources:
+
+```ts
+await app.dispose();
+renderer.dispose();
+physicsWorld.clear();
+```
+
+Also remove event listeners, abort outstanding asset loads, and release editor previews when replacing canvases during hot reload.
+
+## Diagnostics
+
+Use diagnostics snapshots to prove route behavior and detect leaks:
+
+- app diagnostics from `createG3DApp`;
+- renderer diagnostics from render calls;
+- asset diagnostics from loaded resources;
+- route-health reports under `tests/reports`.
+
+Diagnostics are evidence for the measured route. They are not broad production-readiness proof.
+
+## Boundaries
+
+Current lifecycle work does not yet prove:
+
+- long-running production soak stability;
+- complete context-loss recovery;
+- complete WebGPU device recreation;
+- production memory behavior across every browser/GPU pair.
+
+Keep lifecycle claims tied to tests and routes.
+

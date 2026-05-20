@@ -14,6 +14,7 @@
 - `Diagnostics`: structured metric/counter snapshot support.
 - `Logger`: scoped runtime logging abstraction.
 - `DisposableStack`, `ResourceScope`: deterministic LIFO cleanup primitives.
+- `VersionedSchema`, `MigrationRegistry`, `SaveSlot`: browser-independent schema validation, save-data migration, and save-slot metadata/data snapshots.
 - `ValidationError`, `LifecycleError`: typed error classes for invalid configuration, graph, and lifecycle operations.
 
 ## Lifecycle Contract
@@ -43,6 +44,7 @@ Lifecycle, scheduler, fixed-step, plugin rollback, deterministic manual stepping
 - `tests/unit/core/scheduler-engine.test.ts`
 - `tests/unit/core/config-time.test.ts`
 - `tests/unit/core/events-disposal-diagnostics.test.ts`
+- `tests/unit/core/versioned-serialization.test.ts`
 - `tests/integration/engine-loop.test.ts`
 - `tests/browser/core-raf-loop.spec.ts`
 

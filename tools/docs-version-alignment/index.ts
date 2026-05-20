@@ -19,20 +19,20 @@ interface PackageApi {
 
 const versionedDocs = [
   "CHANGELOG.md",
-  "SECURITY.md",
-  "SUPPORT.md",
+  "docs/project/security-policy.md",
+  "docs/project/support-policy.md",
   "CONTRIBUTING.md",
-  "docs/claim-guidelines.md",
-  "docs/compatibility.md",
-  "docs/migration.md",
-  "docs/release-checklist.md",
-  "docs/release-process.md",
-  "docs/site-map.md"
+  "docs/project/claim-guidelines.md",
+  "docs/project/compatibility.md",
+  "docs/project/migration.md",
+  "docs/project/release-checklist.md",
+  "docs/project/release-process.md",
+  "docs/project/site-map.md"
 ] as const;
 
 const tutorialDocs = [
-  "docs/tutorials/getting-started-real-scene.md",
-  "docs/tutorials/product-configurator.md"
+  "docs/project/tutorials-getting-started-real-scene.md",
+  "docs/project/tutorials-product-configurator.md"
 ] as const;
 
 const exampleDocs = [
@@ -78,7 +78,7 @@ export function validateDocsVersionAlignment(root = process.cwd()): DocsVersionA
     violations.push(`CHANGELOG.md is missing section ## ${version}.`);
   }
 
-  for (const path of [...tutorialDocs, ...exampleDocs, "docs/site-map.md"]) {
+  for (const path of [...tutorialDocs, ...exampleDocs, "docs/project/site-map.md"]) {
     checkedFiles.add(path);
     const text = readText(root, path);
     for (const linkedPath of extractMarkdownLinks(path, text)) {

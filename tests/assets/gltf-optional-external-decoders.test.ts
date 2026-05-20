@@ -11,12 +11,19 @@ import {
 const khronosRevision = "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf";
 const meshoptCubeTestUrl = `https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/${khronosRevision}/Models/MeshoptCubeTest/glTF/MeshoptCubeTest.gltf`;
 const duckDracoUrl = `https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/${khronosRevision}/Models/Duck/glTF-Draco/Duck.gltf`;
+const runNetworkAssetTests = process.env.GALILEO3D_RUN_NETWORK_ASSET_TESTS === "1";
 
 const meshoptimizer = await optionalImport<Record<string, unknown>>("meshoptimizer");
 const draco3d = await optionalImport<Record<string, unknown>>("draco3d");
 
 describe("optional external glTF decoder package integration", () => {
-  const meshoptIt = meshoptimizer ? it : it.skip;
+  it("keeps network-backed decoder fixture tests opt-in", () => {
+    expect(typeof runNetworkAssetTests).toBe("boolean");
+    expect(meshoptCubeTestUrl).toContain(khronosRevision);
+    expect(duckDracoUrl).toContain(khronosRevision);
+  });
+
+  const meshoptIt = meshoptimizer && runNetworkAssetTests ? it : it.skip;
   meshoptIt("loads the Khronos MeshoptCubeTest asset with the real meshoptimizer package", async () => {
     const decoderModule = resolveMeshoptModule(meshoptimizer!);
     const asset = await new GLTFLoader({
@@ -27,7 +34,7 @@ describe("optional external glTF decoder package integration", () => {
     expect(asset.meshes[0]?.positions.length).toBeGreaterThan(0);
   });
 
-  const dracoIt = draco3d ? it : it.skip;
+  const dracoIt = draco3d && runNetworkAssetTests ? it : it.skip;
   dracoIt("loads the Khronos Duck Draco asset with the real draco3d package", async () => {
     const decoderModule = await resolveDracoModule(draco3d!);
     const asset = await new GLTFLoader({

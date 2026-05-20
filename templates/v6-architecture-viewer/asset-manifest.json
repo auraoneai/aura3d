@@ -1,0 +1,9 @@
+{
+  "schema": "g3d-v6-template-assets/v1",
+  "fetchInstructions": "Serve the V6 fixture assets at /fixtures/v6 or copy the listed files into that same public path before running the template.",
+  "assets": [
+    { "id": "antique-camera", "path": "fixtures/v6/assets/corpus/antique-camera.glb", "sha256": "ae89695479ad997f09ebea8060a5ad01312ad8fe7ffb92f73b4e895109feecd2" },
+    { "id": "avocado", "path": "fixtures/v6/assets/corpus/avocado.glb", "sha256": "ccc9c3ce56423720b09399c2351537207cd5a65f859f9e6e2f30922762f3abd4" },
+    { "id": "kloppenheim-puresky", "path": "fixtures/v6/environments/hdri/kloppenheim_06_puresky_1k.hdr", "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34" }
+  ]
+}

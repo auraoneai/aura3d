@@ -42,6 +42,20 @@ test.describe("animated character examples", () => {
     expect(state?.handOffset?.[1] ?? 0).toBeGreaterThan(0.05);
     expect(state?.graph.states.map((entry) => entry.name)).toEqual(["idle", "walk", "wave"]);
     expect(state?.graph.transitions.some((transition) => transition.label === "wave requested")).toBe(true);
+    expect(state?.blendTreeWeight).toBeCloseTo(0.65);
+    expect(state?.eventLog.some((entry) => entry.includes("footstep") || entry.includes("wave-apex"))).toBe(true);
+    await page.locator("[data-testid='blend-tree-weight']").evaluate((element) => {
+      const input = element as HTMLInputElement;
+      input.value = "0.85";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await page.locator("[data-testid='state-debug-mode']").selectOption("wave");
+    await page.waitForFunction(() => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?.debugStateMode === "wave");
+    const controlled = await page.evaluate(() => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__);
+    expect(controlled?.blendTreeWeight).toBeCloseTo(0.85);
+    expect(controlled?.debugStateMode).toBe("wave");
+    expect(controlled?.eventLog.length ?? 0).toBeGreaterThan(0);
+    await expect(page.locator("[data-testid='animation-event-log']")).toContainText(/footstep|wave-apex/);
     expect(await hasNonBlank2dPixels(page)).toBe(true);
   });
 
@@ -111,6 +125,9 @@ declare global {
       readonly paletteJointCount: number;
       readonly paletteHandTranslation: readonly [number, number, number];
       readonly mixerActionCount: number;
+      readonly blendTreeWeight: number;
+      readonly debugStateMode: "auto" | "idle" | "walk" | "wave";
+      readonly eventLog: readonly string[];
       readonly graph: {
         readonly states: readonly { readonly name: string; readonly current: boolean; readonly transitionCount: number }[];
         readonly transitions: readonly { readonly from: string; readonly to: string; readonly label: string; readonly exitTime?: number }[];

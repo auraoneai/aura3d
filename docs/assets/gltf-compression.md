@@ -1,6 +1,6 @@
 # glTF Compression Decoder Status
 
-This page records the asset-pipeline compression behavior verified in the v2 asset slice.
+This page records the current asset-pipeline compression behavior. The code supports bounded Draco, Meshopt, and KTX2/Basis paths, but the claim remains narrower than full production asset compatibility.
 
 ## Geometry Compression
 
@@ -37,15 +37,31 @@ Current supported path:
 - `createGLTFRenderResources({ ktx2BasisTargetFormat })` can request `etc2-rgba8unorm`, `bc3-rgba-unorm`, `astc-4x4-rgba-unorm`, or `rgba8`.
 - Compressed targets include RGBA8 fallback mip levels for devices that cannot upload the requested compressed format.
 
-Current limits:
+## Current Route Evidence
+
+The v8 loader route set includes:
+
+- `apps/v8-loader-compression`;
+- `apps/v8-loader-ktx2`;
+- `apps/v8-loader-instancing`;
+- `apps/v8-loader-material-extensions`;
+- `apps/v8-loader-gltf-variants`;
+- `apps/v8-loader-obj`.
+
+Screenshots for those routes are included under `tests/reports/v8/loaders`, and `tests/reports/v8-visual-review.json` accepts them as route evidence. This proves routes exist and render meaningful output; it is not broad loader parity.
+
+## Current limits
 
 - This is a bounded runtime texture path, not a broad production asset-pipeline claim.
 - Renderer capability-driven GPU format choice is not yet integrated into the asset path.
 - Browser deployments must make the loaders.gl Basis encoder WASM assets reachable, either through the default CDN behavior or bundler-specific asset hosting.
 - Current verification uses a small real Khronos KTX2 fixture, not a broad KTX2/Basis corpus or visual parity matrix.
+- Native FBX, USD/USDZ, DAE, and full DCC pipeline compatibility are not implemented. OBJ is a bounded geometry-only native loader path.
 
 ## Verification
 
 - `tests/assets/gltf-compression-decoders.test.ts` proves Meshopt and Draco hook routing, missing-decoder diagnostics, and KTX2/Basis transcoding into renderer texture resources with compressed mips and RGBA8 fallback mips.
 - `tests/assets/gltf-optional-external-decoders.test.ts` is an executable package-backed integration test. In the checked-in dev environment it loads pinned Khronos Meshopt and Draco assets through `meshoptimizer` and `draco3d`. It still skips honestly if a downstream installation removes either optional package.
 - `tests/assets/asset-cache-scale.test.ts` proves cache diagnostics, duplicate in-flight load sharing, retry recovery, dependency cleanup, and aborted-load cleanup at bounded scale.
+- `tests/reports/v8-assets.json`
+- `tests/reports/v8-visual-review.json`

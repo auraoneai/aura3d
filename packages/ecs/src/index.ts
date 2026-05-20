@@ -16,3 +16,6 @@ export * from "./ECSProfiler.js";
 export * from "./components/TransformComponent.js";
 export * from "./components/NameComponent.js";
 export * from "./components/TagComponent.js";
+export * from "./components/ActiveComponent.js";
+export * from "./components/HierarchyComponent.js";
+export * from "./systems/index.js";

@@ -1,6 +1,7 @@
 import {
   DEFAULT_TEXTURED_UNLIT_SHADER_NAME,
   Geometry,
+  IndexBuffer,
   InstancedPBRMaterial,
   InstancedUnlitMaterial,
   Material,
@@ -9,14 +10,18 @@ import {
   PBRMaterial,
   Renderer,
   Sampler,
+  ShadowPass,
   Texture,
   TextureBinding,
+  TexturedPBRMaterial,
   TexturedUnlitMaterial,
   UnlitMaterial,
+  VertexBuffer,
+  VertexFormat,
   createRenderDevice,
   type RenderDeviceDiagnostics
 } from "@galileo3d/rendering";
-import { PointLight, Renderable, Scene, SpotLight } from "@galileo3d/scene";
+import { DirectionalLight, PointLight, Renderable, Scene, SpotLight } from "@galileo3d/scene";
 
 declare global {
   interface Window {
@@ -34,6 +39,7 @@ export interface RenderingHarnessResult {
   readonly pbrSphereDiagnostics?: RenderDeviceDiagnostics;
   readonly litCubeDiagnostics?: RenderDeviceDiagnostics;
   readonly texturedCubeDiagnostics?: RenderDeviceDiagnostics;
+  readonly texturedPbrNoTangentDiagnostics?: RenderDeviceDiagnostics;
   readonly textureFallbackDiagnostics?: RenderDeviceDiagnostics;
   readonly normalMapDiagnostics?: RenderDeviceDiagnostics;
   readonly morphSceneDiagnostics?: RenderDeviceDiagnostics;
@@ -53,6 +59,7 @@ export interface RenderingHarnessResult {
   readonly pbrSphereRimPixel?: readonly number[];
   readonly litCubePixel?: readonly number[];
   readonly texturedCubePixel?: readonly number[];
+  readonly texturedPbrNoTangentPixel?: readonly number[];
   readonly textureFallbackPixel?: readonly number[];
   readonly normalMapPixel?: readonly number[];
   readonly morphScenePixel?: readonly number[];
@@ -65,9 +72,17 @@ export interface RenderingHarnessResult {
   readonly environmentPixel?: readonly number[];
   readonly localLightPixel?: readonly number[];
   readonly outOfRangePixel?: readonly number[];
+  readonly shadowMapDiagnostics?: RenderDeviceDiagnostics;
+  readonly shadowedReceiverPixel?: readonly number[];
+  readonly litReceiverPixel?: readonly number[];
   readonly canvasFrame?: { readonly width: number; readonly height: number };
   readonly bufferReadback?: readonly number[];
   readonly renderTargetReadback?: readonly number[];
+  readonly hdrRenderTargetReadback?: readonly number[] | null;
+  readonly hdrRenderTargetFormat?: string | null;
+  readonly postprocessDepthPixel?: readonly number[];
+  readonly renderTargetViewport?: { readonly width: number; readonly height: number; readonly target: string | null };
+  readonly backbufferViewportAfterTarget?: { readonly width: number; readonly height: number; readonly target: string | null };
   readonly renderTargetDiagnostics?: RenderDeviceDiagnostics;
   readonly renderTargetAfterDispose?: RenderDeviceDiagnostics;
   readonly contextLoss?: {
@@ -180,7 +195,7 @@ async function run(): Promise<void> {
     });
     const scene = new Scene();
     const sun = scene.createLight("directional", "browser-key-light");
-    sun.intensity = 1;
+    sun.intensity = 0.32;
     sun.color = [1, 1, 1];
     scene.root.addChild(sun);
     const pbrDiagnostics = pbrRenderer.render({
@@ -188,7 +203,7 @@ async function run(): Promise<void> {
       renderItems: [
         {
           geometry: Geometry.litTriangle(),
-          material: new PBRMaterial({ baseColor: [0.8, 0.45, 0.16, 1], roughness: 0.2 }),
+          material: new PBRMaterial({ baseColor: [0.8, 0.45, 0.16, 1], roughness: 0.75 }),
           label: "browser-pbr-lit-triangle"
         }
       ]
@@ -206,7 +221,7 @@ async function run(): Promise<void> {
     });
     const sphereScene = new Scene();
     const sphereSun = sphereScene.createLight("directional", "browser-sphere-key");
-    sphereSun.intensity = 1.8;
+    sphereSun.intensity = 1.05;
     sphereSun.color = [1, 0.92, 0.82];
     sphereSun.transform.setRotation(0, 1, 0, 0);
     sphereScene.root.addChild(sphereSun);
@@ -234,7 +249,7 @@ async function run(): Promise<void> {
     });
     const cubeScene = new Scene();
     const cubeSun = cubeScene.createLight("directional", "browser-cube-key");
-    cubeSun.intensity = 1.4;
+    cubeSun.intensity = 1.15;
     cubeSun.color = [0.8, 0.95, 1];
     cubeSun.transform.setRotation(0, 1, 0, 0);
     cubeScene.root.addChild(cubeSun);
@@ -248,7 +263,7 @@ async function run(): Promise<void> {
         }
       ]
     });
-    const litCubePixel = readPixel(cubeCanvas, 48, 48);
+    const litCubePixel = findPixel(cubeCanvas, { x: 0, y: 0, width: cubeCanvas.width, height: cubeCanvas.height }, (r, g, b) => r > 40 && g > 80 && b > 110);
     cubeRenderer.dispose();
 
     const texturedCanvas = requireCanvas("textured-cube");
@@ -271,6 +286,36 @@ async function run(): Promise<void> {
     ]);
     const texturedCubePixel = readPixel(texturedCanvas, 48, 48);
     texturedRenderer.dispose();
+
+    const texturedPbrNoTangentCanvas = requireCanvas("textured-pbr-no-tangent");
+    const texturedPbrNoTangentRenderer = await Renderer.create({
+      backend: "webgl2",
+      canvas: texturedPbrNoTangentCanvas,
+      width: texturedPbrNoTangentCanvas.width,
+      height: texturedPbrNoTangentCanvas.height,
+      clearColor: [0, 0, 0, 1]
+    });
+    const texturedPbrNoTangentScene = new Scene();
+    const texturedPbrNoTangentLight = texturedPbrNoTangentScene.createLight("directional", "browser-no-tangent-key");
+    texturedPbrNoTangentLight.intensity = 0.8;
+    texturedPbrNoTangentLight.color = [1, 0.9, 0.75];
+    texturedPbrNoTangentScene.root.addChild(texturedPbrNoTangentLight);
+    const texturedPbrNoTangentDiagnostics = texturedPbrNoTangentRenderer.render({
+      scene: texturedPbrNoTangentScene,
+      renderItems: [
+        {
+          geometry: createTexturedTriangleWithoutTangents(),
+          material: new TexturedPBRMaterial({
+            baseColorTexture: new Texture({ width: 1, height: 1, colorSpace: "srgb", data: new Uint8Array([220, 116, 42, 255]) }),
+            roughness: 0.45,
+            metallic: 0.05
+          }),
+          label: "browser-textured-pbr-no-tangent"
+        }
+      ]
+    });
+    const texturedPbrNoTangentPixel = findPixel(texturedPbrNoTangentCanvas, { x: 16, y: 18, width: 64, height: 64 }, (r, g, b, a) => r > 90 && g > 35 && b < 80 && a === 255);
+    texturedPbrNoTangentRenderer.dispose();
 
     const textureFallbackCanvas = requireCanvas("texture-fallback");
     const textureFallbackRenderer = await Renderer.create({
@@ -320,7 +365,7 @@ async function run(): Promise<void> {
     });
     const normalMapScene = new Scene();
     const normalMapLight = normalMapScene.createLight("directional", "browser-normal-map-key");
-    normalMapLight.intensity = 2.2;
+    normalMapLight.intensity = 0.7;
     normalMapLight.color = [1, 1, 1];
     normalMapLight.transform.setRotation(0, 1, 0, 0);
     normalMapScene.root.addChild(normalMapLight);
@@ -455,8 +500,8 @@ async function run(): Promise<void> {
         label: "browser-instanced-pbr-triangles"
       }
     ]);
-    const instancedPbrLeftPixel = findPixel(instancedPbrCanvas, { x: 4, y: 20, width: 24, height: 28 }, (r, g, b, a) => r < 90 && g > 130 && b > 150 && a === 255);
-    const instancedPbrRightPixel = findPixel(instancedPbrCanvas, { x: 36, y: 20, width: 24, height: 28 }, (r, g, b, a) => r < 90 && g > 130 && b > 150 && a === 255);
+    const instancedPbrLeftPixel = findPixel(instancedPbrCanvas, { x: 4, y: 20, width: 24, height: 28 }, (r, g, b, a) => r > 120 && g > r + 20 && b > r + 20 && a === 255);
+    const instancedPbrRightPixel = findPixel(instancedPbrCanvas, { x: 36, y: 20, width: 24, height: 28 }, (r, g, b, a) => r > 120 && g > r + 20 && b > r + 20 && a === 255);
     instancedPbrRenderer.dispose();
 
     const emissiveCanvas = requireCanvas("emissive");
@@ -562,10 +607,11 @@ async function run(): Promise<void> {
     localScene.root.addChild(spot);
     const localLightDiagnostics = localRenderer.render({
       scene: localScene,
+      environmentLighting: false,
       renderItems: [
         {
           geometry: Geometry.litTriangle(),
-          material: new PBRMaterial({ baseColor: [0.7, 0.7, 0.7, 1], roughness: 0.3 }),
+          material: new PBRMaterial({ baseColor: [0.7, 0.7, 0.7, 1], roughness: 0.3, environmentIntensity: 0 }),
           label: "browser-pbr-local-lights"
         }
       ]
@@ -590,10 +636,11 @@ async function run(): Promise<void> {
     outScene.root.addChild(farPoint);
     const outOfRangeDiagnostics = outRenderer.render({
       scene: outScene,
+      environmentLighting: false,
       renderItems: [
         {
           geometry: Geometry.litTriangle(),
-          material: new PBRMaterial({ baseColor: [0.7, 0.7, 0.7, 1], roughness: 0.3 }),
+          material: new PBRMaterial({ baseColor: [0.7, 0.7, 0.7, 1], roughness: 0.3, environmentIntensity: 0 }),
           label: "browser-pbr-local-out-of-range"
         }
       ]
@@ -601,19 +648,140 @@ async function run(): Promise<void> {
     const outOfRangePixel = readPixel(outCanvas, 32, 32);
     outRenderer.dispose();
 
+    const shadowCanvas = requireCanvas("shadow-map-integration");
+    const shadowRenderer = await Renderer.create({
+      backend: "webgl2",
+      canvas: shadowCanvas,
+      width: shadowCanvas.width,
+      height: shadowCanvas.height,
+      clearColor: [0, 0, 0, 1]
+    });
+    const shadowLight = new DirectionalLight("browser-shadow-light");
+    shadowLight.castsShadow = true;
+    shadowLight.intensity = 1.2;
+    shadowLight.color = [1, 1, 1];
+    const shadowScene = new Scene();
+    shadowScene.root.addChild(shadowLight);
+    const lightMatrix = identityMatrix();
+    const shadowPass = new ShadowPass({
+      light: shadowLight,
+      casters: [{
+        geometry: Geometry.litTriangle(),
+        material: new PBRMaterial({ baseColor: [0.8, 0.8, 0.8, 1] }),
+        modelMatrix: scaleTranslationMatrix(-0.38, -0.05, -0.46, 0.72, 0.72, 1),
+        label: "browser-shadow-caster"
+      }],
+      viewProjectionMatrix: lightMatrix
+    });
+    shadowRenderer.device.beginFrame(shadowCanvas.width, shadowCanvas.height);
+    const shadowResult = shadowPass.execute({ device: shadowRenderer.device, width: shadowCanvas.width, height: shadowCanvas.height });
+    shadowRenderer.device.endFrame();
+    const forwardShadowMap = shadowPass.getForwardShadowMap({
+      lightMatrix,
+      strength: 0.85,
+      bias: 0,
+      slopeBias: 0,
+      texelSize: [1 / 128, 1 / 128]
+    });
+    if (!shadowResult.rendered || !forwardShadowMap) {
+      throw new Error(`Shadow map integration setup failed: ${shadowResult.reason}`);
+    }
+    const receiverMaterial = new PBRMaterial({ baseColor: [0.72, 0.72, 0.72, 1], roughness: 0.85, environmentIntensity: 0 });
+    const shadowMapDiagnostics = shadowRenderer.render({
+      scene: shadowScene,
+      renderItems: [
+        {
+          geometry: Geometry.litTriangle(),
+          material: receiverMaterial,
+          modelMatrix: scaleTranslationMatrix(-0.38, -0.05, 0.18, 0.72, 0.72, 1),
+          label: "browser-shadowed-receiver"
+        },
+        {
+          geometry: Geometry.litTriangle(),
+          material: receiverMaterial,
+          modelMatrix: scaleTranslationMatrix(0.38, -0.05, 0.18, 0.72, 0.72, 1),
+          label: "browser-lit-receiver"
+        }
+      ],
+      shadowMap: forwardShadowMap
+    });
+    const shadowedReceiverPixel = findPixel(shadowCanvas, { x: 22, y: 30, width: 18, height: 24 }, (_r, _g, _b, a) => a === 255);
+    const litReceiverPixel = findPixel(shadowCanvas, { x: 56, y: 30, width: 18, height: 24 }, (_r, _g, _b, a) => a === 255);
+    shadowPass.dispose();
+    shadowRenderer.dispose();
+
+    const postprocessDepthCanvas = requireCanvas("postprocess-depth");
+    const postprocessDepthRenderer = await Renderer.create({
+      backend: "webgl2",
+      canvas: postprocessDepthCanvas,
+      width: postprocessDepthCanvas.width,
+      height: postprocessDepthCanvas.height,
+      clearColor: [0, 0, 0, 1]
+    });
+    postprocessDepthRenderer.render({
+      cameraPolicy: "identity",
+      renderItems: [
+        {
+          geometry: Geometry.triangle(),
+          material: new UnlitMaterial({ color: [0.02, 0.95, 0.16, 1] }),
+          modelMatrix: translationMatrix(0, 0, -0.45),
+          label: "postprocess-depth-near-green"
+        },
+        {
+          geometry: Geometry.triangle(),
+          material: new UnlitMaterial({ color: [1, 0.05, 0.02, 1] }),
+          modelMatrix: translationMatrix(0, 0, 0.45),
+          label: "postprocess-depth-far-red"
+        }
+      ],
+      postprocess: {
+        toneMapping: { exposure: 1, operator: "linear", inputColorSpace: "linear", outputColorSpace: "srgb" },
+        ssao: { radius: 1, intensity: 0.2, bias: 0.01 }
+      }
+    });
+    const postprocessDepthPixel = readPixel(postprocessDepthCanvas, 32, 32);
+    postprocessDepthRenderer.dispose();
+
     const bufferCanvas = requireCanvas("buffer");
     const device = await createRenderDevice({ backend: "webgl2", canvas: bufferCanvas });
     const gpuBuffer = device.createBuffer("vertex", 16, new Float32Array([1, 2, 3, 4]));
     const bufferReadback = Array.from(new Float32Array(device.readBuffer(gpuBuffer).buffer));
     const renderTarget = device.createRenderTarget({ width: 16, height: 16, label: "browser-offscreen-target" });
+    device.beginFrame(64, 64);
     device.setRenderTarget(renderTarget);
-    device.beginFrame(renderTarget.width, renderTarget.height);
+    const renderTargetState = device.captureState();
+    const renderTargetViewport = {
+      width: Number(renderTargetState.get("actualViewportWidth") ?? renderTargetState.get("viewportWidth") ?? 0),
+      height: Number(renderTargetState.get("actualViewportHeight") ?? renderTargetState.get("viewportHeight") ?? 0),
+      target: typeof renderTargetState.get("renderTarget") === "string" ? String(renderTargetState.get("renderTarget")) : null
+    };
     device.clear([0.2, 0.6, 0.1, 1]);
     const renderTargetReadback = Array.from(device.readPixels(8, 8, 1, 1));
+    device.setRenderTarget(null);
+    const backbufferState = device.captureState();
+    const backbufferViewportAfterTarget = {
+      width: Number(backbufferState.get("actualViewportWidth") ?? backbufferState.get("viewportWidth") ?? 0),
+      height: Number(backbufferState.get("actualViewportHeight") ?? backbufferState.get("viewportHeight") ?? 0),
+      target: typeof backbufferState.get("renderTarget") === "string" ? String(backbufferState.get("renderTarget")) : null
+    };
     device.endFrame();
     const renderTargetDiagnostics = device.getDiagnostics();
-    device.setRenderTarget(null);
     renderTarget.dispose();
+
+    let hdrRenderTargetReadback: readonly number[] | null = null;
+    let hdrRenderTargetFormat: string | null = null;
+    if (device.info.capabilities?.includes("hdr-render-targets") && device.info.capabilities?.includes("float-readback")) {
+      const hdrTarget = device.createRenderTarget({ width: 2, height: 1, label: "browser-hdr-target", format: "rgba16f", depth: false });
+      device.beginFrame(64, 64);
+      device.setRenderTarget(hdrTarget);
+      device.clear([2.5, 0.5, 0.125, 1]);
+      hdrRenderTargetReadback = Array.from(device.readFloatPixels(0, 0, 1, 1)).map((value) => Number(value.toFixed(4)));
+      hdrRenderTargetFormat = hdrTarget.colorTexture.format;
+      device.setRenderTarget(null);
+      device.endFrame();
+      hdrTarget.dispose();
+    }
+
     const renderTargetAfterDispose = device.getDiagnostics();
     device.dispose();
 
@@ -629,6 +797,7 @@ async function run(): Promise<void> {
       pbrSphereDiagnostics,
       litCubeDiagnostics,
       texturedCubeDiagnostics,
+      texturedPbrNoTangentDiagnostics,
       textureFallbackDiagnostics,
       normalMapDiagnostics,
       morphSceneDiagnostics,
@@ -648,6 +817,7 @@ async function run(): Promise<void> {
       pbrSphereRimPixel,
       litCubePixel,
       texturedCubePixel,
+      texturedPbrNoTangentPixel,
       textureFallbackPixel,
       normalMapPixel,
       morphScenePixel,
@@ -660,9 +830,17 @@ async function run(): Promise<void> {
       environmentPixel,
       localLightPixel,
       outOfRangePixel,
+      shadowMapDiagnostics,
+      shadowedReceiverPixel,
+      litReceiverPixel,
       canvasFrame: { width: renderCanvas.width, height: renderCanvas.height },
       bufferReadback,
       renderTargetReadback,
+      hdrRenderTargetReadback,
+      hdrRenderTargetFormat,
+      postprocessDepthPixel,
+      renderTargetViewport,
+      backbufferViewportAfterTarget,
       renderTargetDiagnostics,
       renderTargetAfterDispose,
       contextLoss
@@ -670,9 +848,16 @@ async function run(): Promise<void> {
   } catch (error) {
     window.__GALILEO3D_RENDERING_TEST__ = {
       status: "error",
-      error: error instanceof Error ? error.stack ?? error.message : String(error)
+      error: error instanceof Error ? `${error.stack ?? error.message}${formatErrorDiagnostics(error)}` : String(error)
     };
   }
+}
+
+function formatErrorDiagnostics(error: Error): string {
+  const diagnostics = (error as { readonly diagnostics?: unknown }).diagnostics;
+  return Array.isArray(diagnostics) && diagnostics.length > 0
+    ? `\nDiagnostics:\n${diagnostics.map((entry) => `- ${String(entry)}`).join("\n")}`
+    : "";
 }
 
 function translationMatrix(x: number, y: number, z: number): readonly number[] {
@@ -680,6 +865,15 @@ function translationMatrix(x: number, y: number, z: number): readonly number[] {
     1, 0, 0, 0,
     0, 1, 0, 0,
     0, 0, 1, 0,
+    x, y, z, 1
+  ];
+}
+
+function scaleTranslationMatrix(x: number, y: number, z: number, scaleX: number, scaleY: number, scaleZ: number): readonly number[] {
+  return [
+    scaleX, 0, 0, 0,
+    0, scaleY, 0, 0,
+    0, 0, scaleZ, 0,
     x, y, z, 1
   ];
 }
@@ -698,6 +892,20 @@ function createCheckerTexture(): Texture {
       36, 216, 108, 255
     ])
   });
+}
+
+function createTexturedTriangleWithoutTangents(): Geometry {
+  const vertices = new VertexBuffer(VertexFormat.P3N3T2, 3);
+  vertices.setAttribute(0, "position", [-0.72, -0.68, 0]);
+  vertices.setAttribute(0, "normal", [0, 0, 1]);
+  vertices.setAttribute(0, "uv", [0, 0]);
+  vertices.setAttribute(1, "position", [0.72, -0.68, 0]);
+  vertices.setAttribute(1, "normal", [0, 0, 1]);
+  vertices.setAttribute(1, "uv", [1, 0]);
+  vertices.setAttribute(2, "position", [0, 0.68, 0]);
+  vertices.setAttribute(2, "normal", [0, 0, 1]);
+  vertices.setAttribute(2, "uv", [0.5, 1]);
+  return new Geometry(vertices, new IndexBuffer([0, 1, 2], 3));
 }
 
 function createNormalMapTexture(): Texture {
@@ -800,7 +1008,20 @@ function findPixel(
       return [r, g, b, a];
     }
   }
-  return readPixel(canvas, region.x, region.y);
+  let brightest: readonly number[] = [0, 0, 0, 0];
+  let brightestEnergy = -1;
+  for (let index = 0; index < pixels.length; index += 4) {
+    const r = pixels[index] ?? 0;
+    const g = pixels[index + 1] ?? 0;
+    const b = pixels[index + 2] ?? 0;
+    const a = pixels[index + 3] ?? 0;
+    const energy = r + g + b;
+    if (energy > brightestEnergy) {
+      brightestEnergy = energy;
+      brightest = [r, g, b, a];
+    }
+  }
+  return brightest;
 }
 
 void run();

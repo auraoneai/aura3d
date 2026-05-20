@@ -9,7 +9,7 @@ All notable changes for Galileo3D are tracked here. This project follows source-
 ### Governance
 
 - Added v2 governance requirements for support, security, contribution, release, migration, compatibility, and claim-guideline documentation.
-- Public release language for this version must follow `docs/v2/claim-registry.md`.
+- Public release language for this version must follow `docs/project/v2-claim-registry.md`.
 - Strong claims such as production-ready, better than Three.js, Unity/Unreal replacement, full WebGPU support, or PBR parity remain disallowed unless the v2 gates later approve exact scoped wording.
 
 ### Release Status

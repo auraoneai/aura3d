@@ -28,7 +28,11 @@ declare global {
     __GALILEO3D_EXAMPLE__?: {
       id: string;
       status: "ready" | "error";
+      renderer: "webgl2";
       acceptance: string;
+      visualClaim: string;
+      knownLimits: readonly string[];
+      errors: readonly string[];
       diagnostics?: RenderDeviceDiagnostics;
       metrics?: MutableMetrics;
       error?: string;
@@ -50,12 +54,22 @@ const displayStats = [
   ["Runtime", "Input + audio + editor"],
 ];
 
+const knownLimits = [
+  "This is a combined bounded WebGL2 proof scene, not a flagship production visual demo.",
+  "It uses generated and inline assets for subsystem evidence and does not prove broad Three.js superiority.",
+  "Unity/Unreal-style authoring, production asset workflows, and full renderer parity remain gated elsewhere in v3 docs.",
+] as const;
+
 if (typeof document !== "undefined") {
   void runShowcase().catch((error) => {
     window.__GALILEO3D_EXAMPLE__ = {
       id: metadata.id,
       status: "error",
+      renderer: "webgl2",
       acceptance: metadata.acceptance,
+      visualClaim: metadata.purpose,
+      knownLimits,
+      errors: [error instanceof Error ? error.message : String(error)],
       error: error instanceof Error ? error.stack ?? error.message : String(error),
     };
     throw error;
@@ -377,7 +391,11 @@ async function runShowcase(): Promise<void> {
     const state = {
       id: metadata.id,
       status: "ready" as const,
+      renderer: "webgl2" as const,
       acceptance: metadata.acceptance,
+      visualClaim: metadata.purpose,
+      knownLimits,
+      errors: [],
       diagnostics,
       metrics: {
         ...metrics,

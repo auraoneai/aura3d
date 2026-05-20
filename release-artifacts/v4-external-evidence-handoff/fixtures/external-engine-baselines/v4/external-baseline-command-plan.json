@@ -1,0 +1,442 @@
+{
+  "schemaVersion": "g3d-v4-external-baseline-command-plan-v1",
+  "generatedBy": "tools/v4-external-engine-baselines/index.ts",
+  "claimBoundary": "This plan only makes Unity/Unreal baseline capture reproducible. Parity remains blocked until real Unity and Unreal editor runs produce screenshots and reports that pass the current Galileo diff gates.",
+  "requiredEnvironment": {
+    "unityEditor": "G3D_UNITY_EDITOR",
+    "unitySearchRoots": "G3D_UNITY_SEARCH_ROOTS",
+    "unrealEditor": "G3D_UNREAL_EDITOR",
+    "unrealSearchRoots": "G3D_UNREAL_SEARCH_ROOTS",
+    "cliSmokeFlag": "G3D_RUN_UNITY_UNREAL_CLI_SMOKE"
+  },
+  "reportWriter": {
+    "cliSmokeCommandTemplate": "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs <unity|unreal> [target-report-path]",
+    "commandTemplate": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs <unity|unreal> <baseline-kind> <screenshot-path> <target-report-path> [runner-evidence-path]",
+    "batchCommandTemplate": "node fixtures/external-engine-baselines/v4/write-all-baseline-reports.mjs --engine <unity|unreal|all>",
+    "dryRunCommand": "node fixtures/external-engine-baselines/v4/write-all-baseline-reports.mjs --dry-run",
+    "verifyCommandTemplate": "node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine <unity|unreal|all>",
+    "schemaPath": "fixtures/external-engine-baselines/v4/baseline-report.schema.json",
+    "evidenceChecks": [
+      "descriptorSha256 is computed from the current scene descriptor",
+      "screenshotSha256 is computed from the captured PNG bytes",
+      "runnerEvidenceSha256 is computed from the real external runner evidence sidecar",
+      "PNG width and height must exactly match the descriptor viewport/minimum evidence",
+      "nonBlankPixels and colorBuckets must satisfy descriptor minimum evidence",
+      "slot-specific metrics must come from the runner evidence sidecar and meet descriptor minimum evidence"
+    ]
+  },
+  "renderWorkflowBaselineReports": [
+    {
+      "engine": "unity",
+      "templatePath": "fixtures/external-engine-baselines/v4/unity/v4-unity-baseline-render.template.json",
+      "targetReportPath": "tests/reports/v4-unity-baseline-render.json",
+      "cliSmokeReportPath": "tests/reports/v4-unity-editor-cli-smoke.json",
+      "schemaPath": "fixtures/external-engine-baselines/v4/baseline-render-report.schema.json",
+      "cliSmokeCommand": "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-render-workflow-report.mjs unity tests/reports/v4-unity-baseline-render.json",
+      "requiredBeforeClaim": [
+        "G3D_UNITY_EDITOR points to the Unity editor used for the capture.",
+        "If G3D_UNITY_EDITOR is unset, G3D_UNITY_SEARCH_ROOTS may list colon-separated roots containing Unity Hub editor installs or Unity.app bundles.",
+        "G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true is set and the CLI smoke passes.",
+        "tests/reports/v4-unity-editor-cli-smoke.json exists and records ok=true for the same editor binary.",
+        "The Unity runner opens the baseline kit, builds descriptor scenes, captures rendered frames, and the five Unity slot baseline reports already exist and pass."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "templatePath": "fixtures/external-engine-baselines/v4/unreal/v4-unreal-baseline-render.template.json",
+      "targetReportPath": "tests/reports/v4-unreal-baseline-render.json",
+      "cliSmokeReportPath": "tests/reports/v4-unreal-editor-cli-smoke.json",
+      "schemaPath": "fixtures/external-engine-baselines/v4/baseline-render-report.schema.json",
+      "cliSmokeCommand": "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/v4-unreal-editor-cli-smoke.json",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-render-workflow-report.mjs unreal tests/reports/v4-unreal-baseline-render.json",
+      "requiredBeforeClaim": [
+        "G3D_UNREAL_EDITOR points to the Unreal editor used for the capture.",
+        "If G3D_UNREAL_EDITOR is unset, G3D_UNREAL_SEARCH_ROOTS may list colon-separated roots containing Epic Games engine installs, UnrealEditor-Cmd, or UnrealEditor.app.",
+        "G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true is set and the CLI smoke passes.",
+        "tests/reports/v4-unreal-editor-cli-smoke.json exists and records ok=true for the same editor binary.",
+        "The Unreal runner opens the baseline kit, builds descriptor scenes, captures rendered frames, and the five Unreal slot baseline reports already exist and pass."
+      ]
+    }
+  ],
+  "assetImportWorkflowReports": [
+    {
+      "engine": "unity",
+      "templatePath": "fixtures/external-engine-baselines/v4/unity/v4-unity-asset-import-workflow.template.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unity/V4ExternalAssetImportWorkflowRunner.cs",
+      "targetReportPath": "tests/reports/v4-unity-asset-import-workflow.json",
+      "runnerEvidencePath": "tests/reports/v4-unity-asset-import-workflow.evidence.json",
+      "schemaPath": "fixtures/external-engine-baselines/v4/asset-import-workflow-report.schema.json",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-asset-import-workflow-report.mjs unity tests/reports/v4-unity-asset-import-workflow.evidence.json tests/reports/v4-unity-asset-import-workflow.json",
+      "requiredBeforeClaim": [
+        "A real Unity editor opens an import project and imports the current V4 glTF/glb corpus sample or export fixture.",
+        "The Unity import runner writes tests/reports/v4-unity-asset-import-workflow.evidence.json with project-open, import, material, texture, mesh, and animation metrics.",
+        "Unsupported FBX/USD/USDZ/DAE formats remain recorded as external-conversion-required; OBJ is only a bounded native geometry-import path."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "templatePath": "fixtures/external-engine-baselines/v4/unreal/v4-unreal-asset-import-workflow.template.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unreal/v4_external_asset_import_workflow_runner.py",
+      "targetReportPath": "tests/reports/v4-unreal-asset-import-workflow.json",
+      "runnerEvidencePath": "tests/reports/v4-unreal-asset-import-workflow.evidence.json",
+      "schemaPath": "fixtures/external-engine-baselines/v4/asset-import-workflow-report.schema.json",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-asset-import-workflow-report.mjs unreal tests/reports/v4-unreal-asset-import-workflow.evidence.json tests/reports/v4-unreal-asset-import-workflow.json",
+      "requiredBeforeClaim": [
+        "A real Unreal editor opens an import project and imports the current V4 glTF/glb corpus sample or export fixture.",
+        "The Unreal import runner writes tests/reports/v4-unreal-asset-import-workflow.evidence.json with project-open, import, material, texture, mesh, and animation metrics.",
+        "Unsupported FBX/USD/USDZ/DAE formats remain recorded as external-conversion-required; OBJ is only a bounded native geometry-import path."
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "engine": "unity",
+      "baselineKind": "product-visual",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unity/V4ExternalVisualBaselineRunner.cs",
+      "expectedScreenshotPath": "tests/reports/v4-product-visual/unity-product-visual-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-product-visual/unity-product-visual-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unity-product-visual-baseline.json",
+      "captureInstruction": "Run V4ExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor \"fixtures/external-engine-baselines/v4/product-visual-parity-scene.json\" --baseline-kind \"product-visual\" --screenshot \"tests/reports/v4-product-visual/unity-product-visual-baseline.png\". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unity product-visual tests/reports/v4-product-visual/unity-product-visual-baseline.png tests/reports/v4-unity-product-visual-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-product-visual-parity",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 10001,
+        "colorBuckets": 2,
+        "drawCalls": 18,
+        "materialCount": 7,
+        "productParts": 18,
+        "turntableHotspots": 3,
+        "captureViews": 4,
+        "batchTasks": 4
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unity",
+      "baselineKind": "pbr-visual",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/pbr-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unity/V4ExternalVisualBaselineRunner.cs",
+      "expectedScreenshotPath": "tests/reports/v4-pbr-visual/unity-pbr-visual-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-pbr-visual/unity-pbr-visual-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unity-pbr-visual-baseline.json",
+      "captureInstruction": "Run V4ExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor \"fixtures/external-engine-baselines/v4/pbr-visual-parity-scene.json\" --baseline-kind \"pbr-visual\" --screenshot \"tests/reports/v4-pbr-visual/unity-pbr-visual-baseline.png\". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unity pbr-visual tests/reports/v4-pbr-visual/unity-pbr-visual-baseline.png tests/reports/v4-unity-pbr-visual-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-pbr-visual-parity",
+        "pnpm audit:v4-pbr-reference-readiness",
+        "pnpm audit:v4-pbr-gltf-readiness",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 960,
+        "height": 540,
+        "nonBlankPixels": 30001,
+        "colorBuckets": 7,
+        "drawCalls": 12,
+        "materialCount": 11,
+        "featureCount": 11
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unity",
+      "baselineKind": "shadow-visual",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/shadow-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unity/V4ExternalVisualBaselineRunner.cs",
+      "expectedScreenshotPath": "tests/reports/v4-shadow-visual/unity-shadow-visual-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-shadow-visual/unity-shadow-visual-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unity-shadow-visual-baseline.json",
+      "captureInstruction": "Run V4ExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor \"fixtures/external-engine-baselines/v4/shadow-visual-parity-scene.json\" --baseline-kind \"shadow-visual\" --screenshot \"tests/reports/v4-shadow-visual/unity-shadow-visual-baseline.png\". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unity shadow-visual tests/reports/v4-shadow-visual/unity-shadow-visual-baseline.png tests/reports/v4-unity-shadow-visual-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-shadow-visual-parity",
+        "pnpm audit:v4-shadow-map-readiness",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 60001,
+        "colorBuckets": 5,
+        "drawCalls": 5,
+        "shadowEvidencePixels": 701
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unity",
+      "baselineKind": "hdr-render-target",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/hdr-render-target-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unity/V4ExternalVisualBaselineRunner.cs",
+      "expectedScreenshotPath": "tests/reports/v4-hdr-render-target/unity-hdr-render-target-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-hdr-render-target/unity-hdr-render-target-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unity-hdr-render-target-baseline.json",
+      "captureInstruction": "Run V4ExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor \"fixtures/external-engine-baselines/v4/hdr-render-target-visual-parity-scene.json\" --baseline-kind \"hdr-render-target\" --screenshot \"tests/reports/v4-hdr-render-target/unity-hdr-render-target-baseline.png\". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unity hdr-render-target tests/reports/v4-hdr-render-target/unity-hdr-render-target-baseline.png tests/reports/v4-unity-hdr-render-target-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-hdr-visual-parity",
+        "pnpm audit:v4-hdr-render-target-readiness",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 720,
+        "height": 420,
+        "nonBlankPixels": 30001,
+        "colorBuckets": 5,
+        "drawCalls": 4,
+        "toneMappedPatches": 3
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unity",
+      "baselineKind": "postprocess-suite",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/postprocess-suite-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unity/V4ExternalVisualBaselineRunner.cs",
+      "expectedScreenshotPath": "tests/reports/v4-postprocess-suite/unity-postprocess-suite-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-postprocess-suite/unity-postprocess-suite-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unity-postprocess-suite-baseline.json",
+      "captureInstruction": "Run V4ExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor \"fixtures/external-engine-baselines/v4/postprocess-suite-parity-scene.json\" --baseline-kind \"postprocess-suite\" --screenshot \"tests/reports/v4-postprocess-suite/unity-postprocess-suite-baseline.png\". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unity postprocess-suite tests/reports/v4-postprocess-suite/unity-postprocess-suite-baseline.png tests/reports/v4-unity-postprocess-suite-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-postprocess-suite",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 960,
+        "height": 540,
+        "nonBlankPixels": 30001,
+        "colorBuckets": 8,
+        "drawCalls": 4,
+        "implementedEffects": 14,
+        "realSceneEffects": 14
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "baselineKind": "product-visual",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unreal/v4_external_visual_baseline_runner.py",
+      "expectedScreenshotPath": "tests/reports/v4-product-visual/unreal-product-visual-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-product-visual/unreal-product-visual-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unreal-product-visual-baseline.json",
+      "captureInstruction": "Run v4_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor \"fixtures/external-engine-baselines/v4/product-visual-parity-scene.json\" and screenshot path \"tests/reports/v4-product-visual/unreal-product-visual-baseline.png\". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unreal product-visual tests/reports/v4-product-visual/unreal-product-visual-baseline.png tests/reports/v4-unreal-product-visual-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-product-visual-parity",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 10001,
+        "colorBuckets": 2,
+        "drawCalls": 18,
+        "materialCount": 7,
+        "productParts": 18,
+        "turntableHotspots": 3,
+        "captureViews": 4,
+        "batchTasks": 4
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "baselineKind": "pbr-visual",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/pbr-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unreal/v4_external_visual_baseline_runner.py",
+      "expectedScreenshotPath": "tests/reports/v4-pbr-visual/unreal-pbr-visual-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-pbr-visual/unreal-pbr-visual-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unreal-pbr-visual-baseline.json",
+      "captureInstruction": "Run v4_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor \"fixtures/external-engine-baselines/v4/pbr-visual-parity-scene.json\" and screenshot path \"tests/reports/v4-pbr-visual/unreal-pbr-visual-baseline.png\". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unreal pbr-visual tests/reports/v4-pbr-visual/unreal-pbr-visual-baseline.png tests/reports/v4-unreal-pbr-visual-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-pbr-visual-parity",
+        "pnpm audit:v4-pbr-reference-readiness",
+        "pnpm audit:v4-pbr-gltf-readiness",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 960,
+        "height": 540,
+        "nonBlankPixels": 30001,
+        "colorBuckets": 7,
+        "drawCalls": 12,
+        "materialCount": 11,
+        "featureCount": 11
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "baselineKind": "shadow-visual",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/shadow-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unreal/v4_external_visual_baseline_runner.py",
+      "expectedScreenshotPath": "tests/reports/v4-shadow-visual/unreal-shadow-visual-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-shadow-visual/unreal-shadow-visual-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unreal-shadow-visual-baseline.json",
+      "captureInstruction": "Run v4_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor \"fixtures/external-engine-baselines/v4/shadow-visual-parity-scene.json\" and screenshot path \"tests/reports/v4-shadow-visual/unreal-shadow-visual-baseline.png\". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unreal shadow-visual tests/reports/v4-shadow-visual/unreal-shadow-visual-baseline.png tests/reports/v4-unreal-shadow-visual-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-shadow-visual-parity",
+        "pnpm audit:v4-shadow-map-readiness",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 60001,
+        "colorBuckets": 5,
+        "drawCalls": 5,
+        "shadowEvidencePixels": 701
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "baselineKind": "hdr-render-target",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/hdr-render-target-visual-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unreal/v4_external_visual_baseline_runner.py",
+      "expectedScreenshotPath": "tests/reports/v4-hdr-render-target/unreal-hdr-render-target-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-hdr-render-target/unreal-hdr-render-target-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unreal-hdr-render-target-baseline.json",
+      "captureInstruction": "Run v4_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor \"fixtures/external-engine-baselines/v4/hdr-render-target-visual-parity-scene.json\" and screenshot path \"tests/reports/v4-hdr-render-target/unreal-hdr-render-target-baseline.png\". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unreal hdr-render-target tests/reports/v4-hdr-render-target/unreal-hdr-render-target-baseline.png tests/reports/v4-unreal-hdr-render-target-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-hdr-visual-parity",
+        "pnpm audit:v4-hdr-render-target-readiness",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 720,
+        "height": 420,
+        "nonBlankPixels": 30001,
+        "colorBuckets": 5,
+        "drawCalls": 4,
+        "toneMappedPatches": 3
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    },
+    {
+      "engine": "unreal",
+      "baselineKind": "postprocess-suite",
+      "descriptorPath": "fixtures/external-engine-baselines/v4/postprocess-suite-parity-scene.json",
+      "runnerPath": "fixtures/external-engine-baselines/v4/unreal/v4_external_visual_baseline_runner.py",
+      "expectedScreenshotPath": "tests/reports/v4-postprocess-suite/unreal-postprocess-suite-baseline.png",
+      "expectedRunnerEvidencePath": "tests/reports/v4-postprocess-suite/unreal-postprocess-suite-baseline.png.evidence.json",
+      "targetReportPath": "tests/reports/v4-unreal-postprocess-suite-baseline.json",
+      "captureInstruction": "Run v4_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor \"fixtures/external-engine-baselines/v4/postprocess-suite-parity-scene.json\" and screenshot path \"tests/reports/v4-postprocess-suite/unreal-postprocess-suite-baseline.png\". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.",
+      "reportCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unreal postprocess-suite tests/reports/v4-postprocess-suite/unreal-postprocess-suite-baseline.png tests/reports/v4-unreal-postprocess-suite-baseline.json",
+      "validationCommands": [
+        "pnpm audit:v4-postprocess-suite",
+        "pnpm audit:v4-unity-unreal-parity",
+        "pnpm audit:v4-broad-parity"
+      ],
+      "minimumEvidence": {
+        "width": 960,
+        "height": 540,
+        "nonBlankPixels": 30001,
+        "colorBuckets": 8,
+        "drawCalls": 4,
+        "implementedEffects": 14,
+        "realSceneEffects": 14
+      },
+      "requiredBeforeClaim": [
+        "Real editor capture writes the expected screenshot path.",
+        "Real editor runner writes the matching .evidence.json sidecar with descriptor identity, camera/render flags, and slot-specific metrics.",
+        "Report writer consumes the PNG and sidecar, computes descriptorSha256, screenshotSha256, and runnerEvidenceSha256, then rejects wrong dimensions, weak pixels, missing runner evidence, or weak slot metrics.",
+        "The matching parity audit diffs the external PNG against the current Galileo reference and passes."
+      ]
+    }
+  ],
+  "finalAuditCommands": [
+    "pnpm verify:v4-external-engine-baselines",
+    "node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine all",
+    "pnpm audit:v4-external-evidence-readiness",
+    "pnpm audit:v4-product-visual-parity",
+    "pnpm audit:v4-pbr-visual-parity",
+    "pnpm audit:v4-pbr-reference-readiness",
+    "pnpm audit:v4-pbr-gltf-readiness",
+    "pnpm audit:v4-shadow-visual-parity",
+    "pnpm audit:v4-shadow-map-readiness",
+    "pnpm audit:v4-hdr-visual-parity",
+    "pnpm audit:v4-hdr-ibl-readiness",
+    "pnpm audit:v4-hdr-render-target-readiness",
+    "pnpm audit:v4-postprocess-suite",
+    "pnpm audit:v4-unity-unreal-parity",
+    "pnpm audit:v4-production-readiness",
+    "pnpm audit:v4-broad-parity",
+    "pnpm audit:v4-completion",
+    "pnpm verify:v4-report-freshness",
+    "pnpm verify:v4"
+  ],
+  "blockedUntilAllCapturesPass": [
+    "Unity parity",
+    "Unreal parity",
+    "Unity/Unreal replacement language",
+    "rendered product visual parity against Unity/Unreal",
+    "production PBR/shadow/HDR/postprocess parity against Unity/Unreal"
+  ]
+}

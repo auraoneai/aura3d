@@ -1,0 +1,230 @@
+export interface ProductVisualMaterialDescriptor {
+  readonly id: string;
+  readonly kind: "pbr" | "unlit";
+  readonly color: readonly [number, number, number, number];
+  readonly metallic?: number;
+  readonly roughness?: number;
+  readonly clearcoat?: number;
+  readonly transmission?: number;
+  readonly alpha?: number;
+}
+
+export interface ProductVisualPartDescriptor {
+  readonly id: string;
+  readonly geometry: "cube" | "sphere" | "cylinder";
+  readonly material: string;
+  readonly position: readonly [number, number, number];
+  readonly scale: readonly [number, number, number];
+  readonly rotation?: readonly [number, number, number];
+}
+
+export interface ProductVisualEcommerceWorkflowDescriptor {
+  readonly source: "origin-master-ecommerce-turntable-adapted";
+  readonly sourceFiles: readonly string[];
+  readonly autoRotate: true;
+  readonly pauseOnInteraction: true;
+  readonly lightingPresets: readonly ["studio", "soft", "inspection", "dramatic", "neutral"];
+  readonly hotspots: readonly {
+    readonly id: string;
+    readonly group: "material" | "controls" | "comfort";
+    readonly targetPart: string;
+  }[];
+  readonly capture: {
+    readonly screenshotViews: readonly ["hero", "front", "detail", "exploded"];
+    readonly screenshotFormats: readonly ["png", "jpeg", "webp"];
+    readonly spinFrameCount: 72;
+    readonly batchTasks: readonly ["thumbnail", "screenshot", "360-spin", "ar-export"];
+    readonly arExportFormats: readonly ["glb"];
+    readonly blockedExportClaims: readonly string[];
+  };
+}
+
+export interface ProductVisualAssetPipelineDescriptor {
+  readonly source: "shared-product-visual-descriptor";
+  readonly sourceFiles: readonly [
+    "tools/v4-product-visual-parity/productScene.ts",
+    "tools/v4-product-visual-parity/index.ts",
+    "tools/v4-external-engine-baselines/index.ts"
+  ];
+  readonly generatedDescriptorPath: "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json";
+  readonly localEngines: readonly ["galileo", "threejs", "babylon"];
+  readonly externalEngines: readonly ["unity", "unreal"];
+  readonly sameDescriptorForAllEngines: true;
+  readonly deterministicAssetLayout: true;
+  readonly productionWorkflowEvidence: readonly [
+    "material-variant-descriptor",
+    "turntable-hotspots",
+    "multi-view-capture-plan",
+    "batch-output-plan",
+    "ar-export-boundary"
+  ];
+  readonly commercialImportedAssetClaimed: false;
+}
+
+export interface ProductVisualParitySceneDescriptor {
+  readonly schemaVersion: "v4-product-visual-parity-scene-v1";
+  readonly id: "v4-deterministic-product-visual-parity";
+  readonly viewport: {
+    readonly width: 720;
+    readonly height: 480;
+  };
+  readonly camera: "orthographic-front";
+  readonly lighting: "studio";
+  readonly materials: readonly ProductVisualMaterialDescriptor[];
+  readonly parts: readonly ProductVisualPartDescriptor[];
+  readonly assetPipeline: ProductVisualAssetPipelineDescriptor;
+  readonly minimumEvidence: {
+    readonly productParts: 18;
+    readonly materialCount: 7;
+    readonly drawCalls: 18;
+    readonly turntableHotspots: 3;
+    readonly captureViews: 4;
+    readonly batchTasks: 4;
+  };
+  readonly ecommerceWorkflow: ProductVisualEcommerceWorkflowDescriptor;
+  readonly claimBoundary: string;
+}
+
+export const productVisualParityScene: ProductVisualParitySceneDescriptor = {
+  schemaVersion: "v4-product-visual-parity-scene-v1",
+  id: "v4-deterministic-product-visual-parity",
+  viewport: {
+    width: 720,
+    height: 480,
+  },
+  camera: "orthographic-front",
+  lighting: "studio",
+  materials: [
+    { id: "body", kind: "pbr", color: [0.18, 0.24, 0.28, 1], metallic: 0.42, roughness: 0.28, clearcoat: 0.36 },
+    { id: "accent", kind: "pbr", color: [0.9, 0.48, 0.2, 1], metallic: 0.68, roughness: 0.22, clearcoat: 0.28 },
+    { id: "glass", kind: "pbr", color: [0.45, 0.72, 0.82, 0.82], metallic: 0.02, roughness: 0.08, transmission: 0.22, alpha: 0.74 },
+    { id: "dark", kind: "pbr", color: [0.018, 0.02, 0.024, 1], metallic: 0.04, roughness: 0.62 },
+    { id: "glow", kind: "unlit", color: [0.24, 0.84, 1, 1] },
+    { id: "trim", kind: "unlit", color: [0.72, 0.76, 0.74, 1] },
+    { id: "label", kind: "unlit", color: [1, 0.86, 0.24, 1] },
+    { id: "backdrop-a", kind: "unlit", color: [0.5, 0.57, 0.6, 1] },
+    { id: "backdrop-b", kind: "unlit", color: [0.4, 0.48, 0.54, 1] },
+    { id: "backdrop-c", kind: "unlit", color: [0.66, 0.68, 0.64, 1] },
+  ],
+  parts: [
+    { id: "studio-backdrop", geometry: "cube", material: "backdrop-a", position: [0, 0.08, 0.42], scale: [2.06, 1.62, 0.02] },
+    { id: "studio-left-gradient-panel", geometry: "cube", material: "backdrop-b", position: [-0.68, 0.08, 0.4], scale: [0.34, 1.5, 0.018] },
+    { id: "studio-right-warm-panel", geometry: "cube", material: "backdrop-c", position: [0.68, 0.08, 0.4], scale: [0.34, 1.5, 0.018] },
+    { id: "studio-top-soft-shadow", geometry: "cube", material: "backdrop-b", position: [0, 0.68, 0.39], scale: [1.82, 0.18, 0.018] },
+    { id: "studio-left-panel-seam", geometry: "cube", material: "dark", position: [-0.42, 0.08, 0.28], scale: [0.012, 1.48, 0.012] },
+    { id: "studio-right-panel-seam", geometry: "cube", material: "dark", position: [0.42, 0.08, 0.28], scale: [0.012, 1.48, 0.012] },
+    { id: "studio-top-panel-seam", geometry: "cube", material: "dark", position: [0, 0.56, 0.28], scale: [1.72, 0.012, 0.012] },
+    { id: "studio-back-panel-shelf", geometry: "cube", material: "trim", position: [0, -0.08, 0.29], scale: [1.48, 0.018, 0.012] },
+    { id: "studio-floor", geometry: "cube", material: "backdrop-b", position: [0, -0.78, 0.36], scale: [2.08, 0.42, 0.02] },
+    { id: "studio-left-softbox", geometry: "cube", material: "backdrop-c", position: [-0.82, 0.16, 0.32], scale: [0.08, 0.72, 0.018] },
+    { id: "studio-right-softbox", geometry: "cube", material: "backdrop-c", position: [0.82, 0.16, 0.32], scale: [0.08, 0.72, 0.018] },
+    { id: "studio-horizon-trim", geometry: "cube", material: "trim", position: [0, -0.36, 0.31], scale: [1.84, 0.025, 0.018] },
+    { id: "studio-floor-front-lip", geometry: "cube", material: "trim", position: [0, -0.96, 0.25], scale: [1.86, 0.04, 0.018] },
+    { id: "studio-floor-left-groove", geometry: "cube", material: "dark", position: [-0.48, -0.88, 0.24], scale: [0.5, 0.018, 0.012] },
+    { id: "studio-floor-right-groove", geometry: "cube", material: "dark", position: [0.48, -0.88, 0.24], scale: [0.5, 0.018, 0.012] },
+    { id: "studio-floor-slat-1", geometry: "cube", material: "backdrop-c", position: [-0.68, -0.71, 0.24], scale: [0.34, 0.018, 0.012] },
+    { id: "studio-floor-slat-2", geometry: "cube", material: "backdrop-c", position: [0, -0.69, 0.24], scale: [0.42, 0.018, 0.012] },
+    { id: "studio-floor-slat-3", geometry: "cube", material: "backdrop-c", position: [0.68, -0.71, 0.24], scale: [0.34, 0.018, 0.012] },
+    { id: "floor-shadow", geometry: "sphere", material: "dark", position: [0, -0.72, -0.08], scale: [1.08, 0.12, 0.035] },
+    { id: "display-plinth", geometry: "cube", material: "trim", position: [0, -0.82, -0.02], scale: [1.36, 0.08, 0.12] },
+    { id: "left-yoke", geometry: "cube", material: "trim", position: [-0.48, -0.08, -0.1], scale: [0.08, 0.68, 0.08], rotation: [0, 0, -0.04] },
+    { id: "right-yoke", geometry: "cube", material: "trim", position: [0.48, -0.08, -0.1], scale: [0.08, 0.68, 0.08], rotation: [0, 0, 0.04] },
+    { id: "left-cup-shell", geometry: "sphere", material: "body", position: [-0.5, -0.37, -0.16], scale: [0.3, 0.42, 0.12] },
+    { id: "right-cup-shell", geometry: "sphere", material: "body", position: [0.5, -0.37, -0.16], scale: [0.3, 0.42, 0.12] },
+    { id: "left-cup-ring", geometry: "sphere", material: "accent", position: [-0.5, -0.36, -0.25], scale: [0.2, 0.3, 0.055] },
+    { id: "right-cup-ring", geometry: "sphere", material: "accent", position: [0.5, -0.36, -0.25], scale: [0.2, 0.3, 0.055] },
+    { id: "left-cushion", geometry: "sphere", material: "dark", position: [-0.5, -0.36, -0.32], scale: [0.14, 0.22, 0.035] },
+    { id: "right-cushion", geometry: "sphere", material: "dark", position: [0.5, -0.36, -0.32], scale: [0.14, 0.22, 0.035] },
+    { id: "left-driver-mesh", geometry: "sphere", material: "glass", position: [-0.5, -0.36, -0.36], scale: [0.1, 0.16, 0.025] },
+    { id: "right-driver-mesh", geometry: "sphere", material: "glass", position: [0.5, -0.36, -0.36], scale: [0.1, 0.16, 0.025] },
+    { id: "left-driver-slot-1", geometry: "cube", material: "trim", position: [-0.5, -0.43, -0.39], scale: [0.12, 0.012, 0.012] },
+    { id: "left-driver-slot-2", geometry: "cube", material: "trim", position: [-0.5, -0.36, -0.39], scale: [0.14, 0.012, 0.012] },
+    { id: "left-driver-slot-3", geometry: "cube", material: "trim", position: [-0.5, -0.29, -0.39], scale: [0.12, 0.012, 0.012] },
+    { id: "left-driver-slot-4", geometry: "cube", material: "trim", position: [-0.57, -0.36, -0.395], scale: [0.012, 0.18, 0.012] },
+    { id: "left-driver-slot-5", geometry: "cube", material: "trim", position: [-0.43, -0.36, -0.395], scale: [0.012, 0.18, 0.012] },
+    { id: "right-driver-slot-1", geometry: "cube", material: "trim", position: [0.5, -0.43, -0.39], scale: [0.12, 0.012, 0.012] },
+    { id: "right-driver-slot-2", geometry: "cube", material: "trim", position: [0.5, -0.36, -0.39], scale: [0.14, 0.012, 0.012] },
+    { id: "right-driver-slot-3", geometry: "cube", material: "trim", position: [0.5, -0.29, -0.39], scale: [0.12, 0.012, 0.012] },
+    { id: "right-driver-slot-4", geometry: "cube", material: "trim", position: [0.43, -0.36, -0.395], scale: [0.012, 0.18, 0.012] },
+    { id: "right-driver-slot-5", geometry: "cube", material: "trim", position: [0.57, -0.36, -0.395], scale: [0.012, 0.18, 0.012] },
+    { id: "headband-center", geometry: "cube", material: "body", position: [0, 0.47, -0.18], scale: [0.46, 0.1, 0.1] },
+    { id: "headband-left-1", geometry: "cube", material: "body", position: [-0.25, 0.39, -0.18], scale: [0.28, 0.09, 0.1], rotation: [0, 0, -0.28] },
+    { id: "headband-left-2", geometry: "cube", material: "body", position: [-0.43, 0.2, -0.18], scale: [0.34, 0.085, 0.1], rotation: [0, 0, -0.76] },
+    { id: "headband-right-1", geometry: "cube", material: "body", position: [0.25, 0.39, -0.18], scale: [0.28, 0.09, 0.1], rotation: [0, 0, 0.28] },
+    { id: "headband-right-2", geometry: "cube", material: "body", position: [0.43, 0.2, -0.18], scale: [0.34, 0.085, 0.1], rotation: [0, 0, 0.76] },
+    { id: "headband-inner-pad", geometry: "cube", material: "dark", position: [0, 0.36, -0.28], scale: [0.46, 0.06, 0.04] },
+    { id: "headband-stitch-left", geometry: "cube", material: "trim", position: [-0.18, 0.405, -0.36], scale: [0.1, 0.012, 0.012] },
+    { id: "headband-stitch-center", geometry: "cube", material: "trim", position: [0, 0.415, -0.36], scale: [0.12, 0.012, 0.012] },
+    { id: "headband-stitch-right", geometry: "cube", material: "trim", position: [0.18, 0.405, -0.36], scale: [0.1, 0.012, 0.012] },
+    { id: "left-hinge-pin", geometry: "cylinder", material: "accent", position: [-0.48, 0.02, -0.3], scale: [0.055, 0.12, 0.055], rotation: [Math.PI / 2, 0, 0] },
+    { id: "right-hinge-pin", geometry: "cylinder", material: "accent", position: [0.48, 0.02, -0.3], scale: [0.055, 0.12, 0.055], rotation: [Math.PI / 2, 0, 0] },
+    { id: "left-control-chip", geometry: "cube", material: "glow", position: [-0.66, -0.28, -0.33], scale: [0.05, 0.16, 0.035] },
+    { id: "right-control-chip", geometry: "cube", material: "glow", position: [0.66, -0.28, -0.33], scale: [0.05, 0.16, 0.035] },
+    { id: "brand-plate", geometry: "cube", material: "label", position: [0, 0.34, -0.36], scale: [0.3, 0.035, 0.025] },
+    { id: "left-highlight", geometry: "cube", material: "trim", position: [-0.59, -0.15, -0.36], scale: [0.035, 0.24, 0.018] },
+    { id: "right-highlight", geometry: "cube", material: "trim", position: [0.59, -0.15, -0.36], scale: [0.035, 0.24, 0.018] },
+    { id: "softbox-reflection", geometry: "cube", material: "glass", position: [0.2, 0.08, -0.42], scale: [0.42, 0.045, 0.018], rotation: [0, 0, 0.08] },
+  ],
+  assetPipeline: {
+    source: "shared-product-visual-descriptor",
+    sourceFiles: [
+      "tools/v4-product-visual-parity/productScene.ts",
+      "tools/v4-product-visual-parity/index.ts",
+      "tools/v4-external-engine-baselines/index.ts",
+    ],
+    generatedDescriptorPath: "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
+    localEngines: ["galileo", "threejs", "babylon"],
+    externalEngines: ["unity", "unreal"],
+    sameDescriptorForAllEngines: true,
+    deterministicAssetLayout: true,
+    productionWorkflowEvidence: [
+      "material-variant-descriptor",
+      "turntable-hotspots",
+      "multi-view-capture-plan",
+      "batch-output-plan",
+      "ar-export-boundary",
+    ],
+    commercialImportedAssetClaimed: false,
+  },
+  minimumEvidence: {
+    productParts: 18,
+    materialCount: 7,
+    drawCalls: 18,
+    turntableHotspots: 3,
+    captureViews: 4,
+    batchTasks: 4,
+  },
+  ecommerceWorkflow: {
+    source: "origin-master-ecommerce-turntable-adapted",
+    sourceFiles: [
+      "master:src/ecommerce/turntable/TurntableController.ts",
+      "master:src/ecommerce/turntable/HotspotManager.ts",
+      "master:src/ecommerce/turntable/LightingPresetManager.ts",
+      "master:src/ecommerce/turntable/CaptureManager.ts",
+      "master:src/ecommerce/turntable/BatchProcessor.ts",
+      "master:src/ecommerce/turntable/ARExporter.ts",
+    ],
+    autoRotate: true,
+    pauseOnInteraction: true,
+    lightingPresets: ["studio", "soft", "inspection", "dramatic", "neutral"],
+    hotspots: [
+      { id: "material-finish", group: "material", targetPart: "left-cup-shell" },
+      { id: "comfort-band", group: "comfort", targetPart: "headband-inner-pad" },
+      { id: "control-module", group: "controls", targetPart: "right-control-chip" },
+    ],
+    capture: {
+      screenshotViews: ["hero", "front", "detail", "exploded"],
+      screenshotFormats: ["png", "jpeg", "webp"],
+      spinFrameCount: 72,
+      batchTasks: ["thumbnail", "screenshot", "360-spin", "ar-export"],
+      arExportFormats: ["glb"],
+      blockedExportClaims: [
+        "native-USDZ-export",
+        "browser-video-recording-pipeline",
+        "AR-Quick-Look-and-Scene-Viewer-platform-parity",
+        "ecommerce-PIM-or-commerce-platform-integration",
+      ],
+    },
+  },
+  claimBoundary: "This descriptor defines the deterministic same-layout over-ear headphone product asset pipeline and bounded ecommerce workflow evidence for Galileo3D, Three.js, Babylon.js, and future Unity/Unreal baseline renders. It is not a commercial imported product asset, native AR export pipeline, video capture pipeline, or PIM integration.",
+};

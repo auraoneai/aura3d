@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>V7 Contact Shadow Parity</title>
+    <style>
+      html, body {
+        margin: 0;
+        background: #090b10;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: repeat(3, 1024px);
+        gap: 4px;
+      }
+
+      canvas {
+        display: block;
+        width: 1024px;
+        height: 768px;
+        background: #10131a;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="contact-root"></main>
+    <script type="module" src="/tests/browser/v7-contact-shadow-parity.js"></script>
+  </body>
+</html>

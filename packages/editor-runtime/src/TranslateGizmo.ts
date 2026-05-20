@@ -6,13 +6,14 @@ export class TranslateGizmo extends Gizmo {
     if (!this.target) return;
     const current = readTransform(this.target);
     const next = clone(current);
-    if (input.axis === "x") next.position.x += input.delta;
-    if (input.axis === "y") next.position.y += input.delta;
-    if (input.axis === "z") next.position.z += input.delta;
+    const delta = this.snapPositionDelta(input.delta);
+    if (input.axis === "x" || input.axis === "xy" || input.axis === "xz") next.position.x += delta;
+    if (input.axis === "y" || input.axis === "xy" || input.axis === "yz") next.position.y += delta;
+    if (input.axis === "z" || input.axis === "xz" || input.axis === "yz") next.position.z += delta;
     if (input.axis === "uniform") {
-      next.position.x += input.delta;
-      next.position.y += input.delta;
-      next.position.z += input.delta;
+      next.position.x += delta;
+      next.position.y += delta;
+      next.position.z += delta;
     }
     await this.history.execute(new TransformCommand(this.target, next));
   }

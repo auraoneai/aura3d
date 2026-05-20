@@ -42,6 +42,18 @@ test.describe("physics sandbox example", () => {
     expect(state?.renderer).toBe("webgl2");
     expect(state?.rendererBacked).toBe(true);
     expect(state?.metrics?.rendererBacked).toBe(true);
+    expect(state?.metrics?.oldBranchPhysicsSandboxPort).toBe(true);
+    expect(state?.metrics?.oldBranchPhysicsSandboxSource).toBe("origin-master-physics-sandbox-tools-spawners-adapted");
+    expect(String(state?.metrics?.oldBranchPhysicsSandboxHash ?? "")).toMatch(/^[0-9a-f]{8}$/);
+    expect(Number(state?.metrics?.oldBranchSpawnerPresetCount ?? 0)).toBeGreaterThanOrEqual(12);
+    expect(Number(state?.metrics?.oldBranchSpawnerBodyCount ?? 0)).toBeGreaterThan(40);
+    expect(Number(state?.metrics?.oldBranchSpawnerConstraintCount ?? 0)).toBeGreaterThan(10);
+    expect(Number(state?.metrics?.oldBranchSupportedToolCount ?? 0)).toBeGreaterThanOrEqual(5);
+    expect(Number(state?.metrics?.oldBranchBlockedToolCount ?? 0)).toBe(1);
+    expect(Number(state?.metrics?.oldBranchUnsupportedAdvancedSimulationCount ?? 0)).toBe(4);
+    expect(state?.oldBranchPhysicsSandbox?.spawners.some((spawner) => spawner.preset === "chain" && spawner.constraints >= 5)).toBe(true);
+    expect(state?.oldBranchPhysicsSandbox?.tools.find((tool) => tool.tool === "slice")?.supported).toBe(false);
+    expect(state?.oldBranchPhysicsSandbox?.unsupportedAdvancedSimulations).toEqual(["cloth", "soft-body", "fluid", "fracture"]);
     expect(Number(state?.diagnostics?.drawCalls ?? 0)).toBeGreaterThan(1);
     expect(Number(state?.metrics?.bodies ?? 0)).toBeGreaterThanOrEqual(9);
     expect(Number(state?.metrics?.colliders ?? 0)).toBeGreaterThanOrEqual(9);
@@ -86,6 +98,11 @@ declare global {
       readonly rendererBacked?: boolean;
       readonly interactions?: number;
       readonly diagnostics?: { readonly drawCalls?: number };
+      readonly oldBranchPhysicsSandbox?: {
+        readonly spawners: readonly { readonly preset?: string; readonly constraints?: number }[];
+        readonly tools: readonly { readonly tool?: string; readonly supported?: boolean }[];
+        readonly unsupportedAdvancedSimulations?: readonly string[];
+      };
       readonly metrics?: Record<string, string | number | boolean>;
       readonly error?: string;
     };

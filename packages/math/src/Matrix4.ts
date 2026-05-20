@@ -96,6 +96,25 @@ export class Matrix4 {
     ]);
   }
 
+  static lookAt(eye: Vector3, target: Vector3, up: Vector3): Matrix4 {
+    const z = eye.subtract(target).normalize();
+    if (z.lengthSquared() === 0) throw new RangeError("Look-at eye and target must not be identical.");
+
+    let x = up.cross(z).normalize();
+    if (x.lengthSquared() === 0) {
+      const fallbackUp = Math.abs(up.z) === 1 ? Vector3.up : Vector3.forward;
+      x = fallbackUp.cross(z).normalize();
+    }
+    const y = z.cross(x).normalize();
+
+    return new Matrix4([
+      x.x, y.x, z.x, 0,
+      x.y, y.y, z.y, 0,
+      x.z, y.z, z.z, 0,
+      -x.dot(eye), -y.dot(eye), -z.dot(eye), 1
+    ]);
+  }
+
   multiply(other: Matrix4): Matrix4 {
     const a = this.elements;
     const b = other.elements;
@@ -134,6 +153,16 @@ export class Matrix4 {
       m[2] * v.x + m[6] * v.y + m[10] * v.z + m[14] * v.w,
       m[3] * v.x + m[7] * v.y + m[11] * v.z + m[15] * v.w
     );
+  }
+
+  transpose(): Matrix4 {
+    const m = this.elements;
+    return new Matrix4([
+      m[0], m[4], m[8], m[12],
+      m[1], m[5], m[9], m[13],
+      m[2], m[6], m[10], m[14],
+      m[3], m[7], m[11], m[15]
+    ]);
   }
 
   determinant(): number {
@@ -182,6 +211,26 @@ export class Matrix4 {
     const det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
     if (Math.abs(det) < 1e-12) throw new RangeError("Matrix4 is singular.");
     return new Matrix4(inv.map((value) => value / det) as unknown as Matrix4["elements"]);
+  }
+
+  decompose(): { position: Vector3; rotation: Quaternion; scale: Vector3 } {
+    const m = this.elements;
+    const position = new Vector3(m[12], m[13], m[14]);
+    const sx = new Vector3(m[0], m[1], m[2]).length();
+    const sy = new Vector3(m[4], m[5], m[6]).length();
+    const sz = new Vector3(m[8], m[9], m[10]).length();
+    if (sx === 0 || sy === 0 || sz === 0) throw new RangeError("Cannot decompose matrix with zero scale.");
+
+    const det = this.determinant();
+    const scale = new Vector3(det < 0 ? -sx : sx, sy, sz);
+    const rotationMatrix = new Matrix4([
+      m[0] / scale.x, m[1] / scale.x, m[2] / scale.x, 0,
+      m[4] / scale.y, m[5] / scale.y, m[6] / scale.y, 0,
+      m[8] / scale.z, m[9] / scale.z, m[10] / scale.z, 0,
+      0, 0, 0, 1
+    ]);
+
+    return { position, rotation: Quaternion.fromRotationMatrix(rotationMatrix), scale };
   }
 
   getTranslation(): Vector3 {

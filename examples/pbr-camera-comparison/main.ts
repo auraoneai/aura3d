@@ -17,9 +17,13 @@ declare global {
 }
 
 interface PbrCameraComparisonState {
+  readonly id: "pbr-camera-comparison";
   readonly status: "ready" | "error";
   readonly renderer: "webgl2";
   readonly referenceRenderer: "three";
+  readonly visualClaim: "bounded-camera-pbr-reference-comparison";
+  readonly knownLimits: readonly string[];
+  readonly errors: readonly string[];
   readonly cameraPath: "scene-perspective-camera";
   readonly environmentLighting: "sampled-environment-map-approximation";
   readonly lightingModel: "direct-lights-plus-sampled-environment-map";
@@ -39,13 +43,22 @@ interface PbrMaterialCheck {
 
 const width = 480;
 const height = 360;
+const knownLimits = [
+  "This is a bounded side-by-side material/camera comparison, not production PBR parity.",
+  "HDR IBL, irradiance convolution, calibrated specular prefiltering, and loader parity are not claimed.",
+  "The Three.js panel is a reference check for this scene only, not a broad engine benchmark.",
+] as const;
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
     window.__GALILEO3D_PBR_CAMERA_COMPARISON__ = {
+      id: "pbr-camera-comparison",
       status: "error",
       renderer: "webgl2",
       referenceRenderer: "three",
+      visualClaim: "bounded-camera-pbr-reference-comparison",
+      knownLimits,
+      errors: [error instanceof Error ? error.message : String(error)],
       cameraPath: "scene-perspective-camera",
       environmentLighting: "sampled-environment-map-approximation",
       lightingModel: "direct-lights-plus-sampled-environment-map",
@@ -84,9 +97,13 @@ async function run(): Promise<void> {
   };
 
   window.__GALILEO3D_PBR_CAMERA_COMPARISON__ = {
+    id: "pbr-camera-comparison",
     status: "ready",
     renderer: "webgl2",
     referenceRenderer: "three",
+    visualClaim: "bounded-camera-pbr-reference-comparison",
+    knownLimits,
+    errors: [],
     cameraPath: "scene-perspective-camera",
     environmentLighting: "sampled-environment-map-approximation",
     lightingModel: "direct-lights-plus-sampled-environment-map",

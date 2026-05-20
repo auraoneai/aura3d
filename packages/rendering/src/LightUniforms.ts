@@ -1,7 +1,7 @@
 import { type CollectedLight } from "./LightCollector";
 import { UniformLayout } from "./UniformLayout";
 
-export const MAX_DIRECT_LIGHTS = 8;
+export const MAX_DIRECT_LIGHTS = 16;
 
 export interface PackedLightUniforms {
   readonly lightCount: number;
@@ -25,10 +25,11 @@ export class LightUniforms {
     const data = new Float32Array(MAX_DIRECT_LIGHTS * LightUniforms.floatsPerLight);
     selected.forEach((light, index) => {
       const offset = index * LightUniforms.floatsPerLight;
+      const forwardShadowSupported = light.castsShadow;
       data.set([light.color[0], light.color[1], light.color[2], light.intensity], offset);
       data.set([light.position[0], light.position[1], light.position[2], light.range], offset + 4);
       data.set([light.direction[0], light.direction[1], light.direction[2], kindToFloat(light.kind)], offset + 8);
-      data.set([light.spotAngle, light.penumbra, light.castsShadow ? 1 : 0, light.layerMask], offset + 12);
+      data.set([light.spotAngle, light.penumbra, forwardShadowSupported ? 1 : 0, light.layerMask], offset + 12);
     });
     return { lightCount: selected.length, data, layout: LightUniforms.layout };
   }

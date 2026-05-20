@@ -1,4 +1,4 @@
-import { Bounds3, DirectionalLight, PerspectiveCamera, PointLight, Renderable, Scene, SceneNode, SpotLight, batchReparent, deserializeScene, serializeScene } from "@galileo3d/scene";
+import { Bounds3, DirectionalLight, Group, InstancedMesh, Mesh, Object3D, PerspectiveCamera, PointLight, Renderable, Scene, SceneNode, SkinnedMesh, SpotLight, batchReparent, deserializeScene, serializeScene } from "@galileo3d/scene";
 import { describe, expect, it } from "vitest";
 
 describe("scene hierarchy, query, and serialization", () => {
@@ -41,6 +41,98 @@ describe("scene hierarchy, query, and serialization", () => {
     expect(node.transform.worldMatrix).toEqual(before);
   });
 
+  it("exposes Three.js-style Object3D, Group, Mesh, SkinnedMesh, and InstancedMesh scene objects", () => {
+    const scene = new Scene();
+    const group = scene.createGroup({ name: "group", userData: { role: "root-group" } });
+    const mesh = scene.createMesh({
+      name: "mesh",
+      renderable: { geometry: "geometry:mesh", material: "material:mesh" }
+    });
+    const skinned = scene.createSkinnedMesh({
+      name: "skinned",
+      renderable: {
+        geometry: "geometry:skin",
+        material: "material:skin",
+        skinning: { jointCount: 1, matrices: new Float32Array(16).fill(1) }
+      }
+    });
+    const instanced = scene.createInstancedMesh({
+      name: "instanced",
+      renderable: {
+        geometry: "geometry:instance",
+        material: "material:instance",
+        instanceTransforms: [
+          1, 0, 0, 0,
+          0, 1, 0, 0,
+          0, 0, 1, 0,
+          3, 0, 0, 1
+        ],
+        instanceColors: [0.2, 0.6, 1, 1]
+      }
+    });
+
+    scene.root.addChild(group);
+    group.addChild(mesh).addChild(skinned).addChild(instanced);
+    group.position[0] = 2;
+    group.transform.markDirty();
+    scene.updateWorldTransforms();
+
+    expect(group).toBeInstanceOf(Group);
+    expect(group).toBeInstanceOf(Object3D);
+    expect(mesh).toBeInstanceOf(Mesh);
+    expect(skinned).toBeInstanceOf(SkinnedMesh);
+    expect(instanced).toBeInstanceOf(InstancedMesh);
+    expect(group.userData.role).toBe("root-group");
+    expect(mesh.matrixWorld[12]).toBeCloseTo(2);
+    expect(skinned.skinning?.jointCount).toBe(1);
+    expect(instanced.instanceTransforms).toBeInstanceOf(Float32Array);
+    expect(instanced.instanceColors).toBeInstanceOf(Float32Array);
+    instanced.setInstanceColors([1, 0.4, 0.2, 1]);
+    expect(Array.from(instanced.instanceColors ?? [])).toEqual(expect.arrayContaining([
+      expect.closeTo(1),
+      expect.closeTo(0.4),
+      expect.closeTo(0.2),
+      expect.closeTo(1)
+    ]));
+    expect(scene.collectRenderables().map((entry) => entry.node.name)).toEqual(["mesh", "skinned", "instanced"]);
+  });
+
+  it("tracks visibility, layers, render order, identity, user data, and disposal semantics", () => {
+    const scene = new Scene();
+    const group = scene.createGroup({
+      id: "group-id",
+      name: "group",
+      visible: false,
+      layerMask: 4,
+      renderOrder: 7,
+      userData: { role: "container" }
+    });
+    const mesh = scene.createMesh({
+      name: "mesh",
+      renderable: { geometry: "geometry:mesh", material: "material:mesh" }
+    });
+    scene.root.addChild(group);
+    group.addChild(mesh);
+
+    expect(group.id).toBe("group-id");
+    expect(group.visible).toBe(false);
+    expect(group.layerMask).toBe(4);
+    expect(group.renderOrder).toBe(7);
+    expect(group.userData.role).toBe("container");
+    expect(scene.findByName("mesh")).toEqual([mesh]);
+
+    group.dispose();
+
+    expect(group.disposed).toBe(true);
+    expect(mesh.disposed).toBe(true);
+    expect(group.parent).toBeNull();
+    expect(group.children).toEqual([]);
+    expect(group.userData).toEqual({});
+    expect(group.visible).toBe(false);
+    expect(group.renderable).toBeUndefined();
+    expect(() => group.addChild(scene.createNode("late"))).toThrow(/disposed/i);
+  });
+
   it("can reparent while preserving a node world transform", () => {
     const scene = new Scene();
     const oldParent = scene.createNode("old-parent");
@@ -61,6 +153,37 @@ describe("scene hierarchy, query, and serialization", () => {
     expect(child.parent).toBe(newParent);
     expect(child.transform.worldMatrix).toEqual(before);
     expect(child.transform.position).toEqual([16, 2, 3]);
+  });
+
+  it("supports manual local matrix mode for advanced scene graph users", () => {
+    const scene = new Scene();
+    const parent = scene.createGroup({ name: "manual-parent" });
+    const child = scene.createObject3D({ name: "manual-child" });
+    parent.transform.setPosition(10, 0, 0);
+    child.setLocalMatrix([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      2, 3, 4, 1
+    ], { decompose: false });
+    parent.addChild(child);
+    scene.root.addChild(parent);
+
+    scene.updateWorldTransforms();
+    expect(child.matrixAutoUpdate).toBe(false);
+    expect(child.matrix[12]).toBe(2);
+    expect(child.matrixWorld[12]).toBe(12);
+    expect(child.matrixWorld[13]).toBe(3);
+    expect(child.matrixWorld[14]).toBe(4);
+
+    child.position[0] = 100;
+    child.transform.markDirty();
+    scene.updateWorldTransforms();
+    expect(child.matrixWorld[12]).toBe(12);
+
+    child.matrixAutoUpdate = true;
+    scene.updateWorldTransforms();
+    expect(child.matrixWorld[12]).toBe(110);
   });
 
   it("propagates dirty transforms from parent mutations to descendants", () => {
@@ -131,6 +254,61 @@ describe("scene hierarchy, query, and serialization", () => {
     expect(restored.root.children[0]?.children[0]?.transform.position).toEqual([1, 2, 3]);
   });
 
+  it("roundtrips scene metadata for provenance, plans, unsupported features, and revisions", () => {
+    const scene = new Scene();
+    const mesh = scene.createMesh({
+      id: "mesh-node",
+      name: "metadata-mesh",
+      renderable: { geometry: "geometry:mesh", material: "material:matte" }
+    });
+    scene.root.addChild(mesh);
+    scene.metadata.deterministicSeed = 1337;
+    scene.metadata
+      .registerAsset({
+        id: "asset:robot-arm",
+        uri: "/fixtures/robot-arm.glb",
+        source: "gltf-corpus",
+        loader: "@galileo3d/assets",
+        nodeIds: [mesh.id],
+        materialIds: ["material:matte"]
+      })
+      .assignMaterial({
+        nodeId: mesh.id,
+        materialId: "material:matte",
+        unsupportedFeatures: ["KHR_materials_transmission"]
+      })
+      .addPlan({
+        id: "shot:orbit",
+        kind: "camera",
+        description: "Orbit around the imported robot arm.",
+        nodeIds: [mesh.id],
+        deterministicSeed: 1337
+      })
+      .discloseUnsupportedFeature("articulated robot dynamics", "Only static imported mesh metadata is present.")
+      .recordRevision({
+        summary: "Seeded scene metadata contract for route evidence.",
+        deterministicSeed: 1337
+      });
+
+    const serialized = serializeScene(scene);
+    const restored = deserializeScene(serialized);
+
+    expect(serialized.metadata?.deterministicSeed).toBe(1337);
+    expect(serialized.metadata?.assets?.[0]?.nodeIds).toEqual([mesh.id]);
+    expect(restored.metadata.assets[0]?.source).toBe("gltf-corpus");
+    expect(restored.metadata.materialAssignments[0]?.unsupportedFeatures).toEqual(["KHR_materials_transmission"]);
+    expect(restored.metadata.plans[0]).toMatchObject({ id: "shot:orbit", kind: "camera", deterministicSeed: 1337 });
+    expect(restored.metadata.unsupportedFeatures()[0]).toMatchObject({
+      feature: "articulated robot dynamics",
+      status: "unsupported"
+    });
+    expect(restored.metadata.revisions[0]).toMatchObject({
+      id: "revision-1",
+      summary: "Seeded scene metadata contract for route evidence.",
+      deterministicSeed: 1337
+    });
+  });
+
   it("roundtrips node registry, renderables, cameras, and lights with stable IDs", () => {
     const scene = new Scene();
     const mesh = scene.createNode("mesh");
@@ -156,7 +334,8 @@ describe("scene hierarchy, query, and serialization", () => {
         0, 1, 0, 0,
         0, 0, 1, 0,
         2, 0, 0, 1
-      ]
+      ],
+      instanceColors: [0.1, 0.2, 0.3, 1]
     }));
     scene.root.addChild(mesh);
     scene.root.addChild(camera);
@@ -178,6 +357,12 @@ describe("scene hierarchy, query, and serialization", () => {
       0, 0, 1, 0,
       2, 0, 0, 1
     ]);
+    expect(Array.from(restored.collectRenderables()[0]?.renderable.instanceColors ?? [])).toEqual(expect.arrayContaining([
+      expect.closeTo(0.1),
+      expect.closeTo(0.2),
+      expect.closeTo(0.3),
+      expect.closeTo(1)
+    ]));
     expect(restoredCamera).toBeInstanceOf(PerspectiveCamera);
     expect((restoredCamera as PerspectiveCamera).aspect).toBe(1.5);
     expect((restoredCamera as PerspectiveCamera).viewport).toEqual({ x: 1, y: 2, width: 320, height: 180 });

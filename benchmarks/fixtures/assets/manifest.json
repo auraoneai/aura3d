@@ -24,6 +24,94 @@
       "materials": 4,
       "textures": 0,
       "notes": "Shared deterministic gameplay placeholder with physics, animation, particles, and audio-state metrics."
+    },
+    {
+      "id": "generated-headphone-configurator-v3",
+      "kind": "generated-local-model",
+      "triangles": 18324,
+      "materials": 6,
+      "textures": 1,
+      "notes": "Shared generated headphone configurator asset descriptor used by Galileo3D, Three.js, and Babylon.js benchmark scenes."
+    },
+    {
+      "id": "generated-civic-gallery-v3",
+      "kind": "generated-local-model",
+      "triangles": 6120,
+      "materials": 7,
+      "textures": 0,
+      "notes": "Shared generated architecture viewer model descriptor with zone, hierarchy, selection, and section-view metadata."
+    },
+    {
+      "id": "generated-asset-inspection-corpus-v3",
+      "kind": "generated-local-model",
+      "triangles": 42000,
+      "materials": 9,
+      "textures": 6,
+      "notes": "Generated asset inspection workload descriptor for same-scene load/render comparison."
+    },
+    {
+      "id": "generated-pbr-material-grid-v3",
+      "kind": "generated-local-model",
+      "triangles": 196608,
+      "materials": 16,
+      "textures": 4,
+      "notes": "Generated PBR material grid descriptor for bounded material comparison."
+    },
+    {
+      "id": "generated-architecture-district-v3",
+      "kind": "generated-local-model",
+      "triangles": 240000,
+      "materials": 12,
+      "textures": 3,
+      "notes": "Generated large static architecture district workload descriptor."
+    },
+    {
+      "id": "generated-instanced-product-parts-v3",
+      "kind": "generated-local-model",
+      "triangles": 153600,
+      "materials": 4,
+      "textures": 1,
+      "notes": "Generated instancing workload descriptor with 4096 equivalent instances."
+    },
+    {
+      "id": "generated-skinned-character-crowd-v3",
+      "kind": "generated-local-model",
+      "triangles": 9600,
+      "materials": 4,
+      "textures": 0,
+      "notes": "Generated skinned-character benchmark descriptor; real skinned glTF parity remains unsupported."
+    },
+    {
+      "id": "generated-particle-field-v3",
+      "kind": "generated-local-model",
+      "triangles": 96000,
+      "materials": 5,
+      "textures": 2,
+      "notes": "Generated particle-field benchmark descriptor for bounded same-scaffold particle workload comparison."
+    },
+    {
+      "id": "generated-postprocess-lab-v4",
+      "kind": "generated-local-model",
+      "triangles": 65536,
+      "materials": 8,
+      "textures": 4,
+      "notes": "Bounded V4 postprocess workload descriptor using Galileo3D tone-mapping, bloom, FXAA, and depth-readback evidence; HDR/postprocess parity remains unsupported."
+    },
+    {
+      "id": "generated-morph-character-v4",
+      "kind": "generated-local-model",
+      "triangles": 12288,
+      "materials": 3,
+      "textures": 1,
+      "notes": "Generated morph-character workload descriptor for same-scene comparison metadata; real morph glTF visual parity remains unsupported."
+    },
+    {
+      "id": "editor-authored-v3-app-export",
+      "kind": "editor-authored-export",
+      "triangles": 2048,
+      "materials": 2,
+      "textures": 2,
+      "notes": "Checked-in editor-authored exported app startup descriptor; benchmark wrappers load the same exported project metadata and keep native external-editor workflow parity unsupported."
     }
   ]
 }

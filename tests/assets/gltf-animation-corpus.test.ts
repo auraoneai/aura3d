@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { GLTFLoader, LoadContext, createGLTFCorpusReport, validateGLTFCorpusManifest, type GLTFCorpusManifest } from "../../packages/assets/src";
+import { GLTFLoader, LoadContext, createGLTFRenderResources, createGLTFCorpusReport, validateGLTFCorpusManifest, type DecodedGLTFImage, type GLTFCorpusManifest } from "../../packages/assets/src";
+import { DEFAULT_SKINNED_LIT_SHADER_NAME } from "../../packages/rendering/src";
 
 const externalCharacterManifestPath = resolve("tests/assets/corpus/animated-character-corpus.manifest.json");
 const externalCharacterFixturePaths = {
@@ -21,6 +22,8 @@ describe("glTF animation corpus fixture", () => {
     expect(asset.meshes[0]?.skinIndex).toBe(0);
     expect(asset.meshes[0]?.joints[0]).toEqual([0, 1, 0, 0]);
     expect(asset.meshes[0]?.weights[1]?.map((value) => Number(value.toFixed(3)))).toEqual([0.25, 0.75, 0, 0]);
+    expect(asset.loaderDiagnostics.unsupportedFeatures).toEqual([]);
+    expect(asset.materialVariants).toEqual([{ name: "cool-skin" }]);
 
     expect(asset.skins[0]?.name).toBe("corpus-armature");
     expect(asset.skins[0]?.joints).toEqual([0, 1]);
@@ -40,10 +43,64 @@ describe("glTF animation corpus fixture", () => {
 
     const scene = asset.createScene();
     expect(scene.findByName("character-root")[0]?.children.map((node) => node.name)).toContain("tip-joint");
+    expect(asset.createScene({ materialVariant: "cool-skin" }).collectRenderables()[0]?.renderable.material).toBe("corpus-skinned-pbr-cool");
 
     const serialized = asset.toJSON();
     expect(serialized.animations[0]?.tracks[0]?.target).toBe("tip-joint.rotation");
     expect(serialized.skins[0]?.bones[1]?.name).toBe("tip-joint");
+
+    const resources = await createGLTFRenderResources(asset, { imageDecoder: decodeSkinBaseTexture });
+    try {
+      const material = resources.materialLibrary.get("corpus-skinned-pbr");
+      expect(material?.shaderKey).toBe(DEFAULT_SKINNED_LIT_SHADER_NAME);
+      expect(material?.renderState.cullMode).toBe("none");
+      expect(material?.getParameter("u_baseColor")).toEqual([0.3, 0.45, 0.95, 0.72]);
+      expect(material?.getParameter("u_metallic")).toBe(0.7);
+      expect(material?.getParameter("u_roughness")).toBe(0.22);
+      expect(material?.getParameter("u_emissiveColor")).toEqual([0.1, 0.2, 0.3]);
+      expect(material?.getParameter("u_emissiveStrength")).toBe(1.8);
+      expect(material?.getParameter("u_alphaCutoff")).toBe(0.33);
+    } finally {
+      resources.dispose();
+    }
+    const variantResources = await createGLTFRenderResources(asset, {
+      materialVariant: "cool-skin",
+      imageDecoder: decodeSkinBaseTexture
+    });
+    try {
+      const variantMaterial = variantResources.materialLibrary.get("corpus-skinned-pbr-cool");
+      expect(variantResources.scene.collectRenderables()[0]?.renderable.material).toBe("corpus-skinned-pbr-cool");
+      expect(variantMaterial?.shaderKey).toBe(DEFAULT_SKINNED_LIT_SHADER_NAME);
+      expect(variantMaterial?.requiredAttributes).toContain("a_uv");
+      expect(variantMaterial?.requiredAttributes).toContain("a_tangent");
+      expect(variantMaterial?.getParameter("u_baseColorTextureEnabled")).toBe(1);
+      expect(variantMaterial?.getParameter("u_normalTextureEnabled")).toBe(1);
+      expect(variantMaterial?.getParameter("u_metallicRoughnessTextureEnabled")).toBe(1);
+      expect(variantMaterial?.getParameter("u_emissiveTextureEnabled")).toBe(1);
+      expect(variantMaterial?.getParameter("u_metallic")).toBe(0.15);
+      expect(variantMaterial?.getParameter("u_roughness")).toBe(0.62);
+      expect(variantResources.geometryLibrary.get("corpus-skinned-triangle")?.vertexBuffer.format.hasAttribute("tangent")).toBe(true);
+    } finally {
+      variantResources.dispose();
+    }
+  });
+
+  it("reports unsupported secondary skin influence sets instead of silently claiming full skinning import", async () => {
+    const { url } = createInlineSkinnedAnimationFixture({ extraInfluences: true });
+    const asset = await new GLTFLoader().load({ url }, new LoadContext());
+
+    expect(asset.meshes[0]?.joints[0]).toEqual([0, 1, 0, 0]);
+    expect(asset.loaderDiagnostics.features).toContain("unsupported:skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+    expect(asset.loaderDiagnostics.unsupportedFeatures).toContain("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+    expect(asset.toJSON().loaderDiagnostics.unsupportedFeatures).toContain("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+  });
+
+  it("reports identity inverse-bind fallback when a glTF skin omits inverseBindMatrices", async () => {
+    const { url } = createInlineSkinnedAnimationFixture({ omitInverseBindMatrices: true });
+    const asset = await new GLTFLoader().load({ url }, new LoadContext());
+
+    expect(asset.skins[0]?.inverseBindMatrices).toHaveLength(2);
+    expect(asset.loaderDiagnostics.features).toContain("skinning-default-inverse-bind-matrices");
   });
 
   it("imports pinned externally authored skinned character corpus entries", async () => {
@@ -121,10 +178,23 @@ function readExternalCharacterManifest(): GLTFCorpusManifest {
   return JSON.parse(readFileSync(externalCharacterManifestPath, "utf8")) as GLTFCorpusManifest;
 }
 
-function createInlineSkinnedAnimationFixture(): { readonly url: string } {
+async function decodeSkinBaseTexture(): Promise<DecodedGLTFImage> {
+  return {
+    width: 2,
+    height: 1,
+    colorSpace: "srgb",
+    data: new Uint8Array([
+      255, 64, 32, 255,
+      16, 192, 255, 255
+    ])
+  };
+}
+
+function createInlineSkinnedAnimationFixture(options: { readonly extraInfluences?: boolean; readonly omitInverseBindMatrices?: boolean } = {}): { readonly url: string } {
   const chunks = [
     floatBytes([-0.2, -0.25, 0, 0.2, -0.25, 0, 0, 0.3, 0]),
     floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1]),
+    floatBytes([0, 1, 1, 1, 0.5, 0]),
     uint16Bytes([0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0]),
     floatBytes([1, 0, 0, 0, 0.25, 0.75, 0, 0, 0, 1, 0, 0]),
     floatBytes([
@@ -145,23 +215,67 @@ function createInlineSkinnedAnimationFixture(): { readonly url: string } {
   const binary = Buffer.concat(chunks);
   const gltf = {
     asset: { version: "2.0", generator: "Galileo3D inline animation corpus" },
+    extensionsUsed: ["KHR_materials_emissive_strength", "KHR_materials_variants"],
+    extensions: { KHR_materials_variants: { variants: [{ name: "cool-skin" }] } },
     buffers: [{ byteLength: binary.byteLength }],
     bufferViews: chunks.map((chunk, index) => ({ buffer: 0, byteOffset: offsets[index], byteLength: chunk.byteLength })),
     accessors: [
       { bufferView: 0, componentType: 5126, count: 3, type: "VEC3", min: [-0.2, -0.25, 0], max: [0.2, 0.3, 0] },
       { bufferView: 1, componentType: 5126, count: 3, type: "VEC3" },
-      { bufferView: 2, componentType: 5123, count: 3, type: "VEC4" },
-      { bufferView: 3, componentType: 5126, count: 3, type: "VEC4" },
-      { bufferView: 4, componentType: 5126, count: 2, type: "MAT4" },
-      { bufferView: 5, componentType: 5126, count: 3, type: "SCALAR", min: [0], max: [1] },
-      { bufferView: 6, componentType: 5126, count: 3, type: "VEC4" },
-      { bufferView: 7, componentType: 5126, count: 3, type: "SCALAR", min: [0], max: [1] },
-      { bufferView: 8, componentType: 5126, count: 3, type: "VEC3" }
+      { bufferView: 2, componentType: 5126, count: 3, type: "VEC2" },
+      { bufferView: 3, componentType: 5123, count: 3, type: "VEC4" },
+      { bufferView: 4, componentType: 5126, count: 3, type: "VEC4" },
+      { bufferView: 5, componentType: 5126, count: 2, type: "MAT4" },
+      { bufferView: 6, componentType: 5126, count: 3, type: "SCALAR", min: [0], max: [1] },
+      { bufferView: 7, componentType: 5126, count: 3, type: "VEC4" },
+      { bufferView: 8, componentType: 5126, count: 3, type: "SCALAR", min: [0], max: [1] },
+      { bufferView: 9, componentType: 5126, count: 3, type: "VEC3" }
+    ],
+    images: [{ name: "skin-base-image", uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAADklEQVR4nGP4z8AAQv8BD/kD/YURmXYAAAAASUVORK5CYII=" }],
+    textures: [{ name: "skin-base-texture", source: 0 }],
+    materials: [
+      {
+        name: "corpus-skinned-pbr",
+        pbrMetallicRoughness: {
+          baseColorFactor: [0.3, 0.45, 0.95, 0.72],
+          metallicFactor: 0.7,
+          roughnessFactor: 0.22
+        },
+        emissiveFactor: [0.1, 0.2, 0.3],
+        extensions: { KHR_materials_emissive_strength: { emissiveStrength: 1.8 } },
+        alphaMode: "MASK",
+        alphaCutoff: 0.33,
+        doubleSided: true
+      },
+      {
+        name: "corpus-skinned-pbr-cool",
+        pbrMetallicRoughness: {
+          baseColorFactor: [0.1, 0.8, 0.95, 1],
+          baseColorTexture: { index: 0 },
+          metallicRoughnessTexture: { index: 0 },
+          metallicFactor: 0.15,
+          roughnessFactor: 0.62
+        },
+        normalTexture: { index: 0, scale: 0.75 },
+        emissiveFactor: [0.04, 0.06, 0.08],
+        emissiveTexture: { index: 0 }
+      }
     ],
     meshes: [
       {
         name: "corpus-skinned-triangle",
-        primitives: [{ attributes: { POSITION: 0, NORMAL: 1, JOINTS_0: 2, WEIGHTS_0: 3 } }]
+        primitives: [{
+          attributes: {
+            POSITION: 0,
+            NORMAL: 1,
+            TEXCOORD_0: 2,
+            JOINTS_0: 3,
+            WEIGHTS_0: 4,
+            ...(options.extraInfluences ? { JOINTS_1: 3, WEIGHTS_1: 4 } : {})
+          },
+          material: 0,
+          extensions: { KHR_materials_variants: { mappings: [{ material: 1, variants: [0] }] } }
+        }]
       }
     ],
     nodes: [
@@ -169,13 +283,18 @@ function createInlineSkinnedAnimationFixture(): { readonly url: string } {
       { name: "tip-joint", translation: [0.4, 0, 0] },
       { name: "rendered-body", mesh: 0, skin: 0 }
     ],
-    skins: [{ name: "corpus-armature", skeleton: 0, joints: [0, 1], inverseBindMatrices: 4 }],
+    skins: [{
+      name: "corpus-armature",
+      skeleton: 0,
+      joints: [0, 1],
+      ...(options.omitInverseBindMatrices ? {} : { inverseBindMatrices: 5 })
+    }],
     animations: [
       {
         name: "corpus-arm-swing",
         samplers: [
-          { input: 5, output: 6, interpolation: "LINEAR" },
-          { input: 7, output: 8, interpolation: "LINEAR" }
+          { input: 6, output: 7, interpolation: "LINEAR" },
+          { input: 8, output: 9, interpolation: "LINEAR" }
         ],
         channels: [
           { sampler: 0, target: { node: 1, path: "rotation" } },

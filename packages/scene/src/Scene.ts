@@ -2,20 +2,43 @@ import { ValidationError } from "@galileo3d/core";
 import { Camera } from "./Camera.js";
 import { DirectionalLight } from "./DirectionalLight.js";
 import { Light } from "./Light.js";
+import { Group, InstancedMesh, Mesh, Object3D, SkinnedMesh, type MeshOptions, type Object3DOptions } from "./Object3D.js";
 import { OrthographicCamera } from "./OrthographicCamera.js";
 import { PerspectiveCamera } from "./PerspectiveCamera.js";
 import { PointLight } from "./PointLight.js";
 import { Renderable } from "./Renderable.js";
 import { collectRenderables, queryScene, type SceneQueryOptions } from "./SceneQuery.js";
+import { SceneMetadata } from "./SceneMetadata.js";
 import { SceneNode } from "./SceneNode.js";
 import { SpotLight } from "./SpotLight.js";
 
 export class Scene {
   readonly root = new SceneNode({ id: "root", name: "root" });
+  readonly metadata = new SceneMetadata();
   private readonly nodesById = new Map<string, SceneNode>([[this.root.id, this.root]]);
 
   createNode(name?: string): SceneNode {
     return this.register(new SceneNode({ name }));
+  }
+
+  createObject3D(options: Object3DOptions = {}): Object3D {
+    return this.register(new Object3D(options));
+  }
+
+  createGroup(options: Object3DOptions = {}): Group {
+    return this.register(new Group(options));
+  }
+
+  createMesh(options: MeshOptions = {}): Mesh {
+    return this.register(new Mesh(options));
+  }
+
+  createSkinnedMesh(options: MeshOptions = {}): SkinnedMesh {
+    return this.register(new SkinnedMesh(options));
+  }
+
+  createInstancedMesh(options: MeshOptions = {}): InstancedMesh {
+    return this.register(new InstancedMesh(options));
   }
 
   createPerspectiveCamera(options: ConstructorParameters<typeof PerspectiveCamera>[0] = {}): PerspectiveCamera {
@@ -32,7 +55,7 @@ export class Scene {
   }
 
   addRenderable(node: SceneNode, renderable: Renderable): void {
-    (node as SceneNode & { renderable?: Renderable }).renderable = renderable;
+    node.renderable = renderable;
   }
 
   getNodeById(id: string): SceneNode | undefined {
@@ -84,6 +107,14 @@ export class Scene {
     const removed = node.removeFromParent();
     for (const descendant of descendants) this.nodesById.delete(descendant.id);
     return removed;
+  }
+
+  dispose(): void {
+    const descendants: SceneNode[] = [];
+    for (const child of [...this.root.children]) child.traverse((descendant) => descendants.push(descendant));
+    for (const child of [...this.root.children]) child.dispose();
+    for (const descendant of descendants) this.nodesById.delete(descendant.id);
+    this.root.children.length = 0;
   }
 
   registerSubtree(node: SceneNode): void {

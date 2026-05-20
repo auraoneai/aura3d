@@ -1,0 +1,137 @@
+{
+  "ok": true,
+  "generatedAt": "2026-05-12T16:25:15.029Z",
+  "commit": "84bc815f7e927c8e55917526fab2d32be1d5f2a5",
+  "runId": "v4-github-external-readiness-2026-05-12T16-25-15-035Z-8e5t2h",
+  "command": "pnpm audit:v4-github-external-readiness",
+  "sourceFileHashes": [
+    {
+      "path": "package.json",
+      "sha256": "c29c17678eb8c8ffcc995e0cc133ea03292bb2dbc4009388bb1ce3bdeffc362c"
+    },
+    {
+      "path": "docs/project/v4-parity-execution-prompt.md",
+      "sha256": "d23a6ee5dc0f2d7186acb86f40c7ac4dcf701c4d2f5385647c8381ccb802cdab"
+    },
+    {
+      "path": ".github/workflows/v4-external-engine-baselines.yml",
+      "sha256": "32573a824234fd3b0248db06ea860ac65b3764a7609fe03739aa7c13623516c6"
+    },
+    {
+      "path": ".github/workflows/v4-public-demo-deploy.yml",
+      "sha256": "e3553d45442a6256962c412436aec99c75dddf4a8e4ecdf290d22180ba36f121"
+    },
+    {
+      "path": "tools/v4-github-external-readiness/index.ts",
+      "sha256": "a14a9e13ffb5a93410dc9a62dd0176dd21d5e62ccf7ba9892b30dc20f9791c3e"
+    },
+    {
+      "path": "tools/v4-external-evidence-readiness/index.ts",
+      "sha256": "ac31cfefee91154c8f4df4571ad9be5687d73bcba89c14dd3cb064c29a8cdb9b"
+    },
+    {
+      "path": "tools/v4-external-host-doctor/index.ts",
+      "sha256": "b9abde541280d4989f7255b7f0c1de9b56793cdbda39a4a0b6b4cb2e62a035bf"
+    }
+  ],
+  "blockedClaims": [
+    "broad better-than-Three.js language",
+    "broad better-than-Babylon.js language",
+    "Unity/Unreal replacement language",
+    "production-ready language",
+    "complete PBR parity language"
+  ],
+  "screenshotPaths": [],
+  "violations": [],
+  "auditComplete": true,
+  "githubExternalReady": false,
+  "repo": "gchahal1982/G3D2025",
+  "currentBranch": "preserve/g3d-v2-execution-state",
+  "defaultBranch": "main",
+  "checks": {
+    "remoteConfigured": {
+      "ready": true,
+      "evidence": [
+        "remote.origin.url=https://github.com/gchahal1982/G3D2025.git",
+        "repo=gchahal1982/G3D2025"
+      ],
+      "blockers": []
+    },
+    "currentBranchOnRemote": {
+      "ready": false,
+      "evidence": [
+        "currentBranch=preserve/g3d-v2-execution-state"
+      ],
+      "blockers": [
+        "current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR."
+      ]
+    },
+    "workflowsOnDefaultBranch": {
+      "ready": false,
+      "evidence": [
+        "defaultBranch=main",
+        ".github/workflows/v4-external-engine-baselines.yml@main=missing",
+        ".github/workflows/v4-public-demo-deploy.yml@main=missing",
+        "workflowList="
+      ],
+      "blockers": [
+        ".github/workflows/v4-external-engine-baselines.yml is not readable on default branch main.",
+        ".github/workflows/v4-public-demo-deploy.yml is not readable on default branch main.",
+        "gh workflow list does not show both V4 external evidence workflows as discoverable."
+      ]
+    },
+    "pagesConfigured": {
+      "ready": false,
+      "evidence": [],
+      "blockers": [
+        "GitHub Pages is not configured with a durable HTTPS URL for public deployment smoke evidence."
+      ]
+    },
+    "selfHostedRunners": {
+      "ready": false,
+      "evidence": [
+        "runnerCount=0",
+        "labels=none"
+      ],
+      "blockers": [
+        "No self-hosted runner labeled unity is registered.",
+        "No self-hosted runner labeled unreal is registered."
+      ]
+    },
+    "actionsConfiguration": {
+      "ready": false,
+      "evidence": [
+        "variables=none",
+        "secrets=none",
+        "G3D_RUN_UNITY_UNREAL_CLI_SMOKE is set to true inside .github/workflows/v4-external-engine-baselines.yml."
+      ],
+      "blockers": [
+        "G3D_UNITY_EDITOR is not configured as an Actions variable or secret.",
+        "G3D_UNREAL_EDITOR is not configured as an Actions variable or secret."
+      ]
+    }
+  },
+  "blockers": [
+    "currentBranchOnRemote: current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR.",
+    "workflowsOnDefaultBranch: .github/workflows/v4-external-engine-baselines.yml is not readable on default branch main.",
+    "workflowsOnDefaultBranch: .github/workflows/v4-public-demo-deploy.yml is not readable on default branch main.",
+    "workflowsOnDefaultBranch: gh workflow list does not show both V4 external evidence workflows as discoverable.",
+    "pagesConfigured: GitHub Pages is not configured with a durable HTTPS URL for public deployment smoke evidence.",
+    "selfHostedRunners: No self-hosted runner labeled unity is registered.",
+    "selfHostedRunners: No self-hosted runner labeled unreal is registered.",
+    "actionsConfiguration: G3D_UNITY_EDITOR is not configured as an Actions variable or secret.",
+    "actionsConfiguration: G3D_UNREAL_EDITOR is not configured as an Actions variable or secret."
+  ],
+  "nextCommands": [
+    "git status --short",
+    "git push origin preserve/g3d-v2-execution-state",
+    "Open and merge a PR that lands the V4 workflow files on main.",
+    "Enable GitHub Pages for the repository.",
+    "Register self-hosted GitHub Actions runners labeled unity and unreal.",
+    "Configure G3D_UNITY_EDITOR and G3D_UNREAL_EDITOR as Actions variables or secrets.",
+    "gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/G3D2025 --ref main",
+    "gh workflow run v4-external-engine-baselines.yml --repo gchahal1982/G3D2025 --ref main -f engine=all",
+    "pnpm preflight:v4-parity:after-external-evidence"
+  ],
+  "reportPath": "tests/reports/v4-github-external-readiness.json"
+}

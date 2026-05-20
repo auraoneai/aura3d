@@ -1,0 +1,16 @@
+{
+  "name": "@galileo3d/create-g3d",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "create-g3d": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
+}

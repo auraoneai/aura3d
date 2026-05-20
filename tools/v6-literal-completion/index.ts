@@ -1,0 +1,217 @@
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+type Check = { readonly id: string; readonly pass: boolean; readonly detail: string };
+type Json = Record<string, unknown>;
+const requiredPackageFiles = [
+  "packages/rendering/src/v6/index.ts",
+  "packages/rendering/src/v6/RendererV6.ts",
+  "packages/rendering/src/v6/backends/WebGL2RendererBackend.ts",
+  "packages/rendering/src/v6/backends/WebGPURendererBackend.ts",
+  "packages/rendering/src/v6/backends/RendererBackend.ts",
+  "packages/rendering/src/v6/framegraph/FrameGraph.ts",
+  "packages/rendering/src/v6/framegraph/RenderPass.ts",
+  "packages/rendering/src/v6/resources/GPUBuffer.ts",
+  "packages/rendering/src/v6/resources/GPUTexture.ts",
+  "packages/rendering/src/v6/resources/RenderTarget.ts",
+  "packages/rendering/src/v6/resources/ResourceCache.ts",
+  "packages/rendering/src/v6/scene/RenderableScene.ts",
+  "packages/rendering/src/v6/scene/RenderableMesh.ts",
+  "packages/rendering/src/v6/scene/RenderablePrimitive.ts",
+  "packages/rendering/src/v6/scene/Camera.ts",
+  "packages/rendering/src/v6/scene/Lights.ts",
+  "packages/rendering/src/v6/materials/PBRMaterial.ts",
+  "packages/rendering/src/v6/materials/MaterialCompiler.ts",
+  "packages/rendering/src/v6/materials/MaterialTextureBindings.ts",
+  "packages/rendering/src/v6/materials/GLTFMaterialAdapter.ts",
+  "packages/rendering/src/v6/shaders/ShaderProgramLibrary.ts",
+  "packages/rendering/src/v6/shaders/chunks/pbr.vert.glsl",
+  "packages/rendering/src/v6/shaders/chunks/pbr.frag.glsl",
+  "packages/rendering/src/v6/shaders/chunks/ibl.glsl",
+  "packages/rendering/src/v6/shaders/chunks/brdf.glsl",
+  "packages/rendering/src/v6/shaders/chunks/shadows.glsl",
+  "packages/rendering/src/v6/environment/HDRLoader.ts",
+  "packages/rendering/src/v6/environment/PMREMGenerator.ts",
+  "packages/rendering/src/v6/environment/EnvironmentMap.ts",
+  "packages/rendering/src/v6/passes/DepthPrepass.ts",
+  "packages/rendering/src/v6/passes/ShadowPass.ts",
+  "packages/rendering/src/v6/passes/OpaquePass.ts",
+  "packages/rendering/src/v6/passes/TransparentPass.ts",
+  "packages/rendering/src/v6/passes/SkyboxPass.ts",
+  "packages/rendering/src/v6/passes/ToneMappingPass.ts",
+  "packages/rendering/src/v6/postprocess/EffectComposerV6.ts",
+  "packages/rendering/src/v6/postprocess/BloomPass.ts",
+  "packages/rendering/src/v6/postprocess/SSAOPass.ts",
+  "packages/rendering/src/v6/postprocess/DOFPass.ts",
+  "packages/rendering/src/v6/postprocess/FXAAPass.ts",
+  "packages/rendering/src/v6/postprocess/ColorGradingPass.ts",
+  "packages/rendering/src/v6/animation/SkinningRenderer.ts",
+  "packages/rendering/src/v6/animation/MorphTargetRenderer.ts",
+  "packages/rendering/src/v6/diagnostics/FrameCapture.ts",
+  "packages/rendering/src/v6/diagnostics/RendererStats.ts",
+  "packages/rendering/src/v6/diagnostics/GPUCapabilities.ts",
+  "packages/assets/src/v6/GLTFSceneLoader.ts",
+  "packages/assets/src/v6/TextureLoaderV6.ts",
+  "packages/assets/src/v6/KTX2TextureLoaderV6.ts",
+  "packages/assets/src/v6/HDRTextureLoaderV6.ts",
+  "packages/assets/src/v6/AssetPipelineV6.ts",
+  "packages/assets/src/v6/index.ts",
+  "packages/engine/src/v6/index.ts",
+  "packages/rendering/src/v6/materials/PBRShaderFeatures.ts",
+  "packages/rendering/src/v6/materials/GLTFPBRMaterialAdapter.ts",
+  "packages/rendering/src/v6/lights/LightManager.ts",
+  "packages/rendering/src/v6/lights/ShadowMapRenderer.ts",
+  "packages/rendering/src/v6/color/ColorManagement.ts",
+  "packages/rendering/src/v6/color/ToneMapping.ts",
+  "packages/rendering/src/v6/backends/webgl2/WebGL2Shader.ts",
+  "packages/rendering/src/v6/backends/webgl2/WebGL2Buffer.ts",
+  "packages/rendering/src/v6/backends/webgl2/WebGL2Texture.ts",
+  "packages/rendering/src/v6/backends/webgl2/WebGL2RenderTarget.ts",
+  "packages/rendering/src/v6/backends/webgl2/WebGL2StateCache.ts",
+  "packages/rendering/src/v6/backends/webgl2/WebGL2Capabilities.ts",
+  "packages/rendering/src/v6/backends/webgpu/WebGPUShader.ts",
+  "packages/rendering/src/v6/backends/webgpu/WebGPUBuffer.ts",
+  "packages/rendering/src/v6/backends/webgpu/WebGPUTexture.ts",
+  "packages/rendering/src/v6/backends/webgpu/WebGPURenderTarget.ts",
+  "packages/rendering/src/v6/backends/webgpu/WebGPUCapabilities.ts",
+  "packages/rendering/src/v6/shaders/wgsl/pbr.wgsl",
+  "packages/rendering/src/v6/shaders/wgsl/skybox.wgsl",
+  "packages/rendering/src/v6/shaders/wgsl/postprocess.wgsl"
+] as const;
+const requiredReports = [
+  "tests/reports/v6-truth.json",
+  "tests/reports/v6-progress.json",
+  "tests/reports/v6-v5-visual-failure-audit.json",
+  "tests/reports/v6-asset-audit.json",
+  "tests/reports/v6-environment-readiness.json",
+  "tests/reports/v6-webgl2-readiness.json",
+  "tests/reports/v6-webgpu-readiness.json",
+  "tests/reports/v6-pbr-readiness.json",
+  "tests/reports/v6-gltf-readiness.json",
+  "tests/reports/v6-lighting-postprocess-readiness.json",
+  "tests/reports/v6-animation-controls-readiness.json",
+  "tests/reports/v6-app-suite-readiness.json",
+  "tests/reports/v6-gallery/manifest.json",
+  "tests/reports/v6-visual-quality.json",
+  "tests/reports/v6-real-renderer-proof.json",
+  "tests/reports/v6-human-visual-review.json",
+  "tests/reports/v6-threejs-visual-parity.json",
+  "tests/reports/v6-threejs-runtime-parity.json",
+  "tests/reports/v6-workflow-readiness.json",
+  "tests/reports/v6-examples-readiness.json",
+  "tests/reports/v6-template-readiness.json",
+  "tests/reports/v6-performance-readiness.json",
+  "tests/reports/v6-package-surface-readiness.json",
+  "tests/reports/v6-package-smoke.json",
+  "tests/reports/v6-external-consumer.json",
+  "tests/reports/v6-docs-readiness.json",
+  "tests/reports/v6-claim-registry.json",
+  "tests/reports/v6-production-renderer-readiness.json",
+  "tests/reports/v6-release-readiness.json",
+  "tests/reports/v6-completion-audit.json",
+  "tests/reports/v6-product-decision-record.json"
+] as const;
+const requiredScreenshots = [
+  "tests/reports/v6-gallery/product/product-configurator-webgl2.png",
+  "tests/reports/v6-gallery/product/product-configurator-webgpu.png",
+  "tests/reports/v6-gallery/automotive/automotive-configurator-webgl2.png",
+  "tests/reports/v6-gallery/architecture/architecture-day-webgl2.png",
+  "tests/reports/v6-gallery/architecture/architecture-night-webgl2.png",
+  "tests/reports/v6-gallery/assets/damaged-helmet-webgl2.png",
+  "tests/reports/v6-gallery/assets/boom-box-webgl2.png",
+  "tests/reports/v6-gallery/materials/material-extension-grid-webgl2.png",
+  "tests/reports/v6-gallery/character/animated-character-webgl2.png",
+  "tests/reports/v6-gallery/postprocess/cinematic-before-webgl2.png",
+  "tests/reports/v6-gallery/postprocess/cinematic-after-webgl2.png",
+  "tests/reports/v6-gallery/large-scene/large-scene-webgl2.png",
+  "tests/reports/v6-gallery/webgpu/webgpu-product-frame.png",
+  "tests/reports/v6-gallery/threejs-comparison/product-g3d.png",
+  "tests/reports/v6-gallery/threejs-comparison/product-threejs.png",
+  "tests/reports/v6-gallery/threejs-comparison/product-diff.png",
+  "tests/reports/v6-gallery/threejs-comparison/materials-g3d.png",
+  "tests/reports/v6-gallery/threejs-comparison/materials-threejs.png",
+  "tests/reports/v6-gallery/threejs-comparison/materials-diff.png",
+  "tests/reports/v6-gallery/threejs-comparison/asset-g3d.png",
+  "tests/reports/v6-gallery/threejs-comparison/asset-threejs.png",
+  "tests/reports/v6-gallery/threejs-comparison/asset-diff.png",
+  "tests/reports/v6-gallery/threejs-comparison/architecture-g3d.png",
+  "tests/reports/v6-gallery/threejs-comparison/architecture-threejs.png",
+  "tests/reports/v6-gallery/threejs-comparison/architecture-diff.png"
+] as const;
+const requiredDirs = [
+  "fixtures/v6/assets/khronos",
+  "fixtures/v6/assets/polyhaven",
+  "fixtures/v6/assets/product",
+  "fixtures/v6/assets/architecture",
+  "fixtures/v6/assets/characters",
+  "fixtures/v6/assets/stress",
+  "fixtures/v6/environments/hdri",
+  "fixtures/v6/environments/pmrem-baselines",
+  "benchmarks/v6/shared",
+  "benchmarks/v6/g3d",
+  "benchmarks/v6/threejs"
+] as const;
+const requiredToolsTests = [
+  "tools/v6-asset-fetch/index.ts",
+  "tools/v6-asset-audit/index.ts",
+  "tests/assets/v6-asset-corpus.test.ts",
+  "tests/unit/rendering/v6-hdr-loader.test.ts",
+  "tests/browser/v6-hdr-ibl.spec.ts",
+  "tools/v6-environment-readiness/index.ts",
+  "tests/unit/rendering/v6-pbr-material.test.ts",
+  "tests/browser/v6-pbr-materials.spec.ts",
+  "tests/browser/v6-gltf-material-extensions.spec.ts",
+  "tools/v6-pbr-readiness/index.ts",
+  "tests/unit/rendering/v6-webgl2-backend.test.ts",
+  "tests/browser/v6-webgl2-real-frame.spec.ts",
+  "tests/browser/v6-webgl2-context-loss.spec.ts",
+  "tests/browser/v6-webgpu-capability.spec.ts",
+  "tests/browser/v6-webgpu-real-frame.spec.ts",
+  "tests/assets/v6-gltf-loader.test.ts",
+  "tests/browser/v6-gltf-render-corpus.spec.ts",
+  "tests/browser/v6-gltf-animation-render.spec.ts",
+  "tools/v6-gltf-readiness/index.ts",
+  "tools/v6-screenshot-gallery/index.ts",
+  "tools/v6-visual-quality/index.ts",
+  "tools/v6-real-renderer-proof/index.ts",
+  "tools/v6-human-visual-review/index.ts",
+  "tests/browser/v6-screenshot-gallery.spec.ts",
+  "tests/unit/tools/v6-visual-quality.test.ts",
+  "benchmarks/v6/shared/scenes.ts",
+  "benchmarks/v6/g3d/renderScene.ts",
+  "benchmarks/v6/threejs/renderScene.ts",
+  "benchmarks/v6/shared/compareImages.ts",
+  "tests/browser/v6-threejs-visual-parity.spec.ts",
+  "tests/browser/v6-threejs-runtime-parity.spec.ts",
+  "tools/v6-threejs-parity/index.ts",
+  "packages/workflows/src/v6/ProductRenderWorkflow.ts",
+  "packages/workflows/src/v6/AssetInspectionWorkflow.ts",
+  "packages/workflows/src/v6/MaterialAuthoringWorkflow.ts",
+  "packages/workflows/src/v6/ArchitectureWorkflow.ts",
+  "packages/workflows/src/v6/CinematicWorkflow.ts",
+  "packages/workflows/src/v6/WorkflowDiagnostics.ts",
+  "tests/browser/v6-workflow-presets.spec.ts",
+  "tools/v6-workflow-readiness/index.ts"
+] as const;
+const requiredScripts = ['v6:assets','v6:environments','v6:pbr','v6:gltf','v6:lighting-postprocess','v6:webgl2','v6:webgpu','v6:visuals','v6:compare-threejs','v6:workflows','v6:release'] as const;
+const requiredExports = ['./rendering/v6','./assets/v6','./v6'] as const;
+const pkg = json('package.json') as { scripts?: Record<string, string>; exports?: Record<string, string> };
+const assetManifest = json('fixtures/v6/assets/manifest.json') as { assets?: Array<{ id: string; class?: string; role?: string; tags?: string[]; localPath?: string }>; requirements?: Json };
+const envManifest = json('fixtures/v6/environments/manifest.json') as { environments?: Array<{ id: string; class?: string; label?: string; sourceName?: string; localPath?: string }>; requirements?: Json };
+const assets = assetManifest.assets ?? [];
+const envs = envManifest.environments ?? [];
+const stressCount = assets.filter((asset) => /material-stress|clearcoat|sheen|specular|transmission|transparent|alpha|glass/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const animationCount = assets.filter((asset) => /animation|skinning|morph/i.test([asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const transparentCount = assets.filter((asset) => /transparent|transmission|clearcoat|alpha|glass/i.test([asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const largeCount = assets.filter((asset) => /large-scene|multi-mesh|multiple primitives/i.test([asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const architectureCount = assets.filter((asset) => /architecture|interior/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const productCount = assets.filter((asset) => /product|commerce/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const envLabels = envs.map((env) => [env.class, env.id, env.label, env.sourceName].join(' ').toLowerCase());
+const checks: Check[] = [listCheck('required-package-files', requiredPackageFiles), listCheck('required-directories', requiredDirs), listCheck('required-tools-tests-benchmarks', requiredToolsTests), listCheck('required-final-reports', requiredReports), screenshotCheck('required-final-screenshots', requiredScreenshots), { id: 'root-exports', pass: requiredExports.every((key) => typeof pkg.exports?.[key] === 'string'), detail: requiredExports.filter((key) => typeof pkg.exports?.[key] !== 'string').join(', ') }, { id: 'release-scripts', pass: requiredScripts.every((key) => typeof pkg.scripts?.[key] === 'string'), detail: requiredScripts.filter((key) => typeof pkg.scripts?.[key] !== 'string').join(', ') }, { id: 'asset-count-20', pass: assets.length >= 20, detail: String(assets.length) }, { id: 'material-stress-assets-8', pass: stressCount >= 8, detail: String(stressCount) }, { id: 'animated-skinned-morph-assets-4', pass: animationCount >= 4, detail: String(animationCount) }, { id: 'transparent-transmission-clearcoat-assets-4', pass: transparentCount >= 4, detail: String(transparentCount) }, { id: 'large-multimesh-assets-3', pass: largeCount >= 3, detail: String(largeCount) }, { id: 'architecture-interior-assets-2', pass: architectureCount >= 2, detail: String(architectureCount) }, { id: 'product-commerce-assets-2', pass: productCount >= 2, detail: String(productCount) }, { id: 'hdr-count-10', pass: envs.length >= 10, detail: String(envs.length) }, { id: 'hdr-indoor-studio-4', pass: envLabels.filter((label) => /studio|indoor/.test(label)).length >= 4, detail: String(envLabels.filter((label) => /studio|indoor/.test(label)).length) }, { id: 'hdr-outdoor-daylight-3', pass: envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length >= 3, detail: String(envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length) }, { id: 'hdr-sunset-night-2', pass: envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length >= 2, detail: String(envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length) }, { id: 'hdr-high-contrast-1', pass: envLabels.filter((label) => /high-contrast|industrial/.test(label)).length >= 1, detail: String(envLabels.filter((label) => /high-contrast|industrial/.test(label)).length) }];
+const report = { schema: 'g3d-v6-literal-completion/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks };
+mkdirSync(dirname(resolve('tests/reports/v6-literal-completion.json')), { recursive: true });
+writeFileSync(resolve('tests/reports/v6-literal-completion.json'), JSON.stringify(report, null, 2) + '\n');
+if (!report.pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }
+console.log(JSON.stringify(report, null, 2));
+function listCheck(id: string, paths: readonly string[]): Check { const missing = paths.filter((path) => !existsSync(resolve(path))); return { id, pass: missing.length === 0, detail: missing.join(', ') }; }
+function screenshotCheck(id: string, paths: readonly string[]): Check { const missing = paths.filter((path) => !existsSync(resolve(path)) || statSync(resolve(path)).size < 1000); return { id, pass: missing.length === 0, detail: missing.join(', ') }; }
+function json(path: string): Json { return JSON.parse(readFileSync(resolve(path), 'utf8')) as Json; }

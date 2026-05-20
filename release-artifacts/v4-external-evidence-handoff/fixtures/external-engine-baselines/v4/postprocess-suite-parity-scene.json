@@ -1,0 +1,406 @@
+{
+  "schemaVersion": "v4-postprocess-suite-parity-scene-v1",
+  "id": "v4-postprocess-suite-parity-scene",
+  "baselineKind": "postprocess-suite",
+  "viewport": {
+    "width": 960,
+    "height": 540
+  },
+  "camera": "deterministic-front-orthographic",
+  "sourceReports": [
+    "tests/reports/v4-postprocess-suite.json",
+    "tests/reports/v4-rendering.json"
+  ],
+  "materials": [
+    {
+      "id": "postprocess-sample-0",
+      "kind": "pbr",
+      "color": [
+        1,
+        0.3,
+        0.3,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.25
+    },
+    {
+      "id": "postprocess-sample-1",
+      "kind": "pbr",
+      "color": [
+        1,
+        0.6,
+        0.3,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.275
+    },
+    {
+      "id": "postprocess-sample-2",
+      "kind": "pbr",
+      "color": [
+        1,
+        0.9,
+        0.3,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.3
+    },
+    {
+      "id": "postprocess-sample-3",
+      "kind": "pbr",
+      "color": [
+        0.8,
+        1,
+        0.3,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.325
+    },
+    {
+      "id": "postprocess-sample-4",
+      "kind": "pbr",
+      "color": [
+        0.5,
+        1,
+        0.3,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.35
+    },
+    {
+      "id": "postprocess-sample-5",
+      "kind": "pbr",
+      "color": [
+        0.3,
+        1,
+        0.4,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.375
+    },
+    {
+      "id": "postprocess-sample-6",
+      "kind": "pbr",
+      "color": [
+        0.3,
+        1,
+        0.7,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.4
+    },
+    {
+      "id": "postprocess-sample-7",
+      "kind": "pbr",
+      "color": [
+        0.3,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.425
+    },
+    {
+      "id": "postprocess-sample-8",
+      "kind": "pbr",
+      "color": [
+        0.3,
+        0.7,
+        1,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.45
+    },
+    {
+      "id": "postprocess-sample-9",
+      "kind": "pbr",
+      "color": [
+        0.3,
+        0.4,
+        1,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.475
+    },
+    {
+      "id": "postprocess-sample-10",
+      "kind": "pbr",
+      "color": [
+        0.5,
+        0.3,
+        1,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.5
+    },
+    {
+      "id": "postprocess-sample-11",
+      "kind": "pbr",
+      "color": [
+        0.8,
+        0.3,
+        1,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.525
+    },
+    {
+      "id": "postprocess-sample-12",
+      "kind": "pbr",
+      "color": [
+        1,
+        0.3,
+        0.9,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.55
+    },
+    {
+      "id": "postprocess-sample-13",
+      "kind": "pbr",
+      "color": [
+        1,
+        0.3,
+        0.6,
+        1
+      ],
+      "metallic": 0.05,
+      "roughness": 0.575
+    }
+  ],
+  "parts": [
+    {
+      "id": "postprocess-sample-0",
+      "geometry": "sphere",
+      "material": "postprocess-sample-0",
+      "position": [
+        0.35,
+        0,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-1",
+      "geometry": "sphere",
+      "material": "postprocess-sample-1",
+      "position": [
+        0.496,
+        0.239,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-2",
+      "geometry": "sphere",
+      "material": "postprocess-sample-2",
+      "position": [
+        0.468,
+        0.586,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-3",
+      "geometry": "sphere",
+      "material": "postprocess-sample-3",
+      "position": [
+        0.078,
+        0.341,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-4",
+      "geometry": "sphere",
+      "material": "postprocess-sample-4",
+      "position": [
+        -0.122,
+        0.536,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-5",
+      "geometry": "sphere",
+      "material": "postprocess-sample-5",
+      "position": [
+        -0.468,
+        0.586,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-6",
+      "geometry": "sphere",
+      "material": "postprocess-sample-6",
+      "position": [
+        -0.315,
+        0.152,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-7",
+      "geometry": "sphere",
+      "material": "postprocess-sample-7",
+      "position": [
+        -0.55,
+        0,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-8",
+      "geometry": "sphere",
+      "material": "postprocess-sample-8",
+      "position": [
+        -0.676,
+        -0.325,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-9",
+      "geometry": "sphere",
+      "material": "postprocess-sample-9",
+      "position": [
+        -0.218,
+        -0.274,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-10",
+      "geometry": "sphere",
+      "material": "postprocess-sample-10",
+      "position": [
+        -0.122,
+        -0.536,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-11",
+      "geometry": "sphere",
+      "material": "postprocess-sample-11",
+      "position": [
+        0.167,
+        -0.731,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-12",
+      "geometry": "sphere",
+      "material": "postprocess-sample-12",
+      "position": [
+        0.218,
+        -0.274,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    {
+      "id": "postprocess-sample-13",
+      "geometry": "sphere",
+      "material": "postprocess-sample-13",
+      "position": [
+        0.496,
+        -0.239,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    }
+  ],
+  "minimumEvidence": {
+    "width": 960,
+    "height": 540,
+    "nonBlankPixels": 30001,
+    "colorBuckets": 8,
+    "drawCalls": 4,
+    "implementedEffects": 14,
+    "realSceneEffects": 14
+  },
+  "claimBoundary": "This descriptor defines the required same-scene external Unity/Unreal baseline slot. It is a portable render target for external editor runs, not evidence until a real engine run writes the matching report and screenshot."
+}

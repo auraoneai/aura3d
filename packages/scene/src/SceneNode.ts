@@ -1,6 +1,7 @@
 import { ValidationError } from "@galileo3d/core";
 import { Bounds3 } from "./Bounds.js";
 import { cloneMat4, invertMat4, multiplyMat4 } from "./MathTypes.js";
+import type { Renderable } from "./Renderable.js";
 import { TransformNode } from "./TransformNode.js";
 
 let nextSceneNodeId = 1;
@@ -14,11 +15,19 @@ export interface AddChildOptions {
   preserveWorldTransform?: boolean;
 }
 
+export interface DisposeNodeOptions {
+  recursive?: boolean;
+}
+
 export class SceneNode {
   readonly id: string;
   name: string;
   visible = true;
   layerMask = 1;
+  renderOrder = 0;
+  disposed = false;
+  userData: Record<string, unknown> = {};
+  renderable?: Renderable;
   readonly transform = new TransformNode();
   localBounds: Bounds3 | null = null;
   worldBounds = new Bounds3();
@@ -32,6 +41,8 @@ export class SceneNode {
   }
 
   addChild(child: SceneNode, options: AddChildOptions = {}): this {
+    this.assertAlive();
+    child.assertAlive();
     assertCanParent(this, child);
     if (child.parent === this) return this;
     const preservedWorld = options.preserveWorldTransform ? cloneMat4(child.transform.worldMatrix) : undefined;
@@ -45,6 +56,7 @@ export class SceneNode {
   }
 
   removeChild(child: SceneNode): boolean {
+    this.assertAlive();
     const index = this.children.indexOf(child);
     if (index < 0) return false;
     this.children.splice(index, 1);
@@ -84,9 +96,29 @@ export class SceneNode {
   }
 
   setLocalBounds(bounds: Bounds3 | null): this {
+    this.assertAlive();
     this.localBounds = bounds?.clone() ?? null;
     this.worldBounds = this.localBounds ? this.localBounds.transform(this.transform.worldMatrix) : new Bounds3();
     return this;
+  }
+
+  dispose(options: DisposeNodeOptions = {}): void {
+    if (this.disposed) return;
+    const recursive = options.recursive ?? true;
+    const children = [...this.children];
+    if (recursive) {
+      for (const child of children) child.dispose(options);
+    } else {
+      for (const child of children) child.parent = null;
+    }
+    this.children.length = 0;
+    this.parent?.removeChild(this);
+    this.parent = null;
+    this.renderable = undefined;
+    this.localBounds = null;
+    this.userData = {};
+    this.visible = false;
+    this.disposed = true;
   }
 
   markWorldDirty(): void {
@@ -94,6 +126,10 @@ export class SceneNode {
       child.transform.markDirty();
       child.markWorldDirty();
     }
+  }
+
+  protected assertAlive(): void {
+    if (this.disposed) throw new ValidationError("DISPOSED_SCENE_NODE", `Scene node ${this.name} is disposed.`);
   }
 }
 

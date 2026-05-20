@@ -2,12 +2,16 @@ import type { Ray } from "@galileo3d/math";
 import { CommandHistory } from "./CommandHistory";
 import type { Command, CommandContext } from "./Command";
 import { DiagnosticsOverlayModel, type EditorDiagnosticsInput, type EditorDiagnosticsSnapshot } from "./DiagnosticsOverlayModel";
-import type { GizmoDrag } from "./Gizmo";
+import { normalizeGizmoSettings, type GizmoDrag, type GizmoSettings } from "./Gizmo";
+import { EditorStateModel, type EditorStateSnapshot, type EditorStateStorage, type EditorViewportSettings } from "./EditorStateModel";
 import { HierarchyModel, type HierarchyLikeNode, type HierarchyNodeDescriptor } from "./HierarchyModel";
 import { InspectorModel, type InspectorEditableValue, type InspectorProperty } from "./InspectorModel";
 import { MaterialVariantWorkflow, type MaterialVariantState } from "./MaterialVariantWorkflow";
 import type { PlayModeBridge } from "./PlayModeBridge";
-import { PickingService, type EditorPickHit, type EditorPickTarget } from "./PickingService";
+import { PickingService, type EditorPickHit, type EditorPickTarget, type EditorPickingEvidenceSnapshot } from "./PickingService";
+import { PrefabRegistry, type EditorPrefabNodeBase } from "./PrefabRegistry";
+import { RotateGizmo } from "./RotateGizmo";
+import { ScaleGizmo } from "./ScaleGizmo";
 import { Selection, type SelectionId } from "./Selection";
 import { TranslateGizmo } from "./TranslateGizmo";
 import type { TransformTarget } from "./commands/TransformCommand";
@@ -23,7 +27,16 @@ export interface EditorRuntimeSnapshot {
   readonly undoDepth: number;
   readonly redoDepth: number;
   readonly materialVariants: readonly MaterialVariantState[];
+  readonly prefabCount: number;
+  readonly picking: EditorPickingEvidenceSnapshot;
   readonly diagnostics: EditorDiagnosticsSnapshot;
+  readonly gizmoSettings: GizmoSettings;
+  readonly editorState: EditorStateSnapshot;
+}
+
+export interface EditorRuntimeOptions {
+  readonly stateStorage?: EditorStateStorage;
+  readonly stateStorageKey?: string;
 }
 
 export class EditorRuntime {
@@ -33,12 +46,21 @@ export class EditorRuntime {
   readonly hierarchy = new HierarchyModel();
   readonly materialVariants = new MaterialVariantWorkflow();
   readonly diagnostics = new DiagnosticsOverlayModel();
+  readonly prefabs = new PrefabRegistry<EditorPrefabNodeBase>();
+  readonly state: EditorStateModel;
 
   private readonly picking = new PickingService();
   private modeRef: EditorMode = "edit";
   private activeToolRef = "select";
+  private gizmoSettingsRef: GizmoSettings;
   private disposed = false;
   private activePlayModeBridge: PlayModeBridge<unknown> | null = null;
+
+  constructor(options: EditorRuntimeOptions = {}) {
+    this.state = new EditorStateModel({ storage: options.stateStorage, storageKey: options.stateStorageKey });
+    this.activeToolRef = this.state.activeTool;
+    this.gizmoSettingsRef = this.state.gizmoSettings();
+  }
 
   get mode(): EditorMode {
     return this.modeRef;
@@ -54,7 +76,31 @@ export class EditorRuntime {
     if (normalized.length === 0) {
       throw new Error("EditorRuntime tool name cannot be empty.");
     }
+    this.state.setActiveTool(normalized);
     this.activeToolRef = normalized;
+  }
+
+  configureGizmos(settings: Partial<GizmoSettings>): GizmoSettings {
+    this.assertEditable();
+    this.gizmoSettingsRef = normalizeGizmoSettings({ ...this.gizmoSettingsRef, ...settings });
+    this.state.configureFromGizmoSettings(this.gizmoSettingsRef);
+    return this.gizmoSettingsRef;
+  }
+
+  gizmoSettings(): GizmoSettings {
+    this.assertAlive();
+    return this.gizmoSettingsRef;
+  }
+
+  configureViewportState(settings: Partial<EditorViewportSettings>): EditorStateSnapshot {
+    this.assertEditable();
+    this.state.configureViewport(settings);
+    return this.state.snapshot();
+  }
+
+  editorStateSnapshot(): EditorStateSnapshot {
+    this.assertAlive();
+    return this.state.snapshot();
   }
 
   setMode(mode: EditorMode): void {
@@ -106,6 +152,11 @@ export class EditorRuntime {
     await this.history.redo(context);
   }
 
+  clearHistory(): void {
+    this.assertEditable();
+    this.history.clear();
+  }
+
   inspect(target: object): readonly InspectorProperty[] {
     this.assertAlive();
     return this.inspector.describe(target);
@@ -136,9 +187,20 @@ export class EditorRuntime {
     this.picking.setTargets(targets);
   }
 
+  configurePickingBuffer(width: number, height: number): EditorPickingEvidenceSnapshot {
+    this.assertEditable();
+    this.picking.resizePickingBuffer(width, height);
+    return this.picking.snapshot();
+  }
+
   pick(ray: Ray): EditorPickHit | undefined {
     this.assertAlive();
     return this.picking.pick(ray);
+  }
+
+  pickingSnapshot(): EditorPickingEvidenceSnapshot {
+    this.assertAlive();
+    return this.picking.snapshot();
   }
 
   async translateTarget(target: TransformTarget | undefined, input: GizmoDrag): Promise<void> {
@@ -146,7 +208,35 @@ export class EditorRuntime {
     if (!target) {
       return;
     }
-    const gizmo = new TranslateGizmo(this.history);
+    const gizmo = new TranslateGizmo(this.history, this.gizmoSettingsRef);
+    try {
+      gizmo.setTarget(target);
+      await gizmo.drag(input);
+    } finally {
+      gizmo.dispose();
+    }
+  }
+
+  async rotateTarget(target: TransformTarget | undefined, input: GizmoDrag): Promise<void> {
+    this.assertEditable();
+    if (!target) {
+      return;
+    }
+    const gizmo = new RotateGizmo(this.history, this.gizmoSettingsRef);
+    try {
+      gizmo.setTarget(target);
+      await gizmo.drag(input);
+    } finally {
+      gizmo.dispose();
+    }
+  }
+
+  async scaleTarget(target: TransformTarget | undefined, input: GizmoDrag): Promise<void> {
+    this.assertEditable();
+    if (!target) {
+      return;
+    }
+    const gizmo = new ScaleGizmo(this.history, this.gizmoSettingsRef);
     try {
       gizmo.setTarget(target);
       await gizmo.drag(input);
@@ -224,7 +314,11 @@ export class EditorRuntime {
       undoDepth: this.history.undoDepth,
       redoDepth: this.history.redoDepth,
       materialVariants: this.materialVariants.snapshot(),
-      diagnostics: this.diagnostics.snapshot()
+      prefabCount: this.prefabs.list().length,
+      picking: this.picking.snapshot(),
+      diagnostics: this.diagnostics.snapshot(),
+      gizmoSettings: this.gizmoSettingsRef,
+      editorState: this.state.snapshot()
     };
   }
 
@@ -235,6 +329,7 @@ export class EditorRuntime {
     this.history.clear();
     this.materialVariants.clear();
     this.diagnostics.clear();
+    this.prefabs.clear();
     this.activeToolRef = "select";
     this.disposed = true;
   }

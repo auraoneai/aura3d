@@ -34,6 +34,20 @@ test.describe("rendering camera scene integration", () => {
     expect(g).toBeLessThan(90);
     expect(b).toBeLessThan(40);
     expect(a).toBe(255);
+
+    expect(result?.movingCameraFrames).toHaveLength(3);
+    for (const frame of result?.movingCameraFrames ?? []) {
+      expect(frame.drawCalls, JSON.stringify(frame)).toBe(1);
+      expect(frame.nonDarkPixels, JSON.stringify(frame)).toBeGreaterThan(300);
+      expect(frame.colorBuckets, JSON.stringify(frame)).toBeGreaterThan(1);
+    }
+
+    expect(result?.orbitCameraFrames).toHaveLength(3);
+    for (const frame of result?.orbitCameraFrames ?? []) {
+      expect(frame.drawCalls, JSON.stringify(frame)).toBe(1);
+      expect(frame.nonDarkPixels, JSON.stringify(frame)).toBeGreaterThan(900);
+      expect(frame.colorBuckets, JSON.stringify(frame)).toBeGreaterThan(4);
+    }
   });
 });
 
@@ -47,6 +61,18 @@ declare global {
       readonly mvpTranslation?: readonly number[];
       readonly sceneCameraDrawCalls?: number;
       readonly sceneCameraPixel?: readonly number[];
+      readonly movingCameraFrames?: readonly {
+        readonly cameraX: number;
+        readonly drawCalls: number;
+        readonly nonDarkPixels: number;
+        readonly colorBuckets: number;
+      }[];
+      readonly orbitCameraFrames?: readonly {
+        readonly cameraX: number;
+        readonly drawCalls: number;
+        readonly nonDarkPixels: number;
+        readonly colorBuckets: number;
+      }[];
       readonly error?: string;
     };
   }

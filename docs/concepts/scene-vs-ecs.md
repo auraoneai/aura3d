@@ -1,27 +1,63 @@
 # Scene Graph Versus ECS
 
-Galileo3D exposes both scene graph and ECS-style runtime concepts. They solve different coordination problems and should not be treated as interchangeable APIs.
+Version: `0.1.0-alpha.0`
 
-## System Boundary
+Galileo3D exposes both scene graph and ECS-style runtime concepts. Use them for different jobs and bridge them deliberately.
 
-The scene graph owns authored hierarchy and spatial relationships. ECS owns dense component data and scheduled behavior. Integration code should copy state across that boundary deliberately instead of letting both systems mutate the same transform or identity at the same time.
+## Scene Graph
 
-## Use The Scene Graph For Spatial Authoring
+Use the scene graph when hierarchy and authored spatial relationships matter:
 
-Use scene nodes when hierarchy, transforms, cameras, lights, and imported asset structure matter. glTF import, editor hierarchy, camera placement, and renderer-facing transforms naturally map to scene graph objects.
+- imported glTF node trees;
+- cameras, lights, and transforms;
+- parent/child transform inheritance;
+- editor hierarchy panels;
+- product scene authoring;
+- renderer-facing objects with stable visual identity.
 
-Scene graph code is a good fit when an object has a parent, a local transform, and visible or authored state that a developer expects to inspect.
+Relevant packages:
 
-## Use ECS For Dense Runtime State
+- `@galileo3d/engine/scene`;
+- `@galileo3d/engine/v9`;
+- `@galileo3d/engine/assets`;
+- `@galileo3d/engine/editor-runtime`.
 
-Use ECS when behavior is data-oriented, repeated across many entities, or scheduled as systems. Physics synchronization, gameplay state, and large batches of similar runtime objects are better fits for components and queries.
+## ECS
 
-ECS code is a good fit when the app needs predictable system ordering and compact state updates more than authored hierarchy.
+Use ECS when behavior is data-oriented, repeated, and scheduled:
 
-## Bridge Deliberately
+- gameplay state;
+- many similar objects;
+- fixed system ordering;
+- physics synchronization;
+- simulation or interaction state that does not need authored hierarchy.
 
-Avoid duplicating the same source of truth in both systems. If a physics body drives a scene node, define which side writes the transform and which side reads it. If an editor action creates a visible object, keep the serialized scene identity stable and let ECS state reference it only when needed.
+Relevant package:
 
-## Current Limits
+```ts
+import { World } from "@galileo3d/engine/ecs";
+```
 
-The current examples prove bounded scene, ECS, and physics integration slices. They do not prove a large production editor workflow where every scene object has an ECS mirror or a complete prefab/composition runtime.
+## Bridge Rule
+
+Avoid two independent sources of truth for one transform. If physics drives a scene node, physics writes and scene reads. If editor commands drive a node, editor state writes and ECS systems observe or mirror intentionally.
+
+## V9 Runtime Shape
+
+`G3DScene` is a direct runtime scene surface for renderer usage:
+
+```ts
+import { G3DScene } from "@galileo3d/engine/v9";
+
+const scene = new G3DScene();
+scene.addGeometry("mesh", geometry);
+scene.addMaterial("mat", material);
+scene.createRenderableMesh({ geometry: "mesh", material: "mat" });
+```
+
+This is useful when you need explicit renderer-facing resource libraries. Imported assets and editor scenes may still carry richer authored hierarchy before conversion.
+
+## Boundaries
+
+The current repo proves bounded scene, ECS, physics, editor, and renderer integration slices. It does not prove a large production editor where every object has a complete ECS mirror, a mature prefab system, or a full game-engine composition model.
+

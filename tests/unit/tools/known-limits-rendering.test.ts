@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 describe("renderer known limits", () => {
   it("keeps large-scene culling, PBR environment, material, and shadow caveats explicit", () => {
-    const knownLimits = readFileSync("docs/known-limits.md", "utf8");
+    const knownLimits = readFileSync("docs/project/known-limits.md", "utf8");
 
     expect(knownLimits).toContain("Renderer scene frustum culling is implemented");
     expect(knownLimits).toContain("not a broad large-scene performance claim");

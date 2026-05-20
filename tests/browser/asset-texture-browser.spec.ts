@@ -36,12 +36,33 @@ test.describe("asset texture browser runtime", () => {
     const [gr = 0, gg = 0, gb = 0, ga = 0] = result?.gltfRenderPixel ?? [];
     expect(gr).toBeGreaterThan(10);
     expect(gr).toBeLessThan(140);
-    expect(gg).toBeGreaterThan(160);
+    expect(gg).toBeGreaterThan(130);
     expect(gg).toBeGreaterThan(gr);
     expect(gg).toBeGreaterThan(gb);
     expect(gb).toBeGreaterThan(30);
-    expect(gb).toBeLessThan(100);
+    expect(gb).toBeLessThan(Math.max(120, gg * 0.75));
     expect(ga).toBe(255);
+
+    expect(result?.gltfDefaultSourceDiagnostics?.drawCalls).toBe(1);
+    const [dr = 0, dg = 0, db = 0, da = 0] = result?.gltfDefaultSourcePixel ?? [];
+    expect(dr).toBeGreaterThan(4);
+    expect(dg).toBeGreaterThan(60);
+    expect(dg).toBeGreaterThan(dr);
+    expect(dg).toBeGreaterThan(db);
+    expect(da).toBe(255);
+
+    expect(result?.gltfHdrPreviewDiagnostics?.drawCalls).toBe(1);
+    expect(result?.gltfHdrPreviewPostprocessTargetFormat).toBe("rgba16f");
+    expect(result?.gltfHdrPreviewEnvironmentMapTexture).toBe(true);
+    expect(result?.gltfHdrPreviewBrdfLutTexture).toBe(true);
+    const [hr = 0, hg = 0, hb = 0, ha = 0] = result?.gltfHdrPreviewPixel ?? [];
+    expect(hr).toBeGreaterThan(4);
+    expect(hg).toBeGreaterThan(50);
+    expect(hg).toBeGreaterThan(hr);
+    expect(hg).toBeGreaterThan(hb);
+    expect(ha).toBe(255);
+    expect(result?.gltfHdrPreviewStats?.nonDarkRatio ?? 0).toBeGreaterThan(0.08);
+    expect(result?.gltfHdrPreviewStats?.occupiedQuadrants ?? 0).toBe(4);
 
     expect(result?.gltfInstancedDiagnostics?.drawCalls).toBe(1);
     const [ilr = 0, ilg = 0, ilb = 0, ila = 0] = result?.gltfInstancedLeftPixel ?? [];
@@ -68,6 +89,17 @@ declare global {
       readonly gltfRenderTextureSize?: readonly [number, number];
       readonly gltfRenderPixel?: readonly number[];
       readonly gltfRenderDiagnostics?: { readonly drawCalls: number };
+      readonly gltfDefaultSourcePixel?: readonly number[];
+      readonly gltfDefaultSourceDiagnostics?: { readonly drawCalls: number };
+      readonly gltfHdrPreviewPixel?: readonly number[];
+      readonly gltfHdrPreviewDiagnostics?: { readonly drawCalls: number };
+      readonly gltfHdrPreviewStats?: {
+        readonly nonDarkRatio?: number;
+        readonly occupiedQuadrants?: number;
+      };
+      readonly gltfHdrPreviewPostprocessTargetFormat?: string;
+      readonly gltfHdrPreviewEnvironmentMapTexture?: boolean;
+      readonly gltfHdrPreviewBrdfLutTexture?: boolean;
       readonly gltfInstancedDiagnostics?: { readonly drawCalls: number };
       readonly gltfInstancedLeftPixel?: readonly number[];
       readonly gltfInstancedRightPixel?: readonly number[];

@@ -5,10 +5,17 @@ import {
   ActionMap,
   GamepadDevice,
   GestureRecognizer,
+  InputPlayback,
+  InputRecorder,
   InputSnapshot,
   InputSystem,
   InteractionSystem,
-  pickingRayFromCamera
+  parseInputRecording,
+  pickingRayFromCamera,
+  processInputValue,
+  sampleInputActionBindingFixture,
+  sampleVirtualTouchJoystickFixture,
+  sampleXRRuntimeFixture
 } from "@galileo3d/input";
 import {
   AudioClip,
@@ -21,14 +28,18 @@ import {
   FilterEffect,
   ReverbEffect,
   SceneAudioBridge,
-  SpatialAudio
+  SpatialAudio,
+  sampleAudioEffectsAnalysisFixture,
+  sampleAudioEnvironmentFixture,
+  sampleAdaptiveMusicFixture
 } from "@galileo3d/audio";
-import { BehaviorHost, BehaviorSystem, deserializeGraph, serializeGraph, validateGraph, VisualGraphExecutor, type VisualGraph } from "@galileo3d/scripting";
+import { BehaviorHost, BehaviorSystem, createVisualNode, deserializeGraph, listVisualNodeDefinitions, serializeGraph, validateGraph, VisualGraphExecutor, type VisualGraph } from "@galileo3d/scripting";
 import {
   CommandHistory,
   CreateNodeCommand,
   DeleteNodeCommand,
   EditorRuntime,
+  EditorStateModel,
   HierarchyModel,
   InspectorModel,
   MaterialVariantWorkflow,
@@ -39,7 +50,9 @@ import {
   Selection,
   SetPropertyCommand,
   TransformCommand,
-  TranslateGizmo
+  TranslateGizmo,
+  createMemoryEditorStateStorage,
+  sampleLocalizationAccessibilityFixture
 } from "@galileo3d/editor-runtime";
 
 class MockParam {
@@ -229,6 +242,130 @@ describe("input runtime contracts", () => {
     expect(tap).toEqual([{ type: "tap", x: 10, y: 20 }]);
     expect(pinch).toEqual([{ type: "pinch", scale: 2 }]);
   });
+
+  it("records, exports, seeks, loops, and replays deterministic input events", () => {
+    const recorder = new InputRecorder();
+    recorder.start(100);
+    recorder.recordKey("KeyD", true, 104);
+    recorder.recordPointerMove(12, 18, 3, 4, 108);
+    recorder.recordGamepadAxis(0, 0, 0.75, 112);
+    recorder.recordAction("gameplay", "moveX", 0.75, [0.75, 0], 116);
+    recorder.recordFrame(16, 120);
+    const recording = recorder.stop(132);
+
+    expect(recording.metadata).toMatchObject({
+      source: "origin-master-input-recorder-playback-adapted",
+      durationMs: 32,
+      frameCount: 1,
+      eventCount: 5,
+      evidence: {
+        oldCodebasePort: true,
+        recording: true,
+        playback: true,
+        seek: true,
+        looping: true
+      }
+    });
+
+    const parsed = parseInputRecording(recorder.toJSON());
+    const playback = new InputPlayback({ loop: true });
+    playback.load(parsed);
+    playback.play();
+    expect(playback.update(12).map((event) => event.type)).toEqual(["key", "pointer-move", "gamepad-axis"]);
+    playback.seek(15);
+    expect(playback.update(4).map((event) => event.type)).toEqual(["action"]);
+    playback.update(40);
+    expect(playback.snapshot()).toMatchObject({
+      state: "playing",
+      loopCount: 1,
+      recordingEventCount: 5,
+      evidence: { oldCodebasePort: true, recording: true, playback: true, seek: true, looping: true }
+    });
+  });
+
+  it("samples old-style action bindings, processors, and hold tap double-tap interactions", () => {
+    expect(processInputValue(0.08, [{ type: "deadzone", threshold: 0.2 }])).toBe(0);
+    expect(processInputValue(0.42, [{ type: "deadzone", threshold: 0.2 }, { type: "scale", factor: 1.8 }, { type: "clamp", min: -1, max: 1 }])).toBe(0.756);
+    expect(processInputValue(-0.5, [{ type: "invert" }, { type: "exponential", exponent: 2 }])).toBe(0.25);
+
+    const fixture = sampleInputActionBindingFixture();
+    expect(fixture).toMatchObject({
+      source: "origin-master-input-action-binding-adapted",
+      evidence: {
+        oldCodebasePort: true,
+        actionBindings: true,
+        processors: true,
+        holdTapDoubleTap: true,
+        compositeAxis: true,
+        modifierChord: true
+      },
+      processedAxis: 0.756,
+      deadzoneFilteredAxis: 0,
+      compositeX: 1,
+      compositeY: 1,
+      holdTriggered: true,
+      tapTriggered: true,
+      doubleTapTriggered: true,
+      modifierChordPressed: true
+    });
+    expect(fixture.compositeMagnitude).toBeCloseTo(Math.SQRT2, 4);
+    expect(fixture.claimBoundary).toContain("does not claim full input action");
+  });
+
+  it("samples bounded old virtual touch joystick behavior with dead zone, clamping, and recentering", () => {
+    const fixture = sampleVirtualTouchJoystickFixture();
+
+    expect(fixture.active.source).toBe("origin-master-touch-joystick-virtual-input-adapted");
+    expect(fixture.active.active).toBe(true);
+    expect(fixture.active.consumedTouches).toBe(1);
+    expect(fixture.active.evidence).toMatchObject({
+      oldCodebasePort: true,
+      virtualJoystick: true,
+      deadZone: true,
+      clampedMagnitude: true,
+      returnToCenter: true,
+      floatingCenter: true
+    });
+    expect(fixture.active.magnitude).toBeGreaterThan(0.8);
+    expect(fixture.active.magnitude).toBeLessThanOrEqual(1);
+    expect(fixture.released.active).toBe(false);
+    expect(fixture.released.value).toEqual([0, 0]);
+    expect(fixture.released.center).toEqual([96, 420]);
+  });
+
+  it("samples bounded old XR session, input, and gaze LOD concepts without claiming device parity", () => {
+    const fixture = sampleXRRuntimeFixture({ requestedMode: "immersive-vr", objectCount: 14 });
+
+    expect(fixture.source).toBe("origin-master-xr-session-input-foveated-adapted");
+    expect(fixture.evidence).toMatchObject({
+      oldCodebasePort: true,
+      sessionCapabilityNegotiation: true,
+      gracefulInlineFallback: true,
+      controllerInputTelemetry: true,
+      handGestureTelemetry: true,
+      gazeBasedLodTelemetry: true
+    });
+    expect(fixture.requestedMode).toBe("immersive-vr");
+    expect(fixture.fallbackMode).toBe("inline");
+    expect(fixture.sessionSupported).toBe(false);
+    expect(fixture.fallbackUsed).toBe(true);
+    expect(fixture.webXRSessionClaimed).toBe(false);
+    expect(fixture.deviceRuntimeClaimed).toBe(false);
+    expect(fixture.capabilities.supportedModes).toEqual(["inline"]);
+    expect(fixture.capabilities.unsupportedFeatures).toContain("hand-tracking");
+    expect(fixture.input.controllerCount).toBe(2);
+    expect(fixture.input.triggerPressed).toBe(true);
+    expect(fixture.input.pinchDetected).toBe(true);
+    expect(fixture.input.pinchStrength).toBeGreaterThan(0);
+    expect(fixture.input.pointDetected).toBe(true);
+    expect(fixture.gazeLod.objectCount).toBe(14);
+    expect(fixture.gazeLod.updatedObjects).toBeLessThanOrEqual(fixture.gazeLod.performanceBudget);
+    expect(fixture.gazeLod.selectedLevels).toEqual(expect.arrayContaining(["high", "medium", "low"]));
+    expect(fixture.blockedClaims).toContain("eye-tracked foveated rendering");
+    expect(fixture.blockedClaims).toContain("Unity XR Interaction Toolkit parity");
+    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(fixture.claimBoundary).toContain("does not claim a real WebXR headset session");
+  });
 });
 
 describe("audio runtime contracts", () => {
@@ -328,6 +465,101 @@ describe("audio runtime contracts", () => {
     filter.dispose();
     reverb.dispose();
     mixer.dispose();
+  });
+
+  it("samples bounded adaptive music layers and crossfades from old audio concepts", () => {
+    const action = sampleAdaptiveMusicFixture({ state: "action", curve: "equal-power" });
+    const victory = sampleAdaptiveMusicFixture({ state: "victory", intensity: 0.7, curve: "s-curve" });
+
+    expect(action).toMatchObject({
+      source: "origin-master-adaptive-music-adapted",
+      state: "action",
+      curve: "equal-power",
+      activeLayerCount: 3,
+      tempoBpm: 138,
+      crossfade: { equalPowerNormalized: true }
+    });
+    expect(action.layers.map((layer) => layer.id)).toEqual(["ambient-bed", "rhythm-pulse", "lead-motif", "result-stinger"]);
+    expect(action.layers.find((layer) => layer.id === "lead-motif")?.targetVolume).toBeGreaterThan(0);
+    expect(victory.activeLayerCount).toBeGreaterThanOrEqual(3);
+    expect(victory.layers.find((layer) => layer.id === "result-stinger")?.enabled).toBe(true);
+    expect(victory.crossfade.equalPowerNormalized).toBe(false);
+    expect(victory.hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(victory.claimBoundary).toContain("does not play authored stems");
+  });
+
+  it("samples bounded spatial occlusion, doppler, and reverb-zone audio telemetry", () => {
+    const fixture = sampleAudioEnvironmentFixture({
+      sourcePosition: [0, 0, 0],
+      listenerPosition: [0, 0, 4],
+      sourceVelocity: [0, 0, 8],
+      listenerVelocity: [0, 0, 0],
+      obstacleCount: 3,
+      reverbZoneRadius: 10,
+      reverbZoneDistance: 4,
+      baseFrequencyHz: 220
+    });
+
+    expect(fixture).toMatchObject({
+      source: "origin-master-spatial-audio-environment-adapted",
+      distance: 4,
+      occlusion: {
+        level: "heavy",
+        obstacleCount: 3,
+        lowpassHz: 800,
+        volume: 0.4
+      },
+      doppler: {
+        approaching: true
+      },
+      reverb: {
+        zoneRadius: 10,
+        zoneDistance: 4,
+        blend: 0.6
+      }
+    });
+    expect(fixture.doppler.pitchFactor).toBeGreaterThan(1);
+    expect(fixture.doppler.frequencyShiftHz).toBeGreaterThan(0);
+    expect(fixture.reverb.wetLevel).toBeGreaterThan(0);
+    expect(fixture.reverb.dryLevel).toBeLessThan(0.85);
+    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(fixture.claimBoundary).toContain("does not implement authored audio middleware");
+  });
+
+  it("samples bounded compressor, EQ, delay, chorus, distortion, filter, and spectrum telemetry from old audio concepts", () => {
+    const fixture = sampleAudioEffectsAnalysisFixture({ preset: "master", inputPeakDb: -3, intensity: 0.75 });
+    const repeat = sampleAudioEffectsAnalysisFixture({ preset: "master", inputPeakDb: -3, intensity: 0.75 });
+
+    expect(fixture.source).toBe("origin-master-audio-effects-analysis-adapted");
+    expect(fixture).toEqual(repeat);
+    expect(fixture.effectChain).toEqual(["parametric-eq", "dynamic-compressor", "delay", "chorus", "distortion", "filter", "spectrum-analyzer"]);
+    expect(fixture.compressor.preset).toBe("master");
+    expect(fixture.compressor.gainReductionDb).toBeGreaterThan(0);
+    expect(fixture.compressor.outputPeakDb).toBeLessThan(fixture.compressor.inputPeakDb);
+    expect(fixture.eq.activeBandCount).toBe(4);
+    expect(fixture.eq.lowShelfGainDb).toBeGreaterThan(0);
+    expect(fixture.eq.presenceGainDb).toBeGreaterThan(0);
+    expect(fixture.delay.source).toBe("origin-master-delay-effect-adapted");
+    expect(fixture.delay.delayTimeSeconds).toBeGreaterThan(0);
+    expect(fixture.delay.feedback).toBeGreaterThan(0);
+    expect(fixture.delay.wetDryMix).toBeGreaterThan(0);
+    expect(fixture.delay.repeatsAboveNoiseFloor).toBeGreaterThan(0);
+    expect(fixture.chorus.source).toBe("origin-master-chorus-effect-adapted");
+    expect(fixture.chorus.voices).toBeGreaterThanOrEqual(1);
+    expect(fixture.chorus.stereoWidth).toBeGreaterThan(0);
+    expect(fixture.distortion.source).toBe("origin-master-distortion-effect-adapted");
+    expect(fixture.distortion.harmonicBoost).toBeGreaterThan(0);
+    expect(fixture.distortion.outputCeiling).toBeGreaterThan(0);
+    expect(fixture.filter.source).toBe("origin-master-filter-effect-adapted");
+    expect(fixture.filter.enabled).toBe(true);
+    expect(fixture.filter.frequencyHz).toBeGreaterThan(0);
+    expect(fixture.spectrum.barCount).toBe(16);
+    expect(fixture.spectrum.peakFrequencyHz).toBeGreaterThan(0);
+    expect(fixture.spectrum.peakMagnitude).toBeGreaterThan(0);
+    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
+    expect(fixture.blockedClaims).toEqual(expect.arrayContaining(["Unity Audio Mixer parity", "Unreal Audio Mixer parity"]));
+    expect(fixture.blockedClaims).toContain("production delay/chorus/distortion/filter node graph parity");
+    expect(fixture.claimBoundary).toContain("does not instantiate a production WebAudio mastering graph");
   });
 
   it("updates spatial panner parameters and disconnects on disposal", () => {
@@ -505,6 +737,83 @@ describe("scripting runtime contracts", () => {
     ).toThrow(/cycle/i);
   });
 
+  it("executes the old-branch math and logic visual node catalog deterministically", () => {
+    const graph: VisualGraph = {
+      nodes: [
+        createVisualNode("const", "speed", { value: 42 }),
+        createVisualNode("const", "scale", { value: 1.5 }),
+        createVisualNode("multiply", "scaled-speed"),
+        createVisualNode("clamp", "clamped", { min: 0, max: 60 }),
+        createVisualNode("greater", "is-fast", { b: 50 }),
+        createVisualNode("const", "fast-label", { value: "fast" }),
+        createVisualNode("const", "slow-label", { value: "slow" }),
+        createVisualNode("select", "label"),
+        createVisualNode("log", "log")
+      ],
+      edges: [
+        { fromNode: "speed", fromPort: "out", toNode: "scaled-speed", toPort: "a" },
+        { fromNode: "scale", fromPort: "out", toNode: "scaled-speed", toPort: "b" },
+        { fromNode: "scaled-speed", fromPort: "out", toNode: "clamped", toPort: "value" },
+        { fromNode: "clamped", fromPort: "out", toNode: "is-fast", toPort: "a" },
+        { fromNode: "is-fast", fromPort: "out", toNode: "label", toPort: "condition" },
+        { fromNode: "fast-label", fromPort: "out", toNode: "label", toPort: "ifTrue" },
+        { fromNode: "slow-label", fromPort: "out", toNode: "label", toPort: "ifFalse" },
+        { fromNode: "label", fromPort: "out", toNode: "log", toPort: "in" }
+      ]
+    };
+
+    const definitions = listVisualNodeDefinitions();
+    const result = new VisualGraphExecutor().execute(deserializeGraph(serializeGraph(graph)));
+
+    expect(definitions.length).toBeGreaterThanOrEqual(25);
+    expect(definitions.find((definition) => definition.kind === "clamp")?.oldBranchSource).toContain("src/scripting/nodes/MathNodes.ts");
+    expect(definitions.find((definition) => definition.kind === "select")?.oldBranchSource).toContain("src/scripting/nodes/LogicNodes.ts");
+    expect(result.values.get("scaled-speed")).toBe(63);
+    expect(result.values.get("clamped")).toBe(60);
+    expect(result.values.get("is-fast")).toBe(true);
+    expect(result.values.get("log")).toBe("fast");
+    expect(result.nodeKinds).toEqual(["clamp", "const", "greater", "log", "multiply", "select"]);
+    expect(result.blockedClaims).toContain("Unity Visual Scripting parity");
+    expect(() => new VisualGraphExecutor().execute({ nodes: [createVisualNode("divide", "bad", { a: 1, b: 0 })], edges: [] })).toThrow(/divide by zero/i);
+  });
+
+  it("executes bounded old-branch visual flow-control nodes as deterministic summaries", () => {
+    const graph: VisualGraph = {
+      nodes: [
+        createVisualNode("const", "condition", { value: true }),
+        createVisualNode("branch", "branch"),
+        createVisualNode("switch", "switch", { value: 2, caseCount: 3 }),
+        createVisualNode("sequence", "sequence", { count: 3 }),
+        createVisualNode("forRange", "for-range", { startIndex: 2, endIndex: 5 }),
+        createVisualNode("gate", "gate", { startClosed: false })
+      ],
+      edges: [
+        { fromNode: "condition", fromPort: "out", toNode: "branch", toPort: "condition" }
+      ]
+    };
+
+    const definitions = listVisualNodeDefinitions();
+    const result = new VisualGraphExecutor().execute(deserializeGraph(serializeGraph(graph)));
+
+    expect(definitions.find((definition) => definition.kind === "branch")?.oldBranchSource).toContain("src/scripting/nodes/FlowNodes.ts");
+    expect(definitions.find((definition) => definition.kind === "forRange")?.category).toBe("flow");
+    expect(result.values.get("branch")).toBe("true");
+    expect(result.values.get("branch.selected")).toBe("true");
+    expect(result.values.get("branch.true")).toBe(true);
+    expect(result.values.get("branch.false")).toBe(false);
+    expect(result.values.get("switch")).toBe("case2");
+    expect(result.values.get("switch.case2")).toBe(true);
+    expect(result.values.get("sequence.outputs")).toEqual(["out0", "out1", "out2"]);
+    expect(result.values.get("for-range.indices")).toEqual([2, 3, 4]);
+    expect(result.values.get("for-range.completed")).toBe(true);
+    expect(result.values.get("gate.isOpen")).toBe(true);
+    expect(result.values.get("gate.out")).toBe(true);
+    expect(result.blockedClaims).toEqual(expect.arrayContaining([
+      "async latent action graph parity",
+      "editor-authored visual scripting parity"
+    ]));
+  });
+
   it("dispatches behavior events through services and binds host targets", async () => {
     const events: string[] = [];
     const target = { id: "script-target", x: 0 };
@@ -532,6 +841,54 @@ describe("scripting runtime contracts", () => {
 });
 
 describe("editor runtime contracts", () => {
+  it("samples bounded old localization and UI accessibility concepts without claiming certification", () => {
+    const fixture = sampleLocalizationAccessibilityFixture({ assetCount: 2 });
+
+    expect(fixture.source).toBe("origin-master-localization-ui-accessibility-adapted");
+    expect(fixture.sourceFiles).toEqual(expect.arrayContaining([
+      "origin/master:src/localization/LocalizationManager.ts",
+      "origin/master:src/localization/Pluralization.ts",
+      "origin/master:src/ui/UIAccessibility.ts"
+    ]));
+    expect(fixture.localeCount).toBeGreaterThanOrEqual(3);
+    expect(fixture.rtlLocaleCount).toBeGreaterThanOrEqual(1);
+    expect(fixture.jsonLoaderValidated).toBe(true);
+    expect(fixture.csvLoaderValidated).toBe(true);
+    expect(fixture.hotSwapLocale).toMatchObject({
+      from: "en-US",
+      to: "ar-SA",
+      directionChanged: true,
+      listenerNotifications: ["en-US", "ar-SA"]
+    });
+    expect(fixture.samples.find((sample) => sample.locale === "es-ES")).toMatchObject({
+      direction: "ltr",
+      title: "Editor Galileo3D",
+      assetCount: "2 recursos importados",
+      fallbackTitle: "Inspector",
+      missingKey: "[missing.key]",
+      formattedNumber: "1.234,50",
+      formattedCurrency: "1.234,50 EUR",
+      pluralCategory: "other"
+    });
+    expect(fixture.samples.find((sample) => sample.locale === "ar-SA")).toMatchObject({
+      direction: "rtl",
+      pluralCategory: "two"
+    });
+    expect(fixture.missingKeys).toContain("panel.inspector");
+    expect(fixture.accessibility.focusOrder).toEqual(["command-menu", "viewport", "inspector-name", "timeline-scrub", "export-project"]);
+    expect(fixture.accessibility.focusWalk).toEqual(["command-menu", "viewport", "inspector-name", "viewport"]);
+    expect(fixture.accessibility.aaContrastPasses).toBe(true);
+    expect(fixture.accessibility.liveRegionAnnouncements).toContain("Saved");
+    expect(fixture.blockedClaims).toEqual(expect.arrayContaining([
+      "screen-reader certification",
+      "WCAG conformance certification",
+      "Unity UI Toolkit parity",
+      "Unreal UMG parity"
+    ]));
+    expect(fixture.claimBoundary).toContain("does not certify WCAG compliance");
+    expect(fixture.hash).toMatch(/^[0-9a-f]{8}$/);
+  });
+
   it("executes commands, undo, redo, selection pruning, picking, and translate gizmo edits", async () => {
     const target = { position: { x: 0, y: 0, z: 0 } };
     const history = new CommandHistory();
@@ -608,6 +965,67 @@ describe("editor runtime contracts", () => {
     expect(node.transform.scale).toEqual([2, 2, 2]);
     await commandHistory.undo();
     expect(node.transform.scale).toEqual([1, 1, 1]);
+
+    const snappingRuntime = new EditorRuntime();
+    snappingRuntime.configureGizmos({ snapEnabled: true, positionSnap: 0.5, rotationSnapDegrees: 15, scaleSnap: 0.25, spaceMode: "world", pivotMode: "center" });
+    const snapTarget = {
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0, w: 1 },
+      scale: { x: 1, y: 1, z: 1 }
+    };
+    await snappingRuntime.translateTarget(snapTarget, { axis: "xy", delta: 0.31 });
+    expect(snapTarget.position).toEqual({ x: 0.5, y: 0.5, z: 0 });
+    await snappingRuntime.rotateTarget(snapTarget, { axis: "z", delta: 0.31 });
+    expect(snapTarget.rotation.z).toBeCloseTo(Math.PI / 12, 6);
+    await snappingRuntime.scaleTarget(snapTarget, { axis: "uniform", delta: 0.27 });
+    expect(snapTarget.scale).toEqual({ x: 1.25, y: 1.25, z: 1.25 });
+    expect(snappingRuntime.snapshot().gizmoSettings).toMatchObject({
+      snapEnabled: true,
+      positionSnap: 0.5,
+      rotationSnapDegrees: 15,
+      scaleSnap: 0.25,
+      spaceMode: "world",
+      pivotMode: "center"
+    });
+  });
+
+  it("persists bounded editor state for active tool, viewport settings, snap, transform space, and pivot mode", () => {
+    const storage = createMemoryEditorStateStorage();
+    const state = new EditorStateModel({ storage });
+    const changes: string[] = [];
+    state.subscribe((change) => changes.push(change.property));
+
+    state.setActiveTool("move");
+    state.setTransformSpace("local");
+    state.setPivotMode("active");
+    state.configureViewport({ showWireframe: true, showBounds: true, fov: 72, far: 1500 });
+    state.configureGridSnap({ snapToGrid: true, positionSnap: 0.5, rotationSnapEnabled: true, rotationSnapDegrees: 15, scaleSnapEnabled: true, scaleSnap: 0.25 });
+
+    expect(state.snapPosition(0.31)).toBe(0.5);
+    expect(state.snapRotation(0.31)).toBeCloseTo(Math.PI / 12, 6);
+    expect(state.snapScale(1.27)).toBe(1.25);
+    expect(state.snapshot().evidence).toMatchObject({
+      oldCodebasePort: true,
+      persistentEditorState: true,
+      viewportSettings: true,
+      gridSnapSettings: true,
+      transformSpacePivotMode: true
+    });
+    expect(changes).toEqual(["activeTool", "transformSpace", "pivotMode", "viewport", "gridSnap"]);
+
+    const reloaded = new EditorStateModel({ storage });
+    expect(reloaded.snapshot()).toMatchObject({
+      activeTool: "move",
+      transformSpace: "local",
+      pivotMode: "active",
+      persisted: true,
+      viewport: { showWireframe: true, showBounds: true, fov: 72, far: 1500 },
+      gridSnap: { snapToGrid: true, positionSnap: 0.5, rotationSnapEnabled: true, rotationSnapDegrees: 15, scaleSnapEnabled: true, scaleSnap: 0.25 }
+    });
+
+    const runtime = new EditorRuntime({ stateStorage: storage });
+    expect(runtime.snapshot().activeTool).toBe("move");
+    expect(runtime.snapshot().gizmoSettings).toMatchObject({ snapEnabled: true, positionSnap: 0.5, rotationSnapDegrees: 15, scaleSnap: 0.25, spaceMode: "local", pivotMode: "active" });
   });
 
   it("rolls back failed editor commands without polluting undo history", async () => {

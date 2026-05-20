@@ -11,3 +11,4 @@ export * from "./Diagnostics.js";
 export * from "./Errors.js";
 export * from "./Disposable.js";
 export * from "./ResourceScope.js";
+export * from "./VersionedSerialization.js";

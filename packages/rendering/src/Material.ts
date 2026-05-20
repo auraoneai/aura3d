@@ -3,6 +3,31 @@ import { TextureBinding } from "./TextureBinding";
 
 export type CullMode = "none" | "back" | "front";
 export type DepthCompare = "always" | "less-equal";
+export type ColorWriteMask = readonly [boolean, boolean, boolean, boolean];
+export type StencilCompare = "never" | "less" | "less-equal" | "greater" | "greater-equal" | "equal" | "not-equal" | "always";
+export type StencilOperation = "keep" | "zero" | "replace" | "increment" | "decrement" | "invert" | "increment-wrap" | "decrement-wrap";
+
+export interface ScissorRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface PolygonOffsetState {
+  readonly factor: number;
+  readonly units: number;
+}
+
+export interface StencilState {
+  readonly compare?: StencilCompare;
+  readonly reference?: number;
+  readonly readMask?: number;
+  readonly writeMask?: number;
+  readonly fail?: StencilOperation;
+  readonly depthFail?: StencilOperation;
+  readonly depthPass?: StencilOperation;
+}
 
 export interface RenderState {
   readonly depthTest: boolean;
@@ -10,9 +35,13 @@ export interface RenderState {
   readonly cullMode: CullMode;
   readonly blend: boolean;
   readonly depthCompare: DepthCompare;
+  readonly colorWrite: ColorWriteMask;
+  readonly scissor?: ScissorRect | null;
+  readonly polygonOffset?: PolygonOffsetState | null;
+  readonly stencil?: StencilState | null;
 }
 
-export type MaterialUniformKind = "any" | "float" | "vec2" | "vec3" | "vec4" | "mat4" | "texture2d";
+export type MaterialUniformKind = "any" | "float" | "vec2" | "vec3" | "vec4" | "mat4" | "texture2d" | "textureCube";
 
 export interface MaterialUniformDescriptor {
   readonly name: string;
@@ -23,6 +52,7 @@ export interface MaterialUniformDescriptor {
 export interface MaterialDescriptor {
   readonly name?: string;
   readonly shaderKey: string;
+  readonly shaderVariant?: string;
   readonly renderState?: Partial<RenderState>;
   readonly parameters?: Readonly<Record<string, UniformValue>>;
   readonly requiredAttributes?: readonly string[];
@@ -35,12 +65,18 @@ export const DEFAULT_RENDER_STATE: RenderState = {
   depthWrite: true,
   cullMode: "back",
   blend: false,
-  depthCompare: "less-equal"
+  depthCompare: "less-equal",
+  colorWrite: [true, true, true, true],
+  scissor: null,
+  polygonOffset: null,
+  stencil: null
 };
 
 export class Material {
+  public disposed = false;
   public readonly name: string;
   public readonly shaderKey: string;
+  public readonly shaderVariant?: string;
   public readonly renderState: RenderState;
   public readonly requiredAttributes: readonly string[];
   public readonly requiredUniforms: readonly string[];
@@ -55,6 +91,7 @@ export class Material {
     }
     this.name = descriptor.name ?? descriptor.shaderKey;
     this.shaderKey = descriptor.shaderKey;
+    this.shaderVariant = validateShaderVariant(descriptor.shaderVariant);
     this.renderState = validateRenderState({ ...DEFAULT_RENDER_STATE, ...(descriptor.renderState ?? {}) });
     this.requiredAttributes = descriptor.requiredAttributes ?? [];
     this.uniformSchema = validateUniformSchema(descriptor.uniformSchema ?? deriveRequiredUniformSchema(descriptor.requiredUniforms ?? []));
@@ -65,6 +102,7 @@ export class Material {
   }
 
   setParameter(name: string, value: UniformValue): void {
+    this.assertAlive();
     if (!name.trim()) {
       throw new Error("Material parameter name is required");
     }
@@ -74,11 +112,13 @@ export class Material {
   }
 
   getParameter(name: string): UniformValue | undefined {
+    this.assertAlive();
     const value = this.parameters.get(name);
     return value === undefined ? undefined : cloneUniformValue(value);
   }
 
   getParameters(): ReadonlyMap<string, UniformValue> {
+    this.assertAlive();
     const output = new Map<string, UniformValue>();
     for (const [key, value] of this.parameters) {
       output.set(key, cloneUniformValue(value));
@@ -95,13 +135,47 @@ export class Material {
   }
 
   markClean(): void {
+    this.assertAlive();
     this.dirty = false;
   }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.parameters.clear();
+    this.dirty = false;
+    this.disposed = true;
+  }
+
+  private assertAlive(): void {
+    if (this.disposed) {
+      throw new Error(`Material ${this.name} is disposed`);
+    }
+  }
+}
+
+function validateShaderVariant(variant: string | undefined): string | undefined {
+  if (variant === undefined) return undefined;
+  const trimmed = variant.trim();
+  if (!trimmed) {
+    throw new Error("Material shaderVariant must be non-empty when provided");
+  }
+  return trimmed;
 }
 
 export function validateRenderState(state: RenderState): RenderState {
   if (state.blend && state.depthWrite) {
     throw new Error("Transparent blended materials must disable depthWrite");
+  }
+  if (state.scissor) {
+    if (state.scissor.width < 0 || state.scissor.height < 0) {
+      throw new Error("RenderState scissor width and height must be non-negative");
+    }
+  }
+  if (state.stencil) {
+    const reference = state.stencil.reference ?? 0;
+    if (!Number.isInteger(reference) || reference < 0) {
+      throw new Error("RenderState stencil reference must be a non-negative integer");
+    }
   }
   return state;
 }

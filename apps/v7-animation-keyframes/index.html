@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V7 Animation Keyframes</title>
+    <link rel="stylesheet" href="/apps/v6-common/src/styles.css">
+    <style>
+      .v7-animation-keyframes #viewport {
+        background: #02050a;
+      }
+      .v7-animation-keyframes .runtime-details {
+        border: 1px solid #263244;
+        border-radius: 6px;
+        color: #c7d2e1;
+        display: grid;
+        gap: 6px;
+        margin-top: 16px;
+        padding: 12px;
+      }
+      .v7-animation-keyframes .runtime-details p {
+        margin: 0;
+      }
+      .v7-animation-keyframes #runtime-state.is-loading {
+        background: #42526a;
+      }
+      .v7-animation-keyframes #runtime-state.is-running {
+        background: #24744f;
+      }
+      .v7-animation-keyframes #runtime-state.is-error {
+        background: #963b3b;
+      }
+      .v7-animation-keyframes .runtime-error {
+        max-height: 360px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body class="v7-animation-keyframes">
+    <canvas id="viewport" width="1920" height="1080"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/v7-animation-keyframes/src/main.js"></script>
+  </body>
+</html>

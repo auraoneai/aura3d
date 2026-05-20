@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AssetManager, GLTFLoader, type AssetLoader } from "../src/index";
+import { AssetManager, GLTFLoader, OBJLoader, type AssetLoader } from "../src/index";
 
 test("AssetManager shares duplicate in-flight loads and releases cached handles", async () => {
   let loads = 0;
@@ -143,6 +143,70 @@ test("GLTFLoader loads a binary GLB fixture with a BIN chunk", async () => {
   assert.equal(asset.meshes[0]?.geometry.indexCount, 3);
   assert.deepEqual(asset.meshes[0]?.positions[2], [0, 1, 0]);
   assert.equal(asset.createScene().findByName("glb-node").length, 1);
+});
+
+test("OBJLoader parses bounded geometry into the glTF render-resource path", async () => {
+  const obj = [
+    "v -0.5 -0.5 0",
+    "v 0.5 -0.5 0",
+    "v 0.5 0.5 0",
+    "v -0.5 0.5 0",
+    "vt 0 0",
+    "vt 1 0",
+    "vt 1 1",
+    "vt 0 1",
+    "f 1/1 2/2 3/3 4/4"
+  ].join("\n");
+  const url = `data:text/plain,${encodeURIComponent(obj)}`;
+  const asset = await new OBJLoader().load({ url, type: "obj" }, { throwIfAborted: () => undefined } as never);
+
+  assert.equal(asset.url, url);
+  assert.equal(asset.meshes.length, 1);
+  assert.equal(asset.meshes[0]?.geometry.vertexCount, 6);
+  assert.equal(asset.meshes[0]?.geometry.indexCount, 6);
+  assert.equal(asset.meshes[0]?.texcoords.length, 6);
+  assert.equal(asset.meshes[0]?.normals.length, 6);
+  assert.deepEqual(asset.meshes[0]?.geometry.bounds.min, [-0.5, -0.5, 0]);
+  assert.deepEqual(asset.meshes[0]?.geometry.bounds.max, [0.5, 0.5, 0]);
+  assert(asset.loaderDiagnostics.features.includes("obj-native-import"));
+  assert(asset.loaderDiagnostics.features.includes("obj-generated-normals"));
+  assert.equal(asset.createScene().collectRenderables().length, 1);
+});
+
+test("OBJLoader preserves mtllib/usemtl material groups through glTF primitives", async () => {
+  const obj = [
+    "mtllib sample.mtl",
+    "v -0.5 -0.5 0",
+    "v 0.5 -0.5 0",
+    "v 0.5 0.5 0",
+    "v -0.5 0.5 0",
+    "usemtl amber",
+    "f 1 2 3",
+    "usemtl blue",
+    "f 1 3 4"
+  ].join("\n");
+  const mtl = [
+    "newmtl amber",
+    "Kd 1.0 0.62 0.14",
+    "Ns 64",
+    "newmtl blue",
+    "Kd 0.1 0.35 0.9",
+    "d 0.75"
+  ].join("\n");
+  const url = `data:text/plain,${encodeURIComponent(obj)}`;
+  const request = { url, type: "obj", materialLibraries: { "sample.mtl": mtl } };
+  const asset = await new OBJLoader().load(request, { throwIfAborted: () => undefined } as never);
+
+  assert.equal(asset.materials.length, 2);
+  assert.deepEqual(asset.materials.map((material) => material.name), ["amber", "blue"]);
+  assert.deepEqual(asset.materials[0]?.baseColorFactor, [1, 0.62, 0.14, 1]);
+  assert.deepEqual(asset.materials[1]?.baseColorFactor, [0.1, 0.35, 0.9, 0.75]);
+  assert.equal(asset.materials[1]?.alphaMode, "BLEND");
+  assert.equal(asset.meshes.length, 2);
+  assert.deepEqual(asset.meshes.map((mesh) => mesh.material), ["amber", "blue"]);
+  assert(asset.loaderDiagnostics.features.includes("obj-mtllib"));
+  assert(asset.loaderDiagnostics.features.includes("obj-multi-material"));
+  assert.equal(asset.createScene().collectRenderables().length, 2);
 });
 
 test("GLTFLoader extracts material texture metadata and embedded image bytes from GLB", async () => {

@@ -271,18 +271,18 @@ function writeBrowserHardwareMatrix(root: string, releaseRunId: string): void {
       "tests/reports/browser.json",
       "tests/reports/final-browser.json",
       "tests/reports/webgpu-hardware-matrix.json",
-      "docs/browser-hardware-matrix.md",
-      "docs/compatibility.md",
-      "docs/v2/claim-registry.md",
+      "docs/project/browser-hardware-matrix.md",
+      "docs/project/compatibility.md",
+      "docs/project/v2-claim-registry.md",
       "docs/rendering/webgpu-hardware-matrix.md"
     ],
     artifactLinks: [
       "tests/reports/browser.json",
       "tests/reports/final-browser.json",
       "tests/reports/webgpu-hardware-matrix.json",
-      "docs/browser-hardware-matrix.md",
-      "docs/compatibility.md",
-      "docs/v2/claim-registry.md",
+      "docs/project/browser-hardware-matrix.md",
+      "docs/project/compatibility.md",
+      "docs/project/v2-claim-registry.md",
       "docs/rendering/webgpu-hardware-matrix.md"
     ],
     browserRows,
@@ -429,7 +429,7 @@ function evaluateReleaseHardGateRows(root: string, repeats: number, runs: readon
       row: 692,
       description: "Versioned package release exists.",
       proven: !packageReleaseBlocked && versionedReleaseProven,
-      evidence: ["package.json", "docs/release-process.md", "docs/release-artifacts.json", "tests/reports/versioned-release.json"],
+      evidence: ["package.json", "docs/project/release-process.md", "docs/project/release-artifacts.json", "tests/reports/versioned-release.json"],
       blockers: packageReleaseBlocked || !versionedReleaseProven
         ? [`Package version is ${packageVersion ?? "unreadable"}; no passing versioned release artifact/publication evidence is recorded.`]
         : []
@@ -438,7 +438,7 @@ function evaluateReleaseHardGateRows(root: string, repeats: number, runs: readon
       row: 696,
       description: "Independent clean-checkout reproduction succeeds on another machine or agent from documented commands.",
       proven: independentReproduction,
-      evidence: ["tests/reports/clean-checkout.json", "docs/release-process.md"],
+      evidence: ["tests/reports/clean-checkout.json", "docs/project/release-process.md"],
       blockers: independentReproduction
         ? []
         : ["Current evidence was generated in this workspace only; no independent machine or agent reproduction evidence is recorded."]

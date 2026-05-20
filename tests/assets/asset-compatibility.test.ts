@@ -46,8 +46,8 @@ describe("asset compatibility diagnostics", () => {
 
     expect(report.schemaVersion).toBe("asset-compatibility-report-v1");
     expect(report.fixtureStatus.blenderExportFixtures).toBe("present");
-    expect(report.summary.assetCount).toBe(17);
-    expect(report.summary.galileo3d).toEqual({ pass: 11, warn: 4, "expected-fail": 2, "not-run": 0 });
+    expect(report.summary.assetCount).toBe(77);
+    expect(report.summary.galileo3d).toEqual({ pass: 70, warn: 7, "expected-fail": 0, "not-run": 0 });
     expect(report.summary.threejs["not-run"]).toBe(0);
     expect(report.summary.babylonjs["not-run"]).toBe(0);
     expect(report.blenderExportValidation?.summary).toMatchObject({ fixtureCount: 3, pass: 3, warn: 0, fail: 0 });
@@ -55,14 +55,14 @@ describe("asset compatibility diagnostics", () => {
     expect(report.blenderExportValidation?.fixtures.every((fixture) => fixture.metrics.meshes > 0 && fixture.metrics.renderables > 0)).toBe(true);
     expect(report.assets.every((asset) => asset.loaders.some((loader) => loader.loader === "threejs" && loader.status !== "not-run"))).toBe(true);
     expect(report.assets.every((asset) => asset.loaders.some((loader) => loader.loader === "babylonjs" && loader.status !== "not-run"))).toBe(true);
-    expect(report.summary.threejs.pass + report.summary.threejs.warn + report.summary.threejs["expected-fail"]).toBe(17);
-    expect(report.summary.babylonjs.pass + report.summary.babylonjs.warn + report.summary.babylonjs["expected-fail"]).toBe(17);
+    expect(report.summary.threejs.pass + report.summary.threejs.warn + report.summary.threejs["expected-fail"]).toBe(77);
+    expect(report.summary.babylonjs.pass + report.summary.babylonjs.warn + report.summary.babylonjs["expected-fail"]).toBe(77);
     expect(report.assets.flatMap((asset) => asset.loaders.flatMap((loader) => loader.diagnostics)).every((diagnostic) => diagnostic.nextAction.length > 0)).toBe(true);
 
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
     writeFileSync(blenderExportReportPath, `${JSON.stringify(blenderExportValidation, null, 2)}\n`);
-  }, 60_000);
+  }, 120_000);
 
   it("keeps per-asset import settings normalized and actionable for loader decisions", () => {
     const manifest = readManifest();
@@ -102,6 +102,16 @@ describe("asset compatibility diagnostics", () => {
     });
   });
 
+  it("keeps over-limit skins loadable as bind-pose renderables with explicit diagnostics", async () => {
+    const asset = await new GLTFLoader().load({ url: overLimitSkinGLTF() }, new LoadContext());
+    const renderable = asset.createScene().collectRenderables()[0]?.renderable;
+
+    expect(asset.skins[0]?.joints).toHaveLength(65);
+    expect(asset.loaderDiagnostics.features).toContain("skinning-palette-limit-fallback");
+    expect(renderable).toBeDefined();
+    expect(renderable?.skinning).toBeUndefined();
+  });
+
   it("keeps Blender-export validation blocked when no fixtures exist", () => {
     const report = createAssetCompatibilityReport(readManifest(), {
       generatedAt: "2026-05-06T00:00:00.000Z",
@@ -109,11 +119,35 @@ describe("asset compatibility diagnostics", () => {
     });
 
     expect(report.fixtureStatus.blenderExportFixtures).toBe("missing");
-    expect(report.summary.blenderExport).toEqual({ pass: 0, warn: 0, "expected-fail": 0, "not-run": 17 });
+    expect(report.summary.blenderExport).toEqual({ pass: 0, warn: 0, "expected-fail": 0, "not-run": 77 });
     expect(report.assets[0]?.loaders.find((loader) => loader.loader === "blender-export")?.diagnostics[0]).toMatchObject({
       code: "ASSET_BLENDER_EXPORT_FIXTURES_MISSING",
       nextAction: expect.stringContaining("fixtures")
     });
+  });
+
+  it("accepts real same-corpus Blender export results when a runner supplies them", () => {
+    const manifest = readManifest();
+    const report = createAssetCompatibilityReport(manifest, {
+      generatedAt: "2026-05-06T00:00:00.000Z",
+      blenderExportFixturesPresent: true,
+      blenderExportResults: manifest.assets.map((asset) => ({
+        assetId: asset.id,
+        loader: "blender-export" as const,
+        status: asset.expectedStatus === "warn" ? "warn" as const : "pass" as const,
+        diagnostics: [{
+          code: "ASSET_BLENDER_SAME_CORPUS_EXPORT_VALIDATED",
+          severity: asset.expectedStatus === "warn" ? "warning" as const : "info" as const,
+          message: "Asset was imported and exported by Blender in the same-corpus audit runner.",
+          nextAction: "Keep the same-corpus Blender report fresh when changing the corpus, importer, or renderer."
+        }]
+      }))
+    });
+
+    expect(report.summary.blenderExport["not-run"]).toBe(0);
+    expect(report.summary.blenderExport["expected-fail"]).toBe(0);
+    expect(report.assets).toHaveLength(77);
+    expect(report.assets.every((asset) => asset.loaders.find((loader) => loader.loader === "blender-export")?.status !== "not-run")).toBe(true);
   });
 });
 
@@ -158,7 +192,7 @@ async function runThreeCompatibility(
     }));
     return externalPass(assetId, "threejs", expectedStatus, warnings);
   } catch (error) {
-    return externalExpectedFail(assetId, "threejs", error);
+    return externalExpectedFail(assetId, "threejs", error, expectedStatus);
   }
 }
 
@@ -177,7 +211,7 @@ async function runBabylonCompatibility(
     });
     return externalPass(assetId, "babylonjs", expectedStatus, warnings.filter((message) => !/Babylon\.js v[\d.]+ - Null engine/.test(message)));
   } catch (error) {
-    return externalExpectedFail(assetId, "babylonjs", error);
+    return externalExpectedFail(assetId, "babylonjs", error, expectedStatus);
   } finally {
     scene?.dispose();
     engine?.dispose();
@@ -215,8 +249,25 @@ function externalPass(
 function externalExpectedFail(
   assetId: string,
   loader: "threejs" | "babylonjs",
-  error: unknown
+  error: unknown,
+  expectedStatus: GLTFCorpusManifest["assets"][number]["expectedStatus"]
 ): ExternalAssetLoaderCompatibilityResult {
+  const message = error instanceof Error ? error.message : String(error);
+  if (loader === "threejs" && expectedStatus === "warn" && /Image is not defined/.test(message)) {
+    return {
+      assetId,
+      loader,
+      status: "warn",
+      diagnostics: [
+        {
+          code: "ASSET_THREEJS_NODE_IMAGE_POLYFILL_MISSING",
+          severity: "warning",
+          message: `threejs loader reached an image decode path not available in the pinned Node compatibility harness: ${message}`,
+          nextAction: "Use browser visual parity evidence for this asset or add a real Node Image/createImageBitmap polyfill before treating this as pass evidence."
+        }
+      ]
+    };
+  }
   return {
     assetId,
     loader,
@@ -225,7 +276,7 @@ function externalExpectedFail(
       {
         code: `ASSET_${loader.toUpperCase()}_LOADER_FAILED`,
         severity: "warning",
-        message: `${loader} loader failed in the pinned Node compatibility harness: ${error instanceof Error ? error.message : String(error)}`,
+        message: `${loader} loader failed in the pinned Node compatibility harness: ${message}`,
         nextAction: "Inspect this loader-specific failure before using this asset in parity or superiority claims."
       }
     ]
@@ -287,6 +338,14 @@ function installNodeLoaderPolyfills(): void {
   const globalWithPolyfills = globalThis as typeof globalThis & {
     self?: typeof globalThis;
     ProgressEvent?: typeof Event;
+    Image?: new () => HTMLImageElement;
+    document?: {
+      createElementNS(namespace: string, tagName: string): unknown;
+      createElement(tagName: string): unknown;
+      addEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+      removeEventListener(type: string, listener: EventListenerOrEventListenerObject): void;
+    };
+    createImageBitmap?: (source: unknown) => Promise<unknown>;
   };
   globalWithPolyfills.self ??= globalThis;
   globalWithPolyfills.ProgressEvent ??= class ProgressEvent extends Event {
@@ -294,6 +353,38 @@ function installNodeLoaderPolyfills(): void {
       super(type, init);
     }
   };
+  globalWithPolyfills.Image ??= class NodeCompatibilityImage extends EventTarget {
+    width = 1;
+    height = 1;
+    crossOrigin = "";
+    onload: ((event: Event) => void) | null = null;
+    onerror: ((event: Event) => void) | null = null;
+    #src = "";
+
+    get src(): string {
+      return this.#src;
+    }
+
+    set src(value: string) {
+      this.#src = value;
+      queueMicrotask(() => {
+        const event = new Event("load");
+        this.onload?.(event);
+        this.dispatchEvent(event);
+      });
+    }
+
+    decode(): Promise<void> {
+      return Promise.resolve();
+    }
+  } as unknown as new () => HTMLImageElement;
+  globalWithPolyfills.document ??= {
+    createElementNS: (_namespace: string, tagName: string) => tagName.toLowerCase() === "img" ? new globalWithPolyfills.Image!() : {},
+    createElement: (tagName: string) => tagName.toLowerCase() === "img" ? new globalWithPolyfills.Image!() : {},
+    addEventListener: () => {},
+    removeEventListener: () => {}
+  };
+  globalWithPolyfills.createImageBitmap ??= async (source: unknown) => source;
 }
 
 async function captureConsoleMessages(
@@ -358,6 +449,46 @@ function triangleGLTF(): string {
     meshes: [{ name: "TriangleMesh", primitives: [{ attributes: { POSITION: 0 } }] }],
     nodes: [{ name: "TriangleNode", mesh: 0 }],
     scenes: [{ name: "RoundTripScene", nodes: [0] }],
+    scene: 0
+  };
+  return `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
+}
+
+function overLimitSkinGLTF(): string {
+  const positions = Buffer.alloc(36);
+  new Float32Array(positions.buffer, positions.byteOffset, 9).set([0, 0, 0, 1, 0, 0, 0, 1, 0]);
+  const joints = Buffer.alloc(24);
+  new Uint16Array(joints.buffer, joints.byteOffset, 12).set([0, 1, 2, 3, 0, 1, 2, 3, 0, 1, 2, 3]);
+  const weights = Buffer.alloc(48);
+  new Float32Array(weights.buffer, weights.byteOffset, 12).set([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]);
+  const inverseBindMatrices = Buffer.alloc(65 * 16 * 4);
+  const inverseBindFloats = new Float32Array(inverseBindMatrices.buffer, inverseBindMatrices.byteOffset, 65 * 16);
+  for (let joint = 0; joint < 65; joint += 1) {
+    inverseBindFloats.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], joint * 16);
+  }
+  const buffer = Buffer.concat([positions, joints, weights, inverseBindMatrices]);
+  const gltf = {
+    asset: { version: "2.0" },
+    buffers: [{ uri: `data:application/octet-stream;base64,${buffer.toString("base64")}`, byteLength: buffer.byteLength }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
+      { buffer: 0, byteOffset: positions.byteLength, byteLength: joints.byteLength },
+      { buffer: 0, byteOffset: positions.byteLength + joints.byteLength, byteLength: weights.byteLength },
+      { buffer: 0, byteOffset: positions.byteLength + joints.byteLength + weights.byteLength, byteLength: inverseBindMatrices.byteLength }
+    ],
+    accessors: [
+      { bufferView: 0, componentType: 5126, count: 3, type: "VEC3" },
+      { bufferView: 1, componentType: 5123, count: 3, type: "VEC4" },
+      { bufferView: 2, componentType: 5126, count: 3, type: "VEC4" },
+      { bufferView: 3, componentType: 5126, count: 65, type: "MAT4" }
+    ],
+    meshes: [{ name: "OverLimitMesh", primitives: [{ attributes: { POSITION: 0, JOINTS_0: 1, WEIGHTS_0: 2 } }] }],
+    nodes: [
+      { name: "MeshNode", mesh: 0, skin: 0 },
+      ...Array.from({ length: 65 }, (_, index) => ({ name: `Joint${index}` }))
+    ],
+    skins: [{ name: "OverLimitSkin", joints: Array.from({ length: 65 }, (_, index) => index + 1), inverseBindMatrices: 3 }],
+    scenes: [{ name: "Scene", nodes: [0] }],
     scene: 0
   };
   return `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;

@@ -37,20 +37,71 @@ describe("scene cameras and frustums", () => {
     expect(() => camera.setViewport({ x: 0, y: 0, width: 0, height: 1 })).toThrow(/viewport/i);
   });
 
+  it("keeps projection matrices and frustums fresh after perspective resize", () => {
+    const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 2, aspect: 1, near: 0.5, far: 50 });
+    camera.updateCameraMatrices();
+    const before = [...camera.projectionMatrix];
+
+    camera.resize(1200, 600);
+
+    expect(camera.aspect).toBe(2);
+    expect(camera.projectionMatrix).not.toEqual(before);
+    expectCloseArray(camera.projectionMatrix, Matrix4.perspective(Math.PI / 2, 2, 0.5, 50).elements);
+    expect(camera.frustum.intersectsBox(new Box3(new Vector3(-1, -1, -3), new Vector3(1, 1, -2)))).toBe(true);
+  });
+
+  it("refreshes parent rig transforms before updating camera view matrices", () => {
+    const scene = new Scene();
+    const rig = scene.createNode("camera-rig");
+    const camera = new PerspectiveCamera({ fovYRadians: Math.PI / 3, aspect: 1, near: 0.1, far: 100 });
+    scene.root.addChild(rig);
+    rig.addChild(camera);
+    camera.transform.setPosition(0, 0, 5);
+    scene.updateWorldTransforms();
+    camera.updateCameraMatrices();
+    const before = [...camera.viewMatrix];
+
+    rig.transform.setPosition(4, 0, 0);
+    camera.updateCameraMatrices();
+
+    expect(camera.transform.worldMatrix[12]).toBeCloseTo(4);
+    expect(camera.transform.worldMatrix[14]).toBeCloseTo(5);
+    expect(camera.viewMatrix).not.toEqual(before);
+    expect(camera.viewMatrix[12]).toBeCloseTo(-4);
+    expect(camera.viewMatrix[14]).toBeCloseTo(-5);
+    expect(camera.transform.isDirty()).toBe(false);
+  });
+
   it("updates orthographic projection after zoom and resize", () => {
     const camera = new OrthographicCamera({ left: -2, right: 2, bottom: -1, top: 1, near: 0.1, far: 10, zoom: 2 });
     camera.updateCameraMatrices();
     expectCloseArray(camera.projectionMatrix, Matrix4.orthographic(-1, 1, -0.5, 0.5, 0.1, 10).elements);
 
     camera.resize(800, 400);
-    camera.updateCameraMatrices();
 
     expect(camera.left).toBe(-2);
     expect(camera.right).toBe(2);
+    expectCloseArray(camera.projectionMatrix, Matrix4.orthographic(-1, 1, -0.5, 0.5, 0.1, 10).elements);
     expect(() => {
       camera.zoom = 0;
       camera.computeProjectionMatrix();
     }).toThrow(/zoom/i);
+  });
+
+  it("supports orthographic resize modes that preserve authored framing", () => {
+    const horizontal = new OrthographicCamera({ left: -4, right: 4, bottom: -1, top: 1, resizeMode: "fit-horizontal" });
+    horizontal.resize(800, 400);
+    expect(horizontal.left).toBe(-4);
+    expect(horizontal.right).toBe(4);
+    expect(horizontal.bottom).toBe(-2);
+    expect(horizontal.top).toBe(2);
+
+    const preserve = new OrthographicCamera({ left: -6, right: 6, bottom: -2, top: 2, resizeMode: "preserve-frustum" });
+    preserve.resize(800, 800);
+    expect(preserve.left).toBe(-6);
+    expect(preserve.right).toBe(6);
+    expect(preserve.bottom).toBe(-6);
+    expect(preserve.top).toBe(6);
   });
 });
 

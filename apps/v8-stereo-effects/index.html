@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Stereo Effects</title>
+    <link rel="stylesheet" href="/apps/v6-common/src/styles.css">
+    <style>
+      body.v8-stereo-effects {
+        grid-template-columns: minmax(900px, min(68vw, 1400px)) minmax(390px, 1fr);
+      }
+
+      .stereo-stage {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        min-height: 100vh;
+        padding: 8px;
+        box-sizing: border-box;
+      }
+
+      .stereo-stage canvas {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 1;
+        background: #07090d;
+      }
+
+      .v8-stereo-effects #runtime-state.is-loading {
+        background: #42506a;
+      }
+
+      .v8-stereo-effects #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .v8-stereo-effects #runtime-state.is-error {
+        background: #923b3b;
+      }
+
+      .v8-stereo-effects .runtime-error {
+        max-height: 320px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 900px) {
+        .stereo-stage {
+          min-height: auto;
+        }
+      }
+    </style>
+  </head>
+  <body class="v8-stereo-effects">
+    <section class="stereo-stage" aria-label="Stereo WebGL canvases">
+      <canvas id="leftViewport" width="720" height="720"></canvas>
+      <canvas id="rightViewport" width="720" height="720"></canvas>
+    </section>
+    <main id="app"></main>
+    <script type="module" src="/apps/v8-stereo-effects/src/main.ts"></script>
+  </body>
+</html>

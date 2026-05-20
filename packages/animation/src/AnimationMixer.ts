@@ -175,11 +175,13 @@ export class AnimationMixer {
 
   private applyActionRootMotion(action: AnimationAction, previousTime: number): void {
     if (!this.options.applyRootMotion || action.weight <= 0) return;
+    const rootMotionTarget = this.options.rootMotionTrack ?? "root.position";
+    if (!action.clip.tracks.some((track) => track.target === rootMotionTarget)) return;
     const sample = extractRootMotion(action.clip, {
       fromTime: previousTime,
       toTime: action.time,
       loop: action.loopMode === "repeat",
-      ...(this.options.rootMotionTrack === undefined ? {} : { target: this.options.rootMotionTrack })
+      target: rootMotionTarget
     });
     const scaledSample = action.weight === 1
       ? sample

@@ -19,18 +19,18 @@ export interface DocContradictionReport {
 }
 
 const defaultFiles = [
-  "docs/completion-audit.md",
-  "docs/implementation-plan-final.md",
-  "docs/requirements-trace.md",
-  "docs/verification-evidence.md",
-  "docs/rebuild-progress.md",
-  "docs/v2/decision-gates.md"
+  "docs/project/completion-audit.md",
+  "docs/project/implementation-plan.md",
+  "docs/project/requirements-trace.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/rebuild-progress.md",
+  "docs/project/v2-decision-gates.md"
 ] as const;
 
 const statusAgreementFiles = [
-  "docs/completion-audit.md",
-  "docs/implementation-plan-final.md",
-  "docs/v2/decision-gates.md"
+  "docs/project/completion-audit.md",
+  "docs/project/implementation-plan.md",
+  "docs/project/v2-decision-gates.md"
 ] as const;
 
 const goClaimPatterns = [

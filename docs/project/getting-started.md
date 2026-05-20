@@ -1,0 +1,168 @@
+# Getting Started
+
+Version: `1.0.0`
+
+Galileo3D, or G3D, is a production TypeScript-first browser 3D engine and workflow SDK. The current repo includes public package exports, WebGL2 renderer paths, WebGPU backend coverage, asset loading, animation/skinning, scene/runtime APIs, editor-runtime primitives, migration helpers, app routes, and V10 verification reports showing parity or better results against Three.js in the measured categories.
+
+## Prerequisites
+
+- Node.js compatible with the repo toolchain.
+- `pnpm`.
+- A browser with WebGL2 for the main route set.
+- Optional WebGPU-capable browser/device for WebGPU proof routes.
+
+## Install The Repo
+
+```sh
+pnpm install
+```
+
+## Start Local Apps
+
+```sh
+pnpm dev
+```
+
+Open:
+
+```text
+http://127.0.0.1:5180/
+```
+
+Useful current routes include:
+
+- `/apps/v8-flagship-viewer/`
+- `/apps/v8-animation-keyframes/`
+- `/apps/v8-animation-multiple/`
+- `/apps/v8-skinning-blending/`
+- `/apps/v8-skinning-additive/`
+- `/apps/v8-skinning-ik/`
+- `/apps/v8-skinning-morph/`
+- `/apps/v8-decals/`
+- `/apps/v8-physics-showcase/`
+- `/apps/v8-interactive-picking/`
+- `/apps/v8-postprocessing-bloom/`
+- `/apps/v8-postprocessing-depth-outline/`
+- `/apps/v8-instancing-performance/`
+- `/apps/v8-loader-compression/`
+- `/apps/v8-loader-material-extensions/`
+- `/apps/v8-loader-gltf-variants/`
+- `/apps/v8-webgpu-rtt/`
+- `/apps/v8-webgpu-compute/`
+- `/apps/v8-webgpu-materials/`
+- `/apps/v9-public-scene/`
+
+Routes are evidence and diagnostics surfaces. A route loading correctly proves that route and its scoped behavior, and the V10 reports aggregate those route results into the published parity/exceeds decisions.
+
+## Use The Package API
+
+For a high-level browser app:
+
+```ts
+import { createG3DApp } from "@galileo3d/engine";
+
+const app = await createG3DApp({
+  canvas,
+  quality: "balanced"
+});
+
+await app.renderWorkflow("scene-showcase", { preset: "gallery" });
+console.log(app.diagnostics());
+await app.dispose();
+```
+
+For direct V9 rendering:
+
+```ts
+import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
+import { Geometry, PBRMaterial } from "@galileo3d/engine/rendering";
+
+const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
+const scene = new G3DScene();
+
+scene.addGeometry("cube", Geometry.box());
+scene.addMaterial("paint", new PBRMaterial({ baseColor: [0.8, 0.7, 0.55, 1] }));
+scene.createRenderableMesh({ geometry: "cube", material: "paint" });
+
+renderer.render(scene);
+renderer.dispose();
+```
+
+For asset-backed scenes:
+
+```ts
+import { createRenderableScene, loadRenderableAsset } from "@galileo3d/engine/assets";
+import { G3DRenderer } from "@galileo3d/engine/v9";
+
+const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
+const asset = await loadRenderableAsset("/fixtures/engine-readiness/canonical-product-scene.json");
+const scene = await createRenderableScene(asset, {
+  camera: "auto-frame",
+  lighting: "studio-product",
+  shadows: true,
+  postprocess: "product-default"
+});
+
+renderer.render(scene.source, scene.camera);
+```
+
+## Scaffold A Template
+
+Programmatic scaffolding is available through:
+
+```ts
+import { createG3DProject } from "@galileo3d/engine/create-g3d";
+
+createG3DProject({
+  targetDir: "my-g3d-app",
+  template: "v6-product-viewer"
+});
+```
+
+Template docs live at `docs/templates/create-g3d-templates.md`.
+
+## Learn The Package Surface
+
+- API overview: `docs/api/readme.md`
+- Generated public exports: `docs/api/public-api.md`
+- App API: `docs/api/app-api.md`
+- Rendering concept: `docs/concepts/rendering.md`
+- Asset concept: `docs/concepts/assets.md`
+- Animation concept: `docs/concepts/animation.md`
+- Migration from Three.js: `docs/project/migration.md`
+
+## Verify Locally
+
+Core checks:
+
+```sh
+pnpm typecheck
+pnpm test:unit
+pnpm build
+```
+
+Browser and docs checks:
+
+```sh
+pnpm test:browser
+pnpm verify:api-docs
+pnpm verify:templates
+pnpm verify:claims
+```
+
+Current V8/V9 sweeps:
+
+```sh
+pnpm v8
+pnpm v9
+```
+
+These commands can be expensive. For focused work, run the narrower script that matches the package or route you changed.
+
+## Claim Evidence
+
+Approved description:
+
+> G3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the G3D superiority audit.
+
+Use `tests/reports/v10/claim-defense.json`, `tests/reports/v10/superiority-audit.json`, `docs/project/v10-superiority-status.md`, and `docs/project/competitive-positioning.md` before writing public claims.

@@ -35,7 +35,19 @@ for (const [index, node] of project.scene.nodes.entries()) {
 
 status.textContent = `Loaded ${project.metadata.name}: ${project.scene.nodes.length} nodes`;
 window.__GALILEO3D_EXPORTED_PROJECT__ = {
+  id: "editor-authored-project",
   status: "ready",
+  renderer: "canvas2d",
+  visualClaim: "bounded-editor-authored-static-export",
+  knownLimits: [
+    "This exported project proves a bounded static browser export path, not a full Unity/Unreal replacement.",
+    "The runtime visualization is a canvas2D smoke view of serialized project data, not a full WebGL authored game.",
+  ],
+  errors: [],
+  diagnostics: {
+    drawCalls: project.scene.nodes.length,
+    lastError: null
+  },
   nodeCount: project.scene.nodes.length,
   projectName: project.metadata.name,
   provenanceHash: project.metadata.provenance?.evidenceHash ?? null

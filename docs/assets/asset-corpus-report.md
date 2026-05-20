@@ -2,63 +2,60 @@
 
 Version: 0.1.0-alpha.0
 
-This page summarizes the checked-in asset corpus report used by the current external-claim gates. It is a bounded compatibility report, not a production asset guarantee.
+This page summarizes the current asset evidence. It is intentionally split between source classification, loader compatibility, production viewer assets, and visual route evidence.
 
-## Source Report
+## Current Asset Reports
 
-- Report: `tests/reports/gltf-corpus.json`
-- 100-asset classification report: `tests/reports/gltf-100-classification.json`
-- Loader compatibility scaffold: `tests/reports/asset-compatibility-threejs.json`
-- Blender-export fixture validation: `tests/reports/blender-export-validation.json`
-- Manifest schema: `gltf-corpus-v1`
-- Report schema: `gltf-corpus-report-v1`
-- Compatibility schema: `asset-compatibility-report-v1`
-- Source corpus: Khronos glTF Sample Assets
-- Source revision: `2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf`
-- Asset count: 17
-- 100-asset classification count: 100
+| Report | Purpose |
+| --- | --- |
+| `tests/reports/gltf-corpus.json` | Bounded Khronos loader corpus report. |
+| `tests/reports/gltf-100-classification.json` | 100 pinned Khronos GLB source-classification report. |
+| `tests/reports/asset-compatibility-threejs.json` | Loader compatibility scaffold with Galileo3D, Three.js, and Babylon.js columns. |
+| `tests/reports/blender-export-validation.json` | Three pinned Blender-export fixture validations. |
+| `tests/reports/v6-asset-readiness.json` | v6 production asset/environment readiness across real GLBs and HDR environments. |
+| `tests/reports/v8-assets.json` | v8 route asset corpus used by flagship, animation, material, loader, and physics surfaces. |
 
-## Current Summary
+## Current v8 Corpus
 
-| Status | Count | Meaning |
-|---|---:|---|
-| pass | 11 | The asset is expected to pass the current importer/render-resource profile. |
-| warn | 4 | The asset is usable for importer validation with a documented caveat. |
-| expectedFail | 2 | The asset intentionally documents a known unsupported path. |
+`tests/reports/v8-assets.json` currently passes and records:
 
-## 100-Asset Classification Summary
+| Metric | Value |
+| --- | ---: |
+| Asset count | 20 |
+| Environment count | 2 |
+| SHA-verified assets | 20 |
+| Total bytes | 101859800 |
+| Total triangles | 490350 |
+| Textured PBR assets | 15 |
+| Animation assets | 9 |
+| Skin assets | 4 |
+| Morph assets | 2 |
+| Material-extension assets | 6 |
 
-`tests/assets/corpus/gltf-100-classification.manifest.json` records 100 pinned Khronos GLB entries from the same source revision with SHA-256 hashes. `tests/reports/gltf-100-classification.json` classifies those entries as source-level pass/warn/expected-fail evidence:
+Feature coverage includes animation, skinning, morph targets, PBR metallic-roughness, normal textures, ORM textures, emissive textures, material extensions, texture transform, material variants, real geometry, and textures.
 
-| Status | Count | Meaning |
-|---|---:|---|
-| pass | 38 | The asset has no source-metadata caveat in the classification manifest. |
-| warn | 62 | The asset is pinned and classified, but source metadata indicates extension, showcase, issue-tagged, or video-texture coverage that requires focused importer/render/visual validation before compatibility claims. |
-| expectedFail | 0 | No entry in this 100-asset classification report is marked as an expected failure. |
+## Current v6 Corpus
 
-## Blender-Export Fixture Validation
+`tests/reports/v6-asset-readiness.json` currently passes and records 28 real parsed GLB assets, 28 SHA-verified assets, 25 PBR texture assets, 6 advanced-material assets, 6 animation assets, 2 skin assets, 1 morph asset, and extension coverage including `KHR_materials_clearcoat`, `KHR_materials_sheen`, `KHR_materials_specular`, and `KHR_animation_pointer`.
 
-`tests/assets/corpus/blender/blender-export-fixtures.manifest.json` records three pinned Blender-exported glTF fixtures copied from Khronos Vulkan Samples Assets revision `8db8ce9c528330f0b1261b07531b009732b08731`. The manifest stores SHA-256 hashes, upstream paths, license metadata, and expected Blender generator metadata for each fixture.
+The v6 readiness path is the stronger production-viewer evidence because it pairs assets with rendered screenshots, HDR environments, and app-suite reports. The v8 path is broader route evidence.
 
-`tests/reports/blender-export-validation.json` validates those fixtures through Galileo3D's glTF loader and scene renderable collection:
+## Blender And Khronos Evidence
 
-| Status | Count | Meaning |
-|---|---:|---|
-| pass | 3 | The fixture contains Blender generator metadata, matches its pinned SHA-256 hash, loads through Galileo3D's glTF loader, and produces at least one renderable. |
-| warn | 0 | No fixture currently has a non-fatal Blender-export validation caveat. |
-| fail | 0 | No fixture currently fails the bounded Blender-export validation runner. |
+The Khronos source revision remains `2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf` for the primary glTF sample assets. The 100-asset classification proves breadth of pinned source coverage, not visual compatibility. The Blender-export fixtures prove three bounded Blender-generated glTF inputs can be loaded into renderable scenes; they do not prove a local Blender export round trip or broad DCC compatibility.
 
-## Known Corpus Caveats
+## Known Caveats
 
-- `multi-uv-test` is expected to fail because the current material path supports one UV set per draw.
-- `meshopt-cube-test` is expected to fail in the default no-decoder corpus profile, and passes in the package-backed decoder integration test where `meshoptimizer` is injected.
-- `box-textured` carries a trademark/license warning and should not be used as product art.
-- `duck`, `cesium-man`, and `damaged-helmet` carry license/trademark caveats and should be used only for importer validation under their upstream license terms.
+- Many sample assets carry upstream license, trademark, or suitability caveats. They are good validation inputs, not necessarily product art.
+- Asset readiness is not the same as visual quality. Some animation and demo routes are functional but not visually competitive.
+- v8 flagship currently has real asset/HDR loading costs; do not claim instant startup or streaming until dedicated preload/streaming work exists.
+- The compatibility scaffold prevents ungrounded claims, but broad Three.js/Babylon.js loader parity still requires per-feature visual and runtime evidence.
 
-## Loader Compatibility Scaffold
+## Verification
 
-`createAssetCompatibilityReport()` emits a bounded compatibility matrix from the same pinned manifest. The Galileo3D column mirrors the current corpus classification and preserves normalized import settings for color space, mipmaps, compression, scale, normals/tangents, animation import, and material variants.
-
-The Three.js and Babylon.js columns are executed with pinned loader versions in a Node compatibility harness. The same-corpus `blender-export` column remains `not-run` because the 17-entry Khronos loader corpus is not a Blender re-export corpus. Separate Blender-export fixture evidence now lives in `tests/reports/blender-export-validation.json`. This report exists to prevent accidental parity claims from being based on scaffold-only or unrun loader evidence.
-
-The 17-entry corpus remains the bounded loader-compatibility corpus. The 100-entry report proves real pinned source classification breadth, but it is intentionally not a loader/render/visual parity claim. Separate package-backed tests now prove bounded Draco and Meshopt decoder integration against pinned Khronos assets, the KTX2/Basis transcode path has a separate real Khronos fixture test, and the Blender-export path has a three-fixture validation report. The corpus still does not prove a local Blender executable export round trip, broad Blender/exporter corpus coverage, broad KTX2/Basis corpus coverage, visual parity, or production asset compatibility.
+- `tests/reports/v8-assets.json`
+- `tests/reports/v6-asset-readiness.json`
+- `tests/reports/gltf-100-classification.json`
+- `tests/reports/blender-export-validation.json`
+- `tests/assets/gltf-compression-decoders.test.ts`
+- `tests/assets/gltf-optional-external-decoders.test.ts`

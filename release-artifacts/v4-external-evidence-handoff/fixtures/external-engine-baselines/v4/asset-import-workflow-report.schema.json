@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Galileo3D V4 external engine asset import workflow report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "ok",
+    "engine",
+    "sameSceneAssetImportWorkflowBaseline",
+    "generatedBy",
+    "kitRoot",
+    "runnerEvidencePath",
+    "runnerEvidenceSha256",
+    "metrics"
+  ],
+  "properties": {
+    "ok": {
+      "const": true
+    },
+    "engine": {
+      "enum": [
+        "unity",
+        "unreal"
+      ]
+    },
+    "sameSceneAssetImportWorkflowBaseline": {
+      "const": true
+    },
+    "generatedBy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "kitRoot": {
+      "const": "fixtures/external-engine-baselines/v4"
+    },
+    "runnerEvidencePath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runnerEvidenceSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "editorProjectOpened",
+        "assetImportWorkflowRan",
+        "importedGltfAssets",
+        "importedMeshes",
+        "importedMaterials",
+        "importedTextures",
+        "conversionRequiredFormats"
+      ],
+      "properties": {
+        "editorProjectOpened": {
+          "const": true
+        },
+        "assetImportWorkflowRan": {
+          "const": true
+        },
+        "importedGltfAssets": {
+          "type": "number",
+          "minimum": 1
+        },
+        "importedMeshes": {
+          "type": "number",
+          "minimum": 1
+        },
+        "importedMaterials": {
+          "type": "number",
+          "minimum": 1
+        },
+        "importedTextures": {
+          "type": "number",
+          "minimum": 1
+        },
+        "importedAnimationClips": {
+          "type": "number",
+          "minimum": 0
+        },
+        "conversionRequiredFormats": {
+          "type": "number",
+          "minimum": 5
+        }
+      }
+    }
+  }
+}

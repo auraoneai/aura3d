@@ -8,6 +8,7 @@ import {
   RenderGraph,
   UnsupportedGPUParticleBackend,
   createParticle,
+  createParticleEffectPreset,
   type GPUParticleBackend,
   type GPUParticleSpawnInput,
   type GPUParticleUpdateInput,
@@ -15,6 +16,98 @@ import {
 } from "../../../packages/rendering/src";
 
 describe("ParticleRenderPass", () => {
+  it("samples old-branch cone and circle emitter shapes deterministically", () => {
+    const cone = new ParticleEmitter({
+      seed: 515,
+      emissionRate: 0,
+      bursts: [{ time: 0, count: 6 }],
+      lifetime: 1,
+      speed: 1,
+      shape: { type: "cone", origin: { x: 1, y: 2, z: -1 }, radius: 0.5, length: 2, angle: Math.PI / 6, emitFromVolume: true }
+    });
+    const coneSystem = new ParticleSystem({ maxParticles: 6, emitters: [cone] });
+    coneSystem.update(0.01);
+
+    expect(coneSystem.particles).toHaveLength(6);
+    for (const particle of coneSystem.particles) {
+      expect(particle.position.y).toBeGreaterThanOrEqual(2);
+      expect(particle.position.y).toBeLessThanOrEqual(4);
+      expect(Math.hypot(particle.position.x - 1, particle.position.z + 1)).toBeLessThanOrEqual(0.5);
+      expect(particle.velocity.y).toBeGreaterThan(0);
+    }
+
+    const repeat = new ParticleSystem({
+      maxParticles: 6,
+      emitters: [
+        new ParticleEmitter({
+          seed: 515,
+          emissionRate: 0,
+          bursts: [{ time: 0, count: 6 }],
+          lifetime: 1,
+          speed: 1,
+          shape: { type: "cone", origin: { x: 1, y: 2, z: -1 }, radius: 0.5, length: 2, angle: Math.PI / 6, emitFromVolume: true }
+        })
+      ]
+    });
+    repeat.update(0.01);
+    expect(repeat.particles.map((particle) => particle.position)).toEqual(coneSystem.particles.map((particle) => particle.position));
+
+    const circle = new ParticleEmitter({
+      seed: 616,
+      emissionRate: 0,
+      bursts: [{ time: 0, count: 5 }],
+      lifetime: 1,
+      speed: 0,
+      shape: { type: "circle", center: { x: -1, y: 0.25, z: 2 }, radius: 0.75, arc: Math.PI }
+    });
+    const circleSystem = new ParticleSystem({ maxParticles: 5, emitters: [circle] });
+    circleSystem.update(0.01);
+    for (const particle of circleSystem.particles) {
+      expect(particle.position.y).toBe(0.25);
+      expect(Number(Math.hypot(particle.position.x + 1, particle.position.z - 2).toFixed(6))).toBe(0.75);
+      expect(particle.position.z).toBeGreaterThanOrEqual(2);
+    }
+
+    expect(() => new ParticleEmitter({ shape: { type: "cone", radius: 1, length: 0 } })).toThrow(/cone length/);
+    expect(() => new ParticleEmitter({ shape: { type: "circle", radius: 1, arc: Math.PI * 3 } })).toThrow(/circle arc/);
+  });
+
+  it("creates a bounded spark-shower preset from old particle module concepts", () => {
+    const first = createParticleEffectPreset("spark-shower", { seed: 707, maxParticles: 80 });
+    const second = createParticleEffectPreset("spark-shower", { seed: 707, maxParticles: 80 });
+    first.update(0.05);
+    second.update(0.05);
+
+    expect(first.particles.length).toBeGreaterThan(20);
+    expect(first.particles.length).toBe(second.particles.length);
+    expect(first.particles.map((particle) => ({
+      position: particle.position,
+      velocity: particle.velocity,
+      color: particle.color,
+      size: particle.size
+    }))).toEqual(second.particles.map((particle) => ({
+      position: particle.position,
+      velocity: particle.velocity,
+      color: particle.color,
+      size: particle.size
+    })));
+    expect(first.getStats().spawnedCount).toBeGreaterThan(20);
+    first.update(0.35);
+    second.update(0.35);
+    expect(first.particles.map((particle) => ({
+      position: particle.position,
+      velocity: particle.velocity,
+      color: particle.color,
+      size: particle.size
+    }))).toEqual(second.particles.map((particle) => ({
+      position: particle.position,
+      velocity: particle.velocity,
+      color: particle.color,
+      size: particle.size
+    })));
+    expect(first.particles.some((particle) => particle.color.g < 0.92)).toBe(true);
+  });
+
   it("participates in RenderGraph and records particle buffer uploads", () => {
     const system = new ParticleSystem({
       maxParticles: 8,

@@ -54,9 +54,9 @@ async function main(): Promise<void> {
     },
     corpusEvidence: {
       classifiedExternalAssets: 11,
-      pass: 8,
+      pass: 10,
       warn: 1,
-      expectedFail: 2,
+      expectedFail: 0,
       note: "Performance timing uses deterministic local inline glTF fixtures through public AssetManager and GLTFLoader APIs; it does not claim 100 external assets.",
     },
     samples,

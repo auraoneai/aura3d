@@ -94,7 +94,9 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
 
   const match = /^@galileo3d\/([^/]+)$/.exec(specifier);
   if (!rewriteWorkspacePackages || !match || !packageNameSet.has(match[1]!)) return specifier;
-  const target = join(distRoot, match[1]!, "index.js");
+  const target = match[1] === "animation" && file.includes(`${distRoot}/assets/`)
+    ? join(distRoot, "animation", "browser-index.js")
+    : join(distRoot, match[1]!, "index.js");
   let next = relative(dirname(file), target).replaceAll("\\", "/");
   if (!next.startsWith(".")) next = `./${next}`;
   return next;

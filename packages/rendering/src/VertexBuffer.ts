@@ -36,6 +36,9 @@ export class VertexBuffer {
     if (values.length !== attribute.components) {
       throw new Error(`Semantic ${semantic} requires ${attribute.components} values, got ${values.length}`);
     }
+    if (!values.every(Number.isFinite)) {
+      throw new Error(`Semantic ${semantic} values must be finite`);
+    }
     const byteOffset = vertexIndex * this.format.stride + attribute.offset;
     const floatOffset = byteOffset / 4;
     for (let i = 0; i < values.length; i += 1) {

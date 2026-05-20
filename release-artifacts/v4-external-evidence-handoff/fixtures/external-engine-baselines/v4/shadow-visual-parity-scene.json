@@ -1,0 +1,148 @@
+{
+  "schemaVersion": "v4-shadow-visual-parity-scene-v1",
+  "id": "v4-shadow-visual-parity-scene",
+  "baselineKind": "shadow-visual",
+  "viewport": {
+    "width": 720,
+    "height": 480
+  },
+  "camera": "deterministic-front-orthographic",
+  "sourceReports": [
+    "tests/reports/v4-shadow-visual-parity.json",
+    "tests/reports/v4-shadow-map-readiness.json"
+  ],
+  "materials": [
+    {
+      "id": "receiver",
+      "kind": "pbr",
+      "color": [
+        0.72,
+        0.74,
+        0.68,
+        1
+      ],
+      "metallic": 0,
+      "roughness": 0.7
+    },
+    {
+      "id": "caster-a",
+      "kind": "pbr",
+      "color": [
+        0.22,
+        0.44,
+        0.9,
+        1
+      ],
+      "metallic": 0.15,
+      "roughness": 0.38
+    },
+    {
+      "id": "caster-b",
+      "kind": "pbr",
+      "color": [
+        0.9,
+        0.42,
+        0.18,
+        1
+      ],
+      "metallic": 0.25,
+      "roughness": 0.32
+    },
+    {
+      "id": "shadow",
+      "kind": "unlit",
+      "color": [
+        0.03,
+        0.035,
+        0.04,
+        1
+      ]
+    }
+  ],
+  "parts": [
+    {
+      "id": "receiver",
+      "geometry": "cube",
+      "material": "receiver",
+      "position": [
+        0,
+        -0.55,
+        0.18
+      ],
+      "scale": [
+        2.1,
+        0.08,
+        0.8
+      ]
+    },
+    {
+      "id": "caster-a",
+      "geometry": "cube",
+      "material": "caster-a",
+      "position": [
+        -0.32,
+        0.05,
+        0
+      ],
+      "scale": [
+        0.38,
+        0.78,
+        0.38
+      ]
+    },
+    {
+      "id": "caster-b",
+      "geometry": "sphere",
+      "material": "caster-b",
+      "position": [
+        0.48,
+        0.02,
+        0
+      ],
+      "scale": [
+        0.48,
+        0.48,
+        0.48
+      ]
+    },
+    {
+      "id": "shadow-band-a",
+      "geometry": "cube",
+      "material": "shadow",
+      "position": [
+        -0.24,
+        -0.42,
+        0.21
+      ],
+      "scale": [
+        0.42,
+        0.045,
+        0.08
+      ]
+    },
+    {
+      "id": "shadow-band-b",
+      "geometry": "cube",
+      "material": "shadow",
+      "position": [
+        0.42,
+        -0.39,
+        0.21
+      ],
+      "scale": [
+        0.54,
+        0.055,
+        0.08
+      ]
+    }
+  ],
+  "minimumEvidence": {
+    "width": 720,
+    "height": 480,
+    "nonBlankPixels": 60001,
+    "colorBuckets": 5,
+    "drawCalls": 5,
+    "shadowEvidencePixels": 701
+  },
+  "claimBoundary": "This descriptor defines the required same-scene external Unity/Unreal baseline slot. It is a portable render target for external editor runs, not evidence until a real engine run writes the matching report and screenshot."
+}

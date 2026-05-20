@@ -10,7 +10,9 @@ export interface ParticleBurst {
 export type ParticleEmitterShape =
   | { type: "point"; position?: Partial<Vector3Like> }
   | { type: "box"; center?: Partial<Vector3Like>; size: Partial<Vector3Like> }
-  | { type: "sphere"; center?: Partial<Vector3Like>; radius: number; shell?: boolean };
+  | { type: "sphere"; center?: Partial<Vector3Like>; radius: number; shell?: boolean }
+  | { type: "circle"; center?: Partial<Vector3Like>; radius: number; arc?: number; filled?: boolean }
+  | { type: "cone"; origin?: Partial<Vector3Like>; radius: number; length: number; angle?: number; emitFromVolume?: boolean };
 
 export interface ParticleEmitterOptions {
   seed?: number;
@@ -76,17 +78,51 @@ function randomUnitVector(random: () => number): Vector3Like {
   };
 }
 
-function sampleShape(shape: ParticleEmitterShape, random: () => number): Vector3Like {
+function sampleShape(shape: ParticleEmitterShape, random: () => number): { readonly position: Vector3Like; readonly direction?: Vector3Like } {
   if (shape.type === "point") {
-    return vector(shape.position);
+    return { position: vector(shape.position) };
   }
 
   if (shape.type === "box") {
     const center = vector(shape.center);
     return {
-      x: center.x + (random() - 0.5) * (shape.size.x ?? 0),
-      y: center.y + (random() - 0.5) * (shape.size.y ?? 0),
-      z: center.z + (random() - 0.5) * (shape.size.z ?? 0),
+      position: {
+        x: center.x + (random() - 0.5) * (shape.size.x ?? 0),
+        y: center.y + (random() - 0.5) * (shape.size.y ?? 0),
+        z: center.z + (random() - 0.5) * (shape.size.z ?? 0),
+      }
+    };
+  }
+
+  if (shape.type === "circle") {
+    const center = vector(shape.center);
+    const arc = shape.arc ?? Math.PI * 2;
+    const angle = random() * arc;
+    const radius = shape.radius * (shape.filled ? Math.sqrt(random()) : 1);
+    return {
+      position: {
+        x: center.x + Math.cos(angle) * radius,
+        y: center.y,
+        z: center.z + Math.sin(angle) * radius,
+      },
+      direction: { x: Math.cos(angle), y: 0, z: Math.sin(angle) }
+    };
+  }
+
+  if (shape.type === "cone") {
+    const origin = vector(shape.origin);
+    const axial = shape.length * (shape.emitFromVolume ? random() : 1);
+    const radiusAtAxial = shape.radius * (shape.emitFromVolume ? axial / shape.length : 1);
+    const angle = random() * Math.PI * 2;
+    const radial = radiusAtAxial * (shape.emitFromVolume ? Math.sqrt(random()) : 1);
+    const direction = sampleConeDirection(shape, random);
+    return {
+      position: {
+        x: origin.x + Math.cos(angle) * radial,
+        y: origin.y + axial,
+        z: origin.z + Math.sin(angle) * radial,
+      },
+      direction
     };
   }
 
@@ -95,10 +131,48 @@ function sampleShape(shape: ParticleEmitterShape, random: () => number): Vector3
   const radius = shape.radius * (shape.shell ? 1 : Math.cbrt(random()));
 
   return {
-    x: center.x + direction.x * radius,
-    y: center.y + direction.y * radius,
-    z: center.z + direction.z * radius,
+    position: {
+      x: center.x + direction.x * radius,
+      y: center.y + direction.y * radius,
+      z: center.z + direction.z * radius,
+    },
+    direction
   };
+}
+
+function sampleConeDirection(shape: Extract<ParticleEmitterShape, { type: "cone" }>, random: () => number): Vector3Like {
+  const maxAngle = shape.angle ?? Math.atan2(shape.radius, shape.length);
+  const theta = random() * Math.PI * 2;
+  const spread = Math.tan(maxAngle) * Math.sqrt(random());
+  return normalize({
+    x: Math.cos(theta) * spread,
+    y: 1,
+    z: Math.sin(theta) * spread
+  });
+}
+
+function normalize(value: Vector3Like): Vector3Like {
+  const length = Math.hypot(value.x, value.y, value.z) || 1;
+  return { x: value.x / length, y: value.y / length, z: value.z / length };
+}
+
+function validateShape(shape: ParticleEmitterShape): void {
+  if (shape.type === "sphere" && (!Number.isFinite(shape.radius) || shape.radius < 0)) {
+    throw new RangeError("Particle sphere radius must be a finite non-negative number.");
+  }
+  if (shape.type === "circle") {
+    if (!Number.isFinite(shape.radius) || shape.radius < 0) throw new RangeError("Particle circle radius must be a finite non-negative number.");
+    if (shape.arc !== undefined && (!Number.isFinite(shape.arc) || shape.arc <= 0 || shape.arc > Math.PI * 2)) {
+      throw new RangeError("Particle circle arc must be in the range (0, 2pi].");
+    }
+  }
+  if (shape.type === "cone") {
+    if (!Number.isFinite(shape.radius) || shape.radius < 0) throw new RangeError("Particle cone radius must be a finite non-negative number.");
+    if (!Number.isFinite(shape.length) || shape.length <= 0) throw new RangeError("Particle cone length must be a finite positive number.");
+    if (shape.angle !== undefined && (!Number.isFinite(shape.angle) || shape.angle <= 0 || shape.angle >= Math.PI / 2)) {
+      throw new RangeError("Particle cone angle must be in the range (0, pi/2).");
+    }
+  }
 }
 
 export class ParticleEmitter {
@@ -132,6 +206,7 @@ export class ParticleEmitter {
     this.bursts = options.bursts ?? [];
     this.initial = options.initial ?? {};
     this.burstExecutions = this.bursts.map(() => 0);
+    validateShape(this.shape);
 
     if (!Number.isFinite(this.emissionRate) || this.emissionRate < 0) {
       throw new RangeError("Particle emissionRate must be a finite non-negative number.");
@@ -178,8 +253,9 @@ export class ParticleEmitter {
   }
 
   createParticle(): Particle {
-    const position = sampleShape(this.shape, this.random);
-    const direction = randomUnitVector(this.random);
+    const emitted = sampleShape(this.shape, this.random);
+    const position = emitted.position;
+    const direction = emitted.direction ?? randomUnitVector(this.random);
     const speed = sampleRange(this.speed, this.random);
 
     return createParticle({

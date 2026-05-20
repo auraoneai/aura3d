@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>G3D V4 Gallery</title>
+    <style>
+      body { margin: 0; background: #101214; color: #eef2f5; font: 14px system-ui, sans-serif; }
+      header { padding: 24px 28px 12px; border-bottom: 1px solid #2d3338; }
+      h1 { margin: 0 0 8px; font-size: 28px; letter-spacing: 0; }
+      p { margin: 0; color: #b6c0c8; }
+      main { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; padding: 20px 28px 32px; }
+      article { border: 1px solid #2d3338; border-radius: 8px; overflow: hidden; background: #171b1f; }
+      img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #0b0d0f; }
+      div { padding: 12px 14px 14px; }
+      h2 { margin: 0 0 6px; font-size: 16px; letter-spacing: 0; }
+      a { color: #8bc5ff; text-decoration: none; }
+      span { display: block; color: #b6c0c8; line-height: 1.45; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>G3D Visual Engine V4 Gallery</h1>
+      <p>Installable SDK workflows, V4 examples, same-scene Three.js comparisons, and template proof artifacts.</p>
+    </header>
+    <main data-testid="hr4-gallery">
+      <article data-testid="hr4-gallery-card">
+        <img alt="Product configurator" src="/tests/reports/v4-gallery/product/product-configurator-v4.png" />
+        <div><h2>Product Configurator</h2><a href="/examples/product-configurator-v4/index.html">Open example</a><span>Public workflow for a pinned premium product asset.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Material studio" src="/tests/reports/v4-gallery/materials/material-studio-v4.png" />
+        <div><h2>Material Studio</h2><a href="/examples/material-studio-v4/index.html">Open example</a><span>PBR material review with lighting and postprocess presets.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Asset gallery" src="/tests/reports/v4-gallery/assets/asset-gallery-v4.png" />
+        <div><h2>Asset Gallery</h2><a href="/examples/asset-gallery-v4/index.html">Open example</a><span>glTF corpus review and asset diagnostics proof.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Interior scene" src="/tests/reports/v4-gallery/scenes/interior-scene-v4.png" />
+        <div><h2>Interior Scene</h2><a href="/examples/interior-scene-v4/index.html">Open example</a><span>Architecture/interior workflow with gallery lighting.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Character viewer" src="/tests/reports/v4-gallery/characters/character-viewer-v4.png" />
+        <div><h2>Character Viewer</h2><a href="/examples/character-viewer-v4/index.html">Open example</a><span>Animation and timeline preview proof.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Interactive showcase" src="/tests/reports/v4-gallery/interactive/interactive-showcase-v4.png" />
+        <div><h2>Interactive Showcase</h2><a href="/examples/interactive-showcase-v4/index.html">Open example</a><span>Selection, variants, and fixed realtime interaction state.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Installable template" src="/tests/reports/v4-gallery/templates/v4-product-viewer.png" />
+        <div><h2>Installable Template</h2><a href="/templates/v4-product-viewer/index.html">Open template</a><span>Fresh Vite template that imports the public root SDK.</span></div>
+      </article>
+      <article data-testid="hr4-gallery-card">
+        <img alt="Three.js parity" src="/tests/reports/v4-threejs-visual-parity/product-configurator-threejs.png" />
+        <div><h2>Three.js Parity</h2><a href="/tests/reports/v4-threejs-visual-parity/gap-report.md">Read gap report</a><span>Same-scene comparison evidence with explicit claim boundaries.</span></div>
+      </article>
+    </main>
+  </body>
+</html>

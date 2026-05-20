@@ -20,15 +20,15 @@ describe("governance documentation", () => {
   it("has support, security, contribution, release, migration, compatibility, and claim docs aligned to package version", () => {
     const version = packageVersion();
     const requiredVersionedDocs = [
-      "SECURITY.md",
-      "SUPPORT.md",
+      "docs/project/security-policy.md",
+      "docs/project/support-policy.md",
       "CONTRIBUTING.md",
       "CHANGELOG.md",
-      "docs/release-process.md",
-      "docs/release-checklist.md",
-      "docs/claim-guidelines.md",
-      "docs/migration.md",
-      "docs/compatibility.md"
+      "docs/project/release-process.md",
+      "docs/project/release-checklist.md",
+      "docs/project/claim-guidelines.md",
+      "docs/project/migration.md",
+      "docs/project/compatibility.md"
     ];
 
     for (const path of requiredVersionedDocs) {
@@ -39,17 +39,17 @@ describe("governance documentation", () => {
 
   it("binds public claims and release notes to the v2 claim registry", () => {
     for (const path of [
-      "SECURITY.md",
-      "SUPPORT.md",
+      "docs/project/security-policy.md",
+      "docs/project/support-policy.md",
       "CONTRIBUTING.md",
       "CHANGELOG.md",
-      "docs/release-process.md",
-      "docs/release-checklist.md",
-      "docs/claim-guidelines.md",
-      "docs/migration.md",
-      "docs/compatibility.md"
+      "docs/project/release-process.md",
+      "docs/project/release-checklist.md",
+      "docs/project/claim-guidelines.md",
+      "docs/project/migration.md",
+      "docs/project/compatibility.md"
     ]) {
-      expect(read(path), `${path} should bind wording to the claim registry`).toContain("docs/v2/claim-registry.md");
+      expect(read(path), `${path} should bind wording to the claim registry`).toContain("docs/project/v2-claim-registry.md");
     }
   });
 

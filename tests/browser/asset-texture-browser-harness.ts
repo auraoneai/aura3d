@@ -1,5 +1,5 @@
 import { AssetManager, GLTFLoader, ImageLoader, TextureLoader, createGLTFRenderResources } from "@galileo3d/assets";
-import { InstancedUnlitMaterial, Renderer, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { InstancedUnlitMaterial, Renderer, analyzeRgbaFrameVisualMetrics, type FrameVisualMetrics, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
 
 interface AssetTextureBrowserResult {
   readonly status: "ready" | "error";
@@ -8,6 +8,14 @@ interface AssetTextureBrowserResult {
   readonly gltfRenderTextureSize?: readonly [number, number];
   readonly gltfRenderPixel?: readonly number[];
   readonly gltfRenderDiagnostics?: RenderDeviceDiagnostics;
+  readonly gltfDefaultSourcePixel?: readonly number[];
+  readonly gltfDefaultSourceDiagnostics?: RenderDeviceDiagnostics;
+  readonly gltfHdrPreviewPixel?: readonly number[];
+  readonly gltfHdrPreviewDiagnostics?: RenderDeviceDiagnostics;
+  readonly gltfHdrPreviewStats?: FrameVisualMetrics;
+  readonly gltfHdrPreviewPostprocessTargetFormat?: string;
+  readonly gltfHdrPreviewEnvironmentMapTexture?: boolean;
+  readonly gltfHdrPreviewBrdfLutTexture?: boolean;
   readonly gltfInstancedDiagnostics?: RenderDeviceDiagnostics;
   readonly gltfInstancedLeftPixel?: readonly number[];
   readonly gltfInstancedRightPixel?: readonly number[];
@@ -99,6 +107,8 @@ try {
   gl.readPixels(16, 16, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
 
   const gltfRender = await renderGLTFTextureBinding();
+  const gltfDefaultSource = await renderGLTFDefaultPbrSource();
+  const gltfHdrPreview = await renderGLTFHdrStudioPreviewInput();
   const gltfInstanced = await renderGLTFInstancing();
 
   publish({
@@ -108,6 +118,14 @@ try {
     gltfRenderTextureSize: gltfRender.textureSize,
     gltfRenderPixel: gltfRender.pixel,
     gltfRenderDiagnostics: gltfRender.diagnostics,
+    gltfDefaultSourcePixel: gltfDefaultSource.pixel,
+    gltfDefaultSourceDiagnostics: gltfDefaultSource.diagnostics,
+    gltfHdrPreviewPixel: gltfHdrPreview.pixel,
+    gltfHdrPreviewDiagnostics: gltfHdrPreview.diagnostics,
+    gltfHdrPreviewStats: gltfHdrPreview.stats,
+    gltfHdrPreviewPostprocessTargetFormat: gltfHdrPreview.postprocessTargetFormat,
+    gltfHdrPreviewEnvironmentMapTexture: gltfHdrPreview.environmentMapTexture,
+    gltfHdrPreviewBrdfLutTexture: gltfHdrPreview.brdfLutTexture,
     gltfInstancedDiagnostics: gltfInstanced.diagnostics,
     gltfInstancedLeftPixel: gltfInstanced.leftPixel,
     gltfInstancedRightPixel: gltfInstanced.rightPixel
@@ -122,6 +140,91 @@ try {
     status: "error",
     error: error instanceof Error ? error.message : String(error)
   });
+}
+
+async function renderGLTFDefaultPbrSource(): Promise<{
+  readonly pixel: readonly number[];
+  readonly diagnostics: RenderDeviceDiagnostics;
+}> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  document.body.append(canvas);
+  const asset = await new GLTFLoader().load({ url: createTexturedGLTFUrl() }, { throwIfAborted: () => undefined } as never);
+  const resources = await createGLTFRenderResources(asset, {
+    imageDecoder: (_image, imageIndex) => ({
+      width: 1,
+      height: 1,
+      colorSpace: "srgb",
+      data: [
+        new Uint8Array([30, 220, 60, 255]),
+        new Uint8Array([128, 128, 255, 255]),
+        new Uint8Array([255, 255, 0, 255]),
+        new Uint8Array([255, 255, 255, 255]),
+        new Uint8Array([0, 0, 0, 255])
+      ][imageIndex] ?? new Uint8Array([255, 255, 255, 255])
+    })
+  });
+  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 64, height: 64, clearColor: [0, 0, 0, 1], antialias: false });
+  const rendererInput = resources.toRendererInput({ width: 64, height: 64 });
+  const diagnostics = renderer.render(rendererInput.source, rendererInput.camera);
+  const pixel = Array.from(renderer.device.readPixels(32, 32, 1, 1));
+  renderer.dispose();
+  resources.dispose();
+  canvas.remove();
+  return { pixel, diagnostics };
+}
+
+async function renderGLTFHdrStudioPreviewInput(): Promise<{
+  readonly pixel: readonly number[];
+  readonly diagnostics: RenderDeviceDiagnostics;
+  readonly stats: FrameVisualMetrics;
+  readonly postprocessTargetFormat: string;
+  readonly environmentMapTexture: boolean;
+  readonly brdfLutTexture: boolean;
+}> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 96;
+  canvas.height = 96;
+  document.body.append(canvas);
+  const asset = await new GLTFLoader().load({ url: createTexturedGLTFUrl() }, { throwIfAborted: () => undefined } as never);
+  const resources = await createGLTFRenderResources(asset, {
+    imageDecoder: (_image, imageIndex) => ({
+      width: 1,
+      height: 1,
+      colorSpace: "srgb",
+      data: [
+        new Uint8Array([30, 220, 60, 255]),
+        new Uint8Array([128, 128, 255, 255]),
+        new Uint8Array([255, 255, 0, 255]),
+        new Uint8Array([255, 255, 255, 255]),
+        new Uint8Array([0, 0, 0, 255])
+      ][imageIndex] ?? new Uint8Array([255, 255, 255, 255])
+    })
+  });
+  const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 96, height: 96, clearColor: [0, 0, 0, 1], antialias: false });
+  const rendererInput = resources.toRendererInput({ width: 96, height: 96 }, { qualityPreset: "hdr-studio-preview" });
+  const postprocess = rendererInput.source.postprocess && typeof rendererInput.source.postprocess === "object"
+    ? rendererInput.source.postprocess
+    : {};
+  const environmentLighting = rendererInput.source.environmentLighting && typeof rendererInput.source.environmentLighting === "object"
+    ? rendererInput.source.environmentLighting
+    : {};
+  const diagnostics = renderer.render(rendererInput);
+  const pixels = renderer.device.readPixels(0, 0, 96, 96);
+  const pixel = Array.from(renderer.device.readPixels(48, 48, 1, 1));
+  const stats = analyzeRgbaFrameVisualMetrics(pixels, 96, 96);
+  renderer.dispose();
+  resources.dispose();
+  canvas.remove();
+  return {
+    pixel,
+    diagnostics,
+    stats,
+    postprocessTargetFormat: String(postprocess.targetFormat ?? ""),
+    environmentMapTexture: Boolean("environmentMapTexture" in environmentLighting),
+    brdfLutTexture: Boolean("environmentBrdfLutTexture" in environmentLighting)
+  };
 }
 
 async function renderGLTFInstancing(): Promise<{
@@ -140,7 +243,8 @@ async function renderGLTFInstancing(): Promise<{
     scene: resources.scene,
     geometryLibrary: resources.geometryLibrary,
     materialLibrary,
-    morphTargetLibrary: resources.morphTargetLibrary
+    morphTargetLibrary: resources.morphTargetLibrary,
+    cameraPolicy: "identity"
   });
   const leftPixel = Array.from(renderer.device.readPixels(18, 32, 1, 1));
   const rightPixel = Array.from(renderer.device.readPixels(46, 32, 1, 1));
@@ -167,17 +271,16 @@ async function renderGLTFTextureBinding(): Promise<{
         new Uint8Array([128, 128, 255, 255]),
         new Uint8Array([255, 255, 0, 255]),
         new Uint8Array([255, 255, 255, 255]),
-        new Uint8Array([255, 255, 255, 255])
+        new Uint8Array([0, 0, 0, 255])
       ][imageIndex] ?? new Uint8Array([255, 255, 255, 255])
     })
   });
   const renderer = await Renderer.create({ backend: "webgl2", canvas, width: 64, height: 64, clearColor: [0, 0, 0, 1], antialias: false });
-  const diagnostics = renderer.render({
-    scene: resources.scene,
-    geometryLibrary: resources.geometryLibrary,
-    materialLibrary: resources.materialLibrary,
-    morphTargetLibrary: resources.morphTargetLibrary
-  });
+  const diagnostics = renderer.render(resources.toRenderSource({
+    qualityPreset: "default",
+    cameraPolicy: "identity",
+    environmentLighting: { color: [1, 1, 1], intensity: 0.75 }
+  }));
   const pixel = Array.from(renderer.device.readPixels(32, 32, 1, 1));
   const texture = resources.textureLibrary.get("browser-gltf-base-color");
   const textureSize = [texture?.width ?? 0, texture?.height ?? 0] as const;

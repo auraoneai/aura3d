@@ -30,9 +30,21 @@ export class InspectorPanel {
         ${axisInput("position", "X", node.transform.position[0])}
         ${axisInput("position", "Y", node.transform.position[1])}
         ${axisInput("position", "Z", node.transform.position[2])}
+        ${axisInput("rotation", "X", node.transform.rotation[0])}
+        ${axisInput("rotation", "Y", node.transform.rotation[1])}
+        ${axisInput("rotation", "Z", node.transform.rotation[2])}
         ${axisInput("scale", "X", node.transform.scale[0])}
         ${axisInput("scale", "Y", node.transform.scale[1])}
         ${axisInput("scale", "Z", node.transform.scale[2])}
+      </fieldset>
+      <fieldset>
+        <legend>Mesh Renderer</legend>
+        <label><input data-path="mesh.enabled" type="checkbox" ${node.mesh.enabled ? "checked" : ""}> Enabled</label>
+        <label>Primitive <select data-path="mesh.primitive">${option("cube", node.mesh.primitive)}${option("quad", node.mesh.primitive)}${option("imported", node.mesh.primitive)}</select></label>
+        <label>Asset <select data-path="mesh.assetId">
+          ${option("", node.mesh.assetId ?? "")}
+          ${this.shell.project.assets.map((asset) => option(asset.id, node.mesh.assetId ?? "")).join("")}
+        </select></label>
       </fieldset>
       <fieldset>
         <legend>Material</legend>
@@ -40,6 +52,10 @@ export class InspectorPanel {
         <label>Base color <input data-path="material.baseColor" value="${escapeHtml(node.material.baseColor)}"></label>
         <label>Metallic <input data-path="material.metallic" type="number" step="0.1" value="${node.material.metallic}"></label>
         <label>Roughness <input data-path="material.roughness" type="number" step="0.1" value="${node.material.roughness}"></label>
+        <label>Base texture <input data-path="material.textureSlots.baseColor" value="${escapeHtml(node.material.textureSlots.baseColor)}"></label>
+        <label>Normal texture <input data-path="material.textureSlots.normal" value="${escapeHtml(node.material.textureSlots.normal)}"></label>
+        <label>MR texture <input data-path="material.textureSlots.metallicRoughness" value="${escapeHtml(node.material.textureSlots.metallicRoughness)}"></label>
+        <label>Emissive texture <input data-path="material.textureSlots.emissive" value="${escapeHtml(node.material.textureSlots.emissive)}"></label>
       </fieldset>
       <fieldset>
         <legend>Light</legend>
@@ -55,6 +71,30 @@ export class InspectorPanel {
         <legend>Physics</legend>
         <label>Body <select data-path="physics.body">${option("none", node.physics.body)}${option("static", node.physics.body)}${option("dynamic", node.physics.body)}</select></label>
         <label>Collider <select data-path="physics.collider">${option("none", node.physics.collider)}${option("box", node.physics.collider)}${option("sphere", node.physics.collider)}</select></label>
+        <label>Friction <input data-path="physics.friction" type="number" min="0" max="1" step="0.05" value="${node.physics.friction}"></label>
+        <label>Restitution <input data-path="physics.restitution" type="number" min="0" max="1" step="0.05" value="${node.physics.restitution}"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Animation</legend>
+        <label><input data-path="animation.enabled" type="checkbox" ${node.animation.enabled ? "checked" : ""}> Enabled</label>
+        <label>Clip <input data-path="animation.clip" value="${escapeHtml(node.animation.clip)}"></label>
+        <label><input data-path="animation.loop" type="checkbox" ${node.animation.loop ? "checked" : ""}> Loop</label>
+      </fieldset>
+      <fieldset>
+        <legend>Audio</legend>
+        <label>Source <input data-path="audio.source" value="${escapeHtml(node.audio.source)}"></label>
+        <label><input data-path="audio.listener" type="checkbox" ${node.audio.listener ? "checked" : ""}> Listener</label>
+        <label>Volume <input data-path="audio.volume" type="number" min="0" max="1" step="0.05" value="${node.audio.volume}"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Particle Emitter</legend>
+        <label><input data-path="particleEmitter.enabled" type="checkbox" ${node.particleEmitter.enabled ? "checked" : ""}> Enabled</label>
+        <label>Preset <select data-path="particleEmitter.preset">${option("none", node.particleEmitter.preset)}${option("fire", node.particleEmitter.preset)}${option("fountain", node.particleEmitter.preset)}${option("collision-burst", node.particleEmitter.preset)}</select></label>
+        <label>Rate <input data-path="particleEmitter.emissionRate" type="number" min="0" step="1" value="${node.particleEmitter.emissionRate}"></label>
+        <label>Max particles <input data-path="particleEmitter.maxParticles" type="number" min="1" step="1" value="${node.particleEmitter.maxParticles}"></label>
+        <label>Lifetime <input data-path="particleEmitter.lifetime" type="number" min="0.05" step="0.05" value="${node.particleEmitter.lifetime}"></label>
+        <label>Speed <input data-path="particleEmitter.speed" type="number" min="0" step="0.1" value="${node.particleEmitter.speed}"></label>
+        <label><input data-path="particleEmitter.looping" type="checkbox" ${node.particleEmitter.looping ? "checked" : ""}> Looping</label>
       </fieldset>
       <fieldset>
         <legend>Script</legend>
@@ -70,19 +110,22 @@ export class InspectorPanel {
     if (!selected || !node) {
       return;
     }
-    if (path.startsWith("position.") || path.startsWith("scale.")) {
+    if (path.startsWith("position.") || path.startsWith("rotation.") || path.startsWith("scale.")) {
       const [, axis] = path.split(".");
       const axisIndex = axis === "X" ? 0 : axis === "Y" ? 1 : 2;
       const position = [...node.transform.position] as [number, number, number];
+      const rotation = [...node.transform.rotation] as [number, number, number, number];
       const scale = [...node.transform.scale] as [number, number, number];
       if (path.startsWith("position.")) {
         position[axisIndex] = Number(rawValue);
+      } else if (path.startsWith("rotation.")) {
+        rotation[axisIndex] = Number(rawValue);
       } else {
         scale[axisIndex] = Number(rawValue);
       }
       await this.shell.runtime.executeCommand(new TransformCommand(selected, {
         position: { x: position[0], y: position[1], z: position[2] },
-        rotation: { x: node.transform.rotation[0], y: node.transform.rotation[1], z: node.transform.rotation[2], w: node.transform.rotation[3] },
+        rotation: { x: rotation[0], y: rotation[1], z: rotation[2], w: rotation[3] },
         scale: { x: scale[0], y: scale[1], z: scale[2] }
       }));
       this.shell.projectFromScene();
@@ -90,6 +133,8 @@ export class InspectorPanel {
       return;
     }
     await this.shell.runtime.executeCommand(new ProjectNodeFieldCommand(node, path.split("."), coerceValue(path, rawValue)));
+    this.shell.projectFromScene();
+    this.shell.addConsoleMessage("info", `Edited ${path}.`);
     this.shell.refresh();
   }
 }
@@ -127,8 +172,23 @@ function coerceValue(path: string, value: string | boolean): string | number | b
   if (typeof value === "boolean") {
     return value;
   }
-  if (path.endsWith(".metallic") || path.endsWith(".roughness") || path.endsWith(".intensity") || path.endsWith(".fov")) {
+  if (
+    path.endsWith(".metallic") ||
+    path.endsWith(".roughness") ||
+    path.endsWith(".intensity") ||
+    path.endsWith(".fov") ||
+    path.endsWith(".volume") ||
+    path.endsWith(".friction") ||
+    path.endsWith(".restitution") ||
+    path.endsWith(".emissionRate") ||
+    path.endsWith(".maxParticles") ||
+    path.endsWith(".lifetime") ||
+    path.endsWith(".speed")
+  ) {
     return Number(value);
+  }
+  if (path.endsWith(".assetId") && value === "") {
+    return null;
   }
   return value;
 }

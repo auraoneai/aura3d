@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
-import { chmodSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { mkdtempSync } from "node:fs";
@@ -10,7 +10,11 @@ import { validateV4ClaimGates } from "../../../tools/v4-claim-gates/index.js";
 import { createV4BroadParityReadinessReport } from "../../../tools/v4-broad-parity-readiness/index.js";
 import { createV4ProductionReadinessReport, validatePublicDemoDeploymentSmokeEvidence } from "../../../tools/v4-production-readiness/index.js";
 import { createV4PbrGltfReadinessReport } from "../../../tools/v4-pbr-gltf-readiness/index.js";
-import { validateExternalProductVisualBaseline } from "../../../tools/v4-product-visual-parity/index.js";
+import { collectPbrVisualEvidencePaths } from "../../../tools/v4-pbr-visual-parity/index.js";
+import { collectProductVisualEvidencePaths, validateExternalProductVisualBaseline } from "../../../tools/v4-product-visual-parity/index.js";
+import { collectShadowVisualEvidencePaths } from "../../../tools/v4-shadow-visual-parity/index.js";
+import { collectHdrVisualEvidencePaths } from "../../../tools/v4-hdr-visual-parity/index.js";
+import { collectPostprocessSuiteEvidencePaths } from "../../../tools/v4-postprocess-suite/index.js";
 import { createStaticDemoServerSmokeReport } from "../../../tools/static-demo-server-smoke/index.js";
 import { createPublicDemoDeploymentSmokeReport } from "../../../tools/public-demo-deployment-smoke/index.js";
 import { ingestPublicDemoDeploymentReportArtifacts } from "../../../tools/public-demo-deployment-artifacts/index.js";
@@ -22,13 +26,15 @@ import { createV4ParityStatusSummary } from "../../../tools/v4-parity-status/ind
 import { createV4LocalPortStatusSummary } from "../../../tools/v4-local-port-status/index.js";
 import { createV4ExternalHostDoctorReport } from "../../../tools/v4-external-host-doctor/index.js";
 import { createV4ExternalHostRunnerReport } from "../../../tools/v4-external-host-runner/index.js";
-import { createV4ExternalEvidenceHandoffReport, verifyV4ExternalEvidenceHandoffPackage } from "../../../tools/v4-external-evidence-handoff/index.js";
+import { createV4GithubExternalReadinessReport, type CommandResult, type CommandRunner } from "../../../tools/v4-github-external-readiness/index.js";
+import { createV4ExternalEvidenceHandoffReport, verifyAndRecordV4ExternalEvidenceHandoffPackage, verifyV4ExternalEvidenceHandoffPackage } from "../../../tools/v4-external-evidence-handoff/index.js";
 import { createV4HdrRenderTargetReadinessReport } from "../../../tools/v4-hdr-render-target-readiness/index.js";
 import { createV4PbrReferenceReadinessReport } from "../../../tools/v4-pbr-reference-readiness/index.js";
 import { createV4ShadowMapReadinessReport } from "../../../tools/v4-shadow-map-readiness/index.js";
+import { evaluateV4CodebaseRootReadinessGate, shouldV4CodebaseRootReadinessCliPass } from "../../../tools/v4-codebase-root-readiness/index.js";
 import { baseReport } from "../../../tools/v4-reporting/index.js";
 import { validateV4ReportFreshness } from "../../../tools/v4-reporting/index.js";
-import { validateVisualGateEntry } from "../../../tools/v4-visual-quality/index.js";
+import { validateManualVisualApproval, validateVisualGateEntry } from "../../../tools/v4-visual-quality/index.js";
 
 function fixtureRoot(): string {
   return mkdtempSync(join(tmpdir(), "g3d-v4-validation-"));
@@ -138,7 +144,7 @@ function writePublicDeploymentFixture(root: string): string {
     integrityManifestPath: `${outputDir}/static-integrity-manifest.json`,
     publicDeploymentManifestPath,
     deploymentCommandPlanPath: `${outputDir}/deployment-command-plan.json`,
-    rollbackPlanPath: "docs/deployment-rollback.md",
+    rollbackPlanPath: "docs/project/deployment-rollback.md",
     demos: publicDemoIds.map((id) => ({ id })),
     sourceFileHashes,
   }, null, 2));
@@ -223,6 +229,7 @@ jobs:
         with:
           path: |
             tests/reports/public-demo-deployment-smoke.json
+            tests/reports/public-demo-deployment-runbook.md
             tests/reports/v4-production-readiness.json
             tests/reports/v4-external-evidence-readiness.json
             tests/reports/v4-external-evidence-missing-artifacts.md
@@ -253,7 +260,7 @@ describe("v4 validation tools", () => {
       expect.objectContaining({ path: "examples/bad/README.md", claim: "broad better-than-Three.js language" }),
     ]));
     expect(report.scopedOccurrences).toEqual(expect.arrayContaining([
-      expect.objectContaining({ path: "docs/v4/decision-gates.md", claim: "production-ready language", scoped: true }),
+      expect.objectContaining({ path: "docs/project/v4-decision-gates.md", claim: "production-ready language", scoped: true }),
     ]));
   });
 
@@ -265,7 +272,7 @@ describe("v4 validation tools", () => {
       ok: true,
       command: "test",
       runIdPrefix: "test",
-      sourceFiles: ["docs/v4/README.md"],
+      sourceFiles: ["docs/project/v4-readme.md"],
     });
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
     writeFileSync(join(root, "tests", "reports", "v4-current-capability.json"), `${JSON.stringify(report, null, 2)}\n`);
@@ -306,6 +313,88 @@ describe("v4 validation tools", () => {
     expect(validateVisualGateEntry({ ...good, screenshotPath: "tests/reports/v4-example-screenshots/old.png" }, screenshot)).toMatchObject({ passed: false, stale: true });
     expect(validateVisualGateEntry({ ...good, visualClaim: "debug placeholder wireframe", featureEvidence: { screenshotEvidencePath: "missing.png" } }, screenshot)).toMatchObject({ passed: false, debugDominated: true });
     expect(validateVisualGateEntry({ ...good, featureEvidence: {}, visualClaim: "primitive cube scene" }, screenshot)).toMatchObject({ passed: false, primitiveOnly: true });
+  });
+
+  it("keeps v4 visual approval blocked without an explicit current review artifact", () => {
+    const required = ["product-configurator", "architecture-viewer", "game-slice"];
+
+    expect(validateManualVisualApproval(null, required)).toMatchObject({
+      passed: false,
+      missingIds: required,
+      reason: expect.stringContaining("is missing"),
+    });
+    expect(validateManualVisualApproval({
+      status: "approved",
+      reviewer: "visual-review",
+      approvedAt: "2026-05-13T00:00:00.000Z",
+      entries: [
+        { id: "product-configurator", status: "approved" },
+        { id: "architecture-viewer", status: "rejected" },
+      ],
+    }, required)).toMatchObject({
+      passed: false,
+      rejectedIds: ["architecture-viewer"],
+      missingIds: ["architecture-viewer", "game-slice"],
+    });
+    expect(validateManualVisualApproval({
+      status: "approved",
+      reviewer: "visual-review",
+      approvedAt: "2026-05-13T00:00:00.000Z",
+      entries: required.map((id) => ({ id, status: "approved" })),
+    }, required)).toMatchObject({
+      passed: true,
+      approvedIds: required,
+      missingIds: [],
+    });
+  });
+
+  it("keeps root readiness false while current visual quality is failing", () => {
+    expect(evaluateV4CodebaseRootReadinessGate({
+      rootBlockers: [],
+      completionBlockers: [],
+      broadParityBlockers: [],
+      externalEvidenceBlockers: [],
+      visualQualityOk: false,
+    })).toMatchObject({
+      rootContractsReady: true,
+      localVisualQualityReady: false,
+      exampleImplementationMayResume: false,
+      rootReady: false,
+      examplesAllowedToResume: false,
+      violations: ["visual-quality: tests/reports/v4-visual-quality.json is missing or failing"],
+      examplesResumeBlockers: ["visual-quality: tests/reports/v4-visual-quality.json is missing or failing"],
+    });
+
+    expect(evaluateV4CodebaseRootReadinessGate({
+      rootBlockers: [],
+      completionBlockers: [],
+      broadParityBlockers: [],
+      externalEvidenceBlockers: [],
+      visualQualityOk: true,
+    })).toMatchObject({
+      rootContractsReady: true,
+      localVisualQualityReady: true,
+      exampleImplementationMayResume: true,
+      rootReady: true,
+      examplesAllowedToResume: true,
+      violations: [],
+      examplesResumeBlockers: [],
+    });
+  });
+
+  it("allows a contracts-only root readiness exit without approving full root readiness", () => {
+    const locallyReadyButStrictlyBlocked = {
+      ok: false,
+      rootContractsReady: true,
+      allCodebaseObjectiveRequirementsCovered: true,
+    };
+
+    expect(shouldV4CodebaseRootReadinessCliPass(locallyReadyButStrictlyBlocked, "strict")).toBe(false);
+    expect(shouldV4CodebaseRootReadinessCliPass(locallyReadyButStrictlyBlocked, "contracts-only")).toBe(true);
+    expect(shouldV4CodebaseRootReadinessCliPass({
+      ...locallyReadyButStrictlyBlocked,
+      allCodebaseObjectiveRequirementsCovered: false,
+    }, "contracts-only")).toBe(false);
   });
 
   it("keeps broad parity claims blocked until explicit claim-specific evidence exists", () => {
@@ -461,6 +550,264 @@ describe("v4 validation tools", () => {
     ]));
   });
 
+  it("does not require impossible benchmark wins on intentionally equivalent scene dimensions", () => {
+    const three = JSON.parse(readFileSync(join(process.cwd(), "tests", "reports", "v4-comparison-threejs.json"), "utf8"));
+    const babylon = JSON.parse(readFileSync(join(process.cwd(), "tests", "reports", "v4-comparison-babylon.json"), "utf8"));
+    for (const report of [three, babylon]) {
+      const blockers = String(report.broadSuperiority?.blockers?.join("\n") ?? "");
+      expect(report.claimUsable).toBe(false);
+      expect(blockers).not.toContain("benchmark win count is not broad enough");
+      expect(blockers).toContain("broad-superiority evidence matrix is incomplete");
+      for (const outcome of Object.values(report.comparisonOutcomes?.byCompetitor ?? {}) as Array<{ summary?: { losses?: number; unavailable?: number }; scenes?: Array<Record<string, { result?: string }>> }>) {
+        expect(outcome.summary?.losses ?? 0).toBe(0);
+        expect(outcome.summary?.unavailable ?? 0).toBe(0);
+        expect(outcome.scenes?.every((scene) => Object.values(scene).some((metric) => metric?.result === "win"))).toBe(true);
+      }
+    }
+  });
+
+  it("collects product visual render and diff artifacts into screenshot evidence paths", () => {
+    const paths = collectProductVisualEvidencePaths({
+      renders: [
+        {
+          engine: "galileo",
+          screenshotPath: "tests/reports/v4-product-visual-parity/galileo-product.png",
+          bundleBytes: 1,
+          metrics: {
+            width: 720,
+            height: 480,
+            nonBlankPixels: 1,
+            salientRatio: 0.2,
+            occupiedAreaRatio: 0.2,
+            occupiedQuadrants: 3,
+            meanLuma: 32,
+            darkPixelRatio: 0.4,
+            colorBuckets: 1,
+            dominantBucketRatio: 0.5,
+            edgePixelRatio: 0.02,
+            drawCalls: 1,
+            materialCount: 1,
+            productParts: 1,
+            turntableHotspots: 1,
+            captureViews: 1,
+            batchTasks: 1,
+          },
+        },
+        {
+          engine: "threejs",
+          screenshotPath: "tests/reports/v4-product-visual-parity/threejs-product.png",
+          bundleBytes: 1,
+          metrics: {
+            width: 720,
+            height: 480,
+            nonBlankPixels: 1,
+            salientRatio: 0.2,
+            occupiedAreaRatio: 0.2,
+            occupiedQuadrants: 3,
+            meanLuma: 32,
+            darkPixelRatio: 0.4,
+            colorBuckets: 1,
+            dominantBucketRatio: 0.5,
+            edgePixelRatio: 0.02,
+            drawCalls: 1,
+            materialCount: 1,
+            productParts: 1,
+            turntableHotspots: 1,
+            captureViews: 1,
+            batchTasks: 1,
+          },
+        },
+      ],
+      diffs: [{
+        baselineEngine: "galileo",
+        comparedEngine: "threejs",
+        baselinePath: "tests/reports/v4-product-visual-parity/galileo-product.png",
+        comparedPath: "tests/reports/v4-product-visual-parity/threejs-product.png",
+        diffPath: "tests/reports/v4-product-visual-parity/threejs-product-diff.png",
+        width: 720,
+        height: 480,
+        comparedPixels: 345_600,
+        changedPixels: 10,
+        changedPixelRatio: 0.001,
+        meanAbsoluteError: 0.1,
+        maxChannelDelta: 2,
+        pass: true,
+        thresholds: {
+          maxChangedPixelRatio: 0.15,
+          maxMeanAbsoluteError: 8,
+        },
+      }],
+      externalBaselines: {
+        unity: {
+          engine: "unity",
+          reportPath: "tests/reports/v4-unity-product-visual-baseline.json",
+          ok: true,
+          present: true,
+          requiredSceneDescriptorId: "v4-deterministic-product-visual-parity",
+          requiredSceneDescriptorVersion: "v4-product-visual-parity-scene-v1",
+          screenshot: {
+            ok: true,
+            path: "tests/reports/v4-product-visual-parity/unity-product.png",
+          },
+          runnerEvidence: {
+            ok: true,
+            violations: [],
+          },
+          diffAgainstGalileo: {
+            baselineEngine: "galileo",
+            comparedEngine: "unity",
+            baselinePath: "tests/reports/v4-product-visual-parity/galileo-product.png",
+            comparedPath: "tests/reports/v4-product-visual-parity/unity-product.png",
+            width: 720,
+            height: 480,
+            comparedPixels: 345_600,
+            changedPixels: 10,
+            changedPixelRatio: 0.001,
+            meanAbsoluteError: 0.1,
+            maxChannelDelta: 2,
+            pass: true,
+            thresholds: {
+              maxChangedPixelRatio: 0.15,
+              maxMeanAbsoluteError: 8,
+            },
+          },
+          violations: [],
+        },
+        unreal: {
+          engine: "unreal",
+          reportPath: "tests/reports/v4-unreal-product-visual-baseline.json",
+          ok: false,
+          present: false,
+          requiredSceneDescriptorId: "v4-deterministic-product-visual-parity",
+          requiredSceneDescriptorVersion: "v4-product-visual-parity-scene-v1",
+          screenshot: {
+            ok: false,
+            reason: "baseline report missing",
+          },
+          runnerEvidence: {
+            ok: false,
+            violations: ["baseline report missing"],
+          },
+          violations: ["baseline report missing"],
+        },
+      },
+    });
+
+    expect(paths).toEqual([
+      "tests/reports/v4-product-visual-parity/galileo-product.png",
+      "tests/reports/v4-product-visual-parity/threejs-product.png",
+      "tests/reports/v4-product-visual-parity/threejs-product-diff.png",
+      "tests/reports/v4-product-visual-parity/unity-product.png",
+    ]);
+  });
+
+  it("collects PBR, shadow, and HDR visual render and diff artifacts into screenshot evidence paths", () => {
+    const pbrPaths = collectPbrVisualEvidencePaths({
+      renders: [
+        { screenshotPath: "tests/reports/v4-pbr-visual-parity/galileo-pbr.png" },
+        { screenshotPath: "tests/reports/v4-pbr-visual-parity/threejs-pbr.png" },
+      ],
+      diffs: [{
+        baselinePath: "tests/reports/v4-pbr-visual-parity/galileo-pbr.png",
+        comparedPath: "tests/reports/v4-pbr-visual-parity/threejs-pbr.png",
+        diffPath: "tests/reports/v4-pbr-visual-parity/threejs-pbr-diff.png",
+      }],
+    } as never);
+    const shadowPaths = collectShadowVisualEvidencePaths({
+      renders: [
+        { screenshotPath: "tests/reports/v4-shadow-visual-parity/galileo-shadow.png" },
+        { screenshotPath: "tests/reports/v4-shadow-visual-parity/babylon-shadow.png" },
+      ],
+      diffs: [{
+        baselinePath: "tests/reports/v4-shadow-visual-parity/galileo-shadow.png",
+        comparedPath: "tests/reports/v4-shadow-visual-parity/babylon-shadow.png",
+        diffPath: "tests/reports/v4-shadow-visual-parity/babylon-shadow-diff.png",
+      }],
+    } as never);
+    const hdrPaths = collectHdrVisualEvidencePaths({
+      renders: [
+        { screenshotPath: "tests/reports/v4-hdr-visual-parity/galileo-hdr.png" },
+        { screenshotPath: "tests/reports/v4-hdr-visual-parity/threejs-hdr.png" },
+      ],
+      diffs: [{
+        baselinePath: "tests/reports/v4-hdr-visual-parity/galileo-hdr.png",
+        comparedPath: "tests/reports/v4-hdr-visual-parity/threejs-hdr.png",
+        diffPath: "tests/reports/v4-hdr-visual-parity/threejs-hdr-diff.png",
+      }],
+    } as never);
+
+    expect(pbrPaths).toEqual([
+      "tests/reports/v4-pbr-visual-parity/galileo-pbr.png",
+      "tests/reports/v4-pbr-visual-parity/threejs-pbr.png",
+      "tests/reports/v4-pbr-visual-parity/threejs-pbr-diff.png",
+    ]);
+    expect(shadowPaths).toEqual([
+      "tests/reports/v4-shadow-visual-parity/galileo-shadow.png",
+      "tests/reports/v4-shadow-visual-parity/babylon-shadow.png",
+      "tests/reports/v4-shadow-visual-parity/babylon-shadow-diff.png",
+    ]);
+    expect(hdrPaths).toEqual([
+      "tests/reports/v4-hdr-visual-parity/galileo-hdr.png",
+      "tests/reports/v4-hdr-visual-parity/threejs-hdr.png",
+      "tests/reports/v4-hdr-visual-parity/threejs-hdr-diff.png",
+    ]);
+  });
+
+  it("collects postprocess suite lab and same-scene comparison artifacts into screenshot evidence paths", () => {
+    const paths = collectPostprocessSuiteEvidencePaths({
+      rendering: {
+        screenshotPaths: [
+          "tests/reports/v4-example-screenshots/postprocess-lab.png",
+          "tests/reports/v4-example-screenshots/shadow-lab.png",
+        ],
+        validations: [
+          {
+            name: "postprocess-lab-runtime-color-management-controls",
+            screenshotPath: "tests/reports/v4-example-screenshots/postprocess-lab-color-controls.png",
+          },
+          {
+            name: "shadow-lab-pcf",
+            screenshotPath: "tests/reports/v4-example-screenshots/shadow-lab.png",
+          },
+        ],
+      },
+      comparison: {
+        screenshotDiffs: [{
+          sceneId: "postprocess",
+          baselinePath: "tests/reports/comparison-rendered-screenshots/galileo-postprocess.png",
+          comparedPath: "tests/reports/comparison-rendered-screenshots/threejs-postprocess.png",
+          diffPath: "tests/reports/comparison-diffs/threejs-postprocess.png",
+        }],
+        artifacts: {
+          renderedBenchmarkVisuals: {
+            paths: [
+              "tests/reports/comparison-rendered-screenshots/galileo-postprocess.png",
+              "tests/reports/comparison-rendered-screenshots/galileo-product-configurator.png",
+            ],
+          },
+          screenshotDiffs: {
+            paths: [
+              "tests/reports/comparison-diffs/threejs-postprocess.png",
+              "tests/reports/comparison-diffs/threejs-product-configurator.png",
+            ],
+          },
+        },
+      },
+      hdrBrowser: {
+        screenshotPaths: ["tests/reports/v4-hdr-render-target-postprocess.png"],
+      },
+    });
+
+    expect(paths).toEqual([
+      "tests/reports/v4-example-screenshots/postprocess-lab.png",
+      "tests/reports/v4-example-screenshots/postprocess-lab-color-controls.png",
+      "tests/reports/comparison-rendered-screenshots/galileo-postprocess.png",
+      "tests/reports/comparison-rendered-screenshots/threejs-postprocess.png",
+      "tests/reports/comparison-diffs/threejs-postprocess.png",
+      "tests/reports/v4-hdr-render-target-postprocess.png",
+    ]);
+  });
+
   it("records audited blockers for production and Unity/Unreal parity without marking them ready", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
@@ -528,10 +875,11 @@ describe("v4 validation tools", () => {
     expect(unityUnreal.assetImportPreflight).toMatchObject({
       source: "origin-master-asset-importer-adapted",
       currentPipeline: "gltf-first",
-      supportedFormats: ["glb", "gltf"],
-      conversionRequiredFormats: ["dae", "fbx", "obj", "usd", "usdz"],
+      supportedFormats: ["glb", "gltf", "obj"],
+      conversionRequiredFormats: ["dae", "fbx", "usd", "usdz"],
       blockedFormats: ["unknown"],
       diagnosticCodes: expect.arrayContaining([
+        "ASSET_IMPORT_OBJ_NATIVE_BOUNDED",
         "ASSET_IMPORT_GLTF_SUPPORTED",
         "ASSET_IMPORT_EXTERNAL_CONVERSION_REQUIRED",
         "ASSET_IMPORT_FORMAT_BLOCKED",
@@ -539,8 +887,9 @@ describe("v4 validation tools", () => {
     });
     expect(assetImportArea?.currentEvidence).toContain("bounded import preflight evidence");
     expect(assetImportArea?.blockers).toEqual(expect.arrayContaining([
-      expect.stringContaining("Native FBX/USD/USDZ/OBJ/DAE import is not implemented"),
-      expect.stringContaining("No Unity package or Unreal asset import workflow is executed"),
+      expect.stringContaining("Native FBX/USD/USDZ/DAE import is not implemented"),
+      expect.stringContaining("Unity asset-import workflow"),
+      expect.stringContaining("Unreal asset-import workflow"),
     ]));
     expect(unityUnreal.violations.join("\n")).not.toContain("No FBX/USD/Unity package/Unreal asset import workflow is compared");
     expect(unityUnreal.deploymentEvidence).toMatchObject({
@@ -736,9 +1085,9 @@ describe("v4 validation tools", () => {
         unreal: false,
       },
     }, null, 2));
-    writeFileSync(join(root, "tests", "reports", "v4-pbr-visual-parity.json"), JSON.stringify({ ok: true, boundedPbrVisualParity: true }, null, 2));
-    writeFileSync(join(root, "tests", "reports", "v4-shadow-visual-parity.json"), JSON.stringify({ ok: true, boundedShadowVisualParity: true }, null, 2));
-    writeFileSync(join(root, "tests", "reports", "v4-hdr-visual-parity.json"), JSON.stringify({ ok: true, boundedHdrRenderTargetParity: true }, null, 2));
+    writeFileSync(join(root, "tests", "reports", "v4-pbr-visual-parity.json"), JSON.stringify({ ok: true, boundedPbrVisualParity: { threejs: true, babylon: true } }, null, 2));
+    writeFileSync(join(root, "tests", "reports", "v4-shadow-visual-parity.json"), JSON.stringify({ ok: true, boundedShadowVisualParity: { threejs: true, babylon: true } }, null, 2));
+    writeFileSync(join(root, "tests", "reports", "v4-hdr-visual-parity.json"), JSON.stringify({ ok: true, boundedHdrRenderTargetParity: { threejs: true, babylon: true } }, null, 2));
 
     const report = createV4UnityUnrealParityReport(root);
     const renderingArea = report.workflowAreas.find((area) => area.id === "rendering");
@@ -922,25 +1271,34 @@ describe("v4 validation tools", () => {
     });
     expect(report.canRunExternalEvidenceHere).toBe(false);
     expect(report.firstMissingCapability).toBe("unity-editor-executable");
-    expect(report.totalArtifacts).toBe(30);
+    expect(report.totalArtifacts).toBe(32);
     expect(report.readyArtifacts).toBe(2);
-    expect(report.blockedArtifacts).toBe(28);
+    expect(report.blockedArtifacts).toBe(30);
     expect(report.firstBlockedArtifact).toBe("unity:editor-cli-smoke");
     expect(report.summary).toMatchObject({
-      totalAreas: 10,
+      totalAreas: 11,
       readyAreas: 3,
-      blockedAreas: 7,
-      firstBlockedArea: "unity-external-baselines",
-      totalArtifacts: 30,
+      blockedAreas: 8,
+      firstBlockedArea: "github-remote-external-readiness",
+      totalArtifacts: 32,
       readyArtifacts: 2,
-      blockedArtifacts: 28,
+      blockedArtifacts: 30,
       firstBlockedArtifact: "unity:editor-cli-smoke",
     });
+    expect(report.areas).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: "github-remote-external-readiness",
+        ready: false,
+        evidencePaths: ["tests/reports/v4-github-external-readiness.json"],
+        blockers: ["tests/reports/v4-github-external-readiness.json is missing; run pnpm audit:v4-github-external-readiness."],
+      }),
+    ]));
     expect(report.requiredCommands).toEqual(expect.arrayContaining([
       "pnpm status:v4-local-port",
       "pnpm status:v4-parity",
       "pnpm prepare:v4-external-evidence-handoff",
       "pnpm doctor:v4-external-host",
+      "pnpm audit:v4-github-external-readiness",
       "pnpm run:v4-external-host-evidence",
       "pnpm run:v4-external-host-evidence:execute",
       "pnpm preflight:v4-parity:after-external-evidence",
@@ -977,7 +1335,8 @@ describe("v4 validation tools", () => {
           "pnpm preflight:v4-parity:after-external-evidence",
           "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json",
           "or run .github/workflows/v4-external-engine-baselines.yml on a self-hosted runner labeled unity",
-          "pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-external-baseline-final-audits",
+          "pnpm ingest:v4-external-baseline-artifacts --dry-run path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
+          "pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
           "node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine unity",
           "node fixtures/external-engine-baselines/v4/write-render-workflow-report.mjs unity tests/reports/v4-unity-baseline-render.json",
           "pnpm audit:v4-unity-unreal-parity",
@@ -1068,6 +1427,29 @@ describe("v4 validation tools", () => {
         ]),
       }),
       expect.objectContaining({
+        areaId: "unity-external-baselines",
+        id: "unity:asset-import-workflow",
+        kind: "asset-import-workflow-report",
+        ready: false,
+        path: "tests/reports/v4-unity-asset-import-workflow.json",
+        expectedRunnerEvidencePath: "tests/reports/v4-unity-asset-import-workflow.evidence.json",
+        command: "node fixtures/external-engine-baselines/v4/write-asset-import-workflow-report.mjs unity tests/reports/v4-unity-asset-import-workflow.evidence.json tests/reports/v4-unity-asset-import-workflow.json",
+        localEvidence: expect.arrayContaining([
+          "unity asset-import workflow report schema, template, writer command, and target report path are prepared locally.",
+        ]),
+        requiredExternalEvidence: expect.arrayContaining([
+          "Run the unity asset-import workflow in a real Unity editor project and write the runner-evidence sidecar.",
+        ]),
+      }),
+      expect.objectContaining({
+        areaId: "unreal-external-baselines",
+        id: "unreal:asset-import-workflow",
+        kind: "asset-import-workflow-report",
+        ready: false,
+        path: "tests/reports/v4-unreal-asset-import-workflow.json",
+        expectedRunnerEvidencePath: "tests/reports/v4-unreal-asset-import-workflow.evidence.json",
+      }),
+      expect.objectContaining({
         areaId: "final-external-parity-audits",
         id: "production-readiness",
         kind: "final-audit-report",
@@ -1117,13 +1499,20 @@ describe("v4 validation tools", () => {
     expect(runbook).toContain("pnpm preflight:v4-parity");
     expect(runbook).toContain("pnpm refresh:v4-readiness-reports");
     expect(runbook).toContain("## Next Actions");
+    expect(runbook).toContain("G3D_UNITY_EDITOR and G3D_UNREAL_EDITOR must be configured as Actions variables or secrets; the checked-in workflow sets G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true internally.");
+    expect(runbook).toContain("configure G3D_UNITY_EDITOR and G3D_UNREAL_EDITOR as Actions variables or secrets; the workflow sets G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true internally");
+    expect(runbook).not.toContain("G3D_UNITY_EDITOR, G3D_UNREAL_EDITOR, and G3D_RUN_UNITY_UNREAL_CLI_SMOKE must be configured as Actions variables or secrets.");
+    expect(runbook).not.toContain("configure G3D_UNITY_EDITOR, G3D_UNREAL_EDITOR, and G3D_RUN_UNITY_UNREAL_CLI_SMOKE as Actions variables or secrets");
     expect(runbook).toContain("### unity-external-baselines");
     expect(runbook).toContain("Local evidence already present:");
     expect(runbook).toContain("Browser editor evidence ok=true with 9 passed checks");
     expect(runbook).toContain("Asset import preflight is gltf-first");
     expect(runbook).toContain("External evidence still required:");
     expect(runbook).toContain("unity editor executable discovery and CLI smoke report.");
-    expect(runbook).toContain("pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-external-baseline-final-audits");
+    expect(runbook).toContain("pnpm ingest:v4-external-baseline-artifacts --dry-run path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits");
+    expect(runbook).toContain("pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits");
+    expect(runbook).not.toContain("pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-external-baseline-final-audits");
+    expect(runbook).not.toContain("pnpm ingest:v4-external-baseline-artifacts path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits");
     expect(runbook).toContain("### durable-public-demo-deployment");
     expect(runbook).toContain("Local deployment evidence: staticExportOk=true");
     expect(runbook).toContain("Static export must be deployed to a durable public HTTPS origin.");
@@ -1170,11 +1559,13 @@ describe("v4 validation tools", () => {
     expect(scripts["preflight:v4-external-evidence"]).toContain("pnpm dry-run:v4-unity-baselines");
     expect(scripts["preflight:v4-external-evidence"]).toContain("pnpm dry-run:v4-unreal-baselines");
     expect(scripts["preflight:v4-external-evidence"]).toContain("pnpm run:v4-external-host-evidence");
+    expect(scripts["preflight:v4-external-evidence"]).toContain("pnpm audit:v4-github-external-readiness");
     expect(scripts["preflight:v4-external-evidence"]).toContain("pnpm audit:v4-external-evidence-readiness");
     expect(scripts["preflight:v4-external-evidence:after-execute"]).toContain("pnpm verify:v4-external-engine-baselines");
     expect(scripts["preflight:v4-external-evidence:after-execute"]).toContain("pnpm dry-run:v4-unity-baselines");
     expect(scripts["preflight:v4-external-evidence:after-execute"]).toContain("pnpm dry-run:v4-unreal-baselines");
     expect(scripts["preflight:v4-external-evidence:after-execute"]).not.toContain("pnpm run:v4-external-host-evidence");
+    expect(scripts["preflight:v4-external-evidence:after-execute"]).toContain("pnpm audit:v4-github-external-readiness");
     expect(scripts["preflight:v4-external-evidence:after-execute"]).toContain("pnpm audit:v4-external-evidence-readiness");
     expect(scripts["preflight:v4-production-readiness"]).toContain("pnpm build:external-demos");
     expect(scripts["preflight:v4-production-readiness"]).toContain("pnpm verify:static-demo-server-smoke");
@@ -1192,6 +1583,7 @@ describe("v4 validation tools", () => {
     expect(scripts["status:v4-local-port"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-local-port-status/index.ts");
     expect(scripts["prepare:v4-external-evidence-handoff"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-external-evidence-handoff/index.ts");
     expect(scripts["verify:v4-external-evidence-handoff"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-external-evidence-handoff/index.ts --verify");
+    expect(scripts["audit:v4-github-external-readiness"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-github-external-readiness/index.ts");
     expect(scripts["doctor:v4-external-host"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-external-host-doctor/index.ts");
     expect(scripts["doctor:v4-external-host:strict"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-external-host-doctor/index.ts --strict");
     expect(scripts["run:v4-external-host-evidence"]).toBe("tsx --tsconfig tsconfig.base.json tools/v4-external-host-runner/index.ts");
@@ -1205,6 +1597,7 @@ describe("v4 validation tools", () => {
     expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-hdr-render-target-readiness");
     expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-unity-unreal-parity");
     expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-pbr-gltf-readiness");
+    expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-github-external-readiness");
     expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-external-evidence-readiness");
     expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-ecosystem-readiness");
     expect(scripts["refresh:v4-readiness-reports"]).toContain("pnpm audit:v4-broad-parity");
@@ -1226,6 +1619,89 @@ describe("v4 validation tools", () => {
     expect(v4Readme).toContain("verifies the handoff package manifest");
     expect(v4Readme).toContain("pnpm preflight:v4-parity");
     expect(v4Readme).toContain("pnpm refresh:v4-readiness-reports");
+  });
+
+  it("audits GitHub external evidence prerequisites without dispatching workflows", () => {
+    const root = fixtureRoot();
+    const calls: string[] = [];
+    const results = new Map<string, CommandResult>([
+      ["git config --get remote.origin.url", { status: 0, stdout: "https://github.com/gchahal1982/G3D2025.git\n", stderr: "" }],
+      ["git rev-parse --abbrev-ref HEAD", { status: 0, stdout: "preserve/g3d-v2-execution-state\n", stderr: "" }],
+      ["git ls-remote --heads origin preserve/g3d-v2-execution-state", { status: 0, stdout: "abc123\trefs/heads/preserve/g3d-v2-execution-state\n", stderr: "" }],
+      ["gh repo view gchahal1982/G3D2025 --json defaultBranchRef", { status: 0, stdout: JSON.stringify({ defaultBranchRef: { name: "main" } }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/contents/.github/workflows/v4-external-engine-baselines.yml?ref=main", { status: 0, stdout: JSON.stringify({ name: "v4-external-engine-baselines.yml" }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/contents/.github/workflows/v4-public-demo-deploy.yml?ref=main", { status: 0, stdout: JSON.stringify({ name: "v4-public-demo-deploy.yml" }), stderr: "" }],
+      ["gh workflow list --repo gchahal1982/G3D2025", { status: 0, stdout: "v4-external-engine-baselines.yml\tactive\nv4-public-demo-deploy.yml\tactive\n", stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/pages", { status: 0, stdout: JSON.stringify({ html_url: "https://gchahal1982.github.io/G3D2025/", status: "built" }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/actions/runners", { status: 0, stdout: JSON.stringify({ runners: [
+        { name: "unity-host", labels: [{ name: "self-hosted" }, { name: "unity" }] },
+        { name: "unreal-host", labels: [{ name: "self-hosted" }, { name: "unreal" }] },
+      ] }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/actions/variables", { status: 0, stdout: JSON.stringify({ variables: [] }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/actions/secrets", { status: 0, stdout: JSON.stringify({ secrets: [{ name: "G3D_UNITY_EDITOR" }, { name: "G3D_UNREAL_EDITOR" }] }), stderr: "" }],
+    ]);
+    const runner: CommandRunner = (command, args) => {
+      const key = `${command} ${args.join(" ")}`;
+      calls.push(key);
+      return results.get(key) ?? { status: 1, stdout: "", stderr: `unexpected command: ${key}` };
+    };
+
+    const report = createV4GithubExternalReadinessReport(root, runner);
+
+    expect(report.githubExternalReady).toBe(true);
+    expect(report.repo).toBe("gchahal1982/G3D2025");
+    expect(report.currentBranch).toBe("preserve/g3d-v2-execution-state");
+    expect(report.defaultBranch).toBe("main");
+    expect(report.blockers).toEqual([]);
+    expect(report.checks.workflowsOnDefaultBranch.ready).toBe(true);
+    expect(report.checks.pagesConfigured.ready).toBe(true);
+    expect(report.checks.selfHostedRunners.ready).toBe(true);
+    expect(report.checks.actionsConfiguration.ready).toBe(true);
+    expect(report.checks.actionsConfiguration.evidence).toContain("G3D_RUN_UNITY_UNREAL_CLI_SMOKE is set to true inside .github/workflows/v4-external-engine-baselines.yml.");
+    expect(calls).not.toEqual(expect.arrayContaining([
+      expect.stringContaining("workflow run"),
+      expect.stringContaining("git push"),
+    ]));
+    expect(readFileSync(join(root, "tests", "reports", "v4-github-external-readiness.json"), "utf8")).toContain("\"githubExternalReady\": true");
+  });
+
+  it("keeps GitHub external readiness blocked when workflows and runners are not configured", () => {
+    const root = fixtureRoot();
+    const results = new Map<string, CommandResult>([
+      ["git config --get remote.origin.url", { status: 0, stdout: "https://github.com/gchahal1982/G3D2025.git\n", stderr: "" }],
+      ["git rev-parse --abbrev-ref HEAD", { status: 0, stdout: "preserve/g3d-v2-execution-state\n", stderr: "" }],
+      ["git ls-remote --heads origin preserve/g3d-v2-execution-state", { status: 0, stdout: "", stderr: "" }],
+      ["gh repo view gchahal1982/G3D2025 --json defaultBranchRef", { status: 0, stdout: JSON.stringify({ defaultBranchRef: { name: "main" } }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/contents/.github/workflows/v4-external-engine-baselines.yml?ref=main", { status: 1, stdout: "", stderr: "not found" }],
+      ["gh api repos/gchahal1982/G3D2025/contents/.github/workflows/v4-public-demo-deploy.yml?ref=main", { status: 1, stdout: "", stderr: "not found" }],
+      ["gh workflow list --repo gchahal1982/G3D2025", { status: 0, stdout: "ci.yml\tactive\n", stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/pages", { status: 1, stdout: "", stderr: "not found" }],
+      ["gh api repos/gchahal1982/G3D2025/actions/runners", { status: 0, stdout: JSON.stringify({ runners: [] }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/actions/variables", { status: 0, stdout: JSON.stringify({ variables: [] }), stderr: "" }],
+      ["gh api repos/gchahal1982/G3D2025/actions/secrets", { status: 0, stdout: JSON.stringify({ secrets: [] }), stderr: "" }],
+    ]);
+    const runner: CommandRunner = (command, args) => results.get(`${command} ${args.join(" ")}`) ?? { status: 1, stdout: "", stderr: "unexpected command" };
+
+    const report = createV4GithubExternalReadinessReport(root, runner);
+
+    expect(report.githubExternalReady).toBe(false);
+    expect(report.blockers).toEqual(expect.arrayContaining([
+      "currentBranchOnRemote: current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR.",
+      "workflowsOnDefaultBranch: .github/workflows/v4-external-engine-baselines.yml is not readable on default branch main.",
+      "workflowsOnDefaultBranch: .github/workflows/v4-public-demo-deploy.yml is not readable on default branch main.",
+      "workflowsOnDefaultBranch: gh workflow list does not show both V4 external evidence workflows as discoverable.",
+      "pagesConfigured: GitHub Pages is not configured with a durable HTTPS URL for public deployment smoke evidence.",
+      "selfHostedRunners: No self-hosted runner labeled unity is registered.",
+      "selfHostedRunners: No self-hosted runner labeled unreal is registered.",
+      "actionsConfiguration: G3D_UNITY_EDITOR is not configured as an Actions variable or secret.",
+      "actionsConfiguration: G3D_UNREAL_EDITOR is not configured as an Actions variable or secret.",
+    ]));
+    expect(report.nextCommands).toEqual(expect.arrayContaining([
+      "git push origin preserve/g3d-v2-execution-state",
+      "Open and merge a PR that lands the V4 workflow files on main.",
+      "Enable GitHub Pages for the repository.",
+      "Register self-hosted GitHub Actions runners labeled unity and unreal.",
+    ]));
   });
 
   it("summarizes the current V4 parity status without mutating reports", () => {
@@ -1254,6 +1730,10 @@ describe("v4 validation tools", () => {
       externalEvidenceReady: false,
       firstMissingCapability: "unity-editor-executable",
       firstBlockedArtifact: "unity:editor-cli-smoke",
+      summary: {
+        firstBlockedArea: "github-remote-external-readiness",
+        firstBlockedArtifact: "unity:editor-cli-smoke",
+      },
       artifactChecklist: [{
         areaId: "unity-external-baselines",
         id: "unity:editor-cli-smoke",
@@ -1266,6 +1746,21 @@ describe("v4 validation tools", () => {
         requiredExternalEvidence: ["Run the unity editor CLI smoke against a real Unity editor executable and write tests/reports/v4-unity-editor-cli-smoke.json with ok=true."],
         blockers: ["tests/reports/v4-unity-editor-cli-smoke.json is missing"],
       }],
+    }, null, 2));
+    writeFileSync(join(root, "tests", "reports", "v4-github-external-readiness.json"), JSON.stringify({
+      githubExternalReady: false,
+      repo: "gchahal1982/G3D2025",
+      currentBranch: "preserve/g3d-v2-execution-state",
+      defaultBranch: "main",
+      blockers: [
+        "currentBranchOnRemote: current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR.",
+        "workflowsOnDefaultBranch: .github/workflows/v4-external-engine-baselines.yml is not readable on default branch main.",
+      ],
+      nextCommands: [
+        "git push origin preserve/g3d-v2-execution-state",
+        "Open and merge a PR that lands the V4 workflow files on main.",
+      ],
+      reportPath: "tests/reports/v4-github-external-readiness.json",
     }, null, 2));
     writeFileSync(join(root, "tests", "reports", "v4-production-readiness.json"), JSON.stringify({ productionReady: false }, null, 2));
     writeFileSync(join(root, "tests", "reports", "v4-unity-unreal-parity.json"), JSON.stringify({
@@ -1297,6 +1792,7 @@ describe("v4 validation tools", () => {
       unrealParity: false,
       unityUnrealReplacement: false,
       firstMissingCapability: "unity-editor-executable",
+      firstBlockedExternalArea: "github-remote-external-readiness",
       firstBlockedExternalArtifact: "unity:editor-cli-smoke",
       firstBlockedExternalArtifactDetails: {
         areaId: "unity-external-baselines",
@@ -1308,6 +1804,21 @@ describe("v4 validation tools", () => {
         localEvidence: ["unity CLI smoke command and target report path are prepared locally."],
         requiredExternalEvidence: ["Run the unity editor CLI smoke against a real Unity editor executable and write tests/reports/v4-unity-editor-cli-smoke.json with ok=true."],
         blockers: ["tests/reports/v4-unity-editor-cli-smoke.json is missing"],
+      },
+      githubExternalReady: false,
+      githubExternalReadiness: {
+        repo: "gchahal1982/G3D2025",
+        currentBranch: "preserve/g3d-v2-execution-state",
+        defaultBranch: "main",
+        blockers: [
+          "currentBranchOnRemote: current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR.",
+          "workflowsOnDefaultBranch: .github/workflows/v4-external-engine-baselines.yml is not readable on default branch main.",
+        ],
+        nextCommands: [
+          "git push origin preserve/g3d-v2-execution-state",
+          "Open and merge a PR that lands the V4 workflow files on main.",
+        ],
+        reportPath: "tests/reports/v4-github-external-readiness.json",
       },
       completionRunbookPath: "tests/reports/v4-completion-audit-runbook.md",
       externalEvidenceRunbookPath: "tests/reports/v4-external-evidence-missing-artifacts.md",
@@ -1343,6 +1854,10 @@ describe("v4 validation tools", () => {
       externalEvidenceReady: false,
       firstMissingCapability: "unity-editor-executable",
       firstBlockedArtifact: "unity:editor-cli-smoke",
+      summary: {
+        firstBlockedArea: "github-remote-external-readiness",
+        firstBlockedArtifact: "unity:editor-cli-smoke",
+      },
       artifactChecklist: [{
         areaId: "unity-external-baselines",
         id: "unity:editor-cli-smoke",
@@ -1355,6 +1870,19 @@ describe("v4 validation tools", () => {
         requiredExternalEvidence: ["Run the unity editor CLI smoke against a real Unity editor executable and write tests/reports/v4-unity-editor-cli-smoke.json with ok=true."],
         blockers: ["tests/reports/v4-unity-editor-cli-smoke.json is missing"],
       }],
+    }, null, 2));
+    writeFileSync(join(root, "tests", "reports", "v4-github-external-readiness.json"), JSON.stringify({
+      githubExternalReady: false,
+      repo: "gchahal1982/G3D2025",
+      currentBranch: "preserve/g3d-v2-execution-state",
+      defaultBranch: "main",
+      blockers: [
+        "currentBranchOnRemote: current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR.",
+      ],
+      nextCommands: [
+        "git push origin preserve/g3d-v2-execution-state",
+      ],
+      reportPath: "tests/reports/v4-github-external-readiness.json",
     }, null, 2));
     writeFileSync(join(root, "tests", "reports", "v4-production-readiness.json"), JSON.stringify({ productionReady: false }, null, 2));
 
@@ -1374,6 +1902,7 @@ describe("v4 validation tools", () => {
       productionReady: false,
       externalEvidenceReady: false,
       firstMissingCapability: "unity-editor-executable",
+      firstBlockedExternalArea: "github-remote-external-readiness",
       firstBlockedExternalArtifact: "unity:editor-cli-smoke",
       firstBlockedExternalArtifactDetails: {
         areaId: "unity-external-baselines",
@@ -1386,9 +1915,22 @@ describe("v4 validation tools", () => {
         requiredExternalEvidence: ["Run the unity editor CLI smoke against a real Unity editor executable and write tests/reports/v4-unity-editor-cli-smoke.json with ok=true."],
         blockers: ["tests/reports/v4-unity-editor-cli-smoke.json is missing"],
       },
+      githubExternalReady: false,
+      githubExternalReadiness: {
+        repo: "gchahal1982/G3D2025",
+        currentBranch: "preserve/g3d-v2-execution-state",
+        defaultBranch: "main",
+        blockers: [
+          "currentBranchOnRemote: current branch preserve/g3d-v2-execution-state is not present on origin; push it before opening the external-evidence PR.",
+        ],
+        nextCommands: [
+          "git push origin preserve/g3d-v2-execution-state",
+        ],
+        reportPath: "tests/reports/v4-github-external-readiness.json",
+      },
       claimBoundary: "Local docs and old-codebase port plan rows are complete, but broad parity remains blocked by external evidence or production deployment gates.",
       evidencePaths: {
-        oldCodebasePortPlan: "docs/v4/old-codebase-port-plan.md",
+        oldCodebasePortPlan: "docs/project/v4-old-codebase-port-plan.md",
         completionAudit: "tests/reports/v4-completion-audit.json",
         externalEvidence: "tests/reports/v4-external-evidence-readiness.json",
         completionRunbook: "tests/reports/v4-completion-audit-runbook.md",
@@ -1415,16 +1957,106 @@ describe("v4 validation tools", () => {
     writeFileSync(join(root, "tests", "reports", "galileo-product.png"), rgbaPng(8, 8, [80, 120, 180, 255]));
     writeFileSync(join(root, "tests", "reports", "v4-external-evidence-missing-artifacts.md"), "# missing\n");
     writeFileSync(join(root, "tests", "reports", "v4-completion-audit-runbook.md"), "# completion\n");
+    writeFileSync(join(root, "tests", "reports", "v4-github-external-readiness.json"), JSON.stringify({
+      ok: true,
+      githubExternalReady: false,
+      blockers: ["current branch is not present on origin"],
+    }, null, 2));
     writeFileSync(join(root, ".github", "workflows", "v4-external-engine-baselines.yml"), "name: external\n");
     writeFileSync(join(root, ".github", "workflows", "v4-public-demo-deploy.yml"), "name: deploy\n");
+    writeFileSync(join(root, "docs/project/v4-parity-execution-prompt.md"), "# Coding-Related Parity Execution Prompt\n\n## Goal 12: Full glTF Parity\n\n## Goal 13: Full WebGPU Parity\n");
+    mkdirSync(join(root, "release-artifacts"), { recursive: true });
+    writeFileSync(join(root, "release-artifacts", "v4-external-evidence-operator-runbook.md"), [
+      "# V4 External Evidence Operator Runbook",
+      "",
+      "Handoff integrity is now split by scope.",
+      "",
+      "```json",
+      "{\"restorePreflight\":{\"ok\":true}}",
+      "```",
+      "",
+      "```sh",
+      "mkdir -p release-artifacts",
+      "cp /path/to/v4-external-evidence-handoff/release-artifacts/v4-current-handoff-supplement.patch release-artifacts/",
+      "```",
+      "",
+      "Patch-only transfers must copy the patch files into `release-artifacts/` before applying them.",
+      "The supplement patch does not self-materialize `release-artifacts/v4-current-handoff-supplement.patch` inside that checkout.",
+      "",
+    ].join("\n"));
+    writeFileSync(join(root, "release-artifacts", "v4-parity-external-evidence-pr.md"), [
+      "# Add V4 Parity Execution And External Evidence Workflows",
+      "",
+      "Repo-side handoff verification scope.",
+      "",
+      "Standalone operator package verification also passed.",
+      "",
+      "Patch-only transfers must copy the patch files into `release-artifacts/` before applying them.",
+      "The supplement patch does not self-materialize `release-artifacts/v4-current-handoff-supplement.patch` inside that checkout.",
+      "",
+    ].join("\n"));
+    writeFileSync(join(root, "release-artifacts", "codingrelated-completion-audit.md"), "# Codingrelated Completion Audit\n\nStandalone package verification scope.\n\n`release-artifacts/v4-current-handoff-supplement.patch` was regenerated from the current handoff set. A two-patch simulation against `HEAD^` also passes.\n");
+    writeFileSync(join(root, "release-artifacts", "v4-parity-external-evidence-workflows.patch"), "diff --git a/docs/project/v4-parity-execution-prompt.md b/docs/project/v4-parity-execution-prompt.md\n");
+    writeFileSync(join(root, "release-artifacts", "v4-current-handoff-supplement.patch"), [
+      "diff --git a/tools/v4-external-evidence-handoff/index.ts b/tools/v4-external-evidence-handoff/index.ts",
+      "restorePreflight",
+      "verificationScope",
+      "Cannot restore because the handoff package failed integrity verification.",
+      "Handoff integrity is now split by scope",
+      "Repo-side handoff verification scope",
+      "Standalone package verification scope",
+      "current handoff set",
+      "two-patch simulation",
+    ].join("\n"));
+    mkdirSync(join(root, "tests", "unit", "tools"), { recursive: true });
+    writeFileSync(join(root, "tests", "unit", "tools", "v4-validation.test.ts"), readFileSync(join(process.cwd(), "tests", "unit", "tools", "v4-validation.test.ts"), "utf8"));
     writeFileSync(join(root, "package.json"), readFileSync(join(process.cwd(), "package.json"), "utf8"));
-    for (const toolPath of [
+	    for (const toolPath of [
+	      "tools/external-demo-export/index.ts",
+	      "tools/external-demo-validation/index.ts",
+      "tools/v4-claim-gates/index.ts",
+      "tools/v4-assets/index.ts",
+      "tools/v4-examples/index.ts",
+      "tools/v4-current-capability/index.ts",
+	      "tools/v4-reporting/index.ts",
+	      "tools/v4-parity-status/index.ts",
+      "tools/v4-local-port-status/index.ts",
       "tools/v4-external-host-runner/index.ts",
       "tools/v4-external-host-doctor/index.ts",
+      "tools/v4-github-external-readiness/index.ts",
       "tools/v4-external-evidence-handoff/index.ts",
       "tools/v4-external-evidence-readiness/index.ts",
+	      "tools/v4-external-engine-baselines/index.ts",
+	      "tools/v4-report-freshness/index.ts",
+	      "tools/v4-pbr-reference-readiness/index.ts",
+	      "tools/v4-shadow-map-readiness/index.ts",
+	      "tools/v4-hdr-render-target-readiness/index.ts",
+	      "tools/v4-production-readiness/index.ts",
+	      "tools/v4-pbr-gltf-readiness/index.ts",
+	      "tools/v4-ecosystem-readiness/index.ts",
+	      "tools/v4-broad-parity-readiness/index.ts",
+	      "tools/v4-completion-audit/index.ts",
+	      "tools/v4-product-visual-parity/index.ts",
+      "tools/v4-product-visual-parity/productScene.ts",
+      "tools/v4-pbr-visual-parity/index.ts",
+      "tools/v4-shadow-visual-parity/index.ts",
+      "tools/v4-hdr-visual-parity/index.ts",
+      "tools/v4-postprocess-suite/index.ts",
+      "tools/v4-unity-unreal-parity/index.ts",
+      "tools/static-demo-server-smoke/index.ts",
+      "tools/package-provenance/index.ts",
+      "tools/compare-engines/index.ts",
       "tools/public-demo-deployment-smoke/index.ts",
       "tools/public-demo-deployment-artifacts/index.ts",
+      "packages/assets/src/AssetImportPreflight.ts",
+      "packages/assets/src/OBJLoader.ts",
+      "packages/assets/src/index.ts",
+      "packages/assets/tests/assets.test.ts",
+      "examples/portfolio/main.ts",
+      "examples/portfolio/README.md",
+      "tests/browser/example-portfolio.spec.ts",
+      "tests/browser/example-screenshot-audit-v4.spec.ts",
+      "tests/unit/assets/asset-import-preflight.test.ts",
     ]) {
       mkdirSync(dirname(join(root, toolPath)), { recursive: true });
       writeFileSync(join(root, toolPath), readFileSync(join(process.cwd(), toolPath), "utf8"));
@@ -1459,6 +2091,18 @@ describe("v4 validation tools", () => {
         { areaId: "external-baseline-ci-workflow", id: "github-actions:self-hosted-unity-unreal-baselines", kind: "ci-workflow", ready: true, path: ".github/workflows/v4-external-engine-baselines.yml", blockers: [] },
       ],
     }, null, 2));
+    mkdirSync(join(root, "tests", "reports", "v4-product-visual-parity"), { recursive: true });
+    writeFileSync(join(root, "tests", "reports", "v4-product-visual-parity", "galileo-product.png"), patternedPng(720, 480, "reference"));
+    writeFileSync(join(root, "tests", "reports", "v4-product-visual-parity", "threejs-product.png"), patternedPng(720, 480, "inverted"));
+    writeFileSync(join(root, "tests", "reports", "v4-product-visual-parity", "threejs-product-diff.png"), patternedPng(720, 480, "reference"));
+    writeFileSync(join(root, "tests", "reports", "v4-product-visual-parity.json"), JSON.stringify({
+      ok: true,
+      screenshotPaths: [
+        "tests/reports/v4-product-visual-parity/galileo-product.png",
+        "tests/reports/v4-product-visual-parity/threejs-product.png",
+        "tests/reports/v4-product-visual-parity/threejs-product-diff.png"
+      ],
+    }, null, 2));
 
     const report = createV4ExternalEvidenceHandoffReport(root);
     const runbook = readFileSync(join(root, "tests", "reports", "v4-external-evidence-handoff.md"), "utf8");
@@ -1489,11 +2133,58 @@ describe("v4 validation tools", () => {
     expect(report.files).toEqual(expect.arrayContaining([
       expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/RUNBOOK.md", exists: true, kind: "baseline-kit" }),
       expect.objectContaining({ path: "tests/reports/galileo-product.png", exists: true, kind: "galileo-reference" }),
+      expect.objectContaining({ path: "tests/reports/v4-product-visual-parity.json", exists: true, kind: "local-evidence" }),
+      expect.objectContaining({ path: "tests/reports/v4-product-visual-parity/threejs-product-diff.png", exists: true, kind: "local-evidence" }),
       expect.objectContaining({ path: "release-artifacts/external-demos/0.1.0-alpha.0/public-deployment-manifest.json", exists: true, kind: "static-export" }),
       expect.objectContaining({ path: "tests/reports/v4-external-host-doctor.json", exists: true, kind: "runbook" }),
       expect.objectContaining({ path: "tests/reports/v4-external-host-runner.json", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "tests/reports/v4-github-external-readiness.json", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "docs/project/v4-parity-execution-prompt.md", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "release-artifacts/v4-external-evidence-operator-runbook.md", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "release-artifacts/v4-parity-external-evidence-pr.md", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "release-artifacts/codingrelated-completion-audit.md", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "release-artifacts/v4-parity-external-evidence-workflows.patch", exists: true, kind: "runbook" }),
+      expect.objectContaining({ path: "release-artifacts/v4-current-handoff-supplement.patch", exists: true, kind: "runbook" }),
       expect.objectContaining({ path: "package.json", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "packages/assets/src/AssetImportPreflight.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "packages/assets/src/OBJLoader.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "examples/portfolio/main.ts", exists: true, kind: "local-evidence" }),
+      expect.objectContaining({ path: "examples/portfolio/README.md", exists: true, kind: "local-evidence" }),
+      expect.objectContaining({ path: "tests/browser/example-portfolio.spec.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tests/browser/example-screenshot-audit-v4.spec.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tests/unit/assets/asset-import-preflight.test.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tests/unit/tools/v4-validation.test.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/external-demo-export/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/external-demo-validation/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-examples/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-claim-gates/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-assets/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-current-capability/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-reporting/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-parity-status/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-local-port-status/index.ts", exists: true, kind: "tooling" }),
       expect.objectContaining({ path: "tools/v4-external-host-runner/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-github-external-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-external-engine-baselines/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-report-freshness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-pbr-reference-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-shadow-map-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-hdr-render-target-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-production-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-pbr-gltf-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-ecosystem-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-broad-parity-readiness/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-completion-audit/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-product-visual-parity/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-product-visual-parity/productScene.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-pbr-visual-parity/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-shadow-visual-parity/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-hdr-visual-parity/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-postprocess-suite/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/v4-unity-unreal-parity/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/static-demo-server-smoke/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/package-provenance/index.ts", exists: true, kind: "tooling" }),
+      expect.objectContaining({ path: "tools/compare-engines/index.ts", exists: true, kind: "tooling" }),
       expect.objectContaining({ path: ".github/workflows/v4-public-demo-deploy.yml", exists: true, kind: "workflow" }),
     ]));
     expect(report.packagedFiles).toEqual(expect.arrayContaining([
@@ -1508,22 +2199,199 @@ describe("v4 validation tools", () => {
         copied: true,
       }),
       expect.objectContaining({
+        path: "tests/reports/v4-product-visual-parity/threejs-product-diff.png",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tests/reports/v4-product-visual-parity/threejs-product-diff.png",
+        copied: true,
+      }),
+      expect.objectContaining({
         path: "tests/reports/v4-external-host-runner.json",
         packagePath: "release-artifacts/v4-external-evidence-handoff/tests/reports/v4-external-host-runner.json",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "docs/project/v4-parity-execution-prompt.md",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/docs/project/v4-parity-execution-prompt.md",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "release-artifacts/v4-current-handoff-supplement.patch",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/release-artifacts/v4-current-handoff-supplement.patch",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tests/unit/tools/v4-validation.test.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tests/unit/tools/v4-validation.test.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-production-readiness/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-production-readiness/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-broad-parity-readiness/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-broad-parity-readiness/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-completion-audit/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-completion-audit/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-parity-status/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-parity-status/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-local-port-status/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-local-port-status/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-external-engine-baselines/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-external-engine-baselines/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-report-freshness/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-report-freshness/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-product-visual-parity/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-product-visual-parity/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-product-visual-parity/productScene.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-product-visual-parity/productScene.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-pbr-visual-parity/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-pbr-visual-parity/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-shadow-visual-parity/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-shadow-visual-parity/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-hdr-visual-parity/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-hdr-visual-parity/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-postprocess-suite/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-postprocess-suite/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/v4-unity-unreal-parity/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/v4-unity-unreal-parity/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/static-demo-server-smoke/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/static-demo-server-smoke/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/package-provenance/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/package-provenance/index.ts",
+        copied: true,
+      }),
+      expect.objectContaining({
+        path: "tools/compare-engines/index.ts",
+        packagePath: "release-artifacts/v4-external-evidence-handoff/tools/compare-engines/index.ts",
         copied: true,
       }),
     ]));
     expect(report.commands.unityHost).toContain("node fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project");
     expect(report.commands.ingestAndFinalAudit).toContain("pnpm status:v4-parity");
-    const verified = verifyV4ExternalEvidenceHandoffPackage(root);
+    const verified = verifyAndRecordV4ExternalEvidenceHandoffPackage(root);
     expect(verified).toMatchObject({
       ok: true,
+      verificationScope: {
+        packageInternalEntries: true,
+        archiveAndSidecar: true,
+        externalParityEvidence: false,
+      },
       packageManifestPath: "release-artifacts/v4-external-evidence-handoff/manifest.json",
       packageArchivePath: "release-artifacts/v4-external-evidence-handoff.tar.gz",
       packageArchiveSha256Path: "release-artifacts/v4-external-evidence-handoff.tar.gz.sha256",
       transferManifestPath: "release-artifacts/v4-external-evidence-handoff.transfer.json",
       violations: [],
     });
+    const recordedReport = JSON.parse(readFileSync(join(root, "tests", "reports", "v4-external-evidence-handoff.json"), "utf8")) as {
+      readonly packageVerification?: {
+        readonly ok?: boolean;
+        readonly verificationScope?: {
+          readonly packageInternalEntries?: boolean;
+          readonly archiveAndSidecar?: boolean;
+          readonly externalParityEvidence?: boolean;
+        };
+        readonly checkedFiles?: number;
+        readonly violations?: readonly string[];
+      };
+    };
+    expect(recordedReport.packageVerification).toMatchObject({
+      ok: true,
+      verificationScope: {
+        packageInternalEntries: true,
+        archiveAndSidecar: true,
+        externalParityEvidence: false,
+      },
+      checkedFiles: verified.checkedFiles,
+      violations: [],
+    });
+    const recordedTransferManifest = JSON.parse(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff.transfer.json"), "utf8")) as {
+      readonly packageVerification?: {
+        readonly ok?: boolean;
+        readonly verificationScope?: {
+          readonly packageInternalEntries?: boolean;
+          readonly archiveAndSidecar?: boolean;
+          readonly externalParityEvidence?: boolean;
+        };
+        readonly checkedFiles?: number;
+        readonly violations?: readonly string[];
+      };
+    };
+    expect(recordedTransferManifest.packageVerification).toMatchObject({
+      ok: true,
+      verificationScope: {
+        packageInternalEntries: true,
+        archiveAndSidecar: true,
+        externalParityEvidence: false,
+      },
+      checkedFiles: verified.checkedFiles,
+      violations: [],
+    });
+    const packageReadme = readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8");
+    expect(packageReadme).toContain("Patch-only transfers must copy the patch files into `release-artifacts/` before applying them.");
+    expect(packageReadme).toContain("does not self-materialize `release-artifacts/v4-current-handoff-supplement.patch` inside that checkout");
+    const operatorRunbook = readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-external-evidence-operator-runbook.md"), "utf8");
+    expect(operatorRunbook).toContain("mkdir -p release-artifacts");
+    expect(operatorRunbook).toContain("cp /path/to/v4-external-evidence-handoff/release-artifacts/v4-current-handoff-supplement.patch release-artifacts/");
+    expect(operatorRunbook).toContain("Patch-only transfers must copy the patch files into `release-artifacts/` before applying them.");
+    expect(operatorRunbook).toContain("does not self-materialize `release-artifacts/v4-current-handoff-supplement.patch` inside that checkout");
+    const packagedPrBody = readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-parity-external-evidence-pr.md"), "utf8");
+    expect(packagedPrBody).toContain("Patch-only transfers must copy the patch files into `release-artifacts/` before applying them.");
+    expect(packagedPrBody).toContain("does not self-materialize `release-artifacts/v4-current-handoff-supplement.patch` inside that checkout");
+    const restoreScript = readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "RESTORE_INTO_CHECKOUT.mjs"), "utf8");
+    expect(restoreScript).toContain("VERIFY_PACKAGE_INTEGRITY.mjs");
+    expect(restoreScript).toContain("Cannot restore because the handoff package failed integrity verification.");
+    expect(restoreScript).toContain("\"tools/v4-reporting\"");
+    expect(restoreScript).toContain("\"tools/v4-parity-status\"");
+    expect(restoreScript).toContain("\"tools/v4-local-port-status\"");
+    expect(restoreScript).toContain("\"tools/v4-github-external-readiness\"");
+    expect(restoreScript).toContain("\"tools/v4-external-engine-baselines\"");
+    expect(restoreScript).toContain("\"tools/v4-product-visual-parity\"");
+    expect(restoreScript).toContain("\"tools/v4-postprocess-suite\"");
+    expect(restoreScript).toContain("\"tools/compare-engines\"");
+    expect(restoreScript).toContain("\"pnpm status:v4-local-port\"");
     const runnerReportPath = join(root, "tests", "reports", "v4-external-host-runner.json");
     const dryRunRunner = JSON.parse(readFileSync(runnerReportPath, "utf8")) as Record<string, unknown>;
     writeFileSync(runnerReportPath, JSON.stringify({
@@ -1735,6 +2603,8 @@ describe("v4 validation tools", () => {
       "node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/G3D",
       "node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/G3D",
       "pnpm run:v4-external-host-evidence:execute",
+      "pnpm preflight:v4-parity:after-external-evidence",
+      "pnpm status:v4-parity",
     ]));
     const restoreTarget = join(root, "restore-target");
     mkdirSync(restoreTarget, { recursive: true });
@@ -1747,6 +2617,16 @@ describe("v4 validation tools", () => {
       readonly ok: boolean;
       readonly command: string;
       readonly dryRun: boolean;
+      readonly restorePreflight: {
+        readonly ok: boolean;
+        readonly command: string;
+        readonly checkedFiles: number;
+        readonly verificationScope?: {
+          readonly packageInternalEntries?: boolean;
+          readonly archiveAndSidecar?: boolean;
+          readonly externalParityEvidence?: boolean;
+        };
+      };
       readonly restored: readonly { readonly entry: string; readonly kind: string }[];
       readonly nextCommands: readonly string[];
     };
@@ -1754,15 +2634,38 @@ describe("v4 validation tools", () => {
       ok: true,
       command: "RESTORE_INTO_CHECKOUT",
       dryRun: true,
+      restorePreflight: {
+        ok: true,
+        command: "VERIFY_PACKAGE_INTEGRITY",
+        verificationScope: {
+          packageInternalEntries: true,
+          archiveAndSidecar: false,
+          externalParityEvidence: false,
+        },
+      },
     });
+    expect(restoreDryRun.restorePreflight.checkedFiles).toBeGreaterThan(0);
     expect(restoreDryRun.restored).toEqual(expect.arrayContaining([
       expect.objectContaining({ entry: ".github", kind: "directory" }),
       expect.objectContaining({ entry: "docs", kind: "directory" }),
       expect.objectContaining({ entry: "fixtures", kind: "directory" }),
+      expect.objectContaining({ entry: "docs/project/v4-parity-execution-prompt.md", kind: "file" }),
+      expect.objectContaining({ entry: "examples/portfolio", kind: "directory" }),
       expect.objectContaining({ entry: "package.json", kind: "file" }),
+      expect.objectContaining({ entry: "packages/assets/src/OBJLoader.ts", kind: "file" }),
       expect.objectContaining({ entry: "release-artifacts/external-demos", kind: "directory" }),
+      expect.objectContaining({ entry: "release-artifacts/v4-external-evidence-operator-runbook.md", kind: "file" }),
+      expect.objectContaining({ entry: "release-artifacts/v4-current-handoff-supplement.patch", kind: "file" }),
       expect.objectContaining({ entry: "tests/reports", kind: "directory" }),
+      expect.objectContaining({ entry: "tests/browser/example-portfolio.spec.ts", kind: "file" }),
+      expect.objectContaining({ entry: "tests/browser/example-screenshot-audit-v4.spec.ts", kind: "file" }),
+      expect.objectContaining({ entry: "tests/unit/tools/v4-validation.test.ts", kind: "file" }),
+      expect.objectContaining({ entry: "tools/v4-examples", kind: "directory" }),
       expect.objectContaining({ entry: "tools/v4-external-host-runner", kind: "directory" }),
+      expect.objectContaining({ entry: "tools/v4-external-engine-baselines", kind: "directory" }),
+      expect.objectContaining({ entry: "tools/v4-product-visual-parity", kind: "directory" }),
+      expect.objectContaining({ entry: "tools/v4-postprocess-suite", kind: "directory" }),
+      expect.objectContaining({ entry: "tools/compare-engines", kind: "directory" }),
     ]));
     expect(restoreDryRun.nextCommands).toEqual(expect.arrayContaining([
       "pnpm verify:v4-external-evidence-handoff",
@@ -1791,7 +2694,23 @@ describe("v4 validation tools", () => {
     expect(successPreflight).toContain("\"command\": \"RUN_EXTERNAL_HOST_PREFLIGHT\"");
     expect(successPreflight).toContain("\"ok\": true");
     expect(successPreflight).toContain("run-unity-baseline-captures.mjs");
+    expect(JSON.parse(successPreflight)).toMatchObject({
+      ok: true,
+      command: "RUN_EXTERNAL_HOST_PREFLIGHT",
+      doctorStatus: 0,
+      doctorStdout: "",
+      doctorStderr: "",
+      doctorReportPath: "tests/reports/v4-external-host-doctor.json",
+    });
     expect(readFileSync(fakePnpmLog, "utf8")).toContain("doctor:v4-external-host:strict");
+    writeFileSync(join(root, "tests", "reports", "v4-external-host-doctor.json"), JSON.stringify({
+      externalHostReady: false,
+      handoffPackageReady: true,
+      externalEvidenceReady: false,
+      firstMissingCapability: "unity-editor-executable",
+      firstBlockedArtifact: "unity:editor-cli-smoke",
+      missingArtifactRunbookPath: "tests/reports/v4-external-evidence-missing-artifacts.md",
+    }, null, 2));
     const failedPreflight = spawnSync(process.execPath, [externalHostScript, root], {
       encoding: "utf8",
       env: {
@@ -1802,13 +2721,37 @@ describe("v4 validation tools", () => {
       },
     });
     expect(failedPreflight.status).toBe(7);
-    expect(`${failedPreflight.stdout}\n${failedPreflight.stderr}`).toContain("\"ok\": false");
-    expect(`${failedPreflight.stdout}\n${failedPreflight.stderr}`).toContain("External host doctor failed");
+    const failedPreflightJson = JSON.parse(failedPreflight.stdout) as {
+      readonly ok: boolean;
+      readonly doctorStatus: number;
+      readonly doctorReportPath: string;
+      readonly doctorSummary: {
+        readonly firstMissingCapability?: string;
+        readonly firstBlockedArtifact?: string;
+      } | null;
+      readonly reason: string;
+    };
+    expect(failedPreflightJson).toMatchObject({
+      ok: false,
+      doctorStatus: 7,
+      doctorReportPath: "tests/reports/v4-external-host-doctor.json",
+      reason: "External host doctor failed. Fix the missing Unity/Unreal/public deployment capabilities and rerun this command.",
+    });
+    expect(failedPreflightJson.doctorSummary).toMatchObject({
+      firstMissingCapability: "unity-editor-executable",
+      firstBlockedArtifact: "unity:editor-cli-smoke",
+    });
+    expect(failedPreflight.stderr).toBe("");
     const standaloneVerifyScript = join(root, "release-artifacts", "v4-external-evidence-handoff", "VERIFY_PACKAGE_INTEGRITY.mjs");
     const standaloneVerify = execFileSync(process.execPath, [standaloneVerifyScript], { encoding: "utf8" });
     expect(standaloneVerify).toContain("\"command\": \"VERIFY_PACKAGE_INTEGRITY\"");
     expect(standaloneVerify).toContain("\"ok\": true");
-    writeFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "fixtures", "external-engine-baselines", "v4", "RUNBOOK.md"), "corrupt\n");
+    expect(standaloneVerify).toContain("\"packageInternalEntries\": true");
+    expect(standaloneVerify).toContain("\"archiveAndSidecar\": false");
+    expect(standaloneVerify).toContain("\"externalParityEvidence\": false");
+    const packagedBaselineRunbookPath = join(root, "release-artifacts", "v4-external-evidence-handoff", "fixtures", "external-engine-baselines", "v4", "RUNBOOK.md");
+    const packagedBaselineRunbook = readFileSync(packagedBaselineRunbookPath, "utf8");
+    writeFileSync(packagedBaselineRunbookPath, "corrupt\n");
     const corrupted = verifyV4ExternalEvidenceHandoffPackage(root);
     expect(corrupted.ok).toBe(false);
     expect(corrupted.violations.join("\n")).toContain("fixtures/external-engine-baselines/v4/RUNBOOK.md: packaged");
@@ -1816,6 +2759,15 @@ describe("v4 validation tools", () => {
     expect(standaloneCorrupted.status).toBe(1);
     expect(`${standaloneCorrupted.stdout}\n${standaloneCorrupted.stderr}`).toContain("\"ok\": false");
     expect(`${standaloneCorrupted.stdout}\n${standaloneCorrupted.stderr}`).toContain("sha256");
+    const refusedRestore = spawnSync(process.execPath, [
+      join(root, "release-artifacts", "v4-external-evidence-handoff", "RESTORE_INTO_CHECKOUT.mjs"),
+      "--dry-run",
+      join(root, "restore-target"),
+    ], { encoding: "utf8" });
+    expect(refusedRestore.status).toBe(1);
+    expect(`${refusedRestore.stdout}\n${refusedRestore.stderr}`).toContain("Cannot restore because the handoff package failed integrity verification.");
+    expect(`${refusedRestore.stdout}\n${refusedRestore.stderr}`).toContain("verifierResult");
+    writeFileSync(packagedBaselineRunbookPath, packagedBaselineRunbook);
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "manifest.json"), "utf8")).toContain("g3d-v4-external-evidence-handoff-package-v1");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("V4 External Evidence Handoff Package");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("## First Blocked Artifact");
@@ -1824,6 +2776,10 @@ describe("v4 validation tools", () => {
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("unity CLI smoke command and target report path are prepared locally.");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("Run the unity editor CLI smoke against a real Unity editor executable");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("release-artifacts/v4-external-evidence-handoff.tar.gz");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("## Transfer Manifest Verification");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("release-artifacts/v4-external-evidence-handoff.transfer.json.packageVerification");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("checks package-internal files only");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("does not check the outer archive checksum");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("pnpm verify:v4-external-evidence-handoff");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("node VERIFY_PACKAGE_INTEGRITY.mjs");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/G3D");
@@ -1832,6 +2788,11 @@ describe("v4 validation tools", () => {
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("pnpm doctor:v4-external-host:strict");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("pnpm run:v4-external-host-evidence");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("pnpm run:v4-external-host-evidence:execute");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("## GitHub Workflow Route");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/G3D2025 --ref main");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("gh workflow run v4-external-engine-baselines.yml --repo gchahal1982/G3D2025 --ref main -f engine=all");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).toContain("pnpm preflight:v4-parity:after-external-evidence");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "START_HERE.md"), "utf8")).not.toContain("rerun `pnpm preflight:v4-parity`");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "RESTORE_INTO_CHECKOUT.mjs"), "utf8")).toContain("RESTORE_INTO_CHECKOUT");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "RESTORE_INTO_CHECKOUT.mjs"), "utf8")).toContain("dryRun");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "RUN_EXTERNAL_HOST_PREFLIGHT.mjs"), "utf8")).toContain("RUN_EXTERNAL_HOST_PREFLIGHT");
@@ -1839,6 +2800,24 @@ describe("v4 validation tools", () => {
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "RUN_EXTERNAL_HOST_PREFLIGHT.mjs"), "utf8")).toContain("doctor:v4-external-host:strict");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "tests", "reports", "v4-external-evidence-handoff.json"), "utf8")).toContain("\"claimBoundary\"");
     expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "tests", "reports", "v4-external-evidence-handoff.md"), "utf8")).toContain("# V4 External Evidence Handoff");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "docs/project/v4-parity-execution-prompt.md"), "utf8")).toContain("Goal 12: Full glTF Parity");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "docs/project/v4-parity-execution-prompt.md"), "utf8")).toContain("Goal 13: Full WebGPU Parity");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-external-evidence-operator-runbook.md"), "utf8")).toContain("External Evidence Operator Runbook");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-external-evidence-operator-runbook.md"), "utf8")).toContain("Handoff integrity is now split by scope");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-external-evidence-operator-runbook.md"), "utf8")).toContain("\"restorePreflight\"");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-parity-external-evidence-pr.md"), "utf8")).toContain("V4 Parity Execution");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-parity-external-evidence-pr.md"), "utf8")).toContain("Repo-side handoff verification scope");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-parity-external-evidence-pr.md"), "utf8")).toContain("Standalone operator package verification also passed");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "codingrelated-completion-audit.md"), "utf8")).toContain("Codingrelated Completion Audit");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "codingrelated-completion-audit.md"), "utf8")).toContain("Standalone package verification scope");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "codingrelated-completion-audit.md"), "utf8")).toContain("current handoff set");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "codingrelated-completion-audit.md"), "utf8")).toContain("two-patch simulation against `HEAD^`");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-parity-external-evidence-workflows.patch"), "utf8")).toContain("docs/project/v4-parity-execution-prompt.md");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-current-handoff-supplement.patch"), "utf8")).toContain("tools/v4-external-evidence-handoff/index.ts");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "tests", "unit", "tools", "v4-validation.test.ts"), "utf8")).toContain("createV4ExternalEvidenceHandoffReport");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "tools", "v4-external-engine-baselines", "index.ts"), "utf8")).toContain("createV4ExternalEngineBaselineKit");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "tools", "v4-product-visual-parity", "productScene.ts"), "utf8")).toContain("productVisualParityScene");
+    expect(readFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "tools", "compare-engines", "index.ts"), "utf8")).toContain("compare-engines");
     expect(readFileSync(join(root, "tests", "reports", "v4-external-evidence-handoff.json"), "utf8")).toContain("\"claimBoundary\"");
     expect(runbook).toContain("# V4 External Evidence Handoff");
     expect(runbook).toContain("Package directory: `release-artifacts/v4-external-evidence-handoff`");
@@ -1852,6 +2831,25 @@ describe("v4 validation tools", () => {
     expect(runbook).toContain("unity-external-baselines/unity:editor-cli-smoke");
     expect(runbook).toContain("pnpm run:v4-external-host-evidence");
     expect(runbook).toContain("pnpm preflight:v4-parity:after-external-evidence");
+
+    const supplementPatchPath = join(root, "release-artifacts", "v4-external-evidence-handoff", "release-artifacts", "v4-current-handoff-supplement.patch");
+    const supplementPatch = readFileSync(supplementPatchPath, "utf8");
+    writeFileSync(supplementPatchPath, supplementPatch.replaceAll("restorePreflight", "staleRestorePreflight"));
+    const staleSupplement = verifyV4ExternalEvidenceHandoffPackage(root);
+    expect(staleSupplement.ok).toBe(false);
+    expect(staleSupplement.violations.join("\n")).toContain("v4-current-handoff-supplement.patch is missing required marker: restorePreflight");
+    writeFileSync(supplementPatchPath, supplementPatch);
+    const restoredSupplement = verifyV4ExternalEvidenceHandoffPackage(root);
+    expect(restoredSupplement.violations).toEqual([]);
+    expect(restoredSupplement.ok).toBe(true);
+
+    rmSync(join(root, "release-artifacts", "v4-parity-external-evidence-workflows.patch"), { force: true });
+    rmSync(join(root, "release-artifacts", "v4-current-handoff-supplement.patch"), { force: true });
+    const withoutOptionalPatches = createV4ExternalEvidenceHandoffReport(root);
+    expect(withoutOptionalPatches.ok).toBe(true);
+    expect(withoutOptionalPatches.files.map((file) => file.path)).not.toContain("release-artifacts/v4-parity-external-evidence-workflows.patch");
+    expect(withoutOptionalPatches.files.map((file) => file.path)).not.toContain("release-artifacts/v4-current-handoff-supplement.patch");
+    expect(verifyV4ExternalEvidenceHandoffPackage(root).ok).toBe(true);
   }, 20_000);
 
   it("resolves Unity and Unreal macOS app bundle env paths to editor executables", () => {
@@ -2003,7 +3001,7 @@ describe("v4 validation tools", () => {
     expect(unityArea?.blockers).toEqual(expect.arrayContaining([
       expect.stringContaining("lacks validated runner evidence sidecar")
     ]));
-  });
+  }, 15_000);
 
   it("rejects Unity and Unreal baseline reports whose screenshots do not contain required pixel evidence", () => {
     const root = fixtureRoot();
@@ -2379,6 +3377,12 @@ describe("v4 validation tools", () => {
         batchTasks: 4
       }
     });
+    const unityProductEvidencePath = `${unityProductScreenshotPath}.evidence.json`;
+    const unityProductEvidence = JSON.parse(readFileSync(join(root, unityProductEvidencePath), "utf8"));
+    writeFileSync(join(root, unityProductEvidencePath), JSON.stringify({
+      ...unityProductEvidence,
+      screenshotPath: join(root, unityProductScreenshotPath)
+    }, null, 2));
 
     const kit = createV4ExternalEngineBaselineKit(root);
     const writerPath = join(root, "fixtures", "external-engine-baselines", "v4", "write-baseline-report.mjs");
@@ -2437,8 +3441,10 @@ describe("v4 validation tools", () => {
     const baselineRunbook = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "RUNBOOK.md"), "utf8");
     const unityBatchRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unity", "run-unity-baseline-captures.mjs"), "utf8");
     const unityRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unity", "V4ExternalVisualBaselineRunner.cs"), "utf8");
+    const unityAssetImportRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unity", "V4ExternalAssetImportWorkflowRunner.cs"), "utf8");
     const unrealBatchRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unreal", "run-unreal-baseline-captures.mjs"), "utf8");
     const unrealRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unreal", "v4_external_visual_baseline_runner.py"), "utf8");
+    const unrealAssetImportRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unreal", "v4_external_asset_import_workflow_runner.py"), "utf8");
     const unrealProductRunner = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unreal", "product_visual_parity_baseline.py"), "utf8");
 
     expect(kit.ok).toBe(true);
@@ -2446,6 +3452,9 @@ describe("v4 validation tools", () => {
     expect(kit.artifacts).toEqual(expect.arrayContaining([
       expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs", kind: "report-writer", ok: true }),
       expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/write-baseline-report.mjs", kind: "report-writer", ok: true }),
+      expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/write-asset-import-workflow-report.mjs", kind: "report-writer", ok: true }),
+      expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/unity/V4ExternalAssetImportWorkflowRunner.cs", kind: "unity-runner", ok: true }),
+      expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/unreal/v4_external_asset_import_workflow_runner.py", kind: "unreal-runner", ok: true }),
       expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs", kind: "report-writer", ok: true }),
       expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/ingest-external-baseline-artifacts.mjs", kind: "report-writer", ok: true }),
       expect.objectContaining({ path: "fixtures/external-engine-baselines/v4/RUNBOOK.md", kind: "readme", ok: true }),
@@ -2507,6 +3516,7 @@ describe("v4 validation tools", () => {
         ok: true,
         engine: "unity",
         baselineKind: "product-visual",
+        screenshotPath: unityProductScreenshotPath,
         renderedFrameCaptured: true,
         cameraConfigured: true,
       },
@@ -2523,6 +3533,7 @@ describe("v4 validation tools", () => {
     expect(generatedReport.screenshotSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(generatedReport.runnerEvidenceSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(generatedReport.metrics.nonBlankPixels).toBeGreaterThan(10_000);
+    expect(JSON.parse(readFileSync(join(root, unityProductEvidencePath), "utf8")).screenshotPath).toBe(unityProductScreenshotPath);
     expect(baselineSchema.allOf).toHaveLength(5);
     expect(baselineSchema.allOf).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -2634,6 +3645,18 @@ describe("v4 validation tools", () => {
         cliSmokeCommand: expect.stringContaining("run-editor-cli-smoke.mjs unreal"),
       }),
     ]));
+    expect(commandPlan.assetImportWorkflowReports).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        engine: "unity",
+        runnerPath: "fixtures/external-engine-baselines/v4/unity/V4ExternalAssetImportWorkflowRunner.cs",
+        targetReportPath: "tests/reports/v4-unity-asset-import-workflow.json",
+      }),
+      expect.objectContaining({
+        engine: "unreal",
+        runnerPath: "fixtures/external-engine-baselines/v4/unreal/v4_external_asset_import_workflow_runner.py",
+        targetReportPath: "tests/reports/v4-unreal-asset-import-workflow.json",
+      }),
+    ]));
     expect(commandPlan.captures).toHaveLength(10);
     expect(commandPlan.captures).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -2670,30 +3693,53 @@ describe("v4 validation tools", () => {
     expect(unityRunner).toContain("CommandLineValue(\"--descriptor\")");
     expect(unityRunner).toContain("CaptureDescriptor(descriptor, resolvedKind, screenshotPath)");
     expect(unityRunner).toContain("foreach (var part in descriptor.parts)");
+    expect(unityRunner).toContain("Path.GetDirectoryName(screenshotPath)");
+    expect(unityRunner).not.toContain("Path.GetDirectoryName(ScreenshotPath)");
     expect(unityRunner).toContain("CaptureCameraPng(camera, targetWidth, targetHeight, screenshotPath)");
     expect(unityRunner).toContain("camera.Render()");
     expect(unityRunner).toContain("File.WriteAllBytes(screenshotPath, bytes)");
     expect(unityRunner).toContain("synchronously wrote a rendered camera PNG");
+    expect(unityAssetImportRunner).toContain("V4ExternalAssetImportWorkflowRunner");
+    expect(unityAssetImportRunner).toContain("AssetDatabase.ImportAsset");
+    expect(unityAssetImportRunner).toContain("conversionRequiredFormats");
+    expect(unityAssetImportRunner).toContain("This sidecar is valid only when produced by a real Unity editor import run");
     expect(unityRunner).not.toContain("ScreenCapture.CaptureScreenshot");
     expect(unityBatchRunner).toContain("V4ExternalVisualBaselineRunner.CaptureFromCommandLine");
+    expect(unityBatchRunner).toContain("V4ExternalAssetImportWorkflowRunner.cs");
+    expect(unityBatchRunner).toContain("V4ExternalAssetImportWorkflowRunner.CaptureFromCommandLine");
+    expect(unityBatchRunner).toContain("write-asset-import-workflow-report.mjs");
+    expect(unityBatchRunner).toContain("assetImportWorkflow.runnerEvidencePath");
+    expect(unityBatchRunner).toContain("G3D_EXTERNAL_ASSET_IMPORT_SAMPLE");
     expect(unityBatchRunner).toContain("write-all-baseline-reports.mjs");
     expect(unityBatchRunner).toContain("write-render-workflow-report.mjs");
     const unityBatchDryRun = JSON.parse(execFileSync(process.execPath, [
       join(root, "fixtures", "external-engine-baselines", "v4", "unity", "run-unity-baseline-captures.mjs"),
       "--dry-run",
     ], { cwd: root, encoding: "utf8" })) as Record<string, unknown>;
-    expect(unityBatchDryRun).toMatchObject({ ok: true, dryRun: true, unityCaptureCount: 5 });
+    expect(unityBatchDryRun).toMatchObject({ ok: true, dryRun: true, unityCaptureCount: 5, assetImportWorkflowCount: 1 });
     expect(JSON.stringify(unityBatchDryRun)).toContain("V4ExternalVisualBaselineRunner.CaptureFromCommandLine");
+    expect(JSON.stringify(unityBatchDryRun)).toContain("V4ExternalAssetImportWorkflowRunner.CaptureFromCommandLine");
+    expect(JSON.stringify(unityBatchDryRun)).toContain("write-asset-import-workflow-report.mjs");
+    expect(JSON.stringify(unityBatchDryRun)).toContain("tests/assets/corpus/khronos/Fox/Fox.glb");
     expect(unrealBatchRunner).toContain("v4_external_visual_baseline_runner.py");
+    expect(unrealBatchRunner).toContain("v4_external_asset_import_workflow_runner.py");
     expect(unrealBatchRunner).toContain("-ExecutePythonScript=");
+    expect(unrealBatchRunner).toContain("quoteUnrealPythonArg");
+    expect(unrealBatchRunner).toContain("write-asset-import-workflow-report.mjs");
+    expect(unrealBatchRunner).toContain("assetImportWorkflow.runnerEvidencePath");
+    expect(unrealBatchRunner).toContain("G3D_EXTERNAL_ASSET_IMPORT_SAMPLE");
     expect(unrealBatchRunner).toContain("write-all-baseline-reports.mjs");
     expect(unrealBatchRunner).toContain("write-render-workflow-report.mjs");
     const unrealBatchDryRun = JSON.parse(execFileSync(process.execPath, [
       join(root, "fixtures", "external-engine-baselines", "v4", "unreal", "run-unreal-baseline-captures.mjs"),
       "--dry-run",
     ], { cwd: root, encoding: "utf8" })) as Record<string, unknown>;
-    expect(unrealBatchDryRun).toMatchObject({ ok: true, dryRun: true, unrealCaptureCount: 5 });
+    expect(unrealBatchDryRun).toMatchObject({ ok: true, dryRun: true, unrealCaptureCount: 5, assetImportWorkflowCount: 1 });
     expect(JSON.stringify(unrealBatchDryRun)).toContain("-ExecutePythonScript=");
+    expect(JSON.stringify(unrealBatchDryRun)).toContain("\\\"");
+    expect(JSON.stringify(unrealBatchDryRun)).toContain("v4_external_asset_import_workflow_runner.py");
+    expect(JSON.stringify(unrealBatchDryRun)).toContain("write-asset-import-workflow-report.mjs");
+    expect(JSON.stringify(unrealBatchDryRun)).toContain("tests/assets/corpus/khronos/Fox/Fox.glb");
     expect(unrealRunner).toContain("def build_descriptor_parts()");
     expect(unrealRunner).toContain("component.set_static_mesh(load_mesh(geometry))");
     expect(unrealRunner).toContain("component.set_material(0, material)");
@@ -2702,9 +3748,14 @@ describe("v4 validation tools", () => {
     expect(unrealRunner).toContain("\"renderedFrameCaptured\": screenshot_captured");
     expect(unrealRunner).toContain("waited for a rendered PNG");
     expect(unrealRunner).toContain("/Engine/BasicShapes/Cube.Cube");
+    expect(unrealAssetImportRunner).toContain("v4-unreal-asset-import-workflow.evidence.json");
+    expect(unrealAssetImportRunner).toContain("AssetImportTask");
+    expect(unrealAssetImportRunner).toContain("conversionRequiredFormats");
+    expect(unrealAssetImportRunner).toContain("This sidecar is valid only when produced by a real Unreal editor import run");
     expect(unrealProductRunner).toContain("runpy.run_path(GENERIC_RUNNER");
     const smokeWriter = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "run-editor-cli-smoke.mjs"), "utf8");
     const renderWorkflowWriter = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "write-render-workflow-report.mjs"), "utf8");
+    const assetImportWorkflowWriter = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "write-asset-import-workflow-report.mjs"), "utf8");
     const artifactIngester = readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "ingest-external-baseline-artifacts.mjs"), "utf8");
     expect(smokeWriter).toContain("Usage: node run-editor-cli-smoke.mjs <unity|unreal>");
     expect(smokeWriter).toContain("No \" + engine + \" editor executable found");
@@ -2718,6 +3769,11 @@ describe("v4 validation tools", () => {
     expect(smokeWriter).toContain("Contents/MacOS/UnrealEditor");
     expect(renderWorkflowWriter).toContain("Missing external editor CLI smoke report");
     expect(renderWorkflowWriter).toContain("cliSmokeReportPath: smokeReportPath");
+    expect(assetImportWorkflowWriter).toContain("Usage: node write-asset-import-workflow-report.mjs <unity|unreal> <runner-evidence-path>");
+    expect(assetImportWorkflowWriter).toContain("Missing external asset-import workflow evidence sidecar");
+    expect(assetImportWorkflowWriter).toContain("sameSceneAssetImportWorkflowBaseline");
+    expect(readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unity", "v4-unity-asset-import-workflow.template.json"), "utf8")).toContain("sameSceneAssetImportWorkflowBaseline");
+    expect(readFileSync(join(root, "fixtures", "external-engine-baselines", "v4", "unreal", "v4-unreal-asset-import-workflow.template.json"), "utf8")).toContain("sameSceneAssetImportWorkflowBaseline");
     expect(artifactIngester).toContain("allowedPrefixes");
     expect(artifactIngester).toContain("tests/reports/");
     expect(artifactIngester).toContain("audit:v4-external-evidence-readiness");
@@ -2726,7 +3782,11 @@ describe("v4 validation tools", () => {
     mkdirSync(join(artifactRoot, "v4-product-visual"), { recursive: true });
     mkdirSync(join(artifactRoot, "tmp"), { recursive: true });
     writeFileSync(join(artifactRoot, "tests", "reports", "v4-unity-editor-cli-smoke.json"), JSON.stringify({ ok: true }, null, 2));
+    writeFileSync(join(artifactRoot, "v4-unity-asset-import-workflow.json"), JSON.stringify({ ok: true }, null, 2));
+    writeFileSync(join(artifactRoot, "v4-unity-asset-import-workflow.evidence.json"), JSON.stringify({ ok: true }, null, 2));
     writeFileSync(join(artifactRoot, "v4-unreal-editor-cli-smoke.json"), JSON.stringify({ ok: true }, null, 2));
+    writeFileSync(join(artifactRoot, "v4-unreal-asset-import-workflow.json"), JSON.stringify({ ok: true }, null, 2));
+    writeFileSync(join(artifactRoot, "v4-unreal-asset-import-workflow.evidence.json"), JSON.stringify({ ok: true }, null, 2));
     writeFileSync(join(artifactRoot, "v4-product-visual", "unity-product-visual-baseline.png.evidence.json"), JSON.stringify({ ok: true }, null, 2));
     writeFileSync(join(artifactRoot, "tmp", "ignored.txt"), "ignore me\n");
     const ingestDryRun = JSON.parse(execFileSync(process.execPath, [
@@ -2737,11 +3797,15 @@ describe("v4 validation tools", () => {
     expect(ingestDryRun).toMatchObject({
       ok: true,
       dryRun: true,
-      copiedFiles: 3,
+      copiedFiles: 7,
       skippedFiles: 1,
     });
     expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-unity-editor-cli-smoke.json");
     expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-unreal-editor-cli-smoke.json");
+    expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-unity-asset-import-workflow.json");
+    expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-unity-asset-import-workflow.evidence.json");
+    expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-unreal-asset-import-workflow.json");
+    expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-unreal-asset-import-workflow.evidence.json");
     expect(JSON.stringify(ingestDryRun)).toContain("tests/reports/v4-product-visual/unity-product-visual-baseline.png.evidence.json");
   }, 15_000);
 
@@ -2750,6 +3814,7 @@ describe("v4 validation tools", () => {
 
     expect(workflow).toContain("workflow_dispatch:");
     expect(workflow).toContain("engine:");
+    expect(workflow).toContain("asset_import_sample:");
     expect(workflow).toContain("type: choice");
     expect(workflow).toContain("runs-on: [self-hosted, unity]");
     expect(workflow).toContain("runs-on: [self-hosted, unreal]");
@@ -2757,6 +3822,7 @@ describe("v4 validation tools", () => {
     expect(workflow).toContain("G3D_UNITY_SEARCH_ROOTS");
     expect(workflow).toContain("G3D_UNREAL_EDITOR");
     expect(workflow).toContain("G3D_UNREAL_SEARCH_ROOTS");
+    expect(workflow).toContain("G3D_EXTERNAL_ASSET_IMPORT_SAMPLE");
     expect(workflow).toContain("G3D_RUN_UNITY_UNREAL_CLI_SMOKE: \"true\"");
     expect(workflow).toContain("run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json");
     expect(workflow).toContain("run-editor-cli-smoke.mjs unreal tests/reports/v4-unreal-editor-cli-smoke.json");
@@ -2765,20 +3831,34 @@ describe("v4 validation tools", () => {
     expect(workflow).toContain("final-audits:");
     expect(workflow).toContain("pattern: v4-*-baseline-evidence");
     expect(workflow).toContain("merge-multiple: true");
-    expect(workflow).toContain("ingest-external-baseline-artifacts.mjs --no-audit _v4-external-baseline-evidence");
-    expect(workflow).toContain("v4-external-baseline-final-audits");
-    expect(workflow).toContain("actions/upload-artifact@v4");
+	    expect(workflow).toContain("ingest-external-baseline-artifacts.mjs --no-audit _v4-external-baseline-evidence");
+	    expect(workflow).toContain("pnpm audit:v4-pbr-reference-readiness || true");
+	    expect(workflow).toContain("pnpm audit:v4-pbr-gltf-readiness || true");
+	    expect(workflow).toContain("pnpm audit:v4-shadow-map-readiness || true");
+	    expect(workflow).toContain("pnpm audit:v4-hdr-render-target-readiness || true");
+	    expect(workflow).toContain("pnpm audit:v4-postprocess-suite || true");
+	    expect(workflow).toContain("v4-external-baseline-final-audits");
+	    expect(workflow).toContain("actions/upload-artifact@v4");
+    expect(workflow).toContain("tests/reports/v4-unity-asset-import-workflow.json");
+    expect(workflow).toContain("tests/reports/v4-unity-asset-import-workflow.evidence.json");
     expect(workflow).toContain("tests/reports/v4-unity-product-visual-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unity-pbr-visual-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unity-shadow-visual-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unity-hdr-render-target-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unity-postprocess-suite-baseline.json");
+    expect(workflow).toContain("tests/reports/v4-unreal-asset-import-workflow.json");
+    expect(workflow).toContain("tests/reports/v4-unreal-asset-import-workflow.evidence.json");
     expect(workflow).toContain("tests/reports/v4-unreal-product-visual-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unreal-pbr-visual-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unreal-shadow-visual-baseline.json");
     expect(workflow).toContain("tests/reports/v4-unreal-hdr-render-target-baseline.json");
-    expect(workflow).toContain("tests/reports/v4-unreal-postprocess-suite-baseline.json");
-    expect(workflow).toContain("tests/reports/v4-external-evidence-missing-artifacts.md");
+	    expect(workflow).toContain("tests/reports/v4-unreal-postprocess-suite-baseline.json");
+	    expect(workflow).toContain("tests/reports/v4-pbr-reference-readiness.json");
+	    expect(workflow).toContain("tests/reports/v4-pbr-gltf-readiness.json");
+	    expect(workflow).toContain("tests/reports/v4-shadow-map-readiness.json");
+	    expect(workflow).toContain("tests/reports/v4-hdr-render-target-readiness.json");
+	    expect(workflow).toContain("tests/reports/v4-postprocess-suite.json");
+	    expect(workflow).toContain("tests/reports/v4-external-evidence-missing-artifacts.md");
     expect(workflow).toContain("tests/reports/v4-completion-audit-runbook.md");
     expect(workflow).toContain("pnpm audit:v4-unity-unreal-parity || true");
   });
@@ -3207,6 +4287,7 @@ describe("v4 validation tools", () => {
       "real-webgpu-render-device-feature-matrix-evidence",
       "real-webgpu-webgl2-feature-matrix-conformance",
       "native-webgpu-render-pass-submission-evidence",
+      "native-webgpu-material-wgsl-pbr-shader-evidence",
       "native-webgpu-texture-to-buffer-readback-evidence",
       "real-webgpu-pbr-forward-pass-evidence",
       "real-webgpu-textured-pbr-forward-pass-evidence",
@@ -3226,6 +4307,7 @@ describe("v4 validation tools", () => {
       "real-render-device-feature-matrix-evidence",
       "real-webgpu-webgl2-feature-matrix-conformance",
       "native-webgpu-render-pass-submission",
+      "native-webgpu-material-wgsl-pbr-shader",
       "native-webgpu-texture-to-buffer-readback",
       "real-webgpu-pbr-forward-pass",
       "real-webgpu-textured-pbr-forward-pass",

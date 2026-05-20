@@ -19,6 +19,7 @@ export interface ApiDocsReport {
 }
 
 const defaultOutputPath = "docs/api/public-api.md";
+const defaultReportPath = "tests/reports/api-docs.json";
 
 export function collectPublicPackageApis(root = process.cwd()): readonly PublicPackageApi[] {
   const packagesRoot = join(root, "packages");
@@ -136,6 +137,12 @@ export function writeApiDocs(root = process.cwd(), outputPath = defaultOutputPat
   writeFileSync(absoluteOutputPath, rendered);
 }
 
+export function writeApiDocsReport(report: ApiDocsReport, root = process.cwd(), reportPath = defaultReportPath): void {
+  const absoluteReportPath = join(root, reportPath);
+  mkdirSync(dirname(absoluteReportPath), { recursive: true });
+  writeFileSync(absoluteReportPath, `${JSON.stringify(report, null, 2)}\n`);
+}
+
 function collectExportStatements(source: string): readonly string[] {
   const statements: string[] = [];
   let current: string[] = [];
@@ -188,6 +195,7 @@ if (isMain) {
     writeApiDocs();
   }
   const report = validateApiDocs();
+  writeApiDocsReport(report);
   console.log(JSON.stringify({
     ok: report.ok,
     outputPath: report.outputPath,

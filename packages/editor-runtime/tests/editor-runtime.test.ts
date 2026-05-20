@@ -11,6 +11,9 @@ import {
   PickingService,
   Selection,
   SetPropertyCommand,
+  TimelineClip,
+  TimelineModel,
+  TimelineTrack,
   TransformCommand,
   TranslateGizmo,
   type Command
@@ -206,9 +209,29 @@ test("PickingService and TranslateGizmo use command history for scene node edits
   scene.root.addChild(node);
   const picking = new PickingService();
   picking.addTarget({ id: "editable", node, bounds: { min: [-1, -1, -1], max: [1, 1, 1] } });
+  picking.resizePickingBuffer(640, 360);
+
+  const evidence = picking.snapshot();
+  assert.equal(evidence.source, "origin-master-gpu-picking-adapted");
+  assert.equal(evidence.registeredTargetCount, 1);
+  assert.equal(evidence.width, 640);
+  assert.equal(evidence.height, 360);
+  assert.equal(evidence.sampleColorId?.targetId, "editable");
+  assert.deepEqual(evidence.sampleColorId?.color, [1, 0, 0, 255]);
+  assert.equal(evidence.decodedSampleTargetId, "editable");
+  assert.equal(picking.targetIdFromColor([1, 0, 0, 255]), "editable");
+  assert.equal(evidence.evidence.colorIdEncoding, true);
+  assert.equal(evidence.evidence.colorIdDecoding, true);
+  assert.equal(evidence.evidence.raycastFallback, true);
+  assert.ok(evidence.blockedClaims.includes("production GPU framebuffer picking pass"));
 
   const hit = picking.pick(new Ray(new Vector3(0, 0, 5), new Vector3(0, 0, -1)));
   assert.equal(hit?.target.node, node);
+  assert.equal(picking.snapshot().needsUpdate, false);
+  picking.invalidatePickingBuffer();
+  assert.equal(picking.snapshot().needsUpdate, true);
+  assert.throws(() => picking.resizePickingBuffer(0, 360), /positive integers/);
+  assert.throws(() => PickingService.idToColor(0), /1..16777215/);
 
   const history = new CommandHistory();
   const gizmo = new TranslateGizmo(history);
@@ -258,9 +281,10 @@ test("EditorRuntime exposes public selection, picking, transform, and diagnostic
   runtime.setPickTargets([{ id: node.id, node, bounds: { min: [-1, -1, -1], max: [1, 1, 1] } }]);
   const hit = runtime.pick(new Ray(new Vector3(0, 0, 5), new Vector3(0, 0, -1)));
   assert.equal(hit?.target.id, node.id);
+  assert.equal(runtime.snapshot().picking.decodedSampleTargetId, node.id);
 
   await runtime.translateTarget(node, { axis: "x", delta: 1.5 });
-  assert.equal(node.transform.position[0], 1.5);
+  assert.equal(node.transform.position[0], 2);
   assert.equal(runtime.snapshot().undoDepth, 1);
 
   const diagnostics = runtime.updateDiagnostics({
@@ -305,4 +329,68 @@ test("DiagnosticsOverlayModel validates profiler resource and shader diagnostics
     assetCount: 0,
     physicsBodies: 0
   }), /frame time/);
+});
+
+test("TimelineModel ports bounded track, clip, easing, loop, lock, mute, and signal evidence", () => {
+  const timeline = new TimelineModel({
+    id: "timeline-port",
+    duration: 2,
+    loopMode: "loop",
+    speed: 1.5,
+    frameRate: 60,
+    tracks: [
+      {
+        id: "animation-track",
+        name: "Animation",
+        type: "animation",
+        clips: [
+          {
+            id: "run",
+            name: "Run",
+            startTime: 0,
+            duration: 1,
+            easeInDuration: 0.5,
+            easeIn: "ease-in-out",
+            blendMode: "mix",
+            weight: 0.8,
+            clipInOffset: 0.2
+          }
+        ]
+      },
+      {
+        id: "signal-track",
+        name: "Signals",
+        type: "signal",
+        locked: true,
+        clips: [{ id: "footstep", name: "Footstep", clipName: "footstep", startTime: 0.25, duration: 0.1 }]
+      },
+      {
+        id: "muted-guide",
+        name: "Muted Guide",
+        type: "audio",
+        muted: true,
+        clips: [{ id: "beat", name: "Beat", startTime: 0, duration: 2 }]
+      }
+    ]
+  });
+
+  timeline.seek(0.25);
+  const snapshot = timeline.snapshot();
+  assert.equal(snapshot.activeClipCount, 2);
+  assert.equal(snapshot.activeClips.find((clip) => clip.clipId === "run")?.blendWeight, 0.4);
+  assert.equal(snapshot.activeClips.find((clip) => clip.clipId === "run")?.assetTime, 0.45);
+  assert.deepEqual(snapshot.signalEvents, ["footstep"]);
+  assert.equal(snapshot.evidence.oldCodebasePort, true);
+  assert.equal(snapshot.evidence.clipEasing, true);
+  assert.equal(snapshot.evidence.clipBlending, true);
+  assert.equal(snapshot.evidence.muteLockState, true);
+  assert.equal(snapshot.evidence.loopPlayback, true);
+  assert.equal(snapshot.evidence.signalMarkers, true);
+
+  timeline.play();
+  timeline.tick(2);
+  assert.equal(timeline.snapshot().time, 1.25);
+
+  const lockedTrack = timeline.tracks.find((track) => track.id === "signal-track");
+  assert.throws(() => lockedTrack?.addClip(new TimelineClip({ name: "Late Signal", startTime: 1, duration: 0.1 })), /locked timeline track/);
 });

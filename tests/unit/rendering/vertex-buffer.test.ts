@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MockRenderDevice, VertexBuffer, VertexFormat } from "../../../packages/rendering/src";
+import { MockRenderDevice, VertexBuffer, VertexFormat, type RenderBuffer } from "../../../packages/rendering/src";
 
 describe("VertexBuffer", () => {
   it("writes interleaved CPU attributes at explicit byte offsets", () => {
@@ -36,4 +36,35 @@ describe("VertexBuffer", () => {
     buffer.upload(device);
     expect(buffer.getDirtyRange()).toBeNull();
   });
+
+  it("does not re-upload static vertex data when nothing changed", () => {
+    const device = new CountingMockRenderDevice();
+    const buffer = new VertexBuffer(VertexFormat.P3, 1);
+    buffer.setAttribute(0, "position", [1, 2, 3]);
+
+    const first = buffer.upload(device);
+    const second = buffer.upload(device);
+    const third = buffer.upload(device);
+
+    expect(first).toBe(second);
+    expect(second).toBe(third);
+    expect(device.createBufferCount).toBe(1);
+    expect(device.updateBufferCount).toBe(0);
+    expect(buffer.getDirtyRange()).toBeNull();
+  });
 });
+
+class CountingMockRenderDevice extends MockRenderDevice {
+  public createBufferCount = 0;
+  public updateBufferCount = 0;
+
+  override createBuffer(...args: Parameters<MockRenderDevice["createBuffer"]>): RenderBuffer {
+    this.createBufferCount += 1;
+    return super.createBuffer(...args);
+  }
+
+  override updateBuffer(...args: Parameters<MockRenderDevice["updateBuffer"]>): void {
+    this.updateBufferCount += 1;
+    super.updateBuffer(...args);
+  }
+}

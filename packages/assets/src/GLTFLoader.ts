@@ -2,6 +2,8 @@ import {
   PointLight,
   composeMat4,
   decomposeMat4,
+  invertMat4,
+  multiplyMat4,
   Renderable,
   Scene,
   SpotLight,
@@ -10,8 +12,12 @@ import {
   type SceneNode,
   type Vec3 as SceneVec3
 } from "@galileo3d/scene";
-import { AnimationClip, AnimationTrack, Skeleton, type Mat4, type Quat, type SerializedAnimationClip, type TrackValueType, type Vec3 } from "@galileo3d/animation";
+import { AnimationClip, AnimationTrack, Skeleton, type Mat4, type Quat, type SerializedAnimationClip, type SkinningPalette, type TrackValueType, type Vec3 } from "@galileo3d/animation";
 import type { AssetLoadProgress, AssetLoadRequest, AssetLoader } from "./AssetLoader";
+import {
+  evaluateGLTFExtensionSupport,
+  type GLTFExtensionSupportEvaluation
+} from "./GLTFExtensionSupport";
 import type { LoadContext } from "./LoadContext";
 
 type GLTFComponentType = 5120 | 5121 | 5122 | 5123 | 5125 | 5126;
@@ -19,7 +25,9 @@ type GLTFSparseIndexComponentType = 5121 | 5123 | 5125;
 type GLTFAccessorType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
 
 const DEFAULT_GLTF_MATERIAL_NAME = "default-material";
+const RUNTIME_MATERIAL_KEY_MARKER = "#galileo3d-runtime:";
 const DISPOSE_GLTF_ASSET = Symbol("disposeGLTFAsset");
+const MAX_RENDERABLE_SKIN_JOINTS = 64;
 
 interface GLTFBuffer {
   readonly uri?: string;
@@ -33,6 +41,7 @@ interface GLTFBufferView {
   readonly byteStride?: number;
   readonly extensions?: {
     readonly EXT_meshopt_compression?: GLTFMeshoptCompressionExtension;
+    readonly KHR_meshopt_compression?: GLTFMeshoptCompressionExtension;
   };
 }
 
@@ -43,7 +52,7 @@ interface GLTFMeshoptCompressionExtension {
   readonly byteStride: number;
   readonly count: number;
   readonly mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
-  readonly filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION" | "EXPONENTIAL";
+  readonly filter?: "NONE" | "OCTAHEDRAL" | "QUATERNION" | "EXPONENTIAL" | "COLOR";
 }
 
 interface GLTFAccessor {
@@ -227,6 +236,9 @@ interface GLTFTexture {
   readonly sampler?: number;
   readonly source?: number;
   readonly extensions?: {
+    readonly EXT_texture_avif?: {
+      readonly source: number;
+    };
     readonly EXT_texture_webp?: {
       readonly source: number;
     };
@@ -266,7 +278,12 @@ interface GLTFAnimationChannel {
   readonly sampler: number;
   readonly target: {
     readonly node?: number;
-    readonly path: "translation" | "rotation" | "scale" | "weights";
+    readonly path: "translation" | "rotation" | "scale" | "weights" | "pointer";
+    readonly extensions?: {
+      readonly KHR_animation_pointer?: {
+        readonly pointer?: string;
+      };
+    };
   };
 }
 
@@ -358,6 +375,16 @@ export interface GLTFMeshAsset {
   readonly skinIndex?: number;
 }
 
+export interface GLTFRuntimeMaterialContract {
+  readonly skinned?: boolean;
+  readonly instanced?: boolean;
+}
+
+export interface GLTFRuntimeMaterialKey {
+  readonly material: string;
+  readonly contract: GLTFRuntimeMaterialContract;
+}
+
 export interface GLTFMorphTargetAsset {
   readonly positions: readonly (readonly [number, number, number])[];
   readonly normals: readonly (readonly [number, number, number])[];
@@ -373,9 +400,67 @@ export interface GLTFGeometryAsset {
   };
 }
 
+export interface GLTFLoaderDiagnostics {
+  readonly schemaVersion: "gltf-loader-diagnostics-v1";
+  readonly features: readonly string[];
+  readonly extensionsUsed: readonly string[];
+  readonly extensionsRequired: readonly string[];
+  readonly unsupportedExtensions: readonly string[];
+  readonly extensionSupport?: GLTFExtensionSupportEvaluation;
+  readonly unsupportedFeatures: readonly string[];
+  readonly meshCount: number;
+  readonly primitiveCount: number;
+  readonly vertexCount: number;
+  readonly indexCount: number;
+  readonly materialCount: number;
+  readonly textureCount: number;
+  readonly imageCount: number;
+  readonly animationCount: number;
+  readonly skinCount: number;
+  readonly morphTargetCount: number;
+  readonly materialFeatures: readonly string[];
+  readonly textureSlots: readonly string[];
+  readonly compression: {
+    readonly draco: boolean;
+    readonly meshopt: boolean;
+    readonly ktx2Basis: boolean;
+  };
+  readonly loadProfile?: GLTFLoaderLoadProfileDiagnostics;
+}
+
+export interface GLTFLoaderLoadProfileDiagnostics {
+  readonly schemaVersion: "gltf-loader-load-profile-v1";
+  readonly documentBytes: number;
+  readonly binaryChunkBytes: number;
+  readonly bufferBytes: number;
+  readonly imageBytes: number;
+  readonly embeddedImageBytes: number;
+  readonly externalImageCount: number;
+  readonly bufferViewImageCount: number;
+  readonly accessorReadCount: number;
+  readonly uniqueAccessorReadCount: number;
+  readonly accessorCacheHitCount: number;
+  readonly accessorRowsRead: number;
+  readonly accessorValuesRead: number;
+  readonly accessorReadMs: number;
+  readonly dataViewCacheEntries: number;
+  readonly largestAccessors: readonly GLTFAccessorLoadProfileEntry[];
+}
+
+export interface GLTFAccessorLoadProfileEntry {
+  readonly accessorIndex: number;
+  readonly count: number;
+  readonly type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
+  readonly componentType: 5120 | 5121 | 5122 | 5123 | 5125 | 5126;
+  readonly componentCount: number;
+  readonly byteLength: number;
+  readonly bufferView?: number;
+}
+
 export interface GLTFAsset {
   readonly url: string;
   readonly disposed: boolean;
+  readonly loaderDiagnostics: GLTFLoaderDiagnostics;
   readonly images: readonly GLTFImageAsset[];
   readonly textures: readonly GLTFTextureAsset[];
   readonly materials: readonly GLTFMaterialAsset[];
@@ -421,7 +506,7 @@ export interface GLTFSceneAsset {
 }
 
 export interface GLTFSamplerAsset {
-  readonly minFilter: "nearest" | "linear";
+  readonly minFilter: "nearest" | "linear" | "nearest-mipmap-nearest" | "linear-mipmap-nearest" | "nearest-mipmap-linear" | "linear-mipmap-linear";
   readonly magFilter: "nearest" | "linear";
   readonly addressU: "clamp-to-edge" | "repeat" | "mirror-repeat";
   readonly addressV: "clamp-to-edge" | "repeat" | "mirror-repeat";
@@ -587,12 +672,17 @@ export interface GLTFResolvedTextureTransform {
 export interface GLTFSkinAsset {
   readonly name: string;
   readonly joints: readonly number[];
+  readonly jointNames: readonly string[];
+  readonly inverseBindMatrices: readonly Mat4[];
   readonly skeletonRoot?: number;
   readonly skeleton: Skeleton;
+  readonly jointBindMatrices: readonly Mat4[];
+  readonly skinningPalette?: SkinningPalette;
 }
 
 export interface SerializedGLTFAsset {
   readonly url: string;
+  readonly loaderDiagnostics: GLTFLoaderDiagnostics;
   readonly images: readonly {
     readonly name: string;
     readonly uri?: string;
@@ -610,6 +700,8 @@ export interface SerializedGLTFAsset {
   readonly skins: readonly {
     readonly name: string;
     readonly joints: readonly number[];
+    readonly jointNames: readonly string[];
+    readonly inverseBindMatrices: readonly Mat4[];
     readonly skeletonRoot?: number;
     readonly bones: readonly {
       readonly name: string;
@@ -628,7 +720,7 @@ export interface GLTFMeshoptDecodeDescriptor {
   readonly byteStride: number;
   readonly count: number;
   readonly mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES";
-  readonly filter: "NONE" | "OCTAHEDRAL" | "QUATERNION" | "EXPONENTIAL";
+  readonly filter: "NONE" | "OCTAHEDRAL" | "QUATERNION" | "EXPONENTIAL" | "COLOR";
 }
 
 export type GLTFMeshoptDecoder = (
@@ -658,6 +750,23 @@ export interface GLTFLoaderOptions {
   readonly dracoDecoder?: GLTFDracoDecoder;
 }
 
+interface MutableGLTFLoaderLoadProfileDiagnostics {
+  accessorReadCount: number;
+  uniqueAccessorReadCount: number;
+  accessorCacheHitCount: number;
+  accessorRowsRead: number;
+  accessorValuesRead: number;
+  accessorReadMs: number;
+  dataViewCacheEntries: number;
+  largestAccessors: GLTFAccessorLoadProfileEntry[];
+}
+
+interface GLTFAccessorReadCache {
+  readonly rowsByAccessor: Map<number, number[][]>;
+  readonly dataViews: Map<ArrayBuffer, DataView>;
+  readonly profile: MutableGLTFLoaderLoadProfileDiagnostics;
+}
+
 export class GLTFLoader implements AssetLoader<GLTFAsset> {
   readonly type = "gltf";
 
@@ -674,7 +783,8 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     if (json.asset?.version && !json.asset.version.startsWith("2.")) {
       throw new Error(`Unsupported glTF version: ${json.asset.version}`);
     }
-    const unsupportedRequiredExtensions = (json.extensionsRequired ?? []).filter((extension) => !SUPPORTED_GLTF_EXTENSIONS.has(extension));
+    const extensionSupport = evaluateGLTFExtensionSupport(json.extensionsUsed, json.extensionsRequired);
+    const unsupportedRequiredExtensions = extensionSupport.unsupportedRequired;
     if (unsupportedRequiredExtensions.length > 0) {
       throw new Error(`Unsupported required glTF extensions: ${unsupportedRequiredExtensions.join(", ")}`);
     }
@@ -683,6 +793,7 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     const prepared = await prepareBufferViews(json, rawBuffers, this.options.meshoptDecoder);
     const buffers = prepared.buffers;
     json = prepared.json;
+    const accessorCache = createGLTFAccessorReadCache();
     const meshQuantizationEnabled = usesGLTFExtension(json, "KHR_mesh_quantization");
     const images = createImageAssets(json, buffers);
     const textures = createTextureAssets(json);
@@ -692,8 +803,8 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
     const defaultScene = resolveDefaultSceneIndex(json);
     const cameras = createCameraAssets(json);
     const lights = createLightAssets(json);
-    const skins = createSkinAssets(json, buffers);
-    const nodeInstanceTransforms = createNodeInstanceTransforms(json, buffers);
+    const skins = createSkinAssets(json, buffers, accessorCache);
+    const nodeInstanceTransforms = createNodeInstanceTransforms(json, buffers, accessorCache);
     const meshes = await Promise.all((json.meshes ?? []).flatMap((mesh, meshIndex) => {
       validateMeshDescriptor(mesh, meshIndex);
       return mesh.primitives.map(async (primitive, primitiveIndex) => {
@@ -705,17 +816,17 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         }
 
         const dracoPrimitive = await decodeDracoPrimitive(json, buffers, primitive, meshIndex, primitiveIndex, this.options.dracoDecoder);
-        const positions = dracoPrimitive?.attributes.POSITION ?? readAccessor(json, buffers, positionAccessorIndex);
-        const normals = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "NORMAL");
-        const texcoordSets = readTexcoordSets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex, dracoPrimitive);
+        const positions = dracoPrimitive?.attributes.POSITION ?? readAccessor(json, buffers, positionAccessorIndex, accessorCache);
+        const normals = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "NORMAL", accessorCache);
+        const texcoordSets = readTexcoordSets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex, dracoPrimitive, accessorCache);
         const texcoords = texcoordSets[0] ?? [];
-        const tangents = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "TANGENT");
-        const colors = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "COLOR_0");
-        const joints = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "JOINTS_0");
-        const weights = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "WEIGHTS_0");
+        const tangents = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "TANGENT", accessorCache);
+        const colors = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "COLOR_0", accessorCache);
+        const joints = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "JOINTS_0", accessorCache);
+        const weights = readPrimitiveAttribute(json, buffers, primitive, dracoPrimitive, "WEIGHTS_0", accessorCache);
         const indices = dracoPrimitive
           ? dracoPrimitive.indices?.map((index) => [index])
-          : primitive.indices === undefined ? undefined : readAccessor(json, buffers, primitive.indices);
+          : primitive.indices === undefined ? undefined : readAccessor(json, buffers, primitive.indices, accessorCache);
         validateAttributeCount("NORMAL", normals, positions.length, meshIndex, primitiveIndex);
         validateAttributeCount("TANGENT", tangents, positions.length, meshIndex, primitiveIndex);
         validateAttributeCount("COLOR_0", colors, positions.length, meshIndex, primitiveIndex);
@@ -730,8 +841,13 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         const typedTangents = tangents.map((tangent) => [tangent[0] ?? 0, tangent[1] ?? 0, tangent[2] ?? 0, tangent[3] ?? 1] as const);
         const typedColors = colors.map((color) => [color[0] ?? 1, color[1] ?? 1, color[2] ?? 1, color[3] ?? 1] as const);
         const typedJoints = joints.map((joint) => [joint[0] ?? 0, joint[1] ?? 0, joint[2] ?? 0, joint[3] ?? 0] as const);
-        const typedWeights = weights.map((weight) => [weight[0] ?? 0, weight[1] ?? 0, weight[2] ?? 0, weight[3] ?? 0] as const);
-        const morphTargets = readMorphTargets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex);
+        const typedWeights = weights.map((weight) => normalizeSkinWeights([
+          weight[0] ?? 0,
+          weight[1] ?? 0,
+          weight[2] ?? 0,
+          weight[3] ?? 0
+        ], meshIndex, primitiveIndex));
+        const morphTargets = readMorphTargets(json, buffers, primitive, positions.length, meshIndex, primitiveIndex, accessorCache);
         const resolvedPrimitive = resolvePrimitiveMode(primitive, indices?.map((index) => index[0] ?? 0), positions.length, meshIndex, primitiveIndex);
         const geometry = createGeometryAsset(typedPositions, resolvedPrimitive.indices);
         return {
@@ -758,7 +874,16 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
         };
       });
     }));
-    const animations = createAnimationClips(json, buffers);
+    const animations = createAnimationClips(json, buffers, accessorCache);
+    const loadProfile = createGLTFLoaderLoadProfileDiagnostics(document, buffers, images, accessorCache);
+    const loaderDiagnostics = createGLTFLoaderDiagnostics(json, {
+      images,
+      textures,
+      materials,
+      meshes,
+      animations,
+      skins
+    }, loadProfile);
 
     let disposed = false;
     const assertAlive = (): void => {
@@ -771,6 +896,7 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       get disposed() {
         return disposed;
       },
+      loaderDiagnostics,
       images,
       textures,
       materials,
@@ -784,11 +910,11 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
       animations,
       createScene: (options) => {
         assertAlive();
-        return createScene(json, meshes, cameras, lights, nodeInstanceTransforms, materialVariants, options);
+        return createScene(json, meshes, cameras, lights, skins, nodeInstanceTransforms, materialVariants, options);
       },
       toJSON: () => {
         assertAlive();
-        return serializeGLTFAsset(request.url, images, textures, materials, materialVariants, scenes, defaultScene, meshes, cameras, lights, skins, animations);
+        return serializeGLTFAsset(request.url, loaderDiagnostics, images, textures, materials, materialVariants, scenes, defaultScene, meshes, cameras, lights, skins, animations);
       },
       [DISPOSE_GLTF_ASSET]: () => {
         disposed = true;
@@ -800,6 +926,60 @@ export class GLTFLoader implements AssetLoader<GLTFAsset> {
   dispose(asset: GLTFAsset): void {
     (asset as DisposableGLTFAsset)[DISPOSE_GLTF_ASSET]?.();
   }
+}
+
+function createGLTFAccessorReadCache(): GLTFAccessorReadCache {
+  return {
+    rowsByAccessor: new Map(),
+    dataViews: new Map(),
+    profile: {
+      accessorReadCount: 0,
+      uniqueAccessorReadCount: 0,
+      accessorCacheHitCount: 0,
+      accessorRowsRead: 0,
+      accessorValuesRead: 0,
+      accessorReadMs: 0,
+      dataViewCacheEntries: 0,
+      largestAccessors: []
+    }
+  };
+}
+
+function createGLTFLoaderLoadProfileDiagnostics(
+  document: GLTFDocument,
+  buffers: readonly ArrayBuffer[],
+  images: readonly GLTFImageAsset[],
+  accessorCache: GLTFAccessorReadCache
+): GLTFLoaderLoadProfileDiagnostics {
+  const profile = accessorCache.profile;
+  const embeddedImageBytes = images.reduce((sum, image) => sum + (image.data?.byteLength ?? 0), 0);
+  return {
+    schemaVersion: "gltf-loader-load-profile-v1",
+    documentBytes: document.byteLength,
+    binaryChunkBytes: document.binaryChunk?.byteLength ?? 0,
+    bufferBytes: buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0),
+    imageBytes: embeddedImageBytes,
+    embeddedImageBytes,
+    externalImageCount: images.filter((image) => Boolean(image.uri) && !image.uri!.startsWith("data:")).length,
+    bufferViewImageCount: images.filter((image) => image.data !== undefined).length,
+    accessorReadCount: profile.accessorReadCount,
+    uniqueAccessorReadCount: profile.uniqueAccessorReadCount,
+    accessorCacheHitCount: profile.accessorCacheHitCount,
+    accessorRowsRead: profile.accessorRowsRead,
+    accessorValuesRead: profile.accessorValuesRead,
+    accessorReadMs: roundDiagnosticMs(profile.accessorReadMs),
+    dataViewCacheEntries: profile.dataViewCacheEntries,
+    largestAccessors: [...profile.largestAccessors]
+  };
+}
+
+function roundDiagnosticMs(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+function nowMs(): number {
+  const performance = globalThis.performance;
+  return performance && typeof performance.now === "function" ? performance.now() : Date.now();
 }
 
 function createGeometryAsset(
@@ -817,6 +997,138 @@ function createGeometryAsset(
     max[2] = Math.max(max[2], position[2]);
   }
   return { vertexCount: positions.length, indexCount: indices?.length ?? 0, bounds: { min, max } };
+}
+
+function createGLTFLoaderDiagnostics(
+  json: GLTFJson,
+  asset: {
+    readonly images: readonly GLTFImageAsset[];
+    readonly textures: readonly GLTFTextureAsset[];
+    readonly materials: readonly GLTFMaterialAsset[];
+    readonly meshes: readonly GLTFMeshAsset[];
+    readonly animations: readonly AnimationClip[];
+    readonly skins: readonly GLTFSkinAsset[];
+  },
+  loadProfile?: GLTFLoaderLoadProfileDiagnostics
+): GLTFLoaderDiagnostics {
+  const extensionsUsed = [...new Set([...(json.extensionsUsed ?? []), ...(json.extensionsRequired ?? [])])].sort();
+  const extensionSupport = evaluateGLTFExtensionSupport(json.extensionsUsed, json.extensionsRequired);
+  const materialFeatures = [...new Set(asset.materials.flatMap(materialFeatureNames))].sort();
+  const textureSlots = [...new Set(asset.materials.flatMap(materialTextureSlotNames))].sort();
+  const unsupportedFeatures = collectUnsupportedFeatureDiagnostics(json);
+  const compression = {
+    draco: usesGLTFExtension(json, "KHR_draco_mesh_compression"),
+    meshopt: usesGLTFMeshoptExtension(json),
+    ktx2Basis: usesGLTFExtension(json, "KHR_texture_basisu") || asset.images.some((image) => /\.ktx2(?:[?#]|$)/i.test(image.uri ?? "") || image.mimeType === "image/ktx2")
+  };
+  const features = new Set<string>([
+    "gltf",
+    ...extensionsUsed.map((extension) => `extension:${extension}`),
+    ...materialFeatures.map((feature) => `material:${feature}`),
+    ...textureSlots.map((slot) => `texture-slot:${slot}`)
+  ]);
+  if (asset.meshes.length > 0) features.add("mesh");
+  if (asset.meshes.some((mesh) => mesh.geometry.indexCount > 0)) features.add("indexed-geometry");
+  if (asset.meshes.some((mesh) => mesh.normals.length > 0)) features.add("normals");
+  if (asset.meshes.some((mesh) => mesh.tangents.length > 0)) features.add("tangents");
+  if (asset.meshes.some((mesh) => mesh.colors.length > 0)) features.add("vertex-colors");
+  if (asset.meshes.some((mesh) => mesh.texcoordSets.some((set) => set.length > 0))) features.add("texcoords");
+  if (asset.meshes.some((mesh) => mesh.texcoordSets.length > 1)) features.add("multi-uv");
+  if (asset.meshes.some((mesh) => mesh.morphTargets.length > 0)) features.add("morph-targets");
+  if (asset.meshes.some((mesh) => mesh.skinIndex !== undefined || mesh.joints.length > 0 || mesh.weights.length > 0)) features.add("skinning");
+  if (asset.skins.some((skin) => skin.joints.length > MAX_RENDERABLE_SKIN_JOINTS)) features.add("skinning-palette-limit-fallback");
+  if ((json.skins ?? []).some((skin) => skin.inverseBindMatrices === undefined)) features.add("skinning-default-inverse-bind-matrices");
+  for (const unsupportedFeature of unsupportedFeatures) features.add(`unsupported:${unsupportedFeature}`);
+  if (asset.animations.length > 0) features.add("animations");
+  if (asset.skins.length > 0) features.add("skins");
+  if (asset.textures.length > 0) features.add("textures");
+  if (compression.draco) features.add("compression:draco");
+  if (compression.meshopt) features.add("compression:meshopt");
+  if (compression.ktx2Basis) features.add("compression:ktx2-basis");
+
+  return {
+    schemaVersion: "gltf-loader-diagnostics-v1",
+    features: [...features].sort(),
+    extensionsUsed,
+    extensionsRequired: [...(json.extensionsRequired ?? [])].sort(),
+    unsupportedExtensions: extensionSupport.notAcceptedUsed,
+    extensionSupport,
+    unsupportedFeatures,
+    meshCount: asset.meshes.length,
+    primitiveCount: asset.meshes.length,
+    vertexCount: asset.meshes.reduce((sum, mesh) => sum + mesh.geometry.vertexCount, 0),
+    indexCount: asset.meshes.reduce((sum, mesh) => sum + mesh.geometry.indexCount, 0),
+    materialCount: asset.materials.length,
+    textureCount: asset.textures.length,
+    imageCount: asset.images.length,
+    animationCount: asset.animations.length,
+    skinCount: asset.skins.length,
+    morphTargetCount: asset.meshes.reduce((sum, mesh) => sum + mesh.morphTargets.length, 0),
+    materialFeatures,
+    textureSlots,
+    compression,
+    ...(loadProfile ? { loadProfile } : {})
+  };
+}
+
+function collectUnsupportedFeatureDiagnostics(json: GLTFJson): readonly string[] {
+  const unsupported = new Set<string>();
+  for (const mesh of json.meshes ?? []) {
+    for (const primitive of mesh.primitives) {
+      if (primitive.attributes.JOINTS_1 !== undefined || primitive.attributes.WEIGHTS_1 !== undefined) {
+        unsupported.add("skinning-extra-influences:JOINTS_1/WEIGHTS_1");
+      }
+    }
+  }
+  return [...unsupported].sort();
+}
+
+function materialFeatureNames(material: GLTFMaterialAsset): readonly string[] {
+  return [
+    material.unlit ? "unlit" : undefined,
+    material.metallicFactor > 0 ? "metallic" : undefined,
+    material.roughnessFactor < 1 ? "roughness" : undefined,
+    material.emissiveFactor.some((value) => value > 0) || material.emissiveStrength !== 1 ? "emissive" : undefined,
+    material.alphaMode !== "OPAQUE" ? `alpha-${material.alphaMode.toLowerCase()}` : undefined,
+    material.doubleSided ? "double-sided" : undefined,
+    material.normalTexture ? "normal-texture" : undefined,
+    material.occlusionTexture ? "occlusion-texture" : undefined,
+    material.clearcoat ? "clearcoat" : undefined,
+    material.transmission ? "transmission" : undefined,
+    material.diffuseTransmission ? "diffuse-transmission" : undefined,
+    material.volume ? "volume" : undefined,
+    material.ior !== undefined ? "ior" : undefined,
+    material.specular ? "specular" : undefined,
+    material.sheen ? "sheen" : undefined,
+    material.anisotropy ? "anisotropy" : undefined,
+    material.iridescence ? "iridescence" : undefined,
+    material.dispersion !== undefined ? "dispersion" : undefined,
+    material.pbrSpecularGlossiness ? "pbr-specular-glossiness" : undefined
+  ].filter((feature): feature is string => feature !== undefined);
+}
+
+function materialTextureSlotNames(material: GLTFMaterialAsset): readonly string[] {
+  return [
+    material.baseColorTexture ? "base-color" : undefined,
+    material.metallicRoughnessTexture ? "metallic-roughness" : undefined,
+    material.normalTexture ? "normal" : undefined,
+    material.occlusionTexture ? "occlusion" : undefined,
+    material.emissiveTexture ? "emissive" : undefined,
+    material.clearcoat?.texture ? "clearcoat" : undefined,
+    material.clearcoat?.roughnessTexture ? "clearcoat-roughness" : undefined,
+    material.clearcoat?.normalTexture ? "clearcoat-normal" : undefined,
+    material.transmission?.texture ? "transmission" : undefined,
+    material.diffuseTransmission?.texture ? "diffuse-transmission" : undefined,
+    material.diffuseTransmission?.colorTexture ? "diffuse-transmission-color" : undefined,
+    material.volume?.thicknessTexture ? "volume-thickness" : undefined,
+    material.specular?.texture ? "specular" : undefined,
+    material.specular?.colorTexture ? "specular-color" : undefined,
+    material.sheen?.colorTexture ? "sheen-color" : undefined,
+    material.sheen?.roughnessTexture ? "sheen-roughness" : undefined,
+    material.anisotropy?.texture ? "anisotropy" : undefined,
+    material.iridescence?.texture ? "iridescence" : undefined,
+    material.iridescence?.thicknessTexture ? "iridescence-thickness" : undefined
+  ].filter((slot): slot is string => slot !== undefined);
 }
 
 function validateAttributeCount(
@@ -865,7 +1177,8 @@ function readTexcoordSets(
   vertexCount: number,
   meshIndex: number,
   primitiveIndex: number,
-  decodedPrimitive?: GLTFDracoDecodedPrimitive
+  decodedPrimitive: GLTFDracoDecodedPrimitive | undefined,
+  accessorCache: GLTFAccessorReadCache
 ): readonly (readonly (readonly [number, number])[])[] {
   const sets: (readonly (readonly [number, number])[])[] = [];
   for (const [semantic, accessorIndex] of Object.entries(primitive.attributes)) {
@@ -875,7 +1188,7 @@ function readTexcoordSets(
     if (!Number.isInteger(setIndex)) {
       throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} ${semantic} has invalid texture coordinate set index`);
     }
-    const values = decodedPrimitive?.attributes[semantic] ?? readAccessor(json, buffers, accessorIndex);
+    const values = decodedPrimitive?.attributes[semantic] ?? readAccessor(json, buffers, accessorIndex, accessorCache);
     validateAttributeCount(semantic, values, vertexCount, meshIndex, primitiveIndex);
     sets[setIndex] = values.map((texcoord) => [texcoord[0] ?? 0, texcoord[1] ?? 0] as const);
   }
@@ -891,11 +1204,47 @@ function readPrimitiveAttribute(
   buffers: readonly ArrayBuffer[],
   primitive: GLTFPrimitive,
   decodedPrimitive: GLTFDracoDecodedPrimitive | undefined,
-  semantic: string
+  semantic: string,
+  accessorCache: GLTFAccessorReadCache
 ): number[][] {
   const decoded = decodedPrimitive?.attributes[semantic];
-  if (decoded) return decoded.map((row) => [...row]);
-  return readOptionalAccessor(json, buffers, primitive.attributes[semantic]);
+  if (decoded) return normalizeDecodedPrimitiveAttribute(json, primitive, semantic, decoded);
+  return readOptionalAccessor(json, buffers, primitive.attributes[semantic], accessorCache);
+}
+
+function normalizeDecodedPrimitiveAttribute(
+  json: GLTFJson,
+  primitive: GLTFPrimitive,
+  semantic: string,
+  rows: readonly (readonly number[])[]
+): number[][] {
+  const copied = rows.map((row) => [...row]);
+  const accessorIndex = primitive.attributes[semantic];
+  const accessor = accessorIndex === undefined ? undefined : json.accessors?.[accessorIndex];
+  if (!accessor?.normalized || !semantic.startsWith("COLOR_")) {
+    return copied;
+  }
+  const normalizer = normalizedComponentScale(accessor.componentType);
+  if (!normalizer) {
+    return copied;
+  }
+  const needsNormalization = copied.some((row) => row.some((value) => Math.abs(value) > 1));
+  if (!needsNormalization) {
+    return copied.map((row) => row.map(clampColorChannel));
+  }
+  return copied.map((row) => row.map((value) => clampColorChannel(normalizer(value))));
+}
+
+function normalizedComponentScale(componentType: GLTFComponentType): ((value: number) => number) | null {
+  if (componentType === 5120) return (value) => Math.max(value / 127, -1);
+  if (componentType === 5121) return (value) => value / 255;
+  if (componentType === 5122) return (value) => Math.max(value / 32767, -1);
+  if (componentType === 5123) return (value) => value / 65535;
+  return null;
+}
+
+function clampColorChannel(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }
 
 async function decodeDracoPrimitive(
@@ -1108,7 +1457,8 @@ function readMorphTargets(
   primitive: GLTFPrimitive,
   vertexCount: number,
   meshIndex: number,
-  primitiveIndex: number
+  primitiveIndex: number,
+  accessorCache: GLTFAccessorReadCache
 ): readonly GLTFMorphTargetAsset[] {
   if (primitive.targets === undefined) {
     return [];
@@ -1118,9 +1468,9 @@ function readMorphTargets(
   }
   return primitive.targets.map((target, targetIndex) => {
     validateMorphTargetDescriptor(target, meshIndex, primitiveIndex, targetIndex);
-    const positions = readOptionalAccessor(json, buffers, target.POSITION);
-    const normals = readOptionalAccessor(json, buffers, target.NORMAL);
-    const tangents = readOptionalAccessor(json, buffers, target.TANGENT);
+    const positions = readOptionalAccessor(json, buffers, target.POSITION, accessorCache);
+    const normals = readOptionalAccessor(json, buffers, target.NORMAL, accessorCache);
+    const tangents = readOptionalAccessor(json, buffers, target.TANGENT, accessorCache);
     if (positions.length > 0 && positions.length !== vertexCount) {
       throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} morph target ${targetIndex} POSITION count mismatch`);
     }
@@ -1180,6 +1530,7 @@ function resolveMorphWeights(
 }
 
 function createImageAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): readonly GLTFImageAsset[] {
+  const avifEnabled = usesGLTFExtension(json, "EXT_texture_avif");
   const webpEnabled = usesGLTFExtension(json, "EXT_texture_webp");
   const basisuEnabled = usesGLTFExtension(json, "KHR_texture_basisu");
   return (json.images ?? []).map((image, index) => {
@@ -1192,7 +1543,7 @@ function createImageAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): rea
     if (image.bufferView !== undefined && !image.mimeType) {
       throw new Error(`glTF image ${index} with bufferView requires mimeType`);
     }
-    validateImageMimeType(image, index, webpEnabled, basisuEnabled);
+    validateImageMimeType(image, index, avifEnabled, webpEnabled, basisuEnabled);
     return {
       name: image.name ?? `image-${index}`,
       uri: image.uri,
@@ -1202,9 +1553,9 @@ function createImageAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): rea
   });
 }
 
-function validateImageMimeType(image: GLTFImage, index: number, webpEnabled: boolean, basisuEnabled: boolean): void {
-  if (image.mimeType !== undefined && !isSupportedImageMimeType(image.mimeType, webpEnabled, basisuEnabled)) {
-    throw new Error(`glTF image ${index} mimeType must be ${supportedImageMimeTypeMessage(webpEnabled, basisuEnabled)}`);
+function validateImageMimeType(image: GLTFImage, index: number, avifEnabled: boolean, webpEnabled: boolean, basisuEnabled: boolean): void {
+  if (image.mimeType !== undefined && !isSupportedImageMimeType(image.mimeType, avifEnabled, webpEnabled, basisuEnabled)) {
+    throw new Error(`glTF image ${index} mimeType must be ${supportedImageMimeTypeMessage(avifEnabled, webpEnabled, basisuEnabled)}`);
   }
   if (image.uri?.startsWith("data:")) {
     const separator = image.uri.indexOf(",");
@@ -1212,18 +1563,18 @@ function validateImageMimeType(image: GLTFImage, index: number, webpEnabled: boo
       throw new Error(`glTF image ${index} data uri must include a comma separator`);
     }
     const mediaType = image.uri.slice(5, separator).split(";")[0]?.toLowerCase();
-    if (!isSupportedImageMimeType(mediaType, webpEnabled, basisuEnabled)) {
-      throw new Error(`glTF image ${index} data uri media type must be ${supportedImageMimeTypeMessage(webpEnabled, basisuEnabled)}`);
+    if (!isSupportedImageMimeType(mediaType, avifEnabled, webpEnabled, basisuEnabled)) {
+      throw new Error(`glTF image ${index} data uri media type must be ${supportedImageMimeTypeMessage(avifEnabled, webpEnabled, basisuEnabled)}`);
     }
   }
 }
 
-function isSupportedImageMimeType(mimeType: string | undefined, webpEnabled: boolean, basisuEnabled: boolean): boolean {
-  return mimeType === "image/png" || mimeType === "image/jpeg" || (webpEnabled && mimeType === "image/webp") || (basisuEnabled && mimeType === "image/ktx2");
+function isSupportedImageMimeType(mimeType: string | undefined, avifEnabled: boolean, webpEnabled: boolean, basisuEnabled: boolean): boolean {
+  return mimeType === "image/png" || mimeType === "image/jpeg" || (avifEnabled && mimeType === "image/avif") || (webpEnabled && mimeType === "image/webp") || (basisuEnabled && mimeType === "image/ktx2");
 }
 
-function supportedImageMimeTypeMessage(webpEnabled: boolean, basisuEnabled: boolean): string {
-  return ["image/png", "image/jpeg", ...(webpEnabled ? ["image/webp"] : []), ...(basisuEnabled ? ["image/ktx2"] : [])].join(", or ");
+function supportedImageMimeTypeMessage(avifEnabled: boolean, webpEnabled: boolean, basisuEnabled: boolean): string {
+  return ["image/png", "image/jpeg", ...(avifEnabled ? ["image/avif"] : []), ...(webpEnabled ? ["image/webp"] : []), ...(basisuEnabled ? ["image/ktx2"] : [])].join(", or ");
 }
 
 function createTextureAssets(json: GLTFJson): readonly GLTFTextureAsset[] {
@@ -1240,6 +1591,10 @@ function createTextureAssets(json: GLTFJson): readonly GLTFTextureAsset[] {
 }
 
 function validateTextureDescriptor(json: GLTFJson, texture: GLTFTexture, index: number): number {
+  const avifSource = texture.extensions?.EXT_texture_avif?.source;
+  if (avifSource !== undefined && !usesGLTFExtension(json, "EXT_texture_avif")) {
+    throw new Error(`glTF texture ${index} uses EXT_texture_avif but the extension is not declared`);
+  }
   const webpSource = texture.extensions?.EXT_texture_webp?.source;
   if (webpSource !== undefined && !usesGLTFExtension(json, "EXT_texture_webp")) {
     throw new Error(`glTF texture ${index} uses EXT_texture_webp but the extension is not declared`);
@@ -1248,7 +1603,7 @@ function validateTextureDescriptor(json: GLTFJson, texture: GLTFTexture, index: 
   if (basisuSource !== undefined && !usesGLTFExtension(json, "KHR_texture_basisu")) {
     throw new Error(`glTF texture ${index} uses KHR_texture_basisu but the extension is not declared`);
   }
-  const source = basisuSource ?? webpSource ?? texture.source;
+  const source = basisuSource ?? avifSource ?? webpSource ?? texture.source;
   if (source === undefined) {
     throw new Error(`glTF texture ${index} references missing image source undefined`);
   }
@@ -1278,10 +1633,14 @@ function createSamplerAsset(sampler: GLTFSampler, samplerIndex: number): GLTFSam
   };
 }
 
-function minFilterFromGLTF(value: number | undefined, samplerIndex: number): "nearest" | "linear" {
-  if (value === undefined) return "linear";
-  if (value === 9728 || value === 9984 || value === 9986) return "nearest";
-  if (value === 9729 || value === 9985 || value === 9987) return "linear";
+function minFilterFromGLTF(value: number | undefined, samplerIndex: number): GLTFSamplerAsset["minFilter"] {
+  if (value === undefined) return "linear-mipmap-linear";
+  if (value === 9728) return "nearest";
+  if (value === 9729) return "linear";
+  if (value === 9984) return "nearest-mipmap-nearest";
+  if (value === 9985) return "linear-mipmap-nearest";
+  if (value === 9986) return "nearest-mipmap-linear";
+  if (value === 9987) return "linear-mipmap-linear";
   throw new Error(`glTF sampler ${samplerIndex} minFilter has unsupported value ${value}`);
 }
 
@@ -1451,34 +1810,15 @@ function resolveTextureInfo(
   };
 }
 
-const SUPPORTED_GLTF_EXTENSIONS = new Set([
-  "EXT_texture_webp",
-  "KHR_texture_basisu",
-  "KHR_mesh_quantization",
-  "KHR_texture_transform",
-  "KHR_materials_unlit",
-  "KHR_materials_emissive_strength",
-  "KHR_materials_clearcoat",
-  "KHR_materials_transmission",
-  "KHR_materials_diffuse_transmission",
-  "KHR_materials_volume",
-  "KHR_materials_ior",
-  "KHR_materials_specular",
-  "KHR_materials_sheen",
-  "KHR_materials_anisotropy",
-  "KHR_materials_iridescence",
-  "KHR_materials_dispersion",
-  "KHR_materials_pbrSpecularGlossiness",
-  "KHR_materials_variants",
-  "KHR_draco_mesh_compression",
-  "EXT_mesh_gpu_instancing",
-  "KHR_lights_punctual",
-  "EXT_meshopt_compression"
-]);
-
 function usesGLTFExtension(json: GLTFJson, extension: string): boolean {
   return Boolean(json.extensionsRequired?.includes(extension) || json.extensionsUsed?.includes(extension));
 }
+
+function usesGLTFMeshoptExtension(json: GLTFJson): boolean {
+  return GLTF_MESHOPT_EXTENSION_NAMES.some((extension) => usesGLTFExtension(json, extension));
+}
+
+const GLTF_MESHOPT_EXTENSION_NAMES = ["EXT_meshopt_compression", "KHR_meshopt_compression"] as const;
 
 function validatePrimitiveAttributeAccessors(
   json: GLTFJson,
@@ -1523,6 +1863,27 @@ function validateQuantizedAttributeComponentType(
   throw new Error(
     `glTF mesh ${meshIndex} primitive ${primitiveIndex} ${semantic} accessor componentType ${componentType} is unsupported for KHR_mesh_quantization`
   );
+}
+
+function normalizeSkinWeights(
+  weights: readonly [number, number, number, number],
+  meshIndex: number,
+  primitiveIndex: number
+): readonly [number, number, number, number] {
+  if (weights.some((weight) => !Number.isFinite(weight) || weight < 0)) {
+    throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0 must contain finite non-negative values`);
+  }
+  const sum = weights[0] + weights[1] + weights[2] + weights[3];
+  if (sum <= 0) {
+    throw new Error(`glTF mesh ${meshIndex} primitive ${primitiveIndex} WEIGHTS_0 must sum to a positive value`);
+  }
+  if (Math.abs(sum - 1) <= 1e-5) return weights;
+  return [
+    weights[0] / sum,
+    weights[1] / sum,
+    weights[2] / sum,
+    weights[3] / sum
+  ] as const;
 }
 
 function createCameraAssets(json: GLTFJson): readonly GLTFCameraAsset[] {
@@ -1742,7 +2103,7 @@ function resolveSpecular(
     specular: {
       factor: resolveUnit(extension.specularFactor, 1, `material ${materialIndex} KHR_materials_specular.specularFactor`),
       texture: resolveTextureInfo(textures, extension.specularTexture, `material ${materialIndex} KHR_materials_specular.specularTexture`),
-      colorFactor: resolveColor3(extension.specularColorFactor, [1, 1, 1], `material ${materialIndex} KHR_materials_specular.specularColorFactor`),
+      colorFactor: resolveNonNegativeColor3(extension.specularColorFactor, [1, 1, 1], `material ${materialIndex} KHR_materials_specular.specularColorFactor`),
       colorTexture: resolveTextureInfo(textures, extension.specularColorTexture, `material ${materialIndex} KHR_materials_specular.specularColorTexture`)
     }
   };
@@ -1919,6 +2280,18 @@ function resolveColor3(
   return [channels[0]!, channels[1]!, channels[2]!];
 }
 
+function resolveNonNegativeColor3(
+  value: readonly number[] | undefined,
+  fallback: readonly [number, number, number],
+  label: string
+): readonly [number, number, number] {
+  const channels = value ?? fallback;
+  if (channels.length !== 3 || channels.some((channel) => !Number.isFinite(channel) || channel < 0)) {
+    throw new RangeError(`glTF ${label} must contain three finite non-negative values`);
+  }
+  return [channels[0]!, channels[1]!, channels[2]!];
+}
+
 function resolveUnit(value: number | undefined, fallback: number, label: string): number {
   const resolved = value ?? fallback;
   if (!Number.isFinite(resolved) || resolved < 0 || resolved > 1) {
@@ -1964,7 +2337,10 @@ function resolveFiniteVec2(
   return [resolved[0]!, resolved[1]!];
 }
 
-function createSkinAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): readonly GLTFSkinAsset[] {
+function createSkinAssets(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorCache: GLTFAccessorReadCache): readonly GLTFSkinAsset[] {
+  if (!json.skins || json.skins.length === 0) return [];
+  const nodeWorldMatrices = computeGLTFNodeWorldMatrices(json);
+  const nodeNameForIndex = createGLTFNodeNameResolver(json);
   return (json.skins ?? []).map((skin, skinIndex) => {
     if (skin.joints.length === 0) {
       throw new Error(`glTF skin ${skinIndex} requires at least one joint`);
@@ -1973,7 +2349,7 @@ function createSkinAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): read
     const parentByNode = parentIndexByNode(json);
     const inverseBindMatrices = skin.inverseBindMatrices === undefined
       ? []
-      : readAccessor(json, buffers, skin.inverseBindMatrices).map(toMat4);
+      : readAccessor(json, buffers, skin.inverseBindMatrices, accessorCache).map(toMat4);
     if (inverseBindMatrices.length > 0 && inverseBindMatrices.length !== skin.joints.length) {
       throw new Error(`glTF skin ${skinIndex} inverseBindMatrices count must match joints count`);
     }
@@ -1992,7 +2368,7 @@ function createSkinAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): read
       const parentIndex = parentNode !== undefined && jointSet.has(parentNode) ? boneIndexByNode.get(parentNode) ?? -1 : -1;
       const transform = resolveNodeTransform(node, nodeIndex);
       return {
-        name: node.name ?? `joint-${nodeIndex}`,
+        name: nodeNameForIndex(nodeIndex),
         parentIndex,
         translation: transform.translation,
         rotation: transform.rotation,
@@ -2002,11 +2378,63 @@ function createSkinAssets(json: GLTFJson, buffers: readonly ArrayBuffer[]): read
     }));
     return {
       name: skin.name ?? `skin-${skinIndex}`,
-      joints: orderedJoints,
+      joints: skin.joints,
+      jointNames: skin.joints.map((nodeIndex) => nodeNameForIndex(nodeIndex)),
+      inverseBindMatrices: skin.joints.map((nodeIndex) => inverseBindMatrices[skin.joints.indexOf(nodeIndex)] ?? identityMat4()),
       skeletonRoot: skin.skeleton,
-      skeleton
+      skeleton,
+      jointBindMatrices: skin.joints.map((nodeIndex) => multiplyLoaderMat4(
+        nodeWorldMatrices.get(nodeIndex) ?? identityMat4(),
+        inverseBindMatrices[skin.joints.indexOf(nodeIndex)] ?? identityMat4()
+      )),
+      ...(skin.joints.length <= MAX_RENDERABLE_SKIN_JOINTS ? { skinningPalette: buildGLTFSkinningPalette(skeleton, orderedJoints, skin.joints) } : {})
     };
   });
+}
+
+function computeGLTFNodeWorldMatrices(json: GLTFJson): ReadonlyMap<number, Mat4> {
+  const nodes = json.nodes ?? [];
+  const parents = parentIndexByNode(json);
+  const matrices = new Map<number, Mat4>();
+  const visiting = new Set<number>();
+  const resolve = (nodeIndex: number): Mat4 => {
+    const existing = matrices.get(nodeIndex);
+    if (existing) return existing;
+    if (visiting.has(nodeIndex)) {
+      throw new Error(`glTF node graph contains a cycle at node ${nodeIndex}`);
+    }
+    const node = nodes[nodeIndex];
+    if (!node) return identityMat4();
+    visiting.add(nodeIndex);
+    const transform = resolveNodeTransform(node, nodeIndex);
+    const local = composeLoaderMat4(transform.translation, transform.rotation, transform.scale);
+    const parent = parents.get(nodeIndex);
+    const world = parent === undefined ? local : multiplyLoaderMat4(resolve(parent), local);
+    matrices.set(nodeIndex, world);
+    visiting.delete(nodeIndex);
+    return world;
+  };
+  for (let index = 0; index < nodes.length; index += 1) {
+    resolve(index);
+  }
+  return matrices;
+}
+
+function buildGLTFSkinningPalette(skeleton: Skeleton, orderedJoints: readonly number[], gltfJoints: readonly number[]): SkinningPalette {
+  const orderedPalette = skeleton.matrixPalette();
+  const paletteByNode = new Map<number, Mat4>();
+  for (let index = 0; index < orderedJoints.length; index += 1) {
+    paletteByNode.set(orderedJoints[index]!, orderedPalette[index]!);
+  }
+  const matrices = new Float32Array(gltfJoints.length * 16);
+  for (let index = 0; index < gltfJoints.length; index += 1) {
+    const matrix = paletteByNode.get(gltfJoints[index]!);
+    if (!matrix) {
+      throw new Error(`glTF skin references missing ordered joint ${gltfJoints[index]}`);
+    }
+    matrices.set(matrix, index * 16);
+  }
+  return { jointCount: gltfJoints.length, matrices };
 }
 
 function validateSkinDescriptor(json: GLTFJson, skin: GLTFSkin, skinIndex: number): void {
@@ -2028,7 +2456,7 @@ function validateSkinDescriptor(json: GLTFJson, skin: GLTFSkin, skinIndex: numbe
   }
 }
 
-function createNodeInstanceTransforms(json: GLTFJson, buffers: readonly ArrayBuffer[]): ReadonlyMap<number, Float32Array> {
+function createNodeInstanceTransforms(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorCache: GLTFAccessorReadCache): ReadonlyMap<number, Float32Array> {
   const transforms = new Map<number, Float32Array>();
   for (const [nodeIndex, node] of (json.nodes ?? []).entries()) {
     const extension = node.extensions?.EXT_mesh_gpu_instancing;
@@ -2046,9 +2474,9 @@ function createNodeInstanceTransforms(json: GLTFJson, buffers: readonly ArrayBuf
         throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing ${semantic} accessor must be a non-negative integer`);
       }
     }
-    const translations = readOptionalAccessor(json, buffers, extension.attributes.TRANSLATION);
-    const rotations = readOptionalAccessor(json, buffers, extension.attributes.ROTATION);
-    const scales = readOptionalAccessor(json, buffers, extension.attributes.SCALE);
+    const translations = readOptionalAccessor(json, buffers, extension.attributes.TRANSLATION, accessorCache);
+    const rotations = readOptionalAccessor(json, buffers, extension.attributes.ROTATION, accessorCache);
+    const scales = readOptionalAccessor(json, buffers, extension.attributes.SCALE, accessorCache);
     const instanceCount = firstPositiveLength([translations.length, rotations.length, scales.length]);
     if (instanceCount === 0) {
       throw new Error(`glTF node ${nodeIndex} EXT_mesh_gpu_instancing requires TRANSLATION, ROTATION, or SCALE attributes`);
@@ -2094,31 +2522,41 @@ function toInstanceQuat(row: readonly number[] | undefined, fallback: SceneQuat,
   return [row[0]!, row[1]!, row[2]!, row[3]!];
 }
 
-function createAnimationClips(json: GLTFJson, buffers: readonly ArrayBuffer[]): readonly AnimationClip[] {
+function createAnimationClips(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorCache: GLTFAccessorReadCache): readonly AnimationClip[] {
+  const nodeNameForIndex = createGLTFNodeNameResolver(json);
   return (json.animations ?? []).map((animation, animationIndex) => {
-    const tracks = animation.channels.map((channel, channelIndex) => {
+    const tracks = animation.channels.flatMap((channel, channelIndex) => {
       const sampler = animation.samplers[channel.sampler];
       if (!sampler) {
         throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} references missing sampler ${channel.sampler}`);
+      }
+      if (isOptionalAnimationPointerChannel(json, channel)) {
+        return [];
       }
       if (channel.target.node === undefined || !json.nodes?.[channel.target.node]) {
         throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} references missing target node ${channel.target.node ?? "undefined"}`);
       }
       const interpolation = resolveAnimationInterpolation(sampler.interpolation, animationIndex, channelIndex);
       const path = resolveAnimationTargetPath(channel.target.path, animationIndex, channelIndex);
-      const times = readAccessor(json, buffers, sampler.input).map((row) => row[0] ?? 0);
-      const output = readAccessor(json, buffers, sampler.output);
-      const values = animationKeyframesForSampler(path, times, output, interpolation, animationIndex, channelIndex);
+      const times = readAccessor(json, buffers, sampler.input, accessorCache).map((row) => row[0] ?? 0);
+      const output = readAccessor(json, buffers, sampler.output, accessorCache);
+      const values = animationKeyframesForSampler(path, times, output, interpolation, animationIndex, channelIndex, morphWeightCountForAnimationTarget(json, channel.target.node));
       const valueType = valueTypeForAnimationPath(path);
-      const node = json.nodes[channel.target.node]!;
-      return new AnimationTrack({
-        target: `${node.name ?? `node-${channel.target.node}`}.${path}`,
+      return [new AnimationTrack({
+        target: `${nodeNameForIndex(channel.target.node)}.${path}`,
         valueType,
         keyframes: values
-      });
+      })];
     });
     return new AnimationClip({ name: animation.name ?? `animation-${animationIndex}`, tracks });
   });
+}
+
+function isOptionalAnimationPointerChannel(json: GLTFJson, channel: GLTFAnimationChannel): boolean {
+  return channel.target.path === "pointer" &&
+    json.extensionsUsed?.includes("KHR_animation_pointer") === true &&
+    json.extensionsRequired?.includes("KHR_animation_pointer") !== true &&
+    typeof channel.target.extensions?.KHR_animation_pointer?.pointer === "string";
 }
 
 function resolveAnimationInterpolation(
@@ -2149,7 +2587,8 @@ function animationKeyframesForSampler(
   output: readonly (readonly number[])[],
   interpolation: "LINEAR" | "STEP" | "CUBICSPLINE",
   animationIndex: number,
-  channelIndex: number
+  channelIndex: number,
+  morphWeightCount?: number
 ): readonly {
   readonly time: number;
   readonly value: number | Vec3 | Quat | readonly number[];
@@ -2157,36 +2596,100 @@ function animationKeyframesForSampler(
   readonly inTangent?: number | Vec3 | Quat | readonly number[];
   readonly outTangent?: number | Vec3 | Quat | readonly number[];
 }[] {
+  const normalizedOutput = path === "weights" ? normalizeWeightAnimationOutput(times, output, interpolation, animationIndex, channelIndex, morphWeightCount) : output;
   if (interpolation !== "CUBICSPLINE") {
-    if (times.length !== output.length) {
+    if (times.length !== normalizedOutput.length) {
       throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} input/output count mismatch`);
     }
+    const samples = sanitizeAnimationSamples(times, normalizedOutput, 1);
     const mode = interpolation === "STEP" ? "step" : "linear";
-    return times.map((time, index) => ({
+    return samples.times.map((time, index) => ({
       time,
-      value: animationValueForPath(path, output[index]!),
+      value: animationValueForPath(path, samples.output[index]!),
       interpolation: mode
     }));
   }
 
-  if (output.length !== times.length * 3) {
+  if (normalizedOutput.length !== times.length * 3) {
     throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} CUBICSPLINE output count must be three times input count`);
   }
-  return times.map((time, index) => {
+  const samples = sanitizeAnimationSamples(times, normalizedOutput, 3);
+  return samples.times.map((time, index) => {
     const offset = index * 3;
     return {
       time,
-      inTangent: animationValueForPath(path, output[offset]!),
-      value: animationValueForPath(path, output[offset + 1]!),
-      outTangent: animationValueForPath(path, output[offset + 2]!),
+      inTangent: animationValueForPath(path, samples.output[offset]!),
+      value: animationValueForPath(path, samples.output[offset + 1]!),
+      outTangent: animationValueForPath(path, samples.output[offset + 2]!),
       interpolation: "cubicspline"
     };
   });
 }
 
+function sanitizeAnimationSamples<T>(
+  times: readonly number[],
+  output: readonly T[],
+  rowsPerSample: 1 | 3
+): { readonly times: readonly number[]; readonly output: readonly T[] } {
+  const cleanTimes: number[] = [];
+  const cleanOutput: T[] = [];
+  let previous = -Number.MAX_VALUE;
+  for (let index = 0; index < times.length; index += 1) {
+    const time = times[index] ?? 0;
+    if (!Number.isFinite(time) || time < 0 || time <= previous) {
+      continue;
+    }
+    cleanTimes.push(time);
+    for (let row = 0; row < rowsPerSample; row += 1) {
+      const value = output[index * rowsPerSample + row];
+      if (value !== undefined) cleanOutput.push(value);
+    }
+    previous = time;
+  }
+  return cleanTimes.length > 0 ? { times: cleanTimes, output: cleanOutput } : { times, output };
+}
+
+function morphWeightCountForAnimationTarget(json: GLTFJson, nodeIndex: number | undefined): number | undefined {
+  const node = nodeIndex === undefined ? undefined : json.nodes?.[nodeIndex];
+  const mesh = node?.mesh === undefined ? undefined : json.meshes?.[node.mesh];
+  if (!mesh) return undefined;
+  if (mesh.weights && mesh.weights.length > 0) return mesh.weights.length;
+  return Math.max(0, ...mesh.primitives.map((primitive) => primitive.targets?.length ?? 0)) || undefined;
+}
+
+function normalizeWeightAnimationOutput(
+  times: readonly number[],
+  output: readonly (readonly number[])[],
+  interpolation: "LINEAR" | "STEP" | "CUBICSPLINE",
+  animationIndex: number,
+  channelIndex: number,
+  morphWeightCount: number | undefined
+): readonly (readonly number[])[] {
+  const samplesPerTime = interpolation === "CUBICSPLINE" ? 3 : 1;
+  const expectedRows = times.length * samplesPerTime;
+  if (output.length === expectedRows) return output;
+  if (times.length === 0 || output.length % expectedRows !== 0) {
+    return output;
+  }
+  const width = morphWeightCount ?? (output.length / expectedRows);
+  if (!Number.isInteger(width) || width <= 0 || output.length !== expectedRows * width) {
+    throw new Error(`glTF animation ${animationIndex} channel ${channelIndex} weights output count does not match morph target count`);
+  }
+  const grouped: number[][] = [];
+  for (let sampleIndex = 0; sampleIndex < expectedRows; sampleIndex += 1) {
+    const values: number[] = [];
+    for (let component = 0; component < width; component += 1) {
+      values.push(output[sampleIndex * width + component]?.[0] ?? 0);
+    }
+    grouped.push(values);
+  }
+  return grouped;
+}
+
 interface GLTFDocument {
   readonly json: GLTFJson;
   readonly url: string;
+  readonly byteLength: number;
   readonly binaryChunk?: ArrayBuffer;
 }
 
@@ -2199,7 +2702,7 @@ async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
       return parseGLB(data, request.url);
     }
     const text = new TextDecoder().decode(data);
-    return { json: JSON.parse(text) as GLTFJson, url: request.url };
+    return { json: JSON.parse(text) as GLTFJson, url: request.url, byteLength: data.byteLength };
   }
 
   if (typeof fetch !== "function") {
@@ -2216,7 +2719,7 @@ async function loadDocument(request: AssetLoadRequest): Promise<GLTFDocument> {
   }
 
   const bytes = await readResponseBytes(response, request.url, "document", request);
-  return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url };
+  return { json: JSON.parse(new TextDecoder().decode(bytes)) as GLTFJson, url: request.url, byteLength: bytes.byteLength };
 }
 
 async function loadBuffer(
@@ -2231,7 +2734,9 @@ async function loadBuffer(
       if (buffer.byteLength > document.binaryChunk.byteLength) {
         throw new Error(`glTF buffer 0 declares ${buffer.byteLength} bytes but GLB BIN chunk has ${document.binaryChunk.byteLength}`);
       }
-      return document.binaryChunk.slice(0, buffer.byteLength);
+      return buffer.byteLength === document.binaryChunk.byteLength
+        ? document.binaryChunk
+        : document.binaryChunk.slice(0, buffer.byteLength);
     }
     throw new Error(`glTF buffer ${index} is missing a uri and no GLB BIN chunk is available`);
   }
@@ -2324,22 +2829,23 @@ async function prepareBufferViews(
 ): Promise<{ readonly json: GLTFJson; readonly buffers: readonly ArrayBuffer[] }> {
   const bufferViews = json.bufferViews ?? [];
   const compressedViewEntries = bufferViews
-    .map((view, index) => ({ view, index, extension: view.extensions?.EXT_meshopt_compression }))
-    .filter((entry): entry is { readonly view: GLTFBufferView; readonly index: number; readonly extension: GLTFMeshoptCompressionExtension } => entry.extension !== undefined);
+    .map((view, index) => ({ view, index, meshopt: resolveMeshoptCompressionExtension(view) }))
+    .filter((entry): entry is { readonly view: GLTFBufferView; readonly index: number; readonly meshopt: { readonly name: typeof GLTF_MESHOPT_EXTENSION_NAMES[number]; readonly extension: GLTFMeshoptCompressionExtension } } => entry.meshopt !== undefined);
   if (compressedViewEntries.length === 0) {
     return { json, buffers };
   }
-  if (!usesGLTFExtension(json, "EXT_meshopt_compression")) {
-    throw new Error("glTF uses EXT_meshopt_compression bufferViews but the extension is not declared");
+  if (!usesGLTFMeshoptExtension(json)) {
+    throw new Error("glTF uses meshopt-compressed bufferViews but meshopt extension is not declared");
   }
   if (!meshoptDecoder) {
-    throw new Error("glTF EXT_meshopt_compression requires a meshoptDecoder");
+    throw new Error("glTF meshopt compression requires a meshoptDecoder");
   }
 
   const preparedBuffers = [...buffers];
   const preparedBufferViews = [...bufferViews];
-  for (const { index, extension } of compressedViewEntries) {
-    validateMeshoptDescriptor(json, buffers, index, extension);
+  for (const { index, meshopt } of compressedViewEntries) {
+    const { name, extension } = meshopt;
+    validateMeshoptDescriptor(json, buffers, index, name, extension);
     const sourceBuffer = buffers[extension.buffer]!;
     const byteOffset = extension.byteOffset ?? 0;
     const source = new Uint8Array(sourceBuffer, byteOffset, extension.byteLength);
@@ -2361,7 +2867,7 @@ async function prepareBufferViews(
       buffer: decodedBufferIndex,
       byteOffset: 0,
       byteLength: decoded.byteLength,
-      byteStride: extension.byteStride
+      ...(extension.mode === "ATTRIBUTES" ? { byteStride: extension.byteStride } : {})
     };
   }
 
@@ -2371,44 +2877,54 @@ async function prepareBufferViews(
   };
 }
 
+function resolveMeshoptCompressionExtension(view: GLTFBufferView): { readonly name: typeof GLTF_MESHOPT_EXTENSION_NAMES[number]; readonly extension: GLTFMeshoptCompressionExtension } | undefined {
+  for (const name of GLTF_MESHOPT_EXTENSION_NAMES) {
+    const extension = view.extensions?.[name];
+    if (extension) return { name, extension };
+  }
+  return undefined;
+}
+
 function validateMeshoptDescriptor(
   json: GLTFJson,
   buffers: readonly ArrayBuffer[],
   bufferViewIndex: number,
+  extensionName: string,
   extension: GLTFMeshoptCompressionExtension
 ): void {
   if (!Number.isInteger(extension.buffer) || extension.buffer < 0 || !json.buffers?.[extension.buffer] || !buffers[extension.buffer]) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression buffer must reference an existing buffer`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} buffer must reference an existing buffer`);
   }
   if (extension.byteOffset !== undefined && (!Number.isInteger(extension.byteOffset) || extension.byteOffset < 0)) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression byteOffset must be a non-negative integer`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} byteOffset must be a non-negative integer`);
   }
   if (!Number.isInteger(extension.byteLength) || extension.byteLength < 0) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression byteLength must be a non-negative integer`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} byteLength must be a non-negative integer`);
   }
   if (!Number.isInteger(extension.byteStride) || extension.byteStride <= 0) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression byteStride must be a positive integer`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} byteStride must be a positive integer`);
   }
   if (!Number.isInteger(extension.count) || extension.count < 0) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression count must be a non-negative integer`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} count must be a non-negative integer`);
   }
   if (extension.mode !== "ATTRIBUTES" && extension.mode !== "TRIANGLES" && extension.mode !== "INDICES") {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression mode ${String(extension.mode)} is unsupported`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} mode ${String(extension.mode)} is unsupported`);
   }
   if (
     extension.filter !== undefined &&
     extension.filter !== "NONE" &&
     extension.filter !== "OCTAHEDRAL" &&
     extension.filter !== "QUATERNION" &&
-    extension.filter !== "EXPONENTIAL"
+    extension.filter !== "EXPONENTIAL" &&
+    extension.filter !== "COLOR"
   ) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression filter ${String(extension.filter)} is unsupported`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} filter ${String(extension.filter)} is unsupported`);
   }
   const sourceBuffer = buffers[extension.buffer]!;
   const sourceStart = extension.byteOffset ?? 0;
   const sourceEnd = sourceStart + extension.byteLength;
   if (sourceEnd > sourceBuffer.byteLength) {
-    throw new Error(`glTF bufferView ${bufferViewIndex} EXT_meshopt_compression source range exceeds buffer ${extension.buffer}`);
+    throw new Error(`glTF bufferView ${bufferViewIndex} ${extensionName} source range exceeds buffer ${extension.buffer}`);
   }
 }
 
@@ -2539,10 +3055,17 @@ function parseGLB(data: ArrayBuffer, url: string): GLTFDocument {
     throw new Error("GLB is missing a JSON chunk");
   }
 
-  return { json, binaryChunk, url };
+  return { json, binaryChunk, url, byteLength: data.byteLength };
 }
 
-function readAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorIndex: number): number[][] {
+function readAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorIndex: number, accessorCache?: GLTFAccessorReadCache): number[][] {
+  if (accessorCache) accessorCache.profile.accessorReadCount += 1;
+  const cached = accessorCache?.rowsByAccessor.get(accessorIndex);
+  if (cached && accessorCache) {
+    accessorCache.profile.accessorCacheHitCount++;
+    return cached;
+  }
+  const startedAt = nowMs();
   const accessor = json.accessors?.[accessorIndex];
   if (!accessor) {
     throw new Error(`Missing glTF accessor ${accessorIndex}`);
@@ -2556,6 +3079,7 @@ function readAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorI
 
   if (accessor.bufferView !== undefined) {
     const { view, buffer } = getBufferView(json, buffers, accessor.bufferView);
+    const dataView = dataViewForBuffer(buffer, accessorCache);
     const stride = view.byteStride ?? rowByteLength;
     if (stride < rowByteLength) {
       throw new Error(`glTF accessor ${accessorIndex} byteStride ${stride} is smaller than element size ${rowByteLength}`);
@@ -2566,16 +3090,59 @@ function readAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorI
     for (let item = 0; item < accessor.count; item += 1) {
       const baseOffset = offset + item * stride;
       for (let component = 0; component < componentCount; component += 1) {
-        output[item]![component] = readComponent(buffer, baseOffset + component * componentBytes, accessor.componentType, accessor.normalized ?? false);
+        output[item]![component] = readComponent(dataView, baseOffset + component * componentBytes, accessor.componentType, accessor.normalized ?? false);
       }
     }
   }
 
   if (accessor.sparse) {
-    applySparseAccessor(json, buffers, accessorIndex, accessor, output, componentCount, componentBytes);
+    applySparseAccessor(json, buffers, accessorIndex, accessor, output, componentCount, componentBytes, accessorCache);
   }
 
+  if (accessorCache) {
+    recordAccessorRead(accessorCache, accessorIndex, accessor, componentCount, output.length, nowMs() - startedAt);
+    accessorCache.rowsByAccessor.set(accessorIndex, output);
+  }
   return output;
+}
+
+function dataViewForBuffer(buffer: ArrayBuffer, accessorCache?: GLTFAccessorReadCache): DataView {
+  if (!accessorCache) return new DataView(buffer);
+  const existing = accessorCache.dataViews.get(buffer);
+  if (existing) return existing;
+  const view = new DataView(buffer);
+  accessorCache.dataViews.set(buffer, view);
+  accessorCache.profile.dataViewCacheEntries = accessorCache.dataViews.size;
+  return view;
+}
+
+function recordAccessorRead(
+  accessorCache: GLTFAccessorReadCache,
+  accessorIndex: number,
+  accessor: GLTFAccessor,
+  componentCount: number,
+  rowCount: number,
+  elapsedMs: number
+): void {
+  const profile = accessorCache.profile;
+  const byteLength = rowCount * componentCount * componentByteSize(accessor.componentType);
+  profile.uniqueAccessorReadCount++;
+  profile.accessorRowsRead += rowCount;
+  profile.accessorValuesRead += rowCount * componentCount;
+  profile.accessorReadMs += elapsedMs;
+  profile.largestAccessors.push({
+    accessorIndex,
+    count: accessor.count,
+    type: accessor.type,
+    componentType: accessor.componentType,
+    componentCount,
+    byteLength,
+    ...(accessor.bufferView !== undefined ? { bufferView: accessor.bufferView } : {})
+  });
+  profile.largestAccessors.sort((left, right) => right.byteLength - left.byteLength);
+  if (profile.largestAccessors.length > 8) {
+    profile.largestAccessors.length = 8;
+  }
 }
 
 function validateAccessorShape(accessorIndex: number, accessor: GLTFAccessor): void {
@@ -2649,30 +3216,33 @@ function applySparseAccessor(
   accessor: GLTFAccessor,
   output: number[][],
   componentCount: number,
-  componentBytes: number
+  componentBytes: number,
+  accessorCache?: GLTFAccessorReadCache
 ): void {
   const sparse = accessor.sparse;
   if (!sparse || sparse.count === 0) {
     return;
   }
   const { view: indexView, buffer: indexBuffer } = getBufferView(json, buffers, sparse.indices.bufferView);
+  const indexDataView = dataViewForBuffer(indexBuffer, accessorCache);
   const indexComponentBytes = componentByteSize(sparse.indices.componentType);
   const indexStart = (indexView.byteOffset ?? 0) + (sparse.indices.byteOffset ?? 0);
   validateRawRange(`glTF accessor ${accessorIndex} sparse indices`, indexBuffer, indexView, indexStart, sparse.count * indexComponentBytes);
 
   const { view: valueView, buffer: valueBuffer } = getBufferView(json, buffers, sparse.values.bufferView);
+  const valueDataView = dataViewForBuffer(valueBuffer, accessorCache);
   const valueStart = (valueView.byteOffset ?? 0) + (sparse.values.byteOffset ?? 0);
   const rowByteLength = componentCount * componentBytes;
   validateRawRange(`glTF accessor ${accessorIndex} sparse values`, valueBuffer, valueView, valueStart, sparse.count * rowByteLength);
 
   for (let item = 0; item < sparse.count; item += 1) {
-    const targetIndex = readComponent(indexBuffer, indexStart + item * indexComponentBytes, sparse.indices.componentType, false);
+    const targetIndex = readComponent(indexDataView, indexStart + item * indexComponentBytes, sparse.indices.componentType, false);
     if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= accessor.count) {
       throw new Error(`glTF accessor ${accessorIndex} sparse index ${targetIndex} is out of range`);
     }
     const valueOffset = valueStart + item * rowByteLength;
     for (let component = 0; component < componentCount; component += 1) {
-      output[targetIndex]![component] = readComponent(valueBuffer, valueOffset + component * componentBytes, accessor.componentType, accessor.normalized ?? false);
+      output[targetIndex]![component] = readComponent(valueDataView, valueOffset + component * componentBytes, accessor.componentType, accessor.normalized ?? false);
     }
   }
 }
@@ -2741,8 +3311,8 @@ function validateRawRange(label: string, buffer: ArrayBuffer, view: GLTFBufferVi
   }
 }
 
-function readOptionalAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorIndex: number | undefined): number[][] {
-  return accessorIndex === undefined ? [] : readAccessor(json, buffers, accessorIndex);
+function readOptionalAccessor(json: GLTFJson, buffers: readonly ArrayBuffer[], accessorIndex: number | undefined, accessorCache?: GLTFAccessorReadCache): number[][] {
+  return accessorIndex === undefined ? [] : readAccessor(json, buffers, accessorIndex, accessorCache);
 }
 
 function readBufferViewBytes(json: GLTFJson, buffers: readonly ArrayBuffer[], bufferViewIndex: number): ArrayBuffer {
@@ -2774,8 +3344,7 @@ function componentByteSize(type: GLTFComponentType): number {
   return 4;
 }
 
-function readComponent(buffer: ArrayBuffer, byteOffset: number, type: GLTFComponentType, normalized: boolean): number {
-  const view = new DataView(buffer);
+function readComponent(view: DataView, byteOffset: number, type: GLTFComponentType, normalized: boolean): number {
   if (type === 5120) {
     const value = view.getInt8(byteOffset);
     return normalized ? Math.max(value / 127, -1) : value;
@@ -2876,6 +3445,7 @@ function createScene(
   meshes: readonly GLTFMeshAsset[],
   cameras: readonly GLTFCameraAsset[],
   lights: readonly GLTFLightAsset[],
+  skins: readonly GLTFSkinAsset[],
   nodeInstanceTransforms: ReadonlyMap<number, Float32Array>,
   materialVariants: readonly GLTFMaterialVariantAsset[],
   options: GLTFSceneCreateOptions = {}
@@ -2883,6 +3453,9 @@ function createScene(
   const sceneIndex = resolveSelectedSceneIndex(json, options);
   validateSceneGraph(json, sceneIndex);
   validateSceneMaterialVariant(materialVariants, options.materialVariant);
+  const materialKeyForRenderable = createRuntimeMaterialKeyResolver(json, sceneIndex, meshes, skins, nodeInstanceTransforms, options.materialVariant);
+  const nodeWorldMatrices = computeGLTFNodeWorldMatrices(json);
+  const nodeNameForIndex = createGLTFNodeNameResolver(json);
   const scene = new Scene();
   const nodes = new Map<number, SceneNode>();
   const createNode = (index: number): SceneNode => {
@@ -2896,13 +3469,13 @@ function createScene(
       return existing;
     }
 
-    const node = createSceneNodeForGLTFNode(scene, source, index, cameras, lights);
+    const node = createSceneNodeForGLTFNode(scene, source, index, nodeNameForIndex(index), cameras, lights);
     const transform = resolveNodeTransform(source, index);
     node.transform.setPosition(transform.translation[0], transform.translation[1], transform.translation[2]);
     node.transform.setRotation(transform.rotation[0], transform.rotation[1], transform.rotation[2], transform.rotation[3]);
     node.transform.setScale(transform.scale[0], transform.scale[1], transform.scale[2]);
     if (source.mesh !== undefined) {
-      attachMeshPrimitives(scene, node, source.mesh, index, meshes, nodeInstanceTransforms.get(index), options.materialVariant);
+      attachMeshPrimitives(scene, node, source.mesh, index, meshes, skins, source.skin, nodeWorldMatrices.get(index), nodeInstanceTransforms.get(index), materialKeyForRenderable);
     }
     nodes.set(index, node);
     for (const childIndex of source.children ?? []) {
@@ -3002,8 +3575,11 @@ function attachMeshPrimitives(
   meshIndex: number,
   nodeIndex: number,
   meshes: readonly GLTFMeshAsset[],
+  skins: readonly GLTFSkinAsset[],
+  nodeSkinIndex?: number,
+  nodeWorldMatrix?: Mat4,
   instanceTransforms?: Float32Array,
-  materialVariant?: string
+  materialKeyForRenderable?: (mesh: GLTFMeshAsset, contract: GLTFRuntimeMaterialContract) => string
 ): void {
   if (!Number.isInteger(meshIndex) || meshIndex < 0) {
     throw new RangeError(`glTF node ${nodeIndex} mesh must be a non-negative integer`);
@@ -3014,27 +3590,145 @@ function attachMeshPrimitives(
   }
   if (primitives.length === 1) {
     const mesh = primitives[0]!;
+    const skinning = skinningForMesh(mesh, skins, nodeSkinIndex, nodeWorldMatrix);
     scene.addRenderable(node, new Renderable({
       geometry: mesh.name,
-      material: materialForVariant(mesh, materialVariant),
+      material: materialKeyForRenderable?.(mesh, runtimeMaterialContract(skinning, instanceTransforms)) ?? mesh.material,
+      ...(skinning ? { skinning } : {}),
       morphWeights: mesh.morphWeights,
       ...(instanceTransforms ? { instanceTransforms } : {})
     }));
     return;
   }
   for (const mesh of primitives) {
+    const skinning = skinningForMesh(mesh, skins, nodeSkinIndex, nodeWorldMatrix);
     const primitiveNode = scene.createNode(mesh.name);
     primitiveNode.transform.setPosition(0, 0, 0);
     primitiveNode.transform.setRotation(0, 0, 0, 1);
     primitiveNode.transform.setScale(1, 1, 1);
     scene.addRenderable(primitiveNode, new Renderable({
       geometry: mesh.name,
-      material: materialForVariant(mesh, materialVariant),
+      material: materialKeyForRenderable?.(mesh, runtimeMaterialContract(skinning, instanceTransforms)) ?? mesh.material,
+      ...(skinning ? { skinning } : {}),
       morphWeights: mesh.morphWeights,
       ...(instanceTransforms ? { instanceTransforms } : {})
     }));
     node.addChild(primitiveNode);
   }
+}
+
+function skinningForMesh(mesh: GLTFMeshAsset, skins: readonly GLTFSkinAsset[], nodeSkinIndex?: number, nodeWorldMatrix?: Mat4): { readonly jointCount: number; readonly matrices: Float32Array } | undefined {
+  const skinIndex = nodeSkinIndex;
+  if (skinIndex === undefined) return undefined;
+  if (mesh.joints.length === 0 || mesh.weights.length === 0) {
+    throw new Error(`glTF mesh ${mesh.name} references skin ${skinIndex} but is missing JOINTS_0 or WEIGHTS_0 attributes`);
+  }
+  const skin = skins[skinIndex];
+  if (!skin) {
+    throw new Error(`glTF mesh ${mesh.name} references missing skin ${skinIndex}`);
+  }
+  if (skin.joints.length > MAX_RENDERABLE_SKIN_JOINTS) {
+    return undefined;
+  }
+  if (!nodeWorldMatrix) return skin.skinningPalette;
+  const inverseMeshWorld = invertLoaderMat4(nodeWorldMatrix);
+  const matrices = new Float32Array(skin.jointBindMatrices.length * 16);
+  for (let index = 0; index < skin.jointBindMatrices.length; index += 1) {
+    matrices.set(multiplyLoaderMat4(inverseMeshWorld, skin.jointBindMatrices[index]!), index * 16);
+  }
+  return { jointCount: skin.jointBindMatrices.length, matrices };
+}
+
+function composeLoaderMat4(translation: Vec3, rotation: Quat, scale: Vec3): Mat4 {
+  return composeMat4(
+    [...translation] as SceneVec3,
+    [...rotation] as SceneQuat,
+    [...scale] as SceneVec3
+  ) as unknown as Mat4;
+}
+
+function multiplyLoaderMat4(left: Mat4, right: Mat4): Mat4 {
+  return multiplyMat4([...left] as SceneMat4, [...right] as SceneMat4) as unknown as Mat4;
+}
+
+function invertLoaderMat4(matrix: Mat4): Mat4 {
+  return invertMat4([...matrix] as SceneMat4) as unknown as Mat4;
+}
+
+export function gltfRuntimeMaterialKey(material: string, contract: GLTFRuntimeMaterialContract): string {
+  const signature = runtimeMaterialSignature(contract);
+  return signature === "base" ? material : `${material}${RUNTIME_MATERIAL_KEY_MARKER}${signature}`;
+}
+
+export function parseGLTFRuntimeMaterialKey(key: string): GLTFRuntimeMaterialKey {
+  const markerIndex = key.lastIndexOf(RUNTIME_MATERIAL_KEY_MARKER);
+  if (markerIndex < 0) return { material: key, contract: {} };
+  const signature = key.slice(markerIndex + RUNTIME_MATERIAL_KEY_MARKER.length);
+  const contract = runtimeMaterialContractFromSignature(signature);
+  if (!contract) return { material: key, contract: {} };
+  return {
+    material: key.slice(0, markerIndex),
+    contract
+  };
+}
+
+function createRuntimeMaterialKeyResolver(
+  json: GLTFJson,
+  sceneIndex: number,
+  meshes: readonly GLTFMeshAsset[],
+  skins: readonly GLTFSkinAsset[],
+  nodeInstanceTransforms: ReadonlyMap<number, Float32Array>,
+  materialVariant: string | undefined
+): (mesh: GLTFMeshAsset, contract: GLTFRuntimeMaterialContract) => string {
+  const signaturesByMaterial = new Map<string, Set<string>>();
+  const register = (material: string, contract: GLTFRuntimeMaterialContract): void => {
+    const signatures = signaturesByMaterial.get(material) ?? new Set<string>();
+    signatures.add(runtimeMaterialSignature(contract));
+    signaturesByMaterial.set(material, signatures);
+  };
+  const visit = (nodeIndex: number): void => {
+    const node = json.nodes?.[nodeIndex];
+    if (!node) return;
+    if (node.mesh !== undefined) {
+      const instanceTransforms = nodeInstanceTransforms.get(nodeIndex);
+      for (const mesh of meshes.filter((entry) => entry.sourceMeshIndex === node.mesh)) {
+        const skinning = skinningForMesh(mesh, skins, node.skin);
+        register(materialForVariant(mesh, materialVariant), runtimeMaterialContract(skinning, instanceTransforms));
+      }
+    }
+    for (const childIndex of node.children ?? []) visit(childIndex);
+  };
+  for (const nodeIndex of json.scenes?.[sceneIndex]?.nodes ?? []) visit(nodeIndex);
+  return (mesh, contract) => {
+    const material = materialForVariant(mesh, materialVariant);
+    const signatures = signaturesByMaterial.get(material);
+    return signatures && signatures.size > 1 ? gltfRuntimeMaterialKey(material, contract) : material;
+  };
+}
+
+function runtimeMaterialContract(
+  skinning: { readonly jointCount: number; readonly matrices: Float32Array } | undefined,
+  instanceTransforms: Float32Array | undefined
+): GLTFRuntimeMaterialContract {
+  return {
+    ...(skinning ? { skinned: true } : {}),
+    ...(instanceTransforms ? { instanced: true } : {})
+  };
+}
+
+function runtimeMaterialSignature(contract: GLTFRuntimeMaterialContract): string {
+  if (contract.skinned && contract.instanced) return "skinned+instanced";
+  if (contract.skinned) return "skinned";
+  if (contract.instanced) return "instanced";
+  return "base";
+}
+
+function runtimeMaterialContractFromSignature(signature: string): GLTFRuntimeMaterialContract | undefined {
+  if (signature === "skinned+instanced") return { skinned: true, instanced: true };
+  if (signature === "skinned") return { skinned: true };
+  if (signature === "instanced") return { instanced: true };
+  if (signature === "base") return {};
+  return undefined;
 }
 
 function materialForVariant(mesh: GLTFMeshAsset, materialVariant: string | undefined): string {
@@ -3046,6 +3740,7 @@ function createSceneNodeForGLTFNode(
   scene: Scene,
   source: GLTFNode,
   nodeIndex: number,
+  nodeName: string,
   cameras: readonly GLTFCameraAsset[],
   lights: readonly GLTFLightAsset[]
 ): SceneNode {
@@ -3053,11 +3748,11 @@ function createSceneNodeForGLTFNode(
     throw new Error(`glTF node ${nodeIndex} cannot combine camera and KHR_lights_punctual light`);
   }
   if (source.camera !== undefined) {
-    return createCameraNodeForGLTFNode(scene, source, nodeIndex, cameras);
+    return createCameraNodeForGLTFNode(scene, source, nodeIndex, nodeName, cameras);
   }
   const lightIndex = source.extensions?.KHR_lights_punctual?.light;
   if (lightIndex === undefined) {
-    return scene.createNode(source.name ?? `node-${nodeIndex}`);
+    return scene.createNode(nodeName);
   }
   if (!Number.isInteger(lightIndex) || lightIndex < 0) {
     throw new RangeError(`glTF node ${nodeIndex} KHR_lights_punctual.light must be a non-negative integer`);
@@ -3066,7 +3761,7 @@ function createSceneNodeForGLTFNode(
   if (!light) {
     throw new Error(`glTF node ${nodeIndex} references missing punctual light ${lightIndex}`);
   }
-  const node = scene.createLight(light.type, source.name ?? light.name);
+  const node = scene.createLight(light.type, nodeName);
   node.color = [...light.color];
   node.intensity = light.intensity;
   if (node instanceof PointLight) {
@@ -3083,6 +3778,7 @@ function createCameraNodeForGLTFNode(
   scene: Scene,
   source: GLTFNode,
   nodeIndex: number,
+  nodeName: string,
   cameras: readonly GLTFCameraAsset[]
 ): SceneNode {
   const cameraIndex = source.camera;
@@ -3096,7 +3792,7 @@ function createCameraNodeForGLTFNode(
   if (camera.type === "perspective") {
     const perspective = camera.perspective!;
     return scene.createPerspectiveCamera({
-      name: source.name ?? camera.name,
+      name: nodeName,
       fovYRadians: perspective.yfov,
       aspect: perspective.aspectRatio,
       near: perspective.znear,
@@ -3105,7 +3801,7 @@ function createCameraNodeForGLTFNode(
   }
   const orthographic = camera.orthographic!;
   return scene.createOrthographicCamera({
-    name: source.name ?? camera.name,
+    name: nodeName,
     left: -orthographic.xmag / 2,
     right: orthographic.xmag / 2,
     bottom: -orthographic.ymag / 2,
@@ -3118,6 +3814,27 @@ function createCameraNodeForGLTFNode(
 function spotPenumbra(innerConeAngle: number, outerConeAngle: number): number {
   if (outerConeAngle <= 0) return 0;
   return Math.max(0, Math.min(1, 1 - innerConeAngle / outerConeAngle));
+}
+
+function createGLTFNodeNameResolver(json: GLTFJson): (nodeIndex: number) => string {
+  const bases = (json.nodes ?? []).map((node, index) => typeof node.name === "string" && node.name.trim().length > 0 ? node.name : `node-${index}`);
+  const totals = new Map<string, number>();
+  for (const base of bases) {
+    totals.set(base, (totals.get(base) ?? 0) + 1);
+  }
+  const seen = new Map<string, number>();
+  const names = bases.map((base) => {
+    const count = seen.get(base) ?? 0;
+    seen.set(base, count + 1);
+    return (totals.get(base) ?? 0) > 1 && count > 0 ? `${base}_${count}` : base;
+  });
+  return (nodeIndex) => {
+    const name = names[nodeIndex];
+    if (name === undefined) {
+      throw new Error(`glTF node ${nodeIndex} is missing`);
+    }
+    return name;
+  };
 }
 
 function findSkinForMesh(json: GLTFJson, meshIndex: number): number | undefined {
@@ -3193,6 +3910,7 @@ function identityMat4(): Mat4 {
 
 function serializeGLTFAsset(
   url: string,
+  loaderDiagnostics: GLTFLoaderDiagnostics,
   images: readonly GLTFImageAsset[],
   textures: readonly GLTFTextureAsset[],
   materials: readonly GLTFMaterialAsset[],
@@ -3207,6 +3925,7 @@ function serializeGLTFAsset(
 ): SerializedGLTFAsset {
   return {
     url,
+    loaderDiagnostics,
     images: images.map((image) => ({
       name: image.name,
       ...(image.uri ? { uri: image.uri } : {}),
@@ -3249,6 +3968,8 @@ function serializeGLTFAsset(
     skins: skins.map((skin) => ({
       name: skin.name,
       joints: [...skin.joints],
+      jointNames: [...skin.jointNames],
+      inverseBindMatrices: skin.inverseBindMatrices.map((matrix) => [...matrix] as Mat4),
       ...(skin.skeletonRoot !== undefined ? { skeletonRoot: skin.skeletonRoot } : {}),
       bones: skin.skeleton.bones.map((bone) => ({
         name: bone.name,

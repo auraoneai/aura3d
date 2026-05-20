@@ -53,11 +53,17 @@ export interface AssetCompatibilityReportOptions {
   readonly blenderExportFixturesPresent?: boolean;
   readonly blenderExportValidation?: BlenderExportValidationReport;
   readonly externalLoaderResults?: readonly ExternalAssetLoaderCompatibilityResult[];
+  readonly blenderExportResults?: readonly BlenderExportCompatibilityResult[];
 }
 
 export interface ExternalAssetLoaderCompatibilityResult extends AssetLoaderCompatibilityResult {
   readonly assetId: string;
   readonly loader: "threejs" | "babylonjs";
+}
+
+export interface BlenderExportCompatibilityResult extends AssetLoaderCompatibilityResult {
+  readonly assetId: string;
+  readonly loader: "blender-export";
 }
 
 export function createAssetCompatibilityReport(
@@ -68,7 +74,8 @@ export function createAssetCompatibilityReport(
   const corpusReport = createGLTFCorpusReport(validated, options.generatedAt ?? new Date().toISOString());
   const blenderExportFixturesPresent = options.blenderExportFixturesPresent ?? options.blenderExportValidation !== undefined;
   const externalResults = indexExternalLoaderResults(options.externalLoaderResults ?? []);
-  const assets = corpusReport.assets.map((asset) => createCompatibilityAsset(asset, blenderExportFixturesPresent, externalResults));
+  const blenderExportResults = indexBlenderExportResults(options.blenderExportResults ?? []);
+  const assets = corpusReport.assets.map((asset) => createCompatibilityAsset(asset, blenderExportFixturesPresent, externalResults, blenderExportResults));
 
   return {
     schemaVersion: "asset-compatibility-report-v1",
@@ -92,7 +99,8 @@ export function createAssetCompatibilityReport(
 function createCompatibilityAsset(
   asset: GLTFCorpusAssetReport,
   blenderExportFixturesPresent: boolean,
-  externalResults: ReadonlyMap<string, AssetLoaderCompatibilityResult>
+  externalResults: ReadonlyMap<string, AssetLoaderCompatibilityResult>,
+  blenderExportResults: ReadonlyMap<string, AssetLoaderCompatibilityResult>
 ): AssetCompatibilityReportAsset {
   return {
     id: asset.id,
@@ -111,7 +119,7 @@ function createCompatibilityAsset(
       },
       externalResults.get(externalResultKey(asset.id, "threejs")) ?? externalLoaderScaffold("threejs", asset),
       externalResults.get(externalResultKey(asset.id, "babylonjs")) ?? externalLoaderScaffold("babylonjs", asset),
-      blenderExportScaffold(asset, blenderExportFixturesPresent)
+      blenderExportResults.get(asset.id) ?? blenderExportScaffold(asset, blenderExportFixturesPresent)
     ]
   };
 }
@@ -122,6 +130,20 @@ function indexExternalLoaderResults(
   const indexed = new Map<string, AssetLoaderCompatibilityResult>();
   for (const result of results) {
     indexed.set(externalResultKey(result.assetId, result.loader), {
+      loader: result.loader,
+      status: result.status,
+      diagnostics: result.diagnostics
+    });
+  }
+  return indexed;
+}
+
+function indexBlenderExportResults(
+  results: readonly BlenderExportCompatibilityResult[]
+): ReadonlyMap<string, AssetLoaderCompatibilityResult> {
+  const indexed = new Map<string, AssetLoaderCompatibilityResult>();
+  for (const result of results) {
+    indexed.set(result.assetId, {
       loader: result.loader,
       status: result.status,
       diagnostics: result.diagnostics

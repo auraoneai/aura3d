@@ -3,8 +3,12 @@ import { runLargeSceneHarness } from "./harness";
 if (typeof document !== "undefined") {
   void run().catch((error) => {
     window.__GALILEO3D_LARGE_SCENE_TEST__ = {
+      id: "rendering-large-scene",
       status: "error",
       renderer: "webgl2",
+      visualClaim: "bounded-large-scene-webgl2-harness",
+      knownLimits: ["The large-scene page failed before rendering its bounded WebGL2 harness."],
+      errors: [error instanceof Error ? error.message : String(error)],
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
     throw error;
@@ -27,7 +31,7 @@ function createShell(): { readonly canvas: HTMLCanvasElement; readonly status: H
     <canvas id="large-scene" data-testid="rendering-large-scene-canvas" width="960" height="540"></canvas>
     <aside>
       <h1>Large Scene</h1>
-      <p>Renderer/WebGL2 validation scene with 5,000 static meshes, 10,000 instances, generated texture variants, and mixed materials.</p>
+      <p>Renderer/WebGL2 validation scene with 5,000 logical static meshes, LOD selection, static batching, 10,000 instances, generated texture variants, and stable camera movement timing.</p>
       <pre data-testid="rendering-large-scene-status">booting</pre>
     </aside>
   `;

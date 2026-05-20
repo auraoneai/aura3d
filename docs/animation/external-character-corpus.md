@@ -1,6 +1,6 @@
 # External Animated Character Evidence
 
-The current v2 animation evidence includes two pinned externally authored skinned GLB characters:
+The current checked external animated-character evidence includes two pinned externally authored skinned GLB characters:
 
 | Asset | Source | Local fixture | Status |
 | --- | --- | --- | --- |
@@ -14,4 +14,12 @@ Evidence:
 - `tests/browser/animation-browser-harness.ts` loads the same local GLB in the browser, samples the imported animation at two times, builds renderer skinning palettes, and renders the imported mesh with `SkinnedUnlitMaterial`.
 - `tests/browser/animation-browser.spec.ts` and `tests/visual/skinned-animation-pixels.spec.ts` assert draw calls, vertex/joint counts, visible pixels, and changed pixels between two sampled animation frames.
 
-This is real external animated-character corpus evidence for two different externally authored rigs and clip layouts, but it is still intentionally bounded. It does not establish retargeting coverage, production animation-authoring coverage, or ecosystem-level compatibility across many skinned meshes. Those claims require additional externally authored characters with different rigs, proportions, animation structures, material layouts, and loader edge cases.
+## Current Route Context
+
+The v8 app set adds route-level animation surfaces under `apps/v8-animation-*` and `apps/v8-skinning-*`. Those routes prove browser-visible animation behavior across keyframes, blending, additive layers, IK, morphs, multiple agents, and walking. They do not replace the external corpus; the corpus is still only Cesium Man, Fox, and local fixtures.
+
+## Claim Boundary
+
+This is real external animated-character corpus evidence for two different externally authored rigs and clip layouts, but it is still intentionally bounded. It does not establish retargeting coverage, production animation-authoring coverage, or ecosystem-level compatibility across many skinned meshes.
+
+The current character visuals should not be marketed as final Three.js-level character quality. The repo still needs higher-quality licensed characters with multiple clips, better staging, and broader renderer-backed validation before making strong animation parity claims.

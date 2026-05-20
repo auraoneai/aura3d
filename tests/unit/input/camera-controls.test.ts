@@ -16,22 +16,76 @@ describe("camera controls scene camera contracts", () => {
     const scene = new Scene();
     const camera = scene.createPerspectiveCamera();
     scene.root.addChild(camera);
+    camera.updateCameraMatrices();
+    const initialViewProjection = [...camera.viewProjectionMatrix];
     const adapter = createSceneCameraControlAdapter(camera);
     const controls = new OrbitControls(adapter, { distance: 10, target: { x: 0, y: 0, z: 0 } });
 
-    expect(camera.transform.position).toEqual([0, expect.closeTo(0), 10]);
+    expect(camera.transform.position[0]).toBeCloseTo(0);
+    expect(camera.transform.position[1]).toBeGreaterThan(0.5);
+    expect(camera.transform.position[2]).toBeGreaterThan(9);
+    expect(camera.viewProjectionMatrix).not.toEqual(initialViewProjection);
 
     controls.update(snapshot({ pointer: { deltaX: 100, deltaY: 20, buttons: new Map([[0, { down: true, pressed: false, released: false }]]) } }));
 
     expect(camera.transform.position[0]).not.toBe(0);
     expect(camera.transform.position[1]).not.toBe(0);
     expect(camera.transform.rotation).not.toEqual([0, 0, 0, 1]);
+    expect(camera.transform.isDirty()).toBe(false);
+    expect(camera.frustumPlanes.length).toBeGreaterThan(0);
+  });
+
+  it("orbit controls preserve an authored camera pose inside the default safe presentation envelope", () => {
+    const scene = new Scene();
+    const camera = scene.createPerspectiveCamera();
+    scene.root.addChild(camera);
+    camera.transform.setPosition(4, 4, 7);
+    camera.updateCameraMatrices();
+    const adapter = createSceneCameraControlAdapter(camera);
+
+    new OrbitControls(adapter, { target: { x: 1, y: 0, z: -1 } });
+
+    expect(camera.transform.position[0]).toBeCloseTo(4);
+    expect(camera.transform.position[1]).toBeCloseTo(4);
+    expect(camera.transform.position[2]).toBeCloseTo(7);
+    expect(camera.transform.isDirty()).toBe(false);
+    expect(camera.frustumPlanes.length).toBeGreaterThan(0);
+  });
+
+  it("orbit controls default to presentation-safe pitch and require opt-in for below-target inspection", () => {
+    const scene = new Scene();
+    const safeCamera = scene.createPerspectiveCamera();
+    const fullOrbitCamera = scene.createPerspectiveCamera();
+    const safeControls = new OrbitControls(createSceneCameraControlAdapter(safeCamera), {
+      distance: 6,
+      target: { x: 0, y: 0, z: 0 },
+      rotateSpeed: 0.01
+    });
+    const fullOrbitControls = new OrbitControls(createSceneCameraControlAdapter(fullOrbitCamera), {
+      distance: 6,
+      target: { x: 0, y: 0, z: 0 },
+      rotateSpeed: 0.01,
+      maxPolar: Math.PI - 0.001
+    });
+
+    const dragBelowTarget = snapshot({
+      pointer: { deltaY: -500, buttons: new Map([[0, { down: true, pressed: false, released: false }]]) }
+    });
+    safeControls.update(dragBelowTarget);
+    fullOrbitControls.update(dragBelowTarget);
+
+    expect(safeCamera.transform.position[1]).toBeGreaterThan(0.4);
+    expect(fullOrbitCamera.transform.position[1]).toBeLessThan(0);
+    expect(safeCamera.transform.isDirty()).toBe(false);
+    expect(fullOrbitCamera.transform.isDirty()).toBe(false);
   });
 
   it("adapts scene cameras to first-person movement and pitch/yaw clamps", () => {
     const scene = new Scene();
     const camera = scene.createPerspectiveCamera();
     scene.root.addChild(camera);
+    camera.updateCameraMatrices();
+    const initialViewProjection = [...camera.viewProjectionMatrix];
     const adapter = createSceneCameraControlAdapter(camera);
     const controls = new FirstPersonControls(adapter, { moveSpeed: 2, lookSpeed: 0.01 });
 
@@ -46,6 +100,8 @@ describe("camera controls scene camera contracts", () => {
     expect(camera.transform.position[0]).toBeGreaterThan(0);
     expect(camera.transform.position[2]).toBeGreaterThan(0);
     expect(camera.transform.rotation).not.toEqual([0, 0, 0, 1]);
+    expect(camera.viewProjectionMatrix).not.toEqual(initialViewProjection);
+    expect(camera.transform.isDirty()).toBe(false);
   });
 
   it("camera rig blends and applies scene camera states through the adapter", () => {
@@ -64,6 +120,7 @@ describe("camera controls scene camera contracts", () => {
 
     expect(camera.transform.position).toEqual([2.5, 1, 7.5]);
     expect(camera.transform.rotation).not.toEqual([0, 0, 0, 1]);
+    expect(camera.transform.isDirty()).toBe(false);
   });
 
   it("adapters initialize and maintain rotation state from an existing scene camera", () => {
@@ -77,6 +134,7 @@ describe("camera controls scene camera contracts", () => {
     adapter.lookAt({ x: 0, y: 0, z: -1 });
     expect(adapter.rotation.y).toBeCloseTo(0);
     expect(camera.transform.rotation).toEqual([0, 0, 0, 1]);
+    expect(camera.transform.isDirty()).toBe(false);
   });
 
   it("first-person controls inherit adapter yaw instead of snapping to zero", () => {
@@ -103,14 +161,17 @@ describe("camera controls scene camera contracts", () => {
     expect(camera.transform.position).toEqual(before);
   });
 
-  it("keeps camera update order explicit from input snapshot through scene world matrix", () => {
+  it("keeps scene camera matrices current after input control updates", () => {
     const scene = new Scene();
     const camera = scene.createPerspectiveCamera();
     scene.root.addChild(camera);
+    camera.updateCameraMatrices();
+    const initialViewProjection = [...camera.viewProjectionMatrix];
     const controls = new FirstPersonControls(createSceneCameraControlAdapter(camera), { moveSpeed: 2, lookSpeed: 0.01 });
 
     controls.update(snapshot({ keys: new Set(["KeyW"]) }), 0.5);
-    expect(camera.transform.isDirty()).toBe(true);
+    expect(camera.transform.isDirty()).toBe(false);
+    expect(camera.viewProjectionMatrix).not.toEqual(initialViewProjection);
 
     scene.updateWorldTransforms();
     expect(camera.transform.isDirty()).toBe(false);

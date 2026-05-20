@@ -1,5 +1,5 @@
 import { Sampler } from "./Sampler";
-import { Texture, type TextureColorSpace } from "./Texture";
+import { Texture, type TextureColorSpace, type TextureDimension } from "./Texture";
 
 export interface TextureBindingDescriptor {
   readonly name: string;
@@ -8,6 +8,7 @@ export interface TextureBindingDescriptor {
   readonly required?: boolean;
   readonly ready?: boolean;
   readonly expectedColorSpace?: TextureColorSpace;
+  readonly expectedDimension?: TextureDimension;
   readonly transform?: TextureTransformDescriptor;
 }
 
@@ -30,6 +31,7 @@ export class TextureBinding {
   public readonly required: boolean;
   public readonly ready: boolean;
   public readonly expectedColorSpace?: TextureColorSpace;
+  public readonly expectedDimension?: TextureDimension;
   public readonly offset: readonly [number, number];
   public readonly scale: readonly [number, number];
   public readonly rotation: number;
@@ -44,6 +46,7 @@ export class TextureBinding {
     this.required = descriptor.required ?? false;
     this.ready = descriptor.ready ?? true;
     this.expectedColorSpace = descriptor.expectedColorSpace;
+    this.expectedDimension = descriptor.expectedDimension;
     this.offset = descriptor.transform?.offset ? [descriptor.transform.offset[0], descriptor.transform.offset[1]] : [0, 0];
     this.scale = descriptor.transform?.scale ? [descriptor.transform.scale[0], descriptor.transform.scale[1]] : [1, 1];
     this.rotation = descriptor.transform?.rotation ?? 0;
@@ -65,6 +68,9 @@ export class TextureBinding {
     }
     if (this.texture && this.expectedColorSpace && this.texture.colorSpace !== this.expectedColorSpace) {
       diagnostics.push(`Texture ${this.name} colorSpace must be ${this.expectedColorSpace}, got ${this.texture.colorSpace}`);
+    }
+    if (this.texture && this.expectedDimension && this.texture.dimension !== this.expectedDimension) {
+      diagnostics.push(`Texture ${this.name} dimension must be ${this.expectedDimension}, got ${this.texture.dimension}`);
     }
     if (![...this.offset, ...this.scale, this.rotation].every(Number.isFinite)) {
       diagnostics.push(`Texture transform must contain finite values: ${this.name}`);

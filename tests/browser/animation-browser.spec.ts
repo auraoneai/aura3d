@@ -1,5 +1,26 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+
+const reportPath = resolve(process.cwd(), "tests/reports/v3-animation-browser.json");
+
+const report: {
+  ok: boolean;
+  generatedAt: string;
+  command: string;
+  validations: Array<{
+    readonly name: string;
+    readonly ok: boolean;
+    readonly metrics: Record<string, number>;
+    readonly evidence: readonly string[];
+  }>;
+} = {
+  ok: false,
+  generatedAt: new Date().toISOString(),
+  command: "pnpm exec playwright test tests/browser/animation-browser.spec.ts",
+  validations: []
+};
 
 test.describe("animation browser runtime", () => {
   test.setTimeout(60_000);
@@ -12,6 +33,10 @@ test.describe("animation browser runtime", () => {
 
   test.afterAll(async () => {
     await server.close();
+    report.ok = report.validations.every((validation) => validation.ok);
+    report.generatedAt = new Date().toISOString();
+    await mkdir(dirname(reportPath), { recursive: true });
+    await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });
 
   test("renders sampled transform animation, crossfade, renderer skinning, and skeleton palette debug pixels", async ({ page }) => {
@@ -50,6 +75,27 @@ test.describe("animation browser runtime", () => {
     expect(result?.externalCharacter?.frameAGreenPixels).toBeGreaterThan(250);
     expect(result?.externalCharacter?.frameBGreenPixels).toBeGreaterThan(250);
     expect(result?.externalCharacter?.changedPixels).toBeGreaterThan(50);
+    report.validations.push({
+      name: "real-skinned-character-animation-pixel-change",
+      ok: Number(result?.externalCharacter?.changedPixels ?? 0) > 50 &&
+        Number(result?.externalCharacter?.frameAGreenPixels ?? 0) > 250 &&
+        Number(result?.externalCharacter?.frameBGreenPixels ?? 0) > 250,
+      metrics: {
+        changedPixels: Number(result?.externalCharacter?.changedPixels ?? 0),
+        frameAGreenPixels: Number(result?.externalCharacter?.frameAGreenPixels ?? 0),
+        frameBGreenPixels: Number(result?.externalCharacter?.frameBGreenPixels ?? 0),
+        vertexCount: Number(result?.externalCharacter?.vertexCount ?? 0),
+        indexCount: Number(result?.externalCharacter?.indexCount ?? 0),
+        jointCount: Number(result?.externalCharacter?.jointCount ?? 0),
+        trackCount: Number(result?.externalCharacter?.trackCount ?? 0)
+      },
+      evidence: [
+        "tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb",
+        "tests/browser/animation-browser-harness.ts",
+        "tests/browser/animation-browser.spec.ts",
+        "tests/reports/v3-animation-browser.json"
+      ]
+    });
     expect(result?.controls).toMatchObject({
       playing: true,
       paused: true,

@@ -23,6 +23,10 @@ interface AnimatedCharacterExampleState {
   readonly paletteHandTranslation: readonly [number, number, number];
   readonly mixerActionCount: number;
   readonly graph: AnimationStateMachineGraphSnapshot;
+  readonly blendTreeWeight: number;
+  readonly debugStateMode: "auto" | "idle" | "walk" | "wave";
+  readonly eventLog: readonly string[];
+  readonly latestEvent?: string;
   readonly error?: string;
 }
 
@@ -41,7 +45,7 @@ const metadata: ExampleMetadata = {
 
 if (typeof document !== "undefined") {
   installExampleStyles();
-  void createExample(metadata, () => {
+  void createExample(metadata, ({ canvas }) => {
     const values = new Map<string, AnimationValue>();
     const mixer = new AnimationMixer({ setAnimationValue: (target, value) => values.set(target, value) });
     const locomotionClip = createLocomotionClip();
@@ -51,6 +55,25 @@ if (typeof document !== "undefined") {
     const upperBody = new AnimationLayer("upper-body-wave", { additive: true, weight: 0.65, mask: ["character.hand"] });
     upperBody.add(wave);
     mixer.addLayer(upperBody);
+    let blendTreeWeight = 0.65;
+    let debugStateMode: "auto" | "idle" | "walk" | "wave" = "auto";
+    const eventLog: string[] = [];
+    mixer.onEvent((event) => {
+      const label = `${event.clipName}:${event.name}`;
+      eventLog.push(label);
+      if (eventLog.length > 8) eventLog.shift();
+      const log = document.querySelector<HTMLElement>("[data-testid='animation-event-log']");
+      if (log) log.textContent = eventLog.join("\n");
+    });
+    installAnimationControls(canvas, {
+      onBlendWeight: (value) => {
+        blendTreeWeight = value;
+        upperBody.weight = value;
+      },
+      onDebugState: (value) => {
+        debugStateMode = value;
+      }
+    });
 
     const skeleton = new Skeleton([
       new Bone({ name: "hips", parentIndex: -1, translation: [0, 0, 0] }),
@@ -94,11 +117,16 @@ if (typeof document !== "undefined") {
       draw(context, canvas) {
         frame += 1;
         const phase = frame % 180;
-        machine.setParameter("speed", phase < 150 ? 1 : 0);
-        machine.setParameter("wave", phase >= 45 && phase < 105);
+        if (debugStateMode === "auto") {
+          machine.setParameter("speed", phase < 150 ? 1 : 0);
+          machine.setParameter("wave", phase >= 45 && phase < 105);
+        } else {
+          machine.setParameter("speed", debugStateMode === "idle" ? 0 : 1);
+          machine.setParameter("wave", debugStateMode === "wave");
+        }
         const stateName = machine.update(1 / 60);
         locomotion.setWeight(stateName === "idle" ? 0.2 : 1);
-        wave.setWeight(stateName === "wave" ? 1 : 0.15);
+        wave.setWeight(stateName === "wave" ? blendTreeWeight : 0.15);
         mixer.update(1 / 60);
         latest = publishState(stateName);
 
@@ -122,6 +150,10 @@ if (typeof document !== "undefined") {
         paletteHandTranslation: handTranslation,
         mixerActionCount: snapshot.actionCount,
         graph: machine.graphSnapshot(),
+        blendTreeWeight: Number(blendTreeWeight.toFixed(3)),
+        debugStateMode,
+        eventLog: [...eventLog],
+        latestEvent: eventLog[eventLog.length - 1],
       };
       window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__ = state;
       return state;
@@ -144,6 +176,7 @@ function createLocomotionClip(): AnimationClip {
         ],
       }),
     ],
+    events: [{ name: "footstep", time: 0.5, payload: { foot: "left" } }],
   });
 }
 
@@ -163,7 +196,44 @@ function createWaveClip(): AnimationClip {
         ],
       }),
     ],
+    events: [{ name: "wave-apex", time: 0.25 }],
   });
+}
+
+function installAnimationControls(
+  canvas: HTMLCanvasElement,
+  handlers: {
+    readonly onBlendWeight: (value: number) => void;
+    readonly onDebugState: (value: "auto" | "idle" | "walk" | "wave") => void;
+  }
+): void {
+  const panel = canvas.parentElement?.querySelector<HTMLElement>(".example-panel");
+  if (!panel || panel.querySelector("[data-testid='animation-debug-controls']")) return;
+  const controls = document.createElement("section");
+  controls.dataset.testid = "animation-debug-controls";
+  controls.innerHTML = `
+    <label>
+      <span>Blend</span>
+      <input data-testid="blend-tree-weight" type="range" min="0" max="1" step="0.05" value="0.65" />
+    </label>
+    <label>
+      <span>State</span>
+      <select data-testid="state-debug-mode">
+        <option value="auto">Auto</option>
+        <option value="idle">Idle</option>
+        <option value="walk">Walk</option>
+        <option value="wave">Wave</option>
+      </select>
+    </label>
+    <pre data-testid="animation-event-log">waiting for animation events</pre>
+  `;
+  controls.querySelector<HTMLInputElement>("[data-testid='blend-tree-weight']")?.addEventListener("input", (event) => {
+    handlers.onBlendWeight(Number((event.currentTarget as HTMLInputElement).value));
+  });
+  controls.querySelector<HTMLSelectElement>("[data-testid='state-debug-mode']")?.addEventListener("change", (event) => {
+    handlers.onDebugState((event.currentTarget as HTMLSelectElement).value as "auto" | "idle" | "walk" | "wave");
+  });
+  panel.append(controls);
 }
 
 function drawCharacter(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: AnimatedCharacterExampleState): void {
@@ -199,6 +269,11 @@ function drawCharacter(context: CanvasRenderingContext2D, canvas: HTMLCanvasElem
   context.fillStyle = "#eaf2f7";
   context.font = "16px ui-sans-serif, system-ui, sans-serif";
   context.fillText(state.currentState, x - 28, y + 34);
+  context.font = "14px ui-monospace, SFMono-Regular, Menlo, monospace";
+  context.fillText(`blend ${state.blendTreeWeight.toFixed(2)}`, x - 70, y + 58);
+  if (state.latestEvent) {
+    context.fillText(`event ${state.latestEvent}`, x - 110, y + 82);
+  }
   context.restore();
 }
 

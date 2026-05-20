@@ -1,10 +1,15 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
 
 interface RootPackageJson {
   name?: string;
   exports?: Record<string, unknown>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  private?: boolean;
 }
 
 export interface ImportSmokeEntry {
@@ -20,6 +25,15 @@ export interface ImportSmokeReport {
   readonly packageName: string;
   readonly checkedSubpaths: number;
   readonly entries: readonly ImportSmokeEntry[];
+  readonly workspaceDependencies: readonly WorkspaceDependencyEntry[];
+}
+
+export interface WorkspaceDependencyEntry {
+  readonly packageName: string;
+  readonly ok: boolean;
+  readonly importedPackages: readonly string[];
+  readonly declaredRuntimePackages: readonly string[];
+  readonly missingRuntimeDependencies: readonly string[];
 }
 
 function readRootManifest(root: string): RootPackageJson {
@@ -41,6 +55,7 @@ export async function verifyPublicImports(root = process.cwd()): Promise<ImportS
   const packageName = manifest.name ?? "@galileo3d/engine";
   const exportsMap = manifest.exports ?? {};
   const entries: ImportSmokeEntry[] = [];
+  const workspaceDependencies = verifyWorkspaceRuntimeDependencies(root);
 
   for (const subpath of Object.keys(exportsMap).sort()) {
     const target = resolveExportTarget(root, exportsMap[subpath]);
@@ -68,11 +83,69 @@ export async function verifyPublicImports(root = process.cwd()): Promise<ImportS
   }
 
   return {
-    ok: entries.every((entry) => entry.ok),
+    ok: entries.every((entry) => entry.ok) && workspaceDependencies.every((entry) => entry.ok),
     packageName,
     checkedSubpaths: entries.length,
-    entries
+    entries,
+    workspaceDependencies
   };
+}
+
+function verifyWorkspaceRuntimeDependencies(root: string): readonly WorkspaceDependencyEntry[] {
+  const packagesRoot = join(root, "packages");
+  if (!existsSync(packagesRoot)) return [];
+  const entries: WorkspaceDependencyEntry[] = [];
+  for (const directory of readdirSync(packagesRoot, { withFileTypes: true })) {
+    if (!directory.isDirectory()) continue;
+    const packageRoot = join(packagesRoot, directory.name);
+    const manifestPath = join(packageRoot, "package.json");
+    const sourceRoot = join(packageRoot, "src");
+    if (!existsSync(manifestPath) || !existsSync(sourceRoot)) continue;
+    const packageManifest = JSON.parse(readFileSync(manifestPath, "utf8")) as RootPackageJson;
+    const importedPackages = [...scanWorkspaceImports(sourceRoot)]
+      .filter((specifier) => specifier !== packageManifest.name)
+      .sort();
+    const declaredRuntimePackages = Object.keys({
+      ...(packageManifest.dependencies ?? {}),
+      ...(packageManifest.peerDependencies ?? {}),
+      ...(packageManifest.optionalDependencies ?? {})
+    }).sort();
+    const declared = new Set(declaredRuntimePackages);
+    const missingRuntimeDependencies = importedPackages.filter((specifier) => !declared.has(specifier));
+    entries.push({
+      packageName: packageManifest.name ?? directory.name,
+      ok: missingRuntimeDependencies.length === 0,
+      importedPackages,
+      declaredRuntimePackages,
+      missingRuntimeDependencies
+    });
+  }
+  return entries;
+}
+
+function scanWorkspaceImports(sourceRoot: string): ReadonlySet<string> {
+  const imports = new Set<string>();
+  for (const path of listTypeScriptFiles(sourceRoot)) {
+    const source = readFileSync(path, "utf8");
+    for (const match of source.matchAll(/(?:from\s+|import\s*\(\s*|import\s+)["'](@galileo3d\/[^/"']+)/g)) {
+      const specifier = match[1];
+      if (specifier) imports.add(specifier);
+    }
+  }
+  return imports;
+}
+
+function listTypeScriptFiles(root: string): readonly string[] {
+  const output: string[] = [];
+  for (const entry of readdirSync(root, { withFileTypes: true })) {
+    const path = join(root, entry.name);
+    if (entry.isDirectory()) {
+      output.push(...listTypeScriptFiles(path));
+    } else if (entry.isFile() && path.endsWith(".ts")) {
+      output.push(path);
+    }
+  }
+  return output;
 }
 
 function writeReport(root: string, report: ImportSmokeReport): void {
@@ -88,9 +161,12 @@ if (isMain) {
   const report = await verifyPublicImports(root);
   writeReport(root, report);
   if (!report.ok) {
-    console.error(JSON.stringify(report.entries.filter((entry) => !entry.ok), null, 2));
+    console.error(JSON.stringify({
+      failedImports: report.entries.filter((entry) => !entry.ok),
+      failedWorkspaceDependencies: report.workspaceDependencies.filter((entry) => !entry.ok)
+    }, null, 2));
     process.exitCode = 1;
   } else {
-    console.log(`Import smoke verification passed for ${report.checkedSubpaths} public subpaths.`);
+    console.log(`Import smoke verification passed for ${report.checkedSubpaths} public subpaths and ${report.workspaceDependencies.length} workspace package manifests.`);
   }
 }

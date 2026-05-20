@@ -1,0 +1,110 @@
+{
+  "ok": true,
+  "auditComplete": true,
+  "externalHostReady": false,
+  "handoffPackageReady": true,
+  "externalEvidenceReady": false,
+  "firstMissingCapability": "unity-editor-executable",
+  "firstBlockedArtifact": "unity:editor-cli-smoke",
+  "firstBlockedArtifactDetails": {
+    "areaId": "unity-external-baselines",
+    "id": "unity:editor-cli-smoke",
+    "kind": "editor-cli-smoke",
+    "path": "tests/reports/v4-unity-editor-cli-smoke.json",
+    "command": "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json",
+    "validationCommands": [],
+    "localEvidence": [
+      "unity CLI smoke command and target report path are prepared locally."
+    ],
+    "requiredExternalEvidence": [
+      "Run the unity editor CLI smoke against a real Unity editor executable and write tests/reports/v4-unity-editor-cli-smoke.json with ok=true."
+    ],
+    "blockers": [
+      "tests/reports/v4-unity-editor-cli-smoke.json is missing or does not contain ok=true for engine=\"unity\""
+    ]
+  },
+  "missingArtifactRunbookPath": "tests/reports/v4-external-evidence-missing-artifacts.md",
+  "externalReadinessSummary": {
+    "readyAreas": 4,
+    "blockedAreas": 7,
+    "readyArtifacts": 2,
+    "blockedArtifacts": 30,
+    "firstBlockedArea": "github-remote-external-readiness",
+    "firstBlockedArtifact": "unity:editor-cli-smoke"
+  },
+  "localPreflight": {
+    "unity": {
+      "engine": "unity",
+      "envName": "G3D_UNITY_EDITOR",
+      "searchRootsEnvName": "G3D_UNITY_SEARCH_ROOTS",
+      "envSet": false,
+      "searchRoots": [
+        "/Applications",
+        "/Users/Shared/Unity"
+      ],
+      "executableAvailable": false,
+      "cliSmokeOptIn": false,
+      "smokeReportPath": "tests/reports/v4-unity-editor-cli-smoke.json",
+      "smokeCommand": "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json",
+      "blockers": [
+        "G3D_UNITY_EDITOR is not set to a usable executable and no unity editor executable was auto-discovered.",
+        "G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true has not been set."
+      ]
+    },
+    "unreal": {
+      "engine": "unreal",
+      "envName": "G3D_UNREAL_EDITOR",
+      "searchRootsEnvName": "G3D_UNREAL_SEARCH_ROOTS",
+      "envSet": false,
+      "searchRoots": [
+        "/Applications",
+        "/Users/Shared/Epic Games",
+        "/Users/Shared"
+      ],
+      "executableAvailable": false,
+      "cliSmokeOptIn": false,
+      "smokeReportPath": "tests/reports/v4-unreal-editor-cli-smoke.json",
+      "smokeCommand": "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/v4-unreal-editor-cli-smoke.json",
+      "blockers": [
+        "G3D_UNREAL_EDITOR is not set to a usable executable and no unreal editor executable was auto-discovered.",
+        "G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true has not been set."
+      ]
+    },
+    "publicDeployment": {
+      "envName": "G3D_PUBLIC_DEMO_URL",
+      "envSet": false,
+      "durableHttpsCandidate": false,
+      "command": "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
+      "blockers": [
+        "G3D_PUBLIC_DEMO_URL is not set.",
+        "G3D_PUBLIC_DEMO_URL is not a durable public HTTPS candidate."
+      ]
+    },
+    "canRunExternalEvidenceHere": false,
+    "firstMissingCapability": "unity-editor-executable"
+  },
+  "handoffPackage": {
+    "ok": true,
+    "auditComplete": true,
+    "verificationScope": {
+      "packageInternalEntries": true,
+      "archiveAndSidecar": true,
+      "externalParityEvidence": false
+    },
+    "packageManifestPath": "release-artifacts/v4-external-evidence-handoff/manifest.json",
+    "packageArchivePath": "release-artifacts/v4-external-evidence-handoff.tar.gz",
+    "packageArchiveSha256Path": "release-artifacts/v4-external-evidence-handoff.tar.gz.sha256",
+    "transferManifestPath": "release-artifacts/v4-external-evidence-handoff.transfer.json",
+    "checkedFiles": 159,
+    "violations": []
+  },
+  "nextCommands": [
+    "export G3D_UNITY_EDITOR=/absolute/path/to/Unity",
+    "export G3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd",
+    "export G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
+    "export G3D_PUBLIC_DEMO_URL=https://your-public-demo.example/",
+    "pnpm doctor:v4-external-host",
+    "pnpm run:v4-external-host-evidence"
+  ],
+  "reportPath": "tests/reports/v4-external-host-doctor.json"
+}

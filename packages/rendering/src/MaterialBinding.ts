@@ -95,11 +95,11 @@ function validateUniformSchemaValue(name: string, kind: string, value: UniformVa
   if (kind === "any") {
     return null;
   }
-  if (kind === "texture2d") {
-    return value instanceof TextureBinding ? null : `Material uniform ${name} must be texture2d`;
+  if (kind === "texture2d" || kind === "textureCube") {
+    return value instanceof TextureBinding ? null : `Material uniform ${name} must be ${kind}`;
   }
   if (value instanceof TextureBinding) {
-    return `Material uniform ${name} must be ${kind}, got texture2d`;
+    return `Material uniform ${name} must be ${kind}, got texture binding`;
   }
   const numbers = typeof value === "number"
     ? [value]

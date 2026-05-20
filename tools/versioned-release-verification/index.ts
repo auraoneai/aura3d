@@ -30,7 +30,7 @@ interface VersionedReleaseReport {
   readonly violations: readonly string[];
 }
 
-const defaultManifestPath = "docs/release-artifacts.json";
+const defaultManifestPath = "docs/project/release-artifacts.json";
 const reportPath = "tests/reports/versioned-release.json";
 
 export function validateVersionedRelease(root = process.cwd(), manifestPath = defaultManifestPath): VersionedReleaseReport {

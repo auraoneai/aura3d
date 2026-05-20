@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { arch, platform, release } from "node:os";
 import { spawnSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
@@ -170,6 +170,9 @@ test.describe("real WebGPU device evidence", () => {
       },
       ...probe
     };
+    const reportPath = "tests/reports/webgpu-hardware-matrix.json";
+    const existing = readExistingHardwareMatrixReport(reportPath);
+    const results = mergeHardwareMatrixResults(existing?.results ?? [], result);
     const report: WebGPUHardwareMatrixReport = {
       generatedAt: new Date().toISOString(),
       releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-webgpu-hardware-matrix-run",
@@ -188,11 +191,11 @@ test.describe("real WebGPU device evidence", () => {
       status: "pass",
       source: "tests/browser/webgpu-real-device.spec.ts",
       evidenceType: "real-navigator-gpu-probe",
-      results: [result]
+      results
     };
 
     mkdirSync("tests/reports", { recursive: true });
-    writeFileSync("tests/reports/webgpu-hardware-matrix.json", `${JSON.stringify(report, null, 2)}\n`);
+    writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
     expect(result.userAgent.length).toBeGreaterThan(0);
     expect(result.adapterStatus).toMatch(/^(not-available|missing|available|error)$/);
@@ -204,6 +207,38 @@ test.describe("real WebGPU device evidence", () => {
     }
   });
 });
+
+function readExistingHardwareMatrixReport(path: string): WebGPUHardwareMatrixReport | null {
+  if (!existsSync(path)) return null;
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf8")) as unknown;
+    if (!isRecord(parsed) || !Array.isArray(parsed.results)) return null;
+    return parsed as WebGPUHardwareMatrixReport;
+  } catch {
+    return null;
+  }
+}
+
+function mergeHardwareMatrixResults(existing: readonly WebGPUHardwareMatrixResult[], current: WebGPUHardwareMatrixResult): readonly WebGPUHardwareMatrixResult[] {
+  const currentKey = hardwareMatrixResultKey(current);
+  return [
+    ...existing.filter((entry) => hardwareMatrixResultKey(entry) !== currentKey),
+    current,
+  ].sort((left, right) => hardwareMatrixResultKey(left).localeCompare(hardwareMatrixResultKey(right)));
+}
+
+function hardwareMatrixResultKey(result: WebGPUHardwareMatrixResult): string {
+  return [
+    result.browserName,
+    result.projectName,
+    result.os.platform,
+    result.os.release,
+  ].join("|");
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 function gitSha(): string {
   const result = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" });

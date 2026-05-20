@@ -25,7 +25,11 @@ export type ExampleSetup = (context: ExampleSetupContext) => ExampleState | Prom
 export interface ExampleRuntimeState {
   id: string;
   status: "ready" | "error";
+  renderer: "webgl2" | "canvas2d" | "mock";
   acceptance: string;
+  visualClaim: string;
+  knownLimits: readonly string[];
+  errors: readonly string[];
   diagnostics?: RenderDeviceDiagnostics;
   metrics?: Record<string, string | number | boolean>;
   error?: string;
@@ -100,10 +104,21 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
         drawBackdrop(context, canvas);
         state.draw(context, canvas, timeMs / 1000);
       }
+      diagnostics ??= {
+        drawCalls: state.draw ? 1 : 0,
+        buffers: 0,
+        shaders: 0,
+        lastError: null,
+        contextLost: false,
+      };
       window.__GALILEO3D_EXAMPLE__ = {
         id: metadata.id,
         status: "ready",
+        renderer: renderer ? "webgl2" : context ? "canvas2d" : "mock",
         acceptance: metadata.acceptance,
+        visualClaim: metadata.purpose,
+        knownLimits: ["This page is a bounded engine validation example, not a production app or broad competitor-parity claim."],
+        errors: [],
         diagnostics,
         metrics: typeof state.metrics === "function" ? state.metrics() : state.metrics,
       };
@@ -121,7 +136,11 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
     window.__GALILEO3D_EXAMPLE__ = {
       id: metadata.id,
       status: "error",
+      renderer: "mock",
       acceptance: metadata.acceptance,
+      visualClaim: metadata.purpose,
+      knownLimits: ["This page failed before its bounded validation state could be rendered."],
+      errors: [message],
       error: message,
     };
     setStatus(formatStatus(window.__GALILEO3D_EXAMPLE__));

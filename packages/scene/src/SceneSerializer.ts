@@ -5,6 +5,7 @@ import { PerspectiveCamera } from "./PerspectiveCamera.js";
 import { PointLight } from "./PointLight.js";
 import { Renderable } from "./Renderable.js";
 import { Scene } from "./Scene.js";
+import type { SerializedSceneMetadata } from "./SceneMetadata.js";
 import { SceneNode } from "./SceneNode.js";
 import { SpotLight } from "./SpotLight.js";
 
@@ -27,6 +28,7 @@ export interface SerializedSceneNode {
     receiveShadow: boolean;
     morphWeights?: readonly number[];
     instanceTransforms?: readonly number[];
+    instanceColors?: readonly number[];
   };
   camera?: {
     fovYRadians?: number;
@@ -38,6 +40,7 @@ export interface SerializedSceneNode {
     near: number;
     far: number;
     zoom?: number;
+    resizeMode?: "fit-vertical" | "fit-horizontal" | "preserve-frustum";
     viewport: { x: number; y: number; width: number; height: number };
   };
   light?: {
@@ -53,16 +56,22 @@ export interface SerializedSceneNode {
 
 export interface SerializedScene {
   version: 1;
+  metadata?: SerializedSceneMetadata;
   root: SerializedSceneNode;
 }
 
 export function serializeScene(scene: Scene): SerializedScene {
-  return { version: 1, root: serializeNode(scene.root) };
+  return {
+    version: 1,
+    ...(scene.metadata.isEmpty ? {} : { metadata: scene.metadata.toJSON() }),
+    root: serializeNode(scene.root)
+  };
 }
 
 export function deserializeScene(serialized: SerializedScene): Scene {
   if (serialized.version !== 1) throw new ValidationError("SCENE_VERSION", `Unsupported scene version: ${serialized.version}`);
   const scene = new Scene();
+  if (serialized.metadata) scene.metadata.replace(serialized.metadata);
   for (const child of serialized.root.children) {
     const node = deserializeNode(child);
     scene.root.addChild(node);
@@ -72,7 +81,7 @@ export function deserializeScene(serialized: SerializedScene): Scene {
 }
 
 function serializeNode(node: SceneNode): SerializedSceneNode {
-  const renderable = (node as SceneNode & { renderable?: Renderable }).renderable;
+  const renderable = node.renderable;
   return {
     id: node.id,
     name: node.name,
@@ -91,7 +100,8 @@ function serializeNode(node: SceneNode): SerializedSceneNode {
       castShadow: renderable.castShadow,
       receiveShadow: renderable.receiveShadow,
       ...(renderable.morphWeights.length > 0 ? { morphWeights: [...renderable.morphWeights] } : {}),
-      ...(renderable.instanceTransforms ? { instanceTransforms: [...renderable.instanceTransforms] } : {})
+      ...(renderable.instanceTransforms ? { instanceTransforms: [...renderable.instanceTransforms] } : {}),
+      ...(renderable.instanceColors ? { instanceColors: [...renderable.instanceColors] } : {})
     } : undefined,
     camera: serializeCamera(node),
     light: serializeLight(node),
@@ -102,7 +112,7 @@ function serializeNode(node: SceneNode): SerializedSceneNode {
 function deserializeNode(data: SerializedSceneNode): SceneNode {
   const node =
     data.kind === "perspectiveCamera" ? new PerspectiveCamera({ id: data.id, name: data.name, fovYRadians: data.camera?.fovYRadians, aspect: data.camera?.aspect, near: data.camera?.near, far: data.camera?.far }) :
-    data.kind === "orthographicCamera" ? new OrthographicCamera({ id: data.id, name: data.name, left: data.camera?.left, right: data.camera?.right, bottom: data.camera?.bottom, top: data.camera?.top, near: data.camera?.near, far: data.camera?.far, zoom: data.camera?.zoom }) :
+    data.kind === "orthographicCamera" ? new OrthographicCamera({ id: data.id, name: data.name, left: data.camera?.left, right: data.camera?.right, bottom: data.camera?.bottom, top: data.camera?.top, near: data.camera?.near, far: data.camera?.far, zoom: data.camera?.zoom, resizeMode: data.camera?.resizeMode }) :
     data.kind === "directionalLight" ? new DirectionalLight(data.name, data.id) :
     data.kind === "pointLight" ? new PointLight(data.name, data.id) :
     data.kind === "spotLight" ? new SpotLight(data.name, data.id) :
@@ -121,7 +131,7 @@ function deserializeNode(data: SerializedSceneNode): SceneNode {
   if (data.light?.range !== undefined && (node instanceof PointLight || node instanceof SpotLight)) node.range = data.light.range;
   if (data.light?.angle !== undefined && node instanceof SpotLight) node.angle = data.light.angle;
   if (data.light?.penumbra !== undefined && node instanceof SpotLight) node.penumbra = data.light.penumbra;
-  if (data.renderable) (node as SceneNode & { renderable?: Renderable }).renderable = new Renderable(data.renderable);
+  if (data.renderable) node.renderable = new Renderable(data.renderable);
   for (const child of data.children) node.addChild(deserializeNode(child));
   return node;
 }
@@ -145,6 +155,7 @@ function serializeCamera(node: SceneNode): SerializedSceneNode["camera"] {
       near: node.near,
       far: node.far,
       zoom: node.zoom,
+      resizeMode: node.resizeMode,
       viewport: { ...node.viewport }
     };
   }

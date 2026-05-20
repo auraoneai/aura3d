@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Geometry DrawRange</title>
+    <link rel="stylesheet" href="/apps/v6-common/src/styles.css">
+    <style>
+      body.v8-geometry-drawrange {
+        grid-template-columns: minmax(780px, min(72vw, 1400px)) minmax(360px, 1fr);
+        background: #080b0f;
+      }
+
+      body.v8-geometry-drawrange #viewport {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        max-height: 100vh;
+        align-self: center;
+        background: #080b0f;
+      }
+
+      body.v8-geometry-drawrange #app {
+        padding: 18px;
+      }
+
+      .v8-geometry-drawrange .metrics {
+        grid-template-columns: repeat(2, minmax(132px, 1fr));
+      }
+
+      .v8-geometry-drawrange #runtime-state.is-ready,
+      .v8-geometry-drawrange #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .v8-geometry-drawrange #runtime-state.is-error {
+        background: #923b3b;
+      }
+    </style>
+  </head>
+  <body class="v8-geometry-drawrange">
+    <canvas id="viewport" width="1280" height="720"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/v8-geometry-drawrange/src/main.ts"></script>
+  </body>
+</html>

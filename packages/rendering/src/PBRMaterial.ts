@@ -1,4 +1,5 @@
 import { Material, type RenderState } from "./Material";
+import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 import { TextureBinding } from "./TextureBinding";
 
 export const DEFAULT_PBR_SHADER_NAME = "galileo3d/pbr-direct";
@@ -26,9 +27,15 @@ export interface PBRMaterialOptions {
   readonly transmissionFactor?: number;
   readonly diffuseTransmissionFactor?: number;
   readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+  readonly transmissionFallbackEnergy?: number;
   readonly volumeThicknessFactor?: number;
   readonly volumeAttenuationDistance?: number;
   readonly volumeAttenuationColor?: readonly [number, number, number];
+  readonly transmissionParallaxStrength?: number;
+  readonly transmissionParallaxBoxMin?: readonly [number, number, number];
+  readonly transmissionParallaxBoxMax?: readonly [number, number, number];
+  readonly transmissionBounceCount?: number;
+  readonly transmissionCausticStrength?: number;
   readonly ior?: number;
   readonly specularFactor?: number;
   readonly specularColorFactor?: readonly [number, number, number];
@@ -56,19 +63,14 @@ export class PBRMaterial extends Material {
   constructor(options: PBRMaterialOptions = {}) {
     const baseColor = options.baseColor ?? [1, 1, 1, 1];
     const environmentColor = options.environmentColor ?? [1, 1, 1];
-    const proceduralEnvironmentMap: PBRProceduralEnvironmentMapOptions = options.proceduralEnvironmentMap ?? {
-      skyColor: [0.45, 0.55, 0.72],
-      horizonColor: [0.72, 0.68, 0.58],
-      groundColor: [0.08, 0.08, 0.09],
-      specularColor: [1, 1, 1],
-      intensity: 0,
-      specularIntensity: 0
-    };
+    const proceduralEnvironmentMap: PBRProceduralEnvironmentMapOptions = options.proceduralEnvironmentMap ?? DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP;
     const emissiveColor = options.emissiveColor ?? [0, 0, 0];
     const specularColorFactor = options.specularColorFactor ?? [1, 1, 1];
     const diffuseTransmissionColorFactor = options.diffuseTransmissionColorFactor ?? [1, 1, 1];
     const sheenColorFactor = options.sheenColorFactor ?? [0, 0, 0];
     const volumeAttenuationColor = options.volumeAttenuationColor ?? [1, 1, 1];
+    const transmissionParallaxBoxMin = options.transmissionParallaxBoxMin ?? [-1, -1, -1];
+    const transmissionParallaxBoxMax = options.transmissionParallaxBoxMax ?? [1, 1, 1];
     validateColor4(baseColor, "baseColor");
     validateColor3(environmentColor, "environmentColor");
     validateProceduralEnvironmentMap(proceduralEnvironmentMap);
@@ -77,19 +79,28 @@ export class PBRMaterial extends Material {
     validateFinite(options.environmentMapRotation ?? 0, "environmentMapRotation");
     validateMipCount(options.environmentMapMipCount ?? 1);
     validateColor3(emissiveColor, "emissiveColor");
-    validateColor3(specularColorFactor, "specularColorFactor");
+    validateNonNegativeColor3(specularColorFactor, "specularColorFactor");
     validateColor3(diffuseTransmissionColorFactor, "diffuseTransmissionColorFactor");
     validateColor3(sheenColorFactor, "sheenColorFactor");
     validateColor3(volumeAttenuationColor, "volumeAttenuationColor");
     validateUnit(options.metallic ?? 0, "metallic");
     validateUnit(options.roughness ?? 0.5, "roughness");
-    validateNonNegative(options.environmentIntensity ?? 0, "environmentIntensity");
+    validateNonNegative(options.environmentIntensity ?? DEFAULT_PBR_ENVIRONMENT_INTENSITY, "environmentIntensity");
     validateUnit(options.clearcoatFactor ?? 0, "clearcoatFactor");
     validateUnit(options.clearcoatRoughnessFactor ?? 0, "clearcoatRoughnessFactor");
     validateUnit(options.transmissionFactor ?? 0, "transmissionFactor");
     validateUnit(options.diffuseTransmissionFactor ?? 0, "diffuseTransmissionFactor");
+    validateUnit(options.transmissionFallbackEnergy ?? 0.08, "transmissionFallbackEnergy");
     validateNonNegative(options.volumeThicknessFactor ?? 0, "volumeThicknessFactor");
     validatePositive(options.volumeAttenuationDistance ?? 1_000_000, "volumeAttenuationDistance");
+    validateUnit(options.transmissionParallaxStrength ?? 0, "transmissionParallaxStrength");
+    validateFiniteVec3(transmissionParallaxBoxMin, "transmissionParallaxBoxMin");
+    validateFiniteVec3(transmissionParallaxBoxMax, "transmissionParallaxBoxMax");
+    if (transmissionParallaxBoxMin.some((component, index) => component >= transmissionParallaxBoxMax[index]!)) {
+      throw new RangeError("PBR transmissionParallaxBoxMin must be lower than transmissionParallaxBoxMax");
+    }
+    validateNonNegative(options.transmissionBounceCount ?? 0, "transmissionBounceCount");
+    validateNonNegative(options.transmissionCausticStrength ?? 0, "transmissionCausticStrength");
     validateUnit(options.specularFactor ?? 1, "specularFactor");
     validateUnit(options.sheenRoughnessFactor ?? 0, "sheenRoughnessFactor");
     validateUnit(options.anisotropyStrength ?? 0, "anisotropyStrength");
@@ -116,7 +127,7 @@ export class PBRMaterial extends Material {
         u_metallic: options.metallic ?? 0,
         u_roughness: options.roughness ?? 0.5,
         u_environmentColor: environmentColor,
-        u_environmentIntensity: options.environmentIntensity ?? 0,
+        u_environmentIntensity: options.environmentIntensity ?? DEFAULT_PBR_ENVIRONMENT_INTENSITY,
         u_environmentSkyColor: proceduralEnvironmentMap.skyColor,
         u_environmentHorizonColor: proceduralEnvironmentMap.horizonColor,
         u_environmentGroundColor: proceduralEnvironmentMap.groundColor,
@@ -129,6 +140,7 @@ export class PBRMaterial extends Material {
         u_environmentMapTextureSpecularIntensity: options.environmentMapSpecularIntensity ?? 0,
         u_environmentMapTextureRotation: options.environmentMapRotation ?? 0,
         u_environmentMapTextureMipCount: options.environmentMapMipCount ?? 1,
+        u_environmentMapTextureEncoding: 0,
         u_environmentBrdfLutTexture: options.environmentBrdfLutTexture ?? new TextureBinding({ name: "u_environmentBrdfLutTexture", required: false }),
         u_environmentBrdfLutEnabled: options.environmentBrdfLutTexture ? 1 : 0,
         u_emissiveColor: emissiveColor,
@@ -138,9 +150,15 @@ export class PBRMaterial extends Material {
         u_transmissionFactor: options.transmissionFactor ?? 0,
         u_diffuseTransmissionFactor: options.diffuseTransmissionFactor ?? 0,
         u_diffuseTransmissionColorFactor: diffuseTransmissionColorFactor,
+        u_transmissionFallbackEnergy: options.transmissionFallbackEnergy ?? 0.08,
         u_volumeThicknessFactor: options.volumeThicknessFactor ?? 0,
         u_volumeAttenuationDistance: options.volumeAttenuationDistance ?? 1_000_000,
         u_volumeAttenuationColor: volumeAttenuationColor,
+        u_transmissionParallaxStrength: options.transmissionParallaxStrength ?? 0,
+        u_transmissionParallaxBoxMin: transmissionParallaxBoxMin,
+        u_transmissionParallaxBoxMax: transmissionParallaxBoxMax,
+        u_transmissionBounceCount: options.transmissionBounceCount ?? 0,
+        u_transmissionCausticStrength: options.transmissionCausticStrength ?? 0,
         u_ior: options.ior ?? 1.5,
         u_specularFactor: options.specularFactor ?? 1,
         u_specularColorFactor: specularColorFactor,
@@ -177,8 +195,9 @@ export class PBRMaterial extends Material {
         { name: "u_environmentMapTextureSpecularIntensity", kind: "float" },
         { name: "u_environmentMapTextureRotation", kind: "float" },
         { name: "u_environmentMapTextureMipCount", kind: "float" },
+        { name: "u_environmentMapTextureEncoding", kind: "float" },
         { name: "u_environmentBrdfLutTexture", kind: "texture2d", required: false },
-        { name: "u_environmentBrdfLutEnabled", kind: "float" },
+        { name: "u_environmentBrdfLutEnabled", kind: "float", required: false },
         { name: "u_emissiveColor", kind: "vec3" },
         { name: "u_emissiveStrength", kind: "float" },
         { name: "u_clearcoatFactor", kind: "float" },
@@ -186,9 +205,15 @@ export class PBRMaterial extends Material {
         { name: "u_transmissionFactor", kind: "float" },
         { name: "u_diffuseTransmissionFactor", kind: "float" },
         { name: "u_diffuseTransmissionColorFactor", kind: "vec3" },
+        { name: "u_transmissionFallbackEnergy", kind: "float" },
         { name: "u_volumeThicknessFactor", kind: "float" },
         { name: "u_volumeAttenuationDistance", kind: "float" },
         { name: "u_volumeAttenuationColor", kind: "vec3" },
+        { name: "u_transmissionParallaxStrength", kind: "float" },
+        { name: "u_transmissionParallaxBoxMin", kind: "vec3" },
+        { name: "u_transmissionParallaxBoxMax", kind: "vec3" },
+        { name: "u_transmissionBounceCount", kind: "float" },
+        { name: "u_transmissionCausticStrength", kind: "float" },
         { name: "u_ior", kind: "float" },
         { name: "u_specularFactor", kind: "float" },
         { name: "u_specularColorFactor", kind: "vec3" },
@@ -377,6 +402,18 @@ function validateColor4(value: readonly number[], label: string): void {
 function validateColor3(value: readonly number[], label: string): void {
   if (value.length !== 3 || value.some((channel) => !Number.isFinite(channel) || channel < 0 || channel > 1)) {
     throw new RangeError(`PBR ${label} must contain three finite values in [0, 1]`);
+  }
+}
+
+function validateNonNegativeColor3(value: readonly number[], label: string): void {
+  if (value.length !== 3 || value.some((channel) => !Number.isFinite(channel) || channel < 0)) {
+    throw new RangeError(`PBR ${label} must contain three finite non-negative values`);
+  }
+}
+
+function validateFiniteVec3(value: readonly number[], label: string): void {
+  if (value.length !== 3 || value.some((channel) => !Number.isFinite(channel))) {
+    throw new RangeError(`PBR ${label} must contain three finite values`);
   }
 }
 

@@ -15,6 +15,12 @@ describe("ProjectSerializer", () => {
     expect(loaded.metadata.savedAt).toBe("2026-03-04T05:06:07.000Z");
     expect(loaded.metadata.provenance?.runtimePackage).toBe("@galileo3d/editor-runtime");
     expect(loaded.metadata.provenance?.evidenceHash).toMatch(/^g3d-prov-[0-9a-f]{8}$/);
+    expect(loaded.scene.nodes[0]?.particleEmitter).toMatchObject({
+      enabled: false,
+      preset: "none",
+      emissionRate: 24,
+      maxParticles: 160
+    });
     expect(built.scene.getNodeById("node-hero")?.name).toBe("Hero Cube");
     expect(built.scene.getNodeById("node-child")?.parent?.id).toBe("node-hero");
   });
@@ -57,6 +63,68 @@ describe("ProjectSerializer", () => {
     })).toThrow(/scale must be a positive finite number/);
   });
 
+  it("migrates legacy v0 projects into the current v1 project format", () => {
+    const serializer = new ProjectSerializer();
+    const migrated = serializer.parse(JSON.stringify({
+      version: 0,
+      metadata: {
+        name: "Legacy Browser Scene",
+        savedAt: "2026-02-03T04:05:06.000Z"
+      },
+      scene: {
+        nodes: [
+          {
+            id: "legacy-root-node",
+            name: "Legacy Root Node",
+            position: [1, 2, 3],
+            material: { name: "Legacy Material", baseColor: "#abcdef", metallic: 0.2, roughness: 0.7 }
+          }
+        ]
+      },
+      assets: [
+        {
+          id: "legacy-asset",
+          name: "Legacy Asset",
+          type: "gltf",
+          uri: "legacy.glb"
+        }
+      ],
+      importSettings: {
+        scale: 2,
+        orientation: "z-up"
+      },
+      export: {
+        title: "Legacy Export",
+        entryNodeId: "legacy-root-node"
+      }
+    }));
+
+    expect(migrated.version).toBe(1);
+    expect(migrated.metadata.name).toBe("Legacy Browser Scene");
+    expect(migrated.metadata.provenance?.authoringTool).toBe("galileo3d-browser-editor");
+    expect(migrated.scene.nodes[0]?.transform.position).toEqual([1, 2, 3]);
+    expect(migrated.scene.nodes[0]?.material.textureSlots).toEqual({
+      baseColor: "",
+      normal: "",
+      metallicRoughness: "",
+      emissive: ""
+    });
+    expect(migrated.scene.nodes[0]?.particleEmitter).toMatchObject({
+      enabled: false,
+      preset: "none"
+    });
+    expect(migrated.assets[0]).toMatchObject({
+      id: "legacy-asset",
+      folder: "Migrated",
+      status: "warning",
+      diagnostics: ["Migrated from v0 project"]
+    });
+    expect(migrated.importSettings.scale).toBe(2);
+    expect(migrated.importSettings.orientation).toBe("z-up");
+    expect(migrated.export.title).toBe("Legacy Export");
+    expect(serializer.buildScene(migrated).scene.getNodeById("legacy-root-node")?.name).toBe("Legacy Root Node");
+  });
+
   it("round-trips custom asset records and static export project JSON", () => {
     const serializer = new ProjectSerializer();
     const project: EditorProject = {
@@ -73,11 +141,37 @@ describe("ProjectSerializer", () => {
         }
       ]
     };
+    const projectWithEmitter: EditorProject = {
+      ...project,
+      scene: {
+        nodes: [
+          {
+            ...project.scene.nodes[0]!,
+            particleEmitter: {
+              enabled: true,
+              preset: "fountain",
+              emissionRate: 48,
+              maxParticles: 256,
+              lifetime: 1.5,
+              speed: 3.2,
+              looping: true
+            }
+          },
+          ...project.scene.nodes.slice(1)
+        ]
+      }
+    };
 
-    const parsed = serializer.parse(serializer.serialize(project));
+    const parsed = serializer.parse(serializer.serialize(projectWithEmitter));
     const exported = new StaticProjectExporter().export(parsed);
 
     expect(parsed.assets[0]?.name).toBe("Chair");
+    expect(parsed.scene.nodes[0]?.particleEmitter).toMatchObject({
+      enabled: true,
+      preset: "fountain",
+      emissionRate: 48,
+      maxParticles: 256
+    });
     expect(exported.files.map((file) => file.path)).toEqual(["index.html", "project.json", "runtime.js"]);
     expect(exported.files.find((file) => file.path === "runtime.js")?.content).not.toContain("EditorShell");
   });

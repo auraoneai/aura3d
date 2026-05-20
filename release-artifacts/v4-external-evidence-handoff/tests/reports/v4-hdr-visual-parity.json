@@ -1,0 +1,153 @@
+{
+  "ok": true,
+  "generatedAt": "2026-05-12T12:41:24.208Z",
+  "commit": "84bc815f7e927c8e55917526fab2d32be1d5f2a5",
+  "runId": "v4-hdr-visual-parity-2026-05-12T12-41-24-215Z-mug0tb",
+  "command": "pnpm audit:v4-hdr-visual-parity",
+  "sourceFileHashes": [
+    {
+      "path": "tools/v4-hdr-visual-parity/index.ts",
+      "sha256": "94cb3a186c55720ec1d9e4ba88132ee4258d283b2fe054449101da4cbaedcb00"
+    },
+    {
+      "path": "tools/v4-hdr-render-target-readiness/index.ts",
+      "sha256": "c12e69f3c29254749d3c5e483cb5ba2d889895f8243d55b59156b16410ad5b69"
+    },
+    {
+      "path": "examples/hdr-render-target-check/main.ts",
+      "sha256": "05e37b74d3579c17ee51149d3fa8e441b8ba28f6d1754bf2a5ed087895630772"
+    },
+    {
+      "path": "packages/rendering/src/RenderDevice.ts",
+      "sha256": "462cff5f829a2793b9431120c91e0c0c416821e8cff6700694407f0d938175c1"
+    },
+    {
+      "path": "packages/rendering/src/WebGL2Device.ts",
+      "sha256": "43e08d62881fae225545abd81d3d14beacb5e989b0018e32bbf3824e1ab873b8"
+    }
+  ],
+  "blockedClaims": [
+    "production HDR/render-target parity",
+    "Unity/Unreal replacement language",
+    "production-ready language"
+  ],
+  "screenshotPaths": [
+    "tests/reports/v4-hdr-visual-parity/galileo-hdr.png",
+    "tests/reports/v4-hdr-visual-parity/threejs-hdr.png",
+    "tests/reports/v4-hdr-visual-parity/babylon-hdr.png",
+    "tests/reports/v4-hdr-visual-parity/threejs-hdr-diff.png",
+    "tests/reports/v4-hdr-visual-parity/babylon-hdr-diff.png"
+  ],
+  "violations": [
+    "production-hdr: HDR IBL, multi-pass tone-map chain parity, and shipping HDR pipeline parity remain unproven",
+    "unity-unreal: no Unity or Unreal HDR render-target render was produced by this browser harness"
+  ],
+  "boundedHdrRenderTargetParity": {
+    "threejs": true,
+    "babylon": true
+  },
+  "productionHdrRenderTargetParity": false,
+  "claimBoundary": "This report proves a bounded Chromium HDR render-target/readback and visible LDR tone-map patch scene for Galileo3D, Three.js, and Babylon.js. It is not production HDR IBL, complete render-target pipeline, Unity, or Unreal parity.",
+  "renders": [
+    {
+      "engine": "galileo",
+      "screenshotPath": "tests/reports/v4-hdr-visual-parity/galileo-hdr.png",
+      "bundleBytes": 212219,
+      "metrics": {
+        "width": 720,
+        "height": 420,
+        "nonBlankPixels": 302400,
+        "colorBuckets": 11,
+        "drawCalls": 4,
+        "hdrTargetWidth": 16,
+        "hdrTargetHeight": 16,
+        "hdrSampleR": 2.5,
+        "hdrSampleG": 0.5,
+        "hdrSampleB": 0.125,
+        "hdrSampleA": 1,
+        "sampleOverOne": true,
+        "toneMappedPatches": 3
+      }
+    },
+    {
+      "engine": "threejs",
+      "screenshotPath": "tests/reports/v4-hdr-visual-parity/threejs-hdr.png",
+      "bundleBytes": 470707,
+      "metrics": {
+        "width": 720,
+        "height": 420,
+        "nonBlankPixels": 302400,
+        "colorBuckets": 11,
+        "drawCalls": 4,
+        "hdrTargetWidth": 16,
+        "hdrTargetHeight": 16,
+        "hdrSampleR": 2.5,
+        "hdrSampleG": 0.5,
+        "hdrSampleB": 0.125,
+        "hdrSampleA": 1,
+        "sampleOverOne": true,
+        "toneMappedPatches": 3
+      }
+    },
+    {
+      "engine": "babylon",
+      "screenshotPath": "tests/reports/v4-hdr-visual-parity/babylon-hdr.png",
+      "bundleBytes": 4298213,
+      "metrics": {
+        "width": 720,
+        "height": 420,
+        "nonBlankPixels": 302400,
+        "colorBuckets": 10,
+        "drawCalls": 4,
+        "hdrTargetWidth": 16,
+        "hdrTargetHeight": 16,
+        "hdrSampleR": 2.5,
+        "hdrSampleG": 0.5,
+        "hdrSampleB": 0.125,
+        "hdrSampleA": 1,
+        "sampleOverOne": true,
+        "toneMappedPatches": 3
+      }
+    }
+  ],
+  "diffs": [
+    {
+      "baselineEngine": "galileo",
+      "comparedEngine": "threejs",
+      "baselinePath": "tests/reports/v4-hdr-visual-parity/galileo-hdr.png",
+      "comparedPath": "tests/reports/v4-hdr-visual-parity/threejs-hdr.png",
+      "diffPath": "tests/reports/v4-hdr-visual-parity/threejs-hdr-diff.png",
+      "width": 720,
+      "height": 420,
+      "comparedPixels": 302400,
+      "changedPixels": 79068,
+      "changedPixelRatio": 0.261468,
+      "meanAbsoluteError": 24.19182,
+      "maxChannelDelta": 223,
+      "pass": true,
+      "thresholds": {
+        "maxChangedPixelRatio": 0.55,
+        "maxMeanAbsoluteError": 36
+      }
+    },
+    {
+      "baselineEngine": "galileo",
+      "comparedEngine": "babylon",
+      "baselinePath": "tests/reports/v4-hdr-visual-parity/galileo-hdr.png",
+      "comparedPath": "tests/reports/v4-hdr-visual-parity/babylon-hdr.png",
+      "diffPath": "tests/reports/v4-hdr-visual-parity/babylon-hdr-diff.png",
+      "width": 720,
+      "height": 420,
+      "comparedPixels": 302400,
+      "changedPixels": 43547,
+      "changedPixelRatio": 0.144005,
+      "meanAbsoluteError": 12.071853,
+      "maxChannelDelta": 196,
+      "pass": true,
+      "thresholds": {
+        "maxChangedPixelRatio": 0.55,
+        "maxMeanAbsoluteError": 36
+      }
+    }
+  ]
+}

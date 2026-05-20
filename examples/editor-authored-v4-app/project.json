@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "metadata": {
+    "name": "V4 Editor Authored Sample",
+    "savedAt": "2026-05-08T00:00:00.000Z",
+    "provenance": {
+      "authoringTool": "galileo3d-browser-editor",
+      "workflow": "editor-import-save-export",
+      "runtimePackage": "@galileo3d/editor-runtime",
+      "operations": [
+        { "id": "v4-browser-new-project", "runtimeApi": "EditorRuntime.select", "target": "node-hero" },
+        { "id": "import-v4-fox", "runtimeApi": "EditorRuntime.executeCommand", "target": "asset-v4-fox" },
+        { "id": "place-v4-fox", "runtimeApi": "EditorRuntime.executeCommand", "target": "node-v4-fox" },
+        { "id": "edit-v4-material", "runtimeApi": "EditorRuntime.executeCommand", "target": "node-v4-fox.material" },
+        { "id": "add-v4-light", "runtimeApi": "EditorRuntime.executeCommand", "target": "node-v4-key-light" },
+        { "id": "add-v4-camera", "runtimeApi": "EditorRuntime.executeCommand", "target": "node-v4-camera" },
+        { "id": "enter-v4-play-mode", "runtimeApi": "EditorRuntime.enterPlayMode", "target": "node-v4-fox" },
+        { "id": "save-v4-project", "runtimeApi": "ProjectSerializer.serialize", "target": "project.json" },
+        { "id": "static-export", "runtimeApi": "StaticProjectExporter.export", "target": "index.html" },
+        { "id": "static-export-runtime", "runtimeApi": "createStaticExportRuntime", "target": "runtime.js" }
+      ],
+      "evidenceHash": "g3d-prov-40318679"
+    }
+  },
+  "scene": {
+    "nodes": [
+      {
+        "id": "node-v4-stage",
+        "name": "V4 Stage Root",
+        "parentId": null,
+        "transform": { "position": [0, -0.25, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1] },
+        "material": {
+          "name": "Stage Contact Material",
+          "baseColor": "#172033",
+          "metallic": 0.1,
+          "roughness": 0.72,
+          "textureSlots": { "baseColor": "", "normal": "", "metallicRoughness": "", "emissive": "" }
+        },
+        "mesh": { "enabled": true, "assetId": null, "primitive": "cube" },
+        "light": { "kind": "directional", "intensity": 1.8 },
+        "camera": { "enabled": false, "fov": 60 },
+        "physics": { "body": "static", "collider": "box", "friction": 0.8, "restitution": 0.05 },
+        "animation": { "enabled": false, "clip": "", "loop": true },
+        "audio": { "source": "", "listener": false, "volume": 1 },
+        "particleEmitter": { "enabled": false, "preset": "none", "emissionRate": 24, "maxParticles": 160, "lifetime": 1.2, "speed": 2.4, "looping": true },
+        "script": { "behavior": "", "enabled": false }
+      },
+      {
+        "id": "node-v4-fox",
+        "name": "Imported Fox Hero",
+        "parentId": "node-v4-stage",
+        "transform": { "position": [0.7, 0.35, 0], "rotation": [0, 0, 0, 1], "scale": [1.25, 1.25, 1.25] },
+        "material": {
+          "name": "Edited V4 Fox Material",
+          "baseColor": "#ff8844",
+          "metallic": 0.15,
+          "roughness": 0.36,
+          "textureSlots": { "baseColor": "Fox_baseColor", "normal": "Fox_normal", "metallicRoughness": "Fox_metallicRoughness", "emissive": "" }
+        },
+        "mesh": { "enabled": true, "assetId": "asset-v4-fox", "primitive": "imported" },
+        "light": { "kind": "none", "intensity": 0 },
+        "camera": { "enabled": false, "fov": 60 },
+        "physics": { "body": "dynamic", "collider": "box", "friction": 0.35, "restitution": 0.25 },
+        "animation": { "enabled": true, "clip": "Run", "loop": true },
+        "audio": { "source": "", "listener": false, "volume": 1 },
+        "particleEmitter": { "enabled": true, "preset": "fountain", "emissionRate": 42, "maxParticles": 220, "lifetime": 1.4, "speed": 2.8, "looping": true },
+        "script": { "behavior": "BounceBehavior", "enabled": true }
+      },
+      {
+        "id": "node-v4-key-light",
+        "name": "V4 Key Light",
+        "parentId": null,
+        "transform": { "position": [-1.2, 1.25, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1] },
+        "material": {
+          "name": "Light Gizmo Material",
+          "baseColor": "#facc15",
+          "metallic": 0,
+          "roughness": 0.2,
+          "textureSlots": { "baseColor": "", "normal": "", "metallicRoughness": "", "emissive": "" }
+        },
+        "mesh": { "enabled": true, "assetId": null, "primitive": "cube" },
+        "light": { "kind": "point", "intensity": 2.4 },
+        "camera": { "enabled": false, "fov": 60 },
+        "physics": { "body": "none", "collider": "none", "friction": 0.5, "restitution": 0 },
+        "animation": { "enabled": false, "clip": "", "loop": true },
+        "audio": { "source": "", "listener": false, "volume": 1 },
+        "particleEmitter": { "enabled": false, "preset": "none", "emissionRate": 24, "maxParticles": 160, "lifetime": 1.2, "speed": 2.4, "looping": true },
+        "script": { "behavior": "PulseLightBehavior", "enabled": true }
+      },
+      {
+        "id": "node-v4-camera",
+        "name": "V4 Export Camera",
+        "parentId": null,
+        "transform": { "position": [1.65, 0.85, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1] },
+        "material": {
+          "name": "Camera Gizmo Material",
+          "baseColor": "#67e8f9",
+          "metallic": 0,
+          "roughness": 0.4,
+          "textureSlots": { "baseColor": "", "normal": "", "metallicRoughness": "", "emissive": "" }
+        },
+        "mesh": { "enabled": true, "assetId": null, "primitive": "cube" },
+        "light": { "kind": "none", "intensity": 0 },
+        "camera": { "enabled": true, "fov": 52 },
+        "physics": { "body": "none", "collider": "none", "friction": 0.5, "restitution": 0 },
+        "animation": { "enabled": false, "clip": "", "loop": true },
+        "audio": { "source": "", "listener": true, "volume": 0.75 },
+        "particleEmitter": { "enabled": false, "preset": "none", "emissionRate": 24, "maxParticles": 160, "lifetime": 1.2, "speed": 2.4, "looping": true },
+        "script": { "behavior": "OrbitCameraBehavior", "enabled": true }
+      }
+    ]
+  },
+  "prefabs": [],
+  "assets": [
+    {
+      "id": "asset-v4-fox",
+      "name": "Fox.glb",
+      "type": "gltf",
+      "uri": "../../tests/assets/corpus/khronos/Fox/Fox.glb",
+      "importedAt": "2026-05-08T00:00:00.000Z",
+      "preview": "real glTF asset reference with animation clips",
+      "diagnostics": ["V4 checked-in export preserves browser editor import workflow evidence"],
+      "folder": "Imported/glTF",
+      "status": "imported",
+      "thumbnailColor": "#ff8844",
+      "dependencies": ["Fox.glb", "Run animation clip", "Edited material"],
+      "variants": ["Default", "Copper", "Arctic"],
+      "animationClips": [
+        { "name": "Survey", "duration": 3.5 },
+        { "name": "Run", "duration": 0.8 },
+        { "name": "Walk", "duration": 1.2 }
+      ],
+      "revision": 1,
+      "cacheKey": "../../tests/assets/corpus/khronos/Fox/Fox.glb#rev-1"
+    }
+  ],
+  "importSettings": {
+    "colorSpace": "srgb",
+    "generateMipmaps": true,
+    "compression": "none",
+    "scale": 1.25,
+    "orientation": "y-up",
+    "materialMode": "import",
+    "textureMode": "embedded",
+    "importNormals": true,
+    "importTangents": true,
+    "importAnimations": true,
+    "materialVariants": true
+  },
+  "plugins": ["galileo.default-authoring"],
+  "export": {
+    "title": "Galileo3D V4 Editor Export",
+    "entryNodeId": "node-v4-camera"
+  }
+}

@@ -11,7 +11,7 @@ import {
 
 const manifestPath = resolve("tests/assets/corpus/gltf-corpus.manifest.json");
 const reportPath = resolve("tests/reports/gltf-corpus.json");
-const knownLimitsPath = resolve("docs/known-limits.md");
+const knownLimitsPath = resolve("docs/project/known-limits.md");
 
 describe("glTF external corpus manifest", () => {
   it("validates pinned external asset entries and emits a current corpus report", () => {
@@ -20,17 +20,22 @@ describe("glTF external corpus manifest", () => {
 
     expect(validation.diagnostics).toEqual([]);
     expect(validation.ok).toBe(true);
-    expect(validation.manifest?.assets.length).toBe(17);
+    expect(validation.manifest?.assets.length).toBe(77);
     expect(validation.manifest?.assets.every((asset) => !asset.source.uri.includes("/main/"))).toBe(true);
     expect(validation.manifest?.assets.every((asset) => asset.source.revision === manifest.generatedFrom.revision)).toBe(true);
     expect(validation.manifest?.assets.every((asset) => /^[a-f0-9]{64}$/.test(asset.source.sha256))).toBe(true);
 
     const report = createGLTFCorpusReport(validation.manifest!, new Date().toISOString());
-    expect(report.summary).toEqual({ pass: 11, warn: 4, expectedFail: 2 });
-    expect(report.assets.find((asset) => asset.id === "meshopt-cube-test")?.diagnostics[0]).toMatchObject({
-      assetId: "meshopt-cube-test",
-      code: "ASSET_MESHOPT_DECODER_REQUIRED",
-      nextAction: expect.stringContaining("Meshopt")
+    expect(report.summary).toEqual({ pass: 70, warn: 7, expectedFail: 0 });
+    expect(report.assets.find((asset) => asset.id === "meshopt-cube-test")).toMatchObject({
+      id: "meshopt-cube-test",
+      expectedStatus: "pass",
+      diagnostics: []
+    });
+    expect(report.assets.find((asset) => asset.id === "multi-uv-test")).toMatchObject({
+      id: "multi-uv-test",
+      expectedStatus: "pass",
+      diagnostics: []
     });
 
     mkdirSync(dirname(reportPath), { recursive: true });
@@ -50,8 +55,9 @@ describe("glTF external corpus manifest", () => {
           }
         },
         {
-          ...manifest.assets.find((asset) => asset.expectedStatus === "expected-fail")!,
+          ...manifest.assets[0]!,
           id: "broken-expected-fail",
+          expectedStatus: "expected-fail" as const,
           expectedDiagnostics: []
         }
       ]
@@ -79,22 +85,13 @@ describe("glTF external corpus manifest", () => {
     expect(() => normalizeAssetImportSettings({ colorSpace: "display-p3" as never })).toThrow(/colorSpace/);
   });
 
-  it("documents every expected-fail corpus diagnostic in known limits", () => {
+  it("keeps expected-fail corpus diagnostics out of the current 77-asset profile", () => {
     const manifest = readManifest();
     const report = createGLTFCorpusReport(manifest, "2026-05-06T00:00:00.000Z");
-    const knownLimits = readFileSync(knownLimitsPath, "utf8");
     const expectedFailures = report.assets.filter((asset) => asset.expectedStatus === "expected-fail");
 
-    expect(expectedFailures.length).toBe(2);
-    for (const asset of expectedFailures) {
-      expect(asset.diagnostics.length).toBeGreaterThan(0);
-      expect(knownLimits).toContain(asset.id);
-      for (const diagnostic of asset.diagnostics) {
-        expect(diagnostic.assetId).toBe(asset.id);
-        expect(diagnostic.nextAction.trim().length).toBeGreaterThan(0);
-        expect(knownLimits).toContain(diagnostic.code);
-      }
-    }
+    expect(expectedFailures).toEqual([]);
+    expect(readFileSync(knownLimitsPath, "utf8")).toContain("No current 77-asset glTF corpus entry is expected-fail.");
   });
 });
 

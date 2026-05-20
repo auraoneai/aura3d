@@ -1,0 +1,22 @@
+{
+  "schema": "g3d-v6-example-catalog/v1",
+  "requirements": {
+    "minimumExamples": 11,
+    "minimumBrowserTested": 11,
+    "minimumRealAssetExamples": 11,
+    "minimumHdrExamples": 11
+  },
+  "examples": [
+    { "slug": "product-configurator", "title": "Product Configurator", "category": "product", "browserTested": true, "realAssets": ["damaged-helmet", "boom-box", "antique-camera"], "hdrEnvironment": "studio-small-08", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "damaged-helmet-hdr", "title": "Damaged Helmet HDR", "category": "pbr-hdr", "browserTested": true, "realAssets": ["damaged-helmet"], "hdrEnvironment": "venice-sunset", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "boom-box-textures", "title": "Boom Box Textures", "category": "textures", "browserTested": true, "realAssets": ["boom-box"], "hdrEnvironment": "studio-small-08", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "material-extensions", "title": "Material Extensions", "category": "materials", "browserTested": true, "realAssets": ["clear-coat-test", "sheen-test-grid", "specular-test"], "hdrEnvironment": "studio-small-08", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "hdr-ibl-roughness", "title": "HDR IBL Roughness", "category": "materials", "browserTested": true, "realAssets": ["specular-test"], "hdrEnvironment": "autumn-field-puresky", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "architecture-day-night", "title": "Architecture Day Night", "category": "architecture", "browserTested": true, "realAssets": ["antique-camera", "duck"], "hdrEnvironment": "kloppenheim-puresky", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "animated-character", "title": "Animated Character", "category": "animation", "browserTested": true, "realAssets": ["cesium-man", "animated-morph-cube"], "hdrEnvironment": "spruit-sunrise", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "postprocess-cinematic", "title": "Postprocess Cinematic", "category": "postprocess", "browserTested": true, "realAssets": ["lantern"], "hdrEnvironment": "venice-sunset", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "large-instanced-scene", "title": "Large Instanced Scene", "category": "performance", "browserTested": true, "realAssets": ["cesium-milk-truck", "avocado", "duck"], "hdrEnvironment": "industrial-sunset-puresky", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "webgpu-product", "title": "WebGPU Product", "category": "webgpu", "browserTested": true, "realAssets": ["antique-camera"], "hdrEnvironment": "studio-small-08", "publicImport": "@galileo3d/engine/workflows/v6" },
+    { "slug": "threejs-migrated-scene", "title": "Three.js Migrated Scene", "category": "migration", "browserTested": true, "realAssets": ["damaged-helmet", "clear-coat-test"], "hdrEnvironment": "studio-small-08", "publicImport": "@galileo3d/engine/workflows/v6" }
+  ]
+}

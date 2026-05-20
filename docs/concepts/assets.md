@@ -1,21 +1,68 @@
 # Assets
 
-The asset package is responsible for loading, validating, caching, and converting external data into runtime resources. Current evidence is strongest around glTF/GLB loading, texture validation, material metadata, and render-resource creation.
+Version: `0.1.0-alpha.0`
 
-## Loader Boundary
+The asset system loads, validates, inspects, caches, and converts external files into renderable Galileo3D resources. The primary package is `@galileo3d/engine/assets`.
 
-Loaders should reject malformed or unsupported input with explicit diagnostics. They should not silently reinterpret invalid glTF data as partial success.
+## Package Surface
 
-`GLTFLoader` owns glTF parsing and validation. `createGLTFRenderResources(...)` bridges validated asset data into renderer geometry, material, and texture resources.
+Core public exports include:
 
-## Decoder Boundary
+- `GLTFLoader`, `OBJLoader`, texture loaders, image/audio/shader/material loaders;
+- `AssetManager`, `AssetRegistry`, `AssetCache`, `AssetHandle`;
+- `LoadContext`, `ImportPipeline`, import preflight utilities;
+- glTF inspection and compatibility reports;
+- Draco/Meshopt decoder hooks and KTX2/Basis transcode helpers;
+- `createGLTFRenderResources`, `loadRenderableAsset`, and `createRenderableScene`;
+- V4/V5/V6/V8/V9 asset corpus and diagnostics helpers.
 
-Compression extensions such as Meshopt, Draco, WebP, and KTX2/BasisU require decoder, transcoder, or upload paths. Meshopt and Draco are external decoder hooks, while KTX2/BasisU has a bounded loaders.gl-backed render-resource transcode path. Docs and templates must still describe limits instead of implying full compatibility.
+## Loading Path
 
-## Cache Boundary
+For a developer-facing app, prefer the high-level helpers first:
 
-The asset manager may cache loaded dependencies and retry failed loads, but apps still own release timing for long-lived views, editor previews, and product configurators.
+```ts
+import { createRenderableScene, loadRenderableAsset } from "@galileo3d/engine/assets";
 
-## Current Limits
+const asset = await loadRenderableAsset("/assets/product.glb", { type: "gltf" });
+const scene = await createRenderableScene(asset, {
+  camera: "auto-frame",
+  lighting: "studio-product",
+  shadows: true,
+  postprocess: "product-default"
+});
+```
 
-The pinned corpus is a starter corpus, not a complete compatibility matrix. Multi-UV render resources, decoder-enabled Meshopt corpus runs, and broad production texture-transcoding corpus coverage remain known limits.
+Use `GLTFLoader` directly when you need lower-level parsing, diagnostics, or custom render-resource conversion.
+
+## Render-Resource Boundary
+
+Asset loading and rendering are intentionally separate:
+
+- asset loaders parse, validate, and inspect external data;
+- render-resource conversion creates geometry, material, texture, animation, and camera inputs;
+- renderers submit those resources to WebGL2/WebGPU-facing backends.
+
+This separation keeps import diagnostics testable without requiring a live GPU context.
+
+## Current Strengths
+
+- checked glTF/GLB loading and inspection;
+- product-scene and canonical-scene render-resource conversion;
+- material extension diagnostics;
+- texture metadata and bounded compressed texture paths;
+- HDR/EXR/KTX2 loader hooks;
+- OBJ and MTL loader coverage;
+- route evidence for variants, compression, material extensions, KTX2, instancing, and animation.
+
+## Boundaries
+
+The checked asset corpus is not the entire glTF ecosystem. Do not imply:
+
+- complete Khronos corpus parity;
+- complete Blender/exporter round-trip support;
+- production texture-compression coverage across all GPUs;
+- full material-extension visual parity;
+- broad commercial asset compatibility without per-asset validation.
+
+When documenting an asset claim, cite the fixture, route, test, or report that proves it.
+

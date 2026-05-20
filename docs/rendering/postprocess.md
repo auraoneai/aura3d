@@ -1,27 +1,39 @@
 # Renderer Postprocess
 
-The current renderer package exposes deterministic postprocess passes that operate on render targets:
+The renderer exposes both low-level postprocess passes and route-level postprocess app evidence:
 
-- `ToneMappingPass` reads an HDR-style color target and writes tone-mapped LDR pixels.
-- `BloomPass` extracts bright pixels, diffuses them over a bounded radius, and writes a bloom output target.
-- `FXAAPass` detects high-contrast luma edges and writes a smoothed output target.
+- `ToneMappingPass`, bloom, FXAA, vignette, sharpening, color grading, and debug depth presentation in the root renderer path.
+- v5/v6 postprocess modules for cinematic examples and app-suite evidence.
+- v8 routes for bloom and depth-outline examples under `apps/v8-postprocessing-bloom` and `apps/v8-postprocessing-depth-outline`.
+- WebGPU render-to-texture and HDR readback evidence in the WebGPU matrix.
 
-`examples/postprocess-lab` wires those passes through `RenderGraph` in this order:
+The high-level flow is still the same: render a scene into an offscreen target, run one or more full-screen passes, then present or read back the final target. `RenderGraph`/composer-style code is used to keep pass dependencies explicit.
 
-1. `tone-mapping`: reads `hdr-color`, writes `tone-mapped-color`.
-2. `bloom`: reads `tone-mapped-color`, writes `bloom-color`.
-3. `fxaa`: reads `bloom-color`, writes `fxaa-color`.
+## Current Use Cases
 
-The example intentionally registers the passes out of order and uses `RenderGraph.compilePlan()` to prove dependency ordering before execution. It exposes `window.__GALILEO3D_POSTPROCESS_LAB__` with the compiled pass order, resource lifetime summary, diagnostics, and representative pixels.
+- Product viewers that need tone mapping after HDR/IBL lighting.
+- Cinematic demo routes with bloom, outline/depth visualization, or color grading.
+- WebGPU/WebGL2 render-target validation.
+- Visual-quality gates that need representative pixels instead of pure unit tests.
 
-## Limits
+## Current Evidence
 
-- The lab uses deterministic LDR byte buffers for postprocess verification.
-- HDR render-target formats, color-management policy, TAA, DOF, SSR, SSAO, depth-aware bloom, and temporal history are not implemented in this slice.
-- The WebGL2 render-target path supports readback and source pixels; GPU fullscreen postprocess compositing is not claimed by this example.
+- `tests/reports/v4-postprocess-suite.json` records root postprocess coverage.
+- `tests/reports/v6-lighting-postprocess-readiness.json` and v6 app-suite screenshots cover cinematic postprocess routes.
+- `tests/reports/v8-visual-review.json` includes v8 bloom and depth-outline screenshots as accepted route evidence.
+- `tests/reports/v8-route-health.json` includes the v8 postprocessing routes in the route registry.
+
+## Known Gaps
+
+- Bloom/depth-outline routes are not full Unreal/Unity post stacks. They are evidence that the route and pass wiring work.
+- Depth of field, SSAO, SSR, TAA, motion blur, temporal history, and robust anti-aliasing pipelines remain bounded or incomplete unless a specific report says otherwise.
+- Visual review passing does not mean final art quality. It checks framing, nonblank coverage, contrast, and notes, but it does not replace human art direction or broad competitor comparison.
+- Some current demos still read as debug scenes. Those should not be used in GTM material until they are restaged or replaced with polished assets.
 
 ## Verification
 
-- `tests/unit/rendering/render-graph.test.ts` covers the individual passes and render-graph ordering.
-- `tests/visual/rendering-pixels.spec.ts` covers tone mapping, bloom, and FXAA browser pixels.
-- `tests/visual/rendering-postprocess-lab.spec.ts` covers the ordered `examples/postprocess-lab` graph and presentation pixels.
+- `tests/unit/rendering/render-graph.test.ts`
+- `tests/browser/rendering-root-quality-gate.spec.ts`
+- `tests/browser/rendering-v4-visuals.spec.ts`
+- `tests/reports/v4-postprocess-suite.json`
+- `tests/reports/v8-visual-review.json`

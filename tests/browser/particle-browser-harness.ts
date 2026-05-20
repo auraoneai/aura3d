@@ -1,13 +1,9 @@
 import {
-  CollisionModule,
-  ColorModule,
-  ForceModule,
-  ParticleEmitter,
   ParticleRenderer,
   ParticleSystem,
-  SizeModule,
   TrailModule,
   createParticle,
+  createParticleEffectPreset,
   type ParticleRenderBatch,
   type TrailPoint
 } from "@galileo3d/rendering";
@@ -17,14 +13,17 @@ interface ParticleBrowserResult {
   readonly fireLive?: number;
   readonly fountainLive?: number;
   readonly collisionLive?: number;
+  readonly sparkLive?: number;
   readonly trailPoints?: number;
   readonly firePixel?: readonly number[];
   readonly fountainPixel?: readonly number[];
   readonly collisionPixel?: readonly number[];
+  readonly sparkPixel?: readonly number[];
   readonly trailPixel?: readonly number[];
   readonly stats?: {
     readonly fireUploads: number;
     readonly fountainUploads: number;
+    readonly sparkUploads: number;
     readonly collisionKilled: number;
   };
   readonly error?: string;
@@ -47,6 +46,7 @@ try {
   const fire = createFireSystem();
   const fountain = createFountainSystem();
   const collision = createCollisionSystem();
+  const spark = createSparkSystem();
   const trail = createTrailSystem();
 
   for (let frame = 0; frame < 50; frame += 1) {
@@ -55,6 +55,9 @@ try {
     collision.update(1 / 60);
     trail.system.update(1 / 60);
   }
+  for (let frame = 0; frame < 24; frame += 1) {
+    spark.update(1 / 60);
+  }
 
   context.fillStyle = "rgb(5, 8, 12)";
   context.fillRect(0, 0, canvas.width, canvas.height);
@@ -62,6 +65,7 @@ try {
   const fireBatch = renderer.render(fire, canvasTarget(context, 62, 150, 58));
   const fountainBatch = renderer.render(fountain, canvasTarget(context, 178, 150, 58));
   const collisionBatch = renderer.render(collision, canvasTarget(context, 292, 150, 58));
+  const sparkBatch = renderer.render(spark, canvasTarget(context, 410, 150, 58));
   drawCollisionGround(context);
   drawTrail(context, trail.particle.userData.trail as TrailPoint[], 178, 88, 58);
 
@@ -70,14 +74,17 @@ try {
     fireLive: fireBatch.liveCount,
     fountainLive: fountainBatch.liveCount,
     collisionLive: collisionBatch.liveCount,
+    sparkLive: sparkBatch.liveCount,
     trailPoints: (trail.particle.userData.trail as TrailPoint[]).length,
     firePixel: findPixel(context, { x: 16, y: 42, width: 92, height: 108 }, (r, g, b) => r > 110 && g > 35 && b < 120),
     fountainPixel: findPixel(context, { x: 134, y: 34, width: 88, height: 118 }, (r, g, b) => r < 130 && g > 45 && b > 130),
     collisionPixel: findPixel(context, { x: 248, y: 74, width: 90, height: 78 }, (r, g, b) => r > 45 && g > 110 && b > 35),
+    sparkPixel: findPixel(context, { x: 365, y: 42, width: 88, height: 110 }, (r, g, b) => r > 160 && g > 55 && b < 80),
     trailPixel: findPixel(context, { x: 150, y: 70, width: 60, height: 34 }, (r, g, b) => r > 160 && g < 120 && b > 130),
     stats: {
       fireUploads: fire.getStats().bufferUploads,
       fountainUploads: fountain.getStats().bufferUploads,
+      sparkUploads: spark.getStats().bufferUploads,
       collisionKilled: collision.getStats().killedCount
     }
   };
@@ -89,75 +96,19 @@ try {
 }
 
 function createFireSystem(): ParticleSystem {
-  return new ParticleSystem({
-    maxParticles: 200,
-    emitters: [
-      new ParticleEmitter({
-        seed: 101,
-        emissionRate: 90,
-        lifetime: { min: 0.7, max: 1.1 },
-        speed: { min: 0.15, max: 0.45 },
-        shape: { type: "box", center: { x: 0, y: 0.2, z: 0 }, size: { x: 0.4, y: 0.05, z: 0.1 } },
-        initial: { size: 0.1 }
-      })
-    ],
-    modules: [
-      new ForceModule({ x: 0, y: 0.65, z: 0 }),
-      new ColorModule([
-        { time: 0, color: { r: 1, g: 0.78, b: 0.2, a: 1 } },
-        { time: 1, color: { r: 0.85, g: 0.12, b: 0.04, a: 0.15 } }
-      ]),
-      new SizeModule([
-        { time: 0, size: 0.05 },
-        { time: 0.5, size: 0.14 },
-        { time: 1, size: 0.02 }
-      ])
-    ]
-  });
+  return createParticleEffectPreset("fire", { seed: 101, maxParticles: 200 });
 }
 
 function createFountainSystem(): ParticleSystem {
-  return new ParticleSystem({
-    maxParticles: 220,
-    emitters: [
-      new ParticleEmitter({
-        seed: 202,
-        emissionRate: 120,
-        lifetime: { min: 1.0, max: 1.4 },
-        speed: { min: 0.5, max: 0.9 },
-        shape: { type: "point", position: { x: 0, y: 0.1, z: 0 } },
-        initial: { size: 0.08 }
-      })
-    ],
-    modules: [
-      new ForceModule({ x: 0, y: -0.45, z: 0 }),
-      new ColorModule([
-        { time: 0, color: { r: 0.2, g: 0.72, b: 1, a: 0.9 } },
-        { time: 1, color: { r: 0.1, g: 0.26, b: 1, a: 0.25 } }
-      ])
-    ]
-  });
+  return createParticleEffectPreset("fountain", { seed: 202, maxParticles: 220 });
 }
 
 function createCollisionSystem(): ParticleSystem {
-  return new ParticleSystem({
-    maxParticles: 64,
-    emitters: [
-      new ParticleEmitter({
-        seed: 303,
-        emissionRate: 0,
-        bursts: [{ time: 0, count: 20 }],
-        lifetime: 2,
-        speed: 0,
-        shape: { type: "box", center: { x: 0, y: 0.75, z: 0 }, size: { x: 0.55, y: 0.1, z: 0 } },
-        initial: { size: 0.08, color: { r: 0.45, g: 1, b: 0.48, a: 1 } }
-      })
-    ],
-    modules: [
-      new ForceModule({ x: 0, y: -2.8, z: 0 }),
-      new CollisionModule({ normal: { x: 0, y: 1, z: 0 }, constant: 0, restitution: 0.25 })
-    ]
-  });
+  return createParticleEffectPreset("collision-burst", { seed: 303, maxParticles: 64 });
+}
+
+function createSparkSystem(): ParticleSystem {
+  return createParticleEffectPreset("spark-shower", { seed: 404, maxParticles: 160 });
 }
 
 function createTrailSystem(): { readonly system: ParticleSystem; readonly particle: ReturnType<typeof createParticle> } {
@@ -213,7 +164,7 @@ function drawCollisionGround(context: CanvasRenderingContext2D): void {
 function drawPanelLabels(context: CanvasRenderingContext2D): void {
   context.strokeStyle = "rgb(35, 45, 60)";
   context.lineWidth = 1;
-  for (const x of [120, 240]) {
+  for (const x of [120, 240, 360]) {
     context.beginPath();
     context.moveTo(x, 14);
     context.lineTo(x, 166);

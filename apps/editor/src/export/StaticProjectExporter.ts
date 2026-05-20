@@ -18,7 +18,18 @@ export class StaticProjectExporter {
 
   export(project: EditorProject): StaticExportResult {
     this.serializer.validate(project);
-    const projectJson = this.serializer.serialize(project);
+    const exportedProject: EditorProject = {
+      ...project,
+      metadata: {
+        ...project.metadata,
+        provenance: this.serializer.createEditorProvenance([
+          ...(project.metadata.provenance?.operations ?? []),
+          { id: "static-export", runtimeApi: "StaticProjectExporter.export", target: "index.html" },
+          { id: "static-export-runtime", runtimeApi: "createStaticExportRuntime", target: "runtime.js" }
+        ])
+      }
+    };
+    const projectJson = this.serializer.serialize(exportedProject);
     return {
       entry: "index.html",
       files: [

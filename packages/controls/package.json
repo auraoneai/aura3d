@@ -1,0 +1,13 @@
+{
+  "name": "@galileo3d/controls",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "../../dist/controls/index.js",
+  "types": "../../dist/controls/index.d.ts",
+  "exports": {
+    ".": "../../dist/controls/index.js"
+  },
+  "dependencies": {
+    "@galileo3d/input": "workspace:*"
+  }
+}

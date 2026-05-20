@@ -28,6 +28,7 @@ export abstract class Camera extends SceneNode {
   abstract computeProjectionMatrix(): Mat4;
 
   updateCameraMatrices(): void {
+    updateAncestors(this);
     this.updateWorldTransform();
     this.projectionMatrix = this.computeProjectionMatrix();
     this.viewMatrix = this.transform.inverseWorldMatrix;
@@ -39,5 +40,17 @@ export abstract class Camera extends SceneNode {
   setViewport(viewport: CameraViewport): void {
     if (viewport.width <= 0 || viewport.height <= 0) throw new ValidationError("CAMERA_VIEWPORT", "Camera viewport dimensions must be positive.");
     this.viewport = { ...viewport };
+  }
+}
+
+function updateAncestors(node: SceneNode): void {
+  const ancestors: SceneNode[] = [];
+  let parent = node.parent;
+  while (parent) {
+    ancestors.unshift(parent);
+    parent = parent.parent;
+  }
+  for (const ancestor of ancestors) {
+    ancestor.transform.updateWorld(ancestor.parent?.transform.worldMatrix);
   }
 }

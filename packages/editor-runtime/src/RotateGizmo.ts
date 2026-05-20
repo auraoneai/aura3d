@@ -7,9 +7,10 @@ export class RotateGizmo extends Gizmo {
     const current = readTransform(this.target);
     const next = clone(current);
     next.rotation ??= { x: 0, y: 0, z: 0, w: 1 };
-    if (input.axis === "x") next.rotation.x += input.delta;
-    if (input.axis === "y") next.rotation.y += input.delta;
-    if (input.axis === "z" || input.axis === "uniform") next.rotation.z += input.delta;
+    const delta = this.snapRotationDelta(input.delta);
+    if (input.axis === "x") next.rotation.x += delta;
+    if (input.axis === "y") next.rotation.y += delta;
+    if (input.axis === "z" || input.axis === "uniform") next.rotation.z += delta;
     await this.history.execute(new TransformCommand(this.target, next));
   }
 }

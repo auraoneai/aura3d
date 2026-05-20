@@ -48,9 +48,9 @@ test.describe("glTF corpus gallery visual pixels", () => {
     const state = await page.evaluate(() => window.__GALILEO3D_GLTF_CORPUS_GALLERY__);
     expect(state?.status, state?.error).toBe("ready");
     expect(state?.assetCount).toBe(17);
-    expect(state?.pass).toBe(11);
+    expect(state?.pass).toBe(13);
     expect(state?.warn).toBe(4);
-    expect(state?.expectedFail).toBe(2);
+    expect(state?.expectedFail).toBe(0);
     expect(state?.renderedCards).toBe(17);
     expect(state?.sourceRevision).toMatch(/^[a-f0-9]{40}$/);
 
@@ -58,7 +58,7 @@ test.describe("glTF corpus gallery visual pixels", () => {
     await expect(countMatchingPixels(page, { x: 0, y: 0, width: 960, height: 540 }, "bright")).resolves.toBeGreaterThan(1_000);
     await expect(countMatchingPixels(page, { x: 20, y: 100, width: 920, height: 420 }, "green")).resolves.toBeGreaterThan(6_000);
     await expect(countMatchingPixels(page, { x: 20, y: 100, width: 920, height: 420 }, "yellow")).resolves.toBeGreaterThan(900);
-    await expect(countMatchingPixels(page, { x: 20, y: 100, width: 920, height: 420 }, "red")).resolves.toBeGreaterThan(1_300);
+    await expect(countMatchingPixels(page, { x: 20, y: 100, width: 920, height: 420 }, "red")).resolves.toBeLessThan(300);
   });
 });
 

@@ -1,4 +1,4 @@
-export type VertexAttributeSemantic = "position" | "normal" | "uv" | "tangent" | "color" | "joints" | "weights";
+export type VertexAttributeSemantic = "position" | "normal" | "uv" | "uv1" | "tangent" | "color" | "joints" | "weights";
 
 export type VertexAttributeType = "float32";
 
@@ -105,6 +105,16 @@ export class VertexFormat {
     44
   );
 
+  static readonly P3N3J4W4 = new VertexFormat(
+    [
+      { semantic: "position", components: 3, offset: 0 },
+      { semantic: "normal", components: 3, offset: 12 },
+      { semantic: "joints", components: 4, offset: 24 },
+      { semantic: "weights", components: 4, offset: 40 }
+    ],
+    56
+  );
+
   getAttribute(semantic: VertexAttributeSemantic): VertexAttribute {
     const attribute = this.attributes.find((candidate) => candidate.semantic === semantic);
     if (!attribute) {
@@ -134,6 +144,8 @@ function defaultShaderLocation(semantic: VertexAttributeSemantic): number {
       return 5;
     case "weights":
       return 6;
+    case "uv1":
+      return 7;
   }
 }
 
@@ -145,6 +157,8 @@ function defaultShaderName(semantic: VertexAttributeSemantic): string {
       return "a_normal";
     case "uv":
       return "a_uv";
+    case "uv1":
+      return "a_uv1";
     case "tangent":
       return "a_tangent";
     case "color":

@@ -21,10 +21,13 @@ export interface PipelineDrawDescriptor {
   readonly label?: string;
   readonly vertexBuffer: RenderBuffer;
   readonly vertexCount: number;
+  readonly firstVertex?: number;
   readonly instanceCount?: number;
+  readonly instanceAttributes?: DrawCommand["instanceAttributes"];
   readonly indexBuffer?: RenderBuffer;
   readonly indexType?: IndexType;
   readonly indexCount?: number;
+  readonly firstIndex?: number;
   readonly uniforms?: DrawCommand["uniforms"];
 }
 
@@ -64,7 +67,9 @@ export class RenderPipeline {
       vertexBuffer: descriptor.vertexBuffer,
       vertexFormat: this.vertexFormat,
       vertexCount: descriptor.vertexCount,
+      ...(descriptor.firstVertex !== undefined ? { firstVertex: descriptor.firstVertex } : {}),
       ...(descriptor.instanceCount !== undefined ? { instanceCount: descriptor.instanceCount } : {}),
+      ...(descriptor.instanceAttributes !== undefined ? { instanceAttributes: descriptor.instanceAttributes } : {}),
       shader: this.shader,
       uniforms: descriptor.uniforms
     };
@@ -72,7 +77,8 @@ export class RenderPipeline {
       Object.assign(command, {
         indexBuffer: descriptor.indexBuffer,
         indexType: descriptor.indexType,
-        indexCount: descriptor.indexCount
+        indexCount: descriptor.indexCount,
+        ...(descriptor.firstIndex !== undefined ? { firstIndex: descriptor.firstIndex } : {})
       });
     }
     return command;

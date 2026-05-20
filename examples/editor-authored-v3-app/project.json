@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "metadata": {
+    "name": "V3 Editor Authored Sample",
+    "savedAt": "2026-05-07T00:00:00.000Z",
+    "provenance": {
+      "authoringTool": "galileo3d-browser-editor",
+      "workflow": "editor-import-save-export",
+      "runtimePackage": "@galileo3d/editor-runtime",
+      "operations": [
+        { "id": "new-project", "runtimeApi": "EditorRuntime.select", "target": "node-hero" },
+        { "id": "import-real-gltf", "runtimeApi": "EditorRuntime.executeCommand", "target": "asset-fox" },
+        { "id": "place-gltf", "runtimeApi": "EditorRuntime.executeCommand", "target": "placed-asset-fox" },
+        { "id": "transform-gizmo", "runtimeApi": "EditorRuntime.translateTarget", "target": "placed-asset-fox" },
+        { "id": "material-edit", "runtimeApi": "EditorRuntime.executeCommand", "target": "placed-asset-fox.material" },
+        { "id": "save-project", "runtimeApi": "ProjectSerializer.serialize", "target": "project.json" },
+        { "id": "static-export", "runtimeApi": "StaticProjectExporter.export", "target": "index.html" },
+        { "id": "static-export-runtime", "runtimeApi": "createStaticExportRuntime", "target": "runtime.js" }
+      ],
+      "evidenceHash": "g3d-prov-9bf29cd5"
+    }
+  },
+  "scene": {
+    "nodes": [
+      {
+        "id": "node-hero",
+        "name": "Authoring Camera Rig",
+        "parentId": null,
+        "transform": { "position": [0, 0, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1] },
+        "material": {
+          "name": "Camera Rig Material",
+          "baseColor": "#38d99f",
+          "metallic": 0,
+          "roughness": 0.45,
+          "textureSlots": { "baseColor": "", "normal": "", "metallicRoughness": "", "emissive": "" }
+        },
+        "mesh": { "enabled": true, "assetId": null, "primitive": "cube" },
+        "light": { "kind": "directional", "intensity": 1.4 },
+        "camera": { "enabled": true, "fov": 58 },
+        "physics": { "body": "static", "collider": "box" },
+        "animation": { "enabled": false, "clip": "", "loop": true },
+        "audio": { "source": "", "listener": true, "volume": 0.8 },
+        "script": { "behavior": "SpinBehavior", "enabled": true }
+      },
+      {
+        "id": "placed-asset-fox",
+        "name": "Imported Fox GLB",
+        "parentId": "node-hero",
+        "transform": { "position": [1.3, 0.4, 0], "rotation": [0, 0, 15, 1], "scale": [1.25, 1.25, 1.25] },
+        "material": {
+          "name": "Edited Fox Material",
+          "baseColor": "#ff8844",
+          "metallic": 0.2,
+          "roughness": 0.38,
+          "textureSlots": { "baseColor": "Fox_baseColor", "normal": "Fox_normal", "metallicRoughness": "", "emissive": "" }
+        },
+        "mesh": { "enabled": true, "assetId": "asset-fox", "primitive": "imported" },
+        "light": { "kind": "none", "intensity": 0 },
+        "camera": { "enabled": false, "fov": 60 },
+        "physics": { "body": "dynamic", "collider": "box" },
+        "animation": { "enabled": true, "clip": "Run", "loop": true },
+        "audio": { "source": "", "listener": false, "volume": 1 },
+        "script": { "behavior": "BounceBehavior", "enabled": true }
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "asset-fox",
+      "name": "Fox.glb",
+      "type": "gltf",
+      "uri": "../../tests/assets/corpus/khronos/Fox/Fox.glb",
+      "importedAt": "2026-05-07T00:00:00.000Z",
+      "preview": "real glTF asset reference",
+      "diagnostics": ["authored through editor import workflow fixture"],
+      "folder": "Imported/glTF",
+      "status": "imported",
+      "thumbnailColor": "#ff8844",
+      "dependencies": ["Fox.glb", "Run animation clip"],
+      "variants": ["Default"]
+    }
+  ],
+  "importSettings": {
+    "colorSpace": "srgb",
+    "generateMipmaps": true,
+    "compression": "none",
+    "scale": 1.25,
+    "orientation": "y-up",
+    "materialMode": "import",
+    "textureMode": "embedded",
+    "importNormals": true,
+    "importTangents": true,
+    "importAnimations": true,
+    "materialVariants": true
+  },
+  "plugins": ["galileo.default-authoring"],
+  "export": {
+    "title": "Galileo3D V3 Editor Export",
+    "entryNodeId": "node-hero"
+  }
+}

@@ -17,8 +17,12 @@ declare global {
 }
 
 interface PbrLabState {
+  readonly id: "pbr-material-lab";
   readonly status: "ready" | "error";
   readonly renderer: "webgl2";
+  readonly visualClaim: "bounded-pbr-material-lab";
+  readonly knownLimits: readonly string[];
+  readonly errors: readonly string[];
   readonly environmentLighting: "sampled-environment-map-approximation";
   readonly lightingModel: "direct-lights-plus-sampled-environment-map";
   readonly diagnostics?: { readonly drawCalls: number; readonly lastError: string | null };
@@ -27,11 +31,21 @@ interface PbrLabState {
   readonly error?: string;
 }
 
+const knownLimits = [
+  "This page shows the currently implemented PBR material slice, not production PBR parity.",
+  "HDR IBL, irradiance convolution, calibrated specular prefiltering, reflection probes, and compressed material packs remain unclaimed.",
+  "The visual checks are fixed-scene browser evidence for these generated materials only.",
+] as const;
+
 if (typeof document !== "undefined") {
   void run().catch((error) => {
     window.__GALILEO3D_PBR_MATERIAL_LAB__ = {
+      id: "pbr-material-lab",
       status: "error",
       renderer: "webgl2",
+      visualClaim: "bounded-pbr-material-lab",
+      knownLimits,
+      errors: [error instanceof Error ? error.message : String(error)],
       environmentLighting: "sampled-environment-map-approximation",
       lightingModel: "direct-lights-plus-sampled-environment-map",
       error: error instanceof Error ? error.stack ?? error.message : String(error)
@@ -84,8 +98,12 @@ async function run(): Promise<void> {
     emissive: findPixel(renderer, { x: 610, y: 205, width: 110, height: 130 }, (r, g, b, a) => g > 90 && r < 90 && a === 255)
   };
   window.__GALILEO3D_PBR_MATERIAL_LAB__ = {
+    id: "pbr-material-lab",
     status: "ready",
     renderer: "webgl2",
+    visualClaim: "bounded-pbr-material-lab",
+    knownLimits,
+    errors: [],
     environmentLighting: "sampled-environment-map-approximation",
     lightingModel: "direct-lights-plus-sampled-environment-map",
     diagnostics,

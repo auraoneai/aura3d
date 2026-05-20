@@ -7,7 +7,20 @@ import {
   PhysicsStepper,
   PhysicsWorld,
   ScenePhysicsBridge,
-  Shape
+  Shape,
+  sampleArcadeVehicleDynamics,
+  samplePacejkaTireForces,
+  sampleVehicleDamage,
+  sampleVehicleEffectEmitters,
+  samplePlatformerControllerFixture,
+  sampleClothSimulationFixture,
+  sampleSoftBodyFixture,
+  sampleFractureFixture,
+  sampleFluidFixture,
+  sampleFireSmokeFixture,
+  samplePhysicsSandboxFixture,
+  sampleRacingAiDriver,
+  sampleVehicleDrivetrain
 } from "../../packages/physics/src/index.js";
 import {
   AnimationClip,
@@ -23,7 +36,10 @@ import {
   Skeleton,
   applyRootMotion,
   extractRootMotion,
-  buildSkinningPalette
+  buildSkinningPalette,
+  solveTwoBoneIk,
+  sampleMotionMatchingFixture,
+  sampleSecondaryAnimationFixture
 } from "../../packages/animation/src/index.js";
 import { AnimationInspector } from "../../packages/debug/src/AnimationInspector.js";
 import { PhysicsDebugAdapter } from "../../packages/debug/src/PhysicsDebugAdapter.js";
@@ -743,6 +759,335 @@ test("animation mixer blends numeric-array tracks for morph weights", () => {
   assert.deepEqual(mixer.getValue("mesh.weights"), [0.75, 0.25]);
 });
 
+test("scene animation bridge applies morph weight tracks to render targets", () => {
+  const bridge = new SceneAnimationBridge();
+  const target = {
+    weights: [0, 0],
+    applied: [] as readonly number[][],
+    setWeights(value: readonly number[]) {
+      this.weights = [...value];
+      this.applied = [...this.applied, [...value]];
+    }
+  };
+  bridge.register("face", target);
+  const mixer = new AnimationMixer(bridge);
+  mixer.play(new AnimationClip({
+    name: "face-morph",
+    tracks: [new AnimationTrack({
+      target: "face.weights",
+      valueType: "number-array",
+      keyframes: [
+        { time: 0, value: [0, 1] },
+        { time: 1, value: [1.2, -0.25] }
+      ]
+    })]
+  }));
+
+  mixer.update(0.5);
+
+  assert.deepEqual(target.weights, [0.6, 0.375]);
+  assert.deepEqual(target.applied, [[0.6, 0.375]]);
+  assert.deepEqual(mixer.snapshot().applyErrors, []);
+});
+
+test("secondary animation fixture exposes bounded foot IK and spring-bone telemetry", () => {
+  const fixture = sampleSecondaryAnimationFixture({
+    stridePhase: 0.25,
+    rootHeight: 1.08,
+    velocity: [0.9, 0, 0.22],
+    terrainSlope: 0.18,
+    deltaSeconds: 1 / 60,
+    seed: 0x3d2025
+  });
+  const repeated = sampleSecondaryAnimationFixture({
+    stridePhase: 0.25,
+    rootHeight: 1.08,
+    velocity: [0.9, 0, 0.22],
+    terrainSlope: 0.18,
+    deltaSeconds: 1 / 60,
+    seed: 0x3d2025
+  });
+
+  assert.equal(fixture.source, "origin-master-foot-ik-spring-bone-adapted");
+  assert.deepEqual(fixture, repeated);
+  assert.equal(fixture.footIk.feet.length, 2);
+  assert.equal(fixture.footIk.groundedFeet, 2);
+  assert.ok(fixture.footIk.hipOffset < 0);
+  assert.ok(fixture.footIk.averageTargetError <= 0.015);
+  assert.equal(fixture.springBone.chainName, "ponytail");
+  assert.ok(fixture.springBone.boneCount >= 4);
+  assert.ok(fixture.springBone.maxDisplacement > 0);
+  assert.ok(fixture.springBone.collisionContacts > 0);
+  assert.ok(fixture.productionReadiness.footPlacementTelemetry);
+  assert.ok(fixture.productionReadiness.hipAdjustmentTelemetry);
+  assert.ok(fixture.productionReadiness.springChainTelemetry);
+  assert.ok(fixture.productionReadiness.collisionTelemetry);
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.ok(fixture.blockedClaims.includes("Unity Animation Rigging parity"));
+  assert.ok(fixture.blockedClaims.includes("Unreal Control Rig parity"));
+  assert.throws(() => sampleSecondaryAnimationFixture({ seed: 1.25 }), /seed/);
+});
+
+test("arcade vehicle dynamics exposes bounded speed, nitro, drift, and suspension state", () => {
+  const cruise = sampleArcadeVehicleDynamics({
+    elapsedSeconds: 2.4,
+    throttle: 1,
+    steer: 0.35,
+    nitro: true,
+    maxSpeedKph: 240
+  });
+  const drifting = sampleArcadeVehicleDynamics({
+    elapsedSeconds: 2.4,
+    throttle: 1,
+    steer: 0.75,
+    handbrake: true,
+    nitro: false,
+    maxSpeedKph: 240
+  });
+
+  assert.ok(cruise.speedKph > 70);
+  assert.ok(cruise.rpm > 1000);
+  assert.ok(cruise.nitro < 100);
+  assert.ok(cruise.wheelSpin > 0);
+  assert.equal(cruise.suspensionCompression.length, 4);
+  assert.ok(drifting.driftSlip > cruise.driftSlip);
+  assert.ok(drifting.grip < cruise.grip);
+  assert.ok(drifting.suspensionCompression[1] > drifting.suspensionCompression[0]);
+  assert.throws(() => sampleArcadeVehicleDynamics({ elapsedSeconds: -1 }), /elapsedSeconds/);
+});
+
+test("pacejka tire model exposes combined slip forces and aligning torque", () => {
+  const straight = samplePacejkaTireForces({
+    longitudinalVelocity: 34,
+    lateralVelocity: 0,
+    angularVelocity: 112,
+    normalForce: 4200,
+    longitudinal: "sport",
+    lateral: "sport"
+  });
+  const cornering = samplePacejkaTireForces({
+    longitudinalVelocity: 34,
+    lateralVelocity: 5.2,
+    angularVelocity: 122,
+    normalForce: 4200,
+    steeringAngle: 0.14,
+    camberAngle: -0.03,
+    longitudinal: "racing",
+    lateral: "racing"
+  });
+
+  assert.equal(straight.preset.longitudinal, "sport");
+  assert.equal(cornering.preset.lateral, "racing");
+  assert.ok(straight.combinedForce > 0);
+  assert.ok(cornering.combinedForce > straight.combinedForce);
+  assert.ok(Math.abs(cornering.slipAngle) > Math.abs(straight.slipAngle));
+  assert.ok(Math.abs(cornering.aligningTorque) > 0);
+  assert.ok(cornering.optimalSlipRatio > 0);
+  assert.ok(cornering.optimalSlipAngle > 0);
+  assert.deepEqual(samplePacejkaTireForces({ longitudinalVelocity: 10, angularVelocity: 30, normalForce: 0 }).combinedForce, 0);
+  assert.throws(() => samplePacejkaTireForces({ longitudinalVelocity: 10, angularVelocity: 30, normalForce: -1 }), /normalForce/);
+});
+
+test("vehicle drivetrain samples engine torque, gear selection, differential split, and aero loads", () => {
+  const launch = sampleVehicleDrivetrain({
+    speedKph: 72,
+    throttle: 0.92,
+    clutch: 1,
+    differential: "limited-slip",
+    frontRearSplit: 0.42,
+    lockingFactor: 0.48,
+    peakTorque: 460,
+    peakTorqueRpm: 4200,
+    maxRpm: 7600,
+    finalDriveRatio: 3.73,
+    dragCoefficient: 0.31,
+    frontalArea: 2.05,
+    downforceCoefficient: 0.82
+  });
+  const fast = sampleVehicleDrivetrain({
+    speedKph: 192,
+    throttle: 0.86,
+    differential: "electronic",
+    frontRearSplit: 0.45,
+    lockingFactor: 0.7,
+    peakTorque: 460,
+    peakTorqueRpm: 4200,
+    maxRpm: 7600,
+    finalDriveRatio: 3.73,
+    dragCoefficient: 0.31,
+    frontalArea: 2.05,
+    downforceCoefficient: 0.82
+  });
+
+  assert.equal(launch.differential, "limited-slip");
+  assert.ok(launch.gear >= 1);
+  assert.ok(launch.engineRpm >= 950);
+  assert.ok(launch.engineTorque > 0);
+  assert.ok(launch.wheelTorque > launch.engineTorque);
+  assert.ok(launch.frontTorque > 0);
+  assert.ok(launch.rearTorque > launch.frontTorque);
+  assert.equal(Number((launch.frontTorque + launch.rearTorque).toFixed(3)), launch.wheelTorque);
+  assert.ok(launch.dragForce > 0);
+  assert.ok(launch.downforce > launch.dragForce);
+  assert.ok(["hold", "upshift", "downshift"].includes(launch.shiftState));
+  assert.ok(fast.gear >= launch.gear);
+  assert.ok(fast.dragForce > launch.dragForce);
+  assert.ok(fast.downforce > launch.downforce);
+  assert.throws(() => sampleVehicleDrivetrain({ speedKph: -1 }), /speedKph/);
+  assert.throws(() => sampleVehicleDrivetrain({ speedKph: 10, gearRatios: [] }), /gearRatios/);
+});
+
+test("vehicle effect emitters expose bounded smoke and nitro flame rates", () => {
+  const drift = sampleVehicleEffectEmitters({
+    speedKph: 88,
+    throttle: 0.72,
+    steer: 0.84,
+    handbrake: false,
+    nitroActive: true,
+    wheelOnGround: [true, true, true, false]
+  });
+  const idle = sampleVehicleEffectEmitters({
+    speedKph: 44,
+    throttle: 0.2,
+    steer: 0.1,
+    nitroActive: false
+  });
+
+  assert.equal(drift.smokeReason, "high-speed-steer");
+  assert.equal(drift.tireSmokeRates.length, 4);
+  assert.ok(drift.tireSmokeRates[0] > 0);
+  assert.ok(drift.tireSmokeRates[2] > drift.tireSmokeRates[0]);
+  assert.equal(drift.tireSmokeRates[3], 0);
+  assert.ok(drift.totalTireSmokeRate > 0);
+  assert.ok(drift.nitroFlameRate > 0);
+  assert.equal(drift.visibleEffectEmitters, 4);
+  assert.equal(idle.totalTireSmokeRate, 0);
+  assert.equal(idle.nitroFlameRate, 0);
+  assert.equal(idle.visibleEffectEmitters, 0);
+  assert.throws(() => sampleVehicleEffectEmitters({ speedKph: -1 }), /speedKph/);
+});
+
+test("vehicle damage samples bounded impact health and visual damage levels", () => {
+  const scratched = sampleVehicleDamage({
+    health: 100,
+    impactSpeedKph: 44,
+    collisionSeverity: 0.42
+  });
+  const critical = sampleVehicleDamage({
+    health: 26,
+    impactSpeedKph: 138,
+    collisionSeverity: 0.95
+  });
+  const repaired = sampleVehicleDamage({
+    health: 52,
+    repair: 24
+  });
+
+  assert.ok(scratched.health < 100);
+  assert.ok(scratched.damage > 0);
+  assert.ok(scratched.impactDamage > 0);
+  assert.equal(scratched.visualDamageLevel, "scratched");
+  assert.equal(critical.visualDamageLevel, "critical");
+  assert.equal(critical.disabled, true);
+  assert.equal(repaired.health, 76);
+  assert.equal(repaired.damage, 24);
+  assert.equal(repaired.impactDamage, 0);
+  assert.throws(() => sampleVehicleDamage({ health: -1 }), /health/);
+});
+
+test("racing ai driver samples path following, overtaking, and rubberband controls", () => {
+  const medium = sampleRacingAiDriver({
+    difficulty: "medium",
+    elapsedSeconds: 1.2,
+    progress: 0.42,
+    speedKph: 132,
+    targetSpeedKph: 220,
+    trackCurvature: 0.28,
+    opponentAhead: true,
+    opponentDistance: 12,
+    playerGapSeconds: -1.4
+  });
+  const hard = sampleRacingAiDriver({
+    difficulty: "hard",
+    elapsedSeconds: 1.2,
+    progress: 0.42,
+    speedKph: 132,
+    targetSpeedKph: 220,
+    trackCurvature: 0.28,
+    opponentAhead: true,
+    opponentDistance: 12,
+    playerGapSeconds: -1.4
+  });
+
+  assert.equal(medium.difficulty, "medium");
+  assert.equal(medium.overtaking, true);
+  assert.ok(medium.throttle > 0);
+  assert.ok(medium.lookaheadDistance > 0);
+  assert.ok(medium.rubberbandBoost > 0);
+  assert.ok(Math.abs(medium.steer) > 0);
+  assert.ok(hard.targetSpeedKph > medium.targetSpeedKph);
+  assert.ok(hard.aggressiveness > medium.aggressiveness);
+  assert.throws(() => sampleRacingAiDriver({ elapsedSeconds: -1, progress: 0, speedKph: 0 }), /elapsedSeconds/);
+});
+
+test("two-bone IK reaches reachable targets while preserving segment lengths", () => {
+  const result = solveTwoBoneIk({
+    root: [0, 0, 0],
+    mid: [0, 1, 0],
+    end: [0, 2, 0],
+    target: [1.2, 0.8, 0],
+    pole: [0, 0, 1]
+  });
+
+  assert.equal(result.reached, true);
+  assert.equal(result.stretched, false);
+  assert.ok(result.endDistanceToTarget < 1e-3);
+  assert.equal(Number(distance3(result.root, result.mid).toFixed(6)), 1);
+  assert.equal(Number(distance3(result.mid, result.end).toFixed(6)), 1);
+  assert.ok(result.mid[2] > 0);
+  assert.ok(result.poleInfluence > 0);
+});
+
+test("two-bone IK clamps unreachable targets unless stretching is enabled", () => {
+  const clamped = solveTwoBoneIk({
+    root: [0, 0, 0],
+    mid: [0, 1, 0],
+    end: [0, 2, 0],
+    target: [4, 0, 0],
+    pole: [0, 0, 1]
+  });
+  const stretched = solveTwoBoneIk({
+    root: [0, 0, 0],
+    mid: [0, 1, 0],
+    end: [0, 2, 0],
+    target: [4, 0, 0],
+    pole: [0, 0, 1],
+    allowStretch: true
+  });
+
+  assert.equal(clamped.reached, false);
+  assert.equal(clamped.stretched, false);
+  assert.ok(clamped.endDistanceToTarget > 1.9);
+  assert.equal(stretched.reached, true);
+  assert.equal(stretched.stretched, true);
+  assert.ok(stretched.endDistanceToTarget < 1e-3);
+});
+
+test("two-bone IK respects blend weight", () => {
+  const result = solveTwoBoneIk({
+    root: [0, 0, 0],
+    mid: [0, 1, 0],
+    end: [0, 2, 0],
+    target: [1, 1, 0],
+    pole: [0, 0, 1],
+    weight: 0.5
+  });
+
+  assert.equal(result.end[0], 0.5);
+  assert.equal(result.end[1], 1.5);
+  assert.equal(result.reached, false);
+});
+
 test("animation layers apply stable weights and expose target masks", () => {
   const clip = new AnimationClip({
     name: "upper-body",
@@ -991,6 +1336,327 @@ test("state machine exposes deterministic graph debug output without evaluating 
   assert.equal(evaluated, 2);
 });
 
+test("platformer fixture ports old controller camera and level telemetry with bounded claims", () => {
+  const fixture = samplePlatformerControllerFixture({ seed: 0x3d2025, elapsedSeconds: 0.32 });
+  const repeat = samplePlatformerControllerFixture({ seed: 0x3d2025, elapsedSeconds: 0.32 });
+  const shifted = samplePlatformerControllerFixture({ seed: 0x3d2026, elapsedSeconds: 0.32 });
+
+  assert.equal(fixture.id, "v4-old-branch-platformer-controller-fixture");
+  assert.equal(fixture.source, "origin-master-platformer-controller-adapted");
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.deepEqual(fixture.config, {
+    walkSpeed: 5,
+    runSpeed: 8,
+    jumpForce: 12,
+    doubleJumpForce: 10,
+    wallJumpForce: 14,
+    airControl: 0.3,
+    coyoteTimeSeconds: 0.15,
+    jumpBufferSeconds: 0.1,
+    maxFallSpeed: 30
+  });
+  assert.equal(fixture.controller.coyoteJumpAccepted, true);
+  assert.equal(fixture.controller.bufferedJumpAccepted, true);
+  assert.equal(fixture.controller.doubleJumpAccepted, true);
+  assert.equal(fixture.controller.wallJumpAccepted, true);
+  assert.equal(fixture.controller.stateSequence[0], "idle");
+  assert.ok(fixture.controller.stateSequence.includes("walk") || fixture.controller.stateSequence.includes("run"));
+  assert.ok(fixture.controller.stateSequence.includes("jump"));
+  assert.ok(fixture.controller.stateSequence.includes("doubleJump"));
+  assert.ok(fixture.controller.stateSequence.includes("wallSlide"));
+  assert.equal(fixture.controller.stateSequence.at(-1), "land");
+  assert.equal(fixture.controller.finalState, "land");
+  assert.equal(fixture.camera.distance, 8);
+  assert.equal(fixture.camera.minDistance, 3);
+  assert.equal(fixture.camera.maxDistance, 15);
+  assert.equal(fixture.camera.lockOnSupported, true);
+  assert.ok(fixture.camera.collisionAdjustedDistance < fixture.camera.distance);
+  assert.deepEqual(fixture.level.platformSummaries.map((entry) => entry.kind), ["static", "moving", "rotating", "falling", "bouncy", "disappearing"]);
+  assert.equal(fixture.level.totalPlatforms, 14);
+  assert.equal(fixture.level.totalCollectibles, 8);
+  assert.equal(fixture.level.totalScoreValue, 2500);
+  assert.equal(fixture.level.checkpointCount, 2);
+  assert.equal(fixture.level.movingPlatformPathCount, 2);
+  assert.ok(fixture.level.goalDistance > 56);
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /not a full character controller replacement/);
+  assert.throws(() => samplePlatformerControllerFixture({ seed: 1.5 }), /seed/);
+  assert.throws(() => samplePlatformerControllerFixture({ elapsedSeconds: Number.NaN }), /elapsedSeconds/);
+});
+
+test("cloth fixture ports old PBD collision tearing and material telemetry with bounded claims", () => {
+  const fixture = sampleClothSimulationFixture({ seed: 0x3d2025, elapsedSeconds: 0.4, segmentsX: 12, segmentsY: 8 });
+  const repeat = sampleClothSimulationFixture({ seed: 0x3d2025, elapsedSeconds: 0.4, segmentsX: 12, segmentsY: 8 });
+  const shifted = sampleClothSimulationFixture({ seed: 0x3d2026, elapsedSeconds: 0.4, segmentsX: 12, segmentsY: 8 });
+
+  assert.equal(fixture.id, "v4-old-branch-cloth-simulation-fixture");
+  assert.equal(fixture.source, "origin-master-cloth-pbd-material-adapted");
+  assert.deepEqual(fixture.sourceFiles, [
+    "origin/master:src/simulation/cloth/ClothSimulation.ts",
+    "origin/master:src/simulation/cloth/ClothCollisionSystem.ts",
+    "origin/master:src/simulation/cloth/ClothTearingSystem.ts",
+    "origin/master:src/materials/ClothMaterial.ts"
+  ]);
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.equal(fixture.config.width, 2.4);
+  assert.equal(fixture.config.height, 1.5);
+  assert.equal(fixture.mesh.particleCount, 117);
+  assert.equal(fixture.mesh.triangleCount, 192);
+  assert.equal(fixture.mesh.indexCount, 576);
+  assert.equal(fixture.mesh.pinnedCount, 13);
+  assert.equal(fixture.mesh.pinnedPattern, "top-edge");
+  assert.equal(fixture.mesh.sampleParticles.length, 9);
+  assert.equal(fixture.mesh.sampleParticles.filter((particle) => particle.pinned).length, 3);
+  assert.equal(fixture.constraints.structural, 212);
+  assert.equal(fixture.constraints.shear, 192);
+  assert.equal(fixture.constraints.bending, 190);
+  assert.equal(fixture.constraints.total, 594);
+  assert.ok(fixture.constraints.maxStrain > 1);
+  assert.ok(fixture.constraints.tearCandidates > 0);
+  assert.ok(fixture.constraints.cutPlaneConstraintCandidates > 0);
+  assert.ok(fixture.wind.maxOffset > 0);
+  assert.ok(fixture.wind.affectedParticles > fixture.mesh.pinnedCount);
+  assert.equal(fixture.collision.shape, "sphere");
+  assert.ok(fixture.collision.penetrationCount > 0);
+  assert.equal(fixture.collision.resolvedParticles, fixture.collision.penetrationCount);
+  assert.ok(fixture.collision.maxPenetration > 0);
+  assert.equal(fixture.material.preset, "coarse-wool-flag");
+  assert.ok(fixture.material.sheenIntensity > 0);
+  assert.ok(fixture.material.anisotropyStrength > 0);
+  assert.ok(fixture.material.fuzzIntensity > 0);
+  assert.ok(fixture.blockedClaims.includes("Unity Cloth parity"));
+  assert.ok(fixture.blockedClaims.includes("Unreal Chaos Cloth parity"));
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /does not claim GPU cloth/);
+  assert.throws(() => sampleClothSimulationFixture({ seed: 1.5 }), /seed/);
+  assert.throws(() => sampleClothSimulationFixture({ elapsedSeconds: Number.NaN }), /elapsedSeconds/);
+  assert.throws(() => sampleClothSimulationFixture({ segmentsX: 1 }), /segmentsX/);
+});
+
+test("soft-body fixture ports old tetrahedral PBD telemetry with bounded claims", () => {
+  const fixture = sampleSoftBodyFixture({ seed: 0x50fb0d, elapsedSeconds: 0.36, divisions: 2 });
+  const repeat = sampleSoftBodyFixture({ seed: 0x50fb0d, elapsedSeconds: 0.36, divisions: 2 });
+  const shifted = sampleSoftBodyFixture({ seed: 0x50fb0e, elapsedSeconds: 0.36, divisions: 2 });
+
+  assert.equal(fixture.id, "v4-old-branch-soft-body-fixture");
+  assert.equal(fixture.source, "origin-master-softbody-tet-pbd-adapted");
+  assert.deepEqual(fixture.sourceFiles, [
+    "origin/master:src/simulation/softbody/SoftBody.ts",
+    "origin/master:src/simulation/softbody/SoftBodySolver.ts",
+    "origin/master:src/simulation/softbody/TetMeshGenerator.ts"
+  ]);
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.equal(fixture.config.method, "bounded-pbd-telemetry");
+  assert.equal(fixture.config.materialModel, "bounded-corotated-reference");
+  assert.equal(fixture.config.divisions, 2);
+  assert.equal(fixture.config.solverIterations, 5);
+  assert.equal(fixture.mesh.vertexCount, 27);
+  assert.equal(fixture.mesh.tetrahedronCount, 40);
+  assert.equal(fixture.mesh.surfaceTriangleEstimate, 48);
+  assert.ok(fixture.mesh.distanceConstraintCount > 40);
+  assert.equal(fixture.mesh.attachmentCount, 4);
+  assert.ok(fixture.mesh.sampleVertices.length >= 8);
+  assert.ok(fixture.mesh.sampleVertices.some((vertex) => vertex.attached));
+  assert.ok(fixture.deformation.maxDisplacement > 0);
+  assert.ok(fixture.deformation.averageDisplacement > 0);
+  assert.ok(fixture.deformation.restVolume > 0);
+  assert.ok(fixture.deformation.currentVolume > 0);
+  assert.ok(fixture.deformation.volumeRatio > 0.65);
+  assert.ok(fixture.deformation.volumeRatio < 1.15);
+  assert.ok(fixture.deformation.shapeMatchingError > 0);
+  assert.equal(fixture.collision.groundPlaneY, -0.42);
+  assert.ok(fixture.collision.contactVertices > 0);
+  assert.equal(fixture.collision.resolvedVertices, fixture.collision.contactVertices);
+  assert.ok(fixture.collision.maxPenetrationBeforeResolve > 0);
+  assert.equal(fixture.attachments.rigidAttachmentCount, 4);
+  assert.equal(fixture.attachments.maxAttachmentError, 0);
+  assert.equal(fixture.attachments.averageAttachmentError, 0);
+  assert.ok(fixture.blockedClaims.includes("production tetrahedral FEM solver parity"));
+  assert.ok(fixture.blockedClaims.includes("Unity soft-body asset parity"));
+  assert.ok(fixture.blockedClaims.includes("Unreal Chaos soft-body parity"));
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /does not claim a production FEM solver/);
+  assert.throws(() => sampleSoftBodyFixture({ seed: 1.5 }), /seed/);
+  assert.throws(() => sampleSoftBodyFixture({ elapsedSeconds: Number.NaN }), /elapsedSeconds/);
+  assert.throws(() => sampleSoftBodyFixture({ divisions: 0 }), /divisions/);
+});
+
+test("fracture fixture ports old Voronoi and hierarchical destruction telemetry with bounded claims", () => {
+  const fixture = sampleFractureFixture({ seed: 0xf24c7, fragmentCount: 18, impactStrength: 82 });
+  const repeat = sampleFractureFixture({ seed: 0xf24c7, fragmentCount: 18, impactStrength: 82 });
+  const shifted = sampleFractureFixture({ seed: 0xf24c8, fragmentCount: 18, impactStrength: 82 });
+
+  assert.equal(fixture.id, "v4-old-branch-fracture-fixture");
+  assert.equal(fixture.source, "origin-master-voronoi-hierarchical-fracture-adapted");
+  assert.deepEqual(fixture.sourceFiles, [
+    "origin/master:src/simulation/fracture/VoronoiFractureSystem.ts",
+    "origin/master:src/simulation/fracture/HierarchicalFractureSystem.ts",
+    "origin/master:src/simulation/fracture/GeometryClipper.ts",
+    "origin/master:src/simulation/fracture/VoronoiMath.ts"
+  ]);
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.equal(fixture.config.requestedFragments, 18);
+  assert.equal(fixture.config.density, 2350);
+  assert.equal(fixture.config.interiorFaces, true);
+  assert.equal(fixture.config.progressiveDamage, true);
+  assert.equal(fixture.voronoi.siteCount, 18);
+  assert.equal(fixture.voronoi.radialSiteCount, 18);
+  assert.ok(fixture.voronoi.averageSiteDistance > 0);
+  assert.ok(fixture.voronoi.maxSiteDistance >= fixture.voronoi.averageSiteDistance);
+  assert.ok(fixture.voronoi.neighborPairs > 0);
+  assert.ok(fixture.voronoi.crackGraphEdges >= fixture.voronoi.neighborPairs);
+  assert.equal(fixture.fragments.fragmentCount, 18);
+  assert.ok(fixture.fragments.totalMass > 0);
+  assert.ok(fixture.fragments.totalVolume > 0);
+  assert.ok(fixture.fragments.maxMass > fixture.fragments.minMass);
+  assert.ok(fixture.fragments.interiorFaceEstimate > fixture.fragments.fragmentCount);
+  assert.ok(fixture.fragments.activeAfterImpact > 0);
+  assert.equal(fixture.fragments.samples.length, 6);
+  assert.ok(fixture.fragments.samples.every((fragment) => fragment.mass > 0 && fragment.volume > 0));
+  assert.ok(fixture.fragments.samples.some((fragment) => fragment.neighborCount > 0));
+  assert.equal(fixture.hierarchy.maxDepth, 3);
+  assert.ok(fixture.hierarchy.nodeCount > fixture.fragments.fragmentCount);
+  assert.ok(fixture.hierarchy.rootDamage > 0);
+  assert.ok(fixture.hierarchy.activatedChildren > 0);
+  assert.ok(fixture.hierarchy.residualInactiveChildren >= 0);
+  assert.ok(fixture.blockedClaims.includes("runtime convex mesh clipping"));
+  assert.ok(fixture.blockedClaims.includes("Unity destruction workflow parity"));
+  assert.ok(fixture.blockedClaims.includes("Unreal Chaos destruction parity"));
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /does not claim runtime convex mesh clipping/);
+  assert.throws(() => sampleFractureFixture({ seed: 1.5 }), /seed/);
+  assert.throws(() => sampleFractureFixture({ fragmentCount: 3 }), /fragmentCount/);
+  assert.throws(() => sampleFractureFixture({ impactStrength: 0 }), /impactStrength/);
+});
+
+test("fluid fixture ports old SPH MPM and screen-space telemetry with bounded claims", () => {
+  const fixture = sampleFluidFixture({ seed: 0xf10d, particleGrid: [4, 3, 3], elapsedSeconds: 0.42 });
+  const repeat = sampleFluidFixture({ seed: 0xf10d, particleGrid: [4, 3, 3], elapsedSeconds: 0.42 });
+  const shifted = sampleFluidFixture({ seed: 0xf10e, particleGrid: [4, 3, 3], elapsedSeconds: 0.42 });
+
+  assert.equal(fixture.id, "v4-old-branch-fluid-fixture");
+  assert.equal(fixture.source, "origin-master-sph-mpm-fluid-adapted");
+  assert.deepEqual(fixture.sourceFiles, [
+    "origin/master:src/simulation/sph/SPHFluidFramework.ts",
+    "origin/master:src/simulation/sph/FluidRenderer.ts",
+    "origin/master:src/simulation/mpm/MPMFluidSimulation.ts",
+    "origin/master:src/simulation/mpm/ParticleBuffer.ts"
+  ]);
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.equal(fixture.config.solver, "bounded-sph-pcisph-dfsph-telemetry");
+  assert.equal(fixture.config.restDensity, 1000);
+  assert.equal(fixture.config.pcisphIterations, 3);
+  assert.equal(fixture.config.dfsphIterations, 5);
+  assert.equal(fixture.sph.particleCount, 36);
+  assert.equal(fixture.sph.capacity, 128);
+  assert.ok(fixture.sph.averageDensity >= fixture.config.restDensity);
+  assert.ok(fixture.sph.maxDensity >= fixture.sph.averageDensity);
+  assert.ok(fixture.sph.maxPressure >= fixture.sph.averagePressure);
+  assert.ok(fixture.sph.neighborPairs > 0);
+  assert.ok(fixture.sph.maxNeighborCount > 0);
+  assert.ok(fixture.sph.viscosityForceEstimate > 0);
+  assert.ok(fixture.sph.sampleParticles.length === 6);
+  assert.ok(fixture.sph.sampleParticles.every((particle) => particle.neighborCount > 0));
+  assert.deepEqual(fixture.mpm.gridResolution, [12, 8, 12]);
+  assert.ok(fixture.mpm.activeCells > 0);
+  assert.equal(fixture.mpm.particleToGridTransfers, fixture.sph.particleCount * 8);
+  assert.equal(fixture.mpm.gridToParticleTransfers, fixture.sph.particleCount * 8);
+  assert.equal(fixture.mpm.flipRatio, 0.96);
+  assert.equal(fixture.mpm.deformationGradientSamples, fixture.sph.particleCount);
+  assert.ok(fixture.mpm.plasticityEvents > 0);
+  assert.equal(fixture.rendering.screenWidth, 320);
+  assert.equal(fixture.rendering.screenHeight, 180);
+  assert.ok(fixture.rendering.depthPixels > 0);
+  assert.ok(fixture.rendering.thicknessPixels >= fixture.rendering.depthPixels);
+  assert.ok(fixture.rendering.maxThickness > 0);
+  assert.equal(fixture.rendering.refractionClaimed, false);
+  assert.equal(fixture.rendering.subsurfaceScatteringClaimed, false);
+  assert.ok(fixture.blockedClaims.includes("production SPH pressure solve parity"));
+  assert.ok(fixture.blockedClaims.includes("Unity fluid tooling parity"));
+  assert.ok(fixture.blockedClaims.includes("Unreal Niagara/fluid parity"));
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /does not claim production pressure-solve convergence/);
+  assert.throws(() => sampleFluidFixture({ seed: 1.5 }), /seed/);
+  assert.throws(() => sampleFluidFixture({ elapsedSeconds: Number.NaN }), /elapsedSeconds/);
+  assert.throws(() => sampleFluidFixture({ particleGrid: [1, 3, 3] }), /particleGrid\[0\]/);
+});
+
+test("fire smoke fixture ports old combustion particle and volume telemetry with bounded claims", () => {
+  const fixture = sampleFireSmokeFixture({ seed: 0xf17e, gridResolution: [8, 6, 8], elapsedSeconds: 0.5, sourceCount: 3 });
+  const repeat = sampleFireSmokeFixture({ seed: 0xf17e, gridResolution: [8, 6, 8], elapsedSeconds: 0.5, sourceCount: 3 });
+  const shifted = sampleFireSmokeFixture({ seed: 0xf17f, gridResolution: [8, 6, 8], elapsedSeconds: 0.5, sourceCount: 3 });
+
+  assert.equal(fixture.id, "v4-old-branch-fire-smoke-fixture");
+  assert.equal(fixture.source, "origin-master-fire-smoke-volume-adapted");
+  assert.deepEqual(fixture.sourceFiles, [
+    "origin/master:src/simulation/fire/FireSimulation.ts",
+    "origin/master:src/simulation/fire/FireParticleSystem.ts",
+    "origin/master:src/simulation/fire/TemperatureField.ts",
+    "origin/master:src/simulation/fire/TurbulenceSimulation.ts",
+    "origin/master:src/simulation/smoke/SmokeSimulation.ts",
+    "origin/master:src/simulation/smoke/SmokeGrid.ts",
+    "origin/master:src/simulation/smoke/SmokeRenderer.ts"
+  ]);
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.equal(fixture.config.solver, "bounded-fire-smoke-telemetry");
+  assert.equal(fixture.config.ambientTemperature, 293);
+  assert.equal(fixture.config.combustionTemperature, 1200);
+  assert.equal(fixture.config.ignitionTemperature, 500);
+  assert.equal(fixture.config.smokePressureIterations, 40);
+  assert.equal(fixture.config.rayMarchMaxSteps, 128);
+  assert.deepEqual(fixture.grid.resolution, [8, 6, 8]);
+  assert.equal(fixture.grid.cellCount, 384);
+  assert.equal(fixture.grid.sourceCount, 3);
+  assert.ok(fixture.grid.hotCellSamples.length > 0);
+  assert.ok(fixture.grid.hotCellSamples.every((sample) => sample.temperature >= fixture.config.ignitionTemperature));
+  assert.ok(fixture.fire.activeFuelCells > 0);
+  assert.ok(fixture.fire.burningCells > 0);
+  assert.ok(fixture.fire.averageTemperature > fixture.config.ambientTemperature);
+  assert.ok(fixture.fire.maxTemperature >= fixture.fire.averageTemperature);
+  assert.ok(fixture.fire.fuelConsumed > 0);
+  assert.ok(fixture.fire.smokeGenerated > 0);
+  assert.ok(fixture.fire.buoyancyImpulse > 0);
+  assert.ok(fixture.fire.turbulenceEnergy > 0);
+  assert.ok(fixture.fire.coolingLoss > 0);
+  assert.ok(fixture.fire.diffusionEstimate > 0);
+  assert.ok(fixture.particles.emittedParticles > 0);
+  assert.ok(fixture.particles.activeParticles >= fixture.particles.emittedParticles);
+  assert.ok(fixture.particles.emberParticles > 0);
+  assert.ok(fixture.particles.averageLifetime > 0);
+  assert.ok(fixture.particles.averageSize > 0);
+  assert.equal(fixture.particles.uploadBytes, fixture.particles.activeParticles * 32);
+  assert.ok(fixture.smoke.densityCells > 0);
+  assert.ok(fixture.smoke.totalDensity > 0);
+  assert.ok(fixture.smoke.maxDensity > 0);
+  assert.ok(fixture.smoke.averageVelocityMagnitude > 0);
+  assert.ok(fixture.smoke.divergenceAfterProjection < fixture.smoke.divergenceBeforeProjection);
+  assert.equal(fixture.smoke.pressureIterations, 40);
+  assert.ok(fixture.smoke.vorticityCells > 0);
+  assert.ok(fixture.volumeRendering.sampledDensity > 0);
+  assert.equal(fixture.volumeRendering.rayMarchSteps, 128);
+  assert.equal(fixture.volumeRendering.shadowSamples, 8);
+  assert.ok(fixture.volumeRendering.transmittance >= 0);
+  assert.ok(fixture.volumeRendering.transmittance < 1);
+  assert.ok(fixture.volumeRendering.alpha > 0);
+  assert.equal(fixture.volumeRendering.volumetricRendererClaimed, false);
+  assert.equal(fixture.volumeRendering.productionLightingClaimed, false);
+  assert.ok(fixture.blockedClaims.includes("production combustion solver parity"));
+  assert.ok(fixture.blockedClaims.includes("Unity VFX Graph fire/smoke parity"));
+  assert.ok(fixture.blockedClaims.includes("Unreal Niagara fire/smoke parity"));
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /does not claim production combustion solver parity/);
+  assert.throws(() => sampleFireSmokeFixture({ seed: 1.5 }), /seed/);
+  assert.throws(() => sampleFireSmokeFixture({ elapsedSeconds: Number.NaN }), /elapsedSeconds/);
+  assert.throws(() => sampleFireSmokeFixture({ gridResolution: [3, 6, 8] }), /gridResolution\[0\]/);
+  assert.throws(() => sampleFireSmokeFixture({ sourceCount: 0 }), /sourceCount/);
+});
+
 test("2D blend tree returns deterministic normalized weights", () => {
   const tree = new BlendTree2D([
     { value: "idle", position: [0, 0] },
@@ -1005,6 +1671,77 @@ test("2D blend tree returns deterministic normalized weights", () => {
   assert.deepEqual(weights.map((entry) => Number(entry.weight.toFixed(6))), [0.251166, 0.561625, 0.187208]);
   assert.throws(() => new BlendTree2D([]), /requires/);
   assert.throws(() => tree.weights([Number.NaN, 0]), /finite/);
+});
+
+test("motion matching fixture scores trajectory poses with bounded old-system evidence", () => {
+  const fixture = sampleMotionMatchingFixture({
+    currentPosition: [0.25, 0, 0.1],
+    moveDirection: [1, 0, 0.12],
+    facingDirection: [1, 0, 0],
+    speed: 0.9,
+    elapsedSeconds: 0.09,
+    previousPoseId: "walk-1",
+    seed: 0x3d2025
+  });
+  const repeat = sampleMotionMatchingFixture({
+    currentPosition: [0.25, 0, 0.1],
+    moveDirection: [1, 0, 0.12],
+    facingDirection: [1, 0, 0],
+    speed: 0.9,
+    elapsedSeconds: 0.09,
+    previousPoseId: "walk-1",
+    seed: 0x3d2025
+  });
+  const slower = sampleMotionMatchingFixture({ speed: 0.18, previousPoseId: "idle-0", seed: 0x3d2025 });
+
+  assert.equal(fixture.id, "v4-old-branch-motion-matching-fixture");
+  assert.equal(fixture.source, "origin-master-motion-matching-system-adapted");
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, slower.hash);
+  assert.equal(fixture.databasePoseCount, 18);
+  assert.equal(fixture.queryTrajectory.length, 3);
+  assert.ok(fixture.querySpeed > 0);
+  assert.ok(fixture.queryFacingAlignment > 0.9);
+  assert.ok(fixture.candidateScores.length >= 6);
+  assert.ok(fixture.bestCost <= fixture.secondBestCost);
+  assert.ok(fixture.costMargin >= 0);
+  assert.match(fixture.selectedClip, /walk|run|strafe|turn|jump|idle/);
+  assert.ok(fixture.selectedTags.length > 0);
+  assert.ok(fixture.blendWeight >= 0 && fixture.blendWeight <= 1);
+  assert.equal(fixture.transitionDurationSeconds, 0.18);
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /not a full animation database/);
+  assert.throws(() => sampleMotionMatchingFixture({ seed: 1.25 }), /seed/);
+  assert.throws(() => sampleMotionMatchingFixture({ speed: Number.NaN }), /speed/);
+});
+
+test("physics sandbox fixture adapts old spawners and tools as bounded rigid-body evidence", () => {
+  const fixture = samplePhysicsSandboxFixture({ seed: 0x3d2025, steps: 24 });
+  const repeat = samplePhysicsSandboxFixture({ seed: 0x3d2025, steps: 24 });
+  const shifted = samplePhysicsSandboxFixture({ seed: 0x3d2026, steps: 24 });
+
+  assert.equal(fixture.id, "v4-old-branch-physics-sandbox-fixture");
+  assert.equal(fixture.source, "origin-master-physics-sandbox-tools-spawners-adapted");
+  assert.equal(fixture.hash, repeat.hash);
+  assert.notEqual(fixture.hash, shifted.hash);
+  assert.ok(fixture.spawners.length >= 12);
+  assert.ok(fixture.spawners.some((spawner) => spawner.preset === "chain" && spawner.constraints >= 5));
+  assert.ok(fixture.spawners.some((spawner) => spawner.preset === "vehicle" && spawner.visualKinds.includes("wheel")));
+  assert.ok(fixture.spawners.some((spawner) => spawner.preset === "ragdoll" && spawner.constraints >= 5));
+  assert.ok(fixture.spawners.some((spawner) => spawner.preset === "cylinder-proxy" && spawner.colliderKinds.includes("cylinder-proxy")));
+  assert.ok(fixture.metrics.totalSpawnedBodies > 40);
+  assert.ok(fixture.metrics.totalSpawnerConstraints > 10);
+  assert.ok(fixture.metrics.bodyCountAfterTools < fixture.metrics.bodyCountBeforeTools);
+  assert.ok(fixture.metrics.colliderCountAfterTools > 0);
+  assert.ok(fixture.metrics.supportedToolCount >= 5);
+  assert.equal(fixture.metrics.blockedToolCount, 1);
+  assert.equal(fixture.tools.find((tool) => tool.tool === "slice")?.supported, false);
+  assert.ok(fixture.tools.find((tool) => tool.tool === "push")?.affectedBodies ?? 0);
+  assert.deepEqual(fixture.unsupportedAdvancedSimulations, ["cloth", "soft-body", "fluid", "fracture"]);
+  assert.match(fixture.hash, /^[0-9a-f]{8}$/);
+  assert.match(fixture.claimBoundary, /does not claim soft body/);
+  assert.throws(() => samplePhysicsSandboxFixture({ seed: 1.25 }), /seed/);
+  assert.throws(() => samplePhysicsSandboxFixture({ steps: -1 }), /steps/);
 });
 
 test("animation inspector snapshots mixer and skeleton without mutation", () => {
@@ -1025,3 +1762,7 @@ test("animation inspector snapshots mixer and skeleton without mutation", () => 
   assert.equal(evidence.paletteMatrixCount, 1);
   assert.match(evidence.stableHash, /^[0-9a-f]{8}$/);
 });
+
+function distance3(left: readonly [number, number, number], right: readonly [number, number, number]): number {
+  return Math.hypot(left[0] - right[0], left[1] - right[1], left[2] - right[2]);
+}

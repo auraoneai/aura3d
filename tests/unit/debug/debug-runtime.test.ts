@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ChromeTraceExporter,
   DebugOverlay,
   DebugLineCanvasRenderer,
   ECSInspector,
@@ -7,7 +8,13 @@ import {
   Profiler,
   ReportExporter,
   ResourceLeakError,
-  ResourceTracker
+  ResourceTracker,
+  buildAxesHelper,
+  buildBoundsHelper,
+  buildCameraFrustumHelper,
+  buildDirectionalLightHelper,
+  buildGridHelper,
+  buildSkeletonHelper
 } from "../../../packages/debug/src";
 
 describe("debug runtime helpers", () => {
@@ -39,6 +46,40 @@ describe("debug runtime helpers", () => {
       sampleCount: 1,
       unavailableReason: "EXT_disjoint_timer_query_webgl2 unavailable"
     });
+  });
+
+  it("exports CPU and GPU profiler samples to deterministic Chrome trace JSON", () => {
+    const times = [2, 5, 9, 17];
+    const cpu = new Profiler(() => times.shift() ?? 17);
+    const gpu = new GPUProfiler(false, "EXT_disjoint_timer_query_webgl2 unavailable");
+    cpu.begin("frame");
+    cpu.begin("render");
+    cpu.end("render");
+    cpu.end("frame");
+    gpu.begin("shadow-pass").end(0.75);
+
+    const trace = ChromeTraceExporter.create(cpu.snapshot(), gpu.snapshot(), {
+      profileName: "old-profiler-port",
+      processId: 7,
+      cpuThreadId: 11,
+      gpuThreadId: 12
+    });
+
+    expect(trace.metadata).toMatchObject({
+      source: "galileo3d-debug-chrome-trace-exporter",
+      profileName: "old-profiler-port",
+      cpuMarkerCount: 2,
+      gpuSampleCount: 1
+    });
+    expect(trace.metadata.claimBoundary).toContain("not Unity/Unreal profiler parity");
+    expect(trace.traceEvents).toEqual(expect.arrayContaining([
+      expect.objectContaining({ name: "render", cat: "cpu", ph: "X", ts: 5000, dur: 4000, pid: 7, tid: 11 }),
+      expect.objectContaining({ name: "frame", cat: "cpu", ph: "X", ts: 2000, dur: 15000, pid: 7, tid: 11 }),
+      expect.objectContaining({ name: "shadow-pass", cat: "gpu", ph: "X", dur: 750, pid: 7, tid: 12 }),
+      expect.objectContaining({ name: "gpu_timing_unavailable", cat: "gpu", ph: "i", pid: 7, tid: 12 }),
+      expect.objectContaining({ name: "profile_counters", cat: "counters", ph: "C", pid: 7, tid: 11 })
+    ]));
+    expect(ChromeTraceExporter.toJson(trace)).toContain("\"displayTimeUnit\": \"ms\"");
   });
 
   it("detects resource leaks", () => {
@@ -95,5 +136,20 @@ describe("debug runtime helpers", () => {
 
     expect(result).toEqual({ lineCount: 1, bounds: { minX: 40, minY: 40, maxX: 60, maxY: 50 } });
     expect(() => renderer.render(context, [], { scale: 0 })).toThrow(/scale/);
+  });
+
+  it("builds scene helper line primitives for axes, grids, bounds, cameras, lights, and skeletons", () => {
+    expect(buildAxesHelper({ size: 2 })).toHaveLength(3);
+    expect(buildGridHelper({ size: 4, divisions: 4 })).toHaveLength(10);
+    expect(buildBoundsHelper({ min: [-1, -2, -3], max: [1, 2, 3] })).toHaveLength(12);
+    expect(buildCameraFrustumHelper({ nearHalfWidth: 0.5, nearHalfHeight: 0.25, farHalfWidth: 2, farHalfHeight: 1 })).toHaveLength(12);
+    expect(buildDirectionalLightHelper({ direction: [0, -2, 0], length: 3 })[0]?.to).toEqual([0, -3, 0]);
+    expect(buildSkeletonHelper([
+      { id: "root", position: [0, 0, 0] },
+      { id: "child", parentId: "root", position: [0, 1, 0] },
+      { id: "tip", parentId: "child", position: [0, 2, 0] }
+    ])).toHaveLength(2);
+    expect(() => buildGridHelper({ divisions: 0 })).toThrow(/divisions/);
+    expect(() => buildBoundsHelper({ min: [1, 0, 0], max: [0, 0, 0] })).toThrow(/max/);
   });
 });

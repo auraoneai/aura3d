@@ -174,6 +174,38 @@ describe("MaterialBinding", () => {
     expect(diagnostics).toContain("Texture is not ready: u_albedo");
   });
 
+  it("reports texture dimension mismatches as fatal diagnostics", () => {
+    const device = new MockRenderDevice();
+    const shader = device.createShaderProgram({
+      label: "cube-texture-dimension",
+      marker: "@cube-texture-dimension",
+      vertex: "// @cube-texture-dimension\nin vec3 a_position; uniform samplerCube u_environment; void main() {}",
+      fragment: "// @cube-texture-dimension\nuniform samplerCube u_environment; out vec4 outColor; void main() { outColor = vec4(1.0); }"
+    });
+    const material = new Material({
+      shaderKey: "cube-texture-dimension",
+      requiredAttributes: ["a_position"],
+      parameters: {
+        u_environment: new TextureBinding({
+          name: "u_environment",
+          texture: new Texture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) }),
+          expectedDimension: "cube",
+          required: true
+        })
+      },
+      uniformSchema: [{ name: "u_environment", kind: "textureCube" }]
+    });
+
+    let diagnostics: readonly string[] = [];
+    try {
+      new MaterialBinding().bind(material, shader);
+    } catch (error) {
+      diagnostics = (error as MaterialBindingError).diagnostics;
+    }
+
+    expect(diagnostics).toContain("Texture u_environment dimension must be cube, got 2d");
+  });
+
   it("reports optional missing texture fallbacks as non-fatal diagnostics", () => {
     const device = new MockRenderDevice();
     const shader = device.createShaderProgram({

@@ -63,7 +63,7 @@ test.describe("PBR material lab pixels", () => {
       "packages/rendering/src/ShaderLibrary.ts",
       "packages/rendering/src/TextureBinding.ts",
       "docs/rendering/environment-lighting.md",
-      "docs/v2/claim-registry.md",
+      "docs/project/v2-claim-registry.md",
       "tests/visual/pbr-environment-pixels.spec.ts"
     ],
     artifactLinks: [
@@ -72,7 +72,7 @@ test.describe("PBR material lab pixels", () => {
       "tests/reports/final-visual.json",
       "examples/pbr-camera-comparison/index.html",
       "docs/rendering/environment-lighting.md",
-      "docs/v2/claim-registry.md"
+      "docs/project/v2-claim-registry.md"
     ],
     claimBoundary: {
       supported: "Renderer-backed WebGL2 PBR material lab and perspective-camera comparison against Three.js for a bounded sampled equirectangular RGBA8 environment-map approximation, roughness-dependent mip sampling, and BRDF LUT modulation.",

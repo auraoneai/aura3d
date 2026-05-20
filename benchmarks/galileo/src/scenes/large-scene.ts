@@ -1,26 +1,11 @@
+import { forEngine } from "../../../shared/scenes/descriptor.js";
+import scene from "../../../shared/scenes/large-scene.js";
+
 export default {
-  id: "large-scene",
-  engine: "galileo",
-  engineVersion: "0.0.0-rebuild",
-  sceneVersion: 1,
-  assetId: "procedural-architecture",
-  resolution: { width: 1280, height: 720, dpr: 1 },
-  warmupFrames: 60,
-  measuredFrames: 240,
-  cameraPath: "linear-facade-pan",
-  lighting: "key-fill-ambient",
-  quality: {
-    antialias: true,
-    shadows: false,
-    postprocess: false
-  },
-  workload: {
-    drawCalls: 1200,
-    triangles: 24000,
-    materials: 5,
-    materialVariants: 0,
-    textures: 0,
-    animations: 0,
-    particles: 0
+  ...forEngine(scene, "galileo"),
+  optimizationEvidence: {
+    lodSelection: "examples/rendering-large-scene/harness.ts selects high/medium/low generated mesh LODs by camera distance and projected screen size.",
+    staticBatching: "examples/rendering-large-scene/harness.ts batches 5,000 logical static meshes into instanced static draw submissions before Renderer.render.",
+    stableCameraTiming: "tests/browser/rendering-large-scene.spec.ts verifies repeated camera positions through the WebGL2 Renderer path with bounded timing jitter."
   }
-} as const;
+};

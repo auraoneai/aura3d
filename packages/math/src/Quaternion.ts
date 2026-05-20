@@ -1,4 +1,7 @@
 import { Vector3 } from "./Vector3.js";
+import type { Matrix4 } from "./Matrix4.js";
+
+export type EulerOrder = "XYZ";
 
 export class Quaternion {
   static readonly identity = Object.freeze(new Quaternion(0, 0, 0, 1));
@@ -33,6 +36,66 @@ export class Quaternion {
     return new Quaternion(cross.x, cross.y, cross.z, 1 + dot).normalize();
   }
 
+  static fromEuler(x: number, y: number, z: number, order: EulerOrder = "XYZ"): Quaternion {
+    if (order !== "XYZ") throw new RangeError(`Unsupported Euler order: ${order}`);
+    if (![x, y, z].every(Number.isFinite)) throw new RangeError("Euler angles must be finite.");
+    const c1 = Math.cos(x / 2);
+    const c2 = Math.cos(y / 2);
+    const c3 = Math.cos(z / 2);
+    const s1 = Math.sin(x / 2);
+    const s2 = Math.sin(y / 2);
+    const s3 = Math.sin(z / 2);
+    return new Quaternion(
+      s1 * c2 * c3 + c1 * s2 * s3,
+      c1 * s2 * c3 - s1 * c2 * s3,
+      c1 * c2 * s3 + s1 * s2 * c3,
+      c1 * c2 * c3 - s1 * s2 * s3
+    ).normalize();
+  }
+
+  static fromRotationMatrix(matrix: Matrix4): Quaternion {
+    const m = matrix.elements;
+    const m11 = m[0]!, m12 = m[4]!, m13 = m[8]!;
+    const m21 = m[1]!, m22 = m[5]!, m23 = m[9]!;
+    const m31 = m[2]!, m32 = m[6]!, m33 = m[10]!;
+    const trace = m11 + m22 + m33;
+
+    if (trace > 0) {
+      const s = 0.5 / Math.sqrt(trace + 1);
+      return new Quaternion(
+        (m32 - m23) * s,
+        (m13 - m31) * s,
+        (m21 - m12) * s,
+        0.25 / s
+      ).normalize();
+    }
+    if (m11 > m22 && m11 > m33) {
+      const s = 2 * Math.sqrt(1 + m11 - m22 - m33);
+      return new Quaternion(
+        0.25 * s,
+        (m12 + m21) / s,
+        (m13 + m31) / s,
+        (m32 - m23) / s
+      ).normalize();
+    }
+    if (m22 > m33) {
+      const s = 2 * Math.sqrt(1 + m22 - m11 - m33);
+      return new Quaternion(
+        (m12 + m21) / s,
+        0.25 * s,
+        (m23 + m32) / s,
+        (m13 - m31) / s
+      ).normalize();
+    }
+    const s = 2 * Math.sqrt(1 + m33 - m11 - m22);
+    return new Quaternion(
+      (m13 + m31) / s,
+      (m23 + m32) / s,
+      0.25 * s,
+      (m21 - m12) / s
+    ).normalize();
+  }
+
   clone(): Quaternion {
     return new Quaternion(this.x, this.y, this.z, this.w);
   }
@@ -49,6 +112,18 @@ export class Quaternion {
 
   conjugate(): Quaternion {
     return new Quaternion(-this.x, -this.y, -this.z, this.w);
+  }
+
+  inverse(): Quaternion {
+    const lengthSquared = this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w;
+    if (lengthSquared === 0) return Quaternion.identity.clone();
+    const conjugate = this.conjugate();
+    return new Quaternion(
+      conjugate.x / lengthSquared,
+      conjugate.y / lengthSquared,
+      conjugate.z / lengthSquared,
+      conjugate.w / lengthSquared
+    );
   }
 
   multiply(q: Quaternion): Quaternion {

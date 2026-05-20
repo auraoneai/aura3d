@@ -6,12 +6,12 @@ export class ComponentRegistry {
   private readonly byCtor = new Map<ComponentCtor, ComponentType>();
   private readonly byName = new Map<string, ComponentType>();
 
-  register<T extends object>(ctor: ComponentCtor<T>, schema: ComponentSchema = { version: 1 }): ComponentType<T> {
+  register<T extends object>(ctor: ComponentCtor<T>, schema?: ComponentSchema): ComponentType<T> {
     const name = componentName(ctor);
     const existingByCtor = this.byCtor.get(ctor);
     if (existingByCtor) return existingByCtor as ComponentType<T>;
     if (this.byName.has(name)) throw new ValidationError("DUPLICATE_COMPONENT", `Duplicate component name: ${name}`);
-    const type: ComponentType<T> = { id: this.nextId, name, ctor, schema };
+    const type: ComponentType<T> = { id: this.nextId, name, ctor, schema: schema ?? ctor.schema ?? { version: 1 } };
     this.nextId += 1;
     this.byCtor.set(ctor, type as ComponentType);
     this.byName.set(name, type as ComponentType);

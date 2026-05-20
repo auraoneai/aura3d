@@ -39,4 +39,20 @@ If an adapter exists but `requestDevice()` rejects, backend creation fails with 
 
 WebGPU device creation can succeed without canvas presentation. If a canvas is supplied but cannot provide a usable `webgpu` context, creation fails with either `WEBGPU_CANVAS_CONTEXT_MISSING` or `WEBGPU_CANVAS_CONTEXT_INVALID`.
 
-The current v2 status does not claim full real-hardware WebGPU support. Real public WebGPU claims still require a hardware matrix, browser/OS versions, adapter names, parity reports, performance comparisons, and fallback evidence.
+## Current Repo Status
+
+The current repo has WebGPU coverage in three forms:
+
+- low-level `WebGPUDevice` and render-to-texture/readback tests;
+- v6 WebGPU readiness and app-suite routes;
+- v8 route evidence for WebGPU RTT, materials, instance-uniform submission, and compute particles.
+
+The v8 route registry and visual review include WebGPU app surfaces, but those are still evidence routes. They are not a claim that the full renderer is better than Three.js WebGPU across browsers and GPUs.
+
+## Claim Boundary
+
+Allowed: "WebGPU is an explicit backend with bounded render-target, material, instancing, compute, fallback, and route evidence."
+
+Not allowed: "full WebGPU support", "automatic WebGPU/WebGL2 parity", or "better than Three.js WebGPU" unless broader hardware, visual, feature, and performance reports exist for the specific claim.
+
+Full public WebGPU claims still require broader production-renderer feature coverage, broader browser/OS/GPU coverage, performance comparisons, fallback evidence, and a passing broad-parity gate.

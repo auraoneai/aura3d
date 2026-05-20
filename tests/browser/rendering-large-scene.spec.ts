@@ -14,7 +14,7 @@ test.describe("rendering large scene WebGL2 harness", () => {
     await server.close();
   });
 
-  test("renders 5,000 static meshes and 10,000 instances through Renderer on WebGL2", async ({ page }) => {
+  test("renders 5,000 static meshes with LOD, static batching, and stable camera timing through Renderer on WebGL2", async ({ page }) => {
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
     await page.setContent(`
       <!doctype html>
@@ -43,7 +43,20 @@ test.describe("rendering large scene WebGL2 harness", () => {
     expect(result?.instancedBatches).toBe(157);
     expect(result?.textureVariants).toBe(8);
     expect(result?.materialVariants).toBeGreaterThanOrEqual(15);
-    expect(result?.diagnostics?.drawCalls).toBe(5_157);
+    expect(result?.lod?.enabled).toBe(true);
+    expect(result?.lod?.levels).toEqual(["high", "medium", "low"]);
+    expect((result?.lod?.selectedHigh ?? 0) + (result?.lod?.selectedMedium ?? 0) + (result?.lod?.selectedLow ?? 0)).toBe(4_999);
+    expect(result?.lod?.selectedLow ?? 0).toBeGreaterThan(0);
+    expect(result?.batching?.enabled).toBe(true);
+    expect(result?.batching?.logicalStaticMeshes).toBe(5_000);
+    expect(result?.batching?.submittedStaticDraws ?? 0).toBeLessThan(160);
+    expect(result?.batching?.staticBatches ?? 0).toBeGreaterThan(0);
+    expect(result?.batching?.drawCallReduction ?? 0).toBeGreaterThan(4_800);
+    expect(result?.cameraTiming?.samples).toHaveLength(6);
+    expect(result?.cameraTiming?.stable).toBe(true);
+    expect(result?.cameraTiming?.jitterMs ?? 999).toBeLessThan(250);
+    expect(result?.diagnostics?.drawCalls ?? 0).toBeLessThan(320);
+    expect(result?.diagnostics?.drawCalls).toBe((result?.batching?.submittedStaticDraws ?? 0) + 157 + 8);
     expect(result?.diagnostics?.lastError).toBeNull();
     expect(result?.diagnostics?.textures).toBeGreaterThanOrEqual(8);
     expect(result?.diagnostics?.textureBytes).toBeGreaterThanOrEqual(8 * 4 * 4 * 4);
@@ -74,7 +87,10 @@ test.describe("rendering large scene WebGL2 harness", () => {
     expect(result?.renderer).toBe("webgl2");
     expect(result?.staticMeshes).toBe(5_000);
     expect(result?.instances).toBe(10_000);
-    expect(result?.diagnostics?.drawCalls).toBe(5_157);
+    expect(result?.lod?.enabled).toBe(true);
+    expect(result?.batching?.enabled).toBe(true);
+    expect(result?.cameraTiming?.stable).toBe(true);
+    expect(result?.diagnostics?.drawCalls ?? 0).toBeLessThan(320);
     expect(result?.diagnostics?.lastError).toBeNull();
 
     const [r = 0, g = 0, b = 0, a = 0] = result?.centerPixel ?? [];
@@ -96,6 +112,25 @@ declare global {
       readonly instancedBatches?: number;
       readonly textureVariants?: number;
       readonly materialVariants?: number;
+      readonly lod?: {
+        readonly enabled: boolean;
+        readonly levels: readonly string[];
+        readonly selectedHigh: number;
+        readonly selectedMedium: number;
+        readonly selectedLow: number;
+      };
+      readonly batching?: {
+        readonly enabled: boolean;
+        readonly logicalStaticMeshes: number;
+        readonly submittedStaticDraws: number;
+        readonly staticBatches: number;
+        readonly drawCallReduction: number;
+      };
+      readonly cameraTiming?: {
+        readonly samples: readonly number[];
+        readonly stable: boolean;
+        readonly jitterMs: number;
+      };
       readonly frameMs?: number;
       readonly diagnostics?: {
         readonly drawCalls: number;

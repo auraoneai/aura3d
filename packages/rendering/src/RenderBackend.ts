@@ -1,5 +1,5 @@
 import { type RenderBackendKind, type RenderDevice, MockRenderDevice, RenderDeviceError } from "./RenderDevice";
-import { WebGL2Device, type WebGL2DeviceOptions } from "./WebGL2Device";
+import { WebGL2Device, type WebGL2DeviceOptions, type WebGL2ErrorCheckMode } from "./WebGL2Device";
 import { WebGPUDevice, type WebGPULike } from "./WebGPUDevice";
 
 export interface RenderBackendOptions {
@@ -8,6 +8,7 @@ export interface RenderBackendOptions {
   readonly antialias?: boolean;
   readonly alpha?: boolean;
   readonly preserveDrawingBuffer?: boolean;
+  readonly errorCheckMode?: WebGL2ErrorCheckMode;
   readonly webgpu?: WebGPULike;
 }
 
@@ -29,6 +30,9 @@ export async function createRenderDevice(options: RenderBackendOptions = {}): Pr
     }
     if (options.preserveDrawingBuffer !== undefined) {
       Object.assign(webglOptions, { preserveDrawingBuffer: options.preserveDrawingBuffer });
+    }
+    if (options.errorCheckMode !== undefined) {
+      Object.assign(webglOptions, { errorCheckMode: options.errorCheckMode });
     }
     return WebGL2Device.create(webglOptions);
   }

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>G3D environment background proof</title>
+    <style>
+      body {
+        margin: 0;
+        background: #05070a;
+        display: grid;
+        grid-template-columns: repeat(3, 128px);
+        gap: 12px;
+        padding: 12px;
+      }
+      canvas {
+        width: 128px;
+        height: 128px;
+        image-rendering: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="equirect" width="128" height="128"></canvas>
+    <canvas id="cubemap" width="128" height="128"></canvas>
+    <canvas id="composite" width="128" height="128"></canvas>
+    <script type="module" src="./environment-background-harness.ts"></script>
+  </body>
+</html>

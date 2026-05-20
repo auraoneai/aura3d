@@ -1,0 +1,63 @@
+import type { BenchmarkSceneDescriptor } from "./descriptor.js";
+
+const scene: BenchmarkSceneDescriptor = {
+  id: "editor-authored-startup",
+  sceneVersion: 1,
+  assetId: "editor-authored-v3-app-export",
+  assetClass: "editor-authored-static-export-metadata",
+  resolution: { width: 960, height: 540, dpr: 1 },
+  warmupFrames: 20,
+  measuredFrames: 90,
+  cameraPath: "exported-app-static-camera",
+  lighting: "authored-directional-light-plus-runtime-grid",
+  materialFeatures: ["exported-material-metadata", "exported-texture-metadata"],
+  postprocessState: { enabled: false, effects: [], sourceEvidence: [] },
+  animationState: { enabled: false, clips: 0, skinning: false, morphTargets: false, playback: "exported-app-startup" },
+  quality: {
+    antialias: false,
+    shadows: false,
+    postprocess: false,
+    pbr: false,
+    skinning: false,
+    instancing: false,
+    particles: false,
+  },
+  workload: {
+    drawCalls: 2,
+    triangles: 2048,
+    materials: 2,
+    materialVariants: 1,
+    textures: 2,
+    textureBytes: 131072,
+    geometryBytes: 49152,
+    shaders: 1,
+    animations: 1,
+    particles: 0,
+    instances: 0,
+  },
+  workflow: {
+    kind: "editor-authored-exported-app-startup",
+    exportedProjectPath: "examples/editor-authored-v3-app/project.json",
+    exportedRuntimePath: "examples/editor-authored-v3-app/runtime.js",
+    editorEvidenceReportPath: "tests/reports/v3-editor-authoring.json",
+    comparisonMode: "All engines load the same editor-authored exported project metadata and execute the same WebGL2 startup microbenchmark wrapper; this is workflow startup evidence, not native Three.js/Babylon editor export parity.",
+    authoredOperations: [
+      "new-project",
+      "import-real-gltf",
+      "place-gltf",
+      "transform-gizmo",
+      "material-edit",
+      "save-project",
+      "static-export",
+      "static-export-runtime",
+    ],
+  },
+  unsupportedFeatures: [
+    "native Three.js/Babylon editor export workflow parity",
+    "full exported app canvas2D runtime parity",
+    "real glTF render startup parity",
+    "runtime scripting parity across external engines",
+  ],
+};
+
+export default scene;

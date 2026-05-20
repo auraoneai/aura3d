@@ -34,6 +34,14 @@ export class Vector3 {
     return new Vector3(this.x * v.x, this.y * v.y, this.z * v.z);
   }
 
+  divide(v: Vector3): Vector3 {
+    return new Vector3(this.x / v.x, this.y / v.y, this.z / v.z);
+  }
+
+  divideScalar(scalar: number): Vector3 {
+    return new Vector3(this.x / scalar, this.y / scalar, this.z / scalar);
+  }
+
   dot(v: Vector3): number {
     return this.x * v.x + this.y * v.y + this.z * v.z;
   }

@@ -1,26 +1,40 @@
 # Renderer Material Matrix
 
-`examples/material-lab` is the bounded material stress scene for this slice. It renders through `Renderer` + `WebGL2Device` using a scene camera, scene lights, node transforms, geometry resources, and material resources.
+The renderer material surface is broader than the early `examples/material-lab` matrix. The current repo includes:
 
-The lab covers:
+- `UnlitMaterial`, `TexturedUnlitMaterial`, `PBRMaterial`, `TexturedPBRMaterial`, `NormalMappedPBRMaterial`, `InstancedPBRMaterial`, `SkinnedLitMaterial`, `SkinnedUnlitMaterial`, and `MorphUnlitMaterial`;
+- glTF metallic-roughness texture slots, normal maps, ORM/occlusion/emissive slots, alpha mask/blend state, double-sided state, UV transforms, and material variants;
+- bounded physical-material helpers for clearcoat, sheen, specular, transmission, anisotropy, and transparent material evidence;
+- render-state sorting and alpha utilities under `packages/rendering/src/materials`;
+- v8 route coverage for material extensions, transmission, texture anisotropy, loader variants, and the flagship PBR viewer.
 
-- base color through `UnlitMaterial`
-- vertex colors through the default `a_color` shader path
-- normal mapping through `NormalMappedPBRMaterial`
-- metallic-roughness, occlusion, and emissive texture slots through `TexturedPBRMaterial`
-- alpha mask through `TexturedUnlitMaterial` plus `u_alphaCutoff`
-- alpha blend through transparent PBR render state
-- double-sided rendering through `cullMode: "none"`
-- UV transforms through textured material transform uniforms
+## Current Use Cases
 
-## Limits
+- Render imported glTF/GLB assets with PBR textures in WebGL2.
+- Build product configurators and material labs with variant selection and renderer diagnostics.
+- Compare selected same-scene output against Three.js for flagship product scenes.
+- Exercise material extension behavior in route-level demos before claiming broad loader parity.
 
-- This is a material-matrix validation scene, not coverage for every glTF material extension or alpha-sorting strategy.
-- The current glTF render-resource material path still supports one primary UV path per draw.
-- Large mixed transparent scenes are not claimed.
+## Current Evidence
+
+- `tests/reports/v8-assets.json` records 20 v8 assets, 15 textured-PBR assets, 6 material-extension assets, texture transform coverage, and material-variant coverage.
+- `tests/reports/v8-threejs-parity.json` records a same-scene G3D/Three.js flagship comparison. In that report G3D renders the chronograph watch with 48 draw calls, 100002 triangles, 37 textures, and 29 materials; Three.js renders the same asset with 41 draw calls, 199990 triangles, and 12 textures.
+- `tests/reports/v6-hd-flagship.json` records HD WebGL2 PBR output for composed real assets with HDR environment input and texture diagnostics.
+- `tests/visual/rendering-material-matrix.spec.ts` still verifies the bounded material matrix scene.
+
+## Known Gaps
+
+- The material system does not yet prove full glTF extension parity. Treat `KHR_materials_transmission`, variants, texture transform, clearcoat, sheen, and specular as bounded coverage unless the specific route/report is cited.
+- Large transparent scenes, order-independent transparency, SSR/refraction stacks, and production glass are not complete claims.
+- Some v8 examples are route evidence, not polished product visuals. The v8 visual review accepts screenshots as route evidence and explicitly says not to use them as final proof of Three.js-level character or material quality.
+- The same-scene Three.js comparison is useful, but it is still one flagship scene plus selected categories, not ecosystem-level parity.
 
 ## Verification
 
-- `tests/unit/rendering/pbr-lighting.test.ts` validates textured PBR slots and UV transform uniforms.
-- `tests/unit/rendering/material-binding.test.ts` validates texture binding schema and transform metadata.
-- `tests/visual/rendering-material-matrix.spec.ts` verifies browser pixels from `examples/material-lab`.
+- `tests/reports/v8-assets.json`
+- `tests/reports/v8-threejs-parity.json`
+- `tests/reports/v8-visual-review.json`
+- `tests/reports/v6-hd-flagship.json`
+- `tests/unit/rendering/pbr-lighting.test.ts`
+- `tests/unit/rendering/material-binding.test.ts`
+- `tests/visual/rendering-material-matrix.spec.ts`

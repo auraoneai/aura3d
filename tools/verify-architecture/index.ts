@@ -151,7 +151,7 @@ function exportedRenderingEntries(root: string): string[] {
   const indexPath = join(root, "packages", "rendering", "src", "index.ts");
   if (!existsSync(indexPath)) return [];
   const source = readFileSync(indexPath, "utf8");
-  const directRendererExports = [...source.matchAll(/export\s+\{\s*Renderer\s*\}\s+from\s+["'][^"']+["']/g)].map((match) => match[0]);
+  const directRendererExports = [...source.matchAll(/export\s+\{[^}]*\bRenderer\b[^}]*\}\s+from\s+["'][^"']+["']/g)].map((match) => match[0]);
   return directRendererExports;
 }
 

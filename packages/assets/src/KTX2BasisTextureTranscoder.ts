@@ -74,13 +74,15 @@ async function parseTextureLevels(
   loaderOptions: Record<string, unknown> | undefined
 ): Promise<readonly TextureMipLevelDescriptor[]> {
   await installNodeLoadersGLFileHooks();
-  const [{ parse }, { BasisLoader }] = await Promise.all([
-    import("@loaders.gl/core"),
-    import("@loaders.gl/textures")
-  ]);
+  const { parse, BasisLoader } = await loadLoadersGLModules();
   const parsed = await parse(source.slice(0), BasisLoader, {
-    CDN: DEFAULT_BROWSER_CDN,
+    worker: false,
+    CDN: defaultLoadersGLCdn(),
+    modules: defaultLoadersGLModules(),
     ...loaderOptions,
+    ...(loaderOptions?.modules && typeof loaderOptions.modules === "object"
+      ? { modules: { ...defaultLoadersGLModules(), ...(loaderOptions.modules as Record<string, unknown>) } }
+      : {}),
     basis: {
       ...basisOptions(loaderOptions),
       containerFormat: "ktx2",
@@ -97,6 +99,36 @@ async function parseTextureLevels(
     height: level.height,
     data: new Uint8Array(level.data)
   }));
+}
+
+function defaultLoadersGLCdn(): string {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return `${window.location.origin}/node_modules/@loaders.gl`;
+  }
+  return DEFAULT_BROWSER_CDN;
+}
+
+function defaultLoadersGLModules(): Record<string, string> | undefined {
+  if (typeof window === "undefined" || !window.location?.origin) return undefined;
+  const baseUrl = `${window.location.origin}/node_modules/@loaders.gl/textures/dist/libs`;
+  return {
+    "basis_encoder.js": `${baseUrl}/basis_encoder.js`,
+    "basis_encoder.wasm": `${baseUrl}/basis_encoder.wasm`,
+    "basis_transcoder.js": `${baseUrl}/basis_transcoder.js`,
+    "basis_transcoder.wasm": `${baseUrl}/basis_transcoder.wasm`
+  };
+}
+
+async function loadLoadersGLModules(): Promise<{ readonly parse: typeof import("@loaders.gl/core").parse; readonly BasisLoader: typeof import("@loaders.gl/textures").BasisLoader }> {
+  try {
+    const [core, textures] = await Promise.all([
+      import("@loaders.gl/core"),
+      import("@loaders.gl/textures")
+    ]);
+    return { parse: core.parse, BasisLoader: textures.BasisLoader };
+  } catch (error) {
+    throw new Error(`KTX2/Basis transcoder dependency resolution failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 function basisOptions(loaderOptions: Record<string, unknown> | undefined): Record<string, unknown> {
@@ -149,10 +181,10 @@ async function installNodeLoadersGLFileHooks(): Promise<void> {
   }
 
   const [{ readFile }, { dirname, join }, { createRequire }, vm] = await Promise.all([
-    import("node:fs/promises"),
-    import("node:path"),
-    import("node:module"),
-    import("node:vm")
+    importNodeModule<typeof import("node:fs/promises")>("node:fs/promises"),
+    importNodeModule<typeof import("node:path")>("node:path"),
+    importNodeModule<typeof import("node:module")>("node:module"),
+    importNodeModule<typeof import("node:vm")>("node:vm")
   ]);
   const require = createRequire(import.meta.url);
   const texturesRoot = dirname(dirname(require.resolve("@loaders.gl/textures")));
@@ -185,4 +217,8 @@ async function installNodeLoadersGLFileHooks(): Promise<void> {
     }
   };
   nodeFileHooksReady = true;
+}
+
+async function importNodeModule<T>(specifier: string): Promise<T> {
+  return import(/* @vite-ignore */ specifier) as Promise<T>;
 }

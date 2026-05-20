@@ -14,6 +14,7 @@ import {
 export class TransformNode {
   private dirty = true;
   private readonly dirtyListeners = new Set<() => void>();
+  matrixAutoUpdate = true;
   readonly position: Vec3 = [0, 0, 0];
   readonly rotation: Quat = [0, 0, 0, 1];
   readonly scale: Vec3 = [1, 1, 1];
@@ -59,6 +60,31 @@ export class TransformNode {
     return this.markDirty();
   }
 
+  setLocalMatrix(matrix: Mat4, options: { readonly decompose?: boolean; readonly matrixAutoUpdate?: boolean } = {}): this {
+    if (!matrix.every(Number.isFinite)) throw new Error("Transform local matrix must contain finite values.");
+    this.localMatrix = cloneMat4(matrix);
+    this.matrixAutoUpdate = options.matrixAutoUpdate ?? false;
+    if (options.decompose ?? true) {
+      const decomposed = decomposeMat4(matrix);
+      this.position[0] = decomposed.position[0];
+      this.position[1] = decomposed.position[1];
+      this.position[2] = decomposed.position[2];
+      this.rotation[0] = decomposed.rotation[0];
+      this.rotation[1] = decomposed.rotation[1];
+      this.rotation[2] = decomposed.rotation[2];
+      this.rotation[3] = decomposed.rotation[3];
+      this.scale[0] = decomposed.scale[0];
+      this.scale[1] = decomposed.scale[1];
+      this.scale[2] = decomposed.scale[2];
+    }
+    return this.markDirty();
+  }
+
+  setMatrixAutoUpdate(enabled: boolean): this {
+    this.matrixAutoUpdate = enabled;
+    return this.markDirty();
+  }
+
   markDirty(): this {
     if (!this.dirty) {
       this.dirty = true;
@@ -79,7 +105,9 @@ export class TransformNode {
   updateWorld(parentWorld?: Mat4, force = false): boolean {
     const shouldUpdate = force || this.dirty;
     if (!shouldUpdate) return false;
-    this.localMatrix = composeMat4(this.position, this.rotation, this.scale);
+    if (this.matrixAutoUpdate) {
+      this.localMatrix = composeMat4(this.position, this.rotation, this.scale);
+    }
     this.worldMatrix = parentWorld ? multiplyMat4(parentWorld, this.localMatrix) : cloneMat4(this.localMatrix);
     this.inverseWorldMatrix = invertMat4(this.worldMatrix);
     this.dirty = false;

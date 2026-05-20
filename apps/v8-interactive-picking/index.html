@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Interactive Picking</title>
+    <link rel="stylesheet" href="/apps/v6-common/src/styles.css">
+    <style>
+      body.v8-interactive-picking {
+        grid-template-columns: minmax(780px, min(72vw, 1400px)) minmax(360px, 1fr);
+        background: #080b0f;
+      }
+
+      body.v8-interactive-picking #viewport {
+        width: 100%;
+        height: auto;
+        max-height: 100vh;
+        aspect-ratio: 16 / 9;
+        background: #080b0f;
+        cursor: crosshair;
+      }
+
+      body.v8-interactive-picking #app {
+        padding: 18px;
+      }
+
+      .v8-interactive-picking .metrics {
+        grid-template-columns: repeat(2, minmax(132px, 1fr));
+      }
+
+      .v8-interactive-picking #runtime-state.is-ready,
+      .v8-interactive-picking #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .v8-interactive-picking #runtime-state.is-error {
+        background: #923b3b;
+      }
+    </style>
+  </head>
+  <body class="v8-interactive-picking">
+    <canvas id="viewport" width="1280" height="720"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/v8-interactive-picking/src/main.ts"></script>
+  </body>
+</html>

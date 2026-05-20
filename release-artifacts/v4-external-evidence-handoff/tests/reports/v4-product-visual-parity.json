@@ -1,0 +1,325 @@
+{
+  "ok": true,
+  "generatedAt": "2026-05-12T14:54:21.376Z",
+  "commit": "84bc815f7e927c8e55917526fab2d32be1d5f2a5",
+  "runId": "v4-product-visual-parity-2026-05-12T14-54-21-383Z-ip906z",
+  "command": "pnpm audit:v4-product-visual-parity",
+  "sourceFileHashes": [
+    {
+      "path": "tools/v4-product-visual-parity/index.ts",
+      "sha256": "b6beccab08d94cba662f4320682ed50fe471b20cf427df9994889e2f3a4d8874"
+    },
+    {
+      "path": "tools/v4-product-visual-parity/productScene.ts",
+      "sha256": "ea7d44476efddc585f5c37a21ffcc3ba77f53cd489edd3861cea1b4bbdd74033"
+    },
+    {
+      "path": "tools/v4-broad-parity-readiness/index.ts",
+      "sha256": "62d3691a51b4caaa90c499a83e62a233d776ea8a533d21ac0354bf39bfb0ade3"
+    },
+    {
+      "path": "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
+      "sha256": "63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96"
+    },
+    {
+      "path": "packages/rendering/src/Renderer.ts",
+      "sha256": "fbe683e386ca51bbbc67b36ca310337db0c4592c75655ce05bb219c9bfdce5bf"
+    },
+    {
+      "path": "packages/rendering/src/Geometry.ts",
+      "sha256": "e0a5420ed2ba613a8d351117085be3332df19152b75efab6dba2fcf0dd839751"
+    },
+    {
+      "path": "packages/rendering/src/PBRMaterial.ts",
+      "sha256": "8c4d067029dad4646bbdf731325719b7e4a963d6c32f4d6d6c1d1ffa6f9bb924"
+    },
+    {
+      "path": "packages/rendering/src/ProductTurntableFixtures.ts",
+      "sha256": "0e2f1b968c20babf598b0a7d5f1544f195e0b7624bf1e11db99a221becdef8bd"
+    },
+    {
+      "path": "packages/rendering/src/V4RenderPreset.ts",
+      "sha256": "b92115e3fcb9b69e7df93570ca96da4eb96dc93ee874d39c3774fad8c71052e0"
+    }
+  ],
+  "blockedClaims": [
+    "rendered product visual parity against Unity/Unreal",
+    "full same-asset product render parity across external engines",
+    "broad better-than-Three.js language",
+    "broad better-than-Babylon.js language",
+    "Unity/Unreal replacement language"
+  ],
+  "screenshotPaths": [
+    "tests/reports/v4-product-visual-parity/galileo-product.png",
+    "tests/reports/v4-product-visual-parity/threejs-product.png",
+    "tests/reports/v4-product-visual-parity/babylon-product.png",
+    "tests/reports/v4-product-visual-parity/threejs-product-diff.png",
+    "tests/reports/v4-product-visual-parity/babylon-product-diff.png"
+  ],
+  "violations": [
+    "unity: tests/reports/v4-unity-product-visual-baseline.json is missing; no same-scene unity product visual baseline is attached.",
+    "unity: baseline report must set ok=true",
+    "unity: baseline report must set engine=\"unity\"",
+    "unity: baseline report must set sameSceneProductBaseline=true",
+    "unity: baseline report must use sceneDescriptorId=v4-deterministic-product-visual-parity",
+    "unity: baseline report must use sceneDescriptorVersion=v4-product-visual-parity-scene-v1",
+    "unity: baseline report must use descriptorSha256=63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+    "unity: baseline report must set visualDiffAgainstGalileo=true",
+    "unity: metrics.width must equal 720",
+    "unity: metrics.height must equal 480",
+    "unity: metrics.productParts must be at least 18",
+    "unity: metrics.materialCount must be at least 7",
+    "unity: metrics.turntableHotspots must be at least 3",
+    "unity: metrics.captureViews must be at least 4",
+    "unity: metrics.batchTasks must be at least 4",
+    "unity: metrics.nonBlankPixels must be greater than 10000",
+    "unity: metrics.colorBuckets must be at least 5",
+    "unity: screenshot validation failed: baseline report missing",
+    "unity: runner evidence validation failed: baseline report missing",
+    "unreal: tests/reports/v4-unreal-product-visual-baseline.json is missing; no same-scene unreal product visual baseline is attached.",
+    "unreal: baseline report must set ok=true",
+    "unreal: baseline report must set engine=\"unreal\"",
+    "unreal: baseline report must set sameSceneProductBaseline=true",
+    "unreal: baseline report must use sceneDescriptorId=v4-deterministic-product-visual-parity",
+    "unreal: baseline report must use sceneDescriptorVersion=v4-product-visual-parity-scene-v1",
+    "unreal: baseline report must use descriptorSha256=63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+    "unreal: baseline report must set visualDiffAgainstGalileo=true",
+    "unreal: metrics.width must equal 720",
+    "unreal: metrics.height must equal 480",
+    "unreal: metrics.productParts must be at least 18",
+    "unreal: metrics.materialCount must be at least 7",
+    "unreal: metrics.turntableHotspots must be at least 3",
+    "unreal: metrics.captureViews must be at least 4",
+    "unreal: metrics.batchTasks must be at least 4",
+    "unreal: metrics.nonBlankPixels must be greater than 10000",
+    "unreal: metrics.colorBuckets must be at least 5",
+    "unreal: screenshot validation failed: baseline report missing",
+    "unreal: runner evidence validation failed: baseline report missing"
+  ],
+  "visualParityReady": false,
+  "renderedProductVisualParity": {
+    "threejs": true,
+    "babylon": true,
+    "unity": false,
+    "unreal": false
+  },
+  "sceneDescriptor": {
+    "id": "v4-deterministic-product-visual-parity",
+    "schemaVersion": "v4-product-visual-parity-scene-v1",
+    "materialCount": 10,
+    "productParts": 57,
+    "turntableHotspots": 3,
+    "captureViews": 4,
+    "batchTasks": 4,
+    "minimumEvidence": {
+      "productParts": 18,
+      "materialCount": 7,
+      "drawCalls": 18,
+      "turntableHotspots": 3,
+      "captureViews": 4,
+      "batchTasks": 4
+    },
+    "assetPipeline": {
+      "ready": true,
+      "source": "shared-product-visual-descriptor",
+      "generatedDescriptorPath": "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
+      "runtimeDescriptorSha256": "63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+      "generatedDescriptorSha256": "63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+      "sameDescriptorForAllEngines": true,
+      "localEngines": [
+        "galileo",
+        "threejs",
+        "babylon"
+      ],
+      "externalEngines": [
+        "unity",
+        "unreal"
+      ],
+      "productionWorkflowEvidence": [
+        "material-variant-descriptor",
+        "turntable-hotspots",
+        "multi-view-capture-plan",
+        "batch-output-plan",
+        "ar-export-boundary"
+      ],
+      "commercialImportedAssetClaimed": false,
+      "violations": []
+    },
+    "claimBoundary": "This descriptor defines the deterministic same-layout over-ear headphone product asset pipeline and bounded ecommerce workflow evidence for Galileo3D, Three.js, Babylon.js, and future Unity/Unreal baseline renders. It is not a commercial imported product asset, native AR export pipeline, video capture pipeline, or PIM integration."
+  },
+  "renders": [
+    {
+      "engine": "galileo",
+      "screenshotPath": "tests/reports/v4-product-visual-parity/galileo-product.png",
+      "bundleBytes": 243574,
+      "metrics": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 345600,
+        "colorBuckets": 43,
+        "drawCalls": 57,
+        "materialCount": 10,
+        "productParts": 57,
+        "turntableHotspots": 3,
+        "captureViews": 4,
+        "batchTasks": 4
+      }
+    },
+    {
+      "engine": "threejs",
+      "screenshotPath": "tests/reports/v4-product-visual-parity/threejs-product.png",
+      "bundleBytes": 481285,
+      "metrics": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 345600,
+        "colorBuckets": 30,
+        "drawCalls": 57,
+        "materialCount": 10,
+        "productParts": 57,
+        "turntableHotspots": 3,
+        "captureViews": 4,
+        "batchTasks": 4
+      }
+    },
+    {
+      "engine": "babylon",
+      "screenshotPath": "tests/reports/v4-product-visual-parity/babylon-product.png",
+      "bundleBytes": 4305920,
+      "metrics": {
+        "width": 720,
+        "height": 480,
+        "nonBlankPixels": 345600,
+        "colorBuckets": 30,
+        "drawCalls": 57,
+        "materialCount": 10,
+        "productParts": 57,
+        "turntableHotspots": 3,
+        "captureViews": 4,
+        "batchTasks": 4
+      }
+    }
+  ],
+  "diffs": [
+    {
+      "baselineEngine": "galileo",
+      "comparedEngine": "threejs",
+      "baselinePath": "tests/reports/v4-product-visual-parity/galileo-product.png",
+      "comparedPath": "tests/reports/v4-product-visual-parity/threejs-product.png",
+      "diffPath": "tests/reports/v4-product-visual-parity/threejs-product-diff.png",
+      "width": 720,
+      "height": 480,
+      "comparedPixels": 345600,
+      "changedPixels": 27596,
+      "changedPixelRatio": 0.07985,
+      "meanAbsoluteError": 2.215047,
+      "maxChannelDelta": 92,
+      "pass": true,
+      "thresholds": {
+        "maxChangedPixelRatio": 0.15,
+        "maxMeanAbsoluteError": 8
+      }
+    },
+    {
+      "baselineEngine": "galileo",
+      "comparedEngine": "babylon",
+      "baselinePath": "tests/reports/v4-product-visual-parity/galileo-product.png",
+      "comparedPath": "tests/reports/v4-product-visual-parity/babylon-product.png",
+      "diffPath": "tests/reports/v4-product-visual-parity/babylon-product-diff.png",
+      "width": 720,
+      "height": 480,
+      "comparedPixels": 345600,
+      "changedPixels": 32019,
+      "changedPixelRatio": 0.092648,
+      "meanAbsoluteError": 3.359591,
+      "maxChannelDelta": 147,
+      "pass": true,
+      "thresholds": {
+        "maxChangedPixelRatio": 0.15,
+        "maxMeanAbsoluteError": 8
+      }
+    }
+  ],
+  "externalBaselines": {
+    "unity": {
+      "engine": "unity",
+      "reportPath": "tests/reports/v4-unity-product-visual-baseline.json",
+      "ok": false,
+      "present": false,
+      "requiredSceneDescriptorId": "v4-deterministic-product-visual-parity",
+      "requiredSceneDescriptorVersion": "v4-product-visual-parity-scene-v1",
+      "requiredSceneDescriptorSha256": "63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+      "screenshot": {
+        "ok": false,
+        "reason": "baseline report missing"
+      },
+      "runnerEvidence": {
+        "ok": false,
+        "violations": [
+          "baseline report missing"
+        ]
+      },
+      "violations": [
+        "tests/reports/v4-unity-product-visual-baseline.json is missing; no same-scene unity product visual baseline is attached.",
+        "baseline report must set ok=true",
+        "baseline report must set engine=\"unity\"",
+        "baseline report must set sameSceneProductBaseline=true",
+        "baseline report must use sceneDescriptorId=v4-deterministic-product-visual-parity",
+        "baseline report must use sceneDescriptorVersion=v4-product-visual-parity-scene-v1",
+        "baseline report must use descriptorSha256=63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+        "baseline report must set visualDiffAgainstGalileo=true",
+        "metrics.width must equal 720",
+        "metrics.height must equal 480",
+        "metrics.productParts must be at least 18",
+        "metrics.materialCount must be at least 7",
+        "metrics.turntableHotspots must be at least 3",
+        "metrics.captureViews must be at least 4",
+        "metrics.batchTasks must be at least 4",
+        "metrics.nonBlankPixels must be greater than 10000",
+        "metrics.colorBuckets must be at least 5",
+        "screenshot validation failed: baseline report missing",
+        "runner evidence validation failed: baseline report missing"
+      ]
+    },
+    "unreal": {
+      "engine": "unreal",
+      "reportPath": "tests/reports/v4-unreal-product-visual-baseline.json",
+      "ok": false,
+      "present": false,
+      "requiredSceneDescriptorId": "v4-deterministic-product-visual-parity",
+      "requiredSceneDescriptorVersion": "v4-product-visual-parity-scene-v1",
+      "requiredSceneDescriptorSha256": "63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+      "screenshot": {
+        "ok": false,
+        "reason": "baseline report missing"
+      },
+      "runnerEvidence": {
+        "ok": false,
+        "violations": [
+          "baseline report missing"
+        ]
+      },
+      "violations": [
+        "tests/reports/v4-unreal-product-visual-baseline.json is missing; no same-scene unreal product visual baseline is attached.",
+        "baseline report must set ok=true",
+        "baseline report must set engine=\"unreal\"",
+        "baseline report must set sameSceneProductBaseline=true",
+        "baseline report must use sceneDescriptorId=v4-deterministic-product-visual-parity",
+        "baseline report must use sceneDescriptorVersion=v4-product-visual-parity-scene-v1",
+        "baseline report must use descriptorSha256=63f487fb182f30f3c2943fc7891076a9959e5db9c143c49cb5c026ca37601d96",
+        "baseline report must set visualDiffAgainstGalileo=true",
+        "metrics.width must equal 720",
+        "metrics.height must equal 480",
+        "metrics.productParts must be at least 18",
+        "metrics.materialCount must be at least 7",
+        "metrics.turntableHotspots must be at least 3",
+        "metrics.captureViews must be at least 4",
+        "metrics.batchTasks must be at least 4",
+        "metrics.nonBlankPixels must be greater than 10000",
+        "metrics.colorBuckets must be at least 5",
+        "screenshot validation failed: baseline report missing",
+        "runner evidence validation failed: baseline report missing"
+      ]
+    }
+  }
+}

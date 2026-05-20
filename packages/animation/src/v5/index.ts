@@ -1,0 +1,11 @@
+export { AnimationClipV5 } from "./AnimationClip";
+export type { V5KeyframeTrack, V5LoopMode } from "./AnimationClip";
+export { AnimationActionV5 } from "./AnimationAction";
+export { AnimationMixerV5 } from "./AnimationMixer";
+export { SkeletonV5 } from "./Skeleton";
+export type { V5Bone } from "./Skeleton";
+export { SkinnedMeshV5 } from "./SkinnedMesh";
+export { MorphTargetMixerV5 } from "./MorphTargetMixer";
+export type { V5MorphTargetWeight } from "./MorphTargetMixer";
+export { createV5AnimationDiagnostics, inspectV5AnimatedAssets, V5_ANIMATED_GLTF_ASSETS } from "./AnimationDiagnostics";
+export type { V5AnimatedAssetDiagnostic } from "./AnimationDiagnostics";

@@ -1,0 +1,2 @@
+export interface PBRShaderFeatures { readonly normalMap: boolean; readonly occlusionMap: boolean; readonly emissiveMap: boolean; readonly clearcoat: boolean; readonly sheen: boolean; readonly specular: boolean; readonly transmission: boolean; readonly skinning: boolean; readonly morphTargets: boolean; }
+export const V6_PBR_SHADER_FEATURES: PBRShaderFeatures = { normalMap: true, occlusionMap: true, emissiveMap: true, clearcoat: true, sheen: true, specular: true, transmission: true, skinning: true, morphTargets: true };

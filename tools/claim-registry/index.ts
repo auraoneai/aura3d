@@ -45,7 +45,7 @@ export interface ClaimRegistryOptions {
   readonly startedAt?: Date;
 }
 
-const defaultRegistryPath = "docs/v2/claim-registry.md";
+const defaultRegistryPath = "docs/project/v2-claim-registry.md";
 const defaultReportPath = "tests/reports/claim-registry.json";
 const strongerClaimPatterns = [
   { claim: "Galileo3D is better than Three.js.", pattern: /\bbetter\s+than\s+three\.?js\b/i },
@@ -212,10 +212,10 @@ function scanClaimText(
 function listPublicClaimFiles(root: string): readonly string[] {
   const files = walk(root).map((path) => normalizePath(relative(root, path)));
   return files.filter((path) => {
-    if (path === "package.json" || path === "README.md" || path === "CHANGELOG.md" || /^RELEASE.*\.md$/i.test(path)) return true;
+    if (path === "package.json" || path === "README.md" || path === "CHANGELOG.md" || /^RELEASE[^/]*\.md$/i.test(path)) return true;
     if (/^packages\/[^/]+\/package\.json$/.test(path)) return true;
     if (/^examples\/[^/]+\/README\.md$/.test(path)) return true;
-    return /^docs\/(?:api|tutorials|examples|benchmarks)\//.test(path) || path === "docs/known-limits.md";
+    return /^docs\/(?:api|tutorials|examples|benchmarks)\//.test(path) || path === "docs/project/known-limits.md";
   }).sort((left, right) => left.localeCompare(right));
 }
 

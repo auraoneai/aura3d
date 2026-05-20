@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>V9 Animation Multiple Parity</title>
+    <style>
+      body {
+        margin: 0;
+        background: #f2f3f5;
+        color: #15171c;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+      }
+
+      canvas {
+        border: 1px solid #c8ced8;
+        background: #a6a6a6;
+      }
+
+      pre {
+        margin: 0;
+        max-width: 1280px;
+        white-space: pre-wrap;
+        color: #46515f;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="report-status">loading</div>
+      <canvas id="g3d-animation-multiple" width="720" height="480"></canvas>
+      <canvas id="threejs-animation-multiple" width="720" height="480"></canvas>
+      <canvas id="side-by-side" width="1440" height="540"></canvas>
+      <pre id="report-json"></pre>
+    </main>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

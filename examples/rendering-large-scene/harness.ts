@@ -6,8 +6,12 @@ import {
   Texture,
   TexturedUnlitMaterial,
   UnlitMaterial,
+  batchStaticRenderItems,
+  selectLodLevel,
   type RenderDeviceDiagnostics,
-  type RenderItem
+  type RenderItem,
+  type StaticBatchInput,
+  type StaticBatchResult
 } from "@galileo3d/rendering";
 import { Scene } from "@galileo3d/scene";
 
@@ -18,19 +22,55 @@ declare global {
 }
 
 export interface LargeSceneHarnessResult {
+  readonly id: "rendering-large-scene";
   readonly status: "ready" | "error";
   readonly renderer: "webgl2";
+  readonly visualClaim: "bounded-large-scene-webgl2-harness";
+  readonly knownLimits: readonly string[];
+  readonly errors: readonly string[];
   readonly staticMeshes?: number;
   readonly instances?: number;
   readonly instancedBatches?: number;
   readonly textureVariants?: number;
   readonly materialVariants?: number;
+  readonly lod?: LargeSceneLodMetrics;
+  readonly batching?: LargeSceneBatchMetrics;
+  readonly cameraTiming?: LargeSceneCameraTimingMetrics;
   readonly frameMs?: number;
   readonly diagnostics?: RenderDeviceDiagnostics;
   readonly centerPixel?: readonly number[];
   readonly textureProbePixel?: readonly number[];
   readonly canvasFrame?: { readonly width: number; readonly height: number };
   readonly error?: string;
+}
+
+export interface LargeSceneLodMetrics {
+  readonly enabled: boolean;
+  readonly levels: readonly string[];
+  readonly selectedHigh: number;
+  readonly selectedMedium: number;
+  readonly selectedLow: number;
+  readonly selectionMode: "distance-and-screen-size";
+}
+
+export interface LargeSceneBatchMetrics {
+  readonly enabled: boolean;
+  readonly logicalStaticMeshes: number;
+  readonly submittedStaticDraws: number;
+  readonly staticBatches: number;
+  readonly unbatchedStaticDraws: number;
+  readonly drawCallReduction: number;
+  readonly maxInstancesPerBatch: number;
+}
+
+export interface LargeSceneCameraTimingMetrics {
+  readonly samples: readonly number[];
+  readonly medianMs: number;
+  readonly maxMs: number;
+  readonly minMs: number;
+  readonly jitterMs: number;
+  readonly cameraPositions: readonly number[];
+  readonly stable: boolean;
 }
 
 export interface LargeSceneHarnessOptions {
@@ -44,6 +84,12 @@ const STATIC_MESH_COUNT = 5_000;
 const INSTANCE_COUNT = 10_000;
 const INSTANCES_PER_BATCH = 64;
 const TEXTURE_VARIANT_COUNT = 8;
+const STATIC_BATCH_SIZE = 64;
+const knownLimits = [
+  "This is a fixed large-scene renderer harness, not a world streaming or open-world production system.",
+  "LOD selection and static batching are bounded to generated meshes; streaming, occlusion culling, GPU timing, and production memory budgeting are not fully covered here.",
+  "The workload uses generated geometry and texture variants for repeatable browser evidence.",
+] as const;
 
 export async function runLargeSceneHarness(options: LargeSceneHarnessOptions = {}): Promise<LargeSceneHarnessResult> {
   try {
@@ -68,22 +114,40 @@ export async function runLargeSceneHarness(options: LargeSceneHarnessOptions = {
     scene.root.addChild(keyLight);
 
     const resources = createLargeSceneResources();
-    const renderItems = buildLargeSceneRenderItems(resources);
-    const start = performance.now();
-    const diagnostics = renderer.render({ scene, renderItems });
-    const frameMs = performance.now() - start;
+    const cameraPositions = [-0.42, -0.18, 0, 0.18, 0.42, 0] as const;
+    const frameSamples: number[] = [];
+    let diagnostics: RenderDeviceDiagnostics | undefined;
+    let finalBuild: LargeSceneBuildResult | undefined;
+    for (const cameraX of cameraPositions) {
+      const build = buildLargeSceneRenderItems(resources, cameraX);
+      const start = performance.now();
+      diagnostics = renderer.render({ scene, renderItems: build.renderItems });
+      frameSamples.push(Number((performance.now() - start).toFixed(3)));
+      finalBuild = build;
+    }
+    if (!diagnostics || !finalBuild) {
+      throw new Error("Large-scene renderer did not produce a frame.");
+    }
+    const cameraTiming = summarizeCameraTiming(frameSamples, [...cameraPositions]);
     const centerPixel = readPixel(canvas, Math.floor(canvas.width / 2), Math.floor(canvas.height / 2));
     const textureProbePixel = findPixel(canvas, (r, g, b, a) => a === 255 && r + g + b > 20);
 
     const result: LargeSceneHarnessResult = {
+      id: "rendering-large-scene",
       status: "ready",
       renderer: "webgl2",
+      visualClaim: "bounded-large-scene-webgl2-harness",
+      knownLimits,
+      errors: [],
       staticMeshes: STATIC_MESH_COUNT,
       instances: INSTANCE_COUNT,
       instancedBatches: Math.ceil(INSTANCE_COUNT / INSTANCES_PER_BATCH),
       textureVariants: resources.textures.length,
       materialVariants: resources.materials.length,
-      frameMs: Number(frameMs.toFixed(2)),
+      lod: finalBuild.lod,
+      batching: finalBuild.batching,
+      cameraTiming,
+      frameMs: cameraTiming.medianMs,
       diagnostics,
       centerPixel,
       textureProbePixel,
@@ -98,8 +162,12 @@ export async function runLargeSceneHarness(options: LargeSceneHarnessOptions = {
     return result;
   } catch (error) {
     const result: LargeSceneHarnessResult = {
+      id: "rendering-large-scene",
       status: "error",
       renderer: "webgl2",
+      visualClaim: "bounded-large-scene-webgl2-harness",
+      knownLimits,
+      errors: [error instanceof Error ? error.message : String(error)],
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
     publish(result, options.statusElement);
@@ -111,6 +179,12 @@ interface LargeSceneResources {
   readonly geometries: readonly Geometry[];
   readonly materials: readonly (UnlitMaterial | PBRMaterial | TexturedUnlitMaterial | InstancedUnlitMaterial)[];
   readonly textures: readonly Texture[];
+}
+
+interface LargeSceneBuildResult {
+  readonly renderItems: readonly RenderItem[];
+  readonly lod: LargeSceneLodMetrics;
+  readonly batching: LargeSceneBatchMetrics;
 }
 
 function createLargeSceneResources(): LargeSceneResources {
@@ -128,7 +202,10 @@ function createLargeSceneResources(): LargeSceneResources {
       renderState: { depthTest: false, depthWrite: false, cullMode: "none" }
     })),
     new InstancedUnlitMaterial({ name: "large-scene-instanced-warm", color: [1, 0.52, 0.14, 1] }),
-    new InstancedUnlitMaterial({ name: "large-scene-instanced-cool", color: [0.18, 0.86, 1, 1] })
+    new InstancedUnlitMaterial({ name: "large-scene-instanced-cool", color: [0.18, 0.86, 1, 1] }),
+    new InstancedUnlitMaterial({ name: "large-scene-lod-high", color: [0.96, 0.2, 0.12, 1] }),
+    new InstancedUnlitMaterial({ name: "large-scene-lod-medium", color: [0.18, 0.58, 0.96, 1] }),
+    new InstancedUnlitMaterial({ name: "large-scene-lod-low", color: [0.16, 0.78, 0.38, 1] })
   ];
   return {
     geometries: [Geometry.triangle(), Geometry.litTriangle(), Geometry.texturedCube(0.035)],
@@ -137,13 +214,19 @@ function createLargeSceneResources(): LargeSceneResources {
   };
 }
 
-function buildLargeSceneRenderItems(resources: LargeSceneResources): RenderItem[] {
+function buildLargeSceneRenderItems(resources: LargeSceneResources, cameraX: number): LargeSceneBuildResult {
   const [triangle, litTriangle, texturedCube] = resources.geometries;
   if (!triangle || !litTriangle || !texturedCube) {
     throw new Error("Large-scene geometry resources were not created.");
   }
 
-  const items: RenderItem[] = [];
+  const lodLevels = [
+    { name: "high", geometry: litTriangle, material: resources.materials[15], maxDistance: 0.62, minScreenSize: 0.02 },
+    { name: "medium", geometry: triangle, material: resources.materials[16], maxDistance: 1.18, minScreenSize: 0.01 },
+    { name: "low", geometry: triangle, material: resources.materials[17] }
+  ] as const;
+  const staticItems: StaticBatchInput[] = [];
+  const lodCounts = { high: 0, medium: 0, low: 0 };
 
   for (let index = 1; index < STATIC_MESH_COUNT; index += 1) {
     const column = index % 100;
@@ -151,21 +234,25 @@ function buildLargeSceneRenderItems(resources: LargeSceneResources): RenderItem[
     const x = -0.98 + column * 0.0198;
     const y = -0.96 + row * 0.0384;
     const size = 0.006 + (index % 5) * 0.0012;
-    const textured = index % 11 === 0;
-    const pbr = index % 13 === 0;
-    const material = textured
-      ? resources.materials[5 + (index % TEXTURE_VARIANT_COUNT)]
-      : pbr
-        ? resources.materials[3 + (index % 2)]
-        : resources.materials[index % 3];
-    items.push({
-      geometry: textured ? texturedCube : pbr ? litTriangle : triangle,
-      material,
+    const distance = Math.hypot(x - cameraX, y * 0.5, 1);
+    const screenSize = size / Math.max(0.001, distance);
+    const selected = selectLodLevel({ distance, screenSize, levels: lodLevels });
+    const levelName = selected.level.name as keyof typeof lodCounts;
+    lodCounts[levelName] += 1;
+    staticItems.push({
+      geometry: selected.level.geometry,
+      material: selected.level.material ?? resources.materials[15],
       modelMatrix: translationScaleMatrix(x, y, 0, size, size, 1),
-      label: `large-scene-static-${index}`
+      batchKey: `lod-${selected.level.name}`,
+      label: `large-scene-static-${index}-${selected.level.name}`
     });
   }
 
+  const batched = batchStaticRenderItems(staticItems, {
+    maxInstancesPerBatch: STATIC_BATCH_SIZE,
+    labelPrefix: "large-scene-static"
+  });
+  const items: RenderItem[] = [...batched.renderItems];
   const batches = Math.ceil(INSTANCE_COUNT / INSTANCES_PER_BATCH);
   for (let batch = 0; batch < batches; batch += 1) {
     const count = Math.min(INSTANCES_PER_BATCH, INSTANCE_COUNT - batch * INSTANCES_PER_BATCH);
@@ -185,7 +272,29 @@ function buildLargeSceneRenderItems(resources: LargeSceneResources): RenderItem[
     label: "large-scene-center-probe"
   });
 
-  return items;
+  for (let index = 0; index < TEXTURE_VARIANT_COUNT; index += 1) {
+    const textureProbeMaterial = resources.materials[5 + index];
+    if (!textureProbeMaterial) continue;
+    items.push({
+      geometry: texturedCube,
+      material: textureProbeMaterial,
+      modelMatrix: translationScaleMatrix(-0.91 + index * 0.045, -0.88, 0, 0.92, 0.92, 1),
+      label: `large-scene-texture-probe-${index}`
+    });
+  }
+
+  return {
+    renderItems: items,
+    lod: {
+      enabled: true,
+      levels: lodLevels.map((level) => level.name),
+      selectedHigh: lodCounts.high,
+      selectedMedium: lodCounts.medium,
+      selectedLow: lodCounts.low,
+      selectionMode: "distance-and-screen-size"
+    },
+    batching: toBatchMetrics(batched)
+  };
 }
 
 function buildInstanceTransforms(batch: number, count: number): Float32Array {
@@ -199,6 +308,35 @@ function buildInstanceTransforms(batch: number, count: number): Float32Array {
     transforms.set(translationScaleMatrix(x, y, 0, 0.0038, 0.0038, 1), local * 16);
   }
   return transforms;
+}
+
+function toBatchMetrics(result: StaticBatchResult): LargeSceneBatchMetrics {
+  return {
+    enabled: true,
+    logicalStaticMeshes: result.logicalItems + 1,
+    submittedStaticDraws: result.submittedItems + 1,
+    staticBatches: result.batches,
+    unbatchedStaticDraws: result.unbatchedItems + 1,
+    drawCallReduction: result.drawCallReduction,
+    maxInstancesPerBatch: result.maxInstancesPerBatch
+  };
+}
+
+function summarizeCameraTiming(samples: readonly number[], cameraPositions: readonly number[]): LargeSceneCameraTimingMetrics {
+  const sorted = [...samples].sort((left, right) => left - right);
+  const minMs = sorted[0] ?? 0;
+  const maxMs = sorted[sorted.length - 1] ?? 0;
+  const medianMs = sorted[Math.floor(sorted.length / 2)] ?? 0;
+  const jitterMs = Number((maxMs - minMs).toFixed(3));
+  return {
+    samples,
+    medianMs: Number(medianMs.toFixed(3)),
+    maxMs: Number(maxMs.toFixed(3)),
+    minMs: Number(minMs.toFixed(3)),
+    jitterMs,
+    cameraPositions,
+    stable: samples.length >= 4 && jitterMs < 250
+  };
 }
 
 function createCheckerTexture(index: number): Texture {

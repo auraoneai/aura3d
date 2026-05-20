@@ -1,6 +1,21 @@
 export { AudioBus } from "./AudioBus";
 export { AudioClip } from "./AudioClip";
 export type { AudioClipOptions } from "./AudioClip";
+export { sampleAudioEffectsAnalysisFixture } from "./AudioEffectsAnalysisFixtures";
+export type {
+  AudioChorusPreset,
+  AudioCompressorPreset,
+  AudioDelayPreset,
+  AudioDistortionCurve,
+  AudioEffectsAnalysisFixture,
+  AudioEffectsAnalysisFixtureOptions,
+  AudioEqBandFixture,
+  AudioSpectrumBandFixture
+} from "./AudioEffectsAnalysisFixtures";
+export { sampleAdaptiveMusicFixture } from "./AdaptiveMusicFixtures";
+export type { AdaptiveMusicCrossfadeCurve, AdaptiveMusicFixture, AdaptiveMusicFixtureOptions, AdaptiveMusicFixtureState, AdaptiveMusicLayerMix } from "./AdaptiveMusicFixtures";
+export { sampleAudioEnvironmentFixture } from "./SpatialAudioFixtures";
+export type { AudioEnvironmentFixture, AudioEnvironmentFixtureOptions, AudioOcclusionLevel } from "./SpatialAudioFixtures";
 export { AudioContextManager } from "./AudioContextManager";
 export type { AudioContextLike, AudioContextManagerOptions, AudioContextState } from "./AudioContextManager";
 export type { AudioEffect } from "./AudioEffect";

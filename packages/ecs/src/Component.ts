@@ -3,6 +3,7 @@ import { ValidationError } from "@galileo3d/core";
 export interface ComponentCtor<T = object> {
   readonly prototype: T;
   readonly name: string;
+  readonly schema?: ComponentSchema;
 }
 
 export interface ComponentSchema {

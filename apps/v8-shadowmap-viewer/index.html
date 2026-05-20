@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Shadowmap Viewer</title>
+    <link rel="stylesheet" href="/apps/v6-common/src/styles.css">
+    <style>
+      body.v8-shadowmap-viewer {
+        grid-template-columns: minmax(840px, min(70vw, 1440px)) minmax(390px, 1fr);
+        background: #080a0d;
+      }
+
+      body.v8-shadowmap-viewer #viewport {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        max-height: 100vh;
+        align-self: center;
+        background: #06080b;
+      }
+
+      body.v8-shadowmap-viewer #app {
+        padding: 18px;
+      }
+
+      .v8-shadowmap-viewer .metrics {
+        grid-template-columns: repeat(2, minmax(135px, 1fr));
+      }
+
+      .v8-shadowmap-viewer .shadow-preview {
+        width: min(100%, 320px);
+        aspect-ratio: 1;
+        image-rendering: pixelated;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        background: #111827;
+        margin-top: 14px;
+      }
+
+      .v8-shadowmap-viewer #runtime-state.is-ready,
+      .v8-shadowmap-viewer #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .v8-shadowmap-viewer #runtime-state.is-error {
+        background: #923b3b;
+      }
+    </style>
+  </head>
+  <body class="v8-shadowmap-viewer">
+    <canvas id="viewport" width="1280" height="720"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/v8-shadowmap-viewer/src/main.ts"></script>
+  </body>
+</html>

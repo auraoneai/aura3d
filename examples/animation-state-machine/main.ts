@@ -2,7 +2,12 @@ import { AnimationStateMachine, type AnimationStateMachineGraphSnapshot } from "
 import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 interface AnimationStateMachineExampleState {
+  readonly id: "animation-state-machine";
   readonly status: "ready" | "error";
+  readonly renderer: "canvas2d";
+  readonly visualClaim: "bounded-animation-state-machine-debug-view";
+  readonly knownLimits: readonly string[];
+  readonly errors: readonly string[];
   readonly currentState: string;
   readonly graph: AnimationStateMachineGraphSnapshot;
   readonly debugGraph: string;
@@ -23,6 +28,11 @@ const metadata: ExampleMetadata = {
   purpose: "Visualize AnimationStateMachine transitions and graph debug output.",
   acceptance: "Idle, walk, jump, and land states are reached through parameter-driven transitions.",
 };
+
+const knownLimits = [
+  "This page visualizes state-machine logic and debug transitions, not skinned glTF character animation.",
+  "Retargeting, blend-tree authoring, humanoid tooling, and imported production animation clips remain unclaimed here.",
+] as const;
 
 if (typeof document !== "undefined") {
   installExampleStyles();
@@ -83,7 +93,12 @@ if (typeof document !== "undefined") {
     function publishState(stateMachine: AnimationStateMachine): AnimationStateMachineExampleState {
       const graph = stateMachine.graphSnapshot();
       const state = {
+        id: "animation-state-machine",
         status: "ready" as const,
+        renderer: "canvas2d" as const,
+        visualClaim: "bounded-animation-state-machine-debug-view" as const,
+        knownLimits,
+        errors: [],
         currentState: graph.currentState,
         graph,
         debugGraph: stateMachine.debugGraph(),

@@ -68,8 +68,8 @@ describe("product example docs", () => {
   it("documents useful local product-app proof without turning it into external-demo evidence", () => {
     const index = read("docs/examples/product-demos.md");
     const external = read("docs/examples/external-demos.md");
-    const checklist = read("docs/v2/filename-level-execution-checklist.md");
-    const gate = read("docs/v2/master-gate-evidence.md");
+    const checklist = read("docs/project/v2-filename-level-execution-checklist.md");
+    const gate = read("docs/project/v2-master-gate-evidence.md");
 
     for (const demo of demos) {
       expect(index).toContain(`examples/${demo.id}`);

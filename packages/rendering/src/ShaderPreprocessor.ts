@@ -33,19 +33,9 @@ export class ShaderPreprocessor {
       included
     });
     const defineLines = [...defines.entries()].map(([key, value]) => `#define ${key} ${value}`);
-    const sourceMap = [
-      ...defineLines.map((_, index) => ({
-        generatedLine: index + 1,
-        sourceName: "<defines>",
-        sourceLine: index + 1
-      })),
-      ...expanded.sourceMap.map((entry) => ({
-        ...entry,
-        generatedLine: entry.generatedLine + defineLines.length
-      }))
-    ];
+    const { lines, sourceMap } = mergeDefines(expanded, defineLines);
     return {
-      source: [...defineLines, ...expanded.lines].filter(Boolean).join("\n"),
+      source: lines.filter(Boolean).join("\n"),
       included,
       sourceMap
     };
@@ -159,6 +149,49 @@ export class ShaderPreprocessor {
 
     return { lines: output, sourceMap };
   }
+}
+
+function mergeDefines(expanded: ExpandedShaderSource, defineLines: readonly string[]): ExpandedShaderSource {
+  if (defineLines.length === 0) return expanded;
+  const versionLineIndex = expanded.lines.findIndex((line) => line.trim().startsWith("#version"));
+  if (versionLineIndex === 0) {
+    return {
+      lines: [
+        expanded.lines[0]!,
+        ...defineLines,
+        ...expanded.lines.slice(1)
+      ],
+      sourceMap: [
+        {
+          ...expanded.sourceMap[0]!,
+          generatedLine: 1
+        },
+        ...defineLines.map((_, index) => ({
+          generatedLine: index + 2,
+          sourceName: "<defines>",
+          sourceLine: index + 1
+        })),
+        ...expanded.sourceMap.slice(1).map((entry) => ({
+          ...entry,
+          generatedLine: entry.generatedLine + defineLines.length
+        }))
+      ]
+    };
+  }
+  return {
+    lines: [...defineLines, ...expanded.lines],
+    sourceMap: [
+      ...defineLines.map((_, index) => ({
+        generatedLine: index + 1,
+        sourceName: "<defines>",
+        sourceLine: index + 1
+      })),
+      ...expanded.sourceMap.map((entry) => ({
+        ...entry,
+        generatedLine: entry.generatedLine + defineLines.length
+      }))
+    ]
+  };
 }
 
 function normalizeDefines(defines: Readonly<Record<string, string | number | boolean>>): ReadonlyMap<string, string> {

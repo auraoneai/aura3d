@@ -1,0 +1,53 @@
+{
+  "ok": false,
+  "engine": "unreal",
+  "sameSceneAssetImportWorkflowBaseline": true,
+  "generatedBy": "Unreal asset import workflow runner",
+  "kitRoot": "fixtures/external-engine-baselines/v4",
+  "runnerEvidencePath": "tests/reports/v4-unreal-asset-import-workflow.evidence.json",
+  "runnerEvidenceSha256": "replace-with-sha256-of-real-editor-import-evidence-sidecar",
+  "runnerEvidence": {
+    "ok": false,
+    "engine": "unreal",
+    "workflowKind": "asset-import",
+    "editorProjectOpened": false,
+    "assetImportWorkflowRan": false,
+    "importedFormats": [
+      "glb",
+      "gltf"
+    ],
+    "nativeSupportedFormats": [
+      "glb",
+      "gltf",
+      "obj"
+    ],
+    "conversionRequiredFormats": [
+      "dae",
+      "fbx",
+      "usd",
+      "usdz"
+    ],
+    "metrics": {
+      "editorProjectOpened": false,
+      "assetImportWorkflowRan": false,
+      "importedGltfAssets": 0,
+      "importedMeshes": 0,
+      "importedMaterials": 0,
+      "importedTextures": 0,
+      "importedAnimationClips": 0,
+      "conversionRequiredFormats": 4
+    }
+  },
+  "metrics": {
+    "editorProjectOpened": false,
+    "assetImportWorkflowRan": false,
+    "importedGltfAssets": 0,
+    "importedMeshes": 0,
+    "importedMaterials": 0,
+    "importedTextures": 0,
+    "importedAnimationClips": 0,
+    "conversionRequiredFormats": 4
+  },
+  "requiredCommand": "node fixtures/external-engine-baselines/v4/write-asset-import-workflow-report.mjs unreal tests/reports/v4-unreal-asset-import-workflow.evidence.json tests/reports/v4-unreal-asset-import-workflow.json",
+  "claimBoundary": "This template is not evidence. A real Unity/Unreal editor import run must produce the sidecar before the report writer can create a passing asset-import workflow report."
+}

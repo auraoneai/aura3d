@@ -5,8 +5,10 @@ export type LoopMode = "once" | "repeat" | "pingpong";
 
 export type AnimationActionSnapshot = {
   readonly clipName: string;
+  readonly duration: number;
   readonly time: number;
   readonly weight: number;
+  readonly timeScale: number;
   readonly playing: boolean;
   readonly paused: boolean;
   readonly loopMode: LoopMode;
@@ -53,6 +55,33 @@ export class AnimationAction {
       throw new Error("AnimationAction weight must be finite and non-negative.");
     }
     this.weight = weight;
+    return this;
+  }
+
+  setTimeScale(timeScale: number): this {
+    if (!Number.isFinite(timeScale) || timeScale < 0) {
+      throw new Error("AnimationAction timeScale must be finite and non-negative.");
+    }
+    this.timeScale = timeScale;
+    return this;
+  }
+
+  setLoop(loopMode: LoopMode): this {
+    this.loopMode = loopMode;
+    return this;
+  }
+
+  reset(): this {
+    this.time = 0;
+    this.pingPongForward = true;
+    return this;
+  }
+
+  seek(time: number): this {
+    if (!Number.isFinite(time) || time < 0) {
+      throw new Error("AnimationAction seek time must be finite and non-negative.");
+    }
+    this.time = this.clip.duration > 0 ? Math.min(time, this.clip.duration) : 0;
     return this;
   }
 
@@ -125,8 +154,10 @@ export class AnimationAction {
   snapshot(): AnimationActionSnapshot {
     return {
       clipName: this.clip.name,
+      duration: this.clip.duration,
       time: this.time,
       weight: this.weight,
+      timeScale: this.timeScale,
       playing: this.playing,
       paused: this.paused,
       loopMode: this.loopMode

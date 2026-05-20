@@ -7,7 +7,7 @@ export class ScaleGizmo extends Gizmo {
     const current = readTransform(this.target);
     const next = clone(current);
     next.scale ??= { x: 1, y: 1, z: 1 };
-    const amount = Math.max(0.001, 1 + input.delta);
+    const amount = Math.max(0.001, this.snapScaleFactor(1 + input.delta));
     if (input.axis === "x") next.scale.x *= amount;
     if (input.axis === "y") next.scale.y *= amount;
     if (input.axis === "z") next.scale.z *= amount;

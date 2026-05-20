@@ -7,7 +7,7 @@ This comparison is limited to the current v2 evidence slice. The checked-in repo
 - Generated report: `docs/benchmarks/babylon-comparison.md`
 - Raw report: `tests/reports/comparison-babylon.json`
 - Tool: `tools/compare-engines/index.ts`
-- Caveats: `docs/known-limits.md`
+- Caveats: `docs/project/known-limits.md`
 
 ## Current Result
 

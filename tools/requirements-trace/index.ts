@@ -434,9 +434,9 @@ function browserHardwareMatrixOk(): boolean {
     browserRows.some((row) => isRecord(row) && row.browserName === "firefox" && row.status === "not-configured") &&
     browserRows.some((row) => isRecord(row) && row.browserName === "webkit" && row.status === "not-configured") &&
     Array.isArray(sourceInputs) &&
-    sourceInputs.includes("docs/browser-hardware-matrix.md") &&
-    sourceInputs.includes("docs/compatibility.md") &&
-    sourceInputs.includes("docs/v2/claim-registry.md")
+    sourceInputs.includes("docs/project/browser-hardware-matrix.md") &&
+    sourceInputs.includes("docs/project/compatibility.md") &&
+    sourceInputs.includes("docs/project/v2-claim-registry.md")
   );
 }
 
@@ -457,7 +457,7 @@ function traceIncludesDocument(path: string): boolean {
 function generatedArtifactIsCurrent(row: RequirementRow): boolean {
   const text = artifactTexts.get(row.sourceDocument) ?? "";
   if (!text) return false;
-  if (row.sourceDocument === "docs/requirements-trace.md" || row.sourceDocument === "docs/verification-evidence.md") {
+  if (row.sourceDocument === "docs/project/requirements-trace.md" || row.sourceDocument === "docs/project/verification-evidence.md") {
     return true;
   }
   const verifiedFromPrompt = /Current verified count is ([\d,]+) requirements/.exec(finalPromptText)?.[1];
@@ -477,7 +477,7 @@ function generatedArtifactIsCurrent(row: RequirementRow): boolean {
   if (promptSaysComplete && hasTotal) {
     return /\bGO\b|Complete:\s*(?:yes|true)|Implemented and verified\s*\|\s*1,627/i.test(text);
   }
-  const isGeneratedReport = row.sourceDocument === "docs/requirements-trace.md" || row.sourceDocument === "docs/verification-evidence.md";
+  const isGeneratedReport = row.sourceDocument === "docs/project/requirements-trace.md" || row.sourceDocument === "docs/project/verification-evidence.md";
   const hasCurrentCounts = isGeneratedReport
     ? hasTotal && /Complete:\s*(?:no|false)|Gate Result\s*\nFAIL/i.test(text)
     : hasTotal &&
@@ -622,11 +622,11 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   const finalTraceGenerated = true;
   const traceHasNoInvalidStatuses = true;
   const requiredOutputArtifacts = [
-    "docs/requirements-trace.md",
-    "docs/implementation-plan-final.md",
-    "docs/rebuild-progress.md",
-    "docs/verification-evidence.md",
-    "docs/completion-audit.md",
+    "docs/project/requirements-trace.md",
+    "docs/project/implementation-plan.md",
+    "docs/project/rebuild-progress.md",
+    "docs/project/verification-evidence.md",
+    "docs/project/completion-audit.md",
     "tests/reports/final-requirements-trace.json",
     "tests/reports/final-release-verification.json",
     "tests/reports/final-performance.json",
@@ -722,7 +722,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     return evidence(`${row.sourceDocument} exists, contains the latest trace totals, and explicitly preserves NO-GO/non-completion language`);
   }
 
-  if (row.sourceDocument === "docs/browser-hardware-matrix.md") {
+  if (row.sourceDocument === "docs/project/browser-hardware-matrix.md") {
     if (/Add named browser projects for Chromium, Firefox, and WebKit where supported/i.test(row.requirement) && browserHardwareMatrix) {
       return evidence("tests/reports/browser-hardware-matrix.json records Chromium as tested and Firefox/WebKit as not configured/not claimed in this environment");
     }
@@ -733,7 +733,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tests/reports/browser-hardware-matrix.json keeps unsupported/not-configured browser and WebGPU rows with explicit limits");
     }
     if (/Reference this page, `docs\/compatibility\.md`, and `docs\/v2\/claim-registry\.md` before publishing compatibility wording/i.test(row.requirement) && browserHardwareMatrix) {
-      return evidence("tests/reports/browser-hardware-matrix.json sourceInputs include docs/browser-hardware-matrix.md, docs/compatibility.md, and docs/v2/claim-registry.md");
+      return evidence("tests/reports/browser-hardware-matrix.json sourceInputs include docs/project/browser-hardware-matrix.md, docs/project/compatibility.md, and docs/project/v2-claim-registry.md");
     }
   }
 
@@ -770,13 +770,13 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tests/reports/final-requirements-trace.json includes the required docs");
     }
     if (/File-level acceptance criteria/i.test(row.requirement) && architecture && finalTraceGenerated) {
-      return evidence("pnpm verify:architecture and docs/requirements-trace.md");
+      return evidence("pnpm verify:architecture and docs/project/requirements-trace.md");
     }
     if (/Build foundations before breadth|Prefer boring file boundaries|Legacy adapters/i.test(row.requirement) && architecture && boundaries && sourceCleanliness) {
       return evidence("pnpm verify:architecture, pnpm verify:boundaries, and pnpm verify:source-cleanliness");
     }
-    if (/Risk \| Source Evidence \| Rebuild Control/i.test(row.requirement) && existsSync(join(root, "docs/completion-audit.md"))) {
-      return evidence("docs/completion-audit.md");
+    if (/Risk \| Source Evidence \| Rebuild Control/i.test(row.requirement) && existsSync(join(root, "docs/project/completion-audit.md"))) {
+      return evidence("docs/project/completion-audit.md");
     }
     if (/Browser and visual validation harnesses|Claims of production readiness not backed by tests|Multiple renderer entry points|Renderer appears to work|Material system duplicates shader ownership/i.test(row.requirement) && browser && visual && architecture && renderingDiagnostics) {
       return evidence("browser/visual reports, architecture verifier, and rendering diagnostics tests");
@@ -808,8 +808,8 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     if (/composition over inheritance|file sizes bounded|typed handles|CPU-side data layouts|Separate simulation state|Avoid hidden globals|dynamic import magic|Which package owns|Which public contract|What modules may|cycle|mutate global state|How is it tested|How is it disposed/i.test(row.requirement) && architecture && boundaries && unit) {
       return evidence("architecture, boundary, and unit reports");
     }
-    if (/public API is documented|ownership boundaries are documented|file-by-file plan|Examples prove|Diagnostics expose/i.test(row.requirement) && existsSync(join(root, "docs/completion-audit.md")) && unit && browser) {
-      return evidence("docs/completion-audit.md plus unit/browser reports");
+    if (/public API is documented|ownership boundaries are documented|file-by-file plan|Examples prove|Diagnostics expose/i.test(row.requirement) && existsSync(join(root, "docs/project/completion-audit.md")) && unit && browser) {
+      return evidence("docs/project/completion-audit.md plus unit/browser reports");
     }
     const gates: Record<string, [boolean, string]> = {
       "OVR-0001": [architecture && boundaries, "pnpm verify:architecture and pnpm verify:boundaries"],
@@ -1092,9 +1092,9 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "ROADMAP-0007": [typecheck, "pnpm typecheck"],
       "ROADMAP-0008": [unit, "pnpm test"],
       "ROADMAP-0009": [browser, "pnpm test:browser"],
-      "ROADMAP-0001": [phaseTrackingEvidence && requiredReports, "docs/rebuild-progress.md Phase Tracking Evidence plus release gate reports"],
-      "ROADMAP-0002": [phaseTrackingEvidence && requiredReports, "docs/rebuild-progress.md Phase Tracking Evidence plus release gate reports"],
-      "ROADMAP-0004": [phaseTrackingEvidence && (releaseFailedTrace || releaseConstituentReports), "docs/rebuild-progress.md Phase Tracking Evidence plus release/trace gate evidence"],
+      "ROADMAP-0001": [phaseTrackingEvidence && requiredReports, "docs/project/rebuild-progress.md Phase Tracking Evidence plus release gate reports"],
+      "ROADMAP-0002": [phaseTrackingEvidence && requiredReports, "docs/project/rebuild-progress.md Phase Tracking Evidence plus release gate reports"],
+      "ROADMAP-0004": [phaseTrackingEvidence && (releaseFailedTrace || releaseConstituentReports), "docs/project/rebuild-progress.md Phase Tracking Evidence plus release/trace gate evidence"],
       "ROADMAP-0005": [advancedScopeFilesAbsent && sourceCleanliness, "source-cleanliness report and absence of old scope-creep package families"],
       "ROADMAP-0027": [phaseTrackingEvidence && mathUnit && coreSchedulerEngine && boundaries, "Phase 1 evidence after core/math gates and boundary checks"],
       "ROADMAP-0036": [phaseTrackingEvidence && sceneHierarchy && sceneCameras, "Phase 2 evidence after scene/camera gates"],
@@ -1739,7 +1739,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("trace rows require implemented-and-verified status plus evidence; release still fails on incomplete trace rows");
     }
     if (/Build a requirements trace matrix before claiming implementation progress/i.test(row.requirement) && finalTraceGenerated && traceRows.length > 0) {
-      return evidence("docs/requirements-trace.md and tests/reports/final-requirements-trace.json exist before any GO/completion claim");
+      return evidence("docs/project/requirements-trace.md and tests/reports/final-requirements-trace.json exist before any GO/completion claim");
     }
     if (/Regenerate `tests\/reports\/final-requirements-trace\.json` before using any traced requirement counts|Use the regenerated trace report as the only source of truth/i.test(row.requirement) && finalTraceGenerated && verifyTools) {
       return evidence("tools/requirements-trace/index.ts and tests/unit/tools/verify-tools.test.ts");
@@ -1759,32 +1759,32 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     if (/Examples are validation artifacts|must use public APIs|Do not create examples that bypass public APIs|Examples validated/i.test(row.requirement) && allExamplesReady && visual && boundaries) {
       return evidence("examples browser/visual tests and pnpm verify:boundaries");
     }
-    if (/progress ledger|docs\/rebuild-progress\.md|PRD pages read|Files implemented|Tests added|Commands run|Failures found|Fix iterations|Completion evidence/i.test(row.requirement) && existsSync(join(root, "docs/rebuild-progress.md")) && existsSync(join(root, "docs/completion-audit.md"))) {
-      return evidence("docs/rebuild-progress.md and docs/completion-audit.md updated with current trace and verification evidence");
+    if (/progress ledger|docs\/rebuild-progress\.md|PRD pages read|Files implemented|Tests added|Commands run|Failures found|Fix iterations|Completion evidence/i.test(row.requirement) && existsSync(join(root, "docs/project/rebuild-progress.md")) && existsSync(join(root, "docs/project/completion-audit.md"))) {
+      return evidence("docs/project/rebuild-progress.md and docs/project/completion-audit.md updated with current trace and verification evidence");
     }
     if (/Read the assigned docs and identify the next unchecked file group|Inspect current repository state|Implement the smallest coherent file group|Add or update required tests|Fix failures|Continue to the next file group/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence records docs used, files changed, focused verification, failures reproduced/fixed, and follow-on trace/release results");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records docs used, files changed, focused verification, failures reproduced/fixed, and follow-on trace/release results");
     }
     if (/For every phase, track:/i.test(row.requirement) && phaseTrackingEvidence) {
-      return evidence("docs/rebuild-progress.md Phase Tracking Evidence records every roadmap phase, evidence source, and remaining gate");
+      return evidence("docs/project/rebuild-progress.md Phase Tracking Evidence records every roadmap phase, evidence source, and remaining gate");
     }
     if (/Do not skip ahead to advanced systems before their foundation phase passes/i.test(row.requirement) && phaseTrackingEvidence && requiredReports) {
-      return evidence("docs/rebuild-progress.md Phase Tracking Evidence plus aggregate release reports record phase-ordered implementation and verification gates");
+      return evidence("docs/project/rebuild-progress.md Phase Tracking Evidence plus aggregate release reports record phase-ordered implementation and verification gates");
     }
     if (/Keep the workstreams aligned to the roadmap order/i.test(row.requirement) && phaseTrackingEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Phase Tracking Evidence maps work back to the roadmap sequence and keeps final release at NO-GO");
+      return evidence("docs/project/rebuild-progress.md Phase Tracking Evidence maps work back to the roadmap sequence and keeps final release at NO-GO");
     }
     if (/Integrate completed workstream changes\.$/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence records integrated package, test, browser, and trace changes");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records integrated package, test, browser, and trace changes");
     }
     if (/Hand off any cross-workstream dependency explicitly/i.test(row.requirement) && handoffEvidence) {
-      return evidence("docs/rebuild-progress.md Cross-Workstream Handoffs records animation-to-rendering and physics-to-debug/browser dependencies");
+      return evidence("docs/project/rebuild-progress.md Cross-Workstream Handoffs records animation-to-rendering and physics-to-debug/browser dependencies");
     }
     if (/Reuse or launch exactly six parallel workstreams for implementation/i.test(row.requirement) && sixWorkstreamReuseEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Six Workstream Reuse Evidence records all six reused agent IDs, scopes, outputs, and aggregate verification reruns");
+      return evidence("docs/project/rebuild-progress.md Six Workstream Reuse Evidence records all six reused agent IDs, scopes, outputs, and aggregate verification reruns");
     }
     if (/Integrate workstream changes in small batches|After each integration batch, rerun focused tests plus the relevant trace checks/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence records focused work batches, focused tests, trace regeneration, and release verification");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records focused work batches, focused tests, trace regeneration, and release verification");
     }
     if (/Did every file in `?24-File-by-File-Rebuild-Checklist\.md`? get implemented or explicitly deferred by roadmap rules/i.test(row.requirement) && runtimeEdgeCoverage && unit) {
       return evidence("tests/unit/runtime-edge-coverage.test.ts parses docs/24-File-by-File-Rebuild-Checklist.md and verifies every checklist file row exists with required-test and completion criteria");
@@ -1796,28 +1796,28 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tests/unit/runtime-edge-coverage.test.ts scans required production source for unavailable/not-implemented/placeholder markers and only permits explicit environment-capability checks; pnpm verify:source-cleanliness");
     }
     if (/If the repo is dirty, preserve unrelated changes and work around them|If the worktree is dirty, identify what is yours, what is pre-existing, and avoid destructive cleanup/i.test(row.requirement) && worktreeHygieneEvidence) {
-      return evidence("docs/rebuild-progress.md Worktree Hygiene Evidence records dirty status counts, iteration-owned paths, and preserved pre-existing workspace state");
+      return evidence("docs/project/rebuild-progress.md Worktree Hygiene Evidence records dirty status counts, iteration-owned paths, and preserved pre-existing workspace state");
     }
     if (/Do not delete existing user work unless explicitly requested|Do not delete or revert unrelated user work/i.test(row.requirement) && worktreeHygieneEvidence) {
-      return evidence("docs/rebuild-progress.md Worktree Hygiene Evidence records preservation of pre-existing/unrelated workspace changes without destructive cleanup");
+      return evidence("docs/project/rebuild-progress.md Worktree Hygiene Evidence records preservation of pre-existing/unrelated workspace changes without destructive cleanup");
     }
     if (/Resolve merge conflicts by preserving each workstream's intent/i.test(row.requirement) && mergeConflictEvidence) {
-      return evidence("docs/rebuild-progress.md Worktree Hygiene Evidence records no conflict markers and no required interactive merge-conflict resolution in this iteration");
+      return evidence("docs/project/rebuild-progress.md Worktree Hygiene Evidence records no conflict markers and no required interactive merge-conflict resolution in this iteration");
     }
     if (/Preserve existing useful implementation and improve it in place where possible/i.test(row.requirement) && recentIterationEvidence && worktreeHygieneEvidence) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence lists improved existing package files while Worktree Hygiene Evidence preserves unrelated workspace state");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence lists improved existing package files while Worktree Hygiene Evidence preserves unrelated workspace state");
     }
     if (/Which requirement ID was changed|Which package\/example\/tool owns the implementation|Which browser page or example page proves user-visible behavior/i.test(row.requirement) && recentIterationEvidence && browser) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence records requirement IDs, owning packages/tools, and browser/example evidence");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records requirement IDs, owning packages/tools, and browser/example evidence");
     }
     if (/Assign each row to one of the six workstreams/i.test(row.requirement) && traceRowsAssignedToWorkstreams && finalTraceGenerated) {
       return evidence("tests/reports/final-requirements-trace.json assigns every row to Coordinator or Workstream 1-6");
     }
     if (/Workstream runs focused verification|Coordinator integrates changes|Coordinator runs full verification|If failures exist, create a fix iteration/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence plus tests/reports/final-release-verification.json record focused checks, integration, full verification, and failure-fix iterations");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence plus tests/reports/final-release-verification.json record focused checks, integration, full verification, and failure-fix iterations");
     }
     if (/^Workstream implements the missing behavior\.$/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/rebuild-progress.md Recent Iteration Evidence records concrete implementation passes with changed files, focused verification, and remaining gaps");
+      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records concrete implementation passes with changed files, focused verification, and remaining gaps");
     }
     if (/Confirm all package boundaries|No forbidden imports|private deep imports/i.test(row.requirement) && boundaries) {
       return evidence("pnpm verify:boundaries");
@@ -1861,17 +1861,17 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     if (/Run verification after each integration pass|Run relevant verification after each iteration|Run the next broader verification level|Run the narrowest relevant tests|Last verification command|Last verification result/i.test(row.requirement) && reports.release !== null) {
       return evidence("tests/reports/final-release-verification.json");
     }
-    if (/Files changed|Docs used|Checklist items completed|Test results|Remaining blockers|Workstream \\| Scope|PRD \\| Checklist Item|Date \\| Command|Blocker \\| Owner|Status:|Phase:/i.test(row.requirement) && existsSync(join(root, "docs/rebuild-progress.md"))) {
-      return evidence("docs/rebuild-progress.md");
+    if (/Files changed|Docs used|Checklist items completed|Test results|Remaining blockers|Workstream \\| Scope|PRD \\| Checklist Item|Date \\| Command|Blocker \\| Owner|Status:|Phase:/i.test(row.requirement) && existsSync(join(root, "docs/project/rebuild-progress.md"))) {
+      return evidence("docs/project/rebuild-progress.md");
     }
-    if (/Executive completion status|Exact git status summary|Requirement trace totals|Total requirements|Implemented and verified|Implemented but unverified|Not started|Blocked|Known limitations|Final go\/no-go statement|NO-GO/i.test(row.requirement) && existsSync(join(root, "docs/completion-audit.md"))) {
-      return evidence("docs/completion-audit.md");
+    if (/Executive completion status|Exact git status summary|Requirement trace totals|Total requirements|Implemented and verified|Implemented but unverified|Not started|Blocked|Known limitations|Final go\/no-go statement|NO-GO/i.test(row.requirement) && existsSync(join(root, "docs/project/completion-audit.md"))) {
+      return evidence("docs/project/completion-audit.md");
     }
     if (/Partially implemented/i.test(row.requirement) && /## Requirement Trace Totals/.test(completionAuditText)) {
-      return evidence("docs/completion-audit.md requirement trace totals");
+      return evidence("docs/project/completion-audit.md requirement trace totals");
     }
     if (/Current traced requirement count|Current incomplete count|generated vertical-slice rebuild plus later verification hardening|verify:trace` currently fails|not yet a production-grade Three\.js\/Unity\/Unreal-class engine/i.test(row.requirement) && /## Final Response Evidence/.test(completionAuditText)) {
-      return evidence("docs/completion-audit.md current NO-GO trace evidence");
+      return evidence("docs/project/completion-audit.md current NO-GO trace evidence");
     }
     if (/verify:trace` currently passes/i.test(row.requirement) && finalTraceGenerated && traceHasNoInvalidStatuses) {
       return evidence("pnpm verify:trace and tests/reports/final-requirements-trace.json");
@@ -1883,22 +1883,22 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("final trace rows and release reports for WebGPU, glTF, renderer, render graph, materials, and GPU particles");
     }
     if (/Number of traced requirements|Number incomplete|Links to:|final report JSON files/i.test(row.requirement) && /## Final Response Evidence/.test(completionAuditText) && outputArtifactsExist) {
-      return evidence("docs/completion-audit.md final response evidence and final report artifacts");
+      return evidence("docs/project/completion-audit.md final response evidence and final report artifacts");
     }
     if (/^(File checklist totals:|Required files\.|Present files\.|Verified files\.|Missing files\.)$/.test(row.requirement) && /## File Checklist Totals/.test(completionAuditText)) {
-      return evidence("docs/completion-audit.md file checklist totals");
+      return evidence("docs/project/completion-audit.md file checklist totals");
     }
     if (row.requirement === "Package-level completion table." && /## Package-Level Completion Table/.test(completionAuditText)) {
-      return evidence("docs/completion-audit.md package-level completion table");
+      return evidence("docs/project/completion-audit.md package-level completion table");
     }
     if (row.requirement === "Example-level completion table." && /## Example-Level Completion Table/.test(completionAuditText)) {
-      return evidence("docs/completion-audit.md example-level completion table");
+      return evidence("docs/project/completion-audit.md example-level completion table");
     }
     if (/^Final demo validation\.$/i.test(row.requirement) && demos) {
       return evidence("tests/reports/final-demo-validation.json");
     }
     if (row.requirement === "Visual validation table." && /## Visual Validation Table/.test(completionAuditText) && visual) {
-      return evidence("docs/completion-audit.md visual validation table and pnpm test:visual");
+      return evidence("docs/project/completion-audit.md visual validation table and pnpm test:visual");
     }
     if (/^(TypeScript typecheck\.|Typecheck passes)$/i.test(row.requirement) && typecheck) return evidence("pnpm typecheck");
     if (/Typecheck passes for your packages/i.test(row.requirement) && typecheck) return evidence("pnpm typecheck");

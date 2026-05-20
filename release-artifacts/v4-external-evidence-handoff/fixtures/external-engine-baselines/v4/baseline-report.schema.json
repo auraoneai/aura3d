@@ -1,0 +1,541 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Galileo3D V4 external engine visual baseline report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "ok",
+    "engine",
+    "baselineKind",
+    "sameSceneExternalBaseline",
+    "sceneDescriptorId",
+    "sceneDescriptorVersion",
+    "descriptorSha256",
+    "screenshotPath",
+    "screenshotSha256",
+    "runnerEvidencePath",
+    "runnerEvidenceSha256",
+    "runnerEvidence",
+    "visualDiffAgainstGalileo",
+    "metrics"
+  ],
+  "properties": {
+    "ok": {
+      "const": true
+    },
+    "engine": {
+      "enum": [
+        "unity",
+        "unreal"
+      ]
+    },
+    "baselineKind": {
+      "enum": [
+        "product-visual",
+        "pbr-visual",
+        "shadow-visual",
+        "hdr-render-target",
+        "postprocess-suite"
+      ]
+    },
+    "sameSceneExternalBaseline": {
+      "const": true
+    },
+    "sameSceneProductBaseline": {
+      "type": "boolean"
+    },
+    "sceneDescriptorId": {
+      "enum": [
+        "v4-deterministic-product-visual-parity",
+        "v4-pbr-visual-parity-scene",
+        "v4-shadow-visual-parity-scene",
+        "v4-hdr-render-target-visual-parity-scene",
+        "v4-postprocess-suite-parity-scene"
+      ]
+    },
+    "sceneDescriptorVersion": {
+      "enum": [
+        "v4-product-visual-parity-scene-v1",
+        "v4-pbr-visual-parity-scene-v1",
+        "v4-shadow-visual-parity-scene-v1",
+        "v4-hdr-render-target-visual-parity-scene-v1",
+        "v4-postprocess-suite-parity-scene-v1"
+      ]
+    },
+    "descriptorSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "screenshotPath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "screenshotSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runnerEvidencePath": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runnerEvidenceSha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "runnerEvidence": {
+      "type": "object",
+      "required": [
+        "ok",
+        "engine",
+        "baselineKind",
+        "sceneDescriptorId",
+        "sceneDescriptorVersion",
+        "screenshotPath",
+        "renderedFrameCaptured",
+        "cameraConfigured",
+        "metrics"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "engine": {
+          "enum": [
+            "unity",
+            "unreal"
+          ]
+        },
+        "baselineKind": {
+          "enum": [
+            "product-visual",
+            "pbr-visual",
+            "shadow-visual",
+            "hdr-render-target",
+            "postprocess-suite"
+          ]
+        },
+        "sceneDescriptorId": {
+          "enum": [
+            "v4-deterministic-product-visual-parity",
+            "v4-pbr-visual-parity-scene",
+            "v4-shadow-visual-parity-scene",
+            "v4-hdr-render-target-visual-parity-scene",
+            "v4-postprocess-suite-parity-scene"
+          ]
+        },
+        "sceneDescriptorVersion": {
+          "enum": [
+            "v4-product-visual-parity-scene-v1",
+            "v4-pbr-visual-parity-scene-v1",
+            "v4-shadow-visual-parity-scene-v1",
+            "v4-hdr-render-target-visual-parity-scene-v1",
+            "v4-postprocess-suite-parity-scene-v1"
+          ]
+        },
+        "screenshotPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "renderedFrameCaptured": {
+          "const": true
+        },
+        "cameraConfigured": {
+          "const": true
+        },
+        "metrics": {
+          "type": "object"
+        }
+      }
+    },
+    "visualDiffAgainstGalileo": {
+      "const": true
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "nonBlankPixels",
+        "colorBuckets",
+        "drawCalls"
+      ],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 1
+        },
+        "height": {
+          "type": "number",
+          "minimum": 1
+        },
+        "nonBlankPixels": {
+          "type": "number",
+          "minimum": 10001
+        },
+        "colorBuckets": {
+          "type": "number",
+          "minimum": 2
+        },
+        "drawCalls": {
+          "type": "number",
+          "minimum": 1
+        },
+        "materialCount": {
+          "type": "number",
+          "minimum": 1
+        },
+        "productParts": {
+          "type": "number",
+          "minimum": 1
+        },
+        "turntableHotspots": {
+          "type": "number",
+          "minimum": 1
+        },
+        "captureViews": {
+          "type": "number",
+          "minimum": 1
+        },
+        "batchTasks": {
+          "type": "number",
+          "minimum": 1
+        },
+        "featureCount": {
+          "type": "number",
+          "minimum": 1
+        },
+        "shadowEvidencePixels": {
+          "type": "number",
+          "minimum": 1
+        },
+        "toneMappedPatches": {
+          "type": "number",
+          "minimum": 1
+        },
+        "implementedEffects": {
+          "type": "number",
+          "minimum": 1
+        },
+        "realSceneEffects": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "baselineKind": {
+            "const": "product-visual"
+          }
+        },
+        "required": [
+          "baselineKind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sceneDescriptorId": {
+            "const": "v4-deterministic-product-visual-parity"
+          },
+          "sceneDescriptorVersion": {
+            "const": "v4-product-visual-parity-scene-v1"
+          },
+          "sameSceneProductBaseline": {
+            "const": true
+          },
+          "metrics": {
+            "required": [
+              "width",
+              "height",
+              "nonBlankPixels",
+              "colorBuckets",
+              "drawCalls",
+              "materialCount",
+              "productParts",
+              "turntableHotspots",
+              "captureViews",
+              "batchTasks"
+            ],
+            "properties": {
+              "width": {
+                "const": 720
+              },
+              "height": {
+                "const": 480
+              },
+              "nonBlankPixels": {
+                "type": "number",
+                "minimum": 10001
+              },
+              "colorBuckets": {
+                "type": "number",
+                "minimum": 2
+              },
+              "drawCalls": {
+                "type": "number",
+                "minimum": 18
+              },
+              "materialCount": {
+                "type": "number",
+                "minimum": 7
+              },
+              "productParts": {
+                "type": "number",
+                "minimum": 18
+              },
+              "turntableHotspots": {
+                "type": "number",
+                "minimum": 3
+              },
+              "captureViews": {
+                "type": "number",
+                "minimum": 4
+              },
+              "batchTasks": {
+                "type": "number",
+                "minimum": 4
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "baselineKind": {
+            "const": "pbr-visual"
+          }
+        },
+        "required": [
+          "baselineKind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sceneDescriptorId": {
+            "const": "v4-pbr-visual-parity-scene"
+          },
+          "sceneDescriptorVersion": {
+            "const": "v4-pbr-visual-parity-scene-v1"
+          },
+          "metrics": {
+            "required": [
+              "width",
+              "height",
+              "nonBlankPixels",
+              "colorBuckets",
+              "drawCalls",
+              "materialCount",
+              "featureCount"
+            ],
+            "properties": {
+              "width": {
+                "const": 960
+              },
+              "height": {
+                "const": 540
+              },
+              "nonBlankPixels": {
+                "type": "number",
+                "minimum": 30001
+              },
+              "colorBuckets": {
+                "type": "number",
+                "minimum": 7
+              },
+              "drawCalls": {
+                "type": "number",
+                "minimum": 12
+              },
+              "materialCount": {
+                "type": "number",
+                "minimum": 11
+              },
+              "featureCount": {
+                "type": "number",
+                "minimum": 11
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "baselineKind": {
+            "const": "shadow-visual"
+          }
+        },
+        "required": [
+          "baselineKind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sceneDescriptorId": {
+            "const": "v4-shadow-visual-parity-scene"
+          },
+          "sceneDescriptorVersion": {
+            "const": "v4-shadow-visual-parity-scene-v1"
+          },
+          "metrics": {
+            "required": [
+              "width",
+              "height",
+              "nonBlankPixels",
+              "colorBuckets",
+              "drawCalls",
+              "shadowEvidencePixels"
+            ],
+            "properties": {
+              "width": {
+                "const": 720
+              },
+              "height": {
+                "const": 480
+              },
+              "nonBlankPixels": {
+                "type": "number",
+                "minimum": 60001
+              },
+              "colorBuckets": {
+                "type": "number",
+                "minimum": 5
+              },
+              "drawCalls": {
+                "type": "number",
+                "minimum": 5
+              },
+              "shadowEvidencePixels": {
+                "type": "number",
+                "minimum": 701
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "baselineKind": {
+            "const": "hdr-render-target"
+          }
+        },
+        "required": [
+          "baselineKind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sceneDescriptorId": {
+            "const": "v4-hdr-render-target-visual-parity-scene"
+          },
+          "sceneDescriptorVersion": {
+            "const": "v4-hdr-render-target-visual-parity-scene-v1"
+          },
+          "metrics": {
+            "required": [
+              "width",
+              "height",
+              "nonBlankPixels",
+              "colorBuckets",
+              "drawCalls",
+              "toneMappedPatches"
+            ],
+            "properties": {
+              "width": {
+                "const": 720
+              },
+              "height": {
+                "const": 420
+              },
+              "nonBlankPixels": {
+                "type": "number",
+                "minimum": 30001
+              },
+              "colorBuckets": {
+                "type": "number",
+                "minimum": 5
+              },
+              "drawCalls": {
+                "type": "number",
+                "minimum": 4
+              },
+              "toneMappedPatches": {
+                "type": "number",
+                "minimum": 3
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "baselineKind": {
+            "const": "postprocess-suite"
+          }
+        },
+        "required": [
+          "baselineKind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "sceneDescriptorId": {
+            "const": "v4-postprocess-suite-parity-scene"
+          },
+          "sceneDescriptorVersion": {
+            "const": "v4-postprocess-suite-parity-scene-v1"
+          },
+          "metrics": {
+            "required": [
+              "width",
+              "height",
+              "nonBlankPixels",
+              "colorBuckets",
+              "drawCalls",
+              "implementedEffects",
+              "realSceneEffects"
+            ],
+            "properties": {
+              "width": {
+                "const": 960
+              },
+              "height": {
+                "const": 540
+              },
+              "nonBlankPixels": {
+                "type": "number",
+                "minimum": 30001
+              },
+              "colorBuckets": {
+                "type": "number",
+                "minimum": 8
+              },
+              "drawCalls": {
+                "type": "number",
+                "minimum": 4
+              },
+              "implementedEffects": {
+                "type": "number",
+                "minimum": 14
+              },
+              "realSceneEffects": {
+                "type": "number",
+                "minimum": 14
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

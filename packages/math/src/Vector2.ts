@@ -23,6 +23,14 @@ export class Vector2 {
     return new Vector2(this.x * scalar, this.y * scalar);
   }
 
+  divide(v: Vector2): Vector2 {
+    return new Vector2(this.x / v.x, this.y / v.y);
+  }
+
+  divideScalar(scalar: number): Vector2 {
+    return new Vector2(this.x / scalar, this.y / scalar);
+  }
+
   dot(v: Vector2): number {
     return this.x * v.x + this.y * v.y;
   }

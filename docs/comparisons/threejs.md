@@ -1,35 +1,50 @@
-# Galileo3D and Three.js
+# G3D and Three.js
 
-This comparison is limited to the current v2 evidence slice. The checked-in report at `docs/benchmarks/threejs-comparison.md` verifies equivalent benchmark scaffolds for product-configurator, large-scene, and skinned-characters workloads, captures capped Playwright Chromium WebGL2 microbenchmark timing and esbuild benchmark bundle artifacts, and links pinned Three.js loader-import results for the current 17-entry Khronos corpus. The separate `docs/benchmarks/pbr-rendering-comparison.md` report covers one bounded perspective-camera PBR scene rendered next to a same-page Three.js reference. These reports do not prove production app parity, GPU-counter parity, visual loader-output parity, broad production glTF corpus results, production PBR parity, or broad engine superiority.
+G3D should be compared to Three.js by evidence category, not by blanket parity language. The current repo has meaningful local proof in benchmark scaffolds, visual parity slices, animation/skinning comparisons, route health, and WebGPU probes. It still does not prove that G3D is a general Three.js replacement.
 
-## Evidence
+## Current Classification
 
-- Generated report: `docs/benchmarks/threejs-comparison.md`
-- PBR rendered-scene report: `docs/benchmarks/pbr-rendering-comparison.md`
-- Raw report: `tests/reports/comparison-threejs.json`
-- PBR raw report: `tests/reports/pbr-rendering-comparison.json`
-- Tool: `tools/compare-engines/index.ts`
-- Caveats: `docs/known-limits.md`
-
-## Current Result
-
-| Area | Current classification | Notes |
+| Category | Current classification | Evidence |
 |---|---|---|
-| Equivalent scaffold coverage | Equal within scaffold | Galileo3D and Three.js use matching procedural assets, resolution, DPR, camera path, lighting intent, warmup, measurement window, and workload shape for the three scaffold scenes. |
-| Browser microbenchmark timing | Equal within scaffold | The current bounded WebGL2 microbenchmark samples are captured for matching workload shapes, so they do not prove a production runtime advantage. |
-| Production browser performance | Unsupported by current evidence | No rendered production-scene browser parity run exists in the comparison report. |
-| Screenshots and visual diffs | One bounded PBR scene only | `tests/reports/pbr-rendering-comparison.json` records Galileo, Three.js, and diff PNG artifacts for one perspective-camera PBR scene. The broader benchmark report still records scaffold audit screenshots only, not production scene parity. |
-| Benchmark bundle size | Galileo3D smaller within scaffold | `tests/reports/comparison-threejs.json` records Galileo3D esbuild browser benchmark bundles at 232746, 232742, and 232761 bytes versus Three.js at 671336, 671332, and 671351 bytes for the three checked-in equivalent scaffold scenes. This is not a production release bundle-size claim. |
-| glTF compatibility | Three.js stronger | The repo now records pinned Three.js loader imports for the 17-entry Khronos compatibility corpus, a separate 100-entry pinned Khronos source-classification corpus, a bounded real KTX2/Basis transcode fixture in Galileo3D, and three checked-in Blender-export fixture validations. Three.js still has broader loader maturity, ecosystem knowledge, visual validation, and corpus coverage. Galileo3D still needs 100-asset loader/render validation, broad KTX2/Basis corpus coverage, broad Blender/exporter coverage, and visual comparisons. |
-| Ecosystem and community examples | Three.js stronger | Three.js has a much larger community, third-party integration surface, and public example base. |
-| Browser support history | Three.js stronger | Galileo3D does not yet have multi-browser, multi-device release history comparable to Three.js. |
-| Engine-integrated app scaffolds | Galileo3D has a scoped prototype advantage only | Galileo3D includes first-party package structure, examples, validation reports, and lifecycle docs in this repo. That is not a broad engine superiority claim. |
+| Benchmark scaffold | G3D has equivalent checked-in scaffold scenes and smaller generated benchmark bundles on the recorded run. | `tests/reports/comparison-threejs.json`, `tools/compare-engines/index.ts`, `benchmarks/shared/scenes/*.ts` |
+| Rendered same-scene parity | Partial but real. V6 and V9 include retained G3D/Three.js/diff artifacts. | `tests/reports/v6-threejs-parity-readiness.json`, `tests/reports/v6-threejs-parity/**`, `tests/reports/v9/*-parity.json` |
+| Official example inventory | Partial. 54 examples/categories inventoried, 30 matched, 24 partial, 0 high-priority open in the recorded report. | `tests/reports/v9/threejs-inventory.json`, `tests/reports/v9/official-example-parity.json` |
+| Visual review | Partial. 30 accepted, 24 needing review. | `tests/reports/v9/visual-review.json` |
+| Animation/skinning | Bounded parity slices exist against actual Three.js AnimationMixer. | `tests/reports/v9/animation-keyframes-parity.json`, `tests/reports/v9/animation-walk-parity.json`, `tests/reports/v9/skinning-additive-parity.json`, `tests/reports/v9/skinning-blending-parity.json`, `tests/reports/v9/skinning-ik-parity.json` |
+| glTF loader | Bounded same-asset proof exists for selected assets. | `tests/reports/v9/gltf-parity.json`, `tests/reports/asset-compatibility-threejs.json` |
+| Postprocess/effects | Bounded slices exist for bloom, stereo, parallax, decals, shadows, and lights. | `tests/reports/v9/unreal-bloom-parity.json`, `tests/reports/v9/stereo-parity.json`, `tests/reports/v9/parallax-parity.json`, `tests/reports/v9/decals-parity.json`, `tests/reports/v9/shadowmap-parity.json`, `tests/reports/v9/physical-lights-parity.json` |
+| WebGPU | G3D has local hardware and readiness evidence, but not broad Three.js WebGPU parity. | `tests/reports/webgpu-hardware-matrix.json`, `tests/reports/v6-webgpu-readiness.json`, `tests/reports/v9/threejs-inventory.json` |
+| Ecosystem maturity | Three.js stronger. | Current local evidence cannot match public ecosystem, examples, integrations, docs, Stack Overflow/GitHub history, and production usage. |
+
+## Practical Use Cases Today
+
+Use G3D today for:
+
+- internal product viewers and material/asset labs where the app can use repo-pinned assets and tests;
+- browser-first TypeScript demos that need direct control over engine packages and validation artifacts;
+- migration experiments where Three.js behavior is compared through local parity reports;
+- animation/skinning/material investigations where bounded G3D and Three.js screenshots are retained.
+
+Use Three.js today when the project needs:
+
+- maximum public examples and community support;
+- broad loader/material compatibility without custom validation;
+- mature controls, postprocessing examples, and third-party ecosystem;
+- production confidence without building your own evidence matrix.
 
 ## Claim Boundary
 
-The current evidence supports these exact stronger wordings only:
+Allowed:
 
-- Galileo3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run.
-- Galileo3D renders one bounded perspective-camera WebGL2 PBR comparison scene next to a same-page Three.js reference on this run.
+- G3D has bounded same-scene and same-asset parity evidence against actual Three.js paths.
+- G3D has a local evidence-backed roadmap for Three.js parity.
+- G3D generated smaller esbuild browser benchmark bundles for the checked-in scaffold scenes on the recorded comparison run.
 
-Those claims are limited to `tests/reports/comparison-threejs.json` and `tests/reports/pbr-rendering-comparison.json`. They do not support wording that Galileo3D is faster, more compatible, more mature, production-ready, production-PBR-equivalent, or broadly better than Three.js. Before any broader claim can be considered, the project needs broader browser/device matrix runs, production app browser samples, release bundle sizes, larger glTF corpus results, visual loader-output parity, production PBR/IBL evidence, and a claim-registry entry that names the exact dimension and exclusions.
+Blocked:
+
+- G3D is faster than Three.js.
+- G3D is fully compatible with Three.js.
+- G3D exceeds Three.js in every sense.
+- G3D is production-ready wherever Three.js is production-ready.
+
+Before any stronger claim, update the claim registry and cite fresh reports for browser/device coverage, visual review acceptance, release package bundle size, memory lifecycle, asset corpus breadth, and production app traces.

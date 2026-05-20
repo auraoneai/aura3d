@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -165,6 +165,96 @@ describe("verification tools", () => {
     const report = verifyArchitecture(legacy);
     expect(report.ok).toBe(false);
     expect(report.violations.some((violation) => violation.kind === "legacy-docs-tree")).toBe(true);
+  });
+
+  it("architecture verifier accepts grouped public Renderer exports", () => {
+    const root = fixtureRoot();
+    for (const dir of ["docs", "examples", "packages", "tests/unit", "tests/integration", "tests/browser", "tests/visual", "tests/performance"]) {
+      mkdirSync(join(root, dir), { recursive: true });
+    }
+    for (const dir of [
+      "tools/verify-architecture",
+      "tools/verify-boundaries",
+      "tools/verify-exports",
+      "tools/verify-imports",
+      "tools/verify-shaders",
+      "tools/verify-source-cleanliness",
+      "tools/verify-trace",
+      "tools/visual-baseline",
+      "tools/package-size",
+      "tools/release-verification",
+      "tools/requirements-trace",
+      "tools/final-demo-validation",
+      "tools/finalize-dist"
+    ]) {
+      mkdirSync(join(root, dir), { recursive: true });
+    }
+    for (const file of ["pnpm-workspace.yaml", "tsconfig.build.json", "vitest.config.ts", "playwright.config.ts", "eslint.config.js"]) {
+      writeFileSync(join(root, file), "");
+    }
+
+    const packages = [
+      "math",
+      "core",
+      "scene",
+      "ecs",
+      "rendering",
+      "physics",
+      "animation",
+      "assets",
+      "input",
+      "audio",
+      "scripting",
+      "editor-runtime",
+      "editor",
+      "debug",
+      "test-utils"
+    ];
+    for (const packageName of packages) {
+      mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
+      writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
+      writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
+        name: `@galileo3d/${packageName}`,
+        private: packageName === "test-utils" ? true : undefined
+      }));
+    }
+    writeFileSync(join(root, "packages", "rendering", "src", "Renderer.ts"), "export class Renderer {}\n");
+    writeFileSync(join(root, "packages", "rendering", "src", "ShaderLibrary.ts"), "export class ShaderLibrary {}\n");
+    writeFileSync(join(root, "packages", "rendering", "src", "index.ts"), "export { DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from './Renderer.js';\n");
+    writeFileSync(join(root, "packages", "core", "src", "EventBus.ts"), "export class EventBus {}\n");
+    writeFileSync(join(root, "packages", "scene", "src", "Hierarchy.ts"), "export class Hierarchy {}\n");
+
+    const exportsMap = Object.fromEntries(packages.filter((packageName) => packageName !== "test-utils").map((packageName) => [`./${packageName}`, `./dist/${packageName}/index.js`]));
+    const scripts = Object.fromEntries([
+      "typecheck",
+      "build",
+      "test",
+      "test:unit",
+      "test:integration",
+      "test:browser",
+      "test:visual",
+      "verify",
+      "verify:architecture",
+      "verify:boundaries",
+      "verify:exports",
+      "verify:imports",
+      "verify:shaders",
+      "verify:size",
+      "verify:source-cleanliness",
+      "verify:performance",
+      "verify:demos",
+      "trace:requirements",
+      "verify:trace",
+      "verify:release"
+    ].map((script) => [script, "node -e \"\""]));
+    writeFileSync(join(root, "package.json"), JSON.stringify({ scripts, exports: exportsMap }));
+    writeFileSync(join(root, "tsconfig.base.json"), JSON.stringify({
+      compilerOptions: {
+        paths: Object.fromEntries(packages.map((packageName) => [`@galileo3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
+      }
+    }));
+
+    expect(verifyArchitecture(root)).toMatchObject({ ok: true });
   });
 
   it("shader verifier accepts markers and rejects missing markers", () => {
@@ -372,7 +462,7 @@ describe("verification tools", () => {
       "| Number of traced requirements | 1,627 |"
     ].join("\n"));
 
-    const failed = scanDocContradictions(root, ["docs/completion-audit.md"]);
+    const failed = scanDocContradictions(root, ["docs/project/completion-audit.md"]);
     expect(failed.ok).toBe(false);
     expect(failed.violations.map((violation) => violation.kind).sort()).toEqual([
       "go-with-incomplete-language",
@@ -388,7 +478,7 @@ describe("verification tools", () => {
       "",
       "| Number of traced requirements | 1,625 |"
     ].join("\n"));
-    expect(scanDocContradictions(root, ["docs/completion-audit.md"]).ok).toBe(true);
+    expect(scanDocContradictions(root, ["docs/project/completion-audit.md"]).ok).toBe(true);
   });
 
   it("doc contradiction scan rejects disagreement between audit, final plan, and v2 decision gate status", () => {
@@ -399,18 +489,18 @@ describe("verification tools", () => {
     writeFileSync(join(root, "docs", "v2", "decision-gates.md"), "Current status: **not met**.\n");
 
     const failed = scanDocContradictions(root, [
-      "docs/completion-audit.md",
-      "docs/implementation-plan-final.md",
-      "docs/v2/decision-gates.md"
+      "docs/project/completion-audit.md",
+      "docs/project/implementation-plan.md",
+      "docs/project/v2-decision-gates.md"
     ]);
     expect(failed.ok).toBe(false);
     expect(failed.violations.some((violation) => violation.kind === "status-disagreement")).toBe(true);
 
     writeFileSync(join(root, "docs", "implementation-plan-final.md"), "Current status: NO-GO.\n");
     expect(scanDocContradictions(root, [
-      "docs/completion-audit.md",
-      "docs/implementation-plan-final.md",
-      "docs/v2/decision-gates.md"
+      "docs/project/completion-audit.md",
+      "docs/project/implementation-plan.md",
+      "docs/project/v2-decision-gates.md"
     ]).ok).toBe(true);
   });
 
@@ -575,24 +665,67 @@ describe("verification tools", () => {
     expect(broken.violations.some((violation) => /sha256/.test(violation))).toBe(true);
   });
 
-  it("external demo exporter builds the three required deployable static demo pages", async () => {
+  it("external demo exporter builds the five required deployable static demo pages", async () => {
     const outputDir = join(fixtureRoot(), "external-demos");
-    const report = await buildExternalDemoExport(process.cwd(), outputDir);
+    const reportPath = join(process.cwd(), "tests", "reports", "external-demo-static-export.json");
+    const previousReport = existsSync(reportPath) ? readFileSync(reportPath) : null;
+    try {
+      const report = await buildExternalDemoExport(process.cwd(), outputDir);
 
-    expect(report).toMatchObject({
-      ok: true,
-      command: "pnpm build:external-demos"
-    });
-    expect(report.demos.map((demo) => demo.id).sort()).toEqual([
-      "architecture-viewer",
-      "game-slice",
-      "product-configurator"
-    ]);
-    for (const demo of report.demos) {
-      expect(demo.bytes).toBeGreaterThan(1000);
-      expect(existsSync(join(process.cwd(), demo.outputHtml))).toBe(true);
-      expect(existsSync(join(process.cwd(), demo.outputScript))).toBe(true);
-      expect(readFileSync(join(process.cwd(), demo.outputHtml), "utf8")).toContain("./main.js");
+      expect(report).toMatchObject({
+        ok: true,
+        command: "pnpm build:external-demos",
+        deploymentCommandPlanPath: expect.stringContaining("deployment-command-plan.json")
+      });
+      expect(report.demos.map((demo) => demo.id).sort()).toEqual([
+        "architecture-viewer",
+        "game-slice",
+        "large-world-streaming",
+        "product-configurator",
+        "racing-showcase"
+      ]);
+      expect(report.sourceFileHashes.length).toBeGreaterThan(20);
+      for (const demo of report.demos) {
+        expect(demo.bytes).toBeGreaterThan(1000);
+        expect(existsSync(join(process.cwd(), demo.outputHtml))).toBe(true);
+        expect(existsSync(join(process.cwd(), demo.outputScript))).toBe(true);
+        expect(readFileSync(join(process.cwd(), demo.outputHtml), "utf8")).toContain("./main.js");
+      }
+      const deploymentCommandPlan = JSON.parse(readFileSync(join(process.cwd(), report.deploymentCommandPlanPath), "utf8"));
+      expect(deploymentCommandPlan).toMatchObject({
+        schemaVersion: "g3d-public-demo-deployment-command-plan-v1",
+        outputDir: report.outputDir,
+        validationCommands: expect.arrayContaining([
+          "pnpm build:external-demos",
+          "pnpm verify:static-demo-server-smoke",
+          "G3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
+          "pnpm audit:v4-production-readiness",
+        ]),
+        githubPagesWorkflow: ".github/workflows/v4-public-demo-deploy.yml",
+        githubPagesWorkflowNotes: expect.arrayContaining([
+          expect.stringContaining("verify:public-demo-deployment"),
+        ]),
+        blockedUntilPublicValidationPasses: expect.arrayContaining([
+          "production-ready language",
+          "public deployment readiness",
+        ]),
+      });
+      expect(deploymentCommandPlan.validationCommands.join("\n")).not.toContain("your-durable-demo-origin.example");
+      expect(deploymentCommandPlan.filesToDeploy).toHaveLength(11);
+      expect(deploymentCommandPlan.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
+      const publicDeploymentManifest = JSON.parse(readFileSync(join(process.cwd(), report.publicDeploymentManifestPath), "utf8"));
+      expect(publicDeploymentManifest.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
+      const workflow = readFileSync(join(process.cwd(), ".github", "workflows", "v4-public-demo-deploy.yml"), "utf8");
+      expect(workflow).toContain("pnpm/action-setup@v4");
+      expect(workflow).toContain("version: 8");
+      expect(workflow).toContain("pnpm verify:public-demo-deployment");
+      expect(workflow).toContain("actions/deploy-pages@v4");
+    } finally {
+      if (previousReport) {
+        writeFileSync(reportPath, previousReport);
+      } else {
+        rmSync(reportPath, { force: true });
+      }
     }
   }, 30_000);
 
@@ -662,7 +795,7 @@ describe("verification tools", () => {
         },
         {
           id: "TRACE-0001",
-          sourceDocument: "docs/FINALPROMPT.md",
+          sourceDocument: "docs/project/final-prompt.md",
           sourceSection: "Final Gate",
           requirement: "Statuses must be from the approved set.",
           owner: "Coordinator",
@@ -701,25 +834,25 @@ describe("verification tools", () => {
       rows: [
         {
           id: "FINAL-0001",
-          sourceDocument: "docs/FINALPROMPT.md",
+          sourceDocument: "docs/project/final-prompt.md",
           sourceSection: "Generated Evidence",
           requirement: "Generated audit artifacts must not prove themselves.",
           owner: "Coordinator",
-          implementationFiles: ["docs/rebuild-progress.md"],
+          implementationFiles: ["docs/project/rebuild-progress.md"],
           testFiles: ["tests/reports/final-requirements-trace.json"],
           status: "Implemented and verified",
           evidence: "Generated audit artifact passed."
         },
         {
           id: "FINAL-0002",
-          sourceDocument: "docs/FINALPROMPT.md",
+          sourceDocument: "docs/project/final-prompt.md",
           sourceSection: "Weak Evidence",
           requirement: "Rebuild progress pass text is not enough.",
           owner: "Coordinator",
           implementationFiles: [],
           testFiles: [],
           status: "Implemented and verified",
-          evidence: "docs/rebuild-progress.md passed"
+          evidence: "docs/project/rebuild-progress.md passed"
         },
         {
           id: "CORE-0001",
@@ -748,11 +881,11 @@ describe("verification tools", () => {
       statusCounts: {},
       rows: [{
         id: "FINAL-0001",
-        sourceDocument: "docs/FINALPROMPT.md",
+        sourceDocument: "docs/project/final-prompt.md",
         sourceSection: "Generated Evidence",
         requirement: "Generated audit artifacts must not prove product completion.",
         owner: "Coordinator",
-        implementationFiles: ["docs/completion-audit.md"],
+        implementationFiles: ["docs/project/completion-audit.md"],
         testFiles: ["tests/reports/final-requirements-trace.json"],
         status: "Implemented and verified",
         evidence: "Generated audit artifact passed."

@@ -5,9 +5,11 @@ export type SceneAnimationNode = {
   position?: [number, number, number];
   rotation?: [number, number, number, number];
   scale?: [number, number, number];
+  weights?: number[];
   setPosition?: (value: readonly [number, number, number]) => void;
   setRotation?: (value: readonly [number, number, number, number]) => void;
   setScale?: (value: readonly [number, number, number]) => void;
+  setWeights?: (value: readonly number[]) => void;
 };
 
 export class SceneAnimationBridge {
@@ -29,15 +31,29 @@ export class SceneAnimationBridge {
     if (!node) {
       throw new Error(`Missing scene animation target ${nodeName}.`);
     }
-    if (property === "position") {
+    if (property === "position" || property === "translation") {
       writeVec3(node, "position", "setPosition", value);
     } else if (property === "rotation") {
       writeQuat(node, value);
     } else if (property === "scale") {
       writeVec3(node, "scale", "setScale", value);
+    } else if (property === "weights") {
+      writeWeights(node, value);
     } else {
       throw new Error(`Unsupported scene animation property ${property}.`);
     }
+  }
+}
+
+function writeWeights(node: SceneAnimationNode, value: AnimationValue): void {
+  if (!Array.isArray(value) || value.some((weight) => typeof weight !== "number" || !Number.isFinite(weight))) {
+    throw new Error("weights animation value must be a finite number array.");
+  }
+  const weights = value.map((weight) => Math.max(0, Math.min(1, weight)));
+  if (node.setWeights) {
+    node.setWeights(weights);
+  } else {
+    node.weights = weights;
   }
 }
 

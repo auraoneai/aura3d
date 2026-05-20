@@ -11,3 +11,5 @@ export * from "./ParticleRenderer.js";
 export * from "./ParticleRenderPass.js";
 export * from "./GPUParticleBackend.js";
 export * from "./ParticleSystem.js";
+export * from "./ParticleEffectPresets.js";
+export * from "./ParticleDiagnostics.js";

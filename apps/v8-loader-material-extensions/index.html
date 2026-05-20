@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Loader Material Extensions</title>
+    <link rel="stylesheet" href="/apps/v6-common/src/styles.css">
+    <style>
+      body.v8-loader-material-extensions {
+        grid-template-columns: minmax(840px, min(70vw, 1440px)) minmax(390px, 1fr);
+        background: #080b10;
+      }
+
+      body.v8-loader-material-extensions #viewport {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        max-height: 100vh;
+        align-self: center;
+        background: #07090d;
+      }
+
+      body.v8-loader-material-extensions #app {
+        padding: 18px;
+      }
+
+      .v8-loader-material-extensions .metrics {
+        grid-template-columns: repeat(2, minmax(135px, 1fr));
+      }
+
+      .v8-loader-material-extensions #runtime-state.is-loading {
+        background: #43506a;
+      }
+
+      .v8-loader-material-extensions #runtime-state.is-ready,
+      .v8-loader-material-extensions #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .v8-loader-material-extensions #runtime-state.is-error {
+        background: #923b3b;
+      }
+    </style>
+  </head>
+  <body class="v8-loader-material-extensions">
+    <canvas id="viewport" width="1280" height="720"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/v8-loader-material-extensions/src/main.ts"></script>
+  </body>
+</html>

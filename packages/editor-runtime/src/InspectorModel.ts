@@ -41,7 +41,7 @@ export class InspectorModel {
         value,
         editable: type !== "object"
       });
-      if (type === "object" && value !== null && !Array.isArray(value)) {
+      if (type === "object" && typeof value === "object" && value !== null && !Array.isArray(value)) {
         properties.push(...this.describeObject(value as object, path));
       }
     }

@@ -17,18 +17,21 @@ export function createSceneCameraControlAdapter(camera: Camera): SceneCameraCont
     },
     set x(value: number) {
       camera.transform.setPosition(value, camera.transform.position[1], camera.transform.position[2]);
+      syncCamera(camera);
     },
     get y(): number {
       return camera.transform.position[1];
     },
     set y(value: number) {
       camera.transform.setPosition(camera.transform.position[0], value, camera.transform.position[2]);
+      syncCamera(camera);
     },
     get z(): number {
       return camera.transform.position[2];
     },
     set z(value: number) {
       camera.transform.setPosition(camera.transform.position[0], camera.transform.position[1], value);
+      syncCamera(camera);
     }
   };
   const rotation = {
@@ -69,6 +72,7 @@ export function createSceneCameraControlAdapter(camera: Camera): SceneCameraCont
       euler.x = nextEuler.x;
       euler.y = nextEuler.y;
       euler.z = nextEuler.z;
+      syncCamera(camera);
     }
   };
 }
@@ -79,6 +83,11 @@ function applyEuler(camera: Camera, euler: EulerLike): void {
   const roll = Quaternion.fromAxisAngle(new Vector3(0, 0, 1), euler.z);
   const q = yaw.multiply(pitch).multiply(roll).normalize();
   camera.transform.setRotation(q.x, q.y, q.z, q.w);
+  syncCamera(camera);
+}
+
+function syncCamera(camera: Camera): void {
+  camera.updateCameraMatrices();
 }
 
 function quaternionToEuler(rotation: readonly [number, number, number, number]): EulerLike {

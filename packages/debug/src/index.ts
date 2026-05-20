@@ -14,6 +14,8 @@ export { Profiler } from "./Profiler.js";
 export type { ProfilerMarker, ProfilerSnapshot } from "./Profiler.js";
 export { GPUProfiler } from "./GPUProfiler.js";
 export type { GPUProfilerSnapshot, GPUSample, GPUProfilerTimer } from "./GPUProfiler.js";
+export { ChromeTraceExporter } from "./ChromeTraceExporter.js";
+export type { ChromeTrace, ChromeTraceEvent, ChromeTraceExportOptions } from "./ChromeTraceExporter.js";
 export { ResourceLeakError, ResourceTracker } from "./ResourceTracker.js";
 export type { ResourceLeakReport, TrackedResource } from "./ResourceTracker.js";
 export { ECSInspector } from "./ECSInspector.js";
@@ -22,5 +24,23 @@ export { DebugOverlay } from "./DebugOverlay.js";
 export type { DebugOverlayRow, DebugOverlaySection, DebugOverlaySnapshot } from "./DebugOverlay.js";
 export { DebugLineCanvasRenderer } from "./DebugLineCanvasRenderer.js";
 export type { DebugLineCanvasRendererOptions, DebugLineCanvasRenderResult, DebugRenderLine } from "./DebugLineCanvasRenderer.js";
+export {
+  buildAxesHelper,
+  buildBoundsHelper,
+  buildCameraFrustumHelper,
+  buildDirectionalLightHelper,
+  buildGridHelper,
+  buildSkeletonHelper
+} from "./SceneHelpers.js";
+export type {
+  AxesHelperOptions,
+  BoundsHelperOptions,
+  CameraFrustumHelperOptions,
+  DebugColor,
+  DebugVec3,
+  DirectionalLightHelperOptions,
+  GridHelperOptions,
+  SkeletonHelperJoint
+} from "./SceneHelpers.js";
 export { ReportExporter } from "./ReportExporter.js";
 export type { DebugReport } from "./ReportExporter.js";

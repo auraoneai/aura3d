@@ -1,0 +1,17 @@
+{
+  "name": "g3d-v4-product-viewer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@galileo3d/engine": "0.1.0-alpha.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.2",
+    "typescript": "^5.9.3"
+  }
+}

@@ -42,8 +42,8 @@ describe("claim registry verifier", () => {
 
     expect(report.ok).toBe(true);
     expect(report.allowedOccurrences).toEqual(expect.arrayContaining([
-      expect.objectContaining({ path: "docs/known-limits.md", claim: "Galileo3D is better than Three.js.", scoped: true }),
-      expect.objectContaining({ path: "docs/known-limits.md", claim: "Galileo3D is production-ready.", scoped: true })
+      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Galileo3D is better than Three.js.", scoped: true }),
+      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Galileo3D is production-ready.", scoped: true })
     ]));
   });
 
@@ -65,6 +65,20 @@ describe("claim registry verifier", () => {
     ]));
   });
 
+  it("does not scan release-artifacts as top-level release claim documents", () => {
+    const root = fixtureRoot();
+    mkdirSync(join(root, "release-artifacts", "v4-external-evidence-handoff"), { recursive: true });
+    writeFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "docs/project/v4-parity-execution-prompt.md"), "Unity/Unreal replacement remains blocked.\n");
+    writeFileSync(join(root, "release-artifacts", "codingrelated-completion-audit.md"), "Full WebGPU support is not achieved.\n");
+    writeFileSync(join(root, "RELEASE-NOTES.md"), "No production-ready claim is currently supported.\n");
+
+    const report = validateClaimRegistry(root);
+
+    expect(report.ok).toBe(true);
+    expect(report.scannedFiles).toContain("RELEASE-NOTES.md");
+    expect(report.scannedFiles.some((path) => path.startsWith("release-artifacts/"))).toBe(false);
+  });
+
   it("reports missing evidence paths required by allowed registered claims", () => {
     const root = fixtureRoot();
     writeFileSync(join(root, "docs", "v2", "claim-registry.md"), registry("`tests/reports/missing-claim-evidence.json`"));
@@ -75,7 +89,7 @@ describe("claim registry verifier", () => {
     expect(report.violations).toEqual([
       expect.objectContaining({
         kind: "missing-evidence",
-        path: "docs/v2/claim-registry.md",
+        path: "docs/project/v2-claim-registry.md",
         claim: "Galileo3D is an experimental TypeScript web 3D engine prototype."
       })
     ]);

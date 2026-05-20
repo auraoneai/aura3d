@@ -14,10 +14,10 @@ function readJson<T>(path: string): T {
 
 describe("master gate evidence", () => {
   it("documents objective production-ready gate evidence without implying production readiness", () => {
-    const evidence = read("docs/v2/master-gate-evidence.md");
+    const evidence = read("docs/project/v2-master-gate-evidence.md");
 
     for (const path of [
-      "docs/browser-hardware-matrix.md",
+      "docs/project/browser-hardware-matrix.md",
       "docs/rendering/webgpu-hardware-matrix.md",
       "tests/reports/browser.json",
       "tests/reports/final-browser.json",
@@ -28,19 +28,19 @@ describe("master gate evidence", () => {
       "docs/benchmarks/babylon-comparison.md",
       "tests/reports/comparison-threejs.json",
       "tests/reports/comparison-babylon.json",
-      "docs/site-map.md",
-      "docs/api/README.md",
+      "docs/project/site-map.md",
+      "docs/api/readme.md",
       "docs/api/public-api.md",
       "tests/reports/release-repeat.json",
       "tests/reports/final-release-verification.json",
-      "docs/release-artifacts.json",
+      "docs/project/release-artifacts.json",
       "release-artifacts/galileo3d-engine-0.1.0-alpha.0.tgz",
       "tests/reports/versioned-release.json",
-      "SUPPORT.md",
+      "docs/project/support-policy.md",
       ".github/ISSUE_TEMPLATE/bug_report.yml",
       ".github/ISSUE_TEMPLATE/feature_request.yml",
-      "docs/known-limits.md",
-      "docs/v2/claim-registry.md"
+      "docs/project/known-limits.md",
+      "docs/project/v2-claim-registry.md"
     ]) {
       expect(existsSync(join(root, path)), `${path} should exist`).toBe(true);
       expect(evidence, `${path} should be referenced by master gate evidence`).toContain(path);
@@ -57,14 +57,24 @@ describe("master gate evidence", () => {
       claimUsable: boolean;
       unsupportedByThisReport: string[];
       benchmarkMeasurementFailureLog: string[];
-      artifacts: { screenshots: { status: string; paths: string[] }; bundles: { status: string; paths: string[] } };
+      artifacts: {
+        screenshots: { status: string; paths: string[] };
+        bundles: { status: string; paths: string[] };
+        screenshotDiffs: { status: string; paths: string[] };
+        renderedBenchmarkVisuals: { status: string; paths: string[] };
+      };
     }>("tests/reports/comparison-threejs.json");
     const babylonReport = readJson<{
       ok: boolean;
       claimUsable: boolean;
       unsupportedByThisReport: string[];
       benchmarkMeasurementFailureLog: string[];
-      artifacts: { screenshots: { status: string; paths: string[] }; bundles: { status: string; paths: string[] } };
+      artifacts: {
+        screenshots: { status: string; paths: string[] };
+        bundles: { status: string; paths: string[] };
+        screenshotDiffs: { status: string; paths: string[] };
+        renderedBenchmarkVisuals: { status: string; paths: string[] };
+      };
     }>("tests/reports/comparison-babylon.json");
 
     for (const report of [threeReport, babylonReport]) {
@@ -73,10 +83,14 @@ describe("master gate evidence", () => {
       expect(report.benchmarkMeasurementFailureLog).toEqual([]);
       expect(report.unsupportedByThisReport).not.toContain("real browser startup timing");
       expect(report.unsupportedByThisReport).not.toContain("real browser first-frame timing");
-      expect(report.unsupportedByThisReport).toContain("rendered screenshot diffs");
       expect(report.artifacts.bundles.status).toBe("built-browser-benchmark-bundles");
       expect(report.artifacts.bundles.paths.length).toBeGreaterThan(0);
-      expect(report.artifacts.screenshots.status).toBe("captured-audit-report");
+      expect(report.artifacts.screenshots.status).toBe("captured-webgl2-microbenchmark-canvases");
+      expect(report.artifacts.screenshots.paths.length).toBeGreaterThan(0);
+      expect(report.artifacts.screenshotDiffs.status).toBe("computed-rendered-benchmark-scene-diffs");
+      expect(report.artifacts.screenshotDiffs.paths.length).toBeGreaterThan(0);
+      expect(report.artifacts.renderedBenchmarkVisuals.status).toBe("captured-descriptor-driven-rendered-benchmark-scenes");
+      expect(report.artifacts.renderedBenchmarkVisuals.paths.length).toBeGreaterThan(0);
       expect(report.artifacts.screenshots.paths).toContain("tests/reports/comparison-threejs-audit.png");
       expect(report.artifacts.screenshots.paths).toContain("tests/reports/comparison-babylon-audit.png");
     }
@@ -99,19 +113,23 @@ describe("master gate evidence", () => {
 
     expect(webgpuMatrix.evidenceType).toBe("real-navigator-gpu-probe");
     expect(webgpuMatrix.results.length).toBeGreaterThan(0);
-    expect(webgpuMatrix.results[0]?.hasNavigatorGpu).toBe(true);
-    expect(webgpuMatrix.results[0]?.adapterStatus).toBe("missing");
-    expect(webgpuMatrix.results[0]?.deviceStatus).toBe("not-requested");
-    expect(webgpuMatrix.results[0]?.unsupportedCases).toContain("navigator.gpu.requestAdapter returned null");
+    expect(webgpuMatrix.results.every((result) => result.hasNavigatorGpu)).toBe(true);
+    expect(webgpuMatrix.results.some((result) => result.adapterStatus === "available" && result.deviceStatus === "available")).toBe(true);
+    expect(webgpuMatrix.results.every((result) =>
+      (result.adapterStatus === "available" && result.deviceStatus === "available") ||
+      (result.adapterStatus === "missing" &&
+        result.deviceStatus === "not-requested" &&
+        result.unsupportedCases.includes("navigator.gpu.requestAdapter returned null"))
+    )).toBe(true);
 
     expect(corpus.sourceManifest.assetCount).toBeGreaterThanOrEqual(11);
     expect(corpus.sourceManifest.sourceRevision).toBe("2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf");
     expect(corpus.summary.pass + corpus.summary.warn + corpus.summary.expectedFail).toBe(corpus.sourceManifest.assetCount);
-    expect(corpus.summary.expectedFail).toBe(2);
+    expect(corpus.summary.expectedFail).toBe(0);
   });
 
   it("does not mark explicitly unproven production-ready rows", () => {
-    const checklist = read("docs/v2/filename-level-execution-checklist.md");
+    const checklist = read("docs/project/v2-filename-level-execution-checklist.md");
 
     const releaseRepeat = readJson<{
       ok: boolean;

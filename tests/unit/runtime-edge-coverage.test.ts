@@ -264,7 +264,13 @@ describe("runtime edge-case coverage audit", () => {
       "packages/core/src/EngineLoop.ts:if (typeof requestAnimationFrame !== \"function\") throw new Error(\"requestAnimationFrame is unavailable.\");",
       "packages/debug/src/GPUProfiler.ts:unavailableReason?: string;",
       "packages/debug/src/GPUProfiler.ts:private readonly unavailableReason = \"GPU timing extension unavailable\"",
-      "packages/debug/src/GPUProfiler.ts:unavailableReason: this.unavailableReason"
+      "packages/debug/src/GPUProfiler.ts:unavailableReason: this.unavailableReason",
+      "packages/debug/src/ChromeTraceExporter.ts:args: { reason: gpu.unavailableReason ?? \"GPU timing unavailable\" }",
+      "packages/rendering/src/RendererFeatureGates.ts:return supportedIf(feature, capabilities.has(\"gpu-timing\"), \"GPU timing is unavailable; callers must use CPU timing diagnostics.\");",
+      "packages/rendering/src/RendererFeatureGates.ts:\"WebGPU compute is unavailable on this backend or adapter.\"",
+      "packages/rendering/src/RendererTiming.ts:this.fallbackReason = options.fallbackReason ?? this.gpuBackend.unavailableReason ?? \"GPU timing unavailable; using CPU timing fallback.\";",
+      "packages/rendering/src/RendererTiming.ts:unavailableReason = \"GPU timing unavailable; using CPU timing fallback.\"",
+      "packages/rendering/src/RendererTiming.ts:return createCpuFallbackGpuTimingBackend(\"EXT_disjoint_timer_query_webgl2 unavailable; using CPU timing fallback.\");"
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];

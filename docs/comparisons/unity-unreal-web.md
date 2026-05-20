@@ -5,8 +5,8 @@ This comparison is limited to browser-first TypeScript workflows. It is not a na
 ## Evidence
 
 - Editor workflow caveats: `docs/editor/browser-first-workflow.md`
-- Known limits: `docs/known-limits.md`
-- Claim registry: `docs/v2/claim-registry.md`
+- Known limits: `docs/project/known-limits.md`
+- Claim registry: `docs/project/v2-claim-registry.md`
 - Current benchmark scaffolds: `docs/benchmarks/threejs-comparison.md`, `docs/benchmarks/babylon-comparison.md`
 
 ## Current Result

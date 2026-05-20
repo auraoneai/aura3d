@@ -14,6 +14,10 @@ export class ShaderModule {
     return new ShaderModule(library.compileSource(name));
   }
 
+  static fromLibraryVariant(library: ShaderLibrary, name: string, variantName: string): ShaderModule {
+    return new ShaderModule(library.compileVariant(name, variantName));
+  }
+
   compile(device: RenderDevice): RenderShaderProgram {
     if (!this.program || this.program.disposed) {
       this.program = device.createShaderProgram({

@@ -50,7 +50,7 @@ export function validateGraph(graph: VisualGraph): readonly string[] {
     if (!toPort || toPort.direction !== "input") {
       errors.push(`Invalid target port: ${edge.toNode}.${edge.toPort}`);
     }
-    if (fromPort && toPort && fromPort.type !== toPort.type) {
+    if (fromPort && toPort && fromPort.type !== toPort.type && fromPort.type !== "any" && toPort.type !== "any") {
       errors.push(`Port type mismatch: ${edge.fromNode}.${edge.fromPort} -> ${edge.toNode}.${edge.toPort}`);
     }
   }

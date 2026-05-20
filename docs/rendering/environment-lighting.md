@@ -1,6 +1,11 @@
 # Renderer Environment Lighting
 
-The renderer accepts a bounded environment-lighting input on `Renderer.render(...)`:
+Galileo3D now has two environment-lighting tiers in the repo:
+
+- the public `Renderer.render(...)` environment input for normal WebGL2 scene rendering;
+- the v6/v8 production viewer path that loads real HDR environment files, builds PMREM/BRDF resources, and renders textured glTF assets in apps such as `apps/v8-flagship-viewer`.
+
+The public render input still accepts direct environment settings:
 
 ```ts
 renderer.render({
@@ -18,41 +23,38 @@ renderer.render({
       intensity: 0.58,
       specularIntensity: 0.34
     },
-    environmentMapTexture: new TextureBinding({
-      name: "u_environmentMapTexture",
-      texture: new Texture({ width: 64, height: 32, colorSpace: "srgb", data: environmentPixels }),
-      sampler: new Sampler({ addressU: "repeat", addressV: "clamp-to-edge" }),
-      expectedColorSpace: "srgb",
-      required: true
-    }),
+    environmentMapTexture,
     environmentMapIntensity: 0.42,
     environmentMapSpecularIntensity: 0.24,
     environmentMapMipCount: 3,
-    environmentBrdfLutTexture: new TextureBinding({
-      name: "u_environmentBrdfLutTexture",
-      texture: new Texture({ width: 32, height: 32, colorSpace: "linear", data: brdfLutPixels }),
-      sampler: new Sampler({ addressU: "clamp-to-edge", addressV: "clamp-to-edge" }),
-      expectedColorSpace: "linear",
-      required: true
-    })
+    environmentBrdfLutTexture
   }
 });
 ```
 
-This path feeds `u_environmentColor`, `u_environmentIntensity`, optional `proceduralMap` uniforms, optional sampled environment-map texture uniforms, and an optional BRDF LUT texture into the default `PBRMaterial` shader. Without either optional environment path, the shader applies the older hemispheric diffuse ambient term. With `proceduralMap`, it blends sky, horizon, and ground colors by normal direction and adds a roughness-sensitive procedural specular response. With `environmentMapTexture`, it samples an equirectangular RGBA8 texture for diffuse normal-direction lighting and a reflection-direction highlight. `generateRgba8EnvironmentMipLevels(...)` can build a bounded CPU-generated RGBA8 mip chain, and when `environmentMapMipCount` is set, specular sampling uses roughness-dependent `textureLod(...)`. `generateApproximateBrdfLutPixels(...)` can create the bounded linear RGBA8 LUT used by the examples; when `environmentBrdfLutTexture` is supplied, sampled specular is modulated by that LUT keyed by `NdotV` and roughness. It is intended to keep indirectly lit PBR objects readable in examples and bounded browser tests.
+That path feeds `u_environmentColor`, procedural sky/horizon/ground terms, optional environment texture uniforms, optional mip-aware specular sampling, and an optional BRDF LUT into the default PBR material shader. It is useful for examples, editor previews, and deterministic browser tests.
 
-## Limits
+The higher-fidelity path lives in `packages/rendering/src/EnvironmentPipeline.ts`, `packages/rendering/src/PMREM.ts`, `packages/rendering/src/IBL.ts`, `packages/rendering/src/v6/PBRHDRPipeline.ts`, and the v6/v8 flagship apps. Current reports show real HDR parsing, RGBA16F environment sampling, PMREM/BRDF resources, WebGL2 render proofs, and visible environment deltas. `tests/reports/v6-pbr-hdr-readiness.json` passes for studio/sunset HDR scenes, and `tests/reports/v8-threejs-parity.json` records a same-scene G3D/Three.js flagship comparison using `studio_small_08_1k.hdr`.
 
-- This is not physically correct image-based lighting.
-- The sampled texture path currently accepts ordinary `TextureBinding` RGBA8 data and optional authored or helper-generated RGBA8 mip levels. It is not an HDR environment map pipeline.
-- The BRDF LUT path is a bounded shader input for examples/tests, not a production-calibrated split-sum implementation.
-- There is no irradiance convolution, generated specular prefiltering pipeline, reflection probe, or color-management pipeline behind this approximation.
-- The term affects the current default `PBRMaterial` shader path. Other material shaders ignore the input unless they expose the same uniforms.
+## Current Use Cases
+
+- Product and asset viewers that need studio HDR lighting with real glTF materials.
+- Material labs that compare roughness, metallic, clearcoat, transmission, and texture slots under consistent light.
+- Editor/runtime previews where a readable default environment matters more than physical calibration.
+- WebGPU/WebGL2 parity tests that need explicit environment state and fallback behavior.
+
+## Known Gaps
+
+- Environment loading can still be visible to users. One current `v8-flagship-viewer` report records roughly `440ms` for the GLB asset and `1634ms` for the environment to become ready after first frame. That is acceptable evidence for a route, not acceptable as a finished product experience.
+- The simple `Renderer.render(...)` environment texture path is still an approximation and should not be described as full HDR IBL by itself.
+- PMREM/BRDF resources exist, but the repo does not yet prove broad environment-map parity against Three.js across many HDRIs, devices, and material classes.
+- Reflections, color management, and tone mapping have bounded evidence; they are not yet production-calibrated across a full film/game pipeline.
 
 ## Verification
 
-- `tests/unit/rendering/pbr-lighting.test.ts` verifies material uniforms and renderer-level environment uniform overrides.
-- `tests/unit/rendering/environment-map-resources.test.ts` verifies bounded RGBA8 environment mip and BRDF LUT helper generation.
-- `tests/browser/rendering-webgl2.spec.ts` verifies a WebGL2 PBR environment pixel.
-- `tests/visual/pbr-environment-pixels.spec.ts` verifies the `examples/pbr-material-lab` scene, verifies `examples/pbr-camera-comparison` against a same-page Three.js reference scene, writes `tests/reports/pbr-environment-validation.json`, and checks that the examples report the sampled approximation instead of claiming full IBL.
-- `tests/reports/pbr-rendering-comparison.json` records the bounded perspective-camera comparison descriptor, Galileo/reference/diff screenshot paths, ROI/full-canvas delta metrics, and exact claim boundary.
+- `tests/reports/v6-pbr-hdr-readiness.json`
+- `tests/reports/v6-hd-flagship-readiness.json`
+- `tests/reports/v8-threejs-parity.json`
+- `tests/unit/rendering/environment-map-resources.test.ts`
+- `tests/unit/rendering/pbr-lighting.test.ts`
+- `tests/visual/pbr-environment-pixels.spec.ts`

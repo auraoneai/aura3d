@@ -187,8 +187,8 @@ export function verifySourceCleanliness(root = process.cwd(), options: SourceCle
   };
 }
 
-function writeReport(root: string, report: SourceCleanlinessReport): void {
-  for (const reportPath of reportPaths) {
+function writeReport(root: string, report: SourceCleanlinessReport, paths: readonly string[] = reportPaths): void {
+  for (const reportPath of paths) {
     const path = join(root, reportPath);
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`);
@@ -199,10 +199,12 @@ const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   const rootIndex = process.argv.indexOf("--root");
   const rootsIndex = process.argv.indexOf("--roots");
+  const reportPathsIndex = process.argv.indexOf("--report-paths");
   const root = rootIndex === -1 ? process.cwd() : (process.argv[rootIndex + 1] ?? process.cwd());
   const roots = rootsIndex === -1 ? undefined : process.argv[rootsIndex + 1]?.split(",").map((entry) => entry.trim()).filter(Boolean);
+  const configuredReportPaths = reportPathsIndex === -1 ? undefined : process.argv[reportPathsIndex + 1]?.split(",").map((entry) => entry.trim()).filter(Boolean);
   const report = verifySourceCleanliness(root, roots === undefined ? {} : { roots });
-  writeReport(root, report);
+  writeReport(root, report, configuredReportPaths);
   if (!report.ok) {
     console.error(JSON.stringify(report.violations, null, 2));
     process.exitCode = 1;

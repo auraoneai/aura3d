@@ -23,6 +23,63 @@ importers:
       '@babylonjs/loaders':
         specifier: ^7.16.1
         version: 7.16.1(@babylonjs/core@7.16.1)(babylonjs-gltf2interface@7.16.1)
+      '@galileo3d/animation':
+        specifier: workspace:*
+        version: link:packages/animation
+      '@galileo3d/apps':
+        specifier: workspace:*
+        version: link:packages/apps
+      '@galileo3d/assets':
+        specifier: workspace:*
+        version: link:packages/assets
+      '@galileo3d/audio':
+        specifier: workspace:*
+        version: link:packages/audio
+      '@galileo3d/core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@galileo3d/create-g3d':
+        specifier: workspace:*
+        version: link:packages/create-g3d
+      '@galileo3d/debug':
+        specifier: workspace:*
+        version: link:packages/debug
+      '@galileo3d/ecs':
+        specifier: workspace:*
+        version: link:packages/ecs
+      '@galileo3d/editor':
+        specifier: workspace:*
+        version: link:packages/editor
+      '@galileo3d/editor-runtime':
+        specifier: workspace:*
+        version: link:packages/editor-runtime
+      '@galileo3d/engine-runtime':
+        specifier: workspace:*
+        version: link:packages/engine
+      '@galileo3d/input':
+        specifier: workspace:*
+        version: link:packages/input
+      '@galileo3d/math':
+        specifier: workspace:*
+        version: link:packages/math
+      '@galileo3d/physics':
+        specifier: workspace:*
+        version: link:packages/physics
+      '@galileo3d/product-studio':
+        specifier: workspace:*
+        version: link:packages/product-studio
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:packages/rendering
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:packages/scene
+      '@galileo3d/scripting':
+        specifier: workspace:*
+        version: link:packages/scripting
+      '@galileo3d/workflows':
+        specifier: workspace:*
+        version: link:packages/workflows
       '@playwright/test':
         specifier: ^1.52.0
         version: 1.59.1
@@ -56,21 +113,58 @@ importers:
       typescript:
         specifier: ^5.8.3
         version: 5.9.3
+      vite:
+        specifier: ^7.3.2
+        version: 7.3.2(@types/node@22.19.17)(tsx@4.21.0)
       vitest:
         specifier: ^3.1.3
         version: 3.2.4(@types/node@22.19.17)(tsx@4.21.0)
 
   packages/animation: {}
 
-  packages/assets: {}
+  packages/apps:
+    dependencies:
+      '@galileo3d/core':
+        specifier: workspace:*
+        version: link:../core
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+      '@galileo3d/workflows':
+        specifier: workspace:*
+        version: link:../workflows
 
-  packages/audio: {}
+  packages/assets:
+    dependencies:
+      '@galileo3d/animation':
+        specifier: workspace:*
+        version: link:../animation
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+
+  packages/audio:
+    dependencies:
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+
+  packages/controls:
+    dependencies:
+      '@galileo3d/input':
+        specifier: workspace:*
+        version: link:../input
 
   packages/core:
     dependencies:
       '@galileo3d/math':
         specifier: workspace:*
         version: link:../math
+
+  packages/create-g3d: {}
 
   packages/debug:
     dependencies:
@@ -84,7 +178,14 @@ importers:
         specifier: workspace:*
         version: link:../rendering
 
-  packages/ecs: {}
+  packages/ecs:
+    dependencies:
+      '@galileo3d/core':
+        specifier: workspace:*
+        version: link:../core
+      '@galileo3d/math':
+        specifier: workspace:*
+        version: link:../math
 
   packages/editor:
     dependencies:
@@ -92,21 +193,127 @@ importers:
         specifier: workspace:*
         version: link:../editor-runtime
 
-  packages/editor-runtime: {}
+  packages/editor-runtime:
+    dependencies:
+      '@galileo3d/math':
+        specifier: workspace:*
+        version: link:../math
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
 
-  packages/input: {}
+  packages/engine:
+    dependencies:
+      '@galileo3d/animation':
+        specifier: workspace:*
+        version: link:../animation
+      '@galileo3d/apps':
+        specifier: workspace:*
+        version: link:../apps
+      '@galileo3d/assets':
+        specifier: workspace:*
+        version: link:../assets
+      '@galileo3d/core':
+        specifier: workspace:*
+        version: link:../core
+      '@galileo3d/physics':
+        specifier: workspace:*
+        version: link:../physics
+      '@galileo3d/product-studio':
+        specifier: workspace:*
+        version: link:../product-studio
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+      '@galileo3d/workflows':
+        specifier: workspace:*
+        version: link:../workflows
+
+  packages/environments:
+    dependencies:
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+
+  packages/input:
+    dependencies:
+      '@galileo3d/math':
+        specifier: workspace:*
+        version: link:../math
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+
+  packages/materials:
+    dependencies:
+      '@galileo3d/assets':
+        specifier: workspace:*
+        version: link:../assets
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
 
   packages/math: {}
 
   packages/physics: {}
 
-  packages/rendering: {}
+  packages/product-studio:
+    dependencies:
+      '@galileo3d/assets':
+        specifier: workspace:*
+        version: link:../assets
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
 
-  packages/scene: {}
+  packages/rendering:
+    dependencies:
+      '@galileo3d/math':
+        specifier: workspace:*
+        version: link:../math
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
+
+  packages/scene:
+    dependencies:
+      '@galileo3d/core':
+        specifier: workspace:*
+        version: link:../core
+      '@galileo3d/math':
+        specifier: workspace:*
+        version: link:../math
 
   packages/scripting: {}
 
   packages/test-utils: {}
+
+  packages/three-compat:
+    dependencies:
+      three:
+        specifier: ^0.165.0
+        version: 0.165.0
+
+  packages/workflows:
+    dependencies:
+      '@galileo3d/assets':
+        specifier: workspace:*
+        version: link:../assets
+      '@galileo3d/product-studio':
+        specifier: workspace:*
+        version: link:../product-studio
+      '@galileo3d/rendering':
+        specifier: workspace:*
+        version: link:../rendering
+      '@galileo3d/scene':
+        specifier: workspace:*
+        version: link:../scene
 
 packages:
 

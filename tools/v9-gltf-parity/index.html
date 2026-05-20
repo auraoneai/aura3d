@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>V9 GLTF Parity</title>
+    <style>
+      body {
+        margin: 0;
+        background: #080b10;
+        color: #f4f7fb;
+        font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+      }
+
+      canvas {
+        border: 1px solid #273142;
+        background: #05070a;
+      }
+
+      pre {
+        margin: 0;
+        max-width: 1280px;
+        white-space: pre-wrap;
+        color: #b7c2d4;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="report-status">loading</div>
+      <canvas id="g3d-gltf" width="640" height="480"></canvas>
+      <canvas id="threejs-gltf" width="640" height="480"></canvas>
+      <canvas id="side-by-side" width="1280" height="540"></canvas>
+      <pre id="report-json"></pre>
+    </main>
+    <script type="module" src="./index.ts"></script>
+  </body>
+</html>

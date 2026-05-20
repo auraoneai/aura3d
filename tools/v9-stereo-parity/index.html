@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>V9 Stereo Effect Parity</title>
+    <style>
+      body {
+        margin: 0;
+        background: #05070b;
+        color: #eef3f8;
+        font: 14px system-ui, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+      }
+
+      canvas {
+        background: #05070b;
+        border: 1px solid #293241;
+      }
+
+      .captures {
+        display: grid;
+        grid-template-columns: repeat(3, max-content);
+        gap: 12px;
+        align-items: start;
+      }
+
+      pre {
+        white-space: pre-wrap;
+        color: #b9c4d4;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>V9 Stereo Effect Parity</h1>
+      <p id="report-status">loading</p>
+      <section class="captures">
+        <canvas id="g3d-stereo" width="1280" height="480"></canvas>
+        <canvas id="threejs-stereo" width="1280" height="480"></canvas>
+        <canvas id="side-by-side" width="1280" height="1020"></canvas>
+      </section>
+      <pre id="report-json"></pre>
+    </main>
+    <script type="module" src="/tools/v9-stereo-parity/index.ts"></script>
+  </body>
+</html>

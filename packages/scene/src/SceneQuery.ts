@@ -32,7 +32,7 @@ export function queryScene(root: SceneNode, options: SceneQueryOptions): SceneNo
 export function collectRenderables(root: SceneNode): { node: SceneNode; renderable: Renderable }[] {
   const result: { node: SceneNode; renderable: Renderable }[] = [];
   root.traverse((node) => {
-    const maybe = (node as SceneNode & { renderable?: Renderable }).renderable;
+    const maybe = node.renderable;
     if (maybe && node.visible) result.push({ node, renderable: maybe });
   });
   return result;

@@ -2,11 +2,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const tutorialPaths = [
-  "docs/tutorials/getting-started-real-scene.md",
-  "docs/tutorials/product-configurator.md",
-  "docs/tutorials/asset-viewer.md",
-  "docs/tutorials/physics-sandbox.md",
-  "docs/tutorials/editor-app.md"
+  "docs/project/tutorials-getting-started-real-scene.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/tutorials-asset-viewer.md",
+  "docs/project/tutorials-physics-sandbox.md",
+  "docs/project/tutorials-editor-app.md"
 ] as const;
 
 describe("tutorial docs", () => {
@@ -19,7 +19,7 @@ describe("tutorial docs", () => {
   });
 
   it("provides a getting-started renderer path without relying on test files", () => {
-    const docs = readFileSync("docs/tutorials/getting-started-real-scene.md", "utf8");
+    const docs = readFileSync("docs/project/tutorials-getting-started-real-scene.md", "utf8");
 
     expect(docs).toContain("Renderer.create");
     expect(docs).toContain('backend: "webgl2"');

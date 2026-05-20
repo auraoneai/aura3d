@@ -23,7 +23,7 @@ import {
   type GLTFDracoDecoder,
   type GLTFMeshoptDecoder
 } from "@galileo3d/assets";
-import { PBRMaterial, TextureBinding, UnlitMaterial } from "@galileo3d/rendering";
+import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, TextureBinding, UnlitMaterial } from "@galileo3d/rendering";
 import { InputSnapshot, InteractionSystem, pickingRayFromCamera } from "@galileo3d/input";
 import { AudioListener, SceneAudioBridge } from "@galileo3d/audio";
 import { CommandHistory, DeleteNodeCommand, PickingService, TranslateGizmo, type Command } from "@galileo3d/editor-runtime";
@@ -337,6 +337,12 @@ test("workstream5 GLTFLoader imports POINTS primitives into render-resource poin
   assert.equal(asset.createScene().collectRenderables()[0]?.renderable.geometry, "point-cloud");
   assert.equal(geometry?.topology, "points");
   assert.equal(geometry?.vertexBuffer.vertexCount, 3);
+  assert.deepEqual(resources.bounds, { min: [-0.75, -0.5, 0], max: [0.75, 0.5, 0] });
+  const frame = resources.createCameraFrame({ width: 16, height: 9 }, { paddingRatio: 0.1 });
+  assert.deepEqual(frame.center.map((value) => Number(value.toFixed(3))), [0, 0, 0]);
+  assert.equal(frame.aspect, 16 / 9);
+  assert.ok(frame.cameraPosition[2] > 1);
+  assert.ok(frame.far > frame.near);
 
   resources.dispose();
 });
@@ -373,11 +379,29 @@ test("workstream5 GLTFLoader imports EXT_mesh_gpu_instancing into scene renderab
     { throwIfAborted: () => undefined } as never
   );
   const renderable = asset.createScene().collectRenderables()[0]?.renderable;
+  const resources = await createGLTFRenderResources(asset);
 
   assert.ok(renderable?.instanceTransforms instanceof Float32Array);
   assert.equal(renderable.instanceTransforms.length, 32);
   assert.deepEqual(Array.from(renderable.instanceTransforms.slice(12, 16)), [-0.25, 0, 0, 1]);
   assert.deepEqual(Array.from(renderable.instanceTransforms.slice(28, 32)), [0.25, 0, 0, 1]);
+  assert.ok(resources.materialLibrary.get("instanced-material") instanceof InstancedUnlitMaterial);
+  resources.dispose();
+
+  const defaultMaterialGltf = JSON.parse(JSON.stringify(gltf)) as { materials?: unknown; meshes: Array<{ primitives: Array<{ material?: number }> }> };
+  delete defaultMaterialGltf.materials;
+  delete defaultMaterialGltf.meshes[0]!.primitives[0]!.material;
+  const defaultMaterialAsset = await new GLTFLoader().load(
+    { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(defaultMaterialGltf))}` },
+    { throwIfAborted: () => undefined } as never
+  );
+  const defaultMaterialResources = await createGLTFRenderResources(defaultMaterialAsset);
+  const defaultInstancedMaterial = defaultMaterialResources.materialLibrary.get("default-material");
+  assert.ok(defaultInstancedMaterial instanceof InstancedPBRMaterial);
+  assert.equal(defaultInstancedMaterial?.getParameter("u_metallic"), 0);
+  assert.equal(defaultInstancedMaterial?.getParameter("u_roughness"), 1);
+  assert.equal(defaultInstancedMaterial?.getParameter("u_environmentIntensity"), DEFAULT_PBR_ENVIRONMENT_INTENSITY);
+  defaultMaterialResources.dispose();
 
   const mismatched = structuredClone(gltf) as typeof gltf & { accessors: Array<Record<string, unknown>> };
   mismatched.accessors.push({ bufferView: 1, componentType: 5126, count: 1, type: "VEC3" });
@@ -525,6 +549,10 @@ test("workstream5 GLTFLoader distinguishes default materials from explicit mater
   const resources = await createGLTFRenderResources(asset);
   assert.ok(resources.materialLibrary.has("authored-material"));
   assert.ok(resources.materialLibrary.has("default-material"));
+  const defaultMaterial = resources.materialLibrary.get("default-material");
+  assert.equal(defaultMaterial?.getParameter("u_metallic"), 0);
+  assert.equal(defaultMaterial?.getParameter("u_roughness"), 1);
+  assert.equal(defaultMaterial?.getParameter("u_environmentIntensity"), DEFAULT_PBR_ENVIRONMENT_INTENSITY);
   resources.dispose();
 
   const invalid = structuredClone(base) as typeof base;
@@ -593,6 +621,18 @@ test("workstream5 GLTFLoader preserves and validates KHR_materials_variants meta
   assert.throws(() => asset.createScene({ materialVariant: "green" }), /material variant green is not defined/);
   const blueResources = await createGLTFRenderResources(asset, { materialVariant: "blue" });
   assert.equal(blueResources.scene.collectRenderables()[0]?.renderable.material, "blue-material");
+  assert.deepEqual(blueResources.renderableBindings[0]?.materialVariants, [
+    { variantIndex: 0, variant: "red", materialIndex: 1, material: "red-material" },
+    { variantIndex: 1, variant: "blue", materialIndex: 2, material: "blue-material" }
+  ]);
+  const blueTargets = blueResources.collectMaterialOverrideTargets({ variant: "blue" });
+  assert.equal(blueTargets.length, 1);
+  assert.equal(blueTargets[0]?.nodeName, "variant-node");
+  assert.equal(blueTargets[0]?.materialKey, "blue-material");
+  assert.equal(blueTargets[0]?.sourceMaterialName, "blue-material");
+  assert.equal(blueTargets[0]?.material, blueResources.materialLibrary.get("blue-material"));
+  assert.equal(blueResources.collectMaterialOverrideTargets({ variant: "red" }).length, 1);
+  assert.equal(blueResources.collectMaterialOverrideTargets({ variant: "green" }).length, 0);
   blueResources.dispose();
   await assert.rejects(
     () => createGLTFRenderResources(asset, { materialVariant: "green" }),
@@ -821,7 +861,8 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
     accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3" }],
     materials: [
       { name: "transparent-double-sided", alphaMode: "BLEND", doubleSided: true },
-      { name: "masked-front", alphaMode: "MASK", alphaCutoff: 0.35 }
+      { name: "masked-front", alphaMode: "MASK", alphaCutoff: 0.35 },
+      { name: "transmissive-volume", extensions: { KHR_materials_transmission: { transmissionFactor: 1 }, KHR_materials_volume: { thicknessFactor: 1, attenuationDistance: 1 } } }
     ],
     meshes: [{ primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }],
     nodes: [{ mesh: 0 }],
@@ -835,6 +876,7 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
   const resources = await createGLTFRenderResources(asset);
   const transparent = resources.materialLibrary.get("transparent-double-sided");
   const masked = resources.materialLibrary.get("masked-front");
+  const transmissive = resources.materialLibrary.get("transmissive-volume");
 
   assert.deepEqual(transparent?.renderState, {
     depthTest: true,
@@ -852,6 +894,13 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
     depthCompare: "less-equal"
   });
   assert.equal(masked?.getParameter("u_alphaCutoff"), 0.35);
+  assert.deepEqual(transmissive?.renderState, {
+    depthTest: true,
+    depthWrite: false,
+    cullMode: "back",
+    blend: true,
+    depthCompare: "less-equal"
+  });
 
   resources.dispose();
 });
@@ -1655,6 +1704,11 @@ test("workstream5 GLTFLoader accepts EXT_texture_webp and resolves WebP texture 
   assert.deepEqual(decodedImages, [1]);
   assert.ok(binding instanceof TextureBinding);
   assert.equal(binding.texture?.label, "base-color-webp");
+  assert.equal(binding.sampler.minFilter, "linear-mipmap-linear");
+  assert.equal(binding.sampler.magFilter, "linear");
+  assert.equal(binding.sampler.addressU, "repeat");
+  assert.equal(binding.sampler.addressV, "repeat");
+  assert.equal(binding.sampler.maxAnisotropy, 8);
 
   resources.dispose();
 });
@@ -1969,7 +2023,7 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
               index: 5,
               extensions: { KHR_texture_transform: { offset: [0.51, 0.52], scale: [1.9, 2], rotation: 0.53 } }
             },
-            specularColorFactor: [0.9, 0.8, 0.7],
+            specularColorFactor: [2.5, 1.2, 0.7],
             specularColorTexture: {
               index: 6,
               extensions: { KHR_texture_transform: { offset: [0.61, 0.62], scale: [2.1, 2.2], rotation: 0.63 } }
@@ -2055,7 +2109,7 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   assert.deepEqual(materialAsset?.volume?.attenuationColor, [0.7, 0.8, 0.9]);
   assert.equal(materialAsset?.ior, 1.45);
   assert.equal(materialAsset?.specular?.factor, 0.8);
-  assert.deepEqual(materialAsset?.specular?.colorFactor, [0.9, 0.8, 0.7]);
+  assert.deepEqual(materialAsset?.specular?.colorFactor, [2.5, 1.2, 0.7]);
   assert.deepEqual(materialAsset?.sheen?.colorFactor, [0.2, 0.3, 0.4]);
   assert.equal(materialAsset?.sheen?.roughnessFactor, 0.55);
   assert.equal(materialAsset?.anisotropy?.strength, 0.65);
@@ -2075,7 +2129,7 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   assert.equal(material?.getParameter("u_volumeAttenuationDistance"), 5);
   assert.deepEqual(material?.getParameter("u_volumeAttenuationColor"), [0.7, 0.8, 0.9]);
   assert.equal(material?.getParameter("u_ior"), 1.45);
-  assert.deepEqual(material?.getParameter("u_specularColorFactor"), [0.9, 0.8, 0.7]);
+  assert.deepEqual(material?.getParameter("u_specularColorFactor"), [2.5, 1.2, 0.7]);
   assert.deepEqual(material?.getParameter("u_sheenColorFactor"), [0.2, 0.3, 0.4]);
   assert.equal(material?.getParameter("u_sheenRoughnessFactor"), 0.55);
   assert.equal(material?.getParameter("u_anisotropyStrength"), 0.65);
@@ -2166,7 +2220,7 @@ test("workstream5 GLTFLoader preserves advanced glTF PBR material extensions and
   assert.equal(serialized.materials[0]?.volume?.thicknessFactor, 0.35);
   assert.deepEqual(serialized.materials[0]?.volume?.attenuationColor, [0.7, 0.8, 0.9]);
   assert.equal(serialized.materials[0]?.ior, 1.45);
-  assert.deepEqual(serialized.materials[0]?.specular?.colorFactor, [0.9, 0.8, 0.7]);
+  assert.deepEqual(serialized.materials[0]?.specular?.colorFactor, [2.5, 1.2, 0.7]);
   assert.deepEqual(serialized.materials[0]?.sheen?.colorFactor, [0.2, 0.3, 0.4]);
   assert.equal(serialized.materials[0]?.anisotropy?.strength, 0.65);
   assert.equal(serialized.materials[0]?.iridescence?.factor, 0.75);
@@ -2310,8 +2364,8 @@ test("workstream5 GLTFLoader rejects invalid advanced glTF material extension va
       /KHR_materials_ior\.ior/
     ],
     [
-      "specular color outside unit range",
-      { extensions: { KHR_materials_specular: { specularColorFactor: [1, 1.2, 1] } } },
+      "specular color contains a negative channel",
+      { extensions: { KHR_materials_specular: { specularColorFactor: [1, -0.1, 1] } } },
       /KHR_materials_specular\.specularColorFactor/
     ],
     [
@@ -2632,10 +2686,12 @@ test("workstream5 glTF render resources bind material textures, samplers, UV tra
   assert.deepEqual(Array.from(metallicRoughnessBinding.texture?.data ?? []), [255, 179, 64, 255]);
   assert.deepEqual(Array.from(occlusionBinding.texture?.data ?? []), [128, 255, 255, 255]);
   assert.deepEqual(Array.from(emissiveBinding.texture?.data ?? []), [40, 50, 60, 255]);
-  assert.equal(binding.sampler.minFilter, "nearest");
+  assert.equal(binding.sampler.minFilter, "nearest-mipmap-linear");
   assert.equal(binding.sampler.magFilter, "nearest");
   assert.equal(binding.sampler.addressU, "mirror-repeat");
   assert.equal(binding.sampler.addressV, "clamp-to-edge");
+  assert.equal(binding.sampler.maxAnisotropy, 8);
+  assert.equal(normalBinding.sampler.maxAnisotropy, 8);
   assert.deepEqual(binding.offset, [0.25, 0.5]);
   assert.deepEqual(binding.scale, [2, 3]);
   assert.equal(binding.rotation, 0.5);
@@ -2700,7 +2756,9 @@ test("workstream5 GLTFLoader preserves secondary texcoords and render resources 
   assert.deepEqual(asset.meshes[0]?.texcoords[2], [0.5, 1]);
   assert.deepEqual(asset.meshes[0]?.texcoordSets[1]?.[2]?.map((value) => Number(value.toFixed(3))), [0.8, 0.9]);
   assert.equal(asset.materials[0]?.baseColorTexture?.texCoord, 1);
-  assert.deepEqual(resources.geometryLibrary.get("uv1-triangle")?.vertexBuffer.getAttribute(2, "uv").map((value) => Number(value.toFixed(3))), [0.8, 0.9]);
+  assert.deepEqual(resources.geometryLibrary.get("uv1-triangle")?.vertexBuffer.getAttribute(2, "uv").map((value) => Number(value.toFixed(3))), [0.5, 1]);
+  assert.deepEqual(resources.geometryLibrary.get("uv1-triangle")?.vertexBuffer.getAttribute(2, "uv1").map((value) => Number(value.toFixed(3))), [0.8, 0.9]);
+  assert.equal(resources.materialLibrary.get("uv1-material")?.getParameter("u_baseColorTextureTexCoord"), 1);
   assert.deepEqual(asset.toJSON().meshes[0]?.texcoordSets[1]?.[2]?.map((value) => Number(value.toFixed(3))), [0.8, 0.9]);
   resources.dispose();
 });
@@ -2737,7 +2795,48 @@ test("workstream5 GLTFLoader rejects material texCoord references without matchi
   );
 });
 
-test("workstream5 glTF render resources reject mixed material texcoord sets instead of silently rebinding UVs", async () => {
+test("workstream5 glTF render resources synthesize fallback normals and TEXCOORD_0 attributes when material rendering needs them", async () => {
+  const positions = floatBytes([-1, 0, 0, 1, 0, 0, 0, 1, 0]);
+  const imageBytes = Buffer.from([1, 2, 3, 4]);
+  const binary = Buffer.concat([positions, imageBytes]);
+  const gltf = {
+    asset: { version: "2.0" },
+    buffers: [{ byteLength: binary.byteLength }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
+      { buffer: 0, byteOffset: positions.byteLength, byteLength: imageBytes.byteLength }
+    ],
+    accessors: [{ bufferView: 0, componentType: 5126, count: 3, type: "VEC3" }],
+    images: [{ name: "base", bufferView: 1, mimeType: "image/png" }],
+    textures: [{ name: "base-texture", source: 0 }],
+    materials: [
+      {
+        name: "missing-uv0-textured-pbr",
+        pbrMetallicRoughness: {
+          baseColorTexture: { index: 0, texCoord: 0 }
+        }
+      }
+    ],
+    meshes: [{ name: "fallback-triangle", primitives: [{ attributes: { POSITION: 0 }, material: 0 }] }]
+  };
+  const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
+
+  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const resources = await createGLTFRenderResources(asset, {
+    imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) })
+  });
+  const geometry = resources.geometryLibrary.get("fallback-triangle");
+
+  assert.equal(geometry?.vertexBuffer.format.hasAttribute("normal"), true);
+  assert.equal(geometry?.vertexBuffer.format.hasAttribute("tangent"), true);
+  assert.equal(geometry?.vertexBuffer.format.hasAttribute("uv"), true);
+  assert.deepEqual(geometry?.vertexBuffer.getAttribute(0, "normal"), [0, 0, 1]);
+  assert.deepEqual(geometry?.vertexBuffer.getAttribute(0, "tangent"), [1, 0, 0, 1]);
+  assert.deepEqual(geometry?.vertexBuffer.getAttribute(0, "uv"), [0, 0]);
+  resources.dispose();
+});
+
+test("workstream5 glTF render resources preserve mixed material texcoord sets without silently rebinding UVs", async () => {
   const positions = floatBytes([-1, 0, 0, 1, 0, 0, 0, 1, 0]);
   const uv0 = floatBytes([0, 0, 1, 0, 0.5, 1]);
   const uv1 = floatBytes([0.2, 0.3, 0.4, 0.6, 0.8, 0.9]);
@@ -2788,10 +2887,17 @@ test("workstream5 glTF render resources reject mixed material texcoord sets inst
 
   assert.equal(asset.materials[0]?.baseColorTexture?.texCoord, 0);
   assert.equal(asset.materials[0]?.normalTexture?.texCoord, 1);
-  await assert.rejects(
-    () => createGLTFRenderResources(asset),
-    /multiple texture coordinate sets/
-  );
+  const resources = await createGLTFRenderResources(asset, {
+    imageDecoder: () => ({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) })
+  });
+  const geometry = resources.geometryLibrary.get("mixed-uv-triangle");
+  const material = resources.materialLibrary.get("mixed-uv-material");
+
+  assert.deepEqual(geometry?.vertexBuffer.getAttribute(2, "uv").map((value) => Number(value.toFixed(3))), [0.5, 1]);
+  assert.deepEqual(geometry?.vertexBuffer.getAttribute(2, "uv1").map((value) => Number(value.toFixed(3))), [0.8, 0.9]);
+  assert.equal(material?.getParameter("u_baseColorTextureTexCoord"), 0);
+  assert.equal(material?.getParameter("u_normalTextureTexCoord"), 1);
+  resources.dispose();
 });
 
 test("workstream5 GLTFLoader imports skinning data and animation channels", async () => {
@@ -2870,6 +2976,56 @@ test("workstream5 GLTFLoader imports skinning data and animation channels", asyn
   assert.equal(serialized.meshes[0]?.name, "skinned-triangle");
   assert.equal(serialized.skins[0]?.bones[1]?.name, "child-joint");
   assert.deepEqual(serialized.animations[0]?.tracks[0]?.keyframes[1]?.value, [2, 0, 0]);
+});
+
+test("workstream5 GLTFLoader keeps skinning palette in original glTF joint order", async () => {
+  const positions = floatBytes([-1, 0, 0, 1, 0, 0, 0, 1, 0]);
+  const joints = uint16Bytes([0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0]);
+  const weights = floatBytes([1, 0, 0, 0, 1, 0, 0, 0, 0.5, 0.5, 0, 0]);
+  const inverseBindMatrices = floatBytes([
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1
+  ]);
+  const chunks = [positions, joints, weights, inverseBindMatrices];
+  const offsets: number[] = [];
+  let byteOffset = 0;
+  for (const chunk of chunks) {
+    offsets.push(byteOffset);
+    byteOffset += chunk.byteLength;
+  }
+  const binary = Buffer.concat(chunks);
+  const gltf = {
+    asset: { version: "2.0" },
+    buffers: [{ byteLength: binary.byteLength }],
+    bufferViews: chunks.map((chunk, index) => ({ buffer: 0, byteOffset: offsets[index], byteLength: chunk.byteLength })),
+    accessors: [
+      { bufferView: 0, componentType: 5126, count: 3, type: "VEC3" },
+      { bufferView: 1, componentType: 5123, count: 3, type: "VEC4" },
+      { bufferView: 2, componentType: 5126, count: 3, type: "VEC4" },
+      { bufferView: 3, componentType: 5126, count: 2, type: "MAT4" }
+    ],
+    meshes: [{ name: "non-topological-skin-mesh", primitives: [{ attributes: { POSITION: 0, JOINTS_0: 1, WEIGHTS_0: 2 } }] }],
+    nodes: [
+      { name: "root-joint", children: [1] },
+      { name: "child-joint", translation: [1, 0, 0] },
+      { name: "skinned-node", mesh: 0, skin: 0 }
+    ],
+    skins: [{ name: "non-topological-armature", joints: [1, 0], inverseBindMatrices: 3 }],
+    scenes: [{ nodes: [0, 2] }]
+  };
+  const url = `data:model/gltf-binary;base64,${createGLB(gltf, binary).toString("base64")}`;
+
+  const asset = await new GLTFLoader().load({ url }, { throwIfAborted: () => undefined } as never);
+  const resources = await createGLTFRenderResources(asset);
+  const renderable = resources.scene.collectRenderables()[0]?.renderable;
+
+  assert.deepEqual(asset.skins[0]?.joints, [1, 0]);
+  assert.equal(asset.skins[0]?.skeleton.bones[0]?.name, "root-joint");
+  assert.equal(asset.skins[0]?.skeleton.bones[1]?.name, "child-joint");
+  assert.equal(renderable?.skinning?.jointCount, 2);
+  assert.equal(renderable?.skinning?.matrices[12], 1);
+  assert.equal(renderable?.skinning?.matrices[28], 0);
+  resources.dispose();
 });
 
 test("workstream5 GLTFLoader rejects malformed skin descriptors", async () => {
@@ -2983,6 +3139,56 @@ test("workstream5 GLTFLoader imports multi-target morph weight animation channel
   assert.equal(track?.valueType, "number-array");
   assert.deepEqual((track?.sample(0.5) as readonly number[] | undefined)?.map((value) => Number(value.toFixed(3))), [0.25, 0.45, 0.65]);
   assert.deepEqual((asset.toJSON().animations[0]?.tracks[0]?.keyframes[1]?.value as readonly number[] | undefined)?.map((value) => Number(value.toFixed(3))), [0.5, 0.7, 0.9]);
+});
+
+test("workstream5 GLTFLoader skips optional KHR_animation_pointer channels without dropping node tracks", async () => {
+  const times = floatBytes([0, 1]);
+  const translations = floatBytes([0, 0, 0, 2, 0, 0]);
+  const colors = floatBytes([1, 0, 0, 1, 0, 1, 0, 1]);
+  const binary = Buffer.concat([times, translations, colors]);
+  const gltf = {
+    asset: { version: "2.0" },
+    extensionsUsed: ["KHR_animation_pointer"],
+    buffers: [{ uri: `data:application/octet-stream;base64,${binary.toString("base64")}`, byteLength: binary.byteLength }],
+    bufferViews: [
+      { buffer: 0, byteOffset: 0, byteLength: times.byteLength },
+      { buffer: 0, byteOffset: times.byteLength, byteLength: translations.byteLength },
+      { buffer: 0, byteOffset: times.byteLength + translations.byteLength, byteLength: colors.byteLength }
+    ],
+    accessors: [
+      { bufferView: 0, componentType: 5126, count: 2, type: "SCALAR" },
+      { bufferView: 1, componentType: 5126, count: 2, type: "VEC3" },
+      { bufferView: 2, componentType: 5126, count: 2, type: "VEC4" }
+    ],
+    materials: [{ name: "animated-material", pbrMetallicRoughness: { baseColorFactor: [1, 1, 1, 1] } }],
+    nodes: [{ name: "animated-node" }],
+    animations: [
+      {
+        name: "node-and-material",
+        samplers: [{ input: 0, output: 1, interpolation: "LINEAR" }, { input: 0, output: 2, interpolation: "LINEAR" }],
+        channels: [
+          { sampler: 0, target: { node: 0, path: "translation" } },
+          {
+            sampler: 1,
+            target: {
+              path: "pointer",
+              extensions: { KHR_animation_pointer: { pointer: "/materials/0/pbrMetallicRoughness/baseColorFactor" } }
+            }
+          }
+        ]
+      }
+    ],
+    scenes: [{ nodes: [0] }]
+  };
+
+  const asset = await new GLTFLoader().load(
+    { url: `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}` },
+    { throwIfAborted: () => undefined } as never
+  );
+
+  assert.equal(asset.loaderDiagnostics.unsupportedExtensions.includes("KHR_animation_pointer"), true);
+  assert.equal(asset.animations[0]?.tracks.length, 1);
+  assert.equal(asset.animations[0]?.tracks[0]?.target, "animated-node.translation");
 });
 
 test("workstream5 GLTFLoader rejects unsupported animation interpolation and target paths", async () => {

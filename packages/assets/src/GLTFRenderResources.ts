@@ -1,31 +1,60 @@
 import {
   Geometry,
   IndexBuffer,
+  InstancedPBRMaterial,
+  InstancedUnlitMaterial,
   Material,
   PBRMaterial,
   Sampler,
+  SkinnedLitMaterial,
   Texture,
   TextureBinding,
   TexturedPBRMaterial,
   TexturedUnlitMaterial,
   UnlitMaterial,
   VertexBuffer,
+  createV4EnvironmentLighting,
+  computePerspectiveCameraFrame,
+  computeSkinnedMorphTargetEnvelopeBounds,
+  type CameraFrameBounds,
+  type CameraFrameViewport,
+  type CameraLike,
+  type CollectedLight,
+  type EnvironmentLightingOptions,
+  type ForwardShadowMapOptions,
+  type PerspectiveCameraFrame,
+  type PerspectiveCameraFrameOptions,
   type VertexAttributeDescriptor,
   VertexFormat,
+  DEFAULT_PBR_ENVIRONMENT_INTENSITY,
   type MorphTargetDelta,
+  type RenderItem,
+  type RendererCameraPolicy,
+  type RendererInput,
+  type RendererPostProcessOptions,
+  type RendererShadowOptions,
+  type RenderSource,
   type RenderState,
   type SamplerDescriptor,
   type TextureFormat,
-  type TextureMipLevelDescriptor
+  type TextureMipLevelDescriptor,
+  type TexturePixelData,
+  type TexturedPBRMaterialOptions,
+  type TexturedPBRTextureSlot,
+  isTexturedPbrTextureSlotShaderActive,
+  DEFAULT_TEXTURED_PBR_SHADER_NAME
 } from "@galileo3d/rendering";
-import type {
-  GLTFAsset,
-  GLTFImageAsset,
-  GLTFMaterialAsset,
-  GLTFMeshAsset,
-  GLTFResolvedTextureInfo,
-  GLTFSceneCreateOptions,
-  GLTFTextureAsset
+import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+import {
+  parseGLTFRuntimeMaterialKey,
+  type GLTFAsset,
+  type GLTFImageAsset,
+  type GLTFMaterialAsset,
+  type GLTFMaterialVariantMappingAsset,
+  type GLTFMeshAsset,
+  type GLTFResolvedTextureInfo,
+  type GLTFSceneCreateOptions,
+  type GLTFTextureAsset
 } from "./GLTFLoader";
 import { transcodeKTX2BasisTexture, type KTX2BasisTargetFormat, type KTX2BasisTextureTranscoderOptions } from "./KTX2BasisTextureTranscoder";
 
@@ -34,7 +63,7 @@ export interface DecodedGLTFImage {
   readonly height: number;
   readonly format?: TextureFormat;
   readonly colorSpace?: "srgb" | "linear";
-  readonly data?: Uint8Array | Uint8ClampedArray;
+  readonly data?: TexturePixelData;
   readonly mipLevels?: readonly TextureMipLevelDescriptor[];
   readonly source?: TexImageSource;
   readonly fallbackData?: Uint8Array | Uint8ClampedArray;
@@ -56,12 +85,221 @@ export interface GLTFRenderResources {
   readonly scene: ReturnType<GLTFAsset["createScene"]>;
   readonly geometryLibrary: ReadonlyMap<string, Geometry>;
   readonly materialLibrary: ReadonlyMap<string, Material>;
+  readonly renderableBindings: readonly GLTFRenderableBinding[];
   readonly morphTargetLibrary: ReadonlyMap<string, readonly MorphTargetDelta[]>;
   readonly textureLibrary: ReadonlyMap<string, Texture>;
+  readonly bounds: CameraFrameBounds;
+  collectMaterialOverrideTargets(query?: GLTFMaterialOverrideQuery): readonly GLTFMaterialOverrideTarget[];
+  createCameraFrame(viewport: CameraFrameViewport, options?: PerspectiveCameraFrameOptions): PerspectiveCameraFrame;
+  toRenderSource(options?: GLTFRenderSourceOptions): RenderSource;
+  toRendererInput(viewport: CameraFrameViewport, options?: GLTFRendererInputOptions): GLTFRendererInput;
   dispose(): void;
 }
 
+export interface GLTFRenderableBinding {
+  readonly nodeName: string;
+  readonly geometryKey: string;
+  readonly materialKey: string;
+  readonly sourceMaterialName: string;
+  readonly sourceMaterialIndex?: number;
+  readonly sourceMeshIndex?: number;
+  readonly primitiveIndex?: number;
+  readonly materialVariants: readonly GLTFMaterialVariantMappingAsset[];
+  readonly skinned: boolean;
+  readonly instanced: boolean;
+}
+
+export interface GLTFMaterialOverrideQuery {
+  readonly nodeName?: string | RegExp;
+  readonly sourceMaterialName?: string | RegExp;
+  readonly materialKey?: string | RegExp;
+  readonly variant?: string;
+  readonly uniqueMaterials?: boolean;
+}
+
+export interface GLTFMaterialOverrideTarget extends GLTFRenderableBinding {
+  readonly material: Material;
+}
+
+export interface GLTFRendererInput extends RendererInput {
+  readonly source: RenderSource;
+  readonly camera: CameraLike;
+  readonly frame: PerspectiveCameraFrame;
+  readonly bounds: CameraFrameBounds;
+}
+
+export interface GLTFRendererInputOptions extends GLTFRenderSourceOptions {
+  readonly frame?: PerspectiveCameraFrameOptions;
+}
+
+export type GLTFRenderQualityPreset = "default" | "studio-preview" | "hdr-studio-preview";
+
+export interface GLTFRenderSourceOptions {
+  readonly qualityPreset?: GLTFRenderQualityPreset;
+  readonly environmentLighting?: EnvironmentLightingOptions | false;
+  readonly shadowMap?: ForwardShadowMapOptions;
+  readonly shadow?: RendererShadowOptions | boolean;
+  readonly collectedLights?: Iterable<CollectedLight>;
+  readonly postprocess?: RendererPostProcessOptions | boolean;
+  readonly renderItems?: Iterable<RenderItem>;
+  readonly cameraPolicy?: RendererCameraPolicy;
+  readonly cameraFrameBounds?: CameraFrameBounds;
+  readonly cameraFrameOptions?: PerspectiveCameraFrameOptions;
+  readonly cameraPosition?: readonly [number, number, number];
+  readonly frustumCulling?: boolean;
+}
+
+export interface GLTFRenderResourceDiagnosticsOptions {
+  readonly label?: string;
+  readonly suspectStaticNodePattern?: RegExp;
+}
+
+export interface GLTFRenderResourceDiagnostics {
+  readonly label: string;
+  readonly drawItems: number;
+  readonly skinnedDrawItems: number;
+  readonly texturedDrawItems: number;
+  readonly texturedSkinnedDrawItems: number;
+  readonly untexturedSkinnedDrawItems: number;
+  readonly fallbackWhiteDrawItems: number;
+  readonly missingGeometryDrawItems: number;
+  readonly missingMaterialDrawItems: number;
+  readonly materialCount: number;
+  readonly textureCount: number;
+  readonly textureBackedMaterialNames: readonly string[];
+  readonly textureSlotDiagnostics: readonly GLTFRenderResourceTextureSlotDiagnostic[];
+  readonly shaderActiveTextureSlotDiagnostics: readonly GLTFRenderResourceTextureSlotDiagnostic[];
+  readonly shaderInactiveTextureSlotDiagnostics: readonly GLTFRenderResourceTextureSlotDiagnostic[];
+  readonly fallbackWhiteMaterialNames: readonly string[];
+  readonly skinnedLabels: readonly string[];
+  readonly untexturedSkinnedLabels: readonly string[];
+  readonly fallbackWhiteLabels: readonly string[];
+  readonly missingGeometryLabels: readonly string[];
+  readonly missingMaterialLabels: readonly string[];
+  readonly suspectStaticLabels: readonly string[];
+}
+
+export interface GLTFRenderResourceTextureSlotDiagnostic {
+  readonly slot: TexturedPBRTextureSlot;
+  readonly drawItems: number;
+  readonly materialNames: readonly string[];
+  readonly labels: readonly string[];
+}
+
 type GLTFTextureColorSpace = "srgb" | "linear";
+
+const GLTF_DIAGNOSTIC_TEXTURE_BINDINGS: readonly (readonly [slot: TexturedPBRTextureSlot, textureParameter: string, enabledParameter: string])[] = [
+  ["baseColor", "u_baseColorTexture", "u_baseColorTextureEnabled"],
+  ["normal", "u_normalTexture", "u_normalTextureEnabled"],
+  ["metallicRoughness", "u_metallicRoughnessTexture", "u_metallicRoughnessTextureEnabled"],
+  ["occlusion", "u_occlusionTexture", "u_occlusionTextureEnabled"],
+  ["emissive", "u_emissiveTexture", "u_emissiveTextureEnabled"],
+  ["clearcoat", "u_clearcoatTexture", "u_clearcoatTextureEnabled"],
+  ["clearcoatRoughness", "u_clearcoatRoughnessTexture", "u_clearcoatRoughnessTextureEnabled"],
+  ["clearcoatNormal", "u_clearcoatNormalTexture", "u_clearcoatNormalTextureEnabled"],
+  ["transmission", "u_transmissionTexture", "u_transmissionTextureEnabled"],
+  ["diffuseTransmission", "u_diffuseTransmissionTexture", "u_diffuseTransmissionTextureEnabled"],
+  ["diffuseTransmissionColor", "u_diffuseTransmissionColorTexture", "u_diffuseTransmissionColorTextureEnabled"],
+  ["volumeThickness", "u_volumeThicknessTexture", "u_volumeThicknessTextureEnabled"],
+  ["specular", "u_specularTexture", "u_specularTextureEnabled"],
+  ["specularColor", "u_specularColorTexture", "u_specularColorTextureEnabled"],
+  ["sheenColor", "u_sheenColorTexture", "u_sheenColorTextureEnabled"],
+  ["sheenRoughness", "u_sheenRoughnessTexture", "u_sheenRoughnessTextureEnabled"],
+  ["anisotropy", "u_anisotropyTexture", "u_anisotropyTextureEnabled"],
+  ["iridescence", "u_iridescenceTexture", "u_iridescenceTextureEnabled"],
+  ["iridescenceThickness", "u_iridescenceThicknessTexture", "u_iridescenceThicknessTextureEnabled"]
+];
+
+export const DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING: EnvironmentLightingOptions = {
+  color: [0.72, 0.74, 0.78],
+  intensity: 0.38,
+  proceduralMap: {
+    skyColor: [0.62, 0.72, 0.9],
+    horizonColor: [0.9, 0.82, 0.66],
+    groundColor: [0.16, 0.16, 0.18],
+    specularColor: [1, 0.92, 0.78],
+    intensity: 0.42,
+    specularIntensity: 0.7
+  }
+};
+
+export const DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING: EnvironmentLightingOptions = {
+  color: [0.82, 0.84, 0.88],
+  intensity: 0.5,
+  proceduralMap: {
+    skyColor: [0.72, 0.82, 0.95],
+    horizonColor: [1, 0.9, 0.72],
+    groundColor: [0.12, 0.13, 0.15],
+    specularColor: [1, 0.95, 0.82],
+    intensity: 0.62,
+    specularIntensity: 1.15
+  }
+};
+
+export function createDefaultGLTFHdrStudioPreviewEnvironmentLighting(): EnvironmentLightingOptions {
+  return createV4EnvironmentLighting("studio").lighting;
+}
+
+export const DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS: RendererPostProcessOptions = {
+  targetFormat: "rgba8",
+  toneMapping: {
+    exposure: 1.18,
+    operator: "filmic",
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  colorGrade: {
+    contrast: 1.08,
+    saturation: 1.06,
+    vibrance: 0.1,
+    vignette: 0.18,
+    sharpening: 0.28
+  },
+  bloom: {
+    threshold: 0.82,
+    intensity: 0.08,
+    radius: 1
+  },
+  fxaa: {
+    edgeThreshold: 0.08,
+    subpixelBlend: 0.55
+  }
+};
+
+export const DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS: RendererPostProcessOptions = {
+  targetFormat: "rgba16f",
+  toneMapping: {
+    exposure: 1.12,
+    whitePoint: 1.25,
+    operator: "filmic",
+    inputColorSpace: "linear",
+    outputColorSpace: "srgb"
+  },
+  colorGrade: {
+    contrast: 1.1,
+    saturation: 1.06,
+    vibrance: 0.12,
+    vignette: 0.16,
+    sharpening: 0.32
+  },
+  bloom: {
+    threshold: 0.9,
+    intensity: 0.12,
+    radius: 1
+  },
+  fxaa: {
+    edgeThreshold: 0.08,
+    subpixelBlend: 0.55
+  }
+};
+
+export const DEFAULT_GLTF_STUDIO_PREVIEW_FRAME: PerspectiveCameraFrameOptions = {
+  paddingRatio: 0.16,
+  yawRadians: -0.38,
+  pitchRadians: -0.16,
+  nearPadding: 0.18,
+  farPadding: 2.4
+};
 
 export async function createGLTFRenderResources(
   asset: GLTFAsset,
@@ -71,7 +309,7 @@ export async function createGLTFRenderResources(
   const materialLibrary = new Map<string, Material>();
   const morphTargetLibrary = new Map<string, readonly MorphTargetDelta[]>();
   const textureLibrary = new Map<string, Texture>();
-  const textureByIndex = new Map<number, Texture>();
+  const textureByImage = new Map<string, Promise<Texture>>();
   const scene = asset.createScene({
     ...(options.materialVariant ? { materialVariant: options.materialVariant } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
@@ -79,62 +317,554 @@ export async function createGLTFRenderResources(
   });
 
   const getTexture = async (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace): Promise<Texture> => {
-    const cacheKey = textureCacheKey(info.texture, colorSpace);
-    const existing = textureByIndex.get(cacheKey);
-    if (existing) return existing;
     const textureAsset = asset.textures[info.texture];
     const image = asset.images[info.image];
     if (!textureAsset || !image) {
       throw new Error(`glTF material texture ${info.texture} references missing image ${info.image}`);
     }
-    const decoded = await (options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, options)))(image, info.image, asset);
-    const texture = new Texture({
-      width: decoded.width,
-      height: decoded.height,
-      ...(decoded.format ? { format: decoded.format } : {}),
-      colorSpace,
-      label: textureAsset.name,
-      ...(decoded.mipLevels ? { mipLevels: decoded.mipLevels } : decoded.data ? { data: decoded.data } : { source: decoded.source }),
-      ...(decoded.fallbackData ? { fallbackData: decoded.fallbackData } : {}),
-      ...(decoded.fallbackMipLevels ? { fallbackMipLevels: decoded.fallbackMipLevels } : {})
-    });
-    textureByIndex.set(cacheKey, texture);
-    textureLibrary.set(textureLibraryKey(textureLibrary, textureAsset.name, colorSpace), texture);
-    return texture;
+    const cacheKey = textureCacheKey(info.image, colorSpace);
+    const existing = textureByImage.get(cacheKey);
+    if (existing) {
+      const texture = await existing;
+      setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
+      return texture;
+    }
+    const decoder = options.imageDecoder ?? ((sourceImage, imageIndex, sourceAsset) => decodeImageInBrowser(sourceImage, imageIndex, sourceAsset, options));
+    const texturePromise = (async () => {
+      const decoded = await decoder(image, info.image, asset);
+      return new Texture({
+        width: decoded.width,
+        height: decoded.height,
+        ...(decoded.format ? { format: decoded.format } : {}),
+        colorSpace,
+        label: textureAsset.name,
+        ...(decoded.mipLevels ? { mipLevels: decoded.mipLevels } : decoded.data ? { data: decoded.data } : { source: decoded.source }),
+        ...(decoded.fallbackData ? { fallbackData: decoded.fallbackData } : {}),
+        ...(decoded.fallbackMipLevels ? { fallbackMipLevels: decoded.fallbackMipLevels } : {})
+      });
+    })();
+    textureByImage.set(cacheKey, texturePromise);
+    try {
+      const texture = await texturePromise;
+      setTextureLibraryEntry(textureLibrary, textureAsset.name, colorSpace, texture);
+      return texture;
+    } catch (error) {
+      textureByImage.delete(cacheKey);
+      throw error;
+    }
   };
 
-  for (const mesh of asset.meshes) {
-    geometryLibrary.set(mesh.name, createGeometry(mesh, materialForMesh(asset, mesh, options.materialVariant)));
-    if (mesh.morphTargets.length > 0) {
-      morphTargetLibrary.set(mesh.name, mesh.morphTargets.map((target) => ({
-        positions: target.positions,
-        normals: target.normals,
-        tangents: target.tangents
-      })));
+  try {
+    for (const mesh of asset.meshes) {
+      geometryLibrary.set(mesh.name, createGeometry(mesh, materialForMesh(asset, mesh, options.materialVariant)));
+      if (mesh.morphTargets.length > 0) {
+        morphTargetLibrary.set(mesh.name, mesh.morphTargets.map((target) => ({
+          positions: target.positions,
+          normals: target.normals,
+          tangents: target.tangents
+        })));
+      }
     }
-  }
 
-  for (const material of asset.materials) {
-    materialLibrary.set(material.name, await createMaterial(asset, material, getTexture));
-  }
-
-  for (const mesh of asset.meshes) {
-    if (!materialLibrary.has(mesh.material)) {
-      materialLibrary.set(mesh.material, new UnlitMaterial({ name: mesh.material }));
+    const runtimeMaterialContracts = new Map<string, ReturnType<typeof parseGLTFRuntimeMaterialKey>>();
+    for (const { renderable } of scene.collectRenderables()) {
+      const parsed = parseGLTFRuntimeMaterialKey(renderable.material);
+      runtimeMaterialContracts.set(renderable.material, {
+        material: parsed.material,
+        contract: {
+          ...parsed.contract,
+          ...(renderable.skinning ? { skinned: true } : {}),
+          ...(renderable.instanceTransforms ? { instanced: true } : {})
+        }
+      });
     }
+    const materialTasks: Promise<void>[] = [];
+    for (const material of asset.materials) {
+      const runtimeKeys = [...runtimeMaterialContracts.entries()].filter(([, runtime]) => runtime.material === material.name);
+      if (runtimeKeys.length === 0) {
+        materialTasks.push(createMaterial(asset, material, getTexture).then((runtimeMaterial) => {
+          materialLibrary.set(material.name, runtimeMaterial);
+        }));
+        continue;
+      }
+      for (const [key, runtime] of runtimeKeys) {
+        materialTasks.push(createMaterial(asset, material, getTexture, runtime.contract).then((runtimeMaterial) => {
+          materialLibrary.set(key, runtimeMaterial);
+        }));
+      }
+    }
+    await Promise.all(materialTasks);
+
+    for (const mesh of asset.meshes) {
+      for (const [key, runtime] of runtimeMaterialContracts) {
+        if (runtime.material === mesh.material && !materialLibrary.has(key)) {
+          materialLibrary.set(key, createDefaultGLTFMaterial(mesh, runtime.contract));
+        }
+      }
+      if (!materialLibrary.has(mesh.material)) {
+        materialLibrary.set(mesh.material, createDefaultGLTFMaterial(mesh));
+      }
+    }
+  } catch (error) {
+    disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary);
+    throw error;
   }
+  const bounds = computeGLTFRenderResourceBounds(scene, geometryLibrary, morphTargetLibrary);
+  const renderableBindings = createGLTFRenderableBindings(asset, scene);
 
   return {
     scene,
     geometryLibrary,
     materialLibrary,
+    renderableBindings,
     morphTargetLibrary,
     textureLibrary,
-    dispose: () => {
-      for (const geometry of geometryLibrary.values()) geometry.dispose();
-      for (const texture of textureLibrary.values()) texture.dispose();
-    }
+    bounds,
+    collectMaterialOverrideTargets: (query = {}) => collectGLTFMaterialOverrideTargets(renderableBindings, materialLibrary, query),
+    createCameraFrame: (viewport, frameOptions = {}) => computePerspectiveCameraFrame(bounds, viewport, defaultGLTFCameraFrameOptions(bounds, frameOptions)),
+    toRenderSource: (sourceOptions = {}) => createGLTFRenderSource({
+      scene,
+      geometryLibrary,
+      materialLibrary,
+      morphTargetLibrary,
+      bounds
+    }, sourceOptions),
+    toRendererInput: (viewport, inputOptions = {}) => {
+      const { frame: frameOptions, ...sourceOptions } = inputOptions;
+      const qualityPreset = sourceOptions.qualityPreset ?? "studio-preview";
+      const frame = computePerspectiveCameraFrame(bounds, viewport, defaultGLTFCameraFrameOptions(bounds, frameOptions));
+      return {
+        source: createGLTFRenderSource({
+          scene,
+          geometryLibrary,
+          materialLibrary,
+          morphTargetLibrary,
+          bounds
+        }, {
+          ...sourceOptions,
+          qualityPreset,
+          cameraPosition: sourceOptions.cameraPosition ?? frame.cameraPosition,
+          cameraPolicy: sourceOptions.cameraPolicy ?? "require"
+        }),
+        camera: {
+          viewProjectionMatrix: frame.viewProjectionMatrix,
+          viewMatrix: frame.viewMatrix,
+          projectionMatrix: frame.projectionMatrix
+        },
+        frame,
+        bounds
+      };
+    },
+    dispose: () => disposeGLTFRenderResourceMaps(geometryLibrary, textureLibrary)
   };
+}
+
+function createGLTFRenderableBindings(
+  asset: GLTFAsset,
+  scene: ReturnType<GLTFAsset["createScene"]>
+): readonly GLTFRenderableBinding[] {
+  const meshByGeometry = new Map(asset.meshes.map((mesh) => [mesh.name, mesh]));
+  return scene.collectRenderables().map(({ node, renderable }) => {
+    const mesh = meshByGeometry.get(renderable.geometry);
+    const materialKey = renderable.material;
+    const parsedMaterial = parseGLTFRuntimeMaterialKey(materialKey);
+    return {
+      nodeName: node.name,
+      geometryKey: renderable.geometry,
+      materialKey,
+      sourceMaterialName: parsedMaterial.material,
+      ...(mesh?.materialIndex !== undefined ? { sourceMaterialIndex: mesh.materialIndex } : {}),
+      ...(mesh?.sourceMeshIndex !== undefined ? { sourceMeshIndex: mesh.sourceMeshIndex } : {}),
+      ...(mesh?.primitiveIndex !== undefined ? { primitiveIndex: mesh.primitiveIndex } : {}),
+      materialVariants: mesh?.materialVariants ?? [],
+      skinned: Boolean(renderable.skinning),
+      instanced: Boolean(renderable.instanceTransforms)
+    };
+  });
+}
+
+function collectGLTFMaterialOverrideTargets(
+  bindings: readonly GLTFRenderableBinding[],
+  materialLibrary: ReadonlyMap<string, Material>,
+  query: GLTFMaterialOverrideQuery
+): readonly GLTFMaterialOverrideTarget[] {
+  const uniqueMaterials = query.uniqueMaterials ?? true;
+  const seen = new Set<string>();
+  const targets: GLTFMaterialOverrideTarget[] = [];
+  for (const binding of bindings) {
+    if (!matchesGLTFMaterialOverrideQuery(binding, query)) continue;
+    if (uniqueMaterials && seen.has(binding.materialKey)) continue;
+    const material = materialLibrary.get(binding.materialKey);
+    if (!material) continue;
+    seen.add(binding.materialKey);
+    targets.push({ ...binding, material });
+  }
+  return targets;
+}
+
+function matchesGLTFMaterialOverrideQuery(binding: GLTFRenderableBinding, query: GLTFMaterialOverrideQuery): boolean {
+  if (query.nodeName && !matchesTextOrPattern(binding.nodeName, query.nodeName)) return false;
+  if (query.sourceMaterialName && !matchesTextOrPattern(binding.sourceMaterialName, query.sourceMaterialName)) return false;
+  if (query.materialKey && !matchesTextOrPattern(binding.materialKey, query.materialKey)) return false;
+  if (query.variant && !binding.materialVariants.some((variant) => variant.variant === query.variant)) return false;
+  return true;
+}
+
+function matchesTextOrPattern(value: string, matcher: string | RegExp): boolean {
+  return typeof matcher === "string" ? value === matcher : matcher.test(value);
+}
+
+export function createGLTFRenderSource(
+  resources: Pick<GLTFRenderResources, "scene" | "geometryLibrary" | "materialLibrary" | "morphTargetLibrary" | "bounds">,
+  options: GLTFRenderSourceOptions = {}
+): RenderSource {
+  const qualityPreset = options.qualityPreset ?? "studio-preview";
+  const environmentLighting = options.environmentLighting === false
+    ? false
+    : options.environmentLighting ?? cloneEnvironmentLighting(defaultEnvironmentLightingForPreset(qualityPreset));
+  const postprocess = options.postprocess !== undefined
+    ? options.postprocess
+    : qualityPreset !== "default"
+      ? cloneRendererPostprocess(defaultPostprocessForPreset(qualityPreset))
+      : undefined;
+  return {
+    scene: resources.scene,
+    geometryLibrary: resources.geometryLibrary,
+    materialLibrary: resources.materialLibrary,
+    morphTargetLibrary: resources.morphTargetLibrary,
+    ...(options.renderItems ? { renderItems: options.renderItems } : {}),
+    ...(environmentLighting !== undefined ? { environmentLighting } : {}),
+    ...(options.shadowMap ? { shadowMap: options.shadowMap } : {}),
+    ...(options.shadow !== undefined ? { shadow: options.shadow } : {}),
+    ...(options.collectedLights ? { collectedLights: options.collectedLights } : {}),
+    ...(postprocess !== undefined ? { postprocess } : {}),
+    ...(options.cameraPolicy ? { cameraPolicy: options.cameraPolicy } : {}),
+    ...(options.cameraFrameBounds ? { cameraFrameBounds: options.cameraFrameBounds } : { cameraFrameBounds: resources.bounds }),
+    ...(options.cameraFrameOptions ? { cameraFrameOptions: options.cameraFrameOptions } : {}),
+    ...(options.cameraPosition ? { cameraPosition: options.cameraPosition } : {}),
+    ...(options.frustumCulling !== undefined ? { frustumCulling: options.frustumCulling } : {})
+  };
+}
+
+export function createGLTFRenderResourceDiagnostics(
+  resources: Pick<GLTFRenderResources, "scene" | "geometryLibrary" | "materialLibrary"> & Partial<Pick<GLTFRenderResources, "textureLibrary">>,
+  options: GLTFRenderResourceDiagnosticsOptions = {}
+): GLTFRenderResourceDiagnostics {
+  const label = options.label ?? "gltf-render-resources";
+  const textureBackedMaterialNames = new Set<string>();
+  const textureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
+  const shaderActiveTextureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
+  const shaderInactiveTextureSlotDiagnostics = new Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>();
+  const fallbackWhiteMaterialNames = new Set<string>();
+  const skinnedLabels: string[] = [];
+  const untexturedSkinnedLabels: string[] = [];
+  const fallbackWhiteLabels: string[] = [];
+  const missingGeometryLabels: string[] = [];
+  const missingMaterialLabels: string[] = [];
+  const suspectStaticLabels: string[] = [];
+  let drawItems = 0;
+  let skinnedDrawItems = 0;
+  let texturedDrawItems = 0;
+  let texturedSkinnedDrawItems = 0;
+  let missingGeometryDrawItems = 0;
+  let missingMaterialDrawItems = 0;
+
+  resources.scene.updateWorldTransforms();
+  for (const { node, renderable } of resources.scene.collectRenderables()) {
+    const itemLabel = `${node.name}:${renderable.geometry}`;
+    const geometry = resources.geometryLibrary.get(renderable.geometry);
+    const material = resources.materialLibrary.get(renderable.material);
+    if (!geometry) {
+      missingGeometryDrawItems += 1;
+      missingGeometryLabels.push(itemLabel);
+    }
+    if (!material) {
+      missingMaterialDrawItems += 1;
+      missingMaterialLabels.push(itemLabel);
+    }
+    if (!geometry || !material) continue;
+
+    drawItems += 1;
+    const isSkinned = Boolean(renderable.skinning);
+    const validTextureSlots = GLTF_DIAGNOSTIC_TEXTURE_BINDINGS.filter(([, textureParameter, enabledParameter]) =>
+      materialHasValidTextureBinding(material, textureParameter, enabledParameter)
+    );
+    const hasAnyTexture = validTextureSlots.length > 0;
+    const hasBaseColorTexture = materialHasValidTextureBinding(material, "u_baseColorTexture", "u_baseColorTextureEnabled");
+    if (isSkinned) {
+      skinnedDrawItems += 1;
+      skinnedLabels.push(itemLabel);
+    }
+    if (hasAnyTexture) {
+      texturedDrawItems += 1;
+      textureBackedMaterialNames.add(material.name);
+    }
+    for (const [slot] of validTextureSlots) {
+      addTextureSlotDiagnostic(textureSlotDiagnostics, slot, material.name, itemLabel);
+      const shaderSlotMap = materialSamplesTextureSlot(material, slot)
+        ? shaderActiveTextureSlotDiagnostics
+        : shaderInactiveTextureSlotDiagnostics;
+      addTextureSlotDiagnostic(shaderSlotMap, slot, material.name, itemLabel);
+    }
+    if (isSkinned && hasBaseColorTexture) texturedSkinnedDrawItems += 1;
+    if (isSkinned && !hasBaseColorTexture) untexturedSkinnedLabels.push(itemLabel);
+    if (isFallbackWhiteRuntimeMaterial(material)) {
+      fallbackWhiteLabels.push(itemLabel);
+      fallbackWhiteMaterialNames.add(material.name);
+    }
+    if (!isSkinned && options.suspectStaticNodePattern?.test(node.name)) suspectStaticLabels.push(itemLabel);
+  }
+
+  return {
+    label,
+    drawItems,
+    skinnedDrawItems,
+    texturedDrawItems,
+    texturedSkinnedDrawItems,
+    untexturedSkinnedDrawItems: untexturedSkinnedLabels.length,
+    fallbackWhiteDrawItems: fallbackWhiteLabels.length,
+    missingGeometryDrawItems,
+    missingMaterialDrawItems,
+    materialCount: resources.materialLibrary.size,
+    textureCount: resources.textureLibrary?.size ?? 0,
+    textureBackedMaterialNames: [...textureBackedMaterialNames].sort(),
+    textureSlotDiagnostics: [...textureSlotDiagnostics.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([slot, diagnostics]) => ({
+        slot: slot as TexturedPBRTextureSlot,
+        drawItems: diagnostics.drawItems,
+        materialNames: [...diagnostics.materialNames].sort(),
+        labels: [...diagnostics.labels].sort()
+      })),
+    shaderActiveTextureSlotDiagnostics: [...shaderActiveTextureSlotDiagnostics.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([slot, diagnostics]) => ({
+        slot: slot as TexturedPBRTextureSlot,
+        drawItems: diagnostics.drawItems,
+        materialNames: [...diagnostics.materialNames].sort(),
+        labels: [...diagnostics.labels].sort()
+      })),
+    shaderInactiveTextureSlotDiagnostics: [...shaderInactiveTextureSlotDiagnostics.entries()]
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([slot, diagnostics]) => ({
+        slot: slot as TexturedPBRTextureSlot,
+        drawItems: diagnostics.drawItems,
+        materialNames: [...diagnostics.materialNames].sort(),
+        labels: [...diagnostics.labels].sort()
+      })),
+    fallbackWhiteMaterialNames: [...fallbackWhiteMaterialNames].sort(),
+    skinnedLabels,
+    untexturedSkinnedLabels,
+    fallbackWhiteLabels,
+    missingGeometryLabels,
+    missingMaterialLabels,
+    suspectStaticLabels
+  };
+}
+
+function defaultEnvironmentLightingForPreset(preset: GLTFRenderQualityPreset): EnvironmentLightingOptions {
+  if (preset === "hdr-studio-preview") return createDefaultGLTFHdrStudioPreviewEnvironmentLighting();
+  if (preset === "studio-preview") return DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING;
+  return DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING;
+}
+
+function addTextureSlotDiagnostic(
+  diagnosticsBySlot: Map<string, { drawItems: number; materialNames: Set<string>; labels: string[] }>,
+  slot: TexturedPBRTextureSlot,
+  materialName: string,
+  itemLabel: string
+): void {
+  let diagnostics = diagnosticsBySlot.get(slot);
+  if (!diagnostics) {
+    diagnostics = { drawItems: 0, materialNames: new Set(), labels: [] };
+    diagnosticsBySlot.set(slot, diagnostics);
+  }
+  diagnostics.drawItems += 1;
+  diagnostics.materialNames.add(materialName);
+  diagnostics.labels.push(itemLabel);
+}
+
+function materialSamplesTextureSlot(material: Material, slot: TexturedPBRTextureSlot): boolean {
+  if (material.shaderKey !== DEFAULT_TEXTURED_PBR_SHADER_NAME) return true;
+  return isTexturedPbrTextureSlotShaderActive(slot, material.shaderVariant);
+}
+
+function materialHasValidTextureBinding(material: Material, textureParameter: string, enabledParameter: string): boolean {
+  const enabled = material.getParameter(enabledParameter);
+  const binding = material.getParameter(textureParameter);
+  const enabledByMaterial = enabled === undefined || enabled === 1;
+  return enabledByMaterial
+    && binding instanceof TextureBinding
+    && Boolean(binding.texture)
+    && !isGeneratedFallbackTexture(binding.texture)
+    && binding.validate().ok;
+}
+
+function isFallbackWhiteRuntimeMaterial(material: Material): boolean {
+  const baseColor = material.getParameter("u_baseColor");
+  const hasTexture = materialHasValidTextureBinding(material, "u_baseColorTexture", "u_baseColorTextureEnabled")
+    || materialHasValidTextureBinding(material, "u_texture", "u_textureEnabled");
+  return !hasTexture
+    && (Array.isArray(baseColor) || ArrayBuffer.isView(baseColor))
+    && baseColor.length >= 4
+    && baseColor[0] >= 0.98
+    && baseColor[1] >= 0.98
+    && baseColor[2] >= 0.98
+    && baseColor[3] >= 0.98;
+}
+
+function isGeneratedFallbackTexture(texture: Texture | null | undefined): boolean {
+  if (!texture) return true;
+  return /^default-(?:white|linear-white|flat-normal|metallic-roughness|occlusion|emissive|clearcoat|transmission|diffuse-transmission|volume-thickness|specular|sheen|anisotropy|iridescence)/.test(texture.label);
+}
+
+function defaultPostprocessForPreset(preset: Exclude<GLTFRenderQualityPreset, "default">): RendererPostProcessOptions {
+  return preset === "hdr-studio-preview"
+    ? DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS
+    : DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS;
+}
+
+function cloneEnvironmentLighting(environment: EnvironmentLightingOptions): EnvironmentLightingOptions {
+  return {
+    color: [...environment.color] as [number, number, number],
+    intensity: environment.intensity,
+    ...(environment.proceduralMap
+      ? {
+          proceduralMap: {
+            skyColor: [...environment.proceduralMap.skyColor] as [number, number, number],
+            horizonColor: [...environment.proceduralMap.horizonColor] as [number, number, number],
+            groundColor: [...environment.proceduralMap.groundColor] as [number, number, number],
+            specularColor: [...environment.proceduralMap.specularColor] as [number, number, number],
+            intensity: environment.proceduralMap.intensity,
+            specularIntensity: environment.proceduralMap.specularIntensity
+          }
+        }
+      : {}),
+    ...(environment.environmentMapTexture ? { environmentMapTexture: environment.environmentMapTexture } : {}),
+    ...(environment.environmentMapIntensity !== undefined ? { environmentMapIntensity: environment.environmentMapIntensity } : {}),
+    ...(environment.environmentMapSpecularIntensity !== undefined ? { environmentMapSpecularIntensity: environment.environmentMapSpecularIntensity } : {}),
+    ...(environment.environmentMapRotation !== undefined ? { environmentMapRotation: environment.environmentMapRotation } : {}),
+    ...(environment.environmentMapMipCount !== undefined ? { environmentMapMipCount: environment.environmentMapMipCount } : {}),
+    ...(environment.environmentBrdfLutTexture ? { environmentBrdfLutTexture: environment.environmentBrdfLutTexture } : {})
+  };
+}
+
+function cloneRendererPostprocess(postprocess: RendererPostProcessOptions): RendererPostProcessOptions {
+  return {
+    ...(postprocess.targetFormat ? { targetFormat: postprocess.targetFormat } : {}),
+    ...(postprocess.toneMapping !== undefined
+      ? { toneMapping: typeof postprocess.toneMapping === "object" ? { ...postprocess.toneMapping } : postprocess.toneMapping }
+      : {}),
+    ...(postprocess.colorGrade !== undefined
+      ? { colorGrade: typeof postprocess.colorGrade === "object" ? { ...postprocess.colorGrade } : postprocess.colorGrade }
+      : {}),
+    ...(postprocess.bloom !== undefined
+      ? { bloom: typeof postprocess.bloom === "object" ? { ...postprocess.bloom } : postprocess.bloom }
+      : {}),
+    ...(postprocess.chromaticAberration !== undefined
+      ? { chromaticAberration: typeof postprocess.chromaticAberration === "object" ? { ...postprocess.chromaticAberration } : postprocess.chromaticAberration }
+      : {}),
+    ...(postprocess.filmGrain !== undefined
+      ? { filmGrain: typeof postprocess.filmGrain === "object" ? { ...postprocess.filmGrain } : postprocess.filmGrain }
+      : {}),
+    ...(postprocess.depthOfField !== undefined
+      ? { depthOfField: postprocess.depthOfField === false ? false : { ...postprocess.depthOfField } }
+      : {}),
+    ...(postprocess.motionBlur !== undefined
+      ? { motionBlur: postprocess.motionBlur === false ? false : { ...postprocess.motionBlur } }
+      : {}),
+    ...(postprocess.ssao !== undefined
+      ? { ssao: postprocess.ssao === false ? false : { ...postprocess.ssao } }
+      : {}),
+    ...(postprocess.ssr !== undefined
+      ? { ssr: postprocess.ssr === false ? false : { ...postprocess.ssr } }
+      : {}),
+    ...(postprocess.taa !== undefined
+      ? { taa: postprocess.taa === false ? false : { ...postprocess.taa } }
+      : {}),
+    ...(postprocess.outline !== undefined
+      ? { outline: typeof postprocess.outline === "object" ? { ...postprocess.outline } : postprocess.outline }
+      : {}),
+    ...(postprocess.fxaa !== undefined
+      ? { fxaa: typeof postprocess.fxaa === "object" ? { ...postprocess.fxaa } : postprocess.fxaa }
+      : {})
+  };
+}
+
+function defaultGLTFCameraMinDistance(bounds: CameraFrameBounds): number {
+  const sizeX = Math.max(0, bounds.max[0] - bounds.min[0]);
+  const sizeY = Math.max(0, bounds.max[1] - bounds.min[1]);
+  const sizeZ = Math.max(0, bounds.max[2] - bounds.min[2]);
+  const diagonal = Math.hypot(sizeX, sizeY, sizeZ);
+  return Math.max(1.2, diagonal * 0.5);
+}
+
+function defaultGLTFCameraFrameOptions(
+  bounds: CameraFrameBounds,
+  overrides: PerspectiveCameraFrameOptions = {}
+): PerspectiveCameraFrameOptions {
+  return {
+    ...DEFAULT_GLTF_STUDIO_PREVIEW_FRAME,
+    minDistance: defaultGLTFCameraMinDistance(bounds),
+    ...overrides
+  };
+}
+
+function computeGLTFRenderResourceBounds(
+  scene: GLTFRenderResources["scene"],
+  geometryLibrary: ReadonlyMap<string, Geometry>,
+  morphTargetLibrary: ReadonlyMap<string, readonly MorphTargetDelta[]>
+): CameraFrameBounds {
+  scene.updateWorldTransforms();
+  let bounds: SceneBounds3 | undefined;
+  for (const { node, renderable } of scene.collectRenderables()) {
+    const geometry = geometryLibrary.get(renderable.geometry);
+    if (!geometry) continue;
+    const envelope = computeSkinnedMorphTargetEnvelopeBounds(geometry, renderable.skinning, morphTargetLibrary.get(renderable.geometry));
+    const local = new SceneBounds3(
+      [envelope.min[0], envelope.min[1], envelope.min[2]],
+      [envelope.max[0], envelope.max[1], envelope.max[2]]
+    );
+    const worldBounds = renderable.instanceTransforms
+      ? transformInstancedBounds(local, node.transform.worldMatrix, renderable.instanceTransforms)
+      : local.transform(node.transform.worldMatrix);
+    bounds = bounds ? bounds.union(worldBounds) : worldBounds;
+  }
+  if (!bounds || bounds.isEmpty()) {
+    return { min: [0, 0, 0], max: [0, 0, 0] };
+  }
+  return {
+    min: [bounds.min[0], bounds.min[1], bounds.min[2]],
+    max: [bounds.max[0], bounds.max[1], bounds.max[2]]
+  };
+}
+
+function transformInstancedBounds(
+  local: SceneBounds3,
+  modelMatrix: Mat4,
+  instanceTransforms: Float32Array | readonly number[]
+): SceneBounds3 {
+  let bounds = new SceneBounds3();
+  for (let offset = 0; offset + 15 < instanceTransforms.length; offset += 16) {
+    bounds = bounds.union(local.transform(multiplyMat4(modelMatrix, toMat4(instanceTransforms.slice(offset, offset + 16)))));
+  }
+  return bounds;
+}
+
+function toMat4(values: Float32Array | readonly number[]): Mat4 {
+  const array = Array.from(values);
+  if (array.length !== 16 || array.some((value) => !Number.isFinite(value))) {
+    throw new Error("glTF render resource instance transform must be a finite mat4.");
+  }
+  return array as Mat4;
+}
+
+function disposeGLTFRenderResourceMaps(
+  geometryLibrary: ReadonlyMap<string, Geometry>,
+  textureLibrary: ReadonlyMap<string, Texture>
+): void {
+  for (const geometry of geometryLibrary.values()) geometry.dispose();
+  for (const texture of textureLibrary.values()) texture.dispose();
 }
 
 function materialForMesh(
@@ -149,34 +879,171 @@ function materialForMesh(
 }
 
 function createGeometry(mesh: GLTFMeshAsset, material: GLTFMaterialAsset | undefined): Geometry {
-  const texcoords = selectRenderTexcoords(mesh, material);
-  const needsUv = texcoords.length > 0;
-  const needsNormal = mesh.normals.length > 0 || needsUv;
+  const usedTexCoordSets = usedRenderTexCoordSets(material);
+  const texcoords = selectRenderTexcoords(mesh, material, 0);
+  const texcoords1 = usedTexCoordSets.has(1) ? selectRenderTexcoords(mesh, material, 1) : [];
+  const needsUv = usedTexCoordSets.has(0) || texcoords.length > 0;
+  const needsUv1 = texcoords1.length > 0;
+  const needsNormal = mesh.normals.length > 0 || needsUv || materialNeedsNormals(material);
+  const needsTangent = mesh.tangents.length > 0 || (needsUv && (materialNeedsTangents(material) || (material !== undefined && !material.unlit)));
   const needsColor = mesh.colors.length > 0;
-  const format = vertexFormatForGLTFMesh(needsNormal, needsUv, needsColor);
+  const needsSkinning = mesh.skinIndex !== undefined || mesh.joints.length > 0 || mesh.weights.length > 0;
+  const format = vertexFormatForGLTFMesh(needsNormal, needsUv, needsTangent, needsUv1, needsColor, needsSkinning);
+  const renderNormals = needsNormal && mesh.normals.length === 0
+    ? generateMeshNormals(mesh.positions, mesh.indices, mesh.topology)
+    : mesh.normals;
+  const renderTangents = needsTangent && mesh.tangents.length === 0
+    ? generateMeshTangents(mesh.positions, texcoords, mesh.indices, mesh.topology, renderNormals)
+    : mesh.tangents;
   const vertices = new VertexBuffer(format, mesh.positions.length);
   for (let index = 0; index < mesh.positions.length; index += 1) {
     vertices.setAttribute(index, "position", mesh.positions[index]!);
     if (format.hasAttribute("normal")) {
-      vertices.setAttribute(index, "normal", mesh.normals[index] ?? [0, 0, 1]);
+      vertices.setAttribute(index, "normal", renderNormals[index] ?? [0, 0, 1]);
+    }
+    if (format.hasAttribute("tangent")) {
+      vertices.setAttribute(index, "tangent", renderTangents[index] ?? fallbackTangent(renderNormals[index]));
     }
     if (format.hasAttribute("uv")) {
-      vertices.setAttribute(index, "tangent", mesh.tangents[index] ?? [1, 0, 0, 1]);
       vertices.setAttribute(index, "uv", texcoords[index] ?? [0, 0]);
+    }
+    if (format.hasAttribute("uv1")) {
+      vertices.setAttribute(index, "uv1", texcoords1[index] ?? texcoords[index] ?? [0, 0]);
     }
     if (format.hasAttribute("color")) {
       vertices.setAttribute(index, "color", mesh.colors[index] ?? [1, 1, 1, 1]);
+    }
+    if (format.hasAttribute("joints")) {
+      vertices.setAttribute(index, "joints", mesh.joints[index] ?? [0, 0, 0, 0]);
+      vertices.setAttribute(index, "weights", mesh.weights[index] ?? [0, 0, 0, 0]);
     }
   }
   const indices = mesh.indices && mesh.indices.length > 0 ? new IndexBuffer(mesh.indices, mesh.positions.length) : null;
   return new Geometry(vertices, indices, mesh.topology, mesh.geometry.bounds);
 }
 
+function generateMeshNormals(
+  positions: readonly (readonly [number, number, number])[],
+  indices: readonly number[] | undefined,
+  topology: Geometry["topology"]
+): readonly (readonly [number, number, number])[] {
+  const normals = Array.from({ length: positions.length }, () => [0, 0, 0] as [number, number, number]);
+  if (topology !== "triangles") {
+    return normals.map(() => [0, 0, 1] as const);
+  }
+  const triangleIndices = indices && indices.length > 0 ? indices : positions.map((_, index) => index);
+  for (let offset = 0; offset + 2 < triangleIndices.length; offset += 3) {
+    const ia = triangleIndices[offset]!;
+    const ib = triangleIndices[offset + 1]!;
+    const ic = triangleIndices[offset + 2]!;
+    const a = positions[ia];
+    const b = positions[ib];
+    const c = positions[ic];
+    if (!a || !b || !c) continue;
+    const normal = cross3(subtract3(b, a), subtract3(c, a));
+    normals[ia] = add3(normals[ia]!, normal);
+    normals[ib] = add3(normals[ib]!, normal);
+    normals[ic] = add3(normals[ic]!, normal);
+  }
+  return normals.map((normal) => normalize3(normal));
+}
+
+function generateMeshTangents(
+  positions: readonly (readonly [number, number, number])[],
+  texcoords: readonly (readonly [number, number])[],
+  indices: readonly number[] | undefined,
+  topology: Geometry["topology"],
+  normals: readonly (readonly [number, number, number])[]
+): readonly (readonly [number, number, number, number])[] {
+  const tangents = Array.from({ length: positions.length }, () => [0, 0, 0] as [number, number, number]);
+  const bitangents = Array.from({ length: positions.length }, () => [0, 0, 0] as [number, number, number]);
+  if (topology !== "triangles" || texcoords.length === 0) {
+    return normals.map((normal) => fallbackTangent(normal));
+  }
+  const triangleIndices = indices && indices.length > 0 ? indices : positions.map((_, index) => index);
+  for (let offset = 0; offset + 2 < triangleIndices.length; offset += 3) {
+    const ia = triangleIndices[offset]!;
+    const ib = triangleIndices[offset + 1]!;
+    const ic = triangleIndices[offset + 2]!;
+    const a = positions[ia];
+    const b = positions[ib];
+    const c = positions[ic];
+    const uva = texcoords[ia];
+    const uvb = texcoords[ib];
+    const uvc = texcoords[ic];
+    if (!a || !b || !c || !uva || !uvb || !uvc) continue;
+    const edge1 = subtract3(b, a);
+    const edge2 = subtract3(c, a);
+    const duv1: readonly [number, number] = [uvb[0] - uva[0], uvb[1] - uva[1]];
+    const duv2: readonly [number, number] = [uvc[0] - uva[0], uvc[1] - uva[1]];
+    const determinant = duv1[0] * duv2[1] - duv2[0] * duv1[1];
+    if (Math.abs(determinant) <= 1e-8) continue;
+    const scale = 1 / determinant;
+    const tangent = scale3(subtract3(scale3(edge1, duv2[1]), scale3(edge2, duv1[1])), scale);
+    const bitangent = scale3(subtract3(scale3(edge2, duv1[0]), scale3(edge1, duv2[0])), scale);
+    tangents[ia] = add3(tangents[ia]!, tangent);
+    tangents[ib] = add3(tangents[ib]!, tangent);
+    tangents[ic] = add3(tangents[ic]!, tangent);
+    bitangents[ia] = add3(bitangents[ia]!, bitangent);
+    bitangents[ib] = add3(bitangents[ib]!, bitangent);
+    bitangents[ic] = add3(bitangents[ic]!, bitangent);
+  }
+  return tangents.map((tangent, index) => {
+    const normal = normals[index] ?? [0, 0, 1];
+    const orthogonal = subtract3(tangent, scale3(normal, dot3(normal, tangent)));
+    if (length3(orthogonal) <= 1e-8) return fallbackTangent(normal);
+    const normalized = normalize3(orthogonal);
+    const handedness = dot3(cross3(normal, normalized), bitangents[index] ?? [0, 1, 0]) < 0 ? -1 : 1;
+    return [normalized[0], normalized[1], normalized[2], handedness] as const;
+  });
+}
+
+function subtract3(left: readonly [number, number, number], right: readonly [number, number, number]): [number, number, number] {
+  return [left[0] - right[0], left[1] - right[1], left[2] - right[2]];
+}
+
+function add3(left: readonly [number, number, number], right: readonly [number, number, number]): [number, number, number] {
+  return [left[0] + right[0], left[1] + right[1], left[2] + right[2]];
+}
+
+function scale3(value: readonly [number, number, number], scalar: number): [number, number, number] {
+  return [value[0] * scalar, value[1] * scalar, value[2] * scalar];
+}
+
+function dot3(left: readonly [number, number, number], right: readonly [number, number, number]): number {
+  return left[0] * right[0] + left[1] * right[1] + left[2] * right[2];
+}
+
+function cross3(left: readonly [number, number, number], right: readonly [number, number, number]): [number, number, number] {
+  return [
+    left[1] * right[2] - left[2] * right[1],
+    left[2] * right[0] - left[0] * right[2],
+    left[0] * right[1] - left[1] * right[0]
+  ];
+}
+
+function length3(value: readonly [number, number, number]): number {
+  return Math.hypot(value[0], value[1], value[2]);
+}
+
+function normalize3(value: readonly [number, number, number]): readonly [number, number, number] {
+  const length = length3(value);
+  if (length <= 1e-8) return [0, 0, 1];
+  return [value[0] / length, value[1] / length, value[2] / length];
+}
+
+function fallbackTangent(normal: readonly [number, number, number] | undefined): readonly [number, number, number, number] {
+  const n = normal ?? [0, 0, 1];
+  const reference: readonly [number, number, number] = Math.abs(n[1]) < 0.9 ? [0, 1, 0] : [1, 0, 0];
+  const tangent = normalize3(cross3(reference, n));
+  return [tangent[0], tangent[1], tangent[2], 1];
+}
+
 function selectRenderTexcoords(
   mesh: GLTFMeshAsset,
-  material: GLTFMaterialAsset | undefined
+  material: GLTFMaterialAsset | undefined,
+  setIndex: number
 ): readonly (readonly [number, number])[] {
-  const setIndex = preferredTexCoordSet(material);
   const selected = mesh.texcoordSets[setIndex];
   if (selected && selected.length > 0) return selected;
   if (setIndex > 0) {
@@ -185,18 +1052,14 @@ function selectRenderTexcoords(
   return mesh.texcoords;
 }
 
-function preferredTexCoordSet(material: GLTFMaterialAsset | undefined): number {
-  if (!material) return 0;
-  const usedSets = new Set(materialTextureInfos(material).map((info) => info.texCoord));
-  if (usedSets.size > 1) {
-    throw new Error(
-      `glTF material ${material.name} uses multiple texture coordinate sets (${[...usedSets].sort((a, b) => a - b).join(", ")}), but the current render material path supports one UV set per draw`
-    );
+function usedRenderTexCoordSets(material: GLTFMaterialAsset | undefined): ReadonlySet<number> {
+  const sets = new Set<number>();
+  const infos = material ? materialTextureInfos(material) : [];
+  for (const info of infos) {
+    if (info.texCoord <= 1) sets.add(info.texCoord);
   }
-  for (const setIndex of usedSets) {
-    return setIndex;
-  }
-  return 0;
+  if (sets.size === 0 && infos.length > 0) sets.add(0);
+  return sets;
 }
 
 function materialTextureInfos(material: GLTFMaterialAsset): readonly GLTFResolvedTextureInfo[] {
@@ -223,31 +1086,112 @@ function materialTextureInfos(material: GLTFMaterialAsset): readonly GLTFResolve
   ].filter((info): info is GLTFResolvedTextureInfo => info !== undefined);
 }
 
-function vertexFormatForGLTFMesh(needsNormal: boolean, needsUv: boolean, needsColor: boolean): VertexFormat {
-  if (!needsColor) return needsUv ? VertexFormat.P3N3T4T2 : needsNormal ? VertexFormat.P3N3 : VertexFormat.P3;
+function materialNeedsNormals(material: GLTFMaterialAsset | undefined): boolean {
+  return material === undefined || !material.unlit;
+}
+
+function materialNeedsTangents(material: GLTFMaterialAsset | undefined): boolean {
+  return Boolean(material?.normalTexture || material?.clearcoat?.normalTexture);
+}
+
+function vertexFormatForGLTFMesh(needsNormal: boolean, needsUv: boolean, needsTangent: boolean, needsUv1: boolean, needsColor: boolean, needsSkinning: boolean): VertexFormat {
+  if (!needsColor && !needsSkinning && !needsUv1) {
+    if (needsUv && needsTangent) return VertexFormat.P3N3T4T2;
+    if (needsUv) return needsNormal ? VertexFormat.P3N3T2 : new VertexFormat([
+      { semantic: "position", components: 3, offset: 0 },
+      { semantic: "uv", components: 2, offset: 12 }
+    ], 20);
+    return needsNormal ? VertexFormat.P3N3 : VertexFormat.P3;
+  }
+  if (!needsColor && needsSkinning && !needsUv) return needsNormal ? VertexFormat.P3N3J4W4 : VertexFormat.P3J4W4;
   const attributes: VertexAttributeDescriptor[] = [{ semantic: "position", components: 3, offset: 0 }];
   let offset = 12;
   if (needsNormal) {
     attributes.push({ semantic: "normal", components: 3, offset });
     offset += 12;
   }
-  if (needsUv) {
+  if (needsTangent) {
     attributes.push({ semantic: "tangent", components: 4, offset });
     offset += 16;
+  }
+  if (needsUv) {
     attributes.push({ semantic: "uv", components: 2, offset });
     offset += 8;
   }
-  attributes.push({ semantic: "color", components: 4, offset });
-  offset += 16;
+  if (needsUv1) {
+    attributes.push({ semantic: "uv1", components: 2, offset });
+    offset += 8;
+  }
+  if (needsColor) {
+    attributes.push({ semantic: "color", components: 4, offset });
+    offset += 16;
+  }
+  if (needsSkinning) {
+    attributes.push({ semantic: "joints", components: 4, offset });
+    offset += 16;
+    attributes.push({ semantic: "weights", components: 4, offset });
+    offset += 16;
+  }
   return new VertexFormat(attributes, offset);
 }
 
 async function createMaterial(
   asset: GLTFAsset,
   material: GLTFMaterialAsset,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  options: { readonly skinned?: boolean; readonly instanced?: boolean } = {}
 ): Promise<Material> {
   const renderState = renderStateForGLTFMaterial(material);
+  if (options.skinned && !material.unlit) {
+    const baseColorTexture = material.baseColorTexture
+      ? await createTextureBinding(asset, material.baseColorTexture, "srgb", getTexture, "u_baseColorTexture")
+      : undefined;
+    const normalTexture = material.normalTexture
+      ? await createTextureBinding(asset, material.normalTexture, "linear", getTexture, "u_normalTexture", createNormalSampler(asset, material))
+      : undefined;
+    const metallicRoughnessTexture = material.metallicRoughnessTexture
+      ? await createTextureBinding(asset, material.metallicRoughnessTexture, "linear", getTexture, "u_metallicRoughnessTexture")
+      : undefined;
+    const occlusionTexture = material.occlusionTexture
+      ? await createTextureBinding(asset, material.occlusionTexture, "linear", getTexture, "u_occlusionTexture")
+      : undefined;
+    const emissiveTexture = material.emissiveTexture
+      ? await createTextureBinding(asset, material.emissiveTexture, "srgb", getTexture, "u_emissiveTexture")
+      : undefined;
+    const runtimeMaterial = new SkinnedLitMaterial({
+      name: material.name,
+      renderState,
+      baseColor: material.baseColorFactor,
+      baseColorTexture,
+      baseColorTextureOffset: material.baseColorTexture?.transform?.offset,
+      baseColorTextureScale: material.baseColorTexture?.transform?.scale,
+      baseColorTextureRotation: material.baseColorTexture?.transform?.rotation,
+      normalTexture,
+      normalScale: renderNormalScale(asset, material),
+      metallicRoughnessTexture,
+      occlusionTexture,
+      occlusionStrength: material.occlusionTexture?.strength,
+      emissiveTexture,
+      metallic: material.metallicFactor,
+      roughness: material.roughnessFactor,
+      emissiveColor: material.emissiveFactor,
+      emissiveStrength: material.emissiveStrength,
+      ...pbrExtensionScalarOptions(material)
+    });
+    applyAlphaCutoff(runtimeMaterial, material);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    return runtimeMaterial;
+  }
+  if (options.instanced && material.unlit && !material.baseColorTexture) {
+    const runtimeMaterial = new InstancedUnlitMaterial({
+      name: material.name,
+      color: material.baseColorFactor,
+      renderState
+    });
+    applyAlphaCutoff(runtimeMaterial, material);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    return runtimeMaterial;
+  }
   if (material.unlit) {
     if (material.baseColorTexture) {
       const texture = await getTexture(material.baseColorTexture, "srgb");
@@ -272,12 +1216,27 @@ async function createMaterial(
     await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
     return runtimeMaterial;
   }
+  if (options.instanced && !requiresTexturedPBRMaterial(material) && !material.baseColorTexture) {
+    const runtimeMaterial = new InstancedPBRMaterial({
+      name: material.name,
+      renderState,
+      baseColor: material.baseColorFactor,
+      metallic: material.metallicFactor,
+      roughness: material.roughnessFactor,
+      emissiveColor: material.emissiveFactor,
+      emissiveStrength: material.emissiveStrength
+    });
+    applyAlphaCutoff(runtimeMaterial, material);
+    await applyPBRExtensionParameters(asset, runtimeMaterial, material, getTexture);
+    return runtimeMaterial;
+  }
   if (requiresTexturedPBRMaterial(material)) {
     const baseColorTexture = material.baseColorTexture ? await getTexture(material.baseColorTexture, "srgb") : undefined;
     const normalTexture = material.normalTexture ? await getTexture(material.normalTexture, "linear") : undefined;
     const metallicRoughnessTexture = material.metallicRoughnessTexture ? await getTexture(material.metallicRoughnessTexture, "linear") : undefined;
     const occlusionTexture = material.occlusionTexture ? await getTexture(material.occlusionTexture, "linear") : undefined;
     const emissiveTexture = material.emissiveTexture ? await getTexture(material.emissiveTexture, "srgb") : undefined;
+    const extensionTextureOptions = await pbrExtensionTextureOptions(asset, material, getTexture);
     const runtimeMaterial = new TexturedPBRMaterial({
       name: material.name,
       renderState,
@@ -286,14 +1245,16 @@ async function createMaterial(
       roughness: material.roughnessFactor,
       emissiveColor: material.emissiveFactor,
       emissiveStrength: material.emissiveStrength,
+      textureTexCoords: pbrTextureTexCoords(material),
       ...pbrExtensionScalarOptions(material),
+      ...extensionTextureOptions,
       baseColorTexture,
       baseColorSampler: createSampler(material.baseColorTexture ? asset.textures[material.baseColorTexture.texture] : undefined),
       baseColorTextureTransform: material.baseColorTexture?.transform,
       normalTexture,
-      normalSampler: createSampler(material.normalTexture ? asset.textures[material.normalTexture.texture] : undefined),
+      normalSampler: createNormalSampler(asset, material),
       normalTextureTransform: material.normalTexture?.transform,
-      normalScale: material.normalTexture?.scale,
+      normalScale: renderNormalScale(asset, material),
       metallicRoughnessTexture,
       metallicRoughnessSampler: createSampler(material.metallicRoughnessTexture ? asset.textures[material.metallicRoughnessTexture.texture] : undefined),
       metallicRoughnessTextureTransform: material.metallicRoughnessTexture?.transform,
@@ -338,16 +1299,66 @@ async function createMaterial(
   return runtimeMaterial;
 }
 
+function createDefaultGLTFMaterial(mesh: GLTFMeshAsset, options: { readonly instanced?: boolean; readonly skinned?: boolean } = {}): Material {
+  const defaults = { name: mesh.material, metallic: 0, roughness: 1, environmentIntensity: DEFAULT_PBR_ENVIRONMENT_INTENSITY } as const;
+  if (options.skinned) {
+    return new SkinnedLitMaterial(defaults);
+  }
+  if (options.instanced) {
+    return new InstancedPBRMaterial(defaults);
+  }
+  return new PBRMaterial(defaults);
+}
+
 function renderStateForGLTFMaterial(material: GLTFMaterialAsset): Partial<RenderState> {
+  const blend = material.alphaMode === "BLEND";
   return {
     cullMode: material.doubleSided ? "none" : "back",
-    blend: material.alphaMode === "BLEND",
-    depthWrite: material.alphaMode === "BLEND" ? false : true
+    blend,
+    depthWrite: blend ? false : true
   };
 }
 
 function applyAlphaCutoff(runtimeMaterial: Material, material: GLTFMaterialAsset): void {
   runtimeMaterial.setParameter("u_alphaCutoff", material.alphaMode === "MASK" ? material.alphaCutoff : 0);
+}
+
+function renderNormalScale(asset: GLTFAsset, material: GLTFMaterialAsset): number | undefined {
+  return renderNormalMapScale(asset, material.normalTexture);
+}
+
+function createNormalSampler(asset: GLTFAsset, material: GLTFMaterialAsset): Sampler {
+  const texture = material.normalTexture ? asset.textures[material.normalTexture.texture] : undefined;
+  return createNormalMapSampler(texture);
+}
+
+function createNormalSamplerForInfo(asset: GLTFAsset, info: GLTFResolvedTextureInfo | undefined): Sampler {
+  const texture = info ? asset.textures[info.texture] : undefined;
+  return createNormalMapSampler(texture);
+}
+
+function renderNormalMapScale(asset: GLTFAsset, info: (GLTFResolvedTextureInfo & { readonly scale: number }) | undefined): number | undefined {
+  if (!info) return undefined;
+  const texture = asset.textures[info.texture];
+  const scale = info.scale;
+  return usesNearestSampler(texture) ? Math.min(scale, 0.1) : scale;
+}
+
+function createNormalMapSampler(texture: GLTFTextureAsset | undefined): Sampler {
+  const sampler = createSampler(texture);
+  if (!usesNearestSampler(texture)) return sampler;
+  return new Sampler({
+    minFilter: "linear-mipmap-linear",
+    magFilter: "linear",
+    addressU: sampler.addressU,
+    addressV: sampler.addressV,
+    maxAnisotropy: sampler.maxAnisotropy
+  });
+}
+
+function usesNearestSampler(texture: GLTFTextureAsset | undefined): boolean {
+  const sampler = createSampler(texture);
+  return sampler.magFilter === "nearest" || sampler.minFilter.startsWith("nearest");
 }
 
 function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
@@ -356,6 +1367,7 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
   readonly transmissionFactor?: number;
   readonly diffuseTransmissionFactor?: number;
   readonly diffuseTransmissionColorFactor?: readonly [number, number, number];
+  readonly transmissionFallbackEnergy?: number;
   readonly volumeThicknessFactor?: number;
   readonly volumeAttenuationDistance?: number;
   readonly volumeAttenuationColor?: readonly [number, number, number];
@@ -375,9 +1387,12 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
   return {
     ...(material.clearcoat ? {
       clearcoatFactor: material.clearcoat.factor,
-      clearcoatRoughnessFactor: material.clearcoat.roughnessFactor
+      clearcoatRoughnessFactor: renderClearcoatRoughnessFactor(material)
     } : {}),
-    ...(material.transmission ? { transmissionFactor: material.transmission.factor } : {}),
+    ...(material.transmission ? {
+      transmissionFactor: material.transmission.factor,
+      transmissionFallbackEnergy: renderTransmissionFallbackEnergy(material)
+    } : {}),
     ...(material.diffuseTransmission ? {
       diffuseTransmissionFactor: material.diffuseTransmission.factor,
       diffuseTransmissionColorFactor: material.diffuseTransmission.colorFactor
@@ -390,7 +1405,7 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
     ...(material.ior !== undefined ? { ior: material.ior } : {}),
     ...(material.specular ? {
       specularFactor: material.specular.factor,
-      specularColorFactor: material.specular.colorFactor
+      specularColorFactor: renderSpecularColorFactor(material.specular.colorFactor)
     } : {}),
     ...(material.sheen ? {
       sheenColorFactor: material.sheen.colorFactor,
@@ -412,6 +1427,134 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
   };
 }
 
+async function pbrExtensionTextureOptions(
+  asset: GLTFAsset,
+  material: GLTFMaterialAsset,
+  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+): Promise<Partial<TexturedPBRMaterialOptions>> {
+  const clearcoatTexture = material.clearcoat?.texture;
+  const clearcoatRoughnessTexture = material.clearcoat?.roughnessTexture;
+  const clearcoatNormalTexture = material.clearcoat?.normalTexture;
+  const transmissionTexture = material.transmission?.texture;
+  const diffuseTransmissionTexture = material.diffuseTransmission?.texture;
+  const diffuseTransmissionColorTexture = material.diffuseTransmission?.colorTexture;
+  const volumeThicknessTexture = material.volume?.thicknessTexture;
+  const specularTexture = material.specular?.texture;
+  const specularColorTexture = material.specular?.colorTexture;
+  const sheenColorTexture = material.sheen?.colorTexture;
+  const sheenRoughnessTexture = material.sheen?.roughnessTexture;
+  const anisotropyTexture = material.anisotropy?.texture;
+  const iridescenceTexture = material.iridescence?.texture;
+  const iridescenceThicknessTexture = material.iridescence?.thicknessTexture;
+
+  return {
+    ...(clearcoatTexture ? {
+      clearcoatTexture: await getTexture(clearcoatTexture, "linear"),
+      clearcoatSampler: createSamplerForInfo(asset, clearcoatTexture),
+      clearcoatTextureTransform: clearcoatTexture.transform
+    } : {}),
+    ...(clearcoatRoughnessTexture ? {
+      clearcoatRoughnessTexture: await getTexture(clearcoatRoughnessTexture, "linear"),
+      clearcoatRoughnessSampler: createSamplerForInfo(asset, clearcoatRoughnessTexture),
+      clearcoatRoughnessTextureTransform: clearcoatRoughnessTexture.transform
+    } : {}),
+    ...(clearcoatNormalTexture ? {
+      clearcoatNormalTexture: await getTexture(clearcoatNormalTexture, "linear"),
+      clearcoatNormalSampler: createNormalSamplerForInfo(asset, clearcoatNormalTexture),
+      clearcoatNormalTextureTransform: clearcoatNormalTexture.transform,
+      clearcoatNormalScale: renderNormalMapScale(asset, clearcoatNormalTexture)
+    } : {}),
+    ...(transmissionTexture ? {
+      transmissionTexture: await getTexture(transmissionTexture, "linear"),
+      transmissionSampler: createSamplerForInfo(asset, transmissionTexture),
+      transmissionTextureTransform: transmissionTexture.transform
+    } : {}),
+    ...(diffuseTransmissionTexture ? {
+      diffuseTransmissionTexture: await getTexture(diffuseTransmissionTexture, "linear"),
+      diffuseTransmissionSampler: createSamplerForInfo(asset, diffuseTransmissionTexture),
+      diffuseTransmissionTextureTransform: diffuseTransmissionTexture.transform
+    } : {}),
+    ...(diffuseTransmissionColorTexture ? {
+      diffuseTransmissionColorTexture: await getTexture(diffuseTransmissionColorTexture, "srgb"),
+      diffuseTransmissionColorSampler: createSamplerForInfo(asset, diffuseTransmissionColorTexture),
+      diffuseTransmissionColorTextureTransform: diffuseTransmissionColorTexture.transform
+    } : {}),
+    ...(volumeThicknessTexture ? {
+      volumeThicknessTexture: await getTexture(volumeThicknessTexture, "linear"),
+      volumeThicknessSampler: createSamplerForInfo(asset, volumeThicknessTexture),
+      volumeThicknessTextureTransform: volumeThicknessTexture.transform
+    } : {}),
+    ...(specularTexture ? {
+      specularTexture: await getTexture(specularTexture, "linear"),
+      specularSampler: createSamplerForInfo(asset, specularTexture),
+      specularTextureTransform: specularTexture.transform
+    } : {}),
+    ...(specularColorTexture ? {
+      specularColorTexture: await getTexture(specularColorTexture, "srgb"),
+      specularColorSampler: createSamplerForInfo(asset, specularColorTexture),
+      specularColorTextureTransform: specularColorTexture.transform
+    } : {}),
+    ...(sheenColorTexture ? {
+      sheenColorTexture: await getTexture(sheenColorTexture, "srgb"),
+      sheenColorSampler: createSamplerForInfo(asset, sheenColorTexture),
+      sheenColorTextureTransform: sheenColorTexture.transform
+    } : {}),
+    ...(sheenRoughnessTexture ? {
+      sheenRoughnessTexture: await getTexture(sheenRoughnessTexture, "linear"),
+      sheenRoughnessSampler: createSamplerForInfo(asset, sheenRoughnessTexture),
+      sheenRoughnessTextureTransform: sheenRoughnessTexture.transform
+    } : {}),
+    ...(anisotropyTexture ? {
+      anisotropyTexture: await getTexture(anisotropyTexture, "linear"),
+      anisotropySampler: createSamplerForInfo(asset, anisotropyTexture),
+      anisotropyTextureTransform: anisotropyTexture.transform
+    } : {}),
+    ...(iridescenceTexture ? {
+      iridescenceTexture: await getTexture(iridescenceTexture, "linear"),
+      iridescenceSampler: createSamplerForInfo(asset, iridescenceTexture),
+      iridescenceTextureTransform: iridescenceTexture.transform
+    } : {}),
+    ...(iridescenceThicknessTexture ? {
+      iridescenceThicknessTexture: await getTexture(iridescenceThicknessTexture, "linear"),
+      iridescenceThicknessSampler: createSamplerForInfo(asset, iridescenceThicknessTexture),
+      iridescenceThicknessTextureTransform: iridescenceThicknessTexture.transform
+    } : {})
+  };
+}
+
+function renderTransmissionFallbackEnergy(material: GLTFMaterialAsset): number {
+  const usesUnbackedCutoutTransmission = material.alphaMode === "MASK" && material.transmission?.texture === undefined && material.volume === undefined;
+  return usesUnbackedCutoutTransmission ? 0 : 0.08;
+}
+
+function pbrTextureTexCoords(material: GLTFMaterialAsset): Partial<Record<TexturedPBRTextureSlot, number>> {
+  return {
+    ...(material.baseColorTexture ? { baseColor: renderTexCoord(material.baseColorTexture.texCoord) } : {}),
+    ...(material.normalTexture ? { normal: renderTexCoord(material.normalTexture.texCoord) } : {}),
+    ...(material.metallicRoughnessTexture ? { metallicRoughness: renderTexCoord(material.metallicRoughnessTexture.texCoord) } : {}),
+    ...(material.occlusionTexture ? { occlusion: renderTexCoord(material.occlusionTexture.texCoord) } : {}),
+    ...(material.emissiveTexture ? { emissive: renderTexCoord(material.emissiveTexture.texCoord) } : {}),
+    ...(material.clearcoat?.texture ? { clearcoat: renderTexCoord(material.clearcoat.texture.texCoord) } : {}),
+    ...(material.clearcoat?.roughnessTexture ? { clearcoatRoughness: renderTexCoord(material.clearcoat.roughnessTexture.texCoord) } : {}),
+    ...(material.clearcoat?.normalTexture ? { clearcoatNormal: renderTexCoord(material.clearcoat.normalTexture.texCoord) } : {}),
+    ...(material.transmission?.texture ? { transmission: renderTexCoord(material.transmission.texture.texCoord) } : {}),
+    ...(material.diffuseTransmission?.texture ? { diffuseTransmission: renderTexCoord(material.diffuseTransmission.texture.texCoord) } : {}),
+    ...(material.diffuseTransmission?.colorTexture ? { diffuseTransmissionColor: renderTexCoord(material.diffuseTransmission.colorTexture.texCoord) } : {}),
+    ...(material.volume?.thicknessTexture ? { volumeThickness: renderTexCoord(material.volume.thicknessTexture.texCoord) } : {}),
+    ...(material.specular?.texture ? { specular: renderTexCoord(material.specular.texture.texCoord) } : {}),
+    ...(material.specular?.colorTexture ? { specularColor: renderTexCoord(material.specular.colorTexture.texCoord) } : {}),
+    ...(material.sheen?.colorTexture ? { sheenColor: renderTexCoord(material.sheen.colorTexture.texCoord) } : {}),
+    ...(material.sheen?.roughnessTexture ? { sheenRoughness: renderTexCoord(material.sheen.roughnessTexture.texCoord) } : {}),
+    ...(material.anisotropy?.texture ? { anisotropy: renderTexCoord(material.anisotropy.texture.texCoord) } : {}),
+    ...(material.iridescence?.texture ? { iridescence: renderTexCoord(material.iridescence.texture.texCoord) } : {}),
+    ...(material.iridescence?.thicknessTexture ? { iridescenceThickness: renderTexCoord(material.iridescence.thicknessTexture.texCoord) } : {})
+  };
+}
+
+function renderTexCoord(texCoord: number): number {
+  return texCoord === 1 ? 1 : 0;
+}
+
 async function applyPBRExtensionParameters(
   asset: GLTFAsset,
   runtimeMaterial: Material,
@@ -420,7 +1563,7 @@ async function applyPBRExtensionParameters(
 ): Promise<void> {
   if (material.clearcoat) {
     runtimeMaterial.setParameter("u_clearcoatFactor", material.clearcoat.factor);
-    runtimeMaterial.setParameter("u_clearcoatRoughnessFactor", material.clearcoat.roughnessFactor);
+    runtimeMaterial.setParameter("u_clearcoatRoughnessFactor", renderClearcoatRoughnessFactor(material));
     if (material.clearcoat.texture) {
       await setTextureParameter(asset, runtimeMaterial, "u_clearcoatTexture", material.clearcoat.texture, "linear", getTexture);
     }
@@ -429,7 +1572,7 @@ async function applyPBRExtensionParameters(
     }
     if (material.clearcoat.normalTexture) {
       await setTextureParameter(asset, runtimeMaterial, "u_clearcoatNormalTexture", material.clearcoat.normalTexture, "linear", getTexture);
-      runtimeMaterial.setParameter("u_clearcoatNormalScale", material.clearcoat.normalTexture.scale);
+      runtimeMaterial.setParameter("u_clearcoatNormalScale", renderNormalMapScale(asset, material.clearcoat.normalTexture) ?? material.clearcoat.normalTexture.scale);
     }
   }
   if (material.transmission) {
@@ -461,7 +1604,7 @@ async function applyPBRExtensionParameters(
   }
   if (material.specular) {
     runtimeMaterial.setParameter("u_specularFactor", material.specular.factor);
-    runtimeMaterial.setParameter("u_specularColorFactor", material.specular.colorFactor);
+    runtimeMaterial.setParameter("u_specularColorFactor", renderSpecularColorFactor(material.specular.colorFactor));
     if (material.specular.texture) {
       await setTextureParameter(asset, runtimeMaterial, "u_specularTexture", material.specular.texture, "linear", getTexture);
     }
@@ -503,31 +1646,40 @@ async function applyPBRExtensionParameters(
   }
 }
 
+function renderClearcoatRoughnessFactor(material: GLTFMaterialAsset): number {
+  return material.clearcoat?.roughnessFactor ?? 0;
+}
+
 async function setTextureParameter(
   asset: GLTFAsset,
   runtimeMaterial: Material,
   uniformName: string,
   info: GLTFResolvedTextureInfo,
   colorSpace: GLTFTextureColorSpace,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  sampler?: Sampler
 ): Promise<void> {
-  runtimeMaterial.setParameter(uniformName, await createTextureBinding(asset, info, colorSpace, getTexture));
+  runtimeMaterial.setParameter(uniformName, await createTextureBinding(asset, info, colorSpace, getTexture, uniformName, sampler));
   runtimeMaterial.setParameter(`${uniformName}Offset`, info.transform?.offset ?? [0, 0]);
   runtimeMaterial.setParameter(`${uniformName}Scale`, info.transform?.scale ?? [1, 1]);
   runtimeMaterial.setParameter(`${uniformName}Rotation`, info.transform?.rotation ?? 0);
+  runtimeMaterial.setParameter(`${uniformName}TexCoord`, renderTexCoord(info.texCoord));
 }
 
 async function createTextureBinding(
   asset: GLTFAsset,
   info: GLTFResolvedTextureInfo,
   colorSpace: GLTFTextureColorSpace,
-  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>
+  getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
+  uniformName = `gltf-texture-${info.texture}`,
+  sampler?: Sampler
 ): Promise<TextureBinding> {
   return new TextureBinding({
-    name: `gltf-texture-${info.texture}`,
+    name: uniformName,
     texture: await getTexture(info, colorSpace),
-    sampler: createSampler(asset.textures[info.texture]),
+    sampler: sampler ?? createSampler(asset.textures[info.texture]),
     required: true,
+    expectedColorSpace: colorSpace,
     transform: info.transform
   });
 }
@@ -560,8 +1712,33 @@ function renderVolumeAttenuationDistance(distance: number): number {
   return distance === Number.POSITIVE_INFINITY ? 1_000_000 : distance;
 }
 
-function textureCacheKey(textureIndex: number, colorSpace: GLTFTextureColorSpace): number {
-  return textureIndex * 2 + (colorSpace === "linear" ? 1 : 0);
+function renderSpecularColorFactor(value: readonly [number, number, number]): readonly [number, number, number] {
+  return [clampNonNegative(value[0]), clampNonNegative(value[1]), clampNonNegative(value[2])];
+}
+
+function clampUnit(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function clampNonNegative(value: number): number {
+  return Math.max(0, value);
+}
+
+function textureCacheKey(imageIndex: number, colorSpace: GLTFTextureColorSpace): string {
+  return `${imageIndex}:${colorSpace}`;
+}
+
+function setTextureLibraryEntry(textureLibrary: Map<string, Texture>, textureName: string, colorSpace: GLTFTextureColorSpace, texture: Texture): void {
+  const existing = textureLibrary.get(textureName);
+  if (!existing) {
+    textureLibrary.set(textureName, texture);
+    return;
+  }
+  if (existing === texture) return;
+  const keyedName = textureLibraryKey(textureLibrary, textureName, colorSpace);
+  if (textureLibrary.get(keyedName) !== texture) {
+    textureLibrary.set(keyedName, texture);
+  }
 }
 
 function textureLibraryKey(textureLibrary: ReadonlyMap<string, Texture>, textureName: string, colorSpace: GLTFTextureColorSpace): string {
@@ -576,9 +1753,16 @@ function createSampler(texture: GLTFTextureAsset | undefined): Sampler {
         minFilter: descriptor.minFilter,
         magFilter: descriptor.magFilter,
         addressU: descriptor.addressU,
-        addressV: descriptor.addressV
+        addressV: descriptor.addressV,
+        maxAnisotropy: 8
       }
-    : {};
+    : {
+        minFilter: "linear-mipmap-linear",
+        magFilter: "linear",
+        addressU: "repeat",
+        addressV: "repeat",
+        maxAnisotropy: 8
+      };
   return new Sampler(samplerDescriptor);
 }
 
@@ -599,7 +1783,10 @@ async function decodeImageInBrowser(
     const blob = image.data
       ? new Blob([image.data], { type: image.mimeType ?? "application/octet-stream" })
       : await fetchImageBlob(asset, image);
-    const bitmap = await createImageBitmap(blob);
+    const bitmap = await createImageBitmap(blob, {
+      colorSpaceConversion: "none",
+      premultiplyAlpha: "none"
+    });
     return { width: bitmap.width, height: bitmap.height, source: bitmap, colorSpace: "srgb" };
   }
   const ImageCtor = globalThis.Image;
@@ -613,6 +1800,10 @@ async function decodeImageInBrowser(
     imageElement.onerror = () => reject(new Error(`glTF image decode failed for ${url}`));
     imageElement.src = url;
   });
+}
+
+function createSamplerForInfo(asset: GLTFAsset, info: GLTFResolvedTextureInfo): Sampler {
+  return createSampler(asset.textures[info.texture]);
 }
 
 async function readImageBytes(asset: GLTFAsset, image: GLTFImageAsset): Promise<ArrayBuffer> {

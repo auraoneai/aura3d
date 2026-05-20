@@ -44,14 +44,25 @@ The WebGL2 backend attempts native compressed upload when the required extension
 - `textureFallbacks`
 - `textureFallbackBytes`
 
-## Limits
+## Asset Pipeline Integration
 
-- The asset package has a bounded KTX2/Basis adapter through `@loaders.gl/textures` that can transcode real `image/ktx2` inputs to ETC2, BC3, ASTC 4x4, or RGBA8 payloads and attach RGBA8 fallback mip levels.
-- The default glTF render-resource path targets `etc2-rgba8unorm`, because ETC2 is available in WebGL2. Applications can override the target through `createGLTFRenderResources({ ktx2BasisTargetFormat })`.
-- This is not a full production texture pipeline claim. GPU-format selection is not yet driven by a renderer capability query, transcoder WASM loading still depends on the host bundler/CDN setup in browser deployments, and the corpus coverage is currently a small real KTX2 fixture rather than broad asset validation.
+- `KHR_texture_basisu` and `image/ktx2` are preserved by the glTF loader.
+- `createGLTFRenderResources()` can transcode KTX2/Basis through `@loaders.gl/textures`.
+- The default target is `etc2-rgba8unorm`, with RGBA8 fallback mip levels for devices that cannot upload the compressed target.
+- `createGLTFRenderResources({ ktx2BasisTargetFormat })` can request ETC2, BC3, ASTC 4x4, or RGBA8 payloads.
+- v8 loader routes include KTX2/compression route evidence and screenshots under `tests/reports/v8/loaders`.
+
+## Known Gaps
+
+- GPU-format choice is not yet fully renderer-capability driven across all deployment targets.
+- Browser deployments still depend on loaders.gl Basis transcoder assets being reachable through the host bundler or CDN setup.
+- The real KTX2/Basis corpus remains small. Do not call this broad texture-compression compatibility.
+- Compression upload diagnostics prove resource behavior, not final visual parity.
 
 ## Verification
 
 - `tests/unit/rendering/resource-lifetime.test.ts` validates compressed byte accounting, payload sizes, and fallback-data contracts.
 - `tests/assets/gltf-compression-decoders.test.ts` transcodes a real Khronos KTX2/Basis fixture into ETC2 mip levels plus RGBA8 fallback levels, then routes it through `createGLTFRenderResources()`.
 - WebGL2 diagnostics expose compressed upload/fallback counters when compressed textures are bound through material samplers.
+- `tests/reports/v8-assets.json`
+- `tests/reports/v8-visual-review.json`

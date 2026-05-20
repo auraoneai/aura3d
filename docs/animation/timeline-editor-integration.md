@@ -1,12 +1,13 @@
-# Timeline and Editor Integration Plan
+# Timeline And Editor Integration
 
-The v2 animation runtime can play clips, blend actions, drive state machines, build skinning palettes, and extract root motion. Timeline authoring is not claimed as production-ready yet. The current editor slice is an inspection and preview surface that makes animation state visible without adding a saved timeline asset format.
+The animation runtime can play clips, blend actions, drive state machines, build skinning palettes, apply root motion, and power v8 route demos. Timeline authoring is still not production-ready. The current editor slice is an inspection and preview surface, not a saved timeline-authoring product.
 
 ## Initial Editor UI
 
 - `apps/editor/src/panels/TimelinePanel.ts` lists imported animation-capable assets and the selected project node.
 - The panel exposes play, pause, scrub, and loop controls as UI state only.
 - The editor renders the panel in the right rail so browser/editor inspection can verify that animation authoring is not hidden behind docs-only claims.
+- `packages/editor-runtime/src/TimelineModel.ts` provides deterministic timeline model primitives, but it is not yet wired into a full clip/track authoring workflow with imported animation assets.
 
 ## Required Before Authoring Claims
 
@@ -19,4 +20,4 @@ The v2 animation runtime can play clips, blend actions, drive state machines, bu
 
 ## Current Boundary
 
-The panel is evidence for initial timeline integration only. It is not a claim of full Unity/Unreal-style timeline authoring, retargeting, non-linear animation editing, or production animation event authoring.
+The panel and model are evidence for initial timeline integration only. They are not a claim of Unity/Unreal-style timeline authoring, retargeting, non-linear animation editing, production event authoring, or a DCC-grade animation editor.

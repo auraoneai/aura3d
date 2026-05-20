@@ -20,6 +20,14 @@ export class Vector4 {
     return new Vector4(this.x * scalar, this.y * scalar, this.z * scalar, this.w * scalar);
   }
 
+  divide(v: Vector4): Vector4 {
+    return new Vector4(this.x / v.x, this.y / v.y, this.z / v.z, this.w / v.w);
+  }
+
+  divideScalar(scalar: number): Vector4 {
+    return new Vector4(this.x / scalar, this.y / scalar, this.z / scalar, this.w / scalar);
+  }
+
   dot(v: Vector4): number {
     return this.x * v.x + this.y * v.y + this.z * v.z + this.w * v.w;
   }

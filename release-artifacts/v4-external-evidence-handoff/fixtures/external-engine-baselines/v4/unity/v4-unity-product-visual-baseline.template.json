@@ -1,0 +1,51 @@
+{
+  "ok": false,
+  "engine": "unity",
+  "baselineKind": "product-visual",
+  "sameSceneExternalBaseline": true,
+  "sameSceneProductBaseline": true,
+  "sceneDescriptorId": "v4-deterministic-product-visual-parity",
+  "sceneDescriptorVersion": "v4-product-visual-parity-scene-v1",
+  "descriptorSha256": "replace-with-sha256-of-scene-descriptor",
+  "generatedBy": "V4ExternalVisualBaselineRunner.cs",
+  "screenshotPath": "tests/reports/v4-product-visual/unity-product-visual-baseline.png",
+  "screenshotSha256": "replace-with-sha256-of-screenshot",
+  "runnerEvidencePath": "tests/reports/v4-product-visual/unity-product-visual-baseline.png.evidence.json",
+  "runnerEvidenceSha256": "replace-with-sha256-of-runner-evidence-sidecar",
+  "runnerEvidence": {
+    "ok": false,
+    "engine": "unity",
+    "baselineKind": "product-visual",
+    "sceneDescriptorId": "v4-deterministic-product-visual-parity",
+    "sceneDescriptorVersion": "v4-product-visual-parity-scene-v1",
+    "screenshotPath": "tests/reports/v4-product-visual/unity-product-visual-baseline.png",
+    "renderedFrameCaptured": false,
+    "cameraConfigured": false,
+    "metrics": {
+      "width": 720,
+      "height": 480,
+      "nonBlankPixels": 0,
+      "colorBuckets": 0,
+      "drawCalls": 18,
+      "materialCount": 7,
+      "productParts": 18,
+      "turntableHotspots": 3,
+      "captureViews": 4,
+      "batchTasks": 4
+    }
+  },
+  "visualDiffAgainstGalileo": false,
+  "metrics": {
+    "width": 720,
+    "height": 480,
+    "nonBlankPixels": 0,
+    "colorBuckets": 0,
+    "drawCalls": 18,
+    "materialCount": 7,
+    "productParts": 18,
+    "turntableHotspots": 3,
+    "captureViews": 4,
+    "batchTasks": 4
+  },
+  "requiredCommand": "node fixtures/external-engine-baselines/v4/write-baseline-report.mjs unity product-visual tests/reports/v4-product-visual/unity-product-visual-baseline.png tests/reports/v4-unity-product-visual-baseline.json"
+}

@@ -1,21 +1,72 @@
 # Rendering
 
-The rendering package owns browser graphics resources and draw submission. Current public examples use WebGL2 as the main renderer-backed path.
+Version: `0.1.0-alpha.0`
 
-## Renderer Boundary
-
-Application code supplies renderable geometry, materials, camera state where supported, and canvas sizing. The renderer owns backend resources, render-state application, draw diagnostics, and resource disposal.
-
-The renderer is not a full game engine loop. Apps should keep UI state, route changes, input mapping, and data loading outside the renderer and submit the current scene state each frame.
-
-## Materials And Diagnostics
-
-The current material path includes unlit, direct PBR, textured PBR, normal-mapped PBR, instanced, morph, and selected glTF-derived material bindings. Renderer diagnostics expose draw calls and resource state that browser tests and demos can inspect.
+The rendering package owns browser graphics resources, materials, textures, render queues, state application, frame submission, postprocessing, diagnostics, and disposal. The public package is `@galileo3d/engine/rendering`.
 
 ## Backend Position
 
-WebGL2 is the externally usable path for the current docs and templates. WebGPU has fallback and bounded diagnostic evidence, but real-device parity is not yet claimed.
+WebGL2 is the main externally usable backend today. WebGPU exists as scoped implementation and proof routes for render-to-texture, materials, compute, and instancing work, but Galileo3D does not yet claim complete WebGPU renderer parity.
 
-## Current Limits
+## Package Surface
 
-The renderer does not claim large-scene production culling, physically complete environment lighting, complete glTF material parity, production-wide texture compression coverage, or shadow stress coverage. Keep public wording aligned with `docs/known-limits.md`.
+Current public exports cover:
+
+- render devices and backend creation;
+- WebGL2/WebGPU devices and state/cache helpers;
+- geometry, vertex/index buffers, attributes, bounds, morph target bounds, and skinning bounds;
+- textures, color management, HDR, tone mapping, exposure, BRDF LUT, PMREM, IBL, and environment resources;
+- physical materials, material-extension diagnostics, alpha sorting, transmission helpers;
+- shadows, contact shadows, cascaded shadow pipeline, debug views;
+- bloom, SSAO, depth of field, color grading, postprocess composer;
+- renderer stats, resource budgets, render-item sorting, LOD, BVH, batching, instancing, and frustum helpers;
+- V6 production renderer surfaces and V9 renderer wrappers.
+
+## Direct Usage
+
+```ts
+import { Geometry, PBRMaterial } from "@galileo3d/engine/rendering";
+import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
+
+const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
+
+const scene = new G3DScene();
+scene.addGeometry("cube", Geometry.box());
+scene.addMaterial("paint", new PBRMaterial({
+  baseColor: [0.75, 0.65, 0.48, 1],
+  roughness: 0.4,
+  metalness: 0.1
+}));
+scene.createRenderableMesh({ geometry: "cube", material: "paint" });
+
+const diagnostics = renderer.render(scene);
+console.log(diagnostics.drawCalls);
+```
+
+## Renderer Boundary
+
+The renderer does not own the entire application. It expects the app to provide the current scene, camera, viewport, resources, and timing. It owns GPU-facing resource creation, state management, draw submission, diagnostics, and disposal.
+
+## Current Strengths
+
+- WebGL2 route rendering with diagnostics;
+- state caching and render queue sorting work;
+- PBR/HDR/IBL foundations;
+- postprocess chain foundations;
+- instancing and batching evidence;
+- bounds, culling, and resource lifecycle APIs;
+- V8/V9 routes for materials, decals, cameras, shadows, postprocessing, lines/helpers, picking, and WebGPU proofs.
+
+## Boundaries
+
+Do not claim:
+
+- complete Three.js renderer parity;
+- production physically complete IBL;
+- every glTF material extension rendered visually correctly;
+- broad large-scene performance superiority;
+- full WebGPU engine;
+- complete shadow/postprocess parity.
+
+Use route reports and same-scene comparisons as scoped evidence only.
+

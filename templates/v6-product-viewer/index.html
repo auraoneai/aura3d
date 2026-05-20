@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>G3D V6 Product Viewer</title>
+    <style>
+      body{margin:0;background:#0a0d10;color:#eef2f6;font-family:Inter,system-ui,sans-serif}.shell{display:grid;grid-template-columns:minmax(640px,1fr) 360px;min-height:100vh}canvas{width:100%;height:100vh;display:block;background:#07090c}.panel{display:grid;align-content:start;gap:12px;padding:18px;background:#111820;border-left:1px solid #27313b}.panel h1{font-size:18px;margin:0}.panel p{margin:0;color:#aab5c4;font-size:13px;line-height:1.4}.panel label{display:grid;gap:6px;font-size:12px;color:#d8e0eb}.panel button{border:1px solid #41506a;border-radius:6px;background:#1f6feb;color:white;font:inherit;font-weight:700;padding:10px 12px}.metrics{display:grid;gap:8px}.metrics span{border:1px solid #27313b;border-radius:6px;padding:8px;color:#c9d4e2;font-size:12px}@media(max-width:860px){.shell{grid-template-columns:1fr}canvas{height:auto;aspect-ratio:1}.panel{border-left:0;border-top:1px solid #27313b}}
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <canvas id="viewport" width="960" height="960"></canvas>
+      <section class="panel">
+        <h1>G3D V6 Product Viewer</h1>
+        <p>Public SDK starter with GLB loading, HDR environment lighting, orbit controls, exposure, IBL, postprocess, diagnostics, and screenshot capture.</p>
+        <label>Exposure <input id="exposure" type="range" min="0" max="3" step="0.05" value="1.08"></label>
+        <label>IBL <input id="ibl" type="range" min="0" max="3" step="0.05" value="1.2"></label>
+        <button id="orbit" type="button">Orbit</button>
+        <button id="capture" type="button">Capture PNG</button>
+        <div class="metrics" id="metrics"><span>Loading G3D renderer</span></div>
+      </section>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

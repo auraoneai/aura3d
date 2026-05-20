@@ -1,5 +1,9 @@
 import {
   CommandBuffer,
+  ActiveComponent,
+  ActiveSystem,
+  HierarchyComponent,
+  HierarchySystem,
   NameComponent,
   SystemScheduler,
   TagComponent,
@@ -153,5 +157,74 @@ describe("ECS runtime", () => {
     expect(snapshot.entities).toBe(1);
     expect(restored.get(restoredEntity, TransformComponent)?.position).toEqual([1, 2, 3]);
     expect(restored.get(restoredEntity, TagComponent)?.tag).toBe("player");
+  });
+
+  it("ports old ECS hierarchy parenting with depth, traversal, sibling order, and cycle rejection", () => {
+    const world = new World();
+    const hierarchy = new HierarchySystem();
+    const root = world.createEntity();
+    const left = world.createEntity();
+    const right = world.createEntity();
+    const leaf = world.createEntity();
+
+    hierarchy.addChild(world, root, left);
+    hierarchy.addChild(world, root, right);
+    hierarchy.addChild(world, left, leaf);
+
+    const visited: string[] = [];
+    hierarchy.forEachDescendant(world, root, (entity, depth) => visited.push(`${entity.id}:${depth}`));
+
+    expect(hierarchy.getChildren(world, root)).toEqual([left, right]);
+    expect(hierarchy.getParent(world, leaf)).toEqual(left);
+    expect(hierarchy.getDepth(world, leaf)).toBe(2);
+    expect(hierarchy.isAncestorOf(world, root, leaf)).toBe(true);
+    expect(visited).toEqual([`${left.id}:1`, `${leaf.id}:2`, `${right.id}:1`]);
+    expect(world.get(left, HierarchyComponent)?.nextSibling).toEqual(right);
+    expect(world.get(right, HierarchyComponent)?.previousSibling).toEqual(left);
+
+    hierarchy.setSiblingIndex(world, right, 0);
+
+    expect(hierarchy.getChildren(world, root)).toEqual([right, left]);
+    expect(() => hierarchy.setParent(world, root, leaf)).toThrow(/cycle/i);
+    expect(hierarchy.validateHierarchy(world)).toBe(true);
+  });
+
+  it("propagates active state through ECS hierarchy and serializes restored component classes", () => {
+    const world = new World();
+    world.registerComponent(ActiveComponent);
+    world.registerComponent(HierarchyComponent);
+    const hierarchy = new HierarchySystem();
+    const active = new ActiveSystem();
+    const root = world.createEntity();
+    const child = world.createEntity();
+    const leaf = world.createEntity();
+    world.add(root, ActiveComponent, new ActiveComponent(true));
+    world.add(child, ActiveComponent, new ActiveComponent(true));
+    world.add(leaf, ActiveComponent, new ActiveComponent(true));
+    hierarchy.addChild(world, root, child);
+    hierarchy.addChild(world, child, leaf);
+
+    active.update(world, { deltaTime: 1 / 60, elapsedTime: 1, frame: 1 });
+    expect(active.getActiveEntities(world)).toEqual([root, child, leaf]);
+
+    active.setActive(world, child, false);
+
+    expect(active.isActive(world, leaf)).toBe(true);
+    expect(active.isActiveInHierarchy(world, leaf)).toBe(false);
+    expect(active.getInactiveEntities(world)).toEqual([child, leaf]);
+
+    const { world: restored, remap } = deserializeWorld(serializeWorld(world), [ActiveComponent, HierarchyComponent]);
+    const restoredRoot = remap.get(`${root.id}:${root.generation}`)!;
+    const restoredChild = remap.get(`${child.id}:${child.generation}`)!;
+    const restoredLeaf = remap.get(`${leaf.id}:${leaf.generation}`)!;
+    const restoredHierarchy = new HierarchySystem();
+    const restoredActive = new ActiveSystem();
+    restoredHierarchy.setParent(restored, restoredChild, restoredRoot);
+    restoredHierarchy.setParent(restored, restoredLeaf, restoredChild);
+    restoredActive.update(restored, { deltaTime: 0, elapsedTime: 0, frame: 0 });
+
+    expect(restored.get(restoredChild, ActiveComponent)).toBeInstanceOf(ActiveComponent);
+    expect(restored.get(restoredLeaf, HierarchyComponent)).toBeInstanceOf(HierarchyComponent);
+    expect(restoredActive.isActiveInHierarchy(restored, restoredLeaf)).toBe(false);
   });
 });
