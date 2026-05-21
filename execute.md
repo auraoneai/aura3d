@@ -1,14 +1,14 @@
 # Production-Grade G3D Core Platform And Advanced Gallery PRD
 
-Status: current-branch execution PRD - preserve/g3d-v2-execution-state is source of truth; fix all advanced examples to accepted evidence; no legacy cleanup loop.
+Status: current-branch execution PRD - master is source of truth; fix all advanced examples to accepted evidence; no legacy cleanup loop.
 Last reviewed: 2026-05-21
 Primary objective: build reusable G3D core platform capability first, then prove it through a production-grade advanced examples gallery comparable to official advanced Three.js showcase demos, without route-local hacks, fake assets, false claims, or screenshot churn.
 
 ## 0. Current Branch Operating Rules
 
-This file controls the current work in /Users/gurbakshchahal/G3D on branch preserve/g3d-v2-execution-state.
+This file controls the current work in /Users/gurbakshchahal/G3D on branch master.
 
-The current checked-out branch is authoritative. Do not switch to main, master, local stashes, old backup folders, or transcript history as source truth. main and master are not the active advanced-gallery execution tree for this work.
+The current checked-out master branch is authoritative. Do not switch to deleted branches, old local stashes, old backup folders, or transcript history as source truth. master is the only active advanced-gallery execution tree for this work.
 
 The previous Product/Data loop failed because agents kept treating paperwork, metrics, hashes, generated artifacts, and repeated screenshots as progress while the actual examples remained visually weak. That history is not an implementation base.
 
@@ -122,12 +122,12 @@ Review/audit tooling must fail closed for stale hashes, partial captures, missin
 
 ## 1. Current Truth
 
-We are now on the correct advanced-gallery execution branch: preserve/g3d-v2-execution-state.
+We are now on the canonical advanced-gallery execution branch: master.
 
-Known branch baseline at the time of this PRD rewrite:
+Known branch baseline at the time of branch consolidation:
 
 ~~~text
-4febfe9 fix: v9 gallery fixes, asset inspection, environment platform, shader fixes
+d43abac docs: update advanced gallery execution PRD
 ~~~
 
 If the branch advances, use the current checked-out commit as truth. Do not require an old commit hash if the current branch contains the advanced-gallery source tree.
@@ -275,7 +275,7 @@ Then run one focused capture for that owner change. If the PNG fails, do not rec
 Use a short goal that points to this file instead of pasting a huge prompt:
 
 ~~~text
-Work in /Users/gurbakshchahal/G3D on the current preserve/g3d-v2-execution-state checkout. Read execute.md fully and follow it exactly. execute.md is the only source of truth; do not use goal.md, old chats, master/main, stashes, or backup folders as implementation truth. Run the mandatory first commands, preserve execute.md, fix current-branch source-owned defects across all ten advanced gallery routes, create missing current-branch files/tests/scripts/artifacts as work items, and continue until execute.md acceptance is complete. Do not stop for missing repo files or reports. Do not loop on Product/Data screenshots. Use focused owner tests, one qualified visual check per owner change, direct PNG inspection, review/audit gates, and honest metadata. Stop only for external blockers or explicit user instruction.
+Work in /Users/gurbakshchahal/G3D on the current master checkout. Read execute.md fully and follow it exactly. execute.md is the only source of truth; do not use goal.md, old chats, deleted branches, stashes, or backup folders as implementation truth. Run the mandatory first commands, preserve execute.md, fix current-branch source-owned defects across all ten advanced gallery routes, create missing current-branch files/tests/scripts/artifacts as work items, and continue until execute.md acceptance is complete. Do not stop for missing repo files or reports. Do not loop on Product/Data screenshots. Use focused owner tests, one qualified visual check per owner change, direct PNG inspection, review/audit gates, and honest metadata. Stop only for external blockers or explicit user instruction.
 ~~~
 
 ## 2. Product Definition
