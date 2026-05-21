@@ -1,551 +1,282 @@
 # Production-Grade G3D Core Platform And Advanced Gallery PRD
 
-Status: salvage/restart directive — Product/Data failed; no implementation before dirty-worktree salvage map
-Last reviewed: 2026-05-20
+Status: current-branch execution PRD - preserve/g3d-v2-execution-state is source of truth; fix all advanced examples to accepted evidence; no legacy cleanup loop.
+Last reviewed: 2026-05-21
 Primary objective: build reusable G3D core platform capability first, then prove it through a production-grade advanced examples gallery comparable to official advanced Three.js showcase demos, without route-local hacks, fake assets, false claims, or screenshot churn.
 
-## 0A. Failed Product/Data Recovery Loop — Mandatory Salvage Addendum
+## 0. Current Branch Operating Rules
 
-The previous Product Configurator and Data Galaxy recovery loop failed.
+This file controls the current work in /Users/gurbakshchahal/G3D on branch preserve/g3d-v2-execution-state.
 
-The failure was not lack of activity. The failure was that the agent repeatedly edited code, tests, reports, metadata, gates, layouts, particles, generated assets, and screenshots while the actual Product/Data images remained visibly poor.
+The current checked-out branch is authoritative. Do not switch to main, master, local stashes, old backup folders, or transcript history as source truth. main and master are not the active advanced-gallery execution tree for this work.
 
-This section overrides any optimistic or stale status below.
+The previous Product/Data loop failed because agents kept treating paperwork, metrics, hashes, generated artifacts, and repeated screenshots as progress while the actual examples remained visually weak. That history is not an implementation base.
 
-### Current Hard Truth
+Current rules:
 
-Product Configurator remains failed.
+- Fix the current branch, not an old branch.
+- Do not use the wrong-branch stash as source truth.
+- Do not create a standalone cleanup/report gate before implementation.
+- Do not stop at a report, inventory, or missing-file list.
+- Missing current-branch files, scripts, reports, PNGs, JSON, tests, routes, examples, or harnesses are work items to create, map, or repair from the current codebase.
+- Product Configurator and Data Galaxy are important failed examples, but they are part of the ten-route gallery recovery, not a reason to freeze all other work.
+- The final objective is accepted evidence for all ten advanced examples, not only Product/Data.
 
-Visible blockers:
+## 0A. Mandatory First Commands
 
-- red car paint remains noisy/speckled/glittered;
-- hood, roof, and glass remain gray-white / washed out;
-- contact, grounding, shadow, and reflection quality remain weak;
-- support objects such as watch, shoe, and sunglasses do not improve the hero and often read as edge clutter or debris;
-- current hero does not read as a premium product configurator;
-- moving support GLBs around did not solve the real renderer/material/studio problem.
+Every execution pass starts with exactly these commands:
 
-Data Galaxy remains failed.
+~~~bash
+git status --short
+git log -1 --oneline
+pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
+~~~
 
-Visible blockers:
+If matching Playwright/Vite/Vitest/pnpm/v9 processes belong to /Users/gurbakshchahal/G3D, stop only those G3D-owned processes and continue. Do not kill unrelated processes from other repos.
 
-- still reads as toy/prototype/scaffold/debug art;
-- current DataGalaxyFocalSystem direction still looks like cuboids, tiny dots, thin lines, and generated support fragments;
-- generated/support GLB still contaminates the visual concept;
-- object-count fixes and tiny semantic nodes are not a premium data visualization;
-- route labels like `DataGalaxyFocalSystem` do not matter if the screenshot still looks bad;
-- CPU/static particle honesty is required, but honesty does not make the image visually acceptable.
+## 0B. Worktree Safety
 
-### What Went Wrong
+execute.md may be intentionally dirty while this PRD is being corrected. Preserve it.
 
-The prior loop confused code activity with progress.
+If tracked files other than intentional current-task edits are dirty:
+
+1. inspect git status --short, git diff --name-only, and git diff --stat;
+2. back up unknown churn before any destructive git operation;
+3. keep source changes only when they serve a named owner task in this PRD;
+4. never reset, clean, stash, pop, drop, or switch branches if that would destroy the current PRD or user-provided instructions.
+
+Use destructive git commands only when they are explicitly required for the current task and the affected files are backed up or known generated junk. Do not use git cleanup as a substitute for source ownership.
+
+## 0C. Goal-Mode Continuation Rule
+
+When running this file in goal mode, keep going until the PRD is complete.
+
+Do not stop for ordinary repo-internal blockers. These are work items:
+
+- missing route files;
+- missing tests;
+- missing package scripts;
+- missing report folders;
+- missing PNG/JSON artifacts;
+- missing review/audit harnesses;
+- outdated metadata;
+- old path names from this PRD that need current-branch equivalents;
+- failing route screenshots;
+- failing focused tests caused by the current task.
+
+Only pause for an actual external blocker: credentials, unavailable system dependency with no repo fallback, destructive git decision that would lose user work, tool failure outside the repo, or explicit user instruction.
+
+A route that fails visual review is not a stop condition. It becomes the next source-owned fix.
+
+A report is not a stop condition. It must feed the next owner task.
+
+## 0D. Current Advanced Gallery Route Set
+
+The ten active route IDs are:
+
+1. product-configurator
+2. data-galaxy
+3. reactor-post
+4. digital-twin
+5. robotics-lab
+6. smart-city
+7. fog-cathedral
+8. physics-playground
+9. water-lab
+10. ocean-observatory
+
+All ten routes must be evaluated against current source, current runtime JSON, current screenshots, current metadata, current review output, and current audit output.
+
+## 0E. Anti-Loop Rules
 
 Invalid progress signals:
 
 - smoke tests passed;
 - typecheck passed;
-- route JSON existed;
+- route JSON exists;
 - screenshot hashes changed;
 - object count increased;
 - draw calls changed;
 - metadata wording improved;
-- right-side diagnostics became more detailed;
-- unit tests were updated to match the current implementation;
-- generated GLB roles were renamed or excluded;
-- screenshots were repeatedly captured without a first-glance visual improvement.
+- diagnostics became more detailed;
+- unit tests were updated to match bad output;
+- generated assets were renamed, reclassified, or counted differently.
 
-None of those count as acceptance.
+Valid progress requires all of:
 
-A source-owned change can still be visually irrelevant.
+1. a named source owner;
+2. declared write set before edits;
+3. focused tests for that owner;
+4. a bounded visual verification when visible output changes;
+5. direct PNG inspection of current artifacts;
+6. honest metadata/review/audit status;
+7. continuation to the next owner when the visual result still fails.
 
-A test can pass while the image is still garbage.
+Do not recapture the same failed change repeatedly. Fix a source owner, run the narrow tests, run one qualified visual check, inspect it, then either accept with evidence or move to the next owner.
 
-A route can be honest and still visually failed.
+## 0F. Review And Audit Rule
 
-### Emergency Stop Rules
+The visual review gate is repo-owned and evidence-based. It must not depend on external reviewer environment variables as a reason to stop. If reviewer metadata or route judgments are required, create the current-branch review input from direct inspection of current PNGs and keep hashes tied to the exact artifacts being reviewed.
 
-Do not run another Product/Data gallery screenshot until the specific restart gates below are satisfied.
-
-Do not run:
-
-- `pnpm v9:advanced-gallery`;
-- `pnpm v9:advanced-gallery:review`;
-- `pnpm v9:advanced-gallery:audit`;
-- Playwright gallery capture for Product/Data;
-- visual-review tools;
-- report-audit tools;
-- screenshot hash generation;
-- contact-sheet generation.
-
-Allowed before implementation:
-
-- `git status --short`;
-- `git diff --name-only`;
-- `git diff --stat`;
-- source inspection;
-- targeted type/unit checks only after actual source changes;
-- Product same-asset reference harness only if working on material proof, not gallery route acceptance.
-
-Do not use:
-
-- `git reset`;
-- `git checkout`;
-- `git restore`;
-- `git clean`;
-- stash/apply/pop;
-- branch switching;
-- broad revert commands.
-
-Do not touch `.gitignore`.
-
-Do not delete, move, or modify unrelated dirty files.
-
-### Mandatory Salvage Before New Work
-
-Before new Product/Data implementation, produce a file-by-file salvage map from the current dirty worktree.
-
-Run only:
-
-```bash
-pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
-git status --short
-git diff --name-only
-git diff --stat
-```
-
-If G3D-specific Playwright/Vite/vitest/gallery processes are running, kill only those tied to `/Users/gurbakshchahal/G3D`.
-
-Then classify every dirty file into one of:
-
-A. unrelated pre-existing dirty file
-B. failed Product/Data route churn
-C. potentially useful library/platform fix
-D. test/report/metadata churn
-E. generated/cache artifact
-
-For every file, output:
-
-```md
-File:
-Classification:
-Recommendation: KEEP CANDIDATE | DISCARD/REWRITE MANUALLY | ISOLATE FOR LATER REVIEW | DO NOT TOUCH
-Why:
-Risk:
-Dependencies:
-Safe next action:
-```
-
-Then produce three patch-set buckets:
-
-```md
-Bucket 1 — Keep Candidate: library/platform fixes only
-Bucket 2 — Discard/Rewrite: failed Product/Data visual churn
-Bucket 3 — Review Carefully: tests/review/audit/execute changes
-```
-
-No implementation is allowed until this salvage map is written.
-
-### Known Dirty-File Classification From Prior Salvage
-
-The previous salvage pass found roughly 46 changed files, about 3064 insertions and 597 deletions, plus one untracked file. Treat this as failed-loop churn until reclassified.
-
-Unrelated pre-existing dirty file:
-
-- `.gitignore`
-
-Recommendation: DO NOT TOUCH.
-
-Failed Product/Data route churn:
-
-- `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts`
-- `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts`
-- `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts`
-- `apps/v9-advanced-examples-gallery/src/dataGalaxyFocalSystem.ts`
-- `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`
-- `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
-- `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`
-- `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts`
-- `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`
-- `packages/product-studio/src/ProductShowcaseLayout.ts`
-
-Recommendation: DISCARD/REWRITE MANUALLY unless a file-level review proves the change is independently useful. Do not keep these as the Product/Data recovery.
-
-Potentially useful library/platform candidates:
-
-- `packages/assets/src/AssetInspection.ts`
-- `packages/assets/src/GLTFLoader.ts`
-- `packages/assets/src/GLTFRenderResources.ts`
-- `packages/rendering/src/EnvironmentPlatform.ts`
-- `packages/rendering/src/LightingRig.ts`
-- `packages/rendering/src/ShaderChunks.ts`
-- `packages/rendering/src/ShaderLibrary.ts`
-- `packages/rendering/src/TexturedPBRMaterial.ts`
-- `packages/rendering/src/index.ts`
-- `packages/rendering/src/shaders/pbr-direct.frag.glsl`
-
-Recommendation: ISOLATE FOR LATER REVIEW. Keep only if focused renderer/importer tests prove reusable value independent of failed Product/Data screenshots.
-
-Test/report/metadata churn:
-
-- `execute.md`
-- `apps/v9-advanced-examples-gallery/src/authoredAssets.ts`
-- `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
-- `apps/v9-advanced-examples-gallery/src/main.ts`
-- `apps/v9-advanced-examples-gallery/src/metadata.ts`
-- `tests/assets/gltf-inspection.test.ts`
-- `tests/browser/product-configurator-reference-harness.ts`
-- `tests/browser/product-configurator-reference.spec.ts`
-- `tests/browser/v9-advanced-examples-gallery.spec.ts`
-- `tests/unit/apps/v9-advanced-gallery-route-policies.test.ts`
-- `tests/unit/apps/v9-data-galaxy-budgets.test.ts`
-- `tests/unit/apps/v9-product-configurator-policy.test.ts`
-- `tests/unit/apps/v9-route-scene-modules.test.ts`
-- `tests/unit/product-studio/product-showcase-layout.test.ts`
-- `tests/unit/rendering/environment-lighting-reflection-platform.test.ts`
-- `tests/unit/rendering/environment-platform.test.ts`
-- `tests/unit/rendering/pbr-lighting.test.ts`
-- `tests/unit/rendering/shader-library.test.ts`
-- `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts`
-- `tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts`
-- `tests/unit/tools/v9-data-galaxy-generated-assets.test.ts`
-- `tools/v9-advanced-gallery-report-audit/index.ts`
-- `tools/v9-advanced-gallery-visual-review/gateRules.ts`
-- `tools/v9-advanced-gallery-visual-review/index.ts`
-
-Recommendation: ISOLATE FOR LATER REVIEW. Keep only strict anti-false-acceptance gates. Review `tools/v9-advanced-gallery-visual-review/gateRules.ts` especially carefully because gate behavior changed during the failed loop.
-
-Generated/cache artifact:
-
-- `tools/v9-advanced-gallery-assets/__pycache__/generate-data-galaxy-core-blender.cpython-314.pyc`
-- `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py`
-
-Recommendation: ISOLATE FOR LATER REVIEW. Data generator changes belong with the failed Data experiment unless a clean future strategy needs them.
-
-### Product Restart Strategy
-
-Do not continue the current Product multi-object hero.
-
-Product restart owner order:
-
-1. Renderer/material/importer proof:
-   - `packages/rendering/src/TexturedPBRMaterial.ts`
-   - `packages/rendering/src/ShaderLibrary.ts`
-   - `packages/rendering/src/ShaderChunks.ts`
-   - `packages/rendering/src/shaders/pbr-direct.frag.glsl`
-   - `packages/assets/src/GLTFRenderResources.ts`
-   - `packages/assets/src/AssetInspection.ts`
-
-2. Product same-asset harness:
-   - `tests/browser/product-configurator-reference-harness.ts`
-   - `tests/browser/product-configurator-reference.spec.ts`
-
-3. Product Studio route only after material proof:
-   - `packages/product-studio/src/ProductShowcaseLayout.ts`
-   - `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`
-   - `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
-
-Product visual restart requirements:
-
-- Hero mode must show original `car-concept` only.
-- Watch/shoe/sunglasses must not appear in hero mode.
-- Support objects may appear only in Detail mode or separate variant/product-island mode.
-- No generated/stub Product GLB may replace original car hero.
-- Product hero must be a clean showroom frame: dark premium studio/cove, grounded car, clean contact receiver, no edge clutter.
-- If paint/glass still fail, stop in renderer/importer/material. Do not keep moving objects around.
-
-Product material proof requirements before gallery capture:
-
-- same original `car-concept` GLB;
-- cropped/reference proof for red hood paint;
-- cropped/reference proof for front bumper paint;
-- cropped/reference proof for windshield/roof glass;
-- cropped/reference proof for grounding/contact;
-- proof must measure actual visual failure regions, not whole-image averages;
-- if the reference harness cannot isolate these regions, fix the harness first.
-
-### Data Restart Strategy
-
-Do not continue current `DataGalaxyFocalSystem` as-is.
-
-Data restart owner order:
-
-1. New reusable effect owner:
-   - create `packages/rendering/src/effects/DataGalaxyEffect.ts` or equivalent.
-
-2. Route adapter only after standalone effect proof:
-   - `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts`
-
-3. Delete or stop building on current failed route concept unless reviewed:
-   - `apps/v9-advanced-examples-gallery/src/dataGalaxyFocalSystem.ts`
-   - `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts`
-   - `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py`
-
-Data visual restart requirements:
-
-- No generated Data GLB in hero.
-- No cuboid scaffold blocks.
-- No tiny semantic node filler.
-- No object-count padding.
-- No wide particle carpet.
-- No giant translucent fog sphere.
-- No random thin debug lines.
-- Build one coherent visual effect: luminous central core, orbiting particle rings, clean arcs, clustered glowing points, depth layers.
-- CPU/static honesty must remain explicit: do not claim native GPU compute unless implemented.
-- If the effect cannot be made beautiful in the route, prove it outside the gallery first in the reusable effect owner.
-
-### Expected Visual Delta Requirement
-
-Before any future Product/Data gallery capture, write:
-
-```md
-Expected visual delta:
-Route:
-Files being changed:
-What should look materially different in the next hero PNG:
-What exact old artifact should disappear:
-What exact new visual structure should appear:
-Why this is not only a metric/test/report change:
-```
-
-If the next PNG does not match that delta:
-
-- stop;
-- do not recapture;
-- escalate to the next higher source owner;
-- record failure honestly.
-
-### Forbidden Phrases / Invalid Claims
-
-Do not say:
-
-- "materially improved" unless the screenshot changed at first glance;
-- "accepted" unless visual review accepts exact current screenshot hash;
-- "source-owned fix" as a substitute for visual improvement;
-- "smoke passed" as visual proof;
-- "metrics passed" as visual proof;
-- "Product/Data are close" unless direct screenshot review proves it.
-
-### Valid Final Status Until Reproved
-
-- Product Configurator: failed.
-- Data Galaxy: failed.
-- No Product/Data acceptance claim is valid.
-- No Product/Data gallery capture should run until salvage and restart gates are complete.
-
-## 0B. Operating Contract: Library First, Examples Second
-
-This file is an execution control document, not a running diary. It must prevent visual-polish loops by forcing every failed screenshot back to a named library owner, named file set, task checklist, and one-shot verification path.
-
-The core rule is:
-
-> If an example is hard to make beautiful, the missing capability belongs in the G3D library first. The example is only the proof surface.
-
-A route may contain composition, art direction, camera framing, route policy, and demo-specific content. A route may not become the permanent owner of renderer behavior, GLTF fidelity, material workarounds, environment lighting, postprocessing, controls, capture readiness, particle quality, animation systems, or review/evidence rules.
-
-### Anti-Loop Rules
-
-- No screenshot loop is allowed. A screenshot is a verification artifact after a named source-owner change, not an iteration strategy.
-- No more than one focused browser capture is allowed per named source-owner fix.
-- If the focused capture still looks bad, stop capturing and write the next defect under the owning filename checklist.
-- Smoke tests, route tests, PNG metrics, draw counts, or texture counts never equal visual acceptance.
-- Metadata wording, review notes, test thresholds, and gate text may not be edited to explain away bad visuals.
-- Generated assets, route exclusions, camera crops, CSS darkness, bloom, vignette, and object hiding may not be used to fake quality.
-- Any fix that helps only one example must be justified as route composition. Any fix that would help future examples must be implemented in a reusable package owner.
-- Any task that edits tests before identifying the library/source defect must explain why the test represents a real contract instead of chasing current output.
-- Any failed route must have one current screenshot path, one source-owner diagnosis, one file-owned task list, and one next verification command.
-
-### Definition Of Progress
-
-Progress is only counted when all of the following are true:
-
-1. A named source-owner task was selected from this document.
-2. The exact write set was declared before editing.
-3. The owner files were inspected before patching.
-4. The code change improves reusable G3D capability or a clearly scoped route composition contract.
-5. Focused unit/type checks pass.
-6. At most one qualified capture was run if visible output changed.
-7. The new visual output was opened and judged directly.
-8. The checklist was updated honestly as accepted, still failed, or blocked.
-
-### Ownership Ladder
-
-Every visual defect must be assigned to the highest reusable owner that can solve it:
-
-1. `packages/rendering` — color, tone, lighting, PBR, postprocess, shadows, reflections, DPR, frame/presentation correctness.
-2. `packages/assets` — GLTF parsing, texture/sampler handling, node extras, variants, tangents, UV sets, material diagnostics, provenance.
-3. `packages/scene` — reusable scene graph composition, metadata, render-item contracts, hierarchy, culling, bounds.
-4. `packages/animation` — timelines, animation sampling, mixer behavior, deterministic playback, capture readiness.
-5. `packages/controls` and `packages/input` — camera controls, picking, hotspots, focus, interaction readiness.
-6. `packages/product-studio` and future domain packages — reusable product showcase/studio systems.
-7. `apps/v9-advanced-examples-gallery/src/*Scene.ts` — route-owned composition only.
-8. `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts` — camera/framing/policy only.
-9. `tools/v9-*` — evidence, review, audit, generated assets, and capture discipline only.
-10. `execute.md` — planning/evidence ledger only.
-
-If the selected owner is below the correct owner on this ladder, the task is invalid until rewritten.
-
-This document is the ordered source of truth for the work. It is not a gallery-only checklist. It is not a loose backlog. It is a file-owned PRD that defines what must be fixed, where it must be fixed, what tests must prove it, and when the ten advanced examples can be accepted.
+Review/audit tooling must fail closed for stale hashes, partial captures, missing route artifacts, missing known-gap notes, generated-asset overclaim, scaffold dominance, material failure, crop artifacts, and bad cadence. It must not fail open from metrics alone.
 
 ## 1. Current Truth
 
-Product Configurator failed. Data Galaxy failed. The current mode is salvage/restart, not continuation.
+We are now on the correct advanced-gallery execution branch: preserve/g3d-v2-execution-state.
 
-Current route state:
+Known branch baseline at the time of this PRD rewrite:
+
+~~~text
+4febfe9 fix: v9 gallery fixes, asset inspection, environment platform, shader fixes
+~~~
+
+If the branch advances, use the current checked-out commit as truth. Do not require an old commit hash if the current branch contains the advanced-gallery source tree.
+
+Current route state until reproved by current evidence:
 
 - Product Configurator: failed.
 - Data Galaxy: failed.
-- Reactor Post: candidate with clarity, postprocess, and cadence risk.
-- Other seven advanced routes: candidates, not accepted.
-- Full gallery acceptance: `0/10`.
-
-No Product/Data implementation, gallery capture, review/audit run, contact sheet, screenshot hash refresh, report refresh, or acceptance claim is allowed before the dirty-worktree salvage map in `## 1B` exists.
-
-Smoke tests, typecheck, unit tests, image metrics, object counts, draw counts, route JSON, generated-asset metadata, screenshot hash changes, and "source-owned" wording are not visual acceptance.
+- Reactor Post: candidate, not accepted.
+- Digital Twin: candidate, not accepted.
+- Robotics Lab: candidate, not accepted.
+- Smart City: candidate, not accepted.
+- Fog Cathedral: candidate, not accepted.
+- Physics Playground: candidate, not accepted.
+- Water Lab: candidate, not accepted.
+- Ocean Observatory: candidate, not accepted.
+- Full gallery acceptance: 0/10 until current review/audit proves otherwise.
 
 ## 1A. Current Execution Mode
 
-Current mode: salvage and restart planning.
+Current mode: autonomous current-branch gallery recovery.
 
-Allowed before the salvage map:
+Allowed and expected:
 
-- inspect source files;
-- run `pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"`;
-- run `git status --short`;
-- run `git diff --name-only`;
-- run `git diff --stat`.
+- inspect current source with rg --files, rg, and focused file reads;
+- map each route to current owner files;
+- create missing current-branch scripts, tests, harnesses, reports, and artifacts when needed;
+- fix source-owned platform or route defects;
+- run focused tests for the changed owner;
+- run screenshots/captures only when a source-owned visible change needs verification;
+- update metadata/review/audit only after current evidence supports it;
+- continue to the next route/owner until all ten routes meet acceptance.
 
-Forbidden before the salvage map:
+Forbidden:
 
-- Product/Data implementation;
-- Product/Data gallery captures;
-- review/audit/contact-sheet/screenshot runs;
-- broad git reset/checkout/restore/clean/stash/branch commands;
-- touching `.gitignore`;
-- modifying unrelated dirty files;
-- editing tests to follow failed visuals;
-- claiming acceptance, progress, or material improvement from smoke/metric/report output.
+- branch switching to chase old code;
+- using stale wrong-branch work as implementation truth;
+- creating a standalone cleanup/report gate;
+- stopping after any diagnosis document;
+- treating generated support assets as real authored hero proof;
+- tuning tests, thresholds, metadata, reports, or review wording to make bad output pass;
+- accepting routes from smoke tests, metrics, hashes, object counts, or JSON alone.
 
-If a G3D-specific Playwright/Vite/vitest/gallery process is running, kill only the process tied to `/Users/gurbakshchahal/G3D` and record the PID. Do not kill unrelated processes.
+## 1B. Required Current-Branch Route Inventory
 
-## 1B. Required Dirty-Worktree Salvage Map
+Before editing a route, inspect its current source and write down the route inventory in the task notes or update this PRD if the finding changes the work order.
 
-Before any new implementation, produce a file-by-file salvage map from the current dirty worktree.
+For each route, the inventory must answer:
 
-Run only:
-
-```bash
-pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
-git status --short
-git diff --name-only
-git diff --stat
-```
-
-For every dirty file from `git diff --name-only`, output:
-
-```md
-File:
-Classification: unrelated pre-existing | failed Product/Data route churn | useful library/platform candidate | test/report/metadata churn | generated/cache artifact
-Recommendation: KEEP CANDIDATE | DISCARD/REWRITE MANUALLY | ISOLATE FOR LATER REVIEW | DO NOT TOUCH
-Why:
-Risk:
-Dependencies:
-Safe next action:
-```
-
-Then produce exactly these buckets:
-
-```md
-Bucket 1 — Keep Candidate: library/platform fixes only
-Bucket 2 — Discard/Rewrite: failed Product/Data visual churn
-Bucket 3 — Review Carefully: tests/review/audit/execute changes
-```
-
-No implementation is allowed until this map exists.
-
-## 1C. Known Prior Salvage Classification
-
-Use the dirty-file classification in `## 0A` only as a starting seed. Re-run the commands in `## 1B` and classify the actual current worktree.
-
-`.gitignore` is unrelated pre-existing dirt and must not be touched.
-
-Files previously associated with Product/Data route churn, generated assets, tests, review tooling, metadata, reports, or renderer/importer changes are not proof of progress. They are dirty work that must be reviewed file-by-file before anything is kept.
-
-## 1D. Product Restart Plan
-
-Do not continue the current Product multi-object hero.
-
-Active Product restart path:
-
-1. Complete the dirty-worktree salvage map.
-2. Review renderer/material/importer candidates independently.
-3. Prove the original `car-concept` material problem outside the gallery route.
-4. Use the Product same-asset harness only for material proof, not gallery acceptance.
-5. Return to Product Studio route work only after the material proof passes.
-
-Product restart constraints:
-
-- Hero mode must show original `car-concept` only.
-- Watch, shoe, and sunglasses must not appear in hero mode.
-- Support objects may appear only in Detail mode or a separate product-island mode.
-- No generated/stub Product GLB may replace the original car hero.
-- If paint, glass, grounding, contact, or reflection still fail, stop in renderer/importer/material. Do not keep moving objects around.
-
-## 1E. Data Restart Plan
-
-Do not continue current `DataGalaxyFocalSystem` as-is.
-
-Active Data restart path:
-
-1. Complete the dirty-worktree salvage map.
-2. Stop building on generated/support GLB focal content.
-3. Prove one coherent reusable data effect outside the gallery route first.
-4. Adapt the route only after the effect has a premium first-glance frame.
-5. Preserve CPU/static honesty; do not claim native GPU compute unless implemented.
-
-Data restart constraints:
-
-- No generated Data GLB in hero.
-- No cuboid scaffold blocks.
-- No tiny semantic node filler.
-- No object-count padding.
-- No wide particle carpet.
-- No giant translucent fog sphere.
-- No random thin debug lines.
-- Build one coherent visual effect: luminous central core, orbiting particle rings, clean arcs, clustered glowing points, and depth layers.
-
-## 1F. Expected Visual Delta Gate
-
-Before any future Product/Data gallery capture, write:
-
-```md
-Expected visual delta:
+~~~md
 Route:
-Files being changed:
-What should look materially different in the next hero PNG:
-What exact old artifact should disappear:
-What exact new visual structure should appear:
-Why this is not only a metric/test/report change:
-```
+Current builder/owner files:
+Current authored/generated assets:
+Current runtime evidence files:
+Current visual artifacts:
+Visible blocker:
+Correct source owner:
+First fix task:
+Focused tests:
+Allowed visual verification:
+Stop/continue rule:
+~~~
 
-If the next PNG does not match that delta:
+Do not wait for a perfect ten-route inventory before fixing an obvious source-owned blocker. Inventory enough to select a correct owner, then implement and verify.
 
-- stop;
-- do not recapture;
-- escalate to the next higher source owner;
-- record failure honestly.
+## 1C. Product Configurator Restart
 
-## 1G. Historical Failed Loop Evidence
+Product must read as a premium product configurator with the original car-concept hero as the focal subject.
 
-Old Product/Data timelines, screenshot hashes, metric dumps, generated-GLB attempts, 12k/6k Data attempts, Product layout attempts, `DataGalaxyFocalSystem` attempts, focused-capture records, "passed" test runs, and source-change summaries are removed from the active execution path.
+Current constraints:
 
-Historical Product/Data evidence may be restored only into an appendix for forensic review. It must not be used as current evidence, current acceptance, or a reason to continue an old Product/Data direction.
+- Hero mode must show original car-concept as the focal product.
+- Watch, shoe, sunglasses, and generated studio/support GLBs must not replace or clutter the hero.
+- Paint, glass, roof/panels, wheels, tires, chrome, interior, dashboard, emissive parts, contact, grounding, shadows, reflections, and camera framing must be source-owned and inspectable.
+- Material/import/renderer failures belong in packages/assets, packages/rendering, or packages/product-studio before route composition.
+- Route fixes belong in apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts, productConfiguratorPolicy.ts, productConfiguratorVisualCleanup.ts, authoredLayer.ts, and metadata only when the package owners are proven or the change is route composition.
 
-Product Configurator remains failed.
+Product first-fix order:
 
-Data Galaxy remains failed.
+1. inspect current Product route and authored asset activation;
+2. inspect car-concept and material/mesh bindings;
+3. prove material/import quality in a same-asset harness if needed;
+4. fix renderer/assets/material/studio owners before route layout;
+5. fix route composition only after the car itself renders credibly;
+6. run one qualified focused capture after owner tests pass;
+7. inspect PNGs directly and either accept evidence or select the next owner.
 
-No Product/Data acceptance claim is valid.
+## 1D. Data Galaxy Restart
 
+Data Galaxy must read as a premium data visualization, not debug art.
+
+Current constraints:
+
+- Generated Data GLB may be support/provenance only, never focal proof.
+- No cuboid scaffold blocks, semantic filler, object-count padding, carpet particles, giant fog sphere, or random debug lines as the hero concept.
+- Data needs a coherent reusable visual system: luminous core, orbital rings, streams/arcs, clustered points, depth layers, readable hierarchy, and animation evidence.
+- CPU/static honesty is required, but it does not make a weak image acceptable.
+- Reusable effect ownership belongs in packages/rendering or a route-neutral helper before route composition claims acceptance.
+
+Data first-fix order:
+
+1. inspect current Data route and focal-system source;
+2. identify what actually draws the hero;
+3. prove one reusable data effect outside the gallery route if needed;
+4. preserve CPU/static/GPU boundary honesty;
+5. adapt route composition only after the effect has premium first-glance structure;
+6. run one qualified focused capture after owner tests pass;
+7. inspect PNGs directly and either accept evidence or select the next owner.
+
+## 1E. Remaining Route Recovery
+
+Do not let Product/Data consume the entire execution. After each Product/Data owner attempt, continue the full-gallery route queue.
+
+Route recovery order after Product/Data source owners are selected:
+
+1. Reactor Post - base geometry clarity before bloom/postprocess.
+2. Digital Twin - industrial/factory systems, robot/conveyor/sensor/timeline evidence.
+3. Robotics Lab - animated robots, industrial context, controls, timeline/reset evidence.
+4. Smart City - city scale, traffic/data overlays, camera/readability, performance.
+5. Fog Cathedral - authored architecture plus renderer fog evidence without card/fog overclaim.
+6. Physics Playground - visible physics systems, reset, contacts, debug honesty.
+7. Water Lab - water/reflection/refraction approximation honesty plus visible interaction.
+8. Ocean Observatory - ocean/deck/weather controls, depth/scale, approximation honesty.
+
+Each route must end with current source-owned fixes, current tests, current screenshots/runtime JSON, direct visual review, and audit evidence.
+
+## 1F. One-Shot Visual Verification Rule
+
+Before any focused route capture after a visible source change, write the verification question in the task notes:
+
+~~~md
+Route:
+Source owner:
+Files changed:
+Expected visual difference:
+Old artifact that should disappear:
+New visual structure that should appear:
+Focused tests passed:
+~~~
+
+Then run one focused capture for that owner change. If the PNG fails, do not recapture the same change repeatedly. Update the owner diagnosis and continue with the next source fix.
+
+## 1G. Goal-Mode Prompt Template
+
+Use a short goal that points to this file instead of pasting a huge prompt:
+
+~~~text
+Work in /Users/gurbakshchahal/G3D on the current preserve/g3d-v2-execution-state checkout. Read execute.md fully and follow it exactly. execute.md is the only source of truth; do not use goal.md, old chats, master/main, stashes, or backup folders as implementation truth. Run the mandatory first commands, preserve execute.md, fix current-branch source-owned defects across all ten advanced gallery routes, create missing current-branch files/tests/scripts/artifacts as work items, and continue until execute.md acceptance is complete. Do not stop for missing repo files or reports. Do not loop on Product/Data screenshots. Use focused owner tests, one qualified visual check per owner change, direct PNG inspection, review/audit gates, and honest metadata. Stop only for external blockers or explicit user instruction.
+~~~
 
 ## 2. Product Definition
 
@@ -638,18 +369,18 @@ Purpose: stop false progress. Tooling must make it impossible to claim acceptanc
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
 | P0.1 | Required | Screenshot discipline | `execute.md`, `tests/browser/v9-advanced-examples-gallery.spec.ts`, `tools/v9-advanced-gallery-visual-review/index.ts` | Screenshots are verification only after a named source-owner fix. Focused route captures must not look like complete gallery runs. | Typecheck; review output clearly distinguishes partial/focused artifacts from full gallery evidence. |
-| P0.2 | Salvage review required | Visual regression inventory | `tools/v9-advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the salvage map before preserving. |
-| P0.3 | Required | Review gate hardening | `tools/v9-advanced-gallery-visual-review/index.ts`, tests under `tests/unit/tools/*` | Block accepted state for stale hashes, partial route reports, missing human reviewer, missing known-gaps notes, asset/scaffold dominance, material failure, crop artifacts, bad cadence, or generated-asset overclaim. | Unit tests prove each blocker. |
+| P0.2 | Current-branch review required | Visual regression inventory | `tools/v9-advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the current-branch source-owner review before preserving. |
+| P0.3 | Required | Review gate hardening | `tools/v9-advanced-gallery-visual-review/index.ts`, tests under `tests/unit/tools/*` | Block accepted state for stale hashes, partial route reports, missing direct-review notes, missing known-gaps notes, asset/scaffold dominance, material failure, crop artifacts, bad cadence, or generated-asset overclaim. | Unit tests prove each blocker. |
 | P0.4 | Done / Non-Promotional Audit | Report audit hardening | `tools/v9-advanced-gallery-report-audit/index.ts`, tests under `tests/unit/tools/*` | Audit route reports for reusable-system evidence, unsupported disclosures, screenshot hashes, image stats, material/texture evidence, generated-asset disclosure, CPU/GPU mode, performance, and full-gallery evidence mode. | Audit ignores non-route support reports such as `visual-regression-inventory.json`, blocks focused/partial route reports, and does not mark routes accepted. |
 | P0.5 | Required | No-regression workflow | `tests/browser/v9-advanced-examples-gallery.spec.ts`, review tool, report audit | Any renderer/material/loader/environment/postprocess/gallery-shell change requires focused tests before one capture and full sweep only after focused gates pass. | Tooling or docs enforce sequence; no repeated screenshot loops. |
-| P0.6 | Salvage review required | Partial report folder blocker | `package.json`, `tools/v9-advanced-gallery-report-audit/index.ts`, `tools/v9-advanced-gallery-visual-review/index.ts`, `tests/browser/v9-advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | Review dirty audit/review/test changes through the salvage map before preserving. |
+| P0.6 | Current-branch review required | Partial report folder blocker | `package.json`, `tools/v9-advanced-gallery-report-audit/index.ts`, `tools/v9-advanced-gallery-visual-review/index.ts`, `tests/browser/v9-advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | Review audit/review/test changes through the current-branch source-owner review before preserving. |
 | P0.7 | Required | Route-local hack containment | `apps/v9-advanced-examples-gallery/src/main.ts`, `sceneBuilders.ts`, `authoredLayer.ts`, `galleryRoutePolicies.ts`, Product/Data route modules | Route-specific camera, postprocess, visibility, product policy, and data density logic must move out of shared orchestration. `main.ts` stays renderer/shell orchestration. | Typecheck, route module tests, focused route tests, and no new route-specific `if` branches without PRD owner. |
 | P0.8 | Done | Package script accountability | `package.json` | Keep scripts for full gallery capture, review, audit, and pipeline explicit. The audit script must be non-promotional and pipeline must run capture, review, and audit in order. | `package.json` exposes `v9:advanced-gallery:audit` and `v9:advanced-gallery:pipeline`; pipeline runs capture, review, and audit in order. |
-| P0.9 | Required / Blocking | Product/Data salvage map | `execute.md` only until source work resumes | Record the current dirty-worktree file classification, salvage buckets, forbidden tactics, restart gates, and current evidence absence before further implementation. | Source changes may resume only after the salvage map exists and a post-salvage owner task/write set is selected. |
+| P0.9 | Required | Current-route source-owner map | `execute.md`, route modules, focused tests | Map Product/Data and the remaining eight routes to current branch owner files, visible blockers, first source-owned fixes, focused tests, and allowed visual verification. This is not a stop gate; implementation continues route by route. | Source changes proceed after a named owner task/write set is selected from the current branch. |
 
 P0 acceptance checklist:
 
-- [ ] The dirty-worktree salvage map exists and classifies every dirty file.
+- [ ] Current Product/Data and remaining-route blockers are mapped to source owners from the current branch.
 - [ ] Review/audit/test changes are kept only if they strengthen anti-false-acceptance behavior.
 - [ ] Partial/focused captures cannot be mistaken for full gallery evidence.
 - [ ] Product/Data/Reactor visual defects are mapped to source owners before further screenshots.
@@ -665,13 +396,13 @@ Purpose: make renderer output stable, sharp, correctly colored, and reportable b
 | P1.1 | Required | Color pipeline | `packages/rendering/src/Renderer.ts`, `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/RendererVisualPipelineReport.ts`, future `ColorManagement.ts`, tone/exposure files | First-class output color space, linear workflow, sRGB correctness, tone mapping presets, exposure, HDR/LDR target policy, screenshot color consistency. | Unit tests and browser proof that the same scene captures consistently. |
 | P1.2 | Required | DPR and backing enforcement | `Renderer.ts`, `RenderDevice.ts`, browser tests, gallery report capture | Canvas backing size, device pixel ratio, screenshot downsample/upscale evidence, no soft/upscaled captures. | Runtime JSON reports DPR/backing/capture size; screenshots are sharp. |
 | P1.3 | Required | Presentation state hardening | `ForwardPass.ts`, WebGL2 device/render pipeline files, postprocess path | Scene state must not leak into fullscreen presentation: sampler state, scissor/stencil/polygon offset/color mask, cull/depth/blend, framebuffer flush. | Focused renderer regression tests; product/data background proof does not black out or wash out. |
-| P1.4 | Salvage review required | Frame cadence reporting | `RendererVisualPipelineReport.ts`, gallery capture/report files, `tools/v9-advanced-gallery-visual-review/*` | Separate load timing, render work, RAF cadence, screenshot timing, post-load stable stats. | Review dirty cadence/report changes through the salvage map before preserving. Do not use prior focused Product/Data JSON as proof. |
+| P1.4 | Current-branch review required | Frame cadence reporting | `RendererVisualPipelineReport.ts`, gallery capture/report files, `tools/v9-advanced-gallery-visual-review/*` | Separate load timing, render work, RAF cadence, screenshot timing, post-load stable stats. | Review cadence/report changes through the current-branch source-owner review before preserving. Do not use prior focused Product/Data JSON as proof. |
 | P1.5 | Required | Visual clarity diagnostics | `packages/rendering/src/postprocess/CinematicDiagnostics.ts`, report audit | Detect washed-out tone, bloom/noise risk, soft detail, weak local contrast, unsupported pass claims. | Unit tests and route reports show clarity warnings without accepting routes. |
 
 P1 acceptance checklist:
 
 - [ ] Renderer exposes/report color space, tone, exposure, HDR/LDR path, DPR, backing size, and screenshot consistency.
-- [ ] Current Product/Data failures are not blamed on route composition until renderer clarity is reproved after salvage.
+- [ ] Current Product/Data failures are not blamed on route composition until renderer clarity is reproved from current branch evidence.
 - [ ] No route uses CSS darkness or camera crop to hide renderer visual defects.
 
 ## 8. Phase P2 - Asset And Material Activation
@@ -681,15 +412,15 @@ Purpose: make GLB assets load, diagnose, bind, and render honestly. Raw GLB load
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
 | P2.1 | Required | GLTF extension truth | `packages/assets/src/GLTFLoader.ts`, `packages/assets/src/GLTFExtensionSupport.ts`, `packages/assets/src/AssetInspection.ts` | Bucket extensions as runtime-supported, decoder-required, parsed-with-limits, diagnostic-only, or unsupported. Required unsupported extensions must fail or warn loudly. | `tests/assets/gltf-extension-support.test.ts`; route JSON lists exact support/limits. |
-| P2.2 | Salvage review required | GLTF render-resource metadata | `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/index.ts`, tests under `tests/assets/*` | Per-renderable node, geometry, material, source material, primitive, variant, broad texture-backed slots, effective texture contribution, material-fidelity diagnostics, fallback-white counts, missing-material counts, missing-geometry counts. | Review dirty asset/render-resource changes through the salvage map before preserving. Do not use prior Product/Data runtime reports as proof. |
+| P2.2 | Current-branch review required | GLTF render-resource metadata | `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/index.ts`, tests under `tests/assets/*` | Per-renderable node, geometry, material, source material, primitive, variant, broad texture-backed slots, effective texture contribution, material-fidelity diagnostics, fallback-white counts, missing-material counts, missing-geometry counts. | Review asset/render-resource changes through the current-branch source-owner review before preserving. Do not use prior Product/Data runtime reports as proof. |
 | P2.3 | Required | PBR fallback correctness | `packages/rendering/src/PBRMaterial.ts`, `TexturedPBRMaterial.ts`, `PbrReference.ts`, `ShaderChunks.ts`, `ShaderLibrary.ts`, `packages/rendering/src/shaders/pbr-direct.frag.glsl` | Fix clearcoat, specular, iridescence, transmission, glass opacity, normal-map sampler handling, environment specular over-brightening, fallback-white behavior. | Shader/PBR unit tests; Product reference harness screenshot. |
-| P2.4 | Salvage review required | Material override API | `GLTFRenderResources.ts`, gallery product policy files | Product controls must target imported material semantics through metadata, not blind route key scans. | Review dirty Product policy/material-control changes through the salvage map before preserving. Do not use prior focused Product JSON as proof. |
+| P2.4 | Current-branch review required | Material override API | `GLTFRenderResources.ts`, gallery product policy files | Product controls must target imported material semantics through metadata, not blind route key scans. | Review Product policy/material-control changes through the current-branch source-owner review before preserving. Do not use prior focused Product JSON as proof. |
 | P2.5 | Required | Texture/compression boundary | `GLTFLoader.ts`, decoder files, `KTX2BasisTextureTranscoder.ts`, `GLTFCompressionDecoders.ts`, `AssetInspection.ts` | Draco, Meshopt, KTX2/BasisU, WebP/AVIF, texture transform, mesh quantization, and unsupported decoder boundaries must be explicit. | Loader tests and diagnostics; no generic "loaded" claim hides missing support. |
 | P2.6 | Required | EXR boundary | `packages/assets/src/loaders/EXRLoader.ts` or real EXR implementation | Diagnostic-only EXR must not be claimed as production decode. Implement real OpenEXR decode or keep unsupported. | Tests prove either real decode or explicit diagnostic-only status. |
 
 P2 acceptance checklist:
 
-- [ ] Dirty asset/render-resource/material-control changes are classified in the salvage map before being kept.
+- [ ] Asset/render-resource/material-control changes are tied to a named current-branch source owner before being kept.
 - [ ] Material failures are fixed in package code or remain blocked with explicit unsupported status.
 - [ ] Route-level paint/glass overrides are not counted as platform material fixes.
 - [ ] Product/Data reference harnesses are used only after a named source-owner restart change, and only for the declared proof. They are not gallery acceptance.
@@ -718,7 +449,7 @@ P3 acceptance checklist:
 - [ ] Data deep-space background is route-correct but not used to hide weak geometry.
 - [ ] Cubemap/equirect/HDR claims are bounded to implemented renderer background paths.
 - [ ] EXR, physical sky, cube camera, SSR, planar reflection/refraction, volumetrics, and full PMREM parity are not claimed until implemented.
-- [ ] Dirty Product stage/contact-grounding changes are reviewed through the salvage map before being kept; no prior stage claim is accepted visual quality.
+- [ ] Product stage/contact-grounding changes are reviewed through current branch evidence before being kept; no prior stage claim is accepted visual quality.
 
 ## 10. Phase P4 - Controls, Interaction, Scene Metadata, Animation, Physics
 
@@ -799,7 +530,7 @@ This section lists the concrete files that must be created, modified, or promote
 | File | Owns | Allowed Fixes | Not Allowed |
 | --- | --- | --- | --- |
 | `apps/v9-advanced-examples-gallery/src/main.ts` | Gallery shell, route dispatch, renderer setup, shared capture/runtime reporting. | Wire reusable renderer/environment/control/report systems; keep loading/error/unsupported states. | Route-specific material or asset hacks. |
-| `apps/v9-advanced-examples-gallery/src/metadata.ts` | Route status, known gaps, comparison basis, review notes. | Keep failed/candidate/accepted truthful; update known gaps and claims after evidence. | Mark accepted without human review and hash. |
+| `apps/v9-advanced-examples-gallery/src/metadata.ts` | Route status, known gaps, comparison basis, review notes. | Keep failed/candidate/accepted truthful; update known gaps and claims after evidence. | Mark accepted without direct PNG review and hash. |
 | `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts` | Shared route scene construction until split. | Modularize repeated systems; move route-specific systems into route files. | Bury Product/Data/Reactor hacks in generic builder code. |
 | `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts` | Generic scene-frame types and primitive helper functions shared by route modules and the dispatcher. | Keep `GalleryState`, `SceneFrame`, `Resources`, `item`, `frame`, `lights`, `env`, and line-batch helpers route-neutral. | Route-specific scene composition, route-specific acceptance shortcuts, or circular imports back into route modules. |
 | `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` | Imported asset activation and diagnostics. | Report source/generated status, excluded nodes, material/texture counts, fallback/missing counts. | Hide nodes silently or replace original assets. |
@@ -884,39 +615,41 @@ Package script checklist carried forward:
 Generated asset tool instructions:
 
 - Product/Data generated-asset history from the failed loop is not active evidence.
-- Generated GLBs must not be used as Product/Data focal hero proof during salvage/restart.
+- Generated GLBs must not be used as Product/Data focal hero proof during current-branch recovery.
 - Generated HDR/backdrop assets remain route-correct background evidence only; they do not prove physical sky, EXR, dynamic cube camera, or volumetric environment support.
-- Generated/cache artifacts such as `__pycache__` must be classified in the salvage map before any cleanup.
+- Generated/cache artifacts such as `__pycache__` must be tied to a named owner task before any cleanup.
 
-## 13. Phase P5 - Visual Recovery After Salvage
+## 13. Phase P5 - Current-Branch Visual Recovery
 
-This phase may resume only after the dirty-worktree salvage map exists. Product/Data subsections below are retired from active execution and point back to the restart gates.
+This phase runs directly from the current branch. Product/Data work is active again, but it must proceed through source-owner fixes, focused tests, one qualified visual check per owner change, and continuation to the next route/owner when a PNG still fails.
 
-### P5A. Product Configurator Recovery — Retired From Active Path
+### P5A. Product Configurator Recovery
 
-The prior Product recovery plan, completed checkboxes, generated/support asset notes, focused captures, passed commands, source-change summaries, and runtime/report claims are retired from active execution.
+The prior Product recovery loop, generated/support asset notes, focused captures, passed commands, source-change summaries, and runtime/report claims are not active proof.
 
-Do not continue from that history. Product Configurator remains failed.
+Do not continue from old claims. Inspect the current branch and fix the current source owners.
 
-Active Product work is only the salvage/restart path in `## 0A` and `## 1D`:
+Active Product work follows `## 1C`:
 
-1. produce the dirty-worktree salvage map;
+1. inspect the current Product route and authored asset activation;
 2. isolate any reusable renderer/material/importer candidates;
-3. prove original `car-concept` material quality outside the gallery route;
-4. return to route composition only after material proof exists.
+3. prove original `car-concept` material quality outside the gallery route if needed;
+4. return to route composition only after material/import proof exists;
+5. run one qualified visual check and continue to the next owner if the PNG fails.
 
-### P5B. Data Galaxy Recovery — Retired From Active Path
+### P5B. Data Galaxy Recovery
 
-The prior Data recovery plan, completed checkboxes, generated/support GLB notes, semantic-role notes, 12k/6k particle budget history, focused captures, passed commands, source-change summaries, and runtime/report claims are retired from active execution.
+The prior Data recovery loop, generated/support GLB notes, semantic-role notes, particle budget history, focused captures, passed commands, source-change summaries, and runtime/report claims are not active proof.
 
-Do not continue from that history. Data Galaxy remains failed.
+Do not continue from old claims. Inspect the current branch and fix the current source owners.
 
-Active Data work is only the salvage/restart path in `## 0A` and `## 1E`:
+Active Data work follows `## 1D`:
 
-1. produce the dirty-worktree salvage map;
-2. stop treating generated/support GLB work as focal proof;
-3. prove one coherent reusable data effect outside the gallery route;
-4. return to route composition only after the effect has a premium first-glance frame.
+1. stop treating generated/support GLB work as focal proof;
+2. identify what actually draws the current hero;
+3. prove one coherent reusable data effect outside the gallery route if needed;
+4. return to route composition only after the effect has a premium first-glance frame;
+5. run one qualified visual check and continue to the next owner if the PNG fails.
 
 ### P5C. Reactor Post Recovery
 
@@ -1692,7 +1425,7 @@ Acceptance states:
 
 - `failed`: technical or visual blockers remain.
 - `candidate`: route works and has useful evidence, but is not Three.js-quality.
-- `accepted`: route passes automated gates, screenshot hash verification, and human visual review.
+- `accepted`: route passes automated gates, screenshot hash verification, and direct visual review of current PNGs.
 - `hero`: accepted and strong enough to lead the gallery.
 
 Do not skip from failed to accepted. A failed route must first become a candidate with clear evidence, then accepted after visual review.
