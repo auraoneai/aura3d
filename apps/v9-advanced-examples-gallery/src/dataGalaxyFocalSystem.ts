@@ -17,24 +17,30 @@ export function createDataGalaxyFocalSystem(
   mode: DataGalaxyBudgetMode
 ): DataGalaxyFocalSystemResult {
   const profile = mode === "showcase"
-    ? { coreScale: 2.25, arcScale: 1.55, clusterCount: 140, secondaryCount: 78, shellScale: 1.58 }
+    ? { coreScale: 2.9, arcScale: 2.18, clusterCount: 260, secondaryCount: 170, shellScale: 2.2 }
     : mode === "stress"
       ? { coreScale: 1.25, arcScale: 1.0, clusterCount: 54, secondaryCount: 28, shellScale: 1.0 }
       : { coreScale: 1.15, arcScale: 0.95, clusterCount: 42, secondaryCount: 18, shellScale: 0.92 };
   const items: RenderItem[] = [
     focalWireShellItem(r, "transparent-data-shell", "transparentCyan", time, speed, profile.shellScale),
-    item(r, "cube", "cyanGlow", [0, 0.03, 0], [0.055 * profile.coreScale, 0.11 * profile.coreScale, 0.055 * profile.coreScale], [0.18, time * 0.42 * speed, -0.08], "DataGalaxyFocalSystem central data core"),
-    item(r, "cube", "violetGlow", [-0.045, 0.068, -0.028], [0.032 * profile.coreScale, 0.07 * profile.coreScale, 0.032 * profile.coreScale], [-0.16, time * -0.34 * speed, 0.12], "DataGalaxyFocalSystem nested model-state core"),
-    item(r, "cube", "amberGlow", [0.052, -0.018, 0.034], [0.026 * profile.coreScale, 0.052 * profile.coreScale, 0.026 * profile.coreScale], [0.12, time * 0.48 * speed, 0.2], "DataGalaxyFocalSystem anomaly core shard"),
+    item(r, "sphere", "cyanGlow", [0, 0.03, 0], [0.12 * profile.coreScale, 0.12 * profile.coreScale, 0.12 * profile.coreScale], [0.18, time * 0.42 * speed, -0.08], "DataGalaxyFocalSystem luminous data nucleus"),
+    item(r, "sphere", "violetGlow", [-0.055, 0.078, -0.036], [0.058 * profile.coreScale, 0.058 * profile.coreScale, 0.058 * profile.coreScale], [-0.16, time * -0.34 * speed, 0.12], "DataGalaxyFocalSystem violet model-state satellite"),
+    item(r, "sphere", "amberGlow", [0.066, -0.024, 0.044], [0.046 * profile.coreScale, 0.046 * profile.coreScale, 0.046 * profile.coreScale], [0.12, time * 0.48 * speed, 0.2], "DataGalaxyFocalSystem amber anomaly satellite"),
     focalArcItem(r, "core-orbit", "transparentCyan", [0, 0.032, 0], [profile.arcScale, profile.arcScale, profile.arcScale], [0.34, time * 0.18 * speed, 0.18], 0.27, 0.17, Math.PI * 1.42, 24),
     focalArcItem(r, "vertical-model-orbit", "transparentCyan", [-0.03, 0.046, -0.012], [0.8 * profile.arcScale, 1.05 * profile.arcScale, 0.82 * profile.arcScale], [Math.PI / 2.8, time * -0.16 * speed, -0.22], 0.24, 0.15, Math.PI * 1.16, 20),
     focalArcItem(r, "amber-transfer-orbit", "transparentAmber", [0.06, -0.01, 0.036], [0.72 * profile.arcScale, 0.78 * profile.arcScale, 0.72 * profile.arcScale], [-0.36, time * 0.22 * speed + 0.8, 0.12], 0.2, 0.12, Math.PI * 0.92, 16),
-    focalRailItem(r, "foreground-depth-rail", "transparentCyan", [-0.26, -0.12, 0.24], [0.18, -0.01, 0.08], 8),
-    focalRailItem(r, "background-depth-rail", "transparentCyan", [0.26, 0.15, -0.22], [0.06, 0.04, -0.04], 7),
-    focalFacetRibItem(r, "cyan-facet-ribs", "transparentCyan", time, speed, mode === "showcase" ? 18 : 10, profile.arcScale),
-    focalPanelItem(r, "left-data-panel", "transparentCyan", [-0.28, 0.0, 0.2], [0.18, 0.16, 0.02], [-0.1, -0.55, 0.08], 7, 5),
-    focalPanelItem(r, "right-data-panel", "transparentAmber", [0.28, 0.08, -0.2], [0.16, 0.14, 0.02], [0.14, -0.5, -0.08], 6, 4),
-    focalTransferItem(r, "amber-transfer-lines", "transparentAmber"),
+    focalStreamItem(r, "foreground-cyan-stream", "transparentCyan", [-0.3, -0.1, 0.22], [0.22, -0.02, 0.08], time, speed, 14),
+    focalStreamItem(r, "background-cyan-stream", "transparentCyan", [0.28, 0.16, -0.24], [0.04, 0.05, -0.04], time + 1.2, speed, 12),
+    focalStreamItem(r, "amber-cross-stream", "transparentAmber", [-0.08, 0.14, -0.2], [0.28, -0.04, 0.12], time + 2.1, speed, 10),
+    focalHaloNodeItem(r, "cyan-halo-nodes", "cyanGlow", time, speed, mode === "showcase" ? 24 : 12, profile.arcScale),
+    focalTransferItem(r, "curved-transfer-streams", "transparentAmber"),
+    focalConstellationWebItem(r, "front-constellation-filaments", "transparentCyan", time, speed, mode === "showcase" ? 232 : 48, 1.08 * profile.arcScale),
+    focalConstellationWebItem(r, "warm-anomaly-filaments", "transparentAmber", time + 1.4, speed * 0.92, mode === "showcase" ? 168 : 32, 0.82 * profile.arcScale),
+    focalConstellationWebItem(r, "green-context-filaments", "transparentGreen", time + 2.2, speed * 0.74, mode === "showcase" ? 96 : 24, 0.66 * profile.arcScale),
+    focalConstellationWebItem(r, "white-routing-filaments", "debug", time + 0.6, speed * 0.68, mode === "showcase" ? 256 : 36, 0.58 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-cyan", "cyanGlow", time, speed, mode === "showcase" ? 72 : 18, 0.98 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-violet", "violetGlow", time + 0.8, speed * 0.88, mode === "showcase" ? 54 : 14, 0.72 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-white", "white", time + 1.2, speed * 0.7, mode === "showcase" ? 60 : 12, 0.52 * profile.arcScale),
     clusteredNodeItem(r, "cyan-clustered-data-nodes", "cyanGlow", time, speed, [
       [-0.18, -0.035, 0.17],
       [0.18, 0.12, -0.15],
@@ -52,15 +58,16 @@ export function createDataGalaxyFocalSystem(
       "DataGalaxyFocalSystem central data core",
       "DataGalaxyFocalSystem transparent data shell",
       "DataGalaxyFocalSystem layered orbit arcs",
+      "DataGalaxyFocalSystem dense curated constellation filaments",
+      "DataGalaxyFocalSystem front signal bands",
       "DataGalaxyFocalSystem clustered node lattice",
-    "DataGalaxyFocalSystem facet ribs, data panels, and transfer lines",
-      "DataGalaxyFocalSystem depth rails"
+      "DataGalaxyFocalSystem organic orbit streams and halo nodes"
     ],
     approximations: [
-      "DataGalaxyFocalSystem is route-owned CPU/static focal geometry; it is not native GPU compute and does not promote the generated support GLB to focal hero proof.",
-      "Default showcase visual hierarchy is carried by central core, clustered nodes, arcs, data panels, and depth rails rather than object-count filler or generated scaffold geometry."
+      "DataGalaxyFocalSystem is route-owned CPU/static focal geometry; it uses no renderer-side particle solver and does not promote the generated support GLB to focal hero proof.",
+      "Default showcase visual hierarchy is carried by spherical nuclei, clustered nodes, orbit arcs, and curved streams; no cuboid scaffold, grid panel, debug axis, or object-count filler is allowed to carry the hero."
     ],
-    labels: ["DataGalaxyFocalSystem", "Central core", "Layered arcs", "Clustered nodes", "Data panels"]
+    labels: ["DataGalaxyFocalSystem", "Central nucleus", "Layered arcs", "Constellation filaments", "Signal bands", "Spherical clusters", "Curved streams"]
   };
 }
 
@@ -79,18 +86,82 @@ function clusteredNodeItem(
     const ring = Math.floor(i / centers.length);
     const phase = i * 2.399 + time * (0.11 + (i % 6) * 0.007) * speed;
     const radius = 0.04 + (ring % 6) * 0.014;
-    const scale = 0.013 + (i % 4) * 0.0024;
+    const scale = 0.02 + (i % 4) * 0.0035;
     writeModelMatrix(transforms, i * 16, [
       center[0] + Math.cos(phase) * radius,
       center[1] + Math.sin(phase * 1.7) * 0.02,
       center[2] + Math.sin(phase) * radius * 0.68
-    ], [scale, scale * 1.8, scale], [0.16, phase * 0.4, -0.08]);
+    ], [scale, scale, scale], [0.16, phase * 0.4, -0.08]);
+  }
+  return {
+    geometry: r.geometry.sphere,
+    material: mat(r, material),
+    instanceTransforms: transforms,
+    label: `DataGalaxyFocalSystem ${key}`
+  };
+}
+
+function focalConstellationWebItem(
+  r: Resources,
+  key: string,
+  material: string,
+  time: number,
+  speed: number,
+  segments: number,
+  scale: number
+): RenderItem {
+  const cacheKey = `data-galaxy-focal:${key}:${segments}:${scale.toFixed(2)}`;
+  let geometry = r.dataGalaxyOverlayGeometries.get(cacheKey);
+  if (!geometry) {
+    const positions: Vec3[] = [];
+    for (let i = 0; i < segments; i += 1) {
+      const a = i * 2.399;
+      const b = a + 0.42 + (i % 7) * 0.037;
+      const radiusA = (0.08 + (i % 11) * 0.012) * scale;
+      const radiusB = (0.12 + (i % 13) * 0.014) * scale;
+      const layer = ((i % 9) - 4) * 0.009 * scale;
+      positions.push(
+        [Math.cos(a) * radiusA, 0.02 + Math.sin(a * 1.7) * 0.044 * scale + layer, Math.sin(a) * radiusA * 0.74],
+        [Math.cos(b) * radiusB, 0.02 + Math.sin(b * 1.5) * 0.04 * scale - layer * 0.6, Math.sin(b) * radiusB * 0.72]
+      );
+    }
+    geometry = Geometry.lineSegments(positions);
+    r.dataGalaxyOverlayGeometries.set(cacheKey, geometry);
+  }
+  return {
+    geometry,
+    material: mat(r, material),
+    modelMatrix: modelMatrix([0, 0.026, 0.018], [1, 1, 1], [0.16, time * 0.08 * speed, -0.1]),
+    label: `DataGalaxyFocalSystem curated constellation filaments ${key}`
+  };
+}
+
+function focalSignalBandItem(
+  r: Resources,
+  key: string,
+  material: string,
+  time: number,
+  speed: number,
+  count: number,
+  scale: number
+): RenderItem {
+  const transforms = new Float32Array(count * 16);
+  for (let i = 0; i < count; i += 1) {
+    const row = i % 6;
+    const column = Math.floor(i / 6);
+    const angle = column * 0.42 + row * 0.14 + time * 0.028 * speed;
+    const radius = (0.13 + column * 0.009) * scale;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius * 0.72;
+    const y = -0.12 + row * 0.043 + Math.sin(time * 0.2 * speed + i * 0.31) * 0.008;
+    const length = 0.045 + (i % 5) * 0.012;
+    writeModelMatrix(transforms, i * 16, [x, y, z], [length, 0.0065, 0.008], [0.08, angle + Math.PI / 2, -0.06]);
   }
   return {
     geometry: r.geometry.cube,
     material: mat(r, material),
     instanceTransforms: transforms,
-    label: `DataGalaxyFocalSystem ${key}`
+    label: `DataGalaxyFocalSystem curated signal bands ${key}`
   };
 }
 
@@ -114,40 +185,46 @@ function focalArcItem(
   };
 }
 
-function focalRailItem(
+function focalStreamItem(
   r: Resources,
   key: string,
   material: string,
   from: Vec3,
   to: Vec3,
+  time: number,
+  speed: number,
   segments: number
 ): RenderItem {
   const positions: Vec3[] = [];
   for (let i = 0; i < segments; i += 1) {
     const a = i / segments;
-    const b = (i + 0.62) / segments;
-    const start: Vec3 = [
-      from[0] + (to[0] - from[0]) * a,
-      from[1] + (to[1] - from[1]) * a,
-      from[2] + (to[2] - from[2]) * a
-    ];
-    const end: Vec3 = [
-      from[0] + (to[0] - from[0]) * b,
-      from[1] + (to[1] - from[1]) * b,
-      from[2] + (to[2] - from[2]) * b
-    ];
-    positions.push(start, end);
+    const b = (i + 0.74) / segments;
+    positions.push(streamPoint(from, to, a, time, speed, i), streamPoint(from, to, b, time, speed, i + 1));
   }
-  const cacheKey = `data-galaxy-focal:${key}:${segments}`;
+  const cacheKey = `data-galaxy-focal:${key}:${segments}:curved`;
   let geometry = r.dataGalaxyOverlayGeometries.get(cacheKey);
   if (!geometry) {
     geometry = Geometry.lineSegments(positions);
     r.dataGalaxyOverlayGeometries.set(cacheKey, geometry);
+  } else {
+    positions.forEach((position, index) => {
+      geometry!.vertexBuffer.setAttribute(index, "position", position);
+    });
   }
-  return { geometry, material: mat(r, material), label: `DataGalaxyFocalSystem ${key}` };
+  return { geometry, material: mat(r, material), label: `DataGalaxyFocalSystem organic ${key}` };
 }
 
-function focalFacetRibItem(
+function streamPoint(from: Vec3, to: Vec3, t: number, time: number, speed: number, phaseSeed: number): Vec3 {
+  const wave = Math.sin(t * Math.PI * 2 + time * 0.18 * speed + phaseSeed * 0.31);
+  const lift = Math.sin(t * Math.PI) * 0.035;
+  return [
+    from[0] + (to[0] - from[0]) * t + wave * 0.018,
+    from[1] + (to[1] - from[1]) * t + lift,
+    from[2] + (to[2] - from[2]) * t + Math.cos(t * Math.PI * 2 + phaseSeed * 0.19) * 0.016
+  ];
+}
+
+function focalHaloNodeItem(
   r: Resources,
   key: string,
   material: string,
@@ -160,15 +237,15 @@ function focalFacetRibItem(
   for (let i = 0; i < count; i += 1) {
     const angle = i * Math.PI * 2 / count + time * 0.05 * speed;
     const radius = 0.135 * scale;
-    const length = 0.058 * scale * (i % 3 === 0 ? 1.35 : 1);
+    const size = 0.014 * scale * (i % 3 === 0 ? 1.28 : 1);
     writeModelMatrix(transforms, i * 16, [
       Math.cos(angle) * radius,
       0.03 + Math.sin(angle * 1.7) * 0.028,
       Math.sin(angle) * radius * 0.76
-    ], [0.007, length, 0.011], [0.22, angle, -0.14]);
+    ], [size, size, size], [0.22, angle, -0.14]);
   }
   return {
-    geometry: r.geometry.cube,
+    geometry: r.geometry.sphere,
     material: mat(r, material),
     instanceTransforms: transforms,
     label: `DataGalaxyFocalSystem ${key}`
@@ -177,11 +254,12 @@ function focalFacetRibItem(
 
 function focalTransferItem(r: Resources, key: string, material: string): RenderItem {
   const positions: readonly Vec3[] = [
-    [0.052, -0.018, 0.034], [0, 0.03, 0],
-    [0.052, -0.018, 0.034], [0.16, 0.02, 0.1],
-    [0.052, -0.018, 0.034], [0.12, -0.055, 0.16],
-    [-0.045, 0.068, -0.028], [-0.18, 0.11, -0.15],
-    [-0.045, 0.068, -0.028], [0.02, 0.16, -0.18]
+    [0.066, -0.024, 0.044], [0.02, 0.04, 0.012],
+    [0.02, 0.04, 0.012], [0, 0.03, 0],
+    [0.066, -0.024, 0.044], [0.15, 0.02, 0.1],
+    [0.15, 0.02, 0.1], [0.22, -0.035, 0.16],
+    [-0.055, 0.078, -0.036], [-0.16, 0.12, -0.15],
+    [-0.16, 0.12, -0.15], [0.02, 0.16, -0.18]
   ];
   const cacheKey = `data-galaxy-focal:${key}`;
   let geometry = r.dataGalaxyOverlayGeometries.get(cacheKey);
@@ -190,39 +268,6 @@ function focalTransferItem(r: Resources, key: string, material: string): RenderI
     r.dataGalaxyOverlayGeometries.set(cacheKey, geometry);
   }
   return { geometry, material: mat(r, material), label: `DataGalaxyFocalSystem ${key}` };
-}
-
-function focalPanelItem(
-  r: Resources,
-  key: string,
-  material: string,
-  position: Vec3,
-  scale: Vec3,
-  rotation: Vec3,
-  columns: number,
-  rows: number
-): RenderItem {
-  const positions: Vec3[] = [];
-  for (let x = 0; x <= columns; x += 1) {
-    const normalized = x / columns - 0.5;
-    positions.push([normalized, -0.5, 0], [normalized, 0.5, 0]);
-  }
-  for (let y = 0; y <= rows; y += 1) {
-    const normalized = y / rows - 0.5;
-    positions.push([-0.5, normalized, 0], [0.5, normalized, 0]);
-  }
-  const cacheKey = `data-galaxy-focal:${key}:${columns}:${rows}`;
-  let geometry = r.dataGalaxyOverlayGeometries.get(cacheKey);
-  if (!geometry) {
-    geometry = Geometry.lineSegments(positions);
-    r.dataGalaxyOverlayGeometries.set(cacheKey, geometry);
-  }
-  return {
-    geometry,
-    material: mat(r, material),
-    modelMatrix: modelMatrix(position, scale, rotation),
-    label: `DataGalaxyFocalSystem ${key}`
-  };
 }
 
 function focalWireShellItem(

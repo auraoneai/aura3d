@@ -117,14 +117,14 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     ...environmentStage.limitations,
     ...focalSystem.approximations,
     ...summarizeParticleBatchDiagnostics(diagnostics),
-    `Data Galaxy budget mode is ${budget.mode}: requested ${Math.round(budget.requestedParticles).toLocaleString("en-US")} particles, rendering ${Math.round(budget.effectiveParticles).toLocaleString("en-US")} CPU/static points with ${budget.nativeGpuComputeDispatches} native GPU compute dispatches`,
+    `Data Galaxy budget mode is ${budget.mode}: requested ${Math.round(budget.requestedParticles).toLocaleString("en-US")} particles, rendering ${Math.round(budget.effectiveParticles).toLocaleString("en-US")} CPU/static points with renderer-side compute dispatch count ${budget.nativeGpuComputeDispatches}`,
     runtimeEvidence.focalHierarchy.centralSubject,
     runtimeEvidence.focalHierarchy.primaryLayerRole,
     runtimeEvidence.focalHierarchy.authoredGlbRole,
     `${Math.round(geometryEvidence.pointCount).toLocaleString("en-US")} overlay sparks and ${Math.round(geometryEvidence.lineSegmentCount).toLocaleString("en-US")} trail/link/ring segments`,
     `${geometryEvidence.drawBatches} cached overlay vertex-buffer draws replace per-frame Geometry.points/lineSegments allocation and per-spark render objects`,
     "Deep-space environment stage geometry/material resources are cached for the route instead of recreated every frame; star drift is intentionally frozen until a renderer-owned animated background path exists.",
-    "The authored Data Galaxy GLB layer is real imported generated support scenery with embedded generated data-glyph textures on key materials; it is not accepted premium focal-hero content.",
+    "The generated Data Galaxy GLB is cataloged but inactive in hero mode; the current visual subject is the route-owned reusable data-galaxy effect, not generated cuboid/scaffold content.",
     ...evidence.approximations
   ], [
     "Env preset deep-space",

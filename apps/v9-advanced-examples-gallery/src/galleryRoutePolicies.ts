@@ -356,7 +356,11 @@ function filterByLabel(items: readonly RenderItem[], predicate: (label: string) 
 function productConfiguratorStageLabel(label: string): boolean {
   return label.startsWith("indoor-studio ")
     || label === "product-studio floor"
-    || label === "product-studio backdrop";
+    || label === "product-studio backdrop"
+    || label.startsWith("product studio ")
+    || label.startsWith("car material ")
+    || label.startsWith("side studio material calibration")
+    || label.startsWith("front studio contrast calibration");
 }
 
 function itemLabel(item: RenderItem): string {

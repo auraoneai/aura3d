@@ -119,8 +119,8 @@ export function createDataGalaxyBudgetPlan(options: DataGalaxyBudgetOptions): Da
 
 export function createDataGalaxyCompositionProfile(plan: DataGalaxyBudgetPlan): DataGalaxyCompositionProfile {
   const stressScale = plan.mode === "stress" ? 0.86 : 1;
-  const focalScale = plan.mode === "showcase" ? 1.72 : plan.mode === "interactive" ? 0.78 : 0.9;
-  const supportScale = plan.mode === "showcase" ? 0.12 : 0.68;
+  const focalScale = plan.mode === "showcase" ? 2.05 : plan.mode === "interactive" ? 0.78 : 0.9;
+  const supportScale = plan.mode === "showcase" ? 0.18 : 0.68;
   return {
     primary: {
       position: [0, 0.04, 0.02],
@@ -138,8 +138,8 @@ export function createDataGalaxyCompositionProfile(plan: DataGalaxyBudgetPlan): 
       position: plan.mode === "showcase" ? [0.08, -0.18, 0.24] : [0.62, -0.24, 0.46],
       scale: [0.12 * supportScale * stressScale, 0.1 * supportScale * stressScale, 0.12 * supportScale * stressScale]
     },
-    boundsMin: plan.mode === "showcase" ? [-0.72, -0.54, -0.62] : [-1.28, -0.9, -1.0],
-    boundsMax: plan.mode === "showcase" ? [0.72, 0.68, 0.62] : [1.28, 0.96, 1.0],
+    boundsMin: plan.mode === "showcase" ? [-0.78, -0.58, -0.68] : [-1.28, -0.9, -1.0],
+    boundsMax: plan.mode === "showcase" ? [0.78, 0.72, 0.68] : [1.28, 0.96, 1.0],
     telemetryBars: plan.mode === "stress",
     evidenceLabelBudget: plan.mode === "stress" ? 14 : plan.mode === "showcase" ? 10 : 9
   };

@@ -123,11 +123,19 @@ describe("v9 advanced gallery route policies", () => {
     expect(hero.paddingRatio).toBe(0.045);
   });
 
-  it("keeps procedural support hidden for ready product GLBs", () => {
-    const scene = sceneWithLabels(["studio plinth", "hotspot", "continuous animated water mesh"]);
+  it("limits ready product GLBs to studio calibration helpers", () => {
+    const scene = sceneWithLabels([
+      "product-studio floor",
+      "front studio contrast calibration chip",
+      "hotspot",
+      "continuous animated water mesh"
+    ]);
 
-    expect(visibleProceduralItemsForRoute(scene, "product-configurator", readyAuthored())).toEqual([]);
-    expect(visibleProceduralItemsForRoute(scene, "product-configurator", loadingAuthored())).toHaveLength(3);
+    expect(labels(visibleProceduralItemsForRoute(scene, "product-configurator", readyAuthored()))).toEqual([
+      "product-studio floor",
+      "front studio contrast calibration chip"
+    ]);
+    expect(visibleProceduralItemsForRoute(scene, "product-configurator", loadingAuthored())).toHaveLength(4);
   });
 
   it("applies route-specific procedural visibility through a shared policy module", () => {

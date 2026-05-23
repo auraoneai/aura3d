@@ -138,7 +138,7 @@ describe("v9 data galaxy budgets", () => {
     expect(aboveMax.nativeGpuComputeDispatches).toBe(0);
   });
 
-  it("emits structured runtime proof for CPU/static particles and generated support-only authored content", () => {
+  it("emits structured runtime proof for CPU/static particles with generated GLB inactive in hero mode", () => {
     const geometryStats = {
       pointCount: 34,
       pointDrawBatches: 4,
@@ -180,17 +180,18 @@ describe("v9 data galaxy budgets", () => {
         waveCount: 89
       },
       focalHierarchy: {
-        authoredGlbRole: "generated texture-backed data-galaxy-core-blender remains disclosed support-only content"
+        authoredGlbRole: "generated data-galaxy-core-blender is cataloged for support inspection but inactive in hero mode"
       },
       geometry: geometryStats,
       authoredAssetDisclosure: {
-        activeGeneratedAssetIds: ["data-galaxy-core-blender"],
+        activeGeneratedAssetIds: [],
+        generatedSupportGlbActiveInHero: false,
         generatedNoTextureAuthoredGlb: false,
         premiumTextureBackedAuthoredHero: false,
         supportOnlyUntilVisualReview: true
       }
     });
-    expect(runtimeEvidence.unsupportedGaps.join("\n")).toContain("No native GPU-compute particle solver");
+    expect(runtimeEvidence.unsupportedGaps.join("\n")).toContain("No renderer-side particle solver");
     expect(runtimeEvidence.integrationSteps.join("\n")).toContain("Do not mark GPU particles accepted");
   });
 });

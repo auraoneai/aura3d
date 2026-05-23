@@ -7,26 +7,23 @@ export const PRODUCT_CONFIGURATOR_ROUTE_ID = "product-configurator" as const;
 export const PRODUCT_CONFIGURATOR_SCENEBUILDER_PATCH_POINTS = [
   "apps/v9-advanced-examples-gallery/src/sceneBuilders.ts: replace the product-configurator switch branch with an import from a product-specific scene module.",
   "apps/v9-advanced-examples-gallery/src/sceneBuilders.ts: move buildProduct, productBodyMaterial, and productAccentMaterial into that product-specific module.",
-  "apps/v9-advanced-examples-gallery/src/main.ts: keep visibleProceduralItems(product-configurator) returning [] while the authored GLB is ready."
+  "apps/v9-advanced-examples-gallery/src/main.ts: keep visibleProceduralItems(product-configurator) limited to reusable studio floor/backdrop/calibration helpers while the authored GLB is ready."
 ] as const;
 
 export const PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS = [
   "texture-backed concept vehicle hero",
-  "texture-backed chronograph watch",
-  "texture-backed material variant shoe",
-  "texture-backed transparent sunglasses",
   "reusable indoor studio stage",
   "named imported parts",
-  "imported material variant controls",
+  "imported car material variant controls",
   "selected imported part focus",
   "product exploded view",
   "turntable framing"
 ] as const;
 
 export const PRODUCT_CONFIGURATOR_ROUTE_LIMITATIONS = [
-  "The default Product Configurator route now uses the original texture-backed car, watch, shoe, and sunglasses GLBs as the visual subject; the generated no-texture product-studio fixture is not part of the accepted-fidelity path.",
-  "The car, watch, and shoe controls consume real imported KHR_materials_variants metadata through the shared authored-layer pipeline where the source assets expose variants.",
-  "G3D still does not expose triangle/bounds raycast picking for imported GLB renderables, so hotspot-style part inspection remains bounded to route-side focus controls.",
+  "The default Product Configurator route now uses only the original texture-backed car-concept GLB as the visual subject; generated no-texture product-studio fixtures and unrelated product props are not part of the accepted-fidelity path.",
+  "The car control consumes real imported KHR_materials_variants metadata through the shared authored-layer pipeline where the source asset exposes variants.",
+  "G3D still does not expose triangle spatial raycast picking for imported GLB renderables, so hotspot-style part inspection remains bounded to route-side focus controls.",
   "Exploded view uses route-side name-pattern offsets against imported node names, not a product-aware node graph, variant graph, or authored exploded animation timeline."
 ] as const;
 
@@ -36,8 +33,6 @@ export const PRODUCT_CONFIGURATOR_DIAGNOSTIC_LABELS = [
   "KHR variants",
   "Reusable studio",
   "Car variant",
-  "Watch variant",
-  "Shoe variant",
   "Exploded view",
   "Turntable"
 ] as const;
@@ -58,10 +53,7 @@ type ProductFinish = "graphite" | "alloy" | "champagne" | "copper";
 const PRODUCT_CONFIGURATOR_STUDIO_ASSET_ID = "product-configurator-studio-blender";
 
 export const PRODUCT_CONFIGURATOR_ORIGINAL_PRODUCT_ASSET_IDS = [
-  "chronograph-watch",
-  "car-concept",
-  "sunglasses-khronos",
-  "materials-variants-shoe"
+  "car-concept"
 ] as const;
 
 export const PRODUCT_CONFIGURATOR_GENERATED_FIXTURE_ASSET_IDS = [
@@ -70,10 +62,7 @@ export const PRODUCT_CONFIGURATOR_GENERATED_FIXTURE_ASSET_IDS = [
 ] as const;
 
 export const PRODUCT_CONFIGURATOR_SHOWCASE_SLOTS: readonly ProductShowcaseSlotInput[] = [
-  { assetId: "chronograph-watch", slot: "left-detail", materialVariantControl: "watchVariant", defaultMaterialVariant: "Midnight Gold" },
-  { assetId: "car-concept", slot: "hero", materialVariantControl: "carVariant", defaultMaterialVariant: "Carmine Candy" },
-  { assetId: "sunglasses-khronos", slot: "left-transparent" },
-  { assetId: "materials-variants-shoe", slot: "right-variant", materialVariantControl: "shoeVariant", defaultMaterialVariant: "beach" }
+  { assetId: "car-concept", slot: "hero", materialVariantControl: "carVariant", defaultMaterialVariant: "Carmine Candy" }
 ];
 
 export function createProductConfiguratorShowcaseLayout(): ProductShowcaseLayout {

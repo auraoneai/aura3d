@@ -799,7 +799,7 @@ function createStageContactGrounding(
     items,
     receiverLabel: `${preset} floor/catch plane`,
     limitations: [
-      "Contact grounding uses layered receiver geometry so product assets have reusable visual grounding without route crop or floor-slab expansion.",
+      "Contact grounding uses layered receiver geometry so product assets have reusable visual grounding without camera reframing or floor expansion.",
       plan.claimBoundary
     ]
   };

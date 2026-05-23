@@ -58,50 +58,21 @@ describe("v9 product configurator policy", () => {
     const ids = configuredAuthoredAssetIdsForDemo("product-configurator");
     const layout = createProductConfiguratorShowcaseLayout();
 
-    expect(ids).toEqual([
-      "chronograph-watch",
-      "car-concept",
-      "sunglasses-khronos",
-      "materials-variants-shoe"
-    ]);
+    expect(ids).toEqual(["car-concept"]);
     expect(layout.items.map((item) => item.assetId)).toEqual(ids);
     expect(layout.items.find((item) => item.assetId === "car-concept")?.targetHeight).toBe(0.86);
-    expect(layout.items.find((item) => item.assetId === "chronograph-watch")?.position).toEqual([-2.28, -0.86, -0.72]);
-    expect(layout.items.find((item) => item.assetId === "sunglasses-khronos")?.targetHeight).toBe(0.11);
-    expect(layout.items.find((item) => item.assetId === "materials-variants-shoe")?.position).toEqual([2.34, -0.86, 0.58]);
+    expect(layout.items.find((item) => item.assetId === "chronograph-watch")).toBeUndefined();
+    expect(layout.items.find((item) => item.assetId === "sunglasses-khronos")).toBeUndefined();
+    expect(layout.items.find((item) => item.assetId === "materials-variants-shoe")).toBeUndefined();
     expect(layout.frame.heroPaddingRatio).toBe(0.012);
     expect(ids.every(isProductConfiguratorOriginalProductAssetId)).toBe(true);
     expect(ids.some(isGeneratedProductConfiguratorFixtureAssetId)).toBe(false);
 
-    expect(getAuthoredAssetCandidate("chronograph-watch").localUrl).toBe("/fixtures/v8/assets/product/chronograph-watch.glb");
     expect(getAuthoredAssetCandidate("car-concept").localUrl).toBe("/fixtures/v8/assets/vehicles/car-concept.glb");
-    expect(getAuthoredAssetCandidate("sunglasses-khronos").localUrl).toBe("/fixtures/v8/assets/product/sunglasses-khronos.glb");
-    expect(getAuthoredAssetCandidate("materials-variants-shoe").localUrl).toBe("/fixtures/v8/assets/product/materials-variants-shoe.glb");
     expect(getAuthoredAssetCandidate("car-concept").provenance).toMatchObject({
       sourceKind: "external-fixture",
       generated: false,
       derivative: false,
-      supportOnly: false,
-      acceptableAsFocalHero: true,
-      textureBacked: true
-    });
-    expect(getAuthoredAssetCandidate("chronograph-watch").provenance).toMatchObject({
-      sourceKind: "external-fixture",
-      generated: false,
-      supportOnly: false,
-      acceptableAsFocalHero: true,
-      textureBacked: true
-    });
-    expect(getAuthoredAssetCandidate("materials-variants-shoe").provenance).toMatchObject({
-      sourceKind: "external-fixture",
-      generated: false,
-      supportOnly: false,
-      acceptableAsFocalHero: true,
-      textureBacked: true
-    });
-    expect(getAuthoredAssetCandidate("sunglasses-khronos").provenance).toMatchObject({
-      sourceKind: "external-fixture",
-      generated: false,
       supportOnly: false,
       acceptableAsFocalHero: true,
       textureBacked: true

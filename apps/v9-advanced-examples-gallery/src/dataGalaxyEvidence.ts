@@ -81,7 +81,8 @@ export interface DataGalaxyRuntimeEvidence {
   };
   readonly geometry: DataGalaxyGeometryStats;
   readonly authoredAssetDisclosure: {
-    readonly activeGeneratedAssetIds: readonly ["data-galaxy-core-blender"];
+    readonly activeGeneratedAssetIds: readonly [];
+    readonly generatedSupportGlbActiveInHero: false;
     readonly generatedNoTextureAuthoredGlb: false;
     readonly premiumTextureBackedAuthoredHero: false;
     readonly supportOnlyUntilVisualReview: true;
@@ -133,7 +134,7 @@ export function createDataGalaxyEvidence(options: DataGalaxyEvidenceOptions): Ro
       `${batches.reduce((sum, batch) => sum + batch.count, 0)} per-spark instance transforms submitted`,
       `${particleBudget.densityTier} count tier active`,
       options.connections ? "connection evidence enabled" : "connection evidence disabled",
-      `${particleBudget.nativeGpuComputeDispatches} native GPU compute dispatches`
+      `${particleBudget.nativeGpuComputeDispatches} renderer-side compute dispatches`
     ],
     animatedSystems: [
       "multi-layer point-cloud formations",
@@ -155,12 +156,12 @@ export function createDataGalaxyEvidence(options: DataGalaxyEvidenceOptions): Ro
       "The particle-count control changes the point-buffer partition and overlay sample density, but not the CPU/static update mode.",
       "The default showcase hierarchy is route-generated data visualization geometry, not an unrelated prop or a replacement for texture-backed authored content.",
       "Trail evidence is sampled history geometry for readability, not a temporal GPU simulation buffer.",
-      "WebGPU availability in the browser is not counted as native GPU particle compute for this WebGL2 gallery route."
+      "Browser support for other graphics backends is not counted as route particle-solver evidence for this WebGL2 gallery route."
     ],
     unsupportedGaps: [
-      "No native GPU-compute particle solver is bound to this route.",
+      "No renderer-side particle solver is bound to this route.",
       "No compute-shader particle integration, spatial hashing, or GPU trail buffer is exposed here.",
-      "The current Data Galaxy authored GLB is a generated support fixture with embedded generated data-glyph textures on key materials, but it is not accepted as premium focal hero proof.",
+      "The generated Data Galaxy support GLB is cataloged but inactive in hero mode; the visible focal subject must come from the route-owned reusable data-galaxy effect.",
       "Particle count limits need route-specific screenshot and frame-cadence review before promotion."
     ],
     integrationSteps: [
@@ -189,7 +190,7 @@ export function createDataGalaxyRuntimeEvidence(
       supported: false,
       backend: "none",
       nativeGpuComputeDispatches: particleBudget.nativeGpuComputeDispatches,
-      claimBoundary: "This route reports CPU/static point-buffer animation only; it is not native GPGPU/WebGPU particle compute evidence."
+      claimBoundary: "This route reports CPU/static point-buffer animation only; it is not renderer-side particle-solver evidence."
     },
     budget: {
       defaultShowcaseMode: particleBudget.requestedParticles === DATA_GALAXY_DEFAULT_PARTICLES && particleBudget.mode === "showcase",
@@ -212,7 +213,7 @@ export function createDataGalaxyRuntimeEvidence(
       centralSubject: "bright CPU/static data nucleus with a route-owned solid core, nested shells, and subordinate support clusters",
       primaryLayerRole: "majority particle allocation is compressed around the foreground focal data core instead of full-frame noise",
       supportLayerRole: "vortex, network, and wave layers are smaller secondary context clusters",
-      authoredGlbRole: "generated texture-backed data-galaxy-core-blender remains disclosed support-only content"
+      authoredGlbRole: "generated data-galaxy-core-blender is cataloged for support inspection but inactive in hero mode"
     },
     geometry: {
       pointCount: geometryStats.pointCount,
@@ -225,7 +226,8 @@ export function createDataGalaxyRuntimeEvidence(
       telemetryRingSegmentCount: geometryStats.telemetryRingSegmentCount
     },
     authoredAssetDisclosure: {
-      activeGeneratedAssetIds: ["data-galaxy-core-blender"],
+      activeGeneratedAssetIds: [],
+      generatedSupportGlbActiveInHero: false,
       generatedNoTextureAuthoredGlb: false,
       premiumTextureBackedAuthoredHero: false,
       supportOnlyUntilVisualReview: true
@@ -508,35 +510,35 @@ function createAttractorPositions(time: number, speed: number, pointer: { readon
 function createCoreEvidence(time: number, speed: number, _formation: DataGalaxyFormation): EvidenceSingleItem[] {
   return [
     {
-      geometry: "cube",
+      geometry: "sphere",
       material: "cyanGlow",
       label: "bright central inference nucleus",
       position: [0, 0.02, 0],
-      scale: [0.08, 0.16, 0.08],
+      scale: [0.13, 0.13, 0.13],
       rotation: [0.08, time * 0.8 * speed, -0.06]
     },
     {
-      geometry: "cube",
+      geometry: "sphere",
       material: "cyanGlow",
       label: "foreground focal data cluster anchor",
       position: [-0.2, -0.03, 0.16],
-      scale: [0.04, 0.08, 0.04],
+      scale: [0.06, 0.06, 0.06],
       rotation: [0.04, time * 0.62 * speed, 0.18]
     },
     {
-      geometry: "cube",
+      geometry: "sphere",
       material: "amberGlow",
       label: "warm secondary attractor cluster anchor",
       position: [0.22, 0.08, -0.14],
-      scale: [0.034, 0.068, 0.034],
+      scale: [0.052, 0.052, 0.052],
       rotation: [-0.08, -time * 0.52 * speed, 0.1]
     },
     {
-      geometry: "cube",
+      geometry: "sphere",
       material: "violetGlow",
       label: "violet background model-state cluster anchor",
       position: [-0.24, 0.1, -0.16],
-      scale: [0.03, 0.06, 0.03],
+      scale: [0.046, 0.046, 0.046],
       rotation: [0.12, time * 0.44 * speed, -0.08]
     }
   ];

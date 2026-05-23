@@ -19,9 +19,13 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.animatedSystems).toContain("reusable indoor studio stage");
     expect(frame.animatedSystems).toContain("reusable product-detail LightingRig");
     expect(frame.animatedSystems).toContain("environment stage shell");
-    expect(frame.approximations.some((entry) => entry.includes("generated no-texture product-studio fixture is not part of the accepted-fidelity path"))).toBe(true);
+    expect(frame.animatedSystems).toContain("car-concept turntable enabled");
+    expect(frame.animatedSystems).toContain("route-owned studio inspection rails around original car hero");
+    expect(frame.approximations.some((entry) => entry.includes("original texture-backed car-concept GLB as the visual subject"))).toBe(true);
     expect(frame.labels).toContain("KHR variants");
     expect(frame.labels).toContain("LightingRig product-detail");
+    expect(frame.labels).toContain("Car-only studio inspection rails");
+    expect(frame.labels).toContain("Material swatches");
     expect(frame.lights.map((light) => light.source.name)).toEqual([
       "product-detail-key",
       "product-detail-cool-edge",
@@ -36,11 +40,16 @@ describe("v9 route-owned scene modules", () => {
     const wall = frame.items.find((item) => item.label === "indoor-studio rear infinity wall");
     expect((floor?.material as PBRMaterial | undefined)?.getParameter("u_baseColor")).toEqual([0.00132, 0.00176, 0.00264, 1]);
     expect(wall).toBeUndefined();
-    expect(frame.bounds).toEqual({ min: [-2.18, -1.12, -1.24], max: [2.18, 1.18, 1.34] });
+    expect(frame.bounds).toEqual({ min: [-1.56, -1.04, -1.02], max: [1.56, 0.72, 1.16] });
+    expect(frame.items.some((item) => item.label === "product studio floor inspection rail")).toBe(true);
+    expect(frame.items.some((item) => item.label === "product studio vertical softbox meter")).toBe(true);
+    expect(frame.items.some((item) => item.label === "car material swatch control chip")).toBe(true);
     expect(frame.items.filter((item) => item.label === "product turntable tick")).toHaveLength(0);
+    expect(frame.items.some((item) => item.label === "main chassis")).toBe(false);
+    expect(frame.items.some((item) => item.label === "hotspot")).toBe(false);
     const bloom = frame.postprocess && typeof frame.postprocess.bloom === "object" ? frame.postprocess.bloom : undefined;
     expect(bloom?.intensity).toBe(0.24);
-    expect(frame.objectCount).toBeGreaterThan(frame.items.length);
+    expect(frame.objectCount).toBe(frame.items.length);
   });
 
   it("builds the data galaxy scene through its route-owned module with bounded CPU mode evidence", () => {
@@ -59,20 +68,22 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.animatedSystems).toContain("DataGalaxyFocalSystem transparent data shell");
     expect(frame.animatedSystems).toContain("DataGalaxyFocalSystem layered orbit arcs");
     expect(frame.animatedSystems).toContain("DataGalaxyFocalSystem clustered node lattice");
-    expect(frame.animatedSystems).toContain("DataGalaxyFocalSystem facet ribs, data panels, and transfer lines");
+    expect(frame.animatedSystems).toContain("DataGalaxyFocalSystem organic orbit streams and halo nodes");
     expect(frame.animatedSystems).toContain("default showcase CPU/static density");
     expect(frame.animatedSystems).toContain("separated CPU point-cloud layers");
-    expect(frame.approximations.some((entry) => entry.includes("native GPU compute dispatches"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("renderer-side compute dispatch count"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("cached overlay vertex-buffer draws"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("bright CPU/static data nucleus"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("DataGalaxyFocalSystem is route-owned CPU/static focal geometry"))).toBe(true);
-    expect(frame.approximations.some((entry) => entry.includes("embedded generated data-glyph textures"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("no cuboid scaffold, grid panel, debug axis, or object-count filler"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("generated Data Galaxy GLB is cataloged but inactive in hero mode"))).toBe(true);
     expect(frame.labels).toContain("Mode showcase");
     expect(frame.labels).toContain("Default showcase");
     expect(frame.labels).toContain("DataGalaxyFocalSystem");
-    expect(frame.labels).toContain("Central core");
+    expect(frame.labels).toContain("Central nucleus");
     expect(frame.labels).toContain("Layered arcs");
-    expect(frame.labels).toContain("Clustered nodes");
+    expect(frame.labels).toContain("Spherical clusters");
+    expect(frame.labels).toContain("Curved streams");
     expect(frame.labels).toHaveLength(10);
     expect(frame.items.some((item) => item.label === "primary particle cloud")).toBe(true);
     expect(frame.items.some((item) => item.label === "bright central inference nucleus")).toBe(true);
@@ -83,13 +94,17 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.items.some((item) => item.label === "foreground data-system contour chord")).toBe(false);
     expect(frame.items.some((item) => item.label === "central data-system vertical spine")).toBe(false);
     expect(frame.items.some((item) => String(item.label).includes("tick"))).toBe(false);
+    expect(frame.items.some((item) => String(item.label).includes("panel"))).toBe(false);
+    expect(frame.items.some((item) => /depth-rail|DataGalaxyFocalSystem .*rail/i.test(String(item.label)))).toBe(false);
+    expect(frame.items.some((item) => String(item.label).includes("facet-rib"))).toBe(false);
     expect(frame.items.some((item) => item.label === "intentional core orbit arcs")).toBe(true);
     expect(frame.items.some((item) => item.label === "short intentional cluster transfer links")).toBe(true);
-    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem central data core")).toBe(true);
+    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem luminous data nucleus")).toBe(true);
     expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem transparent data shell")).toBe(true);
     expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem layered core-orbit")).toBe(true);
-    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem cyan-facet-ribs")).toBe(true);
-    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem amber-transfer-lines")).toBe(true);
+    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem cyan-halo-nodes")).toBe(true);
+    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem curved-transfer-streams")).toBe(true);
+    expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem organic foreground-cyan-stream")).toBe(true);
     expect(frame.items.some((item) => item.label === "DataGalaxyFocalSystem cyan-clustered-data-nodes")).toBe(true);
     expect(frame.items.some((item) => item.label === "semantic data node")).toBe(false);
     const focalItems = frame.items.filter((item) => String(item.label).startsWith("DataGalaxyFocalSystem"));
@@ -106,6 +121,8 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.dataGalaxyEvidence?.budget.effectiveParticles).toBe(6000);
     expect(frame.dataGalaxyEvidence?.geometry.telemetryRingSegmentCount).toBe(0);
     expect(frame.dataGalaxyEvidence?.gpuBackend.nativeGpuComputeDispatches).toBe(0);
+    expect(frame.dataGalaxyEvidence?.authoredAssetDisclosure.activeGeneratedAssetIds).toEqual([]);
+    expect(frame.dataGalaxyEvidence?.authoredAssetDisclosure.generatedSupportGlbActiveInHero).toBe(false);
     expect(frame.dataGalaxyEvidence?.authoredAssetDisclosure.generatedNoTextureAuthoredGlb).toBe(false);
 
     const firstOverlay = frame.items.find((item) => item.label === "batched cyan inference spark points")?.geometry;

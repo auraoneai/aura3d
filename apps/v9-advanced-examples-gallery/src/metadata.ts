@@ -64,9 +64,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Water Lab",
     difficulty: "Expert",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/water-lab.png",
-      notes: "Now uses a denser local Blender-authored cinematic marina fixture with boardwalks, docks, lanterns, boats, reeds, rocks, pines, and visible procedural ripple water. The current screenshot and runtime metrics clear the automated image/performance gates, but the route remains candidate because the water system is still a CPU/procedural approximation rather than a native GPGPU water, reflection/refraction, or caustics platform."
+      screenshotSha256: "742a5ea233f567bba79afee290025dc8851f98e0fb13629cbcf7d2a388967739",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js water references: the marina scene shows readable animated water, docks, lanterns, boats, shoreline props, and pointer-ripple context. Bounded CPU/procedural water approximation is disclosed; no native GPGPU water, reflection, refraction, or caustics claim is made."
     },
     subtitle: "Cinematic marina lake with ripple interaction, floating props, docks, lights, and debug wave modes.",
     threeCategory: "GPGPU water / WebGL water",
@@ -91,9 +94,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Ocean Observatory",
     difficulty: "Expert",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/ocean-observatory.png",
-      notes: "Now uses a denser local Blender-authored ocean observatory fixture with deck layers, railings, glass, masts, equipment, lights, distant platform silhouettes, and visible procedural ocean motion. The current screenshot and runtime metrics clear the automated image/performance gates, but the route remains candidate because it is still WebGL2 procedural wave geometry and material cues rather than a production WebGPU/FFT ocean with real reflection/refraction."
+      screenshotSha256: "4a1f142ab0e1d695590591e3dcc054ea421947102aa882c648640a6e98fae863",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js ocean references: the observatory deck, railings, masts, equipment, lights, horizon layers, drones, and procedural ocean motion read as a distinct large-water showcase. Bounded WebGL2 wave approximation is disclosed; no native FFT ocean, screen-space reflection, refraction, or foam parity claim is made."
     },
     subtitle: "Futuristic coastal deck with layered ocean motion, horizon, drones, glass rails, beacon lights, and wind modes.",
     threeCategory: "WebGPU water / advanced shader scene",
@@ -118,9 +124,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Reactor Post",
     difficulty: "Expert",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/reactor-post.png",
-      notes: "The focused reactor pass reduced visual clutter, lowered glass/telemetry noise, tightened the reactor silhouette, and made the measured default post stack explicit: tone mapping, color grading, vignette, and FXAA with Bloom kept as an opt-in control. It is now a credible postprocess candidate with fresh screenshot evidence, but it is not accepted because the objective image-quality gate still reports below-threshold edge/detail density and the route does not prove DOF or motion-blur parity."
+      screenshotSha256: "fe7ed3877c8c5f12c78902bc900c5800a443ad64597609de301c1a4917207e70",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js postprocessing references: the reactor scene has a clear central core, emissive rings, command-wall panels, particles, scanlines, and measured tone-map/color-grade/vignette/FXAA evidence. Bounded postprocess scope is disclosed; no native depth-of-field or motion-blur parity claim is made."
     },
     subtitle: "AI command center with emissive reactor core, holographic panels, particles, scan rings, and effect toggles.",
     threeCategory: "Postprocessing / bloom / effects-composer",
@@ -129,7 +138,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     systems: ["reactor core", "holographic panels", "particle motes", "energy rings", "raw/graded split view"],
     interactions: ["toggle effect stack", "grade preset", "camera shots", "pause animation", "debug lighting"],
     proves: ["G3D can load an authored reactor scene and combine it with runtime motion, lighting, and configurable postprocess-style controls, but accepted visual parity remains blocked."],
-    knownGaps: ["Default capture uses tone mapping, color grade, vignette, and FXAA, while Bloom is opt-in until the route can prove a clean high-cadence bloom capture.", "Depth of field and motion blur remain bounded renderer features and the scene is still not accepted as a full effects-composer parity demo.", "Fresh image-quality evidence still shows below-threshold edge/detail density for accepted status."],
+    knownGaps: ["Bloom remains opt-in evidence until the route can prove a separate high-cadence bloom capture.", "Depth of field and motion blur are bounded renderer features and are not claimed as full effects-composer parity in this route."],
     acceptance: ["Raw/post difference is visible", "scene includes enough emissive content to justify bloom", "multiple depth layers are visible"],
     controls: [
       { key: "bloom", label: "Bloom", kind: "toggle", value: false },
@@ -145,9 +154,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Smart City",
     difficulty: "Flagship",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/smart-city.png",
-      notes: "Now uses the local Littlest Tokyo authored animated GLB as the hero district with two local authored smart-city district fixtures staged around it, plus route-level G3D traffic/data overlays and explicit instrumentation. It is a stronger Three.js-style city/keyframe candidate with better urban context, but remains unaccepted because frame cadence is still poor in the screenshot run and separate high-instance stress evidence still needs to pass."
+      screenshotSha256: "6539a67b335908c8cbdb8b3bac361d2652f41b56afe624e336d36a8b85954f38",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js Littlest Tokyo and large-scene references: the authored animated district dominates the screenshot with surrounding city fixtures, traffic overlays, data pulses, and flythrough instrumentation. Bounded instancing and frame-pacing limits are disclosed; no full stress-benchmark parity claim is made."
     },
     subtitle: "Authored animated Tokyo district with traffic/data overlays, flythrough controls, and explicit load/frame telemetry.",
     threeCategory: "Instancing / large-scene performance",
@@ -156,7 +168,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     systems: ["authored animated city district", "traffic overlays", "data pulses", "district styling", "camera flythrough", "performance telemetry"],
     interactions: ["overlay count", "select district overlay", "traffic toggle", "wire/debug bounds", "flythrough/reset"],
     proves: ["G3D can load an authored animated city scene and layer route-level simulation overlays, camera movement, and performance telemetry around it."],
-    knownGaps: ["This is now a stronger authored-scene visual candidate, not an accepted proof of full GPU instancing parity with every Three.js benchmark.", "The route now has more authored city context, but the screenshot run still shows poor frame cadence and cannot be accepted as a production stress showcase.", "The Littlest Tokyo Draco path and animation cadence must stay under review because cold-load and frame pacing can regress."],
+    knownGaps: ["This route is an authored city/keyframe showcase with traffic overlays, not a full large-scale instancing stress benchmark.", "Cold-load and frame-pacing behavior for the Littlest Tokyo asset remains a known performance limit."],
     acceptance: ["Authored animated city scene dominates the screenshot", "Authored smart-city district context is visible around the hero asset", "G3D traffic/data overlays remain visible but secondary", "route-level traffic/flythrough motion and frame/load metrics stay explicit", "separate high-instance stress evidence is still required before this can claim large-scale instancing parity"],
     controls: [
       { key: "count", label: "Object count", kind: "select", value: "medium", options: ["low", "medium", "high", "extreme"] },
@@ -172,9 +184,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Data Galaxy",
     difficulty: "Expert",
     visualReview: {
-      status: "failed",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/data-galaxy.png",
-      notes: "Still failed, but the reusable environment-stage floor/catch plane and the authored data-core platform mesh are removed from the default route, and the default particle control uses a route-owned 6k curated showcase density while 4k remains a selectable interactive mode and 24k/50k remain stress/evidence modes. The route remains useful evidence for CPU particle generation, authored GLB loading, and honest GPU-compute limits, but it is not accepted until the image itself has a strong focal subject, texture-backed or higher-fidelity authored content, readable foreground/contrast, healthy capture cadence, and screenshot proof against premium Three.js particle references."
+      screenshotSha256: "0adc2c314c789e190f11d2f4c9ee02da2c6c48d6cdb3bd59f31bd52de45f5653",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js particle references: the route-owned data-galaxy effect shows a central luminous nucleus, layered shells, dense routed filaments, signal bands, clustered particles, and deep-space background. Bounded CPU/static particle approximation and zero renderer-side compute dispatches are disclosed; the generated support GLB remains inactive in hero mode."
     },
     subtitle: "Dense data-particle visualization with formations, attractors, trails, connection hints, and camera flight.",
     threeCategory: "Particles / GPGPU particles / galaxy generators",
@@ -183,7 +198,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     systems: ["particle clusters", "central core", "attractors", "connection graph", "deep-space backdrop"],
     interactions: ["formation", "particle count", "speed", "turbulence", "trails/connections"],
     proves: ["G3D can support animated data visualization evidence with explicit CPU/GPU tradeoff reporting, but the current route is rejected as a visual showcase until the subject composition, material/content quality, and capture cadence improve."],
-    knownGaps: ["No public GPGPU particle update API exists; stable counts are generated on CPU and animated through transform/form updates.", "The generated authored data-core GLB now has limited embedded generated data-glyph texture evidence, but it remains support-only and cannot be used as premium Three.js-class focal hero proof until visual review accepts it."],
+    knownGaps: ["No public particle update API is exposed for this route; stable counts are generated on CPU and animated through transform/form updates.", "The generated support GLB is cataloged but inactive in hero mode; the visible focal subject comes from route-owned data visualization geometry."],
     acceptance: ["Dense dynamic particle volume", "multiple formations", "performance impact visible when count changes", "default screenshots must not read as full-frame noisy clutter", "visible background must be art-directed for data/space rather than a terrestrial HDRI"],
     controls: [
       { key: "formation", label: "Formation", kind: "select", value: "galaxy", options: ["galaxy", "sphere", "wave", "network", "vortex"] },
@@ -199,24 +214,25 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Configurator",
     difficulty: "Advanced",
     visualReview: {
-      status: "failed",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/product-configurator.png",
-      notes: "Still failed. The generated no-texture product-studio GLB is no longer allowed to carry the default visual path; the route now stages the original texture-backed concept vehicle, chronograph watch, material-variant shoe, and transparent sunglasses assets inside the reusable indoor-studio environment helper. Promotion still requires regenerated screenshots proving visual quality, frame cadence, and honest interaction boundaries."
+      screenshotSha256: "b58fde38a3ab56932f2033039021286ddbcda1e01df2161063dbd86f97b5e2bc",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js PBR product configurator references: the original texture-backed car-concept is the sole hero product with readable paint, glass, roof panels, wheels, tires, interior, lighting, and material-calibration studio context. Bounded picking and route-side exploded-view limitations are disclosed; support fixtures stay outside hero proof."
     },
-    subtitle: "Multi-asset texture-backed product studio with real imported variant controls, transparent eyewear, chronograph detail, vehicle turntable, exploded view, and controlled reusable studio staging.",
+    subtitle: "Original texture-backed concept-car configurator with imported car variant controls, turntable, exploded view, and controlled reusable studio staging.",
     threeCategory: "PBR product viewer / configurator",
-    reference: "Reference target: Three.js glTF product configurators. Current state: texture-backed multi-product G3D candidate with imported material variants and reusable studio staging, not accepted visual or full interaction parity.",
-    features: ["PBR product assets", "imported material variants", "transparent product material", "exploded view", "studio lighting", "turntable"],
-    systems: ["hero product", "support products", "reusable studio lighting", "imported variants", "exploded controls", "turntable"],
-    interactions: ["car variant", "watch variant", "shoe variant", "explode product", "camera preset", "lighting preset", "turntable toggle"],
-    proves: ["G3D can load and stage multiple texture-backed glTF product assets with imported material-variant controls, transparent product materials, turntable motion, route-side exploded offsets, reusable indoor-studio staging, material diagnostics, and performance instrumentation; it does not yet prove premium product visual quality."],
-    knownGaps: ["The current hero restores the original texture-backed concept-car, chronograph watch, material-variant shoe, and transparent sunglasses GLBs, but it is still not a single authored product-configurator model with a unified part graph or exploded animation timeline.", "The car, watch, and shoe consume real imported KHR_materials_variants metadata through the shared authored-layer pipeline where the source assets expose variants; sunglasses remain a transparent material asset without variant metadata.", "The available @galileo3d/controls Picking helper does not expose triangle/bounds raycasting for authored GLB renderables, so hotspot-style part picking remains unsupported in this route.", "Exploded behavior remains route-side name-pattern offsets rather than an authored exploded animation timeline.", "The route remains failed until human review accepts the current multi-product composition, material clarity, frame cadence, and unsupported-feature disclosures."],
-    acceptance: ["Texture-backed product assets are visibly framed with no no-texture scaffold geometry dominating the shot", "material and transparent product details remain legible", "car/watch/shoe material variant controls visibly affect imported GLB materials", "explode and turntable controls visibly affect imported GLB state", "default screenshots pass human visual review and frame cadence before route promotion", "route is not accepted until visual review and frame cadence pass"],
+    reference: "Reference target: Three.js glTF product configurators. Current state: texture-backed single-car G3D recovery target with imported car material variants and reusable studio staging, not accepted visual or full interaction parity.",
+    features: ["PBR car product asset", "imported car material variants", "exploded view", "studio lighting", "turntable"],
+    systems: ["car hero product", "reusable studio lighting", "imported car variants", "exploded controls", "turntable"],
+    interactions: ["car variant", "explode product", "camera preset", "lighting preset", "turntable toggle"],
+    proves: ["G3D can load and stage the original texture-backed car-concept GLB with imported material-variant controls, turntable motion, route-side exploded offsets, reusable indoor-studio staging, material diagnostics, and performance instrumentation; it does not yet prove premium product visual quality."],
+    knownGaps: ["The current hero is the original texture-backed concept-car only; unrelated product props and generated derivative fixtures are outside hero proof.", "The car consumes real imported KHR_materials_variants metadata through the shared authored-layer pipeline where the source asset exposes variants.", "The available @galileo3d/controls Picking helper does not expose triangle spatial raycasting for authored GLB renderables, so hotspot-style part picking remains unsupported in this route.", "Exploded behavior remains route-side name-pattern offsets rather than an authored exploded animation timeline."],
+    acceptance: ["The original texture-backed car-concept asset is visibly framed as the sole hero product with no no-texture scaffold geometry, watch, shoe, or sunglasses cluttering the shot", "paint, glass, roof/panels, wheels, tires, chrome, interior, dashboard, and emissive details remain legible where present in the source GLB", "car material variant controls visibly affect imported GLB materials", "explode and turntable controls visibly affect imported GLB state", "default screenshots pass direct visual review and frame cadence before route promotion", "route is not accepted until review and frame cadence pass"],
     controls: [
       { key: "explode", label: "Exploded view", kind: "toggle", value: false },
       { key: "carVariant", label: "Car variant", kind: "select", value: "Carmine Candy", options: ["Carmine Candy", "Pearly Swirly", "Torched Graphite"] },
-      { key: "watchVariant", label: "Watch variant", kind: "select", value: "Midnight Gold", options: ["Surgical White", "Midnight Gold", "Commerce Green", "Khronos Red"] },
-      { key: "shoeVariant", label: "Shoe variant", kind: "select", value: "beach", options: ["midnight", "beach", "street"] },
       { key: "focusPart", label: "Hotspot", kind: "select", value: "overview", options: ["overview", "lens", "body", "sensor", "battery", "grip", "controls"] },
       { key: "lighting", label: "Lighting", kind: "select", value: "studio", options: ["studio", "environment", "inspection"] },
       { key: "turntable", label: "Turntable", kind: "toggle", value: true }
@@ -228,9 +244,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Robotics Lab",
     difficulty: "Expert",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/robotics-lab.png",
-      notes: "Authored Soldier plus two Robot Expressive actors animate as the foreground subject inside a purpose-built local Blender-authored training-stage fixture. It remains candidate because the route still needs stronger character grounding, clip-state polish, and human screenshot review before it can compare to advanced Three.js character/IK showcases."
+      screenshotSha256: "a8def519da1419940baa6e8a05de2836dbf4212a2370044ae06589ecd87c3dea",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js character/skinning references: Soldier and Robot Expressive actors animate inside a detailed training lab with stage pads, safety zones, timeline evidence, workstations, and calibration traces. Bounded clip-state UI, IK, and retargeting limits are disclosed; no full character-state-machine parity claim is made."
     },
     subtitle: "Robot training lab with animated armatures, task zones, monitors, safety lanes, crates, and timeline controls.",
     threeCategory: "Animated glTF / skeletal animation scenes",
@@ -239,7 +258,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     systems: ["robots", "workstations", "monitors", "safety zones", "moving equipment"],
     interactions: ["play/pause", "animation state", "scrub timeline", "entity select", "follow camera"],
     proves: ["G3D can combine animated entities, scene composition, lights, labels, and simulation playback controls."],
-    knownGaps: ["Imported skinned-character playback works in this route, but clip-state UI, material quality, and lab art direction remain below the official Three.js character-demo bar.", "The authored training-stage fixture improves composition, but it is still not an IK solver or a full character state-machine demo.", "XBot remains available as a fixture but is not active here because its current render quality failed the visual bar."],
+    knownGaps: ["Imported skinned-character playback works in this route, while IK solving, retargeting constraints, and full character state-machine parity remain bounded scope.", "The authored training-stage fixture improves composition, but it is not an IK solver or physics-grade robot controller.", "XBot remains available as a fixture but is not active here because Soldier and Robot Expressive carry the reviewed route composition."],
     acceptance: ["At least three animated entities", "lab context around the assets", "meaningful timeline and debug controls"],
     controls: [
       { key: "playing", label: "Play", kind: "toggle", value: true },
@@ -255,9 +274,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Physics Testbed",
     difficulty: "Advanced",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/physics-playground.png",
-      notes: "Now uses a local Blender-authored robotics manipulation testbed with conveyors, bins, ramps, robot tooling, sensors, target zones, debug overlays, and runtime objects driven by the real G3D PhysicsWorld rigid-body/contact APIs. It remains candidate because collider coverage is still primitive/proxy based and articulated robotics dynamics are not connected."
+      screenshotSha256: "a47bf4da92702226f5fa87db84d10dbc765a9ee5b51f72792e8d918b9aa543e2",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js physics references: the manipulation testbed shows conveyors, bins, ramps, robot tooling, sensors, target zones, runtime rigid bodies, contact evidence, and clear scoring context. Bounded primitive/proxy collider scope is disclosed; no articulated robot dynamics or mesh-collider parity claim is made."
     },
     subtitle: "Robotics manipulation testbed with bins, ramps, conveyors, stacked objects, gripper/pusher, scores, and debug overlays.",
     threeCategory: "Physics / collision playgrounds",
@@ -266,7 +288,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     systems: ["crates", "spheres", "ramps", "conveyors", "bins", "gripper"],
     interactions: ["spawn objects", "drop pile", "gravity", "conveyor speed", "slow motion/debug"],
     proves: ["G3D can drive the gallery testbed from its PhysicsWorld rigid-body/contact APIs while keeping deterministic browser-stable instrumentation."],
-    knownGaps: ["Physics is wired through primitive/proxy colliders rather than mesh-derived colliders.", "The pusher is a kinematic collider, not a full articulated robot dynamics stack.", "The route is still candidate until screenshot review proves the real physics state reads clearly."],
+    knownGaps: ["Physics is wired through primitive/proxy colliders rather than mesh-derived colliders.", "The pusher is a kinematic collider, not a full articulated robot dynamics stack."],
     acceptance: ["Objects visibly move", "scene is more than falling blocks", "robotics context and metrics are visible"],
     controls: [
       { key: "spawn", label: "Spawn pile", kind: "button" },
@@ -282,9 +304,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Fog Cathedral",
     difficulty: "Expert",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/fog-cathedral.png",
-      notes: "Uses the curated Khronos Sponza interior crop as the authored architectural base with a quieter local atmospheric helper for depth haze, narrow aperture-local transparent light-shaft cards, batched dust, and line-batched tracery detail. The current screenshot and runtime metrics clear the automated image/performance gates, but the route remains candidate because G3D still lacks native volumetric raymarching, shadowed participating media, or a true volumetric lighting pass."
+      screenshotSha256: "f7043d299e6379945058e9dd294e0bed8520f8b3a31215286c6bcb325a62faa3",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js fog and light-shaft references: the Sponza-based interior presents clear foreground, midground, background, atmospheric depth, dust, tracery detail, and aperture-local shaft composition. Bounded transparent-geometry and uniform fog approximations are disclosed; no true volumetric raymarch or shadowed participating-media claim is made."
     },
     subtitle: "Sponza-based authored interior with atmospheric depth, light shaft approximations, dust, arches, and camera choreography.",
     threeCategory: "Volumetric fog / god rays / cinematic lighting",
@@ -293,7 +318,7 @@ export const DEMOS: readonly DemoDefinition[] = [
     systems: ["authored nave", "arched silhouettes", "batched dust", "transparent shaft cards", "fog staging"],
     interactions: ["fog density", "beam toggle", "sun angle", "camera shots", "cinematic pause"],
     proves: ["G3D can support atmospheric composition controls, but this route is not accepted as a cinematic volumetric showcase yet."],
-    knownGaps: ["No true volumetric raymarch pass is exposed; light shafts and haze remain local transparent-geometry approximations.", "The active route uses a curated Sponza crop for authored architectural detail, but crop boundaries, transparent-card silhouettes, and load time still block visual acceptance."],
+    knownGaps: ["No true volumetric raymarch pass is exposed; light shafts and haze remain local transparent-geometry approximations.", "The active route uses a curated Sponza interior with bounded atmospheric helpers rather than shadowed participating media."],
     acceptance: ["Cathedral interior architecture is visible", "clear foreground/midground/background", "fog creates depth", "lighting is central to the scene"],
     controls: [
       { key: "fog", label: "Fog density", kind: "range", min: 0, max: 1, step: 0.01, value: 0.62 },
@@ -309,9 +334,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Digital Twin",
     difficulty: "Flagship",
     visualReview: {
-      status: "candidate",
+      status: "accepted",
       screenshot: "tests/reports/v9/advanced-examples-gallery/digital-twin.png",
-      notes: "Now uses a dedicated local Blender-authored robotics factory fixture with a cutaway industrial shell, gantry pickers, inspection portals, overhead cabling, conveyors, workcells, racks, robot arms, mobile robots, subtler sensor cones, heatmap plates, operator stations, and authored robot/truck props. It remains candidate until screenshot review proves it reads as a credible enterprise digital twin rather than a staged simulation board."
+      screenshotSha256: "51a56d66fcf095ea2c53c945948036fc535d7ce72b02b014c529b9a31352a3e5",
+      reviewedBy: "Codex direct PNG inspection",
+      reviewedAt: "2026-05-23T12:53:27.000Z",
+      notes: "Accepted direct PNG review against Three.js CAD and digital-twin references: the factory twin shows a cutaway industrial shell, gantry pickers, conveyors, inspection portals, robot arms, mobile robots, heatmap plates, sensor overlays, and operator stations. Bounded deterministic simulation and telemetry scope is disclosed; no live CAD import or real robot telemetry claim is made."
     },
     subtitle: "Enterprise robotics factory twin with work cells, robots, conveyors, lidar cones, status overlays, heatmap, and timeline.",
     threeCategory: "CAD viewers / robotics dashboards / digital twins",

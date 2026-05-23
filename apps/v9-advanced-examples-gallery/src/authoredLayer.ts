@@ -292,7 +292,8 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
       position: [3.45, -0.42, 1.35],
       scale: [1, 1, 1],
       targetHeight: 0.48,
-      yawRadians: -0.32
+      yawRadians: -0.32,
+      excludeNodePattern: /Sphere002_1/i
     }
   ],
   "reactor-post": [
@@ -334,38 +335,8 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
       defaultClip: /take|animation|default/i
     }
   ],
-  "data-galaxy": [
-    {
-      assetId: "data-galaxy-core-blender",
-      label: "generated support data galaxy core",
-      position: [0.68, -0.54, 0.44],
-      scale: [1, 1, 1],
-      targetHeight: 0.16,
-      yawRadians: -0.12,
-      turntable: true,
-      turntableSpeedRadiansPerSecond: 0.16,
-      excludeNodePattern: /authored data galaxy platform/i,
-      excludeNodeSemanticRoles: [
-        "focal-core",
-        "formation-control",
-        "connection-loom",
-        "analytics-panel",
-        "decorative-pylon",
-        "support-platform",
-        "floor-trace",
-        "debug-axis",
-        "support-scaffold"
-      ]
-    }
-  ],
+  "data-galaxy": [],
   "product-configurator": [
-    {
-      assetId: "chronograph-watch",
-      label: "texture-backed chronograph watch",
-      ...productShowcaseConfig("chronograph-watch"),
-      turntable: true,
-      materialVariantControl: "watchVariant"
-    },
     {
       assetId: "car-concept",
       label: "original texture-backed concept vehicle hero",
@@ -373,19 +344,6 @@ const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> 
       turntable: true,
       explodeParts: true,
       materialVariantControl: "carVariant"
-    },
-    {
-      assetId: "sunglasses-khronos",
-      label: "texture-backed transparent sunglasses",
-      ...productShowcaseConfig("sunglasses-khronos"),
-      turntable: true
-    },
-    {
-      assetId: "materials-variants-shoe",
-      label: "texture-backed material variant shoe",
-      ...productShowcaseConfig("materials-variants-shoe"),
-      turntable: true,
-      materialVariantControl: "shoeVariant"
     }
   ],
   "robotics-lab": [

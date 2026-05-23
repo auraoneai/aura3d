@@ -1081,7 +1081,6 @@ function assertAuthoredRouteRuntime(demo: DemoId, runtime: AdvancedGalleryRuntim
     "ocean-observatory": 1,
 	    "reactor-post": 1,
 	    "smart-city": 3,
-	    "data-galaxy": 1,
 	    "product-configurator": 12,
     "robotics-lab": 16,
     "physics-playground": 3,
@@ -1125,9 +1124,9 @@ function assertAuthoredRouteRuntime(demo: DemoId, runtime: AdvancedGalleryRuntim
 	    const transformDiagnostics = authored?.transformDiagnostics ?? [];
 	    const provenance = authored?.assetProvenance ?? [];
 	    expect(authored?.assetIds ?? [], `${demo} texture-backed car asset`).toContain("car-concept");
-	    expect(authored?.assetIds ?? [], `${demo} texture-backed watch asset`).toContain("chronograph-watch");
-	    expect(authored?.assetIds ?? [], `${demo} texture-backed shoe asset`).toContain("materials-variants-shoe");
-	    expect(authored?.assetIds ?? [], `${demo} transparent sunglasses asset`).toContain("sunglasses-khronos");
+	    expect(authored?.assetIds ?? [], `${demo} texture-backed watch asset must not clutter hero`).not.toContain("chronograph-watch");
+	    expect(authored?.assetIds ?? [], `${demo} texture-backed shoe asset must not clutter hero`).not.toContain("materials-variants-shoe");
+	    expect(authored?.assetIds ?? [], `${demo} transparent sunglasses asset must not clutter hero`).not.toContain("sunglasses-khronos");
 	    expect(authored?.assetIds ?? [], `${demo} generated no-texture studio scaffold must not be active`).not.toContain("product-configurator-studio-blender");
 	    expect(provenance.find((entry) => entry.assetId === "car-concept"), `${demo} original car provenance`).toMatchObject({
 	      sourceKind: "external-fixture",
@@ -1140,7 +1139,7 @@ function assertAuthoredRouteRuntime(demo: DemoId, runtime: AdvancedGalleryRuntim
 	    });
 	    expect(provenance.some((entry) => entry.assetId === "product-configurator-studio-blender"), `${demo} inactive generated studio provenance`).toBe(false);
 	    expect(provenance.some((entry) => entry.assetId === "car-concept-batched"), `${demo} inactive batched derivative provenance`).toBe(false);
-	    expect(authored?.drawItems ?? 0, `${demo} authored product draw items`).toBeGreaterThanOrEqual(120);
+	    expect(authored?.drawItems ?? 0, `${demo} authored car draw items`).toBeGreaterThanOrEqual(80);
 	    expect(transformDiagnostics.some((diagnostic) =>
 	      diagnostic.assetId === "car-concept"
 	      && diagnostic.source === "authored-turntable"
@@ -1153,32 +1152,8 @@ function assertAuthoredRouteRuntime(demo: DemoId, runtime: AdvancedGalleryRuntim
 	      && (diagnostic.effectiveTextureBackedDrawItems ?? 0) >= 80
 	      && (diagnostic.colorBearingTextureDrawItems ?? 0) > 0
 	    ), `${demo} texture-backed car diagnostics`).toBe(true);
-	    expect(diagnostics.some((diagnostic) => diagnostic.assetId === "chronograph-watch" && diagnostic.drawItems > 0 && diagnostic.textureCount > 0), `${demo} texture-backed watch diagnostics`).toBe(true);
-	    expect(diagnostics.some((diagnostic) => diagnostic.assetId === "materials-variants-shoe" && diagnostic.drawItems > 0 && diagnostic.textureCount > 0), `${demo} texture-backed shoe diagnostics`).toBe(true);
 	    expect((authored?.materialVariants ?? []).some((variant) => variant.assetId === "car-concept" && variant.selected === "Carmine Candy"), `${demo} car material variant evidence`).toBe(true);
-	    expect((authored?.materialVariants ?? []).some((variant) => variant.assetId === "chronograph-watch" && variant.selected === "Midnight Gold"), `${demo} watch material variant evidence`).toBe(true);
-	    expect((authored?.materialVariants ?? []).some((variant) => variant.assetId === "materials-variants-shoe" && variant.selected === "beach"), `${demo} shoe material variant evidence`).toBe(true);
     expect(diagnostics.reduce((total, diagnostic) => total + diagnostic.fallbackWhiteDrawItems, 0), `${demo} fallback white authored materials`).toBe(0);
-  }
-  if (demo === "data-galaxy") {
-    const provenance = authored?.assetProvenance ?? [];
-    expect(provenance.find((entry) => entry.assetId === "data-galaxy-core-blender"), `${demo} generated support provenance`).toMatchObject({
-      sourceKind: "generated-local-fixture",
-      manifestPath: "fixtures/v9/assets/data-galaxy-core-blender/manifest.json",
-      sourceScript: "tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py",
-      generated: true,
-      derivative: false,
-      supportOnly: true,
-      acceptableAsFocalHero: false,
-      textureBacked: true,
-      generatedNoTexture: false,
-      semanticRoles: expect.arrayContaining(["focal-core", "semantic-cluster", "signal-bead"]),
-      supportScaffoldRoles: [],
-      defaultExcludedRoles: expect.arrayContaining(["focal-core", "support-scaffold", "debug-axis"]),
-      textureBackedFocalMaterials: expect.arrayContaining(["cyan neural emission"])
-    });
-    const dataCoreDiagnostics = authored?.materialDiagnostics.find((diagnostic) => diagnostic.assetId === "data-galaxy-core-blender");
-    expect(dataCoreDiagnostics?.excludedNodeSemanticRoles, `${demo} generated support scaffold semantic exclusions`).toEqual(expect.arrayContaining(["focal-core"]));
   }
 }
 
@@ -1205,7 +1180,6 @@ function isAuthoredRoute(demo: DemoId): boolean {
     || demo === "ocean-observatory"
 	    || demo === "reactor-post"
 	    || demo === "smart-city"
-	    || demo === "data-galaxy"
 	    || demo === "product-configurator"
     || demo === "robotics-lab"
     || demo === "physics-playground"

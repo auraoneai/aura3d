@@ -149,10 +149,10 @@ export function createResources(): Resources {
 	    particleWarm: unlit("particleWarm", [1, 0.74, 0.28, 0.78], true, 1.95, true),
 	    particleViolet: unlit("particleViolet", [0.66, 0.44, 1, 0.78], true, 1.9, true),
 	    particleGreen: unlit("particleGreen", [0.26, 0.96, 0.64, 0.7], true, 1.75, true),
-    dataParticle: unlit("dataParticle", [0.52, 0.98, 1, 0.62], true, 1.25, true),
-    dataParticleWarm: unlit("dataParticleWarm", [1, 0.72, 0.24, 0.68], true, 1.4, true),
-    dataParticleViolet: unlit("dataParticleViolet", [0.72, 0.48, 1, 0.58], true, 1.25, true),
-    dataParticleGreen: unlit("dataParticleGreen", [0.32, 1, 0.68, 0.56], true, 1.2, true),
+    dataParticle: unlit("dataParticle", [0.56, 1, 1, 0.82], true, 2.15, true),
+    dataParticleWarm: unlit("dataParticleWarm", [1, 0.74, 0.24, 0.84], true, 2.2, true),
+    dataParticleViolet: unlit("dataParticleViolet", [0.74, 0.5, 1, 0.76], true, 2.05, true),
+    dataParticleGreen: unlit("dataParticleGreen", [0.34, 1, 0.7, 0.74], true, 1.95, true),
     beam: unlit("beam", [1, 0.78, 0.48, 0.14], true),
     fogVeil: unlit("fogVeil", [0.62, 0.72, 0.72, 0.065], true),
     fogShadow: unlit("fogShadow", [0.07, 0.1, 0.11, 0.16], true),
@@ -303,10 +303,9 @@ function buildRoboticsLab(r: Resources, time: number, state: GalleryState): Scen
   const follow = bool(state.controls.follow, false);
   const activeStage = roboticsStateStageIndex(animationState);
   addLabShell(r, items, t);
-  if (state.cameraPreset === "hero") {
-    addRoboticsFloorDetail(r, items, t);
-    addRoboticsWorkstationDetail(r, items, t);
-  }
+  addRoboticsFloorDetail(r, items, t);
+  addRoboticsWorkstationDetail(r, items, t);
+  addRoboticsCalibrationMicroDetail(r, items, t);
   const stagePads: readonly [number, number, string, string, number][] = [
     [-0.58, 0.04, "cyanGlow", "soldier animation stage", 1.94],
     [0.9, 0.16, "violetGlow", "expressive robot stage", 1.42],
@@ -1329,6 +1328,40 @@ function addRoboticsWorkstationDetail(r: Resources, items: RenderItem[], time: n
     pushSegment(barSegments, [x - length * 0.5, y, -1.372], [x + length * 0.5, y, -1.372]);
   }
   pushLineGroup(r, items, barSegments, "debug", "robotics workstation waveform detail");
+}
+
+function addRoboticsCalibrationMicroDetail(r: Resources, items: RenderItem[], time: number): void {
+  const stageSegments: Vec3[] = [];
+  for (let pad = 0; pad < 3; pad += 1) {
+    const centerX = pad === 0 ? -0.58 : pad === 1 ? 0.9 : 1.58;
+    const centerZ = pad === 0 ? 0.04 : pad === 1 ? 0.16 : 0.96;
+    for (let i = 0; i < 72; i += 1) {
+      const angle = i * Math.PI * 2 / 72;
+      const radiusX = 0.38 + (i % 5) * 0.016;
+      const radiusZ = 0.32 + (i % 7) * 0.012;
+      const x = centerX + Math.cos(angle) * radiusX;
+      const z = centerZ + Math.sin(angle) * radiusZ;
+      const length = 0.035 + (i % 4) * 0.012;
+      pushSegment(
+        stageSegments,
+        [x - Math.cos(angle) * length, -0.492, z - Math.sin(angle) * length],
+        [x + Math.cos(angle + 0.16) * length, -0.492, z + Math.sin(angle + 0.16) * length]
+      );
+    }
+  }
+  pushLineGroup(r, items, stageSegments, "debug", "robotics optical calibration micro-ticks");
+
+  const rigSegments: Vec3[] = [];
+  for (let i = 0; i < 144; i += 1) {
+    const column = i % 36;
+    const row = Math.floor(i / 36);
+    const x = -2.38 + column * 0.135;
+    const y = 0.38 + row * 0.085 + Math.sin(time * 0.7 + i * 0.29) * 0.006;
+    const z = row % 2 === 0 ? -1.455 : -1.405;
+    const length = 0.05 + (i % 6) * 0.01;
+    pushSegment(rigSegments, [x - length * 0.5, y, z], [x + length * 0.5, y + 0.018, z]);
+  }
+  pushLineGroup(r, items, rigSegments, "transparentCyan", "robotics inspection monitor micro-traces");
 }
 
 function addRobot(r: Resources, items: RenderItem[], origin: Vec3, time: number, glow: string, label: string, scale = 1): void {
