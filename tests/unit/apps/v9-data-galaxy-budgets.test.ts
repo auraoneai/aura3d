@@ -28,7 +28,7 @@ describe("v9 data galaxy budgets", () => {
     });
   });
 
-  it("uses the route-owned 6k showcase tier as the default focal hierarchy path", () => {
+  it("uses the route-owned 900-particle showcase tier as the default focal hierarchy path", () => {
     const plan = createDataGalaxyBudgetPlan({
       requestedParticles: DATA_GALAXY_DEFAULT_PARTICLES,
       connections: true
@@ -36,11 +36,11 @@ describe("v9 data galaxy budgets", () => {
 
     expect(DATA_GALAXY_DEFAULT_PARTICLES).toBe(DATA_GALAXY_SHOWCASE_PARTICLES);
     expect(plan.mode).toBe("showcase");
-    expect(plan.requestedParticles).toBe(6000);
-    expect(plan.effectiveParticles).toBe(6000);
-    expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(6000);
+    expect(plan.requestedParticles).toBe(900);
+    expect(plan.effectiveParticles).toBe(900);
+    expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(900);
     expect(plan.primaryCount).toBeGreaterThan(plan.vortexCount + plan.networkCount);
-    expect(plan.densityTier).toBe("6k showcase");
+    expect(plan.densityTier).toBe("900 curated showcase");
     expect(plan.overlay.connectionSegments).toBeGreaterThan(0);
     expect(plan.nativeGpuComputeDispatches).toBe(0);
 
@@ -53,21 +53,21 @@ describe("v9 data galaxy budgets", () => {
     expect(composition.evidenceLabelBudget).toBe(10);
   });
 
-  it("keeps the explicit 4k route path available as low-noise interactive density mode", () => {
+  it("keeps the explicit 700 route path available as low-noise interactive density mode", () => {
     const plan = createDataGalaxyBudgetPlan({
-      requestedParticles: 4000,
+      requestedParticles: 700,
       connections: true
     });
 
     expect(plan.mode).toBe("interactive");
-    expect(plan.requestedParticles).toBe(4000);
-    expect(plan.effectiveParticles).toBe(4000);
-    expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(4000);
-    expect(plan.primaryCount).toBe(3680);
-    expect(plan.vortexCount).toBe(140);
-    expect(plan.networkCount).toBe(120);
-    expect(plan.waveCount).toBe(60);
-    expect(plan.densityTier).toBe("4k interactive");
+    expect(plan.requestedParticles).toBe(700);
+    expect(plan.effectiveParticles).toBe(700);
+    expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(700);
+    expect(plan.primaryCount).toBe(602);
+    expect(plan.vortexCount).toBe(42);
+    expect(plan.networkCount).toBe(35);
+    expect(plan.waveCount).toBe(21);
+    expect(plan.densityTier).toBe("700 interactive");
     expect(plan.overlay.connectionSegments).toBeGreaterThan(0);
     expect(plan.nativeGpuComputeDispatches).toBe(0);
 
@@ -77,17 +77,17 @@ describe("v9 data galaxy budgets", () => {
     expect(composition.evidenceLabelBudget).toBe(9);
   });
 
-  it("keeps the selectable 6k route path in showcase density mode", () => {
+  it("keeps the selectable compact showcase route path in showcase density mode", () => {
     const plan = createDataGalaxyBudgetPlan({
       requestedParticles: DATA_GALAXY_SHOWCASE_PARTICLES,
       connections: true
     });
 
     expect(plan.mode).toBe("showcase");
-    expect(plan.requestedParticles).toBe(6000);
-    expect(plan.effectiveParticles).toBe(6000);
-    expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(6000);
-    expect(plan.densityTier).toBe("6k showcase");
+    expect(plan.requestedParticles).toBe(900);
+    expect(plan.effectiveParticles).toBe(900);
+    expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(900);
+    expect(plan.densityTier).toBe("900 curated showcase");
     expect(plan.overlay.sparkPoints + plan.overlay.coreSparkPoints + plan.overlay.focalClusterPoints).toBe(65);
     expect(plan.overlay.trailSegments + plan.overlay.connectionSegments + plan.overlay.contourSegments + plan.overlay.telemetryRingSegments + plan.overlay.budgetLadderSegments).toBe(25);
     expect(plan.overlay.connectionSegments).toBeGreaterThan(0);
@@ -131,7 +131,7 @@ describe("v9 data galaxy budgets", () => {
 
     expect(invalid.effectiveParticles).toBe(DATA_GALAXY_DEFAULT_PARTICLES);
     expect(invalid.mode).toBe("showcase");
-    expect(belowMin.effectiveParticles).toBe(4000);
+    expect(belowMin.effectiveParticles).toBe(700);
     expect(aboveMax.effectiveParticles).toBe(50000);
     expect(invalid.nativeGpuComputeDispatches).toBe(0);
     expect(belowMin.nativeGpuComputeDispatches).toBe(0);
@@ -172,12 +172,12 @@ describe("v9 data galaxy budgets", () => {
       },
       budget: {
         defaultShowcaseMode: true,
-        requestedParticles: 6000,
-        effectiveParticles: 6000,
-        primaryCount: 5520,
-        vortexCount: 211,
-        networkCount: 180,
-        waveCount: 89
+        requestedParticles: 900,
+        effectiveParticles: 900,
+        primaryCount: 774,
+        vortexCount: 54,
+        networkCount: 45,
+        waveCount: 27
       },
       focalHierarchy: {
         authoredGlbRole: "generated data-galaxy-core-blender is cataloged for support inspection but inactive in hero mode"

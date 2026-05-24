@@ -113,6 +113,47 @@ describe("lighting rig platform helpers", () => {
     expect(composed.environmentMapEncoding).toBe("linear");
   });
 
+  it("can replace route procedural lighting with sampled HDR procedural fallback", () => {
+    const base = {
+      color: [0.12, 0.14, 0.18] as const,
+      intensity: 0.92,
+      proceduralMap: {
+        skyColor: [0.05, 0.08, 0.12] as const,
+        horizonColor: [0.18, 0.16, 0.13] as const,
+        groundColor: [0.01, 0.012, 0.016] as const,
+        specularColor: [0.7, 0.82, 1] as const,
+        intensity: 0.48,
+        specularIntensity: 0.42
+      }
+    };
+    const sampled = {
+      color: [1, 1, 1] as const,
+      intensity: 0.08,
+      proceduralMap: {
+        skyColor: [0.2, 0.24, 0.32] as const,
+        horizonColor: [0.22, 0.2, 0.18] as const,
+        groundColor: [0.03, 0.035, 0.045] as const,
+        specularColor: [1, 1, 1] as const,
+        intensity: 0.06,
+        specularIntensity: 0.1
+      },
+      environmentMapIntensity: 0.68,
+      environmentMapSpecularIntensity: 0.2584
+    };
+
+    const composed = composeEnvironmentLighting(base, sampled, {
+      sampledReplacesProceduralMap: true,
+      environmentMapSpecularIntensity: 0.012
+    });
+
+    expect(composed.color).toEqual(base.color);
+    expect(composed.intensity).toBe(base.intensity);
+    expect(composed.proceduralMap).toEqual(sampled.proceduralMap);
+    expect(composed.proceduralMap).not.toEqual(base.proceduralMap);
+    expect(composed.environmentMapIntensity).toBe(0.68);
+    expect(composed.environmentMapSpecularIntensity).toBe(0.012);
+  });
+
   it("creates reusable direct-light rigs and keeps unsupported lighting claims explicit", () => {
     expect(listLightingRigPresets()).toEqual([
       "key-fill-rim",

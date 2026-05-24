@@ -1,4 +1,11 @@
-import type { GLTFRenderResources } from "@galileo3d/assets";
+import {
+  type GLTFRenderResources
+} from "@galileo3d/assets";
+import {
+  applyCarConceptMaterialStability,
+  carConceptMaterialRenderStateOverrides
+} from "../../../packages/assets/src/CarConceptMaterialStability";
+import type { GLTFMaterialRenderStateOverride } from "../../../packages/assets/src/GLTFRenderResources";
 import type { Material } from "@galileo3d/rendering";
 import { createProductShowcaseLayout, type ProductShowcaseLayout, type ProductShowcaseSlotInput } from "@galileo3d/product-studio";
 
@@ -153,6 +160,10 @@ export function isProductConfiguratorHotspotCandidateLabel(label: string): boole
   return PRODUCT_CONFIGURATOR_HOTSPOT_CANDIDATE_LABEL.test(label);
 }
 
+export function productConfiguratorOriginalCarRenderStateOverrides(): readonly GLTFMaterialRenderStateOverride[] {
+  return carConceptMaterialRenderStateOverrides("product-configurator");
+}
+
 export function focusPartForProductConfiguratorImportedLabel(label: string): ProductConfiguratorFocusPart | undefined {
   for (const [pattern, focusPart] of HOTSPOT_LABEL_TO_FOCUS) {
     if (pattern.test(label)) return focusPart;
@@ -178,8 +189,16 @@ export function applyProductConfiguratorRuntimeMaterialControls(
     applyProductGlassMaterial(target.material, [0.035, 0.16, 0.22, 0.18], 0.46, 0.12);
   }
   for (const target of resources.collectMaterialOverrideTargets({ sourceMaterialName: /active oled configurator display|cyan hotspot emissive|amber selection state emissive|soft white etched component labels/i })) {
-    target.material.setParameter("u_environmentSpecularIntensity", 0.08);
+    target.material.setParameter("u_materialEnvironmentSpecularScale", 0.08);
     target.material.setParameter("u_specularFactor", 0.08);
+  }
+}
+
+export function applyProductConfiguratorOriginalCarMaterialQualityCorrections(
+  materialLibrary: ReadonlyMap<string, Material>
+): void {
+  for (const [key, material] of materialLibrary) {
+    applyCarConceptMaterialStability(material, { materialKey: key, profile: "gallery" });
   }
 }
 
@@ -341,7 +360,7 @@ function applyProductPbrMaterial(
   material.setParameter("u_metallic", metallic);
   material.setParameter("u_roughness", roughness);
   material.setParameter("u_specularFactor", specular);
-  material.setParameter("u_environmentSpecularIntensity", environmentSpecular);
+  material.setParameter("u_materialEnvironmentSpecularScale", environmentSpecular);
   material.setParameter("u_clearcoatFactor", 0);
   material.setParameter("u_iridescenceFactor", 0);
 }
@@ -359,7 +378,7 @@ function applyProductGlassMaterial(
   material.setParameter("u_volumeThicknessFactor", 0);
   material.setParameter("u_roughness", roughness);
   material.setParameter("u_specularFactor", 0.04);
-  material.setParameter("u_environmentSpecularIntensity", 0.08);
+  material.setParameter("u_materialEnvironmentSpecularScale", 0.08);
   material.setParameter("u_emissiveStrength", emissiveStrength);
   material.setParameter("u_ior", 1.08);
 }

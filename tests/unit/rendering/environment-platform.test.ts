@@ -173,19 +173,39 @@ describe("environment stage helpers", () => {
     expect(contactLayers.every((item) => item.includeInAutoFrame === false)).toBe(true);
     expect((productFloor?.modelMatrix?.[0] ?? 0)).toBeLessThan(standardFloor?.modelMatrix?.[0] ?? Number.POSITIVE_INFINITY);
     expect((productFloor?.modelMatrix?.[10] ?? 0)).toBeLessThan(standardFloor?.modelMatrix?.[10] ?? Number.POSITIVE_INFINITY);
-    expect((productFloor?.modelMatrix?.[0] ?? 0)).toBeCloseTo(3.25 * 0.54, 5);
-    expect((productFloor?.modelMatrix?.[10] ?? 0)).toBeCloseTo(3.25 * 0.32, 5);
+    expect((productFloor?.modelMatrix?.[0] ?? 0)).toBeCloseTo(3.25 * 0.94, 5);
+    expect((productFloor?.modelMatrix?.[10] ?? 0)).toBeCloseTo(3.25 * 0.52, 5);
+    expect((productFloor?.material as PBRMaterial | undefined)?.getParameter("u_baseColor")).toEqual([0.06, 0.064, 0.067, 1]);
+    expect((productFloor?.material as PBRMaterial | undefined)?.getParameter("u_environmentIntensity")).toBe(0.012);
     expect((contactLayers[0]?.modelMatrix?.[0] ?? 0)).toBeLessThan(productFloor?.modelMatrix?.[0] ?? Number.POSITIVE_INFINITY);
     expect((contactLayers[0]?.modelMatrix?.[10] ?? 0)).toBeLessThan(productFloor?.modelMatrix?.[10] ?? Number.POSITIVE_INFINITY);
     expect((contactLayers[0]?.material as PBRMaterial | undefined)?.renderState.blend).toBe(true);
     expect((contactLayers[0]?.material as PBRMaterial | undefined)?.renderState.depthWrite).toBe(false);
-    expect((contactLayers[0]?.material as PBRMaterial | undefined)?.getParameter("u_baseColor")).toEqual([0, 0, 0, 0.34]);
+    expect((contactLayers[0]?.material as PBRMaterial | undefined)?.getParameter("u_baseColor")).toEqual([0, 0, 0, 0.3]);
     expect((productPanels[0]?.material as PBRMaterial | undefined)?.getParameter("u_emissiveStrength")).toBeLessThan(0.08);
     expect((productPanels[0]?.modelMatrix?.[13] ?? 0)).toBeGreaterThan(2.3);
     expect(Math.abs(productPanels[0]?.modelMatrix?.[0] ?? 0)).toBeLessThan(0.32);
     expect(productPremium.limitations.join(" ")).toMatch(/compact analytical catch planes/i);
-    expect(productPremium.limitations.join(" ")).toMatch(/without route crop or floor-slab expansion/i);
+    expect(productPremium.limitations.join(" ")).toMatch(/without camera reframing or floor expansion/i);
     expect(productPremium.limitations.join(" ")).toMatch(/not a renderer contact-shadow pass/i);
+  });
+
+  it("can disable product studio accent panels without dropping the catch plane", () => {
+    const productPremium = createEnvironmentStage({
+      preset: "indoor-studio",
+      size: 3.25,
+      floorY: -0.95,
+      studioTone: "product-premium",
+      includeGroundGrid: false,
+      includeStageAccents: false
+    });
+    const productFloor = productPremium.items.find((item) => item.label === "indoor-studio floor/catch plane");
+    const productPanels = productPremium.items.filter((item) => (item.label ?? "").startsWith("indoor-studio reusable ") && (item.label ?? "").includes("softbox"));
+
+    expect(productFloor).toBeDefined();
+    expect(productPanels).toHaveLength(0);
+    expect(productPremium.systems).toContain("stage accent panels disabled");
+    expect(productPremium.limitations.join(" ")).toMatch(/Stage accent panel rendering is disabled/i);
   });
 
   it("keeps product contact grounding configurable without widening the stage slab", () => {

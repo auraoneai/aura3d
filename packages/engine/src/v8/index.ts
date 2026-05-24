@@ -13,6 +13,11 @@ import {
 } from "./FlagshipFoundation";
 import type { EnvironmentLightingOptions } from "@galileo3d/rendering";
 import type { Material } from "@galileo3d/rendering";
+import type { GLTFMaterialRenderStateOverride } from "../../../assets/src/GLTFRenderResources";
+import {
+  applyCarConceptMaterialStability,
+  carConceptMaterialRenderStateOverrides
+} from "../../../assets/src/CarConceptMaterialStability";
 import {
   createV8InteractiveRenderer,
   type V8InteractiveRenderer,
@@ -178,7 +183,8 @@ export class V8FlagshipViewer {
       url: v8AssetUrl(asset, origin),
       assetId: asset.id,
       assetName: asset.name,
-      viewport
+      viewport,
+      ...materialCreationOptionsForV8Asset(asset.id)
     }));
     const rendererTask = timeAsync(() => createV8InteractiveRenderer({
       canvas: options.canvas,
@@ -223,7 +229,8 @@ export class V8FlagshipViewer {
       url: v8AssetUrl(asset, this.origin),
       assetId: asset.id,
       assetName: asset.name,
-      viewport: this.viewport
+      viewport: this.viewport,
+      ...materialCreationOptionsForV8Asset(asset.id)
     });
     const nextStage = createGroundedStage(nextScene.resources.bounds, {
       labelPrefix: "v8-flagship-viewer",
@@ -328,8 +335,8 @@ export class V8FlagshipViewer {
   async renderFrame(): Promise<V8ViewerSnapshot> {
     try {
       const environmentLighting = this.environment
-        ? createEnvironmentLighting(this.environment.environmentLighting, this.controls)
-        : createFallbackEnvironmentLighting(this.controls);
+        ? createEnvironmentLighting(this.environment.environmentLighting, this.controls, this.scene.metadata.assetId)
+        : createFallbackEnvironmentLighting(this.controls, this.scene.metadata.assetId);
       const source = this.scene.createRendererInput({
         viewport: this.viewport,
         ...(this.environment ? { environment: this.environment } : {}),
@@ -483,26 +490,58 @@ async function loadV8Environment(preset: V8EnvironmentPreset, origin: string): P
   });
 }
 
-function createEnvironmentLighting(base: EnvironmentLightingOptions, controls: V8ViewerControls): EnvironmentLightingOptions {
+function createEnvironmentLighting(base: EnvironmentLightingOptions, controls: V8ViewerControls, assetId?: string): EnvironmentLightingOptions {
   const exposure = controls.exposure;
+  const carConcept = assetId === "car-concept";
+  const intensity = base.intensity * exposure;
+  const environmentMapIntensity = base.environmentMapIntensity !== undefined
+    ? base.environmentMapIntensity * exposure
+    : undefined;
+  const environmentMapSpecularIntensity = base.environmentMapSpecularIntensity !== undefined
+    ? base.environmentMapSpecularIntensity * exposure
+    : undefined;
   return {
     ...base,
-    intensity: base.intensity * exposure,
-    ...(base.environmentMapIntensity !== undefined ? { environmentMapIntensity: base.environmentMapIntensity * exposure } : {}),
-    ...(base.environmentMapSpecularIntensity !== undefined ? { environmentMapSpecularIntensity: base.environmentMapSpecularIntensity * exposure } : {}),
+    intensity: carConcept ? Math.min(intensity, 0.54) : intensity,
+    ...(environmentMapIntensity !== undefined ? {
+      environmentMapIntensity: carConcept ? Math.min(environmentMapIntensity, 0.32) : environmentMapIntensity
+    } : {}),
+    ...(environmentMapSpecularIntensity !== undefined ? {
+      environmentMapSpecularIntensity: carConcept ? Math.min(environmentMapSpecularIntensity, 0.012) : environmentMapSpecularIntensity
+    } : {}),
     environmentMapRotation: controls.environmentRotation,
     ...(base.proceduralMap ? {
       proceduralMap: {
         ...base.proceduralMap,
-        intensity: base.proceduralMap.intensity * exposure,
-        specularIntensity: base.proceduralMap.specularIntensity * exposure
+        ...(carConcept ? { specularColor: [0.045, 0.012, 0.01] as const } : {}),
+        intensity: carConcept
+          ? Math.min(base.proceduralMap.intensity * exposure, 0.16)
+          : base.proceduralMap.intensity * exposure,
+        specularIntensity: carConcept
+          ? Math.min(base.proceduralMap.specularIntensity * exposure, 0.01)
+          : base.proceduralMap.specularIntensity * exposure
       }
     } : {})
   };
 }
 
-function createFallbackEnvironmentLighting(controls: V8ViewerControls): EnvironmentLightingOptions {
+function createFallbackEnvironmentLighting(controls: V8ViewerControls, assetId?: string): EnvironmentLightingOptions {
   const exposure = controls.exposure;
+  if (assetId === "car-concept") {
+    return {
+      color: [0.22, 0.18, 0.16],
+      intensity: 0.34 * exposure,
+      environmentMapRotation: controls.environmentRotation,
+      proceduralMap: {
+        skyColor: [0.035, 0.04, 0.05],
+        horizonColor: [0.18, 0.12, 0.095],
+        groundColor: [0.018, 0.014, 0.012],
+        specularColor: [0.12, 0.035, 0.025],
+        intensity: 0.28 * exposure,
+        specularIntensity: 0.014 * exposure
+      }
+    };
+  }
   return {
     color: [0.76, 0.8, 0.88],
     intensity: 0.62 * exposure,
@@ -531,13 +570,33 @@ function captureMaterialBaseline(scene: G3DGltfScene): MaterialBaseline {
 }
 
 function applyMaterialControls(scene: G3DGltfScene, baseline: MaterialBaseline, controls: V8ViewerControls): void {
+  const carConcept = scene.metadata.assetId === "car-concept";
   for (const material of scene.resources.materialLibrary.values()) {
     const initial = baseline.get(material);
     if (!initial) continue;
     if (initial.roughness !== undefined) material.setParameter("u_roughness", clamp(initial.roughness * controls.roughnessScale, 0.02, 1));
     if (initial.metallic !== undefined) material.setParameter("u_metallic", clamp(initial.metallic * controls.metallicScale, 0, 1));
     if (initial.clearcoat !== undefined) material.setParameter("u_clearcoatFactor", clamp(initial.clearcoat + controls.clearcoatBoost, 0, 1));
+    if (carConcept) {
+      applyCarConceptMaterialStability(material, {
+        materialKey: material.name,
+        profile: "cinematic",
+        baseline: initial,
+        roughnessScale: controls.roughnessScale,
+        metallicScale: controls.metallicScale,
+        clearcoatBoost: controls.clearcoatBoost
+      });
+    }
   }
+}
+
+function materialCreationOptionsForV8Asset(assetId: V8FlagshipAssetId): {
+  readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
+} {
+  if (assetId !== "car-concept") return {};
+  return {
+    materialRenderStateOverrides: carConceptMaterialRenderStateOverrides("v8-flagship")
+  };
 }
 
 function numberParameter(material: Material, name: string): number | undefined {

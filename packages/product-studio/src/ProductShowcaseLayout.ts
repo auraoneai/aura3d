@@ -35,11 +35,11 @@ export interface ProductShowcaseLayout {
 
 const COMPACT_SLOT_LAYOUT: Record<ProductShowcaseSlot, Omit<ProductShowcaseLayoutItem, "assetId" | "slot" | "materialVariantControl" | "defaultMaterialVariant">> = {
   hero: {
-    position: [0.02, -0.88, 0.0],
+    position: [-0.28, -0.88, 0.0],
     scale: [1, 1, 1],
-    targetHeight: 0.86,
-    yawRadians: -0.56,
-    turntableSpeedRadiansPerSecond: 0.018
+    targetHeight: 0.92,
+    yawRadians: -0.38,
+    turntableSpeedRadiansPerSecond: 0.001
   },
   "left-detail": {
     position: [-2.28, -0.86, -0.72],
@@ -65,9 +65,9 @@ const COMPACT_SLOT_LAYOUT: Record<ProductShowcaseSlot, Omit<ProductShowcaseLayou
 };
 
 const COMPACT_FRAME: ProductShowcaseFrame = {
-  boundsMin: [-1.36, -1.02, -0.84],
-  boundsMax: [1.36, 0.5, 0.94],
-  heroPaddingRatio: 0.012
+  boundsMin: [-1.3, -1.0, -0.78],
+  boundsMax: [1.3, 0.5, 0.86],
+  heroPaddingRatio: 0.02
 };
 
 export function createProductShowcaseLayout(slots: readonly ProductShowcaseSlotInput[]): ProductShowcaseLayout {

@@ -843,6 +843,8 @@ export {
   pbrF0,
   pbrFresnelSchlick,
   pbrFresnelSchlickRoughness,
+  pbrFresnelSchlickRoughnessSpecular,
+  pbrFresnelSchlickSpecular,
   pbrGeometrySmithGgxCorrelated,
   pbrPhotometricConformanceSuite,
   pbrReferenceFinite,

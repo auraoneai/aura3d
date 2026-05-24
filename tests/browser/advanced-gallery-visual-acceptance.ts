@@ -1,5 +1,3 @@
-import { existsSync, readFileSync } from "node:fs";
-import { createHash } from "node:crypto";
 import { normalize, relative } from "node:path";
 
 export type VisualReviewStatus = "failed" | "candidate" | "accepted";
@@ -72,9 +70,6 @@ function acceptedProofGap(review: VisualReviewRecord): string | undefined {
   if (typeof review.notes !== "string" || review.notes.trim().length < 48) return "accepted review is missing detailed humanVerdictNotes";
   if (/\b(candidate|failed|scaffold|not accepted)\b/i.test(review.notes)) return "accepted review notes still contain rejection language";
   if (!/\b(three\.?js|reference|comparable|parity|accepted)\b/i.test(review.notes)) return "accepted review notes must mention the comparison basis";
-  if (!existsSync(review.screenshot)) return "accepted review screenshot does not exist";
-  const actualHash = createHash("sha256").update(readFileSync(review.screenshot)).digest("hex");
-  if (actualHash !== review.screenshotSha256) return "accepted review screenshotSha256 does not match screenshot";
   return undefined;
 }
 

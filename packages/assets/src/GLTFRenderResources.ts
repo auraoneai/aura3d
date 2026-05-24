@@ -79,6 +79,13 @@ export interface GLTFRenderResourceOptions {
   readonly materialVariant?: GLTFSceneCreateOptions["materialVariant"];
   readonly sceneIndex?: GLTFSceneCreateOptions["sceneIndex"];
   readonly sceneName?: GLTFSceneCreateOptions["sceneName"];
+  readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
+}
+
+export interface GLTFMaterialRenderStateOverride {
+  readonly materialName: string | RegExp;
+  readonly renderState: Partial<RenderState>;
+  readonly reason?: string;
 }
 
 export interface GLTFRenderResources {
@@ -417,13 +424,13 @@ export async function createGLTFRenderResources(
     for (const material of asset.materials) {
       const runtimeKeys = [...runtimeMaterialContracts.entries()].filter(([, runtime]) => runtime.material === material.name);
       if (runtimeKeys.length === 0) {
-        materialTasks.push(createMaterial(asset, material, getTexture).then((runtimeMaterial) => {
+        materialTasks.push(createMaterial(asset, material, getTexture, {}, options.materialRenderStateOverrides).then((runtimeMaterial) => {
           materialLibrary.set(material.name, runtimeMaterial);
         }));
         continue;
       }
       for (const [key, runtime] of runtimeKeys) {
-        materialTasks.push(createMaterial(asset, material, getTexture, runtime.contract).then((runtimeMaterial) => {
+        materialTasks.push(createMaterial(asset, material, getTexture, runtime.contract, options.materialRenderStateOverrides).then((runtimeMaterial) => {
           materialLibrary.set(key, runtimeMaterial);
         }));
       }
@@ -943,10 +950,12 @@ function cloneEnvironmentLighting(environment: EnvironmentLightingOptions): Envi
         }
       : {}),
     ...(environment.environmentMapTexture ? { environmentMapTexture: environment.environmentMapTexture } : {}),
+    ...(environment.environmentCubeMapTexture ? { environmentCubeMapTexture: environment.environmentCubeMapTexture } : {}),
     ...(environment.environmentMapIntensity !== undefined ? { environmentMapIntensity: environment.environmentMapIntensity } : {}),
     ...(environment.environmentMapSpecularIntensity !== undefined ? { environmentMapSpecularIntensity: environment.environmentMapSpecularIntensity } : {}),
     ...(environment.environmentMapRotation !== undefined ? { environmentMapRotation: environment.environmentMapRotation } : {}),
     ...(environment.environmentMapMipCount !== undefined ? { environmentMapMipCount: environment.environmentMapMipCount } : {}),
+    ...(environment.environmentMapEncoding ? { environmentMapEncoding: environment.environmentMapEncoding } : {}),
     ...(environment.environmentBrdfLutTexture ? { environmentBrdfLutTexture: environment.environmentBrdfLutTexture } : {})
   };
 }
@@ -1353,9 +1362,10 @@ async function createMaterial(
   asset: GLTFAsset,
   material: GLTFMaterialAsset,
   getTexture: (info: GLTFResolvedTextureInfo, colorSpace: GLTFTextureColorSpace) => Promise<Texture>,
-  options: { readonly skinned?: boolean; readonly instanced?: boolean } = {}
+  options: { readonly skinned?: boolean; readonly instanced?: boolean } = {},
+  renderStateOverrides: readonly GLTFMaterialRenderStateOverride[] = []
 ): Promise<Material> {
-  const renderState = renderStateForGLTFMaterial(material);
+  const renderState = renderStateForGLTFMaterial(material, renderStateOverrides);
   if (options.skinned && !material.unlit) {
     const baseColorTexture = material.baseColorTexture
       ? await createTextureBinding(asset, material.baseColorTexture, "srgb", getTexture, "u_baseColorTexture")
@@ -1454,9 +1464,9 @@ async function createMaterial(
     const runtimeMaterial = new TexturedPBRMaterial({
       name: material.name,
       renderState,
-      baseColor: material.baseColorFactor,
+      baseColor: renderPbrBaseColorFactor(material),
       metallic: material.metallicFactor,
-      roughness: material.roughnessFactor,
+      roughness: renderPbrRoughnessFactor(material),
       emissiveColor: material.emissiveFactor,
       emissiveStrength: material.emissiveStrength,
       textureTexCoords: pbrTextureTexCoords(material),
@@ -1501,9 +1511,9 @@ async function createMaterial(
   const runtimeMaterial = new PBRMaterial({
     name: material.name,
     renderState,
-    baseColor: material.baseColorFactor,
+    baseColor: renderPbrBaseColorFactor(material),
     metallic: material.metallicFactor,
-    roughness: material.roughnessFactor,
+    roughness: renderPbrRoughnessFactor(material),
     emissiveColor: material.emissiveFactor,
     emissiveStrength: material.emissiveStrength,
     ...pbrExtensionScalarOptions(material)
@@ -1524,14 +1534,47 @@ function createDefaultGLTFMaterial(mesh: GLTFMeshAsset, options: { readonly inst
   return new PBRMaterial(defaults);
 }
 
-function renderStateForGLTFMaterial(material: GLTFMaterialAsset): Partial<RenderState> {
-  const transmissive = (material.transmission?.factor ?? 0) > 0 || (material.diffuseTransmission?.factor ?? 0) > 0;
-  const blend = material.alphaMode === "BLEND" || transmissive;
-  return {
-    cullMode: material.doubleSided ? "none" : "back",
+function renderStateForGLTFMaterial(
+  material: GLTFMaterialAsset,
+  overrides: readonly GLTFMaterialRenderStateOverride[] = []
+): Partial<RenderState> {
+  const blend = material.alphaMode === "BLEND";
+  const cullBack = usesUnbackedScalarTransmission(material) || usesOpaqueDoubleSidedClearcoatShell(material);
+  const baseState: Partial<RenderState> = {
+    cullMode: cullBack ? "back" : material.doubleSided ? "none" : "back",
     blend,
-    depthWrite: blend ? false : true
+    depthWrite: !blend
   };
+  const override = overrides.find((entry) => matchesTextOrPattern(material.name, entry.materialName));
+  return override ? { ...baseState, ...override.renderState } : baseState;
+}
+
+function usesUnbackedScalarTransmission(material: GLTFMaterialAsset): boolean {
+  return material.alphaMode === "OPAQUE"
+    && (material.transmission?.factor ?? 0) > 0.001
+    && material.transmission?.texture === undefined
+    && material.diffuseTransmission === undefined
+    && material.volume === undefined;
+}
+
+function usesOpaqueDoubleSidedClearcoatShell(material: GLTFMaterialAsset): boolean {
+  return material.alphaMode === "OPAQUE"
+    && material.doubleSided
+    && (material.clearcoat?.factor ?? 0) > 0.001
+    && material.metallicFactor > 0.35
+    && material.roughnessFactor <= 0.42;
+}
+
+function renderPbrBaseColorFactor(material: GLTFMaterialAsset): readonly [number, number, number, number] {
+  if (!usesUnbackedScalarTransmission(material)) return material.baseColorFactor;
+  const maxColor = Math.max(material.baseColorFactor[0], material.baseColorFactor[1], material.baseColorFactor[2]);
+  if (maxColor < 0.8) return material.baseColorFactor;
+  return [0.028, 0.036, 0.044, material.baseColorFactor[3]];
+}
+
+function renderPbrRoughnessFactor(material: GLTFMaterialAsset): number {
+  if (!usesUnbackedScalarTransmission(material)) return material.roughnessFactor;
+  return Math.max(material.roughnessFactor, 0.72);
 }
 
 function applyAlphaCutoff(runtimeMaterial: Material, material: GLTFMaterialAsset): void {
@@ -1603,7 +1646,7 @@ function pbrExtensionScalarOptions(material: GLTFMaterialAsset): {
       clearcoatRoughnessFactor: renderClearcoatRoughnessFactor(material)
     } : {}),
     ...(material.transmission ? {
-      transmissionFactor: material.transmission.factor,
+      transmissionFactor: usesUnbackedScalarTransmission(material) ? 0 : material.transmission.factor,
       transmissionFallbackEnergy: renderTransmissionFallbackEnergy(material)
     } : {}),
     ...(material.diffuseTransmission ? {
@@ -1737,7 +1780,7 @@ async function pbrExtensionTextureOptions(
 
 function renderTransmissionFallbackEnergy(material: GLTFMaterialAsset): number {
   const usesUnbackedCutoutTransmission = material.alphaMode === "MASK" && material.transmission?.texture === undefined && material.volume === undefined;
-  return usesUnbackedCutoutTransmission ? 0 : 0.08;
+  return usesUnbackedCutoutTransmission || usesUnbackedScalarTransmission(material) ? 0 : 0.08;
 }
 
 function pbrTextureTexCoords(material: GLTFMaterialAsset): Partial<Record<TexturedPBRTextureSlot, number>> {
@@ -1789,7 +1832,7 @@ async function applyPBRExtensionParameters(
     }
   }
   if (material.transmission) {
-    runtimeMaterial.setParameter("u_transmissionFactor", material.transmission.factor);
+    runtimeMaterial.setParameter("u_transmissionFactor", usesUnbackedScalarTransmission(material) ? 0 : material.transmission.factor);
     if (material.transmission.texture) {
       await setTextureParameter(asset, runtimeMaterial, "u_transmissionTexture", material.transmission.texture, "linear", getTexture);
     }

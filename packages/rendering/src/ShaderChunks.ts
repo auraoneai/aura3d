@@ -37,9 +37,21 @@ vec3 g3dFresnelSchlick(vec3 f0, float vDotH) {
   return f0 + (1.0 - f0) * f;
 }
 
+vec3 g3dFresnelSchlickSpecular(vec3 f0, float vDotH, float specularFactor) {
+  float f = pow(g3dSaturate(1.0 - vDotH), 5.0);
+  vec3 f90 = vec3(max(clamp(specularFactor, 0.0, 1.0), max(max(f0.r, f0.g), f0.b)));
+  return f0 + (f90 - f0) * f;
+}
+
 vec3 g3dFresnelSchlickRoughness(vec3 f0, float nDotV, float roughness) {
   float smoothness = 1.0 - clamp(roughness, 0.0, 1.0);
   return f0 + (max(vec3(smoothness), f0) - f0) * pow(g3dSaturate(1.0 - nDotV), 5.0);
+}
+
+vec3 g3dFresnelSchlickRoughnessSpecular(vec3 f0, float nDotV, float roughness, float specularFactor) {
+  float smoothness = 1.0 - clamp(roughness, 0.0, 1.0);
+  vec3 f90 = vec3(max(clamp(smoothness * specularFactor, 0.0, 1.0), max(max(f0.r, f0.g), f0.b)));
+  return f0 + (f90 - f0) * pow(g3dSaturate(1.0 - nDotV), 5.0);
 }
 
 float g3dDistributionGGX(float nDotH, float roughness) {
@@ -96,7 +108,7 @@ vec3 g3dPbrDirectLight(
   float vDotH = g3dSaturate(dot(V, H));
   float lDotH = g3dSaturate(dot(L, H));
   vec3 f0 = g3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = g3dFresnelSchlick(f0, vDotH);
+  vec3 F = g3dFresnelSchlickSpecular(f0, vDotH, specularFactor);
   float D = g3dDistributionGGX(nDotH, roughness);
   float G = g3dGeometrySmithGGXCorrelated(nDotV, nDotL, roughness);
   vec3 specular = D * G * F;
@@ -118,7 +130,7 @@ vec3 g3dPbrEnvironmentLight(
 ) {
   float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
   vec3 f0 = g3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = g3dFresnelSchlickRoughness(f0, nDotV, roughness);
+  vec3 F = g3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
   vec3 diffuse = kd * albedo * diffuseIrradiance;
   vec3 specular = specularRadiance * F;
@@ -139,7 +151,7 @@ vec3 g3dPbrEnvironmentLightSplitSum(
 ) {
   float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
   vec3 f0 = g3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = g3dFresnelSchlickRoughness(f0, nDotV, roughness);
+  vec3 F = g3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
   vec3 diffuse = kd * albedo * diffuseIrradiance;
   vec2 brdf = clamp(environmentBrdf, vec2(0.0), vec2(1.0));

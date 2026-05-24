@@ -184,12 +184,12 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Data Galaxy",
     difficulty: "Expert",
     visualReview: {
-      status: "accepted",
-      screenshot: "tests/reports/v9/advanced-examples-gallery/data-galaxy.png",
-      screenshotSha256: "0adc2c314c789e190f11d2f4c9ee02da2c6c48d6cdb3bd59f31bd52de45f5653",
+      status: "failed",
+      screenshot: "tests/reports/v9/advanced-examples-gallery/focused/data-galaxy/data-galaxy.png",
+      screenshotSha256: "70398ff68df06befb57f2d887d61e2ed32de1c87974dddf5b1bb1caa95bdf87d",
       reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js particle references: the route-owned data-galaxy effect shows a central luminous nucleus, layered shells, dense routed filaments, signal bands, clustered particles, and deep-space background. Bounded CPU/static particle approximation and zero renderer-side compute dispatches are disclosed; the generated support GLB remains inactive in hero mode."
+      reviewedAt: "2026-05-23T23:04:00.000Z",
+      notes: "Failed direct PNG review: the route-owned Data Galaxy source now removes the worst debug routing web, particle carpet, and oversized scaffold density, but the current focused PNG is still not accepted. It still reads as a scattered particle cloud with oversized translucent spheres, loose line clutter, and clipped orbit structure rather than a premium data-visualization focal effect. Do not promote Data until the focal design is rebuilt from source and the focused PNG is directly re-reviewed."
     },
     subtitle: "Dense data-particle visualization with formations, attractors, trails, connection hints, and camera flight.",
     threeCategory: "Particles / GPGPU particles / galaxy generators",
@@ -214,12 +214,11 @@ export const DEMOS: readonly DemoDefinition[] = [
     shortTitle: "Configurator",
     difficulty: "Advanced",
     visualReview: {
-      status: "accepted",
+      status: "failed",
       screenshot: "tests/reports/v9/advanced-examples-gallery/product-configurator.png",
-      screenshotSha256: "b58fde38a3ab56932f2033039021286ddbcda1e01df2161063dbd86f97b5e2bc",
       reviewedBy: "Codex direct PNG inspection",
-      reviewedAt: "2026-05-23T12:53:27.000Z",
-      notes: "Accepted direct PNG review against Three.js PBR product configurator references: the original texture-backed car-concept is the sole hero product with readable paint, glass, roof panels, wheels, tires, interior, lighting, and material-calibration studio context. Bounded picking and route-side exploded-view limitations are disclosed; support fixtures stay outside hero proof."
+      reviewedAt: "2026-05-24T06:31:00.000Z",
+      notes: "Failed direct PNG review: the old floor/grid clutter, red paint glitter, and broad white HDR edge speckle/halo were source-owned and removed from the current focused hero. Product is still not accepted because the current PNG remains below premium product-viewer quality: paint and glass are clean but still too flat, roof/glass material separation is not rich enough, and the showroom image lacks the high-end material response expected from a reference product configurator. Do not promote Product until the remaining material/render-quality owner is fixed from source and the focused PNG is directly re-reviewed."
     },
     subtitle: "Original texture-backed concept-car configurator with imported car variant controls, turntable, exploded view, and controlled reusable studio staging.",
     threeCategory: "PBR product viewer / configurator",
@@ -235,7 +234,7 @@ export const DEMOS: readonly DemoDefinition[] = [
       { key: "carVariant", label: "Car variant", kind: "select", value: "Carmine Candy", options: ["Carmine Candy", "Pearly Swirly", "Torched Graphite"] },
       { key: "focusPart", label: "Hotspot", kind: "select", value: "overview", options: ["overview", "lens", "body", "sensor", "battery", "grip", "controls"] },
       { key: "lighting", label: "Lighting", kind: "select", value: "studio", options: ["studio", "environment", "inspection"] },
-      { key: "turntable", label: "Turntable", kind: "toggle", value: true }
+      { key: "turntable", label: "Turntable", kind: "toggle", value: false }
     ]
   },
   {

@@ -382,6 +382,24 @@ vec3 g3dPbrDecodeEnvironmentSample(vec4 encodedSample) {
   if (u_environmentMapTextureEncoding > 0.5) return g3dPbrDecodeEnvironmentRgbe(encodedSample);
   return g3dPbrDecodeEnvironmentSrgb(encodedSample.rgb);
 }
+vec3 g3dPbrBoundHdrTransmissionRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  return nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)));
+}
+vec3 g3dPbrBoundHdrSpecularRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.58);
+  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
+  return maxChannel > 1.65 ? softKnee * (1.65 / maxChannel) : softKnee;
+}
+vec3 g3dPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
+  float faceOn = smoothstep(0.12, 0.55, clamp(nDotV, 0.0, 1.0));
+  float roughEnergy = mix(0.6, 1.0, clamp(roughness, 0.0, 1.0));
+  float edgeCap = mix(0.12, 1.2, faceOn) * roughEnergy;
+  float edgeScale = mix(0.14, 0.92, faceOn);
+  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
+  return max(bounded, vec3(0.0));
+}
 vec4 g3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, g3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
   vec4 cubeSample = textureLod(u_environmentCubeMapTexture, g3dEnvironmentCubeDirection(direction, u_environmentMapTextureRotation), lod);
@@ -517,9 +535,10 @@ void main() {
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
   vec3 proceduralSpecular = u_environmentSpecularColor * u_environmentSpecularIntensity * proceduralSpecularResponse * proceduralEnvironmentWeight;
   float environmentLod = roughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-  vec3 sampledSpecular = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
+  vec3 sampledSpecular = g3dPbrBoundHdrSpecularRadiance(g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, roughness)).rg;
+  sampledSpecular = g3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, roughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, roughness);
   vec3 shaded = g3dPbrEnvironmentLightSplitSum(
     normal,
@@ -559,7 +578,7 @@ void main() {
     }
     float bounceCount = clamp(u_transmissionBounceCount, 0.0, 4.0);
     float refractionLod = clamp(roughness + u_volumeThicknessFactor * 0.12 + bounceCount * 0.04 * parallaxStrength, 0.0, 1.0) * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-    vec3 refractedEnvironment = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(refractionDirection, refractionLod));
+    vec3 refractedEnvironment = g3dPbrBoundHdrTransmissionRadiance(g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(refractionDirection, refractionLod)));
     float volumeTravel = clamp((max(u_volumeThicknessFactor, 0.0) * (1.0 + bounceCount * 0.18 * parallaxStrength)) / max(u_volumeAttenuationDistance, 0.0001), 0.0, 16.0);
     vec3 volumeTint = pow(clamp(u_volumeAttenuationColor, vec3(0.0001), vec3(1.0)), vec3(volumeTravel));
     float causticEnergy = u_transmissionCausticStrength * parallaxStrength * transmissionAmount * pow(1.0 - roughness, 2.0) / (1.0 + bounceCount * 0.35);
@@ -626,9 +645,6 @@ void main() {
     );
   }
   float alpha = u_baseColor.a * v_vertexColor.a;
-  float transmissionAlpha = clamp(max(u_transmissionFactor, u_diffuseTransmissionFactor), 0.0, 1.0);
-  float transmissionCoverage = mix(0.34, 0.08, clamp(u_transmissionFallbackEnergy, 0.0, 1.0));
-  alpha = mix(alpha, alpha * transmissionCoverage, transmissionAlpha);
   if (alpha < u_alphaCutoff) discard;
   vec3 fogged = g3dApplyEnvironmentFog(max(shaded, vec3(0.0)), v_worldPosition);
   outColor = vec4(g3dPbrEncodeOutput(fogged), alpha);
@@ -815,6 +831,20 @@ vec3 g3dPbrDecodeEnvironmentSample(vec4 encodedSample) {
   if (u_environmentMapTextureEncoding > 0.5) return g3dPbrDecodeEnvironmentRgbe(encodedSample);
   return g3dPbrDecodeEnvironmentSrgb(encodedSample.rgb);
 }
+vec3 g3dPbrBoundHdrSpecularRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.58);
+  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
+  return maxChannel > 1.65 ? softKnee * (1.65 / maxChannel) : softKnee;
+}
+vec3 g3dPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
+  float faceOn = smoothstep(0.12, 0.55, clamp(nDotV, 0.0, 1.0));
+  float roughEnergy = mix(0.6, 1.0, clamp(roughness, 0.0, 1.0));
+  float edgeCap = mix(0.12, 1.2, faceOn) * roughEnergy;
+  float edgeScale = mix(0.14, 0.92, faceOn);
+  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
+  return max(bounded, vec3(0.0));
+}
 vec4 g3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, g3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
   vec4 cubeSample = textureLod(u_environmentCubeMapTexture, g3dEnvironmentCubeDirection(direction, u_environmentMapTextureRotation), lod);
@@ -841,12 +871,20 @@ vec3 g3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, clampedRoughness));
   float roughEnvironmentFloor = mix(0.04, 0.38, clampedRoughness);
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
-  vec3 proceduralSpecular = u_environmentSpecularColor * u_environmentSpecularIntensity * proceduralSpecularResponse * proceduralEnvironmentWeight;
+  float horizonStripe = pow(clamp(1.0 - abs(reflectionDirection.y), 0.0, 1.0), mix(14.0, 3.0, clampedRoughness));
+  float sideStripe = pow(clamp(abs(reflectionDirection.x), 0.0, 1.0), mix(10.0, 3.0, clampedRoughness)) * smoothstep(0.0, 0.72, 1.0 - abs(reflectionDirection.y));
+  float overheadStripe = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(22.0, 4.0, clampedRoughness));
+  vec3 proceduralSpecularColor = u_environmentSpecularColor * proceduralSpecularResponse
+    + u_environmentHorizonColor * horizonStripe * 0.42
+    + u_environmentSkyColor * overheadStripe * 0.28
+    + u_environmentGroundColor * sideStripe * 0.22;
+  vec3 proceduralSpecular = proceduralSpecularColor * u_environmentSpecularIntensity * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureSpecularIntensity);
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-  vec3 sampledSpecular = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
+  vec3 sampledSpecular = g3dPbrBoundHdrSpecularRadiance(g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
+  sampledSpecular = g3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
@@ -1175,6 +1213,20 @@ vec3 g3dPbrDecodeEnvironmentSample(vec4 encodedSample) {
   if (u_environmentMapTextureEncoding > 0.5) return g3dPbrDecodeEnvironmentRgbe(encodedSample);
   return g3dPbrDecodeEnvironmentSrgb(encodedSample.rgb);
 }
+vec3 g3dPbrBoundHdrSpecularRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.58);
+  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
+  return maxChannel > 1.65 ? softKnee * (1.65 / maxChannel) : softKnee;
+}
+vec3 g3dPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
+  float faceOn = smoothstep(0.12, 0.55, clamp(nDotV, 0.0, 1.0));
+  float roughEnergy = mix(0.6, 1.0, clamp(roughness, 0.0, 1.0));
+  float edgeCap = mix(0.12, 1.2, faceOn) * roughEnergy;
+  float edgeScale = mix(0.14, 0.92, faceOn);
+  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
+  return max(bounded, vec3(0.0));
+}
 vec4 g3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, g3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
   vec4 cubeSample = textureLod(u_environmentCubeMapTexture, g3dEnvironmentCubeDirection(direction, u_environmentMapTextureRotation), lod);
@@ -1310,11 +1362,19 @@ void main() {
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, clampedRoughness));
   float roughEnvironmentFloor = mix(0.04, 0.38, clampedRoughness);
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
-  vec3 proceduralSpecular = u_environmentSpecularColor * u_environmentSpecularIntensity * proceduralSpecularResponse * proceduralEnvironmentWeight;
+  float horizonStripe = pow(clamp(1.0 - abs(reflectionDirection.y), 0.0, 1.0), mix(14.0, 3.0, clampedRoughness));
+  float sideStripe = pow(clamp(abs(reflectionDirection.x), 0.0, 1.0), mix(10.0, 3.0, clampedRoughness)) * smoothstep(0.0, 0.72, 1.0 - abs(reflectionDirection.y));
+  float overheadStripe = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(22.0, 4.0, clampedRoughness));
+  vec3 proceduralSpecularColor = u_environmentSpecularColor * proceduralSpecularResponse
+    + u_environmentHorizonColor * horizonStripe * 0.42
+    + u_environmentSkyColor * overheadStripe * 0.28
+    + u_environmentGroundColor * sideStripe * 0.22;
+  vec3 proceduralSpecular = proceduralSpecularColor * u_environmentSpecularIntensity * proceduralEnvironmentWeight;
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-  vec3 sampledSpecular = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
+  vec3 sampledSpecular = g3dPbrBoundHdrSpecularRadiance(g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
+  sampledSpecular = g3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(1.1, 0.85, roughness);
   vec3 shaded = g3dPbrEnvironmentLightSplitSum(
     normal,
@@ -1613,6 +1673,20 @@ vec3 g3dPbrDecodeEnvironmentSample(vec4 encodedSample) {
   if (u_environmentMapTextureEncoding > 0.5) return g3dPbrDecodeEnvironmentRgbe(encodedSample);
   return g3dPbrDecodeEnvironmentSrgb(encodedSample.rgb);
 }
+vec3 g3dPbrBoundHdrSpecularRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.58);
+  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
+  return maxChannel > 1.65 ? softKnee * (1.65 / maxChannel) : softKnee;
+}
+vec3 g3dPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
+  float faceOn = smoothstep(0.12, 0.55, clamp(nDotV, 0.0, 1.0));
+  float roughEnergy = mix(0.6, 1.0, clamp(roughness, 0.0, 1.0));
+  float edgeCap = mix(0.12, 1.2, faceOn) * roughEnergy;
+  float edgeScale = mix(0.14, 0.92, faceOn);
+  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
+  return max(bounded, vec3(0.0));
+}
 vec4 g3dPbrEnvironmentSampleRaw(vec3 direction, float lod) {
   vec4 equirectSample = textureLod(u_environmentMapTexture, g3dEnvironmentEquirectUv(direction, u_environmentMapTextureRotation), lod);
   vec4 cubeSample = textureLod(u_environmentCubeMapTexture, g3dEnvironmentCubeDirection(direction, u_environmentMapTextureRotation), lod);
@@ -1642,9 +1716,10 @@ vec3 g3dPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float rough
   vec3 proceduralSpecular = u_environmentSpecularColor * u_environmentSpecularIntensity * proceduralSpecularResponse * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureSpecularIntensity);
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-  vec3 sampledSpecular = g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
+  vec3 sampledSpecular = g3dPbrBoundHdrSpecularRadiance(g3dPbrDecodeEnvironmentSample(g3dPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
+  sampledSpecular = g3dPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
   return proceduralSpecular + sampledSpecular;
 }
@@ -1769,6 +1844,7 @@ uniform float u_environmentCubeMapTextureEnabled;
 uniform float u_environmentMapTextureEnabled;
 uniform float u_environmentMapTextureIntensity;
 uniform float u_environmentMapTextureSpecularIntensity;
+uniform float u_materialEnvironmentSpecularScale;
 uniform float u_environmentMapTextureRotation;
 uniform float u_environmentMapTextureMipCount;
 uniform float u_environmentMapTextureEncoding;
@@ -1872,18 +1948,21 @@ uniform float u_occlusionStrength;
 uniform float u_clearcoatNormalScale;
 #ifdef G3D_PBR_CLEARCOAT_TEXTURES
 uniform sampler2D u_clearcoatTexture;
+uniform float u_clearcoatTextureEnabled;
 uniform vec2 u_clearcoatTextureOffset;
 uniform vec2 u_clearcoatTextureScale;
 uniform float u_clearcoatTextureRotation;
 uniform float u_clearcoatTextureTexCoord;
 uniform vec2 u_clearcoatTextureWrap;
 uniform sampler2D u_clearcoatRoughnessTexture;
+uniform float u_clearcoatRoughnessTextureEnabled;
 uniform vec2 u_clearcoatRoughnessTextureOffset;
 uniform vec2 u_clearcoatRoughnessTextureScale;
 uniform float u_clearcoatRoughnessTextureRotation;
 uniform float u_clearcoatRoughnessTextureTexCoord;
 uniform vec2 u_clearcoatRoughnessTextureWrap;
 uniform sampler2D u_clearcoatNormalTexture;
+uniform float u_clearcoatNormalTextureEnabled;
 uniform vec2 u_clearcoatNormalTextureOffset;
 uniform vec2 u_clearcoatNormalTextureScale;
 uniform float u_clearcoatNormalTextureRotation;
@@ -1892,24 +1971,28 @@ uniform vec2 u_clearcoatNormalTextureWrap;
 #endif
 #ifdef G3D_PBR_TRANSMISSION_VOLUME_TEXTURES
 uniform sampler2D u_transmissionTexture;
+uniform float u_transmissionTextureEnabled;
 uniform vec2 u_transmissionTextureOffset;
 uniform vec2 u_transmissionTextureScale;
 uniform float u_transmissionTextureRotation;
 uniform float u_transmissionTextureTexCoord;
 uniform vec2 u_transmissionTextureWrap;
 uniform sampler2D u_diffuseTransmissionTexture;
+uniform float u_diffuseTransmissionTextureEnabled;
 uniform vec2 u_diffuseTransmissionTextureOffset;
 uniform vec2 u_diffuseTransmissionTextureScale;
 uniform float u_diffuseTransmissionTextureRotation;
 uniform float u_diffuseTransmissionTextureTexCoord;
 uniform vec2 u_diffuseTransmissionTextureWrap;
 uniform sampler2D u_diffuseTransmissionColorTexture;
+uniform float u_diffuseTransmissionColorTextureEnabled;
 uniform vec2 u_diffuseTransmissionColorTextureOffset;
 uniform vec2 u_diffuseTransmissionColorTextureScale;
 uniform float u_diffuseTransmissionColorTextureRotation;
 uniform float u_diffuseTransmissionColorTextureTexCoord;
 uniform vec2 u_diffuseTransmissionColorTextureWrap;
 uniform sampler2D u_volumeThicknessTexture;
+uniform float u_volumeThicknessTextureEnabled;
 uniform vec2 u_volumeThicknessTextureOffset;
 uniform vec2 u_volumeThicknessTextureScale;
 uniform float u_volumeThicknessTextureRotation;
@@ -1918,12 +2001,14 @@ uniform vec2 u_volumeThicknessTextureWrap;
 #endif
 #ifdef G3D_PBR_SPECULAR_TEXTURES
 uniform sampler2D u_specularTexture;
+uniform float u_specularTextureEnabled;
 uniform vec2 u_specularTextureOffset;
 uniform vec2 u_specularTextureScale;
 uniform float u_specularTextureRotation;
 uniform float u_specularTextureTexCoord;
 uniform vec2 u_specularTextureWrap;
 uniform sampler2D u_specularColorTexture;
+uniform float u_specularColorTextureEnabled;
 uniform vec2 u_specularColorTextureOffset;
 uniform vec2 u_specularColorTextureScale;
 uniform float u_specularColorTextureRotation;
@@ -1932,18 +2017,21 @@ uniform vec2 u_specularColorTextureWrap;
 #endif
 #ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
 uniform sampler2D u_sheenColorTexture;
+uniform float u_sheenColorTextureEnabled;
 uniform vec2 u_sheenColorTextureOffset;
 uniform vec2 u_sheenColorTextureScale;
 uniform float u_sheenColorTextureRotation;
 uniform float u_sheenColorTextureTexCoord;
 uniform vec2 u_sheenColorTextureWrap;
 uniform sampler2D u_sheenRoughnessTexture;
+uniform float u_sheenRoughnessTextureEnabled;
 uniform vec2 u_sheenRoughnessTextureOffset;
 uniform vec2 u_sheenRoughnessTextureScale;
 uniform float u_sheenRoughnessTextureRotation;
 uniform float u_sheenRoughnessTextureTexCoord;
 uniform vec2 u_sheenRoughnessTextureWrap;
 uniform sampler2D u_anisotropyTexture;
+uniform float u_anisotropyTextureEnabled;
 uniform vec2 u_anisotropyTextureOffset;
 uniform vec2 u_anisotropyTextureScale;
 uniform float u_anisotropyTextureRotation;
@@ -1952,12 +2040,14 @@ uniform vec2 u_anisotropyTextureWrap;
 #endif
 #ifdef G3D_PBR_IRIDESCENCE_TEXTURES
 uniform sampler2D u_iridescenceTexture;
+uniform float u_iridescenceTextureEnabled;
 uniform vec2 u_iridescenceTextureOffset;
 uniform vec2 u_iridescenceTextureScale;
 uniform float u_iridescenceTextureRotation;
 uniform float u_iridescenceTextureTexCoord;
 uniform vec2 u_iridescenceTextureWrap;
 uniform sampler2D u_iridescenceThicknessTexture;
+uniform float u_iridescenceThicknessTextureEnabled;
 uniform vec2 u_iridescenceThicknessTextureOffset;
 uniform vec2 u_iridescenceThicknessTextureScale;
 uniform float u_iridescenceThicknessTextureRotation;
@@ -2026,6 +2116,24 @@ vec3 g3dTexturedPbrDecodeEnvironmentSample(vec4 encodedSample) {
   if (u_environmentMapTextureEncoding > 1.5) return max(encodedSample.rgb, vec3(0.0));
   if (u_environmentMapTextureEncoding > 0.5) return g3dTexturedPbrDecodeEnvironmentRgbe(encodedSample);
   return g3dTexturedPbrDecodeSrgb(encodedSample.rgb);
+}
+vec3 g3dTexturedPbrBoundHdrTransmissionRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  return nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)));
+}
+vec3 g3dTexturedPbrBoundHdrSpecularRadiance(vec3 radiance) {
+  vec3 nonNegative = max(radiance, vec3(0.0));
+  vec3 softKnee = nonNegative / (vec3(1.0) + max(nonNegative - vec3(1.0), vec3(0.0)) * 0.62);
+  float maxChannel = max(max(softKnee.r, softKnee.g), softKnee.b);
+  return maxChannel > 1.35 ? softKnee * (1.35 / maxChannel) : softKnee;
+}
+vec3 g3dTexturedPbrClampSampledSpecularEdgeEnergy(vec3 radiance, float nDotV, float roughness) {
+  float faceOn = smoothstep(0.2, 0.72, clamp(nDotV, 0.0, 1.0));
+  float roughEnergy = mix(0.35, 0.88, clamp(roughness, 0.0, 1.0));
+  float edgeCap = mix(0.035, 0.86, faceOn) * roughEnergy;
+  float edgeScale = mix(0.045, 0.78, faceOn);
+  vec3 bounded = min(radiance * edgeScale, vec3(edgeCap));
+  return max(bounded, vec3(0.0));
 }
 vec3 g3dTexturedPbrApplyNormalSample(vec3 baseNormal, vec4 tangentFrame, vec3 sampled, float scale) {
   vec3 n = normalize(baseNormal);
@@ -2135,20 +2243,30 @@ vec3 g3dTexturedPbrEnvironmentDiffuseInput(vec3 normal) {
   return mix(environmentDiffuse, environmentDiffuse * 0.18 + sampledDiffuse * u_environmentMapTextureIntensity * 0.92, sampledEnvironmentWeight);
 }
 vec3 g3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float roughness) {
+  float materialEnvironmentSpecularScale = clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0);
   float proceduralEnvironmentWeight = step(0.0001, u_environmentMapIntensity);
   vec3 reflectionDirection = reflect(-viewDirection, normal);
   float clampedRoughness = clamp(roughness, 0.0, 1.0);
+  float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
+  float grazingSpecularGate = smoothstep(0.12, 0.58, nDotV);
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, clampedRoughness));
   float roughEnvironmentFloor = mix(0.04, 0.38, clampedRoughness);
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
-  vec3 proceduralSpecular = u_environmentSpecularColor * u_environmentSpecularIntensity * proceduralSpecularResponse * proceduralEnvironmentWeight;
+  float horizonStripe = pow(clamp(1.0 - abs(reflectionDirection.y), 0.0, 1.0), mix(14.0, 3.0, clampedRoughness));
+  float sideStripe = pow(clamp(abs(reflectionDirection.x), 0.0, 1.0), mix(10.0, 3.0, clampedRoughness)) * smoothstep(0.0, 0.72, 1.0 - abs(reflectionDirection.y));
+  float overheadStripe = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(22.0, 4.0, clampedRoughness));
+  vec3 proceduralSpecularColor = u_environmentSpecularColor * proceduralSpecularResponse
+    + u_environmentHorizonColor * horizonStripe * 0.18
+    + u_environmentSkyColor * overheadStripe * 0.12
+    + u_environmentGroundColor * sideStripe * 0.09;
+  vec3 proceduralSpecular = proceduralSpecularColor * u_environmentSpecularIntensity * proceduralEnvironmentWeight;
   float sampledEnvironmentWeight = step(0.0001, u_environmentMapTextureEnabled * u_environmentMapTextureSpecularIntensity);
   float environmentLod = clampedRoughness * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-  vec3 sampledSpecular = g3dTexturedPbrDecodeEnvironmentSample(g3dTexturedPbrEnvironmentSampleRaw(reflectionDirection, environmentLod));
-  float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
+  vec3 sampledSpecular = g3dTexturedPbrBoundHdrSpecularRadiance(g3dTexturedPbrDecodeEnvironmentSample(g3dTexturedPbrEnvironmentSampleRaw(reflectionDirection, environmentLod)));
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
+  sampledSpecular = g3dTexturedPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
-  return proceduralSpecular + sampledSpecular;
+  return (proceduralSpecular * mix(0.16, 1.0, grazingSpecularGate) + sampledSpecular) * materialEnvironmentSpecularScale;
 }
 vec3 g3dTexturedPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
   float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
@@ -2192,7 +2310,7 @@ vec3 g3dTexturedPbrExtensionDirectLight(
   float anisotropyBand = pow(abs(dot(H, anisotropyAxis)), mix(28.0, 6.0, clearcoatRough));
   vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);
   vec3 iridescenceColor = g3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.22;
+  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.12;
   return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
 }
 vec3 g3dTexturedPbrExtensionEnvironmentLight(
@@ -2212,12 +2330,14 @@ vec3 g3dTexturedPbrExtensionEnvironmentLight(
 ) {
   float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
   vec3 clearcoatF = g3dFresnelSchlickRoughness(vec3(0.04), nDotV, clamp(clearcoatRoughness, 0.18, 1.0));
-  vec3 clearcoatLobe = specularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0) * 0.08;
+  float faceOn = smoothstep(0.18, 0.68, nDotV);
+  vec3 boundedSpecularRadiance = min(specularRadiance * mix(0.1, 0.82, faceOn), vec3(mix(0.08, 0.95, faceOn)));
+  vec3 clearcoatLobe = boundedSpecularRadiance * clearcoatF * clamp(clearcoat, 0.0, 1.0) * 0.045;
   vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - nDotV), 5.0) * 0.12;
   float anisotropyBand = 0.5 + 0.5 * cos(anisotropyRotation * 2.0);
-  vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
+  vec3 anisotropyLobe = boundedSpecularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
   vec3 iridescenceColor = g3dTexturedPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.18;
+  vec3 iridescenceLobe = boundedSpecularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.09;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
 void main() {
@@ -2260,13 +2380,14 @@ void main() {
   vec3 geometryNormal = normalize(v_normal);
   vec3 mappedNormal = mix(geometryNormal, g3dTexturedPbrNormal(geometryNormal, v_tangent, g3dTexturedPbrWrapUv(normalUv, u_normalTextureWrap)), step(0.5, u_normalTextureEnabled));
   if (!gl_FrontFacing) mappedNormal = -mappedNormal;
-  vec3 clearcoatNormalDirection = geometryNormal;
+  vec3 clearcoatNormalDirection = mappedNormal;
   float clearcoatNormalBoost = max(0.25, 1.0 - clamp(u_clearcoatNormalScale, 0.0, 1.0) * 0.12);
 #ifdef G3D_PBR_CLEARCOAT_TEXTURES
+  float clearcoatNormalTextureWeight = step(0.5, u_clearcoatNormalTextureEnabled);
   vec3 clearcoatNormalSample = texture(u_clearcoatNormalTexture, g3dTexturedPbrWrapUv(clearcoatNormalUv, u_clearcoatNormalTextureWrap)).xyz * 2.0 - 1.0;
-  vec3 sampledClearcoatNormal = g3dTexturedPbrApplyNormalSample(geometryNormal, v_tangent, clearcoatNormalSample, u_clearcoatNormalScale);
-  clearcoatNormalDirection = normalize(mix(geometryNormal, sampledClearcoatNormal, 0.42));
-  clearcoatNormalBoost *= max(0.25, clearcoatNormalSample.z);
+  vec3 sampledClearcoatNormal = g3dTexturedPbrApplyNormalSample(mappedNormal, v_tangent, clearcoatNormalSample, u_clearcoatNormalScale);
+  clearcoatNormalDirection = normalize(mix(mappedNormal, sampledClearcoatNormal, 0.26 * clearcoatNormalTextureWeight));
+  clearcoatNormalBoost *= mix(1.0, max(0.25, clearcoatNormalSample.z), clearcoatNormalTextureWeight);
 #endif
   float clearcoat = clamp(u_clearcoatFactor * clearcoatNormalBoost, 0.0, 1.0);
   float clearcoatRoughness = max(clamp(u_clearcoatRoughnessFactor, 0.0, 1.0), 0.18);
@@ -2283,28 +2404,28 @@ void main() {
   float iridescence = clamp(u_iridescenceFactor, 0.0, 1.0);
   float iridescenceThickness = mix(u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, 0.5);
 #ifdef G3D_PBR_CLEARCOAT_TEXTURES
-  clearcoat = clamp(clearcoat * texture(u_clearcoatTexture, g3dTexturedPbrWrapUv(clearcoatUv, u_clearcoatTextureWrap)).r, 0.0, 1.0);
-  clearcoatRoughness = clamp(clearcoatRoughness * texture(u_clearcoatRoughnessTexture, g3dTexturedPbrWrapUv(clearcoatRoughnessUv, u_clearcoatRoughnessTextureWrap)).g, 0.0, 1.0);
-  clearcoatRoughness = max(clearcoatRoughness, 0.16 + (1.0 - clearcoatNormalBoost) * 0.12);
+  clearcoat = clamp(clearcoat * mix(1.0, texture(u_clearcoatTexture, g3dTexturedPbrWrapUv(clearcoatUv, u_clearcoatTextureWrap)).r, step(0.5, u_clearcoatTextureEnabled)), 0.0, 1.0);
+  clearcoatRoughness = clamp(clearcoatRoughness * mix(1.0, texture(u_clearcoatRoughnessTexture, g3dTexturedPbrWrapUv(clearcoatRoughnessUv, u_clearcoatRoughnessTextureWrap)).g, step(0.5, u_clearcoatRoughnessTextureEnabled)), 0.0, 1.0);
+  clearcoatRoughness = max(clearcoatRoughness, 0.19 + (1.0 - clearcoatNormalBoost) * 0.12);
 #endif
 #ifdef G3D_PBR_TRANSMISSION_VOLUME_TEXTURES
-  transmission = clamp(transmission * texture(u_transmissionTexture, g3dTexturedPbrWrapUv(transmissionUv, u_transmissionTextureWrap)).r, 0.0, 1.0);
-  diffuseTransmission = clamp(diffuseTransmission * texture(u_diffuseTransmissionTexture, g3dTexturedPbrWrapUv(diffuseTransmissionUv, u_diffuseTransmissionTextureWrap)).r, 0.0, 1.0);
-  diffuseTransmissionColor *= g3dTexturedPbrDecodeSrgb(texture(u_diffuseTransmissionColorTexture, g3dTexturedPbrWrapUv(diffuseTransmissionColorUv, u_diffuseTransmissionColorTextureWrap)).rgb);
-  volumeThickness *= texture(u_volumeThicknessTexture, g3dTexturedPbrWrapUv(volumeThicknessUv, u_volumeThicknessTextureWrap)).g;
+  transmission = clamp(transmission * mix(1.0, texture(u_transmissionTexture, g3dTexturedPbrWrapUv(transmissionUv, u_transmissionTextureWrap)).r, step(0.5, u_transmissionTextureEnabled)), 0.0, 1.0);
+  diffuseTransmission = clamp(diffuseTransmission * mix(1.0, texture(u_diffuseTransmissionTexture, g3dTexturedPbrWrapUv(diffuseTransmissionUv, u_diffuseTransmissionTextureWrap)).r, step(0.5, u_diffuseTransmissionTextureEnabled)), 0.0, 1.0);
+  diffuseTransmissionColor *= mix(vec3(1.0), g3dTexturedPbrDecodeSrgb(texture(u_diffuseTransmissionColorTexture, g3dTexturedPbrWrapUv(diffuseTransmissionColorUv, u_diffuseTransmissionColorTextureWrap)).rgb), step(0.5, u_diffuseTransmissionColorTextureEnabled));
+  volumeThickness *= mix(1.0, texture(u_volumeThicknessTexture, g3dTexturedPbrWrapUv(volumeThicknessUv, u_volumeThicknessTextureWrap)).g, step(0.5, u_volumeThicknessTextureEnabled));
 #endif
 #ifdef G3D_PBR_SPECULAR_TEXTURES
-  specular = clamp(specular * texture(u_specularTexture, g3dTexturedPbrWrapUv(specularUv, u_specularTextureWrap)).a, 0.0, 1.0);
-  specularColor *= g3dTexturedPbrDecodeSrgb(texture(u_specularColorTexture, g3dTexturedPbrWrapUv(specularColorUv, u_specularColorTextureWrap)).rgb);
+  specular = clamp(specular * mix(1.0, texture(u_specularTexture, g3dTexturedPbrWrapUv(specularUv, u_specularTextureWrap)).a, step(0.5, u_specularTextureEnabled)), 0.0, 1.0);
+  specularColor *= mix(vec3(1.0), g3dTexturedPbrDecodeSrgb(texture(u_specularColorTexture, g3dTexturedPbrWrapUv(specularColorUv, u_specularColorTextureWrap)).rgb), step(0.5, u_specularColorTextureEnabled));
 #endif
 #ifdef G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES
-  sheenColor *= g3dTexturedPbrDecodeSrgb(texture(u_sheenColorTexture, g3dTexturedPbrWrapUv(sheenColorUv, u_sheenColorTextureWrap)).rgb);
-  sheenRoughness = clamp(sheenRoughness * texture(u_sheenRoughnessTexture, g3dTexturedPbrWrapUv(sheenRoughnessUv, u_sheenRoughnessTextureWrap)).a, 0.0, 1.0);
-  anisotropy = clamp(anisotropy * texture(u_anisotropyTexture, g3dTexturedPbrWrapUv(anisotropyUv, u_anisotropyTextureWrap)).b, 0.0, 1.0);
+  sheenColor *= mix(vec3(1.0), g3dTexturedPbrDecodeSrgb(texture(u_sheenColorTexture, g3dTexturedPbrWrapUv(sheenColorUv, u_sheenColorTextureWrap)).rgb), step(0.5, u_sheenColorTextureEnabled));
+  sheenRoughness = clamp(sheenRoughness * mix(1.0, texture(u_sheenRoughnessTexture, g3dTexturedPbrWrapUv(sheenRoughnessUv, u_sheenRoughnessTextureWrap)).a, step(0.5, u_sheenRoughnessTextureEnabled)), 0.0, 1.0);
+  anisotropy = clamp(anisotropy * mix(1.0, texture(u_anisotropyTexture, g3dTexturedPbrWrapUv(anisotropyUv, u_anisotropyTextureWrap)).b, step(0.5, u_anisotropyTextureEnabled)), 0.0, 1.0);
 #endif
 #ifdef G3D_PBR_IRIDESCENCE_TEXTURES
-  iridescence = clamp(iridescence * texture(u_iridescenceTexture, g3dTexturedPbrWrapUv(iridescenceUv, u_iridescenceTextureWrap)).r, 0.0, 1.0);
-  iridescenceThickness = mix(u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, texture(u_iridescenceThicknessTexture, g3dTexturedPbrWrapUv(iridescenceThicknessUv, u_iridescenceThicknessTextureWrap)).g);
+  iridescence = clamp(iridescence * mix(1.0, texture(u_iridescenceTexture, g3dTexturedPbrWrapUv(iridescenceUv, u_iridescenceTextureWrap)).r, step(0.5, u_iridescenceTextureEnabled)), 0.0, 1.0);
+  iridescenceThickness = mix(iridescenceThickness, mix(u_iridescenceThicknessMinimum, u_iridescenceThicknessMaximum, texture(u_iridescenceThicknessTexture, g3dTexturedPbrWrapUv(iridescenceThicknessUv, u_iridescenceThicknessTextureWrap)).g), step(0.5, u_iridescenceThicknessTextureEnabled));
 #endif
   vec3 base = g3dApplyAdvancedPbrLobes(
     texturedBase.rgb,
@@ -2379,13 +2500,13 @@ void main() {
     }
     float texturedBounceCount = clamp(u_transmissionBounceCount, 0.0, 4.0);
     float texturedRefractionLod = clamp(roughness + volumeThickness * 0.12 + texturedBounceCount * 0.04 * texturedParallaxStrength, 0.0, 1.0) * max(u_environmentMapTextureMipCount - 1.0, 0.0);
-    vec3 texturedRefractedEnvironment = g3dTexturedPbrDecodeEnvironmentSample(g3dTexturedPbrEnvironmentSampleRaw(texturedRefractionDirection, texturedRefractionLod));
+    vec3 texturedRefractedEnvironment = g3dTexturedPbrBoundHdrTransmissionRadiance(g3dTexturedPbrDecodeEnvironmentSample(g3dTexturedPbrEnvironmentSampleRaw(texturedRefractionDirection, texturedRefractionLod)));
     float texturedVolumeTravel = clamp((max(volumeThickness, 0.0) * (1.0 + texturedBounceCount * 0.18 * texturedParallaxStrength)) / max(u_volumeAttenuationDistance, 0.0001), 0.0, 16.0);
     vec3 texturedVolumeTint = pow(clamp(u_volumeAttenuationColor, vec3(0.0001), vec3(1.0)), vec3(texturedVolumeTravel));
     float texturedCausticEnergy = u_transmissionCausticStrength * texturedParallaxStrength * texturedTransmissionAmount * pow(1.0 - roughness, 2.0) / (1.0 + texturedBounceCount * 0.35);
     float texturedRoughVolumeIorLift = mix(1.0, 1.45, clamp((u_ior - 1.0) / 1.5, 0.0, 1.0) * smoothstep(0.35, 0.95, roughness + volumeThickness * 0.2));
     float texturedFallbackEnvironmentTransmissionEnergy = mix(1.0, clamp(u_transmissionFallbackEnergy, 0.0, 1.0), texturedTransmissionAmount);
-    vec3 texturedRefractionRadiance = (texturedRefractedEnvironment + vec3(texturedCausticEnergy)) * texturedVolumeTint * u_environmentMapTextureIntensity * texturedTransmissionAmount * texturedFallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness) * texturedRoughVolumeIorLift * texturedSampledEnvironmentWeight;
+    vec3 texturedRefractionRadiance = (texturedRefractedEnvironment + vec3(texturedCausticEnergy)) * texturedVolumeTint * u_environmentMapTextureIntensity * texturedTransmissionAmount * texturedFallbackEnvironmentTransmissionEnergy * mix(0.9, 0.55, roughness) * texturedRoughVolumeIorLift * texturedSampledEnvironmentWeight * clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0);
 #ifndef G3D_PBR_DISABLE_TRANSMISSION_BACKDROP
     if (texturedBackdropWeight > 0.0001) {
       vec2 backdropUv = gl_FragCoord.xy / max(u_transmissionBackdropResolution, vec2(1.0));
@@ -2445,9 +2566,6 @@ void main() {
     );
   }
   float alpha = texturedBase.a;
-  float transmissionAlpha = clamp(max(transmission, diffuseTransmission), 0.0, 1.0);
-  float texturedTransmissionCoverage = mix(0.34, 0.08, clamp(u_transmissionFallbackEnergy, 0.0, 1.0));
-  alpha = mix(alpha, alpha * texturedTransmissionCoverage, transmissionAlpha);
   if (alpha < u_alphaCutoff) discard;
   vec3 fogged = g3dApplyEnvironmentFog(max(shaded, vec3(0.0)), v_worldPosition);
   outColor = vec4(g3dTexturedPbrEncodeOutput(fogged), alpha);

@@ -121,9 +121,19 @@ export {
   createGLTFRenderResources,
   createGLTFRenderSource
 } from "./GLTFRenderResources";
+export {
+  applyCarConceptMaterialStability,
+  carConceptMaterialRenderStateOverrides
+} from "./CarConceptMaterialStability";
+export type {
+  CarConceptMaterialBaseline,
+  CarConceptMaterialStabilityOptions,
+  CarConceptMaterialStabilityProfile
+} from "./CarConceptMaterialStability";
 export type {
   DecodedGLTFImage,
   GLTFImageDecoder,
+  GLTFMaterialRenderStateOverride,
   GLTFRenderResourceDiagnostics,
   GLTFRenderResourceDiagnosticsOptions,
   GLTFRenderResourceTextureSlotDiagnostic,

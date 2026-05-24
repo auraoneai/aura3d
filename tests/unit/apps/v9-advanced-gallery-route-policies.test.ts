@@ -7,6 +7,7 @@ import {
   applyGalleryRoutePostprocessPolicy,
   composeGalleryRouteRenderItems,
   maxCanvasBackingEdgeForRoute,
+  minimumCanvasBackingDprForRoute,
   rendererEnvironmentLightingCompositionOptionsForRoute,
   routeReceivesWaterRipples,
   usesProductConfiguratorHotspotPicking,
@@ -21,10 +22,10 @@ describe("v9 advanced gallery route policies", () => {
       fxaa: true
     } as const;
 
-    expect(applyGalleryRoutePostprocessPolicy("product-configurator", base, {})).toMatchObject({
-      bloom: false,
-      fxaa: { edgeThreshold: 0.1, subpixelBlend: 0.24 }
-    });
+	expect(applyGalleryRoutePostprocessPolicy("product-configurator", base, {})).toMatchObject({
+		bloom: false,
+		fxaa: { edgeThreshold: 0.16, subpixelBlend: 0.16 }
+	});
     expect(applyGalleryRoutePostprocessPolicy("data-galaxy", { ...base, fxaa: undefined }, {})).toMatchObject({
       bloom: false,
       fxaa: { edgeThreshold: 0.11, subpixelBlend: 0.2 }
@@ -39,7 +40,7 @@ describe("v9 advanced gallery route policies", () => {
     });
   });
 
-  it("preserves explicit route FXAA settings while normalizing boolean defaults", () => {
+  it("keeps Product FXAA bounded while preserving Data FXAA normalization", () => {
     const explicitFxaa = { edgeThreshold: 0.06, subpixelBlend: 0.36 };
 
     expect(applyGalleryRoutePostprocessPolicy("product-configurator", {
@@ -48,7 +49,7 @@ describe("v9 advanced gallery route policies", () => {
       fxaa: explicitFxaa
     }, {})).toMatchObject({
       bloom: false,
-      fxaa: explicitFxaa
+      fxaa: { edgeThreshold: 0.16, subpixelBlend: 0.16 }
     });
     expect(applyGalleryRoutePostprocessPolicy("data-galaxy", {
       bloom: false,
@@ -61,10 +62,11 @@ describe("v9 advanced gallery route policies", () => {
   });
 
   it("keeps renderer environment-lighting composition floors in route policy instead of main orchestration", () => {
-    expect(rendererEnvironmentLightingCompositionOptionsForRoute("product-configurator")).toEqual({
-      minimumEnvironmentMapIntensity: 0.78,
-      minimumEnvironmentMapSpecularIntensity: 0.76
-    });
+			expect(rendererEnvironmentLightingCompositionOptionsForRoute("product-configurator")).toEqual({
+				environmentMapIntensity: 0.16,
+				environmentMapSpecularIntensity: 0.014,
+				sampledReplacesProceduralMap: false
+			});
     expect(rendererEnvironmentLightingCompositionOptionsForRoute("data-galaxy")).toEqual({});
     expect(rendererEnvironmentLightingCompositionOptionsForRoute("reactor-post")).toEqual({});
   });
@@ -76,9 +78,10 @@ describe("v9 advanced gallery route policies", () => {
       time: 10,
       authored: readyAuthored()
     }));
-    expect(product.paddingRatio).toBe(0.012);
-    expect(product.pitchRadians).toBeCloseTo(-0.13 + Math.cos(1.6) * 0.004, 6);
-    expect(product.bounds).toEqual({ min: [-1.36, -1.02, -0.84], max: [1.36, 0.5, 0.94] });
+	expect(product.yawRadians).toBeCloseTo(-0.42 + Math.sin(1.8) * 0.003, 6);
+	expect(product.paddingRatio).toBe(0.045);
+	expect(product.pitchRadians).toBeCloseTo(-0.1 + Math.cos(1.6) * 0.002, 6);
+	expect(product.bounds).toEqual({ min: [-1.54, -0.96, -0.98], max: [1.54, 0.55, 0.98] });
 
     const data = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "data-galaxy",
@@ -87,8 +90,8 @@ describe("v9 advanced gallery route policies", () => {
       authored: loadingAuthored()
     }));
     expect(data.pitchRadians).toBe(-0.12);
-    expect(data.paddingRatio).toBe(0.014);
-    expect(data.bounds).toEqual({ min: [-0.32, -0.3, -0.3], max: [0.34, 0.38, 0.34] });
+    expect(data.paddingRatio).toBe(0.004);
+    expect(data.bounds).toEqual({ min: [-0.2, -0.18, -0.18], max: [0.2, 0.24, 0.2] });
 
     const fog = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "fog-cathedral",
@@ -126,14 +129,14 @@ describe("v9 advanced gallery route policies", () => {
   it("limits ready product GLBs to studio calibration helpers", () => {
     const scene = sceneWithLabels([
       "product-studio floor",
-      "front studio contrast calibration chip",
+      "car material low showroom chip",
       "hotspot",
       "continuous animated water mesh"
     ]);
 
     expect(labels(visibleProceduralItemsForRoute(scene, "product-configurator", readyAuthored()))).toEqual([
       "product-studio floor",
-      "front studio contrast calibration chip"
+      "car material low showroom chip"
     ]);
     expect(visibleProceduralItemsForRoute(scene, "product-configurator", loadingAuthored())).toHaveLength(4);
   });
@@ -177,7 +180,9 @@ describe("v9 advanced gallery route policies", () => {
     expect(routeReceivesWaterRipples("product-configurator")).toBe(false);
 
     expect(maxCanvasBackingEdgeForRoute("reactor-post")).toBe(2160);
-    expect(maxCanvasBackingEdgeForRoute("product-configurator")).toBe(2560);
+    expect(maxCanvasBackingEdgeForRoute("product-configurator")).toBe(3200);
+    expect(minimumCanvasBackingDprForRoute("product-configurator")).toBe(2);
+    expect(minimumCanvasBackingDprForRoute("data-galaxy")).toBe(1);
   });
 });
 

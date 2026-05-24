@@ -13,7 +13,7 @@ void startWowShowcase({
     exposure: 1.18,
     roughnessScale: 0.78,
     metallicScale: 1.16,
-    clearcoatBoost: 0.28,
+    clearcoatBoost: 0,
     backgroundBlur: 0.05,
     backgroundVisible: true,
     shadows: true

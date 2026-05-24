@@ -17,30 +17,31 @@ export function createDataGalaxyFocalSystem(
   mode: DataGalaxyBudgetMode
 ): DataGalaxyFocalSystemResult {
   const profile = mode === "showcase"
-    ? { coreScale: 2.9, arcScale: 2.18, clusterCount: 260, secondaryCount: 170, shellScale: 2.2 }
+    ? { coreScale: 1.28, arcScale: 1.85, clusterCount: 58, secondaryCount: 34, shellScale: 1.32 }
     : mode === "stress"
       ? { coreScale: 1.25, arcScale: 1.0, clusterCount: 54, secondaryCount: 28, shellScale: 1.0 }
       : { coreScale: 1.15, arcScale: 0.95, clusterCount: 42, secondaryCount: 18, shellScale: 0.92 };
   const items: RenderItem[] = [
     focalWireShellItem(r, "transparent-data-shell", "transparentCyan", time, speed, profile.shellScale),
-    item(r, "sphere", "cyanGlow", [0, 0.03, 0], [0.12 * profile.coreScale, 0.12 * profile.coreScale, 0.12 * profile.coreScale], [0.18, time * 0.42 * speed, -0.08], "DataGalaxyFocalSystem luminous data nucleus"),
-    item(r, "sphere", "violetGlow", [-0.055, 0.078, -0.036], [0.058 * profile.coreScale, 0.058 * profile.coreScale, 0.058 * profile.coreScale], [-0.16, time * -0.34 * speed, 0.12], "DataGalaxyFocalSystem violet model-state satellite"),
-    item(r, "sphere", "amberGlow", [0.066, -0.024, 0.044], [0.046 * profile.coreScale, 0.046 * profile.coreScale, 0.046 * profile.coreScale], [0.12, time * 0.48 * speed, 0.2], "DataGalaxyFocalSystem amber anomaly satellite"),
+    item(r, "sphere", "cyanGlow", [0, 0.03, 0], [0.092 * profile.coreScale, 0.092 * profile.coreScale, 0.092 * profile.coreScale], [0.18, time * 0.42 * speed, -0.08], "DataGalaxyFocalSystem luminous data nucleus"),
+    item(r, "sphere", "violetGlow", [-0.055, 0.078, -0.036], [0.038 * profile.coreScale, 0.038 * profile.coreScale, 0.038 * profile.coreScale], [-0.16, time * -0.34 * speed, 0.12], "DataGalaxyFocalSystem violet model-state satellite"),
+    item(r, "sphere", "amberGlow", [0.066, -0.024, 0.044], [0.034 * profile.coreScale, 0.034 * profile.coreScale, 0.034 * profile.coreScale], [0.12, time * 0.48 * speed, 0.2], "DataGalaxyFocalSystem amber anomaly satellite"),
     focalArcItem(r, "core-orbit", "transparentCyan", [0, 0.032, 0], [profile.arcScale, profile.arcScale, profile.arcScale], [0.34, time * 0.18 * speed, 0.18], 0.27, 0.17, Math.PI * 1.42, 24),
     focalArcItem(r, "vertical-model-orbit", "transparentCyan", [-0.03, 0.046, -0.012], [0.8 * profile.arcScale, 1.05 * profile.arcScale, 0.82 * profile.arcScale], [Math.PI / 2.8, time * -0.16 * speed, -0.22], 0.24, 0.15, Math.PI * 1.16, 20),
     focalArcItem(r, "amber-transfer-orbit", "transparentAmber", [0.06, -0.01, 0.036], [0.72 * profile.arcScale, 0.78 * profile.arcScale, 0.72 * profile.arcScale], [-0.36, time * 0.22 * speed + 0.8, 0.12], 0.2, 0.12, Math.PI * 0.92, 16),
+    focalArcItem(r, "equatorial-data-ring", "transparentCyan", [0, 0.032, 0], [1.05 * profile.arcScale, 1.05 * profile.arcScale, 1.05 * profile.arcScale], [0.04, time * 0.055 * speed, 0.02], 0.31, 0.205, Math.PI * 2, mode === "showcase" ? 56 : 30),
+    focalArcItem(r, "vertical-context-ring", "transparentCyan", [0, 0.034, 0], [0.9 * profile.arcScale, 1.08 * profile.arcScale, 0.92 * profile.arcScale], [Math.PI / 2.08, time * -0.044 * speed, -0.18], 0.275, 0.18, Math.PI * 1.78, mode === "showcase" ? 42 : 24),
+    focalArcItem(r, "warm-anomaly-ring", "transparentAmber", [0.028, 0.012, 0.022], [0.78 * profile.arcScale, 0.82 * profile.arcScale, 0.78 * profile.arcScale], [-0.2, time * 0.064 * speed + 0.42, 0.24], 0.235, 0.145, Math.PI * 1.56, mode === "showcase" ? 34 : 20),
     focalStreamItem(r, "foreground-cyan-stream", "transparentCyan", [-0.3, -0.1, 0.22], [0.22, -0.02, 0.08], time, speed, 14),
     focalStreamItem(r, "background-cyan-stream", "transparentCyan", [0.28, 0.16, -0.24], [0.04, 0.05, -0.04], time + 1.2, speed, 12),
     focalStreamItem(r, "amber-cross-stream", "transparentAmber", [-0.08, 0.14, -0.2], [0.28, -0.04, 0.12], time + 2.1, speed, 10),
-    focalHaloNodeItem(r, "cyan-halo-nodes", "cyanGlow", time, speed, mode === "showcase" ? 24 : 12, profile.arcScale),
+    focalHaloNodeItem(r, "cyan-halo-nodes", "cyanGlow", time, speed, mode === "showcase" ? 10 : 12, profile.arcScale),
     focalTransferItem(r, "curved-transfer-streams", "transparentAmber"),
-    focalConstellationWebItem(r, "front-constellation-filaments", "transparentCyan", time, speed, mode === "showcase" ? 232 : 48, 1.08 * profile.arcScale),
-    focalConstellationWebItem(r, "warm-anomaly-filaments", "transparentAmber", time + 1.4, speed * 0.92, mode === "showcase" ? 168 : 32, 0.82 * profile.arcScale),
-    focalConstellationWebItem(r, "green-context-filaments", "transparentGreen", time + 2.2, speed * 0.74, mode === "showcase" ? 96 : 24, 0.66 * profile.arcScale),
-    focalConstellationWebItem(r, "white-routing-filaments", "debug", time + 0.6, speed * 0.68, mode === "showcase" ? 256 : 36, 0.58 * profile.arcScale),
-    focalSignalBandItem(r, "curated-signal-band-cyan", "cyanGlow", time, speed, mode === "showcase" ? 72 : 18, 0.98 * profile.arcScale),
-    focalSignalBandItem(r, "curated-signal-band-violet", "violetGlow", time + 0.8, speed * 0.88, mode === "showcase" ? 54 : 14, 0.72 * profile.arcScale),
-    focalSignalBandItem(r, "curated-signal-band-white", "white", time + 1.2, speed * 0.7, mode === "showcase" ? 60 : 12, 0.52 * profile.arcScale),
+    focalConstellationWebItem(r, "front-constellation-filaments", "transparentCyan", time, speed, mode === "showcase" ? 42 : 48, 0.9 * profile.arcScale),
+    focalConstellationWebItem(r, "warm-anomaly-filaments", "transparentAmber", time + 1.4, speed * 0.92, mode === "showcase" ? 26 : 32, 0.7 * profile.arcScale),
+    focalConstellationWebItem(r, "green-context-filaments", "transparentGreen", time + 2.2, speed * 0.74, mode === "showcase" ? 14 : 24, 0.56 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-cyan", "cyanGlow", time, speed, mode === "showcase" ? 6 : 18, 0.62 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-violet", "violetGlow", time + 0.8, speed * 0.88, mode === "showcase" ? 4 : 14, 0.46 * profile.arcScale),
     clusteredNodeItem(r, "cyan-clustered-data-nodes", "cyanGlow", time, speed, [
       [-0.18, -0.035, 0.17],
       [0.18, 0.12, -0.15],
@@ -58,7 +59,7 @@ export function createDataGalaxyFocalSystem(
       "DataGalaxyFocalSystem central data core",
       "DataGalaxyFocalSystem transparent data shell",
       "DataGalaxyFocalSystem layered orbit arcs",
-      "DataGalaxyFocalSystem dense curated constellation filaments",
+      "DataGalaxyFocalSystem curated constellation filaments",
       "DataGalaxyFocalSystem front signal bands",
       "DataGalaxyFocalSystem clustered node lattice",
       "DataGalaxyFocalSystem organic orbit streams and halo nodes"
@@ -86,7 +87,7 @@ function clusteredNodeItem(
     const ring = Math.floor(i / centers.length);
     const phase = i * 2.399 + time * (0.11 + (i % 6) * 0.007) * speed;
     const radius = 0.04 + (ring % 6) * 0.014;
-    const scale = 0.02 + (i % 4) * 0.0035;
+    const scale = 0.011 + (i % 4) * 0.002;
     writeModelMatrix(transforms, i * 16, [
       center[0] + Math.cos(phase) * radius,
       center[1] + Math.sin(phase * 1.7) * 0.02,
@@ -237,7 +238,7 @@ function focalHaloNodeItem(
   for (let i = 0; i < count; i += 1) {
     const angle = i * Math.PI * 2 / count + time * 0.05 * speed;
     const radius = 0.135 * scale;
-    const size = 0.014 * scale * (i % 3 === 0 ? 1.28 : 1);
+    const size = 0.0085 * scale * (i % 3 === 0 ? 1.18 : 1);
     writeModelMatrix(transforms, i * 16, [
       Math.cos(angle) * radius,
       0.03 + Math.sin(angle * 1.7) * 0.028,
@@ -282,9 +283,9 @@ function focalWireShellItem(
   let geometry = r.dataGalaxyOverlayGeometries.get(cacheKey);
   if (!geometry) {
     const positions: Vec3[] = [];
-    appendEllipseSegments(positions, 0.21 * scale, 0.13 * scale, "xz", 24);
-    appendEllipseSegments(positions, 0.17 * scale, 0.11 * scale, "xy", 18);
-    appendEllipseSegments(positions, 0.15 * scale, 0.1 * scale, "yz", 18);
+    appendEllipseSegments(positions, 0.21 * scale, 0.13 * scale, "xz", 42);
+    appendEllipseSegments(positions, 0.17 * scale, 0.11 * scale, "xy", 32);
+    appendEllipseSegments(positions, 0.15 * scale, 0.1 * scale, "yz", 32);
     geometry = Geometry.lineSegments(positions);
     r.dataGalaxyOverlayGeometries.set(cacheKey, geometry);
   }

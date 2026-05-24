@@ -494,7 +494,7 @@ describe("glTF asset inspection", () => {
     ]));
   });
 
-  it("keeps opaque KHR_materials_transmission materials depth-writing instead of forcing alpha blending", async () => {
+  it("keeps unbacked opaque KHR_materials_transmission materials depth-writing without white refraction fallback energy", async () => {
     const asset = await new GLTFLoader().load(
       { url: createTransmissionGlassGltfUrl(), type: "gltf" },
       new LoadContext()
@@ -520,11 +520,32 @@ describe("glTF asset inspection", () => {
     try {
       const material = resources.materialLibrary.get("transmission-glass");
       expect(material).toBeTruthy();
-      expect(material?.renderState.blend).toBe(true);
-      expect(material?.renderState.depthWrite).toBe(false);
-      expect(material?.getParameter("u_transmissionFactor")).toBe(1);
-      expect(material?.getParameter("u_transmissionFallbackEnergy")).toBe(0.08);
+      expect(material?.renderState.blend).toBe(false);
+      expect(material?.renderState.depthWrite).toBe(true);
+      expect(material?.getParameter("u_transmissionFactor")).toBe(0);
+      expect(material?.getParameter("u_transmissionFallbackEnergy")).toBe(0);
+      expect(material?.getParameter("u_baseColor")).toEqual([0.028, 0.036, 0.044, 1]);
+      expect(material?.getParameter("u_roughness")).toBe(0.72);
       expect(createGLTFRenderResourceDiagnostics(resources).fallbackWhiteDrawItems).toBe(0);
+    } finally {
+      resources.dispose();
+    }
+  });
+
+  it("keeps double-sided opaque KHR_materials_transmission fallback materials culled and out of no-depth overlay mode", async () => {
+    const asset = await new GLTFLoader().load(
+      { url: createTransmissionGlassGltfUrl("OPAQUE", true), type: "gltf" },
+      new LoadContext()
+    );
+    const resources = await createGLTFRenderResources(asset);
+
+    try {
+      const material = resources.materialLibrary.get("transmission-glass");
+      expect(material).toBeTruthy();
+      expect(material?.renderState.cullMode).toBe("back");
+      expect(material?.renderState.blend).toBe(false);
+      expect(material?.renderState.depthWrite).toBe(true);
+      expect(material?.getParameter("u_transmissionFactor")).toBe(0);
     } finally {
       resources.dispose();
     }
@@ -543,6 +564,34 @@ describe("glTF asset inspection", () => {
       expect(material?.renderState.blend).toBe(true);
       expect(material?.renderState.depthWrite).toBe(false);
       expect(material?.getParameter("u_transmissionFactor")).toBe(1);
+      expect(material?.getParameter("u_transmissionFallbackEnergy")).toBe(0.08);
+    } finally {
+      resources.dispose();
+    }
+  });
+
+  it("allows caller-owned render-state overrides for route-specific imported material cleanup", async () => {
+    const asset = await new GLTFLoader().load(
+      { url: createTransmissionGlassGltfUrl(), type: "gltf" },
+      new LoadContext()
+    );
+    const resources = await createGLTFRenderResources(asset, {
+      materialRenderStateOverrides: [
+        {
+          materialName: /transmission-glass/,
+          renderState: { cullMode: "back", blend: false, depthWrite: true },
+          reason: "test route override"
+        }
+      ]
+    });
+
+    try {
+      const material = resources.materialLibrary.get("transmission-glass");
+      expect(material).toBeTruthy();
+      expect(material?.renderState.cullMode).toBe("back");
+      expect(material?.renderState.blend).toBe(false);
+      expect(material?.renderState.depthWrite).toBe(true);
+      expect(material?.getParameter("u_transmissionFactor")).toBe(0);
     } finally {
       resources.dispose();
     }
@@ -825,7 +874,7 @@ function createUnsupportedExtensionsGltfUrl(): string {
   return `data:model/gltf+json,${encodeURIComponent(JSON.stringify(gltf))}`;
 }
 
-function createTransmissionGlassGltfUrl(alphaMode?: "OPAQUE" | "MASK" | "BLEND"): string {
+function createTransmissionGlassGltfUrl(alphaMode?: "OPAQUE" | "MASK" | "BLEND", doubleSided = false): string {
   const positions = floatBytes([-0.5, -0.5, 0, 0.5, -0.5, 0, 0, 0.5, 0]);
   const indices = uint16Bytes([0, 1, 2]);
   const buffer = concatBytes(positions, indices);
@@ -854,6 +903,7 @@ function createTransmissionGlassGltfUrl(alphaMode?: "OPAQUE" | "MASK" | "BLEND")
           transmissionFactor: 1
         }
       },
+      ...(doubleSided ? { doubleSided: true } : {}),
       ...(alphaMode ? { alphaMode } : {})
     }],
     meshes: [{

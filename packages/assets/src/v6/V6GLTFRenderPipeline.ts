@@ -13,6 +13,7 @@ export interface V6GLTFRenderPipelineOptions {
   readonly materialVariant?: GLTFRenderResourceOptions["materialVariant"];
   readonly sceneIndex?: GLTFRenderResourceOptions["sceneIndex"];
   readonly sceneName?: GLTFRenderResourceOptions["sceneName"];
+  readonly materialRenderStateOverrides?: GLTFRenderResourceOptions["materialRenderStateOverrides"];
   readonly rendererInput?: GLTFRendererInputOptions;
   readonly width?: number;
   readonly height?: number;
@@ -74,7 +75,8 @@ export async function loadV6GLTFRenderPipeline(options: V6GLTFRenderPipelineOpti
     ...(options.imageDecoder ? { imageDecoder: options.imageDecoder } : {}),
     ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
-    ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {})
+    ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
+    ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {})
   });
   const rendererInput = resources.toRendererInput(
     { width: options.width ?? 512, height: options.height ?? 512 },

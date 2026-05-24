@@ -5,6 +5,7 @@ export interface EnvironmentLightingCompositionOptions {
   readonly environmentMapSpecularIntensity?: number;
   readonly minimumEnvironmentMapIntensity?: number;
   readonly minimumEnvironmentMapSpecularIntensity?: number;
+  readonly sampledReplacesProceduralMap?: boolean;
 }
 
 export function composeEnvironmentLighting(
@@ -27,11 +28,14 @@ export function composeEnvironmentLighting(
   const environmentMapRotation = sampled.environmentMapRotation ?? base.environmentMapRotation;
   const environmentMapMipCount = sampled.environmentMapMipCount ?? base.environmentMapMipCount;
   const environmentMapEncoding = sampled.environmentMapEncoding ?? base.environmentMapEncoding;
+  const proceduralMap = options.sampledReplacesProceduralMap
+    ? sampled.proceduralMap
+    : base.proceduralMap ?? sampled.proceduralMap;
 
   return {
     color: cloneColor(base.color),
     intensity: base.intensity,
-    proceduralMap: cloneProceduralMap(base.proceduralMap ?? sampled.proceduralMap),
+    ...(proceduralMap ? { proceduralMap: cloneProceduralMap(proceduralMap) } : {}),
     ...(sampled.environmentMapTexture ?? base.environmentMapTexture
       ? { environmentMapTexture: sampled.environmentMapTexture ?? base.environmentMapTexture }
       : {}),

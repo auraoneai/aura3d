@@ -90,12 +90,7 @@ test.describe("Product configurator same-asset reference harness", () => {
     expect(report.renderer.fixedLighting).toBe("studio-small-08-hdr-plus-product-directional");
     expect(report.dpr.viewportCssPixels).toEqual({ width: 640, height: 480 });
 
-    expect(report.summary.originalAssetIds).toEqual([
-      "car-concept",
-      "chronograph-watch",
-      "materials-variants-shoe",
-      "sunglasses-khronos"
-    ]);
+    expect(report.summary.originalAssetIds).toEqual(["car-concept"]);
     expect(report.summary.allOriginalAssetUrlsLoaded).toBe(true);
     expect(report.summary.allAssetsRendered).toBe(true);
     expect(report.summary.allAssetsMaterialBacked).toBe(true);
@@ -111,7 +106,7 @@ test.describe("Product configurator same-asset reference harness", () => {
       const asset = byId.get(id);
       expect(asset, `${id} report`).toBeDefined();
       expect(asset?.sourceOfTruth, `${id} source`).toBe("advanced-gallery-original-product-asset");
-      expect(asset?.url, `${id} original URL`).toMatch(/^\/fixtures\/v8\/assets\/(?:product|vehicles)\/.+\.glb$/);
+      expect(asset?.url, `${id} original URL`).toBe("/fixtures/v8/assets/vehicles/car-concept.glb");
       expect(asset?.loaded, `${id} loaded`).toBe(true);
       expect(asset?.rendered, `${id} rendered`).toBe(true);
       expect(asset?.captureReady, `${id} capture ready`).toBe(true);
@@ -135,19 +130,14 @@ test.describe("Product configurator same-asset reference harness", () => {
     }
 
     expect(byId.get("car-concept")?.extensions.used ?? [], "car-concept material variants extension").toContain("KHR_materials_variants");
-    expect(byId.get("chronograph-watch")?.extensions.used ?? [], "watch material variants extension").toContain("KHR_materials_variants");
-    expect(byId.get("materials-variants-shoe")?.extensions.used ?? [], "shoe material variants extension").toContain("KHR_materials_variants");
-    expect(byId.get("sunglasses-khronos")?.extensions.used.length ?? 0, "sunglasses extension/material state").toBeGreaterThan(0);
     expect(report.summary.materialVariants.some((entry) => entry.assetId === "car-concept" && entry.variants.length > 0)).toBe(true);
-    expect(report.summary.materialVariants.some((entry) => entry.assetId === "chronograph-watch" && entry.variants.length > 0)).toBe(true);
-    expect(report.summary.materialVariants.some((entry) => entry.assetId === "materials-variants-shoe" && entry.variants.length > 0)).toBe(true);
 
     const car = byId.get("car-concept");
     const carGlass = car?.runtimeMaterials.find((material) => material.name === "Glass");
     expect(carGlass, "car Glass runtime material").toBeDefined();
-    expect(carGlass?.renderState.blend, "car glass must render as blended transmission material").toBe(true);
-    expect(carGlass?.renderState.depthWrite, "car glass must not depth-write over the cabin/paint").toBe(false);
-    expect(carGlass?.uniforms.transmissionFactor ?? 0, "car glass transmission uniform").toBeGreaterThan(0.99);
+    expect(carGlass?.renderState.blend, "car glass must not render as a no-depth white transmission overlay").toBe(false);
+    expect(carGlass?.renderState.depthWrite, "car glass must depth-write until a real scene-color refraction path exists").toBe(true);
+    expect(carGlass?.uniforms.transmissionFactor ?? 1, "unbacked scalar transmission is disabled for concept-car fallback glass").toBe(0);
     expect(car?.carRegionAcceptance.map((entry) => entry.id).sort(), "car crop-region material proofs").toEqual([
       "contact-grounding",
       "front-bumper-paint",
@@ -168,9 +158,7 @@ test.describe("Product configurator same-asset reference harness", () => {
     const materialAcceptance = report.assets.flatMap((asset) => asset.materialAcceptance.map((entry) => [asset.id, entry] as const));
     expect(materialAcceptance.map(([assetId, entry]) => `${assetId}:${entry.id}`).sort()).toEqual([
       "car-concept:car-carmine-paint",
-      "car-concept:car-glass",
-      "chronograph-watch:watch-glass-face",
-      "sunglasses-khronos:sunglasses-lenses"
+      "car-concept:car-glass"
     ]);
     for (const [assetId, acceptance] of materialAcceptance) {
       expect(

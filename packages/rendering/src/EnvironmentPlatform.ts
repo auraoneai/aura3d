@@ -148,6 +148,7 @@ export interface EnvironmentStageOptions {
   readonly includeSkyDome?: boolean;
   readonly includeStageShell?: boolean;
   readonly includeGroundGrid?: boolean;
+  readonly includeStageAccents?: boolean;
   readonly contactGrounding?: EnvironmentContactGroundingMode | EnvironmentContactGroundingOptions;
 }
 
@@ -372,6 +373,7 @@ export function createEnvironmentStage(options: EnvironmentStageOptions = {}): E
   const items: RenderItem[] = [];
   const includeStageShell = options.includeStageShell !== false;
   const includeGroundGrid = options.includeGroundGrid !== false;
+  const includeStageAccents = options.includeStageAccents !== false;
   const contactGrounding = createStageContactGrounding(preset, size, floorY, studioTone, options.contactGrounding);
 
   if (options.includeSkyDome !== false) {
@@ -392,7 +394,9 @@ export function createEnvironmentStage(options: EnvironmentStageOptions = {}): E
   if (contactGrounding) {
     items.push(...contactGrounding.items);
   }
-  items.push(...createStageAccents(preset, size, palette, finite(options.timeSeconds ?? 0, "timeSeconds"), floorY, studioTone));
+  if (includeStageAccents) {
+    items.push(...createStageAccents(preset, size, palette, finite(options.timeSeconds ?? 0, "timeSeconds"), floorY, studioTone));
+  }
 
   return {
     preset,
@@ -408,14 +412,15 @@ export function createEnvironmentStage(options: EnvironmentStageOptions = {}): E
       includeGroundGrid ? "ground grid/catch plane" : "ground grid disabled",
       ...(contactGrounding ? ["contact grounding helper"] : []),
       "preset environment lighting",
-      "stage accent panels"
+      includeStageAccents ? "stage accent panels" : "stage accent panels disabled"
     ],
     capabilityIds: stageCapabilities(preset),
     limitations: [
       ...stageLimitations(preset),
       ...(contactGrounding ? contactGrounding.limitations : []),
       ...(includeStageShell ? [] : ["Physical stage shell is disabled for this environment stage; it proves reusable backdrop/lighting behavior, not floor, wall, or catch-plane rendering."]),
-      ...(includeGroundGrid ? [] : ["Ground grid/catch-plane rendering is disabled for this environment stage."])
+      ...(includeGroundGrid ? [] : ["Ground grid/catch-plane rendering is disabled for this environment stage."]),
+      ...(includeStageAccents ? [] : ["Stage accent panel rendering is disabled for this environment stage."])
     ],
     ...(contactGrounding ? { contactGrounding } : {})
   };
@@ -612,7 +617,7 @@ function createStageShell(
   const premiumStudio = preset === "indoor-studio" && (studioTone === "premium-dark" || studioTone === "product-premium");
   const productPremiumStudio = preset === "indoor-studio" && studioTone === "product-premium";
   const floorScale: Vec3 = productPremiumStudio
-    ? [size * 0.54, 0.018, size * 0.32]
+    ? [size * 0.94, 0.028, size * 0.52]
     : premiumStudio
     ? [size * 1.78, 0.052, size * 1.22]
     : [size * 1.65, 0.06, size * 1.65];
@@ -624,11 +629,11 @@ function createStageShell(
     : [size * 1.65, size * 0.74, 0.08];
   const floor = new PBRMaterial({
     name: `${preset} environment floor`,
-    baseColor: [...(productPremiumStudio ? ([palette.floor[0] * 0.22, palette.floor[1] * 0.22, palette.floor[2] * 0.22] as Rgb) : palette.floor), 1],
-    roughness: premiumStudio ? 0.68 : preset === "indoor-studio" ? 0.54 : 0.62,
-    metallic: preset === "urban-city" || preset === "industrial-warehouse" ? 0.14 : 0.02,
+    baseColor: [...(productPremiumStudio ? ([0.06, 0.064, 0.067] as Rgb) : palette.floor), 1],
+    roughness: productPremiumStudio ? 0.74 : premiumStudio ? 0.68 : preset === "indoor-studio" ? 0.54 : 0.62,
+    metallic: productPremiumStudio ? 0.04 : preset === "urban-city" || preset === "industrial-warehouse" ? 0.14 : 0.02,
     environmentColor: palette.ambient,
-    environmentIntensity: premiumStudio ? 0.0 : preset === "indoor-studio" ? 0.24 : 0.48,
+    environmentIntensity: productPremiumStudio ? 0.012 : premiumStudio ? 0.0 : preset === "indoor-studio" ? 0.24 : 0.48,
     proceduralEnvironmentMap: proceduralMap(palette)
   });
   const wall = new PBRMaterial({
@@ -641,7 +646,7 @@ function createStageShell(
     proceduralEnvironmentMap: proceduralMap(palette)
   });
   const floorItem: RenderItem = {
-    geometry: premiumStudio ? Geometry.cylinder({ radius: 0.5, height: 1, segments: 96 }) : Geometry.litCube(1),
+    geometry: productPremiumStudio ? Geometry.litCube(1) : premiumStudio ? Geometry.cylinder({ radius: 0.5, height: 1, segments: 96 }) : Geometry.litCube(1),
     material: floor,
     modelMatrix: trs([0, floorY - floorScale[1] * 0.5 - 0.005, productPremiumStudio ? 0.08 : 0.04], floorScale),
     includeInAutoFrame: false,
@@ -753,16 +758,16 @@ function createStageContactGrounding(
   const defaultProductGrounding = preset === "indoor-studio" && studioTone === "product-premium";
   if (requestedMode === "auto" && !defaultProductGrounding) return undefined;
   const options: EnvironmentContactGroundingOptions = typeof input === "object" ? input : {};
-  const casterRadius = positive(options.casterRadius ?? size * (defaultProductGrounding ? 0.18 : 0.34), "contact grounding casterRadius");
+  const casterRadius = positive(options.casterRadius ?? size * (defaultProductGrounding ? 0.28 : 0.34), "contact grounding casterRadius");
   const receiverDistance = positive(options.receiverDistance ?? size * 0.075, "contact grounding receiverDistance");
   const label = options.label ?? `${preset} product grounding`;
   const plan = createV4ContactShadowPlan({
     casterRadius,
     receiverDistance,
     softness: options.softness ?? (defaultProductGrounding ? 0.62 : 0.52),
-    opacity: options.opacity ?? (defaultProductGrounding ? 0.34 : 0.42),
+    opacity: options.opacity ?? (defaultProductGrounding ? 0.3 : 0.42),
     layerCount: options.layerCount ?? (defaultProductGrounding ? 3 : 2),
-    anisotropy: options.anisotropy ?? (defaultProductGrounding ? 1.42 : 1.22),
+    anisotropy: options.anisotropy ?? (defaultProductGrounding ? 1.72 : 1.22),
     yOffset: options.yOffset ?? 0.003
   });
   const items = plan.layers.map((layer): RenderItem => ({

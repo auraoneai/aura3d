@@ -2,9 +2,6 @@ import type { CameraFrameBounds, EnvironmentLightingCompositionOptions, Renderer
 import type { AuthoredAssetRuntimeState } from "./authoredLayer";
 import type { ControlValues, SceneFrame } from "./sceneBuilderPrimitives";
 import type { DemoDefinition } from "./metadata";
-import { createProductConfiguratorShowcaseLayout } from "./productConfiguratorPolicy";
-
-const PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT = createProductConfiguratorShowcaseLayout();
 
 export interface GalleryRouteCameraPolicyInput {
   readonly demoId: DemoDefinition["id"];
@@ -53,15 +50,15 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     pitchRadians = -0.28 + Math.cos(input.frameCount * 0.06) * 0.008;
     paddingRatio = 0.006;
   }
-  if (input.demoId === "product-configurator" && input.cameraPreset === "hero") {
-    yawRadians = -0.5 + Math.sin(input.time * 0.18) * 0.006;
-    pitchRadians = -0.13 + Math.cos(input.time * 0.16) * 0.004;
-    paddingRatio = PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT.frame.heroPaddingRatio;
-  }
+	if (input.demoId === "product-configurator" && input.cameraPreset === "hero") {
+		yawRadians = -0.42 + Math.sin(input.time * 0.18) * 0.003;
+		pitchRadians = -0.1 + Math.cos(input.time * 0.16) * 0.002;
+		paddingRatio = 0.045;
+	}
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
     yawRadians = -0.22 + Math.sin(input.time * 0.12) * 0.006;
     pitchRadians = -0.12;
-    paddingRatio = 0.014;
+    paddingRatio = 0.004;
   }
   if (input.demoId === "smart-city" && input.cameraPreset === "hero") {
     yawRadians = -0.72;
@@ -87,14 +84,14 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
   if (input.demoId === "ocean-observatory" && input.cameraPreset === "hero" && authoredReady) {
     bounds = { min: [-6.2, -1.0, -5.2], max: [6.2, 3.1, 3.75] };
   }
-  if (input.demoId === "product-configurator" && input.cameraPreset === "hero" && authoredReady) {
-    bounds = {
-      min: PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT.frame.boundsMin,
-      max: PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT.frame.boundsMax
-    };
-  }
+	if (input.demoId === "product-configurator" && input.cameraPreset === "hero" && authoredReady) {
+		bounds = {
+			min: [-1.54, -0.96, -0.98],
+			max: [1.54, 0.55, 0.98]
+		};
+	}
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
-    bounds = { min: [-0.32, -0.3, -0.3], max: [0.34, 0.38, 0.34] };
+    bounds = { min: [-0.2, -0.18, -0.18], max: [0.2, 0.24, 0.2] };
   }
   if (input.demoId === "reactor-post" && input.cameraPreset === "hero" && authoredReady) {
     bounds = { min: [-2.82, -0.6, -2.88], max: [2.82, 2.32, 2.16] };
@@ -129,13 +126,13 @@ export function applyGalleryRoutePostprocessPolicy(
   controls: ControlValues
 ): RendererPostProcessOptions | false {
   if (value === false) return false;
-  if (demoId === "product-configurator") {
-    return {
-      ...value,
-      bloom: false,
-      fxaa: boundedGalleryFxaa(value.fxaa, { edgeThreshold: 0.1, subpixelBlend: 0.24 })
-    };
-  }
+	if (demoId === "product-configurator") {
+		return {
+			...value,
+			bloom: false,
+			fxaa: { edgeThreshold: 0.16, subpixelBlend: 0.16 }
+		};
+	}
   if (demoId === "data-galaxy") {
     return {
       ...value,
@@ -151,12 +148,13 @@ export function applyGalleryRoutePostprocessPolicy(
 export function rendererEnvironmentLightingCompositionOptionsForRoute(
   demoId: DemoDefinition["id"]
 ): EnvironmentLightingCompositionOptions {
-  if (demoId !== "product-configurator") return {};
-  return {
-    minimumEnvironmentMapIntensity: 0.78,
-    minimumEnvironmentMapSpecularIntensity: 0.76
-  };
-}
+		if (demoId !== "product-configurator") return {};
+		return {
+			environmentMapIntensity: 0.16,
+			environmentMapSpecularIntensity: 0.014,
+			sampledReplacesProceduralMap: false
+		};
+	}
 
 function boundedGalleryFxaa(
   value: RendererPostProcessOptions["fxaa"],
@@ -346,7 +344,12 @@ export function routeReceivesWaterRipples(demoId: DemoDefinition["id"]): boolean
 }
 
 export function maxCanvasBackingEdgeForRoute(demoId: DemoDefinition["id"]): number {
+  if (demoId === "product-configurator") return 3200;
   return demoId === "reactor-post" ? 2160 : 2560;
+}
+
+export function minimumCanvasBackingDprForRoute(demoId: DemoDefinition["id"]): number {
+  return demoId === "product-configurator" ? 2 : 1;
 }
 
 function filterByLabel(items: readonly RenderItem[], predicate: (label: string) => boolean): RenderItem[] {

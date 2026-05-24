@@ -387,13 +387,47 @@ function sampleEquirect(
 ): readonly [number, number, number] {
   const u = 0.5 + Math.atan2(direction[2], direction[0]) / (Math.PI * 2);
   const v = 0.5 - Math.asin(clamp(direction[1], -1, 1)) / Math.PI;
-  const x = wrap(Math.floor(u * source.width), source.width);
-  const y = clamp(Math.floor(v * source.height), 0, source.height - 1);
-  const offset = (y * source.width + x) * 4;
+  const sampleX = u * source.width - 0.5;
+  const sampleY = v * source.height - 0.5;
+  const x0 = Math.floor(sampleX);
+  const y0 = Math.floor(sampleY);
+  const x1 = x0 + 1;
+  const y1 = y0 + 1;
+  const tx = sampleX - x0;
+  const ty = sampleY - y0;
+  const topLeft = sampleEquirectTexel(source, x0, y0);
+  const topRight = sampleEquirectTexel(source, x1, y0);
+  const bottomLeft = sampleEquirectTexel(source, x0, y1);
+  const bottomRight = sampleEquirectTexel(source, x1, y1);
+  const top = mixRgb(topLeft, topRight, tx);
+  const bottom = mixRgb(bottomLeft, bottomRight, tx);
+  return mixRgb(top, bottom, ty);
+}
+
+function sampleEquirectTexel(
+  source: LinearHdrEnvironmentMapSource,
+  x: number,
+  y: number
+): readonly [number, number, number] {
+  const pixelX = wrap(x, source.width);
+  const pixelY = clamp(y, 0, source.height - 1);
+  const offset = (pixelY * source.width + pixelX) * 4;
   return [
     Math.max(0, source.data[offset] ?? 0),
     Math.max(0, source.data[offset + 1] ?? 0),
     Math.max(0, source.data[offset + 2] ?? 0)
+  ];
+}
+
+function mixRgb(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+  t: number
+): readonly [number, number, number] {
+  return [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t
   ];
 }
 

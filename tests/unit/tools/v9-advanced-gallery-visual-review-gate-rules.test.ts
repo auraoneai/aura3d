@@ -372,6 +372,15 @@ describe("V9 advanced gallery visual review gate rules", () => {
 
     expect(productBlockers).toContain("product-configurator accepted screenshot localContrast 20.817365 is below the 35 premium visual floor.");
     expect(productBlockers).toContain("product-configurator accepted screenshot detailEdgeDensity 0.008396 is below the 0.028 product material/detail floor.");
+    expect(acceptedRuntimeEvidenceBlockers({
+      ...validAcceptedMetadata,
+      demoId: "product-configurator",
+      runtime: { fps: 24, frameMs: 40 },
+      pngStats: {
+        detailEdgeDensity: 0.034286,
+        localContrast: 32.850988
+      }
+    })).toContain("product-configurator accepted screenshot localContrast 32.850988 is below the 35 premium visual floor.");
 
     expect(acceptedRuntimeEvidenceBlockers({
       ...validAcceptedMetadata,

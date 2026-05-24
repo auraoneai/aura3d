@@ -207,6 +207,15 @@ export type {
   GLTFDracoStatus,
   GLTFMeshoptDecoderModule
 } from "./GLTFCompressionDecoders";
+export {
+  applyCarConceptMaterialStability,
+  carConceptMaterialRenderStateOverrides
+} from "./CarConceptMaterialStability";
+export type {
+  CarConceptMaterialBaseline,
+  CarConceptMaterialStabilityOptions,
+  CarConceptMaterialStabilityProfile
+} from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
 export { GLTFLoader } from "./GLTFLoader";
@@ -256,6 +265,7 @@ export {
 export type {
   DecodedGLTFImage,
   GLTFImageDecoder,
+  GLTFMaterialRenderStateOverride,
   GLTFMaterialOverrideQuery,
   GLTFMaterialOverrideTarget,
   GLTFRenderableBinding,

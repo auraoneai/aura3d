@@ -19,7 +19,7 @@ import {
   loadV6GLTFRenderPipeline,
   type V6GLTFRenderPipeline
 } from "../../../assets/src/v6/V6GLTFRenderPipeline";
-import type { GLTFRendererInputOptions } from "../../../assets/src/GLTFRenderResources";
+import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "../../../assets/src/GLTFRenderResources";
 import { DirectionalLight, composeMat4 } from "../../../scene/src/index";
 
 export interface G3DViewport {
@@ -103,6 +103,7 @@ export interface G3DGltfSceneOptions {
   readonly materialVariant?: string;
   readonly sceneIndex?: number;
   readonly sceneName?: string;
+  readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
   readonly viewport?: G3DViewport;
   readonly rendererInput?: GLTFRendererInputOptions;
 }
@@ -218,6 +219,7 @@ export async function loadGltfScene(input: string | G3DGltfSceneOptions): Promis
     ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
     ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
+    ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
     ...(options.rendererInput ? { rendererInput: options.rendererInput } : {})
   });
   return new G3DGltfScene(pipeline);

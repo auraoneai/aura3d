@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import {
+  applyProductConfiguratorOriginalCarMaterialQualityCorrections,
   applyProductConfiguratorRuntimeMaterialControls,
   createProductConfiguratorShowcaseLayout,
   explodedProductPartOffset,
@@ -11,7 +12,8 @@ import {
   isProductConfiguratorProceduralArtifactLabel,
   productConfiguratorImportedMaterialControlPlan,
   productConfiguratorFocusOffset,
-  productConfiguratorMaterialOverrideTargetCount
+  productConfiguratorMaterialOverrideTargetCount,
+  productConfiguratorOriginalCarRenderStateOverrides
 } from "../../../apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy";
 import {
   configuredAuthoredAssetIdsForDemo
@@ -21,14 +23,199 @@ import {
 } from "../../../apps/v9-advanced-examples-gallery/src/authoredAssets";
 
 describe("v9 product configurator policy", () => {
-  it("keeps original Product GLB material appearance out of authoredLayer route corrections", () => {
+  it("keeps original Product GLB corrections texture-preserving and out of generated fixture paths", () => {
     const authoredLayerSource = readFileSync("apps/v9-advanced-examples-gallery/src/authoredLayer.ts", "utf8");
 
-    expect(authoredLayerSource).not.toContain('assetId === "car-concept"');
+    expect(authoredLayerSource).toContain("isProductConfiguratorOriginalProductAssetId(assetId)");
     expect(authoredLayerSource).not.toContain('assetId === "chronograph-watch"');
-    expect(authoredLayerSource).not.toContain("Paint 2 Carmine");
     expect(authoredLayerSource).not.toContain("Band Carbon Fiber Red");
     expect(authoredLayerSource).not.toContain("Glass Face");
+  });
+
+  it("reduces original car paint/glass/tire aliasing while preserving source paint texture roles", () => {
+    const paint = createMaterialTarget("paint-carmine", "Paint 1 Carmine");
+    const secondaryPaint = createMaterialTarget("paint-carmine-secondary", "Paint 2 Carmine");
+    const pearlPaint = createMaterialTarget("paint-pearl", "Paint 1 Pearl");
+    const roof = createMaterialTarget("roof-panel", "Panel Sides");
+    const roofPanel = createMaterialTarget("body-roof-panel", "BodyRoofPanel");
+    const glass = createMaterialTarget("glass", "Glass");
+    const tire = createMaterialTarget("tire", "Tireside");
+    const rim = createMaterialTarget("rim", "Rim1");
+    const disc = createMaterialTarget("disc", "Disc");
+    const hardware = createMaterialTarget("hardware", "Hardware");
+    const mirror = createMaterialTarget("mirror", "Mirror");
+    const dashboard = createMaterialTarget("dashboard", "Dashboard");
+    const defaultNamedMaterial = createMaterialTarget("material-2", "");
+    const interior = createMaterialTarget("interior", "Interior 3 Carmine");
+    const pearlInterior = createMaterialTarget("interior-pearl", "Interior 3 Pearl");
+    const mechanical = createMaterialTarget("mechanical", "Mechanical");
+    const materialLibrary = new Map([
+      [paint.materialKey, paint.material],
+      [secondaryPaint.materialKey, secondaryPaint.material],
+      [pearlPaint.materialKey, pearlPaint.material],
+      [roof.materialKey, roof.material],
+      [roofPanel.materialKey, roofPanel.material],
+      [glass.materialKey, glass.material],
+      [tire.materialKey, tire.material],
+      [rim.materialKey, rim.material],
+      [disc.materialKey, disc.material],
+      [hardware.materialKey, hardware.material],
+      [mirror.materialKey, mirror.material],
+      [dashboard.materialKey, dashboard.material],
+      [defaultNamedMaterial.materialKey, defaultNamedMaterial.material],
+      [interior.materialKey, interior.material],
+      [pearlInterior.materialKey, pearlInterior.material],
+      [mechanical.materialKey, mechanical.material]
+    ]);
+
+    applyProductConfiguratorOriginalCarMaterialQualityCorrections(materialLibrary as never);
+
+    expect(paint.material.parameters.get("u_baseColorTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+    expect(paint.material.parameters.get("u_normalScale")).toBe(0.035);
+				expect(paint.material.parameters.get("u_baseColor")).toEqual([0.64, 0.008, 0.004, 1]);
+    expect(paint.material.parameters.get("u_metallicRoughnessTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_occlusionTextureEnabled")).toBe(1);
+			expect(paint.material.parameters.get("u_occlusionStrength")).toBe(0.035);
+    expect(paint.material.parameters.get("u_specularTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_specularColorTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_metallic")).toBe(0);
+					expect(paint.material.parameters.get("u_roughness")).toBe(0.37);
+					expect(paint.material.parameters.get("u_specularFactor")).toBe(0.22);
+					expect(paint.material.parameters.get("u_specularColorFactor")).toEqual([0.28, 0.05, 0.034]);
+    expect(paint.material.parameters.get("u_clearcoatTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_clearcoatRoughnessTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_clearcoatNormalTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_clearcoatNormalScale")).toBe(0);
+				expect(paint.material.parameters.get("u_clearcoatFactor")).toBe(0.28);
+					expect(paint.material.parameters.get("u_clearcoatRoughnessFactor")).toBe(0.58);
+    expect(paint.material.parameters.get("u_iridescenceTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_iridescenceThicknessTextureEnabled")).toBe(0);
+    expect(paint.material.parameters.get("u_iridescenceFactor")).toBe(0);
+					expect(paint.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.055);
+				expect(secondaryPaint.material.parameters.get("u_baseColor")).toEqual([0.64, 0.008, 0.004, 1]);
+    expect(secondaryPaint.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+    expect(pearlPaint.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+				expect(pearlPaint.material.parameters.get("u_baseColor")).toEqual([0.42, 0.43, 0.44, 1]);
+				expect(pearlPaint.material.parameters.get("u_normalScale")).toBe(0.012);
+				expect(pearlPaint.material.parameters.get("u_roughness")).toBe(0.58);
+				expect(pearlPaint.material.parameters.get("u_specularFactor")).toBe(0.08);
+				expect(pearlPaint.material.parameters.get("u_specularColorFactor")).toEqual([0.08, 0.085, 0.09]);
+				expect(pearlPaint.material.parameters.get("u_clearcoatFactor")).toBe(0.08);
+				expect(pearlPaint.material.parameters.get("u_clearcoatRoughnessFactor")).toBe(0.66);
+				expect(pearlPaint.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.018);
+					expect(roof.material.parameters.get("u_baseColor")).toEqual([0.026, 0.008, 0.006, 1]);
+    expect(roof.material.parameters.get("u_baseColorTextureEnabled")).toBe(0);
+    expect(roof.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+    expect(roof.material.parameters.get("u_normalScale")).toBe(0.06);
+    expect(roof.material.parameters.get("u_metallicRoughnessTextureEnabled")).toBe(0);
+    expect(roof.material.parameters.get("u_occlusionTextureEnabled")).toBe(1);
+			expect(roof.material.parameters.get("u_occlusionStrength")).toBe(0.1);
+    expect(roof.material.parameters.get("u_specularTextureEnabled")).toBe(0);
+    expect(roof.material.parameters.get("u_specularColorTextureEnabled")).toBe(0);
+    expect(roof.material.parameters.get("u_metallic")).toBe(0);
+			expect(roof.material.parameters.get("u_roughness")).toBe(0.5);
+				expect(roof.material.parameters.get("u_specularFactor")).toBe(0.12);
+				expect(roof.material.parameters.get("u_specularColorFactor")).toEqual([0.12, 0.035, 0.024]);
+					expect(roof.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.045);
+						expect(roofPanel.material.parameters.get("u_baseColor")).toEqual([0.56, 0.58, 0.6, 1]);
+			expect(roofPanel.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+				expect(roofPanel.material.parameters.get("u_normalScale")).toBe(0.035);
+						expect(roofPanel.material.parameters.get("u_roughness")).toBe(0.44);
+						expect(roofPanel.material.parameters.get("u_specularFactor")).toBe(0.18);
+						expect(roofPanel.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.055);
+						expect(glass.material.parameters.get("u_baseColor")).toEqual([0.008, 0.014, 0.018, 1]);
+    expect(glass.material.parameters.get("u_baseColorTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_normalTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_metallicRoughnessTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_occlusionTextureEnabled")).toBe(1);
+		expect(glass.material.parameters.get("u_occlusionStrength")).toBe(0.025);
+    expect(glass.material.parameters.get("u_specularTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_specularColorTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_iorTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_transmissionTextureEnabled")).toBe(0);
+    expect(glass.material.parameters.get("u_transmissionFactor")).toBe(0);
+    expect(glass.material.parameters.get("u_diffuseTransmissionFactor")).toBe(0);
+    expect(glass.material.parameters.get("u_transmissionFallbackEnergy")).toBe(0);
+    expect(glass.material.parameters.get("u_volumeThicknessFactor")).toBe(0);
+    expect(glass.material.parameters.get("u_transmissionParallaxStrength")).toBe(0);
+    expect(glass.material.parameters.get("u_ior")).toBe(1);
+    expect(glass.material.parameters.get("u_metallic")).toBe(0);
+						expect(glass.material.parameters.get("u_roughness")).toBe(0.44);
+						expect(glass.material.parameters.get("u_specularFactor")).toBe(0.08);
+						expect(glass.material.parameters.get("u_specularColorFactor")).toEqual([0.035, 0.045, 0.055]);
+						expect(glass.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.024);
+    expect(tire.material.parameters.get("u_baseColor")).toEqual([0.014, 0.014, 0.013, 1]);
+    expect(tire.material.parameters.get("u_baseColorTextureEnabled")).toBe(0);
+    expect(tire.material.parameters.get("u_normalScale")).toBe(0.24);
+    expect(tire.material.parameters.get("u_metallicRoughnessTextureEnabled")).toBe(0);
+    expect(tire.material.parameters.get("u_occlusionTextureEnabled")).toBe(1);
+    expect(tire.material.parameters.get("u_occlusionStrength")).toBe(0.18);
+    expect(tire.material.parameters.get("u_specularTextureEnabled")).toBe(0);
+    expect(tire.material.parameters.get("u_specularColorTextureEnabled")).toBe(0);
+    expect(tire.material.parameters.get("u_metallic")).toBe(0);
+    expect(tire.material.parameters.get("u_roughness")).toBe(0.8);
+    expect(tire.material.parameters.get("u_specularFactor")).toBe(0.035);
+    expect(tire.material.parameters.get("u_specularColorFactor")).toEqual([0.035, 0.035, 0.034]);
+	    expect(tire.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.008);
+		expect(rim.material.parameters.get("u_baseColor")).toEqual([0.23, 0.24, 0.25, 1]);
+    expect(rim.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+    expect(rim.material.parameters.get("u_normalScale")).toBe(0.05);
+    expect(rim.material.parameters.get("u_occlusionTextureEnabled")).toBe(1);
+    expect(rim.material.parameters.get("u_occlusionStrength")).toBe(0.06);
+    expect(rim.material.parameters.get("u_metallic")).toBe(0.86);
+		expect(rim.material.parameters.get("u_roughness")).toBe(0.34);
+		expect(rim.material.parameters.get("u_specularFactor")).toBe(0.28);
+		expect(rim.material.parameters.get("u_specularColorFactor")).toEqual([0.28, 0.26, 0.22]);
+    expect(rim.material.parameters.get("u_emissiveTextureEnabled")).toBe(0);
+    expect(rim.material.parameters.get("u_emissiveStrength")).toBe(0.02);
+		expect(disc.material.parameters.get("u_baseColor")).toEqual([0.86, 0.82, 0.72, 1]);
+    expect(disc.material.parameters.get("u_baseColorTextureEnabled")).toBe(1);
+    expect(disc.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+    expect(disc.material.parameters.get("u_metallicRoughnessTextureEnabled")).toBe(0);
+    expect(disc.material.parameters.get("u_specularTextureEnabled")).toBe(0);
+    expect(disc.material.parameters.get("u_specularColorTextureEnabled")).toBe(0);
+		expect(disc.material.parameters.get("u_specularFactor")).toBe(0.28);
+		expect(disc.material.parameters.get("u_specularColorFactor")).toEqual([0.28, 0.26, 0.22]);
+			expect(disc.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.055);
+    expect(hardware.material.parameters.get("u_baseColor")).toEqual([0.018, 0.017, 0.018, 1]);
+    expect(hardware.material.parameters.get("u_normalScale")).toBe(0);
+    expect(hardware.material.parameters.get("u_emissiveTextureEnabled")).toBe(0);
+    expect(hardware.material.parameters.get("u_emissiveStrength")).toBe(0);
+    expect(hardware.material.parameters.get("u_occlusionStrength")).toBe(0.02);
+    expect(hardware.material.parameters.get("u_metallic")).toBe(0);
+    expect(mirror.material.parameters.get("u_emissiveTextureEnabled")).toBe(0);
+    expect(mirror.material.parameters.get("u_baseColor")).toEqual([0.018, 0.017, 0.018, 1]);
+    expect(mirror.material.parameters.get("u_specularFactor")).toBe(0.04);
+    expect(mirror.material.parameters.get("u_specularColorFactor")).toEqual([0.055, 0.05, 0.045]);
+    expect(dashboard.material.parameters.get("u_emissiveStrength")).toBe(0.22);
+    expect(defaultNamedMaterial.material.parameters.get("u_emissiveTextureEnabled")).toBe(0);
+    expect(defaultNamedMaterial.material.parameters.get("u_occlusionStrength")).toBe(0.02);
+    expect(defaultNamedMaterial.material.parameters.get("u_specularColorFactor")).toEqual([0.055, 0.05, 0.045]);
+    expect(interior.material.parameters.get("u_normalScale")).toBe(0.09);
+    expect(interior.material.parameters.get("u_occlusionStrength")).toBe(0.06);
+    expect(interior.material.parameters.get("u_baseColor")).toEqual([0.48, 0.08, 0.055, 1]);
+    expect(pearlInterior.material.parameters.get("u_baseColor")).toEqual([0.18, 0.158, 0.138, 1]);
+    expect(mechanical.material.parameters.get("u_baseColor")).toEqual([0.016, 0.015, 0.014, 1]);
+    expect(mechanical.material.parameters.get("u_normalTextureEnabled")).toBe(1);
+    expect(mechanical.material.parameters.get("u_normalScale")).toBe(0.08);
+    expect(mechanical.material.parameters.get("u_occlusionStrength")).toBe(0.12);
+    expect(mechanical.material.parameters.get("u_metallic")).toBe(0);
+    expect(mechanical.material.parameters.get("u_specularFactor")).toBe(0.035);
+	    expect(mechanical.material.parameters.get("u_materialEnvironmentSpecularScale")).toBe(0.01);
+  });
+
+  it("routes original car render-state cleanup through GLTF render resources", () => {
+    const authoredLayerSource = readFileSync("apps/v9-advanced-examples-gallery/src/authoredLayer.ts", "utf8");
+    const overrides = productConfiguratorOriginalCarRenderStateOverrides();
+
+    expect(authoredLayerSource).toContain("materialRenderStateOverrides: productConfiguratorOriginalCarRenderStateOverrides()");
+    expect(overrides).toHaveLength(3);
+    expect(overrides[0]?.renderState).toMatchObject({ cullMode: "back", blend: false, depthWrite: true });
+    expect(String(overrides[0]?.materialName)).toContain("Pearl");
+    expect(String(overrides[2]?.materialName)).toContain("Interior");
+    expect(overrides[1]?.renderState).toMatchObject({ cullMode: "back", blend: false, depthWrite: true });
+    expect(overrides[1]?.reason).toContain("pale HDR silhouette speckle");
   });
 
   it("keeps procedural cleanup labels explicit and narrow", () => {
@@ -60,11 +247,11 @@ describe("v9 product configurator policy", () => {
 
     expect(ids).toEqual(["car-concept"]);
     expect(layout.items.map((item) => item.assetId)).toEqual(ids);
-    expect(layout.items.find((item) => item.assetId === "car-concept")?.targetHeight).toBe(0.86);
+    expect(layout.items.find((item) => item.assetId === "car-concept")?.targetHeight).toBe(0.92);
     expect(layout.items.find((item) => item.assetId === "chronograph-watch")).toBeUndefined();
     expect(layout.items.find((item) => item.assetId === "sunglasses-khronos")).toBeUndefined();
     expect(layout.items.find((item) => item.assetId === "materials-variants-shoe")).toBeUndefined();
-    expect(layout.frame.heroPaddingRatio).toBe(0.012);
+    expect(layout.frame.heroPaddingRatio).toBe(0.02);
     expect(ids.every(isProductConfiguratorOriginalProductAssetId)).toBe(true);
     expect(ids.some(isGeneratedProductConfiguratorFixtureAssetId)).toBe(false);
 
@@ -177,6 +364,7 @@ function createMaterialTarget(
   variants: readonly string[] = []
 ) {
   const material = {
+    name: sourceMaterialName,
     parameters: new Map<string, unknown>(),
     setParameter(name: string, value: unknown): void {
       this.parameters.set(name, value);

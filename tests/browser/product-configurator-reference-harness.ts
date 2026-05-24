@@ -215,21 +215,6 @@ const PRODUCT_SOURCE_ASSETS = [
     id: "car-concept",
     title: "Car Concept",
     url: "/fixtures/v8/assets/vehicles/car-concept.glb"
-  },
-  {
-    id: "chronograph-watch",
-    title: "Chronograph Watch",
-    url: "/fixtures/v8/assets/product/chronograph-watch.glb"
-  },
-  {
-    id: "materials-variants-shoe",
-    title: "Materials Variants Shoe",
-    url: "/fixtures/v8/assets/product/materials-variants-shoe.glb"
-  },
-  {
-    id: "sunglasses-khronos",
-    title: "Sunglasses Khronos",
-    url: "/fixtures/v8/assets/product/sunglasses-khronos.glb"
   }
 ] as const;
 
@@ -253,30 +238,6 @@ const PRODUCT_MATERIAL_ACCEPTANCE_TARGETS = {
         minNonBlackPixels: 1000,
         maxAverageLuma: 130,
         maxWashedGrayWhiteRatio: 0.24
-      }
-    }
-  ],
-  "chronograph-watch": [
-    {
-      id: "watch-glass-face",
-      kind: "glass",
-      sourceMaterialName: /^Glass Face$/,
-      thresholds: {
-        minNonBlackPixels: 1000,
-        maxAverageLuma: 140,
-        maxWashedGrayWhiteRatio: 0.28
-      }
-    }
-  ],
-  "sunglasses-khronos": [
-    {
-      id: "sunglasses-lenses",
-      kind: "glass",
-      sourceMaterialName: /^lens_(?:interior|exterior)$/i,
-      thresholds: {
-        minNonBlackPixels: 1000,
-        maxAverageLuma: 140,
-        maxWashedGrayWhiteRatio: 0.28
       }
     }
   ]

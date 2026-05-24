@@ -8,6 +8,8 @@ import {
   pbrEnvironmentLight,
   pbrF0,
   pbrFresnelSchlick,
+  pbrFresnelSchlickRoughnessSpecular,
+  pbrFresnelSchlickSpecular,
   pbrGeometrySmithGgxCorrelated,
   pbrPhotometricConformanceSuite,
   pbrReferenceFinite,
@@ -36,6 +38,17 @@ describe("PBR reference math", () => {
     expect(dielectric).toEqual([expect.closeTo(0.04, 6), expect.closeTo(0.04, 6), expect.closeTo(0.04, 6)]);
     expect(metal).toEqual([expect.closeTo(0.8, 6), expect.closeTo(0.32, 6), expect.closeTo(0.12, 6)]);
     expect(pbrReferenceLuminance(metal)).toBeGreaterThan(pbrReferenceLuminance(dielectric));
+  });
+
+  it("lets low-specular imported materials suppress grazing white Fresnel", () => {
+    const f0 = [0.0024, 0.00022, 0.00018] as const;
+    const directLow = pbrFresnelSchlickSpecular(f0, 0.02, 0.06);
+    const directDefault = pbrFresnelSchlick(f0, 0.02);
+    const environmentLow = pbrFresnelSchlickRoughnessSpecular(f0, 0.04, 0.82, 0.015);
+
+    expect(pbrReferenceLuminance(directLow)).toBeLessThan(0.06);
+    expect(pbrReferenceLuminance(directLow)).toBeLessThan(pbrReferenceLuminance(directDefault) * 0.08);
+    expect(pbrReferenceLuminance(environmentLow)).toBeLessThan(0.004);
   });
 
   it("keeps direct and environment light finite while responding to material changes", () => {

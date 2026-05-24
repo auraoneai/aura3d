@@ -160,9 +160,21 @@ export function pbrFresnelSchlick(f0: Vec3, vDotH: number): Vec3 {
   return add(f0, multiplyScalar(subtract([1, 1, 1], f0), f));
 }
 
+export function pbrFresnelSchlickSpecular(f0: Vec3, vDotH: number, specularFactor: number): Vec3 {
+  const f = Math.pow(pbrSaturate(1 - vDotH), 5);
+  const f90 = Math.max(pbrSaturate(specularFactor), ...f0);
+  return add(f0, multiplyScalar(subtract([f90, f90, f90], f0), f));
+}
+
 export function pbrFresnelSchlickRoughness(f0: Vec3, nDotV: number, roughness: number): Vec3 {
   const smoothness = 1 - pbrSaturate(roughness);
   return add(f0, multiplyScalar(subtract(maxVec([smoothness, smoothness, smoothness], f0), f0), Math.pow(pbrSaturate(1 - nDotV), 5)));
+}
+
+export function pbrFresnelSchlickRoughnessSpecular(f0: Vec3, nDotV: number, roughness: number, specularFactor: number): Vec3 {
+  const smoothness = 1 - pbrSaturate(roughness);
+  const f90 = Math.max(pbrSaturate(smoothness * specularFactor), ...f0);
+  return add(f0, multiplyScalar(subtract([f90, f90, f90], f0), Math.pow(pbrSaturate(1 - nDotV), 5)));
 }
 
 export function pbrDistributionGgx(nDotH: number, roughness: number): number {
@@ -211,7 +223,7 @@ export function pbrDirectLight(input: PbrDirectLightInput): Vec3 {
   const specularFactor = input.specularFactor ?? 1;
   const specularColorFactor = input.specularColorFactor ?? [1, 1, 1];
   const f0 = pbrF0(input.albedo, input.metallic, specularFactor, specularColorFactor);
-  const fresnel = pbrFresnelSchlick(f0, vDotH);
+  const fresnel = pbrFresnelSchlickSpecular(f0, vDotH, specularFactor);
   const distribution = pbrDistributionGgx(nDotH, input.roughness);
   const geometry = pbrGeometrySmithGgxCorrelated(nDotV, nDotL, input.roughness);
   const specular = multiplyScalar(fresnel, distribution * geometry);
@@ -230,7 +242,7 @@ export function pbrEnvironmentLight(input: PbrEnvironmentLightInput): Vec3 {
   const specularFactor = input.specularFactor ?? 1;
   const specularColorFactor = input.specularColorFactor ?? [1, 1, 1];
   const f0 = pbrF0(input.albedo, input.metallic, specularFactor, specularColorFactor);
-  const fresnel = pbrFresnelSchlickRoughness(f0, nDotV, input.roughness);
+  const fresnel = pbrFresnelSchlickRoughnessSpecular(f0, nDotV, input.roughness, specularFactor);
   const kd = multiplyScalar(subtract([1, 1, 1], fresnel), 1 - pbrSaturate(input.metallic));
   const diffuse = multiply(multiply(kd, input.albedo), input.diffuseIrradiance);
   const specular = multiply(input.specularRadiance, fresnel);

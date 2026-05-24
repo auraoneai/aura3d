@@ -20,7 +20,10 @@ describe("product showcase layout", () => {
     ]);
     expect(layout.items.find((item) => item.slot === "hero")).toMatchObject({
       assetId: "car-concept",
-      targetHeight: 0.86,
+      position: [-0.28, -0.88, 0.0],
+      targetHeight: 0.92,
+      yawRadians: -0.38,
+      turntableSpeedRadiansPerSecond: 0.001,
       defaultMaterialVariant: "Carmine Candy"
     });
     expect(layout.items.find((item) => item.slot === "left-detail")).toMatchObject({
@@ -36,9 +39,9 @@ describe("product showcase layout", () => {
       defaultMaterialVariant: "beach"
     });
     expect(layout.frame).toEqual({
-      boundsMin: [-1.36, -1.02, -0.84],
-      boundsMax: [1.36, 0.5, 0.94],
-      heroPaddingRatio: 0.012
+      boundsMin: [-1.3, -1.0, -0.78],
+      boundsMax: [1.3, 0.5, 0.86],
+      heroPaddingRatio: 0.02
     });
     expect(layout.limitations.join(" ")).toContain("secondary products remain loaded but are kept outside the default hero frame");
     expect(layout.limitations.join(" ")).toContain("does not infer a semantic part graph");

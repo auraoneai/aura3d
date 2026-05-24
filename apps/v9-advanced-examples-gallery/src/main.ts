@@ -31,6 +31,7 @@ import {
   applyGalleryRoutePostprocessPolicy,
   composeGalleryRouteRenderItems,
   maxCanvasBackingEdgeForRoute,
+  minimumCanvasBackingDprForRoute,
   rendererEnvironmentLightingCompositionOptionsForRoute,
   routeReceivesWaterRipples,
   usesProductConfiguratorHotspotPicking,
@@ -322,6 +323,7 @@ let lastRafWindowMinMs = 0;
 let lastRafWindowMaxMs = 0;
 let lastRafWindowLongFrames = 0;
 let currentRafWindowSamples = 0;
+let currentRafWindowTotalMs = 0;
 let currentRafWindowMinMs = Number.POSITIVE_INFINITY;
 let currentRafWindowMaxMs = 0;
 let currentRafWindowLongFrames = 0;
@@ -366,6 +368,7 @@ async function run(): Promise<void> {
         lastRafIntervalMs = Math.max(0, now - lastTime);
         recordObservedRafStall(lastRafIntervalMs);
         const delta = Math.min(lastRafIntervalMs / 1000, 0.05);
+        let fpsSampleIntervalMs = lastRafIntervalMs;
         lastTime = now;
         frameCount += 1;
         const renderSize = syncCanvasSize();
@@ -394,9 +397,10 @@ async function run(): Promise<void> {
           authoredReadyMs = authoredFinishedAt - routeStartedAt;
           resetFpsWindow(now);
           resetSteadyStateWork(frameCount);
+          fpsSampleIntervalMs = 0;
           fpsReadyResetDemoId = selectedDemo.id;
         }
-        recordFpsSample(now, lastRafIntervalMs);
+        recordFpsSample(now, fpsSampleIntervalMs);
         const proceduralItems = visibleProceduralItemsForRoute(scene, selectedDemo.id, authored.runtime);
         const renderItems = composeGalleryRouteRenderItems(selectedDemo.id, proceduralItems, authored.items);
         const cameraStartedAt = performance.now();
@@ -809,7 +813,7 @@ function syncCanvasSize(): { readonly width: number; readonly height: number } {
   const rect = canvas.getBoundingClientRect();
   const cssWidth = rect.width > 0 ? rect.width : window.innerWidth;
   const cssHeight = rect.height > 0 ? rect.height : window.innerHeight;
-  const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+  const dpr = Math.min(2, Math.max(minimumCanvasBackingDprForRoute(selectedDemo.id), window.devicePixelRatio || 1));
   const maxEdge = maxCanvasBackingEdgeForRoute(selectedDemo.id);
   const edgeScale = Math.min(1, maxEdge / Math.max(cssWidth * dpr, cssHeight * dpr));
   const width = Math.max(1, Math.round(cssWidth * dpr * edgeScale));
@@ -1230,6 +1234,7 @@ function resetFpsWindow(now: number): void {
   lastRafWindowMaxMs = 0;
   lastRafWindowLongFrames = 0;
   currentRafWindowSamples = 0;
+  currentRafWindowTotalMs = 0;
   currentRafWindowMinMs = Number.POSITIVE_INFINITY;
   currentRafWindowMaxMs = 0;
   currentRafWindowLongFrames = 0;
@@ -1243,10 +1248,13 @@ function resetSteadyStateWork(startedFrame: number): void {
 function recordFpsSample(now: number, intervalMs: number): void {
   fpsFrames += 1;
   if (intervalMs > 0) {
-    currentRafWindowSamples += 1;
-    currentRafWindowMinMs = Math.min(currentRafWindowMinMs, intervalMs);
-    currentRafWindowMaxMs = Math.max(currentRafWindowMaxMs, intervalMs);
-    if (intervalMs > 50) currentRafWindowLongFrames += 1;
+    if (intervalMs <= 1000) {
+      currentRafWindowSamples += 1;
+      currentRafWindowTotalMs += intervalMs;
+      currentRafWindowMinMs = Math.min(currentRafWindowMinMs, intervalMs);
+      currentRafWindowMaxMs = Math.max(currentRafWindowMaxMs, intervalMs);
+    }
+    if (intervalMs > 50 && intervalMs <= 1000) currentRafWindowLongFrames += 1;
   }
   if (now - fpsFrom < 500) return;
   lastRafWindowMs = Math.max(1, now - fpsFrom);
@@ -1254,11 +1262,14 @@ function recordFpsSample(now: number, intervalMs: number): void {
   lastRafWindowMinMs = Number.isFinite(currentRafWindowMinMs) ? currentRafWindowMinMs : 0;
   lastRafWindowMaxMs = currentRafWindowMaxMs;
   lastRafWindowLongFrames = currentRafWindowLongFrames;
-  fps = fpsFrames * 1000 / lastRafWindowMs;
-  frameMs = lastRafWindowMs / Math.max(1, fpsFrames);
+  if (currentRafWindowSamples > 0) {
+    frameMs = currentRafWindowTotalMs / currentRafWindowSamples;
+    fps = frameMs > 0 ? 1000 / frameMs : 0;
+  }
   fpsFrames = 0;
   fpsFrom = now;
   currentRafWindowSamples = 0;
+  currentRafWindowTotalMs = 0;
   currentRafWindowMinMs = Number.POSITIVE_INFINITY;
   currentRafWindowMaxMs = 0;
   currentRafWindowLongFrames = 0;

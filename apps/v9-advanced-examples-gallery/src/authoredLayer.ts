@@ -25,11 +25,14 @@ import type { ControlValues } from "./sceneBuilderPrimitives";
 import type { DemoId } from "./metadata";
 import {
   applyProductConfiguratorRuntimeMaterialControls,
+  applyProductConfiguratorOriginalCarMaterialQualityCorrections,
   createProductConfiguratorShowcaseLayout,
   explodedProductPartOffset,
+  isProductConfiguratorOriginalProductAssetId,
   productConfiguratorImportedMaterialControlPlan,
   productConfiguratorFocusOffset,
-  productConfiguratorMaterialOverrideTargetCount
+  productConfiguratorMaterialOverrideTargetCount,
+  productConfiguratorOriginalCarRenderStateOverrides
 } from "./productConfiguratorPolicy";
 
 interface Pipeline {
@@ -582,13 +585,13 @@ export function createAuthoredGalleryLayer(): {
       }
 
       const placement = placementFor(config, pipeline, timeSeconds, controls);
-      if (placement.turntable.enabled) {
+      if (config.turntable) {
         transformDiagnostics.push({
           assetId: record.candidate.id,
           assetTitle: record.candidate.title,
           label: config.label,
           source: "authored-turntable",
-          enabled: true,
+          enabled: placement.turntable.enabled,
           yawRadians: placement.turntable.yawRadians,
           angularVelocityRadiansPerSecond: placement.turntable.angularVelocityRadiansPerSecond,
           timeSeconds
@@ -716,7 +719,10 @@ async function createPipeline(
   disposeAsset: boolean
 ): Promise<Pipeline> {
   const resources = await createGLTFRenderResources(asset, {
-    ...(materialVariant ? { materialVariant } : {})
+    ...(materialVariant ? { materialVariant } : {}),
+    ...(isProductConfiguratorOriginalProductAssetId(candidate.id)
+      ? { materialRenderStateOverrides: productConfiguratorOriginalCarRenderStateOverrides() }
+      : {})
   });
   applyAuthoredMaterialCorrections(candidate.id, materialVariant, resources.materialLibrary);
   return {
@@ -747,6 +753,10 @@ function applyAuthoredMaterialCorrections(
   materialVariant: string | undefined,
   materialLibrary: ReadonlyMap<string, Material>
 ): void {
+  if (isProductConfiguratorOriginalProductAssetId(assetId)) {
+    applyProductConfiguratorOriginalCarMaterialQualityCorrections(materialLibrary);
+  }
+
   if (assetId === "data-galaxy-core-blender") {
     for (const [key, material] of materialLibrary) {
       const name = `${key} ${material.name}`;
@@ -915,7 +925,7 @@ interface PlacementFrame {
 }
 
 function placementFor(config: AuthoredInstanceConfig, pipeline: Pipeline, timeSeconds: number, controls: ControlValues): PlacementFrame {
-  const turntable = Boolean(config.turntable && controls.turntable !== false);
+  const turntable = Boolean(config.turntable && controls.turntable === true);
   const turntableSpeed = turntable ? config.turntableSpeedRadiansPerSecond ?? 0.48 : 0;
   const yaw = (config.yawRadians ?? 0) + turntableSpeed * timeSeconds;
   const explodeOffset = controls.explode === true ? config.explodeOffset ?? [0, 0, 0] as const : [0, 0, 0] as const;
