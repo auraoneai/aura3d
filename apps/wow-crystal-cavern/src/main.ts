@@ -2,9 +2,9 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-crystal-cavern",
-  title: "Authored Glass Product Study",
-  subtitle: "Imported Khronos sunglasses GLB focused on transmission, volume, IOR, iridescence, glass edges, and HDR reflection.",
-  assetId: "sunglasses-khronos",
+  title: "Authored Helmet Studio Study",
+  subtitle: "Current checkout does not include the legacy sunglasses GLB; this route now uses the available Damaged Helmet GLB for HDR reflection, texture detail, and grounded product lighting.",
+  assetId: "damaged-helmet",
   environmentId: "industrial-sunset-puresky",
   controls: {
     yaw: -0.18,

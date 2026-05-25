@@ -13,7 +13,7 @@ import {
   type GLTFRenderResources,
   type V6GLTFRenderMetadata
 } from "@galileo3d/assets";
-import { Material, TextureBinding, type RenderItem, type RenderState, type UniformValue } from "@galileo3d/rendering";
+import { Material, TextureBinding, type RenderItem } from "@galileo3d/rendering";
 import { composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
 import {
   getAuthoredAssetCandidate,
@@ -24,18 +24,17 @@ import {
 import type { ControlValues } from "./sceneBuilderPrimitives";
 import type { DemoId } from "./metadata";
 import {
-  applyProductConfiguratorRuntimeMaterialControls,
-  applyProductConfiguratorOriginalCarRenderableMaterialQualityCorrections,
-  applyProductConfiguratorOriginalCarMaterialQualityCorrections,
-  createProductConfiguratorShowcaseLayout,
-  explodedProductPartOffset,
-  isProductConfiguratorOriginalProductAssetId,
-  productConfiguratorImportedMaterialControlPlan,
-  productConfiguratorFocusOffset,
-  productConfiguratorMaterialOverrideTargetCount,
-  productConfiguratorOriginalCarRenderableRenderState,
-  productConfiguratorOriginalCarRenderStateOverrides
-} from "./productConfiguratorPolicy";
+  applyAuthoredAssetMaterialCorrections,
+  applyAuthoredAssetRuntimeMaterialControls,
+  authoredAssetExplodeOffset,
+  authoredAssetFocusOffset,
+  authoredAssetMaterialOverrideTargetCount,
+  authoredAssetMaterialRenderStateOverrides,
+  authoredImportedMaterialControlPlan,
+  authoredMaterialForImportedRenderable,
+  authoredRouteAssetConfigs,
+  type AuthoredInstanceConfig
+} from "./authoredLayerPolicies";
 
 interface Pipeline {
   readonly asset: GLTFAsset;
@@ -194,27 +193,6 @@ export interface AuthoredLayerFrame {
   readonly runtime: AuthoredAssetRuntimeState;
 }
 
-interface AuthoredInstanceConfig {
-  readonly assetId: AuthoredAssetCandidateId;
-  readonly label: string;
-  readonly position: readonly [number, number, number];
-  readonly scale: readonly [number, number, number];
-  readonly targetHeight?: number;
-  readonly yawRadians?: number;
-  readonly turntable?: boolean;
-  readonly turntableSpeedRadiansPerSecond?: number;
-  readonly animate?: boolean;
-  readonly clipByControl?: Readonly<Record<string, RegExp>>;
-  readonly defaultClip?: RegExp;
-  readonly materialVariantControl?: string;
-  readonly defaultMaterialVariant?: string;
-  readonly explodeOffset?: readonly [number, number, number];
-  readonly explodeParts?: boolean;
-  readonly includeNodePattern?: RegExp;
-  readonly excludeNodePattern?: RegExp;
-  readonly excludeNodeSemanticRoles?: readonly string[];
-}
-
 interface LoadedAssetRecord {
   readonly candidate: AuthoredAssetCandidateRecord;
   readonly startedAt: number;
@@ -223,21 +201,6 @@ interface LoadedAssetRecord {
   error?: string;
 }
 
-const PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT = createProductConfiguratorShowcaseLayout();
-
-function productShowcaseConfig(assetId: AuthoredAssetCandidateId): Omit<AuthoredInstanceConfig, "assetId" | "label" | "turntable" | "explodeParts"> {
-  const item = PRODUCT_CONFIGURATOR_SHOWCASE_LAYOUT.items.find((entry) => entry.assetId === assetId);
-  if (!item) throw new Error(`Missing Product Configurator showcase layout slot for ${assetId}.`);
-  return {
-    position: item.position,
-    scale: item.scale,
-    targetHeight: item.targetHeight,
-    yawRadians: item.yawRadians,
-    turntableSpeedRadiansPerSecond: item.turntableSpeedRadiansPerSecond,
-    ...(item.materialVariantControl ? { materialVariantControl: item.materialVariantControl } : {}),
-    ...(item.defaultMaterialVariant ? { defaultMaterialVariant: item.defaultMaterialVariant } : {})
-  };
-}
 
 interface LoadedAuthoredAsset {
   readonly candidate: AuthoredAssetCandidateRecord;
@@ -256,218 +219,13 @@ interface ImportedItemCollection {
 
 const ZERO_OFFSET: readonly [number, number, number] = [0, 0, 0];
 
-const ROUTE_ASSETS: Readonly<Record<DemoId, readonly AuthoredInstanceConfig[]>> = {
-  "water-lab": [
-    {
-      assetId: "water-cinematic-marina-blender",
-      label: "authored cinematic marina environment",
-      position: [0, -0.84, -0.15],
-      scale: [1, 1, 1],
-      targetHeight: 4.25,
-      yawRadians: 0
-    },
-    {
-      assetId: "duck",
-      label: "authored floating prop",
-      position: [-2.1, -0.22, -0.95],
-      scale: [1, 1, 1],
-      targetHeight: 0.34,
-      yawRadians: 0.42
-    },
-    {
-      assetId: "duck",
-      label: "authored foreground float",
-      position: [1.72, -0.22, 1.35],
-      scale: [1, 1, 1],
-      targetHeight: 0.3,
-      yawRadians: -0.74
-    }
-  ],
-  "ocean-observatory": [
-    {
-      assetId: "ocean-observatory-cinematic-blender",
-      label: "authored cinematic ocean observatory",
-      position: [0, -0.72, 0.35],
-      scale: [1, 1, 1],
-      targetHeight: 4.3,
-      yawRadians: 0
-    },
-    {
-      assetId: "compare-transmission",
-      label: "authored glass material station",
-      position: [3.45, -0.42, 1.35],
-      scale: [1, 1, 1],
-      targetHeight: 0.48,
-      yawRadians: -0.32,
-      excludeNodePattern: /Sphere002_1/i
-    }
-  ],
-  "reactor-post": [
-    {
-      assetId: "reactor-command-center-blender",
-      label: "authored reactor command-center environment",
-      position: [0, -0.74, 0.05],
-      scale: [1, 1, 1],
-      targetHeight: 4.6,
-      yawRadians: -0.08,
-      excludeNodePattern: /batched white hot reactor heart/i
-    },
-  ],
-  "smart-city": [
-    {
-      assetId: "smart-city-district",
-      label: "authored smart-city district west",
-      position: [-2.62, -0.9, 1.82],
-      scale: [1, 1, 1],
-      targetHeight: 1.45,
-      yawRadians: 0.38
-    },
-    {
-      assetId: "smart-city-district",
-      label: "authored smart-city district east",
-      position: [2.42, -0.9, -1.65],
-      scale: [1, 1, 1],
-      targetHeight: 1.34,
-      yawRadians: -0.58
-    },
-    {
-      assetId: "littlest-tokyo",
-      label: "authored Littlest Tokyo animated district",
-      position: [-0.62, -0.82, -0.08],
-      scale: [1, 1, 1],
-      targetHeight: 5.55,
-      yawRadians: -0.34,
-      animate: true,
-      defaultClip: /take|animation|default/i
-    }
-  ],
-  "data-galaxy": [],
-  "product-configurator": [
-    {
-      assetId: "car-concept",
-      label: "original texture-backed concept vehicle hero",
-      ...productShowcaseConfig("car-concept"),
-      turntable: true,
-      explodeParts: true,
-      materialVariantControl: "carVariant"
-    }
-  ],
-  "robotics-lab": [
-    {
-      assetId: "robotics-training-factory-blender",
-      label: "authored robotics training stage environment",
-      position: [0, -0.74, 0.12],
-      scale: [1, 1, 1],
-      targetHeight: 2.15,
-      yawRadians: 0,
-      excludeNodePattern: /overhead motion-capture rail|rear diagnostics status chip|rear status chip backplate|front toe alignment marker|rear sensor datum|side calibration dash|tool nest pocket|tracked foot contact puck|rear low sensor puck|rear overhead status chip|mocap marker|floor route stripe|rear floor timeline tick|rear floor state token|rear floor physical timeline rail|rear floor scrubber parked playhead|low rubber cable trough/i
-    },
-    {
-      assetId: "soldier",
-      label: "authored textured soldier animation",
-      position: [-0.58, -0.62, 0.04],
-      scale: [1, 1, 1],
-      targetHeight: 2.02,
-      yawRadians: 3.36,
-      animate: true,
-      defaultClip: /walk|run|idle/i,
-      clipByControl: {
-        idle: /^idle$/i,
-        training: /^run$/i,
-        inspect: /^walk$/i,
-        handoff: /^walk$/i
-      }
-    },
-    {
-      assetId: "robot-expressive",
-      label: "authored expressive robot animation",
-      position: [0.9, -0.62, 0.16],
-      scale: [1, 1, 1],
-      targetHeight: 1.48,
-      yawRadians: 2.88,
-      animate: true,
-      defaultClip: /idle|dance|walk/i,
-      clipByControl: {
-        idle: /^idle$/i,
-        training: /^dance$/i,
-        inspect: /^wave$/i,
-        handoff: /^thumbsup$/i
-      }
-    },
-    {
-      assetId: "robot-expressive",
-      label: "authored secondary robot operator animation",
-      position: [1.58, -0.62, 0.96],
-      scale: [1, 1, 1],
-      targetHeight: 1.04,
-      yawRadians: 2.7,
-      animate: true,
-      defaultClip: /walk|run|dance|idle/i,
-      clipByControl: {
-        idle: /^idle$/i,
-        training: /walk/i,
-        inspect: /^wave$/i,
-        handoff: /^thumbsup$/i
-      }
-    }
-  ],
-  "physics-playground": [
-    {
-      assetId: "physics-robotics-testbed-blender",
-      label: "authored robotics manipulation testbed",
-      position: [0, -0.7, 0.1],
-      scale: [1, 1, 1],
-      targetHeight: 3.35,
-      yawRadians: -0.18
-    }
-  ],
-  "fog-cathedral": [
-    {
-      assetId: "fog-cathedral-blender",
-      label: "authored fog cathedral environment",
-      position: [0, -0.86, -0.2],
-      scale: [1, 1, 1],
-      targetHeight: 3.8,
-      yawRadians: 0
-    }
-  ],
-  "digital-twin": [
-    {
-      assetId: "digital-twin-factory-blender",
-      label: "authored robotics factory digital twin floor",
-      position: [0, -0.66, -0.15],
-      scale: [1, 1, 1],
-      targetHeight: 3.2,
-      yawRadians: -0.18,
-      excludeNodePattern: /overhead cable loop/i
-    },
-    {
-      assetId: "cesium-milk-truck",
-      label: "authored logistics vehicle",
-      position: [-3.75, -0.7, 1.55],
-      scale: [1, 1, 1],
-      targetHeight: 0.44,
-      yawRadians: 0.95
-    },
-    {
-      assetId: "robot-expressive",
-      label: "authored factory robot actor",
-      position: [3.85, -0.62, 1.64],
-      scale: [1, 1, 1],
-      targetHeight: 0.92,
-      yawRadians: -0.62,
-      animate: true,
-      defaultClip: /idle|dance|walk/i
-    }
-  ]
-};
 
 export function expectedAuthoredAssetCountForDemo(demoId: DemoId): number {
-  return new Set(ROUTE_ASSETS[demoId].map((config) => config.assetId)).size;
+  return new Set(authoredRouteAssetConfigs(demoId).map((config) => config.assetId)).size;
 }
 
 export function configuredAuthoredAssetIdsForDemo(demoId: DemoId): readonly AuthoredAssetCandidateId[] {
-  return [...new Set(ROUTE_ASSETS[demoId].map((config) => config.assetId))];
+  return [...new Set(authoredRouteAssetConfigs(demoId).map((config) => config.assetId))];
 }
 
 export function createAuthoredGalleryLayer(): {
@@ -478,7 +236,7 @@ export function createAuthoredGalleryLayer(): {
   const records = new Map<AuthoredAssetCandidateId, LoadedAssetRecord>();
 
   const prepare = (demoId: DemoId, size: { readonly width: number; readonly height: number }): void => {
-    for (const config of ROUTE_ASSETS[demoId]) {
+    for (const config of authoredRouteAssetConfigs(demoId)) {
       if (records.has(config.assetId)) continue;
       const candidate = getAuthoredAssetCandidate(config.assetId);
       const startedAt = performance.now();
@@ -497,7 +255,7 @@ export function createAuthoredGalleryLayer(): {
   };
 
   const frame = (demoId: DemoId, timeSeconds: number, controls: ControlValues): AuthoredLayerFrame => {
-    const configs = ROUTE_ASSETS[demoId];
+    const configs = authoredRouteAssetConfigs(demoId);
     if (configs.length === 0) return {
       items: [],
       labels: [],
@@ -721,13 +479,12 @@ async function createPipeline(
   materialVariant: string | undefined,
   disposeAsset: boolean
 ): Promise<Pipeline> {
+  const materialRenderStateOverrides = authoredAssetMaterialRenderStateOverrides(candidate.id);
   const resources = await createGLTFRenderResources(asset, {
     ...(materialVariant ? { materialVariant } : {}),
-    ...(isProductConfiguratorOriginalProductAssetId(candidate.id)
-      ? { materialRenderStateOverrides: productConfiguratorOriginalCarRenderStateOverrides() }
-      : {})
+    ...(materialRenderStateOverrides ? { materialRenderStateOverrides } : {})
   });
-  applyAuthoredMaterialCorrections(candidate.id, materialVariant, resources.materialLibrary);
+  applyAuthoredAssetMaterialCorrections(candidate.id, materialVariant, resources.materialLibrary);
   const materialInstanceCache = new Map<string, Material>();
   return {
     asset,
@@ -755,65 +512,6 @@ async function createPipeline(
       }
     }
   };
-}
-
-function applyAuthoredMaterialCorrections(
-  assetId: AuthoredAssetCandidateId,
-  materialVariant: string | undefined,
-  materialLibrary: ReadonlyMap<string, Material>
-): void {
-  if (isProductConfiguratorOriginalProductAssetId(assetId)) {
-    applyProductConfiguratorOriginalCarMaterialQualityCorrections(materialLibrary);
-  }
-
-  if (assetId === "data-galaxy-core-blender") {
-    for (const [key, material] of materialLibrary) {
-      const name = `${key} ${material.name}`;
-      if (/black ceramic data housing|deep graphite observatory deck/i.test(name)) {
-        material.setParameter("u_baseColor", [0.012, 0.025, 0.045, 1]);
-        material.setParameter("u_roughness", 0.72);
-        material.setParameter("u_specularFactor", 0.08);
-        material.setParameter("u_environmentSpecularIntensity", 0.08);
-      }
-      if (/brushed dark titanium/i.test(name)) {
-        material.setParameter("u_baseColor", [0.06, 0.085, 0.11, 1]);
-        material.setParameter("u_roughness", 0.58);
-        material.setParameter("u_specularFactor", 0.14);
-        material.setParameter("u_environmentSpecularIntensity", 0.12);
-      }
-      if (/translucent .* glass/i.test(name)) {
-        material.setParameter("u_transmissionFactor", 0);
-        material.setParameter("u_transmissionFallbackEnergy", 0);
-        material.setParameter("u_roughness", 0.46);
-        material.setParameter("u_specularFactor", 0.08);
-        material.setParameter("u_environmentSpecularIntensity", 0.08);
-      }
-    }
-  }
-
-  if (assetId === "reactor-command-center-blender") {
-    for (const [key, material] of materialLibrary) {
-      const name = `${key} ${material.name}`;
-      if (/cyan reactor emissive|contained reactor focal glow|amber reactor emissive|violet power conduit emissive/i.test(name)) {
-        material.setParameter("u_emissiveStrength", 0.62);
-        material.setParameter("u_roughness", 0.42);
-        material.setParameter("u_specularFactor", 0.14);
-      }
-      if (/transparent reactor energy shell|amber transparent holo glass|soft blue diagnostic panel/i.test(name)) {
-        material.setParameter("u_emissiveStrength", 0.36);
-        material.setParameter("u_transmissionFactor", 0);
-        material.setParameter("u_transmissionFallbackEnergy", 0);
-        material.setParameter("u_roughness", 0.5);
-        material.setParameter("u_specularFactor", 0.08);
-      }
-      if (/dark reactor wall alloy|black anodized machinery|brushed titanium rails/i.test(name)) {
-        material.setParameter("u_roughness", 0.56);
-        material.setParameter("u_specularFactor", 0.18);
-        material.setParameter("u_environmentSpecularIntensity", 0.28);
-      }
-    }
-  }
-
 }
 
 function startupMaterialVariantForConfig(asset: GLTFAsset, config: AuthoredInstanceConfig): string | undefined {
@@ -993,11 +691,9 @@ function collectImportedItems(
   let missingGeometryDrawItems = 0;
   let missingMaterialDrawItems = 0;
   let excludedNodeCount = 0;
-  applyProductConfiguratorRuntimeMaterialControls(config.assetId, pipeline.resources, controls);
-  const materialOverrideTargetCount = config.assetId === "product-configurator-studio-blender"
-    ? productConfiguratorMaterialOverrideTargetCount(pipeline.resources)
-    : 0;
-  const materialControlPlan = productConfiguratorImportedMaterialControlPlan(config.assetId, pipeline.resources, {
+  applyAuthoredAssetRuntimeMaterialControls(config.assetId, pipeline.resources, controls);
+  const materialOverrideTargetCount = authoredAssetMaterialOverrideTargetCount(config.assetId, pipeline.resources);
+  const materialControlPlan = authoredImportedMaterialControlPlan(config.assetId, pipeline.resources, {
     ...(config.materialVariantControl ? { controlKey: config.materialVariantControl } : {}),
     ...(selectedVariant ? { selectedVariant } : {})
   });
@@ -1029,7 +725,7 @@ function collectImportedItems(
       missingMaterialLabels.push(label);
     }
     if (!geometry || !material) continue;
-    const renderMaterial = materialForImportedRenderable(pipeline, config.assetId, material, {
+    const renderMaterial = authoredMaterialForImportedRenderable(pipeline.materialInstanceCache, config.assetId, material, {
       nodeName: node.name,
       geometryKey: renderable.geometry,
       materialKey: renderable.material,
@@ -1069,9 +765,9 @@ function collectImportedItems(
     }
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     const explodeOffset = config.explodeParts === true && controls.explode === true
-      ? explodedProductPartOffset(config.assetId, nodeNamePath(node))
+      ? authoredAssetExplodeOffset(config.assetId, nodeNamePath(node))
       : ZERO_OFFSET;
-    const focusOffset = productConfiguratorFocusOffset(config.assetId, node.name, controls);
+    const focusOffset = authoredAssetFocusOffset(config.assetId, node.name, controls);
     const nodeOffset = addOffset(explodeOffset, focusOffset);
     const nodePlacement = hasOffset(nodeOffset)
       ? multiplyMat4(placement, composeMat4(nodeOffset, [0, 0, 0, 1], [1, 1, 1]))
@@ -1131,46 +827,6 @@ function collectImportedItems(
       missingMaterialLabels
     }
   };
-}
-
-function materialForImportedRenderable(
-  pipeline: Pipeline,
-  assetId: AuthoredAssetCandidateId,
-  sourceMaterial: Material,
-  context: {
-    readonly nodeName: string;
-    readonly geometryKey: string;
-    readonly materialKey: string;
-    readonly sourceMaterialName: string;
-  }
-): Material {
-  if (!isProductConfiguratorOriginalProductAssetId(assetId)) return sourceMaterial;
-  const cacheKey = `${context.materialKey}::${context.geometryKey}::${context.nodeName}`;
-  const cached = pipeline.materialInstanceCache.get(cacheKey);
-  if (cached) return cached;
-
-  const renderState = productConfiguratorOriginalCarRenderableRenderState(sourceMaterial.renderState, context);
-  const material = cloneMaterialForRenderable(sourceMaterial, `${sourceMaterial.name}:${context.nodeName}`, renderState);
-  applyProductConfiguratorOriginalCarRenderableMaterialQualityCorrections(material, context);
-  pipeline.materialInstanceCache.set(cacheKey, material);
-  return material;
-}
-
-function cloneMaterialForRenderable(source: Material, name: string, renderState: RenderState): Material {
-  const parameters: Record<string, UniformValue> = {};
-  for (const [key, value] of source.getParameters()) {
-    parameters[key] = value;
-  }
-  return new Material({
-    name,
-    shaderKey: source.shaderKey,
-    ...(source.shaderVariant ? { shaderVariant: source.shaderVariant } : {}),
-    renderState,
-    parameters,
-    requiredAttributes: source.requiredAttributes,
-    requiredUniforms: source.requiredUniforms,
-    uniformSchema: source.uniformSchema
-  });
 }
 
 function sourceMaterialNameForRenderable(

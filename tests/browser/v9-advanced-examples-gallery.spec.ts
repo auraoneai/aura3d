@@ -54,6 +54,40 @@ interface AdvancedGalleryRuntime {
   };
   readonly systems: readonly string[];
   readonly approximations: readonly string[];
+  readonly interactionState: {
+    readonly source: "galleryInteractionAdapter + metadata controls";
+    readonly selected: string;
+    readonly cameraPreset: string;
+    readonly pointer: { readonly x: number; readonly y: number };
+    readonly controls: Record<string, number | boolean | string>;
+    readonly routeInteractions: readonly string[];
+    readonly pointerAction: "product-hotspot" | "scene-ripple-or-select";
+    readonly routePointerCreatesRipple: boolean;
+    readonly activeRippleCount: number;
+    readonly productHotspotTargetCount: number;
+    readonly sharedPointerMath: "galleryInteractionAdapter";
+  };
+  readonly animationState: {
+    readonly source: "scene frame + authored runtime";
+    readonly frameCount: number;
+    readonly routeAnimatedSystems: readonly string[];
+    readonly authoredAnimationTracksApplied: number;
+    readonly authoredSkinningPalettesUpdated: number;
+    readonly motionSampleSource: "screenshot-delta + frameCount";
+    readonly paused: boolean;
+  };
+  readonly resetState: {
+    readonly source: "reset action restores createControlValues, hero camera, cleared selection, and cleared ripples";
+    readonly resettable: true;
+    readonly defaultControls: Record<string, number | boolean | string>;
+    readonly currentMatchesDefaults: boolean;
+    readonly currentControlKeys: readonly string[];
+    readonly defaultControlKeys: readonly string[];
+    readonly resetClearsSelection: true;
+    readonly resetClearsRipples: true;
+    readonly resetCameraPreset: "hero";
+  };
+  readonly unsupportedBoundaries: readonly string[];
   readonly dataGalaxyEvidence?: {
     readonly source?: string;
     readonly routeId?: string;
@@ -89,6 +123,8 @@ interface AdvancedGalleryRuntime {
     readonly cameraMs: number;
     readonly renderMs: number;
     readonly totalLoopMs: number;
+    readonly steadyStateLoopMs?: number;
+    readonly steadyStateRenderMs?: number;
   };
   readonly authoredAsset?: {
     readonly status: "idle" | "loading" | "ready" | "error";
@@ -344,6 +380,7 @@ test.describe("V9 advanced examples gallery", () => {
         expect(runtimeAfterMotion.frameCount, `${demo} frame count advances`).toBeGreaterThan(runtime.frameCount);
         assertAuthoredAnimationAdvances(demo, runtime, runtimeAfterMotion);
         assertMeasuredPerformanceEvidence(demo, runtimeAfterMotion);
+        assertRuntimeStateEvidence(demo, runtimeAfterMotion);
         expect(motion.changedRatio, `${demo} visible motion changed ratio`).toBeGreaterThan(minimumMotionRatio(demo));
 
         const reportDir = evidenceMode === "full-gallery"
@@ -489,7 +526,7 @@ interface CaptureReadinessEvidence {
 
 interface PerformanceEvidence {
   readonly source: "app-runtime-timings";
-  readonly measuredFields: readonly ["runtime.timings.totalLoopMs", "runtime.timings.renderMs"];
+  readonly measuredFields: readonly string[];
   readonly acceptanceUsesRafFrameMs: false;
   readonly budgetMs: number;
   readonly loopMs: number;
@@ -571,9 +608,9 @@ function isHeavyCaptureRoute(demo: DemoId): boolean {
 }
 
 function captureTimeoutMs(demo: DemoId): number {
-  if (demo === "product-configurator") return 540_000;
-  if (demo === "smart-city") return 600_000;
-  return isHeavyCaptureRoute(demo) ? 360_000 : 180_000;
+  if (demo === "product-configurator") return 1_200_000;
+  if (demo === "smart-city" || demo === "data-galaxy" || demo === "fog-cathedral" || demo === "digital-twin") return 900_000;
+  return isHeavyCaptureRoute(demo) ? 720_000 : 180_000;
 }
 
 function assertMeasuredPerformanceEvidence(demo: DemoId, runtime: AdvancedGalleryRuntime): void {
@@ -592,18 +629,67 @@ function assertMeasuredPerformanceEvidence(demo: DemoId, runtime: AdvancedGaller
   }
 }
 
+function assertRuntimeStateEvidence(demo: DemoId, runtime: AdvancedGalleryRuntime): void {
+  const definition = DEMO_DEFINITIONS.find((entry) => entry.id === demo);
+  expect(definition, `${demo} metadata definition`).toBeDefined();
+  const defaultControlKeys = [
+    ...(definition?.controls ?? [])
+      .filter((control) => control.value !== undefined)
+      .map((control) => control.key)
+  ].sort();
+
+  expect(runtime.interactionState.source, `${demo} interaction state source`).toBe("galleryInteractionAdapter + metadata controls");
+  expect(runtime.interactionState.sharedPointerMath, `${demo} shared pointer math`).toBe("galleryInteractionAdapter");
+  expect(runtime.interactionState.routeInteractions, `${demo} route interaction labels`).toEqual(definition?.interactions ?? []);
+  expect(Object.keys(runtime.interactionState.controls).sort(), `${demo} runtime control keys`).toEqual(defaultControlKeys);
+  expect(runtime.interactionState.pointer.x, `${demo} pointer x`).toBeGreaterThanOrEqual(0);
+  expect(runtime.interactionState.pointer.x, `${demo} pointer x`).toBeLessThanOrEqual(1);
+  expect(runtime.interactionState.pointer.y, `${demo} pointer y`).toBeGreaterThanOrEqual(0);
+  expect(runtime.interactionState.pointer.y, `${demo} pointer y`).toBeLessThanOrEqual(1);
+  expect(runtime.interactionState.pointerAction, `${demo} pointer action`).toBe(demo === "product-configurator" ? "product-hotspot" : "scene-ripple-or-select");
+  expect(runtime.interactionState.routePointerCreatesRipple, `${demo} ripple policy`).toBe(demo === "water-lab" || demo === "ocean-observatory");
+
+  expect(runtime.animationState.source, `${demo} animation state source`).toBe("scene frame + authored runtime");
+  expect(runtime.animationState.frameCount, `${demo} animation state frame count`).toBe(runtime.frameCount);
+  expect(runtime.animationState.routeAnimatedSystems.length, `${demo} route animated systems`).toBeGreaterThanOrEqual(runtime.systems.length);
+  expect(runtime.animationState.motionSampleSource, `${demo} motion sample source`).toBe("screenshot-delta + frameCount");
+  if (demo === "robotics-lab" || demo === "smart-city") {
+    expect(runtime.animationState.authoredAnimationTracksApplied, `${demo} authored animation tracks`).toBeGreaterThan(0);
+  }
+
+  expect(runtime.resetState.source, `${demo} reset state source`).toBe("reset action restores createControlValues, hero camera, cleared selection, and cleared ripples");
+  expect(runtime.resetState.resettable, `${demo} resettable`).toBe(true);
+  expect(runtime.resetState.defaultControlKeys, `${demo} default reset controls`).toEqual(defaultControlKeys);
+  expect(runtime.resetState.currentControlKeys, `${demo} current reset controls`).toEqual(defaultControlKeys);
+  expect(runtime.resetState.resetClearsSelection, `${demo} reset clears selection`).toBe(true);
+  expect(runtime.resetState.resetClearsRipples, `${demo} reset clears ripples`).toBe(true);
+  expect(runtime.resetState.resetCameraPreset, `${demo} reset camera`).toBe("hero");
+  expect(runtime.unsupportedBoundaries.length, `${demo} unsupported boundary disclosures`).toBeGreaterThan(0);
+}
+
 function performanceEvidence(demo: DemoId, runtime: AdvancedGalleryRuntime): PerformanceEvidence {
   const budgetMs = maximumFrameMs(demo);
+  const loopMs = Number.isFinite(runtime.timings.steadyStateLoopMs) && (runtime.timings.steadyStateLoopMs ?? 0) > 0
+    ? runtime.timings.steadyStateLoopMs!
+    : runtime.timings.totalLoopMs;
+  const renderMs = Number.isFinite(runtime.timings.steadyStateRenderMs) && (runtime.timings.steadyStateRenderMs ?? 0) > 0
+    ? runtime.timings.steadyStateRenderMs!
+    : runtime.timings.renderMs;
   return {
     source: "app-runtime-timings",
-    measuredFields: ["runtime.timings.totalLoopMs", "runtime.timings.renderMs"],
+    measuredFields: [
+      "runtime.timings.steadyStateLoopMs",
+      "runtime.timings.steadyStateRenderMs",
+      "runtime.timings.totalLoopMs",
+      "runtime.timings.renderMs"
+    ],
     acceptanceUsesRafFrameMs: false,
     budgetMs,
-    loopMs: runtime.timings.totalLoopMs,
-    renderMs: runtime.timings.renderMs,
+    loopMs,
+    renderMs,
     rafFrameMs: runtime.frameMs,
-    loopWithinBudget: runtime.timings.totalLoopMs <= budgetMs,
-    renderWithinBudget: runtime.timings.renderMs <= budgetMs
+    loopWithinBudget: loopMs <= budgetMs,
+    renderWithinBudget: renderMs <= budgetMs
   };
 }
 

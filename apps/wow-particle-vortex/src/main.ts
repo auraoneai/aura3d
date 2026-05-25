@@ -2,8 +2,8 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-particle-vortex",
-  title: "Authored Antique Camera Interior",
-  subtitle: "Imported antique-camera interior GLB with authored texture detail, prop complexity, HDR lighting, and grounded shadow stage.",
+  title: "Authored Antique Camera Viewer",
+  subtitle: "Imported antique-camera GLB with authored texture detail, prop complexity, HDR lighting, and grounded shadow stage.",
   assetId: "antique-camera-interior",
   environmentId: "venice-sunset",
   controls: {

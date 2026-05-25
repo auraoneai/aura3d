@@ -2,9 +2,9 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-robot-parade",
-  title: "Authored Variant Shoe Studio",
-  subtitle: "Imported material-variant shoe GLB with product-configurator-grade material response, texture detail, and studio lighting.",
-  assetId: "materials-variants-shoe",
+  title: "Authored Robot Expressive Studio",
+  subtitle: "Current checkout does not include the legacy material-variant shoe GLB; this route now uses the available Robot Expressive GLB for rigged asset material and studio-lighting inspection.",
+  assetId: "robot-expressive",
   environmentId: "studio-small-08",
   controls: {
     yaw: -0.72,

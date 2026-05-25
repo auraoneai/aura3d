@@ -2,9 +2,9 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-ocean-temple",
-  title: "Authored Lantern Interior Night",
-  subtitle: "Imported lantern interior GLB with emissive materials, textured structure, industrial HDRI, and warm cinematic exposure.",
-  assetId: "lantern-interior",
+  title: "Authored Duck Prop Studio",
+  subtitle: "Current checkout does not include the legacy lantern interior GLB; this route now uses the available Duck GLB as a live prop-lighting and grounded-stage showcase.",
+  assetId: "duck",
   environmentId: "studio-small-08",
   controls: {
     yaw: 0.34,

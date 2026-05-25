@@ -98,13 +98,14 @@
     <main>
       <h1>G3D Local Route Registry</h1>
       <p>
-        Routes become clickable only when the generated V8 route-health report marks them working.
-        Internal and blocked routes stay visible as status cards so localhost does not imply false readiness.
+        Current showcase and gallery routes are listed here as live links. Historical V6/V7/V8
+        route-health proof routes are intentionally pruned from this local registry so localhost
+        does not look like a backlog of old blocked examples.
       </p>
       <section id="route-grid" class="grid" aria-label="Example routes">
         <article class="route-card" data-status="blocked">
-          <strong>Loading route registry</strong>
-          <span>Reading tests/reports/v8-route-health.json.</span>
+          <strong>Loading current routes</strong>
+          <span>Rendering current showcase and gallery routes.</span>
           <small>loading</small>
         </article>
       </section>
@@ -333,8 +334,8 @@
         },
 	        {
 	          path: "/apps/wow-kira-ik-room/",
-	          label: "Robot Expressive IK Gate",
-	          summary: "Imported Robot Expressive GLB with live skeleton IK, animated target motion, controls, and motion telemetry. This legacy URL is not an animated Kira room; the local Kira GLB has no clips and remains rejected for animation proof.",
+	          label: "Authored Robot Expressive Rig",
+	          summary: "Current checkout live route for the available Robot Expressive GLB; the old Kira IK fixture is not present.",
 	          alwaysVisible: true
 	        },
         {
@@ -345,32 +346,32 @@
         },
         {
           path: "/apps/wow-orbital-fleet/",
-          label: "Authored Chronograph Viewer",
-          summary: "Close product macro for normal maps, emissive panels, occlusion, and metallic response.",
+          label: "Authored Helmet Detail",
+          summary: "Close PBR macro using the available Damaged Helmet GLB for normal maps, emissive panels, occlusion, and metallic response.",
           alwaysVisible: true
         },
         {
           path: "/apps/wow-crystal-cavern/",
-          label: "Authored Glass Product Viewer",
-          summary: "Imported lantern GLB with emissive texture response, HDR reflections, and shadowed stage contact.",
+          label: "Authored Helmet Studio Study",
+          summary: "Available Damaged Helmet GLB under HDR studio lighting, texture detail, and grounded product presentation.",
           alwaysVisible: true
         },
         {
           path: "/apps/wow-robot-parade/",
-          label: "Authored Variant Shoe Viewer",
-          summary: "Damaged Helmet GLB with side-lit metallic panels, textured wear, and high-DPR studio presentation.",
+          label: "Authored Robot Expressive Studio",
+          summary: "Available Robot Expressive GLB with rigged asset material, texture detail, and studio-lighting inspection.",
           alwaysVisible: true
         },
         {
           path: "/apps/wow-particle-vortex/",
-          label: "Authored Interior Camera Viewer",
-          summary: "Close lantern GLB orbit focused on emissive glass, wood grain, metal fittings, and HDR reflection.",
+          label: "Authored Antique Camera Viewer",
+          summary: "Available antique-camera GLB with authored texture detail, prop complexity, HDR lighting, and grounded shadow stage.",
           alwaysVisible: true
         },
         {
           path: "/apps/wow-ocean-temple/",
-          label: "Authored Lantern Interior Viewer",
-          summary: "Emissive lantern asset against industrial HDRI with tuned exposure and glossy material controls.",
+          label: "Authored Duck Prop Studio",
+          summary: "Available Duck GLB as a live prop-lighting and grounded-stage showcase.",
           alwaysVisible: true
         },
         {
@@ -393,13 +394,14 @@
         },
         {
           path: "/apps/wow-quantum-stage/",
-          label: "Authored XBot Animation Viewer",
-          summary: "Full-frame route for imported GLB, HDR environment, material texture, and DPR quality gates.",
+          label: "Authored Soldier Animation Viewer",
+          summary: "Available Soldier GLB route for skinned character source, HDR environment, material texture, and DPR quality gates.",
           alwaysVisible: true
         }
       ];
 
       const grid = document.getElementById("route-grid");
+      const visibleRoutes = ROUTES.filter((route) => route.alwaysVisible);
       const healthByPath = new Map();
 
       try {
@@ -414,7 +416,7 @@
         // The registry still renders blocked cards when the report does not exist yet.
       }
 
-      grid.replaceChildren(...ROUTES.map((route) => renderRoute(route)));
+      grid.replaceChildren(...visibleRoutes.map((route) => renderRoute(route)));
 
       function renderRoute(route) {
         const health = healthByPath.get(route.path);

@@ -23,6 +23,8 @@ The V9 advanced examples gallery is current accepted showcase evidence as of the
 
 The claim remains evidence-bound: if source changes invalidate screenshots, route JSON, hashes, review output, or audit output, rerun `pnpm v9:advanced-gallery`, `pnpm v9:advanced-gallery:review`, and `pnpm v9:advanced-gallery:audit` before reusing the gallery as accepted evidence.
 
+The full advanced-gallery capture is intentionally not part of aggregate `pnpm v9`; it is a heavyweight visual acceptance lane that must be run explicitly through `pnpm v9:advanced-gallery:pipeline` when gallery source, route composition, renderer output, or evidence files change. `pnpm test:visual` remains the generic visual baseline command for nonblank/pixel smoke coverage and is not an advanced-gallery acceptance gate.
+
 ## Package Surface
 
 The repo builds these first-party package surfaces:
@@ -125,6 +127,18 @@ Run the current parity and evidence suite:
 
 ```sh
 pnpm v9
+```
+
+`pnpm v9` keeps the broad V9 parity/readiness suite fast enough for aggregate verification. Run the heavyweight advanced-gallery evidence lane explicitly after gallery-visible changes:
+
+```sh
+pnpm v9:advanced-gallery:pipeline
+```
+
+Run the generic visual baseline smoke separately when needed:
+
+```sh
+pnpm test:visual
 ```
 
 Useful focused commands:

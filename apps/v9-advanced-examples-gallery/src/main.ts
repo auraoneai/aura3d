@@ -179,6 +179,40 @@ interface AdvancedGalleryRuntime {
   readonly approximations: readonly string[];
   readonly waterTelemetry?: SceneFrame["waterTelemetry"];
   readonly dataGalaxyEvidence?: SceneFrame["dataGalaxyEvidence"];
+  readonly interactionState: {
+    readonly source: "galleryInteractionAdapter + metadata controls";
+    readonly selected: string;
+    readonly cameraPreset: string;
+    readonly pointer: { readonly x: number; readonly y: number };
+    readonly controls: ControlValues;
+    readonly routeInteractions: readonly string[];
+    readonly pointerAction: "product-hotspot" | "scene-ripple-or-select";
+    readonly routePointerCreatesRipple: boolean;
+    readonly activeRippleCount: number;
+    readonly productHotspotTargetCount: number;
+    readonly sharedPointerMath: "galleryInteractionAdapter";
+  };
+  readonly animationState: {
+    readonly source: "scene frame + authored runtime";
+    readonly frameCount: number;
+    readonly routeAnimatedSystems: readonly string[];
+    readonly authoredAnimationTracksApplied: number;
+    readonly authoredSkinningPalettesUpdated: number;
+    readonly motionSampleSource: "screenshot-delta + frameCount";
+    readonly paused: boolean;
+  };
+  readonly resetState: {
+    readonly source: "reset action restores createControlValues, hero camera, cleared selection, and cleared ripples";
+    readonly resettable: true;
+    readonly defaultControls: ControlValues;
+    readonly currentMatchesDefaults: boolean;
+    readonly currentControlKeys: readonly string[];
+    readonly defaultControlKeys: readonly string[];
+    readonly resetClearsSelection: true;
+    readonly resetClearsRipples: true;
+    readonly resetCameraPreset: "hero";
+  };
+  readonly unsupportedBoundaries: readonly string[];
   readonly timings: {
     readonly buildSceneMs: number;
     readonly authoredFrameMs: number;
@@ -1043,11 +1077,73 @@ function createRuntime(
     approximations: scene?.approximations ?? demo.knownGaps,
     ...(scene?.waterTelemetry ? { waterTelemetry: scene.waterTelemetry } : {}),
     ...(scene?.dataGalaxyEvidence ? { dataGalaxyEvidence: scene.dataGalaxyEvidence } : {}),
+    interactionState: createRuntimeInteractionState(demo),
+    animationState: createRuntimeAnimationState(scene, authoredAsset),
+    resetState: createRuntimeResetState(demo),
+    unsupportedBoundaries: uniqueStrings([...(scene?.approximations ?? []), ...demo.knownGaps]),
     timings: lastTimings,
     telemetry: createRuntimeTelemetry(authoredAsset),
     ...(authoredAsset && authoredAsset.status !== "idle" ? { authoredAsset } : {}),
     ...(error ? { error } : {})
   };
+}
+
+function createRuntimeInteractionState(demo: DemoDefinition): AdvancedGalleryRuntime["interactionState"] {
+  return {
+    source: "galleryInteractionAdapter + metadata controls",
+    selected,
+    cameraPreset,
+    pointer: lastPointer ?? { x: 0.5, y: 0.5 },
+    controls: { ...controls },
+    routeInteractions: demo.interactions,
+    pointerAction: resolveGalleryPointerDownAction(demo.id),
+    routePointerCreatesRipple: routePointerCreatesRipple(demo.id),
+    activeRippleCount: ripples.length,
+    productHotspotTargetCount: usesProductConfiguratorHotspotPicking(demo.id) ? productHotspotTargets.length : 0,
+    sharedPointerMath: "galleryInteractionAdapter"
+  };
+}
+
+function createRuntimeAnimationState(
+  scene?: SceneFrame,
+  authoredAsset?: AuthoredAssetRuntimeState
+): AdvancedGalleryRuntime["animationState"] {
+  return {
+    source: "scene frame + authored runtime",
+    frameCount,
+    routeAnimatedSystems: scene?.animatedSystems ?? selectedDemo.systems,
+    authoredAnimationTracksApplied: authoredAsset?.animationDiagnostics.reduce((sum, diagnostic) => sum + diagnostic.tracksApplied, 0) ?? 0,
+    authoredSkinningPalettesUpdated: authoredAsset?.animationDiagnostics.reduce((sum, diagnostic) => sum + diagnostic.skinningPalettesUpdated, 0) ?? 0,
+    motionSampleSource: "screenshot-delta + frameCount",
+    paused: controls.paused === true || controls.playing === false || controls.running === false
+  };
+}
+
+function createRuntimeResetState(demo: DemoDefinition): AdvancedGalleryRuntime["resetState"] {
+  const defaultControls = createControlValues(demo);
+  return {
+    source: "reset action restores createControlValues, hero camera, cleared selection, and cleared ripples",
+    resettable: true,
+    defaultControls,
+    currentMatchesDefaults: controlsMatchDefaults(controls, defaultControls),
+    currentControlKeys: Object.keys(controls).sort(),
+    defaultControlKeys: Object.keys(defaultControls).sort(),
+    resetClearsSelection: true,
+    resetClearsRipples: true,
+    resetCameraPreset: "hero"
+  };
+}
+
+function controlsMatchDefaults(current: ControlValues, defaults: ControlValues): boolean {
+  const keys = new Set([...Object.keys(current), ...Object.keys(defaults)]);
+  for (const key of keys) {
+    if (current[key] !== defaults[key]) return false;
+  }
+  return true;
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return Array.from(new Set(values.filter((value) => value.length > 0)));
 }
 
 function createRuntimeEnvironmentBackground(

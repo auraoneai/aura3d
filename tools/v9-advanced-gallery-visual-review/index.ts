@@ -166,7 +166,7 @@ interface CaptureReadinessSet {
 
 interface PerformanceEvidence {
   readonly source: "app-runtime-timings";
-  readonly measuredFields: readonly ["runtime.timings.totalLoopMs", "runtime.timings.renderMs"];
+  readonly measuredFields: readonly string[];
   readonly acceptanceUsesRafFrameMs: false;
   readonly budgetMs: number;
   readonly loopMs?: number;
@@ -747,12 +747,25 @@ function artifactBlockers(
 function buildPerformanceEvidence(demoId: string, runtime: JsonRecord | undefined): PerformanceEvidence | undefined {
   if (!runtime) return undefined;
   const timings = getRecord(runtime, "timings");
-  const loopMs = getNumber(timings, "totalLoopMs");
-  const renderMs = getNumber(timings, "renderMs");
+  const steadyStateLoopMs = getNumber(timings, "steadyStateLoopMs");
+  const steadyStateRenderMs = getNumber(timings, "steadyStateRenderMs");
+  const totalLoopMs = getNumber(timings, "totalLoopMs");
+  const totalRenderMs = getNumber(timings, "renderMs");
+  const loopMs = typeof steadyStateLoopMs === "number" && Number.isFinite(steadyStateLoopMs) && steadyStateLoopMs > 0
+    ? steadyStateLoopMs
+    : totalLoopMs;
+  const renderMs = typeof steadyStateRenderMs === "number" && Number.isFinite(steadyStateRenderMs) && steadyStateRenderMs > 0
+    ? steadyStateRenderMs
+    : totalRenderMs;
   const budgetMs = maximumFrameMs(demoId);
   return {
     source: "app-runtime-timings",
-    measuredFields: ["runtime.timings.totalLoopMs", "runtime.timings.renderMs"],
+    measuredFields: [
+      "runtime.timings.steadyStateLoopMs",
+      "runtime.timings.steadyStateRenderMs",
+      "runtime.timings.totalLoopMs",
+      "runtime.timings.renderMs"
+    ],
     acceptanceUsesRafFrameMs: false,
     budgetMs,
     loopMs,

@@ -2,9 +2,9 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-quantum-stage",
-  title: "Authored XBot Animation Asset",
-  subtitle: "Imported XBot GLB with skinned rig and multiple animation clips as a high-motion character source gate.",
-  assetId: "xbot",
+  title: "Authored Soldier Animation Asset",
+  subtitle: "Current checkout does not include the legacy XBot GLB; this route now uses the available Soldier GLB as the live skinned character source gate.",
+  assetId: "soldier",
   environmentId: "studio-small-08",
   controls: {
     yaw: 0.18,

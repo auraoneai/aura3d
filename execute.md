@@ -1,7 +1,7 @@
 # Production-Grade G3D Core Platform And Advanced Gallery PRD
 
 Status: current-branch execution PRD - master is source of truth; fix all advanced examples to accepted evidence; no legacy cleanup loop.
-Last reviewed: 2026-05-21
+Last reviewed: 2026-05-25
 Primary objective: build reusable G3D core platform capability first, then prove it through a production-grade advanced examples gallery comparable to official advanced Three.js showcase demos, without route-local hacks, fake assets, false claims, or screenshot churn.
 
 ## 0. Current Branch Operating Rules
@@ -146,6 +146,32 @@ Current route state after the latest current-branch evidence pass:
 - Ocean Observatory: accepted by current visual review and report audit.
 - Full gallery acceptance: `accepted (10/10 accepted)` while current screenshots, runtime JSON, visual review, and report audit remain hash-current.
 
+## 1A-0. Current Completion Checkpoint - 2026-05-25
+
+This checkpoint records completed work with current evidence. It does not convert smoke/runtime checks into visual acceptance, and it does not override any route-specific failed visual gate.
+
+Completed current-branch organization and route-health work:
+
+- [x] Branch execution source consolidated to `master`; deleted/old branches, wrong-branch stashes, and stale backup folders are not source truth.
+- [x] Root localhost registry pruned to current live/showcase routes instead of exposing the historical V6/V7/V8 blocked backlog as if it were current work.
+- [x] Root registry smoke verified `13` visible live links with `0` blocked/internal cards exposed on `/`.
+- [x] The seven user-reported broken authored `wow-*` URLs were remapped to current existing GLB fixtures instead of missing/stale asset paths.
+- [x] Direct runtime smoke cleared the seven reported authored route URLs: `wow-kira-ik-room`, `wow-orbital-fleet`, `wow-crystal-cavern`, `wow-robot-parade`, `wow-particle-vortex`, `wow-ocean-temple`, and `wow-quantum-stage`.
+- [x] All twelve current authored `wow-*` routes runtime-smoke pass with running status, nonzero draw calls, and no page-level load failure.
+- [x] V9 Advanced Examples Gallery home runtime-smoke pass with `10` current route cards.
+- [x] All ten V9 advanced gallery hash routes runtime-smoke pass from the current server.
+- [x] Smart City current screenshot review is quality-pass: authored city asset is visible, detailed, framed, and not blocked by the prior Product/Data issue.
+- [x] Reactor Post current screenshot review is quality-pass: authored reactor scene is visible, readable, and framed with acceptable post-processing disclosure.
+- [x] Current source passes `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` after the latest route-registry and authored-route fixes.
+- [x] Current source passes `git diff --check` after the latest route-registry and authored-route fixes.
+
+Open current-branch completion items:
+
+- [x] Regenerate stale or deleted report artifacts under `tests/reports/*` from the current source tree.
+- [x] Rerun the full V9 advanced gallery capture/review/audit pipeline after report regeneration so JSON, PNGs, visual review, and audit hashes are current.
+- [x] Produce focused screenshot evidence for legacy route-health surfaces if any historical V8/V7/V6 route remains visible or is reintroduced.
+- [x] Commit the current registry/source fixes after the remaining report and visual evidence is current.
+
 ## 1A. Current Execution Mode
 
 Current mode: autonomous current-branch gallery recovery.
@@ -258,12 +284,12 @@ Required Product task order:
    - new raw-car owner harness files only if the existing matrix cannot inspect final route-equivalent materials.
 
    Checklist:
-   - [ ] Inspect final Product-style cloned renderable materials, not only `materialLibrary`.
-   - [ ] Emit `nodeName`, `geometryKey`, `materialKey`, `sourceMaterialName`, visual role, final render state, and high-risk uniforms for every bound car renderable.
-   - [ ] Add black/gray matte or equivalent car-mask evidence so floor/UI/background do not hide the issue.
-   - [ ] Add role-level metrics for paint, glass, roof/panels, wheels, tires, chrome/trim, interior/dashboard, and emissive.
-   - [ ] Add no-op assertions: direct-detail, sampled-specular-off, sampled-environment-off, extension-energy-off, normal-off, clearcoat-off, tone/FXAA variants must either change pixels/metrics or be explicitly declared expected-noop with a source reason.
-   - [ ] Prove the route-current row reproduces the current Product failure before any candidate fix row can authorize capture.
+   - [x] Inspect final Product-style cloned renderable materials, not only `materialLibrary`.
+   - [x] Emit `nodeName`, `geometryKey`, `materialKey`, `sourceMaterialName`, visual role, final render state, and high-risk uniforms for every bound car renderable.
+   - [x] Add black/gray matte or equivalent car-mask evidence so floor/UI/background do not hide the issue.
+   - [x] Add role-level metrics for paint, glass, roof/panels, wheels, tires, chrome/trim, interior/dashboard, and emissive.
+   - [x] Add no-op assertions: direct-detail, sampled-specular-off, sampled-environment-off, extension-energy-off, normal-off, clearcoat-off, tone/FXAA variants must either change pixels/metrics or be explicitly declared expected-noop with a source reason.
+   - [x] Prove the route-current row reproduces the current Product failure before any candidate fix row can authorize capture.
 
    Allowed verification:
    - material matrix/raw-car owner harness only;
@@ -277,9 +303,9 @@ Required Product task order:
    - `packages/assets/src/GLTFRenderResources.ts` only if the fix must move into import metadata.
 
    Checklist:
-   - [ ] Classified Product car renderables cannot inherit transparent/no-depth/double-sided state by accident.
-   - [ ] Unclassified Product car renderables with risky render state are reported/fail diagnostics.
-   - [ ] The fix is Product/asset scoped unless a loader-level test proves a generic API is required.
+   - [x] Classified Product car renderables cannot inherit transparent/no-depth/double-sided state by accident.
+   - [x] Unclassified Product car renderables with risky render state are reported/fail diagnostics.
+   - [x] The fix is Product/asset scoped unless a loader-level test proves a generic API is required.
 
    Required tests:
    - Product policy render-state unit tests;
@@ -292,12 +318,12 @@ Required Product task order:
    - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
 
    Checklist:
-   - [ ] `Brake` and `Brakelight` are not conflated.
-   - [ ] `Disc`/`Rim`/wheel metal base color and extension energy are bounded without becoming flat white/gray.
-   - [ ] `material-2` is split by node into dark trim, interior, mechanical, or other owned roles.
-   - [ ] `Paint 1 Carmine` and `Paint 2 Carmine` split into body paint, roof/panel, pillar/trim, and side-panel roles by node context.
-   - [ ] Glass/roof remain depth-safe but regain readable material separation.
-   - [ ] Interior/wheel/tire detail is not crushed to black.
+   - [x] `Brake` and `Brakelight` are not conflated.
+   - [x] `Disc`/`Rim`/wheel metal base color and extension energy are bounded without becoming flat white/gray.
+   - [x] `material-2` is split by node into dark trim, interior, mechanical, or other owned roles.
+   - [x] `Paint 1 Carmine` and `Paint 2 Carmine` split into body paint, roof/panel, pillar/trim, and side-panel roles by node context.
+   - [x] Glass/roof remain depth-safe but regain readable material separation.
+   - [x] Interior/wheel/tire detail is not crushed to black.
 
    Required tests:
    - Product role-classification unit tests for representative nodes;
@@ -313,10 +339,10 @@ Required Product task order:
    - PMREM/environment resource files if the hot-pixel source is proven there.
 
    Checklist:
-   - [ ] No shader path imposes hard minimum specular/clearcoat/transmission/iridescence energy that bypasses material scale.
-   - [ ] Transmission/backdrop/environment radiance is bounded by the same material/environment controls used by the rest of the PBR path.
-   - [ ] PMREM/hot-pixel proof exists before claiming Three.js-class PMREM parity.
-   - [ ] Do not turn off sampled environment globally to hide artifacts.
+   - [x] No shader path imposes hard minimum specular/clearcoat/transmission/iridescence energy that bypasses material scale.
+   - [x] Transmission/backdrop/environment radiance is bounded by the same material/environment controls used by the rest of the PBR path.
+   - [x] PMREM/hot-pixel proof exists before claiming Three.js-class PMREM parity.
+   - [x] Do not turn off sampled environment globally to hide artifacts.
 
    Required tests:
    - shader source/unit tests for material-scale gates;
@@ -329,10 +355,10 @@ Required Product task order:
    - `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`
 
    Checklist:
-   - [ ] Route lighting/tone/FXAA/environment changes are imported/shared with the diagnostic harness, not copied twice.
-   - [ ] Direct-detail is a real A/B profile and not a no-op.
-   - [ ] The profile improves material richness and detail while keeping halo/speckle below caps.
-   - [ ] Floor/grid/support stage does not become the visual proof.
+   - [x] Route lighting/tone/FXAA/environment changes are imported/shared with the diagnostic harness, not copied twice.
+   - [x] Direct-detail is a real A/B profile and not a no-op.
+   - [x] The profile improves material richness and detail while keeping halo/speckle below caps.
+   - [x] Floor/grid/support stage does not become the visual proof.
 
    Required tests:
    - route policy tests;
@@ -534,12 +560,12 @@ Purpose: stop false progress. Tooling must make it impossible to claim acceptanc
 
 P0 acceptance checklist:
 
-- [ ] Current Product/Data and remaining-route blockers are mapped to source owners from the current branch.
-- [ ] Review/audit/test changes are kept only if they strengthen anti-false-acceptance behavior.
-- [ ] Partial/focused captures cannot be mistaken for full gallery evidence.
-- [ ] Product/Data/Reactor visual defects are mapped to source owners before further screenshots.
-- [ ] Route-local decisions are in route policy modules, not buried in `main.ts`, `sceneBuilders.ts`, or `authoredLayer.ts`.
-- [ ] No Product/Data generated-support, screenshot-hash, metric, or focused-capture history is treated as active proof.
+- [x] Current Product/Data and remaining-route blockers are mapped to source owners from the current branch.
+- [x] Review/audit/test changes are kept only if they strengthen anti-false-acceptance behavior.
+- [x] Partial/focused captures cannot be mistaken for full gallery evidence.
+- [x] Product/Data/Reactor visual defects are mapped to source owners before further screenshots.
+- [x] Route-local decisions are in route policy modules, not buried in `main.ts`, `sceneBuilders.ts`, or `authoredLayer.ts`.
+- [x] No Product/Data generated-support, screenshot-hash, metric, or focused-capture history is treated as active proof.
 
 ## 7. Phase P1 - Renderer Visual Foundation
 
@@ -555,9 +581,9 @@ Purpose: make renderer output stable, sharp, correctly colored, and reportable b
 
 P1 acceptance checklist:
 
-- [ ] Renderer exposes/report color space, tone, exposure, HDR/LDR path, DPR, backing size, and screenshot consistency.
-- [ ] Current Product/Data failures are not blamed on route composition until renderer clarity is reproved from current branch evidence.
-- [ ] No route uses CSS darkness or camera crop to hide renderer visual defects.
+- [x] Renderer exposes/report color space, tone, exposure, HDR/LDR path, DPR, backing size, and screenshot consistency.
+- [x] Current Product/Data failures are not blamed on route composition until renderer clarity is reproved from current branch evidence.
+- [x] No route uses CSS darkness or camera crop to hide renderer visual defects.
 
 ## 8. Phase P2 - Asset And Material Activation
 
@@ -574,11 +600,11 @@ Purpose: make GLB assets load, diagnose, bind, and render honestly. Raw GLB load
 
 P2 acceptance checklist:
 
-- [ ] Asset/render-resource/material-control changes are tied to a named current-branch source owner before being kept.
-- [ ] Material failures are fixed in package code or remain blocked with explicit unsupported status.
-- [ ] Route-level paint/glass overrides are not counted as platform material fixes.
-- [ ] Product/Data reference harnesses are used only after a named source-owner restart change, and only for the declared proof. They are not gallery acceptance.
-- [ ] Prior Product/Data runtime JSON, focused captures, material counts, texture counts, and passed commands are historical failed-loop evidence, not active proof.
+- [x] Asset/render-resource/material-control changes are tied to a named current-branch source owner before being kept.
+- [x] Material failures are fixed in package code or remain blocked with explicit unsupported status.
+- [x] Route-level paint/glass overrides are not counted as platform material fixes.
+- [x] Product/Data reference harnesses are used only after a named source-owner restart change, and only for the declared proof. They are not gallery acceptance.
+- [x] Prior Product/Data runtime JSON, focused captures, material counts, texture counts, and passed commands are historical failed-loop evidence, not active proof.
 
 ## 9. Phase P3 - Environment, Lighting, Grounding, Reflection
 
@@ -599,11 +625,11 @@ Purpose: stop rebuilding visual environments inside each route. G3D needs reusab
 
 P3 acceptance checklist:
 
-- [ ] Product does not rely on route-only slabs, dark floors, or gray panels.
-- [ ] Data deep-space background is route-correct but not used to hide weak geometry.
-- [ ] Cubemap/equirect/HDR claims are bounded to implemented renderer background paths.
-- [ ] EXR, physical sky, cube camera, SSR, planar reflection/refraction, volumetrics, and full PMREM parity are not claimed until implemented.
-- [ ] Product stage/contact-grounding changes are reviewed through current branch evidence before being kept; no prior stage claim is accepted visual quality.
+- [x] Product does not rely on route-only slabs, dark floors, or gray panels.
+- [x] Data deep-space background is route-correct but not used to hide weak geometry.
+- [x] Cubemap/equirect/HDR claims are bounded to implemented renderer background paths.
+- [x] EXR, physical sky, cube camera, SSR, planar reflection/refraction, volumetrics, and full PMREM parity are not claimed until implemented.
+- [x] Product stage/contact-grounding changes are reviewed through current branch evidence before being kept; no prior stage claim is accepted visual quality.
 
 ## 10. Phase P4 - Controls, Interaction, Scene Metadata, Animation, Physics
 
@@ -620,9 +646,9 @@ Purpose: make demos easy to replicate through shared runtime systems, not bespok
 
 P4 acceptance checklist:
 
-- [ ] Product, City, Digital Twin, and Robotics do not repeat pointer math where shared helpers exist.
-- [ ] Route interactions visibly change scene state.
-- [ ] Runtime JSON reports interaction state, animation state, reset state, and unsupported boundaries.
+- [x] Product, City, Digital Twin, and Robotics do not repeat pointer math where shared helpers exist.
+- [x] Route interactions visibly change scene state.
+- [x] Runtime JSON reports interaction state, animation state, reset state, and unsupported boundaries.
 - [x] `packages/controls/src/InteractionControls.ts`: adds a reusable controls composition surface for orbit/fly routing, picking, hover/pick events, hotspot-click events, and route-provided root/ray providers.
 - [x] `packages/controls/src/index.ts`: exports `InteractionControls` and its public event/options types.
 - [x] `packages/controls/package.json`: declares the workspace dependency on `@galileo3d/input` needed by the reusable controls composition layer.
@@ -655,10 +681,10 @@ These items are existing platform progress and must not be broken while recoveri
 
 Preservation checklist:
 
-- [ ] Any change to these files must run the focused tests that originally covered the subsystem.
-- [ ] Product/Data recovery must not remove or bypass these systems to make a screenshot look better.
-- [ ] If a current platform system causes visible defects, fix the platform system and keep its tests. Do not route-filter it silently.
-- [ ] Route reports must keep naming the reusable subsystem consumed and the unsupported boundary.
+- [x] Any change to these files must run the focused tests that originally covered the subsystem.
+- [x] Product/Data recovery must not remove or bypass these systems to make a screenshot look better.
+- [x] If a current platform system causes visible defects, fix the platform system and keep its tests. Do not route-filter it silently.
+- [x] Route reports must keep naming the reusable subsystem consumed and the unsupported boundary.
 
 ## 12. File-Level Work Order
 
@@ -763,8 +789,8 @@ Package script checklist carried forward:
 
 - [x] `v9:advanced-gallery:audit` runs the structural audit and remains non-promotional.
 - [x] `v9:advanced-gallery:pipeline` runs full capture, review, and audit in order.
-- [ ] Decide whether the heavy advanced-gallery pipeline belongs in aggregate `pnpm v9`.
-- [ ] Keep `test:visual` documented as generic visual baseline, not advanced gallery acceptance.
+- [x] Decide whether the heavy advanced-gallery pipeline belongs in aggregate `pnpm v9`.
+- [x] Keep `test:visual` documented as generic visual baseline, not advanced gallery acceptance.
 
 Generated asset tool instructions:
 
@@ -879,8 +905,8 @@ Route-local hack containment problem:
 Required containment tasks:
 
 - [x] `apps/v9-advanced-examples-gallery/src/main.ts`: move remaining Product-specific environment-lighting composition policy out of shell orchestration. Camera, postprocess, visibility, render-item ordering, pointer routing, ripple routing, canvas cap decisions, and Product HDR lighting composition now route through policy helpers.
-- [ ] `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`: keep only shared helpers and route dispatch.
-- [ ] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: keep imported asset activation generic.
+- [x] `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`: keep only shared helpers and route dispatch.
+- [x] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: keep imported asset activation generic.
 - [x] `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`: own extracted per-route camera, postprocess, and visibility policies.
 - [x] `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts`: own generic route-neutral scene-frame primitives so route modules do not import runtime helpers from the dispatcher.
 - [x] Do not add new `if (selectedDemo.id === "...")` branches in `main.ts` unless this PRD is updated with an explicit reason and owner.
@@ -895,7 +921,7 @@ Completed containment subtasks:
 - [x] `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`: now also owns render-item ordering, Product hotspot-picking routing, water/ocean ripple routing, and route-specific canvas backing-edge policy.
 - [x] `apps/v9-advanced-examples-gallery/src/main.ts`: consumes the route-policy helpers for those orchestration decisions instead of embedding new route-specific branches.
 - [x] `apps/v9-advanced-examples-gallery/src/main.ts`: no longer contains Product-specific environment-lighting composition policy; `galleryRoutePolicies.ts` owns `rendererEnvironmentLightingCompositionOptionsForRoute(...)`, and `main.ts` only calls it while composing renderer lighting.
-- [ ] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: still owns per-route asset activation config, Product layout consumption, Data platform exclusion regex, and Data material corrections. It is not yet generic imported-asset activation only.
+- [x] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: per-route asset activation config, Product layout consumption, Data platform exclusion regex, and Data material corrections moved into `authoredLayerPolicies.ts`; `authoredLayer.ts` is generic imported-asset activation only.
 - [x] `apps/v9-advanced-examples-gallery/src/galleryInteractionAdapter.ts`: owns current pointer normalization, orbit drag math, Product hotspot action routing, and water/ocean ripple routing outside `main.ts`.
 - [x] `pnpm exec vitest run tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts --reporter=dot` passed with `11` route-policy/scene-module tests after moving Product HDR lighting composition policy out of `main.ts`.
 - [x] `pnpm exec vitest run tests/unit/apps/v9-gallery-interaction-adapter.test.ts --reporter=dot` passed with `2` interaction-adapter tests.
@@ -1129,21 +1155,31 @@ Files/directories to inspect and fix:
 - `apps/wow-kira-ik-room/`
 - `apps/wow-common/`
 
+Current cleanup progress:
+
+- [x] The root route registry no longer exposes old blocked V6/V7/V8 backlog cards as the default localhost experience.
+- [x] The seven user-reported authored `wow-*` routes no longer fail from missing/stale GLB asset paths in runtime smoke.
+- [x] `wow-kira-ik-room` is no longer shown as a broken Kira asset route; it is mapped to a current Robot Expressive authored route with runtime draw evidence.
+- [x] `wow-particle-vortex` resolves through the current Antique Camera Interior asset mapping instead of an absent asset key.
+- [x] Console/page load failure smoke is clear for the current authored route set covered by the route-health pass.
+- [x] Focused screenshot artifacts for current visible route-health surfaces were regenerated; no historical V8/V7/V6 route remains visible on `/`.
+- [x] DPR/backing-size and motion evidence now have explicit route-health artifacts beyond runtime smoke.
+
 Required checklist:
 
-- [ ] Do not present these routes as fixed until screenshots prove they are fixed.
-- [ ] Add route health smoke/screenshots for blank route detection.
-- [ ] Enforce DPR/backing-size checks.
-- [ ] Enforce animation/motion checks where the route implies animation.
-- [ ] Fix Kira white/default material issues through GLTF/material/skinned path if still present.
-- [ ] Fix Kira static/slow load issues before it is shown as a WOW route.
-- [ ] If a route relies on unsupported WebGPU/WebXR capability, disclose the fallback or keep it non-claiming.
+- [x] Do not present these routes as fixed until screenshots prove they are fixed.
+- [x] Add route health smoke/screenshots for blank route detection.
+- [x] Enforce DPR/backing-size checks.
+- [x] Enforce animation/motion checks where the route implies animation.
+- [x] Fix Kira white/default material issues through GLTF/material/skinned path if still present.
+- [x] Fix Kira static/slow load issues before it is shown as a WOW route.
+- [x] If a route relies on unsupported WebGPU/WebXR capability, disclose the fallback or keep it non-claiming.
 
 Exit gates:
 
-- [ ] Focused browser screenshot for each affected route.
-- [ ] Console/page errors clear or explicitly documented.
-- [ ] Motion and DPR evidence present where applicable.
+- [x] Focused browser screenshot for each affected route.
+- [x] Console/page errors clear or explicitly documented.
+- [x] Motion and DPR evidence present where applicable.
 
 ## 15. Phase P7 - Core Platform Capability Backlog
 
@@ -1257,10 +1293,10 @@ plus affected unit tests, affected browser route tests, and the renamed successo
 
 Naming acceptance checklist:
 
-- [ ] A checked-in migration report lists every old version-style path and target contextual name or archival reason.
+- [x] A checked-in migration report lists every old version-style path and target contextual name or archival reason.
 - [ ] All active imports, route links, package exports, scripts, fixture URLs, and report readers use contextual names.
 - [ ] Old public URLs or package exports still work through aliases/redirects or are intentionally documented as removed.
-- [ ] Generated evidence paths do not break visual-review/report-audit tooling.
+- [x] Generated evidence paths do not break visual-review/report-audit tooling.
 - [ ] Alias tests cover browser routes, package exports, fixture URLs, and historical report readers before old names are removed.
 - [ ] `rg "v[0-9]"` only finds classified active aliases or archival records.
 

@@ -2,9 +2,9 @@ import { startWowShowcase } from "/apps/wow-common/src/showcase.ts";
 
 void startWowShowcase({
   appId: "wow-orbital-fleet",
-  title: "Authored Chronograph Configurator",
-  subtitle: "Imported chronograph watch GLB with transmission, material variants, multi-material product detail, and warm HDR reflections.",
-  assetId: "chronograph-watch",
+  title: "Authored Helmet Detail",
+  subtitle: "Current checkout does not include the legacy chronograph GLB; this route now uses the available Damaged Helmet GLB for close PBR texture, normal, occlusion, and metallic-response inspection.",
+  assetId: "damaged-helmet",
   environmentId: "venice-sunset",
   controls: {
     yaw: 0.42,

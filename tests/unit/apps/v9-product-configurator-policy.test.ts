@@ -28,11 +28,15 @@ import {
 describe("v9 product configurator policy", () => {
   it("keeps original Product GLB corrections texture-preserving and out of generated fixture paths", () => {
     const authoredLayerSource = readFileSync("apps/v9-advanced-examples-gallery/src/authoredLayer.ts", "utf8");
+    const authoredLayerPolicySource = readFileSync("apps/v9-advanced-examples-gallery/src/authoredLayerPolicies.ts", "utf8");
 
-    expect(authoredLayerSource).toContain("isProductConfiguratorOriginalProductAssetId(assetId)");
-    expect(authoredLayerSource).not.toContain('assetId === "chronograph-watch"');
-    expect(authoredLayerSource).not.toContain("Band Carbon Fiber Red");
-    expect(authoredLayerSource).not.toContain("Glass Face");
+    expect(authoredLayerSource).not.toContain("isProductConfiguratorOriginalProductAssetId(assetId)");
+    expect(authoredLayerSource).not.toContain("applyProductConfiguratorOriginalCarMaterialQualityCorrections");
+    expect(authoredLayerPolicySource).toContain("isProductConfiguratorOriginalProductAssetId(assetId)");
+    expect(authoredLayerPolicySource).toContain("applyProductConfiguratorOriginalCarMaterialQualityCorrections");
+    expect(authoredLayerPolicySource).not.toContain('assetId === "chronograph-watch"');
+    expect(authoredLayerPolicySource).not.toContain("Band Carbon Fiber Red");
+    expect(authoredLayerPolicySource).not.toContain("Glass Face");
   });
 
   it("reduces original car paint/glass/tire aliasing while preserving source paint texture roles", () => {
@@ -219,9 +223,12 @@ describe("v9 product configurator policy", () => {
 
   it("routes original car render-state cleanup through GLTF render resources", () => {
     const authoredLayerSource = readFileSync("apps/v9-advanced-examples-gallery/src/authoredLayer.ts", "utf8");
+    const authoredLayerPolicySource = readFileSync("apps/v9-advanced-examples-gallery/src/authoredLayerPolicies.ts", "utf8");
     const overrides = productConfiguratorOriginalCarRenderStateOverrides();
 
-    expect(authoredLayerSource).toContain("materialRenderStateOverrides: productConfiguratorOriginalCarRenderStateOverrides()");
+    expect(authoredLayerSource).toContain("materialRenderStateOverrides");
+    expect(authoredLayerSource).toContain("authoredAssetMaterialRenderStateOverrides(candidate.id)");
+    expect(authoredLayerPolicySource).toContain("productConfiguratorOriginalCarRenderStateOverrides()");
     expect(overrides).toHaveLength(3);
     expect(overrides[0]?.renderState).toMatchObject({ cullMode: "back", blend: false, depthWrite: true });
     expect(String(overrides[0]?.materialName)).toContain("Pearl");

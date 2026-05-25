@@ -95,7 +95,7 @@ export const V8_FLAGSHIP_ASSETS: readonly V8FlagshipAsset[] = [
   {
     id: "antique-camera-interior",
     name: "Antique Camera Interior",
-    localPath: "fixtures/v8/assets/architecture/antique-camera-interior.glb",
+    localPath: "fixtures/v6/assets/corpus/antique-camera.glb",
     role: "flagship-interior-prop",
     license: "local-fixture-corpus",
     expectedFeatures: ["interiorScene", "pbrMaterials", "largeTextureSet", "hdrIbl"]

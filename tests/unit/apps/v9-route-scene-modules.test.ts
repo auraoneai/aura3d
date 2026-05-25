@@ -216,6 +216,86 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.postprocess && typeof frame.postprocess.bloom === "object" ? frame.postprocess.bloom : false).toBe(false);
   });
 
+  it("makes Product, City, Digital Twin, and Robotics controls visibly change route state", () => {
+    const resources = createResources();
+    const product = demoById("product-configurator");
+    const productPaused = buildScene(product, resources, 4.2, state({
+      turntable: false,
+      finish: "carmine",
+      focusPart: "body",
+      lighting: "studio"
+    }));
+    const productTurntable = buildScene(product, resources, 4.2, state({
+      turntable: true,
+      finish: "carmine",
+      focusPart: "body",
+      lighting: "studio"
+    }));
+    expect(productPaused.animatedSystems).toContain("car-concept turntable paused");
+    expect(productTurntable.animatedSystems).toContain("car-concept turntable enabled");
+
+    const city = demoById("smart-city");
+    const cityBase = buildScene(city, resources, 5.4, state({
+      count: "low",
+      traffic: false,
+      wire: false,
+      fly: false,
+      district: "all"
+    }));
+    const cityDebug = buildScene(city, resources, 5.4, state({
+      count: "extreme",
+      traffic: true,
+      wire: true,
+      fly: true,
+      district: "harbor"
+    }));
+    expect(countLabel(cityBase, "debug grid")).toBe(0);
+    expect(countLabel(cityDebug, "debug grid")).toBeGreaterThan(0);
+    expect(cityDebug.labels).toContain("Flythrough");
+
+    const robotics = demoById("robotics-lab");
+    const roboticsBase = buildScene(robotics, resources, 2.2, state({
+      playing: true,
+      state: "training",
+      timeline: 0,
+      skeleton: false,
+      follow: false
+    }));
+    const roboticsControlled = buildScene(robotics, resources, 2.2, state({
+      playing: false,
+      state: "inspect",
+      timeline: 0.6,
+      skeleton: true,
+      follow: true
+    }, { selected: "expressive primary robot" }));
+    expect(countLabel(roboticsBase, "skeleton path no IK")).toBe(0);
+    expect(countLabel(roboticsControlled, "skeleton path no IK")).toBeGreaterThan(0);
+    expect(countLabel(roboticsControlled, "robotics follow camera body")).toBeGreaterThan(0);
+    expect(roboticsControlled.labels.join(" ")).toContain("selected primary robot");
+
+    const digitalTwin = demoById("digital-twin");
+    const digitalMuted = buildScene(digitalTwin, resources, 6.1, state({
+      running: false,
+      speed: 1,
+      sensors: false,
+      safety: false,
+      heatmap: false,
+      zone: "all"
+    }));
+    const digitalFocused = buildScene(digitalTwin, resources, 6.1, state({
+      running: true,
+      speed: 1.8,
+      sensors: true,
+      safety: true,
+      heatmap: true,
+      zone: "qa"
+    }));
+    expect(countLabel(digitalMuted, "central sensor sweep")).toBe(0);
+    expect(countLabel(digitalFocused, "central sensor sweep")).toBeGreaterThan(0);
+    expect(countLabel(digitalFocused, "quality heatmap")).toBeGreaterThan(0);
+    expect(digitalFocused.labels).toContain("Zone qa");
+  });
+
   it("keeps ocean observatory route-owned foam and deck detail visible for the hero gate", () => {
     const demo = DEMOS.find((entry) => entry.id === "ocean-observatory");
     expect(demo).toBeDefined();
@@ -237,13 +317,24 @@ describe("v9 route-owned scene modules", () => {
   });
 });
 
-function state(controls: GalleryState["controls"]): GalleryState {
+function demoById(id: typeof DEMOS[number]["id"]): typeof DEMOS[number] {
+  const demo = DEMOS.find((entry) => entry.id === id);
+  expect(demo).toBeDefined();
+  return demo!;
+}
+
+function countLabel(frame: ReturnType<typeof buildScene>, label: string): number {
+  return frame.items.filter((item) => item.label === label).length;
+}
+
+function state(controls: GalleryState["controls"], overrides: Partial<GalleryState> = {}): GalleryState {
   return {
     controls,
     ripples: [],
     selected: "overview",
     cameraPreset: "hero",
     pointer: { x: 0.5, y: 0.5 },
-    pulse: 0
+    pulse: 0,
+    ...overrides
   };
 }
