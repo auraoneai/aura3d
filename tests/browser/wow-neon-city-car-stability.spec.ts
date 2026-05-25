@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const REPORT_DIR = "tests/reports/v9/advanced-examples-gallery/product-wow-delayed-env";
+const REPORT_DIR = "tests/reports/advanced-examples-gallery/product-wow-delayed-env";
 
 declare global {
   interface Window {
@@ -248,7 +248,7 @@ function diagnoseDelayedEnvironment(early: CarArtifactStats, late: CarArtifactSt
   return delayedHdrTakeoverDetected
     ? {
       delayedHdrTakeoverDetected,
-      sourceOwner: "packages/engine/src/v8/index.ts plus packages/rendering/src/ShaderLibrary.ts sampled HDR/specular path",
+      sourceOwner: "packages/engine/src/threejs-example-parity/index.ts plus packages/rendering/src/ShaderLibrary.ts sampled HDR/specular path",
       nextSourceChange: "Treat delayed sampled HDR activation as the white-speckle source: add a car-concept sampled-environment clamp/disable path before any Product route acceptance work.",
       routeCaptureAllowed: false
     }

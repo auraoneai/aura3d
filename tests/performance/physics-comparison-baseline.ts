@@ -33,7 +33,7 @@ export interface PhysicsComparisonBaselineReport {
 }
 
 const outputPath = "tests/reports/v10/physics-comparison-baseline.json";
-const showcaseOutputPath = "tests/reports/v8-physics-showcase.json";
+const showcaseOutputPath = "tests/reports/physics-showcase.json";
 
 export function runPhysicsComparisonBaseline(): PhysicsComparisonBaselineReport {
   const world = new PhysicsWorld({ gravity: [0, -9.81, 0], fixedDelta: 1 / 120, solverIterations: 8 });
@@ -139,10 +139,10 @@ export function writePhysicsComparisonBaseline(path = outputPath): PhysicsCompar
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`);
   const showcaseReport = {
-    schema: "g3d-v8-physics-showcase-evidence/v1",
+    schema: "g3d-physics-showcase-evidence/v1",
     generatedAt: report.generatedAt,
     pass: report.pass,
-    route: "apps/v8-physics-showcase",
+    route: "apps/physics-showcase",
     renderer: "g3d-webgl2",
     physics: {
       bodies: report.samples.bodies,

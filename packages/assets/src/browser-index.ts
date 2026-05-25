@@ -153,13 +153,13 @@ export type { TextureDescriptorAsset } from "./TextureLoader";
 export {
   createV6GLTFRenderMetadata,
   loadV6GLTFRenderPipeline
-} from "./v6/V6GLTFRenderPipeline";
+} from "./asset-corpus/V6GLTFRenderPipeline";
 export type {
   V6GLTFRenderMetadata,
   V6GLTFRenderWarning,
   V6GLTFRenderPipeline,
   V6GLTFRenderPipelineOptions
-} from "./v6/V6GLTFRenderPipeline";
+} from "./asset-corpus/V6GLTFRenderPipeline";
 export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecoders";
 export type {
   GLTFDracoAttribute,

@@ -2,6 +2,7 @@ import { createServer, type Server } from "node:http";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, join, normalize, resolve } from "node:path";
 import ts from "typescript";
+import { contextualPathForLegacyPath } from "../../tools/naming-taxonomy/contextualAliases";
 
 export interface ExampleDevServer {
   readonly origin: string;
@@ -15,8 +16,10 @@ const packageEntryPoints = new Map<string, string>([
   ["@galileo3d/ecs", "/packages/ecs/src/index.ts"],
   ["@galileo3d/rendering", "/packages/rendering/src/index.ts"],
   ["@galileo3d/engine", "/packages/engine/src/index.ts"],
-  ["@galileo3d/engine/v6", "/packages/engine/src/v6/index.ts"],
-  ["@galileo3d/engine/v9", "/packages/engine/src/v9/index.ts"],
+  ["@galileo3d/engine/production-runtime", "/packages/engine/src/production-runtime/index.ts"],
+  ["@galileo3d/engine/advanced-runtime", "/packages/engine/src/advanced-runtime/index.ts"],
+  ["@galileo3d/engine/v6", "/packages/engine/src/production-runtime/index.ts"],
+  ["@galileo3d/engine/v9", "/packages/engine/src/advanced-runtime/index.ts"],
   ["@galileo3d/apps", "/packages/apps/src/index.ts"],
   ["@galileo3d/engine/apps", "/packages/apps/src/index.ts"],
   ["@galileo3d/engine/engine", "/packages/engine/src/index.ts"],
@@ -24,16 +27,23 @@ const packageEntryPoints = new Map<string, string>([
   ["@galileo3d/physics", "/packages/physics/src/index.ts"],
   ["@galileo3d/animation", "/packages/animation/src/browser-index.ts"],
   ["@galileo3d/assets", "/packages/assets/src/browser-index.ts"],
-  ["@galileo3d/engine/assets/v6", "/packages/assets/src/v6/index.ts"],
+  ["@galileo3d/engine/assets/asset-corpus", "/packages/assets/src/asset-corpus/index.ts"],
+  ["@galileo3d/engine/assets/advanced-gallery", "/packages/assets/src/advanced-gallery/index.ts"],
+  ["@galileo3d/engine/assets/v6", "/packages/assets/src/asset-corpus/index.ts"],
+  ["@galileo3d/engine/assets/v9", "/packages/assets/src/advanced-gallery/index.ts"],
   ["@galileo3d/engine/assets/browser", "/packages/assets/src/browser-index.ts"],
   ["@galileo3d/engine/rendering", "/packages/rendering/src/index.ts"],
-  ["@galileo3d/engine/rendering/v6", "/packages/rendering/src/v6/index.ts"],
+  ["@galileo3d/engine/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
+  ["@galileo3d/engine/rendering/advanced-runtime", "/packages/rendering/src/advanced-runtime/index.ts"],
+  ["@galileo3d/engine/rendering/v6", "/packages/rendering/src/production-runtime/index.ts"],
+  ["@galileo3d/engine/rendering/v9", "/packages/rendering/src/advanced-runtime/index.ts"],
   ["@galileo3d/input", "/packages/input/src/index.ts"],
   ["@galileo3d/controls", "/packages/controls/src/index.ts"],
   ["@galileo3d/audio", "/packages/audio/src/index.ts"],
   ["@galileo3d/scripting", "/packages/scripting/src/index.ts"],
   ["@galileo3d/workflows", "/packages/workflows/src/index.ts"],
-  ["@galileo3d/engine/workflows/v6", "/packages/workflows/src/v6/index.ts"],
+  ["@galileo3d/engine/workflows/production", "/packages/workflows/src/production-runtime/index.ts"],
+  ["@galileo3d/engine/workflows/v6", "/packages/workflows/src/production-runtime/index.ts"],
   ["@galileo3d/engine/workflows", "/packages/workflows/src/index.ts"],
   ["@galileo3d/editor-runtime", "/packages/editor-runtime/src/index.ts"],
   ["@galileo3d/editor", "/packages/editor/src/index.ts"],
@@ -111,7 +121,7 @@ export async function startExampleDevServer(root = process.cwd()): Promise<Examp
 }
 
 function resolveDirectoryModuleRedirect(root: string, pathname: string): string | undefined {
-  const normalizedPath = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
+  const normalizedPath = normalize(contextualPathForLegacyPath(pathname)).replace(/^(\.\.[/\\])+/, "");
   if (normalizedPath === "/" || normalizedPath === "." || extname(normalizedPath) || pathname.endsWith("/")) {
     return undefined;
   }
@@ -126,7 +136,7 @@ function resolveDirectoryModuleRedirect(root: string, pathname: string): string 
 }
 
 function resolveRequest(root: string, pathname: string): string | undefined {
-  const normalizedPath = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
+  const normalizedPath = normalize(contextualPathForLegacyPath(pathname)).replace(/^(\.\.[/\\])+/, "");
   const candidates: string[] = [];
   const loadersBrowserMappedPath = browserMappedLoadersGLPath(normalizedPath);
 

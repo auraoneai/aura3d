@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Flagship Viewer</title>
+    <link rel="preload" as="fetch" href="/fixtures/asset-corpus/damaged-helmet.glb" crossorigin fetchpriority="high">
+    <link rel="prefetch" as="fetch" href="/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr" crossorigin fetchpriority="low">
+    <link rel="stylesheet" href="/apps/common/src/styles.css">
+    <style>
+      body.flagship-viewer {
+        grid-template-columns: minmax(900px, min(68vw, 1440px)) minmax(430px, 1fr);
+        overflow: hidden;
+        background: #0f1115;
+      }
+
+      body.flagship-viewer #viewport {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        aspect-ratio: auto;
+        background: #07090d;
+      }
+
+      body.flagship-viewer #app {
+        max-height: 100vh;
+        overflow: auto;
+        padding: 18px;
+      }
+
+      .flagship-viewer .metrics,
+      .flagship-viewer .controls,
+      .flagship-viewer .button-row {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+
+      .flagship-viewer select,
+      .flagship-viewer input[type="range"] {
+        min-width: 0;
+      }
+
+      .flagship-viewer #runtime-state.is-loading {
+        background: #43506a;
+      }
+
+      .flagship-viewer #runtime-state.is-ready,
+      .flagship-viewer #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .flagship-viewer #runtime-state.is-error {
+        background: #923b3b;
+      }
+
+      .flagship-viewer .runtime-error {
+        max-height: 260px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 1180px) {
+        body.flagship-viewer {
+          grid-template-columns: 1fr;
+          overflow: auto;
+        }
+
+        body.flagship-viewer #viewport {
+          width: 100vw;
+          height: min(72vh, 100vw);
+          max-height: none;
+        }
+      }
+    </style>
+  </head>
+  <body class="flagship-viewer">
+    <canvas id="viewport" width="1280" height="960"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/flagship-viewer/src/main.ts"></script>
+  </body>
+</html>

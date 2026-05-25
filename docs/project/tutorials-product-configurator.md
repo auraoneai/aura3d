@@ -1,6 +1,6 @@
 # Tutorial: G3D V6 Product Configurator
 
-This tutorial maps to the V7 flagship viewer in `apps/v6-product-configurator/` and the reusable template in `templates/v6-product-viewer/`.
+This tutorial maps to the V7 flagship viewer in `apps/product-configurator/` and the reusable template in `templates/production-product-viewer/`.
 
 The product path is G3D only. Three.js is used only by the comparison report, not by the app runtime.
 
@@ -11,16 +11,16 @@ import {
   createProductViewer,
   loadGltfScene,
   loadHdrEnvironment
-} from "@galileo3d/engine/v6";
+} from "@galileo3d/engine/production-runtime";
 
 const asset = await loadGltfScene({
-  url: "/fixtures/v6/assets/corpus/damaged-helmet.glb",
+  url: "/fixtures/asset-corpus/damaged-helmet.glb",
   assetId: "damaged-helmet",
   assetName: "Damaged Helmet"
 });
 
 const environment = await loadHdrEnvironment({
-  url: "/fixtures/v6/environments/hdri/studio_small_08_1k.hdr",
+  url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
   id: "studio-small-08",
   label: "Studio Small 08",
   intensity: 1.2
@@ -79,7 +79,7 @@ viewer.render();
 ## Verification
 
 ```sh
-pnpm exec playwright test tests/browser/v7-product-viewer.spec.ts --reporter=line
+pnpm exec playwright test tests/browser/runtime-parity-product-viewer.spec.ts --reporter=line
 ```
 
 The comparison artifact is written to:

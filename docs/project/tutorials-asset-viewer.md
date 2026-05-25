@@ -1,6 +1,6 @@
 # Tutorial: Asset Viewer V3
 
-This tutorial maps to `examples/asset-viewer-v3`. It is the current public API path for loading a glTF asset and rendering it inside a browser app.
+This tutorial maps to `examples/foundation-asset-viewer`. It is the current public API path for loading a glTF asset and rendering it inside a browser app.
 
 ## Core API
 
@@ -29,7 +29,7 @@ Render `workflow.source` with `Renderer.render(workflow.source, workflow.camera)
 ## Verification
 
 ```sh
-pnpm exec playwright test tests/browser/v3-examples.spec.ts -g "asset-viewer-v3"
+pnpm exec playwright test tests/browser/foundation-examples.spec.ts -g "foundation-asset-viewer"
 ```
 
 The screenshot proof is written under `tests/reports/v3-examples/`.

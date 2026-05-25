@@ -26,7 +26,7 @@ Work starts at the first incomplete milestone in `docs/project/v3-roadmap-produc
 - Product workflow seed: existing `packages/product-studio` and `apps/product-studio`.
 - Required next platform package: `packages/workflows`.
 - Required next apps: `apps/asset-lab`, `apps/material-lab`, `apps/scene-lab`, `apps/game-lab`.
-- Required final comparison: same-scene G3D vs Three.js under `benchmarks/v3`.
+- Required final comparison: same-scene G3D vs Three.js under `benchmarks/foundation`.
 
 ## Completion Standard
 

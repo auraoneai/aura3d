@@ -5,7 +5,7 @@
 
 Historical status: superseded by V9.
 
-V6 is retained as historical planning and evidence context. Its original completion rule required `pnpm v6:release` and the completion audit to prove real WebGL2/WebGPU renderer output from real imported assets with true PBR/HDR behavior, same-scene Three.js parity evidence, external package proof, and visible claim boundaries. Current release/claim decisions now use the V9 docs.
+V6 is retained as historical planning and evidence context. Its original completion rule required `pnpm production-runtime:release` and the completion audit to prove real WebGL2/WebGPU renderer output from real imported assets with true PBR/HDR behavior, same-scene Three.js parity evidence, external package proof, and visible claim boundaries. Current release/claim decisions now use the V9 docs.
 
 V6 exists because V5 still allowed fake visual proof. V6 must not pass on canvas-painted screenshots, mock renderer output, metadata-only app state, primitive-only scenes, or hardcoded visual scores.
 
@@ -35,4 +35,4 @@ Blocked until separately proven:
 
 ## Current Execution Rule
 
-Do not mark this reset complete until `tests/reports/v6-completion-audit.json` exists, has `pass: true`, and covers every named requirement in `docs/project/v6-roadmap-production-renderer-plan.md`.
+Do not mark this reset complete until `tests/reports/production-runtime-completion-audit.json` exists, has `pass: true`, and covers every named requirement in `docs/project/production-runtime-roadmap-production-renderer-plan.md`.

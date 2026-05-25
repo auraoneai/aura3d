@@ -32,9 +32,9 @@ Each comparison captures:
 
 ## Evidence
 
-- Browser manifest: `tests/reports/v4-threejs-visual-parity/manifest.json`
-- Readiness report: `tests/reports/v4-threejs-visual-parity.json`
-- Gap report: `tests/reports/v4-threejs-visual-parity/gap-report.md`
+- Browser manifest: `tests/reports/external-parity-threejs-visual-parity/manifest.json`
+- Readiness report: `tests/reports/external-parity-threejs-visual-parity.json`
+- Gap report: `tests/reports/external-parity-threejs-visual-parity/gap-report.md`
 
 ## What It Proves
 

@@ -5,12 +5,12 @@ G3D has PBR/HDR/IBL-facing code and matched tracked routes for several material 
 ## Real Code
 
 - `packages/rendering/src/PBRMaterial.ts`
-- `packages/rendering/src/v6/materials/*`
-- `packages/rendering/src/v6/environment/*`
-- `packages/rendering/src/v6/shaders/chunks/brdf.glsl`
-- `packages/rendering/src/v6/shaders/chunks/ibl.glsl`
-- `packages/rendering/src/v6/shaders/chunks/pbr.frag.glsl`
-- `packages/rendering/src/v6/shaders/chunks/pbr.vert.glsl`
+- `packages/rendering/src/production-runtime/materials/*`
+- `packages/rendering/src/production-runtime/environment/*`
+- `packages/rendering/src/production-runtime/shaders/chunks/brdf.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/ibl.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/pbr.frag.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/pbr.vert.glsl`
 - `packages/assets/src/GLTFRenderResources.ts`
 - `packages/assets/src/GLTFExtensionSupport.ts`
 

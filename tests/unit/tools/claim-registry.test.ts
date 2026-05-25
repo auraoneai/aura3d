@@ -67,8 +67,8 @@ describe("claim registry verifier", () => {
 
   it("does not scan release-artifacts as top-level release claim documents", () => {
     const root = fixtureRoot();
-    mkdirSync(join(root, "release-artifacts", "v4-external-evidence-handoff"), { recursive: true });
-    writeFileSync(join(root, "release-artifacts", "v4-external-evidence-handoff", "docs/project/v4-parity-execution-prompt.md"), "Unity/Unreal replacement remains blocked.\n");
+    mkdirSync(join(root, "release-artifacts", "external-parity-external-evidence-handoff"), { recursive: true });
+    writeFileSync(join(root, "release-artifacts", "external-parity-external-evidence-handoff", "docs/project/v4-parity-execution-prompt.md"), "Unity/Unreal replacement remains blocked.\n");
     writeFileSync(join(root, "release-artifacts", "codingrelated-completion-audit.md"), "Full WebGPU support is not achieved.\n");
     writeFileSync(join(root, "RELEASE-NOTES.md"), "No production-ready claim is currently supported.\n");
 

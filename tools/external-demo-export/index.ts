@@ -218,17 +218,17 @@ function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymen
     githubPagesWorkflow: ".github/workflows/v4-public-demo-deploy.yml",
     githubPagesWorkflowNotes: [
       "The workflow builds the static export, runs local static-server smoke validation, deploys the exact artifact to GitHub Pages, and then runs verify:public-demo-deployment against the Pages URL.",
-      "A workflow pass is public deployment evidence only when the uploaded public-demo-deployment-smoke and v4-production-readiness reports are retained with the run and the deployed URL is durable.",
+      "A workflow pass is public deployment evidence only when the uploaded public-demo-deployment-smoke and external-parity-production-readiness reports are retained with the run and the deployed URL is durable.",
       "Local production readiness remains blocked until tests/reports/public-demo-deployment-smoke.json is generated against a durable HTTPS origin in the current evidence set.",
     ],
     validationCommands: [
       "pnpm build:external-demos",
       "pnpm verify:static-demo-server-smoke",
       "G3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
-      "pnpm audit:v4-production-readiness",
+      "pnpm audit:external-parity-production-readiness",
       "pnpm audit:v4-broad-parity",
       "pnpm audit:v4-completion",
-      "pnpm verify:v4-report-freshness",
+      "pnpm verify:external-parity-report-freshness",
     ],
     blockedUntilPublicValidationPasses: [
       "production-ready language",

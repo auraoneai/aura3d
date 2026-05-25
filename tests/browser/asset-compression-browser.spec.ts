@@ -7,8 +7,8 @@ import { expect, test } from "@playwright/test";
 import { MeshoptEncoder } from "meshoptimizer/encoder";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const reportPath = "tests/reports/v4-asset-compression.json";
-const screenshotDirectory = "tests/reports/v4-asset-compression";
+const reportPath = "tests/reports/external-parity-asset-compression.json";
+const screenshotDirectory = "tests/reports/external-parity-asset-compression";
 const validations: AssetCompressionValidation[] = [];
 
 test.describe("asset viewer compression decode evidence", () => {

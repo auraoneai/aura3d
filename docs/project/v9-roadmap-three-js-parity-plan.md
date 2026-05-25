@@ -1,6 +1,6 @@
 # V9 Three.js Parity Plan
 
-This file is the canonical V9 plan consumed by `tools/v9-completion-audit`. It now records the completed high-priority construction pass and the remaining measured parity surface.
+This file is the canonical V9 plan consumed by `tools/threejs-parity-completion-audit`. It now records the completed high-priority construction pass and the remaining measured parity surface.
 
 ## Plan State
 

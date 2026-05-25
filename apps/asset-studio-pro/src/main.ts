@@ -1,3 +1,3 @@
-import { mountAssetGalleryV4 } from "../../../examples/asset-gallery-v4/AssetGalleryV4";
+import { mountAssetGalleryV4 } from "../../../examples/external-asset-gallery/AssetGalleryV4";
 
 void mountAssetGalleryV4("asset-studio-pro");

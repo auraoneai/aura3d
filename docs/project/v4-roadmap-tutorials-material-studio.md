@@ -16,9 +16,9 @@ const diagnostics = createDiagnosticsPanel({ render });
 
 Evidence:
 
-- Example: `examples/material-studio-v4`
+- Example: `examples/external-material-studio`
 - App: `apps/material-studio-pro`
-- Screenshot: `tests/reports/v4-gallery/materials/material-studio-v4.png`
-- Same-scene Three.js comparison: `tests/reports/v4-threejs-visual-parity/material-metals-threejs.png`
+- Screenshot: `tests/reports/external-gallery/materials/external-material-studio.png`
+- Same-scene Three.js comparison: `tests/reports/external-parity-threejs-visual-parity/material-metals-threejs.png`
 
 Boundary: scanned material libraries and full DCC material parity remain outside this bounded tutorial.

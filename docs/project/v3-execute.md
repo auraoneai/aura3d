@@ -20,8 +20,8 @@ Historically, this prompt required reading every markdown file matching `docs/pr
 - `docs/project/v3-master-code-only-checklist.md`
 - `docs/project/v3-renderer-and-gpu-plan.md`
 - `docs/project/v3-asset-pipeline-and-content-plan.md`
-- `docs/project/v3-editor-authoring-plan.md`
-- `docs/project/v3-runtime-systems-plan.md`
+- `docs/project/foundation-editor-authoring-plan.md`
+- `docs/project/foundation-runtime-systems-plan.md`
 - `docs/project/v3-examples-and-benchmarks-plan.md`
 - `docs/project/v3-testing-and-validation-plan.md`
 - `docs/project/v3-decision-gates.md`
@@ -62,8 +62,8 @@ Before launching agents:
 
 1. Run `rg -n '^- \[ \]' docs/project/v3-*.md` to capture the unchecked task inventory.
 2. Run `rg -n '^- \[x\]' docs/project/v3-*.md` to understand what is already claimed complete.
-3. Run `pnpm --silent tsx --tsconfig tsconfig.base.json tools/v3-current-capability/index.ts` if it exists.
-4. Run `pnpm verify:v3-code` if it exists.
+3. Run `pnpm --silent tsx --tsconfig tsconfig.base.json tools/foundation-current-capability/index.ts` if it exists.
+4. Run `pnpm verify:foundation-code` if it exists.
 5. Record the current blocked gates and unchecked task count.
 6. Split the unchecked tasks across the six workstreams below.
 
@@ -97,7 +97,7 @@ Primary ownership:
 - `tests/browser/rendering-*.spec.ts`
 - `tests/browser/webgpu-*.spec.ts`
 - renderer reports under `tests/reports/`
-- renderer verification tools under `tools/v3-rendering/**`
+- renderer verification tools under `tools/foundation-rendering/**`
 
 Required execution focus:
 
@@ -139,7 +139,7 @@ Primary ownership:
 - `tests/assets/**`
 - `tests/browser/asset-*.spec.ts`
 - asset reports under `tests/reports/`
-- asset verification tools under `tools/v3-assets/**` and `tools/asset-v3-corpus/**`
+- asset verification tools under `tools/foundation-assets/**` and `tools/foundation-asset-corpus/**`
 
 Required execution focus:
 
@@ -166,7 +166,7 @@ Agent 2 final response must include:
 
 Primary documents:
 
-- `docs/project/v3-editor-authoring-plan.md`
+- `docs/project/foundation-editor-authoring-plan.md`
 - editor sections of `docs/project/v3-master-code-only-checklist.md`
 - editor gates in `docs/project/v3-decision-gates.md`
 - editor workflow validation in `docs/project/v3-testing-and-validation-plan.md`
@@ -175,12 +175,12 @@ Primary ownership:
 
 - `apps/editor/**`
 - `packages/editor-runtime/src/**`
-- `examples/editor-authored-v3-app/**`
+- `examples/foundation-editor-authored-app/**`
 - `examples/editor-authored-game/**` if added
 - `tests/unit/editor/**`
 - `tests/browser/editor-*.spec.ts`
 - editor reports under `tests/reports/`
-- editor verification tools under `tools/v3-editor/**`
+- editor verification tools under `tools/foundation-editor/**`
 
 Required execution focus:
 
@@ -206,7 +206,7 @@ Agent 3 final response must include:
 
 Primary documents:
 
-- `docs/project/v3-runtime-systems-plan.md`
+- `docs/project/foundation-runtime-systems-plan.md`
 - runtime sections of `docs/project/v3-master-code-only-checklist.md`
 - runtime gates in `docs/project/v3-decision-gates.md`
 - runtime validation in `docs/project/v3-testing-and-validation-plan.md`
@@ -227,7 +227,7 @@ Primary ownership:
 - runtime browser tests under `tests/browser/runtime-*.spec.ts`
 - animation browser tests
 - runtime reports under `tests/reports/`
-- runtime verification tools under `tools/v3-runtime/**`
+- runtime verification tools under `tools/foundation-runtime/**`
 
 Required execution focus:
 
@@ -269,7 +269,7 @@ Primary ownership:
 - `benchmarks/threejs/**`
 - `benchmarks/babylon/**`
 - `tools/compare-engines/**`
-- `tools/v3-benchmarks/**`
+- `tools/foundation-benchmarks/**`
 - `tests/browser/product-demos.spec.ts`
 - `tests/browser/engine-comparison.spec.ts`
 - benchmark reports under `tests/reports/`
@@ -319,7 +319,7 @@ Required execution focus:
 
 - Maintain the canonical unchecked task inventory.
 - Prevent broad claims from appearing before gates pass.
-- Ensure `pnpm verify:v3-code`, `pnpm verify:v3-examples`, `pnpm verify:v3-rendering`, `pnpm verify:v3-assets`, `pnpm verify:v3-editor`, `pnpm verify:v3-runtime`, `pnpm verify:v3-benchmarks`, and `pnpm verify:v3` exist and run the correct evidence.
+- Ensure `pnpm verify:foundation-code`, `pnpm verify:v3-examples`, `pnpm verify:foundation-rendering`, `pnpm verify:foundation-assets`, `pnpm verify:foundation-editor`, `pnpm verify:foundation-runtime`, `pnpm verify:foundation-benchmarks`, and `pnpm verify:v3` exist and run the correct evidence.
 - Ensure report freshness checks fail when source files change after report generation.
 - Ensure screenshot manifests include paths, scene names, browser version, viewport, DPR, commit hash, and run ID.
 - Ensure flaky visual and benchmark tests run at least twice and compare reports.
@@ -354,13 +354,13 @@ Own `packages/assets/src/**`, `examples/asset-viewer/**`, `fixtures/assets/v3/**
 
 ### Prompt 3: Browser Editor Authoring Agent
 
-You are Agent 3 for Browser Editor Authoring in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every editor-authoring task in full, especially `docs/project/v3-editor-authoring-plan.md`, editor tasks in `docs/project/v3-master-code-only-checklist.md`, editor gates in `docs/project/v3-decision-gates.md`, and editor validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 3 for Browser Editor Authoring in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every editor-authoring task in full, especially `docs/project/foundation-editor-authoring-plan.md`, editor tasks in `docs/project/v3-master-code-only-checklist.md`, editor gates in `docs/project/v3-decision-gates.md`, and editor validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
 Own `apps/editor/**`, `packages/editor-runtime/src/**`, editor-authored examples, editor unit tests, editor browser tests, and editor reports unless the coordinator assigns otherwise. Build a real browser editor workflow with viewport, hierarchy, inspector, asset browser, import settings, material editor, gizmos, save/load, play mode, profiler/debugging, export, and exported-app smoke tests. Mark an original markdown checkbox only after Playwright or equivalent browser workflow evidence passes. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked editor tasks remaining, and blockers.
 
 ### Prompt 4: Runtime Systems Agent
 
-You are Agent 4 for Runtime Systems in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every runtime task in full, especially `docs/project/v3-runtime-systems-plan.md`, runtime tasks in `docs/project/v3-master-code-only-checklist.md`, runtime gates in `docs/project/v3-decision-gates.md`, and runtime validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 4 for Runtime Systems in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every runtime task in full, especially `docs/project/foundation-runtime-systems-plan.md`, runtime tasks in `docs/project/v3-master-code-only-checklist.md`, runtime gates in `docs/project/v3-decision-gates.md`, and runtime validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
 Own physics, animation, input, audio, scripting, particles/effects in coordination with renderer, game slice runtime behavior, physics sandbox, animated-character examples, runtime browser tests, and runtime reports unless the coordinator assigns otherwise. Implement real interactive behavior and real browser evidence, not counters. Mark an original markdown checkbox only after tests, screenshots, runtime state, and reports prove the behavior. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked runtime tasks remaining, and blockers.
 
@@ -469,14 +469,14 @@ Use the commands that exist in the repository. At minimum, after relevant work a
 
 ```bash
 pnpm typecheck
-pnpm verify:v3-code
+pnpm verify:foundation-code
 pnpm verify:v3-examples
-pnpm verify:v3-rendering
-pnpm verify:v3-assets
-pnpm verify:v3-editor
-pnpm verify:v3-runtime
-pnpm verify:v3-benchmarks
-pnpm verify:v3-report-freshness
+pnpm verify:foundation-rendering
+pnpm verify:foundation-assets
+pnpm verify:foundation-editor
+pnpm verify:foundation-runtime
+pnpm verify:foundation-benchmarks
+pnpm verify:foundation-report-freshness
 pnpm verify:v3-flakes
 pnpm verify:v3
 ```
@@ -487,8 +487,8 @@ After every major set of changes, run:
 
 ```bash
 rg -n '^- \[ \]' docs/project/v3-*.md
-pnpm --silent tsx --tsconfig tsconfig.base.json tools/v3-current-capability/index.ts
-pnpm verify:v3-code
+pnpm --silent tsx --tsconfig tsconfig.base.json tools/foundation-current-capability/index.ts
+pnpm verify:foundation-code
 ```
 
 Use the current capability report to keep the status truthful.
@@ -499,8 +499,8 @@ Do not stop until all of these are true:
 
 1. `rg -n '^- \[ \]' docs/project/v3-*.md` returns no unchecked task that is required for v3 code completion, or every remaining unchecked task has a truthful `Blocked:` note and the relevant claim is blocked.
 2. `pnpm verify:v3` passes.
-3. `pnpm verify:v3-code` passes.
-4. `pnpm verify:v3-report-freshness` passes.
+3. `pnpm verify:foundation-code` passes.
+4. `pnpm verify:foundation-report-freshness` passes.
 5. `pnpm verify:v3-flakes` passes.
 6. Every v3 report is fresh for the current code state.
 7. Every v3 example has a current screenshot generated from the real browser page.
@@ -514,7 +514,7 @@ The task is not complete if any of these are true:
 
 - unchecked required tasks remain without a truthful blocker;
 - `pnpm verify:v3` fails;
-- `pnpm verify:v3-code` fails;
+- `pnpm verify:foundation-code` fails;
 - reports are stale;
 - screenshots are missing or are not from real pages;
 - examples still look like renamed primitive demos while claiming product-grade behavior;

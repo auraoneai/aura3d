@@ -100,7 +100,7 @@ Expected primary code areas:
 
 ## Required End-To-End Test
 
-Add `tests/browser/editor-authoring-v3.spec.ts`:
+Add `tests/browser/editor-authoring-foundation.spec.ts`:
 
 - [x] Open editor.
 - [x] Create new project.

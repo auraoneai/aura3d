@@ -14,7 +14,7 @@ import {
   type RenderItem,
   type RenderSource
 } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/v9";
+import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
 import { multiplyMat4, type Mat4 } from "@galileo3d/scene";
 
 type Pipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;

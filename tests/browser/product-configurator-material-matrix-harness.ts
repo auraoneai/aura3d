@@ -5,14 +5,14 @@ import {
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment
-} from "/packages/engine/src/v6/index.js";
+} from "/packages/engine/src/production-runtime/index.js";
 import {
   applyCarConceptMaterialStability,
   carConceptMaterialVisualRole,
   carConceptMaterialRenderStateOverrides
 } from "/packages/assets/src/browser-index.js";
 import { createLightingRig, Material, type CollectedLight, type RenderItem, type RenderState, type UniformValue } from "/packages/rendering/src/index.js";
-import { createProductConfiguratorShowroomLighting } from "/apps/v9-advanced-examples-gallery/src/productConfiguratorLighting.js";
+import { createProductConfiguratorShowroomLighting } from "/apps/advanced-examples-gallery/src/productConfiguratorLighting.js";
 
 declare global {
   interface Window {
@@ -60,7 +60,7 @@ export interface ProductConfiguratorMaterialMatrixReport {
   readonly galleryUiBypassed: true;
   readonly asset: {
     readonly id: "car-concept";
-    readonly url: "/fixtures/v8/assets/vehicles/car-concept.glb";
+    readonly url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb";
   };
   readonly viewport: typeof VIEWPORT;
   readonly variants: readonly ProductConfiguratorMaterialMatrixVariant[];
@@ -212,7 +212,7 @@ interface ProductMaterialMatrixPixelStats {
 }
 
 const VIEWPORT = { width: 760, height: 520 } as const;
-const CAR_URL = "/fixtures/v8/assets/vehicles/car-concept.glb" as const;
+const CAR_URL = "/fixtures/threejs-parity/assets/vehicles/car-concept.glb" as const;
 
 const MATRIX_VARIANTS: readonly MatrixVariantConfig[] = [
   {
@@ -465,7 +465,7 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
     environment = await loadHdrEnvironment({
       id: "product-material-matrix-studio-small-08",
       label: "Product Material Matrix Studio Small 08",
-      url: `${location.origin}/fixtures/v6/environments/hdri/studio_small_08_1k.hdr`,
+      url: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`,
       intensity: 1.02,
       backgroundIntensity: 0.72,
       rotation: 0.18,
@@ -505,7 +505,7 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
         ? "Material extension toggles are not the missing richness source; inspect sampled HDR/base material response before route capture."
         : "Material extension energy still changes Product richness and must be bounded in CarConceptMaterialStability or ShaderLibrary.",
       nextSourceOwner: routeCurrentCrushesDetail
-        ? "apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts plus apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts"
+        ? "apps/advanced-examples-gallery/src/productConfiguratorScene.ts plus apps/advanced-examples-gallery/src/galleryRoutePolicies.ts"
         : (Math.abs((gallery?.metrics.averageLuma ?? 0) - (sampledSpecularOff?.metrics.averageLuma ?? 0)) > 1.5)
           ? "packages/rendering/src/ShaderLibrary.ts plus sampled HDR composition"
           : "packages/assets/src/CarConceptMaterialStability.ts",

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 WebXR Interactions</title>
+    <link rel="stylesheet" href="/apps/common/src/styles.css">
+    <style>
+      body.webxr-interactions {
+        grid-template-columns: minmax(760px, 1fr) minmax(410px, 30vw);
+        background: #07090c;
+      }
+
+      .webxr-interactions .viewport-wrap {
+        display: grid;
+        place-items: center;
+        min-width: 0;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #151923 0, #232936 48%, #080a0f 100%);
+      }
+
+      .webxr-interactions #viewport {
+        width: min(76vw, 940px);
+        aspect-ratio: 1;
+        border: 1px solid rgba(205, 215, 230, 0.28);
+        border-radius: 8px;
+        background: #0c1016;
+        box-shadow: 0 24px 72px rgba(0, 0, 0, 0.48);
+      }
+
+      .webxr-interactions #app {
+        padding: 18px;
+      }
+
+      .webxr-interactions .metrics {
+        grid-template-columns: repeat(2, minmax(140px, 1fr));
+      }
+
+      .webxr-interactions #runtime-state.is-ready,
+      .webxr-interactions #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .webxr-interactions #runtime-state.is-error {
+        background: #923b3b;
+      }
+    </style>
+  </head>
+  <body class="webxr-interactions">
+    <section class="viewport-wrap">
+      <canvas id="viewport" width="260" height="260"></canvas>
+    </section>
+    <main id="app"></main>
+    <script type="module" src="/apps/webxr-interactions/src/main.ts"></script>
+  </body>
+</html>

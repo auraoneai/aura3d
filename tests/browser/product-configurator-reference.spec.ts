@@ -106,7 +106,7 @@ test.describe("Product configurator same-asset reference harness", () => {
       const asset = byId.get(id);
       expect(asset, `${id} report`).toBeDefined();
       expect(asset?.sourceOfTruth, `${id} source`).toBe("advanced-gallery-original-product-asset");
-      expect(asset?.url, `${id} original URL`).toBe("/fixtures/v8/assets/vehicles/car-concept.glb");
+      expect(asset?.url, `${id} original URL`).toBe("/fixtures/threejs-parity/assets/vehicles/car-concept.glb");
       expect(asset?.loaded, `${id} loaded`).toBe(true);
       expect(asset?.rendered, `${id} rendered`).toBe(true);
       expect(asset?.captureReady, `${id} capture ready`).toBe(true);

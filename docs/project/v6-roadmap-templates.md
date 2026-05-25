@@ -5,14 +5,14 @@
 
 V6 templates:
 
-- `templates/v6-product-configurator/`
-- `templates/v6-asset-inspector/`
-- `templates/v6-material-studio/`
-- `templates/v6-architecture-viewer/`
-- `templates/v6-webgpu-starter/`
+- `templates/production-product-configurator/`
+- `templates/production-asset-inspector/`
+- `templates/production-material-studio/`
+- `templates/production-architecture-viewer/`
+- `templates/production-webgpu-starter/`
 
 Each template includes a package file, browser entry, source entry, asset manifest with checksums, and README fetch/copy instructions. The create-g3d mirrors live under `packages/create-g3d/templates/`.
 
 Primary evidence:
 
-- `tests/reports/v6-template-readiness.json`
+- `tests/reports/production-runtime-template-readiness.json`

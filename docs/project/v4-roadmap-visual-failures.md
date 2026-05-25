@@ -13,14 +13,14 @@ The following V3 artifacts are useful evidence that rendering and workflows are 
 - `tests/reports/v3-app-suite/material-lab-default.png`
 - `tests/reports/v3-app-suite/scene-lab-default.png`
 - `tests/reports/v3-app-suite/game-lab-default.png`
-- `tests/reports/v3-examples/asset-viewer-v3.png`
-- `tests/reports/v3-examples/material-studio-v3.png`
-- `tests/reports/v3-examples/product-configurator-v3.png`
-- `tests/reports/v3-examples/interactive-scene-v3.png`
-- `tests/reports/v3-threejs-comparison/product-g3d.png`
-- `tests/reports/v3-threejs-comparison/material-g3d.png`
-- `tests/reports/v3-threejs-comparison/asset-g3d.png`
-- `tests/reports/v3-threejs-comparison/interactive-g3d.png`
+- `tests/reports/v3-examples/foundation-asset-viewer.png`
+- `tests/reports/v3-examples/foundation-material-studio.png`
+- `tests/reports/v3-examples/foundation-product-configurator.png`
+- `tests/reports/v3-examples/foundation-interactive-scene.png`
+- `tests/reports/foundation-threejs-comparison/product-g3d.png`
+- `tests/reports/foundation-threejs-comparison/material-g3d.png`
+- `tests/reports/foundation-threejs-comparison/asset-g3d.png`
+- `tests/reports/foundation-threejs-comparison/interactive-g3d.png`
 
 ## Visual Problems To Fix
 

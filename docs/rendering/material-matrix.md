@@ -18,8 +18,8 @@ The renderer material surface is broader than the early `examples/material-lab` 
 ## Current Evidence
 
 - `tests/reports/v8-assets.json` records 20 v8 assets, 15 textured-PBR assets, 6 material-extension assets, texture transform coverage, and material-variant coverage.
-- `tests/reports/v8-threejs-parity.json` records a same-scene G3D/Three.js flagship comparison. In that report G3D renders the chronograph watch with 48 draw calls, 100002 triangles, 37 textures, and 29 materials; Three.js renders the same asset with 41 draw calls, 199990 triangles, and 12 textures.
-- `tests/reports/v6-hd-flagship.json` records HD WebGL2 PBR output for composed real assets with HDR environment input and texture diagnostics.
+- `tests/reports/current-routes-threejs-parity.json` records a same-scene G3D/Three.js flagship comparison. In that report G3D renders the chronograph watch with 48 draw calls, 100002 triangles, 37 textures, and 29 materials; Three.js renders the same asset with 41 draw calls, 199990 triangles, and 12 textures.
+- `tests/reports/production-runtime-hd-flagship.json` records HD WebGL2 PBR output for composed real assets with HDR environment input and texture diagnostics.
 - `tests/visual/rendering-material-matrix.spec.ts` still verifies the bounded material matrix scene.
 
 ## Known Gaps
@@ -32,9 +32,9 @@ The renderer material surface is broader than the early `examples/material-lab` 
 ## Verification
 
 - `tests/reports/v8-assets.json`
-- `tests/reports/v8-threejs-parity.json`
-- `tests/reports/v8-visual-review.json`
-- `tests/reports/v6-hd-flagship.json`
+- `tests/reports/current-routes-threejs-parity.json`
+- `tests/reports/current-routes-visual-review.json`
+- `tests/reports/production-runtime-hd-flagship.json`
 - `tests/unit/rendering/pbr-lighting.test.ts`
 - `tests/unit/rendering/material-binding.test.ts`
 - `tests/visual/rendering-material-matrix.spec.ts`

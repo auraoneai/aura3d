@@ -6,10 +6,10 @@
 The public HDR entrypoint is:
 
 ```ts
-import { loadHdrEnvironment } from "@galileo3d/engine/v6";
+import { loadHdrEnvironment } from "@galileo3d/engine/production-runtime";
 
 const environment = await loadHdrEnvironment({
-  url: "/fixtures/v6/environments/hdri/studio_small_08_1k.hdr",
+  url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
   id: "studio-small-08",
   intensity: 1.2,
   toneMapping: { operator: "filmic", exposure: 1.08, whitePoint: 11.2 }

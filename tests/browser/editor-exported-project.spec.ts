@@ -35,7 +35,7 @@ test.describe("editor exported project", () => {
   });
 
   test("runs the checked-in V3 editor-authored app with imported asset, material, behavior, and export provenance", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/editor-authored-v3-app/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/foundation-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__GALILEO3D_EXPORTED_PROJECT__?.status === "ready");
 
     const result = await page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__);

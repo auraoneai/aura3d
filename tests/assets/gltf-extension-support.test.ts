@@ -104,7 +104,7 @@ describe("glTF extension support matrix", () => {
   });
 
   it("keeps HDR and EXR loader diagnostics honest about decode parity", () => {
-    const existingHdr = "fixtures/v5/environments/hdri/studio_small_08_1k.hdr";
+    const existingHdr = "fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr";
     expect(new HDRLoader().load(existingHdr)).toMatchObject({
       loader: "HDRLoaderV5",
       status: "loaded"
@@ -114,7 +114,7 @@ describe("glTF extension support matrix", () => {
       status: "diagnostic-only",
       warnings: [expect.stringContaining("diagnostic-only")]
     });
-    expect(new EXRLoader().load("fixtures/v5/environments/hdri/missing.exr")).toMatchObject({
+    expect(new EXRLoader().load("fixtures/three-compat/environments/hdri/missing.exr")).toMatchObject({
       status: "missing",
       bytes: 0
     });

@@ -2,6 +2,11 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
+import {
+  CONTEXTUAL_FIXTURE_ALIASES,
+  CONTEXTUAL_REPORT_ALIASES,
+  CONTEXTUAL_ROUTE_ALIASES
+} from "./contextualAliases";
 
 export type MigrationClassification =
   | "public-api"
@@ -33,6 +38,7 @@ export interface ActiveReferenceRecord {
     | "script"
     | "source-import"
     | "tsconfig-alias"
+    | "vite-alias"
     | "vitest-alias";
   readonly source: string;
   readonly reference: string;
@@ -90,6 +96,16 @@ const TEXT_EXTENSIONS = new Set([
 const ARCHIVAL_REASON = "Historical phase evidence or roadmap record; retain the versioned path to preserve provenance until a scoped owner approves a rename batch.";
 const RELEASE_ARCHIVE_REASON = "Frozen release handoff artifact; retain the versioned path because hashes, tarballs, and external restore instructions are archival evidence.";
 const REPORT_ARCHIVE_REASON = "Generated evidence path; retain until all current and historical report readers have contextual aliases and fixture/report hash expectations are updated.";
+const PHASE_SCRIPT_NAMES: Readonly<Record<string, string>> = {
+  v2: "product-studio",
+  v3: "foundation",
+  v4: "external-parity",
+  v5: "three-compat",
+  v6: "production-runtime",
+  v8: "current-routes",
+  v9: "threejs-parity",
+  v10: "superiority"
+};
 
 export function isVersionStylePath(path: string): boolean {
   return VERSIONED_PATH_PATTERN.test(toPosix(path));
@@ -206,10 +222,11 @@ export function buildMigrationReportData(rootDir = process.cwd(), generatedDate 
 }
 
 export function extractActiveReferences(files: readonly { readonly path: string; readonly text: string }[]): ActiveReferenceRecord[] {
-  const records: ActiveReferenceRecord[] = [];
+  const records: ActiveReferenceRecord[] = [...contextualAliasReferences()];
   for (const file of files) {
     records.push(...extractPackageJsonReferences(file));
     records.push(...extractTsconfigReferences(file));
+    records.push(...extractViteReferences(file));
     records.push(...extractVitestReferences(file));
     records.push(...extractImportReferences(file));
     records.push(...extractPathLikeReferences(file));
@@ -217,6 +234,35 @@ export function extractActiveReferences(files: readonly { readonly path: string;
   return dedupeReferences(records).sort((a, b) =>
     `${a.kind}\0${a.source}\0${a.reference}`.localeCompare(`${b.kind}\0${b.source}\0${b.reference}`)
   );
+}
+
+function contextualAliasReferences(): ActiveReferenceRecord[] {
+  return [
+    ...CONTEXTUAL_ROUTE_ALIASES.map((alias) => ({
+      kind: "route-link" as const,
+      source: "tools/naming-taxonomy/contextualAliases.ts:CONTEXTUAL_ROUTE_ALIASES",
+      reference: alias.legacy,
+      classification: "active-route" as const,
+      target: alias.contextual,
+      compatibilityDecision: alias.reason
+    })),
+    ...CONTEXTUAL_FIXTURE_ALIASES.map((alias) => ({
+      kind: "fixture-url" as const,
+      source: "tools/naming-taxonomy/contextualAliases.ts:CONTEXTUAL_FIXTURE_ALIASES",
+      reference: alias.legacy,
+      classification: "fixture-url" as const,
+      target: alias.contextual,
+      compatibilityDecision: alias.reason
+    })),
+    ...CONTEXTUAL_REPORT_ALIASES.map((alias) => ({
+      kind: "report-reader" as const,
+      source: "tools/naming-taxonomy/contextualAliases.ts:CONTEXTUAL_REPORT_ALIASES",
+      reference: alias.legacy,
+      classification: "report-path" as const,
+      target: alias.contextual,
+      compatibilityDecision: alias.reason
+    }))
+  ];
 }
 
 export function renderMigrationReport(data: MigrationReportData): string {
@@ -254,7 +300,7 @@ export function renderMigrationReport(data: MigrationReportData): string {
     `- Version-style repository directory paths inventoried: ${data.versionedDirectories.length}`,
     `- Active reference records classified: ${data.activeReferences.length}`,
     "- Rename action in this report: none",
-    "- Compatibility posture: keep current versioned public URLs, package exports, fixture URLs, package scripts, and report paths until contextual aliases and focused tests exist.",
+    "- Compatibility posture: contextual app route, package, script, fixture, and report aliases exist; old versioned surfaces remain compatibility aliases, test harnesses, or archival records until each owner batch removes them.",
     "",
     "### Counts By Root",
     "",
@@ -278,19 +324,20 @@ export function renderMigrationReport(data: MigrationReportData): string {
     "",
     "## Compatibility Decisions",
     "",
-    "- Public package exports and TypeScript/Vitest aliases containing `/v6` or `/v9` remain compatibility aliases until contextual package subpaths are added and package smoke tests cover both old and new names.",
-    "- Browser routes under `/apps/v*` remain current public/local URLs until a route registry or redirect layer maps contextual route names back to the historical URLs.",
-    "- Fixture URLs under `fixtures/v*` remain current fetch paths until manifests expose contextual aliases and every runtime/test consumer is updated in the same batch.",
-    "- `tests/reports/v9/advanced-examples-gallery` remains the current generated evidence directory. `tools/v9-advanced-gallery-report-audit` already accepts `--report-dir`; `tools/v9-advanced-gallery-visual-review` still hardcodes the current directory, so a contextual report path remains blocked until that reader gains an aliasable report-dir option.",
+    "- Public package exports and TypeScript/Vite/Vitest aliases now include contextual production-runtime, advanced-runtime, asset-corpus, advanced-gallery, and workflows/production names. Legacy `/v6` and `/v9` exports remain compatibility aliases and are covered by focused import parity tests.",
+    "- Public app route URLs now have contextual `/apps/<capability>/` aliases for the current V5/V6/V7/V8/V9 surfaces while the old `/apps/v*` URLs remain Vite compatibility aliases for historical links and tests.",
+    "- Versioned package scripts now have contextual command aliases such as `production-runtime:*`, `current-routes:*`, `threejs-parity:*`, and `superiority:*`; old `v*` script names remain wrappers for compatibility.",
+    "- Current advanced-gallery fixture fetch URLs use contextual fixture prefixes where the Vite alias layer can map them to existing `fixtures/v*` files. Legacy fixture paths remain compatibility aliases and are covered by browser byte-hash tests for the first alias batch.",
+    "- `tests/reports/advanced-examples-gallery` is the contextual advanced-gallery evidence directory. The visual-review and report-audit tools both accept `--report-dir` and fall back to the historical `tests/reports/v9/advanced-examples-gallery` directory for old report sets.",
     "- Historical project docs, release handoffs, and older generated reports are archival records, not rename candidates, unless an owning migration batch explicitly reclassifies them.",
     "",
     "## Checklist Evidence",
     "",
     "- Provable now: every repository version-style file path under the scoped roots and every version-style directory implied by those files has a row below with a contextual target or an archival/generated-artifact reason.",
     "- Provable now: active package exports, package file entries, TypeScript/Vitest aliases, scripts, route links, fixture URLs, report readers, and versioned imports detected by this tool are classified below.",
-    "- Still blocked: active imports/routes/exports/scripts/fixtures/report readers have not all moved to contextual names; many remain compatibility aliases by decision.",
-    "- Still blocked: route/package/fixture alias tests are not broad enough to remove old names.",
-    "- Still blocked: raw `rg \"v[0-9]\"` still finds active compatibility aliases and historical records across the repo; this report classifies them, but it does not make the raw search small.",
+    "- Provable now: the current advanced-gallery alias batch has focused browser route, fixture-byte, package import/export, and report-reader fallback coverage.",
+    "- Remaining version-style hits are retained as classified compatibility aliases, test harnesses, generated report records, or historical archive records until the owning migration batch removes them.",
+    "- Raw `rg \"v[0-9]\"` remains intentionally non-empty because compatibility aliases and archival records still exist; use this generated report as the classifier for those hits before removal.",
     "",
     "## Active Reference Classification",
     "",
@@ -359,6 +406,15 @@ function contextualReportTarget(path: string): string {
   if (path.startsWith("tests/reports/v9/advanced-examples-gallery/")) {
     return path.replace("tests/reports/v9/advanced-examples-gallery/", "tests/reports/advanced-examples-gallery/");
   }
+  if (path === "tests/reports/v7") return "tests/reports/runtime-parity";
+  if (path.startsWith("tests/reports/v7/")) return path.replace("tests/reports/v7/", "tests/reports/runtime-parity/");
+  if (path === "tests/reports/v8") return "tests/reports/current-routes";
+  if (path.startsWith("tests/reports/v8/")) return path.replace("tests/reports/v8/", "tests/reports/current-routes/");
+  if (path === "tests/reports/v9") return "tests/reports/threejs-parity";
+  if (path.startsWith("tests/reports/v9/")) return path.replace("tests/reports/v9/", "tests/reports/threejs-parity/");
+  if (path.startsWith("tests/reports/v2-product-studio")) return path.replace("tests/reports/v2-product-studio", "tests/reports/product-studio");
+  if (/^tests\/reports\/v3(?=$|[-/.])/.test(path)) return path.replace("tests/reports/v3", "tests/reports/foundation");
+  if (/^tests\/reports\/v4(?=$|[-/.])/.test(path)) return path.replace("tests/reports/v4", "tests/reports/external-parity");
   if (/^tests\/reports\/v[0-9]+-/.test(path)) return contextualizePath(path);
   return path.replace(/^tests\/reports\/v([0-9]+)\//, "tests/reports/phase-$1-archive/");
 }
@@ -453,7 +509,8 @@ function extractTsconfigReferences(file: { readonly path: string; readonly text:
 
 function extractVitestReferences(file: { readonly path: string; readonly text: string }): ActiveReferenceRecord[] {
   if (file.path !== "vitest.config.ts") return [];
-  return matchAll(file.text, /["']([^"']*v[0-9][^"']*)["']\s*:\s*new URL\(["']([^"']+)["']/g)
+  return matchAll(file.text, /["']([^"']+)["']\s*:\s*new URL\(["']([^"']+)["']/g)
+    .filter((match) => VERSIONED_TEXT_PATTERN.test(match[1] ?? "") || VERSIONED_TEXT_PATTERN.test(match[2] ?? ""))
     .map((match) => ({
       kind: "vitest-alias" as const,
       source: `${file.path}:resolve.alias.${match[1]}`,
@@ -461,6 +518,20 @@ function extractVitestReferences(file: { readonly path: string; readonly text: s
       classification: "public-api" as const,
       target: contextualPackageExportTarget(match[1] ?? "", match[2] ?? ""),
       compatibilityDecision: "Vitest alias mirrors public/workspace package names; keep old alias until contextual aliases and tests exist."
+    }));
+}
+
+function extractViteReferences(file: { readonly path: string; readonly text: string }): ActiveReferenceRecord[] {
+  if (file.path !== "vite.config.ts") return [];
+  return matchAll(file.text, /\[\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']\s*\]/g)
+    .filter((match) => VERSIONED_TEXT_PATTERN.test(match[1] ?? "") || VERSIONED_TEXT_PATTERN.test(match[2] ?? ""))
+    .map((match) => ({
+      kind: "vite-alias" as const,
+      source: `${file.path}:aliasEntries.${match[1]}`,
+      reference: `${match[1]} -> ${match[2]}`,
+      classification: "public-api" as const,
+      target: contextualPackageExportTarget(match[1] ?? "", match[2] ?? ""),
+      compatibilityDecision: "Vite alias mirrors public/workspace package names; keep old alias until contextual aliases and browser route tests cover consumers."
     }));
 }
 
@@ -540,10 +611,21 @@ function contextualPackageExportTarget(key: string, value: string): string {
 }
 
 function contextualScriptTarget(name: string, value: string): string {
-  if (name.includes("v9:advanced-gallery")) return name.replace("v9:advanced-gallery", "advanced-gallery");
-  const contextualName = name.replace(/(^|:)v[0-9]+(?=:|$)/g, "$1").replace(/::+/g, ":").replace(/^:/, "");
+  const contextualName = contextualizeScriptName(name);
   const contextualValue = contextualizePath(value);
   return `${contextualName || name} = ${contextualValue}`;
+}
+
+function contextualizeScriptName(name: string): string {
+  let output = name;
+  for (const [version, contextual] of Object.entries(PHASE_SCRIPT_NAMES)) {
+    if (output === version) output = contextual;
+    output = output
+      .replace(new RegExp(`^${version}:`), `${contextual}:`)
+      .replace(new RegExp(`:${version}(?=[-:]|$)`, "g"), `:${contextual}`)
+      .replace(new RegExp(`-${version}(?=[-:]|$)`, "g"), `-${contextual}`);
+  }
+  return output;
 }
 
 function readActiveReferenceSources(rootDir: string, trackedFiles: readonly string[]): { readonly path: string; readonly text: string }[] {
@@ -554,7 +636,7 @@ function readActiveReferenceSources(rootDir: string, trackedFiles: readonly stri
 }
 
 function isActiveReferenceSource(path: string): boolean {
-  if (path === "package.json" || path === "README.md" || path === "tsconfig.base.json" || path === "vitest.config.ts") return true;
+  if (path === "package.json" || path === "README.md" || path === "tsconfig.base.json" || path === "vite.config.ts" || path === "vitest.config.ts") return true;
   return path.startsWith("apps/")
     || path.startsWith("packages/")
     || path.startsWith("tests/browser/")
@@ -569,7 +651,7 @@ function isReportReaderSource(path: string): boolean {
 }
 
 function isInScannedScope(path: string): boolean {
-  if (path === "package.json" || path === "README.md") return true;
+  if (path === "package.json" || path === "README.md" || path === "tsconfig.base.json" || path === "vite.config.ts" || path === "vitest.config.ts") return true;
   return SCANNED_ROOTS.some((root) => path === root || path.startsWith(`${root}/`));
 }
 
@@ -591,7 +673,7 @@ function isTextPath(path: string): boolean {
 
 function listTrackedFiles(rootDir: string): string[] {
   try {
-    return execFileSync("rg", ["--files", "--", ...SCANNED_ROOTS, "package.json", "README.md", "tsconfig.base.json", "vitest.config.ts"], { cwd: rootDir, encoding: "utf8" })
+    return execFileSync("rg", ["--files", "--", ...SCANNED_ROOTS, "package.json", "README.md", "tsconfig.base.json", "vite.config.ts", "vitest.config.ts"], { cwd: rootDir, encoding: "utf8" })
       .split("\n")
       .map((path) => toPosix(path.trim()))
       .filter(Boolean)

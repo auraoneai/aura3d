@@ -1,0 +1,9 @@
+{
+  "schema": "g3d-production-runtime-template-assets/v1",
+  "fetchInstructions": "Serve the V6 fixture assets at /fixtures/production-runtime or copy the listed files into that same public path before running the template.",
+  "assets": [
+    { "id": "antique-camera", "path": "fixtures/asset-corpus/antique-camera.glb", "sha256": "ae89695479ad997f09ebea8060a5ad01312ad8fe7ffb92f73b4e895109feecd2" },
+    { "id": "duck", "path": "fixtures/asset-corpus/duck.glb", "sha256": "65bf938f54d6073e619e76e007820bbf980cdc3dc0daec0d94830ffc4ae54ab5" },
+    { "id": "autumn-field-puresky", "path": "fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr", "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0" }
+  ]
+}

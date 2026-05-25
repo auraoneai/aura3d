@@ -25,9 +25,9 @@ app.renderer?.render(workflow.source, workflow.camera);
 
 Evidence:
 
-- Example: `examples/product-configurator-v4`
+- Example: `examples/external-product-configurator`
 - App: `apps/product-studio-pro`
-- Screenshot: `tests/reports/v4-gallery/product/product-configurator-v4.png`
-- Same-scene Three.js comparison: `tests/reports/v4-threejs-visual-parity/product-configurator-threejs.png`
+- Screenshot: `tests/reports/external-gallery/product/external-product-configurator.png`
+- Same-scene Three.js comparison: `tests/reports/external-parity-threejs-visual-parity/product-configurator-threejs.png`
 
 Boundary: this is a supported product-visualization workflow, not a full Three.js API replacement.

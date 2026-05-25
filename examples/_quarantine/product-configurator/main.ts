@@ -203,7 +203,7 @@ const productManifestUrl = "/fixtures/assets/v3/product/generated-headphones/man
 const productSourceEvidenceUrl = "/fixtures/assets/v3/product/generated-headphones/source-generation.json";
 const v4ProductAssetUrl = "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf";
 const v4ProductManifestUrl = "/fixtures/assets/v4/product/v4-product-speaker/manifest.json";
-const v4ScreenshotPath = "tests/reports/v4-example-screenshots/product-configurator.png";
+const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/product-configurator.png";
 const productLodGeometries = {
   highEarcup: Geometry.capsule({ radius: 0.34, height: 1.02, segments: 32, rings: 8 }),
   mediumEarcup: Geometry.capsule({ radius: 0.34, height: 1.02, segments: 18, rings: 5 }),
@@ -297,7 +297,7 @@ if (typeof document !== "undefined") {
         source: "v4-generated-local-gltf",
         url: v4ProductAssetUrl,
         manifestUrl: v4ProductManifestUrl,
-        generator: "tools/asset-v4-corpus/index.ts",
+        generator: "tools/external-parity-asset-corpus/index.ts",
         meshCount: 0,
         materialCount: 0,
         textureCount: 0,

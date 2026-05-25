@@ -11,7 +11,7 @@ The agent must treat this as an execution contract, not a brainstorming brief. E
 
 Latest verified local status:
 
-- Completion audit timestamp: read `generatedAt` from `tests/reports/v4-completion-audit.json` at the start of the run; do not hand-maintain this prompt as the timestamp source of truth.
+- Completion audit timestamp: read `generatedAt` from `tests/reports/external-parity-completion-audit.json` at the start of the run; do not hand-maintain this prompt as the timestamp source of truth.
 - Current result: `2/13` achieved.
 - Achieved and must be preserved: `full-gltf-parity`, `full-webgpu-parity`.
 - Missing: `threejs-broad-superiority`, `babylonjs-broad-superiority`, `unity-parity`, `unreal-parity`, `unity-unreal-replacement`, `production-readiness`, `full-pbr-parity`, `production-hdr-render-target-parity`, `production-shadow-map-parity`, `full-postprocess-suite-parity`, `rendered-product-visual-parity`.
@@ -23,7 +23,7 @@ Latest verified local status:
 
 Current local reality:
 
-- The V4 visual-quality gate is currently blocked again, intentionally. `tools/v4-visual-quality/index.ts` now rejects primitive/debug-dominated flagship scenes instead of accepting nonblank screenshots. The current blocker is that product, architecture, game, and racing scenes still rely too heavily on unlit/depth-disabled overlays, primitive factories, and evidence scaffolding. Manual review confirms the examples are not visually impressive, high-definition, production-ready, or Unity/Unreal/Three.js/Babylon parity proof.
+- The V4 visual-quality gate is currently blocked again, intentionally. `tools/external-parity-visual-quality/index.ts` now rejects primitive/debug-dominated flagship scenes instead of accepting nonblank screenshots. The current blocker is that product, architecture, game, and racing scenes still rely too heavily on unlit/depth-disabled overlays, primitive factories, and evidence scaffolding. Manual review confirms the examples are not visually impressive, high-definition, production-ready, or Unity/Unreal/Three.js/Babylon parity proof.
 - Local renderer/product evidence is already strong enough for scoped G3D/Three.js/Babylon checks in several reports, but broad superiority remains false because lower gates and external Unity/Unreal/production gates are not complete.
 - Asset import is glTF-first with native `glb`, `gltf`, and bounded geometry-only `obj` support. `dae`, `fbx`, `usd`, and `usdz` remain conversion-required. Do not describe this as Unity/Unreal/DCC import parity.
 - Local production static export and static-server smoke are prepared, but production readiness remains false until a durable public HTTPS deployment report exists for the current static export.
@@ -33,7 +33,7 @@ Current local reality:
 
 Use this strategy before writing more code:
 
-1. Run `pnpm status:v4-parity` and inspect `tests/reports/v4-completion-audit.json`.
+1. Run `pnpm status:v4-parity` and inspect `tests/reports/external-parity-completion-audit.json`.
 2. If a missing goal has only external blockers, do not add local metadata to make it look closer. Work on the external evidence path, handoff package, runner scripts, ingest validators, or public deployment evidence instead.
 3. If a missing goal has a local coding blocker, implement the actual engine/example/test change named by the report, then regenerate the report.
 4. If a goal is already achieved, treat it as a regression guardrail, not a place to churn.
@@ -63,14 +63,14 @@ These are the concrete outcomes the coding agent must create or preserve. A goal
 
 You are the coding agent responsible for completing the remaining G3D V3/V4 parity work. Work in `/Users/gurbakshchahal/G3D`. Your job is not to make the docs sound better; your job is to make the engine, examples, validators, screenshots, benchmarks, and external-evidence handoff strong enough that the parity audits honestly pass.
 
-Start by reading `docs/project/v3-*.md`, `docs/project/v4-*.md`, this file, and the current reports under `tests/reports/`. Then run `pnpm status:v4-parity`. Treat that status report and `tests/reports/v4-completion-audit.json` as the source of truth.
+Start by reading `docs/project/v3-*.md`, `docs/project/v4-*.md`, this file, and the current reports under `tests/reports/`. Then run `pnpm status:v4-parity`. Treat that status report and `tests/reports/external-parity-completion-audit.json` as the source of truth.
 
 The current result is only `2/13` achieved: `full-gltf-parity` and `full-webgpu-parity`. Do not claim the overall objective is complete until all 13 criteria are achieved by the completion audit. The missing goals are `threejs-broad-superiority`, `babylonjs-broad-superiority`, `unity-parity`, `unreal-parity`, `unity-unreal-replacement`, `production-readiness`, `full-pbr-parity`, `production-hdr-render-target-parity`, `production-shadow-map-parity`, `full-postprocess-suite-parity`, and `rendered-product-visual-parity`.
 
 For every implementation slice:
 
 - Pick the highest-leverage missing goal from the tangible outcome ledger below.
-- If `pnpm verify:v4-visual-quality` fails, treat that as the first local coding blocker for product/PBR/HDR/shadow/postprocess visual claims. Fix the examples and renderer output before marking any of those goals ready.
+- If `pnpm verify:external-parity-visual-quality` fails, treat that as the first local coding blocker for product/PBR/HDR/shadow/postprocess visual claims. Fix the examples and renderer output before marking any of those goals ready.
 - Implement the real engine/example/verifier changes needed for that goal.
 - Regenerate the relevant reports and screenshots.
 - Run the listed proof commands for that goal.
@@ -89,7 +89,7 @@ A goal has a real tangible outcome only when all of these are true:
 - A report under `tests/reports/` records the behavior with fresh evidence.
 - Any screenshot artifact is real, current, nonblank, and tied to the current scenario.
 - The relevant audit command passes without weakening its checks.
-- `tests/reports/v4-completion-audit.json` marks the specific goal `achieved: true`, except for guardrail goals that were already achieved and must remain achieved.
+- `tests/reports/external-parity-completion-audit.json` marks the specific goal `achieved: true`, except for guardrail goals that were already achieved and must remain achieved.
 
 The following do not count as outcomes:
 
@@ -105,14 +105,14 @@ You are working in `/Users/gurbakshchahal/G3D`.
 
 Your task is to complete the coding-related work required for G3D V4/V3 parity goals. Do not spend the run adding cosmetic report fields, moving checklist text, or claiming broad parity without rendered evidence. Work from blocked parity goals backward into concrete engine, example, benchmark, and verifier changes.
 
-Current audit snapshot from `tests/reports/v4-completion-audit.json` at its latest `generatedAt` value:
+Current audit snapshot from `tests/reports/external-parity-completion-audit.json` at its latest `generatedAt` value:
 
 - Total goals: 13.
 - Achieved goals: 2.
 - Missing goals: 11.
 - Achieved now: `full-gltf-parity`, `full-webgpu-parity`.
 - Not achieved now: `threejs-broad-superiority`, `babylonjs-broad-superiority`, `unity-parity`, `unreal-parity`, `unity-unreal-replacement`, `production-readiness`, `full-pbr-parity`, `production-hdr-render-target-parity`, `production-shadow-map-parity`, `full-postprocess-suite-parity`, `rendered-product-visual-parity`.
-- Treat `tests/reports/v4-completion-audit.json` as the source of truth for the latest `generatedAt` timestamp before each run.
+- Treat `tests/reports/external-parity-completion-audit.json` as the source of truth for the latest `generatedAt` timestamp before each run.
 
 Current strategic truth:
 
@@ -126,17 +126,17 @@ Before editing code, read:
 - `docs/project/v3-*.md`
 - `docs/project/v4-*.md`
 - `docs/project/v4-old-codebase-port-plan.md` if present
-- `tests/reports/v4-completion-audit.json`
-- `tests/reports/v4-product-visual-parity.json`
-- `tests/reports/v4-pbr-gltf-readiness.json`
-- `tests/reports/v4-pbr-reference-readiness.json`
-- `tests/reports/v4-hdr-render-target-readiness.json`
-- `tests/reports/v4-shadow-map-readiness.json`
-- `tests/reports/v4-postprocess-suite.json`
-- `tests/reports/v4-broad-parity-readiness.json`
-- `tests/reports/v4-unity-unreal-parity.json`
-- `tests/reports/v4-production-readiness.json`
-- `tests/reports/v4-external-evidence-readiness.json`
+- `tests/reports/external-parity-completion-audit.json`
+- `tests/reports/external-parity-product-visual-parity.json`
+- `tests/reports/external-parity-pbr-gltf-readiness.json`
+- `tests/reports/external-parity-pbr-reference-readiness.json`
+- `tests/reports/external-parity-hdr-render-target-readiness.json`
+- `tests/reports/external-parity-shadow-map-readiness.json`
+- `tests/reports/external-parity-postprocess-suite.json`
+- `tests/reports/external-parity-broad-parity-readiness.json`
+- `tests/reports/external-parity-unity-unreal-parity.json`
+- `tests/reports/external-parity-production-readiness.json`
+- `tests/reports/external-parity-external-evidence-readiness.json`
 
 Run:
 
@@ -144,7 +144,7 @@ Run:
 pnpm status:v4-parity
 pnpm status:v4-local-port
 pnpm doctor:v4-external-host
-pnpm audit:v4-github-external-readiness
+pnpm audit:external-parity-github-external-readiness
 ```
 
 Then work only on the highest-impact blocked coding goal.
@@ -153,8 +153,8 @@ Then work only on the highest-impact blocked coding goal.
 
 Before attempting to close any goal whose verifier names Unity, Unreal, or durable public deployment evidence, check whether the external execution path exists. As of the latest local audit, the local code and report path are prepared, but the external infrastructure is not present:
 
-- `pnpm audit:v4-github-external-readiness` writes `tests/reports/v4-github-external-readiness.json` and checks these prerequisites read-only.
-- `.github/workflows/v4-external-engine-baselines.yml` exists locally but is not tracked/pushed, so GitHub cannot run it yet.
+- `pnpm audit:external-parity-github-external-readiness` writes `tests/reports/external-parity-github-external-readiness.json` and checks these prerequisites read-only.
+- `.github/workflows/external-parity-external-engine-baselines.yml` exists locally but is not tracked/pushed, so GitHub cannot run it yet.
 - `.github/workflows/v4-public-demo-deploy.yml` exists locally but is not tracked/pushed, so GitHub cannot deploy the public demo yet.
 - `gh workflow list --repo gchahal1982/G3D2025` did not show the V4 workflows.
 - `gh repo view gchahal1982/G3D2025 --json defaultBranchRef` reports `main` as the default branch.
@@ -171,7 +171,7 @@ Do not keep modifying renderer reports, parity wording, or checklist rows to wor
 ```sh
 git add \
   docs/project/v4-parity-execution-prompt.md package.json docs/project/deployment-rollback.md \
-  .github/workflows/v4-external-engine-baselines.yml \
+  .github/workflows/external-parity-external-engine-baselines.yml \
   .github/workflows/v4-public-demo-deploy.yml \
   examples/portfolio \
   packages/assets/src/AssetImportPreflight.ts \
@@ -181,31 +181,31 @@ git add \
   fixtures/external-engine-baselines/v4 \
   tests/unit/assets/asset-import-preflight.test.ts \
   tests/browser/example-portfolio.spec.ts \
-  tests/browser/example-screenshot-audit-v4.spec.ts \
-  tests/unit/tools/v4-validation.test.ts \
+  tests/browser/example-screenshot-audit-external-parity.spec.ts \
+  tests/unit/tools/external-parity-validation.test.ts \
   tools/external-demo-export tools/external-demo-validation \
-  tools/v4-examples \
-  tools/v4-claim-gates tools/v4-assets tools/v4-current-capability \
-  tools/v4-pbr-reference-readiness tools/v4-shadow-map-readiness \
-  tools/v4-hdr-render-target-readiness tools/v4-production-readiness \
-  tools/v4-pbr-gltf-readiness tools/v4-ecosystem-readiness \
-  tools/v4-broad-parity-readiness tools/v4-completion-audit \
-  tools/v4-parity-status tools/v4-local-port-status tools/v4-reporting \
-  tools/v4-external-engine-baselines tools/v4-external-host-doctor \
-  tools/v4-external-host-runner tools/v4-report-freshness \
-  tools/v4-github-external-readiness tools/v4-external-evidence-readiness \
-  tools/v4-external-evidence-handoff tools/v4-product-visual-parity \
-  tools/v4-pbr-visual-parity tools/v4-shadow-visual-parity \
-  tools/v4-hdr-visual-parity tools/v4-postprocess-suite \
-  tools/v4-unity-unreal-parity tools/compare-engines \
+  tools/external-parity-examples \
+  tools/external-parity-claim-gates tools/external-parity-assets tools/external-parity-current-capability \
+  tools/external-parity-pbr-reference-readiness tools/external-parity-shadow-map-readiness \
+  tools/external-parity-hdr-render-target-readiness tools/external-parity-production-readiness \
+  tools/external-parity-pbr-gltf-readiness tools/external-parity-ecosystem-readiness \
+  tools/external-parity-broad-parity-readiness tools/external-parity-completion-audit \
+  tools/external-parity-parity-status tools/external-parity-local-port-status tools/external-parity-reporting \
+  tools/external-parity-external-engine-baselines tools/external-parity-external-host-doctor \
+  tools/external-parity-external-host-runner tools/external-parity-report-freshness \
+  tools/external-parity-github-external-readiness tools/external-parity-external-evidence-readiness \
+  tools/external-parity-external-evidence-handoff tools/external-parity-product-visual-parity \
+  tools/external-parity-pbr-visual-parity tools/external-parity-shadow-visual-parity \
+  tools/external-parity-hdr-visual-parity tools/external-parity-postprocess-suite \
+  tools/external-parity-unity-unreal-parity tools/compare-engines \
   tools/public-demo-deployment-artifacts tools/public-demo-deployment-smoke \
   tools/static-demo-server-smoke tools/package-provenance \
   release-artifacts/v4-current-handoff-supplement.patch \
   release-artifacts/v4-parity-external-evidence-workflows.patch \
-  release-artifacts/v4-external-evidence-handoff.tar.gz \
-  release-artifacts/v4-external-evidence-handoff.tar.gz.sha256 \
-  release-artifacts/v4-external-evidence-handoff.transfer.json \
-  release-artifacts/v4-external-evidence-handoff \
+  release-artifacts/external-parity-external-evidence-handoff.tar.gz \
+  release-artifacts/external-parity-external-evidence-handoff.tar.gz.sha256 \
+  release-artifacts/external-parity-external-evidence-handoff.transfer.json \
+  release-artifacts/external-parity-external-evidence-handoff \
   release-artifacts/v4-external-evidence-operator-runbook.md \
   release-artifacts/v4-parity-external-evidence-pr.md \
   release-artifacts/codingrelated-completion-audit.md
@@ -228,7 +228,7 @@ Then run or trigger:
 
 ```sh
 gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/G3D2025 --ref main
-gh workflow run v4-external-engine-baselines.yml --repo gchahal1982/G3D2025 --ref main -f engine=all
+gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/G3D2025 --ref main -f engine=all
 ```
 
 Only after those workflows upload real reports should the repo ingest artifacts and rerun:
@@ -243,7 +243,7 @@ These commands are externally visible. Do not run `git push`, `gh workflow run`,
 
 ## Hard Rules
 
-1. Do not claim a goal complete unless `tests/reports/v4-completion-audit.json` says that criterion is achieved.
+1. Do not claim a goal complete unless `tests/reports/external-parity-completion-audit.json` says that criterion is achieved.
 2. Do not treat Unity, Unreal, or public deployment evidence as locally complete unless the real external reports exist and pass.
 3. Do not add new evidence metadata unless an existing verifier cannot express a real passing/failing condition.
 4. Do not improve screenshots by hiding evidence panels while leaving weak rendering unchanged.
@@ -258,19 +258,19 @@ Use this table as the concrete backlog. Each row names the real deliverables tha
 
 | Goal ID | Current status | Local tangible deliverables | External tangible deliverables | Done when |
 | --- | --- | --- | --- | --- |
-| `full-pbr-parity` | Missing | Current renderer imports and renders all claimed glTF PBR fields/extensions; browser material scenes visibly prove metallic/roughness, normal, occlusion, emissive, alpha, double-sided, texture transforms, IBL response, and every claimed advanced lobe; reports reject metadata-only PBR. | Unity/Unreal or other physical-reference evidence required by the audit for remaining advanced parity claims. | `pnpm audit:v4-pbr-reference-readiness`, `pnpm audit:v4-pbr-gltf-readiness`, `pnpm verify:v4-assets`, and `pnpm verify:v4-rendering` pass, then `full-pbr-parity` is `achieved: true` in `v4-completion-audit.json`. |
-| `production-hdr-render-target-parity` | Missing | Real render-target pipeline with color/depth attachments, resize lifecycle, HDR-capable target where supported, tone-map/exposure pass to LDR, fallback diagnostics, and browser pixel validation. | Unity/Unreal HDR same-scene baseline reports if required by the audit. | `pnpm audit:v4-hdr-render-target-readiness`, `pnpm verify:v4-rendering`, and `pnpm verify:v4-examples` pass, then the completion audit marks it achieved. |
-| `production-shadow-map-parity` | Missing | Real shadow-map depth pass, caster/receiver routing, light projection, PCF/bias controls, DPR/resize-safe tests, and product/architecture/game/shadow-lab using real sampled shadows where claimed. | Unity/Unreal shadow same-scene baseline reports if required by the audit. | `pnpm audit:v4-shadow-map-readiness`, `pnpm verify:v4-rendering`, and `pnpm verify:v4-examples` pass, then the completion audit marks it achieved. |
-| `full-postprocess-suite-parity` | Missing | Every claimed effect runs on real scene buffers and has toggle/pixel evidence: tone map, exposure, bloom, FXAA, color grading, saturation/vibrance, temperature/tint, vignette, sharpening, and any depth/history effects only when the real inputs exist. | Unity/Unreal postprocess same-scene baseline reports if required by the audit. | `pnpm audit:v4-postprocess-suite`, `pnpm verify:v4-rendering`, and `pnpm verify:v4-examples` pass, then the completion audit marks it achieved. |
-| `rendered-product-visual-parity` | Missing | Product scene is visually credible and deterministic; same camera/product intent is rendered in G3D, Three.js, and Babylon; screenshots are nonblank, material-rich, and diffed by verifier. | Real Unity and Unreal product visual baseline screenshots/reports with runner evidence sidecars. | `pnpm verify:v4-examples`, `pnpm audit:v4-product-visual-parity`, and `pnpm verify:v4-benchmarks` pass with all four engines accepted, then the completion audit marks it achieved. |
-| `threejs-broad-superiority` | Missing | Local broad-readiness matrix proves G3D beats Three.js across the defined dimensions after lower renderer/product gates pass; comparison harnesses are same-scene and fresh. | None by itself, but the audit currently depends on Unity/Unreal/replacement/production gates being achieved first. | `pnpm verify:v4-benchmarks`, `pnpm audit:v4-broad-parity`, and `pnpm status:v4-parity` show `broadSuperiority.threejs=true` and the completion audit marks it achieved. |
-| `babylonjs-broad-superiority` | Missing | Local broad-readiness matrix proves G3D beats Babylon.js across the defined dimensions after lower renderer/product gates pass; comparison harnesses are same-scene and fresh. | None by itself, but the audit currently depends on Unity/Unreal/replacement/production gates being achieved first. | `pnpm verify:v4-benchmarks`, `pnpm audit:v4-broad-parity`, and `pnpm status:v4-parity` show `broadSuperiority.babylonjs=true` and the completion audit marks it achieved. |
+| `full-pbr-parity` | Missing | Current renderer imports and renders all claimed glTF PBR fields/extensions; browser material scenes visibly prove metallic/roughness, normal, occlusion, emissive, alpha, double-sided, texture transforms, IBL response, and every claimed advanced lobe; reports reject metadata-only PBR. | Unity/Unreal or other physical-reference evidence required by the audit for remaining advanced parity claims. | `pnpm audit:external-parity-pbr-reference-readiness`, `pnpm audit:external-parity-pbr-gltf-readiness`, `pnpm verify:external-parity-assets`, and `pnpm verify:external-parity-rendering` pass, then `full-pbr-parity` is `achieved: true` in `external-parity-completion-audit.json`. |
+| `production-hdr-render-target-parity` | Missing | Real render-target pipeline with color/depth attachments, resize lifecycle, HDR-capable target where supported, tone-map/exposure pass to LDR, fallback diagnostics, and browser pixel validation. | Unity/Unreal HDR same-scene baseline reports if required by the audit. | `pnpm audit:external-parity-hdr-render-target-readiness`, `pnpm verify:external-parity-rendering`, and `pnpm verify:external-parity-examples` pass, then the completion audit marks it achieved. |
+| `production-shadow-map-parity` | Missing | Real shadow-map depth pass, caster/receiver routing, light projection, PCF/bias controls, DPR/resize-safe tests, and product/architecture/game/shadow-lab using real sampled shadows where claimed. | Unity/Unreal shadow same-scene baseline reports if required by the audit. | `pnpm audit:external-parity-shadow-map-readiness`, `pnpm verify:external-parity-rendering`, and `pnpm verify:external-parity-examples` pass, then the completion audit marks it achieved. |
+| `full-postprocess-suite-parity` | Missing | Every claimed effect runs on real scene buffers and has toggle/pixel evidence: tone map, exposure, bloom, FXAA, color grading, saturation/vibrance, temperature/tint, vignette, sharpening, and any depth/history effects only when the real inputs exist. | Unity/Unreal postprocess same-scene baseline reports if required by the audit. | `pnpm audit:external-parity-postprocess-suite`, `pnpm verify:external-parity-rendering`, and `pnpm verify:external-parity-examples` pass, then the completion audit marks it achieved. |
+| `rendered-product-visual-parity` | Missing | Product scene is visually credible and deterministic; same camera/product intent is rendered in G3D, Three.js, and Babylon; screenshots are nonblank, material-rich, and diffed by verifier. | Real Unity and Unreal product visual baseline screenshots/reports with runner evidence sidecars. | `pnpm verify:external-parity-examples`, `pnpm audit:external-parity-product-visual-parity`, and `pnpm verify:external-parity-benchmarks` pass with all four engines accepted, then the completion audit marks it achieved. |
+| `threejs-broad-superiority` | Missing | Local broad-readiness matrix proves G3D beats Three.js across the defined dimensions after lower renderer/product gates pass; comparison harnesses are same-scene and fresh. | None by itself, but the audit currently depends on Unity/Unreal/replacement/production gates being achieved first. | `pnpm verify:external-parity-benchmarks`, `pnpm audit:v4-broad-parity`, and `pnpm status:v4-parity` show `broadSuperiority.threejs=true` and the completion audit marks it achieved. |
+| `babylonjs-broad-superiority` | Missing | Local broad-readiness matrix proves G3D beats Babylon.js across the defined dimensions after lower renderer/product gates pass; comparison harnesses are same-scene and fresh. | None by itself, but the audit currently depends on Unity/Unreal/replacement/production gates being achieved first. | `pnpm verify:external-parity-benchmarks`, `pnpm audit:v4-broad-parity`, and `pnpm status:v4-parity` show `broadSuperiority.babylonjs=true` and the completion audit marks it achieved. |
 | `unity-parity` | Missing | Repo-side Unity export/capture kit, asset-import workflow runner, report validators, workflow files, ingest path, and same-scene descriptors are complete and fail clearly when Unity is unavailable. | Unity editor executable, CLI smoke, Unity runner evidence, Unity asset-import workflow sidecar/report, and same-scene Unity baseline reports for product/PBR/shadow/HDR/postprocess. | `pnpm doctor:v4-external-host`, `pnpm run:v4-external-host-evidence:execute`, and `pnpm preflight:v4-parity:after-external-evidence` pass with Unity evidence, then the completion audit marks it achieved. |
 | `unreal-parity` | Missing | Repo-side Unreal export/capture kit, asset-import workflow runner, report validators, workflow files, ingest path, and same-scene descriptors are complete and fail clearly when Unreal is unavailable. | Unreal editor executable, CLI smoke, Unreal runner evidence, Unreal asset-import workflow sidecar/report, and same-scene Unreal baseline reports for product/PBR/shadow/HDR/postprocess. | `pnpm doctor:v4-external-host`, `pnpm run:v4-external-host-evidence:execute`, and `pnpm preflight:v4-parity:after-external-evidence` pass with Unreal evidence, then the completion audit marks it achieved. |
-| `unity-unreal-replacement` | Missing | Editor/runtime/import/export workflow is end-to-end credible; generated projects build/run; visual examples are production-grade; deployment path is ready; replacement audit rejects shallow editor demos. | Unity and Unreal parity evidence, plus public/deployment/reproduction evidence required by production readiness. | `pnpm verify:v4-editor`, `pnpm verify:v4-runtime`, `pnpm audit:v4-unity-unreal-parity`, `pnpm audit:v4-production-readiness`, and `pnpm status:v4-parity` all support replacement, then the completion audit marks it achieved. |
-| `production-readiness` | Missing | Build/package/install/static-export/report-freshness/provenance checks pass; public demo smoke tooling exists; release artifacts are reproducible and restorable. | Durable public HTTPS deployment report for the current static export, plus external engine evidence if the production audit requires it. | `pnpm build`, `pnpm verify:v4-report-freshness`, `pnpm audit:v4-production-readiness`, and public deployment smoke pass, then the completion audit marks it achieved. |
-| `full-gltf-parity` | Achieved | Preserve loader/material/animation/morph/skinning/corpus coverage while other renderer changes land; fix regressions immediately. | None unless future audit criteria add external conformance evidence. | It remains `achieved: true` after every major slice and after `pnpm verify:v4-assets`, `pnpm audit:v4-gltf-loader-visual-parity`, `pnpm audit:v4-pbr-gltf-readiness`, and `pnpm verify:v4-report-freshness`. |
-| `full-webgpu-parity` | Achieved | Preserve capability detection, fallback behavior, explicit compute claim blocking, and browser evidence boundaries; only add compute if real hardware/browser evidence exists. | Real WebGPU hardware compute evidence only if new compute claims are introduced. | It remains `achieved: true` after every major slice and after `pnpm verify:v4-rendering`, `pnpm verify:v4-report-freshness`, and `pnpm status:v4-parity`. |
+| `unity-unreal-replacement` | Missing | Editor/runtime/import/export workflow is end-to-end credible; generated projects build/run; visual examples are production-grade; deployment path is ready; replacement audit rejects shallow editor demos. | Unity and Unreal parity evidence, plus public/deployment/reproduction evidence required by production readiness. | `pnpm verify:external-parity-editor`, `pnpm verify:external-parity-runtime`, `pnpm audit:external-parity-unity-unreal-parity`, `pnpm audit:external-parity-production-readiness`, and `pnpm status:v4-parity` all support replacement, then the completion audit marks it achieved. |
+| `production-readiness` | Missing | Build/package/install/static-export/report-freshness/provenance checks pass; public demo smoke tooling exists; release artifacts are reproducible and restorable. | Durable public HTTPS deployment report for the current static export, plus external engine evidence if the production audit requires it. | `pnpm build`, `pnpm verify:external-parity-report-freshness`, `pnpm audit:external-parity-production-readiness`, and public deployment smoke pass, then the completion audit marks it achieved. |
+| `full-gltf-parity` | Achieved | Preserve loader/material/animation/morph/skinning/corpus coverage while other renderer changes land; fix regressions immediately. | None unless future audit criteria add external conformance evidence. | It remains `achieved: true` after every major slice and after `pnpm verify:external-parity-assets`, `pnpm audit:external-parity-gltf-loader-visual-parity`, `pnpm audit:external-parity-pbr-gltf-readiness`, and `pnpm verify:external-parity-report-freshness`. |
+| `full-webgpu-parity` | Achieved | Preserve capability detection, fallback behavior, explicit compute claim blocking, and browser evidence boundaries; only add compute if real hardware/browser evidence exists. | Real WebGPU hardware compute evidence only if new compute claims are introduced. | It remains `achieved: true` after every major slice and after `pnpm verify:external-parity-rendering`, `pnpm verify:external-parity-report-freshness`, and `pnpm status:v4-parity`. |
 
 ## Local Readiness Versus Full Parity Certification
 
@@ -284,10 +284,10 @@ Current split from the latest local audit:
 
 | Goal | Local implementation/readiness state | Full parity certification state | Next useful work |
 | --- | --- | --- | --- |
-| `full-pbr-parity` | `pnpm audit:v4-pbr-reference-readiness` and `pnpm audit:v4-pbr-gltf-readiness` run cleanly; local bounded PBR/glTF evidence exists. | `pbrParity=false` and `fullPhysicalPbrParity=false` because Unity/Unreal/external physical-reference parity is not proven. | Generate and ingest real Unity/Unreal PBR baseline reports or add only verifier-required local physical-reference evidence if a future report names a local blocker. |
-| `production-hdr-render-target-parity` | `pnpm audit:v4-hdr-render-target-readiness` runs cleanly; local HDR/render-target evidence exists. | `hdrRenderTargetParity=false` because Unity/Unreal HDR runner sidecars and same-scene baselines are missing. | Run the external HDR baseline path on real Unity/Unreal editors and ingest the reports. |
-| `production-shadow-map-parity` | `pnpm audit:v4-shadow-map-readiness` runs cleanly; local shadow-map evidence exists. | `shadowMapParity=false` because Unity/Unreal shadow runner sidecars and same-scene/cascade parity reports are missing. | Run the external shadow baseline path on real Unity/Unreal editors and ingest the reports. |
-| `full-postprocess-suite-parity` | `pnpm audit:v4-postprocess-suite` runs cleanly and reports 17 implemented real-scene effects. | `postprocessSuiteParity=false` because Unity/Unreal postprocess runner sidecars and same-scene postprocess/HDR evidence are missing. | Run the external postprocess baseline path on real Unity/Unreal editors and ingest the reports. |
+| `full-pbr-parity` | `pnpm audit:external-parity-pbr-reference-readiness` and `pnpm audit:external-parity-pbr-gltf-readiness` run cleanly; local bounded PBR/glTF evidence exists. | `pbrParity=false` and `fullPhysicalPbrParity=false` because Unity/Unreal/external physical-reference parity is not proven. | Generate and ingest real Unity/Unreal PBR baseline reports or add only verifier-required local physical-reference evidence if a future report names a local blocker. |
+| `production-hdr-render-target-parity` | `pnpm audit:external-parity-hdr-render-target-readiness` runs cleanly; local HDR/render-target evidence exists. | `hdrRenderTargetParity=false` because Unity/Unreal HDR runner sidecars and same-scene baselines are missing. | Run the external HDR baseline path on real Unity/Unreal editors and ingest the reports. |
+| `production-shadow-map-parity` | `pnpm audit:external-parity-shadow-map-readiness` runs cleanly; local shadow-map evidence exists. | `shadowMapParity=false` because Unity/Unreal shadow runner sidecars and same-scene/cascade parity reports are missing. | Run the external shadow baseline path on real Unity/Unreal editors and ingest the reports. |
+| `full-postprocess-suite-parity` | `pnpm audit:external-parity-postprocess-suite` runs cleanly and reports 17 implemented real-scene effects. | `postprocessSuiteParity=false` because Unity/Unreal postprocess runner sidecars and same-scene postprocess/HDR evidence are missing. | Run the external postprocess baseline path on real Unity/Unreal editors and ingest the reports. |
 | `rendered-product-visual-parity` | Local Galileo/Three.js/Babylon same-scene product visual evidence is present. | Unity and Unreal product visual parity are false because their same-scene baseline reports/screenshots are missing. | Run the external product visual baselines and ingest Unity/Unreal reports. |
 | `full-gltf-parity` | Achieved and green. | Achieved. | Preserve as a regression guardrail. |
 | `full-webgpu-parity` | Achieved and green. | Achieved. | Preserve as a regression guardrail; do not claim compute unless real hardware evidence exists. |
@@ -300,19 +300,19 @@ Use this as the non-negotiable target list. A goal is not done because the docs 
 
 | Goal | Tangible done outcome | Primary proof |
 | --- | --- | --- |
-| Full PBR parity | Claimed glTF/PBR material features render visibly and correctly across real browser scenes, including maps, alpha modes, double-sided behavior, texture transforms, environment response, and any claimed extensions. | `pnpm audit:v4-pbr-reference-readiness`, `pnpm audit:v4-pbr-gltf-readiness`, `pnpm verify:v4-assets`, `pnpm verify:v4-rendering` |
-| Production HDR/render-target parity | Real scenes render through resize-safe color/depth render targets with HDR-capable buffers where supported, then tone-map/expose to LDR output with fallback diagnostics. | `pnpm audit:v4-hdr-render-target-readiness`, `pnpm verify:v4-rendering`, `pnpm verify:v4-examples` |
-| Production shadow-map parity | Product, architecture, game, and shadow lab use real shadow-map caster/receiver/depth-pass sampling where shadow-map parity is claimed; proxy/contact shadows no longer satisfy this goal. | `pnpm audit:v4-shadow-map-readiness`, `pnpm verify:v4-rendering`, `pnpm verify:v4-examples` |
-| Full postprocess-suite parity | Every claimed postprocess effect runs on real scene buffers, changes pixels when enabled, survives runtime toggles/resizes, and keeps unimplemented effects blocked. | `pnpm audit:v4-postprocess-suite`, `pnpm verify:v4-rendering`, `pnpm verify:v4-examples` |
-| Rendered product visual parity | The product scene is visually credible, materially rich, deterministic, and compared against same-scene Three.js/Babylon baselines, with Unity/Unreal artifacts added when externally available. | `pnpm verify:v4-examples`, `pnpm audit:v4-product-visual-parity`, `pnpm verify:v4-benchmarks` |
-| Three.js broad superiority | Same-scene local benchmarks and screenshots prove G3D beats Three.js under the repo's defined criteria after renderer/material/postprocess/product blockers are resolved. | `pnpm verify:v4-benchmarks`, `pnpm audit:v4-broad-parity`, `pnpm status:v4-parity` |
-| Babylon.js broad superiority | Same-scene local benchmarks and screenshots prove G3D beats Babylon.js under the repo's defined criteria after renderer/material/postprocess/product blockers are resolved. | `pnpm verify:v4-benchmarks`, `pnpm audit:v4-broad-parity`, `pnpm status:v4-parity` |
+| Full PBR parity | Claimed glTF/PBR material features render visibly and correctly across real browser scenes, including maps, alpha modes, double-sided behavior, texture transforms, environment response, and any claimed extensions. | `pnpm audit:external-parity-pbr-reference-readiness`, `pnpm audit:external-parity-pbr-gltf-readiness`, `pnpm verify:external-parity-assets`, `pnpm verify:external-parity-rendering` |
+| Production HDR/render-target parity | Real scenes render through resize-safe color/depth render targets with HDR-capable buffers where supported, then tone-map/expose to LDR output with fallback diagnostics. | `pnpm audit:external-parity-hdr-render-target-readiness`, `pnpm verify:external-parity-rendering`, `pnpm verify:external-parity-examples` |
+| Production shadow-map parity | Product, architecture, game, and shadow lab use real shadow-map caster/receiver/depth-pass sampling where shadow-map parity is claimed; proxy/contact shadows no longer satisfy this goal. | `pnpm audit:external-parity-shadow-map-readiness`, `pnpm verify:external-parity-rendering`, `pnpm verify:external-parity-examples` |
+| Full postprocess-suite parity | Every claimed postprocess effect runs on real scene buffers, changes pixels when enabled, survives runtime toggles/resizes, and keeps unimplemented effects blocked. | `pnpm audit:external-parity-postprocess-suite`, `pnpm verify:external-parity-rendering`, `pnpm verify:external-parity-examples` |
+| Rendered product visual parity | The product scene is visually credible, materially rich, deterministic, and compared against same-scene Three.js/Babylon baselines, with Unity/Unreal artifacts added when externally available. | `pnpm verify:external-parity-examples`, `pnpm audit:external-parity-product-visual-parity`, `pnpm verify:external-parity-benchmarks` |
+| Three.js broad superiority | Same-scene local benchmarks and screenshots prove G3D beats Three.js under the repo's defined criteria after renderer/material/postprocess/product blockers are resolved. | `pnpm verify:external-parity-benchmarks`, `pnpm audit:v4-broad-parity`, `pnpm status:v4-parity` |
+| Babylon.js broad superiority | Same-scene local benchmarks and screenshots prove G3D beats Babylon.js under the repo's defined criteria after renderer/material/postprocess/product blockers are resolved. | `pnpm verify:external-parity-benchmarks`, `pnpm audit:v4-broad-parity`, `pnpm status:v4-parity` |
 | Unity parity | Repo-side Unity export/capture validation is ready, and real Unity editor evidence has been generated and ingested; missing Unity executable remains an external blocker, not a local claim. | `pnpm doctor:v4-external-host`, `pnpm run:v4-external-host-evidence:execute`, `pnpm preflight:v4-parity:after-external-evidence` |
 | Unreal parity | Repo-side Unreal export/capture validation is ready, and real Unreal editor evidence has been generated and ingested; missing Unreal executable remains an external blocker, not a local claim. | `pnpm doctor:v4-external-host`, `pnpm run:v4-external-host-evidence:execute`, `pnpm preflight:v4-parity:after-external-evidence` |
-| Unity/Unreal replacement | Editor/import/build/runtime workflow is end-to-end credible, visually competitive, publicly deployable, and backed by Unity/Unreal comparison evidence where required. | `pnpm verify:v4-editor`, `pnpm verify:v4-runtime`, `pnpm audit:v4-unity-unreal-parity`, `pnpm audit:v4-production-readiness`, `pnpm status:v4-parity` |
-| Production readiness | Static builds, package/install smoke tests, report freshness, reproducible release artifacts, and public deployment smoke evidence pass without dev-only assumptions. | `pnpm build`, `pnpm verify:v4-report-freshness`, `pnpm audit:v4-production-readiness`, optional `G3D_PUBLIC_DEMO_URL=<url> pnpm verify:public-demo-deployment` |
-| Full glTF parity | The already-achieved glTF criterion stays achieved after all changes; loader/material/animation/morph/skinning/corpus reports stay fresh and honest. | `pnpm verify:v4-assets`, `pnpm audit:v4-gltf-loader-visual-parity`, `pnpm audit:v4-pbr-gltf-readiness`, `pnpm verify:v4-report-freshness`, `pnpm status:v4-parity` |
-| Full WebGPU parity | The already-achieved WebGPU criterion stays achieved; capability/fallback/blocked compute boundaries remain explicit and tested. | `pnpm verify:v4-rendering`, `pnpm verify:v4-report-freshness`, `pnpm status:v4-parity` |
+| Unity/Unreal replacement | Editor/import/build/runtime workflow is end-to-end credible, visually competitive, publicly deployable, and backed by Unity/Unreal comparison evidence where required. | `pnpm verify:external-parity-editor`, `pnpm verify:external-parity-runtime`, `pnpm audit:external-parity-unity-unreal-parity`, `pnpm audit:external-parity-production-readiness`, `pnpm status:v4-parity` |
+| Production readiness | Static builds, package/install smoke tests, report freshness, reproducible release artifacts, and public deployment smoke evidence pass without dev-only assumptions. | `pnpm build`, `pnpm verify:external-parity-report-freshness`, `pnpm audit:external-parity-production-readiness`, optional `G3D_PUBLIC_DEMO_URL=<url> pnpm verify:public-demo-deployment` |
+| Full glTF parity | The already-achieved glTF criterion stays achieved after all changes; loader/material/animation/morph/skinning/corpus reports stay fresh and honest. | `pnpm verify:external-parity-assets`, `pnpm audit:external-parity-gltf-loader-visual-parity`, `pnpm audit:external-parity-pbr-gltf-readiness`, `pnpm verify:external-parity-report-freshness`, `pnpm status:v4-parity` |
+| Full WebGPU parity | The already-achieved WebGPU criterion stays achieved; capability/fallback/blocked compute boundaries remain explicit and tested. | `pnpm verify:external-parity-rendering`, `pnpm verify:external-parity-report-freshness`, `pnpm status:v4-parity` |
 
 ## Per-Goal Acceptance Artifacts
 
@@ -320,19 +320,19 @@ Use this table to keep work tangible. If the artifact listed here does not exist
 
 | Goal ID | Required code artifacts | Required report/screenshot artifacts | Acceptance result |
 | --- | --- | --- | --- |
-| `full-pbr-parity` | Renderer material/shader code for every claimed glTF PBR field and extension; asset-viewer/material-showroom/product scenes wired to those paths; tests that fail on missing map response or metadata-only extension support. | `tests/reports/v4-pbr-gltf-readiness.json`, `tests/reports/v4-pbr-reference-readiness.json`, `tests/reports/v4-asset-material-fidelity.json` or equivalent current asset/material report, current material screenshots under `tests/reports/v4-example-screenshots/`. | Completion audit marks `full-pbr-parity` achieved. |
-| `production-hdr-render-target-parity` | Render-target abstraction with color/depth attachments, HDR-capable format negotiation, resize/dispose lifecycle, tone-map pass, fallback path, and browser validation tests. | `tests/reports/v4-hdr-render-target-readiness.json`, rendering verifier report, screenshots proving target-backed render output and fallback diagnostics. | Completion audit marks `production-hdr-render-target-parity` achieved. |
-| `production-shadow-map-parity` | Depth shadow pass, light-space matrices, caster/receiver routing, sampled shadow shader path, PCF/bias controls, product/architecture/game/shadow-lab integration, resize/DPR tests. | `tests/reports/v4-shadow-map-readiness.json`, real shadow screenshots for lab and flagship scenes, verifier entries proving lit/shadow pixel separation from real geometry. | Completion audit marks `production-shadow-map-parity` achieved. |
-| `full-postprocess-suite-parity` | Real scene-buffer postprocess graph for all claimed effects; toggle controls; pixel-diff tests for each effect; depth/history effects implemented only when real inputs exist. | `tests/reports/v4-postprocess-suite.json`, rendering/examples reports, before/after screenshots or metrics for every claimed effect. | Completion audit marks `full-postprocess-suite-parity` achieved. |
-| `rendered-product-visual-parity` | Product scene upgraded to a credible modeled object with materials, lighting, camera presets, shadows/postprocess where claimed; same-scene Three.js/Babylon harnesses; Unity/Unreal descriptors and ingest path. | `tests/reports/v4-product-visual-parity.json`, `tests/reports/v4-engine-comparison.json`, G3D/Three/Babylon screenshots, and Unity/Unreal screenshots/reports when external baselines are available. | Completion audit marks `rendered-product-visual-parity` achieved. |
-| `threejs-broad-superiority` | Same-scene comparison harnesses and scoring logic that reflect real lower-gate outcomes, not hand-entered superiority flags. | `tests/reports/v4-broad-parity-readiness.json`, `tests/reports/v4-engine-comparison.json`, fresh benchmark/screenshot outputs against Three.js. | Completion audit marks `threejs-broad-superiority` achieved. |
-| `babylonjs-broad-superiority` | Same-scene comparison harnesses and scoring logic that reflect real lower-gate outcomes, not hand-entered superiority flags. | `tests/reports/v4-broad-parity-readiness.json`, `tests/reports/v4-engine-comparison.json`, fresh benchmark/screenshot outputs against Babylon.js. | Completion audit marks `babylonjs-broad-superiority` achieved. |
+| `full-pbr-parity` | Renderer material/shader code for every claimed glTF PBR field and extension; asset-viewer/material-showroom/product scenes wired to those paths; tests that fail on missing map response or metadata-only extension support. | `tests/reports/external-parity-pbr-gltf-readiness.json`, `tests/reports/external-parity-pbr-reference-readiness.json`, `tests/reports/v4-asset-material-fidelity.json` or equivalent current asset/material report, current material screenshots under `tests/reports/v4-example-screenshots/`. | Completion audit marks `full-pbr-parity` achieved. |
+| `production-hdr-render-target-parity` | Render-target abstraction with color/depth attachments, HDR-capable format negotiation, resize/dispose lifecycle, tone-map pass, fallback path, and browser validation tests. | `tests/reports/external-parity-hdr-render-target-readiness.json`, rendering verifier report, screenshots proving target-backed render output and fallback diagnostics. | Completion audit marks `production-hdr-render-target-parity` achieved. |
+| `production-shadow-map-parity` | Depth shadow pass, light-space matrices, caster/receiver routing, sampled shadow shader path, PCF/bias controls, product/architecture/game/shadow-lab integration, resize/DPR tests. | `tests/reports/external-parity-shadow-map-readiness.json`, real shadow screenshots for lab and flagship scenes, verifier entries proving lit/shadow pixel separation from real geometry. | Completion audit marks `production-shadow-map-parity` achieved. |
+| `full-postprocess-suite-parity` | Real scene-buffer postprocess graph for all claimed effects; toggle controls; pixel-diff tests for each effect; depth/history effects implemented only when real inputs exist. | `tests/reports/external-parity-postprocess-suite.json`, rendering/examples reports, before/after screenshots or metrics for every claimed effect. | Completion audit marks `full-postprocess-suite-parity` achieved. |
+| `rendered-product-visual-parity` | Product scene upgraded to a credible modeled object with materials, lighting, camera presets, shadows/postprocess where claimed; same-scene Three.js/Babylon harnesses; Unity/Unreal descriptors and ingest path. | `tests/reports/external-parity-product-visual-parity.json`, `tests/reports/v4-engine-comparison.json`, G3D/Three/Babylon screenshots, and Unity/Unreal screenshots/reports when external baselines are available. | Completion audit marks `rendered-product-visual-parity` achieved. |
+| `threejs-broad-superiority` | Same-scene comparison harnesses and scoring logic that reflect real lower-gate outcomes, not hand-entered superiority flags. | `tests/reports/external-parity-broad-parity-readiness.json`, `tests/reports/v4-engine-comparison.json`, fresh benchmark/screenshot outputs against Three.js. | Completion audit marks `threejs-broad-superiority` achieved. |
+| `babylonjs-broad-superiority` | Same-scene comparison harnesses and scoring logic that reflect real lower-gate outcomes, not hand-entered superiority flags. | `tests/reports/external-parity-broad-parity-readiness.json`, `tests/reports/v4-engine-comparison.json`, fresh benchmark/screenshot outputs against Babylon.js. | Completion audit marks `babylonjs-broad-superiority` achieved. |
 | `unity-parity` | Unity runner scripts, generated Unity scene descriptors, asset-import workflow runner, report validators, ingest command, and GitHub workflow/readiness tooling. | `tests/reports/v4-unity-editor-cli-smoke.json`, `tests/reports/v4-unity-asset-import-workflow.json`, Unity visual baseline reports/screenshots, Unity sidecar evidence files. | Completion audit marks `unity-parity` achieved only after real Unity evidence is ingested. |
 | `unreal-parity` | Unreal runner scripts, generated Unreal scene descriptors, asset-import workflow runner, report validators, ingest command, and GitHub workflow/readiness tooling. | `tests/reports/v4-unreal-editor-cli-smoke.json`, `tests/reports/v4-unreal-asset-import-workflow.json`, Unreal visual baseline reports/screenshots, Unreal sidecar evidence files. | Completion audit marks `unreal-parity` achieved only after real Unreal evidence is ingested. |
-| `unity-unreal-replacement` | Editor/import/export/runtime workflows that can author, import, build, and run a project; replacement audit that rejects shallow demos; visual quality gates tied to renderer/product goals. | `tests/reports/v4-unity-unreal-parity.json`, editor/runtime reports, production readiness report, Unity/Unreal evidence reports, current completion audit. | Completion audit marks `unity-unreal-replacement` achieved. |
-| `production-readiness` | Production build/static export/package install smoke, public demo verification tooling, release artifact generation, report freshness/provenance checks. | `tests/reports/v4-production-readiness.json`, public deployment smoke report when a URL exists, release artifacts under `release-artifacts/`, freshness reports. | Completion audit marks `production-readiness` achieved. |
-| `full-gltf-parity` | Existing glTF loader/material/texture/animation/morph/skinning code remains working; any renderer changes preserve corpus behavior. | `tests/reports/v4-gltf-loader-visual-parity.json`, `tests/reports/v4-pbr-gltf-readiness.json`, V4 asset reports/screenshots, report freshness output. | Completion audit continues to mark `full-gltf-parity` achieved after every slice. |
-| `full-webgpu-parity` | Existing WebGPU capability/fallback/blocked-claim code remains honest; compute paths are added only with real hardware evidence. | `tests/reports/v4-rendering.json`, WebGPU capability screenshot/report entries, report freshness output. | Completion audit continues to mark `full-webgpu-parity` achieved after every slice. |
+| `unity-unreal-replacement` | Editor/import/export/runtime workflows that can author, import, build, and run a project; replacement audit that rejects shallow demos; visual quality gates tied to renderer/product goals. | `tests/reports/external-parity-unity-unreal-parity.json`, editor/runtime reports, production readiness report, Unity/Unreal evidence reports, current completion audit. | Completion audit marks `unity-unreal-replacement` achieved. |
+| `production-readiness` | Production build/static export/package install smoke, public demo verification tooling, release artifact generation, report freshness/provenance checks. | `tests/reports/external-parity-production-readiness.json`, public deployment smoke report when a URL exists, release artifacts under `release-artifacts/`, freshness reports. | Completion audit marks `production-readiness` achieved. |
+| `full-gltf-parity` | Existing glTF loader/material/texture/animation/morph/skinning code remains working; any renderer changes preserve corpus behavior. | `tests/reports/external-parity-gltf-loader-visual-parity.json`, `tests/reports/external-parity-pbr-gltf-readiness.json`, V4 asset reports/screenshots, report freshness output. | Completion audit continues to mark `full-gltf-parity` achieved after every slice. |
+| `full-webgpu-parity` | Existing WebGPU capability/fallback/blocked-claim code remains honest; compute paths are added only with real hardware evidence. | `tests/reports/external-parity-rendering.json`, WebGPU capability screenshot/report entries, report freshness output. | Completion audit continues to mark `full-webgpu-parity` achieved after every slice. |
 
 ## Goal 1: Full PBR Parity
 
@@ -341,14 +341,14 @@ Classification: coding-related, but currently external-certification-blocked for
 Current local state:
 
 - Local bounded PBR/glTF implementation evidence is present.
-- `pnpm audit:v4-pbr-reference-readiness` reports `ok=true` and `fullPhysicalPbrParity=false`.
-- `pnpm audit:v4-pbr-gltf-readiness` reports `ok=true`, `gltfParity=true`, and `pbrParity=false`.
+- `pnpm audit:external-parity-pbr-reference-readiness` reports `ok=true` and `fullPhysicalPbrParity=false`.
+- `pnpm audit:external-parity-pbr-gltf-readiness` reports `ok=true`, `gltfParity=true`, and `pbrParity=false`.
 - The remaining blockers are Unity/Unreal or external physical-reference parity reports, not generic local PBR feature metadata.
 
 Tangible coding outcome:
 
 - G3D has a real PBR material path that covers the material behavior required by the readiness reports.
-- Implement or complete the missing material features shown as blockers in `v4-pbr-gltf-readiness.json` and `v4-pbr-reference-readiness.json`.
+- Implement or complete the missing material features shown as blockers in `external-parity-pbr-gltf-readiness.json` and `external-parity-pbr-reference-readiness.json`.
 - Expected feature areas include:
   - metallic/roughness response
   - normal maps
@@ -376,15 +376,15 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm audit:v4-pbr-reference-readiness
-pnpm audit:v4-pbr-gltf-readiness
-pnpm verify:v4-assets
-pnpm verify:v4-rendering
+pnpm audit:external-parity-pbr-reference-readiness
+pnpm audit:external-parity-pbr-gltf-readiness
+pnpm verify:external-parity-assets
+pnpm verify:external-parity-rendering
 ```
 
 Completion condition:
 
-- `full-pbr-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `full-pbr-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - If the local readiness reports remain `ok=true` and list only Unity/Unreal/external physical-reference blockers, do not spend another slice adding unrelated local PBR demos. Move to the external baseline generation/ingest path.
 
 ## Goal 2: Production HDR / Render-Target Parity
@@ -394,7 +394,7 @@ Classification: coding-related, but currently external-certification-blocked for
 Current local state:
 
 - Local HDR/render-target implementation evidence is present.
-- `pnpm audit:v4-hdr-render-target-readiness` reports `ok=true` and `hdrRenderTargetParity=false`.
+- `pnpm audit:external-parity-hdr-render-target-readiness` reports `ok=true` and `hdrRenderTargetParity=false`.
 - The remaining blockers are actual Unity/Unreal HDR runner evidence sidecars and same-scene HDR/IBL comparison reports.
 
 Tangible coding outcome:
@@ -419,14 +419,14 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm audit:v4-hdr-render-target-readiness
-pnpm verify:v4-rendering
-pnpm verify:v4-examples
+pnpm audit:external-parity-hdr-render-target-readiness
+pnpm verify:external-parity-rendering
+pnpm verify:external-parity-examples
 ```
 
 Completion condition:
 
-- `production-hdr-render-target-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `production-hdr-render-target-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - If the local readiness report remains `ok=true` and lists only Unity/Unreal baseline blockers, move to external evidence execution/ingest instead of adding unrelated local HDR metadata.
 
 ## Goal 3: Production Shadow-Map Parity
@@ -436,7 +436,7 @@ Classification: coding-related, but currently external-certification-blocked for
 Current local state:
 
 - Local directional/cascaded/PCF/point/spot/forward-pass shadow-map evidence is present.
-- `pnpm audit:v4-shadow-map-readiness` reports `ok=true` and `shadowMapParity=false`.
+- `pnpm audit:external-parity-shadow-map-readiness` reports `ok=true` and `shadowMapParity=false`.
 - The remaining blockers are actual Unity/Unreal shadow runner evidence sidecars, same-scene shadow pixel parity, and Unity/Unreal atlas/cascade selection parity.
 
 Tangible coding outcome:
@@ -462,14 +462,14 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm audit:v4-shadow-map-readiness
-pnpm verify:v4-rendering
-pnpm verify:v4-examples
+pnpm audit:external-parity-shadow-map-readiness
+pnpm verify:external-parity-rendering
+pnpm verify:external-parity-examples
 ```
 
 Completion condition:
 
-- `production-shadow-map-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `production-shadow-map-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - If the local readiness report remains `ok=true` and lists only Unity/Unreal baseline blockers, move to external evidence execution/ingest instead of adding proxy shadow scenes.
 
 ## Goal 4: Full Postprocess-Suite Parity
@@ -479,7 +479,7 @@ Classification: coding-related, but currently external-certification-blocked for
 Current local state:
 
 - Local real-scene postprocess suite evidence is present.
-- `pnpm audit:v4-postprocess-suite` reports `ok=true`, `implementedEffects=17`, `realSceneEffects=17`, and `postprocessSuiteParity=false`.
+- `pnpm audit:external-parity-postprocess-suite` reports `ok=true`, `implementedEffects=17`, `realSceneEffects=17`, and `postprocessSuiteParity=false`.
 - The remaining blockers are actual Unity/Unreal postprocess runner evidence sidecars and same-scene postprocess/HDR image-based-lighting parity.
 
 Tangible coding outcome:
@@ -514,14 +514,14 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm audit:v4-postprocess-suite
-pnpm verify:v4-rendering
-pnpm verify:v4-examples
+pnpm audit:external-parity-postprocess-suite
+pnpm verify:external-parity-rendering
+pnpm verify:external-parity-examples
 ```
 
 Completion condition:
 
-- `full-postprocess-suite-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `full-postprocess-suite-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - If the local suite report remains `ok=true` and lists only Unity/Unreal baseline blockers, move to external evidence execution/ingest instead of adding unrequested effects.
 
 ## Goal 5: Rendered Product Visual Parity
@@ -531,7 +531,7 @@ Classification: coding-heavy, with local Three.js/Babylon evidence present and U
 Current local state:
 
 - Local Galileo/Three.js/Babylon same-scene product visual evidence is present.
-- `tests/reports/v4-product-visual-parity.json` reports local Three.js/Babylon parity but Unity/Unreal parity remains false.
+- `tests/reports/external-parity-product-visual-parity.json` reports local Three.js/Babylon parity but Unity/Unreal parity remains false.
 - The remaining blockers are real Unity and Unreal product visual baseline reports, screenshots, visual-diff evidence, and runner sidecars.
 
 Tangible coding outcome:
@@ -569,9 +569,9 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm verify:v4-examples
-pnpm audit:v4-product-visual-parity
-pnpm verify:v4-benchmarks
+pnpm verify:external-parity-examples
+pnpm audit:external-parity-product-visual-parity
+pnpm verify:external-parity-benchmarks
 ```
 
 Completion condition:
@@ -606,14 +606,14 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm verify:v4-benchmarks
+pnpm verify:external-parity-benchmarks
 pnpm audit:v4-broad-parity
 pnpm status:v4-parity
 ```
 
 Completion condition:
 
-- `threejs-broad-superiority` is achieved in `tests/reports/v4-completion-audit.json`.
+- `threejs-broad-superiority` is achieved in `tests/reports/external-parity-completion-audit.json`.
 
 ## Goal 7: Babylon.js Broad Superiority
 
@@ -639,14 +639,14 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm verify:v4-benchmarks
+pnpm verify:external-parity-benchmarks
 pnpm audit:v4-broad-parity
 pnpm status:v4-parity
 ```
 
 Completion condition:
 
-- `babylonjs-broad-superiority` is achieved in `tests/reports/v4-completion-audit.json`.
+- `babylonjs-broad-superiority` is achieved in `tests/reports/external-parity-completion-audit.json`.
 
 ## Goal 8: Unity Parity
 
@@ -677,7 +677,7 @@ pnpm preflight:v4-parity:after-external-evidence
 
 Completion condition:
 
-- `unity-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `unity-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - Do not claim it locally without real Unity evidence.
 
 ## Goal 9: Unreal Parity
@@ -709,7 +709,7 @@ pnpm preflight:v4-parity:after-external-evidence
 
 Completion condition:
 
-- `unreal-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `unreal-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - Do not claim it locally without real Unreal evidence.
 
 ## Goal 10: Unity / Unreal Replacement
@@ -737,17 +737,17 @@ Tangible proof outcome:
 - These commands are likely required:
 
 ```sh
-pnpm verify:v4-editor
-pnpm verify:v4-runtime
-pnpm verify:v4-examples
-pnpm audit:v4-unity-unreal-parity
-pnpm audit:v4-production-readiness
+pnpm verify:external-parity-editor
+pnpm verify:external-parity-runtime
+pnpm verify:external-parity-examples
+pnpm audit:external-parity-unity-unreal-parity
+pnpm audit:external-parity-production-readiness
 pnpm status:v4-parity
 ```
 
 Completion condition:
 
-- `unity-unreal-replacement` is achieved in `tests/reports/v4-completion-audit.json`.
+- `unity-unreal-replacement` is achieved in `tests/reports/external-parity-completion-audit.json`.
 
 ## Goal 11: Production Readiness
 
@@ -774,20 +774,20 @@ Tangible proof outcome:
 
 ```sh
 pnpm build
-pnpm verify:v4-report-freshness
-pnpm audit:v4-production-readiness
+pnpm verify:external-parity-report-freshness
+pnpm audit:external-parity-production-readiness
 ```
 
 If public URL is available:
 
 ```sh
 G3D_PUBLIC_DEMO_URL=<url> pnpm verify:public-demo-deployment
-pnpm audit:v4-production-readiness
+pnpm audit:external-parity-production-readiness
 ```
 
 Completion condition:
 
-- `production-readiness` is achieved in `tests/reports/v4-completion-audit.json`.
+- `production-readiness` is achieved in `tests/reports/external-parity-completion-audit.json`.
 
 ## Goal 12: Full glTF Parity
 
@@ -816,16 +816,16 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm verify:v4-assets
-pnpm audit:v4-gltf-loader-visual-parity
-pnpm audit:v4-pbr-gltf-readiness
-pnpm verify:v4-report-freshness
+pnpm verify:external-parity-assets
+pnpm audit:external-parity-gltf-loader-visual-parity
+pnpm audit:external-parity-pbr-gltf-readiness
+pnpm verify:external-parity-report-freshness
 pnpm status:v4-parity
 ```
 
 Completion condition:
 
-- `full-gltf-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `full-gltf-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - If it was already achieved at the start of a run, the tangible outcome is no regression after all other parity changes.
 
 ## Goal 13: Full WebGPU Parity
@@ -852,14 +852,14 @@ Tangible proof outcome:
 - These commands pass:
 
 ```sh
-pnpm verify:v4-rendering
+pnpm verify:external-parity-rendering
 pnpm status:v4-parity
-pnpm verify:v4-report-freshness
+pnpm verify:external-parity-report-freshness
 ```
 
 Completion condition:
 
-- `full-webgpu-parity` is achieved in `tests/reports/v4-completion-audit.json`.
+- `full-webgpu-parity` is achieved in `tests/reports/external-parity-completion-audit.json`.
 - If it was already achieved at the start of a run, the tangible outcome is no regression after all other parity changes.
 
 ## Work Order
@@ -914,7 +914,7 @@ Run:
 ```sh
 pnpm status:v4-parity
 pnpm preflight:v4-parity
-pnpm verify:v4-report-freshness
+pnpm verify:external-parity-report-freshness
 ```
 
 If external evidence was generated:
@@ -926,7 +926,7 @@ pnpm preflight:v4-parity:after-external-evidence
 Then inspect:
 
 ```sh
-jq '.criteria[] | {id, achieved, blockers}' tests/reports/v4-completion-audit.json
+jq '.criteria[] | {id, achieved, blockers}' tests/reports/external-parity-completion-audit.json
 ```
 
 Final answer must state:

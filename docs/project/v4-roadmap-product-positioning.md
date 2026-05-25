@@ -32,11 +32,11 @@ G3D Visual Engine V4 is being built as a high-quality Three.js competitor for:
 
 ## Evidence
 
-- Public API: `tests/reports/v4-api-readiness.json`
-- Template install/build: `tests/reports/v4-template-readiness.json`
-- Three.js parity: `tests/reports/v4-threejs-visual-parity.json`
-- Gallery/visual QA: `tests/reports/v4-examples-readiness.json`
-- External package consumer: `tests/reports/v4-external-consumer.json`
+- Public API: `tests/reports/external-parity-api-readiness.json`
+- Template install/build: `tests/reports/external-parity-template-readiness.json`
+- Three.js parity: `tests/reports/external-parity-threejs-visual-parity.json`
+- Gallery/visual QA: `tests/reports/external-parity-examples-readiness.json`
+- External package consumer: `tests/reports/external-parity-external-consumer.json`
 
 ## Boundary
 

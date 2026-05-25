@@ -9,18 +9,18 @@ G3D V5 is being built as a premium browser 3D engine that can credibly sit besid
 
 The release bundle must include final screenshots for:
 
-- Premium product viewer: `tests/reports/v5-gallery/product/premium-product-viewer.png`
-- Automotive configurator: `tests/reports/v5-gallery/automotive/automotive-configurator.png`
-- Architecture daylight: `tests/reports/v5-gallery/architecture-day/interior-daylight.png`
-- Architecture night: `tests/reports/v5-gallery/architecture-night/interior-night.png`
-- Material library: `tests/reports/v5-gallery/materials/material-library.png`
-- Asset inspector: `tests/reports/v5-gallery/assets/asset-inspector.png`
-- Character animation: `tests/reports/v5-gallery/character/character-animation.png`
-- Cinematic postprocess: `tests/reports/v5-gallery/postprocess/cinematic-postprocess.png`
-- Particle VFX: `tests/reports/v5-gallery/vfx/particle-vfx.png`
-- Large instanced scene: `tests/reports/v5-gallery/large-scene/large-instanced-scene.png`
-- Shader lab: `tests/reports/v5-gallery/shader-lab/shader-lab.png`
-- Migrated Three.js scene: `tests/reports/v5-gallery/threejs-migration/migrated-threejs-scene.png`
+- Premium product viewer: `tests/reports/three-compat-gallery/product/premium-product-viewer.png`
+- Automotive configurator: `tests/reports/three-compat-gallery/automotive/automotive-configurator.png`
+- Architecture daylight: `tests/reports/three-compat-gallery/architecture-day/interior-daylight.png`
+- Architecture night: `tests/reports/three-compat-gallery/architecture-night/interior-night.png`
+- Material library: `tests/reports/three-compat-gallery/materials/material-library.png`
+- Asset inspector: `tests/reports/three-compat-gallery/assets/asset-inspector.png`
+- Character animation: `tests/reports/three-compat-gallery/character/character-animation.png`
+- Cinematic postprocess: `tests/reports/three-compat-gallery/postprocess/cinematic-postprocess.png`
+- Particle VFX: `tests/reports/three-compat-gallery/vfx/particle-vfx.png`
+- Large instanced scene: `tests/reports/three-compat-gallery/large-scene/large-instanced-scene.png`
+- Shader lab: `tests/reports/three-compat-gallery/shader-lab/shader-lab.png`
+- Migrated Three.js scene: `tests/reports/three-compat-gallery/threejs-migration/migrated-threejs-scene.png`
 
 ## Quality Bar
 
@@ -37,7 +37,7 @@ Each flagship screenshot must answer yes to these release questions:
 
 ## Numeric Evidence
 
-The visual target is gated by `tests/reports/v5-threejs-visual-parity.json`, which must include at least 13 same-scene comparisons and at least 10 visual score passes at or above the V5 threshold. The release is also gated by `docs/project/v5-roadmap-human-visual-review.md`, which must explicitly approve every flagship scene.
+The visual target is gated by `tests/reports/three-compat-threejs-visual-parity.json`, which must include at least 13 same-scene comparisons and at least 10 visual score passes at or above the V5 threshold. The release is also gated by `docs/project/three-compat-roadmap-human-visual-review.md`, which must explicitly approve every flagship scene.
 
 ## What This Does Not Claim
 

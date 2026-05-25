@@ -2,7 +2,7 @@ import { chromium, test, expect, type Page } from "@playwright/test";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { readV6PngStats, type V6PngStats } from "../../tools/v6-report-bridge/pngStats";
+import { readV6PngStats, type V6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 
 interface WowRoute {
   readonly slug: string;

@@ -44,8 +44,8 @@ export type {
   WebGPURenderToTextureProof,
   WebGPURenderToTextureProofOptions
 } from "./WebGPURenderToTextureProof";
-export { RendererV9 } from "./v9";
-export type { RendererV9Options, RendererV9Source } from "./v9";
+export { RendererV9 } from "./advanced-runtime";
+export type { RendererV9Options, RendererV9Source } from "./advanced-runtime";
 
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
@@ -344,7 +344,7 @@ export {
   createRendererV5,
   summarizeV5RendererDiagnostics,
   V5_REQUIRED_RENDERER_FEATURES
-} from "./v5";
+} from "./threejs-compatibility";
 export type {
   V5InstancingSystemStatus,
   V5LightDescriptor,
@@ -360,11 +360,11 @@ export type {
   V5ShadowSystemStatus,
   V5TextureCapability,
   V5TransparencySystemStatus
-} from "./v5";
-export * from "./v5/postprocess";
-export * from "./v5/shaders";
-export * from "./v5/vfx";
-export * from "./v5/performance";
+} from "./threejs-compatibility";
+export * from "./threejs-compatibility/postprocess";
+export * from "./threejs-compatibility/shaders";
+export * from "./threejs-compatibility/vfx";
+export * from "./threejs-compatibility/performance";
 export {
   ProductionWebGL2Renderer,
   ProductionWebGPURenderer,
@@ -381,7 +381,7 @@ export {
   summarizeV6EffectsProof,
   summarizeV6ProductionProof,
   summarizeV6WebGL2Proof
-} from "./v6";
+} from "./production-runtime";
 export type {
   V6EffectsOptions,
   V6EffectsSummary,
@@ -411,7 +411,7 @@ export type {
   V6WebGPUStatus,
   ProductionWebGL2RendererOptions,
   ProductionWebGPURendererOptions
-} from "./v6";
+} from "./production-runtime";
 
 export { ShaderModule } from "./ShaderModule";
 export { RenderPipeline } from "./RenderPipeline";
@@ -868,7 +868,7 @@ export type {
   PbrTransmissionVolumeResponse,
   Vec3
 } from "./PbrReference";
-export * from "./v6/geometry/ProjectedDecalGeometry";
+export * from "./production-runtime/geometry/ProjectedDecalGeometry";
 export * from "./DecalGeometry.js";
 export * from "./GeometryPrimitives.js";
 export * from "./Instancing.js";

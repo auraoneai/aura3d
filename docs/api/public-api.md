@@ -68,7 +68,7 @@ export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./Retargeting.js";
-export * from "./v5";
+export * from "./three-compat";
 ```
 
 ## @galileo3d/apps
@@ -127,12 +127,12 @@ export { createAssetCompatibilityReport } from "./AssetCompatibility";
 export type { AssetCompatibilityLoaderName, AssetCompatibilityReport, AssetCompatibilityReportAsset, AssetCompatibilityReportOptions, AssetCompatibilityStatus, AssetLoaderCompatibilityResult, BlenderExportCompatibilityResult, ExternalAssetLoaderCompatibilityResult } from "./AssetCompatibility";
 export { summarizeV4Corpus, validateV4CorpusManifest } from "./V4Corpus";
 export type { V4CorpusAsset, V4CorpusManifest, V4CorpusSummary } from "./V4Corpus";
-export { loadV5AssetManifest, loadV5AssetRegistry, summarizeV5AssetRegistry } from "./v5/V5AssetRegistry";
-export { createV5AssetProvenance } from "./v5/V5AssetProvenance";
-export type { V5AssetManifest, V5AssetRegistrySummary } from "./v5/V5AssetRegistry";
-export type { V5AssetProvenance, V5SourceAsset, V5TrackedAssetInput } from "./v5/V5AssetProvenance";
-export { createV6GLTFRenderMetadata, createV6AssetCorpusSummary, inspectV6Glb, loadV6GLTFRenderPipeline, loadV6AssetManifest } from "./v6";
-export type { V6AssetClass, V6AssetCorpusRequirements, V6AssetCorpusSummary, V6AssetManifest, V6AssetManifestEntry, V6AssetReadinessEntry, V6GLTFRenderMetadata, V6GLTFRenderWarning, V6GLTFRenderPipeline, V6GLTFRenderPipelineOptions, V6GlbInspection } from "./v6";
+export { loadV5AssetManifest, loadV5AssetRegistry, summarizeV5AssetRegistry } from "./three-compat/V5AssetRegistry";
+export { createV5AssetProvenance } from "./three-compat/V5AssetProvenance";
+export type { V5AssetManifest, V5AssetRegistrySummary } from "./three-compat/V5AssetRegistry";
+export type { V5AssetProvenance, V5SourceAsset, V5TrackedAssetInput } from "./three-compat/V5AssetProvenance";
+export { createV6GLTFRenderMetadata, createV6AssetCorpusSummary, inspectV6Glb, loadV6GLTFRenderPipeline, loadV6AssetManifest } from "./production-runtime";
+export type { V6AssetClass, V6AssetCorpusRequirements, V6AssetCorpusSummary, V6AssetManifest, V6AssetManifestEntry, V6AssetReadinessEntry, V6GLTFRenderMetadata, V6GLTFRenderWarning, V6GLTFRenderPipeline, V6GLTFRenderPipelineOptions, V6GlbInspection } from "./production-runtime";
 export { createV8AssetCorpusSummary, inspectV8Glb, loadV8AssetManifest, writeV8AssetCorpusReport } from "./V8AssetCorpus";
 export type { V8AssetClass, V8AssetCorpusSummary, V8AssetManifest, V8AssetManifestEntry, V8AssetReadinessEntry, V8AssetRequirement, V8EnvironmentManifestEntry, V8EnvironmentReadinessEntry, V8GlbInspection } from "./V8AssetCorpus";
 export * from "./loaders";
@@ -287,7 +287,7 @@ export * from "./VersionedSerialization.js";
 export type CreateG3DTemplate =
 export interface CreateG3DProjectOptions { readonly targetDir: string;
 export interface CreateG3DProjectResult { readonly targetDir: string;
-export function createG3DProject(options: CreateG3DProjectOptions): CreateG3DProjectResult { const template = options.template ?? "v4-product-viewer";
+export function createG3DProject(options: CreateG3DProjectOptions): CreateG3DProjectResult { const template = options.template ?? "external-parity-product-viewer";
 export function writeCreateG3DReport(path: string, result: CreateG3DProjectResult): void { mkdirSync(dirname(resolve(path)), { recursive: true });
 ```
 
@@ -489,8 +489,8 @@ export { createV5PMREMDiagnostics } from "./PMREMPreset";
 export type { V5PMREMDiagnostics, V5PMREMPreset } from "./PMREMPreset";
 export { createV5EnvironmentProbePreviews } from "./EnvironmentPreview";
 export type { V5EnvironmentProbePreview } from "./EnvironmentPreview";
-export { createV6EnvironmentCorpusSummary, inspectV6HDR, loadV6EnvironmentManifest } from "./v6/V6EnvironmentCorpus";
-export type { V6HDREnvironment, V6HDRInspection, V6EnvironmentCorpusSummary, V6EnvironmentManifest, V6EnvironmentProbeType, V6EnvironmentReadinessEntry, V6EnvironmentRequirements, V6PMREMPreset } from "./v6/V6EnvironmentCorpus";
+export { createV6EnvironmentCorpusSummary, inspectV6HDR, loadV6EnvironmentManifest } from "./production-runtime/V6EnvironmentCorpus";
+export type { V6HDREnvironment, V6HDRInspection, V6EnvironmentCorpusSummary, V6EnvironmentManifest, V6EnvironmentProbeType, V6EnvironmentReadinessEntry, V6EnvironmentRequirements, V6PMREMPreset } from "./production-runtime/V6EnvironmentCorpus";
 ```
 
 ## @galileo3d/input
@@ -759,14 +759,14 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { RendererV5, createRendererV5, summarizeV5RendererDiagnostics, V5_REQUIRED_RENDERER_FEATURES } from "./v5";
-export type { V5InstancingSystemStatus, V5LightDescriptor, V5LightKind, V5MaterialMode, V5RenderTargetDescriptor, V5RendererBackend, V5RendererDiagnostics, V5RendererFeatureStatus, V5RendererOptions, V5RendererSupportState, V5SceneRenderPlan, V5ShadowSystemStatus, V5TextureCapability, V5TransparencySystemStatus } from "./v5";
-export * from "./v5/postprocess";
-export * from "./v5/shaders";
-export * from "./v5/vfx";
-export * from "./v5/performance";
-export { ProductionWebGL2Renderer, ProductionWebGPURenderer, analyzePixels, createV6OrbitControlPreset, createV6EnvironmentLightingResources, createV6EffectsRenderSource, createV6PbrHdrPipelineFromRadiance, createV6ToneMappingPolicy, createV6WebGPUReport, loadV6HdrEnvironment, parseV6RadianceHDR, summarizeV6AnimationWorkflow, summarizeV6EffectsProof, summarizeV6ProductionProof, summarizeV6WebGL2Proof } from "./v6";
-export type { V6EffectsOptions, V6EffectsSummary, V6AnimationMetadataInput, V6AnimationWorkflowSummary, V6OrbitControlPreset, V6EnvironmentLightingResources, V6HdrEnvironmentLoaderOptions, V6LoadedHdrEnvironment, V6ImportedAssetRenderMetadata, V6PbrHdrPipeline, V6PbrHdrPipelineOptions, V6PixelMetrics, V6ProductionRenderer, V6RadianceHDR, V6RenderProof, V6RendererBackend, V6RendererFeature, V6RendererFeatureState, V6RendererInput, V7FrameRenderResult, V6ToneMappingOperator, V6ToneMappingPolicy, V6WebGPUAdapterLike, V6WebGPULike, V6WebGPUReport, V6WebGPUStatus, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./v6";
+export { RendererV5, createRendererV5, summarizeV5RendererDiagnostics, V5_REQUIRED_RENDERER_FEATURES } from "./three-compat";
+export type { V5InstancingSystemStatus, V5LightDescriptor, V5LightKind, V5MaterialMode, V5RenderTargetDescriptor, V5RendererBackend, V5RendererDiagnostics, V5RendererFeatureStatus, V5RendererOptions, V5RendererSupportState, V5SceneRenderPlan, V5ShadowSystemStatus, V5TextureCapability, V5TransparencySystemStatus } from "./three-compat";
+export * from "./three-compat/postprocess";
+export * from "./three-compat/shaders";
+export * from "./three-compat/vfx";
+export * from "./three-compat/performance";
+export { ProductionWebGL2Renderer, ProductionWebGPURenderer, analyzePixels, createV6OrbitControlPreset, createV6EnvironmentLightingResources, createV6EffectsRenderSource, createV6PbrHdrPipelineFromRadiance, createV6ToneMappingPolicy, createV6WebGPUReport, loadV6HdrEnvironment, parseV6RadianceHDR, summarizeV6AnimationWorkflow, summarizeV6EffectsProof, summarizeV6ProductionProof, summarizeV6WebGL2Proof } from "./production-runtime";
+export type { V6EffectsOptions, V6EffectsSummary, V6AnimationMetadataInput, V6AnimationWorkflowSummary, V6OrbitControlPreset, V6EnvironmentLightingResources, V6HdrEnvironmentLoaderOptions, V6LoadedHdrEnvironment, V6ImportedAssetRenderMetadata, V6PbrHdrPipeline, V6PbrHdrPipelineOptions, V6PixelMetrics, V6ProductionRenderer, V6RadianceHDR, V6RenderProof, V6RendererBackend, V6RendererFeature, V6RendererFeatureState, V6RendererInput, V7FrameRenderResult, V6ToneMappingOperator, V6ToneMappingPolicy, V6WebGPUAdapterLike, V6WebGPULike, V6WebGPUReport, V6WebGPUStatus, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
@@ -889,7 +889,7 @@ export { createV4EnvironmentLighting, createV4DirectionalShadowEvidence, createV
 export type { V4EnvironmentLightingBundle, V4EnvironmentPreset, V4DirectionalShadowEvidence, V4LdrPostprocessSummary, V4ReadbackDevice, V4RenderPresetEvidence, V4RenderPresetEvidenceOptions, V4RenderPresetFeature, V4RenderPresetFeatureStatus } from "./V4RenderPreset";
 export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEnvironmentLight, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrFresnelSchlickRoughnessSpecular, pbrFresnelSchlickSpecular, pbrGeometrySmithGgxCorrelated, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
 export type { PbrDirectLightInput, PbrEnvironmentLightInput, PbrCausticsConformanceReport, PbrCausticsTransmissionInput, PbrCausticsTransmissionResponse, PbrPhotometricConformanceCategory, PbrPhotometricConformanceCheck, PbrPhotometricConformanceReport, PbrPhotometricConformanceSample, PbrTransmissionVolumeConformanceReport, PbrTransmissionVolumeInput, PbrTransmissionVolumeResponse, Vec3 } from "./PbrReference";
-export * from "./v6/geometry/ProjectedDecalGeometry";
+export * from "./production-runtime/geometry/ProjectedDecalGeometry";
 export * from "./DecalGeometry.js";
 export * from "./GeometryPrimitives.js";
 export * from "./Instancing.js";
@@ -1079,7 +1079,7 @@ export { createAnimationLabWorkflow } from "./AnimationLabWorkflow";
 export { createComparisonWorkflow } from "./ComparisonWorkflow";
 export { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 export { workflows as v4Workflows } from "./v4/index";
-export { V6_WORKFLOWS, createV6AssetPreflight, createV6ProductionRendererDefaults, createV6VisualQAResult, createV6WorkflowPlan, listV6WorkflowDefinitions, runV6Example } from "./v6";
-export type { V6AssetPreflightInput, V6AssetPreflightResult, V6ExampleAsset, V6ExampleDefinition, V6ExampleEnvironment, V6ExampleRuntime, V6ExampleRuntimeMetrics, V6ProductionRendererDefaults, V6VisualQAInput, V6VisualQAResult, V6WorkflowDefinition, V6WorkflowId, V6WorkflowPlan } from "./v6";
+export { V6_WORKFLOWS, createV6AssetPreflight, createV6ProductionRendererDefaults, createV6VisualQAResult, createV6WorkflowPlan, listV6WorkflowDefinitions, runV6Example } from "./production-runtime";
+export type { V6AssetPreflightInput, V6AssetPreflightResult, V6ExampleAsset, V6ExampleDefinition, V6ExampleEnvironment, V6ExampleRuntime, V6ExampleRuntimeMetrics, V6ProductionRendererDefaults, V6VisualQAInput, V6VisualQAResult, V6WorkflowDefinition, V6WorkflowId, V6WorkflowPlan } from "./production-runtime";
 export type * from "./WorkflowTypes";
 ```

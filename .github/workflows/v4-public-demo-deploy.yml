@@ -32,7 +32,7 @@ jobs:
           cache: pnpm
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@three-compat
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -115,10 +115,10 @@ jobs:
           G3D_PUBLIC_DEMO_URL: ${{ steps.deployment.outputs.page_url }}
 
       - name: Audit production readiness after public smoke
-        run: pnpm audit:v4-production-readiness
+        run: pnpm audit:external-parity-production-readiness
 
       - name: Audit external evidence readiness after public smoke
-        run: pnpm audit:v4-external-evidence-readiness
+        run: pnpm audit:external-parity-external-evidence-readiness
 
       - name: Audit broad parity readiness after public smoke
         run: pnpm audit:v4-broad-parity || true
@@ -127,7 +127,7 @@ jobs:
         run: pnpm audit:v4-completion || true
 
       - name: Verify V4 report freshness after public smoke
-        run: pnpm verify:v4-report-freshness
+        run: pnpm verify:external-parity-report-freshness
 
       - name: Upload public deployment reports
         if: always()
@@ -137,11 +137,11 @@ jobs:
           path: |
             tests/reports/public-demo-deployment-smoke.json
             tests/reports/public-demo-deployment-runbook.md
-            tests/reports/v4-production-readiness.json
-            tests/reports/v4-external-evidence-readiness.json
+            tests/reports/external-parity-production-readiness.json
+            tests/reports/external-parity-external-evidence-readiness.json
             tests/reports/v4-external-evidence-missing-artifacts.md
-            tests/reports/v4-broad-parity-readiness.json
-            tests/reports/v4-completion-audit.json
-            tests/reports/v4-completion-audit-runbook.md
-            tests/reports/v4-report-freshness.json
+            tests/reports/external-parity-broad-parity-readiness.json
+            tests/reports/external-parity-completion-audit.json
+            tests/reports/external-parity-completion-audit-runbook.md
+            tests/reports/external-parity-report-freshness.json
           retention-days: 30

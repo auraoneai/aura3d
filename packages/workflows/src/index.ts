@@ -6,7 +6,7 @@ export { createInteractiveSceneWorkflow } from "./InteractiveSceneWorkflow";
 export { createAnimationLabWorkflow } from "./AnimationLabWorkflow";
 export { createComparisonWorkflow } from "./ComparisonWorkflow";
 export { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
-export { workflows as v4Workflows } from "./v4/index";
+export { workflows as v4Workflows } from "./workflow-foundation/index";
 export {
   V6_WORKFLOWS,
   createV6AssetPreflight,
@@ -15,7 +15,7 @@ export {
   createV6WorkflowPlan,
   listV6WorkflowDefinitions,
   runV6Example
-} from "./v6";
+} from "./production-runtime";
 export type {
   V6AssetPreflightInput,
   V6AssetPreflightResult,
@@ -30,5 +30,5 @@ export type {
   V6WorkflowDefinition,
   V6WorkflowId,
   V6WorkflowPlan
-} from "./v6";
+} from "./production-runtime";
 export type * from "./WorkflowTypes";

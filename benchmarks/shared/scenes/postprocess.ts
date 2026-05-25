@@ -18,7 +18,7 @@ const scene: BenchmarkSceneDescriptor = {
       "packages/rendering/src/PostProcessPass.ts",
       "examples/postprocess-lab/main.ts",
       "examples/material-showroom/main.ts",
-      "tests/reports/v3-rendering.json",
+      "tests/reports/foundation-rendering.json",
     ],
   },
   animationState: { enabled: false, clips: 0, skinning: false, morphTargets: false, playback: "static-bright-pixel-readback" },

@@ -6,10 +6,10 @@
 Create a V6 app by importing the V6 workflow runtime from the packed package:
 
 ```ts
-import { runV6Example } from "@galileo3d/engine/workflows/v6";
+import { runV6Example } from "@galileo3d/engine/workflows/production-runtime";
 
 void runV6Example({
-  appId: "my-v6-app",
+  appId: "my-production-runtime-app",
   sceneId: "damaged-helmet",
   title: "My V6 App",
   workflow: "real renderer setup with imported GLB and HDR IBL",
@@ -21,8 +21,8 @@ void runV6Example({
 });
 ```
 
-Serve the fixture assets at `/fixtures/v6` or copy equivalent assets with matching checksums.
+Serve the fixture assets at `/fixtures/production-runtime` or copy equivalent assets with matching checksums.
 
 Primary evidence:
 
-- `tests/reports/v6-external-consumer.json`
+- `tests/reports/production-runtime-external-consumer.json`

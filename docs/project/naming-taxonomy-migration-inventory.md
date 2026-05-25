@@ -1,6 +1,6 @@
 # Naming And Taxonomy Migration Inventory
 
-Status: active inventory, no renames started
+Status: active inventory with contextual alias coverage
 Last reviewed: 2026-05-25
 
 This file is the checked-in migration map required before replacing historical `v1` through `v10` names with product taxonomy. It is intentionally an inventory and planning artifact only. Do not rename paths from this file until aliases, redirects, fixture/report readers, package exports, docs links, and focused tests are defined for the batch.
@@ -10,13 +10,13 @@ This file is the checked-in migration map required before replacing historical `
 Run these commands from the repository root before each migration batch:
 
 ```bash
-rg --files -- .github apps docs examples fixtures packages release-artifacts templates tests tools package.json README.md tsconfig.base.json vitest.config.ts | rg '(^|/|[-_])v[0-9]+($|[-_/\.])'
+rg --files -- .github apps docs examples fixtures packages release-artifacts templates tests tools package.json README.md tsconfig.base.json vite.config.ts vitest.config.ts | rg '(^|/|[-_])v[0-9]+($|[-_/\.])'
 find . -maxdepth 3 \( -path './node_modules' -o -path './.git' \) -prune -o -type d | sed 's#^./##' | rg '(^|/|[-_])v[0-9]+($|[-_/])'
-rg -n 'v[0-9]+' package.json README.md docs apps packages tests tools fixtures templates .github tsconfig.base.json vitest.config.ts
+rg -n 'v[0-9]+' package.json README.md docs apps packages tests tools fixtures templates .github tsconfig.base.json vite.config.ts vitest.config.ts
 pnpm exec tsx --tsconfig tsconfig.base.json tools/naming-taxonomy/index.ts --write
 ```
 
-Current generated path inventory from 2026-05-25 found `1637` version-style repository file paths plus `658` version-style directory paths implied by those files in the scoped roots. The generated report is checked in at `docs/project/naming-taxonomy-migration-report.md` and currently classifies `3310` active reference records across package exports/file entries, package scripts, TypeScript/Vitest aliases, route links, fixture URLs, report readers, and versioned imports.
+Current generated path inventory from 2026-05-25 found `1645` version-style repository file paths plus `660` version-style directory paths implied by those files in the scoped roots. The generated report is checked in at `docs/project/naming-taxonomy-migration-report.md` and currently classifies `3321` active reference records across package exports/file entries, package scripts, TypeScript/Vite/Vitest aliases, route links, fixture URLs, report readers, and versioned imports.
 
 | Root | Version-Style File Count | Initial Classification |
 | --- | ---: | --- |
@@ -39,15 +39,16 @@ The report also classifies active load-bearing references:
 
 | Active Reference Kind | Count | Compatibility Decision |
 | --- | ---: | --- |
-| `fixture-url` | 381 | Keep current `fixtures/v*` fetch paths until manifest aliases or same-batch consumer updates exist. |
-| `package-export` | 9 | Keep old `/v6` and `/v9` package exports as aliases until contextual exports and smoke tests exist. |
+| `fixture-url` | 351 | Keep current `fixtures/v*` fetch paths until manifest aliases or same-batch consumer updates exist. |
+| `package-export` | 18 | Contextual exports exist for production-runtime, advanced-runtime, asset-corpus, advanced-gallery, and workflows/production; legacy `/v6` and `/v9` exports remain compatibility aliases until removal. |
 | `package-file-entry` | 18 | Keep old template/file allowlist entries until contextual template names and create-g3d aliases are proven. |
-| `report-reader` | 1859 | Keep current generated evidence paths until readers support contextual aliases; `v9-advanced-gallery-report-audit` accepts `--report-dir`, but `v9-advanced-gallery-visual-review` still hardcodes `tests/reports/v9/advanced-examples-gallery`. |
-| `route-link` | 387 | Keep current `/apps/v*` URLs until route redirects or a route registry alias layer exists. |
-| `script` | 207 | Keep old package script commands as compatibility aliases until contextual successors and docs are in place. |
-| `source-import` | 435 | Rename only with the corresponding file move, import update, and focused alias tests. |
-| `tsconfig-alias` | 7 | Keep old workspace aliases until contextual package exports and tests cover consumers. |
-| `vitest-alias` | 7 | Keep old test aliases until contextual package exports and tests cover consumers. |
+| `report-reader` | 1854 | Advanced-gallery visual-review and report-audit support contextual report directories and legacy fallback; other report-reader batches still need owner-scoped aliases. |
+| `route-link` | 266 | Public app route URLs have contextual `/apps/<capability>/` aliases for V5/V6/V7/V8/V9 surfaces; old `/apps/v*` routes remain compatibility aliases for historical links and tests. |
+| `script` | 397 | Contextual command aliases exist for versioned phase script names, including `product-studio:*`, `foundation:*`, `external-parity:*`, `three-compat:*`, `production-runtime:*`, `current-routes:*`, `threejs-parity:*`, and `superiority:*`; old `v*` commands remain wrappers. |
+| `source-import` | 376 | Public package imports in current gallery/WOW surfaces use contextual aliases; internal versioned source imports remain classified test/tool/historical records until file moves. |
+| `tsconfig-alias` | 14 | Contextual and legacy workspace aliases coexist for production-runtime, advanced-runtime, asset-corpus, advanced-gallery, and workflows/production. |
+| `vite-alias` | 14 | Contextual and legacy Vite aliases coexist and the Vite middleware rewrites contextual route/fixture URLs to legacy file-backed paths. |
+| `vitest-alias` | 14 | Contextual and legacy Vitest aliases coexist for focused package import parity tests. |
 
 ## Classification Rules
 
@@ -70,12 +71,12 @@ No path in this table is approved for immediate rename. The target names are pro
 
 | Current Pattern | Classification | Proposed Target | Required Compatibility |
 | --- | --- | --- | --- |
-| `apps/v9-advanced-examples-gallery` | `active-route` | `apps/advanced-examples-gallery` or `apps/cinematic-examples-gallery` | Vite route alias, Playwright path updates, package scripts, report tool path aliases. |
-| `tests/reports/v9/advanced-examples-gallery` | `report-path` | `tests/reports/advanced-examples-gallery` | Historical report reader and current review/audit path compatibility. |
+| `apps/v9-advanced-examples-gallery` | `active-route` | `apps/advanced-examples-gallery` | Implemented contextual route alias, Playwright path updates, package scripts, and report tool path aliases. |
+| `tests/reports/v9/advanced-examples-gallery` | `report-path` | `tests/reports/advanced-examples-gallery` | Implemented for the first batch: current capture writes contextual reports, and visual-review/report-audit readers accept contextual report dirs with legacy fallback. |
 | `tools/v9-advanced-gallery-*` | `internal-tool` | `tools/advanced-gallery-*` | Package script aliases and docs updates. |
 | `fixtures/v9/assets/*` | `fixture-url` | `fixtures/advanced-gallery/assets/*` | Fixture manifest aliases and runtime fetch updates. |
-| `fixtures/v9/environments/*` | `fixture-url` | `fixtures/environments/advanced-gallery/*` | Environment manifest aliases and background evidence updates. |
-| `apps/v8-*` | `active-route` / `historical-archive` | Capability names such as `apps/controls-orbit`, `apps/materials-transmission`, `apps/webgpu-compute` | Playwright route aliases; preserve any Three.js parity navigation. |
+| `fixtures/v9/environments/*` | `fixture-url` | `fixtures/advanced-gallery/environments/*` | First-batch Vite fixture URL aliases and byte-hash browser tests are in place. |
+| `apps/v8-*` | `active-route` / `historical-archive` | Capability names such as `apps/controls-orbit`, `apps/materials-transmission`, `apps/webgpu-compute` | Implemented Vite route aliases and public docs/root route updates; preserve any Three.js parity navigation. |
 | `tests/browser/v8-*` | `test-harness` | Capability-based browser specs | Update test references and any report path assumptions. |
 | `docs/project/v2-*` through `docs/project/v10-*` | `historical-archive` unless linked as active directives | Keep versioned but add archive index, or migrate active docs to contextual names. | Documentation index must mark archival status. |
 | `packages/*/v6` and package exports containing `/v6` or `/v9` | `public-api` | Capability namespace such as `/rendering/environment` | Semver/API migration notes plus export aliases. |
@@ -96,4 +97,4 @@ Before any rename batch:
 
 ## Current Decision
 
-Do not start the rename migration while Product Configurator and Data Galaxy are failed. The active value of this inventory is to prevent blind renames and to give future workers a concrete migration map. Product/Data source-owned recovery, renderer/material/platform gates, and report correctness remain higher priority.
+The current contextual alias batch covers public app routes, current advanced gallery evidence paths, advanced-gallery fixture fetches, public package aliases, and contextual package-script names. Physical versioned app/tool/test paths remain in place while broader V2 through V10 owner batches are classified. Do not remove legacy paths until their focused route/package/fixture/report-reader alias tests are in place and passing.

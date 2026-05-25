@@ -73,7 +73,7 @@ export interface PlayerBehaviorTelemetryFixture {
 
 export function samplePlayerBehaviorTelemetryFixture(options: PlayerBehaviorTelemetryOptions = {}): PlayerBehaviorTelemetryFixture {
   const seed = normalizeSeed(options.seed ?? 0xb34a);
-  const playerId = normalizePlayerId(options.playerId ?? "v4-runtime-player");
+  const playerId = normalizePlayerId(options.playerId ?? "external-parity-runtime-player");
   const sessionSeconds = positive(options.sessionSeconds ?? 180, "sessionSeconds");
   const combat = count(options.combatEvents ?? 12, "combatEvents");
   const movement = count(options.movementEvents ?? 18, "movementEvents");

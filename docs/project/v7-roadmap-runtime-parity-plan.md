@@ -13,8 +13,8 @@ The prior prompts were written with the expectation that each reset would move G
 - `docs/project/v2-roadmap-product-asset-pipeline-plan.md`
 - `docs/project/v3-roadmap-product-workflow-plan.md`
 - `docs/project/v4-roadmap-visual-engine-plan.md`
-- `docs/project/v5-roadmap-visual-engine-plan.md`
-- `docs/project/v6-roadmap-production-renderer-plan.md`
+- `docs/project/three-compat-roadmap-visual-engine-plan.md`
+- `docs/project/production-runtime-roadmap-production-renderer-plan.md`
 
 That did not happen with enough clarity or discipline.
 
@@ -58,7 +58,7 @@ Say it in the dumbest possible way so the work cannot drift again:
 - We are creating a competing renderer and developer SDK named G3D.
 - Three.js can stand next to G3D in a lab scene so we can compare output.
 - Three.js cannot stand inside G3D as the thing doing the work.
-- If a developer imports `@galileo3d/engine/v6`, the rendered product path must be G3D code.
+- If a developer imports `@galileo3d/engine/production-runtime`, the rendered product path must be G3D code.
 - If the only reason a screenshot looks good is because Three.js rendered it, that screenshot is not G3D proof.
 
 Three.js may be used only for:
@@ -195,7 +195,7 @@ import {
   loadHdrEnvironment,
   createOrbitControls,
   createProductViewer
-} from "@galileo3d/engine/v6";
+} from "@galileo3d/engine/production-runtime";
 
 const viewer = await createProductViewer({
   canvas,
@@ -333,14 +333,14 @@ The goal is not to import Three.js to make these examples work. The goal is to b
 
 The first implemented artifact for this ladder is:
 
-- `apps/v7-example-parity-lab/`
+- `apps/example-parity-lab/`
 - `packages/assets/src/GLTFAnimationRuntime.ts`
-- `packages/rendering/src/v6/geometry/ProjectedDecalGeometry.ts`
+- `packages/rendering/src/production-runtime/geometry/ProjectedDecalGeometry.ts`
 - `tests/assets/gltf-animation-runtime.test.ts`
 - `tests/unit/rendering/projected-decal-geometry.test.ts`
-- `tests/browser/v7-threejs-example-parity-lab.spec.ts`
-- `tests/reports/v7/threejs-example-parity-lab/v7-example-parity-lab.png`
-- `tests/reports/v7/threejs-example-parity-lab/v7-example-parity-lab-report.json`
+- `tests/browser/runtime-parity-threejs-example-parity-lab.spec.ts`
+- `tests/reports/v7/threejs-example-parity-lab/example-parity-lab.png`
+- `tests/reports/v7/threejs-example-parity-lab/example-parity-lab-report.json`
 
 This app is intentionally G3D-only. It imports no Three.js runtime. It currently loads real GLB assets, renders Cesium Man, Damaged Helmet, and Animated Morph Cube through the G3D GLTF/PBR/HDR pipeline, applies imported GLTF TRS and morph-weight animation tracks through `GLTFAnimationRuntime`, refreshes renderable skinning palettes from animated joint transforms for the skinned GLB path, generates clipped decal geometry from imported helmet mesh triangles through `ProjectedDecalGeometry`, steps the G3D animation mixer with crossfade/additive/root-motion evidence, runs the G3D IK solver, renders stereo/physics evidence, and captures a real 1920x1080 WebGL2 canvas artifact.
 
@@ -429,21 +429,21 @@ Work by filename. Do not hide the product in browser tests only.
 
 Implement or harden:
 
-- `packages/rendering/src/v6/RendererV6.ts`
-- `packages/rendering/src/v6/ProductionWebGL2Renderer.ts`
-- `packages/rendering/src/v6/WebGPUProductionRenderer.ts`
-- `packages/rendering/src/v6/backends/RendererBackend.ts`
-- `packages/rendering/src/v6/backends/WebGL2RendererBackend.ts`
-- `packages/rendering/src/v6/backends/WebGPURendererBackend.ts`
-- `packages/rendering/src/v6/framegraph/FrameGraph.ts`
-- `packages/rendering/src/v6/framegraph/RenderPass.ts`
-- `packages/rendering/src/v6/resources/GPUBuffer.ts`
-- `packages/rendering/src/v6/resources/GPUTexture.ts`
-- `packages/rendering/src/v6/resources/RenderTarget.ts`
-- `packages/rendering/src/v6/resources/ResourceCache.ts`
-- `packages/rendering/src/v6/diagnostics/FrameCapture.ts`
-- `packages/rendering/src/v6/diagnostics/RendererStats.ts`
-- `packages/rendering/src/v6/diagnostics/GPUCapabilities.ts`
+- `packages/rendering/src/production-runtime/RendererV6.ts`
+- `packages/rendering/src/production-runtime/ProductionWebGL2Renderer.ts`
+- `packages/rendering/src/production-runtime/WebGPUProductionRenderer.ts`
+- `packages/rendering/src/production-runtime/backends/RendererBackend.ts`
+- `packages/rendering/src/production-runtime/backends/WebGL2RendererBackend.ts`
+- `packages/rendering/src/production-runtime/backends/WebGPURendererBackend.ts`
+- `packages/rendering/src/production-runtime/framegraph/FrameGraph.ts`
+- `packages/rendering/src/production-runtime/framegraph/RenderPass.ts`
+- `packages/rendering/src/production-runtime/resources/GPUBuffer.ts`
+- `packages/rendering/src/production-runtime/resources/GPUTexture.ts`
+- `packages/rendering/src/production-runtime/resources/RenderTarget.ts`
+- `packages/rendering/src/production-runtime/resources/ResourceCache.ts`
+- `packages/rendering/src/production-runtime/diagnostics/FrameCapture.ts`
+- `packages/rendering/src/production-runtime/diagnostics/RendererStats.ts`
+- `packages/rendering/src/production-runtime/diagnostics/GPUCapabilities.ts`
 - `packages/rendering/src/index.ts`
 
 Required outcome:
@@ -462,12 +462,12 @@ Implement or harden:
 - `packages/assets/src/GLTFRenderResources.ts`
 - `packages/assets/src/loadRenderableAsset.ts`
 - `packages/assets/src/createRenderableScene.ts`
-- `packages/assets/src/v6/GLTFSceneLoader.ts`
-- `packages/assets/src/v6/TextureLoaderV6.ts`
-- `packages/assets/src/v6/KTX2TextureLoaderV6.ts`
-- `packages/assets/src/v6/HDRTextureLoaderV6.ts`
-- `packages/assets/src/v6/AssetPipelineV6.ts`
-- `packages/assets/src/v6/index.ts`
+- `packages/assets/src/asset-corpus/GLTFSceneLoader.ts`
+- `packages/assets/src/asset-corpus/TextureLoaderV6.ts`
+- `packages/assets/src/asset-corpus/KTX2TextureLoaderV6.ts`
+- `packages/assets/src/asset-corpus/HDRTextureLoaderV6.ts`
+- `packages/assets/src/asset-corpus/AssetPipelineV6.ts`
+- `packages/assets/src/asset-corpus/index.ts`
 - `packages/assets/src/index.ts`
 
 Required outcome:
@@ -482,12 +482,12 @@ Required outcome:
 Implement or harden:
 
 - `packages/rendering/src/EnvironmentMapResources.ts`
-- `packages/rendering/src/v6/PBRHDRPipeline.ts`
-- `packages/rendering/src/v6/environment/HDRLoader.ts`
-- `packages/rendering/src/v6/environment/EnvironmentMap.ts`
-- `packages/rendering/src/v6/environment/PMREMGenerator.ts`
-- `packages/rendering/src/v6/passes/SkyboxPass.ts`
-- `packages/rendering/src/v6/passes/ToneMappingPass.ts`
+- `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`
+- `packages/rendering/src/production-runtime/environment/HDRLoader.ts`
+- `packages/rendering/src/production-runtime/environment/EnvironmentMap.ts`
+- `packages/rendering/src/production-runtime/environment/PMREMGenerator.ts`
+- `packages/rendering/src/production-runtime/passes/SkyboxPass.ts`
+- `packages/rendering/src/production-runtime/passes/ToneMappingPass.ts`
 - `packages/rendering/src/BRDFLut.ts`
 - `packages/rendering/src/ShaderLibrary.ts`
 - `packages/rendering/src/ShaderChunks.ts`
@@ -507,19 +507,19 @@ Required outcome:
 
 Implement or harden:
 
-- `packages/rendering/src/v6/passes/DepthPrepass.ts`
-- `packages/rendering/src/v6/passes/ShadowPass.ts`
-- `packages/rendering/src/v6/passes/OpaquePass.ts`
-- `packages/rendering/src/v6/passes/TransparentPass.ts`
+- `packages/rendering/src/production-runtime/passes/DepthPrepass.ts`
+- `packages/rendering/src/production-runtime/passes/ShadowPass.ts`
+- `packages/rendering/src/production-runtime/passes/OpaquePass.ts`
+- `packages/rendering/src/production-runtime/passes/TransparentPass.ts`
 - `packages/rendering/src/ShadowMap.ts`
 - `packages/rendering/src/ShadowPass.ts`
 - `packages/rendering/src/CascadedShadowMaps.ts`
-- `packages/rendering/src/v6/postprocess/EffectComposerV6.ts`
-- `packages/rendering/src/v6/postprocess/BloomPass.ts`
-- `packages/rendering/src/v6/postprocess/SSAOPass.ts`
-- `packages/rendering/src/v6/postprocess/DOFPass.ts`
-- `packages/rendering/src/v6/postprocess/FXAAPass.ts`
-- `packages/rendering/src/v6/postprocess/ColorGradingPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/EffectComposerV6.ts`
+- `packages/rendering/src/production-runtime/postprocess/BloomPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/SSAOPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/DOFPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/FXAAPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/ColorGradingPass.ts`
 - `packages/rendering/src/PostProcessPass.ts`
 - `packages/rendering/src/ToneMapping.ts`
 - `packages/rendering/src/ColorManagement.ts`
@@ -554,10 +554,10 @@ Required outcome:
 
 Implement or harden:
 
-- `packages/engine/src/v6/index.ts`
+- `packages/engine/src/production-runtime/index.ts`
 - `packages/engine/src/index.ts`
-- `packages/rendering/src/v6/index.ts`
-- `packages/assets/src/v6/index.ts`
+- `packages/rendering/src/production-runtime/index.ts`
+- `packages/assets/src/asset-corpus/index.ts`
 - `packages/create-g3d/`
 - `package.json`
 - `tsconfig.base.json`
@@ -565,10 +565,10 @@ Implement or harden:
 Required public imports:
 
 ```ts
-import { G3DRenderer } from "@galileo3d/engine/v6";
-import { loadGltfScene, loadHdrEnvironment } from "@galileo3d/engine/v6";
-import { createOrbitControls } from "@galileo3d/engine/v6";
-import { createProductViewer } from "@galileo3d/engine/v6";
+import { G3DRenderer } from "@galileo3d/engine/production-runtime";
+import { loadGltfScene, loadHdrEnvironment } from "@galileo3d/engine/production-runtime";
+import { createOrbitControls } from "@galileo3d/engine/production-runtime";
+import { createProductViewer } from "@galileo3d/engine/production-runtime";
 ```
 
 Required outcome:
@@ -581,18 +581,18 @@ Required outcome:
 
 Build the actual product surface:
 
-- `apps/v6-product-configurator/`
-- `apps/v6-asset-inspector/`
-- `apps/v6-material-studio/`
-- `apps/v6-common/`
-- `examples/v6/product-viewer/`
-- `examples/v6/asset-inspector/`
-- `examples/v6/material-studio/`
-- `templates/v6-product-viewer/`
+- `apps/product-configurator/`
+- `apps/asset-inspector/`
+- `apps/material-studio/`
+- `apps/common/`
+- `examples/production-runtime-examples/product-viewer/`
+- `examples/production-runtime-examples/asset-inspector/`
+- `examples/production-runtime-examples/material-studio/`
+- `templates/production-product-viewer/`
 
 Required flagship viewer:
 
-`apps/v6-product-configurator/` must become the primary proof app.
+`apps/product-configurator/` must become the primary proof app.
 
 It must include:
 
@@ -623,7 +623,7 @@ Implement or harden:
 - `tools/v7-threejs-parity-readiness/`
 - `benchmarks/threejs/src/scenes/product-configurator.ts`
 - `benchmarks/galileo/src/scenes/product-configurator.ts`
-- `docs/project/v6-roadmap-threejs-parity.md`
+- `docs/project/production-runtime-roadmap-threejs-parity.md`
 
 Required outcome:
 
@@ -643,12 +643,12 @@ Do not claim parity if the screenshot does not show it.
 
 Implement or harden:
 
-- `docs/project/v6-roadmap-renderer-v6.md`
-- `docs/project/v6-roadmap-gltf-loading.md`
-- `docs/project/v6-roadmap-pbr-hdr-ibl.md`
-- `docs/project/v6-roadmap-product-viewer.md`
-- `docs/project/v6-roadmap-threejs-migration.md`
-- `docs/project/v6-roadmap-known-gaps.md`
+- `docs/project/production-runtime-roadmap-renderer-production-runtime.md`
+- `docs/project/production-runtime-roadmap-gltf-loading.md`
+- `docs/project/production-runtime-roadmap-pbr-hdr-ibl.md`
+- `docs/project/production-runtime-roadmap-product-viewer.md`
+- `docs/project/production-runtime-roadmap-threejs-migration.md`
+- `docs/project/production-runtime-roadmap-known-gaps.md`
 - `docs/project/tutorials-product-configurator.md`
 - `docs/project/tutorials-asset-viewer.md`
 - `docs/project/tutorials-material-studio.md`
@@ -673,7 +673,7 @@ Required artifact paths:
 - `tests/reports/v7/product-viewer/threejs-product-viewer.png`
 - `tests/reports/v7/product-viewer/comparison.png`
 - `tests/reports/v7/product-viewer/product-viewer-report.json`
-- `docs/project/v6-roadmap-product-viewer.md`
+- `docs/project/production-runtime-roadmap-product-viewer.md`
 
 The artifact must show:
 
@@ -699,7 +699,7 @@ Use this checklist as the work order.
 - [ ] Create public `loadHdrEnvironment()` API.
 - [ ] Create public `createOrbitControls()` API.
 - [ ] Create public `createProductViewer()` API.
-- [ ] Export all of the above from `@galileo3d/engine/v6`.
+- [ ] Export all of the above from `@galileo3d/engine/production-runtime`.
 - [ ] Make the flagship viewer use only the public API.
 
 ### Phase 2: GLTF Render Fidelity
@@ -739,10 +739,10 @@ Use this checklist as the work order.
 
 Evidence:
 
-- `tests/reports/v6-hd-materials/pbr-materials-hd.png`
-- `tests/reports/v6-hd-materials.json`
-- `tests/browser/v6-hd-materials.spec.ts`
-- `docs/project/v6-roadmap-pbr-materials.md`
+- `tests/reports/production-runtime-hd-materials/pbr-materials-hd.png`
+- `tests/reports/production-runtime-hd-materials.json`
+- `tests/browser/production-runtime-hd-materials.spec.ts`
+- `docs/project/production-runtime-roadmap-pbr-materials.md`
 
 This prior evidence is not enough to close V7. Treat it as a baseline to surpass with stronger renderer output, dedicated material-extension scenes, and honest same-scene comparison.
 
@@ -790,7 +790,7 @@ This prior evidence is not enough to close V7. Treat it as a baseline to surpass
 - [ ] Write HDR/IBL docs.
 - [ ] Write material support docs.
 - [ ] Write Three.js migration docs.
-- [ ] Create `templates/v6-product-viewer/`.
+- [ ] Create `templates/production-product-viewer/`.
 - [ ] Verify external consumer can import and run the public API.
 
 ## Acceptance Criteria

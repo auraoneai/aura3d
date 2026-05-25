@@ -33,7 +33,7 @@ interface ShadowLabState {
   readonly knownLimits: readonly string[];
   readonly errors: readonly string[];
   readonly diagnostics?: { readonly drawCalls: number; readonly lastError: string | null };
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/shadow-lab.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png";
   readonly featureEvidence?: V4RenderPresetEvidence;
   readonly claimBoundary: string;
   readonly cascadeCount?: number;
@@ -122,7 +122,7 @@ if (typeof document !== "undefined") {
       status: "error",
       renderer: "webgl2-plus-shadow-pass",
       visualClaim: "bounded-directional-shadow-lab",
-      screenshotPath: "tests/reports/v4-example-screenshots/shadow-lab.png",
+      screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png",
       claimBoundary,
       knownLimits,
       errors: [error instanceof Error ? error.message : String(error)],
@@ -245,11 +245,11 @@ async function run(): Promise<void> {
       knownLimits,
       errors: [],
       diagnostics,
-      screenshotPath: "tests/reports/v4-example-screenshots/shadow-lab.png",
+      screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png",
       claimBoundary,
       featureEvidence: createV4RenderPresetEvidence({
         exampleId: "shadow-lab",
-        screenshotPath: "tests/reports/v4-example-screenshots/shadow-lab.png",
+        screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png",
         features: [
           v4ActiveFeature("directional-shadows", "CascadedShadowPass renders three directional shadow cascades with stable camera fits."),
           v4ActiveFeature("color-management", "Debug and WebGL canvases publish opaque pixel evidence for lit and shadowed regions."),

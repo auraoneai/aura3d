@@ -21,7 +21,7 @@ type RacingShowcaseState = {
   readonly status: "ready" | "error";
   readonly renderer: "webgl2";
   readonly visualClaim: string;
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/racing-showcase.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/racing-showcase.png";
   readonly claimBoundary: string;
   readonly knownLimits: readonly string[];
   readonly diagnostics?: RenderDeviceDiagnostics;
@@ -40,7 +40,7 @@ declare global {
   }
 }
 
-const screenshotPath = "tests/reports/v4-example-screenshots/racing-showcase.png" as const;
+const screenshotPath = "tests/reports/external-parity-example-screenshots/racing-showcase.png" as const;
 const claimBoundary = "V4 racing showcase evidence is limited to a deterministic procedural car, generated track, seeded texture fixtures, browser screenshot checks, and bounded race telemetry; full racing-game, vehicle-simulation, Unity, or Unreal parity is not claimed.";
 const knownLimits = [
   "The car, track, and HUD are deterministic local showcase assets, not imported production vehicle content.",

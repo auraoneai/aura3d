@@ -8,9 +8,9 @@ G3D has a real renderer frame path with camera handling, resize support, culling
 - `packages/rendering/src/ForwardPass.ts`
 - `packages/rendering/src/SceneOptimization.ts`
 - `packages/rendering/src/performance/RenderItemSorting.ts`
-- `packages/rendering/src/v9/RendererV9.ts`
-- `packages/engine/src/v9/G3DRenderer.ts`
-- `apps/v9-public-scene/src/main.ts`
+- `packages/rendering/src/advanced-runtime/RendererV9.ts`
+- `packages/engine/src/advanced-runtime/G3DRenderer.ts`
+- `apps/public-scene/src/main.ts`
 
 ## What Is Supported
 
@@ -26,7 +26,7 @@ G3D has a real renderer frame path with camera handling, resize support, culling
 - `tests/reports/v9/route-health.json`
 - `tests/reports/v9/same-scene-render.json`
 - `tests/reports/v9/api-surface.json`
-- `apps/v9-public-scene/`
+- `apps/public-scene/`
 
 ## Remaining Deltas
 

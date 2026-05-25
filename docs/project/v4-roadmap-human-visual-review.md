@@ -9,17 +9,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Product Configurator
 
-- Screenshot: `tests/reports/v4-gallery/product/product-configurator-v4.png`
-- Scene id: `product-configurator-v4`
-- App/example id: `examples/product-configurator-v4`
+- Screenshot: `tests/reports/external-gallery/product/external-product-configurator.png`
+- Scene id: `external-product-configurator`
+- App/example id: `examples/external-product-configurator`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: catalog softbox
 - Material mode: asset / variant proof
-- Draw calls: recorded in `tests/reports/v4-product-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-product-readiness.json`
 - Asset count: pinned BoomBox GLB product asset
 - Warnings: see readiness report
-- Source file path: `examples/product-configurator-v4/ProductConfiguratorV4.ts`
+- Source file path: `examples/external-product-configurator/ProductConfiguratorV4.ts`
 - Premium product judgment: passes for bounded V4 product viewer proof.
 - Lighting believable: yes, within the current studio-lighting preset.
 - Materials distinguishable: yes, especially across variant evidence.
@@ -29,17 +29,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Material Studio
 
-- Screenshot: `tests/reports/v4-gallery/materials/material-studio-v4.png`
-- Scene id: `material-studio-v4`
-- App/example id: `examples/material-studio-v4`
+- Screenshot: `tests/reports/external-gallery/materials/external-material-studio.png`
+- Scene id: `external-material-studio`
+- App/example id: `examples/external-material-studio`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: material studio lighting
 - Material mode: metals / comparison
-- Draw calls: recorded in `tests/reports/v4-material-studio-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-material-studio-readiness.json`
 - Asset count: procedural material review objects
 - Warnings: see readiness report
-- Source file path: `examples/material-studio-v4/MaterialStudioV4.ts`
+- Source file path: `examples/external-material-studio/MaterialStudioV4.ts`
 - Premium product judgment: passes for bounded material review proof.
 - Lighting believable: yes for studio comparison.
 - Materials distinguishable: yes.
@@ -49,17 +49,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Asset Gallery
 
-- Screenshot: `tests/reports/v4-gallery/assets/asset-gallery-v4.png`
-- Scene id: `asset-gallery-v4`
-- App/example id: `examples/asset-gallery-v4`
+- Screenshot: `tests/reports/external-gallery/assets/external-asset-gallery.png`
+- Scene id: `external-asset-gallery`
+- App/example id: `examples/external-asset-gallery`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: neutral asset review
 - Material mode: asset-authored materials
-- Draw calls: recorded in `tests/reports/v4-asset-studio-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-asset-studio-readiness.json`
 - Asset count: glTF corpus entries
 - Warnings: see asset diagnostics report
-- Source file path: `examples/asset-gallery-v4/AssetGalleryV4.ts`
+- Source file path: `examples/external-asset-gallery/AssetGalleryV4.ts`
 - Premium product judgment: passes for bounded asset review proof.
 - Lighting believable: yes for inspection/review.
 - Materials distinguishable: yes where the source asset exposes material variety.
@@ -69,17 +69,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Interior Scene
 
-- Screenshot: `tests/reports/v4-gallery/scenes/interior-scene-v4.png`
-- Scene id: `interior-scene-v4`
-- App/example id: `examples/interior-scene-v4`
+- Screenshot: `tests/reports/external-gallery/scenes/external-interior-scene.png`
+- Scene id: `external-interior-scene`
+- App/example id: `examples/external-interior-scene`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: interior gallery
 - Material mode: scene-authored PBR
-- Draw calls: recorded in `tests/reports/v4-scene-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-scene-readiness.json`
 - Asset count: interior scene fixture
 - Warnings: see readiness report
-- Source file path: `examples/interior-scene-v4/InteriorSceneV4.ts`
+- Source file path: `examples/external-interior-scene/InteriorSceneV4.ts`
 - Premium product judgment: passes for bounded interior/architecture proof.
 - Lighting believable: yes, with gallery/night variants.
 - Materials distinguishable: yes.
@@ -89,17 +89,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Character Viewer
 
-- Screenshot: `tests/reports/v4-gallery/characters/character-viewer-v4.png`
-- Scene id: `character-viewer-v4`
-- App/example id: `examples/character-viewer-v4`
+- Screenshot: `tests/reports/external-gallery/characters/external-character-viewer.png`
+- Scene id: `external-character-viewer`
+- App/example id: `examples/external-character-viewer`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: character preview
 - Material mode: character-authored materials
-- Draw calls: recorded in `tests/reports/v4-character-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-character-readiness.json`
 - Asset count: animated character fixture
 - Warnings: see readiness report
-- Source file path: `examples/character-viewer-v4/CharacterViewerV4.ts`
+- Source file path: `examples/external-character-viewer/CharacterViewerV4.ts`
 - Premium product judgment: passes for bounded character preview proof.
 - Lighting believable: yes for preview use.
 - Materials distinguishable: acceptable for current character fixture.
@@ -109,17 +109,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Interactive Showcase
 
-- Screenshot: `tests/reports/v4-gallery/interactive/interactive-showcase-v4.png`
-- Scene id: `interactive-showcase-v4`
-- App/example id: `examples/interactive-showcase-v4`
+- Screenshot: `tests/reports/external-gallery/interactive/external-interactive-showcase.png`
+- Scene id: `external-interactive-showcase`
+- App/example id: `examples/external-interactive-showcase`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: interactive product lighting
 - Material mode: selectable variants
-- Draw calls: recorded in `tests/reports/v4-interactive-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-interactive-readiness.json`
 - Asset count: interactive workflow objects
 - Warnings: see readiness report
-- Source file path: `examples/interactive-showcase-v4/InteractiveShowcaseV4.ts`
+- Source file path: `examples/external-interactive-showcase/InteractiveShowcaseV4.ts`
 - Premium product judgment: passes for lightweight interactive scene proof.
 - Lighting believable: yes.
 - Materials distinguishable: yes.
@@ -129,10 +129,10 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Product Viewer Template / External Consumer
 
-- Screenshot: `tests/reports/v4-gallery/templates/v4-product-viewer.png`
-- External screenshot: `tests/reports/v4-external-consumer/external-consumer.png`
-- Scene id: `v4-product-viewer`
-- App/example id: `templates/v4-product-viewer`
+- Screenshot: `tests/reports/external-gallery/templates/external-parity-product-viewer.png`
+- External screenshot: `tests/reports/external-parity-external-consumer/external-consumer.png`
+- Scene id: `external-parity-product-viewer`
+- App/example id: `templates/external-parity-product-viewer`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshots
 - Environment preset: gallery neutral HDR intent
@@ -140,7 +140,7 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 - Draw calls: recorded in template and external consumer reports
 - Asset count: external consumer loads pinned BoomBox GLB
 - Warnings: see external consumer diagnostics
-- Source file path: `templates/v4-product-viewer/src/main.ts`
+- Source file path: `templates/external-parity-product-viewer/src/main.ts`
 - Premium product judgment: passes for installable product proof.
 - Lighting believable: yes for template proof.
 - Materials distinguishable: yes in the external asset consumer proof.
@@ -150,17 +150,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Material Studio Template
 
-- Screenshot: `tests/reports/v4-gallery/templates/v4-material-studio.png`
-- Scene id: `v4-material-studio`
-- App/example id: `templates/v4-material-studio`
+- Screenshot: `tests/reports/external-gallery/templates/external-parity-material-studio.png`
+- Scene id: `external-parity-material-studio`
+- App/example id: `templates/external-parity-material-studio`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: studio softbox HDR
 - Material mode: physical material matrix
 - Draw calls: recorded in template reports
 - Asset count: material review objects
-- Warnings: see `tests/reports/v4-template-readiness.json`
-- Source file path: `templates/v4-material-studio/src/main.ts`
+- Warnings: see `tests/reports/external-parity-template-readiness.json`
+- Source file path: `templates/external-parity-material-studio/src/main.ts`
 - Premium product judgment: passes as a real starter app for material review.
 - Lighting believable: yes for bounded material comparison.
 - Materials distinguishable: yes.
@@ -170,17 +170,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Asset Gallery Template
 
-- Screenshot: `tests/reports/v4-gallery/templates/v4-asset-gallery.png`
-- Scene id: `v4-asset-gallery`
-- App/example id: `templates/v4-asset-gallery`
+- Screenshot: `tests/reports/external-gallery/templates/external-parity-asset-gallery.png`
+- Scene id: `external-parity-asset-gallery`
+- App/example id: `templates/external-parity-asset-gallery`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: neutral asset review
 - Material mode: asset-authored materials and diagnostics
 - Draw calls: recorded in template reports
 - Asset count: template asset set
-- Warnings: see `tests/reports/v4-template-readiness.json`
-- Source file path: `templates/v4-asset-gallery/src/main.ts`
+- Warnings: see `tests/reports/external-parity-template-readiness.json`
+- Source file path: `templates/external-parity-asset-gallery/src/main.ts`
 - Premium product judgment: passes as a real starter app for asset review.
 - Lighting believable: yes for inspection.
 - Materials distinguishable: yes where assets expose material variety.
@@ -190,17 +190,17 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Interactive Scene Template
 
-- Screenshot: `tests/reports/v4-gallery/templates/v4-interactive-scene.png`
-- Scene id: `v4-interactive-scene`
-- App/example id: `templates/v4-interactive-scene`
+- Screenshot: `tests/reports/external-gallery/templates/external-parity-interactive-scene.png`
+- Scene id: `external-parity-interactive-scene`
+- App/example id: `templates/external-parity-interactive-scene`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: interactive workflow preset
 - Material mode: selectable variants
 - Draw calls: recorded in template reports
 - Asset count: interactive workflow objects
-- Warnings: see `tests/reports/v4-template-readiness.json`
-- Source file path: `templates/v4-interactive-scene/src/main.ts`
+- Warnings: see `tests/reports/external-parity-template-readiness.json`
+- Source file path: `templates/external-parity-interactive-scene/src/main.ts`
 - Premium product judgment: passes as a real starter app for interactive product scenes.
 - Lighting believable: yes.
 - Materials distinguishable: yes.
@@ -210,22 +210,22 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 
 ## Large Scene Performance
 
-- Screenshot: `tests/reports/v4-gallery/performance/large-scene-performance.png`
+- Screenshot: `tests/reports/external-gallery/performance/large-scene-performance.png`
 - Scene id: `large-scene-performance`
-- App/example id: `tests/browser/v4-large-scene.spec.ts`
+- App/example id: `tests/browser/external-parity-large-scene.spec.ts`
 - Renderer backend: WebGL2
 - Resolution: captured browser screenshot
 - Environment preset: large-scene benchmark
 - Material mode: large-scene performance materials
-- Draw calls: recorded in `tests/reports/v4-performance-readiness.json`
+- Draw calls: recorded in `tests/reports/external-parity-performance-readiness.json`
 - Asset count: recorded in `tests/reports/v4-large-scene-browser.json`
 - Warnings: see performance readiness report
-- Source file path: `tests/browser/v4-large-scene.spec.ts`
+- Source file path: `tests/browser/external-parity-large-scene.spec.ts`
 - Premium product judgment: passes as performance proof, not as a hero marketing screenshot.
 - Lighting believable: acceptable for benchmark evidence.
 - Materials distinguishable: acceptable for benchmark evidence.
 - Shadows credible: not the primary purpose of this screenshot.
-- Competitive with Three.js reference: supported by `tests/reports/v4-threejs-visual-parity/large-scene-performance-g3d.png`.
+- Competitive with Three.js reference: supported by `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-g3d.png`.
 - Still weak: broad performance superiority remains blocked beyond the measured V4 scenes.
 
 ## Release Judgment

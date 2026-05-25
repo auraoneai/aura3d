@@ -11,28 +11,28 @@ Create a v3 verification system that proves code behavior, visual output, and co
 
 Add these package scripts:
 
-- [x] `pnpm verify:v3-code`
+- [x] `pnpm verify:foundation-code`
 - [x] `pnpm verify:v3-examples`
-- [x] `pnpm verify:v3-rendering`
-- [x] `pnpm verify:v3-assets`
-- [x] `pnpm verify:v3-editor`
-- [x] `pnpm verify:v3-runtime`
-- [x] `pnpm verify:v3-benchmarks`
+- [x] `pnpm verify:foundation-rendering`
+- [x] `pnpm verify:foundation-assets`
+- [x] `pnpm verify:foundation-editor`
+- [x] `pnpm verify:foundation-runtime`
+- [x] `pnpm verify:foundation-benchmarks`
 - [x] `pnpm verify:v3`
 
 ## Reports
 
 Add these reports:
 
-- [x] `tests/reports/v3-current-capability.json`
+- [x] `tests/reports/foundation-current-capability.json`
 - [x] `tests/reports/v3-example-screenshots/manifest.json`
-- [x] `tests/reports/v3-rendering.json`
+- [x] `tests/reports/foundation-rendering.json`
 - [x] `tests/reports/v3-asset-corpus.json`
-- [x] `tests/reports/v3-editor-authoring.json`
-- [x] `tests/reports/v3-runtime-systems.json`
+- [x] `tests/reports/foundation-editor-authoring.json`
+- [x] `tests/reports/foundation-runtime-systems.json`
 - [x] `tests/reports/v3-engine-comparison.json`
-- [x] `tests/reports/v3-flake-detection.json`
-- [x] `tests/reports/v3-claim-gates.json`
+- [x] `tests/reports/foundation-flake-detection.json`
+- [x] `tests/reports/foundation-claim-gates.json`
 
 Each report must include:
 

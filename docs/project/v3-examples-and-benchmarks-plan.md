@@ -108,7 +108,7 @@ Done criteria:
 
 ### Editor-Authored App
 
-Path: `examples/editor-authored-v3-app`
+Path: `examples/foundation-editor-authored-app`
 
 Missing code:
 

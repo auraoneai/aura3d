@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { isIP } from "node:net";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { baseReport, writeJson } from "../v4-reporting/index.js";
+import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
 interface PublicDemoDeploymentSmokeReport {
   readonly ok: boolean;
@@ -153,9 +153,9 @@ function publicDemoDeploymentExecutionPlan(
       "pnpm build:external-demos",
       "pnpm verify:static-demo-server-smoke",
       "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
-      "pnpm audit:v4-production-readiness",
+      "pnpm audit:external-parity-production-readiness",
       "pnpm audit:v4-broad-parity",
-      "pnpm verify:v4-report-freshness",
+      "pnpm verify:external-parity-report-freshness",
     ],
   };
 }
@@ -228,7 +228,7 @@ function isDurablePublicHost(hostname: string): boolean {
   }
   const ipVersion = isIP(host);
   if (ipVersion === 4) return isPublicIpv4(host);
-  if (ipVersion === 6) return isPublicIpv6(host);
+  if (ipVersion === 6) return isPublicIpV6(host);
   return host.includes(".");
 }
 
@@ -253,7 +253,7 @@ function isPublicIpv4(host: string): boolean {
   );
 }
 
-function isPublicIpv6(host: string): boolean {
+function isPublicIpV6(host: string): boolean {
   const normalized = host.toLowerCase();
   return !(
     normalized === "::1" ||
@@ -402,7 +402,7 @@ ${report.violations.length > 0 ? report.violations.map((violation) => `- ${viola
 
 ${report.deploymentExecutionPlan.validationCommands.map((command) => `- \`${command}\``).join("\n")}
 
-Do not claim production readiness until this runbook shows \`Deployment ready: yes\`, \`${reportPath}\` has \`ok: true\`, \`pnpm audit:v4-production-readiness\` has \`productionReady: true\`, and \`pnpm audit:v4-completion\` marks the production-readiness criterion achieved.
+Do not claim production readiness until this runbook shows \`Deployment ready: yes\`, \`${reportPath}\` has \`ok: true\`, \`pnpm audit:external-parity-production-readiness\` has \`productionReady: true\`, and \`pnpm audit:v4-completion\` marks the production-readiness criterion achieved.
 `;
 }
 

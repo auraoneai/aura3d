@@ -3,7 +3,7 @@ import { arch, platform, release } from "node:os";
 import { spawnSync } from "node:child_process";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
-import { baseReport } from "../../tools/v4-reporting/index.js";
+import { baseReport } from "../../tools/external-parity-reporting/index.js";
 
 interface WebGPUParityCase {
   readonly name: string;
@@ -2250,12 +2250,12 @@ fn fs_main(@location(0) normalInput: vec3<f32>) -> @location(0) vec4<f32> {
       validation("real-compute-particle-evidence", featureMatrix.realHardwareComputeParticles, "tests/browser/webgpu-parity.spec.ts:real-webgpu-compute-particles", [
         "real WebGPU compute particle update did not match the CPU reference in this browser run.",
       ]),
-      validation("full-webgpu-parity-boundary", fullWebGPUParityBlockers.length === 0, "tests/reports/v4-webgpu-parity.json", fullWebGPUParityBlockers),
+      validation("full-webgpu-parity-boundary", fullWebGPUParityBlockers.length === 0, "tests/reports/external-parity-webgpu-parity.json", fullWebGPUParityBlockers),
     ];
     const report: WebGPUParityReport = {
       ...baseReport(process.cwd(), {
         ok: true,
-        command: "G3D_WEBGPU_PARITY_REPORT=tests/reports/v4-webgpu-parity.json pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts tests/browser/webgpu-parity.spec.ts",
+        command: "G3D_WEBGPU_PARITY_REPORT=tests/reports/external-parity-webgpu-parity.json pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts tests/browser/webgpu-parity.spec.ts",
         runIdPrefix: "v4-webgpu-parity",
         sourceFiles: webgpuReportSourceFiles,
         violations: validations.flatMap((entry) => entry.blockers.map((blocker) => `${entry.id}: ${blocker}`)),

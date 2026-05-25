@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "editor-authored-startup",
   sceneVersion: 1,
-  assetId: "editor-authored-v3-app-export",
+  assetId: "foundation-editor-authored-app-export",
   assetClass: "editor-authored-static-export-metadata",
   resolution: { width: 960, height: 540, dpr: 1 },
   warmupFrames: 20,
@@ -37,9 +37,9 @@ const scene: BenchmarkSceneDescriptor = {
   },
   workflow: {
     kind: "editor-authored-exported-app-startup",
-    exportedProjectPath: "examples/editor-authored-v3-app/project.json",
-    exportedRuntimePath: "examples/editor-authored-v3-app/runtime.js",
-    editorEvidenceReportPath: "tests/reports/v3-editor-authoring.json",
+    exportedProjectPath: "examples/foundation-editor-authored-app/project.json",
+    exportedRuntimePath: "examples/foundation-editor-authored-app/runtime.js",
+    editorEvidenceReportPath: "tests/reports/foundation-editor-authoring.json",
     comparisonMode: "All engines load the same editor-authored exported project metadata and execute the same WebGL2 startup microbenchmark wrapper; this is workflow startup evidence, not native Three.js/Babylon editor export parity.",
     authoredOperations: [
       "new-project",

@@ -35,7 +35,7 @@
   - `docs/project/v4-current-gap-audit.md`
   - `docs/project/v4-renderer-visual-quality-plan.md`
   - `docs/project/v4-asset-content-plan.md`
-  - `docs/project/v4-benchmarks-validation-plan.md`
+  - `docs/project/external-parity-benchmarks-validation-plan.md`
   - `docs/project/v4-master-code-checklist.md`
   - `docs/project/v4-remaining-code-to-write.md`
   - Relevant V3 docs if a V4 task references V3 carry-over behavior:
@@ -156,9 +156,9 @@
 
   Expected files may include:
   - `examples/racing-showcase/*`
-  - `tests/browser/racing-showcase-v4.spec.ts`
-  - `tools/v4-examples/index.ts`
-  - `tools/v4-visual-quality/index.ts`
+  - `tests/browser/racing-showcase-external-parity.spec.ts`
+  - `tools/external-parity-examples/index.ts`
+  - `tools/external-parity-visual-quality/index.ts`
   - `package.json` scripts only if needed
 
   Phase 4: Space / Starfield / Nebula Backgrounds
@@ -223,7 +223,7 @@
   Expected files:
   - `packages/rendering/src/PostProcessPass.ts`
   - `examples/postprocess-lab/main.ts`
-  - `tests/browser/rendering-v4-visuals.spec.ts`
+  - `tests/browser/rendering-external-parity-visuals.spec.ts`
   - `tests/unit/rendering/*postprocess*.test.ts`, if appropriate
 
   Phase 8: Shader / PBR / Shadow Reference Port
@@ -257,11 +257,11 @@
 
   - `pnpm typecheck`
   - `pnpm test`
-  - `pnpm verify:v4-assets`
-  - `pnpm verify:v4-rendering`
-  - `pnpm verify:v4-examples`
-  - `pnpm verify:v4-visual-quality`
-  - `pnpm verify:v4-benchmarks`, only when comparison scenes are touched
+  - `pnpm verify:external-parity-assets`
+  - `pnpm verify:external-parity-rendering`
+  - `pnpm verify:external-parity-examples`
+  - `pnpm verify:external-parity-visual-quality`
+  - `pnpm verify:external-parity-benchmarks`, only when comparison scenes are touched
   - `pnpm verify:v4`, only after broad integration changes
 
   If the repo uses different scripts after inspection, use the actual package scripts from `package.json`.
@@ -292,8 +292,8 @@
   - feature evidence exists only as metadata with no screenshot/pixel support.
 
   Specify how to implement this either by extending:
-  - `tools/v4-visual-quality/index.ts`
-  - `tests/browser/example-screenshot-audit-v4.spec.ts`
+  - `tools/external-parity-visual-quality/index.ts`
+  - `tests/browser/example-screenshot-audit-external-parity.spec.ts`
   - contact-sheet generation/review artifacts
 
   7. Do-Not-Port List

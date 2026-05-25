@@ -12,7 +12,7 @@ The renderer and animation packages now cover more than the original unit stress
 ## Current Evidence
 
 - `tests/reports/v8-animation-examples.json` records v8 route evidence for additive blending, IK, keyframes, morphs, multiple agents, skinning blending, and walk routes.
-- `tests/reports/v8-visual-review.json` accepts the animation screenshots as route evidence while explicitly warning not to treat them as final Three.js-level character quality.
+- `tests/reports/current-routes-visual-review.json` accepts the animation screenshots as route evidence while explicitly warning not to treat them as final Three.js-level character quality.
 - `tests/assets/gltf-animation-corpus.test.ts` covers pinned Cesium Man and Fox GLBs plus an inline skinned fixture.
 - `tests/browser/animation-browser.spec.ts` and `tests/visual/skinned-animation-pixels.spec.ts` verify browser-rendered skinned animation pixels and changed frames.
 
@@ -27,7 +27,7 @@ The renderer and animation packages now cover more than the original unit stress
 ## Verification
 
 - `tests/reports/v8-animation-examples.json`
-- `tests/reports/v8-visual-review.json`
+- `tests/reports/current-routes-visual-review.json`
 - `tests/assets/gltf-animation-corpus.test.ts`
 - `tests/browser/animation-browser.spec.ts`
 - `tests/visual/skinned-animation-pixels.spec.ts`

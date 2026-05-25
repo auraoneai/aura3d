@@ -9,8 +9,8 @@ G3D has real geometry and GPU-buffer infrastructure. Full Three.js `BufferGeomet
 - `packages/rendering/src/IndexBuffer.ts`
 - `packages/rendering/src/RenderDevice.ts`
 - `packages/rendering/src/WebGL2Device.ts`
-- `packages/rendering/src/v6/resources/*`
-- `packages/rendering/src/v9/RendererV9.ts`
+- `packages/rendering/src/production-runtime/resources/*`
+- `packages/rendering/src/advanced-runtime/RendererV9.ts`
 
 ## What Is Supported
 

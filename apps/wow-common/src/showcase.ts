@@ -5,7 +5,7 @@ import {
   type V8FlagshipViewer,
   type V8ViewerControls,
   type V8ViewerSnapshot
-} from "../../../packages/engine/src/v8/index";
+} from "../../../packages/engine/src/threejs-example-parity/index";
 
 export interface WowShowcaseConfig {
   readonly appId: string;

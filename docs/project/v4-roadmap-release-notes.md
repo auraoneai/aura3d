@@ -19,8 +19,8 @@ V4 completes the local V4 product release gate for the supported `@galileo3d/eng
 ## Verification
 
 - Full release command: `pnpm v4:release`
-- Release report: `tests/reports/v4-release-readiness.json`
-- Completion audit: `tests/reports/v4-completion-audit.json`
+- Release report: `tests/reports/external-parity-release-readiness.json`
+- Completion audit: `tests/reports/external-parity-completion-audit.json`
 
 ## Blocked Claims
 

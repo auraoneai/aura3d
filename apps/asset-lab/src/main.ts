@@ -1,5 +1,5 @@
 import { createAssetViewerWorkflow } from "@galileo3d/workflows";
-import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../v3-common/src/WorkflowWorkbench";
+import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../legacy-common/src/WorkflowWorkbench";
 
 const scenarios: readonly WorkflowScenario[] = [
   {

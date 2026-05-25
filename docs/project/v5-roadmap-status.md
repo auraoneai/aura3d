@@ -5,7 +5,7 @@
 
 Historical status: superseded by V9.
 
-V5 is retained as historical planning and evidence context. Its original completion rule required `pnpm v5:release` and the completion audit to prove every named requirement in `docs/project/v5-roadmap-visual-engine-plan.md`; current release/claim decisions now use the V9 docs.
+V5 is retained as historical planning and evidence context. Its original completion rule required `pnpm three-compat:release` and the completion audit to prove every named requirement in `docs/project/three-compat-roadmap-visual-engine-plan.md`; current release/claim decisions now use the V9 docs.
 
 V4 completed a bounded V4 SDK/product suite. That is the baseline, not the destination.
 

@@ -10,9 +10,9 @@ G3D has a renderer-owned shader/material/state stack. It is strong enough for th
 - `packages/rendering/src/ShaderModule.ts`
 - `packages/rendering/src/ShaderProgramLibrary.ts`
 - `packages/rendering/src/WebGL2StateCache.ts`
-- `packages/rendering/src/v6/materials/*`
-- `packages/rendering/src/v6/shaders/chunks/*`
-- `packages/rendering/src/v6/shaders/wgsl/*`
+- `packages/rendering/src/production-runtime/materials/*`
+- `packages/rendering/src/production-runtime/shaders/chunks/*`
+- `packages/rendering/src/production-runtime/shaders/wgsl/*`
 
 ## What Is Supported
 

@@ -7,10 +7,10 @@ EngineReadiness 1 reset the repo direction and created local gates. It did **not
 
 The screenshots below are not product success:
 
-- `tests/reports/product-viewer-v1/product-viewer.png`
-- `tests/reports/material-studio-v1/material-studio.png`
-- `tests/reports/asset-viewer-v1/asset-viewer.png`
-- `tests/reports/rendering-showcase-v1/rendering-showcase.png`
+- `tests/reports/legacy-product-viewer/product-viewer.png`
+- `tests/reports/legacy-material-studio/material-studio.png`
+- `tests/reports/legacy-asset-viewer/asset-viewer.png`
+- `tests/reports/legacy-rendering-showcase/rendering-showcase.png`
 
 These four screenshots are explicitly rejected. They still look like generated demo output, primitive staging, weak product art, or screenshot-gate bait. They do not count as product evidence, visual baseline, or acceptable output. Passing nonblank/metric tests was not enough.
 
@@ -80,10 +80,10 @@ Treat the EngineReadiness 1 screenshots as temporary pipeline evidence, not as s
 
 For EngineReadiness 2, treat these exact files as failed/rejected output:
 
-- `tests/reports/product-viewer-v1/product-viewer.png`
-- `tests/reports/material-studio-v1/material-studio.png`
-- `tests/reports/asset-viewer-v1/asset-viewer.png`
-- `tests/reports/rendering-showcase-v1/rendering-showcase.png`
+- `tests/reports/legacy-product-viewer/product-viewer.png`
+- `tests/reports/legacy-material-studio/material-studio.png`
+- `tests/reports/legacy-asset-viewer/asset-viewer.png`
+- `tests/reports/legacy-rendering-showcase/rendering-showcase.png`
 
 The EngineReadiness 2 implementation must produce new evidence from `apps/product-studio`, not from `examples/*-v1`.
 
@@ -145,7 +145,7 @@ Do the work in this order. Do not start browser screenshot tests, visual metrics
 
 Create and implement:
 
-- [ ] `tools/v2-generate-products/index.ts`
+- [ ] `tools/product-studio-generate-products/index.ts`
 
 This file must write the product assets. It is not a verifier.
 
@@ -197,7 +197,7 @@ The generator must create or reference these texture slots:
 Done means:
 
 ```sh
-pnpm exec tsx --tsconfig tsconfig.base.json tools/v2-generate-products/index.ts
+pnpm exec tsx --tsconfig tsconfig.base.json tools/product-studio-generate-products/index.ts
 ```
 
 creates the product corpus without needing any renderer, browser, or screenshot test.
@@ -493,7 +493,7 @@ Must:
 - [ ] re-render when controls change.
 - [ ] show compact warnings and asset summary.
 - [ ] expose `window.__G3D_PRODUCT_STUDIO__`.
-- [ ] never depend on `examples/product-viewer-v1`, `examples/material-studio-v1`, `examples/asset-viewer-v1`, or `examples/rendering-showcase-v1`.
+- [ ] never depend on `examples/legacy-product-viewer`, `examples/legacy-material-studio`, `examples/legacy-asset-viewer`, or `examples/legacy-rendering-showcase`.
 - [ ] never load or copy the rejected V1 screenshots.
 
 #### `apps/product-studio/src/main.ts`
@@ -518,20 +518,20 @@ Update:
 
 After steps 1 through 4 exist, create:
 
-- [ ] `tests/assets/v2-product-assets.test.ts`
+- [ ] `tests/assets/product-studio-product-assets.test.ts`
 - [ ] `tests/unit/product-studio/product-asset-loader.test.ts`
 - [ ] `tests/unit/product-studio/product-camera.test.ts`
 - [ ] `tests/unit/product-studio/product-lighting.test.ts`
 - [ ] `tests/unit/product-studio/product-materials.test.ts`
 - [ ] `tests/unit/product-studio/product-export.test.ts`
 - [ ] `tests/browser/product-studio-app.spec.ts`
-- [ ] `tools/v2-truth/index.ts`
-- [ ] `tools/v2-product-assets/index.ts`
-- [ ] `tools/v2-sdk/index.ts`
-- [ ] `tools/v2-app/index.ts`
-- [ ] `tools/v2-product-evidence/index.ts`
-- [ ] `tools/v2-package-smoke/index.ts`
-- [ ] `tools/v2-product-readiness/index.ts`
+- [ ] `tools/product-studio-truth/index.ts`
+- [ ] `tools/product-studio-product-assets/index.ts`
+- [ ] `tools/product-studio-sdk/index.ts`
+- [ ] `tools/product-studio-app/index.ts`
+- [ ] `tools/product-studio-product-evidence/index.ts`
+- [ ] `tools/product-studio-package-smoke/index.ts`
+- [ ] `tools/product-studio-product-readiness/index.ts`
 
 These files prove the product. They are not the product.
 
@@ -541,10 +541,10 @@ Every EngineReadiness 2 browser screenshot must come from:
 
 No EngineReadiness 2 screenshot may come from:
 
-- `examples/product-viewer-v1/`
-- `examples/material-studio-v1/`
-- `examples/asset-viewer-v1/`
-- `examples/rendering-showcase-v1/`
+- `examples/legacy-product-viewer/`
+- `examples/legacy-material-studio/`
+- `examples/legacy-asset-viewer/`
+- `examples/legacy-rendering-showcase/`
 
 ## Code To Write
 
@@ -552,7 +552,7 @@ No EngineReadiness 2 screenshot may come from:
 
 Create:
 
-- `tools/v2-generate-products/index.ts`
+- `tools/product-studio-generate-products/index.ts`
 
 This script must generate real glTF or GLB files under `fixtures/v2/products/`. Do not hand-wave with render items. Do not use `createProductTurntableRenderKit` as the product.
 
@@ -944,15 +944,15 @@ Acceptance:
 
 Deliverables:
 
-- [ ] `tools/v2-generate-products/index.ts`
+- [ ] `tools/product-studio-generate-products/index.ts`
 - [ ] `fixtures/v2/products/camera-kit/camera-kit.glb`
 - [ ] `fixtures/v2/products/camera-kit/manifest.json`
 - [ ] `fixtures/v2/products/speaker/speaker.glb`
 - [ ] `fixtures/v2/products/speaker/manifest.json`
 - [ ] `fixtures/v2/products/watch/watch.glb`
 - [ ] `fixtures/v2/products/watch/manifest.json`
-- [ ] `tools/v2-product-assets/index.ts`
-- [ ] `tests/assets/v2-product-assets.test.ts`
+- [ ] `tools/product-studio-product-assets/index.ts`
+- [ ] `tests/assets/product-studio-product-assets.test.ts`
 
 Exit command:
 
@@ -968,7 +968,7 @@ Acceptance:
 - [ ] Assets have real bounds.
 - [ ] Assets are not just primitive proof arrangements.
 - [ ] Manifest records source/license/generated status.
-- [ ] Report generated at `tests/reports/v2-product-assets.json`.
+- [ ] Report generated at `tests/reports/product-studio-product-assets.json`.
 
 ### Milestone 2: Product Studio SDK
 
@@ -1003,7 +1003,7 @@ Acceptance:
 - [ ] A caller can load a product and create a render scene in fewer than 30 lines.
 - [ ] No caller needs low-level shader, framebuffer, render-device, or pass setup.
 - [ ] Unsupported product features create warnings, not blank screens.
-- [ ] Report generated at `tests/reports/v2-sdk.json`.
+- [ ] Report generated at `tests/reports/product-studio-sdk.json`.
 
 ### Milestone 3: Product Studio App
 
@@ -1077,7 +1077,7 @@ Acceptance:
 
 Deliverables:
 
-- [ ] `tools/v2-package-smoke/index.ts`
+- [ ] `tools/product-studio-package-smoke/index.ts`
 - [ ] Fresh temporary app.
 - [ ] Fresh package tarball install.
 - [ ] Browser render from the package API.
@@ -1094,15 +1094,15 @@ Acceptance:
 - [ ] Temporary app imports the product studio API from the packed package.
 - [ ] Temporary app renders one product asset.
 - [ ] Temporary app writes a PNG screenshot.
-- [ ] Report generated at `tests/reports/v2-package-smoke.json`.
-- [ ] Screenshot generated at `tests/reports/v2-package-smoke/screenshot.png`.
+- [ ] Report generated at `tests/reports/product-studio-package-smoke.json`.
+- [ ] Screenshot generated at `tests/reports/product-studio-package-smoke/screenshot.png`.
 
 ### Milestone 6: Real Product Gate
 
 Deliverables:
 
-- [ ] `tools/v2-product-readiness/index.ts`
-- [ ] `tests/reports/v2-product-readiness.json`
+- [ ] `tools/product-studio-product-readiness/index.ts`
+- [ ] `tests/reports/product-studio-product-readiness.json`
 - [ ] `docs/project/v2-*-roadmap/product-readiness.md`
 
 Exit command:
@@ -1123,13 +1123,13 @@ Acceptance:
 
 ```json
 {
-  "v2:truth": "tsx --tsconfig tsconfig.base.json tools/v2-truth/index.ts",
-  "v2:assets": "pnpm v2:truth && pnpm exec vitest run tests/assets/v2-product-assets.test.ts --reporter=dot && tsx --tsconfig tsconfig.base.json tools/v2-product-assets/index.ts",
-  "v2:sdk": "pnpm typecheck && pnpm exec vitest run tests/unit/product-studio --reporter=dot && tsx --tsconfig tsconfig.base.json tools/v2-sdk/index.ts",
-  "v2:app": "pnpm exec playwright test tests/browser/product-studio-app.spec.ts --grep @app --reporter=line && tsx --tsconfig tsconfig.base.json tools/v2-app/index.ts",
-  "v2:product-evidence": "pnpm exec playwright test tests/browser/product-studio-app.spec.ts --reporter=line && tsx --tsconfig tsconfig.base.json tools/v2-product-evidence/index.ts",
-  "v2:package-smoke": "pnpm build && tsx --tsconfig tsconfig.base.json tools/v2-package-smoke/index.ts",
-  "v2:product": "pnpm v2:assets && pnpm v2:sdk && pnpm v2:app && pnpm v2:product-evidence && pnpm v2:package-smoke && tsx --tsconfig tsconfig.base.json tools/v2-product-readiness/index.ts"
+  "v2:truth": "tsx --tsconfig tsconfig.base.json tools/product-studio-truth/index.ts",
+  "v2:assets": "pnpm v2:truth && pnpm exec vitest run tests/assets/product-studio-product-assets.test.ts --reporter=dot && tsx --tsconfig tsconfig.base.json tools/product-studio-product-assets/index.ts",
+  "v2:sdk": "pnpm typecheck && pnpm exec vitest run tests/unit/product-studio --reporter=dot && tsx --tsconfig tsconfig.base.json tools/product-studio-sdk/index.ts",
+  "v2:app": "pnpm exec playwright test tests/browser/product-studio-app.spec.ts --grep @app --reporter=line && tsx --tsconfig tsconfig.base.json tools/product-studio-app/index.ts",
+  "v2:product-evidence": "pnpm exec playwright test tests/browser/product-studio-app.spec.ts --reporter=line && tsx --tsconfig tsconfig.base.json tools/product-studio-product-evidence/index.ts",
+  "v2:package-smoke": "pnpm build && tsx --tsconfig tsconfig.base.json tools/product-studio-package-smoke/index.ts",
+  "v2:product": "pnpm v2:assets && pnpm v2:sdk && pnpm v2:app && pnpm v2:product-evidence && pnpm v2:package-smoke && tsx --tsconfig tsconfig.base.json tools/product-studio-product-readiness/index.ts"
 }
 ```
 

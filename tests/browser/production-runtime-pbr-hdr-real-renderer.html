@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>V6 PBR HDR Real Renderer</title>
+    <style>
+      html, body {
+        margin: 0;
+        background: #101217;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: 1024px 1024px;
+        gap: 0;
+      }
+
+      canvas {
+        display: block;
+        width: 1024px;
+        height: 1024px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <canvas id="studio" width="1024" height="1024"></canvas>
+      <canvas id="sunset" width="1024" height="1024"></canvas>
+    </main>
+    <script type="module" src="/tests/browser/production-runtime-pbr-hdr-real-renderer.js"></script>
+  </body>
+</html>

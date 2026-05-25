@@ -19,11 +19,11 @@ The current claim is evidence-bound: G3D matches or exceeds Three.js in the meas
 
 ## Advanced Gallery Boundary
 
-The V9 advanced examples gallery is current accepted showcase evidence as of the latest report set. `pnpm v9:advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`, and `pnpm v9:advanced-gallery:audit` verifies ten current route reports, screenshot hashes, runtime JSON, reusable-system disclosures, unsupported disclosures, measured performance evidence, and image-quality evidence with zero blockers.
+The V9 advanced examples gallery is current accepted showcase evidence as of the latest report set. `pnpm advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`, and `pnpm advanced-gallery:audit` verifies ten current route reports, screenshot hashes, runtime JSON, reusable-system disclosures, unsupported disclosures, measured performance evidence, and image-quality evidence with zero blockers.
 
-The claim remains evidence-bound: if source changes invalidate screenshots, route JSON, hashes, review output, or audit output, rerun `pnpm v9:advanced-gallery`, `pnpm v9:advanced-gallery:review`, and `pnpm v9:advanced-gallery:audit` before reusing the gallery as accepted evidence.
+The claim remains evidence-bound: if source changes invalidate screenshots, route JSON, hashes, review output, or audit output, rerun `pnpm advanced-gallery`, `pnpm advanced-gallery:review`, and `pnpm advanced-gallery:audit` before reusing the gallery as accepted evidence.
 
-The full advanced-gallery capture is intentionally not part of aggregate `pnpm v9`; it is a heavyweight visual acceptance lane that must be run explicitly through `pnpm v9:advanced-gallery:pipeline` when gallery source, route composition, renderer output, or evidence files change. `pnpm test:visual` remains the generic visual baseline command for nonblank/pixel smoke coverage and is not an advanced-gallery acceptance gate.
+The full advanced-gallery capture is intentionally not part of aggregate `pnpm v9`; it is a heavyweight visual acceptance lane that must be run explicitly through `pnpm advanced-gallery:pipeline` when gallery source, route composition, renderer output, or evidence files change. `pnpm test:visual` remains the generic visual baseline command for nonblank/pixel smoke coverage and is not an advanced-gallery acceptance gate.
 
 ## Package Surface
 
@@ -75,27 +75,27 @@ http://127.0.0.1:5180/
 
 Useful routes include:
 
-- `/apps/v8-flagship-viewer/`
-- `/apps/v8-animation-keyframes/`
-- `/apps/v8-animation-multiple/`
-- `/apps/v8-animation-walk/`
-- `/apps/v8-skinning-blending/`
-- `/apps/v8-skinning-additive/`
-- `/apps/v8-skinning-ik/`
-- `/apps/v8-skinning-morph/`
-- `/apps/v8-decals/`
-- `/apps/v8-postprocessing-bloom/`
-- `/apps/v8-postprocessing-depth-outline/`
-- `/apps/v8-instancing-performance/`
-- `/apps/v8-loader-compression/`
-- `/apps/v8-loader-material-extensions/`
-- `/apps/v8-loader-gltf-variants/`
-- `/apps/v8-webgpu-rtt/`
-- `/apps/v8-webgpu-compute/`
-- `/apps/v8-webgpu-materials/`
-- `/apps/v8-webgpu-instance-uniform/`
-- `/apps/v8-webxr-interactions/`
-- `/apps/v9-public-scene/`
+- `/apps/flagship-viewer/`
+- `/apps/animation-keyframes/`
+- `/apps/animation-multiple/`
+- `/apps/animation-walk/`
+- `/apps/skinning-blending/`
+- `/apps/skinning-additive/`
+- `/apps/skinning-ik/`
+- `/apps/skinning-morph/`
+- `/apps/decals/`
+- `/apps/postprocessing-bloom/`
+- `/apps/postprocessing-depth-outline/`
+- `/apps/instancing-performance/`
+- `/apps/loader-compression/`
+- `/apps/loader-material-extensions/`
+- `/apps/loader-gltf-variants/`
+- `/apps/webgpu-rtt/`
+- `/apps/webgpu-compute/`
+- `/apps/webgpu-materials/`
+- `/apps/webgpu-instance-uniform/`
+- `/apps/webxr-interactions/`
+- `/apps/public-scene/`
 
 ## Basic SDK Shape
 
@@ -132,7 +132,7 @@ pnpm v9
 `pnpm v9` keeps the broad V9 parity/readiness suite fast enough for aggregate verification. Run the heavyweight advanced-gallery evidence lane explicitly after gallery-visible changes:
 
 ```sh
-pnpm v9:advanced-gallery:pipeline
+pnpm advanced-gallery:pipeline
 ```
 
 Run the generic visual baseline smoke separately when needed:
@@ -147,7 +147,7 @@ Useful focused commands:
 pnpm v9:inventory
 pnpm v9:same-scene-render
 pnpm v9:visual-review
-pnpm v9:advanced-gallery
+pnpm advanced-gallery
 pnpm v9:performance
 pnpm v10:feature-parity
 pnpm v10:visual-quality
@@ -165,7 +165,7 @@ Primary evidence:
 - `tests/reports/v9/threejs-inventory.json`
 - `tests/reports/v9/visual-review.json`
 - `tests/reports/v9/same-scene-render.json`
-- `tests/reports/v9/advanced-examples-gallery/` (current accepted advanced-gallery evidence; rerun capture, review, and audit after visual/source changes)
+- `tests/reports/advanced-examples-gallery/` (current accepted advanced-gallery evidence; rerun capture, review, and audit after visual/source changes)
 - `tests/reports/v9/performance.json`
 - `tests/reports/v10/feature-parity.json`
 - `tests/reports/v10/visual-quality.json`

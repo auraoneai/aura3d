@@ -13,7 +13,7 @@ The engine readiness blocks all broad parity and replacement claims until repo-l
 - Canonical scene screenshots: `tests/reports/engine-readiness-canonical-scene/`
 - Visual quality report: `tests/reports/engine-readiness-visual-quality.json`
 - Root readiness report: `tests/reports/engine-readiness-root-readiness.json`
-- Public example screenshots: `tests/reports/product-viewer-v1/`, `tests/reports/material-studio-v1/`, `tests/reports/asset-viewer-v1/`, `tests/reports/rendering-showcase-v1/`
+- Public example screenshots: `tests/reports/legacy-product-viewer/`, `tests/reports/legacy-material-studio/`, `tests/reports/legacy-asset-viewer/`, `tests/reports/legacy-rendering-showcase/`
 
 ## Blocked Claims
 
@@ -40,9 +40,9 @@ The engine readiness blocks all broad parity and replacement claims until repo-l
 
 Only these rebuilt examples are public during the engine readiness:
 
-- `examples/product-viewer-v1/`
-- `examples/material-studio-v1/`
-- `examples/asset-viewer-v1/`
-- `examples/rendering-showcase-v1/`
+- `examples/legacy-product-viewer/`
+- `examples/legacy-material-studio/`
+- `examples/legacy-asset-viewer/`
+- `examples/legacy-rendering-showcase/`
 
 All previous flagship examples remain under `examples/_quarantine/`.

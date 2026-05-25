@@ -44,7 +44,7 @@ WebGPU device creation can succeed without canvas presentation. If a canvas is s
 The current repo has WebGPU coverage in three forms:
 
 - low-level `WebGPUDevice` and render-to-texture/readback tests;
-- v6 WebGPU readiness and app-suite routes;
+- production-runtime WebGPU readiness and app-suite routes;
 - v8 route evidence for WebGPU RTT, materials, instance-uniform submission, and compute particles.
 
 The v8 route registry and visual review include WebGPU app surfaces, but those are still evidence routes. They are not a claim that the full renderer is better than Three.js WebGPU across browsers and GPUs.

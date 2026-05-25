@@ -40,4 +40,4 @@ Use the V3 examples gate:
 pnpm v3:examples
 ```
 
-That command captures browser screenshots and writes `tests/reports/v3-examples-readiness.json`.
+That command captures browser screenshots and writes `tests/reports/foundation-examples-readiness.json`.

@@ -45,7 +45,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
     generatedAt: new Date().toISOString(),
     command: "pnpm exec playwright test tests/browser/rendering-debug-timing.spec.ts",
     run: {
-      id: `v3-rendering-debug-timing-${Date.now()}`,
+      id: `foundation-rendering-debug-timing-${Date.now()}`,
       agent: "renderer-debug-timing",
       startedAt: new Date().toISOString(),
       command: "pnpm exec playwright test tests/browser/rendering-debug-timing.spec.ts"
@@ -59,7 +59,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
           "examples/postprocess-lab/main.ts",
           "tests/unit/rendering/renderer-debug-overlay.test.ts",
           "tests/browser/rendering-debug-timing.spec.ts",
-          "tests/reports/v3-rendering-debug-timing.json"
+          "tests/reports/foundation-rendering-debug-timing.json"
         ]
       },
       {
@@ -69,7 +69,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
           "examples/postprocess-lab/main.ts",
           "tests/unit/rendering/renderer-timing.test.ts",
           "tests/browser/rendering-debug-timing.spec.ts",
-          "tests/reports/v3-rendering-debug-timing.json"
+          "tests/reports/foundation-rendering-debug-timing.json"
         ]
       }
     ],
@@ -85,7 +85,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
     report.ok = report.validations.every((validation) => validation.ok);
     report.generatedAt = new Date().toISOString();
     report.run.finishedAt = report.generatedAt;
-    const reportPath = resolve("tests/reports/v3-rendering-debug-timing.json");
+    const reportPath = resolve("tests/reports/foundation-rendering-debug-timing.json");
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });

@@ -4,7 +4,7 @@ void startWowGltfShowcase({
   appId: "wow-tokyo-keyframes",
   title: "G3D Authored Tokyo Keyframes",
   subtitle: "Imported authored scene with native G3D glTF animation playback.",
-  assetUrl: "/fixtures/v8/assets/showcase/littlest-tokyo.glb",
+  assetUrl: "/fixtures/threejs-parity/assets/showcase/littlest-tokyo.glb",
   assetName: "Littlest Tokyo animated scene",
   attribution: "Model: Littlest Tokyo by Glen Fox, CC Attribution.",
   requiresDraco: true,

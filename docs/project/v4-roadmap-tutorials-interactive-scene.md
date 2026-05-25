@@ -20,9 +20,9 @@ canvas.addEventListener("pointerdown", () => {
 
 Evidence:
 
-- Example: `examples/interactive-showcase-v4`
+- Example: `examples/external-interactive-showcase`
 - App: `apps/interactive-showcase-pro`
-- Screenshot: `tests/reports/v4-gallery/interactive/interactive-showcase-v4.png`
-- Same-scene Three.js comparison: `tests/reports/v4-threejs-visual-parity/interactive-orbit-threejs.png`
+- Screenshot: `tests/reports/external-gallery/interactive/external-interactive-showcase.png`
+- Same-scene Three.js comparison: `tests/reports/external-parity-threejs-visual-parity/interactive-orbit-threejs.png`
 
 Boundary: this tutorial proves a lightweight interactive scene, not a full game engine.

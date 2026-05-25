@@ -12,13 +12,13 @@ import {
   createProductViewer,
   loadGltfScene,
   loadHdrEnvironment
-} from "@galileo3d/engine/v6";
+} from "@galileo3d/engine/production-runtime";
 ```
 
 The app path is:
 
 ```text
-apps/v6-product-configurator/
+apps/product-configurator/
 ```
 
 It uses:
@@ -66,8 +66,8 @@ window.__g3dV6Runtime
 Browser verification writes:
 
 ```text
-tests/reports/v6-app-suite/v6-product-configurator.png
-tests/reports/v6-app-suite/v6-product-configurator.json
+tests/reports/production-runtime-app-suite/production-product-configurator.png
+tests/reports/production-runtime-app-suite/production-product-configurator.json
 ```
 
 V7 also writes the actual high-resolution canvas export:
@@ -127,7 +127,7 @@ The viewer also creates renderer-owned product-scene render items:
 - grounding items: floor and contact-grounding proxy
 - background items: a subdued product-stage backdrop
 
-The contact-grounding proxy is now produced by `packages/rendering/src/v6/passes/ContactShadowPass.ts` rather than being hidden as one-off app geometry. Its diagnostics are explicit:
+The contact-grounding proxy is now produced by `packages/rendering/src/production-runtime/passes/ContactShadowPass.ts` rather than being hidden as one-off app geometry. Its diagnostics are explicit:
 
 - `mode: layered-elliptical-receiver-proxy`
 - `parity: not-full-contact-shadow`

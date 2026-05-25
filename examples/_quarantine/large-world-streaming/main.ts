@@ -42,7 +42,7 @@ type LargeWorldState = {
   readonly visualClaim: string;
   readonly knownLimits: readonly string[];
   readonly claimBoundary: string;
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/large-world-streaming.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/large-world-streaming.png";
   readonly diagnostics?: RenderDeviceDiagnostics;
   readonly featureEvidence: Record<string, number | string | boolean>;
   readonly metrics: Record<string, number | string | boolean>;
@@ -63,7 +63,7 @@ declare global {
   }
 }
 
-const screenshotPath = "tests/reports/v4-example-screenshots/large-world-streaming.png" as const;
+const screenshotPath = "tests/reports/external-parity-example-screenshots/large-world-streaming.png" as const;
 const knownLimits = [
   "This is a bounded local streaming and culling harness, not an open-world asset pipeline.",
   "Chunks are generated modular WebGL2 geometry and deterministic terrain-heightfield state, not a full terrain ECS or network streaming stack.",

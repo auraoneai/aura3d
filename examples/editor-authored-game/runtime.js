@@ -99,7 +99,7 @@ function publish() {
     id: "editor-authored-game",
     status: "ready",
     renderer: "canvas2d-static-export",
-    visualClaim: "bounded-v3-editor-authored-game-static-export",
+    visualClaim: "bounded-foundation-editor-authored-game-static-export",
     knownLimits: [
       "This proves a checked-in editor-authored game export workflow, not a full Unity/Unreal replacement.",
       "The checked-in export runtime is canvas2D visualization of project/gameplay data, not the full WebGL renderer path."

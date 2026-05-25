@@ -7,13 +7,13 @@ G3D should be compared to Three.js by evidence category, not by blanket parity l
 | Category | Current classification | Evidence |
 |---|---|---|
 | Benchmark scaffold | G3D has equivalent checked-in scaffold scenes and smaller generated benchmark bundles on the recorded run. | `tests/reports/comparison-threejs.json`, `tools/compare-engines/index.ts`, `benchmarks/shared/scenes/*.ts` |
-| Rendered same-scene parity | Partial but real. V6 and V9 include retained G3D/Three.js/diff artifacts. | `tests/reports/v6-threejs-parity-readiness.json`, `tests/reports/v6-threejs-parity/**`, `tests/reports/v9/*-parity.json` |
+| Rendered same-scene parity | Partial but real. V6 and V9 include retained G3D/Three.js/diff artifacts. | `tests/reports/production-runtime-threejs-parity-readiness.json`, `tests/reports/production-runtime-threejs-parity/**`, `tests/reports/v9/*-parity.json` |
 | Official example inventory | Partial. 54 examples/categories inventoried, 30 matched, 24 partial, 0 high-priority open in the recorded report. | `tests/reports/v9/threejs-inventory.json`, `tests/reports/v9/official-example-parity.json` |
 | Visual review | Partial. 30 accepted, 24 needing review. | `tests/reports/v9/visual-review.json` |
 | Animation/skinning | Bounded parity slices exist against actual Three.js AnimationMixer. | `tests/reports/v9/animation-keyframes-parity.json`, `tests/reports/v9/animation-walk-parity.json`, `tests/reports/v9/skinning-additive-parity.json`, `tests/reports/v9/skinning-blending-parity.json`, `tests/reports/v9/skinning-ik-parity.json` |
 | glTF loader | Bounded same-asset proof exists for selected assets. | `tests/reports/v9/gltf-parity.json`, `tests/reports/asset-compatibility-threejs.json` |
 | Postprocess/effects | Bounded slices exist for bloom, stereo, parallax, decals, shadows, and lights. | `tests/reports/v9/unreal-bloom-parity.json`, `tests/reports/v9/stereo-parity.json`, `tests/reports/v9/parallax-parity.json`, `tests/reports/v9/decals-parity.json`, `tests/reports/v9/shadowmap-parity.json`, `tests/reports/v9/physical-lights-parity.json` |
-| WebGPU | G3D has local hardware and readiness evidence, but not broad Three.js WebGPU parity. | `tests/reports/webgpu-hardware-matrix.json`, `tests/reports/v6-webgpu-readiness.json`, `tests/reports/v9/threejs-inventory.json` |
+| WebGPU | G3D has local hardware and readiness evidence, but not broad Three.js WebGPU parity. | `tests/reports/webgpu-hardware-matrix.json`, `tests/reports/production-runtime-webgpu-readiness.json`, `tests/reports/v9/threejs-inventory.json` |
 | Ecosystem maturity | Three.js stronger. | Current local evidence cannot match public ecosystem, examples, integrations, docs, Stack Overflow/GitHub history, and production usage. |
 
 ## Practical Use Cases Today

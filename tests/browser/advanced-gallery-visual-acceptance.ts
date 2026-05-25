@@ -1,4 +1,8 @@
 import { normalize, relative } from "node:path";
+import {
+  ADVANCED_GALLERY_CONTEXTUAL_REPORT_DIR,
+  ADVANCED_GALLERY_LEGACY_REPORT_DIR
+} from "../../tools/advanced-gallery-evidence-paths";
 
 export type VisualReviewStatus = "failed" | "candidate" | "accepted";
 
@@ -63,7 +67,7 @@ function acceptedProofGap(review: VisualReviewRecord): string | undefined {
   if (!review.screenshotSha256) return "accepted review is missing screenshotSha256";
   if (!review.reviewedBy) return "accepted review is missing reviewedBy";
   if (!review.reviewedAt) return "accepted review is missing reviewedAt";
-  if (!isAdvancedGalleryScreenshotPath(review.screenshot)) return "accepted review screenshot must live under tests/reports/v9/advanced-examples-gallery";
+  if (!isAdvancedGalleryScreenshotPath(review.screenshot)) return "accepted review screenshot must live under the contextual advanced-gallery report directory or its legacy compatibility alias";
   if (!/^[a-f0-9]{64}$/.test(review.screenshotSha256)) return "accepted review screenshotSha256 is not a lowercase SHA-256 hex digest";
   if (review.reviewedBy.trim().length < 2) return "accepted review reviewedBy is too short to identify a reviewer";
   if (!isValidIsoTimestamp(review.reviewedAt)) return "accepted review reviewedAt must be a valid ISO timestamp";
@@ -75,10 +79,12 @@ function acceptedProofGap(review: VisualReviewRecord): string | undefined {
 
 function isAdvancedGalleryScreenshotPath(path: string): boolean {
   const normalized = normalize(path);
-  const base = normalize("tests/reports/v9/advanced-examples-gallery");
-  return relative(base, normalized).startsWith("..") === false
-    && relative(base, normalized) !== ""
-    && normalized.endsWith(".png");
+  return [ADVANCED_GALLERY_CONTEXTUAL_REPORT_DIR, ADVANCED_GALLERY_LEGACY_REPORT_DIR].some((basePath) => {
+    const base = normalize(basePath);
+    return relative(base, normalized).startsWith("..") === false
+      && relative(base, normalized) !== ""
+      && normalized.endsWith(".png");
+  });
 }
 
 function isValidIsoTimestamp(value: string): boolean {

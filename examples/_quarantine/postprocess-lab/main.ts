@@ -68,7 +68,7 @@ interface PostprocessLabState {
   readonly passCostsMs?: Record<string, number>;
   readonly timing?: RendererTimingSnapshot;
   readonly debugOverlay?: RenderDebugOverlaySnapshot;
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/postprocess-lab.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png";
   readonly featureEvidence?: V4RenderPresetEvidence;
   readonly claimBoundary: string;
   readonly canvasFrame?: { readonly width: number; readonly height: number };
@@ -245,7 +245,7 @@ if (typeof document !== "undefined") {
       visualClaim: "bounded-real-scene-postprocess-lab",
       knownLimits,
       errors: [error instanceof Error ? error.message : String(error)],
-      screenshotPath: "tests/reports/v4-example-screenshots/postprocess-lab.png",
+      screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png",
       claimBoundary,
       graphOrder: ["tone-mapping", "bloom", "fxaa"],
       enabledPasses: ["tone-mapping", "bloom", "fxaa"],
@@ -559,11 +559,11 @@ function renderPostprocessLab(options: {
     passCostsMs,
     timing: timing.snapshot(),
     debugOverlay,
-    screenshotPath: "tests/reports/v4-example-screenshots/postprocess-lab.png",
+    screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png",
     claimBoundary,
     featureEvidence: createV4RenderPresetEvidence({
       exampleId: "postprocess-lab",
-      screenshotPath: "tests/reports/v4-example-screenshots/postprocess-lab.png",
+      screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png",
       toneMapper: controls.toneMapper,
       inputColorSpace: controls.inputColorSpace,
       outputColorSpace: controls.outputColorSpace,

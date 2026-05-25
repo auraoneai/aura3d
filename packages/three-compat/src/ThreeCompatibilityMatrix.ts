@@ -14,7 +14,7 @@ export interface ThreeCompatibilityThreshold {
 }
 
 export interface ThreeCompatibilityMatrix {
-  readonly schema: "g3d-v5-threejs-compatibility-matrix/v1";
+  readonly schema: "g3d-three-compat-threejs-compatibility-matrix/v1";
   readonly threeVersion: string;
   readonly totalEntries: number;
   readonly entries: readonly ThreeCompatibilityEntry[];
@@ -41,7 +41,7 @@ export const V5_COMPATIBILITY_THRESHOLDS: readonly ThreeCompatibilityThreshold[]
 export function buildInitialCompatibilityMatrix(inventory: ThreeApiInventory): ThreeCompatibilityMatrix {
   const entries = inventory.entries.map((entry) => ({ ...entry, ...initialCompatibilityFor(entry) }));
   return {
-    schema: "g3d-v5-threejs-compatibility-matrix/v1",
+    schema: "g3d-three-compat-threejs-compatibility-matrix/v1",
     threeVersion: inventory.threeVersion,
     totalEntries: entries.length,
     entries,

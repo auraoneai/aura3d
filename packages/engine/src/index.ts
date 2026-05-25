@@ -30,19 +30,19 @@ export {
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow
 } from "@galileo3d/workflows";
-export * as v9 from "./v9/index.js";
+export * as v9 from "./advanced-runtime/index.js";
 export {
   G3DRenderer,
   G3DScene,
   G3DAppLifecycle
-} from "./v9/index.js";
+} from "./advanced-runtime/index.js";
 export type {
   G3DAppLifecycleSnapshot,
   G3DDisposable,
   G3DRendererOptions,
   G3DSceneMeshOptions,
   G3DSceneRenderSourceOptions
-} from "./v9/index.js";
+} from "./advanced-runtime/index.js";
 import type { G3DApp, G3DAppRendererLike } from "@galileo3d/apps";
 import {
   createAnimationLabWorkflow,

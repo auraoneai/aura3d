@@ -95,13 +95,13 @@ If a legacy path was pruned because it was a weak demo, duplicate shell, obsolet
 
 Required files:
 
-- `docs/project/v5-roadmap-legacy-prune-ledger.md`
-- `tools/v5-legacy-prune-readiness/index.ts`
-- `tests/reports/v5-legacy-prune-readiness.json`
+- `docs/project/three-compat-roadmap-legacy-prune-ledger.md`
+- `tools/three-compat-legacy-prune-readiness/index.ts`
+- `tests/reports/three-compat-legacy-prune-readiness.json`
 
 Required package script:
 
-- `v5:legacy-prune`
+- `three-compat:legacy-prune`
 
 Required ledger sections:
 
@@ -148,7 +148,7 @@ V5 must not keep obsolete files just because tests still point at them. If a del
 
 Acceptance:
 
-- `tools/v5-legacy-prune-readiness/index.ts` fails if any path listed as `Allowed to return: no` exists.
+- `tools/three-compat-legacy-prune-readiness/index.ts` fails if any path listed as `Allowed to return: no` exists.
 - The readiness report lists every pruned path, existence state, deletion reason, and V5 replacement if one exists.
 - The tool fails if a legacy directory returns with only an `index.html`, `main.ts`, or screenshot and no product-grade V5 replacement evidence.
 - The tool fails if `examples/portfolio/` or old one-off demo folders are recreated as release proof.
@@ -159,7 +159,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:legacy-prune
+pnpm three-compat:legacy-prune
 ```
 
 ## Three.js Baseline
@@ -173,10 +173,10 @@ If the implementer updates Three.js, they must regenerate the inventory and comp
 
 Required files:
 
-- `docs/project/v5-roadmap-threejs-baseline.md`
-- `tools/v5-threejs-inventory/index.ts`
-- `tests/reports/v5-threejs-inventory.json`
-- `tests/reports/v5-threejs-compatibility-matrix.json`
+- `docs/project/three-compat-roadmap-threejs-baseline.md`
+- `tools/three-compat-threejs-inventory/index.ts`
+- `tests/reports/three-compat-threejs-inventory.json`
+- `tests/reports/three-compat-threejs-compatibility-matrix.json`
 
 Acceptance:
 
@@ -240,7 +240,7 @@ Required package files:
 - `packages/environments/src/index.ts`
 - `packages/controls/package.json`
 - `packages/controls/src/index.ts`
-- `tools/v5-package-surface-readiness/index.ts`
+- `tools/three-compat-package-surface-readiness/index.ts`
 
 Acceptance:
 
@@ -254,30 +254,30 @@ Acceptance:
 
 V5 must ship product-grade app surfaces, not test harnesses:
 
-- `apps/v5-product-studio-pro`
-- `apps/v5-material-studio-pro`
-- `apps/v5-asset-studio-pro`
-- `apps/v5-scene-studio-pro`
-- `apps/v5-animation-studio-pro`
-- `apps/v5-postprocess-studio-pro`
-- `apps/v5-shader-lab-pro`
-- `apps/v5-threejs-migration-lab`
-- `apps/v5-large-scene-lab`
-- `apps/v5-controls-lab`
+- `apps/three-compat-product-studio-pro`
+- `apps/three-compat-material-studio-pro`
+- `apps/three-compat-asset-studio-pro`
+- `apps/three-compat-scene-studio-pro`
+- `apps/three-compat-animation-studio-pro`
+- `apps/three-compat-postprocess-studio-pro`
+- `apps/three-compat-shader-lab-pro`
+- `apps/three-compat-threejs-migration-lab`
+- `apps/three-compat-large-scene-lab`
+- `apps/three-compat-controls-lab`
 
 Required app readiness:
 
-- `tests/browser/v5-product-studio-pro.spec.ts`
-- `tests/browser/v5-material-studio-pro.spec.ts`
-- `tests/browser/v5-asset-studio-pro.spec.ts`
-- `tests/browser/v5-scene-studio-pro.spec.ts`
-- `tests/browser/v5-animation-studio-pro.spec.ts`
-- `tests/browser/v5-postprocess-studio-pro.spec.ts`
-- `tests/browser/v5-shader-lab-pro.spec.ts`
-- `tests/browser/v5-threejs-migration-lab.spec.ts`
-- `tests/browser/v5-large-scene-lab.spec.ts`
-- `tests/browser/v5-controls-lab.spec.ts`
-- `tools/v5-app-suite-readiness/index.ts`
+- `tests/browser/three-compat-product-studio-pro.spec.ts`
+- `tests/browser/three-compat-material-studio-pro.spec.ts`
+- `tests/browser/three-compat-asset-studio-pro.spec.ts`
+- `tests/browser/three-compat-scene-studio-pro.spec.ts`
+- `tests/browser/three-compat-animation-studio-pro.spec.ts`
+- `tests/browser/three-compat-postprocess-studio-pro.spec.ts`
+- `tests/browser/three-compat-shader-lab-pro.spec.ts`
+- `tests/browser/three-compat-threejs-migration-lab.spec.ts`
+- `tests/browser/three-compat-large-scene-lab.spec.ts`
+- `tests/browser/three-compat-controls-lab.spec.ts`
+- `tools/three-compat-app-suite-readiness/index.ts`
 
 Acceptance:
 
@@ -291,33 +291,33 @@ Acceptance:
 
 V5 must let developers start real projects:
 
-- `templates/v5-premium-product-viewer/`
-- `templates/v5-architecture-interior/`
-- `templates/v5-material-authoring/`
-- `templates/v5-asset-inspector/`
-- `templates/v5-character-viewer/`
-- `templates/v5-postprocess-scene/`
-- `templates/v5-custom-threejs-migration/`
-- `templates/v5-large-scene/`
+- `templates/three-compat-premium-product-viewer/`
+- `templates/three-compat-architecture-interior/`
+- `templates/three-compat-material-authoring/`
+- `templates/three-compat-asset-inspector/`
+- `templates/three-compat-character-viewer/`
+- `templates/three-compat-postprocess-scene/`
+- `templates/three-compat-custom-threejs-migration/`
+- `templates/three-compat-large-scene/`
 
 Create-g3d template mirrors:
 
-- `packages/create-g3d/templates/v5-premium-product-viewer/`
-- `packages/create-g3d/templates/v5-architecture-interior/`
-- `packages/create-g3d/templates/v5-material-authoring/`
-- `packages/create-g3d/templates/v5-asset-inspector/`
-- `packages/create-g3d/templates/v5-character-viewer/`
-- `packages/create-g3d/templates/v5-postprocess-scene/`
-- `packages/create-g3d/templates/v5-custom-threejs-migration/`
-- `packages/create-g3d/templates/v5-large-scene/`
+- `packages/create-g3d/templates/three-compat-premium-product-viewer/`
+- `packages/create-g3d/templates/three-compat-architecture-interior/`
+- `packages/create-g3d/templates/three-compat-material-authoring/`
+- `packages/create-g3d/templates/three-compat-asset-inspector/`
+- `packages/create-g3d/templates/three-compat-character-viewer/`
+- `packages/create-g3d/templates/three-compat-postprocess-scene/`
+- `packages/create-g3d/templates/three-compat-custom-threejs-migration/`
+- `packages/create-g3d/templates/three-compat-large-scene/`
 
 Required tests/tools:
 
-- `tests/integration/v5-create-g3d.test.ts`
-- `tests/browser/v5-templates.spec.ts`
-- `tools/v5-template-readiness/index.ts`
-- `tools/v5-external-vite-build/index.ts`
-- `tools/v5-static-preview-smoke/index.ts`
+- `tests/integration/three-compat-create-g3d.test.ts`
+- `tests/browser/three-compat-templates.spec.ts`
+- `tools/three-compat-template-readiness/index.ts`
+- `tools/three-compat-external-vite-build/index.ts`
+- `tools/three-compat-static-preview-smoke/index.ts`
 
 Acceptance:
 
@@ -332,35 +332,35 @@ Acceptance:
 
 Required docs:
 
-- `docs/project/v5-roadmap-status.md`
-- `docs/project/v5-roadmap-progress.md`
-- `docs/project/v5-roadmap-visual-targets.md`
-- `docs/project/v5-roadmap-asset-library.md`
-- `docs/project/v5-roadmap-environment-library.md`
-- `docs/project/v5-roadmap-materials-guide.md`
-- `docs/project/v5-roadmap-threejs-baseline.md`
-- `docs/project/v5-roadmap-threejs-compatibility-matrix.md`
-- `docs/project/v5-roadmap-threejs-migration-guide.md`
-- `docs/project/v5-roadmap-api-reference.md`
-- `docs/project/v5-roadmap-getting-started.md`
-- `docs/project/v5-roadmap-product-viewer-guide.md`
-- `docs/project/v5-roadmap-architecture-guide.md`
-- `docs/project/v5-roadmap-material-authoring-guide.md`
-- `docs/project/v5-roadmap-asset-pipeline-guide.md`
-- `docs/project/v5-roadmap-animation-guide.md`
-- `docs/project/v5-roadmap-postprocess-guide.md`
-- `docs/project/v5-roadmap-shader-authoring-guide.md`
-- `docs/project/v5-roadmap-controls-guide.md`
-- `docs/project/v5-roadmap-performance-guide.md`
-- `docs/project/v5-roadmap-known-gaps.md`
-- `docs/project/v5-roadmap-blocked-claims.md`
-- `docs/project/v5-roadmap-release-notes.md`
-- `docs/project/v5-roadmap-human-visual-review.md`
+- `docs/project/three-compat-roadmap-status.md`
+- `docs/project/three-compat-roadmap-progress.md`
+- `docs/project/three-compat-roadmap-visual-targets.md`
+- `docs/project/three-compat-roadmap-asset-library.md`
+- `docs/project/three-compat-roadmap-environment-library.md`
+- `docs/project/three-compat-roadmap-materials-guide.md`
+- `docs/project/three-compat-roadmap-threejs-baseline.md`
+- `docs/project/three-compat-roadmap-threejs-compatibility-matrix.md`
+- `docs/project/three-compat-roadmap-threejs-migration-guide.md`
+- `docs/project/three-compat-roadmap-api-reference.md`
+- `docs/project/three-compat-roadmap-getting-started.md`
+- `docs/project/three-compat-roadmap-product-viewer-guide.md`
+- `docs/project/three-compat-roadmap-architecture-guide.md`
+- `docs/project/three-compat-roadmap-material-authoring-guide.md`
+- `docs/project/three-compat-roadmap-asset-pipeline-guide.md`
+- `docs/project/three-compat-roadmap-animation-guide.md`
+- `docs/project/three-compat-roadmap-postprocess-guide.md`
+- `docs/project/three-compat-roadmap-shader-authoring-guide.md`
+- `docs/project/three-compat-roadmap-controls-guide.md`
+- `docs/project/three-compat-roadmap-performance-guide.md`
+- `docs/project/three-compat-roadmap-known-gaps.md`
+- `docs/project/three-compat-roadmap-blocked-claims.md`
+- `docs/project/three-compat-roadmap-release-notes.md`
+- `docs/project/three-compat-roadmap-human-visual-review.md`
 
 Required tools:
 
-- `tools/v5-docs-readiness/index.ts`
-- `tools/v5-claim-registry/index.ts`
+- `tools/three-compat-docs-readiness/index.ts`
+- `tools/three-compat-claim-registry/index.ts`
 
 Acceptance:
 
@@ -391,20 +391,20 @@ Required flagship scenes:
 
 Required screenshot groups:
 
-- `tests/reports/v5-gallery/product/`
-- `tests/reports/v5-gallery/automotive/`
-- `tests/reports/v5-gallery/architecture-day/`
-- `tests/reports/v5-gallery/architecture-night/`
-- `tests/reports/v5-gallery/materials/`
-- `tests/reports/v5-gallery/assets/`
-- `tests/reports/v5-gallery/character/`
-- `tests/reports/v5-gallery/postprocess/`
-- `tests/reports/v5-gallery/vfx/`
-- `tests/reports/v5-gallery/large-scene/`
-- `tests/reports/v5-gallery/shader-lab/`
-- `tests/reports/v5-gallery/threejs-migration/`
-- `tests/reports/v5-gallery/threejs-comparison/`
-- `tests/reports/v5-gallery/debug-views/`
+- `tests/reports/three-compat-gallery/product/`
+- `tests/reports/three-compat-gallery/automotive/`
+- `tests/reports/three-compat-gallery/architecture-day/`
+- `tests/reports/three-compat-gallery/architecture-night/`
+- `tests/reports/three-compat-gallery/materials/`
+- `tests/reports/three-compat-gallery/assets/`
+- `tests/reports/three-compat-gallery/character/`
+- `tests/reports/three-compat-gallery/postprocess/`
+- `tests/reports/three-compat-gallery/vfx/`
+- `tests/reports/three-compat-gallery/large-scene/`
+- `tests/reports/three-compat-gallery/shader-lab/`
+- `tests/reports/three-compat-gallery/threejs-migration/`
+- `tests/reports/three-compat-gallery/threejs-comparison/`
+- `tests/reports/three-compat-gallery/debug-views/`
 
 Every screenshot manifest entry must include:
 
@@ -428,9 +428,9 @@ Every screenshot manifest entry must include:
 
 Required tools:
 
-- `tools/v5-screenshot-gallery/index.ts`
-- `tools/v5-visual-quality/index.ts`
-- `tools/v5-human-review-readiness/index.ts`
+- `tools/three-compat-screenshot-gallery/index.ts`
+- `tools/three-compat-visual-quality/index.ts`
+- `tools/three-compat-human-review-readiness/index.ts`
 
 Acceptance:
 
@@ -446,20 +446,20 @@ Purpose: prevent circular work and fake completion.
 
 Required files:
 
-- `docs/project/v5-roadmap-visual-engine-plan.md`
-- `docs/project/v5-roadmap-status.md`
-- `docs/project/v5-roadmap-progress.md`
-- `docs/project/v5-roadmap-known-gaps.md`
-- `docs/project/v5-roadmap-blocked-claims.md`
-- `docs/project/v5-roadmap-visual-failures.md`
-- `tools/v5-truth/index.ts`
-- `tools/v5-progress/index.ts`
-- `tools/v5-claim-registry/index.ts`
+- `docs/project/three-compat-roadmap-visual-engine-plan.md`
+- `docs/project/three-compat-roadmap-status.md`
+- `docs/project/three-compat-roadmap-progress.md`
+- `docs/project/three-compat-roadmap-known-gaps.md`
+- `docs/project/three-compat-roadmap-blocked-claims.md`
+- `docs/project/three-compat-roadmap-visual-failures.md`
+- `tools/three-compat-truth/index.ts`
+- `tools/three-compat-progress/index.ts`
+- `tools/three-compat-claim-registry/index.ts`
 
 Required package scripts:
 
-- `v5:truth`
-- `v5:progress`
+- `three-compat:truth`
+- `three-compat:progress`
 
 Acceptance:
 
@@ -472,7 +472,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:truth && pnpm v5:progress
+pnpm three-compat:truth && pnpm three-compat:progress
 ```
 
 ## Milestone 1: Three.js Inventory And Compatibility Target
@@ -483,15 +483,15 @@ Required files:
 
 - `packages/three-compat/src/ThreeCompatibilityMatrix.ts`
 - `packages/three-compat/src/ThreeApiInventory.ts`
-- `docs/project/v5-roadmap-threejs-baseline.md`
-- `docs/project/v5-roadmap-threejs-compatibility-matrix.md`
-- `tools/v5-threejs-inventory/index.ts`
-- `tools/v5-compatibility-matrix/index.ts`
-- `tests/unit/three-compat/v5-threejs-inventory.test.ts`
+- `docs/project/three-compat-roadmap-threejs-baseline.md`
+- `docs/project/three-compat-roadmap-threejs-compatibility-matrix.md`
+- `tools/three-compat-threejs-inventory/index.ts`
+- `tools/three-compat-compatibility-matrix/index.ts`
+- `tests/unit/three-compat/three-compat-threejs-inventory.test.ts`
 
 Required package script:
 
-- `v5:threejs-inventory`
+- `three-compat:threejs-inventory`
 
 Acceptance:
 
@@ -506,7 +506,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:threejs-inventory
+pnpm three-compat:threejs-inventory
 ```
 
 ## Milestone 2: High-End Asset Library
@@ -515,21 +515,21 @@ Purpose: stop using primitive scenes as flagship proof.
 
 Required files:
 
-- `fixtures/v5/assets/manifest.json`
-- `fixtures/v5/assets/licenses.md`
-- `fixtures/v5/products/manifest.json`
-- `fixtures/v5/automotive/manifest.json`
-- `fixtures/v5/architecture/manifest.json`
-- `fixtures/v5/characters/manifest.json`
-- `fixtures/v5/vfx/manifest.json`
-- `packages/assets/src/v5/V5AssetRegistry.ts`
-- `packages/assets/src/v5/V5AssetProvenance.ts`
-- `tools/v5-asset-readiness/index.ts`
-- `tests/assets/v5-asset-library.test.ts`
+- `fixtures/three-compat/assets/manifest.json`
+- `fixtures/three-compat/assets/licenses.md`
+- `fixtures/three-compat/products/manifest.json`
+- `fixtures/three-compat/automotive/manifest.json`
+- `fixtures/three-compat/architecture/manifest.json`
+- `fixtures/three-compat/characters/manifest.json`
+- `fixtures/three-compat/vfx/manifest.json`
+- `packages/assets/src/threejs-compatibility/V5AssetRegistry.ts`
+- `packages/assets/src/threejs-compatibility/V5AssetProvenance.ts`
+- `tools/three-compat-asset-readiness/index.ts`
+- `tests/assets/three-compat-asset-library.test.ts`
 
 Required package script:
 
-- `v5:assets`
+- `three-compat:assets`
 
 Acceptance:
 
@@ -542,7 +542,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:assets
+pnpm three-compat:assets
 ```
 
 ## Milestone 3: HDR Environment Library
@@ -551,19 +551,19 @@ Purpose: make lighting credible.
 
 Required files:
 
-- `fixtures/v5/environments/manifest.json`
-- `fixtures/v5/environments/licenses.md`
+- `fixtures/three-compat/environments/manifest.json`
+- `fixtures/three-compat/environments/licenses.md`
 - `packages/environments/src/EnvironmentRegistry.ts`
 - `packages/environments/src/HDRIEnvironment.ts`
 - `packages/environments/src/PMREMPreset.ts`
 - `packages/environments/src/EnvironmentPreview.ts`
-- `tests/unit/environments/v5-environments.test.ts`
-- `tests/browser/v5-environment-gallery.spec.ts`
-- `tools/v5-environment-readiness/index.ts`
+- `tests/unit/environments/three-compat-environments.test.ts`
+- `tests/browser/three-compat-environment-gallery.spec.ts`
+- `tools/three-compat-environment-readiness/index.ts`
 
 Required package script:
 
-- `v5:environments`
+- `three-compat:environments`
 
 Acceptance:
 
@@ -576,7 +576,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:environments
+pnpm three-compat:environments
 ```
 
 ## Milestone 4: Real PBR Material Library
@@ -585,20 +585,20 @@ Purpose: make materials look real, not procedural-only.
 
 Required files:
 
-- `fixtures/v5/materials/manifest.json`
-- `fixtures/v5/materials/licenses.md`
+- `fixtures/three-compat/materials/manifest.json`
+- `fixtures/three-compat/materials/licenses.md`
 - `packages/materials/src/PBRMaterialLibrary.ts`
 - `packages/materials/src/MaterialPreset.ts`
 - `packages/materials/src/TextureSet.ts`
 - `packages/materials/src/MaterialValidation.ts`
 - `packages/materials/src/MaterialPreviewScene.ts`
-- `tests/unit/materials/v5-material-library.test.ts`
-- `tests/browser/v5-material-library.spec.ts`
-- `tools/v5-material-readiness/index.ts`
+- `tests/unit/materials/three-compat-material-library.test.ts`
+- `tests/browser/three-compat-material-library.spec.ts`
+- `tools/three-compat-material-readiness/index.ts`
 
 Required package script:
 
-- `v5:materials`
+- `three-compat:materials`
 
 Acceptance:
 
@@ -630,7 +630,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:materials
+pnpm three-compat:materials
 ```
 
 ## Milestone 5: Renderer Breadth For Broad Replacement
@@ -639,23 +639,23 @@ Purpose: implement the renderer features developers expect from Three.js-class w
 
 Required files:
 
-- `packages/rendering/src/v5/RendererV5.ts`
-- `packages/rendering/src/v5/SceneRenderer.ts`
-- `packages/rendering/src/v5/RenderTargetSystem.ts`
-- `packages/rendering/src/v5/TextureSystem.ts`
-- `packages/rendering/src/v5/MaterialSystem.ts`
-- `packages/rendering/src/v5/LightingSystem.ts`
-- `packages/rendering/src/v5/ShadowSystem.ts`
-- `packages/rendering/src/v5/TransparencySystem.ts`
-- `packages/rendering/src/v5/InstancingSystem.ts`
-- `packages/rendering/src/v5/RendererDiagnostics.ts`
-- `tests/unit/rendering/v5-renderer-v5.test.ts`
-- `tests/browser/v5-renderer-v5.spec.ts`
-- `tools/v5-renderer-readiness/index.ts`
+- `packages/rendering/src/threejs-compatibility/RendererV5.ts`
+- `packages/rendering/src/threejs-compatibility/SceneRenderer.ts`
+- `packages/rendering/src/threejs-compatibility/RenderTargetSystem.ts`
+- `packages/rendering/src/threejs-compatibility/TextureSystem.ts`
+- `packages/rendering/src/threejs-compatibility/MaterialSystem.ts`
+- `packages/rendering/src/threejs-compatibility/LightingSystem.ts`
+- `packages/rendering/src/threejs-compatibility/ShadowSystem.ts`
+- `packages/rendering/src/threejs-compatibility/TransparencySystem.ts`
+- `packages/rendering/src/threejs-compatibility/InstancingSystem.ts`
+- `packages/rendering/src/threejs-compatibility/RendererDiagnostics.ts`
+- `tests/unit/rendering/three-compat-renderer-three-compat.test.ts`
+- `tests/browser/three-compat-renderer-three-compat.spec.ts`
+- `tools/three-compat-renderer-readiness/index.ts`
 
 Required package script:
 
-- `v5:renderer`
+- `three-compat:renderer`
 
 Acceptance:
 
@@ -678,7 +678,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:renderer
+pnpm three-compat:renderer
 ```
 
 ## Milestone 6: Scene Graph, Math, Cameras, Lights, And Helpers
@@ -694,13 +694,13 @@ Required files:
 - `packages/three-compat/src/cameras/index.ts`
 - `packages/three-compat/src/lights/index.ts`
 - `packages/three-compat/src/helpers/index.ts`
-- `tests/unit/three-compat/v5-core-compat.test.ts`
-- `tests/browser/v5-core-compat.spec.ts`
-- `tools/v5-core-compat-readiness/index.ts`
+- `tests/unit/three-compat/three-compat-core-compat.test.ts`
+- `tests/browser/three-compat-core-compat.spec.ts`
+- `tools/three-compat-core-compat-readiness/index.ts`
 
 Required package script:
 
-- `v5:core-compat`
+- `three-compat:core-compat`
 
 Acceptance:
 
@@ -722,7 +722,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:core-compat`
+pnpm three-compat:core-compat`
 ```
 
 ## Milestone 7: Geometry, Textures, Render Targets, And Materials Compatibility
@@ -735,13 +735,13 @@ Required files:
 - `packages/three-compat/src/textures/index.ts`
 - `packages/three-compat/src/materials/index.ts`
 - `packages/three-compat/src/render-targets/index.ts`
-- `tests/unit/three-compat/v5-material-geometry-compat.test.ts`
-- `tests/browser/v5-material-geometry-compat.spec.ts`
-- `tools/v5-material-geometry-compat-readiness/index.ts`
+- `tests/unit/three-compat/three-compat-material-geometry-compat.test.ts`
+- `tests/browser/three-compat-material-geometry-compat.spec.ts`
+- `tools/three-compat-material-geometry-compat-readiness/index.ts`
 
 Required package script:
 
-- `v5:material-geometry-compat`
+- `three-compat:material-geometry-compat`
 
 Acceptance:
 
@@ -771,7 +771,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:material-geometry-compat
+pnpm three-compat:material-geometry-compat
 ```
 
 ## Milestone 8: Loader Ecosystem
@@ -790,13 +790,13 @@ Required files:
 - `packages/assets/src/loaders/CubeTextureLoader.ts`
 - `packages/assets/src/loaders/LoaderDiagnostics.ts`
 - `packages/three-compat/src/loaders/index.ts`
-- `tests/assets/v5-loader-corpus.test.ts`
-- `tests/browser/v5-loader-corpus.spec.ts`
-- `tools/v5-loader-readiness/index.ts`
+- `tests/assets/three-compat-loader-corpus.test.ts`
+- `tests/browser/three-compat-loader-corpus.spec.ts`
+- `tools/three-compat-loader-readiness/index.ts`
 
 Required package script:
 
-- `v5:loaders`
+- `three-compat:loaders`
 
 Acceptance:
 
@@ -811,7 +811,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:loaders
+pnpm three-compat:loaders
 ```
 
 ## Milestone 9: Controls, Interaction, Picking, And Transform Tools
@@ -831,13 +831,13 @@ Required files:
 - `packages/controls/src/SelectionManager.ts`
 - `packages/controls/src/Picking.ts`
 - `packages/three-compat/src/controls/index.ts`
-- `tests/unit/controls/v5-controls.test.ts`
-- `tests/browser/v5-controls.spec.ts`
-- `tools/v5-controls-readiness/index.ts`
+- `tests/unit/controls/three-compat-controls.test.ts`
+- `tests/browser/three-compat-controls.spec.ts`
+- `tools/three-compat-controls-readiness/index.ts`
 
 Required package script:
 
-- `v5:controls`
+- `three-compat:controls`
 
 Acceptance:
 
@@ -850,7 +850,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:controls
+pnpm three-compat:controls
 ```
 
 ## Milestone 10: Animation, Skinning, Morph Targets, And Timeline
@@ -859,21 +859,21 @@ Purpose: make character and animated asset workflows credible.
 
 Required files:
 
-- `packages/animation/src/v5/AnimationMixer.ts`
-- `packages/animation/src/v5/AnimationClip.ts`
-- `packages/animation/src/v5/AnimationAction.ts`
-- `packages/animation/src/v5/Skeleton.ts`
-- `packages/animation/src/v5/SkinnedMesh.ts`
-- `packages/animation/src/v5/MorphTargetMixer.ts`
-- `packages/animation/src/v5/AnimationDiagnostics.ts`
+- `packages/animation/src/threejs-compatibility/AnimationMixer.ts`
+- `packages/animation/src/threejs-compatibility/AnimationClip.ts`
+- `packages/animation/src/threejs-compatibility/AnimationAction.ts`
+- `packages/animation/src/threejs-compatibility/Skeleton.ts`
+- `packages/animation/src/threejs-compatibility/SkinnedMesh.ts`
+- `packages/animation/src/threejs-compatibility/MorphTargetMixer.ts`
+- `packages/animation/src/threejs-compatibility/AnimationDiagnostics.ts`
 - `packages/three-compat/src/animation/index.ts`
-- `tests/unit/animation/v5-animation.test.ts`
-- `tests/browser/v5-animation.spec.ts`
-- `tools/v5-animation-readiness/index.ts`
+- `tests/unit/animation/three-compat-animation.test.ts`
+- `tests/browser/three-compat-animation.spec.ts`
+- `tools/three-compat-animation-readiness/index.ts`
 
 Required package script:
 
-- `v5:animation`
+- `three-compat:animation`
 
 Acceptance:
 
@@ -885,7 +885,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:animation
+pnpm three-compat:animation
 ```
 
 ## Milestone 11: Postprocess, Composer, And Cinematic Pipeline
@@ -894,27 +894,27 @@ Purpose: match the postprocessing workflows Three.js developers expect.
 
 Required files:
 
-- `packages/rendering/src/v5/postprocess/EffectComposer.ts`
-- `packages/rendering/src/v5/postprocess/RenderPass.ts`
-- `packages/rendering/src/v5/postprocess/ShaderPass.ts`
-- `packages/rendering/src/v5/postprocess/BloomPass.ts`
-- `packages/rendering/src/v5/postprocess/SSAOPass.ts`
-- `packages/rendering/src/v5/postprocess/TAAPass.ts`
-- `packages/rendering/src/v5/postprocess/FXAAPass.ts`
-- `packages/rendering/src/v5/postprocess/SMAAPass.ts`
-- `packages/rendering/src/v5/postprocess/DepthOfFieldPass.ts`
-- `packages/rendering/src/v5/postprocess/MotionBlurPass.ts`
-- `packages/rendering/src/v5/postprocess/ColorGradingPass.ts`
-- `packages/rendering/src/v5/postprocess/VignettePass.ts`
-- `packages/rendering/src/v5/postprocess/OutlinePass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/EffectComposer.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/RenderPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/ShaderPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/BloomPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/SSAOPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/TAAPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/FXAAPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/SMAAPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/DepthOfFieldPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/MotionBlurPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/ColorGradingPass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/VignettePass.ts`
+- `packages/rendering/src/threejs-compatibility/postprocess/OutlinePass.ts`
 - `packages/three-compat/src/postprocessing/index.ts`
-- `tests/unit/rendering/v5-postprocess.test.ts`
-- `tests/browser/v5-postprocess.spec.ts`
-- `tools/v5-postprocess-readiness/index.ts`
+- `tests/unit/rendering/three-compat-postprocess.test.ts`
+- `tests/browser/three-compat-postprocess.spec.ts`
+- `tools/three-compat-postprocess-readiness/index.ts`
 
 Required package script:
 
-- `v5:postprocess`
+- `three-compat:postprocess`
 
 Acceptance:
 
@@ -926,7 +926,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:postprocess
+pnpm three-compat:postprocess
 ```
 
 ## Milestone 12: Shader Authoring, Custom Materials, And Nodes
@@ -935,22 +935,22 @@ Purpose: support developers who write custom Three.js materials.
 
 Required files:
 
-- `packages/rendering/src/v5/shaders/ShaderMaterial.ts`
-- `packages/rendering/src/v5/shaders/RawShaderMaterial.ts`
-- `packages/rendering/src/v5/shaders/Uniforms.ts`
-- `packages/rendering/src/v5/shaders/ShaderChunksV5.ts`
-- `packages/rendering/src/v5/shaders/NodeMaterial.ts`
-- `packages/rendering/src/v5/shaders/ShaderDiagnostics.ts`
+- `packages/rendering/src/threejs-compatibility/shaders/ShaderMaterial.ts`
+- `packages/rendering/src/threejs-compatibility/shaders/RawShaderMaterial.ts`
+- `packages/rendering/src/threejs-compatibility/shaders/Uniforms.ts`
+- `packages/rendering/src/threejs-compatibility/shaders/ShaderChunksV5.ts`
+- `packages/rendering/src/threejs-compatibility/shaders/NodeMaterial.ts`
+- `packages/rendering/src/threejs-compatibility/shaders/ShaderDiagnostics.ts`
 - `packages/three-compat/src/shaders/index.ts`
-- `apps/v5-shader-lab-pro/index.html`
-- `apps/v5-shader-lab-pro/src/main.ts`
-- `tests/unit/rendering/v5-shaders.test.ts`
-- `tests/browser/v5-shader-lab.spec.ts`
-- `tools/v5-shader-readiness/index.ts`
+- `apps/three-compat-shader-lab-pro/index.html`
+- `apps/three-compat-shader-lab-pro/src/main.ts`
+- `tests/unit/rendering/three-compat-shaders.test.ts`
+- `tests/browser/three-compat-shader-lab.spec.ts`
+- `tools/three-compat-shader-readiness/index.ts`
 
 Required package script:
 
-- `v5:shaders`
+- `three-compat:shaders`
 
 Acceptance:
 
@@ -963,7 +963,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:shaders
+pnpm three-compat:shaders
 ```
 
 ## Milestone 13: Particles, VFX, Sprites, Lines, And Points
@@ -972,19 +972,19 @@ Purpose: cover visual categories beyond mesh rendering.
 
 Required files:
 
-- `packages/rendering/src/v5/vfx/ParticleSystem.ts`
-- `packages/rendering/src/v5/vfx/GPUPointCloud.ts`
-- `packages/rendering/src/v5/vfx/SpriteSystem.ts`
-- `packages/rendering/src/v5/vfx/LineRenderer.ts`
-- `packages/rendering/src/v5/vfx/TrailRenderer.ts`
-- `packages/rendering/src/v5/vfx/VFXDiagnostics.ts`
-- `tests/unit/rendering/v5-vfx.test.ts`
-- `tests/browser/v5-vfx.spec.ts`
-- `tools/v5-vfx-readiness/index.ts`
+- `packages/rendering/src/threejs-compatibility/vfx/ParticleSystem.ts`
+- `packages/rendering/src/threejs-compatibility/vfx/GPUPointCloud.ts`
+- `packages/rendering/src/threejs-compatibility/vfx/SpriteSystem.ts`
+- `packages/rendering/src/threejs-compatibility/vfx/LineRenderer.ts`
+- `packages/rendering/src/threejs-compatibility/vfx/TrailRenderer.ts`
+- `packages/rendering/src/threejs-compatibility/vfx/VFXDiagnostics.ts`
+- `tests/unit/rendering/three-compat-vfx.test.ts`
+- `tests/browser/three-compat-vfx.spec.ts`
+- `tools/three-compat-vfx-readiness/index.ts`
 
 Required package script:
 
-- `v5:vfx`
+- `three-compat:vfx`
 
 Acceptance:
 
@@ -995,7 +995,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:vfx
+pnpm three-compat:vfx
 ```
 
 ## Milestone 14: Performance, Large Scenes, Instancing, And BVH
@@ -1004,22 +1004,22 @@ Purpose: prove broad replacement does not collapse at scale.
 
 Required files:
 
-- `packages/rendering/src/v5/performance/Instancing.ts`
-- `packages/rendering/src/v5/performance/FrustumCulling.ts`
-- `packages/rendering/src/v5/performance/OcclusionCulling.ts`
-- `packages/rendering/src/v5/performance/BVH.ts`
-- `packages/rendering/src/v5/performance/RaycastAcceleration.ts`
-- `packages/rendering/src/v5/performance/LODSystem.ts`
-- `packages/rendering/src/v5/performance/TextureStreaming.ts`
-- `packages/rendering/src/v5/performance/RendererProfiler.ts`
-- `tests/performance/v5-performance-baselines.ts`
-- `tests/browser/v5-large-scene.spec.ts`
-- `tests/browser/v5-raycast-bvh.spec.ts`
-- `tools/v5-performance-readiness/index.ts`
+- `packages/rendering/src/threejs-compatibility/performance/Instancing.ts`
+- `packages/rendering/src/threejs-compatibility/performance/FrustumCulling.ts`
+- `packages/rendering/src/threejs-compatibility/performance/OcclusionCulling.ts`
+- `packages/rendering/src/threejs-compatibility/performance/BVH.ts`
+- `packages/rendering/src/threejs-compatibility/performance/RaycastAcceleration.ts`
+- `packages/rendering/src/threejs-compatibility/performance/LODSystem.ts`
+- `packages/rendering/src/threejs-compatibility/performance/TextureStreaming.ts`
+- `packages/rendering/src/threejs-compatibility/performance/RendererProfiler.ts`
+- `tests/performance/three-compat-performance-baselines.ts`
+- `tests/browser/three-compat-large-scene.spec.ts`
+- `tests/browser/three-compat-raycast-bvh.spec.ts`
+- `tools/three-compat-performance-readiness/index.ts`
 
 Required package script:
 
-- `v5:performance`
+- `three-compat:performance`
 
 Acceptance:
 
@@ -1033,7 +1033,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:performance
+pnpm three-compat:performance
 ```
 
 ## Milestone 15: Three.js Migration Layer And Codemods
@@ -1046,16 +1046,16 @@ Required files:
 - `packages/three-compat/src/migration/ImportMap.ts`
 - `packages/three-compat/src/migration/ThreeToG3DAdapter.ts`
 - `packages/three-compat/src/migration/CompatibilityWarnings.ts`
-- `tools/v5-migrate-three/index.ts`
-- `tools/v5-threejs-example-migrator/index.ts`
-- `tests/unit/three-compat/v5-migration.test.ts`
-- `tests/integration/v5-threejs-migration.test.ts`
-- `tests/browser/v5-threejs-migration.spec.ts`
-- `tools/v5-migration-readiness/index.ts`
+- `tools/three-compat-migrate-three/index.ts`
+- `tools/three-compat-threejs-example-migrator/index.ts`
+- `tests/unit/three-compat/three-compat-migration.test.ts`
+- `tests/integration/three-compat-threejs-migration.test.ts`
+- `tests/browser/three-compat-threejs-migration.spec.ts`
+- `tools/three-compat-migration-readiness/index.ts`
 
 Required package script:
 
-- `v5:migration`
+- `three-compat:migration`
 
 Acceptance:
 
@@ -1073,7 +1073,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:migration
+pnpm three-compat:migration
 ```
 
 ## Milestone 16: Example Parity Suite
@@ -1082,40 +1082,40 @@ Purpose: compete with Three.js where developers actually evaluate engines: examp
 
 Required directories:
 
-- `examples/v5/`
-- `examples/v5/basic-scene/`
-- `examples/v5/materials-physical/`
-- `examples/v5/gltf-loader/`
-- `examples/v5/obj-loader/`
-- `examples/v5/hdr-environment/`
-- `examples/v5/postprocess-bloom/`
-- `examples/v5/postprocess-dof/`
-- `examples/v5/controls-orbit/`
-- `examples/v5/controls-transform/`
-- `examples/v5/animation-skinning/`
-- `examples/v5/morph-targets/`
-- `examples/v5/particles/`
-- `examples/v5/sprites/`
-- `examples/v5/lines/`
-- `examples/v5/instancing/`
-- `examples/v5/raycasting/`
-- `examples/v5/shader-material/`
-- `examples/v5/render-targets/`
-- `examples/v5/large-scene/`
-- `examples/v5/product-configurator/`
-- `examples/v5/architecture-interior/`
-- `examples/v5/automotive-configurator/`
-- `examples/v5/threejs-migrated-custom-scene/`
+- `examples/three-compat-examples/`
+- `examples/three-compat-examples/basic-scene/`
+- `examples/three-compat-examples/materials-physical/`
+- `examples/three-compat-examples/gltf-loader/`
+- `examples/three-compat-examples/obj-loader/`
+- `examples/three-compat-examples/hdr-environment/`
+- `examples/three-compat-examples/postprocess-bloom/`
+- `examples/three-compat-examples/postprocess-dof/`
+- `examples/three-compat-examples/controls-orbit/`
+- `examples/three-compat-examples/controls-transform/`
+- `examples/three-compat-examples/animation-skinning/`
+- `examples/three-compat-examples/morph-targets/`
+- `examples/three-compat-examples/particles/`
+- `examples/three-compat-examples/sprites/`
+- `examples/three-compat-examples/lines/`
+- `examples/three-compat-examples/instancing/`
+- `examples/three-compat-examples/raycasting/`
+- `examples/three-compat-examples/shader-material/`
+- `examples/three-compat-examples/render-targets/`
+- `examples/three-compat-examples/large-scene/`
+- `examples/three-compat-examples/product-configurator/`
+- `examples/three-compat-examples/architecture-interior/`
+- `examples/three-compat-examples/automotive-configurator/`
+- `examples/three-compat-examples/threejs-migrated-custom-scene/`
 
 Required tools/tests:
 
-- `tests/browser/v5-examples.spec.ts`
-- `tools/v5-examples-readiness/index.ts`
-- `tools/v5-example-parity/index.ts`
+- `tests/browser/three-compat-examples.spec.ts`
+- `tools/three-compat-examples-readiness/index.ts`
+- `tools/three-compat-example-parity/index.ts`
 
 Required package script:
 
-- `v5:examples`
+- `three-compat:examples`
 
 Acceptance:
 
@@ -1128,7 +1128,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:examples
+pnpm three-compat:examples
 ```
 
 ## Milestone 17: Same-Scene Three.js Visual And Runtime Parity
@@ -1137,17 +1137,17 @@ Purpose: prove the competitor claim with direct comparisons.
 
 Required files:
 
-- `benchmarks/v5/shared/`
-- `benchmarks/v5/galileo/`
-- `benchmarks/v5/threejs/`
-- `tests/browser/v5-threejs-visual-parity.spec.ts`
-- `tests/browser/v5-threejs-runtime-parity.spec.ts`
-- `tools/v5-threejs-visual-parity/index.ts`
-- `tools/v5-threejs-runtime-parity/index.ts`
+- `benchmarks/three-compat/shared/`
+- `benchmarks/three-compat/galileo/`
+- `benchmarks/three-compat/threejs/`
+- `tests/browser/three-compat-threejs-visual-parity.spec.ts`
+- `tests/browser/three-compat-threejs-runtime-parity.spec.ts`
+- `tools/three-compat-threejs-visual-parity/index.ts`
+- `tools/three-compat-threejs-runtime-parity/index.ts`
 
 Required package script:
 
-- `v5:compare-threejs`
+- `three-compat:compare-threejs`
 
 Required comparison scenes:
 
@@ -1177,7 +1177,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:compare-threejs
+pnpm three-compat:compare-threejs
 ```
 
 ## Milestone 18: Developer Ergonomics And Documentation Depth
@@ -1186,23 +1186,23 @@ Purpose: make it a product developers can learn and use.
 
 Required files:
 
-- `docs/project/v5-roadmap-getting-started.md`
-- `docs/project/v5-roadmap-api-reference.md`
-- `docs/project/v5-roadmap-threejs-migration-guide.md`
-- `docs/project/v5-roadmap-examples-index.md`
-- `docs/project/v5-roadmap-templates-index.md`
-- `docs/project/v5-roadmap-troubleshooting.md`
-- `docs/project/v5-roadmap-performance-guide.md`
-- `docs/project/v5-roadmap-asset-pipeline-guide.md`
-- `docs/project/v5-roadmap-controls-guide.md`
-- `docs/project/v5-roadmap-shader-authoring-guide.md`
-- `docs/project/v5-roadmap-release-notes.md`
-- `tools/v5-docs-readiness/index.ts`
-- `tests/unit/tools/v5-docs.test.ts`
+- `docs/project/three-compat-roadmap-getting-started.md`
+- `docs/project/three-compat-roadmap-api-reference.md`
+- `docs/project/three-compat-roadmap-threejs-migration-guide.md`
+- `docs/project/three-compat-roadmap-examples-index.md`
+- `docs/project/three-compat-roadmap-templates-index.md`
+- `docs/project/three-compat-roadmap-troubleshooting.md`
+- `docs/project/three-compat-roadmap-performance-guide.md`
+- `docs/project/three-compat-roadmap-asset-pipeline-guide.md`
+- `docs/project/three-compat-roadmap-controls-guide.md`
+- `docs/project/three-compat-roadmap-shader-authoring-guide.md`
+- `docs/project/three-compat-roadmap-release-notes.md`
+- `tools/three-compat-docs-readiness/index.ts`
+- `tests/unit/tools/three-compat-docs.test.ts`
 
 Required package script:
 
-- `v5:docs`
+- `three-compat:docs`
 
 Acceptance:
 
@@ -1216,7 +1216,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:docs
+pnpm three-compat:docs
 ```
 
 ## Milestone 19: External Consumer, Package, Deployment, And Starter Proof
@@ -1225,16 +1225,16 @@ Purpose: ensure V5 works outside the repo.
 
 Required files:
 
-- `tools/v5-package-smoke/index.ts`
-- `tools/v5-external-consumer/index.ts`
-- `tools/v5-external-vite-build/index.ts`
-- `tools/v5-static-preview-smoke/index.ts`
-- `tests/browser/v5-external-consumer-static.spec.ts`
-- `tests/reports/v5-external-consumer/`
+- `tools/three-compat-package-smoke/index.ts`
+- `tools/three-compat-external-consumer/index.ts`
+- `tools/three-compat-external-vite-build/index.ts`
+- `tools/three-compat-static-preview-smoke/index.ts`
+- `tests/browser/three-compat-external-consumer-static.spec.ts`
+- `tests/reports/three-compat-external-consumer/`
 
 Required package script:
 
-- `v5:package`
+- `three-compat:package`
 
 Acceptance:
 
@@ -1248,7 +1248,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v5:package
+pnpm three-compat:package
 ```
 
 ## Milestone 20: Release Readiness, Broad Replacement Claim Gate, And Completion Audit
@@ -1257,48 +1257,48 @@ Purpose: only mark complete after the product is actually broad and visually str
 
 Required files:
 
-- `tools/v5-release-readiness/index.ts`
-- `tools/v5-broad-replacement-readiness/index.ts`
-- `tools/v5-completion-audit/index.ts`
-- `tests/reports/v5-release-readiness.json`
-- `tests/reports/v5-broad-replacement-readiness.json`
-- `tests/reports/v5-completion-audit.json`
+- `tools/three-compat-release-readiness/index.ts`
+- `tools/three-compat-broad-replacement-readiness/index.ts`
+- `tools/three-compat-completion-audit/index.ts`
+- `tests/reports/three-compat-release-readiness.json`
+- `tests/reports/three-compat-broad-replacement-readiness.json`
+- `tests/reports/three-compat-completion-audit.json`
 
 Required package script:
 
-- `v5:release`
+- `three-compat:release`
 
 Release command must include:
 
 ```sh
-pnpm v5:truth \
-  && pnpm v5:progress \
-  && pnpm v5:legacy-prune \
+pnpm three-compat:truth \
+  && pnpm three-compat:progress \
+  && pnpm three-compat:legacy-prune \
   && pnpm typecheck \
-  && pnpm v5:threejs-inventory \
-  && pnpm v5:assets \
-  && pnpm v5:environments \
-  && pnpm v5:materials \
-  && pnpm v5:renderer \
-  && pnpm v5:core-compat \
-  && pnpm v5:material-geometry-compat \
-  && pnpm v5:loaders \
-  && pnpm v5:controls \
-  && pnpm v5:animation \
-  && pnpm v5:postprocess \
-  && pnpm v5:shaders \
-  && pnpm v5:vfx \
-  && pnpm v5:performance \
-  && pnpm v5:migration \
-  && pnpm v5:app-suite \
-  && pnpm v5:templates \
-  && pnpm v5:examples \
-  && pnpm v5:compare-threejs \
-  && pnpm v5:package \
-  && pnpm v5:docs \
-  && pnpm exec tsx --tsconfig tsconfig.base.json tools/v5-release-readiness/index.ts \
-  && pnpm exec tsx --tsconfig tsconfig.base.json tools/v5-broad-replacement-readiness/index.ts \
-  && pnpm exec tsx --tsconfig tsconfig.base.json tools/v5-completion-audit/index.ts
+  && pnpm three-compat:threejs-inventory \
+  && pnpm three-compat:assets \
+  && pnpm three-compat:environments \
+  && pnpm three-compat:materials \
+  && pnpm three-compat:renderer \
+  && pnpm three-compat:core-compat \
+  && pnpm three-compat:material-geometry-compat \
+  && pnpm three-compat:loaders \
+  && pnpm three-compat:controls \
+  && pnpm three-compat:animation \
+  && pnpm three-compat:postprocess \
+  && pnpm three-compat:shaders \
+  && pnpm three-compat:vfx \
+  && pnpm three-compat:performance \
+  && pnpm three-compat:migration \
+  && pnpm three-compat:app-suite \
+  && pnpm three-compat:templates \
+  && pnpm three-compat:examples \
+  && pnpm three-compat:compare-threejs \
+  && pnpm three-compat:package \
+  && pnpm three-compat:docs \
+  && pnpm exec tsx --tsconfig tsconfig.base.json tools/three-compat-release-readiness/index.ts \
+  && pnpm exec tsx --tsconfig tsconfig.base.json tools/three-compat-broad-replacement-readiness/index.ts \
+  && pnpm exec tsx --tsconfig tsconfig.base.json tools/three-compat-completion-audit/index.ts
 ```
 
 Broad replacement gate must require:
@@ -1333,74 +1333,74 @@ Completion audit must fail if:
 Exit command:
 
 ```sh
-pnpm v5:release
+pnpm three-compat:release
 ```
 
 ## Required Final Reports
 
 V5 release must generate:
 
-- `tests/reports/v5-truth.json`
-- `tests/reports/v5-progress.json`
-- `tests/reports/v5-legacy-prune-readiness.json`
-- `tests/reports/v5-threejs-inventory.json`
-- `tests/reports/v5-threejs-compatibility-matrix.json`
-- `tests/reports/v5-asset-readiness.json`
-- `tests/reports/v5-environment-readiness.json`
-- `tests/reports/v5-material-readiness.json`
-- `tests/reports/v5-renderer-readiness.json`
-- `tests/reports/v5-core-compat-readiness.json`
-- `tests/reports/v5-material-geometry-compat-readiness.json`
-- `tests/reports/v5-loader-readiness.json`
-- `tests/reports/v5-controls-readiness.json`
-- `tests/reports/v5-animation-readiness.json`
-- `tests/reports/v5-postprocess-readiness.json`
-- `tests/reports/v5-shader-readiness.json`
-- `tests/reports/v5-vfx-readiness.json`
-- `tests/reports/v5-performance-readiness.json`
-- `tests/reports/v5-migration-readiness.json`
-- `tests/reports/v5-app-suite-readiness.json`
-- `tests/reports/v5-template-readiness.json`
-- `tests/reports/v5-examples-readiness.json`
-- `tests/reports/v5-threejs-visual-parity.json`
-- `tests/reports/v5-threejs-runtime-parity.json`
-- `tests/reports/v5-package-smoke.json`
-- `tests/reports/v5-external-consumer.json`
-- `tests/reports/v5-docs-readiness.json`
-- `tests/reports/v5-claim-registry.json`
-- `tests/reports/v5-release-readiness.json`
-- `tests/reports/v5-broad-replacement-readiness.json`
-- `tests/reports/v5-completion-audit.json`
+- `tests/reports/three-compat-truth.json`
+- `tests/reports/three-compat-progress.json`
+- `tests/reports/three-compat-legacy-prune-readiness.json`
+- `tests/reports/three-compat-threejs-inventory.json`
+- `tests/reports/three-compat-threejs-compatibility-matrix.json`
+- `tests/reports/three-compat-asset-readiness.json`
+- `tests/reports/three-compat-environment-readiness.json`
+- `tests/reports/three-compat-material-readiness.json`
+- `tests/reports/three-compat-renderer-readiness.json`
+- `tests/reports/three-compat-core-compat-readiness.json`
+- `tests/reports/three-compat-material-geometry-compat-readiness.json`
+- `tests/reports/three-compat-loader-readiness.json`
+- `tests/reports/three-compat-controls-readiness.json`
+- `tests/reports/three-compat-animation-readiness.json`
+- `tests/reports/three-compat-postprocess-readiness.json`
+- `tests/reports/three-compat-shader-readiness.json`
+- `tests/reports/three-compat-vfx-readiness.json`
+- `tests/reports/three-compat-performance-readiness.json`
+- `tests/reports/three-compat-migration-readiness.json`
+- `tests/reports/three-compat-app-suite-readiness.json`
+- `tests/reports/three-compat-template-readiness.json`
+- `tests/reports/three-compat-examples-readiness.json`
+- `tests/reports/three-compat-threejs-visual-parity.json`
+- `tests/reports/three-compat-threejs-runtime-parity.json`
+- `tests/reports/three-compat-package-smoke.json`
+- `tests/reports/three-compat-external-consumer.json`
+- `tests/reports/three-compat-docs-readiness.json`
+- `tests/reports/three-compat-claim-registry.json`
+- `tests/reports/three-compat-release-readiness.json`
+- `tests/reports/three-compat-broad-replacement-readiness.json`
+- `tests/reports/three-compat-completion-audit.json`
 
 ## Required Final Screenshots
 
 V5 release must generate:
 
-- `tests/reports/v5-gallery/product/premium-product-viewer.png`
-- `tests/reports/v5-gallery/automotive/automotive-configurator.png`
-- `tests/reports/v5-gallery/architecture-day/interior-daylight.png`
-- `tests/reports/v5-gallery/architecture-night/interior-night.png`
-- `tests/reports/v5-gallery/materials/material-library.png`
-- `tests/reports/v5-gallery/assets/asset-inspector.png`
-- `tests/reports/v5-gallery/character/character-animation.png`
-- `tests/reports/v5-gallery/postprocess/cinematic-postprocess.png`
-- `tests/reports/v5-gallery/vfx/particle-vfx.png`
-- `tests/reports/v5-gallery/large-scene/large-instanced-scene.png`
-- `tests/reports/v5-gallery/shader-lab/shader-lab.png`
-- `tests/reports/v5-gallery/threejs-migration/migrated-threejs-scene.png`
-- `tests/reports/v5-gallery/threejs-comparison/product-comparison-g3d.png`
-- `tests/reports/v5-gallery/threejs-comparison/product-comparison-threejs.png`
-- `tests/reports/v5-gallery/threejs-comparison/product-comparison-diff.png`
-- `tests/reports/v5-gallery/threejs-comparison/large-scene-g3d.png`
-- `tests/reports/v5-gallery/threejs-comparison/large-scene-threejs.png`
-- `tests/reports/v5-gallery/threejs-comparison/large-scene-diff.png`
-- `tests/reports/v5-external-consumer/external-consumer-static.png`
+- `tests/reports/three-compat-gallery/product/premium-product-viewer.png`
+- `tests/reports/three-compat-gallery/automotive/automotive-configurator.png`
+- `tests/reports/three-compat-gallery/architecture-day/interior-daylight.png`
+- `tests/reports/three-compat-gallery/architecture-night/interior-night.png`
+- `tests/reports/three-compat-gallery/materials/material-library.png`
+- `tests/reports/three-compat-gallery/assets/asset-inspector.png`
+- `tests/reports/three-compat-gallery/character/character-animation.png`
+- `tests/reports/three-compat-gallery/postprocess/cinematic-postprocess.png`
+- `tests/reports/three-compat-gallery/vfx/particle-vfx.png`
+- `tests/reports/three-compat-gallery/large-scene/large-instanced-scene.png`
+- `tests/reports/three-compat-gallery/shader-lab/shader-lab.png`
+- `tests/reports/three-compat-gallery/threejs-migration/migrated-threejs-scene.png`
+- `tests/reports/three-compat-gallery/threejs-comparison/product-comparison-g3d.png`
+- `tests/reports/three-compat-gallery/threejs-comparison/product-comparison-threejs.png`
+- `tests/reports/three-compat-gallery/threejs-comparison/product-comparison-diff.png`
+- `tests/reports/three-compat-gallery/threejs-comparison/large-scene-g3d.png`
+- `tests/reports/three-compat-gallery/threejs-comparison/large-scene-threejs.png`
+- `tests/reports/three-compat-gallery/threejs-comparison/large-scene-diff.png`
+- `tests/reports/three-compat-external-consumer/external-consumer-static.png`
 
 ## Human Visual Review Requirement
 
 Before release, create:
 
-- `docs/project/v5-roadmap-human-visual-review.md`
+- `docs/project/three-compat-roadmap-human-visual-review.md`
 
 It must list every flagship screenshot and answer:
 
@@ -1421,16 +1421,16 @@ If any flagship screenshot fails human review, V5 is not complete.
 
 Do this first, in order:
 
-1. Create `docs/project/v5-roadmap-status.md`.
-2. Create `docs/project/v5-roadmap-progress.md`.
-3. Create `docs/project/v5-roadmap-visual-failures.md` naming the weak V4 screenshots and exactly why they are not enough.
-4. Create `docs/project/v5-roadmap-blocked-claims.md`.
-5. Create `docs/project/v5-roadmap-legacy-prune-ledger.md`.
-6. Create `tools/v5-truth/index.ts`.
-7. Create `tools/v5-progress/index.ts`.
-8. Create `tools/v5-legacy-prune-readiness/index.ts`.
-9. Add `v5:truth`, `v5:progress`, and `v5:legacy-prune` scripts.
-10. Run `pnpm v5:truth && pnpm v5:progress && pnpm v5:legacy-prune`.
+1. Create `docs/project/three-compat-roadmap-status.md`.
+2. Create `docs/project/three-compat-roadmap-progress.md`.
+3. Create `docs/project/three-compat-roadmap-visual-failures.md` naming the weak V4 screenshots and exactly why they are not enough.
+4. Create `docs/project/three-compat-roadmap-blocked-claims.md`.
+5. Create `docs/project/three-compat-roadmap-legacy-prune-ledger.md`.
+6. Create `tools/three-compat-truth/index.ts`.
+7. Create `tools/three-compat-progress/index.ts`.
+8. Create `tools/three-compat-legacy-prune-readiness/index.ts`.
+9. Add `three-compat:truth`, `three-compat:progress`, and `three-compat:legacy-prune` scripts.
+10. Run `pnpm three-compat:truth && pnpm three-compat:progress && pnpm three-compat:legacy-prune`.
 11. Start Milestone 1 inventory before building new visuals.
 
 Do not start with new screenshots.

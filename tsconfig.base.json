@@ -62,11 +62,26 @@
       "@galileo3d/engine/rendering": [
         "packages/rendering/src/index.ts"
       ],
+      "@galileo3d/engine/rendering/production-runtime": [
+        "packages/rendering/src/production-runtime/index.ts"
+      ],
+      "@galileo3d/engine/rendering/advanced-runtime": [
+        "packages/rendering/src/advanced-runtime/index.ts"
+      ],
+      "@galileo3d/engine/rendering/v6": [
+        "packages/rendering/src/production-runtime/index.ts"
+      ],
       "@galileo3d/engine/rendering/v9": [
-        "packages/rendering/src/v9/index.ts"
+        "packages/rendering/src/advanced-runtime/index.ts"
+      ],
+      "@galileo3d/engine/workflows/production": [
+        "packages/workflows/src/production-runtime/index.ts"
       ],
       "@galileo3d/engine/workflows/v6": [
-        "packages/workflows/src/v6/index.ts"
+        "packages/workflows/src/production-runtime/index.ts"
+      ],
+      "@galileo3d/engine/workflows/production-runtime": [
+        "packages/workflows/src/production-runtime/index.ts"
       ],
       "@galileo3d/three-compat": [
         "packages/three-compat/src/index.ts"
@@ -110,20 +125,29 @@
       "@galileo3d/test-utils": [
         "packages/test-utils/src/index.ts"
       ],
-      "@galileo3d/engine/rendering/v6": [
-        "packages/rendering/src/v6/index.ts"
+      "@galileo3d/engine/assets/asset-corpus": [
+        "packages/assets/src/asset-corpus/index.ts"
+      ],
+      "@galileo3d/engine/assets/advanced-gallery": [
+        "packages/assets/src/advanced-gallery/index.ts"
       ],
       "@galileo3d/engine/assets/v6": [
-        "packages/assets/src/v6/index.ts"
+        "packages/assets/src/asset-corpus/index.ts"
       ],
       "@galileo3d/engine/assets/v9": [
-        "packages/assets/src/v9/index.ts"
+        "packages/assets/src/advanced-gallery/index.ts"
+      ],
+      "@galileo3d/engine/production-runtime": [
+        "packages/engine/src/production-runtime/index.ts"
+      ],
+      "@galileo3d/engine/advanced-runtime": [
+        "packages/engine/src/advanced-runtime/index.ts"
       ],
       "@galileo3d/engine/v6": [
-        "packages/engine/src/v6/index.ts"
+        "packages/engine/src/production-runtime/index.ts"
       ],
       "@galileo3d/engine/v9": [
-        "packages/engine/src/v9/index.ts"
+        "packages/engine/src/advanced-runtime/index.ts"
       ]
     }
   }

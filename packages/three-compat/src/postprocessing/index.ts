@@ -11,4 +11,4 @@ export {
   SSAOPassV5 as SSAOPassCompat,
   TAAPassV5 as TAAPassCompat,
   VignettePassV5 as VignettePassCompat
-} from "../../../rendering/src/v5/postprocess";
+} from "../../../rendering/src/threejs-compatibility/postprocess";

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Decals</title>
+    <link rel="stylesheet" href="/apps/common/src/styles.css">
+    <style>
+      body.decals {
+        grid-template-columns: minmax(920px, 1fr) minmax(390px, 38vw);
+        align-items: start;
+        overflow: hidden;
+      }
+
+      .decal-stage {
+        position: relative;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+        background: #07090d;
+      }
+
+      .decals #viewport {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+        cursor: crosshair;
+      }
+
+      .decals #runtime-state.is-loading {
+        background: #43506a;
+      }
+
+      .decals #runtime-state.is-running {
+        background: #276b51;
+      }
+
+      .decals #runtime-state.is-error {
+        background: #923b3b;
+      }
+
+      .decals .runtime-error {
+        max-height: 320px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 1180px) {
+        body.decals {
+          grid-template-columns: 1fr;
+          overflow: auto;
+        }
+
+        .decal-stage {
+          height: min(72vh, 100vw);
+        }
+      }
+    </style>
+  </head>
+  <body class="decals">
+    <section class="decal-stage" aria-label="G3D decal viewport">
+      <canvas id="viewport" width="1280" height="720"></canvas>
+    </section>
+    <main id="app"></main>
+    <script type="module" src="/apps/decals/src/main.ts"></script>
+  </body>
+</html>

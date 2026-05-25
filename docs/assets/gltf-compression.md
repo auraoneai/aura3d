@@ -41,14 +41,14 @@ Current supported path:
 
 The v8 loader route set includes:
 
-- `apps/v8-loader-compression`;
-- `apps/v8-loader-ktx2`;
-- `apps/v8-loader-instancing`;
-- `apps/v8-loader-material-extensions`;
-- `apps/v8-loader-gltf-variants`;
-- `apps/v8-loader-obj`.
+- `apps/loader-compression`;
+- `apps/loader-ktx2`;
+- `apps/loader-instancing`;
+- `apps/loader-material-extensions`;
+- `apps/loader-gltf-variants`;
+- `apps/loader-obj`.
 
-Screenshots for those routes are included under `tests/reports/v8/loaders`, and `tests/reports/v8-visual-review.json` accepts them as route evidence. This proves routes exist and render meaningful output; it is not broad loader parity.
+Screenshots for those routes are included under `tests/reports/v8/loaders`, and `tests/reports/current-routes-visual-review.json` accepts them as route evidence. This proves routes exist and render meaningful output; it is not broad loader parity.
 
 ## Current limits
 
@@ -64,4 +64,4 @@ Screenshots for those routes are included under `tests/reports/v8/loaders`, and 
 - `tests/assets/gltf-optional-external-decoders.test.ts` is an executable package-backed integration test. In the checked-in dev environment it loads pinned Khronos Meshopt and Draco assets through `meshoptimizer` and `draco3d`. It still skips honestly if a downstream installation removes either optional package.
 - `tests/assets/asset-cache-scale.test.ts` proves cache diagnostics, duplicate in-flight load sharing, retry recovery, dependency cleanup, and aborted-load cleanup at bounded scale.
 - `tests/reports/v8-assets.json`
-- `tests/reports/v8-visual-review.json`
+- `tests/reports/current-routes-visual-review.json`

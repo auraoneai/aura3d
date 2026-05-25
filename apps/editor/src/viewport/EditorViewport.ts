@@ -1,6 +1,6 @@
 import { Ray, Vector3 } from "@galileo3d/math";
 import { Geometry, UnlitMaterial, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/v9";
+import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
 import type { EditorDiagnosticsResource } from "@galileo3d/editor-runtime";
 import type { SceneNode } from "@galileo3d/scene";
 import type { EditorShell } from "../EditorShell";

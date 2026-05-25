@@ -15,7 +15,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Add a source check that blocks phrases like "better than Three.js", "Unity/Unreal for the web", "production renderer", and "production ready" unless v3 gates pass.
 - [x] Add `tools/example-truth-audit/index.ts` to verify every portfolio card has a matching screenshot, browser test, and current known-limit note.
 - [x] Add a `tests/browser/example-screenshot-audit.spec.ts` that opens every portfolio example and stores screenshots under `tests/reports/v3-example-screenshots/`.
-- [x] Add a report `tests/reports/v3-current-capability.json` that states which v3 gates are blocked and why.
+- [x] Add a report `tests/reports/foundation-current-capability.json` that states which v3 gates are blocked and why.
 - [x] Update examples so every page exposes a typed `window.__GALILEO3D_*__` state with `status`, `renderer`, `errors`, `diagnostics`, `visualClaim`, and `knownLimits`.
 
 ## 1. Renderer And GPU
@@ -29,7 +29,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Implement contact shadows or a deliberate alternative for product/architecture/game scenes.
 - [x] Implement point/spot shadows only if examples or claims need them; otherwise block those claims.
 - [x] Implement depth texture support for postprocess and debug views.
-- [x] Implement SSAO, SSR, TAA, DOF, or other post effects only when there is a real visual demo and performance budget. Evidence: unsupported SSAO/SSR/DOF/TAA claims remain blocked; supported tone mapping, bloom, and FXAA have real-scene visual and timing evidence in `pnpm verify:v3-rendering` and `pnpm verify:v4-rendering`.
+- [x] Implement SSAO, SSR, TAA, DOF, or other post effects only when there is a real visual demo and performance budget. Evidence: unsupported SSAO/SSR/DOF/TAA claims remain blocked; supported tone mapping, bloom, and FXAA have real-scene visual and timing evidence in `pnpm verify:foundation-rendering` and `pnpm verify:external-parity-rendering`.
 - [x] Implement renderer resource lifetime diagnostics visible in examples.
 - [x] Implement render-pass and shader error overlays for developer debugging.
 - [x] Implement GPU timing where available with fallback CPU timing.
@@ -37,7 +37,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Implement LOD support for real model scenes. Evidence: the product configurator publishes real-model LOD diagnostics, large-scene reports include active LOD and culling metrics, and `pnpm verify:v3` passes with rendering and benchmark reports fresh.
 - [x] Implement instancing stress scenes with screenshots and frame metrics.
 - [x] Implement skinned mesh rendering beyond unlit proof paths. Evidence: `examples/character-animation-viewer` renders a real skinned CesiumMan glTF animation, `examples/game-slice` publishes lit skinned hero evidence, and the V3 runtime verifier passes.
-- [x] Implement morph target rendering for real glTF assets. Evidence: the asset viewer drives glTF morph target weights through browser controls, the V4 corpus includes animated morph-weight playback, and `pnpm verify:v3` plus `pnpm verify:v4-assets` pass.
+- [x] Implement morph target rendering for real glTF assets. Evidence: the asset viewer drives glTF morph target weights through browser controls, the V4 corpus includes animated morph-weight playback, and `pnpm verify:v3` plus `pnpm verify:external-parity-assets` pass.
 - [x] Implement WebGPU real hardware path or keep WebGPU claims blocked.
 - [x] Add renderer feature flags so unsupported features fail visibly and do not silently render fake output.
 
@@ -102,7 +102,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Add `examples/material-showroom` with real material spheres/objects and environment controls.
 - [x] Add `examples/character-animation-viewer` with skinned glTF animation.
 - [x] Add `examples/editor-authored-game` generated from the browser editor workflow.
-- [x] Add `examples/large-world-streaming` only if streaming/culling/LOD exists. Evidence: `examples/large-world-streaming/main.ts` implements bounded async chunk loading, culling, LOD, camera-path, frame, and memory metrics, verified by `tests/browser/large-world-streaming-v4.spec.ts`.
+- [x] Add `examples/large-world-streaming` only if streaming/culling/LOD exists. Evidence: `examples/large-world-streaming/main.ts` implements bounded async chunk loading, culling, LOD, camera-path, frame, and memory metrics, verified by `tests/browser/large-world-streaming-external-parity.spec.ts`.
 - [x] Add `examples/renderer-stress-lab` with adjustable object/material/light counts.
 - [x] Add example screenshot generation command and store reports under `tests/reports/v3-examples/`.
 
@@ -123,12 +123,12 @@ Do not check off an item until the implementation, tests, examples, and report e
 
 ## 7. Validation Tooling
 
-- [x] Add `pnpm verify:v3-code` as the code-only v3 gate.
+- [x] Add `pnpm verify:foundation-code` as the code-only v3 gate.
 - [x] Add `pnpm verify:v3-examples` for all v3 example browser tests and screenshots.
-- [x] Add `pnpm verify:v3-rendering` for renderer visual and benchmark tests.
-- [x] Add `pnpm verify:v3-assets` for corpus loading/rendering/inspection tests.
-- [x] Add `pnpm verify:v3-editor` for editor workflow automation.
-- [x] Add `pnpm verify:v3-benchmarks` for local Three.js/Babylon/Galileo comparison reports.
+- [x] Add `pnpm verify:foundation-rendering` for renderer visual and benchmark tests.
+- [x] Add `pnpm verify:foundation-assets` for corpus loading/rendering/inspection tests.
+- [x] Add `pnpm verify:foundation-editor` for editor workflow automation.
+- [x] Add `pnpm verify:foundation-benchmarks` for local Three.js/Babylon/Galileo comparison reports.
 - [x] Add report freshness checks so v3 reports fail when source files changed after report generation.
 - [x] Add flaky-test detection for browser visual and benchmark tests.
 - [x] Add screenshot review manifest with paths, scene names, browser version, viewport, DPR, commit hash, and run ID.

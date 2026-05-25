@@ -7,13 +7,13 @@ V5 exists because V4 is a bounded product baseline, not a visually undeniable Th
 
 The following V4 artifacts are useful evidence but not sufficient for the V5 visual bar:
 
-- `tests/reports/v4-gallery/product/product-configurator-v4.png` - proves product workflow, but does not yet prove premium automotive/product presentation with high-end assets, full material depth, and cinematic polish.
-- `tests/reports/v4-gallery/materials/material-studio-v4.png` - proves material review, but the material library must become broader, texture-backed, and visibly closer to real scanned/production materials.
-- `tests/reports/v4-gallery/assets/asset-gallery-v4.png` - proves asset diagnostics, but is not visually strong enough to sell the engine.
-- `tests/reports/v4-gallery/scenes/interior-scene-v4.png` - the strongest V4 visual, but V5 must add larger, more realistic day/night architecture scenes with richer assets and lighting.
-- `tests/reports/v4-gallery/characters/character-viewer-v4.png` - proves character workflow, but V5 must prove real skinning, morphs, animation controls, shadows, and material detail.
-- `tests/reports/v4-gallery/templates/v4-asset-gallery.png` - useful starter proof, but not a flagship visual.
-- `tests/reports/v4-gallery/performance/large-scene-performance.png` - useful performance proof, but not visually rich enough to prove a high-end renderer.
+- `tests/reports/external-gallery/product/external-product-configurator.png` - proves product workflow, but does not yet prove premium automotive/product presentation with high-end assets, full material depth, and cinematic polish.
+- `tests/reports/external-gallery/materials/external-material-studio.png` - proves material review, but the material library must become broader, texture-backed, and visibly closer to real scanned/production materials.
+- `tests/reports/external-gallery/assets/external-asset-gallery.png` - proves asset diagnostics, but is not visually strong enough to sell the engine.
+- `tests/reports/external-gallery/scenes/external-interior-scene.png` - the strongest V4 visual, but V5 must add larger, more realistic day/night architecture scenes with richer assets and lighting.
+- `tests/reports/external-gallery/characters/external-character-viewer.png` - proves character workflow, but V5 must prove real skinning, morphs, animation controls, shadows, and material detail.
+- `tests/reports/external-gallery/templates/external-parity-asset-gallery.png` - useful starter proof, but not a flagship visual.
+- `tests/reports/external-gallery/performance/large-scene-performance.png` - useful performance proof, but not visually rich enough to prove a high-end renderer.
 
 V5 must not pass by reusing these as flagship visuals. V4 screenshots may only be used as baseline, migration, or regression comparison evidence.
 

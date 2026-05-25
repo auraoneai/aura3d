@@ -145,7 +145,7 @@ test.describe("Data Galaxy same-system reference harness", () => {
       fixedDensity: true,
       fixedBackground: true
     });
-    expect(result.harness?.importedRouteModules).toContain("apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts");
+    expect(result.harness?.importedRouteModules).toContain("apps/advanced-examples-gallery/src/dataGalaxyScene.ts");
     expect(result.harness?.claimBoundary).toContain("does not prove native GPU-compute particle simulation");
 
     expect(result.render?.rendererBackend).toBe("webgl2");

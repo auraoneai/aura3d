@@ -118,11 +118,11 @@ await app.renderWorkflow("product-configurator", { productId: "demo-product" });
 
 Migration claims should cite current reports, for example:
 
-- `tests/reports/v5-threejs-compatibility-matrix.json`;
-- `tests/reports/v5-threejs-runtime-parity.json`;
-- `tests/reports/v5-threejs-visual-parity.json`;
-- `tests/reports/v6-threejs-parity-readiness.json`;
-- `tests/reports/v8-threejs-parity.json`;
+- `tests/reports/three-compat-threejs-compatibility-matrix.json`;
+- `tests/reports/three-compat-threejs-runtime-parity.json`;
+- `tests/reports/three-compat-threejs-visual-parity.json`;
+- `tests/reports/production-runtime-threejs-parity-readiness.json`;
+- `tests/reports/current-routes-threejs-parity.json`;
 - `tests/reports/v9/threejs-inventory.json`;
 - `docs/project/v9-roadmap-parity-matrix.md`.
 

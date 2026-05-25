@@ -79,7 +79,7 @@ export interface CloudServiceFixture {
 
 export function sampleCloudServiceFixture(options: CloudServiceFixtureOptions = {}): CloudServiceFixture {
   const seed = normalizeSeed(options.seed ?? 0xc10d);
-  const playerId = normalizePlayerId(options.playerId ?? "v4-runtime-player");
+  const playerId = normalizePlayerId(options.playerId ?? "external-parity-runtime-player");
   const score = positiveInteger(options.score ?? 12_400, "score");
   const sessionSeconds = positiveInteger(options.sessionSeconds ?? 180, "sessionSeconds");
   const offlineMode = options.offlineMode ?? true;

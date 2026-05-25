@@ -699,7 +699,7 @@ describe("verification tools", () => {
           "pnpm build:external-demos",
           "pnpm verify:static-demo-server-smoke",
           "G3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
-          "pnpm audit:v4-production-readiness",
+          "pnpm audit:external-parity-production-readiness",
         ]),
         githubPagesWorkflow: ".github/workflows/v4-public-demo-deploy.yml",
         githubPagesWorkflowNotes: expect.arrayContaining([

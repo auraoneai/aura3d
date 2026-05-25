@@ -20,7 +20,7 @@ The V5 product viewer surface must include:
 
 ## Developer API Shape
 
-Developers should be able to start from `templates/v5-premium-product-viewer` or `apps/v5-product-studio-pro` and then replace asset ids, material presets, and environment presets without rewriting renderer internals.
+Developers should be able to start from `templates/three-compat-premium-product-viewer` or `apps/three-compat-product-studio-pro` and then replace asset ids, material presets, and environment presets without rewriting renderer internals.
 
 ```ts
 import { RendererV5 } from "@galileo3d/engine/rendering";
@@ -42,10 +42,10 @@ import { OrbitControlsCompat } from "@galileo3d/engine/controls";
 
 The release evidence is:
 
-- `apps/v5-product-studio-pro`
-- `templates/v5-premium-product-viewer`
-- `examples/v5/product-configurator`
-- `tests/reports/v5-gallery/product/premium-product-viewer.png`
-- `tests/reports/v5-threejs-visual-parity/product-configurator-g3d.png`
-- `tests/reports/v5-threejs-visual-parity/product-configurator-threejs.png`
-- `tests/reports/v5-threejs-visual-parity/product-configurator-diff.png`
+- `apps/three-compat-product-studio-pro`
+- `templates/three-compat-premium-product-viewer`
+- `examples/three-compat-examples/product-configurator`
+- `tests/reports/three-compat-gallery/product/premium-product-viewer.png`
+- `tests/reports/three-compat-threejs-visual-parity/product-configurator-g3d.png`
+- `tests/reports/three-compat-threejs-visual-parity/product-configurator-threejs.png`
+- `tests/reports/three-compat-threejs-visual-parity/product-configurator-diff.png`

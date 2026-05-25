@@ -3,7 +3,7 @@ export {
   createProjectedDecalGeometry,
   createRaycastProjectedDecalGeometry,
   raycastProjectedDecalMesh
-} from "./v6/geometry/ProjectedDecalGeometry";
+} from "./production-runtime/geometry/ProjectedDecalGeometry";
 export type {
   ProjectedDecalBasis as DecalBasis,
   ProjectedDecalBox as DecalBox,
@@ -23,4 +23,4 @@ export type {
   ProjectedDecalRaycastResult,
   ProjectedDecalShape,
   ProjectedDecalTriangleMesh
-} from "./v6/geometry/ProjectedDecalGeometry";
+} from "./production-runtime/geometry/ProjectedDecalGeometry";

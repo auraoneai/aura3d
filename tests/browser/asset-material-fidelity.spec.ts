@@ -77,7 +77,7 @@ test.describe("asset material fidelity browser evidence", () => {
       evidence: [
         "packages/assets/src/AssetInspection.ts",
         "tests/browser/asset-material-fidelity.spec.ts",
-        "tests/reports/v3-asset-material-fidelity.json"
+        "tests/reports/foundation-asset-material-fidelity.json"
       ]
     }, {
       task: "Add browser visual tests for KHR_texture_transform, alpha blend/mask ordering, and double-sided rendering.",
@@ -85,14 +85,14 @@ test.describe("asset material fidelity browser evidence", () => {
         "packages/assets/src/GLTFRenderResources.ts",
         "packages/rendering/src/ShaderLibrary.ts",
         "tests/browser/asset-material-fidelity.spec.ts",
-        "tests/reports/v3-asset-material-fidelity.json"
+        "tests/reports/foundation-asset-material-fidelity.json"
       ]
     }];
     report.blockedTasks = [
       "This validates loader, inspection, texture decode, render-resource, and asset-viewer reporting for material features; it is not a pixel-perfect renderer parity claim.",
       "KTX2/Basis, Draco, and Meshopt browser evidence are not added by this material-fidelity test."
     ];
-    const reportPath = resolve("tests/reports/v3-asset-material-fidelity.json");
+    const reportPath = resolve("tests/reports/foundation-asset-material-fidelity.json");
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });

@@ -73,4 +73,4 @@ Do not claim support until a route and report prove it:
 
 ## Evidence
 
-Generated evidence belongs in `tests/reports/v8-animation-examples.json` and screenshots under `tests/reports/v8/`. Visual acceptance still requires `tools/v8-visual-review/index.ts`.
+Generated evidence belongs in `tests/reports/v8-animation-examples.json` and screenshots under `tests/reports/v8/`. Visual acceptance still requires `tools/current-routes-visual-review/index.ts`.

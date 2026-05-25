@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const reportPath = resolve(process.cwd(), "tests/reports/v3-animation-browser.json");
+const reportPath = resolve(process.cwd(), "tests/reports/foundation-animation-browser.json");
 
 const report: {
   ok: boolean;
@@ -93,7 +93,7 @@ test.describe("animation browser runtime", () => {
         "tests/assets/corpus/khronos/CesiumMan/CesiumMan.glb",
         "tests/browser/animation-browser-harness.ts",
         "tests/browser/animation-browser.spec.ts",
-        "tests/reports/v3-animation-browser.json"
+        "tests/reports/foundation-animation-browser.json"
       ]
     });
     expect(result?.controls).toMatchObject({

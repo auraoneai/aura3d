@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
-const reportPath = "tests/reports/v3-engine-comparison.json";
+const reportPath = "tests/reports/foundation-engine-comparison.json";
 const expectedScenes = [
   "product-configurator",
   "architecture-viewer",
@@ -51,9 +51,9 @@ test.describe("v3 engine comparison report", () => {
       if (scene.id === "editor-authored-startup") {
         expect(scene.workflow).toMatchObject({
           kind: "editor-authored-exported-app-startup",
-          exportedProjectPath: "examples/editor-authored-v3-app/project.json",
-          exportedRuntimePath: "examples/editor-authored-v3-app/runtime.js",
-          editorEvidenceReportPath: "tests/reports/v3-editor-authoring.json"
+          exportedProjectPath: "examples/foundation-editor-authored-app/project.json",
+          exportedRuntimePath: "examples/foundation-editor-authored-app/runtime.js",
+          editorEvidenceReportPath: "tests/reports/foundation-editor-authoring.json"
         });
         expect(scene.workflow.authoredOperations).toContain("static-export");
         expect(scene.workflow.authoredOperations).toContain("static-export-runtime");

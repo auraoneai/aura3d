@@ -5,4 +5,4 @@ export {
   MorphTargetMixerV5 as MorphTargetMixerCompat,
   SkeletonV5 as SkeletonCompat,
   SkinnedMeshV5 as SkinnedMeshCompat
-} from "../../../animation/src/v5";
+} from "../../../animation/src/threejs-compatibility";

@@ -20,4 +20,4 @@ export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
 export * from "./CrowdAnimation.js";
 export * from "./Retargeting.js";
-export * from "./v5";
+export * from "./threejs-compatibility";

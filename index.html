@@ -113,216 +113,216 @@
     <script type="module">
       const ROUTES = [
         {
-          path: "/apps/v7-animation-keyframes/",
-          label: "V7 Animation Keyframes",
-          summary: "Legacy startup route kept for regression coverage. Use V8 Animation Keyframes for the current example.",
+          path: "/apps/regression-animation-keyframes/",
+          label: "Regression Animation Keyframes",
+          summary: "Legacy startup route kept for regression coverage. Use Animation Keyframes for the current example.",
           internal: true
         },
         {
-          path: "/apps/v6-character-viewer/",
-          label: "V6 Character Viewer",
-          summary: "Legacy character route kept for regression coverage. Use the V8 animation examples for current visual work.",
+          path: "/apps/character-viewer/",
+          label: "Character Viewer",
+          summary: "Legacy character route kept for regression coverage. Use the animation examples for current visual work.",
           internal: true
         },
         {
-          path: "/apps/v7-example-parity-lab/",
-          label: "V7 Example Parity Lab",
+          path: "/apps/example-parity-lab/",
+          label: "Example Parity Lab",
           summary: "Internal stress lab. Not listed as working until route-health proves it can start quickly.",
           internal: true
         },
         {
-          path: "/apps/v8-animation-keyframes/",
-          label: "V8 Animation Keyframes",
+          path: "/apps/animation-keyframes/",
+          label: "Animation Keyframes",
           summary: "Dedicated G3D-only route for keyframe animation parity work."
         },
         {
-          path: "/apps/v8-flagship-viewer/",
-          label: "V8 Flagship Viewer",
+          path: "/apps/flagship-viewer/",
+          label: "Flagship Viewer",
           summary: "Main G3D-only product viewer route for GLB/HDR/PBR SDK workflow proof."
         },
         {
-          path: "/apps/v8-skinning-blending/",
-          label: "V8 Skinning Blending",
+          path: "/apps/skinning-blending/",
+          label: "Skinning Blending",
           summary: "Dedicated G3D-only route for skinned clip blending parity work."
         },
         {
-          path: "/apps/v8-skinning-additive/",
-          label: "V8 Skinning Additive",
+          path: "/apps/skinning-additive/",
+          label: "Skinning Additive",
           summary: "Dedicated G3D-only route for additive skeletal animation parity work."
         },
         {
-          path: "/apps/v8-skinning-ik/",
-          label: "V8 Robot Expressive IK",
+          path: "/apps/skinning-ik/",
+          label: "Robot Expressive IK",
           summary: "Dedicated G3D-only route for imported Robot Expressive skeleton IK, animated target motion, controls, and motion telemetry."
         },
         {
-          path: "/apps/v8-skinning-morph/",
-          label: "V8 Skinning Morph",
+          path: "/apps/skinning-morph/",
+          label: "Skinning Morph",
           summary: "Dedicated G3D-only route for morph target animation work."
         },
         {
-          path: "/apps/v8-animation-multiple/",
-          label: "V8 Animation Multiple",
+          path: "/apps/animation-multiple/",
+          label: "Animation Multiple",
           summary: "Dedicated G3D-only route for many animated agents."
         },
         {
-          path: "/apps/v8-animation-walk/",
-          label: "V8 Animation Walk",
+          path: "/apps/animation-walk/",
+          label: "Animation Walk",
           summary: "Dedicated G3D-only route for locomotion and path movement."
         },
         {
-          path: "/apps/v8-decals/",
-          label: "V8 Decals",
+          path: "/apps/decals/",
+          label: "Decals",
           summary: "Dedicated G3D-only route for interactive decal placement."
         },
         {
-          path: "/apps/v8-camera/",
-          label: "V8 Camera",
+          path: "/apps/camera/",
+          label: "Camera",
           summary: "Dedicated G3D-only route for camera helpers, preset views, and frustum visualization."
         },
         {
-          path: "/apps/v8-camera-multiple-views/",
-          label: "V8 Camera Multiple Views",
+          path: "/apps/camera-multiple-views/",
+          label: "Camera Multiple Views",
           summary: "Dedicated G3D-only route for multiple DOM elements and camera views."
         },
         {
-          path: "/apps/v8-parallax-barrier/",
-          label: "V8 Parallax Barrier",
+          path: "/apps/parallax-barrier/",
+          label: "Parallax Barrier",
           summary: "Dedicated G3D-only route for interleaved parallax-barrier stereo rendering."
         },
         {
-          path: "/apps/v8-stereo-effects/",
-          label: "V8 Stereo Effects",
+          path: "/apps/stereo-effects/",
+          label: "Stereo Effects",
           summary: "Dedicated G3D-only route for stereo camera effects."
         },
         {
-          path: "/apps/v8-physics-showcase/",
-          label: "V8 Physics Showcase",
+          path: "/apps/physics-showcase/",
+          label: "Physics Showcase",
           summary: "Dedicated G3D-only route for rendered physics interaction."
         },
         {
-          path: "/apps/v8-loader-compression/",
-          label: "V8 Loader Compression",
+          path: "/apps/loader-compression/",
+          label: "Loader Compression",
           summary: "Dedicated G3D-only route for browser glTF compression decoder evidence."
         },
         {
-          path: "/apps/v8-loader-instancing/",
-          label: "V8 Loader Instancing",
+          path: "/apps/loader-instancing/",
+          label: "Loader Instancing",
           summary: "Dedicated G3D-only route for EXT_mesh_gpu_instancing loader/runtime evidence."
         },
         {
-          path: "/apps/v8-loader-material-extensions/",
-          label: "V8 Loader Material Extensions",
+          path: "/apps/loader-material-extensions/",
+          label: "Loader Material Extensions",
           summary: "Dedicated G3D-only route for clearcoat, sheen, and transmission glTF material extension evidence."
         },
         {
-          path: "/apps/v8-loader-gltf-variants/",
-          label: "V8 Loader GLTF Variants",
+          path: "/apps/loader-gltf-variants/",
+          label: "Loader GLTF Variants",
           summary: "Dedicated G3D-only route for KHR_materials_variants selection through public render resources."
         },
         {
-          path: "/apps/v8-loader-ktx2/",
-          label: "V8 Loader KTX2",
+          path: "/apps/loader-ktx2/",
+          label: "Loader KTX2",
           summary: "Dedicated G3D-only route for KHR_texture_basisu/KTX2 transcoding evidence."
         },
         {
-          path: "/apps/v8-loader-obj/",
-          label: "V8 Loader OBJ",
+          path: "/apps/loader-obj/",
+          label: "Loader OBJ",
           summary: "Dedicated G3D-only route for native OBJ parsing through public render resources."
         },
         {
-          path: "/apps/v8-instancing-performance/",
-          label: "V8 Instancing Performance",
+          path: "/apps/instancing-performance/",
+          label: "Instancing Performance",
           summary: "Dedicated G3D-only route for large per-instance attribute batches."
         },
         {
-          path: "/apps/v8-texture-anisotropy/",
-          label: "V8 Texture Anisotropy",
+          path: "/apps/texture-anisotropy/",
+          label: "Texture Anisotropy",
           summary: "Dedicated G3D-only route for anisotropic texture sampler evidence."
         },
         {
-          path: "/apps/v8-interactive-picking/",
-          label: "V8 Interactive Picking",
+          path: "/apps/interactive-picking/",
+          label: "Interactive Picking",
           summary: "Dedicated G3D-only route for cube and point raycasting evidence."
         },
         {
-          path: "/apps/v8-controls-trackball/",
-          label: "V8 Controls Trackball",
+          path: "/apps/controls-trackball/",
+          label: "Controls Trackball",
           summary: "Dedicated G3D-only route for public TrackballControls state and rendering evidence."
         },
         {
-          path: "/apps/v8-controls-orbit/",
-          label: "V8 Controls Orbit",
+          path: "/apps/controls-orbit/",
+          label: "Controls Orbit",
           summary: "Dedicated G3D-only route for public OrbitControls rotation, pan, and wheel evidence."
         },
         {
-          path: "/apps/v8-controls-transform/",
-          label: "V8 Controls Transform",
+          path: "/apps/controls-transform/",
+          label: "Controls Transform",
           summary: "Dedicated G3D-only route for public TransformControls translate, rotate, and scale evidence."
         },
         {
-          path: "/apps/v8-geometry-drawrange/",
-          label: "V8 Geometry DrawRange",
+          path: "/apps/geometry-drawrange/",
+          label: "Geometry DrawRange",
           summary: "Dedicated G3D-only route for indexed and array drawRange evidence."
         },
         {
-          path: "/apps/v8-materials-transmission/",
-          label: "V8 Materials Transmission",
+          path: "/apps/materials-transmission/",
+          label: "Materials Transmission",
           summary: "Dedicated G3D-only route for physical transmission material evidence."
         },
         {
-          path: "/apps/v8-lights-spotlight/",
-          label: "V8 Lights Spotlight",
+          path: "/apps/lights-spotlight/",
+          label: "Lights Spotlight",
           summary: "Dedicated G3D-only route for scene SpotLight collection and WebGL2 lighting evidence."
         },
         {
-          path: "/apps/v8-shadowmap-viewer/",
-          label: "V8 Shadowmap Viewer",
+          path: "/apps/shadowmap-viewer/",
+          label: "Shadowmap Viewer",
           summary: "Dedicated G3D-only route for ShadowPass depth texture diagnostics and preview."
         },
         {
-          path: "/apps/v8-webgpu-rtt/",
-          label: "V8 WebGPU RTT",
+          path: "/apps/webgpu-rtt/",
+          label: "WebGPU RTT",
           summary: "Proof route for WebGPU render-target, readback, presentation, and disposal plumbing. Visual fidelity is intentionally minimal.",
           proofOnly: true
         },
         {
-          path: "/apps/v8-webgpu-materials/",
-          label: "V8 WebGPU Materials",
+          path: "/apps/webgpu-materials/",
+          label: "WebGPU Materials",
           summary: "Proof route for WebGPU PBR and textured material plumbing. Not a final product-quality material gallery.",
           proofOnly: true
         },
         {
-          path: "/apps/v8-webgpu-instance-uniform/",
-          label: "V8 WebGPU Instance Uniform",
+          path: "/apps/webgpu-instance-uniform/",
+          label: "WebGPU Instance Uniform",
           summary: "Proof route for WebGPU instanced PBR uniform-matrix submission. Visuals are diagnostic.",
           proofOnly: true
         },
         {
-          path: "/apps/v8-webgpu-compute/",
-          label: "V8 WebGPU Compute",
+          path: "/apps/webgpu-compute/",
+          label: "WebGPU Compute",
           summary: "Proof route for WebGPU particle compute, storage buffers, and readback evidence. Visuals are diagnostic.",
           proofOnly: true
         },
         {
-          path: "/apps/v8-webxr-interactions/",
-          label: "V8 WebXR Interactions",
+          path: "/apps/webxr-interactions/",
+          label: "WebXR Interactions",
           summary: "Dedicated G3D-only route for injected WebXR controller, dragging, and AR hit-test evidence."
         },
         {
-          path: "/apps/v8-postprocessing-bloom/",
-          label: "V8 Postprocessing Bloom",
+          path: "/apps/postprocessing-bloom/",
+          label: "Postprocessing Bloom",
           summary: "Proof route for renderer-owned bloom postprocess evidence. It is not yet a cinematic-quality postprocessing example.",
           proofOnly: true
         },
         {
-          path: "/apps/v8-postprocessing-depth-outline/",
-          label: "V8 Postprocessing Depth Outline",
+          path: "/apps/postprocessing-depth-outline/",
+          label: "Postprocessing Depth Outline",
           summary: "Dedicated G3D-only route for visible outline, depth-of-field, SSAO, tone mapping, and FXAA evidence."
         },
 	        {
-	          path: "/apps/v9-advanced-examples-gallery/",
-	          label: "V9 Advanced Examples Gallery",
+	          path: "/apps/advanced-examples-gallery/",
+	          label: "Advanced Examples Gallery",
 	          summary: "Advanced examples scaffold with ten complex interactive demos, runtime controls, stats, and a red visual-review gate until screenshots are accepted.",
 	          alwaysVisible: true
 	        },
@@ -405,7 +405,7 @@
       const healthByPath = new Map();
 
       try {
-        const response = await fetch("/tests/reports/v8-route-health.json", { cache: "no-store" });
+        const response = await fetch("/tests/reports/current-routes-route-health.json", { cache: "no-store" });
         if (response.ok) {
           const report = await response.json();
           for (const route of report.routes ?? []) {

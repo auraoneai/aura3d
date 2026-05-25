@@ -27,4 +27,4 @@ A limited replacement claim is allowed only after `pnpm v3:release` passes and t
 
 ## Enforcement
 
-`tools/v3-truth/index.ts` must fail if public docs introduce unqualified blocked claims before the release gate passes.
+`tools/foundation-truth/index.ts` must fail if public docs introduce unqualified blocked claims before the release gate passes.

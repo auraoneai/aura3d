@@ -67,7 +67,7 @@ High-level scene render sources use `DEFAULT_RENDERER_ENVIRONMENT_LIGHTING` when
 - CSS size, DPR, backing-buffer size, viewport, and pixels across resizes.
 - Bounded long-running animation-loop ownership with repeated render calls.
 - WebGL2 state-cache diagnostics, including issued/skipped state changes, program switches, texture binds, buffer binds, vertex-array binds, and sampler binds.
-- Route-level first-frame and average-frame timing, as shown by `tests/reports/v8-flagship-viewer.json`.
+- Route-level first-frame and average-frame timing, as shown by `tests/reports/flagship-viewer.json`.
 
 ## Limits
 
@@ -82,5 +82,5 @@ High-level scene render sources use `DEFAULT_RENDERER_ENVIRONMENT_LIGHTING` when
 - `tests/unit/rendering/renderer.test.ts` covers `resizeToDisplay()` and animation-loop stop/dispose behavior.
 - `tests/browser/rendering-context-lifecycle.spec.ts` covers context loss, restore, disposal, same-canvas recreate, and a bounded 8-frame render loop.
 - `tests/browser/rendering-resize-stress.spec.ts` covers high-DPI CSS/backing-buffer/viewport/pixel alignment.
-- `tests/reports/v8-flagship-viewer.json` records route-level asset, environment, renderer, frame, draw-call, and state-cache timing.
-- `tests/reports/v8-runtime-import-audit.json` proves the current runtime source roots do not import Three.js implementation paths.
+- `tests/reports/flagship-viewer.json` records route-level asset, environment, renderer, frame, draw-call, and state-cache timing.
+- `tests/reports/current-routes-runtime-import-audit.json` proves the current runtime source roots do not import Three.js implementation paths.

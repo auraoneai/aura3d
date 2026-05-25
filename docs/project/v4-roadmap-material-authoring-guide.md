@@ -10,15 +10,15 @@ Required implementation surfaces:
 - `packages/rendering/src/materials/PhysicalMaterial.ts`
 - `packages/rendering/src/materials/MaterialExtensions.ts`
 - `apps/material-studio-pro/`
-- `examples/material-studio-v4/`
-- `templates/v4-material-studio/`
+- `examples/external-material-studio/`
+- `templates/external-parity-material-studio/`
 
 Release evidence:
 
-- `tests/reports/v4-material-studio-readiness.json`
-- `tests/reports/v4-material-readiness.json`
-- `tests/reports/v4-gallery/materials/material-studio-v4.png`
-- `tests/reports/v4-gallery/templates/v4-material-studio.png`
+- `tests/reports/external-parity-material-studio-readiness.json`
+- `tests/reports/external-parity-material-readiness.json`
+- `tests/reports/external-gallery/materials/external-material-studio.png`
+- `tests/reports/external-gallery/templates/external-parity-material-studio.png`
 
 Boundary: scan-texture realism and full DCC material round-tripping remain outside the V4 release claim.
 

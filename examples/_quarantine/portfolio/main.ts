@@ -10,7 +10,7 @@ type PortfolioExample = {
   readonly screenshotPath?: string;
   readonly knownLimits?: readonly string[];
   readonly visualGate?: {
-    readonly status: "blocked-v4-visual-quality" | "passed-v4-screenshot-audit";
+    readonly status: "blocked-external-parity-visual-quality" | "passed-v4-screenshot-audit";
     readonly reportPath: string;
     readonly visualQualityReportPath: string;
     readonly blocker?: string;
@@ -51,7 +51,7 @@ declare global {
         readonly screenshotPath: string;
         readonly knownLimits: readonly string[];
         readonly visualGate: {
-          readonly status: "blocked-v4-visual-quality" | "passed-v4-screenshot-audit";
+          readonly status: "blocked-external-parity-visual-quality" | "passed-v4-screenshot-audit";
           readonly reportPath: string;
           readonly visualQualityReportPath: string;
           readonly blocker?: string;
@@ -62,10 +62,10 @@ declare global {
   }
 }
 
-const v4ScreenshotReportPath = "/tests/reports/v4-example-screenshots/manifest.json";
-const v4VisualQualityReportPath = "/tests/reports/v4-visual-quality.json";
+const v4ScreenshotReportPath = "/tests/reports/external-parity-example-screenshots/manifest.json";
+const v4VisualQualityReportPath = "/tests/reports/external-parity-visual-quality.json";
 const blockedVisualGate = {
-  status: "blocked-v4-visual-quality",
+  status: "blocked-external-parity-visual-quality",
   reportPath: v4ScreenshotReportPath,
   visualQualityReportPath: v4VisualQualityReportPath,
   blocker: "Current screenshots fail the V4 visual-quality gate and must not be used as PBR, product visual, production rendering, or competitor-parity proof.",
@@ -110,7 +110,7 @@ const examples: PortfolioExample[] = [
     systems: ["WebGL2", "Generated glTF", "PBR variants", "Environment lighting", "Contact shadow alternative", "Screenshot export"],
     proof: "The page loads, publishes renderer metrics, and passes the current V4 screenshot-health gate with generated product, lighting, postprocess, and contact-shadow evidence.",
     caveat: "This is still a generated local product fixture. It is not product visual parity, PBR parity, or production commerce output.",
-    screenshotPath: "/tests/reports/v4-example-screenshots/product-configurator.png",
+    screenshotPath: "/tests/reports/external-parity-example-screenshots/product-configurator.png",
     visualGate: passedScreenshotGate,
     knownLimits: [
       "Generated local glTF asset, not commercial product art.",
@@ -127,7 +127,7 @@ const examples: PortfolioExample[] = [
     systems: ["WebGL2", "Generated room asset", "Room selection", "Measurements", "Camera modes", "Contact shadow alternative"],
     proof: "The page loads, publishes room/material/measurement metrics, passes current screenshot-health gates, and has a regression test for visible orbit/zone camera changes.",
     caveat: "This is still a generated schematic room, not a high-fidelity architecture visualization or CAD/BIM-grade viewer.",
-    screenshotPath: "/tests/reports/v4-example-screenshots/architecture-viewer.png",
+    screenshotPath: "/tests/reports/external-parity-example-screenshots/architecture-viewer.png",
     visualGate: passedScreenshotGate,
     knownLimits: [
       "Generated local civic-gallery fixture, not BIM/IFC import.",
@@ -144,7 +144,7 @@ const examples: PortfolioExample[] = [
     systems: ["WebGL2", "Generated glTF level", "Character controller", "Camera follow", "Particles", "Spatial audio", "Objective loop"],
     proof: "Runtime controls, objective metrics, generated glTF assets, textured arena surfaces, and the current screenshot-health gate pass.",
     caveat: "Generated block assets and flat staging are not acceptable as Unity, Unreal, or product-quality game rendering evidence.",
-    screenshotPath: "/tests/reports/v4-example-screenshots/game-slice.png",
+    screenshotPath: "/tests/reports/external-parity-example-screenshots/game-slice.png",
     visualGate: passedScreenshotGate,
     knownLimits: [
       "Generated local glTF fixtures, not licensed production art.",
@@ -161,7 +161,7 @@ const examples: PortfolioExample[] = [
     systems: ["WebGL2", "Procedural car", "Generated track", "Seeded textures", "Race telemetry", "Postprocess"],
     proof: "The browser test verifies telemetry, seeded texture evidence, HUD pixels, nonblank WebGL pixels, and the current screenshot-health gate.",
     caveat: "The procedural car and track still need a real art pass before this can count as Unity/Unreal racing-game parity.",
-    screenshotPath: "/tests/reports/v4-example-screenshots/racing-showcase.png",
+    screenshotPath: "/tests/reports/external-parity-example-screenshots/racing-showcase.png",
     visualGate: passedScreenshotGate,
     knownLimits: [
       "Deterministic local procedural vehicle and track, not commercial vehicle art.",
@@ -271,8 +271,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./product-configurator/index.html",
     status: "local-ready",
     summary: "The live product scene publishes shared V4 preset, generated HDR environment resources, real-scene postprocess readback, directional-shadow evidence, and LOD/product metrics.",
-    proofCommand: "pnpm audit:v4-product-visual-parity",
-    reportPath: "/tests/reports/v4-product-visual-parity.json",
+    proofCommand: "pnpm audit:external-parity-product-visual-parity",
+    reportPath: "/tests/reports/external-parity-product-visual-parity.json",
     caveat: "Local browser proof now passes the visual-quality gate, but rendered product visual parity still requires real Unity/Unreal same-scene baselines and external reports.",
   },
   {
@@ -281,8 +281,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./material-showroom/index.html",
     status: "local-ready",
     summary: "Material scenes and asset-viewer coverage exercise metallic/roughness, alpha, double-sided, normal/emissive/occlusion, texture transforms, environment response, and extension variants.",
-    proofCommand: "pnpm audit:v4-pbr-gltf-readiness",
-    reportPath: "/tests/reports/v4-pbr-gltf-readiness.json",
+    proofCommand: "pnpm audit:external-parity-pbr-gltf-readiness",
+    reportPath: "/tests/reports/external-parity-pbr-gltf-readiness.json",
     caveat: "Local browser proof now passes the visual-quality gate, but full production PBR parity remains blocked by external engine parity and broader material-corpus evidence.",
   },
   {
@@ -291,8 +291,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./hdr-render-target-check/index.html",
     status: "local-ready",
     summary: "The HDR check renders into an HDR-capable target where supported, reads back overbright pixels, and tone maps them into LDR diagnostics.",
-    proofCommand: "pnpm audit:v4-hdr-render-target-readiness",
-    reportPath: "/tests/reports/v4-hdr-render-target-readiness.json",
+    proofCommand: "pnpm audit:external-parity-hdr-render-target-readiness",
+    reportPath: "/tests/reports/external-parity-hdr-render-target-readiness.json",
     caveat: "Local HDR render-target checks pass, but production HDR/render-target parity remains blocked by external engine evidence.",
   },
   {
@@ -301,8 +301,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./shadow-lab/index.html",
     status: "local-ready",
     summary: "The shadow lab and flagship scenes publish real directional/cascade/PCF-style shadow-map evidence, caster/receiver counts, and resize/DPR-safe diagnostics.",
-    proofCommand: "pnpm audit:v4-shadow-map-readiness",
-    reportPath: "/tests/reports/v4-shadow-map-readiness.json",
+    proofCommand: "pnpm audit:external-parity-shadow-map-readiness",
+    reportPath: "/tests/reports/external-parity-shadow-map-readiness.json",
     caveat: "Local shadow-map readiness checks pass, but production shadow-map parity remains blocked by external engine evidence and broader scene coverage.",
   },
   {
@@ -311,8 +311,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./postprocess-lab/index.html",
     status: "local-ready",
     summary: "The postprocess lab runs real-scene pixels through tone mapping, exposure, bloom, FXAA, color controls, vignette, sharpening, and other audited pixel effects.",
-    proofCommand: "pnpm audit:v4-postprocess-suite",
-    reportPath: "/tests/reports/v4-postprocess-suite.json",
+    proofCommand: "pnpm audit:external-parity-postprocess-suite",
+    reportPath: "/tests/reports/external-parity-postprocess-suite.json",
     caveat: "Local postprocess-suite checks pass, but full postprocess-suite parity remains blocked by external engine evidence and broader scene coverage.",
   },
   {
@@ -321,8 +321,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./asset-viewer/index.html?model=external",
     status: "achieved",
     summary: "The glTF loader, material, texture, animation, skinning, morph, compression, and corpus evidence are currently achieved and must stay green.",
-    proofCommand: "pnpm audit:v4-pbr-gltf-readiness",
-    reportPath: "/tests/reports/v4-pbr-gltf-readiness.json",
+    proofCommand: "pnpm audit:external-parity-pbr-gltf-readiness",
+    reportPath: "/tests/reports/external-parity-pbr-gltf-readiness.json",
     caveat: "This is achieved today, but any renderer or loader change must preserve it.",
   },
   {
@@ -331,8 +331,8 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     href: "./webgpu-capability/index.html",
     status: "achieved",
     summary: "The WebGPU page shows real capability detection, fallback behavior, and explicit compute-claim blocking rather than pretending broad compute parity.",
-    proofCommand: "pnpm verify:v4-rendering",
-    reportPath: "/tests/reports/v4-rendering.json",
+    proofCommand: "pnpm verify:external-parity-rendering",
+    reportPath: "/tests/reports/external-parity-rendering.json",
     caveat: "Broad WebGPU compute is still not claimed unless real hardware compute evidence is added.",
   },
 ];

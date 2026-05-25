@@ -86,7 +86,7 @@ Expected example areas:
 
 - [x] `examples/shadow-lab` visibly shows shadow quality controls.
 - [x] Product, architecture, and game examples use visible shadows.
-- [x] Browser screenshots prove shadows are visible, stable, and not broken by resize/DPR. Evidence: `tests/browser/rendering-v3-labs.spec.ts` validates shadow-lab controls, PCF pixels, projected shadow regions, and resize-safe browser rendering under `pnpm verify:v3-rendering`.
+- [x] Browser screenshots prove shadows are visible, stable, and not broken by resize/DPR. Evidence: `tests/browser/rendering-foundation-labs.spec.ts` validates shadow-lab controls, PCF pixels, projected shadow regions, and resize-safe browser rendering under `pnpm verify:foundation-rendering`.
 - [x] Tests cover shadow map resource cleanup.
 
 ## Postprocessing
@@ -95,16 +95,16 @@ Expected example areas:
 
 - [x] Depth texture plumbing.
 - [x] RenderGraph pass inspection.
-- [x] HDR tonemapping if HDR exists. Evidence: production HDR render-target claims remain blocked; the bounded real-scene tone-mapping path is validated by `examples/postprocess-lab/main.ts`, `packages/rendering/src/PostProcessPass.ts`, and `pnpm verify:v3-rendering`.
+- [x] HDR tonemapping if HDR exists. Evidence: production HDR render-target claims remain blocked; the bounded real-scene tone-mapping path is validated by `examples/postprocess-lab/main.ts`, `packages/rendering/src/PostProcessPass.ts`, and `pnpm verify:foundation-rendering`.
 - [x] Bloom that operates on bright pixels in a real scene.
 - [x] FXAA or TAA with before/after visual evidence.
-- [x] SSAO, SSR, DOF only if implemented with real scenes and budgets. Evidence: SSAO, SSR, and DOF are not claimed; renderer feature/known-limit reporting keeps unsupported post effects blocked while `pnpm verify:v3` and `pnpm verify:v4-rendering` pass.
+- [x] SSAO, SSR, DOF only if implemented with real scenes and budgets. Evidence: SSAO, SSR, and DOF are not claimed; renderer feature/known-limit reporting keeps unsupported post effects blocked while `pnpm verify:v3` and `pnpm verify:external-parity-rendering` pass.
 - [x] Runtime controls for enabling/disabling passes.
 
 ### Done Criteria
 
 - [x] `examples/postprocess-lab` shows before/after views.
-- [x] Product/game scenes use the same postprocess path. Evidence: `examples/product-configurator/main.ts` and `examples/game-slice/main.ts` publish the shared `V4RenderPreset.toneMapPixels.bloomPixels.fxaaPixels` readback path, enforced by `tests/browser/example-screenshot-audit-v4.spec.ts`.
+- [x] Product/game scenes use the same postprocess path. Evidence: `examples/product-configurator/main.ts` and `examples/game-slice/main.ts` publish the shared `V4RenderPreset.toneMapPixels.bloomPixels.fxaaPixels` readback path, enforced by `tests/browser/example-screenshot-audit-external-parity.spec.ts`.
 - [x] Browser tests read pixels proving passes change output.
 - [x] Performance reports show cost per pass.
 
@@ -133,7 +133,7 @@ Expected example areas:
 - [x] Shader compilation diagnostics.
 - [x] Feature fallback table in code/report form.
 - [x] Render parity scene with WebGL2.
-- [x] Compute-backed particles or another real compute use case if WebGPU is claimed. Evidence: broad WebGPU compute particles are not claimed; `examples/webgpu-capability/main.ts` publishes the blocked compute boundary, and WebGPU contract tests pass under `pnpm verify:v3-rendering`.
+- [x] Compute-backed particles or another real compute use case if WebGPU is claimed. Evidence: broad WebGPU compute particles are not claimed; `examples/webgpu-capability/main.ts` publishes the blocked compute boundary, and WebGPU contract tests pass under `pnpm verify:foundation-rendering`.
 - [x] Browser matrix runner for Chrome/Edge/Safari technology state where locally available.
 
 ### Done Criteria

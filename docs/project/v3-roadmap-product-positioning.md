@@ -20,8 +20,8 @@ The supported workflows are asset viewing, product configuration, material revie
 - Game Lab: `apps/game-lab`.
 - Product Studio: `apps/product-studio`.
 - V3 examples under `examples/*-v3`.
-- External package consumer proof in `tests/reports/v3-external-consumer.json`.
-- Same-scene Three.js comparison in `tests/reports/v3-threejs-comparison.json`.
+- External package consumer proof in `tests/reports/foundation-external-consumer.json`.
+- Same-scene Three.js comparison in `tests/reports/foundation-threejs-comparison.json`.
 
 ## How To Talk About It
 

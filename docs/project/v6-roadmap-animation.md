@@ -7,6 +7,6 @@ V6 animation proof verifies that imported glTF animation metadata, skinning meta
 
 Primary evidence:
 
-- `tests/reports/v6-animation-controls-readiness.json`
-- `tests/reports/v6-animation-controls/cesium-man-animation.png`
-- `tests/reports/v6-animation-controls/animated-morph-cube.png`
+- `tests/reports/production-runtime-animation-controls-readiness.json`
+- `tests/reports/production-runtime-animation-controls/cesium-man-animation.png`
+- `tests/reports/production-runtime-animation-controls/animated-morph-cube.png`

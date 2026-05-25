@@ -5,9 +5,9 @@
 
 V6 visual proof rejects blank or fake screenshots. A valid visual proof needs real renderer JSON, WebGL2 backend, real asset ids, HDR environment id, draw calls, textures, texture memory, nonblank pixels, and screenshot dimensions.
 
-Gallery proof is generated under `tests/reports/v6-gallery/`. The gallery readiness report is the acceptance gate for visual bundles.
+Gallery proof is generated under `tests/reports/production-runtime-gallery/`. The gallery readiness report is the acceptance gate for visual bundles.
 
 Primary evidence:
 
-- `tests/reports/v6-gallery-readiness.json`
-- `tests/reports/v6-gallery/manifest.json`
+- `tests/reports/production-runtime-gallery-readiness.json`
+- `tests/reports/production-runtime-gallery/manifest.json`

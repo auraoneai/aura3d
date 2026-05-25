@@ -11,8 +11,8 @@ G3D has explicit disposal and resource diagnostics. This is a real code area and
 - `packages/rendering/src/RenderDevice.ts`
 - `packages/rendering/src/WebGL2Device.ts`
 - `packages/rendering/src/Renderer.ts`
-- `packages/engine/src/v9/G3DAppLifecycle.ts`
-- `packages/engine/src/v9/G3DScene.ts`
+- `packages/engine/src/advanced-runtime/G3DAppLifecycle.ts`
+- `packages/engine/src/advanced-runtime/G3DScene.ts`
 
 ## What Is Supported
 
@@ -25,7 +25,7 @@ G3D has explicit disposal and resource diagnostics. This is a real code area and
 
 ## Evidence
 
-- `apps/v9-public-scene/`
+- `apps/public-scene/`
 - `tests/reports/v9/api-surface.json`
 - `tests/reports/v9/route-health.json`
 - Existing resource lifetime and render-state leak tests referenced by V9 status tooling.

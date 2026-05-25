@@ -65,4 +65,4 @@ The WebGL2 backend attempts native compressed upload when the required extension
 - `tests/assets/gltf-compression-decoders.test.ts` transcodes a real Khronos KTX2/Basis fixture into ETC2 mip levels plus RGBA8 fallback levels, then routes it through `createGLTFRenderResources()`.
 - WebGL2 diagnostics expose compressed upload/fallback counters when compressed textures are bound through material samplers.
 - `tests/reports/v8-assets.json`
-- `tests/reports/v8-visual-review.json`
+- `tests/reports/current-routes-visual-review.json`

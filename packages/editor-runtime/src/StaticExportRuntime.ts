@@ -62,7 +62,7 @@ function featureEvidence() {
 function publish() {
   const evidence = featureEvidence();
   window[${JSON.stringify(globalName)}] = {
-    id: "editor-authored-v4-app",
+    id: "external-editor-authored-app",
     status: "ready",
     renderer: "canvas2d-static-export",
     visualClaim: "Browser-first local authoring and static export workflow for the shown V4 app.",
@@ -82,7 +82,7 @@ function publish() {
       frameTimeMs: Number((performance.now() - startedAt).toFixed(2)),
       scriptTickCount
     },
-    screenshotPath: "tests/reports/v4-example-screenshots/editor-authoring-v4-export.png",
+    screenshotPath: "tests/reports/external-parity-example-screenshots/editor-authoring-v4-export.png",
     nodeCount: project.scene.nodes.length,
     assetCount: project.assets.length,
     projectName: project.metadata.name,

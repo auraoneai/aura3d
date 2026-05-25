@@ -39,7 +39,7 @@ Last verified at: `2026-05-14T09:53:40Z`
 - [x] `tests/unit/workflows/material-studio-workflow.test.ts`
 - [x] `tests/unit/workflows/scene-showcase-workflow.test.ts`
 - [x] `tests/unit/workflows/interactive-scene-workflow.test.ts`
-- [x] `tools/v3-workflows-readiness/index.ts`
+- [x] `tools/foundation-workflows-readiness/index.ts`
 - [x] Verify Milestone 4 exit command.
 
 ## Completed Milestone 5 Evidence
@@ -55,11 +55,11 @@ Last verified at: `2026-05-14T09:53:40Z`
 
 ## Completed Milestone 6 Evidence
 
-- [x] `examples/asset-viewer-v3/index.html`, `main.ts`, and `README.md`.
-- [x] `examples/material-studio-v3/index.html`, `main.ts`, and `README.md`.
-- [x] `examples/product-configurator-v3/index.html`, `main.ts`, and `README.md`.
-- [x] `examples/interactive-scene-v3/index.html`, `main.ts`, and `README.md`.
-- [x] `examples/game-slice-v3/index.html`, `main.ts`, and `README.md`.
+- [x] `examples/foundation-asset-viewer/index.html`, `main.ts`, and `README.md`.
+- [x] `examples/foundation-material-studio/index.html`, `main.ts`, and `README.md`.
+- [x] `examples/foundation-product-configurator/index.html`, `main.ts`, and `README.md`.
+- [x] `examples/foundation-interactive-scene/index.html`, `main.ts`, and `README.md`.
+- [x] `examples/foundation-game-slice/index.html`, `main.ts`, and `README.md`.
 - [x] `examples/index.html` promotes V3 examples, not failed V1 output.
 - [x] Tutorial docs for basic app, asset viewer, product configurator, material studio, and interactive scene.
 - [x] Browser tests capture current V3 examples.
@@ -68,10 +68,10 @@ Last verified at: `2026-05-14T09:53:40Z`
 
 ## Completed Milestone 7 Evidence
 
-- [x] `tools/v3-package-smoke/index.ts`
-- [x] `tools/v3-external-consumer/index.ts`
-- [x] `tests/reports/v3-package-smoke.json`
-- [x] `tests/reports/v3-external-consumer.json`
+- [x] `tools/foundation-package-smoke/index.ts`
+- [x] `tools/foundation-external-consumer/index.ts`
+- [x] `tests/reports/foundation-package-smoke.json`
+- [x] `tests/reports/foundation-external-consumer.json`
 - [x] `pnpm build` succeeds.
 - [x] Packed package installs into a temp app.
 - [x] Temp app imports root and subpath exports.
@@ -105,10 +105,10 @@ Last verified at: `2026-05-14T09:53:40Z`
 
 Milestone 10 - Release Gates
 
-- [x] `tools/v3-release-readiness/index.ts`
-- [x] `tools/v3-completion-audit/index.ts`
-- [x] `tests/reports/v3-release-readiness.json`
-- [x] `tests/reports/v3-completion-audit.json`
+- [x] `tools/foundation-release-readiness/index.ts`
+- [x] `tools/foundation-completion-audit/index.ts`
+- [x] `tests/reports/foundation-release-readiness.json`
+- [x] `tests/reports/foundation-completion-audit.json`
 - [x] `v3:release` script runs every milestone gate in order.
 - [x] Release Gate 1 supported-workflow Three.js competitor claim is validated.
 - [x] Release Gate 2 limited replacement-for-supported-workflows claim is validated only if evidence supports it.

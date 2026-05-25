@@ -9,28 +9,28 @@ V8 is retained as historical planning and evidence context. Its original complet
 
 ## Working Route Evidence
 
-The current route index is expected to read `tests/reports/v8-route-health.json` and expose only routes that passed route health as clickable working routes.
+The current route index is expected to read `tests/reports/current-routes-route-health.json` and expose only routes that passed route health as clickable working routes.
 
 Current known V8 route-health evidence includes:
 
-- `/apps/v7-animation-keyframes/`
-- `/apps/v6-character-viewer/`
-- `/apps/v8-animation-keyframes/`
-- `/apps/v8-skinning-blending/`
-- `/apps/v8-skinning-additive/`
-- `/apps/v8-skinning-ik/`
-- `/apps/v8-skinning-morph/`
-- `/apps/v8-animation-multiple/`
-- `/apps/v8-animation-walk/`
-- `/apps/v8-decals/`
-- `/apps/v8-stereo-effects/`
-- `/apps/v8-physics-showcase/`
+- `/apps/regression-animation-keyframes/`
+- `/apps/character-viewer/`
+- `/apps/animation-keyframes/`
+- `/apps/skinning-blending/`
+- `/apps/skinning-additive/`
+- `/apps/skinning-ik/`
+- `/apps/skinning-morph/`
+- `/apps/animation-multiple/`
+- `/apps/animation-walk/`
+- `/apps/decals/`
+- `/apps/stereo-effects/`
+- `/apps/physics-showcase/`
 
-These routes remain only conditionally working. They must keep passing `tools/v8-route-health/index.ts`; any route that becomes slow, blank, stuck loading, or zero-draw-call must be removed from the working set or fixed.
+These routes remain only conditionally working. They must keep passing `tools/current-routes-route-health/index.ts`; any route that becomes slow, blank, stuck loading, or zero-draw-call must be removed from the working set or fixed.
 
 ## Slow Or Blocked Routes
 
-- `/apps/v7-example-parity-lab/` is an internal stress lab, not a working product route.
+- `/apps/example-parity-lab/` is an internal stress lab, not a working product route.
 - Any route with `readyTimeMs > 5000` in route-health output is slow for V8 purposes.
 - Any route that reports `running` while still at zero frames or zero draw calls is blocked.
 - `examples/physics-sandbox/` can remain a debug sandbox, but it is not V8 visual proof.
@@ -49,7 +49,7 @@ V8 rejects screenshots that are technically nonblank but still fail the product 
 - debug-like or placeholder path names
 - required human review notes
 
-The required report is `tests/reports/v8-visual-review.json`. A missing `tests/reports/v8-visual-review-notes.json` is a failure, because flagship screenshots need written human review notes in addition to metrics.
+The required report is `tests/reports/current-routes-visual-review.json`. A missing `tests/reports/current-routes-visual-review-notes.json` is a failure, because flagship screenshots need written human review notes in addition to metrics.
 
 ## Three.js Parity Gaps
 
@@ -69,11 +69,11 @@ Blocked claims:
 
 The following reports are required before completion:
 
-- `tests/reports/v8-route-health.json`
+- `tests/reports/current-routes-route-health.json`
 - `tests/reports/v8-animation-examples.json`
-- `tests/reports/v8-threejs-parity.json`
-- `tests/reports/v8-visual-review.json`
-- `tests/reports/v8-legacy-prune.json`
-- `tests/reports/v8-completion-audit.json`
+- `tests/reports/current-routes-threejs-parity.json`
+- `tests/reports/current-routes-visual-review.json`
+- `tests/reports/current-routes-legacy-prune.json`
+- `tests/reports/current-routes-completion-audit.json`
 
 Missing reports mean V8 is incomplete.

@@ -34,15 +34,15 @@ The root package is `@galileo3d/engine`. Public exports include:
 - `./create-g3d`
 - `./scripting`
 - `./workflows`
-- `./workflows/v6`
+- `./workflows/production-runtime`
 - `./editor-runtime`
 - `./editor`
 - `./debug`
-- `./rendering/v6`
+- `./rendering/production-runtime`
 - `./rendering/v9`
-- `./assets/v6`
+- `./assets/production-runtime`
 - `./assets/v9`
-- `./v6`
+- `./production-runtime`
 - `./v9`
 
 Workspace packages include `animation`, `apps`, `assets`, `audio`, `controls`, `core`, `create-g3d`, `debug`, `ecs`, `editor`, `editor-runtime`, `engine`, `environments`, `input`, `materials`, `math`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `three-compat`, and `workflows`.

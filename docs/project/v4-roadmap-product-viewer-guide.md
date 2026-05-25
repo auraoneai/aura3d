@@ -9,17 +9,17 @@ Required implementation surfaces:
 
 - `packages/engine/src/index.ts`
 - `packages/engine/src/G3DApp.ts`
-- `packages/workflows/src/v4/index.ts`
+- `packages/workflows/src/workflow-foundation/index.ts`
 - `apps/product-studio-pro/`
-- `examples/product-configurator-v4/`
-- `templates/v4-product-viewer/`
+- `examples/external-product-configurator/`
+- `templates/external-parity-product-viewer/`
 
 Release evidence:
 
-- `tests/reports/v4-product-readiness.json`
+- `tests/reports/external-parity-product-readiness.json`
 - `tests/reports/v4-public-api-app-browser.json`
-- `tests/reports/v4-external-consumer.json`
-- `tests/reports/v4-gallery/product/product-configurator-v4.png`
+- `tests/reports/external-parity-external-consumer.json`
+- `tests/reports/external-gallery/product/external-product-configurator.png`
 
 Boundary: this proves the supported product-configurator workflow. It does not claim full Three.js ecosystem replacement.
 

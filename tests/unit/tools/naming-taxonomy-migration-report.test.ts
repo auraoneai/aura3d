@@ -40,11 +40,13 @@ describe("naming taxonomy migration report", () => {
         text: JSON.stringify({
           files: ["templates/v6-product-viewer"],
           exports: {
+            "./advanced-runtime": "./dist/engine/v9/index.js",
             "./v9": "./dist/engine/v9/index.js",
-            "./rendering/v6": "./dist/rendering/v6/index.js"
+            "./rendering/production-runtime": "./dist/rendering/production-runtime/index.js",
+            "./rendering/v6": "./dist/rendering/production-runtime/index.js"
           },
           scripts: {
-            "v9:advanced-gallery:review": "pnpm exec tsx --tsconfig tsconfig.base.json tools/v9-advanced-gallery-visual-review/index.ts"
+            "v9:advanced-gallery:review": "pnpm exec tsx --tsconfig tsconfig.base.json tools/advanced-gallery-visual-review/index.ts"
           }
         })
       },
@@ -53,13 +55,21 @@ describe("naming taxonomy migration report", () => {
         text: JSON.stringify({
           compilerOptions: {
             paths: {
-              "@galileo3d/engine/v9": ["packages/engine/src/v9/index.ts"]
+              "@galileo3d/engine/v9": ["packages/engine/src/advanced-runtime/index.ts"],
+              "@galileo3d/engine/advanced-runtime": ["packages/engine/src/advanced-runtime/index.ts"]
             }
           }
         })
       },
       {
-        path: "tools/v9-advanced-gallery-report-audit/index.ts",
+        path: "vite.config.ts",
+        text: [
+          '["@galileo3d/engine/advanced-runtime", "./packages/engine/src/advanced-runtime/index.ts"],',
+          '["@galileo3d/engine/v9", "./packages/engine/src/advanced-runtime/index.ts"]'
+        ].join("\n")
+      },
+      {
+        path: "tools/advanced-gallery-report-audit/index.ts",
         text: [
           "const reportDir = \"tests/reports/v9/advanced-examples-gallery\";",
           "const fixture = \"fixtures/v9/assets/data-galaxy-core-blender/manifest.json\";",
@@ -74,6 +84,7 @@ describe("naming taxonomy migration report", () => {
       expect.objectContaining({ kind: "package-export", classification: "public-api", target: "@galileo3d/engine/rendering/production-runtime" }),
       expect.objectContaining({ kind: "script", classification: "internal-tool", target: expect.stringContaining("advanced-gallery:review") }),
       expect.objectContaining({ kind: "tsconfig-alias", classification: "public-api", target: "@galileo3d/engine/advanced-runtime" }),
+      expect.objectContaining({ kind: "vite-alias", classification: "public-api", target: "@galileo3d/engine/advanced-runtime" }),
       expect.objectContaining({ kind: "report-reader", classification: "report-path", target: "tests/reports/advanced-examples-gallery" }),
       expect.objectContaining({ kind: "fixture-url", classification: "fixture-url", target: "fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json" }),
       expect.objectContaining({ kind: "route-link", classification: "active-route", target: "/apps/advanced-examples-gallery/" })
@@ -82,15 +93,19 @@ describe("naming taxonomy migration report", () => {
 
   it("keeps the generated report data fully classified", () => {
     const data = buildMigrationReportData(process.cwd(), "2026-05-25");
+    const activeClassCounts = data.activeReferences.reduce<Record<string, number>>((counts, entry) => {
+      counts[entry.classification] = (counts[entry.classification] ?? 0) + 1;
+      return counts;
+    }, {});
     expect(data.versionedPaths.length).toBeGreaterThan(0);
     expect(data.versionedDirectories.length).toBeGreaterThan(0);
     expect(data.activeReferences.length).toBeGreaterThan(0);
     expect(data.versionedPaths.every((entry) => entry.target || entry.archivalReason)).toBe(true);
     expect(data.versionedDirectories.every((entry) => entry.target || entry.archivalReason)).toBe(true);
     expect(data.activeReferences.every((entry) => entry.target || entry.archivalReason)).toBe(true);
-    expect(data.classificationCounts["active-route"]).toBeGreaterThan(0);
-    expect(data.classificationCounts["fixture-url"]).toBeGreaterThan(0);
-    expect(data.classificationCounts["report-path"]).toBeGreaterThan(0);
-    expect(data.classificationCounts["public-api"]).toBeGreaterThan(0);
+    expect(activeClassCounts["active-route"]).toBeGreaterThan(0);
+    expect(activeClassCounts["fixture-url"]).toBeGreaterThan(0);
+    expect(activeClassCounts["report-path"]).toBeGreaterThan(0);
+    expect(activeClassCounts["public-api"]).toBeGreaterThan(0);
   });
 });

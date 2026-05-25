@@ -7,8 +7,8 @@
 
 V8 exists because docs/project/v4-engine-readiness-plan.md through docs/project/v7-roadmap-runtime-parity-plan.md did not produce a credible developer-facing renderer product. The repository contains real engineering work, but the visible product still fails the basic user test:
 
-- `http://localhost:5180/apps/v7-animation-keyframes/` can sit at `loading` with a blank viewport.
-- `http://localhost:5180/apps/v6-character-viewer/` can take too long to become usable.
+- `http://localhost:5180/apps/regression-animation-keyframes/` can sit at `loading` with a blank viewport.
+- `http://localhost:5180/apps/character-viewer/` can take too long to become usable.
 - Some outputs look like debug scenes, gray boxes, low-fidelity material tests, or static screenshots.
 - Animation/physics examples do not visually compete with official Three.js examples.
 - Reports, metrics, galleries, and screenshot bundles have repeatedly substituted for product quality.
@@ -34,7 +34,7 @@ Allowed:
 
 Forbidden:
 
-- Importing `three` from `packages/rendering/**`, `packages/assets/**`, `packages/animation/**`, `packages/physics/**`, `packages/engine/**`, `apps/v6-*/**`, `apps/v7-*/**`, `examples/v6/**`, or production templates.
+- Importing `three` from `packages/rendering/**`, `packages/assets/**`, `packages/animation/**`, `packages/physics/**`, `packages/engine/**`, `apps/production-runtime-*/**`, `apps/v7-*/**`, `examples/production-runtime-examples/**`, or production templates.
 - Using Three.js loaders, materials, PMREM, controls, animation mixer, decal geometry, skybox, shadows, postprocess, or physics as G3D implementation.
 - Calling a screenshot G3D proof if Three.js rendered the G3D side.
 
@@ -84,7 +84,7 @@ This section must be treated as binding context. Do not repeat these mistakes.
   - One flagship viewer and one animation suite must become excellent before galleries expand.
   - App code must shrink because renderer/assets/controls packages carry the real implementation.
 
-### docs/project/v5-roadmap-visual-engine-plan.md Mistakes
+### docs/project/three-compat-roadmap-visual-engine-plan.md Mistakes
 
 - Mistake: Claimed a broad replacement track too early.
 - Mistake: Built a large list of Three.js replacement areas without first clearing core renderer fidelity and example quality.
@@ -95,7 +95,7 @@ This section must be treated as binding context. Do not repeat these mistakes.
   - Delete/quarantine legacy files that are no longer product routes.
   - Create a strict package/source cleanliness check that fails on obsolete EngineReadiness-era demo leftovers.
 
-### docs/project/v6-roadmap-production-renderer-plan.md Mistakes
+### docs/project/production-runtime-roadmap-production-renderer-plan.md Mistakes
 
 - Mistake: Correctly demanded production GLTF/HDR/PBR renderer parity, but still accepted proof scenes that looked like Lambert/gray-box/debug outputs.
 - Mistake: Generated screenshots that were higher resolution than prior work but not high-fidelity enough.
@@ -128,7 +128,7 @@ These failures are known and must be fixed before new feature work.
 
 Observed:
 
-- URL: `http://localhost:5180/apps/v7-animation-keyframes/`
+- URL: `http://localhost:5180/apps/regression-animation-keyframes/`
 - UI says `Running`.
 - Metrics show `loading`, `loading clip`, `0 frames`, `0 fps`, `0 draw calls`.
 - Viewport is blank.
@@ -145,7 +145,7 @@ Required behavior:
 
 Observed:
 
-- URL: `http://localhost:5180/apps/v6-character-viewer/`
+- URL: `http://localhost:5180/apps/character-viewer/`
 - Route can become usable only after a long delay.
 - Startup path uses proof/readback-heavy behavior that is not appropriate for an interactive app.
 
@@ -160,7 +160,7 @@ Required behavior:
 
 Observed:
 
-- URL: `http://localhost:5180/apps/v7-example-parity-lab/`
+- URL: `http://localhost:5180/apps/example-parity-lab/`
 - It attempts too many features in one page.
 - It can take tens of seconds to reach ready.
 - It is not acceptable as a user-facing proof.
@@ -255,7 +255,7 @@ Tasks:
 - [x] Convert root index into a generated route registry consumer.
 - [x] Show only routes that pass health checks.
 - [x] Add status labels: `working`, `slow`, `internal`, `blocked`.
-- [x] Do not link `apps/v7-example-parity-lab/` as working until it passes startup gates.
+- [x] Do not link `apps/example-parity-lab/` as working until it passes startup gates.
 
 Acceptance:
 
@@ -263,7 +263,7 @@ Acceptance:
 - [x] Browser route test confirms all links exist.
 - [x] Root page cannot list a route as working unless route health JSON marks it working.
 
-### `apps/v7-animation-keyframes/src/main.ts`
+### `apps/regression-animation-keyframes/src/main.ts`
 
 Current failure:
 
@@ -285,12 +285,12 @@ Tasks:
 
 Acceptance:
 
-- [x] `tests/browser/v8-v7-animation-route-health.spec.ts` proves first visible state under 500 ms.
+- [x] `tests/browser/current-routes-runtime-parity-animation-route-health.spec.ts` proves first visible state under 500 ms.
 - [x] First nonblank WebGL frame under 5 seconds.
 - [x] After ready, `frameCount > 10`, `drawCalls > 0`, `clipName` is not loading text.
 - [x] Blank viewport while `status === running` fails the test.
 
-### `apps/v7-animation-keyframes/index.html`
+### `apps/regression-animation-keyframes/index.html`
 
 Tasks:
 
@@ -303,7 +303,7 @@ Acceptance:
 - [x] Browser reload from direct route succeeds.
 - [x] No root-relative asset path 404s.
 
-### `apps/v6-common/src/runtime.ts`
+### `apps/common/src/runtime.ts`
 
 Current failure:
 
@@ -324,11 +324,11 @@ Tasks:
 
 Acceptance:
 
-- [x] `apps/v6-character-viewer/` reaches first frame under 5 seconds.
+- [x] `apps/character-viewer/` reaches first frame under 5 seconds.
 - [x] Browser console has no `GPU stall due to ReadPixels` during startup.
 - [x] Readback only happens after capture/export actions or explicit proof tests.
 
-### `apps/v6-character-viewer/src/main.ts`
+### `apps/character-viewer/src/main.ts`
 
 Tasks:
 
@@ -343,7 +343,7 @@ Acceptance:
 - [ ] User can pause and scrub.
 - [ ] Metrics reflect real frames and clip time.
 
-### `apps/v6-character-viewer/src/assets.ts`
+### `apps/character-viewer/src/assets.ts`
 
 Tasks:
 
@@ -356,7 +356,7 @@ Acceptance:
 - [ ] Metadata shows `animationCount >= 3` and `skinCount >= 1` for flagship character.
 - [ ] Character has real texture/material detail, not a flat cartoon placeholder.
 
-### `apps/v6-character-viewer/src/scene.ts`
+### `apps/character-viewer/src/scene.ts`
 
 Tasks:
 
@@ -372,7 +372,7 @@ Acceptance:
 
 ## Phase 2: App Split, Route Registry, And Slow Route Removal
 
-### `apps/v7-example-parity-lab/src/main.ts`
+### `apps/example-parity-lab/src/main.ts`
 
 Current failure:
 
@@ -391,15 +391,15 @@ Acceptance:
 - [x] Root index marks it `internal` or omits it.
 - [x] No docs call it final parity proof.
 
-### `apps/v8-animation-keyframes/`
+### `apps/animation-keyframes/`
 
 Create:
 
-- [x] `apps/v8-animation-keyframes/index.html`
-- [x] `apps/v8-animation-keyframes/src/main.ts`
-- [x] `apps/v8-animation-keyframes/src/state.ts`
-- [x] `apps/v8-animation-keyframes/src/scene.ts`
-- [x] `apps/v8-animation-keyframes/src/ui.ts`
+- [x] `apps/animation-keyframes/index.html`
+- [x] `apps/animation-keyframes/src/main.ts`
+- [x] `apps/animation-keyframes/src/state.ts`
+- [x] `apps/animation-keyframes/src/scene.ts`
+- [x] `apps/animation-keyframes/src/ui.ts`
 
 Tasks:
 
@@ -414,14 +414,14 @@ Acceptance:
 - [x] G3D route first frame under 5 seconds.
 - [x] Visual output is not blank, gray-boxed, or placeholder-like.
 
-### `apps/v8-skinning-blending/`
+### `apps/skinning-blending/`
 
 Create:
 
-- [x] `apps/v8-skinning-blending/index.html`
-- [x] `apps/v8-skinning-blending/src/main.ts`
-- [x] `apps/v8-skinning-blending/src/blendController.ts`
-- [x] `apps/v8-skinning-blending/src/ui.ts`
+- [x] `apps/skinning-blending/index.html`
+- [x] `apps/skinning-blending/src/main.ts`
+- [x] `apps/skinning-blending/src/blendController.ts`
+- [x] `apps/skinning-blending/src/ui.ts`
 
 Tasks:
 
@@ -435,13 +435,13 @@ Acceptance:
 - [x] User can blend clips live.
 - [x] No static sampled-pose proof counts.
 
-### `apps/v8-skinning-additive/`
+### `apps/skinning-additive/`
 
 Create:
 
-- [x] `apps/v8-skinning-additive/index.html`
-- [x] `apps/v8-skinning-additive/src/main.ts`
-- [x] `apps/v8-skinning-additive/src/additiveLayers.ts`
+- [x] `apps/skinning-additive/index.html`
+- [x] `apps/skinning-additive/src/main.ts`
+- [x] `apps/skinning-additive/src/additiveLayers.ts`
 
 Tasks:
 
@@ -454,14 +454,14 @@ Acceptance:
 - [x] Additive layer visibly changes pose over base locomotion.
 - [ ] Layer mask behavior is tested.
 
-### `apps/v8-skinning-ik/`
+### `apps/skinning-ik/`
 
 Create:
 
-- [x] `apps/v8-skinning-ik/index.html`
-- [x] `apps/v8-skinning-ik/src/main.ts`
-- [x] `apps/v8-skinning-ik/src/ikTargets.ts`
-- [x] `apps/v8-skinning-ik/src/ui.ts`
+- [x] `apps/skinning-ik/index.html`
+- [x] `apps/skinning-ik/src/main.ts`
+- [x] `apps/skinning-ik/src/ikTargets.ts`
+- [x] `apps/skinning-ik/src/ui.ts`
 
 Tasks:
 
@@ -475,13 +475,13 @@ Acceptance:
 - [ ] Moving target changes imported skinned pose.
 - [x] IK solve result and end-effector distance are visible in UI.
 
-### `apps/v8-skinning-morph/`
+### `apps/skinning-morph/`
 
 Create:
 
-- [x] `apps/v8-skinning-morph/index.html`
-- [x] `apps/v8-skinning-morph/src/main.ts`
-- [x] `apps/v8-skinning-morph/src/morphControls.ts`
+- [x] `apps/skinning-morph/index.html`
+- [x] `apps/skinning-morph/src/main.ts`
+- [x] `apps/skinning-morph/src/morphControls.ts`
 
 Tasks:
 
@@ -493,13 +493,13 @@ Acceptance:
 
 - [x] Morph changes are visible and not just cube deformation.
 
-### `apps/v8-animation-multiple/`
+### `apps/animation-multiple/`
 
 Create:
 
-- [x] `apps/v8-animation-multiple/index.html`
-- [x] `apps/v8-animation-multiple/src/main.ts`
-- [x] `apps/v8-animation-multiple/src/agentSpawner.ts`
+- [x] `apps/animation-multiple/index.html`
+- [x] `apps/animation-multiple/src/main.ts`
+- [x] `apps/animation-multiple/src/agentSpawner.ts`
 
 Tasks:
 
@@ -512,13 +512,13 @@ Acceptance:
 - [x] At least 20 animated agents.
 - [x] Route remains interactive.
 
-### `apps/v8-animation-walk/`
+### `apps/animation-walk/`
 
 Create:
 
-- [x] `apps/v8-animation-walk/index.html`
-- [x] `apps/v8-animation-walk/src/main.ts`
-- [x] `apps/v8-animation-walk/src/locomotion.ts`
+- [x] `apps/animation-walk/index.html`
+- [x] `apps/animation-walk/src/main.ts`
+- [x] `apps/animation-walk/src/locomotion.ts`
 
 Tasks:
 
@@ -530,13 +530,13 @@ Acceptance:
 
 - [x] Character visibly walks through scene, not in-place only unless toggle selected.
 
-### `apps/v8-decals/`
+### `apps/decals/`
 
 Create:
 
-- [x] `apps/v8-decals/index.html`
-- [x] `apps/v8-decals/src/main.ts`
-- [x] `apps/v8-decals/src/decalPlacement.ts`
+- [x] `apps/decals/index.html`
+- [x] `apps/decals/src/main.ts`
+- [x] `apps/decals/src/decalPlacement.ts`
 
 Tasks:
 
@@ -550,13 +550,13 @@ Acceptance:
 - [ ] Click adds visible decal on imported asset.
 - [x] Decal placement uses G3D geometry, raycast, and material code.
 
-### `apps/v8-stereo-effects/`
+### `apps/stereo-effects/`
 
 Create:
 
-- [x] `apps/v8-stereo-effects/index.html`
-- [x] `apps/v8-stereo-effects/src/main.ts`
-- [x] `apps/v8-stereo-effects/src/stereoControls.ts`
+- [x] `apps/stereo-effects/index.html`
+- [x] `apps/stereo-effects/src/main.ts`
+- [x] `apps/stereo-effects/src/stereoControls.ts`
 
 Tasks:
 
@@ -569,14 +569,14 @@ Acceptance:
 - [x] Left/right views visibly differ.
 - [ ] Camera rig math is tested.
 
-### `apps/v8-physics-showcase/`
+### `apps/physics-showcase/`
 
 Create:
 
-- [x] `apps/v8-physics-showcase/index.html`
-- [x] `apps/v8-physics-showcase/src/main.ts`
-- [x] `apps/v8-physics-showcase/src/physicsScene.ts`
-- [x] `apps/v8-physics-showcase/src/controls.ts`
+- [x] `apps/physics-showcase/index.html`
+- [x] `apps/physics-showcase/src/main.ts`
+- [x] `apps/physics-showcase/src/physicsScene.ts`
+- [x] `apps/physics-showcase/src/controls.ts`
 
 Tasks:
 
@@ -590,7 +590,7 @@ Acceptance:
 
 ## Phase 3: Renderer Startup And Performance Work
 
-### `packages/rendering/src/v6/ProductionWebGL2Renderer.ts`
+### `packages/rendering/src/production-runtime/ProductionWebGL2Renderer.ts`
 
 Current failure:
 
@@ -639,7 +639,7 @@ Tasks:
 
 Acceptance:
 
-- [x] `tests/unit/rendering/v8-forward-pass-cache.test.ts`.
+- [x] `tests/unit/rendering/current-routes-forward-pass-cache.test.ts`.
 - [x] Browser animation perf test shows no per-frame shader compile.
 
 ### `packages/rendering/src/WebGL2Device.ts`
@@ -658,7 +658,7 @@ Tasks:
 
 Acceptance:
 
-- [x] `tests/unit/rendering/v8-webgl2-hot-path.test.ts`.
+- [x] `tests/unit/rendering/current-routes-webgl2-hot-path.test.ts`.
 - [x] Browser tests fail if startup emits `GPU stall due to ReadPixels`.
 
 ### `packages/rendering/src/IndexBuffer.ts`
@@ -703,7 +703,7 @@ Acceptance:
 
 ## Phase 4: Asset Pipeline And High-Quality Local Corpus
 
-### `fixtures/v8/assets/manifest.json`
+### `fixtures/threejs-parity/assets/manifest.json`
 
 Create:
 
@@ -721,13 +721,13 @@ Acceptance:
 
 - [x] Every asset has source, license, triangle count, textures, animations, skins/morphs, material extensions.
 
-### `tools/v8-asset-fetch/index.ts`
+### `tools/current-routes-asset-fetch/index.ts`
 
 Create:
 
 - [x] Fetch or validate approved public assets.
 - [x] Do not fetch at app runtime.
-- [x] Store assets locally under `fixtures/v8/assets/**`.
+- [x] Store assets locally under `fixtures/threejs-parity/assets/**`.
 - [x] Verify checksums.
 
 Acceptance:
@@ -744,7 +744,7 @@ Tasks:
 
 Acceptance:
 
-- [x] `tests/assets/v8-gltf-loader-corpus.test.ts`.
+- [x] `tests/assets/current-routes-gltf-loader-corpus.test.ts`.
 
 ### `packages/assets/src/GLTFAnimationRuntime.ts`
 
@@ -758,7 +758,7 @@ Tasks:
 
 Acceptance:
 
-- [x] `tests/assets/v8-gltf-animation-runtime.test.ts`.
+- [x] `tests/assets/current-routes-gltf-animation-runtime.test.ts`.
 - [x] Browser tests prove continuous animation, not sampled static pose.
 
 ### `packages/assets/src/loadRenderableAsset.ts`
@@ -775,7 +775,7 @@ Acceptance:
 
 ## Phase 5: PBR/HDR/IBL Fidelity
 
-### `packages/rendering/src/v6/PBRHDRPipeline.ts`
+### `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`
 
 Tasks:
 
@@ -788,7 +788,7 @@ Acceptance:
 
 - [ ] Same asset under two HDRIs shows visibly different reflections and exposure.
 
-### `packages/rendering/src/v6/environment/PMREMGenerator.ts`
+### `packages/rendering/src/production-runtime/environment/PMREMGenerator.ts`
 
 Tasks:
 
@@ -798,7 +798,7 @@ Tasks:
 
 Acceptance:
 
-- [x] `tests/unit/rendering/v8-pmrem.test.ts`.
+- [x] `tests/unit/rendering/current-routes-pmrem.test.ts`.
 - [ ] Browser material matrix shows roughness-dependent environment reflection.
 
 ### `packages/rendering/src/shaders/pbr-direct.frag.glsl`
@@ -867,7 +867,7 @@ Acceptance:
 
 - [ ] Product viewer has believable grounding shadow.
 
-### `packages/rendering/src/v6/passes/ContactShadowPass.ts`
+### `packages/rendering/src/production-runtime/passes/ContactShadowPass.ts`
 
 Tasks:
 
@@ -943,7 +943,7 @@ Acceptance:
 
 ## Phase 8: Public SDK Surface
 
-### `packages/engine/src/v8/index.ts`
+### `packages/engine/src/threejs-example-parity/index.ts`
 
 Create:
 
@@ -955,7 +955,7 @@ Acceptance:
 
 - [ ] Example apps import from `@galileo3d/engine/v8` or package-level stable exports.
 
-### `packages/rendering/src/v8/RendererV8.ts`
+### `packages/rendering/src/threejs-example-parity/RendererV8.ts`
 
 Create:
 
@@ -969,7 +969,7 @@ Acceptance:
 
 - [ ] Flagship viewer has minimal setup code.
 
-### `packages/assets/src/v8/loadGltfScene.ts`
+### `packages/assets/src/threejs-example-parity/loadGltfScene.ts`
 
 Create:
 
@@ -982,7 +982,7 @@ Acceptance:
 
 - [ ] Used by v8 apps.
 
-### `packages/environments/src/v8/loadEnvironment.ts`
+### `packages/environments/src/threejs-example-parity/loadEnvironment.ts`
 
 Create:
 
@@ -996,14 +996,14 @@ Acceptance:
 
 ## Phase 9: Flagship Viewer Product
 
-### `apps/v8-flagship-viewer/index.html`
+### `apps/flagship-viewer/index.html`
 
 Create:
 
 - [x] Main product route for V8.
 - [x] Must load quickly and progressively.
 
-### `apps/v8-flagship-viewer/src/main.ts`
+### `apps/flagship-viewer/src/main.ts`
 
 Tasks:
 
@@ -1018,7 +1018,7 @@ Acceptance:
 - [x] First frame under 5 seconds.
 - [x] Interactive orbit immediately after ready.
 
-### `apps/v8-flagship-viewer/src/ViewerState.ts`
+### `apps/flagship-viewer/src/ViewerState.ts`
 
 Tasks:
 
@@ -1029,7 +1029,7 @@ Tasks:
 - [x] Camera preset.
 - [x] Screenshot capture state.
 
-### `apps/v8-flagship-viewer/src/ViewerControls.ts`
+### `apps/flagship-viewer/src/ViewerControls.ts`
 
 Tasks:
 
@@ -1039,7 +1039,7 @@ Tasks:
 - [ ] Animation controls if asset has clips.
 - [x] Capture/export button.
 
-### `apps/v8-flagship-viewer/src/ViewerScene.ts`
+### `apps/flagship-viewer/src/ViewerScene.ts`
 
 Tasks:
 
@@ -1049,7 +1049,7 @@ Tasks:
 - [x] Product lighting presets.
 - [x] No debug boxes by default.
 
-### `apps/v8-flagship-viewer/src/ViewerDiagnostics.ts`
+### `apps/flagship-viewer/src/ViewerDiagnostics.ts`
 
 Tasks:
 
@@ -1062,7 +1062,7 @@ Acceptance:
 
 ## Phase 10: Same-Scene Three.js Competitor Baselines
 
-### `benchmarks/threejs/src/scenes/v8-flagship-viewer.ts`
+### `benchmarks/threejs/src/scenes/flagship-viewer.ts`
 
 Create:
 
@@ -1072,13 +1072,13 @@ Create:
 - [x] Same camera.
 - [x] Same target resolution.
 
-### `benchmarks/galileo/src/scenes/v8-flagship-viewer.ts`
+### `benchmarks/galileo/src/scenes/flagship-viewer.ts`
 
 Create:
 
 - [x] G3D version using public v8 SDK.
 
-### `tools/v8-threejs-parity/index.ts`
+### `tools/current-routes-threejs-parity/index.ts`
 
 Create:
 
@@ -1086,7 +1086,7 @@ Create:
 - [x] Generate side-by-side page.
 - [x] Generate deltas and human notes.
 
-### `tests/browser/v8-threejs-parity.spec.ts`
+### `tests/browser/current-routes-threejs-parity.spec.ts`
 
 Create:
 
@@ -1102,7 +1102,7 @@ Acceptance:
 - [x] Report states exact deltas, not fake equality.
 - [x] Side-by-side comparison no longer accepts the earlier blown-out/opaque-glass watch render.
 
-### `tools/v8-runtime-import-audit/index.ts`
+### `tools/current-routes-runtime-import-audit/index.ts`
 
 Create:
 
@@ -1113,11 +1113,11 @@ Create:
 Acceptance:
 
 - [x] `pnpm v8:no-three-runtime`.
-- [x] `tests/reports/v8-runtime-import-audit.json`.
+- [x] `tests/reports/current-routes-runtime-import-audit.json`.
 
 ## Phase 11: Visual Quality Gates That Cannot Be Gamed
 
-### `tools/v8-route-health/index.ts`
+### `tools/current-routes-route-health/index.ts`
 
 Create:
 
@@ -1125,7 +1125,7 @@ Create:
 - [x] Record load time, first frame time, ready time, error text, console errors.
 - [x] Fail slow or blank routes.
 
-### `tools/v8-visual-review/index.ts`
+### `tools/current-routes-visual-review/index.ts`
 
 Create:
 
@@ -1134,7 +1134,7 @@ Create:
 - [x] Check edge/detail density without allowing metric gaming.
 - [x] Require human visual review notes for flagship output.
 
-### `tests/browser/v8-route-health.spec.ts`
+### `tests/browser/current-routes-route-health.spec.ts`
 
 Create:
 
@@ -1143,7 +1143,7 @@ Create:
 - [x] No linked route stays loading.
 - [x] No working route has zero draw calls.
 
-### `tests/browser/v8-flagship-viewer.spec.ts`
+### `tests/browser/current-routes-flagship-viewer.spec.ts`
 
 Create:
 
@@ -1154,7 +1154,7 @@ Create:
 - [x] Material inspect.
 - [x] Screenshot export.
 
-### `tests/browser/v8-animation-examples.spec.ts`
+### `tests/browser/current-routes-animation-examples.spec.ts`
 
 Create:
 
@@ -1172,7 +1172,7 @@ Acceptance:
 
 ## Phase 12: Legacy Prune And Source Cleanliness
 
-### `tools/v8-legacy-prune/index.ts`
+### `tools/current-routes-legacy-prune/index.ts`
 
 Create:
 
@@ -1183,7 +1183,7 @@ Create:
 
 Acceptance:
 
-- [x] `tests/reports/v8-legacy-prune.json` lists deleted, quarantined, retained, and blocked files.
+- [x] `tests/reports/current-routes-legacy-prune.json` lists deleted, quarantined, retained, and blocked files.
 
 ### `examples/_quarantine/README.md`
 
@@ -1206,16 +1206,16 @@ Add scripts:
 
 ```json
 {
-  "v8:assets": "pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-asset-fetch/index.ts",
+  "v8:assets": "pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-asset-fetch/index.ts",
   "v8:typecheck": "pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false",
-  "v8:route-health": "pnpm exec playwright test tests/browser/v8-route-health.spec.ts tests/browser/v8-v7-animation-route-health.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-route-health/index.ts",
-  "v8:flagship": "pnpm exec playwright test tests/browser/v8-flagship-viewer.spec.ts --reporter=line",
-  "v8:animation": "pnpm exec playwright test tests/browser/v8-animation-examples.spec.ts --reporter=line",
-  "v8:threejs-parity": "pnpm exec playwright test tests/browser/v8-threejs-parity.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-threejs-parity/index.ts",
-  "v8:no-three-runtime": "pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-runtime-import-audit/index.ts",
-  "v8:visual-review": "pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-visual-review/index.ts",
-  "v8:legacy-prune": "pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-legacy-prune/index.ts",
-  "v8:completion-audit": "pnpm exec tsx --tsconfig tsconfig.base.json tools/v8-completion-audit/index.ts",
+  "v8:route-health": "pnpm exec playwright test tests/browser/current-routes-route-health.spec.ts tests/browser/current-routes-runtime-parity-animation-route-health.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-route-health/index.ts",
+  "v8:flagship": "pnpm exec playwright test tests/browser/current-routes-flagship-viewer.spec.ts --reporter=line",
+  "v8:animation": "pnpm exec playwright test tests/browser/current-routes-animation-examples.spec.ts --reporter=line",
+  "v8:threejs-parity": "pnpm exec playwright test tests/browser/current-routes-threejs-parity.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-threejs-parity/index.ts",
+  "v8:no-three-runtime": "pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-runtime-import-audit/index.ts",
+  "v8:visual-review": "pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-visual-review/index.ts",
+  "v8:legacy-prune": "pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-legacy-prune/index.ts",
+  "v8:completion-audit": "pnpm exec tsx --tsconfig tsconfig.base.json tools/current-routes-completion-audit/index.ts",
   "v8": "pnpm v8:typecheck && pnpm v8:assets && pnpm v8:route-health && pnpm v8:flagship && pnpm v8:animation && pnpm v8:threejs-parity && pnpm v8:no-three-runtime && pnpm v8:visual-review && pnpm v8:legacy-prune && pnpm v8:completion-audit"
 }
 ```
@@ -1288,14 +1288,14 @@ Create:
 
 Create:
 
-- [x] `tests/reports/v8-route-health.json`
-- [x] `tests/reports/v8-flagship-viewer.json`
+- [x] `tests/reports/current-routes-route-health.json`
+- [x] `tests/reports/flagship-viewer.json`
 - [x] `tests/reports/v8-animation-examples.json`
-- [x] `tests/reports/v8-threejs-parity.json`
-- [x] `tests/reports/v8-runtime-import-audit.json`
-- [x] `tests/reports/v8-visual-review.json`
-- [x] `tests/reports/v8-legacy-prune.json`
-- [x] `tests/reports/v8-completion-audit.json`
+- [x] `tests/reports/current-routes-threejs-parity.json`
+- [x] `tests/reports/current-routes-runtime-import-audit.json`
+- [x] `tests/reports/current-routes-visual-review.json`
+- [x] `tests/reports/current-routes-legacy-prune.json`
+- [x] `tests/reports/current-routes-completion-audit.json`
 
 Acceptance:
 
@@ -1352,19 +1352,19 @@ Run these before writing new features:
 
 ```bash
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
-pnpm exec playwright test tests/browser/v8-route-health.spec.ts --reporter=line
+pnpm exec playwright test tests/browser/current-routes-route-health.spec.ts --reporter=line
 ```
 
-If `tests/browser/v8-route-health.spec.ts` does not exist yet, create it first.
+If `tests/browser/current-routes-route-health.spec.ts` does not exist yet, create it first.
 
 Then fix, in order:
 
-1. `apps/v7-animation-keyframes/src/main.ts`
-2. `apps/v6-common/src/runtime.ts`
-3. `apps/v6-character-viewer/src/main.ts`
-4. `apps/v7-example-parity-lab/src/main.ts`
-5. `tools/v8-route-health/index.ts`
-6. `tests/browser/v8-route-health.spec.ts`
+1. `apps/regression-animation-keyframes/src/main.ts`
+2. `apps/common/src/runtime.ts`
+3. `apps/character-viewer/src/main.ts`
+4. `apps/example-parity-lab/src/main.ts`
+5. `tools/current-routes-route-health/index.ts`
+6. `tests/browser/current-routes-route-health.spec.ts`
 
 Do not start new screenshots until these routes behave truthfully.
 

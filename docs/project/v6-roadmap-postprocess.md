@@ -15,5 +15,5 @@ Postprocess screenshots are accepted only when WebGL2 diagnostics, imported asse
 
 Primary evidence:
 
-- `tests/reports/v6-effects-readiness.json`
-- `tests/reports/v6-examples-readiness.json`
+- `tests/reports/production-runtime-effects-readiness.json`
+- `tests/reports/production-runtime-examples-readiness.json`

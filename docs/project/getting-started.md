@@ -31,26 +31,26 @@ http://127.0.0.1:5180/
 
 Useful current routes include:
 
-- `/apps/v8-flagship-viewer/`
-- `/apps/v8-animation-keyframes/`
-- `/apps/v8-animation-multiple/`
-- `/apps/v8-skinning-blending/`
-- `/apps/v8-skinning-additive/`
-- `/apps/v8-skinning-ik/`
-- `/apps/v8-skinning-morph/`
-- `/apps/v8-decals/`
-- `/apps/v8-physics-showcase/`
-- `/apps/v8-interactive-picking/`
-- `/apps/v8-postprocessing-bloom/`
-- `/apps/v8-postprocessing-depth-outline/`
-- `/apps/v8-instancing-performance/`
-- `/apps/v8-loader-compression/`
-- `/apps/v8-loader-material-extensions/`
-- `/apps/v8-loader-gltf-variants/`
-- `/apps/v8-webgpu-rtt/`
-- `/apps/v8-webgpu-compute/`
-- `/apps/v8-webgpu-materials/`
-- `/apps/v9-public-scene/`
+- `/apps/flagship-viewer/`
+- `/apps/animation-keyframes/`
+- `/apps/animation-multiple/`
+- `/apps/skinning-blending/`
+- `/apps/skinning-additive/`
+- `/apps/skinning-ik/`
+- `/apps/skinning-morph/`
+- `/apps/decals/`
+- `/apps/physics-showcase/`
+- `/apps/interactive-picking/`
+- `/apps/postprocessing-bloom/`
+- `/apps/postprocessing-depth-outline/`
+- `/apps/instancing-performance/`
+- `/apps/loader-compression/`
+- `/apps/loader-material-extensions/`
+- `/apps/loader-gltf-variants/`
+- `/apps/webgpu-rtt/`
+- `/apps/webgpu-compute/`
+- `/apps/webgpu-materials/`
+- `/apps/public-scene/`
 
 Routes are evidence and diagnostics surfaces. A route loading correctly proves that route and its scoped behavior, and the V10 reports aggregate those route results into the published parity/exceeds decisions.
 
@@ -71,10 +71,10 @@ console.log(app.diagnostics());
 await app.dispose();
 ```
 
-For direct V9 rendering:
+For direct advanced rendering:
 
 ```ts
-import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
+import { G3DRenderer, G3DScene } from "@galileo3d/engine/advanced-runtime";
 import { Geometry, PBRMaterial } from "@galileo3d/engine/rendering";
 
 const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
@@ -92,7 +92,7 @@ For asset-backed scenes:
 
 ```ts
 import { createRenderableScene, loadRenderableAsset } from "@galileo3d/engine/assets";
-import { G3DRenderer } from "@galileo3d/engine/v9";
+import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
 
 const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
 const asset = await loadRenderableAsset("/fixtures/engine-readiness/canonical-product-scene.json");
@@ -115,7 +115,7 @@ import { createG3DProject } from "@galileo3d/engine/create-g3d";
 
 createG3DProject({
   targetDir: "my-g3d-app",
-  template: "v6-product-viewer"
+  template: "production-product-viewer"
 });
 ```
 

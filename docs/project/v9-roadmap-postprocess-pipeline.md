@@ -7,11 +7,11 @@ G3D has render-target and postprocess code with matched baseline/bloom routes. A
 - `packages/rendering/src/RenderTarget.ts`
 - `packages/rendering/src/PostProcessPass.ts`
 - `packages/rendering/src/postprocess/*`
-- `packages/rendering/src/v6/postprocess/*`
-- `packages/rendering/src/v6/framegraph/*`
+- `packages/rendering/src/production-runtime/postprocess/*`
+- `packages/rendering/src/production-runtime/framegraph/*`
 - `packages/rendering/src/WebGL2Device.ts`
-- `apps/v8-postprocessing-bloom/`
-- `apps/v8-postprocessing-depth-outline/`
+- `apps/postprocessing-bloom/`
+- `apps/postprocessing-depth-outline/`
 
 ## What Is Supported
 

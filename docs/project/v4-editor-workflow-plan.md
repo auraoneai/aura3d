@@ -18,7 +18,7 @@ The editor only supports a Unity/Unreal-style workflow claim if it authors a rea
 
 ## Editor-Authored V4 App
 
-Path: `examples/editor-authored-v4-app`
+Path: `examples/external-editor-authored-app`
 
 - [x] Create the app through the browser editor workflow.
 - [x] Include imported model asset.
@@ -34,7 +34,7 @@ Path: `examples/editor-authored-v4-app`
 
 - [x] Add Playwright flow: open editor, create project, import asset, place object, edit material, add light/camera, save, reload, enter play mode, export, open exported app.
 - [x] Add unit tests for project serialization and static export.
-- [x] Add report `tests/reports/v4-editor-authoring.json`.
+- [x] Add report `tests/reports/external-parity-editor-authoring.json`.
 
 ## Claim Boundary
 

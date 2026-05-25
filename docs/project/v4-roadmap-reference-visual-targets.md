@@ -22,8 +22,8 @@ These targets define what the renderer, asset pipeline, workflow APIs, apps, tem
 Product surface:
 
 - `apps/product-studio-pro`
-- `examples/product-configurator-v4`
-- `templates/v4-product-viewer`
+- `examples/external-product-configurator`
+- `templates/external-parity-product-viewer`
 - `workflows.productConfigurator`
 - `createG3DApp`
 - same-scene Three.js benchmark
@@ -54,7 +54,7 @@ Unacceptable output:
 Product surface:
 
 - `apps/material-studio-pro`
-- `examples/material-studio-v4`
+- `examples/external-material-studio`
 - `fixtures/v4/materials/material-library.json`
 - physical material API
 - same-scene Three.js material matrix benchmark
@@ -84,7 +84,7 @@ Unacceptable output:
 Product surface:
 
 - `apps/scene-studio-pro`
-- `examples/interior-scene-v4`
+- `examples/external-interior-scene`
 - interior/architecture workflow APIs
 - same-scene Three.js benchmark
 
@@ -113,7 +113,7 @@ Unacceptable output:
 Product surface:
 
 - `apps/asset-studio-pro`
-- `examples/asset-gallery-v4`
+- `examples/external-asset-gallery`
 - `inspectAsset`
 - `createAssetDiagnostics`
 - `createCompatibilityReport`
@@ -144,7 +144,7 @@ Unacceptable output:
 Product surface:
 
 - `apps/animation-studio-pro`
-- `examples/character-viewer-v4`
+- `examples/external-character-viewer`
 - character/animation workflow APIs
 - timeline and scrub UI
 
@@ -172,7 +172,7 @@ Unacceptable output:
 Product surface:
 
 - `apps/interactive-showcase-pro`
-- `examples/interactive-showcase-v4`
+- `examples/external-interactive-showcase`
 - public interaction APIs
 - camera/select/variant/lighting controls
 

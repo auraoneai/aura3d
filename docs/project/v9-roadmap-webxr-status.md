@@ -5,7 +5,7 @@ WebXR is scoped and partial.
 ## Real Code
 
 - `packages/input/src/WebXRSessionController.ts`
-- `apps/v8-webxr-interactions/`
+- `apps/webxr-interactions/`
 - V9 inventory and claim reports under `tests/reports/v9/`.
 
 ## Current Claim

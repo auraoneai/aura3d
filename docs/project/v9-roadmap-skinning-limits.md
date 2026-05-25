@@ -11,8 +11,8 @@ G3D has real animation, skeleton, skinning, morph, additive, and IK code. The cu
 - `packages/animation/src/IK.ts`
 - `packages/assets/src/GLTFAnimationRuntime.ts`
 - `packages/rendering/src/SkinningBounds.ts`
-- `packages/rendering/src/v6/animation/SkinningRenderer.ts`
-- `packages/rendering/src/v6/animation/MorphTargetRenderer.ts`
+- `packages/rendering/src/production-runtime/animation/SkinningRenderer.ts`
+- `packages/rendering/src/production-runtime/animation/MorphTargetRenderer.ts`
 
 ## Matched V9 Evidence
 

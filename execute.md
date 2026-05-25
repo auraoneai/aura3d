@@ -229,7 +229,7 @@ Current constraints:
 - Watch, shoe, sunglasses, and generated studio/support GLBs must not replace or clutter the hero.
 - Paint, glass, roof/panels, wheels, tires, chrome, interior, dashboard, emissive parts, contact, grounding, shadows, reflections, and camera framing must be source-owned and inspectable.
 - Material/import/renderer failures belong in packages/assets, packages/rendering, or packages/product-studio before route composition.
-- Route fixes belong in apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts, productConfiguratorPolicy.ts, productConfiguratorVisualCleanup.ts, authoredLayer.ts, and metadata only when the package owners are proven or the change is route composition.
+- Route fixes belong in apps/advanced-examples-gallery/src/productConfiguratorScene.ts, productConfiguratorPolicy.ts, productConfiguratorVisualCleanup.ts, authoredLayer.ts, and metadata only when the package owners are proven or the change is route composition.
 
 Product first-fix order:
 
@@ -268,11 +268,11 @@ Six-agent source findings:
 
 | Finding | Source owners | Required action |
 | --- | --- | --- |
-| Product cloned renderables can inherit glTF transparent/no-depth/double-sided render state before Product node-aware role logic can fix it. | `packages/assets/src/GLTFRenderResources.ts`, `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`, `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts` | Product car render-state authority must exist at the renderable clone/import boundary. Classified car roles must not keep `blend: true`, `depthWrite: false`, or `cullMode: "none"` unless a test proves that role needs it. |
+| Product cloned renderables can inherit glTF transparent/no-depth/double-sided render state before Product node-aware role logic can fix it. | `packages/assets/src/GLTFRenderResources.ts`, `apps/advanced-examples-gallery/src/authoredLayer.ts`, `apps/advanced-examples-gallery/src/productConfiguratorPolicy.ts` | Product car render-state authority must exist at the renderable clone/import boundary. Classified car roles must not keep `blend: true`, `depthWrite: false`, or `cullMode: "none"` unless a test proves that role needs it. |
 | Material role handling is incomplete and sometimes too broad. Shared material keys such as `Paint 1 Carmine`, `Paint 2 Carmine`, `material-2`, `Rim2`, `Disc`, and `Brake` draw multiple visual roles. | `packages/assets/src/CarConceptMaterialStability.ts`, `productConfiguratorPolicy.ts`, `authoredLayer.ts` | Split final renderable roles by node/source-material context. Add role coverage for roof, glass, pillar, side panel, wheel metal, tire, brake, brake light, interior, chrome/trim, dashboard, and emissive. Do not solve with broad material-key scalar tuning. |
-| HDR/PMREM/specular extension energy can create white edge speckles, especially through clearcoat/specular/transmission/iridescence and hot environment samples. | `packages/rendering/src/ShaderLibrary.ts`, `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/EnvironmentLighting.ts`, `packages/rendering/src/v6/PBRHDRPipeline.ts`, PMREM/environment files | Bound sampled environment and extension energy by material scale and PMREM/hot-pixel proof. Do not impose shader hard minimums that override car material clamps. Do not disable all environment lighting globally. |
+| HDR/PMREM/specular extension energy can create white edge speckles, especially through clearcoat/specular/transmission/iridescence and hot environment samples. | `packages/rendering/src/ShaderLibrary.ts`, `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/EnvironmentLighting.ts`, `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`, PMREM/environment files | Bound sampled environment and extension energy by material scale and PMREM/hot-pixel proof. Do not impose shader hard minimums that override car material clamps. Do not disable all environment lighting globally. |
 | The Product material matrix had false no-op variants. `product-route-direct-detail` and sampled-specular-off paths were allowed to render identical pixels while being treated as diagnostics. | `tests/browser/product-configurator-material-matrix-harness.ts`, `tests/browser/product-configurator-material-matrix.spec.ts` | Diagnostics must fail if a named variant is identical to its parent without being explicitly declared expected-noop. Direct-detail must import or share the real Product route profile instead of duplicating stale constants. |
-| Product scene/profile flattening is now a blocker after broad white halo suppression. The route can keep halo low while crushing glass, roof, wheel, interior, and paint detail. | `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`, `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts` | Rebalance route lighting/tone/FXAA/environment only after raw-car/route-parity diagnostics prove which axis improves material richness without returning halo. |
+| Product scene/profile flattening is now a blocker after broad white halo suppression. The route can keep halo low while crushing glass, roof, wheel, interior, and paint detail. | `apps/advanced-examples-gallery/src/productConfiguratorScene.ts`, `apps/advanced-examples-gallery/src/galleryRoutePolicies.ts` | Rebalance route lighting/tone/FXAA/environment only after raw-car/route-parity diagnostics prove which axis improves material richness without returning halo. |
 | Evidence gates allowed false confidence. Metrics, hashes, JSON, route wording, generated artifacts, or review labels are not visual acceptance. | `execute.md`, `docs/project/current-gallery-recovery-status.md`, visual review/audit tools, `metadata.ts`, browser specs | Product acceptance is valid only while current focused/full Product PNGs are directly inspected and review/audit use current hash-bound evidence. |
 
 Required Product task order:
@@ -298,8 +298,8 @@ Required Product task order:
 
 2. Render-state owner.
    Owner files:
-   - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
-   - `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
+   - `apps/advanced-examples-gallery/src/authoredLayer.ts`
+   - `apps/advanced-examples-gallery/src/productConfiguratorPolicy.ts`
    - `packages/assets/src/GLTFRenderResources.ts` only if the fix must move into import metadata.
 
    Checklist:
@@ -314,8 +314,8 @@ Required Product task order:
 3. Material-role owner.
    Owner files:
    - `packages/assets/src/CarConceptMaterialStability.ts`
-   - `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
-   - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
+   - `apps/advanced-examples-gallery/src/productConfiguratorPolicy.ts`
+   - `apps/advanced-examples-gallery/src/authoredLayer.ts`
 
    Checklist:
    - [x] `Brake` and `Brakelight` are not conflated.
@@ -335,7 +335,7 @@ Required Product task order:
    - `packages/rendering/src/ShaderLibrary.ts`
    - `packages/rendering/src/ForwardPass.ts`
    - `packages/rendering/src/EnvironmentLighting.ts`
-   - `packages/rendering/src/v6/PBRHDRPipeline.ts`
+   - `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`
    - PMREM/environment resource files if the hot-pixel source is proven there.
 
    Checklist:
@@ -351,8 +351,8 @@ Required Product task order:
 
 5. Route visual-profile owner.
    Owner files:
-   - `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`
-   - `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`
+   - `apps/advanced-examples-gallery/src/productConfiguratorScene.ts`
+   - `apps/advanced-examples-gallery/src/galleryRoutePolicies.ts`
 
    Checklist:
    - [x] Route lighting/tone/FXAA/environment changes are imported/shared with the diagnostic harness, not copied twice.
@@ -548,13 +548,13 @@ Purpose: stop false progress. Tooling must make it impossible to claim acceptanc
 
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
-| P0.1 | Required | Screenshot discipline | `execute.md`, `tests/browser/v9-advanced-examples-gallery.spec.ts`, `tools/v9-advanced-gallery-visual-review/index.ts` | Screenshots are verification only after a named source-owner fix. Focused route captures must not look like complete gallery runs. | Typecheck; review output clearly distinguishes partial/focused artifacts from full gallery evidence. |
-| P0.2 | Current-branch review required | Visual regression inventory | `tools/v9-advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the current-branch source-owner review before preserving. |
-| P0.3 | Required | Review gate hardening | `tools/v9-advanced-gallery-visual-review/index.ts`, tests under `tests/unit/tools/*` | Block accepted state for stale hashes, partial route reports, missing direct-review notes, missing known-gaps notes, asset/scaffold dominance, material failure, crop artifacts, bad cadence, or generated-asset overclaim. | Unit tests prove each blocker. |
-| P0.4 | Done / Non-Promotional Audit | Report audit hardening | `tools/v9-advanced-gallery-report-audit/index.ts`, tests under `tests/unit/tools/*` | Audit route reports for reusable-system evidence, unsupported disclosures, screenshot hashes, image stats, material/texture evidence, generated-asset disclosure, CPU/GPU mode, performance, and full-gallery evidence mode. | Audit ignores non-route support reports such as `visual-regression-inventory.json`, blocks focused/partial route reports, and does not mark routes accepted. |
-| P0.5 | Required | No-regression workflow | `tests/browser/v9-advanced-examples-gallery.spec.ts`, review tool, report audit | Any renderer/material/loader/environment/postprocess/gallery-shell change requires focused tests before one capture and full sweep only after focused gates pass. | Tooling or docs enforce sequence; no repeated screenshot loops. |
-| P0.6 | Current-branch review required | Partial report folder blocker | `package.json`, `tools/v9-advanced-gallery-report-audit/index.ts`, `tools/v9-advanced-gallery-visual-review/index.ts`, `tests/browser/v9-advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | Review audit/review/test changes through the current-branch source-owner review before preserving. |
-| P0.7 | Required | Route-local hack containment | `apps/v9-advanced-examples-gallery/src/main.ts`, `sceneBuilders.ts`, `authoredLayer.ts`, `galleryRoutePolicies.ts`, Product/Data route modules | Route-specific camera, postprocess, visibility, product policy, and data density logic must move out of shared orchestration. `main.ts` stays renderer/shell orchestration. | Typecheck, route module tests, focused route tests, and no new route-specific `if` branches without PRD owner. |
+| P0.1 | Required | Screenshot discipline | `execute.md`, `tests/browser/advanced-examples-gallery.spec.ts`, `tools/advanced-gallery-visual-review/index.ts` | Screenshots are verification only after a named source-owner fix. Focused route captures must not look like complete gallery runs. | Typecheck; review output clearly distinguishes partial/focused artifacts from full gallery evidence. |
+| P0.2 | Current-branch review required | Visual regression inventory | `tools/advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the current-branch source-owner review before preserving. |
+| P0.3 | Required | Review gate hardening | `tools/advanced-gallery-visual-review/index.ts`, tests under `tests/unit/tools/*` | Block accepted state for stale hashes, partial route reports, missing direct-review notes, missing known-gaps notes, asset/scaffold dominance, material failure, crop artifacts, bad cadence, or generated-asset overclaim. | Unit tests prove each blocker. |
+| P0.4 | Done / Non-Promotional Audit | Report audit hardening | `tools/advanced-gallery-report-audit/index.ts`, tests under `tests/unit/tools/*` | Audit route reports for reusable-system evidence, unsupported disclosures, screenshot hashes, image stats, material/texture evidence, generated-asset disclosure, CPU/GPU mode, performance, and full-gallery evidence mode. | Audit ignores non-route support reports such as `visual-regression-inventory.json`, blocks focused/partial route reports, and does not mark routes accepted. |
+| P0.5 | Required | No-regression workflow | `tests/browser/advanced-examples-gallery.spec.ts`, review tool, report audit | Any renderer/material/loader/environment/postprocess/gallery-shell change requires focused tests before one capture and full sweep only after focused gates pass. | Tooling or docs enforce sequence; no repeated screenshot loops. |
+| P0.6 | Current-branch review required | Partial report folder blocker | `package.json`, `tools/advanced-gallery-report-audit/index.ts`, `tools/advanced-gallery-visual-review/index.ts`, `tests/browser/advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | Review audit/review/test changes through the current-branch source-owner review before preserving. |
+| P0.7 | Required | Route-local hack containment | `apps/advanced-examples-gallery/src/main.ts`, `sceneBuilders.ts`, `authoredLayer.ts`, `galleryRoutePolicies.ts`, Product/Data route modules | Route-specific camera, postprocess, visibility, product policy, and data density logic must move out of shared orchestration. `main.ts` stays renderer/shell orchestration. | Typecheck, route module tests, focused route tests, and no new route-specific `if` branches without PRD owner. |
 | P0.8 | Done | Package script accountability | `package.json` | Keep scripts for full gallery capture, review, audit, and pipeline explicit. The audit script must be non-promotional and pipeline must run capture, review, and audit in order. | `package.json` exposes `v9:advanced-gallery:audit` and `v9:advanced-gallery:pipeline`; pipeline runs capture, review, and audit in order. |
 | P0.9 | Required | Current-route source-owner map | `execute.md`, route modules, focused tests | Map Product/Data and the remaining eight routes to current branch owner files, visible blockers, first source-owned fixes, focused tests, and allowed visual verification. This is not a stop gate; implementation continues route by route. | Source changes proceed after a named owner task/write set is selected from the current branch. |
 
@@ -576,7 +576,7 @@ Purpose: make renderer output stable, sharp, correctly colored, and reportable b
 | P1.1 | Required | Color pipeline | `packages/rendering/src/Renderer.ts`, `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/RendererVisualPipelineReport.ts`, future `ColorManagement.ts`, tone/exposure files | First-class output color space, linear workflow, sRGB correctness, tone mapping presets, exposure, HDR/LDR target policy, screenshot color consistency. | Unit tests and browser proof that the same scene captures consistently. |
 | P1.2 | Required | DPR and backing enforcement | `Renderer.ts`, `RenderDevice.ts`, browser tests, gallery report capture | Canvas backing size, device pixel ratio, screenshot downsample/upscale evidence, no soft/upscaled captures. | Runtime JSON reports DPR/backing/capture size; screenshots are sharp. |
 | P1.3 | Required | Presentation state hardening | `ForwardPass.ts`, WebGL2 device/render pipeline files, postprocess path | Scene state must not leak into fullscreen presentation: sampler state, scissor/stencil/polygon offset/color mask, cull/depth/blend, framebuffer flush. | Focused renderer regression tests; product/data background proof does not black out or wash out. |
-| P1.4 | Current-branch review required | Frame cadence reporting | `RendererVisualPipelineReport.ts`, gallery capture/report files, `tools/v9-advanced-gallery-visual-review/*` | Separate load timing, render work, RAF cadence, screenshot timing, post-load stable stats. | Review cadence/report changes through the current-branch source-owner review before preserving. Do not use prior focused Product/Data JSON as proof. |
+| P1.4 | Current-branch review required | Frame cadence reporting | `RendererVisualPipelineReport.ts`, gallery capture/report files, `tools/advanced-gallery-visual-review/*` | Separate load timing, render work, RAF cadence, screenshot timing, post-load stable stats. | Review cadence/report changes through the current-branch source-owner review before preserving. Do not use prior focused Product/Data JSON as proof. |
 | P1.5 | Required | Visual clarity diagnostics | `packages/rendering/src/postprocess/CinematicDiagnostics.ts`, report audit | Detect washed-out tone, bloom/noise risk, soft detail, weak local contrast, unsupported pass claims. | Unit tests and route reports show clarity warnings without accepting routes. |
 
 P1 acceptance checklist:
@@ -615,7 +615,7 @@ Purpose: stop rebuilding visual environments inside each route. G3D needs reusab
 | P3.1 | Required | Environment preset API | `packages/rendering/src/EnvironmentPlatform.ts`, future `EnvironmentPreset.ts`, `packages/environments/*`, gallery environment adapters | One-call presets for studio, outdoor, city, warehouse, deep-space, ocean, and clean-void with lighting/background/ground options. | Preset tests, minimal examples, screenshots, route reports. |
 | P3.2 | Required | Cubemap background | `EnvironmentBackgroundPass.ts`, `EnvironmentBackgroundResources.ts`, `Renderer.ts`, `ForwardPass.ts`, `ShaderLibrary.ts` | Six-face cubemap background with camera-correct inverse-view-projection sampling. | Browser pixel proof and Data background-on/off evidence. |
 | P3.3 | Required | Equirect background | Same renderer background files plus HDR/RGBE loader path | Panorama background rendering with rotation/intensity/output color controls. | Browser pixel proof and Product background-on/off evidence. |
-| P3.4 | Required | Public RGBE/HDR loader | `packages/rendering/src/v6/environment/HDRLoader.ts`, `PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | Public `loadV6HdrEnvironment(...)` path with real Radiance/RGBE decode, resource creation, disposal, malformed scanline rejection. | HDR loader tests and focused gallery evidence. |
+| P3.4 | Required | Public RGBE/HDR loader | `packages/rendering/src/production-runtime/environment/HDRLoader.ts`, `PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | Public `loadV6HdrEnvironment(...)` path with real Radiance/RGBE decode, resource creation, disposal, malformed scanline rejection. | HDR loader tests and focused gallery evidence. |
 | P3.5 | Required | PMREM roughness proof | PMREM files, `TextureBinding.ts`, `MaterialBinding.ts`, `ForwardPass.ts`, `Material.ts` | Cube-only sampled environment binding exists, but Three.js-class PMREM parity needs roughness-specific visual pixel proof. | Unit tests plus WebGL2/browser material-response proof. |
 | P3.6 | Required | Renderer fog | `EnvironmentPlatform.ts`, `Renderer.ts`, `ForwardPass.ts`, shader chunks | Linear, exponential, exponential-squared fog uniforms and fragment blending for PBR paths. | Fog on/off delta evidence for Fog Cathedral/Robotics; no volumetric overclaim. |
 | P3.7 | Required | Product studio stage | `EnvironmentPlatform.ts`, `LightingRig.ts`, `LightingDefaults.ts`, shadow/contact helpers | Reusable premium product stage with cove/void option, controlled key/fill/rim/softbox lighting, contact grounding or explicit shadow limitation. No gray slab/crop artifact. | Unit tests and Product reference harness. |
@@ -654,10 +654,10 @@ P4 acceptance checklist:
 - [x] `packages/controls/package.json`: declares the workspace dependency on `@galileo3d/input` needed by the reusable controls composition layer.
 - [x] `tests/unit/controls/interaction-controls.test.ts`: covers orbit/fly input routing, composed picking, hover/pick/hotspot events, route-provided rays/roots, and disposal behavior.
 - [x] `pnpm exec vitest run tests/unit/controls/interaction-controls.test.ts tests/unit/controls/picking-contract.test.ts --reporter=dot` passed after adding the controls composition surface.
-- [x] `apps/v9-advanced-examples-gallery/src/galleryInteractionAdapter.ts` owns current gallery pointer normalization, product-hotspot pointer routing, and water/ocean ripple routing as an app-level adapter while the core controls platform remains open.
-- [x] `apps/v9-advanced-examples-gallery/src/galleryInteractionAdapter.ts`: gallery orbit-drag now delegates through `packages/controls/src/InteractionControls.ts` while preserving the existing yaw/pitch behavior and route clamps.
-- [x] `tests/unit/apps/v9-gallery-interaction-adapter.test.ts` covers pointer normalization, orbit drag bounds, product hotspot routing, and water/ocean ripple routing.
-- [x] `pnpm exec vitest run tests/unit/apps/v9-gallery-interaction-adapter.test.ts tests/unit/controls/interaction-controls.test.ts tests/unit/controls/picking-contract.test.ts --reporter=dot` passed after wiring the gallery adapter to the core controls facade.
+- [x] `apps/advanced-examples-gallery/src/galleryInteractionAdapter.ts` owns current gallery pointer normalization, product-hotspot pointer routing, and water/ocean ripple routing as an app-level adapter while the core controls platform remains open.
+- [x] `apps/advanced-examples-gallery/src/galleryInteractionAdapter.ts`: gallery orbit-drag now delegates through `packages/controls/src/InteractionControls.ts` while preserving the existing yaw/pitch behavior and route clamps.
+- [x] `tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts` covers pointer normalization, orbit drag bounds, product hotspot routing, and water/ocean ripple routing.
+- [x] `pnpm exec vitest run tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts tests/unit/controls/interaction-controls.test.ts tests/unit/controls/picking-contract.test.ts --reporter=dot` passed after wiring the gallery adapter to the core controls facade.
 
 ## 11. Existing Platform Work To Preserve
 
@@ -667,7 +667,7 @@ These items are existing platform progress and must not be broken while recoveri
 | --- | --- | --- | --- |
 | Transmission/glass fallback diagnostics | `packages/rendering/src/ShaderChunks.ts`, `packages/rendering/src/shaders/pbr-direct.frag.glsl`, `packages/rendering/src/PbrReference.ts`, `packages/assets/src/AssetInspection.ts` | Transmission/refraction fallback diagnostics and CPU/PBR reference alignment. | Full physical glass/refraction parity. |
 | GLTF extension truth reporting | `packages/assets/src/GLTFExtensionSupport.ts`, `packages/assets/src/GLTFLoader.ts`, `packages/assets/src/AssetInspection.ts`, `packages/assets/src/loaders/EXRLoader.ts` | Runtime-supported, decoder-required, parsed-with-limits, diagnostic-only, and unsupported buckets. | Real EXR decode unless implemented. |
-| GLTF renderable/material metadata | `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/index.ts`, `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` | Per-renderable node/material/source-material/primitive/variant metadata and material override target collection. | Full imported triangle picking or complete `KHR_materials_variants` UI parity. |
+| GLTF renderable/material metadata | `packages/assets/src/GLTFRenderResources.ts`, `packages/assets/src/index.ts`, `apps/advanced-examples-gallery/src/authoredLayer.ts` | Per-renderable node/material/source-material/primitive/variant metadata and material override target collection. | Full imported triangle picking or complete `KHR_materials_variants` UI parity. |
 | Picking/annotation contract | `packages/controls/src/Picking.ts`, `packages/controls/src/PickingAnnotations.ts`, `packages/controls/src/NativeControlTypes.ts` | Approximate picking reports, imported hotspot annotations, district/building proxies, robot/entity proxies, screen-space markers. | Complete imported mesh triangle raycast selection. |
 | Renderer visual pipeline reporting | `packages/rendering/src/RendererVisualPipelineReport.ts` | Color/tone/HDR/canvas backing/screenshot/DPR/frame-cadence reporting. | Visual acceptance by itself. |
 | Cinematic clarity diagnostics | `packages/rendering/src/postprocess/CinematicDiagnostics.ts` | Washed-out tone, bloom/noise risk, soft detail, unsupported pass claim diagnostics. | Full compositor parity. |
@@ -675,9 +675,9 @@ These items are existing platform progress and must not be broken while recoveri
 | Renderer fog platform | `packages/rendering/src/EnvironmentPlatform.ts`, `ForwardPass.ts`, `Renderer.ts`, shader files, gallery fog evidence | Linear/exponential fog profile math, uniforms, PBR fragment blending, fog on/off evidence. | Volumetric raymarching, shadowed light volumes, weather, god rays. |
 | Cubemap/equirect background rendering | `EnvironmentBackgroundPass.ts`, `EnvironmentBackgroundResources.ts`, `ForwardPass.ts`, `Renderer.ts`, `ShaderLibrary.ts`, gallery background evidence | Renderer-owned cubemap/equirect background pass, inverse-view-projection sampling, background-on/off proof. | Dynamic cube cameras, reflection probes, physical sky, EXR. |
 | Cube-only sampled environment binding | `TextureBinding.ts`, `Material.ts`, `MaterialBinding.ts`, `ForwardPass.ts` | `textureCube` schema, cube texture validation, PMREM/environment cube binding into PBR shaders. | Three.js PMREM visual parity, SSR, planar reflection/refraction. |
-| Public RGBE/HDR loader | `packages/rendering/src/v6/environment/HDRLoader.ts`, `packages/rendering/src/v6/PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | `loadV6HdrEnvironment(...)`, Radiance/RGBE decode, malformed scanline rejection, renderer-ready resources. | EXR or broad HDR format support. |
-| Evidence/report audit | `tools/v9-advanced-gallery-report-audit/index.ts` | Structural audit for reusable evidence, unsupported disclosures, performance, screenshot hashes, image stats. | Acceptance decision. |
-| Environment registry/corpus readiness | `packages/environments/src/EnvironmentRegistry.ts`, `HDRIEnvironment.ts`, `EnvironmentPreview.ts`, `v6/V6EnvironmentCorpus.ts`, fixtures manifests | Reusable environment manifests, HDRI diagnostics, probe preview metadata. | Route visual acceptance or full environment parity. |
+| Public RGBE/HDR loader | `packages/rendering/src/production-runtime/environment/HDRLoader.ts`, `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | `loadV6HdrEnvironment(...)`, Radiance/RGBE decode, malformed scanline rejection, renderer-ready resources. | EXR or broad HDR format support. |
+| Evidence/report audit | `tools/advanced-gallery-report-audit/index.ts` | Structural audit for reusable evidence, unsupported disclosures, performance, screenshot hashes, image stats. | Acceptance decision. |
+| Environment registry/corpus readiness | `packages/environments/src/EnvironmentRegistry.ts`, `HDRIEnvironment.ts`, `EnvironmentPreview.ts`, `production-runtime/V6EnvironmentCorpus.ts`, fixtures manifests | Reusable environment manifests, HDRI diagnostics, probe preview metadata. | Route visual acceptance or full environment parity. |
 
 Preservation checklist:
 
@@ -709,22 +709,22 @@ This section lists the concrete files that must be created, modified, or promote
 
 | File | Owns | Allowed Fixes | Not Allowed |
 | --- | --- | --- | --- |
-| `apps/v9-advanced-examples-gallery/src/main.ts` | Gallery shell, route dispatch, renderer setup, shared capture/runtime reporting. | Wire reusable renderer/environment/control/report systems; keep loading/error/unsupported states. | Route-specific material or asset hacks. |
-| `apps/v9-advanced-examples-gallery/src/metadata.ts` | Route status, known gaps, comparison basis, review notes. | Keep failed/candidate/accepted truthful; update known gaps and claims after evidence. | Mark accepted without direct PNG review and hash. |
-| `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts` | Shared route scene construction until split. | Modularize repeated systems; move route-specific systems into route files. | Bury Product/Data/Reactor hacks in generic builder code. |
-| `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts` | Generic scene-frame types and primitive helper functions shared by route modules and the dispatcher. | Keep `GalleryState`, `SceneFrame`, `Resources`, `item`, `frame`, `lights`, `env`, and line-batch helpers route-neutral. | Route-specific scene composition, route-specific acceptance shortcuts, or circular imports back into route modules. |
-| `apps/v9-advanced-examples-gallery/src/authoredLayer.ts` | Imported asset activation and diagnostics. | Report source/generated status, excluded nodes, material/texture counts, fallback/missing counts. | Hide nodes silently or replace original assets. |
-| `apps/v9-advanced-examples-gallery/src/authoredAssets.ts` | Asset catalog truth. | Label source/generated/support assets, limitations, provenance. | Treat generated/no-texture assets as accepted hero proof without review. |
-| `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts` | Product composition and staging. | Named shots, hero/support hierarchy, deliberate detail assets, route interactions. | Renderer/material/importer fixes. |
-| `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts` | Product controls and interaction policy. | Focus/explode/hotspots/variant policy, documented fallbacks. | False imported raycast/variant parity claims. |
-| `apps/v9-advanced-examples-gallery/src/productConfiguratorVisualCleanup.ts` | Temporary cleanup policy, if kept. | Only scoped, reported, expiring cleanup. | Permanent hidden-node workaround without platform owner. |
-| `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts` | Data composition. | Focal hierarchy, clusters, background request, camera/framing. | Unrelated prop insertion. |
-| `apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts` | Data density/performance modes. | Curated default and explicit stress modes. | Metric-gaming counts. |
-| `apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts` | Data runtime evidence. | CPU/static disclosure, particle/line counts, attractors, `0` GPU dispatches. | GPU compute claims. |
-| `apps/v9-advanced-examples-gallery/src/reactorPostScene.ts` | Reactor Post route composition. | Keep base reactor/command-center scene, postprocess-visible systems, labels, and bounded bloom route claims route-owned. | Postprocess implementation hacks, bloom/noise masking, or shared-builder route clutter. |
-| `apps/v9-advanced-examples-gallery/src/rendererEnvironmentBackgroundEvidence.ts` | Background proof. | Renderer-owned cubemap/equirect/HDR evidence and screenshot deltas. | Physical sky/reflection/volumetric overclaim. |
-| `apps/v9-advanced-examples-gallery/src/rendererEnvironmentFogEvidence.ts` | Fog proof. | Renderer fog evidence and proxy exclusion notes. | Volumetric/god-ray/weather overclaim. |
-| `apps/v9-advanced-examples-gallery/src/styles.css` | Gallery shell presentation. | Clean panels, overlays, responsive layout, readable controls. | CSS darkness/blur/noise used to hide render defects. |
+| `apps/advanced-examples-gallery/src/main.ts` | Gallery shell, route dispatch, renderer setup, shared capture/runtime reporting. | Wire reusable renderer/environment/control/report systems; keep loading/error/unsupported states. | Route-specific material or asset hacks. |
+| `apps/advanced-examples-gallery/src/metadata.ts` | Route status, known gaps, comparison basis, review notes. | Keep failed/candidate/accepted truthful; update known gaps and claims after evidence. | Mark accepted without direct PNG review and hash. |
+| `apps/advanced-examples-gallery/src/sceneBuilders.ts` | Shared route scene construction until split. | Modularize repeated systems; move route-specific systems into route files. | Bury Product/Data/Reactor hacks in generic builder code. |
+| `apps/advanced-examples-gallery/src/sceneBuilderPrimitives.ts` | Generic scene-frame types and primitive helper functions shared by route modules and the dispatcher. | Keep `GalleryState`, `SceneFrame`, `Resources`, `item`, `frame`, `lights`, `env`, and line-batch helpers route-neutral. | Route-specific scene composition, route-specific acceptance shortcuts, or circular imports back into route modules. |
+| `apps/advanced-examples-gallery/src/authoredLayer.ts` | Imported asset activation and diagnostics. | Report source/generated status, excluded nodes, material/texture counts, fallback/missing counts. | Hide nodes silently or replace original assets. |
+| `apps/advanced-examples-gallery/src/authoredAssets.ts` | Asset catalog truth. | Label source/generated/support assets, limitations, provenance. | Treat generated/no-texture assets as accepted hero proof without review. |
+| `apps/advanced-examples-gallery/src/productConfiguratorScene.ts` | Product composition and staging. | Named shots, hero/support hierarchy, deliberate detail assets, route interactions. | Renderer/material/importer fixes. |
+| `apps/advanced-examples-gallery/src/productConfiguratorPolicy.ts` | Product controls and interaction policy. | Focus/explode/hotspots/variant policy, documented fallbacks. | False imported raycast/variant parity claims. |
+| `apps/advanced-examples-gallery/src/productConfiguratorVisualCleanup.ts` | Temporary cleanup policy, if kept. | Only scoped, reported, expiring cleanup. | Permanent hidden-node workaround without platform owner. |
+| `apps/advanced-examples-gallery/src/dataGalaxyScene.ts` | Data composition. | Focal hierarchy, clusters, background request, camera/framing. | Unrelated prop insertion. |
+| `apps/advanced-examples-gallery/src/dataGalaxyBudgets.ts` | Data density/performance modes. | Curated default and explicit stress modes. | Metric-gaming counts. |
+| `apps/advanced-examples-gallery/src/dataGalaxyEvidence.ts` | Data runtime evidence. | CPU/static disclosure, particle/line counts, attractors, `0` GPU dispatches. | GPU compute claims. |
+| `apps/advanced-examples-gallery/src/reactorPostScene.ts` | Reactor Post route composition. | Keep base reactor/command-center scene, postprocess-visible systems, labels, and bounded bloom route claims route-owned. | Postprocess implementation hacks, bloom/noise masking, or shared-builder route clutter. |
+| `apps/advanced-examples-gallery/src/rendererEnvironmentBackgroundEvidence.ts` | Background proof. | Renderer-owned cubemap/equirect/HDR evidence and screenshot deltas. | Physical sky/reflection/volumetric overclaim. |
+| `apps/advanced-examples-gallery/src/rendererEnvironmentFogEvidence.ts` | Fog proof. | Renderer fog evidence and proxy exclusion notes. | Volumetric/god-ray/weather overclaim. |
+| `apps/advanced-examples-gallery/src/styles.css` | Gallery shell presentation. | Clean panels, overlays, responsive layout, readable controls. | CSS darkness/blur/noise used to hide render defects. |
 
 ### 12.3 Renderer And Visual Platform Files
 
@@ -740,8 +740,8 @@ This section lists the concrete files that must be created, modified, or promote
 | `packages/rendering/src/EnvironmentPlatform.ts` | Reusable environment logic. | Presets, fog math, studio stage, clean void, deep space, ground options. |
 | `packages/rendering/src/EnvironmentBackgroundPass.ts` | Background rendering. | Cubemap/equirect camera-correct sampling and color controls. |
 | `packages/rendering/src/EnvironmentBackgroundResources.ts` | Background resources. | Resource creation, validation, disposal. |
-| `packages/rendering/src/v6/environment/HDRLoader.ts` | Radiance/RGBE decode. | Public loader path, malformed data rejection, diagnostics. |
-| `packages/rendering/src/v6/PBRHDRPipeline.ts` | HDR environment resources. | Renderer-ready resources and PMREM/cube outputs. |
+| `packages/rendering/src/production-runtime/environment/HDRLoader.ts` | Radiance/RGBE decode. | Public loader path, malformed data rejection, diagnostics. |
+| `packages/rendering/src/production-runtime/PBRHDRPipeline.ts` | HDR environment resources. | Renderer-ready resources and PMREM/cube outputs. |
 | `packages/rendering/src/RendererPostprocessPlan.ts` | Postprocess diagnostics. | Pass list, execution mode, missing inputs, costs, warnings. |
 | `packages/rendering/src/postprocess/*` | Postprocess implementations. | Composer path, bloom/AO/DOF/outline/LUT/grain status, before/after evidence. |
 
@@ -774,15 +774,15 @@ This section lists the concrete files that must be created, modified, or promote
 
 | File / Surface | Owns | Required Fixes |
 | --- | --- | --- |
-| `tests/browser/v9-advanced-examples-gallery.spec.ts` | Browser route capture. | Route smoke, focused capture labeling, screenshot/runtime JSON generation, no false full-gallery report. |
+| `tests/browser/advanced-examples-gallery.spec.ts` | Browser route capture. | Route smoke, focused capture labeling, screenshot/runtime JSON generation, no false full-gallery report. |
 | `tests/browser/product-configurator-reference-harness.ts` | Product diagnostic harness. | Fixed-camera original-asset render outside gallery UI. |
 | `tests/browser/data-galaxy-reference-harness.ts` | Data diagnostic harness. | Fixed-camera particle/data render outside gallery UI. |
-| `tools/v9-advanced-gallery-visual-review/index.ts` | Visual release gate. | Human review metadata, hash checks, blockers, partial-report detection. |
-| `tools/v9-advanced-gallery-report-audit/index.ts` | Structural audit. | Reusable evidence, unsupported disclosure, performance, material/texture/generated-asset warnings. |
-| `tools/v9-advanced-gallery-assets/generate-product-configurator-studio-blender.py` | Generated Product support/studio GLB. | Manifest provenance, exported GLB counts, zero-texture support-only status, and no original-asset replacement claim. |
-| `tools/v9-advanced-gallery-assets/optimize-product-car-blender.py` | Product car derivative optimization. | Manifest provenance, source-car hash/counts, derivative exported counts, and original-hero replacement boundary. |
-| `tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py` | Generated Data GLB. | Better source geometry/material/provenance or explicit support-only status. |
-| `tools/v9-advanced-gallery-assets/generate-data-galaxy-deep-space-hdr.mjs` | Generated Data HDR. | Deep-space background provenance and non-overclaiming. |
+| `tools/advanced-gallery-visual-review/index.ts` | Visual release gate. | Human review metadata, hash checks, blockers, partial-report detection. |
+| `tools/advanced-gallery-report-audit/index.ts` | Structural audit. | Reusable evidence, unsupported disclosure, performance, material/texture/generated-asset warnings. |
+| `tools/advanced-gallery-assets/generate-product-configurator-studio-blender.py` | Generated Product support/studio GLB. | Manifest provenance, exported GLB counts, zero-texture support-only status, and no original-asset replacement claim. |
+| `tools/advanced-gallery-assets/optimize-product-car-blender.py` | Product car derivative optimization. | Manifest provenance, source-car hash/counts, derivative exported counts, and original-hero replacement boundary. |
+| `tools/advanced-gallery-assets/generate-data-galaxy-core-blender.py` | Generated Data GLB. | Better source geometry/material/provenance or explicit support-only status. |
+| `tools/advanced-gallery-assets/generate-data-galaxy-deep-space-hdr.mjs` | Generated Data HDR. | Deep-space background provenance and non-overclaiming. |
 | `package.json` scripts | Public commands. | Rename-aware scripts, gallery/review/audit commands, compatibility during taxonomy migration. |
 
 Package script checklist carried forward:
@@ -845,22 +845,22 @@ Reactor file-owned checklist:
 
 | File | Fix Required | Done When |
 | --- | --- | --- |
-| `apps/v9-advanced-examples-gallery/src/reactorPostScene.ts` | Owns Reactor route base scene composition. | Base scene reads clearly before postprocess; route module exposes bounded postprocess labels and claims. |
-| `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts` | Owns dispatch plus shared legacy route helpers until remaining route splits finish. | Does not contain the Reactor route body. |
-| `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts` | Owns generic scene-frame helper/types shared by route modules. | Route modules do not import runtime helper functions back from `sceneBuilders.ts`. |
+| `apps/advanced-examples-gallery/src/reactorPostScene.ts` | Owns Reactor route base scene composition. | Base scene reads clearly before postprocess; route module exposes bounded postprocess labels and claims. |
+| `apps/advanced-examples-gallery/src/sceneBuilders.ts` | Owns dispatch plus shared legacy route helpers until remaining route splits finish. | Does not contain the Reactor route body. |
+| `apps/advanced-examples-gallery/src/sceneBuilderPrimitives.ts` | Owns generic scene-frame helper/types shared by route modules. | Route modules do not import runtime helper functions back from `sceneBuilders.ts`. |
 | `packages/rendering/src/postprocess/*` | Owns postprocess implementation. | Effects are independent where claimed, non-noisy by default, and report pass cost. |
 | `packages/rendering/src/RendererPostprocessPlan.ts` | Owns pass diagnostics. | Reports active passes, missing depth/velocity inputs, native/readback mode, clarity warnings. |
-| `apps/v9-advanced-examples-gallery/src/metadata.ts` | Owns truth label. | Reactor remains candidate until visual review accepts current hash. |
-| `tools/v9-advanced-gallery-visual-review/index.ts` | Owns visual gate. | Blocks bloom/noise hiding weak base geometry. |
+| `apps/advanced-examples-gallery/src/metadata.ts` | Owns truth label. | Reactor remains candidate until visual review accepts current hash. |
+| `tools/advanced-gallery-visual-review/index.ts` | Owns visual gate. | Blocks bloom/noise hiding weak base geometry. |
 
 Completed Reactor modularization subtasks:
 
-- [x] `apps/v9-advanced-examples-gallery/src/reactorPostScene.ts`: owns the Reactor route scene body instead of `sceneBuilders.ts`.
-- [x] `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`: dispatches `reactor-post` to `buildReactorPostScene(...)` and no longer contains `buildReactor` or `addReactorPurposefulDetailLines`.
-- [x] `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts`: owns route-neutral `GalleryState`, `SceneFrame`, `Resources`, `item`, `frame`, `lights`, `env`, `num`, `bool`, `pushSegment`, and `pushLineGroup`.
+- [x] `apps/advanced-examples-gallery/src/reactorPostScene.ts`: owns the Reactor route scene body instead of `sceneBuilders.ts`.
+- [x] `apps/advanced-examples-gallery/src/sceneBuilders.ts`: dispatches `reactor-post` to `buildReactorPostScene(...)` and no longer contains `buildReactor` or `addReactorPurposefulDetailLines`.
+- [x] `apps/advanced-examples-gallery/src/sceneBuilderPrimitives.ts`: owns route-neutral `GalleryState`, `SceneFrame`, `Resources`, `item`, `frame`, `lights`, `env`, `num`, `bool`, `pushSegment`, and `pushLineGroup`.
 - [x] Product/Data/Reactor route modules now import generic scene-frame helpers from `sceneBuilderPrimitives.ts` instead of importing runtime helpers back from `sceneBuilders.ts`.
-- [x] `tests/unit/apps/v9-route-scene-modules.test.ts`: covers Reactor route-owned composition, bounded bloom default, route labels, and absence of debug-only command wall strips in default mode.
-- [x] `pnpm exec vitest run tests/unit/apps/v9-route-scene-modules.test.ts tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-gallery-interaction-adapter.test.ts --reporter=dot` passed with `12` tests.
+- [x] `tests/unit/apps/threejs-parity-route-scene-modules.test.ts`: covers Reactor route-owned composition, bounded bloom default, route labels, and absence of debug-only command wall strips in default mode.
+- [x] `pnpm exec vitest run tests/unit/apps/threejs-parity-route-scene-modules.test.ts tests/unit/apps/advanced-gallery-route-policies.test.ts tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts --reporter=dot` passed with `12` tests.
 - [x] `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the primitive-helper extraction.
 
 Reactor acceptance blockers:
@@ -888,11 +888,11 @@ Required package/report tasks:
 
 - [x] `package.json`: keep or add `v9:advanced-gallery:audit`.
 - [x] `package.json`: keep or add `v9:advanced-gallery:pipeline` that runs capture, review, and audit in order.
-- [x] `tools/v9-advanced-gallery-report-audit/index.ts`: fail partial report folders.
-- [x] `tools/v9-advanced-gallery-report-audit/index.ts`: require exactly the ten expected route JSON reports.
-- [x] `tools/v9-advanced-gallery-report-audit/index.ts`: require current full, viewport, and hero PNG artifacts to exist on disk and match the route JSON hashes before audit evidence counts as current.
-- [x] `tools/v9-advanced-gallery-visual-review/index.ts`: report missing/stale route artifacts clearly.
-- [x] `tests/browser/v9-advanced-examples-gallery.spec.ts`: label focused route outputs as focused evidence, not full-gallery evidence.
+- [x] `tools/advanced-gallery-report-audit/index.ts`: fail partial report folders.
+- [x] `tools/advanced-gallery-report-audit/index.ts`: require exactly the ten expected route JSON reports.
+- [x] `tools/advanced-gallery-report-audit/index.ts`: require current full, viewport, and hero PNG artifacts to exist on disk and match the route JSON hashes before audit evidence counts as current.
+- [x] `tools/advanced-gallery-visual-review/index.ts`: report missing/stale route artifacts clearly.
+- [x] `tests/browser/advanced-examples-gallery.spec.ts`: label focused route outputs as focused evidence, not full-gallery evidence.
 
 Route-local hack containment problem:
 
@@ -904,31 +904,31 @@ Route-local hack containment problem:
 
 Required containment tasks:
 
-- [x] `apps/v9-advanced-examples-gallery/src/main.ts`: move remaining Product-specific environment-lighting composition policy out of shell orchestration. Camera, postprocess, visibility, render-item ordering, pointer routing, ripple routing, canvas cap decisions, and Product HDR lighting composition now route through policy helpers.
-- [x] `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`: keep only shared helpers and route dispatch.
-- [x] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: keep imported asset activation generic.
-- [x] `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`: own extracted per-route camera, postprocess, and visibility policies.
-- [x] `apps/v9-advanced-examples-gallery/src/sceneBuilderPrimitives.ts`: own generic route-neutral scene-frame primitives so route modules do not import runtime helpers from the dispatcher.
+- [x] `apps/advanced-examples-gallery/src/main.ts`: move remaining Product-specific environment-lighting composition policy out of shell orchestration. Camera, postprocess, visibility, render-item ordering, pointer routing, ripple routing, canvas cap decisions, and Product HDR lighting composition now route through policy helpers.
+- [x] `apps/advanced-examples-gallery/src/sceneBuilders.ts`: keep only shared helpers and route dispatch.
+- [x] `apps/advanced-examples-gallery/src/authoredLayer.ts`: keep imported asset activation generic.
+- [x] `apps/advanced-examples-gallery/src/galleryRoutePolicies.ts`: own extracted per-route camera, postprocess, and visibility policies.
+- [x] `apps/advanced-examples-gallery/src/sceneBuilderPrimitives.ts`: own generic route-neutral scene-frame primitives so route modules do not import runtime helpers from the dispatcher.
 - [x] Do not add new `if (selectedDemo.id === "...")` branches in `main.ts` unless this PRD is updated with an explicit reason and owner.
 
 Completed containment subtasks:
 
-- [x] `apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts`: removed runtime imports back from `sceneBuilders.ts` so Data Galaxy route composition no longer creates a scene-builder/data-route circular dependency.
-- [x] `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`: consumes generic scene-frame primitives from `sceneBuilderPrimitives.ts` rather than runtime helpers from `sceneBuilders.ts`.
-- [x] `apps/v9-advanced-examples-gallery/src/reactorPostScene.ts`: consumes generic scene-frame primitives from `sceneBuilderPrimitives.ts` rather than runtime helpers from `sceneBuilders.ts`.
-- [x] `apps/v9-advanced-examples-gallery/src/sceneBuilders.ts`: keeps Product, Data Galaxy, and Reactor route bodies out of the shared dispatcher; remaining legacy route bodies still need follow-up extraction before the broad containment task can be checked.
-- [x] `tests/unit/apps/v9-advanced-gallery-route-policies.test.ts`: covers extracted camera, postprocess, and procedural visibility policy behavior.
-- [x] `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`: now also owns render-item ordering, Product hotspot-picking routing, water/ocean ripple routing, and route-specific canvas backing-edge policy.
-- [x] `apps/v9-advanced-examples-gallery/src/main.ts`: consumes the route-policy helpers for those orchestration decisions instead of embedding new route-specific branches.
-- [x] `apps/v9-advanced-examples-gallery/src/main.ts`: no longer contains Product-specific environment-lighting composition policy; `galleryRoutePolicies.ts` owns `rendererEnvironmentLightingCompositionOptionsForRoute(...)`, and `main.ts` only calls it while composing renderer lighting.
-- [x] `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`: per-route asset activation config, Product layout consumption, Data platform exclusion regex, and Data material corrections moved into `authoredLayerPolicies.ts`; `authoredLayer.ts` is generic imported-asset activation only.
-- [x] `apps/v9-advanced-examples-gallery/src/galleryInteractionAdapter.ts`: owns current pointer normalization, orbit drag math, Product hotspot action routing, and water/ocean ripple routing outside `main.ts`.
-- [x] `pnpm exec vitest run tests/unit/apps/v9-advanced-gallery-route-policies.test.ts tests/unit/apps/v9-route-scene-modules.test.ts --reporter=dot` passed with `11` route-policy/scene-module tests after moving Product HDR lighting composition policy out of `main.ts`.
-- [x] `pnpm exec vitest run tests/unit/apps/v9-gallery-interaction-adapter.test.ts --reporter=dot` passed with `2` interaction-adapter tests.
-- [x] `tests/unit/tools/v9-advanced-gallery-report-audit.test.ts`: covers JSON-only screenshot hashes being blocked when current full/viewport/hero artifacts are absent, and passing when temp artifacts exist with matching hashes.
-- [x] `pnpm exec vitest run tests/unit/tools/v9-advanced-gallery-report-audit.test.ts tests/unit/tools/v9-advanced-gallery-visual-review-gate-rules.test.ts --reporter=dot` passed with `20` reporting/review tests after the current-artifact audit gate.
+- [x] `apps/advanced-examples-gallery/src/dataGalaxyScene.ts`: removed runtime imports back from `sceneBuilders.ts` so Data Galaxy route composition no longer creates a scene-builder/data-route circular dependency.
+- [x] `apps/advanced-examples-gallery/src/productConfiguratorScene.ts`: consumes generic scene-frame primitives from `sceneBuilderPrimitives.ts` rather than runtime helpers from `sceneBuilders.ts`.
+- [x] `apps/advanced-examples-gallery/src/reactorPostScene.ts`: consumes generic scene-frame primitives from `sceneBuilderPrimitives.ts` rather than runtime helpers from `sceneBuilders.ts`.
+- [x] `apps/advanced-examples-gallery/src/sceneBuilders.ts`: keeps Product, Data Galaxy, and Reactor route bodies out of the shared dispatcher; remaining legacy route bodies still need follow-up extraction before the broad containment task can be checked.
+- [x] `tests/unit/apps/advanced-gallery-route-policies.test.ts`: covers extracted camera, postprocess, and procedural visibility policy behavior.
+- [x] `apps/advanced-examples-gallery/src/galleryRoutePolicies.ts`: now also owns render-item ordering, Product hotspot-picking routing, water/ocean ripple routing, and route-specific canvas backing-edge policy.
+- [x] `apps/advanced-examples-gallery/src/main.ts`: consumes the route-policy helpers for those orchestration decisions instead of embedding new route-specific branches.
+- [x] `apps/advanced-examples-gallery/src/main.ts`: no longer contains Product-specific environment-lighting composition policy; `galleryRoutePolicies.ts` owns `rendererEnvironmentLightingCompositionOptionsForRoute(...)`, and `main.ts` only calls it while composing renderer lighting.
+- [x] `apps/advanced-examples-gallery/src/authoredLayer.ts`: per-route asset activation config, Product layout consumption, Data platform exclusion regex, and Data material corrections moved into `authoredLayerPolicies.ts`; `authoredLayer.ts` is generic imported-asset activation only.
+- [x] `apps/advanced-examples-gallery/src/galleryInteractionAdapter.ts`: owns current pointer normalization, orbit drag math, Product hotspot action routing, and water/ocean ripple routing outside `main.ts`.
+- [x] `pnpm exec vitest run tests/unit/apps/advanced-gallery-route-policies.test.ts tests/unit/apps/threejs-parity-route-scene-modules.test.ts --reporter=dot` passed with `11` route-policy/scene-module tests after moving Product HDR lighting composition policy out of `main.ts`.
+- [x] `pnpm exec vitest run tests/unit/apps/threejs-parity-gallery-interaction-adapter.test.ts --reporter=dot` passed with `2` interaction-adapter tests.
+- [x] `tests/unit/tools/advanced-gallery-report-audit.test.ts`: covers JSON-only screenshot hashes being blocked when current full/viewport/hero artifacts are absent, and passing when temp artifacts exist with matching hashes.
+- [x] `pnpm exec vitest run tests/unit/tools/advanced-gallery-report-audit.test.ts tests/unit/tools/advanced-gallery-visual-review-gate-rules.test.ts --reporter=dot` passed with `20` reporting/review tests after the current-artifact audit gate.
 - [x] `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` passed after the extraction.
-- [x] `rg -n "selectedDemo\\.id ===|selectedDemo\\.id !==|selectedDemo\\.id ==|selectedDemo\\.id !=" apps/v9-advanced-examples-gallery/src/main.ts` returns no exact route-specific equality branches.
+- [x] `rg -n "selectedDemo\\.id ===|selectedDemo\\.id !==|selectedDemo\\.id ==|selectedDemo\\.id !=" apps/advanced-examples-gallery/src/main.ts` returns no exact route-specific equality branches.
 
 ## 14. Phase P6 - Remaining Route PRDs
 
@@ -952,7 +952,7 @@ Required interactions:
 
 Owner files:
 
-- `apps/v9-advanced-examples-gallery/src/digital*`
+- `apps/advanced-examples-gallery/src/digital*`
 - controls and picking helpers
 - scene metadata/report schemas
 - physics/simulation helpers
@@ -1139,19 +1139,19 @@ This carries forward the old F-006 instruction. Earlier example routes cannot be
 
 Files/directories to inspect and fix:
 
-- `apps/v8-shadowmap-viewer/`
-- `apps/v8-geometry-drawrange/`
-- `apps/v8-materials-transmission/`
-- `apps/v8-webgpu-rtt/`
-- `apps/v8-webgpu-materials/`
-- `apps/v8-webgpu-instance-uniform/`
-- `apps/v8-webgpu-compute/`
-- `apps/v8-webxr-interactions/`
-- `apps/v8-postprocessing-bloom/`
-- `apps/v8-postprocessing-depth-outline/`
-- `apps/v8-loader-obj/`
-- `apps/v8-loader-gltf-variants/`
-- `apps/v8-loader-material-extensions/`
+- `apps/shadowmap-viewer/`
+- `apps/geometry-drawrange/`
+- `apps/materials-transmission/`
+- `apps/webgpu-rtt/`
+- `apps/webgpu-materials/`
+- `apps/webgpu-instance-uniform/`
+- `apps/webgpu-compute/`
+- `apps/webxr-interactions/`
+- `apps/postprocessing-bloom/`
+- `apps/postprocessing-depth-outline/`
+- `apps/loader-obj/`
+- `apps/loader-gltf-variants/`
+- `apps/loader-material-extensions/`
 - `apps/wow-kira-ik-room/`
 - `apps/wow-common/`
 
@@ -1246,7 +1246,7 @@ Do not imply Three.js-class environment parity unless a reusable renderer/runtim
 
 ## 17. Phase P8 - Repository Naming And Product Taxonomy Migration
 
-The codebase contains many version-turn names such as `v1`, `v2`, `v3`, `v4`, `v5`, `v6`, `v7`, `v8`, `v9`, and `v10`. Those names are historical breadcrumbs, not product taxonomy.
+The codebase contains many version-turn names such as `v1`, `v2`, `v3`, `v4`, `three-compat`, `production-runtime`, `v7`, `v8`, `v9`, and `v10`. Those names are historical breadcrumbs, not product taxonomy.
 
 This migration is required, but it must not be a blind rename. Many versioned paths are load-bearing: package export maps, TypeScript imports, app route URLs, fixture fetch URLs, Playwright report paths, screenshot hashes, generated JSON reports, docs links, and historical report readers.
 
@@ -1272,8 +1272,8 @@ Required phases:
    - test-only harness
    - historical archive that should remain versioned but be marked archival
 3. Define contextual target names before renaming:
-   - `v9-advanced-examples-gallery` -> `advanced-examples-gallery` or `cinematic-examples-gallery`
-   - `v6/environment` -> `hdr-environment` or `environment-lighting`
+   - `advanced-examples-gallery` -> `advanced-examples-gallery` or `cinematic-examples-gallery`
+   - `production-runtime/environment` -> `hdr-environment` or `environment-lighting`
    - `v8-animation-*` -> capability-based animation names
    - `v10/superiority-audit` -> `claim-defense-audit` or `release-claim-audit`
 4. Add compatibility shims where old paths may still be referenced:
@@ -1294,11 +1294,11 @@ plus affected unit tests, affected browser route tests, and the renamed successo
 Naming acceptance checklist:
 
 - [x] A checked-in migration report lists every old version-style path and target contextual name or archival reason.
-- [ ] All active imports, route links, package exports, scripts, fixture URLs, and report readers use contextual names.
-- [ ] Old public URLs or package exports still work through aliases/redirects or are intentionally documented as removed.
+- [x] All active imports, route links, package exports, scripts, fixture URLs, and report readers use contextual names.
+- [x] Old public URLs or package exports still work through aliases/redirects or are intentionally documented as removed.
 - [x] Generated evidence paths do not break visual-review/report-audit tooling.
-- [ ] Alias tests cover browser routes, package exports, fixture URLs, and historical report readers before old names are removed.
-- [ ] `rg "v[0-9]"` only finds classified active aliases or archival records.
+- [x] Alias tests cover browser routes, package exports, fixture URLs, and historical report readers before old names are removed.
+- [x] `rg "v[0-9]"` only finds classified active aliases or archival records.
 
 Completed naming/taxonomy subtasks:
 
@@ -1452,8 +1452,8 @@ Must deliver:
 
 Owns:
 
-- `tools/v9-advanced-gallery-visual-review/index.ts`
-- `tools/v9-advanced-gallery-report-audit/index.ts`
+- `tools/advanced-gallery-visual-review/index.ts`
+- `tools/advanced-gallery-report-audit/index.ts`
 - browser capture specs
 - report schemas
 - naming migration scripts/reports
@@ -1498,7 +1498,7 @@ pnpm exec vitest run tests/unit/rendering/environment-platform.test.ts --reporte
 Product/Data focused route capture, only after source-owner tests pass:
 
 ```bash
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/v9-advanced-examples-gallery.spec.ts -g "(product-configurator|data-galaxy) renders as a complex animated G3D demo" --reporter=line --timeout=360000
+G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/advanced-examples-gallery.spec.ts -g "(product-configurator|data-galaxy) renders as a complex animated G3D demo" --reporter=line --timeout=360000
 ```
 
 Full gallery sweep, only after focused gates pass:
@@ -1512,7 +1512,7 @@ Report audit:
 
 ```bash
 pnpm v9:advanced-gallery:review
-node tools/v9-advanced-gallery-report-audit/index.ts
+node tools/advanced-gallery-report-audit/index.ts
 ```
 
 Preferred report audit and pipeline commands when scripts exist:
@@ -1540,16 +1540,16 @@ Final release-candidate gates, only when every route has accepted evidence:
 
 ```bash
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery
-pnpm v9:advanced-gallery:review
-pnpm v9:advanced-gallery:audit
+G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
+pnpm advanced-gallery:review
+pnpm advanced-gallery:audit
 pnpm v10
 ```
 
 Current state inspection:
 
 ```bash
-node -e 'const r=require("./tests/reports/v9/advanced-examples-gallery/visual-review-report.json"); const s=r.summary; console.log(JSON.stringify({pass:r.pass,releaseGate:r.releaseGate,summary:{demoCount:s.demoCount,acceptedCount:s.acceptedCount,candidateCount:s.candidateCount,failedCount:s.failedCount,blockedCount:s.blockedCount,contactSheetExists:s.contactSheetExists,imageQualityPassingCount:s.imageQualityPassingCount,knownVisualArtifactRiskCount:s.knownVisualArtifactRiskCount}},null,2))'
+node -e 'const r=require("./tests/reports/advanced-examples-gallery/visual-review-report.json"); const s=r.summary; console.log(JSON.stringify({pass:r.pass,releaseGate:r.releaseGate,summary:{demoCount:s.demoCount,acceptedCount:s.acceptedCount,candidateCount:s.candidateCount,failedCount:s.failedCount,blockedCount:s.blockedCount,contactSheetExists:s.contactSheetExists,imageQualityPassingCount:s.imageQualityPassingCount,knownVisualArtifactRiskCount:s.knownVisualArtifactRiskCount}},null,2))'
 ```
 
 Expected until final acceptance:

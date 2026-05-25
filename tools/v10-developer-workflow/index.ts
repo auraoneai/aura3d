@@ -1,11 +1,11 @@
 import { issue, readJson, reportPasses, writeReport } from "../v10-common";
 
 const outputPath = "tests/reports/v10/developer-workflow.json";
-const packageSmoke = reportPasses("tests/reports/v9/package-smoke.json");
-const externalConsumer = reportPasses("tests/reports/v9/external-consumer.json");
-const migrationAudit = reportPasses("tests/reports/v9/migration-audit.json");
-const templateReport = reportPasses("tests/reports/v4-template-readiness.json") || reportPasses("tests/reports/v6-template-readiness.json");
-const publicApi = reportPasses("tests/reports/v9/api-surface.json");
+const packageSmoke = reportPasses("tests/reports/threejs-parity/package-smoke.json");
+const externalConsumer = reportPasses("tests/reports/threejs-parity/external-consumer.json");
+const migrationAudit = reportPasses("tests/reports/threejs-parity/migration-audit.json");
+const templateReport = reportPasses("tests/reports/external-parity-template-readiness.json") || reportPasses("tests/reports/production-runtime-template-readiness.json");
+const publicApi = reportPasses("tests/reports/threejs-parity/api-surface.json");
 const apiDocs = readJson<{ readonly ok?: boolean }>("tests/reports/api-docs.json");
 const issues = [
   ...(packageSmoke ? [] : [issue("workflow:package-smoke", "V9 package smoke is missing or failing.")]),
@@ -16,12 +16,12 @@ const issues = [
   ...(apiDocs?.ok === true ? [] : [issue("workflow:api-docs", "API docs report is missing or not ok.")])
 ];
 const evidence = [
-  "tests/reports/v9/package-smoke.json",
-  "tests/reports/v9/external-consumer.json",
-  "tests/reports/v9/migration-audit.json",
-  "tests/reports/v4-template-readiness.json",
-  "tests/reports/v6-template-readiness.json",
-  "tests/reports/v9/api-surface.json",
+  "tests/reports/threejs-parity/package-smoke.json",
+  "tests/reports/threejs-parity/external-consumer.json",
+  "tests/reports/threejs-parity/migration-audit.json",
+  "tests/reports/external-parity-template-readiness.json",
+  "tests/reports/production-runtime-template-readiness.json",
+  "tests/reports/threejs-parity/api-surface.json",
   "tests/reports/api-docs.json"
 ];
 

@@ -33,7 +33,7 @@ interface PbrExtensionTextureVariantState {
   readonly status: "ready" | "error";
   readonly renderer: "webgl2";
   readonly visualClaim: "bounded-pbr-extension-texture-variants";
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/pbr-extension-texture-variants.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/pbr-extension-texture-variants.png";
   readonly diagnostics?: RenderDeviceDiagnostics;
   readonly canvasFrame?: { readonly width: number; readonly height: number };
   readonly variants: readonly VariantEvidence[];
@@ -56,7 +56,7 @@ declare global {
   }
 }
 
-const screenshotPath = "tests/reports/v4-example-screenshots/pbr-extension-texture-variants.png" as const;
+const screenshotPath = "tests/reports/external-parity-example-screenshots/pbr-extension-texture-variants.png" as const;
 const variantCenters: Record<VariantId, { readonly x: number; readonly y: number }> = {
   clearcoat: { x: 80, y: 270 },
   "transmission-volume": { x: 240, y: 270 },

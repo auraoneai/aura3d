@@ -15,7 +15,7 @@ This status is evidence-bound. Public wording should cite the reports below inst
 | Feature coverage | Parity | `tests/reports/v10/feature-parity.json`, `tests/reports/v9/threejs-inventory.json` |
 | Graphics and visual quality | Parity | `tests/reports/v10/visual-quality.json`, `tests/reports/v9/visual-review.json`, `tests/reports/v9/same-scene-render.json` |
 | Animation fidelity | Parity | `tests/reports/v10/animation-fidelity.json`, V9 animation/skinning/morph parity reports |
-| Physics and interaction | Parity with workflow advantage | `tests/reports/v10/physics-fidelity.json`, `tests/reports/v10/physics-comparison-baseline.json`, `apps/v8-physics-showcase/` |
+| Physics and interaction | Parity with workflow advantage | `tests/reports/v10/physics-fidelity.json`, `tests/reports/v10/physics-comparison-baseline.json`, `apps/physics-showcase/` |
 | Performance | Parity or better on measured set | `tests/reports/v10/performance.json`, `tests/reports/v9/performance.json`, `tests/reports/comparison-threejs.json`, `tests/reports/v9/instancing-parity.json` |
 | Asset pipeline | Parity | `tests/reports/v9/threejs-inventory.json`, asset loader tests, glTF/material/compression route reports |
 | WebGPU/WebGL2 | Parity for measured routes | `tests/reports/webgpu-hardware-matrix.json`, V8 WebGPU route screenshots, renderer tests |
@@ -92,7 +92,7 @@ Primary evidence:
 - `packages/physics/src/Constraints.ts`
 - `packages/physics/src/CharacterController.ts`
 - `packages/physics/src/Raycast.ts`
-- `apps/v8-physics-showcase/src/main.ts`
+- `apps/physics-showcase/src/main.ts`
 - `packages/input/src/WebXRSessionController.ts`
 - `tests/reports/v10/physics-fidelity.json`
 - `tests/reports/v10/physics-comparison-baseline.json`
@@ -115,9 +115,9 @@ Primary reports:
 - `tests/reports/v9/performance.json`
 - `tests/reports/comparison-threejs.json`
 - `tests/reports/v9/instancing-parity.json`
-- `tests/reports/v6-performance-baselines.json`
-- `tests/reports/v6-large-scene-performance.json`
-- `tests/reports/v5-performance-baselines.json`
+- `tests/reports/production-runtime-performance-baselines.json`
+- `tests/reports/production-runtime-large-scene-performance.json`
+- `tests/reports/three-compat-performance-baselines.json`
 - `tests/reports/v10/resource-lifecycle-100-reloads.json`
 
 ## Stability And Memory

@@ -30,10 +30,10 @@
 
 ## Public Examples
 
-- [x] `examples/product-viewer-v1/`
-- [x] `examples/material-studio-v1/`
-- [x] `examples/asset-viewer-v1/`
-- [x] `examples/rendering-showcase-v1/`
+- [x] `examples/legacy-product-viewer/`
+- [x] `examples/legacy-material-studio/`
+- [x] `examples/legacy-asset-viewer/`
+- [x] `examples/legacy-rendering-showcase/`
 - [x] Browser screenshot specs exist for all four.
 - [x] `tools/engine-readiness-examples/index.ts` writes `tests/reports/engine-readiness-examples.json`.
 

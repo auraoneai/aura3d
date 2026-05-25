@@ -53,9 +53,9 @@ Material support is not proven by a debug chart or by claiming that a field exis
 
 Primary evidence:
 
-- `tests/reports/v6-pbr-hdr-readiness.json`
-- `tests/reports/v6-gltf-render-readiness.json`
-- `tests/reports/v6-threejs-parity-readiness.json`
+- `tests/reports/production-runtime-pbr-hdr-readiness.json`
+- `tests/reports/production-runtime-gltf-render-readiness.json`
+- `tests/reports/production-runtime-threejs-parity-readiness.json`
 - `tests/reports/v7/product-viewer/product-viewer-report.json`
 - `tests/reports/v7/material-extensions/material-extensions.png`
 - `tests/reports/v7/material-extensions/material-extensions.json`

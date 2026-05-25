@@ -4,7 +4,7 @@ import { createV5EnvironmentDiagnostics, type V5HDRIEnvironmentPreset } from "./
 import { createV5EnvironmentProbePreviews } from "./EnvironmentPreview";
 
 export interface V5EnvironmentManifest {
-  readonly schema: "g3d-v5-environment-library/v1";
+  readonly schema: "g3d-three-compat-environment-library/v1";
   readonly requirements: {
     readonly minimumPresets: number;
     readonly minimumRealHdriSources: number;
@@ -29,7 +29,7 @@ export interface V5EnvironmentLibrarySummary {
   readonly totalEstimatedMemoryBytes: number;
 }
 
-export function loadV5EnvironmentManifest(path = "fixtures/v5/environments/manifest.json"): V5EnvironmentManifest {
+export function loadV5EnvironmentManifest(path = "fixtures/three-compat/environments/manifest.json"): V5EnvironmentManifest {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as V5EnvironmentManifest;
 }
 

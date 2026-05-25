@@ -363,7 +363,7 @@ async function main(): Promise<void> {
     writeJson(comparisonReportPath("babylon"), babylonReport);
     writeJson("tests/reports/comparison-threejs.json", threejsReport);
     writeJson("tests/reports/comparison-babylon.json", babylonReport);
-    writeJson(isV4Run ? "tests/reports/v4-engine-comparison.json" : "tests/reports/v3-engine-comparison.json", report);
+    writeJson(isV4Run ? "tests/reports/external-parity-engine-comparison.json" : "tests/reports/foundation-engine-comparison.json", report);
   }
 
   if (process.argv.includes("--write-docs")) {
@@ -621,28 +621,28 @@ function sourceInputPaths(): string[] {
     ...scenePaths,
     "benchmarks/shared/scenes/descriptor.ts",
     "benchmarks/fixtures/assets/manifest.json",
-    "examples/editor-authored-v3-app/project.json",
-    "examples/editor-authored-v3-app/runtime.js",
-    "tests/reports/v3-editor-authoring.json",
+    "examples/foundation-editor-authored-app/project.json",
+    "examples/foundation-editor-authored-app/runtime.js",
+    "tests/reports/foundation-editor-authoring.json",
     ...(isV4Run ? [
-      "docs/project/v4-benchmarks-validation-plan.md",
+      "docs/project/external-parity-benchmarks-validation-plan.md",
       "docs/project/v4-decision-gates.md",
       "docs/project/v4-master-code-checklist.md",
-      "tests/reports/v3-rendering.json",
-      "tests/reports/v4-product-visual-parity.json",
-      "tools/v4-product-visual-parity/index.ts",
-      "tools/v4-product-visual-parity/productScene.ts",
-      "tests/reports/v4-gltf-loader-visual-parity.json",
-      "tools/v4-gltf-loader-visual-parity/index.ts",
-      "tests/reports/v4-rendering.json",
-      "tests/reports/v4-pbr-gltf-readiness.json",
-      "tests/reports/v4-shadow-map-readiness.json",
-      "tests/reports/v4-postprocess-suite.json",
-      "tests/reports/v4-hdr-render-target-readiness.json",
-      "tests/reports/v4-webgpu-parity.json",
-      "tests/reports/v4-production-readiness.json",
-      "tests/reports/v4-ecosystem-readiness.json",
-      "tests/reports/v4-unity-unreal-parity.json",
+      "tests/reports/foundation-rendering.json",
+      "tests/reports/external-parity-product-visual-parity.json",
+      "tools/external-parity-product-visual-parity/index.ts",
+      "tools/external-parity-product-visual-parity/productScene.ts",
+      "tests/reports/external-parity-gltf-loader-visual-parity.json",
+      "tools/external-parity-gltf-loader-visual-parity/index.ts",
+      "tests/reports/external-parity-rendering.json",
+      "tests/reports/external-parity-pbr-gltf-readiness.json",
+      "tests/reports/external-parity-shadow-map-readiness.json",
+      "tests/reports/external-parity-postprocess-suite.json",
+      "tests/reports/external-parity-hdr-render-target-readiness.json",
+      "tests/reports/external-parity-webgpu-parity.json",
+      "tests/reports/external-parity-production-readiness.json",
+      "tests/reports/external-parity-ecosystem-readiness.json",
+      "tests/reports/external-parity-unity-unreal-parity.json",
       "tests/reports/package-install-smoke.json",
       "tests/reports/package-provenance.json",
     ] : []),
@@ -651,13 +651,13 @@ function sourceInputPaths(): string[] {
 }
 
 function productVisualParityEvidence(): Record<string, unknown> {
-  const reportPath = "tests/reports/v4-product-visual-parity.json";
+  const reportPath = "tests/reports/external-parity-product-visual-parity.json";
   if (!existsSync(resolve(reportPath))) {
     return {
       status: "missing",
       reportPath,
       galileoThreeBabylon: false,
-      blockers: ["Run `pnpm audit:v4-product-visual-parity` before writing V4 engine-comparison reports."],
+      blockers: ["Run `pnpm audit:external-parity-product-visual-parity` before writing V4 engine-comparison reports."],
     };
   }
   const report = readJson(reportPath);
@@ -699,13 +699,13 @@ function productVisualParityEvidence(): Record<string, unknown> {
 }
 
 function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
-  const reportPath = "tests/reports/v4-gltf-loader-visual-parity.json";
+  const reportPath = "tests/reports/external-parity-gltf-loader-visual-parity.json";
   if (!existsSync(resolve(reportPath))) {
     return {
       status: "missing",
       reportPath,
       galileoThreeBabylon: false,
-      blockers: ["Run `pnpm audit:v4-gltf-loader-visual-parity` before writing V4 engine-comparison reports."],
+      blockers: ["Run `pnpm audit:external-parity-gltf-loader-visual-parity` before writing V4 engine-comparison reports."],
     };
   }
   const report = readJson(reportPath);
@@ -1015,16 +1015,16 @@ function sceneHasWin(scene: Record<string, unknown>): boolean {
 
 function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompetitor: Record<string, unknown>): readonly CompetitorBroadSuperiorityEvidence[] {
   return (["threejs", "babylon"] as const).map((competitor) => {
-    const product = readOptionalReport("tests/reports/v4-product-visual-parity.json");
-    const gltf = readOptionalReport("tests/reports/v4-gltf-loader-visual-parity.json");
-    const pbrGltf = readOptionalReport("tests/reports/v4-pbr-gltf-readiness.json");
-    const shadow = readOptionalReport("tests/reports/v4-shadow-map-readiness.json");
-    const hdr = readOptionalReport("tests/reports/v4-hdr-render-target-readiness.json");
-    const postprocess = readOptionalReport("tests/reports/v4-postprocess-suite.json");
-    const webgpu = readOptionalReport("tests/reports/v4-webgpu-parity.json");
-    const unityUnreal = readOptionalReport("tests/reports/v4-unity-unreal-parity.json");
-    const production = readOptionalReport("tests/reports/v4-production-readiness.json");
-    const ecosystem = readOptionalReport("tests/reports/v4-ecosystem-readiness.json");
+    const product = readOptionalReport("tests/reports/external-parity-product-visual-parity.json");
+    const gltf = readOptionalReport("tests/reports/external-parity-gltf-loader-visual-parity.json");
+    const pbrGltf = readOptionalReport("tests/reports/external-parity-pbr-gltf-readiness.json");
+    const shadow = readOptionalReport("tests/reports/external-parity-shadow-map-readiness.json");
+    const hdr = readOptionalReport("tests/reports/external-parity-hdr-render-target-readiness.json");
+    const postprocess = readOptionalReport("tests/reports/external-parity-postprocess-suite.json");
+    const webgpu = readOptionalReport("tests/reports/external-parity-webgpu-parity.json");
+    const unityUnreal = readOptionalReport("tests/reports/external-parity-unity-unreal-parity.json");
+    const production = readOptionalReport("tests/reports/external-parity-production-readiness.json");
+    const ecosystem = readOptionalReport("tests/reports/external-parity-ecosystem-readiness.json");
     const packageInstall = readOptionalReport("tests/reports/package-install-smoke.json");
     const packageProvenance = readOptionalReport("tests/reports/package-provenance.json");
     const comparison = isRecord(byCompetitor[competitor]) ? byCompetitor[competitor] : {};
@@ -1053,7 +1053,7 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
         "Equivalent benchmark scene definitions",
         (report.scenes as SceneComparison[] | undefined)?.length === comparedSceneIds.length &&
           (report.scenes as SceneComparison[] | undefined)?.every((scene) => scene.equivalent) === true,
-        ["tests/reports/v4-engine-comparison.json", "benchmarks/shared/scenes"],
+        ["tests/reports/external-parity-engine-comparison.json", "benchmarks/shared/scenes"],
         [`expected ${comparedSceneIds.length} equivalent benchmark scenes for Galileo3D, Three.js, and Babylon.js`]
       ),
       dimension(
@@ -1063,7 +1063,7 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
           scenes.every((scene) => isRecord(scene.galileo) || scene.equivalent === true) &&
           Array.isArray(report.benchmarkMeasurementFailureLog) &&
           report.benchmarkMeasurementFailureLog.length === 0,
-        ["tests/reports/v4-engine-comparison.json"],
+        ["tests/reports/external-parity-engine-comparison.json"],
         ["browser WebGL2 measurements, bundles, and failure logs must cover every compared scene"]
       ),
       dimension(
@@ -1071,63 +1071,63 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
         "Same-scene benchmark screenshot diffs",
         screenshotDiffsAreBroadClaimEvidence &&
           screenshotDiffs.filter((diff) => diff.comparedEngine === competitor && diff.pass === true).length === comparedSceneIds.length,
-        ["tests/reports/v4-engine-comparison.json", "tests/reports/comparison-screenshots"],
+        ["tests/reports/external-parity-engine-comparison.json", "tests/reports/comparison-screenshots"],
         screenshotDiffBlockers
       ),
       dimension(
         "product-visual-parity",
         "Rendered product visual parity",
         product?.ok === true && productParity[competitor === "threejs" ? "threejs" : "babylon"] === true,
-        ["tests/reports/v4-product-visual-parity.json"],
+        ["tests/reports/external-parity-product-visual-parity.json"],
         [`product visual parity must pass for Galileo3D vs ${competitor === "threejs" ? "Three.js" : "Babylon.js"} browser renders`]
       ),
       dimension(
         "gltf-loader-visual-parity",
         "glTF loader visual parity",
         gltf?.ok === true && boundedGltfParity.threejs === true && boundedGltfParity.babylon === true,
-        ["tests/reports/v4-gltf-loader-visual-parity.json"],
+        ["tests/reports/external-parity-gltf-loader-visual-parity.json"],
         ["same-source glTF visual-loader parity must pass across the required corpus and extensions"]
       ),
       dimension(
         "pbr-gltf-full-parity",
         "Full PBR and glTF parity",
         pbrGltf?.pbrParity === true && pbrGltf?.gltfParity === true,
-        ["tests/reports/v4-pbr-gltf-readiness.json"],
+        ["tests/reports/external-parity-pbr-gltf-readiness.json"],
         pbrGltfBlockers
       ),
       dimension(
         "shadow-hdr-postprocess-parity",
         "Shadow, HDR, and postprocess parity",
         shadow?.shadowMapParity === true && hdr?.hdrRenderTargetParity === true && postprocess?.postprocessSuiteParity === true,
-        ["tests/reports/v4-shadow-map-readiness.json", "tests/reports/v4-hdr-render-target-readiness.json", "tests/reports/v4-postprocess-suite.json"],
+        ["tests/reports/external-parity-shadow-map-readiness.json", "tests/reports/external-parity-hdr-render-target-readiness.json", "tests/reports/external-parity-postprocess-suite.json"],
         ["production shadow-map parity, HDR/render-target parity, and full postprocess-suite parity must all be true"]
       ),
       dimension(
         "webgpu-real-hardware-parity",
         "Real WebGPU hardware parity",
         webgpu?.fullWebGPUParity === true,
-        ["tests/reports/v4-webgpu-parity.json", "tests/reports/webgpu-hardware-matrix.json"],
+        ["tests/reports/external-parity-webgpu-parity.json", "tests/reports/webgpu-hardware-matrix.json"],
         ["full WebGPU parity must include real adapter/device and real WebGPU render/readback evidence"]
       ),
       dimension(
         "unity-unreal-workflow-parity",
         "Unity/Unreal workflow parity",
         unityUnreal?.unityParity === true && unityUnreal?.unrealParity === true && unityUnreal?.replacement === true,
-        ["tests/reports/v4-unity-unreal-parity.json"],
+        ["tests/reports/external-parity-unity-unreal-parity.json"],
         ["Unity parity, Unreal parity, and replacement readiness must all be true"]
       ),
       dimension(
         "production-and-independent-reproduction",
         "Production deployment and independent reproduction",
         production?.productionReady === true && packageInstall?.ok === true && packageProvenance?.ok === true,
-        ["tests/reports/v4-production-readiness.json", "tests/reports/package-install-smoke.json", "tests/reports/package-provenance.json"],
+        ["tests/reports/external-parity-production-readiness.json", "tests/reports/package-install-smoke.json", "tests/reports/package-provenance.json"],
         ["production readiness, clean package install smoke, and provenance evidence must all pass"]
       ),
       dimension(
         "ecosystem-docs-accessibility-device-matrix",
         "Ecosystem, documentation, accessibility, and device matrix",
         ecosystem?.ok === true && ecosystem.boundedEcosystemDocsAccessibilityDeviceMatrix === true,
-        ["tests/reports/v4-ecosystem-readiness.json", "docs/project/v4-decision-gates.md", "tests/reports/browser-hardware-matrix.json"],
+        ["tests/reports/external-parity-ecosystem-readiness.json", "docs/project/v4-decision-gates.md", "tests/reports/browser-hardware-matrix.json"],
         ["bounded documentation, accessibility, and device-matrix audit must pass; this still does not prove ecosystem superiority"]
       ),
     ];
@@ -2523,14 +2523,14 @@ function featureRuntimeCoverageMatrix(): Array<Record<string, unknown>> {
     }];
   }
 
-  const rendering = readOptionalReport("tests/reports/v4-rendering.json");
-  const pbr = readOptionalReport("tests/reports/v4-pbr-gltf-readiness.json");
-  const shadow = readOptionalReport("tests/reports/v4-shadow-map-readiness.json");
-  const postprocess = readOptionalReport("tests/reports/v4-postprocess-suite.json");
-  const hdr = readOptionalReport("tests/reports/v4-hdr-render-target-readiness.json");
-  const webgpu = readOptionalReport("tests/reports/v4-webgpu-parity.json");
-  const product = readOptionalReport("tests/reports/v4-product-visual-parity.json");
-  const gltfVisual = readOptionalReport("tests/reports/v4-gltf-loader-visual-parity.json");
+  const rendering = readOptionalReport("tests/reports/external-parity-rendering.json");
+  const pbr = readOptionalReport("tests/reports/external-parity-pbr-gltf-readiness.json");
+  const shadow = readOptionalReport("tests/reports/external-parity-shadow-map-readiness.json");
+  const postprocess = readOptionalReport("tests/reports/external-parity-postprocess-suite.json");
+  const hdr = readOptionalReport("tests/reports/external-parity-hdr-render-target-readiness.json");
+  const webgpu = readOptionalReport("tests/reports/external-parity-webgpu-parity.json");
+  const product = readOptionalReport("tests/reports/external-parity-product-visual-parity.json");
+  const gltfVisual = readOptionalReport("tests/reports/external-parity-gltf-loader-visual-parity.json");
 
   return [
     {

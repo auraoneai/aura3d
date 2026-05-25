@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const reportPath = "tests/reports/v4-editor-prefab-workflow.json";
+const reportPath = "tests/reports/external-parity-editor-prefab-workflow.json";
 
 test.describe("editor prefab reusable object workflow", () => {
   let server: ExampleDevServer;
@@ -91,7 +91,7 @@ function writeEditorReport(evidence: { readonly prefabId: string; readonly prefa
     ...existing,
     ok: true,
     generatedAt: new Date().toISOString(),
-    schemaVersion: "g3d-v4-editor-prefab-workflow-report-v1",
+    schemaVersion: "g3d-external-parity-editor-prefab-workflow-report-v1",
     subsystem: "browser-editor-authoring",
     command: "pnpm exec playwright test tests/browser/editor-prefab-workflow.spec.ts",
     checks: [

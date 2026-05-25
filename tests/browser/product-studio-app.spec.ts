@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const reportDir = resolve("tests/reports/v2-product-studio");
+const reportDir = resolve("tests/reports/product-studio");
 const captures: Array<{ readonly id: string; readonly path: string; readonly bytes: number; readonly hash: string }> = [];
 
 test.describe("V2 Product Studio app", () => {
@@ -23,10 +23,10 @@ test.describe("V2 Product Studio app", () => {
       generatedAt: new Date().toISOString(),
       app: "apps/product-studio/index.html",
       rejectedInputs: [
-        "tests/reports/product-viewer-v1/product-viewer.png",
-        "tests/reports/material-studio-v1/material-studio.png",
-        "tests/reports/asset-viewer-v1/asset-viewer.png",
-        "tests/reports/rendering-showcase-v1/rendering-showcase.png"
+        "tests/reports/legacy-product-viewer/product-viewer.png",
+        "tests/reports/legacy-material-studio/material-studio.png",
+        "tests/reports/legacy-asset-viewer/asset-viewer.png",
+        "tests/reports/legacy-rendering-showcase/rendering-showcase.png"
       ],
       captures
     }, null, 2)}\n`);

@@ -12,7 +12,7 @@ This page summarizes the current asset evidence. It is intentionally split betwe
 | `tests/reports/gltf-100-classification.json` | 100 pinned Khronos GLB source-classification report. |
 | `tests/reports/asset-compatibility-threejs.json` | Loader compatibility scaffold with Galileo3D, Three.js, and Babylon.js columns. |
 | `tests/reports/blender-export-validation.json` | Three pinned Blender-export fixture validations. |
-| `tests/reports/v6-asset-readiness.json` | v6 production asset/environment readiness across real GLBs and HDR environments. |
+| `tests/reports/production-runtime-asset-readiness.json` | production-runtime production asset/environment readiness across real GLBs and HDR environments. |
 | `tests/reports/v8-assets.json` | v8 route asset corpus used by flagship, animation, material, loader, and physics surfaces. |
 
 ## Current v8 Corpus
@@ -34,11 +34,11 @@ This page summarizes the current asset evidence. It is intentionally split betwe
 
 Feature coverage includes animation, skinning, morph targets, PBR metallic-roughness, normal textures, ORM textures, emissive textures, material extensions, texture transform, material variants, real geometry, and textures.
 
-## Current v6 Corpus
+## Current production-runtime Corpus
 
-`tests/reports/v6-asset-readiness.json` currently passes and records 28 real parsed GLB assets, 28 SHA-verified assets, 25 PBR texture assets, 6 advanced-material assets, 6 animation assets, 2 skin assets, 1 morph asset, and extension coverage including `KHR_materials_clearcoat`, `KHR_materials_sheen`, `KHR_materials_specular`, and `KHR_animation_pointer`.
+`tests/reports/production-runtime-asset-readiness.json` currently passes and records 28 real parsed GLB assets, 28 SHA-verified assets, 25 PBR texture assets, 6 advanced-material assets, 6 animation assets, 2 skin assets, 1 morph asset, and extension coverage including `KHR_materials_clearcoat`, `KHR_materials_sheen`, `KHR_materials_specular`, and `KHR_animation_pointer`.
 
-The v6 readiness path is the stronger production-viewer evidence because it pairs assets with rendered screenshots, HDR environments, and app-suite reports. The v8 path is broader route evidence.
+The production-runtime readiness path is the stronger production-viewer evidence because it pairs assets with rendered screenshots, HDR environments, and app-suite reports. The v8 path is broader route evidence.
 
 ## Blender And Khronos Evidence
 
@@ -54,7 +54,7 @@ The Khronos source revision remains `2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf` f
 ## Verification
 
 - `tests/reports/v8-assets.json`
-- `tests/reports/v6-asset-readiness.json`
+- `tests/reports/production-runtime-asset-readiness.json`
 - `tests/reports/gltf-100-classification.json`
 - `tests/reports/blender-export-validation.json`
 - `tests/assets/gltf-compression-decoders.test.ts`

@@ -14,8 +14,8 @@ Required:
 - [x] All examples use names that match actual visuals and behavior.
 - [x] Portfolio screenshots are generated from real pages.
 - [x] Claims are blocked by source checks unless gates pass.
-- [x] `tests/reports/v3-current-capability.json` exists and lists blocked claims.
-- [x] `pnpm verify:v3-code` exists and passes.
+- [x] `tests/reports/foundation-current-capability.json` exists and lists blocked claims.
+- [x] `pnpm verify:foundation-code` exists and passes.
 
 Allowed claim after this gate:
 
@@ -30,7 +30,7 @@ Required:
 - [x] Game slice uses real model/level assets.
 - [x] Asset viewer renders real glTF assets with real texture decoding.
 - [x] Material showroom demonstrates supported PBR features honestly.
-- [x] Shadow and postprocess examples visibly affect real scenes. Evidence: `tests/browser/rendering-v3-labs.spec.ts` validates shadow-lab and postprocess-lab browser pixels, and `pnpm verify:v3` passes.
+- [x] Shadow and postprocess examples visibly affect real scenes. Evidence: `tests/browser/rendering-foundation-labs.spec.ts` validates shadow-lab and postprocess-lab browser pixels, and `pnpm verify:v3` passes.
 - [x] Browser screenshots and tests pass for all examples.
 
 Allowed claim after this gate:
@@ -70,7 +70,7 @@ Required:
 - [x] Browser editor can create, import, place, inspect, transform, save, reload, play, and export a scene.
 - [x] Editor-authored exported app renders without editor code.
 - [x] Gizmos, hierarchy, inspector, asset browser, material editor, play mode, and profiler/debug panels exist.
-- [x] `tests/reports/v3-editor-authoring.json` passes.
+- [x] `tests/reports/foundation-editor-authoring.json` passes.
 
 Allowed claim after this gate:
 
@@ -145,7 +145,7 @@ Still disallowed:
 Required:
 
 - [x] `pnpm verify:v3` passes. Evidence: `pnpm verify:v3` exited 0 on 2026-05-08 with `failedCommands: []`.
-- [x] All v3 reports are fresh for the current commit. Evidence: `pnpm verify:v3` exited 0 on 2026-05-08 with `v3-report-freshness` reporting `issues: 0`.
+- [x] All v3 reports are fresh for the current commit. Evidence: `pnpm verify:v3` exited 0 on 2026-05-08 with `foundation-report-freshness` reporting `issues: 0`.
 - [x] All v3 examples have screenshots.
 - [x] All v3 benchmark reports are generated.
 - [x] All disallowed broad claims remain blocked.

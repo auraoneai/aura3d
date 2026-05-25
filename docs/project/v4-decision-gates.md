@@ -72,10 +72,10 @@ pnpm engine-readiness:examples
 
 Required evidence:
 
-- `tests/reports/product-viewer-v1/product-viewer.png`
-- `tests/reports/material-studio-v1/material-studio.png`
-- `tests/reports/asset-viewer-v1/asset-viewer.png`
-- `tests/reports/rendering-showcase-v1/rendering-showcase.png`
+- `tests/reports/legacy-product-viewer/product-viewer.png`
+- `tests/reports/legacy-material-studio/material-studio.png`
+- `tests/reports/legacy-asset-viewer/asset-viewer.png`
+- `tests/reports/legacy-rendering-showcase/rendering-showcase.png`
 - `tests/reports/engine-readiness-examples.json`
 
 Allowed claim:

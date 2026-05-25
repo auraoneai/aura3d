@@ -3,8 +3,8 @@ import { dirname, join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const rootQualityReportPath = join(process.cwd(), "tests/reports/v4-root-rendering-quality.json");
-const rootQualityScreenshotDir = join(process.cwd(), "tests/reports/v4-root-rendering-quality");
+const rootQualityReportPath = join(process.cwd(), "tests/reports/external-parity-root-rendering-quality.json");
+const rootQualityScreenshotDir = join(process.cwd(), "tests/reports/external-parity-root-rendering-quality");
 
 test.describe("root rendering quality gate", () => {
   test.setTimeout(60_000);
@@ -2695,7 +2695,7 @@ function writeRootQualityScreenshot(id: string, dataUrl: string): string {
   const match = /^data:image\/png;base64,(.+)$/.exec(dataUrl);
   if (!match) throw new Error(`Root quality screenshot ${id} did not return a PNG data URL.`);
   mkdirSync(rootQualityScreenshotDir, { recursive: true });
-  const relativePath = `tests/reports/v4-root-rendering-quality/${id}.png`;
+  const relativePath = `tests/reports/external-parity-root-rendering-quality/${id}.png`;
   writeFileSync(join(process.cwd(), relativePath), Buffer.from(match[1]!, "base64"));
   return relativePath;
 }

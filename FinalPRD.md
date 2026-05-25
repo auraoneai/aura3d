@@ -225,9 +225,9 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/rendering/src/webgpu/WebGPUBuffer.ts` | Add if missing. Dynamic/staging buffers and ring allocation. | Instance/uniform benchmark passes. |
 | [x] | `packages/rendering/src/webgpu/WebGPUPostProcess.ts` | Add if missing. RTT and postprocess chain. | Bloom/outline/SSAO routes work. |
 | [x] | `packages/rendering/src/webgpu/WebGPUCompute.ts` | Add if missing. Compute particles, skinning optional path, culling optional path. | Compute route is measurable and stable. |
-| [x] | `apps/v8-webgpu-rtt/src/main.ts` | Upgrade from proof to quality route. | Dimension/color/frame checks pass. |
-| [x] | `apps/v8-webgpu-compute/src/main.ts` | Upgrade compute route with GPU timing. | Stable FPS and nonblank. |
-| [x] | `tests/browser/v6-webgpu-real-frame.spec.ts` | Real WebGPU frame check. | Passes on supported adapters, skips honestly otherwise. |
+| [x] | `apps/webgpu-rtt/src/main.ts` | Upgrade from proof to quality route. | Dimension/color/frame checks pass. |
+| [x] | `apps/webgpu-compute/src/main.ts` | Upgrade compute route with GPU timing. | Stable FPS and nonblank. |
+| [x] | `tests/browser/production-runtime-webgpu-real-frame.spec.ts` | Real WebGPU frame check. | Passes on supported adapters, skips honestly otherwise. |
 
 ### 6. Materials, Shaders, PBR, And Color
 
@@ -242,7 +242,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/rendering/src/shaders/pbr-direct.frag.glsl` | GGX, Smith, Fresnel-Schlick, energy conservation, multiple lights. | PBR reference tests pass. |
 | [x] | `packages/rendering/src/ColorManagement.ts` | Add if missing. Linear/sRGB/HDR/tone mapping/exposure pipeline. | Washed-out/faded route issue eliminated. |
 | [x] | `packages/rendering/src/ToneMapping.ts` | ACES, Reinhard, neutral, custom exposure. | Screenshots match reference. |
-| [x] | `apps/v8-materials-transmission/src/main.ts` | Upgrade material extensions route. | Visual comparison passes. |
+| [x] | `apps/materials-transmission/src/main.ts` | Upgrade material extensions route. | Visual comparison passes. |
 | [x] | `tests/visual/pbr-environment-pixels.spec.ts` | Pixel-level PBR/color tests. | Delta thresholds pass. |
 
 ### 7. Lighting, Shadows, IBL, And Environments
@@ -255,8 +255,8 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/rendering/src/EnvironmentMapResources.ts` | HDR decode, irradiance, specular prefilter, BRDF LUT, PMREM. | PMREM parity route passes. |
 | [x] | `packages/environments/src/EnvironmentRegistry.ts` | HDR environment registry, metadata, thumbnails. | Product viewer can switch environments instantly. |
 | [x] | `packages/rendering/src/ReflectionProbe.ts` | Add if missing. Reflection capture and probe blending. | Interior scene quality improves. |
-| [x] | `apps/v8-shadowmap-viewer/src/main.ts` | Upgrade shadow diagnostics route. | Nonblank depth preview and quality comparison. |
-| [x] | `tests/browser/v9-shadowmap-parity.spec.ts` | Three.js shadow parity route. | Passes image and dimension gates. |
+| [x] | `apps/shadowmap-viewer/src/main.ts` | Upgrade shadow diagnostics route. | Nonblank depth preview and quality comparison. |
+| [x] | `tests/browser/threejs-parity-shadowmap-parity.spec.ts` | Three.js shadow parity route. | Passes image and dimension gates. |
 
 ### 8. Textures, Compression, And Streaming
 
@@ -268,7 +268,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/assets/src/TextureStreaming.ts` | Add if missing. Progressive texture loading and memory budgets. | Large scene loads without stalls. |
 | [x] | `packages/assets/src/HDRLoader.ts` | Add/complete HDR loading. | HDR route starts under budget. |
 | [x] | `packages/assets/src/EXRLoader.ts` | Add/complete EXR loading. | EXR fixtures pass. |
-| [x] | `apps/v8-texture-anisotropy/src/main.ts` | Upgrade anisotropy route. | Visual comparison documents improvement. |
+| [x] | `apps/texture-anisotropy/src/main.ts` | Upgrade anisotropy route. | Visual comparison documents improvement. |
 | [x] | `tests/assets/gltf-compression-decoders.test.ts` | Decoder availability and fallback tests. | Passes with clear missing-decoder diagnostics. |
 
 ### 9. glTF, GLB, OBJ, And Asset Pipeline
@@ -283,10 +283,10 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/assets/src/AssetImportPreflight.ts` | Validate scale, bounds, missing textures, unsupported extensions. | Bad assets produce useful diagnostics. |
 | [x] | `packages/assets/src/AssetInspection.ts` | Mesh/material/animation/texture report API. | Asset inspector UI uses it. |
 | [x] | `packages/assets/src/AssetBundleCacheFixtures.ts` | Replace fixture-only cache with production cache. | Asset cache tests pass. |
-| [x] | `apps/v8-loader-material-extensions/src/main.ts` | Upgrade material extension route. | Matches Three.js for supported KHR extensions. |
-| [x] | `apps/v8-loader-compression/src/main.ts` | Upgrade Draco/Meshopt/KTX2 route. | Loads compressed assets and reports decode time. |
-| [x] | `apps/v8-loader-gltf-variants/src/main.ts` | Upgrade variants route. | Variant switching works without reload. |
-| [x] | `tests/assets/v8-gltf-loader-corpus.test.ts` | Expand corpus and pass. | No unsupported production-critical samples. |
+| [x] | `apps/loader-material-extensions/src/main.ts` | Upgrade material extension route. | Matches Three.js for supported KHR extensions. |
+| [x] | `apps/loader-compression/src/main.ts` | Upgrade Draco/Meshopt/KTX2 route. | Loads compressed assets and reports decode time. |
+| [x] | `apps/loader-gltf-variants/src/main.ts` | Upgrade variants route. | Variant switching works without reload. |
+| [x] | `tests/assets/current-routes-gltf-loader-corpus.test.ts` | Expand corpus and pass. | No unsupported production-critical samples. |
 
 ### 10. Animation, Skinning, Morphs, IK, And Crowds
 
@@ -303,10 +303,10 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/animation/src/RootMotion.ts` | Add if missing. Root motion extraction/application. | Locomotion route passes. |
 | [x] | `packages/animation/src/AnimationStateMachine.ts` | Add if missing. Blend trees and transitions. | Character controller uses it. |
 | [x] | `packages/animation/src/CrowdAnimation.ts` | Add if missing. Instanced skinned crowd palettes. | Crowd benchmark beats Three.js baseline. |
-| [x] | `apps/v8-animation-keyframes/src/main.ts` | Fix camera, framing, asset quality, clip labels. | User can clearly see correct animation. |
-| [x] | `apps/v8-animation-multiple/src/main.ts` | Render high-quality soldiers or correct chosen characters, not debug placeholders. | Animation quality and FPS pass. |
-| [x] | `apps/v8-skinning-additive/src/main.ts` | Fix missing limbs/disconnected body parts. | Skeleton is visually correct under all poses. |
-| [x] | `tests/browser/v9-skinning-blending-parity.spec.ts` | Blending comparison to Three.js. | Passes pixel and motion metrics. |
+| [x] | `apps/animation-keyframes/src/main.ts` | Fix camera, framing, asset quality, clip labels. | User can clearly see correct animation. |
+| [x] | `apps/animation-multiple/src/main.ts` | Render high-quality soldiers or correct chosen characters, not debug placeholders. | Animation quality and FPS pass. |
+| [x] | `apps/skinning-additive/src/main.ts` | Fix missing limbs/disconnected body parts. | Skeleton is visually correct under all poses. |
+| [x] | `tests/browser/threejs-parity-skinning-blending-parity.spec.ts` | Blending comparison to Three.js. | Passes pixel and motion metrics. |
 | [x] | `tests/performance/animation-crowd-baseline.ts` | Crowd performance benchmark. | G3D beats Three.js at target crowd sizes. |
 
 ### 11. Physics And Simulation
@@ -321,7 +321,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/physics/src/CharacterController.ts` | Add if missing. Grounding, slopes, steps, capsule movement. | Character route passes. |
 | [x] | `packages/physics/src/Raycast.ts` | Add if missing. Ray, shape casts, overlap queries. | Picking and physics queries align. |
 | [x] | `packages/debug/src/PhysicsDebugAdapter.ts` | Debug draw contacts, bounds, constraints. | Physics showcase explains itself visually. |
-| [x] | `apps/v8-physics-showcase/src/main.ts` | Upgrade from toy blocks to benchmarkable physics scene. | Dimensions are correct and simulation is stable. |
+| [x] | `apps/physics-showcase/src/main.ts` | Upgrade from toy blocks to benchmarkable physics scene. | Dimensions are correct and simulation is stable. |
 | [x] | `tests/performance/physics-comparison-baseline.ts` | Compare with Three.js plus common physics integration baseline. | G3D has better integrated workflow and comparable speed. |
 
 ### 12. Controls, Interaction, Picking, And XR
@@ -336,8 +336,8 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/input/src/GamepadInput.ts` | Add if missing. Gamepad mapping. | Game lab route passes. |
 | [x] | `packages/rendering/src/Raycaster.ts` | Add/complete scene raycast with layers, points, lines, sprites, skinned meshes. | Picking route accurate. |
 | [x] | `packages/input/src/WebXRSessionController.ts` | Add/complete. XR session, controllers, hit tests. | WebXR interactions route passes where supported. |
-| [x] | `apps/v8-interactive-picking/src/main.ts` | Fix slow route and add precise hit visualization. | FPS >= 60 on target hardware. |
-| [x] | `apps/v8-webxr-interactions/src/main.ts` | Upgrade XR route with graceful fallback. | Supported/unsupported states are clear. |
+| [x] | `apps/interactive-picking/src/main.ts` | Fix slow route and add precise hit visualization. | FPS >= 60 on target hardware. |
+| [x] | `apps/webxr-interactions/src/main.ts` | Upgrade XR route with graceful fallback. | Supported/unsupported states are clear. |
 
 ### 13. Postprocessing, Effects, Particles, And Special Rendering
 
@@ -352,9 +352,9 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/rendering/src/effects/ParticleEmitter.ts` | CPU/GPU particles, sorting, soft particles. | Particle benchmark beats Three.js. |
 | [x] | `packages/rendering/src/DecalGeometry.ts` | Add/complete projected decals clipped to surfaces. | Decals route is dimensionally correct. |
 | [x] | `packages/rendering/src/StereoEffects.ts` | Add/complete stereo, anaglyph, parallax barrier. | Stereo effects explain/measure effect correctly. |
-| [x] | `apps/v8-postprocessing-bloom/src/main.ts` | Upgrade visual route. | Bloom route beats Three.js comparison. |
-| [x] | `apps/v8-decals/src/main.ts` | Upgrade from simple egg demo to mesh decal proof. | Surface projection is visually clear. |
-| [x] | `apps/v8-parallax-barrier/src/main.ts` | Label intentional blinds; add disable toggle and correct dimensions. | No confusion between effect and deformation. |
+| [x] | `apps/postprocessing-bloom/src/main.ts` | Upgrade visual route. | Bloom route beats Three.js comparison. |
+| [x] | `apps/decals/src/main.ts` | Upgrade from simple egg demo to mesh decal proof. | Surface projection is visually clear. |
+| [x] | `apps/parallax-barrier/src/main.ts` | Label intentional blinds; add disable toggle and correct dimensions. | No confusion between effect and deformation. |
 
 ### 14. Performance, Culling, Memory, And Large Worlds
 
@@ -375,11 +375,11 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 
 | Status | File | Task | Acceptance |
 |---|---|---|---|
-| [x] | `packages/workflows/src/v6/index.ts` | Product workflows upgraded to current renderer/asset/diagnostic APIs. | No stale route-only API. |
+| [x] | `packages/workflows/src/production-runtime/index.ts` | Product workflows upgraded to current renderer/asset/diagnostic APIs. | No stale route-only API. |
 | [x] | `packages/product-studio/src/index.ts` | Product scenes, variants, annotations, hotspots, screenshots, AR/export hooks. | Product configurator beats raw Three.js build time. |
 | [x] | `packages/apps/src/index.ts` | Public app runtime with lifecycle, diagnostics, presets. | Templates use it cleanly. |
-| [x] | `apps/v8-flagship-viewer/src/main.ts` | Fix 3-4s startup, quality, dimensions, background, lighting. | First interactive frame <= target and image quality passes. |
-| [x] | `apps/v8-animation-multiple/src/main.ts` | High-quality crowd route, not low-quality/slow placeholders. | Animation route visually clear and performant. |
+| [x] | `apps/flagship-viewer/src/main.ts` | Fix 3-4s startup, quality, dimensions, background, lighting. | First interactive frame <= target and image quality passes. |
+| [x] | `apps/animation-multiple/src/main.ts` | High-quality crowd route, not low-quality/slow placeholders. | Animation route visually clear and performant. |
 | [x] | `apps/product-studio-pro/src/main.ts` | Product-studio flagship. | Production-style workflow route. |
 | [x] | `apps/material-studio-pro/src/main.ts` | Material-studio flagship. | Authoring workflow route. |
 | [x] | `apps/asset-studio-pro/src/main.ts` | Asset-inspector flagship. | Diagnostics workflow route. |
@@ -397,9 +397,9 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/three-compat/src/controls/*` | Controls compatibility wrappers. | Orbit/transform/trackball examples pass. |
 | [x] | `packages/three-compat/src/postprocessing/*` | Composer/effect migration wrappers. | Postprocess migration route passes. |
 | [x] | `packages/three-compat/src/migration/*` | Codemods, warnings, reports, compatibility score. | Migration report is actionable. |
-| [x] | `tools/v9-threejs-inventory/index.ts` | Inventory all official Three.js examples into categories. | No stale generated-doc paths. |
-| [x] | `tools/v9-official-example-parity/index.ts` | Automate matched/partial/unsupported/exceeded status. | Report drives docs. |
-| [x] | `apps/v7-example-parity-lab/src/main.ts` | Upgrade lab to current V9 route set. | Visual parity lab is clear. |
+| [x] | `tools/threejs-parity-threejs-inventory/index.ts` | Inventory all official Three.js examples into categories. | No stale generated-doc paths. |
+| [x] | `tools/threejs-parity-official-example-parity/index.ts` | Automate matched/partial/unsupported/exceeded status. | Report drives docs. |
+| [x] | `apps/example-parity-lab/src/main.ts` | Upgrade lab to current V9 route set. | Visual parity lab is clear. |
 | [x] | `tests/browser/v9-*-parity.spec.ts` | Add missing official example categories. | Required examples pass. |
 
 ### 17. Editor, Authoring, And Developer Tools
@@ -422,10 +422,10 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | Status | File | Task | Acceptance |
 |---|---|---|---|
 | [x] | `packages/create-g3d/src/cli.ts` | Production create command with templates, validation, package versioning. | External install smoke passes. |
-| [x] | `packages/create-g3d/templates/v6-product-viewer` | Product template. | Builds outside repo. |
-| [x] | `packages/create-g3d/templates/v6-material-studio` | Material template. | Builds outside repo. |
-| [x] | `packages/create-g3d/templates/v6-asset-inspector` | Asset template. | Builds outside repo. |
-| [x] | `packages/create-g3d/templates/v6-webgpu-starter` | WebGPU template with fallback. | Builds outside repo. |
+| [x] | `packages/create-g3d/templates/production-product-viewer` | Product template. | Builds outside repo. |
+| [x] | `packages/create-g3d/templates/production-material-studio` | Material template. | Builds outside repo. |
+| [x] | `packages/create-g3d/templates/production-asset-inspector` | Asset template. | Builds outside repo. |
+| [x] | `packages/create-g3d/templates/production-webgpu-starter` | WebGPU template with fallback. | Builds outside repo. |
 | [x] | `docs/api/public-api.md` | Generated public API reference. | Matches exports. |
 | [x] | `docs/project/getting-started.md` | Current quickstart. | New user can build a real route. |
 | [x] | `docs/project/competitive-positioning.md` | Claim-safe positioning. | No overclaim. |
@@ -486,23 +486,23 @@ Every flagship route must pass:
 
 Required route files:
 
-- [x] `apps/v8-flagship-viewer/src/main.ts`
-- [x] `apps/v8-animation-keyframes/src/main.ts`
-- [x] `apps/v8-animation-multiple/src/main.ts`
-- [x] `apps/v8-skinning-additive/src/main.ts`
-- [x] `apps/v8-skinning-blending/src/main.ts`
-- [x] `apps/v8-skinning-ik/src/main.ts`
-- [x] `apps/v8-skinning-morph/src/main.ts`
-- [x] `apps/v8-decals/src/main.ts`
-- [x] `apps/v8-camera/src/main.ts`
-- [x] `apps/v8-parallax-barrier/src/main.ts`
-- [x] `apps/v8-physics-showcase/src/main.ts`
-- [x] `apps/v8-interactive-picking/src/main.ts`
-- [x] `apps/v8-postprocessing-bloom/src/main.ts`
-- [x] `apps/v8-postprocessing-depth-outline/src/main.ts`
-- [x] `apps/v8-webgpu-rtt/src/main.ts`
-- [x] `apps/v8-webgpu-compute/src/main.ts`
-- [x] `apps/v9-public-scene/src/main.ts`
+- [x] `apps/flagship-viewer/src/main.ts`
+- [x] `apps/animation-keyframes/src/main.ts`
+- [x] `apps/animation-multiple/src/main.ts`
+- [x] `apps/skinning-additive/src/main.ts`
+- [x] `apps/skinning-blending/src/main.ts`
+- [x] `apps/skinning-ik/src/main.ts`
+- [x] `apps/skinning-morph/src/main.ts`
+- [x] `apps/decals/src/main.ts`
+- [x] `apps/camera/src/main.ts`
+- [x] `apps/parallax-barrier/src/main.ts`
+- [x] `apps/physics-showcase/src/main.ts`
+- [x] `apps/interactive-picking/src/main.ts`
+- [x] `apps/postprocessing-bloom/src/main.ts`
+- [x] `apps/postprocessing-depth-outline/src/main.ts`
+- [x] `apps/webgpu-rtt/src/main.ts`
+- [x] `apps/webgpu-compute/src/main.ts`
+- [x] `apps/public-scene/src/main.ts`
 - [x] `apps/product-studio-pro/src/main.ts`
 - [x] `apps/material-studio-pro/src/main.ts`
 - [x] `apps/asset-studio-pro/src/main.ts`

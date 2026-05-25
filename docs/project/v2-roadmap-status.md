@@ -5,10 +5,10 @@
 
 V2 is build-first. The rejected V1 screenshots are not baselines and are not reused:
 
-- `tests/reports/product-viewer-v1/product-viewer.png`
-- `tests/reports/material-studio-v1/material-studio.png`
-- `tests/reports/asset-viewer-v1/asset-viewer.png`
-- `tests/reports/rendering-showcase-v1/rendering-showcase.png`
+- `tests/reports/legacy-product-viewer/product-viewer.png`
+- `tests/reports/legacy-material-studio/material-studio.png`
+- `tests/reports/legacy-asset-viewer/asset-viewer.png`
+- `tests/reports/legacy-rendering-showcase/rendering-showcase.png`
 
 The product target is `G3D Product Studio V1`: a local ecommerce/catalog product-rendering studio backed by generated glTF product assets, a public `@galileo3d/product-studio` package, and a usable browser app in `apps/product-studio`.
 
@@ -19,7 +19,7 @@ Build outputs:
 - Product fixtures: `fixtures/v2/products/{camera-kit,speaker,watch}`
 - SDK package: `packages/product-studio`
 - Browser app: `apps/product-studio`
-- Asset tests: `tests/assets/v2-product-assets.test.ts`
+- Asset tests: `tests/assets/product-studio-product-assets.test.ts`
 - SDK tests: `tests/unit/product-studio`
 - Browser evidence: `tests/browser/product-studio-app.spec.ts`
 - Reports: `tests/reports/v2-*`

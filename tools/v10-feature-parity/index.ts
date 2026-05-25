@@ -14,7 +14,7 @@ const decisions = categories.map((category) => {
   return {
     category,
     decision: blockers.length === 0 ? (exceeded ? "exceeds" as const : "parity" as const) : "partial" as const,
-    evidence: ["tests/reports/v9/threejs-inventory.json"],
+    evidence: ["tests/reports/threejs-parity/threejs-inventory.json"],
     blockers
   };
 });
@@ -28,6 +28,6 @@ writeReport(outputPath, {
   pass: issues.length === 0,
   decisions,
   issues,
-  evidence: ["tests/reports/v9/threejs-inventory.json"]
+  evidence: ["tests/reports/threejs-parity/threejs-inventory.json"]
 });
 

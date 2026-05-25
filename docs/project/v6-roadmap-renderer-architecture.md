@@ -11,7 +11,7 @@ The current V6 product boundary is not "full Three.js replacement." The current 
 
 Key evidence:
 
-- `tests/reports/v6-webgl2-readiness.json`
-- `tests/reports/v6-gallery-readiness.json`
-- `tests/reports/v6-threejs-parity-readiness.json`
-- `tests/reports/v6-external-consumer.json`
+- `tests/reports/production-runtime-webgl2-readiness.json`
+- `tests/reports/production-runtime-gallery-readiness.json`
+- `tests/reports/production-runtime-threejs-parity-readiness.json`
+- `tests/reports/production-runtime-external-consumer.json`

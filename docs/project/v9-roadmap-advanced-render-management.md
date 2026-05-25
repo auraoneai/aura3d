@@ -9,8 +9,8 @@ G3D has real render-queue sorting, state caching, instancing, and diagnostics. A
 - `packages/rendering/src/ForwardPass.ts`
 - `packages/rendering/src/InstancedMesh`-related scene/rendering paths.
 - `packages/rendering/src/SceneOptimization.ts`
-- `tools/v9-performance/`
-- `tools/v9-instancing-parity/`
+- `tools/threejs-parity-performance/`
+- `tools/threejs-parity-instancing-parity/`
 
 ## What Is Supported
 

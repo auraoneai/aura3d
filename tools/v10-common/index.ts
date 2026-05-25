@@ -98,7 +98,7 @@ export function requirePassingReport(path: string, label: string): V10Issue[] {
   return [];
 }
 
-export function readV9Inventory(path = "tests/reports/v9/threejs-inventory.json"): V9InventoryReport {
+export function readV9Inventory(path = "tests/reports/threejs-parity/threejs-inventory.json"): V9InventoryReport {
   const inventory = readJson<V9InventoryReport>(path);
   if (!inventory) {
     throw new Error(`Missing V9 inventory report: ${path}. Run pnpm v9:inventory first.`);

@@ -97,11 +97,11 @@ Required files:
 
 - `packages/create-g3d/package.json`
 - `packages/create-g3d/src/index.ts`
-- `templates/v4-product-viewer/`
-- `templates/v4-material-studio/`
-- `templates/v4-asset-gallery/`
-- `templates/v4-interactive-scene/`
-- `tools/v4-template-readiness/index.ts`
+- `templates/external-parity-product-viewer/`
+- `templates/external-parity-material-studio/`
+- `templates/external-parity-asset-gallery/`
+- `templates/external-parity-interactive-scene/`
+- `tools/external-parity-template-readiness/index.ts`
 
 Acceptance:
 
@@ -165,8 +165,8 @@ Required proof:
 
 Required files:
 
-- `tools/v4-external-vite-build/index.ts`
-- `tools/v4-static-preview-smoke/index.ts`
+- `tools/external-parity-external-vite-build/index.ts`
+- `tools/external-parity-static-preview-smoke/index.ts`
 
 ## Product Surface Areas
 
@@ -343,11 +343,11 @@ Required files:
 
 - `fixtures/v4/products/premium-product/`
 - `apps/product-studio-pro/`
-- `examples/product-configurator-v4/`
-- `benchmarks/v4/galileo/product-configurator.ts`
-- `benchmarks/v4/threejs/product-configurator.ts`
-- `tests/browser/v4-product-configurator.spec.ts`
-- `tools/v4-product-readiness/index.ts`
+- `examples/external-product-configurator/`
+- `benchmarks/external-parity/galileo/product-configurator.ts`
+- `benchmarks/external-parity/threejs/product-configurator.ts`
+- `tests/browser/external-parity-product-configurator.spec.ts`
+- `tools/external-parity-product-readiness/index.ts`
 
 ### 2. Material Studio Pro
 
@@ -379,11 +379,11 @@ Required files:
 - `fixtures/v4/materials/material-library.json`
 - `fixtures/v4/materials/textures/`
 - `apps/material-studio-pro/`
-- `examples/material-studio-v4/`
-- `benchmarks/v4/galileo/material-studio.ts`
-- `benchmarks/v4/threejs/material-studio.ts`
-- `tests/browser/v4-material-studio.spec.ts`
-- `tools/v4-material-readiness/index.ts`
+- `examples/external-material-studio/`
+- `benchmarks/external-parity/galileo/material-studio.ts`
+- `benchmarks/external-parity/threejs/material-studio.ts`
+- `tests/browser/external-parity-material-studio.spec.ts`
+- `tools/external-parity-material-readiness/index.ts`
 
 ### 3. HDR Interior / Architecture Scene
 
@@ -404,11 +404,11 @@ Required files:
 
 - `fixtures/v4/scenes/interior-gallery/`
 - `apps/scene-studio-pro/`
-- `examples/interior-scene-v4/`
-- `benchmarks/v4/galileo/interior-scene.ts`
-- `benchmarks/v4/threejs/interior-scene.ts`
-- `tests/browser/v4-interior-scene.spec.ts`
-- `tools/v4-scene-readiness/index.ts`
+- `examples/external-interior-scene/`
+- `benchmarks/external-parity/galileo/interior-scene.ts`
+- `benchmarks/external-parity/threejs/interior-scene.ts`
+- `tests/browser/external-parity-interior-scene.spec.ts`
+- `tools/external-parity-scene-readiness/index.ts`
 
 ### 4. Complex glTF Asset Review
 
@@ -437,10 +437,10 @@ Required files:
 
 - `fixtures/v4/gltf-corpus/manifest.json`
 - `apps/asset-studio-pro/`
-- `examples/asset-gallery-v4/`
-- `tests/assets/v4-gltf-corpus.test.ts`
-- `tests/browser/v4-gltf-visual-corpus.spec.ts`
-- `tools/v4-gltf-corpus-readiness/index.ts`
+- `examples/external-asset-gallery/`
+- `tests/assets/external-parity-gltf-corpus.test.ts`
+- `tests/browser/external-parity-gltf-visual-corpus.spec.ts`
+- `tools/external-parity-gltf-corpus-readiness/index.ts`
 
 ### 5. Animated Character / Motion Preview
 
@@ -461,9 +461,9 @@ Required files:
 
 - `fixtures/v4/characters/animated-character/`
 - `apps/animation-studio-pro/`
-- `examples/character-viewer-v4/`
-- `tests/browser/v4-character-viewer.spec.ts`
-- `tools/v4-character-readiness/index.ts`
+- `examples/external-character-viewer/`
+- `tests/browser/external-parity-character-viewer.spec.ts`
+- `tools/external-parity-character-readiness/index.ts`
 
 ### 6. Lightweight Interactive Showcase
 
@@ -481,9 +481,9 @@ Must prove:
 Required files:
 
 - `apps/interactive-showcase-pro/`
-- `examples/interactive-showcase-v4/`
-- `tests/browser/v4-interactive-showcase.spec.ts`
-- `tools/v4-interactive-readiness/index.ts`
+- `examples/external-interactive-showcase/`
+- `tests/browser/external-parity-interactive-showcase.spec.ts`
+- `tools/external-parity-interactive-readiness/index.ts`
 
 ## V4 Technical Pillars
 
@@ -519,9 +519,9 @@ Required files:
 - `packages/rendering/src/ToneMapping.ts`
 - `packages/rendering/src/Exposure.ts`
 - `packages/rendering/src/RenderDebugViews.ts`
-- `tests/unit/rendering/v4-color-management.test.ts`
-- `tests/browser/v4-hdr-pipeline.spec.ts`
-- `tools/v4-hdr-readiness/index.ts`
+- `tests/unit/rendering/external-parity-color-management.test.ts`
+- `tests/browser/external-parity-hdr-pipeline.spec.ts`
+- `tools/external-parity-hdr-readiness/index.ts`
 
 Acceptance:
 
@@ -556,9 +556,9 @@ Required files:
 - `packages/rendering/src/PMREM.ts`
 - `packages/rendering/src/BRDFLut.ts`
 - `fixtures/v4/environments/manifest.json`
-- `tests/unit/rendering/v4-ibl.test.ts`
-- `tests/browser/v4-ibl-visual.spec.ts`
-- `tools/v4-ibl-readiness/index.ts`
+- `tests/unit/rendering/external-parity-ibl.test.ts`
+- `tests/browser/external-parity-ibl-visual.spec.ts`
+- `tools/external-parity-ibl-readiness/index.ts`
 
 Acceptance:
 
@@ -594,9 +594,9 @@ Required files:
 - `packages/rendering/src/materials/MaterialExtensions.ts`
 - `packages/rendering/src/materials/AlphaSorting.ts`
 - `packages/rendering/src/materials/TransmissionPass.ts`
-- `tests/unit/rendering/v4-physical-material.test.ts`
-- `tests/browser/v4-material-matrix.spec.ts`
-- `tools/v4-pbr-readiness/index.ts`
+- `tests/unit/rendering/external-parity-physical-material.test.ts`
+- `tests/browser/external-parity-material-matrix.spec.ts`
+- `tools/external-parity-pbr-readiness/index.ts`
 
 Acceptance:
 
@@ -622,8 +622,8 @@ Required files:
 - `packages/rendering/src/shadows/ContactShadows.ts`
 - `packages/rendering/src/shadows/CascadedShadowPipeline.ts`
 - `packages/rendering/src/shadows/ShadowDebugViews.ts`
-- `tests/browser/v4-shadow-quality.spec.ts`
-- `tools/v4-shadow-readiness/index.ts`
+- `tests/browser/external-parity-shadow-quality.spec.ts`
+- `tools/external-parity-shadow-readiness/index.ts`
 
 Acceptance:
 
@@ -649,8 +649,8 @@ Required files:
 - `packages/rendering/src/postprocess/SSAOPass.ts`
 - `packages/rendering/src/postprocess/DepthOfFieldPass.ts`
 - `packages/rendering/src/postprocess/ColorGradingPass.ts`
-- `tests/browser/v4-postprocess-suite.spec.ts`
-- `tools/v4-postprocess-readiness/index.ts`
+- `tests/browser/external-parity-postprocess-suite.spec.ts`
+- `tools/external-parity-postprocess-readiness/index.ts`
 
 Acceptance:
 
@@ -684,9 +684,9 @@ Required files:
 - `fixtures/v4/gltf-corpus/manifest.json`
 - `fixtures/v4/gltf-corpus/licenses.md`
 - `packages/assets/src/V4Corpus.ts`
-- `tests/assets/v4-gltf-loader-corpus.test.ts`
-- `tests/browser/v4-gltf-visual-corpus.spec.ts`
-- `tools/v4-gltf-corpus-readiness/index.ts`
+- `tests/assets/external-parity-gltf-loader-corpus.test.ts`
+- `tests/browser/external-parity-gltf-visual-corpus.spec.ts`
+- `tools/external-parity-gltf-corpus-readiness/index.ts`
 
 Acceptance:
 
@@ -715,9 +715,9 @@ Required files:
 - `packages/rendering/src/performance/ResourceBudget.ts`
 - `packages/rendering/src/performance/RenderItemSorting.ts`
 - `packages/rendering/src/performance/LOD.ts`
-- `tests/browser/v4-large-scene.spec.ts`
-- `tests/performance/v4-performance-baselines.ts`
-- `tools/v4-performance-readiness/index.ts`
+- `tests/browser/external-parity-large-scene.spec.ts`
+- `tests/performance/external-parity-performance-baselines.ts`
+- `tools/external-parity-performance-readiness/index.ts`
 
 Acceptance:
 
@@ -759,10 +759,10 @@ Required files:
 - `packages/engine/src/G3DApp.ts`
 - `packages/engine/src/G3DQualityPresets.ts`
 - `packages/engine/src/index.ts`
-- `packages/workflows/src/v4/`
-- `tests/unit/engine/v4-app-api.test.ts`
-- `tests/browser/v4-public-api-app.spec.ts`
-- `tools/v4-api-readiness/index.ts`
+- `packages/workflows/src/workflow-foundation/`
+- `tests/unit/engine/external-parity-app-api.test.ts`
+- `tests/browser/external-parity-public-api-app.spec.ts`
+- `tools/external-parity-api-readiness/index.ts`
 
 Acceptance:
 
@@ -795,13 +795,13 @@ Required files:
 - `packages/create-g3d/templates/material-studio/`
 - `packages/create-g3d/templates/asset-gallery/`
 - `packages/create-g3d/templates/interactive-scene/`
-- `templates/v4-product-viewer/`
-- `templates/v4-material-studio/`
-- `templates/v4-asset-gallery/`
-- `templates/v4-interactive-scene/`
-- `tools/v4-template-readiness/index.ts`
-- `tools/v4-external-vite-build/index.ts`
-- `tools/v4-static-preview-smoke/index.ts`
+- `templates/external-parity-product-viewer/`
+- `templates/external-parity-material-studio/`
+- `templates/external-parity-asset-gallery/`
+- `templates/external-parity-interactive-scene/`
+- `tools/external-parity-template-readiness/index.ts`
+- `tools/external-parity-external-vite-build/index.ts`
+- `tools/external-parity-static-preview-smoke/index.ts`
 
 Acceptance:
 
@@ -841,13 +841,13 @@ Each app must include:
 
 Required tests:
 
-- `tests/browser/v4-product-studio-pro.spec.ts`
-- `tests/browser/v4-material-studio-pro.spec.ts`
-- `tests/browser/v4-asset-studio-pro.spec.ts`
-- `tests/browser/v4-scene-studio-pro.spec.ts`
-- `tests/browser/v4-animation-studio-pro.spec.ts`
-- `tests/browser/v4-interactive-showcase-pro.spec.ts`
-- `tools/v4-app-suite-readiness/index.ts`
+- `tests/browser/external-parity-product-studio-pro.spec.ts`
+- `tests/browser/external-parity-material-studio-pro.spec.ts`
+- `tests/browser/external-parity-asset-studio-pro.spec.ts`
+- `tests/browser/external-parity-scene-studio-pro.spec.ts`
+- `tests/browser/external-parity-animation-studio-pro.spec.ts`
+- `tests/browser/external-parity-interactive-showcase-pro.spec.ts`
+- `tools/external-parity-app-suite-readiness/index.ts`
 
 Acceptance:
 
@@ -859,21 +859,21 @@ Acceptance:
 
 Required examples:
 
-- `examples/product-configurator-v4`
-- `examples/material-studio-v4`
-- `examples/asset-gallery-v4`
-- `examples/interior-scene-v4`
-- `examples/character-viewer-v4`
-- `examples/interactive-showcase-v4`
-- `examples/hdr-ibl-v4`
-- `examples/postprocess-v4`
+- `examples/external-product-configurator`
+- `examples/external-material-studio`
+- `examples/external-asset-gallery`
+- `examples/external-interior-scene`
+- `examples/external-character-viewer`
+- `examples/external-interactive-showcase`
+- `examples/external-hdr-ibl`
+- `examples/external-postprocess`
 
 Required tutorials:
 
 - `docs/project/tutorials-v4-hdr-ibl.md`
 - `docs/project/tutorials-v4-product-configurator.md`
-- `docs/project/tutorials-v4-material-studio.md`
-- `docs/project/tutorials-v4-asset-gallery.md`
+- `docs/project/tutorials-external-parity-material-studio.md`
+- `docs/project/tutorials-external-parity-asset-gallery.md`
 - `docs/project/tutorials-v4-interior-scene.md`
 - `docs/project/tutorials-v4-character-viewer.md`
 - `docs/project/tutorials-v4-performance.md`
@@ -900,11 +900,11 @@ Required comparisons:
 
 Required files:
 
-- `benchmarks/v4/shared/`
-- `benchmarks/v4/galileo/`
-- `benchmarks/v4/threejs/`
-- `tests/browser/v4-threejs-visual-parity.spec.ts`
-- `tools/v4-threejs-visual-parity/index.ts`
+- `benchmarks/external-parity/shared/`
+- `benchmarks/external-parity/galileo/`
+- `benchmarks/external-parity/threejs/`
+- `tests/browser/external-parity-threejs-visual-parity.spec.ts`
+- `tools/external-parity-threejs-visual-parity/index.ts`
 
 Each comparison must report:
 
@@ -935,10 +935,10 @@ V4 release requires visual gates, not just JSON gates.
 
 Required files:
 
-- `tools/v4-roadmap-visual-quality/index.ts`
-- `tools/v4-screenshot-gallery/index.ts`
-- `tests/reports/v4-gallery/index.html`
-- `tests/reports/v4-visual-quality.json`
+- `tools/external-parity-roadmap-visual-quality/index.ts`
+- `tools/external-parity-screenshot-gallery/index.ts`
+- `tests/reports/external-gallery/index.html`
+- `tests/reports/external-parity-visual-quality.json`
 
 Visual gate must check:
 
@@ -969,8 +969,8 @@ Create:
 - `docs/project/v4-roadmap-progress.md`
 - `docs/project/v4-roadmap-blocked-claims.md`
 - `docs/project/v4-roadmap-visual-failures.md`
-- `tools/v4-truth/index.ts`
-- `tools/v4-progress/index.ts`
+- `tools/external-parity-truth/index.ts`
+- `tools/external-parity-progress/index.ts`
 
 Acceptance:
 
@@ -996,7 +996,7 @@ Create:
 - `fixtures/v4/scenes/manifest.json`
 - `fixtures/v4/characters/manifest.json`
 - `docs/project/v4-roadmap-reference-visual-targets.md`
-- `tools/v4-fixture-readiness/index.ts`
+- `tools/external-parity-fixture-readiness/index.ts`
 
 Requirements:
 
@@ -1022,9 +1022,9 @@ Build:
 
 Tests:
 
-- `tests/unit/rendering/v4-color-management.test.ts`
-- `tests/browser/v4-hdr-pipeline.spec.ts`
-- `tools/v4-hdr-readiness/index.ts`
+- `tests/unit/rendering/external-parity-color-management.test.ts`
+- `tests/browser/external-parity-hdr-pipeline.spec.ts`
+- `tools/external-parity-hdr-readiness/index.ts`
 
 Exit:
 
@@ -1044,9 +1044,9 @@ Build:
 
 Tests:
 
-- `tests/unit/rendering/v4-ibl.test.ts`
-- `tests/browser/v4-ibl-visual.spec.ts`
-- `tools/v4-ibl-readiness/index.ts`
+- `tests/unit/rendering/external-parity-ibl.test.ts`
+- `tests/browser/external-parity-ibl-visual.spec.ts`
+- `tools/external-parity-ibl-readiness/index.ts`
 
 Exit:
 
@@ -1065,9 +1065,9 @@ Build:
 
 Tests:
 
-- `tests/unit/rendering/v4-physical-material.test.ts`
-- `tests/browser/v4-material-matrix.spec.ts`
-- `tools/v4-pbr-readiness/index.ts`
+- `tests/unit/rendering/external-parity-physical-material.test.ts`
+- `tests/browser/external-parity-material-matrix.spec.ts`
+- `tools/external-parity-pbr-readiness/index.ts`
 
 Exit:
 
@@ -1089,10 +1089,10 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-shadow-quality.spec.ts`
-- `tests/browser/v4-postprocess-suite.spec.ts`
-- `tools/v4-shadow-readiness/index.ts`
-- `tools/v4-postprocess-readiness/index.ts`
+- `tests/browser/external-parity-shadow-quality.spec.ts`
+- `tests/browser/external-parity-postprocess-suite.spec.ts`
+- `tools/external-parity-shadow-readiness/index.ts`
+- `tools/external-parity-postprocess-readiness/index.ts`
 
 Exit:
 
@@ -1111,9 +1111,9 @@ Build:
 
 Tests:
 
-- `tests/assets/v4-gltf-loader-corpus.test.ts`
-- `tests/browser/v4-gltf-visual-corpus.spec.ts`
-- `tools/v4-gltf-corpus-readiness/index.ts`
+- `tests/assets/external-parity-gltf-loader-corpus.test.ts`
+- `tests/browser/external-parity-gltf-visual-corpus.spec.ts`
+- `tools/external-parity-gltf-corpus-readiness/index.ts`
 
 Exit:
 
@@ -1132,8 +1132,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-product-configurator.spec.ts`
-- `tools/v4-product-readiness/index.ts`
+- `tests/browser/external-parity-product-configurator.spec.ts`
+- `tools/external-parity-product-readiness/index.ts`
 
 Exit:
 
@@ -1151,8 +1151,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-material-studio-pro.spec.ts`
-- `tools/v4-material-studio-readiness/index.ts`
+- `tests/browser/external-parity-material-studio-pro.spec.ts`
+- `tools/external-parity-material-studio-readiness/index.ts`
 
 Exit:
 
@@ -1171,8 +1171,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-interior-scene.spec.ts`
-- `tools/v4-scene-readiness/index.ts`
+- `tests/browser/external-parity-interior-scene.spec.ts`
+- `tools/external-parity-scene-readiness/index.ts`
 
 Exit:
 
@@ -1191,8 +1191,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-asset-studio-pro.spec.ts`
-- `tools/v4-asset-studio-readiness/index.ts`
+- `tests/browser/external-parity-asset-studio-pro.spec.ts`
+- `tools/external-parity-asset-studio-readiness/index.ts`
 
 Exit:
 
@@ -1211,8 +1211,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-character-viewer.spec.ts`
-- `tools/v4-character-readiness/index.ts`
+- `tests/browser/external-parity-character-viewer.spec.ts`
+- `tools/external-parity-character-readiness/index.ts`
 
 Exit:
 
@@ -1230,8 +1230,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-interactive-showcase.spec.ts`
-- `tools/v4-interactive-readiness/index.ts`
+- `tests/browser/external-parity-interactive-showcase.spec.ts`
+- `tools/external-parity-interactive-readiness/index.ts`
 
 Exit:
 
@@ -1251,9 +1251,9 @@ Build:
 
 Tests:
 
-- `tests/unit/engine/v4-app-api.test.ts`
-- `tests/browser/v4-public-api-app.spec.ts`
-- `tools/v4-api-readiness/index.ts`
+- `tests/unit/engine/external-parity-app-api.test.ts`
+- `tests/browser/external-parity-public-api-app.spec.ts`
+- `tools/external-parity-api-readiness/index.ts`
 
 Exit:
 
@@ -1274,12 +1274,12 @@ Build:
 
 Tests:
 
-- `tests/unit/engine/v4-public-api-stability.test.ts`
-- `tests/integration/v4-create-g3d.test.ts`
-- `tests/browser/v4-template-product-viewer.spec.ts`
-- `tools/v4-template-readiness/index.ts`
-- `tools/v4-external-vite-build/index.ts`
-- `tools/v4-static-preview-smoke/index.ts`
+- `tests/unit/engine/external-parity-public-api-stability.test.ts`
+- `tests/integration/external-parity-create-g3d.test.ts`
+- `tests/browser/external-parity-template-product-viewer.spec.ts`
+- `tools/external-parity-template-readiness/index.ts`
+- `tools/external-parity-external-vite-build/index.ts`
+- `tools/external-parity-static-preview-smoke/index.ts`
 
 Exit:
 
@@ -1300,8 +1300,8 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-threejs-visual-parity.spec.ts`
-- `tools/v4-threejs-visual-parity/index.ts`
+- `tests/browser/external-parity-threejs-visual-parity.spec.ts`
+- `tools/external-parity-threejs-visual-parity/index.ts`
 
 Exit:
 
@@ -1320,10 +1320,10 @@ Build:
 
 Tests:
 
-- `tests/browser/v4-examples.spec.ts`
-- `tools/v4-examples-readiness/index.ts`
-- `tools/v4-screenshot-gallery/index.ts`
-- `tools/v4-roadmap-visual-quality/index.ts`
+- `tests/browser/external-parity-examples.spec.ts`
+- `tools/external-parity-examples-readiness/index.ts`
+- `tools/external-parity-screenshot-gallery/index.ts`
+- `tools/external-parity-roadmap-visual-quality/index.ts`
 
 Exit:
 
@@ -1345,10 +1345,10 @@ Build:
 
 Tests:
 
-- `tools/v4-package-smoke/index.ts`
-- `tools/v4-external-consumer/index.ts`
-- `tools/v4-external-vite-build/index.ts`
-- `tools/v4-static-preview-smoke/index.ts`
+- `tools/external-parity-package-smoke/index.ts`
+- `tools/external-parity-external-consumer/index.ts`
+- `tools/external-parity-external-vite-build/index.ts`
+- `tools/external-parity-static-preview-smoke/index.ts`
 
 Exit:
 
@@ -1361,7 +1361,7 @@ pnpm v4:package
 Build:
 
 - `docs/project/v4-roadmap-product-positioning.md`
-- `docs/project/v4-roadmap-visual-quality-status.md`
+- `docs/project/external-parity-roadmap-visual-quality-status.md`
 - `docs/project/v4-roadmap-threejs-parity-status.md`
 - `docs/project/v4-roadmap-supported-workflows.md`
 - `docs/project/v4-roadmap-known-gaps.md`
@@ -1369,7 +1369,7 @@ Build:
 
 Tests:
 
-- `tools/v4-docs-readiness/index.ts`
+- `tools/external-parity-docs-readiness/index.ts`
 
 Exit:
 
@@ -1381,8 +1381,8 @@ pnpm v4:docs
 
 Build:
 
-- `tools/v4-release-readiness/index.ts`
-- `tools/v4-roadmap-completion-audit/index.ts`
+- `tools/external-parity-release-readiness/index.ts`
+- `tools/external-parity-roadmap-completion-audit/index.ts`
 - `v4:release`
 
 Release command must run:
@@ -1411,8 +1411,8 @@ pnpm v4:compare-threejs &&
 pnpm v4:examples &&
 pnpm v4:package &&
 pnpm v4:docs &&
-pnpm exec tsx --tsconfig tsconfig.base.json tools/v4-release-readiness/index.ts &&
-pnpm exec tsx --tsconfig tsconfig.base.json tools/v4-roadmap-completion-audit/index.ts
+pnpm exec tsx --tsconfig tsconfig.base.json tools/external-parity-release-readiness/index.ts &&
+pnpm exec tsx --tsconfig tsconfig.base.json tools/external-parity-roadmap-completion-audit/index.ts
 ```
 
 V4 is not complete until this command passes.
@@ -1421,49 +1421,49 @@ V4 is not complete until this command passes.
 
 Required reports:
 
-- `tests/reports/v4-truth.json`
-- `tests/reports/v4-progress.json`
-- `tests/reports/v4-fixture-readiness.json`
-- `tests/reports/v4-hdr-readiness.json`
-- `tests/reports/v4-ibl-readiness.json`
-- `tests/reports/v4-pbr-readiness.json`
-- `tests/reports/v4-shadow-readiness.json`
-- `tests/reports/v4-postprocess-readiness.json`
-- `tests/reports/v4-performance-readiness.json`
-- `tests/reports/v4-gltf-corpus-readiness.json`
-- `tests/reports/v4-product-readiness.json`
-- `tests/reports/v4-material-studio-readiness.json`
-- `tests/reports/v4-scene-readiness.json`
-- `tests/reports/v4-asset-studio-readiness.json`
-- `tests/reports/v4-character-readiness.json`
-- `tests/reports/v4-interactive-readiness.json`
-- `tests/reports/v4-app-suite-readiness.json`
-- `tests/reports/v4-api-readiness.json`
-- `tests/reports/v4-template-readiness.json`
-- `tests/reports/v4-external-vite-build.json`
-- `tests/reports/v4-static-preview-smoke.json`
-- `tests/reports/v4-threejs-visual-parity.json`
-- `tests/reports/v4-examples-readiness.json`
-- `tests/reports/v4-visual-quality.json`
-- `tests/reports/v4-package-smoke.json`
-- `tests/reports/v4-external-consumer.json`
-- `tests/reports/v4-docs-readiness.json`
-- `tests/reports/v4-release-readiness.json`
-- `tests/reports/v4-completion-audit.json`
+- `tests/reports/external-parity-truth.json`
+- `tests/reports/external-parity-progress.json`
+- `tests/reports/external-parity-fixture-readiness.json`
+- `tests/reports/external-parity-hdr-readiness.json`
+- `tests/reports/external-parity-ibl-readiness.json`
+- `tests/reports/external-parity-pbr-readiness.json`
+- `tests/reports/external-parity-shadow-readiness.json`
+- `tests/reports/external-parity-postprocess-readiness.json`
+- `tests/reports/external-parity-performance-readiness.json`
+- `tests/reports/external-parity-gltf-corpus-readiness.json`
+- `tests/reports/external-parity-product-readiness.json`
+- `tests/reports/external-parity-material-studio-readiness.json`
+- `tests/reports/external-parity-scene-readiness.json`
+- `tests/reports/external-parity-asset-studio-readiness.json`
+- `tests/reports/external-parity-character-readiness.json`
+- `tests/reports/external-parity-interactive-readiness.json`
+- `tests/reports/external-parity-app-suite-readiness.json`
+- `tests/reports/external-parity-api-readiness.json`
+- `tests/reports/external-parity-template-readiness.json`
+- `tests/reports/external-parity-external-vite-build.json`
+- `tests/reports/external-parity-static-preview-smoke.json`
+- `tests/reports/external-parity-threejs-visual-parity.json`
+- `tests/reports/external-parity-examples-readiness.json`
+- `tests/reports/external-parity-visual-quality.json`
+- `tests/reports/external-parity-package-smoke.json`
+- `tests/reports/external-parity-external-consumer.json`
+- `tests/reports/external-parity-docs-readiness.json`
+- `tests/reports/external-parity-release-readiness.json`
+- `tests/reports/external-parity-completion-audit.json`
 
 ## V4 Screenshot Proof
 
 Required screenshot groups:
 
-- `tests/reports/v4-gallery/product/`
-- `tests/reports/v4-gallery/materials/`
-- `tests/reports/v4-gallery/interior/`
-- `tests/reports/v4-gallery/assets/`
-- `tests/reports/v4-gallery/character/`
-- `tests/reports/v4-gallery/interactive/`
-- `tests/reports/v4-gallery/threejs-comparison/`
-- `tests/reports/v4-gallery/debug-views/`
-- `tests/reports/v4-gallery/postprocess/`
+- `tests/reports/external-gallery/product/`
+- `tests/reports/external-gallery/materials/`
+- `tests/reports/external-gallery/interior/`
+- `tests/reports/external-gallery/assets/`
+- `tests/reports/external-gallery/character/`
+- `tests/reports/external-gallery/interactive/`
+- `tests/reports/external-gallery/threejs-comparison/`
+- `tests/reports/external-gallery/debug-views/`
+- `tests/reports/external-gallery/postprocess/`
 
 Every flagship screenshot must include:
 
@@ -1505,8 +1505,8 @@ Do this first, in order:
 2. Create `docs/project/v4-roadmap-progress.md`.
 3. Create `docs/project/v4-roadmap-visual-failures.md` with the current V3 screenshot failures explicitly named.
 4. Create `docs/project/v4-roadmap-blocked-claims.md`.
-5. Create `tools/v4-truth/index.ts`.
-6. Create `tools/v4-progress/index.ts`.
+5. Create `tools/external-parity-truth/index.ts`.
+6. Create `tools/external-parity-progress/index.ts`.
 7. Add `v4:truth` and `v4:progress` scripts.
 8. Create fixture manifests for environments/products/materials/scenes/characters.
 9. Choose real licensed reference assets.

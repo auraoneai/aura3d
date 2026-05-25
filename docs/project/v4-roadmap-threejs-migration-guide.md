@@ -22,8 +22,8 @@ const scene = await workflows.productConfigurator({
 
 ## Evidence
 
-- Same-scene comparison report: `tests/reports/v4-threejs-visual-parity.json`
-- Large-scene comparison images: `tests/reports/v4-threejs-visual-parity/large-scene-performance-g3d.png`, `tests/reports/v4-threejs-visual-parity/large-scene-performance-threejs.png`
+- Same-scene comparison report: `tests/reports/external-parity-threejs-visual-parity.json`
+- Large-scene comparison images: `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-g3d.png`, `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-threejs.png`
 - Bounded status: `docs/project/v4-roadmap-threejs-parity-status.md`
 
 Boundary: full Three.js API compatibility remains blocked. Migrate supported product, material, asset, scene, character, and interactive workflows first.

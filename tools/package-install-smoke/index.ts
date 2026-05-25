@@ -206,7 +206,7 @@ assert.equal(material.name, "external-smoke-pbr");
 assert.equal(typeof rendering.Renderer.prototype.renderScene, "function");
 
 const lighting = rendering.createV4EnvironmentLighting("studio");
-assert.equal(lighting.presetId, "galileo3d-v4-visual-quality-preset");
+assert.equal(lighting.presetId, "galileo3d-external-parity-visual-quality-preset");
 assert.equal(lighting.resources.validation.brdfLutTexture, true);
 assert.equal(lighting.resources.validation.diffuseIrradiance, true);
 assert.ok(lighting.resources.specularMipCount >= 4);

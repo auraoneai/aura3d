@@ -3,7 +3,7 @@
 > Historical note: This V5 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-The V5 environment library exists to make HDR lighting and image-based lighting a first-class product feature. It is tracked in `fixtures/v5/environments/manifest.json` and exposed through `packages/environments`.
+The V5 environment library exists to make HDR lighting and image-based lighting a first-class product feature. It is tracked in `fixtures/three-compat/environments/manifest.json` and exposed through `packages/environments`.
 
 ## Required Capabilities
 
@@ -26,7 +26,7 @@ The environment library must support:
 
 ## Acceptance Evidence
 
-The environment readiness gate is `pnpm v5:environments`. It must prove that at least 12 environment presets exist and that at least 6 real HDRI files are present, checked, and license documented.
+The environment readiness gate is `pnpm three-compat:environments`. It must prove that at least 12 environment presets exist and that at least 6 real HDRI files are present, checked, and license documented.
 
 ## Release Boundary
 

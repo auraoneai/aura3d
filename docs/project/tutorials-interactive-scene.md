@@ -1,6 +1,6 @@
 # Tutorial: Interactive Scene V3
 
-This tutorial maps to `examples/interactive-scene-v3` and `examples/game-slice-v3`. It shows how to run a public workflow inside the renderer animation loop.
+This tutorial maps to `examples/foundation-interactive-scene` and `examples/foundation-game-slice`. It shows how to run a public workflow inside the renderer animation loop.
 
 ## Core API
 
@@ -30,5 +30,5 @@ This is a realtime viewport slice, not a claim that G3D replaces Unity, Unreal, 
 ## Verification
 
 ```sh
-pnpm exec playwright test tests/browser/v3-examples.spec.ts -g "interactive-scene-v3|game-slice-v3"
+pnpm exec playwright test tests/browser/foundation-examples.spec.ts -g "foundation-interactive-scene|foundation-game-slice"
 ```

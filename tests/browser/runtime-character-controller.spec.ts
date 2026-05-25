@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const assetScreenshotPath = resolve(process.cwd(), "examples/game-slice/test-artifacts/game-slice-v3-assets.png");
+const assetScreenshotPath = resolve(process.cwd(), "examples/game-slice/test-artifacts/foundation-game-slice-assets.png");
 
 test.describe("runtime character controller", () => {
   test.setTimeout(180_000);

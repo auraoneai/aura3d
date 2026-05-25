@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const reportPath = resolve(process.cwd(), "tests/reports/v3-runtime-browser.json");
+const reportPath = resolve(process.cwd(), "tests/reports/foundation-runtime-browser.json");
 
 type RuntimeReport = {
   readonly generatedAt: string;

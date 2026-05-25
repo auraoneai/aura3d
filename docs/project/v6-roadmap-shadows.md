@@ -9,4 +9,4 @@ The current docs do not claim Unity/Unreal shadow parity, cascaded shadow parity
 
 Primary evidence:
 
-- `tests/reports/v6-effects-readiness.json`
+- `tests/reports/production-runtime-effects-readiness.json`

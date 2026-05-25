@@ -9,5 +9,5 @@ This is API coverage governed by the V10 evidence matrix. The current allowed cl
 
 Primary evidence:
 
-- `tests/reports/v6-threejs-parity/browser-report.json`
-- `tests/reports/v6-threejs-parity-readiness.json`
+- `tests/reports/production-runtime-threejs-parity/browser-report.json`
+- `tests/reports/production-runtime-threejs-parity-readiness.json`

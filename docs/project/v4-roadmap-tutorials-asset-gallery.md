@@ -20,9 +20,9 @@ const diagnostics = createDiagnosticsPanel({
 
 Evidence:
 
-- Example: `examples/asset-gallery-v4`
+- Example: `examples/external-asset-gallery`
 - App: `apps/asset-studio-pro`
-- Screenshot: `tests/reports/v4-gallery/assets/asset-gallery-v4.png`
-- Same-scene Three.js comparison: `tests/reports/v4-threejs-visual-parity/asset-review-threejs.png`
+- Screenshot: `tests/reports/external-gallery/assets/external-asset-gallery.png`
+- Same-scene Three.js comparison: `tests/reports/external-parity-threejs-visual-parity/asset-review-threejs.png`
 
 Boundary: full glTF ecosystem parity remains blocked until the broader corpus and external loader gates are green.

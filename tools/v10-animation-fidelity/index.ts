@@ -5,13 +5,13 @@ const inventory = readV9Inventory();
 const animationCategories = new Set(["animation", "skinning", "morph-targets"]);
 const animationItems = (inventory.items ?? []).filter((item) => animationCategories.has(item.category));
 const requiredReports = [
-  "tests/reports/v9/animation-keyframes-parity.json",
-  "tests/reports/v9/animation-multiple-parity.json",
-  "tests/reports/v9/animation-walk-parity.json",
-  "tests/reports/v9/skinning-additive-parity.json",
-  "tests/reports/v9/skinning-blending-parity.json",
-  "tests/reports/v9/skinning-ik-parity.json",
-  "tests/reports/v9/morphtargets-parity.json"
+  "tests/reports/threejs-parity/animation-keyframes-parity.json",
+  "tests/reports/threejs-parity/animation-multiple-parity.json",
+  "tests/reports/threejs-parity/animation-walk-parity.json",
+  "tests/reports/threejs-parity/skinning-additive-parity.json",
+  "tests/reports/threejs-parity/skinning-blending-parity.json",
+  "tests/reports/threejs-parity/skinning-ik-parity.json",
+  "tests/reports/threejs-parity/morphtargets-parity.json"
 ];
 const issues = [
   ...requiredReports.flatMap((path) => reportPasses(path) ? [] : [issue(`animation-report:${path}`, `${path} is missing or not passing.`)]),

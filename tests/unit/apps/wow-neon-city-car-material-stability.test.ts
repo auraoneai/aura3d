@@ -8,9 +8,9 @@ import {
 describe("wow neon city car material stability", () => {
   it("keeps the delayed HDR environment from reintroducing white car speckle", () => {
     const wowSource = readFileSync("apps/wow-neon-city/src/main.ts", "utf8");
-    const v8Source = readFileSync("packages/engine/src/v8/index.ts", "utf8");
+    const v8Source = readFileSync("packages/engine/src/threejs-example-parity/index.ts", "utf8");
     const carProfileSource = readFileSync("packages/assets/src/CarConceptMaterialStability.ts", "utf8");
-    const pmremSource = readFileSync("packages/rendering/src/v6/environment/PMREMGenerator.ts", "utf8");
+    const pmremSource = readFileSync("packages/rendering/src/production-runtime/environment/PMREMGenerator.ts", "utf8");
     const materialSource = readFileSync("packages/rendering/src/TexturedPBRMaterial.ts", "utf8");
     const shaderSource = readFileSync("packages/rendering/src/ShaderLibrary.ts", "utf8");
 

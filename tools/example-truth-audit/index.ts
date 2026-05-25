@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { baseReport, listFiles } from "../v3-reporting/index.js";
+import { baseReport, listFiles } from "../foundation-reporting/index.js";
 
 export interface ExampleTruthAuditEntry {
   readonly id: string;
@@ -26,7 +26,7 @@ export interface ExampleTruthAuditReport {
   readonly examples: readonly ExampleTruthAuditEntry[];
 }
 
-const reportPath = "tests/reports/v3-example-truth-audit.json";
+const reportPath = "tests/reports/foundation-example-truth-audit.json";
 
 export function auditExampleTruth(root = process.cwd()): ExampleTruthAuditReport {
   const portfolioPath = "examples/portfolio/main.ts";
@@ -57,7 +57,7 @@ export function auditExampleTruth(root = process.cwd()): ExampleTruthAuditReport
   const violations = examples.flatMap((entry) => entry.violations);
   const base = baseReport(root, {
     ok: violations.length === 0,
-    command: "pnpm verify:v3-code",
+    command: "pnpm verify:foundation-code",
     runIdPrefix: "v3-example-truth-audit",
     sourceFiles: [portfolioPath, ...browserTestPaths, ...examples.map((entry) => entry.screenshotPath)],
     screenshotPaths: examples.map((entry) => entry.screenshotPath),

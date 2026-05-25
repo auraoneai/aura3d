@@ -11,8 +11,8 @@ V5 created broad packages, docs, examples, and release gates, but its visual pro
 
 Specific failures:
 
-- `tests/browser/v5-threejs-visual-parity.spec.ts` used canvas-painted visual evidence instead of rendering real G3D scenes through a production WebGL2/WebGPU renderer.
-- `tests/reports/v5-gallery/*` was initially allowed to pass with tiny, blank, flat, or non-renderer screenshots.
+- `tests/browser/three-compat-threejs-visual-parity.spec.ts` used canvas-painted visual evidence instead of rendering real G3D scenes through a production WebGL2/WebGPU renderer.
+- `tests/reports/three-compat-gallery/*` was initially allowed to pass with tiny, blank, flat, or non-renderer screenshots.
 - V5 app-suite tests used metadata such as `window.__app` as proof, which is not enough for visual product quality.
 - V5 renderer capture contracts could return identifiers instead of real framebuffer pixels.
 - V5 parity metadata contained hardcoded scene scores rather than computed image similarity from real same-scene renders.
@@ -44,4 +44,4 @@ The following cannot count as completion:
 
 ## Required Audit Outcome
 
-`tools/v6-v5-failure-audit/index.ts` must fail if the failure docs do not name canvas-painted visual proof, fake parity scores, non-renderer screenshots, mock renderer output, and the requirement for real WebGL2/WebGPU frame-buffer screenshots.
+`tools/production-runtime-three-compat-failure-audit/index.ts` must fail if the failure docs do not name canvas-painted visual proof, fake parity scores, non-renderer screenshots, mock renderer output, and the requirement for real WebGL2/WebGPU frame-buffer screenshots.

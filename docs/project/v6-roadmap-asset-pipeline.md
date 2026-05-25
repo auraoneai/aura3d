@@ -9,6 +9,6 @@ Asset preflight checks provenance and render requirements before workflow use. A
 
 Primary evidence:
 
-- `fixtures/v6/assets/manifest.json`
-- `tests/reports/v6-asset-readiness.json`
-- `tests/reports/v6-workflows-readiness.json`
+- `fixtures/asset-corpus/manifest.json`
+- `tests/reports/production-runtime-asset-readiness.json`
+- `tests/reports/production-runtime-workflows-readiness.json`

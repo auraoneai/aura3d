@@ -46,7 +46,7 @@ Path: `examples/architecture-viewer`
 Path: `examples/game-slice`
 
 - [x] Load a real level asset.
-- [x] Add player/character model with lit skinning. Evidence: `examples/game-slice/main.ts` now renders a V4 skinned hero with `SkinnedLitMaterial` and a live skinning palette; `tests/browser/example-screenshot-audit-v4.spec.ts` requires `litSkinnedCharacter` and `skinnedHeroAnimation`, and `pnpm verify:v4-examples` passes.
+- [x] Add player/character model with lit skinning. Evidence: `examples/game-slice/main.ts` now renders a V4 skinned hero with `SkinnedLitMaterial` and a live skinning palette; `tests/browser/example-screenshot-audit-external-parity.spec.ts` requires `litSkinnedCharacter` and `skinnedHeroAnimation`, and `pnpm verify:external-parity-examples` passes.
 - [x] Add animation state machine.
 - [x] Add physics controller and collisions.
 - [x] Add keyboard and touch input.
@@ -101,7 +101,7 @@ Path: `examples/shadow-lab`
 
 Path: `examples/large-world-streaming`
 
-- [x] Create this example only after real streaming/culling/LOD code exists. Evidence: `examples/large-world-streaming/main.ts` implements the bounded streaming/culling/LOD harness and is verified by `pnpm verify:v4-examples`.
+- [x] Create this example only after real streaming/culling/LOD code exists. Evidence: `examples/large-world-streaming/main.ts` implements the bounded streaming/culling/LOD harness and is verified by `pnpm verify:external-parity-examples`.
 - [x] Use real assets or realistic modular assets. Evidence: `examples/large-world-streaming/main.ts` uses generated modular PBR world cells with published known limits.
 - [x] Add cells/chunks, async loading simulation, culling, LOD, camera path, and metrics. Evidence: `window.__GALILEO3D_LARGE_WORLD_STREAMING__` publishes loaded/loading/unloaded cells, async load counts, culling, LOD levels, camera path, frame, triangle, and memory metrics.
-- [x] Add browser screenshot and movement tests. Evidence: `tests/browser/large-world-streaming-v4.spec.ts` captures `tests/reports/v4-example-screenshots/large-world-streaming.png` and asserts camera-path movement.
+- [x] Add browser screenshot and movement tests. Evidence: `tests/browser/large-world-streaming-external-parity.spec.ts` captures `tests/reports/v4-example-screenshots/large-world-streaming.png` and asserts camera-path movement.

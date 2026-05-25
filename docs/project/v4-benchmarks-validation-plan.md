@@ -19,7 +19,7 @@ Benchmarks must stop being generic scaffolds. They must compare real supported b
 - [x] Asset render.
 - [x] PBR material scene.
 - [x] Postprocess scene if Galileo3D supports matching effects.
-- [x] Large scene with LOD/culling if implemented. Evidence: `benchmarks/shared/scenes/large-scene.ts` defines the shared large-scene comparison, the Galileo wrapper publishes LOD/batching/camera timing evidence, and `tools/v4-benchmarks/index.ts` requires `large-scene`.
+- [x] Large scene with LOD/culling if implemented. Evidence: `benchmarks/shared/scenes/large-scene.ts` defines the shared large-scene comparison, the Galileo wrapper publishes LOD/batching/camera timing evidence, and `tools/external-parity-benchmarks/index.ts` requires `large-scene`.
 - [x] Skinned character scene.
 - [x] Morph character scene if implemented.
 - [x] Particles scene.
@@ -33,7 +33,7 @@ Benchmarks must stop being generic scaffolds. They must compare real supported b
 - [x] `tests/reports/comparison-screenshots/babylon-*.png`.
 - [x] `tests/reports/comparison-diffs/*.png`.
 - [x] `tests/reports/v4-example-screenshots/*.png`.
-- [x] `tests/reports/v4-visual-quality.json`.
+- [x] `tests/reports/external-parity-visual-quality.json`.
 
 ## Visual Quality Gate
 
@@ -47,13 +47,13 @@ Benchmarks must stop being generic scaffolds. They must compare real supported b
 
 ## Final Commands
 
-- [x] `pnpm verify:v4-code` passes.
-- [x] `pnpm verify:v4-rendering` passes.
-- [x] `pnpm verify:v4-assets` passes.
-- [x] `pnpm verify:v4-editor` passes.
-- [x] `pnpm verify:v4-runtime` passes.
-- [x] `pnpm verify:v4-examples` passes.
-- [x] `pnpm verify:v4-benchmarks` passes.
-- [ ] `pnpm verify:v4-visual-quality` passes. Current blocker: `tests/reports/v4-visual-quality.json` is `ok: false`.
-- [ ] `pnpm verify:v4-report-freshness` passes. Current blocker: full V4 freshness must be rerun after visual-quality repair; do not rely on stale 2026-05-08 evidence.
+- [x] `pnpm verify:external-parity-code` passes.
+- [x] `pnpm verify:external-parity-rendering` passes.
+- [x] `pnpm verify:external-parity-assets` passes.
+- [x] `pnpm verify:external-parity-editor` passes.
+- [x] `pnpm verify:external-parity-runtime` passes.
+- [x] `pnpm verify:external-parity-examples` passes.
+- [x] `pnpm verify:external-parity-benchmarks` passes.
+- [ ] `pnpm verify:external-parity-visual-quality` passes. Current blocker: `tests/reports/external-parity-visual-quality.json` is `ok: false`.
+- [ ] `pnpm verify:external-parity-report-freshness` passes. Current blocker: full V4 freshness must be rerun after visual-quality repair; do not rely on stale 2026-05-08 evidence.
 - [ ] `pnpm verify:v4` passes. Current blocker: visual-quality and final completion gates remain blocked.

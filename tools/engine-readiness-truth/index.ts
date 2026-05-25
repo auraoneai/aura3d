@@ -38,8 +38,8 @@ const checks = [
   },
   {
     id: "stale-v4-completion-report-removed",
-    ok: !existsSync("tests/reports/v4-completion-audit.json"),
-    evidence: "tests/reports/v4-completion-audit.json"
+    ok: !existsSync("tests/reports/external-parity-completion-audit.json"),
+    evidence: "tests/reports/external-parity-completion-audit.json"
   }
 ];
 

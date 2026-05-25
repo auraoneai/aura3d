@@ -19,4 +19,4 @@ Blocked language:
 
 Primary evidence:
 
-- `tests/reports/v6-webgpu-readiness.json`
+- `tests/reports/production-runtime-webgpu-readiness.json`

@@ -21,5 +21,5 @@ The renderer proof includes backend kind, draw calls, buffers, shaders, textures
 
 Primary evidence:
 
-- `tests/reports/v6-webgl2-readiness.json`
-- `tests/reports/v6-performance-readiness.json`
+- `tests/reports/production-runtime-webgl2-readiness.json`
+- `tests/reports/production-runtime-performance-readiness.json`

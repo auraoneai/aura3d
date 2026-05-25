@@ -15,7 +15,7 @@ User requirement:
 
 Current status:
 
-- Root-code checks: all 15 checks in `tests/reports/v4-codebase-root-readiness.json` pass.
+- Root-code checks: all 15 checks in `tests/reports/external-parity-codebase-root-readiness.json` pass.
 - Overall readiness: `rootReady: false`.
 - Example work: `examplesAllowedToResume: false`.
 - Reason examples remain blocked: visual-quality and external parity gates still fail or remain incomplete.
@@ -32,13 +32,13 @@ Current status:
 | WebGL sRGB textures must not be double-decoded in PBR shaders. | `does not double-decode WebGL sRGB PBR texture samples` root browser test; shader source no longer contains `return pow(clamp(encodedColor`. | Passing |
 | Samplers and texture upload behavior must preserve sRGB and mipmap contracts. | `tests/unit/rendering/render-state-leaks.test.ts`; `uploads sRGB textures with WebGL2 sRGB internal formats`; `preserves mipmap-aware sampler min filters`. | Passing |
 | Root postprocess must render real scene pixels without inheriting scene cull/blend/depth state. | `preserves dark clear color through renderer-owned postprocess presentation`; `presents renderer-owned postprocess even after scene cull state changes`; root browser gate passed 11/11. | Passing |
-| HDR render-target root path must preserve overbright linear output before tone mapping. | `tests/browser/rendering-root-quality-gate.spec.ts`; `tests/reports/v4-hdr-render-target-readiness.json`; `audit:v4-hdr-render-target-readiness` passes with parity still blocked. | Passing, parity blocked |
-| Shadow-map root forward path must have renderer-owned sampling evidence. | `packages/rendering/src/ForwardPass.ts`; `packages/rendering/src/ShadowPass.ts`; `tests/reports/v4-shadow-map-readiness.json`; root browser shadow resize test. | Passing, parity blocked |
+| HDR render-target root path must preserve overbright linear output before tone mapping. | `tests/browser/rendering-root-quality-gate.spec.ts`; `tests/reports/external-parity-hdr-render-target-readiness.json`; `audit:external-parity-hdr-render-target-readiness` passes with parity still blocked. | Passing, parity blocked |
+| Shadow-map root forward path must have renderer-owned sampling evidence. | `packages/rendering/src/ForwardPass.ts`; `packages/rendering/src/ShadowPass.ts`; `tests/reports/external-parity-shadow-map-readiness.json`; root browser shadow resize test. | Passing, parity blocked |
 | Asset-to-render-resource ergonomics must provide a usable default path. | `packages/assets/src/GLTFRenderResources.ts`; `tests/assets/gltf-inspection.test.ts`; `toRenderSource()` defaults to `studio-preview`; `qualityPreset: "default"` is explicit opt-out. | Passing |
-| glTF local loader contract must remain covered. | `tests/reports/v4-pbr-gltf-readiness.json`; `gltfParity: true`; focused asset contract test passed 5/5. | Passing locally |
+| glTF local loader contract must remain covered. | `tests/reports/external-parity-pbr-gltf-readiness.json`; `gltfParity: true`; focused asset contract test passed 5/5. | Passing locally |
 | WebGPU native root path must remain tracked and bounded. | `packages/rendering/src/WebGPUDevice.ts`; `tests/reports/v4-webgpu-parity.json`; root readiness check passes, broad WebGPU parity remains blocked. | Passing locally, parity blocked |
-| Current visual quality must block resume until honestly fixed. | `tests/reports/v4-visual-quality.json`; root readiness reports `exampleVisualsStillBlocked: true`. | Blocking |
-| External Unity/Unreal parity must not be inferred from local tests. | `tests/reports/v4-codebase-root-readiness.json`; blockers list missing Unity executable and external evidence sidecars. | Blocking |
+| Current visual quality must block resume until honestly fixed. | `tests/reports/external-parity-visual-quality.json`; root readiness reports `exampleVisualsStillBlocked: true`. | Blocking |
+| External Unity/Unreal parity must not be inferred from local tests. | `tests/reports/external-parity-codebase-root-readiness.json`; blockers list missing Unity executable and external evidence sidecars. | Blocking |
 
 ## Verification Commands
 
@@ -50,18 +50,18 @@ Root-only commands run in this pass:
 - `pnpm exec vitest run tests/unit/input/camera-controls.test.ts tests/unit/rendering/renderer.test.ts -t "camera|frustum|auto-frame|explicit offscreen render targets" --reporter=dot`
 - `pnpm exec playwright test tests/browser/workspace-vite-imports.spec.ts --reporter=line`
 - `pnpm exec playwright test tests/browser/rendering-root-quality-gate.spec.ts --reporter=line`
-- `pnpm audit:v4-hdr-render-target-readiness`
-- `pnpm audit:v4-shadow-map-readiness`
-- `pnpm audit:v4-postprocess-suite`
-- `pnpm audit:v4-pbr-gltf-readiness`
-- `pnpm exec tsx --tsconfig tsconfig.base.json tools/v4-codebase-root-readiness/index.ts`
-- `pnpm verify:v4-codebase-root-report-freshness`
+- `pnpm audit:external-parity-hdr-render-target-readiness`
+- `pnpm audit:external-parity-shadow-map-readiness`
+- `pnpm audit:external-parity-postprocess-suite`
+- `pnpm audit:external-parity-pbr-gltf-readiness`
+- `pnpm exec tsx --tsconfig tsconfig.base.json tools/external-parity-codebase-root-readiness/index.ts`
+- `pnpm verify:external-parity-codebase-root-report-freshness`
 
 ## Remaining Blockers
 
 Do not resume example work until these are resolved or explicitly waived:
 
-- `tests/reports/v4-visual-quality.json` fails. Current concrete failures:
+- `tests/reports/external-parity-visual-quality.json` fails. Current concrete failures:
   - screenshot files are visually weak or badly framed for `product-configurator`, `game-slice`, and `material-showroom`;
   - primary asset visibility is under-evidenced for `product-configurator`, `architecture-viewer`, and `game-slice`;
   - static/manifest flagship evidence does not clear the `v4-not-debug-or-primitive-dominated` gate;

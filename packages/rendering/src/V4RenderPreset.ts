@@ -29,7 +29,7 @@ export interface V4RenderPresetFeatureStatus {
 }
 
 export interface V4RenderPresetEvidence {
-  readonly presetId: "galileo3d-v4-visual-quality-preset";
+  readonly presetId: "galileo3d-external-parity-visual-quality-preset";
   readonly presetVersion: 1;
   readonly exampleId: string;
   readonly screenshotPath: string;
@@ -55,7 +55,7 @@ export type V4EnvironmentPreset =
   | "gameplay";
 
 export interface V4EnvironmentLightingBundle {
-  readonly presetId: "galileo3d-v4-visual-quality-preset";
+  readonly presetId: "galileo3d-external-parity-visual-quality-preset";
   readonly manifestPath: "fixtures/assets/v4/environments/generated-local-environment-manifest.json";
   readonly preset: V4EnvironmentPreset;
   readonly lighting: EnvironmentLightingOptions;
@@ -98,7 +98,7 @@ export interface V4LdrPostprocessSummary {
 
 export interface V4DirectionalShadowEvidence {
   readonly mode: "bounded-directional-shadow-map" | "renderer-owned-directional-shadow-map";
-  readonly presetId: "galileo3d-v4-visual-quality-preset";
+  readonly presetId: "galileo3d-external-parity-visual-quality-preset";
   readonly exampleId: string;
   readonly cascadeCount: number;
   readonly mapSize: number;
@@ -180,7 +180,7 @@ export function createV4EnvironmentLighting(preset: V4EnvironmentPreset): V4Envi
   const environmentValidation = environmentMapTexture.validate();
   const brdfValidation = environmentBrdfLutTexture.validate();
   const bundle: V4EnvironmentLightingBundle = {
-    presetId: "galileo3d-v4-visual-quality-preset",
+    presetId: "galileo3d-external-parity-visual-quality-preset",
     manifestPath: "fixtures/assets/v4/environments/generated-local-environment-manifest.json",
     preset,
     lighting: {
@@ -372,7 +372,7 @@ export function createV4DirectionalShadowEvidence(options: {
   const productionShadowSamplingClaimed = options.productionShadowSamplingClaimed === true;
   return {
     mode: productionShadowSamplingClaimed ? "renderer-owned-directional-shadow-map" : "bounded-directional-shadow-map",
-    presetId: "galileo3d-v4-visual-quality-preset",
+    presetId: "galileo3d-external-parity-visual-quality-preset",
     exampleId: options.exampleId,
     cascadeCount: options.cascadeCount ?? 3,
     mapSize: options.mapSize ?? 512,
@@ -454,7 +454,7 @@ export function createV4RenderPresetEvidence(options: V4RenderPresetEvidenceOpti
   }
   const features = normalizeFeatureStatuses(options.features);
   return {
-    presetId: "galileo3d-v4-visual-quality-preset",
+    presetId: "galileo3d-external-parity-visual-quality-preset",
     presetVersion: 1,
     exampleId: options.exampleId,
     screenshotPath: options.screenshotPath,

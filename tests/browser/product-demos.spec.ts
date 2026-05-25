@@ -157,7 +157,7 @@ test.describe("v2 product demos", () => {
     expect(state.export.requested).toBe(true);
     expect(state.export.dataUrlBytes).toBeGreaterThan(1000);
 
-    await page.screenshot({ path: "tests/reports/v3-product-configurator-model-backed.png", fullPage: true });
+    await page.screenshot({ path: "tests/reports/foundation-product-configurator-model-backed.png", fullPage: true });
   });
 
   test("product configurator environment presets visibly affect metallic real-model pixels", async ({ page }) => {
@@ -168,13 +168,13 @@ test.describe("v2 product demos", () => {
     await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.environmentPreset === "softbox");
     await page.waitForTimeout(200);
     const softboxStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
-    await writeProductDemoScreenshot(page, "tests/reports/v4-example-screenshots/product-configurator-env-softbox.png");
+    await writeProductDemoScreenshot(page, "tests/reports/external-parity-example-screenshots/product-configurator-env-softbox.png");
 
     await page.getByRole("button", { name: "Inspect" }).click();
     await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.environmentPreset === "inspection");
     await page.waitForTimeout(200);
     const inspectionStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
-    await writeProductDemoScreenshot(page, "tests/reports/v4-example-screenshots/product-configurator-env-inspection.png");
+    await writeProductDemoScreenshot(page, "tests/reports/external-parity-example-screenshots/product-configurator-env-inspection.png");
     const state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
 
     expect(state.activeVariant).toBe("copper");

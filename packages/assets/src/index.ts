@@ -112,26 +112,26 @@ export {
   loadV5AssetManifest,
   loadV5AssetRegistry,
   summarizeV5AssetRegistry
-} from "./v5/V5AssetRegistry";
+} from "./threejs-compatibility/V5AssetRegistry";
 export {
   createV5AssetProvenance
-} from "./v5/V5AssetProvenance";
+} from "./threejs-compatibility/V5AssetProvenance";
 export type {
   V5AssetManifest,
   V5AssetRegistrySummary
-} from "./v5/V5AssetRegistry";
+} from "./threejs-compatibility/V5AssetRegistry";
 export type {
   V5AssetProvenance,
   V5SourceAsset,
   V5TrackedAssetInput
-} from "./v5/V5AssetProvenance";
+} from "./threejs-compatibility/V5AssetProvenance";
 export {
   createV6GLTFRenderMetadata,
   createV6AssetCorpusSummary,
   inspectV6Glb,
   loadV6GLTFRenderPipeline,
   loadV6AssetManifest
-} from "./v6";
+} from "./asset-corpus";
 export type {
   V6AssetClass,
   V6AssetCorpusRequirements,
@@ -144,7 +144,7 @@ export type {
   V6GLTFRenderPipeline,
   V6GLTFRenderPipelineOptions,
   V6GlbInspection
-} from "./v6";
+} from "./asset-corpus";
 export {
   createV8AssetCorpusSummary,
   inspectV8Glb,

@@ -3,16 +3,16 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export type CreateG3DTemplate =
-  | "v4-product-viewer"
-  | "v4-material-studio"
-  | "v4-asset-gallery"
-  | "v4-interactive-scene"
-  | "v6-product-viewer"
-  | "v6-product-configurator"
-  | "v6-asset-inspector"
-  | "v6-material-studio"
-  | "v6-architecture-viewer"
-  | "v6-webgpu-starter";
+  | "external-parity-product-viewer"
+  | "external-parity-material-studio"
+  | "external-parity-asset-gallery"
+  | "external-parity-interactive-scene"
+  | "production-product-viewer"
+  | "production-product-configurator"
+  | "production-asset-inspector"
+  | "production-material-studio"
+  | "production-architecture-viewer"
+  | "production-webgpu-starter";
 
 export interface CreateG3DProjectOptions {
   readonly targetDir: string;
@@ -28,7 +28,7 @@ export interface CreateG3DProjectResult {
 }
 
 export function createG3DProject(options: CreateG3DProjectOptions): CreateG3DProjectResult {
-  const template = options.template ?? "v4-product-viewer";
+  const template = options.template ?? "external-parity-product-viewer";
   const rootDir = options.rootDir ?? findDefaultTemplateRoot();
   const templateDir = resolve(rootDir, "templates", template);
   if (!existsSync(templateDir)) throw new Error(`Unknown create-g3d template: ${template}`);
@@ -65,16 +65,16 @@ function findDefaultTemplateRoot(): string {
   let current = dirname(fileURLToPath(import.meta.url));
   for (let depth = 0; depth < 8; depth += 1) {
   if (
-    existsSync(resolve(current, "templates", "v4-product-viewer")) &&
-    existsSync(resolve(current, "templates", "v4-material-studio")) &&
-    existsSync(resolve(current, "templates", "v4-asset-gallery")) &&
-    existsSync(resolve(current, "templates", "v4-interactive-scene")) &&
-    existsSync(resolve(current, "templates", "v6-product-viewer")) &&
-    existsSync(resolve(current, "templates", "v6-product-configurator")) &&
-    existsSync(resolve(current, "templates", "v6-asset-inspector")) &&
-    existsSync(resolve(current, "templates", "v6-material-studio")) &&
-    existsSync(resolve(current, "templates", "v6-architecture-viewer")) &&
-    existsSync(resolve(current, "templates", "v6-webgpu-starter"))
+    existsSync(resolve(current, "templates", "external-parity-product-viewer")) &&
+    existsSync(resolve(current, "templates", "external-parity-material-studio")) &&
+    existsSync(resolve(current, "templates", "external-parity-asset-gallery")) &&
+    existsSync(resolve(current, "templates", "external-parity-interactive-scene")) &&
+    existsSync(resolve(current, "templates", "production-product-viewer")) &&
+    existsSync(resolve(current, "templates", "production-product-configurator")) &&
+    existsSync(resolve(current, "templates", "production-asset-inspector")) &&
+    existsSync(resolve(current, "templates", "production-material-studio")) &&
+    existsSync(resolve(current, "templates", "production-architecture-viewer")) &&
+    existsSync(resolve(current, "templates", "production-webgpu-starter"))
   ) return current;
     const next = dirname(current);
     if (next === current) break;

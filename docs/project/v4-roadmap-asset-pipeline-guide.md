@@ -10,15 +10,15 @@ Required implementation surfaces:
 - `packages/assets/src/V4Corpus.ts`
 - `fixtures/v4/gltf-corpus/manifest.json`
 - `apps/asset-studio-pro/`
-- `examples/asset-gallery-v4/`
-- `templates/v4-asset-gallery/`
+- `examples/external-asset-gallery/`
+- `templates/external-parity-asset-gallery/`
 
 Release evidence:
 
-- `tests/reports/v4-gltf-corpus-readiness.json`
-- `tests/reports/v4-asset-studio-readiness.json`
-- `tests/reports/v4-gallery/assets/asset-gallery-v4.png`
-- `tests/reports/v4-gallery/templates/v4-asset-gallery.png`
+- `tests/reports/external-parity-gltf-corpus-readiness.json`
+- `tests/reports/external-parity-asset-studio-readiness.json`
+- `tests/reports/external-gallery/assets/external-asset-gallery.png`
+- `tests/reports/external-gallery/templates/external-parity-asset-gallery.png`
 
 Boundary: full glTF ecosystem parity, every extension, every decoder path, and every DCC export quirk remain blocked claims.
 

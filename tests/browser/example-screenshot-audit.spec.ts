@@ -1,10 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { baseReport } from "../../tools/v3-reporting/index.js";
+import { baseReport } from "../../tools/foundation-reporting/index.js";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const screenshotDir = "tests/reports/v3-example-screenshots";
+const screenshotDir = "tests/reports/foundation-example-screenshots";
 const manifestPath = `${screenshotDir}/manifest.json`;
 const viewport = { width: 1280, height: 800 };
 const auditTimeoutMs = 420_000;

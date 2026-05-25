@@ -203,7 +203,7 @@ const SUPPORTED_REQUIRED_EXTENSIONS = new Set([
   "KHR_texture_transform"
 ]);
 
-export function loadV8AssetManifest(path = "fixtures/v8/assets/manifest.json"): V8AssetManifest {
+export function loadV8AssetManifest(path = "fixtures/threejs-parity/assets/manifest.json"): V8AssetManifest {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as V8AssetManifest;
 }
 
@@ -391,7 +391,7 @@ export function createV8AssetCorpusSummary(manifest = loadV8AssetManifest()): V8
   };
 }
 
-export function writeV8AssetCorpusReport(path = "tests/reports/v8-assets.json"): V8AssetCorpusSummary {
+export function writeV8AssetCorpusReport(path = "tests/reports/current-routes-assets.json"): V8AssetCorpusSummary {
   const summary = createV8AssetCorpusSummary();
   const outputPath = resolve(path);
   writeFileSync(outputPath, `${JSON.stringify(summary, null, 2)}\n`);

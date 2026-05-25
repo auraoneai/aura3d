@@ -9,8 +9,8 @@ V9 does not currently exceed Three.js broadly. The current reports allow scoped 
 G3D exposes workflow and renderer wrappers that can reduce setup for supported paths:
 
 - `@galileo3d/engine/v9` provides `G3DRenderer`, `G3DScene`, and `G3DAppLifecycle`.
-- `@galileo3d/workflows` and `packages/workflows/src/v6/*` provide higher-level product, asset, material, cinematic, and architecture workflow structure.
-- `apps/v9-public-scene/` demonstrates public V9 imports rather than private app-only helpers.
+- `@galileo3d/workflows` and `packages/workflows/src/production-runtime/*` provide higher-level product, asset, material, cinematic, and architecture workflow structure.
+- `apps/public-scene/` demonstrates public V9 imports rather than private app-only helpers.
 
 Allowed claim: for supported G3D workflows, setup can be more structured than hand-wiring raw Three.js scene/camera/renderer/loop/disposal code.
 

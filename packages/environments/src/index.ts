@@ -27,7 +27,7 @@ export {
   createV6EnvironmentCorpusSummary,
   inspectV6HDR,
   loadV6EnvironmentManifest
-} from "./v6/V6EnvironmentCorpus";
+} from "./production-runtime/V6EnvironmentCorpus";
 export type {
   V6HDREnvironment,
   V6HDRInspection,
@@ -37,4 +37,4 @@ export type {
   V6EnvironmentReadinessEntry,
   V6EnvironmentRequirements,
   V6PMREMPreset
-} from "./v6/V6EnvironmentCorpus";
+} from "./production-runtime/V6EnvironmentCorpus";

@@ -1,6 +1,6 @@
 # Tutorial: Material Studio V3
 
-This tutorial maps to `examples/material-studio-v3`. It demonstrates a public material review workflow that creates PBR, textured PBR, and normal-mapped render items.
+This tutorial maps to `examples/foundation-material-studio`. It demonstrates a public material review workflow that creates PBR, textured PBR, and normal-mapped render items.
 
 ## Core API
 
@@ -22,5 +22,5 @@ renderer.render(workflow.source, workflow.camera);
 ## Verification
 
 ```sh
-pnpm exec playwright test tests/browser/v3-examples.spec.ts -g "material-studio-v3"
+pnpm exec playwright test tests/browser/foundation-examples.spec.ts -g "foundation-material-studio"
 ```

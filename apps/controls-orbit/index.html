@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V8 Orbit Controls</title>
+    <link rel="stylesheet" href="/apps/common/src/styles.css">
+    <style>
+      body.controls-orbit {
+        grid-template-columns: minmax(780px, min(72vw, 1400px)) minmax(360px, 1fr);
+        background: #080b0f;
+      }
+
+      body.controls-orbit #viewport {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        background: #080b0f;
+        cursor: grab;
+      }
+
+      body.controls-orbit #viewport:active {
+        cursor: grabbing;
+      }
+
+      body.controls-orbit #app {
+        padding: 18px;
+      }
+
+      .controls-orbit .metrics {
+        grid-template-columns: repeat(2, minmax(132px, 1fr));
+      }
+
+      .controls-orbit #runtime-state.is-ready,
+      .controls-orbit #runtime-state.is-running {
+        background: #286b50;
+      }
+
+      .controls-orbit #runtime-state.is-error {
+        background: #923b3b;
+      }
+    </style>
+  </head>
+  <body class="controls-orbit">
+    <canvas id="viewport" width="1280" height="720"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/controls-orbit/src/main.ts"></script>
+  </body>
+</html>

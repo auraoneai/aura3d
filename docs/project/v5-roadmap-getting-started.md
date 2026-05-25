@@ -27,7 +27,7 @@ Use readiness reports under `tests/reports/`.
 
 ## Migrate
 
-Run `pnpm v5:migration`.
+Run `pnpm three-compat:migration`.
 
 ## Snippet 1
 

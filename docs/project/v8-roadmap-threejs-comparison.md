@@ -70,4 +70,4 @@ Blocked until broader reports pass:
 
 ## Required Reports
 
-The required V8 comparison report is `tests/reports/v8-threejs-parity.json`. It must be generated from code and must fail when comparison screenshots, assets, environments, or source-boundary checks are missing.
+The required V8 comparison report is `tests/reports/current-routes-threejs-parity.json`. It must be generated from code and must fail when comparison screenshots, assets, environments, or source-boundary checks are missing.

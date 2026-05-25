@@ -7,8 +7,8 @@ V5 targets the installed Three.js baseline from the root package.
 
 - Package: `three`
 - Declared version range at V5 start: `^0.165.0`
-- Inventory report: `tests/reports/v5-threejs-inventory.json`
-- Compatibility matrix: `tests/reports/v5-threejs-compatibility-matrix.json`
+- Inventory report: `tests/reports/three-compat-threejs-inventory.json`
+- Compatibility matrix: `tests/reports/three-compat-threejs-compatibility-matrix.json`
 
 The compatibility inventory must be regenerated before claiming any broad Three.js replacement progress. If the Three.js package version changes, the inventory and matrix must be regenerated before any release gate can pass.
 

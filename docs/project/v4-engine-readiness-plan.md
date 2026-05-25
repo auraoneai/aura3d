@@ -101,10 +101,10 @@ Goal: product viewer workflow is simpler and good-looking.
 
 Code deliverables:
 
-- [ ] `examples/product-viewer-v1/index.html`
-- [ ] `examples/product-viewer-v1/main.ts`
-- [ ] `tests/browser/product-viewer-v1.spec.ts`
-- [ ] `tests/reports/product-viewer-v1/product-viewer.png`
+- [ ] `examples/legacy-product-viewer/index.html`
+- [ ] `examples/legacy-product-viewer/main.ts`
+- [ ] `tests/browser/product-viewer-engine-readiness.spec.ts`
+- [ ] `tests/reports/legacy-product-viewer/product-viewer.png`
 - [ ] `tools/engine-readiness-product-viewer/index.ts`
 
 Acceptance:
@@ -123,9 +123,9 @@ Code deliverables:
 - [ ] `packages/assets/src/loadRenderableAsset.ts`
 - [ ] `packages/assets/src/createRenderableScene.ts`
 - [ ] `packages/assets/src/AssetRenderDefaults.ts`
-- [ ] `examples/asset-viewer-v1/index.html`
-- [ ] `examples/asset-viewer-v1/main.ts`
-- [ ] `tests/browser/asset-viewer-v1.spec.ts`
+- [ ] `examples/legacy-asset-viewer/index.html`
+- [ ] `examples/legacy-asset-viewer/main.ts`
+- [ ] `tests/browser/asset-viewer-engine-readiness.spec.ts`
 - [ ] `tools/engine-readiness-gltf-support/index.ts`
 
 Acceptance:
@@ -141,10 +141,10 @@ Goal: PBR/material workflows are ergonomic and visually credible.
 
 Code deliverables:
 
-- [ ] `examples/material-studio-v1/index.html`
-- [ ] `examples/material-studio-v1/main.ts`
-- [ ] `tests/browser/material-studio-v1.spec.ts`
-- [ ] `tests/reports/material-studio-v1/material-studio.png`
+- [ ] `examples/legacy-material-studio/index.html`
+- [ ] `examples/legacy-material-studio/main.ts`
+- [ ] `tests/browser/material-studio-engine-readiness.spec.ts`
+- [ ] `tests/reports/legacy-material-studio/material-studio.png`
 - [ ] `packages/rendering/src/MaterialPresets.ts`
 - [ ] `packages/rendering/src/LightingDefaults.ts`
 
@@ -295,10 +295,10 @@ Goal: ship one clean public demo that uses the SDK.
 
 Deliverables:
 
-- [ ] `examples/product-viewer-v1/index.html`
-- [ ] `examples/product-viewer-v1/main.ts`
-- [ ] `tests/browser/product-viewer-v1.spec.ts`
-- [ ] `tests/reports/product-viewer-v1/product-viewer.png`
+- [ ] `examples/legacy-product-viewer/index.html`
+- [ ] `examples/legacy-product-viewer/main.ts`
+- [ ] `tests/browser/product-viewer-engine-readiness.spec.ts`
+- [ ] `tests/reports/legacy-product-viewer/product-viewer.png`
 
 Exit command:
 
@@ -324,10 +324,10 @@ Goal: rebuild only the demos that prove product value.
 
 Deliverables:
 
-- [ ] `examples/product-viewer-v1/`
-- [ ] `examples/material-studio-v1/`
-- [ ] `examples/asset-viewer-v1/`
-- [ ] `examples/rendering-showcase-v1/`
+- [ ] `examples/legacy-product-viewer/`
+- [ ] `examples/legacy-material-studio/`
+- [ ] `examples/legacy-asset-viewer/`
+- [ ] `examples/legacy-rendering-showcase/`
 - [ ] `examples/index.html` lists only these rebuilt examples.
 - [ ] Browser screenshot tests for each example.
 
@@ -339,10 +339,10 @@ pnpm engine-readiness:examples
 
 Exit evidence:
 
-- [ ] `tests/reports/product-viewer-v1/product-viewer.png`
-- [ ] `tests/reports/material-studio-v1/material-studio.png`
-- [ ] `tests/reports/asset-viewer-v1/asset-viewer.png`
-- [ ] `tests/reports/rendering-showcase-v1/rendering-showcase.png`
+- [ ] `tests/reports/legacy-product-viewer/product-viewer.png`
+- [ ] `tests/reports/legacy-material-studio/material-studio.png`
+- [ ] `tests/reports/legacy-asset-viewer/asset-viewer.png`
+- [ ] `tests/reports/legacy-rendering-showcase/rendering-showcase.png`
 - [ ] `tests/reports/engine-readiness-examples.json`
 
 Loop stopper:
@@ -485,14 +485,14 @@ These tools may contain useful logic, but they currently encode goals the repo c
 
 Checklist:
 
-- [ ] Remove `tools/v4-broad-parity-readiness/index.ts` from required scripts.
-- [ ] Remove `tools/v4-unity-unreal-parity/index.ts` from required scripts.
-- [ ] Remove `tools/v4-external-engine-baselines/index.ts` from required scripts.
-- [ ] Remove `tools/v4-external-evidence-readiness/index.ts` from required scripts.
-- [ ] Remove `tools/v4-external-host-runner/index.ts` from required scripts.
-- [ ] Remove `tools/v4-external-host-doctor/index.ts` from required scripts.
-- [ ] Remove `tools/v4-github-external-readiness/index.ts` from required scripts.
-- [ ] Remove `tools/v4-completion-audit/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-broad-parity-readiness/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-unity-unreal-parity/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-external-engine-baselines/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-external-evidence-readiness/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-external-host-runner/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-external-host-doctor/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-github-external-readiness/index.ts` from required scripts.
+- [ ] Remove `tools/external-parity-completion-audit/index.ts` from required scripts.
 - [ ] Replace these scripts with a local-only blocker report under `tools/engine-readiness-root-readiness/index.ts`.
 - [ ] Keep old tools under `tools/_quarantine/v4-parity/` only if tests still import them.
 - [ ] Update `package.json` to remove or rename scripts that imply broad parity readiness.
@@ -500,14 +500,14 @@ Checklist:
 Files to edit:
 
 - `package.json`
-- `tools/v4-broad-parity-readiness/index.ts`
-- `tools/v4-unity-unreal-parity/index.ts`
-- `tools/v4-external-engine-baselines/index.ts`
-- `tools/v4-external-evidence-readiness/index.ts`
-- `tools/v4-external-host-runner/index.ts`
-- `tools/v4-external-host-doctor/index.ts`
-- `tools/v4-github-external-readiness/index.ts`
-- `tools/v4-completion-audit/index.ts`
+- `tools/external-parity-broad-parity-readiness/index.ts`
+- `tools/external-parity-unity-unreal-parity/index.ts`
+- `tools/external-parity-external-engine-baselines/index.ts`
+- `tools/external-parity-external-evidence-readiness/index.ts`
+- `tools/external-parity-external-host-runner/index.ts`
+- `tools/external-parity-external-host-doctor/index.ts`
+- `tools/external-parity-github-external-readiness/index.ts`
+- `tools/external-parity-completion-audit/index.ts`
 - `tools/engine-readiness-root-readiness/index.ts`
 
 ### 1.3 Delete Or Regenerate Misleading Reports
@@ -517,14 +517,14 @@ Current report artifacts mix real evidence with failed visual output. They shoul
 Checklist:
 
 - [ ] Delete generated V4 screenshot reports under `tests/reports/v4-example-screenshots/`.
-- [ ] Delete generated V4 product parity screenshots under `tests/reports/v4-product-visual-parity/`.
-- [ ] Delete stale `tests/reports/v4-visual-quality.json`.
-- [ ] Delete stale `tests/reports/v4-codebase-root-readiness.json`.
+- [ ] Delete generated V4 product parity screenshots under `tests/reports/external-parity-product-visual-parity/`.
+- [ ] Delete stale `tests/reports/external-parity-visual-quality.json`.
+- [ ] Delete stale `tests/reports/external-parity-codebase-root-readiness.json`.
 - [ ] Delete stale parity reports that imply broad readiness:
-  - `tests/reports/v4-broad-parity-readiness.json`
-  - `tests/reports/v4-unity-unreal-parity.json`
-  - `tests/reports/v4-production-readiness.json`
-  - `tests/reports/v4-completion-audit.json`
+  - `tests/reports/external-parity-broad-parity-readiness.json`
+  - `tests/reports/external-parity-unity-unreal-parity.json`
+  - `tests/reports/external-parity-production-readiness.json`
+  - `tests/reports/external-parity-completion-audit.json`
 - [ ] Add `.gitignore` entries if these reports are generated and should not be checked in.
 - [ ] Add a regeneration command that only writes engine-readiness reports:
   - `pnpm engine-readiness:reports`
@@ -624,7 +624,7 @@ Files:
 - `packages/rendering/src/WebGL2Device.ts`
 - `packages/rendering/src/PostProcessPass.ts`
 - `tests/unit/rendering/render-graph.test.ts`
-- `tests/browser/hdr-render-target-v4.spec.ts`
+- `tests/browser/hdr-render-target-external-parity.spec.ts`
 - `tests/browser/rendering-root-quality-gate.spec.ts`
 
 Done when:
@@ -752,7 +752,7 @@ Files:
 - `packages/assets/src/GLTFRenderResources.ts`
 - `tests/unit/rendering/render-resources.test.ts`
 - `tests/browser/asset-texture-browser.spec.ts`
-- `tests/browser/asset-material-fidelity-v4.spec.ts`
+- `tests/browser/asset-material-fidelity-external-parity.spec.ts`
 
 Done when:
 
@@ -888,9 +888,9 @@ Files:
 - `packages/rendering/src/PostProcessPass.ts`
 - `packages/rendering/src/WebGL2Device.ts`
 - `packages/rendering/src/RenderGraph.ts`
-- `tests/browser/hdr-render-target-v4.spec.ts`
+- `tests/browser/hdr-render-target-external-parity.spec.ts`
 - `tests/browser/rendering-canonical-scene.spec.ts`
-- `tools/v4-hdr-render-target-readiness/index.ts` or replacement engine-readiness audit
+- `tools/external-parity-hdr-render-target-readiness/index.ts` or replacement engine-readiness audit
 
 Done when:
 
@@ -931,7 +931,7 @@ Files:
 - `packages/rendering/src/RenderGraph.ts`
 - `tests/unit/rendering/render-graph.test.ts`
 - `tests/browser/rendering-canonical-scene.spec.ts`
-- `tools/v4-postprocess-suite/index.ts` or replacement engine-readiness audit
+- `tools/external-parity-postprocess-suite/index.ts` or replacement engine-readiness audit
 
 Done when:
 
@@ -1015,8 +1015,8 @@ Files:
 - `packages/assets/src/AssetRenderDefaults.ts`
 - `packages/assets/src/index.ts`
 - `packages/rendering/src/Renderer.ts`
-- `tests/assets/v4-asset-corpus.test.ts`
-- `tests/browser/asset-viewer-v4.spec.ts`
+- `tests/assets/external-parity-asset-corpus.test.ts`
+- `tests/browser/asset-viewer-external-parity.spec.ts`
 - `tests/browser/rendering-canonical-scene.spec.ts`
 
 Done when:
@@ -1066,8 +1066,8 @@ Files:
 - `packages/assets/src/GLTFRenderResources.ts`
 - `packages/assets/src/AssetCompatibility.ts`
 - `tests/assets/gltf-corpus.test.ts`
-- `tests/assets/v4-asset-corpus.test.ts`
-- `tests/browser/khronos-gltf-visual-v4.spec.ts`
+- `tests/assets/external-parity-asset-corpus.test.ts`
+- `tests/browser/khronos-gltf-visual-external-parity.spec.ts`
 
 Done when:
 
@@ -1082,7 +1082,7 @@ Problem: current gates can reward grids, random panels, and noisy overlays.
 
 Build:
 
-- [ ] Replace `tools/v4-visual-quality/index.ts` with `tools/engine-readiness-visual-quality/index.ts`.
+- [ ] Replace `tools/external-parity-visual-quality/index.ts` with `tools/engine-readiness-visual-quality/index.ts`.
 - [ ] Reject screenshots that contain:
   - debug overlay text
   - large JSON blocks
@@ -1118,7 +1118,7 @@ Build:
 
 Files:
 
-- `tools/v4-visual-quality/index.ts`
+- `tools/external-parity-visual-quality/index.ts`
 - `tools/engine-readiness-visual-quality/index.ts`
 - `packages/rendering/src/FrameVisualMetrics.ts`
 - `tests/unit/rendering/frame-visual-metrics.test.ts`
@@ -1148,7 +1148,7 @@ Files:
 
 - `tests/browser/rendering-canonical-scene.spec.ts`
 - `tools/engine-readiness-root-readiness/index.ts`
-- `tools/v4-report-freshness/index.ts` or replacement engine-readiness freshness tool
+- `tools/external-parity-report-freshness/index.ts` or replacement engine-readiness freshness tool
 - `tests/reports/engine-readiness-canonical-scene/`
 
 Done when:
@@ -1304,8 +1304,8 @@ Script definitions:
   "engine-readiness:assets": "tsx --tsconfig tsconfig.base.json tools/engine-readiness-gltf-support/index.ts && pnpm exec playwright test tests/browser/rendering-canonical-scene.spec.ts --reporter=line",
   "engine-readiness:root": "pnpm engine-readiness:typecheck && pnpm engine-readiness:unit-rendering && pnpm engine-readiness:canonical-scene && pnpm engine-readiness:visual-quality && tsx --tsconfig tsconfig.base.json tools/engine-readiness-root-readiness/index.ts",
   "engine-readiness:reports": "pnpm engine-readiness:truth && pnpm engine-readiness:visual-quality && tsx --tsconfig tsconfig.base.json tools/engine-readiness-root-readiness/index.ts",
-  "engine-readiness:product-viewer": "pnpm exec playwright test tests/browser/product-viewer-v1.spec.ts --reporter=line",
-  "engine-readiness:examples": "pnpm exec playwright test tests/browser/product-viewer-v1.spec.ts tests/browser/material-studio-v1.spec.ts tests/browser/asset-viewer-v1.spec.ts tests/browser/rendering-showcase-v1.spec.ts --reporter=line",
+  "engine-readiness:product-viewer": "pnpm exec playwright test tests/browser/product-viewer-engine-readiness.spec.ts --reporter=line",
+  "engine-readiness:examples": "pnpm exec playwright test tests/browser/product-viewer-engine-readiness.spec.ts tests/browser/material-studio-engine-readiness.spec.ts tests/browser/asset-viewer-engine-readiness.spec.ts tests/browser/rendering-showcase-engine-readiness.spec.ts --reporter=line",
   "engine-readiness:package-smoke": "tsx --tsconfig tsconfig.base.json tools/engine-readiness-package-smoke/index.ts"
 }
 ```
@@ -1318,15 +1318,15 @@ Examples restart from zero and consume the canonical renderer APIs. No example g
 
 Build after root gate passes:
 
-- [ ] Create `examples/product-viewer-v1/index.html`.
-- [ ] Create `examples/product-viewer-v1/main.ts`.
+- [ ] Create `examples/legacy-product-viewer/index.html`.
+- [ ] Create `examples/legacy-product-viewer/main.ts`.
 - [ ] Use `loadRenderableAsset` or canonical fixture loader.
 - [ ] Use `LightingDefaults.studioProduct`.
 - [ ] Use `fitCameraToBounds`.
 - [ ] Use renderer-owned shadow and postprocess.
 - [ ] No debug overlays in default screenshot.
 - [ ] Add controls only after default screenshot is visually good.
-- [ ] Add screenshot test `tests/browser/product-viewer-v1.spec.ts`.
+- [ ] Add screenshot test `tests/browser/product-viewer-engine-readiness.spec.ts`.
 
 Done when:
 
@@ -1337,12 +1337,12 @@ Done when:
 
 Build after product viewer passes:
 
-- [ ] Create `examples/material-studio-v1/index.html`.
-- [ ] Create `examples/material-studio-v1/main.ts`.
+- [ ] Create `examples/legacy-material-studio/index.html`.
+- [ ] Create `examples/legacy-material-studio/main.ts`.
 - [ ] Render material spheres or models under identical lighting.
 - [ ] Include metal, plastic, glass, emissive, normal map, alpha, texture transform.
 - [ ] No grid spam.
-- [ ] Add `tests/browser/material-studio-v1.spec.ts`.
+- [ ] Add `tests/browser/material-studio-engine-readiness.spec.ts`.
 
 Done when:
 
@@ -1352,11 +1352,11 @@ Done when:
 
 Build after asset ergonomics gate passes:
 
-- [ ] Replace current `examples/asset-viewer/main.ts` or create `examples/asset-viewer-v1/main.ts`.
+- [ ] Replace current `examples/asset-viewer/main.ts` or create `examples/legacy-asset-viewer/main.ts`.
 - [ ] Default viewport must be the asset, not UI.
 - [ ] UI must not dominate screenshots.
 - [ ] Add drag/drop only after render defaults work.
-- [ ] Add `tests/browser/asset-viewer-v1.spec.ts`.
+- [ ] Add `tests/browser/asset-viewer-engine-readiness.spec.ts`.
 
 Done when:
 
@@ -1366,13 +1366,13 @@ Done when:
 
 Build after canonical shadow/postprocess gates pass:
 
-- [ ] Create `examples/rendering-showcase-v1/index.html`.
-- [ ] Create `examples/rendering-showcase-v1/main.ts`.
+- [ ] Create `examples/legacy-rendering-showcase/index.html`.
+- [ ] Create `examples/legacy-rendering-showcase/main.ts`.
 - [ ] Use one real scene, not diagnostic boxes.
 - [ ] Include toggleable shadow and postprocess controls.
 - [ ] Default screenshot must be clean scene output.
 - [ ] Diagnostics can be hidden behind a collapsible panel, not visible by default.
-- [ ] Add `tests/browser/rendering-showcase-v1.spec.ts`.
+- [ ] Add `tests/browser/rendering-showcase-engine-readiness.spec.ts`.
 
 Done when:
 
@@ -1435,7 +1435,7 @@ pnpm exec tsx --tsconfig tsconfig.base.json tools/engine-readiness-root-readines
 Optional after public examples are rebuilt:
 
 ```sh
-pnpm exec playwright test tests/browser/product-viewer-v1.spec.ts tests/browser/material-studio-v1.spec.ts tests/browser/asset-viewer-v1.spec.ts tests/browser/rendering-showcase-v1.spec.ts --reporter=line
+pnpm exec playwright test tests/browser/product-viewer-engine-readiness.spec.ts tests/browser/material-studio-engine-readiness.spec.ts tests/browser/asset-viewer-engine-readiness.spec.ts tests/browser/rendering-showcase-engine-readiness.spec.ts --reporter=line
 ```
 
 ### Evidence Files

@@ -232,7 +232,7 @@ const exitPosition: readonly [number, number, number] = [1.16, -0.12, 0];
 const hazardPosition: readonly [number, number, number] = [-1.18, -0.12, 0];
 const objectiveTimeLimitSeconds = 18;
 const playerAnimationStates: readonly PlayerAnimationState[] = ["idle", "run", "jump", "win", "fail"] as const;
-const v4ScreenshotPath = "tests/reports/v4-example-screenshots/game-slice.png";
+const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/game-slice.png";
 const claimBoundary = "V4 game slice evidence is limited to this generated local glTF arena/player, lit skinned V4 hero render item, bounded directional shadow-map metrics with visible receiver darkening, contact-shadow proxy, and browser-proven runtime loop; production forward-pass shadow sampling is not claimed.";
 
 declare global {
@@ -1240,7 +1240,7 @@ async function run(): Promise<void> {
     });
     const playerBehaviorTelemetry = samplePlayerBehaviorTelemetryFixture({
       seed: 0xb34a,
-      playerId: "v4-runtime-player",
+      playerId: "external-parity-runtime-player",
       sessionSeconds: Math.max(180, objectiveState.elapsedSeconds + 180),
       combatEvents: plasmaBurst.projectileCount + missileBurst.projectileCount,
       movementEvents: Math.max(12, Math.round(runtimeBehaviorState.movementUpdates / 2) + 14),

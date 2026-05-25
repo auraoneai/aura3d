@@ -162,9 +162,9 @@ declare global {
 }
 
 const architectureModelSource = "fixtures/assets/v3/architecture/civic-gallery-room/civic-gallery-room.gltf";
-const v4ArchitectureAssetUrl = "/fixtures/assets/v4/architecture/v4-gallery-corner/v4-gallery-corner.gltf";
-const v4ArchitectureManifestUrl = "/fixtures/assets/v4/architecture/v4-gallery-corner/manifest.json";
-const v4ScreenshotPath = "tests/reports/v4-example-screenshots/architecture-viewer.png";
+const v4ArchitectureAssetUrl = "/fixtures/assets/v4/architecture/external-gallery-corner/external-gallery-corner.gltf";
+const v4ArchitectureManifestUrl = "/fixtures/assets/v4/architecture/external-gallery-corner/manifest.json";
+const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/architecture-viewer.png";
 const claimBoundary = "V4 architecture viewer evidence is limited to this generated civic-gallery room scene, authored metadata selection, and WebGL2 contact-shadow alternatives; it is not BIM/IFC import or CAD-accurate measurement.";
 const architectureInteriorDetailCount = 34;
 
@@ -329,11 +329,11 @@ if (typeof document !== "undefined") {
         elements: architectureElements.map((element) => element.id),
       },
       v4Asset: {
-        id: "v4-gallery-corner",
+        id: "external-gallery-corner",
         source: "v4-generated-local-gltf",
         url: v4ArchitectureAssetUrl,
         manifestUrl: v4ArchitectureManifestUrl,
-        generator: "tools/asset-v4-corpus/index.ts",
+        generator: "tools/external-parity-asset-corpus/index.ts",
         meshCount: 0,
         materialCount: 0,
         cameraCount: 0,
@@ -1191,7 +1191,7 @@ function appendV4ArchitectureAssetRenderItems(items: RenderItem[], v4Architectur
     .setPosition(-1.08, sectionView ? 0.42 : 0.38, 0.42)
     .setScale(0.18 * zoom, 0.18 * zoom, 0.18 * zoom)
     .setRotation(0, Math.sin(yaw * 0.5), 0, Math.cos(yaw * 0.5));
-  appendGLTFSceneRenderItems(items, v4ArchitectureAsset.resources, "v4-gallery-corner");
+  appendGLTFSceneRenderItems(items, v4ArchitectureAsset.resources, "external-gallery-corner");
 }
 
 function appendGLTFSceneRenderItems(items: RenderItem[], resources: GLTFRenderResources, labelPrefix: string): void {

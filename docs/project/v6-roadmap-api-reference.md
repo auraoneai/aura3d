@@ -5,7 +5,7 @@
 
 Public V6 package paths:
 
-- `@galileo3d/engine/workflows/v6`
+- `@galileo3d/engine/workflows/production-runtime`
 - `@galileo3d/engine/rendering`
 - `@galileo3d/engine/assets/browser`
 - `@galileo3d/engine/animation/browser`
@@ -21,5 +21,5 @@ Main V6 APIs:
 
 Primary evidence:
 
-- `tests/reports/v6-package-surface-readiness.json`
-- `tests/reports/v6-package-smoke.json`
+- `tests/reports/production-runtime-package-surface-readiness.json`
+- `tests/reports/production-runtime-package-smoke.json`

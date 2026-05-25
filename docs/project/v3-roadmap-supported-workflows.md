@@ -14,8 +14,8 @@ Public API:
 Evidence:
 
 - App: `apps/asset-lab`.
-- Example: `examples/asset-viewer-v3`.
-- Screenshots: `tests/reports/v3-app-suite/asset-lab-default.png`, `tests/reports/v3-examples/asset-viewer-v3.png`.
+- Example: `examples/foundation-asset-viewer`.
+- Screenshots: `tests/reports/v3-app-suite/asset-lab-default.png`, `tests/reports/v3-examples/foundation-asset-viewer.png`.
 
 ## Product Configuration
 
@@ -27,8 +27,8 @@ Public API:
 Evidence:
 
 - App: `apps/product-studio`.
-- Example: `examples/product-configurator-v3`.
-- Package consumer proof: `tests/reports/v3-external-consumer.json`.
+- Example: `examples/foundation-product-configurator`.
+- Package consumer proof: `tests/reports/foundation-external-consumer.json`.
 
 ## Material Review
 
@@ -39,8 +39,8 @@ Public API:
 Evidence:
 
 - App: `apps/material-lab`.
-- Example: `examples/material-studio-v3`.
-- Screenshots: `tests/reports/v3-app-suite/material-lab-default.png`, `tests/reports/v3-examples/material-studio-v3.png`.
+- Example: `examples/foundation-material-studio`.
+- Screenshots: `tests/reports/v3-app-suite/material-lab-default.png`, `tests/reports/v3-examples/foundation-material-studio.png`.
 
 ## Scene Showcase
 
@@ -52,7 +52,7 @@ Evidence:
 
 - App: `apps/scene-lab`.
 - Workflow unit tests: `tests/unit/workflows/scene-showcase-workflow.test.ts`.
-- Same-scene comparison: `tests/reports/v3-threejs-comparison/scene` is represented by product/material procedural scenes and the report JSON.
+- Same-scene comparison: `tests/reports/foundation-threejs-comparison/scene` is represented by product/material procedural scenes and the report JSON.
 
 ## Interactive Viewport Slice
 
@@ -63,8 +63,8 @@ Public API:
 Evidence:
 
 - App: `apps/game-lab`.
-- Examples: `examples/interactive-scene-v3`, `examples/game-slice-v3`.
-- Same-scene comparison: `tests/reports/v3-threejs-comparison/interactive-g3d.png`.
+- Examples: `examples/foundation-interactive-scene`, `examples/foundation-game-slice`.
+- Same-scene comparison: `tests/reports/foundation-threejs-comparison/interactive-g3d.png`.
 
 ## Required Gates
 

@@ -5,13 +5,13 @@ WebGPU is scoped and partial.
 ## Real Code
 
 - `packages/rendering/src/WebGPUDevice.ts`
-- `packages/rendering/src/v6/ProductionWebGPURenderer.ts`
-- `packages/rendering/src/v6/backends/webgpu/*`
-- `packages/rendering/src/v6/shaders/wgsl/*`
-- `apps/v8-webgpu-rtt/`
-- `apps/v8-webgpu-compute/`
-- `apps/v8-webgpu-materials/`
-- `apps/v8-webgpu-instance-uniform/`
+- `packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`
+- `packages/rendering/src/production-runtime/backends/webgpu/*`
+- `packages/rendering/src/production-runtime/shaders/wgsl/*`
+- `apps/webgpu-rtt/`
+- `apps/webgpu-compute/`
+- `apps/webgpu-materials/`
+- `apps/webgpu-instance-uniform/`
 
 ## Current Claim
 

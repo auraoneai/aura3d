@@ -60,7 +60,7 @@ export interface AnalyticsPrivacyFixture {
 
 export function sampleAnalyticsPrivacyFixture(options: AnalyticsPrivacyFixtureOptions = {}): AnalyticsPrivacyFixture {
   const seed = normalizeSeed(options.seed ?? 0xa11a);
-  const userId = normalizeText(options.userId ?? "v4-runtime-player", "userId");
+  const userId = normalizeText(options.userId ?? "external-parity-runtime-player", "userId");
   const sessionId = normalizeText(options.sessionId ?? "runtime-session", "sessionId");
   const frameMs = positive(options.frameMs ?? 16.7, "frameMs");
   const eventCount = count(options.eventCount ?? 24, "eventCount");

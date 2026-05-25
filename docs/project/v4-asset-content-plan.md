@@ -15,7 +15,7 @@ The asset pipeline must prove real-world visual credibility with local assets. T
 - [x] Add a morph target asset with visible morph controls.
 - [x] Add a skinned plus morph animated asset if broad animation fidelity is claimed. Evidence: broad animation fidelity is not claimed; V4 reports keep broad animation/skin parity blocked while separate skinned and animated-morph evidence exists.
 - [x] Add material test assets for normal, metallic-roughness, emissive, occlusion, alpha, double-sided, and texture transform coverage.
-- [x] Add environment maps used by all flagship scenes. Evidence: `fixtures/assets/v4/environments/generated-local-environment-manifest.json` plus `createV4EnvironmentLighting` are used by product, architecture, and game examples and verified by `pnpm verify:v4-examples`.
+- [x] Add environment maps used by all flagship scenes. Evidence: `fixtures/assets/v4/environments/generated-local-environment-manifest.json` plus `createV4EnvironmentLighting` are used by product, architecture, and game examples and verified by `pnpm verify:external-parity-examples`.
 - [x] Store screenshot baselines and loader diagnostics for each corpus asset.
 
 ## Loader And Renderer Integration
@@ -26,7 +26,7 @@ The asset pipeline must prove real-world visual credibility with local assets. T
 - [x] Add warnings for unsupported glTF extensions and unsupported material extensions.
 - [x] Add lit skinning path in the renderer.
 - [x] Add morph target rendering path in the renderer.
-- [x] Add animation playback for transforms, skins, morph weights, and root motion where supported. Evidence: `SceneAnimationBridge` applies `weights` tracks, the V4 morph corpus asset now includes `morph-weight-smile`, `pnpm verify:v4-assets` passes, `tests/unit/workstream4.physics-animation.test.ts` covers bridge morph weights, and `tests/browser/character-animation-viewer.spec.ts` passes for skinned browser playback.
+- [x] Add animation playback for transforms, skins, morph weights, and root motion where supported. Evidence: `SceneAnimationBridge` applies `weights` tracks, the V4 morph corpus asset now includes `morph-weight-smile`, `pnpm verify:external-parity-assets` passes, `tests/unit/workstream4.physics-animation.test.ts` covers bridge morph weights, and `tests/browser/character-animation-viewer.spec.ts` passes for skinned browser playback.
 
 ## Asset Viewer
 
@@ -39,7 +39,7 @@ The asset pipeline must prove real-world visual credibility with local assets. T
 
 ## Done Criteria
 
-- [x] `pnpm verify:v4-assets` passes.
+- [x] `pnpm verify:external-parity-assets` passes.
 - [x] `tests/reports/v4-asset-corpus.json` passes.
 - [x] `tests/reports/v4-asset-material-fidelity.json` passes.
 - [x] Every V4 corpus asset has a screenshot and diagnostics report.

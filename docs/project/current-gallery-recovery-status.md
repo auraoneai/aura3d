@@ -63,17 +63,17 @@ Current status: accepted by current evidence.
 
 Acceptance is valid only while these remain current:
 
-- `tests/reports/v9/advanced-examples-gallery/product-configurator.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator-viewport.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator-hero.png`
-- `tests/reports/v9/advanced-examples-gallery/product-configurator.json`
-- `tests/reports/v9/advanced-examples-gallery/visual-review-report.json`
-- `tests/reports/v9/advanced-examples-gallery/reusable-systems-disclosure-audit.json`
+- `tests/reports/advanced-examples-gallery/product-configurator.png`
+- `tests/reports/advanced-examples-gallery/product-configurator-viewport.png`
+- `tests/reports/advanced-examples-gallery/product-configurator-hero.png`
+- `tests/reports/advanced-examples-gallery/product-configurator.json`
+- `tests/reports/advanced-examples-gallery/visual-review-report.json`
+- `tests/reports/advanced-examples-gallery/reusable-systems-disclosure-audit.json`
 
 Important preserved learning:
 
 - The old white HDR/frosted outline was a real source issue caused by unsafe imported material/render-state and HDR/physical-material energy interactions.
-- Product acceptance must not be preserved by changing metadata or review wording. If the PNG regresses, return to source owners: `packages/assets/src/CarConceptMaterialStability.ts`, `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`, `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`, `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`, `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`, and `packages/rendering/src/ShaderLibrary.ts`.
+- Product acceptance must not be preserved by changing metadata or review wording. If the PNG regresses, return to source owners: `packages/assets/src/CarConceptMaterialStability.ts`, `apps/advanced-examples-gallery/src/authoredLayer.ts`, `apps/advanced-examples-gallery/src/productConfiguratorPolicy.ts`, `apps/advanced-examples-gallery/src/productConfiguratorScene.ts`, `apps/advanced-examples-gallery/src/galleryRoutePolicies.ts`, and `packages/rendering/src/ShaderLibrary.ts`.
 
 ## Data Galaxy
 
@@ -81,12 +81,12 @@ Current status: accepted by current evidence.
 
 Acceptance is valid only while these remain current:
 
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy-viewport.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy-hero.png`
-- `tests/reports/v9/advanced-examples-gallery/data-galaxy.json`
-- `tests/reports/v9/advanced-examples-gallery/visual-review-report.json`
-- `tests/reports/v9/advanced-examples-gallery/reusable-systems-disclosure-audit.json`
+- `tests/reports/advanced-examples-gallery/data-galaxy.png`
+- `tests/reports/advanced-examples-gallery/data-galaxy-viewport.png`
+- `tests/reports/advanced-examples-gallery/data-galaxy-hero.png`
+- `tests/reports/advanced-examples-gallery/data-galaxy.json`
+- `tests/reports/advanced-examples-gallery/visual-review-report.json`
+- `tests/reports/advanced-examples-gallery/reusable-systems-disclosure-audit.json`
 
 Important preserved learning:
 
@@ -101,9 +101,9 @@ The latest completion pass ran:
 ```bash
 git diff --check
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery
-pnpm v9:advanced-gallery:review
-pnpm v9:advanced-gallery:audit
+G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
+pnpm advanced-gallery:review
+pnpm advanced-gallery:audit
 pnpm v10
 ```
 

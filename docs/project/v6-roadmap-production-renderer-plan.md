@@ -60,14 +60,14 @@ V6 starts from this failure and must build gates that make it impossible to repe
 
 Required failure documentation:
 
-- `docs/project/v6-roadmap-v5-visual-failure-audit.md`
-- `docs/project/v6-roadmap-no-fake-visual-proof.md`
-- `tests/reports/v6-v5-visual-failure-audit.json`
+- `docs/project/production-runtime-roadmap-three-compat-visual-failure-audit.md`
+- `docs/project/production-runtime-roadmap-no-fake-visual-proof.md`
+- `tests/reports/production-runtime-three-compat-visual-failure-audit.json`
 
 The audit must explicitly name the V5 failure modes:
 
-- `tests/browser/v5-threejs-visual-parity.spec.ts` used canvas-painted visual evidence.
-- `tests/reports/v5-gallery/*` was initially allowed to pass with tiny/blank or non-renderer screenshots.
+- `tests/browser/three-compat-threejs-visual-parity.spec.ts` used canvas-painted visual evidence.
+- `tests/reports/three-compat-gallery/*` was initially allowed to pass with tiny/blank or non-renderer screenshots.
 - V5 release readiness was not enough because it did not require real WebGL/WebGPU renderer output from real app surfaces.
 
 ## Non-Negotiable Rules
@@ -157,65 +157,65 @@ V6 must either extend existing packages or add V6 modules inside them. Do not cr
 
 Required files:
 
-- `packages/rendering/src/v6/index.ts`
-- `packages/rendering/src/v6/RendererV6.ts`
-- `packages/rendering/src/v6/backends/WebGL2RendererBackend.ts`
-- `packages/rendering/src/v6/backends/WebGPURendererBackend.ts`
-- `packages/rendering/src/v6/backends/RendererBackend.ts`
-- `packages/rendering/src/v6/framegraph/FrameGraph.ts`
-- `packages/rendering/src/v6/framegraph/RenderPass.ts`
-- `packages/rendering/src/v6/resources/GPUBuffer.ts`
-- `packages/rendering/src/v6/resources/GPUTexture.ts`
-- `packages/rendering/src/v6/resources/RenderTarget.ts`
-- `packages/rendering/src/v6/resources/ResourceCache.ts`
-- `packages/rendering/src/v6/scene/RenderableScene.ts`
-- `packages/rendering/src/v6/scene/RenderableMesh.ts`
-- `packages/rendering/src/v6/scene/RenderablePrimitive.ts`
-- `packages/rendering/src/v6/scene/Camera.ts`
-- `packages/rendering/src/v6/scene/Lights.ts`
-- `packages/rendering/src/v6/materials/PBRMaterial.ts`
-- `packages/rendering/src/v6/materials/MaterialCompiler.ts`
-- `packages/rendering/src/v6/materials/MaterialTextureBindings.ts`
-- `packages/rendering/src/v6/materials/GLTFMaterialAdapter.ts`
-- `packages/rendering/src/v6/shaders/ShaderProgramLibrary.ts`
-- `packages/rendering/src/v6/shaders/chunks/pbr.vert.glsl`
-- `packages/rendering/src/v6/shaders/chunks/pbr.frag.glsl`
-- `packages/rendering/src/v6/shaders/chunks/ibl.glsl`
-- `packages/rendering/src/v6/shaders/chunks/brdf.glsl`
-- `packages/rendering/src/v6/shaders/chunks/shadows.glsl`
-- `packages/rendering/src/v6/environment/HDRLoader.ts`
-- `packages/rendering/src/v6/environment/PMREMGenerator.ts`
-- `packages/rendering/src/v6/environment/EnvironmentMap.ts`
-- `packages/rendering/src/v6/passes/DepthPrepass.ts`
-- `packages/rendering/src/v6/passes/ShadowPass.ts`
-- `packages/rendering/src/v6/passes/OpaquePass.ts`
-- `packages/rendering/src/v6/passes/TransparentPass.ts`
-- `packages/rendering/src/v6/passes/SkyboxPass.ts`
-- `packages/rendering/src/v6/passes/ToneMappingPass.ts`
-- `packages/rendering/src/v6/postprocess/EffectComposerV6.ts`
-- `packages/rendering/src/v6/postprocess/BloomPass.ts`
-- `packages/rendering/src/v6/postprocess/SSAOPass.ts`
-- `packages/rendering/src/v6/postprocess/DOFPass.ts`
-- `packages/rendering/src/v6/postprocess/FXAAPass.ts`
-- `packages/rendering/src/v6/postprocess/ColorGradingPass.ts`
-- `packages/rendering/src/v6/animation/SkinningRenderer.ts`
-- `packages/rendering/src/v6/animation/MorphTargetRenderer.ts`
-- `packages/rendering/src/v6/diagnostics/FrameCapture.ts`
-- `packages/rendering/src/v6/diagnostics/RendererStats.ts`
-- `packages/rendering/src/v6/diagnostics/GPUCapabilities.ts`
-- `packages/assets/src/v6/GLTFSceneLoader.ts`
-- `packages/assets/src/v6/TextureLoaderV6.ts`
-- `packages/assets/src/v6/KTX2TextureLoaderV6.ts`
-- `packages/assets/src/v6/HDRTextureLoaderV6.ts`
-- `packages/assets/src/v6/AssetPipelineV6.ts`
-- `packages/assets/src/v6/index.ts`
-- `packages/engine/src/v6/index.ts`
+- `packages/rendering/src/production-runtime/index.ts`
+- `packages/rendering/src/production-runtime/RendererV6.ts`
+- `packages/rendering/src/production-runtime/backends/WebGL2RendererBackend.ts`
+- `packages/rendering/src/production-runtime/backends/WebGPURendererBackend.ts`
+- `packages/rendering/src/production-runtime/backends/RendererBackend.ts`
+- `packages/rendering/src/production-runtime/framegraph/FrameGraph.ts`
+- `packages/rendering/src/production-runtime/framegraph/RenderPass.ts`
+- `packages/rendering/src/production-runtime/resources/GPUBuffer.ts`
+- `packages/rendering/src/production-runtime/resources/GPUTexture.ts`
+- `packages/rendering/src/production-runtime/resources/RenderTarget.ts`
+- `packages/rendering/src/production-runtime/resources/ResourceCache.ts`
+- `packages/rendering/src/production-runtime/scene/RenderableScene.ts`
+- `packages/rendering/src/production-runtime/scene/RenderableMesh.ts`
+- `packages/rendering/src/production-runtime/scene/RenderablePrimitive.ts`
+- `packages/rendering/src/production-runtime/scene/Camera.ts`
+- `packages/rendering/src/production-runtime/scene/Lights.ts`
+- `packages/rendering/src/production-runtime/materials/PBRMaterial.ts`
+- `packages/rendering/src/production-runtime/materials/MaterialCompiler.ts`
+- `packages/rendering/src/production-runtime/materials/MaterialTextureBindings.ts`
+- `packages/rendering/src/production-runtime/materials/GLTFMaterialAdapter.ts`
+- `packages/rendering/src/production-runtime/shaders/ShaderProgramLibrary.ts`
+- `packages/rendering/src/production-runtime/shaders/chunks/pbr.vert.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/pbr.frag.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/ibl.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/brdf.glsl`
+- `packages/rendering/src/production-runtime/shaders/chunks/shadows.glsl`
+- `packages/rendering/src/production-runtime/environment/HDRLoader.ts`
+- `packages/rendering/src/production-runtime/environment/PMREMGenerator.ts`
+- `packages/rendering/src/production-runtime/environment/EnvironmentMap.ts`
+- `packages/rendering/src/production-runtime/passes/DepthPrepass.ts`
+- `packages/rendering/src/production-runtime/passes/ShadowPass.ts`
+- `packages/rendering/src/production-runtime/passes/OpaquePass.ts`
+- `packages/rendering/src/production-runtime/passes/TransparentPass.ts`
+- `packages/rendering/src/production-runtime/passes/SkyboxPass.ts`
+- `packages/rendering/src/production-runtime/passes/ToneMappingPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/EffectComposerV6.ts`
+- `packages/rendering/src/production-runtime/postprocess/BloomPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/SSAOPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/DOFPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/FXAAPass.ts`
+- `packages/rendering/src/production-runtime/postprocess/ColorGradingPass.ts`
+- `packages/rendering/src/production-runtime/animation/SkinningRenderer.ts`
+- `packages/rendering/src/production-runtime/animation/MorphTargetRenderer.ts`
+- `packages/rendering/src/production-runtime/diagnostics/FrameCapture.ts`
+- `packages/rendering/src/production-runtime/diagnostics/RendererStats.ts`
+- `packages/rendering/src/production-runtime/diagnostics/GPUCapabilities.ts`
+- `packages/assets/src/asset-corpus/GLTFSceneLoader.ts`
+- `packages/assets/src/asset-corpus/TextureLoaderV6.ts`
+- `packages/assets/src/asset-corpus/KTX2TextureLoaderV6.ts`
+- `packages/assets/src/asset-corpus/HDRTextureLoaderV6.ts`
+- `packages/assets/src/asset-corpus/AssetPipelineV6.ts`
+- `packages/assets/src/asset-corpus/index.ts`
+- `packages/engine/src/production-runtime/index.ts`
 
 Root exports required:
 
-- `@galileo3d/engine/rendering/v6`
-- `@galileo3d/engine/assets/v6`
-- `@galileo3d/engine/v6`
+- `@galileo3d/engine/rendering/production-runtime`
+- `@galileo3d/engine/assets/production-runtime`
+- `@galileo3d/engine/production-runtime`
 
 Acceptance:
 
@@ -230,19 +230,19 @@ V6 must ship real assets for renderer proof. The asset corpus must be intentiona
 
 Required directory:
 
-- `fixtures/v6/assets/`
+- `fixtures/production-runtime/assets/`
 
 Required files:
 
-- `fixtures/v6/assets/manifest.json`
-- `fixtures/v6/assets/licenses.md`
-- `fixtures/v6/assets/checksums.json`
-- `fixtures/v6/assets/khronos/`
-- `fixtures/v6/assets/polyhaven/`
-- `fixtures/v6/assets/product/`
-- `fixtures/v6/assets/architecture/`
-- `fixtures/v6/assets/characters/`
-- `fixtures/v6/assets/stress/`
+- `fixtures/asset-corpus/manifest.json`
+- `fixtures/production-runtime/assets/licenses.md`
+- `fixtures/production-runtime/assets/checksums.json`
+- `fixtures/production-runtime/assets/khronos/`
+- `fixtures/production-runtime/assets/polyhaven/`
+- `fixtures/production-runtime/assets/product/`
+- `fixtures/production-runtime/assets/architecture/`
+- `fixtures/production-runtime/assets/characters/`
+- `fixtures/production-runtime/assets/stress/`
 
 Minimum real checked-in assets:
 
@@ -290,15 +290,15 @@ Acceptance:
 
 Required tools/tests:
 
-- `tools/v6-asset-fetch/index.ts`
-- `tools/v6-asset-audit/index.ts`
-- `tests/assets/v6-asset-corpus.test.ts`
-- `tests/reports/v6-asset-audit.json`
+- `tools/production-runtime-asset-fetch/index.ts`
+- `tools/production-runtime-asset-audit/index.ts`
+- `tests/assets/production-runtime-asset-corpus.test.ts`
+- `tests/reports/production-runtime-asset-audit.json`
 
 Exit command:
 
 ```sh
-pnpm v6:assets
+pnpm production-runtime:assets
 ```
 
 ## Required HDR Environment Corpus
@@ -307,15 +307,15 @@ V6 must use real HDR environments and real IBL filtering.
 
 Required directory:
 
-- `fixtures/v6/environments/`
+- `fixtures/environment-corpus/`
 
 Required files:
 
-- `fixtures/v6/environments/manifest.json`
-- `fixtures/v6/environments/licenses.md`
-- `fixtures/v6/environments/checksums.json`
-- `fixtures/v6/environments/hdri/`
-- `fixtures/v6/environments/pmrem-baselines/`
+- `fixtures/environment-corpus/manifest.json`
+- `fixtures/environment-corpus/licenses.md`
+- `fixtures/environment-corpus/checksums.json`
+- `fixtures/environment-corpus/hdri/`
+- `fixtures/environment-corpus/pmrem-baselines/`
 
 Minimum environments:
 
@@ -346,16 +346,16 @@ Acceptance:
 
 Required tools/tests:
 
-- `tests/unit/rendering/v6-hdr-loader.test.ts`
-- `tests/browser/v6-hdr-ibl.spec.ts`
-- `tools/v6-environment-readiness/index.ts`
-- `tests/reports/v6-environment-readiness.json`
-- `tests/reports/v6-gallery/debug-views/pmrem-roughness-lods.png`
+- `tests/unit/rendering/production-runtime-hdr-loader.test.ts`
+- `tests/browser/production-runtime-hdr-ibl.spec.ts`
+- `tools/production-runtime-environment-readiness/index.ts`
+- `tests/reports/production-runtime-environment-readiness.json`
+- `tests/reports/production-runtime-gallery/debug-views/pmrem-roughness-lods.png`
 
 Exit command:
 
 ```sh
-pnpm v6:environments
+pnpm production-runtime:environments
 ```
 
 ## Required PBR Renderer Features
@@ -393,13 +393,13 @@ Required lighting support:
 
 Required files:
 
-- `packages/rendering/src/v6/materials/PBRMaterial.ts`
-- `packages/rendering/src/v6/materials/PBRShaderFeatures.ts`
-- `packages/rendering/src/v6/materials/GLTFPBRMaterialAdapter.ts`
-- `packages/rendering/src/v6/lights/LightManager.ts`
-- `packages/rendering/src/v6/lights/ShadowMapRenderer.ts`
-- `packages/rendering/src/v6/color/ColorManagement.ts`
-- `packages/rendering/src/v6/color/ToneMapping.ts`
+- `packages/rendering/src/production-runtime/materials/PBRMaterial.ts`
+- `packages/rendering/src/production-runtime/materials/PBRShaderFeatures.ts`
+- `packages/rendering/src/production-runtime/materials/GLTFPBRMaterialAdapter.ts`
+- `packages/rendering/src/production-runtime/lights/LightManager.ts`
+- `packages/rendering/src/production-runtime/lights/ShadowMapRenderer.ts`
+- `packages/rendering/src/production-runtime/color/ColorManagement.ts`
+- `packages/rendering/src/production-runtime/color/ToneMapping.ts`
 
 Acceptance:
 
@@ -413,17 +413,17 @@ Acceptance:
 
 Required tests/tools:
 
-- `tests/unit/rendering/v6-pbr-material.test.ts`
-- `tests/browser/v6-pbr-materials.spec.ts`
-- `tests/browser/v6-gltf-material-extensions.spec.ts`
-- `tools/v6-pbr-readiness/index.ts`
-- `tests/reports/v6-pbr-readiness.json`
-- `tests/reports/v6-gallery/materials/pbr-material-extension-grid.png`
+- `tests/unit/rendering/production-runtime-pbr-material.test.ts`
+- `tests/browser/production-runtime-pbr-materials.spec.ts`
+- `tests/browser/production-runtime-gltf-material-extensions.spec.ts`
+- `tools/production-runtime-pbr-readiness/index.ts`
+- `tests/reports/production-runtime-pbr-readiness.json`
+- `tests/reports/production-runtime-gallery/materials/pbr-material-extension-grid.png`
 
 Exit command:
 
 ```sh
-pnpm v6:pbr
+pnpm production-runtime:pbr
 ```
 
 ## Real WebGL2 Renderer Backend
@@ -453,13 +453,13 @@ Required implementation:
 
 Required files:
 
-- `packages/rendering/src/v6/backends/WebGL2RendererBackend.ts`
-- `packages/rendering/src/v6/backends/webgl2/WebGL2Shader.ts`
-- `packages/rendering/src/v6/backends/webgl2/WebGL2Buffer.ts`
-- `packages/rendering/src/v6/backends/webgl2/WebGL2Texture.ts`
-- `packages/rendering/src/v6/backends/webgl2/WebGL2RenderTarget.ts`
-- `packages/rendering/src/v6/backends/webgl2/WebGL2StateCache.ts`
-- `packages/rendering/src/v6/backends/webgl2/WebGL2Capabilities.ts`
+- `packages/rendering/src/production-runtime/backends/WebGL2RendererBackend.ts`
+- `packages/rendering/src/production-runtime/backends/webgl2/WebGL2Shader.ts`
+- `packages/rendering/src/production-runtime/backends/webgl2/WebGL2Buffer.ts`
+- `packages/rendering/src/production-runtime/backends/webgl2/WebGL2Texture.ts`
+- `packages/rendering/src/production-runtime/backends/webgl2/WebGL2RenderTarget.ts`
+- `packages/rendering/src/production-runtime/backends/webgl2/WebGL2StateCache.ts`
+- `packages/rendering/src/production-runtime/backends/webgl2/WebGL2Capabilities.ts`
 
 Acceptance:
 
@@ -471,16 +471,16 @@ Acceptance:
 
 Required tests/tools:
 
-- `tests/unit/rendering/v6-webgl2-backend.test.ts`
-- `tests/browser/v6-webgl2-real-frame.spec.ts`
-- `tests/browser/v6-webgl2-context-loss.spec.ts`
-- `tools/v6-webgl2-readiness/index.ts`
-- `tests/reports/v6-webgl2-readiness.json`
+- `tests/unit/rendering/production-runtime-webgl2-backend.test.ts`
+- `tests/browser/production-runtime-webgl2-real-frame.spec.ts`
+- `tests/browser/production-runtime-webgl2-context-loss.spec.ts`
+- `tools/production-runtime-webgl2-readiness/index.ts`
+- `tests/reports/production-runtime-webgl2-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:webgl2
+pnpm production-runtime:webgl2
 ```
 
 ## Real WebGPU Renderer Backend
@@ -505,15 +505,15 @@ Required implementation:
 
 Required files:
 
-- `packages/rendering/src/v6/backends/WebGPURendererBackend.ts`
-- `packages/rendering/src/v6/backends/webgpu/WebGPUShader.ts`
-- `packages/rendering/src/v6/backends/webgpu/WebGPUBuffer.ts`
-- `packages/rendering/src/v6/backends/webgpu/WebGPUTexture.ts`
-- `packages/rendering/src/v6/backends/webgpu/WebGPURenderTarget.ts`
-- `packages/rendering/src/v6/backends/webgpu/WebGPUCapabilities.ts`
-- `packages/rendering/src/v6/shaders/wgsl/pbr.wgsl`
-- `packages/rendering/src/v6/shaders/wgsl/skybox.wgsl`
-- `packages/rendering/src/v6/shaders/wgsl/postprocess.wgsl`
+- `packages/rendering/src/production-runtime/backends/WebGPURendererBackend.ts`
+- `packages/rendering/src/production-runtime/backends/webgpu/WebGPUShader.ts`
+- `packages/rendering/src/production-runtime/backends/webgpu/WebGPUBuffer.ts`
+- `packages/rendering/src/production-runtime/backends/webgpu/WebGPUTexture.ts`
+- `packages/rendering/src/production-runtime/backends/webgpu/WebGPURenderTarget.ts`
+- `packages/rendering/src/production-runtime/backends/webgpu/WebGPUCapabilities.ts`
+- `packages/rendering/src/production-runtime/shaders/wgsl/pbr.wgsl`
+- `packages/rendering/src/production-runtime/shaders/wgsl/skybox.wgsl`
+- `packages/rendering/src/production-runtime/shaders/wgsl/postprocess.wgsl`
 
 Acceptance:
 
@@ -524,15 +524,15 @@ Acceptance:
 
 Required tests/tools:
 
-- `tests/browser/v6-webgpu-capability.spec.ts`
-- `tests/browser/v6-webgpu-real-frame.spec.ts`
-- `tools/v6-webgpu-readiness/index.ts`
-- `tests/reports/v6-webgpu-readiness.json`
+- `tests/browser/production-runtime-webgpu-capability.spec.ts`
+- `tests/browser/production-runtime-webgpu-real-frame.spec.ts`
+- `tools/production-runtime-webgpu-readiness/index.ts`
+- `tests/reports/production-runtime-webgpu-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:webgpu
+pnpm production-runtime:webgpu
 ```
 
 ## Real glTF Render Pipeline
@@ -559,14 +559,14 @@ Required pipeline:
 
 Required files:
 
-- `packages/assets/src/v6/GLTFSceneLoader.ts`
-- `packages/assets/src/v6/GLTFBufferAdapter.ts`
-- `packages/assets/src/v6/GLTFTextureAdapter.ts`
-- `packages/assets/src/v6/GLTFMaterialAdapter.ts`
-- `packages/assets/src/v6/GLTFAnimationAdapter.ts`
-- `packages/assets/src/v6/GLTFSkinAdapter.ts`
-- `packages/assets/src/v6/GLTFMorphAdapter.ts`
-- `packages/assets/src/v6/GLTFDiagnostics.ts`
+- `packages/assets/src/asset-corpus/GLTFSceneLoader.ts`
+- `packages/assets/src/asset-corpus/GLTFBufferAdapter.ts`
+- `packages/assets/src/asset-corpus/GLTFTextureAdapter.ts`
+- `packages/assets/src/asset-corpus/GLTFMaterialAdapter.ts`
+- `packages/assets/src/asset-corpus/GLTFAnimationAdapter.ts`
+- `packages/assets/src/asset-corpus/GLTFSkinAdapter.ts`
+- `packages/assets/src/asset-corpus/GLTFMorphAdapter.ts`
+- `packages/assets/src/asset-corpus/GLTFDiagnostics.ts`
 
 Acceptance:
 
@@ -578,16 +578,16 @@ Acceptance:
 
 Required tests/tools:
 
-- `tests/assets/v6-gltf-loader.test.ts`
-- `tests/browser/v6-gltf-render-corpus.spec.ts`
-- `tests/browser/v6-gltf-animation-render.spec.ts`
-- `tools/v6-gltf-readiness/index.ts`
-- `tests/reports/v6-gltf-readiness.json`
+- `tests/assets/production-runtime-gltf-loader.test.ts`
+- `tests/browser/production-runtime-gltf-render-corpus.spec.ts`
+- `tests/browser/production-runtime-gltf-animation-render.spec.ts`
+- `tools/production-runtime-gltf-readiness/index.ts`
+- `tests/reports/production-runtime-gltf-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:gltf
+pnpm production-runtime:gltf
 ```
 
 ## Flagship Product Apps
@@ -596,16 +596,16 @@ V6 must replace V5-style placeholder apps with real renderer-driven apps.
 
 Required apps:
 
-- `apps/v6-product-configurator/`
-- `apps/v6-automotive-configurator/`
-- `apps/v6-architecture-viewer/`
-- `apps/v6-asset-inspector/`
-- `apps/v6-material-studio/`
-- `apps/v6-character-viewer/`
-- `apps/v6-cinematic-postprocess/`
-- `apps/v6-large-scene-lab/`
-- `apps/v6-webgpu-lab/`
-- `apps/v6-threejs-parity-lab/`
+- `apps/product-configurator/`
+- `apps/automotive-configurator/`
+- `apps/architecture-viewer/`
+- `apps/asset-inspector/`
+- `apps/material-studio/`
+- `apps/character-viewer/`
+- `apps/cinematic-postprocess/`
+- `apps/large-scene-lab/`
+- `apps/webgpu-lab/`
+- `apps/threejs-parity-lab/`
 
 Every app must contain:
 
@@ -650,26 +650,26 @@ Required runtime metrics:
 
 Required tests:
 
-- `tests/browser/v6-product-configurator.spec.ts`
-- `tests/browser/v6-automotive-configurator.spec.ts`
-- `tests/browser/v6-architecture-viewer.spec.ts`
-- `tests/browser/v6-asset-inspector.spec.ts`
-- `tests/browser/v6-material-studio.spec.ts`
-- `tests/browser/v6-character-viewer.spec.ts`
-- `tests/browser/v6-cinematic-postprocess.spec.ts`
-- `tests/browser/v6-large-scene-lab.spec.ts`
-- `tests/browser/v6-webgpu-lab.spec.ts`
-- `tests/browser/v6-threejs-parity-lab.spec.ts`
+- `tests/browser/production-runtime-product-configurator.spec.ts`
+- `tests/browser/production-runtime-automotive-configurator.spec.ts`
+- `tests/browser/production-runtime-architecture-viewer.spec.ts`
+- `tests/browser/production-runtime-asset-inspector.spec.ts`
+- `tests/browser/production-runtime-material-studio.spec.ts`
+- `tests/browser/production-runtime-character-viewer.spec.ts`
+- `tests/browser/production-runtime-cinematic-postprocess.spec.ts`
+- `tests/browser/production-runtime-large-scene-lab.spec.ts`
+- `tests/browser/production-runtime-webgpu-lab.spec.ts`
+- `tests/browser/production-runtime-threejs-parity-lab.spec.ts`
 
 Required readiness:
 
-- `tools/v6-app-suite-readiness/index.ts`
-- `tests/reports/v6-app-suite-readiness.json`
+- `tools/production-runtime-app-suite-readiness/index.ts`
+- `tests/reports/production-runtime-app-suite-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:apps
+pnpm production-runtime:apps
 ```
 
 ## Hard Visual Proof Rules
@@ -678,35 +678,35 @@ V6 must ship real screenshot evidence. It must be hard to fake.
 
 Required gallery paths:
 
-- `tests/reports/v6-gallery/product/product-configurator-webgl2.png`
-- `tests/reports/v6-gallery/product/product-configurator-webgpu.png`
-- `tests/reports/v6-gallery/automotive/automotive-configurator-webgl2.png`
-- `tests/reports/v6-gallery/architecture/architecture-day-webgl2.png`
-- `tests/reports/v6-gallery/architecture/architecture-night-webgl2.png`
-- `tests/reports/v6-gallery/assets/damaged-helmet-webgl2.png`
-- `tests/reports/v6-gallery/assets/boom-box-webgl2.png`
-- `tests/reports/v6-gallery/materials/material-extension-grid-webgl2.png`
-- `tests/reports/v6-gallery/character/animated-character-webgl2.png`
-- `tests/reports/v6-gallery/postprocess/cinematic-before-webgl2.png`
-- `tests/reports/v6-gallery/postprocess/cinematic-after-webgl2.png`
-- `tests/reports/v6-gallery/large-scene/large-scene-webgl2.png`
-- `tests/reports/v6-gallery/webgpu/webgpu-product-frame.png`
-- `tests/reports/v6-gallery/threejs-comparison/product-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/product-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/product-diff.png`
-- `tests/reports/v6-gallery/threejs-comparison/materials-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/materials-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/materials-diff.png`
-- `tests/reports/v6-gallery/threejs-comparison/asset-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/asset-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/asset-diff.png`
-- `tests/reports/v6-gallery/threejs-comparison/architecture-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/architecture-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/architecture-diff.png`
+- `tests/reports/production-runtime-gallery/product/product-configurator-webgl2.png`
+- `tests/reports/production-runtime-gallery/product/product-configurator-webgpu.png`
+- `tests/reports/production-runtime-gallery/automotive/automotive-configurator-webgl2.png`
+- `tests/reports/production-runtime-gallery/architecture/architecture-day-webgl2.png`
+- `tests/reports/production-runtime-gallery/architecture/architecture-night-webgl2.png`
+- `tests/reports/production-runtime-gallery/assets/damaged-helmet-webgl2.png`
+- `tests/reports/production-runtime-gallery/assets/boom-box-webgl2.png`
+- `tests/reports/production-runtime-gallery/materials/material-extension-grid-webgl2.png`
+- `tests/reports/production-runtime-gallery/character/animated-character-webgl2.png`
+- `tests/reports/production-runtime-gallery/postprocess/cinematic-before-webgl2.png`
+- `tests/reports/production-runtime-gallery/postprocess/cinematic-after-webgl2.png`
+- `tests/reports/production-runtime-gallery/large-scene/large-scene-webgl2.png`
+- `tests/reports/production-runtime-gallery/webgpu/webgpu-product-frame.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-diff.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-diff.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-diff.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-diff.png`
 
 Required gallery manifest:
 
-- `tests/reports/v6-gallery/manifest.json`
+- `tests/reports/production-runtime-gallery/manifest.json`
 
 Every manifest entry must include:
 
@@ -750,20 +750,20 @@ Visual quality gate must reject:
 
 Required tools:
 
-- `tools/v6-screenshot-gallery/index.ts`
-- `tools/v6-visual-quality/index.ts`
-- `tools/v6-real-renderer-proof/index.ts`
-- `tools/v6-human-visual-review/index.ts`
+- `tools/production-runtime-screenshot-gallery/index.ts`
+- `tools/production-runtime-visual-quality/index.ts`
+- `tools/production-runtime-real-renderer-proof/index.ts`
+- `tools/production-runtime-human-visual-review/index.ts`
 
 Required tests:
 
-- `tests/browser/v6-screenshot-gallery.spec.ts`
-- `tests/unit/tools/v6-visual-quality.test.ts`
+- `tests/browser/production-runtime-screenshot-gallery.spec.ts`
+- `tests/unit/tools/production-runtime-visual-quality.test.ts`
 
 Exit command:
 
 ```sh
-pnpm v6:visuals
+pnpm production-runtime:visuals
 ```
 
 ## Same-Scene Three.js Parity
@@ -787,22 +787,22 @@ Required comparison scenes:
 
 Required directories:
 
-- `benchmarks/v6/shared/`
-- `benchmarks/v6/g3d/`
-- `benchmarks/v6/threejs/`
+- `benchmarks/production-runtime/shared/`
+- `benchmarks/production-runtime/g3d/`
+- `benchmarks/production-runtime/threejs/`
 
 Required files:
 
-- `benchmarks/v6/shared/scenes.ts`
-- `benchmarks/v6/g3d/renderScene.ts`
-- `benchmarks/v6/threejs/renderScene.ts`
-- `benchmarks/v6/shared/compareImages.ts`
+- `benchmarks/production-runtime/shared/scenes.ts`
+- `benchmarks/production-runtime/g3d/renderScene.ts`
+- `benchmarks/production-runtime/threejs/renderScene.ts`
+- `benchmarks/production-runtime/shared/compareImages.ts`
 
 Required reports:
 
-- `tests/reports/v6-threejs-visual-parity.json`
-- `tests/reports/v6-threejs-runtime-parity.json`
-- `tests/reports/v6-threejs-parity-summary.md`
+- `tests/reports/production-runtime-threejs-visual-parity.json`
+- `tests/reports/production-runtime-threejs-runtime-parity.json`
+- `tests/reports/production-runtime-threejs-parity-summary.md`
 
 Comparison metrics:
 
@@ -829,14 +829,14 @@ Required thresholds:
 
 Required tests/tools:
 
-- `tests/browser/v6-threejs-visual-parity.spec.ts`
-- `tests/browser/v6-threejs-runtime-parity.spec.ts`
-- `tools/v6-threejs-parity/index.ts`
+- `tests/browser/production-runtime-threejs-visual-parity.spec.ts`
+- `tests/browser/production-runtime-threejs-runtime-parity.spec.ts`
+- `tools/production-runtime-threejs-parity/index.ts`
 
 Exit command:
 
 ```sh
-pnpm v6:compare-threejs
+pnpm production-runtime:compare-threejs
 ```
 
 ## Renderer Differentiation
@@ -879,25 +879,25 @@ Required differentiators:
 
 Required files:
 
-- `packages/workflows/src/v6/ProductRenderWorkflow.ts`
-- `packages/workflows/src/v6/AssetInspectionWorkflow.ts`
-- `packages/workflows/src/v6/MaterialAuthoringWorkflow.ts`
-- `packages/workflows/src/v6/ArchitectureWorkflow.ts`
-- `packages/workflows/src/v6/CinematicWorkflow.ts`
-- `packages/workflows/src/v6/WorkflowDiagnostics.ts`
-- `packages/workflows/src/v6/index.ts`
+- `packages/workflows/src/production-runtime/ProductRenderWorkflow.ts`
+- `packages/workflows/src/production-runtime/AssetInspectionWorkflow.ts`
+- `packages/workflows/src/production-runtime/MaterialAuthoringWorkflow.ts`
+- `packages/workflows/src/production-runtime/ArchitectureWorkflow.ts`
+- `packages/workflows/src/production-runtime/CinematicWorkflow.ts`
+- `packages/workflows/src/production-runtime/WorkflowDiagnostics.ts`
+- `packages/workflows/src/production-runtime/index.ts`
 
 Required tests:
 
-- `tests/unit/workflows/v6-workflows.test.ts`
-- `tests/browser/v6-workflow-presets.spec.ts`
-- `tools/v6-workflow-readiness/index.ts`
-- `tests/reports/v6-workflow-readiness.json`
+- `tests/unit/workflows/production-runtime-workflows.test.ts`
+- `tests/browser/production-runtime-workflow-presets.spec.ts`
+- `tools/production-runtime-workflow-readiness/index.ts`
+- `tests/reports/production-runtime-workflow-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:workflows
+pnpm production-runtime:workflows
 ```
 
 ## Examples And Templates
@@ -906,35 +906,35 @@ V6 examples must be actual renderer apps, not placeholder docs.
 
 Required examples:
 
-- `examples/v6/product-configurator/`
-- `examples/v6/damaged-helmet-hdr/`
-- `examples/v6/boom-box-textures/`
-- `examples/v6/material-extensions/`
-- `examples/v6/hdr-ibl-roughness/`
-- `examples/v6/architecture-day-night/`
-- `examples/v6/animated-character/`
-- `examples/v6/postprocess-cinematic/`
-- `examples/v6/large-instanced-scene/`
-- `examples/v6/webgpu-product/`
-- `examples/v6/threejs-migrated-scene/`
-- `examples/v6/index.html`
-- `examples/v6/catalog.json`
+- `examples/production-runtime-examples/product-configurator/`
+- `examples/production-runtime-examples/damaged-helmet-hdr/`
+- `examples/production-runtime-examples/boom-box-textures/`
+- `examples/production-runtime-examples/material-extensions/`
+- `examples/production-runtime-examples/hdr-ibl-roughness/`
+- `examples/production-runtime-examples/architecture-day-night/`
+- `examples/production-runtime-examples/animated-character/`
+- `examples/production-runtime-examples/postprocess-cinematic/`
+- `examples/production-runtime-examples/large-instanced-scene/`
+- `examples/production-runtime-examples/webgpu-product/`
+- `examples/production-runtime-examples/threejs-migrated-scene/`
+- `examples/production-runtime-examples/index.html`
+- `examples/production-runtime-examples/catalog.json`
 
 Required templates:
 
-- `templates/v6-product-configurator/`
-- `templates/v6-asset-inspector/`
-- `templates/v6-material-studio/`
-- `templates/v6-architecture-viewer/`
-- `templates/v6-webgpu-starter/`
+- `templates/production-product-configurator/`
+- `templates/production-asset-inspector/`
+- `templates/production-material-studio/`
+- `templates/production-architecture-viewer/`
+- `templates/production-webgpu-starter/`
 
 Create-g3d mirrors:
 
-- `packages/create-g3d/templates/v6-product-configurator/`
-- `packages/create-g3d/templates/v6-asset-inspector/`
-- `packages/create-g3d/templates/v6-material-studio/`
-- `packages/create-g3d/templates/v6-architecture-viewer/`
-- `packages/create-g3d/templates/v6-webgpu-starter/`
+- `packages/create-g3d/templates/production-product-configurator/`
+- `packages/create-g3d/templates/production-asset-inspector/`
+- `packages/create-g3d/templates/production-material-studio/`
+- `packages/create-g3d/templates/production-architecture-viewer/`
+- `packages/create-g3d/templates/production-webgpu-starter/`
 
 Acceptance:
 
@@ -947,18 +947,18 @@ Acceptance:
 
 Required tests/tools:
 
-- `tests/browser/v6-examples.spec.ts`
-- `tests/integration/v6-create-g3d.test.ts`
-- `tests/browser/v6-templates.spec.ts`
-- `tools/v6-examples-readiness/index.ts`
-- `tools/v6-template-readiness/index.ts`
-- `tests/reports/v6-examples-readiness.json`
-- `tests/reports/v6-template-readiness.json`
+- `tests/browser/production-runtime-examples.spec.ts`
+- `tests/integration/production-runtime-create-g3d.test.ts`
+- `tests/browser/production-runtime-templates.spec.ts`
+- `tools/production-runtime-examples-readiness/index.ts`
+- `tools/production-runtime-template-readiness/index.ts`
+- `tests/reports/production-runtime-examples-readiness.json`
+- `tests/reports/production-runtime-template-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:examples && pnpm v6:templates
+pnpm production-runtime:examples && pnpm production-runtime:templates
 ```
 
 ## Docs
@@ -967,28 +967,28 @@ V6 docs must teach how to use a real renderer.
 
 Required docs:
 
-- `docs/project/v6-roadmap-status.md`
-- `docs/project/v6-roadmap-progress.md`
-- `docs/project/v6-roadmap-renderer-architecture.md`
-- `docs/project/v6-roadmap-webgl2-backend.md`
-- `docs/project/v6-roadmap-webgpu-backend.md`
-- `docs/project/v6-roadmap-gltf-pipeline.md`
-- `docs/project/v6-roadmap-pbr-materials.md`
-- `docs/project/v6-roadmap-hdr-ibl.md`
-- `docs/project/v6-roadmap-shadows.md`
-- `docs/project/v6-roadmap-postprocess.md`
-- `docs/project/v6-roadmap-animation.md`
-- `docs/project/v6-roadmap-asset-pipeline.md`
-- `docs/project/v6-roadmap-threejs-parity.md`
-- `docs/project/v6-roadmap-visual-quality-gates.md`
-- `docs/project/v6-roadmap-product-workflows.md`
-- `docs/project/v6-roadmap-api-reference.md`
-- `docs/project/v6-roadmap-getting-started.md`
-- `docs/project/v6-roadmap-templates.md`
-- `docs/project/v6-roadmap-examples.md`
-- `docs/project/v6-roadmap-known-gaps.md`
-- `docs/project/v6-roadmap-blocked-claims.md`
-- `docs/project/v6-roadmap-release-notes.md`
+- `docs/project/production-runtime-roadmap-status.md`
+- `docs/project/production-runtime-roadmap-progress.md`
+- `docs/project/production-runtime-roadmap-renderer-architecture.md`
+- `docs/project/production-runtime-roadmap-webgl2-backend.md`
+- `docs/project/production-runtime-roadmap-webgpu-backend.md`
+- `docs/project/production-runtime-roadmap-gltf-pipeline.md`
+- `docs/project/production-runtime-roadmap-pbr-materials.md`
+- `docs/project/production-runtime-roadmap-hdr-ibl.md`
+- `docs/project/production-runtime-roadmap-shadows.md`
+- `docs/project/production-runtime-roadmap-postprocess.md`
+- `docs/project/production-runtime-roadmap-animation.md`
+- `docs/project/production-runtime-roadmap-asset-pipeline.md`
+- `docs/project/production-runtime-roadmap-threejs-parity.md`
+- `docs/project/production-runtime-roadmap-visual-quality-gates.md`
+- `docs/project/production-runtime-roadmap-product-workflows.md`
+- `docs/project/production-runtime-roadmap-api-reference.md`
+- `docs/project/production-runtime-roadmap-getting-started.md`
+- `docs/project/production-runtime-roadmap-templates.md`
+- `docs/project/production-runtime-roadmap-examples.md`
+- `docs/project/production-runtime-roadmap-known-gaps.md`
+- `docs/project/production-runtime-roadmap-blocked-claims.md`
+- `docs/project/production-runtime-roadmap-release-notes.md`
 
 Docs must include:
 
@@ -1004,16 +1004,16 @@ Docs must include:
 
 Required tests/tools:
 
-- `tests/unit/tools/v6-docs.test.ts`
-- `tools/v6-docs-readiness/index.ts`
-- `tools/v6-claim-registry/index.ts`
-- `tests/reports/v6-docs-readiness.json`
-- `tests/reports/v6-claim-registry.json`
+- `tests/unit/tools/production-runtime-docs.test.ts`
+- `tools/production-runtime-docs-readiness/index.ts`
+- `tools/production-runtime-claim-registry/index.ts`
+- `tests/reports/production-runtime-docs-readiness.json`
+- `tests/reports/production-runtime-claim-registry.json`
 
 Exit command:
 
 ```sh
-pnpm v6:docs
+pnpm production-runtime:docs
 ```
 
 ## Milestone Checklist
@@ -1022,19 +1022,19 @@ pnpm v6:docs
 
 Required files:
 
-- `docs/project/v6-roadmap-production-renderer-plan.md`
-- `docs/project/v6-roadmap-status.md`
-- `docs/project/v6-roadmap-progress.md`
-- `docs/project/v6-roadmap-v5-visual-failure-audit.md`
-- `docs/project/v6-roadmap-no-fake-visual-proof.md`
-- `docs/project/v6-roadmap-known-gaps.md`
-- `docs/project/v6-roadmap-blocked-claims.md`
-- `tools/v6-truth/index.ts`
-- `tools/v6-progress/index.ts`
-- `tools/v6-v5-failure-audit/index.ts`
-- `tests/reports/v6-truth.json`
-- `tests/reports/v6-progress.json`
-- `tests/reports/v6-v5-visual-failure-audit.json`
+- `docs/project/production-runtime-roadmap-production-renderer-plan.md`
+- `docs/project/production-runtime-roadmap-status.md`
+- `docs/project/production-runtime-roadmap-progress.md`
+- `docs/project/production-runtime-roadmap-three-compat-visual-failure-audit.md`
+- `docs/project/production-runtime-roadmap-no-fake-visual-proof.md`
+- `docs/project/production-runtime-roadmap-known-gaps.md`
+- `docs/project/production-runtime-roadmap-blocked-claims.md`
+- `tools/production-runtime-truth/index.ts`
+- `tools/production-runtime-progress/index.ts`
+- `tools/production-runtime-three-compat-failure-audit/index.ts`
+- `tests/reports/production-runtime-truth.json`
+- `tests/reports/production-runtime-progress.json`
+- `tests/reports/production-runtime-three-compat-visual-failure-audit.json`
 
 Acceptance:
 
@@ -1046,7 +1046,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm v6:truth && pnpm v6:progress
+pnpm production-runtime:truth && pnpm production-runtime:progress
 ```
 
 ### Milestone 1: Asset And Environment Corpus
@@ -1061,7 +1061,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:assets && pnpm v6:environments
+pnpm production-runtime:assets && pnpm production-runtime:environments
 ```
 
 ### Milestone 2: WebGL2 Renderer Backend
@@ -1077,7 +1077,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:webgl2
+pnpm production-runtime:webgl2
 ```
 
 ### Milestone 3: PBR/HDR Pipeline
@@ -1093,7 +1093,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:pbr && pnpm v6:environments
+pnpm production-runtime:pbr && pnpm production-runtime:environments
 ```
 
 ### Milestone 4: glTF Render Pipeline
@@ -1107,7 +1107,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:gltf
+pnpm production-runtime:gltf
 ```
 
 ### Milestone 5: Shadows, Transparency, And Postprocess
@@ -1122,16 +1122,16 @@ Required:
 
 Required tests/tools:
 
-- `tests/browser/v6-shadows.spec.ts`
-- `tests/browser/v6-transparency.spec.ts`
-- `tests/browser/v6-postprocess.spec.ts`
-- `tools/v6-lighting-postprocess-readiness/index.ts`
-- `tests/reports/v6-lighting-postprocess-readiness.json`
+- `tests/browser/production-runtime-shadows.spec.ts`
+- `tests/browser/production-runtime-transparency.spec.ts`
+- `tests/browser/production-runtime-postprocess.spec.ts`
+- `tools/production-runtime-lighting-postprocess-readiness/index.ts`
+- `tests/reports/production-runtime-lighting-postprocess-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:lighting-postprocess
+pnpm production-runtime:lighting-postprocess
 ```
 
 ### Milestone 6: WebGPU Backend
@@ -1145,7 +1145,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:webgpu
+pnpm production-runtime:webgpu
 ```
 
 ### Milestone 7: Animation And Controls
@@ -1159,15 +1159,15 @@ Required:
 
 Required tests/tools:
 
-- `tests/browser/v6-animation-render.spec.ts`
-- `tests/browser/v6-controls-picking.spec.ts`
-- `tools/v6-animation-controls-readiness/index.ts`
-- `tests/reports/v6-animation-controls-readiness.json`
+- `tests/browser/production-runtime-animation-render.spec.ts`
+- `tests/browser/production-runtime-controls-picking.spec.ts`
+- `tools/production-runtime-animation-controls-readiness/index.ts`
+- `tests/reports/production-runtime-animation-controls-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:animation-controls
+pnpm production-runtime:animation-controls
 ```
 
 ### Milestone 8: Product Apps
@@ -1182,7 +1182,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:apps
+pnpm production-runtime:apps
 ```
 
 ### Milestone 9: Visual Gallery And Anti-Fake Gate
@@ -1198,7 +1198,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:visuals
+pnpm production-runtime:visuals
 ```
 
 ### Milestone 10: Same-Scene Three.js Parity
@@ -1213,7 +1213,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:compare-threejs
+pnpm production-runtime:compare-threejs
 ```
 
 ### Milestone 11: Workflows And Differentiation
@@ -1228,7 +1228,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:workflows
+pnpm production-runtime:workflows
 ```
 
 ### Milestone 12: Examples And Templates
@@ -1243,7 +1243,7 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:examples && pnpm v6:templates
+pnpm production-runtime:examples && pnpm production-runtime:templates
 ```
 
 ### Milestone 13: Performance And Memory
@@ -1260,15 +1260,15 @@ Required:
 
 Required tests/tools:
 
-- `tests/performance/v6-performance-baselines.ts`
-- `tests/browser/v6-large-scene-performance.spec.ts`
-- `tools/v6-performance-readiness/index.ts`
-- `tests/reports/v6-performance-readiness.json`
+- `tests/performance/production-runtime-performance-baselines.ts`
+- `tests/browser/production-runtime-large-scene-performance.spec.ts`
+- `tools/production-runtime-performance-readiness/index.ts`
+- `tests/reports/production-runtime-performance-readiness.json`
 
 Exit command:
 
 ```sh
-pnpm v6:performance
+pnpm production-runtime:performance
 ```
 
 ### Milestone 14: Package And External Consumer
@@ -1282,19 +1282,19 @@ Required:
 
 Required tests/tools:
 
-- `tools/v6-package-surface-readiness/index.ts`
-- `tools/v6-package-smoke/index.ts`
-- `tools/v6-external-consumer/index.ts`
-- `tools/v6-external-vite-build/index.ts`
-- `tests/browser/v6-external-consumer-render.spec.ts`
-- `tests/reports/v6-package-surface-readiness.json`
-- `tests/reports/v6-package-smoke.json`
-- `tests/reports/v6-external-consumer.json`
+- `tools/production-runtime-package-surface-readiness/index.ts`
+- `tools/production-runtime-package-smoke/index.ts`
+- `tools/production-runtime-external-consumer/index.ts`
+- `tools/production-runtime-external-vite-build/index.ts`
+- `tests/browser/production-runtime-external-consumer-render.spec.ts`
+- `tests/reports/production-runtime-package-surface-readiness.json`
+- `tests/reports/production-runtime-package-smoke.json`
+- `tests/reports/production-runtime-external-consumer.json`
 
 Exit command:
 
 ```sh
-pnpm v6:package
+pnpm production-runtime:package
 ```
 
 ### Milestone 15: Docs And Claims
@@ -1309,19 +1309,19 @@ Required:
 Exit command:
 
 ```sh
-pnpm v6:docs
+pnpm production-runtime:docs
 ```
 
 ### Milestone 16: Release Readiness
 
 Required files:
 
-- `tools/v6-release-readiness/index.ts`
-- `tools/v6-completion-audit/index.ts`
-- `tools/v6-production-renderer-readiness/index.ts`
-- `tests/reports/v6-release-readiness.json`
-- `tests/reports/v6-completion-audit.json`
-- `tests/reports/v6-production-renderer-readiness.json`
+- `tools/production-runtime-release-readiness/index.ts`
+- `tools/production-runtime-completion-audit/index.ts`
+- `tools/production-runtime-production-renderer-readiness/index.ts`
+- `tests/reports/production-runtime-release-readiness.json`
+- `tests/reports/production-runtime-completion-audit.json`
+- `tests/reports/production-runtime-production-renderer-readiness.json`
 
 Release readiness must fail if:
 
@@ -1342,48 +1342,48 @@ Release readiness must fail if:
 Exit command:
 
 ```sh
-pnpm v6:release-readiness
+pnpm production-runtime:release-readiness
 ```
 
 ### Milestone 17: Full Release Command
 
 Required package script:
 
-- `v6:release`
+- `production-runtime:release`
 
 Required command:
 
 ```sh
-pnpm v6:truth \
-  && pnpm v6:progress \
-  && pnpm v6:assets \
-  && pnpm v6:environments \
+pnpm production-runtime:truth \
+  && pnpm production-runtime:progress \
+  && pnpm production-runtime:assets \
+  && pnpm production-runtime:environments \
   && pnpm typecheck \
-  && pnpm v6:webgl2 \
-  && pnpm v6:pbr \
-  && pnpm v6:gltf \
-  && pnpm v6:lighting-postprocess \
-  && pnpm v6:webgpu \
-  && pnpm v6:animation-controls \
-  && pnpm v6:apps \
-  && pnpm v6:visuals \
-  && pnpm v6:compare-threejs \
-  && pnpm v6:workflows \
-  && pnpm v6:examples \
-  && pnpm v6:templates \
-  && pnpm v6:performance \
-  && pnpm v6:package \
-  && pnpm v6:docs \
-  && pnpm v6:release-readiness \
-  && pnpm exec tsx --tsconfig tsconfig.base.json tools/v6-completion-audit/index.ts
+  && pnpm production-runtime:webgl2 \
+  && pnpm production-runtime:pbr \
+  && pnpm production-runtime:gltf \
+  && pnpm production-runtime:lighting-postprocess \
+  && pnpm production-runtime:webgpu \
+  && pnpm production-runtime:animation-controls \
+  && pnpm production-runtime:apps \
+  && pnpm production-runtime:visuals \
+  && pnpm production-runtime:compare-threejs \
+  && pnpm production-runtime:workflows \
+  && pnpm production-runtime:examples \
+  && pnpm production-runtime:templates \
+  && pnpm production-runtime:performance \
+  && pnpm production-runtime:package \
+  && pnpm production-runtime:docs \
+  && pnpm production-runtime:release-readiness \
+  && pnpm exec tsx --tsconfig tsconfig.base.json tools/production-runtime-completion-audit/index.ts
 ```
 
 ### Milestone 18: Product Decision Record
 
 Required files:
 
-- `docs/project/v6-roadmap-product-decision-record.md`
-- `tests/reports/v6-product-decision-record.json`
+- `docs/project/production-runtime-roadmap-product-decision-record.md`
+- `tests/reports/production-runtime-product-decision-record.json`
 
 The decision record must answer:
 
@@ -1400,80 +1400,80 @@ The decision record must answer:
 Exit command:
 
 ```sh
-pnpm v6:product-decision
+pnpm production-runtime:product-decision
 ```
 
 ## Required Final Reports
 
 V6 cannot be called complete until these reports exist and pass:
 
-- `tests/reports/v6-truth.json`
-- `tests/reports/v6-progress.json`
-- `tests/reports/v6-v5-visual-failure-audit.json`
-- `tests/reports/v6-asset-audit.json`
-- `tests/reports/v6-environment-readiness.json`
-- `tests/reports/v6-webgl2-readiness.json`
-- `tests/reports/v6-webgpu-readiness.json`
-- `tests/reports/v6-pbr-readiness.json`
-- `tests/reports/v6-gltf-readiness.json`
-- `tests/reports/v6-lighting-postprocess-readiness.json`
-- `tests/reports/v6-animation-controls-readiness.json`
-- `tests/reports/v6-app-suite-readiness.json`
-- `tests/reports/v6-gallery/manifest.json`
-- `tests/reports/v6-visual-quality.json`
-- `tests/reports/v6-real-renderer-proof.json`
-- `tests/reports/v6-human-visual-review.json`
-- `tests/reports/v6-threejs-visual-parity.json`
-- `tests/reports/v6-threejs-runtime-parity.json`
-- `tests/reports/v6-workflow-readiness.json`
-- `tests/reports/v6-examples-readiness.json`
-- `tests/reports/v6-template-readiness.json`
-- `tests/reports/v6-performance-readiness.json`
-- `tests/reports/v6-package-surface-readiness.json`
-- `tests/reports/v6-package-smoke.json`
-- `tests/reports/v6-external-consumer.json`
-- `tests/reports/v6-docs-readiness.json`
-- `tests/reports/v6-claim-registry.json`
-- `tests/reports/v6-production-renderer-readiness.json`
-- `tests/reports/v6-release-readiness.json`
-- `tests/reports/v6-completion-audit.json`
-- `tests/reports/v6-product-decision-record.json`
+- `tests/reports/production-runtime-truth.json`
+- `tests/reports/production-runtime-progress.json`
+- `tests/reports/production-runtime-three-compat-visual-failure-audit.json`
+- `tests/reports/production-runtime-asset-audit.json`
+- `tests/reports/production-runtime-environment-readiness.json`
+- `tests/reports/production-runtime-webgl2-readiness.json`
+- `tests/reports/production-runtime-webgpu-readiness.json`
+- `tests/reports/production-runtime-pbr-readiness.json`
+- `tests/reports/production-runtime-gltf-readiness.json`
+- `tests/reports/production-runtime-lighting-postprocess-readiness.json`
+- `tests/reports/production-runtime-animation-controls-readiness.json`
+- `tests/reports/production-runtime-app-suite-readiness.json`
+- `tests/reports/production-runtime-gallery/manifest.json`
+- `tests/reports/production-runtime-visual-quality.json`
+- `tests/reports/production-runtime-real-renderer-proof.json`
+- `tests/reports/production-runtime-human-visual-review.json`
+- `tests/reports/production-runtime-threejs-visual-parity.json`
+- `tests/reports/production-runtime-threejs-runtime-parity.json`
+- `tests/reports/production-runtime-workflow-readiness.json`
+- `tests/reports/production-runtime-examples-readiness.json`
+- `tests/reports/production-runtime-template-readiness.json`
+- `tests/reports/production-runtime-performance-readiness.json`
+- `tests/reports/production-runtime-package-surface-readiness.json`
+- `tests/reports/production-runtime-package-smoke.json`
+- `tests/reports/production-runtime-external-consumer.json`
+- `tests/reports/production-runtime-docs-readiness.json`
+- `tests/reports/production-runtime-claim-registry.json`
+- `tests/reports/production-runtime-production-renderer-readiness.json`
+- `tests/reports/production-runtime-release-readiness.json`
+- `tests/reports/production-runtime-completion-audit.json`
+- `tests/reports/production-runtime-product-decision-record.json`
 
 ## Required Final Screenshots
 
 These must be real renderer screenshots, not Canvas 2D proof:
 
-- `tests/reports/v6-gallery/product/product-configurator-webgl2.png`
-- `tests/reports/v6-gallery/product/product-configurator-webgpu.png`
-- `tests/reports/v6-gallery/automotive/automotive-configurator-webgl2.png`
-- `tests/reports/v6-gallery/architecture/architecture-day-webgl2.png`
-- `tests/reports/v6-gallery/architecture/architecture-night-webgl2.png`
-- `tests/reports/v6-gallery/assets/damaged-helmet-webgl2.png`
-- `tests/reports/v6-gallery/assets/boom-box-webgl2.png`
-- `tests/reports/v6-gallery/materials/material-extension-grid-webgl2.png`
-- `tests/reports/v6-gallery/character/animated-character-webgl2.png`
-- `tests/reports/v6-gallery/postprocess/cinematic-before-webgl2.png`
-- `tests/reports/v6-gallery/postprocess/cinematic-after-webgl2.png`
-- `tests/reports/v6-gallery/large-scene/large-scene-webgl2.png`
-- `tests/reports/v6-gallery/webgpu/webgpu-product-frame.png`
-- `tests/reports/v6-gallery/threejs-comparison/product-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/product-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/product-diff.png`
-- `tests/reports/v6-gallery/threejs-comparison/materials-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/materials-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/materials-diff.png`
-- `tests/reports/v6-gallery/threejs-comparison/asset-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/asset-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/asset-diff.png`
-- `tests/reports/v6-gallery/threejs-comparison/architecture-g3d.png`
-- `tests/reports/v6-gallery/threejs-comparison/architecture-threejs.png`
-- `tests/reports/v6-gallery/threejs-comparison/architecture-diff.png`
+- `tests/reports/production-runtime-gallery/product/product-configurator-webgl2.png`
+- `tests/reports/production-runtime-gallery/product/product-configurator-webgpu.png`
+- `tests/reports/production-runtime-gallery/automotive/automotive-configurator-webgl2.png`
+- `tests/reports/production-runtime-gallery/architecture/architecture-day-webgl2.png`
+- `tests/reports/production-runtime-gallery/architecture/architecture-night-webgl2.png`
+- `tests/reports/production-runtime-gallery/assets/damaged-helmet-webgl2.png`
+- `tests/reports/production-runtime-gallery/assets/boom-box-webgl2.png`
+- `tests/reports/production-runtime-gallery/materials/material-extension-grid-webgl2.png`
+- `tests/reports/production-runtime-gallery/character/animated-character-webgl2.png`
+- `tests/reports/production-runtime-gallery/postprocess/cinematic-before-webgl2.png`
+- `tests/reports/production-runtime-gallery/postprocess/cinematic-after-webgl2.png`
+- `tests/reports/production-runtime-gallery/large-scene/large-scene-webgl2.png`
+- `tests/reports/production-runtime-gallery/webgpu/webgpu-product-frame.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-diff.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-diff.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-diff.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-threejs.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-diff.png`
 
 ## Final Completion Definition
 
 V6 is complete only when:
 
-- `pnpm v6:release` passes.
+- `pnpm production-runtime:release` passes.
 - Completion audit passes.
 - Product decision record exists.
 - Real WebGL2 renderer output is proven.

@@ -47,7 +47,7 @@ interface AssetViewerResult {
   readonly visualClaim: "bounded-gltf-asset-inspection-viewer";
   readonly knownLimits: readonly string[];
   readonly errors: readonly string[];
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png";
   readonly claimBoundary: string;
   readonly featureEvidence: Record<string, string | number | boolean>;
   readonly v4RenderPreset?: V4RenderPresetEvidence;
@@ -220,7 +220,7 @@ interface AssetViewerComparisonExport {
   readonly loaderFeatures: readonly string[];
   readonly warnings: readonly string[];
   readonly lookControls: AssetViewerLookControls;
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png";
   readonly byteLength: number;
 }
 
@@ -805,7 +805,7 @@ async function boot(): Promise<void> {
         visualClaim: "bounded-gltf-asset-inspection-viewer",
         knownLimits,
         errors: [message],
-        screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png",
+        screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png",
         claimBoundary,
         featureEvidence: failedFeatureEvidence(message),
         sourceKind: kind,
@@ -852,7 +852,7 @@ async function boot(): Promise<void> {
         visualClaim: "bounded-gltf-asset-inspection-viewer",
         knownLimits,
         errors: [error instanceof Error ? error.message : String(error)],
-        screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png",
+        screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png",
         claimBoundary,
         featureEvidence: failedFeatureEvidence(error instanceof Error ? error.message : String(error)),
         sourceKind: "local",
@@ -877,7 +877,7 @@ async function boot(): Promise<void> {
         visualClaim: "bounded-gltf-asset-inspection-viewer" as const,
         knownLimits,
         errors: ["Screenshot requested before an asset finished loading."],
-        screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png" as const,
+        screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png" as const,
         claimBoundary,
         featureEvidence: failedFeatureEvidence("Screenshot requested before an asset finished loading."),
       }),
@@ -1027,7 +1027,7 @@ async function boot(): Promise<void> {
         visualClaim: "bounded-gltf-asset-inspection-viewer",
         knownLimits,
         errors: [error instanceof Error ? error.message : String(error)],
-        screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png",
+        screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png",
         claimBoundary,
         featureEvidence: failedFeatureEvidence(error instanceof Error ? error.message : String(error)),
         sourceKind: lastResult?.sourceKind,
@@ -1441,7 +1441,7 @@ function summarize(
   const realScenePostprocessReadback = postprocess.inputNonDarkPixels > 0 || postprocess.outputNonDarkPixels > 0;
   const v4RenderPreset = createV4FlagshipRenderPresetEvidence({
     exampleId: "asset-viewer",
-    screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png",
+    screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png",
     exposure: postprocess.exposure,
     postprocessEvidence: realScenePostprocessReadback,
     lodEvidence: false
@@ -1470,7 +1470,7 @@ function summarize(
     visualClaim: "bounded-gltf-asset-inspection-viewer",
     knownLimits,
     errors: [],
-    screenshotPath: "tests/reports/v4-example-screenshots/asset-viewer.png",
+    screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png",
     claimBoundary,
     featureEvidence: {
       loaded: true,

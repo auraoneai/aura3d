@@ -38,13 +38,13 @@ interface PublicDemoDeploymentArtifactIngestResult {
 const allowedReportPaths = new Set([
   "tests/reports/public-demo-deployment-smoke.json",
   "tests/reports/public-demo-deployment-runbook.md",
-  "tests/reports/v4-production-readiness.json",
-  "tests/reports/v4-external-evidence-readiness.json",
-  "tests/reports/v4-external-evidence-missing-artifacts.md",
-  "tests/reports/v4-broad-parity-readiness.json",
-  "tests/reports/v4-completion-audit.json",
-  "tests/reports/v4-completion-audit-runbook.md",
-  "tests/reports/v4-report-freshness.json",
+  "tests/reports/external-parity-production-readiness.json",
+  "tests/reports/external-parity-external-evidence-readiness.json",
+  "tests/reports/external-parity-external-evidence-missing-artifacts.md",
+  "tests/reports/external-parity-broad-parity-readiness.json",
+  "tests/reports/external-parity-completion-audit.json",
+  "tests/reports/external-parity-completion-audit-runbook.md",
+  "tests/reports/external-parity-report-freshness.json",
 ]);
 const targetByArtifactPath = new Map([
   ...[...allowedReportPaths].map((path) => [path, path] as const),
@@ -52,11 +52,11 @@ const targetByArtifactPath = new Map([
 ]);
 
 const auditCommands = [
-  ["pnpm", ["audit:v4-production-readiness"]],
-  ["pnpm", ["audit:v4-external-evidence-readiness"]],
+  ["pnpm", ["audit:external-parity-production-readiness"]],
+  ["pnpm", ["audit:external-parity-external-evidence-readiness"]],
   ["pnpm", ["audit:v4-broad-parity"]],
   ["pnpm", ["audit:v4-completion"]],
-  ["pnpm", ["verify:v4-report-freshness"]],
+  ["pnpm", ["verify:external-parity-report-freshness"]],
 ] as const;
 
 export function ingestPublicDemoDeploymentReportArtifacts(options: PublicDemoDeploymentArtifactIngestOptions): PublicDemoDeploymentArtifactIngestResult {

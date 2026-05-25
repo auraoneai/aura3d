@@ -7,9 +7,13 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./advanced-runtime": {
+      "types": "./dist/advanced-runtime/index.d.ts",
+      "import": "./dist/advanced-runtime/index.js"
+    },
     "./v9": {
-      "types": "./dist/v9/index.d.ts",
-      "import": "./dist/v9/index.js"
+      "types": "./dist/advanced-runtime/index.d.ts",
+      "import": "./dist/advanced-runtime/index.js"
     }
   },
   "main": "./dist/index.js",

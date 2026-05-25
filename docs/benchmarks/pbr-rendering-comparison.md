@@ -10,9 +10,9 @@ This report records the bounded PBR evidence currently present in the repo. It s
 |---|---|---|
 | Original PBR visual slice | `tests/reports/pbr-rendering-comparison.json` | One perspective-camera WebGL2 PBR scene rendered against a same-page Three.js reference. |
 | Retained PBR PNGs | `tests/reports/pbr-material-lab-galileo.png`, `tests/reports/pbr-material-lab-threejs.png`, `tests/reports/pbr-material-lab-diff.png` | Screenshot artifacts for the bounded PBR scene. |
-| V6 material/product parity | `tests/reports/v6-threejs-parity-readiness.json`, `tests/reports/v6-threejs-parity/**` | Bounded same-scene material/product/asset comparisons against Three.js. |
+| V6 material/product parity | `tests/reports/production-runtime-threejs-parity-readiness.json`, `tests/reports/production-runtime-threejs-parity/**` | Bounded same-scene material/product/asset comparisons against Three.js. |
 | V9 material extension parity | `tests/reports/v9/loader-material-extensions-parity.json`, `tests/reports/v9/material-grid-parity.json`, `tests/reports/v9/physical-lights-parity.json` | Same-scene or same-generated-asset parity slices for material grids, material extensions, and physical light behavior. |
-| V9 flagship viewer | `tests/reports/v8-threejs-parity.json`, `apps/v8-flagship-viewer/**`, `tools/v8-threejs-parity/index.ts` | Product-viewer comparison with HDR environment, PMREM-style environment path, shadows, and actual Three.js baseline. |
+| V9 flagship viewer | `tests/reports/current-routes-threejs-parity.json`, `apps/flagship-viewer/**`, `tools/current-routes-threejs-parity/index.ts` | Product-viewer comparison with HDR environment, PMREM-style environment path, shadows, and actual Three.js baseline. |
 
 ## Claim Boundary
 

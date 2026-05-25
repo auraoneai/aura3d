@@ -16,10 +16,10 @@ Required implementation surfaces:
 
 Release evidence:
 
-- `tests/reports/v4-hdr-readiness.json`
-- `tests/reports/v4-ibl-readiness.json`
-- `tests/reports/v4-visual-quality.json`
-- `tests/reports/v4-screenshot-gallery.json`
+- `tests/reports/external-parity-hdr-readiness.json`
+- `tests/reports/external-parity-ibl-readiness.json`
+- `tests/reports/external-parity-visual-quality.json`
+- `tests/reports/external-parity-screenshot-gallery.json`
 
 Boundary: V4 proves bounded browser HDR/IBL behavior for supported workflows, not offline-renderer parity.
 

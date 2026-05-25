@@ -32,7 +32,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: v4-external-engine-baselines-${{ github.ref }}
+  group: external-parity-external-engine-baselines-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -58,7 +58,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Package external baseline kit
-        run: pnpm verify:v4-external-engine-baselines
+        run: pnpm verify:external-parity-external-engine-baselines
 
       - name: Upload external baseline kit
         uses: actions/upload-artifact@v4
@@ -66,7 +66,7 @@ jobs:
           name: v4-external-engine-baseline-kit
           path: |
             fixtures/external-engine-baselines/v4/**
-            tests/reports/v4-external-engine-baselines.json
+            tests/reports/external-parity-external-engine-baselines.json
           retention-days: 30
 
   unity-baselines:
@@ -99,7 +99,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Regenerate external baseline kit
-        run: pnpm verify:v4-external-engine-baselines
+        run: pnpm verify:external-parity-external-engine-baselines
 
       - name: Run Unity editor CLI smoke
         run: node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json
@@ -108,10 +108,10 @@ jobs:
         run: node fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs --project "${G3D_UNITY_PROJECT_PATH}"
 
       - name: Audit Unity and Unreal parity gates
-        run: pnpm audit:v4-unity-unreal-parity || true
+        run: pnpm audit:external-parity-unity-unreal-parity || true
 
       - name: Audit external evidence readiness
-        run: pnpm audit:v4-external-evidence-readiness || true
+        run: pnpm audit:external-parity-external-evidence-readiness || true
 
       - name: Audit completion state
         run: pnpm audit:v4-completion || true
@@ -135,12 +135,12 @@ jobs:
             tests/reports/v4-pbr-visual/**
             tests/reports/v4-shadow-visual/**
             tests/reports/v4-hdr-render-target/**
-            tests/reports/v4-postprocess-suite/**
-            tests/reports/v4-unity-unreal-parity.json
-            tests/reports/v4-external-evidence-readiness.json
+            tests/reports/external-parity-postprocess-suite/**
+            tests/reports/external-parity-unity-unreal-parity.json
+            tests/reports/external-parity-external-evidence-readiness.json
             tests/reports/v4-external-evidence-missing-artifacts.md
-            tests/reports/v4-completion-audit.json
-            tests/reports/v4-completion-audit-runbook.md
+            tests/reports/external-parity-completion-audit.json
+            tests/reports/external-parity-completion-audit-runbook.md
           retention-days: 30
 
   unreal-baselines:
@@ -173,7 +173,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Regenerate external baseline kit
-        run: pnpm verify:v4-external-engine-baselines
+        run: pnpm verify:external-parity-external-engine-baselines
 
       - name: Run Unreal editor CLI smoke
         run: node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/v4-unreal-editor-cli-smoke.json
@@ -182,10 +182,10 @@ jobs:
         run: node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs --project "${G3D_UNREAL_PROJECT_PATH}"
 
       - name: Audit Unity and Unreal parity gates
-        run: pnpm audit:v4-unity-unreal-parity || true
+        run: pnpm audit:external-parity-unity-unreal-parity || true
 
       - name: Audit external evidence readiness
-        run: pnpm audit:v4-external-evidence-readiness || true
+        run: pnpm audit:external-parity-external-evidence-readiness || true
 
       - name: Audit completion state
         run: pnpm audit:v4-completion || true
@@ -209,12 +209,12 @@ jobs:
             tests/reports/v4-pbr-visual/**
             tests/reports/v4-shadow-visual/**
             tests/reports/v4-hdr-render-target/**
-            tests/reports/v4-postprocess-suite/**
-            tests/reports/v4-unity-unreal-parity.json
-            tests/reports/v4-external-evidence-readiness.json
+            tests/reports/external-parity-postprocess-suite/**
+            tests/reports/external-parity-unity-unreal-parity.json
+            tests/reports/external-parity-external-evidence-readiness.json
             tests/reports/v4-external-evidence-missing-artifacts.md
-            tests/reports/v4-completion-audit.json
-            tests/reports/v4-completion-audit-runbook.md
+            tests/reports/external-parity-completion-audit.json
+            tests/reports/external-parity-completion-audit-runbook.md
           retention-days: 30
 
   final-audits:
@@ -244,7 +244,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Regenerate external baseline kit
-        run: pnpm verify:v4-external-engine-baselines
+        run: pnpm verify:external-parity-external-engine-baselines
 
       - name: Download external baseline evidence artifacts
         uses: actions/download-artifact@v4
@@ -261,31 +261,31 @@ jobs:
           fi
 
       - name: Audit external evidence readiness
-        run: pnpm audit:v4-external-evidence-readiness || true
+        run: pnpm audit:external-parity-external-evidence-readiness || true
 
       - name: Audit product visual parity
-        run: pnpm audit:v4-product-visual-parity || true
+        run: pnpm audit:external-parity-product-visual-parity || true
 
       - name: Audit PBR reference readiness
-        run: pnpm audit:v4-pbr-reference-readiness || true
+        run: pnpm audit:external-parity-pbr-reference-readiness || true
 
       - name: Audit PBR and glTF readiness
-        run: pnpm audit:v4-pbr-gltf-readiness || true
+        run: pnpm audit:external-parity-pbr-gltf-readiness || true
 
       - name: Audit shadow-map readiness
-        run: pnpm audit:v4-shadow-map-readiness || true
+        run: pnpm audit:external-parity-shadow-map-readiness || true
 
       - name: Audit HDR render-target readiness
-        run: pnpm audit:v4-hdr-render-target-readiness || true
+        run: pnpm audit:external-parity-hdr-render-target-readiness || true
 
       - name: Audit postprocess suite readiness
-        run: pnpm audit:v4-postprocess-suite || true
+        run: pnpm audit:external-parity-postprocess-suite || true
 
       - name: Audit Unity and Unreal parity
-        run: pnpm audit:v4-unity-unreal-parity || true
+        run: pnpm audit:external-parity-unity-unreal-parity || true
 
       - name: Audit production readiness
-        run: pnpm audit:v4-production-readiness || true
+        run: pnpm audit:external-parity-production-readiness || true
 
       - name: Audit broad parity
         run: pnpm audit:v4-broad-parity || true
@@ -294,7 +294,7 @@ jobs:
         run: pnpm audit:v4-completion || true
 
       - name: Verify V4 report freshness
-        run: pnpm verify:v4-report-freshness || true
+        run: pnpm verify:external-parity-report-freshness || true
 
       - name: Upload merged external evidence audit reports
         if: always()
@@ -302,19 +302,19 @@ jobs:
         with:
           name: v4-external-baseline-final-audits
           path: |
-            tests/reports/v4-external-engine-baselines.json
-            tests/reports/v4-external-evidence-readiness.json
+            tests/reports/external-parity-external-engine-baselines.json
+            tests/reports/external-parity-external-evidence-readiness.json
             tests/reports/v4-external-evidence-missing-artifacts.md
-            tests/reports/v4-product-visual-parity.json
-            tests/reports/v4-pbr-reference-readiness.json
-            tests/reports/v4-pbr-gltf-readiness.json
-            tests/reports/v4-shadow-map-readiness.json
-            tests/reports/v4-hdr-render-target-readiness.json
-            tests/reports/v4-postprocess-suite.json
-            tests/reports/v4-unity-unreal-parity.json
-            tests/reports/v4-production-readiness.json
-            tests/reports/v4-broad-parity-readiness.json
-            tests/reports/v4-completion-audit.json
-            tests/reports/v4-completion-audit-runbook.md
-            tests/reports/v4-report-freshness.json
+            tests/reports/external-parity-product-visual-parity.json
+            tests/reports/external-parity-pbr-reference-readiness.json
+            tests/reports/external-parity-pbr-gltf-readiness.json
+            tests/reports/external-parity-shadow-map-readiness.json
+            tests/reports/external-parity-hdr-render-target-readiness.json
+            tests/reports/external-parity-postprocess-suite.json
+            tests/reports/external-parity-unity-unreal-parity.json
+            tests/reports/external-parity-production-readiness.json
+            tests/reports/external-parity-broad-parity-readiness.json
+            tests/reports/external-parity-completion-audit.json
+            tests/reports/external-parity-completion-audit-runbook.md
+            tests/reports/external-parity-report-freshness.json
           retention-days: 30

@@ -12,9 +12,9 @@ import {
   createV6WorkflowPlan,
   createV6AssetPreflight,
   createV6VisualQAResult
-} from "@galileo3d/engine/workflows/v6";
+} from "@galileo3d/engine/workflows/production-runtime";
 ```
 
 Primary evidence:
 
-- `tests/reports/v6-workflows-readiness.json`
+- `tests/reports/production-runtime-workflows-readiness.json`

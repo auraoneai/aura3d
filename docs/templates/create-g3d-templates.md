@@ -10,16 +10,16 @@ The current template API supports:
 
 | Template | Intent |
 |---|---|
-| `v4-product-viewer` | Product-viewer proof using the high-level app/workflow API. |
-| `v4-material-studio` | Material review starter. |
-| `v4-asset-gallery` | Asset gallery starter. |
-| `v4-interactive-scene` | Interaction and picking starter. |
-| `v6-product-viewer` | Product viewer with V6 renderer/workflow defaults. |
-| `v6-product-configurator` | Product variant/configurator starter. |
-| `v6-asset-inspector` | Asset inspection starter. |
-| `v6-material-studio` | Material studio starter. |
-| `v6-architecture-viewer` | Architecture/interior viewer starter. |
-| `v6-webgpu-starter` | WebGPU-oriented starter with fallback boundaries. |
+| `external-parity-product-viewer` | Product-viewer proof using the high-level app/workflow API. |
+| `external-parity-material-studio` | Material review starter. |
+| `external-parity-asset-gallery` | Asset gallery starter. |
+| `external-parity-interactive-scene` | Interaction and picking starter. |
+| `production-product-viewer` | Product viewer with V6 renderer/workflow defaults. |
+| `production-product-configurator` | Product variant/configurator starter. |
+| `production-asset-inspector` | Asset inspection starter. |
+| `production-material-studio` | Material studio starter. |
+| `production-architecture-viewer` | Architecture/interior viewer starter. |
+| `production-webgpu-starter` | WebGPU-oriented starter with fallback boundaries. |
 
 There are also V5 template directories in the repo used by verification and legacy migration evidence. The public scaffolding API currently exposes the V4 and V6 list above.
 
@@ -30,7 +30,7 @@ import { createG3DProject } from "@galileo3d/engine/create-g3d";
 
 const result = createG3DProject({
   targetDir: "my-g3d-app",
-  template: "v6-product-viewer",
+  template: "production-product-viewer",
   packageVersion: "0.1.0-alpha.0"
 });
 
@@ -49,7 +49,7 @@ The generated project includes:
 The intended consumer flow is:
 
 ```sh
-npm create g3d@latest my-g3d-app -- --template v6-product-viewer
+npm create g3d@latest my-g3d-app -- --template production-product-viewer
 cd my-g3d-app
 npm install
 npm run build

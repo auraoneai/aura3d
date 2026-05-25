@@ -8,11 +8,11 @@ const requiredFiles = [
   "packages/physics/src/Constraints.ts",
   "packages/physics/src/CharacterController.ts",
   "packages/physics/src/Raycast.ts",
-  "apps/v8-physics-showcase/src/main.ts",
+  "apps/physics-showcase/src/main.ts",
   "tests/performance/physics-comparison-baseline.ts"
 ];
 const requiredReports = [
-  "tests/reports/v8-physics-showcase.json",
+  "tests/reports/physics-showcase.json",
   "tests/reports/v10/physics-comparison-baseline.json"
 ];
 const issues = [

@@ -7,46 +7,46 @@
 
 - API: `workflows.productConfigurator`
 - App: `apps/product-studio-pro`
-- Example: `examples/product-configurator-v4`
-- Evidence: `tests/reports/v4-product-readiness.json`
+- Example: `examples/external-product-configurator`
+- Evidence: `tests/reports/external-parity-product-readiness.json`
 
 ## Asset Review
 
 - API: `workflows.assetViewer`, `loadAsset`, `createAssetDiagnostics`
 - App: `apps/asset-studio-pro`
-- Example: `examples/asset-gallery-v4`
-- Evidence: `tests/reports/v4-asset-studio-readiness.json`
+- Example: `examples/external-asset-gallery`
+- Evidence: `tests/reports/external-parity-asset-studio-readiness.json`
 
 ## Material Studio
 
 - API: `workflows.materialStudio`
 - App: `apps/material-studio-pro`
-- Example: `examples/material-studio-v4`
-- Evidence: `tests/reports/v4-material-studio-readiness.json`
+- Example: `examples/external-material-studio`
+- Evidence: `tests/reports/external-parity-material-studio-readiness.json`
 
 ## Interior / Scene Review
 
 - API: `workflows.sceneShowcase`
 - App: `apps/scene-studio-pro`
-- Example: `examples/interior-scene-v4`
-- Evidence: `tests/reports/v4-scene-readiness.json`
+- Example: `examples/external-interior-scene`
+- Evidence: `tests/reports/external-parity-scene-readiness.json`
 
 ## Character / Animation Preview
 
 - App: `apps/animation-studio-pro`
-- Example: `examples/character-viewer-v4`
-- Evidence: `tests/reports/v4-character-readiness.json`
+- Example: `examples/external-character-viewer`
+- Evidence: `tests/reports/external-parity-character-readiness.json`
 
 ## Lightweight Interactive Scene
 
 - API: `workflows.interactiveScene`
 - App: `apps/interactive-showcase-pro`
-- Example: `examples/interactive-showcase-v4`
-- Evidence: `tests/reports/v4-interactive-readiness.json`
+- Example: `examples/external-interactive-showcase`
+- Evidence: `tests/reports/external-parity-interactive-readiness.json`
 
 ## Install And Ship
 
 - API/runtime package: `@galileo3d/engine`
-- Template: `templates/v4-product-viewer`
+- Template: `templates/external-parity-product-viewer`
 - Scaffolder: `@galileo3d/engine/create-g3d`
-- Evidence: `tests/reports/v4-package-smoke.json`, `tests/reports/v4-external-consumer.json`
+- Evidence: `tests/reports/external-parity-package-smoke.json`, `tests/reports/external-parity-external-consumer.json`

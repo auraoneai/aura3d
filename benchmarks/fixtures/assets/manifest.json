@@ -106,7 +106,7 @@
       "notes": "Generated morph-character workload descriptor for same-scene comparison metadata; real morph glTF visual parity remains unsupported."
     },
     {
-      "id": "editor-authored-v3-app-export",
+      "id": "foundation-editor-authored-app-export",
       "kind": "editor-authored-export",
       "triangles": 2048,
       "materials": 2,

@@ -1,0 +1,8 @@
+{
+  "schema": "g3d-v7-template-assets/v1",
+  "fetchInstructions": "Serve the listed files at /fixtures/production-runtime before running the template, or copy them into the same public path.",
+  "assets": [
+    { "id": "damaged-helmet", "path": "fixtures/asset-corpus/damaged-helmet.glb", "sha256": "a1e3b04de97b11de564ce6e53b95f02954a297f0008183ac63a4f5974f6b32d8" },
+    { "id": "studio-small-08", "path": "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba" }
+  ]
+}

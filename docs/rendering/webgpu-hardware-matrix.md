@@ -41,10 +41,10 @@ The current parity reports distinguish:
 
 The v8 app surface adds route evidence for:
 
-- `apps/v8-webgpu-rtt`;
-- `apps/v8-webgpu-materials`;
-- `apps/v8-webgpu-instance-uniform`;
-- `apps/v8-webgpu-compute`.
+- `apps/webgpu-rtt`;
+- `apps/webgpu-materials`;
+- `apps/webgpu-instance-uniform`;
+- `apps/webgpu-compute`.
 
 Those routes should be read as implementation and diagnostic evidence, not as complete hardware coverage. Full WebGPU parity remains blocked even when local rows pass because the current matrix is still a focused conformance scene plus selected production-renderer paths, not a broad production-renderer matrix. The synchronous `WebGPUDevice.readPixels()` path remains CPU-shadowed for deterministic tests; native GPU texture-to-buffer readback is exposed through `readPixelsAsync()`.
 

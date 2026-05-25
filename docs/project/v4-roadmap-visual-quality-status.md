@@ -15,10 +15,10 @@ pnpm v4:examples
 
 ## Evidence Reports
 
-- `tests/reports/v4-screenshot-gallery.json`
-- `tests/reports/v4-visual-quality.json`
-- `tests/reports/v4-examples-readiness.json`
-- `tests/reports/v4-threejs-visual-parity.json`
+- `tests/reports/external-parity-screenshot-gallery.json`
+- `tests/reports/external-parity-visual-quality.json`
+- `tests/reports/external-parity-examples-readiness.json`
+- `tests/reports/external-parity-threejs-visual-parity.json`
 
 ## Required Gallery Categories
 

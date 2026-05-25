@@ -17,7 +17,7 @@ These paths must stay deleted outside `examples/_quarantine/`:
 - `examples/game-slice/`
 - `examples/portfolio/screenshots/`
 
-If any of these paths return outside quarantine, `tools/v8-legacy-prune/index.ts` fails.
+If any of these paths return outside quarantine, `tools/current-routes-legacy-prune/index.ts` fails.
 
 ## Quarantined Material
 
@@ -30,20 +30,20 @@ They must not be linked from the root route registry as product examples. They m
 Some older report directories may remain for historical comparison or regression context:
 
 - `tests/reports/example-portfolio-screenshots/`
-- `tests/reports/v4-gallery/`
-- `tests/reports/v5-gallery/`
-- `tests/reports/v6-gallery/`
+- `tests/reports/external-gallery/`
+- `tests/reports/three-compat-gallery/`
+- `tests/reports/production-runtime-gallery/`
 - `tests/reports/v7/`
 
 These are not current V8 approval evidence unless a new V8 report explicitly regenerates and validates equivalent output under `tests/reports/v8/`.
 
 ## Root Link Boundary
 
-The root index can show internal or blocked status cards, but it must not link obsolete examples as working routes. `/apps/v7-example-parity-lab/` remains internal until split or rebuilt into fast dedicated routes.
+The root index can show internal or blocked status cards, but it must not link obsolete examples as working routes. `/apps/example-parity-lab/` remains internal until split or rebuilt into fast dedicated routes.
 
 ## Report
 
-The generated report is `tests/reports/v8-legacy-prune.json`.
+The generated report is `tests/reports/current-routes-legacy-prune.json`.
 
 It lists:
 

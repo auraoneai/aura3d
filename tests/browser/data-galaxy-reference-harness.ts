@@ -9,25 +9,25 @@ import {
   DATA_GALAXY_SHOWCASE_PARTICLES,
   createDataGalaxyBudgetPlan,
   createDataGalaxyCompositionProfile
-} from "/apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.js";
+} from "/apps/advanced-examples-gallery/src/dataGalaxyBudgets.js";
 import {
   createDataGalaxyEvidence,
   createDataGalaxyGeometryEvidence
-} from "/apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.js";
+} from "/apps/advanced-examples-gallery/src/dataGalaxyEvidence.js";
 import {
   applyGalleryRoutePostprocessPolicy
-} from "/apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.js";
+} from "/apps/advanced-examples-gallery/src/galleryRoutePolicies.js";
 import {
   createResources,
   env,
   getPointCloud,
   lights,
   mat
-} from "/apps/v9-advanced-examples-gallery/src/sceneBuilders.js";
+} from "/apps/advanced-examples-gallery/src/sceneBuilders.js";
 import {
   createAdvancedGalleryShaderLibrary
-} from "/apps/v9-advanced-examples-gallery/src/showcaseShaders.js";
-import { modelMatrix } from "/apps/v9-advanced-examples-gallery/src/math.js";
+} from "/apps/advanced-examples-gallery/src/showcaseShaders.js";
+import { modelMatrix } from "/apps/advanced-examples-gallery/src/math.js";
 
 declare global {
   interface Window {
@@ -226,11 +226,11 @@ async function run(): Promise<void> {
         purpose: "same-system Data Galaxy reference harness outside the advanced gallery shell",
         galleryShellUi: false,
         importedRouteModules: [
-          "apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts",
-          "apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts",
-          "apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts",
-          "apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts",
-          "apps/v9-advanced-examples-gallery/src/sceneBuilders.ts"
+          "apps/advanced-examples-gallery/src/dataGalaxyScene.ts",
+          "apps/advanced-examples-gallery/src/dataGalaxyBudgets.ts",
+          "apps/advanced-examples-gallery/src/dataGalaxyEvidence.ts",
+          "apps/advanced-examples-gallery/src/galleryRoutePolicies.ts",
+          "apps/advanced-examples-gallery/src/sceneBuilders.ts"
         ],
         fixedCamera: true,
         fixedDensity: true,
@@ -304,9 +304,9 @@ async function run(): Promise<void> {
         purpose: "same-system Data Galaxy reference harness outside the advanced gallery shell",
         galleryShellUi: false,
         importedRouteModules: [
-          "apps/v9-advanced-examples-gallery/src/dataGalaxyScene.ts",
-          "apps/v9-advanced-examples-gallery/src/dataGalaxyBudgets.ts",
-          "apps/v9-advanced-examples-gallery/src/dataGalaxyEvidence.ts"
+          "apps/advanced-examples-gallery/src/dataGalaxyScene.ts",
+          "apps/advanced-examples-gallery/src/dataGalaxyBudgets.ts",
+          "apps/advanced-examples-gallery/src/dataGalaxyEvidence.ts"
         ],
         fixedCamera: true,
         fixedDensity: true,

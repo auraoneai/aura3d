@@ -44,7 +44,7 @@ function createPreset(index: number, materialClass: V5MaterialClass): V5Material
   const isEmissive = materialClass === "emissive panel";
   const isAlpha = materialClass === "alpha-cutout foliage/card material";
   return {
-    id: `v5-${materialClass.replace(/[^a-z0-9]+/g, "-")}-${String(index + 1).padStart(2, "0")}`,
+    id: `three-compat-${materialClass.replace(/[^a-z0-9]+/g, "-")}-${String(index + 1).padStart(2, "0")}`,
     label: `V5 ${materialClass} ${index + 1}`,
     class: materialClass,
     textureSetId: textureSet?.id,

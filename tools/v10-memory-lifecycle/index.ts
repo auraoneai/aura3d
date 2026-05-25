@@ -2,7 +2,7 @@ import { issue, reportPasses, writeReport } from "../v10-common";
 
 const outputPath = "tests/reports/v10/memory-lifecycle.json";
 const requiredReports = [
-  "tests/reports/v9/route-health.json",
+  "tests/reports/threejs-parity/route-health.json",
   "tests/reports/v10/resource-lifecycle-100-reloads.json"
 ];
 const issues = requiredReports.flatMap((path) => reportPasses(path) ? [] : [issue(`memory-report:${path}`, `${path} is missing or not passing.`)]);

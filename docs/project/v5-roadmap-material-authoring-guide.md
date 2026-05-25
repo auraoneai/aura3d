@@ -18,9 +18,9 @@ The V5 material surface must include:
 ## Developer Entry Points
 
 - `packages/materials`
-- `apps/v5-material-studio-pro`
-- `templates/v5-material-authoring`
-- `examples/v5/materials-physical`
+- `apps/three-compat-material-studio-pro`
+- `templates/three-compat-material-authoring`
+- `examples/three-compat-examples/materials-physical`
 
 ```ts
 import { PBRMaterialLibrary, validateMaterialPreset } from "@galileo3d/engine/materials";
@@ -37,6 +37,6 @@ import { EnvironmentRegistry } from "@galileo3d/engine/environments";
 
 ## Release Evidence
 
-- `tests/reports/v5-material-readiness.json`
-- `tests/reports/v5-gallery/materials/material-library.png`
-- `tests/reports/v5-threejs-visual-parity/material-library-g3d.png`
+- `tests/reports/three-compat-material-readiness.json`
+- `tests/reports/three-compat-gallery/materials/material-library.png`
+- `tests/reports/three-compat-threejs-visual-parity/material-library-g3d.png`

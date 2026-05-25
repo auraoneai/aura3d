@@ -292,7 +292,7 @@ Layer 5: Evidence
 - `tests/assets`
 - `tests/browser`
 - `tools/v3-*`
-- `benchmarks/v3`
+- `benchmarks/foundation`
 - `tests/reports/v3-*`
 
 Rules:
@@ -638,11 +638,11 @@ Create or harden:
 - `examples/00-basic-triangle/`
 - `examples/01-basic-scene/`
 - `examples/02-materials-pbr/`
-- `examples/asset-viewer-v3/`
-- `examples/material-studio-v3/`
-- `examples/product-configurator-v3/`
-- `examples/interactive-scene-v3/`
-- `examples/game-slice-v3/`
+- `examples/foundation-asset-viewer/`
+- `examples/foundation-material-studio/`
+- `examples/foundation-product-configurator/`
+- `examples/foundation-interactive-scene/`
+- `examples/foundation-game-slice/`
 - `examples/gltf-corpus-gallery/`
 
 Each example must include:
@@ -668,8 +668,8 @@ Build and harden:
 - `tsconfig.build.json`
 - `tools/finalize-dist/index.ts`
 - `tools/package-install-smoke/index.ts`
-- `tools/v3-package-smoke/index.ts`
-- `tools/v3-external-consumer/index.ts`
+- `tools/foundation-package-smoke/index.ts`
+- `tools/foundation-external-consumer/index.ts`
 
 Required package smoke cases:
 
@@ -688,15 +688,15 @@ Comparison must be local, reproducible, and honest.
 
 Add:
 
-- `benchmarks/v3/galileo/`
-- `benchmarks/v3/threejs/`
-- `benchmarks/v3/shared/`
-- `benchmarks/v3/shared/scenes/product-scene.ts`
-- `benchmarks/v3/shared/scenes/material-scene.ts`
-- `benchmarks/v3/shared/scenes/asset-scene.ts`
-- `benchmarks/v3/shared/scenes/interactive-scene.ts`
-- `tools/v3-threejs-comparison/index.ts`
-- `tests/browser/v3-threejs-comparison.spec.ts`
+- `benchmarks/foundation/galileo/`
+- `benchmarks/foundation/threejs/`
+- `benchmarks/foundation/shared/`
+- `benchmarks/foundation/shared/scenes/product-scene.ts`
+- `benchmarks/foundation/shared/scenes/material-scene.ts`
+- `benchmarks/foundation/shared/scenes/asset-scene.ts`
+- `benchmarks/foundation/shared/scenes/interactive-scene.ts`
+- `tools/foundation-threejs-comparison/index.ts`
+- `tests/browser/foundation-threejs-comparison.spec.ts`
 
 Required comparisons:
 
@@ -813,14 +813,14 @@ V3 release must produce this artifact matrix:
 
 | Area | Code | Test | Report | Screenshot/Artifact |
 | --- | --- | --- | --- | --- |
-| Renderer | `packages/rendering` | `tests/unit/rendering`, `tests/browser/v3-renderer-foundation.spec.ts` | `tests/reports/v3-renderer-readiness.json` | `tests/reports/v3-renderer-foundation/*.png` |
-| Assets | `packages/assets` | `tests/assets`, `tests/browser/v3-asset-rendering.spec.ts` | `tests/reports/v3-assets-readiness.json` | `tests/reports/v3-assets/*.png` |
-| Workflows | `packages/workflows` | `tests/unit/workflows` | `tests/reports/v3-workflows-readiness.json` | Workflow manifests |
+| Renderer | `packages/rendering` | `tests/unit/rendering`, `tests/browser/foundation-renderer-foundation.spec.ts` | `tests/reports/foundation-renderer-readiness.json` | `tests/reports/v3-renderer-foundation/*.png` |
+| Assets | `packages/assets` | `tests/assets`, `tests/browser/foundation-asset-rendering.spec.ts` | `tests/reports/foundation-assets-readiness.json` | `tests/reports/foundation-assets/*.png` |
+| Workflows | `packages/workflows` | `tests/unit/workflows` | `tests/reports/foundation-workflows-readiness.json` | Workflow manifests |
 | Apps | `apps/*-lab`, `apps/product-studio` | `tests/browser/v3-*.spec.ts` | `tests/reports/v3-app-suite.json` | App screenshots |
-| Examples | `examples/*-v3` | `tests/browser/v3-examples.spec.ts` | `tests/reports/v3-examples-readiness.json` | Example screenshots |
-| Package | `dist`, packed tarball | package smoke tools | `tests/reports/v3-package-smoke.json` | Temp app PNG |
-| Three.js comparison | `benchmarks/v3` | `tests/browser/v3-threejs-comparison.spec.ts` | `tests/reports/v3-threejs-comparison.json` | G3D, Three.js, diff PNGs |
-| Docs | `docs/project/v3-*-roadmap`, tutorials | docs readiness tool | `tests/reports/v3-docs-readiness.json` | Public docs |
+| Examples | `examples/*-v3` | `tests/browser/foundation-examples.spec.ts` | `tests/reports/foundation-examples-readiness.json` | Example screenshots |
+| Package | `dist`, packed tarball | package smoke tools | `tests/reports/foundation-package-smoke.json` | Temp app PNG |
+| Three.js comparison | `benchmarks/foundation` | `tests/browser/foundation-threejs-comparison.spec.ts` | `tests/reports/foundation-threejs-comparison.json` | G3D, Three.js, diff PNGs |
+| Docs | `docs/project/v3-*-roadmap`, tutorials | docs readiness tool | `tests/reports/foundation-docs-readiness.json` | Public docs |
 
 If any row is missing, V3 is not done.
 
@@ -834,8 +834,8 @@ Create:
 - [ ] `docs/project/v3-roadmap-status.md`
 - [ ] `docs/project/v3-roadmap-progress.md`
 - [ ] `docs/project/v3-roadmap-blocked-claims.md`
-- [ ] `tools/v3-truth/index.ts`
-- [ ] `tools/v3-progress/index.ts`
+- [ ] `tools/foundation-truth/index.ts`
+- [ ] `tools/foundation-progress/index.ts`
 
 Update:
 
@@ -850,8 +850,8 @@ Acceptance:
 
 - [ ] The docs explicitly say G3D is not yet a Three.js replacement.
 - [ ] The docs explicitly say V3 is not complete until all release gates pass.
-- [ ] `tools/v3-truth/index.ts` fails if docs claim Unity/Unreal replacement or broad Three.js replacement before release gates.
-- [ ] `tools/v3-progress/index.ts` writes `tests/reports/v3-progress.json`.
+- [ ] `tools/foundation-truth/index.ts` fails if docs claim Unity/Unreal replacement or broad Three.js replacement before release gates.
+- [ ] `tools/foundation-progress/index.ts` writes `tests/reports/foundation-progress.json`.
 
 Exit command:
 
@@ -869,8 +869,8 @@ Create:
 
 - [ ] `docs/project/v3-roadmap-public-api-map.md`
 - [ ] `docs/project/v3-roadmap-api-stability.md`
-- [ ] `tools/v3-api-audit/index.ts`
-- [ ] `tests/unit/tools/v3-api-audit.test.ts`
+- [ ] `tools/foundation-api-audit/index.ts`
+- [ ] `tests/unit/tools/foundation-api-audit.test.ts`
 
 Update:
 
@@ -888,7 +888,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm typecheck && pnpm exec vitest run tests/unit/tools/v3-api-audit.test.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-api-audit/index.ts
+pnpm typecheck && pnpm exec vitest run tests/unit/tools/foundation-api-audit.test.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-api-audit/index.ts
 ```
 
 Do not stop after Milestone 1.
@@ -915,9 +915,9 @@ Build:
 
 Add tests:
 
-- [ ] `tests/unit/rendering/v3-renderer-contract.test.ts`
-- [ ] `tests/browser/v3-renderer-foundation.spec.ts`
-- [ ] `tools/v3-renderer-readiness/index.ts`
+- [ ] `tests/unit/rendering/foundation-renderer-contract.test.ts`
+- [ ] `tests/browser/foundation-renderer-foundation.spec.ts`
+- [ ] `tools/foundation-renderer-readiness/index.ts`
 
 Acceptance:
 
@@ -930,7 +930,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm typecheck && pnpm exec vitest run tests/unit/rendering/v3-renderer-contract.test.ts && pnpm exec playwright test tests/browser/v3-renderer-foundation.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-renderer-readiness/index.ts
+pnpm typecheck && pnpm exec vitest run tests/unit/rendering/foundation-renderer-contract.test.ts && pnpm exec playwright test tests/browser/foundation-renderer-foundation.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-renderer-readiness/index.ts
 ```
 
 Do not stop after Milestone 2.
@@ -960,10 +960,10 @@ Add fixtures:
 
 Add tests:
 
-- [ ] `tests/assets/v3-gltf-loader.test.ts`
-- [ ] `tests/assets/v3-render-resources.test.ts`
-- [ ] `tests/browser/v3-asset-rendering.spec.ts`
-- [ ] `tools/v3-assets-readiness/index.ts`
+- [ ] `tests/assets/foundation-gltf-loader.test.ts`
+- [ ] `tests/assets/foundation-render-resources.test.ts`
+- [ ] `tests/browser/foundation-asset-rendering.spec.ts`
+- [ ] `tools/foundation-assets-readiness/index.ts`
 
 Acceptance:
 
@@ -976,7 +976,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm exec vitest run --config tests/assets/vitest.config.ts tests/assets/v3-gltf-loader.test.ts tests/assets/v3-render-resources.test.ts && pnpm exec playwright test tests/browser/v3-asset-rendering.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-assets-readiness/index.ts
+pnpm exec vitest run --config tests/assets/vitest.config.ts tests/assets/foundation-gltf-loader.test.ts tests/assets/foundation-render-resources.test.ts && pnpm exec playwright test tests/browser/foundation-asset-rendering.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-assets-readiness/index.ts
 ```
 
 Do not stop after Milestone 3.
@@ -1014,7 +1014,7 @@ Add tests:
 - [ ] `tests/unit/workflows/material-studio-workflow.test.ts`
 - [ ] `tests/unit/workflows/scene-showcase-workflow.test.ts`
 - [ ] `tests/unit/workflows/interactive-scene-workflow.test.ts`
-- [ ] `tools/v3-workflows-readiness/index.ts`
+- [ ] `tools/foundation-workflows-readiness/index.ts`
 
 Acceptance:
 
@@ -1027,7 +1027,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm typecheck && pnpm exec vitest run tests/unit/workflows && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-workflows-readiness/index.ts
+pnpm typecheck && pnpm exec vitest run tests/unit/workflows && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-workflows-readiness/index.ts
 ```
 
 Do not stop after Milestone 4.
@@ -1100,21 +1100,21 @@ Goal: public examples become a real developer onboarding path.
 
 Build:
 
-- [ ] `examples/asset-viewer-v3/index.html`
-- [ ] `examples/asset-viewer-v3/main.ts`
-- [ ] `examples/asset-viewer-v3/README.md`
-- [ ] `examples/material-studio-v3/index.html`
-- [ ] `examples/material-studio-v3/main.ts`
-- [ ] `examples/material-studio-v3/README.md`
-- [ ] `examples/product-configurator-v3/index.html`
-- [ ] `examples/product-configurator-v3/main.ts`
-- [ ] `examples/product-configurator-v3/README.md`
-- [ ] `examples/interactive-scene-v3/index.html`
-- [ ] `examples/interactive-scene-v3/main.ts`
-- [ ] `examples/interactive-scene-v3/README.md`
-- [ ] `examples/game-slice-v3/index.html`
-- [ ] `examples/game-slice-v3/main.ts`
-- [ ] `examples/game-slice-v3/README.md`
+- [ ] `examples/foundation-asset-viewer/index.html`
+- [ ] `examples/foundation-asset-viewer/main.ts`
+- [ ] `examples/foundation-asset-viewer/README.md`
+- [ ] `examples/foundation-material-studio/index.html`
+- [ ] `examples/foundation-material-studio/main.ts`
+- [ ] `examples/foundation-material-studio/README.md`
+- [ ] `examples/foundation-product-configurator/index.html`
+- [ ] `examples/foundation-product-configurator/main.ts`
+- [ ] `examples/foundation-product-configurator/README.md`
+- [ ] `examples/foundation-interactive-scene/index.html`
+- [ ] `examples/foundation-interactive-scene/main.ts`
+- [ ] `examples/foundation-interactive-scene/README.md`
+- [ ] `examples/foundation-game-slice/index.html`
+- [ ] `examples/foundation-game-slice/main.ts`
+- [ ] `examples/foundation-game-slice/README.md`
 
 Update:
 
@@ -1127,8 +1127,8 @@ Update:
 
 Add tests:
 
-- [ ] `tests/browser/v3-examples.spec.ts`
-- [ ] `tools/v3-examples-readiness/index.ts`
+- [ ] `tests/browser/foundation-examples.spec.ts`
+- [ ] `tools/foundation-examples-readiness/index.ts`
 
 Acceptance:
 
@@ -1141,7 +1141,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm exec playwright test tests/browser/v3-examples.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-examples-readiness/index.ts
+pnpm exec playwright test tests/browser/foundation-examples.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-examples-readiness/index.ts
 ```
 
 Do not stop after Milestone 6.
@@ -1152,10 +1152,10 @@ Goal: prove a developer can install and use G3D outside the monorepo.
 
 Create:
 
-- [ ] `tools/v3-package-smoke/index.ts`
-- [ ] `tools/v3-external-consumer/index.ts`
-- [ ] `tests/reports/v3-package-smoke.json`
-- [ ] `tests/reports/v3-external-consumer.json`
+- [ ] `tools/foundation-package-smoke/index.ts`
+- [ ] `tools/foundation-external-consumer/index.ts`
+- [ ] `tests/reports/foundation-package-smoke.json`
+- [ ] `tests/reports/foundation-external-consumer.json`
 
 Acceptance:
 
@@ -1170,7 +1170,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-package-smoke/index.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-external-consumer/index.ts
+pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-package-smoke/index.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-external-consumer/index.ts
 ```
 
 Do not stop after Milestone 7.
@@ -1181,36 +1181,36 @@ Goal: produce honest local evidence that G3D competes with Three.js for supporte
 
 Create:
 
-- [ ] `benchmarks/v3/shared/scenes/product-scene.ts`
-- [ ] `benchmarks/v3/shared/scenes/material-scene.ts`
-- [ ] `benchmarks/v3/shared/scenes/asset-scene.ts`
-- [ ] `benchmarks/v3/shared/scenes/interactive-scene.ts`
-- [ ] `benchmarks/v3/galileo/product-scene.ts`
-- [ ] `benchmarks/v3/galileo/material-scene.ts`
-- [ ] `benchmarks/v3/galileo/asset-scene.ts`
-- [ ] `benchmarks/v3/galileo/interactive-scene.ts`
-- [ ] `benchmarks/v3/threejs/product-scene.ts`
-- [ ] `benchmarks/v3/threejs/material-scene.ts`
-- [ ] `benchmarks/v3/threejs/asset-scene.ts`
-- [ ] `benchmarks/v3/threejs/interactive-scene.ts`
-- [ ] `tests/browser/v3-threejs-comparison.spec.ts`
-- [ ] `tools/v3-threejs-comparison/index.ts`
+- [ ] `benchmarks/foundation/shared/scenes/product-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/material-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/asset-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/interactive-scene.ts`
+- [ ] `benchmarks/foundation/galileo/product-scene.ts`
+- [ ] `benchmarks/foundation/galileo/material-scene.ts`
+- [ ] `benchmarks/foundation/galileo/asset-scene.ts`
+- [ ] `benchmarks/foundation/galileo/interactive-scene.ts`
+- [ ] `benchmarks/foundation/threejs/product-scene.ts`
+- [ ] `benchmarks/foundation/threejs/material-scene.ts`
+- [ ] `benchmarks/foundation/threejs/asset-scene.ts`
+- [ ] `benchmarks/foundation/threejs/interactive-scene.ts`
+- [ ] `tests/browser/foundation-threejs-comparison.spec.ts`
+- [ ] `tools/foundation-threejs-comparison/index.ts`
 
 Evidence outputs:
 
-- [ ] `tests/reports/v3-threejs-comparison/product-g3d.png`
-- [ ] `tests/reports/v3-threejs-comparison/product-threejs.png`
-- [ ] `tests/reports/v3-threejs-comparison/product-diff.png`
-- [ ] `tests/reports/v3-threejs-comparison/material-g3d.png`
-- [ ] `tests/reports/v3-threejs-comparison/material-threejs.png`
-- [ ] `tests/reports/v3-threejs-comparison/material-diff.png`
-- [ ] `tests/reports/v3-threejs-comparison/asset-g3d.png`
-- [ ] `tests/reports/v3-threejs-comparison/asset-threejs.png`
-- [ ] `tests/reports/v3-threejs-comparison/asset-diff.png`
-- [ ] `tests/reports/v3-threejs-comparison/interactive-g3d.png`
-- [ ] `tests/reports/v3-threejs-comparison/interactive-threejs.png`
-- [ ] `tests/reports/v3-threejs-comparison/interactive-diff.png`
-- [ ] `tests/reports/v3-threejs-comparison.json`
+- [ ] `tests/reports/foundation-threejs-comparison/product-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/product-threejs.png`
+- [ ] `tests/reports/foundation-threejs-comparison/product-diff.png`
+- [ ] `tests/reports/foundation-threejs-comparison/material-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/material-threejs.png`
+- [ ] `tests/reports/foundation-threejs-comparison/material-diff.png`
+- [ ] `tests/reports/foundation-threejs-comparison/asset-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/asset-threejs.png`
+- [ ] `tests/reports/foundation-threejs-comparison/asset-diff.png`
+- [ ] `tests/reports/foundation-threejs-comparison/interactive-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/interactive-threejs.png`
+- [ ] `tests/reports/foundation-threejs-comparison/interactive-diff.png`
+- [ ] `tests/reports/foundation-threejs-comparison.json`
 
 Acceptance:
 
@@ -1223,7 +1223,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm exec playwright test tests/browser/v3-threejs-comparison.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-threejs-comparison/index.ts
+pnpm exec playwright test tests/browser/foundation-threejs-comparison.spec.ts && pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-threejs-comparison/index.ts
 ```
 
 Do not stop after Milestone 8.
@@ -1257,7 +1257,7 @@ Acceptance:
 Exit command:
 
 ```sh
-pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-docs-readiness/index.ts
+pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-docs-readiness/index.ts
 ```
 
 Do not stop after Milestone 9.
@@ -1268,10 +1268,10 @@ Goal: decide whether the repo can honestly present G3D as a Three.js competitor.
 
 Create:
 
-- [ ] `tools/v3-release-readiness/index.ts`
-- [ ] `tools/v3-completion-audit/index.ts`
-- [ ] `tests/reports/v3-release-readiness.json`
-- [ ] `tests/reports/v3-completion-audit.json`
+- [ ] `tools/foundation-release-readiness/index.ts`
+- [ ] `tools/foundation-completion-audit/index.ts`
+- [ ] `tests/reports/foundation-release-readiness.json`
+- [ ] `tests/reports/foundation-completion-audit.json`
 
 Add scripts:
 
@@ -1299,8 +1299,8 @@ pnpm v3:examples &&
 pnpm v3:package &&
 pnpm v3:compare-threejs &&
 pnpm v3:docs &&
-pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-release-readiness/index.ts &&
-pnpm exec tsx --tsconfig tsconfig.base.json tools/v3-completion-audit/index.ts
+pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-release-readiness/index.ts &&
+pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-completion-audit/index.ts
 ```
 
 V3 is not complete until this command passes.
@@ -1405,57 +1405,57 @@ This section exists so implementation cannot drift into vague work.
 
 ### New Examples
 
-- [ ] `examples/asset-viewer-v3/index.html`
-- [ ] `examples/asset-viewer-v3/main.ts`
-- [ ] `examples/asset-viewer-v3/README.md`
-- [ ] `examples/material-studio-v3/index.html`
-- [ ] `examples/material-studio-v3/main.ts`
-- [ ] `examples/material-studio-v3/README.md`
-- [ ] `examples/product-configurator-v3/index.html`
-- [ ] `examples/product-configurator-v3/main.ts`
-- [ ] `examples/product-configurator-v3/README.md`
-- [ ] `examples/interactive-scene-v3/index.html`
-- [ ] `examples/interactive-scene-v3/main.ts`
-- [ ] `examples/interactive-scene-v3/README.md`
-- [ ] `examples/game-slice-v3/index.html`
-- [ ] `examples/game-slice-v3/main.ts`
-- [ ] `examples/game-slice-v3/README.md`
+- [ ] `examples/foundation-asset-viewer/index.html`
+- [ ] `examples/foundation-asset-viewer/main.ts`
+- [ ] `examples/foundation-asset-viewer/README.md`
+- [ ] `examples/foundation-material-studio/index.html`
+- [ ] `examples/foundation-material-studio/main.ts`
+- [ ] `examples/foundation-material-studio/README.md`
+- [ ] `examples/foundation-product-configurator/index.html`
+- [ ] `examples/foundation-product-configurator/main.ts`
+- [ ] `examples/foundation-product-configurator/README.md`
+- [ ] `examples/foundation-interactive-scene/index.html`
+- [ ] `examples/foundation-interactive-scene/main.ts`
+- [ ] `examples/foundation-interactive-scene/README.md`
+- [ ] `examples/foundation-game-slice/index.html`
+- [ ] `examples/foundation-game-slice/main.ts`
+- [ ] `examples/foundation-game-slice/README.md`
 
 ### New Tools
 
-- [ ] `tools/v3-truth/index.ts`
-- [ ] `tools/v3-progress/index.ts`
-- [ ] `tools/v3-api-audit/index.ts`
-- [ ] `tools/v3-renderer-readiness/index.ts`
-- [ ] `tools/v3-assets-readiness/index.ts`
-- [ ] `tools/v3-workflows-readiness/index.ts`
+- [ ] `tools/foundation-truth/index.ts`
+- [ ] `tools/foundation-progress/index.ts`
+- [ ] `tools/foundation-api-audit/index.ts`
+- [ ] `tools/foundation-renderer-readiness/index.ts`
+- [ ] `tools/foundation-assets-readiness/index.ts`
+- [ ] `tools/foundation-workflows-readiness/index.ts`
 - [ ] `tools/v3-app-suite/index.ts`
-- [ ] `tools/v3-examples-readiness/index.ts`
-- [ ] `tools/v3-package-smoke/index.ts`
-- [ ] `tools/v3-external-consumer/index.ts`
-- [ ] `tools/v3-threejs-comparison/index.ts`
-- [ ] `tools/v3-docs-readiness/index.ts`
-- [ ] `tools/v3-release-readiness/index.ts`
-- [ ] `tools/v3-completion-audit/index.ts`
+- [ ] `tools/foundation-examples-readiness/index.ts`
+- [ ] `tools/foundation-package-smoke/index.ts`
+- [ ] `tools/foundation-external-consumer/index.ts`
+- [ ] `tools/foundation-threejs-comparison/index.ts`
+- [ ] `tools/foundation-docs-readiness/index.ts`
+- [ ] `tools/foundation-release-readiness/index.ts`
+- [ ] `tools/foundation-completion-audit/index.ts`
 
 ### New Browser Tests
 
-- [ ] `tests/browser/v3-renderer-foundation.spec.ts`
-- [ ] `tests/browser/v3-asset-rendering.spec.ts`
+- [ ] `tests/browser/foundation-renderer-foundation.spec.ts`
+- [ ] `tests/browser/foundation-asset-rendering.spec.ts`
 - [ ] `tests/browser/v3-product-studio.spec.ts`
 - [ ] `tests/browser/v3-asset-lab.spec.ts`
 - [ ] `tests/browser/v3-material-lab.spec.ts`
 - [ ] `tests/browser/v3-scene-lab.spec.ts`
 - [ ] `tests/browser/v3-game-lab.spec.ts`
-- [ ] `tests/browser/v3-examples.spec.ts`
-- [ ] `tests/browser/v3-threejs-comparison.spec.ts`
+- [ ] `tests/browser/foundation-examples.spec.ts`
+- [ ] `tests/browser/foundation-threejs-comparison.spec.ts`
 
 ### New Unit And Asset Tests
 
-- [ ] `tests/unit/tools/v3-api-audit.test.ts`
-- [ ] `tests/unit/rendering/v3-renderer-contract.test.ts`
-- [ ] `tests/assets/v3-gltf-loader.test.ts`
-- [ ] `tests/assets/v3-render-resources.test.ts`
+- [ ] `tests/unit/tools/foundation-api-audit.test.ts`
+- [ ] `tests/unit/rendering/foundation-renderer-contract.test.ts`
+- [ ] `tests/assets/foundation-gltf-loader.test.ts`
+- [ ] `tests/assets/foundation-render-resources.test.ts`
 - [ ] `tests/unit/workflows/asset-viewer-workflow.test.ts`
 - [ ] `tests/unit/workflows/product-configurator-workflow.test.ts`
 - [ ] `tests/unit/workflows/material-studio-workflow.test.ts`
@@ -1464,18 +1464,18 @@ This section exists so implementation cannot drift into vague work.
 
 ### New Benchmarks
 
-- [ ] `benchmarks/v3/shared/scenes/product-scene.ts`
-- [ ] `benchmarks/v3/shared/scenes/material-scene.ts`
-- [ ] `benchmarks/v3/shared/scenes/asset-scene.ts`
-- [ ] `benchmarks/v3/shared/scenes/interactive-scene.ts`
-- [ ] `benchmarks/v3/galileo/product-scene.ts`
-- [ ] `benchmarks/v3/galileo/material-scene.ts`
-- [ ] `benchmarks/v3/galileo/asset-scene.ts`
-- [ ] `benchmarks/v3/galileo/interactive-scene.ts`
-- [ ] `benchmarks/v3/threejs/product-scene.ts`
-- [ ] `benchmarks/v3/threejs/material-scene.ts`
-- [ ] `benchmarks/v3/threejs/asset-scene.ts`
-- [ ] `benchmarks/v3/threejs/interactive-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/product-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/material-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/asset-scene.ts`
+- [ ] `benchmarks/foundation/shared/scenes/interactive-scene.ts`
+- [ ] `benchmarks/foundation/galileo/product-scene.ts`
+- [ ] `benchmarks/foundation/galileo/material-scene.ts`
+- [ ] `benchmarks/foundation/galileo/asset-scene.ts`
+- [ ] `benchmarks/foundation/galileo/interactive-scene.ts`
+- [ ] `benchmarks/foundation/threejs/product-scene.ts`
+- [ ] `benchmarks/foundation/threejs/material-scene.ts`
+- [ ] `benchmarks/foundation/threejs/asset-scene.ts`
+- [ ] `benchmarks/foundation/threejs/interactive-scene.ts`
 
 ## Execution Rules For Agents
 

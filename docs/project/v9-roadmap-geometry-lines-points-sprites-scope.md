@@ -7,7 +7,7 @@ This area remains partial overall.
 - Primitive geometry and topologies in `packages/rendering/src/Geometry.ts`.
 - Debug helper line builders in `packages/debug/src/SceneHelpers.ts`.
 - Picking and selection code in `packages/controls/src/Picking.ts` and related controls.
-- Routes under `apps/v8-lines-helpers/`, `apps/v8-interactive-picking/`, and `apps/v8-geometry-drawrange/`.
+- Routes under `apps/lines-helpers/`, `apps/interactive-picking/`, and `apps/geometry-drawrange/`.
 
 ## Supported Today
 

@@ -19,9 +19,9 @@ Architecture examples and templates must include:
 
 ## Developer Entry Points
 
-- `templates/v5-architecture-interior`
-- `examples/v5/architecture-interior`
-- `apps/v5-scene-studio-pro`
+- `templates/three-compat-architecture-interior`
+- `examples/three-compat-examples/architecture-interior`
+- `apps/three-compat-scene-studio-pro`
 
 These entry points must use public package imports and must not depend on monorepo-only fixture imports when copied outside the repository.
 
@@ -34,7 +34,7 @@ These entry points must use public package imports and must not depend on monore
 
 ## Release Evidence
 
-- `tests/reports/v5-gallery/architecture-day/interior-daylight.png`
-- `tests/reports/v5-gallery/architecture-night/interior-night.png`
-- `tests/reports/v5-threejs-visual-parity/architecture-daylight-g3d.png`
-- `tests/reports/v5-threejs-visual-parity/architecture-night-g3d.png`
+- `tests/reports/three-compat-gallery/architecture-day/interior-daylight.png`
+- `tests/reports/three-compat-gallery/architecture-night/interior-night.png`
+- `tests/reports/three-compat-threejs-visual-parity/architecture-daylight-g3d.png`
+- `tests/reports/three-compat-threejs-visual-parity/architecture-night-g3d.png`

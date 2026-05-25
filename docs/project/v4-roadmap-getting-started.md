@@ -17,9 +17,9 @@ npm run dev
 The local release proof verifies the same path from a packed package through:
 
 - `tests/reports/v4-create-g3d-templates.json`
-- `tests/reports/v4-external-vite-build.json`
-- `tests/reports/v4-static-preview-smoke.json`
-- `tests/reports/v4-package-smoke.json`
+- `tests/reports/external-parity-external-vite-build.json`
+- `tests/reports/external-parity-static-preview-smoke.json`
+- `tests/reports/external-parity-package-smoke.json`
 
 ## Use The Public API
 

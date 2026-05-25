@@ -46,7 +46,7 @@ interface MaterialShowroomState {
     readonly diffuseIrradianceSize: readonly [number, number];
     readonly brdfLutSize: readonly [number, number];
   };
-  readonly screenshotPath: "tests/reports/v4-example-screenshots/material-showroom.png";
+  readonly screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png";
   readonly featureEvidence?: V4RenderPresetEvidence;
   readonly claimBoundary: string;
   readonly materials?: readonly string[];
@@ -105,7 +105,7 @@ if (typeof document !== "undefined") {
       renderer: "webgl2",
       visualClaim: "bounded-pbr-material-showroom",
       environmentLighting: "sampled-rgba8-environment-map-approximation",
-      screenshotPath: "tests/reports/v4-example-screenshots/material-showroom.png",
+      screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",
       claimBoundary,
       knownLimits: knownLimits(),
       errors: [error instanceof Error ? error.message : String(error)],
@@ -146,11 +146,11 @@ async function run(): Promise<void> {
       diagnostics,
       canvasFrame: { width: canvas.width, height: canvas.height },
       environmentResources: environmentLighting.resources,
-      screenshotPath: "tests/reports/v4-example-screenshots/material-showroom.png",
+      screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",
       claimBoundary,
       featureEvidence: createV4RenderPresetEvidence({
         exampleId: "material-showroom",
-        screenshotPath: "tests/reports/v4-example-screenshots/material-showroom.png",
+        screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",
         toneMapper: "bounded-direct",
         exposure: preset === "sunset" ? 1.08 : 1,
         whitePoint: 1,

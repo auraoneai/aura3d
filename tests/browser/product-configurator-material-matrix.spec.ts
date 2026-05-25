@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const REPORT_DIR = "tests/reports/v9/advanced-examples-gallery/product-material-matrix";
+const REPORT_DIR = "tests/reports/advanced-examples-gallery/product-material-matrix";
 
 test.describe("Product configurator material diagnostic matrix", () => {
   test.setTimeout(240_000);
@@ -55,7 +55,7 @@ test.describe("Product configurator material diagnostic matrix", () => {
             galleryUiBypassed: true,
             asset: {
               id: "car-concept",
-              url: "/fixtures/v8/assets/vehicles/car-concept.glb"
+              url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb"
             },
             viewport: { width: 760, height: 520 },
             variants: [],
@@ -108,7 +108,7 @@ test.describe("Product configurator material diagnostic matrix", () => {
     expect(report.galleryUiBypassed).toBe(true);
     expect(report.asset).toEqual({
       id: "car-concept",
-      url: "/fixtures/v8/assets/vehicles/car-concept.glb"
+      url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb"
     });
     expect(report.variants.map((variant) => variant.id)).toEqual([
       "raw-fallback",
@@ -325,7 +325,7 @@ interface ProductMaterialMatrixReport {
   readonly galleryUiBypassed: true;
   readonly asset: {
     readonly id: "car-concept";
-    readonly url: "/fixtures/v8/assets/vehicles/car-concept.glb";
+    readonly url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb";
   };
   readonly viewport: { readonly width: number; readonly height: number };
   readonly variants: readonly ProductMaterialMatrixVariant[];

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>G3D V7 Animation Keyframes</title>
+    <link rel="stylesheet" href="/apps/common/src/styles.css">
+    <style>
+      .regression-animation-keyframes #viewport {
+        background: #02050a;
+      }
+      .regression-animation-keyframes .runtime-details {
+        border: 1px solid #263244;
+        border-radius: 6px;
+        color: #c7d2e1;
+        display: grid;
+        gap: 6px;
+        margin-top: 16px;
+        padding: 12px;
+      }
+      .regression-animation-keyframes .runtime-details p {
+        margin: 0;
+      }
+      .regression-animation-keyframes #runtime-state.is-loading {
+        background: #42526a;
+      }
+      .regression-animation-keyframes #runtime-state.is-running {
+        background: #24744f;
+      }
+      .regression-animation-keyframes #runtime-state.is-error {
+        background: #963b3b;
+      }
+      .regression-animation-keyframes .runtime-error {
+        max-height: 360px;
+        overflow: auto;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body class="regression-animation-keyframes">
+    <canvas id="viewport" width="1920" height="1080"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/regression-animation-keyframes/src/main.js"></script>
+  </body>
+</html>

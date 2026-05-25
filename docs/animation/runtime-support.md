@@ -38,7 +38,7 @@ Retargeting should not be claimed until these pieces exist with tests:
 ## Verification
 
 - `tests/reports/v8-animation-examples.json`
-- `tests/reports/v8-visual-review.json`
+- `tests/reports/current-routes-visual-review.json`
 - `tests/assets/gltf-animation-corpus.test.ts`
 - `tests/browser/animation-browser.spec.ts`
 - `tests/visual/skinned-animation-pixels.spec.ts`

@@ -19,13 +19,13 @@ pnpm v3:compare-threejs
 The report is written to:
 
 ```text
-tests/reports/v3-threejs-comparison.json
+tests/reports/foundation-threejs-comparison.json
 ```
 
 Screenshot evidence is written under:
 
 ```text
-tests/reports/v3-threejs-comparison/
+tests/reports/foundation-threejs-comparison/
 ```
 
 Each scene has:

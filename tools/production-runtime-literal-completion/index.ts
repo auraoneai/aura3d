@@ -1,0 +1,217 @@
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+type Check = { readonly id: string; readonly pass: boolean; readonly detail: string };
+type Json = Record<string, unknown>;
+const requiredPackageFiles = [
+  "packages/rendering/src/production-runtime/index.ts",
+  "packages/rendering/src/production-runtime/RendererV6.ts",
+  "packages/rendering/src/production-runtime/backends/WebGL2RendererBackend.ts",
+  "packages/rendering/src/production-runtime/backends/WebGPURendererBackend.ts",
+  "packages/rendering/src/production-runtime/backends/RendererBackend.ts",
+  "packages/rendering/src/production-runtime/framegraph/FrameGraph.ts",
+  "packages/rendering/src/production-runtime/framegraph/RenderPass.ts",
+  "packages/rendering/src/production-runtime/resources/GPUBuffer.ts",
+  "packages/rendering/src/production-runtime/resources/GPUTexture.ts",
+  "packages/rendering/src/production-runtime/resources/RenderTarget.ts",
+  "packages/rendering/src/production-runtime/resources/ResourceCache.ts",
+  "packages/rendering/src/production-runtime/scene/RenderableScene.ts",
+  "packages/rendering/src/production-runtime/scene/RenderableMesh.ts",
+  "packages/rendering/src/production-runtime/scene/RenderablePrimitive.ts",
+  "packages/rendering/src/production-runtime/scene/Camera.ts",
+  "packages/rendering/src/production-runtime/scene/Lights.ts",
+  "packages/rendering/src/production-runtime/materials/PBRMaterial.ts",
+  "packages/rendering/src/production-runtime/materials/MaterialCompiler.ts",
+  "packages/rendering/src/production-runtime/materials/MaterialTextureBindings.ts",
+  "packages/rendering/src/production-runtime/materials/GLTFMaterialAdapter.ts",
+  "packages/rendering/src/production-runtime/shaders/ShaderProgramLibrary.ts",
+  "packages/rendering/src/production-runtime/shaders/chunks/pbr.vert.glsl",
+  "packages/rendering/src/production-runtime/shaders/chunks/pbr.frag.glsl",
+  "packages/rendering/src/production-runtime/shaders/chunks/ibl.glsl",
+  "packages/rendering/src/production-runtime/shaders/chunks/brdf.glsl",
+  "packages/rendering/src/production-runtime/shaders/chunks/shadows.glsl",
+  "packages/rendering/src/production-runtime/environment/HDRLoader.ts",
+  "packages/rendering/src/production-runtime/environment/PMREMGenerator.ts",
+  "packages/rendering/src/production-runtime/environment/EnvironmentMap.ts",
+  "packages/rendering/src/production-runtime/passes/DepthPrepass.ts",
+  "packages/rendering/src/production-runtime/passes/ShadowPass.ts",
+  "packages/rendering/src/production-runtime/passes/OpaquePass.ts",
+  "packages/rendering/src/production-runtime/passes/TransparentPass.ts",
+  "packages/rendering/src/production-runtime/passes/SkyboxPass.ts",
+  "packages/rendering/src/production-runtime/passes/ToneMappingPass.ts",
+  "packages/rendering/src/production-runtime/postprocess/EffectComposerV6.ts",
+  "packages/rendering/src/production-runtime/postprocess/BloomPass.ts",
+  "packages/rendering/src/production-runtime/postprocess/SSAOPass.ts",
+  "packages/rendering/src/production-runtime/postprocess/DOFPass.ts",
+  "packages/rendering/src/production-runtime/postprocess/FXAAPass.ts",
+  "packages/rendering/src/production-runtime/postprocess/ColorGradingPass.ts",
+  "packages/rendering/src/production-runtime/animation/SkinningRenderer.ts",
+  "packages/rendering/src/production-runtime/animation/MorphTargetRenderer.ts",
+  "packages/rendering/src/production-runtime/diagnostics/FrameCapture.ts",
+  "packages/rendering/src/production-runtime/diagnostics/RendererStats.ts",
+  "packages/rendering/src/production-runtime/diagnostics/GPUCapabilities.ts",
+  "packages/assets/src/asset-corpus/GLTFSceneLoader.ts",
+  "packages/assets/src/asset-corpus/TextureLoaderV6.ts",
+  "packages/assets/src/asset-corpus/KTX2TextureLoaderV6.ts",
+  "packages/assets/src/asset-corpus/HDRTextureLoaderV6.ts",
+  "packages/assets/src/asset-corpus/AssetPipelineV6.ts",
+  "packages/assets/src/asset-corpus/index.ts",
+  "packages/engine/src/production-runtime/index.ts",
+  "packages/rendering/src/production-runtime/materials/PBRShaderFeatures.ts",
+  "packages/rendering/src/production-runtime/materials/GLTFPBRMaterialAdapter.ts",
+  "packages/rendering/src/production-runtime/lights/LightManager.ts",
+  "packages/rendering/src/production-runtime/lights/ShadowMapRenderer.ts",
+  "packages/rendering/src/production-runtime/color/ColorManagement.ts",
+  "packages/rendering/src/production-runtime/color/ToneMapping.ts",
+  "packages/rendering/src/production-runtime/backends/webgl2/WebGL2Shader.ts",
+  "packages/rendering/src/production-runtime/backends/webgl2/WebGL2Buffer.ts",
+  "packages/rendering/src/production-runtime/backends/webgl2/WebGL2Texture.ts",
+  "packages/rendering/src/production-runtime/backends/webgl2/WebGL2RenderTarget.ts",
+  "packages/rendering/src/production-runtime/backends/webgl2/WebGL2StateCache.ts",
+  "packages/rendering/src/production-runtime/backends/webgl2/WebGL2Capabilities.ts",
+  "packages/rendering/src/production-runtime/backends/webgpu/WebGPUShader.ts",
+  "packages/rendering/src/production-runtime/backends/webgpu/WebGPUBuffer.ts",
+  "packages/rendering/src/production-runtime/backends/webgpu/WebGPUTexture.ts",
+  "packages/rendering/src/production-runtime/backends/webgpu/WebGPURenderTarget.ts",
+  "packages/rendering/src/production-runtime/backends/webgpu/WebGPUCapabilities.ts",
+  "packages/rendering/src/production-runtime/shaders/wgsl/pbr.wgsl",
+  "packages/rendering/src/production-runtime/shaders/wgsl/skybox.wgsl",
+  "packages/rendering/src/production-runtime/shaders/wgsl/postprocess.wgsl"
+] as const;
+const requiredReports = [
+  "tests/reports/production-runtime-truth.json",
+  "tests/reports/production-runtime-progress.json",
+  "tests/reports/production-runtime-three-compat-visual-failure-audit.json",
+  "tests/reports/production-runtime-asset-audit.json",
+  "tests/reports/production-runtime-environment-readiness.json",
+  "tests/reports/production-runtime-webgl2-readiness.json",
+  "tests/reports/production-runtime-webgpu-readiness.json",
+  "tests/reports/production-runtime-pbr-readiness.json",
+  "tests/reports/production-runtime-gltf-readiness.json",
+  "tests/reports/production-runtime-lighting-postprocess-readiness.json",
+  "tests/reports/production-runtime-animation-controls-readiness.json",
+  "tests/reports/production-runtime-app-suite-readiness.json",
+  "tests/reports/production-runtime-gallery/manifest.json",
+  "tests/reports/production-runtime-visual-quality.json",
+  "tests/reports/production-runtime-real-renderer-proof.json",
+  "tests/reports/production-runtime-human-visual-review.json",
+  "tests/reports/production-runtime-threejs-visual-parity.json",
+  "tests/reports/production-runtime-threejs-runtime-parity.json",
+  "tests/reports/production-runtime-workflow-readiness.json",
+  "tests/reports/production-runtime-examples-readiness.json",
+  "tests/reports/production-runtime-template-readiness.json",
+  "tests/reports/production-runtime-performance-readiness.json",
+  "tests/reports/production-runtime-package-surface-readiness.json",
+  "tests/reports/production-runtime-package-smoke.json",
+  "tests/reports/production-runtime-external-consumer.json",
+  "tests/reports/production-runtime-docs-readiness.json",
+  "tests/reports/production-runtime-claim-registry.json",
+  "tests/reports/production-runtime-production-renderer-readiness.json",
+  "tests/reports/production-runtime-release-readiness.json",
+  "tests/reports/production-runtime-completion-audit.json",
+  "tests/reports/production-runtime-product-decision-record.json"
+] as const;
+const requiredScreenshots = [
+  "tests/reports/production-runtime-gallery/product/product-configurator-webgl2.png",
+  "tests/reports/production-runtime-gallery/product/product-configurator-webgpu.png",
+  "tests/reports/production-runtime-gallery/automotive/automotive-configurator-webgl2.png",
+  "tests/reports/production-runtime-gallery/architecture/architecture-day-webgl2.png",
+  "tests/reports/production-runtime-gallery/architecture/architecture-night-webgl2.png",
+  "tests/reports/production-runtime-gallery/assets/damaged-helmet-webgl2.png",
+  "tests/reports/production-runtime-gallery/assets/boom-box-webgl2.png",
+  "tests/reports/production-runtime-gallery/materials/material-extension-grid-webgl2.png",
+  "tests/reports/production-runtime-gallery/character/animated-character-webgl2.png",
+  "tests/reports/production-runtime-gallery/postprocess/cinematic-before-webgl2.png",
+  "tests/reports/production-runtime-gallery/postprocess/cinematic-after-webgl2.png",
+  "tests/reports/production-runtime-gallery/large-scene/large-scene-webgl2.png",
+  "tests/reports/production-runtime-gallery/webgpu/webgpu-product-frame.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/product-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/product-threejs.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/product-diff.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/materials-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/materials-threejs.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/materials-diff.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/asset-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/asset-threejs.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/asset-diff.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/architecture-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/architecture-threejs.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/architecture-diff.png"
+] as const;
+const requiredDirs = [
+  "fixtures/production-runtime/assets/khronos",
+  "fixtures/production-runtime/assets/polyhaven",
+  "fixtures/production-runtime/assets/product",
+  "fixtures/production-runtime/assets/architecture",
+  "fixtures/production-runtime/assets/characters",
+  "fixtures/production-runtime/assets/stress",
+  "fixtures/environment-corpus/hdri",
+  "fixtures/environment-corpus/pmrem-baselines",
+  "benchmarks/production-runtime/shared",
+  "benchmarks/production-runtime/g3d",
+  "benchmarks/production-runtime/threejs"
+] as const;
+const requiredToolsTests = [
+  "tools/production-runtime-asset-fetch/index.ts",
+  "tools/production-runtime-asset-audit/index.ts",
+  "tests/assets/production-runtime-asset-corpus.test.ts",
+  "tests/unit/rendering/production-runtime-hdr-loader.test.ts",
+  "tests/browser/production-runtime-hdr-ibl.spec.ts",
+  "tools/production-runtime-environment-readiness/index.ts",
+  "tests/unit/rendering/production-runtime-pbr-material.test.ts",
+  "tests/browser/production-runtime-pbr-materials.spec.ts",
+  "tests/browser/production-runtime-gltf-material-extensions.spec.ts",
+  "tools/production-runtime-pbr-readiness/index.ts",
+  "tests/unit/rendering/production-runtime-webgl2-backend.test.ts",
+  "tests/browser/production-runtime-webgl2-real-frame.spec.ts",
+  "tests/browser/production-runtime-webgl2-context-loss.spec.ts",
+  "tests/browser/production-runtime-webgpu-capability.spec.ts",
+  "tests/browser/production-runtime-webgpu-real-frame.spec.ts",
+  "tests/assets/production-runtime-gltf-loader.test.ts",
+  "tests/browser/production-runtime-gltf-render-corpus.spec.ts",
+  "tests/browser/production-runtime-gltf-animation-render.spec.ts",
+  "tools/production-runtime-gltf-readiness/index.ts",
+  "tools/production-runtime-screenshot-gallery/index.ts",
+  "tools/production-runtime-visual-quality/index.ts",
+  "tools/production-runtime-real-renderer-proof/index.ts",
+  "tools/production-runtime-human-visual-review/index.ts",
+  "tests/browser/production-runtime-screenshot-gallery.spec.ts",
+  "tests/unit/tools/production-runtime-visual-quality.test.ts",
+  "benchmarks/production-runtime/shared/scenes.ts",
+  "benchmarks/production-runtime/g3d/renderScene.ts",
+  "benchmarks/production-runtime/threejs/renderScene.ts",
+  "benchmarks/production-runtime/shared/compareImages.ts",
+  "tests/browser/production-runtime-threejs-visual-parity.spec.ts",
+  "tests/browser/production-runtime-threejs-runtime-parity.spec.ts",
+  "tools/production-runtime-threejs-parity/index.ts",
+  "packages/workflows/src/production-runtime/ProductRenderWorkflow.ts",
+  "packages/workflows/src/production-runtime/AssetInspectionWorkflow.ts",
+  "packages/workflows/src/production-runtime/MaterialAuthoringWorkflow.ts",
+  "packages/workflows/src/production-runtime/ArchitectureWorkflow.ts",
+  "packages/workflows/src/production-runtime/CinematicWorkflow.ts",
+  "packages/workflows/src/production-runtime/WorkflowDiagnostics.ts",
+  "tests/browser/production-runtime-workflow-presets.spec.ts",
+  "tools/production-runtime-workflow-readiness/index.ts"
+] as const;
+const requiredScripts = ['production-runtime:assets','production-runtime:environments','production-runtime:pbr','production-runtime:gltf','production-runtime:lighting-postprocess','production-runtime:webgl2','production-runtime:webgpu','production-runtime:visuals','production-runtime:compare-threejs','production-runtime:workflows','production-runtime:release'] as const;
+const requiredExports = ['./rendering/production-runtime','./assets/production-runtime','./production-runtime'] as const;
+const pkg = json('package.json') as { scripts?: Record<string, string>; exports?: Record<string, string> };
+const assetManifest = json('fixtures/asset-corpus/manifest.json') as { assets?: Array<{ id: string; class?: string; role?: string; tags?: string[]; localPath?: string }>; requirements?: Json };
+const envManifest = json('fixtures/environment-corpus/manifest.json') as { environments?: Array<{ id: string; class?: string; label?: string; sourceName?: string; localPath?: string }>; requirements?: Json };
+const assets = assetManifest.assets ?? [];
+const envs = envManifest.environments ?? [];
+const stressCount = assets.filter((asset) => /material-stress|clearcoat|sheen|specular|transmission|transparent|alpha|glass/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const animationCount = assets.filter((asset) => /animation|skinning|morph/i.test([asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const transparentCount = assets.filter((asset) => /transparent|transmission|clearcoat|alpha|glass/i.test([asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const largeCount = assets.filter((asset) => /large-scene|multi-mesh|multiple primitives/i.test([asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const architectureCount = assets.filter((asset) => /architecture|interior/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const productCount = assets.filter((asset) => /product|commerce/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
+const envLabels = envs.map((env) => [env.class, env.id, env.label, env.sourceName].join(' ').toLowerCase());
+const checks: Check[] = [listCheck('required-package-files', requiredPackageFiles), listCheck('required-directories', requiredDirs), listCheck('required-tools-tests-benchmarks', requiredToolsTests), listCheck('required-final-reports', requiredReports), screenshotCheck('required-final-screenshots', requiredScreenshots), { id: 'root-exports', pass: requiredExports.every((key) => typeof pkg.exports?.[key] === 'string'), detail: requiredExports.filter((key) => typeof pkg.exports?.[key] !== 'string').join(', ') }, { id: 'release-scripts', pass: requiredScripts.every((key) => typeof pkg.scripts?.[key] === 'string'), detail: requiredScripts.filter((key) => typeof pkg.scripts?.[key] !== 'string').join(', ') }, { id: 'asset-count-20', pass: assets.length >= 20, detail: String(assets.length) }, { id: 'material-stress-assets-8', pass: stressCount >= 8, detail: String(stressCount) }, { id: 'animated-skinned-morph-assets-4', pass: animationCount >= 4, detail: String(animationCount) }, { id: 'transparent-transmission-clearcoat-assets-4', pass: transparentCount >= 4, detail: String(transparentCount) }, { id: 'large-multimesh-assets-3', pass: largeCount >= 3, detail: String(largeCount) }, { id: 'architecture-interior-assets-2', pass: architectureCount >= 2, detail: String(architectureCount) }, { id: 'product-commerce-assets-2', pass: productCount >= 2, detail: String(productCount) }, { id: 'hdr-count-10', pass: envs.length >= 10, detail: String(envs.length) }, { id: 'hdr-indoor-studio-4', pass: envLabels.filter((label) => /studio|indoor/.test(label)).length >= 4, detail: String(envLabels.filter((label) => /studio|indoor/.test(label)).length) }, { id: 'hdr-outdoor-daylight-3', pass: envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length >= 3, detail: String(envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length) }, { id: 'hdr-sunset-night-2', pass: envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length >= 2, detail: String(envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length) }, { id: 'hdr-high-contrast-1', pass: envLabels.filter((label) => /high-contrast|industrial/.test(label)).length >= 1, detail: String(envLabels.filter((label) => /high-contrast|industrial/.test(label)).length) }];
+const report = { schema: 'g3d-production-runtime-literal-completion/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks };
+mkdirSync(dirname(resolve('tests/reports/production-runtime-literal-completion.json')), { recursive: true });
+writeFileSync(resolve('tests/reports/production-runtime-literal-completion.json'), JSON.stringify(report, null, 2) + '\n');
+if (!report.pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }
+console.log(JSON.stringify(report, null, 2));
+function listCheck(id: string, paths: readonly string[]): Check { const missing = paths.filter((path) => !existsSync(resolve(path))); return { id, pass: missing.length === 0, detail: missing.join(', ') }; }
+function screenshotCheck(id: string, paths: readonly string[]): Check { const missing = paths.filter((path) => !existsSync(resolve(path)) || statSync(resolve(path)).size < 1000); return { id, pass: missing.length === 0, detail: missing.join(', ') }; }
+function json(path: string): Json { return JSON.parse(readFileSync(resolve(path), 'utf8')) as Json; }

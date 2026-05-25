@@ -5,7 +5,7 @@ import {
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment
-} from "/packages/engine/src/v6/index.js";
+} from "/packages/engine/src/production-runtime/index.js";
 import { createGLTFRenderResourceDiagnostics } from "/packages/assets/src/browser-index.js";
 
 declare global {
@@ -214,7 +214,7 @@ const PRODUCT_SOURCE_ASSETS = [
   {
     id: "car-concept",
     title: "Car Concept",
-    url: "/fixtures/v8/assets/vehicles/car-concept.glb"
+    url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb"
   }
 ] as const;
 
@@ -327,7 +327,7 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
     environment = await loadHdrEnvironment({
       id: "product-reference-studio-small-08",
       label: "Product Reference Studio Small 08",
-      url: `${location.origin}/fixtures/v6/environments/hdri/studio_small_08_1k.hdr`,
+      url: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`,
       intensity: 1.12,
       backgroundIntensity: 0.78,
       rotation: 0.18,

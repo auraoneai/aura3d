@@ -3,7 +3,7 @@ import {
   createProjectedDecalGeometry,
   createRaycastProjectedDecalGeometry,
   raycastProjectedDecalMesh
-} from "../../../packages/rendering/src/v6/geometry/ProjectedDecalGeometry";
+} from "../../../packages/rendering/src/production-runtime/geometry/ProjectedDecalGeometry";
 
 describe("createProjectedDecalGeometry", () => {
   it("clips source mesh triangles to a decal projection box and emits lit textured geometry", () => {
