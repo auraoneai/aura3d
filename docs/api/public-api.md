@@ -13,33 +13,33 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@galileo3d/animation` | `0.1.0-alpha.0` | `packages/animation/src/index.ts` | 21 |
-| `@galileo3d/apps` | `0.1.0-alpha.0` | `packages/apps/src/index.ts` | 10 |
-| `@galileo3d/assets` | `0.1.0-alpha.0` | `packages/assets/src/index.ts` | 76 |
-| `@galileo3d/audio` | `0.1.0-alpha.0` | `packages/audio/src/index.ts` | 24 |
-| `@galileo3d/controls` | `0.1.0-alpha.0` | `packages/controls/src/index.ts` | 16 |
-| `@galileo3d/core` | `0.1.0-alpha.0` | `packages/core/src/index.ts` | 14 |
-| `@galileo3d/create-g3d` | `0.1.0-alpha.0` | `packages/create-g3d/src/index.ts` | 5 |
-| `@galileo3d/debug` | `0.1.0-alpha.0` | `packages/debug/src/index.ts` | 30 |
-| `@galileo3d/ecs` | `0.1.0-alpha.0` | `packages/ecs/src/index.ts` | 21 |
-| `@galileo3d/editor` | `0.1.0-alpha.0` | `packages/editor/src/index.ts` | 1 |
-| `@galileo3d/editor-runtime` | `0.1.0-alpha.0` | `packages/editor-runtime/src/index.ts` | 45 |
-| `@galileo3d/engine-runtime` | `0.1.0-alpha.0` | `packages/engine/src/index.ts` | 28 |
-| `@galileo3d/environments` | `0.1.0-alpha.0` | `packages/environments/src/index.ts` | 10 |
-| `@galileo3d/input` | `0.1.0-alpha.0` | `packages/input/src/index.ts` | 43 |
-| `@galileo3d/materials` | `0.1.0-alpha.0` | `packages/materials/src/index.ts` | 8 |
-| `@galileo3d/math` | `0.1.0-alpha.0` | `packages/math/src/index.ts` | 17 |
-| `@galileo3d/physics` | `0.1.0-alpha.0` | `packages/physics/src/index.ts` | 24 |
-| `@galileo3d/product-studio` | `0.1.0-alpha.0` | `packages/product-studio/src/index.ts` | 10 |
-| `@galileo3d/rendering` | `0.1.0-alpha.0` | `packages/rendering/src/index.ts` | 219 |
-| `@galileo3d/scene` | `0.1.0-alpha.0` | `packages/scene/src/index.ts` | 17 |
-| `@galileo3d/scripting` | `0.1.0-alpha.0` | `packages/scripting/src/index.ts` | 49 |
-| `@galileo3d/three-compat` | `0.1.0-alpha.0` | `packages/three-compat/src/index.ts` | 30 |
-| `@galileo3d/workflows` | `0.1.0-alpha.0` | `packages/workflows/src/index.ts` | 12 |
+| `@galileo3d/animation` | `1.0.0` | `packages/animation/src/index.ts` | 23 |
+| `@galileo3d/apps` | `1.0.0` | `packages/apps/src/index.ts` | 10 |
+| `@galileo3d/assets` | `1.0.0` | `packages/assets/src/index.ts` | 81 |
+| `@galileo3d/audio` | `1.0.0` | `packages/audio/src/index.ts` | 24 |
+| `@galileo3d/controls` | `1.0.0` | `packages/controls/src/index.ts` | 20 |
+| `@galileo3d/core` | `1.0.0` | `packages/core/src/index.ts` | 14 |
+| `@galileo3d/create-g3d` | `1.0.0` | `packages/create-g3d/src/index.ts` | 5 |
+| `@galileo3d/debug` | `1.0.0` | `packages/debug/src/index.ts` | 30 |
+| `@galileo3d/ecs` | `1.0.0` | `packages/ecs/src/index.ts` | 21 |
+| `@galileo3d/editor` | `1.0.0` | `packages/editor/src/index.ts` | 1 |
+| `@galileo3d/editor-runtime` | `1.0.0` | `packages/editor-runtime/src/index.ts` | 46 |
+| `@galileo3d/engine-runtime` | `1.0.0` | `packages/engine/src/index.ts` | 28 |
+| `@galileo3d/environments` | `1.0.0` | `packages/environments/src/index.ts` | 10 |
+| `@galileo3d/input` | `1.0.0` | `packages/input/src/index.ts` | 46 |
+| `@galileo3d/materials` | `1.0.0` | `packages/materials/src/index.ts` | 10 |
+| `@galileo3d/math` | `1.0.0` | `packages/math/src/index.ts` | 18 |
+| `@galileo3d/physics` | `1.0.0` | `packages/physics/src/index.ts` | 24 |
+| `@galileo3d/product-studio` | `1.0.0` | `packages/product-studio/src/index.ts` | 12 |
+| `@galileo3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 259 |
+| `@galileo3d/scene` | `1.0.0` | `packages/scene/src/index.ts` | 20 |
+| `@galileo3d/scripting` | `1.0.0` | `packages/scripting/src/index.ts` | 49 |
+| `@galileo3d/three-compat` | `1.0.0` | `packages/three-compat/src/index.ts` | 31 |
+| `@galileo3d/workflows` | `1.0.0` | `packages/workflows/src/index.ts` | 12 |
 
 ## @galileo3d/animation
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/animation/package.json`
 - Public entrypoint: `packages/animation/src/index.ts`
 
@@ -66,12 +66,14 @@ export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
 export * from "./MotionMatchingFixtures.js";
 export * from "./SecondaryAnimationFixtures.js";
+export * from "./CrowdAnimation.js";
+export * from "./Retargeting.js";
 export * from "./v5";
 ```
 
 ## @galileo3d/apps
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/apps/package.json`
 - Public entrypoint: `packages/apps/src/index.ts`
 
@@ -92,7 +94,7 @@ export async function createG3DApp(options: G3DAppOptions = {}): Promise<G3DApp>
 
 ## @galileo3d/assets
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/assets/package.json`
 - Public entrypoint: `packages/assets/src/index.ts`
 
@@ -108,10 +110,10 @@ export type { GLTFComputerVisionBoundingBox, GLTFObjectDetectionEvidence, GLTFOb
 export { AssetDependencyGraph } from "./AssetDependencyGraph";
 export { inspectGLTFAsset } from "./AssetInspection";
 export type { GLTFAnimationInspection, GLTFAssetInspectionReport, GLTFDependencyInspection, GLTFMaterialInspection, GLTFMaterialTextureSlotInspection, GLTFMeshInspection, GLTFMorphTargetInspection, GLTFSceneHierarchyNodeInspection, GLTFSkinInspection, GLTFTextureInspection } from "./AssetInspection";
-export { GLTF_EXTENSION_SUPPORT_MATRIX, GLTF_SUPPORTED_EXTENSION_NAMES, evaluateGLTFExtensionSupport, getGLTFExtensionSupport } from "./GLTFExtensionSupport";
+export { GLTF_DECODER_REQUIRED_EXTENSION_NAMES, GLTF_DIAGNOSTIC_ONLY_EXTENSION_NAMES, GLTF_EXTENSION_SUPPORT_MATRIX, GLTF_PARSED_WITH_LIMITS_EXTENSION_NAMES, GLTF_REQUIRED_ACCEPTED_EXTENSION_NAMES, GLTF_RUNTIME_SUPPORTED_EXTENSION_NAMES, GLTF_SUPPORTED_EXTENSION_NAMES, evaluateGLTFExtensionSupport, getGLTFExtensionSupport } from "./GLTFExtensionSupport";
 export type { GLTFExtensionSupportEntry, GLTFExtensionSupportEvaluation, GLTFExtensionSupportFamily, GLTFExtensionSupportStatus } from "./GLTFExtensionSupport";
 export { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime, GLTFImportedSkeletonIKController, GLTFSceneAnimationCloneSampler, GLTFSceneAnimationMixerBinding, GLTFSceneAnimationRuntime, GLTFSceneMorphTargetController } from "./GLTFAnimationRuntime";
-export type { GLTFImportedSkeletonIKControllerOptions, GLTFImportedSkeletonIKControllerSnapshot, GLTFImportedSkeletonIKOptions, GLTFImportedSkeletonIKResult, GLTFSceneAnimationApplyResult, GLTFSceneAnimationActionSnapshot, GLTFSceneAnimationCloneSample, GLTFSceneAnimationCloneSampleResult, GLTFSceneAnimationCloneSamplerSnapshot, GLTFSceneAnimationMixerOptions, GLTFSceneAnimationPlayOptions, GLTFSceneAnimationMixerSnapshot, GLTFSceneAnimationMixerUpdateResult, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFSceneMorphTargetControllerOptions, GLTFSceneMorphTargetControllerSnapshot } from "./GLTFAnimationRuntime";
+export type { GLTFImportedSkeletonIKControllerOptions, GLTFImportedSkeletonIKControllerSnapshot, GLTFImportedSkeletonIKOptions, GLTFImportedSkeletonIKResult, GLTFSceneAnimationApplyResult, GLTFSceneAnimationActionSnapshot, GLTFSceneAnimationCloneSample, GLTFSceneAnimationCloneSampleResult, GLTFSceneAnimationCloneSamplerSnapshot, GLTFSceneAnimationClipBindingDiagnostics, GLTFSceneAnimationMixerOptions, GLTFSceneAnimationPlayOptions, GLTFSceneAnimationMixerSnapshot, GLTFSceneAnimationMixerUpdateResult, GLTFSceneAnimationRuntimeOptions, GLTFSceneAnimationRuntimeSnapshot, GLTFSceneMorphTargetControllerOptions, GLTFSceneMorphTargetControllerSnapshot } from "./GLTFAnimationRuntime";
 export { AssetHandle } from "./AssetHandle";
 export type { AssetHandleOptions, AssetHandleStatus } from "./AssetHandle";
 export { AssetLoadError } from "./AssetLoader";
@@ -142,13 +144,15 @@ export { assertValidBlenderExportFixtureManifest, createBlenderExportValidationR
 export type { BlenderExportFixture, BlenderExportFixtureInput, BlenderExportFixtureManifest, BlenderExportValidationDiagnostic, BlenderExportValidationFixtureResult, BlenderExportValidationReport, BlenderExportValidationStatus } from "./BlenderExportValidation";
 export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecoders";
 export type { GLTFDracoAttribute, GLTFDracoDecoderBuffer, GLTFDracoDecoderInstance, GLTFDracoDecoderModule, GLTFDracoMesh, GLTFDracoNumericArray, GLTFDracoStatus, GLTFMeshoptDecoderModule } from "./GLTFCompressionDecoders";
+export { applyCarConceptMaterialStability, carConceptMaterialVisualRole, carConceptMaterialRenderStateOverrides } from "./CarConceptMaterialStability";
+export type { CarConceptMaterialBaseline, CarConceptMaterialVisualRole, CarConceptMaterialStabilityOptions, CarConceptMaterialStabilityProfile } from "./CarConceptMaterialStability";
 export { ImageLoader } from "./ImageLoader";
 export type { ImageAsset } from "./ImageLoader";
 export { GLTFLoader } from "./GLTFLoader";
 export type { GLTFAsset, GLTFCameraAsset, GLTFClearcoatMaterialExtension, GLTFDracoDecodeDescriptor, GLTFDracoDecodedPrimitive, GLTFDracoDecoder, GLTFGeometryAsset, GLTFImageAsset, GLTFLightAsset, GLTFLoaderOptions, GLTFLoaderDiagnostics, GLTFMaterialAsset, GLTFMaterialVariantAsset, GLTFMaterialVariantMappingAsset, GLTFMeshAsset, GLTFMeshoptDecodeDescriptor, GLTFMeshoptDecoder, GLTFPBRSpecularGlossinessMaterialExtension, GLTFResolvedTextureInfo, GLTFSamplerAsset, GLTFSceneAsset, GLTFSceneCreateOptions, GLTFSheenMaterialExtension, GLTFSkinAsset, GLTFSpecularMaterialExtension, GLTFTextureAsset, GLTFTransmissionMaterialExtension, GLTFVolumeMaterialExtension, SerializedGLTFAsset } from "./GLTFLoader";
 export { OBJLoader } from "./OBJLoader";
-export { DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING, DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS, DEFAULT_GLTF_STUDIO_PREVIEW_FRAME, DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING, DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS, createDefaultGLTFHdrStudioPreviewEnvironmentLighting, createGLTFRenderResources, createGLTFRenderSource } from "./GLTFRenderResources";
-export type { DecodedGLTFImage, GLTFImageDecoder, GLTFRenderQualityPreset, GLTFRendererInput, GLTFRendererInputOptions, GLTFRenderResourceOptions, GLTFRenderSourceOptions, GLTFRenderResources } from "./GLTFRenderResources";
+export { DEFAULT_GLTF_RENDER_ENVIRONMENT_LIGHTING, DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS, DEFAULT_GLTF_STUDIO_PREVIEW_FRAME, DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING, DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS, createDefaultGLTFHdrStudioPreviewEnvironmentLighting, createGLTFRenderResourceDiagnostics, createGLTFRenderResources, createGLTFRenderSource } from "./GLTFRenderResources";
+export type { DecodedGLTFImage, GLTFImageDecoder, GLTFMaterialRenderStateOverride, GLTFMaterialOverrideQuery, GLTFMaterialOverrideTarget, GLTFRenderableBinding, GLTFRenderResourceDiagnostics, GLTFRenderResourceDiagnosticsOptions, GLTFRenderResourceTextureSlotDiagnostic, GLTFRenderQualityPreset, GLTFRendererInput, GLTFRendererInputOptions, GLTFRenderResourceOptions, GLTFRenderSourceOptions, GLTFRenderResources } from "./GLTFRenderResources";
 export { createAssetRenderDefaults, DEFAULT_ASSET_RENDER_VIEWPORT } from "./AssetRenderDefaults";
 export type { AssetRenderDefaults, AssetRenderLightingPreset } from "./AssetRenderDefaults";
 export { loadRenderableAsset } from "./loadRenderableAsset";
@@ -175,11 +179,14 @@ export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
 export { WorkerAssetJobs } from "./WorkerAssetJobs";
 export type { WorkerAssetJob, WorkerAssetJobRunner } from "./WorkerAssetJobs";
+export * from "./HDRLoader.js";
+export * from "./EXRLoader.js";
+export * from "./TextureStreaming.js";
 ```
 
 ## @galileo3d/audio
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/audio/package.json`
 - Public entrypoint: `packages/audio/src/index.ts`
 
@@ -214,7 +221,7 @@ export { ReverbEffect } from "./effects/Reverb";
 
 ## @galileo3d/controls
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/controls/package.json`
 - Public entrypoint: `packages/controls/src/index.ts`
 
@@ -231,17 +238,21 @@ export { DragControls } from "./DragControls";
 export { TransformControls } from "./TransformControls";
 export type { TransformControlMode } from "./TransformControls";
 export { SelectionManager } from "./SelectionManager";
+export { InteractionControls } from "./InteractionControls";
+export type { HotspotHandler, InteractionControlMode, InteractionControlsEvent, InteractionControlsEventType, InteractionControlsListener, InteractionControlsOptions, InteractionControlsUpdate, InteractionRay, InteractionRayProvider, InteractionRootProvider } from "./InteractionControls";
 export { Picking } from "./Picking";
-export type { V5PickResult } from "./Picking";
+export type { PickingDiagnostics, PickingOptions, PickingReport, V5PickResult } from "./Picking";
+export { annotationFromPickHit, createDistrictPickingAnnotations, createEntityPickingAnnotations, createImportedGlbHotspotAnnotations, createPickingAnnotationObject, createPickingAnnotationRoot, createRobotPickingAnnotations, pickAnnotation, pickScreenSpaceAnnotation } from "./PickingAnnotations";
+export type { BuildingPickingDescriptor, DistrictPickingDescriptor, EntityPickingDescriptor, ImportedGlbHotspotDescriptor, PickingAnnotation, PickingAnnotationHitPolicy, PickingAnnotationKind, PickingAnnotationObject, PickingAnnotationOptions, PickingAnnotationReport, PickingAnnotationRoot, PickingAnnotationSource, ScreenPickingAnnotation, ScreenPickingHit, ScreenPickingOptions, ScreenPickingReport } from "./PickingAnnotations";
 export { ControlVector3 } from "./NativeControlTypes";
-export type { ControlObject3DLike, Vector3Like } from "./NativeControlTypes";
+export type { ControlObject3DLike, ControlPickMetadata, Vector3Like } from "./NativeControlTypes";
 export { createDefaultControlState } from "./ControlState";
 export type { V5ControlEvent, V5ControlState } from "./ControlState";
 ```
 
 ## @galileo3d/core
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/core/package.json`
 - Public entrypoint: `packages/core/src/index.ts`
 
@@ -266,7 +277,7 @@ export * from "./VersionedSerialization.js";
 
 ## @galileo3d/create-g3d
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/create-g3d/package.json`
 - Public entrypoint: `packages/create-g3d/src/index.ts`
 
@@ -282,7 +293,7 @@ export function writeCreateG3DReport(path: string, result: CreateG3DProjectResul
 
 ## @galileo3d/debug
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/debug/package.json`
 - Public entrypoint: `packages/debug/src/index.ts`
 
@@ -323,7 +334,7 @@ export type { DebugReport } from "./ReportExporter.js";
 
 ## @galileo3d/ecs
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/ecs/package.json`
 - Public entrypoint: `packages/ecs/src/index.ts`
 
@@ -355,7 +366,7 @@ export * from "./systems/index.js";
 
 ## @galileo3d/editor
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/editor/package.json`
 - Public entrypoint: `packages/editor/src/index.ts`
 
@@ -367,7 +378,7 @@ export * from "@galileo3d/editor-runtime";
 
 ## @galileo3d/editor-runtime
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/editor-runtime/package.json`
 - Public entrypoint: `packages/editor-runtime/src/index.ts`
 
@@ -409,6 +420,7 @@ export { createOldBranchShaderGraphFixture } from "./ShaderGraphModel";
 export type { ShaderGraphDiagnostic, ShaderGraphEdge, ShaderGraphFixture, ShaderGraphNode, ShaderGraphPort, ShaderGraphValueType } from "./ShaderGraphModel";
 export { createStaticExportHtml, createStaticExportRuntime } from "./StaticExportRuntime";
 export type { StaticExportHtmlOptions, StaticExportRuntimeOptions } from "./StaticExportRuntime";
+export * from "./ProjectSerializer.js";
 export { TranslateGizmo } from "./TranslateGizmo";
 export { TimelineClip, TimelineModel, TimelineTrack } from "./TimelineModel";
 export type { TimelineActiveClipSnapshot, TimelineClipBlendMode, TimelineClipConfig, TimelineEasingName, TimelineLoopMode, TimelineModelConfig, TimelineSnapshot, TimelineTrackConfig, TimelineTrackSnapshot } from "./TimelineModel";
@@ -423,7 +435,7 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 
 ## @galileo3d/engine-runtime
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/engine/package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
@@ -462,7 +474,7 @@ export function createDiagnosticsPanel(initial: { readonly render?: RenderDevice
 
 ## @galileo3d/environments
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/environments/package.json`
 - Public entrypoint: `packages/environments/src/index.ts`
 
@@ -483,7 +495,7 @@ export type { V6HDREnvironment, V6HDRInspection, V6EnvironmentCorpusSummary, V6E
 
 ## @galileo3d/input
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/input/package.json`
 - Public entrypoint: `packages/input/src/index.ts`
 
@@ -519,7 +531,10 @@ export type { VirtualJoystickConfig, VirtualTouchJoystickSnapshot, VirtualTouchP
 export { sampleXRRuntimeFixture } from "./XRFixtures";
 export type { XRFixtureLodLevel, XRFixtureOptions, XRFixtureSessionMode, XRRuntimeFixture } from "./XRFixtures";
 export { WebXRSessionController } from "./WebXRSessionController";
-export type { G3DXRFrameLike, G3DXRHandedness, G3DXRHitTestResultLike, G3DXRInputSourceLike, G3DXRReferenceSpaceLike, G3DXRReferenceSpaceType, G3DXRSessionInit, G3DXRSessionLike, G3DXRSessionMode, G3DXRSystemLike, WebXRControllerSample, WebXRFrameSample, WebXRHitTestSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
+export type { G3DXRFrameLike, G3DXRHandedness, G3DXRHitTestResultLike, G3DXRInputSourceLike, G3DXRPoseLike, G3DXRReferenceSpaceLike, G3DXRReferenceSpaceType, G3DXRSessionInit, G3DXRSessionLike, G3DXRSessionMode, G3DXRSystemLike, WebXRControllerSample, WebXRFrameSample, WebXRHitTestSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
+export * from "./GamepadInput.js";
+export * from "./GestureControls.js";
+export * from "./controls/PointerLockControls.js";
 export { CameraRig } from "./controls/CameraRig";
 export type { CameraRigState } from "./controls/CameraRig";
 export type { CameraTransformLike, EulerLike, Vec3Like } from "./controls/ControlTypes";
@@ -537,7 +552,7 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 
 ## @galileo3d/materials
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/materials/package.json`
 - Public entrypoint: `packages/materials/src/index.ts`
 
@@ -552,11 +567,13 @@ export type { V5MaterialClass, V5MaterialParameters, V5MaterialPreset, V5Materia
 export type { V5TextureMapReference, V5TextureSemantic, V5TextureSet } from "./TextureSet";
 export type { V5MaterialLibrarySummary } from "./MaterialValidation";
 export type { V5MaterialPreviewTile } from "./MaterialPreviewScene";
+export * from "./MaterialPresets.js";
+export * from "./NodeMaterial.js";
 ```
 
 ## @galileo3d/math
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/math/package.json`
 - Public entrypoint: `packages/math/src/index.ts`
 
@@ -580,11 +597,12 @@ export * from "./Transform.js";
 export * from "./Interpolation.js";
 export * from "./Easing.js";
 export * from "./Random.js";
+export * from "./Curves.js";
 ```
 
 ## @galileo3d/physics
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/physics/package.json`
 - Public entrypoint: `packages/physics/src/index.ts`
 
@@ -619,7 +637,7 @@ export * from "./FireSmokeFixtures.js";
 
 ## @galileo3d/product-studio
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/product-studio/package.json`
 - Public entrypoint: `packages/product-studio/src/index.ts`
 
@@ -634,13 +652,15 @@ export { createProductFloor } from "./ProductFloor";
 export { createProductLightingPreset } from "./ProductLighting";
 export { applyProductMaterialMode, createProductMaterialMode } from "./ProductMaterials";
 export { createProductRenderScene, updateProductRenderScene } from "./ProductRenderScene";
+export { createProductShowcaseLayout } from "./ProductShowcaseLayout";
 export { createProductStudio } from "./ProductStudio";
 export type * from "./ProductTypes";
+export type * from "./ProductShowcaseLayout";
 ```
 
 ## @galileo3d/rendering
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/rendering/package.json`
 - Public entrypoint: `packages/rendering/src/index.ts`
 
@@ -672,8 +692,14 @@ export type { MorphTargetDelta } from "./MorphTarget";
 export { computeSkinnedGeometryBounds, computeSkinnedMorphTargetEnvelopeBounds, computeSkinnedMorphTargetWeightedBounds } from "./SkinningBounds";
 export type { SkinningBoundsPalette } from "./SkinningBounds";
 export { Texture, bytesPerPixel, compressedBlockByteLength, compressedTextureByteLength, isCompressedTextureFormat } from "./Texture";
-export type { TextureColorSpace, TextureCompressedFormat, TextureDescriptor, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TexturePixelData } from "./Texture";
+export type { TextureColorSpace, TextureCompressedFormat, TextureCubeFace, TextureCubeFaceDescriptor, TextureCubeFaceLevel, TextureDescriptor, TextureDimension, TextureFormat, TextureMipLevel, TextureMipLevelDescriptor, TexturePixelData } from "./Texture";
 export { createEnvironmentMapResourceSet, decodeRgba8EnvironmentToLinear, decodeRgbeEnvironmentMap, encodeLinearHdrEnvironmentToRgba8, encodeLinearHdrEnvironmentToRgba16f, generateApproximateBrdfLutPixels, generateDiffuseIrradianceRgba8, generateRgba8EnvironmentMipLevels, generateRgba16fEnvironmentMipLevels, generateRgba16fDiffuseIrradianceMipLevel, generateRgba16fSpecularPrefilterMipLevels, generateSpecularPrefilterMipLevels, linearChannelToSrgb, srgbChannelToLinear } from "./EnvironmentMapResources";
+export { createEnvironmentCapabilityReport, createEnvironmentFogProfile, createEnvironmentPreset, createEnvironmentStage, createEnvironmentUnsupportedRequestDisclosures, createInfiniteGroundGrid, applyEnvironmentFogToColor, createProceduralSkyDome, listEnvironmentCapabilities, sampleEnvironmentFogFactor } from "./EnvironmentPlatform";
+export type { EnvironmentCapability, EnvironmentCapabilityId, EnvironmentCapabilityReport, EnvironmentCapabilityStatus, EnvironmentFeatureRequest, EnvironmentFogInput, EnvironmentFogMode, EnvironmentFogOptions, EnvironmentFogPresetId, EnvironmentFogProfile, EnvironmentFogTelemetry, EnvironmentFogUniforms, EnvironmentPreset, EnvironmentPresetBackground, EnvironmentPresetGround, EnvironmentPresetLighting, EnvironmentPresetOptions, EnvironmentPresetType, EnvironmentStage, EnvironmentStageOptions, EnvironmentStagePresetId, EnvironmentUnsupportedRequestDisclosure, EnvironmentUnsupportedRequestDisclosureOptions } from "./EnvironmentPlatform";
+export { createEnvironmentPresetReport, createNamedEnvironmentPreset, listNamedEnvironmentPresets } from "./EnvironmentPreset";
+export type { EnvironmentPresetReport, NamedEnvironmentPresetDescriptor, NamedEnvironmentPresetId } from "./EnvironmentPreset";
+export { composeEnvironmentLighting } from "./EnvironmentLighting";
+export type { EnvironmentLightingCompositionOptions } from "./EnvironmentLighting";
 export { V4_TEXTURE_COLOR_POLICY, convertColorSpace, createColorConversionSamples, createV4ColorManagementPolicy, linearToSrgbChannel, srgbToLinearChannel, validateTextureColorSpace } from "./ColorManagement";
 export type { G3DColorConversionSample, G3DColorManagementPolicy, G3DColorSpace, G3DTextureColorSpaceValidation, G3DTextureSemantic } from "./ColorManagement";
 export { applyV4ToneMappingPreset, createV4ToneMappingPolicy, listV4ToneMappingPresets, toneMapV4HdrPixels, toneMapV4Pixels } from "./ToneMapping";
@@ -682,6 +708,8 @@ export { analyzeV4Exposure, createV4ExposurePolicy } from "./Exposure";
 export type { V4ExposureAnalysis, V4ExposurePolicy } from "./Exposure";
 export { createV4HdrPipeline, executeV4ToneMapPass } from "./HDRRenderPipeline";
 export type { V4HdrPipeline, V4HdrPipelineDescriptor, V4HdrPipelineMode, V4HdrRenderTargetFormat } from "./HDRRenderPipeline";
+export { createRendererVisualPipelineReport, evaluateRendererCanvasBacking, evaluateRendererCaptureQuality, evaluateRendererFrameCadence, evaluateRendererScreenshotConsistency } from "./RendererVisualPipelineReport";
+export type { RendererCanvasBackingInput, RendererCanvasBackingReport, RendererCaptureQualityInput, RendererCaptureQualityReport, RendererFrameCadenceInput, RendererFrameCadenceReport, RendererScreenshotConsistencyInput, RendererScreenshotConsistencyReport, RendererUnsupportedVisualCapability, RendererVisualColorReport, RendererVisualHdrTargetReport, RendererVisualPipelineReport, RendererVisualPipelineReportOptions, RendererVisualPipelineStatus, RendererVisualPostprocessDescriptor, RendererVisualPostprocessPassName, RendererVisualPostprocessReport, RendererVisualTargetFormat, RendererVisualToneMappingReport } from "./RendererVisualPipelineReport";
 export { V4_REQUIRED_DEBUG_VIEWS, createV4DebugView, createV4DebugViewSet, encodeLinearDebugColor } from "./RenderDebugViews";
 export type { V4DebugViewInput, V4DebugViewResult, V4RenderDebugView } from "./RenderDebugViews";
 export { createV4BrdfLut } from "./BRDFLut";
@@ -714,6 +742,8 @@ export { runV4ColorGrade } from "./postprocess/ColorGradingPass";
 export type { V4ColorGradePreset } from "./postprocess/ColorGradingPass";
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./postprocess/EffectComposer";
 export type { PostProcessCapabilityReport, PostProcessComposerDiagnostics, PostProcessComposerOptions, PostProcessComposerPass, PostProcessComposerRenderOptions, PostProcessUnsupportedEffect } from "./postprocess/EffectComposer";
+export { CINEMATIC_POSTPROCESS_EFFECT_IDS, analyzeCinematicPostprocessClarity, createCinematicDiagnosticsReport } from "./postprocess/CinematicDiagnostics";
+export type { CinematicCapabilityArea, CinematicCapabilityEntry, CinematicCapabilityStatus, CinematicDiagnosticId, CinematicDiagnosticsBackendInfo, CinematicDiagnosticsReport, CinematicPostprocessClarityFinding, CinematicPostprocessClarityFindingId, CinematicPostprocessClarityInput, CinematicPostprocessClarityReport, CinematicPostprocessClaritySeverity, CinematicPostprocessClarityStatus, CinematicPostprocessFrameMetrics, CinematicPostprocessPipelineDescriptor, CinematicPostProcessEffectId } from "./postprocess/CinematicDiagnostics";
 export { createV4RendererStats } from "./performance/RendererStats";
 export type { V4RendererStats, V4RendererStatsInput } from "./performance/RendererStats";
 export { evaluateV4ResourceBudget } from "./performance/ResourceBudget";
@@ -735,14 +765,14 @@ export * from "./v5/postprocess";
 export * from "./v5/shaders";
 export * from "./v5/vfx";
 export * from "./v5/performance";
-export { ProductionWebGL2Renderer, ProductionWebGPURenderer, analyzePixels, createV6OrbitControlPreset, createV6EnvironmentLightingResources, createV6EffectsRenderSource, createV6PbrHdrPipelineFromRadiance, createV6ToneMappingPolicy, createV6WebGPUReport, parseV6RadianceHDR, summarizeV6AnimationWorkflow, summarizeV6EffectsProof, summarizeV6ProductionProof, summarizeV6WebGL2Proof } from "./v6";
-export type { V6EffectsOptions, V6EffectsSummary, V6AnimationMetadataInput, V6AnimationWorkflowSummary, V6OrbitControlPreset, V6EnvironmentLightingResources, V6ImportedAssetRenderMetadata, V6PbrHdrPipeline, V6PbrHdrPipelineOptions, V6PixelMetrics, V6ProductionRenderer, V6RadianceHDR, V6RenderProof, V6RendererBackend, V6RendererFeature, V6RendererFeatureState, V6RendererInput, V7FrameRenderResult, V6ToneMappingOperator, V6ToneMappingPolicy, V6WebGPUAdapterLike, V6WebGPULike, V6WebGPUReport, V6WebGPUStatus, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./v6";
+export { ProductionWebGL2Renderer, ProductionWebGPURenderer, analyzePixels, createV6OrbitControlPreset, createV6EnvironmentLightingResources, createV6EffectsRenderSource, createV6PbrHdrPipelineFromRadiance, createV6ToneMappingPolicy, createV6WebGPUReport, loadV6HdrEnvironment, parseV6RadianceHDR, summarizeV6AnimationWorkflow, summarizeV6EffectsProof, summarizeV6ProductionProof, summarizeV6WebGL2Proof } from "./v6";
+export type { V6EffectsOptions, V6EffectsSummary, V6AnimationMetadataInput, V6AnimationWorkflowSummary, V6OrbitControlPreset, V6EnvironmentLightingResources, V6HdrEnvironmentLoaderOptions, V6LoadedHdrEnvironment, V6ImportedAssetRenderMetadata, V6PbrHdrPipeline, V6PbrHdrPipelineOptions, V6PixelMetrics, V6ProductionRenderer, V6RadianceHDR, V6RenderProof, V6RendererBackend, V6RendererFeature, V6RendererFeatureState, V6RendererInput, V7FrameRenderResult, V6ToneMappingOperator, V6ToneMappingPolicy, V6WebGPUAdapterLike, V6WebGPULike, V6WebGPUReport, V6WebGPUStatus, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./v6";
 export { ShaderModule } from "./ShaderModule";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
 export { ShaderPreprocessor } from "./ShaderPreprocessor";
 export type { ShaderPreprocessOptions, ShaderPreprocessResult, ShaderSourceMapEntry } from "./ShaderPreprocessor";
-export { DEFAULT_DEPTH_SHADER_MARKER, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_INSTANCED_PBR_SHADER_MARKER, DEFAULT_INSTANCED_PBR_SHADER_NAME, DEFAULT_INSTANCED_UNLIT_SHADER_MARKER, DEFAULT_INSTANCED_UNLIT_SHADER_NAME, DEFAULT_MORPH_UNLIT_SHADER_MARKER, DEFAULT_MORPH_UNLIT_SHADER_NAME, DEFAULT_NORMAL_MAPPED_PBR_SHADER_MARKER, DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SHADER_MARKER, DEFAULT_TEXTURED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_SKINNED_LIT_SHADER_MARKER, DEFAULT_SKINNED_LIT_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_MARKER, DEFAULT_SKINNED_UNLIT_SHADER_NAME, DEFAULT_TEXTURED_UNLIT_SHADER_MARKER, DEFAULT_TEXTURED_UNLIT_SHADER_NAME, DEFAULT_UNLIT_SHADER_MARKER, DEFAULT_UNLIT_SHADER_NAME, ShaderLibrary, createDefaultShaderLibrary } from "./ShaderLibrary";
+export { DEFAULT_DEPTH_SHADER_MARKER, DEFAULT_DEPTH_SHADER_NAME, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER, DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME, DEFAULT_INSTANCED_PBR_SHADER_MARKER, DEFAULT_INSTANCED_PBR_SHADER_NAME, DEFAULT_INSTANCED_UNLIT_SHADER_MARKER, DEFAULT_INSTANCED_UNLIT_SHADER_NAME, DEFAULT_MORPH_UNLIT_SHADER_MARKER, DEFAULT_MORPH_UNLIT_SHADER_NAME, DEFAULT_NORMAL_MAPPED_PBR_SHADER_MARKER, DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SHADER_MARKER, DEFAULT_TEXTURED_PBR_SHADER_NAME, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT, DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT, DEFAULT_SKINNED_LIT_SHADER_MARKER, DEFAULT_SKINNED_LIT_SHADER_NAME, DEFAULT_SKINNED_UNLIT_SHADER_MARKER, DEFAULT_SKINNED_UNLIT_SHADER_NAME, DEFAULT_TEXTURED_UNLIT_SHADER_MARKER, DEFAULT_TEXTURED_UNLIT_SHADER_NAME, DEFAULT_UNLIT_SHADER_MARKER, DEFAULT_UNLIT_SHADER_NAME, ShaderLibrary, createDefaultShaderLibrary } from "./ShaderLibrary";
 export type { CompiledShaderSource, ShaderSourcePair } from "./ShaderLibrary";
 export type { ShaderVariantDescriptor } from "./ShaderLibrary";
 export { SHADER_CHUNKS, validateShaderChunks } from "./ShaderChunks";
@@ -771,12 +801,16 @@ export type { PBRMaterialOptions } from "./PBRMaterial";
 export { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_MAP } from "./PBRLightingDefaults";
 export { NormalMappedPBRMaterial } from "./NormalMappedPBRMaterial";
 export type { NormalMappedPBRMaterialOptions } from "./NormalMappedPBRMaterial";
-export { TexturedPBRMaterial } from "./TexturedPBRMaterial";
+export { TexturedPBRMaterial, isTexturedPbrTextureSlotShaderActive, texturedPbrShaderActiveTextureSlots } from "./TexturedPBRMaterial";
 export type { TexturedPBRMaterialOptions, TexturedPBRTextureSlot } from "./TexturedPBRMaterial";
 export { MaterialPresetRegistry, createPhysicalMaterialPreset, defaultMaterialPresets, listPhysicalMaterialPresets, physicalMaterialPresetDescriptor } from "./MaterialPresets";
 export type { MaterialFactory, MaterialPresetDescriptor, MaterialPresetKind, MaterialPresetOptions, PhysicalMaterialPresetDescriptor, PhysicalMaterialPresetName } from "./MaterialPresets";
 export { BaseRenderPass } from "./RenderPass";
 export type { RenderPass, RenderPassContext } from "./RenderPass";
+export { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, EnvironmentBackgroundPass, createEnvironmentBackgroundUniforms } from "./EnvironmentBackgroundPass";
+export type { EnvironmentBackgroundEncoding, EnvironmentBackgroundOptions, EnvironmentBackgroundProjection } from "./EnvironmentBackgroundPass";
+export { ENVIRONMENT_BACKGROUND_CUBE_FACES, createCubemapEnvironmentBackgroundOptions, createEquirectEnvironmentBackgroundOptions, validateEnvironmentBackgroundResourceOptions } from "./EnvironmentBackgroundResources";
+export type { CubemapEnvironmentBackgroundFacePixels, CubemapEnvironmentBackgroundResourceOptions, EnvironmentBackgroundPixelFormat, EnvironmentBackgroundResourceOptions, EquirectEnvironmentBackgroundResourceOptions } from "./EnvironmentBackgroundResources";
 export { RenderGraph } from "./RenderGraph";
 export type { RenderGraphPlan, RenderGraphResourceLifetime } from "./RenderGraph";
 export { buildRenderDebugOverlaySnapshot, captureRenderDebugIssue, formatRenderDebugIssue } from "./RendererDebugOverlay";
@@ -785,15 +819,15 @@ export { RendererTimingCollector, createCpuFallbackGpuTimingBackend, createImmed
 export type { RendererGpuTimingBackend, RendererGpuTimingResult, RendererGpuTimingToken, RendererTimingCollectorOptions, RendererTimingSample, RendererTimingSampleSource, RendererTimingSnapshot } from "./RendererTiming";
 export { ForwardPass } from "./ForwardPass";
 export { MAX_GPU_INSTANCES, MAX_GPU_MORPH_TARGETS, MAX_GPU_MORPH_VERTICES } from "./ForwardPass";
-export type { EnvironmentLightingOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding } from "./ForwardPass";
+export type { EnvironmentLightingOptions, ForwardEnvironmentFogMode, ForwardEnvironmentFogOptions, ForwardPassOptions, ForwardShadowMapOptions, RenderItem, RenderItemDrawRange, RenderMaterial, SkinningPaletteBinding } from "./ForwardPass";
 export { batchStaticRenderItems, buildStaticBoundsBvh, queryStaticBoundsBvh, raycastStaticBoundsBvh, selectLodLevel, updateStaticBoundsBvh } from "./SceneOptimization";
 export type { LodLevel, LodSelection, LodSelectionInput, StaticBatchInput, StaticBatchOptions, StaticBatchResult, StaticBoundsBvh, StaticBoundsBvhBuildDiagnostics, StaticBoundsBvhNode, StaticBoundsBvhOptions, StaticBoundsBvhQueryOptions, StaticBoundsBvhQueryResult, StaticBoundsBvhRaycastDiagnostics, StaticBoundsBvhRaycastHit, StaticBoundsBvhRaycastResult, StaticBoundsBvhTraversalDiagnostics, StaticBoundsBvhUpdateResult, StaticBoundsIntersector, StaticSpatialBounds, StaticSpatialItem } from "./SceneOptimization";
 export { computePerspectiveCameraFrame } from "./CameraFraming";
 export type { CameraFrameBounds, CameraFrameViewport, PerspectiveCameraFrame, PerspectiveCameraFrameOptions } from "./CameraFraming";
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
-export { createAnaglyphCompositePlan, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
-export type { AnaglyphCompositePlan, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
+export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
+export type { AnaglyphCompositePlan, AnaglyphPixelComposite, AnaglyphPixelCompositeOptions, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
 export { analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
 export type { FrameVisualBounds, FrameVisualMetrics, FrameVisualMetricsOptions, FrameVisualQualityResult, FrameVisualQualityThresholds } from "./FrameVisualMetrics";
 export { LightCollector } from "./LightCollector";
@@ -824,6 +858,8 @@ export { createCanonicalProductSceneRenderKit } from "./CanonicalSceneFixtures";
 export type { CanonicalProductSceneFixture, CanonicalProductSceneRenderKit } from "./CanonicalSceneFixtures";
 export { createLightingDefault } from "./LightingDefaults";
 export type { LightingDefault, LightingDefaultPreset } from "./LightingDefaults";
+export { createLightingRig, listLightingRigPresets } from "./LightingRig";
+export type { LightingRig, LightingRigDiagnostics, LightingRigLightDescriptor, LightingRigOptions, LightingRigPreset, LightingRigUnsupportedFeature } from "./LightingRig";
 export { createTerrainHeightfieldFixture, sampleTerrainHeightfield } from "./TerrainFixtures";
 export type { TerrainFixtureBiome, TerrainHeightfieldFixture, TerrainHeightfieldFixtureOptions, TerrainHeightfieldSample } from "./TerrainFixtures";
 export { sampleWeatherFixture } from "./WeatherFixtures";
@@ -845,13 +881,36 @@ export type { CascadedShadowMapsOptions, CascadedShadowPassOptions, CascadedShad
 export { DEFAULT_RENDERER_AUTO_FRAME_OPTIONS, DEFAULT_RENDERER_DIRECT_LIGHTING, DEFAULT_RENDERER_ENVIRONMENT_LIGHTING, Renderer } from "./Renderer";
 export { pickSceneRenderableHits, pickSceneRenderables } from "./Renderer";
 export type { CameraLike, RendererAnimationLoop, RendererCameraPolicy, RendererFrameCapture, RendererInput, RendererOptions, RendererPostProcessOptions, RendererShadowOptions, RenderSource, ResizeToDisplayOptions, ResizeToDisplayResult, ScenePickHit, ScenePickOptions } from "./Renderer";
+export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnostics } from "./RendererPostprocessPlan";
+export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
 export type { RendererFeature, RendererFeatureReport, RendererFeatureStatus } from "./RendererFeatureGates";
 export { createV4EnvironmentLighting, createV4DirectionalShadowEvidence, createV4FlagshipRenderPresetEvidence, createV4GeneratedEnvironmentMapSource, createV4GeneratedHdrEnvironmentMapSource, createV4RenderPresetEvidence, sampleV4LdrPostprocessReadback, v4ActiveFeature, v4BlockedFeature, v4UnsupportedFeature } from "./V4RenderPreset";
 export type { V4EnvironmentLightingBundle, V4EnvironmentPreset, V4DirectionalShadowEvidence, V4LdrPostprocessSummary, V4ReadbackDevice, V4RenderPresetEvidence, V4RenderPresetEvidenceOptions, V4RenderPresetFeature, V4RenderPresetFeatureStatus } from "./V4RenderPreset";
-export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEnvironmentLight, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrGeometrySmithGgxCorrelated, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
+export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEnvironmentLight, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrFresnelSchlickRoughnessSpecular, pbrFresnelSchlickSpecular, pbrGeometrySmithGgxCorrelated, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
 export type { PbrDirectLightInput, PbrEnvironmentLightInput, PbrCausticsConformanceReport, PbrCausticsTransmissionInput, PbrCausticsTransmissionResponse, PbrPhotometricConformanceCategory, PbrPhotometricConformanceCheck, PbrPhotometricConformanceReport, PbrPhotometricConformanceSample, PbrTransmissionVolumeConformanceReport, PbrTransmissionVolumeInput, PbrTransmissionVolumeResponse, Vec3 } from "./PbrReference";
 export * from "./v6/geometry/ProjectedDecalGeometry";
+export * from "./DecalGeometry.js";
+export * from "./GeometryPrimitives.js";
+export * from "./Instancing.js";
+export * from "./LineGeometry.js";
+export * from "./SpriteGeometry.js";
+export * from "./Raycaster.js";
+export * from "./ReflectionProbe.js";
+export * from "./ReflectionSurfaces.js";
+export * from "./RenderQueue.js";
+export * from "./RenderState.js";
+export * from "./ResourceLifecycle.js";
+export * from "./UniformBinder.js";
+export * from "./performance/FrustumCuller.js";
+export * from "./performance/BVH.js";
+export * from "./performance/Octree.js";
+export * from "./performance/Batcher.js";
+export * from "./webgpu/WebGPUBuffer.js";
+export * from "./webgpu/WebGPUCompute.js";
+export * from "./webgpu/WebGPUPipelineCache.js";
+export * from "./webgpu/WebGPUPostProcess.js";
+export * from "./webgpu/WebGPUTexture.js";
 export * from "./effects/Particle.js";
 export * from "./effects/ParticleEmitter.js";
 export * from "./effects/ParticleModule.js";
@@ -866,11 +925,12 @@ export * from "./effects/ParticleRenderPass.js";
 export * from "./effects/GPUParticleBackend.js";
 export * from "./effects/ParticleSystem.js";
 export * from "./effects/ParticleEffectPresets.js";
+export * from "./effects/ParticleDiagnostics.js";
 ```
 
 ## @galileo3d/scene
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/scene/package.json`
 - Public entrypoint: `packages/scene/src/index.ts`
 
@@ -890,15 +950,18 @@ export * from "./Light.js";
 export * from "./DirectionalLight.js";
 export * from "./PointLight.js";
 export * from "./SpotLight.js";
+export * from "./Layers.js";
+export * from "./Lights.js";
 export * from "./Renderable.js";
 export * from "./SceneQuery.js";
+export * from "./SceneMetadata.js";
 export * from "./Scene.js";
 export * from "./SceneSerializer.js";
 ```
 
 ## @galileo3d/scripting
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/scripting/package.json`
 - Public entrypoint: `packages/scripting/src/index.ts`
 
@@ -958,7 +1021,7 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ## @galileo3d/three-compat
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/three-compat/package.json`
 - Public entrypoint: `packages/three-compat/src/index.ts`
 
@@ -966,7 +1029,8 @@ export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from
 
 ```ts
 export { REQUIRED_THREE_API_CATEGORIES, THREE_EXAMPLES_INVENTORY, buildThreeApiInventory, categorizeThreeExport } from "./ThreeApiInventory";
-export { GroupCompat, MeshCompat, Object3DCompat } from "./core/Object3DCompat";
+export { GroupCompat, LineSegmentsCompat, MeshCompat, Object3DCompat, PointsCompat, SpriteBatchCompat, SpriteCompat } from "./core/Object3DCompat";
+export type { SpriteBatchInstanceCompat } from "./core/Object3DCompat";
 export { SceneCompat } from "./core/SceneCompat";
 export { RaycasterCompat } from "./core/RaycasterCompat";
 export type { RaycasterCompatIntersection } from "./core/RaycasterCompat";
@@ -991,7 +1055,7 @@ export type { V5MigrationResult } from "./migration/ThreeToG3DAdapter";
 export { createV5CompatibilityWarnings } from "./migration/CompatibilityWarnings";
 export type { V5CompatibilityWarning } from "./migration/CompatibilityWarnings";
 export { AmbientLightCompat, DirectionalLightCompat, HemisphereLightCompat, LightCompat, PointLightCompat, RectAreaLightCompat, SpotLightCompat } from "./lights";
-export { AxesHelperCompat, BoxHelperCompat, GridHelperCompat } from "./helpers";
+export { AxesHelperCompat, BoxHelperCompat, CameraHelperCompat, DirectionalLightHelperCompat, GridHelperCompat, HelperLineSegmentsCompat, SkeletonHelperCompat } from "./helpers";
 export { V5_COMPATIBILITY_THRESHOLDS, buildInitialCompatibilityMatrix, supportedOrPartial } from "./ThreeCompatibilityMatrix";
 export type { ThreeApiCategory, ThreeApiInventory, ThreeApiInventoryEntry } from "./ThreeApiInventory";
 export type { ThreeCompatibilityEntry, ThreeCompatibilityMatrix, ThreeCompatibilityStatus, ThreeCompatibilityThreshold } from "./ThreeCompatibilityMatrix";
@@ -999,7 +1063,7 @@ export type { ThreeCompatibilityEntry, ThreeCompatibilityMatrix, ThreeCompatibil
 
 ## @galileo3d/workflows
 
-- Version: `0.1.0-alpha.0`
+- Version: `1.0.0`
 - Package manifest: `packages/workflows/package.json`
 - Public entrypoint: `packages/workflows/src/index.ts`
 

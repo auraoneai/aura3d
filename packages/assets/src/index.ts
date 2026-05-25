@@ -209,10 +209,12 @@ export type {
 } from "./GLTFCompressionDecoders";
 export {
   applyCarConceptMaterialStability,
+  carConceptMaterialVisualRole,
   carConceptMaterialRenderStateOverrides
 } from "./CarConceptMaterialStability";
 export type {
   CarConceptMaterialBaseline,
+  CarConceptMaterialVisualRole,
   CarConceptMaterialStabilityOptions,
   CarConceptMaterialStabilityProfile
 } from "./CarConceptMaterialStability";

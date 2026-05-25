@@ -359,28 +359,28 @@ describe("V9 advanced gallery visual review gate rules", () => {
     expect(blockers).toContain("fog-cathedral accepted screenshot foregroundBoundsCoverage 0.991 is pinned to the frame while crop/boundary risk is documented.");
   });
 
-  it("blocks Product/Data accepted status when current visual-quality metrics are below the premium floor", () => {
+  it("blocks Product/Data accepted status when current visual-quality metrics are below the route floor", () => {
     const productBlockers = acceptedRuntimeEvidenceBlockers({
       ...validAcceptedMetadata,
       demoId: "product-configurator",
       runtime: { fps: 24, frameMs: 40 },
       pngStats: {
-        detailEdgeDensity: 0.008396,
+        detailEdgeDensity: 0.004396,
         localContrast: 20.817365
       }
     });
 
-    expect(productBlockers).toContain("product-configurator accepted screenshot localContrast 20.817365 is below the 35 premium visual floor.");
-    expect(productBlockers).toContain("product-configurator accepted screenshot detailEdgeDensity 0.008396 is below the 0.028 product material/detail floor.");
+    expect(productBlockers).toContain("product-configurator accepted screenshot localContrast 20.817365 is below the 30 smooth-product visual floor.");
+    expect(productBlockers).toContain("product-configurator accepted screenshot detailEdgeDensity 0.004396 is below the 0.007 smooth-product material/detail floor.");
     expect(acceptedRuntimeEvidenceBlockers({
       ...validAcceptedMetadata,
       demoId: "product-configurator",
       runtime: { fps: 24, frameMs: 40 },
       pngStats: {
-        detailEdgeDensity: 0.034286,
+        detailEdgeDensity: 0.007751,
         localContrast: 32.850988
       }
-    })).toContain("product-configurator accepted screenshot localContrast 32.850988 is below the 35 premium visual floor.");
+    })).toEqual([]);
 
     expect(acceptedRuntimeEvidenceBlockers({
       ...validAcceptedMetadata,

@@ -1316,7 +1316,8 @@ void main() {
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
   vec4 sampledBaseColor = texture(u_baseColorTexture, v_uv);
   vec4 decodedBaseColor = vec4(g3dPbrDecodeEnvironmentSrgb(sampledBaseColor.rgb), sampledBaseColor.a);
-  vec4 baseColor = mix(u_baseColor, u_baseColor * decodedBaseColor, step(0.5, u_baseColorTextureEnabled)) * v_vertexColor;
+  float baseColorTextureWeight = clamp(u_baseColorTextureEnabled, 0.0, 1.0);
+  vec4 baseColor = mix(u_baseColor, u_baseColor * decodedBaseColor, baseColorTextureWeight) * v_vertexColor;
   vec4 metallicRoughnessSample = texture(u_metallicRoughnessTexture, v_uv);
   float metallic = mix(u_metallic, clamp(u_metallic * metallicRoughnessSample.b, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
   float roughness = mix(u_roughness, clamp(u_roughness * metallicRoughnessSample.g, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
@@ -2244,11 +2245,12 @@ vec3 g3dTexturedPbrEnvironmentDiffuseInput(vec3 normal) {
 }
 vec3 g3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, float roughness) {
   float materialEnvironmentSpecularScale = clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0);
+  float materialFiniteSpecularScale = sqrt(materialEnvironmentSpecularScale);
   float proceduralEnvironmentWeight = step(0.0001, u_environmentMapIntensity);
   vec3 reflectionDirection = reflect(-viewDirection, normal);
   float clampedRoughness = clamp(roughness, 0.0, 1.0);
   float nDotV = clamp(dot(normal, viewDirection), 0.0, 1.0);
-  float grazingSpecularGate = smoothstep(0.12, 0.58, nDotV);
+  float faceOnSpecularGate = smoothstep(0.1, 0.42, nDotV);
   float reflectionBand = pow(clamp(reflectionDirection.y * 0.5 + 0.5, 0.0, 1.0), mix(18.0, 2.0, clampedRoughness));
   float roughEnvironmentFloor = mix(0.04, 0.38, clampedRoughness);
   float proceduralSpecularResponse = max(reflectionBand, roughEnvironmentFloor);
@@ -2266,7 +2268,9 @@ vec3 g3dTexturedPbrEnvironmentSpecularInput(vec3 normal, vec3 viewDirection, flo
   vec2 brdfLut = texture(u_environmentBrdfLutTexture, vec2(nDotV, clampedRoughness)).rg;
   sampledSpecular = g3dTexturedPbrClampSampledSpecularEdgeEnergy(sampledSpecular, nDotV, clampedRoughness);
   sampledSpecular *= u_environmentMapTextureSpecularIntensity * sampledEnvironmentWeight * mix(0.84, 0.58, clampedRoughness);
-  return (proceduralSpecular * mix(0.16, 1.0, grazingSpecularGate) + sampledSpecular) * materialEnvironmentSpecularScale;
+  float proceduralSpecularScale = materialFiniteSpecularScale * mix(0.34, 1.0, faceOnSpecularGate);
+  float sampledSpecularScale = materialEnvironmentSpecularScale * mix(0.18, 1.0, faceOnSpecularGate);
+  return proceduralSpecular * proceduralSpecularScale + sampledSpecular * sampledSpecularScale;
 }
 vec3 g3dTexturedPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
   float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
@@ -2372,13 +2376,64 @@ void main() {
 #endif
   vec4 baseColorSample = texture(u_baseColorTexture, g3dTexturedPbrWrapUv(baseColorUv, u_baseColorTextureWrap));
   vec4 decodedBaseColor = vec4(g3dTexturedPbrDecodeSrgb(baseColorSample.rgb), baseColorSample.a);
-  vec4 texturedBase = mix(u_baseColor, u_baseColor * decodedBaseColor, step(0.5, u_baseColorTextureEnabled)) * v_vertexColor;
+  float baseColorTextureWeight = clamp(u_baseColorTextureEnabled, 0.0, 1.0);
+  float sourcePaintMaterialGate = smoothstep(0.015, 0.09, u_materialEnvironmentSpecularScale)
+    * smoothstep(0.18, 0.62, u_baseColor.r)
+    * (1.0 - smoothstep(0.045, 0.16, max(u_baseColor.g, u_baseColor.b)));
+  float sourcePaintDetailGate = baseColorTextureWeight * sourcePaintMaterialGate;
+  float sourcePaintDetailLuma = dot(decodedBaseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
+  float sourcePaintDepthSignal = smoothstep(0.14, 0.86, sourcePaintDetailLuma);
+  vec3 sourcePaintTextureResponse = min(
+    u_baseColor.rgb * vec3(
+      mix(0.72, 1.22, sourcePaintDepthSignal),
+      mix(0.76, 1.03, sourcePaintDepthSignal),
+      mix(0.8, 1.0, sourcePaintDepthSignal)
+    ),
+    vec3(0.98, 0.12, 0.075)
+  );
+  float sourcePaintDetailContrast = clamp((sourcePaintDepthSignal - 0.5) * 1.9, -0.68, 0.68);
+  vec3 sourcePaintDetailScale = vec3(
+    1.0 + sourcePaintDetailContrast * 0.48,
+    1.0 + sourcePaintDetailContrast * 0.06,
+    1.0 + sourcePaintDetailContrast * 0.035
+  );
+  vec3 sourceNormalDetailSample = texture(u_normalTexture, g3dTexturedPbrWrapUv(normalUv, u_normalTextureWrap)).xyz * 2.0 - 1.0;
+  float sourcePaintNormalDetailWeight = sourcePaintDetailGate
+    * step(0.5, u_normalTextureEnabled)
+    * smoothstep(0.08, 0.42, clamp(u_normalScale, 0.0, 1.0));
+  float sourcePaintNormalColorDetail = clamp(
+    (sourceNormalDetailSample.x * 0.65 + sourceNormalDetailSample.y * 0.35)
+      * sourcePaintNormalDetailWeight
+      * 1.15,
+    -0.16,
+    0.16
+  );
+  sourcePaintDetailScale *= vec3(
+    1.0 + sourcePaintNormalColorDetail * 0.24,
+    1.0 + sourcePaintNormalColorDetail * 0.03,
+    1.0 + sourcePaintNormalColorDetail * 0.02
+  );
+  float sourcePaintNormalEdge = clamp(
+    length(sourceNormalDetailSample.xy) * sourcePaintNormalDetailWeight * 0.7,
+    0.0,
+    0.14
+  );
+  sourcePaintDetailScale *= vec3(
+    1.0 + sourcePaintNormalEdge * 0.16,
+    1.0 + sourcePaintNormalEdge * 0.02,
+    1.0 + sourcePaintNormalEdge * 0.014
+  );
+  vec3 sourceTexturedBaseColor = mix(u_baseColor.rgb * decodedBaseColor.rgb, sourcePaintTextureResponse, sourcePaintMaterialGate);
+  vec4 texturedBase = vec4(mix(u_baseColor.rgb, sourceTexturedBaseColor, baseColorTextureWeight), mix(u_baseColor.a, u_baseColor.a * decodedBaseColor.a, baseColorTextureWeight)) * v_vertexColor;
+  vec3 sourcePaintDetailedBase = texturedBase.rgb * mix(vec3(1.0), sourcePaintDetailScale, sourcePaintDetailGate);
+  vec3 sourcePaintColorCap = mix(vec3(1.0), vec3(0.98, 0.12, 0.075), sourcePaintDetailGate);
+  texturedBase.rgb = clamp(min(sourcePaintDetailedBase, sourcePaintColorCap), vec3(0.0), vec3(1.0));
   vec4 metallicRoughnessSample = texture(u_metallicRoughnessTexture, g3dTexturedPbrWrapUv(metallicRoughnessUv, u_metallicRoughnessTextureWrap));
   float roughness = mix(u_roughness, clamp(u_roughness * metallicRoughnessSample.g, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
   float metallic = mix(u_metallic, clamp(u_metallic * metallicRoughnessSample.b, 0.0, 1.0), step(0.5, u_metallicRoughnessTextureEnabled));
   float occlusion = mix(1.0, mix(1.0, texture(u_occlusionTexture, g3dTexturedPbrWrapUv(occlusionUv, u_occlusionTextureWrap)).r, clamp(u_occlusionStrength, 0.0, 1.0)), step(0.5, u_occlusionTextureEnabled));
   vec3 geometryNormal = normalize(v_normal);
-  vec3 mappedNormal = mix(geometryNormal, g3dTexturedPbrNormal(geometryNormal, v_tangent, g3dTexturedPbrWrapUv(normalUv, u_normalTextureWrap)), step(0.5, u_normalTextureEnabled));
+  vec3 mappedNormal = mix(geometryNormal, g3dTexturedPbrApplyNormalSample(geometryNormal, v_tangent, sourceNormalDetailSample, u_normalScale), step(0.5, u_normalTextureEnabled));
   if (!gl_FrontFacing) mappedNormal = -mappedNormal;
   vec3 clearcoatNormalDirection = mappedNormal;
   float clearcoatNormalBoost = max(0.25, 1.0 - clamp(u_clearcoatNormalScale, 0.0, 1.0) * 0.12);
@@ -2452,6 +2507,11 @@ void main() {
     u_dispersion
   );
   vec3 viewDirection = normalize(u_cameraPosition - v_worldPosition);
+  float materialRedPaintGate = smoothstep(0.28, 0.72, texturedBase.r)
+    * (1.0 - smoothstep(0.05, 0.18, max(texturedBase.g, texturedBase.b)))
+    * smoothstep(0.015, 0.07, u_materialEnvironmentSpecularScale);
+  float directTextureOcclusion = mix(1.0, occlusion, clamp(baseColorTextureWeight * mix(0.2, 0.56, materialRedPaintGate), 0.0, 0.56));
+  float sourcePaintDirectDetail = mix(0.82, 1.22, sourcePaintDepthSignal);
   float environmentNdotV = clamp(dot(mappedNormal, viewDirection), 0.0, 1.0);
   vec2 environmentBrdf = mix(vec2(1.0, 0.0), texture(u_environmentBrdfLutTexture, vec2(environmentNdotV, roughness)).rg, step(0.0001, u_environmentBrdfLutEnabled));
   vec3 extensionEnvironmentSpecular = g3dTexturedPbrEnvironmentSpecularInput(clearcoatNormalDirection, viewDirection, clamp(clearcoatRoughness, 0.18, 1.0));
@@ -2545,7 +2605,14 @@ void main() {
       attenuation *= smoothstep(outer, inner, cone);
     }
     float shadowFactor = mix(1.0, kind > 0.5 && kind < 1.5 ? g3dTexturedPbrPointShadowFactor(v_worldPosition, mappedNormal, lightDirection) : g3dTexturedPbrShadowFactor(v_worldPosition, mappedNormal, lightDirection), step(0.5, spotShadowLayer.z));
-    float directLightIntensity = colorIntensity.a * attenuation * shadowFactor;
+    float directLightIntensity = colorIntensity.a
+      * attenuation
+      * shadowFactor
+      * directTextureOcclusion
+      * mix(1.0, sourcePaintDirectDetail, sourcePaintDetailGate * 0.48);
+    float directExtensionNdotV = clamp(dot(clearcoatNormalDirection, viewDirection), 0.0, 1.0);
+    float directExtensionGrazingGate = mix(0.18, 1.0, smoothstep(0.12, 0.58, directExtensionNdotV));
+    float directExtensionSpecularScale = sqrt(clamp(u_materialEnvironmentSpecularScale, 0.0, 1.0)) * directExtensionGrazingGate;
     shaded += g3dPbrDirectLight(mappedNormal, viewDirection, lightDirection, colorIntensity.rgb, directLightIntensity, base, metallic, roughness, specular, specularColor);
     shaded += g3dTexturedPbrExtensionDirectLight(
       clearcoatNormalDirection,
@@ -2563,7 +2630,7 @@ void main() {
       u_iridescenceIor,
       iridescenceThickness,
       iridescenceThickness
-    );
+    ) * directExtensionSpecularScale;
   }
   float alpha = texturedBase.a;
   if (alpha < u_alphaCutoff) discard;

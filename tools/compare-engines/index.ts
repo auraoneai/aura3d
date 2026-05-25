@@ -1015,18 +1015,18 @@ function sceneHasWin(scene: Record<string, unknown>): boolean {
 
 function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompetitor: Record<string, unknown>): readonly CompetitorBroadSuperiorityEvidence[] {
   return (["threejs", "babylon"] as const).map((competitor) => {
-    const product = readJson("tests/reports/v4-product-visual-parity.json") as Record<string, unknown> | null;
-    const gltf = readJson("tests/reports/v4-gltf-loader-visual-parity.json") as Record<string, unknown> | null;
-    const pbrGltf = readJson("tests/reports/v4-pbr-gltf-readiness.json") as Record<string, unknown> | null;
-    const shadow = readJson("tests/reports/v4-shadow-map-readiness.json") as Record<string, unknown> | null;
-    const hdr = readJson("tests/reports/v4-hdr-render-target-readiness.json") as Record<string, unknown> | null;
-    const postprocess = readJson("tests/reports/v4-postprocess-suite.json") as Record<string, unknown> | null;
-    const webgpu = readJson("tests/reports/v4-webgpu-parity.json") as Record<string, unknown> | null;
-    const unityUnreal = readJson("tests/reports/v4-unity-unreal-parity.json") as Record<string, unknown> | null;
-    const production = readJson("tests/reports/v4-production-readiness.json") as Record<string, unknown> | null;
-    const ecosystem = readJson("tests/reports/v4-ecosystem-readiness.json") as Record<string, unknown> | null;
-    const packageInstall = readJson("tests/reports/package-install-smoke.json") as Record<string, unknown> | null;
-    const packageProvenance = readJson("tests/reports/package-provenance.json") as Record<string, unknown> | null;
+    const product = readOptionalReport("tests/reports/v4-product-visual-parity.json");
+    const gltf = readOptionalReport("tests/reports/v4-gltf-loader-visual-parity.json");
+    const pbrGltf = readOptionalReport("tests/reports/v4-pbr-gltf-readiness.json");
+    const shadow = readOptionalReport("tests/reports/v4-shadow-map-readiness.json");
+    const hdr = readOptionalReport("tests/reports/v4-hdr-render-target-readiness.json");
+    const postprocess = readOptionalReport("tests/reports/v4-postprocess-suite.json");
+    const webgpu = readOptionalReport("tests/reports/v4-webgpu-parity.json");
+    const unityUnreal = readOptionalReport("tests/reports/v4-unity-unreal-parity.json");
+    const production = readOptionalReport("tests/reports/v4-production-readiness.json");
+    const ecosystem = readOptionalReport("tests/reports/v4-ecosystem-readiness.json");
+    const packageInstall = readOptionalReport("tests/reports/package-install-smoke.json");
+    const packageProvenance = readOptionalReport("tests/reports/package-provenance.json");
     const comparison = isRecord(byCompetitor[competitor]) ? byCompetitor[competitor] : {};
     const scenes = Array.isArray((comparison as Record<string, unknown>).scenes) ? (comparison as { scenes: readonly Record<string, unknown>[] }).scenes : [];
     const screenshotDiffs = Array.isArray(report.screenshotDiffs) ? report.screenshotDiffs.filter(isRecord) : [];

@@ -17,7 +17,7 @@ export function createDataGalaxyFocalSystem(
   mode: DataGalaxyBudgetMode
 ): DataGalaxyFocalSystemResult {
   const profile = mode === "showcase"
-    ? { coreScale: 1.28, arcScale: 1.85, clusterCount: 58, secondaryCount: 34, shellScale: 1.32 }
+    ? { coreScale: 1.36, arcScale: 2.05, clusterCount: 86, secondaryCount: 58, shellScale: 1.44 }
     : mode === "stress"
       ? { coreScale: 1.25, arcScale: 1.0, clusterCount: 54, secondaryCount: 28, shellScale: 1.0 }
       : { coreScale: 1.15, arcScale: 0.95, clusterCount: 42, secondaryCount: 18, shellScale: 0.92 };
@@ -26,22 +26,22 @@ export function createDataGalaxyFocalSystem(
     item(r, "sphere", "cyanGlow", [0, 0.03, 0], [0.092 * profile.coreScale, 0.092 * profile.coreScale, 0.092 * profile.coreScale], [0.18, time * 0.42 * speed, -0.08], "DataGalaxyFocalSystem luminous data nucleus"),
     item(r, "sphere", "violetGlow", [-0.055, 0.078, -0.036], [0.038 * profile.coreScale, 0.038 * profile.coreScale, 0.038 * profile.coreScale], [-0.16, time * -0.34 * speed, 0.12], "DataGalaxyFocalSystem violet model-state satellite"),
     item(r, "sphere", "amberGlow", [0.066, -0.024, 0.044], [0.034 * profile.coreScale, 0.034 * profile.coreScale, 0.034 * profile.coreScale], [0.12, time * 0.48 * speed, 0.2], "DataGalaxyFocalSystem amber anomaly satellite"),
-    focalArcItem(r, "core-orbit", "transparentCyan", [0, 0.032, 0], [profile.arcScale, profile.arcScale, profile.arcScale], [0.34, time * 0.18 * speed, 0.18], 0.27, 0.17, Math.PI * 1.42, 24),
-    focalArcItem(r, "vertical-model-orbit", "transparentCyan", [-0.03, 0.046, -0.012], [0.8 * profile.arcScale, 1.05 * profile.arcScale, 0.82 * profile.arcScale], [Math.PI / 2.8, time * -0.16 * speed, -0.22], 0.24, 0.15, Math.PI * 1.16, 20),
-    focalArcItem(r, "amber-transfer-orbit", "transparentAmber", [0.06, -0.01, 0.036], [0.72 * profile.arcScale, 0.78 * profile.arcScale, 0.72 * profile.arcScale], [-0.36, time * 0.22 * speed + 0.8, 0.12], 0.2, 0.12, Math.PI * 0.92, 16),
-    focalArcItem(r, "equatorial-data-ring", "transparentCyan", [0, 0.032, 0], [1.05 * profile.arcScale, 1.05 * profile.arcScale, 1.05 * profile.arcScale], [0.04, time * 0.055 * speed, 0.02], 0.31, 0.205, Math.PI * 2, mode === "showcase" ? 56 : 30),
-    focalArcItem(r, "vertical-context-ring", "transparentCyan", [0, 0.034, 0], [0.9 * profile.arcScale, 1.08 * profile.arcScale, 0.92 * profile.arcScale], [Math.PI / 2.08, time * -0.044 * speed, -0.18], 0.275, 0.18, Math.PI * 1.78, mode === "showcase" ? 42 : 24),
-    focalArcItem(r, "warm-anomaly-ring", "transparentAmber", [0.028, 0.012, 0.022], [0.78 * profile.arcScale, 0.82 * profile.arcScale, 0.78 * profile.arcScale], [-0.2, time * 0.064 * speed + 0.42, 0.24], 0.235, 0.145, Math.PI * 1.56, mode === "showcase" ? 34 : 20),
-    focalStreamItem(r, "foreground-cyan-stream", "transparentCyan", [-0.3, -0.1, 0.22], [0.22, -0.02, 0.08], time, speed, 14),
-    focalStreamItem(r, "background-cyan-stream", "transparentCyan", [0.28, 0.16, -0.24], [0.04, 0.05, -0.04], time + 1.2, speed, 12),
-    focalStreamItem(r, "amber-cross-stream", "transparentAmber", [-0.08, 0.14, -0.2], [0.28, -0.04, 0.12], time + 2.1, speed, 10),
-    focalHaloNodeItem(r, "cyan-halo-nodes", "cyanGlow", time, speed, mode === "showcase" ? 10 : 12, profile.arcScale),
+    focalArcItem(r, "core-orbit", "transparentCyan", [0, 0.032, 0], [profile.arcScale, profile.arcScale, profile.arcScale], [0.34, time * 0.18 * speed, 0.18], 0.27, 0.17, Math.PI * 1.42, mode === "showcase" ? 42 : 24),
+    focalArcItem(r, "vertical-model-orbit", "transparentCyan", [-0.03, 0.046, -0.012], [0.8 * profile.arcScale, 1.05 * profile.arcScale, 0.82 * profile.arcScale], [Math.PI / 2.8, time * -0.16 * speed, -0.22], 0.24, 0.15, Math.PI * 1.16, mode === "showcase" ? 36 : 20),
+    focalArcItem(r, "amber-transfer-orbit", "transparentAmber", [0.06, -0.01, 0.036], [0.72 * profile.arcScale, 0.78 * profile.arcScale, 0.72 * profile.arcScale], [-0.36, time * 0.22 * speed + 0.8, 0.12], 0.2, 0.12, Math.PI * 0.92, mode === "showcase" ? 28 : 16),
+    focalArcItem(r, "equatorial-data-ring", "transparentCyan", [0, 0.032, 0], [1.05 * profile.arcScale, 1.05 * profile.arcScale, 1.05 * profile.arcScale], [0.04, time * 0.055 * speed, 0.02], 0.31, 0.205, Math.PI * 2, mode === "showcase" ? 88 : 30),
+    focalArcItem(r, "vertical-context-ring", "transparentCyan", [0, 0.034, 0], [0.9 * profile.arcScale, 1.08 * profile.arcScale, 0.92 * profile.arcScale], [Math.PI / 2.08, time * -0.044 * speed, -0.18], 0.275, 0.18, Math.PI * 1.78, mode === "showcase" ? 68 : 24),
+    focalArcItem(r, "warm-anomaly-ring", "transparentAmber", [0.028, 0.012, 0.022], [0.78 * profile.arcScale, 0.82 * profile.arcScale, 0.78 * profile.arcScale], [-0.2, time * 0.064 * speed + 0.42, 0.24], 0.235, 0.145, Math.PI * 1.56, mode === "showcase" ? 54 : 20),
+    focalStreamItem(r, "foreground-cyan-stream", "transparentCyan", [-0.3, -0.1, 0.22], [0.22, -0.02, 0.08], time, speed, mode === "showcase" ? 22 : 14),
+    focalStreamItem(r, "background-cyan-stream", "transparentCyan", [0.28, 0.16, -0.24], [0.04, 0.05, -0.04], time + 1.2, speed, mode === "showcase" ? 20 : 12),
+    focalStreamItem(r, "amber-cross-stream", "transparentAmber", [-0.08, 0.14, -0.2], [0.28, -0.04, 0.12], time + 2.1, speed, mode === "showcase" ? 18 : 10),
+    focalHaloNodeItem(r, "cyan-halo-nodes", "cyanGlow", time, speed, mode === "showcase" ? 22 : 12, profile.arcScale),
     focalTransferItem(r, "curved-transfer-streams", "transparentAmber"),
-    focalConstellationWebItem(r, "front-constellation-filaments", "transparentCyan", time, speed, mode === "showcase" ? 42 : 48, 0.9 * profile.arcScale),
-    focalConstellationWebItem(r, "warm-anomaly-filaments", "transparentAmber", time + 1.4, speed * 0.92, mode === "showcase" ? 26 : 32, 0.7 * profile.arcScale),
-    focalConstellationWebItem(r, "green-context-filaments", "transparentGreen", time + 2.2, speed * 0.74, mode === "showcase" ? 14 : 24, 0.56 * profile.arcScale),
-    focalSignalBandItem(r, "curated-signal-band-cyan", "cyanGlow", time, speed, mode === "showcase" ? 6 : 18, 0.62 * profile.arcScale),
-    focalSignalBandItem(r, "curated-signal-band-violet", "violetGlow", time + 0.8, speed * 0.88, mode === "showcase" ? 4 : 14, 0.46 * profile.arcScale),
+    focalConstellationWebItem(r, "front-constellation-filaments", "transparentCyan", time, speed, mode === "showcase" ? 78 : 48, 0.9 * profile.arcScale),
+    focalConstellationWebItem(r, "warm-anomaly-filaments", "transparentAmber", time + 1.4, speed * 0.92, mode === "showcase" ? 52 : 32, 0.7 * profile.arcScale),
+    focalConstellationWebItem(r, "green-context-filaments", "transparentGreen", time + 2.2, speed * 0.74, mode === "showcase" ? 30 : 24, 0.56 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-cyan", "cyanGlow", time, speed, mode === "showcase" ? 34 : 18, 0.62 * profile.arcScale),
+    focalSignalBandItem(r, "curated-signal-band-violet", "violetGlow", time + 0.8, speed * 0.88, mode === "showcase" ? 24 : 14, 0.46 * profile.arcScale),
     clusteredNodeItem(r, "cyan-clustered-data-nodes", "cyanGlow", time, speed, [
       [-0.18, -0.035, 0.17],
       [0.18, 0.12, -0.15],

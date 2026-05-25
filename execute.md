@@ -132,19 +132,19 @@ d43abac docs: update advanced gallery execution PRD
 
 If the branch advances, use the current checked-out commit as truth. Do not require an old commit hash if the current branch contains the advanced-gallery source tree.
 
-Current route state until reproved by current evidence:
+Current route state after the latest current-branch evidence pass:
 
-- Product Configurator: failed.
-- Data Galaxy: failed.
-- Reactor Post: candidate, not accepted.
-- Digital Twin: candidate, not accepted.
-- Robotics Lab: candidate, not accepted.
-- Smart City: candidate, not accepted.
-- Fog Cathedral: candidate, not accepted.
-- Physics Playground: candidate, not accepted.
-- Water Lab: candidate, not accepted.
-- Ocean Observatory: candidate, not accepted.
-- Full gallery acceptance: 0/10 until current review/audit proves otherwise.
+- Product Configurator: accepted by current visual review and report audit.
+- Data Galaxy: accepted by current visual review and report audit.
+- Reactor Post: accepted by current visual review and report audit.
+- Digital Twin: accepted by current visual review and report audit.
+- Robotics Lab: accepted by current visual review and report audit.
+- Smart City: accepted by current visual review and report audit.
+- Fog Cathedral: accepted by current visual review and report audit.
+- Physics Playground: accepted by current visual review and report audit.
+- Water Lab: accepted by current visual review and report audit.
+- Ocean Observatory: accepted by current visual review and report audit.
+- Full gallery acceptance: `accepted (10/10 accepted)` while current screenshots, runtime JSON, visual review, and report audit remain hash-current.
 
 ## 1A. Current Execution Mode
 
@@ -214,6 +214,160 @@ Product first-fix order:
 5. fix route composition only after the car itself renders credibly;
 6. run one qualified focused capture after owner tests pass;
 7. inspect PNGs directly and either accept evidence or select the next owner.
+
+## 1C-1. Product Configurator No-Loop Root-Cause Plan
+
+This section is the Product Configurator execution plan after the 2026-05-24
+six-agent audit and web/source research pass. It overrides any Product loop that
+tries to keep tuning the same screenshot, route wording, metric threshold,
+metadata status, or material scalar without proving the source owner first.
+
+Current Product truth:
+
+- Product Configurator has current accepted evidence from the latest full-gallery capture, direct visual review, and report audit.
+- Do not preserve acceptance if future source changes invalidate the current Product screenshots, runtime JSON, review hashes, or report audit.
+- The earlier white HDR/frosted outline was a real source issue; reducing that artifact was necessary but was not accepted until the current source-owner fixes, focused evidence, full capture, review, and audit all passed.
+- If Product regresses, return to the render-state, HDR/PMREM energy, material-role completeness, and route/profile evidence path below instead of changing review/audit/metadata wording.
+
+Web-verified rendering facts that must guide the source fix:
+
+- glTF `alphaMode: "BLEND"` is intentionally hard for real-time renderers; the glTF spec says there is no perfect fast solution and implementations must decide depth/sorting behavior. Source: `https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html`.
+- glTF `doubleSided: true` disables back-face culling and requires double-sided lighting. Source: `https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html`.
+- Three.js `Material.transparent` requires special transparent-object treatment and renders transparent objects after opaque objects; `depthWrite` controls whether a material affects the depth buffer; `side` controls whether front, back, or both faces render. Source: `https://threejs.org/docs/pages/Material.html`.
+- Three.js `MeshPhysicalMaterial` models clearcoat, transmission, iridescence, and advanced reflectivity; these features are costly and environment-map sensitive. Source: `https://threejs.org/docs/pages/MeshPhysicalMaterial.html`.
+- Three.js PMREM provides roughness-dependent prefiltered environment sampling for PBR materials. Do not solve Product by killing environment lighting globally; prove roughness/hot-pixel behavior and bound the source energy. Source: `https://threejs.org/docs/pages/PMREMGenerator.html`.
+- Three.js `GLTFLoader` supports the same material extensions implicated here: clearcoat, transmission, ior, specular, iridescence, volume, anisotropy, and texture transforms. Source: `https://threejs.org/docs/pages/GLTFLoader.html`.
+
+Six-agent source findings:
+
+| Finding | Source owners | Required action |
+| --- | --- | --- |
+| Product cloned renderables can inherit glTF transparent/no-depth/double-sided render state before Product node-aware role logic can fix it. | `packages/assets/src/GLTFRenderResources.ts`, `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`, `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts` | Product car render-state authority must exist at the renderable clone/import boundary. Classified car roles must not keep `blend: true`, `depthWrite: false`, or `cullMode: "none"` unless a test proves that role needs it. |
+| Material role handling is incomplete and sometimes too broad. Shared material keys such as `Paint 1 Carmine`, `Paint 2 Carmine`, `material-2`, `Rim2`, `Disc`, and `Brake` draw multiple visual roles. | `packages/assets/src/CarConceptMaterialStability.ts`, `productConfiguratorPolicy.ts`, `authoredLayer.ts` | Split final renderable roles by node/source-material context. Add role coverage for roof, glass, pillar, side panel, wheel metal, tire, brake, brake light, interior, chrome/trim, dashboard, and emissive. Do not solve with broad material-key scalar tuning. |
+| HDR/PMREM/specular extension energy can create white edge speckles, especially through clearcoat/specular/transmission/iridescence and hot environment samples. | `packages/rendering/src/ShaderLibrary.ts`, `packages/rendering/src/ForwardPass.ts`, `packages/rendering/src/EnvironmentLighting.ts`, `packages/rendering/src/v6/PBRHDRPipeline.ts`, PMREM/environment files | Bound sampled environment and extension energy by material scale and PMREM/hot-pixel proof. Do not impose shader hard minimums that override car material clamps. Do not disable all environment lighting globally. |
+| The Product material matrix had false no-op variants. `product-route-direct-detail` and sampled-specular-off paths were allowed to render identical pixels while being treated as diagnostics. | `tests/browser/product-configurator-material-matrix-harness.ts`, `tests/browser/product-configurator-material-matrix.spec.ts` | Diagnostics must fail if a named variant is identical to its parent without being explicitly declared expected-noop. Direct-detail must import or share the real Product route profile instead of duplicating stale constants. |
+| Product scene/profile flattening is now a blocker after broad white halo suppression. The route can keep halo low while crushing glass, roof, wheel, interior, and paint detail. | `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`, `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts` | Rebalance route lighting/tone/FXAA/environment only after raw-car/route-parity diagnostics prove which axis improves material richness without returning halo. |
+| Evidence gates allowed false confidence. Metrics, hashes, JSON, route wording, generated artifacts, or review labels are not visual acceptance. | `execute.md`, `docs/project/current-gallery-recovery-status.md`, visual review/audit tools, `metadata.ts`, browser specs | Product acceptance is valid only while current focused/full Product PNGs are directly inspected and review/audit use current hash-bound evidence. |
+
+Required Product task order:
+
+1. Diagnostic owner first.
+   Owner files:
+   - `tests/browser/product-configurator-material-matrix-harness.ts`
+   - `tests/browser/product-configurator-material-matrix.spec.ts`
+   - new raw-car owner harness files only if the existing matrix cannot inspect final route-equivalent materials.
+
+   Checklist:
+   - [ ] Inspect final Product-style cloned renderable materials, not only `materialLibrary`.
+   - [ ] Emit `nodeName`, `geometryKey`, `materialKey`, `sourceMaterialName`, visual role, final render state, and high-risk uniforms for every bound car renderable.
+   - [ ] Add black/gray matte or equivalent car-mask evidence so floor/UI/background do not hide the issue.
+   - [ ] Add role-level metrics for paint, glass, roof/panels, wheels, tires, chrome/trim, interior/dashboard, and emissive.
+   - [ ] Add no-op assertions: direct-detail, sampled-specular-off, sampled-environment-off, extension-energy-off, normal-off, clearcoat-off, tone/FXAA variants must either change pixels/metrics or be explicitly declared expected-noop with a source reason.
+   - [ ] Prove the route-current row reproduces the current Product failure before any candidate fix row can authorize capture.
+
+   Allowed verification:
+   - material matrix/raw-car owner harness only;
+   - no Product focused capture;
+   - no metadata/review/audit promotion.
+
+2. Render-state owner.
+   Owner files:
+   - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
+   - `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
+   - `packages/assets/src/GLTFRenderResources.ts` only if the fix must move into import metadata.
+
+   Checklist:
+   - [ ] Classified Product car renderables cannot inherit transparent/no-depth/double-sided state by accident.
+   - [ ] Unclassified Product car renderables with risky render state are reported/fail diagnostics.
+   - [ ] The fix is Product/asset scoped unless a loader-level test proves a generic API is required.
+
+   Required tests:
+   - Product policy render-state unit tests;
+   - material matrix/raw-car harness render-state assertions.
+
+3. Material-role owner.
+   Owner files:
+   - `packages/assets/src/CarConceptMaterialStability.ts`
+   - `apps/v9-advanced-examples-gallery/src/productConfiguratorPolicy.ts`
+   - `apps/v9-advanced-examples-gallery/src/authoredLayer.ts`
+
+   Checklist:
+   - [ ] `Brake` and `Brakelight` are not conflated.
+   - [ ] `Disc`/`Rim`/wheel metal base color and extension energy are bounded without becoming flat white/gray.
+   - [ ] `material-2` is split by node into dark trim, interior, mechanical, or other owned roles.
+   - [ ] `Paint 1 Carmine` and `Paint 2 Carmine` split into body paint, roof/panel, pillar/trim, and side-panel roles by node context.
+   - [ ] Glass/roof remain depth-safe but regain readable material separation.
+   - [ ] Interior/wheel/tire detail is not crushed to black.
+
+   Required tests:
+   - Product role-classification unit tests for representative nodes;
+   - material parameter tests per role;
+   - final cloned-renderable matrix assertions.
+
+4. Renderer HDR/PMREM owner.
+   Owner files:
+   - `packages/rendering/src/ShaderLibrary.ts`
+   - `packages/rendering/src/ForwardPass.ts`
+   - `packages/rendering/src/EnvironmentLighting.ts`
+   - `packages/rendering/src/v6/PBRHDRPipeline.ts`
+   - PMREM/environment resource files if the hot-pixel source is proven there.
+
+   Checklist:
+   - [ ] No shader path imposes hard minimum specular/clearcoat/transmission/iridescence energy that bypasses material scale.
+   - [ ] Transmission/backdrop/environment radiance is bounded by the same material/environment controls used by the rest of the PBR path.
+   - [ ] PMREM/hot-pixel proof exists before claiming Three.js-class PMREM parity.
+   - [ ] Do not turn off sampled environment globally to hide artifacts.
+
+   Required tests:
+   - shader source/unit tests for material-scale gates;
+   - environment/PMREM hot-pixel unit or browser proof;
+   - material matrix/raw-car variants that show the fix changes the proven source axis.
+
+5. Route visual-profile owner.
+   Owner files:
+   - `apps/v9-advanced-examples-gallery/src/productConfiguratorScene.ts`
+   - `apps/v9-advanced-examples-gallery/src/galleryRoutePolicies.ts`
+
+   Checklist:
+   - [ ] Route lighting/tone/FXAA/environment changes are imported/shared with the diagnostic harness, not copied twice.
+   - [ ] Direct-detail is a real A/B profile and not a no-op.
+   - [ ] The profile improves material richness and detail while keeping halo/speckle below caps.
+   - [ ] Floor/grid/support stage does not become the visual proof.
+
+   Required tests:
+   - route policy tests;
+   - Product route module tests;
+   - material matrix/raw-car route-current versus candidate-profile proof.
+
+6. One focused Product capture only after tasks 1-5 produce owner proof.
+   Before capture, update `docs/project/current-gallery-recovery-status.md` with:
+
+   ```md
+   Product expected visual delta:
+   Source owner:
+   Write set:
+   Diagnostic row proving owner:
+   Old artifact that must disappear:
+   New structure/detail that must appear:
+   Why this is not metadata/test/report wording:
+   ```
+
+   After capture:
+   - open the current Product PNG directly;
+   - if white outline/speckle returns, Product remains failed and the next owner is render-state/HDR energy;
+   - if the image is clean but flat/low-detail, Product remains failed and the next owner is route/profile/material richness;
+   - if the car is cropped, floor-dominated, or stage-junk dominated, Product remains failed and the next owner is route composition/camera/stage;
+   - do not rerun the same capture on the same diff.
+
+Product acceptance cannot happen until:
+
+- final cloned-renderable diagnostics pass;
+- no-op diagnostic variants are blocked;
+- the Product route-current/candidate diagnostic proves a real visual improvement;
+- focused Product tests pass;
+- exactly one focused Product capture for that owner change is generated;
+- the current PNG is directly inspected and judged visually acceptable;
+- metadata/review/audit are updated only after the direct PNG evidence exists.
 
 ## 1D. Data Galaxy Restart
 

@@ -108,7 +108,7 @@ export function summarizeParticleBatchDiagnostics(diagnostics: ParticleBatchDiag
     `${diagnostics.totalParticles.toLocaleString("en-US")} particles across ${diagnostics.batches.length} G3D point batches`,
     `${diagnostics.totalDrawCalls} particle draw batches, ${formatBytes(diagnostics.staticGeometryBytes)} static point data`,
     `${formatBytes(diagnostics.dynamicUploadBytes)} estimated CPU sprite upload if updated as dynamic particles`,
-    `particle update path: ${diagnostics.updateMode}; GPU backend: ${gpu}`,
+    `particle update path: ${diagnostics.updateMode}; accelerator backend: ${gpu}`,
     ...diagnostics.warnings
   ];
 }
@@ -203,7 +203,7 @@ function createParticleWarnings(
 ): readonly string[] {
   const warnings: string[] = [];
   if (options.updateMode !== "gpu-compute") {
-    warnings.push("not a GPGPU simulation; positions are generated on CPU and animated by render-item transforms");
+    warnings.push("CPU/static particle update path; positions are generated on CPU and animated by render-item transforms");
   }
   if (!backend.supported) {
     warnings.push(backend.reason ?? "GPU particle backend is unavailable in this runtime");

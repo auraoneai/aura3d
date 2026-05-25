@@ -167,6 +167,39 @@ describe("V9 advanced gallery report audit", () => {
     }
   });
 
+  it("does not block accepted route reports merely because visual review already accepted them", () => {
+    const root = resolve(".");
+    const reportDir = mkdtempSync(join(tmpdir(), "g3d-v9-report-audit-accepted-status-"));
+    try {
+      for (const routeId of expectedRouteIdsForAuditTest()) {
+        writeFileSync(join(reportDir, `${routeId}.json`), JSON.stringify({
+          ...minimalRouteReport(routeId),
+          visualReviewStatus: "accepted"
+        }, null, 2));
+      }
+
+      const result = spawnSync("pnpm", [
+        "exec",
+        "tsx",
+        "--tsconfig",
+        "tsconfig.base.json",
+        "tools/v9-advanced-gallery-report-audit/index.ts",
+        "--report-dir",
+        reportDir
+      ], {
+        cwd: root,
+        encoding: "utf8"
+      });
+
+      expect(result.status).toBe(1);
+      const outputPath = join(reportDir, "reusable-systems-disclosure-audit.json");
+      const audit = JSON.parse(readFileSync(outputPath, "utf8")) as AuditReport;
+      expect(audit.blockers.join("\n")).not.toContain("route report claims accepted/hero status");
+    } finally {
+      rmSync(reportDir, { recursive: true, force: true });
+    }
+  });
+
   it("blocks generated/support Product and Data assets when manifest provenance is missing or stale", () => {
     const root = resolve(".");
     const reportDir = mkdtempSync(join(tmpdir(), "g3d-v9-report-audit-generated-assets-"));
@@ -177,7 +210,8 @@ describe("V9 advanced gallery report audit", () => {
           ? {
               ...minimalRouteReport(routeId),
               authored: productAuthoredEvidence({
-                includeMaterialControlBindings: true
+                includeMaterialControlBindings: true,
+                includeGeneratedSupportAssets: true
               })
             }
           : routeId === "data-galaxy"
@@ -635,6 +669,7 @@ function expectedRouteIdsForAuditTest(): readonly string[] {
 function productAuthoredEvidence(options: {
   readonly includeMaterialControlBindings: boolean;
   readonly includeShaderInactiveTextureSlots?: boolean;
+  readonly includeGeneratedSupportAssets?: boolean;
 }): Record<string, unknown> {
   const withMaterialControl = (
     assetId: string,
@@ -651,7 +686,7 @@ function productAuthoredEvidence(options: {
         materialControlControlKey: controlKey
       }
     : {};
-  return {
+  const authored = {
     status: "ready",
     assetIds: ["chronograph-watch", "car-concept", "sunglasses-khronos", "materials-variants-shoe"],
     assets: ["Chronograph Watch", "Car Concept", "Sunglasses Khronos", "Materials Variants Shoe"],
@@ -725,6 +760,45 @@ function productAuthoredEvidence(options: {
         missingMaterialDrawItems: 0,
         ...withMaterialControl("materials-variants-shoe", "shoeVariant", "street", 1, 1)
       }
+    ]
+  };
+  if (!options.includeGeneratedSupportAssets) return authored;
+  return {
+    ...authored,
+    assetIds: [
+      "product-configurator-studio-blender",
+      "product-configurator-car-batched",
+      ...authored.assetIds
+    ],
+    assets: [
+      "Authored Premium Product Configurator Studio",
+      "Car Concept Batched",
+      ...authored.assets
+    ],
+    drawItems: authored.drawItems + 334,
+    materialDiagnostics: [
+      {
+        assetId: "product-configurator-studio-blender",
+        drawItems: 229,
+        texturedDrawItems: 0,
+        fallbackWhiteDrawItems: 0,
+        missingGeometryDrawItems: 0,
+        missingMaterialDrawItems: 0
+      },
+      {
+        assetId: "product-configurator-car-batched",
+        drawItems: 105,
+        texturedDrawItems: 97,
+        baseColorTextureDrawItems: 8,
+        colorBearingTextureDrawItems: 8,
+        surfaceDetailTextureDrawItems: 97,
+        effectiveTextureBackedDrawItems: 97,
+        textureCount: 15,
+        fallbackWhiteDrawItems: 0,
+        missingGeometryDrawItems: 0,
+        missingMaterialDrawItems: 0
+      },
+      ...authored.materialDiagnostics
     ]
   };
 }
@@ -804,7 +878,8 @@ function dataGalaxyStructuredEvidence(options: { readonly generatedNoTextureAuth
       drawBatches: 12
     },
     authoredAssetDisclosure: {
-      activeGeneratedAssetIds: ["data-galaxy-core-blender"],
+      activeGeneratedAssetIds: [],
+      generatedSupportGlbActiveInHero: false,
       generatedNoTextureAuthoredGlb: options.generatedNoTextureAuthoredGlb ?? false,
       premiumTextureBackedAuthoredHero: false,
       supportOnlyUntilVisualReview: true

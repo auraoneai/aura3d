@@ -113,6 +113,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
   const trafficBatches = options.traffic ? createTrafficBatches(options.time, columns, spacing) : [];
   const logisticsBatch = createLogisticsBatch(options.time, columns, spacing);
   const sensorBatch = createSensorBatch(options.time, columns, spacing, selectedDistrict);
+  const facadeBandBatch = createFacadeBandBatch(options.time, columns, spacing, selectedDistrict);
   const lineGroups = createLineGroups(options.time, columns, spacing, selectedDistrict, options.flythrough, options.pointer);
   const pointGroups = createPulsePointGroups(options.time, columns, spacing, selectedDistrict, options.flythrough);
   const singles = createSingleItems(options.time, selectedDistrict, selectedAnchor, extent, options.flythrough);
@@ -125,7 +126,8 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
     ...towerBatches,
     ...trafficBatches,
     logisticsBatch,
-    sensorBatch
+    sensorBatch,
+    facadeBandBatch
   ].filter((batch) => batch.count > 0);
   const trafficInstances = trafficBatches.reduce((sum, batch) => sum + batch.count, 0);
   const lineSegments = lineGroups.reduce((sum, group) => sum + group.segments, 0);
@@ -153,6 +155,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       "district-scale instanced tower grid",
       "logistics cargo and curb-flow instances",
       "traffic platoons and light-rail sweeps",
+      "instanced facade/window bands",
       "batched facade, window, road, and logistics-yard detail",
       "district selection overlays",
       "batched minimap/data telemetry",
@@ -163,6 +166,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       `${towerInstances.toLocaleString("en-US")} procedural district towers across 3 instanced draw batches`,
       `${trafficInstances.toLocaleString("en-US")} traffic vehicles and ${logisticsBatch.count.toLocaleString("en-US")} logistics cargo markers are instanced overlays around the authored city`,
       `${sensorBatch.count.toLocaleString("en-US")} smart-infrastructure status pulses use instanced cubes, not individual render objects`,
+      `${facadeBandBatch.count.toLocaleString("en-US")} tower facade/window bands use one instanced draw batch for accepted-route detail evidence`,
       `${lineSegments.toLocaleString("en-US")} facade/window, road, rail, minimap, selection, and data-flow segments are batched line geometry`,
       `${pulsePoints.toLocaleString("en-US")} telemetry pulse points are batched point geometry`,
       "Pointer probe highlights the nearest district as control-level picking evidence; per-building raycast picking is not claimed.",
@@ -175,6 +179,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       `${trafficInstances.toLocaleString("en-US")} traffic`,
       `${logisticsBatch.count.toLocaleString("en-US")} cargo`,
       `${sensorBatch.count.toLocaleString("en-US")} sensors`,
+      `${facadeBandBatch.count.toLocaleString("en-US")} facade bands`,
       `${lineSegments.toLocaleString("en-US")} segments`,
       `District ${selectedDistrict}`,
       "Pointer pick probe",
@@ -241,6 +246,35 @@ function createSensorBatch(time: number, columns: number, spacing: number, selec
     ], [size, size * 1.8, size], [0, angle, 0]);
   }
   return toInstanceBatch("cube", "cityC", "instanced district tower", batch);
+}
+
+function createFacadeBandBatch(time: number, columns: number, spacing: number, selectedDistrict: SmartCityDistrict): SmartCityInstanceBatch {
+  const capacity = columns * columns * 3;
+  const batch: MutableBatch = { transforms: new Float32Array(capacity * 16), count: 0 };
+  for (let row = 0; row < columns; row += 1) {
+    for (let col = 0; col < columns; col += 1) {
+      const profile = cityTowerProfile(row, col, columns, spacing, selectedDistrict);
+      if (!profile) continue;
+      const selected = selectedDistrict === profile.district || (selectedDistrict === "all" && profile.district === "core");
+      const visibleDetailTower = selected || profile.district === "core" || (row + col) % 3 === 0;
+      if (!visibleDetailTower) continue;
+
+      const frontZ = profile.z - profile.depth * 0.64;
+      const bandCount = selected || profile.district === "core" ? 3 : 2;
+      for (let band = 0; band < bandCount; band += 1) {
+        const heightT = 0.28 + band * (0.48 / Math.max(1, bandCount - 1));
+        const y = -0.48 + profile.height * heightT + Math.sin(time * 0.36 + row * 0.19 + col * 0.23 + band) * 0.004;
+        const widthScale = band % 2 === 0 ? 0.84 : 0.62;
+        pushMatrix(
+          batch,
+          [profile.x, y, frontZ],
+          [profile.width * widthScale, 0.026, 0.016],
+          [0, 0, 0]
+        );
+      }
+    }
+  }
+  return toInstanceBatch("cube", "white", "facade window data pulse", batch);
 }
 
 function createLineGroups(
@@ -359,18 +393,21 @@ function addRoadAndYardDetail(
 
   for (let lane = -half; lane <= half; lane += 6) {
     const p = lane * spacing;
-    const tickCount = 18;
+    const tickCount = 24;
     for (let tick = 0; tick < tickCount; tick += 1) {
       const t = tick / Math.max(1, tickCount - 1);
       const sweep = -extent + t * extent * 2;
       const phase = ((time * 0.18 + tick * 0.071 + lane * 0.013) % 1) * 0.05;
       addSegment(roadMarkLines, [sweep - 0.08, -0.438, p + phase], [sweep + 0.08, -0.438, p + phase]);
       addSegment(roadMarkLines, [p - phase, -0.436, sweep - 0.08], [p - phase, -0.436, sweep + 0.08]);
+      if (tick % 3 === 1) {
+        addSegment(roadMarkLines, [sweep - 0.06, -0.434, p - 0.07], [sweep + 0.06, -0.434, p + 0.07]);
+      }
     }
 
     for (let cross = -half; cross <= half; cross += 6) {
       const q = cross * spacing;
-      for (let stripe = -3; stripe <= 3; stripe += 1) {
+      for (let stripe = -4; stripe <= 4; stripe += 1) {
         const offset = stripe * 0.035;
         addSegment(roadMarkLines, [p + offset, -0.432, q - 0.22], [p + offset, -0.432, q + 0.22]);
         addSegment(roadMarkLines, [p - 0.22, -0.43, q + offset], [p + 0.22, -0.43, q + offset]);
@@ -430,6 +467,10 @@ function addSmartCityFacadeLines(
           addSegment(facadeLines, [leftX, y - 0.035, profile.z], [leftX, y + 0.035, profile.z]);
           addSegment(facadeLines, [rightX, y - 0.035, profile.z], [rightX, y + 0.035, profile.z]);
         }
+        if (denseFacade && floor % 2 === 1) {
+          const midX = profile.x + Math.sin(time * 0.18 + row * 0.37 + col * 0.29) * profile.width * 0.12;
+          addSegment(facadeLines, [midX, y - 0.028, frontZ - 0.005], [midX, y + 0.04, frontZ - 0.005]);
+        }
 
         const slots = 2 + ((row + col + floor) % 3);
         for (let slot = 0; slot < slots; slot += 1) {
@@ -442,6 +483,10 @@ function addSmartCityFacadeLines(
             addSegment(windowFrameLines, [profile.x + offset - dash, pulseY, backZ + 0.006], [profile.x + offset + dash, pulseY, backZ + 0.006]);
           }
         }
+      }
+      if (denseFacade) {
+        addSegment(facadeLines, [leftX, baseY + profile.height * 0.22, frontZ - 0.008], [profile.x, topY - 0.045, frontZ - 0.008]);
+        addSegment(facadeLines, [rightX, baseY + profile.height * 0.22, frontZ - 0.008], [profile.x, topY - 0.045, frontZ - 0.008]);
       }
     }
   }
@@ -605,10 +650,10 @@ function normalizeDistrict(value: string): SmartCityDistrict {
 }
 
 function columnsForLevel(level: SmartCityLevel): number {
-  if (level === "extreme") return 36;
-  if (level === "high") return 32;
-  if (level === "low") return 20;
-  return 28;
+  if (level === "extreme") return 24;
+  if (level === "high") return 20;
+  if (level === "low") return 14;
+  return 16;
 }
 
 function districtForPosition(x: number, z: number): SmartCityDistrict {

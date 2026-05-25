@@ -1081,21 +1081,21 @@ describe("PBR material and direct light contracts", () => {
       iridescenceThicknessTexture: linearPixel()
     });
 
-    expect(material.parameters.get("u_clearcoatTextureEnabled")).toBe(1);
-    expect(material.parameters.get("u_clearcoatRoughnessTextureEnabled")).toBe(1);
-    expect(material.parameters.get("u_clearcoatNormalTextureEnabled")).toBe(1);
-    expect(material.parameters.get("u_specularTextureEnabled")).toBe(1);
-    expect(material.parameters.get("u_specularColorTextureEnabled")).toBe(1);
-    expect(material.parameters.get("u_iridescenceTextureEnabled")).toBe(1);
-    expect(material.parameters.get("u_iridescenceThicknessTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_clearcoatTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_clearcoatRoughnessTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_clearcoatNormalTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_specularTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_specularColorTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_iridescenceTextureEnabled")).toBe(1);
+    expect(material.getParameter("u_iridescenceThicknessTextureEnabled")).toBe(1);
 
     material.setParameter("u_specularTextureEnabled", 0);
     material.setParameter("u_clearcoatNormalTextureEnabled", 0);
     material.setParameter("u_iridescenceTextureEnabled", 0);
 
-    expect(material.parameters.get("u_specularTextureEnabled")).toBe(0);
-    expect(material.parameters.get("u_clearcoatNormalTextureEnabled")).toBe(0);
-    expect(material.parameters.get("u_iridescenceTextureEnabled")).toBe(0);
+    expect(material.getParameter("u_specularTextureEnabled")).toBe(0);
+    expect(material.getParameter("u_clearcoatNormalTextureEnabled")).toBe(0);
+    expect(material.getParameter("u_iridescenceTextureEnabled")).toBe(0);
     expect(material.uniformSchema.some((uniform) => uniform.name === "u_specularTextureEnabled")).toBe(true);
     expect(material.uniformSchema.some((uniform) => uniform.name === "u_clearcoatNormalTextureEnabled")).toBe(true);
     expect(material.uniformSchema.some((uniform) => uniform.name === "u_iridescenceTextureEnabled")).toBe(true);

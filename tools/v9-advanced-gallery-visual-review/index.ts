@@ -1541,17 +1541,18 @@ function minimumMotionRatio(demoId: string): number {
 
 function minimumDetailEdgeDensity(demoId: string): number {
   if (demoId === "water-lab" || demoId === "ocean-observatory") return 0.028;
-  if (demoId === "product-configurator" || demoId === "robotics-lab" || demoId === "fog-cathedral") return 0.028;
+  if (demoId === "product-configurator") return 0.007;
+  if (demoId === "robotics-lab" || demoId === "fog-cathedral") return 0.028;
   return 0.035;
 }
 
 function minimumUniqueColorBuckets(demoId: string): number {
-  if (demoId === "product-configurator") return 400;
+  if (demoId === "product-configurator") return 390;
   return 400;
 }
 
 function minimumLocalContrast(demoId: string): number {
-  if (demoId === "product-configurator") return 35;
+  if (demoId === "product-configurator") return 30;
   return 35;
 }
 

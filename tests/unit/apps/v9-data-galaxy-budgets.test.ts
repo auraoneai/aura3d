@@ -88,8 +88,8 @@ describe("v9 data galaxy budgets", () => {
     expect(plan.effectiveParticles).toBe(900);
     expect(plan.primaryCount + plan.vortexCount + plan.networkCount + plan.waveCount).toBe(900);
     expect(plan.densityTier).toBe("900 curated showcase");
-    expect(plan.overlay.sparkPoints + plan.overlay.coreSparkPoints + plan.overlay.focalClusterPoints).toBe(65);
-    expect(plan.overlay.trailSegments + plan.overlay.connectionSegments + plan.overlay.contourSegments + plan.overlay.telemetryRingSegments + plan.overlay.budgetLadderSegments).toBe(25);
+    expect(plan.overlay.sparkPoints + plan.overlay.coreSparkPoints + plan.overlay.focalClusterPoints).toBe(118);
+    expect(plan.overlay.trailSegments + plan.overlay.connectionSegments + plan.overlay.contourSegments + plan.overlay.telemetryRingSegments + plan.overlay.budgetLadderSegments).toBe(46);
     expect(plan.overlay.connectionSegments).toBeGreaterThan(0);
     expect(plan.nativeGpuComputeDispatches).toBe(0);
 

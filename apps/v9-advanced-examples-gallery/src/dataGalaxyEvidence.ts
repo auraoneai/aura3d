@@ -287,7 +287,7 @@ function createOverlayPointGroups(
     dataParticleGreen: []
   };
   const pointerAttractor = pointerAttractorPosition(pointer);
-  const sparkCount = diagnosticAttractors ? overlay.sparkPoints : 0;
+  const sparkCount = diagnosticAttractors ? overlay.sparkPoints : Math.min(overlay.sparkPoints, 28);
   const coreSparkCount = overlay.coreSparkPoints;
   const focalClusterCount = overlay.focalClusterPoints;
 
@@ -378,11 +378,11 @@ function createOverlayLineGroups(
   const telemetryLines: Vec3[] = [];
   const contourLines: Vec3[] = [];
   const budgetLines: Vec3[] = [];
-  const trailCount = diagnosticOverlays ? overlay.trailSegments : Math.min(overlay.trailSegments, 8);
+  const trailCount = diagnosticOverlays ? overlay.trailSegments : Math.min(overlay.trailSegments, 18);
 
   if (!diagnosticOverlays) {
-    addArc(cyanTrail, [0, 0.02, 0], 0.28, 0.2, 0.025, time * 0.18 * speed, Math.PI * 0.74, Math.min(7, Math.max(4, trailCount)));
-    addArc(violetTrail, [-0.16, 0.05, -0.1], 0.18, 0.13, 0.02, time * -0.14 * speed + 1.1, Math.PI * 0.46, 4);
+    addArc(cyanTrail, [0, 0.02, 0], 0.3, 0.215, 0.025, time * 0.18 * speed, Math.PI * 0.92, Math.min(14, Math.max(8, trailCount)));
+    addArc(violetTrail, [-0.16, 0.05, -0.1], 0.2, 0.145, 0.02, time * -0.14 * speed + 1.1, Math.PI * 0.6, 8);
     if (connections) {
       addSegment(connectionLines, [-0.18, -0.04, 0.18], [0, 0.02, 0]);
       addSegment(connectionLines, [0, 0.02, 0], [0.2, 0.12, -0.16]);
@@ -390,6 +390,8 @@ function createOverlayLineGroups(
     }
     addSegment(amberTrail, [0.2, 0.12, -0.16], [0.11, 0.08, -0.08]);
     addSegment(violetTrail, [-0.22, 0.14, -0.18], [-0.08, 0.08, -0.08]);
+    addArc(amberTrail, [0.08, 0.012, 0.035], 0.22, 0.135, 0.018, time * 0.12 * speed + 0.55, Math.PI * 0.54, 7);
+    addArc(connectionLines, [0, 0.035, 0], 0.19, 0.13, 0.018, time * -0.1 * speed + 1.8, Math.PI * 0.48, 6);
 
     const groups: DataGalaxyLineGroup[] = [
       toLineGroup("transparentCyan", "intentional core orbit arcs", cyanTrail),
@@ -450,7 +452,7 @@ function createOverlayLineGroups(
     telemetryRingSegmentCount += segments;
   }
 
-  const contourCount = diagnosticOverlays ? overlay.contourSegments : Math.min(overlay.contourSegments, 6);
+  const contourCount = diagnosticOverlays ? overlay.contourSegments : Math.min(overlay.contourSegments, 14);
   for (let i = 0; i < contourCount; i += 1) {
     const t = i / contourCount;
     const angle = i * 0.299 + time * 0.09 * speed;

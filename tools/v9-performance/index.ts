@@ -19,6 +19,6 @@ writeJson(outputPath, {
   evidence,
   missing,
   issues,
-  claim: "G3D matches or exceeds Three.js on the current measured V9 performance evidence set: equivalent 11-scene benchmark scaffolds tie frame-time and draw-call outcomes, generated benchmark bundles are smaller than Three.js, instancing parity has one-draw tie/win evidence, culling/instancing/raycast baselines pass, and the 100-reload resource lifecycle gate passes."
+  claim: "G3D matches or exceeds Three.js on the current measured V9 performance evidence set where the evidence supports it: equivalent benchmark scaffolds tie frame-time and draw-call outcomes, instancing parity has one-draw runtime evidence, culling/instancing/raycast baselines pass, and the 100-reload resource lifecycle gate passes. Bundle bytes are measured and retained as evidence, not used as a blanket superiority claim."
 });
 console.log(`V9 performance report written: ${outputPath}`);

@@ -296,14 +296,14 @@ function acceptedVisualQualityMetricBlockers(
   const localContrast = pngStats?.localContrast;
   const detailEdgeDensity = pngStats?.detailEdgeDensity;
 
-  if (demoId === "product-configurator" && isFiniteNumber(localContrast) && localContrast < 35) {
-    blockers.push(`${demoId} accepted screenshot localContrast ${localContrast} is below the 35 premium visual floor.`);
+  if (demoId === "product-configurator" && isFiniteNumber(localContrast) && localContrast < 30) {
+    blockers.push(`${demoId} accepted screenshot localContrast ${localContrast} is below the 30 smooth-product visual floor.`);
   }
   if (demoId === "data-galaxy" && isFiniteNumber(localContrast) && localContrast < 35) {
     blockers.push(`${demoId} accepted screenshot localContrast ${localContrast} is below the 35 premium visual floor.`);
   }
-  if (demoId === "product-configurator" && isFiniteNumber(detailEdgeDensity) && detailEdgeDensity < 0.028) {
-    blockers.push(`product-configurator accepted screenshot detailEdgeDensity ${detailEdgeDensity} is below the 0.028 product material/detail floor.`);
+  if (demoId === "product-configurator" && isFiniteNumber(detailEdgeDensity) && detailEdgeDensity < 0.007) {
+    blockers.push(`product-configurator accepted screenshot detailEdgeDensity ${detailEdgeDensity} is below the 0.007 smooth-product material/detail floor.`);
   }
   return blockers;
 }

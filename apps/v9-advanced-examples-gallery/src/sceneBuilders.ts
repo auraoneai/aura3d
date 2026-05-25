@@ -1977,7 +1977,7 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
   const brightFoamSlivers: FlatSliver[] = [];
   const detailBatches = new Map<string, CueInstanceBatch>();
 
-  for (let i = 0; i < 118; i += 1) {
+  for (let i = 0; i < 144; i += 1) {
     const col = i % 16;
     const row = Math.floor(i / 16);
     pushPlanarLine(deckLines, [-5.25 + col * 0.68, -0.13 + row * 0.012, 2.22 - row * 0.56], 0.5, 0.02 * Math.sin(i));
@@ -1992,9 +1992,9 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     );
   }
 
-  for (let i = 0; i < 64; i += 1) {
-    const x = -5.62 + (i % 32) * 0.36;
-    const y = 0.34 + Math.floor(i / 32) * 0.32 + (i % 3) * 0.035;
+  for (let i = 0; i < 84; i += 1) {
+    const x = -5.62 + (i % 42) * 0.27;
+    const y = 0.34 + Math.floor(i / 42) * 0.32 + (i % 3) * 0.035;
     pushPlanarLine(railLines, [x, y, -0.58], 0.52, 0.02);
     if (i % 4 === 0) {
       pushSegment(railLines, [x, 0.18, -0.62], [x + 0.18, 0.78, -0.58]);
@@ -2064,6 +2064,23 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     );
   }
 
+  for (let i = 0; i < 96; i += 1) {
+    const row = Math.floor(i / 32);
+    const col = i % 32;
+    const x = -7.6 + col * 0.5 + Math.sin(i * 0.41 + time * 0.07) * 0.08;
+    const z = -5.8 + row * 1.7 + Math.cos(i * 0.53 + time * 0.09) * 0.18;
+    const h = oceanHeight(x, z + 13.2, profile);
+    const yaw = -0.08 + Math.sin(i * 0.29 + row * 0.37) * 0.18;
+    const length = 0.22 + hash01(i * 101) * 0.34;
+    pushPlanarLine(foamLines, [x, -0.052 + h, z], length, yaw);
+    foamSlivers.push({
+      center: [x + Math.sin(i * 0.23) * 0.06, -0.048 + h, z + Math.cos(i * 0.19) * 0.06],
+      length: length * 0.62,
+      thickness: 0.012 + hash01(i * 103) * 0.012,
+      yaw
+    });
+  }
+
   for (let i = 0; i < 28; i += 1) {
     const x = -3.9 + (i % 14) * 0.58;
     const y = 0.96 + Math.floor(i / 14) * 0.42 + Math.sin(i * 0.31 + time * 0.06) * 0.018;
@@ -2077,9 +2094,9 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     pushSegment(deckLines, [x, y, 0.4], [x + 0.22, y + 0.2, 0.18]);
   }
 
-  for (let i = 0; i < 58; i += 1) {
-    const row = Math.floor(i / 29);
-    const x = -3.62 + (i % 29) * 0.2;
+  for (let i = 0; i < 72; i += 1) {
+    const row = Math.floor(i / 36);
+    const x = -3.62 + (i % 36) * 0.16;
     const z = -0.48 + row * 0.84 + Math.sin(i * 0.37) * 0.018;
     pushPlanarLine(deckLines, [x, 1.085 + row * 0.016, z], 0.24 + hash01(i * 71) * 0.18, 0.02);
   }
@@ -2093,10 +2110,10 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     pushSegment(deckLines, [x + 0.32, y, -0.2], [x + 0.08, y + 0.12, -0.3]);
   }
 
-  for (let i = 0; i < 224; i += 1) {
-    const col = i % 32;
-    const row = Math.floor(i / 32);
-    const x = -5.32 + col * 0.33;
+  for (let i = 0; i < 272; i += 1) {
+    const col = i % 34;
+    const row = Math.floor(i / 34);
+    const x = -5.32 + col * 0.31;
     const z = 2.38 - row * 0.72;
     const y = -0.08 + row * 0.035;
     pushPlanarLine(crispInstrumentLines, [x, y, z], 0.2 + hash01(i * 97) * 0.16, row % 2 === 0 ? 0 : Math.PI / 2);

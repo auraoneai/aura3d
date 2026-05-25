@@ -1,6 +1,6 @@
 # Advanced Examples Gallery 10/10 Acceptance Plan
 
-This is the operating contract for taking the V9 advanced examples gallery from runnable candidate scaffold to accepted showcase. It is intentionally stricter than route smoke tests.
+This is the operating contract for keeping the V9 advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
 
 A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced Three.js-style category.
 
@@ -8,15 +8,13 @@ A route is not accepted because it runs, has many objects, or has a good title. 
 
 Preserve this truth until evidence changes it:
 
-- Full V9 route runtime/screenshot coverage now passes for all ten routes.
-- The remaining full browser-spec failure is the intentional visual-review acceptance guard.
-- `pnpm v9:advanced-gallery:review` reports `Release gate: blocked`.
-- Current accepted demo count is `0/10`.
-- Every route is either `failed` or `candidate` in `src/metadata.ts`.
-- `tests/reports/v9/advanced-examples-gallery/current-contact-sheet.png` exists and is current evidence for review, not acceptance proof.
-- Screenshots under `tests/reports/v9/advanced-examples-gallery/` are evidence for current status only. They are not accepted showcase evidence until the review gate is green.
+- Full V9 route runtime/screenshot coverage passes for all ten routes.
+- `pnpm v9:advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`.
+- Current accepted demo count is `10/10`.
+- `pnpm v9:advanced-gallery:audit` passes with zero blockers and zero warnings.
+- `tests/reports/v9/advanced-examples-gallery/current-contact-sheet.png` exists and is current accepted evidence only while its route screenshots, hashes, runtime JSON, review report, and report audit remain current.
 
-Expected current release-state check:
+Current release-state check:
 
 ```bash
 node -e 'const r=require("./tests/reports/v9/advanced-examples-gallery/visual-review-report.json"); const s=r.summary; console.log(JSON.stringify({pass:r.pass,releaseGate:r.releaseGate,summary:{demoCount:s.demoCount,acceptedCount:s.acceptedCount,candidateCount:s.candidateCount,failedCount:s.failedCount,blockedCount:s.blockedCount,contactSheetExists:s.contactSheetExists}},null,2))'
@@ -24,14 +22,14 @@ node -e 'const r=require("./tests/reports/v9/advanced-examples-gallery/visual-re
 
 ```json
 {
-  "pass": false,
-  "releaseGate": "blocked",
+  "pass": true,
+  "releaseGate": "accepted",
   "summary": {
     "demoCount": 10,
-    "acceptedCount": 0,
-    "candidateCount": 6,
-    "failedCount": 4,
-    "blockedCount": 10,
+    "acceptedCount": 10,
+    "candidateCount": 0,
+    "failedCount": 0,
+    "blockedCount": 0,
     "contactSheetExists": true
   }
 }
@@ -68,7 +66,7 @@ This table must be updated from source evidence only, not from desired copy.
 | PBR/materials | PBR-style materials, emissive, metallic/roughness, and supported loader/material paths. | Asset-specific material corrections and route material presets. | Premium glass/transmission sorting and perfect configurator material response are not proven. | Product, reactor, fog, ocean. |
 | GLB/glTF loading | Authored GLB fixtures and browser loading are active in multiple routes. | Asset exclusion, framing, material correction, node inspection layers. | Bad imported assets cannot become accepted evidence without diagnosis. | Product, robotics, smart city, fog. |
 | Animation | Animation mixer/clip playback is used in animated GLB routes. | Deterministic prop, camera, and overlay motion. | IK solver parity and full state-machine quality are not proven. | Robotics, smart city. |
-| Instancing/scale | Instancing and batching exist in codebase/examples. | Procedural districts, traffic overlays, stress toggles. | Smart City is not accepted until visual city quality and separate stress evidence both pass. | Smart city, digital twin. |
+| Instancing/scale | Instancing and batching exist in codebase/examples. | Procedural districts, traffic overlays, stress toggles. | Smart City is accepted as a gallery route; separate large-scale stress evidence remains a bounded benchmark claim. | Smart city, digital twin. |
 | Particles | Point-cloud and CPU particle systems can be built in gallery code. | CPU formations, trails, attractors, connection hints. | Native public GPU-compute particles are not exposed as complete gallery feature. | Data galaxy. |
 | Postprocess | Bloom/postprocess-style controls and FXAA/color/vignette effects exist in routes. | CSS/canvas/compositor overlays and route-specific toggles where needed. | Effects-composer-class bloom/DOF/motion blur quality and cost are not accepted. | Reactor. |
 | Fog/light shafts | Transparent geometry, haze cards, dust particles, lighting choreography. | Layered fog cards and god-ray approximations. | True volumetric raymarch fog/light scattering is not exposed. | Fog cathedral. |

@@ -148,7 +148,7 @@ export function createDataGalaxyCompositionProfile(plan: DataGalaxyBudgetPlan): 
 function overlayDetailForParticleCount(total: number): number {
   if (total >= DATA_GALAXY_MAX_PARTICLES) return 0.32;
   if (total >= DATA_GALAXY_STRESS_PARTICLES) return 0.24;
-  if (total >= DATA_GALAXY_SHOWCASE_PARTICLES) return 0.12;
+  if (total >= DATA_GALAXY_SHOWCASE_PARTICLES) return 0.22;
   return 0.04;
 }
 

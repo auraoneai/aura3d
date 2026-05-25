@@ -63,7 +63,7 @@ import {
   createDefaultShaderLibrary
 } from "@galileo3d/rendering";
 import { DirectionalLight, composeMat4 } from "@galileo3d/scene";
-import type { GLTFRendererInputOptions } from "@galileo3d/assets";
+import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@galileo3d/assets";
 
 export * as renderingV6 from "@galileo3d/engine/rendering/v6";
 export * as workflowsV6 from "@galileo3d/engine/workflows/v6";
@@ -848,6 +848,7 @@ export interface G3DGltfSceneOptions {
   readonly assetId?: string;
   readonly assetName?: string;
   readonly materialVariant?: string;
+  readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
   readonly sceneIndex?: number;
   readonly sceneName?: string;
   readonly viewport?: G3DViewport;
@@ -917,6 +918,7 @@ export async function loadGltfScene(input: string | G3DGltfSceneOptions): Promis
     width: viewport.width,
     height: viewport.height,
     ...(options.materialVariant !== undefined ? { materialVariant: options.materialVariant } : {}),
+    ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
     ...(options.sceneIndex !== undefined ? { sceneIndex: options.sceneIndex } : {}),
     ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
     ...(options.rendererInput ? { rendererInput: options.rendererInput } : {})

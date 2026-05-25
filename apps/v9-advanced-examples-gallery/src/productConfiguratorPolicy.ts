@@ -3,10 +3,12 @@ import {
 } from "@galileo3d/assets";
 import {
   applyCarConceptMaterialStability,
+  carConceptMaterialVisualRole,
   carConceptMaterialRenderStateOverrides
 } from "../../../packages/assets/src/CarConceptMaterialStability";
 import type { GLTFMaterialRenderStateOverride } from "../../../packages/assets/src/GLTFRenderResources";
-import type { Material } from "@galileo3d/rendering";
+import type { Material, RenderState } from "@galileo3d/rendering";
+import type { CarConceptMaterialVisualRole, CarConceptMaterialVisualRoleContext } from "../../../packages/assets/src/CarConceptMaterialStability";
 import { createProductShowcaseLayout, type ProductShowcaseLayout, type ProductShowcaseSlotInput } from "@galileo3d/product-studio";
 
 export const PRODUCT_CONFIGURATOR_ROUTE_ID = "product-configurator" as const;
@@ -202,6 +204,43 @@ export function applyProductConfiguratorOriginalCarMaterialQualityCorrections(
   }
 }
 
+export interface ProductConfiguratorOriginalCarRenderableMaterialContext extends CarConceptMaterialVisualRoleContext {
+  readonly geometryKey?: string;
+}
+
+export function productConfiguratorOriginalCarMaterialVisualRole(
+  context: ProductConfiguratorOriginalCarRenderableMaterialContext
+): CarConceptMaterialVisualRole {
+  return carConceptMaterialVisualRole(context);
+}
+
+export function productConfiguratorOriginalCarRenderableRenderState(
+  source: RenderState,
+  context: ProductConfiguratorOriginalCarRenderableMaterialContext
+): RenderState {
+  const role = productConfiguratorOriginalCarMaterialVisualRole(context);
+  if (role === "unclassified") return source;
+  return {
+    ...source,
+    cullMode: "back",
+    blend: false,
+    depthTest: true,
+    depthWrite: true
+  };
+}
+
+export function applyProductConfiguratorOriginalCarRenderableMaterialQualityCorrections(
+  material: Material,
+  context: ProductConfiguratorOriginalCarRenderableMaterialContext
+): void {
+  applyCarConceptMaterialStability(material, {
+    materialKey: context.materialKey,
+    sourceMaterialName: context.sourceMaterialName,
+    nodeName: context.nodeName,
+    profile: "gallery"
+  });
+}
+
 export function productConfiguratorImportedMaterialControlPlan(
   assetId: string,
   resources: GLTFRenderResources,
@@ -327,12 +366,14 @@ export function explodedProductPartOffset(
 }
 
 function explodedOriginalCarPartOffset(nodePath: string): readonly [number, number, number] {
-  if (/WheelFrontL|WheelRearL/i.test(nodePath)) return [-0.1, -0.02, 0.04];
-  if (/WheelFrontR|WheelRearR/i.test(nodePath)) return [0.1, -0.02, 0.04];
-  if (/BodyDoorLColor1|BodyDoorL/i.test(nodePath)) return [-0.1, 0.03, 0.02];
-  if (/BodyDoorRColor1|BodyDoorR/i.test(nodePath)) return [0.1, 0.03, 0.02];
-  if (/BodyHood/i.test(nodePath)) return [0, 0.04, -0.1];
-  if (/BodyRearPanelsColor1|BodyRear|BodyTaillights|BodyTurnsignalsRear/i.test(nodePath)) return [0, 0.04, 0.1];
+  if (/WheelFrontL|WheelRearL/i.test(nodePath)) return [-0.2, -0.035, 0.12];
+  if (/WheelFrontR|WheelRearR/i.test(nodePath)) return [0.2, -0.035, -0.12];
+  if (/BodyDoorLColor1|BodyDoorL/i.test(nodePath)) return [-0.18, 0.06, 0.045];
+  if (/BodyDoorRColor1|BodyDoorR/i.test(nodePath)) return [0.18, 0.06, -0.045];
+  if (/BodyRoofPanel|BodyPillars|BodyWindshield|BodyRearwindow|Window/i.test(nodePath)) return [0, 0.14, -0.06];
+  if (/BodyHood/i.test(nodePath)) return [0, 0.105, -0.2];
+  if (/BodyRearPanelsColor1|BodyRear|BodyTaillights|BodyTurnsignalsRear/i.test(nodePath)) return [0, 0.08, 0.2];
+  if (/Interior|Dashboard|Seat|Steering|Cage/i.test(nodePath)) return [0, 0.055, 0.06];
   return ZERO_OFFSET;
 }
 

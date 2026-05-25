@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { DEMOS } from "../../../apps/v9-advanced-examples-gallery/src/metadata";
 import { buildDataGalaxyScene } from "../../../apps/v9-advanced-examples-gallery/src/dataGalaxyScene";
 import { buildProductConfiguratorScene } from "../../../apps/v9-advanced-examples-gallery/src/productConfiguratorScene";
 import { buildReactorPostScene } from "../../../apps/v9-advanced-examples-gallery/src/reactorPostScene";
-import { createResources, type GalleryState } from "../../../apps/v9-advanced-examples-gallery/src/sceneBuilders";
+import { buildScene, createResources, type GalleryState } from "../../../apps/v9-advanced-examples-gallery/src/sceneBuilders";
 
 describe("v9 route-owned scene modules", () => {
   it("builds the product configurator scene through its route-owned module", () => {
@@ -11,51 +12,59 @@ describe("v9 route-owned scene modules", () => {
       turntable: true,
       finish: "copper",
       focusPart: "sensor",
-      lighting: "inspection"
+      lighting: "studio"
     }));
 
     expect(frame.animatedSystems).toContain("texture-backed concept vehicle hero");
     expect(frame.animatedSystems).toContain("reusable indoor studio stage");
-    expect(frame.animatedSystems).toContain("reusable product-detail LightingRig");
+    expect(frame.animatedSystems).toContain("bounded v6-product-studio showroom lighting");
     expect(frame.animatedSystems).toContain("environment stage shell");
     expect(frame.animatedSystems).toContain("ground grid disabled");
     expect(frame.animatedSystems).toContain("stage accent panels disabled");
     expect(frame.animatedSystems).toContain("contact grounding helper");
     expect(frame.animatedSystems).toContain("car-concept turntable enabled");
     expect(frame.animatedSystems).toContain("route-owned car-only showroom staging around original car hero");
-    expect(frame.animatedSystems).toContain("route-owned car paint lighting suppresses white cool-rim outline");
+    expect(frame.animatedSystems).toContain("route-owned car paint lighting uses a bounded product-shot rig for red body-paint shape");
+    expect(frame.animatedSystems).toContain("route-owned car paint lighting limits cool rim energy around roof, glass, trim, and side panels");
     expect(frame.animatedSystems).toContain("route-owned car paint environment suppresses blue-gray specular halo");
-    expect(frame.animatedSystems).toContain("route-owned Product proof uses only the compact showroom catch plane; grids, rails, walls, and prop clutter remain disabled");
+    expect(frame.animatedSystems).toContain("route-owned Product proof uses original car plus controlled configurator platform etch and material swatch tray");
+    expect(frame.animatedSystems).toContain("route-owned compact material selector panel");
     expect(frame.approximations.some((entry) => entry.includes("original texture-backed car-concept GLB as the visual subject"))).toBe(true);
-    expect(frame.approximations.some((entry) => entry.includes("white silhouette halo"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("route-owned product-shot/product-detail lighting rig"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("bounded direct key/fill/rim energy"))).toBe(true);
     expect(frame.approximations.some((entry) => entry.includes("blue-gray product environment creates pale Fresnel shading"))).toBe(true);
-    expect(frame.approximations.some((entry) => entry.includes("compact catch plane"))).toBe(true);
+    expect(frame.approximations.some((entry) => entry.includes("fine configurator platform etch"))).toBe(true);
     expect(frame.labels).toContain("KHR variants");
-    expect(frame.labels).toContain("LightingRig product-detail");
+    expect(frame.labels).toContain("Product lighting v6-product-studio");
     expect(frame.labels).toContain("Car-only showroom staging");
     expect(frame.labels).toContain("Material controls");
+    expect(frame.labels).toContain("Precision platform etch");
+    expect(frame.labels).toContain("Material swatch tray");
+    expect(frame.labels).toContain("Visible material selector");
+    const productKey = frame.lights.find((light) => light.source.name === "product-key");
+    const fill = frame.lights.find((light) => light.source.name === "product-fill");
+    const rim = frame.lights.find((light) => light.source.name === "product-rim");
     expect(frame.lights.map((light) => light.source.name)).toEqual([
-      "product-detail-key",
-      "product-detail-cool-edge",
-      "product-detail-warm-edge",
-      "product-detail-fill"
+      "g3d-v6-product-key-shadow",
+      "g3d-v6-product-fill",
+      "g3d-v6-product-rim"
     ]);
-    const productKey = frame.lights.find((light) => light.source.name === "product-detail-key");
-    const coolEdge = frame.lights.find((light) => light.source.name === "product-detail-cool-edge");
-    const warmEdge = frame.lights.find((light) => light.source.name === "product-detail-warm-edge");
-    const fill = frame.lights.find((light) => light.source.name === "product-detail-fill");
-			expect(productKey?.color).toEqual([1, 0.92, 0.82]);
-	    expect(productKey?.intensity).toBeGreaterThan(2.9);
-	    expect(productKey?.intensity).toBeLessThan(3.55);
-	    expect(coolEdge?.color).toEqual([0.42, 0.5, 0.62]);
-	    expect(coolEdge?.intensity).toBeGreaterThan(0.24);
-	    expect(coolEdge?.intensity).toBeLessThan(0.62);
-				expect(warmEdge?.color).toEqual([1, 0.72, 0.5]);
-		    expect(fill?.color).toEqual([0.5, 0.56, 0.64]);
-		    expect(frame.environment.color).toEqual([0.075, 0.08, 0.088]);
-		    expect(frame.environment.intensity).toBe(0.82);
-				expect(frame.environment.proceduralMap.specularColor).toEqual([0.36, 0.4, 0.46]);
-				expect(frame.environment.proceduralMap.specularIntensity).toBe(0.22);
+    const v6ProductKey = frame.lights.find((light) => light.source.name === "g3d-v6-product-key-shadow");
+    const v6Fill = frame.lights.find((light) => light.source.name === "g3d-v6-product-fill");
+    const v6Rim = frame.lights.find((light) => light.source.name === "g3d-v6-product-rim");
+    expect(productKey).toBeUndefined();
+    expect(fill).toBeUndefined();
+    expect(rim).toBeUndefined();
+    expect(v6ProductKey?.color).toEqual([1, 0.95, 0.86]);
+    expect(v6ProductKey?.intensity).toBe(2.75);
+    expect(v6Fill?.color).toEqual([0.55, 0.68, 1]);
+    expect(v6Fill?.intensity).toBe(0.48);
+    expect(v6Rim?.color).toEqual([1, 0.82, 0.55]);
+    expect(v6Rim?.intensity).toBe(1.05);
+    expect(frame.environment.color).toEqual([0.074, 0.071, 0.067]);
+    expect(frame.environment.intensity).toBe(0.88);
+    expect(frame.environment.proceduralMap.specularColor).toEqual([0.105, 0.093, 0.082]);
+    expect(frame.environment.proceduralMap.specularIntensity).toBe(0.105);
     expect(frame.approximations.join(" ")).toMatch(/true area lights/i);
     expect(frame.items.some((item) => item.label === "overhead product strip light")).toBe(false);
     expect(frame.items.some((item) => item.label === "studio reflection streak")).toBe(false);
@@ -65,17 +74,23 @@ describe("v9 route-owned scene modules", () => {
     expect(floor).toBeDefined();
     expect(wall).toBeUndefined();
     expect(frame.items.filter((item) => String(item.label).startsWith("indoor-studio product grounding contact shadow layer"))).toHaveLength(3);
-		expect(frame.bounds).toEqual({ min: [-1.52, -0.96, -0.94], max: [1.52, 0.52, 0.96] });
+    expect(frame.bounds).toEqual({ min: [-1.82, -0.96, -0.94], max: [1.82, 0.68, 0.96] });
     expect(frame.items.some((item) => item.label === "product studio floor contour rail")).toBe(false);
     expect(frame.items.some((item) => item.label === "product studio graphite reflection platform")).toBe(false);
     expect(frame.items.some((item) => item.label === "product studio seamless rear cove")).toBe(false);
     expect(frame.items.some((item) => item.label === "product studio softbox reflection strip")).toBe(false);
     expect(frame.items.some((item) => item.label === "car material low showroom chip")).toBe(false);
     expect(frame.items.some((item) => item.label === "indoor-studio ground grid")).toBe(false);
-    expect(frame.items.filter((item) => item.label === "product studio subtle floor grid")).toHaveLength(0);
-    expect(frame.items.filter((item) => item.label === "product studio recessed floor inlay")).toHaveLength(0);
-    expect(frame.items.filter((item) => item.label === "product studio floor micro reflection etch")).toHaveLength(0);
-    expect(frame.items.filter((item) => item.label === "car material low showroom chip")).toHaveLength(0);
+    expect(frame.items.filter((item) => item.label === "product configurator precision platform etch")).toHaveLength(1);
+    expect(frame.items.filter((item) => item.label === "product configurator precision platform perimeter")).toHaveLength(1);
+    expect(frame.items.filter((item) => item.label === "product configurator material swatch chip")).toHaveLength(7);
+    expect(frame.items.filter((item) => item.label === "product configurator material selector backplate")).toHaveLength(1);
+    expect(frame.items.filter((item) => item.label === "product configurator material selector swatch")).toHaveLength(10);
+    expect(frame.items.filter((item) => item.label === "product configurator material selector value rail")).toHaveLength(11);
+    expect(frame.items.filter((item) => item.label === "product configurator material selector response meter")).toHaveLength(6);
+    expect(frame.items.filter((item) => item.label === "product configurator imported part callout lines")).toHaveLength(0);
+    expect(frame.items.filter((item) => item.label === "product configurator imported part status chip")).toHaveLength(0);
+    expect(frame.items.filter((item) => item.label === "product configurator imported part value bar")).toHaveLength(0);
     expect(frame.items.filter((item) => String(item.label).startsWith("product configurator clean showroom grounding contact shadow layer"))).toHaveLength(0);
     expect(frame.items.some((item) => item.label === "product studio luminous floor grid")).toBe(false);
     expect(frame.items.some((item) => item.label === "product studio luminous floor inlay")).toBe(false);
@@ -83,10 +98,7 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.items.filter((item) => item.label === "product turntable tick")).toHaveLength(0);
     expect(frame.items.some((item) => item.label === "main chassis")).toBe(false);
     expect(frame.items.some((item) => item.label === "hotspot")).toBe(false);
-    const bloom = frame.postprocess && typeof frame.postprocess.bloom === "object" ? frame.postprocess.bloom : undefined;
-    expect(bloom?.intensity).toBe(0.04);
-    expect(frame.postprocess?.toneMapping).toEqual({ operator: "filmic", exposure: 1.26, whitePoint: 1.18, gamma: 2.2 });
-    expect(frame.postprocess?.colorGrade).toEqual({ contrast: 1.22, saturation: 1.16, vibrance: 0.08, sharpening: 0.08 });
+    expect(frame.postprocess).toBe(false);
     expect(frame.objectCount).toBe(frame.items.length);
   });
 
@@ -202,6 +214,26 @@ describe("v9 route-owned scene modules", () => {
     expect(frame.items.some((item) => item.label === "reactor postprocess evidence line batch")).toBe(true);
     expect(frame.items.some((item) => item.label === "high-contrast command wall status strip")).toBe(false);
     expect(frame.postprocess && typeof frame.postprocess.bloom === "object" ? frame.postprocess.bloom : false).toBe(false);
+  });
+
+  it("keeps ocean observatory route-owned foam and deck detail visible for the hero gate", () => {
+    const demo = DEMOS.find((entry) => entry.id === "ocean-observatory");
+    expect(demo).toBeDefined();
+    const frame = buildScene(demo!, createResources(), 7.2, state({
+      mode: "cinematic",
+      wind: 1.2,
+      scale: 1.1,
+      paths: true,
+      lighting: "dusk"
+    }));
+
+    expect(frame.animatedSystems).toContain("foam and spray bands");
+    expect(frame.approximations.join(" ")).toContain("WebGPU/FFT ocean path is not used");
+    expect(frame.items.some((item) => item.label === "continuous multi-frequency ocean mesh")).toBe(true);
+    expect(frame.items.filter((item) => item.label === "subtle foam crest").length).toBeGreaterThanOrEqual(3);
+    expect(frame.items.some((item) => item.label === "drone navigation glint")).toBe(true);
+    expect(frame.waterTelemetry?.visualLayerTelemetry?.crestFoamCueCount).toBeGreaterThan(0);
+    expect(frame.waterTelemetry?.visualLayerTelemetry?.specularCueCount).toBeGreaterThan(0);
   });
 });
 

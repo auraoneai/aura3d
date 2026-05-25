@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { cpus, platform, release, totalmem } from "node:os";
 import { dirname, resolve } from "node:path";
 import {
@@ -190,12 +190,31 @@ function buildInstanceMatrices(start: number, count: number): Float32Array {
 }
 
 function createAssetBudgetWarnings(): readonly string[] {
-  const manifest = JSON.parse(readFileSync(resolve("fixtures/v6/assets/manifest.json"), "utf8")) as {
+  const manifestPath = resolve("fixtures/v6/assets/manifest.json");
+  if (!existsSync(manifestPath)) return createCurrentFixtureBudgetWarnings();
+  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as {
     readonly assets?: readonly { readonly id: string; readonly bytes?: number; readonly textureCount?: number }[];
   };
   return (manifest.assets ?? [])
     .filter((asset) => (asset.bytes ?? 0) > 8_000_000)
     .map((asset) => `${asset.id}: ${asset.bytes} bytes exceeds the 8 MB preview asset budget; use compression, LOD, or streaming before claiming broad real-time performance.`);
+}
+
+function createCurrentFixtureBudgetWarnings(): readonly string[] {
+  const roots = ["fixtures/v8/assets", "fixtures/v9/assets"].map((path) => resolve(path)).filter((path) => existsSync(path));
+  const glbs = roots.flatMap((root) => collectGlbs(root));
+  return glbs
+    .map((path) => ({ path, bytes: statSync(path).size }))
+    .filter((asset) => asset.bytes > 8_000_000)
+    .map((asset) => `${asset.path.replace(`${process.cwd()}/`, "")}: ${asset.bytes} bytes exceeds the 8 MB preview asset budget; use compression, LOD, or streaming before claiming broad real-time performance.`);
+}
+
+function collectGlbs(root: string): string[] {
+  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const path = resolve(root, entry.name);
+    if (entry.isDirectory()) return collectGlbs(path);
+    return entry.isFile() && entry.name.endsWith(".glb") ? [path] : [];
+  });
 }
 
 await main();

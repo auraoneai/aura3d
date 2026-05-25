@@ -67,7 +67,7 @@ describe("particle diagnostics", () => {
       updateMode: "static-geometry",
       targetFrameMs: 34
     });
-    expect(summarizeParticleBatchDiagnostics(diagnostics).join("\n")).toContain("not a GPGPU simulation");
+    expect(summarizeParticleBatchDiagnostics(diagnostics).join("\n")).toContain("CPU/static particle update path");
     expect(diagnostics.warnings).toContain("50k CPU-generated particles is a dense visualization tier, not a native compute-particle stress proof");
   });
 

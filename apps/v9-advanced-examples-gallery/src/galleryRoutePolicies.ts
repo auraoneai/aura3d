@@ -51,9 +51,9 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
     paddingRatio = 0.006;
   }
 	if (input.demoId === "product-configurator" && input.cameraPreset === "hero") {
-		yawRadians = -0.42 + Math.sin(input.time * 0.18) * 0.003;
-		pitchRadians = -0.1 + Math.cos(input.time * 0.16) * 0.002;
-		paddingRatio = 0.045;
+		yawRadians = -0.48 + Math.sin(input.time * 0.18) * 0.003;
+		pitchRadians = -0.085 + Math.cos(input.time * 0.16) * 0.002;
+		paddingRatio = 0.035;
 	}
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
     yawRadians = -0.22 + Math.sin(input.time * 0.12) * 0.006;
@@ -86,8 +86,8 @@ export function applyGalleryRouteCameraPolicy(input: GalleryRouteCameraPolicyInp
   }
 	if (input.demoId === "product-configurator" && input.cameraPreset === "hero" && authoredReady) {
 		bounds = {
-			min: [-1.54, -0.96, -0.98],
-			max: [1.54, 0.55, 0.98]
+			min: [-1.84, -0.96, -0.9],
+			max: [1.84, 0.68, 0.92]
 		};
 	}
   if (input.demoId === "data-galaxy" && input.cameraPreset === "hero") {
@@ -128,9 +128,10 @@ export function applyGalleryRoutePostprocessPolicy(
   if (value === false) return false;
 	if (demoId === "product-configurator") {
 		return {
-			...value,
+			targetFormat: "rgba8",
+			toneMapping: false,
 			bloom: false,
-			fxaa: { edgeThreshold: 0.16, subpixelBlend: 0.16 }
+			fxaa: false
 		};
 	}
   if (demoId === "data-galaxy") {
@@ -148,13 +149,11 @@ export function applyGalleryRoutePostprocessPolicy(
 export function rendererEnvironmentLightingCompositionOptionsForRoute(
   demoId: DemoDefinition["id"]
 ): EnvironmentLightingCompositionOptions {
-		if (demoId !== "product-configurator") return {};
-		return {
-			environmentMapIntensity: 0.16,
-			environmentMapSpecularIntensity: 0.014,
-			sampledReplacesProceduralMap: false
-		};
-	}
+	if (demoId !== "product-configurator") return {};
+	return {
+		sampledReplacesProceduralMap: false
+	};
+}
 
 function boundedGalleryFxaa(
   value: RendererPostProcessOptions["fxaa"],
@@ -357,13 +356,11 @@ function filterByLabel(items: readonly RenderItem[], predicate: (label: string) 
 }
 
 function productConfiguratorStageLabel(label: string): boolean {
-  return label.startsWith("indoor-studio ")
+  return label === "indoor-studio floor/catch plane"
+    || label.startsWith("indoor-studio product grounding contact shadow layer")
     || label === "product-studio floor"
     || label === "product-studio backdrop"
-    || label.startsWith("product studio ")
-    || label.startsWith("car material ")
-    || label.startsWith("side studio material calibration")
-    || label.startsWith("front studio contrast calibration");
+    || label.startsWith("product configurator ");
 }
 
 function itemLabel(item: RenderItem): string {

@@ -4,14 +4,13 @@ Generated from the V9 Three.js inventory.
 
 ## Current Claim
 
-The V9 inventory is retained as the construction history behind the V10 superiority audit. Current public claims are governed by `tests/reports/v10/claim-defense.json` and `docs/project/v10-superiority-status.md`.
+G3D is not yet a full Three.js replacement. This inventory is a code backlog, not a parity proof.
 
 ## Blocked Claims
 
+- Full Three.js parity.
+- Exceeds Three.js.
 - Exceeds Three.js in every sense.
-- Unity/Unreal replacement.
-- Every official Three.js example exceeded.
-- Every browser/device combination covered.
 
 ## Why
 

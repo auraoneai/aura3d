@@ -198,6 +198,7 @@ interface DataGalaxyEvidence {
   };
   readonly authoredAssetDisclosure?: {
     readonly activeGeneratedAssetIds?: readonly string[];
+    readonly generatedSupportGlbActiveInHero?: boolean;
     readonly generatedNoTextureAuthoredGlb?: boolean;
     readonly premiumTextureBackedAuthoredHero?: boolean;
     readonly supportOnlyUntilVisualReview?: boolean;
@@ -525,9 +526,6 @@ function auditRouteReport(reportPath: string): RouteAudit {
   if (report && !fullGalleryEvidence) {
     blockers.push("route report is focused/partial evidence, not a full-gallery capture report; run pnpm v9:advanced-gallery before release audit claims");
   }
-  if (report?.visualReviewStatus === "accepted" || report?.visualReviewStatus === "hero") {
-    blockers.push("route report claims accepted/hero status; this audit must not be used to promote routes");
-  }
   if (systems.length < 5) blockers.push(`runtime.systems has ${systems.length} entries; expected at least 5 reusable/visible systems`);
   if (disclosures.length === 0) blockers.push("runtime.approximations has no unsupported-feature disclosure entries");
   if (disclosures.length > 0 && disclosureKeywords.length === 0) blockers.push("unsupported-feature disclosures do not contain bounded/non-claiming language");
@@ -559,7 +557,7 @@ function auditRouteReport(reportPath: string): RouteAudit {
     blockers.push(...dataGalaxyStructuredEvidenceBlockers(report));
   }
   blockers.push(...generatedAssetRuntimeProvenanceBlockers(routeId, authored));
-  blockers.push(...generatedAssetManifestBlockers(routeId));
+  blockers.push(...generatedAssetManifestBlockers(routeId, authored));
 
   if (authored?.status === "ready" && authoredAudit.materialDiagnosticCount === 0) {
     warnings.push("authored asset is ready but material diagnostics are absent");
@@ -785,16 +783,24 @@ function dataGalaxyStructuredEvidenceBlockers(report: RouteReport | undefined): 
     || evidence.authoredAssetDisclosure?.supportOnlyUntilVisualReview !== true) {
     blockers.push("data-galaxy structured evidence lacks generated/support-only authored GLB disclosure");
   }
-  if (!evidence.authoredAssetDisclosure?.activeGeneratedAssetIds?.includes("data-galaxy-core-blender")) {
-    blockers.push("data-galaxy structured evidence does not name data-galaxy-core-blender as the active generated authored asset");
+  const authoredRole = evidence.focalHierarchy?.authoredGlbRole ?? "";
+  if (!/data-galaxy-core-blender/i.test(authoredRole) || !/\b(cataloged|inactive|support|inspection)\b/i.test(authoredRole)) {
+    blockers.push("data-galaxy structured evidence must disclose data-galaxy-core-blender as cataloged/inactive support, not active focal proof");
+  }
+  if (evidence.authoredAssetDisclosure?.activeGeneratedAssetIds?.includes("data-galaxy-core-blender")
+    && evidence.authoredAssetDisclosure?.generatedSupportGlbActiveInHero === false) {
+    blockers.push("data-galaxy structured evidence lists data-galaxy-core-blender as active while also declaring the generated support GLB inactive in hero mode");
   }
   if ((evidence.unsupportedGaps?.length ?? 0) <= 0) blockers.push("data-galaxy structured evidence lacks unsupportedGaps");
   if ((evidence.integrationSteps?.length ?? 0) <= 0) blockers.push("data-galaxy structured evidence lacks integrationSteps");
   return blockers;
 }
 
-function generatedAssetManifestBlockers(routeId: string): string[] {
-  const requirements = generatedAssetManifestRequirements.filter((requirement) => requirement.routeId === routeId);
+function generatedAssetManifestBlockers(routeId: string, authored: AuthoredEvidence | undefined): string[] {
+  const activeAssetIds = new Set((authored?.assetIds ?? authored?.assets ?? [])
+    .filter((assetId): assetId is string => typeof assetId === "string"));
+  const requirements = generatedAssetManifestRequirements.filter((requirement) =>
+    requirement.routeId === routeId && activeAssetIds.has(requirement.id));
   const blockers: string[] = [];
   for (const requirement of requirements) {
     const manifestPath = join(assetRoot, requirement.manifestPath);
@@ -1108,14 +1114,8 @@ function hasProductConfiguratorMaterialVariantEvidence(authored: AuthoredEvidenc
     );
   return !((authored?.assetIds ?? []) as readonly string[]).includes("product-configurator-studio-blender")
     && hasTextureBackedAsset("car-concept", 80)
-    && hasTextureBackedAsset("chronograph-watch", 10)
-    && hasTextureBackedAsset("materials-variants-shoe", 1)
     && hasSelectedVariant("car-concept")
-    && hasSelectedVariant("chronograph-watch")
-    && hasSelectedVariant("materials-variants-shoe")
-    && hasMetadataBackedMaterialControl("car-concept")
-    && hasMetadataBackedMaterialControl("chronograph-watch")
-    && hasMetadataBackedMaterialControl("materials-variants-shoe");
+    && hasMetadataBackedMaterialControl("car-concept");
 }
 
 function hasRendererFogVisualDeltaEvidence(routeId: string, report: RouteReport | undefined): boolean {

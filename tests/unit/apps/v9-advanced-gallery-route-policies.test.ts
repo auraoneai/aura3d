@@ -23,8 +23,10 @@ describe("v9 advanced gallery route policies", () => {
     } as const;
 
 	expect(applyGalleryRoutePostprocessPolicy("product-configurator", base, {})).toMatchObject({
+		targetFormat: "rgba8",
+		toneMapping: false,
 		bloom: false,
-		fxaa: { edgeThreshold: 0.16, subpixelBlend: 0.16 }
+		fxaa: false
 	});
     expect(applyGalleryRoutePostprocessPolicy("data-galaxy", { ...base, fxaa: undefined }, {})).toMatchObject({
       bloom: false,
@@ -48,8 +50,10 @@ describe("v9 advanced gallery route policies", () => {
       colorGrade: { contrast: 1.08, saturation: 1.04 },
       fxaa: explicitFxaa
     }, {})).toMatchObject({
+      targetFormat: "rgba8",
+      toneMapping: false,
       bloom: false,
-      fxaa: { edgeThreshold: 0.16, subpixelBlend: 0.16 }
+      fxaa: false
     });
     expect(applyGalleryRoutePostprocessPolicy("data-galaxy", {
       bloom: false,
@@ -63,8 +67,6 @@ describe("v9 advanced gallery route policies", () => {
 
   it("keeps renderer environment-lighting composition floors in route policy instead of main orchestration", () => {
 			expect(rendererEnvironmentLightingCompositionOptionsForRoute("product-configurator")).toEqual({
-				environmentMapIntensity: 0.16,
-				environmentMapSpecularIntensity: 0.014,
 				sampledReplacesProceduralMap: false
 			});
     expect(rendererEnvironmentLightingCompositionOptionsForRoute("data-galaxy")).toEqual({});
@@ -77,11 +79,11 @@ describe("v9 advanced gallery route policies", () => {
       cameraPreset: "hero",
       time: 10,
       authored: readyAuthored()
-    }));
-	expect(product.yawRadians).toBeCloseTo(-0.42 + Math.sin(1.8) * 0.003, 6);
-	expect(product.paddingRatio).toBe(0.045);
-	expect(product.pitchRadians).toBeCloseTo(-0.1 + Math.cos(1.6) * 0.002, 6);
-	expect(product.bounds).toEqual({ min: [-1.54, -0.96, -0.98], max: [1.54, 0.55, 0.98] });
+	}));
+	expect(product.yawRadians).toBeCloseTo(-0.48 + Math.sin(1.8) * 0.003, 6);
+	expect(product.paddingRatio).toBe(0.035);
+	expect(product.pitchRadians).toBeCloseTo(-0.085 + Math.cos(1.6) * 0.002, 6);
+	expect(product.bounds).toEqual({ min: [-1.84, -0.96, -0.9], max: [1.84, 0.68, 0.92] });
 
     const data = applyGalleryRouteCameraPolicy(baseCameraPolicyInput({
       demoId: "data-galaxy",
@@ -126,19 +128,49 @@ describe("v9 advanced gallery route policies", () => {
     expect(hero.paddingRatio).toBe(0.045);
   });
 
-  it("limits ready product GLBs to studio calibration helpers", () => {
+  it("keeps ready product GLBs on compact studio grounding only", () => {
     const scene = sceneWithLabels([
+      "indoor-studio floor/catch plane",
+      "indoor-studio product grounding contact shadow layer 0",
+      "indoor-studio reusable upper warm softbox",
       "product-studio floor",
+      "product-studio backdrop",
+      "product configurator precision platform etch",
+      "product configurator precision platform perimeter",
+      "product configurator material swatch chip",
+      "product configurator material selector backplate",
+      "product configurator material selector swatch",
+      "product configurator material selector value rail",
+      "product configurator material selector response meter",
+      "product studio luminous floor grid",
       "car material low showroom chip",
+      "product configurator visible material selector backplate",
+      "product configurator visible material swatch",
+      "product configurator visible material value rail",
+      "product configurator visible finish response meter",
+      "front studio contrast calibration rail",
       "hotspot",
       "continuous animated water mesh"
     ]);
 
     expect(labels(visibleProceduralItemsForRoute(scene, "product-configurator", readyAuthored()))).toEqual([
+      "indoor-studio floor/catch plane",
+      "indoor-studio product grounding contact shadow layer 0",
       "product-studio floor",
-      "car material low showroom chip"
+      "product-studio backdrop",
+      "product configurator precision platform etch",
+      "product configurator precision platform perimeter",
+      "product configurator material swatch chip",
+      "product configurator material selector backplate",
+      "product configurator material selector swatch",
+      "product configurator material selector value rail",
+      "product configurator material selector response meter",
+      "product configurator visible material selector backplate",
+      "product configurator visible material swatch",
+      "product configurator visible material value rail",
+      "product configurator visible finish response meter"
     ]);
-    expect(visibleProceduralItemsForRoute(scene, "product-configurator", loadingAuthored())).toHaveLength(4);
+    expect(visibleProceduralItemsForRoute(scene, "product-configurator", loadingAuthored())).toHaveLength(21);
   });
 
   it("applies route-specific procedural visibility through a shared policy module", () => {

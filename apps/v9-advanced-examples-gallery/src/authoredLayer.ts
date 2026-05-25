@@ -13,7 +13,7 @@ import {
   type GLTFRenderResources,
   type V6GLTFRenderMetadata
 } from "@galileo3d/assets";
-import { TextureBinding, type Material, type RenderItem } from "@galileo3d/rendering";
+import { Material, TextureBinding, type RenderItem, type RenderState, type UniformValue } from "@galileo3d/rendering";
 import { composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
 import {
   getAuthoredAssetCandidate,
@@ -25,6 +25,7 @@ import type { ControlValues } from "./sceneBuilderPrimitives";
 import type { DemoId } from "./metadata";
 import {
   applyProductConfiguratorRuntimeMaterialControls,
+  applyProductConfiguratorOriginalCarRenderableMaterialQualityCorrections,
   applyProductConfiguratorOriginalCarMaterialQualityCorrections,
   createProductConfiguratorShowcaseLayout,
   explodedProductPartOffset,
@@ -32,6 +33,7 @@ import {
   productConfiguratorImportedMaterialControlPlan,
   productConfiguratorFocusOffset,
   productConfiguratorMaterialOverrideTargetCount,
+  productConfiguratorOriginalCarRenderableRenderState,
   productConfiguratorOriginalCarRenderStateOverrides
 } from "./productConfiguratorPolicy";
 
@@ -39,6 +41,7 @@ interface Pipeline {
   readonly asset: GLTFAsset;
   readonly resources: GLTFRenderResources;
   readonly metadata: V6GLTFRenderMetadata;
+  readonly materialInstanceCache: Map<string, Material>;
   readonly mixer?: Mixer;
   dispose(): void;
 }
@@ -725,10 +728,12 @@ async function createPipeline(
       : {})
   });
   applyAuthoredMaterialCorrections(candidate.id, materialVariant, resources.materialLibrary);
+  const materialInstanceCache = new Map<string, Material>();
   return {
     asset,
     resources,
     metadata: createV6GLTFRenderMetadata(asset, `v9-gallery-${candidate.id}`, candidate.title),
+    materialInstanceCache,
     ...(asset.animations.length > 0
       ? {
         mixer: createGLTFSceneAnimationMixer({
@@ -740,6 +745,10 @@ async function createPipeline(
       }
       : {}),
     dispose: () => {
+      for (const material of materialInstanceCache.values()) {
+        material.dispose();
+      }
+      materialInstanceCache.clear();
       resources.dispose();
       if (disposeAsset && "dispose" in asset && typeof asset.dispose === "function") {
         asset.dispose();
@@ -1009,6 +1018,7 @@ function collectImportedItems(
     }
     const geometry = pipeline.resources.geometryLibrary.get(renderable.geometry);
     const material = pipeline.resources.materialLibrary.get(renderable.material);
+    const sourceMaterialName = sourceMaterialNameForRenderable(pipeline, node.name, renderable.geometry, renderable.material) ?? material?.name ?? renderable.material;
     const label = `${config.label}:${node.name}`;
     if (!geometry) {
       missingGeometryDrawItems += 1;
@@ -1019,35 +1029,41 @@ function collectImportedItems(
       missingMaterialLabels.push(label);
     }
     if (!geometry || !material) continue;
+    const renderMaterial = materialForImportedRenderable(pipeline, config.assetId, material, {
+      nodeName: node.name,
+      geometryKey: renderable.geometry,
+      materialKey: renderable.material,
+      sourceMaterialName
+    });
     const isSkinned = Boolean(renderable.skinning);
-    const hasBaseColorTexture = materialHasTexture(material, "u_baseColorTexture", "u_baseColorTextureEnabled");
+    const hasBaseColorTexture = materialHasTexture(renderMaterial, "u_baseColorTexture", "u_baseColorTextureEnabled");
     const hasAnyTexture = hasBaseColorTexture
-      || materialHasTexture(material, "u_normalTexture", "u_normalTextureEnabled")
-      || materialHasTexture(material, "u_metallicRoughnessTexture", "u_metallicRoughnessTextureEnabled")
-      || materialHasTexture(material, "u_occlusionTexture", "u_occlusionTextureEnabled")
-      || materialHasTexture(material, "u_emissiveTexture", "u_emissiveTextureEnabled")
-      || materialHasTexture(material, "u_clearcoatTexture", "u_clearcoatTextureEnabled")
-      || materialHasTexture(material, "u_clearcoatRoughnessTexture", "u_clearcoatRoughnessTextureEnabled")
-      || materialHasTexture(material, "u_clearcoatNormalTexture", "u_clearcoatNormalTextureEnabled")
-      || materialHasTexture(material, "u_transmissionTexture", "u_transmissionTextureEnabled")
-      || materialHasTexture(material, "u_diffuseTransmissionTexture", "u_diffuseTransmissionTextureEnabled")
-      || materialHasTexture(material, "u_diffuseTransmissionColorTexture", "u_diffuseTransmissionColorTextureEnabled")
-      || materialHasTexture(material, "u_volumeThicknessTexture", "u_volumeThicknessTextureEnabled")
-      || materialHasTexture(material, "u_specularTexture", "u_specularTextureEnabled")
-      || materialHasTexture(material, "u_specularColorTexture", "u_specularColorTextureEnabled")
-      || materialHasTexture(material, "u_sheenColorTexture", "u_sheenColorTextureEnabled")
-      || materialHasTexture(material, "u_sheenRoughnessTexture", "u_sheenRoughnessTextureEnabled")
-      || materialHasTexture(material, "u_anisotropyTexture", "u_anisotropyTextureEnabled")
-      || materialHasTexture(material, "u_iridescenceTexture", "u_iridescenceTextureEnabled")
-      || materialHasTexture(material, "u_iridescenceThicknessTexture", "u_iridescenceThicknessTextureEnabled");
+      || materialHasTexture(renderMaterial, "u_normalTexture", "u_normalTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_metallicRoughnessTexture", "u_metallicRoughnessTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_occlusionTexture", "u_occlusionTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_emissiveTexture", "u_emissiveTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_clearcoatTexture", "u_clearcoatTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_clearcoatRoughnessTexture", "u_clearcoatRoughnessTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_clearcoatNormalTexture", "u_clearcoatNormalTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_transmissionTexture", "u_transmissionTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_diffuseTransmissionTexture", "u_diffuseTransmissionTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_diffuseTransmissionColorTexture", "u_diffuseTransmissionColorTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_volumeThicknessTexture", "u_volumeThicknessTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_specularTexture", "u_specularTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_specularColorTexture", "u_specularColorTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_sheenColorTexture", "u_sheenColorTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_sheenRoughnessTexture", "u_sheenRoughnessTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_anisotropyTexture", "u_anisotropyTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_iridescenceTexture", "u_iridescenceTextureEnabled")
+      || materialHasTexture(renderMaterial, "u_iridescenceThicknessTexture", "u_iridescenceThicknessTextureEnabled");
     if (isSkinned) skinnedDrawItems += 1;
     if (hasAnyTexture) {
       texturedDrawItems += 1;
-      textureBackedMaterialNames.add(material.name);
+      textureBackedMaterialNames.add(renderMaterial.name);
     }
     if (isSkinned && hasBaseColorTexture) texturedSkinnedDrawItems += 1;
     if (isSkinned && !hasBaseColorTexture) untexturedSkinnedLabels.push(label);
-    if (isFallbackWhiteMaterial(material)) {
+    if (isFallbackWhiteMaterial(renderMaterial)) {
       fallbackWhiteDrawItems += 1;
       fallbackWhiteLabels.push(label);
     }
@@ -1063,7 +1079,7 @@ function collectImportedItems(
     items.push({
       label: `${config.label}:${node.name}`,
       geometry,
-      material,
+      material: renderMaterial,
       modelMatrix: multiplyMat4(nodePlacement, node.transform.worldMatrix),
       ...(renderable.skinning ? { skinning: renderable.skinning } : {}),
       ...(renderable.instanceTransforms ? { instanceTransforms: renderable.instanceTransforms } : {}),
@@ -1115,6 +1131,57 @@ function collectImportedItems(
       missingMaterialLabels
     }
   };
+}
+
+function materialForImportedRenderable(
+  pipeline: Pipeline,
+  assetId: AuthoredAssetCandidateId,
+  sourceMaterial: Material,
+  context: {
+    readonly nodeName: string;
+    readonly geometryKey: string;
+    readonly materialKey: string;
+    readonly sourceMaterialName: string;
+  }
+): Material {
+  if (!isProductConfiguratorOriginalProductAssetId(assetId)) return sourceMaterial;
+  const cacheKey = `${context.materialKey}::${context.geometryKey}::${context.nodeName}`;
+  const cached = pipeline.materialInstanceCache.get(cacheKey);
+  if (cached) return cached;
+
+  const renderState = productConfiguratorOriginalCarRenderableRenderState(sourceMaterial.renderState, context);
+  const material = cloneMaterialForRenderable(sourceMaterial, `${sourceMaterial.name}:${context.nodeName}`, renderState);
+  applyProductConfiguratorOriginalCarRenderableMaterialQualityCorrections(material, context);
+  pipeline.materialInstanceCache.set(cacheKey, material);
+  return material;
+}
+
+function cloneMaterialForRenderable(source: Material, name: string, renderState: RenderState): Material {
+  const parameters: Record<string, UniformValue> = {};
+  for (const [key, value] of source.getParameters()) {
+    parameters[key] = value;
+  }
+  return new Material({
+    name,
+    shaderKey: source.shaderKey,
+    ...(source.shaderVariant ? { shaderVariant: source.shaderVariant } : {}),
+    renderState,
+    parameters,
+    requiredAttributes: source.requiredAttributes,
+    requiredUniforms: source.requiredUniforms,
+    uniformSchema: source.uniformSchema
+  });
+}
+
+function sourceMaterialNameForRenderable(
+  pipeline: Pipeline,
+  nodeName: string,
+  geometryKey: string,
+  materialKey: string
+): string | undefined {
+  return pipeline.resources.renderableBindings.find((binding) => binding.nodeName === nodeName
+    && binding.geometryKey === geometryKey
+    && binding.materialKey === materialKey)?.sourceMaterialName;
 }
 
 function gltfNodeSemanticRole(node: { readonly userData?: Record<string, unknown> }): string | undefined {

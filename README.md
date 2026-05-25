@@ -19,7 +19,9 @@ The current claim is evidence-bound: G3D matches or exceeds Three.js in the meas
 
 ## Advanced Gallery Boundary
 
-The V9 advanced examples gallery is not accepted superiority evidence yet. It is a blocked candidate showcase and visual test harness. `pnpm v9:advanced-gallery:review` currently reports `Release gate: blocked (0/10 accepted)`, so screenshots under `tests/reports/v9/advanced-examples-gallery/` must not be used to claim advanced Three.js-style showcase parity until all ten routes pass human visual review and the release gate is green.
+The V9 advanced examples gallery is current accepted showcase evidence as of the latest report set. `pnpm v9:advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`, and `pnpm v9:advanced-gallery:audit` verifies ten current route reports, screenshot hashes, runtime JSON, reusable-system disclosures, unsupported disclosures, measured performance evidence, and image-quality evidence with zero blockers.
+
+The claim remains evidence-bound: if source changes invalidate screenshots, route JSON, hashes, review output, or audit output, rerun `pnpm v9:advanced-gallery`, `pnpm v9:advanced-gallery:review`, and `pnpm v9:advanced-gallery:audit` before reusing the gallery as accepted evidence.
 
 ## Package Surface
 
@@ -60,7 +62,7 @@ pnpm install
 Start the local app registry and routes:
 
 ```sh
-pnpm dev
+pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
 ```
 
 Open:
@@ -149,7 +151,7 @@ Primary evidence:
 - `tests/reports/v9/threejs-inventory.json`
 - `tests/reports/v9/visual-review.json`
 - `tests/reports/v9/same-scene-render.json`
-- `tests/reports/v9/advanced-examples-gallery/` (blocked candidate-gallery evidence; not accepted advanced showcase parity evidence until `pnpm v9:advanced-gallery:review` passes)
+- `tests/reports/v9/advanced-examples-gallery/` (current accepted advanced-gallery evidence; rerun capture, review, and audit after visual/source changes)
 - `tests/reports/v9/performance.json`
 - `tests/reports/v10/feature-parity.json`
 - `tests/reports/v10/visual-quality.json`

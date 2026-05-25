@@ -1,6 +1,6 @@
 export const APP_ID = "v8-animation-keyframes" as const;
 export const RUNTIME_KEY = "__g3dV8AnimationKeyframes" as const;
-export const ASSET_URL = "/fixtures/v7/assets/animation/robot-expressive.glb";
+export const ASSET_URL = "/fixtures/v8/assets/character/robot-expressive.glb";
 
 export type V8RuntimeStatus = "loading" | "ready" | "running" | "error";
 
