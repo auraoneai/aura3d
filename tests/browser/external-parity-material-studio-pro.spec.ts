@@ -97,7 +97,7 @@ test.describe("V4 Material Studio Pro", () => {
 async function waitForMaterialState(page: Page, id: string): Promise<MaterialStudioState> {
   await page.waitForFunction(
     (expectedId) => {
-      const state = window.__G3D_V4_MATERIAL_STUDIO__ as MaterialStudioState | undefined;
+      const state = window.__A3D_V4_MATERIAL_STUDIO__ as MaterialStudioState | undefined;
       return state?.status === "ready" && state.id === expectedId;
     },
     id,
@@ -109,7 +109,7 @@ async function waitForMaterialState(page: Page, id: string): Promise<MaterialStu
 }
 
 async function materialState(page: Page): Promise<MaterialStudioState | undefined> {
-  return page.evaluate(() => window.__G3D_V4_MATERIAL_STUDIO__ as MaterialStudioState | undefined);
+  return page.evaluate(() => window.__A3D_V4_MATERIAL_STUDIO__ as MaterialStudioState | undefined);
 }
 
 function statePasses(state: MaterialStudioState, id: string): boolean {
@@ -121,8 +121,8 @@ function statePasses(state: MaterialStudioState, id: string): boolean {
     state.status === "ready" &&
     state.renderer === "webgl2" &&
     state.productSurface === "material-studio-pro" &&
-    state.materialLibrary === "fixtures/v4/materials/material-library.json" &&
-    state.textureDirectory === "fixtures/v4/materials/textures" &&
+    state.materialLibrary === "fixtures/external-parity/materials/material-library.json" &&
+    state.textureDirectory === "fixtures/external-parity/materials/textures" &&
     state.materialCount === 12 &&
     materialIds.includes("chrome") &&
     materialIds.includes("glass-transmission") &&
@@ -160,6 +160,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __G3D_V4_MATERIAL_STUDIO__?: MaterialStudioState;
+    __A3D_V4_MATERIAL_STUDIO__?: MaterialStudioState;
   }
 }

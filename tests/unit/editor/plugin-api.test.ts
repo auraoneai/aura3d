@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EditorPluginHost } from "@galileo3d/editor-runtime";
+import { EditorPluginHost } from "@aura3d/editor-runtime";
 
 describe("EditorPluginHost", () => {
   it("registers panel, tool, importer, and scripting node contributions", () => {

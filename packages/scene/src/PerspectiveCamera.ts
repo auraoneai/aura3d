@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { perspectiveMat4, type Mat4 } from "./MathTypes.js";
 import { Camera } from "./Camera.js";
 

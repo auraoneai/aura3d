@@ -2,7 +2,7 @@
 
 Version: `0.1.0-alpha.0`
 
-Galileo3D exposes both scene graph and ECS-style runtime concepts. Use them for different jobs and bridge them deliberately.
+Aura3D exposes both scene graph and ECS-style runtime concepts. Use them for different jobs and bridge them deliberately.
 
 ## Scene Graph
 
@@ -17,10 +17,10 @@ Use the scene graph when hierarchy and authored spatial relationships matter:
 
 Relevant packages:
 
-- `@galileo3d/engine/scene`;
-- `@galileo3d/engine/v9`;
-- `@galileo3d/engine/assets`;
-- `@galileo3d/engine/editor-runtime`.
+- `@aura3d/engine/scene`;
+- `@aura3d/engine/v9`;
+- `@aura3d/engine/assets`;
+- `@aura3d/engine/editor-runtime`.
 
 ## ECS
 
@@ -35,7 +35,7 @@ Use ECS when behavior is data-oriented, repeated, and scheduled:
 Relevant package:
 
 ```ts
-import { World } from "@galileo3d/engine/ecs";
+import { World } from "@aura3d/engine/ecs";
 ```
 
 ## Bridge Rule
@@ -44,12 +44,12 @@ Avoid two independent sources of truth for one transform. If physics drives a sc
 
 ## V9 Runtime Shape
 
-`G3DScene` is a direct runtime scene surface for renderer usage:
+`A3DScene` is a direct runtime scene surface for renderer usage:
 
 ```ts
-import { G3DScene } from "@galileo3d/engine/v9";
+import { A3DScene } from "@aura3d/engine/v9";
 
-const scene = new G3DScene();
+const scene = new A3DScene();
 scene.addGeometry("mesh", geometry);
 scene.addMaterial("mat", material);
 scene.createRenderableMesh({ geometry: "mesh", material: "mat" });

@@ -63,7 +63,7 @@ if (captures.length >= 4 && hashes.size < 4) {
 }
 
 const report = {
-  schemaVersion: "g3d-engine-readiness-visual-quality-v1",
+  schemaVersion: "a3d-engine-readiness-visual-quality-v1",
   generatedAt: new Date().toISOString(),
   ok: failures.length === 0,
   manifestPath,

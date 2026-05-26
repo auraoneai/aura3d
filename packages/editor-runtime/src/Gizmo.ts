@@ -1,4 +1,4 @@
-import type { Ray } from "@galileo3d/math";
+import type { Ray } from "@aura3d/math";
 import type { CommandHistory } from "./CommandHistory";
 import type { TransformTarget } from "./commands/TransformCommand";
 

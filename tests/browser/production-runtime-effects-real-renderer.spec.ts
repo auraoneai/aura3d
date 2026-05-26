@@ -65,7 +65,7 @@ test.describe("V6 effects real renderer", () => {
     mkdirSync(resolve("tests/reports/production-runtime-effects"), { recursive: true });
     await page.locator("#effects").screenshot({ path: "tests/reports/production-runtime-effects/damaged-helmet-effects.png" });
     writeFileSync(resolve("tests/reports/production-runtime-effects-real-renderer.json"), `${JSON.stringify({
-      schema: "g3d-production-runtime-effects-real-renderer/v1",
+      schema: "a3d-production-runtime-effects-real-renderer/v1",
       generatedAt: new Date().toISOString(),
       screenshot: "tests/reports/production-runtime-effects/damaged-helmet-effects.png",
       ...result

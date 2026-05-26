@@ -1,4 +1,4 @@
-import { Geometry, IndexBuffer, VertexBuffer, VertexFormat, type RenderItem } from "@galileo3d/rendering";
+import { Geometry, IndexBuffer, VertexBuffer, VertexFormat, type RenderItem } from "@aura3d/rendering";
 import { bounds, clamp, hash01, modelMatrix, writeModelMatrix, type Vec3 } from "./math";
 import { getPhysicsPlaygroundFrame } from "./physicsSimulation";
 import { GalleryWaterMaterial } from "./showcaseShaders";
@@ -96,7 +96,7 @@ function buildWaterLab(r: Resources, time: number, state: GalleryState): SceneFr
     colorGrade: { contrast: 1.1, saturation: 1.08 },
     fxaa: true
   }, ["layered procedural water", "floating props", "dock lights", "ripple interaction rings", "shoreline foam bands", "debug wave overlay"], [
-    "CPU/procedural ripple field rendered as dense G3D geometry; no native GPGPU water solver.",
+    "CPU/procedural ripple field rendered as dense A3D geometry; no native GPGPU water solver.",
     "Fresnel, glints, shoreline foam, and wake lines are runtime geometry/material approximations; no planar reflection/refraction or caustic pass."
   ], ["Water", "Layered waves", "Foam", "Wake rings", "Buoys", "Dock"], 0, waterTelemetry);
 }
@@ -442,7 +442,7 @@ function buildPhysics(r: Resources, time: number, state: GalleryState): SceneFra
     bloom: { threshold: 0.45, intensity: 0.24, radius: 3 },
     colorGrade: { contrast: 1.08, saturation: 1.02 },
     fxaa: true
-  }, ["rigid-body objects", "conveyor friction", "contact normals", "kinematic robot pusher", "bin scoring", "deterministic reset"], ["Uses G3D PhysicsWorld rigid bodies with primitive/proxy colliders; mesh colliders and articulated robot dynamics are still bounded route gaps."], [`${physics.stats.bodies} bodies`, `${physics.contactEvidence.contacts} contacts`, `${physics.contactEvidence.pusherContacts} pusher contacts`, `${physics.scoredBodies} scored`, `${physics.stepper.steps} substeps`, `reset ${physics.resetEvidence.fingerprint}`]);
+  }, ["rigid-body objects", "conveyor friction", "contact normals", "kinematic robot pusher", "bin scoring", "deterministic reset"], ["Uses A3D PhysicsWorld rigid bodies with primitive/proxy colliders; mesh colliders and articulated robot dynamics are still bounded route gaps."], [`${physics.stats.bodies} bodies`, `${physics.contactEvidence.contacts} contacts`, `${physics.contactEvidence.pusherContacts} pusher contacts`, `${physics.scoredBodies} scored`, `${physics.stepper.steps} substeps`, `reset ${physics.resetEvidence.fingerprint}`]);
 }
 
 function buildFogCathedral(r: Resources, time: number, state: GalleryState): SceneFrame {

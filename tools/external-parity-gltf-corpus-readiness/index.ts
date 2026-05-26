@@ -9,8 +9,8 @@ const exists = (p: string) => existsSync(resolve(p));
 const arr = (v: unknown): Obj[] => Array.isArray(v) ? v as Obj[] : [];
 
 const required = [
-  "fixtures/v4/gltf-corpus/manifest.json",
-  "fixtures/v4/gltf-corpus/licenses.md",
+  "fixtures/external-parity/gltf-corpus/manifest.json",
+  "fixtures/external-parity/gltf-corpus/licenses.md",
   "packages/assets/src/V4Corpus.ts",
   "tests/assets/external-parity-gltf-loader-corpus.test.ts",
   "tests/browser/external-parity-gltf-visual-corpus.spec.ts",
@@ -18,14 +18,14 @@ const required = [
 ] as const;
 for (const file of required) check(`file:${file}`, exists(file), `${file} must exist.`);
 
-const manifest = json("fixtures/v4/gltf-corpus/manifest.json");
+const manifest = json("fixtures/external-parity/gltf-corpus/manifest.json");
 const sourceCorpus = json("tests/assets/corpus/gltf-corpus.manifest.json");
 const assets = arr(manifest.assets);
 const sourceAssets = arr(sourceCorpus.assets);
 const ids = new Set(sourceAssets.map((asset) => asset.id));
 const features = new Set(assets.flatMap((asset) => Array.isArray(asset.features) ? asset.features as string[] : []));
 
-check("schema", manifest.schema === "g3d-v4-gltf-corpus/v1", "Manifest schema must be V4 corpus v1.");
+check("schema", manifest.schema === "a3d-v4-gltf-corpus/v1", "Manifest schema must be V4 corpus v1.");
 check("source-pin", (manifest.source as Obj | undefined)?.revision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf", "Manifest must pin the Khronos source revision.");
 check("asset-count", assets.length >= 25, "Corpus must include at least 25 assets.");
 check("source-cross-reference", assets.every((asset) => ids.has(asset.id)), "Every V4 corpus asset must exist in the pinned source corpus.");
@@ -41,7 +41,7 @@ const summary = browser.summary as Obj | undefined;
 check("browser-board", browser.ok === true && Number(summary?.assetCount) >= 25 && typeof browser.productBoundary === "string" && browser.productBoundary.includes("not final rendered glTF visual proof"), "Browser report must prove corpus board and preserve proof boundary.");
 
 const pass = checks.every((entry) => entry.pass);
-const report = { schema: "g3d-external-parity-gltf-corpus-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
+const report = { schema: "a3d-external-parity-gltf-corpus-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-gltf-corpus-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-gltf-corpus-readiness.json"), `${JSON.stringify(report, null, 2)}\n`);
 if (!pass) {

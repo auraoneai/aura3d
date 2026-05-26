@@ -1,4 +1,4 @@
-import { Box3, Ray, Vector3 } from "@galileo3d/math";
+import { Box3, Ray, Vector3 } from "@aura3d/math";
 import { Geometry } from "./Geometry";
 import { MAX_GPU_INSTANCES, type RenderItem, type RenderMaterial } from "./ForwardPass";
 

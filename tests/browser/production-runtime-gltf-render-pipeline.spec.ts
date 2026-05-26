@@ -84,7 +84,7 @@ test.describe("V6 glTF render pipeline", () => {
     await page.locator("#clearcoat").screenshot({ path: "tests/reports/production-runtime-gltf-render/clearcoat.png" });
     await page.locator("#cesium-man").screenshot({ path: "tests/reports/production-runtime-gltf-render/cesium-man.png" });
     writeFileSync(resolve("tests/reports/production-runtime-gltf-render-real-renderer.json"), `${JSON.stringify({
-      schema: "g3d-production-runtime-gltf-render-real-renderer/v1",
+      schema: "a3d-production-runtime-gltf-render-real-renderer/v1",
       generatedAt: new Date().toISOString(),
       screenshots: [
         "tests/reports/production-runtime-gltf-render/damaged-helmet.png",

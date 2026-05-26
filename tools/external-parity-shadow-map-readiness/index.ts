@@ -218,8 +218,8 @@ function hasPointForwardShadowSamplingEvidence(root: string): boolean {
     forwardPass.includes("u_pointShadowFaceMatrices") &&
     forwardPass.includes("u_pointShadowFaceRects") &&
     lightUniforms.includes("forwardShadowSupported = light.castsShadow") &&
-    shaderLibrary.includes("g3dPointShadowFactor") &&
-    shaderLibrary.includes("g3dTexturedPbrPointShadowFactor") &&
+    shaderLibrary.includes("a3dPointShadowFactor") &&
+    shaderLibrary.includes("a3dTexturedPbrPointShadowFactor") &&
     rendererTests.includes("renders renderer-owned point shadow maps through a six-face atlas forward path") &&
     rendererTests.includes("expect(forwardUniforms?.get(\"u_pointShadowMapEnabled\")).toBe(1)") &&
     rendererTests.includes("expect(faceMatrices).toHaveLength(96)") &&

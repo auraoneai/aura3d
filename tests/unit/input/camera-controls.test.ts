@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Scene } from "@galileo3d/scene";
-import { CameraRig, EditorFlyControls, FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, createSceneCameraControlAdapter } from "@galileo3d/input";
-import { Quaternion, Vector3 } from "@galileo3d/math";
+import { Scene } from "@aura3d/scene";
+import { CameraRig, EditorFlyControls, FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, createSceneCameraControlAdapter } from "@aura3d/input";
+import { Quaternion, Vector3 } from "@aura3d/math";
 
 function snapshot(options: ConstructorParameters<typeof InputSnapshot>[0] = {}): InputSnapshot {
   return new InputSnapshot(options);

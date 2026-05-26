@@ -37,8 +37,8 @@ Complete
 ## Milestone 18 Verification Notes
 
 - [x] Added `docs/project/production-runtime-roadmap-product-decision-record.md`.
-- [x] Answered what G3D V6 does better than raw Three.js today.
-- [x] Answered what G3D V6 matches Three.js on today.
+- [x] Answered what A3D V6 does better than raw Three.js today.
+- [x] Answered what A3D V6 matches Three.js on today.
 - [x] Answered what Three.js still does better.
 - [x] Identified production-ready V6 workflows.
 - [x] Identified experimental V6 workflows.
@@ -101,7 +101,7 @@ Complete
 - [x] `tests/reports/production-runtime-external-consumer/external-consumer-render.png`
 - [x] Package surface exposes `./workflows/production-runtime`, `./assets/browser`, `./animation/browser`, and `./rendering`.
 - [x] Packed package installs in a fresh temp app and imports V6 workflow, rendering, asset, and animation APIs.
-- [x] Fresh external Vite app builds from packed `@galileo3d/engine`.
+- [x] Fresh external Vite app builds from packed `@aura3d/engine`.
 - [x] Built external app renders Damaged Helmet with Studio Small 08 HDR through WebGL2 and passes nonblank screenshot proof.
 - [x] Added `production-runtime:package` script.
 - [x] Verified Milestone 14 exit command.
@@ -125,8 +125,8 @@ Complete
 ## Milestone 12 Verification Notes
 
 - [x] `packages/workflows/src/production-runtime/V6ExampleRuntime.ts`
-- [x] Added public V6 browser workflow API via `@galileo3d/engine/workflows/production-runtime`.
-- [x] Added browser-safe package exports for `@galileo3d/engine/assets/browser` and `@galileo3d/engine/animation/browser`.
+- [x] Added public V6 browser workflow API via `@aura3d/engine/workflows/production-runtime`.
+- [x] Added browser-safe package exports for `@aura3d/engine/assets/browser` and `@aura3d/engine/animation/browser`.
 - [x] Updated dist finalizer so asset/browser GLTF code links to browser-safe animation exports in packed builds.
 - [x] `examples/production-runtime-examples/catalog.json`
 - [x] `examples/production-runtime-examples/index.html`
@@ -147,21 +147,21 @@ Complete
 - [x] `templates/production-material-studio/`
 - [x] `templates/production-architecture-viewer/`
 - [x] `templates/production-webgpu-starter/`
-- [x] `packages/create-g3d/templates/production-product-configurator/`
-- [x] `packages/create-g3d/templates/production-asset-inspector/`
-- [x] `packages/create-g3d/templates/production-material-studio/`
-- [x] `packages/create-g3d/templates/production-architecture-viewer/`
-- [x] `packages/create-g3d/templates/production-webgpu-starter/`
+- [x] `packages/create-aura3d/templates/production-product-configurator/`
+- [x] `packages/create-aura3d/templates/production-asset-inspector/`
+- [x] `packages/create-aura3d/templates/production-material-studio/`
+- [x] `packages/create-aura3d/templates/production-architecture-viewer/`
+- [x] `packages/create-aura3d/templates/production-webgpu-starter/`
 - [x] Every V6 template includes package metadata, browser entry, source entry, asset manifest with checksums, and README fetch/copy instructions.
 - [x] Packed package external Vite builds pass for all five V6 templates.
 - [x] `tests/browser/production-runtime-examples.spec.ts`
-- [x] `tests/integration/production-runtime-create-g3d.test.ts`
+- [x] `tests/integration/production-runtime-create-aura3d.test.ts`
 - [x] `tests/browser/production-runtime-templates.spec.ts`
 - [x] `tools/production-runtime-examples-readiness/index.ts`
 - [x] `tools/production-runtime-template-readiness/index.ts`
 - [x] `tests/reports/production-runtime-examples-readiness.json`
 - [x] `tests/reports/production-runtime-template-readiness.json`
-- [x] `tests/reports/production-runtime-template-pack/galileo3d-engine-1.0.0.tgz`
+- [x] `tests/reports/production-runtime-template-pack/aura3d-engine-1.0.0.tgz`
 - [x] Added `production-runtime:examples` and `production-runtime:templates` scripts.
 - [x] Verified Milestone 12 exit command.
 
@@ -189,9 +189,9 @@ Complete
 - [x] `tools/production-runtime-threejs-parity-readiness/index.ts`
 - [x] `tests/reports/production-runtime-threejs-parity/browser-report.json`
 - [x] `tests/reports/production-runtime-threejs-parity-readiness.json`
-- [x] G3D and Three.js both render 12 actual GLB scenes.
+- [x] A3D and Three.js both render 12 actual GLB scenes.
 - [x] Product, material, asset, and architecture categories are mandatory pass scenes.
-- [x] Each scene produces G3D, Three.js, and diff screenshots with draw-call and nonblank pixel proof.
+- [x] Each scene produces A3D, Three.js, and diff screenshots with draw-call and nonblank pixel proof.
 - [x] Gallery comparison screenshots exist for product, materials, asset, and architecture.
 - [x] Added `production-runtime:compare-threejs` script.
 - [x] Verified Milestone 10 exit command.
@@ -221,7 +221,7 @@ Complete
 - [x] `apps/webgpu-lab/`
 - [x] `apps/threejs-parity-lab/`
 - [x] Every V6 app contains `index.html`, `src/main.ts`, `src/scene.ts`, `src/ui.ts`, `src/assets.ts`, and `README.md`.
-- [x] Every V6 app creates a real WebGL2 renderer, loads a real V6 GLB asset, loads a real HDR environment, renders to canvas, exposes `window.__g3dV6Runtime`, and supports a user interaction.
+- [x] Every V6 app creates a real WebGL2 renderer, loads a real V6 GLB asset, loads a real HDR environment, renders to canvas, exposes `window.__a3dV6Runtime`, and supports a user interaction.
 - [x] `apps/common/src/runtime.ts`
 - [x] `packages/assets/src/browser-index.ts`
 - [x] `tests/browser/production-runtime-product-configurator.spec.ts`

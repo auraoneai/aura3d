@@ -71,7 +71,7 @@ const checks = [
 ];
 
 const readiness = {
-  schema: "g3d-production-runtime-hd-flagship-readiness/v1",
+  schema: "a3d-production-runtime-hd-flagship-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   screenshot: expectedScreenshot,

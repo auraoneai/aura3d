@@ -7,19 +7,19 @@ These claims are blocked until the explicit release gates in `docs/project/v3-ro
 
 ## Blocked Product Claims
 
-- G3D is a Unity replacement.
-- G3D is an Unreal replacement.
-- G3D is a full game engine replacement.
-- G3D is a full Three.js API replacement.
-- G3D is a broad Three.js replacement.
-- G3D has full glTF parity.
-- G3D has full WebGPU parity.
-- G3D is broadly faster than Three.js.
-- G3D is broadly superior to Three.js.
+- A3D is a Unity replacement.
+- A3D is an Unreal replacement.
+- A3D is a full game engine replacement.
+- A3D is a full Three.js API replacement.
+- A3D is a broad Three.js replacement.
+- A3D has full glTF parity.
+- A3D has full WebGPU parity.
+- A3D is broadly faster than Three.js.
+- A3D is broadly superior to Three.js.
 
 ## Allowed Current Claim
 
-G3D is building toward a high-end Three.js competitor for supported browser product, asset-viewer, material, scene, and lightweight interactive workflows.
+A3D is building toward a high-end Three.js competitor for supported browser product, asset-viewer, material, scene, and lightweight interactive workflows.
 
 ## Future Limited Claim
 

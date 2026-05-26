@@ -5,9 +5,9 @@ import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../browser/example-dev-server";
 
 type ProductStateName =
-  | "__GALILEO3D_PRODUCT_DEMO__"
-  | "__GALILEO3D_ARCHITECTURE_DEMO__"
-  | "__GALILEO3D_GAME_DEMO__";
+  | "__AURA3D_PRODUCT_DEMO__"
+  | "__AURA3D_ARCHITECTURE_DEMO__"
+  | "__AURA3D_GAME_DEMO__";
 
 type Region = {
   x: number;
@@ -90,12 +90,12 @@ type ProductVisualReport = {
 const productDemos: readonly ProductDemo[] = [
   {
     id: "product-configurator",
-    stateName: "__GALILEO3D_PRODUCT_DEMO__",
+    stateName: "__AURA3D_PRODUCT_DEMO__",
     canvasSelector: "[data-testid='product-configurator-canvas']",
     stableState: "graphite-default",
     interaction: async (page, demo) => {
       await page.locator(demo.canvasSelector).click({ position: { x: 320, y: 280 } });
-      await page.waitForFunction(() => (globalThis as Record<string, any>).__GALILEO3D_PRODUCT_DEMO__?.activeVariant === "copper");
+      await page.waitForFunction(() => (globalThis as Record<string, any>).__AURA3D_PRODUCT_DEMO__?.activeVariant === "copper");
     },
     expectedAfterInteraction: (state) => state.activeVariant === "copper" && state.interactions === 1,
     pixelChecks: [
@@ -105,12 +105,12 @@ const productDemos: readonly ProductDemo[] = [
   },
   {
     id: "architecture-viewer",
-    stateName: "__GALILEO3D_ARCHITECTURE_DEMO__",
+    stateName: "__AURA3D_ARCHITECTURE_DEMO__",
     canvasSelector: "[data-testid='architecture-viewer-canvas']",
     stableState: "atrium-default",
     interaction: async (page, demo) => {
       await page.locator(demo.canvasSelector).click({ position: { x: 220, y: 240 } });
-      await page.waitForFunction(() => (globalThis as Record<string, any>).__GALILEO3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
+      await page.waitForFunction(() => (globalThis as Record<string, any>).__AURA3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
     },
     expectedAfterInteraction: (state) => state.selectedZone === "gallery" && state.measurements?.areaSqm === 310,
     pixelChecks: [
@@ -120,12 +120,12 @@ const productDemos: readonly ProductDemo[] = [
   },
   {
     id: "game-slice",
-    stateName: "__GALILEO3D_GAME_DEMO__",
+    stateName: "__AURA3D_GAME_DEMO__",
     canvasSelector: "[data-testid='game-slice-canvas']",
     stableState: "idle-runtime",
     interaction: async (page, demo) => {
       await page.locator(demo.canvasSelector).click({ position: { x: 220, y: 260 } });
-      await page.waitForFunction(() => ((globalThis as Record<string, any>).__GALILEO3D_GAME_DEMO__?.interactions ?? 0) >= 1);
+      await page.waitForFunction(() => ((globalThis as Record<string, any>).__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
     },
     expectedAfterInteraction: (state) => Number(state.interactions ?? 0) >= 1 && Number(state.metrics?.physicsBodies ?? 0) >= 2,
     pixelChecks: [
@@ -138,7 +138,7 @@ const productDemos: readonly ProductDemo[] = [
 const report: ProductVisualReport = {
   ok: true,
   generatedAt: new Date().toISOString(),
-  releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-product-visual-run",
+  releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-product-visual-run",
   suite: "v2-product-demo-visual-screenshot-diff",
   environment: {
     platform: platform(),

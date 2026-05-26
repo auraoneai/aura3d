@@ -12,7 +12,7 @@ import {
   type DecodedGLTFImage,
   type GLTFAssetInspectionReport,
   type GLTFLoaderDiagnostics
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 
 type V4Category = "product" | "architecture" | "environment" | "character" | "materials" | "morph" | "animation";
 
@@ -74,7 +74,7 @@ interface CorpusInspectionSummary {
   readonly warnings: readonly string[];
 }
 
-const fixtureRoot = resolve("fixtures/assets/v4");
+const fixtureRoot = resolve("fixtures/external-parity-assets");
 const reportPath = resolve("tests/reports/external-parity-asset-corpus.json");
 const generatedAt = new Date().toISOString();
 const fixtures: readonly V4Fixture[] = [
@@ -99,7 +99,7 @@ for (const fixture of fixtures) {
 }
 
 writeJson(resolve(fixtureRoot, "manifest.json"), {
-  schemaVersion: "g3d-v4-asset-corpus-v1",
+  schemaVersion: "a3d-v4-asset-corpus-v1",
   generatedAt,
   source: {
     kind: "generated-local",
@@ -128,7 +128,7 @@ writeJson(resolve(fixtureRoot, "manifest.json"), {
 
 const report = {
   ok: reports.every((entry) => entry.renderStatus === "render-resources-created"),
-  schemaVersion: "g3d-v4-asset-corpus-report-v1",
+  schemaVersion: "a3d-v4-asset-corpus-report-v1",
   generatedAt,
   commit: currentCommit(),
   command: "pnpm exec tsx --tsconfig tsconfig.base.json tools/external-parity-asset-corpus/index.ts",
@@ -290,7 +290,7 @@ function createAssetManifest(
   inspection: CorpusInspectionSummary
 ): Record<string, unknown> {
   return {
-    schemaVersion: "g3d-v4-local-asset-v1",
+    schemaVersion: "a3d-v4-local-asset-v1",
     id: fixture.id,
     category: fixture.category,
     displayName: fixture.displayName,
@@ -719,7 +719,7 @@ function baseGltf(
   rest: Record<string, unknown>
 ): Record<string, unknown> {
   return {
-    asset: { version: "2.0", generator: "G3D V4 generated local fixture" },
+    asset: { version: "2.0", generator: "A3D V4 generated local fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews,
     accessors,

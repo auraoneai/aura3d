@@ -7,9 +7,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, PointLight, SpotLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, PointLight, SpotLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import * as THREE from "three";
 
 declare global {
@@ -24,30 +24,30 @@ type PhysicalLightsParityResult = PhysicalLightsParityReady | PhysicalLightsPari
 
 interface PhysicalLightsParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-physical-lights-parity/v1";
-  readonly purpose: "same-scene G3D point/spot range attenuation vs Three.js PointLight/SpotLight decay scene";
+  readonly schema: "a3d-threejs-parity-physical-lights-parity/v1";
+  readonly purpose: "same-scene A3D point/spot range attenuation vs Three.js PointLight/SpotLight decay scene";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: { readonly renderer: { readonly drawCalls: number; readonly actualG3DRenderer: true }; readonly lights: LightStats; readonly pixels: PixelStats };
+  readonly a3d: { readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: true }; readonly lights: LightStats; readonly pixels: PixelStats };
   readonly threejs: { readonly renderer: { readonly actualThreeRenderer: true; readonly drawCalls: number; readonly triangles: number }; readonly lights: LightStats; readonly pixels: PixelStats };
   readonly attenuationSamples: readonly AttenuationSample[];
   readonly diff: DiffStats;
   readonly assertions: {
     readonly sameResolution: boolean;
     readonly actualThreeRenderer: boolean;
-    readonly g3dPointAndSpotLights: boolean;
+    readonly a3dPointAndSpotLights: boolean;
     readonly threePointAndSpotLights: boolean;
     readonly inverseSquareSamples: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly visibleLightGradient: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
 }
 
 interface PhysicalLightsParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-physical-lights-parity/v1";
+  readonly schema: "a3d-threejs-parity-physical-lights-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -71,7 +71,7 @@ interface PixelStats {
 
 interface AttenuationSample {
   readonly distance: number;
-  readonly g3d: number;
+  readonly a3d: number;
   readonly threeDecay2: number;
   readonly delta: number;
 }
@@ -102,40 +102,40 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-physical-lights", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-physical-lights", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-physical-lights", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
-    if (status) status.textContent = "rendering G3D physical lights";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D physical lights";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering Three.js physical lights";
     const threejs = await renderThree(threeCanvas);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
     const attenuationSamples = createAttenuationSamples();
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: PhysicalLightsParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-physical-lights-parity/v1",
-      purpose: "same-scene G3D point/spot range attenuation vs Three.js PointLight/SpotLight decay scene",
+      schema: "a3d-threejs-parity-physical-lights-parity/v1",
+      purpose: "same-scene A3D point/spot range attenuation vs Three.js PointLight/SpotLight decay scene",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: { renderer: { drawCalls: g3d.drawCalls, actualG3DRenderer: true }, lights: lightStats(), pixels: g3dStats },
+      a3d: { renderer: { drawCalls: a3d.drawCalls, actualA3DRenderer: true }, lights: lightStats(), pixels: a3dStats },
       threejs: { renderer: { actualThreeRenderer: threejs.actualThreeRenderer, drawCalls: threejs.drawCalls, triangles: threejs.triangles }, lights: lightStats(), pixels: threeStats },
       attenuationSamples,
       diff,
       assertions: {
-        sameResolution: g3dPixels.width === threePixels.width && g3dPixels.height === threePixels.height,
+        sameResolution: a3dPixels.width === threePixels.width && a3dPixels.height === threePixels.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
-        g3dPointAndSpotLights: g3d.lightKinds.includes("point") && g3d.lightKinds.includes("spot"),
+        a3dPointAndSpotLights: a3d.lightKinds.includes("point") && a3d.lightKinds.includes("spot"),
         threePointAndSpotLights: threejs.pointLights === 1 && threejs.spotLights === 1,
         inverseSquareSamples: attenuationSamples.every((sample) => sample.delta <= 0.18),
-        screenshotsNonBlank: g3dStats.litPixels > 25_000 && threeStats.litPixels > 25_000,
-        visibleLightGradient: g3dStats.uniqueColorBuckets > 60 && threeStats.uniqueColorBuckets > 60,
+        screenshotsNonBlank: a3dStats.litPixels > 25_000 && threeStats.litPixels > 25_000,
+        visibleLightGradient: a3dStats.uniqueColorBuckets > 60 && threeStats.uniqueColorBuckets > 60,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
     window.__V9_PHYSICAL_LIGHTS_PARITY__ = ready;
     if (status) status.textContent = "ready";
@@ -143,7 +143,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: PhysicalLightsParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-physical-lights-parity/v1",
+      schema: "a3d-threejs-parity-physical-lights-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -153,8 +153,8 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
-  const renderer = await G3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.025, 0.027, 0.032, 1] });
+async function renderA3D(canvas: HTMLCanvasElement) {
+  const renderer = await A3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.025, 0.027, 0.032, 1] });
   const frame = computePerspectiveCameraFrame(SCENE.frameBounds, { width: SCENE.width, height: SCENE.height }, CAMERA);
   const lights = createCollectedLights();
   const result = renderer.render({
@@ -197,7 +197,7 @@ async function renderThree(canvas: HTMLCanvasElement) {
 
 function createSource(lights: readonly CollectedLight[]): RenderSource {
   return {
-    collectRenderItems: () => createG3DItems(),
+    collectRenderItems: () => createA3DItems(),
     collectedLights: lights,
     cameraPolicy: "require",
     cameraFrameBounds: SCENE.frameBounds,
@@ -207,7 +207,7 @@ function createSource(lights: readonly CollectedLight[]): RenderSource {
   };
 }
 
-function createG3DItems(): readonly RenderItem[] {
+function createA3DItems(): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
   const sphere = Geometry.uvSphere(0.5, 48, 24);
   const floor = new PBRMaterial({ name: "physical-lights-floor", baseColor: [0.45, 0.45, 0.44, 1], roughness: 0.58, metallic: 0, environmentIntensity: 0 });
@@ -275,13 +275,13 @@ function addSphere(scene: THREE.Scene, position: readonly [number, number, numbe
 
 function createAttenuationSamples(): readonly AttenuationSample[] {
   return [1, 2, 3].map((distance) => {
-    const g3d = g3dAttenuation(distance, SCENE.range);
+    const a3d = a3dAttenuation(distance, SCENE.range);
     const threeDecay2 = threeDecayAttenuation(distance, SCENE.range, SCENE.decay);
-    return { distance, g3d, threeDecay2, delta: Number(Math.abs(g3d - threeDecay2).toFixed(4)) };
+    return { distance, a3d, threeDecay2, delta: Number(Math.abs(a3d - threeDecay2).toFixed(4)) };
   });
 }
 
-function g3dAttenuation(distance: number, range: number): number {
+function a3dAttenuation(distance: number, range: number): number {
   const rangeFalloff = Math.max(0, Math.min(1, 1 - Math.pow(distance / range, 4)));
   return Number((rangeFalloff / Math.max(distance * distance, 1)).toFixed(4));
 }
@@ -364,19 +364,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return { meanDelta: Number(meanDelta.toFixed(4)), maxDelta: Number(maxDelta.toFixed(4)), changedPixels, structuralSimilarityProxy: Number(Math.max(0, 1 - meanDelta / 255).toFixed(4)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create physical-light side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, SCENE.width, 0, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.92)";
   context.fillRect(0, SCENE.height, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("Left: G3D point/spot lights | Right: Three.js PointLight/SpotLight decay=2", 20, SCENE.height + 28);
+  context.fillText("Left: A3D point/spot lights | Right: Three.js PointLight/SpotLight decay=2", 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
   context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height + 50);

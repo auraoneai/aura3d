@@ -10,7 +10,7 @@ describe("V6 real asset corpus", () => {
     const manifest = loadV6AssetManifest();
     const summary = createV6AssetCorpusSummary(manifest);
 
-    expect(manifest.schema).toBe("g3d-production-runtime-real-asset-corpus/v1");
+    expect(manifest.schema).toBe("a3d-production-runtime-real-asset-corpus/v1");
     expect(summary.pass, summary.failures.join("\n")).toBe(true);
     expect(summary.assetCount).toBeGreaterThanOrEqual(manifest.requirements.minimumRealGlbAssets);
     expect(summary.existingAssetCount).toBe(summary.assetCount);

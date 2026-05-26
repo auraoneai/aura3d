@@ -22,7 +22,7 @@ const sourceFiles = [
   "tools/external-parity-hdr-ibl-readiness/index.ts",
   "packages/rendering/src/EnvironmentMapResources.ts",
   "packages/rendering/src/V4RenderPreset.ts",
-  "fixtures/assets/v4/environments/generated-local-environment-manifest.json",
+  "fixtures/environment-corpus/manifest.json",
   "examples/asset-viewer/main.ts",
   "examples/product-configurator/main.ts",
   "examples/architecture-viewer/main.ts",

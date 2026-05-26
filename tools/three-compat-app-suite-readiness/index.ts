@@ -9,7 +9,7 @@ const checks = [
   { name: "public-imports", pass: internalImports.length === 0, detail: internalImports.join(", ") || "apps use public V5 APIs" }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "g3d-three-compat-app-suite-readiness/v1", generatedAt: new Date().toISOString(), pass, apps, checks };
+const report = { schema: "a3d-three-compat-app-suite-readiness/v1", generatedAt: new Date().toISOString(), pass, apps, checks };
 const reportPath = resolve("tests/reports/three-compat-app-suite-readiness.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);

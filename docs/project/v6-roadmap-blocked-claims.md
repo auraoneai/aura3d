@@ -17,6 +17,6 @@ The following claims are blocked:
 
 Allowed claim after release gates pass:
 
-> G3D V6 provides a production WebGL2 renderer with real asset loading, true PBR/HDR image-based lighting, shadows, postprocess, animation, controls, and same-scene Three.js visual parity for the documented flagship workflows.
+> A3D V6 provides a production WebGL2 renderer with real asset loading, true PBR/HDR image-based lighting, shadows, postprocess, animation, controls, and same-scene Three.js visual parity for the documented flagship workflows.
 
 WebGPU may only be claimed with explicit feature coverage and gap reporting.

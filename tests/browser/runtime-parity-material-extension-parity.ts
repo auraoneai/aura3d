@@ -1,4 +1,4 @@
-import { GLTFLoader as G3DGLTFLoader } from "/packages/assets/src/GLTFLoader.js";
+import { GLTFLoader as A3DGLTFLoader } from "/packages/assets/src/GLTFLoader.js";
 import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
@@ -44,17 +44,17 @@ const HDR_URI = "/fixtures/environment-corpus/hdri/industrial_high_contrast_1k.h
 const NEUTRAL_BACKGROUND = 0x171a1d;
 const NEUTRAL_BACKGROUND_LINEAR = [0.009, 0.011, 0.013, 1] as const;
 const MATERIAL_EXTENSION_ASSETS = [
-  { id: "compare-anisotropy", uri: "/fixtures/v7/assets/material-extensions/compare-anisotropy.glb", expectedExtension: "KHR_materials_anisotropy", expectedFeature: "anisotropy" },
-  { id: "compare-iridescence", uri: "/fixtures/v7/assets/material-extensions/compare-iridescence.glb", expectedExtension: "KHR_materials_iridescence", expectedFeature: "iridescence" },
-  { id: "compare-transmission", uri: "/fixtures/v7/assets/material-extensions/compare-transmission.glb", expectedExtension: "KHR_materials_transmission", expectedFeature: "transmission" },
-  { id: "compare-volume", uri: "/fixtures/v7/assets/material-extensions/compare-volume.glb", expectedExtension: "KHR_materials_volume", expectedFeature: "volume" },
-  { id: "compare-clearcoat", uri: "/fixtures/v7/assets/material-extensions/compare-clearcoat.glb", expectedExtension: "KHR_materials_clearcoat", expectedFeature: "clearcoat" },
-  { id: "compare-sheen", uri: "/fixtures/v7/assets/material-extensions/compare-sheen.glb", expectedExtension: "KHR_materials_sheen", expectedFeature: "sheen" },
-  { id: "compare-specular", uri: "/fixtures/v7/assets/material-extensions/compare-specular.glb", expectedExtension: "KHR_materials_specular", expectedFeature: "specular" },
-  { id: "compare-ior", uri: "/fixtures/v7/assets/material-extensions/compare-ior.glb", expectedExtension: "KHR_materials_ior", expectedFeature: "ior" },
-  { id: "compare-dispersion", uri: "/fixtures/v7/assets/material-extensions/compare-dispersion.glb", expectedExtension: "KHR_materials_dispersion", expectedFeature: "dispersion" },
-  { id: "compare-emissive-strength", uri: "/fixtures/v7/assets/material-extensions/compare-emissive-strength.glb", expectedExtension: "KHR_materials_emissive_strength", expectedFeature: "emissive" },
-  { id: "diffuse-transmission-test", uri: "/fixtures/v7/assets/material-extensions/diffuse-transmission-test.glb", expectedExtension: "KHR_materials_diffuse_transmission", expectedFeature: "diffuse-transmission" }
+  { id: "compare-anisotropy", uri: "/fixtures/threejs-parity/assets/materials/compare-anisotropy.glb", expectedExtension: "KHR_materials_anisotropy", expectedFeature: "anisotropy" },
+  { id: "compare-iridescence", uri: "/fixtures/threejs-parity/assets/materials/compare-iridescence.glb", expectedExtension: "KHR_materials_iridescence", expectedFeature: "iridescence" },
+  { id: "compare-transmission", uri: "/fixtures/threejs-parity/assets/materials/compare-transmission.glb", expectedExtension: "KHR_materials_transmission", expectedFeature: "transmission" },
+  { id: "compare-volume", uri: "/fixtures/threejs-parity/assets/materials/compare-volume.glb", expectedExtension: "KHR_materials_volume", expectedFeature: "volume" },
+  { id: "compare-clearcoat", uri: "/fixtures/threejs-parity/assets/materials/compare-clearcoat.glb", expectedExtension: "KHR_materials_clearcoat", expectedFeature: "clearcoat" },
+  { id: "compare-sheen", uri: "/fixtures/threejs-parity/assets/materials/compare-sheen.glb", expectedExtension: "KHR_materials_sheen", expectedFeature: "sheen" },
+  { id: "compare-specular", uri: "/fixtures/threejs-parity/assets/materials/compare-specular.glb", expectedExtension: "KHR_materials_specular", expectedFeature: "specular" },
+  { id: "compare-ior", uri: "/fixtures/threejs-parity/assets/materials/compare-ior.glb", expectedExtension: "KHR_materials_ior", expectedFeature: "ior" },
+  { id: "compare-dispersion", uri: "/fixtures/threejs-parity/assets/materials/compare-dispersion.glb", expectedExtension: "KHR_materials_dispersion", expectedFeature: "dispersion" },
+  { id: "compare-emissive-strength", uri: "/fixtures/threejs-parity/assets/materials/compare-emissive-strength.glb", expectedExtension: "KHR_materials_emissive_strength", expectedFeature: "emissive" },
+  { id: "diffuse-transmission-test", uri: "/fixtures/threejs-parity/assets/materials/diffuse-transmission-test.glb", expectedExtension: "KHR_materials_diffuse_transmission", expectedFeature: "diffuse-transmission" }
 ] as const;
 
 async function run(): Promise<void> {
@@ -72,27 +72,27 @@ async function run(): Promise<void> {
   const lighting = createV6EnvironmentLightingResources(hdrPipeline);
   const cases = [];
   for (const asset of MATERIAL_EXTENSION_ASSETS) {
-    const g3dCanvas = createCanvas(`${asset.id}-g3d`);
+    const a3dCanvas = createCanvas(`${asset.id}-a3d`);
     const threeCanvas = createCanvas(`${asset.id}-threejs`);
     const diffCanvas = createCanvas(`${asset.id}-diff`);
-    root.append(g3dCanvas, threeCanvas, diffCanvas);
-    const g3d = await renderG3D(asset, g3dCanvas, lighting.lighting, hdrPipeline);
-    const threejs = await renderThree(asset, threeCanvas, `${location.origin}${HDR_URI}`, g3d.frameBounds);
-    const diff = renderDiff(g3d.pixels, threejs.pixels, diffCanvas);
+    root.append(a3dCanvas, threeCanvas, diffCanvas);
+    const a3d = await renderA3D(asset, a3dCanvas, lighting.lighting, hdrPipeline);
+    const threejs = await renderThree(asset, threeCanvas, `${location.origin}${HDR_URI}`, a3d.frameBounds);
+    const diff = renderDiff(a3d.pixels, threejs.pixels, diffCanvas);
     cases.push({
       id: asset.id,
       expectedExtension: asset.expectedExtension,
       expectedFeature: asset.expectedFeature,
       parity: { claim: "bounded-eleven-extension-material-delta-coverage" },
-      g3d: {
-        diagnostics: g3d.proof.diagnostics,
-        importedAsset: g3d.proof.importedAsset,
-        summary: summarizeV6WebGL2Proof(g3d.proof),
-        pixelStats: analyzePixels(g3d.pixels),
-        extensionsUsed: g3d.asset.loaderDiagnostics.extensionsUsed,
-        materialFeatures: g3d.asset.loaderDiagnostics.materialFeatures,
-        unsupportedExtensions: g3d.asset.loaderDiagnostics.unsupportedExtensions,
-        transmissionBackdrop: g3d.transmissionBackdrop
+      a3d: {
+        diagnostics: a3d.proof.diagnostics,
+        importedAsset: a3d.proof.importedAsset,
+        summary: summarizeV6WebGL2Proof(a3d.proof),
+        pixelStats: analyzePixels(a3d.pixels),
+        extensionsUsed: a3d.asset.loaderDiagnostics.extensionsUsed,
+        materialFeatures: a3d.asset.loaderDiagnostics.materialFeatures,
+        unsupportedExtensions: a3d.asset.loaderDiagnostics.unsupportedExtensions,
+        transmissionBackdrop: a3d.transmissionBackdrop
       },
       threejs: {
         diagnostics: threejs.diagnostics,
@@ -101,7 +101,7 @@ async function run(): Promise<void> {
       },
       diff,
       dataUrls: {
-        g3d: pixelsToDataUrl(g3d.pixels, SIZE, SIZE, true),
+        a3d: pixelsToDataUrl(a3d.pixels, SIZE, SIZE, true),
         threejs: pixelsToDataUrl(threejs.pixels, SIZE, SIZE, true),
         diff: diffCanvas.toDataURL("image/png")
       }
@@ -110,8 +110,8 @@ async function run(): Promise<void> {
   lighting.dispose();
   window.__V7_MATERIAL_EXTENSION_PARITY__ = {
     status: "ready",
-    schema: "g3d-v7-material-extension-parity/v1",
-    purpose: "same-extension G3D vs Three.js material delta gate",
+    schema: "a3d-v7-material-extension-parity/v1",
+    purpose: "same-extension A3D vs Three.js material delta gate",
     parity: {
       claim: "bounded-eleven-extension-material-delta-coverage",
       reason: "This compares eleven dedicated material-extension assets against a same-camera Three.js PMREM reference. It is bounded visual-delta coverage, not broad material-extension ecosystem parity."
@@ -133,14 +133,14 @@ async function run(): Promise<void> {
   };
 }
 
-async function renderG3D(
+async function renderA3D(
   asset: typeof MATERIAL_EXTENSION_ASSETS[number],
   canvas: HTMLCanvasElement,
   environmentLighting: NonNullable<Parameters<typeof createV6ComposedProductionStageScene>[2]["environmentLighting"]>,
   hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
 ) {
   const assetUri = `${location.origin}${asset.uri}`;
-  const loaded = await new G3DGLTFLoader().load({ url: assetUri }, new LoadContext());
+  const loaded = await new A3DGLTFLoader().load({ url: assetUri }, new LoadContext());
   const resources = await createGLTFRenderResources(loaded);
   const input = resources.toRendererInput({ width: SIZE, height: SIZE }, {
     qualityPreset: "hdr-studio-preview",

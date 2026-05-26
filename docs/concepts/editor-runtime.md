@@ -2,7 +2,7 @@
 
 Version: `0.1.0-alpha.0`
 
-The editor runtime provides browser-first authoring primitives without requiring every consumer to import the full editor UI. The public package is `@galileo3d/engine/editor-runtime`.
+The editor runtime provides browser-first authoring primitives without requiring every consumer to import the full editor UI. The public package is `@aura3d/engine/editor-runtime`.
 
 ## Package Surface
 

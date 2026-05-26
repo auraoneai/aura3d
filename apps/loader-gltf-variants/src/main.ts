@@ -4,12 +4,12 @@ import {
   createGLTFRenderResources,
   type GLTFAsset,
   type GLTFRenderResources
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LoaderGLTFVariants?: V8LoaderGLTFVariantsRuntime;
+    __a3dV8LoaderGLTFVariants?: V8LoaderGLTFVariantsRuntime;
   }
 }
 
@@ -30,7 +30,7 @@ interface V8LoaderGLTFVariantsRuntime {
   readonly extensionsUsed: readonly string[];
   readonly unsupportedRequired: readonly string[];
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -62,7 +62,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LoaderGLTFVariants = runtime;
+    window.__a3dV8LoaderGLTFVariants = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -70,7 +70,7 @@ async function run(): Promise<void> {
   try {
     const asset = await new GLTFLoader().load({ url: createVariantFixtureDataUrl() }, new LoadContext());
     const resourcesByVariant = await createVariantResources(asset);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -123,7 +123,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: []
         });
-        window.__g3dV8LoaderGLTFVariants = runtime;
+        window.__a3dV8LoaderGLTFVariants = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -154,7 +154,7 @@ function inspectSelectedMaterial(asset: GLTFAsset, variant: string): string {
   return scene.collectRenderables()[0]?.renderable.material ?? "unknown";
 }
 
-function createRendererInput(resources: GLTFRenderResources, activeVariant: string, time: number): Parameters<G3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, activeVariant: string, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: {
@@ -213,7 +213,7 @@ function createRuntime(
     extensionsUsed: patch.extensionsUsed ?? [],
     unsupportedRequired: patch.unsupportedRequired ?? [],
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -238,7 +238,7 @@ function createVariantFixtureDataUrl(): string {
   const indexView = buffer.appendUint16(indices);
   const bytes = buffer.bytes();
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V8 variants fixture" },
+    asset: { version: "2.0", generator: "Aura3D V8 variants fixture" },
     extensionsUsed: ["KHR_materials_variants"],
     extensionsRequired: ["KHR_materials_variants"],
     extensions: {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Scene, type SceneNode } from "@galileo3d/scene";
-import { TransformComponent, type Entity, World } from "@galileo3d/ecs";
-import { BehaviorHost, BehaviorSystem, type ScriptContext } from "@galileo3d/scripting";
+import { Scene, type SceneNode } from "@aura3d/scene";
+import { TransformComponent, type Entity, World } from "@aura3d/ecs";
+import { BehaviorHost, BehaviorSystem, type ScriptContext } from "@aura3d/scripting";
 
 describe("scripting scene and ECS integration", () => {
   it("moves a scene node and updates an ECS component through behavior services", async () => {

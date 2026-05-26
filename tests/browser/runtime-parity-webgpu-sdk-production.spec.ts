@@ -16,7 +16,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
     await server.close();
   });
 
-  test("renders imported GLTF/HDR/PBR through G3DRenderer backend='auto' navigator.gpu renderAsync", async ({ page }) => {
+  test("renders imported GLTF/HDR/PBR through A3DRenderer backend='auto' navigator.gpu renderAsync", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/production-runtime-webgl2-real-renderer.html`, { waitUntil: "domcontentloaded" });
     const report = await page.evaluate(async () => {
       const WIDTH = 1024;
@@ -33,7 +33,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
       const availability = await renderingV6.createV6WebGPUReport(navigator.gpu);
       if (availability.status !== "available") {
         return {
-          schema: "g3d-v7-webgpu-sdk-production/v1",
+          schema: "a3d-v7-webgpu-sdk-production/v1",
           status: "blocked",
           productionClaim: "hardware-unavailable",
           availability,
@@ -41,14 +41,14 @@ test.describe("V7 WebGPU public SDK production path", () => {
         };
       }
 
-      let renderer: Awaited<ReturnType<typeof engine.G3DRenderer.create>> | undefined;
+      let renderer: Awaited<ReturnType<typeof engine.A3DRenderer.create>> | undefined;
       let asset: Awaited<ReturnType<typeof engine.loadGltfScene>> | undefined;
       let environment: Awaited<ReturnType<typeof engine.loadHdrEnvironment>> | undefined;
       let stage: ReturnType<typeof engine.createGroundedStage> | undefined;
       try {
         const viewport = { width: WIDTH, height: HEIGHT };
         asset = await engine.loadGltfScene({
-          url: `${location.origin}/fixtures/v7/assets/flagship/chronograph-watch.glb`,
+          url: `${location.origin}/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`,
           assetId: "chronograph-watch",
           assetName: "Chronograph Watch",
           viewport
@@ -56,7 +56,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
         environment = await engine.loadHdrEnvironment({
           id: "studio-small-08-webgpu-sdk-production",
           label: "Studio Small 08 WebGPU SDK Production",
-          url: `${location.origin}/fixtures/v7/environments/hdri/studio_small_08_4k.hdr`,
+          url: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`,
           intensity: 1.12,
           backgroundIntensity: 0.82,
           rotation: 0.18,
@@ -72,7 +72,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
           viewport,
           preset: "product-hero"
         });
-        renderer = await engine.G3DRenderer.create({
+        renderer = await engine.A3DRenderer.create({
           backend: "auto",
           canvas,
           width: WIDTH,
@@ -116,12 +116,12 @@ test.describe("V7 WebGPU public SDK production path", () => {
           && result.proof.pixels.uniqueColorBuckets >= 40
           && result.proof.pixels.maxLuma > 80;
         return {
-          schema: "g3d-v7-webgpu-sdk-production/v1",
+          schema: "a3d-v7-webgpu-sdk-production/v1",
           status: ready ? "ready" : "blocked",
           productionClaim: ready ? "public-sdk-webgpu-production-path" : "not-ready",
           availability,
           sdkPath: {
-            g3dRendererBackend: renderer.backend,
+            a3dRendererBackend: renderer.backend,
             backendSelection: renderer.backendSelection,
             renderAsync: true,
             lowLevelRendererImportedDirectly: false,
@@ -151,7 +151,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
         };
       } catch (error) {
         return {
-          schema: "g3d-v7-webgpu-sdk-production/v1",
+          schema: "a3d-v7-webgpu-sdk-production/v1",
           status: "blocked",
           productionClaim: "not-ready",
           availability,
@@ -172,14 +172,14 @@ test.describe("V7 WebGPU public SDK production path", () => {
       ...report
     }, null, 2)}\n`);
 
-    expect(report.schema).toBe("g3d-v7-webgpu-sdk-production/v1");
+    expect(report.schema).toBe("a3d-v7-webgpu-sdk-production/v1");
     if (report.status === "blocked" && report.productionClaim === "hardware-unavailable") {
       test.skip(true, report.reason);
       return;
     }
     expect(report.status).toBe("ready");
     expect(report.productionClaim).toBe("public-sdk-webgpu-production-path");
-    expect(report.sdkPath.g3dRendererBackend).toBe("webgpu");
+    expect(report.sdkPath.a3dRendererBackend).toBe("webgpu");
     expect(report.sdkPath.backendSelection.requestedBackend).toBe("auto");
     expect(report.sdkPath.backendSelection.selectedBackend).toBe("webgpu");
     expect(report.sdkPath.backendSelection.reason).toContain("navigator.gpu");

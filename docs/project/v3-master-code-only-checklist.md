@@ -16,7 +16,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Add `tools/example-truth-audit/index.ts` to verify every portfolio card has a matching screenshot, browser test, and current known-limit note.
 - [x] Add a `tests/browser/example-screenshot-audit.spec.ts` that opens every portfolio example and stores screenshots under `tests/reports/v3-example-screenshots/`.
 - [x] Add a report `tests/reports/foundation-current-capability.json` that states which v3 gates are blocked and why.
-- [x] Update examples so every page exposes a typed `window.__GALILEO3D_*__` state with `status`, `renderer`, `errors`, `diagnostics`, `visualClaim`, and `knownLimits`.
+- [x] Update examples so every page exposes a typed `window.__AURA3D_*__` state with `status`, `renderer`, `errors`, `diagnostics`, `visualClaim`, and `knownLimits`.
 
 ## 1. Renderer And GPU
 
@@ -44,7 +44,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 ## 2. Asset Pipeline And Content
 
 - [x] Replace placeholder image decoding in user-facing asset examples with real browser image decoding.
-- [x] Add a real local asset corpus under `fixtures/assets/v3/` with product, character, environment, architecture, and material test models.
+- [x] Add a real local asset corpus under `fixtures/workflow-assets/assets/` with product, character, environment, architecture, and material test models.
 - [x] Add a glTF visual corpus runner that renders each asset and stores screenshots plus diagnostics.
 - [x] Add material fidelity tests for base color, normal, metallic-roughness, emissive, occlusion, alpha, double-sided, clearcoat, transmission, sheen, specular, and variants where supported.
 - [x] Add animation playback for glTF clips in the asset viewer.
@@ -109,16 +109,16 @@ Do not check off an item until the implementation, tests, examples, and report e
 ## 6. Three.js And Babylon Comparison Code
 
 - [x] Create shared benchmark scene descriptors under `benchmarks/shared/scenes/`.
-- [x] Implement identical product configurator scene in Galileo3D, Three.js, and Babylon.js.
-- [x] Implement identical asset viewer load/render scene in Galileo3D, Three.js, and Babylon.js.
-- [x] Implement identical PBR material scene in Galileo3D, Three.js, and Babylon.js.
-- [x] Implement identical large static scene in Galileo3D, Three.js, and Babylon.js.
-- [x] Implement identical instancing scene in Galileo3D, Three.js, and Babylon.js.
-- [x] Implement identical skinned character scene in Galileo3D, Three.js, and Babylon.js.
-- [x] Implement identical postprocess scene only if Galileo3D supports the same effects. Evidence: broad same-effect competitor postprocess parity is not claimed; Galileo3D's supported real-scene postprocess path is verified locally, while comparison reports remain scoped to the implemented shared benchmark scenes.
+- [x] Implement identical product configurator scene in Aura3D, Three.js, and Babylon.js.
+- [x] Implement identical asset viewer load/render scene in Aura3D, Three.js, and Babylon.js.
+- [x] Implement identical PBR material scene in Aura3D, Three.js, and Babylon.js.
+- [x] Implement identical large static scene in Aura3D, Three.js, and Babylon.js.
+- [x] Implement identical instancing scene in Aura3D, Three.js, and Babylon.js.
+- [x] Implement identical skinned character scene in Aura3D, Three.js, and Babylon.js.
+- [x] Implement identical postprocess scene only if Aura3D supports the same effects. Evidence: broad same-effect competitor postprocess parity is not claimed; Aura3D's supported real-scene postprocess path is verified locally, while comparison reports remain scoped to the implemented shared benchmark scenes.
 - [x] Add benchmark runner for startup time, asset load time, first frame, steady frame time, memory estimate, draw calls, shader count, texture bytes, and bundle size.
 - [x] Add screenshot diff tooling for comparison scenes.
-- [x] Add report generator that states where Galileo3D loses, ties, or wins.
+- [x] Add report generator that states where Aura3D loses, ties, or wins.
 - [x] Block broad Three.js claims unless comparison reports show measured advantages for the exact claim.
 
 ## 7. Validation Tooling
@@ -128,7 +128,7 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Add `pnpm verify:foundation-rendering` for renderer visual and benchmark tests.
 - [x] Add `pnpm verify:foundation-assets` for corpus loading/rendering/inspection tests.
 - [x] Add `pnpm verify:foundation-editor` for editor workflow automation.
-- [x] Add `pnpm verify:foundation-benchmarks` for local Three.js/Babylon/Galileo comparison reports.
+- [x] Add `pnpm verify:foundation-benchmarks` for local Three.js/Babylon/Aura3D comparison reports.
 - [x] Add report freshness checks so v3 reports fail when source files changed after report generation.
 - [x] Add flaky-test detection for browser visual and benchmark tests.
 - [x] Add screenshot review manifest with paths, scene names, browser version, viewport, DPR, commit hash, and run ID.
@@ -139,5 +139,5 @@ Do not check off an item until the implementation, tests, examples, and report e
 - [x] Gate 2: At least three product-grade local examples exist and pass screenshot/interaction tests.
 - [x] Gate 3: Asset corpus loads and renders with material/animation diagnostics.
 - [x] Gate 4: Browser editor can author and export a real app.
-- [x] Gate 5: Comparison benchmarks show exact measurable Galileo3D advantages in a defined niche.
+- [x] Gate 5: Comparison benchmarks show exact measurable Aura3D advantages in a defined niche.
 - [x] Gate 6: No broad Three.js or Unity/Unreal claim appears outside allowed gate-checked wording.

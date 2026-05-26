@@ -20,12 +20,12 @@ test.describe("V4 postprocess suite browser evidence", () => {
   test("proves postprocess lab output plus V4 bloom/SSAO/DOF/color-grade APIs", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_POSTPROCESS_LAB__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready", undefined, { timeout: 30_000 });
     const screenshotPath = "tests/reports/external-gallery/postprocess/postprocess-suite.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/postprocess"), { recursive: true });
     await page.locator("[data-testid='postprocess-lab-canvas']").screenshot({ path: screenshotPath });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const state = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     const v4Postprocess = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
       const width = 4;
@@ -86,7 +86,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_POSTPROCESS_LAB__?: {
+    __AURA3D_POSTPROCESS_LAB__?: {
       readonly status?: "ready" | "error";
     };
   }

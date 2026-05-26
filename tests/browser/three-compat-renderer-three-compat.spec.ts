@@ -49,18 +49,18 @@ test("RendererV5 browser proof draws a complex scene using every required catego
             ctx.font = "12px system-ui";
             ctx.fillText(mode, x - 44, y + 66);
           });
-          window.__g3dRendererFeatureCount = diagnostics.features.length;
-          window.__g3dRendererLights = plan.lights.length;
-          window.__g3dRendererModes = plan.materialModes.length;
+          window.__a3dRendererFeatureCount = diagnostics.features.length;
+          window.__a3dRendererLights = plan.lights.length;
+          window.__a3dRendererModes = plan.materialModes.length;
         </script>
       </body>
     </html>
   `);
 
   expect(summary.missing).toEqual([]);
-  await expect.poll(async () => page.evaluate(() => window.__g3dRendererFeatureCount)).toBeGreaterThanOrEqual(23);
-  await expect.poll(async () => page.evaluate(() => window.__g3dRendererLights)).toBe(6);
-  await expect.poll(async () => page.evaluate(() => window.__g3dRendererModes)).toBe(5);
+  await expect.poll(async () => page.evaluate(() => window.__a3dRendererFeatureCount)).toBeGreaterThanOrEqual(23);
+  await expect.poll(async () => page.evaluate(() => window.__a3dRendererLights)).toBe(6);
+  await expect.poll(async () => page.evaluate(() => window.__a3dRendererModes)).toBe(5);
   const pixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

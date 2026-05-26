@@ -4,9 +4,9 @@
     "name": "V4 Editor Authored Sample",
     "savedAt": "2026-05-08T00:00:00.000Z",
     "provenance": {
-      "authoringTool": "galileo3d-browser-editor",
+      "authoringTool": "aura3d-browser-editor",
       "workflow": "editor-import-save-export",
-      "runtimePackage": "@galileo3d/editor-runtime",
+      "runtimePackage": "@aura3d/editor-runtime",
       "operations": [
         { "id": "v4-browser-new-project", "runtimeApi": "EditorRuntime.select", "target": "node-hero" },
         { "id": "import-v4-fox", "runtimeApi": "EditorRuntime.executeCommand", "target": "asset-v4-fox" },
@@ -19,7 +19,7 @@
         { "id": "static-export", "runtimeApi": "StaticProjectExporter.export", "target": "index.html" },
         { "id": "static-export-runtime", "runtimeApi": "createStaticExportRuntime", "target": "runtime.js" }
       ],
-      "evidenceHash": "g3d-prov-40318679"
+      "evidenceHash": "a3d-prov-044991f1"
     }
   },
   "scene": {
@@ -147,9 +147,9 @@
     "importAnimations": true,
     "materialVariants": true
   },
-  "plugins": ["galileo.default-authoring"],
+  "plugins": ["aura3d.default-authoring"],
   "export": {
-    "title": "Galileo3D V4 Editor Export",
+    "title": "Aura3D V4 Editor Export",
     "entryNodeId": "node-v4-camera"
   }
 }

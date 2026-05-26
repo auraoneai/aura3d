@@ -50,7 +50,7 @@ export interface GithubReadinessCheck {
 
 export function createV4GithubExternalReadinessReport(root = process.cwd(), runner: CommandRunner = defaultCommandRunner): V4GithubExternalReadinessReport {
   const remoteUrl = runText(runner, root, "git", ["config", "--get", "remote.origin.url"]);
-  const repo = parseGithubRepo(remoteUrl.stdout) ?? process.env.G3D_GITHUB_REPOSITORY;
+  const repo = parseGithubRepo(remoteUrl.stdout) ?? process.env.A3D_GITHUB_REPOSITORY;
   const currentBranchResult = runText(runner, root, "git", ["rev-parse", "--abbrev-ref", "HEAD"]);
   const currentBranch = currentBranchResult.status === 0 ? currentBranchResult.stdout.trim() : undefined;
   const defaultBranch = repo ? githubDefaultBranch(root, runner, repo) : undefined;
@@ -133,7 +133,7 @@ function checkRemote(remoteUrl: CommandResult, repo: string | undefined): Github
   ];
   const blockers = [
     ...(remoteUrl.status === 0 ? [] : ["remote.origin.url is not configured."]),
-    ...(repo ? [] : ["remote.origin.url is not a GitHub repository URL and G3D_GITHUB_REPOSITORY is not set."]),
+    ...(repo ? [] : ["remote.origin.url is not a GitHub repository URL and A3D_GITHUB_REPOSITORY is not set."]),
   ];
   return { ready: blockers.length === 0, evidence, blockers };
 }
@@ -158,9 +158,14 @@ function checkWorkflowsOnDefaultBranch(root: string, runner: CommandRunner, repo
     result: runText(runner, root, "gh", ["api", `repos/${repo}/contents/${path}?ref=${defaultBranch}`]),
   }));
   const workflowList = runText(runner, root, "gh", ["workflow", "list", "--repo", repo]);
+  const workflowListText = workflowList.stdout;
+  const workflowsDiscoverable =
+    workflowList.status === 0 &&
+    workflowListText.includes("external-parity-external-engine-baselines") &&
+    workflowListText.includes("v4-public-demo-deploy");
   const blockers = [
     ...results.flatMap(({ path, result }) => result.status === 0 ? [] : [`${path} is not readable on default branch ${defaultBranch}.`]),
-    ...(workflowList.status === 0 && workflowList.stdout.includes("v4-external") && workflowList.stdout.includes("v4-public")
+    ...(workflowsDiscoverable
       ? []
       : ["gh workflow list does not show both V4 external evidence workflows as discoverable."]),
   ];
@@ -215,14 +220,14 @@ function checkActionsConfiguration(root: string, runner: CommandRunner, repo: st
     ? secrets.json.secrets.filter(isRecord).map((entry) => typeof entry.name === "string" ? entry.name : "").filter(Boolean)
     : [];
   const configuredNames = new Set([...variableNames, ...secretNames]);
-  const requiredNames = ["G3D_UNITY_EDITOR", "G3D_UNREAL_EDITOR"] as const;
+  const requiredNames = ["A3D_UNITY_EDITOR", "A3D_UNREAL_EDITOR"] as const;
   const missing = requiredNames.filter((name) => !configuredNames.has(name));
   return {
     ready: variables.ok && secrets.ok && missing.length === 0,
     evidence: [
       `variables=${variableNames.sort().join(",") || "none"}`,
       `secrets=${secretNames.sort().join(",") || "none"}`,
-      "G3D_RUN_UNITY_UNREAL_CLI_SMOKE is set to true inside .github/workflows/external-parity-external-engine-baselines.yml.",
+      "A3D_RUN_UNITY_UNREAL_CLI_SMOKE is set to true inside .github/workflows/external-parity-external-engine-baselines.yml.",
     ],
     blockers: [
       ...(variables.ok ? [] : ["GitHub Actions variables API could not be read."]),
@@ -281,7 +286,7 @@ function blockedNextCommands(repo: string | undefined, defaultBranch: string | u
     `Open and merge a PR that lands the V4 workflow files on ${defaultBranch ?? "the default branch"}.`,
     "Enable GitHub Pages for the repository.",
     "Register self-hosted GitHub Actions runners labeled unity and unreal.",
-    "Configure G3D_UNITY_EDITOR and G3D_UNREAL_EDITOR as Actions variables or secrets.",
+    "Configure A3D_UNITY_EDITOR and A3D_UNREAL_EDITOR as Actions variables or secrets.",
     repo && defaultBranch ? `gh workflow run v4-public-demo-deploy.yml --repo ${repo} --ref ${defaultBranch}` : "gh workflow run v4-public-demo-deploy.yml --repo <owner/repo> --ref <default-branch>",
     repo && defaultBranch ? `gh workflow run external-parity-external-engine-baselines.yml --repo ${repo} --ref ${defaultBranch} -f engine=all` : "gh workflow run external-parity-external-engine-baselines.yml --repo <owner/repo> --ref <default-branch> -f engine=all",
     "pnpm preflight:v4-parity:after-external-evidence",

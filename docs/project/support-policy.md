@@ -4,7 +4,7 @@ Version: 1.0.0
 
 ## Current Support Level
 
-Galileo3D is an production TypeScript-first browser 3D engine and workflow SDK. Support for version `1.0.0` is limited to repository issues, reproducible test cases, and documentation updates.
+Aura3D is an production TypeScript-first browser 3D engine and workflow SDK. Support for version `1.0.0` is limited to repository issues, reproducible test cases, and documentation updates.
 
 ## Where To Ask For Help
 

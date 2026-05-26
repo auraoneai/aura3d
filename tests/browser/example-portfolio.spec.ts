@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 declare global {
   interface Window {
-    __GALILEO3D_PORTFOLIO__?: {
+    __AURA3D_PORTFOLIO__?: {
       status: "ready";
       examples: number;
       readinessDemos: readonly {
@@ -54,9 +54,9 @@ test.describe("example portfolio", () => {
     });
 
     await page.goto(`${server.origin}/examples/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_PORTFOLIO__?.status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_PORTFOLIO__?.status === "ready");
 
-    const state = await page.evaluate(() => window.__GALILEO3D_PORTFOLIO__);
+    const state = await page.evaluate(() => window.__AURA3D_PORTFOLIO__);
     const visibleCards = await page.locator("[data-example-id]").evaluateAll((cards) =>
       cards.map((card) => card.getAttribute("data-example-id")),
     );

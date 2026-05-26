@@ -20,133 +20,136 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@galileo3d/math": [
+      "@aura3d/math": [
         "packages/math/src/index.ts"
       ],
-      "@galileo3d/core": [
+      "@aura3d/core": [
         "packages/core/src/index.ts"
       ],
-      "@galileo3d/scene": [
+      "@aura3d/scene": [
         "packages/scene/src/index.ts"
       ],
-      "@galileo3d/ecs": [
+      "@aura3d/ecs": [
         "packages/ecs/src/index.ts"
       ],
-      "@galileo3d/rendering": [
+      "@aura3d/rendering": [
         "packages/rendering/src/index.ts"
       ],
-      "@galileo3d/controls": [
+      "@aura3d/controls": [
         "packages/controls/src/index.ts"
       ],
-      "@galileo3d/environments": [
+      "@aura3d/environments": [
         "packages/environments/src/index.ts"
       ],
-      "@galileo3d/materials": [
+      "@aura3d/materials": [
         "packages/materials/src/index.ts"
       ],
-      "@galileo3d/engine": [
+      "@aura3d/engine": [
         "packages/engine/src/index.ts"
       ],
-      "@galileo3d/apps": [
-        "packages/apps/src/index.ts"
-      ],
-      "@galileo3d/engine/apps": [
-        "packages/apps/src/index.ts"
-      ],
-      "@galileo3d/engine/engine": [
+      "@aura3d/engine-runtime": [
         "packages/engine/src/index.ts"
       ],
-      "@galileo3d/engine/assets/browser": [
+      "@aura3d/apps": [
+        "packages/apps/src/index.ts"
+      ],
+      "@aura3d/engine/apps": [
+        "packages/apps/src/index.ts"
+      ],
+      "@aura3d/engine/engine": [
+        "packages/engine/src/index.ts"
+      ],
+      "@aura3d/engine/assets/browser": [
         "packages/assets/src/browser-index.ts"
       ],
-      "@galileo3d/engine/rendering": [
+      "@aura3d/engine/rendering": [
         "packages/rendering/src/index.ts"
       ],
-      "@galileo3d/engine/rendering/production-runtime": [
+      "@aura3d/engine/rendering/production-runtime": [
         "packages/rendering/src/production-runtime/index.ts"
       ],
-      "@galileo3d/engine/rendering/advanced-runtime": [
+      "@aura3d/engine/rendering/advanced-runtime": [
         "packages/rendering/src/advanced-runtime/index.ts"
       ],
-      "@galileo3d/engine/rendering/v6": [
+      "@aura3d/engine/rendering/v6": [
         "packages/rendering/src/production-runtime/index.ts"
       ],
-      "@galileo3d/engine/rendering/v9": [
+      "@aura3d/engine/rendering/v9": [
         "packages/rendering/src/advanced-runtime/index.ts"
       ],
-      "@galileo3d/engine/workflows/production": [
+      "@aura3d/engine/workflows/production": [
         "packages/workflows/src/production-runtime/index.ts"
       ],
-      "@galileo3d/engine/workflows/v6": [
+      "@aura3d/engine/workflows/v6": [
         "packages/workflows/src/production-runtime/index.ts"
       ],
-      "@galileo3d/engine/workflows/production-runtime": [
+      "@aura3d/engine/workflows/production-runtime": [
         "packages/workflows/src/production-runtime/index.ts"
       ],
-      "@galileo3d/three-compat": [
+      "@aura3d/three-compat": [
         "packages/three-compat/src/index.ts"
       ],
-      "@galileo3d/create-g3d": [
-        "packages/create-g3d/src/index.ts"
+      "@aura3d/create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
       ],
-      "@galileo3d/physics": [
+      "@aura3d/physics": [
         "packages/physics/src/index.ts"
       ],
-      "@galileo3d/product-studio": [
+      "@aura3d/product-studio": [
         "packages/product-studio/src/index.ts"
       ],
-      "@galileo3d/animation": [
+      "@aura3d/animation": [
         "packages/animation/src/index.ts"
       ],
-      "@galileo3d/assets": [
+      "@aura3d/assets": [
         "packages/assets/src/index.ts"
       ],
-      "@galileo3d/input": [
+      "@aura3d/input": [
         "packages/input/src/index.ts"
       ],
-      "@galileo3d/audio": [
+      "@aura3d/audio": [
         "packages/audio/src/index.ts"
       ],
-      "@galileo3d/scripting": [
+      "@aura3d/scripting": [
         "packages/scripting/src/index.ts"
       ],
-      "@galileo3d/workflows": [
+      "@aura3d/workflows": [
         "packages/workflows/src/index.ts"
       ],
-      "@galileo3d/editor-runtime": [
+      "@aura3d/editor-runtime": [
         "packages/editor-runtime/src/index.ts"
       ],
-      "@galileo3d/editor": [
+      "@aura3d/editor": [
         "packages/editor/src/index.ts"
       ],
-      "@galileo3d/debug": [
+      "@aura3d/debug": [
         "packages/debug/src/index.ts"
       ],
-      "@galileo3d/test-utils": [
+      "@aura3d/test-utils": [
         "packages/test-utils/src/index.ts"
       ],
-      "@galileo3d/engine/assets/asset-corpus": [
+      "@aura3d/engine/assets/asset-corpus": [
         "packages/assets/src/asset-corpus/index.ts"
       ],
-      "@galileo3d/engine/assets/advanced-gallery": [
+      "@aura3d/engine/assets/advanced-gallery": [
         "packages/assets/src/advanced-gallery/index.ts"
       ],
-      "@galileo3d/engine/assets/v6": [
+      "@aura3d/engine/assets/v6": [
         "packages/assets/src/asset-corpus/index.ts"
       ],
-      "@galileo3d/engine/assets/v9": [
+      "@aura3d/engine/assets/v9": [
         "packages/assets/src/advanced-gallery/index.ts"
       ],
-      "@galileo3d/engine/production-runtime": [
+      "@aura3d/engine/production-runtime": [
         "packages/engine/src/production-runtime/index.ts"
       ],
-      "@galileo3d/engine/advanced-runtime": [
+      "@aura3d/engine/advanced-runtime": [
         "packages/engine/src/advanced-runtime/index.ts"
       ],
-      "@galileo3d/engine/v6": [
+      "@aura3d/engine/v6": [
         "packages/engine/src/production-runtime/index.ts"
       ],
-      "@galileo3d/engine/v9": [
+      "@aura3d/engine/v9": [
         "packages/engine/src/advanced-runtime/index.ts"
       ]
     }

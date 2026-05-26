@@ -11,7 +11,7 @@ const blockers = [
 const evidence = ["tests/reports/threejs-parity/performance.json", ...(performance?.evidence ?? [])];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-performance/v1",
+  schema: "a3d-v10-performance/v1",
   pass: blockers.length === 0,
   decisions: [{
     category: "performance",

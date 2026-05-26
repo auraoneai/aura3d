@@ -1,4 +1,4 @@
-import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderItem } from "@galileo3d/rendering";
+import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderItem } from "@aura3d/rendering";
 
 const variants = [
   { name: "Graphite", color: [0.12, 0.16, 0.2, 1] as const, metallic: 0.62, roughness: 0.3 },
@@ -51,7 +51,7 @@ function render(): void {
       activeVariant: variant.name,
       interactions,
       drawCalls: diagnostics.drawCalls,
-      publicRuntime: "@galileo3d/rendering",
+      publicRuntime: "@aura3d/rendering",
     },
     null,
     2,

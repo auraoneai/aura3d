@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProductShowcaseLayout } from "@galileo3d/product-studio";
+import { createProductShowcaseLayout } from "@aura3d/product-studio";
 
 describe("product showcase layout", () => {
   it("creates a deterministic compact multi-product layout with frame bounds", () => {
@@ -10,7 +10,7 @@ describe("product showcase layout", () => {
       { assetId: "materials-variants-shoe", slot: "right-variant", materialVariantControl: "shoeVariant", defaultMaterialVariant: "beach" }
     ]);
 
-    expect(layout.schema).toBe("g3d-product-showcase-layout/v1");
+    expect(layout.schema).toBe("a3d-product-showcase-layout/v1");
     expect(layout.mode).toBe("hero-product-with-secondary-detail");
     expect(layout.items.map((item) => item.assetId)).toEqual([
       "chronograph-watch",

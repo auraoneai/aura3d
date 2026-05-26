@@ -1,5 +1,5 @@
-import { ValidationError } from "@galileo3d/core";
-import { type Vector3 } from "@galileo3d/math";
+import { ValidationError } from "@aura3d/core";
+import { type Vector3 } from "@aura3d/math";
 import { type Vec3 } from "./MathTypes.js";
 import { SceneNode } from "./SceneNode.js";
 

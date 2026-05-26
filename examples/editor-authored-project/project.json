@@ -4,9 +4,9 @@
     "name": "Editor Authored Sample",
     "savedAt": "2026-01-01T00:00:00.000Z",
     "provenance": {
-      "authoringTool": "galileo3d-browser-editor",
+      "authoringTool": "aura3d-browser-editor",
       "workflow": "editor-import-save-export",
-      "runtimePackage": "@galileo3d/editor-runtime",
+      "runtimePackage": "@aura3d/editor-runtime",
       "operations": [
         {
           "id": "select-default-node",
@@ -39,7 +39,7 @@
           "target": "runtime.js"
         }
       ],
-      "evidenceHash": "g3d-prov-29e66ba9"
+      "evidenceHash": "a3d-prov-198756a1"
     }
   },
   "scene": {
@@ -131,9 +131,9 @@
     "importAnimations": true,
     "materialVariants": true
   },
-  "plugins": ["galileo.default-authoring"],
+  "plugins": ["aura3d.default-authoring"],
   "export": {
-    "title": "Galileo3D Editor Authored Sample",
+    "title": "Aura3D Editor Authored Sample",
     "entryNodeId": "node-hero"
   }
 }

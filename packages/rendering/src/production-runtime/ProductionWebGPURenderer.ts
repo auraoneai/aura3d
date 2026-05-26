@@ -90,7 +90,7 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
           height: this.height,
           colorSpace: "srgb",
           mipLevels,
-          label: "g3d-webgpu-renderer-owned-scene-color-transmission-backdrop"
+          label: "a3d-webgpu-renderer-owned-scene-color-transmission-backdrop"
         });
         const materialBindings = bindTransmissionBackdropCapture(input.source, transmissionBackdropTexture, captureOptions);
         transmissionBackdropCapture = {
@@ -135,7 +135,7 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
           height: this.height,
           colorSpace: "srgb",
           mipLevels,
-          label: "g3d-webgpu-renderer-owned-scene-color-transmission-backdrop"
+          label: "a3d-webgpu-renderer-owned-scene-color-transmission-backdrop"
         });
         const materialBindings = bindTransmissionBackdropCapture(input.source, transmissionBackdropTexture, captureOptions);
         transmissionBackdropCapture = {
@@ -186,7 +186,7 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
         "scene-color-transmission-capture",
         input?.transmissionBackdropCapture ? "supported" : "partial",
         input?.transmissionBackdropCapture
-          ? "Renderer-owned first-pass WebGPU scene-color readback is rebound as u_transmissionBackdropTexture for the final G3D transmission pass."
+          ? "Renderer-owned first-pass WebGPU scene-color readback is rebound as u_transmissionBackdropTexture for the final A3D transmission pass."
           : "Transmission backdrop capture was not requested for this proof."
       )
     ];
@@ -213,7 +213,7 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     return this.renderer.device.createRenderTarget({
       width: this.width,
       height: this.height,
-      label: "g3d-production-runtime-webgpu-production-proof",
+      label: "a3d-production-runtime-webgpu-production-proof",
       format: "rgba8",
       depth: true
     });
@@ -241,7 +241,7 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
 }
 
 export interface V6WebGPUReport {
-  readonly schema: "g3d-production-runtime-webgpu-report/v1";
+  readonly schema: "a3d-production-runtime-webgpu-report/v1";
   readonly status: V6WebGPUStatus;
   readonly adapterName: string | null;
   readonly preferredFormat: string | null;
@@ -258,7 +258,7 @@ export interface V7WebGPUReadinessItem {
 }
 
 export interface V7WebGPUReadinessReport {
-  readonly schema: "g3d-v7-webgpu-readiness/v1";
+  readonly schema: "a3d-v7-webgpu-readiness/v1";
   readonly availability: V6WebGPUReport;
   readonly productionBackend: "webgpu-production-sdk-path";
   readonly primaryRendererClaim: true;
@@ -302,7 +302,7 @@ export async function createV6WebGPUReport(gpu: V6WebGPULike | undefined | null)
     return blocked(`requestDevice failed: ${error instanceof Error ? error.message : String(error)}`);
   }
   return {
-    schema: "g3d-production-runtime-webgpu-report/v1",
+    schema: "a3d-production-runtime-webgpu-report/v1",
     status: "available",
     adapterName: adapter.name ?? adapter.info?.description ?? adapter.info?.device ?? "unknown-adapter",
     preferredFormat: gpu.getPreferredCanvasFormat?.() ?? null,
@@ -341,7 +341,7 @@ export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefine
     {
       id: "webgpu-sdk-production-backend",
       status: "ready",
-      evidence: "RendererV6 and G3DRenderer now accept backend='webgpu' and expose an async imported GLTF/HDR/PBR production render path backed by native render-pipeline submission, sampled textures, and texture-to-buffer readback."
+      evidence: "RendererV6 and A3DRenderer now accept backend='webgpu' and expose an async imported GLTF/HDR/PBR production render path backed by native render-pipeline submission, sampled textures, and texture-to-buffer readback."
     }
   ];
   const safetyChecks: readonly V7WebGPUReadinessItem[] = [
@@ -353,11 +353,11 @@ export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefine
     {
       id: "sdk-webgpu-exposes-async-production-render",
       status: "ready",
-      evidence: "G3DRenderer.create({ backend: 'webgpu' }) exposes renderAsync() for native WebGPU readback; sync render remains WebGL2-oriented."
+      evidence: "A3DRenderer.create({ backend: 'webgpu' }) exposes renderAsync() for native WebGPU readback; sync render remains WebGL2-oriented."
     }
   ];
   return {
-    schema: "g3d-v7-webgpu-readiness/v1",
+    schema: "a3d-v7-webgpu-readiness/v1",
     availability,
     productionBackend: "webgpu-production-sdk-path",
     primaryRendererClaim: true,
@@ -371,7 +371,7 @@ export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefine
 
 function unavailable(reason: string): V6WebGPUReport {
   return {
-    schema: "g3d-production-runtime-webgpu-report/v1",
+    schema: "a3d-production-runtime-webgpu-report/v1",
     status: "unavailable",
     adapterName: null,
     preferredFormat: null,
@@ -384,7 +384,7 @@ function unavailable(reason: string): V6WebGPUReport {
 
 function blocked(reason: string): V6WebGPUReport {
   return {
-    schema: "g3d-production-runtime-webgpu-report/v1",
+    schema: "a3d-production-runtime-webgpu-report/v1",
     status: "blocked",
     adapterName: null,
     preferredFormat: null,

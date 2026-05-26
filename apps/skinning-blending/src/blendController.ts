@@ -1,4 +1,4 @@
-import type { AnimationClip } from "@galileo3d/animation";
+import type { AnimationClip } from "@aura3d/animation";
 
 export interface BlendWeights {
   readonly idle: number;

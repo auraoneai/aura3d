@@ -1,4 +1,4 @@
-import { solveTwoBoneIk, type TwoBoneIkResult } from "@galileo3d/animation";
+import { solveTwoBoneIk, type TwoBoneIkResult } from "@aura3d/animation";
 
 export type Vec3 = [number, number, number];
 

@@ -4,27 +4,27 @@ Version: 1.0.0
 
 Claim wording in this migration guide is bounded by `docs/project/v2-claim-registry.md`.
 
-Galileo3D includes migration helpers and a partial Three.js compatibility layer, but the current project is not a drop-in replacement for Three.js. Treat migration as an incremental rewrite toward G3D package APIs.
+Aura3D includes migration helpers and a partial Three.js compatibility layer, but the current project is not a drop-in replacement for Three.js. Treat migration as an incremental rewrite toward A3D package APIs.
 
 ## Current Migration Status
 
 The repo contains:
 
-- `@galileo3d/engine/three-compat` for partial Three.js-compatible classes and adapters;
-- `migrateThreeToG3D(...)` for source-level import guidance;
+- `@aura3d/engine/three-compat` for partial Three.js-compatible classes and adapters;
+- `migrateThreeToA3D(...)` for source-level import guidance;
 - compatibility inventory and matrix helpers;
 - V5/V6/V8/V9 route and report evidence for selected equivalent scenes;
-- app templates and workflows that show G3D-native patterns.
+- app templates and workflows that show A3D-native patterns.
 
-The migration target is not "run every Three.js app unchanged." The target is "move supported scene, asset, material, control, animation, and postprocess workflows onto explicit G3D APIs."
+The migration target is not "run every Three.js app unchanged." The target is "move supported scene, asset, material, control, animation, and postprocess workflows onto explicit A3D APIs."
 
 ## Recommended Migration Path
 
 1. Inventory the current Three.js app.
 2. Identify the real workflow: product viewer, asset viewer, material review, configurator, interactive scene, or custom renderer.
-3. Replace private Three.js scene setup with a G3D-native route or template.
-4. Use `@galileo3d/engine/three-compat` only as a bridge for supported classes.
-5. Move rendering to `G3DRenderer` or `createG3DApp`.
+3. Replace private Three.js scene setup with a A3D-native route or template.
+4. Use `@aura3d/engine/three-compat` only as a bridge for supported classes.
+5. Move rendering to `A3DRenderer` or `createA3DApp`.
 6. Move asset loading to `loadRenderableAsset`, `GLTFLoader`, or `createRenderableScene`.
 7. Compare one scene at a time with screenshots, diagnostics, and route reports.
 
@@ -44,20 +44,20 @@ import {
   Object3DCompat,
   PerspectiveCameraCompat,
   Vector3Compat
-} from "@galileo3d/engine/three-compat";
+} from "@aura3d/engine/three-compat";
 ```
 
-G3D-native runtime:
+A3D-native runtime:
 
 ```ts
-import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
-import { Geometry, PBRMaterial } from "@galileo3d/engine/rendering";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/v9";
+import { Geometry, PBRMaterial } from "@aura3d/engine/rendering";
 ```
 
 High-level app runtime:
 
 ```ts
-import { createG3DApp, workflows } from "@galileo3d/engine";
+import { createA3DApp, workflows } from "@aura3d/engine";
 ```
 
 ## Compatibility Layer Coverage
@@ -83,7 +83,7 @@ Coverage is partial. Unsupported APIs should be treated as migration work, not h
 ### Renderer
 
 ```ts
-const renderer = await G3DRenderer.create({
+const renderer = await A3DRenderer.create({
   backend: "webgl2",
   canvas,
   width,
@@ -95,7 +95,7 @@ const renderer = await G3DRenderer.create({
 ### Scene
 
 ```ts
-const scene = new G3DScene();
+const scene = new A3DScene();
 scene.addGeometry("box", Geometry.box());
 scene.addMaterial("mat", new PBRMaterial({ baseColor: [1, 1, 1, 1] }));
 scene.createRenderableMesh({ geometry: "box", material: "mat" });
@@ -112,7 +112,7 @@ renderer.render(renderable.source, renderable.camera);
 ### Product Workflow
 
 ```ts
-const app = await createG3DApp({ canvas, quality: "balanced" });
+const app = await createA3DApp({ canvas, quality: "balanced" });
 await app.renderWorkflow("product-configurator", { productId: "demo-product" });
 ```
 
@@ -135,11 +135,11 @@ These reports are scoped evidence. They do not prove broad superiority or comple
 Delay migration or keep Three.js in place when the app depends on:
 
 - unsupported official examples;
-- advanced custom shader chunks or node-material graphs not represented in G3D;
+- advanced custom shader chunks or node-material graphs not represented in A3D;
 - broad loader/plugin ecosystem integrations;
 - production-proven WebXR;
-- mature postprocessing stacks beyond current G3D passes;
-- large public asset corpora that have not been validated in G3D;
+- mature postprocessing stacks beyond current A3D passes;
+- large public asset corpora that have not been validated in A3D;
 - production support guarantees.
 
 ## Policy

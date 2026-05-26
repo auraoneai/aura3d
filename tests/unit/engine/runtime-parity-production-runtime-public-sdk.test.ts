@@ -3,9 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { legacyPathForContextualPath } from "../../../tools/naming-taxonomy/contextualAliases";
 import {
-  GALILEO3D_ENGINE_V6_PRODUCT_SURFACE,
-  G3D_THREEJS_EXAMPLE_PARITY_TARGETS,
-  G3DRenderer,
+  AURA3D_ENGINE_V6_PRODUCT_SURFACE,
+  A3D_THREEJS_EXAMPLE_PARITY_TARGETS,
+  A3DRenderer,
   assetsV6,
   createAnimationController,
   createCameraFrame,
@@ -22,13 +22,13 @@ import {
   createTrackballControls,
   loadGltfScene,
   loadHdrEnvironment
-} from "@galileo3d/engine/production-runtime";
-import { AnimationClip, AnimationTrack } from "@galileo3d/animation";
+} from "@aura3d/engine/production-runtime";
+import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 
 describe("V7 V6 public SDK", () => {
   it("exports the developer-facing renderer product API", () => {
-    expect(GALILEO3D_ENGINE_V6_PRODUCT_SURFACE).toBe("g3d-renderer-production-runtime-sdk");
-    expect(typeof G3DRenderer.create).toBe("function");
+    expect(AURA3D_ENGINE_V6_PRODUCT_SURFACE).toBe("a3d-renderer-production-runtime-sdk");
+    expect(typeof A3DRenderer.create).toBe("function");
     expect(typeof loadGltfScene).toBe("function");
     expect(typeof loadHdrEnvironment).toBe("function");
     expect(typeof createDirectionalLight).toBe("function");
@@ -44,15 +44,15 @@ describe("V7 V6 public SDK", () => {
     expect(typeof createProductViewer).toBe("function");
     expect(typeof createAnimationController).toBe("function");
     expect(typeof createPhysicsScene).toBe("function");
-    expect(G3D_THREEJS_EXAMPLE_PARITY_TARGETS.keyframes).toBe("webgl_animation_keyframes");
-    expect(G3D_THREEJS_EXAMPLE_PARITY_TARGETS.skinningIk).toBe("webgl_animation_skinning_ik");
+    expect(A3D_THREEJS_EXAMPLE_PARITY_TARGETS.keyframes).toBe("webgl_animation_keyframes");
+    expect(A3D_THREEJS_EXAMPLE_PARITY_TARGETS.skinningIk).toBe("webgl_animation_skinning_ik");
   });
 
-  it("keeps the G3D V6 SDK entrypoint independent from Three.js runtime imports", () => {
+  it("keeps the A3D V6 SDK entrypoint independent from Three.js runtime imports", () => {
     const source = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
 
     expect(source).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
-    expect(source).not.toMatch(/from\s+["']@galileo3d\/three-compat(?:\/[^"']*)?["']/);
+    expect(source).not.toMatch(/from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/);
     expect(source).not.toMatch(/from\s+["'][^"']*three-compat[^"']*["']/);
     expect(source).not.toMatch(/\bTHREE\./);
   });
@@ -69,7 +69,7 @@ describe("V7 V6 public SDK", () => {
       "packages/controls/src/index.ts"
     ].map((file) => readFileSync(resolve(file), "utf8")).join("\n");
 
-    expect(controlsPackage).not.toContain("@galileo3d/three-compat");
+    expect(controlsPackage).not.toContain("@aura3d/three-compat");
     expect(controlsSources).not.toMatch(/three-compat/);
     expect(controlsSources).not.toMatch(/Vector3Compat|Object3DCompat|RaycasterCompat/);
   });
@@ -80,9 +80,9 @@ describe("V7 V6 public SDK", () => {
 
     expect(source).toContain("resolveRendererV6Backend(options)");
     expect(source).toContain("readonly backendSelection");
-    expect(source).toContain("renderFrame(input: G3DRenderOptions)");
-    expect(source).toContain("renderFrameAsync(input: G3DRenderOptions)");
-    expect(source).toContain("async renderAsync(input: G3DRenderOptions)");
+    expect(source).toContain("renderFrame(input: A3DRenderOptions)");
+    expect(source).toContain("renderFrameAsync(input: A3DRenderOptions)");
+    expect(source).toContain("async renderAsync(input: A3DRenderOptions)");
     expect(source).toContain("renderFrame(");
     expect(source).toContain("renderImportedAssetAsync");
     expect(rendererSource).toContain("readBrowserWebGPU()");
@@ -309,13 +309,13 @@ describe("V7 V6 public SDK", () => {
     const sources = appFiles.map((file) => readFileSync(resolve(file), "utf8")).join("\n");
     const main = readFileSync(resolve("apps/product-configurator/src/main.ts"), "utf8");
 
-    expect(main).toContain("@galileo3d/engine/production-runtime");
+    expect(main).toContain("@aura3d/engine/production-runtime");
     expect(main).toContain("loadGltfScene");
     expect(main).toContain("loadHdrEnvironment");
     expect(main).toContain("createProductViewer");
     expect(sources).not.toContain("production-runtime-common/src/runtime");
     expect(sources).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
-    expect(sources).not.toMatch(/from\s+["']@galileo3d\/three-compat(?:\/[^"']*)?["']/);
+    expect(sources).not.toMatch(/from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/);
   });
 
   it("exposes GLTF scene and material variant selection through loadGltfScene", () => {
@@ -418,7 +418,7 @@ describe("V7 V6 public SDK", () => {
     const checks = [
       {
         id: "public-production-runtime-entrypoint",
-        pass: typeof G3DRenderer.create === "function"
+        pass: typeof A3DRenderer.create === "function"
           && typeof loadGltfScene === "function"
           && typeof loadHdrEnvironment === "function"
           && typeof createDirectionalLight === "function"
@@ -431,18 +431,18 @@ describe("V7 V6 public SDK", () => {
           && typeof createTrackballControls === "function"
           && typeof createPointerLockControls === "function"
           && typeof createProductViewer === "function",
-        evidence: "@galileo3d/engine/production-runtime exports renderer, GLTF, HDR, scene-composition, orbit/first-person/map/trackball/pointer-lock controls, and viewer APIs."
+        evidence: "@aura3d/engine/production-runtime exports renderer, GLTF, HDR, scene-composition, orbit/first-person/map/trackball/pointer-lock controls, and viewer APIs."
       },
       {
         id: "no-three-runtime-delegation",
         pass: !/from\s+["']three(?:\/[^"']*)?["']/.test(engineSource)
-          && !/from\s+["']@galileo3d\/three-compat(?:\/[^"']*)?["']/.test(engineSource)
+          && !/from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/.test(engineSource)
           && !/\bTHREE\./.test(engineSource),
         evidence: "packages/engine/src/production-runtime/index.ts has no Three.js runtime import or THREE namespace use."
       },
       {
         id: "flagship-app-uses-public-sdk",
-        pass: flagshipSource.includes("@galileo3d/engine/production-runtime")
+        pass: flagshipSource.includes("@aura3d/engine/production-runtime")
           && flagshipSource.includes("loadGltfScene")
           && flagshipSource.includes("loadHdrEnvironment")
           && flagshipSource.includes("createProductViewer"),
@@ -450,7 +450,7 @@ describe("V7 V6 public SDK", () => {
       },
       {
         id: "template-uses-public-sdk",
-        pass: templateSource.includes("@galileo3d/engine/production-runtime")
+        pass: templateSource.includes("@aura3d/engine/production-runtime")
           && templateSource.includes("loadGltfScene")
           && templateSource.includes("loadHdrEnvironment")
           && templateSource.includes("createProductViewer"),
@@ -458,10 +458,10 @@ describe("V7 V6 public SDK", () => {
       },
       {
         id: "native-controls-no-three-compat-runtime",
-        pass: !controlsPackage.includes("@galileo3d/three-compat")
+        pass: !controlsPackage.includes("@aura3d/three-compat")
           && !/three-compat/.test(controlsSources)
           && !/Vector3Compat|Object3DCompat|RaycasterCompat/.test(controlsSources),
-        evidence: "packages/controls/src uses native structural control types and package.json has no @galileo3d/three-compat dependency."
+        evidence: "packages/controls/src uses native structural control types and package.json has no @aura3d/three-compat dependency."
       },
       {
         id: "public-sdk-native-navigation-controls",
@@ -470,14 +470,14 @@ describe("V7 V6 public SDK", () => {
           && typeof createMapControls === "function"
           && typeof createTrackballControls === "function"
           && typeof createPointerLockControls === "function",
-        evidence: "@galileo3d/engine/production-runtime exposes native camera/navigation control factories without Three.js runtime imports."
+        evidence: "@aura3d/engine/production-runtime exposes native camera/navigation control factories without Three.js runtime imports."
       },
       {
         id: "public-sdk-frame-render-api",
-        pass: engineSource.includes("renderFrame(input: G3DRenderOptions)")
-          && engineSource.includes("renderFrameAsync(input: G3DRenderOptions)")
+        pass: engineSource.includes("renderFrame(input: A3DRenderOptions)")
+          && engineSource.includes("renderFrameAsync(input: A3DRenderOptions)")
           && readFileSync(resolve("packages/rendering/src/production-runtime/RendererV6.ts"), "utf8").includes("renderFrame(input: V6RendererInput)"),
-        evidence: "@galileo3d/engine/production-runtime exposes frame rendering APIs for real apps instead of forcing every render through screenshot proof/readback."
+        evidence: "@aura3d/engine/production-runtime exposes frame rendering APIs for real apps instead of forcing every render through screenshot proof/readback."
       },
       {
         id: "public-sdk-scene-composition-helpers",
@@ -488,7 +488,7 @@ describe("V7 V6 public SDK", () => {
           && typeof createProductionRenderOptions === "function"
           && engineSource.includes("export function createProductionRenderOptions")
           && engineSource.includes("createGroundedStage(options.asset.resources.bounds"),
-        evidence: "@galileo3d/engine/production-runtime exposes native light, stage, camera-frame, and production render-option helpers, and the flagship viewer uses the public grounded-stage helper."
+        evidence: "@aura3d/engine/production-runtime exposes native light, stage, camera-frame, and production render-option helpers, and the flagship viewer uses the public grounded-stage helper."
       },
       {
         id: "external-consumer-render-proof",
@@ -502,9 +502,9 @@ describe("V7 V6 public SDK", () => {
       "WebGPU production SDK coverage is bounded to the async imported GLTF/HDR/PBR path until broader examples and parity gates prove the full ecosystem."
     ];
     const report = {
-      schema: "g3d-v7-sdk-replacement-readiness/v1",
+      schema: "a3d-v7-sdk-replacement-readiness/v1",
       generatedAt: new Date().toISOString(),
-      productSurface: GALILEO3D_ENGINE_V6_PRODUCT_SURFACE,
+      productSurface: AURA3D_ENGINE_V6_PRODUCT_SURFACE,
       status: checks.every((check) => check.pass) ? "bounded-sdk-ready" : "blocked",
       broadThreeJsReplacement: false,
       checks,

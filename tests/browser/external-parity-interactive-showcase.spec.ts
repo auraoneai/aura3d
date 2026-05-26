@@ -40,7 +40,7 @@ test.describe("V4 interactive showcase", () => {
 
 async function waitForState(page: Page, id: string): Promise<InteractiveState> {
   await page.waitForFunction((expectedId) => {
-    const state = window.__G3D_V4_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined;
+    const state = window.__A3D_V4_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined;
     return state?.status === "ready" && state.id === expectedId;
   }, id, { timeout: 60_000 });
   const current = await state(page);
@@ -48,7 +48,7 @@ async function waitForState(page: Page, id: string): Promise<InteractiveState> {
   return current;
 }
 async function state(page: Page): Promise<InteractiveState | undefined> {
-  return page.evaluate(() => window.__G3D_V4_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined);
+  return page.evaluate(() => window.__A3D_V4_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined);
 }
 function passes(value: InteractiveState, id: string): boolean {
   const checklist = value.featureChecklist ?? [];
@@ -60,4 +60,4 @@ function captureErrors(page: Page): string[] {
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   return errors;
 }
-declare global { interface Window { __G3D_V4_INTERACTIVE_SHOWCASE__?: InteractiveState; } }
+declare global { interface Window { __A3D_V4_INTERACTIVE_SHOWCASE__?: InteractiveState; } }

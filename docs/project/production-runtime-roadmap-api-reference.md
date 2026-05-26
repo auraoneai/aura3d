@@ -5,10 +5,10 @@
 
 Public V6 package paths:
 
-- `@galileo3d/engine/workflows/production-runtime`
-- `@galileo3d/engine/rendering`
-- `@galileo3d/engine/assets/browser`
-- `@galileo3d/engine/animation/browser`
+- `@aura3d/engine/workflows/production-runtime`
+- `@aura3d/engine/rendering`
+- `@aura3d/engine/assets/browser`
+- `@aura3d/engine/animation/browser`
 
 Main V6 APIs:
 

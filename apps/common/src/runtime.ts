@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline, type V6GLTFRenderMetadata } from "@galileo3d/assets";
+import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline, type V6GLTFRenderMetadata } from "@aura3d/assets";
 import {
   computePerspectiveCameraFrame,
   Geometry,
@@ -15,8 +15,8 @@ import {
   type RenderItem,
   type RenderSource,
   type V6WebGPUReport
-} from "@galileo3d/rendering";
-import { composeMat4, multiplyMat4, transformPoint, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { composeMat4, multiplyMat4, transformPoint, type Mat4 } from "@aura3d/scene";
 
 export interface V6AppAsset {
   readonly id: string;
@@ -64,7 +64,7 @@ export interface V6AppUiDefinition {
   readonly secondaryLabel: string;
 }
 
-export interface G3DV6RuntimeMetrics {
+export interface A3DV6RuntimeMetrics {
   readonly appId: string;
   readonly sceneId: string;
   readonly workflow: string;
@@ -100,7 +100,7 @@ export interface G3DV6RuntimeMetrics {
   readonly animationClipCount?: number;
 }
 
-export type G3DV6RuntimeStatus =
+export type A3DV6RuntimeStatus =
   | "loading"
   | "loading-environment"
   | "loading-asset"
@@ -110,28 +110,28 @@ export type G3DV6RuntimeStatus =
   | "animating"
   | "error";
 
-export interface G3DV6RuntimeLifecycle {
-  readonly status: G3DV6RuntimeStatus;
+export interface A3DV6RuntimeLifecycle {
+  readonly status: A3DV6RuntimeStatus;
   readonly message: string;
   readonly startedAtMs: number;
   readonly updatedAtMs: number;
   readonly elapsedMs: number;
-  readonly timings: readonly G3DV6RuntimeTiming[];
+  readonly timings: readonly A3DV6RuntimeTiming[];
 }
 
-export interface G3DV6RuntimeTiming {
-  readonly phase: G3DV6RuntimeStatus | "load-secondary-assets";
+export interface A3DV6RuntimeTiming {
+  readonly phase: A3DV6RuntimeStatus | "load-secondary-assets";
   readonly durationMs: number;
 }
 
-export interface G3DV6Runtime {
-  readonly status: G3DV6RuntimeStatus;
+export interface A3DV6Runtime {
+  readonly status: A3DV6RuntimeStatus;
   readonly error?: string;
   readonly appId: string;
   readonly sceneId: string;
   readonly rendererBackend?: "webgl2";
-  readonly lifecycle: G3DV6RuntimeLifecycle;
-  readonly runtime?: G3DV6RuntimeMetrics;
+  readonly lifecycle: A3DV6RuntimeLifecycle;
+  readonly runtime?: A3DV6RuntimeMetrics;
   readonly metadata?: V6GLTFRenderMetadata;
   readonly secondaryMetadata?: readonly V6GLTFRenderMetadata[];
   readonly proof?: V6RenderProof;
@@ -143,12 +143,12 @@ export interface G3DV6Runtime {
 
 declare global {
   interface Window {
-    __g3dV6Runtime?: G3DV6Runtime;
-    __g3dV6Controls?: G3DV6AnimationControls;
+    __a3dV6Runtime?: A3DV6Runtime;
+    __a3dV6Controls?: A3DV6AnimationControls;
   }
 }
 
-export interface G3DV6AnimationControls {
+export interface A3DV6AnimationControls {
   paused: boolean;
   clipIndex: number;
   scrubTime: number;
@@ -162,8 +162,8 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
     throw new Error(`${scene.appId} requires #app and canvas#viewport.`);
   }
   const startedAtMs = performance.now();
-  const timings: G3DV6RuntimeTiming[] = [];
-  const initial: G3DV6Runtime = {
+  const timings: A3DV6RuntimeTiming[] = [];
+  const initial: A3DV6Runtime = {
     status: "loading",
     appId: scene.appId,
     sceneId: scene.sceneId,
@@ -175,9 +175,9 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
   try {
     const primary = scene.assets.find((asset) => asset.role === "primary") ?? scene.assets[0];
     if (!primary) throw new Error(`${scene.appId} has no configured V6 asset.`);
-    const publishPhase = (status: G3DV6RuntimeStatus, message: string) => {
+    const publishPhase = (status: A3DV6RuntimeStatus, message: string) => {
       publishV6Runtime(root, scene, ui, {
-        ...(window.__g3dV6Runtime ?? initial),
+        ...(window.__a3dV6Runtime ?? initial),
         status,
         appId: scene.appId,
         sceneId: scene.sceneId,
@@ -274,7 +274,7 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
     const webgpu = scene.webgpuReport
       ? await createV6WebGPUReport((navigator as Navigator & { gpu?: unknown }).gpu as Parameters<typeof createV6WebGPUReport>[0])
       : undefined;
-    const runtime: G3DV6Runtime = {
+    const runtime: A3DV6Runtime = {
       status: "ready",
       appId: scene.appId,
       sceneId: scene.sceneId,
@@ -336,7 +336,7 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
       sceneId: scene.sceneId,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       lifecycle: createLifecycle("error", "V6 app startup failed before a usable interactive frame.", startedAtMs, timings),
-      interactionCount: window.__g3dV6Runtime?.interactionCount ?? 0
+      interactionCount: window.__a3dV6Runtime?.interactionCount ?? 0
     });
   }
 }
@@ -345,17 +345,17 @@ export async function runV6InteractiveApp(scene: V6AppSceneDefinition, ui: V6App
   return runV6App(scene, ui);
 }
 
-function publishV6Runtime(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6AppUiDefinition, runtime: G3DV6Runtime): void {
-  window.__g3dV6Runtime = runtime;
+function publishV6Runtime(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6AppUiDefinition, runtime: A3DV6Runtime): void {
+  window.__a3dV6Runtime = runtime;
   mountV6AppShell(root, scene, ui, runtime);
 }
 
 function createLifecycle(
-  status: G3DV6RuntimeStatus,
+  status: A3DV6RuntimeStatus,
   message: string,
   startedAtMs: number,
-  timings: readonly G3DV6RuntimeTiming[]
-): G3DV6RuntimeLifecycle {
+  timings: readonly A3DV6RuntimeTiming[]
+): A3DV6RuntimeLifecycle {
   const now = performance.now();
   return {
     status,
@@ -367,7 +367,7 @@ function createLifecycle(
   };
 }
 
-function createTiming(phase: G3DV6RuntimeTiming["phase"], startMs: number): G3DV6RuntimeTiming {
+function createTiming(phase: A3DV6RuntimeTiming["phase"], startMs: number): A3DV6RuntimeTiming {
   return {
     phase,
     durationMs: Number((performance.now() - startMs).toFixed(3))
@@ -396,7 +396,7 @@ function createImportedAssetMetadata(
   };
 }
 
-function mountV6AppShell(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6AppUiDefinition, runtime: G3DV6Runtime): void {
+function mountV6AppShell(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6AppUiDefinition, runtime: A3DV6Runtime): void {
   const metrics = runtime.runtime;
   const lifecycle = runtime.lifecycle;
   root.innerHTML = `
@@ -424,16 +424,16 @@ function mountV6AppShell(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6A
     ${metrics?.animationClipName ? renderV6AnimationControls(runtime) : ""}
   `;
   root.querySelector("#primary-action")?.addEventListener("click", () => {
-    const current = window.__g3dV6Runtime;
+    const current = window.__a3dV6Runtime;
     const controls = getV6AnimationControls();
     controls.paused = !controls.paused;
     if (!current) return;
-    window.__g3dV6Runtime = {
+    window.__a3dV6Runtime = {
       ...current,
       interactionCount: current.interactionCount + 1,
       lastInteraction: ui.primaryActionLabel
     };
-    mountV6AppShell(root, scene, ui, window.__g3dV6Runtime);
+    mountV6AppShell(root, scene, ui, window.__a3dV6Runtime);
   });
   root.querySelector<HTMLSelectElement>("#clip-select")?.addEventListener("change", (event) => {
     const controls = getV6AnimationControls();
@@ -447,7 +447,7 @@ function mountV6AppShell(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6A
   });
 }
 
-function renderV6AnimationControls(runtime: G3DV6Runtime): string {
+function renderV6AnimationControls(runtime: A3DV6Runtime): string {
   const controls = getV6AnimationControls();
   const clipCount = Math.max(1, runtime.runtime?.animationClipCount ?? 1);
   const duration = Math.max(0.1, runtime.runtime?.animationClipTime ?? controls.scrubTime ?? 1);
@@ -505,12 +505,12 @@ function startV6AnimationLoop(options: {
   readonly camera: V6Pipeline["camera"];
   readonly metadata: V6ImportedAssetRenderMetadata;
   readonly startedAtMs: number;
-  readonly timings: readonly G3DV6RuntimeTiming[];
+  readonly timings: readonly A3DV6RuntimeTiming[];
 }): void {
   const clips = options.pipeline.asset.animations;
   const initialClip = clips.find((animation) => /walk|run|idle/i.test(animation.name)) ?? clips[0];
   if (!initialClip) return;
-  window.__g3dV6Controls = {
+  window.__a3dV6Controls = {
     paused: false,
     clipIndex: Math.max(0, clips.indexOf(initialClip)),
     scrubTime: 0,
@@ -564,7 +564,7 @@ function startV6AnimationLoop(options: {
       });
     } catch (error) {
       stopped = true;
-      const current = window.__g3dV6Runtime;
+      const current = window.__a3dV6Runtime;
       publishV6Runtime(options.root, options.scene, options.ui, {
         ...(current ?? {
           appId: options.scene.appId,
@@ -587,7 +587,7 @@ function startV6AnimationLoop(options: {
       fpsFrames = 0;
       fpsStart = now;
     }
-    const current = window.__g3dV6Runtime;
+    const current = window.__a3dV6Runtime;
     if (current?.runtime && now - lastPublish >= 250) {
       publishV6Runtime(options.root, options.scene, options.ui, {
         ...current,
@@ -613,14 +613,14 @@ function startV6AnimationLoop(options: {
   animationFrameId = requestAnimationFrame(tick);
 }
 
-function getV6AnimationControls(): G3DV6AnimationControls {
-  window.__g3dV6Controls ??= {
+function getV6AnimationControls(): A3DV6AnimationControls {
+  window.__a3dV6Controls ??= {
     paused: false,
     clipIndex: 0,
     scrubTime: 0,
     speed: 1
   };
-  return window.__g3dV6Controls;
+  return window.__a3dV6Controls;
 }
 
 function resolveV6AssetUrl(file: string): string {

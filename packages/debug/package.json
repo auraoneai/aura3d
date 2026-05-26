@@ -1,11 +1,11 @@
 {
-  "name": "@galileo3d/debug",
+  "name": "@aura3d/debug",
   "version": "1.0.0",
   "type": "module",
   "dependencies": {
-    "@galileo3d/animation": "workspace:*",
-    "@galileo3d/physics": "workspace:*",
-    "@galileo3d/rendering": "workspace:*"
+    "@aura3d/animation": "workspace:*",
+    "@aura3d/physics": "workspace:*",
+    "@aura3d/rendering": "workspace:*"
   },
   "exports": {
     ".": {

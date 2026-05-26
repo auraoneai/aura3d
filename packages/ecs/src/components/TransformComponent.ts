@@ -1,4 +1,4 @@
-import { Quaternion, Vector3 } from "@galileo3d/math";
+import { Quaternion, Vector3 } from "@aura3d/math";
 
 export class TransformComponent {
   position: [number, number, number];

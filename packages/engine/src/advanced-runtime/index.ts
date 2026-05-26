@@ -1,9 +1,9 @@
-export { G3DRenderer } from "./G3DRenderer.js";
-export type { G3DRendererOptions } from "./G3DRenderer.js";
-export { G3DScene } from "./G3DScene.js";
-export type { G3DSceneMeshOptions, G3DSceneRenderSourceOptions } from "./G3DScene.js";
-export { G3DAppLifecycle } from "./G3DAppLifecycle.js";
-export type { G3DAppLifecycleSnapshot, G3DDisposable } from "./G3DAppLifecycle.js";
+export { A3DRenderer } from "./A3DRenderer.js";
+export type { A3DRendererOptions } from "./A3DRenderer.js";
+export { A3DScene } from "./A3DScene.js";
+export type { A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./A3DScene.js";
+export { A3DAppLifecycle } from "./A3DAppLifecycle.js";
+export type { A3DAppLifecycleSnapshot, A3DDisposable } from "./A3DAppLifecycle.js";
 
 export {
   Scene,
@@ -19,12 +19,12 @@ export {
   PointLight,
   SpotLight,
   Renderable
-} from "@galileo3d/scene";
+} from "@aura3d/scene";
 export type {
   MeshOptions,
   Object3DOptions,
   RenderableDescriptor
-} from "@galileo3d/scene";
+} from "@aura3d/scene";
 
 export {
   Renderer,
@@ -37,7 +37,7 @@ export {
   SkinnedLitMaterial,
   InstancedPBRMaterial,
   TextureBinding
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 export type {
   CameraLike,
   RenderDeviceDiagnostics,
@@ -45,4 +45,4 @@ export type {
   RenderMaterial,
   RendererOptions,
   RenderSource
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";

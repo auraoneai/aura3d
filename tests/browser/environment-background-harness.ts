@@ -7,12 +7,12 @@ import {
   type RenderDeviceDiagnostics,
   type TextureCubeFace,
   type TextureCubeFaceDescriptor
-} from "@galileo3d/rendering";
-import { PerspectiveCamera } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { PerspectiveCamera } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __GALILEO3D_ENVIRONMENT_BACKGROUND_TEST__?: EnvironmentBackgroundHarnessResult;
+    __AURA3D_ENVIRONMENT_BACKGROUND_TEST__?: EnvironmentBackgroundHarnessResult;
   }
 }
 
@@ -106,7 +106,7 @@ async function run(): Promise<void> {
 
     equirectTexture.dispose();
     cubemapTexture.dispose();
-    window.__GALILEO3D_ENVIRONMENT_BACKGROUND_TEST__ = {
+    window.__AURA3D_ENVIRONMENT_BACKGROUND_TEST__ = {
       status: "ready",
       equirectDiagnostics,
       cubemapDiagnostics,
@@ -117,7 +117,7 @@ async function run(): Promise<void> {
       compositeBackgroundPixel
     };
   } catch (error) {
-    window.__GALILEO3D_ENVIRONMENT_BACKGROUND_TEST__ = {
+    window.__AURA3D_ENVIRONMENT_BACKGROUND_TEST__ = {
       status: "error",
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };

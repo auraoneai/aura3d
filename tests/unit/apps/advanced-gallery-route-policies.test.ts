@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RenderItem } from "@galileo3d/rendering";
+import type { RenderItem } from "@aura3d/rendering";
 import type { AuthoredAssetRuntimeState } from "../../../apps/advanced-examples-gallery/src/authoredLayer";
 import type { SceneFrame } from "../../../apps/advanced-examples-gallery/src/sceneBuilders";
 import {

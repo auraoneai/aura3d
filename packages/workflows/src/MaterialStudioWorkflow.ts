@@ -1,5 +1,5 @@
-import { composeMat4 } from "@galileo3d/scene";
-import { Geometry, NormalMappedPBRMaterial, PBRMaterial, TexturedPBRMaterial, Texture, createLightingDefault } from "@galileo3d/rendering";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, NormalMappedPBRMaterial, PBRMaterial, TexturedPBRMaterial, Texture, createLightingDefault } from "@aura3d/rendering";
 import { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 import type { MaterialStudioWorkflowOptions, MaterialStudioWorkflowResult } from "./WorkflowTypes";
 

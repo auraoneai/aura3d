@@ -2,7 +2,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "/node_modules/three/examples/jsm/loaders/RGBELoader.js";
-import type { V8FlagshipViewerSceneConfig } from "../../../galileo/src/scenes/flagship-viewer.js";
+import type { V8FlagshipViewerSceneConfig } from "../../../aura3d/src/scenes/flagship-viewer.js";
 
 export interface V8ThreeFlagshipCamera {
   readonly cameraPosition: readonly [number, number, number];

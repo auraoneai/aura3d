@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PhysicsWorld, Shape } from "../../packages/physics/src/index.js";
 
 export interface PhysicsComparisonBaselineReport {
-  readonly schema: "g3d-v10-physics-comparison-baseline/v1";
+  readonly schema: "a3d-v10-physics-comparison-baseline/v1";
   readonly generatedAt: string;
   readonly pass: boolean;
   readonly samples: {
@@ -115,7 +115,7 @@ export function runPhysicsComparisonBaseline(): PhysicsComparisonBaselineReport 
   ];
 
   return {
-    schema: "g3d-v10-physics-comparison-baseline/v1",
+    schema: "a3d-v10-physics-comparison-baseline/v1",
     generatedAt: new Date().toISOString(),
     pass: issues.length === 0,
     samples,
@@ -139,11 +139,11 @@ export function writePhysicsComparisonBaseline(path = outputPath): PhysicsCompar
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`);
   const showcaseReport = {
-    schema: "g3d-physics-showcase-evidence/v1",
+    schema: "a3d-physics-showcase-evidence/v1",
     generatedAt: report.generatedAt,
     pass: report.pass,
     route: "apps/physics-showcase",
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     physics: {
       bodies: report.samples.bodies,
       colliders: report.samples.colliders,

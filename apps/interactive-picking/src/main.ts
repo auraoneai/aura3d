@@ -1,18 +1,18 @@
-import { pickingRayFromCamera } from "@galileo3d/input";
-import { Ray, Vector3 } from "@galileo3d/math";
+import { pickingRayFromCamera } from "@aura3d/input";
+import { Ray, Vector3 } from "@aura3d/math";
 import {
   Geometry,
   RenderDeviceError,
   UnlitMaterial,
   pickSceneRenderableHits,
   pickSceneRenderables
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { Renderable, Scene, type SceneNode } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Renderable, Scene, type SceneNode } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV8InteractivePicking?: V8InteractivePickingRuntime;
+    __a3dV8InteractivePicking?: V8InteractivePickingRuntime;
   }
 }
 
@@ -30,7 +30,7 @@ interface V8InteractivePickingRuntime {
   readonly nearestCubeId: string;
   readonly nearestPointIndex: number;
   readonly lastPointerHit: string;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly elapsedMs: number;
   readonly error?: string;
 }
@@ -71,7 +71,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8InteractivePicking = runtime;
+    window.__a3dV8InteractivePicking = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -90,7 +90,7 @@ async function run(): Promise<void> {
       "material:cyan": new UnlitMaterial({ color: [0.3, 0.82, 1, 1] }),
       "material:point": new UnlitMaterial({ color: [0.88, 0.96, 0.62, 1] })
     };
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -164,7 +164,7 @@ async function run(): Promise<void> {
           nearestPointIndex: cachedNearestPointIndex,
           lastPointerHit
         });
-        window.__g3dV8InteractivePicking = runtime;
+        window.__a3dV8InteractivePicking = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -232,7 +232,7 @@ function createRuntime(
     nearestCubeId: patch.nearestCubeId ?? "none",
     nearestPointIndex: patch.nearestPointIndex ?? -1,
     lastPointerHit: patch.lastPointerHit ?? "none",
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };

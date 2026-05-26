@@ -1,4 +1,4 @@
-import { Frustum, Matrix4, Quaternion, Vector3 } from "@galileo3d/math";
+import { Frustum, Matrix4, Quaternion, Vector3 } from "@aura3d/math";
 
 export type Vec3 = [number, number, number];
 export type Quat = [number, number, number, number];

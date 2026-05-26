@@ -26,7 +26,7 @@ const profile = createV5RendererProfile({
 });
 
 const report = {
-  schema: "g3d-three-compat-performance-baselines/v1",
+  schema: "a3d-three-compat-performance-baselines/v1",
   generatedAt: new Date().toISOString(),
   frustum,
   occlusion,

@@ -4,7 +4,7 @@ import { BaseRenderPass, type RenderPassContext } from "./RenderPass";
 import { ShaderModule } from "./ShaderModule";
 import { DEFAULT_DEPTH_SHADER_NAME, type ShaderLibrary, createDefaultShaderLibrary } from "./ShaderLibrary";
 import { type RenderItem } from "./ForwardPass";
-import { identityMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+import { identityMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 export interface DepthPassOptions {
   readonly casters: readonly RenderItem[];

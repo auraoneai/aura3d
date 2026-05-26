@@ -1,6 +1,6 @@
-# @galileo3d/scene
+# @aura3d/scene
 
-`@galileo3d/scene` owns transform hierarchy, scene nodes, bounds, traversal, queries, cameras, lights, renderable descriptors, scene registry, and serialization.
+`@aura3d/scene` owns transform hierarchy, scene nodes, bounds, traversal, queries, cameras, lights, renderable descriptors, scene registry, and serialization.
 
 ## Public API
 

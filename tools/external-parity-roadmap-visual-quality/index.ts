@@ -35,7 +35,7 @@ check("no-legacy-v1-gallery", entries.every((entry) => !String(entry.path).inclu
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-visual-quality/v1",
+  schema: "a3d-external-parity-visual-quality/v1",
   generatedAt: new Date().toISOString(),
   pass,
   scores,

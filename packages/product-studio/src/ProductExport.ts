@@ -12,7 +12,7 @@ export async function exportProductRender(canvas: HTMLCanvasElement | OffscreenC
 
 export function exportProductSceneManifest(scene: ProductRenderScene): ProductSceneManifest {
   return {
-    schema: "g3d-product-studio-scene/v1",
+    schema: "a3d-product-studio-scene/v1",
     assetId: scene.asset.id,
     title: scene.asset.title,
     partCount: scene.asset.parts.length,

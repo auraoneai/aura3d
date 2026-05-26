@@ -174,7 +174,7 @@ function resolvePickMetadata(object: ControlObject3DLike, options: PickingOption
 }
 
 function readUserDataMetadata(userData: Record<string, unknown> | undefined): ControlPickMetadata | undefined {
-  const value = userData?.g3dPicking ?? userData?.picking;
+  const value = userData?.a3dPicking ?? userData?.picking;
   if (!value || typeof value !== "object") return undefined;
   return value as ControlPickMetadata;
 }
@@ -198,7 +198,7 @@ function resolvePickRadius(object: ControlObject3DLike, metadata: ControlPickMet
 }
 
 function readUserDataRadius(userData: Record<string, unknown> | undefined): number | undefined {
-  const value = userData?.g3dPickRadius;
+  const value = userData?.a3dPickRadius;
   return typeof value === "number" ? value : undefined;
 }
 

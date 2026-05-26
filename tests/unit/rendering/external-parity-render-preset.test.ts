@@ -24,7 +24,7 @@ describe("V4 render preset evidence", () => {
     });
 
     expect(evidence).toMatchObject({
-      presetId: "galileo3d-external-parity-visual-quality-preset",
+      presetId: "aura3d-external-parity-visual-quality-preset",
       presetVersion: 1,
       exampleId: "material-showroom",
       screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",

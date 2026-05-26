@@ -20,12 +20,12 @@ test.describe("V4 shadow quality browser evidence", () => {
   test("proves shadow lab output plus V4 contact/cascade/debug APIs", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_SHADOW_LAB__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_SHADOW_LAB__?.status === "ready", undefined, { timeout: 30_000 });
     const screenshotPath = "tests/reports/external-gallery/postprocess/shadow-quality.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/postprocess"), { recursive: true });
     await page.locator("[data-testid='shadow-lab-canvas']").screenshot({ path: screenshotPath });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+    const state = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
     const v4Shadow = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
       const contact = rendering.createV4ContactShadow({ casterRadius: 1.2, receiverDistance: 0.35, softness: 0.45, opacity: 0.58 });
@@ -84,7 +84,7 @@ function rgbSum(pixel: readonly number[] | undefined): number {
 
 declare global {
   interface Window {
-    __GALILEO3D_SHADOW_LAB__?: {
+    __AURA3D_SHADOW_LAB__?: {
       readonly status?: "ready" | "error";
       readonly pcf?: {
         readonly shadowPixel?: readonly number[];

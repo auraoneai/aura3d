@@ -1,6 +1,6 @@
-# @galileo3d/rendering
+# @aura3d/rendering
 
-`@galileo3d/rendering` owns render-device abstraction, WebGL2/mock backends, buffers, geometry, textures, samplers, shader modules, shader libraries, material schemas, render pipelines, render graphs, lighting, shadows, diagnostics-facing render state, and particle rendering/effects.
+`@aura3d/rendering` owns render-device abstraction, WebGL2/mock backends, buffers, geometry, textures, samplers, shader modules, shader libraries, material schemas, render pipelines, render graphs, lighting, shadows, diagnostics-facing render state, and particle rendering/effects.
 
 ## Public API
 

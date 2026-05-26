@@ -1,4 +1,4 @@
-import "@galileo3d/three-compat";
+import "@aura3d/three-compat";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#app");
 const ctx = canvas?.getContext("2d");
@@ -11,4 +11,4 @@ if (canvas && ctx) {
   ctx.font = "24px system-ui";
   ctx.fillText("Vfx Point Cloud", 40, 48);
 }
-(document.body as HTMLBodyElement).dataset.g3dExample = "vfx-point-cloud";
+(document.body as HTMLBodyElement).dataset.a3dExample = "vfx-point-cloud";

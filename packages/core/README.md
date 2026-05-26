@@ -1,6 +1,6 @@
-# @galileo3d/core
+# @aura3d/core
 
-`@galileo3d/core` owns the engine lifecycle, scheduling spine, deterministic time stepping, diagnostics, events, logging, task queues, and disposable resource scopes. It is the root runtime package and does not depend on scene, rendering, physics, animation, assets, input, audio, scripting, editor, or browser-only APIs.
+`@aura3d/core` owns the engine lifecycle, scheduling spine, deterministic time stepping, diagnostics, events, logging, task queues, and disposable resource scopes. It is the root runtime package and does not depend on scene, rendering, physics, animation, assets, input, audio, scripting, editor, or browser-only APIs.
 
 ## Public API
 

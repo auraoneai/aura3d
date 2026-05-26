@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { GLTFLoader, LoadContext } from "../../packages/assets/src";
 
-const fixtureRoot = resolve("fixtures/assets/v4");
+const fixtureRoot = resolve("fixtures/external-parity-assets");
 const reportPath = resolve("tests/reports/external-parity-asset-corpus.json");
 const expectedCategories = ["product", "architecture", "environment", "character", "materials", "morph", "animation"];
 
@@ -13,7 +13,7 @@ describe("v4 local asset corpus", () => {
     expect(existsSync(manifestPath), `${manifestPath} missing`).toBe(true);
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as V4Manifest;
 
-    expect(manifest.schemaVersion).toBe("g3d-v4-asset-corpus-v1");
+    expect(manifest.schemaVersion).toBe("a3d-v4-asset-corpus-v1");
     expect(manifest.assetCount).toBeGreaterThanOrEqual(expectedCategories.length);
     expect(manifest.categories).toEqual([...expectedCategories].sort());
     for (const category of expectedCategories) {
@@ -43,7 +43,7 @@ describe("v4 local asset corpus", () => {
       for (const entry of entries) {
         const directory = resolve(categoryPath, entry.name);
         const manifest = JSON.parse(readFileSync(resolve(directory, "manifest.json"), "utf8")) as V4AssetManifest;
-        expect(manifest.schemaVersion).toBe("g3d-v4-local-asset-v1");
+        expect(manifest.schemaVersion).toBe("a3d-v4-local-asset-v1");
         expect(manifest.category).toBe(category);
         expect(manifest.features.length).toBeGreaterThan(0);
         expect(existsSync(resolve(directory, manifest.localFile))).toBe(true);
@@ -56,7 +56,7 @@ describe("v4 local asset corpus", () => {
   it("emits a passing V4 asset corpus report with loader/render diagnostics for every asset", () => {
     const report = JSON.parse(readFileSync(reportPath, "utf8")) as V4Report;
 
-    expect(report.schemaVersion).toBe("g3d-v4-asset-corpus-report-v1");
+    expect(report.schemaVersion).toBe("a3d-v4-asset-corpus-report-v1");
     expect(report.ok).toBe(true);
     expect(report.assetCount).toBe(8);
     expect(report.summary).toMatchObject({

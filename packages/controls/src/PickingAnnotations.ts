@@ -32,8 +32,8 @@ export interface PickingAnnotationObject<TPayload = unknown> extends ControlObje
   readonly name: string;
   readonly picking: ControlPickMetadata;
   readonly userData: {
-    readonly g3dPicking: ControlPickMetadata;
-    readonly g3dPickingAnnotation: PickingAnnotation<TPayload>;
+    readonly a3dPicking: ControlPickMetadata;
+    readonly a3dPickingAnnotation: PickingAnnotation<TPayload>;
   };
 }
 
@@ -171,8 +171,8 @@ export function createPickingAnnotationObject<TPayload = unknown>(
     pickPriority: annotation.priority,
     picking: metadata,
     userData: {
-      g3dPicking: metadata,
-      g3dPickingAnnotation: annotation
+      a3dPicking: metadata,
+      a3dPickingAnnotation: annotation
     }
   };
 }
@@ -200,7 +200,7 @@ export function pickAnnotation<TPayload = unknown>(
 export function annotationFromPickHit<TPayload = unknown>(
   hit: V5PickResult | null | undefined
 ): PickingAnnotation<TPayload> | null {
-  const value = hit?.object.userData?.g3dPickingAnnotation;
+  const value = hit?.object.userData?.a3dPickingAnnotation;
   return isPickingAnnotation(value) ? value as PickingAnnotation<TPayload> : null;
 }
 

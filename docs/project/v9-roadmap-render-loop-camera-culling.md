@@ -1,6 +1,6 @@
 # V9 Render Loop, Camera, And Culling
 
-G3D has a real renderer frame path with camera handling, resize support, culling, diagnostics, and render-loop helpers. Some camera-layout parity remains partial.
+A3D has a real renderer frame path with camera handling, resize support, culling, diagnostics, and render-loop helpers. Some camera-layout parity remains partial.
 
 ## Real Code
 
@@ -9,13 +9,13 @@ G3D has a real renderer frame path with camera handling, resize support, culling
 - `packages/rendering/src/SceneOptimization.ts`
 - `packages/rendering/src/performance/RenderItemSorting.ts`
 - `packages/rendering/src/advanced-runtime/RendererV9.ts`
-- `packages/engine/src/advanced-runtime/G3DRenderer.ts`
+- `packages/engine/src/advanced-runtime/A3DRenderer.ts`
 - `apps/public-scene/src/main.ts`
 
 ## What Is Supported
 
 - `Renderer.create()`, `render()`, `renderAsync()`, `captureFrame()`, `resize()`, and `resizeToDisplay()`.
-- `G3DRenderer` wrapper with animation-loop and diagnostics access.
+- `A3DRenderer` wrapper with animation-loop and diagnostics access.
 - Camera-like inputs and render-source camera policy.
 - Scene traversal through first-party scene objects and render sources.
 - Frustum culling and visible-object diagnostics.

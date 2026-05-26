@@ -4,9 +4,9 @@
     "name": "V3 Editor Authored Game",
     "savedAt": "2026-05-07T00:00:00.000Z",
     "provenance": {
-      "authoringTool": "galileo3d-browser-editor",
+      "authoringTool": "aura3d-browser-editor",
       "workflow": "editor-import-play-export-game-slice",
-      "runtimePackage": "@galileo3d/editor-runtime",
+      "runtimePackage": "@aura3d/editor-runtime",
       "operations": [
         { "id": "new-project", "runtimeApi": "EditorRuntime.select", "target": "player-rig" },
         { "id": "import-real-gltf", "runtimeApi": "EditorRuntime.executeCommand", "target": "asset-fox" },
@@ -18,7 +18,7 @@
         { "id": "static-export", "runtimeApi": "StaticProjectExporter.export", "target": "index.html" },
         { "id": "static-export-runtime", "runtimeApi": "createStaticExportRuntime", "target": "runtime.js" }
       ],
-      "evidenceHash": "g3d-game-prov-3f42c1a8"
+      "evidenceHash": "a3d-game-prov-3f42c1a8"
     }
   },
   "scene": {
@@ -72,7 +72,7 @@
     "input": ["ArrowRight", "ArrowLeft", "A", "D", "pointer"]
   },
   "export": {
-    "title": "Galileo3D Editor Authored Game",
+    "title": "Aura3D Editor Authored Game",
     "entryNodeId": "player-rig"
   }
 }

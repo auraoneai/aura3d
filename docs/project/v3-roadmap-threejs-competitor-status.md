@@ -30,7 +30,7 @@ tests/reports/foundation-threejs-comparison/
 
 Each scene has:
 
-- G3D screenshot.
+- A3D screenshot.
 - Three.js screenshot.
 - Diff screenshot.
 - Setup-line count.
@@ -42,7 +42,7 @@ Each scene has:
 
 The current evidence supports this claim:
 
-> G3D is a credible Three.js competitor for the tested supported workflows because the workflow APIs produce comparable local screenshots with less setup code and built-in diagnostics.
+> A3D is a credible Three.js competitor for the tested supported workflows because the workflow APIs produce comparable local screenshots with less setup code and built-in diagnostics.
 
 ## Claim Boundary
 

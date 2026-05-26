@@ -7,7 +7,7 @@ const reportPath = resolve("tests/reports/production-runtime-asset-readiness.jso
 const assetSummary = createV6AssetCorpusSummary();
 const environmentSummary = createV6EnvironmentCorpusSummary();
 const report = {
-  schema: "g3d-production-runtime-asset-environment-readiness/v1",
+  schema: "a3d-production-runtime-asset-environment-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: assetSummary.pass && environmentSummary.pass,
   assetSummary,

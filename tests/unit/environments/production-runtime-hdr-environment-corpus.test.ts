@@ -10,7 +10,7 @@ describe("V6 HDR environment corpus", () => {
     const manifest = loadV6EnvironmentManifest();
     const summary = createV6EnvironmentCorpusSummary(manifest);
 
-    expect(manifest.schema).toBe("g3d-production-runtime-hdr-environment-corpus/v1");
+    expect(manifest.schema).toBe("a3d-production-runtime-hdr-environment-corpus/v1");
     expect(summary.pass, summary.failures.join("\n")).toBe(true);
     expect(summary.environmentCount).toBeGreaterThanOrEqual(manifest.requirements.minimumRealHdriSources);
     expect(summary.existingEnvironmentCount).toBe(summary.environmentCount);

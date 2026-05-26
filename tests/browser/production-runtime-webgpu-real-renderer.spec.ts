@@ -29,7 +29,7 @@ test.describe("V6 WebGPU report", () => {
       doesNotBlockWebGL2Production: boolean;
       warnings: readonly string[];
     };
-    expect(report.schema).toBe("g3d-production-runtime-webgpu-report/v1");
+    expect(report.schema).toBe("a3d-production-runtime-webgpu-report/v1");
     expect(["available", "unavailable", "blocked"]).toContain(report.status);
     expect(report.realHardwareRequiredForParity).toBe(true);
     expect(report.doesNotBlockWebGL2Production).toBe(true);
@@ -57,7 +57,7 @@ test.describe("V6 WebGPU report", () => {
       requiredForCompletion: readonly { id: string; status: "ready" | "missing" | "blocked"; evidence: string }[];
       blockers: readonly string[];
     };
-    expect(readiness.schema).toBe("g3d-v7-webgpu-readiness/v1");
+    expect(readiness.schema).toBe("a3d-v7-webgpu-readiness/v1");
     expect(readiness.productionBackend).toBe("webgpu-production-sdk-path");
     expect(readiness.primaryRendererClaim).toBe(true);
     expect(readiness.safetyChecks.find((item) => item.id === "renderer-production-runtime-webgpu-uses-production-webgpu-path")?.status).toBe("ready");

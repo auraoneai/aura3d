@@ -1,5 +1,5 @@
-import { ValidationError } from "@galileo3d/core";
-import { Frustum } from "@galileo3d/math";
+import { ValidationError } from "@aura3d/core";
+import { Frustum } from "@aura3d/math";
 import { extractFrustumPlanes, identityMat4, multiplyMat4, toMathMat4, type Mat4, type PlaneTuple } from "./MathTypes.js";
 import { SceneNode } from "./SceneNode.js";
 

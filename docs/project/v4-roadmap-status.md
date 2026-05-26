@@ -10,8 +10,8 @@ V4 was the visual-quality and productization reset. It exists as historical cont
 V4 is not complete until:
 
 - `pnpm v4:release` exists and passes.
-- A packed `@galileo3d/engine` package can be installed into a fresh external app.
-- A developer can scaffold a V4 app through the create-g3d path or repo-local equivalent.
+- A packed `@aura3d/engine` package can be installed into a fresh external app.
+- A developer can scaffold a V4 app through the create-aura3d path or repo-local equivalent.
 - The external app can build for production, serve static output, render a flagship V4 scene, and capture a screenshot.
 - Product, material, interior, asset, character, and interactive flagship scenes are visually credible.
 - Same-scene Three.js comparisons exist for the flagship scenes.

@@ -5,7 +5,7 @@
 
 Status: in progress.
 
-The current product position is blocked from broad parity or replacement claims. G3D is being reset to a TypeScript/WebGL rendering SDK for controlled product, material, asset-viewer, and clean scene-rendering workflows.
+The current product position is blocked from broad parity or replacement claims. A3D is being reset to a TypeScript/WebGL rendering SDK for controlled product, material, asset-viewer, and clean scene-rendering workflows.
 
 ## Current Gate
 

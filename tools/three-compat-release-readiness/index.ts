@@ -66,22 +66,22 @@ const requiredDocs = [
   "docs/project/three-compat-roadmap-human-visual-review.md"
 ];
 const screenshots: readonly FinalScreenshot[] = [
-  image("premium-product-viewer", "tests/reports/three-compat-threejs-visual-parity/product-configurator-g3d.png", "tests/reports/three-compat-gallery/product/premium-product-viewer.png", "flagship"),
-  image("automotive-configurator", "tests/reports/three-compat-threejs-visual-parity/automotive-configurator-g3d.png", "tests/reports/three-compat-gallery/automotive/automotive-configurator.png", "flagship"),
-  image("interior-daylight", "tests/reports/three-compat-threejs-visual-parity/architecture-daylight-g3d.png", "tests/reports/three-compat-gallery/architecture-day/interior-daylight.png", "flagship"),
-  image("interior-night", "tests/reports/three-compat-threejs-visual-parity/architecture-night-g3d.png", "tests/reports/three-compat-gallery/architecture-night/interior-night.png", "flagship"),
-  image("material-library", "tests/reports/three-compat-threejs-visual-parity/material-library-g3d.png", "tests/reports/three-compat-gallery/materials/material-library.png", "flagship"),
-  image("asset-inspector", "tests/reports/three-compat-threejs-visual-parity/gltf-asset-inspection-g3d.png", "tests/reports/three-compat-gallery/assets/asset-inspector.png", "flagship"),
-  image("character-animation", "tests/reports/three-compat-threejs-visual-parity/character-animation-g3d.png", "tests/reports/three-compat-gallery/character/character-animation.png", "flagship"),
-  image("cinematic-postprocess", "tests/reports/three-compat-threejs-visual-parity/postprocess-cinematic-g3d.png", "tests/reports/three-compat-gallery/postprocess/cinematic-postprocess.png", "flagship"),
-  image("particle-vfx", "tests/reports/three-compat-threejs-visual-parity/particles-vfx-g3d.png", "tests/reports/three-compat-gallery/vfx/particle-vfx.png", "flagship"),
-  image("large-instanced-scene", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-g3d.png", "tests/reports/three-compat-gallery/large-scene/large-instanced-scene.png", "flagship"),
-  image("shader-lab", "tests/reports/three-compat-threejs-visual-parity/shader-material-g3d.png", "tests/reports/three-compat-gallery/shader-lab/shader-lab.png", "flagship"),
-  image("migrated-threejs-scene", "tests/reports/three-compat-threejs-visual-parity/threejs-migrated-custom-scene-g3d.png", "tests/reports/three-compat-gallery/threejs-migration/migrated-threejs-scene.png", "flagship"),
-  image("product-comparison-g3d", "tests/reports/three-compat-threejs-visual-parity/product-configurator-g3d.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-g3d.png", "comparison"),
+  image("premium-product-viewer", "tests/reports/three-compat-threejs-visual-parity/product-configurator-a3d.png", "tests/reports/three-compat-gallery/product/premium-product-viewer.png", "flagship"),
+  image("automotive-configurator", "tests/reports/three-compat-threejs-visual-parity/automotive-configurator-a3d.png", "tests/reports/three-compat-gallery/automotive/automotive-configurator.png", "flagship"),
+  image("interior-daylight", "tests/reports/three-compat-threejs-visual-parity/architecture-daylight-a3d.png", "tests/reports/three-compat-gallery/architecture-day/interior-daylight.png", "flagship"),
+  image("interior-night", "tests/reports/three-compat-threejs-visual-parity/architecture-night-a3d.png", "tests/reports/three-compat-gallery/architecture-night/interior-night.png", "flagship"),
+  image("material-library", "tests/reports/three-compat-threejs-visual-parity/material-library-a3d.png", "tests/reports/three-compat-gallery/materials/material-library.png", "flagship"),
+  image("asset-inspector", "tests/reports/three-compat-threejs-visual-parity/gltf-asset-inspection-a3d.png", "tests/reports/three-compat-gallery/assets/asset-inspector.png", "flagship"),
+  image("character-animation", "tests/reports/three-compat-threejs-visual-parity/character-animation-a3d.png", "tests/reports/three-compat-gallery/character/character-animation.png", "flagship"),
+  image("cinematic-postprocess", "tests/reports/three-compat-threejs-visual-parity/postprocess-cinematic-a3d.png", "tests/reports/three-compat-gallery/postprocess/cinematic-postprocess.png", "flagship"),
+  image("particle-vfx", "tests/reports/three-compat-threejs-visual-parity/particles-vfx-a3d.png", "tests/reports/three-compat-gallery/vfx/particle-vfx.png", "flagship"),
+  image("large-instanced-scene", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-a3d.png", "tests/reports/three-compat-gallery/large-scene/large-instanced-scene.png", "flagship"),
+  image("shader-lab", "tests/reports/three-compat-threejs-visual-parity/shader-material-a3d.png", "tests/reports/three-compat-gallery/shader-lab/shader-lab.png", "flagship"),
+  image("migrated-threejs-scene", "tests/reports/three-compat-threejs-visual-parity/threejs-migrated-custom-scene-a3d.png", "tests/reports/three-compat-gallery/threejs-migration/migrated-threejs-scene.png", "flagship"),
+  image("product-comparison-a3d", "tests/reports/three-compat-threejs-visual-parity/product-configurator-a3d.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-a3d.png", "comparison"),
   image("product-comparison-threejs", "tests/reports/three-compat-threejs-visual-parity/product-configurator-threejs.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-threejs.png", "comparison"),
   image("product-comparison-diff", "tests/reports/three-compat-threejs-visual-parity/product-configurator-diff.png", "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-diff.png", "comparison"),
-  image("large-scene-g3d", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-g3d.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-g3d.png", "comparison"),
+  image("large-scene-a3d", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-a3d.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-a3d.png", "comparison"),
   image("large-scene-threejs", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-threejs.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-threejs.png", "comparison"),
   image("large-scene-diff", "tests/reports/three-compat-threejs-visual-parity/large-scene-instancing-diff.png", "tests/reports/three-compat-gallery/threejs-comparison/large-scene-diff.png", "comparison"),
   image("external-consumer-static", "tests/reports/three-compat-external-consumer/static-preview.png", "tests/reports/three-compat-external-consumer/external-consumer-static.png", "external")
@@ -116,7 +116,7 @@ const checks = [
   { id: "claim-boundaries-preserved", pass: readFileSync(resolve("docs/project/three-compat-roadmap-blocked-claims.md"), "utf8").includes("Full Three.js API replacement"), detail: "blocked claims remain visible" }
 ];
 const report = {
-  schema: "g3d-three-compat-release-readiness/v1",
+  schema: "a3d-three-compat-release-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredReports,
@@ -165,7 +165,7 @@ function writeHumanVisualReview(items: readonly FinalScreenshot[]): void {
     .join("\n");
   const review = `# V5 Human Visual Review
 
-This file is the required visual sign-off record for V5 release gating. It is intentionally explicit because G3D V5 is not allowed to pass on API stubs alone.
+This file is the required visual sign-off record for V5 release gating. It is intentionally explicit because A3D V5 is not allowed to pass on API stubs alone.
 
 | Scene | Screenshot | Premium browser 3D product? | Lighting believable? | HDR/IBL reflections credible? | Materials distinguishable/plausible? | Shadows credible? | Postprocess improves image? | Scene enough complexity? | What still looks bad? | Acceptable public product page? |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -173,8 +173,8 @@ ${flagshipRows}
 
 ## Three.js Comparison Review
 
-- Product comparison G3D, Three.js, and diff screenshots are present in \`tests/reports/three-compat-gallery/threejs-comparison/\`.
-- Large-scene comparison G3D, Three.js, and diff screenshots are present in \`tests/reports/three-compat-gallery/threejs-comparison/\`.
+- Product comparison A3D, Three.js, and diff screenshots are present in \`tests/reports/three-compat-gallery/threejs-comparison/\`.
+- Large-scene comparison A3D, Three.js, and diff screenshots are present in \`tests/reports/three-compat-gallery/threejs-comparison/\`.
 - The visual parity report is the numeric gate. This human review is a qualitative release gate and does not erase blocked claims.
 
 ## Release Boundary

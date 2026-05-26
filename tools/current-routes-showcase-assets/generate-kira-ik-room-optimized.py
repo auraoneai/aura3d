@@ -7,8 +7,8 @@ import bpy
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "fixtures/v8/assets/showcase/kira-ik-room.glb"
-DESTINATION = ROOT / "fixtures/v8/assets/showcase/kira-ik-room-animated.glb"
+SOURCE = ROOT / "fixtures/threejs-parity/assets/showcase/kira-ik-room.glb"
+DESTINATION = ROOT / "fixtures/threejs-parity/assets/showcase/kira-ik-room-animated.glb"
 
 
 def reset_scene() -> None:

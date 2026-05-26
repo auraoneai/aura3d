@@ -26,7 +26,7 @@ const evidence = [
 ];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-developer-workflow/v1",
+  schema: "a3d-v10-developer-workflow/v1",
   pass: issues.length === 0,
   decisions: [{
     category: "developer-workflow",

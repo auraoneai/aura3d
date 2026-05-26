@@ -103,7 +103,7 @@ const report: V4MaterialFidelityReport = {
   ok: false,
   generatedAt: new Date().toISOString(),
   command: "pnpm exec playwright test tests/browser/asset-material-fidelity-external-parity.spec.ts",
-  asset: "fixtures/assets/v4/materials/v4-material-fidelity-card/v4-material-fidelity-card.gltf",
+  asset: "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
   validations: [],
   completedTaskEvidence: [],
   blockedTasks: [],
@@ -123,7 +123,7 @@ test.describe("V4 asset material fidelity report", () => {
     report.completedTaskEvidence = [{
       task: "`tests/reports/external-parity-asset-material-fidelity.json` passes.",
       evidence: [
-        "fixtures/assets/v4/materials/v4-material-fidelity-card/v4-material-fidelity-card.gltf",
+        "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-material-fidelity-external-parity.spec.ts",
         "tests/reports/external-parity-asset-material-fidelity.json",
@@ -139,11 +139,11 @@ test.describe("V4 asset material fidelity report", () => {
   });
 
   test("loads the V4 material fidelity corpus asset and reports supported material features", async ({ page }) => {
-    const url = `${server.origin}/fixtures/assets/v4/materials/v4-material-fidelity-card/v4-material-fidelity-card.gltf`;
+    const url = `${server.origin}/fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const snapshot = (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerMaterialSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+        const snapshot = (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerMaterialSnapshot }).__AURA3D_ASSET_VIEWER__;
         return snapshot?.status === "ready" || snapshot?.status === "error";
       },
       undefined,
@@ -236,7 +236,7 @@ test.describe("V4 asset material fidelity report", () => {
 
 async function snapshot(page: Page): Promise<AssetViewerMaterialSnapshot | undefined> {
   return page.evaluate(() => {
-    return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerMaterialSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+    return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerMaterialSnapshot }).__AURA3D_ASSET_VIEWER__;
   });
 }
 

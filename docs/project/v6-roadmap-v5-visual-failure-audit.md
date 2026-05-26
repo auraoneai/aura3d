@@ -7,11 +7,11 @@ V6 starts by acknowledging the exact V5 failure that must not repeat.
 
 ## Failed Evidence Pattern
 
-V5 created broad packages, docs, examples, and release gates, but its visual proof path was weak. The V5 visual parity and gallery flow allowed proof images that did not originate from real G3D renderer output.
+V5 created broad packages, docs, examples, and release gates, but its visual proof path was weak. The V5 visual parity and gallery flow allowed proof images that did not originate from real A3D renderer output.
 
 Specific failures:
 
-- `tests/browser/three-compat-threejs-visual-parity.spec.ts` used canvas-painted visual evidence instead of rendering real G3D scenes through a production WebGL2/WebGPU renderer.
+- `tests/browser/three-compat-threejs-visual-parity.spec.ts` used canvas-painted visual evidence instead of rendering real A3D scenes through a production WebGL2/WebGPU renderer.
 - `tests/reports/three-compat-gallery/*` was initially allowed to pass with tiny, blank, flat, or non-renderer screenshots.
 - V5 app-suite tests used metadata such as `window.__app` as proof, which is not enough for visual product quality.
 - V5 renderer capture contracts could return identifiers instead of real framebuffer pixels.
@@ -22,10 +22,10 @@ Specific failures:
 V6 must prove real renderer output:
 
 - screenshots from WebGL2/WebGPU frame buffers
-- real glTF/GLB assets loaded through G3D
+- real glTF/GLB assets loaded through A3D
 - real HDR environments and PBR materials
 - runtime renderer metrics with nonzero draw calls, textures, materials, and assets
-- same-scene screenshots rendered by G3D and Three.js
+- same-scene screenshots rendered by A3D and Three.js
 - pixel-stat and human-review gates that reject fake or primitive output
 
 ## Non-Acceptable V6 Evidence

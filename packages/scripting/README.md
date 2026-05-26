@@ -1,6 +1,6 @@
-# @galileo3d/scripting
+# @aura3d/scripting
 
-`@galileo3d/scripting` owns behavior attachment, behavior runtime phases, script context data, behavior registries, visual graph validation, graph serialization, and deterministic visual graph execution.
+`@aura3d/scripting` owns behavior attachment, behavior runtime phases, script context data, behavior registries, visual graph validation, graph serialization, and deterministic visual graph execution.
 
 ## Public API
 

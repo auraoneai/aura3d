@@ -7,13 +7,13 @@ interface Check { readonly id: string; readonly pass: boolean; readonly detail: 
 const requiredFiles = [
   "packages/engine/package.json",
   "packages/engine/src/index.ts",
-  "packages/create-g3d/package.json",
-  "packages/create-g3d/src/index.ts",
-  "packages/create-g3d/src/cli.ts",
-  "packages/create-g3d/templates/product-viewer/README.md",
-  "packages/create-g3d/templates/material-studio/README.md",
-  "packages/create-g3d/templates/asset-gallery/README.md",
-  "packages/create-g3d/templates/interactive-scene/README.md",
+  "packages/create-aura3d/package.json",
+  "packages/create-aura3d/src/index.ts",
+  "packages/create-aura3d/src/cli.ts",
+  "packages/create-aura3d/templates/product-viewer/README.md",
+  "packages/create-aura3d/templates/material-studio/README.md",
+  "packages/create-aura3d/templates/asset-gallery/README.md",
+  "packages/create-aura3d/templates/interactive-scene/README.md",
   "templates/external-parity-product-viewer/package.json",
   "templates/external-parity-product-viewer/index.html",
   "templates/external-parity-product-viewer/src/main.ts",
@@ -30,12 +30,12 @@ const requiredFiles = [
   "templates/external-parity-interactive-scene/index.html",
   "templates/external-parity-interactive-scene/src/main.ts",
   "templates/external-parity-interactive-scene/README.md",
-  "docs/templates/create-g3d-templates.md",
+  "docs/templates/create-aura3d-templates.md",
   "tests/unit/engine/external-parity-public-api-stability.test.ts",
-  "tests/integration/external-parity-create-g3d.test.ts",
+  "tests/integration/external-parity-create-aura3d.test.ts",
   "tests/browser/external-parity-template-product-viewer.spec.ts",
-  "tests/reports/external-parity-create-g3d.json",
-  "tests/reports/external-parity-create-g3d-templates.json",
+  "tests/reports/external-parity-create-aura3d.json",
+  "tests/reports/external-parity-create-aura3d-templates.json",
   "tests/reports/external-parity-template-product-viewer-browser.json",
   "tests/reports/external-parity-external-vite-build.json",
   "tests/reports/external-parity-static-preview-smoke.json",
@@ -62,7 +62,7 @@ const engineSource = text("packages/engine/src/index.ts");
 check(
   "root-product-api",
   [
-    "createG3DApp",
+    "createA3DApp",
     "workflows",
     "loadAsset",
     "createEnvironment",
@@ -83,13 +83,13 @@ check(
   rootExports["."] === "./dist/engine/index.js" &&
     rootExports["./engine"] === "./dist/engine/index.js" &&
     rootExports["./apps"] === "./dist/apps/index.js" &&
-    rootExports["./create-g3d"] === "./dist/create-g3d/index.js",
-  "Root package must export installable product, apps, and create-g3d paths."
+    rootExports["./create-aura3d"] === "./dist/create-aura3d/index.js",
+  "Root package must export installable product, apps, and create-aura3d paths."
 );
 check(
   "package-files",
-  ["dist/apps", "dist/engine", "dist/create-g3d"].every((file) => arr(rootPackage?.files).includes(file)),
-  "Root package files must include apps, engine, and create-g3d dist directories."
+  ["dist/apps", "dist/engine", "dist/create-aura3d"].every((file) => arr(rootPackage?.files).includes(file)),
+  "Root package files must include apps, engine, and create-aura3d dist directories."
 );
 
 check(
@@ -101,9 +101,9 @@ check(
   "template-public-imports",
   ["external-parity-product-viewer", "external-parity-material-studio", "external-parity-asset-gallery", "external-parity-interactive-scene"].every((template) => {
     const source = text(`templates/${template}/src/main.ts`);
-    return source.includes("from \"@galileo3d/engine\"") && !source.includes("@galileo3d/engine/apps") && !source.includes("/packages/");
+    return source.includes("from \"@aura3d/engine\"") && !source.includes("@aura3d/engine/apps") && !source.includes("/packages/");
   }),
-  "Template sources must consume the public root @galileo3d/engine API."
+  "Template sources must consume the public root @aura3d/engine API."
 );
 check(
   "template-real-api-usage",
@@ -112,7 +112,7 @@ check(
     ["templates/external-parity-material-studio/src/main.ts", "workflows.materialStudio"],
     ["templates/external-parity-asset-gallery/src/main.ts", "workflows.assetViewer"],
     ["templates/external-parity-interactive-scene/src/main.ts", "workflows.interactiveScene"]
-  ].every(([file, workflow]) => ["createG3DApp", workflow, "createEnvironment", "createDiagnosticsPanel"].every((marker) => text(file!).includes(marker!))),
+  ].every(([file, workflow]) => ["createA3DApp", workflow, "createEnvironment", "createDiagnosticsPanel"].every((marker) => text(file!).includes(marker!))),
   "Templates must exercise runtime, workflow, environment, and diagnostics APIs."
 );
 
@@ -143,7 +143,7 @@ check(
       const entry = obj(build);
       return entry.ok === true && typeof entry.outputDir === "string" && exists(String(entry.outputDir)) && arr(entry.outputFiles).some((file) => String(file).endsWith(".js"));
     }),
-  "External Vite proof must build every V4 template from a packed @galileo3d/engine package."
+  "External Vite proof must build every V4 template from a packed @aura3d/engine package."
 );
 
 const staticSmoke = json("tests/reports/external-parity-static-preview-smoke.json");
@@ -160,13 +160,13 @@ check(
 
 check(
   "docs",
-  ["npm create g3d@latest", "@galileo3d/engine", "full Three.js"].every((marker) => text("docs/templates/create-g3d-templates.md").includes(marker)),
+  ["npm create aura3d@latest", "@aura3d/engine", "full Three.js"].every((marker) => text("docs/templates/create-aura3d-templates.md").includes(marker)),
   "Template docs must explain install path, public API, and remaining boundary."
 );
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-template-readiness/v1",
+  schema: "a3d-external-parity-template-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

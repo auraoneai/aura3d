@@ -21,11 +21,11 @@ test.describe("editor prefab reusable object workflow", () => {
     await waitForEditor(page);
 
     await page.getByRole("button", { name: "Prefab from Selection" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().prefabCount)).toBe(1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().prefabCount)).toBe(1);
 
-    const prefab = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.shell.project.prefabs[0]);
+    const prefab = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.shell.project.prefabs[0]);
     expect(prefab).toMatchObject({
-      schemaVersion: "galileo3d-prefab-v1",
+      schemaVersion: "aura3d-prefab-v1",
       name: "Hero Cube Prefab",
       rootNodeId: "node-hero",
       sourceNodeId: "node-hero"
@@ -33,9 +33,9 @@ test.describe("editor prefab reusable object workflow", () => {
     expect(prefab?.nodes.map((node) => node.name)).toEqual(["Hero Cube", "Imported Placeholder"]);
 
     await page.getByRole("button", { name: "Instantiate Prefab" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().nodeCount)).toBe(4);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().nodeCount)).toBe(4);
     const instantiatedNodes = await page.evaluate(() => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.scene.nodes
+      return window.__AURA3D_EDITOR_APP__!.shell.project.scene.nodes
         .filter((node) => node.name.endsWith(" Instance"))
         .map((node) => ({ id: node.id, name: node.name, parentId: node.parentId, x: node.transform.position[0] }));
     });
@@ -48,9 +48,9 @@ test.describe("editor prefab reusable object workflow", () => {
     );
 
     await page.getByRole("button", { name: "Save", exact: true }).click();
-    const savedProjectJson = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().savedProjectJson);
+    const savedProjectJson = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().savedProjectJson);
     expect(savedProjectJson).toContain('"prefabs"');
-    expect(savedProjectJson).toContain('"galileo3d-prefab-v1"');
+    expect(savedProjectJson).toContain('"aura3d-prefab-v1"');
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await waitForEditor(page);
@@ -58,13 +58,13 @@ test.describe("editor prefab reusable object workflow", () => {
       element.value = value;
     }, savedProjectJson);
     await page.getByRole("button", { name: "Load", exact: true }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().prefabCount)).toBe(1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().prefabCount)).toBe(1);
     await expect(page.getByRole("button", { name: "Hero Cube Instance" })).toBeVisible();
 
     await page.getByRole("button", { name: "Export", exact: true }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().exportedFileCount)).toBe(3);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().exportedFileCount)).toBe(3);
     const exportedProject = await page.evaluate(() => {
-      const projectFile = window.__GALILEO3D_EDITOR_APP__!.shell.exportedFiles().find((file) => file.path === "project.json");
+      const projectFile = window.__AURA3D_EDITOR_APP__!.shell.exportedFiles().find((file) => file.path === "project.json");
       return projectFile ? JSON.parse(projectFile.content) as { readonly prefabs: readonly unknown[]; readonly scene: { readonly nodes: readonly unknown[] } } : undefined;
     });
     expect(exportedProject?.prefabs).toHaveLength(1);
@@ -79,7 +79,7 @@ test.describe("editor prefab reusable object workflow", () => {
 });
 
 async function waitForEditor(page: Page): Promise<void> {
-  await page.waitForFunction(() => window.__GALILEO3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
+  await page.waitForFunction(() => window.__AURA3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
 }
 
 function writeEditorReport(evidence: { readonly prefabId: string; readonly prefabNodeCount: number; readonly exportedNodeCount: number }): void {
@@ -91,7 +91,7 @@ function writeEditorReport(evidence: { readonly prefabId: string; readonly prefa
     ...existing,
     ok: true,
     generatedAt: new Date().toISOString(),
-    schemaVersion: "g3d-external-parity-editor-prefab-workflow-report-v1",
+    schemaVersion: "a3d-external-parity-editor-prefab-workflow-report-v1",
     subsystem: "browser-editor-authoring",
     command: "pnpm exec playwright test tests/browser/editor-prefab-workflow.spec.ts",
     checks: [
@@ -115,7 +115,7 @@ function writeEditorReport(evidence: { readonly prefabId: string; readonly prefa
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): {
         readonly status: "booting" | "ready" | "error";
         readonly nodeCount: number;

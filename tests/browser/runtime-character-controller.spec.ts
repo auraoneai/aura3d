@@ -21,14 +21,14 @@ test.describe("runtime character controller", () => {
   test("game slice drives player movement and jump through the physics CharacterController", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.characterControllerGrounded === true, undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.characterControllerGrounded === true, undefined, { timeout: 10_000 });
     const before = await metrics(page);
 
     await page.evaluate(() => {
-      window.__GALILEO3D_TEST_GAMEPADS__ = [{
+      window.__AURA3D_TEST_GAMEPADS__ = [{
         id: "character-controller-test-gamepad",
         index: 0,
         connected: true,
@@ -37,12 +37,12 @@ test.describe("runtime character controller", () => {
       }];
     });
     await page.waitForFunction(
-      (startX) => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.playerX ?? -999) > Number(startX) + 0.25,
+      (startX) => Number(window.__AURA3D_GAME_DEMO__?.metrics.playerX ?? -999) > Number(startX) + 0.25,
       before.playerX,
       { timeout: 10_000 }
     );
     await page.evaluate(() => {
-      window.__GALILEO3D_TEST_GAMEPADS__ = [{
+      window.__AURA3D_TEST_GAMEPADS__ = [{
         id: "character-controller-test-gamepad",
         index: 0,
         connected: true,
@@ -50,10 +50,10 @@ test.describe("runtime character controller", () => {
         buttons: [{ pressed: false, value: 0 }],
       }];
     });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.characterControllerGrounded === true, undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.characterControllerGrounded === true, undefined, { timeout: 10_000 });
 
     await page.evaluate(() => {
-      window.__GALILEO3D_TEST_GAMEPADS__ = [{
+      window.__AURA3D_TEST_GAMEPADS__ = [{
         id: "character-controller-test-gamepad",
         index: 0,
         connected: true,
@@ -61,9 +61,9 @@ test.describe("runtime character controller", () => {
         buttons: [{ pressed: true, value: 1 }],
       }];
     });
-    await page.waitForFunction(() => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.characterControllerJumpCount ?? 0) >= 1, undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.characterControllerJumpCount ?? 0) >= 1, undefined, { timeout: 10_000 });
     await page.evaluate(() => {
-      window.__GALILEO3D_TEST_GAMEPADS__ = [{
+      window.__AURA3D_TEST_GAMEPADS__ = [{
         id: "character-controller-test-gamepad",
         index: 0,
         connected: true,
@@ -92,14 +92,14 @@ test.describe("runtime character controller", () => {
   test("game slice follows the player with a third-person camera path", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();
     const before = await metrics(page);
     await setTestGamepad(page, 0.85, false);
     await page.waitForFunction(
       (startX) => {
-        const metrics = window.__GALILEO3D_GAME_DEMO__?.metrics;
+        const metrics = window.__AURA3D_GAME_DEMO__?.metrics;
         return Number(metrics?.playerX ?? -999) > Number(startX) + 0.25
           && Number(metrics?.cameraFollowPathLength ?? 0) > 0.04
           && Number(metrics?.cameraFollowUpdates ?? 0) > 10;
@@ -125,11 +125,11 @@ test.describe("runtime character controller", () => {
   test("game slice renders generated glTF player and arena assets with contact shadow evidence", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true, undefined, { timeout: 15_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true, undefined, { timeout: 15_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();
-    await page.waitForFunction(() => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.visualAssetRenderItems ?? 0) >= 16, undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.visualAssetRenderItems ?? 0) >= 16, undefined, { timeout: 10_000 });
 
     await mkdir(dirname(assetScreenshotPath), { recursive: true });
     await page.screenshot({ path: assetScreenshotPath, fullPage: true });
@@ -141,8 +141,8 @@ test.describe("runtime character controller", () => {
     expect(state.productionLikePlayerModel).toBe(true);
     expect(state.productionLikeArenaAsset).toBe(true);
     expect(state.primitivePlayerFallback).toBe(false);
-    expect(String(state.visualAssetPlayerUrl)).toContain("/fixtures/assets/v3/character/game-hero-runner/game-hero-runner.gltf");
-    expect(String(state.visualAssetArenaUrl)).toContain("/fixtures/assets/v3/environment/game-arena-outpost/game-arena-outpost.gltf");
+    expect(String(state.visualAssetPlayerUrl)).toContain("/fixtures/workflow-assets/assets/animated-character/animated-character.gltf");
+    expect(String(state.visualAssetArenaUrl)).toContain("/fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf");
     expect(Number(state.visualAssetPlayerMeshes)).toBeGreaterThanOrEqual(5);
     expect(Number(state.visualAssetArenaMeshes)).toBeGreaterThanOrEqual(6);
     expect(Number(state.visualAssetPlayerRenderables)).toBeGreaterThanOrEqual(8);
@@ -158,11 +158,11 @@ test.describe("runtime character controller", () => {
   test("game slice resolves win and fail objective states from gameplay movement", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='game-slice-canvas']").focus();
     await setTestGamepad(page, 0.9, false);
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.objectivePhase === "won", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "won", undefined, { timeout: 45_000 });
     await setTestGamepad(page, 0, false);
     const won = await metrics(page);
 
@@ -177,10 +177,10 @@ test.describe("runtime character controller", () => {
     await expect(page.locator("[data-testid='objective-status']")).toHaveAttribute("data-phase", "won");
 
     await page.reload({ waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
     await page.locator("[data-testid='game-slice-canvas']").focus();
     await setTestGamepad(page, -0.9, false);
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.objectivePhase === "failed", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "failed", undefined, { timeout: 45_000 });
     await setTestGamepad(page, 0, false);
     const failed = await metrics(page);
 
@@ -195,12 +195,12 @@ test.describe("runtime character controller", () => {
 });
 
 async function metrics(page: Page): Promise<Record<string, number | string | boolean>> {
-  return page.evaluate(() => window.__GALILEO3D_GAME_DEMO__?.metrics ?? {});
+  return page.evaluate(() => window.__AURA3D_GAME_DEMO__?.metrics ?? {});
 }
 
 async function setTestGamepad(page: Page, axisX: number, jump: boolean): Promise<void> {
   await page.evaluate(({ axisX, jump }) => {
-    window.__GALILEO3D_TEST_GAMEPADS__ = [{
+    window.__AURA3D_TEST_GAMEPADS__ = [{
       id: "character-controller-test-gamepad",
       index: 0,
       connected: true,
@@ -248,11 +248,11 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_GAME_DEMO__?: {
+    __AURA3D_GAME_DEMO__?: {
       readonly status: "ready" | "error";
       readonly metrics: Record<string, number | string | boolean>;
     };
-    __GALILEO3D_TEST_GAMEPADS__?: readonly {
+    __AURA3D_TEST_GAMEPADS__?: readonly {
       readonly id: string;
       readonly index: number;
       readonly connected: boolean;

@@ -2,7 +2,7 @@ import { runLargeSceneHarness } from "./harness";
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_LARGE_SCENE_TEST__ = {
+    window.__AURA3D_LARGE_SCENE_TEST__ = {
       id: "rendering-large-scene",
       status: "error",
       renderer: "webgl2",

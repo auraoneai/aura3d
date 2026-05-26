@@ -3,12 +3,12 @@
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-The product viewer workflow is the primary commercial app path for V4. It is exposed through `createG3DApp`, `workflows.productConfigurator`, `loadAsset`, `createEnvironment`, `createMaterialVariantController`, `captureScreenshot`, and `createDiagnosticsPanel`.
+The product viewer workflow is the primary commercial app path for V4. It is exposed through `createA3DApp`, `workflows.productConfigurator`, `loadAsset`, `createEnvironment`, `createMaterialVariantController`, `captureScreenshot`, and `createDiagnosticsPanel`.
 
 Required implementation surfaces:
 
 - `packages/engine/src/index.ts`
-- `packages/engine/src/G3DApp.ts`
+- `packages/engine/src/A3DApp.ts`
 - `packages/workflows/src/workflow-foundation/index.ts`
 - `apps/product-studio-pro/`
 - `examples/external-product-configurator/`

@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/test-utils",
+  "name": "@aura3d/test-utils",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",

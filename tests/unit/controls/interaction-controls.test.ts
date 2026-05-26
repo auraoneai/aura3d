@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { InputSnapshot } from "@galileo3d/input";
+import { InputSnapshot } from "@aura3d/input";
 import {
   ControlVector3,
   InteractionControls,

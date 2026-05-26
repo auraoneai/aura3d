@@ -16,12 +16,12 @@ test.describe("input browser runtime", () => {
     await page.goto(`${server.origin}/tests/browser/input-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.locator("#lock-target").click();
     await page.waitForFunction(
-      () => window.__GALILEO3D_INPUT_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_INPUT_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_INPUT_BROWSER_TEST__?.status === "ready" || window.__AURA3D_INPUT_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_INPUT_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_INPUT_BROWSER_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.keyboardBeforeBlur).toBe(true);
@@ -37,7 +37,7 @@ test.describe("input browser runtime", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_INPUT_BROWSER_TEST__?: {
+    __AURA3D_INPUT_BROWSER_TEST__?: {
       readonly status: "running" | "ready" | "error";
       readonly keyboardBeforeBlur: boolean;
       readonly keyboardAfterBlur: boolean;

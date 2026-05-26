@@ -9,10 +9,10 @@ describe("V8 WebGL2 hot path caches", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
       label: "v8-uniform-cache",
-      marker: "@galileo3d-test:v8-uniform-cache",
+      marker: "@aura3d-test:v8-uniform-cache",
       vertex: `
         #version 300 es
-        // @galileo3d-test:v8-uniform-cache
+        // @aura3d-test:v8-uniform-cache
         layout(location = 0) in vec3 a_position;
         uniform mat4 u_modelViewProjection;
         void main() {
@@ -21,7 +21,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @galileo3d-test:v8-uniform-cache
+        // @aura3d-test:v8-uniform-cache
         precision mediump float;
         uniform float u_alpha;
         out vec4 outColor;
@@ -66,10 +66,10 @@ describe("V8 WebGL2 hot path caches", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
       label: "v8-texture-cache",
-      marker: "@galileo3d-test:v8-texture-cache",
+      marker: "@aura3d-test:v8-texture-cache",
       vertex: `
         #version 300 es
-        // @galileo3d-test:v8-texture-cache
+        // @aura3d-test:v8-texture-cache
         layout(location = 0) in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position, 1.0);
@@ -77,7 +77,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @galileo3d-test:v8-texture-cache
+        // @aura3d-test:v8-texture-cache
         precision mediump float;
         uniform sampler2D u_texture;
         out vec4 outColor;
@@ -130,10 +130,10 @@ describe("V8 WebGL2 hot path caches", () => {
     const vertexArrayBindsAfterUpload = gl.state.vertexArrayBinds;
     const shader = device.createShaderProgram({
       label: "v9-vao-cache",
-      marker: "@galileo3d-test:v9-vao-cache",
+      marker: "@aura3d-test:v9-vao-cache",
       vertex: `
         #version 300 es
-        // @galileo3d-test:v9-vao-cache
+        // @aura3d-test:v9-vao-cache
         layout(location = 0) in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position, 1.0);
@@ -141,7 +141,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @galileo3d-test:v9-vao-cache
+        // @aura3d-test:v9-vao-cache
         precision mediump float;
         out vec4 outColor;
         void main() {
@@ -180,10 +180,10 @@ describe("V8 WebGL2 hot path caches", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
       label: "v9-native-instancing-diagnostics",
-      marker: "@galileo3d-test:v9-native-instancing-diagnostics",
+      marker: "@aura3d-test:v9-native-instancing-diagnostics",
       vertex: `
         #version 300 es
-        // @galileo3d-test:v9-native-instancing-diagnostics
+        // @aura3d-test:v9-native-instancing-diagnostics
         layout(location = 0) in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position.xy + vec2(float(gl_InstanceID) * 0.01, 0.0), a_position.z, 1.0);
@@ -191,7 +191,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @galileo3d-test:v9-native-instancing-diagnostics
+        // @aura3d-test:v9-native-instancing-diagnostics
         precision mediump float;
         out vec4 outColor;
         void main() {
@@ -355,7 +355,7 @@ function createCountingWebGL2Context(): WebGL2RenderingContext & { readonly stat
     state,
     getParameter(parameter: number) {
       if (parameter === this.MAX_VERTEX_ATTRIBS) return 8;
-      if (parameter === this.VENDOR) return "galileo3d";
+      if (parameter === this.VENDOR) return "aura3d";
       if (parameter === this.RENDERER) return "fake-webgl2";
       if (parameter === this.CURRENT_PROGRAM) return state.currentProgram;
       if (parameter === this.ARRAY_BUFFER_BINDING) return state.arrayBuffer;

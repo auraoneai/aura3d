@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Scene, PointLight, SpotLight } from "@galileo3d/scene";
-import { Vector3 } from "@galileo3d/math";
+import { Scene, PointLight, SpotLight } from "@aura3d/scene";
+import { Vector3 } from "@aura3d/math";
 import {
   DEFAULT_PBR_SHADER_NAME,
   DEFAULT_INSTANCED_PBR_SHADER_NAME,
@@ -437,7 +437,7 @@ describe("PBR material and direct light contracts", () => {
   it("keeps textured PBR non-emissive by default instead of self-lighting every textured asset", () => {
     const library = createDefaultShaderLibrary();
     const device = new MockRenderDevice();
-    const shader = device.createShaderProgram(library.compileSource("galileo3d/pbr-textured"));
+    const shader = device.createShaderProgram(library.compileSource("aura3d/pbr-textured"));
     const material = new TexturedPBRMaterial();
 
     const binding = new MaterialBinding().bind(material, shader);
@@ -767,7 +767,7 @@ describe("PBR material and direct light contracts", () => {
   it("validates PBR texture color-space contracts", () => {
     const library = createDefaultShaderLibrary();
     const device = new MockRenderDevice();
-    const shader = device.createShaderProgram(library.compileSource("galileo3d/pbr-textured"));
+    const shader = device.createShaderProgram(library.compileSource("aura3d/pbr-textured"));
     const material = new TexturedPBRMaterial({
       baseColorTexture: new Texture({ width: 1, height: 1, colorSpace: "linear", data: new Uint8Array([255, 255, 255, 255]) }),
       normalTexture: new Texture({ width: 1, height: 1, colorSpace: "srgb", data: new Uint8Array([128, 128, 255, 255]) }),
@@ -795,7 +795,7 @@ describe("PBR material and direct light contracts", () => {
   it("binds a normal-mapped PBR material with required UVs and normal texture uniforms", () => {
     const library = createDefaultShaderLibrary();
     const device = new MockRenderDevice();
-    const shader = device.createShaderProgram(library.compileSource("galileo3d/pbr-normal-map"));
+    const shader = device.createShaderProgram(library.compileSource("aura3d/pbr-normal-map"));
     const material = new NormalMappedPBRMaterial({
       baseColor: [0.7, 0.7, 0.7, 1],
       normalTexture: new Texture({
@@ -817,7 +817,7 @@ describe("PBR material and direct light contracts", () => {
 	  it("binds textured PBR material slots for glTF base-color, normal, metallic-roughness, occlusion, and emissive textures", () => {
 	    const library = createDefaultShaderLibrary();
 	    const device = new MockRenderDevice();
-	    const shader = device.createShaderProgram(library.compileSource("galileo3d/pbr-textured"));
+	    const shader = device.createShaderProgram(library.compileSource("aura3d/pbr-textured"));
 	    const extensionSampler = new Sampler({ addressU: "repeat", addressV: "mirror-repeat" });
 	    const material = new TexturedPBRMaterial({
 	      baseColor: [0.5, 0.6, 0.7, 1],

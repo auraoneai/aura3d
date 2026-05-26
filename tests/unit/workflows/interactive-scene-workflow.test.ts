@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Renderer } from "@galileo3d/rendering";
-import { createInteractiveSceneWorkflow } from "@galileo3d/workflows";
+import { Renderer } from "@aura3d/rendering";
+import { createInteractiveSceneWorkflow } from "@aura3d/workflows";
 
 describe("createInteractiveSceneWorkflow", () => {
   it("creates updateable interactive scene output", async () => {

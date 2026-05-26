@@ -1,9 +1,9 @@
-import { AnimationMotionQualityTracker, LocomotionController, createRootMotionWalkClip, type LocomotionControllerSample, type LocomotionControllerState } from "@galileo3d/animation";
+import { AnimationMotionQualityTracker, LocomotionController, createRootMotionWalkClip, type LocomotionControllerSample, type LocomotionControllerState } from "@aura3d/animation";
 import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
   loadV6GLTFRenderPipeline
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   Geometry,
   PBRMaterial,
@@ -11,13 +11,13 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV8AnimationWalk?: V8AnimationWalkRuntime;
+    __a3dV8AnimationWalk?: V8AnimationWalkRuntime;
   }
 }
 
@@ -38,7 +38,7 @@ interface V8AnimationWalkRuntime {
   motionTimeRange: number;
   poseDiversityScore: number;
   motionHealthy: boolean;
-  renderer: "g3d-webgl2";
+  renderer: "a3d-webgl2";
   fixture: string;
   error?: string;
 }
@@ -72,12 +72,12 @@ async function run(): Promise<void> {
     rootMotionScale: 0.78
   });
   const state = locomotion.state;
-  let runtime = createRuntime("loading", "Loading G3D walk route", startedAt, state, clip.name, locomotion.sample(0));
+  let runtime = createRuntime("loading", "Loading A3D walk route", startedAt, state, clip.name, locomotion.sample(0));
   publish(root, runtime, state);
   bindUi(root, state, () => publish(root, runtime, state));
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       backend: "webgl2",
       width: WIDTH,
@@ -190,7 +190,7 @@ async function run(): Promise<void> {
           poseDiversityScore: motion.poseDiversityScore,
           motionHealthy: motion.healthy
         });
-        window.__g3dV8AnimationWalk = runtime;
+        window.__a3dV8AnimationWalk = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish(root, runtime, state);
           bindUi(root, state, () => publish(root, runtime, state));
@@ -236,8 +236,8 @@ function createRuntime(
     motionTimeRange: counters.motionTimeRange ?? 0,
     poseDiversityScore: counters.poseDiversityScore ?? 0,
     motionHealthy: counters.motionHealthy ?? false,
-    renderer: "g3d-webgl2",
-    fixture: "imported Soldier GLB Walk clip with G3D root-motion locomotion"
+    renderer: "a3d-webgl2",
+    fixture: "imported Soldier GLB Walk clip with A3D root-motion locomotion"
   };
 }
 
@@ -300,7 +300,7 @@ function sampleImportedLocomotion(controller: LocomotionController, state: Locom
 }
 
 function publish(root: HTMLElement, runtime: V8AnimationWalkRuntime, state: LocomotionControllerState): void {
-  window.__g3dV8AnimationWalk = runtime;
+  window.__a3dV8AnimationWalk = runtime;
   root.innerHTML = `
     <section class="panel">
       <h1>V8 Animation Walk</h1>

@@ -1,0 +1,168 @@
+{
+  "schema": "a3d-v2-product-manifest/v1",
+  "id": "watch",
+  "title": "Chronograph Watch",
+  "category": "wearable",
+  "gltf": "watch.gltf",
+  "rejectedInputs": [
+    "tests/reports/legacy-product-viewer/product-viewer.png",
+    "tests/reports/legacy-material-studio/material-studio.png",
+    "tests/reports/legacy-asset-viewer/asset-viewer.png",
+    "tests/reports/legacy-rendering-showcase/rendering-showcase.png"
+  ],
+  "parts": [
+    {
+      "name": "case",
+      "shape": "cylinder",
+      "material": "polished-metal-case"
+    },
+    {
+      "name": "bezel",
+      "shape": "cylinder",
+      "material": "polished-metal-case"
+    },
+    {
+      "name": "crystal",
+      "shape": "cylinder",
+      "material": "glass-crystal"
+    },
+    {
+      "name": "face",
+      "shape": "cylinder",
+      "material": "matte-face"
+    },
+    {
+      "name": "hour-hand",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "minute-hand",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-01",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-02",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-03",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-04",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-05",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-06",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-07",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-08",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-09",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-10",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-11",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "tick-marker-12",
+      "shape": "box",
+      "material": "bright-tick-markers"
+    },
+    {
+      "name": "crown",
+      "shape": "cylinder",
+      "material": "polished-metal-case"
+    },
+    {
+      "name": "upper-strap",
+      "shape": "box",
+      "material": "strap-material"
+    },
+    {
+      "name": "lower-strap",
+      "shape": "box",
+      "material": "strap-material"
+    }
+  ],
+  "materials": [
+    {
+      "name": "polished-metal-case",
+      "metallic": 1,
+      "roughness": 0.16,
+      "alphaMode": "OPAQUE",
+      "textureSet": "metal"
+    },
+    {
+      "name": "glass-crystal",
+      "metallic": 0,
+      "roughness": 0.03,
+      "alphaMode": "BLEND",
+      "textureSet": "glass"
+    },
+    {
+      "name": "matte-face",
+      "metallic": 0,
+      "roughness": 0.72,
+      "alphaMode": "OPAQUE",
+      "textureSet": "face"
+    },
+    {
+      "name": "bright-tick-markers",
+      "metallic": 1,
+      "roughness": 0.24,
+      "alphaMode": "OPAQUE",
+      "textureSet": "dial"
+    },
+    {
+      "name": "strap-material",
+      "metallic": 0,
+      "roughness": 0.86,
+      "alphaMode": "OPAQUE",
+      "textureSet": "strap"
+    }
+  ],
+  "requirements": {
+    "namedNodes": true,
+    "namedMeshes": true,
+    "materialTextureSlots": [
+      "baseColorTexture",
+      "metallicRoughnessTexture",
+      "normalTexture",
+      "emissiveTexture"
+    ],
+    "generatedFor": "A3D Product Studio V1"
+  }
+}

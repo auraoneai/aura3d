@@ -1,6 +1,6 @@
 # V9 Resource Lifecycle
 
-G3D has explicit disposal and resource diagnostics. This is a real code area and a key V9 advantage, but long-run leak freedom still needs broad route soak coverage.
+A3D has explicit disposal and resource diagnostics. This is a real code area and a key V9 advantage, but long-run leak freedom still needs broad route soak coverage.
 
 ## Real Code
 
@@ -11,8 +11,8 @@ G3D has explicit disposal and resource diagnostics. This is a real code area and
 - `packages/rendering/src/RenderDevice.ts`
 - `packages/rendering/src/WebGL2Device.ts`
 - `packages/rendering/src/Renderer.ts`
-- `packages/engine/src/advanced-runtime/G3DAppLifecycle.ts`
-- `packages/engine/src/advanced-runtime/G3DScene.ts`
+- `packages/engine/src/advanced-runtime/A3DAppLifecycle.ts`
+- `packages/engine/src/advanced-runtime/A3DScene.ts`
 
 ## What Is Supported
 

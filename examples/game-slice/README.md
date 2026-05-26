@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This demo is an early game-slice proof that multiple public Galileo3D systems can run together in a browser app. It uses the WebGL2 renderer for visible output while stepping physics, animation, input, particles, and audio-state APIs.
+This demo is an early game-slice proof that multiple public Aura3D systems can run together in a browser app. It uses the WebGL2 renderer for visible output while stepping physics, animation, input, particles, and audio-state APIs.
 
 ## Run
 
@@ -35,17 +35,17 @@ Read `main.ts` as the source of truth for how the slice is assembled; tests only
 2. `InputSystem`, `AudioSystem`, `PhysicsWorld`, `ParticleSystem`, and `AnimationMixer` are initialized together near startup.
 3. The canvas `pointerdown` handler and focused keyboard input update the same interaction state shown in the app.
 4. The animation and physics loop updates runtime state before each `renderer.render` call.
-5. `window.__GALILEO3D_GAME_DEMO__` exposes physics body count, live particle count, input snapshot status, audio state, draw calls, and renderer diagnostics.
+5. `window.__AURA3D_GAME_DEMO__` exposes physics body count, live particle count, input snapshot status, audio state, draw calls, and renderer diagnostics.
 
-Use the status panel or DevTools to inspect `window.__GALILEO3D_GAME_DEMO__` while clicking the viewport or pressing Space on the focused canvas.
+Use the status panel or DevTools to inspect `window.__AURA3D_GAME_DEMO__` while clicking the viewport or pressing Space on the focused canvas.
 
 ## Expected Output
 
-A WebGL2-rendered player marker and pickups animate while physics and particle counts update. Pressing or clicking the viewport changes input metrics and updates `window.__GALILEO3D_GAME_DEMO__`.
+A WebGL2-rendered player marker and pickups animate while physics and particle counts update. Pressing or clicking the viewport changes input metrics and updates `window.__AURA3D_GAME_DEMO__`.
 
 ## Acceptance Target
 
-- `window.__GALILEO3D_GAME_DEMO__.status` is `ready`.
+- `window.__AURA3D_GAME_DEMO__.status` is `ready`.
 - `renderer` is `webgl2`.
 - `metrics.rendererBacked` is `true`.
 - `diagnostics.drawCalls` is greater than zero.

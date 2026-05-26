@@ -5,11 +5,11 @@
 
 Use this prompt when handing the current repository to an agent or human operator that has access to real external tools that are not available in the local Codex environment: Unity, Unreal, Blender, and a durable public HTTPS deployment target.
 
-This prompt is intentionally evidence-first. Do not create placeholder reports, copy template JSON into `tests/reports`, reuse Galileo screenshots as Unity/Unreal screenshots, loosen thresholds, or mark parity complete without real external captures that pass the current validators.
+This prompt is intentionally evidence-first. Do not create placeholder reports, copy template JSON into `tests/reports`, reuse Aura3D screenshots as Unity/Unreal screenshots, loosen thresholds, or mark parity complete without real external captures that pass the current validators.
 
 ## Prompt
 
-You are working in the Galileo3D repository. Your task is to close the remaining V4 external evidence blockers for the active parity objective without faking evidence.
+You are working in the Aura3D repository. Your task is to close the remaining V4 external evidence blockers for the active parity objective without faking evidence.
 
 Start by reading:
 
@@ -17,8 +17,8 @@ Start by reading:
 - `docs/project/v4-decision-gates.md`
 - `docs/project/v4-remaining-code-to-write.md`
 - `docs/project/v4-old-codebase-port-plan.md`
-- `fixtures/external-engine-baselines/v4/RUNBOOK.md`
-- `fixtures/external-engine-baselines/v4/external-baseline-command-plan.json`
+- `fixtures/external-engine-baselines/external-parity/RUNBOOK.md`
+- `fixtures/external-engine-baselines/external-parity/external-baseline-command-plan.json`
 - `tools/external-parity-completion-audit/index.ts`
 - `tools/external-parity-broad-parity-readiness/index.ts`
 - `tools/external-parity-unity-unreal-parity/index.ts`
@@ -43,7 +43,7 @@ The external-evidence audit writes a machine-readable checklist and a human-read
 - Local host preflight: `tests/reports/external-parity-external-evidence-readiness.json.localPreflight`.
 - External host doctor: `tests/reports/external-parity-external-host-doctor.json`.
 
-Use the external evidence runbook as the canonical capture/deployment todo list for this handoff. Every blocked item includes the target report path, expected screenshot path, expected runner-evidence sidecar path, scene descriptor, report-writer command, validation commands, and validator blocker text. Inspect `localPreflight` before attempting captures; it records whether `G3D_UNITY_EDITOR`, `G3D_UNREAL_EDITOR`, `G3D_RUN_UNITY_UNREAL_CLI_SMOKE`, and `G3D_PUBLIC_DEMO_URL` are usable on the current host and names the first missing local capability. Also run `pnpm doctor:v4-external-host`; its report mirrors the host preflight and includes `externalReadinessSummary`, `firstBlockedArtifact`, and `missingArtifactRunbookPath` so the external operator can see whether the host is ready and which evidence artifact is still first in line. Run `pnpm run:v4-external-host-evidence` before execute mode and inspect `tests/reports/external-parity-external-host-runner.json.commands[].expectedEvidencePaths` plus `validationCommands`; this is the dry-run execution manifest for the files each external command must create. Use the completion runbook as the top-level map from the original 13 requested criteria to gate reports, required fields, evidence paths, and blockers. If either runbook and this prompt disagree, regenerate with `pnpm audit:external-parity-external-evidence-readiness` and `pnpm audit:v4-completion`, then follow the regenerated artifact paths.
+Use the external evidence runbook as the canonical capture/deployment todo list for this handoff. Every blocked item includes the target report path, expected screenshot path, expected runner-evidence sidecar path, scene descriptor, report-writer command, validation commands, and validator blocker text. Inspect `localPreflight` before attempting captures; it records whether `A3D_UNITY_EDITOR`, `A3D_UNREAL_EDITOR`, `A3D_RUN_UNITY_UNREAL_CLI_SMOKE`, and `A3D_PUBLIC_DEMO_URL` are usable on the current host and names the first missing local capability. Also run `pnpm doctor:v4-external-host`; its report mirrors the host preflight and includes `externalReadinessSummary`, `firstBlockedArtifact`, and `missingArtifactRunbookPath` so the external operator can see whether the host is ready and which evidence artifact is still first in line. Run `pnpm run:v4-external-host-evidence` before execute mode and inspect `tests/reports/external-parity-external-host-runner.json.commands[].expectedEvidencePaths` plus `validationCommands`; this is the dry-run execution manifest for the files each external command must create. Use the completion runbook as the top-level map from the original 13 requested criteria to gate reports, required fields, evidence paths, and blockers. If either runbook and this prompt disagree, regenerate with `pnpm audit:external-parity-external-evidence-readiness` and `pnpm audit:v4-completion`, then follow the regenerated artifact paths.
 
 Record the current completion result from `tests/reports/external-parity-completion-audit.json` and the summary from `tests/reports/external-parity-completion-audit-runbook.md`. As of the last local run, V4 code verification passes, report freshness passes, and the completion audit remains blocked at 2 of 13 top-level criteria. The currently achieved criteria are `full-gltf-parity` and `full-webgpu-parity`. The remaining criteria are blocked by real external Unity/Unreal visual baselines, same-scene HDR/shadow/postprocess/PBR parity evidence, durable public deployment validation, production readiness, and broad Three.js/Babylon/Unity/Unreal replacement evidence.
 
@@ -73,7 +73,7 @@ If any criterion is not met, do not claim completion. Report the remaining block
 
 You must produce real Unity and Unreal screenshots and reports for every baseline slot in:
 
-- `fixtures/external-engine-baselines/v4/external-baseline-command-plan.json`
+- `fixtures/external-engine-baselines/external-parity/external-baseline-command-plan.json`
 
 Required Unity reports:
 
@@ -94,9 +94,9 @@ Required Unreal reports:
 Use real editor binaries:
 
 ```bash
-export G3D_UNITY_EDITOR=/absolute/path/to/Unity
-export G3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd
-export G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true
+export A3D_UNITY_EDITOR=/absolute/path/to/Unity
+export A3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd
+export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true
 ```
 
 Before launching editors, inspect the generated commands:
@@ -106,7 +106,7 @@ pnpm dry-run:v4-unity-baselines
 pnpm dry-run:v4-unreal-baselines
 ```
 
-For reproducible CI capture sessions, use `.github/workflows/external-parity-external-engine-baselines.yml`. The workflow is manual (`workflow_dispatch`) and expects self-hosted runners labeled `unity` and/or `unreal`. It regenerates the external baseline kit, runs the editor CLI smoke checks, invokes `fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs` and/or `fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs`, runs the parity/readiness audits in non-forcing mode, and uploads the generated screenshots, sidecars, JSON reports, and runbooks. Its `final-audits` job downloads the Unity/Unreal evidence artifacts that exist, restores them into the checkout, reruns the top-level readiness/parity/completion audits, and uploads a merged `v4-external-baseline-final-audits` artifact. This workflow is only evidence plumbing; it does not make Unity/Unreal parity true unless the real editor captures pass the existing validators.
+For reproducible CI capture sessions, use `.github/workflows/external-parity-external-engine-baselines.yml`. The workflow is manual (`workflow_dispatch`) and expects self-hosted runners labeled `unity` and/or `unreal`. It regenerates the external baseline kit, runs the editor CLI smoke checks, invokes `fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs` and/or `fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs`, runs the parity/readiness audits in non-forcing mode, and uploads the generated screenshots, sidecars, JSON reports, and runbooks. Its `final-audits` job downloads the Unity/Unreal evidence artifacts that exist, restores them into the checkout, reruns the top-level readiness/parity/completion audits, and uploads a merged `v4-external-baseline-final-audits` artifact. This workflow is only evidence plumbing; it does not make Unity/Unreal parity true unless the real editor captures pass the existing validators.
 
 If you download those workflow artifacts locally, merge them into a checkout with the generated ingester:
 
@@ -117,15 +117,15 @@ pnpm ingest:v4-external-baseline-artifacts \
   path/to/v4-external-baseline-final-audits
 ```
 
-Run it with `--dry-run` first. The ingester only restores files below `tests/reports/` and `fixtures/external-engine-baselines/v4/`, then reruns the external readiness, visual parity, Unity/Unreal parity, production, broad parity, completion, and freshness audits unless `--no-audit` is passed.
+Run it with `--dry-run` first. The ingester only restores files below `tests/reports/` and `fixtures/external-engine-baselines/external-parity/`, then reruns the external readiness, visual parity, Unity/Unreal parity, production, broad parity, completion, and freshness audits unless `--no-audit` is passed.
 
-On macOS, `G3D_UNITY_EDITOR` may also point at a Unity `.app` bundle such as `/Applications/Unity/Hub/Editor/<version>/Unity.app`; the validators and CLI smoke helper resolve it to `Contents/MacOS/Unity`. `G3D_UNREAL_EDITOR` may similarly point at `UnrealEditor.app`, which resolves to `Contents/MacOS/UnrealEditor`. Standard Unity Hub and Epic Games install locations are also auto-discovered when the binaries are not on `PATH`.
+On macOS, `A3D_UNITY_EDITOR` may also point at a Unity `.app` bundle such as `/Applications/Unity/Hub/Editor/<version>/Unity.app`; the validators and CLI smoke helper resolve it to `Contents/MacOS/Unity`. `A3D_UNREAL_EDITOR` may similarly point at `UnrealEditor.app`, which resolves to `Contents/MacOS/UnrealEditor`. Standard Unity Hub and Epic Games install locations are also auto-discovered when the binaries are not on `PATH`.
 
 If the editors are installed outside the default macOS locations, provide colon-separated search roots instead of hard-coding a binary path:
 
 ```bash
-export G3D_UNITY_SEARCH_ROOTS="/Applications:/Users/Shared/Unity:/Volumes/Tools/Unity"
-export G3D_UNREAL_SEARCH_ROOTS="/Applications:/Users/Shared/Epic Games:/Volumes/Tools/Epic Games"
+export A3D_UNITY_SEARCH_ROOTS="/Applications:/Users/Shared/Unity:/Volumes/Tools/Unity"
+export A3D_UNREAL_SEARCH_ROOTS="/Applications:/Users/Shared/Epic Games:/Volumes/Tools/Epic Games"
 ```
 
 The validators and CLI smoke helper scan those roots for Unity Hub editor folders, `Unity.app`, Epic Games engine folders, `UnrealEditor-Cmd`, and `UnrealEditor.app`.
@@ -133,20 +133,20 @@ The validators and CLI smoke helper scan those roots for Unity Hub editor folder
 Write durable editor CLI smoke reports before writing render/workflow baseline reports:
 
 ```bash
-node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json
-node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/v4-unreal-editor-cli-smoke.json
+node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/v4-unity-editor-cli-smoke.json
+node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unreal tests/reports/v4-unreal-editor-cli-smoke.json
 ```
 
 For each capture:
 
-1. Use the matching descriptor from `fixtures/external-engine-baselines/v4/*.json`.
+1. Use the matching descriptor from `fixtures/external-engine-baselines/external-parity/*.json`.
 2. Render the same scene in the real external editor.
 3. Save a PNG at the screenshot path listed in the command plan.
 4. Confirm the editor runner wrote the matching `<screenshot-path>.evidence.json` sidecar.
 5. Generate the report with:
 
 ```bash
-node fixtures/external-engine-baselines/v4/write-baseline-report.mjs <unity|unreal> <baseline-kind> <screenshot-path> <target-report-path>
+node fixtures/external-engine-baselines/external-parity/write-baseline-report.mjs <unity|unreal> <baseline-kind> <screenshot-path> <target-report-path>
 ```
 
 6. Run the relevant validator commands from the command plan.
@@ -154,29 +154,29 @@ node fixtures/external-engine-baselines/v4/write-baseline-report.mjs <unity|unre
 For Unity, prefer the generated batchmode entry point instead of a hand-wired scene component:
 
 ```bash
-"$G3D_UNITY_EDITOR" -batchmode -quit -projectPath /absolute/path/to/unity-project \
+"$A3D_UNITY_EDITOR" -batchmode -quit -projectPath /absolute/path/to/unity-project \
   -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine \
-  --descriptor fixtures/external-engine-baselines/v4/<descriptor>.json \
+  --descriptor fixtures/external-engine-baselines/external-parity/<descriptor>.json \
   --baseline-kind <baseline-kind> \
   --screenshot tests/reports/v4-<slot>/<unity-screenshot>.png
 ```
 
 The manual Unity component path is still available, but the batchmode method is the preferred way to keep descriptor path, baseline kind, screenshot path, and sidecar evidence reproducible.
 
-For Unreal, prefer the generated all-slot batch helper when `G3D_UNREAL_EDITOR` points at a real `UnrealEditor-Cmd` or `UnrealEditor` binary:
+For Unreal, prefer the generated all-slot batch helper when `A3D_UNREAL_EDITOR` points at a real `UnrealEditor-Cmd` or `UnrealEditor` binary:
 
 ```bash
-node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs \
+node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs \
   --project /absolute/path/to/project.uproject
 ```
 
-Use `node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs --dry-run` first to inspect the exact `-ExecutePythonScript` commands without launching Unreal.
+Use `node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --dry-run` first to inspect the exact `-ExecutePythonScript` commands without launching Unreal.
 
 Before writing render/workflow baseline reports, verify every report/sidecar pair for the engine:
 
 ```bash
-node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine unity
-node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine unreal
+node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unity
+node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unreal
 ```
 
 The package-level equivalent for verifying all available external visual baseline reports is:
@@ -188,8 +188,8 @@ pnpm verify:v4-external-baseline-reports
 After all five visual slot reports for an engine pass, write the render/workflow baseline report:
 
 ```bash
-node fixtures/external-engine-baselines/v4/write-render-workflow-report.mjs unity tests/reports/v4-unity-baseline-render.json
-node fixtures/external-engine-baselines/v4/write-render-workflow-report.mjs unreal tests/reports/v4-unreal-baseline-render.json
+node fixtures/external-engine-baselines/external-parity/write-render-workflow-report.mjs unity tests/reports/v4-unity-baseline-render.json
+node fixtures/external-engine-baselines/external-parity/write-render-workflow-report.mjs unreal tests/reports/v4-unreal-baseline-render.json
 ```
 
 The package-level visual report writer for all engines is:
@@ -198,9 +198,9 @@ The package-level visual report writer for all engines is:
 pnpm write:v4-external-baseline-reports
 ```
 
-The render/workflow writer rejects missing or failing editor CLI smoke reports, missing visual slot reports, wrong engines, wrong baseline kinds, and reports that do not set `visualDiffAgainstGalileo: true`.
+The render/workflow writer rejects missing or failing editor CLI smoke reports, missing visual slot reports, wrong engines, wrong baseline kinds, and reports that do not set `visualDiffAgainstAura3D: true`.
 
-Do not edit validators to accept bad external screenshots. The reports must pass because the screenshots satisfy pixel richness, metrics, descriptor identity, and diff thresholds against the current Galileo reference screenshots.
+Do not edit validators to accept bad external screenshots. The reports must pass because the screenshots satisfy pixel richness, metrics, descriptor identity, and diff thresholds against the current Aura3D reference screenshots.
 
 ## Public Deployment Evidence
 
@@ -217,7 +217,7 @@ This rebuilds the external demo export, runs the local static-server smoke gate,
 Deploy the generated static artifact to a durable public HTTPS origin. Then run:
 
 ```bash
-G3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment
+A3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment
 pnpm audit:external-parity-production-readiness
 ```
 
@@ -265,7 +265,7 @@ Expected behavior:
 
 - Every same-corpus asset is exported or explicitly fails with a real Blender error.
 - No `not-run` entries remain.
-- Exported outputs are validated by the Galileo3D glTF loader.
+- Exported outputs are validated by the Aura3D glTF loader.
 - Any visual/rendering claim is backed by browser screenshots, not metadata alone.
 
 If Blender is not installed, stop and report this blocker. Do not fabricate exported assets.

@@ -1,5 +1,5 @@
-import { AssetManager, GLTFLoader, ImageLoader, TextureLoader, createGLTFRenderResources } from "@galileo3d/assets";
-import { InstancedUnlitMaterial, Renderer, analyzeRgbaFrameVisualMetrics, type FrameVisualMetrics, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { AssetManager, GLTFLoader, ImageLoader, TextureLoader, createGLTFRenderResources } from "@aura3d/assets";
+import { InstancedUnlitMaterial, Renderer, analyzeRgbaFrameVisualMetrics, type FrameVisualMetrics, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 interface AssetTextureBrowserResult {
   readonly status: "ready" | "error";
@@ -24,12 +24,12 @@ interface AssetTextureBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_ASSET_TEXTURE_BROWSER_TEST__?: AssetTextureBrowserResult;
+    __AURA3D_ASSET_TEXTURE_BROWSER_TEST__?: AssetTextureBrowserResult;
   }
 }
 
 function publish(result: AssetTextureBrowserResult): void {
-  window.__GALILEO3D_ASSET_TEXTURE_BROWSER_TEST__ = result;
+  window.__AURA3D_ASSET_TEXTURE_BROWSER_TEST__ = result;
 }
 
 function createSourceImage(): string {

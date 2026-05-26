@@ -42,12 +42,12 @@ test.describe("animation browser runtime", () => {
   test("renders sampled transform animation, crossfade, renderer skinning, and skeleton palette debug pixels", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/animation-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_ANIMATION_BROWSER_TEST__?.status === "ready" || window.__AURA3D_ANIMATION_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.frameAValue?.[0]).toBeCloseTo(0, 5);
@@ -151,16 +151,16 @@ test.describe("animation browser runtime", () => {
     expect(sa).toBe(255);
 
     await page.locator("#anim-play").click();
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("play"));
-    let controls = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("play"));
+    let controls = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls);
     expect(controls?.playing).toBe(true);
     expect(controls?.paused).toBe(false);
     expect(controls?.time).toBeCloseTo(0.5, 5);
     expect(controls?.position?.[0]).toBeCloseTo(0, 5);
 
     await page.locator("#anim-pause").click();
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("pause"));
-    controls = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("pause"));
+    controls = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls);
     expect(controls?.paused).toBe(true);
 
     await page.locator("#anim-scrub").evaluate((element) => {
@@ -168,8 +168,8 @@ test.describe("animation browser runtime", () => {
       input.value = "0.75";
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("scrub"));
-    controls = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("scrub"));
+    controls = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls);
     expect(controls?.time).toBeCloseTo(0.75, 5);
     expect(controls?.position?.[0]).toBeCloseTo(0.3, 5);
 
@@ -178,20 +178,20 @@ test.describe("animation browser runtime", () => {
       input.value = "2";
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("speed"));
-    controls = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("speed"));
+    controls = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls);
     expect(controls?.timeScale).toBe(2);
     expect(controls?.playing).toBe(true);
     expect(controls?.time).toBeCloseTo(1, 5);
 
     await page.locator("#anim-loop").selectOption("once");
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("loop"));
-    controls = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("loop"));
+    controls = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls);
     expect(controls?.loopMode).toBe("once");
 
     await page.locator("#anim-crossfade").click();
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("crossfade"));
-    controls = await page.evaluate(() => window.__GALILEO3D_ANIMATION_BROWSER_TEST__?.controls);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls?.history.includes("crossfade"));
+    controls = await page.evaluate(() => window.__AURA3D_ANIMATION_BROWSER_TEST__?.controls);
     expect(controls?.crossfadeWeight).toBeCloseTo(0.5, 5);
     expect(controls?.position?.[1]).toBeGreaterThan(0.15);
     const [tr = 0, tg = 0, tb = 0, ta = 0] = controls?.pixel ?? [];
@@ -204,7 +204,7 @@ test.describe("animation browser runtime", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_ANIMATION_BROWSER_TEST__?: {
+    __AURA3D_ANIMATION_BROWSER_TEST__?: {
       readonly status: "ready" | "error";
       readonly frameAPixel?: readonly number[];
       readonly frameBPixel?: readonly number[];

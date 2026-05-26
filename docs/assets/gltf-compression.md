@@ -9,12 +9,12 @@ This page records the current asset-pipeline compression behavior. The code supp
 - `createMeshoptDecoder()` adapts the `meshoptimizer` package `MeshoptDecoder.decodeGltfBuffer()` API to `GLTFLoaderOptions.meshoptDecoder`.
 - `createDracoDecoder()` adapts a `draco3d.createDecoderModule()` result to `GLTFLoaderOptions.dracoDecoder`.
 - The loader validates extension declaration, source buffer ranges, descriptor fields, decoded byte lengths, decoded attribute rows, and decoded index bounds before exposing mesh data.
-- No decoder package is bundled by `@galileo3d/assets`. Applications must install and inject decoder packages explicitly. The repository dev environment pins `draco3d` and `meshoptimizer` so package-backed integration tests run instead of skipping.
+- No decoder package is bundled by `@aura3d/assets`. Applications must install and inject decoder packages explicitly. The repository dev environment pins `draco3d` and `meshoptimizer` so package-backed integration tests run instead of skipping.
 
 Example package-backed setup:
 
 ```ts
-import { GLTFLoader, createDracoDecoder, createMeshoptDecoder } from "@galileo3d/assets";
+import { GLTFLoader, createDracoDecoder, createMeshoptDecoder } from "@aura3d/assets";
 import { MeshoptDecoder } from "meshoptimizer";
 import draco3d from "draco3d";
 

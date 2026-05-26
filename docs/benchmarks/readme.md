@@ -1,6 +1,6 @@
 # Benchmark and Comparison Evidence
 
-This directory contains human-readable benchmark and comparison summaries for G3D. The files here are evidence indexes, not marketing claims. They should cite generated reports, browser specs, scripts, and screenshots under `tests/reports`, `tests/browser`, `tools`, and `benchmarks` instead of making broad performance or parity statements.
+This directory contains human-readable benchmark and comparison summaries for A3D. The files here are evidence indexes, not marketing claims. They should cite generated reports, browser specs, scripts, and screenshots under `tests/reports`, `tests/browser`, `tools`, and `benchmarks` instead of making broad performance or parity statements.
 
 ## Current Evidence Sources
 
@@ -10,19 +10,19 @@ This directory contains human-readable benchmark and comparison summaries for G3
 | Three.js visual/runtime parity slices | `tests/reports/production-runtime-threejs-parity-readiness.json`, `tests/reports/production-runtime-threejs-runtime-parity.json`, `tests/reports/production-runtime-threejs-visual-parity.json` | Bounded same-scene visual evidence across 12 product/material/asset/architecture scenes. |
 | V9 official example inventory | `tests/reports/v9/threejs-inventory.json`, `tests/reports/v9/official-example-parity.json` | Backlog and status inventory for 54 Three.js example categories; it is not a completion certificate. |
 | V9 same-asset parity slices | `tests/reports/v9/*-parity.json`, `tests/browser/v9-*.spec.ts` | Individual comparisons against actual Three.js loaders, renderers, AnimationMixer, EffectComposer, or effects. |
-| WebGPU availability | `tests/reports/webgpu-hardware-matrix.json`, `tests/reports/production-runtime-webgpu-readiness.json` | Local Chromium/Mac hardware availability and G3D readiness gates; not broad WebGPU parity. |
+| WebGPU availability | `tests/reports/webgpu-hardware-matrix.json`, `tests/reports/production-runtime-webgpu-readiness.json` | Local Chromium/Mac hardware availability and A3D readiness gates; not broad WebGPU parity. |
 | Performance readiness | `tests/reports/v9/performance.json`, `tests/reports/production-runtime-performance-baselines.json`, `tests/reports/production-runtime-large-scene-performance.json`, `tests/reports/three-compat-performance-baselines.json` | Current-machine performance evidence only. The report explicitly blocks broad Three.js superiority claims. |
 
 ## Supported Wording
 
 The current repo supports narrow wording such as:
 
-- G3D has checked-in benchmark scaffolds against Three.js and Babylon.js with generated comparison reports.
-- G3D generated smaller esbuild browser benchmark bundles than Three.js and Babylon.js for the checked-in scaffold scenes on the recorded run.
-- G3D has bounded same-asset and same-scene parity slices against actual Three.js code paths for glTF loading, animation sampling, skinning, morph targets, decals, lights, shadows, stereo/parallax effects, and bloom.
-- G3D has local WebGPU availability evidence on the recorded Chromium/Mac run, but WebGPU parity remains bounded to the reports that exist.
+- A3D has checked-in benchmark scaffolds against Three.js and Babylon.js with generated comparison reports.
+- A3D generated smaller esbuild browser benchmark bundles than Three.js and Babylon.js for the checked-in scaffold scenes on the recorded run.
+- A3D has bounded same-asset and same-scene parity slices against actual Three.js code paths for glTF loading, animation sampling, skinning, morph targets, decals, lights, shadows, stereo/parallax effects, and bloom.
+- A3D has local WebGPU availability evidence on the recorded Chromium/Mac run, but WebGPU parity remains bounded to the reports that exist.
 
-Avoid wording that G3D is generally faster than Three.js or Babylon.js, fully compatible with Three.js, broadly production-ready, or a Unity/Unreal replacement. Those claims require broader device matrices, release package benchmarks, production-app traces, long-run memory data, larger asset corpora, and independent review.
+Avoid wording that A3D is generally faster than Three.js or Babylon.js, fully compatible with Three.js, broadly production-ready, or a Unity/Unreal replacement. Those claims require broader device matrices, release package benchmarks, production-app traces, long-run memory data, larger asset corpora, and independent review.
 
 ## Files
 

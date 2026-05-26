@@ -39,7 +39,7 @@ export interface VerifyExportsOptions {
 }
 
 export function verifyExports(root = process.cwd(), options: VerifyExportsOptions = {}): ExportReport {
-  const packageFilter = options.packages ? new Set(options.packages.map((name) => name.replace("@galileo3d/", ""))) : undefined;
+  const packageFilter = options.packages ? new Set(options.packages.map((name) => name.replace("@aura3d/", ""))) : undefined;
   const packageDirs = getPackageDirs(root).filter((dir) => {
     if (!packageFilter) return true;
     return packageFilter.has(dir.split(/[\\/]/).at(-1) ?? "");
@@ -101,7 +101,7 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
       violations.push({ packageName: rootManifest.name ?? "root", message: "Root package must define exports." });
     } else {
       for (const packageName of publicPackages) {
-        const shortName = packageName.replace("@galileo3d/", "");
+        const shortName = packageName.replace("@aura3d/", "");
         if (!(`./${shortName}` in rootExports)) {
           violations.push({ packageName: rootManifest.name ?? "root", message: `Missing root export ./${shortName}.` });
         }

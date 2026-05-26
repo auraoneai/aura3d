@@ -5,7 +5,7 @@
 
 ## Mission
 
-You are executing Galileo3D v2 to completion. Your job is to implement every task described across the v2 documentation set, verify every task with real tests/reports/examples, and update the original markdown checklists in place as work is completed. Every completed task must be crossed off with a real markdown check mark in the original owning `.md` file.
+You are executing Aura3D v2 to completion. Your job is to implement every task described across the v2 documentation set, verify every task with real tests/reports/examples, and update the original markdown checklists in place as work is completed. Every completed task must be crossed off with a real markdown check mark in the original owning `.md` file.
 
 Do not treat this as a planning exercise. Treat it as an implementation, validation, documentation, and release-readiness execution run.
 
@@ -13,8 +13,8 @@ The target is not to create a fake "complete" audit. The target is to make the r
 
 - Internal release candidate readiness.
 - Developer preview readiness.
-- A narrow, evidence-backed "better than Three.js" claim where Galileo3D is actually measurably stronger.
-- A browser-first Unity/Unreal-competitive workflow claim where Galileo3D actually has editor authoring, import, play mode, export, and product proof.
+- A narrow, evidence-backed "better than Three.js" claim where Aura3D is actually measurably stronger.
+- A browser-first Unity/Unreal-competitive workflow claim where Aura3D actually has editor authoring, import, play mode, export, and product proof.
 - Production credibility only after the required external evidence, docs, support, release, benchmark, and known-limits work exists.
 
 You must continue iterating until the gates in `docs/project/v2-decision-gates.md` pass or until a hard technical blocker is documented with exact failing files, commands, reports, and next actions.
@@ -351,7 +351,7 @@ Owns:
 - `examples/**`
 - `benchmarks/threejs/**`
 - `benchmarks/babylon/**`
-- `benchmarks/galileo/**`
+- `benchmarks/aura3d/**`
 - `benchmarks/fixtures/**`
 - `tools/compare-engines/index.ts`
 - `docs/project/getting-started.md`
@@ -371,7 +371,7 @@ Owns:
 Primary objectives:
 
 - Separate validation examples from learning/product examples.
-- Ensure product examples render through Galileo3D's renderer and draw meaningful WebGL pixels.
+- Ensure product examples render through Aura3D's renderer and draw meaningful WebGL pixels.
 - Build product configurator.
 - Build architecture viewer.
 - Build game slice.
@@ -380,7 +380,7 @@ Primary objectives:
 - Link editor app integration with Agent 5.
 - Add README files for each example with systems used, run command, expected output, and known limits.
 - Add browser, visual, screenshot-diff, and performance reports for every product example.
-- Build equivalent Galileo3D, Three.js, and Babylon.js benchmark scenes.
+- Build equivalent Aura3D, Three.js, and Babylon.js benchmark scenes.
 - Pin exact versions and benchmark environments.
 - Store raw samples, summaries, screenshots, bundle artifacts, and failure logs.
 - Write benchmark markdown reports.

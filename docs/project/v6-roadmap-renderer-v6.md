@@ -1,17 +1,17 @@
-# G3D Renderer V6
+# A3D Renderer V6
 
 > Historical note: This V6 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-`@galileo3d/engine/production-runtime` is the public V6 renderer SDK surface. It is the product API used by the flagship product viewer and the V6 product viewer template.
+`@aura3d/engine/production-runtime` is the public V6 renderer SDK surface. It is the product API used by the flagship product viewer and the V6 product viewer template.
 
 ```ts
 import {
-  G3DRenderer,
+  A3DRenderer,
   createProductViewer,
   loadGltfScene,
   loadHdrEnvironment
-} from "@galileo3d/engine/production-runtime";
+} from "@aura3d/engine/production-runtime";
 ```
 
 ## Current Product Scope
@@ -20,12 +20,12 @@ The production backend for the documented workflow is WebGL2. WebGPU remains exp
 
 The product viewer path renders through:
 
-- `G3DRenderer`
+- `A3DRenderer`
 - `loadGltfScene()`
 - `loadHdrEnvironment()`
 - `createProductViewer()`
 
-Three.js is not used by the G3D renderer path. Three.js is allowed only for comparison output and migration documentation.
+Three.js is not used by the A3D renderer path. Three.js is allowed only for comparison output and migration documentation.
 
 ## Viewer Controller
 

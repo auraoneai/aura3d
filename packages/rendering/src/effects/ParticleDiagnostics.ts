@@ -105,7 +105,7 @@ export function summarizeParticleBatchDiagnostics(diagnostics: ParticleBatchDiag
     ? `${diagnostics.gpuBackend.backend}${diagnostics.gpuBackend.adapterName ? `:${diagnostics.gpuBackend.adapterName}` : ""}`
     : `${diagnostics.gpuBackend.backend}:unsupported`;
   return [
-    `${diagnostics.totalParticles.toLocaleString("en-US")} particles across ${diagnostics.batches.length} G3D point batches`,
+    `${diagnostics.totalParticles.toLocaleString("en-US")} particles across ${diagnostics.batches.length} A3D point batches`,
     `${diagnostics.totalDrawCalls} particle draw batches, ${formatBytes(diagnostics.staticGeometryBytes)} static point data`,
     `${formatBytes(diagnostics.dynamicUploadBytes)} estimated CPU sprite upload if updated as dynamic particles`,
     `particle update path: ${diagnostics.updateMode}; accelerator backend: ${gpu}`,

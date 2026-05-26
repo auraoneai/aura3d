@@ -1,26 +1,26 @@
-export type G3DXRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
-export type G3DXRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
-export type G3DXRHandedness = "none" | "left" | "right";
+export type A3DXRSessionMode = "inline" | "immersive-vr" | "immersive-ar";
+export type A3DXRReferenceSpaceType = "viewer" | "local" | "local-floor" | "bounded-floor" | "unbounded";
+export type A3DXRHandedness = "none" | "left" | "right";
 
-export interface G3DXRSystemLike {
-  isSessionSupported?(mode: G3DXRSessionMode): Promise<boolean>;
-  requestSession(mode: G3DXRSessionMode, options?: G3DXRSessionInit): Promise<G3DXRSessionLike>;
+export interface A3DXRSystemLike {
+  isSessionSupported?(mode: A3DXRSessionMode): Promise<boolean>;
+  requestSession(mode: A3DXRSessionMode, options?: A3DXRSessionInit): Promise<A3DXRSessionLike>;
 }
 
-export interface G3DXRSessionInit {
+export interface A3DXRSessionInit {
   readonly requiredFeatures?: readonly string[];
   readonly optionalFeatures?: readonly string[];
 }
 
-export interface G3DXRSessionLike {
-  readonly inputSources?: readonly G3DXRInputSourceLike[];
-  requestReferenceSpace?(type: G3DXRReferenceSpaceType): Promise<G3DXRReferenceSpaceLike>;
-  requestAnimationFrame?(callback: (time: number, frame: G3DXRFrameLike) => void): number;
+export interface A3DXRSessionLike {
+  readonly inputSources?: readonly A3DXRInputSourceLike[];
+  requestReferenceSpace?(type: A3DXRReferenceSpaceType): Promise<A3DXRReferenceSpaceLike>;
+  requestAnimationFrame?(callback: (time: number, frame: A3DXRFrameLike) => void): number;
   end?(): Promise<void>;
 }
 
-export interface G3DXRInputSourceLike {
-  readonly handedness?: G3DXRHandedness;
+export interface A3DXRInputSourceLike {
+  readonly handedness?: A3DXRHandedness;
   readonly targetRayMode?: "gaze" | "tracked-pointer" | "screen";
   readonly profiles?: readonly string[];
   readonly targetRaySpace?: unknown;
@@ -32,21 +32,21 @@ export interface G3DXRInputSourceLike {
   };
 }
 
-export interface G3DXRFrameLike {
-  getHitTestResults?(source: unknown): readonly G3DXRHitTestResultLike[];
-  getPose?(space: unknown, baseSpace: G3DXRReferenceSpaceLike): G3DXRPoseLike | undefined;
+export interface A3DXRFrameLike {
+  getHitTestResults?(source: unknown): readonly A3DXRHitTestResultLike[];
+  getPose?(space: unknown, baseSpace: A3DXRReferenceSpaceLike): A3DXRPoseLike | undefined;
 }
 
-export interface G3DXRReferenceSpaceLike {
-  readonly type?: G3DXRReferenceSpaceType;
+export interface A3DXRReferenceSpaceLike {
+  readonly type?: A3DXRReferenceSpaceType;
 }
 
-export interface G3DXRHitTestResultLike {
+export interface A3DXRHitTestResultLike {
   readonly position?: readonly [number, number, number];
   readonly normal?: readonly [number, number, number];
 }
 
-export interface G3DXRPoseLike {
+export interface A3DXRPoseLike {
   readonly transform?: {
     readonly matrix?: readonly number[];
     readonly position?: readonly [number, number, number];
@@ -55,15 +55,15 @@ export interface G3DXRPoseLike {
 }
 
 export interface WebXRSessionControllerOptions {
-  readonly xr?: G3DXRSystemLike;
-  readonly mode?: G3DXRSessionMode;
+  readonly xr?: A3DXRSystemLike;
+  readonly mode?: A3DXRSessionMode;
   readonly requiredFeatures?: readonly string[];
   readonly optionalFeatures?: readonly string[];
-  readonly referenceSpace?: G3DXRReferenceSpaceType;
+  readonly referenceSpace?: A3DXRReferenceSpaceType;
 }
 
 export interface WebXRControllerSample {
-  readonly handedness: G3DXRHandedness;
+  readonly handedness: A3DXRHandedness;
   readonly targetRayMode: "gaze" | "tracked-pointer" | "screen";
   readonly profiles: readonly string[];
   readonly triggerPressed: boolean;
@@ -81,8 +81,8 @@ export interface WebXRHitTestSample {
 }
 
 export interface WebXRFrameSample {
-  readonly mode: G3DXRSessionMode;
-  readonly referenceSpace: G3DXRReferenceSpaceType;
+  readonly mode: A3DXRSessionMode;
+  readonly referenceSpace: A3DXRReferenceSpaceType;
   readonly active: boolean;
   readonly controllerCount: number;
   readonly controllers: readonly WebXRControllerSample[];
@@ -91,21 +91,21 @@ export interface WebXRFrameSample {
 }
 
 export interface WebXRSessionStartResult {
-  readonly mode: G3DXRSessionMode;
-  readonly referenceSpace: G3DXRReferenceSpaceType;
+  readonly mode: A3DXRSessionMode;
+  readonly referenceSpace: A3DXRReferenceSpaceType;
   readonly supported: boolean;
   readonly started: boolean;
 }
 
 export class WebXRSessionController {
-  readonly mode: G3DXRSessionMode;
+  readonly mode: A3DXRSessionMode;
   readonly requiredFeatures: readonly string[];
   readonly optionalFeatures: readonly string[];
-  readonly referenceSpaceType: G3DXRReferenceSpaceType;
+  readonly referenceSpaceType: A3DXRReferenceSpaceType;
 
-  private readonly xr?: G3DXRSystemLike;
-  private session: G3DXRSessionLike | null = null;
-  private referenceSpace: G3DXRReferenceSpaceLike | null = null;
+  private readonly xr?: A3DXRSystemLike;
+  private session: A3DXRSessionLike | null = null;
+  private referenceSpace: A3DXRReferenceSpaceLike | null = null;
 
   constructor(options: WebXRSessionControllerOptions = {}) {
     this.xr = options.xr ?? readNavigatorXR();
@@ -156,7 +156,7 @@ export class WebXRSessionController {
     };
   }
 
-  sampleFrame(frame?: G3DXRFrameLike, hitTestSource?: unknown): WebXRFrameSample {
+  sampleFrame(frame?: A3DXRFrameLike, hitTestSource?: unknown): WebXRFrameSample {
     const referenceSpace = this.referenceSpace ?? { type: this.referenceSpaceType };
     const controllers = Array.from(this.session?.inputSources ?? []).map((source) => sampleInputSource(source, frame, referenceSpace));
     const hitTests = frame?.getHitTestResults && hitTestSource
@@ -194,7 +194,7 @@ export class WebXRSessionController {
   }
 }
 
-function sampleInputSource(source: G3DXRInputSourceLike, frame: G3DXRFrameLike | undefined, referenceSpace: G3DXRReferenceSpaceLike): WebXRControllerSample {
+function sampleInputSource(source: A3DXRInputSourceLike, frame: A3DXRFrameLike | undefined, referenceSpace: A3DXRReferenceSpaceLike): WebXRControllerSample {
   const buttons = source.gamepad?.buttons ?? [];
   const axes = source.gamepad?.axes ?? [];
   const trigger = buttons[0];
@@ -213,12 +213,12 @@ function sampleInputSource(source: G3DXRInputSourceLike, frame: G3DXRFrameLike |
   };
 }
 
-function samplePoseMatrix(frame: G3DXRFrameLike | undefined, space: unknown, referenceSpace: G3DXRReferenceSpaceLike): readonly number[] | null {
+function samplePoseMatrix(frame: A3DXRFrameLike | undefined, space: unknown, referenceSpace: A3DXRReferenceSpaceLike): readonly number[] | null {
   if (!frame?.getPose || !space) return null;
   return sanitizeMatrix4(frame.getPose(space, referenceSpace)?.transform?.matrix);
 }
 
-function sampleHitTest(result: G3DXRHitTestResultLike): WebXRHitTestSample {
+function sampleHitTest(result: A3DXRHitTestResultLike): WebXRHitTestSample {
   return {
     position: sanitizeVec3(result.position, [0, 0, 0]),
     normal: sanitizeVec3(result.normal, [0, 1, 0])
@@ -243,6 +243,6 @@ function sanitizeMatrix4(value: readonly number[] | undefined): readonly number[
   return matrix;
 }
 
-function readNavigatorXR(): G3DXRSystemLike | undefined {
-  return (globalThis.navigator as Navigator & { xr?: G3DXRSystemLike } | undefined)?.xr;
+function readNavigatorXR(): A3DXRSystemLike | undefined {
+  return (globalThis.navigator as Navigator & { xr?: A3DXRSystemLike } | undefined)?.xr;
 }

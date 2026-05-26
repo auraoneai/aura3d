@@ -1,6 +1,6 @@
-# @galileo3d/editor-runtime
+# @aura3d/editor-runtime
 
-`@galileo3d/editor-runtime` owns editor command history, selection state, picking, inspector models, play-mode snapshots, and transform gizmos for runtime editor workflows.
+`@aura3d/editor-runtime` owns editor command history, selection state, picking, inspector models, play-mode snapshots, and transform gizmos for runtime editor workflows.
 
 ## Public API
 

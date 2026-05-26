@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/input",
+  "name": "@aura3d/input",
   "version": "1.0.0",
   "type": "module",
   "exports": {
@@ -11,7 +11,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@galileo3d/math": "workspace:*",
-    "@galileo3d/scene": "workspace:*"
+    "@aura3d/math": "workspace:*",
+    "@aura3d/scene": "workspace:*"
   }
 }

@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/animation-keyframes-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/animation-keyframes-parity/g3d-animation-keyframes.png",
+  a3d: "tests/reports/threejs-parity/animation-keyframes-parity/a3d-animation-keyframes.png",
   threejs: "tests/reports/threejs-parity/animation-keyframes-parity/threejs-animation-keyframes.png",
   sideBySide: "tests/reports/threejs-parity/animation-keyframes-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 animation keyframes same-asset Three.js parity", () => {
     await server.close();
   });
 
-  test("samples Robot Expressive keyframes through G3D and actual Three.js AnimationMixer", async ({ page }) => {
+  test("samples Robot Expressive keyframes through A3D and actual Three.js AnimationMixer", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -63,31 +63,31 @@ test.describe("V9 animation keyframes same-asset Three.js parity", () => {
       writePng(path, dataUrl);
     }
 
-    expect(result.schema).toBe("g3d-threejs-parity-animation-keyframes-parity/v1");
-    expect(result.purpose).toBe("same-asset Robot Expressive G3D keyframe sampling vs actual Three.js AnimationMixer baseline");
+    expect(result.schema).toBe("a3d-threejs-parity-animation-keyframes-parity/v1");
+    expect(result.purpose).toBe("same-asset Robot Expressive A3D keyframe sampling vs actual Three.js AnimationMixer baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAssetUrl).toBe(true);
     expect(result.assertions.sameClip).toBe(true);
     expect(result.assertions.actualThreeGLTFLoader).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeAnimationMixer).toBe(true);
-    expect(result.assertions.g3dAppliedTracksAndSkinning).toBe(true);
+    expect(result.assertions.a3dAppliedTracksAndSkinning).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.animation.clipName).toBe("Dance");
+    expect(result.a3d.animation.clipName).toBe("Dance");
     expect(result.threejs.animation.clipName).toBe("Dance");
-    expect(result.g3d.animation.clipCount).toBeGreaterThanOrEqual(1);
+    expect(result.a3d.animation.clipCount).toBeGreaterThanOrEqual(1);
     expect(result.threejs.animation.clipCount).toBeGreaterThanOrEqual(1);
-    expect(result.g3d.animation.tracksApplied).toBeGreaterThan(0);
-    expect(result.g3d.animation.skinningPalettesUpdated).toBeGreaterThan(0);
+    expect(result.a3d.animation.tracksApplied).toBeGreaterThan(0);
+    expect(result.a3d.animation.skinningPalettesUpdated).toBeGreaterThan(0);
     expect(result.threejs.animation.trackCount).toBeGreaterThan(0);
     expect(result.threejs.animation.skinnedMeshCount).toBeGreaterThan(0);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.25);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DAnimationKeyframesRuntimeSource();
+    assertNoThreeJsInA3DAnimationKeyframesRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const stats = readV6PngStats(resolve(path));
@@ -115,7 +115,7 @@ test.describe("V9 animation keyframes same-asset Three.js parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DAnimationKeyframesRuntimeSource(): void {
+function assertNoThreeJsInA3DAnimationKeyframesRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/animation-keyframes/src/main.ts",
@@ -146,9 +146,9 @@ function stripDataUrls(result: Extract<AnimationKeyframesParityResult, { readonl
 type AnimationKeyframesParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-animation-keyframes-parity/v1";
+      readonly schema: "a3d-threejs-parity-animation-keyframes-parity/v1";
       readonly purpose: string;
-      readonly g3d: {
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly animation: {
           readonly clipName: string;
@@ -175,14 +175,14 @@ type AnimationKeyframesParityResult =
         readonly actualThreeGLTFLoader: boolean;
         readonly actualThreeRenderer: boolean;
         readonly actualThreeAnimationMixer: boolean;
-        readonly g3dAppliedTracksAndSkinning: boolean;
+        readonly a3dAppliedTracksAndSkinning: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-animation-keyframes-parity/v1";
+      readonly schema: "a3d-threejs-parity-animation-keyframes-parity/v1";
       readonly error: string;
     };

@@ -45,7 +45,7 @@ const checks: V5ShaderCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-shader-readiness/v1",
+  schema: "a3d-three-compat-shader-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   diagnostics,

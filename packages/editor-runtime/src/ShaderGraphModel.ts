@@ -118,12 +118,12 @@ export function createOldBranchShaderGraphFixture(): ShaderGraphFixture {
   ];
   const validation = validateShaderGraph(nodes, edges);
   const previewFragmentLines = [
-    "vec2 uv = g3d_texcoord0;",
+    "vec2 uv = a3d_texcoord0;",
     "vec3 sampled = texture(u_proceduralCarbonFiber, uv).rgb;",
     "vec3 baseColor = sampled * vec3(0.88, 0.14, 0.08);",
-    "g3dSurface.baseColor = baseColor;",
-    "g3dSurface.metallic = 0.2;",
-    "g3dSurface.roughness = 0.38;"
+    "a3dSurface.baseColor = baseColor;",
+    "a3dSurface.metallic = 0.2;",
+    "a3dSurface.roughness = 0.38;"
   ] as const;
   const glslHash = hashStrings(previewFragmentLines);
   const wgslHash = hashStrings(previewFragmentLines.map((line) => line.replaceAll("vec", "vec").replaceAll("texture(", "textureSample(")));

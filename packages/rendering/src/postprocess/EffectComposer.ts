@@ -279,7 +279,7 @@ export function createPostProcessCapabilityReport(device: RenderDevice): PostPro
   }
   unsupportedEffects.push({
     name: "smaa",
-    reason: "SMAA is not implemented in the public G3D postprocess pass catalog; use FXAA or TAA."
+    reason: "SMAA is not implemented in the public A3D postprocess pass catalog; use FXAA or TAA."
   });
 
   return {

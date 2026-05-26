@@ -15,8 +15,8 @@ export default [
         "error",
         {
           "patterns": [
-            "@galileo3d/*/src/*",
-            "@galileo3d/*/*"
+            "@aura3d/*/src/*",
+            "@aura3d/*/*"
           ]
         }
       ]

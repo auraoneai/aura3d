@@ -1,5 +1,5 @@
-import type { RenderItem } from "@galileo3d/rendering";
-import type { Mat4 } from "@galileo3d/scene";
+import type { RenderItem } from "@aura3d/rendering";
+import type { Mat4 } from "@aura3d/scene";
 import {
   focusPartForProductConfiguratorImportedLabel,
   isProductConfiguratorHotspotCandidateLabel,

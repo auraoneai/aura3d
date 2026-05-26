@@ -28,7 +28,7 @@ interface PackageInstallSmokeReport {
 }
 
 const reportPath = "tests/reports/package-install-smoke.json";
-const defaultTarballPath = "release-artifacts/galileo3d-engine-0.1.0-alpha.0.tgz";
+const defaultTarballPath = "release-artifacts/aura3d-engine-0.1.0-alpha.0.tgz";
 const freshPackDirectory = "tests/reports/package-install-smoke-fresh";
 
 export function runPackageInstallSmoke(
@@ -39,7 +39,7 @@ export function runPackageInstallSmoke(
   const freshPack = options.freshPack === true;
   const packDirectory = join(root, freshPackDirectory);
   const packCommand = ["npm", "pack", "--pack-destination", packDirectory, "--silent"] as const;
-  const tempProject = mkdtempSync(join(tmpdir(), "g3d-package-smoke-"));
+  const tempProject = mkdtempSync(join(tmpdir(), "a3d-package-smoke-"));
   const smokeCommand = ["node", "smoke.mjs"] as const;
   const viteBuildCommand = [join(root, "node_modules", ".bin", process.platform === "win32" ? "vite.cmd" : "vite"), "build", "--logLevel", "warn"] as const;
   const violations: string[] = [];
@@ -85,15 +85,15 @@ export function runPackageInstallSmoke(
     const installCommand = ["npm", "install", "--ignore-scripts", "--no-audit", "--no-fund", tarballFullPath] as const;
 
     writeFileSync(join(tempProject, "package.json"), `${JSON.stringify({
-      name: "g3d-external-install-smoke",
+      name: "a3d-external-install-smoke",
       version: "0.0.0",
       private: true,
       type: "module"
     }, null, 2)}\n`);
-    writeFileSync(join(tempProject, "smoke.mjs"), smokeSource(packageInfo.name ?? "@galileo3d/engine"));
+    writeFileSync(join(tempProject, "smoke.mjs"), smokeSource(packageInfo.name ?? "@aura3d/engine"));
     mkdirSync(join(tempProject, "src"), { recursive: true });
     writeFileSync(join(tempProject, "index.html"), `<div id="app"></div><script type="module" src="/src/main.js"></script>\n`);
-    writeFileSync(join(tempProject, "src", "main.js"), viteSmokeSource(packageInfo.name ?? "@galileo3d/engine"));
+    writeFileSync(join(tempProject, "src", "main.js"), viteSmokeSource(packageInfo.name ?? "@aura3d/engine"));
 
     if (violations.length === 0) {
       try {
@@ -153,11 +153,11 @@ export function runPackageInstallSmoke(
     smokeCommand,
     viteBuildCommand,
     importedEntrypoints: [
-      "@galileo3d/engine",
-      "@galileo3d/engine/rendering",
-      "@galileo3d/engine/scene",
-      "@galileo3d/engine/math",
-      "@galileo3d/engine/assets"
+      "@aura3d/engine",
+      "@aura3d/engine/rendering",
+      "@aura3d/engine/scene",
+      "@aura3d/engine/math",
+      "@aura3d/engine/assets"
     ],
     smokeAssertions: [
       "root export map resolves",
@@ -206,7 +206,7 @@ assert.equal(material.name, "external-smoke-pbr");
 assert.equal(typeof rendering.Renderer.prototype.renderScene, "function");
 
 const lighting = rendering.createV4EnvironmentLighting("studio");
-assert.equal(lighting.presetId, "galileo3d-external-parity-visual-quality-preset");
+assert.equal(lighting.presetId, "aura3d-external-parity-visual-quality-preset");
 assert.equal(lighting.resources.validation.brdfLutTexture, true);
 assert.equal(lighting.resources.validation.diffuseIrradiance, true);
 assert.ok(lighting.resources.specularMipCount >= 4);
@@ -235,7 +235,7 @@ const lighting = createV4EnvironmentLighting("studio");
 const scene = new Scene();
 const loader = new GLTFLoader();
 
-globalThis.__GALILEO3D_PACKAGE_VITE_SMOKE__ = {
+globalThis.__AURA3D_PACKAGE_VITE_SMOKE__ = {
   engine: typeof Engine,
   cubeVertices: cube.vertexBuffer.vertexCount,
   material: material.name,

@@ -27,7 +27,7 @@ export interface V8SkinningIkRuntime {
   skinName: string;
   jointNames: readonly string[];
   clipName: string;
-  renderer: "g3d-webgl2";
+  renderer: "a3d-webgl2";
   fixture: string;
   error?: string;
 }

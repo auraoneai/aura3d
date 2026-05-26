@@ -13,8 +13,8 @@ const {
 
 const asset = await loadProductAsset({
   id: "camera-kit",
-  url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/camera-kit.gltf"))),
-  manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/manifest.json")))
+  url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/camera-kit.gltf"))),
+  manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/manifest.json")))
 });
 const studio = await createProductStudio({ backend: "mock", width: 640, height: 480 });
 const lighting = createProductLightingPreset("catalog-softbox");
@@ -34,7 +34,7 @@ studio.dispose();
 asset.resources.dispose();
 
 const report = {
-  schema: "g3d-product-studio-package-smoke/v1",
+  schema: "a3d-product-studio-package-smoke/v1",
   generatedAt: new Date().toISOString(),
   packageImport: "../../dist/product-studio/index.js",
   diagnostics,

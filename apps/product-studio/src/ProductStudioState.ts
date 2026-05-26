@@ -7,7 +7,7 @@ import type {
   ProductLightingPreset,
   ProductMaterialModeId,
   ProductRenderScene
-} from "@galileo3d/product-studio";
+} from "@aura3d/product-studio";
 
 export interface ProductOption {
   readonly id: ProductAssetId;
@@ -35,20 +35,20 @@ export const PRODUCT_OPTIONS: readonly ProductOption[] = [
   {
     id: "camera-kit",
     label: "Camera Kit",
-    url: "/fixtures/v2/products/camera-kit/camera-kit.gltf",
-    manifestUrl: "/fixtures/v2/products/camera-kit/manifest.json"
+    url: "/fixtures/product-studio/products/camera-kit/camera-kit.gltf",
+    manifestUrl: "/fixtures/product-studio/products/camera-kit/manifest.json"
   },
   {
     id: "speaker",
     label: "Speaker",
-    url: "/fixtures/v2/products/speaker/speaker.gltf",
-    manifestUrl: "/fixtures/v2/products/speaker/manifest.json"
+    url: "/fixtures/product-studio/products/speaker/speaker.gltf",
+    manifestUrl: "/fixtures/product-studio/products/speaker/manifest.json"
   },
   {
     id: "watch",
     label: "Watch",
-    url: "/fixtures/v2/products/watch/watch.gltf",
-    manifestUrl: "/fixtures/v2/products/watch/manifest.json"
+    url: "/fixtures/product-studio/products/watch/watch.gltf",
+    manifestUrl: "/fixtures/product-studio/products/watch/manifest.json"
   }
 ];
 
@@ -70,7 +70,7 @@ export function selectedProduct(state: ProductStudioAppState): ProductOption {
 
 declare global {
   interface Window {
-    __G3D_PRODUCT_STUDIO__?: ProductStudioAppState & {
+    __A3D_PRODUCT_STUDIO__?: ProductStudioAppState & {
       reloadProduct?: (id: ProductAssetId) => Promise<void>;
       setLighting?: (preset: ProductLightingPreset) => Promise<void>;
       setCamera?: (preset: ProductCameraPreset) => Promise<void>;

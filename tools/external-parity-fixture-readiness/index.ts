@@ -81,12 +81,12 @@ function check(id: string, pass: boolean, detail: string): void {
 }
 
 const requiredFiles = [
-  "fixtures/v4/manifest.json",
-  "fixtures/v4/environments/manifest.json",
-  "fixtures/v4/products/manifest.json",
-  "fixtures/v4/materials/manifest.json",
-  "fixtures/v4/scenes/manifest.json",
-  "fixtures/v4/characters/manifest.json",
+  "fixtures/external-parity/manifest.json",
+  "fixtures/external-parity/environments/manifest.json",
+  "fixtures/external-parity/products/manifest.json",
+  "fixtures/external-parity/materials/manifest.json",
+  "fixtures/external-parity/scenes/manifest.json",
+  "fixtures/external-parity/characters/manifest.json",
   "docs/project/v4-roadmap-reference-visual-targets.md"
 ];
 
@@ -94,21 +94,21 @@ for (const file of requiredFiles) {
   check(`file:${file}`, existsSync(resolve(file)), `${file} must exist.`);
 }
 
-const root = readJson("fixtures/v4/manifest.json");
-const environments = readJson("fixtures/v4/environments/manifest.json");
-const products = readJson("fixtures/v4/products/manifest.json");
-const materials = readJson("fixtures/v4/materials/manifest.json");
-const scenes = readJson("fixtures/v4/scenes/manifest.json");
-const characters = readJson("fixtures/v4/characters/manifest.json");
+const root = readJson("fixtures/external-parity/manifest.json");
+const environments = readJson("fixtures/external-parity/environments/manifest.json");
+const products = readJson("fixtures/external-parity/products/manifest.json");
+const materials = readJson("fixtures/external-parity/materials/manifest.json");
+const scenes = readJson("fixtures/external-parity/scenes/manifest.json");
+const characters = readJson("fixtures/external-parity/characters/manifest.json");
 const targetsDoc = readText("docs/project/v4-roadmap-reference-visual-targets.md");
 
 const sourceManifests = root.sourceManifests as JsonObject | undefined;
 const expectedSourceManifests = [
-  "fixtures/v4/environments/manifest.json",
-  "fixtures/v4/products/manifest.json",
-  "fixtures/v4/materials/manifest.json",
-  "fixtures/v4/scenes/manifest.json",
-  "fixtures/v4/characters/manifest.json"
+  "fixtures/external-parity/environments/manifest.json",
+  "fixtures/external-parity/products/manifest.json",
+  "fixtures/external-parity/materials/manifest.json",
+  "fixtures/external-parity/scenes/manifest.json",
+  "fixtures/external-parity/characters/manifest.json"
 ];
 
 check(
@@ -126,7 +126,7 @@ check(
 );
 check(
   "root-product-contract",
-  typeof root.productContract === "object" && JSON.stringify(root.productContract).includes("@galileo3d/engine"),
+  typeof root.productContract === "object" && JSON.stringify(root.productContract).includes("@aura3d/engine"),
   "Root manifest must name the SDK/runtime/toolchain as the product, not screenshots."
 );
 
@@ -211,7 +211,7 @@ check(
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-external-parity-fixture-readiness/v1",
+  schema: "a3d-external-parity-fixture-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

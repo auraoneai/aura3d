@@ -122,15 +122,15 @@ test.describe("roadmap examples runtime", () => {
 
 async function openExample(page: Page, server: ExampleDevServer, id: string): Promise<void> {
   await page.goto(`${server.origin}/examples/${id}/index.html`, { waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => window.__GALILEO3D_EXAMPLE__?.status === "ready" || window.__GALILEO3D_EXAMPLE__?.status === "error", undefined, { timeout: 30_000 });
+  await page.waitForFunction(() => window.__AURA3D_EXAMPLE__?.status === "ready" || window.__AURA3D_EXAMPLE__?.status === "error", undefined, { timeout: 30_000 });
   await page.waitForTimeout(100);
 }
 
-async function readExampleState(page: Page): Promise<NonNullable<Window["__GALILEO3D_EXAMPLE__"]>> {
+async function readExampleState(page: Page): Promise<NonNullable<Window["__AURA3D_EXAMPLE__"]>> {
   return page.evaluate(() => {
-    if (!window.__GALILEO3D_EXAMPLE__) {
+    if (!window.__AURA3D_EXAMPLE__) {
       throw new Error("Example did not publish runtime state.");
     }
-    return window.__GALILEO3D_EXAMPLE__;
+    return window.__AURA3D_EXAMPLE__;
   });
 }

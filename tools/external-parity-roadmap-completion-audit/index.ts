@@ -50,7 +50,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-completion-audit/v1",
+  schema: "a3d-external-parity-completion-audit/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

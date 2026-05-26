@@ -26,7 +26,7 @@ const exampleChecks = examples.map((example) => {
   const readme = existsSync(readmePath) ? readFileSync(readmePath, "utf8") : "";
   return {
     example,
-    importsWorkflows: main.includes("@galileo3d/workflows"),
+    importsWorkflows: main.includes("@aura3d/workflows"),
     usesPublicShell: main.includes("mountV3Example"),
     readmeMentionsGate: readme.includes("v3-examples.spec.ts"),
     avoidsV1Proof: !main.includes("-v1") && !readme.includes("-v1")
@@ -46,7 +46,7 @@ const captureChecks = (manifest?.captures ?? []).map((capture) => ({
 const examplesWithCaptures = new Set(captureChecks.map((capture) => capture.id));
 
 const report = {
-  schema: "g3d-foundation-examples-readiness/v1",
+  schema: "a3d-foundation-examples-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: fileChecks.every((file) => file.exists)
     && exampleChecks.every((example) => example.importsWorkflows && example.usesPublicShell && example.readmeMentionsGate && example.avoidsV1Proof)

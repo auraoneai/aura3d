@@ -121,20 +121,20 @@ const locales: readonly EditorLocaleDescriptor[] = [
 
 const stringTables: Record<string, StringTable> = {
   "en-US": {
-    "editor.title": "Galileo3D Editor",
+    "editor.title": "Aura3D Editor",
     "assets.count.one": "{count} imported asset",
     "assets.count.other": "{count} imported assets",
     "status.saved": "Saved",
     "panel.inspector": "Inspector"
   },
   "es-ES": {
-    "editor.title": "Editor Galileo3D",
+    "editor.title": "Editor Aura3D",
     "assets.count.one": "{count} recurso importado",
     "assets.count.other": "{count} recursos importados",
     "status.saved": "Guardado"
   },
   "ar-SA": {
-    "editor.title": "Galileo3D RTL Editor",
+    "editor.title": "Aura3D RTL Editor",
     "assets.count.zero": "no imported assets",
     "assets.count.one": "{count} imported asset",
     "assets.count.two": "{count} imported assets",

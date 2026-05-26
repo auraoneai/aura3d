@@ -99,7 +99,7 @@ const completionAuditPasses = reportPasses("tests/reports/three-compat-completio
 const progressDoesNotClaimComplete = !progressClaimsComplete || completionAuditPasses;
 
 const report = {
-  schema: "g3d-three-compat-truth/v1",
+  schema: "a3d-three-compat-truth/v1",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0
     && findings.length === 0

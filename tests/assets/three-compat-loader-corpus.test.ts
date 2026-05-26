@@ -16,10 +16,10 @@ describe("V5 loader corpus", () => {
     const mtl = new MTLLoaderV5().load("fixtures/three-compat/loaders/sample.mtl");
     const hdr = new HDRLoaderV5().load("fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr");
     const ktx2 = new KTX2LoaderV5().load("tests/assets/corpus/ktx2/Rib_N.ktx2");
-    const texture = new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png");
+    const texture = new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png");
     const compatGltf = new GLTFLoaderCompat().load("fixtures/three-compat/assets/corpus/boom-box.glb");
     const compatObj = new OBJLoaderCompat().load("fixtures/three-compat/loaders/sample.obj");
-    const compatTexture = new ThreeCompatTextureLoader().load("tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png");
+    const compatTexture = new ThreeCompatTextureLoader().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png");
 
     expect(gltf.diagnostic.status).toBe("loaded");
     expect(gltf.capabilities).toEqual(expect.arrayContaining(["pbr", "animations", "skins", "morph-targets", "extension-diagnostics"]));

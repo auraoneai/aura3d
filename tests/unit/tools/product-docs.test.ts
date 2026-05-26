@@ -9,21 +9,21 @@ const demos = [
     id: "product-configurator",
     readme: "examples/product-configurator/README.md",
     main: "examples/product-configurator/main.ts",
-    state: "__GALILEO3D_PRODUCT_DEMO__",
+    state: "__AURA3D_PRODUCT_DEMO__",
     sourceSignals: ["variants", "setVariant", "Renderer.create", "renderer.render"],
   },
   {
     id: "architecture-viewer",
     readme: "examples/architecture-viewer/README.md",
     main: "examples/architecture-viewer/main.ts",
-    state: "__GALILEO3D_ARCHITECTURE_DEMO__",
+    state: "__AURA3D_ARCHITECTURE_DEMO__",
     sourceSignals: ["zones", "buildRenderItems", "Renderer.create", "renderer.render"],
   },
   {
     id: "game-slice",
     readme: "examples/game-slice/README.md",
     main: "examples/game-slice/main.ts",
-    state: "__GALILEO3D_GAME_DEMO__",
+    state: "__AURA3D_GAME_DEMO__",
     sourceSignals: ["PhysicsWorld", "AnimationMixer", "ParticleSystem", "InputSystem", "AudioSystem", "renderer.render"],
   },
 ] as const;
@@ -84,7 +84,7 @@ describe("product example docs", () => {
     expect(existsSync(join(root, "docs/examples/external-demos.md"))).toBe(true);
     expect(external).toContain("does not contain evidence of externally hosted");
     expect(external).toContain("must remain unchecked");
-    expect(checklist).toContain("- [x] Product examples prove Galileo3D can build useful browser apps.");
+    expect(checklist).toContain("- [x] Product examples prove Aura3D can build useful browser apps.");
     expect(checklist).toContain("- [x] A new developer can learn from example code without reading tests.");
     expect(checklist).toContain("- [ ] External demos exist.");
     expect(gate).toContain("docs/examples/external-demos.md");

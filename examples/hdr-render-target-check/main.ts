@@ -1,4 +1,4 @@
-import { Geometry, Renderer, toneMapFloatPixels, type HdrToneMappingResult, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { Geometry, Renderer, toneMapFloatPixels, type HdrToneMappingResult, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 type HdrRenderTargetCheckState = {
   readonly id: "hdr-render-target-check";
@@ -34,7 +34,7 @@ type HdrRenderTargetCheckState = {
 
 declare global {
   interface Window {
-    __GALILEO3D_HDR_RENDER_TARGET_CHECK__?: HdrRenderTargetCheckState;
+    __AURA3D_HDR_RENDER_TARGET_CHECK__?: HdrRenderTargetCheckState;
   }
 }
 
@@ -45,7 +45,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_HDR_RENDER_TARGET_CHECK__ = {
+    window.__AURA3D_HDR_RENDER_TARGET_CHECK__ = {
       id: "hdr-render-target-check",
       status: "error",
       renderer: "webgl2",
@@ -111,16 +111,16 @@ async function run(): Promise<void> {
   const geometry = Geometry.triangle();
   const shader = renderer.device.createShaderProgram({
     label: "hdr-check-overbright",
-    marker: "@galileo3d-shader:hdr-check-overbright",
+    marker: "@aura3d-shader:hdr-check-overbright",
     vertex: `#version 300 es
-// @galileo3d-shader:hdr-check-overbright
+// @aura3d-shader:hdr-check-overbright
 precision highp float;
 in vec3 a_position;
 void main() {
   gl_Position = vec4(a_position.xy * 2.0, 0.0, 1.0);
 }`,
     fragment: `#version 300 es
-// @galileo3d-shader:hdr-check-overbright
+// @aura3d-shader:hdr-check-overbright
 precision highp float;
 out vec4 outColor;
 void main() {
@@ -192,7 +192,7 @@ void main() {
     diagnostics,
     knownLimits,
   };
-  window.__GALILEO3D_HDR_RENDER_TARGET_CHECK__ = state;
+  window.__AURA3D_HDR_RENDER_TARGET_CHECK__ = state;
   if (summaryNode) {
     summaryNode.innerHTML = `
       <span><b>${state.format.toUpperCase()}</b> target</span>

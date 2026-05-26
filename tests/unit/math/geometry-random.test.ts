@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Box3, Color, Easing, Frustum, Matrix4, Plane, Ray, SeededRandom, Sphere, Vector3, lerp, smoothstep } from "@galileo3d/math";
+import { Box3, Color, Easing, Frustum, Matrix4, Plane, Ray, SeededRandom, Sphere, Vector3, lerp, smoothstep } from "@aura3d/math";
 
 describe("math geometry and scalar helpers", () => {
   it("intersects rays with plane, sphere, and box", () => {

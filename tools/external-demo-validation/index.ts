@@ -61,7 +61,7 @@ const defaultRequiredDemoIds = [
   "large-world-streaming",
 ] as const;
 
-export async function validateExternalDemos(root = process.cwd(), manifestPath = process.env.G3D_EXTERNAL_DEMO_MANIFEST ?? defaultManifestPath): Promise<ExternalDemoValidationReport> {
+export async function validateExternalDemos(root = process.cwd(), manifestPath = process.env.A3D_EXTERNAL_DEMO_MANIFEST ?? defaultManifestPath): Promise<ExternalDemoValidationReport> {
   const absoluteManifestPath = join(root, manifestPath);
   const manifest = readManifest(absoluteManifestPath);
   const requiredDemoIds = manifest?.requiredDemoIds ?? defaultRequiredDemoIds;
@@ -86,7 +86,7 @@ export async function validateExternalDemos(root = process.cwd(), manifestPath =
   return {
     ok: violations.length === 0 && validations.length >= requiredDemoIds.length && validations.every((validation) => validation.passed),
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-external-demo-validation-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-external-demo-validation-run",
     command: "pnpm verify:external-demos",
     manifestPath,
     environment: {

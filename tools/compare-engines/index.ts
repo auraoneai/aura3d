@@ -16,17 +16,17 @@ import babylonPbrMaterials from "../../benchmarks/babylon/src/scenes/pbr-materia
 import babylonPostprocess from "../../benchmarks/babylon/src/scenes/postprocess.js";
 import babylonMorphCharacters from "../../benchmarks/babylon/src/scenes/morph-characters.js";
 import babylonEditorAuthoredStartup from "../../benchmarks/babylon/src/scenes/editor-authored-startup.js";
-import galileoLargeScene from "../../benchmarks/galileo/src/scenes/large-scene.js";
-import galileoProductConfigurator from "../../benchmarks/galileo/src/scenes/product-configurator.js";
-import galileoSkinnedCharacters from "../../benchmarks/galileo/src/scenes/skinned-characters.js";
-import galileoArchitectureViewer from "../../benchmarks/galileo/src/scenes/architecture-viewer.js";
-import galileoAssetRender from "../../benchmarks/galileo/src/scenes/asset-render.js";
-import galileoInstancing from "../../benchmarks/galileo/src/scenes/instancing.js";
-import galileoParticles from "../../benchmarks/galileo/src/scenes/particles.js";
-import galileoPbrMaterials from "../../benchmarks/galileo/src/scenes/pbr-materials.js";
-import galileoPostprocess from "../../benchmarks/galileo/src/scenes/postprocess.js";
-import galileoMorphCharacters from "../../benchmarks/galileo/src/scenes/morph-characters.js";
-import galileoEditorAuthoredStartup from "../../benchmarks/galileo/src/scenes/editor-authored-startup.js";
+import aura3dLargeScene from "../../benchmarks/aura3d/src/scenes/large-scene.js";
+import aura3dProductConfigurator from "../../benchmarks/aura3d/src/scenes/product-configurator.js";
+import aura3dSkinnedCharacters from "../../benchmarks/aura3d/src/scenes/skinned-characters.js";
+import aura3dArchitectureViewer from "../../benchmarks/aura3d/src/scenes/architecture-viewer.js";
+import aura3dAssetRender from "../../benchmarks/aura3d/src/scenes/asset-render.js";
+import aura3dInstancing from "../../benchmarks/aura3d/src/scenes/instancing.js";
+import aura3dParticles from "../../benchmarks/aura3d/src/scenes/particles.js";
+import aura3dPbrMaterials from "../../benchmarks/aura3d/src/scenes/pbr-materials.js";
+import aura3dPostprocess from "../../benchmarks/aura3d/src/scenes/postprocess.js";
+import aura3dMorphCharacters from "../../benchmarks/aura3d/src/scenes/morph-characters.js";
+import aura3dEditorAuthoredStartup from "../../benchmarks/aura3d/src/scenes/editor-authored-startup.js";
 import threeLargeScene from "../../benchmarks/threejs/src/scenes/large-scene.js";
 import threeProductConfigurator from "../../benchmarks/threejs/src/scenes/product-configurator.js";
 import threeSkinnedCharacters from "../../benchmarks/threejs/src/scenes/skinned-characters.js";
@@ -39,7 +39,7 @@ import threePostprocess from "../../benchmarks/threejs/src/scenes/postprocess.js
 import threeMorphCharacters from "../../benchmarks/threejs/src/scenes/morph-characters.js";
 import threeEditorAuthoredStartup from "../../benchmarks/threejs/src/scenes/editor-authored-startup.js";
 
-type Engine = "babylon" | "galileo" | "threejs";
+type Engine = "babylon" | "aura3d" | "threejs";
 
 type BenchmarkScene = {
   readonly id: string;
@@ -198,7 +198,7 @@ type BenchmarkVisualRender = {
 
 type ScreenshotDiffResult = {
   readonly sceneId: string;
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "threejs" | "babylon";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -254,7 +254,7 @@ type SupportedNicheClaim = {
     readonly reportPath: string;
     readonly scenes: readonly {
       readonly id: string;
-      readonly galileoBundleBytes?: number;
+      readonly aura3dBundleBytes?: number;
       readonly competitorBundleBytes?: number;
       readonly ratio?: number;
       readonly losingDimensions?: number;
@@ -280,17 +280,17 @@ type CompetitorBroadSuperiorityEvidence = {
 };
 
 const scenes: BenchmarkScene[] = [
-  galileoProductConfigurator,
-  galileoArchitectureViewer,
-  galileoAssetRender,
-  galileoPbrMaterials,
-  galileoLargeScene,
-  galileoInstancing,
-  galileoSkinnedCharacters,
-  galileoParticles,
-  galileoPostprocess,
-  galileoMorphCharacters,
-  galileoEditorAuthoredStartup,
+  aura3dProductConfigurator,
+  aura3dArchitectureViewer,
+  aura3dAssetRender,
+  aura3dPbrMaterials,
+  aura3dLargeScene,
+  aura3dInstancing,
+  aura3dSkinnedCharacters,
+  aura3dParticles,
+  aura3dPostprocess,
+  aura3dMorphCharacters,
+  aura3dEditorAuthoredStartup,
   threeProductConfigurator,
   threeArchitectureViewer,
   threeAssetRender,
@@ -380,14 +380,14 @@ function compareScene(id: string, assetIds: Set<string>): SceneComparison {
     byEngine.set(scene.engine, scene);
   }
 
-  const requiredEngines: Engine[] = ["galileo", "threejs", "babylon"];
+  const requiredEngines: Engine[] = ["aura3d", "threejs", "babylon"];
   for (const engine of requiredEngines) {
     if (!byEngine.has(engine)) {
       return { id, equivalent: false, reason: `missing ${engine} scene definition`, estimates: {} as Record<Engine, Record<string, unknown>> };
     }
   }
 
-  const base = byEngine.get("galileo")!;
+  const base = byEngine.get("aura3d")!;
   const estimates = {} as Record<Engine, Record<string, unknown>>;
   for (const engine of requiredEngines) {
     const scene = byEngine.get(engine)!;
@@ -395,7 +395,7 @@ function compareScene(id: string, assetIds: Set<string>): SceneComparison {
       return { id, equivalent: false, reason: `${engine} references unknown asset ${scene.assetId}`, estimates };
     }
     if (!sameBenchmarkShape(base, scene)) {
-      return { id, equivalent: false, reason: `${engine} scene does not match Galileo benchmark shape`, estimates };
+      return { id, equivalent: false, reason: `${engine} scene does not match Aura3D benchmark shape`, estimates };
     }
     estimates[engine] = estimateScene(scene);
   }
@@ -490,15 +490,15 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
   const threePackage = readJson("benchmarks/threejs/package.json") as PackageJson;
   const babylonPackage = readJson("benchmarks/babylon/package.json") as PackageJson;
   const productVisualParity = isV4Run ? productVisualParityEvidence() : { status: "not-applicable-to-v3" };
-  const productVisualParityReady = isRecord(productVisualParity) && productVisualParity.galileoThreeBabylon === true;
+  const productVisualParityReady = isRecord(productVisualParity) && productVisualParity.aura3dThreeBabylon === true;
   const gltfLoaderVisualParity = isV4Run ? gltfLoaderVisualParityEvidence() : { status: "not-applicable-to-v3" };
-  const gltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.galileoThreeBabylon === true;
+  const gltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.aura3dThreeBabylon === true;
   const fullGltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.fullCorpusThreeBabylon === true;
   const featureRuntimeCoverage = featureRuntimeCoverageMatrix();
 
   return {
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-compare-engines-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-compare-engines-run",
     gitSha: gitSha(),
     command: isV4Run
       ? "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --v4 --write-reports"
@@ -562,12 +562,12 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
       },
       screenshotDiffs: {
         status: "not-captured",
-        reason: "Run with --write-reports to compare Galileo benchmark canvas screenshots against Three.js and Babylon.js captures.",
+        reason: "Run with --write-reports to compare Aura3D benchmark canvas screenshots against Three.js and Babylon.js captures.",
         paths: [] as string[],
       },
     },
     comparedEngines: {
-      galileo: rootPackage.version ?? "unknown",
+      aura3d: rootPackage.version ?? "unknown",
       threejs: threePackage.benchmarkEngine?.version ?? "unknown",
       babylon: babylonPackage.benchmarkEngine?.version ?? "unknown",
     },
@@ -613,7 +613,7 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
 function sourceInputPaths(): string[] {
   const scenePaths = Array.from(comparedSceneIds).flatMap((id) => [
     `benchmarks/shared/scenes/${id}.ts`,
-    `benchmarks/galileo/src/scenes/${id}.ts`,
+    `benchmarks/aura3d/src/scenes/${id}.ts`,
     `benchmarks/threejs/src/scenes/${id}.ts`,
     `benchmarks/babylon/src/scenes/${id}.ts`,
   ]);
@@ -656,7 +656,7 @@ function productVisualParityEvidence(): Record<string, unknown> {
     return {
       status: "missing",
       reportPath,
-      galileoThreeBabylon: false,
+      aura3dThreeBabylon: false,
       blockers: ["Run `pnpm audit:external-parity-product-visual-parity` before writing V4 engine-comparison reports."],
     };
   }
@@ -665,7 +665,7 @@ function productVisualParityEvidence(): Record<string, unknown> {
     return {
       status: "invalid",
       reportPath,
-      galileoThreeBabylon: false,
+      aura3dThreeBabylon: false,
       blockers: ["V4 product visual parity report is not a JSON object."],
     };
   }
@@ -676,7 +676,7 @@ function productVisualParityEvidence(): Record<string, unknown> {
   return {
     status: threejs && babylon ? "bounded-product-visual-diffs-pass" : "blocked",
     reportPath,
-    galileoThreeBabylon: threejs && babylon,
+    aura3dThreeBabylon: threejs && babylon,
     threejs,
     babylon,
     unity: rendered.unity === true,
@@ -704,7 +704,7 @@ function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
     return {
       status: "missing",
       reportPath,
-      galileoThreeBabylon: false,
+      aura3dThreeBabylon: false,
       blockers: ["Run `pnpm audit:external-parity-gltf-loader-visual-parity` before writing V4 engine-comparison reports."],
     };
   }
@@ -713,7 +713,7 @@ function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
     return {
       status: "invalid",
       reportPath,
-      galileoThreeBabylon: false,
+      aura3dThreeBabylon: false,
       blockers: ["V4 glTF loader visual parity report is not a JSON object."],
     };
   }
@@ -728,7 +728,7 @@ function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
   return {
     status: threejs && babylon ? "bounded-same-source-gltf-loader-visual-diffs-pass" : "blocked",
     reportPath,
-    galileoThreeBabylon: threejs && babylon,
+    aura3dThreeBabylon: threejs && babylon,
     fullCorpusThreeBabylon,
     threejs,
     babylon,
@@ -809,7 +809,7 @@ function filterReport(report: Record<string, unknown>, competitor: "threejs" | "
       equivalent: scene.equivalent,
       reason: scene.reason,
       estimates: {
-        galileo: scene.estimates.galileo,
+        aura3d: scene.estimates.aura3d,
         [competitor]: scene.estimates[competitor],
       },
     })),
@@ -820,7 +820,7 @@ function withBenchmarkMeasurements(report: Record<string, unknown>, evidence: Be
   const byKey = new Map(evidence.measurements.map((measurement) => [`${measurement.engine}:${measurement.sceneId}`, measurement]));
   const scenesWithMeasurements = (report.scenes as SceneComparison[]).map((scene) => {
     const estimates = {} as Record<Engine, Record<string, unknown>>;
-    for (const engine of ["galileo", "threejs", "babylon"] as const) {
+    for (const engine of ["aura3d", "threejs", "babylon"] as const) {
       const existing = scene.estimates[engine];
       const measurement = byKey.get(`${engine}:${scene.id}`);
       estimates[engine] = measurement
@@ -855,13 +855,13 @@ function withBenchmarkMeasurements(report: Record<string, unknown>, evidence: Be
       screenshotDiffs: {
         status: evidence.screenshotDiffs.length > 0 ? "computed-rendered-benchmark-scene-diffs" : "not-computed",
         reason:
-          "Diff PNGs and metrics compare Galileo's descriptor-driven rendered benchmark visual captures against the Three.js and Babylon.js rendered benchmark visual captures for each equivalent scene. They are generated benchmark-scene visual evidence, not external Unity/Unreal product-render parity.",
+          "Diff PNGs and metrics compare Aura3D's descriptor-driven rendered benchmark visual captures against the Three.js and Babylon.js rendered benchmark visual captures for each equivalent scene. They are generated benchmark-scene visual evidence, not external Unity/Unreal product-render parity.",
         paths: evidence.screenshotDiffs.map((diff) => diff.diffPath),
       },
       renderedBenchmarkVisuals: {
         status: evidence.visualRenders.length > 0 ? "captured-descriptor-driven-rendered-benchmark-scenes" : "not-captured",
         reason:
-          "Screenshots capture descriptor-driven real rendered browser scenes for Galileo3D, Three.js, and Babylon.js using the shared benchmark scene metadata.",
+          "Screenshots capture descriptor-driven real rendered browser scenes for Aura3D, Three.js, and Babylon.js using the shared benchmark scene metadata.",
         paths: evidence.visualRenders.map((render) => render.screenshotPath),
       },
     },
@@ -880,23 +880,23 @@ function withComparisonOutcomes(report: Record<string, unknown>): Record<string,
   const sceneComparisons = report.scenes as SceneComparison[];
   const byCompetitor = Object.fromEntries((["threejs", "babylon"] as const).map((competitor) => {
     const sceneOutcomes = sceneComparisons.map((scene) => {
-      const galileo = scene.estimates.galileo;
+      const aura3d = scene.estimates.aura3d;
       const other = scene.estimates[competitor];
       return {
         id: scene.id,
         equivalent: scene.equivalent,
-        frameTimeMedian: compareTimingMetric(lowerIsBetter(galileo?.frameTimeMs), lowerIsBetter(other?.frameTimeMs)),
-        frameTimeP95: compareTimingMetric(p95Metric(galileo?.frameTimeMs), p95Metric(other?.frameTimeMs)),
-        startupMedian: neutralMicrobenchmarkStartupMetric(lowerIsBetter(galileo?.startupMs), lowerIsBetter(other?.startupMs)),
-        assetLoadMedian: compareTimingMetric(lowerIsBetter(galileo?.assetLoadMs), lowerIsBetter(other?.assetLoadMs)),
-        bundleBytes: compareMetric(numeric(galileo?.bundleBytes), numeric(other?.bundleBytes)),
-        drawCalls: compareMetric(numeric(galileo?.drawCalls), numeric(other?.drawCalls)),
-        shaderCount: compareMetric(numeric(galileo?.shaderCount), numeric(other?.shaderCount)),
-        textureBytes: compareMetric(numeric(galileo?.textureBytes), numeric(other?.textureBytes)),
-        geometryBytesEstimate: compareMetric(numeric(galileo?.geometryBytesEstimate), numeric(other?.geometryBytesEstimate)),
+        frameTimeMedian: compareTimingMetric(lowerIsBetter(aura3d?.frameTimeMs), lowerIsBetter(other?.frameTimeMs)),
+        frameTimeP95: compareTimingMetric(p95Metric(aura3d?.frameTimeMs), p95Metric(other?.frameTimeMs)),
+        startupMedian: neutralMicrobenchmarkStartupMetric(lowerIsBetter(aura3d?.startupMs), lowerIsBetter(other?.startupMs)),
+        assetLoadMedian: compareTimingMetric(lowerIsBetter(aura3d?.assetLoadMs), lowerIsBetter(other?.assetLoadMs)),
+        bundleBytes: compareMetric(numeric(aura3d?.bundleBytes), numeric(other?.bundleBytes)),
+        drawCalls: compareMetric(numeric(aura3d?.drawCalls), numeric(other?.drawCalls)),
+        shaderCount: compareMetric(numeric(aura3d?.shaderCount), numeric(other?.shaderCount)),
+        textureBytes: compareMetric(numeric(aura3d?.textureBytes), numeric(other?.textureBytes)),
+        geometryBytesEstimate: compareMetric(numeric(aura3d?.geometryBytesEstimate), numeric(other?.geometryBytesEstimate)),
         screenshotDiff: screenshotDiffFor(report, scene.id, competitor),
         unsupportedFeatures: Array.from(new Set([
-          ...unsupportedFromEstimate(galileo),
+          ...unsupportedFromEstimate(aura3d),
           ...unsupportedFromEstimate(other),
         ])),
       };
@@ -938,7 +938,7 @@ function withComparisonOutcomes(report: Record<string, unknown>): Record<string,
       : report.claimCaveat,
     comparisonOutcomes: {
       status: "computed-from-report-measurements",
-      rule: "For lower-is-better non-timing metrics, Galileo wins when at least 5% lower, loses when at least 5% higher, and ties inside +/-5%. Timing metrics additionally tie inside a 2 ms absolute tolerance. startupMedian is neutral for this WebGL2 microbenchmark because the startup path creates a raw browser WebGL2 context and shader directly; it does not import or execute Galileo3D, Three.js, or Babylon.js runtime code.",
+      rule: "For lower-is-better non-timing metrics, Aura3D wins when at least 5% lower, loses when at least 5% higher, and ties inside +/-5%. Timing metrics additionally tie inside a 2 ms absolute tolerance. startupMedian is neutral for this WebGL2 microbenchmark because the startup path creates a raw browser WebGL2 context and shader directly; it does not import or execute Aura3D, Three.js, or Babylon.js runtime code.",
       byCompetitor,
     },
   };
@@ -1054,13 +1054,13 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
         (report.scenes as SceneComparison[] | undefined)?.length === comparedSceneIds.length &&
           (report.scenes as SceneComparison[] | undefined)?.every((scene) => scene.equivalent) === true,
         ["tests/reports/external-parity-engine-comparison.json", "benchmarks/shared/scenes"],
-        [`expected ${comparedSceneIds.length} equivalent benchmark scenes for Galileo3D, Three.js, and Babylon.js`]
+        [`expected ${comparedSceneIds.length} equivalent benchmark scenes for Aura3D, Three.js, and Babylon.js`]
       ),
       dimension(
         "browser-measurement-coverage",
         "Browser measurement coverage",
         scenes.length === comparedSceneIds.length &&
-          scenes.every((scene) => isRecord(scene.galileo) || scene.equivalent === true) &&
+          scenes.every((scene) => isRecord(scene.aura3d) || scene.equivalent === true) &&
           Array.isArray(report.benchmarkMeasurementFailureLog) &&
           report.benchmarkMeasurementFailureLog.length === 0,
         ["tests/reports/external-parity-engine-comparison.json"],
@@ -1079,7 +1079,7 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
         "Rendered product visual parity",
         product?.ok === true && productParity[competitor === "threejs" ? "threejs" : "babylon"] === true,
         ["tests/reports/external-parity-product-visual-parity.json"],
-        [`product visual parity must pass for Galileo3D vs ${competitor === "threejs" ? "Three.js" : "Babylon.js"} browser renders`]
+        [`product visual parity must pass for Aura3D vs ${competitor === "threejs" ? "Three.js" : "Babylon.js"} browser renders`]
       ),
       dimension(
         "gltf-loader-visual-parity",
@@ -1181,37 +1181,37 @@ function p95Metric(value: unknown): number | undefined {
   return undefined;
 }
 
-function compareMetric(galileo: number | undefined, competitor: number | undefined): { result: "win" | "tie" | "loss" | "unavailable"; galileo?: number; competitor?: number; ratio?: number } {
-  if (galileo === undefined || competitor === undefined) return { result: "unavailable", ...(galileo !== undefined ? { galileo } : {}), ...(competitor !== undefined ? { competitor } : {}) };
-  if (galileo === 0 && competitor === 0) return { result: "tie", galileo, competitor, ratio: 1 };
-  if (competitor === 0) return { result: galileo === 0 ? "tie" : "loss", galileo, competitor };
-  const ratio = galileo / competitor;
+function compareMetric(aura3d: number | undefined, competitor: number | undefined): { result: "win" | "tie" | "loss" | "unavailable"; aura3d?: number; competitor?: number; ratio?: number } {
+  if (aura3d === undefined || competitor === undefined) return { result: "unavailable", ...(aura3d !== undefined ? { aura3d } : {}), ...(competitor !== undefined ? { competitor } : {}) };
+  if (aura3d === 0 && competitor === 0) return { result: "tie", aura3d, competitor, ratio: 1 };
+  if (competitor === 0) return { result: aura3d === 0 ? "tie" : "loss", aura3d, competitor };
+  const ratio = aura3d / competitor;
   const result = ratio <= 0.95 ? "win" : ratio >= 1.05 ? "loss" : "tie";
-  return { result, galileo, competitor, ratio: Number(ratio.toFixed(3)) };
+  return { result, aura3d, competitor, ratio: Number(ratio.toFixed(3)) };
 }
 
-function compareTimingMetric(galileo: number | undefined, competitor: number | undefined): { result: "win" | "tie" | "loss" | "unavailable"; galileo?: number; competitor?: number; ratio?: number; toleranceMs?: number } {
+function compareTimingMetric(aura3d: number | undefined, competitor: number | undefined): { result: "win" | "tie" | "loss" | "unavailable"; aura3d?: number; competitor?: number; ratio?: number; toleranceMs?: number } {
   const toleranceMs = 2;
-  if (galileo === undefined || competitor === undefined) return { result: "unavailable", ...(galileo !== undefined ? { galileo } : {}), ...(competitor !== undefined ? { competitor } : {}), toleranceMs };
-  if (Math.abs(galileo - competitor) <= toleranceMs) {
-    return { result: "tie", galileo, competitor, ratio: competitor === 0 ? (galileo === 0 ? 1 : undefined) : Number((galileo / competitor).toFixed(3)), toleranceMs };
+  if (aura3d === undefined || competitor === undefined) return { result: "unavailable", ...(aura3d !== undefined ? { aura3d } : {}), ...(competitor !== undefined ? { competitor } : {}), toleranceMs };
+  if (Math.abs(aura3d - competitor) <= toleranceMs) {
+    return { result: "tie", aura3d, competitor, ratio: competitor === 0 ? (aura3d === 0 ? 1 : undefined) : Number((aura3d / competitor).toFixed(3)), toleranceMs };
   }
-  return { ...compareMetric(galileo, competitor), toleranceMs };
+  return { ...compareMetric(aura3d, competitor), toleranceMs };
 }
 
-function neutralMicrobenchmarkStartupMetric(galileo: number | undefined, competitor: number | undefined): {
+function neutralMicrobenchmarkStartupMetric(aura3d: number | undefined, competitor: number | undefined): {
   readonly result: "tie" | "unavailable";
-  readonly galileo?: number;
+  readonly aura3d?: number;
   readonly competitor?: number;
   readonly ratio?: number;
   readonly neutralized: boolean;
   readonly reason: string;
 } {
   const reason = "browser WebGL2 context and shader startup is measured without importing any compared engine runtime";
-  if (galileo === undefined || competitor === undefined) {
+  if (aura3d === undefined || competitor === undefined) {
     return {
       result: "unavailable",
-      ...(galileo !== undefined ? { galileo } : {}),
+      ...(aura3d !== undefined ? { aura3d } : {}),
       ...(competitor !== undefined ? { competitor } : {}),
       neutralized: true,
       reason
@@ -1219,9 +1219,9 @@ function neutralMicrobenchmarkStartupMetric(galileo: number | undefined, competi
   }
   return {
     result: "tie",
-    galileo,
+    aura3d,
     competitor,
-    ratio: competitor === 0 ? (galileo === 0 ? 1 : undefined) : Number((galileo / competitor).toFixed(3)),
+    ratio: competitor === 0 ? (aura3d === 0 ? 1 : undefined) : Number((aura3d / competitor).toFixed(3)),
     neutralized: true,
     reason
   };
@@ -1239,21 +1239,21 @@ function bundleSizeNicheClaims(report: Record<string, unknown>): SupportedNicheC
     ["babylon", "Babylon.js", comparisonReportPath("babylon")]
   ] as const).flatMap(([competitor, label, reportPath]) => {
     const evidence = scenesToCheck.flatMap((scene) => {
-      const galileoBundleBytes = numeric(scene.estimates.galileo?.bundleBytes);
+      const aura3dBundleBytes = numeric(scene.estimates.aura3d?.bundleBytes);
       const competitorBundleBytes = numeric(scene.estimates[competitor]?.bundleBytes);
-      if (!galileoBundleBytes || !competitorBundleBytes || galileoBundleBytes >= competitorBundleBytes) return [];
+      if (!aura3dBundleBytes || !competitorBundleBytes || aura3dBundleBytes >= competitorBundleBytes) return [];
       return [{
         id: scene.id,
-        galileoBundleBytes,
+        aura3dBundleBytes,
         competitorBundleBytes,
-        ratio: Number((galileoBundleBytes / competitorBundleBytes).toFixed(3))
+        ratio: Number((aura3dBundleBytes / competitorBundleBytes).toFixed(3))
       }];
     });
     if (evidence.length !== comparedSceneIds.length) return [];
     return [{
       id: `equivalent-scaffold-bundle-size-${competitor}`,
       status: "supported",
-      claim: `Galileo3D generated smaller esbuild browser benchmark bundles than ${label} for all ${comparedSceneIds.length} checked-in equivalent scaffold scenes on this run.`,
+      claim: `Aura3D generated smaller esbuild browser benchmark bundles than ${label} for all ${comparedSceneIds.length} checked-in equivalent scaffold scenes on this run.`,
       comparedEngine: competitor,
       measuredDimension: "esbuild browser benchmark bundle bytes",
       evidence: {
@@ -1271,7 +1271,9 @@ function bundleSizeNicheClaims(report: Record<string, unknown>): SupportedNicheC
 }
 
 function comparisonReportPath(competitor: "threejs" | "babylon"): string {
-  return `tests/reports/${isV4Run ? "v4" : "v3"}-comparison-${competitor}.json`;
+  return isV4Run
+    ? `tests/reports/external-parity-comparison-${competitor}.json`
+    : `tests/reports/v3-comparison-${competitor}.json`;
 }
 
 function numeric(value: unknown): number | undefined {
@@ -1355,9 +1357,9 @@ async function captureBenchmarkMeasurements(): Promise<BenchmarkMeasurementEvide
 function interleavedMeasurementScenes(activeScenes: readonly BenchmarkScene[]): BenchmarkScene[] {
   const byKey = new Map(activeScenes.map((scene) => [`${scene.engine}:${scene.id}`, scene]));
   const engineOrders: readonly (readonly Engine[])[] = [
-    ["galileo", "threejs", "babylon"],
-    ["threejs", "babylon", "galileo"],
-    ["babylon", "galileo", "threejs"],
+    ["aura3d", "threejs", "babylon"],
+    ["threejs", "babylon", "aura3d"],
+    ["babylon", "aura3d", "threejs"],
   ];
   return comparedSceneIds.flatMap((id, index) => {
     const order = engineOrders[index % engineOrders.length] ?? engineOrders[0];
@@ -1392,7 +1394,7 @@ function browserWarmupScene(base: BenchmarkScene): BenchmarkScene {
   return {
     ...base,
     id: "browser-webgl2-measurement-warmup",
-    engine: "galileo",
+    engine: "aura3d",
     assetId: "browser-webgl2-measurement-warmup",
     warmupFrames: 1,
     measuredFrames: 1,
@@ -1431,9 +1433,9 @@ async function createScreenshotDiffs(
   mkdirSync(resolve("tests/reports/comparison-diffs"), { recursive: true });
 
   for (const sceneId of comparedSceneIds) {
-    const baseline = byKey.get(`galileo:${sceneId}`);
+    const baseline = byKey.get(`aura3d:${sceneId}`);
     if (!baseline) {
-      failureLog.push(`screenshot-diff/${sceneId}: missing Galileo baseline screenshot`);
+      failureLog.push(`screenshot-diff/${sceneId}: missing Aura3D baseline screenshot`);
       continue;
     }
     for (const competitor of ["threejs", "babylon"] as const) {
@@ -1447,7 +1449,7 @@ async function createScreenshotDiffs(
         const result = await createScreenshotDiff(page, baseline.screenshotPath, compared.screenshotPath, diffPath);
         diffs.push({
           sceneId,
-          baselineEngine: "galileo",
+          baselineEngine: "aura3d",
           comparedEngine: competitor,
           baselinePath: baseline.screenshotPath,
           comparedPath: compared.screenshotPath,
@@ -1515,7 +1517,7 @@ async function buildBenchmarkBundles(): Promise<BenchmarkBundle[]> {
   for (const scene of activeScenes) {
     const outfile = resolve(outputDir, `${scene.engine}-${scene.id}.js`);
     const runtimeImport =
-      scene.engine === "galileo"
+      scene.engine === "aura3d"
         ? "./packages/rendering/src/index.ts"
         : scene.engine === "threejs"
           ? "three"
@@ -1559,7 +1561,7 @@ async function buildBenchmarkBundles(): Promise<BenchmarkBundle[]> {
 
 async function buildBenchmarkVisualBundles(): Promise<ReadonlyMap<Engine, string>> {
   const entries: Record<Engine, string> = {
-    galileo: galileoBenchmarkVisualBundleSource(),
+    aura3d: aura3dBenchmarkVisualBundleSource(),
     threejs: threeBenchmarkVisualBundleSource(),
     babylon: babylonBenchmarkVisualBundleSource(),
   };
@@ -1575,7 +1577,7 @@ async function buildBenchmarkVisualBundles(): Promise<ReadonlyMap<Engine, string
       bundle: true,
       platform: "browser",
       format: "iife",
-      globalName: `G3D_${engine}_benchmark_visual_renderer`,
+      globalName: `A3D_${engine}_benchmark_visual_renderer`,
       target: "es2022",
       write: false,
       minify: true,
@@ -1614,7 +1616,7 @@ async function captureBenchmarkVisualRenders(
         canvas.style.width = `${benchmarkScene.resolution.width}px`;
         canvas.style.height = `${benchmarkScene.resolution.height}px`;
         document.body.replaceChildren(canvas);
-        const bundleName = `G3D_${benchmarkScene.engine}_benchmark_visual_renderer`;
+        const bundleName = `A3D_${benchmarkScene.engine}_benchmark_visual_renderer`;
         const render = (window as unknown as Record<string, { renderBenchmarkVisualScene?: (canvas: HTMLCanvasElement, scene: BenchmarkScene) => Promise<BenchmarkVisualRender["metrics"]> }>)[bundleName]?.renderBenchmarkVisualScene;
         if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderBenchmarkVisualScene`);
         const metrics = await render(canvas, benchmarkScene);
@@ -1716,7 +1718,7 @@ function benchmarkVisualSharedHelpers(): string {
   `;
 }
 
-function galileoBenchmarkVisualBundleSource(): string {
+function aura3dBenchmarkVisualBundleSource(): string {
   return `
     import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
     ${benchmarkVisualSharedHelpers()}
@@ -2214,9 +2216,9 @@ function createMarkdown(report: Record<string, unknown>, label: string): string 
   const scenes = report.scenes as Array<{ id: string; equivalent: boolean; estimates: Record<string, Record<string, { median: number } | number | string>> }>;
   const rows = scenes
     .map((scene) => {
-      const galileo = scene.estimates.galileo;
+      const aura3d = scene.estimates.aura3d;
       const competitor = scene.estimates[(report.competitor as string) ?? ""];
-      return `| ${scene.id} | ${scene.equivalent ? "yes" : "no"} | ${median(galileo?.frameTimeMs)} | ${median(competitor?.frameTimeMs)} | ${galileo?.drawCalls ?? "n/a"} / ${galileo?.requestedDrawCalls ?? "n/a"} | ${galileo?.bundleBytes ?? "n/a"} | ${galileo?.sourceCodeBytes ?? "n/a"} |`;
+      return `| ${scene.id} | ${scene.equivalent ? "yes" : "no"} | ${median(aura3d?.frameTimeMs)} | ${median(competitor?.frameTimeMs)} | ${aura3d?.drawCalls ?? "n/a"} / ${aura3d?.requestedDrawCalls ?? "n/a"} | ${aura3d?.bundleBytes ?? "n/a"} | ${aura3d?.sourceCodeBytes ?? "n/a"} |`;
     })
     .join("\n");
   const comparedEngines = report.comparedEngines as Record<string, string>;
@@ -2244,14 +2246,14 @@ function createMarkdown(report: Record<string, unknown>, label: string): string 
   };
   const featureComparison = report.featureComparison as Array<{
     area: string;
-    galileo: string;
+    aura3d: string;
     competitor: string;
     currentEvidence: string;
     claimImpact: string;
   }>;
   const supportedNicheClaims = report.supportedNicheClaims as SupportedNicheClaim[] | undefined;
   const featureRows = featureComparison
-    .map((row) => `| ${row.area} | ${row.galileo} | ${row.competitor} | ${row.currentEvidence} | ${row.claimImpact} |`)
+    .map((row) => `| ${row.area} | ${row.aura3d} | ${row.competitor} | ${row.currentEvidence} | ${row.claimImpact} |`)
     .join("\n");
   const screenshotPaths = artifacts.screenshots?.paths?.length ? artifacts.screenshots.paths.join(", ") : "none";
   const gltfRows = Object.entries(gltfCompatibility.summary ?? {})
@@ -2265,19 +2267,19 @@ function createMarkdown(report: Record<string, unknown>, label: string): string 
   const nicheClaimSection = supportedNicheClaims?.length
     ? `\n## Supported Narrow Claim\n\n${supportedNicheClaims.map((claim) => {
       const sceneRows = claim.evidence.scenes
-        .map((scene) => `| ${scene.id} | ${scene.galileoBundleBytes} | ${scene.competitorBundleBytes} | ${scene.ratio} |`)
+        .map((scene) => `| ${scene.id} | ${scene.aura3dBundleBytes} | ${scene.competitorBundleBytes} | ${scene.ratio} |`)
         .join("\n");
-      return `${claim.claim}\n\nMeasured dimension: ${claim.measuredDimension}. Evidence report: \`${claim.evidence.reportPath}\`.\n\n| Scene | Galileo bundle bytes | ${label} bundle bytes | Galileo / ${label} ratio |\n|---|---:|---:|---:|\n${sceneRows}\n\nExclusions: ${claim.exclusions.join(" ")}`
+      return `${claim.claim}\n\nMeasured dimension: ${claim.measuredDimension}. Evidence report: \`${claim.evidence.reportPath}\`.\n\n| Scene | Aura3D bundle bytes | ${label} bundle bytes | Aura3D / ${label} ratio |\n|---|---:|---:|---:|\n${sceneRows}\n\nExclusions: ${claim.exclusions.join(" ")}`
     }).join("\n\n")}\n`
     : "";
 
-  return `# Galileo3D vs ${label} Benchmark Scaffold
+  return `# Aura3D vs ${label} Benchmark Scaffold
 
 Generated: ${report.generatedAt}
 
-This document is intentionally limited to reproducible benchmark scaffolding. It verifies that Galileo3D and ${label} scene definitions use the same procedural assets, render resolution, camera path, lighting intent, warmup policy, measurement window, and workload shape, then captures a bounded Playwright Chromium WebGL2 microbenchmark plus esbuild browser bundle artifacts. It does not claim a runtime performance win.
+This document is intentionally limited to reproducible benchmark scaffolding. It verifies that Aura3D and ${label} scene definitions use the same procedural assets, render resolution, camera path, lighting intent, warmup policy, measurement window, and workload shape, then captures a bounded Playwright Chromium WebGL2 microbenchmark plus esbuild browser bundle artifacts. It does not claim a runtime performance win.
 
-Pinned versions in the generated JSON: Galileo3D ${comparedEngines.galileo}, Three.js ${comparedEngines.threejs}, Babylon.js ${comparedEngines.babylon}. Browser timing is a capped WebGL2 microbenchmark over equivalent workload metadata; it is not rendered product-scene parity.
+Pinned versions in the generated JSON: Aura3D ${comparedEngines.aura3d}, Three.js ${comparedEngines.threejs}, Babylon.js ${comparedEngines.babylon}. Browser timing is a capped WebGL2 microbenchmark over equivalent workload metadata; it is not rendered product-scene parity.
 
 ## Captured Environment
 
@@ -2301,7 +2303,7 @@ Pinned versions in the generated JSON: Galileo3D ${comparedEngines.galileo}, Thr
 | Screenshots | ${artifacts.screenshots?.status ?? "unknown"} | ${artifacts.screenshots?.reason ?? "No screenshot artifact metadata captured."} Paths: ${screenshotPaths}. |
 | Browser bundles | ${artifacts.bundles?.status ?? "unknown"} | ${artifacts.bundles?.reason ?? "No bundle artifact metadata captured."} |
 
-| Scene | Equivalent scaffold | Galileo browser frame median ms | ${label} browser frame median ms | Galileo executed/requested draw calls | Galileo bundle bytes | Galileo scene source bytes |
+| Scene | Equivalent scaffold | Aura3D browser frame median ms | ${label} browser frame median ms | Aura3D executed/requested draw calls | Aura3D bundle bytes | Aura3D scene source bytes |
 |---|---:|---:|---:|---:|---:|---:|
 ${rows}
 
@@ -2319,7 +2321,7 @@ ${nicheClaimSection}
 
 ## Feature Comparison Coverage
 
-| Area | Galileo3D evidence | ${label} evidence | Current comparison evidence | Claim impact |
+| Area | Aura3D evidence | ${label} evidence | Current comparison evidence | Claim impact |
 |---|---|---|---|---|
 ${featureRows}
 
@@ -2442,7 +2444,7 @@ function auditHtml(report: Record<string, unknown>, title: string): string {
   <body>
     <h1>${escapeHtml(title)}</h1>
     <p>Generated: ${escapeHtml(String(report.generatedAt))}</p>
-    <p>Galileo3D ${escapeHtml(comparedEngines.galileo)}, Three.js ${escapeHtml(comparedEngines.threejs)}, Babylon.js ${escapeHtml(comparedEngines.babylon)}</p>
+    <p>Aura3D ${escapeHtml(comparedEngines.aura3d)}, Three.js ${escapeHtml(comparedEngines.threejs)}, Babylon.js ${escapeHtml(comparedEngines.babylon)}</p>
     <div class="caveat">${escapeHtml(String(report.claimCaveat))}</div>
     <table>
       <thead><tr><th>Scene</th><th>Equivalent scaffold</th></tr></thead>
@@ -2454,8 +2456,8 @@ function auditHtml(report: Record<string, unknown>, title: string): string {
 
 function dependencyPins(rootPackage: PackageJson, threePackage: PackageJson, babylonPackage: PackageJson): Record<string, unknown> {
   return {
-    galileo: {
-      packageName: rootPackage.name ?? "@galileo3d/engine",
+    aura3d: {
+      packageName: rootPackage.name ?? "@aura3d/engine",
       packageVersion: rootPackage.version ?? "unknown",
     },
     threejs: {
@@ -2509,7 +2511,7 @@ function gltfCompatibilitySummary(): Record<string, unknown> {
       sameCorpusBlenderComplete
         ? `The linked compatibility report executes pinned Three.js, Babylon.js, and Blender same-corpus export coverage against ${assetCount} Khronos corpus assets. Three.js/Babylon entries are loader import evidence; Blender entries are import/export/reload evidence from the same corpus.`
         : blenderExportValidation
-          ? `The linked compatibility report executes pinned Three.js and Babylon.js loaders against the same ${assetCount || "unknown"}-entry Khronos corpus in a Node compatibility harness. It is loader import evidence, not visual/rendering parity. The same-corpus Blender-export column remains incomplete (${blenderNotRun} not-run, ${blenderExpectedFail} expected-fail), while the separate Blender-export validation report passes checked-in Blender-exported fixtures through Galileo3D's glTF loader.`
+          ? `The linked compatibility report executes pinned Three.js and Babylon.js loaders against the same ${assetCount || "unknown"}-entry Khronos corpus in a Node compatibility harness. It is loader import evidence, not visual/rendering parity. The same-corpus Blender-export column remains incomplete (${blenderNotRun} not-run, ${blenderExpectedFail} expected-fail), while the separate Blender-export validation report passes checked-in Blender-exported fixtures through Aura3D's glTF loader.`
           : `The linked compatibility report executes pinned Three.js and Babylon.js loaders against the same ${assetCount || "unknown"}-entry Khronos corpus in a Node compatibility harness. It is loader import evidence, not visual/rendering parity. Blender-export validation remains not-run.`,
   };
 }
@@ -2635,56 +2637,56 @@ function featureComparisonMatrix(): Array<Record<string, string>> {
   return [
     {
       area: "Controls",
-      galileo: "input/control unit and example evidence exists outside this scaffold",
+      aura3d: "input/control unit and example evidence exists outside this scaffold",
       competitor: "not executed by this scaffold",
       currentEvidence: "no same-scene control ergonomics benchmark",
       claimImpact: "unsupported for better claims",
     },
     {
       area: "Materials",
-      galileo: "PBR/material unit and visual slices exist outside this scaffold",
+      aura3d: "PBR/material unit and visual slices exist outside this scaffold",
       competitor: "not executed by this scaffold",
       currentEvidence: "procedural material counts are matched; visual parity is not scored",
       claimImpact: "unsupported for material parity claims",
     },
     {
       area: "Lights",
-      galileo: "lighting intent is matched in scaffold scene definitions",
+      aura3d: "lighting intent is matched in scaffold scene definitions",
       competitor: "same lighting intent in scaffold scene definitions",
       currentEvidence: "configuration equivalence only",
       claimImpact: "no quality or performance advantage",
     },
     {
       area: "Shadows",
-      galileo: "quality.shadows is false in current scaffold scenes",
+      aura3d: "quality.shadows is false in current scaffold scenes",
       competitor: "quality.shadows is false in current scaffold scenes",
       currentEvidence: "not exercised",
       claimImpact: "unsupported for shadow claims",
     },
     {
       area: "Postprocess",
-      galileo: "quality.postprocess is false in current scaffold scenes",
+      aura3d: "quality.postprocess is false in current scaffold scenes",
       competitor: "quality.postprocess is false in current scaffold scenes",
       currentEvidence: "not exercised",
       claimImpact: "unsupported for postprocess claims",
     },
     {
       area: "Animation",
-      galileo: "skinned-characters workload declares 32 animations",
+      aura3d: "skinned-characters workload declares 32 animations",
       competitor: "matching skinned-characters workload declares 32 animations",
       currentEvidence: "workload equivalence plus capped browser microbenchmark timing; no animation-system parity scoring",
       claimImpact: "no runtime animation advantage",
     },
     {
       area: "Particles",
-      galileo: "skinned-characters workload declares 400 particles",
+      aura3d: "skinned-characters workload declares 400 particles",
       competitor: "matching skinned-characters workload declares 400 particles",
       currentEvidence: "workload equivalence plus capped browser microbenchmark timing; no particle-system parity scoring",
       claimImpact: "no runtime particle advantage",
     },
     {
       area: "Docs",
-      galileo: "local docs and generated reports are linked",
+      aura3d: "local docs and generated reports are linked",
       competitor: "external documentation breadth is not measured by this scaffold",
       currentEvidence: "repo-local documentation linkage only",
       claimImpact: "unsupported for ecosystem/docs superiority",

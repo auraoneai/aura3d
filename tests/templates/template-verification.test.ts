@@ -8,19 +8,19 @@ const appTemplates = [
   {
     name: "product-configurator",
     entry: "src/main.ts",
-    requiredImports: ["@galileo3d/rendering"],
+    requiredImports: ["@aura3d/rendering"],
     expectedSource: ["Renderer.create", 'backend: "webgl2"', "PBRMaterial", "variants"],
   },
   {
     name: "game-slice",
     entry: "src/main.ts",
-    requiredImports: ["@galileo3d/rendering", "@galileo3d/input", "@galileo3d/physics", "@galileo3d/animation"],
+    requiredImports: ["@aura3d/rendering", "@aura3d/input", "@aura3d/physics", "@aura3d/animation"],
     expectedSource: ["Renderer.create", 'backend: "webgl2"', "InputSystem", "PhysicsWorld", "AnimationMixer"],
   },
   {
     name: "asset-viewer",
     entry: "src/main.ts",
-    requiredImports: ["@galileo3d/assets"],
+    requiredImports: ["@aura3d/assets"],
     expectedSource: ["AssetManager", "GLTFLoader", "createGLTFRenderResources", "createInlineTriangleGltfUrl"],
   },
 ] as const;
@@ -49,8 +49,8 @@ describe("starter templates", () => {
 
       expect(packageJson.private, `${template} remains a scaffold`).toBe(true);
       expect(packageJson.scripts?.build, `${template} build script`).toBe("vite build");
-      expect(deps, `${template} public renderer dependency`).toHaveProperty("@galileo3d/rendering");
-      expect(deps["@galileo3d/rendering"], `${template} version`).toBe("0.0.0-rebuild");
+      expect(deps, `${template} public renderer dependency`).toHaveProperty("@aura3d/rendering");
+      expect(deps["@aura3d/rendering"], `${template} version`).toBe("0.0.0-rebuild");
       expect(JSON.stringify(deps), `${template} should not use workspace protocol dependencies`).not.toContain("workspace:");
     }
   });

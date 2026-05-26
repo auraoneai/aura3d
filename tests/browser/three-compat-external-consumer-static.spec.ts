@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 test("V5 external consumer static preview renders built output", async ({ page }) => {
   await page.goto(`file://${process.cwd()}/tests/reports/three-compat-external-consumer/static-preview/index.html`);
-  await expect.poll(async () => page.evaluate(() => window.__g3dStaticPreview)).toBe(true);
+  await expect.poll(async () => page.evaluate(() => window.__a3dStaticPreview)).toBe(true);
   await page.screenshot({ path: "tests/reports/three-compat-external-consumer/static-preview.png" });
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;

@@ -1,9 +1,9 @@
-import { Geometry, PBRMaterial, type RenderItem } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+import { Geometry, PBRMaterial, type RenderItem } from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8CameraMultipleViews?: V8CameraMultipleViewsRuntime;
+    __a3dV8CameraMultipleViews?: V8CameraMultipleViewsRuntime;
   }
 }
 
@@ -21,7 +21,7 @@ interface V8CameraMultipleViewsRuntime {
   readonly distinctCameraViews: boolean;
   readonly viewLabels: readonly string[];
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -30,7 +30,7 @@ type ViewLabel = "hero" | "top" | "detail";
 interface ViewRuntime {
   readonly label: ViewLabel;
   readonly canvas: HTMLCanvasElement;
-  readonly renderer: G3DRenderer;
+  readonly renderer: A3DRenderer;
   readonly width: number;
   readonly height: number;
   readonly cameraPosition: readonly [number, number, number];
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8CameraMultipleViews = runtime;
+    window.__a3dV8CameraMultipleViews = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -113,7 +113,7 @@ async function run(): Promise<void> {
           distinctCameraViews: true,
           viewLabels: viewports.map((viewport) => viewport.label)
         });
-        window.__g3dV8CameraMultipleViews = runtime;
+        window.__a3dV8CameraMultipleViews = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -170,7 +170,7 @@ async function createViewports(): Promise<readonly ViewRuntime[]> {
     }
     canvas.width = config.width;
     canvas.height = config.height;
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: config.width,
@@ -289,7 +289,7 @@ function createRuntime(
     distinctCameraViews: patch.distinctCameraViews ?? false,
     viewLabels: patch.viewLabels ?? VIEW_LABELS,
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -300,7 +300,7 @@ function renderUi(root: HTMLElement, runtime: V8CameraMultipleViewsRuntime): voi
       <div class="panel-heading">
         <div>
           <h1>V8 Camera Multiple Views</h1>
-          <p>Three independent WebGL elements render one shared G3D scene definition through distinct camera views.</p>
+          <p>Three independent WebGL elements render one shared A3D scene definition through distinct camera views.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>
       </div>

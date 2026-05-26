@@ -6,15 +6,15 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler, type Vec3 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler, type Vec3 } from "@aura3d/scene";
 import { bindPhysicsControls, DEFAULT_PHYSICS_CONTROLS, type PhysicsControlState } from "./controls";
 import { applyShowcaseImpulse, createPhysicsScene, raycastImpulse, stepPhysicsScene, type PhysicsBodyView, type PhysicsSceneFixture } from "./physicsScene";
 
 declare global {
   interface Window {
-    __g3dV8PhysicsShowcase?: V8PhysicsRuntime;
+    __a3dV8PhysicsShowcase?: V8PhysicsRuntime;
   }
 }
 
@@ -91,7 +91,7 @@ async function run(): Promise<void> {
   });
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -140,7 +140,7 @@ async function run(): Promise<void> {
       animationCount: 0,
       skinCount: 0,
       morphTargetCount: 0,
-      extensionsUsed: ["G3D_physics_world", "G3D_rigid_bodies", "G3D_constraints", "G3D_raycast"]
+      extensionsUsed: ["A3D_physics_world", "A3D_rigid_bodies", "A3D_constraints", "A3D_raycast"]
     };
     let lastNow = 0;
 
@@ -181,7 +181,7 @@ async function run(): Promise<void> {
           debugOverlay: controls.debugOverlay,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__g3dV8PhysicsShowcase = runtime;
+        window.__a3dV8PhysicsShowcase = runtime;
         if (nextFrame === 1 || nextFrame % 8 === 0) publish(root, runtime, controls);
         requestAnimationFrame(render);
       } catch (error) {
@@ -281,13 +281,13 @@ function createLights(): readonly CollectedLight[] {
 }
 
 function publish(root: HTMLElement, runtime: V8PhysicsRuntime, controls: PhysicsControlState): void {
-  window.__g3dV8PhysicsShowcase = runtime;
+  window.__a3dV8PhysicsShowcase = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "loading" ? "is-loading" : "is-running";
   root.innerHTML = `
     <section class="panel">
       <div>
         <h1>V8 Physics Showcase</h1>
-        <p>G3D physics rigid bodies, a spring constraint, raycast impulse, and rendered contact diagnostics.</p>
+        <p>A3D physics rigid bodies, a spring constraint, raycast impulse, and rendered contact diagnostics.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>
     </section>

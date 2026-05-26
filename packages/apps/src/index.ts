@@ -1,5 +1,5 @@
-import { Engine, type DiagnosticsSnapshot } from "@galileo3d/core";
-import { Renderer, type RenderDeviceDiagnostics, type RendererOptions } from "@galileo3d/rendering";
+import { Engine, type DiagnosticsSnapshot } from "@aura3d/core";
+import { Renderer, type RenderDeviceDiagnostics, type RendererOptions } from "@aura3d/rendering";
 import {
   createAssetViewerWorkflow,
   createInteractiveSceneWorkflow,
@@ -7,18 +7,18 @@ import {
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow,
   type AssetViewerWorkflowOptions,
-  type G3DWorkflowResult,
+  type A3DWorkflowResult,
   type InteractiveSceneWorkflowOptions,
   type MaterialStudioWorkflowOptions,
   type ProductConfiguratorWorkflowOptions,
   type SceneShowcaseWorkflowOptions
-} from "@galileo3d/workflows";
+} from "@aura3d/workflows";
 
-export type G3DAppQualityPreset = "draft" | "balanced" | "production";
-export type G3DAppWorkflowPreset = "asset-viewer" | "product-configurator" | "material-studio" | "scene-showcase" | "interactive-scene";
+export type A3DAppQualityPreset = "draft" | "balanced" | "production";
+export type A3DAppWorkflowPreset = "asset-viewer" | "product-configurator" | "material-studio" | "scene-showcase" | "interactive-scene";
 
-export interface G3DAppQualitySettings {
-  readonly preset: G3DAppQualityPreset;
+export interface A3DAppQualitySettings {
+  readonly preset: A3DAppQualityPreset;
   readonly width: number;
   readonly height: number;
   readonly antialias: boolean;
@@ -27,43 +27,43 @@ export interface G3DAppQualitySettings {
   readonly diagnostics: readonly string[];
 }
 
-export interface G3DAppOptions {
+export interface A3DAppOptions {
   readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
-  readonly quality?: G3DAppQualityPreset;
+  readonly quality?: A3DAppQualityPreset;
   readonly width?: number;
   readonly height?: number;
-  readonly rendererFactory?: (options: RendererOptions) => Promise<G3DAppRendererLike>;
+  readonly rendererFactory?: (options: RendererOptions) => Promise<A3DAppRendererLike>;
 }
 
-export interface G3DAppRendererLike {
-  render(source: G3DWorkflowResult["source"], camera?: G3DWorkflowResult["camera"]): RenderDeviceDiagnostics;
+export interface A3DAppRendererLike {
+  render(source: A3DWorkflowResult["source"], camera?: A3DWorkflowResult["camera"]): RenderDeviceDiagnostics;
   dispose?(): void;
 }
 
-export interface G3DAppDiagnostics {
+export interface A3DAppDiagnostics {
   readonly appState: "ready" | "disposed";
-  readonly quality: G3DAppQualitySettings;
+  readonly quality: A3DAppQualitySettings;
   readonly workflowRuns: number;
-  readonly lastWorkflow?: G3DAppWorkflowPreset;
+  readonly lastWorkflow?: A3DAppWorkflowPreset;
   readonly lastRender?: RenderDeviceDiagnostics;
   readonly engine: DiagnosticsSnapshot;
 }
 
-export interface G3DApp {
+export interface A3DApp {
   readonly engine: Engine;
-  readonly renderer?: G3DAppRendererLike;
-  readonly quality: G3DAppQualitySettings;
-  renderWorkflow(preset: "asset-viewer", options: AssetViewerWorkflowOptions): Promise<G3DWorkflowResult>;
-  renderWorkflow(preset: "product-configurator", options: ProductConfiguratorWorkflowOptions): Promise<G3DWorkflowResult>;
-  renderWorkflow(preset: "material-studio", options?: MaterialStudioWorkflowOptions): Promise<G3DWorkflowResult>;
-  renderWorkflow(preset: "scene-showcase", options?: SceneShowcaseWorkflowOptions): Promise<G3DWorkflowResult>;
-  renderWorkflow(preset: "interactive-scene", options?: InteractiveSceneWorkflowOptions): Promise<G3DWorkflowResult>;
-  renderWorkflow(preset: G3DAppWorkflowPreset, options?: unknown): Promise<G3DWorkflowResult>;
-  diagnostics(): G3DAppDiagnostics;
+  readonly renderer?: A3DAppRendererLike;
+  readonly quality: A3DAppQualitySettings;
+  renderWorkflow(preset: "asset-viewer", options: AssetViewerWorkflowOptions): Promise<A3DWorkflowResult>;
+  renderWorkflow(preset: "product-configurator", options: ProductConfiguratorWorkflowOptions): Promise<A3DWorkflowResult>;
+  renderWorkflow(preset: "material-studio", options?: MaterialStudioWorkflowOptions): Promise<A3DWorkflowResult>;
+  renderWorkflow(preset: "scene-showcase", options?: SceneShowcaseWorkflowOptions): Promise<A3DWorkflowResult>;
+  renderWorkflow(preset: "interactive-scene", options?: InteractiveSceneWorkflowOptions): Promise<A3DWorkflowResult>;
+  renderWorkflow(preset: A3DAppWorkflowPreset, options?: unknown): Promise<A3DWorkflowResult>;
+  diagnostics(): A3DAppDiagnostics;
   dispose(): Promise<void>;
 }
 
-export const G3D_APP_WORKFLOW_PRESETS: readonly G3DAppWorkflowPreset[] = [
+export const A3D_APP_WORKFLOW_PRESETS: readonly A3DAppWorkflowPreset[] = [
   "asset-viewer",
   "product-configurator",
   "material-studio",
@@ -71,7 +71,7 @@ export const G3D_APP_WORKFLOW_PRESETS: readonly G3DAppWorkflowPreset[] = [
   "interactive-scene"
 ] as const;
 
-export function resolveG3DAppQualityPreset(preset: G3DAppQualityPreset = "balanced", overrides: Pick<G3DAppOptions, "width" | "height"> = {}): G3DAppQualitySettings {
+export function resolveA3DAppQualityPreset(preset: A3DAppQualityPreset = "balanced", overrides: Pick<A3DAppOptions, "width" | "height"> = {}): A3DAppQualitySettings {
   const base = preset === "production"
     ? { width: 1600, height: 1000, antialias: true, preserveDrawingBuffer: true, targetFormat: "rgba16f" as const }
     : preset === "draft"
@@ -91,8 +91,8 @@ export function resolveG3DAppQualityPreset(preset: G3DAppQualityPreset = "balanc
   };
 }
 
-export async function createG3DApp(options: G3DAppOptions = {}): Promise<G3DApp> {
-  const quality = resolveG3DAppQualityPreset(options.quality, options);
+export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp> {
+  const quality = resolveA3DAppQualityPreset(options.quality, options);
   const engine = new Engine({ autoStart: false });
   await engine.init();
   const renderer = options.canvas
@@ -108,15 +108,15 @@ export async function createG3DApp(options: G3DAppOptions = {}): Promise<G3DApp>
     : undefined;
   let disposed = false;
   let workflowRuns = 0;
-  let lastWorkflow: G3DAppWorkflowPreset | undefined;
+  let lastWorkflow: A3DAppWorkflowPreset | undefined;
   let lastRender: RenderDeviceDiagnostics | undefined;
 
   return {
     engine,
     renderer,
     quality,
-    async renderWorkflow(preset: G3DAppWorkflowPreset, workflowOptions?: unknown): Promise<G3DWorkflowResult> {
-      if (disposed) throw new Error("G3D app has been disposed.");
+    async renderWorkflow(preset: A3DAppWorkflowPreset, workflowOptions?: unknown): Promise<A3DWorkflowResult> {
+      if (disposed) throw new Error("A3D app has been disposed.");
       const workflow = await createWorkflow(preset, workflowOptions);
       workflowRuns += 1;
       lastWorkflow = preset;
@@ -127,7 +127,7 @@ export async function createG3DApp(options: G3DAppOptions = {}): Promise<G3DApp>
       }
       return workflow;
     },
-    diagnostics(): G3DAppDiagnostics {
+    diagnostics(): A3DAppDiagnostics {
       return {
         appState: disposed ? "disposed" : "ready",
         quality,
@@ -146,7 +146,7 @@ export async function createG3DApp(options: G3DAppOptions = {}): Promise<G3DApp>
   };
 }
 
-async function createWorkflow(preset: G3DAppWorkflowPreset, options: unknown): Promise<G3DWorkflowResult> {
+async function createWorkflow(preset: A3DAppWorkflowPreset, options: unknown): Promise<A3DWorkflowResult> {
   switch (preset) {
     case "asset-viewer":
       return createAssetViewerWorkflow(options as AssetViewerWorkflowOptions);

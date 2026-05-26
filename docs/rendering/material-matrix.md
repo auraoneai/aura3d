@@ -18,7 +18,7 @@ The renderer material surface is broader than the early `examples/material-lab` 
 ## Current Evidence
 
 - `tests/reports/v8-assets.json` records 20 v8 assets, 15 textured-PBR assets, 6 material-extension assets, texture transform coverage, and material-variant coverage.
-- `tests/reports/current-routes-threejs-parity.json` records a same-scene G3D/Three.js flagship comparison. In that report G3D renders the chronograph watch with 48 draw calls, 100002 triangles, 37 textures, and 29 materials; Three.js renders the same asset with 41 draw calls, 199990 triangles, and 12 textures.
+- `tests/reports/current-routes-threejs-parity.json` records a same-scene A3D/Three.js flagship comparison. In that report A3D renders the chronograph watch with 48 draw calls, 100002 triangles, 37 textures, and 29 materials; Three.js renders the same asset with 41 draw calls, 199990 triangles, and 12 textures.
 - `tests/reports/production-runtime-hd-flagship.json` records HD WebGL2 PBR output for composed real assets with HDR environment input and texture diagnostics.
 - `tests/visual/rendering-material-matrix.spec.ts` still verifies the bounded material matrix scene.
 

@@ -22,14 +22,14 @@ test.describe("racing showcase V4 example", () => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/racing-showcase/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => {
-      const state = window.__GALILEO3D_RACING_SHOWCASE__;
+      const state = window.__AURA3D_RACING_SHOWCASE__;
       return state?.status === "ready"
         && state.metrics?.raceState === "finished"
         && Number(state.metrics?.carParts ?? 0) >= 30
         && state.featureEvidence?.raceTelemetry === true;
     }, undefined, { timeout: 20_000 });
     await page.waitForTimeout(250);
-    const state = await page.evaluate(() => window.__GALILEO3D_RACING_SHOWCASE__);
+    const state = await page.evaluate(() => window.__AURA3D_RACING_SHOWCASE__);
     const pixels = await canvasPixelStats(page);
     const hudPixels = await hudCanvasPixelStats(page);
     mkdirSync(join(process.cwd(), "tests/reports/external-parity-example-screenshots"), { recursive: true });
@@ -70,7 +70,7 @@ test.describe("racing showcase V4 example", () => {
     expect(state?.featureEvidence?.concreteAsphaltTexture).toBe(true);
     expect(state?.featureEvidence?.starfieldNebulaTexture).toBe(true);
     expect(state?.featureEvidence?.fullVehiclePhysicsClaimed).toBe(false);
-    expect(state?.v4RenderPreset?.presetId).toBe("galileo3d-external-parity-visual-quality-preset");
+    expect(state?.v4RenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
     expect(state?.v4RenderPreset?.blockedFeatures?.map((entry) => entry.feature)).toEqual(expect.arrayContaining(["directional-shadows", "depth-textures", "hdr"]));
     expect(state?.textureFixtures.map((entry) => entry.hash)).toHaveLength(new Set(state?.textureFixtures.map((entry) => entry.hash)).size);
     expect(Number(state?.metrics?.aeroParts ?? 0)).toBeGreaterThanOrEqual(10);
@@ -194,7 +194,7 @@ async function hudCanvasPixelStats(page: Page): Promise<{ readonly nonBlankPixel
 
 declare global {
   interface Window {
-    __GALILEO3D_RACING_SHOWCASE__?: {
+    __AURA3D_RACING_SHOWCASE__?: {
       readonly status?: "ready" | "error";
       readonly renderer?: "webgl2";
       readonly screenshotPath?: string;

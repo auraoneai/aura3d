@@ -6,11 +6,11 @@ import { V5_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scene
 test("V5 runtime parity reports setup, draw calls, frame time, and warnings", async ({ page }) => {
   const comparisons = V5_COMPARISON_SCENES.map((scene) => ({
     sceneId: scene.id,
-    g3dSetupLines: scene.g3dSetupLines,
+    a3dSetupLines: scene.a3dSetupLines,
     threeSetupLines: scene.threeSetupLines,
-    g3dDrawCalls: scene.g3dDrawCalls,
+    a3dDrawCalls: scene.a3dDrawCalls,
     threeDrawCalls: scene.threeDrawCalls,
-    g3dFrameMs: scene.g3dFrameMs,
+    a3dFrameMs: scene.a3dFrameMs,
     threeFrameMs: scene.threeFrameMs,
     warnings: scene.warnings,
     largeScene: scene.largeScene
@@ -18,7 +18,7 @@ test("V5 runtime parity reports setup, draw calls, frame time, and warnings", as
   await page.setContent(`<html><body><script>window.__runtime=${JSON.stringify(comparisons)}</script></body></html>`);
   await expect.poll(async () => page.evaluate(() => window.__runtime.length)).toBe(13);
   const report = {
-    schema: "g3d-three-compat-threejs-runtime-parity-browser/v1",
+    schema: "a3d-three-compat-threejs-runtime-parity-browser/v1",
     generatedAt: new Date().toISOString(),
     comparisons
   };

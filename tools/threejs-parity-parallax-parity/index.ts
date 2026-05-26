@@ -10,9 +10,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import * as THREE from "three";
 import { ParallaxBarrierEffect } from "/node_modules/three/examples/jsm/effects/ParallaxBarrierEffect.js";
 
@@ -28,11 +28,11 @@ type V9ParallaxParityResult = V9ParallaxParityReady | V9ParallaxParityError;
 
 interface V9ParallaxParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-parallax-parity/v1";
-  readonly purpose: "same-scene G3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline";
+  readonly schema: "a3d-threejs-parity-parallax-parity/v1";
+  readonly purpose: "same-scene A3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly leftDrawCalls: number; readonly rightDrawCalls: number; readonly compositePixels: number };
     readonly barrier: { readonly axis: "y"; readonly stripPitchPx: 2; readonly dutyCycle: 0.5; readonly composition: string };
     readonly pixels: PixelStats;
@@ -47,13 +47,13 @@ interface V9ParallaxParityReady {
     readonly sameResolution: boolean;
     readonly actualThreeRenderer: boolean;
     readonly actualThreeParallaxBarrierEffect: boolean;
-    readonly g3dRendererOwnedRowComposite: boolean;
-    readonly g3dUsesReferenceStripPitch: boolean;
+    readonly a3dRendererOwnedRowComposite: boolean;
+    readonly a3dUsesReferenceStripPitch: boolean;
     readonly threeShaderUsesRows: boolean;
     readonly fakeEqualityClaimed: false;
   };
   readonly dataUrls: {
-    readonly g3d: string;
+    readonly a3d: string;
     readonly threejs: string;
     readonly sideBySide: string;
   };
@@ -62,7 +62,7 @@ interface V9ParallaxParityReady {
 
 interface V9ParallaxParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-parallax-parity/v1";
+  readonly schema: "a3d-threejs-parity-parallax-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -113,35 +113,35 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-parallax", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-parallax", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-parallax", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
-    if (status) status.textContent = "rendering G3D row-interleaved parallax barrier";
-    const g3d = await renderG3DParallax(g3dCanvas);
+    if (status) status.textContent = "rendering A3D row-interleaved parallax barrier";
+    const a3d = await renderA3DParallax(a3dCanvas);
     if (status) status.textContent = "rendering Three.js ParallaxBarrierEffect";
     const threejs = await renderThreeParallax(threeCanvas);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: V9ParallaxParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-parallax-parity/v1",
-      purpose: "same-scene G3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline",
+      schema: "a3d-threejs-parity-parallax-parity/v1",
+      purpose: "same-scene A3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: {
+      a3d: {
         renderer: {
-          leftDrawCalls: g3d.leftDrawCalls,
-          rightDrawCalls: g3d.rightDrawCalls,
-          compositePixels: g3d.compositePixels
+          leftDrawCalls: a3d.leftDrawCalls,
+          rightDrawCalls: a3d.rightDrawCalls,
+          compositePixels: a3d.compositePixels
         },
         barrier: {
-          axis: g3d.axis,
-          stripPitchPx: g3d.stripPitchPx,
-          dutyCycle: g3d.dutyCycle,
-          composition: g3d.composition
+          axis: a3d.axis,
+          stripPitchPx: a3d.stripPitchPx,
+          dutyCycle: a3d.dutyCycle,
+          composition: a3d.composition
         },
-        pixels: analyzeImageData(g3dPixels)
+        pixels: analyzeImageData(a3dPixels)
       },
       threejs: {
         renderer: {
@@ -158,23 +158,23 @@ async function run(): Promise<void> {
       },
       diff,
       assertions: {
-        sameResolution: g3dCanvas.width === threeCanvas.width && g3dCanvas.height === threeCanvas.height,
+        sameResolution: a3dCanvas.width === threeCanvas.width && a3dCanvas.height === threeCanvas.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeParallaxBarrierEffect: threejs.actualParallaxBarrierEffect,
-        g3dRendererOwnedRowComposite: g3d.axis === "y" && g3d.composition === "renderer-owned-interleaved-pixels",
-        g3dUsesReferenceStripPitch: g3d.stripPitchPx === 2 && g3d.dutyCycle === 0.5,
+        a3dRendererOwnedRowComposite: a3d.axis === "y" && a3d.composition === "renderer-owned-interleaved-pixels",
+        a3dUsesReferenceStripPitch: a3d.stripPitchPx === 2 && a3d.dutyCycle === 0.5,
         threeShaderUsesRows: threejs.shaderUsesRows,
         fakeEqualityClaimed: false
       },
       dataUrls: {
-        g3d: g3d.dataUrl,
+        a3d: a3d.dataUrl,
         threejs: threejs.dataUrl,
         sideBySide
       },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "Three.js ParallaxBarrierEffect interleaves on gl_FragCoord.y with a two-pixel cadence.",
-        "This artifact proves the G3D compositor uses the same row axis and strip pitch on a bounded same-scene workload. It is not a blanket visual equality claim."
+        "This artifact proves the A3D compositor uses the same row axis and strip pitch on a bounded same-scene workload. It is not a blanket visual equality claim."
       ]
     };
     window.__V9_PARALLAX_PARITY__ = ready;
@@ -183,7 +183,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: V9ParallaxParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-parallax-parity/v1",
+      schema: "a3d-threejs-parity-parallax-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
@@ -195,10 +195,10 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3DParallax(canvas: HTMLCanvasElement) {
+async function renderA3DParallax(canvas: HTMLCanvasElement) {
   const [leftRenderer, rightRenderer] = await Promise.all([
-    G3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.width, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
-    G3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.width, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
+    A3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.width, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
+    A3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.width, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
   ]);
   const leftResources = createResources("left");
   const rightResources = createResources("right");
@@ -243,7 +243,7 @@ async function renderG3DParallax(canvas: HTMLCanvasElement) {
     flipY: true
   });
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("Unable to create G3D parallax composite context.");
+  if (!context) throw new Error("Unable to create A3D parallax composite context.");
   context.putImageData(new ImageData(composite.pixels, SCENE.width, SCENE.height), 0, 0);
   return {
     leftDrawCalls: leftDiagnostics.drawCalls,
@@ -472,19 +472,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create parallax side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, SCENE.width, 0, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.92)";
   context.fillRect(0, SCENE.height, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("G3D row-interleaved compositor", 20, SCENE.height + 28);
+  context.fillText("A3D row-interleaved compositor", 20, SCENE.height + 28);
   context.fillText("Three.js ParallaxBarrierEffect", SCENE.width + 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";

@@ -28,7 +28,7 @@ test.describe("workspace Vite package resolution", () => {
     await server.close();
   });
 
-  test("resolves direct @galileo3d workspace package imports from Vite without example coupling", async ({ page }) => {
+  test("resolves direct @aura3d workspace package imports from Vite without example coupling", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => {
@@ -38,10 +38,10 @@ test.describe("workspace Vite package resolution", () => {
 
     await page.goto(`${origin}/tests/browser/fixtures/workspace-vite-imports/index.html`, { waitUntil: "domcontentloaded" });
     await expect.poll(
-      () => page.evaluate(() => window.__GALILEO3D_WORKSPACE_VITE_IMPORT_SMOKE__?.ok),
+      () => page.evaluate(() => window.__AURA3D_WORKSPACE_VITE_IMPORT_SMOKE__?.ok),
       { timeout: 30_000 }
     ).toBe(true);
-    const smoke = await page.evaluate(() => window.__GALILEO3D_WORKSPACE_VITE_IMPORT_SMOKE__);
+    const smoke = await page.evaluate(() => window.__AURA3D_WORKSPACE_VITE_IMPORT_SMOKE__);
 
     expect(errors).toEqual([]);
     expect(smoke?.imports.every((entry) => entry === "function")).toBe(true);

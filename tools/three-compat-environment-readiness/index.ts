@@ -49,7 +49,7 @@ const checks: V5EnvironmentReadinessCheck[] = [
     requiredFiles.every((file) => existsSync(resolve(file))),
     requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 environment files exist"
   ),
-  check("schema", manifest.schema === "g3d-three-compat-environment-library/v1", `schema=${manifest.schema}`),
+  check("schema", manifest.schema === "a3d-three-compat-environment-library/v1", `schema=${manifest.schema}`),
   check(
     "preset-floor",
     summary.presetCount >= manifest.requirements.minimumPresets,
@@ -89,7 +89,7 @@ const checks: V5EnvironmentReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-environment-readiness/v1",
+  schema: "a3d-three-compat-environment-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary,

@@ -30,7 +30,7 @@ test.describe("V8 flagship viewer", () => {
     await page.goto(`${server.origin}/apps/flagship-viewer/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV8FlagshipViewer as {
+        const runtime = window.__a3dV8FlagshipViewer as {
           status?: string;
           snapshot?: { metrics?: { frameCount?: number; drawCalls?: number } };
         } | undefined;
@@ -53,7 +53,7 @@ test.describe("V8 flagship viewer", () => {
     await page.locator("#orbit-right").click();
     await page.waitForFunction(
       (beforeYaw) => {
-        const runtime = window.__g3dV8FlagshipViewer as { snapshot?: { camera?: { yawRadians?: number } } } | undefined;
+        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { camera?: { yawRadians?: number } } } | undefined;
         return (runtime?.snapshot?.camera?.yawRadians ?? 0) > beforeYaw;
       },
       firstFrame.snapshot.camera.yawRadians,
@@ -65,7 +65,7 @@ test.describe("V8 flagship viewer", () => {
     await setRange(page, "#exposure-control", "1.42");
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV8FlagshipViewer as { snapshot?: { environment?: { exposure?: number } } } | undefined;
+        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { environment?: { exposure?: number } } } | undefined;
         return Math.abs((runtime?.snapshot?.environment?.exposure ?? 0) - 1.42) < 0.02;
       },
       undefined,
@@ -77,7 +77,7 @@ test.describe("V8 flagship viewer", () => {
     await page.locator("#environment-picker").selectOption("venice-sunset");
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV8FlagshipViewer as { snapshot?: { environment?: { id?: string } } } | undefined;
+        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { environment?: { id?: string } } } | undefined;
         return runtime?.snapshot?.environment?.id === "venice-sunset";
       },
       undefined,
@@ -90,7 +90,7 @@ test.describe("V8 flagship viewer", () => {
     await setRange(page, "#roughness-control", "1.26");
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV8FlagshipViewer as { snapshot?: { controls?: { roughnessScale?: number } } } | undefined;
+        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { controls?: { roughnessScale?: number } } } | undefined;
         return Math.abs((runtime?.snapshot?.controls?.roughnessScale ?? 0) - 1.26) < 0.02;
       },
       undefined,
@@ -102,7 +102,7 @@ test.describe("V8 flagship viewer", () => {
     await page.locator("#screenshot-button").click();
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV8FlagshipViewer as {
+        const runtime = window.__a3dV8FlagshipViewer as {
           screenshot?: { byteLength?: number };
           snapshot?: { screenshotCount?: number };
         } | undefined;
@@ -123,7 +123,7 @@ test.describe("V8 flagship viewer", () => {
     expect(pngStats.localContrast).toBeGreaterThan(8);
 
     const report = {
-      schema: "g3d-flagship-viewer/v1",
+      schema: "a3d-flagship-viewer/v1",
       generatedAt: new Date().toISOString(),
       url: `${server.origin}/apps/flagship-viewer/`,
       screenshot: screenshotPath,
@@ -175,7 +175,7 @@ async function runtimeSnapshot(page: Page): Promise<{
   };
 }> {
   return await page.evaluate(() => {
-    const runtime = window.__g3dV8FlagshipViewer;
+    const runtime = window.__a3dV8FlagshipViewer;
     if (!runtime?.snapshot) throw new Error("Missing V8 flagship runtime snapshot.");
     return {
       status: runtime.status,

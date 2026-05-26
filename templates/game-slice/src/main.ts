@@ -1,7 +1,7 @@
-import { AnimationClip, AnimationMixer, AnimationTrack } from "@galileo3d/animation";
-import { InputSystem } from "@galileo3d/input";
-import { PhysicsWorld, Shape } from "@galileo3d/physics";
-import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderItem } from "@galileo3d/rendering";
+import { AnimationClip, AnimationMixer, AnimationTrack } from "@aura3d/animation";
+import { InputSystem } from "@aura3d/input";
+import { PhysicsWorld, Shape } from "@aura3d/physics";
+import { Geometry, PBRMaterial, Renderer, UnlitMaterial, type RenderItem } from "@aura3d/rendering";
 
 const root = document.querySelector<HTMLElement>("#app");
 if (!root) throw new Error("Missing app root.");
@@ -77,7 +77,7 @@ function frame(time: number): void {
       interactions,
       drawCalls: diagnostics.drawCalls,
       physicsBodies: physics.snapshot().stats.bodies,
-      publicRuntime: ["@galileo3d/rendering", "@galileo3d/input", "@galileo3d/physics", "@galileo3d/animation"],
+      publicRuntime: ["@aura3d/rendering", "@aura3d/input", "@aura3d/physics", "@aura3d/animation"],
     },
     null,
     2,

@@ -1,4 +1,4 @@
-import { Renderer } from "@galileo3d/rendering";
+import { Renderer } from "@aura3d/rendering";
 import { createProductCameraFrame } from "./ProductCamera";
 import { exportProductRender, exportProductSceneManifest } from "./ProductExport";
 import { createProductLightingPreset } from "./ProductLighting";

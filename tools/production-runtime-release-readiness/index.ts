@@ -65,7 +65,7 @@ const checks = [
   { id: "known-gaps-visible", pass: knownGaps.includes("incomplete") && blocked.includes("Full Three.js API replacement"), detail: "known gaps and blocked claims docs are visible" }
 ];
 const report = {
-  schema: "g3d-production-runtime-release-readiness/v1",
+  schema: "a3d-production-runtime-release-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checkedReports: reports.map(({ path, exists, report }) => ({ path, exists, pass: path.endsWith("/manifest.json") ? exists : report.pass === true })),

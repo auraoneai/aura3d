@@ -1,4 +1,4 @@
-import { DirectionalLight, Light, PointLight, SpotLight } from "@galileo3d/scene";
+import { DirectionalLight, Light, PointLight, SpotLight } from "@aura3d/scene";
 import type { CollectedLight, CollectedLightKind } from "./LightCollector";
 
 export type LightingRigPreset =
@@ -95,7 +95,7 @@ export function createLightingRig(options: LightingRigOptions = {}): LightingRig
       softboxProxyCount: softboxes.length,
       unsupportedFeatures,
       disclosures: unsupportedFeatures.map(lightingDisclosure),
-      claimBoundary: "Lighting rigs are reusable direct-light descriptors for G3D ForwardPass; true area lights, IES profiles, GI, contact shadows, and cascaded-shadow production claims require separate renderer evidence."
+      claimBoundary: "Lighting rigs are reusable direct-light descriptors for A3D ForwardPass; true area lights, IES profiles, GI, contact shadows, and cascaded-shadow production claims require separate renderer evidence."
     }
   };
 }

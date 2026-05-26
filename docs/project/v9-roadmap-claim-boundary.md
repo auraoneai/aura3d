@@ -4,7 +4,7 @@ Generated from the V9 Three.js inventory.
 
 ## Current Claim
 
-G3D is not yet a full Three.js replacement. This inventory is a code backlog, not a parity proof.
+A3D is not yet a full Three.js replacement. This inventory is a code backlog, not a parity proof.
 
 ## Blocked Claims
 

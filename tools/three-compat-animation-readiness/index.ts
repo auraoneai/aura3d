@@ -56,7 +56,7 @@ const checks: V5AnimationCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-animation-readiness/v1",
+  schema: "a3d-three-compat-animation-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   diagnostics,

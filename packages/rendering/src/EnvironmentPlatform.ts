@@ -482,7 +482,7 @@ export function createEnvironmentFogProfile(options: EnvironmentFogPresetId | En
       sampleFactors,
       monotonicDistanceResponse: sampleFactors.every((value, index) => index === 0 || value >= sampleFactors[index - 1]!),
       uniformKeys: Object.keys(uniforms),
-      claimBoundary: "Uniform-ready G3D environment fog helper with deterministic CPU attenuation samples; not an accepted volumetric fog, atmospheric scattering, or Three.js Fog/FogExp2 parity claim.",
+      claimBoundary: "Uniform-ready A3D environment fog helper with deterministic CPU attenuation samples; not an accepted volumetric fog, atmospheric scattering, or Three.js Fog/FogExp2 parity claim.",
       limitations
     }
   };
@@ -1127,7 +1127,7 @@ function unsupported(
 
 function stageLimitations(preset: EnvironmentStagePresetId): readonly string[] {
   const shared = [
-    "Environment stage helpers are reusable G3D geometry/material systems, not proof of full Three.js environment parity.",
+    "Environment stage helpers are reusable A3D geometry/material systems, not proof of full Three.js environment parity.",
     "Linear/exponential fog profiles are uniform-ready helpers; accepted shader integration, cube-camera reflections, and volumetric weather remain separate backlog items."
   ];
   if (preset === "indoor-studio") return [

@@ -167,10 +167,10 @@ def write_manifest():
             "role": "support-only",
             "reason": "Generated procedural support fixture with zero exported texture-backed material evidence.",
             "cannotReplace": [
-                "fixtures/v8/assets/vehicles/car-concept.glb",
-                "fixtures/v8/assets/product/chronograph-watch.glb",
-                "fixtures/v8/assets/product/materials-variants-shoe.glb",
-                "fixtures/v8/assets/product/sunglasses-khronos.glb",
+                "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+                "fixtures/threejs-parity/assets/product/chronograph-watch.glb",
+                "fixtures/threejs-parity/assets/product/materials-variants-shoe.glb",
+                "fixtures/threejs-parity/assets/product/sunglasses-khronos.glb",
                 "texture-backed imported Product material evidence",
                 "accepted current-route visual-review screenshots",
             ],
@@ -221,12 +221,12 @@ def assign(obj, material):
     return obj
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -241,10 +241,10 @@ def bevel(obj, amount=0.025, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.02, rot=(0, 0, 0), extras=None):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -256,7 +256,7 @@ def cube(name, loc, scale, material, bevel_width=0.02, rot=(0, 0, 0), extras=Non
 
 
 def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0), extras=None):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -268,7 +268,7 @@ def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0), ext
 
 
 def sphere(name, loc, radius, material, segments=32, extras=None):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=16, radius=radius, location=loc_g3d(loc))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=16, radius=radius, location=loc_a3d(loc))
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -285,7 +285,7 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0), extras=None):
         minor_segments=12,
         major_radius=major,
         minor_radius=minor,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -299,7 +299,7 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0), extras=None):
 
 
 def cone(name, loc, radius1, radius2, depth, material, vertices=36, rot=(0, 0, 0), extras=None):
-    bpy.ops.mesh.primitive_cone_add(vertices=vertices, radius1=radius1, radius2=radius2, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cone_add(vertices=vertices, radius1=radius1, radius2=radius2, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -390,7 +390,7 @@ def add_visible_softbox(prefix, x, y, z, yaw, white, dark, glow):
 
 
 def text_label(name, body, loc, material, size=0.08, rot=(0, 0, 0), extras=None):
-    bpy.ops.object.text_add(location=loc_g3d(loc), rotation=rot)
+    bpy.ops.object.text_add(location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     obj.data.body = body
@@ -857,7 +857,7 @@ def make_scene():
     bpy.context.scene["v9_gallery_target"] = "advanced gallery product configurator"
 
     # Keep the studio shell segmented and low-profile. A full cyclorama sweep
-    # dominated G3D camera bounds and made the product read as a tiny prop.
+    # dominated A3D camera bounds and made the product read as a tiny prop.
     cube("single slab studio floor", (0, -0.055, 0.24), (6.2, 0.1, 4.45), mats["floor"], 0.025)
     # Keep rear detail below the sightline. A previous full-height feature wall
     # landed between the gallery camera and product and blocked the entire hero.

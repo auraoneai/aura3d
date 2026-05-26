@@ -1,4 +1,4 @@
-import { DirectionalLight, PerspectiveCamera, Scene } from "@galileo3d/scene";
+import { DirectionalLight, PerspectiveCamera, Scene } from "@aura3d/scene";
 
 interface SceneBrowserResult {
   readonly status: "ready" | "error";
@@ -15,7 +15,7 @@ interface SceneBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_SCENE_BROWSER_TEST__?: SceneBrowserResult;
+    __AURA3D_SCENE_BROWSER_TEST__?: SceneBrowserResult;
   }
 }
 
@@ -73,7 +73,7 @@ try {
   context.lineTo(196 + -lightDirection[0] * 32, 34 + lightDirection[2] * 32);
   context.stroke();
 
-  window.__GALILEO3D_SCENE_BROWSER_TEST__ = {
+  window.__AURA3D_SCENE_BROWSER_TEST__ = {
     status: "ready",
     parentWorld,
     childWorld,
@@ -85,7 +85,7 @@ try {
     lightPixel: readPixel(context, 196, 20)
   };
 } catch (error) {
-  window.__GALILEO3D_SCENE_BROWSER_TEST__ = {
+  window.__AURA3D_SCENE_BROWSER_TEST__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

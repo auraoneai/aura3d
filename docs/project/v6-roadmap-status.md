@@ -11,16 +11,16 @@ V6 exists because V5 still allowed fake visual proof. V6 must not pass on canvas
 
 ## Product Target
 
-Build G3D Renderer V6: a production browser renderer and scene pipeline for product visualization, architecture/interiors, asset inspection, animation, cinematic postprocess, and large-scene rendering with real imported assets and physically based lighting.
+Build A3D Renderer V6: a production browser renderer and scene pipeline for product visualization, architecture/interiors, asset inspection, animation, cinematic postprocess, and large-scene rendering with real imported assets and physically based lighting.
 
 ## Completion Boundary
 
 Allowed after release gates pass:
 
-- G3D V6 provides a production WebGL2 renderer for the documented flagship workflows.
-- G3D V6 has WebGPU backend evidence with explicit feature coverage and gaps.
-- G3D V6 renders real glTF/GLB assets with HDR/PBR lighting for the documented scene corpus.
-- G3D V6 has same-scene Three.js parity evidence for mandatory workflows.
+- A3D V6 provides a production WebGL2 renderer for the documented flagship workflows.
+- A3D V6 has WebGPU backend evidence with explicit feature coverage and gaps.
+- A3D V6 renders real glTF/GLB assets with HDR/PBR lighting for the documented scene corpus.
+- A3D V6 has same-scene Three.js parity evidence for mandatory workflows.
 
 Blocked until separately proven:
 

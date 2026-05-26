@@ -1,4 +1,4 @@
-import type { AnimationMixer, AnimationMixerSnapshot, Skeleton } from "@galileo3d/animation";
+import type { AnimationMixer, AnimationMixerSnapshot, Skeleton } from "@aura3d/animation";
 
 export type SkeletonDebugSnapshot = {
   readonly boneCount: number;

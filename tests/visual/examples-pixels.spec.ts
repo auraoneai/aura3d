@@ -26,7 +26,7 @@ type PixelCheck = {
 
 declare global {
   interface Window {
-    __GALILEO3D_EXAMPLE__?: {
+    __AURA3D_EXAMPLE__?: {
       id: string;
       status: "ready" | "error";
       acceptance: string;
@@ -153,7 +153,7 @@ test.describe("example visual pixels", () => {
 
   test("renderer diagnostics are exposed for render-backed examples", async ({ page }) => {
     await openReadyExample(page, server, "00-basic-triangle");
-    const diagnostics = await page.evaluate(() => window.__GALILEO3D_EXAMPLE__?.diagnostics);
+    const diagnostics = await page.evaluate(() => window.__AURA3D_EXAMPLE__?.diagnostics);
     expect(diagnostics?.drawCalls).toBe(1);
     expect(diagnostics?.lastError).toBeNull();
   });
@@ -191,10 +191,10 @@ async function openReadyExample(page: Page, server: ExampleDevServer, id: string
   await page.waitForTimeout(id === "10-particles" || id === "11-showcase-world" ? 500 : 150);
 }
 
-async function waitForExampleState(page: Page, timeoutMs: number): Promise<Window["__GALILEO3D_EXAMPLE__"]> {
+async function waitForExampleState(page: Page, timeoutMs: number): Promise<Window["__AURA3D_EXAMPLE__"]> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const state = await page.evaluate(() => window.__GALILEO3D_EXAMPLE__);
+    const state = await page.evaluate(() => window.__AURA3D_EXAMPLE__);
     if (state?.status === "ready" || state?.status === "error") {
       return state;
     }

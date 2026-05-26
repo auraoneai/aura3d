@@ -28,7 +28,7 @@ const checks = [
 ];
 
 const report = {
-  schemaVersion: "g3d-engine-readiness-legacy-product-viewer",
+  schemaVersion: "a3d-engine-readiness-legacy-product-viewer",
   generatedAt: new Date().toISOString(),
   ok: checks.every((check) => check.ok),
   checks

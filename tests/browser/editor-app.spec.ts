@@ -41,7 +41,7 @@ test.describe("editor app shell", () => {
     await page.getByRole("button", { name: "Move X" }).click();
     await page.getByRole("button", { name: "Rotate Z" }).click();
     await page.getByRole("button", { name: "Scale", exact: true }).click();
-    const transformed = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-hero")?.transform);
+    const transformed = await page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-hero")?.transform);
     expect(transformed?.position[0]).toBe(0.5);
     expect(Math.abs(transformed?.rotation[2] ?? 0)).toBeGreaterThan(0.2);
     expect(transformed?.scale).toEqual([1.25, 1.25, 1.25]);
@@ -86,20 +86,20 @@ test.describe("editor app shell", () => {
       input.dispatchEvent(new Event("change", { bubbles: true }));
     });
     await expect.poll(() => page.evaluate(() => {
-      const selected = window.__GALILEO3D_EDITOR_APP__?.getState().selectedNodeId;
-      return window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === selected)?.name;
+      const selected = window.__AURA3D_EDITOR_APP__?.getState().selectedNodeId;
+      return window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === selected)?.name;
     })).toBe("Browser Authored Node");
     await expect(page.getByRole("button", { name: "Browser Authored Node" })).toBeVisible();
     const authoredNodeId = await editorState(page).then((state) => state.selectedNodeId);
     expect(authoredNodeId).toBeTruthy();
 
     await dragHierarchyNode(page, "node-child", authoredNodeId!);
-    const dragReparented = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-child")?.parentId);
+    const dragReparented = await page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-child")?.parentId);
     expect(dragReparented).toBe(authoredNodeId);
 
     await page.getByRole("button", { name: "Imported Placeholder" }).click();
     await page.locator('[data-action="reparent-node"][data-node-id="node-child"]').click();
-    const reparented = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-child")?.parentId);
+    const reparented = await page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-child")?.parentId);
     expect(reparented).toBeNull();
 
     await page.getByRole("button", { name: "Browser Authored Node" }).click();
@@ -132,7 +132,7 @@ test.describe("editor app shell", () => {
     await page.locator('input[data-path="script.behavior"]').fill("BounceBehavior");
     await page.locator('input[data-path="script.behavior"]').blur();
 
-    const node = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((candidate) => candidate.id === "node-hero"));
+    const node = await page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((candidate) => candidate.id === "node-hero"));
     expect(node?.transform.position[0]).toBe(2);
     expect(node?.material.baseColor).toBe("#ff8844");
     expect(node?.light.kind).toBe("point");
@@ -197,7 +197,7 @@ test.describe("editor app shell", () => {
 });
 
 async function waitForEditor(page: import("@playwright/test").Page): Promise<void> {
-  await page.waitForFunction(() => window.__GALILEO3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
+  await page.waitForFunction(() => window.__AURA3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
 }
 
 interface EditorState {
@@ -225,7 +225,7 @@ interface EditorState {
 }
 
 async function editorState(page: import("@playwright/test").Page): Promise<EditorState> {
-  return page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState());
+  return page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState());
 }
 
 async function clickTopbar(page: import("@playwright/test").Page, name: string): Promise<void> {
@@ -235,7 +235,7 @@ async function clickTopbar(page: import("@playwright/test").Page, name: string):
 async function dragHierarchyNode(page: import("@playwright/test").Page, nodeId: string, parentId: string): Promise<void> {
   await page.evaluate(({ draggedNodeId, targetParentId }) => {
     const transfer = new DataTransfer();
-    transfer.setData("application/x-galileo3d-node", draggedNodeId);
+    transfer.setData("application/x-aura3d-node", draggedNodeId);
     const target = document.querySelector<HTMLElement>(`.hierarchy-row[data-node-id="${targetParentId}"]`);
     if (!target) {
       throw new Error(`Hierarchy drop target missing: ${targetParentId}`);
@@ -265,24 +265,24 @@ async function dispatchEditorViewportDrag(page: import("@playwright/test").Page,
 }
 
 async function heroPositionX(page: import("@playwright/test").Page): Promise<number | undefined> {
-  return page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-hero")?.transform.position[0]);
+  return page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-hero")?.transform.position[0]);
 }
 
 async function heroMaterialColor(page: import("@playwright/test").Page): Promise<string | undefined> {
-  return page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-hero")?.material.baseColor);
+  return page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-hero")?.material.baseColor);
 }
 
 async function importScale(page: import("@playwright/test").Page): Promise<number | undefined> {
-  return page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.importSettings.scale);
+  return page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.importSettings.scale);
 }
 
 async function childParentId(page: import("@playwright/test").Page): Promise<string | null | undefined> {
-  return page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-child")?.parentId);
+  return page.evaluate(() => window.__AURA3D_EDITOR_APP__?.shell.project.scene.nodes.find((node) => node.id === "node-child")?.parentId);
 }
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): EditorState;
       readonly shell: {
         readonly project: {

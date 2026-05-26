@@ -6,13 +6,13 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV8Camera?: V8CameraRuntime;
+    __a3dV8Camera?: V8CameraRuntime;
   }
 }
 
@@ -71,7 +71,7 @@ async function run(): Promise<void> {
 
   const publish = (patch: Partial<V8CameraRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
-    window.__g3dV8Camera = runtime;
+    window.__a3dV8Camera = runtime;
     renderUi(root, runtime, mode, (next) => {
       mode = next;
       publish({ activeCamera: mode });
@@ -82,7 +82,7 @@ async function run(): Promise<void> {
   publish({});
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: renderSize.width,
       height: renderSize.height,
@@ -147,7 +147,7 @@ async function run(): Promise<void> {
             animationCount: 1,
             skinCount: 0,
             morphTargetCount: 0,
-            extensionsUsed: ["G3D_camera_helpers", "G3D_camera_presets"]
+            extensionsUsed: ["A3D_camera_helpers", "A3D_camera_presets"]
           }
         });
         runtime = {
@@ -162,7 +162,7 @@ async function run(): Promise<void> {
           frustumHelpers: 3,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__g3dV8Camera = runtime;
+        window.__a3dV8Camera = runtime;
         if (frameCount === 1 || frameCount % 12 === 0 || delta === 0) {
           renderUi(root, runtime, mode, (next) => {
             mode = next;
@@ -271,7 +271,7 @@ function renderUi(root: HTMLElement, runtime: V8CameraRuntime, mode: CameraMode,
     <section class="panel">
       <p id="runtime-state" class="runtime-pill is-${runtime.status}">${runtime.statusLabel}</p>
       <h1>V8 Camera</h1>
-      <p>G3D-only camera/frustum route for webgl_camera parity work.</p>
+      <p>A3D-only camera/frustum route for webgl_camera parity work.</p>
       <dl>
         <dt>Frames</dt><dd>${runtime.frameCount}</dd>
         <dt>Draw calls</dt><dd>${runtime.drawCalls}</dd>

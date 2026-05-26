@@ -3,7 +3,7 @@
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-Material authoring in V4 is built around physical material inspection, environment comparison, and deterministic readiness reports. Use `workflows.materialStudio` from `@galileo3d/engine` for application code and `apps/material-studio-pro/` for the pro app surface.
+Material authoring in V4 is built around physical material inspection, environment comparison, and deterministic readiness reports. Use `workflows.materialStudio` from `@aura3d/engine` for application code and `apps/material-studio-pro/` for the pro app surface.
 
 Required implementation surfaces:
 

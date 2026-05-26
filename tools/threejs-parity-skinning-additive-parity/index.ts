@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { computePerspectiveCameraFrame, Geometry, PBRMaterial } from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4, multiplyMat4 } from "@galileo3d/scene";
+import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { computePerspectiveCameraFrame, Geometry, PBRMaterial } from "@aura3d/rendering";
+import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
 import { createAdditiveLayerController, createMaskedAdditiveClips } from "/apps/skinning-additive/src/additiveLayers.ts";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
@@ -19,12 +19,12 @@ type SkinningAdditiveParityResult = SkinningAdditiveParityReady | SkinningAdditi
 
 interface SkinningAdditiveParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-skinning-additive-parity/v1";
-  readonly purpose: "same-asset Robot Expressive G3D masked additive layer vs actual Three.js additive AnimationMixer action";
+  readonly schema: "a3d-threejs-parity-skinning-additive-parity/v1";
+  readonly purpose: "same-asset Robot Expressive A3D masked additive layer vs actual Three.js additive AnimationMixer action";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
   readonly layer: typeof LAYER;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly drawCalls: number; readonly triangles: number };
     readonly animation: {
       readonly baseClip: string;
@@ -60,17 +60,17 @@ interface SkinningAdditiveParityReady {
     readonly actualThreeRenderer: boolean;
     readonly actualThreeAnimationMixer: boolean;
     readonly actualThreeAdditiveBlendMode: boolean;
-    readonly g3dAppliedTracksAndSkinning: boolean;
+    readonly a3dAppliedTracksAndSkinning: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
   readonly humanNotes: readonly string[];
 }
 
 interface SkinningAdditiveParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-skinning-additive-parity/v1";
+  readonly schema: "a3d-threejs-parity-skinning-additive-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -118,37 +118,37 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-skinning-additive", ASSET.width, ASSET.height);
+    const a3dCanvas = requiredCanvas("a3d-skinning-additive", ASSET.width, ASSET.height);
     const threeCanvas = requiredCanvas("threejs-skinning-additive", ASSET.width, ASSET.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", ASSET.width * 2, ASSET.height + 60);
-    if (status) status.textContent = "rendering G3D additive skinning";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D additive skinning";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering actual Three.js additive reference";
-    const threejs = await renderThree(threeCanvas, g3d.baseClip, g3d.additiveClip);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const threejs = await renderThree(threeCanvas, a3d.baseClip, a3d.additiveClip);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
     const ready: SkinningAdditiveParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-skinning-additive-parity/v1",
-      purpose: "same-asset Robot Expressive G3D masked additive layer vs actual Three.js additive AnimationMixer action",
+      schema: "a3d-threejs-parity-skinning-additive-parity/v1",
+      purpose: "same-asset Robot Expressive A3D masked additive layer vs actual Three.js additive AnimationMixer action",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
       layer: LAYER,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls, triangles: g3d.triangles },
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls, triangles: a3d.triangles },
         animation: {
-          baseClip: g3d.baseClip,
-          additiveClip: g3d.additiveClip,
-          maskedClip: g3d.maskedClip,
-          maskedTrackCount: g3d.maskedTrackCount,
-          tracksApplied: g3d.tracksApplied,
-          skinningPalettesUpdated: g3d.skinningPalettesUpdated,
+          baseClip: a3d.baseClip,
+          additiveClip: a3d.additiveClip,
+          maskedClip: a3d.maskedClip,
+          maskedTrackCount: a3d.maskedTrackCount,
+          tracksApplied: a3d.tracksApplied,
+          skinningPalettesUpdated: a3d.skinningPalettesUpdated,
           sampledAtSeconds: SAMPLE_SECONDS
         },
-        pixels: g3dStats
+        pixels: a3dStats
       },
       threejs: {
         loader: {
@@ -171,18 +171,18 @@ async function run(): Promise<void> {
       diff,
       assertions: {
         sameAssetUrl: true,
-        sameBaseClip: g3d.baseClip === threejs.baseClip,
-        sameAdditiveClip: g3d.additiveClip === threejs.additiveClip,
-        maskHasTracks: g3d.maskedTrackCount > 0 && threejs.maskedTrackCount > 0,
+        sameBaseClip: a3d.baseClip === threejs.baseClip,
+        sameAdditiveClip: a3d.additiveClip === threejs.additiveClip,
+        maskHasTracks: a3d.maskedTrackCount > 0 && threejs.maskedTrackCount > 0,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeAnimationMixer: threejs.actualAnimationMixer,
         actualThreeAdditiveBlendMode: threejs.actualAdditiveBlendMode,
-        g3dAppliedTracksAndSkinning: g3d.tracksApplied > 0 && g3d.skinningPalettesUpdated > 0,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
+        a3dAppliedTracksAndSkinning: a3d.tracksApplied > 0 && a3d.skinningPalettesUpdated > 0,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "This is a bounded Walking + Wave upper-body additive proof against actual Three.js additive AnimationMixer behavior.",
@@ -195,7 +195,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: SkinningAdditiveParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-skinning-additive-parity/v1",
+      schema: "a3d-threejs-parity-skinning-additive-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
@@ -208,8 +208,8 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
-  const renderer = await G3DRenderer.create({
+async function renderA3D(canvas: HTMLCanvasElement) {
+  const renderer = await A3DRenderer.create({
     canvas,
     width: ASSET.width,
     height: ASSET.height,
@@ -252,11 +252,11 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   ]).applyResult;
   const frame = computePerspectiveCameraFrame(FRAME_BOUNDS, { width: ASSET.width, height: ASSET.height }, CAMERA_FRAME);
   const placement = composeMat4([0, 0, 0], [0, 0.04, 0, 0.9992], [0.2, 0.2, 0.2]);
-  const stage = createG3DStageItems(LAYER.weight);
+  const stage = createA3DStageItems(LAYER.weight);
   const result = renderer.renderFrame({
     source: {
       collectRenderItems: () => [...collectImportedItems(pipeline, placement), ...stage],
-      collectedLights: createG3DLights(),
+      collectedLights: createA3DLights(),
       environmentLighting: false,
       cameraPolicy: "require",
       cameraPosition: frame.cameraPosition,
@@ -390,7 +390,7 @@ function collectImportedItems(pipeline, placement) {
   return items;
 }
 
-function createG3DStageItems(weight: number) {
+function createA3DStageItems(weight: number) {
   const cube = Geometry.litCube(1);
   const floor = new PBRMaterial({ name: "v9-additive-floor", baseColor: [0.065, 0.075, 0.085, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
   const base = new PBRMaterial({ name: "v9-additive-base-marker", baseColor: [0.18, 0.31, 0.5, 1], roughness: 0.32, metallic: 0.18, environmentIntensity: 0.8 });
@@ -402,7 +402,7 @@ function createG3DStageItems(weight: number) {
   ];
 }
 
-function createG3DLights() {
+function createA3DLights() {
   const key = new DirectionalLight("v9-additive-key");
   key.intensity = 4.5;
   key.color = [1, 0.94, 0.82];
@@ -510,17 +510,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side skinning additive comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#090d14";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, ASSET.width, 0);
   context.fillStyle = "#f4f7fb";
   context.font = "16px sans-serif";
-  context.fillText("G3D masked additive layer", 18, ASSET.height + 28);
+  context.fillText("A3D masked additive layer", 18, ASSET.height + 28);
   context.fillText("Three.js additive AnimationMixer", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#aab5c4";
   context.font = "12px sans-serif";

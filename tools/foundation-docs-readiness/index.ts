@@ -36,20 +36,20 @@ const requiredPhrases = [
 ] as const;
 const phraseChecks = requiredPhrases.map((phrase) => ({ phrase, present: docsText.toLowerCase().includes(phrase.toLowerCase()) }));
 const forbiddenPositivePatterns = [
-  /^G3D replaces Three\.js\.?$/im,
-  /^G3D is broadly better than Three\.js\.?$/im,
-  /^G3D replaces Unity\.?$/im,
-  /^G3D replaces Unreal\.?$/im,
-  /^G3D is production-ready\.?$/im,
-  /^G3D has full glTF parity\.?$/im,
-  /^G3D has full WebGPU parity\.?$/im
+  /^A3D replaces Three\.js\.?$/im,
+  /^A3D is broadly better than Three\.js\.?$/im,
+  /^A3D replaces Unity\.?$/im,
+  /^A3D replaces Unreal\.?$/im,
+  /^A3D is production-ready\.?$/im,
+  /^A3D has full glTF parity\.?$/im,
+  /^A3D has full WebGPU parity\.?$/im
 ] as const;
 const forbiddenHits = forbiddenPositivePatterns
   .map((pattern) => ({ pattern: pattern.source, hit: pattern.test(docsText) }))
   .filter((item) => item.hit);
 
 const report = {
-  schema: "g3d-foundation-docs-readiness/v1",
+  schema: "a3d-foundation-docs-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: fileChecks.every((file) => file.exists)
     && evidenceChecks.every((check) => check.mentioned)

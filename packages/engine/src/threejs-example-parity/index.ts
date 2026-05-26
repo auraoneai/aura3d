@@ -4,15 +4,15 @@ import {
   createStudioLighting,
   loadGltfScene,
   loadHdrEnvironment,
-  type G3DCameraFrame,
-  type G3DGltfScene,
-  type G3DGroundedStage,
-  type G3DHdrEnvironment,
-  type G3DVec3,
-  type G3DViewport
+  type A3DCameraFrame,
+  type A3DGltfScene,
+  type A3DGroundedStage,
+  type A3DHdrEnvironment,
+  type A3DVec3,
+  type A3DViewport
 } from "./FlagshipFoundation";
-import type { EnvironmentLightingOptions } from "@galileo3d/rendering";
-import type { Material } from "@galileo3d/rendering";
+import type { EnvironmentLightingOptions } from "@aura3d/rendering";
+import type { Material } from "@aura3d/rendering";
 import type { GLTFMaterialRenderStateOverride } from "../../../assets/src/GLTFRenderResources";
 import {
   applyCarConceptMaterialStability,
@@ -69,7 +69,7 @@ export interface V8ViewerControls {
   readonly yaw: number;
   readonly pitch: number;
   readonly zoom: number;
-  readonly target: G3DVec3;
+  readonly target: A3DVec3;
   readonly exposure: number;
   readonly environmentRotation: number;
   readonly backgroundVisible: boolean;
@@ -98,7 +98,7 @@ export interface V8ViewerSnapshot {
     readonly rotation: number;
   };
   readonly controls: V8ViewerControls;
-  readonly camera: G3DCameraFrame["diagnostics"];
+  readonly camera: A3DCameraFrame["diagnostics"];
   readonly metrics: V8RuntimeMetrics;
   readonly loading: {
     readonly assetMs: number;
@@ -118,16 +118,16 @@ type MaterialBaseline = ReadonlyMap<Material, {
 
 export class V8FlagshipViewer {
   private status: V8ViewerStatus = "ready";
-  private viewport: G3DViewport;
+  private viewport: A3DViewport;
   private readonly origin: string;
-  private scene: G3DGltfScene;
-  private environment: G3DHdrEnvironment | undefined;
+  private scene: A3DGltfScene;
+  private environment: A3DHdrEnvironment | undefined;
   private environmentPreset: V8EnvironmentPreset;
-  private stage: G3DGroundedStage;
+  private stage: A3DGroundedStage;
   private renderer: V8InteractiveRenderer;
   private materialBaseline: MaterialBaseline;
   private screenshotCount = 0;
-  private cameraFrame: G3DCameraFrame;
+  private cameraFrame: A3DCameraFrame;
   private error: string | undefined;
   private environmentLoadSerial = 0;
   private environmentLoadScheduled = false;
@@ -149,10 +149,10 @@ export class V8FlagshipViewer {
 
   private constructor(options: {
     readonly origin: string;
-    readonly viewport: G3DViewport;
-    readonly scene: G3DGltfScene;
+    readonly viewport: A3DViewport;
+    readonly scene: A3DGltfScene;
     readonly environmentPreset: V8EnvironmentPreset;
-    readonly stage: G3DGroundedStage;
+    readonly stage: A3DGroundedStage;
     readonly renderer: V8InteractiveRenderer;
     readonly loading: V8ViewerSnapshot["loading"];
   }) {
@@ -452,7 +452,7 @@ export class V8FlagshipViewer {
     setTimeout(start, 120);
   }
 
-  private createCamera(): G3DCameraFrame {
+  private createCamera(): A3DCameraFrame {
     return createCameraFrame({
       bounds: this.scene.resources.bounds,
       viewport: this.viewport,
@@ -473,7 +473,7 @@ export function createV8FlagshipViewer(options: V8FlagshipViewerOptions): Promis
   return V8FlagshipViewer.create(options);
 }
 
-async function loadV8Environment(preset: V8EnvironmentPreset, origin: string): Promise<G3DHdrEnvironment> {
+async function loadV8Environment(preset: V8EnvironmentPreset, origin: string): Promise<A3DHdrEnvironment> {
   return loadHdrEnvironment({
     id: preset.id,
     label: preset.label,
@@ -557,7 +557,7 @@ function createFallbackEnvironmentLighting(controls: V8ViewerControls, assetId?:
   };
 }
 
-function captureMaterialBaseline(scene: G3DGltfScene): MaterialBaseline {
+function captureMaterialBaseline(scene: A3DGltfScene): MaterialBaseline {
   const baseline = new Map<Material, { roughness?: number; metallic?: number; clearcoat?: number }>();
   for (const material of scene.resources.materialLibrary.values()) {
     baseline.set(material, {
@@ -569,7 +569,7 @@ function captureMaterialBaseline(scene: G3DGltfScene): MaterialBaseline {
   return baseline;
 }
 
-function applyMaterialControls(scene: G3DGltfScene, baseline: MaterialBaseline, controls: V8ViewerControls): void {
+function applyMaterialControls(scene: A3DGltfScene, baseline: MaterialBaseline, controls: V8ViewerControls): void {
   const carConcept = scene.metadata.assetId === "car-concept";
   for (const material of scene.resources.materialLibrary.values()) {
     const initial = baseline.get(material);

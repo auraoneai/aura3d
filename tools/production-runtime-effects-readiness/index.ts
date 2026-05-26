@@ -24,7 +24,7 @@ const checks = [
   { id: "screenshot-exists", pass: existsSync(screenshotPath), detail: screenshotPath }
 ];
 const report = {
-  schema: "g3d-production-runtime-effects-readiness/v1",
+  schema: "a3d-production-runtime-effects-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks

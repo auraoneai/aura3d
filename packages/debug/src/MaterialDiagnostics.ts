@@ -4,7 +4,7 @@ import {
   type Material,
   type MaterialInstance,
   type RenderShaderProgram
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 export interface MaterialDiagnosticReport {
   readonly materialName: string;

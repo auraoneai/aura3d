@@ -17,7 +17,7 @@ const BANNED_RUNTIME_PATTERNS: readonly { readonly id: string; readonly pattern:
   { id: "three-import", pattern: /from\s+["']three(?:\/[^"']*)?["']/ },
   { id: "three-require", pattern: /require\(["']three(?:\/[^"']*)?["']\)/ },
   { id: "three-namespace", pattern: /\bTHREE\./ },
-  { id: "three-compat-import", pattern: /from\s+["']@galileo3d\/three-compat(?:\/[^"']*)?["']/ },
+  { id: "three-compat-import", pattern: /from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/ },
   { id: "three-compat-relative-import", pattern: /from\s+["'][^"']*three-compat[^"']*["']/ }
 ];
 
@@ -35,7 +35,7 @@ describe("V7 V6 runtime boundary", () => {
     });
 
     const report = {
-      schema: "g3d-v7-production-runtime-runtime-boundary/v1",
+      schema: "a3d-v7-production-runtime-runtime-boundary/v1",
       generatedAt: new Date().toISOString(),
       claim: "bounded-no-three-runtime-delegation",
       roots: RUNTIME_ROOTS,

@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/morphtargets-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/morphtargets-parity/g3d-morphtargets.png",
+  a3d: "tests/reports/threejs-parity/morphtargets-parity/a3d-morphtargets.png",
   threejs: "tests/reports/threejs-parity/morphtargets-parity/threejs-morphtargets.png",
   sideBySide: "tests/reports/threejs-parity/morphtargets-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
     await server.close();
   });
 
-  test("applies Robot Expressive head morph weights through G3D and actual Three.js morphTargetInfluences", async ({ page }) => {
+  test("applies Robot Expressive head morph weights through A3D and actual Three.js morphTargetInfluences", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -63,7 +63,7 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
       writePng(path, dataUrl);
     }
 
-    expect(result.schema).toBe("g3d-threejs-parity-morphtargets-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-morphtargets-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAssetUrl).toBe(true);
     expect(result.assertions.sameBodyClip).toBe(true);
@@ -71,18 +71,18 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeAnimationMixer).toBe(true);
     expect(result.assertions.actualThreeMorphTargetInfluences).toBe(true);
-    expect(result.assertions.g3dAppliedMorphWeights).toBe(true);
+    expect(result.assertions.a3dAppliedMorphWeights).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.animation.morphWeightTracksApplied).toBeGreaterThan(0);
+    expect(result.a3d.animation.morphWeightTracksApplied).toBeGreaterThan(0);
     expect(result.threejs.animation.morphMeshCount).toBeGreaterThan(0);
     expect(result.threejs.animation.morphTargetCount).toBeGreaterThanOrEqual(3);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.25);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DMorphRuntimeSource();
+    assertNoThreeJsInA3DMorphRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const stats = readV6PngStats(resolve(path));
@@ -106,7 +106,7 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DMorphRuntimeSource(): void {
+function assertNoThreeJsInA3DMorphRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/skinning-morph/src/main.ts",
@@ -136,8 +136,8 @@ function stripDataUrls(result: Extract<MorphTargetsParityResult, { readonly stat
 type MorphTargetsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-morphtargets-parity/v1";
-      readonly g3d: {
+      readonly schema: "a3d-threejs-parity-morphtargets-parity/v1";
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly animation: { readonly morphWeightTracksApplied: number };
         readonly pixels: { readonly uniqueColorBuckets: number };
@@ -155,10 +155,10 @@ type MorphTargetsParityResult =
         readonly actualThreeRenderer: boolean;
         readonly actualThreeAnimationMixer: boolean;
         readonly actualThreeMorphTargetInfluences: boolean;
-        readonly g3dAppliedMorphWeights: boolean;
+        readonly a3dAppliedMorphWeights: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
-  | { readonly status: "error"; readonly schema: "g3d-threejs-parity-morphtargets-parity/v1"; readonly error: string };
+  | { readonly status: "error"; readonly schema: "a3d-threejs-parity-morphtargets-parity/v1"; readonly error: string };

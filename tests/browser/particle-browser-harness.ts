@@ -6,7 +6,7 @@ import {
   createParticleEffectPreset,
   type ParticleRenderBatch,
   type TrailPoint
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 interface ParticleBrowserResult {
   readonly status: "ready" | "error";
@@ -31,7 +31,7 @@ interface ParticleBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_PARTICLE_BROWSER_TEST__?: ParticleBrowserResult;
+    __AURA3D_PARTICLE_BROWSER_TEST__?: ParticleBrowserResult;
   }
 }
 
@@ -69,7 +69,7 @@ try {
   drawCollisionGround(context);
   drawTrail(context, trail.particle.userData.trail as TrailPoint[], 178, 88, 58);
 
-  window.__GALILEO3D_PARTICLE_BROWSER_TEST__ = {
+  window.__AURA3D_PARTICLE_BROWSER_TEST__ = {
     status: "ready",
     fireLive: fireBatch.liveCount,
     fountainLive: fountainBatch.liveCount,
@@ -89,7 +89,7 @@ try {
     }
   };
 } catch (error) {
-  window.__GALILEO3D_PARTICLE_BROWSER_TEST__ = {
+  window.__AURA3D_PARTICLE_BROWSER_TEST__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

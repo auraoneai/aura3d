@@ -1,4 +1,4 @@
-import { AssetManager, GLTFLoader } from "@galileo3d/assets";
+import { AssetManager, GLTFLoader } from "@aura3d/assets";
 import type { EditorAssetRecord } from "../project/ProjectSerializer";
 import type { EditorShell } from "../EditorShell";
 
@@ -40,7 +40,7 @@ export class AssetBrowserPanel {
       const target = event.target as HTMLElement;
       const assetId = target.dataset.assetId;
       if (assetId && event.dataTransfer) {
-        event.dataTransfer.setData("application/x-galileo3d-asset", assetId);
+        event.dataTransfer.setData("application/x-aura3d-asset", assetId);
         event.dataTransfer.effectAllowed = "copy";
       }
     });

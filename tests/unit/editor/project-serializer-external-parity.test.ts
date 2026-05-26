@@ -28,7 +28,7 @@ describe("V4 editor project serialization and static export", () => {
     expect(project.scene.nodes.some((node) => node.light.kind === "point" && node.light.intensity > 0)).toBe(true);
     expect(project.scene.nodes.some((node) => node.camera.enabled)).toBe(true);
     expect(project.export.entryNodeId).toBe("node-v4-camera");
-    expect(project.metadata.provenance?.authoringTool).toBe("galileo3d-browser-editor");
+    expect(project.metadata.provenance?.authoringTool).toBe("aura3d-browser-editor");
     expect(() => serializer.validate(project)).not.toThrow();
   });
 
@@ -47,7 +47,7 @@ describe("V4 editor project serialization and static export", () => {
     expect(runtime).toContain("featureEvidence");
     expect(runtime).toContain("playBehaviorActive");
     expect(runtime).not.toContain("EditorShell");
-    expect(runtime).not.toContain("__GALILEO3D_EDITOR_APP__");
+    expect(runtime).not.toContain("__AURA3D_EDITOR_APP__");
   });
 
   it("validates the checked-in V4 editor-authored static project provenance", () => {

@@ -1,8 +1,8 @@
 # Asset Viewer V3
 
-This example shows the recommended public path for loading and rendering a glTF asset with G3D.
+This example shows the recommended public path for loading and rendering a glTF asset with A3D.
 
-It uses `createAssetViewerWorkflow()` from `@galileo3d/workflows`, which wraps the asset loader, render resource creation, camera framing, lighting, shadows, postprocess, and diagnostics into one app-ready result.
+It uses `createAssetViewerWorkflow()` from `@aura3d/workflows`, which wraps the asset loader, render resource creation, camera framing, lighting, shadows, postprocess, and diagnostics into one app-ready result.
 
 Run it through the repo dev server or browser tests:
 

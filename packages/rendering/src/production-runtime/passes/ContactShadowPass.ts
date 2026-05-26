@@ -1,4 +1,4 @@
-import { composeMat4 } from "@galileo3d/scene";
+import { composeMat4 } from "@aura3d/scene";
 import { Geometry } from "../../Geometry";
 import type { RenderItem } from "../../ForwardPass";
 import { UnlitMaterial } from "../../UnlitMaterial";
@@ -46,7 +46,7 @@ export interface ContactShadowPassResult {
 
 export function createContactShadowPass(options: ContactShadowPassOptions): ContactShadowPassResult {
   const bounds = options.bounds;
-  const labelPrefix = options.labelPrefix ?? "g3d-contact-shadow";
+  const labelPrefix = options.labelPrefix ?? "a3d-contact-shadow";
   const opacity = clamp(options.opacity ?? 1, 0, 1);
   const softness = clamp(options.softness ?? 0.72, 0.15, 1);
   const lightDirection = normalize3(options.lightDirection ?? [-0.42, -0.82, -0.38]);

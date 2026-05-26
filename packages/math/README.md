@@ -1,6 +1,6 @@
-# @galileo3d/math
+# @aura3d/math
 
-`@galileo3d/math` owns deterministic engine math primitives used by runtime packages without depending on browser, rendering, scene, physics, or ECS packages.
+`@aura3d/math` owns deterministic engine math primitives used by runtime packages without depending on browser, rendering, scene, physics, or ECS packages.
 
 ## Public API
 

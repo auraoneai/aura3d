@@ -87,7 +87,7 @@ export const V8_FLAGSHIP_ASSETS: readonly V8FlagshipAsset[] = [
   {
     id: "toy-car",
     name: "Toy Car",
-    localPath: "fixtures/v7/assets/flagship/toy-car.glb",
+    localPath: "fixtures/threejs-parity/assets/vehicles/toy-car.glb",
     role: "flagship-vehicle-product",
     license: "local-fixture-corpus",
     expectedFeatures: ["authoredVehicle", "pbrMaterials", "hdrIbl"]

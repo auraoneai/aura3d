@@ -2,7 +2,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
 test("V4 glTF corpus alias maps the requested filename to the loader corpus proof", () => {
-  const manifest = JSON.parse(readFileSync("fixtures/v4/gltf-corpus/manifest.json", "utf8")) as {
+  const manifest = JSON.parse(readFileSync("fixtures/external-parity/gltf-corpus/manifest.json", "utf8")) as {
     assets?: readonly unknown[];
     source?: { readonly revision?: string };
   };

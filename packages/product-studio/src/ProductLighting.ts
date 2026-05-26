@@ -1,6 +1,6 @@
-import { DirectionalLight } from "@galileo3d/scene";
-import { createLightingDefault } from "@galileo3d/rendering";
-import type { CollectedLight } from "@galileo3d/rendering";
+import { DirectionalLight } from "@aura3d/scene";
+import { createLightingDefault } from "@aura3d/rendering";
+import type { CollectedLight } from "@aura3d/rendering";
 import type { ProductLightingConfig, ProductLightingPreset } from "./ProductTypes";
 
 export function createProductLightingPreset(preset: ProductLightingPreset = "catalog-softbox"): ProductLightingConfig {

@@ -66,7 +66,7 @@ const checks = [
 ];
 
 const report = {
-  schemaVersion: "g3d-engine-readiness-root-readiness-v1",
+  schemaVersion: "a3d-engine-readiness-root-readiness-v1",
   generatedAt: new Date().toISOString(),
   ok: checks.every((check) => check.ok),
   checks

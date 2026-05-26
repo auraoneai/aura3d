@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { Geometry, Texture } from "@galileo3d/rendering";
+import { Geometry, Texture } from "@aura3d/rendering";
 import {
   GLTFLoader,
   LoadContext,

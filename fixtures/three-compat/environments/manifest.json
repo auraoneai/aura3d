@@ -1,5 +1,5 @@
 {
-  "schema": "g3d-three-compat-environment-library/v1",
+  "schema": "a3d-three-compat-environment-library/v1",
   "requirements": {
     "minimumPresets": 12,
     "minimumRealHdriSources": 6,
@@ -28,8 +28,8 @@
       "label": "Studio Small 08",
       "kind": "real-hdri",
       "class": "studio",
-      "license": "Fixture HDRI license for local G3D validation only",
-      "author": "G3D fixture corpus",
+      "license": "Fixture HDRI license for local A3D validation only",
+      "author": "A3D fixture corpus",
       "sourceName": "studio_small_08_1k",
       "sourceUri": "local://studio_small_08_1k",
       "downloadUri": "local://fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
@@ -63,8 +63,8 @@
       "label": "Autumn Field Puresky",
       "kind": "real-hdri",
       "class": "outdoor",
-      "license": "Fixture HDRI license for local G3D validation only",
-      "author": "G3D fixture corpus",
+      "license": "Fixture HDRI license for local A3D validation only",
+      "author": "A3D fixture corpus",
       "sourceName": "autumn_field_puresky_1k",
       "sourceUri": "local://autumn_field_puresky_1k",
       "downloadUri": "local://fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
@@ -98,8 +98,8 @@
       "label": "Kloppenheim Puresky",
       "kind": "real-hdri",
       "class": "daylight",
-      "license": "Fixture HDRI license for local G3D validation only",
-      "author": "G3D fixture corpus",
+      "license": "Fixture HDRI license for local A3D validation only",
+      "author": "A3D fixture corpus",
       "sourceName": "kloppenheim_06_puresky_1k",
       "sourceUri": "local://kloppenheim_06_puresky_1k",
       "downloadUri": "local://fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
@@ -133,8 +133,8 @@
       "label": "Industrial Sunset Puresky",
       "kind": "real-hdri",
       "class": "industrial",
-      "license": "Fixture HDRI license for local G3D validation only",
-      "author": "G3D fixture corpus",
+      "license": "Fixture HDRI license for local A3D validation only",
+      "author": "A3D fixture corpus",
       "sourceName": "autumn_field_puresky_1k",
       "sourceUri": "local://autumn_field_puresky_1k",
       "downloadUri": "local://fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
@@ -168,8 +168,8 @@
       "label": "Spruit Sunrise",
       "kind": "real-hdri",
       "class": "sunrise",
-      "license": "Fixture HDRI license for local G3D validation only",
-      "author": "G3D fixture corpus",
+      "license": "Fixture HDRI license for local A3D validation only",
+      "author": "A3D fixture corpus",
       "sourceName": "kloppenheim_06_puresky_1k",
       "sourceUri": "local://kloppenheim_06_puresky_1k",
       "downloadUri": "local://fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
@@ -203,8 +203,8 @@
       "label": "Venice Sunset",
       "kind": "real-hdri",
       "class": "outdoor",
-      "license": "Fixture HDRI license for local G3D validation only",
-      "author": "G3D fixture corpus",
+      "license": "Fixture HDRI license for local A3D validation only",
+      "author": "A3D fixture corpus",
       "sourceName": "studio_small_08_1k",
       "sourceUri": "local://studio_small_08_1k",
       "downloadUri": "local://fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
@@ -239,7 +239,7 @@
       "kind": "procedural-hdr",
       "class": "studio",
       "license": "Generated procedural fixture",
-      "author": "G3D fixture generator",
+      "author": "A3D fixture generator",
       "resolution": [
         1024,
         512
@@ -268,7 +268,7 @@
       "kind": "procedural-hdr",
       "class": "gallery",
       "license": "Generated procedural fixture",
-      "author": "G3D fixture generator",
+      "author": "A3D fixture generator",
       "resolution": [
         1024,
         512
@@ -297,7 +297,7 @@
       "kind": "procedural-hdr",
       "class": "outdoor",
       "license": "Generated procedural fixture",
-      "author": "G3D fixture generator",
+      "author": "A3D fixture generator",
       "resolution": [
         1024,
         512
@@ -326,7 +326,7 @@
       "kind": "procedural-hdr",
       "class": "night",
       "license": "Generated procedural fixture",
-      "author": "G3D fixture generator",
+      "author": "A3D fixture generator",
       "resolution": [
         1024,
         512
@@ -355,7 +355,7 @@
       "kind": "procedural-hdr",
       "class": "sunrise",
       "license": "Generated procedural fixture",
-      "author": "G3D fixture generator",
+      "author": "A3D fixture generator",
       "resolution": [
         1024,
         512
@@ -384,7 +384,7 @@
       "kind": "procedural-hdr",
       "class": "industrial",
       "license": "Generated procedural fixture",
-      "author": "G3D fixture generator",
+      "author": "A3D fixture generator",
       "resolution": [
         1024,
         512

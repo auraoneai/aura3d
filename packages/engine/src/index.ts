@@ -1,26 +1,26 @@
 export {
-  G3D_APP_WORKFLOW_PRESETS,
-  createG3DApp,
-  resolveG3DAppQualityPreset
-} from "@galileo3d/apps";
+  A3D_APP_WORKFLOW_PRESETS,
+  createA3DApp,
+  resolveA3DAppQualityPreset
+} from "@aura3d/apps";
 export type {
-  G3DApp,
-  G3DAppDiagnostics,
-  G3DAppOptions,
-  G3DAppQualityPreset,
-  G3DAppQualitySettings,
-  G3DAppWorkflowPreset
-} from "@galileo3d/apps";
-export { Engine } from "@galileo3d/core";
-export { Renderer, createV4EnvironmentPipeline, listV4EnvironmentTargets } from "@galileo3d/rendering";
+  A3DApp,
+  A3DAppDiagnostics,
+  A3DAppOptions,
+  A3DAppQualityPreset,
+  A3DAppQualitySettings,
+  A3DAppWorkflowPreset
+} from "@aura3d/apps";
+export { Engine } from "@aura3d/core";
+export { Renderer, createV4EnvironmentPipeline, listV4EnvironmentTargets } from "@aura3d/rendering";
 export {
   GLTFLoader,
   createAssetCompatibilityReport,
   inspectGLTFAsset,
   loadRenderableAsset,
   summarizeV4Corpus
-} from "@galileo3d/assets";
-export { loadProductAsset } from "@galileo3d/product-studio";
+} from "@aura3d/assets";
+export { loadProductAsset } from "@aura3d/product-studio";
 export {
   createAnimationLabWorkflow,
   createAssetViewerWorkflow,
@@ -29,21 +29,21 @@ export {
   createMaterialStudioWorkflow,
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow
-} from "@galileo3d/workflows";
+} from "@aura3d/workflows";
 export * as v9 from "./advanced-runtime/index.js";
 export {
-  G3DRenderer,
-  G3DScene,
-  G3DAppLifecycle
+  A3DRenderer,
+  A3DScene,
+  A3DAppLifecycle
 } from "./advanced-runtime/index.js";
 export type {
-  G3DAppLifecycleSnapshot,
-  G3DDisposable,
-  G3DRendererOptions,
-  G3DSceneMeshOptions,
-  G3DSceneRenderSourceOptions
+  A3DAppLifecycleSnapshot,
+  A3DDisposable,
+  A3DRendererOptions,
+  A3DSceneMeshOptions,
+  A3DSceneRenderSourceOptions
 } from "./advanced-runtime/index.js";
-import type { G3DApp, G3DAppRendererLike } from "@galileo3d/apps";
+import type { A3DApp, A3DAppRendererLike } from "@aura3d/apps";
 import {
   createAnimationLabWorkflow,
   createAssetViewerWorkflow,
@@ -52,13 +52,13 @@ import {
   createMaterialStudioWorkflow,
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow
-} from "@galileo3d/workflows";
+} from "@aura3d/workflows";
 import {
   createV4EnvironmentPipeline,
   type V4EnvironmentPipeline,
   type V4EnvironmentPipelineOptions,
   type RenderDeviceDiagnostics
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import {
   createAssetCompatibilityReport,
   inspectGLTFAsset,
@@ -70,7 +70,7 @@ import {
   type GLTFRenderResources,
   type LoadRenderableAssetOptions,
   type RenderableAsset
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 
 export const workflows = {
   assetViewer: createAssetViewerWorkflow,
@@ -82,12 +82,12 @@ export const workflows = {
   comparison: createComparisonWorkflow
 } as const;
 
-export type G3DWorkflowApi = typeof workflows;
+export type A3DWorkflowApi = typeof workflows;
 
-export type G3DEnvironmentOptions = V4EnvironmentPipelineOptions;
-export type G3DEnvironment = V4EnvironmentPipeline;
+export type A3DEnvironmentOptions = V4EnvironmentPipelineOptions;
+export type A3DEnvironment = V4EnvironmentPipeline;
 
-export function createEnvironment(options: G3DEnvironmentOptions): G3DEnvironment {
+export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment {
   return createV4EnvironmentPipeline(options);
 }
 
@@ -95,7 +95,7 @@ export async function loadAsset(urlOrAsset: string | RenderableAsset, options: L
   return await loadRenderableAsset(urlOrAsset, options);
 }
 
-export interface G3DMaterialVariantController<TVariantId extends string = string> {
+export interface A3DMaterialVariantController<TVariantId extends string = string> {
   readonly current: TVariantId;
   readonly variants: readonly TVariantId[];
   setVariant(variant: TVariantId): TVariantId;
@@ -105,7 +105,7 @@ export interface G3DMaterialVariantController<TVariantId extends string = string
 export function createMaterialVariantController<TVariantId extends string>(
   variants: readonly TVariantId[],
   initialVariant: TVariantId = variants[0] as TVariantId
-): G3DMaterialVariantController<TVariantId> {
+): A3DMaterialVariantController<TVariantId> {
   if (variants.length === 0) throw new Error("createMaterialVariantController requires at least one variant.");
   if (!variants.includes(initialVariant)) throw new Error(`Unknown initial material variant: ${initialVariant}`);
   let current = initialVariant;
@@ -125,16 +125,16 @@ export function createMaterialVariantController<TVariantId extends string>(
   };
 }
 
-export interface G3DScreenshotCapture {
+export interface A3DScreenshotCapture {
   readonly mimeType: "image/png";
   readonly dataUrl: string;
   readonly width?: number;
   readonly height?: number;
 }
 
-export function captureScreenshot(target: HTMLCanvasElement | OffscreenCanvas | G3DApp): G3DScreenshotCapture {
-  const canvas = isG3DApp(target) ? findCanvasFromRenderer(target.renderer) : target;
-  if (!canvas) throw new Error("captureScreenshot requires a canvas-backed G3D app or canvas.");
+export function captureScreenshot(target: HTMLCanvasElement | OffscreenCanvas | A3DApp): A3DScreenshotCapture {
+  const canvas = isA3DApp(target) ? findCanvasFromRenderer(target.renderer) : target;
+  if (!canvas) throw new Error("captureScreenshot requires a canvas-backed A3D app or canvas.");
   if ("toDataURL" in canvas && typeof canvas.toDataURL === "function") {
     return {
       mimeType: "image/png",
@@ -154,7 +154,7 @@ export function createCompatibilityReport(manifest: GLTFCorpusManifest): AssetCo
   return createAssetCompatibilityReport(manifest);
 }
 
-export interface G3DAssetDiagnostics {
+export interface A3DAssetDiagnostics {
   readonly kind: RenderableAsset["kind"];
   readonly url?: string;
   readonly warnings: readonly string[];
@@ -165,7 +165,7 @@ export interface G3DAssetDiagnostics {
   readonly morphTargetMeshCount: number;
 }
 
-export function createAssetDiagnostics(asset: RenderableAsset): G3DAssetDiagnostics {
+export function createAssetDiagnostics(asset: RenderableAsset): A3DAssetDiagnostics {
   const gltf = asset.gltf;
   return {
     kind: asset.kind,
@@ -179,7 +179,7 @@ export function createAssetDiagnostics(asset: RenderableAsset): G3DAssetDiagnost
   };
 }
 
-export interface G3DRenderDiagnostics {
+export interface A3DRenderDiagnostics {
   readonly drawCalls: number;
   readonly buffers: number;
   readonly shaders: number;
@@ -187,7 +187,7 @@ export interface G3DRenderDiagnostics {
   readonly warnings: readonly string[];
 }
 
-export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): G3DRenderDiagnostics {
+export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): A3DRenderDiagnostics {
   return {
     drawCalls: diagnostics?.drawCalls ?? 0,
     buffers: diagnostics?.buffers ?? 0,
@@ -197,20 +197,20 @@ export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): 
   };
 }
 
-export interface G3DDiagnosticsPanel {
-  readonly kind: "g3d-diagnostics-panel";
-  update(next: { readonly render?: RenderDeviceDiagnostics; readonly asset?: G3DAssetDiagnostics }): void;
+export interface A3DDiagnosticsPanel {
+  readonly kind: "a3d-diagnostics-panel";
+  update(next: { readonly render?: RenderDeviceDiagnostics; readonly asset?: A3DAssetDiagnostics }): void;
   snapshot(): {
-    readonly render: G3DRenderDiagnostics;
-    readonly asset?: G3DAssetDiagnostics;
+    readonly render: A3DRenderDiagnostics;
+    readonly asset?: A3DAssetDiagnostics;
   };
 }
 
-export function createDiagnosticsPanel(initial: { readonly render?: RenderDeviceDiagnostics; readonly asset?: G3DAssetDiagnostics } = {}): G3DDiagnosticsPanel {
+export function createDiagnosticsPanel(initial: { readonly render?: RenderDeviceDiagnostics; readonly asset?: A3DAssetDiagnostics } = {}): A3DDiagnosticsPanel {
   let render = createRenderDiagnostics(initial.render);
   let asset = initial.asset;
   return {
-    kind: "g3d-diagnostics-panel",
+    kind: "a3d-diagnostics-panel",
     update(next) {
       if (next.render) render = createRenderDiagnostics(next.render);
       if (next.asset) asset = next.asset;
@@ -224,10 +224,10 @@ export function createDiagnosticsPanel(initial: { readonly render?: RenderDevice
   };
 }
 
-function isG3DApp(value: HTMLCanvasElement | OffscreenCanvas | G3DApp): value is G3DApp {
+function isA3DApp(value: HTMLCanvasElement | OffscreenCanvas | A3DApp): value is A3DApp {
   return "diagnostics" in value && typeof value.diagnostics === "function";
 }
 
-function findCanvasFromRenderer(renderer: G3DAppRendererLike | undefined): HTMLCanvasElement | OffscreenCanvas | undefined {
-  return (renderer as (G3DAppRendererLike & { readonly canvas?: HTMLCanvasElement | OffscreenCanvas }) | undefined)?.canvas;
+function findCanvasFromRenderer(renderer: A3DAppRendererLike | undefined): HTMLCanvasElement | OffscreenCanvas | undefined {
+  return (renderer as (A3DAppRendererLike & { readonly canvas?: HTMLCanvasElement | OffscreenCanvas }) | undefined)?.canvas;
 }

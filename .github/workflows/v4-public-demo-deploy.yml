@@ -32,7 +32,7 @@ jobs:
           cache: pnpm
 
       - name: Configure Pages
-        uses: actions/configure-pages@three-compat
+        uses: actions/configure-pages@v4
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -112,7 +112,7 @@ jobs:
       - name: Verify public deployment bytes
         run: pnpm verify:public-demo-deployment
         env:
-          G3D_PUBLIC_DEMO_URL: ${{ steps.deployment.outputs.page_url }}
+          A3D_PUBLIC_DEMO_URL: ${{ steps.deployment.outputs.page_url }}
 
       - name: Audit production readiness after public smoke
         run: pnpm audit:external-parity-production-readiness
@@ -139,7 +139,7 @@ jobs:
             tests/reports/public-demo-deployment-runbook.md
             tests/reports/external-parity-production-readiness.json
             tests/reports/external-parity-external-evidence-readiness.json
-            tests/reports/v4-external-evidence-missing-artifacts.md
+            tests/reports/external-parity-external-evidence-missing-artifacts.md
             tests/reports/external-parity-broad-parity-readiness.json
             tests/reports/external-parity-completion-audit.json
             tests/reports/external-parity-completion-audit-runbook.md

@@ -20,7 +20,7 @@ import { validateVersionedRelease } from "../../../tools/versioned-release-verif
 import { buildExternalDemoExport } from "../../../tools/external-demo-export/index.js";
 
 function fixtureRoot(): string {
-  return mkdtempSync(join(tmpdir(), "g3d-tools-"));
+  return mkdtempSync(join(tmpdir(), "a3d-tools-"));
 }
 
 function writePackage(root: string, name: string, source: string): void {
@@ -28,7 +28,7 @@ function writePackage(root: string, name: string, source: string): void {
   mkdirSync(join(dir, "src"), { recursive: true });
   writeFileSync(join(dir, "src", "index.ts"), source);
   writeFileSync(join(dir, "package.json"), JSON.stringify({
-    name: `@galileo3d/${name}`,
+    name: `@aura3d/${name}`,
     type: "module",
     main: "./dist/index.js",
     types: "./dist/index.d.ts",
@@ -40,16 +40,16 @@ describe("verification tools", () => {
   it("boundary verifier passes valid imports and fails invalid/private imports", () => {
     const valid = fixtureRoot();
     writePackage(valid, "math", "export const x = 1;\n");
-    writePackage(valid, "core", "import { x } from '@galileo3d/math'; export const y = x;\n");
+    writePackage(valid, "core", "import { x } from '@aura3d/math'; export const y = x;\n");
     expect(verifyBoundaries(valid)).toMatchObject({ ok: true });
 
     const invalid = fixtureRoot();
-    writePackage(invalid, "core", "import { bad } from '@galileo3d/ecs'; export const y = bad;\n");
+    writePackage(invalid, "core", "import { bad } from '@aura3d/ecs'; export const y = bad;\n");
     writePackage(invalid, "ecs", "export const bad = 1;\n");
     expect(verifyBoundaries(invalid).ok).toBe(false);
 
     const deep = fixtureRoot();
-    writePackage(deep, "core", "import { Vector3 } from '@galileo3d/math/src/Vector3'; export const y = Vector3;\n");
+    writePackage(deep, "core", "import { Vector3 } from '@aura3d/math/src/Vector3'; export const y = Vector3;\n");
     writePackage(deep, "math", "export const Vector3 = 1;\n");
     expect(verifyBoundaries(deep).violations[0]?.message).toMatch(/private/i);
 
@@ -62,12 +62,12 @@ describe("verification tools", () => {
   it("export verifier detects missing barrels and root exports", () => {
     const root = fixtureRoot();
     writePackage(root, "math", "export const x = 1;\n");
-    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "@galileo3d/engine", exports: { ".": "./dist/index.js", "./math": "./dist/math/index.js" } }));
+    writeFileSync(join(root, "package.json"), JSON.stringify({ name: "@aura3d/engine", exports: { ".": "./dist/index.js", "./math": "./dist/math/index.js" } }));
     expect(verifyExports(root).ok).toBe(true);
 
     const broken = fixtureRoot();
     mkdirSync(join(broken, "packages", "math", "src"), { recursive: true });
-    writeFileSync(join(broken, "packages", "math", "package.json"), JSON.stringify({ name: "@galileo3d/math", main: "./dist/index.js", types: "./dist/index.d.ts", exports: { ".": "./dist/index.js" } }));
+    writeFileSync(join(broken, "packages", "math", "package.json"), JSON.stringify({ name: "@aura3d/math", main: "./dist/index.js", types: "./dist/index.d.ts", exports: { ".": "./dist/index.js" } }));
     expect(verifyExports(broken).ok).toBe(false);
   });
 
@@ -118,7 +118,7 @@ describe("verification tools", () => {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
       writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: `@galileo3d/${packageName}`,
+        name: `@aura3d/${packageName}`,
         private: packageName === "test-utils" ? true : undefined
       }));
     }
@@ -154,7 +154,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "package.json"), JSON.stringify({ scripts, exports: exportsMap }));
     writeFileSync(join(root, "tsconfig.base.json"), JSON.stringify({
       compilerOptions: {
-        paths: Object.fromEntries(packages.map((packageName) => [`@galileo3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
+        paths: Object.fromEntries(packages.map((packageName) => [`@aura3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
       }
     }));
 
@@ -214,7 +214,7 @@ describe("verification tools", () => {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
       writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: `@galileo3d/${packageName}`,
+        name: `@aura3d/${packageName}`,
         private: packageName === "test-utils" ? true : undefined
       }));
     }
@@ -250,7 +250,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "package.json"), JSON.stringify({ scripts, exports: exportsMap }));
     writeFileSync(join(root, "tsconfig.base.json"), JSON.stringify({
       compilerOptions: {
-        paths: Object.fromEntries(packages.map((packageName) => [`@galileo3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
+        paths: Object.fromEntries(packages.map((packageName) => [`@aura3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
       }
     }));
 
@@ -260,7 +260,7 @@ describe("verification tools", () => {
   it("shader verifier accepts markers and rejects missing markers", () => {
     const valid = fixtureRoot();
     mkdirSync(join(valid, "packages", "rendering", "src"), { recursive: true });
-    writeFileSync(join(valid, "packages", "rendering", "src", "basic.wgsl"), "// @galileo3d-shader:basic\n");
+    writeFileSync(join(valid, "packages", "rendering", "src", "basic.wgsl"), "// @aura3d-shader:basic\n");
     const validReport = verifyShaders(valid);
     expect(validReport.ok).toBe(true);
     expect(validReport.coverage.status).toBe("covered");
@@ -292,7 +292,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "dist", "math", "index.js"), "export const math = true;\n");
     writeFileSync(join(root, "dist", "core", "index.js"), "export const core = true;\n");
     writeFileSync(join(root, "package.json"), JSON.stringify({
-      name: "@galileo3d/engine",
+      name: "@aura3d/engine",
       type: "module",
       exports: {
         ".": "./dist/index.js",
@@ -305,9 +305,9 @@ describe("verification tools", () => {
     expect(report.ok).toBe(true);
     expect(report.checkedSubpaths).toBe(3);
     expect(report.entries.map((entry) => entry.specifier).sort()).toEqual([
-      "@galileo3d/engine",
-      "@galileo3d/engine/core",
-      "@galileo3d/engine/math"
+      "@aura3d/engine",
+      "@aura3d/engine/core",
+      "@aura3d/engine/math"
     ]);
   });
 
@@ -330,7 +330,7 @@ describe("verification tools", () => {
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
     const freshReportCommand = [
       "node -e",
-      JSON.stringify("const fs=require('fs'); fs.mkdirSync('tests/reports',{recursive:true}); const report={generatedAt:new Date().toISOString(),releaseRunId:process.env.G3D_RELEASE_RUN_ID,status:'pass'}; fs.writeFileSync('tests/reports/performance.json',JSON.stringify(report)); fs.writeFileSync('tests/reports/final-performance.json',JSON.stringify(report));")
+      JSON.stringify("const fs=require('fs'); fs.mkdirSync('tests/reports',{recursive:true}); const report={generatedAt:new Date().toISOString(),releaseRunId:process.env.A3D_RELEASE_RUN_ID,status:'pass'}; fs.writeFileSync('tests/reports/performance.json',JSON.stringify(report)); fs.writeFileSync('tests/reports/final-performance.json',JSON.stringify(report));")
     ].join(" ");
     const report = runReleaseVerification(root, [["performance", freshReportCommand]], "test-release-run");
     expect(report.ok).toBe(false);
@@ -394,7 +394,7 @@ describe("verification tools", () => {
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
     const failedReportCommand = [
       "node -e",
-      JSON.stringify("const fs=require('fs'); fs.mkdirSync('tests/reports',{recursive:true}); const report={generatedAt:new Date().toISOString(),releaseRunId:process.env.G3D_RELEASE_RUN_ID,status:'fail'}; fs.writeFileSync('tests/reports/performance.json',JSON.stringify(report)); fs.writeFileSync('tests/reports/final-performance.json',JSON.stringify(report));")
+      JSON.stringify("const fs=require('fs'); fs.mkdirSync('tests/reports',{recursive:true}); const report={generatedAt:new Date().toISOString(),releaseRunId:process.env.A3D_RELEASE_RUN_ID,status:'fail'}; fs.writeFileSync('tests/reports/performance.json',JSON.stringify(report)); fs.writeFileSync('tests/reports/final-performance.json',JSON.stringify(report));")
     ].join(" ");
     const report = runReleaseVerification(root, [["performance", failedReportCommand]], "failed-report-run");
 
@@ -505,11 +505,11 @@ describe("verification tools", () => {
   });
 
   it("clean-checkout verification records git, package manager, OS, browser, GPU, and run ID fields", () => {
-    const previousIndependent = process.env.G3D_INDEPENDENT_REPRODUCTION;
-    const previousEvidence = process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
+    const previousIndependent = process.env.A3D_INDEPENDENT_REPRODUCTION;
+    const previousEvidence = process.env.A3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
 
-    delete process.env.G3D_INDEPENDENT_REPRODUCTION;
-    delete process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
+    delete process.env.A3D_INDEPENDENT_REPRODUCTION;
+    delete process.env.A3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
 
     try {
       const report = createCleanCheckoutReport(process.cwd());
@@ -533,15 +533,15 @@ describe("verification tools", () => {
       expect(report.reproduction.blockers.join(" ")).toMatch(/Independent/i);
     } finally {
       if (previousIndependent === undefined) {
-        delete process.env.G3D_INDEPENDENT_REPRODUCTION;
+        delete process.env.A3D_INDEPENDENT_REPRODUCTION;
       } else {
-        process.env.G3D_INDEPENDENT_REPRODUCTION = previousIndependent;
+        process.env.A3D_INDEPENDENT_REPRODUCTION = previousIndependent;
       }
 
       if (previousEvidence === undefined) {
-        delete process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
+        delete process.env.A3D_INDEPENDENT_REPRODUCTION_EVIDENCE;
       } else {
-        process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE = previousEvidence;
+        process.env.A3D_INDEPENDENT_REPRODUCTION_EVIDENCE = previousEvidence;
       }
     }
   }, 15_000);
@@ -593,7 +593,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "tests", "reports", "pbr-rendering-comparison.json"), JSON.stringify({
       ok: true,
       claimBoundary: {
-        supported: "One bounded perspective-camera WebGL2 PBR scene is rendered in Galileo3D and a same-page Three.js reference.",
+        supported: "One bounded perspective-camera WebGL2 PBR scene is rendered in Aura3D and a same-page Three.js reference.",
         unsupported: ["No production PBR parity claim."]
       }
     }));
@@ -624,7 +624,7 @@ describe("verification tools", () => {
     mkdirSync(join(root, "release-artifacts"), { recursive: true });
     mkdirSync(join(root, "docs"), { recursive: true });
     writeFileSync(join(root, "package.json"), JSON.stringify({
-      name: "@galileo3d/engine",
+      name: "@aura3d/engine",
       version: "0.1.0-alpha.0",
       private: false
     }));
@@ -635,7 +635,7 @@ describe("verification tools", () => {
       artifacts: [
         {
           type: "tarball",
-          name: "@galileo3d/engine",
+          name: "@aura3d/engine",
           version: "0.1.0-alpha.0",
           pathOrUrl: "release-artifacts/engine.tgz",
           sha256,
@@ -651,7 +651,7 @@ describe("verification tools", () => {
       artifacts: [
         {
           type: "tarball",
-          name: "@galileo3d/engine",
+          name: "@aura3d/engine",
           version: "0.1.0-alpha.0",
           pathOrUrl: "release-artifacts/engine.tgz",
           sha256: "bad",
@@ -693,12 +693,12 @@ describe("verification tools", () => {
       }
       const deploymentCommandPlan = JSON.parse(readFileSync(join(process.cwd(), report.deploymentCommandPlanPath), "utf8"));
       expect(deploymentCommandPlan).toMatchObject({
-        schemaVersion: "g3d-public-demo-deployment-command-plan-v1",
+        schemaVersion: "a3d-public-demo-deployment-command-plan-v1",
         outputDir: report.outputDir,
         validationCommands: expect.arrayContaining([
           "pnpm build:external-demos",
           "pnpm verify:static-demo-server-smoke",
-          "G3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
+          "A3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
           "pnpm audit:external-parity-production-readiness",
         ]),
         githubPagesWorkflow: ".github/workflows/v4-public-demo-deploy.yml",

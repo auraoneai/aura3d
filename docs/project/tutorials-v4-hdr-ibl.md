@@ -1,6 +1,6 @@
 # V4 HDR / IBL
 
-Use `@galileo3d/engine` with `createG3DApp`, `createEnvironment`, and `workflows.materialStudio` to prove color-managed HDR/IBL behavior before accepting material screenshots.
+Use `@aura3d/engine` with `createA3DApp`, `createEnvironment`, and `workflows.materialStudio` to prove color-managed HDR/IBL behavior before accepting material screenshots.
 
 Evidence: `examples/external-hdr-ibl`, `tests/browser/external-parity-hdr-pipeline.spec.ts`, and `tests/browser/external-parity-ibl-visual.spec.ts`.
 

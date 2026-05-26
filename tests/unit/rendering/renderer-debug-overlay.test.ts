@@ -14,7 +14,7 @@ describe("renderer debug overlays", () => {
     try {
       device.createShaderProgram({
         label: "debug-broken-shader",
-        marker: "@galileo3d-debug-overlay-marker",
+        marker: "@aura3d-debug-overlay-marker",
         vertex: "void main() { gl_Position = vec4(0.0); }",
         fragment: "void main() { }"
       });

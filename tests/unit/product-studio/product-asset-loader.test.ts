@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { loadProductAsset } from "@galileo3d/product-studio";
+import { loadProductAsset } from "@aura3d/product-studio";
 
 describe("loadProductAsset", () => {
   it("loads a generated product asset with resources and manifest metadata", async () => {
     const product = await loadProductAsset({
       id: "camera-kit",
-      url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/camera-kit.gltf"))),
-      manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/manifest.json")))
+      url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/camera-kit.gltf"))),
+      manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/manifest.json")))
     });
 
     expect(product.id).toBe("camera-kit");

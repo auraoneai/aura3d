@@ -1,4 +1,4 @@
-import type { Ray } from "@galileo3d/math";
+import type { Ray } from "@aura3d/math";
 import { CommandHistory } from "./CommandHistory";
 import type { Command, CommandContext } from "./Command";
 import { DiagnosticsOverlayModel, type EditorDiagnosticsInput, type EditorDiagnosticsSnapshot } from "./DiagnosticsOverlayModel";

@@ -10,14 +10,14 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import { type StereoControlState } from "../../stereo-effects/src/stereoControls.js";
 
 declare global {
   interface Window {
-    __g3dV8ParallaxBarrier?: V8ParallaxBarrierRuntime;
+    __a3dV8ParallaxBarrier?: V8ParallaxBarrierRuntime;
   }
 }
 
@@ -105,7 +105,7 @@ async function run(): Promise<void> {
   };
   const publish = (patch: Partial<V8ParallaxBarrierRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
-    window.__g3dV8ParallaxBarrier = runtime;
+    window.__a3dV8ParallaxBarrier = runtime;
     renderUi(root, runtime);
   };
 
@@ -122,8 +122,8 @@ async function run(): Promise<void> {
 
   try {
     const [leftRenderer, rightRenderer] = await Promise.all([
-      G3DRenderer.create({ canvas: leftCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
-      G3DRenderer.create({ canvas: rightCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
+      A3DRenderer.create({ canvas: leftCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
+      A3DRenderer.create({ canvas: rightCanvas, width: renderSize.width, height: renderSize.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
     ]);
     const leftResources = createResources("left");
     const rightResources = createResources("right");
@@ -212,7 +212,7 @@ async function run(): Promise<void> {
           compositeRightPixels: composite?.rightPixelCount ?? 0,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__g3dV8ParallaxBarrier = runtime;
+        window.__a3dV8ParallaxBarrier = runtime;
         if (frameCount === 1 || frameCount % 12 === 0) renderUi(root, runtime);
         requestAnimationFrame(render);
       } catch (error) {
@@ -329,7 +329,7 @@ function renderUi(root: HTMLElement, runtime: V8ParallaxBarrierRuntime): void {
     <section class="panel">
       <p id="runtime-state" class="runtime-pill is-${runtime.status}">${runtime.statusLabel}</p>
       <h1>V8 Parallax Barrier</h1>
-      <p>${runtime.barrierMaskEnabled ? "G3D-only interleaved stereo route for webgl_effects_parallaxbarrier parity work." : "Single-view preview. Add ?mask=1 to inspect the interleaved parallax barrier mask."}</p>
+      <p>${runtime.barrierMaskEnabled ? "A3D-only interleaved stereo route for webgl_effects_parallaxbarrier parity work." : "Single-view preview. Add ?mask=1 to inspect the interleaved parallax barrier mask."}</p>
       <dl>
         <dt>Frames</dt><dd>${runtime.frameCount}</dd>
         <dt>Draw calls</dt><dd>${runtime.drawCalls}</dd>

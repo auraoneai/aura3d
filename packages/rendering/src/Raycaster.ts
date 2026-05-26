@@ -1,4 +1,4 @@
-import { Box3, Ray } from "@galileo3d/math";
+import { Box3, Ray } from "@aura3d/math";
 
 export interface RaycastTarget<T = unknown> {
   readonly id: string;

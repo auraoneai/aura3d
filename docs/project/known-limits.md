@@ -1,4 +1,4 @@
-# Galileo3D Known Limits
+# Aura3D Known Limits
 
 This page records limits that affect public demos, benchmarks, docs, and claims as of the current v2 execution slice. It exists to prevent demos and comparison scaffolds from implying broader production readiness.
 
@@ -13,10 +13,10 @@ This page records limits that affect public demos, benchmarks, docs, and claims 
 - `tools/compare-engines` currently verifies equivalent benchmark scaffolds, capped Playwright Chromium WebGL2 microbenchmark timing, and esbuild benchmark bundle artifacts.
 - The generated `comparison-threejs.json` and `comparison-babylon.json` reports include Node, OS, hardware, browser, GPU, screenshot-artifact, raw-sample, benchmark-bundle, and failure-log fields. The timing samples are bounded microbenchmarks over equivalent workload metadata, not rendered product-scene parity.
 - The comparison reports are not production app performance evidence and do not include rendered screenshot diffs.
-- The only current supported stronger competitive wording is the exact bundle-size niche registered in `docs/project/v2-claim-registry.md`: Galileo3D generated smaller esbuild browser benchmark bundles than Three.js and Babylon.js for all three checked-in equivalent scaffold scenes on this run.
+- The only current supported stronger competitive wording is the exact bundle-size niche registered in `docs/project/v2-claim-registry.md`: Aura3D generated smaller esbuild browser benchmark bundles than Three.js and Babylon.js for all three checked-in equivalent scaffold scenes on this run.
 - No broad "better than Three.js," broad "better than Babylon.js," "Unity/Unreal for the web," or "production-ready" claim is supported by the current benchmark scaffolds.
 - Real external claim evidence still requires broader pinned package installs, browser/device matrix data, rendered-scene raw frame samples, GPU memory data, screenshots, release-bundle artifacts, and failure logs.
-- `docs/comparisons/threejs.md` and `docs/comparisons/babylonjs.md` classify Galileo3D as smaller only for generated esbuild browser benchmark bundle bytes in the checked-in equivalent scaffold scenes. They classify the current scaffold as equal for checked-in workload definitions and bounded browser microbenchmark coverage, and classify Three.js and Babylon.js as stronger for ecosystem maturity, loader maturity, public examples, and proven browser history.
+- `docs/comparisons/threejs.md` and `docs/comparisons/babylonjs.md` classify Aura3D as smaller only for generated esbuild browser benchmark bundle bytes in the checked-in equivalent scaffold scenes. They classify the current scaffold as equal for checked-in workload definitions and bounded browser microbenchmark coverage, and classify Three.js and Babylon.js as stronger for ecosystem maturity, loader maturity, public examples, and proven browser history.
 - The browser/native-engine comparison page limits the scope to browser-first TypeScript workflows and classifies those native authoring engines as stronger for visual authoring, asset pipeline maturity, profiling/debugging tools, platform breadth, and production editor workflows.
 - Future narrower claims beyond the exact scaffold bundle-size wording must name the measured dimension, cite browser/device artifacts, and list exclusions where competitors remain stronger.
 
@@ -39,8 +39,8 @@ This page records limits that affect public demos, benchmarks, docs, and claims 
 - The product demos in this slice use procedural assets. External glTF product assets, broad Khronos corpus validation, and compatibility comparisons remain separate asset-track work. Draco/Meshopt package-backed decoder evidence exists only for pinned Khronos test assets.
 - `tests/assets/corpus/gltf-corpus.manifest.json` is the bounded 77-entry loader-compatibility corpus. `tests/assets/corpus/gltf-100-classification.manifest.json` and `tests/reports/gltf-100-classification.json` add 100 pinned Khronos GLB source classifications with SHA-256 hashes, but that broader report is classification evidence only, not loader/render/visual validation.
 - `tests/reports/asset-compatibility-threejs.json` now records pinned Three.js and Babylon.js loader imports for the current 77-entry Khronos compatibility corpus. This is loader-import evidence only: it is not visual output parity or 100-asset loader parity. The same-corpus Blender-export rows remain `not-run` because that corpus is not a Blender re-export corpus.
-- `tests/reports/blender-export-validation.json` now validates three pinned Khronos Vulkan Samples glTF fixtures with Blender generator metadata through Galileo3D's glTF loader. This is bounded checked-in fixture evidence, not a local Blender executable export round trip, broad Blender/exporter corpus coverage, or visual output parity.
-- No current 77-asset glTF corpus entry is expected-fail. `multi-uv-test` and `meshopt-cube-test` were promoted to pass after current browser visual evidence showed clean Galileo/Three/Babylon renders with no warnings. Seven entries remain `warn` and still block full external glTF visual parity claims.
+- `tests/reports/blender-export-validation.json` now validates three pinned Khronos Vulkan Samples glTF fixtures with Blender generator metadata through Aura3D's glTF loader. This is bounded checked-in fixture evidence, not a local Blender executable export round trip, broad Blender/exporter corpus coverage, or visual output parity.
+- No current 77-asset glTF corpus entry is expected-fail. `multi-uv-test` and `meshopt-cube-test` were promoted to pass after current browser visual evidence showed clean Aura3D/Three/Babylon renders with no warnings. Seven entries remain `warn` and still block full external glTF visual parity claims.
 - `box-textured` is classified as warn with diagnostic `ASSET_LICENSE_TRADEMARK_LIMIT` because the sample includes non-copyrightable Cesium logo/trademark markings. Next action: use it for importer validation only, not product art.
 - `duck`, `cesium-man`, and `damaged-helmet` are classified as warn because their source licenses include SCEA, trademark-restricted, or non-commercial terms. Next action: use them for importer validation only under their source license constraints.
 
@@ -51,9 +51,9 @@ This page records limits that affect public demos, benchmarks, docs, and claims 
 - Continuous collision detection is not supported in the current built-in physics path; fast bodies are handled by discrete fixed-step collision checks only.
 - The current broadphase is deterministic sweep-and-prune with profiling counters, a deterministic JavaScript physics backend with documented native-backend extension points.
 - The physics package does not claim vehicle dynamics, cloth, soft bodies, fluids, destructible simulation, or large-world streaming physics.
-- `tests/reports/physics-comparison-baseline.json` records the built-in Galileo3D physics baseline and external package availability. Rapier, Cannon, and Ammo are currently reported as unavailable when their packages are not installed, so this report does not enable a physics-engine superiority claim.
+- `tests/reports/physics-comparison-baseline.json` records the built-in Aura3D physics baseline and external package availability. Rapier, Cannon, and Ammo are currently reported as unavailable when their packages are not installed, so this report does not enable a physics-engine superiority claim.
 
 ## Documentation Status
 
 - API docs in `docs/api` are generated entrypoint export summaries, not symbol-level reference output.
-- Starter templates are scaffolds intended for local validation; they are not published packages. Template verification currently checks file structure, public `@galileo3d/rendering` imports, Vite build scripts, and absence of `workspace:` dependency protocols. It does not prove install-from-registry builds because `0.0.0-rebuild` packages are not published.
+- Starter templates are scaffolds intended for local validation; they are not published packages. Template verification currently checks file structure, public `@aura3d/rendering` imports, Vite build scripts, and absence of `workspace:` dependency protocols. It does not prove install-from-registry builds because `0.0.0-rebuild` packages are not published.

@@ -1,6 +1,6 @@
 // @ts-nocheck
-import { Geometry, UnlitMaterial } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+import { Geometry, UnlitMaterial } from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import * as THREE from "three";
 import { EffectComposer } from "/node_modules/three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "/node_modules/three/examples/jsm/postprocessing/RenderPass.js";
@@ -18,12 +18,12 @@ type V9UnrealBloomParityResult = V9UnrealBloomParityReady | V9UnrealBloomParityE
 
 interface V9UnrealBloomParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-unreal-bloom-parity/v1";
-  readonly purpose: "same-scene G3D bloom chain vs Three.js EffectComposer UnrealBloomPass";
+  readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
+  readonly purpose: "same-scene A3D bloom chain vs Three.js EffectComposer UnrealBloomPass";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: {
-    readonly renderer: { readonly drawCalls: number; readonly actualG3DRenderer: true };
+  readonly a3d: {
+    readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: true };
     readonly postprocess: { readonly chain: readonly string[]; readonly threshold: number; readonly radius: number; readonly intensity: number };
     readonly pixels: PixelStats;
   };
@@ -38,19 +38,19 @@ interface V9UnrealBloomParityReady {
     readonly actualThreeRenderer: boolean;
     readonly actualEffectComposer: boolean;
     readonly actualUnrealBloomPass: boolean;
-    readonly g3dBloomChain: boolean;
+    readonly a3dBloomChain: boolean;
     readonly brightOutput: boolean;
     readonly haloOutput: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
   readonly humanNotes: readonly string[];
 }
 
 interface V9UnrealBloomParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-unreal-bloom-parity/v1";
+  readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -88,31 +88,31 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-unreal-bloom", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-unreal-bloom", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-unreal-bloom", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
 
-    if (status) status.textContent = "rendering G3D bloom chain";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D bloom chain";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering Three.js UnrealBloomPass";
     const threejs = await renderThree(threeCanvas);
 
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
 
     const ready: V9UnrealBloomParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-unreal-bloom-parity/v1",
-      purpose: "same-scene G3D bloom chain vs Three.js EffectComposer UnrealBloomPass",
+      schema: "a3d-threejs-parity-unreal-bloom-parity/v1",
+      purpose: "same-scene A3D bloom chain vs Three.js EffectComposer UnrealBloomPass",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls, actualG3DRenderer: true },
-        postprocess: { chain: g3d.chain, threshold: SCENE.bloom.threshold, radius: SCENE.bloom.radius, intensity: SCENE.bloom.intensity },
-        pixels: g3dStats
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls, actualA3DRenderer: true },
+        postprocess: { chain: a3d.chain, threshold: SCENE.bloom.threshold, radius: SCENE.bloom.radius, intensity: SCENE.bloom.intensity },
+        pixels: a3dStats
       },
       threejs: {
         renderer: { actualThreeRenderer: threejs.actualThreeRenderer, drawCalls: threejs.drawCalls, triangles: threejs.triangles },
@@ -128,17 +128,17 @@ async function run(): Promise<void> {
       },
       diff,
       assertions: {
-        sameResolution: g3dPixels.width === threePixels.width && g3dPixels.height === threePixels.height,
+        sameResolution: a3dPixels.width === threePixels.width && a3dPixels.height === threePixels.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualEffectComposer: threejs.actualEffectComposer,
         actualUnrealBloomPass: threejs.actualUnrealBloomPass,
-        g3dBloomChain: g3d.chain.join("/") === "bloom/tone-mapping/fxaa",
-        brightOutput: g3dStats.brightPixels > 4_000 && threeStats.brightPixels > 4_000,
-        haloOutput: g3dStats.haloPixels > 3_000 && threeStats.haloPixels > 8_000,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 20_000 && threeStats.nonBlackPixels > 20_000,
+        a3dBloomChain: a3d.chain.join("/") === "bloom/tone-mapping/fxaa",
+        brightOutput: a3dStats.brightPixels > 4_000 && threeStats.brightPixels > 4_000,
+        haloOutput: a3dStats.haloPixels > 3_000 && threeStats.haloPixels > 8_000,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 20_000 && threeStats.nonBlackPixels > 20_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "Three.js reference uses an actual EffectComposer with RenderPass and UnrealBloomPass.",
@@ -152,7 +152,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: V9UnrealBloomParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-unreal-bloom-parity/v1",
+      schema: "a3d-threejs-parity-unreal-bloom-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
@@ -164,8 +164,8 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
-  const renderer = await G3DRenderer.create({
+async function renderA3D(canvas: HTMLCanvasElement) {
+  const renderer = await A3DRenderer.create({
     canvas,
     width: SCENE.width,
     height: SCENE.height,
@@ -176,7 +176,7 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   });
   const diagnostics = renderer.render({
     cameraPolicy: "identity",
-    renderItems: createG3DItems(),
+    renderItems: createA3DItems(),
     postprocess: {
       bloom: { threshold: SCENE.bloom.threshold, intensity: SCENE.bloom.intensity, radius: SCENE.bloom.radius },
       toneMapping: {
@@ -231,7 +231,7 @@ async function renderThree(canvas: HTMLCanvasElement) {
   };
 }
 
-function createG3DItems() {
+function createA3DItems() {
   const yellow = new UnlitMaterial({ color: [1, 0.82, 0.18, 1] });
   const blue = new UnlitMaterial({ color: [0.1, 0.52, 1, 1] });
   const white = new UnlitMaterial({ color: [1, 1, 0.92, 1] });
@@ -359,19 +359,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create unreal bloom side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, SCENE.width, 0, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.92)";
   context.fillRect(0, SCENE.height, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("Left: G3D bloom chain | Right: Three.js EffectComposer + UnrealBloomPass", 20, SCENE.height + 28);
+  context.fillText("Left: A3D bloom chain | Right: Three.js EffectComposer + UnrealBloomPass", 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
   context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height + 50);

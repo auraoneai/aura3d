@@ -22,20 +22,20 @@ import {
 import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "../../../assets/src/GLTFRenderResources";
 import { DirectionalLight, composeMat4 } from "../../../scene/src/index";
 
-export interface G3DViewport {
+export interface A3DViewport {
   readonly width: number;
   readonly height: number;
 }
 
-export type G3DVec3 = readonly [number, number, number];
+export type A3DVec3 = readonly [number, number, number];
 
-export interface G3DStudioLightingOptions {
+export interface A3DStudioLightingOptions {
   readonly preset?: "product" | "inspection" | "softbox";
   readonly intensityScale?: number;
   readonly shadows?: boolean;
 }
 
-export interface G3DGroundedStageOptions {
+export interface A3DGroundedStageOptions {
   readonly labelPrefix?: string;
   readonly floorColor?: readonly [number, number, number, number];
   readonly backdropColor?: readonly [number, number, number, number];
@@ -44,15 +44,15 @@ export interface G3DGroundedStageOptions {
   readonly floorMetallic?: number;
   readonly contactShadows?: boolean;
   readonly background?: boolean;
-  readonly shadowLightDirection?: G3DVec3;
+  readonly shadowLightDirection?: A3DVec3;
 }
 
-export interface G3DGroundedStageSettings {
+export interface A3DGroundedStageSettings {
   readonly backgroundBlur?: number;
   readonly backgroundVisible?: boolean;
 }
 
-export interface G3DGroundedStageDiagnostics {
+export interface A3DGroundedStageDiagnostics {
   readonly labelPrefix: string;
   readonly floorY: number;
   readonly floorItemCount: number;
@@ -60,17 +60,17 @@ export interface G3DGroundedStageDiagnostics {
   readonly contactShadow?: ContactShadowPassDiagnostics;
 }
 
-export interface G3DGroundedStage {
+export interface A3DGroundedStage {
   readonly groundingItems: readonly RenderItem[];
   readonly backgroundItems: readonly RenderItem[];
   readonly floorY: number;
-  readonly diagnostics: G3DGroundedStageDiagnostics;
-  update(settings?: G3DGroundedStageSettings): void;
+  readonly diagnostics: A3DGroundedStageDiagnostics;
+  update(settings?: A3DGroundedStageSettings): void;
   renderItems(options?: { readonly shadows?: boolean; readonly backgroundVisible?: boolean }): readonly RenderItem[];
   dispose(): void;
 }
 
-export interface G3DProductViewerCameraDiagnostics {
+export interface A3DProductViewerCameraDiagnostics {
   readonly preset: "product-hero" | "asset-inspection" | "material-inspection";
   readonly yawRadians: number;
   readonly pitchRadians: number;
@@ -80,23 +80,23 @@ export interface G3DProductViewerCameraDiagnostics {
   readonly zoom: number;
 }
 
-export interface G3DCameraFrameOptions {
+export interface A3DCameraFrameOptions {
   readonly bounds: CameraFrameBounds;
-  readonly viewport: G3DViewport;
-  readonly preset?: G3DProductViewerCameraDiagnostics["preset"];
-  readonly target?: G3DVec3;
+  readonly viewport: A3DViewport;
+  readonly preset?: A3DProductViewerCameraDiagnostics["preset"];
+  readonly target?: A3DVec3;
   readonly yawRadians?: number;
   readonly pitchRadians?: number;
   readonly zoom?: number;
   readonly paddingRatio?: number;
 }
 
-export interface G3DCameraFrame {
+export interface A3DCameraFrame {
   readonly camera: CameraLike;
-  readonly diagnostics: G3DProductViewerCameraDiagnostics;
+  readonly diagnostics: A3DProductViewerCameraDiagnostics;
 }
 
-export interface G3DGltfSceneOptions {
+export interface A3DGltfSceneOptions {
   readonly url: string;
   readonly assetId?: string;
   readonly assetName?: string;
@@ -104,13 +104,13 @@ export interface G3DGltfSceneOptions {
   readonly sceneIndex?: number;
   readonly sceneName?: string;
   readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
-  readonly viewport?: G3DViewport;
+  readonly viewport?: A3DViewport;
   readonly rendererInput?: GLTFRendererInputOptions;
 }
 
-export interface G3DGltfRendererInputOptions {
-  readonly viewport: G3DViewport;
-  readonly environment?: G3DHdrEnvironment;
+export interface A3DGltfRendererInputOptions {
+  readonly viewport: A3DViewport;
+  readonly environment?: A3DHdrEnvironment;
   readonly environmentLighting?: EnvironmentLightingOptions;
   readonly renderItems?: Iterable<RenderItem>;
   readonly collectedLights?: Iterable<CollectedLight>;
@@ -118,7 +118,7 @@ export interface G3DGltfRendererInputOptions {
   readonly postprocess?: RendererPostProcessOptions | boolean;
 }
 
-export class G3DGltfScene {
+export class A3DGltfScene {
   constructor(private readonly pipeline: V6GLTFRenderPipeline) {}
 
   get asset() {
@@ -133,7 +133,7 @@ export class G3DGltfScene {
     return this.pipeline.metadata;
   }
 
-  createRendererInput(options: G3DGltfRendererInputOptions): {
+  createRendererInput(options: A3DGltfRendererInputOptions): {
     readonly source: RenderSource;
     readonly camera: CameraLike;
     readonly bounds: CameraFrameBounds;
@@ -160,7 +160,7 @@ export class G3DGltfScene {
   }
 }
 
-export interface G3DHdrEnvironmentOptions {
+export interface A3DHdrEnvironmentOptions {
   readonly url: string;
   readonly id?: string;
   readonly label?: string;
@@ -176,7 +176,7 @@ export interface G3DHdrEnvironmentOptions {
   };
 }
 
-export class G3DHdrEnvironment {
+export class A3DHdrEnvironment {
   readonly id: string;
   readonly label: string;
   readonly url: string;
@@ -206,7 +206,7 @@ export class G3DHdrEnvironment {
   }
 }
 
-export async function loadGltfScene(input: string | G3DGltfSceneOptions): Promise<G3DGltfScene> {
+export async function loadGltfScene(input: string | A3DGltfSceneOptions): Promise<A3DGltfScene> {
   const options = typeof input === "string" ? { url: input } : input;
   const viewport = options.viewport ?? { width: 1024, height: 1024 };
   const assetId = options.assetId ?? assetIdFromUrl(options.url);
@@ -222,10 +222,10 @@ export async function loadGltfScene(input: string | G3DGltfSceneOptions): Promis
     ...(options.materialRenderStateOverrides ? { materialRenderStateOverrides: options.materialRenderStateOverrides } : {}),
     ...(options.rendererInput ? { rendererInput: options.rendererInput } : {})
   });
-  return new G3DGltfScene(pipeline);
+  return new A3DGltfScene(pipeline);
 }
 
-export async function loadHdrEnvironment(input: string | G3DHdrEnvironmentOptions): Promise<G3DHdrEnvironment> {
+export async function loadHdrEnvironment(input: string | A3DHdrEnvironmentOptions): Promise<A3DHdrEnvironment> {
   const options = typeof input === "string" ? { url: input } : input;
   const data = options.data ?? await fetchArrayBuffer(options.url);
   const id = options.id ?? assetIdFromUrl(options.url);
@@ -249,7 +249,7 @@ export async function loadHdrEnvironment(input: string | G3DHdrEnvironmentOption
     } : {}),
     ...(options.toneMapping ? { toneMapping: options.toneMapping } : {})
   });
-  return new G3DHdrEnvironment({
+  return new A3DHdrEnvironment({
     id,
     label: options.label ?? id,
     url: options.url,
@@ -258,33 +258,33 @@ export async function loadHdrEnvironment(input: string | G3DHdrEnvironmentOption
   });
 }
 
-export function createStudioLighting(options: G3DStudioLightingOptions = {}): readonly CollectedLight[] {
+export function createStudioLighting(options: A3DStudioLightingOptions = {}): readonly CollectedLight[] {
   const scale = clamp(options.intensityScale ?? 1, 0, 16);
   const shadows = options.shadows ?? true;
   switch (options.preset ?? "product") {
     case "inspection":
       return [
-        createDirectionalLight({ name: "g3d-v8-inspection-key", direction: [-0.35, -0.72, -0.46], color: [1, 0.98, 0.92], intensity: 2.1 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "g3d-v8-inspection-fill", direction: [0.55, -0.48, -0.34], color: [0.62, 0.74, 1], intensity: 0.72 * scale }),
-        createDirectionalLight({ name: "g3d-v8-inspection-rim", direction: [0.14, -0.34, 0.93], color: [1, 0.82, 0.62], intensity: 1.16 * scale })
+        createDirectionalLight({ name: "a3d-v8-inspection-key", direction: [-0.35, -0.72, -0.46], color: [1, 0.98, 0.92], intensity: 2.1 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-v8-inspection-fill", direction: [0.55, -0.48, -0.34], color: [0.62, 0.74, 1], intensity: 0.72 * scale }),
+        createDirectionalLight({ name: "a3d-v8-inspection-rim", direction: [0.14, -0.34, 0.93], color: [1, 0.82, 0.62], intensity: 1.16 * scale })
       ];
     case "softbox":
       return [
-        createDirectionalLight({ name: "g3d-v8-softbox-key", direction: [-0.2, -0.9, -0.32], color: [1, 0.97, 0.91], intensity: 1.75 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "g3d-v8-softbox-fill", direction: [0.44, -0.52, -0.42], color: [0.74, 0.82, 1], intensity: 1.04 * scale })
+        createDirectionalLight({ name: "a3d-v8-softbox-key", direction: [-0.2, -0.9, -0.32], color: [1, 0.97, 0.91], intensity: 1.75 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-v8-softbox-fill", direction: [0.44, -0.52, -0.42], color: [0.74, 0.82, 1], intensity: 1.04 * scale })
       ];
     case "product":
     default:
       return [
-        createDirectionalLight({ name: "g3d-v8-product-key-shadow", direction: [-0.42, -0.82, -0.38], color: [1, 0.95, 0.86], intensity: 2.75 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "g3d-v8-product-fill", direction: [0.62, -0.42, -0.34], color: [0.55, 0.68, 1], intensity: 0.48 * scale }),
-        createDirectionalLight({ name: "g3d-v8-product-rim", direction: [0.18, -0.34, 0.92], color: [1, 0.82, 0.55], intensity: 1.05 * scale })
+        createDirectionalLight({ name: "a3d-v8-product-key-shadow", direction: [-0.42, -0.82, -0.38], color: [1, 0.95, 0.86], intensity: 2.75 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-v8-product-fill", direction: [0.62, -0.42, -0.34], color: [0.55, 0.68, 1], intensity: 0.48 * scale }),
+        createDirectionalLight({ name: "a3d-v8-product-rim", direction: [0.18, -0.34, 0.92], color: [1, 0.82, 0.55], intensity: 1.05 * scale })
       ];
   }
 }
 
-export function createGroundedStage(bounds: CameraFrameBounds, options: G3DGroundedStageOptions = {}): G3DGroundedStage {
-  const labelPrefix = options.labelPrefix ?? "g3d-v8-grounded-stage";
+export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroundedStageOptions = {}): A3DGroundedStage {
+  const labelPrefix = options.labelPrefix ?? "a3d-v8-grounded-stage";
   const width = Math.max(3.8, (bounds.max[0] - bounds.min[0]) * 2.4);
   const height = Math.max(2.6, (bounds.max[1] - bounds.min[1]) * 2.35);
   const depth = Math.max(3.2, (bounds.max[2] - bounds.min[2]) * 3.2 + 1.35);
@@ -333,7 +333,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: G3DGroun
       modelMatrix: composeMat4([centerX, centerY + height * 0.9, backZ], [0, 0, 0, 1], [width * 1.35, height * 2.8, 0.05])
     }
   ];
-  const diagnostics: G3DGroundedStageDiagnostics = {
+  const diagnostics: A3DGroundedStageDiagnostics = {
     labelPrefix,
     floorY,
     floorItemCount: groundingItems.length,
@@ -364,7 +364,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: G3DGroun
   };
 }
 
-export function createCameraFrame(options: G3DCameraFrameOptions): G3DCameraFrame {
+export function createCameraFrame(options: A3DCameraFrameOptions): A3DCameraFrame {
   const preset = options.preset ?? "product-hero";
   const base = productViewerCameraPreset(preset);
   const targetOffset = productViewerTargetOffset(options.bounds, options.target ?? [0, 0, 0], preset);
@@ -400,12 +400,12 @@ export function createCameraFrame(options: G3DCameraFrameOptions): G3DCameraFram
 
 function createDirectionalLight(options: {
   readonly name?: string;
-  readonly direction?: G3DVec3;
-  readonly color?: G3DVec3;
+  readonly direction?: A3DVec3;
+  readonly color?: A3DVec3;
   readonly intensity?: number;
   readonly castsShadow?: boolean;
 } = {}): CollectedLight {
-  const source = new DirectionalLight(options.name ?? "g3d-v8-directional-light");
+  const source = new DirectionalLight(options.name ?? "a3d-v8-directional-light");
   const color = options.color ?? [1, 1, 1];
   source.color = [color[0], color[1], color[2]];
   source.intensity = clamp(options.intensity ?? 1, 0, 64);
@@ -433,7 +433,7 @@ function collectedDirectionalLight(
   };
 }
 
-function productViewerCameraPreset(preset: G3DProductViewerCameraDiagnostics["preset"]): Required<Pick<
+function productViewerCameraPreset(preset: A3DProductViewerCameraDiagnostics["preset"]): Required<Pick<
   PerspectiveCameraFrameOptions,
   "fovYRadians" | "paddingRatio" | "minDistance" | "nearPadding" | "farPadding" | "yawRadians" | "pitchRadians"
 >> {
@@ -451,7 +451,7 @@ function productViewerCameraPreset(preset: G3DProductViewerCameraDiagnostics["pr
 function productViewerTargetOffset(
   bounds: CameraFrameBounds,
   target: readonly [number, number, number],
-  preset: G3DProductViewerCameraDiagnostics["preset"]
+  preset: A3DProductViewerCameraDiagnostics["preset"]
 ): readonly [number, number, number] {
   const extent = Math.max(
     0.001,

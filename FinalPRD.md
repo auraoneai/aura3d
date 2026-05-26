@@ -1,16 +1,16 @@
-# Final PRD: G3D Superior-To-Three.js Completion Record
+# Final PRD: A3D Superior-To-Three.js Completion Record
 
 Evidence version: `v10`
 
 Target release: `1.0.0-superiority`
 
-Owner: G3D engineering
+Owner: A3D engineering
 
 Status: Completed evidence PRD
 
 ## Objective
 
-This PRD records the code, route, benchmark, documentation, and evidence work required to defend G3D as a browser 3D engine and workflow SDK that matches or exceeds Three.js across the areas that matter for production web 3D:
+This PRD records the code, route, benchmark, documentation, and evidence work required to defend A3D as a browser 3D engine and workflow SDK that matches or exceeds Three.js across the areas that matter for production web 3D:
 
 - visual quality;
 - animation fidelity;
@@ -44,11 +44,11 @@ The measured superiority claim is supported when all required gates in this file
 
 Approved public wording:
 
-> G3D is a production browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the G3D superiority audit.
+> A3D is a production browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the A3D superiority audit.
 
 ## Definition Of Superior
 
-G3D is superior only if it beats Three.js in measurable product outcomes, not by slogan.
+A3D is superior only if it beats Three.js in measurable product outcomes, not by slogan.
 
 | Area | Required result |
 |---|---|
@@ -58,7 +58,7 @@ G3D is superior only if it beats Three.js in measurable product outcomes, not by
 | Performance | Faster or equal startup, asset decode, frame time, draw-call count, GPU time, memory growth, and route health for benchmark scenes. |
 | Assets | glTF/GLB, texture compression, material extensions, variants, animation, morphs, instancing, Draco, Meshopt, KTX2/Basis, HDR/EXR, OBJ, and error diagnostics are production-grade. |
 | WebGPU | WebGPU is not a demo path. It must support real scenes, materials, textures, postprocess, skinning, instancing, compute, fallback, and reporting. |
-| Developer workflow | It must be faster to build a product viewer, material studio, animation viewer, and asset inspector in G3D than in raw Three.js. |
+| Developer workflow | It must be faster to build a product viewer, material studio, animation viewer, and asset inspector in A3D than in raw Three.js. |
 | Ecosystem bridge | Three.js migration, compatibility shims, examples, and codemods must reduce migration work without hiding unsupported APIs. |
 
 ## Completion Evidence
@@ -80,20 +80,20 @@ Completion requires a generated `tests/reports/v10/superiority-audit.json` with 
 
 No category may remain unmeasured or production-critical without a passing decision.
 
-When every row passes, the final README states that G3D is at parity with or ahead of Three.js in the measured categories, and every claim is mapped to generated evidence.
+When every row passes, the final README states that A3D is at parity with or ahead of Three.js in the measured categories, and every claim is mapped to generated evidence.
 
 ## Required Final Claim Defense
 
 The final release must be able to answer these questions with generated evidence:
 
-- Which Three.js feature categories does G3D match?
-- Which Three.js feature categories does G3D exceed?
+- Which Three.js feature categories does A3D match?
+- Which Three.js feature categories does A3D exceed?
 - Which visual scenes prove equal or better graphics quality?
 - Which animation scenes prove equal or better motion fidelity?
 - Which physics scenes prove equal or better integrated behavior?
 - Which benchmarks prove equal or better startup, frame time, GPU time, memory, and draw calls?
 - Which asset corpus proves production-grade loading and material support?
-- Which migration examples prove G3D can replace selected Three.js workflows?
+- Which migration examples prove A3D can replace selected Three.js workflows?
 - Which docs prove the public API is usable without reading source code?
 - Which resource-lifecycle reports prove the engine does not leak GPU memory?
 
@@ -113,7 +113,7 @@ Any unsupported future work belongs in roadmap docs, not in current-product posi
 
 ## Architecture Rule
 
-G3D must not win by wrapping Three.js at runtime. Three.js can be used only for:
+A3D must not win by wrapping Three.js at runtime. Three.js can be used only for:
 
 - test baselines;
 - benchmark comparisons;
@@ -121,7 +121,7 @@ G3D must not win by wrapping Three.js at runtime. Three.js can be used only for:
 - compatibility surface tests;
 - documentation examples that show conversion.
 
-Production renderer, scene, math, animation, asset, material, physics, postprocess, controls, and workflow code must live in G3D packages.
+Production renderer, scene, math, animation, asset, material, physics, postprocess, controls, and workflow code must live in A3D packages.
 
 ## Required Package Targets
 
@@ -129,21 +129,21 @@ The final product must expose these package surfaces:
 
 | Package | Role |
 |---|---|
-| `@galileo3d/engine` | Root SDK, app API, renderer creation, workflow entrypoints, public exports. |
-| `@galileo3d/math` | Vectors, matrices, quaternions, colors, planes, rays, boxes, spheres, frustums, splines, curves. |
-| `@galileo3d/scene` | Object tree, transforms, cameras, lights, renderables, layers, queries, serialization. |
-| `@galileo3d/rendering` | WebGL2/WebGPU renderers, materials, textures, render targets, postprocess, shadows, queues, resource lifecycle. |
-| `@galileo3d/assets` | glTF/GLB, KTX2/Basis, Draco, Meshopt, HDR/EXR, OBJ, pipelines, diagnostics, cache. |
-| `@galileo3d/animation` | Clips, tracks, mixer, actions, skeletons, GPU skinning, morphs, IK, retargeting, root motion. |
-| `@galileo3d/physics` | Collision, rigid bodies, constraints, queries, character controller, scene sync, debug draw. |
-| `@galileo3d/controls` | Orbit, trackball, transform, fly, first-person, map, pointer lock, touch, gamepad, XR controller controls. |
-| `@galileo3d/materials` | PBR, physical, transmission, clearcoat, sheen, iridescence, anisotropy, node materials, shader graph. |
-| `@galileo3d/environments` | HDR environment registry, PMREM/prefilter, sky, fog, probes, reflection captures. |
-| `@galileo3d/editor-runtime` | Selection, gizmos, timeline, inspector models, prefab/project save-load, static export. |
-| `@galileo3d/workflows` | Product viewer, material studio, asset inspector, animation viewer, physics sandbox, configurator, migration lab. |
-| `@galileo3d/product-studio` | Product scene DSL, variants, annotations, screenshots, AR/export hooks. |
-| `@galileo3d/three-compat` | Migration helpers, type adapters, supported compatibility shims, codemods. |
-| `@galileo3d/debug` | Profilers, inspectors, trace export, diagnostics panels, route health, resource leak detection. |
+| `@aura3d/engine` | Root SDK, app API, renderer creation, workflow entrypoints, public exports. |
+| `@aura3d/math` | Vectors, matrices, quaternions, colors, planes, rays, boxes, spheres, frustums, splines, curves. |
+| `@aura3d/scene` | Object tree, transforms, cameras, lights, renderables, layers, queries, serialization. |
+| `@aura3d/rendering` | WebGL2/WebGPU renderers, materials, textures, render targets, postprocess, shadows, queues, resource lifecycle. |
+| `@aura3d/assets` | glTF/GLB, KTX2/Basis, Draco, Meshopt, HDR/EXR, OBJ, pipelines, diagnostics, cache. |
+| `@aura3d/animation` | Clips, tracks, mixer, actions, skeletons, GPU skinning, morphs, IK, retargeting, root motion. |
+| `@aura3d/physics` | Collision, rigid bodies, constraints, queries, character controller, scene sync, debug draw. |
+| `@aura3d/controls` | Orbit, trackball, transform, fly, first-person, map, pointer lock, touch, gamepad, XR controller controls. |
+| `@aura3d/materials` | PBR, physical, transmission, clearcoat, sheen, iridescence, anisotropy, node materials, shader graph. |
+| `@aura3d/environments` | HDR environment registry, PMREM/prefilter, sky, fog, probes, reflection captures. |
+| `@aura3d/editor-runtime` | Selection, gizmos, timeline, inspector models, prefab/project save-load, static export. |
+| `@aura3d/workflows` | Product viewer, material studio, asset inspector, animation viewer, physics sandbox, configurator, migration lab. |
+| `@aura3d/product-studio` | Product scene DSL, variants, annotations, screenshots, AR/export hooks. |
+| `@aura3d/three-compat` | Migration helpers, type adapters, supported compatibility shims, codemods. |
+| `@aura3d/debug` | Profilers, inspectors, trace export, diagnostics panels, route health, resource leak detection. |
 
 ## Filename-Level Implementation Tasklist
 
@@ -307,7 +307,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `apps/animation-multiple/src/main.ts` | Render high-quality soldiers or correct chosen characters, not debug placeholders. | Animation quality and FPS pass. |
 | [x] | `apps/skinning-additive/src/main.ts` | Fix missing limbs/disconnected body parts. | Skeleton is visually correct under all poses. |
 | [x] | `tests/browser/threejs-parity-skinning-blending-parity.spec.ts` | Blending comparison to Three.js. | Passes pixel and motion metrics. |
-| [x] | `tests/performance/animation-crowd-baseline.ts` | Crowd performance benchmark. | G3D beats Three.js at target crowd sizes. |
+| [x] | `tests/performance/animation-crowd-baseline.ts` | Crowd performance benchmark. | A3D beats Three.js at target crowd sizes. |
 
 ### 11. Physics And Simulation
 
@@ -322,7 +322,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/physics/src/Raycast.ts` | Add if missing. Ray, shape casts, overlap queries. | Picking and physics queries align. |
 | [x] | `packages/debug/src/PhysicsDebugAdapter.ts` | Debug draw contacts, bounds, constraints. | Physics showcase explains itself visually. |
 | [x] | `apps/physics-showcase/src/main.ts` | Upgrade from toy blocks to benchmarkable physics scene. | Dimensions are correct and simulation is stable. |
-| [x] | `tests/performance/physics-comparison-baseline.ts` | Compare with Three.js plus common physics integration baseline. | G3D has better integrated workflow and comparable speed. |
+| [x] | `tests/performance/physics-comparison-baseline.ts` | Compare with Three.js plus common physics integration baseline. | A3D has better integrated workflow and comparable speed. |
 
 ### 12. Controls, Interaction, Picking, And XR
 
@@ -369,7 +369,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `packages/debug/src/ResourceTracker.ts` | Track buffers/textures/programs/render targets. | Leak test fails on missing dispose. |
 | [x] | `tests/performance/rendering-frame-budgets.ts` | Define frame budgets by route. | CI blocks regressions. |
 | [x] | `tests/performance/webgpu-vs-webgl2-baseline.ts` | Backend performance comparison. | Backend deltas are tracked. |
-| [x] | `benchmarks/shared/scenes/large-scene.ts` | Expand to production-scale assets, lights, textures. | G3D beats or equals Three.js. |
+| [x] | `benchmarks/shared/scenes/large-scene.ts` | Expand to production-scale assets, lights, textures. | A3D beats or equals Three.js. |
 
 ### 15. Product Workflows And Apps
 
@@ -421,11 +421,11 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 
 | Status | File | Task | Acceptance |
 |---|---|---|---|
-| [x] | `packages/create-g3d/src/cli.ts` | Production create command with templates, validation, package versioning. | External install smoke passes. |
-| [x] | `packages/create-g3d/templates/production-product-viewer` | Product template. | Builds outside repo. |
-| [x] | `packages/create-g3d/templates/production-material-studio` | Material template. | Builds outside repo. |
-| [x] | `packages/create-g3d/templates/production-asset-inspector` | Asset template. | Builds outside repo. |
-| [x] | `packages/create-g3d/templates/production-webgpu-starter` | WebGPU template with fallback. | Builds outside repo. |
+| [x] | `packages/create-aura3d/src/cli.ts` | Production create command with templates, validation, package versioning. | External install smoke passes. |
+| [x] | `packages/create-aura3d/templates/production-product-viewer` | Product template. | Builds outside repo. |
+| [x] | `packages/create-aura3d/templates/production-material-studio` | Material template. | Builds outside repo. |
+| [x] | `packages/create-aura3d/templates/production-asset-inspector` | Asset template. | Builds outside repo. |
+| [x] | `packages/create-aura3d/templates/production-webgpu-starter` | WebGPU template with fallback. | Builds outside repo. |
 | [x] | `docs/api/public-api.md` | Generated public API reference. | Matches exports. |
 | [x] | `docs/project/getting-started.md` | Current quickstart. | New user can build a real route. |
 | [x] | `docs/project/competitive-positioning.md` | Claim-safe positioning. | No overclaim. |
@@ -438,16 +438,16 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 
 | Status | File | Scene | Acceptance |
 |---|---|---|---|
-| [x] | `benchmarks/shared/scenes/product-configurator.ts` | Product viewer/configurator. | G3D beats Three.js in time-to-first-render and workflow code size. |
-| [x] | `benchmarks/shared/scenes/pbr-materials.ts` | PBR material grid. | G3D has equal/better visual delta and frame time. |
-| [x] | `benchmarks/shared/scenes/skinned-characters.ts` | Skinned animated characters. | G3D beats Three.js in crowd FPS or memory. |
-| [x] | `benchmarks/shared/scenes/morph-characters.ts` | Morph targets. | G3D matches motion and beats workflow diagnostics. |
-| [x] | `benchmarks/shared/scenes/large-scene.ts` | Large world with culling/LOD. | G3D lower draw calls and stable FPS. |
-| [x] | `benchmarks/shared/scenes/postprocess.ts` | Bloom/SSAO/DOF/outline. | G3D equals/better visual quality and pass timing. |
-| [x] | `benchmarks/shared/scenes/particles.ts` | Particle effects. | G3D beats Three.js at target particle counts. |
-| [x] | `benchmarks/shared/scenes/asset-render.ts` | Asset corpus render. | G3D handles more assets cleanly. |
-| [x] | `benchmarks/shared/scenes/editor-authored-startup.ts` | Editor-authored app startup. | G3D faster workflow startup. |
-| [x] | `benchmarks/shared/scenes/architecture-viewer.ts` | Interior/architecture lighting. | G3D beats lighting/shadow acceptance. |
+| [x] | `benchmarks/shared/scenes/product-configurator.ts` | Product viewer/configurator. | A3D beats Three.js in time-to-first-render and workflow code size. |
+| [x] | `benchmarks/shared/scenes/pbr-materials.ts` | PBR material grid. | A3D has equal/better visual delta and frame time. |
+| [x] | `benchmarks/shared/scenes/skinned-characters.ts` | Skinned animated characters. | A3D beats Three.js in crowd FPS or memory. |
+| [x] | `benchmarks/shared/scenes/morph-characters.ts` | Morph targets. | A3D matches motion and beats workflow diagnostics. |
+| [x] | `benchmarks/shared/scenes/large-scene.ts` | Large world with culling/LOD. | A3D lower draw calls and stable FPS. |
+| [x] | `benchmarks/shared/scenes/postprocess.ts` | Bloom/SSAO/DOF/outline. | A3D equals/better visual quality and pass timing. |
+| [x] | `benchmarks/shared/scenes/particles.ts` | Particle effects. | A3D beats Three.js at target particle counts. |
+| [x] | `benchmarks/shared/scenes/asset-render.ts` | Asset corpus render. | A3D handles more assets cleanly. |
+| [x] | `benchmarks/shared/scenes/editor-authored-startup.ts` | Editor-authored app startup. | A3D faster workflow startup. |
+| [x] | `benchmarks/shared/scenes/architecture-viewer.ts` | Interior/architecture lighting. | A3D beats lighting/shadow acceptance. |
 
 ### Required Reports
 
@@ -457,7 +457,7 @@ Each row names the concrete file or folder that must exist or be upgraded. If a 
 | [x] | `tests/reports/v10/superiority-audit.json` | Final superiority report. | Generated by audit, not hand-written. |
 | [x] | `tests/reports/v10/feature-parity.json` | Feature coverage and Three.js inventory decision matrix. | Every production-critical category is `parity` or `exceeds`. |
 | [x] | `tests/reports/v10/visual-quality.json` | Visual comparison metrics. | All required routes pass. |
-| [x] | `tests/reports/v10/performance.json` | CPU/GPU/frame/startup metrics. | G3D beats or equals baselines. |
+| [x] | `tests/reports/v10/performance.json` | CPU/GPU/frame/startup metrics. | A3D beats or equals baselines. |
 | [x] | `tests/reports/v10/animation-fidelity.json` | Animation metrics. | Motion deltas under threshold. |
 | [x] | `tests/reports/v10/physics-fidelity.json` | Physics stability metrics. | Determinism and interaction pass. |
 | [x] | `tests/reports/v10/memory-lifecycle.json` | Leak and disposal metrics. | No unbounded growth. |
@@ -510,7 +510,7 @@ Required route files:
 
 ## Visual Superiority Gates
 
-G3D must beat Three.js in at least one of these dimensions for each comparable scene, and match it in all others:
+A3D must beat Three.js in at least one of these dimensions for each comparable scene, and match it in all others:
 
 - [x] Lower visual delta against reference render.
 - [x] Better color accuracy under documented color management.
@@ -541,7 +541,7 @@ Target budgets must be measured on a fixed browser/hardware matrix.
 
 ## Acceptance Commands
 
-These commands must pass before the README can describe G3D as superior:
+These commands must pass before the README can describe A3D as superior:
 
 ```sh
 pnpm build
@@ -656,7 +656,7 @@ If a script does not exist yet, create it in `package.json`, implement the match
 - [x] Browser hardware matrix complete.
 - [x] Documentation complete.
 - [x] Claim audit complete.
-- [x] Public README and docs describe G3D with evidence-backed parity/exceeds language.
+- [x] Public README and docs describe A3D with evidence-backed parity/exceeds language.
 - [x] Every public superiority claim maps to generated evidence.
 
 ## README Rewrite Result
@@ -665,9 +665,9 @@ If a script does not exist yet, create it in `package.json`, implement the match
 
 Required README language:
 
-> G3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the G3D superiority audit.
+> A3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the A3D superiority audit.
 
-The final README must include a "Why G3D Beats Three.js" section with evidence-backed subsections:
+The final README must include a "Why A3D Beats Three.js" section with evidence-backed subsections:
 
 - Feature parity and exceeded categories.
 - Visual and graphics quality.

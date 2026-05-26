@@ -1,4 +1,5 @@
 #version 300 es
+// @aura3d-shader:production-pbr-frag-v1
 precision highp float;
 in vec3 vNormal;
 out vec4 fragColor;

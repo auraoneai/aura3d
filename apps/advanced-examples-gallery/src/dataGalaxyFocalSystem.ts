@@ -1,4 +1,4 @@
-import { Geometry, type RenderItem } from "@galileo3d/rendering";
+import { Geometry, type RenderItem } from "@aura3d/rendering";
 import { item, mat, type Resources } from "./sceneBuilderPrimitives";
 import { modelMatrix, writeModelMatrix, type Vec3 } from "./math";
 import type { DataGalaxyBudgetMode } from "./dataGalaxyBudgets";

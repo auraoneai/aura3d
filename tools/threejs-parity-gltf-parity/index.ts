@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { computePerspectiveCameraFrame } from "@galileo3d/rendering";
+import { loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { computePerspectiveCameraFrame } from "@aura3d/rendering";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -17,11 +17,11 @@ type V9GltfParityResult = V9GltfParityReady | V9GltfParityError;
 
 interface V9GltfParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-gltf-parity/v1";
-  readonly purpose: "same-asset G3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline";
+  readonly schema: "a3d-threejs-parity-gltf-parity/v1";
+  readonly purpose: "same-asset A3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
-  readonly g3d: {
+  readonly a3d: {
     readonly metadata: {
       readonly meshCount: number;
       readonly primitiveCount: number;
@@ -52,14 +52,14 @@ interface V9GltfParityReady {
     readonly sameAssetUrl: boolean;
     readonly actualThreeGLTFLoader: boolean;
     readonly actualThreeRenderer: boolean;
-    readonly g3dPublicRenderResources: boolean;
+    readonly a3dPublicRenderResources: boolean;
     readonly requiredCountsPresent: boolean;
     readonly boundsComparable: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
   readonly dataUrls: {
-    readonly g3d: string;
+    readonly a3d: string;
     readonly threejs: string;
     readonly sideBySide: string;
   };
@@ -68,7 +68,7 @@ interface V9GltfParityReady {
 
 interface V9GltfParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-gltf-parity/v1";
+  readonly schema: "a3d-threejs-parity-gltf-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -118,35 +118,35 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-gltf", ASSET.width, ASSET.height);
+    const a3dCanvas = requiredCanvas("a3d-gltf", ASSET.width, ASSET.height);
     const threeCanvas = requiredCanvas("threejs-gltf", ASSET.width, ASSET.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", ASSET.width * 2, ASSET.height + 60);
-    if (status) status.textContent = "rendering G3D GLTF resources";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D GLTF resources";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering actual Three.js GLTFLoader baseline";
     const threejs = await renderThree(threeCanvas);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: V9GltfParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-gltf-parity/v1",
-      purpose: "same-asset G3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline",
+      schema: "a3d-threejs-parity-gltf-parity/v1",
+      purpose: "same-asset A3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
-      g3d: {
+      a3d: {
         metadata: {
-          meshCount: g3d.metadata.meshCount,
-          primitiveCount: g3d.metadata.primitiveCount,
-          materialCount: g3d.metadata.materialCount,
-          textureCount: g3d.metadata.textureCount,
-          vertexCount: g3d.metadata.vertexCount,
-          indexCount: g3d.metadata.indexCount,
-          unsupportedExtensions: g3d.metadata.unsupportedExtensions
+          meshCount: a3d.metadata.meshCount,
+          primitiveCount: a3d.metadata.primitiveCount,
+          materialCount: a3d.metadata.materialCount,
+          textureCount: a3d.metadata.textureCount,
+          vertexCount: a3d.metadata.vertexCount,
+          indexCount: a3d.metadata.indexCount,
+          unsupportedExtensions: a3d.metadata.unsupportedExtensions
         },
-        renderer: { drawCalls: g3d.drawCalls },
-        bounds: summarizeBounds(g3d.bounds.min, g3d.bounds.max),
-        pixels: analyzeImageData(g3dPixels)
+        renderer: { drawCalls: a3d.drawCalls },
+        bounds: summarizeBounds(a3d.bounds.min, a3d.bounds.max),
+        pixels: analyzeImageData(a3dPixels)
       },
       threejs: {
         loader: { actualGLTFLoader: threejs.actualGLTFLoader, actualThreeRenderer: threejs.actualThreeRenderer },
@@ -160,19 +160,19 @@ async function run(): Promise<void> {
         sameAssetUrl: true,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
-        g3dPublicRenderResources: g3d.metadata.meshCount > 0 && g3d.drawCalls > 0,
-        requiredCountsPresent: g3d.metadata.meshCount === 1
-          && g3d.metadata.primitiveCount === 1
-          && g3d.metadata.materialCount === 1
-          && g3d.metadata.textureCount >= 5
+        a3dPublicRenderResources: a3d.metadata.meshCount > 0 && a3d.drawCalls > 0,
+        requiredCountsPresent: a3d.metadata.meshCount === 1
+          && a3d.metadata.primitiveCount === 1
+          && a3d.metadata.materialCount === 1
+          && a3d.metadata.textureCount >= 5
           && threejs.metadata.meshCount === 1
           && threejs.metadata.materialCount === 1
           && threejs.metadata.textureCount >= 5,
-        boundsComparable: boundsDelta(summarizeBounds(g3d.bounds.min, g3d.bounds.max), threejs.bounds) <= 0.18,
-        screenshotsNonBlank: analyzeImageData(g3dPixels).nonBlackPixels > 25_000 && analyzeImageData(threePixels).nonBlackPixels > 25_000,
+        boundsComparable: boundsDelta(summarizeBounds(a3d.bounds.min, a3d.bounds.max), threejs.bounds) <= 0.18,
+        screenshotsNonBlank: analyzeImageData(a3dPixels).nonBlackPixels > 25_000 && analyzeImageData(threePixels).nonBlackPixels > 25_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "This artifact proves the bounded Damaged Helmet GLB path against actual Three.js GLTFLoader and WebGLRenderer.",
@@ -185,7 +185,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: V9GltfParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-gltf-parity/v1",
+      schema: "a3d-threejs-parity-gltf-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
@@ -197,7 +197,7 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
+async function renderA3D(canvas: HTMLCanvasElement) {
   const pipeline = await loadV6GLTFRenderPipeline({
     url: ASSET.url,
     assetId: ASSET.id,
@@ -212,7 +212,7 @@ async function renderG3D(canvas: HTMLCanvasElement) {
         frustumCulling: false
     }
   });
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     canvas,
     width: ASSET.width,
     height: ASSET.height,
@@ -404,17 +404,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side GLTF comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#090d14";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, ASSET.width, 0);
   context.fillStyle = "#f4f7fb";
   context.font = "16px sans-serif";
-  context.fillText("G3D GLTF render resources", 18, ASSET.height + 28);
+  context.fillText("A3D GLTF render resources", 18, ASSET.height + 28);
   context.fillText("Three.js GLTFLoader", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#aab5c4";
   context.font = "12px sans-serif";

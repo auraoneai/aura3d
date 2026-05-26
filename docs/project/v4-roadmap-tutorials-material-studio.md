@@ -6,9 +6,9 @@
 Use the workflow preset when the application is a material comparison or review surface.
 
 ```ts
-import { createDiagnosticsPanel, createG3DApp, workflows } from "@galileo3d/engine";
+import { createDiagnosticsPanel, createA3DApp, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({ canvas, quality: "production" });
+const app = await createA3DApp({ canvas, quality: "production" });
 const workflow = await workflows.materialStudio({ mode: "metals" });
 const render = app.renderer?.render(workflow.source, workflow.camera);
 const diagnostics = createDiagnosticsPanel({ render });

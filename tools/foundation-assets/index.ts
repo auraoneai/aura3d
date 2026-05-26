@@ -35,9 +35,9 @@ const report = createSubsystemReport(root, {
     {
       id: "v3-corpus-fixtures",
       description: "v3 asset corpus fixtures exist.",
-      passed: pathExists(root, "fixtures/assets/v3"),
-      evidencePaths: ["fixtures/assets/v3"],
-      blocker: "fixtures/assets/v3 corpus is not implemented yet.",
+      passed: pathExists(root, "fixtures/foundation-assets"),
+      evidencePaths: ["fixtures/foundation-assets"],
+      blocker: "fixtures/foundation-assets corpus is not implemented yet.",
     },
     {
       id: "gltf-corpus-report",

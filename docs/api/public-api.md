@@ -1,4 +1,4 @@
-# Galileo3D Public API Reference
+# Aura3D Public API Reference
 
 This file is generated from every non-private package entrypoint under `packages/*/src/index.ts`.
 It documents the public export surface that package consumers can import today.
@@ -13,31 +13,31 @@ pnpm verify:api-docs
 
 | Package | Version | Entrypoint | Export declarations |
 |---|---:|---|---:|
-| `@galileo3d/animation` | `1.0.0` | `packages/animation/src/index.ts` | 23 |
-| `@galileo3d/apps` | `1.0.0` | `packages/apps/src/index.ts` | 10 |
-| `@galileo3d/assets` | `1.0.0` | `packages/assets/src/index.ts` | 81 |
-| `@galileo3d/audio` | `1.0.0` | `packages/audio/src/index.ts` | 24 |
-| `@galileo3d/controls` | `1.0.0` | `packages/controls/src/index.ts` | 20 |
-| `@galileo3d/core` | `1.0.0` | `packages/core/src/index.ts` | 14 |
-| `@galileo3d/create-g3d` | `1.0.0` | `packages/create-g3d/src/index.ts` | 5 |
-| `@galileo3d/debug` | `1.0.0` | `packages/debug/src/index.ts` | 30 |
-| `@galileo3d/ecs` | `1.0.0` | `packages/ecs/src/index.ts` | 21 |
-| `@galileo3d/editor` | `1.0.0` | `packages/editor/src/index.ts` | 1 |
-| `@galileo3d/editor-runtime` | `1.0.0` | `packages/editor-runtime/src/index.ts` | 46 |
-| `@galileo3d/engine-runtime` | `1.0.0` | `packages/engine/src/index.ts` | 28 |
-| `@galileo3d/environments` | `1.0.0` | `packages/environments/src/index.ts` | 10 |
-| `@galileo3d/input` | `1.0.0` | `packages/input/src/index.ts` | 46 |
-| `@galileo3d/materials` | `1.0.0` | `packages/materials/src/index.ts` | 10 |
-| `@galileo3d/math` | `1.0.0` | `packages/math/src/index.ts` | 18 |
-| `@galileo3d/physics` | `1.0.0` | `packages/physics/src/index.ts` | 24 |
-| `@galileo3d/product-studio` | `1.0.0` | `packages/product-studio/src/index.ts` | 12 |
-| `@galileo3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 259 |
-| `@galileo3d/scene` | `1.0.0` | `packages/scene/src/index.ts` | 20 |
-| `@galileo3d/scripting` | `1.0.0` | `packages/scripting/src/index.ts` | 49 |
-| `@galileo3d/three-compat` | `1.0.0` | `packages/three-compat/src/index.ts` | 31 |
-| `@galileo3d/workflows` | `1.0.0` | `packages/workflows/src/index.ts` | 12 |
+| `@aura3d/animation` | `1.0.0` | `packages/animation/src/index.ts` | 23 |
+| `@aura3d/apps` | `1.0.0` | `packages/apps/src/index.ts` | 10 |
+| `@aura3d/assets` | `1.0.0` | `packages/assets/src/index.ts` | 81 |
+| `@aura3d/audio` | `1.0.0` | `packages/audio/src/index.ts` | 24 |
+| `@aura3d/controls` | `1.0.0` | `packages/controls/src/index.ts` | 20 |
+| `@aura3d/core` | `1.0.0` | `packages/core/src/index.ts` | 14 |
+| `@aura3d/create-aura3d` | `1.0.0` | `packages/create-aura3d/src/index.ts` | 5 |
+| `@aura3d/debug` | `1.0.0` | `packages/debug/src/index.ts` | 30 |
+| `@aura3d/ecs` | `1.0.0` | `packages/ecs/src/index.ts` | 21 |
+| `@aura3d/editor` | `1.0.0` | `packages/editor/src/index.ts` | 1 |
+| `@aura3d/editor-runtime` | `1.0.0` | `packages/editor-runtime/src/index.ts` | 46 |
+| `@aura3d/engine-runtime` | `1.0.0` | `packages/engine/src/index.ts` | 28 |
+| `@aura3d/environments` | `1.0.0` | `packages/environments/src/index.ts` | 10 |
+| `@aura3d/input` | `1.0.0` | `packages/input/src/index.ts` | 46 |
+| `@aura3d/materials` | `1.0.0` | `packages/materials/src/index.ts` | 10 |
+| `@aura3d/math` | `1.0.0` | `packages/math/src/index.ts` | 18 |
+| `@aura3d/physics` | `1.0.0` | `packages/physics/src/index.ts` | 24 |
+| `@aura3d/product-studio` | `1.0.0` | `packages/product-studio/src/index.ts` | 12 |
+| `@aura3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 259 |
+| `@aura3d/scene` | `1.0.0` | `packages/scene/src/index.ts` | 20 |
+| `@aura3d/scripting` | `1.0.0` | `packages/scripting/src/index.ts` | 49 |
+| `@aura3d/three-compat` | `1.0.0` | `packages/three-compat/src/index.ts` | 31 |
+| `@aura3d/workflows` | `1.0.0` | `packages/workflows/src/index.ts` | 12 |
 
-## @galileo3d/animation
+## @aura3d/animation
 
 - Version: `1.0.0`
 - Package manifest: `packages/animation/package.json`
@@ -71,7 +71,7 @@ export * from "./Retargeting.js";
 export * from "./threejs-compatibility";
 ```
 
-## @galileo3d/apps
+## @aura3d/apps
 
 - Version: `1.0.0`
 - Package manifest: `packages/apps/package.json`
@@ -80,19 +80,19 @@ export * from "./threejs-compatibility";
 ### Export Declarations
 
 ```ts
-export type G3DAppQualityPreset = "draft" | "balanced" | "production";
-export type G3DAppWorkflowPreset = "asset-viewer" | "product-configurator" | "material-studio" | "scene-showcase" | "interactive-scene";
-export interface G3DAppQualitySettings { readonly preset: G3DAppQualityPreset;
-export interface G3DAppOptions { readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
-export interface G3DAppRendererLike { render(source: G3DWorkflowResult["source"], camera?: G3DWorkflowResult["camera"]): RenderDeviceDiagnostics;
-export interface G3DAppDiagnostics { readonly appState: "ready" | "disposed";
-export interface G3DApp { readonly engine: Engine;
-export const G3D_APP_WORKFLOW_PRESETS: readonly G3DAppWorkflowPreset[] = [
-export function resolveG3DAppQualityPreset(preset: G3DAppQualityPreset = "balanced", overrides: Pick<G3DAppOptions, "width" | "height"> = {}): G3DAppQualitySettings { const base = preset === "production" ? { width: 1600, height: 1000, antialias: true, preserveDrawingBuffer: true, targetFormat: "rgba16f" as const } : preset === "draft" ? { width: 960, height: 540, antialias: false, preserveDrawingBuffer: false, targetFormat: "rgba8" as const } : { width: 1280, height: 720, antialias: true, preserveDrawingBuffer: true, targetFormat: "rgba16f" as const };
-export async function createG3DApp(options: G3DAppOptions = {}): Promise<G3DApp> { const quality = resolveG3DAppQualityPreset(options.quality, options);
+export type A3DAppQualityPreset = "draft" | "balanced" | "production";
+export type A3DAppWorkflowPreset = "asset-viewer" | "product-configurator" | "material-studio" | "scene-showcase" | "interactive-scene";
+export interface A3DAppQualitySettings { readonly preset: A3DAppQualityPreset;
+export interface A3DAppOptions { readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
+export interface A3DAppRendererLike { render(source: A3DWorkflowResult["source"], camera?: A3DWorkflowResult["camera"]): RenderDeviceDiagnostics;
+export interface A3DAppDiagnostics { readonly appState: "ready" | "disposed";
+export interface A3DApp { readonly engine: Engine;
+export const A3D_APP_WORKFLOW_PRESETS: readonly A3DAppWorkflowPreset[] = [
+export function resolveA3DAppQualityPreset(preset: A3DAppQualityPreset = "balanced", overrides: Pick<A3DAppOptions, "width" | "height"> = {}): A3DAppQualitySettings { const base = preset === "production" ? { width: 1600, height: 1000, antialias: true, preserveDrawingBuffer: true, targetFormat: "rgba16f" as const } : preset === "draft" ? { width: 960, height: 540, antialias: false, preserveDrawingBuffer: false, targetFormat: "rgba8" as const } : { width: 1280, height: 720, antialias: true, preserveDrawingBuffer: true, targetFormat: "rgba16f" as const };
+export async function createA3DApp(options: A3DAppOptions = {}): Promise<A3DApp> { const quality = resolveA3DAppQualityPreset(options.quality, options);
 ```
 
-## @galileo3d/assets
+## @aura3d/assets
 
 - Version: `1.0.0`
 - Package manifest: `packages/assets/package.json`
@@ -184,7 +184,7 @@ export * from "./EXRLoader.js";
 export * from "./TextureStreaming.js";
 ```
 
-## @galileo3d/audio
+## @aura3d/audio
 
 - Version: `1.0.0`
 - Package manifest: `packages/audio/package.json`
@@ -219,7 +219,7 @@ export { FilterEffect } from "./effects/Filter";
 export { ReverbEffect } from "./effects/Reverb";
 ```
 
-## @galileo3d/controls
+## @aura3d/controls
 
 - Version: `1.0.0`
 - Package manifest: `packages/controls/package.json`
@@ -250,7 +250,7 @@ export { createDefaultControlState } from "./ControlState";
 export type { V5ControlEvent, V5ControlState } from "./ControlState";
 ```
 
-## @galileo3d/core
+## @aura3d/core
 
 - Version: `1.0.0`
 - Package manifest: `packages/core/package.json`
@@ -275,23 +275,23 @@ export * from "./ResourceScope.js";
 export * from "./VersionedSerialization.js";
 ```
 
-## @galileo3d/create-g3d
+## @aura3d/create-aura3d
 
 - Version: `1.0.0`
-- Package manifest: `packages/create-g3d/package.json`
-- Public entrypoint: `packages/create-g3d/src/index.ts`
+- Package manifest: `packages/create-aura3d/package.json`
+- Public entrypoint: `packages/create-aura3d/src/index.ts`
 
 ### Export Declarations
 
 ```ts
-export type CreateG3DTemplate =
-export interface CreateG3DProjectOptions { readonly targetDir: string;
-export interface CreateG3DProjectResult { readonly targetDir: string;
-export function createG3DProject(options: CreateG3DProjectOptions): CreateG3DProjectResult { const template = options.template ?? "external-parity-product-viewer";
-export function writeCreateG3DReport(path: string, result: CreateG3DProjectResult): void { mkdirSync(dirname(resolve(path)), { recursive: true });
+export type CreateA3DTemplate =
+export interface CreateA3DProjectOptions { readonly targetDir: string;
+export interface CreateA3DProjectResult { readonly targetDir: string;
+export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult { const template = options.template ?? "external-parity-product-viewer";
+export function writeCreateA3DReport(path: string, result: CreateA3DProjectResult): void { mkdirSync(dirname(resolve(path)), { recursive: true });
 ```
 
-## @galileo3d/debug
+## @aura3d/debug
 
 - Version: `1.0.0`
 - Package manifest: `packages/debug/package.json`
@@ -332,7 +332,7 @@ export { ReportExporter } from "./ReportExporter.js";
 export type { DebugReport } from "./ReportExporter.js";
 ```
 
-## @galileo3d/ecs
+## @aura3d/ecs
 
 - Version: `1.0.0`
 - Package manifest: `packages/ecs/package.json`
@@ -364,7 +364,7 @@ export * from "./components/HierarchyComponent.js";
 export * from "./systems/index.js";
 ```
 
-## @galileo3d/editor
+## @aura3d/editor
 
 - Version: `1.0.0`
 - Package manifest: `packages/editor/package.json`
@@ -373,10 +373,10 @@ export * from "./systems/index.js";
 ### Export Declarations
 
 ```ts
-export * from "@galileo3d/editor-runtime";
+export * from "@aura3d/editor-runtime";
 ```
 
-## @galileo3d/editor-runtime
+## @aura3d/editor-runtime
 
 - Version: `1.0.0`
 - Package manifest: `packages/editor-runtime/package.json`
@@ -433,7 +433,7 @@ export { TransformCommand } from "./commands/TransformCommand";
 export type { SceneTransformTargetLike, TransformLike, TransformTarget } from "./commands/TransformCommand";
 ```
 
-## @galileo3d/engine-runtime
+## @aura3d/engine-runtime
 
 - Version: `1.0.0`
 - Package manifest: `packages/engine/package.json`
@@ -442,37 +442,37 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 ### Export Declarations
 
 ```ts
-export { G3D_APP_WORKFLOW_PRESETS, createG3DApp, resolveG3DAppQualityPreset } from "@galileo3d/apps";
-export type { G3DApp, G3DAppDiagnostics, G3DAppOptions, G3DAppQualityPreset, G3DAppQualitySettings, G3DAppWorkflowPreset } from "@galileo3d/apps";
-export { Engine } from "@galileo3d/core";
-export { Renderer, createV4EnvironmentPipeline, listV4EnvironmentTargets } from "@galileo3d/rendering";
-export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeV4Corpus } from "@galileo3d/assets";
-export { loadProductAsset } from "@galileo3d/product-studio";
-export { createAnimationLabWorkflow, createAssetViewerWorkflow, createComparisonWorkflow, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createSceneShowcaseWorkflow } from "@galileo3d/workflows";
+export { A3D_APP_WORKFLOW_PRESETS, createA3DApp, resolveA3DAppQualityPreset } from "@aura3d/apps";
+export type { A3DApp, A3DAppDiagnostics, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset } from "@aura3d/apps";
+export { Engine } from "@aura3d/core";
+export { Renderer, createV4EnvironmentPipeline, listV4EnvironmentTargets } from "@aura3d/rendering";
+export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeV4Corpus } from "@aura3d/assets";
+export { loadProductAsset } from "@aura3d/product-studio";
+export { createAnimationLabWorkflow, createAssetViewerWorkflow, createComparisonWorkflow, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createSceneShowcaseWorkflow } from "@aura3d/workflows";
 export * as v9 from "./advanced-runtime/index.js";
-export { G3DRenderer, G3DScene, G3DAppLifecycle } from "./advanced-runtime/index.js";
-export type { G3DAppLifecycleSnapshot, G3DDisposable, G3DRendererOptions, G3DSceneMeshOptions, G3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
+export { A3DRenderer, A3DScene, A3DAppLifecycle } from "./advanced-runtime/index.js";
+export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
 export const workflows = { assetViewer: createAssetViewerWorkflow, productConfigurator: createProductConfiguratorWorkflow, materialStudio: createMaterialStudioWorkflow, sceneShowcase: createSceneShowcaseWorkflow, interactiveScene: createInteractiveSceneWorkflow, animationLab: createAnimationLabWorkflow, comparison: createComparisonWorkflow } as const;
-export type G3DWorkflowApi = typeof workflows;
-export type G3DEnvironmentOptions = V4EnvironmentPipelineOptions;
-export type G3DEnvironment = V4EnvironmentPipeline;
-export function createEnvironment(options: G3DEnvironmentOptions): G3DEnvironment { return createV4EnvironmentPipeline(options);
+export type A3DWorkflowApi = typeof workflows;
+export type A3DEnvironmentOptions = V4EnvironmentPipelineOptions;
+export type A3DEnvironment = V4EnvironmentPipeline;
+export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment { return createV4EnvironmentPipeline(options);
 export async function loadAsset(urlOrAsset: string | RenderableAsset, options: LoadRenderableAssetOptions = {}): Promise<RenderableAsset> { return await loadRenderableAsset(urlOrAsset, options);
-export interface G3DMaterialVariantController<TVariantId extends string = string> { readonly current: TVariantId;
+export interface A3DMaterialVariantController<TVariantId extends string = string> { readonly current: TVariantId;
 export function createMaterialVariantController<TVariantId extends string>(
-export interface G3DScreenshotCapture { readonly mimeType: "image/png";
-export function captureScreenshot(target: HTMLCanvasElement | OffscreenCanvas | G3DApp): G3DScreenshotCapture { const canvas = isG3DApp(target) ? findCanvasFromRenderer(target.renderer) : target;
+export interface A3DScreenshotCapture { readonly mimeType: "image/png";
+export function captureScreenshot(target: HTMLCanvasElement | OffscreenCanvas | A3DApp): A3DScreenshotCapture { const canvas = isA3DApp(target) ? findCanvasFromRenderer(target.renderer) : target;
 export function inspectAsset(asset: GLTFAsset, resources?: GLTFRenderResources): GLTFAssetInspectionReport { return inspectGLTFAsset(asset, resources);
 export function createCompatibilityReport(manifest: GLTFCorpusManifest): AssetCompatibilityReport { return createAssetCompatibilityReport(manifest);
-export interface G3DAssetDiagnostics { readonly kind: RenderableAsset["kind"];
-export function createAssetDiagnostics(asset: RenderableAsset): G3DAssetDiagnostics { const gltf = asset.gltf;
-export interface G3DRenderDiagnostics { readonly drawCalls: number;
-export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): G3DRenderDiagnostics { return { drawCalls: diagnostics?.drawCalls ?? 0, buffers: diagnostics?.buffers ?? 0, shaders: diagnostics?.shaders ?? 0, textureCount: diagnostics?.textures, warnings: diagnostics ? [] : ["No render diagnostics have been recorded yet."] };
-export interface G3DDiagnosticsPanel { readonly kind: "g3d-diagnostics-panel";
-export function createDiagnosticsPanel(initial: { readonly render?: RenderDeviceDiagnostics; readonly asset?: G3DAssetDiagnostics } = {}): G3DDiagnosticsPanel { let render = createRenderDiagnostics(initial.render);
+export interface A3DAssetDiagnostics { readonly kind: RenderableAsset["kind"];
+export function createAssetDiagnostics(asset: RenderableAsset): A3DAssetDiagnostics { const gltf = asset.gltf;
+export interface A3DRenderDiagnostics { readonly drawCalls: number;
+export function createRenderDiagnostics(diagnostics?: RenderDeviceDiagnostics): A3DRenderDiagnostics { return { drawCalls: diagnostics?.drawCalls ?? 0, buffers: diagnostics?.buffers ?? 0, shaders: diagnostics?.shaders ?? 0, textureCount: diagnostics?.textures, warnings: diagnostics ? [] : ["No render diagnostics have been recorded yet."] };
+export interface A3DDiagnosticsPanel { readonly kind: "a3d-diagnostics-panel";
+export function createDiagnosticsPanel(initial: { readonly render?: RenderDeviceDiagnostics; readonly asset?: A3DAssetDiagnostics } = {}): A3DDiagnosticsPanel { let render = createRenderDiagnostics(initial.render);
 ```
 
-## @galileo3d/environments
+## @aura3d/environments
 
 - Version: `1.0.0`
 - Package manifest: `packages/environments/package.json`
@@ -493,7 +493,7 @@ export { createV6EnvironmentCorpusSummary, inspectV6HDR, loadV6EnvironmentManife
 export type { V6HDREnvironment, V6HDRInspection, V6EnvironmentCorpusSummary, V6EnvironmentManifest, V6EnvironmentProbeType, V6EnvironmentReadinessEntry, V6EnvironmentRequirements, V6PMREMPreset } from "./production-runtime/V6EnvironmentCorpus";
 ```
 
-## @galileo3d/input
+## @aura3d/input
 
 - Version: `1.0.0`
 - Package manifest: `packages/input/package.json`
@@ -531,7 +531,7 @@ export type { VirtualJoystickConfig, VirtualTouchJoystickSnapshot, VirtualTouchP
 export { sampleXRRuntimeFixture } from "./XRFixtures";
 export type { XRFixtureLodLevel, XRFixtureOptions, XRFixtureSessionMode, XRRuntimeFixture } from "./XRFixtures";
 export { WebXRSessionController } from "./WebXRSessionController";
-export type { G3DXRFrameLike, G3DXRHandedness, G3DXRHitTestResultLike, G3DXRInputSourceLike, G3DXRPoseLike, G3DXRReferenceSpaceLike, G3DXRReferenceSpaceType, G3DXRSessionInit, G3DXRSessionLike, G3DXRSessionMode, G3DXRSystemLike, WebXRControllerSample, WebXRFrameSample, WebXRHitTestSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
+export type { A3DXRFrameLike, A3DXRHandedness, A3DXRHitTestResultLike, A3DXRInputSourceLike, A3DXRPoseLike, A3DXRReferenceSpaceLike, A3DXRReferenceSpaceType, A3DXRSessionInit, A3DXRSessionLike, A3DXRSessionMode, A3DXRSystemLike, WebXRControllerSample, WebXRFrameSample, WebXRHitTestSample, WebXRSessionControllerOptions, WebXRSessionStartResult } from "./WebXRSessionController";
 export * from "./GamepadInput.js";
 export * from "./GestureControls.js";
 export * from "./controls/PointerLockControls.js";
@@ -550,7 +550,7 @@ export { ThirdPersonFollowControls } from "./controls/ThirdPersonFollowControls"
 export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFollowControls";
 ```
 
-## @galileo3d/materials
+## @aura3d/materials
 
 - Version: `1.0.0`
 - Package manifest: `packages/materials/package.json`
@@ -571,7 +571,7 @@ export * from "./MaterialPresets.js";
 export * from "./NodeMaterial.js";
 ```
 
-## @galileo3d/math
+## @aura3d/math
 
 - Version: `1.0.0`
 - Package manifest: `packages/math/package.json`
@@ -600,7 +600,7 @@ export * from "./Random.js";
 export * from "./Curves.js";
 ```
 
-## @galileo3d/physics
+## @aura3d/physics
 
 - Version: `1.0.0`
 - Package manifest: `packages/physics/package.json`
@@ -635,7 +635,7 @@ export * from "./FluidFixtures.js";
 export * from "./FireSmokeFixtures.js";
 ```
 
-## @galileo3d/product-studio
+## @aura3d/product-studio
 
 - Version: `1.0.0`
 - Package manifest: `packages/product-studio/package.json`
@@ -658,7 +658,7 @@ export type * from "./ProductTypes";
 export type * from "./ProductShowcaseLayout";
 ```
 
-## @galileo3d/rendering
+## @aura3d/rendering
 
 - Version: `1.0.0`
 - Package manifest: `packages/rendering/package.json`
@@ -701,7 +701,7 @@ export type { EnvironmentPresetReport, NamedEnvironmentPresetDescriptor, NamedEn
 export { composeEnvironmentLighting } from "./EnvironmentLighting";
 export type { EnvironmentLightingCompositionOptions } from "./EnvironmentLighting";
 export { V4_TEXTURE_COLOR_POLICY, convertColorSpace, createColorConversionSamples, createV4ColorManagementPolicy, linearToSrgbChannel, srgbToLinearChannel, validateTextureColorSpace } from "./ColorManagement";
-export type { G3DColorConversionSample, G3DColorManagementPolicy, G3DColorSpace, G3DTextureColorSpaceValidation, G3DTextureSemantic } from "./ColorManagement";
+export type { A3DColorConversionSample, A3DColorManagementPolicy, A3DColorSpace, A3DTextureColorSpaceValidation, A3DTextureSemantic } from "./ColorManagement";
 export { applyV4ToneMappingPreset, createV4ToneMappingPolicy, listV4ToneMappingPresets, toneMapV4HdrPixels, toneMapV4Pixels } from "./ToneMapping";
 export type { V4ToneMappingIntent, V4ToneMappingPolicy } from "./ToneMapping";
 export { analyzeV4Exposure, createV4ExposurePolicy } from "./Exposure";
@@ -928,7 +928,7 @@ export * from "./effects/ParticleEffectPresets.js";
 export * from "./effects/ParticleDiagnostics.js";
 ```
 
-## @galileo3d/scene
+## @aura3d/scene
 
 - Version: `1.0.0`
 - Package manifest: `packages/scene/package.json`
@@ -959,7 +959,7 @@ export * from "./Scene.js";
 export * from "./SceneSerializer.js";
 ```
 
-## @galileo3d/scripting
+## @aura3d/scripting
 
 - Version: `1.0.0`
 - Package manifest: `packages/scripting/package.json`
@@ -1019,7 +1019,7 @@ export { validateNode } from "./VisualNode";
 export type { VisualNode, VisualPort, VisualPortDirection, VisualPortType } from "./VisualNode";
 ```
 
-## @galileo3d/three-compat
+## @aura3d/three-compat
 
 - Version: `1.0.0`
 - Package manifest: `packages/three-compat/package.json`
@@ -1050,8 +1050,8 @@ export { AnimationActionCompat, AnimationClipCompat, AnimationMixerCompat, Morph
 export { ColorGradingPassCompat, DepthOfFieldPassCompat, EffectComposerCompat, FXAAPassCompat, OutlinePassCompat, RenderPassCompat, ShaderPassCompat, SMAAPassCompat, SSAOPassCompat, TAAPassCompat, UnrealBloomPassCompat, VignettePassCompat } from "./postprocessing";
 export { NodeMaterialCompat, RawShaderMaterialCompat, CustomShaderMaterialCompat, UniformsCompat, SHADER_CHUNKS_V5, diagnoseV5Shader } from "./shaders";
 export { V5_THREE_IMPORT_MAP } from "./migration/ImportMap";
-export { migrateThreeToG3D } from "./migration/ThreeToG3DAdapter";
-export type { V5MigrationResult } from "./migration/ThreeToG3DAdapter";
+export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
+export type { V5MigrationResult } from "./migration/ThreeToA3DAdapter";
 export { createV5CompatibilityWarnings } from "./migration/CompatibilityWarnings";
 export type { V5CompatibilityWarning } from "./migration/CompatibilityWarnings";
 export { AmbientLightCompat, DirectionalLightCompat, HemisphereLightCompat, LightCompat, PointLightCompat, RectAreaLightCompat, SpotLightCompat } from "./lights";
@@ -1061,7 +1061,7 @@ export type { ThreeApiCategory, ThreeApiInventory, ThreeApiInventoryEntry } from
 export type { ThreeCompatibilityEntry, ThreeCompatibilityMatrix, ThreeCompatibilityStatus, ThreeCompatibilityThreshold } from "./ThreeCompatibilityMatrix";
 ```
 
-## @galileo3d/workflows
+## @aura3d/workflows
 
 - Version: `1.0.0`
 - Package manifest: `packages/workflows/package.json`

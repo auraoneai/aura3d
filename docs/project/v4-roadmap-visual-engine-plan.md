@@ -1,9 +1,9 @@
-# G3D V4: Visual Quality, Real Assets, And Three.js-Level Product Depth
+# A3D V4: Visual Quality, Real Assets, And Three.js-Level Product Depth
 
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-V3 proved that G3D can wire together workflows, apps, examples, package smoke tests, and bounded Three.js comparisons.
+V3 proved that A3D can wire together workflows, apps, examples, package smoke tests, and bounded Three.js comparisons.
 
 That is not enough.
 
@@ -11,13 +11,13 @@ The screenshots still look like simple objects in test scenes. They do not prove
 
 V4 exists to stop treating "objects render" as success.
 
-V4 must turn G3D into a visually credible, production-shaped web 3D product that can compete with Three.js for quality across supported workflows.
+V4 must turn A3D into a visually credible, production-shaped web 3D product that can compete with Three.js for quality across supported workflows.
 
 ## The Product We Are Actually Building In V4
 
 Build:
 
-**G3D Visual Engine V4: a high-quality browser 3D engine and workflow SDK for premium product visualization, asset review, material authoring, architecture/interior scenes, animated characters, and lightweight interactive scenes.**
+**A3D Visual Engine V4: a high-quality browser 3D engine and workflow SDK for premium product visualization, asset review, material authoring, architecture/interior scenes, animated characters, and lightweight interactive scenes.**
 
 This is not a wrapper around a few primitives.
 
@@ -29,7 +29,7 @@ This is not an examples repo.
 
 This is not "make prettier screenshots."
 
-This is not a claim that G3D broadly replaces Three.js yet.
+This is not a claim that A3D broadly replaces Three.js yet.
 
 The V4 product must make a developer believe:
 
@@ -47,8 +47,8 @@ Apps, examples, screenshots, and benchmarks are proof artifacts. They are not th
 
 The product must include:
 
-- Stable public package exports from `@galileo3d/engine`.
-- A high-level app runtime: `createG3DApp`.
+- Stable public package exports from `@aura3d/engine`.
+- A high-level app runtime: `createA3DApp`.
 - Workflow APIs for supported real use cases.
 - Renderer quality presets that actually change rendering quality.
 - Asset loading APIs that work outside the monorepo.
@@ -87,7 +87,7 @@ V4 must make these developer workflows work end to end:
 A developer can run:
 
 ```sh
-npm create g3d@latest my-product-viewer
+npm create a3d@latest my-product-viewer
 cd my-product-viewer
 npm install
 npm run dev
@@ -95,8 +95,8 @@ npm run dev
 
 Required files:
 
-- `packages/create-g3d/package.json`
-- `packages/create-g3d/src/index.ts`
+- `packages/create-aura3d/package.json`
+- `packages/create-aura3d/src/index.ts`
 - `templates/external-parity-product-viewer/`
 - `templates/external-parity-material-studio/`
 - `templates/external-parity-asset-gallery/`
@@ -115,14 +115,14 @@ Acceptance:
 A developer can import:
 
 ```ts
-import { createG3DApp, workflows } from "@galileo3d/engine";
+import { createA3DApp, workflows } from "@aura3d/engine";
 ```
 
 Then load a GLB product, choose an HDR environment, enable contact shadows, expose variants, and export a screenshot with public APIs only.
 
 Required public APIs:
 
-- `createG3DApp`
+- `createA3DApp`
 - `workflows.productConfigurator`
 - `loadAsset`
 - `createEnvironment`
@@ -158,7 +158,7 @@ A developer can build with Vite and deploy static files.
 Required proof:
 
 - Fresh temp Vite app.
-- Packed `@galileo3d/engine` install.
+- Packed `@aura3d/engine` install.
 - Production build.
 - Static preview smoke.
 - Browser screenshot from the built app, not the dev server only.
@@ -178,7 +178,7 @@ Required packages:
 - `packages/rendering`: renderer, materials, lights, postprocess, diagnostics.
 - `packages/assets`: loaders, corpus validation, diagnostics, asset compatibility.
 - `packages/workflows`: product, material, asset, scene, character, interactive workflows.
-- `packages/create-g3d`: project scaffolder.
+- `packages/create-aura3d`: project scaffolder.
 
 Required apps:
 
@@ -270,7 +270,7 @@ V4 is not complete when a test passes.
 
 V4 is complete only when:
 
-1. G3D renders multiple complex, human-inspectable scenes that look premium.
+1. A3D renders multiple complex, human-inspectable scenes that look premium.
 2. Those scenes use real glTF/GLB assets, real texture maps, HDR/IBL lighting, shadows, and postprocess.
 3. Same-scene Three.js comparisons exist for every flagship scene.
 4. Visual quality audits compare screenshots, not just draw calls.
@@ -283,7 +283,7 @@ Do not stop after one scene, one visual fix, one report, one app, one example, o
 
 Allowed target claim after V4 release gates pass:
 
-**G3D is a high-quality Three.js competitor for supported product visualization, asset review, material authoring, architecture/interior, character preview, and lightweight interactive workflows.**
+**A3D is a high-quality Three.js competitor for supported product visualization, asset review, material authoring, architecture/interior, character preview, and lightweight interactive workflows.**
 
 Blocked unless separately proven:
 
@@ -337,14 +337,14 @@ Must prove:
 
 - Asset-driven product, not procedural boxes.
 - Product looks like a commercial catalog render.
-- Same product rendered in G3D and Three.js.
+- Same product rendered in A3D and Three.js.
 
 Required files:
 
-- `fixtures/v4/products/premium-product/`
+- `fixtures/external-parity/products/premium-product/`
 - `apps/product-studio-pro/`
 - `examples/external-product-configurator/`
-- `benchmarks/external-parity/galileo/product-configurator.ts`
+- `benchmarks/external-parity/aura3d/product-configurator.ts`
 - `benchmarks/external-parity/threejs/product-configurator.ts`
 - `tests/browser/external-parity-product-configurator.spec.ts`
 - `tools/external-parity-product-readiness/index.ts`
@@ -372,15 +372,15 @@ Must prove:
 - PBR response is visibly different by material.
 - HDR/IBL affects specular and roughness correctly enough to be credible.
 - Color management is consistent.
-- Same material matrix exists in G3D and Three.js.
+- Same material matrix exists in A3D and Three.js.
 
 Required files:
 
-- `fixtures/v4/materials/material-library.json`
-- `fixtures/v4/materials/textures/`
+- `fixtures/external-parity/materials/material-library.json`
+- `fixtures/external-parity/materials/textures/`
 - `apps/material-studio-pro/`
 - `examples/external-material-studio/`
-- `benchmarks/external-parity/galileo/material-studio.ts`
+- `benchmarks/external-parity/aura3d/material-studio.ts`
 - `benchmarks/external-parity/threejs/material-studio.ts`
 - `tests/browser/external-parity-material-studio.spec.ts`
 - `tools/external-parity-material-readiness/index.ts`
@@ -396,16 +396,16 @@ Scene target:
 
 Must prove:
 
-- G3D can render more than isolated objects.
+- A3D can render more than isolated objects.
 - Camera framing, tone mapping, shadows, and material response work in a multi-object environment.
 - Same-scene comparison with Three.js exists.
 
 Required files:
 
-- `fixtures/v4/scenes/interior-gallery/`
+- `fixtures/external-parity/scenes/interior-gallery/`
 - `apps/scene-studio-pro/`
 - `examples/external-interior-scene/`
-- `benchmarks/external-parity/galileo/interior-scene.ts`
+- `benchmarks/external-parity/aura3d/interior-scene.ts`
 - `benchmarks/external-parity/threejs/interior-scene.ts`
 - `tests/browser/external-parity-interior-scene.spec.ts`
 - `tools/external-parity-scene-readiness/index.ts`
@@ -435,7 +435,7 @@ Must prove:
 
 Required files:
 
-- `fixtures/v4/gltf-corpus/manifest.json`
+- `fixtures/external-parity/gltf-corpus/manifest.json`
 - `apps/asset-studio-pro/`
 - `examples/external-asset-gallery/`
 - `tests/assets/external-parity-gltf-corpus.test.ts`
@@ -459,7 +459,7 @@ Must prove:
 
 Required files:
 
-- `fixtures/v4/characters/animated-character/`
+- `fixtures/external-parity/characters/animated-character/`
 - `apps/animation-studio-pro/`
 - `examples/external-character-viewer/`
 - `tests/browser/external-parity-character-viewer.spec.ts`
@@ -474,7 +474,7 @@ Scene target:
 
 Must prove:
 
-- G3D can support interactive experiences, not only screenshots.
+- A3D can support interactive experiences, not only screenshots.
 - The render loop remains stable under user interaction.
 - Visual quality remains high while interactive.
 
@@ -555,7 +555,7 @@ Required files:
 - `packages/rendering/src/IBL.ts`
 - `packages/rendering/src/PMREM.ts`
 - `packages/rendering/src/BRDFLut.ts`
-- `fixtures/v4/environments/manifest.json`
+- `fixtures/external-parity/environments/manifest.json`
 - `tests/unit/rendering/external-parity-ibl.test.ts`
 - `tests/browser/external-parity-ibl-visual.spec.ts`
 - `tools/external-parity-ibl-readiness/index.ts`
@@ -601,7 +601,7 @@ Required files:
 Acceptance:
 
 - Material matrix screenshot exists and passes quality thresholds.
-- Same material matrix exists in Three.js and G3D.
+- Same material matrix exists in Three.js and A3D.
 - Unsupported material features produce explicit diagnostics, not silent wrong output.
 
 ### Pillar 4: Shadows And Scene Lighting
@@ -681,8 +681,8 @@ Required asset support:
 
 Required files:
 
-- `fixtures/v4/gltf-corpus/manifest.json`
-- `fixtures/v4/gltf-corpus/licenses.md`
+- `fixtures/external-parity/gltf-corpus/manifest.json`
+- `fixtures/external-parity/gltf-corpus/licenses.md`
 - `packages/assets/src/V4Corpus.ts`
 - `tests/assets/external-parity-gltf-loader-corpus.test.ts`
 - `tests/browser/external-parity-gltf-visual-corpus.spec.ts`
@@ -732,9 +732,9 @@ V4 must reduce setup complexity while preserving visual quality.
 Target API:
 
 ```ts
-import { createG3DApp, workflows } from "@galileo3d/engine";
+import { createA3DApp, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({
+const app = await createA3DApp({
   canvas,
   quality: "ultra",
   color: "managed",
@@ -756,8 +756,8 @@ app.start();
 
 Required files:
 
-- `packages/engine/src/G3DApp.ts`
-- `packages/engine/src/G3DQualityPresets.ts`
+- `packages/engine/src/A3DApp.ts`
+- `packages/engine/src/A3DQualityPresets.ts`
 - `packages/engine/src/index.ts`
 - `packages/workflows/src/workflow-foundation/`
 - `tests/unit/engine/external-parity-app-api.test.ts`
@@ -780,21 +780,21 @@ V4 must behave like a product developers can start using.
 
 Build:
 
-- Root package exports for `@galileo3d/engine`.
+- Root package exports for `@aura3d/engine`.
 - `packages/engine` as the primary public API surface.
-- `packages/create-g3d` scaffolder.
+- `packages/create-aura3d` scaffolder.
 - V4 templates for real app starts.
 - Static production build smoke.
 - External consumer smoke that renders a flagship scene from an installed tarball.
 
 Required files:
 
-- `packages/create-g3d/package.json`
-- `packages/create-g3d/src/index.ts`
-- `packages/create-g3d/templates/product-viewer/`
-- `packages/create-g3d/templates/material-studio/`
-- `packages/create-g3d/templates/asset-gallery/`
-- `packages/create-g3d/templates/interactive-scene/`
+- `packages/create-aura3d/package.json`
+- `packages/create-aura3d/src/index.ts`
+- `packages/create-aura3d/templates/product-viewer/`
+- `packages/create-aura3d/templates/material-studio/`
+- `packages/create-aura3d/templates/asset-gallery/`
+- `packages/create-aura3d/templates/interactive-scene/`
 - `templates/external-parity-product-viewer/`
 - `templates/external-parity-material-studio/`
 - `templates/external-parity-asset-gallery/`
@@ -806,7 +806,7 @@ Required files:
 Acceptance:
 
 - A fresh app installs the packed package.
-- A fresh app imports `@galileo3d/engine`.
+- A fresh app imports `@aura3d/engine`.
 - A fresh app imports public subpaths only if they are documented.
 - A fresh app builds with Vite.
 - A fresh app renders a flagship scene after production build.
@@ -901,14 +901,14 @@ Required comparisons:
 Required files:
 
 - `benchmarks/external-parity/shared/`
-- `benchmarks/external-parity/galileo/`
+- `benchmarks/external-parity/aura3d/`
 - `benchmarks/external-parity/threejs/`
 - `tests/browser/external-parity-threejs-visual-parity.spec.ts`
 - `tools/external-parity-threejs-visual-parity/index.ts`
 
 Each comparison must report:
 
-- G3D screenshot.
+- A3D screenshot.
 - Three.js screenshot.
 - Diff image.
 - Visual scoring metrics.
@@ -918,15 +918,15 @@ Each comparison must report:
 - Draw calls.
 - Texture memory estimate.
 - Feature coverage.
-- Exact G3D wins.
+- Exact A3D wins.
 - Exact Three.js wins.
-- Exact G3D gaps.
+- Exact A3D gaps.
 
 Acceptance:
 
 - At least 6 same-scene comparisons.
-- G3D output is visually credible to a human.
-- Any "G3D wins" claim names the exact dimension.
+- A3D output is visually credible to a human.
+- Any "A3D wins" claim names the exact dimension.
 - No broad superiority wording.
 
 ### Pillar 12: Visual Quality Gates
@@ -989,12 +989,12 @@ pnpm v4:truth && pnpm v4:progress
 
 Create:
 
-- `fixtures/v4/manifest.json`
-- `fixtures/v4/environments/manifest.json`
-- `fixtures/v4/products/manifest.json`
-- `fixtures/v4/materials/manifest.json`
-- `fixtures/v4/scenes/manifest.json`
-- `fixtures/v4/characters/manifest.json`
+- `fixtures/external-parity/manifest.json`
+- `fixtures/external-parity/environments/manifest.json`
+- `fixtures/external-parity/products/manifest.json`
+- `fixtures/external-parity/materials/manifest.json`
+- `fixtures/external-parity/scenes/manifest.json`
+- `fixtures/external-parity/characters/manifest.json`
 - `docs/project/v4-roadmap-reference-visual-targets.md`
 - `tools/external-parity-fixture-readiness/index.ts`
 
@@ -1243,7 +1243,7 @@ pnpm v4:interactive
 
 Build:
 
-- `createG3DApp`.
+- `createA3DApp`.
 - Quality presets.
 - Workflow presets.
 - Diagnostics.
@@ -1266,7 +1266,7 @@ pnpm v4:api
 Build:
 
 - `packages/engine` root product API.
-- `packages/create-g3d` project scaffolder.
+- `packages/create-aura3d` project scaffolder.
 - V4 templates that render flagship-quality scenes.
 - External Vite production build proof.
 - Static preview proof.
@@ -1275,7 +1275,7 @@ Build:
 Tests:
 
 - `tests/unit/engine/external-parity-public-api-stability.test.ts`
-- `tests/integration/external-parity-create-g3d.test.ts`
+- `tests/integration/external-parity-create-aura3d.test.ts`
 - `tests/browser/external-parity-template-product-viewer.spec.ts`
 - `tools/external-parity-template-readiness/index.ts`
 - `tools/external-parity-external-vite-build/index.ts`
@@ -1524,7 +1524,7 @@ V4 is done only when:
 
 - All 19 milestones pass.
 - `pnpm v4:release` passes.
-- `npm create g3d@latest` or the repo-local equivalent creates a real V4 app.
+- `npm create a3d@latest` or the repo-local equivalent creates a real V4 app.
 - A fresh external app installs the packed package, builds for production, serves static output, renders a flagship scene, and captures a screenshot.
 - Screenshot gallery exists and is human-inspectable.
 - Product, material, interior, asset, character, and interactive scenes look visually credible.

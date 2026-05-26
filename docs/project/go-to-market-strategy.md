@@ -1,6 +1,6 @@
 # Go-To-Market Strategy
 
-G3D should go to market as a workflow-first browser 3D engine and SDK that matches or exceeds Three.js in the measured categories documented by the V10 superiority audit.
+A3D should go to market as a workflow-first browser 3D engine and SDK that matches or exceeds Three.js in the measured categories documented by the V10 superiority audit.
 
 ## Primary Wedge
 
@@ -34,9 +34,9 @@ Primary buyer or sponsor:
 
 The product ships as:
 
-- `@galileo3d/engine` as the main SDK entry;
+- `@aura3d/engine` as the main SDK entry;
 - public subpackages for renderer, assets, animation, scene, controls, materials, environments, workflows, physics, input, product-studio, debug, and Three.js migration helpers;
-- `create-g3d` templates for product viewer, configurator, asset inspector, material studio, WebGPU starter, and migration flows;
+- `create-aura3d` templates for product viewer, configurator, asset inspector, material studio, WebGPU starter, and migration flows;
 - docs that show app creation, asset loading, workflow rendering, diagnostics, screenshots, and disposal;
 - benchmark and comparison pages that state exact route evidence and current report links.
 
@@ -44,7 +44,7 @@ The product ships as:
 
 1. Evidence release
 
-Publish the README, current-state doc, superiority status doc, package API map, route registry, benchmark reports, and V10 audit outputs. The message is "G3D matches or exceeds Three.js in measured browser 3D workflow categories."
+Publish the README, current-state doc, superiority status doc, package API map, route registry, benchmark reports, and V10 audit outputs. The message is "A3D matches or exceeds Three.js in measured browser 3D workflow categories."
 
 2. Workflow demos
 
@@ -69,8 +69,8 @@ Expand official-example coverage, WebGPU feature breadth, WebXR device coverage,
 - "Create a browser material studio with screenshots."
 - "Inspect GLB animation, skeletons, morphs, clips, and IK."
 - "Run physics, picking, decals, controls, and postprocess routes with diagnostics."
-- "Compare selected Three.js scenes against a G3D route."
-- "Migrate selected Three.js workflows into G3D package APIs."
+- "Compare selected Three.js scenes against a A3D route."
+- "Migrate selected Three.js workflows into A3D package APIs."
 - "Build internal browser 3D tools with explicit renderer and asset diagnostics."
 
 ## Benchmarks And Proof

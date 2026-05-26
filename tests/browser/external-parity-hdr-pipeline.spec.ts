@@ -20,9 +20,9 @@ test.describe("V4 HDR pipeline browser evidence", () => {
   test("proves browser HDR target readback, tone mapping, exposure, and color management state", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/hdr-render-target-check/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_HDR_RENDER_TARGET_CHECK__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_HDR_RENDER_TARGET_CHECK__?.status === "ready", undefined, { timeout: 30_000 });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_HDR_RENDER_TARGET_CHECK__);
+    const state = await page.evaluate(() => window.__AURA3D_HDR_RENDER_TARGET_CHECK__);
     const report = {
       ok: errors.length === 0 &&
         state?.status === "ready" &&
@@ -73,7 +73,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_HDR_RENDER_TARGET_CHECK__?: {
+    __AURA3D_HDR_RENDER_TARGET_CHECK__?: {
       readonly status?: "ready" | "error";
       readonly format?: "rgba32f";
       readonly featureEvidence: {

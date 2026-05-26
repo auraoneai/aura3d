@@ -36,9 +36,9 @@ test.describe("rendering WebGPU backend", () => {
       const pointBuffer = device.createBuffer("vertex", pointVertices.byteLength, pointVertices);
       const shader = device.createShaderProgram({
         label: "browser-webgpu-raster",
-        marker: "@galileo3d-shader:browser-webgpu-raster",
-        vertex: "// @galileo3d-shader:browser-webgpu-raster\nin vec3 position;",
-        fragment: "// @galileo3d-shader:browser-webgpu-raster\nuniform vec4 u_color;"
+        marker: "@aura3d-shader:browser-webgpu-raster",
+        vertex: "// @aura3d-shader:browser-webgpu-raster\nin vec3 position;",
+        fragment: "// @aura3d-shader:browser-webgpu-raster\nuniform vec4 u_color;"
       });
       const target = device.createRenderTarget({ width: 16, height: 16, label: "browser-webgpu-target" });
       device.setRenderTarget(target);
@@ -254,9 +254,9 @@ test.describe("rendering WebGPU backend", () => {
       const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
       const shader = device.createShaderProgram({
         label: "browser-webgpu-canvas",
-        marker: "@galileo3d-shader:browser-webgpu-canvas",
-        vertex: "// @galileo3d-shader:browser-webgpu-canvas\nin vec3 position;",
-        fragment: "// @galileo3d-shader:browser-webgpu-canvas\nuniform vec4 color;"
+        marker: "@aura3d-shader:browser-webgpu-canvas",
+        vertex: "// @aura3d-shader:browser-webgpu-canvas\nin vec3 position;",
+        fragment: "// @aura3d-shader:browser-webgpu-canvas\nuniform vec4 color;"
       });
 
       device.beginFrame(32, 32);

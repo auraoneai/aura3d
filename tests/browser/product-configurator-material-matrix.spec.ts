@@ -34,22 +34,22 @@ test.describe("Product configurator material diagnostic matrix", () => {
       document.body.replaceChildren();
       document.body.style.margin = "0";
       document.body.style.background = "#05070a";
-      window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = ["spec:import:start"];
+      window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = ["spec:import:start"];
       void import("/tests/browser/product-configurator-material-matrix-harness.js")
         .then((module) => {
-          window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = [
-            ...(window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []),
+          window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = [
+            ...(window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []),
             "spec:import:done"
           ];
           return module.runProductConfiguratorMaterialMatrixHarness();
         })
         .catch((error) => {
-          window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = [
-            ...(window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []),
+          window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = [
+            ...(window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []),
             `spec:import:error:${error instanceof Error ? error.message : String(error)}`
           ];
-          window.__G3D_PRODUCT_MATERIAL_MATRIX__ = {
-            schema: "g3d-product-configurator-material-matrix/v1",
+          window.__A3D_PRODUCT_MATERIAL_MATRIX__ = {
+            schema: "a3d-product-configurator-material-matrix/v1",
             status: "error",
             source: "tests/browser/product-configurator-material-matrix-harness.ts",
             galleryUiBypassed: true,
@@ -91,20 +91,20 @@ test.describe("Product configurator material diagnostic matrix", () => {
     try {
       await page.waitForFunction(
         () => {
-          const report = window.__G3D_PRODUCT_MATERIAL_MATRIX__ as { status?: string } | undefined;
+          const report = window.__A3D_PRODUCT_MATERIAL_MATRIX__ as { status?: string } | undefined;
           return report?.status === "ready" || report?.status === "error";
         },
         undefined,
         { timeout: 210_000 }
       );
     } catch (error) {
-      const progress = await page.evaluate(() => window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []);
+      const progress = await page.evaluate(() => window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []);
       throw new Error(`Product material matrix did not report ready/error. Progress:\n${progress.join("\n") || "(none captured)"}\nPage errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const report = await page.evaluate(() => window.__G3D_PRODUCT_MATERIAL_MATRIX__) as ProductMaterialMatrixReport;
+    const report = await page.evaluate(() => window.__A3D_PRODUCT_MATERIAL_MATRIX__) as ProductMaterialMatrixReport;
     expect(report.status, report.error).toBe("ready");
-    expect(report.schema).toBe("g3d-product-configurator-material-matrix/v1");
+    expect(report.schema).toBe("a3d-product-configurator-material-matrix/v1");
     expect(report.galleryUiBypassed).toBe(true);
     expect(report.asset).toEqual({
       id: "car-concept",
@@ -319,7 +319,7 @@ function pngBufferFromDataUrl(dataUrl: string): Buffer {
 }
 
 interface ProductMaterialMatrixReport {
-  readonly schema: "g3d-product-configurator-material-matrix/v1";
+  readonly schema: "a3d-product-configurator-material-matrix/v1";
   readonly status: "ready" | "error";
   readonly source: string;
   readonly galleryUiBypassed: true;

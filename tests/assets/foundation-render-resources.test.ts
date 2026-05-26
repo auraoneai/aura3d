@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createGLTFRenderResources, GLTFLoader, LoadContext, loadRenderableAsset, createRenderableScene } from "@galileo3d/assets";
+import { createGLTFRenderResources, GLTFLoader, LoadContext, loadRenderableAsset, createRenderableScene } from "@aura3d/assets";
 
-const root = join(process.cwd(), "fixtures/v3/assets");
+const root = join(process.cwd(), "fixtures/workflow-assets/assets");
 
 describe("V3 glTF render resources", () => {
   it("creates render resources with bounds, geometry, materials, and textures", async () => {

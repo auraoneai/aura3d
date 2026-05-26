@@ -1,4 +1,4 @@
-import { InputSystem } from "@galileo3d/input";
+import { InputSystem } from "@aura3d/input";
 
 interface PointerLockResult {
   readonly available: boolean;
@@ -21,12 +21,12 @@ interface InputBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_INPUT_BROWSER_TEST__?: InputBrowserResult;
+    __AURA3D_INPUT_BROWSER_TEST__?: InputBrowserResult;
   }
 }
 
 function publish(result: InputBrowserResult): void {
-  window.__GALILEO3D_INPUT_BROWSER_TEST__ = result;
+  window.__AURA3D_INPUT_BROWSER_TEST__ = result;
 }
 
 function pointerEvent(type: string, options: PointerEventInit): Event {

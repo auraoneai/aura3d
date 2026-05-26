@@ -46,7 +46,7 @@ interface PixelStats {
 
 interface DataGalaxyReferenceReport {
   readonly status: "ready" | "error";
-  readonly schema: "g3d-data-galaxy-reference/v1";
+  readonly schema: "a3d-data-galaxy-reference/v1";
   readonly error?: string;
   readonly route: "data-galaxy";
   readonly harness: {
@@ -220,7 +220,7 @@ async function run(): Promise<void> {
 
     window.__DATA_GALAXY_REFERENCE__ = {
       status: "ready",
-      schema: "g3d-data-galaxy-reference/v1",
+      schema: "a3d-data-galaxy-reference/v1",
       route: "data-galaxy",
       harness: {
         purpose: "same-system Data Galaxy reference harness outside the advanced gallery shell",
@@ -235,7 +235,7 @@ async function run(): Promise<void> {
         fixedCamera: true,
         fixedDensity: true,
         fixedBackground: true,
-        claimBoundary: "This harness renders the same Data Galaxy route systems through G3D WebGL2 without the gallery shell UI. It proves deterministic CPU/static point-buffer density, overlay point/line/core evidence, renderer diagnostics, and postprocess state; it does not prove native GPU-compute particle simulation or Three.js visual parity."
+        claimBoundary: "This harness renders the same Data Galaxy route systems through A3D WebGL2 without the gallery shell UI. It proves deterministic CPU/static point-buffer density, overlay point/line/core evidence, renderer diagnostics, and postprocess state; it does not prove native GPU-compute particle simulation or Three.js visual parity."
       },
       render: {
         width: WIDTH,
@@ -297,7 +297,7 @@ async function run(): Promise<void> {
   } catch (error) {
     window.__DATA_GALAXY_REFERENCE__ = {
       status: "error",
-      schema: "g3d-data-galaxy-reference/v1",
+      schema: "a3d-data-galaxy-reference/v1",
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       route: "data-galaxy",
       harness: {

@@ -1,4 +1,4 @@
-import { createEnvironmentStage } from "@galileo3d/rendering";
+import { createEnvironmentStage } from "@aura3d/rendering";
 import { bool, frame, item, pushLineGroup, type GalleryState, type Resources, type SceneFrame } from "./sceneBuilderPrimitives";
 import { bounds, type Vec3 } from "./math";
 import {

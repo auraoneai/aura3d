@@ -1,4 +1,4 @@
-# G3D V7 Example Parity Lab
+# A3D V7 Example Parity Lab
 
 Runtime app for building toward the Three.js example categories that the product must match or exceed:
 
@@ -10,4 +10,4 @@ Runtime app for building toward the Three.js example categories that the product
 - stereo/effects composition
 - physics-driven runtime scenes
 
-This app must render through G3D code only. Three.js belongs only in reference/comparison harnesses.
+This app must render through A3D code only. Three.js belongs only in reference/comparison harnesses.

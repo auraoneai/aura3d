@@ -1,4 +1,4 @@
-import { Bounds3, DirectionalLight, Group, InstancedMesh, Mesh, Object3D, PerspectiveCamera, PointLight, Renderable, Scene, SceneNode, SkinnedMesh, SpotLight, batchReparent, deserializeScene, serializeScene } from "@galileo3d/scene";
+import { Bounds3, DirectionalLight, Group, InstancedMesh, Mesh, Object3D, PerspectiveCamera, PointLight, Renderable, Scene, SceneNode, SkinnedMesh, SpotLight, batchReparent, deserializeScene, serializeScene } from "@aura3d/scene";
 import { describe, expect, it } from "vitest";
 
 describe("scene hierarchy, query, and serialization", () => {
@@ -268,7 +268,7 @@ describe("scene hierarchy, query, and serialization", () => {
         id: "asset:robot-arm",
         uri: "/fixtures/robot-arm.glb",
         source: "gltf-corpus",
-        loader: "@galileo3d/assets",
+        loader: "@aura3d/assets",
         nodeIds: [mesh.id],
         materialIds: ["material:matte"]
       })

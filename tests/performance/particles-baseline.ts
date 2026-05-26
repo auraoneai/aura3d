@@ -12,7 +12,7 @@ import {
   type Particle,
   type ParticleModule,
   type ParticleUpdateContext,
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 interface AssertionContext {
   name: string;

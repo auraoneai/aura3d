@@ -183,8 +183,8 @@ test.describe("v4 runtime systems", () => {
   test("game slice produces v4 runtime systems, restart, screenshot, and report evidence", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true, undefined, { timeout: 15_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true, undefined, { timeout: 15_000 });
 
     await page.locator("[data-testid='unlock-audio']").click();
     await setControlValue(page, "[data-testid='binding-select']", "pointer", "change");
@@ -203,16 +203,16 @@ test.describe("v4 runtime systems", () => {
     await page.locator("[data-testid='reload-behavior']").dispatchEvent("click");
 
     await setTestGamepad(page, 0.9, false);
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.objectivePhase === "won", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "won", undefined, { timeout: 45_000 });
     await setTestGamepad(page, 0, false);
     await page.locator("[data-testid='restart-objective']").click();
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.objectivePhase === "playing" && Number(window.__GALILEO3D_GAME_DEMO__?.metrics.objectiveRestartCount ?? 0) >= 1, undefined, { timeout: 10_000 });
-    await page.waitForFunction(() => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.scriptErrors ?? 0) >= 1, undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "playing" && Number(window.__AURA3D_GAME_DEMO__?.metrics.objectiveRestartCount ?? 0) >= 1, undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.scriptErrors ?? 0) >= 1, undefined, { timeout: 10_000 });
 
     await mkdir(dirname(screenshotPath), { recursive: true });
     await page.screenshot({ path: screenshotPath, fullPage: true });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_GAME_DEMO__);
+    const state = await page.evaluate(() => window.__AURA3D_GAME_DEMO__);
     const pixels = await canvasPixelStats(page);
     report.gameSlice = { state, pixels };
 
@@ -1074,38 +1074,38 @@ test.describe("v4 runtime systems", () => {
 
   test("asset viewer, editor, and game slice expose mobile touch controls", async ({ page }) => {
     await page.goto(`${server.origin}/examples/asset-viewer/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 30_000 });
     await dispatchTouchDrag(page, "[data-testid='asset-viewer-canvas']", false);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("touch");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("touch");
     const assetViewer = await page.evaluate(() => ({
-      status: window.__GALILEO3D_ASSET_VIEWER__?.status,
-      lastInput: window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.lastInput,
-      touchControls: window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.touchControls,
-      pointerControls: window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.pointerControls
+      status: window.__AURA3D_ASSET_VIEWER__?.status,
+      lastInput: window.__AURA3D_ASSET_VIEWER__?.cameraControls?.lastInput,
+      touchControls: window.__AURA3D_ASSET_VIEWER__?.cameraControls?.touchControls,
+      pointerControls: window.__AURA3D_ASSET_VIEWER__?.cameraControls?.pointerControls
     }));
 
     await page.goto(`${server.origin}/apps/editor/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 20_000 });
+    await page.waitForFunction(() => window.__AURA3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 20_000 });
     await dispatchTouchDrag(page, ".editor-viewport", false);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__?.getState().viewportCamera.lastInput)).toBe("touch");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__?.getState().viewportCamera.lastInput)).toBe("touch");
     const editor = await page.evaluate(() => ({
-      status: window.__GALILEO3D_EDITOR_APP__?.getState().status,
-      lastInput: window.__GALILEO3D_EDITOR_APP__?.getState().viewportCamera.lastInput,
-      touchControls: window.__GALILEO3D_EDITOR_APP__?.getState().viewportCamera.touchControls,
-      pointerControls: window.__GALILEO3D_EDITOR_APP__?.getState().viewportCamera.pointerControls
+      status: window.__AURA3D_EDITOR_APP__?.getState().status,
+      lastInput: window.__AURA3D_EDITOR_APP__?.getState().viewportCamera.lastInput,
+      touchControls: window.__AURA3D_EDITOR_APP__?.getState().viewportCamera.touchControls,
+      pointerControls: window.__AURA3D_EDITOR_APP__?.getState().viewportCamera.pointerControls
     }));
 
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
     await page.locator("[data-testid='game-slice-canvas']").dispatchEvent("touchstart");
     await page.locator("[data-testid='game-slice-canvas']").dispatchEvent("pointerdown", { clientX: 160, clientY: 120, button: 0, pointerId: 44, pointerType: "touch" });
     await page.locator("[data-testid='game-slice-canvas']").dispatchEvent("pointerup", { clientX: 160, clientY: 120, button: 0, pointerId: 44, pointerType: "touch" });
-    await expect.poll(() => page.evaluate(() => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.mobileUnlockAttempts ?? 0))).toBeGreaterThanOrEqual(1);
+    await expect.poll(() => page.evaluate(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.mobileUnlockAttempts ?? 0))).toBeGreaterThanOrEqual(1);
     const game = await page.evaluate(() => ({
-      status: window.__GALILEO3D_GAME_DEMO__?.status,
-      mobileUnlockAttempts: window.__GALILEO3D_GAME_DEMO__?.metrics.mobileUnlockAttempts,
-      mobileUnlockHandling: window.__GALILEO3D_GAME_DEMO__?.metrics.mobileUnlockHandling,
-      pointerTouches: window.__GALILEO3D_GAME_DEMO__?.metrics.pointerTouches
+      status: window.__AURA3D_GAME_DEMO__?.status,
+      mobileUnlockAttempts: window.__AURA3D_GAME_DEMO__?.metrics.mobileUnlockAttempts,
+      mobileUnlockHandling: window.__AURA3D_GAME_DEMO__?.metrics.mobileUnlockHandling,
+      pointerTouches: window.__AURA3D_GAME_DEMO__?.metrics.pointerTouches
     }));
 
     report.mobileTouch = { assetViewer, editor, game };
@@ -1117,7 +1117,7 @@ test.describe("v4 runtime systems", () => {
 
 async function setTestGamepad(page: Page, axisX: number, jump: boolean): Promise<void> {
   await page.evaluate(({ axisX, jump }) => {
-    window.__GALILEO3D_TEST_GAMEPADS__ = [{
+    window.__AURA3D_TEST_GAMEPADS__ = [{
       id: "external-parity-runtime-gamepad",
       index: 0,
       connected: true,
@@ -1200,7 +1200,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_GAME_DEMO__?: {
+    __AURA3D_GAME_DEMO__?: {
       readonly status: "ready" | "error";
       readonly renderer?: string;
       readonly visualClaim?: string;
@@ -1209,7 +1209,7 @@ declare global {
       readonly diagnostics?: { readonly drawCalls?: number };
       readonly error?: string;
     };
-    __GALILEO3D_ASSET_VIEWER__?: {
+    __AURA3D_ASSET_VIEWER__?: {
       readonly status: "ready" | "error";
       readonly cameraControls?: {
         readonly lastInput?: string;
@@ -1217,7 +1217,7 @@ declare global {
         readonly pointerControls?: boolean;
       };
     };
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): {
         readonly status: "ready" | "error" | "booting";
         readonly viewportCamera: {
@@ -1227,7 +1227,7 @@ declare global {
         };
       };
     };
-    __GALILEO3D_TEST_GAMEPADS__?: readonly {
+    __AURA3D_TEST_GAMEPADS__?: readonly {
       readonly id: string;
       readonly index: number;
       readonly connected: boolean;

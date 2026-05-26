@@ -1,4 +1,4 @@
-import { createInteractiveSceneWorkflow } from "@galileo3d/workflows";
+import { createInteractiveSceneWorkflow } from "@aura3d/workflows";
 import { mountV3Example } from "../foundation-example-shell";
 
 void mountV3Example({

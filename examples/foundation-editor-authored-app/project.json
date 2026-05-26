@@ -4,9 +4,9 @@
     "name": "V3 Editor Authored Sample",
     "savedAt": "2026-05-07T00:00:00.000Z",
     "provenance": {
-      "authoringTool": "galileo3d-browser-editor",
+      "authoringTool": "aura3d-browser-editor",
       "workflow": "editor-import-save-export",
-      "runtimePackage": "@galileo3d/editor-runtime",
+      "runtimePackage": "@aura3d/editor-runtime",
       "operations": [
         { "id": "new-project", "runtimeApi": "EditorRuntime.select", "target": "node-hero" },
         { "id": "import-real-gltf", "runtimeApi": "EditorRuntime.executeCommand", "target": "asset-fox" },
@@ -17,7 +17,7 @@
         { "id": "static-export", "runtimeApi": "StaticProjectExporter.export", "target": "index.html" },
         { "id": "static-export-runtime", "runtimeApi": "createStaticExportRuntime", "target": "runtime.js" }
       ],
-      "evidenceHash": "g3d-prov-9bf29cd5"
+      "evidenceHash": "a3d-prov-b1c7b66d"
     }
   },
   "scene": {
@@ -93,9 +93,9 @@
     "importAnimations": true,
     "materialVariants": true
   },
-  "plugins": ["galileo.default-authoring"],
+  "plugins": ["aura3d.default-authoring"],
   "export": {
-    "title": "Galileo3D V3 Editor Export",
+    "title": "Aura3D V3 Editor Export",
     "entryNodeId": "node-hero"
   }
 }

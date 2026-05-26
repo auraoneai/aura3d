@@ -4,12 +4,12 @@ import {
   RenderDeviceError,
   UnlitMaterial,
   type CollectedLight
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8MaterialsTransmission?: V8MaterialsTransmissionRuntime;
+    __a3dV8MaterialsTransmission?: V8MaterialsTransmissionRuntime;
   }
 }
 
@@ -25,7 +25,7 @@ interface V8MaterialsTransmissionRuntime {
   readonly attenuationBlueBias: number;
   readonly outputNonDarkPixels: number;
   readonly outputColorBuckets: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly elapsedMs: number;
   readonly error?: string;
 }
@@ -52,13 +52,13 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8MaterialsTransmission = runtime;
+    window.__a3dV8MaterialsTransmission = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -157,7 +157,7 @@ async function run(): Promise<void> {
           outputNonDarkPixels: metrics.nonDark,
           outputColorBuckets: metrics.colorBuckets
         });
-        window.__g3dV8MaterialsTransmission = runtime;
+        window.__a3dV8MaterialsTransmission = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -238,7 +238,7 @@ function createRuntime(
     attenuationBlueBias: ATTENUATION_COLOR[2] - ATTENUATION_COLOR[0],
     outputNonDarkPixels: patch.outputNonDarkPixels ?? 0,
     outputColorBuckets: patch.outputColorBuckets ?? 0,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };

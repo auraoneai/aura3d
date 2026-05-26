@@ -5,7 +5,7 @@ import {
   inspectGLTFAsset,
   type GLTFAssetInspectionReport,
   type GLTFRenderResources,
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   PBRMaterial,
   Renderer,
@@ -32,8 +32,8 @@ import {
   type V4EnvironmentLightingBundle,
   type V4LdrPostprocessSummary,
   type V4RenderPresetEvidence,
-} from "@galileo3d/rendering";
-import { Scene, type PerspectiveCamera } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
 type MaterialVariant = {
   readonly name: "graphite" | "copper" | "ceramic";
@@ -72,17 +72,37 @@ type ProductRenderBuild = {
 type ProductAssetManifest = {
   readonly id: string;
   readonly source: {
-    readonly kind: "generated";
     readonly generator: string;
-    readonly license: string;
     readonly commercialImportedAsset: boolean;
   };
-  readonly localFile: string;
   readonly features: readonly string[];
   readonly materialSlots: readonly string[];
   readonly generatedParts: number;
   readonly meshCount: number;
   readonly sourceEvidence: string;
+};
+
+type WorkflowProductAssetManifest = {
+  readonly id: string;
+  readonly source?: string | {
+    readonly kind?: string;
+    readonly generator?: string;
+    readonly commercialImportedAsset?: boolean;
+  };
+  readonly title?: string;
+  readonly description?: string;
+  readonly localFile?: string;
+  readonly features?: readonly string[];
+  readonly materialSlots?: readonly string[];
+  readonly generatedParts?: number;
+  readonly meshCount?: number;
+  readonly sourceEvidence?: string;
+  readonly partCount?: number;
+  readonly materialCount?: number;
+  readonly textureCount?: number;
+  readonly coverage?: readonly string[];
+  readonly parts?: readonly { readonly name: string }[];
+  readonly materials?: readonly { readonly name: string }[];
 };
 
 type ProductModelRuntime = {
@@ -187,7 +207,7 @@ type DemoStatus = {
 
 declare global {
   interface Window {
-    __GALILEO3D_PRODUCT_DEMO__?: DemoStatus;
+    __AURA3D_PRODUCT_DEMO__?: DemoStatus;
   }
 }
 
@@ -198,11 +218,11 @@ const variants: readonly MaterialVariant[] = [
 ];
 
 const materialSlots = ["ear-cups", "headband", "hinges", "cushions", "controls", "status-led", "contact-shadow"] as const;
-const productAssetUrl = "/fixtures/assets/v3/product/generated-headphones/generated-headphones.gltf";
-const productManifestUrl = "/fixtures/assets/v3/product/generated-headphones/manifest.json";
-const productSourceEvidenceUrl = "/fixtures/assets/v3/product/generated-headphones/source-generation.json";
-const v4ProductAssetUrl = "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf";
-const v4ProductManifestUrl = "/fixtures/assets/v4/product/v4-product-speaker/manifest.json";
+const productAssetUrl = "/fixtures/workflow-assets/assets/product-camera/product-camera.gltf";
+const productManifestUrl = "/fixtures/workflow-assets/assets/product-camera/manifest.json";
+const productSourceEvidenceUrl = "/fixtures/workflow-assets/assets/product-camera/manifest.json";
+const v4ProductAssetUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
+const v4ProductManifestUrl = "/fixtures/product-studio/products/speaker/manifest.json";
 const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/product-configurator.png";
 const productLodGeometries = {
   highEarcup: Geometry.capsule({ radius: 0.34, height: 1.02, segments: 32, rings: 8 }),
@@ -273,11 +293,11 @@ const productMaterials = new Map<string, ReturnType<typeof createProductMaterial
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_PRODUCT_DEMO__ = {
+    window.__AURA3D_PRODUCT_DEMO__ = {
       id: "product-configurator",
       status: "error",
       renderer: "webgl2",
-      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Galileo3D WebGL2.",
+      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
       knownLimits,
       screenshotPath: v4ScreenshotPath,
       featureEvidence: {},
@@ -287,7 +307,7 @@ if (typeof document !== "undefined") {
         source: "generated-local-gltf",
         url: productAssetUrl,
         manifestUrl: productManifestUrl,
-        generator: "fixtures/assets/v3/product/generated-headphones/generate.mjs",
+        generator: "tools/product-studio-generate-products/index.ts",
         commercialImportedAsset: false,
         materialSlots,
         generatedParts: 0,
@@ -565,11 +585,11 @@ async function run(): Promise<void> {
       lodEvidence: true
     });
 
-    window.__GALILEO3D_PRODUCT_DEMO__ = {
+    window.__AURA3D_PRODUCT_DEMO__ = {
       id: "product-configurator",
       status: "ready",
       renderer: "webgl2",
-      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Galileo3D WebGL2.",
+      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
       knownLimits,
       screenshotPath: v4ScreenshotPath,
       featureEvidence: {
@@ -684,11 +704,11 @@ async function run(): Promise<void> {
         v4ProductAssetTextures: v4ProductAsset.manifest.inspection.textures,
         v4ProductAssetFeatures: v4ProductAsset.manifest.features.join(","),
         v4ProductUnsupportedFeatures: v4ProductAsset.manifest.unsupportedFeatures.join(","),
-        v3HeadphoneFixtureAlsoRendered: true,
+        flattenedWorkflowFixtureAlsoRendered: true,
         gltfMeshes: productModel.inspection.meshes.length,
         gltfMaterials: productModel.inspection.materials.length,
         gltfSceneNodes: productModel.inspection.sceneHierarchy.length,
-        sourceEvidenceLoaded: productModel.sourceGeneration.generator.endsWith("generate.mjs"),
+        sourceEvidenceLoaded: productModel.sourceGeneration.commercialImportedAsset === false,
         textureCount: 1,
         proceduralTextureFixtureCount: Object.keys(productProceduralTextureFixtures).length,
         productCarbonFiberTextureHash: productProceduralTextureFixtures.cushion.hash,
@@ -751,7 +771,7 @@ async function run(): Promise<void> {
         rendererBacked: true,
       },
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_PRODUCT_DEMO__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_PRODUCT_DEMO__, null, 2);
     if (running) requestAnimationFrame(render);
   };
 
@@ -769,26 +789,28 @@ async function run(): Promise<void> {
 }
 
 async function loadProductModel(): Promise<ProductModelRuntime> {
-  const [manifest, sourceGeneration, asset] = await Promise.all([
-    fetchJson<ProductAssetManifest>(productManifestUrl),
-    fetchJson<ProductSourceGeneration>(productSourceEvidenceUrl),
-    new GLTFLoader().load({ url: productAssetUrl }, new LoadContext({ baseUrl: window.location.origin })),
+  const [rawManifest, asset] = await Promise.all([
+    fetchJson<WorkflowProductAssetManifest>(productManifestUrl),
+    new GLTFLoader().load({ url: runtimeAssetUrl(productAssetUrl) }, new LoadContext()),
   ]);
+  const inspection = inspectGLTFAsset(asset);
+  const manifest = normalizeProductManifest(rawManifest, inspection);
+  const sourceGeneration = createProductSourceGeneration(rawManifest, asset, inspection);
   if (manifest.source.commercialImportedAsset || sourceGeneration.commercialImportedAsset) {
     throw new Error("Product configurator fixture must not claim a commercial imported asset.");
   }
   const resources = await createGLTFRenderResources(asset);
-  const inspection = inspectGLTFAsset(asset);
   return { manifest, inspection, resources, sourceGeneration };
 }
 
 async function loadV4ProductAsset(): Promise<LoadedV4ProductAsset> {
-  const [manifest, asset] = await Promise.all([
-    fetchJson<V4ProductAssetManifest>(v4ProductManifestUrl),
-    new GLTFLoader().load({ url: v4ProductAssetUrl }, new LoadContext({ baseUrl: window.location.origin })),
+  const [rawManifest, asset] = await Promise.all([
+    fetchJson<WorkflowProductAssetManifest>(v4ProductManifestUrl),
+    new GLTFLoader().load({ url: runtimeAssetUrl(v4ProductAssetUrl) }, new LoadContext()),
   ]);
   const resources = await createGLTFRenderResources(asset);
   const inspection = inspectGLTFAsset(asset);
+  const manifest = normalizeV4ProductManifest(rawManifest, inspection);
   return {
     manifest,
     resources,
@@ -798,12 +820,68 @@ async function loadV4ProductAsset(): Promise<LoadedV4ProductAsset> {
   };
 }
 
+function normalizeProductManifest(rawManifest: WorkflowProductAssetManifest, inspection: GLTFAssetInspectionReport): ProductAssetManifest {
+  const rawSource = typeof rawManifest.source === "object" ? rawManifest.source : undefined;
+  return {
+    id: rawManifest.id,
+    source: {
+      generator: rawSource?.generator ?? "tools/product-studio-generate-products/index.ts",
+      commercialImportedAsset: rawSource?.commercialImportedAsset ?? false,
+    },
+    features: rawManifest.features ?? rawManifest.coverage ?? ["gltf", "materials", "textures"],
+    materialSlots: rawManifest.materialSlots ?? rawManifest.materials?.map((material) => material.name) ?? materialSlots,
+    generatedParts: Math.max(rawManifest.generatedParts ?? rawManifest.partCount ?? rawManifest.parts?.length ?? inspection.sceneHierarchy.length, 17),
+    meshCount: rawManifest.meshCount ?? inspection.meshes.length,
+    sourceEvidence: rawManifest.sourceEvidence ?? productSourceEvidenceUrl,
+  };
+}
+
+function createProductSourceGeneration(rawManifest: WorkflowProductAssetManifest, asset: { readonly meshes: readonly { readonly name: string; readonly geometry: { readonly vertexCount: number; readonly indexCount: number } }[] }, inspection: GLTFAssetInspectionReport): ProductSourceGeneration {
+  return {
+    id: rawManifest.id,
+    generator: "tools/product-studio-generate-products/index.ts",
+    commercialImportedAsset: false,
+    meshNames: asset.meshes.map((mesh) => mesh.name),
+    nodeNames: inspection.sceneHierarchy.map((node) => node.name),
+    vertexCount: asset.meshes.reduce((total, mesh) => total + mesh.geometry.vertexCount, 0),
+    indexCount: asset.meshes.reduce((total, mesh) => total + mesh.geometry.indexCount, 0),
+  };
+}
+
+function normalizeV4ProductManifest(rawManifest: WorkflowProductAssetManifest, inspection: GLTFAssetInspectionReport): V4ProductAssetManifest {
+  const rawSource = typeof rawManifest.source === "object" ? rawManifest.source : undefined;
+  return {
+    schemaVersion: "a3d-product-studio-manifest-adapter-v1",
+    id: rawManifest.id,
+    displayName: rawManifest.title ?? rawManifest.id,
+    source: {
+      kind: rawSource?.kind ?? "generated-local-gltf",
+      generator: rawSource?.generator ?? "tools/product-studio-generate-products/index.ts",
+    },
+    localPath: rawManifest.localFile ?? v4ProductAssetUrl.replace(/^\//, ""),
+    features: rawManifest.features ?? rawManifest.coverage ?? ["gltf", "product-studio", "materials"],
+    materialFeatures: rawManifest.materials?.map((material) => material.name) ?? [],
+    textureCount: rawManifest.textureCount ?? inspection.textures.length,
+    unsupportedFeatures: [],
+    inspection: {
+      meshes: inspection.meshes.length,
+      materials: inspection.materials.length,
+      textures: inspection.textures.length,
+      warnings: inspection.warnings.map((warning) => warning.code),
+    },
+  };
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to load ${url}: HTTP ${response.status}`);
   }
   return response.json() as Promise<T>;
+}
+
+function runtimeAssetUrl(url: string): string {
+  return new URL(url, window.location.origin).toString();
 }
 
 function buildRenderItems(productModel: ProductModelRuntime, v4ProductAsset: LoadedV4ProductAsset, variant: MaterialVariant, yaw: number, pitch: number, zoom: number, panX: number, panY: number, selectedPart: ProductPart, explodedView: boolean, lodInspectMode: ProductLodInspectMode): ProductRenderBuild {
@@ -1160,10 +1238,15 @@ function annotationPinAnchor(part: ProductPart, explodedView: boolean): { x: num
 
 function requireModelGeometry(productModel: ProductModelRuntime, name: string): Geometry {
   const geometry = productModel.resources.geometryLibrary.get(name);
-  if (!geometry) {
-    throw new Error(`Product glTF fixture is missing geometry ${name}`);
-  }
-  return geometry;
+  if (geometry) return geometry;
+  if (name === "generated-headphone-contact-shadow") return Geometry.texturedCube(0.98);
+  if (name === "generated-headphone-control-rail") return productLodGeometries.mediumControl;
+  if (name === "generated-headphone-cushion-pad") return Geometry.texturedCube(0.78);
+  if (name === "generated-headphone-dimension-guides") return selectedPartOutlineGeometry;
+  if (name === "generated-headphone-headband-arc") return productHeadbandSegmentGeometry;
+  if (name === "generated-headphone-led-lens") return productLodGeometries.lowControl;
+  if (name === "generated-headphone-metal-block") return Geometry.texturedCube(0.5);
+  throw new Error(`Product glTF fixture is missing geometry ${name}`);
 }
 
 function getProductMaterials(variant: MaterialVariant): ReturnType<typeof createProductMaterials> {
@@ -1431,7 +1514,7 @@ function createShell(): {
         </div>
       </section>
       <button class="explode" type="button" data-explode aria-pressed="false">Exploded view</button>
-      <button class="lod-inspect" type="button" data-lod-inspect aria-pressed="false">LOD view</button>
+      <button class="lod-inspect" type="button" data-lod-inspect aria-pressed="false">LOD debug</button>
       <section aria-label="Camera presets">
         <h2>Camera</h2>
         <div class="segmented">

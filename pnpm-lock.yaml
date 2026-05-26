@@ -17,69 +17,69 @@ importers:
         specifier: 4.4.1
         version: 4.4.1(@loaders.gl/core@4.4.1)
     devDependencies:
+      '@aura3d/animation':
+        specifier: workspace:*
+        version: link:packages/animation
+      '@aura3d/apps':
+        specifier: workspace:*
+        version: link:packages/apps
+      '@aura3d/assets':
+        specifier: workspace:*
+        version: link:packages/assets
+      '@aura3d/audio':
+        specifier: workspace:*
+        version: link:packages/audio
+      '@aura3d/core':
+        specifier: workspace:*
+        version: link:packages/core
+      '@aura3d/create-aura3d':
+        specifier: workspace:*
+        version: link:packages/create-aura3d
+      '@aura3d/debug':
+        specifier: workspace:*
+        version: link:packages/debug
+      '@aura3d/ecs':
+        specifier: workspace:*
+        version: link:packages/ecs
+      '@aura3d/editor':
+        specifier: workspace:*
+        version: link:packages/editor
+      '@aura3d/editor-runtime':
+        specifier: workspace:*
+        version: link:packages/editor-runtime
+      '@aura3d/engine-runtime':
+        specifier: workspace:*
+        version: link:packages/engine
+      '@aura3d/input':
+        specifier: workspace:*
+        version: link:packages/input
+      '@aura3d/math':
+        specifier: workspace:*
+        version: link:packages/math
+      '@aura3d/physics':
+        specifier: workspace:*
+        version: link:packages/physics
+      '@aura3d/product-studio':
+        specifier: workspace:*
+        version: link:packages/product-studio
+      '@aura3d/rendering':
+        specifier: workspace:*
+        version: link:packages/rendering
+      '@aura3d/scene':
+        specifier: workspace:*
+        version: link:packages/scene
+      '@aura3d/scripting':
+        specifier: workspace:*
+        version: link:packages/scripting
+      '@aura3d/workflows':
+        specifier: workspace:*
+        version: link:packages/workflows
       '@babylonjs/core':
         specifier: ^7.16.1
         version: 7.16.1
       '@babylonjs/loaders':
         specifier: ^7.16.1
         version: 7.16.1(@babylonjs/core@7.16.1)(babylonjs-gltf2interface@7.16.1)
-      '@galileo3d/animation':
-        specifier: workspace:*
-        version: link:packages/animation
-      '@galileo3d/apps':
-        specifier: workspace:*
-        version: link:packages/apps
-      '@galileo3d/assets':
-        specifier: workspace:*
-        version: link:packages/assets
-      '@galileo3d/audio':
-        specifier: workspace:*
-        version: link:packages/audio
-      '@galileo3d/core':
-        specifier: workspace:*
-        version: link:packages/core
-      '@galileo3d/create-g3d':
-        specifier: workspace:*
-        version: link:packages/create-g3d
-      '@galileo3d/debug':
-        specifier: workspace:*
-        version: link:packages/debug
-      '@galileo3d/ecs':
-        specifier: workspace:*
-        version: link:packages/ecs
-      '@galileo3d/editor':
-        specifier: workspace:*
-        version: link:packages/editor
-      '@galileo3d/editor-runtime':
-        specifier: workspace:*
-        version: link:packages/editor-runtime
-      '@galileo3d/engine-runtime':
-        specifier: workspace:*
-        version: link:packages/engine
-      '@galileo3d/input':
-        specifier: workspace:*
-        version: link:packages/input
-      '@galileo3d/math':
-        specifier: workspace:*
-        version: link:packages/math
-      '@galileo3d/physics':
-        specifier: workspace:*
-        version: link:packages/physics
-      '@galileo3d/product-studio':
-        specifier: workspace:*
-        version: link:packages/product-studio
-      '@galileo3d/rendering':
-        specifier: workspace:*
-        version: link:packages/rendering
-      '@galileo3d/scene':
-        specifier: workspace:*
-        version: link:packages/scene
-      '@galileo3d/scripting':
-        specifier: workspace:*
-        version: link:packages/scripting
-      '@galileo3d/workflows':
-        specifier: workspace:*
-        version: link:packages/workflows
       '@playwright/test':
         specifier: ^1.52.0
         version: 1.59.1
@@ -124,135 +124,135 @@ importers:
 
   packages/apps:
     dependencies:
-      '@galileo3d/core':
+      '@aura3d/core':
         specifier: workspace:*
         version: link:../core
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
-      '@galileo3d/workflows':
+      '@aura3d/workflows':
         specifier: workspace:*
         version: link:../workflows
 
   packages/assets:
     dependencies:
-      '@galileo3d/animation':
+      '@aura3d/animation':
         specifier: workspace:*
         version: link:../animation
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 
   packages/audio:
     dependencies:
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 
   packages/controls:
     dependencies:
-      '@galileo3d/input':
+      '@aura3d/input':
         specifier: workspace:*
         version: link:../input
 
   packages/core:
     dependencies:
-      '@galileo3d/math':
+      '@aura3d/math':
         specifier: workspace:*
         version: link:../math
 
-  packages/create-g3d: {}
+  packages/create-aura3d: {}
 
   packages/debug:
     dependencies:
-      '@galileo3d/animation':
+      '@aura3d/animation':
         specifier: workspace:*
         version: link:../animation
-      '@galileo3d/physics':
+      '@aura3d/physics':
         specifier: workspace:*
         version: link:../physics
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
 
   packages/ecs:
     dependencies:
-      '@galileo3d/core':
+      '@aura3d/core':
         specifier: workspace:*
         version: link:../core
-      '@galileo3d/math':
+      '@aura3d/math':
         specifier: workspace:*
         version: link:../math
 
   packages/editor:
     dependencies:
-      '@galileo3d/editor-runtime':
+      '@aura3d/editor-runtime':
         specifier: workspace:*
         version: link:../editor-runtime
 
   packages/editor-runtime:
     dependencies:
-      '@galileo3d/math':
+      '@aura3d/math':
         specifier: workspace:*
         version: link:../math
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 
   packages/engine:
     dependencies:
-      '@galileo3d/animation':
+      '@aura3d/animation':
         specifier: workspace:*
         version: link:../animation
-      '@galileo3d/apps':
+      '@aura3d/apps':
         specifier: workspace:*
         version: link:../apps
-      '@galileo3d/assets':
+      '@aura3d/assets':
         specifier: workspace:*
         version: link:../assets
-      '@galileo3d/core':
+      '@aura3d/core':
         specifier: workspace:*
         version: link:../core
-      '@galileo3d/physics':
+      '@aura3d/physics':
         specifier: workspace:*
         version: link:../physics
-      '@galileo3d/product-studio':
+      '@aura3d/product-studio':
         specifier: workspace:*
         version: link:../product-studio
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
-      '@galileo3d/workflows':
+      '@aura3d/workflows':
         specifier: workspace:*
         version: link:../workflows
 
   packages/environments:
     dependencies:
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
 
   packages/input:
     dependencies:
-      '@galileo3d/math':
+      '@aura3d/math':
         specifier: workspace:*
         version: link:../math
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 
   packages/materials:
     dependencies:
-      '@galileo3d/assets':
+      '@aura3d/assets':
         specifier: workspace:*
         version: link:../assets
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
 
@@ -262,31 +262,31 @@ importers:
 
   packages/product-studio:
     dependencies:
-      '@galileo3d/assets':
+      '@aura3d/assets':
         specifier: workspace:*
         version: link:../assets
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 
   packages/rendering:
     dependencies:
-      '@galileo3d/math':
+      '@aura3d/math':
         specifier: workspace:*
         version: link:../math
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 
   packages/scene:
     dependencies:
-      '@galileo3d/core':
+      '@aura3d/core':
         specifier: workspace:*
         version: link:../core
-      '@galileo3d/math':
+      '@aura3d/math':
         specifier: workspace:*
         version: link:../math
 
@@ -302,16 +302,16 @@ importers:
 
   packages/workflows:
     dependencies:
-      '@galileo3d/assets':
+      '@aura3d/assets':
         specifier: workspace:*
         version: link:../assets
-      '@galileo3d/product-studio':
+      '@aura3d/product-studio':
         specifier: workspace:*
         version: link:../product-studio
-      '@galileo3d/rendering':
+      '@aura3d/rendering':
         specifier: workspace:*
         version: link:../rendering
-      '@galileo3d/scene':
+      '@aura3d/scene':
         specifier: workspace:*
         version: link:../scene
 

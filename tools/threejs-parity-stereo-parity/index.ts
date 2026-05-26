@@ -9,9 +9,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import * as THREE from "three";
 import { StereoEffect } from "/node_modules/three/examples/jsm/effects/StereoEffect.js";
 
@@ -27,11 +27,11 @@ type V9StereoParityResult = V9StereoParityReady | V9StereoParityError;
 
 interface V9StereoParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-stereo-parity/v1";
-  readonly purpose: "same-scene G3D side-by-side stereo rig vs Three.js StereoEffect baseline";
+  readonly schema: "a3d-threejs-parity-stereo-parity/v1";
+  readonly purpose: "same-scene A3D side-by-side stereo rig vs Three.js StereoEffect baseline";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly leftDrawCalls: number; readonly rightDrawCalls: number };
     readonly effect: { readonly composition: "dual-canvas"; readonly layout: "side-by-side"; readonly rigViews: 2 };
     readonly pixels: PixelStats;
@@ -46,13 +46,13 @@ interface V9StereoParityReady {
     readonly sameResolution: boolean;
     readonly actualThreeRenderer: boolean;
     readonly actualThreeStereoEffect: boolean;
-    readonly g3dPublicStereoRig: boolean;
-    readonly g3dSideBySideLayout: boolean;
+    readonly a3dPublicStereoRig: boolean;
+    readonly a3dSideBySideLayout: boolean;
     readonly threeUsesScissorHalfViewports: boolean;
     readonly fakeEqualityClaimed: false;
   };
   readonly dataUrls: {
-    readonly g3d: string;
+    readonly a3d: string;
     readonly threejs: string;
     readonly sideBySide: string;
   };
@@ -61,7 +61,7 @@ interface V9StereoParityReady {
 
 interface V9StereoParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-stereo-parity/v1";
+  readonly schema: "a3d-threejs-parity-stereo-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -113,26 +113,26 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-stereo", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-stereo", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-stereo", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width, SCENE.height * 2 + 60);
-    if (status) status.textContent = "rendering G3D public stereo rig";
-    const g3d = await renderG3DStereo(g3dCanvas);
+    if (status) status.textContent = "rendering A3D public stereo rig";
+    const a3d = await renderA3DStereo(a3dCanvas);
     if (status) status.textContent = "rendering Three.js StereoEffect";
     const threejs = await renderThreeStereo(threeCanvas);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawStacked(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawStacked(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: V9StereoParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-stereo-parity/v1",
-      purpose: "same-scene G3D side-by-side stereo rig vs Three.js StereoEffect baseline",
+      schema: "a3d-threejs-parity-stereo-parity/v1",
+      purpose: "same-scene A3D side-by-side stereo rig vs Three.js StereoEffect baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: {
-        renderer: { leftDrawCalls: g3d.leftDrawCalls, rightDrawCalls: g3d.rightDrawCalls },
-        effect: { composition: g3d.composition, layout: g3d.layout, rigViews: g3d.rigViews },
-        pixels: analyzeImageData(g3dPixels)
+      a3d: {
+        renderer: { leftDrawCalls: a3d.leftDrawCalls, rightDrawCalls: a3d.rightDrawCalls },
+        effect: { composition: a3d.composition, layout: a3d.layout, rigViews: a3d.rigViews },
+        pixels: analyzeImageData(a3dPixels)
       },
       threejs: {
         renderer: {
@@ -149,19 +149,19 @@ async function run(): Promise<void> {
       },
       diff,
       assertions: {
-        sameResolution: g3dCanvas.width === threeCanvas.width && g3dCanvas.height === threeCanvas.height,
+        sameResolution: a3dCanvas.width === threeCanvas.width && a3dCanvas.height === threeCanvas.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeStereoEffect: threejs.actualStereoEffect,
-        g3dPublicStereoRig: g3d.rigViews === 2,
-        g3dSideBySideLayout: g3d.layout === "side-by-side" && g3d.composition === "dual-canvas",
+        a3dPublicStereoRig: a3d.rigViews === 2,
+        a3dSideBySideLayout: a3d.layout === "side-by-side" && a3d.composition === "dual-canvas",
         threeUsesScissorHalfViewports: threejs.scissorViewports && threejs.halfWidthViewports,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "Three.js StereoEffect uses scissor and viewport half-width calls on one renderer canvas.",
-        "This artifact proves G3D public stereo-rig side-by-side semantics against a bounded same-scene workload. It is not a blanket visual equality claim."
+        "This artifact proves A3D public stereo-rig side-by-side semantics against a bounded same-scene workload. It is not a blanket visual equality claim."
       ]
     };
     window.__V9_STEREO_PARITY__ = ready;
@@ -170,7 +170,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: V9StereoParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-stereo-parity/v1",
+      schema: "a3d-threejs-parity-stereo-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
@@ -182,10 +182,10 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3DStereo(outputCanvas: HTMLCanvasElement) {
+async function renderA3DStereo(outputCanvas: HTMLCanvasElement) {
   const [leftRenderer, rightRenderer] = await Promise.all([
-    G3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.eyeWidth, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
-    G3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.eyeWidth, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
+    A3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.eyeWidth, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] }),
+    A3DRenderer.create({ canvas: document.createElement("canvas"), width: SCENE.eyeWidth, height: SCENE.height, backend: "webgl2", clearColor: [0.006, 0.008, 0.012, 1] })
   ]);
   const leftResources = createResources("left");
   const rightResources = createResources("right");
@@ -222,7 +222,7 @@ async function renderG3DStereo(outputCanvas: HTMLCanvasElement) {
     camera: { viewProjectionMatrix: rightEye.viewProjectionMatrix, viewMatrix: rightEye.viewMatrix, projectionMatrix: rightEye.projectionMatrix }
   });
   const context = outputCanvas.getContext("2d");
-  if (!context) throw new Error("Unable to create G3D stereo output context.");
+  if (!context) throw new Error("Unable to create A3D stereo output context.");
   putFlippedPixels(context, leftRenderer.device.readPixels(0, 0, SCENE.eyeWidth, SCENE.height), 0);
   putFlippedPixels(context, rightRenderer.device.readPixels(0, 0, SCENE.eyeWidth, SCENE.height), SCENE.eyeWidth);
   return {
@@ -472,19 +472,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   };
 }
 
-async function drawStacked(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawStacked(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create stereo side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, 0, SCENE.height, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.92)";
   context.fillRect(0, SCENE.height * 2, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("Top: G3D side-by-side stereo | Bottom: Three.js StereoEffect", 20, SCENE.height * 2 + 28);
+  context.fillText("Top: A3D side-by-side stereo | Bottom: Three.js StereoEffect", 20, SCENE.height * 2 + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
   context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height * 2 + 50);

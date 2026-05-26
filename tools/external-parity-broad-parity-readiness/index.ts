@@ -244,7 +244,7 @@ function requiredCommandsForClaim(id: V4BroadParityClaimId): readonly string[] {
     case "unity-unreal-replacement":
       return ["pnpm verify:external-parity-external-engine-baselines", "pnpm audit:external-parity-product-visual-parity", "pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:v4-broad-parity"];
     case "production-readiness":
-      return ["pnpm verify:v4", "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment", "pnpm audit:external-parity-production-readiness", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:v4", "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment", "pnpm audit:external-parity-production-readiness", "pnpm audit:v4-broad-parity"];
     case "full-pbr-parity":
       return ["pnpm audit:external-parity-pbr-visual-parity", "pnpm audit:external-parity-pbr-reference-readiness", "pnpm audit:external-parity-pbr-gltf-readiness", "pnpm audit:v4-broad-parity"];
     case "full-gltf-parity":
@@ -415,7 +415,7 @@ function renderedProductVisualParityClaim(
     id: "rendered-product-visual-parity",
     claim: "Rendered product visual parity against Three.js/Babylon/Unity/Unreal.",
     requiredEvidence: [
-      "real product scenes render through Galileo3D, Three.js, Babylon.js, Unity, and Unreal with the same assets, camera, lighting, material feature state, viewport, and postprocess state",
+      "real product scenes render through Aura3D, Three.js, Babylon.js, Unity, and Unreal with the same assets, camera, lighting, material feature state, viewport, and postprocess state",
       "visual diff reports pass against each engine",
       "unsupported features are absent or explicitly excluded from the claim",
       "independent reproduction confirms the result",

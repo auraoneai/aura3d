@@ -1,4 +1,4 @@
-import { AnimationClip, AnimationMixer, AnimationTrack } from "@galileo3d/animation";
+import { AnimationClip, AnimationMixer, AnimationTrack } from "@aura3d/animation";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

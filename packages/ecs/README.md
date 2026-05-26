@@ -1,6 +1,6 @@
-# @galileo3d/ecs
+# @aura3d/ecs
 
-`@galileo3d/ecs` owns entity identity, component registration/storage, sparse-set and archetype data structures, queries, command buffering, systems, scheduling, serialization, profiling, and common transform/name/tag components.
+`@aura3d/ecs` owns entity identity, component registration/storage, sparse-set and archetype data structures, queries, command buffering, systems, scheduling, serialization, profiling, and common transform/name/tag components.
 
 ## Public API
 

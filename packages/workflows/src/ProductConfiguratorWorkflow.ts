@@ -4,7 +4,7 @@ import {
   createProductMaterialMode,
   createProductRenderScene,
   loadProductAsset
-} from "@galileo3d/product-studio";
+} from "@aura3d/product-studio";
 import { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 import type { ProductConfiguratorWorkflowOptions, ProductConfiguratorWorkflowResult } from "./WorkflowTypes";
 

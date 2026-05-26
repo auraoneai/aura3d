@@ -61,9 +61,9 @@ export function verifyShaders(root = process.cwd()): ShaderReport {
     const extension = extname(file);
     filesByExtension[extension] = (filesByExtension[extension] ?? 0) + 1;
     const source = readFileSync(file, "utf8");
-    const marker = /@galileo3d-shader:([a-z0-9_.-]+)/i.exec(source);
+    const marker = /@aura3d-shader:([a-z0-9_.-]+)/i.exec(source);
     if (!marker) {
-      violations.push({ file, message: "Shader source is missing a @galileo3d-shader:<id> marker." });
+      violations.push({ file, message: "Shader source is missing a @aura3d-shader:<id> marker." });
     } else {
       markerIds.add(marker[1]!);
     }

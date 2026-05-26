@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Engine, SystemPhase } from "@galileo3d/core";
+import { Engine, SystemPhase } from "@aura3d/core";
 
 describe("engine loop integration", () => {
   it("runs task finalization before fixed/update phases and emits frame diagnostics", async () => {

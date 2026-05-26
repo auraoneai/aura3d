@@ -1,8 +1,8 @@
-import { Ray, Vector3 } from "@galileo3d/math";
-import { Geometry, UnlitMaterial, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import type { EditorDiagnosticsResource } from "@galileo3d/editor-runtime";
-import type { SceneNode } from "@galileo3d/scene";
+import { Ray, Vector3 } from "@aura3d/math";
+import { Geometry, UnlitMaterial, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import type { EditorDiagnosticsResource } from "@aura3d/editor-runtime";
+import type { SceneNode } from "@aura3d/scene";
 import type { EditorShell } from "../EditorShell";
 
 export class EditorViewport {
@@ -11,7 +11,7 @@ export class EditorViewport {
   readonly overlayCanvas: HTMLCanvasElement;
   viewMode: "shaded" | "wireframe" | "collider" | "bounds" | "lighting" = "shaded";
   snapEnabled = true;
-  private renderer?: G3DRenderer;
+  private renderer?: A3DRenderer;
   private diagnostics: RenderDeviceDiagnostics | undefined;
   private orbitYaw = 0;
   private orbitPitch = 20;
@@ -187,12 +187,12 @@ export class EditorViewport {
       shell.refresh();
     }, { passive: false });
     this.element.addEventListener("dragover", (event) => {
-      if (event.dataTransfer?.types.includes("application/x-galileo3d-asset")) {
+      if (event.dataTransfer?.types.includes("application/x-aura3d-asset")) {
         event.preventDefault();
       }
     });
     this.element.addEventListener("drop", (event) => {
-      const assetId = event.dataTransfer?.getData("application/x-galileo3d-asset");
+      const assetId = event.dataTransfer?.getData("application/x-aura3d-asset");
       if (assetId) {
         event.preventDefault();
         void shell.placeAsset(assetId);
@@ -201,7 +201,7 @@ export class EditorViewport {
   }
 
   async initialize(): Promise<void> {
-    this.renderer = await G3DRenderer.create({
+    this.renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas: this.canvas,
       width: this.canvas.width,

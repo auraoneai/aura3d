@@ -10,12 +10,12 @@ import {
   type WebGPUDeviceLike,
   type WebGPULike,
   type WebGPUSamplerDescriptorLike
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8WebGPUMaterials?: V8WebGPUMaterialsRuntime;
+    __a3dV8WebGPUMaterials?: V8WebGPUMaterialsRuntime;
   }
 }
 
@@ -34,7 +34,7 @@ interface V8WebGPUMaterialsRuntime {
   readonly nativeTextureBindings: number;
   readonly outputNonDarkPixels: number;
   readonly outputColorBuckets: number;
-  readonly renderer: "g3d-webgpu";
+  readonly renderer: "a3d-webgpu";
   readonly evidenceMode: "injected-webgpu-device";
   readonly elapsedMs: number;
   readonly error?: string;
@@ -63,13 +63,13 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__g3dV8WebGPUMaterials = runtime;
+    window.__a3dV8WebGPUMaterials = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgpu",
       webgpu: createRouteWebGPU(),
       width: SIZE,
@@ -148,7 +148,7 @@ async function run(): Promise<void> {
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
       });
-      window.__g3dV8WebGPUMaterials = runtime;
+      window.__a3dV8WebGPUMaterials = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -168,7 +168,7 @@ function createRouteWebGPU(): WebGPULike {
     async requestAdapter(): Promise<WebGPUAdapterLike> {
       return {
         name: "webgpu-materials-adapter",
-        info: { vendor: "galileo3d-route" },
+        info: { vendor: "aura3d-route" },
         async requestDevice() {
           return device;
         }
@@ -313,7 +313,7 @@ function createRuntime(
     nativeTextureBindings: patch.nativeTextureBindings ?? 0,
     outputNonDarkPixels: patch.outputNonDarkPixels ?? 0,
     outputColorBuckets: patch.outputColorBuckets ?? 0,
-    renderer: "g3d-webgpu",
+    renderer: "a3d-webgpu",
     evidenceMode: "injected-webgpu-device",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
@@ -326,7 +326,7 @@ function renderUi(root: HTMLElement, runtime: V8WebGPUMaterialsRuntime): void {
       <div class="panel-heading">
         <div>
           <h1>V8 WebGPU Materials</h1>
-          <p>Public PBR and textured PBR materials rendered through the G3D WebGPU backend.</p>
+          <p>Public PBR and textured PBR materials rendered through the A3D WebGPU backend.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>
       </div>

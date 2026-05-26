@@ -84,7 +84,7 @@ export function getGLTFExtensionSupport(name: string): GLTFExtensionSupportEntry
       status: "unsupported",
       requiredAccepted: false,
       publicApi: [],
-      knownLimits: ["No G3D loader/runtime support is registered for this extension."]
+      knownLimits: ["No A3D loader/runtime support is registered for this extension."]
     };
 }
 

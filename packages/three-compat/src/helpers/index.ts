@@ -7,7 +7,7 @@ import {
   buildSkeletonHelper,
   type DebugRenderLine,
   type SkeletonHelperJoint
-} from "@galileo3d/debug";
+} from "@aura3d/debug";
 import type { CameraCompat, OrthographicCameraCompat, PerspectiveCameraCompat } from "../cameras";
 import { LineSegmentsCompat, Object3DCompat } from "../core/Object3DCompat";
 import { BufferGeometryCompat } from "../geometries";

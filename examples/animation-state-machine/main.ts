@@ -1,4 +1,4 @@
-import { AnimationStateMachine, type AnimationStateMachineGraphSnapshot } from "@galileo3d/animation";
+import { AnimationStateMachine, type AnimationStateMachineGraphSnapshot } from "@aura3d/animation";
 import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 interface AnimationStateMachineExampleState {
@@ -18,7 +18,7 @@ interface AnimationStateMachineExampleState {
 
 declare global {
   interface Window {
-    __GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__?: AnimationStateMachineExampleState;
+    __AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__?: AnimationStateMachineExampleState;
   }
 }
 
@@ -105,7 +105,7 @@ if (typeof document !== "undefined") {
         visited: [...visited],
         transitionCount: graph.transitions.length,
       };
-      window.__GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__ = state;
+      window.__AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__ = state;
       return state;
     }
   });

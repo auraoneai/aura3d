@@ -17,7 +17,7 @@ const arr = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
 check("browser-manifest", manifest?.pass === true, "Browser manifest must pass.");
 check("scene-count", captures.length >= 7 && captures.length === V4_THREEJS_PARITY_SCENES.length, "At least seven same-scene captures are required, including large-scene/performance.");
 
-const screenshotChecks = V4_THREEJS_PARITY_SCENES.flatMap((scene) => ["g3d", "threejs", "diff"].map((kind) => {
+const screenshotChecks = V4_THREEJS_PARITY_SCENES.flatMap((scene) => ["a3d", "threejs", "diff"].map((kind) => {
   const path = `${reportDir}/${scene.id}-${kind}.png`;
   const exists = existsSync(resolve(path));
   const bytes = exists ? statSync(resolve(path)).size : 0;
@@ -26,19 +26,19 @@ const screenshotChecks = V4_THREEJS_PARITY_SCENES.flatMap((scene) => ["g3d", "th
 }));
 
 const setupLineCounts = captures.map((capture) => {
-  const g3d = obj(capture.g3d);
+  const a3d = obj(capture.a3d);
   const threejs = obj(capture.threejs);
   return {
     scene: String(capture.sceneId),
-    g3d: Number(g3d.setupLines ?? 0),
+    a3d: Number(a3d.setupLines ?? 0),
     threejs: Number(threejs.setupLines ?? 0),
-    g3dShorter: Number(g3d.setupLines ?? 0) < Number(threejs.setupLines ?? 0)
+    a3dShorter: Number(a3d.setupLines ?? 0) < Number(threejs.setupLines ?? 0)
   };
 });
 
 const runtimeStats = captures.map((capture) => ({
   scene: String(capture.sceneId),
-  g3dDrawCalls: Number(obj(capture.runtimeStats).g3dDrawCalls ?? 0),
+  a3dDrawCalls: Number(obj(capture.runtimeStats).a3dDrawCalls ?? 0),
   threejsDrawCalls: Number(obj(capture.runtimeStats).threejsDrawCalls ?? 0),
   threejsTriangles: Number(obj(capture.runtimeStats).threejsTriangles ?? 0),
   meanDifference: Number(obj(capture.diff).meanDifference ?? Number.NaN),
@@ -47,13 +47,13 @@ const runtimeStats = captures.map((capture) => ({
 
 check(
   "line-counts",
-  setupLineCounts.length >= 6 && setupLineCounts.every((entry) => entry.g3dShorter && entry.g3d > 0 && entry.threejs > 0),
-  "Every supported workflow comparison must record lower G3D setup line count than the raw Three.js setup."
+  setupLineCounts.length >= 6 && setupLineCounts.every((entry) => entry.a3dShorter && entry.a3d > 0 && entry.threejs > 0),
+  "Every supported workflow comparison must record lower A3D setup line count than the raw Three.js setup."
 );
 check(
   "runtime-stats",
   runtimeStats.length >= 6 && runtimeStats.every((entry) =>
-    Number(entry.g3dDrawCalls) > 0 &&
+    Number(entry.a3dDrawCalls) > 0 &&
     Number(entry.threejsDrawCalls) > 0 &&
     Number.isFinite(entry.meanDifference) &&
     Number.isFinite(entry.visualScore)
@@ -85,7 +85,7 @@ writeFileSync(resolve(gapReportPath), [
     "",
     `- Visual score: ${String(capture.visualScore)}`,
     `- Mean diff: ${String(obj(capture.diff).meanDifference)}`,
-    `- G3D setup lines: ${String(obj(capture.g3d).setupLines)}`,
+    `- A3D setup lines: ${String(obj(capture.a3d).setupLines)}`,
     `- Three.js setup lines: ${String(obj(capture.threejs).setupLines)}`,
     ...arr(capture.gaps).map((gap) => `- Gap: ${String(gap)}`),
     ""
@@ -96,7 +96,7 @@ check("gap-report", existsSync(resolve(gapReportPath)) && readFileSync(resolve(g
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-threejs-visual-parity/v1",
+  schema: "a3d-external-parity-threejs-visual-parity/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

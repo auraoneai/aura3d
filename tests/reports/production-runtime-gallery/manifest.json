@@ -1,5 +1,5 @@
 {
-  "schema": "g3d-production-runtime-generated-gallery-manifest/v1",
+  "schema": "aura3d-production-runtime-generated-gallery-manifest/v1",
   "generatedAt": "2026-05-26T01:16:59.908Z",
   "sourceManifest": "fixtures/production-runtime/gallery-manifest.json",
   "entries": []

@@ -40,15 +40,15 @@ test("V5 environment gallery renders all probe types for every environment", asy
               ctx.stroke();
             });
           });
-          window.__g3dGalleryRows = gallery.length;
-          window.__g3dProbeCells = gallery.reduce((count, env) => count + env.probes.length, 0);
+          window.__a3dGalleryRows = gallery.length;
+          window.__a3dProbeCells = gallery.reduce((count, env) => count + env.probes.length, 0);
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dGalleryRows)).toBeGreaterThanOrEqual(12);
-  await expect.poll(async () => page.evaluate(() => window.__g3dProbeCells)).toBeGreaterThanOrEqual(48);
+  await expect.poll(async () => page.evaluate(() => window.__a3dGalleryRows)).toBeGreaterThanOrEqual(12);
+  await expect.poll(async () => page.evaluate(() => window.__a3dProbeCells)).toBeGreaterThanOrEqual(48);
   const pixelStats = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

@@ -58,10 +58,10 @@ const finalScreenshots = [
   "tests/reports/three-compat-gallery/large-scene/large-instanced-scene.png",
   "tests/reports/three-compat-gallery/shader-lab/shader-lab.png",
   "tests/reports/three-compat-gallery/threejs-migration/migrated-threejs-scene.png",
-  "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-g3d.png",
+  "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-a3d.png",
   "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-threejs.png",
   "tests/reports/three-compat-gallery/threejs-comparison/product-comparison-diff.png",
-  "tests/reports/three-compat-gallery/threejs-comparison/large-scene-g3d.png",
+  "tests/reports/three-compat-gallery/threejs-comparison/large-scene-a3d.png",
   "tests/reports/three-compat-gallery/threejs-comparison/large-scene-threejs.png",
   "tests/reports/three-compat-gallery/threejs-comparison/large-scene-diff.png",
   "tests/reports/three-compat-external-consumer/external-consumer-static.png"
@@ -108,10 +108,10 @@ const checks = [
   { id: "progress-not-premature-complete", pass: !/Status:\s*Complete/i.test(progress) || release.pass === true, detail: "progress file is not marked complete before release readiness passes" }
 ];
 const report = {
-  schema: "g3d-three-compat-completion-audit/v1",
+  schema: "a3d-three-compat-completion-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
-  objective: "G3D V5 has concrete implementation, examples, apps, templates, docs, package smoke, screenshots, comparison evidence, and claim boundaries for a broad Three.js replacement track.",
+  objective: "A3D V5 has concrete implementation, examples, apps, templates, docs, package smoke, screenshots, comparison evidence, and claim boundaries for a broad Three.js replacement track.",
   screenshotVisualValidations,
   checks
 };

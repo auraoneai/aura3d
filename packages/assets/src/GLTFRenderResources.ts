@@ -43,8 +43,8 @@ import {
   type TexturedPBRTextureSlot,
   isTexturedPbrTextureSlotShaderActive,
   DEFAULT_TEXTURED_PBR_SHADER_NAME
-} from "@galileo3d/rendering";
-import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Bounds3 as SceneBounds3, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   parseGLTFRuntimeMaterialKey,
   type GLTFAsset,

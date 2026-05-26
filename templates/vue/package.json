@@ -1,5 +1,5 @@
 {
-  "name": "galileo3d-vue-template",
+  "name": "aura3d-vue-template",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,7 +7,7 @@
     "build": "vite build"
   },
   "dependencies": {
-    "@galileo3d/rendering": "0.0.0-rebuild",
+    "@aura3d/rendering": "0.0.0-rebuild",
     "@vitejs/plugin-vue": "^5.2.1",
     "typescript": "^5.8.3",
     "vite": "^5.4.0",

@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { Renderer } from "@galileo3d/rendering";
-import { createAssetViewerWorkflow } from "@galileo3d/workflows";
+import { Renderer } from "@aura3d/rendering";
+import { createAssetViewerWorkflow } from "@aura3d/workflows";
 
 describe("createAssetViewerWorkflow", () => {
   it("loads a glTF asset and returns renderable workflow output", async () => {
     const workflow = await createAssetViewerWorkflow({
-      url: jsonDataUri(readFileSync(join(process.cwd(), "fixtures/v3/assets/product-camera/product-camera.gltf"), "utf8")),
+      url: jsonDataUri(readFileSync(join(process.cwd(), "fixtures/workflow-assets/assets/product-camera/product-camera.gltf"), "utf8")),
       postprocess: false,
       shadows: false,
       renderResources: {

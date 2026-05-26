@@ -68,7 +68,7 @@ export function validateVersionedRelease(root = process.cwd(), manifestPath = de
   return {
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-versioned-release-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-versioned-release-run",
     command: "pnpm verify:versioned-release",
     packageVersion,
     packagePrivate,

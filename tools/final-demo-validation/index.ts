@@ -185,7 +185,7 @@ export function validateFinalDemos(rootDir = root): FinalDemoValidationReport {
   return {
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-demo-validation-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-demo-validation-run",
     examples: [...requiredExamples],
     upstreamReports,
     browserReadyExamples,

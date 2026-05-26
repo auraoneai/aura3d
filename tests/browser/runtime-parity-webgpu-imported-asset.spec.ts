@@ -49,7 +49,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
       if (availability.status !== "available") {
         return {
           status: "blocked",
-          schema: "g3d-v7-webgpu-imported-asset/v1",
+          schema: "a3d-v7-webgpu-imported-asset/v1",
           availability,
           productionClaim: "not-claimed",
           reason: "Browser did not expose a usable WebGPU adapter/device."
@@ -146,7 +146,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
         lighting.dispose();
         return {
           status: visualReady ? "ready" : "blocked",
-          schema: "g3d-v7-webgpu-imported-asset/v1",
+          schema: "a3d-v7-webgpu-imported-asset/v1",
           productionClaim: "not-claimed",
           reason: visualReady
             ? "This is low-level Renderer WebGPU imported-asset evidence. It is not the public V6 SDK production backend."
@@ -176,7 +176,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
       } catch (error) {
         return {
           status: "blocked",
-          schema: "g3d-v7-webgpu-imported-asset/v1",
+          schema: "a3d-v7-webgpu-imported-asset/v1",
           availability,
           productionClaim: "not-claimed",
           reason: error instanceof Error ? error.stack ?? error.message : String(error)

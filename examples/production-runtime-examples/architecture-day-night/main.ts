@@ -1,4 +1,4 @@
-import { runV6Example } from "@galileo3d/engine/workflows/production";
+import { runV6Example } from "@aura3d/engine/workflows/production";
 
 void runV6Example({
   appId: "production-runtime-example-architecture-day-night",

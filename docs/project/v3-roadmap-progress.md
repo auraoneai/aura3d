@@ -33,7 +33,7 @@ Last verified at: `2026-05-14T09:53:40Z`
 - [x] `packages/workflows/src/MaterialStudioWorkflow.ts`
 - [x] `packages/workflows/src/SceneShowcaseWorkflow.ts`
 - [x] `packages/workflows/src/InteractiveSceneWorkflow.ts`
-- [x] Workspace/root/package/tsconfig/browser/vitest aliases for `@galileo3d/workflows`
+- [x] Workspace/root/package/tsconfig/browser/vitest aliases for `@aura3d/workflows`
 - [x] `tests/unit/workflows/asset-viewer-workflow.test.ts`
 - [x] `tests/unit/workflows/product-configurator-workflow.test.ts`
 - [x] `tests/unit/workflows/material-studio-workflow.test.ts`
@@ -44,7 +44,7 @@ Last verified at: `2026-05-14T09:53:40Z`
 
 ## Completed Milestone 5 Evidence
 
-- [x] `apps/asset-lab` real app using `@galileo3d/workflows` asset-viewer workflow.
+- [x] `apps/asset-lab` real app using `@aura3d/workflows` asset-viewer workflow.
 - [x] `apps/material-lab` real app using material-studio workflow.
 - [x] `apps/scene-lab` real app using scene-showcase workflow.
 - [x] `apps/game-lab` real app using interactive-scene workflow.
@@ -84,9 +84,9 @@ Last verified at: `2026-05-14T09:53:40Z`
 ## Completed Milestone 8 Evidence
 
 - [x] Shared scene descriptors for product, material, asset, and interactive workflows.
-- [x] G3D implementations for all four scenes.
+- [x] A3D implementations for all four scenes.
 - [x] Three.js implementations for all four scenes.
-- [x] Browser comparison captures G3D, Three.js, and diff image for every scene.
+- [x] Browser comparison captures A3D, Three.js, and diff image for every scene.
 - [x] Comparison report includes line counts, bundle estimate, runtime diagnostics, wins, and gaps.
 - [x] Verify Milestone 8 exit command.
 

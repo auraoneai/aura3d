@@ -329,7 +329,7 @@ export class MockRenderDevice implements RenderDevice {
   public readonly kind = "mock";
   public readonly info: RenderDeviceInfo = {
     backend: "mock",
-    vendor: "galileo3d",
+    vendor: "aura3d",
     renderer: "mock-render-device",
     capabilities: ["buffers", "buffer-readback", "shader-validation", "render-targets", "pixel-readback", "postprocess-presentation", "draw-validation", "spot-shadow-maps", "depth-render-targets", "depth-textures"],
     limitations: ["Mock render device validates commands and readback contracts but does not rasterize geometry."]

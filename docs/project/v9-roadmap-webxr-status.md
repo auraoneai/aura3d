@@ -10,7 +10,7 @@ WebXR is scoped and partial.
 
 ## Current Claim
 
-G3D has WebXR-facing session/controller/hit-test style interaction code and a scoped interaction route.
+A3D has WebXR-facing session/controller/hit-test style interaction code and a scoped interaction route.
 
 ## Blocked Claims
 

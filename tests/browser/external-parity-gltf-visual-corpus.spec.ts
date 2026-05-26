@@ -18,7 +18,7 @@ test.describe("V4 glTF visual corpus browser evidence", () => {
   });
 
   test("loads corpus manifest in browser and renders a human-inspectable coverage board", async ({ page }) => {
-    await page.goto(`${server.origin}/fixtures/v4/gltf-corpus/manifest.json`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/fixtures/external-parity/gltf-corpus/manifest.json`, { waitUntil: "domcontentloaded" });
     const manifest = await page.evaluate(() => JSON.parse(document.body.textContent ?? "{}"));
     const summary = {
       assetCount: manifest.assets.length,

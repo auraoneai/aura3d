@@ -36,7 +36,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "g3d-three-compat-compatibility-matrix-readiness/v1",
+  schema: "a3d-three-compat-compatibility-matrix-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((entry) => entry.pass),
   matrixPath,

@@ -24,7 +24,7 @@ const milestoneCoverage = requiredMilestones.map((milestone) => ({
 const activeItems = activeSectionItems(progress, "## Active Milestone");
 
 const report = {
-  schema: "g3d-foundation-progress/v1",
+  schema: "a3d-foundation-progress/v1",
   generatedAt: new Date().toISOString(),
   pass: existsSync(progressPath)
     && (currentStatus === "in-progress" || currentStatus === "complete")

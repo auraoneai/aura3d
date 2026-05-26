@@ -1,5 +1,5 @@
-import { Ray, Vector3 } from "@galileo3d/math";
-import { invertMat4, type Camera } from "@galileo3d/scene";
+import { Ray, Vector3 } from "@aura3d/math";
+import { invertMat4, type Camera } from "@aura3d/scene";
 
 type Tuple3 = readonly [number, number, number];
 type TupleMat4 = readonly [

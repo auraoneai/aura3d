@@ -1,4 +1,4 @@
-import { type Quat, type Vec3, normalizeVec3 } from "@galileo3d/scene";
+import { type Quat, type Vec3, normalizeVec3 } from "@aura3d/scene";
 
 export interface DecalPlacement {
   readonly id: number;

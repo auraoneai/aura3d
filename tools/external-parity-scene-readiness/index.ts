@@ -5,13 +5,13 @@ type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }
 
 const requiredFiles = [
-  "fixtures/v4/scenes/interior-gallery/manifest.json",
+  "fixtures/external-parity/scenes/interior-gallery/manifest.json",
   "apps/scene-studio-pro/index.html",
   "apps/scene-studio-pro/src/main.ts",
   "examples/external-interior-scene/index.html",
   "examples/external-interior-scene/main.ts",
   "examples/external-interior-scene/InteriorSceneV4.ts",
-  "benchmarks/external-parity/galileo/interior-scene.ts",
+  "benchmarks/external-parity/aura3d/interior-scene.ts",
   "benchmarks/external-parity/threejs/interior-scene.ts",
   "tests/browser/external-parity-interior-scene.spec.ts",
   "tests/reports/external-parity-interior-scene-browser.json"
@@ -28,9 +28,9 @@ const includesAll = (source: string, phrases: readonly string[]) => phrases.ever
 
 for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} must exist.`);
 
-const manifest = json("fixtures/v4/scenes/interior-gallery/manifest.json");
+const manifest = json("fixtures/external-parity/scenes/interior-gallery/manifest.json");
 const targets = isObj(manifest?.targets) ? manifest.targets : {};
-check("fixture-schema", manifest?.schema === "g3d-v4-interior-gallery/v1", "Interior fixture must use the V4 schema.");
+check("fixture-schema", manifest?.schema === "a3d-v4-interior-gallery/v1", "Interior fixture must use the V4 schema.");
 check("fixture-targets", Number(targets.minimumRenderItems ?? 0) >= 28 && Number(targets.minimumMaterialCategories ?? 0) >= 5, "Interior fixture must define complexity targets.");
 check("fixture-proof-boundary", typeof manifest?.claimBoundary === "string" && manifest.claimBoundary.includes("same-scene Three.js visual parity"), "Interior fixture must preserve Three.js parity boundary.");
 
@@ -42,7 +42,7 @@ check(
     "createArchitecturalLightingFixture",
     "multi-object-interior",
     "contact-shadow-receiver-geometry",
-    "__G3D_V4_INTERIOR_SCENE__",
+    "__A3D_V4_INTERIOR_SCENE__",
     "same-scene Three.js visual parity"
   ]),
   "Interior scene must render architectural materials, lighting fixture metadata, contact-shadow receivers, and browser state."
@@ -57,9 +57,9 @@ check(
 
 check(
   "benchmark-sources",
-  includesAll(text("benchmarks/external-parity/galileo/interior-scene.ts"), ["createArchitecturalMaterial", "multi-object interior", "lighting presets"]) &&
+  includesAll(text("benchmarks/external-parity/aura3d/interior-scene.ts"), ["createArchitecturalMaterial", "multi-object interior", "lighting presets"]) &&
     includesAll(text("benchmarks/external-parity/threejs/interior-scene.ts"), ["threejs", "same room layout", "visual diff"]),
-  "Milestone 9 must add Galileo and Three.js interior benchmark descriptors."
+  "Milestone 9 must add Aura3D and Three.js interior benchmark descriptors."
 );
 
 const browser = json("tests/reports/external-parity-interior-scene-browser.json");
@@ -79,7 +79,7 @@ check("browser-proof-boundary", typeof browser?.productBoundary === "string" && 
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-scene-readiness/v1",
+  schema: "a3d-external-parity-scene-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass ? "V4 Milestone 9 interior scene proof is ready as a real product app/example milestone. Same-scene Three.js parity remains required." : "V4 Milestone 9 interior scene proof is incomplete.",
@@ -101,7 +101,7 @@ function statePasses(state: Obj, id: string): boolean {
     state.status === "ready" &&
     state.renderer === "webgl2" &&
     state.productSurface === "scene-studio-pro" &&
-    state.sceneFixture === "fixtures/v4/scenes/interior-gallery/manifest.json" &&
+    state.sceneFixture === "fixtures/external-parity/scenes/interior-gallery/manifest.json" &&
     state.sceneClass === "interior-gallery" &&
     Number(state.renderItemCount ?? 0) >= 28 &&
     Number(state.architecturalMaterialCount ?? 0) >= 30 &&

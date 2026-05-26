@@ -14,7 +14,7 @@ describe("Picking contract", () => {
     const alignedFarther = pickObject("Mesh", "core district tower", [0.1, 0, -5], {
       scale: [0.3, 0.3, 0.3],
       userData: {
-        g3dPicking: {
+        a3dPicking: {
           id: "district-core",
           label: "Core district tower",
           pickRadius: 0.35,
@@ -38,18 +38,18 @@ describe("Picking contract", () => {
 
   it("reports hotspot metadata, disabled/invisible skips, hit ordering, and labels for scaled scenes", () => {
     const disabledMarker = pickObject("Mesh", "disabled marker", [0, 0, -2], {
-      userData: { g3dPicking: { selectable: false, label: "Disabled marker", pickRadius: 0.4 } }
+      userData: { a3dPicking: { selectable: false, label: "Disabled marker", pickRadius: 0.4 } }
     });
     const invisibleMesh = pickObject("Mesh", "invisible facade", [0, 0, -2.5], {
       visible: false,
       scale: [1, 1, 1]
     });
     const lowPriorityMesh = pickObject("Mesh", "building mass", [0, 0, -3], {
-      userData: { g3dPicking: { label: "Building mass", pickRadius: 0.25, priority: 1 } }
+      userData: { a3dPicking: { label: "Building mass", pickRadius: 0.25, priority: 1 } }
     });
     const hotspot = pickObject("Group", "lens hotspot", [0, 0, -3], {
       userData: {
-        g3dPicking: {
+        a3dPicking: {
           id: "hotspot-lens",
           kind: "hotspot",
           label: "Lens hotspot",
@@ -79,7 +79,7 @@ describe("Picking contract", () => {
     const scene = pickObject("Scene", "root", [0, 0, 0], {
       children: [
         pickObject("Mesh", "invalid radius", [0, 0, -2], {
-          userData: { g3dPicking: { label: "Invalid", pickRadius: 0 } }
+          userData: { a3dPicking: { label: "Invalid", pickRadius: 0 } }
         })
       ]
     });

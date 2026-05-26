@@ -172,7 +172,7 @@ describe("v9 Data Galaxy generated asset manifests", () => {
       "amber anomaly emission"
     ]);
     expect(manifest.semanticRoles?.textureBackedSupportMaterials).toEqual([]);
-    expect(manifest.batching?.semanticRolePreservation).toContain("g3d_semantic_role");
+    expect(manifest.batching?.semanticRolePreservation).toContain("a3d_semantic_role");
     expect(manifest.supportTruth?.routeExclusionsMayApply?.join("\n")).toContain("source-pruned before GLB export");
   });
 
@@ -240,7 +240,7 @@ function inspectGlb(path: string): GlbInspection {
   const textureBackedMaterialCount = materials.filter((material) => materialReferencesTexture(material)).length;
   const semanticRoleCounts: Record<string, number> = {};
   for (const node of nodes) {
-    const role = recordOfUnknown(node.extras)?.g3d_semantic_role;
+    const role = recordOfUnknown(node.extras)?.a3d_semantic_role;
     if (typeof role !== "string") continue;
     semanticRoleCounts[role] = (semanticRoleCounts[role] ?? 0) + 1;
   }

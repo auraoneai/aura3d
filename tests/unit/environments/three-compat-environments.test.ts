@@ -11,7 +11,7 @@ describe("V5 environment library", () => {
     const summary = summarizeV5EnvironmentLibrary(manifest);
     const gallery = createV5EnvironmentGalleryModel(manifest);
 
-    expect(manifest.schema).toBe("g3d-three-compat-environment-library/v1");
+    expect(manifest.schema).toBe("a3d-three-compat-environment-library/v1");
     expect(summary.presetCount).toBeGreaterThanOrEqual(12);
     expect(summary.realHdriCount).toBeGreaterThanOrEqual(6);
     expect(summary.checkedRealHdriCount).toBeGreaterThanOrEqual(6);

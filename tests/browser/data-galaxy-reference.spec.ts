@@ -137,7 +137,7 @@ test.describe("Data Galaxy same-system reference harness", () => {
     };
 
     expect(result.status, result.error).toBe("ready");
-    expect(result.schema).toBe("g3d-data-galaxy-reference/v1");
+    expect(result.schema).toBe("a3d-data-galaxy-reference/v1");
     expect(result.route).toBe("data-galaxy");
     expect(result.harness).toMatchObject({
       galleryShellUi: false,

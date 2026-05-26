@@ -1,8 +1,8 @@
-import { Renderer, createCanonicalProductSceneRenderKit } from "@galileo3d/rendering";
+import { Renderer, createCanonicalProductSceneRenderKit } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __G3D_RENDERING_SHOWCASE_V1__?: ExampleState;
+    __A3D_RENDERING_SHOWCASE_V1__?: ExampleState;
   }
 }
 
@@ -31,14 +31,14 @@ async function boot(): Promise<void> {
       preserveDrawingBuffer: true
     });
     const diagnostics = renderer.renderScene(kit.source);
-    window.__G3D_RENDERING_SHOWCASE_V1__ = {
+    window.__A3D_RENDERING_SHOWCASE_V1__ = {
       status: "ready",
       diagnostics,
       shadowEnabled: typeof kit.source.shadow === "object" && kit.source.shadow.enabled === true,
       postprocessEnabled: Boolean(kit.source.postprocess)
     };
   } catch (error) {
-    window.__G3D_RENDERING_SHOWCASE_V1__ = {
+    window.__A3D_RENDERING_SHOWCASE_V1__ = {
       status: "error",
       shadowEnabled: false,
       postprocessEnabled: false,

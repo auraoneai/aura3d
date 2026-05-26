@@ -1,6 +1,6 @@
-import { DebugLineCanvasRenderer, DebugOverlay, PhysicsDebugAdapter, type DebugRenderLine } from "@galileo3d/debug";
-import { PhysicsWorld, Shape } from "@galileo3d/physics";
-import { Bounds3, PerspectiveCamera } from "@galileo3d/scene";
+import { DebugLineCanvasRenderer, DebugOverlay, PhysicsDebugAdapter, type DebugRenderLine } from "@aura3d/debug";
+import { PhysicsWorld, Shape } from "@aura3d/physics";
+import { Bounds3, PerspectiveCamera } from "@aura3d/scene";
 
 interface DebugBrowserResult {
   readonly status: "ready" | "error";
@@ -26,7 +26,7 @@ interface DebugBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_DEBUG_BROWSER_TEST__?: DebugBrowserResult;
+    __AURA3D_DEBUG_BROWSER_TEST__?: DebugBrowserResult;
   }
 }
 
@@ -72,7 +72,7 @@ try {
   });
 
   const snapshot = overlay.snapshot();
-  window.__GALILEO3D_DEBUG_BROWSER_TEST__ = {
+  window.__AURA3D_DEBUG_BROWSER_TEST__ = {
     status: "ready",
     physicsLineCount: physicsLines.length,
     cameraLineCount: cameraLines.length,
@@ -88,7 +88,7 @@ try {
     renderBounds: renderResult.bounds
   };
 } catch (error) {
-  window.__GALILEO3D_DEBUG_BROWSER_TEST__ = {
+  window.__AURA3D_DEBUG_BROWSER_TEST__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

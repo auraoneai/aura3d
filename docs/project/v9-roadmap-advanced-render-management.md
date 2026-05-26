@@ -1,6 +1,6 @@
 # V9 Advanced Render Management
 
-G3D has real render-queue sorting, state caching, instancing, and diagnostics. Automatic broad batching and every Three.js performance pattern are not complete.
+A3D has real render-queue sorting, state caching, instancing, and diagnostics. Automatic broad batching and every Three.js performance pattern are not complete.
 
 ## Real Code
 

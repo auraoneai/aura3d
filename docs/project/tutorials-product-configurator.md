@@ -1,10 +1,10 @@
-# Tutorial: G3D V6 Product Configurator
+# Tutorial: A3D V6 Product Configurator
 
 This tutorial maps to the V7 flagship viewer in `apps/product-configurator/` and the reusable template in `templates/production-product-viewer/`.
 
 Running example: `/examples/product-configurator/index.html`
 
-The product path is G3D only. Three.js is used only by the comparison report, not by the app runtime.
+The product path is A3D only. Three.js is used only by the comparison report, not by the app runtime.
 
 ## Core API
 
@@ -13,7 +13,7 @@ import {
   createProductViewer,
   loadGltfScene,
   loadHdrEnvironment
-} from "@galileo3d/engine/production-runtime";
+} from "@aura3d/engine/production-runtime";
 
 const asset = await loadGltfScene({
   url: "/fixtures/asset-corpus/damaged-helmet.glb",
@@ -90,4 +90,4 @@ The comparison artifact is written to:
 tests/reports/v7/product-viewer/product-viewer-report.json
 ```
 
-That report compares G3D against Three.js using the same asset and HDRI. It must be treated as an honest comparison artifact, not proof of full Three.js parity.
+That report compares A3D against Three.js using the same asset and HDRI. It must be treated as an honest comparison artifact, not proof of full Three.js parity.

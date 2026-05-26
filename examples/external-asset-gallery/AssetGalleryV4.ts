@@ -1,12 +1,12 @@
-import { summarizeV4Corpus, type V4CorpusAsset, type V4CorpusManifest } from "@galileo3d/assets";
+import { summarizeV4Corpus, type V4CorpusAsset, type V4CorpusManifest } from "@aura3d/assets";
 
 declare global {
   interface Window {
-    __G3D_V4_ASSET_STUDIO__?: unknown;
+    __A3D_V4_ASSET_STUDIO__?: unknown;
   }
 }
 
-const manifestPath = "/fixtures/v4/gltf-corpus/manifest.json";
+const manifestPath = "/fixtures/external-parity/gltf-corpus/manifest.json";
 const claimBoundary = "Milestone 10 Asset Studio Pro proof only; V4 release still requires actual rendered screenshots for selected assets, same-scene Three.js parity, and final package/template proof.";
 
 export async function mountAssetGalleryV4(id: string): Promise<void> {
@@ -51,7 +51,7 @@ export async function mountAssetGalleryV4(id: string): Promise<void> {
       id,
       status: "ready",
       productSurface: "asset-studio-pro",
-      corpusManifest: "fixtures/v4/gltf-corpus/manifest.json",
+      corpusManifest: "fixtures/external-parity/gltf-corpus/manifest.json",
       sourceRepository: manifest.source.repository,
       sourceRevision: manifest.source.revision,
       assetCount: summary.assetCount,
@@ -67,7 +67,7 @@ export async function mountAssetGalleryV4(id: string): Promise<void> {
       featureChecklist: ["corpus-browser", "asset-diagnostics", "license-provenance", "feature-coverage", "visual-evidence-slots", "app-ui"],
       claimBoundary
     };
-    window.__G3D_V4_ASSET_STUDIO__ = state;
+    window.__A3D_V4_ASSET_STUDIO__ = state;
     status.textContent = JSON.stringify(state, null, 2);
   }
 

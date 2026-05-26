@@ -65,7 +65,7 @@ Each corpus asset needs:
 
 ## Comparative Benchmarks
 
-Build equivalent scenes in Galileo3D, Three.js, and Babylon.js. Add Unity WebGL only where the comparison is meaningful.
+Build equivalent scenes in Aura3D, Three.js, and Babylon.js. Add Unity WebGL only where the comparison is meaningful.
 
 Fairness requirements:
 

@@ -102,7 +102,7 @@ describe("V6 PBR/HDR pipeline", () => {
   });
 
   it("builds texture bindings that can feed the renderer environment uniforms", () => {
-    const hdr = readFileSync("fixtures/environment-corpus/hdri/venice_sunset_1k.hdr");
+    const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
     const pipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
       id: "venice-sunset",
       label: "Venice Sunset",

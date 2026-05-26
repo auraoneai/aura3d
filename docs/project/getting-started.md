@@ -2,7 +2,7 @@
 
 Version: `1.0.0`
 
-Galileo3D, or G3D, is a production TypeScript-first browser 3D engine and workflow SDK. The current repo includes public package exports, WebGL2 renderer paths, WebGPU backend coverage, asset loading, animation/skinning, scene/runtime APIs, editor-runtime primitives, migration helpers, app routes, and V10 verification reports showing parity or better results against Three.js in the measured categories.
+Aura3D, or A3D, is a production TypeScript-first browser 3D engine and workflow SDK. The current repo includes public package exports, WebGL2 renderer paths, WebGPU backend coverage, asset loading, animation/skinning, scene/runtime APIs, editor-runtime primitives, migration helpers, app routes, and V10 verification reports showing parity or better results against Three.js in the measured categories.
 
 ## Prerequisites
 
@@ -59,9 +59,9 @@ Routes are evidence and diagnostics surfaces. A route loading correctly proves t
 For a high-level browser app:
 
 ```ts
-import { createG3DApp } from "@galileo3d/engine";
+import { createA3DApp } from "@aura3d/engine";
 
-const app = await createG3DApp({
+const app = await createA3DApp({
   canvas,
   quality: "balanced"
 });
@@ -74,11 +74,11 @@ await app.dispose();
 For direct advanced rendering:
 
 ```ts
-import { G3DRenderer, G3DScene } from "@galileo3d/engine/advanced-runtime";
-import { Geometry, PBRMaterial } from "@galileo3d/engine/rendering";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/advanced-runtime";
+import { Geometry, PBRMaterial } from "@aura3d/engine/rendering";
 
-const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
-const scene = new G3DScene();
+const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
+const scene = new A3DScene();
 
 scene.addGeometry("cube", Geometry.box());
 scene.addMaterial("paint", new PBRMaterial({ baseColor: [0.8, 0.7, 0.55, 1] }));
@@ -91,10 +91,10 @@ renderer.dispose();
 For asset-backed scenes:
 
 ```ts
-import { createRenderableScene, loadRenderableAsset } from "@galileo3d/engine/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
-const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
+const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
 const asset = await loadRenderableAsset("/fixtures/engine-readiness/canonical-product-scene.json");
 const scene = await createRenderableScene(asset, {
   camera: "auto-frame",
@@ -111,15 +111,15 @@ renderer.render(scene.source, scene.camera);
 Programmatic scaffolding is available through:
 
 ```ts
-import { createG3DProject } from "@galileo3d/engine/create-g3d";
+import { createA3DProject } from "@aura3d/engine/create-aura3d";
 
-createG3DProject({
-  targetDir: "my-g3d-app",
+createA3DProject({
+  targetDir: "my-a3d-app",
   template: "production-product-viewer"
 });
 ```
 
-Template docs live at `docs/templates/create-g3d-templates.md`.
+Template docs live at `docs/templates/create-aura3d-templates.md`.
 
 ## Learn The Package Surface
 
@@ -163,6 +163,6 @@ These commands can be expensive. For focused work, run the narrower script that 
 
 Approved description:
 
-> G3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the G3D superiority audit.
+> A3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the A3D superiority audit.
 
 Use `tests/reports/v10/claim-defense.json`, `tests/reports/v10/superiority-audit.json`, `docs/project/v10-superiority-status.md`, and `docs/project/competitive-positioning.md` before writing public claims.

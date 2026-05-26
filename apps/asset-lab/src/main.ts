@@ -1,4 +1,4 @@
-import { createAssetViewerWorkflow } from "@galileo3d/workflows";
+import { createAssetViewerWorkflow } from "@aura3d/workflows";
 import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../legacy-common/src/WorkflowWorkbench";
 
 const scenarios: readonly WorkflowScenario[] = [
@@ -23,9 +23,9 @@ const scenarios: readonly WorkflowScenario[] = [
 ];
 
 const assetPaths: Record<string, string> = {
-  "product-camera": "/fixtures/v3/assets/product-camera/product-camera.gltf",
-  "material-spheres": "/fixtures/v3/assets/material-spheres/material-spheres.gltf",
-  "external-product": "/fixtures/v3/assets/product-camera/product-camera-external.gltf"
+  "product-camera": "/fixtures/workflow-assets/assets/product-camera/product-camera.gltf",
+  "material-spheres": "/fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
+  "external-product": "/fixtures/workflow-assets/assets/product-camera/product-camera-external.gltf"
 };
 
 const root = document.getElementById("app");

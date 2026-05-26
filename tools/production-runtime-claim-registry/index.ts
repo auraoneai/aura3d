@@ -14,7 +14,7 @@ const allowedClaims = [
   },
   {
     id: "external-package-render-proof",
-    claim: "A fresh external Vite app can import V6 APIs from a packed @galileo3d/engine package and render a real V6 scene.",
+    claim: "A fresh external Vite app can import V6 APIs from a packed @aura3d/engine package and render a real V6 scene.",
     evidence: ["tests/reports/production-runtime-external-consumer.json"]
   },
   {
@@ -34,7 +34,7 @@ const blockedClaims = [
   "Broad performance superiority."
 ];
 const report = {
-  schema: "g3d-production-runtime-claim-registry/v1",
+  schema: "a3d-production-runtime-claim-registry/v1",
   generatedAt: new Date().toISOString(),
   pass: allowedClaims.every((claim) => claim.evidence.length > 0) && blockedClaims.length >= 8,
   allowedClaims,

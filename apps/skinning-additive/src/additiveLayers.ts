@@ -1,4 +1,4 @@
-import { AnimationClip } from "@galileo3d/animation";
+import { AnimationClip } from "@aura3d/animation";
 
 export interface AdditiveLayerControls {
   readonly playing: boolean;

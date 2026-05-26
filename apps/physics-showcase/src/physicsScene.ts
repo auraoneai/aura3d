@@ -1,4 +1,4 @@
-import { PhysicsWorld, Shape, type RigidBody, type PhysicsSnapshot } from "@galileo3d/physics";
+import { PhysicsWorld, Shape, type RigidBody, type PhysicsSnapshot } from "@aura3d/physics";
 
 export interface PhysicsBodyView {
   readonly body: RigidBody;

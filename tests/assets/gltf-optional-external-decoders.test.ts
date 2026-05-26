@@ -11,7 +11,7 @@ import {
 const khronosRevision = "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf";
 const meshoptCubeTestUrl = `https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/${khronosRevision}/Models/MeshoptCubeTest/glTF/MeshoptCubeTest.gltf`;
 const duckDracoUrl = `https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/${khronosRevision}/Models/Duck/glTF-Draco/Duck.gltf`;
-const runNetworkAssetTests = process.env.GALILEO3D_RUN_NETWORK_ASSET_TESTS === "1";
+const runNetworkAssetTests = process.env.AURA3D_RUN_NETWORK_ASSET_TESTS === "1";
 
 const meshoptimizer = await optionalImport<Record<string, unknown>>("meshoptimizer");
 const draco3d = await optionalImport<Record<string, unknown>>("draco3d");

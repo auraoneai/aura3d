@@ -257,7 +257,7 @@ interface RouteAudit {
 }
 
 interface AuditReport {
-  readonly schema: "g3d-v9-advanced-gallery-report-disclosure-audit/v1";
+  readonly schema: "a3d-v9-advanced-gallery-report-disclosure-audit/v1";
   readonly generatedAt: string;
   readonly sourceDir: string;
   readonly outputPath: string;
@@ -371,7 +371,7 @@ function main(): void {
     blockers.unshift(`report folder contains unexpected route JSON reports: ${unexpectedRouteReports.join(", ")}`);
   }
   const audit: AuditReport = {
-    schema: "g3d-v9-advanced-gallery-report-disclosure-audit/v1",
+    schema: "a3d-v9-advanced-gallery-report-disclosure-audit/v1",
     generatedAt: new Date().toISOString(),
     sourceDir: reportDir,
     outputPath,
@@ -405,7 +405,7 @@ function main(): void {
 }
 
 function configureCli(args: readonly string[]): void {
-  reportDir = process.env.G3D_ADVANCED_GALLERY_REPORT_DIR || resolveAdvancedGalleryReportDir();
+  reportDir = process.env.A3D_ADVANCED_GALLERY_REPORT_DIR || resolveAdvancedGalleryReportDir();
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === "--report-dir") {
@@ -914,8 +914,8 @@ function dataGalaxySemanticManifestBlockers(manifest: Record<string, unknown>, p
     if (supportScaffoldRoles.includes(role)) blockers.push(`${prefix} semanticRoles.supportScaffoldRoles should not include source-pruned role ${role}`);
     if (defaultExcludedRoles.includes(role)) blockers.push(`${prefix} semanticRoles.defaultExcludedRoles should not include source-pruned role ${role}`);
   }
-  if (!getString(getRecord(manifest, "batching"), "semanticRolePreservation")?.includes("g3d_semantic_role")) {
-    blockers.push(`${prefix} batching.semanticRolePreservation must explain g3d_semantic_role preservation`);
+  if (!getString(getRecord(manifest, "batching"), "semanticRolePreservation")?.includes("a3d_semantic_role")) {
+    blockers.push(`${prefix} batching.semanticRolePreservation must explain a3d_semantic_role preservation`);
   }
   const focalDrawItems = getNumber(semanticRoles, "focalDrawItems");
   const supportScaffoldDrawItems = getNumber(semanticRoles, "supportScaffoldDrawItems");

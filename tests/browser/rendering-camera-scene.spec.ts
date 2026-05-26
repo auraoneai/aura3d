@@ -15,12 +15,12 @@ test.describe("rendering camera scene integration", () => {
   test("uses camera matrices for scene renderables in browser execution", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/rendering-camera-scene-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_CAMERA_SCENE_TEST__?.status === "ready" || window.__GALILEO3D_CAMERA_SCENE_TEST__?.status === "error",
+      () => window.__AURA3D_CAMERA_SCENE_TEST__?.status === "ready" || window.__AURA3D_CAMERA_SCENE_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_CAMERA_SCENE_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_CAMERA_SCENE_TEST__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.drawCalls).toBe(1);
     expect(result?.modelTranslation).toEqual([2, 3, 4, 1]);
@@ -53,7 +53,7 @@ test.describe("rendering camera scene integration", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_CAMERA_SCENE_TEST__?: {
+    __AURA3D_CAMERA_SCENE_TEST__?: {
       readonly status: "ready" | "error";
       readonly drawCalls?: number;
       readonly modelTranslation?: readonly number[];

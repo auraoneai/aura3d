@@ -17,7 +17,7 @@ describe("V5 docs", () => {
     const manifest = JSON.parse(readFileSync(resolve("docs/project/three-compat-roadmap-docs-manifest.json"), "utf8")) as DocsManifest;
     const allDocs = manifest.docs.map((doc) => readFileSync(resolve(doc.path), "utf8")).join("\n");
 
-    expect(manifest.schema).toBe("g3d-three-compat-docs-manifest/v1");
+    expect(manifest.schema).toBe("a3d-three-compat-docs-manifest/v1");
     expect(manifest.docs.length).toBeGreaterThanOrEqual(manifest.requirements.minimumGuidePages);
     expect(manifest.snippets.length).toBeGreaterThanOrEqual(manifest.requirements.minimumRunnableOrLinkedSnippets);
     expect(manifest.docs.every((doc) => existsSync(resolve(doc.path)))).toBe(true);

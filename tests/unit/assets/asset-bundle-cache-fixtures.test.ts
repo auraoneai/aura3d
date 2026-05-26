@@ -5,7 +5,7 @@ describe("asset bundle cache fixtures", () => {
   it("builds deterministic bundle, dependency, and cache evidence for a loaded glTF asset", () => {
     const evidence = createAssetBundleCacheEvidence({
       assetId: "V4 Product Speaker",
-      url: "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf",
+      url: "/fixtures/product-studio/products/speaker/speaker.gltf",
       meshCount: 5,
       materialCount: 4,
       textureCount: 3,
@@ -67,7 +67,7 @@ describe("asset bundle cache fixtures", () => {
 
     expect(createAssetBundleCacheEvidence({
       assetId: "V4 Product Speaker",
-      url: "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf",
+      url: "/fixtures/product-studio/products/speaker/speaker.gltf",
       meshCount: 5,
       materialCount: 4,
       textureCount: 3,

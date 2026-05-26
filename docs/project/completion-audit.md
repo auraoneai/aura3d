@@ -2,9 +2,9 @@
 
 ## Current Result
 
-G3D has a passing V10 superiority audit for the measured browser 3D categories.
+A3D has a passing V10 superiority audit for the measured browser 3D categories.
 
-The current claim is evidence-scoped: G3D matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the V10 reports.
+The current claim is evidence-scoped: A3D matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the V10 reports.
 
 ## Latest V10 Snapshot
 
@@ -22,7 +22,7 @@ The current claim is evidence-scoped: G3D matches or exceeds Three.js across the
 
 ## What Can Be Claimed
 
-G3D has evidence-backed parity/exceeds claims for:
+A3D has evidence-backed parity/exceeds claims for:
 
 - Product and asset viewer workflows.
 - Public package-backed renderer foundations.

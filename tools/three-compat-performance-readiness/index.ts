@@ -32,7 +32,7 @@ const checks = [
   { name: "claim-boundary", pass: /cannot be claimed without external/i.test(baseline.claimBoundary), detail: baseline.claimBoundary }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "g3d-three-compat-performance-readiness/v1", generatedAt: new Date().toISOString(), pass, baseline, checks };
+const report = { schema: "a3d-three-compat-performance-readiness/v1", generatedAt: new Date().toISOString(), pass, baseline, checks };
 const reportPath = resolve("tests/reports/three-compat-performance-readiness.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);

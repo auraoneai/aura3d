@@ -10,13 +10,13 @@ interface Check {
 }
 
 const requiredFiles = [
-  "fixtures/v4/products/premium-product/manifest.json",
+  "fixtures/external-parity/products/premium-product/manifest.json",
   "apps/product-studio-pro/index.html",
   "apps/product-studio-pro/src/main.ts",
   "examples/external-product-configurator/index.html",
   "examples/external-product-configurator/main.ts",
   "examples/external-product-configurator/ProductConfiguratorV4.ts",
-  "benchmarks/external-parity/galileo/product-configurator.ts",
+  "benchmarks/external-parity/aura3d/product-configurator.ts",
   "benchmarks/external-parity/threejs/product-configurator.ts",
   "tests/browser/external-parity-product-configurator.spec.ts",
   "tests/reports/external-parity-product-configurator-browser.json"
@@ -54,9 +54,9 @@ for (const file of requiredFiles) {
   check(`file:${file}`, existsSync(resolve(file)), `${file} must exist.`);
 }
 
-const manifest = readJson("fixtures/v4/products/premium-product/manifest.json");
+const manifest = readJson("fixtures/external-parity/products/premium-product/manifest.json");
 const source = isObj(manifest?.source) ? manifest.source : {};
-check("fixture-schema", manifest?.schema === "g3d-v4-premium-product/v1", "Premium product fixture must use the V4 schema.");
+check("fixture-schema", manifest?.schema === "a3d-v4-premium-product/v1", "Premium product fixture must use the V4 schema.");
 check("fixture-product-id", manifest?.id === "premium-boom-box" && manifest?.category === "consumer-audio", "Premium product fixture must identify the product and category.");
 check(
   "fixture-external-source",
@@ -86,7 +86,7 @@ check(
     "createProductConfiguratorWorkflow",
     "premium-boom-box",
     "KhronosGroup/glTF-Sample-Assets",
-    "__G3D_V4_PRODUCT_CONFIGURATOR__",
+    "__A3D_V4_PRODUCT_CONFIGURATOR__",
     "featureChecklist",
     "V4 release still requires"
   ]),
@@ -100,13 +100,13 @@ check(
   "Example and app must share a side-effect-free module instead of importing the example entry."
 );
 
-const galileoBenchmark = readText("benchmarks/external-parity/galileo/product-configurator.ts");
+const aura3dBenchmark = readText("benchmarks/external-parity/aura3d/product-configurator.ts");
 const threeBenchmark = readText("benchmarks/external-parity/threejs/product-configurator.ts");
 check(
   "benchmark-sources",
-  includesAll(galileoBenchmark, ["createProductConfiguratorWorkflow", "premium-boom-box-product-configurator", "material variants", "environment lighting"]) &&
+  includesAll(aura3dBenchmark, ["createProductConfiguratorWorkflow", "premium-boom-box-product-configurator", "material variants", "environment lighting"]) &&
     includesAll(threeBenchmark, ["threejs", "same asset", "same camera intent", "same material/environment intent"]),
-  "Milestone 7 must add Galileo and Three.js same-scene benchmark source placeholders."
+  "Milestone 7 must add Aura3D and Three.js same-scene benchmark source placeholders."
 );
 
 const browser = readJson("tests/reports/external-parity-product-configurator-browser.json");
@@ -146,7 +146,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-product-readiness/v1",
+  schema: "a3d-external-parity-product-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

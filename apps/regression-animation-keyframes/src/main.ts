@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
+import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
 import {
   Geometry,
   PBRMaterial,
@@ -8,12 +8,12 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV7AnimationKeyframes?: V7AnimationKeyframesRuntime;
+    __a3dV7AnimationKeyframes?: V7AnimationKeyframesRuntime;
   }
 }
 
@@ -48,8 +48,8 @@ const APP_ID = "regression-animation-keyframes" as const;
 const WIDTH = 1920;
 const HEIGHT = 1080;
 const FRAME_BOUNDS: CameraFrameBounds = { min: [-0.9, -0.08, -0.9], max: [0.9, 2.05, 0.9] };
-const ANIMATED_CHARACTER_URI = "/fixtures/v7/assets/animation/soldier.glb";
-const HDR_ENVIRONMENT_URI = "/fixtures/v7/environments/hdri/studio_small_08_4k.hdr";
+const ANIMATED_CHARACTER_URI = "/fixtures/threejs-parity/assets/character/soldier.glb";
+const HDR_ENVIRONMENT_URI = "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr";
 const ASSET_TIMEOUT_MS = 30_000;
 const FIRST_FRAME_TIMEOUT_MS = 5_000;
 
@@ -125,7 +125,7 @@ async function run(): Promise<void> {
       statusLabel: "Compiling renderer",
       rendererStatus: "pending",
       details: [
-        "Creating the G3D WebGL2 renderer.",
+        "Creating the A3D WebGL2 renderer.",
         "The route must not claim running until at least one real render frame completes."
       ]
     });
@@ -138,7 +138,7 @@ async function run(): Promise<void> {
     });
     update({
       rendererStatus: "ready",
-      details: ["G3D WebGL2 renderer is ready.", "Loading the animated GLB next."]
+      details: ["A3D WebGL2 renderer is ready.", "Loading the animated GLB next."]
     });
 
     const environmentLighting: RenderSource["environmentLighting"] = false;
@@ -278,7 +278,7 @@ async function run(): Promise<void> {
           elapsedMs: Math.round(performance.now() - startedAt),
           details: [
             frameCount === 1
-              ? "First real G3D animation frame rendered. Running starts on the next frame."
+              ? "First real A3D animation frame rendered. Running starts on the next frame."
               : "Imported GLB animation is being sampled and rendered every frame.",
             hdrMessage
           ],
@@ -297,7 +297,7 @@ async function run(): Promise<void> {
         };
         runtime = nextRuntime;
         if (frameCount === 1) window.clearTimeout(firstFrameGuard);
-        window.__g3dV7AnimationKeyframes = runtime;
+        window.__a3dV7AnimationKeyframes = runtime;
         if (frameCount === 1 || now - lastPublish >= 250) {
           publish(root, runtime);
           lastPublish = now;
@@ -427,13 +427,13 @@ function createLights(): readonly CollectedLight[] {
 }
 
 function publish(root: HTMLElement, runtime: V7AnimationKeyframesRuntime): void {
-  window.__g3dV7AnimationKeyframes = runtime;
+  window.__a3dV7AnimationKeyframes = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "running" ? "is-running" : "is-loading";
   root.innerHTML = `
     <section class="panel">
       <div>
         <h1>V7 Animation Keyframes</h1>
-        <p>Imported GLB clip sampled and rendered every frame by G3D WebGL2.</p>
+        <p>Imported GLB clip sampled and rendered every frame by A3D WebGL2.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>
     </section>

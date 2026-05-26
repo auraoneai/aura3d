@@ -1,18 +1,18 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { AnimationClip, AnimationMixer, AnimationTrack } from "@galileo3d/animation";
-import { AssetManager, type AssetLoader } from "@galileo3d/assets";
-import { AudioSystem } from "@galileo3d/audio";
-import { Engine, SystemPhase } from "@galileo3d/core";
-import { EditorRuntime as PublicEditorRuntime } from "@galileo3d/editor";
-import { EditorRuntime } from "@galileo3d/editor-runtime";
-import { World, TransformComponent } from "@galileo3d/ecs";
-import { ActionMap, InputSnapshot } from "@galileo3d/input";
-import { PhysicsWorld, Shape } from "@galileo3d/physics";
-import { Geometry, Renderer } from "@galileo3d/rendering";
-import { Scene } from "@galileo3d/scene";
-import { BehaviorHost, BehaviorSystem } from "@galileo3d/scripting";
+import { AnimationClip, AnimationMixer, AnimationTrack } from "@aura3d/animation";
+import { AssetManager, type AssetLoader } from "@aura3d/assets";
+import { AudioSystem } from "@aura3d/audio";
+import { Engine, SystemPhase } from "@aura3d/core";
+import { EditorRuntime as PublicEditorRuntime } from "@aura3d/editor";
+import { EditorRuntime } from "@aura3d/editor-runtime";
+import { World, TransformComponent } from "@aura3d/ecs";
+import { ActionMap, InputSnapshot } from "@aura3d/input";
+import { PhysicsWorld, Shape } from "@aura3d/physics";
+import { Geometry, Renderer } from "@aura3d/rendering";
+import { Scene } from "@aura3d/scene";
+import { BehaviorHost, BehaviorSystem } from "@aura3d/scripting";
 
 describe("public package API contracts", () => {
   const publicPackages = [
@@ -41,7 +41,7 @@ describe("public package API contracts", () => {
       const index = readFileSync(`${packageDir}/src/index.ts`, "utf8");
 
       expect(readmePath, `${packageName} README exists`).toSatisfy(existsSync);
-      expect(readme).toContain(`# @galileo3d/${packageName}`);
+      expect(readme).toContain(`# @aura3d/${packageName}`);
       expect(readme).toContain("## Public API");
       expect(readme).toContain("## Verification");
       expect(manifest.exports).toHaveProperty(".");
@@ -52,10 +52,10 @@ describe("public package API contracts", () => {
   it("keeps examples on public package barrels instead of package internals", () => {
     const rootManifest = JSON.parse(readFileSync("package.json", "utf8")) as { exports?: Record<string, unknown>; name?: string };
     const rootExportSpecifiers = Object.keys(rootManifest.exports ?? {}).map((exportPath) =>
-      exportPath === "." ? rootManifest.name ?? "@galileo3d/engine" : `${rootManifest.name ?? "@galileo3d/engine"}/${exportPath.slice(2)}`
+      exportPath === "." ? rootManifest.name ?? "@aura3d/engine" : `${rootManifest.name ?? "@aura3d/engine"}/${exportPath.slice(2)}`
     );
     const allowedPublicSpecifiers = new Set([
-      ...publicPackages.map((packageName) => `@galileo3d/${packageName}`),
+      ...publicPackages.map((packageName) => `@aura3d/${packageName}`),
       ...publicWorkspacePackageSpecifiers(),
       ...rootExportSpecifiers
     ]);
@@ -69,7 +69,7 @@ describe("public package API contracts", () => {
         .filter(Boolean);
 
       for (const specifier of imports) {
-        if (specifier.startsWith("@galileo3d/")) {
+        if (specifier.startsWith("@aura3d/")) {
           expect(allowedPublicSpecifiers.has(specifier), `${file} imports ${specifier}`).toBe(true);
           continue;
         }
@@ -253,7 +253,7 @@ function publicWorkspacePackageSpecifiers(): string[] {
     .map((packageName) => `packages/${packageName}/package.json`)
     .filter((manifestPath) => existsSync(manifestPath))
     .map((manifestPath) => JSON.parse(readFileSync(manifestPath, "utf8")) as { exports?: Record<string, unknown>; name?: string; private?: boolean })
-    .filter((manifest) => manifest.private !== true && manifest.name?.startsWith("@galileo3d/") && manifest.exports?.["."] !== undefined)
+    .filter((manifest) => manifest.private !== true && manifest.name?.startsWith("@aura3d/") && manifest.exports?.["."] !== undefined)
     .map((manifest) => manifest.name!)
     .sort();
 }

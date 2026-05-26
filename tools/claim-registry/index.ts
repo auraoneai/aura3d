@@ -52,19 +52,19 @@ const canonicalPathFallbacks: Record<string, readonly string[]> = {
   "docs/project/known-limits.md": ["docs/known-limits.md"]
 };
 const strongerClaimPatterns = [
-  { claim: "Galileo3D is better than Three.js.", pattern: /\bbetter\s+than\s+three\.?js\b/i },
-  { claim: "Galileo3D is Unity/Unreal for the web.", pattern: /\b(?:unity\s*\/\s*unreal|unreal\s*\/\s*unity|unity\b.*\bunreal|unreal\b.*\bunity)\b/i },
-  { claim: "Galileo3D is production-ready.", pattern: /\bproduction[-\s]+ready\b/i },
-  { claim: "Galileo3D has production PBR parity.", pattern: /\bproduction\s+pbr\s+parity\b|\bpbr\s+parity\b/i },
-  { claim: "Galileo3D has full WebGPU support.", pattern: /\bfull\s+webgpu\s+support\b/i }
+  { claim: "Aura3D is better than Three.js.", pattern: /\bbetter\s+than\s+three\.?js\b/i },
+  { claim: "Aura3D is Unity/Unreal for the web.", pattern: /\b(?:unity\s*\/\s*unreal|unreal\s*\/\s*unity|unity\b.*\bunreal|unreal\b.*\bunity)\b/i },
+  { claim: "Aura3D is production-ready.", pattern: /\bproduction[-\s]+ready\b/i },
+  { claim: "Aura3D has production PBR parity.", pattern: /\bproduction\s+pbr\s+parity\b|\bpbr\s+parity\b/i },
+  { claim: "Aura3D has full WebGPU support.", pattern: /\bfull\s+webgpu\s+support\b/i }
 ] as const;
 
 export function validateClaimRegistry(root = process.cwd(), options: ClaimRegistryOptions = {}): ClaimRegistryReport {
   const registryPath = normalizePath(options.registryPath ?? defaultRegistryPath);
   const registry = parseClaimRegistry(readText(root, registryPath), registryPath);
   const scannedFiles = listPublicClaimFiles(root);
-  const releaseRunId = options.releaseRunId ?? process.env.G3D_RELEASE_RUN_ID ?? "standalone-claim-registry-run";
-  const startedAt = options.startedAt ?? (process.env.G3D_RELEASE_STARTED_AT ? new Date(process.env.G3D_RELEASE_STARTED_AT) : undefined);
+  const releaseRunId = options.releaseRunId ?? process.env.A3D_RELEASE_RUN_ID ?? "standalone-claim-registry-run";
+  const startedAt = options.startedAt ?? (process.env.A3D_RELEASE_STARTED_AT ? new Date(process.env.A3D_RELEASE_STARTED_AT) : undefined);
   const allowedOccurrences: ClaimOccurrence[] = [];
   const violations: ClaimViolation[] = [];
 

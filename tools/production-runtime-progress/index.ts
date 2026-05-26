@@ -19,7 +19,7 @@ const knownGaps = sectionBullets(progress, "## Known Gaps");
 const blockedClaims = sectionBullets(progress, "## Blocked Claims");
 const milestoneCoverage = requiredMilestones.map((milestone) => ({ milestone, present: progress.includes(milestone) }));
 const report = {
-  schema: "g3d-production-runtime-progress/v1",
+  schema: "a3d-production-runtime-progress/v1",
   generatedAt: new Date().toISOString(),
   pass: existsSync(resolve(progressPath))
     && (currentStatus === "in-progress" || currentStatus === "complete")

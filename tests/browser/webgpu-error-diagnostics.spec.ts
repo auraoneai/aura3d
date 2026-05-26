@@ -34,9 +34,9 @@ test.describe("WebGPU error diagnostics", () => {
       const invalidWgslDevice = await createRenderDevice({ backend: "webgpu", webgpu: createDiagnosticWebGPU("invalid-wgsl") });
       const invalidWgsl = await capture(() => invalidWgslDevice.createShaderProgram({
         label: "invalid-wgsl",
-        marker: "@galileo3d-shader:invalid-wgsl",
-        vertex: "// @galileo3d-shader:invalid-wgsl\n@vertex fn vs_main() -> @builtin(position) vec4<f32> { definitely_invalid_wgsl }",
-        fragment: "// @galileo3d-shader:invalid-wgsl\n@fragment fn fs_main() -> @location(0) vec4<f32> { return vec4<f32>(1.0); }"
+        marker: "@aura3d-shader:invalid-wgsl",
+        vertex: "// @aura3d-shader:invalid-wgsl\n@vertex fn vs_main() -> @builtin(position) vec4<f32> { definitely_invalid_wgsl }",
+        fragment: "// @aura3d-shader:invalid-wgsl\n@fragment fn fs_main() -> @location(0) vec4<f32> { return vec4<f32>(1.0); }"
       }));
       invalidWgslDevice.dispose();
 
@@ -68,9 +68,9 @@ test.describe("WebGPU error diagnostics", () => {
         const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
         const shader = device.createShaderProgram({
           label: mode,
-          marker: `@galileo3d-shader:${mode}`,
-          vertex: `// @galileo3d-shader:${mode}\nin vec3 position;`,
-          fragment: `// @galileo3d-shader:${mode}\nuniform vec4 color;`
+          marker: `@aura3d-shader:${mode}`,
+          vertex: `// @aura3d-shader:${mode}\nin vec3 position;`,
+          fragment: `// @aura3d-shader:${mode}\nuniform vec4 color;`
         });
         const target = device.createRenderTarget({ width: 8, height: 8, label: mode });
         device.setRenderTarget(target);

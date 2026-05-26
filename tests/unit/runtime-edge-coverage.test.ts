@@ -52,10 +52,10 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     ],
     edgeTerms: [/pointer/i, /drag/i, /dispose/i, /invalid/i, /selection/i]
   },
-  "create-g3d": {
+  "create-aura3d": {
     suites: [
-      "tests/integration/production-runtime-create-g3d.test.ts",
-      "tests/integration/three-compat-create-g3d.test.ts"
+      "tests/integration/production-runtime-create-aura3d.test.ts",
+      "tests/integration/three-compat-create-aura3d.test.ts"
     ],
     edgeTerms: [/template/i, /dependencies/i, /README/i, /package/i, /throws?/i]
   },
@@ -352,7 +352,7 @@ describe("runtime edge-case coverage audit", () => {
       "packages/rendering/src/effects/ParticleDiagnostics.ts:warnings.push(backend.reason ?? \"GPU particle backend is unavailable in this runtime\");",
       "packages/rendering/src/postprocess/CinematicDiagnostics.ts:...(supportsDepthTexture ? [] : [\"Renderer-owned DOF injection is unavailable without depth-textures; callers may still provide a depth binding to the pixel kernel.\"]),",
       "packages/rendering/src/postprocess/CinematicDiagnostics.ts:...(supportsDepthTexture ? [] : [\"Renderer-owned SSAO injection is unavailable without depth-textures; callers may still provide a depth binding to the pixel kernel.\"]),",
-      "packages/rendering/src/postprocess/EffectComposer.ts:reason: \"SMAA is not implemented in the public G3D postprocess pass catalog; use FXAA or TAA.\"",
+      "packages/rendering/src/postprocess/EffectComposer.ts:reason: \"SMAA is not implemented in the public A3D postprocess pass catalog; use FXAA or TAA.\"",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:export type V6WebGPUStatus = \"available\" | \"unavailable\" | \"blocked\";",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"navigator.gpu is not exposed in this browser/runtime.\");",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"WebGPU requestAdapter returned null.\");",

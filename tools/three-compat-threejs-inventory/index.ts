@@ -41,7 +41,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "g3d-three-compat-threejs-inventory/v1",
+  schema: "a3d-three-compat-threejs-inventory/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((entry) => entry.pass),
   inventory,

@@ -1,4 +1,4 @@
-# Galileo3D Docs Site Map
+# Aura3D Docs Site Map
 
 Version: 1.0.0
 
@@ -54,7 +54,7 @@ This file is the deployment manifest for the current documentation set. A docs d
 - [V2 product asset pipeline plan](v2-roadmap-product-asset-pipeline-plan.md)
 - [V3 product workflow plan](v3-roadmap-product-workflow-plan.md)
 - [V4 visual engine plan](v4-roadmap-visual-engine-plan.md)
-- [V5 visual engine plan](v5-roadmap-visual-engine-plan.md)
+- [Three-compat visual engine plan](three-compat-roadmap-visual-engine-plan.md)
 - [V6 production renderer plan](v6-roadmap-production-renderer-plan.md)
 - [V7 runtime parity plan](v7-roadmap-runtime-parity-plan.md)
 - [V8 Three.js competitor plan](v8-roadmap-three-js-competitor-plan.md)

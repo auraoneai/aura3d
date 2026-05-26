@@ -1,5 +1,5 @@
-import { EditorPluginHost, EditorRuntime, PlayModeBridge, PrefabRegistry, ReparentNodeCommand, sampleLocalizationAccessibilityFixture, type Command, type EditorLocalizationAccessibilityFixture, type EditorPickingEvidenceSnapshot, type EditorStateSnapshot, type EditorStateStorage, type GizmoSettings, type TimelineSnapshot } from "@galileo3d/editor-runtime";
-import { Scene, SceneNode } from "@galileo3d/scene";
+import { EditorPluginHost, EditorRuntime, PlayModeBridge, PrefabRegistry, ReparentNodeCommand, sampleLocalizationAccessibilityFixture, type Command, type EditorLocalizationAccessibilityFixture, type EditorPickingEvidenceSnapshot, type EditorStateSnapshot, type EditorStateStorage, type GizmoSettings, type TimelineSnapshot } from "@aura3d/editor-runtime";
+import { Scene, SceneNode } from "@aura3d/scene";
 import { StaticProjectExporter, type StaticExportResult } from "./export/StaticProjectExporter";
 import { ImportSettingsPanel } from "./import/ImportSettingsPanel";
 import { AssetBrowserPanel } from "./panels/AssetBrowserPanel";
@@ -86,7 +86,7 @@ export interface EditorConsoleMessage {
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): EditorAppState;
       shell: EditorShell;
     };
@@ -131,7 +131,7 @@ export class EditorShell {
     this.scene = built.scene;
     this.runtime.select(["node-hero"]);
     this.plugins.register({
-      id: "galileo.default-authoring",
+      id: "aura3d.default-authoring",
       name: "Default authoring tools",
       panels: [
         { id: "hierarchy", title: "Hierarchy", order: 1 },
@@ -162,7 +162,7 @@ export class EditorShell {
   async mount(): Promise<void> {
     this.root.innerHTML = `
       <header class="editor-topbar">
-        <strong>Galileo3D Editor</strong>
+        <strong>Aura3D Editor</strong>
         <select data-action="command-menu" aria-label="Command menu">
           <option value="">Command</option>
           <option value="new-project">New Project</option>
@@ -781,8 +781,8 @@ export class EditorShell {
       oldBranchVisualScriptingPort: visualScripting.evidence.oldCodebasePort,
       editorVisibleVisualGraph: visualScripting.evidence.editorVisibleGraph,
       visualScriptingCatalogExecution: visualScripting.evidence.deterministicExecution && visualScripting.evidence.blockedUnityUnrealVisualScriptingParity,
-      staticExportWithoutEditorCode: (this.exportedProject?.files.find((file) => file.path === "runtime.js")?.content ?? "").includes("__GALILEO3D_EXPORTED_PROJECT__") &&
-        !(this.exportedProject?.files.some((file) => file.content.includes("EditorShell") || file.content.includes("__GALILEO3D_EDITOR_APP__")) ?? true)
+      staticExportWithoutEditorCode: (this.exportedProject?.files.find((file) => file.path === "runtime.js")?.content ?? "").includes("__AURA3D_EXPORTED_PROJECT__") &&
+        !(this.exportedProject?.files.some((file) => file.content.includes("EditorShell") || file.content.includes("__AURA3D_EDITOR_APP__")) ?? true)
     };
   }
 }

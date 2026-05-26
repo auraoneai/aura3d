@@ -47,7 +47,7 @@ describe("asset compatibility diagnostics", () => {
     expect(report.schemaVersion).toBe("asset-compatibility-report-v1");
     expect(report.fixtureStatus.blenderExportFixtures).toBe("present");
     expect(report.summary.assetCount).toBe(77);
-    expect(report.summary.galileo3d).toEqual({ pass: 70, warn: 7, "expected-fail": 0, "not-run": 0 });
+    expect(report.summary.aura3d).toEqual({ pass: 70, warn: 7, "expected-fail": 0, "not-run": 0 });
     expect(report.summary.threejs["not-run"]).toBe(0);
     expect(report.summary.babylonjs["not-run"]).toBe(0);
     expect(report.blenderExportValidation?.summary).toMatchObject({ fixtureCount: 3, pass: 3, warn: 0, fail: 0 });

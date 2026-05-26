@@ -1,8 +1,8 @@
-import { WebGPUParticleBackend } from "@galileo3d/rendering";
+import { WebGPUParticleBackend } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __g3dV8WebGPUCompute?: V8WebGPUComputeRuntime;
+    __a3dV8WebGPUCompute?: V8WebGPUComputeRuntime;
   }
 }
 
@@ -56,7 +56,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__g3dV8WebGPUCompute = runtime;
+    window.__a3dV8WebGPUCompute = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -97,7 +97,7 @@ async function run(): Promise<void> {
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
       });
-      window.__g3dV8WebGPUCompute = runtime;
+      window.__a3dV8WebGPUCompute = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };

@@ -33,7 +33,7 @@ check("browser-shadow", report?.ok === true && Number(contact.anchorStrength) > 
 check("claim-boundary", typeof report?.productBoundary === "string" && report.productBoundary.includes("Flagship product/interior screenshots"), "Shadow report must state flagship screenshots remain required.");
 
 const pass = checks.every((entry) => entry.pass);
-const output = { schema: "g3d-external-parity-shadow-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
+const output = { schema: "a3d-external-parity-shadow-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-shadow-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-shadow-readiness.json"), `${JSON.stringify(output, null, 2)}\n`);
 if (!pass) {

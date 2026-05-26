@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const fixtureRoot = resolve("fixtures/assets/v3");
+const fixtureRoot = resolve("fixtures/foundation-assets");
 const reportPath = resolve("tests/reports/foundation-asset-corpus.json");
 const gltfReportPath = resolve("tests/reports/foundation-gltf-corpus.json");
 const expectedCategories = ["product", "architecture", "character", "environment", "materials", "animation", "compression", "problem-cases"];
@@ -25,7 +25,7 @@ describe("v3 local asset corpus", () => {
           readonly screenshotBaseline: string;
           readonly loaderDiagnosticsBaseline: string;
         };
-        expect(manifest.schemaVersion).toBe("g3d-v3-local-asset-v1");
+        expect(manifest.schemaVersion).toBe("a3d-v3-local-asset-v1");
         expect(manifest.category).toBe(category);
         expect(manifest.features.length).toBeGreaterThan(0);
         expect(existsSync(resolve(directory, manifest.localFile))).toBe(true);
@@ -54,7 +54,7 @@ describe("v3 local asset corpus", () => {
       }[];
     };
 
-    expect(report.schemaVersion).toBe("g3d-v3-asset-corpus-report-v1");
+    expect(report.schemaVersion).toBe("a3d-v3-asset-corpus-report-v1");
     expect(report.assetCount).toBe(8);
     expect(report.summary).toEqual({ renderResourcesCreated: 7, expectedError: 1, error: 0 });
     expect(report.assets.find((asset) => asset.id === "compression-meshopt-required")).toMatchObject({
@@ -88,7 +88,7 @@ describe("v3 local asset corpus", () => {
       }[];
     };
 
-    expect(report.schemaVersion).toBe("g3d-v3-asset-corpus-report-v1");
+    expect(report.schemaVersion).toBe("a3d-v3-asset-corpus-report-v1");
     expect(report.assets.length).toBeGreaterThan(0);
     for (const asset of report.assets) {
       expect(asset.id.length).toBeGreaterThan(0);

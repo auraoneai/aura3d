@@ -1,4 +1,4 @@
-import type { CameraLike, RenderSource } from "@galileo3d/rendering";
+import type { CameraLike, RenderSource } from "@aura3d/rendering";
 import { GLTFLoader, type GLTFAsset, type GLTFDracoDecoder, type GLTFLoaderDiagnostics, type GLTFMeshoptDecoder } from "../GLTFLoader";
 import { createGLTFRenderResources, type GLTFImageDecoder, type GLTFRenderResourceOptions, type GLTFRenderResources, type GLTFRendererInputOptions } from "../GLTFRenderResources";
 import { LoadContext } from "../LoadContext";
@@ -156,7 +156,7 @@ function createV6GLTFRenderWarnings(
     warnings.push({
       code: "unsupported-gltf-extension",
       severity: "warning",
-      message: `Optional glTF extension ${extension} was present but is not supported by the G3D render path.`,
+      message: `Optional glTF extension ${extension} was present but is not supported by the A3D render path.`,
       nextAction: "Keep the asset loaded if the extension is optional, but inspect the visual output and document the missing feature before claiming parity."
     });
   }

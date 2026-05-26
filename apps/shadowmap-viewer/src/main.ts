@@ -1,16 +1,16 @@
-import { DirectionalLight } from "@galileo3d/scene";
+import { DirectionalLight } from "@aura3d/scene";
 import {
   Geometry,
   PBRMaterial,
   ShadowMap,
   ShadowPass,
   UnlitMaterial
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8ShadowmapViewer?: V8ShadowmapViewerRuntime;
+    __a3dV8ShadowmapViewer?: V8ShadowmapViewerRuntime;
   }
 }
 
@@ -33,7 +33,7 @@ interface V8ShadowmapViewerRuntime {
   readonly pcfSamples: number;
   readonly pcfRadius: number;
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -62,14 +62,14 @@ async function run(): Promise<void> {
   let latestDepth: Float32Array | null = null;
 
   const publish = (): void => {
-    window.__g3dV8ShadowmapViewer = runtime;
+    window.__a3dV8ShadowmapViewer = runtime;
     renderUi(root, runtime);
     if (latestDepth) drawDepthPreview(root, latestDepth, SHADOW_SIZE, SHADOW_SIZE);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2" });
+    const renderer = await A3DRenderer.create({ canvas, width: WIDTH, height: HEIGHT, backend: "webgl2" });
     const device = renderer.device;
     const light = new DirectionalLight("shadowmap-viewer-light");
     light.castsShadow = true;
@@ -208,7 +208,7 @@ async function run(): Promise<void> {
           pcfSamples: shadowMap.filterKernel.samples.length,
           pcfRadius: shadowMap.filterKernel.radius
         });
-        window.__g3dV8ShadowmapViewer = runtime;
+        window.__a3dV8ShadowmapViewer = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -319,7 +319,7 @@ function createRuntime(
     pcfSamples: patch.pcfSamples ?? 0,
     pcfRadius: patch.pcfRadius ?? 0,
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }

@@ -1,9 +1,0 @@
-{
-  "type": "module",
-  "scripts": {
-    "build": "vite build"
-  },
-  "dependencies": {
-    "@galileo3d/engine": "^0.1.0-alpha.0"
-  }
-}

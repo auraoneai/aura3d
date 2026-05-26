@@ -10,7 +10,7 @@ import {
   Vector3Compat
 } from "../../packages/three-compat/src";
 
-test("Three.js-style compat scene migrates through G3D browser proof", async ({ page }) => {
+test("Three.js-style compat scene migrates through A3D browser proof", async ({ page }) => {
   const scene = new SceneCompat();
   const camera = new PerspectiveCameraCompat(55, 1.6, 0.1, 500);
   const group = new GroupCompat();
@@ -47,16 +47,16 @@ test("Three.js-style compat scene migrates through G3D browser proof", async ({ 
           }
           ctx.fillStyle = "#f2f6ff";
           ctx.font = "16px system-ui";
-          ctx.fillText("G3D Three.js compat scene", 32, 44);
-          window.__g3dCompatObjects = objects.length;
-          window.__g3dCompatIntersections = intersections;
+          ctx.fillText("A3D Three.js compat scene", 32, 44);
+          window.__a3dCompatObjects = objects.length;
+          window.__a3dCompatIntersections = intersections;
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dCompatObjects)).toBeGreaterThanOrEqual(4);
-  await expect.poll(async () => page.evaluate(() => window.__g3dCompatIntersections)).toBeGreaterThanOrEqual(24);
+  await expect.poll(async () => page.evaluate(() => window.__a3dCompatObjects)).toBeGreaterThanOrEqual(4);
+  await expect.poll(async () => page.evaluate(() => window.__a3dCompatIntersections)).toBeGreaterThanOrEqual(24);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

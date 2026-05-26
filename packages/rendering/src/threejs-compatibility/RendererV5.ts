@@ -42,7 +42,7 @@ export class RendererV5 {
   }
 
   captureScreenshot(): string {
-    return `g3d-three-compat-capture://${this.backend}/${this.renderTargets.current.width}x${this.renderTargets.current.height}`;
+    return `a3d-three-compat-capture://${this.backend}/${this.renderTargets.current.width}x${this.renderTargets.current.height}`;
   }
 
   handleDeviceLost(reason: string): { readonly recovered: boolean; readonly reason: string } {

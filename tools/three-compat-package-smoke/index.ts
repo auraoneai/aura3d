@@ -30,13 +30,13 @@ const installDir = resolve("tests/reports/three-compat-external-consumer/temp-ap
 rmSync(installDir, { recursive: true, force: true });
 mkdirSync(installDir, { recursive: true });
 if (latest) {
-  writeFileSync(join(installDir, "package.json"), `${JSON.stringify({ type: "module", dependencies: { "@galileo3d/engine": `file:../${latest}` } }, null, 2)}\n`);
+  writeFileSync(join(installDir, "package.json"), `${JSON.stringify({ type: "module", dependencies: { "@aura3d/engine": `file:../${latest}` } }, null, 2)}\n`);
   execFileSync("npm", ["install", "--ignore-scripts", "--package-lock=false"], { cwd: installDir, stdio: "pipe" });
 }
 const report = {
-  schema: "g3d-three-compat-package-smoke/v1",
+  schema: "a3d-three-compat-package-smoke/v1",
   generatedAt: new Date().toISOString(),
-  pass: Boolean(latest) && existsSync(join(installDir, "node_modules/@galileo3d/engine/package.json")),
+  pass: Boolean(latest) && existsSync(join(installDir, "node_modules/@aura3d/engine/package.json")),
   tarball: latest ? `tests/reports/three-compat-external-consumer/${latest}` : null,
   installedTempApp: "tests/reports/three-compat-external-consumer/temp-app"
 };

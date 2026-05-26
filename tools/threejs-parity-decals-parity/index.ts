@@ -9,9 +9,9 @@ import {
   type ProjectedDecalTriangleMesh,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, normalizeVec3, type Vec3 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, normalizeVec3, type Vec3 } from "@aura3d/scene";
 import { placeDecalFromPointer, seededDecals, type DecalPlacement } from "../../apps/decals/src/decalPlacement";
 import * as THREE from "three";
 import { DecalGeometry } from "/node_modules/three/examples/jsm/geometries/DecalGeometry.js";
@@ -28,11 +28,11 @@ type V9DecalsParityResult = V9DecalsParityReady | V9DecalsParityError;
 
 interface V9DecalsParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-decals-parity/v1";
-  readonly purpose: "same-scene G3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline";
+  readonly schema: "a3d-threejs-parity-decals-parity/v1";
+  readonly purpose: "same-scene A3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly drawCalls: number };
     readonly decals: { readonly count: number; readonly triangles: number; readonly vertices: number; readonly shape: "ellipse" };
     readonly pixels: PixelStats;
@@ -55,12 +55,12 @@ interface V9DecalsParityReady {
     readonly sameResolution: boolean;
     readonly actualThreeRenderer: boolean;
     readonly actualThreeDecalGeometry: boolean;
-    readonly g3dEllipseProjectedGeometry: boolean;
+    readonly a3dEllipseProjectedGeometry: boolean;
     readonly projectorSemanticsClose: boolean;
     readonly fakeEqualityClaimed: false;
   };
   readonly dataUrls: {
-    readonly g3d: string;
+    readonly a3d: string;
     readonly threejs: string;
     readonly sideBySide: string;
   };
@@ -69,7 +69,7 @@ interface V9DecalsParityReady {
 
 interface V9DecalsParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-decals-parity/v1";
+  readonly schema: "a3d-threejs-parity-decals-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -129,33 +129,33 @@ void run();
 async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   try {
-    const g3dCanvas = requiredCanvas("g3d-decals", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-decals", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-decals", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
     const placements = seededDecals(SCENE.decalCount);
-    if (status) status.textContent = "rendering G3D decals";
-    const g3d = await renderG3DDecals(g3dCanvas, placements);
+    if (status) status.textContent = "rendering A3D decals";
+    const a3d = await renderA3DDecals(a3dCanvas, placements);
     if (status) status.textContent = "rendering Three.js DecalGeometry baseline";
     const threejs = await renderThreeDecals(threeCanvas, placements);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const projectorSemantics = compareProjectorSemantics(g3d.entries, threejs.semanticHits, g3dCanvas);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const projectorSemantics = compareProjectorSemantics(a3d.entries, threejs.semanticHits, a3dCanvas);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: V9DecalsParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-decals-parity/v1",
-      purpose: "same-scene G3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline",
+      schema: "a3d-threejs-parity-decals-parity/v1",
+      purpose: "same-scene A3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls },
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls },
         decals: {
-          count: g3d.entries.length,
-          triangles: g3d.entries.reduce((sum, entry) => sum + entry.clippedTriangleCount, 0),
-          vertices: g3d.entries.reduce((sum, entry) => sum + entry.vertexCount, 0),
+          count: a3d.entries.length,
+          triangles: a3d.entries.reduce((sum, entry) => sum + entry.clippedTriangleCount, 0),
+          vertices: a3d.entries.reduce((sum, entry) => sum + entry.vertexCount, 0),
           shape: "ellipse"
         },
-        pixels: analyzeImageData(g3dPixels)
+        pixels: analyzeImageData(a3dPixels)
       },
       threejs: {
         renderer: {
@@ -173,11 +173,11 @@ async function run(): Promise<void> {
       projectorSemantics,
       diff,
       assertions: {
-        samePlacements: placements.length === g3d.entries.length && placements.length === threejs.decalCount,
-        sameResolution: g3dCanvas.width === threeCanvas.width && g3dCanvas.height === threeCanvas.height,
+        samePlacements: placements.length === a3d.entries.length && placements.length === threejs.decalCount,
+        sameResolution: a3dCanvas.width === threeCanvas.width && a3dCanvas.height === threeCanvas.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeDecalGeometry: threejs.decalGeometryCount === placements.length,
-        g3dEllipseProjectedGeometry: g3d.entries.length === placements.length && g3d.entries.every((entry) => entry.clippedTriangleCount >= 8),
+        a3dEllipseProjectedGeometry: a3d.entries.length === placements.length && a3d.entries.every((entry) => entry.clippedTriangleCount >= 8),
         projectorSemanticsClose: projectorSemantics.maxHitPositionDelta <= 0.035
           && projectorSemantics.minNormalDot >= 0.985
           && projectorSemantics.pointerHitDelta <= 0.035
@@ -185,7 +185,7 @@ async function run(): Promise<void> {
         fakeEqualityClaimed: false
       },
       dataUrls: {
-        g3d: g3d.dataUrl,
+        a3d: a3d.dataUrl,
         threejs: threejs.dataUrl,
         sideBySide
       },
@@ -200,7 +200,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: V9DecalsParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-decals-parity/v1",
+      schema: "a3d-threejs-parity-decals-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
@@ -211,15 +211,15 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3DDecals(canvas: HTMLCanvasElement, placements: readonly DecalPlacement[]) {
-  const renderer = await G3DRenderer.create({
+async function renderA3DDecals(canvas: HTMLCanvasElement, placements: readonly DecalPlacement[]) {
+  const renderer = await A3DRenderer.create({
     canvas,
     width: SCENE.width,
     height: SCENE.height,
     backend: "webgl2",
     clearColor: [0.02, 0.023, 0.028, 1]
   });
-  const resources = createG3DResources();
+  const resources = createA3DResources();
   const entries = placements.map((placement) => createProjectedDecalEntry(resources, placement));
   const frame = computeDecalCameraFrame();
   const diagnostics = renderer.render({
@@ -323,7 +323,7 @@ async function renderThreeDecals(canvas: HTMLCanvasElement, placements: readonly
   return result;
 }
 
-function createG3DResources(): DecalResources {
+function createA3DResources(): DecalResources {
   const sphere = Geometry.uvSphere(SCENE.targetRadius, 64, 32);
   return {
     sphere,
@@ -567,19 +567,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create decals side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, SCENE.width, 0, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.9)";
   context.fillRect(0, SCENE.height, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("G3D ProjectedDecalGeometry", 20, SCENE.height + 28);
+  context.fillText("A3D ProjectedDecalGeometry", 20, SCENE.height + 28);
   context.fillText("Three.js DecalGeometry baseline", SCENE.width + 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";

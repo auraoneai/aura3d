@@ -22,7 +22,7 @@ const checks = [
   { id: "performance", pass: performance.pass === true, detail: "tests/reports/production-runtime-performance-readiness.json" }
 ];
 const report = {
-  schema: "g3d-production-runtime-production-renderer-readiness/v1",
+  schema: "a3d-production-runtime-production-renderer-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   galleryEntryCount: entries.length,

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createProductCameraFrame, loadProductAsset, validateProductCameraFrame } from "@galileo3d/product-studio";
+import { createProductCameraFrame, loadProductAsset, validateProductCameraFrame } from "@aura3d/product-studio";
 
 describe("product camera framing", () => {
   it("creates valid frames for all Product Studio camera presets", async () => {
@@ -19,8 +19,8 @@ describe("product camera framing", () => {
 async function fixtureAsset(id: string) {
   return loadProductAsset({
     id,
-    url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), `fixtures/v2/products/${id}/${id}.gltf`))),
-    manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), `fixtures/v2/products/${id}/manifest.json`)))
+    url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), `fixtures/product-studio/products/${id}/${id}.gltf`))),
+    manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), `fixtures/product-studio/products/${id}/manifest.json`)))
   });
 }
 

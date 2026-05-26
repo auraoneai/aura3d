@@ -86,22 +86,22 @@ function createContactFrame() {
 async function run(): Promise<void> {
   const root = document.getElementById("contact-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing contact shadow root.");
-  const g3dCanvas = createCanvas("v7-contact-g3d");
+  const a3dCanvas = createCanvas("v7-contact-a3d");
   const threeCanvas = createCanvas("v7-contact-threejs");
   const diffCanvas = createCanvas("v7-contact-diff");
-  root.append(g3dCanvas, threeCanvas, diffCanvas);
+  root.append(a3dCanvas, threeCanvas, diffCanvas);
 
-  const g3d = await renderG3D(g3dCanvas);
+  const a3d = await renderA3D(a3dCanvas);
   const threejs = renderThree(threeCanvas);
-  const diff = renderDiff(g3d.pixels, threejs.pixels, diffCanvas);
+  const diff = renderDiff(a3d.pixels, threejs.pixels, diffCanvas);
 
   window.__V7_CONTACT_SHADOW_PARITY__ = {
     status: "ready",
-    schema: "g3d-v7-contact-shadow-parity/v1",
+    schema: "a3d-v7-contact-shadow-parity/v1",
     purpose: "same-scene contact/shadow delta gate",
     parity: {
       claim: "bounded-threejs-soft-contact-shadow-delta-parity",
-      reason: "This artifact proves a bounded same-scene G3D soft contact/shadow delta against a Three.js PCFSoftShadowMap baseline. It is not full screen-space, ray, or general contact-shadow parity."
+      reason: "This artifact proves a bounded same-scene A3D soft contact/shadow delta against a Three.js PCFSoftShadowMap baseline. It is not full screen-space, ray, or general contact-shadow parity."
     },
     scene: {
       type: "grounded-multi-caster-contact",
@@ -113,18 +113,18 @@ async function run(): Promise<void> {
       casters: CONTACT_CASTERS.map((caster) => ({ id: caster.id, type: caster.type, bounds: caster.bounds })),
       setupAlignment: "shared-camera-near-black-background-matched-floor-bounds"
     },
-    g3d: {
-      diagnostics: g3d.diagnostics,
-      pixelStats: analyzePixels(g3d.pixels),
-      contactShadow: g3d.contactShadow,
-      contactShadows: g3d.contactShadows,
+    a3d: {
+      diagnostics: a3d.diagnostics,
+      pixelStats: analyzePixels(a3d.pixels),
+      contactShadow: a3d.contactShadow,
+      contactShadows: a3d.contactShadows,
       rendererShadowMap: {
-        enabled: (g3d.diagnostics.nativeShadowMapBindings ?? 0) > 0,
+        enabled: (a3d.diagnostics.nativeShadowMapBindings ?? 0) > 0,
         type: "renderer-owned-directional-shadow-map",
         size: 2048,
         pcfSamples: 16,
-        nativeShadowMapBindings: g3d.diagnostics.nativeShadowMapBindings ?? 0,
-        reason: "This artifact combines the bounded gap-aware receiver contact pass with a renderer-owned G3D directional shadow map and compares it against a same-scene Three.js soft-shadow baseline."
+        nativeShadowMapBindings: a3d.diagnostics.nativeShadowMapBindings ?? 0,
+        reason: "This artifact combines the bounded gap-aware receiver contact pass with a renderer-owned A3D directional shadow map and compares it against a same-scene Three.js soft-shadow baseline."
       }
     },
     threejs: {
@@ -138,24 +138,24 @@ async function run(): Promise<void> {
     },
     diff,
     artifacts: {
-      g3d: "tests/reports/runtime-parity/contact-shadow-parity/g3d-contact-shadow.png",
+      a3d: "tests/reports/runtime-parity/contact-shadow-parity/a3d-contact-shadow.png",
       threejs: "tests/reports/runtime-parity/contact-shadow-parity/threejs-contact-shadow.png",
       diff: "tests/reports/runtime-parity/contact-shadow-parity/contact-shadow-diff.png"
     },
     dataUrls: {
-      g3d: pixelsToDataUrl(g3d.pixels, WIDTH, HEIGHT, true),
+      a3d: pixelsToDataUrl(a3d.pixels, WIDTH, HEIGHT, true),
       threejs: pixelsToDataUrl(threejs.pixels, WIDTH, HEIGHT, true),
       diff: diffCanvas.toDataURL("image/png")
     },
     openGaps: [
-      "G3D contact remains a bounded gap-aware receiver approximation, not a full screen-space or ray/contact-shadow solution.",
+      "A3D contact remains a bounded gap-aware receiver approximation, not a full screen-space or ray/contact-shadow solution.",
       "The delta gate proves only this grounded sphere/floor/camera/light setup, not broad Three.js shadow-system parity.",
       "Broad WebGPU parity across every shadow, postprocess, material-extension, and example path remains open."
     ]
   };
 }
 
-async function renderG3D(canvas: HTMLCanvasElement): Promise<{
+async function renderA3D(canvas: HTMLCanvasElement): Promise<{
   readonly diagnostics: RenderDeviceDiagnostics;
   readonly pixels: Uint8Array;
   readonly contactShadow: ReturnType<typeof createContactShadowPass>["diagnostics"];
@@ -211,7 +211,7 @@ async function renderG3D(canvas: HTMLCanvasElement): Promise<{
     clearColor: [0.012, 0.014, 0.018, 1],
     requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets"]
   });
-  const lights = createG3DContactLights();
+  const lights = createA3DContactLights();
   const diagnostics = renderer.render({
     renderItems,
     environmentLighting: false,
@@ -267,7 +267,7 @@ function createFootprintPoints(
   });
 }
 
-function createG3DContactLights(): readonly CollectedLight[] {
+function createA3DContactLights(): readonly CollectedLight[] {
   const key = new DirectionalLight("v7-contact-parity-key");
   key.color = [1, 0.94, 0.82];
   key.intensity = 1.75;

@@ -17,7 +17,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     await server.close();
   });
 
-  test("saves G3D, Three.js, and comparison artifacts for the same product scene", async ({ page }) => {
+  test("saves A3D, Three.js, and comparison artifacts for the same product scene", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -48,7 +48,7 @@ test.describe("V7 flagship product viewer comparison", () => {
       results?: {
         id: string;
         assetId: string;
-        g3d: { drawCalls: number; nonBlackPixels: number; uniqueColorBuckets: number; pass: boolean };
+        a3d: { drawCalls: number; nonBlackPixels: number; uniqueColorBuckets: number; pass: boolean };
         threejs: { drawCalls: number; triangles: number; geometries: number; textures: number; nonBlackPixels: number; uniqueColorBuckets: number };
         diff: { meanDelta: number; maxDelta: number; changedPixels: number; structuralSimilarityProxy: number; pass: boolean };
       }[];
@@ -57,17 +57,17 @@ test.describe("V7 flagship product viewer comparison", () => {
     const product = result.results?.find((item) => item.id === "product-helmet");
     expect(product).toBeDefined();
     expect(product?.assetId).toBe("damaged-helmet");
-    expect(product?.g3d.pass).toBe(true);
+    expect(product?.a3d.pass).toBe(true);
     expect(product?.threejs.nonBlackPixels).toBeGreaterThan(1000);
     expect(product?.diff.pass, JSON.stringify(product?.diff)).toBe(true);
 
     const reportDir = "tests/reports/runtime-parity/product-viewer";
     mkdirSync(resolve(reportDir), { recursive: true });
-    await saveCanvasPng(page, "product-helmet-g3d", `${reportDir}/g3d-product-viewer.png`);
+    await saveCanvasPng(page, "product-helmet-a3d", `${reportDir}/a3d-product-viewer.png`);
     await saveCanvasPng(page, "product-helmet-threejs", `${reportDir}/threejs-product-viewer.png`);
     await saveComparisonPng(page, `${reportDir}/comparison.png`);
     writeFileSync(resolve(`${reportDir}/product-viewer-report.json`), `${JSON.stringify({
-      schema: "g3d-v7-product-viewer-comparison/v1",
+      schema: "a3d-v7-product-viewer-comparison/v1",
       generatedAt: new Date().toISOString(),
       asset: {
         id: "damaged-helmet",
@@ -78,14 +78,14 @@ test.describe("V7 flagship product viewer comparison", () => {
         file: "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"
       },
       screenshots: {
-        g3d: `${reportDir}/g3d-product-viewer.png`,
+        a3d: `${reportDir}/a3d-product-viewer.png`,
         threejs: `${reportDir}/threejs-product-viewer.png`,
         comparison: `${reportDir}/comparison.png`
       },
       comparison: product,
       honestDeltas: [
-        "G3D and Three.js use the same GLB and HDRI in this artifact.",
-        "The G3D renderer path is the Galileo/G3D WebGL2 renderer; Three.js is used only as a competitor baseline.",
+        "A3D and Three.js use the same GLB and HDRI in this artifact.",
+        "The A3D renderer path is the Aura3D/A3D WebGL2 renderer; Three.js is used only as a competitor baseline.",
         "The images are not claimed as exact parity; diff metrics and visual inspection remain required.",
         "Known open gaps remain around true cubemap PMREM parity, full contact-shadow parity, and broader material-extension parity."
       ],
@@ -97,7 +97,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     await page.goto(`${server.origin}/apps/product-configurator/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV6Runtime as { status?: string; viewerDiagnostics?: { camera?: unknown } } | undefined;
+        const runtime = window.__a3dV6Runtime as { status?: string; viewerDiagnostics?: { camera?: unknown } } | undefined;
         return runtime?.status === "ready" && runtime.viewerDiagnostics?.camera;
       },
       undefined,
@@ -108,7 +108,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     const readyDiagnostics = await viewerDiagnostics(page);
     const renderResolution = await page.evaluate(() => {
       const canvas = document.getElementById("viewport");
-      const runtime = window.__g3dV6Runtime as {
+      const runtime = window.__a3dV6Runtime as {
         runtime?: {
           renderResolution?: {
             width: number;
@@ -135,7 +135,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     expect(Math.min(renderResolution.renderResolution.width, renderResolution.renderResolution.height)).toBeGreaterThanOrEqual(2880);
     expect(renderResolution.renderResolution.pixelRatio).toBeGreaterThan(1);
     expect(renderResolution.datasetResolution).toBe(`${renderResolution.canvasWidth}x${renderResolution.canvasHeight}`);
-    const readyRuntime = await page.evaluate(() => window.__g3dV6Runtime as {
+    const readyRuntime = await page.evaluate(() => window.__a3dV6Runtime as {
       runtime?: { shadowMapCount?: number };
       proof?: { diagnostics?: { nativeShadowMapBindings?: number; nativeEnvironmentBindings?: number } };
     } | undefined);
@@ -209,13 +209,13 @@ test.describe("V7 flagship product viewer comparison", () => {
     await page.goto(`${server.origin}/apps/product-configurator/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV6Runtime as { status?: string; runtime?: { renderResolution?: { width?: number } } } | undefined;
+        const runtime = window.__a3dV6Runtime as { status?: string; runtime?: { renderResolution?: { width?: number } } } | undefined;
       return runtime?.status === "error" || (runtime?.status === "ready" && (runtime.runtime?.renderResolution?.width ?? 0) >= 5120);
       },
       undefined,
       { timeout: 150_000 }
     );
-    const readyRuntime = await page.evaluate(() => window.__g3dV6Runtime as { status?: string; error?: string } | undefined);
+    const readyRuntime = await page.evaluate(() => window.__a3dV6Runtime as { status?: string; error?: string } | undefined);
     expect(readyRuntime?.status, readyRuntime?.error).toBe("ready");
 
     const reportDir = "tests/reports/runtime-parity/product-viewer";
@@ -232,7 +232,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     writeFileSync(resolve(screenshotPath), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
     const pixelStats = readV6PngStats(resolve(screenshotPath));
     const fileSize = statSync(resolve(screenshotPath)).size;
-    const runtime = await page.evaluate(() => window.__g3dV6Runtime);
+    const runtime = await page.evaluate(() => window.__a3dV6Runtime);
     expect(Math.max(pixelStats.width, pixelStats.height)).toBeGreaterThanOrEqual(5120);
     expect(Math.min(pixelStats.width, pixelStats.height)).toBeGreaterThanOrEqual(2880);
     expect(pixelStats.uniqueColorBuckets).toBeGreaterThanOrEqual(320);
@@ -251,7 +251,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     expect(runtime?.proof?.diagnostics?.nativeShadowMapBindings).toBeGreaterThan(0);
     expect(runtime?.proof?.diagnostics?.nativeEnvironmentBindings).toBeGreaterThan(0);
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-v7-flagship-product-viewer-ultra-res/v1",
+      schema: "a3d-v7-flagship-product-viewer-ultra-res/v1",
       generatedAt: new Date().toISOString(),
       screenshot: screenshotPath,
       fileSize,
@@ -274,7 +274,7 @@ test.describe("V7 flagship product viewer comparison", () => {
     await page.locator("#orbit").click();
     await expect(page.locator("#metrics")).toContainText("orbit");
     await page.locator("#capture").click();
-    const capture = await page.evaluate(() => window.__g3dProductViewerCapture);
+    const capture = await page.evaluate(() => window.__a3dProductViewerCapture);
     expect(capture?.startsWith("data:image/png;base64,")).toBe(true);
 
     const reportDir = "tests/reports/runtime-parity/sdk-template";
@@ -286,24 +286,24 @@ test.describe("V7 flagship product viewer comparison", () => {
     const fileSize = statSync(resolve(screenshotPath)).size;
     const templateSource = readFileSync(resolve("templates/production-product-viewer/src/main.ts"), "utf8");
     const report = {
-      schema: "g3d-v7-sdk-template-product-viewer/v1",
+      schema: "a3d-v7-sdk-template-product-viewer/v1",
       generatedAt: new Date().toISOString(),
       screenshot: screenshotPath,
       fileSize,
       pixelStats,
       metrics,
       publicSdkImports: {
-        usesEngineV6: templateSource.includes("@galileo3d/engine/production-runtime"),
+        usesEngineV6: templateSource.includes("@aura3d/engine/production-runtime"),
         usesLoadGltfScene: templateSource.includes("loadGltfScene"),
         usesLoadHdrEnvironment: templateSource.includes("loadHdrEnvironment"),
         usesCreateProductViewer: templateSource.includes("createProductViewer")
       },
       noThreeRuntimeImport: !/from\s+["']three(?:\/[^"']*)?["']/.test(templateSource)
-        && !/from\s+["']@galileo3d\/three-compat(?:\/[^"']*)?["']/.test(templateSource)
+        && !/from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/.test(templateSource)
         && !/\bTHREE\./.test(templateSource),
       captureDataUrl: typeof capture === "string" ? `${capture.slice(0, 32)}...` : null,
       broadThreeJsReplacement: false,
-      reason: "This proves the V6 product viewer template runs through the public G3D SDK. It is not broad Three.js ecosystem replacement proof."
+      reason: "This proves the V6 product viewer template runs through the public A3D SDK. It is not broad Three.js ecosystem replacement proof."
     };
     expect(report.publicSdkImports.usesEngineV6).toBe(true);
     expect(report.publicSdkImports.usesLoadGltfScene).toBe(true);
@@ -326,7 +326,7 @@ async function viewerCamera(page: Page): Promise<{
   readonly zoom: number;
 }> {
   return page.evaluate(() => {
-    const runtime = window.__g3dV6Runtime as {
+    const runtime = window.__a3dV6Runtime as {
       viewerDiagnostics?: {
         camera?: {
           yawRadians: number;
@@ -338,7 +338,7 @@ async function viewerCamera(page: Page): Promise<{
       };
     } | undefined;
     if (!runtime?.viewerDiagnostics?.camera) {
-      throw new Error("Missing G3D viewer camera diagnostics.");
+      throw new Error("Missing A3D viewer camera diagnostics.");
     }
     return runtime.viewerDiagnostics.camera;
   });
@@ -377,7 +377,7 @@ async function viewerDiagnostics(page: Page): Promise<{
   };
 }> {
   return page.evaluate(() => {
-    const runtime = window.__g3dV6Runtime as {
+    const runtime = window.__a3dV6Runtime as {
       viewerDiagnostics?: {
         environment?: { readonly id: string };
         stage?: {
@@ -397,7 +397,7 @@ async function viewerDiagnostics(page: Page): Promise<{
       };
     } | undefined;
     if (!runtime?.viewerDiagnostics?.stage || !runtime.viewerDiagnostics.environment || !runtime.viewerDiagnostics.background) {
-      throw new Error("Missing G3D viewer diagnostics.");
+      throw new Error("Missing A3D viewer diagnostics.");
     }
     return {
       environment: runtime.viewerDiagnostics.environment,
@@ -409,7 +409,7 @@ async function viewerDiagnostics(page: Page): Promise<{
 
 async function saveComparisonPng(page: Page, path: string): Promise<void> {
   const dataUrl = await page.evaluate(async () => {
-    const ids = ["product-helmet-g3d", "product-helmet-threejs", "product-helmet-diff"] as const;
+    const ids = ["product-helmet-a3d", "product-helmet-threejs", "product-helmet-diff"] as const;
     const images = await Promise.all(ids.map(async (id) => {
       const canvas = document.getElementById(id);
       if (!(canvas instanceof HTMLCanvasElement)) throw new Error(`Missing canvas ${id}`);
@@ -429,7 +429,7 @@ async function saveComparisonPng(page: Page, path: string): Promise<void> {
     context.fillRect(0, 0, output.width, output.height);
     context.font = "22px system-ui, sans-serif";
     context.fillStyle = "#eef3fb";
-    const labels = ["G3D WebGL2", "Three.js Baseline", "Difference"];
+    const labels = ["A3D WebGL2", "Three.js Baseline", "Difference"];
     for (let index = 0; index < images.length; index += 1) {
       context.fillText(labels[index]!, index * cellWidth + 24, 28);
       context.drawImage(images[index]!.image, index * cellWidth, labelHeight, cellWidth, 768);

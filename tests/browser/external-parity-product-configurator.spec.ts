@@ -75,7 +75,7 @@ test.describe("V4 flagship product configurator", () => {
       ],
       productBoundary: "Milestone 7 proves a real product-configurator workflow and app using a pinned external Khronos asset. Full V4 release still requires installable SDK/templates and same-scene Three.js parity.",
       requiredNextProof: [
-        "create-g3d installable product template",
+        "create-aura3d installable product template",
         "packed-package external consumer proof",
         "same-scene Three.js rendered comparison",
         "full V4 release audit"
@@ -102,7 +102,7 @@ test.describe("V4 flagship product configurator", () => {
 async function waitForProductState(page: Page, id: string): Promise<ProductState> {
   await page.waitForFunction(
     (expectedId) => {
-      const state = window.__G3D_V4_PRODUCT_CONFIGURATOR__ as ProductState | undefined;
+      const state = window.__A3D_V4_PRODUCT_CONFIGURATOR__ as ProductState | undefined;
       return state?.status === "ready" && state.id === expectedId;
     },
     id,
@@ -114,7 +114,7 @@ async function waitForProductState(page: Page, id: string): Promise<ProductState
 }
 
 async function productState(page: Page): Promise<ProductState | undefined> {
-  return page.evaluate(() => window.__G3D_V4_PRODUCT_CONFIGURATOR__ as ProductState | undefined);
+  return page.evaluate(() => window.__A3D_V4_PRODUCT_CONFIGURATOR__ as ProductState | undefined);
 }
 
 function statePasses(state: ProductState): boolean {
@@ -149,6 +149,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __G3D_V4_PRODUCT_CONFIGURATOR__?: ProductState;
+    __A3D_V4_PRODUCT_CONFIGURATOR__?: ProductState;
   }
 }

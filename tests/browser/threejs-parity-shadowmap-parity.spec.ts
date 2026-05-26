@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/shadowmap-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/shadowmap-parity/g3d-shadowmap.png",
+  a3d: "tests/reports/threejs-parity/shadowmap-parity/a3d-shadowmap.png",
   threejs: "tests/reports/threejs-parity/shadowmap-parity/threejs-shadowmap.png",
   sideBySide: "tests/reports/threejs-parity/shadowmap-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 shadowmap same-scene parity", () => {
     await server.close();
   });
 
-  test("captures G3D directional shadow map against actual Three.js WebGLShadowMap", async ({ page }) => {
+  test("captures A3D directional shadow map against actual Three.js WebGLShadowMap", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -57,28 +57,28 @@ test.describe("V9 shadowmap same-scene parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-shadowmap-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-shadowmap-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
-    expect(result.assertions.g3dShadowMapRequested).toBe(true);
+    expect(result.assertions.a3dShadowMapRequested).toBe(true);
     expect(result.assertions.threeShadowMapEnabled).toBe(true);
     expect(result.assertions.pcfCoverage).toBe(true);
     expect(result.assertions.shadowContactVisible).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThanOrEqual(3);
-    expect(result.g3d.shadowMap).toMatchObject({ enabled: true, size: 2048, filter: "pcf", pcfSamples: 16, casterCount: 1, receiverCount: 1 });
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThanOrEqual(3);
+    expect(result.a3d.shadowMap).toMatchObject({ enabled: true, size: 2048, filter: "pcf", pcfSamples: 16, casterCount: 1, receiverCount: 1 });
     expect(result.threejs.renderer.drawCalls).toBeGreaterThanOrEqual(2);
     expect(result.threejs.shadowMap).toMatchObject({ enabled: true, type: "PCFSoftShadowMap", size: 2048, filter: "pcf-soft", casterCount: 1, receiverCount: 1 });
-    expect(Math.abs(result.g3d.pixels.contactDarkening)).toBeGreaterThan(2.5);
+    expect(Math.abs(result.a3d.pixels.contactDarkening)).toBeGreaterThan(2.5);
     expect(Math.abs(result.threejs.pixels.contactDarkening)).toBeGreaterThan(2.5);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(20);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(20);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(20);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(150);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.4);
     expect(pageErrors).toEqual([]);
-    assertG3DShadowShaderUsesPCF();
-    assertNoThreeJsInG3DShadowRuntimeSource();
+    assertA3DShadowShaderUsesPCF();
+    assertNoThreeJsInA3DShadowRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -109,7 +109,7 @@ test.describe("V9 shadowmap same-scene parity", () => {
   });
 });
 
-function assertG3DShadowShaderUsesPCF(): void {
+function assertA3DShadowShaderUsesPCF(): void {
   const source = readFileSync(resolve("packages/rendering/src/ShaderLibrary.ts"), "utf8");
   expect(source).toContain("u_shadowMapTexture");
   expect(source).toContain("u_shadowMapTexelSize");
@@ -117,7 +117,7 @@ function assertG3DShadowShaderUsesPCF(): void {
   expect(source).toContain("u_shadowMapStrength");
 }
 
-function assertNoThreeJsInG3DShadowRuntimeSource(): void {
+function assertNoThreeJsInA3DShadowRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/shadowmap-viewer/src/main.ts",
@@ -148,8 +148,8 @@ function stripDataUrls(result: Extract<ShadowMapParityResult, { readonly status:
 type ShadowMapParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-shadowmap-parity/v1";
-      readonly g3d: {
+      readonly schema: "a3d-threejs-parity-shadowmap-parity/v1";
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly shadowMap: ShadowMapStats;
         readonly pixels: PixelStats;
@@ -163,18 +163,18 @@ type ShadowMapParityResult =
       readonly assertions: {
         readonly sameResolution: boolean;
         readonly actualThreeRenderer: boolean;
-        readonly g3dShadowMapRequested: boolean;
+        readonly a3dShadowMapRequested: boolean;
         readonly threeShadowMapEnabled: boolean;
         readonly pcfCoverage: boolean;
         readonly shadowContactVisible: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-shadowmap-parity/v1";
+      readonly schema: "a3d-threejs-parity-shadowmap-parity/v1";
       readonly error: string;
     };
 

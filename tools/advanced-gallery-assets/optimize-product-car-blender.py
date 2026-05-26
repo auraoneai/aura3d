@@ -129,7 +129,7 @@ def write_manifest(before_mesh_objects, after_mesh_objects):
             "visualReviewAccepted": False,
         },
         "intendedRole": "Optional derivative optimization of the original texture-backed car-concept GLB for draw-call experiments. The original fixture remains the Product Configurator source-of-truth hero.",
-        "acceptanceBoundary": "This derivative cannot replace fixtures/v8/assets/vehicles/car-concept.glb as Product hero evidence unless material/texture/node/extension equivalence and current human visual review both pass.",
+        "acceptanceBoundary": "This derivative cannot replace fixtures/threejs-parity/assets/vehicles/car-concept.glb as Product hero evidence unless material/texture/node/extension equivalence and current human visual review both pass.",
         "batching": {
             "strategy": "Join compatible non-semantic static meshes by material signature while preserving semantic interior, glass, wheel, tire, light, mirror, brake, axle, engine, and hardware meshes.",
             "beforeMeshObjects": before_mesh_objects,
@@ -158,7 +158,7 @@ def write_manifest(before_mesh_objects, after_mesh_objects):
             "role": "support-only derivative",
             "reason": "Generated optimization derivative of the original car. It preserves texture-backed material evidence but changes mesh/node topology and is not accepted as the Product source hero.",
             "cannotReplace": [
-                "fixtures/v8/assets/vehicles/car-concept.glb",
+                "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
                 "source GLB node/topology evidence",
                 "accepted current-route visual-review screenshots",
                 "complete imported material/variant/picking semantics",

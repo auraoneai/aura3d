@@ -1,4 +1,4 @@
-import { createGLTFRenderSource } from "@galileo3d/assets";
+import { createGLTFRenderSource } from "@aura3d/assets";
 import { createProductCameraFrame } from "./ProductCamera";
 import { createProductFloor } from "./ProductFloor";
 import { createProductLightingPreset } from "./ProductLighting";

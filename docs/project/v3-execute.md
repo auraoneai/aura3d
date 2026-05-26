@@ -5,9 +5,9 @@
 
 Use this prompt from the repository root:
 
-`/Users/gurbakshchahal/G3D`
+`/Users/gurbakshchahal/Aura3D`
 
-You are Codex acting as the coordinator for the Galileo3D v3 execution effort. Your job is to execute every unfinished code-related task in every markdown file under `docs/project/v3-*.md`, using six parallel agents, until the actual code, tests, examples, screenshots, reports, and gates prove that every task is complete.
+You are Codex acting as the coordinator for the Aura3D v3 execution effort. Your job is to execute every unfinished code-related task in every markdown file under `docs/project/v3-*.md`, using six parallel agents, until the actual code, tests, examples, screenshots, reports, and gates prove that every task is complete.
 
 This is not a documentation rewrite task. This is not a planning task. This is a code execution task. Do not stop because the docs are long. Do not stop after creating scaffolding. Do not mark any task complete unless the implementation and verification evidence exists in the repository.
 
@@ -45,7 +45,7 @@ Treat the checklist tasks and decision gates in the source docs as binding requi
 10. Every broad claim must remain blocked unless the gate proves it.
 11. Every example name must match the actual visuals and behavior in the browser.
 12. Every browser visual task must be validated by Playwright or equivalent browser automation plus screenshot or pixel evidence.
-13. Every benchmark task must compare the same scene, same asset class, same viewport, and same feature behavior across Galileo3D, Three.js, and Babylon.js where the docs require comparison.
+13. Every benchmark task must compare the same scene, same asset class, same viewport, and same feature behavior across Aura3D, Three.js, and Babylon.js where the docs require comparison.
 14. Every report must include command, commit hash, run ID, timestamp, pass/fail status, source freshness evidence, and screenshot paths where applicable.
 15. Every report must be fresh for the current code state before its task can be marked complete.
 16. Keep a shared task inventory so no agent marks another agent's incomplete work as complete.
@@ -90,9 +90,9 @@ Primary ownership:
 - `examples/renderer-stress-lab/**`
 - `examples/rendering-large-scene/**`
 - `examples/webgpu-capability/**`
-- `benchmarks/galileo/src/scenes/pbr-materials.ts`
-- `benchmarks/galileo/src/scenes/large-scene.ts`
-- `benchmarks/galileo/src/scenes/instancing.ts`
+- `benchmarks/aura3d/src/scenes/pbr-materials.ts`
+- `benchmarks/aura3d/src/scenes/large-scene.ts`
+- `benchmarks/aura3d/src/scenes/instancing.ts`
 - `tests/unit/rendering/**`
 - `tests/browser/rendering-*.spec.ts`
 - `tests/browser/webgpu-*.spec.ts`
@@ -133,8 +133,8 @@ Primary ownership:
 - `packages/assets/src/**`
 - `examples/asset-viewer/**`
 - `examples/gltf-corpus-gallery/**`
-- `fixtures/assets/v3/**`
-- `benchmarks/galileo/src/scenes/asset-render.ts`
+- `fixtures/workflow-assets/assets/**`
+- `benchmarks/aura3d/src/scenes/asset-render.ts`
 - asset-related shared benchmark descriptors
 - `tests/assets/**`
 - `tests/browser/asset-*.spec.ts`
@@ -265,7 +265,7 @@ Primary ownership:
 - `examples/game-slice/**` in coordination with Agent 4
 - `examples/portfolio/**`
 - `benchmarks/shared/**`
-- `benchmarks/galileo/**`
+- `benchmarks/aura3d/**`
 - `benchmarks/threejs/**`
 - `benchmarks/babylon/**`
 - `tools/compare-engines/**`
@@ -280,9 +280,9 @@ Required execution focus:
 - Ensure `product-configurator` uses a real product glTF asset, real materials, variants, swatches, camera presets, environment controls, screenshots, diagnostics, and equivalent Three.js/Babylon scenes.
 - Ensure `architecture-viewer` uses a real building or room model, metadata, selection, measurement, clipping if claimed, real lighting/material fidelity, and equivalent Three.js/Babylon scenes.
 - Ensure `game-slice` uses real character or vehicle/player assets, real level/arena assets, camera follow or first-person controls, physics, animation, particles, audio, scripted behavior, and an objective/win/fail loop.
-- Ensure asset viewer comparison scenes load the same asset in Galileo3D, Three.js, and Babylon.js.
+- Ensure asset viewer comparison scenes load the same asset in Aura3D, Three.js, and Babylon.js.
 - Add benchmark scenes for product, architecture, asset load/render, PBR, large scene, instancing, skinned character, particles if compared, and editor-authored exported app startup if compared.
-- Ensure reports include startup, load, first frame, steady frame median/p95, draw calls, shader count, texture count/bytes, geometry bytes estimate, JS heap estimate, bundle size, screenshots, unsupported features, and where Galileo3D loses.
+- Ensure reports include startup, load, first frame, steady frame median/p95, draw calls, shader count, texture count/bytes, geometry bytes estimate, JS heap estimate, bundle size, screenshots, unsupported features, and where Aura3D loses.
 - Mark example and benchmark checkboxes only after browser interaction tests, screenshots, and comparison reports pass.
 
 Agent 5 final response must include:
@@ -342,37 +342,37 @@ Launch the six agents with these prompts. Add the current unchecked task invento
 
 ### Prompt 1: Renderer And GPU Agent
 
-You are Agent 1 for Renderer and GPU in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every renderer/GPU task in full, especially the tasks in `docs/project/v3-renderer-and-gpu-plan.md`, renderer tasks in `docs/project/v3-master-code-only-checklist.md`, renderer-related gates in `docs/project/v3-decision-gates.md`, and renderer validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 1 for Renderer and GPU in `/Users/gurbakshchahal/Aura3D`. Read every `docs/project/v3-*.md` file first. Execute every renderer/GPU task in full, especially the tasks in `docs/project/v3-renderer-and-gpu-plan.md`, renderer tasks in `docs/project/v3-master-code-only-checklist.md`, renderer-related gates in `docs/project/v3-decision-gates.md`, and renderer validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
 Own `packages/rendering/src/**`, renderer examples, renderer browser tests, renderer benchmark paths, WebGPU capability paths, and renderer reports unless the coordinator assigns otherwise. Implement real code and real browser-visible examples. Do not fake renderer features with placeholders, primitive-only demos, renamed examples, or screenshots that do not prove the feature. Mark an original markdown checkbox only after implementation and verification pass. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked renderer tasks remaining, and blockers.
 
 ### Prompt 2: Asset Pipeline And Content Agent
 
-You are Agent 2 for Asset Pipeline and Content in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every asset/content task in full, especially the tasks in `docs/project/v3-asset-pipeline-and-content-plan.md`, asset tasks in `docs/project/v3-master-code-only-checklist.md`, asset gates in `docs/project/v3-decision-gates.md`, and asset validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 2 for Asset Pipeline and Content in `/Users/gurbakshchahal/Aura3D`. Read every `docs/project/v3-*.md` file first. Execute every asset/content task in full, especially the tasks in `docs/project/v3-asset-pipeline-and-content-plan.md`, asset tasks in `docs/project/v3-master-code-only-checklist.md`, asset gates in `docs/project/v3-decision-gates.md`, and asset validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
-Own `packages/assets/src/**`, `examples/asset-viewer/**`, `fixtures/assets/v3/**`, asset tests, asset browser tests, asset corpus tools, and asset reports unless the coordinator assigns otherwise. Implement real glTF loading/rendering evidence, real material/texture/animation/skin/morph/variant inspection, real compression decode paths where claimed, warnings, and corpus validation. Mark an original markdown checkbox only after tests, browser evidence, screenshots, and reports pass. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked asset tasks remaining, and blockers.
+Own `packages/assets/src/**`, `examples/asset-viewer/**`, `fixtures/workflow-assets/assets/**`, asset tests, asset browser tests, asset corpus tools, and asset reports unless the coordinator assigns otherwise. Implement real glTF loading/rendering evidence, real material/texture/animation/skin/morph/variant inspection, real compression decode paths where claimed, warnings, and corpus validation. Mark an original markdown checkbox only after tests, browser evidence, screenshots, and reports pass. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked asset tasks remaining, and blockers.
 
 ### Prompt 3: Browser Editor Authoring Agent
 
-You are Agent 3 for Browser Editor Authoring in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every editor-authoring task in full, especially `docs/project/foundation-editor-authoring-plan.md`, editor tasks in `docs/project/v3-master-code-only-checklist.md`, editor gates in `docs/project/v3-decision-gates.md`, and editor validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 3 for Browser Editor Authoring in `/Users/gurbakshchahal/Aura3D`. Read every `docs/project/v3-*.md` file first. Execute every editor-authoring task in full, especially `docs/project/foundation-editor-authoring-plan.md`, editor tasks in `docs/project/v3-master-code-only-checklist.md`, editor gates in `docs/project/v3-decision-gates.md`, and editor validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
 Own `apps/editor/**`, `packages/editor-runtime/src/**`, editor-authored examples, editor unit tests, editor browser tests, and editor reports unless the coordinator assigns otherwise. Build a real browser editor workflow with viewport, hierarchy, inspector, asset browser, import settings, material editor, gizmos, save/load, play mode, profiler/debugging, export, and exported-app smoke tests. Mark an original markdown checkbox only after Playwright or equivalent browser workflow evidence passes. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked editor tasks remaining, and blockers.
 
 ### Prompt 4: Runtime Systems Agent
 
-You are Agent 4 for Runtime Systems in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every runtime task in full, especially `docs/project/foundation-runtime-systems-plan.md`, runtime tasks in `docs/project/v3-master-code-only-checklist.md`, runtime gates in `docs/project/v3-decision-gates.md`, and runtime validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 4 for Runtime Systems in `/Users/gurbakshchahal/Aura3D`. Read every `docs/project/v3-*.md` file first. Execute every runtime task in full, especially `docs/project/foundation-runtime-systems-plan.md`, runtime tasks in `docs/project/v3-master-code-only-checklist.md`, runtime gates in `docs/project/v3-decision-gates.md`, and runtime validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
 Own physics, animation, input, audio, scripting, particles/effects in coordination with renderer, game slice runtime behavior, physics sandbox, animated-character examples, runtime browser tests, and runtime reports unless the coordinator assigns otherwise. Implement real interactive behavior and real browser evidence, not counters. Mark an original markdown checkbox only after tests, screenshots, runtime state, and reports prove the behavior. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked runtime tasks remaining, and blockers.
 
 ### Prompt 5: Product Examples And Engine Comparisons Agent
 
-You are Agent 5 for Product Examples and Engine Comparisons in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Execute every example and benchmark task in full, especially `docs/project/v3-examples-and-benchmarks-plan.md`, product/example/benchmark tasks in `docs/project/v3-master-code-only-checklist.md`, comparison gates in `docs/project/v3-decision-gates.md`, and benchmark validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
+You are Agent 5 for Product Examples and Engine Comparisons in `/Users/gurbakshchahal/Aura3D`. Read every `docs/project/v3-*.md` file first. Execute every example and benchmark task in full, especially `docs/project/v3-examples-and-benchmarks-plan.md`, product/example/benchmark tasks in `docs/project/v3-master-code-only-checklist.md`, comparison gates in `docs/project/v3-decision-gates.md`, and benchmark validation tasks in `docs/project/v3-testing-and-validation-plan.md`.
 
-Own product configurator, architecture viewer, portfolio, benchmark shared descriptors, Galileo/Three.js/Babylon.js scene implementations, engine comparison tools, product demo tests, engine comparison tests, and benchmark reports unless the coordinator assigns otherwise. Replace primitive-looking examples with real model-backed scenes. Build same-scene comparisons and reports that honestly show losses, ties, wins, unsupported features, and raw metrics. Mark an original markdown checkbox only after browser interaction tests, screenshots, and comparison reports pass. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked example/benchmark tasks remaining, and blockers.
+Own product configurator, architecture viewer, portfolio, benchmark shared descriptors, Aura3D/Three.js/Babylon.js scene implementations, engine comparison tools, product demo tests, engine comparison tests, and benchmark reports unless the coordinator assigns otherwise. Replace primitive-looking examples with real model-backed scenes. Build same-scene comparisons and reports that honestly show losses, ties, wins, unsupported features, and raw metrics. Mark an original markdown checkbox only after browser interaction tests, screenshots, and comparison reports pass. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked example/benchmark tasks remaining, and blockers.
 
 ### Prompt 6: Validation, Claims, Reports, And Coordination Agent
 
-You are Agent 6 for Validation, Claims, Reports, and Coordination in `/Users/gurbakshchahal/G3D`. Read every `docs/project/v3-*.md` file first. Maintain the canonical unchecked task inventory and execute every validation, truth, report, freshness, and gate task in full, especially `docs/project/v3-testing-and-validation-plan.md`, validation/final-gate tasks in `docs/project/v3-master-code-only-checklist.md`, and all of `docs/project/v3-decision-gates.md`.
+You are Agent 6 for Validation, Claims, Reports, and Coordination in `/Users/gurbakshchahal/Aura3D`. Read every `docs/project/v3-*.md` file first. Maintain the canonical unchecked task inventory and execute every validation, truth, report, freshness, and gate task in full, especially `docs/project/v3-testing-and-validation-plan.md`, validation/final-gate tasks in `docs/project/v3-master-code-only-checklist.md`, and all of `docs/project/v3-decision-gates.md`.
 
 Own `tools/v3-*`, claim-blocking tools, report freshness tools, screenshot audit tools, v3 verification scripts, report manifests, and final markdown checkmark consistency unless the coordinator assigns otherwise. Do not let broad claims pass without gate evidence. Do not let stale reports count as completion. Audit checkbox changes from every agent. Mark an original markdown checkbox only after its verification tool passes and evidence is fresh. Return exact files changed, commands run, screenshots/reports produced, checkboxes marked, unchecked validation/gate tasks remaining, blocked gates, and blockers.
 
@@ -453,7 +453,7 @@ Benchmark task evidence:
 - same-scene implementation across required engines;
 - same asset class, viewport, feature set, and measurement method;
 - report containing raw metrics and unsupported features;
-- report states where Galileo3D loses or remains weaker;
+- report states where Aura3D loses or remains weaker;
 - no win claimed from disabled or missing features.
 
 Validation task evidence:
@@ -506,7 +506,7 @@ Do not stop until all of these are true:
 7. Every v3 example has a current screenshot generated from the real browser page.
 8. Every gate in `docs/project/v3-decision-gates.md` is either checked with evidence or explicitly blocked.
 9. No source file, page, report, or doc contains broad overclaims unless the corresponding gate passes.
-10. The final status states honestly whether Galileo3D exceeds Three.js in any exact measured niche and whether it has achieved a browser-first Unity/Unreal-style workflow. If the gates do not prove those claims, say they are not achieved.
+10. The final status states honestly whether Aura3D exceeds Three.js in any exact measured niche and whether it has achieved a browser-first Unity/Unreal-style workflow. If the gates do not prove those claims, say they are not achieved.
 
 ## Non-Completion Conditions
 
@@ -534,7 +534,7 @@ When the work is complete, respond with:
 5. Reports and screenshots generated.
 6. Verification commands run and pass/fail status.
 7. Honest claim status:
-   - whether any exact Galileo3D advantage over Three.js is proven;
+   - whether any exact Aura3D advantage over Three.js is proven;
    - whether the browser-first Unity/Unreal-style workflow gate passes;
    - whether production-ready remains blocked.
 8. Remaining blockers, if any.

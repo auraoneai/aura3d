@@ -1,7 +1,7 @@
-import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, sampleMotionMatchingFixture, sampleSecondaryAnimationFixture, solveTwoBoneIk, type AnimationValue } from "@galileo3d/animation";
-import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFRenderResources, type GLTFSkinAsset } from "@galileo3d/assets";
-import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio, sampleAdaptiveMusicFixture, sampleAudioEffectsAnalysisFixture, sampleAudioEnvironmentFixture } from "@galileo3d/audio";
-import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleGestureHapticsFixture, sampleInputActionBindingFixture, sampleVirtualTouchJoystickFixture, sampleXRRuntimeFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@galileo3d/input";
+import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, sampleMotionMatchingFixture, sampleSecondaryAnimationFixture, solveTwoBoneIk, type AnimationValue } from "@aura3d/animation";
+import { createGLTFRenderResources, GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFRenderResources, type GLTFSkinAsset } from "@aura3d/assets";
+import { AudioClip, AudioListener, AudioSource, AudioSystem, SceneAudioBridge, SpatialAudio, sampleAdaptiveMusicFixture, sampleAudioEffectsAnalysisFixture, sampleAudioEnvironmentFixture } from "@aura3d/audio";
+import { createSceneCameraControlAdapter, InputPlayback, InputRecorder, InputSnapshot, InputSystem, ThirdPersonFollowControls, sampleGestureHapticsFixture, sampleInputActionBindingFixture, sampleVirtualTouchJoystickFixture, sampleXRRuntimeFixture, type GamepadLike, type InputPlaybackSnapshot, type InputRecording } from "@aura3d/input";
 import {
   CharacterController,
   CrowdSimulation,
@@ -30,7 +30,7 @@ import {
   type NavigationPoint,
   type CrowdSimulationSnapshot,
   type SteeringAgentSnapshot
-} from "@galileo3d/physics";
+} from "@aura3d/physics";
 import {
   Geometry,
   IndexBuffer,
@@ -62,7 +62,7 @@ import {
   type V4EnvironmentLightingBundle,
   type V4LdrPostprocessSummary,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import {
   BehaviorAction,
   BehaviorCondition,
@@ -108,8 +108,8 @@ import {
   type ScriptContext,
   type StateMachineSnapshot,
   type UtilityActionScore
-} from "@galileo3d/scripting";
-import { Scene, type PerspectiveCamera } from "@galileo3d/scene";
+} from "@aura3d/scripting";
+import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
 type DemoStatus = {
   id: string;
@@ -237,14 +237,14 @@ const claimBoundary = "V4 game slice evidence is limited to this generated local
 
 declare global {
   interface Window {
-    __GALILEO3D_GAME_DEMO__?: DemoStatus;
-    __GALILEO3D_TEST_GAMEPADS__?: readonly GamepadLike[];
+    __AURA3D_GAME_DEMO__?: DemoStatus;
+    __AURA3D_TEST_GAMEPADS__?: readonly GamepadLike[];
   }
 }
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_GAME_DEMO__ = {
+    window.__AURA3D_GAME_DEMO__ = {
       id: "game-slice",
       status: "error",
       renderer: "webgl2",
@@ -785,7 +785,7 @@ async function run(): Promise<void> {
     lastFrame = time;
 
     const browserGamepads = Array.from(navigator.getGamepads?.() ?? []);
-    const snapshot = input.update(window.__GALILEO3D_TEST_GAMEPADS__ ?? browserGamepads);
+    const snapshot = input.update(window.__AURA3D_TEST_GAMEPADS__ ?? browserGamepads);
     lastInputAxis = input.actions.axis("moveX", snapshot);
     lastJumpPressed = input.actions.pressed("jump", snapshot);
     character.setMoveInput({ x: objectiveState.phase === "playing" ? lastInputAxis : 0 });
@@ -1279,7 +1279,7 @@ async function run(): Promise<void> {
     });
     const powerUpEffect = samplePowerUpEffect({ type: spaceWave.powerUpType, health: 62, shield: 44, weaponLevel: 2, speed: 320, lives: 3, multiplier: 1 });
 
-    window.__GALILEO3D_GAME_DEMO__ = {
+    window.__AURA3D_GAME_DEMO__ = {
       id: "game-slice",
       status: "ready",
       renderer: "webgl2",
@@ -2403,7 +2403,7 @@ async function run(): Promise<void> {
         rendererBacked: true,
       },
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_GAME_DEMO__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_GAME_DEMO__, null, 2);
     if (running) requestAnimationFrame(render);
   };
 
@@ -2427,9 +2427,9 @@ async function run(): Promise<void> {
 
 async function loadGameVisualAssets(): Promise<LoadedGameVisualAssets> {
   const loader = new GLTFLoader();
-  const playerUrl = new URL("../../fixtures/assets/v3/character/game-hero-runner/game-hero-runner.gltf", window.location.href).toString();
-  const arenaUrl = new URL("../../fixtures/assets/v3/environment/game-arena-outpost/game-arena-outpost.gltf", window.location.href).toString();
-  const skinnedHeroUrl = new URL("../../fixtures/assets/v4/character/v4-skinned-hero/v4-skinned-hero.gltf", window.location.href).toString();
+  const playerUrl = new URL("../../fixtures/workflow-assets/assets/animated-character/animated-character.gltf", window.location.href).toString();
+  const arenaUrl = new URL("../../fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf", window.location.href).toString();
+  const skinnedHeroUrl = new URL("../../fixtures/threejs-parity/assets/character/soldier.glb", window.location.href).toString();
   const [playerAsset, arenaAsset, skinnedHeroAsset] = await Promise.all([
     loader.load({ url: playerUrl }, new LoadContext()),
     loader.load({ url: arenaUrl }, new LoadContext()),

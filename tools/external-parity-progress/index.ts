@@ -24,7 +24,7 @@ const activeItems = activeSectionItems(progress, "## Active Milestone");
 const knownGaps = sectionBullets(progress, "## Known Gaps");
 
 const report = {
-  schema: "g3d-external-parity-progress/v1",
+  schema: "a3d-external-parity-progress/v1",
   generatedAt: new Date().toISOString(),
   pass: existsSync(progressPath)
     && (currentStatus === "in-progress" || currentStatus === "complete")

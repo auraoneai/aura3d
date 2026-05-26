@@ -5,7 +5,7 @@ import { build } from "esbuild";
 import { chromium, type Page } from "@playwright/test";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
-type HdrVisualEngine = "galileo" | "threejs" | "babylon";
+type HdrVisualEngine = "aura3d" | "threejs" | "babylon";
 
 interface HdrVisualRender {
   readonly engine: HdrVisualEngine;
@@ -29,7 +29,7 @@ interface HdrVisualRender {
 }
 
 interface HdrVisualDiff {
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "threejs" | "babylon";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -83,7 +83,7 @@ export async function createV4HdrVisualParityReport(root = process.cwd()): Promi
     });
     try {
       const renders: HdrVisualRender[] = [];
-      for (const engine of ["galileo", "threejs", "babylon"] as const) {
+      for (const engine of ["aura3d", "threejs", "babylon"] as const) {
         const bundle = bundles.get(engine);
         if (!bundle) throw new Error(`Missing ${engine} HDR visual parity bundle.`);
         renders.push(await renderEngine(page, root, engine, bundle));
@@ -121,7 +121,7 @@ export async function createV4HdrVisualParityReport(root = process.cwd()): Promi
         }),
         boundedHdrRenderTargetParity,
         productionHdrRenderTargetParity: false,
-        claimBoundary: "This report proves a bounded Chromium HDR render-target/readback and visible LDR tone-map patch scene for Galileo3D, Three.js, and Babylon.js. It is not production HDR IBL, complete render-target pipeline, Unity, or Unreal parity.",
+        claimBoundary: "This report proves a bounded Chromium HDR render-target/readback and visible LDR tone-map patch scene for Aura3D, Three.js, and Babylon.js. It is not production HDR IBL, complete render-target pipeline, Unity, or Unreal parity.",
         renders,
         diffs,
         violations,
@@ -144,7 +144,7 @@ export function collectHdrVisualEvidencePaths(report: Pick<V4HdrVisualParityRepo
 
 async function buildEngineBundles(): Promise<ReadonlyMap<HdrVisualEngine, string>> {
   const entries: Record<HdrVisualEngine, string> = {
-    galileo: galileoBundleSource(),
+    aura3d: aura3dBundleSource(),
     threejs: threeBundleSource(),
     babylon: babylonBundleSource(),
   };
@@ -160,7 +160,7 @@ async function buildEngineBundles(): Promise<ReadonlyMap<HdrVisualEngine, string
       bundle: true,
       platform: "browser",
       format: "iife",
-      globalName: `G3D_${engine}_hdr_visual_parity`,
+      globalName: `A3D_${engine}_hdr_visual_parity`,
       target: "es2022",
       write: false,
       minify: true,
@@ -186,7 +186,7 @@ async function renderEngine(page: Page, root: string, engine: HdrVisualEngine, b
         canvas.style.width = "720px";
         canvas.style.height = "420px";
         document.body.replaceChildren(canvas);
-        const bundleName = `G3D_${engineName}_hdr_visual_parity`;
+        const bundleName = `A3D_${engineName}_hdr_visual_parity`;
         const render = (window as unknown as Record<string, { renderHdrVisualParity?: (canvas: HTMLCanvasElement) => Promise<HdrVisualRender["metrics"]> }>)[bundleName]?.renderHdrVisualParity;
         if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderHdrVisualParity`);
         const metrics = await render(canvas);
@@ -209,7 +209,7 @@ async function renderEngine(page: Page, root: string, engine: HdrVisualEngine, b
 }
 
 async function createScreenshotDiff(page: Page, root: string, renders: readonly HdrVisualRender[], comparedEngine: "threejs" | "babylon"): Promise<HdrVisualDiff> {
-  const baseline = renders.find((render) => render.engine === "galileo");
+  const baseline = renders.find((render) => render.engine === "aura3d");
   const compared = renders.find((render) => render.engine === comparedEngine);
   if (!baseline || !compared) throw new Error(`Missing render for HDR screenshot diff: ${comparedEngine}.`);
   const diffPath = `${artifactDir}/${comparedEngine}-hdr-diff.png`;
@@ -222,7 +222,7 @@ async function createScreenshotDiff(page: Page, root: string, renders: readonly 
   writePngDataUrl(root, diffPath, result.diffDataUrl);
   const { diffDataUrl: _diffDataUrl, ...metrics } = result;
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine,
     baselinePath: baseline.screenshotPath,
     comparedPath: compared.screenshotPath,
@@ -354,18 +354,18 @@ function sharedBrowserHelpers(): string {
   `;
 }
 
-function galileoBundleSource(): string {
+function aura3dBundleSource(): string {
   return `
     import { Geometry, Renderer, UnlitMaterial } from "./packages/rendering/src/index.ts";
     ${sharedBrowserHelpers()}
     export async function renderHdrVisualParity(canvas) {
       const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.03, 0.06, 0.09, 1], antialias: true, preserveDrawingBuffer: true });
-      const target = renderer.device.createRenderTarget({ width: 16, height: 16, label: "hdr-visual-galileo-rgba32f", format: "rgba32f" });
+      const target = renderer.device.createRenderTarget({ width: 16, height: 16, label: "hdr-visual-aura3d-rgba32f", format: "rgba32f" });
       const shader = renderer.device.createShaderProgram({
         label: "hdr-visual-overbright",
-        marker: "@galileo3d-shader:hdr-visual-overbright",
-        vertex: "#version 300 es\\nprecision highp float;\\n// @galileo3d-shader:hdr-visual-overbright\\nin vec3 a_position;\\nvoid main(){gl_Position=vec4(a_position.xy*2.0,0.0,1.0);}",
-        fragment: "#version 300 es\\nprecision highp float;\\n// @galileo3d-shader:hdr-visual-overbright\\nout vec4 outColor;\\nvoid main(){outColor=vec4(2.5,0.5,0.125,1.0);}"
+        marker: "@aura3d-shader:hdr-visual-overbright",
+        vertex: "#version 300 es\\nprecision highp float;\\n// @aura3d-shader:hdr-visual-overbright\\nin vec3 a_position;\\nvoid main(){gl_Position=vec4(a_position.xy*2.0,0.0,1.0);}",
+        fragment: "#version 300 es\\nprecision highp float;\\n// @aura3d-shader:hdr-visual-overbright\\nout vec4 outColor;\\nvoid main(){outColor=vec4(2.5,0.5,0.125,1.0);}"
       });
       const geometry = Geometry.triangle();
       renderer.device.setRenderTarget(target);
@@ -389,10 +389,10 @@ function galileoBundleSource(): string {
       const cyan = byteColor(0.25, 1.8, 2.4);
       const white = byteColor(4.0, 4.0, 4.0);
       const diagnostics = renderer.render([
-        { geometry: quad, material: new UnlitMaterial({ color: [orange[0], orange[1], orange[2], 1] }), modelMatrix: ${matrix(-0.48, 0.02, 0, 0.34, 0.46, 0.08)}, label: "galileo-hdr-orange" },
-        { geometry: quad, material: new UnlitMaterial({ color: [cyan[0], cyan[1], cyan[2], 1] }), modelMatrix: ${matrix(0, 0.02, 0, 0.34, 0.46, 0.08)}, label: "galileo-hdr-cyan" },
-        { geometry: quad, material: new UnlitMaterial({ color: [white[0], white[1], white[2], 1] }), modelMatrix: ${matrix(0.48, 0.02, 0, 0.34, 0.46, 0.08)}, label: "galileo-hdr-white" },
-        { geometry: quad, material: new UnlitMaterial({ color: [0.08, 0.14, 0.2, 1] }), modelMatrix: ${matrix(0, -0.42, 0, 1.6, 0.05, 0.08)}, label: "galileo-hdr-baseline" },
+        { geometry: quad, material: new UnlitMaterial({ color: [orange[0], orange[1], orange[2], 1] }), modelMatrix: ${matrix(-0.48, 0.02, 0, 0.34, 0.46, 0.08)}, label: "aura3d-hdr-orange" },
+        { geometry: quad, material: new UnlitMaterial({ color: [cyan[0], cyan[1], cyan[2], 1] }), modelMatrix: ${matrix(0, 0.02, 0, 0.34, 0.46, 0.08)}, label: "aura3d-hdr-cyan" },
+        { geometry: quad, material: new UnlitMaterial({ color: [white[0], white[1], white[2], 1] }), modelMatrix: ${matrix(0.48, 0.02, 0, 0.34, 0.46, 0.08)}, label: "aura3d-hdr-white" },
+        { geometry: quad, material: new UnlitMaterial({ color: [0.08, 0.14, 0.2, 1] }), modelMatrix: ${matrix(0, -0.42, 0, 1.6, 0.05, 0.08)}, label: "aura3d-hdr-baseline" },
       ]);
       await nextFrame();
       const stats = pixelStats(canvas);

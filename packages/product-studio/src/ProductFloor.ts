@@ -1,6 +1,6 @@
-import { composeMat4 } from "@galileo3d/scene";
-import { Geometry, PBRMaterial } from "@galileo3d/rendering";
-import type { RenderItem } from "@galileo3d/rendering";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, PBRMaterial } from "@aura3d/rendering";
+import type { RenderItem } from "@aura3d/rendering";
 import type { ProductAsset } from "./ProductTypes";
 
 export function createProductFloor(asset: ProductAsset): RenderItem {

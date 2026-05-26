@@ -10,19 +10,19 @@ interface Check {
 }
 
 const requiredFiles = [
-  "fixtures/v4/materials/material-library.json",
-  "fixtures/v4/materials/textures/brushed-metal-lines.json",
-  "fixtures/v4/materials/textures/clearcoat-orange-peel.json",
-  "fixtures/v4/materials/textures/micro-rubber-grain.json",
-  "fixtures/v4/materials/textures/woven-fabric.json",
-  "fixtures/v4/materials/textures/emissive-grid.json",
-  "fixtures/v4/materials/textures/ceramic-stone.json",
+  "fixtures/external-parity/materials/material-library.json",
+  "fixtures/external-parity/materials/textures/brushed-metal-lines.json",
+  "fixtures/external-parity/materials/textures/clearcoat-orange-peel.json",
+  "fixtures/external-parity/materials/textures/micro-rubber-grain.json",
+  "fixtures/external-parity/materials/textures/woven-fabric.json",
+  "fixtures/external-parity/materials/textures/emissive-grid.json",
+  "fixtures/external-parity/materials/textures/ceramic-stone.json",
   "apps/material-studio-pro/index.html",
   "apps/material-studio-pro/src/main.ts",
   "examples/external-material-studio/index.html",
   "examples/external-material-studio/main.ts",
   "examples/external-material-studio/MaterialStudioV4.ts",
-  "benchmarks/external-parity/galileo/material-studio.ts",
+  "benchmarks/external-parity/aura3d/material-studio.ts",
   "benchmarks/external-parity/threejs/material-studio.ts",
   "tests/browser/external-parity-material-studio-pro.spec.ts",
   "tests/reports/external-parity-material-studio-pro-browser.json"
@@ -60,11 +60,11 @@ for (const file of requiredFiles) {
   check(`file:${file}`, existsSync(resolve(file)), `${file} must exist.`);
 }
 
-const library = readJson("fixtures/v4/materials/material-library.json");
+const library = readJson("fixtures/external-parity/materials/material-library.json");
 const materials = arr(library?.materials);
 const textureSets = arr(library?.textureSets);
 const materialIds = materials.map((entry) => isObj(entry) ? entry.id : undefined);
-check("library-schema", library?.schema === "g3d-v4-material-library/v1", "Material library must use the V4 schema.");
+check("library-schema", library?.schema === "a3d-v4-material-library/v1", "Material library must use the V4 schema.");
 check("library-material-count", materials.length === 12, "Material library must include exactly 12 material targets.");
 check(
   "library-required-targets",
@@ -90,7 +90,7 @@ for (const texturePath of textureSets) {
   const texture = readJson(texturePath);
   check(
     `texture:${texturePath}`,
-    texture?.schema === "g3d-v4-procedural-texture/v1" &&
+    texture?.schema === "a3d-v4-procedural-texture/v1" &&
       texture.license === "CC0-1.0" &&
       texture.notFinalTextureProof === true &&
       typeof texture.provenance === "string",
@@ -106,7 +106,7 @@ check(
     "analyzeV4MaterialMatrix",
     "createLightingDefault",
     "TexturedPBRMaterial",
-    "__G3D_V4_MATERIAL_STUDIO__",
+    "__A3D_V4_MATERIAL_STUDIO__",
     "12-material-matrix",
     "same-scene Three.js visual parity"
   ]),
@@ -120,13 +120,13 @@ check(
   "Material Studio Pro must import a side-effect-free shared module."
 );
 
-const galileoBenchmark = readText("benchmarks/external-parity/galileo/material-studio.ts");
+const aura3dBenchmark = readText("benchmarks/external-parity/aura3d/material-studio.ts");
 const threeBenchmark = readText("benchmarks/external-parity/threejs/material-studio.ts");
 check(
   "benchmark-sources",
-  includesAll(galileoBenchmark, ["V4_PHYSICAL_MATERIAL_MATRIX", "12 material balls", "HDR/IBL-sensitive lighting"]) &&
+  includesAll(aura3dBenchmark, ["V4_PHYSICAL_MATERIAL_MATRIX", "12 material balls", "HDR/IBL-sensitive lighting"]) &&
     includesAll(threeBenchmark, ["threejs", "same 12 material targets", "same HDR/IBL intent", "visual diff"]),
-  "Milestone 8 must add Galileo and Three.js material benchmark source descriptors."
+  "Milestone 8 must add Aura3D and Three.js material benchmark source descriptors."
 );
 
 const browser = readJson("tests/reports/external-parity-material-studio-pro-browser.json");
@@ -165,7 +165,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-material-studio-readiness/v1",
+  schema: "a3d-external-parity-material-studio-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
@@ -195,8 +195,8 @@ function statePasses(state: Obj, id: string): boolean {
     state.status === "ready" &&
     state.renderer === "webgl2" &&
     state.productSurface === "material-studio-pro" &&
-    state.materialLibrary === "fixtures/v4/materials/material-library.json" &&
-    state.textureDirectory === "fixtures/v4/materials/textures" &&
+    state.materialLibrary === "fixtures/external-parity/materials/material-library.json" &&
+    state.textureDirectory === "fixtures/external-parity/materials/textures" &&
     state.materialCount === 12 &&
     materialIds.includes("chrome") &&
     materialIds.includes("glass-transmission") &&

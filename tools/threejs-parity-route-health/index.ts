@@ -11,7 +11,7 @@ const missing = routeSpecs.filter((path) => !fileExists(path));
 const issues = missing.map((path) => reportIssue(`missing-route-health-spec:${path}`, `Missing route health spec ${path}.`, "blocker"));
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-route-health/v1",
+  schema: "a3d-threejs-parity-route-health/v1",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   routeSpecs,

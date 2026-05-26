@@ -19,7 +19,7 @@ test.describe("V2 Product Studio app", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-v2-product-studio-browser-report/v1",
+      schema: "a3d-v2-product-studio-browser-report/v1",
       generatedAt: new Date().toISOString(),
       app: "apps/product-studio/index.html",
       rejectedInputs: [
@@ -34,18 +34,18 @@ test.describe("V2 Product Studio app", () => {
 
   test("loads all generated products and captures Product Studio states", async ({ page }) => {
     await page.goto(`${server.origin}/apps/product-studio/index.html`, { waitUntil: "domcontentloaded" });
-    await expect.poll(() => page.evaluate(() => window.__G3D_PRODUCT_STUDIO__?.status)).toBe("ready");
+    await expect.poll(() => page.evaluate(() => window.__A3D_PRODUCT_STUDIO__?.status)).toBe("ready");
 
     for (const product of ["camera-kit", "speaker", "watch"] as const) {
-      await page.evaluate(async (id) => window.__G3D_PRODUCT_STUDIO__?.reloadProduct?.(id), product);
-      await expect.poll(() => page.evaluate(() => window.__G3D_PRODUCT_STUDIO__?.status)).toBe("ready");
+      await page.evaluate(async (id) => window.__A3D_PRODUCT_STUDIO__?.reloadProduct?.(id), product);
+      await expect.poll(() => page.evaluate(() => window.__A3D_PRODUCT_STUDIO__?.status)).toBe("ready");
       const state = await page.evaluate(() => ({
-        product: window.__G3D_PRODUCT_STUDIO__?.selectedProductId,
-        parts: window.__G3D_PRODUCT_STUDIO__?.diagnostics?.partCount,
-        materials: window.__G3D_PRODUCT_STUDIO__?.diagnostics?.materialCount,
-        textures: window.__G3D_PRODUCT_STUDIO__?.diagnostics?.textureCount,
-        warnings: window.__G3D_PRODUCT_STUDIO__?.diagnostics?.warnings,
-        lastError: window.__G3D_PRODUCT_STUDIO__?.diagnostics?.renderDiagnostics?.lastError
+        product: window.__A3D_PRODUCT_STUDIO__?.selectedProductId,
+        parts: window.__A3D_PRODUCT_STUDIO__?.diagnostics?.partCount,
+        materials: window.__A3D_PRODUCT_STUDIO__?.diagnostics?.materialCount,
+        textures: window.__A3D_PRODUCT_STUDIO__?.diagnostics?.textureCount,
+        warnings: window.__A3D_PRODUCT_STUDIO__?.diagnostics?.warnings,
+        lastError: window.__A3D_PRODUCT_STUDIO__?.diagnostics?.renderDiagnostics?.lastError
       }));
       expect(state.product).toBe(product);
       expect(state.parts).toBeGreaterThanOrEqual(8);
@@ -56,15 +56,15 @@ test.describe("V2 Product Studio app", () => {
       await capture(page, `${product}-asset`);
     }
 
-    await page.evaluate(async () => window.__G3D_PRODUCT_STUDIO__?.setMaterialMode?.("contrast"));
+    await page.evaluate(async () => window.__A3D_PRODUCT_STUDIO__?.setMaterialMode?.("contrast"));
     await capture(page, "watch-contrast-materials");
-    await page.evaluate(async () => window.__G3D_PRODUCT_STUDIO__?.setLighting?.("hero-contrast"));
+    await page.evaluate(async () => window.__A3D_PRODUCT_STUDIO__?.setLighting?.("hero-contrast"));
     await capture(page, "watch-hero-lighting");
-    await page.evaluate(async () => window.__G3D_PRODUCT_STUDIO__?.setCamera?.("macro-detail"));
+    await page.evaluate(async () => window.__A3D_PRODUCT_STUDIO__?.setCamera?.("macro-detail"));
     await capture(page, "watch-macro-camera");
 
     const exported = await page.evaluate(async () => {
-      const result = await window.__G3D_PRODUCT_STUDIO__?.exportPng?.();
+      const result = await window.__A3D_PRODUCT_STUDIO__?.exportPng?.();
       return result ? {
         byteLength: result.byteLength,
         mimeType: result.mimeType,

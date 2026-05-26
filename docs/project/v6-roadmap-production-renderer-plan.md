@@ -1,4 +1,4 @@
-# G3D V6: Production Renderer, Real Assets, True PBR/HDR Parity
+# A3D V6: Production Renderer, Real Assets, True PBR/HDR Parity
 
 > Historical note: This V6 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
@@ -15,17 +15,17 @@ This reset is not about making better reports. It is not about drawing prettier 
 
 V6 must build:
 
-**G3D Production Renderer V6: a real WebGL2/WebGPU browser renderer that imports real assets, renders physically based materials with HDR image-based lighting, shadows, tone mapping, postprocess, animation, and controls, then proves same-scene quality against Three.js using real renderer pixels.**
+**A3D Production Renderer V6: a real WebGL2/WebGPU browser renderer that imports real assets, renders physically based materials with HDR image-based lighting, shadows, tone mapping, postprocess, animation, and controls, then proves same-scene quality against Three.js using real renderer pixels.**
 
 The next product step is simple:
 
-> A developer should be able to load real glTF/GLB assets, real HDR environments, real texture sets, and real production scenes in G3D and get renderer output that is credibly equal to or better than equivalent Three.js scenes for the documented scope.
+> A developer should be able to load real glTF/GLB assets, real HDR environments, real texture sets, and real production scenes in A3D and get renderer output that is credibly equal to or better than equivalent Three.js scenes for the documented scope.
 
-V6 is not complete until G3D has real renderer output that can be inspected visually and measured technically.
+V6 is not complete until A3D has real renderer output that can be inspected visually and measured technically.
 
 ## Product Objective
 
-G3D must become a differentiated production renderer and developer product, not a clone of Three.js examples.
+A3D must become a differentiated production renderer and developer product, not a clone of Three.js examples.
 
 The V6 product must make a serious Three.js developer believe:
 
@@ -75,7 +75,7 @@ The audit must explicitly name the V5 failure modes:
 V6 must obey these rules:
 
 1. **Real renderer output only.**
-   Release screenshots must come from G3D renderer frame buffers in WebGL2 or WebGPU, not Canvas 2D painting.
+   Release screenshots must come from A3D renderer frame buffers in WebGL2 or WebGPU, not Canvas 2D painting.
 
 2. **Real imported assets only for flagship proof.**
    Flagship scenes must load real glTF/GLB assets and real texture/HDR files. Primitive-only scenes may exist as unit tests, but cannot count as flagship proof.
@@ -96,7 +96,7 @@ V6 must obey these rules:
    If WebGPU falls back to WebGL2, the report must say so. If a material extension is unsupported, the report must say so.
 
 8. **No broad superiority claim without same-scene evidence.**
-   G3D may target "equal or better than Three.js" only where same-scene comparison reports prove it.
+   A3D may target "equal or better than Three.js" only where same-scene comparison reports prove it.
 
 9. **No completion with blank, flat, tiny, or low-entropy screenshots.**
    Pixel stats, structural similarity, histogram spread, edge density, object occupancy, and human review must all pass.
@@ -108,11 +108,11 @@ V6 must obey these rules:
 
 V6 is allowed to claim only after release gates pass:
 
-> "G3D V6 provides a production WebGL2 renderer with real asset loading, true PBR/HDR image-based lighting, shadows, postprocess, animation, controls, and same-scene Three.js visual parity for the documented flagship workflows."
+> "A3D V6 provides a production WebGL2 renderer with real asset loading, true PBR/HDR image-based lighting, shadows, postprocess, animation, controls, and same-scene Three.js visual parity for the documented flagship workflows."
 
 V6 may claim WebGPU only as:
 
-> "G3D V6 includes a WebGPU backend with documented feature coverage and parity gaps."
+> "A3D V6 includes a WebGPU backend with documented feature coverage and parity gaps."
 
 V6 is not allowed to claim:
 
@@ -130,7 +130,7 @@ V6 is not allowed to claim:
 
 Build:
 
-**G3D Renderer V6: a production browser renderer and scene pipeline for real-time 3D product visualization, architecture/interiors, asset inspection, animation, cinematic postprocess, and large-scene rendering with real imported assets and physically based lighting.**
+**A3D Renderer V6: a production browser renderer and scene pipeline for real-time 3D product visualization, architecture/interiors, asset inspection, animation, cinematic postprocess, and large-scene rendering with real imported assets and physically based lighting.**
 
 The V6 product must include:
 
@@ -213,9 +213,9 @@ Required files:
 
 Root exports required:
 
-- `@galileo3d/engine/rendering/production-runtime`
-- `@galileo3d/engine/assets/production-runtime`
-- `@galileo3d/engine/production-runtime`
+- `@aura3d/engine/rendering/production-runtime`
+- `@aura3d/engine/assets/production-runtime`
+- `@aura3d/engine/production-runtime`
 
 Acceptance:
 
@@ -623,7 +623,7 @@ Every app must:
 - load at least one real asset from V6 manifest
 - load a real HDR environment
 - render to a real canvas
-- expose runtime metrics through `window.__g3dV6Runtime`
+- expose runtime metrics through `window.__a3dV6Runtime`
 - support at least one user interaction
 - produce a screenshot from the renderer canvas
 
@@ -691,16 +691,16 @@ Required gallery paths:
 - `tests/reports/production-runtime-gallery/postprocess/cinematic-after-webgl2.png`
 - `tests/reports/production-runtime-gallery/large-scene/large-scene-webgl2.png`
 - `tests/reports/production-runtime-gallery/webgpu/webgpu-product-frame.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/product-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/product-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/product-diff.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/materials-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/materials-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/materials-diff.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/asset-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/asset-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/asset-diff.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/architecture-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/architecture-diff.png`
 
@@ -788,13 +788,13 @@ Required comparison scenes:
 Required directories:
 
 - `benchmarks/production-runtime/shared/`
-- `benchmarks/production-runtime/g3d/`
+- `benchmarks/production-runtime/a3d/`
 - `benchmarks/production-runtime/threejs/`
 
 Required files:
 
 - `benchmarks/production-runtime/shared/scenes.ts`
-- `benchmarks/production-runtime/g3d/renderScene.ts`
+- `benchmarks/production-runtime/a3d/renderScene.ts`
 - `benchmarks/production-runtime/threejs/renderScene.ts`
 - `benchmarks/production-runtime/shared/compareImages.ts`
 
@@ -822,7 +822,7 @@ Required thresholds:
 - At least 12 same-scene comparisons.
 - At least 9 scenes must pass visual similarity thresholds.
 - Product, asset, materials, and architecture scenes are mandatory pass scenes.
-- G3D screenshots must pass nonblank visual quality independently.
+- A3D screenshots must pass nonblank visual quality independently.
 - Three.js screenshots must pass nonblank visual quality independently.
 - Diff images must be generated.
 - Runtime metrics must exist for both engines.
@@ -928,13 +928,13 @@ Required templates:
 - `templates/production-architecture-viewer/`
 - `templates/production-webgpu-starter/`
 
-Create-g3d mirrors:
+Create-a3d mirrors:
 
-- `packages/create-g3d/templates/production-product-configurator/`
-- `packages/create-g3d/templates/production-asset-inspector/`
-- `packages/create-g3d/templates/production-material-studio/`
-- `packages/create-g3d/templates/production-architecture-viewer/`
-- `packages/create-g3d/templates/production-webgpu-starter/`
+- `packages/create-aura3d/templates/production-product-configurator/`
+- `packages/create-aura3d/templates/production-asset-inspector/`
+- `packages/create-aura3d/templates/production-material-studio/`
+- `packages/create-aura3d/templates/production-architecture-viewer/`
+- `packages/create-aura3d/templates/production-webgpu-starter/`
 
 Acceptance:
 
@@ -948,7 +948,7 @@ Acceptance:
 Required tests/tools:
 
 - `tests/browser/production-runtime-examples.spec.ts`
-- `tests/integration/production-runtime-create-g3d.test.ts`
+- `tests/integration/production-runtime-create-aura3d.test.ts`
 - `tests/browser/production-runtime-templates.spec.ts`
 - `tools/production-runtime-examples-readiness/index.ts`
 - `tools/production-runtime-template-readiness/index.ts`
@@ -1206,7 +1206,7 @@ pnpm production-runtime:visuals
 Required:
 
 - At least 12 same-scene comparisons.
-- G3D and Three.js both render actual scene assets.
+- A3D and Three.js both render actual scene assets.
 - Diff images and metrics.
 - Mandatory pass scenes.
 
@@ -1237,7 +1237,7 @@ Required:
 
 - Real renderer examples.
 - External templates.
-- create-g3d mirrors.
+- create-aura3d mirrors.
 - Packed package external Vite build.
 
 Exit command:
@@ -1387,8 +1387,8 @@ Required files:
 
 The decision record must answer:
 
-- What can G3D V6 do better than raw Three.js today?
-- What does G3D V6 match Three.js on today?
+- What can A3D V6 do better than raw Three.js today?
+- What does A3D V6 match Three.js on today?
 - What does Three.js still do better?
 - Which workflows are production-ready?
 - Which workflows are experimental?
@@ -1456,16 +1456,16 @@ These must be real renderer screenshots, not Canvas 2D proof:
 - `tests/reports/production-runtime-gallery/postprocess/cinematic-after-webgl2.png`
 - `tests/reports/production-runtime-gallery/large-scene/large-scene-webgl2.png`
 - `tests/reports/production-runtime-gallery/webgpu/webgpu-product-frame.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/product-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/product-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/product-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/product-diff.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/materials-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/materials-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/materials-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/materials-diff.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/asset-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/asset-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/asset-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/asset-diff.png`
-- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-g3d.png`
+- `tests/reports/production-runtime-gallery/threejs-comparison/architecture-a3d.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/architecture-threejs.png`
 - `tests/reports/production-runtime-gallery/threejs-comparison/architecture-diff.png`
 
@@ -1491,4 +1491,4 @@ If any release screenshot is a stick figure, triangle car, primitive-only scene,
 
 If the renderer cannot load and render real imported assets with HDR/PBR in WebGL2, V6 is not complete.
 
-If "equal or better than Three.js" is claimed without same-scene G3D/Three.js screenshots and metrics, V6 is not complete.
+If "equal or better than Three.js" is claimed without same-scene A3D/Three.js screenshots and metrics, V6 is not complete.

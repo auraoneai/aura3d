@@ -22,11 +22,11 @@ test.describe("large-world streaming V4 example", () => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/large-world-streaming/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => {
-      const state = window.__GALILEO3D_LARGE_WORLD_STREAMING__;
+      const state = window.__AURA3D_LARGE_WORLD_STREAMING__;
       return state?.status === "ready" && Number(state.metrics?.cameraSamples ?? 0) > 24 && Number(state.metrics?.streamedIn ?? 0) > 0;
     }, undefined, { timeout: 30_000 });
     await page.waitForTimeout(250);
-    const state = await page.evaluate(() => window.__GALILEO3D_LARGE_WORLD_STREAMING__);
+    const state = await page.evaluate(() => window.__AURA3D_LARGE_WORLD_STREAMING__);
     const pixels = await canvasPixelStats(page);
     mkdirSync(join(process.cwd(), "tests/reports/external-parity-example-screenshots"), { recursive: true });
     await page.screenshot({ path: join(process.cwd(), screenshotPath), fullPage: true });
@@ -188,7 +188,7 @@ async function canvasPixelStats(page: Page): Promise<{ readonly nonBlankPixels: 
 
 declare global {
   interface Window {
-    __GALILEO3D_LARGE_WORLD_STREAMING__?: {
+    __AURA3D_LARGE_WORLD_STREAMING__?: {
       readonly status?: "ready" | "error";
       readonly renderer?: "webgl2";
       readonly screenshotPath?: string;

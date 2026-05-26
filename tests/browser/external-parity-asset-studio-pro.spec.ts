@@ -92,7 +92,7 @@ test.describe("V4 Asset Studio Pro", () => {
 
 async function waitForAssetState(page: Page, id: string): Promise<AssetStudioState> {
   await page.waitForFunction((expectedId) => {
-    const state = window.__G3D_V4_ASSET_STUDIO__ as AssetStudioState | undefined;
+    const state = window.__A3D_V4_ASSET_STUDIO__ as AssetStudioState | undefined;
     return state?.status === "ready" && state.id === expectedId;
   }, id, { timeout: 60_000 });
   const state = await assetState(page);
@@ -101,7 +101,7 @@ async function waitForAssetState(page: Page, id: string): Promise<AssetStudioSta
 }
 
 async function assetState(page: Page): Promise<AssetStudioState | undefined> {
-  return page.evaluate(() => window.__G3D_V4_ASSET_STUDIO__ as AssetStudioState | undefined);
+  return page.evaluate(() => window.__A3D_V4_ASSET_STUDIO__ as AssetStudioState | undefined);
 }
 
 function statePasses(state: AssetStudioState, id: string): boolean {
@@ -110,7 +110,7 @@ function statePasses(state: AssetStudioState, id: string): boolean {
   return state.id === id &&
     state.status === "ready" &&
     state.productSurface === "asset-studio-pro" &&
-    state.corpusManifest === "fixtures/v4/gltf-corpus/manifest.json" &&
+    state.corpusManifest === "fixtures/external-parity/gltf-corpus/manifest.json" &&
     typeof state.sourceRepository === "string" &&
     state.sourceRepository.includes("KhronosGroup/glTF-Sample-Assets") &&
     state.sourceRevision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" &&
@@ -147,6 +147,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __G3D_V4_ASSET_STUDIO__?: AssetStudioState;
+    __A3D_V4_ASSET_STUDIO__?: AssetStudioState;
   }
 }

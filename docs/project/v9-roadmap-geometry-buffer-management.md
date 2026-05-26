@@ -1,6 +1,6 @@
 # V9 Geometry And Buffer Management
 
-G3D has real geometry and GPU-buffer infrastructure. Full Three.js `BufferGeometry` parity is still not claimed.
+A3D has real geometry and GPU-buffer infrastructure. Full Three.js `BufferGeometry` parity is still not claimed.
 
 ## Real Code
 

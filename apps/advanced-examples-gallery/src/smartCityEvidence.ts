@@ -171,7 +171,7 @@ export function createSmartCityRouteEvidence(options: SmartCityEvidenceOptions):
       `${pulsePoints.toLocaleString("en-US")} telemetry pulse points are batched point geometry`,
       "Pointer probe highlights the nearest district as control-level picking evidence; per-building raycast picking is not claimed.",
       options.flythrough ? "flythrough mode modulates route camera and adds corridor breadcrumbs" : "flythrough mode is available but currently off",
-      "Authored GLB context remains the hero scene; procedural G3D layers provide scale, motion, selection, and instrumentation evidence."
+      "Authored GLB context remains the hero scene; procedural A3D layers provide scale, motion, selection, and instrumentation evidence."
     ],
     labels: [
       `Grid ${columns}x${columns}`,

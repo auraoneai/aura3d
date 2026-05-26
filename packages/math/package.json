@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/math",
+  "name": "@aura3d/math",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",

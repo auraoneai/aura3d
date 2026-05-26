@@ -14,7 +14,7 @@ describe("V8 GLTF loader corpus", () => {
     const manifest = loadV8AssetManifest();
     const summary = createV8AssetCorpusSummary(manifest);
 
-    expect(manifest.schema).toBe("g3d-v8-local-asset-corpus/v1");
+    expect(manifest.schema).toBe("a3d-v8-local-asset-corpus/v1");
     expect(summary.pass, summary.failures.join("\n")).toBe(true);
     expect(summary.assetCount).toBeGreaterThanOrEqual(manifest.requirements.minimumAssetCount);
     expect(summary.environmentCount).toBe(2);

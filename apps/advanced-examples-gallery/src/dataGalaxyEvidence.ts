@@ -151,7 +151,7 @@ export function createDataGalaxyEvidence(options: DataGalaxyEvidenceOptions): Ro
     ],
     labels: ["Particles", "Formation", "Attractors", "Connections", "Performance", "CPU/static"],
     approximations: [
-      "The route uses four dense G3D point-cloud geometries plus dynamic batched point/line geometry; it does not submit one render object per spark.",
+      "The route uses four dense A3D point-cloud geometries plus dynamic batched point/line geometry; it does not submit one render object per spark.",
       "Particle positions are deterministic CPU-generated point buffers animated by route transforms and refreshed overlay geometry.",
       "The particle-count control changes the point-buffer partition and overlay sample density, but not the CPU/static update mode.",
       "The default showcase hierarchy is route-generated data visualization geometry, not an unrelated prop or a replacement for texture-backed authored content.",
@@ -165,7 +165,7 @@ export function createDataGalaxyEvidence(options: DataGalaxyEvidenceOptions): Ro
       "Particle count limits need route-specific screenshot and frame-cadence review before promotion."
     ],
     integrationSteps: [
-      "Keep dense particles in four G3D point buffers so particle count scales independently from render object count.",
+      "Keep dense particles in four A3D point buffers so particle count scales independently from render object count.",
       "Use route-local Geometry.points and Geometry.lineSegments batches for inference sparks, trails, rings, links, and attractor vectors.",
       "Keep CPU/static particle telemetry visible and do not report navigator WebGPU support as a native particle solver.",
       "Do not mark GPU particles accepted unless a real compute-backed update path replaces this CPU/static point-buffer mode."

@@ -24,7 +24,7 @@ const weakDecisions = decisions.flatMap((entry) => entry.decision === "parity" |
 const issues = [...missingOrFailing, ...weakDecisions];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-superiority-audit/v1",
+  schema: "a3d-v10-superiority-audit/v1",
   pass: issues.length === 0 && categoriesPass(decisions),
   decisions,
   issues,

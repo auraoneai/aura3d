@@ -37,11 +37,11 @@ const requiredScreenshots = [
   "tests/reports/foundation-examples/foundation-asset-viewer.png",
   "tests/reports/foundation-examples/foundation-product-configurator.png",
   "tests/reports/foundation-external-consumer/external-consumer.png",
-  "tests/reports/foundation-threejs-comparison/product-g3d.png",
+  "tests/reports/foundation-threejs-comparison/product-a3d.png",
   "tests/reports/foundation-threejs-comparison/product-threejs.png",
   "tests/reports/foundation-threejs-comparison/product-diff.png",
-  "tests/reports/foundation-threejs-comparison/asset-g3d.png",
-  "tests/reports/foundation-threejs-comparison/interactive-g3d.png"
+  "tests/reports/foundation-threejs-comparison/asset-a3d.png",
+  "tests/reports/foundation-threejs-comparison/interactive-a3d.png"
 ] as const;
 
 const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { readonly scripts?: Record<string, string> };
@@ -61,7 +61,7 @@ const screenshotChecks = requiredScreenshots.map((path) => ({
 }));
 const comparison = readJson("tests/reports/foundation-threejs-comparison.json") as {
   readonly ergonomicWins?: readonly string[];
-  readonly runtimeDiagnostics?: readonly { readonly scene: string; readonly g3dDrawCalls: number; readonly threejsDrawCalls: number }[];
+  readonly runtimeDiagnostics?: readonly { readonly scene: string; readonly a3dDrawCalls: number; readonly threejsDrawCalls: number }[];
   readonly gaps?: readonly string[];
 } | undefined;
 const externalConsumer = readJson("tests/reports/foundation-external-consumer.json") as { readonly pass?: boolean; readonly state?: { readonly imports?: readonly string[] } } | undefined;
@@ -77,19 +77,19 @@ const releaseGate2 = {
   pass: releaseGate1.pass
     && (comparison?.ergonomicWins?.length ?? 0) >= 4
     && externalConsumer?.pass === true
-    && (comparison?.runtimeDiagnostics ?? []).every((diagnostic) => diagnostic.g3dDrawCalls > 0 && diagnostic.threejsDrawCalls > 0)
+    && (comparison?.runtimeDiagnostics ?? []).every((diagnostic) => diagnostic.a3dDrawCalls > 0 && diagnostic.threejsDrawCalls > 0)
     && (comparison?.gaps?.length ?? 0) > 0
 };
 const report = {
-  schema: "g3d-foundation-release-readiness/v1",
+  schema: "a3d-foundation-release-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: scriptChecks.every((check) => check.exists)
     && reportChecks.every((check) => check.pass)
     && screenshotChecks.every((check) => check.exists && check.bytes > 10_000)
     && releaseGate1.pass
     && releaseGate2.pass,
-  allowedClaim: "G3D is a Three.js competitor for supported web product, asset-viewer, material, scene, and lightweight interactive workflows.",
-  limitedReplacementClaim: "G3D can replace Three.js for the supported workflows listed in docs/project/v3-roadmap-supported-workflows.md.",
+  allowedClaim: "A3D is a Three.js competitor for supported web product, asset-viewer, material, scene, and lightweight interactive workflows.",
+  limitedReplacementClaim: "A3D can replace Three.js for the supported workflows listed in docs/project/v3-roadmap-supported-workflows.md.",
   blockedClaimsRemainBlocked: [
     "Unity replacement",
     "Unreal replacement",

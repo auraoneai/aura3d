@@ -14,14 +14,14 @@ interface PackageProvenanceReport {
     readonly digest: { readonly sha256: string };
   };
   readonly builder: {
-    readonly id: "galileo3d-local-release-verifier";
+    readonly id: "aura3d-local-release-verifier";
     readonly version: string | null;
   };
   readonly materials: readonly {
     readonly uri: string;
     readonly digest?: { readonly sha256: string };
   }[];
-  readonly buildType: "https://galileo3d.local/build/package-tarball";
+  readonly buildType: "https://aura3d.local/build/package-tarball";
   readonly invocation: {
     readonly configSource: string;
     readonly parameters: readonly string[];
@@ -62,7 +62,7 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
       digest: { sha256: subjectSha }
     },
     builder: {
-      id: "galileo3d-local-release-verifier" as const,
+      id: "aura3d-local-release-verifier" as const,
       version: typeof packageInfo?.version === "string" ? packageInfo.version : null
     },
     materials: [
@@ -71,7 +71,7 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
       material(installSmokePath),
       material("package.json")
     ].map((entry) => hashMaterial(root, entry)),
-    buildType: "https://galileo3d.local/build/package-tarball" as const,
+    buildType: "https://aura3d.local/build/package-tarball" as const,
     invocation: {
       configSource: "local-checkout",
       parameters: [

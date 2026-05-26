@@ -1,4 +1,4 @@
-import type { TextureCompressedFormat, TextureMipLevelDescriptor } from "@galileo3d/rendering";
+import type { TextureCompressedFormat, TextureMipLevelDescriptor } from "@aura3d/rendering";
 import type { DecodedGLTFImage } from "./GLTFRenderResources";
 
 export type KTX2BasisTargetFormat = "etc2-rgba8unorm" | "bc3-rgba-unorm" | "astc-4x4-rgba-unorm" | "rgba8";

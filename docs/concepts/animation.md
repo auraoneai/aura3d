@@ -2,7 +2,7 @@
 
 Version: `0.1.0-alpha.0`
 
-Galileo3D animation is a runtime playback system for clips, tracks, skeletal data, morph target weights, and scene-node transforms. It is exposed through `@galileo3d/engine/animation` and is also exercised by the V8/V9 animation proof routes.
+Aura3D animation is a runtime playback system for clips, tracks, skeletal data, morph target weights, and scene-node transforms. It is exposed through `@aura3d/engine/animation` and is also exercised by the V8/V9 animation proof routes.
 
 ## Package Surface
 
@@ -15,7 +15,7 @@ Primary exports include:
 - scene and ECS bridges for applying sampled animation state;
 - motion-quality and fixture helpers used by evidence routes.
 
-Browser-specific animation helpers are exposed through `@galileo3d/engine/animation/browser`.
+Browser-specific animation helpers are exposed through `@aura3d/engine/animation/browser`.
 
 ## Runtime Flow
 
@@ -31,7 +31,7 @@ The renderer should consume already-sampled transforms and palettes. The animati
 
 ## glTF And Character Work
 
-The current repo includes glTF animation runtime work in `@galileo3d/engine/assets`, including imported animation mixers, clone sampling, morph target control, skeleton import, and bounded IK support. V8 routes exercise keyframes, multiple animated agents, walking, additive layers, blending, IK, and morph targets.
+The current repo includes glTF animation runtime work in `@aura3d/engine/assets`, including imported animation mixers, clone sampling, morph target control, skeleton import, and bounded IK support. V8 routes exercise keyframes, multiple animated agents, walking, additive layers, blending, IK, and morph targets.
 
 This is meaningful animation infrastructure, but it is not a DCC-grade animation authoring tool.
 

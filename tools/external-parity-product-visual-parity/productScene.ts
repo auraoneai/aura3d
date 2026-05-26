@@ -46,8 +46,8 @@ export interface ProductVisualAssetPipelineDescriptor {
     "tools/external-parity-product-visual-parity/index.ts",
     "tools/external-parity-external-engine-baselines/index.ts"
   ];
-  readonly generatedDescriptorPath: "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json";
-  readonly localEngines: readonly ["galileo", "threejs", "babylon"];
+  readonly generatedDescriptorPath: "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json";
+  readonly localEngines: readonly ["aura3d", "threejs", "babylon"];
   readonly externalEngines: readonly ["unity", "unreal"];
   readonly sameDescriptorForAllEngines: true;
   readonly deterministicAssetLayout: true;
@@ -289,8 +289,8 @@ export const productVisualParityScene: ProductVisualParitySceneDescriptor = {
       "tools/external-parity-product-visual-parity/index.ts",
       "tools/external-parity-external-engine-baselines/index.ts",
     ],
-    generatedDescriptorPath: "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
-    localEngines: ["galileo", "threejs", "babylon"],
+    generatedDescriptorPath: "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json",
+    localEngines: ["aura3d", "threejs", "babylon"],
     externalEngines: ["unity", "unreal"],
     sameDescriptorForAllEngines: true,
     deterministicAssetLayout: true,
@@ -343,5 +343,5 @@ export const productVisualParityScene: ProductVisualParitySceneDescriptor = {
       ],
     },
   },
-  claimBoundary: "This descriptor defines the deterministic same-layout over-ear headphone product asset pipeline and bounded ecommerce workflow evidence for Galileo3D, Three.js, Babylon.js, and future Unity/Unreal baseline renders. It is not a commercial imported product asset, native AR export pipeline, video capture pipeline, or PIM integration.",
+  claimBoundary: "This descriptor defines the deterministic same-layout over-ear headphone product asset pipeline and bounded ecommerce workflow evidence for Aura3D, Three.js, Babylon.js, and future Unity/Unreal baseline renders. It is not a commercial imported product asset, native AR export pipeline, video capture pipeline, or PIM integration.",
 };

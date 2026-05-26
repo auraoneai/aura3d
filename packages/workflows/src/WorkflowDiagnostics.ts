@@ -1,17 +1,17 @@
-import type { RenderDeviceDiagnostics } from "@galileo3d/rendering";
-import type { RenderableAsset } from "@galileo3d/assets";
-import type { ProductAsset } from "@galileo3d/product-studio";
-import type { G3DWorkflowDiagnostics, G3DWorkflowKind } from "./WorkflowTypes";
+import type { RenderDeviceDiagnostics } from "@aura3d/rendering";
+import type { RenderableAsset } from "@aura3d/assets";
+import type { ProductAsset } from "@aura3d/product-studio";
+import type { A3DWorkflowDiagnostics, A3DWorkflowKind } from "./WorkflowTypes";
 
 export function createWorkflowDiagnostics(
-  workflow: G3DWorkflowKind,
+  workflow: A3DWorkflowKind,
   options: {
     readonly warnings?: readonly string[];
     readonly featureChecklist?: readonly string[];
     readonly asset?: RenderableAsset | ProductAsset;
     readonly renderDiagnostics?: RenderDeviceDiagnostics;
   } = {}
-): G3DWorkflowDiagnostics {
+): A3DWorkflowDiagnostics {
   return {
     workflow,
     warnings: options.warnings ?? [],
@@ -21,7 +21,7 @@ export function createWorkflowDiagnostics(
   };
 }
 
-function summarizeAsset(asset: RenderableAsset | ProductAsset): G3DWorkflowDiagnostics["asset"] {
+function summarizeAsset(asset: RenderableAsset | ProductAsset): A3DWorkflowDiagnostics["asset"] {
   if ("gltf" in asset && asset.gltf) {
     return {
       kind: "gltf",

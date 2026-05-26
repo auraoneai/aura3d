@@ -7,10 +7,10 @@ const reportDir = resolve("tests/reports/foundation-threejs-comparison");
 const captures: ComparisonCapture[] = [];
 
 const scenes = [
-  { id: "product", g3dModule: "product-scene", g3dExport: "renderGalileoProductScene", threeModule: "product-scene", threeExport: "renderThreeProductScene" },
-  { id: "material", g3dModule: "material-scene", g3dExport: "renderGalileoMaterialScene", threeModule: "material-scene", threeExport: "renderThreeMaterialScene" },
-  { id: "asset", g3dModule: "asset-scene", g3dExport: "renderGalileoAssetScene", threeModule: "asset-scene", threeExport: "renderThreeAssetScene" },
-  { id: "interactive", g3dModule: "interactive-scene", g3dExport: "renderGalileoInteractiveScene", threeModule: "interactive-scene", threeExport: "renderThreeInteractiveScene" }
+  { id: "product", a3dModule: "product-scene", a3dExport: "renderAura3DProductScene", threeModule: "product-scene", threeExport: "renderThreeProductScene" },
+  { id: "material", a3dModule: "material-scene", a3dExport: "renderAura3DMaterialScene", threeModule: "material-scene", threeExport: "renderThreeMaterialScene" },
+  { id: "asset", a3dModule: "asset-scene", a3dExport: "renderAura3DAssetScene", threeModule: "asset-scene", threeExport: "renderThreeAssetScene" },
+  { id: "interactive", a3dModule: "interactive-scene", a3dExport: "renderAura3DInteractiveScene", threeModule: "interactive-scene", threeExport: "renderThreeInteractiveScene" }
 ] as const;
 
 test.describe("V3 same-scene Three.js comparison", () => {
@@ -26,37 +26,37 @@ test.describe("V3 same-scene Three.js comparison", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-foundation-threejs-comparison-browser/v1",
+      schema: "a3d-foundation-threejs-comparison-browser/v1",
       generatedAt: new Date().toISOString(),
       scenes: scenes.map((scene) => scene.id),
       captures,
       pass: captures.length === scenes.length
-        && captures.every((capture) => capture.g3d.bytes > 10_000 && capture.threejs.bytes > 10_000 && capture.diff.bytes > 5_000 && capture.g3d.drawCalls > 0 && capture.threejs.drawCalls > 0)
+        && captures.every((capture) => capture.a3d.bytes > 10_000 && capture.threejs.bytes > 10_000 && capture.diff.bytes > 5_000 && capture.a3d.drawCalls > 0 && capture.threejs.drawCalls > 0)
     }, null, 2)}\n`);
   });
 
   for (const scene of scenes) {
-    test(`${scene.id} scene captures G3D, Three.js, and diff images`, async ({ page }) => {
+    test(`${scene.id} scene captures A3D, Three.js, and diff images`, async ({ page }) => {
       await page.goto(server.origin, { waitUntil: "domcontentloaded" });
       const metrics = await page.evaluate(async ({ origin, scene }) => {
-        const g3dModule = await import(`${origin}/benchmarks/foundation/galileo/${scene.g3dModule}.ts`);
+        const a3dModule = await import(`${origin}/benchmarks/foundation/aura3d/${scene.a3dModule}.ts`);
         const threeModule = await import(`${origin}/benchmarks/foundation/threejs/${scene.threeModule}.ts`);
-        const g3d = await g3dModule[scene.g3dExport](origin);
+        const a3d = await a3dModule[scene.a3dExport](origin);
         const threejs = await threeModule[scene.threeExport](origin);
-        const diff = createDiffCanvas(scene.id, g3d.canvas, threejs.canvas);
+        const diff = createDiffCanvas(scene.id, a3d.canvas, threejs.canvas);
         document.body.style.margin = "0";
         document.body.style.background = "#111413";
         document.body.style.display = "grid";
         document.body.style.gridTemplateColumns = "900px 900px 900px";
-        document.body.replaceChildren(g3d.canvas, threejs.canvas, diff);
+        document.body.replaceChildren(a3d.canvas, threejs.canvas, diff);
         return {
           sceneId: scene.id,
-          g3d: {
-            drawCalls: g3d.drawCalls,
-            itemCount: g3d.itemCount,
-            setupLines: g3d.setupLines,
-            lastError: g3d.diagnostics.lastError,
-            gaps: g3d.gaps
+          a3d: {
+            drawCalls: a3d.drawCalls,
+            itemCount: a3d.itemCount,
+            setupLines: a3d.setupLines,
+            lastError: a3d.diagnostics.lastError,
+            gaps: a3d.gaps
           },
           threejs: {
             drawCalls: threejs.drawCalls,
@@ -111,22 +111,22 @@ test.describe("V3 same-scene Three.js comparison", () => {
         }
       }, { origin: server.origin, scene });
 
-      expect(metrics.g3d.drawCalls).toBeGreaterThan(0);
+      expect(metrics.a3d.drawCalls).toBeGreaterThan(0);
       expect(metrics.threejs.drawCalls).toBeGreaterThan(0);
-      expect(metrics.g3d.lastError).toBeNull();
-      await screenshotScene(page, scene.id, "g3d", metrics.g3d);
+      expect(metrics.a3d.lastError).toBeNull();
+      await screenshotScene(page, scene.id, "a3d", metrics.a3d);
       await screenshotScene(page, scene.id, "threejs", metrics.threejs);
       const diff = await screenshotScene(page, scene.id, "diff", { drawCalls: 1, itemCount: 1, setupLines: 0, gaps: [] });
       captures.push({
         sceneId: scene.id,
-        g3d: captureFor(scene.id, "g3d", metrics.g3d),
+        a3d: captureFor(scene.id, "a3d", metrics.a3d),
         threejs: captureFor(scene.id, "threejs", metrics.threejs),
         diff: {
           ...diff,
           meanDifference: Number(metrics.diff)
         },
-        ergonomicWin: metrics.g3d.setupLines < metrics.threejs.setupLines,
-        gaps: [...metrics.g3d.gaps, ...metrics.threejs.gaps]
+        ergonomicWin: metrics.a3d.setupLines < metrics.threejs.setupLines,
+        gaps: [...metrics.a3d.gaps, ...metrics.threejs.gaps]
       });
     });
   }
@@ -135,7 +135,7 @@ test.describe("V3 same-scene Three.js comparison", () => {
 async function screenshotScene(
   page: import("@playwright/test").Page,
   sceneId: string,
-  engine: "g3d" | "threejs" | "diff",
+  engine: "a3d" | "threejs" | "diff",
   metrics: { readonly drawCalls: number; readonly itemCount: number; readonly setupLines: number; readonly gaps: readonly string[] }
 ): Promise<CaptureImage> {
   const path = join(reportDir, `${sceneId}-${engine}.png`);
@@ -153,7 +153,7 @@ async function screenshotScene(
 
 function captureFor(
   sceneId: string,
-  engine: "g3d" | "threejs",
+  engine: "a3d" | "threejs",
   metrics: { readonly drawCalls: number; readonly itemCount: number; readonly setupLines: number }
 ): CaptureImage {
   const path = join(reportDir, `${sceneId}-${engine}.png`);
@@ -176,7 +176,7 @@ interface CaptureImage {
 
 interface ComparisonCapture {
   readonly sceneId: string;
-  readonly g3d: CaptureImage;
+  readonly a3d: CaptureImage;
   readonly threejs: CaptureImage;
   readonly diff: CaptureImage & { readonly meanDifference: number };
   readonly ergonomicWin: boolean;

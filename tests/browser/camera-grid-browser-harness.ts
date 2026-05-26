@@ -1,4 +1,4 @@
-import { OrthographicCamera, PerspectiveCamera } from "@galileo3d/scene";
+import { OrthographicCamera, PerspectiveCamera } from "@aura3d/scene";
 
 interface CameraGridBrowserResult {
   readonly status: "ready" | "error";
@@ -14,7 +14,7 @@ interface CameraGridBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_CAMERA_GRID_BROWSER_TEST__?: CameraGridBrowserResult;
+    __AURA3D_CAMERA_GRID_BROWSER_TEST__?: CameraGridBrowserResult;
   }
 }
 
@@ -48,7 +48,7 @@ try {
   context.lineTo(160, 160);
   context.stroke();
 
-  window.__GALILEO3D_CAMERA_GRID_BROWSER_TEST__ = {
+  window.__AURA3D_CAMERA_GRID_BROWSER_TEST__ = {
     status: "ready",
     perspectiveLines,
     orthographicLines,
@@ -59,7 +59,7 @@ try {
     dividerPixel: readPixel(context, 160, 80)
   };
 } catch (error) {
-  window.__GALILEO3D_CAMERA_GRID_BROWSER_TEST__ = {
+  window.__AURA3D_CAMERA_GRID_BROWSER_TEST__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

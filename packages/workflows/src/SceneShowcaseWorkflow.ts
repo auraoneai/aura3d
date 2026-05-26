@@ -1,5 +1,5 @@
-import { composeMat4 } from "@galileo3d/scene";
-import { Geometry, PBRMaterial, createLightingDefault } from "@galileo3d/rendering";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, PBRMaterial, createLightingDefault } from "@aura3d/rendering";
 import { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 import type { SceneShowcaseWorkflowOptions, SceneShowcaseWorkflowResult } from "./WorkflowTypes";
 

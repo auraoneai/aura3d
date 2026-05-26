@@ -1,10 +1,10 @@
 declare global {
   interface Window {
-    __G3D_V4_CHARACTER_VIEWER__?: unknown;
+    __A3D_V4_CHARACTER_VIEWER__?: unknown;
   }
 }
 
-const fixturePath = "fixtures/v4/characters/animated-character/manifest.json";
+const fixturePath = "fixtures/external-parity/characters/animated-character/manifest.json";
 const claimBoundary = "Milestone 11 character viewer proof only; V4 release still requires real skinned glTF rendered animation parity against Three.js and license review.";
 
 export async function mountCharacterViewerV4(id: string): Promise<void> {
@@ -56,7 +56,7 @@ export async function mountCharacterViewerV4(id: string): Promise<void> {
       featureChecklist: ["character-fixture", "timeline-scrub", "play-pause", "skin-pose", "clip-diagnostics", "app-ui"],
       claimBoundary
     };
-    window.__G3D_V4_CHARACTER_VIEWER__ = state;
+    window.__A3D_V4_CHARACTER_VIEWER__ = state;
     status.textContent = JSON.stringify(state, null, 2);
   }
 

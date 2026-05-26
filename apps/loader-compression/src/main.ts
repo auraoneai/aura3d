@@ -12,12 +12,12 @@ import {
   type GLTFMeshoptDecoder,
   type GLTFMeshoptDecoderModule,
   type GLTFRenderResources
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LoaderCompression?: V8LoaderCompressionRuntime;
+    __a3dV8LoaderCompression?: V8LoaderCompressionRuntime;
   }
 }
 
@@ -42,7 +42,7 @@ interface V8LoaderCompressionRuntime {
   readonly extensionsUsed: readonly string[];
   readonly unsupportedRequired: readonly string[];
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -97,7 +97,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LoaderCompression = runtime;
+    window.__a3dV8LoaderCompression = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -113,7 +113,7 @@ async function run(): Promise<void> {
     }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
     const dracoResources = await createGLTFRenderResources(dracoAsset);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -174,7 +174,7 @@ async function run(): Promise<void> {
           extensionsUsed: [...asset.loaderDiagnostics.extensionsUsed, ...dracoAsset.loaderDiagnostics.extensionsUsed],
           unsupportedRequired: [...extensionSupport.unsupportedRequired, ...evaluateGLTFExtensionSupport(dracoAsset.loaderDiagnostics.extensionsUsed, dracoAsset.loaderDiagnostics.extensionsRequired).unsupportedRequired]
         });
-        window.__g3dV8LoaderCompression = runtime;
+        window.__a3dV8LoaderCompression = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -192,7 +192,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<G3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
   const viewport = { width: WIDTH, height: HEIGHT };
   const input = resources.toRendererInput(viewport, {
     qualityPreset: "studio-preview",
@@ -252,7 +252,7 @@ function createRuntime(
     extensionsUsed: patch.extensionsUsed ?? [],
     unsupportedRequired: patch.unsupportedRequired ?? [],
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -357,7 +357,7 @@ async function loadMeshoptDecoderModule(): Promise<GLTFMeshoptDecoderModule> {
 function createMeshoptFixtureDataUrl(): string {
   const buffer = concatBytes([COMPRESSED_POSITION_BYTES, NORMAL_BYTES, INDEX_BYTES], [0, 88, 124], 130);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V9 V8 loader compression fixture" },
+    asset: { version: "2.0", generator: "Aura3D V9 V8 loader compression fixture" },
     extensionsUsed: ["EXT_meshopt_compression", "KHR_materials_unlit"],
     extensionsRequired: ["EXT_meshopt_compression"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(buffer)}`, byteLength: buffer.byteLength }],
@@ -406,7 +406,7 @@ function createMeshoptFixtureDataUrl(): string {
 function createDracoFixtureDataUrl(): string {
   const compressed = DRACO_COMPRESSED_TRIANGLE_BYTES;
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V9 V8 loader Draco compression fixture" },
+    asset: { version: "2.0", generator: "Aura3D V9 V8 loader Draco compression fixture" },
     extensionsUsed: ["KHR_draco_mesh_compression", "KHR_materials_unlit"],
     extensionsRequired: ["KHR_draco_mesh_compression"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(compressed)}`, byteLength: compressed.byteLength }],
@@ -459,7 +459,7 @@ function renderUi(root: HTMLElement, runtime: V8LoaderCompressionRuntime): void 
     <section class="panel">
       <div>
         <h1>V8 Loader Compression</h1>
-        <p>EXT_meshopt_compression and KHR_draco_mesh_compression decoded through public G3D loader hooks.</p>
+        <p>EXT_meshopt_compression and KHR_draco_mesh_compression decoded through public A3D loader hooks.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>
     </section>

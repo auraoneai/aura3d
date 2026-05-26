@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { Ray, Vector3 } from "@galileo3d/math";
-import { DirectionalLight, OrthographicCamera, PerspectiveCamera, PointLight, Scene, SpotLight } from "@galileo3d/scene";
+import { Ray, Vector3 } from "@aura3d/math";
+import { DirectionalLight, OrthographicCamera, PerspectiveCamera, PointLight, Scene, SpotLight } from "@aura3d/scene";
 import {
   AssetLoadError,
   AssetManager,
@@ -22,11 +22,11 @@ import {
   type GLTFAsset,
   type GLTFDracoDecoder,
   type GLTFMeshoptDecoder
-} from "@galileo3d/assets";
-import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, TextureBinding, UnlitMaterial } from "@galileo3d/rendering";
-import { InputSnapshot, InteractionSystem, pickingRayFromCamera } from "@galileo3d/input";
-import { AudioListener, SceneAudioBridge } from "@galileo3d/audio";
-import { CommandHistory, DeleteNodeCommand, PickingService, TranslateGizmo, type Command } from "@galileo3d/editor-runtime";
+} from "@aura3d/assets";
+import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, InstancedPBRMaterial, InstancedUnlitMaterial, PBRMaterial, TextureBinding, UnlitMaterial } from "@aura3d/rendering";
+import { InputSnapshot, InteractionSystem, pickingRayFromCamera } from "@aura3d/input";
+import { AudioListener, SceneAudioBridge } from "@aura3d/audio";
+import { CommandHistory, DeleteNodeCommand, PickingService, TranslateGizmo, type Command } from "@aura3d/editor-runtime";
 
 test("workstream5 asset manager releases dependencies through dependency graph", async () => {
   const disposed: string[] = [];
@@ -1875,7 +1875,7 @@ test("workstream5 GLTFLoader accepts KHR_materials_unlit and creates unlit rende
   });
 
   assert.equal(asset.materials[0]?.unlit, true);
-  assert.equal(resources.materialLibrary.get("unlit-material")?.shaderKey, "galileo3d/textured-unlit");
+  assert.equal(resources.materialLibrary.get("unlit-material")?.shaderKey, "aura3d/textured-unlit");
   const binding = resources.materialLibrary.get("unlit-material")?.getParameter("u_baseColorTexture");
   assert.ok(binding instanceof TextureBinding);
   assert.equal(binding.texture?.label, "unlit-base-texture");
@@ -1907,7 +1907,7 @@ test("workstream5 GLTFLoader accepts KHR_materials_emissive_strength and preserv
 
   assert.equal(asset.materials[0]?.emissiveStrength, 4.5);
   assert.deepEqual(asset.materials[0]?.emissiveFactor, [0.2, 0.4, 0.6]);
-  assert.equal(material?.shaderKey, "galileo3d/pbr-direct");
+  assert.equal(material?.shaderKey, "aura3d/pbr-direct");
   assert.deepEqual(material?.getParameter("u_emissiveColor"), [0.2, 0.4, 0.6]);
   assert.equal(material?.getParameter("u_emissiveStrength"), 4.5);
 
@@ -2672,7 +2672,7 @@ test("workstream5 glTF render resources bind material textures, samplers, UV tra
   assert.equal(resources.scene.collectRenderables()[0]?.renderable.material, "textured-material");
 
   const material = resources.materialLibrary.get("textured-material");
-  assert.equal(material?.shaderKey, "galileo3d/pbr-textured");
+  assert.equal(material?.shaderKey, "aura3d/pbr-textured");
   const binding = material?.getParameter("u_baseColorTexture");
   const normalBinding = material?.getParameter("u_normalTexture");
   const metallicRoughnessBinding = material?.getParameter("u_metallicRoughnessTexture");

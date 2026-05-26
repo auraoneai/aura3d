@@ -164,7 +164,7 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
   if (relativePath.endsWith("/index.html")) {
     return [
       "<script type=\"module\" src=\"./main.js\"></script>",
-      "Galileo3D",
+      "Aura3D",
     ];
   }
   const demoId = relativePath.split("/", 1)[0] ?? "";

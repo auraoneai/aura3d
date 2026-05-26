@@ -79,7 +79,7 @@ test.describe("V6 WebGL2 real renderer", () => {
     await canvas.screenshot({ path: screenshotPath });
     const reportPath = "tests/reports/production-runtime-webgl2-real-renderer.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-production-runtime-webgl2-real-renderer/v1",
+      schema: "a3d-production-runtime-webgl2-real-renderer/v1",
       generatedAt: new Date().toISOString(),
       screenshot: screenshotPath,
       ...result

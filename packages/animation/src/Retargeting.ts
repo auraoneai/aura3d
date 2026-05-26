@@ -1,4 +1,4 @@
-import { Matrix4 } from "@galileo3d/math";
+import { Matrix4 } from "@aura3d/math";
 
 export interface RetargetBoneMap {
   readonly source: string;

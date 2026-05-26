@@ -76,7 +76,7 @@ test.describe("V8 route health", () => {
       ...routes.flatMap((route) => route.failures.map((failure) => `${route.path}: ${failure}`))
     ];
     const report: V8RouteHealthReport = {
-      schema: "g3d-current-routes-route-health/v1",
+      schema: "a3d-current-routes-route-health/v1",
       generatedAt: new Date().toISOString(),
       origin,
       root: {

@@ -169,7 +169,7 @@ export function createReleaseRunId(now = new Date()): string {
 export function runReleaseVerification(
   root = process.cwd(),
   commands: readonly ReleaseCommand[] = defaultCommands,
-  releaseRunId = process.env.G3D_RELEASE_RUN_ID ?? createReleaseRunId()
+  releaseRunId = process.env.A3D_RELEASE_RUN_ID ?? createReleaseRunId()
 ): ReleaseVerificationReport {
   const results: ReleaseCommandResult[] = [];
   const startedAt = new Date();
@@ -183,8 +183,8 @@ export function runReleaseVerification(
       maxBuffer: 20 * 1024 * 1024,
       env: {
         ...process.env,
-        G3D_RELEASE_RUN_ID: releaseRunId,
-        G3D_RELEASE_STARTED_AT: startedAt.toISOString()
+        A3D_RELEASE_RUN_ID: releaseRunId,
+        A3D_RELEASE_STARTED_AT: startedAt.toISOString()
       }
     });
     postprocessCommandReports(root, name, releaseRunId);
@@ -357,7 +357,7 @@ export function runReleaseRepeat(
   return {
     ok: runs.every((run) => run.ok),
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-release-repeat-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-release-repeat-run",
     gitSha: gitSha(root),
     command: `pnpm verify:release:repeat --repeat ${repeats}`,
     environment: {

@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../browser/example
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_LAB__?: {
+    __AURA3D_MATERIAL_LAB__?: {
       status: "ready" | "error";
       renderer: "webgl2";
       diagnostics?: { drawCalls: number; lastError: string | null };
@@ -29,10 +29,10 @@ test.describe("material matrix visual pixels", () => {
   test("renders base color, vertex color, normal map, metallic-roughness, occlusion, emissive, alpha mask, double-sided, UV transform, and alpha blend materials through WebGL2", async ({ page }) => {
     await page.goto(`${server.origin}/examples/material-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
-      () => window.__GALILEO3D_MATERIAL_LAB__?.status === "ready" || window.__GALILEO3D_MATERIAL_LAB__?.status === "error",
+      () => window.__AURA3D_MATERIAL_LAB__?.status === "ready" || window.__AURA3D_MATERIAL_LAB__?.status === "error",
       undefined,
       { timeout: 15_000 }
-    ).then(() => page.evaluate(() => window.__GALILEO3D_MATERIAL_LAB__));
+    ).then(() => page.evaluate(() => window.__AURA3D_MATERIAL_LAB__));
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");

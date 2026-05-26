@@ -31,7 +31,7 @@
       "triangles": 18324,
       "materials": 6,
       "textures": 1,
-      "notes": "Shared generated headphone configurator asset descriptor used by Galileo3D, Three.js, and Babylon.js benchmark scenes."
+      "notes": "Shared generated headphone configurator asset descriptor used by Aura3D, Three.js, and Babylon.js benchmark scenes."
     },
     {
       "id": "generated-civic-gallery-v3",
@@ -95,7 +95,7 @@
       "triangles": 65536,
       "materials": 8,
       "textures": 4,
-      "notes": "Bounded V4 postprocess workload descriptor using Galileo3D tone-mapping, bloom, FXAA, and depth-readback evidence; HDR/postprocess parity remains unsupported."
+      "notes": "Bounded V4 postprocess workload descriptor using Aura3D tone-mapping, bloom, FXAA, and depth-readback evidence; HDR/postprocess parity remains unsupported."
     },
     {
       "id": "generated-morph-character-v4",

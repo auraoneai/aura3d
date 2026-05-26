@@ -1,6 +1,6 @@
-import { AnimationAction, AnimationClip, AnimationLayer, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, type AnimationValue, type LoopMode } from "@galileo3d/animation";
-import { GLTFLoader, LoadContext, type GLTFMeshAsset } from "@galileo3d/assets";
-import { Geometry, IndexBuffer, Renderer, SkinnedUnlitMaterial, UnlitMaterial, VertexBuffer, VertexFormat } from "@galileo3d/rendering";
+import { AnimationAction, AnimationClip, AnimationLayer, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette, type AnimationValue, type LoopMode } from "@aura3d/animation";
+import { GLTFLoader, LoadContext, type GLTFMeshAsset } from "@aura3d/assets";
+import { Geometry, IndexBuffer, Renderer, SkinnedUnlitMaterial, UnlitMaterial, VertexBuffer, VertexFormat } from "@aura3d/rendering";
 
 interface AnimationBrowserResult {
   readonly status: "ready" | "error";
@@ -60,8 +60,8 @@ interface AnimationControlState {
 
 declare global {
   interface Window {
-    __GALILEO3D_ANIMATION_BROWSER_TEST__?: AnimationBrowserResult;
-    __GALILEO3D_ANIMATION_CONTROLS__?: AnimationControlState;
+    __AURA3D_ANIMATION_BROWSER_TEST__?: AnimationBrowserResult;
+    __AURA3D_ANIMATION_CONTROLS__?: AnimationControlState;
   }
 }
 
@@ -99,7 +99,7 @@ async function run(): Promise<void> {
     const skeletonResult = drawSkeletonDebug();
     const controls = await setupAnimationControls();
 
-    window.__GALILEO3D_ANIMATION_BROWSER_TEST__ = {
+    window.__AURA3D_ANIMATION_BROWSER_TEST__ = {
       status: "ready",
       frameAPixel: frameA.pixel,
       frameBPixel: frameB.pixel,
@@ -126,7 +126,7 @@ async function run(): Promise<void> {
       }
     };
   } catch (error) {
-    window.__GALILEO3D_ANIMATION_BROWSER_TEST__ = {
+    window.__AURA3D_ANIMATION_BROWSER_TEST__ = {
       status: "error",
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -202,7 +202,7 @@ async function setupAnimationControls(): Promise<AnimationControlState> {
     void updateControls(mixer, action, crossfadeAction, values, history, "crossfade", 0.25).then((state) => { latest = state; });
   });
 
-  Object.defineProperty(window, "__GALILEO3D_ANIMATION_CONTROLS__", {
+  Object.defineProperty(window, "__AURA3D_ANIMATION_CONTROLS__", {
     configurable: true,
     get: () => latest
   });
@@ -239,9 +239,9 @@ async function updateControls(
     drawCalls: render.drawCalls,
     history: [...history]
   };
-  const result = window.__GALILEO3D_ANIMATION_BROWSER_TEST__;
+  const result = window.__AURA3D_ANIMATION_BROWSER_TEST__;
   if (result) {
-    window.__GALILEO3D_ANIMATION_BROWSER_TEST__ = { ...result, controls: state };
+    window.__AURA3D_ANIMATION_BROWSER_TEST__ = { ...result, controls: state };
   }
   return state;
 }

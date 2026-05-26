@@ -5,7 +5,7 @@ This tutorial maps to `examples/foundation-interactive-scene` and `examples/foun
 ## Core API
 
 ```ts
-import { createInteractiveSceneWorkflow } from "@galileo3d/workflows";
+import { createInteractiveSceneWorkflow } from "@aura3d/workflows";
 
 const workflow = createInteractiveSceneWorkflow({ preset: "orbiting-products" });
 
@@ -25,7 +25,7 @@ renderer.startAnimationLoop((timeMs) => {
 
 ## Boundary
 
-This is a realtime viewport slice, not a claim that G3D replaces Unity, Unreal, or every Three.js use case.
+This is a realtime viewport slice, not a claim that A3D replaces Unity, Unreal, or every Three.js use case.
 
 ## Verification
 

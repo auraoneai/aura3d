@@ -357,16 +357,16 @@ function createGltfParityDimensions(options: {
   const khronos100Source = isRecord(options.khronos100Classification?.sourceManifest) ? options.khronos100Classification.sourceManifest : {};
   const comparisonUnsupported = stringArray(options.comparison?.unsupportedByThisReport);
   const assetCompatibilityEntries = Array.isArray(options.assetCompatibility?.assets) ? options.assetCompatibility.assets.filter(isRecord) : [];
-  const galileoExpectedFailIds = assetCompatibilityEntries.flatMap((asset) => {
+  const aura3dExpectedFailIds = assetCompatibilityEntries.flatMap((asset) => {
     const loaders = Array.isArray(asset.loaders) ? asset.loaders.filter(isRecord) : [];
-    const galileo = loaders.find((loader) => loader.loader === "galileo3d");
-    return galileo?.status === "expected-fail" && typeof asset.id === "string" ? [asset.id] : [];
+    const aura3d = loaders.find((loader) => loader.loader === "aura3d");
+    return aura3d?.status === "expected-fail" && typeof asset.id === "string" ? [asset.id] : [];
   });
-  const recoveredGalileoExpectedFailIds = galileoExpectedFailIds.filter((assetId) => hasRecoveredKhronosVisualEvidence(options.khronosVisuals, assetId));
-  const unrecoveredGalileoExpectedFailIds = galileoExpectedFailIds.filter((assetId) => !recoveredGalileoExpectedFailIds.includes(assetId));
+  const recoveredAura3DExpectedFailIds = aura3dExpectedFailIds.filter((assetId) => hasRecoveredKhronosVisualEvidence(options.khronosVisuals, assetId));
+  const unrecoveredAura3DExpectedFailIds = aura3dExpectedFailIds.filter((assetId) => !recoveredAura3DExpectedFailIds.includes(assetId));
   const compatibility = isRecord(options.comparison?.gltfCompatibility) ? options.comparison.gltfCompatibility : {};
   const compatibilitySummary = isRecord(compatibility.summary) ? compatibility.summary : {};
-  const galileoCompatibility = isRecord(compatibilitySummary.galileo3d) ? compatibilitySummary.galileo3d : {};
+  const aura3dCompatibility = isRecord(compatibilitySummary.aura3d) ? compatibilitySummary.aura3d : {};
   const threeCompatibility = isRecord(compatibilitySummary.threejs) ? compatibilitySummary.threejs : {};
   const babylonCompatibility = isRecord(compatibilitySummary.babylonjs) ? compatibilitySummary.babylonjs : {};
   const blenderCompatibility = isRecord(compatibilitySummary.blenderExport) ? compatibilitySummary.blenderExport : {};
@@ -386,13 +386,13 @@ function createGltfParityDimensions(options: {
     khronos100EffectivePass === Number(khronos100Source.assetCount ?? 0) &&
     khronos100EffectiveWarn === 0 &&
     Number(khronos100Summary.expectedFail ?? 0) === 0;
-  const galileoExpectedFailCount = Number(galileoCompatibility["expected-fail"] ?? 0);
-  const galileoExpectedFailuresRecovered = galileoExpectedFailCount === 0 ||
-    (assetCompatibilityEntries.length > 0 && recoveredGalileoExpectedFailIds.length >= galileoExpectedFailCount && unrecoveredGalileoExpectedFailIds.length === 0);
+  const aura3dExpectedFailCount = Number(aura3dCompatibility["expected-fail"] ?? 0);
+  const aura3dExpectedFailuresRecovered = aura3dExpectedFailCount === 0 ||
+    (assetCompatibilityEntries.length > 0 && recoveredAura3DExpectedFailIds.length >= aura3dExpectedFailCount && unrecoveredAura3DExpectedFailIds.length === 0);
   const sameCorpusLoaderCompatibilityReady =
     Number(compatibilitySummary.assetCount ?? 0) >= 17 &&
-    galileoExpectedFailuresRecovered &&
-    Number(galileoCompatibility["not-run"] ?? 0) === 0 &&
+    aura3dExpectedFailuresRecovered &&
+    Number(aura3dCompatibility["not-run"] ?? 0) === 0 &&
     Number(threeCompatibility["expected-fail"] ?? 0) === 0 &&
     Number(threeCompatibility["not-run"] ?? 0) === 0 &&
     Number(babylonCompatibility["expected-fail"] ?? 0) === 0 &&
@@ -486,30 +486,30 @@ function createGltfParityDimensions(options: {
       expectedFail: Number(khronos100Summary.expectedFail ?? 0),
     }),
     gltfDimension("same-corpus-loader-compatibility", sameCorpusLoaderCompatibilityReady, [
-      "Galileo3D, Three.js, and Babylon.js all run the same pinned Khronos compatibility corpus with no not-run entries.",
-      "Legacy Galileo3D expected-fail entries have browser visual recovery evidence in the V4 Khronos visual report.",
+      "Aura3D, Three.js, and Babylon.js all run the same pinned Khronos compatibility corpus with no not-run entries.",
+      "Legacy Aura3D expected-fail entries have browser visual recovery evidence in the V4 Khronos visual report.",
     ], [
-      galileoExpectedFailCount === 0 ? "" : assetCompatibilityEntries.length === 0 ? "asset compatibility entries are missing, so Galileo3D expected-fail recovery cannot be verified." : unrecoveredGalileoExpectedFailIds.length === 0 ? "" : `Galileo3D has ${unrecoveredGalileoExpectedFailIds.length} unrecovered expected-fail compatibility entries: ${unrecoveredGalileoExpectedFailIds.join(", ")}.`,
-      Number(galileoCompatibility["not-run"] ?? 0) === 0 ? "" : `Galileo3D has ${Number(galileoCompatibility["not-run"] ?? 0)} not-run compatibility entries.`,
+      aura3dExpectedFailCount === 0 ? "" : assetCompatibilityEntries.length === 0 ? "asset compatibility entries are missing, so Aura3D expected-fail recovery cannot be verified." : unrecoveredAura3DExpectedFailIds.length === 0 ? "" : `Aura3D has ${unrecoveredAura3DExpectedFailIds.length} unrecovered expected-fail compatibility entries: ${unrecoveredAura3DExpectedFailIds.join(", ")}.`,
+      Number(aura3dCompatibility["not-run"] ?? 0) === 0 ? "" : `Aura3D has ${Number(aura3dCompatibility["not-run"] ?? 0)} not-run compatibility entries.`,
       Number(threeCompatibility["expected-fail"] ?? 0) === 0 ? "" : `Three.js has ${Number(threeCompatibility["expected-fail"] ?? 0)} expected-fail compatibility entries.`,
       Number(threeCompatibility["not-run"] ?? 0) === 0 ? "" : `Three.js has ${Number(threeCompatibility["not-run"] ?? 0)} not-run compatibility entries.`,
       Number(babylonCompatibility["expected-fail"] ?? 0) === 0 ? "" : `Babylon.js has ${Number(babylonCompatibility["expected-fail"] ?? 0)} expected-fail compatibility entries.`,
       Number(babylonCompatibility["not-run"] ?? 0) === 0 ? "" : `Babylon.js has ${Number(babylonCompatibility["not-run"] ?? 0)} not-run compatibility entries.`,
     ], {
       assetCount: Number(compatibilitySummary.assetCount ?? 0),
-      galileoExpectedFail: galileoExpectedFailCount,
-      galileoRecoveredExpectedFail: recoveredGalileoExpectedFailIds.length,
-      galileoUnrecoveredExpectedFail: unrecoveredGalileoExpectedFailIds.length,
+      aura3dExpectedFail: aura3dExpectedFailCount,
+      aura3dRecoveredExpectedFail: recoveredAura3DExpectedFailIds.length,
+      aura3dUnrecoveredExpectedFail: unrecoveredAura3DExpectedFailIds.length,
       threeExpectedFail: Number(threeCompatibility["expected-fail"] ?? 0),
       babylonExpectedFail: Number(babylonCompatibility["expected-fail"] ?? 0),
-      galileoNotRun: Number(galileoCompatibility["not-run"] ?? 0),
+      aura3dNotRun: Number(aura3dCompatibility["not-run"] ?? 0),
       threeNotRun: Number(threeCompatibility["not-run"] ?? 0),
       babylonNotRun: Number(babylonCompatibility["not-run"] ?? 0),
     }),
     gltfDimension("blender-export-same-corpus-coverage", blenderSameCorpusReady && separateBlenderValidationReady, [
       "Blender-export validation passes and the same compatibility corpus has Blender-export coverage.",
       ...(blenderSameCorpusFailures.expectedFailCount > 0
-        ? [`${blenderSameCorpusFailures.expectedFailCount} same-corpus entries explicitly fail in Blender's importer before Galileo3D reload; these are recorded as external-tool failures, not not-run placeholders.`]
+        ? [`${blenderSameCorpusFailures.expectedFailCount} same-corpus entries explicitly fail in Blender's importer before Aura3D reload; these are recorded as external-tool failures, not not-run placeholders.`]
         : []),
     ], [
       separateBlenderValidationReady ? "" : "separate Blender-export validation is missing, warning, or failing.",
@@ -649,10 +649,10 @@ function hasAdvancedPbrTextureVariantEvidence(root: string): boolean {
   return variantNames.every((variant) => shaderLibrary.includes(variant)) &&
     variantConstants.every((variant) => shaderTests.includes(variant)) &&
     [
-      "G3D_PBR_CLEARCOAT_TEXTURES",
-      "G3D_PBR_TRANSMISSION_VOLUME_TEXTURES",
-      "G3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES",
-      "G3D_PBR_IRIDESCENCE_TEXTURES",
+      "A3D_PBR_CLEARCOAT_TEXTURES",
+      "A3D_PBR_TRANSMISSION_VOLUME_TEXTURES",
+      "A3D_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES",
+      "A3D_PBR_IRIDESCENCE_TEXTURES",
     ].every((define) => shaderLibrary.includes(define)) &&
     shaderTests.includes("fragmentSamplerCount") &&
     shaderTests.includes("toBeLessThanOrEqual(16)") &&

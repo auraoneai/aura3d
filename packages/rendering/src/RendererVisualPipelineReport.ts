@@ -1,8 +1,8 @@
 import {
   createV4ColorManagementPolicy,
-  type G3DColorManagementPolicy,
-  type G3DColorSpace,
-  type G3DTextureSemantic
+  type A3DColorManagementPolicy,
+  type A3DColorSpace,
+  type A3DTextureSemantic
 } from "./ColorManagement";
 import {
   createToneMappingCalibration,
@@ -106,7 +106,7 @@ export interface RendererScreenshotConsistencyInput {
   readonly expectedWidth: number;
   readonly expectedHeight: number;
   readonly expectedByteLength?: number;
-  readonly colorSpace?: G3DColorSpace;
+  readonly colorSpace?: A3DColorSpace;
 }
 
 export interface RendererScreenshotConsistencyReport {
@@ -117,7 +117,7 @@ export interface RendererScreenshotConsistencyReport {
   readonly expectedWidth: number;
   readonly expectedHeight: number;
   readonly expectedByteLength: number;
-  readonly colorSpace: G3DColorSpace;
+  readonly colorSpace: A3DColorSpace;
   readonly pixelFormat: "rgba8";
   readonly readbackMatchesBackingStore: boolean;
   readonly colorProfileEmbedded: false;
@@ -199,10 +199,10 @@ export interface RendererVisualPipelineReportOptions {
   readonly width: number;
   readonly height: number;
   readonly postprocess?: RendererVisualPostprocessDescriptor | boolean;
-  readonly colorManagement?: G3DColorManagementPolicy;
+  readonly colorManagement?: A3DColorManagementPolicy;
   readonly canvas?: RendererCanvasBackingInput;
   readonly screenshot?: Omit<RendererScreenshotConsistencyInput, "expectedWidth" | "expectedHeight" | "colorSpace"> & {
-    readonly colorSpace?: G3DColorSpace;
+    readonly colorSpace?: A3DColorSpace;
   };
   readonly capture?: RendererCaptureQualityInput;
   readonly frameCadence?: RendererFrameCadenceInput;
@@ -211,10 +211,10 @@ export interface RendererVisualPipelineReportOptions {
 
 export interface RendererVisualColorReport {
   readonly lightingColorSpace: "linear";
-  readonly outputColorSpace: G3DColorSpace;
-  readonly supportedOutputColorSpaces: readonly G3DColorSpace[];
+  readonly outputColorSpace: A3DColorSpace;
+  readonly supportedOutputColorSpaces: readonly A3DColorSpace[];
   readonly unsupportedOutputColorSpaces: readonly ["display-p3", "rec2020"];
-  readonly texturePolicy: Readonly<Record<G3DTextureSemantic, G3DColorSpace>>;
+  readonly texturePolicy: Readonly<Record<A3DTextureSemantic, A3DColorSpace>>;
   readonly ldrFallbackAllowed: boolean;
   readonly fallbackBehavior: string;
 }
@@ -247,7 +247,7 @@ export interface RendererVisualPostprocessReport {
   readonly rendererOwnedPassNames: readonly RendererVisualPostprocessPassName[];
   readonly clarityWarnings: readonly string[];
   readonly forwardOutputColorSpace: PostProcessColorSpace;
-  readonly presentationColorSpace: G3DColorSpace;
+  readonly presentationColorSpace: A3DColorSpace;
   readonly renderTargetWidth: number;
   readonly renderTargetHeight: number;
   readonly plan?: RendererPostprocessPlanDiagnostics;
@@ -285,7 +285,7 @@ export interface RendererVisualPipelineReport {
   readonly warnings: readonly string[];
 }
 
-const SUPPORTED_OUTPUT_COLOR_SPACES: readonly G3DColorSpace[] = ["linear", "srgb"];
+const SUPPORTED_OUTPUT_COLOR_SPACES: readonly A3DColorSpace[] = ["linear", "srgb"];
 const UNSUPPORTED_OUTPUT_COLOR_SPACES = ["display-p3", "rec2020"] as const;
 const HDR_FORMATS: readonly RendererVisualTargetFormat[] = ["rgba16f", "rgba32f"];
 
@@ -685,7 +685,7 @@ function createPostprocessReport(options: {
   readonly plan?: RendererPostprocessPlanDiagnostics;
   readonly width: number;
   readonly height: number;
-  readonly presentationColorSpace: G3DColorSpace;
+  readonly presentationColorSpace: A3DColorSpace;
   readonly hdrTargetStatus: RendererVisualPipelineStatus;
   readonly toneMappingStatus: RendererVisualPipelineStatus;
 }): RendererVisualPostprocessReport {

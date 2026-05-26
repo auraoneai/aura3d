@@ -5,7 +5,7 @@ import { readV6PngStats, type V6PngStats } from "../production-runtime-report-br
 
 const DEFAULT_SCREENSHOT_ROOTS = ["tests/reports/current-routes"] as const;
 const REPORT_PATH = "tests/reports/current-routes-visual-review.json";
-const NOTES_PATH = process.env.G3D_V8_VISUAL_NOTES ?? "tests/reports/current-routes-visual-review-notes.json";
+const NOTES_PATH = process.env.A3D_V8_VISUAL_NOTES ?? "tests/reports/current-routes-visual-review-notes.json";
 
 interface ScreenshotReview {
   readonly screenshot: string;
@@ -75,7 +75,7 @@ export function createV8VisualReviewReport(): Record<string, unknown> {
   ];
 
   return {
-    schema: "g3d-current-routes-visual-review/v1",
+    schema: "a3d-current-routes-visual-review/v1",
     generatedAt: new Date().toISOString(),
     pass: screenshots.length > 0 && failures.length === 0,
     screenshotRoots,
@@ -102,7 +102,7 @@ export function writeV8VisualReviewReport(report: Record<string, unknown>): void
 }
 
 function screenshotRootsFromEnv(): readonly string[] {
-  const raw = process.env.G3D_V8_VISUAL_ROOTS;
+  const raw = process.env.A3D_V8_VISUAL_ROOTS;
   if (!raw) return DEFAULT_SCREENSHOT_ROOTS;
   return raw.split(",").map((entry) => entry.trim()).filter(Boolean);
 }

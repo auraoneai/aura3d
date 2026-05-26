@@ -10,7 +10,7 @@ const issues = needingReview.map((item) => reportIssue(
 ));
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-visual-review/v1",
+  schema: "a3d-threejs-parity-visual-review/v1",
   generatedAt: new Date().toISOString(),
   pass: !issues.some((issue) => issue.severity === "blocker"),
   accepted: inventory.items.length - needingReview.length,

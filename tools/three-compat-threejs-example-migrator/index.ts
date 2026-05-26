@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { migrateThreeToG3D } from "../../packages/three-compat/src";
+import { migrateThreeToA3D } from "../../packages/three-compat/src";
 
 const source = `
 import * as THREE from "three";
@@ -11,7 +11,7 @@ renderer.setSize(800, 600);
 new OrbitControls();
 new GLTFLoader();
 `;
-const result = migrateThreeToG3D(source);
+const result = migrateThreeToA3D(source);
 const outputPath = resolve("tests/reports/three-compat-migrated-three-example.ts");
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, result.code);

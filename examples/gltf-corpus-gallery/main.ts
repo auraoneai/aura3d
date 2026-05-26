@@ -1,4 +1,4 @@
-import { createGLTFCorpusReport, type GLTFCorpusManifest, type GLTFCorpusReport } from "@galileo3d/assets";
+import { createGLTFCorpusReport, type GLTFCorpusManifest, type GLTFCorpusReport } from "@aura3d/assets";
 import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {
@@ -21,7 +21,7 @@ interface GalleryState {
 
 declare global {
   interface Window {
-    __GALILEO3D_GLTF_CORPUS_GALLERY__?: GalleryState;
+    __AURA3D_GLTF_CORPUS_GALLERY__?: GalleryState;
   }
 }
 
@@ -31,7 +31,7 @@ if (typeof document !== "undefined") {
     const manifest = await loadManifest();
     const report = createGLTFCorpusReport(manifest, "2026-05-06T00:00:00.000Z");
     const galleryState = summarize(report);
-    window.__GALILEO3D_GLTF_CORPUS_GALLERY__ = galleryState;
+    window.__AURA3D_GLTF_CORPUS_GALLERY__ = galleryState;
 
     return {
       metrics: {
@@ -46,7 +46,7 @@ if (typeof document !== "undefined") {
       },
     };
   }).catch((error) => {
-    window.__GALILEO3D_GLTF_CORPUS_GALLERY__ = {
+    window.__AURA3D_GLTF_CORPUS_GALLERY__ = {
       status: "error",
       assetCount: 0,
       pass: 0,

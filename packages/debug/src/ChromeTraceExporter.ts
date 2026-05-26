@@ -16,7 +16,7 @@ export interface ChromeTrace {
   readonly traceEvents: readonly ChromeTraceEvent[];
   readonly displayTimeUnit: "ms";
   readonly metadata: {
-    readonly source: "galileo3d-debug-chrome-trace-exporter";
+    readonly source: "aura3d-debug-chrome-trace-exporter";
     readonly profileName: string;
     readonly cpuMarkerCount: number;
     readonly gpuSampleCount: number;
@@ -38,12 +38,12 @@ export class ChromeTraceExporter {
     gpu?: GPUProfilerSnapshot,
     options: ChromeTraceExportOptions = {}
   ): ChromeTrace {
-    const profileName = options.profileName?.trim() || "Galileo3D profile";
+    const profileName = options.profileName?.trim() || "Aura3D profile";
     const processId = positiveInteger(options.processId, 1);
     const cpuThreadId = positiveInteger(options.cpuThreadId, 1);
     const gpuThreadId = positiveInteger(options.gpuThreadId, 2);
     const events: ChromeTraceEvent[] = [
-      metadataEvent("process_name", processId, cpuThreadId, { name: "Galileo3D" }),
+      metadataEvent("process_name", processId, cpuThreadId, { name: "Aura3D" }),
       metadataEvent("thread_name", processId, cpuThreadId, { name: "CPU" }),
       metadataEvent("thread_name", processId, gpuThreadId, { name: "GPU" })
     ];
@@ -90,7 +90,7 @@ export class ChromeTraceExporter {
       traceEvents: events,
       displayTimeUnit: "ms",
       metadata: {
-        source: "galileo3d-debug-chrome-trace-exporter",
+        source: "aura3d-debug-chrome-trace-exporter",
         profileName,
         cpuMarkerCount: cpu.markerCount,
         gpuSampleCount: gpu?.sampleCount ?? 0,

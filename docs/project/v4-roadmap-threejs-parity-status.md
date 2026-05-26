@@ -22,7 +22,7 @@ The gate renders six scene intents in the browser:
 
 Each comparison captures:
 
-- G3D screenshot,
+- A3D screenshot,
 - Three.js screenshot,
 - diff image,
 - setup line counts,
@@ -38,7 +38,7 @@ Each comparison captures:
 
 ## What It Proves
 
-For supported workflows, G3D can produce comparable browser-rendered scenes with fewer public setup lines and first-class diagnostics/workflow APIs.
+For supported workflows, A3D can produce comparable browser-rendered scenes with fewer public setup lines and first-class diagnostics/workflow APIs.
 
 ## What It Does Not Prove
 

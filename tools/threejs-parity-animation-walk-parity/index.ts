@@ -3,10 +3,10 @@ import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
   loadV6GLTFRenderPipeline
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4, multiplyMat4 } from "@galileo3d/scene";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@aura3d/rendering";
+import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -22,11 +22,11 @@ type AnimationWalkParityResult = AnimationWalkParityReady | AnimationWalkParityE
 
 interface AnimationWalkParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-animation-walk-parity/v1";
-  readonly purpose: "same-asset Soldier Walk clip G3D imported animation runtime vs actual Three.js AnimationMixer";
+  readonly schema: "a3d-threejs-parity-animation-walk-parity/v1";
+  readonly purpose: "same-asset Soldier Walk clip A3D imported animation runtime vs actual Three.js AnimationMixer";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly drawCalls: number; readonly triangles: number };
     readonly animation: { readonly clipName: string; readonly sampledAtSeconds: number; readonly tracksApplied: number; readonly skinningPalettesUpdated: number };
     readonly pixels: PixelStats;
@@ -44,16 +44,16 @@ interface AnimationWalkParityReady {
     readonly actualThreeGLTFLoader: boolean;
     readonly actualThreeRenderer: boolean;
     readonly actualThreeAnimationMixer: boolean;
-    readonly g3dAppliedTracksAndSkinning: boolean;
+    readonly a3dAppliedTracksAndSkinning: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
 }
 
 interface AnimationWalkParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-animation-walk-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-walk-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -97,28 +97,28 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-animation-walk", ASSET.width, ASSET.height);
+    const a3dCanvas = requiredCanvas("a3d-animation-walk", ASSET.width, ASSET.height);
     const threeCanvas = requiredCanvas("threejs-animation-walk", ASSET.width, ASSET.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", ASSET.width * 2, ASSET.height + 60);
-    if (status) status.textContent = "rendering G3D Soldier Walk";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D Soldier Walk";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering Three.js Soldier Walk reference";
-    const threejs = await renderThree(threeCanvas, g3d.clipName);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const threejs = await renderThree(threeCanvas, a3d.clipName);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
     const ready: AnimationWalkParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-animation-walk-parity/v1",
-      purpose: "same-asset Soldier Walk clip G3D imported animation runtime vs actual Three.js AnimationMixer",
+      schema: "a3d-threejs-parity-animation-walk-parity/v1",
+      purpose: "same-asset Soldier Walk clip A3D imported animation runtime vs actual Three.js AnimationMixer",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls, triangles: g3d.triangles },
-        animation: { clipName: g3d.clipName, sampledAtSeconds: SAMPLE_SECONDS, tracksApplied: g3d.tracksApplied, skinningPalettesUpdated: g3d.skinningPalettesUpdated },
-        pixels: g3dStats
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls, triangles: a3d.triangles },
+        animation: { clipName: a3d.clipName, sampledAtSeconds: SAMPLE_SECONDS, tracksApplied: a3d.tracksApplied, skinningPalettesUpdated: a3d.skinningPalettesUpdated },
+        pixels: a3dStats
       },
       threejs: {
         loader: {
@@ -133,15 +133,15 @@ async function run(): Promise<void> {
       diff,
       assertions: {
         sameAssetUrl: true,
-        sameWalkClip: /^walk$/i.test(g3d.clipName) && g3d.clipName === threejs.clipName,
+        sameWalkClip: /^walk$/i.test(a3d.clipName) && a3d.clipName === threejs.clipName,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeAnimationMixer: threejs.actualAnimationMixer,
-        g3dAppliedTracksAndSkinning: g3d.tracksApplied > 0 && g3d.skinningPalettesUpdated > 0,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
+        a3dAppliedTracksAndSkinning: a3d.tracksApplied > 0 && a3d.skinningPalettesUpdated > 0,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
     window.__V9_ANIMATION_WALK_PARITY__ = ready;
     if (status) status.textContent = "ready";
@@ -149,7 +149,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: AnimationWalkParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-animation-walk-parity/v1",
+      schema: "a3d-threejs-parity-animation-walk-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -159,7 +159,7 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
+async function renderA3D(canvas: HTMLCanvasElement) {
   const pipeline = await loadV6GLTFRenderPipeline({
     url: ASSET.url,
     assetId: "v9-animation-walk-soldier",
@@ -174,7 +174,7 @@ async function renderG3D(canvas: HTMLCanvasElement) {
       frustumCulling: false
     }
   });
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     canvas,
     width: ASSET.width,
     height: ASSET.height,
@@ -194,8 +194,8 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   const frame = computePerspectiveCameraFrame(FRAME_BOUNDS, { width: ASSET.width, height: ASSET.height }, CAMERA_FRAME);
   const diagnostics = renderer.render({
     source: {
-      collectRenderItems: () => [...createG3DStageItems(), ...collectImportedItems(pipeline, PLACEMENT)],
-      collectedLights: createG3DLights(),
+      collectRenderItems: () => [...createA3DStageItems(), ...collectImportedItems(pipeline, PLACEMENT)],
+      collectedLights: createA3DLights(),
       environmentLighting: DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
       cameraPolicy: "require",
       cameraPosition: frame.cameraPosition,
@@ -236,7 +236,7 @@ function collectImportedItems(pipeline, placement) {
   return items;
 }
 
-function createG3DStageItems() {
+function createA3DStageItems() {
   const cube = Geometry.litCube(1);
   const shadow = Geometry.cylinder({ radius: 0.5, height: 1, segments: 48, capped: true });
   const floor = new PBRMaterial({ name: "animation-walk-parity-floor", baseColor: [0.73, 0.73, 0.73, 1], roughness: 0.66, metallic: 0, environmentIntensity: 0.25 });
@@ -247,7 +247,7 @@ function createG3DStageItems() {
   ];
 }
 
-function createG3DLights() {
+function createA3DLights() {
   const key = new DirectionalLight("v9-animation-walk-key");
   key.intensity = 5.6;
   key.color = [1, 1, 1];
@@ -386,17 +386,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side animation walk comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#f2f3f5";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, ASSET.width, 0);
   context.fillStyle = "#15171c";
   context.font = "16px sans-serif";
-  context.fillText("G3D Soldier Walk", 18, ASSET.height + 28);
+  context.fillText("A3D Soldier Walk", 18, ASSET.height + 28);
   context.fillText("Three.js AnimationMixer Walk", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#46515f";
   context.font = "12px sans-serif";

@@ -67,7 +67,7 @@ Expected example areas:
 
 - [x] `examples/material-showroom` shows dielectric, metal, rough, glossy, normal-mapped, emissive, transparent/alpha, and clearcoat-like materials if supported.
 - [x] Screenshot tests compare material states across fixed camera/environment settings.
-- [x] PBR comparison report shows Galileo3D, Three.js, and Babylon rendering the same asset/material scene. Evidence: `tests/reports/comparison-threejs.json` and `tests/reports/comparison-babylon.json` include the shared `pbr-materials` benchmark scene, and `pnpm verify:v3` passes.
+- [x] PBR comparison report shows Aura3D, Three.js, and Babylon rendering the same asset/material scene. Evidence: `tests/reports/comparison-threejs.json` and `tests/reports/comparison-babylon.json` include the shared `pbr-materials` benchmark scene, and `pnpm verify:v3` passes.
 - [x] Known-limits output lists unsupported PBR features for each loaded material.
 
 ## Shadows
@@ -122,7 +122,7 @@ Expected example areas:
 ### Done Criteria
 
 - [x] `examples/renderer-stress-lab` allows object/material/light count changes.
-- [x] `benchmarks/galileo/src/scenes/large-scene.ts` uses real renderer paths.
+- [x] `benchmarks/aura3d/src/scenes/large-scene.ts` uses real renderer paths.
 - [x] Reports include draw calls, visible objects, culled objects, frame time, and memory estimates.
 
 ## WebGPU

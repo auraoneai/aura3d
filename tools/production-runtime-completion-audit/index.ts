@@ -14,7 +14,7 @@ const pass =
   || (completed.includes(17) && active === "Milestone 18" && incomplete.includes(18) && productDecisionPasses)
   || (currentStatus === "complete" && completed.includes(18) && productDecisionPasses && literalCompletionPasses));
 const report = {
-  schema: "g3d-production-runtime-completion-audit/v1",
+  schema: "a3d-production-runtime-completion-audit/v1",
   generatedAt: new Date().toISOString(),
   pass,
   completionState: currentStatus === "complete" && completed.includes(18) && productDecisionPasses && literalCompletionPasses ? "complete" : "not-complete-yet",

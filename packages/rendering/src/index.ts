@@ -138,11 +138,11 @@ export {
   validateTextureColorSpace
 } from "./ColorManagement";
 export type {
-  G3DColorConversionSample,
-  G3DColorManagementPolicy,
-  G3DColorSpace,
-  G3DTextureColorSpaceValidation,
-  G3DTextureSemantic
+  A3DColorConversionSample,
+  A3DColorManagementPolicy,
+  A3DColorSpace,
+  A3DTextureColorSpaceValidation,
+  A3DTextureSemantic
 } from "./ColorManagement";
 export {
   applyV4ToneMappingPreset,

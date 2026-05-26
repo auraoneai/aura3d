@@ -33,7 +33,7 @@ test.describe("V9 OrbitControls route parity evidence", () => {
     const response = await page.goto(`${server.origin}/apps/controls-orbit/`, { waitUntil: "domcontentloaded" });
     expect(response?.status()).toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__g3dV8OrbitControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
+      const runtime = window.__a3dV8OrbitControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
       return (runtime?.status === "ready" || runtime?.status === "running") && (runtime.drawCalls ?? 0) > 0;
     }, undefined, { timeout: 20_000 });
 
@@ -55,7 +55,7 @@ test.describe("V9 OrbitControls route parity evidence", () => {
     await page.keyboard.up("Shift");
 
     await page.waitForFunction(() => {
-      const runtime = window.__g3dV8OrbitControls as {
+      const runtime = window.__a3dV8OrbitControls as {
         readonly rotateSamples?: number;
         readonly panSamples?: number;
         readonly wheelSamples?: number;
@@ -65,7 +65,7 @@ test.describe("V9 OrbitControls route parity evidence", () => {
     const after = await readRuntime(page);
 
     expect(after.controls).toBe("public-input-OrbitControls");
-    expect(after.renderer).toBe("g3d-webgl2");
+    expect(after.renderer).toBe("a3d-webgl2");
     expect(after.rotateSamples).toBeGreaterThan(0);
     expect(after.panSamples).toBeGreaterThan(0);
     expect(after.wheelSamples).toBeGreaterThan(0);
@@ -90,7 +90,7 @@ async function readRuntime(page: import("@playwright/test").Page): Promise<{
   readonly wheelSamples: number;
 }> {
   return page.evaluate(() => {
-    const runtime = window.__g3dV8OrbitControls as {
+    const runtime = window.__a3dV8OrbitControls as {
       readonly controls?: string;
       readonly renderer?: string;
       readonly distance?: number;

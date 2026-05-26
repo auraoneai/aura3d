@@ -17,23 +17,23 @@ V3 uses explicit stability labels so the project can grow without pretending eve
 
 | Package | Stability | Notes |
 | --- | --- | --- |
-| `@galileo3d/math` | stable-foundation | Math types and primitives are foundational. |
-| `@galileo3d/core` | stable-foundation | Engine loop, diagnostics, scheduling, and resource lifecycle. |
-| `@galileo3d/scene` | stable-foundation | Scene graph and camera/light/renderable types. |
-| `@galileo3d/ecs` | evolving-public | Runtime ECS is public but still needs workflow-level validation. |
-| `@galileo3d/rendering` | evolving-public | Core renderer API is public; advanced features remain under V3 validation. |
-| `@galileo3d/assets` | evolving-public | Asset loading is public; supported glTF matrix must be kept honest. |
-| `@galileo3d/animation` | evolving-public | Public animation runtime, still needs app-level proof. |
-| `@galileo3d/input` | evolving-public | Public input/control runtime, still needs Game Lab proof. |
-| `@galileo3d/audio` | evolving-public | Public audio runtime, still needs Game Lab proof. |
-| `@galileo3d/physics` | evolving-public | Public physics runtime, still needs Game Lab proof. |
-| `@galileo3d/scripting` | evolving-public | Public scripting helpers, still needs interactive workflow proof. |
-| `@galileo3d/debug` | evolving-public | Public diagnostics helpers for developer tooling. |
-| `@galileo3d/product-studio` | evolving-public | Real workflow seed from V2. |
-| `@galileo3d/workflows` | evolving-public | High-level V3 workflow SDK for supported Three.js-competitor use cases. |
-| `@galileo3d/editor-runtime` | evolving-public | Editor/runtime bridge for authored scenes. |
-| `@galileo3d/editor` | unstable-facade | Facade package needs a final product decision later. |
-| `@galileo3d/test-utils` | test-private | Private and not part of public product API. |
+| `@aura3d/math` | stable-foundation | Math types and primitives are foundational. |
+| `@aura3d/core` | stable-foundation | Engine loop, diagnostics, scheduling, and resource lifecycle. |
+| `@aura3d/scene` | stable-foundation | Scene graph and camera/light/renderable types. |
+| `@aura3d/ecs` | evolving-public | Runtime ECS is public but still needs workflow-level validation. |
+| `@aura3d/rendering` | evolving-public | Core renderer API is public; advanced features remain under V3 validation. |
+| `@aura3d/assets` | evolving-public | Asset loading is public; supported glTF matrix must be kept honest. |
+| `@aura3d/animation` | evolving-public | Public animation runtime, still needs app-level proof. |
+| `@aura3d/input` | evolving-public | Public input/control runtime, still needs Game Lab proof. |
+| `@aura3d/audio` | evolving-public | Public audio runtime, still needs Game Lab proof. |
+| `@aura3d/physics` | evolving-public | Public physics runtime, still needs Game Lab proof. |
+| `@aura3d/scripting` | evolving-public | Public scripting helpers, still needs interactive workflow proof. |
+| `@aura3d/debug` | evolving-public | Public diagnostics helpers for developer tooling. |
+| `@aura3d/product-studio` | evolving-public | Real workflow seed from V2. |
+| `@aura3d/workflows` | evolving-public | High-level V3 workflow SDK for supported Three.js-competitor use cases. |
+| `@aura3d/editor-runtime` | evolving-public | Editor/runtime bridge for authored scenes. |
+| `@aura3d/editor` | unstable-facade | Facade package needs a final product decision later. |
+| `@aura3d/test-utils` | test-private | Private and not part of public product API. |
 
 ## API Change Rules During V3
 
@@ -41,7 +41,7 @@ V3 uses explicit stability labels so the project can grow without pretending eve
 - Do not expose app-only code from public package entrypoints.
 - Do not expose test-only helpers from public package entrypoints.
 - Fixture/evidence helpers already exposed are tolerated during Milestone 1 but must be reviewed before release.
-- New workflow APIs must be exported from `@galileo3d/workflows` once Milestone 4 creates the package.
+- New workflow APIs must be exported from `@aura3d/workflows` once Milestone 4 creates the package.
 - Public docs must use package entrypoints, not deep private source imports.
 
 ## Release Gate Requirement

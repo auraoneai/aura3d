@@ -14,7 +14,7 @@ test.describe("editor workflow visual evidence", () => {
 
   test("captures diagnostics overlay and workflow panels with nonblank pixels", async ({ page }, testInfo) => {
     await page.goto(`${server.origin}/apps/editor/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EDITOR_APP__?.getState().status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_EDITOR_APP__?.getState().status === "ready");
 
     await page.getByRole("button", { name: "Move X" }).click();
     await expect(page.locator('[data-metric="draw-calls"]')).toContainText("1");
@@ -40,7 +40,7 @@ test.describe("editor workflow visual evidence", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): { readonly status: "booting" | "ready" | "error" };
     };
   }

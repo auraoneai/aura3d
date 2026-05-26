@@ -99,7 +99,7 @@
         "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
         "path": "Models/AntiqueCamera/glTF-Binary/AntiqueCamera.glb",
         "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/AntiqueCamera/glTF-Binary/AntiqueCamera.glb",
-        "sha256": "ae89695479ad997f09ebea8060a5ad01312ad8fe7ffb92f73b4e895109feecd2"
+        "sha256": "7480f9bed3918fe63ce1da0e54dcd235bd11fe54c5006fa0f7a0a31ddcc274c1"
       },
       "format": "glb",
       "tags": [
@@ -606,7 +606,7 @@
         "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
         "path": "Models/Avocado/glTF-Binary/Avocado.glb",
         "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Avocado/glTF-Binary/Avocado.glb",
-        "sha256": "ccc9c3ce56423720b09399c2351537207cd5a65f859f9e6e2f30922762f3abd4"
+        "sha256": "2713a264e3e16f3850028f5a10db9f18e38257965ad2ca5caff693d1a1991a1e"
       },
       "format": "glb",
       "tags": [
@@ -684,7 +684,7 @@
         "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
         "path": "Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
         "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/DamagedHelmet/glTF-Binary/DamagedHelmet.glb",
-        "sha256": "a1e3b04de97b11de564ce6e53b95f02954a297f0008183ac63a4f5974f6b32d8"
+        "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656"
       },
       "format": "glb",
       "tags": [
@@ -717,7 +717,7 @@
         "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
         "path": "Models/BoomBox/glTF-Binary/BoomBox.glb",
         "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoomBox/glTF-Binary/BoomBox.glb",
-        "sha256": "f8b918445ebdd006768232205a62f5182d2208ca57f84c6ccc084943c0bc8f15"
+        "sha256": "de9d5954855c16ff2593e914ae672baaeb4cf23a3262022b32164cc4621f93d6"
       },
       "format": "glb",
       "tags": [
@@ -821,7 +821,7 @@
         "revision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf",
         "path": "Models/CarConcept/glTF-Binary/CarConcept.glb",
         "uri": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/CarConcept/glTF-Binary/CarConcept.glb",
-        "sha256": "c272098089d78c5cd9fd9f24ff50ee8acf8d932c55f2d55fc10adb6c8998966b"
+        "sha256": "1d1df2377481bd7f6b9d5a746a997747347009826b68ff74753181b737c5cd50"
       },
       "format": "glb",
       "tags": [

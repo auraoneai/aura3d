@@ -1,15 +1,15 @@
 import {
   type GLTFRenderResources
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   applyCarConceptMaterialStability,
   carConceptMaterialVisualRole,
   carConceptMaterialRenderStateOverrides
 } from "../../../packages/assets/src/CarConceptMaterialStability";
 import type { GLTFMaterialRenderStateOverride } from "../../../packages/assets/src/GLTFRenderResources";
-import type { Material, RenderState } from "@galileo3d/rendering";
+import type { Material, RenderState } from "@aura3d/rendering";
 import type { CarConceptMaterialVisualRole, CarConceptMaterialVisualRoleContext } from "../../../packages/assets/src/CarConceptMaterialStability";
-import { createProductShowcaseLayout, type ProductShowcaseLayout, type ProductShowcaseSlotInput } from "@galileo3d/product-studio";
+import { createProductShowcaseLayout, type ProductShowcaseLayout, type ProductShowcaseSlotInput } from "@aura3d/product-studio";
 
 export const PRODUCT_CONFIGURATOR_ROUTE_ID = "product-configurator" as const;
 
@@ -32,7 +32,7 @@ export const PRODUCT_CONFIGURATOR_AUTHORED_SYSTEMS = [
 export const PRODUCT_CONFIGURATOR_ROUTE_LIMITATIONS = [
   "The default Product Configurator route now uses only the original texture-backed car-concept GLB as the visual subject; generated no-texture product-studio fixtures and unrelated product props are not part of the accepted-fidelity path.",
   "The car control consumes real imported KHR_materials_variants metadata through the shared authored-layer pipeline where the source asset exposes variants.",
-  "G3D still does not expose triangle spatial raycast picking for imported GLB renderables, so hotspot-style part inspection remains bounded to route-side focus controls.",
+  "A3D still does not expose triangle spatial raycast picking for imported GLB renderables, so hotspot-style part inspection remains bounded to route-side focus controls.",
   "Exploded view uses route-side name-pattern offsets against imported node names, not a product-aware node graph, variant graph, or authored exploded animation timeline."
 ] as const;
 

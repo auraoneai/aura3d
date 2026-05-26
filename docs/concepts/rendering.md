@@ -2,11 +2,11 @@
 
 Version: `0.1.0-alpha.0`
 
-The rendering package owns browser graphics resources, materials, textures, render queues, state application, frame submission, postprocessing, diagnostics, and disposal. The public package is `@galileo3d/engine/rendering`.
+The rendering package owns browser graphics resources, materials, textures, render queues, state application, frame submission, postprocessing, diagnostics, and disposal. The public package is `@aura3d/engine/rendering`.
 
 ## Backend Position
 
-WebGL2 is the main externally usable backend today. WebGPU exists as scoped implementation and proof routes for render-to-texture, materials, compute, and instancing work, but Galileo3D does not yet claim complete WebGPU renderer parity.
+WebGL2 is the main externally usable backend today. WebGPU exists as scoped implementation and proof routes for render-to-texture, materials, compute, and instancing work, but Aura3D does not yet claim complete WebGPU renderer parity.
 
 ## Package Surface
 
@@ -25,12 +25,12 @@ Current public exports cover:
 ## Direct Usage
 
 ```ts
-import { Geometry, PBRMaterial } from "@galileo3d/engine/rendering";
-import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
+import { Geometry, PBRMaterial } from "@aura3d/engine/rendering";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/v9";
 
-const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
+const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
 
-const scene = new G3DScene();
+const scene = new A3DScene();
 scene.addGeometry("cube", Geometry.box());
 scene.addMaterial("paint", new PBRMaterial({
   baseColor: [0.75, 0.65, 0.48, 1],

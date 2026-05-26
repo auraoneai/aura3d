@@ -11,7 +11,7 @@ describe("naming taxonomy migration report", () => {
       classification: "active-route",
       target: "apps/advanced-examples-gallery/src/main.ts"
     });
-    expect(classifyVersionedPath("fixtures/v9/assets/data-galaxy-core-blender/manifest.json")).toMatchObject({
+    expect(classifyVersionedPath("fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json")).toMatchObject({
       classification: "fixture-url",
       target: "fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json"
     });
@@ -55,8 +55,8 @@ describe("naming taxonomy migration report", () => {
         text: JSON.stringify({
           compilerOptions: {
             paths: {
-              "@galileo3d/engine/v9": ["packages/engine/src/advanced-runtime/index.ts"],
-              "@galileo3d/engine/advanced-runtime": ["packages/engine/src/advanced-runtime/index.ts"]
+              "@aura3d/engine/v9": ["packages/engine/src/advanced-runtime/index.ts"],
+              "@aura3d/engine/advanced-runtime": ["packages/engine/src/advanced-runtime/index.ts"]
             }
           }
         })
@@ -64,15 +64,15 @@ describe("naming taxonomy migration report", () => {
       {
         path: "vite.config.ts",
         text: [
-          '["@galileo3d/engine/advanced-runtime", "./packages/engine/src/advanced-runtime/index.ts"],',
-          '["@galileo3d/engine/v9", "./packages/engine/src/advanced-runtime/index.ts"]'
+          '["@aura3d/engine/advanced-runtime", "./packages/engine/src/advanced-runtime/index.ts"],',
+          '["@aura3d/engine/v9", "./packages/engine/src/advanced-runtime/index.ts"]'
         ].join("\n")
       },
       {
         path: "tools/advanced-gallery-report-audit/index.ts",
         text: [
           "const reportDir = \"tests/reports/v9/advanced-examples-gallery\";",
-          "const fixture = \"fixtures/v9/assets/data-galaxy-core-blender/manifest.json\";",
+          "const fixture = \"fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json\";",
           "const route = \"/apps/v9-advanced-examples-gallery/\";"
         ].join("\n")
       }
@@ -80,13 +80,13 @@ describe("naming taxonomy migration report", () => {
 
     expect(references).toEqual(expect.arrayContaining([
       expect.objectContaining({ kind: "package-file-entry", classification: "public-api", target: "templates/product-viewer" }),
-      expect.objectContaining({ kind: "package-export", classification: "public-api", target: "@galileo3d/engine/advanced-runtime" }),
-      expect.objectContaining({ kind: "package-export", classification: "public-api", target: "@galileo3d/engine/rendering/production-runtime" }),
+      expect.objectContaining({ kind: "package-export", classification: "public-api", target: "@aura3d/engine/advanced-runtime" }),
+      expect.objectContaining({ kind: "package-export", classification: "public-api", target: "@aura3d/engine/rendering/production-runtime" }),
       expect.objectContaining({ kind: "script", classification: "internal-tool", target: expect.stringContaining("advanced-gallery:review") }),
-      expect.objectContaining({ kind: "tsconfig-alias", classification: "public-api", target: "@galileo3d/engine/advanced-runtime" }),
-      expect.objectContaining({ kind: "vite-alias", classification: "public-api", target: "@galileo3d/engine/advanced-runtime" }),
+      expect.objectContaining({ kind: "tsconfig-alias", classification: "public-api", target: "@aura3d/engine/advanced-runtime" }),
+      expect.objectContaining({ kind: "vite-alias", classification: "public-api", target: "@aura3d/engine/advanced-runtime" }),
       expect.objectContaining({ kind: "report-reader", classification: "report-path", target: "tests/reports/advanced-examples-gallery" }),
-      expect.objectContaining({ kind: "fixture-url", classification: "fixture-url", target: "fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json" }),
+      expect.objectContaining({ kind: "fixture-url", classification: "fixture-url", target: "/fixtures/advanced-gallery/assets/" }),
       expect.objectContaining({ kind: "route-link", classification: "active-route", target: "/apps/advanced-examples-gallery/" })
     ]));
   });

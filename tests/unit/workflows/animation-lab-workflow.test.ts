@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Renderer } from "@galileo3d/rendering";
-import { createAnimationLabWorkflow } from "@galileo3d/workflows";
+import { Renderer } from "@aura3d/rendering";
+import { createAnimationLabWorkflow } from "@aura3d/workflows";
 
 describe("createAnimationLabWorkflow", () => {
   it("creates keyframe-driven animation lab output", async () => {

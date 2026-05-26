@@ -1,5 +1,5 @@
-import { Renderer, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
-import type { G3DWorkflowDiagnostics, G3DWorkflowResult } from "@galileo3d/workflows";
+import { Renderer, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import type { A3DWorkflowDiagnostics, A3DWorkflowResult } from "@aura3d/workflows";
 
 export interface WorkflowScenario {
   readonly id: string;
@@ -17,7 +17,7 @@ export interface WorkflowWorkbenchConfig {
   readonly scenarios: readonly WorkflowScenario[];
   readonly defaultScenarioId: string;
   readonly dynamic?: boolean;
-  createWorkflow(scenario: WorkflowScenario): Promise<G3DWorkflowResult> | G3DWorkflowResult;
+  createWorkflow(scenario: WorkflowScenario): Promise<A3DWorkflowResult> | A3DWorkflowResult;
 }
 
 export interface WorkflowWorkbenchState {
@@ -26,7 +26,7 @@ export interface WorkflowWorkbenchState {
   readonly selectedScenarioId: string;
   readonly workflowKind?: string;
   readonly featureChecklist: readonly string[];
-  readonly diagnostics?: G3DWorkflowDiagnostics;
+  readonly diagnostics?: A3DWorkflowDiagnostics;
   readonly renderDiagnostics?: RenderDeviceDiagnostics;
   readonly lastError: string | null;
   readonly frameCount: number;
@@ -36,7 +36,7 @@ export interface WorkflowWorkbenchState {
 
 declare global {
   interface Window {
-    __G3D_V3_APP__?: WorkflowWorkbenchState & {
+    __A3D_V3_APP__?: WorkflowWorkbenchState & {
       loadScenario?: (id: string) => Promise<void>;
       captureState?: () => WorkflowWorkbenchState;
     };
@@ -56,7 +56,7 @@ export class WorkflowWorkbenchApp {
   private readonly sceneList = document.createElement("div");
   private readonly diagnosticsPanel = document.createElement("pre");
   private renderer?: Renderer;
-  private workflow?: G3DWorkflowResult;
+  private workflow?: A3DWorkflowResult;
   private animation?: { stop(): void };
   private resizeObserver?: ResizeObserver;
   private frameCount = 0;
@@ -71,11 +71,11 @@ export class WorkflowWorkbenchApp {
 
   async start(): Promise<void> {
     installWorkflowWorkbenchStyles();
-    this.shell.className = "g3d-workbench";
-    this.sidebar.className = "g3d-sidebar";
-    this.viewport.className = "g3d-viewport";
-    this.inspector.className = "g3d-inspector";
-    this.canvas.className = "g3d-canvas";
+    this.shell.className = "a3d-workbench";
+    this.sidebar.className = "a3d-sidebar";
+    this.viewport.className = "a3d-viewport";
+    this.inspector.className = "a3d-inspector";
+    this.canvas.className = "a3d-canvas";
     this.canvas.dataset.testid = `${this.config.appId}-canvas`;
     this.canvas.style.setProperty("--accent", this.config.accent);
 
@@ -150,42 +150,42 @@ export class WorkflowWorkbenchApp {
   private renderStaticShell(): void {
     this.sidebar.replaceChildren();
     const header = document.createElement("header");
-    header.className = "g3d-brand";
+    header.className = "a3d-brand";
     header.innerHTML = `
       <span>${this.config.suiteLabel}</span>
       <h1>${this.config.title}</h1>
       <p>${this.config.subtitle}</p>
     `;
-    this.statusLine.className = "g3d-statusline";
-    this.scenarioList.className = "g3d-scenarios";
-    this.metricGrid.className = "g3d-metrics";
+    this.statusLine.className = "a3d-statusline";
+    this.scenarioList.className = "a3d-scenarios";
+    this.metricGrid.className = "a3d-metrics";
     this.sidebar.append(header, this.statusLine, this.scenarioList, this.metricGrid);
 
     this.viewport.replaceChildren();
     const viewportHeader = document.createElement("div");
-    viewportHeader.className = "g3d-viewport-header";
+    viewportHeader.className = "a3d-viewport-header";
     viewportHeader.innerHTML = `
       <div>
         <span>Live Renderer</span>
         <strong>${this.config.title}</strong>
       </div>
-      <div class="g3d-render-badge">WebGL2</div>
+      <div class="a3d-render-badge">WebGL2</div>
     `;
     const canvasWrap = document.createElement("div");
-    canvasWrap.className = "g3d-canvas-wrap";
+    canvasWrap.className = "a3d-canvas-wrap";
     canvasWrap.append(this.canvas);
-    this.checklist.className = "g3d-checklist";
+    this.checklist.className = "a3d-checklist";
     this.viewport.append(viewportHeader, canvasWrap, this.checklist);
 
     this.inspector.replaceChildren();
     const inspectorHeader = document.createElement("header");
-    inspectorHeader.className = "g3d-inspector-header";
+    inspectorHeader.className = "a3d-inspector-header";
     inspectorHeader.innerHTML = `
       <span>Workflow Inspector</span>
       <strong data-testid="${this.config.appId}-status">booting</strong>
     `;
-    this.sceneList.className = "g3d-scene-list";
-    this.diagnosticsPanel.className = "g3d-diagnostics";
+    this.sceneList.className = "a3d-scene-list";
+    this.diagnosticsPanel.className = "a3d-diagnostics";
     this.inspector.append(inspectorHeader, this.sceneList, this.diagnosticsPanel);
     this.renderControls();
     this.renderPanels();
@@ -193,7 +193,7 @@ export class WorkflowWorkbenchApp {
 
   private renderControls(): void {
     this.statusLine.innerHTML = `
-      <span class="g3d-dot ${this.status}"></span>
+      <span class="a3d-dot ${this.status}"></span>
       <div>
         <strong>${this.status.toUpperCase()}</strong>
         <small>${this.lastError ?? "Workflow source, controls, and render target are connected."}</small>
@@ -240,7 +240,7 @@ export class WorkflowWorkbenchApp {
     const itemLabels = this.renderedItemLabels();
     this.sceneList.replaceChildren(...itemLabels.map((label, index) => {
       const row = document.createElement("div");
-      row.className = "g3d-scene-row";
+      row.className = "a3d-scene-row";
       row.innerHTML = `<span>${String(index + 1).padStart(2, "0")}</span><strong>${label}</strong>`;
       return row;
     }));
@@ -289,13 +289,13 @@ export class WorkflowWorkbenchApp {
 
 function metric(label: string, value: string): HTMLElement {
   const element = document.createElement("div");
-  element.className = "g3d-metric";
+  element.className = "a3d-metric";
   element.innerHTML = `<span>${label}</span><strong>${value}</strong>`;
   return element;
 }
 
-function exposeAppState(state: WorkflowWorkbenchState, methods: Pick<NonNullable<Window["__G3D_V3_APP__"]>, "loadScenario" | "captureState">): void {
-  window.__G3D_V3_APP__ = Object.assign({}, state, methods);
+function exposeAppState(state: WorkflowWorkbenchState, methods: Pick<NonNullable<Window["__A3D_V3_APP__"]>, "loadScenario" | "captureState">): void {
+  window.__A3D_V3_APP__ = Object.assign({}, state, methods);
 }
 
 function installWorkflowWorkbenchStyles(): void {
@@ -320,7 +320,7 @@ function installWorkflowWorkbenchStyles(): void {
       font: inherit;
     }
 
-    .g3d-workbench {
+    .a3d-workbench {
       display: grid;
       grid-template-columns: minmax(260px, 320px) minmax(420px, 1fr) minmax(260px, 340px);
       height: 100%;
@@ -330,30 +330,30 @@ function installWorkflowWorkbenchStyles(): void {
         #111413;
     }
 
-    .g3d-sidebar, .g3d-inspector {
+    .a3d-sidebar, .a3d-inspector {
       min-width: 0;
       overflow: auto;
       border-color: #333a37;
       background: #1d2321;
     }
 
-    .g3d-sidebar {
+    .a3d-sidebar {
       border-right: 1px solid #333a37;
       padding: 18px;
     }
 
-    .g3d-inspector {
+    .a3d-inspector {
       border-left: 1px solid #333a37;
       padding: 18px;
     }
 
-    .g3d-brand {
+    .a3d-brand {
       border-bottom: 1px solid #343d39;
       margin-bottom: 16px;
       padding-bottom: 16px;
     }
 
-    .g3d-brand span, .g3d-viewport-header span, .g3d-inspector-header span, .g3d-metric span {
+    .a3d-brand span, .a3d-viewport-header span, .a3d-inspector-header span, .a3d-metric span {
       color: #99a39c;
       display: block;
       font-size: 12px;
@@ -362,20 +362,20 @@ function installWorkflowWorkbenchStyles(): void {
       text-transform: uppercase;
     }
 
-    .g3d-brand h1 {
+    .a3d-brand h1 {
       margin: 7px 0 8px;
       font-size: 25px;
       line-height: 1.08;
     }
 
-    .g3d-brand p {
+    .a3d-brand p {
       color: #c8c7bd;
       font-size: 13px;
       line-height: 1.45;
       margin: 0;
     }
 
-    .g3d-statusline {
+    .a3d-statusline {
       align-items: flex-start;
       border-bottom: 1px solid #343d39;
       display: flex;
@@ -384,20 +384,20 @@ function installWorkflowWorkbenchStyles(): void {
       padding-bottom: 16px;
     }
 
-    .g3d-statusline strong {
+    .a3d-statusline strong {
       display: block;
       font-size: 13px;
       margin-bottom: 4px;
     }
 
-    .g3d-statusline small {
+    .a3d-statusline small {
       color: #b7bab0;
       display: block;
       font-size: 12px;
       line-height: 1.35;
     }
 
-    .g3d-dot {
+    .a3d-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
@@ -407,23 +407,23 @@ function installWorkflowWorkbenchStyles(): void {
       flex: 0 0 auto;
     }
 
-    .g3d-dot.ready {
+    .a3d-dot.ready {
       background: #54b978;
       box-shadow: 0 0 0 4px rgba(84, 185, 120, 0.14);
     }
 
-    .g3d-dot.error {
+    .a3d-dot.error {
       background: #e05c5c;
       box-shadow: 0 0 0 4px rgba(224, 92, 92, 0.14);
     }
 
-    .g3d-scenarios {
+    .a3d-scenarios {
       display: grid;
       gap: 8px;
       margin-bottom: 16px;
     }
 
-    .g3d-scenarios button {
+    .a3d-scenarios button {
       display: grid;
       grid-template-columns: 34px minmax(0, 1fr);
       gap: 3px 10px;
@@ -437,13 +437,13 @@ function installWorkflowWorkbenchStyles(): void {
       text-align: left;
     }
 
-    .g3d-scenarios button.active {
+    .a3d-scenarios button.active {
       border-color: var(--accent, #58a6ff);
       background: #29312d;
       box-shadow: inset 3px 0 0 var(--accent, #58a6ff);
     }
 
-    .g3d-scenarios button > span {
+    .a3d-scenarios button > span {
       align-items: center;
       background: #151918;
       border: 1px solid #3b4440;
@@ -455,25 +455,25 @@ function installWorkflowWorkbenchStyles(): void {
       width: 34px;
     }
 
-    .g3d-scenarios strong {
+    .a3d-scenarios strong {
       font-size: 13px;
       line-height: 1.2;
       min-width: 0;
     }
 
-    .g3d-scenarios small {
+    .a3d-scenarios small {
       color: #afb5ad;
       font-size: 12px;
       line-height: 1.3;
     }
 
-    .g3d-metrics {
+    .a3d-metrics {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
     }
 
-    .g3d-metric {
+    .a3d-metric {
       border: 1px solid #39423e;
       border-radius: 7px;
       background: #171b1a;
@@ -481,14 +481,14 @@ function installWorkflowWorkbenchStyles(): void {
       padding: 10px;
     }
 
-    .g3d-metric strong {
+    .a3d-metric strong {
       display: block;
       font-size: 19px;
       margin-top: 7px;
       overflow-wrap: anywhere;
     }
 
-    .g3d-viewport {
+    .a3d-viewport {
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
       min-width: 0;
@@ -496,7 +496,7 @@ function installWorkflowWorkbenchStyles(): void {
       background: #0f1211;
     }
 
-    .g3d-viewport-header {
+    .a3d-viewport-header {
       align-items: center;
       border-bottom: 1px solid #2f3633;
       display: flex;
@@ -505,13 +505,13 @@ function installWorkflowWorkbenchStyles(): void {
       padding: 0 18px;
     }
 
-    .g3d-viewport-header strong {
+    .a3d-viewport-header strong {
       display: block;
       font-size: 15px;
       margin-top: 4px;
     }
 
-    .g3d-render-badge {
+    .a3d-render-badge {
       border: 1px solid #405049;
       border-radius: 6px;
       color: #d9e8df;
@@ -520,13 +520,13 @@ function installWorkflowWorkbenchStyles(): void {
       padding: 7px 9px;
     }
 
-    .g3d-canvas-wrap {
+    .a3d-canvas-wrap {
       min-height: 0;
       min-width: 0;
       position: relative;
     }
 
-    .g3d-canvas {
+    .a3d-canvas {
       display: block;
       width: 100%;
       height: 100%;
@@ -535,7 +535,7 @@ function installWorkflowWorkbenchStyles(): void {
       outline-offset: -1px;
     }
 
-    .g3d-checklist {
+    .a3d-checklist {
       align-items: center;
       border-top: 1px solid #2f3633;
       display: flex;
@@ -545,7 +545,7 @@ function installWorkflowWorkbenchStyles(): void {
       padding: 10px 18px;
     }
 
-    .g3d-checklist span {
+    .a3d-checklist span {
       border: 1px solid #3c4642;
       border-radius: 999px;
       color: #d4d6cb;
@@ -553,7 +553,7 @@ function installWorkflowWorkbenchStyles(): void {
       padding: 5px 9px;
     }
 
-    .g3d-inspector-header {
+    .a3d-inspector-header {
       border-bottom: 1px solid #343d39;
       display: flex;
       justify-content: space-between;
@@ -562,19 +562,19 @@ function installWorkflowWorkbenchStyles(): void {
       padding-bottom: 14px;
     }
 
-    .g3d-inspector-header strong {
+    .a3d-inspector-header strong {
       color: #f4f1e8;
       font-size: 12px;
       text-transform: uppercase;
     }
 
-    .g3d-scene-list {
+    .a3d-scene-list {
       display: grid;
       gap: 7px;
       margin-bottom: 14px;
     }
 
-    .g3d-scene-row {
+    .a3d-scene-row {
       align-items: center;
       border: 1px solid #38413d;
       border-radius: 6px;
@@ -585,18 +585,18 @@ function installWorkflowWorkbenchStyles(): void {
       padding: 6px 9px;
     }
 
-    .g3d-scene-row span {
+    .a3d-scene-row span {
       color: #8fa098;
       font-size: 12px;
       font-weight: 700;
     }
 
-    .g3d-scene-row strong {
+    .a3d-scene-row strong {
       font-size: 12px;
       overflow-wrap: anywhere;
     }
 
-    .g3d-diagnostics {
+    .a3d-diagnostics {
       background: #101413;
       border: 1px solid #38413d;
       border-radius: 7px;
@@ -615,13 +615,13 @@ function installWorkflowWorkbenchStyles(): void {
         overflow: auto;
       }
 
-      .g3d-workbench {
+      .a3d-workbench {
         grid-template-columns: 1fr;
         grid-template-rows: auto minmax(520px, 65vh) auto;
         min-height: 100%;
       }
 
-      .g3d-sidebar, .g3d-inspector {
+      .a3d-sidebar, .a3d-inspector {
         border: 0;
       }
     }

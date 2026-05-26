@@ -51,9 +51,9 @@ export function createV4ExternalHostDoctorReport(root = process.cwd()): V4Extern
   const nextCommands = externalHostReady
     ? [
       localPreflight.unity.smokeCommand,
-      "node fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
+      "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
       localPreflight.unreal.smokeCommand,
-      "node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
+      "node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
       localPreflight.publicDeployment.command,
       "pnpm run:v4-external-host-evidence:execute",
       "pnpm refresh:v4-readiness-reports",
@@ -147,10 +147,10 @@ function blockedNextCommands(
 ): readonly string[] {
   return [
     ...(!handoffPackage.ok ? ["pnpm prepare:external-parity-external-evidence-handoff && pnpm verify:external-parity-external-evidence-handoff"] : []),
-    ...(localPreflight.unity.executableAvailable ? [] : ["export G3D_UNITY_EDITOR=/absolute/path/to/Unity"]),
-    ...(localPreflight.unreal.executableAvailable ? [] : ["export G3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd"]),
-    ...(localPreflight.unity.cliSmokeOptIn && localPreflight.unreal.cliSmokeOptIn ? [] : ["export G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true"]),
-    ...(localPreflight.publicDeployment.durableHttpsCandidate ? [] : ["export G3D_PUBLIC_DEMO_URL=https://your-public-demo.example/"]),
+    ...(localPreflight.unity.executableAvailable ? [] : ["export A3D_UNITY_EDITOR=/absolute/path/to/Unity"]),
+    ...(localPreflight.unreal.executableAvailable ? [] : ["export A3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd"]),
+    ...(localPreflight.unity.cliSmokeOptIn && localPreflight.unreal.cliSmokeOptIn ? [] : ["export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true"]),
+    ...(localPreflight.publicDeployment.durableHttpsCandidate ? [] : ["export A3D_PUBLIC_DEMO_URL=https://your-public-demo.example/"]),
     "pnpm doctor:v4-external-host",
     "pnpm run:v4-external-host-evidence",
   ];

@@ -1,5 +1,5 @@
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { AnimationMotionQualityTracker } from "@galileo3d/animation";
+import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
   PBRMaterial,
@@ -8,9 +8,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   createAdditiveLayerController,
   createMaskedAdditiveClips,
@@ -20,7 +20,7 @@ import {
 
 declare global {
   interface Window {
-    __g3dV8SkinningAdditive?: SkinningAdditiveRuntime;
+    __a3dV8SkinningAdditive?: SkinningAdditiveRuntime;
   }
 }
 
@@ -94,7 +94,7 @@ async function run(): Promise<void> {
 
   const publish = (patch: Partial<SkinningAdditiveRuntime>): void => {
     runtime = { ...runtime, ...patch, controls: patch.controls ?? controls };
-    window.__g3dV8SkinningAdditive = runtime;
+    window.__a3dV8SkinningAdditive = runtime;
     renderUi(root, runtime, controller, setControls);
   };
   const setControls = (next: AdditiveLayerControls): void => {
@@ -106,8 +106,8 @@ async function run(): Promise<void> {
   publish({});
 
   try {
-    publish({ status: "loading", loadingStep: `creating G3D renderer for ${ASSET_URL}` });
-    const renderer = await G3DRenderer.create({
+    publish({ status: "loading", loadingStep: `creating A3D renderer for ${ASSET_URL}` });
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -214,7 +214,7 @@ async function run(): Promise<void> {
           fpsLast = now;
         }
         runtime = createRunningRuntime(frameCount === 1 ? "ready" : "running", result.diagnostics.drawCalls, fps, animationTime, controls, selection, apply.tracksApplied, apply.skinningPalettesUpdated, motion);
-        window.__g3dV8SkinningAdditive = runtime;
+        window.__a3dV8SkinningAdditive = runtime;
         if (frameCount === 1 || now - lastPublish > 250) {
           renderUi(root, runtime, controller, setControls);
           lastPublish = now;

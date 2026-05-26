@@ -103,5 +103,5 @@ Path: `examples/large-world-streaming`
 
 - [x] Create this example only after real streaming/culling/LOD code exists. Evidence: `examples/large-world-streaming/main.ts` implements the bounded streaming/culling/LOD harness and is verified by `pnpm verify:external-parity-examples`.
 - [x] Use real assets or realistic modular assets. Evidence: `examples/large-world-streaming/main.ts` uses generated modular PBR world cells with published known limits.
-- [x] Add cells/chunks, async loading simulation, culling, LOD, camera path, and metrics. Evidence: `window.__GALILEO3D_LARGE_WORLD_STREAMING__` publishes loaded/loading/unloaded cells, async load counts, culling, LOD levels, camera path, frame, triangle, and memory metrics.
+- [x] Add cells/chunks, async loading simulation, culling, LOD, camera path, and metrics. Evidence: `window.__AURA3D_LARGE_WORLD_STREAMING__` publishes loaded/loading/unloaded cells, async load counts, culling, LOD levels, camera path, frame, triangle, and memory metrics.
 - [x] Add browser screenshot and movement tests. Evidence: `tests/browser/large-world-streaming-external-parity.spec.ts` captures `tests/reports/v4-example-screenshots/large-world-streaming.png` and asserts camera-path movement.

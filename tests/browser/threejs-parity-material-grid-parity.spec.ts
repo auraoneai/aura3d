@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/material-grid-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/material-grid-parity/g3d-material-grid.png",
+  a3d: "tests/reports/threejs-parity/material-grid-parity/a3d-material-grid.png",
   threejs: "tests/reports/threejs-parity/material-grid-parity/threejs-material-grid.png",
   sideBySide: "tests/reports/threejs-parity/material-grid-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 material grid same-scene parity", () => {
     await server.close();
   });
 
-  test("captures G3D material grid against actual Three.js materials", async ({ page }) => {
+  test("captures A3D material grid against actual Three.js materials", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -57,37 +57,37 @@ test.describe("V9 material grid same-scene parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-material-grid-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-material-grid-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
-    expect(result.assertions.g3dMaterialCoverage).toBe(true);
+    expect(result.assertions.a3dMaterialCoverage).toBe(true);
     expect(result.assertions.threeMaterialCoverage).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
     expect(result.assertions.visibleMaterialVariation).toBe(true);
-    expect(result.g3d.renderer.actualG3DRenderer).toBe(true);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThanOrEqual(8);
+    expect(result.a3d.renderer.actualA3DRenderer).toBe(true);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThanOrEqual(8);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThanOrEqual(8);
-    expect(result.g3d.materials.total).toBe(7);
+    expect(result.a3d.materials.total).toBe(7);
     expect(result.threejs.materials.total).toBe(7);
-    expect(result.g3d.materials.unlit).toBe(1);
-    expect(result.g3d.materials.metal).toBe(1);
-    expect(result.g3d.materials.emissive).toBe(1);
-    expect(result.g3d.materials.clearcoat).toBe(1);
-    expect(result.g3d.materials.transparent).toBe(1);
+    expect(result.a3d.materials.unlit).toBe(1);
+    expect(result.a3d.materials.metal).toBe(1);
+    expect(result.a3d.materials.emissive).toBe(1);
+    expect(result.a3d.materials.clearcoat).toBe(1);
+    expect(result.a3d.materials.transparent).toBe(1);
     expect(result.threejs.materials.unlit).toBe(1);
     expect(result.threejs.materials.metal).toBe(1);
     expect(result.threejs.materials.emissive).toBe(1);
     expect(result.threejs.materials.clearcoat).toBe(1);
     expect(result.threejs.materials.transparent).toBe(1);
-    expect(result.g3d.pixels.foregroundPixels).toBeGreaterThan(65_000);
+    expect(result.a3d.pixels.foregroundPixels).toBeGreaterThan(65_000);
     expect(result.threejs.pixels.foregroundPixels).toBeGreaterThan(65_000);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(80);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(80);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(80);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(105);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.58);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DMaterialRuntimeSource();
+    assertNoThreeJsInA3DMaterialRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -118,7 +118,7 @@ test.describe("V9 material grid same-scene parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DMaterialRuntimeSource(): void {
+function assertNoThreeJsInA3DMaterialRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/loader-material-extensions/src/main.ts",
@@ -150,9 +150,9 @@ function stripDataUrls(result: Extract<MaterialGridParityResult, { readonly stat
 type MaterialGridParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-material-grid-parity/v1";
-      readonly g3d: {
-        readonly renderer: { readonly drawCalls: number; readonly actualG3DRenderer: boolean };
+      readonly schema: "a3d-threejs-parity-material-grid-parity/v1";
+      readonly a3d: {
+        readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: boolean };
         readonly materials: MaterialStats;
         readonly pixels: PixelStats;
       };
@@ -165,17 +165,17 @@ type MaterialGridParityResult =
       readonly assertions: {
         readonly sameResolution: boolean;
         readonly actualThreeRenderer: boolean;
-        readonly g3dMaterialCoverage: boolean;
+        readonly a3dMaterialCoverage: boolean;
         readonly threeMaterialCoverage: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly visibleMaterialVariation: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-material-grid-parity/v1";
+      readonly schema: "a3d-threejs-parity-material-grid-parity/v1";
       readonly error: string;
     };
 

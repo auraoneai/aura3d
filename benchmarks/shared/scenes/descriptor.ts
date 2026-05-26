@@ -1,4 +1,4 @@
-export type BenchmarkEngine = "galileo" | "threejs" | "babylon";
+export type BenchmarkEngine = "aura3d" | "threejs" | "babylon";
 
 export type BenchmarkSceneDescriptor = {
   readonly id: string;
@@ -62,7 +62,7 @@ export type EngineBenchmarkScene = BenchmarkSceneDescriptor & {
 };
 
 const engineVersions: Record<BenchmarkEngine, string> = {
-  galileo: "0.1.0-alpha.0",
+  aura3d: "0.1.0-alpha.0",
   threejs: "0.165.0",
   babylon: "7.16.1",
 };

@@ -18,8 +18,8 @@ describe("OrbitControls Three.js parity", () => {
     threeControls.rotateSpeed = 1;
     threeControls.zoomSpeed = 1;
 
-    const g3dCamera = createCamera();
-    const g3dControls = new OrbitControls(g3dCamera, {
+    const a3dCamera = createCamera();
+    const a3dControls = new OrbitControls(a3dCamera, {
       target: { x: 0, y: 0, z: 0 },
       distance: 10,
       minDistance: 0.1,
@@ -35,24 +35,24 @@ describe("OrbitControls Three.js parity", () => {
     dom.dispatch("pointerup", pointerEvent({ clientX: 160, clientY: 130, button: 0, buttons: 0 }));
     dom.dispatch("wheel", wheelEvent({ deltaY: 100, clientX: 160, clientY: 130 }));
 
-    g3dControls.update(new InputSnapshot({
+    a3dControls.update(new InputSnapshot({
       pointer: { deltaX: 60, deltaY: 30, buttons: new Map([[0, { down: true, pressed: true, released: false }]]) }
     }));
-    g3dControls.update(new InputSnapshot({ pointer: { wheelY: 100 } }));
+    a3dControls.update(new InputSnapshot({ pointer: { wheelY: 100 } }));
 
-    expect(g3dControls.getAzimuthalAngle()).toBeCloseTo(threeControls.getAzimuthalAngle(), 5);
-    expect(g3dControls.getPolarAngle()).toBeCloseTo(threeControls.getPolarAngle(), 5);
-    expect(g3dControls.getDistance()).toBeCloseTo(threeControls.getDistance(), 5);
-    expect(g3dCamera.position.x).toBeCloseTo(threeCamera.position.x, 4);
-    expect(g3dCamera.position.y).toBeCloseTo(threeCamera.position.y, 4);
-    expect(g3dCamera.position.z).toBeCloseTo(threeCamera.position.z, 4);
-    expect(g3dCamera.lookAtCalls.at(-1)).toEqual({ x: 0, y: 0, z: 0 });
+    expect(a3dControls.getAzimuthalAngle()).toBeCloseTo(threeControls.getAzimuthalAngle(), 5);
+    expect(a3dControls.getPolarAngle()).toBeCloseTo(threeControls.getPolarAngle(), 5);
+    expect(a3dControls.getDistance()).toBeCloseTo(threeControls.getDistance(), 5);
+    expect(a3dCamera.position.x).toBeCloseTo(threeCamera.position.x, 4);
+    expect(a3dCamera.position.y).toBeCloseTo(threeCamera.position.y, 4);
+    expect(a3dCamera.position.z).toBeCloseTo(threeCamera.position.z, 4);
+    expect(a3dCamera.lookAtCalls.at(-1)).toEqual({ x: 0, y: 0, z: 0 });
 
     threeControls.dispose();
     expect(dom.listenerCount("pointerdown")).toBe(0);
   });
 
-  it("supports pan, saveState, reset, and disable flags through the public G3D API", () => {
+  it("supports pan, saveState, reset, and disable flags through the public A3D API", () => {
     const camera = createCamera();
     const controls = new OrbitControls(camera, {
       distance: 8,

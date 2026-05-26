@@ -16,17 +16,17 @@ const tarballName = execFileSync("npm", ["pack", "--silent", "--pack-destination
 }).trim().split(/\r?\n/).at(-1);
 if (!tarballName) throw new Error("npm pack did not produce a tarball.");
 const tarballPath = join(reportDir, basename(tarballName));
-const tempRoot = mkdtempSync(join(tmpdir(), "g3d-package-smoke-"));
+const tempRoot = mkdtempSync(join(tmpdir(), "a3d-package-smoke-"));
 const scaffoldRoot = join(tempRoot, "scaffolded");
 
 try {
   writeFileSync(join(tempRoot, "package.json"), `${JSON.stringify({
-    name: "g3d-external-parity-package-smoke",
+    name: "a3d-external-parity-package-smoke",
     version: "0.0.0",
     private: true,
     type: "module",
     dependencies: {
-      "@galileo3d/engine": `file:${tarballPath}`
+      "@aura3d/engine": `file:${tarballPath}`
     }
   }, null, 2)}\n`);
   execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], {
@@ -36,25 +36,25 @@ try {
   const smokeSource = `
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { createDiagnosticsPanel, createEnvironment, createG3DApp, createMaterialVariantController, workflows } from "@galileo3d/engine";
-import { createG3DApp as createG3DAppFromEngineSubpath } from "@galileo3d/engine/engine";
-import { createG3DProject } from "@galileo3d/engine/create-g3d";
+import { createDiagnosticsPanel, createEnvironment, createA3DApp, createMaterialVariantController, workflows } from "@aura3d/engine";
+import { createA3DApp as createA3DAppFromEngineSubpath } from "@aura3d/engine/engine";
+import { createA3DProject } from "@aura3d/engine/create-aura3d";
 
-assert.equal(typeof createG3DApp, "function");
-assert.equal(createG3DApp, createG3DAppFromEngineSubpath);
+assert.equal(typeof createA3DApp, "function");
+assert.equal(createA3DApp, createA3DAppFromEngineSubpath);
 assert.equal(typeof workflows.productConfigurator, "function");
 assert.equal(createEnvironment({ target: "gallery-neutral-hdr" }).target, "gallery-neutral-hdr");
 assert.equal(createMaterialVariantController(["asset", "contrast"], "asset").setVariant("contrast"), "contrast");
-assert.equal(createDiagnosticsPanel().kind, "g3d-diagnostics-panel");
+assert.equal(createDiagnosticsPanel().kind, "a3d-diagnostics-panel");
 const templates = ["external-parity-product-viewer", "external-parity-material-studio", "external-parity-asset-gallery", "external-parity-interactive-scene"];
 const results = [];
 for (const template of templates) {
   const targetDir = ${JSON.stringify(scaffoldRoot)} + "/" + template;
-  const result = createG3DProject({ targetDir, template, packageVersion: "0.1.0-alpha.0" });
+  const result = createA3DProject({ targetDir, template, packageVersion: "0.1.0-alpha.0" });
   assert.equal(result.template, template);
   assert.equal(existsSync(targetDir + "/src/main.ts"), true);
   const source = readFileSync(targetDir + "/src/main.ts", "utf8");
-  assert.equal(source.includes('from "@galileo3d/engine"'), true);
+  assert.equal(source.includes('from "@aura3d/engine"'), true);
   assert.equal(source.includes("workspace:"), false);
   results.push(result);
 }
@@ -72,11 +72,11 @@ console.log(JSON.stringify({ ok: true, templates: results, publicRootImport: tru
   };
   const tarballBytes = statSync(tarballPath).size;
   const report = {
-    schema: "g3d-external-parity-package-smoke/v1",
+    schema: "a3d-external-parity-package-smoke/v1",
     generatedAt: new Date().toISOString(),
     ok: stdout.includes("\"ok\":true") &&
       manifest.exports["."] === "./dist/engine/index.js" &&
-      manifest.exports["./create-g3d"] === "./dist/create-g3d/index.js" &&
+      manifest.exports["./create-aura3d"] === "./dist/create-aura3d/index.js" &&
       ["templates/external-parity-product-viewer", "templates/external-parity-material-studio", "templates/external-parity-asset-gallery", "templates/external-parity-interactive-scene"].every((file) => manifest.files.includes(file)) &&
       tarballBytes > 10_000,
     tarballPath,
@@ -85,7 +85,7 @@ console.log(JSON.stringify({ ok: true, templates: results, publicRootImport: tru
     smokeStdout: stdout.trim(),
     packageExports: manifest.exports,
     packageFiles: manifest.files,
-    productBoundary: "Package smoke proves packed install, root product API import, create-g3d scaffold, and template inclusion."
+    productBoundary: "Package smoke proves packed install, root product API import, create-aura3d scaffold, and template inclusion."
   };
   mkdirSync(dirname(reportPath), { recursive: true });
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);

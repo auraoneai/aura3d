@@ -66,7 +66,7 @@ describe("debug runtime helpers", () => {
     });
 
     expect(trace.metadata).toMatchObject({
-      source: "galileo3d-debug-chrome-trace-exporter",
+      source: "aura3d-debug-chrome-trace-exporter",
       profileName: "old-profiler-port",
       cpuMarkerCount: 2,
       gpuSampleCount: 1

@@ -11,7 +11,7 @@ import {
   type ProductLightingPreset,
   type ProductMaterialModeId,
   type ProductStudio
-} from "@galileo3d/product-studio";
+} from "@aura3d/product-studio";
 import { renderProductStudioControls } from "./ProductStudioControls";
 import { exportCurrentProductRender } from "./ProductStudioExports";
 import { createProductStudioState, selectedProduct, type ProductStudioAppState } from "./ProductStudioState";
@@ -137,8 +137,8 @@ export class ProductStudioApp {
   }
 }
 
-function exposeState(state: ProductStudioAppState, methods: Partial<NonNullable<typeof window.__G3D_PRODUCT_STUDIO__>> = {}): void {
-  window.__G3D_PRODUCT_STUDIO__ = Object.assign(state, methods);
+function exposeState(state: ProductStudioAppState, methods: Partial<NonNullable<typeof window.__A3D_PRODUCT_STUDIO__>> = {}): void {
+  window.__A3D_PRODUCT_STUDIO__ = Object.assign(state, methods);
 }
 
 function installProductStudioStyles(): void {

@@ -4,7 +4,7 @@ Version: 1.0.0
 
 ## Supported Security Scope
 
-Galileo3D is currently an production TypeScript-first browser 3D engine package. Security handling applies to the source tree, verification tooling, examples, package metadata, and generated release artifacts for version `1.0.0`.
+Aura3D is currently an production TypeScript-first browser 3D engine package. Security handling applies to the source tree, verification tooling, examples, package metadata, and generated release artifacts for version `1.0.0`.
 
 ## Reporting A Vulnerability
 
@@ -30,4 +30,4 @@ The maintainer should acknowledge receipt within 5 business days, triage severit
 - New runtime dependencies require a maintainer review for license, maintenance status, and browser compatibility.
 - Release verification must be run from a clean checkout before a release candidate is tagged.
 - Generated reports under `tests/reports` must be current for the release-run ID being evaluated.
-- Runtime code must not import Three.js into G3D product packages as an implementation shortcut; Three.js remains allowed only in comparison, benchmark, migration, and reference harnesses described by the V9 boundary docs.
+- Runtime code must not import Three.js into A3D product packages as an implementation shortcut; Three.js remains allowed only in comparison, benchmark, migration, and reference harnesses described by the V9 boundary docs.

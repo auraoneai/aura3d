@@ -19,7 +19,7 @@ export class Object3DCompat {
   userData: Record<string, unknown> = {};
 
   constructor() {
-    this.uuid = `g3d-three-compat-${this.id}`;
+    this.uuid = `a3d-three-compat-${this.id}`;
   }
 
   add(...objects: Object3DCompat[]): this {

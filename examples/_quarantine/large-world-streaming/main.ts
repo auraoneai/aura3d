@@ -13,7 +13,7 @@ import {
   sampleWeatherFixture,
   type RenderDeviceDiagnostics,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 type WorldCell = {
   readonly id: string;
@@ -59,7 +59,7 @@ type LargeWorldState = {
 
 declare global {
   interface Window {
-    __GALILEO3D_LARGE_WORLD_STREAMING__?: LargeWorldState;
+    __AURA3D_LARGE_WORLD_STREAMING__?: LargeWorldState;
   }
 }
 
@@ -96,7 +96,7 @@ const cells: readonly WorldCell[] = Array.from({ length: 13 }, (_, index) => {
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_LARGE_WORLD_STREAMING__ = {
+    window.__AURA3D_LARGE_WORLD_STREAMING__ = {
       id: "large-world-streaming",
       status: "error",
       renderer: "webgl2",
@@ -213,7 +213,7 @@ async function run(): Promise<void> {
     });
     const memoryBytes = [...loaded.values()].reduce((sum, cell) => sum + cell.bytes, 0);
     const p95FrameMs = percentile(frameSamples, 0.95);
-    window.__GALILEO3D_LARGE_WORLD_STREAMING__ = {
+    window.__AURA3D_LARGE_WORLD_STREAMING__ = {
       id: "large-world-streaming",
       status: "ready",
       renderer: "webgl2",
@@ -388,7 +388,7 @@ async function run(): Promise<void> {
       }),
       errors: []
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_LARGE_WORLD_STREAMING__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_LARGE_WORLD_STREAMING__, null, 2);
     requestAnimationFrame(tick);
   };
 

@@ -1,5 +1,5 @@
-import type { CameraFrameViewport, PerspectiveCameraFrameOptions, RendererPostProcessOptions, RendererShadowOptions } from "@galileo3d/rendering";
-import { createLightingDefault } from "@galileo3d/rendering";
+import type { CameraFrameViewport, PerspectiveCameraFrameOptions, RendererPostProcessOptions, RendererShadowOptions } from "@aura3d/rendering";
+import { createLightingDefault } from "@aura3d/rendering";
 
 export type AssetRenderLightingPreset = "studioProduct" | "outdoorDay" | "interiorGallery" | "gameNight";
 

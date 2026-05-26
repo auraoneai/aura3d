@@ -4,7 +4,7 @@ Version: 1.0.0
 
 ## Rule
 
-All public claim language for Galileo3D version `1.0.0` must be backed by the current V10 claim-defense evidence:
+All public claim language for Aura3D version `1.0.0` must be backed by the current V10 claim-defense evidence:
 
 - current V10 status: `docs/project/v10-superiority-status.md`
 - claim-defense report: `tests/reports/v10/claim-defense.json`
@@ -27,7 +27,7 @@ This applies to:
 
 Use wording such as:
 
-> G3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the G3D superiority audit.
+> A3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the A3D superiority audit.
 
 Keep the scope evidence-backed. Prefer "measured category", "published V10 report", "claim-defense evidence", and "route-backed proof" over unsupported market claims.
 
@@ -37,7 +37,7 @@ The current V10 audit may be described with its explicit status:
 
 The historical bundle-size niche remains allowed only with the exact evidence boundary:
 
-> Galileo3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run.
+> Aura3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run.
 
 This wording must keep the evidence links from `tests/reports/v10/claim-defense.json` and must not be shortened into an unmeasured "better at everything" claim.
 

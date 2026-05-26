@@ -1,5 +1,5 @@
 #version 300 es
-// @galileo3d-shader:unlit-v1
+// @aura3d-shader:unlit-v1
 precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 4) in vec4 a_color;

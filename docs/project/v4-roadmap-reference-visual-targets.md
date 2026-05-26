@@ -3,18 +3,18 @@
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-V4 is not a demo pass. It is a product build toward G3D Visual Engine V4: an installable SDK/runtime/toolchain for developers building high-quality browser 3D applications.
+V4 is not a demo pass. It is a product build toward A3D Visual Engine V4: an installable SDK/runtime/toolchain for developers building high-quality browser 3D applications.
 
 These targets define what the renderer, asset pipeline, workflow APIs, apps, templates, screenshots, and Three.js comparisons must prove. This document is not visual completion. Generated local fixtures cannot satisfy flagship proof.
 
 ## Universal Rules
 
-- Apps, examples, screenshots, and reports are proof artifacts. The product is the installable `@galileo3d/engine` SDK, public `createG3DApp` runtime, workflow APIs, `create-g3d` scaffolder, Vite templates, diagnostics, docs, and external consumer build path.
+- Apps, examples, screenshots, and reports are proof artifacts. The product is the installable `@aura3d/engine` SDK, public `createA3DApp` runtime, workflow APIs, `create-aura3d` scaffolder, Vite templates, diagnostics, docs, and external consumer build path.
 - Every flagship scene must be reproducible from public APIs only.
 - Every flagship scene must have a same-scene Three.js comparison.
 - Every release screenshot must identify the asset source, license, environment, renderer backend, resolution, warnings, draw calls, and source file path.
 - Every real asset must have provenance and license metadata.
-- Bootstrap assets under `fixtures/assets/v4/` can drive early wiring and regression checks, but they cannot count as product-quality flagship evidence.
+- Bootstrap assets under `fixtures/workflow-assets/assets/` can drive early wiring and regression checks, but they cannot count as product-quality flagship evidence.
 - A generated primitive-only scene cannot satisfy flagship proof.
 
 ## Premium Product Configurator
@@ -25,7 +25,7 @@ Product surface:
 - `examples/external-product-configurator`
 - `templates/external-parity-product-viewer`
 - `workflows.productConfigurator`
-- `createG3DApp`
+- `createA3DApp`
 - same-scene Three.js benchmark
 
 Visual target:
@@ -34,12 +34,12 @@ The scene must look like a commercial catalog/product configurator: real glTF/GL
 
 Required proof:
 
-- G3D screenshot from the app.
-- G3D screenshot from the example.
-- G3D screenshot from a fresh external template app after production build/static preview.
+- A3D screenshot from the app.
+- A3D screenshot from the example.
+- A3D screenshot from a fresh external template app after production build/static preview.
 - Three.js screenshot of the same scene.
 - Diff image and parity report.
-- Public API reproduction test using `createG3DApp` and `workflows.productConfigurator`.
+- Public API reproduction test using `createA3DApp` and `workflows.productConfigurator`.
 - Diagnostics report covering textures, materials, variants, draw calls, memory estimate, and unsupported features.
 
 Unacceptable output:
@@ -55,7 +55,7 @@ Product surface:
 
 - `apps/material-studio-pro`
 - `examples/external-material-studio`
-- `fixtures/v4/materials/material-library.json`
+- `fixtures/external-parity/materials/material-library.json`
 - physical material API
 - same-scene Three.js material matrix benchmark
 
@@ -65,7 +65,7 @@ The material matrix must make physically different surfaces read differently to 
 
 Required proof:
 
-- G3D material matrix screenshot.
+- A3D material matrix screenshot.
 - Three.js material matrix screenshot.
 - HDR/IBL debug view screenshots.
 - Base color, normal, roughness, metallic, emissive, diffuse IBL, specular IBL, and tone-mapped output debug views.
@@ -94,7 +94,7 @@ The scene must feel like a real interior/gallery/retail space: multiple assets, 
 
 Required proof:
 
-- G3D interior screenshot.
+- A3D interior screenshot.
 - Three.js same-scene screenshot.
 - Shadow debug screenshot.
 - Lighting-only screenshot.
@@ -223,7 +223,7 @@ The required material set is:
 - emissive
 - textured ceramic/stone
 
-Before visual acceptance, each material must have a G3D screenshot, Three.js comparison screenshot, debug-view evidence, and an explicit support status.
+Before visual acceptance, each material must have a A3D screenshot, Three.js comparison screenshot, debug-view evidence, and an explicit support status.
 
 ## Hard Stop
 

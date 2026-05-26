@@ -45,13 +45,13 @@ describe("v9 route-owned scene modules", () => {
     const fill = frame.lights.find((light) => light.source.name === "product-fill");
     const rim = frame.lights.find((light) => light.source.name === "product-rim");
     expect(frame.lights.map((light) => light.source.name)).toEqual([
-      "g3d-production-runtime-product-key-shadow",
-      "g3d-production-runtime-product-fill",
-      "g3d-production-runtime-product-rim"
+      "a3d-production-runtime-product-key-shadow",
+      "a3d-production-runtime-product-fill",
+      "a3d-production-runtime-product-rim"
     ]);
-    const productionRuntimeProductKey = frame.lights.find((light) => light.source.name === "g3d-production-runtime-product-key-shadow");
-    const productionRuntimeFill = frame.lights.find((light) => light.source.name === "g3d-production-runtime-product-fill");
-    const productionRuntimeRim = frame.lights.find((light) => light.source.name === "g3d-production-runtime-product-rim");
+    const productionRuntimeProductKey = frame.lights.find((light) => light.source.name === "a3d-production-runtime-product-key-shadow");
+    const productionRuntimeFill = frame.lights.find((light) => light.source.name === "a3d-production-runtime-product-fill");
+    const productionRuntimeRim = frame.lights.find((light) => light.source.name === "a3d-production-runtime-product-rim");
     expect(productKey).toBeUndefined();
     expect(fill).toBeUndefined();
     expect(rim).toBeUndefined();

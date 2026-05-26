@@ -2,10 +2,10 @@ import {
   Material,
   createDefaultShaderLibrary,
   type ShaderLibrary
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
-const GALLERY_WATER_SHADER = "g3d-gallery/animated-water";
-const GALLERY_WATER_MARKER = "@g3d-gallery-shader:animated-water-v4";
+const GALLERY_WATER_SHADER = "a3d-gallery/animated-water";
+const GALLERY_WATER_MARKER = "@aura3d-gallery-shader:animated-water-v4";
 
 export interface GalleryWaterMaterialOptions {
   readonly name: string;

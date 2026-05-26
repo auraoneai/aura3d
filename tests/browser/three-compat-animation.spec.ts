@@ -38,15 +38,15 @@ test("V5 animation browser proof renders skinned and morphed state", async ({ pa
           ctx.font = "16px system-ui";
           ctx.fillText("loaded animated assets: " + diagnostics.loadedAnimatedAssets, 34, 42);
           ctx.fillText("bones: " + diagnostics.skinnedBoneCount + " morphs: " + diagnostics.morphTargetCount, 34, 70);
-          window.__g3dAnimatedAssets = diagnostics.loadedAnimatedAssets;
-          window.__g3dMorphTargets = diagnostics.morphTargetCount;
+          window.__a3dAnimatedAssets = diagnostics.loadedAnimatedAssets;
+          window.__a3dMorphTargets = diagnostics.morphTargetCount;
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dAnimatedAssets)).toBeGreaterThanOrEqual(5);
-  await expect.poll(async () => page.evaluate(() => window.__g3dMorphTargets)).toBeGreaterThanOrEqual(2);
+  await expect.poll(async () => page.evaluate(() => window.__a3dAnimatedAssets)).toBeGreaterThanOrEqual(5);
+  await expect.poll(async () => page.evaluate(() => window.__a3dMorphTargets)).toBeGreaterThanOrEqual(2);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

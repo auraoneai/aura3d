@@ -46,7 +46,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-app-suite-readiness/v1",
+  schema: "a3d-external-parity-app-suite-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass ? "V4 Pro app suite is explicitly covered." : "V4 Pro app suite coverage is incomplete.",

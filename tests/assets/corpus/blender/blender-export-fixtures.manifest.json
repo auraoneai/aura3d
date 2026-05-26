@@ -21,7 +21,7 @@
       "name": "Vulkan Samples Terrain",
       "path": "tests/assets/corpus/blender/vulkan-samples/terrain.gltf",
       "upstreamPath": "scenes/terrain/terrain.gltf",
-      "sourceSha256": "972e70501fac000610f5704e99bb1fc4fc600d5a0aff2f5af58b1cee834682c0",
+      "sourceSha256": "8ced30d620f9c1dfdee1af30a60f6dc6998021ae011d7698aedf39eac8809992",
       "license": "Apache-2.0",
       "expectedGeneratorPattern": "Blender",
       "tags": ["blender-export", "terrain", "material", "embedded-buffer"]

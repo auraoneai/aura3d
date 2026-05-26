@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 
 export type SceneMetadataSeed = string | number;
 export type SceneMetadataPlanKind =

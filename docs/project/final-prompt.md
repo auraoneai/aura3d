@@ -4,7 +4,7 @@ This file is no longer the primary rebuild prompt. The old final prompt was writ
 
 ## Objective
 
-Build G3D into a credible TypeScript-first browser 3D engine and workflow SDK that can replace custom Three.js stacks for scoped product, asset, material, animation, and interactive-scene workflows.
+Build A3D into a credible TypeScript-first browser 3D engine and workflow SDK that can replace custom Three.js stacks for scoped product, asset, material, animation, and interactive-scene workflows.
 
 The objective is code and evidence, not more generated status documents.
 

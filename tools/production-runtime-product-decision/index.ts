@@ -13,8 +13,8 @@ const doc = existsSync(resolve(docPath)) ? readFileSync(resolve(docPath), "utf8"
 
 const requiredHeadings = [
   "## Decision",
-  "## What G3D V6 Does Better Than Raw Three.js Today",
-  "## What G3D V6 Matches Three.js On Today",
+  "## What A3D V6 Does Better Than Raw Three.js Today",
+  "## What A3D V6 Matches Three.js On Today",
   "## What Three.js Still Does Better",
   "## Production-Ready V6 Workflows",
   "## Experimental V6 Workflows",
@@ -141,7 +141,7 @@ const checks: Check[] = [
 ];
 
 const report = {
-  schema: "g3d-production-runtime-product-decision-record/v1",
+  schema: "a3d-production-runtime-product-decision-record/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   docPath,

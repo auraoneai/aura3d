@@ -85,9 +85,9 @@ async function main(): Promise<void> {
             : { backend, canvas });
           const shader = device.createShaderProgram({
             label: `${backend}-baseline-shader`,
-            marker: `@galileo3d-shader:${backend}-baseline`,
+            marker: `@aura3d-shader:${backend}-baseline`,
             vertex: scene === "offscreen-instanced-triangles-render-target-readback" ? `#version 300 es
-// @galileo3d-shader:${backend}-baseline
+// @aura3d-shader:${backend}-baseline
 precision highp float;
 layout(location = 0) in vec3 a_position;
 uniform mat4 u_instanceMatrices[64];
@@ -97,7 +97,7 @@ void main() {
   gl_Position = u_instanceMatrices[instanceIndex] * vec4(a_position, 1.0);
 }
 ` : `#version 300 es
-// @galileo3d-shader:${backend}-baseline
+// @aura3d-shader:${backend}-baseline
 precision highp float;
 layout(location = 0) in vec3 a_position;
 void main() {
@@ -105,7 +105,7 @@ void main() {
 }
 `,
             fragment: `#version 300 es
-// @galileo3d-shader:${backend}-baseline
+// @aura3d-shader:${backend}-baseline
 precision highp float;
 uniform vec4 u_color;
 out vec4 outColor;
@@ -260,7 +260,7 @@ void main() {
     });
     const report: ComparisonReport = {
       generatedAt: new Date().toISOString(),
-      releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-webgpu-vs-webgl2-run",
+      releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-webgpu-vs-webgl2-run",
       gitSha: gitSha(),
       command: "tsx --tsconfig tsconfig.base.json tests/performance/webgpu-vs-webgl2-baseline.ts --write-report",
       environment: {

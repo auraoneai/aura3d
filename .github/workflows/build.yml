@@ -88,4 +88,4 @@ jobs:
         with:
           files: ./coverage/coverage-final.json
           flags: unittests
-          name: codecov-g3d
+          name: codecov-a3d

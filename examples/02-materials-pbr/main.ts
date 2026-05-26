@@ -1,4 +1,4 @@
-import { Geometry, PBRMaterial } from "@galileo3d/rendering";
+import { Geometry, PBRMaterial } from "@aura3d/rendering";
 import { createExample, drawLabel, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

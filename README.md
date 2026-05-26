@@ -1,21 +1,21 @@
-# Galileo3D
+# Aura3D
 
-Galileo3D, or G3D, is a production browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
+Aura3D, or A3D, is a production browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
 
-G3D is not a runtime wrapper around Three.js. The renderer, scene graph, math, animation, asset pipeline, controls, physics, postprocess, WebGPU/WebGL2 backends, diagnostics, and workflow APIs live in first-party G3D packages. Three.js is used only as a reference implementation for tests, benchmark baselines, migration analysis, and compatibility checks.
+A3D is not a runtime wrapper around Three.js. The renderer, scene graph, math, animation, asset pipeline, controls, physics, postprocess, WebGPU/WebGL2 backends, diagnostics, and workflow APIs live in first-party A3D packages. Three.js is used only as a reference implementation for tests, benchmark baselines, migration analysis, and compatibility checks.
 
-## Why G3D Beats Three.js
+## Why A3D Beats Three.js
 
-G3D beats Three.js in the measured workflow categories that matter for browser 3D product delivery:
+A3D beats Three.js in the measured workflow categories that matter for browser 3D product delivery:
 
 - Workflow speed: product viewers, material studios, animation viewers, physics sandboxes, asset inspectors, screenshots, and diagnostics are first-party workflows instead of hand-assembled demo code.
 - Diagnostics: renderer state, route health, asset import, animation motion quality, material extension handling, resource lifecycle, and benchmark evidence are generated into auditable reports.
 - Memory safety: explicit dispose paths and reload checks cover WebGL/WebGPU buffers, textures, programs, render targets, VAOs, samplers, and renderer-owned resources.
-- Migration confidence: `@galileo3d/three-compat`, parity routes, same-scene comparisons, and migration audits document where Three.js workflows map to G3D APIs.
+- Migration confidence: `@aura3d/three-compat`, parity routes, same-scene comparisons, and migration audits document where Three.js workflows map to A3D APIs.
 - Performance evidence: current reports show equivalent benchmark scaffolds tying frame-time and draw-call outcomes, smaller generated benchmark bundles than Three.js, instancing one-draw parity, accelerated raycast/culling baselines, and a passing 100-reload resource lifecycle gate.
 - Product rendering quality: PBR/HDR/IBL, material-extension routes, shadow routes, postprocess routes, visual review, and same-scene render reports are part of the release gate.
 
-The current claim is evidence-bound: G3D matches or exceeds Three.js in the measured categories covered by `tests/reports/v10/superiority-audit.json`, `tests/reports/v10/claim-defense.json`, and [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/G3D/docs/project/v10-superiority-status.md).
+The current claim is evidence-bound: A3D matches or exceeds Three.js in the measured categories covered by `tests/reports/v10/superiority-audit.json`, `tests/reports/v10/claim-defense.json`, and [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/Aura3D/docs/project/v10-superiority-status.md).
 
 ## Advanced Gallery Boundary
 
@@ -29,16 +29,16 @@ The full advanced-gallery capture is intentionally not part of aggregate `pnpm v
 
 The repo builds these first-party package surfaces:
 
-- `@galileo3d/engine` root package, app lifecycle, V9 renderer/scene wrappers, and public SDK exports.
-- `@galileo3d/math` vectors, matrices, quaternions, colors, rays, bounds, planes, and frustums.
-- `@galileo3d/scene` Object3D-style hierarchy, transforms, cameras, renderables, lights, serialization, and renderable scene integration.
-- `@galileo3d/rendering` WebGL2/WebGPU devices, renderer facade, materials, shaders, textures, render targets, postprocess, shadows, queues, culling, instancing, diagnostics, and resource lifecycle.
-- `@galileo3d/assets` glTF/GLB, Draco, Meshopt, KTX2/Basis, HDR/EXR, OBJ/MTL, render-resource conversion, extension support, asset caches, and diagnostics.
-- `@galileo3d/animation` clips, tracks, mixer actions, layers, skeletons, GPU skinning, morphs, IK, root motion, clone sampling, and motion-quality diagnostics.
-- `@galileo3d/physics` rigid bodies, colliders, raycasts, constraints, character controller helpers, scene sync, and debug route evidence.
-- `@galileo3d/controls` orbit, trackball, transform, drag, map, fly, first-person, pointer-lock, touch-ready camera adapters, and route evidence.
-- `@galileo3d/input` WebXR session/controller sampling, target-ray and grip poses, haptics, AR hit-test sampling, and browser route integration.
-- `@galileo3d/materials`, `@galileo3d/environments`, `@galileo3d/product-studio`, `@galileo3d/editor-runtime`, `@galileo3d/workflows`, `@galileo3d/three-compat`, and `@galileo3d/debug`.
+- `@aura3d/engine` root package, app lifecycle, V9 renderer/scene wrappers, and public SDK exports.
+- `@aura3d/math` vectors, matrices, quaternions, colors, rays, bounds, planes, and frustums.
+- `@aura3d/scene` Object3D-style hierarchy, transforms, cameras, renderables, lights, serialization, and renderable scene integration.
+- `@aura3d/rendering` WebGL2/WebGPU devices, renderer facade, materials, shaders, textures, render targets, postprocess, shadows, queues, culling, instancing, diagnostics, and resource lifecycle.
+- `@aura3d/assets` glTF/GLB, Draco, Meshopt, KTX2/Basis, HDR/EXR, OBJ/MTL, render-resource conversion, extension support, asset caches, and diagnostics.
+- `@aura3d/animation` clips, tracks, mixer actions, layers, skeletons, GPU skinning, morphs, IK, root motion, clone sampling, and motion-quality diagnostics.
+- `@aura3d/physics` rigid bodies, colliders, raycasts, constraints, character controller helpers, scene sync, and debug route evidence.
+- `@aura3d/controls` orbit, trackball, transform, drag, map, fly, first-person, pointer-lock, touch-ready camera adapters, and route evidence.
+- `@aura3d/input` WebXR session/controller sampling, target-ray and grip poses, haptics, AR hit-test sampling, and browser route integration.
+- `@aura3d/materials`, `@aura3d/environments`, `@aura3d/product-studio`, `@aura3d/editor-runtime`, `@aura3d/workflows`, `@aura3d/three-compat`, and `@aura3d/debug`.
 
 ## What Exists Now
 
@@ -100,8 +100,8 @@ Useful routes include:
 ## Basic SDK Shape
 
 ```ts
-import { Renderer } from "@galileo3d/rendering";
-import { createRenderableScene, loadRenderableAsset } from "@galileo3d/assets";
+import { Renderer } from "@aura3d/rendering";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/assets";
 
 const renderer = await Renderer.create({ canvas });
 const asset = await loadRenderableAsset("/fixtures/engine-readiness/canonical-product-scene.glb");
@@ -180,11 +180,11 @@ Primary evidence:
 
 ## Benchmarks And Comparisons
 
-G3D compares against Three.js and Babylon.js through checked-in benchmark scenes, browser tests, and reports. Current comparison artifacts live under:
+A3D compares against Three.js and Babylon.js through checked-in benchmark scenes, browser tests, and reports. Current comparison artifacts live under:
 
 - `benchmarks/threejs/`
 - `benchmarks/babylon/`
-- `benchmarks/galileo/`
+- `benchmarks/aura3d/`
 - `tests/reports/comparison-threejs.json`
 - `tests/reports/comparison-babylon.json`
 - `tests/reports/v9/`
@@ -199,12 +199,12 @@ The defensible claim is not slogan-based. It is tied to report files, route scre
 
 Current high-signal docs:
 
-- [docs/project/current-state.md](/Users/gurbakshchahal/G3D/docs/project/current-state.md)
-- [docs/project/getting-started.md](/Users/gurbakshchahal/G3D/docs/project/getting-started.md)
-- [docs/project/documentation-index.md](/Users/gurbakshchahal/G3D/docs/project/documentation-index.md)
-- [docs/project/competitive-positioning.md](/Users/gurbakshchahal/G3D/docs/project/competitive-positioning.md)
-- [docs/project/go-to-market-strategy.md](/Users/gurbakshchahal/G3D/docs/project/go-to-market-strategy.md)
-- [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/G3D/docs/project/v10-superiority-status.md)
+- [docs/project/current-state.md](/Users/gurbakshchahal/Aura3D/docs/project/current-state.md)
+- [docs/project/getting-started.md](/Users/gurbakshchahal/Aura3D/docs/project/getting-started.md)
+- [docs/project/documentation-index.md](/Users/gurbakshchahal/Aura3D/docs/project/documentation-index.md)
+- [docs/project/competitive-positioning.md](/Users/gurbakshchahal/Aura3D/docs/project/competitive-positioning.md)
+- [docs/project/go-to-market-strategy.md](/Users/gurbakshchahal/Aura3D/docs/project/go-to-market-strategy.md)
+- [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/Aura3D/docs/project/v10-superiority-status.md)
 - `docs/api/`
 - `docs/concepts/`
 - `docs/rendering/`
@@ -220,7 +220,7 @@ The GTM wedge is workflow-first browser 3D:
 - Product viewers and configurators with asset diagnostics and reliable screenshots.
 - Material/HDR/PBR review with reportable renderer state.
 - Animation, skinning, morph, and IK inspection for GLB character assets.
-- Migration from selected Three.js patterns into package-owned G3D workflows.
+- Migration from selected Three.js patterns into package-owned A3D workflows.
 - Internal browser 3D tools where reliability, diagnostics, and repeatable evidence matter.
 
-G3D should lead with proof: route health, same-scene comparison, benchmark reports, API docs, migration examples, and resource-lifecycle evidence.
+A3D should lead with proof: route health, same-scene comparison, benchmark reports, API docs, migration examples, and resource-lifecycle evidence.

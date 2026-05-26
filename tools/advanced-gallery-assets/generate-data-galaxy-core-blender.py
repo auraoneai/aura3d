@@ -111,8 +111,8 @@ def exported_semantic_role_counts(nodes):
             if not isinstance(node.get("mesh"), int):
                 continue
             extras = node.get("extras")
-            if isinstance(extras, dict) and isinstance(extras.get("g3d_semantic_role"), str):
-                role = extras["g3d_semantic_role"]
+            if isinstance(extras, dict) and isinstance(extras.get("a3d_semantic_role"), str):
+                role = extras["a3d_semantic_role"]
             elif isinstance(node.get("name"), str):
                 name = node["name"]
                 if name.startswith("batched "):
@@ -203,16 +203,16 @@ def semantic_role_for_name(name):
 
 def tag_semantic_role(obj):
     role = semantic_role_for_name(obj.name)
-    obj["g3d_semantic_role"] = role
-    obj["g3d_acceptance_role"] = "support-only" if role != "focal-core" else "generated focal-context support"
-    obj["g3d_generated_asset_id"] = "data-galaxy-core-blender"
+    obj["a3d_semantic_role"] = role
+    obj["a3d_acceptance_role"] = "support-only" if role != "focal-core" else "generated focal-context support"
+    obj["a3d_generated_asset_id"] = "data-galaxy-core-blender"
     return obj
 
 
 def semantic_role_counts(objects):
     counts = {role: 0 for role in SEMANTIC_ROLE_ORDER}
     for obj in objects:
-        role = obj.get("g3d_semantic_role") or semantic_role_for_name(obj.name)
+        role = obj.get("a3d_semantic_role") or semantic_role_for_name(obj.name)
         counts[role] = counts.get(role, 0) + 1
     return {role: counts.get(role, 0) for role in SEMANTIC_ROLE_ORDER if counts.get(role, 0) > 0}
 
@@ -239,7 +239,7 @@ def prune_default_excluded_source_geometry():
     for obj in list(bpy.context.scene.objects):
         if obj.type != "MESH":
             continue
-        role = obj.get("g3d_semantic_role") or semantic_role_for_name(obj.name)
+        role = obj.get("a3d_semantic_role") or semantic_role_for_name(obj.name)
         if role in excluded:
             bpy.data.objects.remove(obj, do_unlink=True)
 
@@ -309,12 +309,12 @@ def assign(obj, material):
     return obj
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -329,11 +329,11 @@ def bevel(obj, amount=0.018, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.016, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     tag_semantic_role(obj)
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -346,7 +346,7 @@ def sphere(name, loc, radius, material, segments=48, ring_count=24):
         segments=segments,
         ring_count=ring_count,
         radius=radius,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
     )
     obj = bpy.context.object
     obj.name = name
@@ -357,7 +357,7 @@ def sphere(name, loc, radius, material, segments=48, ring_count=24):
 
 
 def ico(name, loc, radius, material, subdivisions=2):
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=subdivisions, radius=radius, location=loc_g3d(loc))
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=subdivisions, radius=radius, location=loc_a3d(loc))
     obj = bpy.context.object
     obj.name = name
     tag_semantic_role(obj)
@@ -375,13 +375,13 @@ def batch_meshes_by_material():
         tag_semantic_role(obj)
         material = obj.data.materials[0]
         authored_alpha = float(material.get("authored_alpha", 1.0))
-        # G3D sorts transparent renderables per object. Joining distant glass
+        # A3D sorts transparent renderables per object. Joining distant glass
         # panels into one mesh creates a single unsortable alpha slab, which is
         # exactly the noisy scaffold artifact visible in the data-galaxy shots.
         if authored_alpha < 0.999 or material.blend_method == "BLEND":
-            obj["g3d_transparency_sort_unit"] = "kept separate for renderer alpha sorting"
+            obj["a3d_transparency_sort_unit"] = "kept separate for renderer alpha sorting"
             continue
-        role = obj.get("g3d_semantic_role") or semantic_role_for_name(obj.name)
+        role = obj.get("a3d_semantic_role") or semantic_role_for_name(obj.name)
         groups.setdefault((role, material.name), []).append(obj)
 
     for (role, material_name), objects in groups.items():
@@ -399,9 +399,9 @@ def batch_meshes_by_material():
         bpy.context.view_layer.objects.active = objects[0]
         bpy.ops.object.join()
         bpy.context.object.name = f"batched {role} {material_name}"
-        bpy.context.object["g3d_semantic_role"] = role
-        bpy.context.object["g3d_acceptance_role"] = "support-only" if role != "focal-core" else "generated focal-context support"
-        bpy.context.object["g3d_generated_asset_id"] = "data-galaxy-core-blender"
+        bpy.context.object["a3d_semantic_role"] = role
+        bpy.context.object["a3d_acceptance_role"] = "support-only" if role != "focal-core" else "generated focal-context support"
+        bpy.context.object["a3d_generated_asset_id"] = "data-galaxy-core-blender"
 
 
 def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0)):
@@ -409,7 +409,7 @@ def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0)):
         vertices=vertices,
         radius=radius,
         depth=depth,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -426,7 +426,7 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0), major_segments=160, 
         minor_segments=minor_segments,
         major_radius=major,
         minor_radius=minor,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -438,8 +438,8 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0), major_segments=160, 
 
 
 def cylinder_between(name, a, b, radius, material, vertices=12):
-    av = Vector(loc_g3d(a))
-    bv = Vector(loc_g3d(b))
+    av = Vector(loc_a3d(a))
+    bv = Vector(loc_a3d(b))
     mid = (av + bv) * 0.5
     direction = bv - av
     bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=direction.length, location=mid)
@@ -859,8 +859,8 @@ def write_metadata():
             },
         },
         "generator": "tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py",
-        "asset": "fixtures/v9/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
-        "blend": "fixtures/v9/assets/data-galaxy-core-blender/data-galaxy-core-blender.blend",
+        "asset": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
+        "blend": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.blend",
         "status": {
             "generated": True,
             "stub": False,
@@ -927,8 +927,8 @@ def write_metadata():
             "emissiveMaterialNames": emissive,
         },
         "batching": {
-            "staticMeshStrategy": "Opaque objects are joined by semantic role and first material before GLB export; transparent objects remain separate render-sort units for G3D alpha correctness.",
-            "semanticRolePreservation": "Opaque batching preserves source ownership by grouping on (g3d_semantic_role, material); support scaffold and focal-core meshes cannot collapse into one material-only batch.",
+            "staticMeshStrategy": "Opaque objects are joined by semantic role and first material before GLB export; transparent objects remain separate render-sort units for A3D alpha correctness.",
+            "semanticRolePreservation": "Opaque batching preserves source ownership by grouping on (a3d_semantic_role, material); support scaffold and focal-core meshes cannot collapse into one material-only batch.",
             "runtimeParticleStrategy": "Dense particles are generated by the TypeScript route as point buffers; trail/link overlays are batched line geometry.",
             "nativeGpuComputeParticles": False,
         },
@@ -965,7 +965,7 @@ def write_metadata():
         "- It is not accepted as premium focal hero proof and cannot replace accepted current-route visual review evidence.\n"
         "- It remains support-only until current-route screenshots pass human visual review and runtime material diagnostics support a stronger claim.\n"
         "- Runtime particle buffers, trail/link batching, bloom, animation, and GPU compute remain external to this authored fixture; it does not add native GPU-compute particles.\n\n"
-        "Opaque static meshes are joined by material at export, while transparent panels remain separate render-sort units for G3D alpha correctness.\n",
+        "Opaque static meshes are joined by material at export, while transparent panels remain separate render-sort units for A3D alpha correctness.\n",
         encoding="utf-8",
     )
     print(json.dumps(manifest["counts"], indent=2))

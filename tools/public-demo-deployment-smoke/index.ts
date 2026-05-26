@@ -20,7 +20,7 @@ interface PublicDemoDeploymentSmokeReport {
 
 interface PublicDemoDeploymentExecutionPlan {
   readonly claimBoundary: string;
-  readonly requiredCommand: "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment";
+  readonly requiredCommand: "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment";
   readonly sourceManifestPath: string | null;
   readonly publicDeploymentManifestPath: string | null;
   readonly filesToDeploy: readonly {
@@ -63,7 +63,7 @@ const sourceFiles = [
 ] as const;
 
 export async function createPublicDemoDeploymentSmokeReport(root = process.cwd()): Promise<PublicDemoDeploymentSmokeReport> {
-  const deploymentUrlInput = process.env.G3D_PUBLIC_DEMO_URL;
+  const deploymentUrlInput = process.env.A3D_PUBLIC_DEMO_URL;
   const deploymentUrl = normalizedDeploymentUrl(deploymentUrlInput);
   const exportReport = readJson(join(root, exportReportPath));
   const sourceManifestPath = typeof exportReport?.integrityManifestPath === "string" ? exportReport.integrityManifestPath : null;
@@ -80,8 +80,8 @@ export async function createPublicDemoDeploymentSmokeReport(root = process.cwd()
   const exportSourceFreshnessViolations = validateReportSourceFileHashes(root, exportReport, "Static demo export");
   const baseViolations = [
     ...(deploymentUrl ? [] : [deploymentUrlInput?.trim()
-      ? `G3D_PUBLIC_DEMO_URL must be a durable public HTTPS origin, not localhost/private/reserved/placeholder host: ${deploymentUrlInput.trim()}.`
-      : "G3D_PUBLIC_DEMO_URL is not set to a durable public demo origin."]),
+      ? `A3D_PUBLIC_DEMO_URL must be a durable public HTTPS origin, not localhost/private/reserved/placeholder host: ${deploymentUrlInput.trim()}.`
+      : "A3D_PUBLIC_DEMO_URL is not set to a durable public demo origin."]),
     ...(exportReport?.ok === true ? [] : ["Static demo export report is missing or failing."]),
     ...exportSourceFreshnessViolations,
     ...(sourceManifestPath && existsSync(join(root, sourceManifestPath)) ? [] : ["Static integrity manifest is missing."]),
@@ -139,7 +139,7 @@ function publicDemoDeploymentExecutionPlan(
 ): PublicDemoDeploymentExecutionPlan {
   return {
     claimBoundary: "This plan only defines the public-demo deployment evidence required by the production readiness gate. Production readiness remains blocked until a durable HTTPS origin serves bytes that match the static integrity manifest and pass content-marker validation.",
-    requiredCommand: "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
+    requiredCommand: "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
     sourceManifestPath,
     publicDeploymentManifestPath,
     filesToDeploy: deploymentFiles.map((file) => ({
@@ -152,7 +152,7 @@ function publicDemoDeploymentExecutionPlan(
     validationCommands: [
       "pnpm build:external-demos",
       "pnpm verify:static-demo-server-smoke",
-      "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
+      "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
       "pnpm audit:external-parity-production-readiness",
       "pnpm audit:v4-broad-parity",
       "pnpm verify:external-parity-report-freshness",
@@ -392,7 +392,7 @@ ${report.checks.length > 0 ? report.checks.map((check) => `### ${check.id}
 - SHA-256: ${check.sha256 ?? "missing"}
 - Matched static integrity: ${check.matchedStaticIntegrity === true ? "yes" : "no"}
 - Content markers matched: ${check.contentOk === true ? "yes" : "no"}
-${check.error ? `- Error: ${check.error}\n` : ""}`).join("\n") : "- No public checks were run because `G3D_PUBLIC_DEMO_URL` was missing or rejected."}
+${check.error ? `- Error: ${check.error}\n` : ""}`).join("\n") : "- No public checks were run because `A3D_PUBLIC_DEMO_URL` was missing or rejected."}
 
 ## Violations
 

@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/scripting",
+  "name": "@aura3d/scripting",
   "version": "1.0.0",
   "type": "module",
   "exports": {

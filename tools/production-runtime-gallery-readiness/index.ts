@@ -114,7 +114,7 @@ const categoryCounts = [...requiredCategories].map((category) => ({
 }));
 const checks = [
   { id: "manifest-exists", pass: existsSync(manifestPath), detail: manifestPath },
-  { id: "manifest-schema", pass: manifest.schema === "g3d-production-runtime-gallery-manifest/v1", detail: manifest.schema },
+  { id: "manifest-schema", pass: manifest.schema === "a3d-production-runtime-gallery-manifest/v1", detail: manifest.schema },
   { id: "minimum-gallery-size", pass: entries.length >= 18, detail: `${entries.length} entries` },
   { id: "required-categories", pass: categoryCounts.every((item) => item.count > 0), detail: JSON.stringify(categoryCounts) },
   { id: "screenshots-exist", pass: entries.every((entry) => entry.screenshotExists), detail: missing(entries, "screenshotExists") },
@@ -126,7 +126,7 @@ const checks = [
   { id: "manifest-required-fields", pass: entries.every(hasGeneratedManifestFields), detail: entries.filter((entry) => !hasGeneratedManifestFields(entry)).map((entry) => entry.id).join(", ") }
 ];
 const generatedManifest = {
-  schema: "g3d-production-runtime-generated-gallery-manifest/v1",
+  schema: "a3d-production-runtime-generated-gallery-manifest/v1",
   generatedAt: new Date().toISOString(),
   sourceManifest: "fixtures/production-runtime/gallery-manifest.json",
   entries: entries.map((entry) => ({
@@ -158,7 +158,7 @@ const generatedManifest = {
   }))
 };
 const report = {
-  schema: "g3d-production-runtime-gallery-readiness/v1",
+  schema: "a3d-production-runtime-gallery-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   entryCount: entries.length,

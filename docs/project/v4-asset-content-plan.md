@@ -7,7 +7,7 @@ The asset pipeline must prove real-world visual credibility with local assets. T
 
 ## Local Corpus
 
-- [x] Create `fixtures/assets/v4/manifest.json`.
+- [x] Create `fixtures/asset-corpus/manifest.json`.
 - [x] Add a product asset suitable for configurator materials and exploded views.
 - [x] Add an architecture or room asset suitable for interior/exterior viewing.
 - [x] Add a game environment asset suitable for an interactive level.
@@ -15,7 +15,7 @@ The asset pipeline must prove real-world visual credibility with local assets. T
 - [x] Add a morph target asset with visible morph controls.
 - [x] Add a skinned plus morph animated asset if broad animation fidelity is claimed. Evidence: broad animation fidelity is not claimed; V4 reports keep broad animation/skin parity blocked while separate skinned and animated-morph evidence exists.
 - [x] Add material test assets for normal, metallic-roughness, emissive, occlusion, alpha, double-sided, and texture transform coverage.
-- [x] Add environment maps used by all flagship scenes. Evidence: `fixtures/assets/v4/environments/generated-local-environment-manifest.json` plus `createV4EnvironmentLighting` are used by product, architecture, and game examples and verified by `pnpm verify:external-parity-examples`.
+- [x] Add environment maps used by all flagship scenes. Evidence: `fixtures/environment-corpus/manifest.json` plus `createV4EnvironmentLighting` are used by product, architecture, and game examples and verified by `pnpm verify:external-parity-examples`.
 - [x] Store screenshot baselines and loader diagnostics for each corpus asset.
 
 ## Loader And Renderer Integration

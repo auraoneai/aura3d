@@ -1,4 +1,4 @@
-import { FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, type CameraTransformLike, type Vec3Like } from "@galileo3d/input";
+import { FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, type CameraTransformLike, type Vec3Like } from "@aura3d/input";
 import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

@@ -53,7 +53,7 @@ The required report is `tests/reports/current-routes-visual-review.json`. A miss
 
 ## Three.js Parity Gaps
 
-Three.js is the competitor baseline, not a runtime dependency for G3D product paths. V8 can claim route-level comparison only for scenes that have same-asset, same-environment, same-camera comparison output and explicit deltas.
+Three.js is the competitor baseline, not a runtime dependency for A3D product paths. V8 can claim route-level comparison only for scenes that have same-asset, same-environment, same-camera comparison output and explicit deltas.
 
 Blocked claims:
 

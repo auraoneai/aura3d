@@ -5,9 +5,9 @@ import { chromium, type Browser, type Page } from "@playwright/test";
 import { startExampleDevServer } from "../browser/example-dev-server";
 
 type ProductStateName =
-  | "__GALILEO3D_PRODUCT_DEMO__"
-  | "__GALILEO3D_ARCHITECTURE_DEMO__"
-  | "__GALILEO3D_GAME_DEMO__";
+  | "__AURA3D_PRODUCT_DEMO__"
+  | "__AURA3D_ARCHITECTURE_DEMO__"
+  | "__AURA3D_GAME_DEMO__";
 
 type ProductDemo = {
   id: "product-configurator" | "architecture-viewer" | "game-slice";
@@ -47,34 +47,34 @@ type ProductDemoBaseline = {
 const demos: readonly ProductDemo[] = [
   {
     id: "product-configurator",
-    stateName: "__GALILEO3D_PRODUCT_DEMO__",
+    stateName: "__AURA3D_PRODUCT_DEMO__",
     canvasSelector: "[data-testid='product-configurator-canvas']",
     interactions: async (page, selector) => {
       await page.locator(selector).click({ position: { x: 320, y: 280 } });
       await page.getByRole("button", { name: "ceramic" }).click();
-      await page.waitForFunction(() => (globalThis as Record<string, any>).__GALILEO3D_PRODUCT_DEMO__?.activeVariant === "ceramic");
+      await page.waitForFunction(() => (globalThis as Record<string, any>).__AURA3D_PRODUCT_DEMO__?.activeVariant === "ceramic");
     },
     budget: { averageFrameMs: 1_000, p95FrameMs: 1_500, maxFrameMs: 2_500, readyMs: 7_000 },
   },
   {
     id: "architecture-viewer",
-    stateName: "__GALILEO3D_ARCHITECTURE_DEMO__",
+    stateName: "__AURA3D_ARCHITECTURE_DEMO__",
     canvasSelector: "[data-testid='architecture-viewer-canvas']",
     interactions: async (page, selector) => {
       await page.locator(selector).click({ position: { x: 220, y: 240 } });
-      await page.waitForFunction(() => (globalThis as Record<string, any>).__GALILEO3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
+      await page.waitForFunction(() => (globalThis as Record<string, any>).__AURA3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
     },
     budget: { averageFrameMs: 1_500, p95FrameMs: 2_500, maxFrameMs: 3_500, readyMs: 5_000 },
   },
   {
     id: "game-slice",
-    stateName: "__GALILEO3D_GAME_DEMO__",
+    stateName: "__AURA3D_GAME_DEMO__",
     canvasSelector: "[data-testid='game-slice-canvas']",
     interactions: async (page, selector) => {
       await page.locator(selector).focus();
       await page.keyboard.press("Space");
       await page.locator(selector).click({ position: { x: 220, y: 260 } });
-      await page.waitForFunction(() => ((globalThis as Record<string, any>).__GALILEO3D_GAME_DEMO__?.interactions ?? 0) >= 1);
+      await page.waitForFunction(() => ((globalThis as Record<string, any>).__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
     },
     budget: { averageFrameMs: 1_000, p95FrameMs: 1_500, maxFrameMs: 2_500, readyMs: 5_000 },
   },
@@ -97,7 +97,7 @@ async function main(): Promise<void> {
 
     const report = {
       generatedAt: new Date().toISOString(),
-      releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-product-performance-run",
+      releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-product-performance-run",
       suite: "v2-product-demo-performance",
       environment: {
         node: process.version,

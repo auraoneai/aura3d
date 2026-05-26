@@ -2,7 +2,7 @@
 
 Version: `0.1.0-alpha.0`
 
-The physics package provides deterministic browser rigid-body primitives, constraints, stepping helpers, scene/ECS bridges, debug draw data, and higher-level fixture systems. The public package is `@galileo3d/engine/physics`.
+The physics package provides deterministic browser rigid-body primitives, constraints, stepping helpers, scene/ECS bridges, debug draw data, and higher-level fixture systems. The public package is `@aura3d/engine/physics`.
 
 ## Package Surface
 
@@ -23,7 +23,7 @@ Some exported systems are fixture or evidence helpers. Treat them as alpha APIs 
 Application code owns the loop:
 
 ```ts
-import { PhysicsWorld, Shape } from "@galileo3d/engine/physics";
+import { PhysicsWorld, Shape } from "@aura3d/engine/physics";
 
 const world = new PhysicsWorld({ gravity: [0, -9.81, 0] });
 const body = world.createRigidBody({

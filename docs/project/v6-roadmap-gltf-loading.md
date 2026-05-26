@@ -6,7 +6,7 @@
 The public V6 asset entrypoint is:
 
 ```ts
-import { loadGltfScene } from "@galileo3d/engine/production-runtime";
+import { loadGltfScene } from "@aura3d/engine/production-runtime";
 
 const scene = await loadGltfScene({
   url: "/fixtures/asset-corpus/damaged-helmet.glb",

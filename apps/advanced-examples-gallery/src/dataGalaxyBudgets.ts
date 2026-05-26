@@ -1,4 +1,4 @@
-import { createLayeredParticleBudgetPlan } from "@galileo3d/rendering";
+import { createLayeredParticleBudgetPlan } from "@aura3d/rendering";
 
 export type DataGalaxyBudgetMode = "interactive" | "showcase" | "stress";
 

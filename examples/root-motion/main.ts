@@ -1,4 +1,4 @@
-import { AnimationClip, AnimationMixer, AnimationTrack, applyRootMotion, extractRootMotion, type RootMotionSample } from "@galileo3d/animation";
+import { AnimationClip, AnimationMixer, AnimationTrack, applyRootMotion, extractRootMotion, type RootMotionSample } from "@aura3d/animation";
 import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 interface RootMotionExampleState {
@@ -13,7 +13,7 @@ interface RootMotionExampleState {
 
 declare global {
   interface Window {
-    __GALILEO3D_ROOT_MOTION_EXAMPLE__?: RootMotionExampleState;
+    __AURA3D_ROOT_MOTION_EXAMPLE__?: RootMotionExampleState;
   }
 }
 
@@ -63,7 +63,7 @@ if (typeof document !== "undefined") {
           ecsPosition: [...ecsTarget.position],
           localStride: latestLocalStride,
         };
-        window.__GALILEO3D_ROOT_MOTION_EXAMPLE__ = state;
+        window.__AURA3D_ROOT_MOTION_EXAMPLE__ = state;
 
         drawGrid(context, canvas, 64);
         drawTrack(context, canvas);
@@ -72,7 +72,7 @@ if (typeof document !== "undefined") {
       },
     };
   }).catch((error) => {
-    window.__GALILEO3D_ROOT_MOTION_EXAMPLE__ = {
+    window.__AURA3D_ROOT_MOTION_EXAMPLE__ = {
       status: "error",
       clipName: "root-motion-run",
       sample: extractRootMotion(createRootMotionRunClip(), { fromTime: 0, toTime: 0, loop: true }),

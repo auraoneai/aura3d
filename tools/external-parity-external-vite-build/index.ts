@@ -8,10 +8,10 @@ const reportDir = resolve("tests/reports/external-parity-external-vite-build");
 const staticPreviewRoot = resolve("tests/reports/external-parity-static-preview");
 const reportPath = resolve("tests/reports/external-parity-external-vite-build.json");
 const templates = [
-  { id: "external-parity-product-viewer", marker: "__G3D_TEMPLATE_PRODUCT_VIEWER__", requiredText: "gallery-neutral-hdr" },
-  { id: "external-parity-material-studio", marker: "__G3D_TEMPLATE_MATERIAL_STUDIO__", requiredText: "studio-softbox-hdr" },
-  { id: "external-parity-asset-gallery", marker: "__G3D_TEMPLATE_ASSET_GALLERY__", requiredText: "BoomBox.glb" },
-  { id: "external-parity-interactive-scene", marker: "__G3D_TEMPLATE_INTERACTIVE_SCENE__", requiredText: "warehouse-industrial-hdr" }
+  { id: "external-parity-product-viewer", marker: "__A3D_TEMPLATE_PRODUCT_VIEWER__", requiredText: "gallery-neutral-hdr" },
+  { id: "external-parity-material-studio", marker: "__A3D_TEMPLATE_MATERIAL_STUDIO__", requiredText: "studio-softbox-hdr" },
+  { id: "external-parity-asset-gallery", marker: "__A3D_TEMPLATE_ASSET_GALLERY__", requiredText: "BoomBox.glb" },
+  { id: "external-parity-interactive-scene", marker: "__A3D_TEMPLATE_INTERACTIVE_SCENE__", requiredText: "warehouse-industrial-hdr" }
 ] as const;
 
 mkdirSync(reportDir, { recursive: true });
@@ -27,7 +27,7 @@ if (!tarballName) throw new Error("npm pack did not return a tarball name.");
 const tarballPath = join(reportDir, basename(tarballName));
 if (!existsSync(tarballPath)) throw new Error(`Packed tarball was not created: ${tarballPath}`);
 
-const tempRoot = mkdtempSync(join(tmpdir(), "g3d-external-vite-"));
+const tempRoot = mkdtempSync(join(tmpdir(), "a3d-external-vite-"));
 try {
   const builds = [];
   for (const template of templates) {
@@ -40,7 +40,7 @@ try {
     };
     packageJson.dependencies = {
       ...(packageJson.dependencies ?? {}),
-      "@galileo3d/engine": `file:${tarballPath}`
+      "@aura3d/engine": `file:${tarballPath}`
     };
     writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
 
@@ -73,11 +73,11 @@ try {
         bundledJs.includes(template.marker) &&
         bundledJs.includes(template.requiredText) &&
         !bundledJs.includes("workspace:"),
-      packageDependency: packageJson.dependencies["@galileo3d/engine"]
+      packageDependency: packageJson.dependencies["@aura3d/engine"]
     });
   }
   const report = {
-    schema: "g3d-external-parity-external-vite-build/v1",
+    schema: "a3d-external-parity-external-vite-build/v1",
     generatedAt: new Date().toISOString(),
     ok: builds.length === templates.length && builds.every((build) => build.ok),
     tarballPath,

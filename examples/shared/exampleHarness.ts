@@ -1,4 +1,4 @@
-import { Renderer, type RenderDeviceDiagnostics, type RenderItem, type RenderSource } from "@galileo3d/rendering";
+import { Renderer, type RenderDeviceDiagnostics, type RenderItem, type RenderSource } from "@aura3d/rendering";
 
 export interface ExampleMetadata {
   id: string;
@@ -37,7 +37,7 @@ export interface ExampleRuntimeState {
 
 declare global {
   interface Window {
-    __GALILEO3D_EXAMPLE__?: ExampleRuntimeState;
+    __AURA3D_EXAMPLE__?: ExampleRuntimeState;
   }
 }
 
@@ -111,7 +111,7 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
         lastError: null,
         contextLost: false,
       };
-      window.__GALILEO3D_EXAMPLE__ = {
+      window.__AURA3D_EXAMPLE__ = {
         id: metadata.id,
         status: "ready",
         renderer: renderer ? "webgl2" : context ? "canvas2d" : "mock",
@@ -122,7 +122,7 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
         diagnostics,
         metrics: typeof state.metrics === "function" ? state.metrics() : state.metrics,
       };
-      setStatus(formatStatus(window.__GALILEO3D_EXAMPLE__));
+      setStatus(formatStatus(window.__AURA3D_EXAMPLE__));
       requestAnimationFrame(drawFrame);
     };
 
@@ -133,7 +133,7 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    window.__GALILEO3D_EXAMPLE__ = {
+    window.__AURA3D_EXAMPLE__ = {
       id: metadata.id,
       status: "error",
       renderer: "mock",
@@ -143,18 +143,18 @@ export async function createExample(metadata: ExampleMetadata, setup: ExampleSet
       errors: [message],
       error: message,
     };
-    setStatus(formatStatus(window.__GALILEO3D_EXAMPLE__));
+    setStatus(formatStatus(window.__AURA3D_EXAMPLE__));
     throw error;
   }
 }
 
 export function installExampleStyles(): void {
-  if (document.querySelector("#galileo3d-example-styles")) {
+  if (document.querySelector("#aura3d-example-styles")) {
     return;
   }
 
   const style = document.createElement("style");
-  style.id = "galileo3d-example-styles";
+  style.id = "aura3d-example-styles";
   style.textContent = `
     html, body, #app { margin: 0; min-height: 100%; background: #101418; color: #eef2f6; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
     .example-shell { min-height: 100vh; display: grid; grid-template-rows: minmax(0, 1fr) auto; }

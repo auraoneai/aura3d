@@ -2,7 +2,7 @@
 
 Version: 1.0.0
 
-All notable changes for Galileo3D are tracked here. This project follows source-controlled release notes until a public package release process is approved.
+All notable changes for Aura3D are tracked here. This project follows source-controlled release notes until a public package release process is approved.
 
 ## 1.0.0
 

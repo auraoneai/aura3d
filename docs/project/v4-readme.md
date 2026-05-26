@@ -1,4 +1,4 @@
-# Galileo3D V4 Engine Readiness
+# Aura3D V4 Engine Readiness
 
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
@@ -63,3 +63,27 @@ pnpm engine-readiness:package-smoke
 - `tests/reports/engine-readiness-gltf-support.json`
 - `tests/reports/engine-readiness-examples.json`
 - `tests/reports/engine-readiness-package-smoke.json`
+
+## External Evidence Operations
+
+The compatibility command aliases remain available for historical V4 workflows, while the reports and tool paths now use the flattened external-parity naming.
+
+```sh
+pnpm status:v4-parity
+pnpm status:v4-local-port
+pnpm refresh:v4-readiness-reports
+pnpm preflight:v4-parity
+pnpm preflight:v4-parity:after-external-evidence
+pnpm prepare:external-parity-external-evidence-handoff
+pnpm verify:external-parity-external-evidence-handoff
+pnpm doctor:v4-external-host
+pnpm doctor:v4-external-host:strict
+pnpm run:v4-external-host-evidence
+pnpm run:v4-external-host-evidence:execute
+```
+
+- `pnpm status:v4-parity` reads the generated reports and does not refresh them.
+- `pnpm prepare:external-parity-external-evidence-handoff` prepares the external-evidence handoff package.
+- `pnpm verify:external-parity-external-evidence-handoff` verifies the handoff package manifest.
+- `tests/reports/external-parity-external-host-doctor.json`
+- `tests/reports/external-parity-external-host-runner.json`

@@ -7,12 +7,12 @@ import {
   type WebGPUDeviceLike,
   type WebGPULike,
   type WebGPUSamplerDescriptorLike
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8WebGPUInstanceUniform?: V8WebGPUInstanceUniformRuntime;
+    __a3dV8WebGPUInstanceUniform?: V8WebGPUInstanceUniformRuntime;
   }
 }
 
@@ -32,7 +32,7 @@ interface V8WebGPUInstanceUniformRuntime {
   readonly outputColorBuckets: number;
   readonly renderTargetWidth: number;
   readonly renderTargetHeight: number;
-  readonly renderer: "g3d-webgpu";
+  readonly renderer: "a3d-webgpu";
   readonly evidenceMode: "injected-webgpu-device";
   readonly elapsedMs: number;
   readonly error?: string;
@@ -76,13 +76,13 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__g3dV8WebGPUInstanceUniform = runtime;
+    window.__a3dV8WebGPUInstanceUniform = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgpu",
       webgpu: createRouteWebGPU(),
       width: SIZE,
@@ -149,7 +149,7 @@ async function run(): Promise<void> {
         renderTargetWidth: SIZE,
         renderTargetHeight: SIZE
       });
-      window.__g3dV8WebGPUInstanceUniform = runtime;
+      window.__a3dV8WebGPUInstanceUniform = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -169,7 +169,7 @@ function createRouteWebGPU(): WebGPULike {
     async requestAdapter(): Promise<WebGPUAdapterLike> {
       return {
         name: "webgpu-instance-uniform-adapter",
-        info: { vendor: "galileo3d-route" },
+        info: { vendor: "aura3d-route" },
         async requestDevice() {
           return device;
         }
@@ -302,7 +302,7 @@ function createRuntime(
     outputColorBuckets: patch.outputColorBuckets ?? 0,
     renderTargetWidth: patch.renderTargetWidth ?? 0,
     renderTargetHeight: patch.renderTargetHeight ?? 0,
-    renderer: "g3d-webgpu",
+    renderer: "a3d-webgpu",
     evidenceMode: "injected-webgpu-device",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})

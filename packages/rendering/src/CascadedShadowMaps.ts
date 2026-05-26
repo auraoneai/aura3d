@@ -1,4 +1,4 @@
-import { DirectionalLight, Light } from "@galileo3d/scene";
+import { DirectionalLight, Light } from "@aura3d/scene";
 import { type Bounds3 } from "./Geometry";
 import { type RenderItem } from "./ForwardPass";
 import { type RenderDeviceDiagnostics } from "./RenderDevice";

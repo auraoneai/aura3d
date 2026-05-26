@@ -43,7 +43,7 @@ Every demo must pass every gate before its `visualReview.status` can become `acc
 
 | Gate | Required Evidence | Failure Mode |
 | --- | --- | --- |
-| Real G3D implementation | Route uses real exported G3D APIs, reusable local helpers, or documented approximations visible in source. | Fake API, static screenshot, or marketing-only feature claim. |
+| Real A3D implementation | Route uses real exported A3D APIs, reusable local helpers, or documented approximations visible in source. | Fake API, static screenshot, or marketing-only feature claim. |
 | Current screenshot set | Full UI, hero crop, viewport-only crop, and gallery contact sheet from current route code. | Old screenshot, missing screenshot, stale contact sheet, or screenshot that does not match current code. |
 | Screenshot hash lock | Accepted metadata includes lowercase SHA-256 for the exact accepted screenshot. | Hash missing, invalid, stale, or points to another file. |
 | Human review metadata | `reviewedBy`, `reviewedAt`, detailed notes, and named comparison basis tied to exact artifact. | Smoke/runtime pass used as visual acceptance. |
@@ -59,9 +59,9 @@ Every demo must pass every gate before its `visualReview.status` can become `acc
 
 This table must be updated from source evidence only, not from desired copy.
 
-| Area | Native G3D / Repo Capability | Local Helper Approximation | Not Yet Acceptable As Native | Demo Risk |
+| Area | Native A3D / Repo Capability | Local Helper Approximation | Not Yet Acceptable As Native | Demo Risk |
 | --- | --- | --- | --- | --- |
-| WebGL2 rendering | G3D render items, geometry, materials, lights, depth, transparency, readback, diagnostics. | Route scene builders, camera presets, composition helpers. | Film-quality renderer parity is not proven by smoke tests. | All demos. |
+| WebGL2 rendering | A3D render items, geometry, materials, lights, depth, transparency, readback, diagnostics. | Route scene builders, camera presets, composition helpers. | Film-quality renderer parity is not proven by smoke tests. | All demos. |
 | WebGPU | Existing WebGPU examples and proof routes exist. | Gallery currently routes through WebGL2-oriented runtime paths. | WebGPU water/compute showcase is not proven in V9 gallery. | Ocean, water, particles. |
 | PBR/materials | PBR-style materials, emissive, metallic/roughness, and supported loader/material paths. | Asset-specific material corrections and route material presets. | Premium glass/transmission sorting and perfect configurator material response are not proven. | Product, reactor, fog, ocean. |
 | GLB/glTF loading | Authored GLB fixtures and browser loading are active in multiple routes. | Asset exclusion, framing, material correction, node inspection layers. | Bad imported assets cannot become accepted evidence without diagnosis. | Product, robotics, smart city, fog. |
@@ -71,7 +71,7 @@ This table must be updated from source evidence only, not from desired copy.
 | Postprocess | Bloom/postprocess-style controls and FXAA/color/vignette effects exist in routes. | CSS/canvas/compositor overlays and route-specific toggles where needed. | Effects-composer-class bloom/DOF/motion blur quality and cost are not accepted. | Reactor. |
 | Fog/light shafts | Transparent geometry, haze cards, dust particles, lighting choreography. | Layered fog cards and god-ray approximations. | True volumetric raymarch fog/light scattering is not exposed. | Fog cathedral. |
 | Water | Procedural mesh waves/ripples and pointer disturbance can be implemented. | CPU ripple fields, normal/foam/color approximations. | Native GPGPU water, SSR, refraction, FFT ocean stack is not exposed as complete. | Water lab, ocean. |
-| Physics | `@galileo3d/physics` exists and V9 playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
+| Physics | `@aura3d/physics` exists and V9 playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
 | Controls/UI | Orbit/camera presets, panels, toggles, sliders, capture, reset, status HUD. | Route dashboards and labels. | Controls must be visually tested per route, not inferred from UI existence. | All demos. |
 | Screenshots/review | Playwright capture and visual-review tooling exist. | Human acceptance metadata and screenshot hashes. | Runtime pass cannot promote visual status by itself. | All demos. |
 
@@ -104,7 +104,7 @@ Every route owner must define and then prove:
 - visible motion
 - three or more meaningful interactions
 - five or more visible systems
-- native G3D features used
+- native A3D features used
 - helper approximations used
 - unsupported gaps and accepted claim boundary
 
@@ -139,7 +139,7 @@ Every demo must have a final audit row with current evidence for each item:
 - At least three interactions with screenshot/runtime evidence or explicit test coverage.
 - Animation/motion evidence from runtime samples.
 - Load time and post-load frame cadence.
-- G3D native features used.
+- A3D native features used.
 - Helper approximations used.
 - Unsupported gaps and why they do not invalidate the accepted claim.
 - Human reviewer, timestamp, notes, and acceptance decision.
@@ -172,7 +172,7 @@ pnpm advanced-gallery:review
 Focused route gate:
 
 ```bash
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/advanced-examples-gallery.spec.ts -g "<demo-id> renders as a complex animated G3D demo" --reporter=line --timeout=240000
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/advanced-examples-gallery.spec.ts -g "<demo-id> renders as a complex animated A3D demo" --reporter=line --timeout=240000
 pnpm advanced-gallery:review
 ```
 
@@ -191,7 +191,7 @@ Do not set a route to `accepted` unless all of this is true:
 3. The accepted screenshot hash is recorded and verified by the review tool.
 4. Runtime telemetry proves animation and post-load stats.
 5. The route has no known visual blockers such as white materials, haloed glass, visible crop edges, noisy postprocess, missing subject, stretched canvas, low-resolution backing store, or slideshow cadence.
-6. Unsupported features are documented as gaps and are not described as native G3D features.
+6. Unsupported features are documented as gaps and are not described as native A3D features.
 7. `pnpm advanced-gallery:review` accepts the route.
 
 The final gallery is complete only when every route is accepted and the full report says `Release gate: accepted (10/10 accepted)`.

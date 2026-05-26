@@ -8,11 +8,11 @@ import {
   createLightingDefault,
   createProceduralTexture,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __G3D_MATERIAL_STUDIO_V1__?: ExampleState;
+    __A3D_MATERIAL_STUDIO_V1__?: ExampleState;
   }
 }
 
@@ -77,13 +77,13 @@ async function boot(): Promise<void> {
       postprocess: lighting.postprocess,
       frustumCulling: false
     });
-    window.__G3D_MATERIAL_STUDIO_V1__ = {
+    window.__A3D_MATERIAL_STUDIO_V1__ = {
       status: "ready",
       diagnostics,
       materials: materials.map((material) => material.name)
     };
   } catch (error) {
-    window.__G3D_MATERIAL_STUDIO_V1__ = {
+    window.__A3D_MATERIAL_STUDIO_V1__ = {
       status: "error",
       materials: [],
       error: error instanceof Error ? error.message : String(error)

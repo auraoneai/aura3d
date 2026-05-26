@@ -15,7 +15,7 @@ const POINT_POSITIONS = [
 
 describe("interactive points Three.js parity", () => {
   it("matches Three.js Raycaster point threshold hits for the V8 picking scene", () => {
-    const g3d = createG3DScene();
+    const a3d = createA3DScene();
     const three = createThreePoints();
     const threshold = 0.12;
     const cases = [
@@ -26,38 +26,38 @@ describe("interactive points Three.js parity", () => {
 
     for (const testCase of cases) {
       const ray = new Ray(new Vector3(0, 0, 0), new Vector3(testCase.direction[0], testCase.direction[1], testCase.direction[2]));
-      const g3dHit = pickSceneRenderables(
-        { scene: g3d.scene, geometryLibrary: { "geometry:points": g3d.geometry } },
+      const a3dHit = pickSceneRenderables(
+        { scene: a3d.scene, geometryLibrary: { "geometry:points": a3d.geometry } },
         ray,
         { pointRadius: threshold }
       );
-      const g3dHits = pickSceneRenderableHits(
-        { scene: g3d.scene, geometryLibrary: { "geometry:points": g3d.geometry } },
+      const a3dHits = pickSceneRenderableHits(
+        { scene: a3d.scene, geometryLibrary: { "geometry:points": a3d.geometry } },
         ray,
         { pointRadius: threshold }
       );
       const threeHit = pickThreePoint(three.points, testCase.direction, threshold);
 
-      expect(g3dHit?.node.name, testCase.label).toBe("pickable-points");
+      expect(a3dHit?.node.name, testCase.label).toBe("pickable-points");
       expect(threeHit?.object.name, testCase.label).toBe("pickable-points");
-      expect(g3dHits[0]?.geometry.topology).toBe("points");
-      expect(Math.abs((g3dHit?.distance ?? 0) - (threeHit?.distance ?? 0)), testCase.label).toBeLessThan(0.18);
+      expect(a3dHits[0]?.geometry.topology).toBe("points");
+      expect(Math.abs((a3dHit?.distance ?? 0) - (threeHit?.distance ?? 0)), testCase.label).toBeLessThan(0.18);
     }
 
     const missDirection = [0, 1.8, -4.4] as const;
-    const g3dMiss = pickSceneRenderables(
-      { scene: g3d.scene, geometryLibrary: { "geometry:points": g3d.geometry } },
+    const a3dMiss = pickSceneRenderables(
+      { scene: a3d.scene, geometryLibrary: { "geometry:points": a3d.geometry } },
       new Ray(new Vector3(0, 0, 0), new Vector3(missDirection[0], missDirection[1], missDirection[2])),
       { pointRadius: threshold }
     );
     const threeMiss = pickThreePoint(three.points, missDirection, threshold);
-    expect(g3dMiss).toBeUndefined();
+    expect(a3dMiss).toBeUndefined();
     expect(threeMiss).toBeUndefined();
-    g3d.geometry.dispose();
+    a3d.geometry.dispose();
   });
 });
 
-function createG3DScene(): { readonly scene: Scene; readonly geometry: Geometry } {
+function createA3DScene(): { readonly scene: Scene; readonly geometry: Geometry } {
   const scene = new Scene();
   const node = scene.createNode("pickable-points");
   scene.root.addChild(node);

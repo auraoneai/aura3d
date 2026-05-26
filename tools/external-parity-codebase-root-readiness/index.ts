@@ -130,10 +130,10 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
   const checks: readonly RootCheck[] = [
     check(
       "workspace-package-imports-resolve-in-vite",
-      workspaceImportSpec.includes("direct @galileo3d workspace package imports")
-        && workspaceImportFixture.includes("@galileo3d/rendering")
-        && workspaceImportFixture.includes("@galileo3d/assets")
-        && workspaceImportFixture.includes("@galileo3d/scene"),
+      workspaceImportSpec.includes("direct @aura3d workspace package imports")
+        && workspaceImportFixture.includes("@aura3d/rendering")
+        && workspaceImportFixture.includes("@aura3d/assets")
+        && workspaceImportFixture.includes("@aura3d/scene"),
       ["tests/browser/workspace-vite-imports.spec.ts", "tests/browser/fixtures/workspace-vite-imports/main.ts", "package.json"],
       ["Vite/workspace package import smoke coverage is missing."]
     ),
@@ -373,8 +373,8 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
         && packagedDirectPbrShader.includes("proceduralSpecularResponse")
         && packagedDirectPbrShader.includes("clearcoatGloss")
         && packagedDirectPbrShader.includes("anisotropyDirection")
-        && packagedDirectPbrShader.includes("g3dPointShadowFactor")
-        && packagedDirectPbrShader.includes("kind > 0.5 && kind < 1.5 ? g3dPointShadowFactor")
+        && packagedDirectPbrShader.includes("a3dPointShadowFactor")
+        && packagedDirectPbrShader.includes("kind > 0.5 && kind < 1.5 ? a3dPointShadowFactor")
         && webgl2Source.includes("rgba8TextureInternalFormat")
         && webgl2Source.includes("SRGB8_ALPHA8")
         && webgl2Source.includes("LINEAR_MIPMAP_LINEAR")

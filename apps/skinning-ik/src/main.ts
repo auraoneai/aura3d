@@ -1,5 +1,5 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { AnimationMotionQualityTracker } from "@galileo3d/animation";
+import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
   PBRMaterial,
@@ -8,15 +8,15 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { bindIkUi, renderIkUi, type V8SkinningIkRuntime } from "./ui.js";
 import { createDefaultIkTargetState, targetFromCanvasPoint, type IkTargetState, type Vec3 } from "./ikTargets.js";
 
 declare global {
   interface Window {
-    __g3dV8SkinningIk?: V8SkinningIkRuntime;
+    __a3dV8SkinningIk?: V8SkinningIkRuntime;
   }
 }
 
@@ -65,7 +65,7 @@ async function run(): Promise<void> {
   });
 
   const publish = (): void => {
-    window.__g3dV8SkinningIk = runtime;
+    window.__a3dV8SkinningIk = runtime;
     renderIkUi(root, runtime, state);
     bindControls(root, state, publish);
   };
@@ -73,7 +73,7 @@ async function run(): Promise<void> {
   installCanvasDrag(canvas, state);
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: size.width,
       height: size.height,
@@ -213,10 +213,10 @@ async function run(): Promise<void> {
           skinName: ik.skinName,
           jointNames: ik.jointNames,
           clipName: baseClip.name,
-          renderer: "g3d-webgl2",
+          renderer: "a3d-webgl2",
           fixture: "imported robot-expressive.glb skeleton IK"
         };
-        window.__g3dV8SkinningIk = runtime;
+        window.__a3dV8SkinningIk = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -260,7 +260,7 @@ function createRuntime(status: V8SkinningIkRuntime["status"], statusLabel: strin
     skinName: "pending",
     jointNames: IK_JOINTS,
     clipName: "pending",
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     fixture: "imported robot-expressive.glb skeleton IK"
   };
 }

@@ -5,7 +5,7 @@ import { build } from "esbuild";
 import { chromium, type Browser, type Page } from "@playwright/test";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
-type GltfVisualEngine = "galileo" | "threejs" | "babylon";
+type GltfVisualEngine = "aura3d" | "threejs" | "babylon";
 
 interface GltfVisualRender {
   readonly assetId: string;
@@ -26,7 +26,7 @@ interface GltfVisualRender {
 
 interface GltfVisualDiff {
   readonly assetId: string;
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "threejs" | "babylon";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -129,56 +129,56 @@ const localGltfVisualAssets: readonly LocalGltfVisualAsset[] = [
   {
     sourceKind: "local-gltf-text",
     id: "v4-root-motion-clip",
-    path: "fixtures/assets/v4/animation/v4-root-motion-clip/v4-root-motion-clip.gltf",
+    path: "fixtures/workflow-assets/assets/animated-character/animated-character.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
     id: "external-gallery-corner",
-    path: "fixtures/assets/v4/architecture/external-gallery-corner/external-gallery-corner.gltf",
+    path: "fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 6,
   },
   {
     sourceKind: "local-gltf-text",
     id: "v4-skinned-hero",
-    path: "fixtures/assets/v4/character/v4-skinned-hero/v4-skinned-hero.gltf",
+    path: "fixtures/workflow-assets/assets/animated-character/animated-character.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
     id: "v4-game-outpost",
-    path: "fixtures/assets/v4/environment/v4-game-outpost/v4-game-outpost.gltf",
+    path: "fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 7,
   },
   {
     sourceKind: "local-gltf-text",
     id: "v4-material-fidelity-card",
-    path: "fixtures/assets/v4/materials/v4-material-fidelity-card/v4-material-fidelity-card.gltf",
+    path: "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
     id: "v4-specular-glossiness-card",
-    path: "fixtures/assets/v4/materials/v4-specular-glossiness-card/v4-specular-glossiness-card.gltf",
+    path: "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
     id: "v4-morph-expression",
-    path: "fixtures/assets/v4/morph/v4-morph-expression/v4-morph-expression.gltf",
+    path: "fixtures/workflow-assets/assets/variant-product/variant-product.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
     id: "v4-product-speaker",
-    path: "fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf",
+    path: "fixtures/product-studio/products/speaker/speaker.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 8,
   },
@@ -208,7 +208,7 @@ export async function createV4GltfLoaderVisualParityReport(root = process.cwd())
       const validations: GltfVisualAssetValidation[] = [];
       for (const asset of gltfVisualAssets) {
         const renders: GltfVisualRender[] = [];
-        for (const engine of ["galileo", "threejs", "babylon"] as const) {
+        for (const engine of ["aura3d", "threejs", "babylon"] as const) {
           const bundle = bundles.get(engine);
           if (!bundle) throw new Error(`Missing ${engine} glTF visual parity bundle.`);
           renders.push(await renderEngineWithRetry(browser, root, asset, engine, bundle));
@@ -301,7 +301,7 @@ export async function createV4GltfLoaderVisualParityReport(root = process.cwd())
 }
 
 function filterAssets(assets: readonly GltfVisualAsset[]): readonly GltfVisualAsset[] {
-  const filter = process.env.G3D_GLTF_VISUAL_ASSET_IDS;
+  const filter = process.env.A3D_GLTF_VISUAL_ASSET_IDS;
   if (!filter?.trim()) return assets;
   const ids = new Set(filter.split(",").map((entry) => entry.trim()).filter(Boolean));
   if (ids.size === 0) return assets;
@@ -309,7 +309,7 @@ function filterAssets(assets: readonly GltfVisualAsset[]): readonly GltfVisualAs
   if (selected.length !== ids.size) {
     const found = new Set(selected.map((asset) => asset.id));
     const missing = [...ids].filter((id) => !found.has(id));
-    throw new Error(`Unknown G3D_GLTF_VISUAL_ASSET_IDS entries: ${missing.join(", ")}`);
+    throw new Error(`Unknown A3D_GLTF_VISUAL_ASSET_IDS entries: ${missing.join(", ")}`);
   }
   return selected;
 }
@@ -363,7 +363,7 @@ function externalStrictVisualFailures(validations: readonly GltfVisualAssetValid
       passingEngines: validation.diffs.filter((diff) => diff.pass).map((diff) => diff.comparedEngine),
       maxChangedPixelRatio: Number(Math.max(...failedDiffs.map((diff) => diff.changedPixelRatio)).toFixed(6)),
       maxMeanAbsoluteError: Number(Math.max(...failedDiffs.map((diff) => diff.meanAbsoluteError)).toFixed(6)),
-      nextAction: "Improve Galileo3D glTF material/texture/animation handling or add focused evidence proving this warning-classified asset should remain excluded from full visual parity.",
+      nextAction: "Improve Aura3D glTF material/texture/animation handling or add focused evidence proving this warning-classified asset should remain excluded from full visual parity.",
     }];
   });
 }
@@ -381,7 +381,7 @@ function isVisualDiffRequired(asset: GltfVisualAsset): boolean {
 async function buildEngineBundles(gltfTexts: Readonly<Record<string, string>>): Promise<ReadonlyMap<GltfVisualEngine, string>> {
   const gltfLiteral = JSON.stringify(gltfTexts);
   const entries: Record<GltfVisualEngine, string> = {
-    galileo: galileoBundleSource(gltfLiteral),
+    aura3d: aura3dBundleSource(gltfLiteral),
     threejs: threeBundleSource(gltfLiteral),
     babylon: babylonBundleSource(gltfLiteral),
   };
@@ -397,7 +397,7 @@ async function buildEngineBundles(gltfTexts: Readonly<Record<string, string>>): 
       bundle: true,
       platform: "browser",
       format: "iife",
-      globalName: `G3D_${engine}_gltf_loader_visual_parity`,
+      globalName: `A3D_${engine}_gltf_loader_visual_parity`,
       target: "es2022",
       write: false,
       minify: true,
@@ -428,7 +428,7 @@ async function renderEngine(browser: Browser, root: string, asset: GltfVisualAss
       canvas.style.width = "640px";
       canvas.style.height = "420px";
       document.body.replaceChildren(canvas);
-      const bundleName = `G3D_${engineName}_gltf_loader_visual_parity`;
+      const bundleName = `A3D_${engineName}_gltf_loader_visual_parity`;
       const render = (window as unknown as Record<string, { renderGltfLoaderVisualParity?: (canvas: HTMLCanvasElement, asset: GltfVisualAsset) => Promise<GltfVisualRender["metrics"]> }>)[bundleName]?.renderGltfLoaderVisualParity;
       if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderGltfLoaderVisualParity`);
       const metrics = await Promise.race([
@@ -490,7 +490,7 @@ function withTimeout<T>(operation: Promise<T>, timeoutMs: number, message: strin
 }
 
 async function createScreenshotDiff(page: Page, root: string, asset: GltfVisualAsset, renders: readonly GltfVisualRender[], comparedEngine: "threejs" | "babylon"): Promise<GltfVisualDiff> {
-  const baseline = renders.find((render) => render.engine === "galileo");
+  const baseline = renders.find((render) => render.engine === "aura3d");
   const compared = renders.find((render) => render.engine === comparedEngine);
   if (!baseline || !compared) throw new Error(`Missing render for screenshot diff: ${comparedEngine}.`);
   const diffPath = `${artifactDir}/${comparedEngine}-${asset.id}-diff.png`;
@@ -504,7 +504,7 @@ async function createScreenshotDiff(page: Page, root: string, asset: GltfVisualA
   const { diffDataUrl: _diffDataUrl, ...metrics } = result;
   return {
     assetId: asset.id,
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine,
     baselinePath: baseline.screenshotPath,
     comparedPath: compared.screenshotPath,
@@ -580,7 +580,7 @@ function sharedBrowserHelpers(): string {
   `;
 }
 
-function galileoBundleSource(gltfLiteral: string): string {
+function aura3dBundleSource(gltfLiteral: string): string {
   return `
     import { GLTFLoader, LoadContext, createGLTFRenderResources, createMeshoptDecoder } from "./packages/assets/src/index.ts";
     import { Geometry, Renderer, computeMorphTargetEnvelopeBounds, computeSkinnedGeometryBounds, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
@@ -595,18 +595,18 @@ function galileoBundleSource(gltfLiteral: string): string {
       const resources = await createGLTFRenderResources(asset);
       const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.018, 0.023, 0.034, 1], antialias: true, preserveDrawingBuffer: true });
       resources.scene.updateWorldTransforms();
-      const renderableStats = collectGalileoRenderableStats(resources);
+      const renderableStats = collectAura3DRenderableStats(resources);
       const diagnostics = visualAsset.sourceKind === "local-gltf-text"
         ? renderer.render({
-          renderItems: localGalileoRenderItems(resources),
-          environmentLighting: galileoAuditEnvironment(visualAsset)
+          renderItems: localAura3DRenderItems(resources),
+          environmentLighting: aura3dAuditEnvironment(visualAsset)
         })
-        : renderFramedGalileoScene(renderer, resources, canvas, visualAsset);
+        : renderFramedAura3DScene(renderer, resources, canvas, visualAsset);
       await nextFrame();
       const stats = pixelStats(canvas);
       return { width: canvas.width, height: canvas.height, ...stats, drawCalls: diagnostics.drawCalls, meshCount: renderableStats.meshCount, materialCount: Math.max(asset.materials.length, renderableStats.materialCount), vertexCount: renderableStats.vertexCount };
     }
-    function collectGalileoRenderableStats(resources) {
+    function collectAura3DRenderableStats(resources) {
       const renderables = resources.scene.collectRenderables();
       const materials = new Set();
       let vertexCount = 0;
@@ -617,30 +617,30 @@ function galileoBundleSource(gltfLiteral: string): string {
       }
       return { meshCount: renderables.length, materialCount: materials.size, vertexCount };
     }
-    function localGalileoRenderItems(resources) {
+    function localAura3DRenderItems(resources) {
       const renderItems = [];
       resources.scene.updateWorldTransforms();
       for (const { node, renderable } of resources.scene.collectRenderables()) {
         const geometry = resources.geometryLibrary.get(renderable.geometry);
         const material = resources.materialLibrary.get(renderable.material);
         if (geometry && material) {
-          renderItems.push({ geometry, material, modelMatrix: node.transform.worldMatrix, label: "galileo-" + node.name });
+          renderItems.push({ geometry, material, modelMatrix: node.transform.worldMatrix, label: "aura3d-" + node.name });
         }
       }
       return renderItems;
     }
-    function renderFramedGalileoScene(renderer, resources, canvas, visualAsset) {
-      const camera = frameGalileoScene(resources, canvas, visualAsset);
+    function renderFramedAura3DScene(renderer, resources, canvas, visualAsset) {
+      const camera = frameAura3DScene(resources, canvas, visualAsset);
       return renderer.render({
         scene: resources.scene,
         geometryLibrary: resources.geometryLibrary,
         materialLibrary: resources.materialLibrary,
         morphTargetLibrary: resources.morphTargetLibrary,
-        environmentLighting: galileoAuditEnvironment(visualAsset)
+        environmentLighting: aura3dAuditEnvironment(visualAsset)
       }, camera);
     }
-    function frameGalileoScene(resources, canvas, visualAsset) {
-      const bounds = galileoWorldBounds(resources);
+    function frameAura3DScene(resources, canvas, visualAsset) {
+      const bounds = aura3dWorldBounds(resources);
       const spanX = Math.max(0.1, bounds.max[0] - bounds.min[0]);
       const spanY = Math.max(0.1, bounds.max[1] - bounds.min[1]);
       const spanZ = Math.max(0.1, bounds.max[2] - bounds.min[2]);
@@ -674,7 +674,7 @@ function galileoBundleSource(gltfLiteral: string): string {
       resources.scene.root.addChild(fill);
       return camera;
     }
-    function galileoAuditEnvironment(visualAsset) {
+    function aura3dAuditEnvironment(visualAsset) {
       return usesSceneAuthoredLights(visualAsset)
         ? { color: [0, 0, 0], intensity: 0 }
         : createV4EnvironmentLighting("studio").lighting;
@@ -685,7 +685,7 @@ function galileoBundleSource(gltfLiteral: string): string {
     function usesReferenceBoxFraming(visualAsset) {
       return visualAsset.id === "box-textured" || visualAsset.id === "box-textured-non-power-of-two";
     }
-    function galileoWorldBounds(resources) {
+    function aura3dWorldBounds(resources) {
       resources.scene.updateWorldTransforms();
       const min = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
       const max = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];

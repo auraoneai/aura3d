@@ -34,7 +34,7 @@ describe("master gate evidence", () => {
       "tests/reports/release-repeat.json",
       "tests/reports/final-release-verification.json",
       "docs/project/release-artifacts.json",
-      "release-artifacts/galileo3d-engine-1.0.0.tgz",
+      "release-artifacts/aura3d-engine-1.0.0.tgz",
       "tests/reports/versioned-release.json",
       "docs/project/support-policy.md",
       ".github/ISSUE_TEMPLATE/bug_report.yml",

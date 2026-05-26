@@ -6,8 +6,8 @@ import {
   type RenderDeviceDiagnostics,
   type RenderItem,
   type V6LoadedHdrEnvironment
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { DEMOS, getDemo, type DemoDefinition } from "./metadata";
 import { buildScene, createResources, type ControlValues, type GalleryState, type Ripple, type SceneFrame } from "./sceneBuilders";
 import { createAuthoredGalleryLayer, type AuthoredAssetRuntimeState } from "./authoredLayer";
@@ -47,7 +47,7 @@ import "./styles.css";
 
 declare global {
   interface Window {
-    __G3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime;
+    __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime;
   }
 }
 
@@ -64,7 +64,7 @@ interface AdvancedGalleryRuntime {
   readonly frameMs: number;
   readonly width: number;
   readonly height: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly postprocess: boolean;
   readonly environmentBackground?: {
     readonly source: "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
@@ -380,7 +380,7 @@ async function run(): Promise<void> {
   try {
     const renderSize = syncCanvasSize();
     const rendererCreateStartedAt = performance.now();
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: renderSize.width,
       height: renderSize.height,
@@ -549,7 +549,7 @@ window.addEventListener("beforeunload", () => {
   }
 });
 
-function bindEvents(renderer: G3DRenderer): void {
+function bindEvents(renderer: A3DRenderer): void {
   window.addEventListener("hashchange", () => {
     routeId = normalizeHash(location.hash);
     galleryMode = isGalleryRoute(routeId);
@@ -663,7 +663,7 @@ function renderShell(): void {
     shell.innerHTML = `
       <section class="gallery-home">
         <header>
-          <span>G3D Advanced Gallery</span>
+          <span>A3D Advanced Gallery</span>
           <h1>Production-Grade Engine Showcase Candidates</h1>
           <p>Every demo remains failed or candidate until screenshot review proves authored assets, complex systems, interaction, motion, and visual composition against its Three.js-style target.</p>
         </header>
@@ -723,7 +723,7 @@ function renderShell(): void {
       <section class="info-section">
         <h2>What This Proves</h2>
         ${list(selectedDemo.proves)}
-        <h2>G3D Features Used</h2>
+        <h2>A3D Features Used</h2>
         ${chips(selectedDemo.features)}
         <h2>Three.js Reference Target</h2>
         <p>${escapeHtml(selectedDemo.reference)}</p>
@@ -1056,7 +1056,7 @@ function createRuntime(
     frameMs,
     width: canvas.width,
     height: canvas.height,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     postprocess: actualPostprocess,
     ...(environmentBackground ? { environmentBackground: createRuntimeEnvironmentBackground(environmentBackground, environmentBackgroundActive) } : {}),
     ...(environmentLighting ? { environmentLighting: createRuntimeEnvironmentLighting(environmentLighting) } : {}),
@@ -1478,7 +1478,7 @@ function countRenderItemInstances(items: readonly RenderItem[]): number {
 }
 
 function publish(value: AdvancedGalleryRuntime): void {
-  window.__G3D_V9_ADVANCED_EXAMPLES_GALLERY__ = value;
+  window.__A3D_V9_ADVANCED_EXAMPLES_GALLERY__ = value;
 }
 
 function showError(message: string): void {

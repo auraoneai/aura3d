@@ -34,7 +34,7 @@ check("feature-coverage", V4_PERFORMANCE_BASELINE.featureCoverage.includes("frus
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-performance-readiness/v1",
+  schema: "a3d-external-parity-performance-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass ? "V4 renderer performance and large-scene proof is ready." : "V4 renderer performance proof is incomplete.",

@@ -15,7 +15,7 @@ WebGPU is scoped and partial.
 
 ## Current Claim
 
-G3D has WebGPU-facing code and demo routes for RTT, compute, materials, and instance uniforms.
+A3D has WebGPU-facing code and demo routes for RTT, compute, materials, and instance uniforms.
 
 ## Blocked Claims
 

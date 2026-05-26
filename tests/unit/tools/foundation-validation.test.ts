@@ -8,15 +8,15 @@ import { validateV3ClaimGates } from "../../../tools/foundation-claim-gates/inde
 import { validateV3ReportFreshness, writeJson, baseReport } from "../../../tools/foundation-reporting/index.js";
 
 function fixtureRoot(): string {
-  return mkdtempSync(join(tmpdir(), "g3d-v3-validation-"));
+  return mkdtempSync(join(tmpdir(), "a3d-v3-validation-"));
 }
 
 describe("v3 validation tools", () => {
   it("blocks unscoped v3 competitor and production claims", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "examples", "bad"), { recursive: true });
-    writeFileSync(join(root, "examples", "bad", "README.md"), "Galileo3D is better than Three.js.\n");
-    writeFileSync(join(root, "README.md"), "Galileo3D is not production-ready.\n");
+    writeFileSync(join(root, "examples", "bad", "README.md"), "Aura3D is better than Three.js.\n");
+    writeFileSync(join(root, "README.md"), "Aura3D is not production-ready.\n");
 
     const report = validateV3ClaimGates(root);
 
@@ -54,8 +54,8 @@ const examples = [{
 
   it("detects stale v3 reports by source hash", () => {
     const root = fixtureRoot();
-    mkdirSync(join(root, "docs", "v3"), { recursive: true });
-    writeFileSync(join(root, "docs", "v3", "README.md"), "before\n");
+    mkdirSync(join(root, "docs", "project"), { recursive: true });
+    writeFileSync(join(root, "docs", "project", "v3-readme.md"), "before\n");
     const report = baseReport(root, {
       ok: true,
       command: "test",
@@ -63,7 +63,7 @@ const examples = [{
       sourceFiles: ["docs/project/v3-readme.md"],
     });
     writeJson(root, "tests/reports/foundation-current-capability.json", report);
-    writeFileSync(join(root, "docs", "v3", "README.md"), "after\n");
+    writeFileSync(join(root, "docs", "project", "v3-readme.md"), "after\n");
 
     const issues = validateV3ReportFreshness(root, ["tests/reports/foundation-current-capability.json"]);
 

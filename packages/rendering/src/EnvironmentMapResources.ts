@@ -5,7 +5,7 @@ export type EnvironmentInputEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe";
 export type EnvironmentTextureEncoding = "rgba8-linear" | "rgba8-srgb" | "rgbe";
 export type EnvironmentToneMappingOperator = "linear" | "reinhard";
 
-const G3D_EPSILON_NUMBER = 0.00001;
+const A3D_EPSILON_NUMBER = 0.00001;
 
 export interface Rgba8EnvironmentMapSource {
   readonly width: number;
@@ -527,7 +527,7 @@ function integrateGgxEnvironmentBrdf(
     if (nDotL <= 0 || nDotH <= 0 || vDotH <= 0) {
       continue;
     }
-    const visibility = ggxGeometrySmithCorrelated(nDotV, nDotL, roughness) * vDotH / Math.max(nDotH * nDotV, G3D_EPSILON_NUMBER);
+    const visibility = ggxGeometrySmithCorrelated(nDotV, nDotL, roughness) * vDotH / Math.max(nDotH * nDotV, A3D_EPSILON_NUMBER);
     const fresnel = Math.pow(1 - vDotH, 5);
     scale += (1 - fresnel) * visibility;
     bias += fresnel * visibility;
@@ -559,7 +559,7 @@ function importanceSampleGgx(
   const alpha = Math.max(roughness, 0.001) * Math.max(roughness, 0.001);
   const alpha2 = alpha * alpha;
   const phi = 2 * Math.PI * xi[0];
-  const cosTheta = Math.sqrt((1 - xi[1]) / Math.max(1 + (alpha2 - 1) * xi[1], G3D_EPSILON_NUMBER));
+  const cosTheta = Math.sqrt((1 - xi[1]) / Math.max(1 + (alpha2 - 1) * xi[1], A3D_EPSILON_NUMBER));
   const sinTheta = Math.sqrt(Math.max(0, 1 - cosTheta * cosTheta));
   return [
     Math.cos(phi) * sinTheta,
@@ -571,14 +571,14 @@ function importanceSampleGgx(
 function ggxGeometrySmithCorrelated(nDotV: number, nDotL: number, roughness: number): number {
   const alpha = Math.max(roughness, 0.045);
   const alpha2 = alpha * alpha * alpha * alpha;
-  const lambdaV = nDotL * Math.sqrt(Math.max((nDotV - alpha2 * nDotV) * nDotV + alpha2, G3D_EPSILON_NUMBER));
-  const lambdaL = nDotV * Math.sqrt(Math.max((nDotL - alpha2 * nDotL) * nDotL + alpha2, G3D_EPSILON_NUMBER));
-  return 0.5 / Math.max(lambdaV + lambdaL, G3D_EPSILON_NUMBER);
+  const lambdaV = nDotL * Math.sqrt(Math.max((nDotV - alpha2 * nDotV) * nDotV + alpha2, A3D_EPSILON_NUMBER));
+  const lambdaL = nDotV * Math.sqrt(Math.max((nDotL - alpha2 * nDotL) * nDotL + alpha2, A3D_EPSILON_NUMBER));
+  return 0.5 / Math.max(lambdaV + lambdaL, A3D_EPSILON_NUMBER);
 }
 
 function normalize3(value: readonly [number, number, number]): readonly [number, number, number] {
   const length = Math.hypot(value[0], value[1], value[2]);
-  if (length <= G3D_EPSILON_NUMBER) return [0, 0, 1];
+  if (length <= A3D_EPSILON_NUMBER) return [0, 0, 1];
   return [value[0] / length, value[1] / length, value[2] / length];
 }
 
@@ -649,7 +649,7 @@ function prefilterLinearHdrEnvironmentDirection(
   roughness: number,
   sampleCount: number
 ): readonly [number, number, number, number] {
-  if (roughness <= G3D_EPSILON_NUMBER) {
+  if (roughness <= A3D_EPSILON_NUMBER) {
     return sampleLinearHdrEquirect(source, reflectionDirection);
   }
   const normal = reflectionDirection;
@@ -669,7 +669,7 @@ function prefilterLinearHdrEnvironmentDirection(
       2 * vDotH * halfVector[2] - view[2]
     ]);
     const nDotL = Math.max(dot3(normal, light), 0);
-    if (nDotL <= G3D_EPSILON_NUMBER) {
+    if (nDotL <= A3D_EPSILON_NUMBER) {
       continue;
     }
     const sample = sampleLinearHdrEquirect(source, light);
@@ -679,7 +679,7 @@ function prefilterLinearHdrEnvironmentDirection(
     alpha += sample[3] * nDotL;
     totalWeight += nDotL;
   }
-  if (totalWeight <= G3D_EPSILON_NUMBER) {
+  if (totalWeight <= A3D_EPSILON_NUMBER) {
     return sampleLinearHdrEquirect(source, reflectionDirection);
   }
   return [

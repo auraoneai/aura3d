@@ -235,7 +235,7 @@ test.describe("V7 material extension artifacts", () => {
 
     const reportPath = "tests/reports/runtime-parity/material-extensions/material-extensions.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-v7-material-extension-artifacts/v1",
+      schema: "a3d-v7-material-extension-artifacts/v1",
       generatedAt: new Date().toISOString(),
       screenshot: screenshotPath,
       fileSize,

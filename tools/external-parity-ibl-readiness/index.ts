@@ -14,7 +14,7 @@ const requiredFiles = [
   "packages/rendering/src/IBL.ts",
   "packages/rendering/src/PMREM.ts",
   "packages/rendering/src/BRDFLut.ts",
-  "fixtures/v4/environments/manifest.json",
+  "fixtures/external-parity/environments/manifest.json",
   "tests/unit/rendering/external-parity-ibl.test.ts",
   "tests/browser/external-parity-ibl-visual.spec.ts",
   "tools/external-parity-ibl-readiness/index.ts",
@@ -121,7 +121,7 @@ check(
   "BRDF LUT wrapper must generate a non-empty LUT with roughness response diagnostics."
 );
 
-const manifest = readJson("fixtures/v4/environments/manifest.json");
+const manifest = readJson("fixtures/external-parity/environments/manifest.json");
 const targets = Array.isArray(manifest?.targets) ? manifest.targets.filter(isRecord) : [];
 check("environment-manifest-target-count", targets.length >= 5, "Environment manifest must include five HDR targets.");
 check(
@@ -168,7 +168,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-ibl-readiness/v1",
+  schema: "a3d-external-parity-ibl-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

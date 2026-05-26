@@ -13,43 +13,50 @@ V3 treats every non-private package under `packages/*` as intentional public sur
 - a TypeScript path alias in `tsconfig.base.json`.
 - generated coverage in `docs/api/public-api.md`.
 
-`@galileo3d/test-utils` is private and must not be treated as public product API.
+`@aura3d/test-utils` is private and must not be treated as public product API.
 
 ## Foundation Packages
 
 | Package | Role | Stability |
 | --- | --- | --- |
-| `@galileo3d/math` | Vectors, matrices, rays, bounds, interpolation, random helpers. | stable-foundation |
-| `@galileo3d/core` | Engine loop, scheduler, diagnostics, errors, resource lifecycle. | stable-foundation |
-| `@galileo3d/scene` | Scene graph, transforms, cameras, lights, renderables, serialization. | stable-foundation |
-| `@galileo3d/ecs` | Entity/component runtime, systems, queries, serialization. | evolving-public |
+| `@aura3d/math` | Vectors, matrices, rays, bounds, interpolation, random helpers. | stable-foundation |
+| `@aura3d/core` | Engine loop, scheduler, diagnostics, errors, resource lifecycle. | stable-foundation |
+| `@aura3d/scene` | Scene graph, transforms, cameras, lights, renderables, serialization. | stable-foundation |
+| `@aura3d/ecs` | Entity/component runtime, systems, queries, serialization. | evolving-public |
 
 ## Runtime Subsystems
 
 | Package | Role | Stability |
 | --- | --- | --- |
-| `@galileo3d/rendering` | Render device, renderer, materials, geometry, lighting, shadows, postprocess, diagnostics. | evolving-public |
-| `@galileo3d/assets` | Asset manager, glTF loader, render resources, import preflight, compatibility, texture pipeline. | evolving-public |
-| `@galileo3d/animation` | Clips, tracks, mixers, skeletons, state machines, IK, runtime bridges. | evolving-public |
-| `@galileo3d/input` | Keyboard, pointer, gamepad, controls, picking rays, input playback. | evolving-public |
-| `@galileo3d/audio` | Audio context, clips, mixer, spatial audio, scene audio bridge, effects. | evolving-public |
-| `@galileo3d/physics` | Rigid bodies, shapes, collisions, world stepping, scene/ECS bridges, character/navigation helpers. | evolving-public |
-| `@galileo3d/scripting` | Behaviors, decision systems, AI helpers, behavior host/registry/runtime. | evolving-public |
-| `@galileo3d/debug` | Runtime diagnostics, inspectors, resource tracking, report export. | evolving-public |
+| `@aura3d/rendering` | Render device, renderer, materials, geometry, lighting, shadows, postprocess, diagnostics. | evolving-public |
+| `@aura3d/controls` | Orbit, trackball, transform, pointer-lock, map, and interaction control helpers. | evolving-public |
+| `@aura3d/environments` | Environment map descriptors, HDR readiness helpers, and renderer environment presets. | evolving-public |
+| `@aura3d/materials` | Material presets, variant helpers, PBR material descriptors, and material workflow utilities. | evolving-public |
+| `@aura3d/assets` | Asset manager, glTF loader, render resources, import preflight, compatibility, texture pipeline. | evolving-public |
+| `@aura3d/animation` | Clips, tracks, mixers, skeletons, state machines, IK, runtime bridges. | evolving-public |
+| `@aura3d/input` | Keyboard, pointer, gamepad, controls, picking rays, input playback. | evolving-public |
+| `@aura3d/audio` | Audio context, clips, mixer, spatial audio, scene audio bridge, effects. | evolving-public |
+| `@aura3d/physics` | Rigid bodies, shapes, collisions, world stepping, scene/ECS bridges, character/navigation helpers. | evolving-public |
+| `@aura3d/scripting` | Behaviors, decision systems, AI helpers, behavior host/registry/runtime. | evolving-public |
+| `@aura3d/debug` | Runtime diagnostics, inspectors, resource tracking, report export. | evolving-public |
 
 ## Workflow And Editor Packages
 
 | Package | Role | Stability |
 | --- | --- | --- |
-| `@galileo3d/product-studio` | Product rendering workflow SDK created by V2 and carried into V3. | evolving-public |
-| `@galileo3d/editor-runtime` | Editor runtime models, gizmos, picking, plugins, prefab/timeline/state helpers. | evolving-public |
-| `@galileo3d/editor` | Editor package facade over editor runtime. | unstable-facade |
+| `@aura3d/product-studio` | Product rendering workflow SDK created by V2 and carried into V3. | evolving-public |
+| `@aura3d/apps` | Public app/workflow entrypoints for asset viewer, material studio, product configurator, scene showcase, and interactive scenes. | evolving-public |
+| `@aura3d/create-aura3d` | Project scaffolding CLI and template manifest helpers. | evolving-public |
+| `@aura3d/engine-runtime` | Engine runtime package consumed by the root `@aura3d/engine` facade. | evolving-public |
+| `@aura3d/three-compat` | Three.js compatibility adapters, migration helpers, and compatibility reports. | evolving-public |
+| `@aura3d/editor-runtime` | Editor runtime models, gizmos, picking, plugins, prefab/timeline/state helpers. | evolving-public |
+| `@aura3d/editor` | Editor package facade over editor runtime. | unstable-facade |
 
 ## Required Future Package
 
 | Package | Role | Status |
 | --- | --- | --- |
-| `@galileo3d/workflows` | High-level asset viewer, product configurator, material studio, scene showcase, and interactive scene workflows. | created-milestone-4 |
+| `@aura3d/workflows` | High-level asset viewer, product configurator, material studio, scene showcase, and interactive scene workflows. | created-milestone-4 |
 
 ## Public API Audit Rules
 
@@ -59,12 +66,12 @@ The V3 API audit must verify:
 - Every non-private package exposes `exports["."]` with `types` and `import`.
 - Every non-private package is documented in `docs/api/public-api.md`.
 - Every non-private package has a TypeScript path alias.
-- Root package subpath exports exist for public packages that ship through `@galileo3d/engine`.
-- `@galileo3d/test-utils` remains private.
-- `@galileo3d/product-studio` is part of the public surface.
-- `@galileo3d/workflows` exists after Milestone 4 and is required for release.
+- Root package subpath exports exist for public packages that ship through `@aura3d/engine`.
+- `@aura3d/test-utils` remains private.
+- `@aura3d/product-studio` is part of the public surface.
+- `@aura3d/workflows` exists after Milestone 4 and is required for release.
 
 ## Current Gaps
 
 - Several packages expose fixture/evidence helpers publicly; Milestone 1 records this as an intentional current risk to revisit after workflow APIs are in place.
-- `@galileo3d/editor` is currently a facade over `@galileo3d/editor-runtime`; its long-term public shape is not settled.
+- `@aura3d/editor` is currently a facade over `@aura3d/editor-runtime`; its long-term public shape is not settled.

@@ -1,9 +1,9 @@
-import { Renderer } from "@galileo3d/rendering";
-import { createProductConfiguratorWorkflow } from "@galileo3d/workflows";
+import { Renderer } from "@aura3d/rendering";
+import { createProductConfiguratorWorkflow } from "@aura3d/workflows";
 
 declare global {
   interface Window {
-    __G3D_V4_PRODUCT_CONFIGURATOR__?: unknown;
+    __A3D_V4_PRODUCT_CONFIGURATOR__?: unknown;
   }
 }
 
@@ -40,7 +40,7 @@ export async function mountProductConfiguratorV4(id: string): Promise<void> {
         title: "Premium Boom Box",
         category: "consumer-audio",
         url: productUrl,
-        manifestUrl: `${location.origin}/fixtures/v4/products/premium-product/manifest.json`
+        manifestUrl: `${location.origin}/fixtures/external-parity/products/premium-product/manifest.json`
       },
       materialMode: material.value as "asset" | "contrast" | "metal-check",
       lighting: lighting.value as "catalog-softbox" | "hero-contrast" | "inspection-bay",
@@ -65,7 +65,7 @@ export async function mountProductConfiguratorV4(id: string): Promise<void> {
       externalSource: productUrl,
       claimBoundary: "Milestone 7 product proof only; V4 release still requires package/templates and Three.js parity."
     };
-    window.__G3D_V4_PRODUCT_CONFIGURATOR__ = state;
+    window.__A3D_V4_PRODUCT_CONFIGURATOR__ = state;
     status.textContent = JSON.stringify(state, null, 2);
   }
 

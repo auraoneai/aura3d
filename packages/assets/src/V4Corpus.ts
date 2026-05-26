@@ -10,7 +10,7 @@ export interface V4CorpusAsset {
 }
 
 export interface V4CorpusManifest {
-  readonly schema: "g3d-v4-gltf-corpus/v1";
+  readonly schema: "a3d-v4-gltf-corpus/v1";
   readonly source: {
     readonly repository: string;
     readonly revision: string;
@@ -47,7 +47,7 @@ export function summarizeV4Corpus(manifest: V4CorpusManifest): V4CorpusSummary {
 }
 
 export function validateV4CorpusManifest(manifest: V4CorpusManifest): void {
-  if (manifest.schema !== "g3d-v4-gltf-corpus/v1") throw new Error("Invalid V4 corpus schema.");
+  if (manifest.schema !== "a3d-v4-gltf-corpus/v1") throw new Error("Invalid V4 corpus schema.");
   if (!manifest.source.repository || !manifest.source.revision || !manifest.source.sourceManifest) throw new Error("V4 corpus source must include repository, revision, and source manifest.");
   if (!manifest.claimBoundary.includes("not final flagship product visual proof")) throw new Error("V4 corpus must include a flagship proof claim boundary.");
   if (manifest.assets.length < 25) throw new Error("V4 corpus must include at least 25 assets.");

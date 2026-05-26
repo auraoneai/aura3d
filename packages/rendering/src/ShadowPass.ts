@@ -1,4 +1,4 @@
-import { Light } from "@galileo3d/scene";
+import { Light } from "@aura3d/scene";
 import { DepthPass } from "./DepthPass";
 import { type ForwardShadowMapOptions, type RenderItem } from "./ForwardPass";
 import { Material } from "./Material";

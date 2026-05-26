@@ -1,1 +1,1 @@
-export * from "@galileo3d/editor-runtime";
+export * from "@aura3d/editor-runtime";

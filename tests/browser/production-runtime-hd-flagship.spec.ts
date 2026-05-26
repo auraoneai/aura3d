@@ -103,7 +103,7 @@ test.describe("V6 HD flagship renderer", () => {
 
     const reportPath = "tests/reports/production-runtime-hd-flagship.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-production-runtime-hd-flagship/v1",
+      schema: "a3d-production-runtime-hd-flagship/v1",
       generatedAt: new Date().toISOString(),
       pass: true,
       screenshot: screenshotPath,

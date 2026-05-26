@@ -1,4 +1,4 @@
-import { Box3, Matrix4, Sphere, Vector3 } from "@galileo3d/math";
+import { Box3, Matrix4, Sphere, Vector3 } from "@aura3d/math";
 import {
   Bounds3,
   DirectionalLight,
@@ -8,7 +8,7 @@ import {
   Renderable,
   Scene,
   SpotLight
-} from "@galileo3d/scene";
+} from "@aura3d/scene";
 import { describe, expect, it } from "vitest";
 
 function expectCloseArray(actual: readonly number[], expected: readonly number[], precision = 8): void {

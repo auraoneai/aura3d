@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createOldBranchShaderGraphFixture } from "@galileo3d/editor-runtime";
+import { createOldBranchShaderGraphFixture } from "@aura3d/editor-runtime";
 
 describe("editor shader graph model", () => {
   it("ports bounded node library validation and codegen evidence from the old shader graph", () => {
@@ -43,7 +43,7 @@ describe("editor shader graph model", () => {
     expect(fixture.codegen.generatedExpressionCount).toBeGreaterThanOrEqual(6);
     expect(fixture.codegen.glslHash).toMatch(/^[0-9a-f]{8}$/);
     expect(fixture.codegen.wgslHash).toMatch(/^[0-9a-f]{8}$/);
-    expect(fixture.codegen.previewFragmentLines.join("\n")).toContain("g3dSurface.baseColor");
+    expect(fixture.codegen.previewFragmentLines.join("\n")).toContain("a3dSurface.baseColor");
     expect(fixture.blockedClaims).toEqual(expect.arrayContaining([
       "Unity Shader Graph parity",
       "Unreal Material Editor parity",

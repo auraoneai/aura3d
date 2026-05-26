@@ -33,7 +33,7 @@ test.describe("v3 runtime systems", () => {
   test("game slice wires physics, animation, input bindings, particles, audio, and scripting", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });
 
     await page.locator("[data-testid='unlock-audio']").click();
     await setControlValue(page, "[data-testid='binding-select']", "pointer", "change");
@@ -43,7 +43,7 @@ test.describe("v3 runtime systems", () => {
     await page.locator("[data-testid='pointer-lock']").dispatchEvent("click");
     await page.locator("[data-testid='game-slice-canvas']").dispatchEvent("touchstart");
     await page.evaluate(() => {
-      window.__GALILEO3D_TEST_GAMEPADS__ = [{
+      window.__AURA3D_TEST_GAMEPADS__ = [{
         id: "playwright-standard-gamepad",
         index: 0,
         connected: true,
@@ -59,19 +59,19 @@ test.describe("v3 runtime systems", () => {
     await page.locator("[data-testid='inject-physics-error']").dispatchEvent("click");
     await page.locator("[data-testid='reload-behavior']").dispatchEvent("click");
     await page.locator("[data-testid='restart-objective']").dispatchEvent("click");
-    await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.objectivePhase === "playing", undefined, { timeout: 8_000 });
+    await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.objectivePhase === "playing", undefined, { timeout: 8_000 });
     await page.locator("[data-testid='game-slice-canvas']").focus();
     try {
       await page.keyboard.down("ArrowRight");
       await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { code: "ArrowRight", key: "ArrowRight", bubbles: true })));
-      await page.waitForFunction(() => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.triggerEvents ?? 0) >= 1, undefined, { timeout: 12_000 });
+      await page.waitForFunction(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.triggerEvents ?? 0) >= 1, undefined, { timeout: 12_000 });
     } finally {
       await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keyup", { code: "ArrowRight", key: "ArrowRight", bubbles: true }))).catch(() => undefined);
       await page.keyboard.up("ArrowRight").catch(() => undefined);
     }
-    await page.waitForFunction(() => Number(window.__GALILEO3D_GAME_DEMO__?.metrics.scriptErrors ?? 0) >= 1, undefined, { timeout: 8_000 });
+    await page.waitForFunction(() => Number(window.__AURA3D_GAME_DEMO__?.metrics.scriptErrors ?? 0) >= 1, undefined, { timeout: 8_000 });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_GAME_DEMO__);
+    const state = await page.evaluate(() => window.__AURA3D_GAME_DEMO__);
     (report as { gameSlice?: unknown }).gameSlice = state;
 
     expect(errors).toEqual([]);
@@ -143,14 +143,14 @@ test.describe("v3 runtime systems", () => {
   test("physics sandbox exposes v3 scene coverage and stability metrics", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_PHYSICS_SANDBOX__?.status === "ready", undefined, { timeout: 20_000 });
+    await page.waitForFunction(() => window.__AURA3D_PHYSICS_SANDBOX__?.status === "ready", undefined, { timeout: 20_000 });
 
     for (const scene of ["constraints", "triggers", "raycasts", "shape-casts", "sleeping", "stress"]) {
       await page.locator("[data-testid='physics-scene-select']").selectOption(scene);
     }
-    await page.waitForFunction(() => window.__GALILEO3D_PHYSICS_SANDBOX__?.metrics?.activeScene === "stress", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_PHYSICS_SANDBOX__?.metrics?.activeScene === "stress", undefined, { timeout: 10_000 });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_PHYSICS_SANDBOX__);
+    const state = await page.evaluate(() => window.__AURA3D_PHYSICS_SANDBOX__);
     (report as { physicsSandbox?: unknown }).physicsSandbox = state;
 
     expect(errors).toEqual([]);
@@ -201,7 +201,7 @@ async function setControlValue(page: Page, selector: string, value: string | boo
 
 declare global {
   interface Window {
-    __GALILEO3D_GAME_DEMO__?: {
+    __AURA3D_GAME_DEMO__?: {
       readonly id: string;
       readonly status: "ready" | "error";
       readonly renderer?: string;
@@ -211,7 +211,7 @@ declare global {
       readonly visualClaim?: string;
       readonly error?: string;
     };
-    __GALILEO3D_PHYSICS_SANDBOX__?: {
+    __AURA3D_PHYSICS_SANDBOX__?: {
       readonly status: "ready" | "error";
       readonly rendererBacked?: boolean;
       readonly diagnostics?: { readonly drawCalls?: number };

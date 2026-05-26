@@ -38,7 +38,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       if (availability.status !== "available") {
         return {
           status: "blocked",
-          schema: "g3d-v7-webgpu-product-viewer/v1",
+          schema: "a3d-v7-webgpu-product-viewer/v1",
           productionClaim: "not-claimed",
           availability,
           reason: "Browser did not expose a usable WebGPU adapter/device."
@@ -56,7 +56,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       try {
         const viewport = { width: WIDTH, height: HEIGHT };
         const assetOptions = {
-          url: `${location.origin}/fixtures/v7/assets/flagship/chronograph-watch.glb`,
+          url: `${location.origin}/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`,
           assetId: "chronograph-watch",
           assetName: "Chronograph Watch",
           viewport
@@ -66,7 +66,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
         const environmentOptions = {
           id: "studio-small-08-webgpu-product-viewer",
           label: "Studio Small 08 WebGPU Product Viewer",
-          url: `${location.origin}/fixtures/v7/environments/hdri/studio_small_08_4k.hdr`,
+          url: `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`,
           intensity: 1.12,
           backgroundIntensity: 0.82,
           rotation: 0.18,
@@ -178,7 +178,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
           && deltaReady;
         return {
           status: visualReady ? "ready" : "blocked",
-          schema: "g3d-v7-webgpu-product-viewer/v1",
+          schema: "a3d-v7-webgpu-product-viewer/v1",
           productionClaim: "not-claimed",
           reason: visualReady
             ? "This is a bounded native WebGPU product-viewer visual artifact using public V6 scene-composition helpers; public SDK production-backend proof is covered by v7-webgpu-sdk-production.spec.ts."
@@ -223,7 +223,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       } catch (error) {
         return {
           status: "blocked",
-          schema: "g3d-v7-webgpu-product-viewer/v1",
+          schema: "a3d-v7-webgpu-product-viewer/v1",
           productionClaim: "not-claimed",
           availability,
           reason: error instanceof Error ? error.stack ?? error.message : String(error)

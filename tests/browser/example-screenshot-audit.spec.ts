@@ -32,12 +32,12 @@ test.describe("v3 example screenshot audit", () => {
 
     const portfolioErrors = installErrorCapture(page);
     await page.goto(`${server.origin}/examples/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_PORTFOLIO__?.status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_PORTFOLIO__?.status === "ready");
     const portfolioState = await page.evaluate(() => {
-      const state = window.__GALILEO3D_PORTFOLIO__;
+      const state = window.__AURA3D_PORTFOLIO__;
       const diagnostics = state?.diagnostics as { lastError?: string | null; contextLost?: boolean } | undefined;
       return {
-        key: "__GALILEO3D_PORTFOLIO__",
+        key: "__AURA3D_PORTFOLIO__",
         status: state?.status ?? "error",
         renderer: typeof state?.renderer === "string" ? state.renderer : undefined,
         diagnosticsPresent: typeof state?.diagnostics === "object" && state.diagnostics !== null,
@@ -70,7 +70,7 @@ test.describe("v3 example screenshot audit", () => {
       browserVersion: page.context().browser()?.version() ?? "unknown",
       viewport,
       dpr: await page.evaluate(() => window.devicePixelRatio),
-      runtimeStateKey: "__GALILEO3D_PORTFOLIO__",
+      runtimeStateKey: "__AURA3D_PORTFOLIO__",
       runtimeStatus: "ready",
       renderer: portfolioState.renderer,
       diagnosticsPresent: portfolioState.diagnosticsPresent,
@@ -189,21 +189,21 @@ type RuntimeStateAudit = {
 
 async function waitForKnownRuntimeState(page: Page, timeoutMs = 45_000): Promise<RuntimeStateAudit> {
   const keys = [
-    "__GALILEO3D_EXAMPLE__",
-    "__GALILEO3D_PRODUCT_DEMO__",
-    "__GALILEO3D_ARCHITECTURE_DEMO__",
-    "__GALILEO3D_GAME_DEMO__",
-    "__GALILEO3D_ASSET_VIEWER__",
-    "__GALILEO3D_PBR_CAMERA_COMPARISON__",
-    "__GALILEO3D_PBR_MATERIAL_LAB__",
-    "__GALILEO3D_LARGE_SCENE_TEST__",
-    "__GALILEO3D_PHYSICS_SANDBOX__",
-    "__GALILEO3D_POSTPROCESS_LAB__",
-    "__GALILEO3D_SHADOW_LAB__",
-    "__GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__",
-    "__GALILEO3D_EXPORTED_PROJECT__",
-    "__GALILEO3D_MATERIAL_SHOWROOM__",
-    "__GALILEO3D_RENDERER_STRESS_LAB__",
+    "__AURA3D_EXAMPLE__",
+    "__AURA3D_PRODUCT_DEMO__",
+    "__AURA3D_ARCHITECTURE_DEMO__",
+    "__AURA3D_GAME_DEMO__",
+    "__AURA3D_ASSET_VIEWER__",
+    "__AURA3D_PBR_CAMERA_COMPARISON__",
+    "__AURA3D_PBR_MATERIAL_LAB__",
+    "__AURA3D_LARGE_SCENE_TEST__",
+    "__AURA3D_PHYSICS_SANDBOX__",
+    "__AURA3D_POSTPROCESS_LAB__",
+    "__AURA3D_SHADOW_LAB__",
+    "__AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__",
+    "__AURA3D_EXPORTED_PROJECT__",
+    "__AURA3D_MATERIAL_SHOWROOM__",
+    "__AURA3D_RENDERER_STRESS_LAB__",
   ];
   try {
     await page.waitForFunction((candidateKeys) => {

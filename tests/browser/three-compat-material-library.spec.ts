@@ -54,15 +54,15 @@ test("V5 material browser renders the PBR library matrix", async ({ page }) => {
             ctx.fillText(tiles[index].previewGeometry, x + 8, y + 122);
             ctx.fillText(material.textureSetId ? "texture" : "procedural", x + 8, y + 138);
           });
-          window.__g3dMaterialCount = materials.length;
-          window.__g3dTextureBacked = materials.filter((material) => material.textureSetId).length;
+          window.__a3dMaterialCount = materials.length;
+          window.__a3dTextureBacked = materials.filter((material) => material.textureSetId).length;
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dMaterialCount)).toBeGreaterThanOrEqual(50);
-  await expect.poll(async () => page.evaluate(() => window.__g3dTextureBacked)).toBeGreaterThanOrEqual(25);
+  await expect.poll(async () => page.evaluate(() => window.__a3dMaterialCount)).toBeGreaterThanOrEqual(50);
+  await expect.poll(async () => page.evaluate(() => window.__a3dTextureBacked)).toBeGreaterThanOrEqual(25);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

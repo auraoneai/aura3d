@@ -5,12 +5,12 @@ import {
   Renderer,
   UnlitMaterial,
   computePerspectiveCameraFrame
-} from "@galileo3d/rendering";
-import { Renderable, Scene } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Renderable, Scene } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __GALILEO3D_CAMERA_SCENE_TEST__?: CameraSceneHarnessResult;
+    __AURA3D_CAMERA_SCENE_TEST__?: CameraSceneHarnessResult;
   }
 }
 
@@ -87,7 +87,7 @@ async function run(): Promise<void> {
     const movingCameraFrames = await renderMovingCameraFrames();
     const orbitCameraFrames = await renderOrbitCameraFrames();
 
-    window.__GALILEO3D_CAMERA_SCENE_TEST__ = {
+    window.__AURA3D_CAMERA_SCENE_TEST__ = {
       status: "ready",
       drawCalls: diagnostics.drawCalls,
       modelTranslation: Array.from(model.slice(12, 16)).map(round3),
@@ -99,7 +99,7 @@ async function run(): Promise<void> {
       orbitCameraFrames
     };
   } catch (error) {
-    window.__GALILEO3D_CAMERA_SCENE_TEST__ = {
+    window.__AURA3D_CAMERA_SCENE_TEST__ = {
       status: "error",
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };

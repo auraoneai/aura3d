@@ -1,4 +1,4 @@
-import { Renderable, Scene } from "@galileo3d/scene";
+import { Renderable, Scene } from "@aura3d/scene";
 import {
   Geometry,
   NormalMappedPBRMaterial,
@@ -20,11 +20,11 @@ import {
   type EnvironmentLightingOptions,
   type ProceduralTextureFixture,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_SHOWROOM__?: MaterialShowroomState;
+    __AURA3D_MATERIAL_SHOWROOM__?: MaterialShowroomState;
   }
 }
 
@@ -100,7 +100,7 @@ const claimBoundary = "V4 material-showroom evidence is limited to bounded WebGL
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_MATERIAL_SHOWROOM__ = {
+    window.__AURA3D_MATERIAL_SHOWROOM__ = {
       status: "error",
       renderer: "webgl2",
       visualClaim: "bounded-pbr-material-showroom",
@@ -136,7 +136,7 @@ async function run(): Promise<void> {
     });
     const pixels = readMaterialPixels(renderer);
     const postprocess = renderPostprocessPreview(renderer, previewCanvas);
-    window.__GALILEO3D_MATERIAL_SHOWROOM__ = {
+    window.__AURA3D_MATERIAL_SHOWROOM__ = {
       status: "ready",
       renderer: "webgl2",
       visualClaim: "bounded-pbr-material-showroom",
@@ -174,7 +174,7 @@ async function run(): Promise<void> {
       knownLimits: knownLimits(),
       errors: []
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_MATERIAL_SHOWROOM__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_MATERIAL_SHOWROOM__, null, 2);
   };
   environmentPresetSelect.addEventListener("change", () => {
     renderPreset(asMaterialShowroomEnvironmentPreset(environmentPresetSelect.value));

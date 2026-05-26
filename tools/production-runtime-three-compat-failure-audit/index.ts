@@ -33,7 +33,7 @@ const checks = [
   }))
 ];
 const report = {
-  schema: "g3d-production-runtime-three-compat-visual-failure-audit/v1",
+  schema: "a3d-production-runtime-three-compat-visual-failure-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks

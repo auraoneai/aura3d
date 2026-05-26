@@ -7,11 +7,11 @@ V3 is not complete until `pnpm v3:release` exists and passes. These gaps must re
 
 ## Product Scope Gaps
 
-- G3D is not a broad Three.js replacement.
-- G3D is not a Unity replacement.
-- G3D is not an Unreal replacement.
-- G3D is not a full game engine.
-- G3D is public-claim-ready when backed by the V10 reports without the final release gate.
+- A3D is not a broad Three.js replacement.
+- A3D is not a Unity replacement.
+- A3D is not an Unreal replacement.
+- A3D is not a full game engine.
+- A3D is public-claim-ready when backed by the V10 reports without the final release gate.
 
 ## Rendering Gaps
 
@@ -30,7 +30,7 @@ V3 is not complete until `pnpm v3:release` exists and passes. These gaps must re
 ## Ecosystem Gaps
 
 - Three.js has a much larger ecosystem, loader catalog, plugin set, examples base, documentation footprint, and production deployment history.
-- G3D package proof currently covers temp local tarball installation, not public registry publishing.
+- A3D package proof currently covers temp local tarball installation, not public registry publishing.
 - External consumer proof is a generated temp app on the local machine, not independent third-party reproduction.
 
 ## Execution Gaps

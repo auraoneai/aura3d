@@ -1,6 +1,6 @@
-# @galileo3d/animation
+# @aura3d/animation
 
-`@galileo3d/animation` owns deterministic clip sampling, mixer state, root motion extraction, skeletal hierarchy data, skinning palette generation, blend trees, state machines, and scene/ECS animation bridges.
+`@aura3d/animation` owns deterministic clip sampling, mixer state, root motion extraction, skeletal hierarchy data, skinning palette generation, blend trees, state machines, and scene/ECS animation bridges.
 
 ## Public API
 

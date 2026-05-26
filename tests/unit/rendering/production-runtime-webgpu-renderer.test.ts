@@ -43,7 +43,7 @@ describe("V6 WebGPU report", () => {
       })
     });
 
-    expect(report.schema).toBe("g3d-v7-webgpu-readiness/v1");
+    expect(report.schema).toBe("a3d-v7-webgpu-readiness/v1");
     expect(report.availability.status).toBe("available");
     expect(report.productionBackend).toBe("webgpu-production-sdk-path");
     expect(report.primaryRendererClaim).toBe(true);

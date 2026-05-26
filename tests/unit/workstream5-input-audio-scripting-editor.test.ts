@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Ray, Vector3 } from "@galileo3d/math";
-import { Scene } from "@galileo3d/scene";
+import { Ray, Vector3 } from "@aura3d/math";
+import { Scene } from "@aura3d/scene";
 import {
   ActionMap,
   GamepadDevice,
@@ -16,7 +16,7 @@ import {
   sampleInputActionBindingFixture,
   sampleVirtualTouchJoystickFixture,
   sampleXRRuntimeFixture
-} from "@galileo3d/input";
+} from "@aura3d/input";
 import {
   AudioClip,
   type AudioContextLike,
@@ -32,8 +32,8 @@ import {
   sampleAudioEffectsAnalysisFixture,
   sampleAudioEnvironmentFixture,
   sampleAdaptiveMusicFixture
-} from "@galileo3d/audio";
-import { BehaviorHost, BehaviorSystem, createVisualNode, deserializeGraph, listVisualNodeDefinitions, serializeGraph, validateGraph, VisualGraphExecutor, type VisualGraph } from "@galileo3d/scripting";
+} from "@aura3d/audio";
+import { BehaviorHost, BehaviorSystem, createVisualNode, deserializeGraph, listVisualNodeDefinitions, serializeGraph, validateGraph, VisualGraphExecutor, type VisualGraph } from "@aura3d/scripting";
 import {
   CommandHistory,
   CreateNodeCommand,
@@ -53,7 +53,7 @@ import {
   TranslateGizmo,
   createMemoryEditorStateStorage,
   sampleLocalizationAccessibilityFixture
-} from "@galileo3d/editor-runtime";
+} from "@aura3d/editor-runtime";
 
 class MockParam {
   value = 0;
@@ -862,7 +862,7 @@ describe("editor runtime contracts", () => {
     });
     expect(fixture.samples.find((sample) => sample.locale === "es-ES")).toMatchObject({
       direction: "ltr",
-      title: "Editor Galileo3D",
+      title: "Editor Aura3D",
       assetCount: "2 recursos importados",
       fallbackTitle: "Inspector",
       missingKey: "[missing.key]",

@@ -95,7 +95,7 @@ function draw() {
 
 function publish() {
   const goalX = goalNode?.transform.position[0] ?? 3.1;
-  window.__GALILEO3D_EDITOR_AUTHORED_GAME__ = {
+  window.__AURA3D_EDITOR_AUTHORED_GAME__ = {
     id: "editor-authored-game",
     status: "ready",
     renderer: "canvas2d-static-export",
@@ -127,7 +127,7 @@ function publish() {
     failed,
     interactive: true,
   };
-  status.textContent = JSON.stringify(window.__GALILEO3D_EDITOR_AUTHORED_GAME__, null, 2);
+  status.textContent = JSON.stringify(window.__AURA3D_EDITOR_AUTHORED_GAME__, null, 2);
 }
 
 canvas.addEventListener("keydown", (event) => {

@@ -74,7 +74,7 @@ jobs:
       - name: Create tarball
         run: |
           mkdir -p release
-          tar -czf release/g3d-${{ github.ref_name }}.tar.gz dist/
+          tar -czf release/a3d-${{ github.ref_name }}.tar.gz dist/
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v3
@@ -146,7 +146,7 @@ jobs:
           PREV_TAG=$(git describe --abbrev=0 --tags ${VERSION}^ 2>/dev/null || echo "")
 
           if [ -z "$PREV_TAG" ]; then
-            CHANGELOG="Initial release of G3D 5.0"
+            CHANGELOG="Initial release of A3D 5.0"
           else
             CHANGELOG=$(git log ${PREV_TAG}..${VERSION} --pretty=format:"- %s (%h)" --no-merges)
           fi
@@ -159,18 +159,18 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.changelog.outputs.VERSION }}
-          name: G3D ${{ steps.changelog.outputs.VERSION }}
+          name: A3D ${{ steps.changelog.outputs.VERSION }}
           body: |
-            # G3D ${{ steps.changelog.outputs.VERSION }}
+            # A3D ${{ steps.changelog.outputs.VERSION }}
 
             ## Changes
             ${{ steps.changelog.outputs.CHANGELOG }}
 
             ## Installation
             ```bash
-            npm install g3d@${{ steps.changelog.outputs.VERSION }}
+            npm install a3d@${{ steps.changelog.outputs.VERSION }}
             # or
-            pnpm add g3d@${{ steps.changelog.outputs.VERSION }}
+            pnpm add a3d@${{ steps.changelog.outputs.VERSION }}
             ```
 
             ## Documentation

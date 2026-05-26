@@ -1,4 +1,4 @@
-import { TransformCommand, type Command } from "@galileo3d/editor-runtime";
+import { TransformCommand, type Command } from "@aura3d/editor-runtime";
 import type { EditorProjectNode } from "../project/ProjectSerializer";
 import type { EditorShell } from "../EditorShell";
 

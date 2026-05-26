@@ -1,21 +1,21 @@
-import { createDiagnosticsPanel, createEnvironment, createG3DApp, workflows } from "@galileo3d/engine";
+import { createDiagnosticsPanel, createEnvironment, createA3DApp, workflows } from "@aura3d/engine";
 
 declare global {
   interface Window {
-    __G3D_TEMPLATE_PRODUCT_VIEWER__?: unknown;
+    __A3D_TEMPLATE_PRODUCT_VIEWER__?: unknown;
   }
 }
 
 const canvas = document.getElementById("app") as HTMLCanvasElement | null;
 if (!canvas) throw new Error("Missing #app canvas.");
 
-const app = await createG3DApp({ canvas, quality: "production", width: 1280, height: 720 });
+const app = await createA3DApp({ canvas, quality: "production", width: 1280, height: 720 });
 const environment = createEnvironment({ target: "gallery-neutral-hdr", intensity: 1.2, backgroundIntensity: 0.72 });
 const workflow = await workflows.sceneShowcase({ preset: "gallery" });
 const render = app.renderer?.render(workflow.source, workflow.camera);
 const diagnostics = app.diagnostics();
 const panel = createDiagnosticsPanel({ render });
-window.__G3D_TEMPLATE_PRODUCT_VIEWER__ = {
+window.__A3D_TEMPLATE_PRODUCT_VIEWER__ = {
   status: "ready",
   template: "external-parity-product-viewer",
   workflowKind: workflow.kind,

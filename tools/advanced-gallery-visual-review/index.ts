@@ -441,7 +441,7 @@ async function main(): Promise<void> {
   const warningIssueCount = issues.filter((issue) => issue.severity === "warning").length;
   const pass = acceptedCount === DEMOS.length && blockerIssueCount === 0;
   const visualReviewReport = {
-    schema: "g3d-advanced-gallery-visual-review/v1",
+    schema: "a3d-advanced-gallery-visual-review/v1",
     generatedAt: new Date().toISOString(),
     pass,
     releaseGate: pass ? "accepted" : "blocked",
@@ -507,7 +507,7 @@ function configureCli(args: readonly string[]): void {
   let outputExplicit = false;
   let contactSheetExplicit = false;
   let visualRegressionInventoryExplicit = false;
-  reportDir = process.env.G3D_ADVANCED_GALLERY_REPORT_DIR || resolveAdvancedGalleryReportDir();
+  reportDir = process.env.A3D_ADVANCED_GALLERY_REPORT_DIR || resolveAdvancedGalleryReportDir();
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === "--report-dir") {
@@ -632,7 +632,7 @@ function buildVisualRegressionInventory(
   );
   const visualReviewReport = fileEvidence(outputPath);
   return {
-    schema: "g3d-v9-advanced-gallery-visual-regression-inventory/v1",
+    schema: "a3d-v9-advanced-gallery-visual-regression-inventory/v1",
     generatedAt,
     source: "tools/advanced-gallery-visual-review",
     reportDir,

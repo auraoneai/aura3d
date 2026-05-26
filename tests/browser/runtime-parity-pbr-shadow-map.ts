@@ -53,11 +53,11 @@ async function run(): Promise<void> {
 
   window.__V7_PBR_SHADOW_MAP__ = {
     status: "ready",
-    schema: "g3d-v7-pbr-shadow-map/v1",
+    schema: "a3d-v7-pbr-shadow-map/v1",
     purpose: "renderer-owned PBR directional shadow-map visual proof",
     parity: {
       claim: "not-claimed",
-      reason: "This proves G3D can render and sample a PBR directional shadow map in WebGL2; it does not prove full contact-shadow parity or Three.js visual parity."
+      reason: "This proves A3D can render and sample a PBR directional shadow map in WebGL2; it does not prove full contact-shadow parity or Three.js visual parity."
     },
     scene: {
       width: WIDTH,
@@ -85,15 +85,15 @@ async function run(): Promise<void> {
       shadowPatchDelta: Number((noShadowStats.shadowPatchLuma - shadowStats.shadowPatchLuma).toFixed(4))
     },
     artifacts: {
-      shadowed: "tests/reports/runtime-parity/pbr-shadow-map/g3d-pbr-shadow-map.png",
-      unshadowed: "tests/reports/runtime-parity/pbr-shadow-map/g3d-pbr-no-shadow.png"
+      shadowed: "tests/reports/runtime-parity/pbr-shadow-map/a3d-pbr-shadow-map.png",
+      unshadowed: "tests/reports/runtime-parity/pbr-shadow-map/a3d-pbr-no-shadow.png"
     },
     dataUrls: {
       shadowed: shadowed.dataUrl,
       unshadowed: unshadowed.dataUrl
     },
     openGaps: [
-      "This is G3D-only renderer-owned shadow evidence, not Three.js parity.",
+      "This is A3D-only renderer-owned shadow evidence, not Three.js parity.",
       "This is not a full screen-space/ray/contact-shadow implementation.",
       "The product viewer still needs to report runtime shadow-map resources before claiming product-level shadow parity."
     ]

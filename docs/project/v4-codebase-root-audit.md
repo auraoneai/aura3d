@@ -65,7 +65,7 @@ Do not resume example work until these are resolved or explicitly waived:
   - screenshot files are visually weak or badly framed for `product-configurator`, `game-slice`, and `material-showroom`;
   - primary asset visibility is under-evidenced for `product-configurator`, `architecture-viewer`, and `game-slice`;
   - static/manifest flagship evidence does not clear the `v4-not-debug-or-primitive-dominated` gate;
-  - manual visual review explicitly rejected `product-configurator`, `product-visual-parity-galileo`, `architecture-viewer`, `game-slice`, `racing-showcase`, `asset-viewer`, `material-showroom`, `postprocess-lab`, and `shadow-lab`.
+  - manual visual review explicitly rejected `product-configurator`, `product-visual-parity-aura3d`, `architecture-viewer`, `game-slice`, `racing-showcase`, `asset-viewer`, `material-showroom`, `postprocess-lab`, and `shadow-lab`.
 - Broad parity/completion still blocks 11 of 13 criteria:
   - Three.js broad superiority
   - Babylon.js broad superiority

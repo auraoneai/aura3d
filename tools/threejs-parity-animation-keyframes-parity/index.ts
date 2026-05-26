@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { computePerspectiveCameraFrame } from "@galileo3d/rendering";
+import { computePerspectiveCameraFrame } from "@aura3d/rendering";
 import { createV8KeyframeScene } from "/apps/animation-keyframes/src/scene.ts";
 import { ASSET_URL, type V8KeyframeControls } from "/apps/animation-keyframes/src/state.ts";
 import * as THREE from "three";
@@ -17,11 +17,11 @@ type AnimationKeyframesParityResult = AnimationKeyframesParityReady | AnimationK
 
 interface AnimationKeyframesParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-animation-keyframes-parity/v1";
-  readonly purpose: "same-asset Robot Expressive G3D keyframe sampling vs actual Three.js AnimationMixer baseline";
+  readonly schema: "a3d-threejs-parity-animation-keyframes-parity/v1";
+  readonly purpose: "same-asset Robot Expressive A3D keyframe sampling vs actual Three.js AnimationMixer baseline";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly drawCalls: number; readonly triangles: number };
     readonly animation: {
       readonly clipName: string;
@@ -51,12 +51,12 @@ interface AnimationKeyframesParityReady {
     readonly actualThreeGLTFLoader: boolean;
     readonly actualThreeRenderer: boolean;
     readonly actualThreeAnimationMixer: boolean;
-    readonly g3dAppliedTracksAndSkinning: boolean;
+    readonly a3dAppliedTracksAndSkinning: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
   readonly dataUrls: {
-    readonly g3d: string;
+    readonly a3d: string;
     readonly threejs: string;
     readonly sideBySide: string;
   };
@@ -65,7 +65,7 @@ interface AnimationKeyframesParityReady {
 
 interface AnimationKeyframesParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-animation-keyframes-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-keyframes-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -113,34 +113,34 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-animation-keyframes", ASSET.width, ASSET.height);
+    const a3dCanvas = requiredCanvas("a3d-animation-keyframes", ASSET.width, ASSET.height);
     const threeCanvas = requiredCanvas("threejs-animation-keyframes", ASSET.width, ASSET.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", ASSET.width * 2, ASSET.height + 60);
-    if (status) status.textContent = "rendering G3D keyframe route";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D keyframe route";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering actual Three.js AnimationMixer reference";
-    const threejs = await renderThree(threeCanvas, g3d.clipName);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const threejs = await renderThree(threeCanvas, a3d.clipName);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
     const ready: AnimationKeyframesParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-animation-keyframes-parity/v1",
-      purpose: "same-asset Robot Expressive G3D keyframe sampling vs actual Three.js AnimationMixer baseline",
+      schema: "a3d-threejs-parity-animation-keyframes-parity/v1",
+      purpose: "same-asset Robot Expressive A3D keyframe sampling vs actual Three.js AnimationMixer baseline",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls, triangles: g3d.triangles },
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls, triangles: a3d.triangles },
         animation: {
-          clipName: g3d.clipName,
-          clipCount: g3d.clipCount,
-          tracksApplied: g3d.tracksApplied,
-          skinningPalettesUpdated: g3d.skinningPalettesUpdated,
+          clipName: a3d.clipName,
+          clipCount: a3d.clipCount,
+          tracksApplied: a3d.tracksApplied,
+          skinningPalettesUpdated: a3d.skinningPalettesUpdated,
           sampledAtSeconds: SAMPLE_SECONDS
         },
-        pixels: g3dStats
+        pixels: a3dStats
       },
       threejs: {
         loader: {
@@ -161,15 +161,15 @@ async function run(): Promise<void> {
       diff,
       assertions: {
         sameAssetUrl: true,
-        sameClip: g3d.clipName === threejs.clipName,
+        sameClip: a3d.clipName === threejs.clipName,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeAnimationMixer: threejs.actualAnimationMixer,
-        g3dAppliedTracksAndSkinning: g3d.tracksApplied > 0 && g3d.skinningPalettesUpdated > 0,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
+        a3dAppliedTracksAndSkinning: a3d.tracksApplied > 0 && a3d.skinningPalettesUpdated > 0,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "This is a bounded Robot Expressive keyframe parity proof against actual Three.js AnimationMixer for the selected clip.",
@@ -182,7 +182,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: AnimationKeyframesParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-animation-keyframes-parity/v1",
+      schema: "a3d-threejs-parity-animation-keyframes-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
@@ -195,7 +195,7 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
+async function renderA3D(canvas: HTMLCanvasElement) {
   const scene = await createV8KeyframeScene(canvas);
   const controls: V8KeyframeControls = {
     playing: true,
@@ -378,17 +378,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side animation keyframes comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#090d14";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, ASSET.width, 0);
   context.fillStyle = "#f4f7fb";
   context.font = "16px sans-serif";
-  context.fillText("G3D keyframe sampler", 18, ASSET.height + 28);
+  context.fillText("A3D keyframe sampler", 18, ASSET.height + 28);
   context.fillText("Three.js AnimationMixer", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#aab5c4";
   context.font = "12px sans-serif";

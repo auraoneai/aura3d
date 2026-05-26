@@ -234,11 +234,11 @@ function deterministicSamplesMatch(metrics: V4PbrReferenceReadinessReport["metri
 function shaderChunkContainsReferenceFunctions(): boolean {
   const pbrChunk = SHADER_CHUNKS.find((chunk) => chunk.name === "pbr_common")?.source ?? "";
   return [
-    "g3dFresnelSchlick",
-    "g3dDistributionGGX",
-    "g3dGeometrySmithGGXCorrelated",
-    "g3dDiffuseBurley",
-    "g3dPbrEnvironmentLight",
+    "a3dFresnelSchlick",
+    "a3dDistributionGGX",
+    "a3dGeometrySmithGGXCorrelated",
+    "a3dDiffuseBurley",
+    "a3dPbrEnvironmentLight",
   ].every((name) => pbrChunk.includes(name));
 }
 

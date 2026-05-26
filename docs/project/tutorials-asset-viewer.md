@@ -7,10 +7,10 @@ Running example: `/examples/asset-viewer/index.html`
 ## Core API
 
 ```ts
-import { createAssetViewerWorkflow } from "@galileo3d/workflows";
+import { createAssetViewerWorkflow } from "@aura3d/workflows";
 
 const workflow = await createAssetViewerWorkflow({
-  url: `${location.origin}/fixtures/v3/assets/product-camera/product-camera.gltf`,
+  url: `${location.origin}/fixtures/workflow-assets/assets/product-camera/product-camera.gltf`,
   camera: "auto-frame",
   lighting: "studioProduct",
   shadows: true,

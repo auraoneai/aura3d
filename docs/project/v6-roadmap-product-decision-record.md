@@ -5,18 +5,18 @@
 
 ## Decision
 
-G3D V6 is a proof-backed WebGL2-first production renderer and workflow SDK for imported glTF/GLB assets, HDR image-based lighting, PBR material inspection, visual QA, package consumption, and developer-facing product templates. Its measured parity/exceeds claims are governed by V10 evidence. The product position after V6 is: compete where G3D has stronger workflow proof, renderer diagnostics, curated app templates, and release gates; keep broad Three.js API/ecosystem replacement blocked until the remaining surface area is implemented and proven.
+A3D V6 is a proof-backed WebGL2-first production renderer and workflow SDK for imported glTF/GLB assets, HDR image-based lighting, PBR material inspection, visual QA, package consumption, and developer-facing product templates. Its measured parity/exceeds claims are governed by V10 evidence. The product position after V6 is: compete where A3D has stronger workflow proof, renderer diagnostics, curated app templates, and release gates; keep broad Three.js API/ecosystem replacement blocked until the remaining surface area is implemented and proven.
 
-## What G3D V6 Does Better Than Raw Three.js Today
+## What A3D V6 Does Better Than Raw Three.js Today
 
 - V6 ships first-party proof bundles for every flagship visual path: renderer backend, imported asset metadata, HDR environment binding, draw calls, texture memory, nonblank pixel readback, screenshots, readiness JSON, and claim boundaries.
 - V6 treats visual output as a release artifact, not a loose example. The gallery manifest rejects blank PNGs, Canvas 2D proof, mock devices, missing HDR, missing real assets, missing textures, and missing draw calls.
 - V6 has productized workflows around real renderer evidence: product configurator, asset inspector, material studio, architecture viewer, cinematic postprocess, examples, templates, external package builds, and external package render proof.
-- V6 gives developers a narrower but clearer high-level workflow SDK through `@galileo3d/engine/workflows/production-runtime`, `@galileo3d/engine/assets/browser`, `@galileo3d/engine/animation/browser`, and `@galileo3d/engine/rendering`.
+- V6 gives developers a narrower but clearer high-level workflow SDK through `@aura3d/engine/workflows/production-runtime`, `@aura3d/engine/assets/browser`, `@aura3d/engine/animation/browser`, and `@aura3d/engine/rendering`.
 - V6 includes asset preflight, visual QA scoring, blocked-claim scanning, and release-readiness tooling as part of the product. Raw Three.js can do the rendering work, but it does not ship this opinionated product QA layer by default.
 - V6 has a packed-package external consumer proof showing a fresh Vite app importing the package and rendering Damaged Helmet with Studio Small 08 HDR through WebGL2.
 
-## What G3D V6 Matches Three.js On Today
+## What A3D V6 Matches Three.js On Today
 
 - V6 renders real imported GLB assets in a real browser WebGL2 context with PBR texture metadata, HDR environment metadata, draw-call diagnostics, texture diagnostics, and nonblank screenshots.
 - V6 has same-scene comparison evidence against Three.js for 12 corpus scenes across product, material, asset, architecture, character, and automotive categories.
@@ -30,7 +30,7 @@ G3D V6 is a proof-backed WebGL2-first production renderer and workflow SDK for i
 - Three.js has deeper real-world compatibility across arbitrary glTF files, compressed textures, extensions, animation cases, skeletal/morph combinations, lighting setups, and non-glTF asset formats.
 - Three.js has more mature WebGPU renderer work and broader browser/hardware testing.
 - Three.js has more examples, docs, community knowledge, third-party integrations, Stack Overflow coverage, production precedents, and battle-tested edge cases.
-- Three.js still wins as a general-purpose 3D platform. G3D V6 only competes on proof-backed imported-asset workflow depth and release discipline for the current V6 scope.
+- Three.js still wins as a general-purpose 3D platform. A3D V6 only competes on proof-backed imported-asset workflow depth and release discipline for the current V6 scope.
 
 ## Production-Ready V6 Workflows
 
@@ -118,7 +118,7 @@ The V1 and V5 screenshots are explicitly not public-worthy because they are the 
 7. Add production asset pipeline features: LODs, streaming, compression recommendations, cache policy, dependency graph inspection, import reports, and CI validation.
 8. Add broad performance gates with multiple devices, mobile browser targets, memory ceilings, GPU timing where available, and regression tracking.
 9. Add public demo deployment gates so screenshots are backed by live URLs and reproducible package builds.
-10. Only after the above gates pass, revisit the claim that G3D can be marketed as a broad Three.js replacement.
+10. Only after the above gates pass, revisit the claim that A3D can be marketed as a broad Three.js replacement.
 
 ## Evidence
 

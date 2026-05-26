@@ -25,7 +25,7 @@ Current generated path inventory from 2026-05-25 found `1645` version-style repo
 | `docs` | 182 | Mostly historical project docs plus active tutorial names. Medium risk. |
 | `examples` | 245 | Public example paths and quarantined example paths. High risk. |
 | `fixtures` | 36 | Fixture URLs used by tests/apps/reports. High risk. |
-| `packages` | 229 | Package exports, package source surfaces, and create-g3d templates. Highest risk. |
+| `packages` | 229 | Package exports, package source surfaces, and create-aura3d templates. Highest risk. |
 | `release-artifacts` | 93 | Historical release artifacts. Archive unless active readers depend on them. |
 | `templates` | 78 | Starter templates. Medium risk. |
 | `tests` | 269 | Browser specs, reports, and harnesses. High risk. |
@@ -41,7 +41,7 @@ The report also classifies active load-bearing references:
 | --- | ---: | --- |
 | `fixture-url` | 351 | Keep current `fixtures/v*` fetch paths until manifest aliases or same-batch consumer updates exist. |
 | `package-export` | 18 | Contextual exports exist for production-runtime, advanced-runtime, asset-corpus, advanced-gallery, and workflows/production; legacy `/v6` and `/v9` exports remain compatibility aliases until removal. |
-| `package-file-entry` | 18 | Keep old template/file allowlist entries until contextual template names and create-g3d aliases are proven. |
+| `package-file-entry` | 18 | Keep old template/file allowlist entries until contextual template names and create-aura3d aliases are proven. |
 | `report-reader` | 1854 | Advanced-gallery visual-review and report-audit support contextual report directories and legacy fallback; other report-reader batches still need owner-scoped aliases. |
 | `route-link` | 266 | Public app route URLs have contextual `/apps/<capability>/` aliases for V5/V6/V7/V8/V9 surfaces; old `/apps/v*` routes remain compatibility aliases for historical links and tests. |
 | `script` | 397 | Contextual command aliases exist for versioned phase script names, including `product-studio:*`, `foundation:*`, `external-parity:*`, `three-compat:*`, `production-runtime:*`, `current-routes:*`, `threejs-parity:*`, and `superiority:*`; old `v*` commands remain wrappers. |
@@ -74,8 +74,8 @@ No path in this table is approved for immediate rename. The target names are pro
 | `apps/v9-advanced-examples-gallery` | `active-route` | `apps/advanced-examples-gallery` | Implemented contextual route alias, Playwright path updates, package scripts, and report tool path aliases. |
 | `tests/reports/v9/advanced-examples-gallery` | `report-path` | `tests/reports/advanced-examples-gallery` | Implemented for the first batch: current capture writes contextual reports, and visual-review/report-audit readers accept contextual report dirs with legacy fallback. |
 | `tools/v9-advanced-gallery-*` | `internal-tool` | `tools/advanced-gallery-*` | Package script aliases and docs updates. |
-| `fixtures/v9/assets/*` | `fixture-url` | `fixtures/advanced-gallery/assets/*` | Fixture manifest aliases and runtime fetch updates. |
-| `fixtures/v9/environments/*` | `fixture-url` | `fixtures/advanced-gallery/environments/*` | First-batch Vite fixture URL aliases and byte-hash browser tests are in place. |
+| `fixtures/advanced-gallery/assets/*` | `fixture-url` | `fixtures/advanced-gallery/assets/*` | Fixture manifest aliases and runtime fetch updates. |
+| `fixtures/advanced-gallery/environments/*` | `fixture-url` | `fixtures/advanced-gallery/environments/*` | First-batch Vite fixture URL aliases and byte-hash browser tests are in place. |
 | `apps/v8-*` | `active-route` / `historical-archive` | Capability names such as `apps/controls-orbit`, `apps/materials-transmission`, `apps/webgpu-compute` | Implemented Vite route aliases and public docs/root route updates; preserve any Three.js parity navigation. |
 | `tests/browser/v8-*` | `test-harness` | Capability-based browser specs | Update test references and any report path assumptions. |
 | `docs/project/v2-*` through `docs/project/v10-*` | `historical-archive` unless linked as active directives | Keep versioned but add archive index, or migrate active docs to contextual names. | Documentation index must mark archival status. |

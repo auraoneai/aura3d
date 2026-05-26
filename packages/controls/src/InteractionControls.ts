@@ -1,4 +1,4 @@
-import { InputSnapshot } from "@galileo3d/input";
+import { InputSnapshot } from "@aura3d/input";
 import { FlyControls } from "./FlyControls";
 import { OrbitControls } from "./OrbitControls";
 import { Picking, type PickingOptions, type PickingReport, type V5PickResult } from "./Picking";

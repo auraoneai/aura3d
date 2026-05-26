@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createProductLightingPreset } from "@galileo3d/product-studio";
+import { createProductLightingPreset } from "@aura3d/product-studio";
 
 describe("product lighting presets", () => {
   it("creates environment, direct lights, shadows, and postprocess for every preset", () => {

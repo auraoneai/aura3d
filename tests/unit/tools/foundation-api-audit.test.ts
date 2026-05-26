@@ -7,13 +7,13 @@ describe("V3 API audit", () => {
     const report = createV3ApiAuditReport(process.cwd());
     const packageNames = report.packages.map((pkg) => pkg.packageName);
 
-    expect(report.schema).toBe("g3d-foundation-api-audit/v1");
-    expect(packageNames).toContain("@galileo3d/product-studio");
-    expect(packageNames).not.toContain("@galileo3d/test-utils");
-    expect(report.privatePackages).toContain("@galileo3d/test-utils");
+    expect(report.schema).toBe("a3d-foundation-api-audit/v1");
+    expect(packageNames).toContain("@aura3d/product-studio");
+    expect(packageNames).not.toContain("@aura3d/test-utils");
+    expect(report.privatePackages).toContain("@aura3d/test-utils");
     expect(report.futurePackages).toEqual([
       {
-        packageName: "@galileo3d/workflows",
+        packageName: "@aura3d/workflows",
         expectedAtMilestone: "Milestone 4 - Workflow SDK Package",
         exists: existsSync("packages/workflows/package.json")
       }

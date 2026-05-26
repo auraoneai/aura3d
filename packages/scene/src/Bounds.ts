@@ -1,4 +1,4 @@
-import { Box3, Vector3 } from "@galileo3d/math";
+import { Box3, Vector3 } from "@aura3d/math";
 import { transformPoint, type Mat4, type Vec3 } from "./MathTypes.js";
 
 export class Bounds3 {

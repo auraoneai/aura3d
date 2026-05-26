@@ -16,12 +16,12 @@ const requiredReports = [
 const issues = [
   ...requiredReports.flatMap((path) => reportPasses(path) ? [] : [issue(`animation-report:${path}`, `${path} is missing or not passing.`)]),
   ...animationItems
-    .filter((item) => item.g3dStatus !== "matched" && item.g3dStatus !== "exceeded")
-    .map((item) => issue(`animation-item:${item.threeExampleId}`, `${item.threeExampleId} remains ${item.g3dStatus}.`))
+    .filter((item) => item.a3dStatus !== "matched" && item.a3dStatus !== "exceeded")
+    .map((item) => issue(`animation-item:${item.threeExampleId}`, `${item.threeExampleId} remains ${item.a3dStatus}.`))
 ];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-animation-fidelity/v1",
+  schema: "a3d-v10-animation-fidelity/v1",
   pass: issues.length === 0,
   decisions: [{
     category: "animation",

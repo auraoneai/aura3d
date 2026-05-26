@@ -146,7 +146,7 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 - Materials distinguishable: yes in the external asset consumer proof.
 - Shadows credible: acceptable for template proof.
 - Competitive with Three.js reference: package path supports the same V4 workflows compared in parity reports.
-- Still weak: final published `npm create g3d@latest` distribution remains a release/distribution operation outside this local proof.
+- Still weak: final published `npm create a3d@latest` distribution remains a release/distribution operation outside this local proof.
 
 ## Material Studio Template
 
@@ -225,7 +225,7 @@ This is a release-readiness review for the current V4 gallery. It is bounded to 
 - Lighting believable: acceptable for benchmark evidence.
 - Materials distinguishable: acceptable for benchmark evidence.
 - Shadows credible: not the primary purpose of this screenshot.
-- Competitive with Three.js reference: supported by `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-g3d.png`.
+- Competitive with Three.js reference: supported by `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-a3d.png`.
 - Still weak: broad performance superiority remains blocked beyond the measured V4 scenes.
 
 ## Release Judgment

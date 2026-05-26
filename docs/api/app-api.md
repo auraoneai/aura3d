@@ -2,23 +2,23 @@
 
 Version: `0.1.0-alpha.0`
 
-The app API is the highest-level browser-facing surface in Galileo3D. It wraps the core engine, renderer creation, workflow presets, and diagnostics behind `createG3DApp`.
+The app API is the highest-level browser-facing surface in Aura3D. It wraps the core engine, renderer creation, workflow presets, and diagnostics behind `createA3DApp`.
 
 ```ts
-import { createG3DApp } from "@galileo3d/engine";
+import { createA3DApp } from "@aura3d/engine";
 ```
 
 The same API is also available from the package module:
 
 ```ts
-import { createG3DApp } from "@galileo3d/engine/apps";
+import { createA3DApp } from "@aura3d/engine/apps";
 ```
 
 ## What It Does
 
-`createG3DApp(options)` creates an app runtime with:
+`createA3DApp(options)` creates an app runtime with:
 
-- a `@galileo3d/core` `Engine`;
+- a `@aura3d/core` `Engine`;
 - optional WebGL2 renderer creation when a canvas is supplied;
 - quality presets: `draft`, `balanced`, and `production`;
 - workflow presets for asset viewing, product configuration, material studio, scene showcase, and interactive scene demos;
@@ -30,9 +30,9 @@ It is intended for productized browser tools and starter templates, not for engi
 ## Basic Usage
 
 ```ts
-import { createG3DApp } from "@galileo3d/engine";
+import { createA3DApp } from "@aura3d/engine";
 
-const app = await createG3DApp({
+const app = await createA3DApp({
   canvas,
   quality: "balanced"
 });
@@ -102,20 +102,20 @@ import {
   inspectAsset,
   loadAsset,
   workflows
-} from "@galileo3d/engine";
+} from "@aura3d/engine";
 ```
 
 Use these helpers for product viewers, asset inspection, route diagnostics, and template code.
 
 ## Direct Runtime Alternative
 
-Use `@galileo3d/engine/v9` when you need direct rendering control:
+Use `@aura3d/engine/v9` when you need direct rendering control:
 
 ```ts
-import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/v9";
 
-const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
-const scene = new G3DScene();
+const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
+const scene = new A3DScene();
 
 renderer.render(scene);
 renderer.dispose();

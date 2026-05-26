@@ -1,26 +1,26 @@
-# G3D Documentation Index
+# A3D Documentation Index
 
 This index is the current entry point for project documentation. It replaces the old build-era rebuild PRD folder as the summary layer for what the repository is, what is implemented, what is still scoped, and which docs should be treated as current.
 
 ## Current Repo Shape
 
-G3D is a production TypeScript-first browser 3D engine and workflow SDK. The repository contains first-party package code, route evidence, benchmarks, and V10 verification reports for a renderer stack that matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, and developer-workflow categories.
+A3D is a production TypeScript-first browser 3D engine and workflow SDK. The repository contains first-party package code, route evidence, benchmarks, and V10 verification reports for a renderer stack that matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, and developer-workflow categories.
 
 Current package areas include:
 
 | Area | Current package or folder |
 |---|---|
-| Root SDK | `@galileo3d/engine` |
-| Runtime helpers | `@galileo3d/engine-runtime` |
-| Rendering | `@galileo3d/rendering` |
-| Assets and loaders | `@galileo3d/assets` |
-| Animation and skinning | `@galileo3d/animation` |
-| Scene graph | `@galileo3d/scene` |
-| Controls | `@galileo3d/controls` |
-| Materials and environments | `@galileo3d/materials`, `@galileo3d/environments` |
-| Product workflows | `@galileo3d/product-studio`, `@galileo3d/workflows` |
-| Editor/runtime systems | `@galileo3d/editor-runtime`, `@galileo3d/apps` |
-| Supporting systems | `@galileo3d/core`, `@galileo3d/math`, `@galileo3d/physics`, `@galileo3d/input`, `@galileo3d/audio`, `@galileo3d/scripting`, `@galileo3d/debug`, `@galileo3d/three-compat` |
+| Root SDK | `@aura3d/engine` |
+| Runtime helpers | `@aura3d/engine-runtime` |
+| Rendering | `@aura3d/rendering` |
+| Assets and loaders | `@aura3d/assets` |
+| Animation and skinning | `@aura3d/animation` |
+| Scene graph | `@aura3d/scene` |
+| Controls | `@aura3d/controls` |
+| Materials and environments | `@aura3d/materials`, `@aura3d/environments` |
+| Product workflows | `@aura3d/product-studio`, `@aura3d/workflows` |
+| Editor/runtime systems | `@aura3d/editor-runtime`, `@aura3d/apps` |
+| Supporting systems | `@aura3d/core`, `@aura3d/math`, `@aura3d/physics`, `@aura3d/input`, `@aura3d/audio`, `@aura3d/scripting`, `@aura3d/debug`, `@aura3d/three-compat` |
 
 ## Current Use Cases
 
@@ -31,15 +31,15 @@ The strongest current use cases are:
 - PBR, HDR, IBL, material, lighting, and environment preview workflows.
 - Character preview, animation mixer workflows, skinning, morph targets, and IK diagnostics.
 - Interactive browser scenes with picking, controls, decals, shadows, postprocessing, and route-level visual evidence.
-- Migration and comparison work for teams evaluating how much custom Three.js code can move behind a G3D workflow API.
+- Migration and comparison work for teams evaluating how much custom Three.js code can move behind a A3D workflow API.
 
 ## Current Claim Position
 
-G3D's public claim is evidence-scoped: it matches or exceeds Three.js in the categories measured by the V10 superiority audit. Broad statements outside the measured feature, visual, animation, physics, asset, performance, workflow, stability, and documentation categories must be backed by new reports before they are used.
+A3D's public claim is evidence-scoped: it matches or exceeds Three.js in the categories measured by the V10 superiority audit. Broad statements outside the measured feature, visual, animation, physics, asset, performance, workflow, stability, and documentation categories must be backed by new reports before they are used.
 
 Approved claim:
 
-> G3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the G3D superiority audit.
+> A3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the A3D superiority audit.
 
 ## Current High-Signal Docs
 

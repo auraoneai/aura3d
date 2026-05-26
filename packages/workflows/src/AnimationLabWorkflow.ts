@@ -1,6 +1,6 @@
-import { AnimationClip, AnimationTrack } from "@galileo3d/animation";
-import { composeMat4 } from "@galileo3d/scene";
-import { Geometry, PBRMaterial, createLightingDefault } from "@galileo3d/rendering";
+import { AnimationClip, AnimationTrack } from "@aura3d/animation";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, PBRMaterial, createLightingDefault } from "@aura3d/rendering";
 import { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 import type { AnimationLabWorkflowOptions, AnimationLabWorkflowResult } from "./WorkflowTypes";
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This demo is a v3 product-app slice for Galileo3D. It loads a generated local over-ear headphone glTF fixture, renders the model geometry through the public `@galileo3d/rendering` WebGL2 path, and exposes runtime evidence for material variants, camera controls, environment controls, frame timing, draw calls, screenshot export state, and user interaction.
+This demo is a v3 product-app slice for Aura3D. It loads a generated local over-ear headphone glTF fixture, renders the model geometry through the public `@aura3d/rendering` WebGL2 path, and exposes runtime evidence for material variants, camera controls, environment controls, frame timing, draw calls, screenshot export state, and user interaction.
 
 ## Run
 
@@ -33,29 +33,29 @@ For manual inspection, serve the repository with the example dev server used by 
 Read `main.ts` from top to bottom; it is intentionally a single-file app so a developer can understand the product flow without opening test files.
 
 1. `variants` defines the product material choices and the UI-facing variant ids.
-2. `loadProductModel` fetches `fixtures/assets/v3/product/generated-headphones/generated-headphones.gltf`, its manifest, and its source-generation evidence.
+2. `loadProductModel` fetches `fixtures/workflow-assets/assets/product-camera/product-camera.gltf`, its manifest, and its source-generation evidence.
 3. `Renderer.create({ backend: "webgl2" })` creates the real engine renderer used by the canvas.
 4. `buildRenderItems` converts loaded glTF geometry resources and active material slot variants into render items using `PBRMaterial`, `TexturedPBRMaterial`, and `UnlitMaterial`.
-5. Swatch, camera, light, orbit/zoom, and export controls update page state through helpers including `setVariant` before `renderer.render` publishes `window.__GALILEO3D_PRODUCT_DEMO__`.
+5. Swatch, camera, light, orbit/zoom, and export controls update page state through helpers including `setVariant` before `renderer.render` publishes `window.__AURA3D_PRODUCT_DEMO__`.
 6. Canvas pointer input, wheel input, swatch buttons, camera buttons, environment buttons, and screenshot export are real browser interactions, not synthetic test-only hooks.
 
-Use the displayed JSON status panel or `window.__GALILEO3D_PRODUCT_DEMO__` in DevTools to inspect the same runtime evidence the automated checks read: active variant, material slots, camera/environment presets, interaction count, export state, draw calls, renderer backend, generated glTF source evidence, known limits, and renderer diagnostics.
+Use the displayed JSON status panel or `window.__AURA3D_PRODUCT_DEMO__` in DevTools to inspect the same runtime evidence the automated checks read: active variant, material slots, camera/environment presets, interaction count, export state, draw calls, renderer backend, generated glTF source evidence, known limits, and renderer diagnostics.
 
 ## Expected Output
 
-A WebGL2-rendered generated headphone configurator appears with selectable material swatches, visible PBR finish changes, generated cushion texture detail, procedural environment reflection evidence, model-backed contact-shadow receiver geometry, camera presets, environment presets, orbit/zoom input, and a PNG export button. Clicking a swatch selects that material, clicking the canvas cycles the active material variant, and both paths update `window.__GALILEO3D_PRODUCT_DEMO__`.
+A WebGL2-rendered generated headphone configurator appears with selectable material swatches, visible PBR finish changes, generated cushion texture detail, procedural environment reflection evidence, model-backed contact-shadow receiver geometry, camera presets, environment presets, orbit/zoom input, and a PNG export button. Clicking a swatch selects that material, clicking the canvas cycles the active material variant, and both paths update `window.__AURA3D_PRODUCT_DEMO__`.
 
 ## Acceptance Target
 
-- `window.__GALILEO3D_PRODUCT_DEMO__.status` is `ready`.
+- `window.__AURA3D_PRODUCT_DEMO__.status` is `ready`.
 - `renderer` is `webgl2`.
 - `metrics.rendererBacked` is `true`.
 - `diagnostics.drawCalls` is greater than zero.
 - `diagnostics.contextLost` is `false` and `diagnostics.lastError` is `null`.
-- `visualClaim` and `knownLimits` are present in `window.__GALILEO3D_PRODUCT_DEMO__`.
+- `visualClaim` and `knownLimits` are present in `window.__AURA3D_PRODUCT_DEMO__`.
 - Runtime asset metadata lists material slots and generated part counts.
 - `metrics.modelBacked` is `true`, `asset.source` is `generated-local-gltf`, and `asset.commercialImportedAsset` is `false`.
-- Runtime evidence lists glTF mesh/material/node counts loaded from `fixtures/assets/v3/product/generated-headphones`.
+- Runtime evidence lists glTF mesh/material/node counts loaded from `fixtures/workflow-assets/assets/product-camera`.
 - Pointer input changes the active material variant from `graphite` to `copper`.
 - The `ceramic` swatch button selects the `ceramic` variant and updates `aria-pressed`.
 

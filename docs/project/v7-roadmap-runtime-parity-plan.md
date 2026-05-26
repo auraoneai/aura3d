@@ -1,4 +1,4 @@
-# G3D V7: Build the Renderer Product, Not Another Screenshot
+# A3D V7: Build the Renderer Product, Not Another Screenshot
 
 > Historical note: This V7 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
@@ -7,7 +7,7 @@
 
 This is the seventh engine readiness prompt.
 
-The prior prompts were written with the expectation that each reset would move G3D closer to a real product:
+The prior prompts were written with the expectation that each reset would move A3D closer to a real product:
 
 - `docs/project/v4-engine-readiness-plan.md`
 - `docs/project/v2-roadmap-product-asset-pipeline-plan.md`
@@ -34,18 +34,18 @@ This prompt must not be interpreted as:
 
 This prompt means:
 
-> Build the actual renderer product, SDK surface, flagship viewer, asset pipeline, HDR/PBR/IBL workflow, controls, docs, examples, and same-scene Three.js comparison that prove G3D can be used by developers as a serious renderer library.
+> Build the actual renderer product, SDK surface, flagship viewer, asset pipeline, HDR/PBR/IBL workflow, controls, docs, examples, and same-scene Three.js comparison that prove A3D can be used by developers as a serious renderer library.
 
 V7 must be dignified and direct: acknowledge what is not good enough, stop overclaiming, and build the missing product pieces by filename.
 
 ## Three.js Boundary
 
-G3D is being built as a competitor to Three.js, not as a wrapper around Three.js.
+A3D is being built as a competitor to Three.js, not as a wrapper around Three.js.
 
 This must be understood in the simplest possible terms:
 
 ```text
-G3D = our renderer, our SDK, our asset pipeline, our runtime.
+A3D = our renderer, our SDK, our asset pipeline, our runtime.
 Three.js = competitor/reference baseline only.
 ```
 
@@ -53,13 +53,13 @@ Say it in the dumbest possible way so the work cannot drift again:
 
 - We are not building a Three.js app.
 - We are not wrapping Three.js.
-- We are not importing Three.js inside the G3D product runtime.
-- We are not using Three.js loaders, controls, materials, postprocess, skyboxes, PMREM, shadows, or renderer internals to make G3D look finished.
-- We are creating a competing renderer and developer SDK named G3D.
-- Three.js can stand next to G3D in a lab scene so we can compare output.
-- Three.js cannot stand inside G3D as the thing doing the work.
-- If a developer imports `@galileo3d/engine/production-runtime`, the rendered product path must be G3D code.
-- If the only reason a screenshot looks good is because Three.js rendered it, that screenshot is not G3D proof.
+- We are not importing Three.js inside the A3D product runtime.
+- We are not using Three.js loaders, controls, materials, postprocess, skyboxes, PMREM, shadows, or renderer internals to make A3D look finished.
+- We are creating a competing renderer and developer SDK named A3D.
+- Three.js can stand next to A3D in a lab scene so we can compare output.
+- Three.js cannot stand inside A3D as the thing doing the work.
+- If a developer imports `@aura3d/engine/production-runtime`, the rendered product path must be A3D code.
+- If the only reason a screenshot looks good is because Three.js rendered it, that screenshot is not A3D proof.
 
 Three.js may be used only for:
 
@@ -67,27 +67,27 @@ Three.js may be used only for:
 - benchmark/reference output
 - migration documentation
 - API compatibility analysis
-- proving whether G3D is good enough against an established renderer
+- proving whether A3D is good enough against an established renderer
 
 Three.js must not be used for:
 
-- G3D rendering
-- G3D material evaluation
-- G3D GLTF loading in product code
-- G3D skybox/IBL/PBR implementation
-- G3D app runtime
-- G3D controls runtime
-- G3D postprocess implementation
+- A3D rendering
+- A3D material evaluation
+- A3D GLTF loading in product code
+- A3D skybox/IBL/PBR implementation
+- A3D app runtime
+- A3D controls runtime
+- A3D postprocess implementation
 - hiding missing renderer features
-- making G3D appear better than it is
+- making A3D appear better than it is
 
-Any G3D product path that renders through Three.js fails V7.
+Any A3D product path that renders through Three.js fails V7.
 
-Any flagship viewer path that depends on Three.js for its actual G3D render fails V7.
+Any flagship viewer path that depends on Three.js for its actual A3D render fails V7.
 
 Any SDK API that secretly delegates renderer behavior to Three.js fails V7.
 
-Three.js comparison is allowed only as an external competitor baseline. It is not part of the G3D product implementation.
+Three.js comparison is allowed only as an external competitor baseline. It is not part of the A3D product implementation.
 
 ## Why V7 Exists
 
@@ -99,23 +99,23 @@ V6 improved the evidence path, but it still exposed the real product gap:
 - The GLB route is one evidence point within the V10 renderer SDK gate.
 - Debug-gallery cleanup is not enough.
 
-V7 exists because G3D needs a clear product objective that cannot collapse back into one-off visual proof.
+V7 exists because A3D needs a clear product objective that cannot collapse back into one-off visual proof.
 
 The objective is:
 
-**G3D Renderer: a production WebGL2/WebGPU rendering library and developer SDK for real-time 3D apps, with GLTF-first asset loading, HDR/PBR material fidelity, environment lighting, postprocessing, controls, scene composition, developer APIs, examples, and migration affordances from Three.js.**
+**A3D Renderer: a production WebGL2/WebGPU rendering library and developer SDK for real-time 3D apps, with GLTF-first asset loading, HDR/PBR material fidelity, environment lighting, postprocessing, controls, scene composition, developer APIs, examples, and migration affordances from Three.js.**
 
 The product is not "a screenshot of a helmet."
 
 The product is:
 
-> A developer can install G3D, load real GLTF/GLB assets and HDR environments, render them with high-quality PBR/IBL/PMREM/tone mapping/shadows/materials/postprocess, interact with the scene through controls, and ship a real viewer/app using a clean public API instead of raw Three.js.
+> A developer can install A3D, load real GLTF/GLB assets and HDR environments, render them with high-quality PBR/IBL/PMREM/tone mapping/shadows/materials/postprocess, interact with the scene through controls, and ship a real viewer/app using a clean public API instead of raw Three.js.
 
 The screenshot is only one artifact of that product.
 
 ## The Objective In One Sentence
 
-V7 must turn G3D into a usable, documented, public WebGL2/WebGPU GLTF/HDR/PBR renderer SDK with a flagship interactive product viewer that uses the public API and proves, through same-scene Three.js comparison, where G3D is ready and where gaps remain.
+V7 must turn A3D into a usable, documented, public WebGL2/WebGPU GLTF/HDR/PBR renderer SDK with a flagship interactive product viewer that uses the public API and proves, through same-scene Three.js comparison, where A3D is ready and where gaps remain.
 
 Everything else is secondary.
 
@@ -150,7 +150,7 @@ If the work does not improve one of these three product parts, it is not V7 prog
 
 ## Non-Negotiable Objective
 
-Build a production-grade G3D renderer package and flagship GLTF viewer that developers can use as a serious alternative to Three.js for the documented scope.
+Build a production-grade A3D renderer package and flagship GLTF viewer that developers can use as a serious alternative to Three.js for the documented scope.
 
 V7 is not complete until the repo contains:
 
@@ -167,7 +167,7 @@ Do not spend this reset creating another gallery of weak screenshots.
 
 Create:
 
-**G3D Renderer**
+**A3D Renderer**
 
 A production WebGL2/WebGPU rendering library for real-time 3D apps, with:
 
@@ -190,12 +190,12 @@ The developer-facing experience should feel like:
 
 ```ts
 import {
-  G3DRenderer,
+  A3DRenderer,
   loadGltfScene,
   loadHdrEnvironment,
   createOrbitControls,
   createProductViewer
-} from "@galileo3d/engine/production-runtime";
+} from "@aura3d/engine/production-runtime";
 
 const viewer = await createProductViewer({
   canvas,
@@ -254,7 +254,7 @@ The next work must improve renderer fidelity and product workflow:
 - visible metal/roughness/normal/AO/emissive/clearcoat/sheen/specular/transmission behavior on real imported assets
 - real grounded contact behavior, shadows, and depth-aware occlusion
 - curated product-stage composition with real camera/framing presets
-- same-scene Three.js reference output used only as competitor baseline, not as G3D runtime
+- same-scene Three.js reference output used only as competitor baseline, not as A3D runtime
 - developer API and docs that prove the app is built as an SDK product
 
 If the output still looks like a low-resolution or Lambert-style demo after these changes, V7 is not done.
@@ -282,7 +282,7 @@ Minimum visual artifact expectations:
 | Flagship export | 5K-class or better screenshot with the asset filling the frame and real material detail visible |
 | Close-up material proof | tight crop/export that shows normal, roughness, metallic, emissive, and transparent/transmissive behavior |
 | HDR/IBL proof | same asset under at least two HDR environments with visible reflection and exposure differences |
-| Comparison proof | G3D and Three.js side by side using the same GLB, HDRI, camera, exposure, tone mapping intent, and documented deltas |
+| Comparison proof | A3D and Three.js side by side using the same GLB, HDRI, camera, exposure, tone mapping intent, and documented deltas |
 
 The acceptance decision is visual first and metric second.
 
@@ -307,7 +307,7 @@ V7 must close these gaps with implementation, not prose.
 
 ## Three.js Example Parity Ladder
 
-V7 must also target the official Three.js example categories that expose the current G3D weakness most clearly:
+V7 must also target the official Three.js example categories that expose the current A3D weakness most clearly:
 
 - `webgl_animation_keyframes`
 - `webgl_animation_skinning_blending`
@@ -320,16 +320,16 @@ V7 must also target the official Three.js example categories that expose the cur
 - `webgl_effects_parallaxbarrier`
 - `webgl_effects_stereo`
 
-The goal is not to import Three.js to make these examples work. The goal is to build the G3D systems that can compete with those examples:
+The goal is not to import Three.js to make these examples work. The goal is to build the A3D systems that can compete with those examples:
 
-- native G3D keyframe playback
-- native G3D animation mixer, crossfades, additive actions, masks, and clip controls
-- native G3D skinned mesh deformation driven by imported GLTF animation
-- native G3D morph target animation driven by imported GLTF weights
-- native G3D IK solvers connected to imported skeletons and transform controls
-- native G3D decal projection with raycast hit testing and clipped decal geometry
-- native G3D stereo/parallax render effects through real multi-camera compositors
-- native G3D physics examples with collision, constraints, contact reporting, and rendered state
+- native A3D keyframe playback
+- native A3D animation mixer, crossfades, additive actions, masks, and clip controls
+- native A3D skinned mesh deformation driven by imported GLTF animation
+- native A3D morph target animation driven by imported GLTF weights
+- native A3D IK solvers connected to imported skeletons and transform controls
+- native A3D decal projection with raycast hit testing and clipped decal geometry
+- native A3D stereo/parallax render effects through real multi-camera compositors
+- native A3D physics examples with collision, constraints, contact reporting, and rendered state
 
 The first implemented artifact for this ladder is:
 
@@ -342,7 +342,7 @@ The first implemented artifact for this ladder is:
 - `tests/reports/v7/threejs-example-parity-lab/example-parity-lab.png`
 - `tests/reports/v7/threejs-example-parity-lab/example-parity-lab-report.json`
 
-This app is intentionally G3D-only. It imports no Three.js runtime. It currently loads real GLB assets, renders Cesium Man, Damaged Helmet, and Animated Morph Cube through the G3D GLTF/PBR/HDR pipeline, applies imported GLTF TRS and morph-weight animation tracks through `GLTFAnimationRuntime`, refreshes renderable skinning palettes from animated joint transforms for the skinned GLB path, generates clipped decal geometry from imported helmet mesh triangles through `ProjectedDecalGeometry`, steps the G3D animation mixer with crossfade/additive/root-motion evidence, runs the G3D IK solver, renders stereo/physics evidence, and captures a real 1920x1080 WebGL2 canvas artifact.
+This app is intentionally A3D-only. It imports no Three.js runtime. It currently loads real GLB assets, renders Cesium Man, Damaged Helmet, and Animated Morph Cube through the A3D GLTF/PBR/HDR pipeline, applies imported GLTF TRS and morph-weight animation tracks through `GLTFAnimationRuntime`, refreshes renderable skinning palettes from animated joint transforms for the skinned GLB path, generates clipped decal geometry from imported helmet mesh triangles through `ProjectedDecalGeometry`, steps the A3D animation mixer with crossfade/additive/root-motion evidence, runs the A3D IK solver, renders stereo/physics evidence, and captures a real 1920x1080 WebGL2 canvas artifact.
 
 Do not overclaim this artifact. It is the first implemented foundation, not final parity.
 
@@ -355,7 +355,7 @@ The current missing work for this ladder is still substantial:
 - replace small physics evidence stacks with richer interactive physics examples and external-engine benchmark comparison
 - add dedicated apps or views for animation blending, additive blending, IK, morphs, decals, stereo/parallax, and physics rather than hiding everything in one lab
 
-V7 cannot be called a Three.js example competitor until these categories produce visually impressive, interactive G3D examples that can stand next to the official Three.js examples without relying on Three.js runtime code.
+V7 cannot be called a Three.js example competitor until these categories produce visually impressive, interactive A3D examples that can stand next to the official Three.js examples without relying on Three.js runtime code.
 
 ## What Not To Do
 
@@ -448,7 +448,7 @@ Implement or harden:
 
 Required outcome:
 
-- A real public `G3DRenderer`/`RendererV6` API exists.
+- A real public `A3DRenderer`/`RendererV6` API exists.
 - The flagship viewer uses this API.
 - Browser tests are not the only consumers.
 - WebGL2 is production-grade for the documented scope.
@@ -558,17 +558,17 @@ Implement or harden:
 - `packages/engine/src/index.ts`
 - `packages/rendering/src/production-runtime/index.ts`
 - `packages/assets/src/asset-corpus/index.ts`
-- `packages/create-g3d/`
+- `packages/create-aura3d/`
 - `package.json`
 - `tsconfig.base.json`
 
 Required public imports:
 
 ```ts
-import { G3DRenderer } from "@galileo3d/engine/production-runtime";
-import { loadGltfScene, loadHdrEnvironment } from "@galileo3d/engine/production-runtime";
-import { createOrbitControls } from "@galileo3d/engine/production-runtime";
-import { createProductViewer } from "@galileo3d/engine/production-runtime";
+import { A3DRenderer } from "@aura3d/engine/production-runtime";
+import { loadGltfScene, loadHdrEnvironment } from "@aura3d/engine/production-runtime";
+import { createOrbitControls } from "@aura3d/engine/production-runtime";
+import { createProductViewer } from "@aura3d/engine/production-runtime";
 ```
 
 Required outcome:
@@ -622,7 +622,7 @@ Implement or harden:
 - `tools/v7-threejs-parity/`
 - `tools/v7-threejs-parity-readiness/`
 - `benchmarks/threejs/src/scenes/product-configurator.ts`
-- `benchmarks/galileo/src/scenes/product-configurator.ts`
+- `benchmarks/aura3d/src/scenes/product-configurator.ts`
 - `docs/project/production-runtime-roadmap-threejs-parity.md`
 
 Required outcome:
@@ -633,7 +633,7 @@ Required outcome:
 - Same tone mapping target.
 - Same approximate exposure.
 - Same screenshot resolution.
-- G3D and Three.js outputs are shown side by side.
+- A3D and Three.js outputs are shown side by side.
 - Differences are documented honestly.
 - Unsupported features are named.
 
@@ -665,11 +665,11 @@ Required outcome:
 
 V7 must produce one primary acceptance artifact:
 
-**A flagship G3D product viewer that renders the same real asset and environment in G3D and Three.js.**
+**A flagship A3D product viewer that renders the same real asset and environment in A3D and Three.js.**
 
 Required artifact paths:
 
-- `tests/reports/v7/product-viewer/g3d-product-viewer.png`
+- `tests/reports/v7/product-viewer/a3d-product-viewer.png`
 - `tests/reports/v7/product-viewer/threejs-product-viewer.png`
 - `tests/reports/v7/product-viewer/comparison.png`
 - `tests/reports/v7/product-viewer/product-viewer-report.json`
@@ -694,12 +694,12 @@ Use this checklist as the work order.
 
 ### Phase 1: Product API
 
-- [ ] Create public `G3DRenderer` / `RendererV6` API.
+- [ ] Create public `A3DRenderer` / `RendererV6` API.
 - [ ] Create public `loadGltfScene()` API.
 - [ ] Create public `loadHdrEnvironment()` API.
 - [ ] Create public `createOrbitControls()` API.
 - [ ] Create public `createProductViewer()` API.
-- [ ] Export all of the above from `@galileo3d/engine/production-runtime`.
+- [ ] Export all of the above from `@aura3d/engine/production-runtime`.
 - [ ] Make the flagship viewer use only the public API.
 
 ### Phase 2: GLTF Render Fidelity
@@ -772,7 +772,7 @@ This prior evidence is not enough to close V7. Treat it as a baseline to surpass
 
 ### Phase 7: Same-Scene Three.js Comparison
 
-- [ ] Render G3D version.
+- [ ] Render A3D version.
 - [ ] Render Three.js version.
 - [ ] Use the same GLB.
 - [ ] Use the same HDRI.
@@ -798,14 +798,14 @@ This prior evidence is not enough to close V7. Treat it as a baseline to surpass
 V7 can only be considered complete when all of the following are true:
 
 - [ ] A developer-facing public SDK API exists and is used by the flagship app.
-- [ ] A real GLB renders through G3D with real textures/materials.
+- [ ] A real GLB renders through A3D with real textures/materials.
 - [ ] A real HDRI visibly lights the asset and renders as background/skybox.
 - [ ] PBR material response is visible and inspectable.
 - [ ] Shadows or contact grounding are visible.
 - [ ] Tone mapping/postprocess controls exist.
 - [ ] Orbit controls exist.
 - [ ] The app is interactive, not a static screenshot harness.
-- [ ] G3D and Three.js render the same scene side by side.
+- [ ] A3D and Three.js render the same scene side by side.
 - [ ] Known gaps are documented.
 - [ ] Docs/examples show how a developer uses the API.
 - [ ] The final report does not use screenshot metrics as the primary claim.
@@ -835,7 +835,7 @@ When the work is reported complete, the final response must include these sectio
    - State the shadow/postprocess features visibly exercised.
 
 5. **Three.js Comparison**
-   - Provide the G3D screenshot path.
+   - Provide the A3D screenshot path.
    - Provide the Three.js screenshot path.
    - Provide the side-by-side comparison path.
    - State what is equal, what is worse, and what is still missing.
@@ -858,7 +858,7 @@ V7 fails if any of the following happen:
 
 - The main output is another standalone screenshot harness.
 - The flagship viewer uses private test-only helpers instead of the public SDK API.
-- The comparison does not render the same asset/environment in both G3D and Three.js.
+- The comparison does not render the same asset/environment in both A3D and Three.js.
 - The report claims PBR/HDR quality but the screenshot looks flat, tiny, blank, gray-boxed, or debug-like.
 - The app cannot be interacted with through real controls.
 - The docs show APIs that do not compile or are not exported.
@@ -871,6 +871,6 @@ Do not stop at "we improved the screenshot."
 
 The target is a renderer product:
 
-> G3D Renderer must be a usable, documented, public WebGL2/WebGPU GLTF/HDR/PBR SDK with a flagship viewer that proves developers can build real-time 3D apps with it instead of Three.js for the documented workflows.
+> A3D Renderer must be a usable, documented, public WebGL2/WebGPU GLTF/HDR/PBR SDK with a flagship viewer that proves developers can build real-time 3D apps with it instead of Three.js for the documented workflows.
 
 If the work does not improve that product surface, it is not V7 progress.

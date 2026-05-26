@@ -88,7 +88,7 @@ const progressHasReleaseGate = progress.includes("Milestone 10 - Release Gates")
   && (progress.includes("Current status: in-progress") || progress.includes("Current status: complete"));
 
 const report = {
-  schema: "g3d-foundation-truth/v1",
+  schema: "a3d-foundation-truth/v1",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0 && findings.length === 0 && missingStatusPhrases.length === 0 && progressHasReleaseGate,
   requiredFiles: requiredFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),

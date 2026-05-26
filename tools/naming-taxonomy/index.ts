@@ -178,7 +178,7 @@ export function classifyVersionedPath(path: string): VersionedPathRecord {
   }
 
   if (root === "templates") {
-    return targetRecord(normalized, root, version, "public-api", contextualizePath(normalized), "Published starter template path; keep create-g3d/template aliases or document removal before moving.");
+    return targetRecord(normalized, root, version, "public-api", contextualizePath(normalized), "Published starter template path; keep create-aura3d/template aliases or document removal before moving.");
   }
 
   if (root === "tests") {
@@ -375,11 +375,11 @@ function targetRecord(
 }
 
 function contextualFixtureTarget(path: string): string {
-  if (path.startsWith("fixtures/v9/assets/")) return path.replace("fixtures/v9/assets/", "fixtures/advanced-gallery/assets/");
-  if (path.startsWith("fixtures/v9/environments/")) return path.replace("fixtures/v9/environments/", "fixtures/advanced-gallery/environments/");
-  if (path.startsWith("fixtures/v8/assets/")) return path.replace("fixtures/v8/assets/", "fixtures/threejs-parity/assets/");
-  if (path.startsWith("fixtures/v6/assets/corpus/")) return path.replace("fixtures/v6/assets/corpus/", "fixtures/asset-corpus/");
-  if (path.startsWith("fixtures/v6/environments/")) return path.replace("fixtures/v6/environments/", "fixtures/environment-corpus/");
+  if (path.startsWith("fixtures/advanced-gallery/assets/")) return path.replace("fixtures/advanced-gallery/assets/", "fixtures/advanced-gallery/assets/");
+  if (path.startsWith("fixtures/advanced-gallery/environments/")) return path.replace("fixtures/advanced-gallery/environments/", "fixtures/advanced-gallery/environments/");
+  if (path.startsWith("fixtures/threejs-parity/assets/")) return path.replace("fixtures/threejs-parity/assets/", "fixtures/threejs-parity/assets/");
+  if (path.startsWith("fixtures/asset-corpus/")) return path.replace("fixtures/asset-corpus/", "fixtures/asset-corpus/");
+  if (path.startsWith("fixtures/environment-corpus/")) return path.replace("fixtures/environment-corpus/", "fixtures/environment-corpus/");
   return contextualizePath(path);
 }
 
@@ -453,7 +453,7 @@ function extractPackageJsonReferences(file: { readonly path: string; readonly te
       reference: entry,
       classification: "public-api",
       target: contextualizePath(entry),
-      compatibilityDecision: "Published package file allowlist; keep old template/file entries until contextual package contents and create-g3d aliases are proven."
+      compatibilityDecision: "Published package file allowlist; keep old template/file entries until contextual package contents and create-aura3d aliases are proven."
     });
   }
 
@@ -600,13 +600,13 @@ function referenceRecord(kind: ActiveReferenceRecord["kind"], source: string, re
 
 function contextualPackageExportTarget(key: string, value: string): string {
   const combined = `${key} ${value}`;
-  if (combined.includes("/rendering/v9")) return "@galileo3d/engine/rendering/advanced-runtime";
-  if (combined.includes("/rendering/v6")) return "@galileo3d/engine/rendering/production-runtime";
-  if (combined.includes("/assets/v9")) return "@galileo3d/engine/assets/advanced-gallery";
-  if (combined.includes("/assets/v6")) return "@galileo3d/engine/assets/asset-corpus";
-  if (combined.includes("/workflows/v6")) return "@galileo3d/engine/workflows/production";
-  if (combined.includes("/v9")) return "@galileo3d/engine/advanced-runtime";
-  if (combined.includes("/v6")) return "@galileo3d/engine/production-runtime";
+  if (combined.includes("/rendering/v9")) return "@aura3d/engine/rendering/advanced-runtime";
+  if (combined.includes("/rendering/v6")) return "@aura3d/engine/rendering/production-runtime";
+  if (combined.includes("/assets/v9")) return "@aura3d/engine/assets/advanced-gallery";
+  if (combined.includes("/assets/v6")) return "@aura3d/engine/assets/asset-corpus";
+  if (combined.includes("/workflows/v6")) return "@aura3d/engine/workflows/production";
+  if (combined.includes("/v9")) return "@aura3d/engine/advanced-runtime";
+  if (combined.includes("/v6")) return "@aura3d/engine/production-runtime";
   return contextualizePath(value || key);
 }
 

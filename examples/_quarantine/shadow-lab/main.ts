@@ -1,4 +1,4 @@
-import { DirectionalLight, PointLight, SpotLight } from "@galileo3d/scene";
+import { DirectionalLight, PointLight, SpotLight } from "@aura3d/scene";
 import {
   CascadedShadowMaps,
   CascadedShadowPass,
@@ -17,11 +17,11 @@ import {
   type RenderItem,
   type ShadowFilterKernel,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_SHADOW_LAB__?: ShadowLabState;
+    __AURA3D_SHADOW_LAB__?: ShadowLabState;
   }
 }
 
@@ -117,7 +117,7 @@ const claimBoundary = "V4 shadow-lab evidence is limited to directional, point, 
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_SHADOW_LAB__ = {
+    window.__AURA3D_SHADOW_LAB__ = {
       id: "shadow-lab",
       status: "error",
       renderer: "webgl2-plus-shadow-pass",
@@ -237,7 +237,7 @@ async function run(): Promise<void> {
       frustum: readPixel(context, 206, 194),
       resolutionLabel: readPixel(context, 54, 62)
     };
-    window.__GALILEO3D_SHADOW_LAB__ = {
+    window.__AURA3D_SHADOW_LAB__ = {
       id: "shadow-lab",
       status: "ready",
       renderer: "webgl2-plus-shadow-pass",
@@ -319,7 +319,7 @@ async function run(): Promise<void> {
       controls,
       canvasFrame: { width: renderCanvas.width, height: renderCanvas.height }
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_SHADOW_LAB__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_SHADOW_LAB__, null, 2);
     cascades.dispose();
   };
   mapSizeInput.addEventListener("input", render);

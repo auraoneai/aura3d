@@ -1,4 +1,4 @@
-import { createGLTFRenderResources, GLTFLoader, LoadContext, type DecodedGLTFImage } from "@galileo3d/assets";
+import { createGLTFRenderResources, GLTFLoader, LoadContext, type DecodedGLTFImage } from "@aura3d/assets";
 import type { ProductAsset, ProductAssetLoadOptions, ProductManifest } from "./ProductTypes";
 
 export async function loadProductAsset(options: ProductAssetLoadOptions): Promise<ProductAsset> {
@@ -55,7 +55,7 @@ async function loadManifest(options: ProductAssetLoadOptions, gltf: Awaited<Retu
     }
   }
   return normalizeManifest({
-    schema: "g3d-product-manifest/fallback",
+    schema: "a3d-product-manifest/fallback",
     id: options.id ?? "product",
     title: options.title ?? gltf.scenes[gltf.defaultScene]?.name ?? "Product",
     category: options.category ?? "product",

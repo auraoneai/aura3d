@@ -12,7 +12,7 @@ import {
   createV6WorkflowPlan,
   createV6AssetPreflight,
   createV6VisualQAResult
-} from "@galileo3d/engine/workflows/production-runtime";
+} from "@aura3d/engine/workflows/production-runtime";
 ```
 
 Primary evidence:

@@ -17,7 +17,7 @@ test.describe("V7 material extension parity artifact", () => {
     await server.close();
   });
 
-  test("captures same-extension G3D vs Three.js material deltas", async ({ page }) => {
+  test("captures same-extension A3D vs Three.js material deltas", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -51,7 +51,7 @@ test.describe("V7 material extension parity artifact", () => {
         expectedExtension: string;
         expectedFeature: string;
         parity: { claim: string };
-        g3d: {
+        a3d: {
           diagnostics: { drawCalls: number; lastError: string | null; textures?: number; textureBytes?: number };
           summary: { pass: boolean; missing: readonly string[] };
           pixelStats: { nonBlackPixels: number; uniqueColorBuckets: number; averageLuma: number; maxLuma: number };
@@ -75,12 +75,12 @@ test.describe("V7 material extension parity artifact", () => {
           pmremGenerator: boolean;
         };
         diff: { meanDelta: number; maxDelta: number; changedPixels: number; structuralSimilarityProxy: number };
-        dataUrls: { g3d: string; threejs: string; diff: string };
+        dataUrls: { a3d: string; threejs: string; diff: string };
       }[];
     };
 
     expect(result.status, result.error).toBe("ready");
-    expect(result.schema).toBe("g3d-v7-material-extension-parity/v1");
+    expect(result.schema).toBe("a3d-v7-material-extension-parity/v1");
     expect(result.parity?.claim).toBe("bounded-eleven-extension-material-delta-coverage");
     expect(result.cases).toHaveLength(11);
 
@@ -89,34 +89,34 @@ test.describe("V7 material extension parity artifact", () => {
     const cases = [];
     for (const entry of result.cases ?? []) {
       expect(entry.parity.claim).toBe("bounded-eleven-extension-material-delta-coverage");
-      expect(entry.g3d.extensionsUsed).toContain(entry.expectedExtension);
-      expect(entry.g3d.materialFeatures).toContain(entry.expectedFeature);
-      expect(entry.g3d.unsupportedExtensions).not.toContain(entry.expectedExtension);
-      expect(entry.g3d.summary.pass, entry.g3d.summary.missing.join(", ")).toBe(true);
-      expect(entry.g3d.diagnostics.lastError).toBeNull();
-      expect(entry.g3d.diagnostics.drawCalls).toBeGreaterThan(0);
-      expect(entry.g3d.diagnostics.textures ?? 0).toBeGreaterThan(0);
-      expect(entry.g3d.diagnostics.textureBytes ?? 0).toBeGreaterThan(128 * 1024);
+      expect(entry.a3d.extensionsUsed).toContain(entry.expectedExtension);
+      expect(entry.a3d.materialFeatures).toContain(entry.expectedFeature);
+      expect(entry.a3d.unsupportedExtensions).not.toContain(entry.expectedExtension);
+      expect(entry.a3d.summary.pass, entry.a3d.summary.missing.join(", ")).toBe(true);
+      expect(entry.a3d.diagnostics.lastError).toBeNull();
+      expect(entry.a3d.diagnostics.drawCalls).toBeGreaterThan(0);
+      expect(entry.a3d.diagnostics.textures ?? 0).toBeGreaterThan(0);
+      expect(entry.a3d.diagnostics.textureBytes ?? 0).toBeGreaterThan(128 * 1024);
       if (entry.id === "compare-ior") {
-        expect(entry.g3d.transmissionBackdrop?.mode).toBe("renderer-owned-scene-color-readback");
-        expect(entry.g3d.transmissionBackdrop?.strength).toBeGreaterThan(0.75);
-        expect(entry.g3d.transmissionBackdrop?.refractionScale).toBeGreaterThan(0.02);
-        expect(entry.g3d.transmissionBackdrop?.byteLength).toBe(512 * 512 * 4);
-        expect(entry.g3d.transmissionBackdrop?.mipCount).toBeGreaterThan(1);
-        expect(entry.g3d.transmissionBackdrop?.materialBindings).toBeGreaterThan(0);
-        expect(entry.g3d.transmissionBackdrop?.width).toBe(512);
-        expect(entry.g3d.transmissionBackdrop?.height).toBe(512);
+        expect(entry.a3d.transmissionBackdrop?.mode).toBe("renderer-owned-scene-color-readback");
+        expect(entry.a3d.transmissionBackdrop?.strength).toBeGreaterThan(0.75);
+        expect(entry.a3d.transmissionBackdrop?.refractionScale).toBeGreaterThan(0.02);
+        expect(entry.a3d.transmissionBackdrop?.byteLength).toBe(512 * 512 * 4);
+        expect(entry.a3d.transmissionBackdrop?.mipCount).toBeGreaterThan(1);
+        expect(entry.a3d.transmissionBackdrop?.materialBindings).toBeGreaterThan(0);
+        expect(entry.a3d.transmissionBackdrop?.width).toBe(512);
+        expect(entry.a3d.transmissionBackdrop?.height).toBe(512);
       } else {
-        expect(entry.g3d.transmissionBackdrop).toBeUndefined();
+        expect(entry.a3d.transmissionBackdrop).toBeUndefined();
       }
-      expect(entry.g3d.pixelStats.nonBlackPixels).toBeGreaterThan(5_000);
-      expect(entry.g3d.pixelStats.uniqueColorBuckets, `${entry.id} G3D unique color buckets`).toBeGreaterThanOrEqual(minParityUniqueColorBuckets(entry.id));
-      expect(entry.g3d.pixelStats.maxLuma, `${entry.id} G3D max luma`).toBeGreaterThan(40);
+      expect(entry.a3d.pixelStats.nonBlackPixels).toBeGreaterThan(5_000);
+      expect(entry.a3d.pixelStats.uniqueColorBuckets, `${entry.id} A3D unique color buckets`).toBeGreaterThanOrEqual(minParityUniqueColorBuckets(entry.id));
+      expect(entry.a3d.pixelStats.maxLuma, `${entry.id} A3D max luma`).toBeGreaterThan(40);
       expect(entry.threejs.pmremGenerator).toBe(true);
       expect(entry.threejs.diagnostics.drawCalls).toBeGreaterThan(0);
       expect(entry.threejs.pixelStats.nonBlackPixels).toBeGreaterThan(5_000);
       const thresholds = parityThresholds(entry.id);
-      const lumaDelta = Math.abs(entry.g3d.pixelStats.averageLuma - entry.threejs.pixelStats.averageLuma);
+      const lumaDelta = Math.abs(entry.a3d.pixelStats.averageLuma - entry.threejs.pixelStats.averageLuma);
       expect.soft(lumaDelta, `${entry.id} luma delta`).toBeLessThan(thresholds.lumaDelta);
       expect.soft(entry.diff.changedPixels, `${entry.id} changed pixels`).toBeGreaterThan(1_000);
       expect.soft(entry.diff.meanDelta, `${entry.id} mean delta`).toBeLessThan(thresholds.meanDelta);

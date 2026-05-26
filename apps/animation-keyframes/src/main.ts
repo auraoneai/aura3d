@@ -1,7 +1,7 @@
 import { ASSET_URL, createInitialRuntime, publishRuntime, updateRuntime, type V8AnimationKeyframesRuntime, type V8KeyframeControls } from "./state.js";
 import { createV8KeyframeScene, drawFallbackFrame } from "./scene.js";
 import { renderKeyframeUi } from "./ui.js";
-import { AnimationMotionQualityTracker } from "@galileo3d/animation";
+import { AnimationMotionQualityTracker } from "@aura3d/animation";
 
 void run();
 
@@ -45,7 +45,7 @@ async function run(): Promise<void> {
   renderKeyframeUi(root, { runtime, clips: clipNames, onControls: setControls });
 
   try {
-    publish({ status: "loading", loadingStep: `creating G3D renderer and loading ${ASSET_URL}` });
+    publish({ status: "loading", loadingStep: `creating A3D renderer and loading ${ASSET_URL}` });
     const scene = await createV8KeyframeScene(canvas);
     clipNames = scene.clips.map((clip) => clip.name);
     const preferred = scene.clips.find((clip) => clip.name === controls.clipName) ?? scene.clips.find((clip) => /dance|walk/i.test(clip.name)) ?? scene.clips[0];
@@ -87,7 +87,7 @@ async function run(): Promise<void> {
         }
         runtime = updateRuntime(runtime, startedAt, {
           status: frameCount === 1 ? "ready" : "running",
-          loadingStep: frameCount === 1 ? "first G3D frame rendered" : "sampling keyframes and rendering",
+          loadingStep: frameCount === 1 ? "first A3D frame rendered" : "sampling keyframes and rendering",
           clipName: clip.name,
           clipCount: scene.clips.length,
           duration: clip.duration,

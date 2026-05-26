@@ -5,11 +5,11 @@
 
 Release date: 2026-05-14
 
-V4 completes the local V4 product release gate for the supported `@galileo3d/engine` SDK, pro app suite, scaffolder templates, visual gallery, external consumer build, and claim registry.
+V4 completes the local V4 product release gate for the supported `@aura3d/engine` SDK, pro app suite, scaffolder templates, visual gallery, external consumer build, and claim registry.
 
 ## Shipped
 
-- Public app runtime through `createG3DApp`.
+- Public app runtime through `createA3DApp`.
 - Product, material, asset, scene, character, and interactive workflows.
 - Four installable V4 templates: product viewer, material studio, asset gallery, and interactive scene.
 - HDR, IBL, PBR material, shadows, postprocess, glTF corpus, performance, diagnostics, and screenshot evidence.

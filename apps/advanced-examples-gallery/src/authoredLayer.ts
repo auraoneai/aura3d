@@ -12,9 +12,9 @@ import {
   type GLTFDracoDecoderModule,
   type GLTFRenderResources,
   type V6GLTFRenderMetadata
-} from "@galileo3d/assets";
-import { Material, TextureBinding, type RenderItem } from "@galileo3d/rendering";
-import { composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/assets";
+import { Material, TextureBinding, type RenderItem } from "@aura3d/rendering";
+import { composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   getAuthoredAssetCandidate,
   type AuthoredAssetCandidateId,
@@ -841,11 +841,11 @@ function sourceMaterialNameForRenderable(
 }
 
 function gltfNodeSemanticRole(node: { readonly userData?: Record<string, unknown> }): string | undefined {
-  const direct = node.userData?.g3d_semantic_role;
+  const direct = node.userData?.a3d_semantic_role;
   if (typeof direct === "string" && direct.length > 0) return direct;
   const extras = node.userData?.gltfExtras;
   if (extras && typeof extras === "object" && !Array.isArray(extras)) {
-    const role = (extras as Record<string, unknown>).g3d_semantic_role;
+    const role = (extras as Record<string, unknown>).a3d_semantic_role;
     if (typeof role === "string" && role.length > 0) return role;
   }
   return undefined;

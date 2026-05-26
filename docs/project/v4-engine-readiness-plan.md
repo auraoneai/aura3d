@@ -1,4 +1,4 @@
-# G3D Engine Readiness Plan
+# A3D Engine Readiness Plan
 
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
@@ -11,14 +11,14 @@ This plan is intentionally code-only. It excludes external events, manual Unity/
 
 ## Post-Reset Product Definition
 
-After the deletion/quarantine work, G3D is no longer claiming to be a Unity/Unreal replacement or a broad Three.js/Babylon.js killer. That claim has failed too many times and is not supported by current evidence.
+After the deletion/quarantine work, A3D is no longer claiming to be a Unity/Unreal replacement or a broad Three.js/Babylon.js killer. That claim has failed too many times and is not supported by current evidence.
 
-G3D can still strive to become a Three.js replacement. The engine readiness separates that ambition from the current state:
+A3D can still strive to become a Three.js replacement. The engine readiness separates that ambition from the current state:
 
 - **Current state:** not a Three.js replacement.
 - **Near-term product:** a TypeScript/WebGL rendering SDK with sane asset-to-render defaults.
 - **First strategic ambition:** become a credible Three.js alternative for controlled product, material, asset-viewer, and clean scene-rendering workflows.
-- **Future claim:** only call G3D a Three.js replacement after same-scene visual/API/package evidence supports that claim.
+- **Future claim:** only call A3D a Three.js replacement after same-scene visual/API/package evidence supports that claim.
 
 The post-reset product is:
 
@@ -27,8 +27,8 @@ The post-reset product is:
 The product is useful only if a developer can do this locally, inside this repo, without example-specific renderer hacks:
 
 ```ts
-import { Renderer } from "@galileo3d/rendering";
-import { loadRenderableAsset, createRenderableScene } from "@galileo3d/assets";
+import { Renderer } from "@aura3d/rendering";
+import { loadRenderableAsset, createRenderableScene } from "@aura3d/assets";
 
 const renderer = await Renderer.create({ canvas });
 const asset = await loadRenderableAsset("/fixtures/engine-readiness/canonical-product-scene.glb");
@@ -78,7 +78,7 @@ This framing is the product direction after the engine readiness. It is not a cu
 
 ### 1. Three.js Alternative For One Scene
 
-Goal: one canonical scene renders comparably in G3D with less setup code.
+Goal: one canonical scene renders comparably in A3D with less setup code.
 
 Code deliverables:
 
@@ -90,7 +90,7 @@ Code deliverables:
 
 Acceptance:
 
-- [ ] Same scene uses PBR, textures, environment, camera framing, shadow, HDR target, and postprocess through G3D public APIs.
+- [ ] Same scene uses PBR, textures, environment, camera framing, shadow, HDR target, and postprocess through A3D public APIs.
 - [ ] Setup code is shorter than the equivalent internal Three.js comparison scaffold.
 - [ ] Screenshot is clean scene output, not a diagnostic panel.
 - [ ] `pnpm engine-readiness:root` passes.
@@ -157,7 +157,7 @@ Acceptance:
 
 ### 5. Three.js Replacement Candidate
 
-Goal: G3D can be called a candidate only after multiple repo-local workflows are comparable.
+Goal: A3D can be called a candidate only after multiple repo-local workflows are comparable.
 
 Code deliverables:
 
@@ -182,17 +182,17 @@ Goal: only make the replacement claim after same-scene visual/API/package compar
 Code deliverables:
 
 - [ ] `tools/engine-readiness-threejs-comparison/index.ts`
-- [ ] `benchmarks/engine-readiness/galileo/`
+- [ ] `benchmarks/engine-readiness/aura3d/`
 - [ ] `benchmarks/engine-readiness/threejs/`
 - [ ] `tests/reports/engine-readiness-threejs-comparison.json`
-- [ ] `tests/reports/engine-readiness-threejs-comparison/galileo-canonical.png`
+- [ ] `tests/reports/engine-readiness-threejs-comparison/aura3d-canonical.png`
 - [ ] `tests/reports/engine-readiness-threejs-comparison/threejs-canonical.png`
 - [ ] `tests/reports/engine-readiness-threejs-comparison/diff.png`
 
 Acceptance:
 
-- [ ] G3D and Three.js render the same repo-local canonical scene.
-- [ ] G3D setup code is objectively shorter or simpler for the supported workflow.
+- [ ] A3D and Three.js render the same repo-local canonical scene.
+- [ ] A3D setup code is objectively shorter or simpler for the supported workflow.
 - [ ] Visual output is comparable under local automated checks and human review.
 - [ ] Package smoke test proves the workflow works outside the monorepo.
 - [ ] Only then may docs use "Three.js replacement for supported product/material/asset-viewer workflows."
@@ -379,7 +379,7 @@ Loop stopper:
 
 The engine readiness must prevent the project from sliding back into impossible claims.
 
-G3D is not allowed to describe itself as any of these until future local evidence exists:
+A3D is not allowed to describe itself as any of these until future local evidence exists:
 
 - Unity replacement.
 - Unreal replacement.
@@ -432,7 +432,7 @@ The examples are downstream consumers. If a simple canonical scene cannot render
 
 The engine readiness is successful only when all of these are true:
 
-- A new canonical scene renders through the normal Galileo renderer path without debug overlays, screenshot hacks, proof-grid spam, or example-specific renderer branches.
+- A new canonical scene renders through the normal Aura3D renderer path without debug overlays, screenshot hacks, proof-grid spam, or example-specific renderer branches.
 - The canonical scene includes PBR materials, textured materials, metallic/roughness variation, normal mapping, emissive, alpha/blend, environment lighting, directional shadow sampling, HDR/render-target path, and postprocess.
 - The canonical scene is framed by reusable camera/framing code, not by hand-tuned per-example camera hacks.
 - Asset-to-render-resource conversion is ergonomic enough that the canonical scene setup is short and repeatable.
@@ -1393,7 +1393,7 @@ Pivot option if killed:
 
 - [ ] Keep editor/runtime/assets/scripting code that has independent value.
 - [ ] Replace the custom renderer with Three.js or Babylon.js as a backend.
-- [ ] Reposition G3D as a higher-level editor/runtime/tooling layer, not a renderer parity project.
+- [ ] Reposition A3D as a higher-level editor/runtime/tooling layer, not a renderer parity project.
 
 ## Prompt-To-Artifact Checklist
 
@@ -1456,7 +1456,7 @@ These evidence files must be generated by tests/tools, not hand-edited.
 
 After this plan is implemented, make one of two decisions:
 
-1. Continue G3D as a custom renderer project only if the canonical scene is visually acceptable and the root readiness gate passes.
+1. Continue A3D as a custom renderer project only if the canonical scene is visually acceptable and the root readiness gate passes.
 2. Kill or pivot the custom renderer if the canonical scene still looks bad or requires fake visual tricks.
 
 No parity language is allowed until this engine readiness succeeds.

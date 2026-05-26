@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Scene } from "@galileo3d/scene";
-import { TransformComponent, World } from "@galileo3d/ecs";
+import { Scene } from "@aura3d/scene";
+import { TransformComponent, World } from "@aura3d/ecs";
 
 describe("scene and ECS transform contracts", () => {
   it("keeps scene hierarchy ownership separate from ECS transform data", () => {

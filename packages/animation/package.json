@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/animation",
+  "name": "@aura3d/animation",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",

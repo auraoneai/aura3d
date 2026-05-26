@@ -2,14 +2,14 @@
 
 > Historical note: This V4 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
-  You are working in `/Users/gurbakshchahal/G3D`.
+  You are working in `/Users/gurbakshchahal/Aura3D`.
 
-  Create a detailed, evidence-driven port plan for bringing forward the useful parts of the previous Galileo3D codebase into the current V3/V4 codebase, with explicit verification requirements proving that each ported thing actually works.
+  Create a detailed, evidence-driven port plan for bringing forward the useful parts of the previous Aura3D codebase into the current V3/V4 codebase, with explicit verification requirements proving that each ported thing actually works.
 
   Important context:
 
   - The old codebase is not a separate local folder. It is the older `master` / `origin/master` branch in this same repo.
-  - The current working branch is `preserve/g3d-v2-execution-state`.
+  - The current working branch is `preserve/a3d-v2-execution-state`.
   - Do not switch branches destructively.
   - Inspect old files read-only using commands like:
     - `git show master:path/to/file`
@@ -307,7 +307,7 @@
   - `src/rendering/Renderer.ts.corrupt`
   - broad old `src/ai/**` unless a current V4 example needs a specific behavior and test
   - broad old `src/postfx/**` unless reimplemented in current `PostProcessPass` with pixel tests
-  - any old code that depends on old `g3d` APIs without adaptation
+  - any old code that depends on old `a3d` APIs without adaptation
   - any random/non-deterministic visual generation that would make browser screenshots flaky
 
   8. Execution Checklist

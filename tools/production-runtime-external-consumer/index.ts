@@ -18,7 +18,7 @@ const checks = [
   { id: "nonblank-screenshot", pass: existsSync(resolve(screenshot)) && statSync(resolve(screenshot)).size > 10_000 && Number(pixels.nonBlackPixels ?? 0) > 1000 && Number(pixels.uniqueColorBuckets ?? 0) > 4, detail: screenshot }
 ];
 const report = {
-  schema: "g3d-production-runtime-external-consumer/v1",
+  schema: "a3d-production-runtime-external-consumer/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   build,

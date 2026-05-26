@@ -49,12 +49,12 @@ def assign(obj, material):
     return obj
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -69,10 +69,10 @@ def bevel(obj, amount=0.025, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.02, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -81,7 +81,7 @@ def cube(name, loc, scale, material, bevel_width=0.02, rot=(0, 0, 0)):
 
 
 def cylinder(name, loc, radius, depth, material, vertices=32, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -90,7 +90,7 @@ def cylinder(name, loc, radius, depth, material, vertices=32, rot=(0, 0, 0)):
 
 
 def cone(name, loc, radius1, radius2, depth, material, vertices=28, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cone_add(vertices=vertices, radius1=radius1, radius2=radius2, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cone_add(vertices=vertices, radius1=radius1, radius2=radius2, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -99,7 +99,7 @@ def cone(name, loc, radius1, radius2, depth, material, vertices=28, rot=(0, 0, 0
 
 
 def sphere(name, loc, radius, material, segments=24):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=12, radius=radius, location=loc_g3d(loc))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=12, radius=radius, location=loc_a3d(loc))
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -108,10 +108,10 @@ def sphere(name, loc, radius, material, segments=24):
 
 
 def ico(name, loc, scale, material):
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=loc_g3d(loc))
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=2, radius=1, location=loc_a3d(loc))
     obj = bpy.context.object
     obj.name = name
-    obj.scale = scale_g3d(scale)
+    obj.scale = scale_a3d(scale)
     assign(obj, material)
     obj.modifiers.new("weighted normals", "WEIGHTED_NORMAL")
     return obj
@@ -148,7 +148,7 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0)):
         minor_segments=12,
         major_radius=major,
         minor_radius=minor,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -168,7 +168,7 @@ def grid_mesh(name, width, depth, cols, rows, material, y=-0.08, wave=0.02):
             px = (u - 0.5) * width
             pz = (v - 0.5) * depth
             py = y + math.sin(px * 1.2 + pz * 0.7) * wave + math.sin(px * 0.37 - pz * 1.9) * wave * 0.65
-            verts.append(loc_g3d((px, py, pz)))
+            verts.append(loc_a3d((px, py, pz)))
     for z in range(rows - 1):
         for x in range(cols - 1):
             i = z * cols + x
@@ -184,7 +184,7 @@ def grid_mesh(name, width, depth, cols, rows, material, y=-0.08, wave=0.02):
 
 
 def add_light(name, kind, loc, energy, color=(1, 1, 1), size=1.0):
-    bpy.ops.object.light_add(type=kind, location=loc_g3d(loc))
+    bpy.ops.object.light_add(type=kind, location=loc_a3d(loc))
     light = bpy.context.object
     light.name = name
     light.data.energy = energy
@@ -195,7 +195,7 @@ def add_light(name, kind, loc, energy, color=(1, 1, 1), size=1.0):
 
 
 def add_camera(name, loc, rot_degrees):
-    bpy.ops.object.camera_add(location=loc_g3d(loc), rotation=tuple(math.radians(v) for v in rot_degrees))
+    bpy.ops.object.camera_add(location=loc_a3d(loc), rotation=tuple(math.radians(v) for v in rot_degrees))
     camera = bpy.context.object
     camera.name = name
     camera.data.lens = 29
@@ -225,7 +225,7 @@ def build_water_marina():
     clear_scene()
     WATER_DIR.mkdir(parents=True, exist_ok=True)
 
-    water = mat("G3D procedural water receiver - marina basin", (0.025, 0.22, 0.34, 0.26), roughness=0.08, alpha=0.26, emission=(0.0, 0.045, 0.07, 1), strength=0.12, transmission=0.18)
+    water = mat("A3D procedural water receiver - marina basin", (0.025, 0.22, 0.34, 0.26), roughness=0.08, alpha=0.26, emission=(0.0, 0.045, 0.07, 1), strength=0.12, transmission=0.18)
     water_detail = mat("secondary crossing ripple normal reference", (0.12, 0.48, 0.62, 0.16), roughness=0.16, alpha=0.16, emission=(0.02, 0.12, 0.16, 1), strength=0.18, transmission=0.08)
     foam = mat("thin shoreline foam accents", (0.86, 0.96, 1.0, 0.62), roughness=0.36, alpha=0.62, emission=(0.25, 0.48, 0.55, 1), strength=0.22)
     glint = mat("painted fresnel water glint strips", (0.78, 0.96, 1.0, 0.5), roughness=0.12, alpha=0.5, emission=(0.26, 0.58, 0.72, 1), strength=0.34)
@@ -250,8 +250,8 @@ def build_water_marina():
     siding = mat("weathered boathouse siding", (0.46, 0.29, 0.17, 1), roughness=0.58)
     mountain = mat("layered blue distant shore", (0.08, 0.11, 0.15, 1), roughness=0.88)
 
-    grid_mesh("G3D water procedural base tessellated marina surface", 16.5, 11.0, 96, 58, water, y=-0.18, wave=0.026)
-    grid_mesh("G3D water secondary crossing ripple reference layer", 16.2, 10.6, 68, 42, water_detail, y=-0.145, wave=0.014)
+    grid_mesh("A3D water procedural base tessellated marina surface", 16.5, 11.0, 96, 58, water, y=-0.18, wave=0.026)
+    grid_mesh("A3D water secondary crossing ripple reference layer", 16.2, 10.6, 68, 42, water_detail, y=-0.145, wave=0.014)
     cube("near stepped gravel shore shelf", (0, -0.31, 4.9), (13.4, 0.16, 1.45), gravel, 0.055)
     cube("left rocky inlet shelf", (-6.55, -0.29, 0.2), (1.15, 0.18, 7.2), gravel, 0.05)
     cube("far tree lined shoreline shelf", (-0.4, -0.32, -5.35), (12.8, 0.16, 0.96), gravel, 0.05)
@@ -357,7 +357,7 @@ def build_ocean_observatory():
     clear_scene()
     OCEAN_DIR.mkdir(parents=True, exist_ok=True)
 
-    ocean = mat("G3D procedural ocean receiver - open water", (0.01, 0.12, 0.24, 0.34), roughness=0.1, alpha=0.34, emission=(0.0, 0.032, 0.06, 1), strength=0.16, transmission=0.12)
+    ocean = mat("A3D procedural ocean receiver - open water", (0.01, 0.12, 0.24, 0.34), roughness=0.1, alpha=0.34, emission=(0.0, 0.032, 0.06, 1), strength=0.16, transmission=0.12)
     ocean_detail = mat("secondary wind chop surface reference", (0.04, 0.24, 0.38, 0.18), roughness=0.18, alpha=0.18, emission=(0.0, 0.08, 0.14, 1), strength=0.16, transmission=0.08)
     whitewater = mat("wind torn ocean foam cards", (0.82, 0.94, 1.0, 0.58), roughness=0.34, alpha=0.58, emission=(0.18, 0.36, 0.48, 1), strength=0.28)
     ocean_glint = mat("low angle ocean fresnel glints", (0.72, 0.96, 1.0, 0.44), roughness=0.1, alpha=0.44, emission=(0.18, 0.5, 0.72, 1), strength=0.34)
@@ -375,8 +375,8 @@ def build_ocean_observatory():
     concrete = mat("wave wet concrete caisson", (0.23, 0.245, 0.24, 1), roughness=0.72)
     rock = mat("dark basalt breakwater", (0.11, 0.115, 0.11, 1), roughness=0.82)
 
-    grid_mesh("G3D ocean procedural base tessellated swell surface", 18.5, 12.4, 112, 68, ocean, y=-0.28, wave=0.052)
-    grid_mesh("G3D ocean secondary wind chop reference layer", 18.1, 12.0, 82, 52, ocean_detail, y=-0.24, wave=0.028)
+    grid_mesh("A3D ocean procedural base tessellated swell surface", 18.5, 12.4, 112, 68, ocean, y=-0.28, wave=0.052)
+    grid_mesh("A3D ocean secondary wind chop reference layer", 18.1, 12.0, 82, 52, ocean_detail, y=-0.24, wave=0.028)
     cube("foreground angular concrete caisson", (0, -0.19, 3.5), (8.6, 0.36, 2.2), concrete, 0.055)
     cube("main observatory deck slab", (0, 0.03, 1.05), (7.4, 0.16, 3.35), deck, 0.04)
     cube("rear raised operations deck", (0, 0.22, -2.35), (6.4, 0.18, 1.9), deck, 0.04)

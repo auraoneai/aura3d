@@ -8,12 +8,12 @@ Run the repository dev server used by the browser tests and open `examples/physi
 
 ## Systems Used
 
-- `@galileo3d/physics` for rigid bodies, colliders, sensors, discrete fixed-step simulation, broadphase stats, and debug line extraction.
-- `@galileo3d/rendering` for WebGL2 renderer-backed cubes, ground lines, and physics debug lines.
+- `@aura3d/physics` for rigid bodies, colliders, sensors, discrete fixed-step simulation, broadphase stats, and debug line extraction.
+- `@aura3d/rendering` for WebGL2 renderer-backed cubes, ground lines, and physics debug lines.
 
 ## Expected Output
 
-The canvas shows a ground line, falling boxes, a fast body, a sensor box, and optional physics debug overlays. The buttons spawn another box, step the simulation, and toggle debug rendering. Debug layer checkboxes control collider outlines, contact normal lines, AABB boxes, and sleeping-body markers. Runtime state is published to `window.__GALILEO3D_PHYSICS_SANDBOX__`.
+The canvas shows a ground line, falling boxes, a fast body, a sensor box, and optional physics debug overlays. The buttons spawn another box, step the simulation, and toggle debug rendering. Debug layer checkboxes control collider outlines, contact normal lines, AABB boxes, and sleeping-body markers. Runtime state is published to `window.__AURA3D_PHYSICS_SANDBOX__`.
 
 ## Known Limits
 

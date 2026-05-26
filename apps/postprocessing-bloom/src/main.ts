@@ -2,12 +2,12 @@ import {
   Geometry,
   RenderDeviceError,
   UnlitMaterial
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8PostprocessingBloom?: V8PostprocessingBloomRuntime;
+    __a3dV8PostprocessingBloom?: V8PostprocessingBloomRuntime;
   }
 }
 
@@ -21,7 +21,7 @@ interface V8PostprocessingBloomRuntime {
   readonly bloomEnabled: boolean;
   readonly outputNonDarkPixels: number;
   readonly outputBrightPixels: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly elapsedMs: number;
   readonly error?: string;
 }
@@ -45,13 +45,13 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8PostprocessingBloom = runtime;
+    window.__a3dV8PostprocessingBloom = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -114,7 +114,7 @@ async function run(): Promise<void> {
           outputNonDarkPixels: metrics.nonDark,
           outputBrightPixels: metrics.bright
         });
-        window.__g3dV8PostprocessingBloom = runtime;
+        window.__a3dV8PostprocessingBloom = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -161,7 +161,7 @@ function createRuntime(
     bloomEnabled: true,
     outputNonDarkPixels: patch.outputNonDarkPixels ?? 0,
     outputBrightPixels: patch.outputBrightPixels ?? 0,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };

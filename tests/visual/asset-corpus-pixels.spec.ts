@@ -12,7 +12,7 @@ type Matcher = "green" | "yellow" | "red" | "bright";
 
 declare global {
   interface Window {
-    __GALILEO3D_GLTF_CORPUS_GALLERY__?: {
+    __AURA3D_GLTF_CORPUS_GALLERY__?: {
       readonly status: "ready" | "error";
       readonly assetCount: number;
       readonly pass: number;
@@ -39,13 +39,13 @@ test.describe("glTF corpus gallery visual pixels", () => {
   test("renders classified corpus cards with status color evidence", async ({ page }) => {
     await page.goto(`${server.origin}/examples/gltf-corpus-gallery/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_GLTF_CORPUS_GALLERY__?.status === "ready" || window.__GALILEO3D_GLTF_CORPUS_GALLERY__?.status === "error",
+      () => window.__AURA3D_GLTF_CORPUS_GALLERY__?.status === "ready" || window.__AURA3D_GLTF_CORPUS_GALLERY__?.status === "error",
       undefined,
       { timeout: 15_000 },
     );
     await page.waitForTimeout(150);
 
-    const state = await page.evaluate(() => window.__GALILEO3D_GLTF_CORPUS_GALLERY__);
+    const state = await page.evaluate(() => window.__AURA3D_GLTF_CORPUS_GALLERY__);
     expect(state?.status, state?.error).toBe("ready");
     expect(state?.assetCount).toBe(17);
     expect(state?.pass).toBe(13);

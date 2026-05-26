@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/animation-walk-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/animation-walk-parity/g3d-animation-walk.png",
+  a3d: "tests/reports/threejs-parity/animation-walk-parity/a3d-animation-walk.png",
   threejs: "tests/reports/threejs-parity/animation-walk-parity/threejs-animation-walk.png",
   sideBySide: "tests/reports/threejs-parity/animation-walk-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 animation walk same-asset Three.js parity", () => {
     await server.close();
   });
 
-  test("samples Soldier Walk through G3D and actual Three.js AnimationMixer", async ({ page }) => {
+  test("samples Soldier Walk through A3D and actual Three.js AnimationMixer", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -63,27 +63,27 @@ test.describe("V9 animation walk same-asset Three.js parity", () => {
       writePng(path, dataUrl);
     }
 
-    expect(result.schema).toBe("g3d-threejs-parity-animation-walk-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-animation-walk-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAssetUrl).toBe(true);
     expect(result.assertions.sameWalkClip).toBe(true);
     expect(result.assertions.actualThreeGLTFLoader).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeAnimationMixer).toBe(true);
-    expect(result.assertions.g3dAppliedTracksAndSkinning).toBe(true);
+    expect(result.assertions.a3dAppliedTracksAndSkinning).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.animation.clipName).toBe("Walk");
+    expect(result.a3d.animation.clipName).toBe("Walk");
     expect(result.threejs.animation.clipName).toBe("Walk");
-    expect(result.g3d.animation.tracksApplied).toBeGreaterThan(0);
-    expect(result.g3d.animation.skinningPalettesUpdated).toBeGreaterThan(0);
+    expect(result.a3d.animation.tracksApplied).toBeGreaterThan(0);
+    expect(result.a3d.animation.skinningPalettesUpdated).toBeGreaterThan(0);
     expect(result.threejs.animation.skinnedMeshCount).toBeGreaterThan(0);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.25);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DWalkRuntimeSource();
+    assertNoThreeJsInA3DWalkRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const stats = readV6PngStats(resolve(path));
@@ -107,7 +107,7 @@ test.describe("V9 animation walk same-asset Three.js parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DWalkRuntimeSource(): void {
+function assertNoThreeJsInA3DWalkRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/animation-walk/src/main.ts",
@@ -137,8 +137,8 @@ function stripDataUrls(result: Extract<AnimationWalkParityResult, { readonly sta
 type AnimationWalkParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-animation-walk-parity/v1";
-      readonly g3d: {
+      readonly schema: "a3d-threejs-parity-animation-walk-parity/v1";
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly animation: { readonly clipName: string; readonly tracksApplied: number; readonly skinningPalettesUpdated: number };
         readonly pixels: { readonly uniqueColorBuckets: number };
@@ -155,10 +155,10 @@ type AnimationWalkParityResult =
         readonly actualThreeGLTFLoader: boolean;
         readonly actualThreeRenderer: boolean;
         readonly actualThreeAnimationMixer: boolean;
-        readonly g3dAppliedTracksAndSkinning: boolean;
+        readonly a3dAppliedTracksAndSkinning: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
-  | { readonly status: "error"; readonly schema: "g3d-threejs-parity-animation-walk-parity/v1"; readonly error: string };
+  | { readonly status: "error"; readonly schema: "a3d-threejs-parity-animation-walk-parity/v1"; readonly error: string };

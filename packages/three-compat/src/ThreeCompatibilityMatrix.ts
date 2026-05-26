@@ -4,7 +4,7 @@ export type ThreeCompatibilityStatus = "supported" | "partial" | "planned" | "bl
 
 export interface ThreeCompatibilityEntry extends ThreeApiInventoryEntry {
   readonly status: ThreeCompatibilityStatus;
-  readonly g3dEquivalent: string;
+  readonly a3dEquivalent: string;
   readonly notes: string;
 }
 
@@ -14,7 +14,7 @@ export interface ThreeCompatibilityThreshold {
 }
 
 export interface ThreeCompatibilityMatrix {
-  readonly schema: "g3d-three-compat-threejs-compatibility-matrix/v1";
+  readonly schema: "a3d-three-compat-threejs-compatibility-matrix/v1";
   readonly threeVersion: string;
   readonly totalEntries: number;
   readonly entries: readonly ThreeCompatibilityEntry[];
@@ -41,7 +41,7 @@ export const V5_COMPATIBILITY_THRESHOLDS: readonly ThreeCompatibilityThreshold[]
 export function buildInitialCompatibilityMatrix(inventory: ThreeApiInventory): ThreeCompatibilityMatrix {
   const entries = inventory.entries.map((entry) => ({ ...entry, ...initialCompatibilityFor(entry) }));
   return {
-    schema: "g3d-three-compat-threejs-compatibility-matrix/v1",
+    schema: "a3d-three-compat-threejs-compatibility-matrix/v1",
     threeVersion: inventory.threeVersion,
     totalEntries: entries.length,
     entries,
@@ -54,7 +54,7 @@ export function supportedOrPartial(status: ThreeCompatibilityStatus): boolean {
   return status === "supported" || status === "partial";
 }
 
-function initialCompatibilityFor(entry: ThreeApiInventoryEntry): Pick<ThreeCompatibilityEntry, "status" | "g3dEquivalent" | "notes"> {
+function initialCompatibilityFor(entry: ThreeApiInventoryEntry): Pick<ThreeCompatibilityEntry, "status" | "a3dEquivalent" | "notes"> {
   if (
     entry.category === "core" ||
     entry.category === "math" ||
@@ -71,20 +71,20 @@ function initialCompatibilityFor(entry: ThreeApiInventoryEntry): Pick<ThreeCompa
   ) {
     return {
       status: "partial",
-      g3dEquivalent: `@galileo3d/engine/three-compat:${entry.name}`,
+      a3dEquivalent: `@aura3d/engine/three-compat:${entry.name}`,
       notes: "V5 target entry. Partial until direct API tests and browser migrated examples prove behavior."
     };
   }
   if (entry.category === "renderers" || entry.category === "webxr") {
     return {
       status: "blocked",
-      g3dEquivalent: "none",
+      a3dEquivalent: "none",
       notes: "Renderer/WebXR parity is blocked until explicit V5 implementation and external evidence exist."
     };
   }
   return {
     status: "planned",
-    g3dEquivalent: `@galileo3d/engine/three-compat:${entry.name}`,
+    a3dEquivalent: `@aura3d/engine/three-compat:${entry.name}`,
     notes: "Tracked for V5 migration and parity work."
   };
 }

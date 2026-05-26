@@ -1,12 +1,12 @@
-# Production-Grade G3D Core Platform And Advanced Gallery PRD
+# Production-Grade A3D Core Platform And Advanced Gallery PRD
 
 Status: current-branch execution PRD - master is source of truth; fix all advanced examples to accepted evidence; no legacy cleanup loop.
 Last reviewed: 2026-05-25
-Primary objective: build reusable G3D core platform capability first, then prove it through a production-grade advanced examples gallery comparable to official advanced Three.js showcase demos, without route-local hacks, fake assets, false claims, or screenshot churn.
+Primary objective: build reusable A3D core platform capability first, then prove it through a production-grade advanced examples gallery comparable to official advanced Three.js showcase demos, without route-local hacks, fake assets, false claims, or screenshot churn.
 
 ## 0. Current Branch Operating Rules
 
-This file controls the current work in /Users/gurbakshchahal/G3D on branch master.
+This file controls the current work in /Users/gurbakshchahal/Aura3D on branch master.
 
 The current checked-out master branch is authoritative. Do not switch to deleted branches, old local stashes, old backup folders, or transcript history as source truth. master is the only active advanced-gallery execution tree for this work.
 
@@ -32,7 +32,7 @@ git log -1 --oneline
 pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
 ~~~
 
-If matching Playwright/Vite/Vitest/pnpm/v9 processes belong to /Users/gurbakshchahal/G3D, stop only those G3D-owned processes and continue. Do not kill unrelated processes from other repos.
+If matching Playwright/Vite/Vitest/pnpm/v9 processes belong to /Users/gurbakshchahal/Aura3D, stop only those A3D-owned processes and continue. Do not kill unrelated processes from other repos.
 
 ## 0B. Worktree Safety
 
@@ -455,12 +455,12 @@ Then run one focused capture for that owner change. If the PNG fails, do not rec
 Use a short goal that points to this file instead of pasting a huge prompt:
 
 ~~~text
-Work in /Users/gurbakshchahal/G3D on the current master checkout. Read execute.md fully and follow it exactly. execute.md is the only source of truth; do not use goal.md, old chats, deleted branches, stashes, or backup folders as implementation truth. Run the mandatory first commands, preserve execute.md, fix current-branch source-owned defects across all ten advanced gallery routes, create missing current-branch files/tests/scripts/artifacts as work items, and continue until execute.md acceptance is complete. Do not stop for missing repo files or reports. Do not loop on Product/Data screenshots. Use focused owner tests, one qualified visual check per owner change, direct PNG inspection, review/audit gates, and honest metadata. Stop only for external blockers or explicit user instruction.
+Work in /Users/gurbakshchahal/Aura3D on the current master checkout. Read execute.md fully and follow it exactly. execute.md is the only source of truth; do not use goal.md, old chats, deleted branches, stashes, or backup folders as implementation truth. Run the mandatory first commands, preserve execute.md, fix current-branch source-owned defects across all ten advanced gallery routes, create missing current-branch files/tests/scripts/artifacts as work items, and continue until execute.md acceptance is complete. Do not stop for missing repo files or reports. Do not loop on Product/Data screenshots. Use focused owner tests, one qualified visual check per owner change, direct PNG inspection, review/audit gates, and honest metadata. Stop only for external blockers or explicit user instruction.
 ~~~
 
 ## 2. Product Definition
 
-G3D is being developed into an AI-native cinematic scene engine for the web.
+A3D is being developed into an AI-native cinematic scene engine for the web.
 
 The product is not a set of patched examples. The gallery is the proof surface. The reusable platform underneath is the product:
 
@@ -477,28 +477,28 @@ The product is not a set of patched examples. The gallery is the proof surface. 
 The product distinction is:
 
 - Three.js gives developers powerful low-level parts.
-- G3D must provide reusable scene systems that are inspectable, reproducible, directable, and evidence-backed.
+- A3D must provide reusable scene systems that are inspectable, reproducible, directable, and evidence-backed.
 - Three.js is primarily code-first.
-- G3D must remain code-first while becoming AI-directable through scene metadata, asset provenance, material assignments, lighting plans, camera shots, animation timelines, postproduction settings, unsupported-feature disclosures, and deterministic evidence reports.
-- A G3D example is not accepted because it looks good once. It is accepted only when the same result can be generated, inspected, revised, captured, and explained through reusable renderer/runtime/gallery capability.
+- A3D must remain code-first while becoming AI-directable through scene metadata, asset provenance, material assignments, lighting plans, camera shots, animation timelines, postproduction settings, unsupported-feature disclosures, and deterministic evidence reports.
+- A A3D example is not accepted because it looks good once. It is accepted only when the same result can be generated, inspected, revised, captured, and explained through reusable renderer/runtime/gallery capability.
 
 The intended claim is:
 
-> G3D is an AI-native cinematic scene engine for the web, designed to let developers and AI agents create, inspect, revise, and ship premium interactive 3D scenes with evidence-backed renderer/runtime capability.
+> A3D is an AI-native cinematic scene engine for the web, designed to let developers and AI agents create, inspect, revise, and ship premium interactive 3D scenes with evidence-backed renderer/runtime capability.
 
 That sentence is product direction until current code, screenshots, runtime reports, metadata, and review gates prove it.
 
 ## 3. Non-Negotiable Rules
 
 - Do not fake capabilities.
-- Do not invent G3D APIs.
+- Do not invent A3D APIs.
 - Do not weaken review gates.
 - Do not call a route `accepted` from smoke tests, route tests, or image metrics alone.
 - Do not replace real texture-backed assets with random, generated, no-texture, or unrelated props to make screenshots look busier.
 - Do not hide broken nodes, crop cameras, darken CSS, disable systems, add bloom, or add vignette as a substitute for renderer/material/loader/environment fixes.
 - Do not keep route-specific hacks when the problem belongs in importer, renderer, material, animation, postprocess, physics, controls, environment, scene metadata, or gallery tooling.
 - Do not downgrade demos into simple cubes, spheres, planes, particles, or placeholder props.
-- Do not claim Three.js parity for a feature until reusable G3D source, focused tests, runtime evidence, screenshots, and known-limit metadata prove it.
+- Do not claim Three.js parity for a feature until reusable A3D source, focused tests, runtime evidence, screenshots, and known-limit metadata prove it.
 - Do not run repeated screenshots after speculative edits. Screenshots are verification artifacts after source-owned fixes, not an iteration strategy.
 - Do not remove unrelated files or revert unrelated dirty work.
 - Do not use git reset or checkout to recover visual state. There was no clean checkpoint for the current regression.
@@ -608,7 +608,7 @@ P2 acceptance checklist:
 
 ## 9. Phase P3 - Environment, Lighting, Grounding, Reflection
 
-Purpose: stop rebuilding visual environments inside each route. G3D needs reusable scene shells and lighting systems.
+Purpose: stop rebuilding visual environments inside each route. A3D needs reusable scene shells and lighting systems.
 
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
@@ -651,7 +651,7 @@ P4 acceptance checklist:
 - [x] Runtime JSON reports interaction state, animation state, reset state, and unsupported boundaries.
 - [x] `packages/controls/src/InteractionControls.ts`: adds a reusable controls composition surface for orbit/fly routing, picking, hover/pick events, hotspot-click events, and route-provided root/ray providers.
 - [x] `packages/controls/src/index.ts`: exports `InteractionControls` and its public event/options types.
-- [x] `packages/controls/package.json`: declares the workspace dependency on `@galileo3d/input` needed by the reusable controls composition layer.
+- [x] `packages/controls/package.json`: declares the workspace dependency on `@aura3d/input` needed by the reusable controls composition layer.
 - [x] `tests/unit/controls/interaction-controls.test.ts`: covers orbit/fly input routing, composed picking, hover/pick/hotspot events, route-provided rays/roots, and disposal behavior.
 - [x] `pnpm exec vitest run tests/unit/controls/interaction-controls.test.ts tests/unit/controls/picking-contract.test.ts --reporter=dot` passed after adding the controls composition surface.
 - [x] `apps/advanced-examples-gallery/src/galleryInteractionAdapter.ts` owns current gallery pointer normalization, product-hotspot pointer routing, and water/ocean ripple routing as an app-level adapter while the core controls platform remains open.
@@ -1183,7 +1183,7 @@ Exit gates:
 
 ## 15. Phase P7 - Core Platform Capability Backlog
 
-These are required for G3D to scale beyond ten examples.
+These are required for A3D to scale beyond ten examples.
 
 | ID | Platform Lane | Required Capability | Files / Surfaces | Acceptance Evidence |
 | --- | --- | --- | --- | --- |
@@ -1307,9 +1307,9 @@ Completed naming/taxonomy subtasks:
 
 ## 18. Phase P9 - Cinematic / Animation-Studio Tier
 
-The current advanced gallery target is Three.js-class web 3D parity. A higher tier is required before G3D can credibly claim movie-like, animation-studio-grade, AI-directed graphics.
+The current advanced gallery target is Three.js-class web 3D parity. A higher tier is required before A3D can credibly claim movie-like, animation-studio-grade, AI-directed graphics.
 
-Do not claim Pixar, feature-film, RenderMan, or offline-renderer parity unless the engine has explicit evidence for the relevant capability. The near-term acceptable claim is cinematic real-time/previsualization quality: AI-directed scenes with premium lighting, materials, camera language, animation, layout, and compositing that can be generated, inspected, revised, and rendered interactively in G3D.
+Do not claim Pixar, feature-film, RenderMan, or offline-renderer parity unless the engine has explicit evidence for the relevant capability. The near-term acceptable claim is cinematic real-time/previsualization quality: AI-directed scenes with premium lighting, materials, camera language, animation, layout, and compositing that can be generated, inspected, revised, and rendered interactively in A3D.
 
 Required cinematic platform lanes:
 
@@ -1318,7 +1318,7 @@ Required cinematic platform lanes:
 | Color pipeline and tone mapping | Linear workflow, sRGB correctness, HDR render targets, exposure, filmic tone mapping, display transforms, screenshot consistency. | Same scene produces stable, non-washed-out screenshots across browser capture, gallery capture, and runtime viewer. |
 | Cinematic lighting toolkit | Key/fill/rim lights, area lights, softboxes, gobos/cookies, IES profiles, practical lights, contact shadows, cascaded shadows, light-linking or documented limit. | Portrait/product/interior shots show controlled cinematic lighting. |
 | Look-development material system | Skin, cloth, hair/fur, eyes, glass, metal, plastic, ceramic, concrete, asphalt, water, smoke, hologram, emissive neon, car paint. | Material ball and production-shot galleries prove each material under studio, outdoor, and night lighting. |
-| Material graph and interchange | Node material authoring, reusable material graphs, MaterialX/USDShade import or unsupported status, texture transform, layered materials. | Material graphs survive round-trip into G3D without becoming flat/default materials. |
+| Material graph and interchange | Node material authoring, reusable material graphs, MaterialX/USDShade import or unsupported status, texture transform, layered materials. | Material graphs survive round-trip into A3D without becoming flat/default materials. |
 | Character system | Rig import, skeletal animation, blend shapes, facial controls, state machines, retargeting, root motion, events, clip blending. | Character route proves facial expression, body motion, clip blending, and timeline scrubbing. |
 | Hair/fur/cloth/soft-body | Groom cards/strands, fur fallback, cloth constraints, fabric/wind, collision awareness, simulation cache or unsupported status. | Character/creature shot shows secondary motion with limits labeled. |
 | Particle and effects | Sparks, embers, dust, smoke, rain, snow, magic trails, energy arcs, debris, volumetric-looking particles, collisions, GPU/CPU telemetry. | FX route shows layered effects that interact with lighting/camera. |
@@ -1498,13 +1498,13 @@ pnpm exec vitest run tests/unit/rendering/environment-platform.test.ts --reporte
 Product/Data focused route capture, only after source-owner tests pass:
 
 ```bash
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/advanced-examples-gallery.spec.ts -g "(product-configurator|data-galaxy) renders as a complex animated G3D demo" --reporter=line --timeout=360000
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/advanced-examples-gallery.spec.ts -g "(product-configurator|data-galaxy) renders as a complex animated A3D demo" --reporter=line --timeout=360000
 ```
 
 Full gallery sweep, only after focused gates pass:
 
 ```bash
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery
 pnpm v9:advanced-gallery:review
 ```
 
@@ -1526,21 +1526,21 @@ Renderer-focused gates after renderer edits:
 
 ```bash
 pnpm exec vitest run tests/unit/rendering/renderer.test.ts tests/unit/rendering/render-state-leaks.test.ts tests/unit/rendering/renderer-postprocess-plan.test.ts
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/rendering-root-quality-gate.spec.ts --reporter=line
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/rendering-root-quality-gate.spec.ts --reporter=line
 ```
 
 Asset-focused gates after loader/material edits:
 
 ```bash
 pnpm exec vitest run --config tests/assets/vitest.config.ts tests/assets/gltf-extension-support.test.ts tests/assets/gltf-compression-decoders.test.ts tests/assets/gltf-inspection.test.ts
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/asset-texture-browser.spec.ts tests/browser/asset-material-fidelity.spec.ts --reporter=line
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/asset-texture-browser.spec.ts tests/browser/asset-material-fidelity.spec.ts --reporter=line
 ```
 
 Final release-candidate gates, only when every route has accepted evidence:
 
 ```bash
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
 pnpm advanced-gallery:review
 pnpm advanced-gallery:audit
 pnpm v10
@@ -1600,7 +1600,7 @@ Do not run another screenshot if the result is still bad. Return to source inspe
 A route is accepted only when all gates pass:
 
 - It loads without page errors or unhandled console errors.
-- It uses real G3D APIs, reusable helper layers, or explicitly documented approximations.
+- It uses real A3D APIs, reusable helper layers, or explicitly documented approximations.
 - It has current full-page, hero, viewport-only, and contact-sheet screenshot evidence.
 - It has current runtime JSON with load timing, render size, draw/object counts, motion samples, and post-load performance stats.
 - It animates visibly after assets load.
@@ -1629,7 +1629,7 @@ Do not provide a completion answer until the objective is actually complete. Fin
 3. How to run each demo.
 4. What works.
 5. What is approximated.
-6. What G3D currently cannot support.
+6. What A3D currently cannot support.
 7. Comparison table against Three.js-style references.
 8. Performance observations.
 9. Screenshot/report paths.

@@ -27,7 +27,7 @@ test.describe("V3 V3 examples", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-v3-examples-browser/v1",
+      schema: "a3d-v3-examples-browser/v1",
       generatedAt: new Date().toISOString(),
       examples: examples.map((example) => example.id),
       captures,
@@ -69,7 +69,7 @@ test.describe("V3 V3 examples", () => {
 
 async function readExampleState(page: import("@playwright/test").Page): Promise<ExampleState | undefined> {
   return page.evaluate(() => {
-    const state = (window as any).__G3D_V3_EXAMPLE__?.captureState?.() ?? (window as any).__G3D_V3_EXAMPLE__;
+    const state = (window as any).__A3D_V3_EXAMPLE__?.captureState?.() ?? (window as any).__A3D_V3_EXAMPLE__;
     if (!state) return undefined;
     return {
       id: state.id,

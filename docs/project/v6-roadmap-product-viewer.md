@@ -1,9 +1,9 @@
-# G3D V6 Product Viewer
+# A3D V6 Product Viewer
 
 > Historical note: This V6 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-The V6 product viewer is the current flagship app for the G3D renderer product. It is not a screenshot harness. It is a browser app that imports the public V6 SDK, loads a real GLB, loads a real HDR environment, renders through the G3D WebGL2 renderer, exposes runtime diagnostics, and provides interaction controls.
+The V6 product viewer is the current flagship app for the A3D renderer product. It is not a screenshot harness. It is a browser app that imports the public V6 SDK, loads a real GLB, loads a real HDR environment, renders through the A3D WebGL2 renderer, exposes runtime diagnostics, and provides interaction controls.
 
 ## Public API Used
 
@@ -12,7 +12,7 @@ import {
   createProductViewer,
   loadGltfScene,
   loadHdrEnvironment
-} from "@galileo3d/engine/production-runtime";
+} from "@aura3d/engine/production-runtime";
 ```
 
 The app path is:
@@ -33,9 +33,9 @@ The flagship app must keep using this public import path. If it needs private En
 
 The default viewer loads:
 
-- Asset: `fixtures/v7/assets/flagship/chronograph-watch.glb`
-- Environment: `fixtures/v7/environments/hdri/studio_small_08_4k.hdr`
-- Backend: G3D WebGL2
+- Asset: `fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`
+- Environment: `fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`
+- Backend: A3D WebGL2
 
 The UI exposes:
 
@@ -60,7 +60,7 @@ The UI exposes:
 The runtime publishes:
 
 ```ts
-window.__g3dV6Runtime
+window.__a3dV6Runtime
 ```
 
 Browser verification writes:
@@ -91,12 +91,12 @@ These are still not a claim of full Three.js parity. They are a better flagship 
 
 ## V7 Comparison Artifact
 
-V7 requires a same-scene comparison against Three.js. Three.js is used only as a competitor baseline, not as the G3D implementation.
+V7 requires a same-scene comparison against Three.js. Three.js is used only as a competitor baseline, not as the A3D implementation.
 
 The comparison artifact writes:
 
 ```text
-tests/reports/v7/product-viewer/g3d-product-viewer.png
+tests/reports/v7/product-viewer/a3d-product-viewer.png
 tests/reports/v7/product-viewer/threejs-product-viewer.png
 tests/reports/v7/product-viewer/comparison.png
 tests/reports/v7/product-viewer/product-viewer-report.json
@@ -109,7 +109,7 @@ The comparison uses:
 - Same screenshot resolution
 - Same product-scene harness
 
-The report must not claim exact parity. It records the G3D output, the Three.js output, and diff metrics so visual gaps remain visible.
+The report must not claim exact parity. It records the A3D output, the Three.js output, and diff metrics so visual gaps remain visible.
 
 ## Product Viewer SDK Controls
 

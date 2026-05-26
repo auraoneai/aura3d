@@ -85,34 +85,34 @@ function createTransmissionFrame() {
 async function run(): Promise<void> {
   const root = document.getElementById("pmrem-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing PMREM root.");
-  const g3dCanvas = createCanvas("v7-pmrem-g3d");
+  const a3dCanvas = createCanvas("v7-pmrem-a3d");
   const threeCanvas = createCanvas("v7-pmrem-threejs");
   const diffCanvas = createCanvas("v7-pmrem-diff");
   const atlasCanvas = createCanvas("v7-pmrem-cubemap-atlas", 1024, 512);
-  const g3dSkyboxCanvas = createCanvas("v7-pmrem-skybox-g3d");
+  const a3dSkyboxCanvas = createCanvas("v7-pmrem-skybox-a3d");
   const threeSkyboxCanvas = createCanvas("v7-pmrem-skybox-threejs");
   const skyboxDiffCanvas = createCanvas("v7-pmrem-skybox-diff");
-  const g3dTransmissionCanvas = createCanvas("v7-pmrem-transmission-g3d");
+  const a3dTransmissionCanvas = createCanvas("v7-pmrem-transmission-a3d");
   const threeTransmissionCanvas = createCanvas("v7-pmrem-transmission-threejs");
   const transmissionDiffCanvas = createCanvas("v7-pmrem-transmission-diff");
-  const g3dTexturedParallaxCanvas = createCanvas("v7-pmrem-textured-parallax-g3d");
-  const g3dTexturedFlatCanvas = createCanvas("v7-pmrem-textured-flat-g3d");
+  const a3dTexturedParallaxCanvas = createCanvas("v7-pmrem-textured-parallax-a3d");
+  const a3dTexturedFlatCanvas = createCanvas("v7-pmrem-textured-flat-a3d");
   const texturedParallaxDiffCanvas = createCanvas("v7-pmrem-textured-parallax-diff");
   const threeTexturedTransmissionCanvas = createCanvas("v7-pmrem-textured-transmission-threejs");
   const texturedTransmissionDiffCanvas = createCanvas("v7-pmrem-textured-transmission-diff");
   root.append(
-    g3dCanvas,
+    a3dCanvas,
     threeCanvas,
     diffCanvas,
     atlasCanvas,
-    g3dSkyboxCanvas,
+    a3dSkyboxCanvas,
     threeSkyboxCanvas,
     skyboxDiffCanvas,
-    g3dTransmissionCanvas,
+    a3dTransmissionCanvas,
     threeTransmissionCanvas,
     transmissionDiffCanvas,
-    g3dTexturedParallaxCanvas,
-    g3dTexturedFlatCanvas,
+    a3dTexturedParallaxCanvas,
+    a3dTexturedFlatCanvas,
     texturedParallaxDiffCanvas,
     threeTexturedTransmissionCanvas,
     texturedTransmissionDiffCanvas
@@ -138,29 +138,29 @@ async function run(): Promise<void> {
     toneMapping: { operator: "filmic", exposure: 1.05, whitePoint: 11.2 },
     cubemapFaceSize: 128
   });
-  const g3d = await renderG3D(g3dCanvas, hdrPipeline);
+  const a3d = await renderA3D(a3dCanvas, hdrPipeline);
   const threejs = await renderThree(threeCanvas, `${location.origin}${HDR_URI}`);
-  const diff = renderDiff(g3d.pixels, threejs.pixels, diffCanvas);
+  const diff = renderDiff(a3d.pixels, threejs.pixels, diffCanvas);
   const cubemapAtlas = renderCubemapAtlas(hdrPipeline, atlasCanvas);
-  const g3dSkybox = await renderG3DSkybox(g3dSkyboxCanvas, skyboxHdrPipeline);
+  const a3dSkybox = await renderA3DSkybox(a3dSkyboxCanvas, skyboxHdrPipeline);
   const threejsSkybox = await renderThreeSkybox(threeSkyboxCanvas, `${location.origin}${SKYBOX_HDR_URI}`);
-  const skyboxDiff = renderDiff(g3dSkybox.pixels, threejsSkybox.pixels, skyboxDiffCanvas);
-  const g3dTransmission = await renderG3DTransmission(g3dTransmissionCanvas, hdrPipeline);
+  const skyboxDiff = renderDiff(a3dSkybox.pixels, threejsSkybox.pixels, skyboxDiffCanvas);
+  const a3dTransmission = await renderA3DTransmission(a3dTransmissionCanvas, hdrPipeline);
   const threejsTransmission = await renderThreeTransmission(threeTransmissionCanvas, `${location.origin}${HDR_URI}`);
-  const transmissionDiff = renderDiff(g3dTransmission.pixels, threejsTransmission.pixels, transmissionDiffCanvas);
-  const g3dTexturedParallax = await renderG3DTexturedParallaxTransmission(g3dTexturedParallaxCanvas, hdrPipeline, true);
-  const g3dTexturedFlat = await renderG3DTexturedParallaxTransmission(g3dTexturedFlatCanvas, hdrPipeline, false);
-  const texturedParallaxDiff = renderDiff(g3dTexturedParallax.pixels, g3dTexturedFlat.pixels, texturedParallaxDiffCanvas);
+  const transmissionDiff = renderDiff(a3dTransmission.pixels, threejsTransmission.pixels, transmissionDiffCanvas);
+  const a3dTexturedParallax = await renderA3DTexturedParallaxTransmission(a3dTexturedParallaxCanvas, hdrPipeline, true);
+  const a3dTexturedFlat = await renderA3DTexturedParallaxTransmission(a3dTexturedFlatCanvas, hdrPipeline, false);
+  const texturedParallaxDiff = renderDiff(a3dTexturedParallax.pixels, a3dTexturedFlat.pixels, texturedParallaxDiffCanvas);
   const threejsTexturedTransmission = await renderThreeTexturedTransmission(threeTexturedTransmissionCanvas, `${location.origin}${HDR_URI}`);
-  const texturedTransmissionDiff = renderDiff(g3dTexturedFlat.pixels, threejsTexturedTransmission.pixels, texturedTransmissionDiffCanvas);
+  const texturedTransmissionDiff = renderDiff(a3dTexturedFlat.pixels, threejsTexturedTransmission.pixels, texturedTransmissionDiffCanvas);
 
   window.__V7_PMREM_PARITY__ = {
     status: "ready",
-    schema: "g3d-v7-pmrem-parity/v1",
+    schema: "a3d-v7-pmrem-parity/v1",
     purpose: "same-scene PMREM/reflection delta gate",
     parity: {
       claim: "bounded-threejs-cubemap-pmrem-parity",
-      reason: "This artifact gates G3D GGX cubemap PMREM against a Three.js PMREMGenerator baseline for metallic roughness reflections, visible HDR skybox response, cubemap mip/face resource proof, bounded cubemap transmission/refraction, and bounded same-scene deltas. It does not claim parallax-corrected, screen-space, caustic, or multi-bounce refraction parity."
+      reason: "This artifact gates A3D GGX cubemap PMREM against a Three.js PMREMGenerator baseline for metallic roughness reflections, visible HDR skybox response, cubemap mip/face resource proof, bounded cubemap transmission/refraction, and bounded same-scene deltas. It does not claim parallax-corrected, screen-space, caustic, or multi-bounce refraction parity."
     },
     scene: {
       type: "metallic-roughness-sphere-row",
@@ -171,9 +171,9 @@ async function run(): Promise<void> {
       setupAlignment: "shared-camera-near-black-background-same-hdri-aces-target",
       swatches: ROUGHNESS_SWATCHES
     },
-    g3d: {
-      diagnostics: g3d.diagnostics,
-      pixelStats: analyzePixels(g3d.pixels),
+    a3d: {
+      diagnostics: a3d.diagnostics,
+      pixelStats: analyzePixels(a3d.pixels),
       cubemapPMREMModel: hdrPipeline.diagnostics.cubemapPMREMModel,
       cubemapPMREMShaderSampling: hdrPipeline.diagnostics.cubemapPMREMShaderSampling,
       cubemapFaceSize: hdrPipeline.diagnostics.cubemapFaceSize,
@@ -192,10 +192,10 @@ async function run(): Promise<void> {
         claim: "bounded-hdr-skybox-parity",
         reason: "This is a visible HDR background/skybox parity artifact for the same HDR texture, exposure, and tone-mapping intent. It does not claim parallax-corrected, screen-space, caustic, or multi-bounce refraction parity."
       },
-      g3d: {
-        diagnostics: g3dSkybox.diagnostics,
-        pixelStats: analyzePixels(g3dSkybox.pixels),
-        rendererPath: "G3D WebGL2 HDR skybox material using raw linear HDR texture, aligned ACES-style tone mapping, exposure, and rotation"
+      a3d: {
+        diagnostics: a3dSkybox.diagnostics,
+        pixelStats: analyzePixels(a3dSkybox.pixels),
+        rendererPath: "A3D WebGL2 HDR skybox material using raw linear HDR texture, aligned ACES-style tone mapping, exposure, and rotation"
       },
       threejs: {
         diagnostics: threejsSkybox.diagnostics,
@@ -207,13 +207,13 @@ async function run(): Promise<void> {
     transmission: {
       parity: {
         claim: "bounded-cubemap-transmission-refraction-parity",
-        reason: "This gates G3D transmission/volume materials against Three.js MeshPhysicalMaterial with same HDR, camera, tone mapping intent, colored backplates, cubemap PMREM lighting, and refracted cubemap environment sampling. It does not claim parallax-corrected, screen-space, caustic, or multi-bounce refraction parity."
+        reason: "This gates A3D transmission/volume materials against Three.js MeshPhysicalMaterial with same HDR, camera, tone mapping intent, colored backplates, cubemap PMREM lighting, and refracted cubemap environment sampling. It does not claim parallax-corrected, screen-space, caustic, or multi-bounce refraction parity."
       },
       probes: TRANSMISSION_PROBES,
-      g3d: {
-        diagnostics: g3dTransmission.diagnostics,
-        pixelStats: analyzePixels(g3dTransmission.pixels),
-        rendererPath: "G3D WebGL2 PBRMaterial transmission/volume uniforms with cubemap PMREM environment lighting"
+      a3d: {
+        diagnostics: a3dTransmission.diagnostics,
+        pixelStats: analyzePixels(a3dTransmission.pixels),
+        rendererPath: "A3D WebGL2 PBRMaterial transmission/volume uniforms with cubemap PMREM environment lighting"
       },
       threejs: {
         diagnostics: threejsTransmission.diagnostics,
@@ -223,30 +223,30 @@ async function run(): Promise<void> {
       diff: transmissionDiff
     },
     texturedParallax: {
-      claim: "g3d-textured-pbr-parallax-transmission-browser-proof",
-      reason: "This is a G3D-only browser artifact proving the textured/imported-GLTF shader path binds parallax PMREM transmission controls and renders both enabled and disabled configurations. Visible parallax delta is not claimed by this section unless the pixel diff is nonzero. It is not a Three.js parity claim.",
+      claim: "a3d-textured-pbr-parallax-transmission-browser-proof",
+      reason: "This is a A3D-only browser artifact proving the textured/imported-GLTF shader path binds parallax PMREM transmission controls and renders both enabled and disabled configurations. Visible parallax delta is not claimed by this section unless the pixel diff is nonzero. It is not a Three.js parity claim.",
       enabled: {
-        diagnostics: g3dTexturedParallax.diagnostics,
-        pixelStats: analyzePixels(g3dTexturedParallax.pixels),
+        diagnostics: a3dTexturedParallax.diagnostics,
+        pixelStats: analyzePixels(a3dTexturedParallax.pixels),
         materialPath: "TexturedPBRMaterial",
-        uniforms: g3dTexturedParallax.uniforms
+        uniforms: a3dTexturedParallax.uniforms
       },
       disabled: {
-        diagnostics: g3dTexturedFlat.diagnostics,
-        pixelStats: analyzePixels(g3dTexturedFlat.pixels),
+        diagnostics: a3dTexturedFlat.diagnostics,
+        pixelStats: analyzePixels(a3dTexturedFlat.pixels),
         materialPath: "TexturedPBRMaterial",
-        uniforms: g3dTexturedFlat.uniforms
+        uniforms: a3dTexturedFlat.uniforms
       },
       diff: texturedParallaxDiff
     },
     texturedTransmissionParity: {
       claim: "bounded-textured-transmission-volume-threejs-delta",
-      reason: "This compares G3D TexturedPBRMaterial with parallax disabled against a Three.js MeshPhysicalMaterial textured transmission/volume reference using the same HDR, camera, base texture, colored backplates, and tone-mapping intent. Parallax-enabled G3D proof is tracked separately because Three.js does not expose the same box-projected parallax PMREM controls in this harness.",
-      g3d: {
-        diagnostics: g3dTexturedFlat.diagnostics,
-        pixelStats: analyzePixels(g3dTexturedFlat.pixels),
+      reason: "This compares A3D TexturedPBRMaterial with parallax disabled against a Three.js MeshPhysicalMaterial textured transmission/volume reference using the same HDR, camera, base texture, colored backplates, and tone-mapping intent. Parallax-enabled A3D proof is tracked separately because Three.js does not expose the same box-projected parallax PMREM controls in this harness.",
+      a3d: {
+        diagnostics: a3dTexturedFlat.diagnostics,
+        pixelStats: analyzePixels(a3dTexturedFlat.pixels),
         materialPath: "TexturedPBRMaterial",
-        uniforms: g3dTexturedFlat.uniforms
+        uniforms: a3dTexturedFlat.uniforms
       },
       threejs: {
         diagnostics: threejsTexturedTransmission.diagnostics,
@@ -256,42 +256,42 @@ async function run(): Promise<void> {
       diff: texturedTransmissionDiff
     },
     artifacts: {
-      g3d: "tests/reports/runtime-parity/pmrem-parity/g3d-pmrem-spheres.png",
+      a3d: "tests/reports/runtime-parity/pmrem-parity/a3d-pmrem-spheres.png",
       threejs: "tests/reports/runtime-parity/pmrem-parity/threejs-pmrem-spheres.png",
       diff: "tests/reports/runtime-parity/pmrem-parity/pmrem-diff.png",
-      cubemapAtlas: "tests/reports/runtime-parity/pmrem-parity/g3d-cubemap-pmrem-atlas.png",
-      g3dSkybox: "tests/reports/runtime-parity/pmrem-parity/g3d-hdr-skybox.png",
+      cubemapAtlas: "tests/reports/runtime-parity/pmrem-parity/a3d-cubemap-pmrem-atlas.png",
+      a3dSkybox: "tests/reports/runtime-parity/pmrem-parity/a3d-hdr-skybox.png",
       threejsSkybox: "tests/reports/runtime-parity/pmrem-parity/threejs-hdr-skybox.png",
       skyboxDiff: "tests/reports/runtime-parity/pmrem-parity/hdr-skybox-diff.png",
-      g3dTransmission: "tests/reports/runtime-parity/pmrem-parity/g3d-transmission-pmrem.png",
+      a3dTransmission: "tests/reports/runtime-parity/pmrem-parity/a3d-transmission-pmrem.png",
       threejsTransmission: "tests/reports/runtime-parity/pmrem-parity/threejs-transmission-pmrem.png",
       transmissionDiff: "tests/reports/runtime-parity/pmrem-parity/transmission-pmrem-diff.png",
-      g3dTexturedParallax: "tests/reports/runtime-parity/pmrem-parity/g3d-textured-parallax-transmission.png",
-      g3dTexturedFlat: "tests/reports/runtime-parity/pmrem-parity/g3d-textured-parallax-disabled.png",
+      a3dTexturedParallax: "tests/reports/runtime-parity/pmrem-parity/a3d-textured-parallax-transmission.png",
+      a3dTexturedFlat: "tests/reports/runtime-parity/pmrem-parity/a3d-textured-parallax-disabled.png",
       texturedParallaxDiff: "tests/reports/runtime-parity/pmrem-parity/textured-parallax-transmission-diff.png",
       threejsTexturedTransmission: "tests/reports/runtime-parity/pmrem-parity/threejs-textured-transmission.png",
       texturedTransmissionDiff: "tests/reports/runtime-parity/pmrem-parity/textured-transmission-threejs-diff.png"
     },
     dataUrls: {
-      g3d: pixelsToDataUrl(g3d.pixels, WIDTH, HEIGHT, true),
+      a3d: pixelsToDataUrl(a3d.pixels, WIDTH, HEIGHT, true),
       threejs: pixelsToDataUrl(threejs.pixels, WIDTH, HEIGHT, true),
       diff: diffCanvas.toDataURL("image/png"),
       cubemapAtlas: atlasCanvas.toDataURL("image/png"),
-      g3dSkybox: pixelsToDataUrl(g3dSkybox.pixels, WIDTH, HEIGHT, true),
+      a3dSkybox: pixelsToDataUrl(a3dSkybox.pixels, WIDTH, HEIGHT, true),
       threejsSkybox: pixelsToDataUrl(threejsSkybox.pixels, WIDTH, HEIGHT, true),
       skyboxDiff: skyboxDiffCanvas.toDataURL("image/png"),
-      g3dTransmission: pixelsToDataUrl(g3dTransmission.pixels, WIDTH, HEIGHT, true),
+      a3dTransmission: pixelsToDataUrl(a3dTransmission.pixels, WIDTH, HEIGHT, true),
       threejsTransmission: pixelsToDataUrl(threejsTransmission.pixels, WIDTH, HEIGHT, true),
       transmissionDiff: transmissionDiffCanvas.toDataURL("image/png"),
-      g3dTexturedParallax: pixelsToDataUrl(g3dTexturedParallax.pixels, WIDTH, HEIGHT, true),
-      g3dTexturedFlat: pixelsToDataUrl(g3dTexturedFlat.pixels, WIDTH, HEIGHT, true),
+      a3dTexturedParallax: pixelsToDataUrl(a3dTexturedParallax.pixels, WIDTH, HEIGHT, true),
+      a3dTexturedFlat: pixelsToDataUrl(a3dTexturedFlat.pixels, WIDTH, HEIGHT, true),
       texturedParallaxDiff: texturedParallaxDiffCanvas.toDataURL("image/png"),
       threejsTexturedTransmission: pixelsToDataUrl(threejsTexturedTransmission.pixels, WIDTH, HEIGHT, true),
       texturedTransmissionDiff: texturedTransmissionDiffCanvas.toDataURL("image/png")
     },
     openGaps: [
       "Delta thresholds and visual inspection still need to be tightened before claiming broad PMREM parity.",
-      "Transmission/refraction PMREM behavior is now covered by a bounded cubemap-refraction probe, and textured PBR parallax controls now have G3D-only browser proof, but Three.js parallax-corrected, screen-space, caustic, and broad multi-bounce refraction parity are still not claimed.",
+      "Transmission/refraction PMREM behavior is now covered by a bounded cubemap-refraction probe, and textured PBR parallax controls now have A3D-only browser proof, but Three.js parallax-corrected, screen-space, caustic, and broad multi-bounce refraction parity are still not claimed.",
       "This PMREM artifact does not make broad WebGPU renderer parity or the full Three.js ecosystem replacement claim."
     ]
   };
@@ -321,7 +321,7 @@ function renderCubemapAtlas(
   for (let row = 0; row < displayedMipLevels.length; row += 1) {
     const mip = displayedMipLevels[row]!;
     const level = hdrPipeline.cubemapPMREM.levels.find((candidate) => candidate.mip === mip);
-    if (!level) throw new Error(`Missing G3D cubemap PMREM mip ${mip}.`);
+    if (!level) throw new Error(`Missing A3D cubemap PMREM mip ${mip}.`);
     luminanceVarianceByDisplayedMip.push(Number(cubemapMipVariance(level.faces).toFixed(6)));
     edgeMeanDeltaByDisplayedMip.push(Number(cubemapMipEdgeDelta(level.faces).toFixed(6)));
     for (let column = 0; column < level.faces.length; column += 1) {
@@ -360,17 +360,17 @@ function renderCubemapAtlas(
   };
 }
 
-async function renderG3D(
+async function renderA3D(
   canvas: HTMLCanvasElement,
   hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
 ): Promise<{ readonly diagnostics: RenderDeviceDiagnostics; readonly pixels: Uint8Array }> {
   const lighting = createV6EnvironmentLightingResources(hdrPipeline);
   const sphere = Geometry.uvSphere(0.54, 96, 48);
   const renderItems: RenderItem[] = ROUGHNESS_SWATCHES.map((swatch) => ({
-    label: `g3d-pmrem-${swatch.id}`,
+    label: `a3d-pmrem-${swatch.id}`,
     geometry: sphere,
     material: new PBRMaterial({
-      name: `g3d-pmrem-${swatch.id}-material`,
+      name: `a3d-pmrem-${swatch.id}-material`,
       baseColor: swatch.color,
       metallic: 1,
       roughness: swatch.roughness,
@@ -411,7 +411,7 @@ async function renderG3D(
   return { diagnostics, pixels };
 }
 
-async function renderG3DSkybox(
+async function renderA3DSkybox(
   canvas: HTMLCanvasElement,
   hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
 ): Promise<{ readonly diagnostics: RenderDeviceDiagnostics; readonly pixels: Uint8Array }> {
@@ -454,7 +454,7 @@ async function renderG3DSkybox(
   return { diagnostics, pixels };
 }
 
-async function renderG3DTransmission(
+async function renderA3DTransmission(
   canvas: HTMLCanvasElement,
   hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
 ): Promise<{ readonly diagnostics: RenderDeviceDiagnostics; readonly pixels: Uint8Array }> {
@@ -462,10 +462,10 @@ async function renderG3DTransmission(
   const sphere = Geometry.uvSphere(0.44, 96, 48, { textured: true });
   const backdrop = Geometry.uvSphere(0.5, 64, 32);
   const backdropItems: RenderItem[] = TRANSMISSION_PROBES.map((probe) => ({
-    label: `g3d-transmission-${probe.id}-backdrop`,
+    label: `a3d-transmission-${probe.id}-backdrop`,
     geometry: backdrop,
     material: new PBRMaterial({
-      name: `g3d-transmission-${probe.id}-backdrop-material`,
+      name: `a3d-transmission-${probe.id}-backdrop-material`,
       baseColor: probe.backdrop,
       metallic: 0,
       roughness: 0.48,
@@ -474,10 +474,10 @@ async function renderG3DTransmission(
     modelMatrix: composeMat4([probe.x, 0, -0.58], [0, 0, 0, 1], [1.08, 1.08, 0.08])
   }));
   const glassItems: RenderItem[] = TRANSMISSION_PROBES.map((probe) => ({
-    label: `g3d-transmission-${probe.id}`,
+    label: `a3d-transmission-${probe.id}`,
     geometry: sphere,
     material: new PBRMaterial({
-      name: `g3d-transmission-${probe.id}-material`,
+      name: `a3d-transmission-${probe.id}-material`,
       baseColor: probe.color,
       metallic: 0,
       roughness: probe.roughness,
@@ -530,7 +530,7 @@ async function renderG3DTransmission(
   return { diagnostics, pixels };
 }
 
-async function renderG3DTexturedParallaxTransmission(
+async function renderA3DTexturedParallaxTransmission(
   canvas: HTMLCanvasElement,
   hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>,
   parallaxEnabled: boolean
@@ -550,7 +550,7 @@ async function renderG3DTexturedParallaxTransmission(
     width: 4,
     height: 4,
     colorSpace: "srgb",
-    label: parallaxEnabled ? "g3d-textured-parallax-base-color" : "g3d-textured-flat-base-color",
+    label: parallaxEnabled ? "a3d-textured-parallax-base-color" : "a3d-textured-flat-base-color",
     data: new Uint8Array([
       195, 235, 255, 180, 95, 155, 255, 180, 255, 218, 118, 180, 80, 245, 190, 180,
       80, 245, 190, 180, 195, 235, 255, 180, 95, 155, 255, 180, 255, 218, 118, 180,
@@ -566,10 +566,10 @@ async function renderG3DTexturedParallaxTransmission(
   const boxMin = [-2.05, -1.15, -1.45] as const;
   const boxMax = [2.05, 1.15, 0.85] as const;
   const backdropItems: RenderItem[] = TRANSMISSION_PROBES.map((probe, index) => ({
-    label: `${parallaxEnabled ? "g3d-textured-parallax" : "g3d-textured-flat"}-${probe.id}-backdrop`,
+    label: `${parallaxEnabled ? "a3d-textured-parallax" : "a3d-textured-flat"}-${probe.id}-backdrop`,
     geometry: backdrop,
     material: new PBRMaterial({
-      name: `${parallaxEnabled ? "g3d-textured-parallax" : "g3d-textured-flat"}-${probe.id}-backdrop-material`,
+      name: `${parallaxEnabled ? "a3d-textured-parallax" : "a3d-textured-flat"}-${probe.id}-backdrop-material`,
       baseColor: index === 0 ? [0.12, 0.32, 0.95, 1] : index === 1 ? [1, 0.26, 0.12, 1] : [0.04, 0.82, 0.38, 1],
       metallic: 0,
       roughness: 0.32,
@@ -578,10 +578,10 @@ async function renderG3DTexturedParallaxTransmission(
     modelMatrix: composeMat4([probe.x, 0, -0.72], [0, 0, 0, 1], [1.18, 1.18, 0.08])
   }));
   const glassItems: RenderItem[] = TRANSMISSION_PROBES.map((probe, index) => ({
-    label: `${parallaxEnabled ? "g3d-textured-parallax" : "g3d-textured-flat"}-${probe.id}`,
+    label: `${parallaxEnabled ? "a3d-textured-parallax" : "a3d-textured-flat"}-${probe.id}`,
     geometry: sphere,
     material: new TexturedPBRMaterial({
-      name: `${parallaxEnabled ? "g3d-textured-parallax" : "g3d-textured-flat"}-${probe.id}-material`,
+      name: `${parallaxEnabled ? "a3d-textured-parallax" : "a3d-textured-flat"}-${probe.id}-material`,
       baseColor: [probe.color[0], probe.color[1], probe.color[2], 0.58],
       baseColorTexture,
       metallic: 0,
@@ -981,7 +981,7 @@ function analyzePixels(pixels: Uint8Array): PixelStats {
 
 function readCanvasBackbufferPixels(canvas: HTMLCanvasElement): Uint8Array {
   const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-  if (!gl) throw new Error("PMREM G3D canvas does not expose a WebGL context for pixel readback.");
+  if (!gl) throw new Error("PMREM A3D canvas does not expose a WebGL context for pixel readback.");
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   gl.finish();
   const pixels = new Uint8Array(WIDTH * HEIGHT * 4);

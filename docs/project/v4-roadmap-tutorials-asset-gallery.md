@@ -6,9 +6,9 @@
 Use public asset loading and diagnostics helpers for asset review workflows.
 
 ```ts
-import { createAssetDiagnostics, createDiagnosticsPanel, createG3DApp, loadAsset, workflows } from "@galileo3d/engine";
+import { createAssetDiagnostics, createDiagnosticsPanel, createA3DApp, loadAsset, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({ canvas, quality: "production" });
+const app = await createA3DApp({ canvas, quality: "production" });
 const asset = await loadAsset("/assets/model.glb", { type: "gltf" });
 const workflow = await workflows.assetViewer({ url: "/assets/model.glb", type: "gltf" });
 const render = app.renderer?.render(workflow.source, workflow.camera);

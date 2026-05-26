@@ -38,12 +38,12 @@ def assign(obj, material):
     return obj
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -58,10 +58,10 @@ def bevel(obj, amount=0.025, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.015, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -70,7 +70,7 @@ def cube(name, loc, scale, material, bevel_width=0.015, rot=(0, 0, 0)):
 
 
 def cylinder(name, loc, radius, depth, material, vertices=24, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -79,7 +79,7 @@ def cylinder(name, loc, radius, depth, material, vertices=24, rot=(0, 0, 0)):
 
 
 def cone(name, loc, radius1, radius2, depth, material, vertices=32, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cone_add(vertices=vertices, radius1=radius1, radius2=radius2, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cone_add(vertices=vertices, radius1=radius1, radius2=radius2, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -88,7 +88,7 @@ def cone(name, loc, radius1, radius2, depth, material, vertices=32, rot=(0, 0, 0
 
 
 def sphere(name, loc, radius, material, segments=24):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=12, radius=radius, location=loc_g3d(loc))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=12, radius=radius, location=loc_a3d(loc))
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -111,7 +111,7 @@ def curved_cable(name, points, material, bevel_depth=0.018):
     spline = curve.splines.new("POLY")
     spline.points.add(len(points) - 1)
     for point, value in zip(spline.points, points):
-        x, y, z = loc_g3d(value)
+        x, y, z = loc_a3d(value)
         point.co = (x, y, z, 1)
     obj = bpy.data.objects.new(name, curve)
     bpy.context.collection.objects.link(obj)
@@ -120,7 +120,7 @@ def curved_cable(name, points, material, bevel_depth=0.018):
 
 
 def text_label(name, text, loc, size, material, rot=(math.radians(70), 0, 0)):
-    bpy.ops.object.text_add(location=loc_g3d(loc), rotation=rot)
+    bpy.ops.object.text_add(location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     obj.data.body = text

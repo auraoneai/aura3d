@@ -15,12 +15,12 @@ test.describe("asset texture browser runtime", () => {
   test("loads an image through TextureLoader, uploads it to WebGL2, displays textured pixels, and renders glTF texture and instancing bindings", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/asset-texture-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_TEXTURE_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_ASSET_TEXTURE_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_ASSET_TEXTURE_BROWSER_TEST__?.status === "ready" || window.__AURA3D_ASSET_TEXTURE_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_TEXTURE_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_TEXTURE_BROWSER_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.textureSize).toEqual([2, 2]);
@@ -82,7 +82,7 @@ test.describe("asset texture browser runtime", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_ASSET_TEXTURE_BROWSER_TEST__?: {
+    __AURA3D_ASSET_TEXTURE_BROWSER_TEST__?: {
       readonly status: "ready" | "error";
       readonly textureSize?: readonly [number, number];
       readonly pixel?: readonly number[];

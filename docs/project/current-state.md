@@ -1,16 +1,16 @@
-# Current G3D State
+# Current A3D State
 
 This document summarizes the current repository state for the V10 superiority gate on May 17, 2026.
 
-## What G3D Is
+## What A3D Is
 
-G3D is a TypeScript browser 3D engine and workflow SDK with package-level runtime code for math, scene graphs, rendering, assets, animation, controls, input, physics, workflows, debugging, editor/runtime utilities, and Three.js migration helpers.
+A3D is a TypeScript browser 3D engine and workflow SDK with package-level runtime code for math, scene graphs, rendering, assets, animation, controls, input, physics, workflows, debugging, editor/runtime utilities, and Three.js migration helpers.
 
-The current release position is evidence-bound: G3D matches or exceeds Three.js in the measured categories covered by the V10 audit reports and by [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/G3D/docs/project/v10-superiority-status.md).
+The current release position is evidence-bound: A3D matches or exceeds Three.js in the measured categories covered by the V10 audit reports and by [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/Aura3D/docs/project/v10-superiority-status.md).
 
 ## Package Surface
 
-The root package is `@galileo3d/engine`. Public exports include:
+The root package is `@aura3d/engine`. Public exports include:
 
 - `.` and `./engine`
 - `./core`
@@ -31,7 +31,7 @@ The root package is `@galileo3d/engine`. Public exports include:
 - `./audio`
 - `./apps`
 - `./three-compat`
-- `./create-g3d`
+- `./create-aura3d`
 - `./scripting`
 - `./workflows`
 - `./workflows/production-runtime`
@@ -45,7 +45,7 @@ The root package is `@galileo3d/engine`. Public exports include:
 - `./production-runtime`
 - `./v9`
 
-Workspace packages include `animation`, `apps`, `assets`, `audio`, `controls`, `core`, `create-g3d`, `debug`, `ecs`, `editor`, `editor-runtime`, `engine`, `environments`, `input`, `materials`, `math`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `three-compat`, and `workflows`.
+Workspace packages include `animation`, `apps`, `assets`, `audio`, `controls`, `core`, `create-aura3d`, `debug`, `ecs`, `editor`, `editor-runtime`, `engine`, `environments`, `input`, `materials`, `math`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `three-compat`, and `workflows`.
 
 ## V9 And V10 Evidence
 
@@ -82,18 +82,18 @@ Real runtime code exists for:
 
 ## How Users Should Interpret The Current State
 
-Use G3D when evaluating:
+Use A3D when evaluating:
 
 - Product viewers and configurators.
 - Asset ingestion, diagnostics, and GLB/glTF inspection.
 - PBR/HDR material review and environment setup.
 - Animation, skinning, morph, IK, root-motion, and clone-sampling workflows.
 - Physics, picking, controls, decals, postprocess, WebGPU/WebGL2, and WebXR route coverage.
-- Migration from selected Three.js patterns into package-owned G3D workflows.
+- Migration from selected Three.js patterns into package-owned A3D workflows.
 
 The current claim should stay tied to generated evidence:
 
-> G3D matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
+> A3D matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
 
 ## GTM Framing
 

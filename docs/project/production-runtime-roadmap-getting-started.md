@@ -5,10 +5,10 @@
 
 Create a V6 app by importing the V6 workflow runtime from the packed package:
 
-Current workflow imports should use `@galileo3d/engine/workflows/production` for the production-runtime public surface.
+Current workflow imports should use `@aura3d/engine/workflows/production` for the production-runtime public surface.
 
 ```ts
-import { runV6Example } from "@galileo3d/engine/workflows/production-runtime";
+import { runV6Example } from "@aura3d/engine/workflows/production-runtime";
 
 void runV6Example({
   appId: "my-production-runtime-app",

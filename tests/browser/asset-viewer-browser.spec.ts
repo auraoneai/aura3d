@@ -16,12 +16,12 @@ test.describe("asset viewer browser runtime", () => {
   test("loads a glTF model through public asset APIs and publishes viewer metadata", async ({ page }) => {
     await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("inline");
@@ -68,12 +68,12 @@ test.describe("asset viewer browser runtime", () => {
     const url = `${server.origin}/fixtures/asset-viewer/external-triangle.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("custom");
@@ -113,12 +113,12 @@ test.describe("asset viewer browser runtime", () => {
     const url = `${server.origin}/fixtures/asset-viewer/multi-node-material.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 },
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.meshCount).toBe(2);
@@ -155,9 +155,9 @@ test.describe("asset viewer browser runtime", () => {
 
     const url = `${server.origin}/fixtures/asset-viewer/interleaved-stride.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.inspection?.meshes[0]?.name).toBe("interleaved-stride-triangle");
     expect(result?.vertexCount).toBe(3);
@@ -189,21 +189,21 @@ test.describe("asset viewer browser runtime", () => {
 
     const url = `${server.origin}/fixtures/asset-viewer/material-variant.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await expect(page.getByTestId("asset-viewer-material-variant")).toBeVisible();
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.materialVariants)).toEqual(["blue-finish"]);
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.activeRenderMaterials)).toContain("variant-default-red");
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.variantSwitching)).toEqual({
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.materialVariants)).toEqual(["blue-finish"]);
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.activeRenderMaterials)).toContain("variant-default-red");
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.variantSwitching)).toEqual({
       available: true,
       applied: false,
     });
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_VARIANTS_SWITCHING_BOUNDED");
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_VARIANTS_SWITCHING_BOUNDED");
 
     await page.getByTestId("asset-viewer-material-variant").selectOption("blue-finish");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.selectedMaterialVariant)).toBe("blue-finish");
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.activeRenderMaterials)).toContain("variant-blue-finish");
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.variantSwitching)).toEqual({
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.selectedMaterialVariant)).toBe("blue-finish");
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.activeRenderMaterials)).toContain("variant-blue-finish");
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.variantSwitching)).toEqual({
       available: true,
       applied: true,
     });
@@ -229,25 +229,25 @@ test.describe("asset viewer browser runtime", () => {
 
     const url = `${server.origin}/fixtures/asset-viewer/morph-target.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await expect(page.getByTestId("asset-viewer-morph-controls")).toBeVisible();
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.morphControls)).toMatchObject({
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.morphControls)).toMatchObject({
       available: true,
       meshName: "morph-fixture-triangle",
       targetCount: 1,
       activeWeights: [0],
       renderApplied: true,
     });
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_MORPH_PLAYBACK_BOUNDED");
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_MORPH_PLAYBACK_BOUNDED");
 
     await page.getByTestId("asset-viewer-morph-weight-0").evaluate((input) => {
       const slider = input as HTMLInputElement;
       slider.value = "1";
       slider.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.morphControls?.activeWeights?.[0])).toBe(1);
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.morphControls?.renderApplied)).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.morphControls?.activeWeights?.[0])).toBe(1);
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.morphControls?.renderApplied)).toBe(true);
     expect(await nonBlankWebGLPixels(page, "[data-testid='asset-viewer-canvas']")).toBeGreaterThan(1000);
   });
 
@@ -263,12 +263,12 @@ test.describe("asset viewer browser runtime", () => {
 
     await page.goto(`${server.origin}/examples/asset-viewer/?model=external&url=${encodeURIComponent(localExternalGlb)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("external");
@@ -296,11 +296,11 @@ test.describe("asset viewer browser runtime", () => {
       const url = `${server.origin}${asset.path}`;
       await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(
-        () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+        () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
         undefined,
         { timeout: 15_000 }
       );
-      const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+      const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
       expect(result?.status, result?.error).toBe("ready");
       expect(result?.sourceKind).toBe("custom");
       expect(result?.url).toBe(url);
@@ -340,12 +340,12 @@ test.describe("asset viewer browser runtime", () => {
     const url = `${server.origin}/fixtures/asset-viewer/textured-triangle.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.decodedTextures?.[0]).toMatchObject({
@@ -381,12 +381,12 @@ test.describe("asset viewer browser runtime", () => {
 
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 30_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("custom");
@@ -430,9 +430,9 @@ test.describe("asset viewer browser runtime", () => {
 
     const url = `${server.origin}/fixtures/asset-viewer/animated-textured-triangle.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
     expect(await nonBlankWebGLPixels(page, "[data-testid='asset-viewer-canvas']")).toBeGreaterThan(1000);
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_ROOT_MOTION_ACTIVE");
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.warnings?.map((warning) => String((warning as { code?: string }).code)))).toContain("ASSET_VIEWER_ROOT_MOTION_ACTIVE");
 
     const inspector = page.getByTestId("asset-viewer-inspector");
     await expect(inspector).toContainText("Hierarchy");
@@ -446,8 +446,8 @@ test.describe("asset viewer browser runtime", () => {
     await expect(page.getByTestId("asset-viewer-animation-clip")).toContainText("animated-fixture-clip");
     await page.getByTestId("asset-viewer-animation-play").dispatchEvent("click");
     await expect.poll(async () => Number(await page.getByTestId("asset-viewer-animation-time").inputValue())).toBeGreaterThan(0);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.renderApplied)).toBe(true);
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.animationPlayback)).toMatchObject({
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.animationPlayback?.renderApplied)).toBe(true);
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.animationPlayback)).toMatchObject({
       clipName: "animated-fixture-clip",
       appliedTargets: ["animated-fixture-node.translation"],
       sampledNodeTransforms: 1,
@@ -461,30 +461,30 @@ test.describe("asset viewer browser runtime", () => {
     await page.getByTestId("asset-viewer-animation-play").dispatchEvent("click");
 
     await page.getByTestId("asset-viewer-render-mode").selectOption("wireframe");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.renderMode)).toBe("wireframe");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.renderMode)).toBe("wireframe");
     expect(await nonBlankCanvasPixels(page, "[data-testid='asset-viewer-overlay']")).toBeGreaterThan(100);
 
     await page.getByTestId("asset-viewer-render-mode").selectOption("bounds");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.renderMode)).toBe("bounds");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.renderMode)).toBe("bounds");
     expect(await nonBlankCanvasPixels(page, "[data-testid='asset-viewer-overlay']")).toBeGreaterThan(100);
 
     await page.locator("button[data-view-control='pan']").click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.panX)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.panX)).toBeGreaterThan(0);
 
     await page.getByTestId("asset-viewer-canvas").focus();
     await page.keyboard.press("ArrowRight");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("keyboard");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("keyboard");
 
-    const beforeYaw = await page.evaluate(() => Number(window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.orbitYaw ?? 0));
+    const beforeYaw = await page.evaluate(() => Number(window.__AURA3D_ASSET_VIEWER__?.cameraControls?.orbitYaw ?? 0));
     await dispatchSyntheticPointerDrag(page, "[data-testid='asset-viewer-canvas']", "touch", false);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("touch");
-    await expect.poll(() => page.evaluate(() => Number(window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.orbitYaw ?? 0))).not.toBe(beforeYaw);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.lastInput)).toBe("touch");
+    await expect.poll(() => page.evaluate(() => Number(window.__AURA3D_ASSET_VIEWER__?.cameraControls?.orbitYaw ?? 0))).not.toBe(beforeYaw);
 
     await page.locator("button[data-view-control='focus']").click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.focused)).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.focused)).toBe(true);
     await page.locator("button[data-view-control='reset']").click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls?.panX)).toBe(0);
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.cameraControls)).toMatchObject({
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls?.panX)).toBe(0);
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.cameraControls)).toMatchObject({
       fitToBounds: true,
       resetView: true,
       pointerControls: true,
@@ -495,14 +495,14 @@ test.describe("asset viewer browser runtime", () => {
     });
 
     await page.getByTestId("asset-viewer-screenshot").click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.screenshot?.captured)).toBe(true);
-    expect(await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__?.screenshot?.byteLength ?? 0)).toBeGreaterThan(1000);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.screenshot?.captured)).toBe(true);
+    expect(await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__?.screenshot?.byteLength ?? 0)).toBeGreaterThan(1000);
   });
 
   test("loads dropped multi-file glTF with local buffer dependencies", async ({ page }) => {
     const fixture = createExternalTriangleFixture();
     await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await page.evaluate(
       ({ gltfText, bufferBytes }) => {
@@ -516,8 +516,8 @@ test.describe("asset viewer browser runtime", () => {
       { gltfText: JSON.stringify(fixture.gltf), bufferBytes: [...fixture.buffer] },
     );
 
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.sourceKind === "local", undefined, { timeout: 10_000 });
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.sourceKind === "local", undefined, { timeout: 10_000 });
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("local");
@@ -532,7 +532,7 @@ test.describe("asset viewer browser runtime", () => {
   test("loads dropped local GLB document", async ({ page }) => {
     const glb = createTriangleGlbFixture();
     await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await page.evaluate((glbBytes) => {
       const transfer = new DataTransfer();
@@ -542,8 +542,8 @@ test.describe("asset viewer browser runtime", () => {
       dropzone.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
     }, [...glb]);
 
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.sourceKind === "local", undefined, { timeout: 10_000 });
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.sourceKind === "local", undefined, { timeout: 10_000 });
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.dependencyResolution).toEqual([
@@ -556,7 +556,7 @@ test.describe("asset viewer browser runtime", () => {
   test("loads dropped multi-file glTF with local image dependencies", async ({ page }) => {
     const fixture = createTexturedTriangleFixture();
     await page.goto(`${server.origin}/examples/asset-viewer/?model=inline`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.status === "ready", undefined, { timeout: 10_000 });
 
     await page.evaluate(
       ({ gltfText, bufferBytes, imageBytes }) => {
@@ -575,8 +575,8 @@ test.describe("asset viewer browser runtime", () => {
       },
     );
 
-    await page.waitForFunction(() => window.__GALILEO3D_ASSET_VIEWER__?.sourceKind === "local", undefined, { timeout: 10_000 });
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    await page.waitForFunction(() => window.__AURA3D_ASSET_VIEWER__?.sourceKind === "local", undefined, { timeout: 10_000 });
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.dependencyResolution).toEqual(expect.arrayContaining([
@@ -601,7 +601,7 @@ function createExternalTriangleFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D deterministic external viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D deterministic external viewer fixture" },
       buffers: [{ uri: "external-triangle.bin", byteLength: buffer.byteLength }],
       bufferViews: [
         { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
@@ -636,7 +636,7 @@ function createMultiNodeMaterialFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D multi-node material viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D multi-node material viewer fixture" },
       buffers: [{ uri: "multi-node-material.bin", byteLength: buffer.byteLength }],
       bufferViews: [
         { buffer: 0, byteOffset: offsets[0], byteLength: redPositions.byteLength },
@@ -695,7 +695,7 @@ function createInterleavedStrideFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D interleaved byteStride viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D interleaved byteStride viewer fixture" },
       buffers: [{ uri: "interleaved-stride.bin", byteLength: buffer.byteLength }],
       bufferViews: [
         { buffer: 0, byteOffset: 0, byteLength: vertexBytes.byteLength, byteStride: vertexStride },
@@ -736,7 +736,7 @@ function createKtx2BasisTextureFixture(ktx2Bytes: Uint8Array): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D asset viewer KTX2/Basis browser fixture" },
+      asset: { version: "2.0", generator: "Aura3D asset viewer KTX2/Basis browser fixture" },
       extensionsUsed: ["KHR_texture_basisu"],
       buffers: [{ uri: "ktx2-basis-texture.bin", byteLength: buffer.byteLength }],
       bufferViews: [
@@ -783,7 +783,7 @@ function createMaterialVariantFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D material variant viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D material variant viewer fixture" },
       extensionsUsed: ["KHR_materials_variants"],
       extensions: {
         KHR_materials_variants: {
@@ -839,7 +839,7 @@ function createMorphTargetFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D morph target viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D morph target viewer fixture" },
       buffers: [{ uri: "morph-target.bin", byteLength: buffer.byteLength }],
       bufferViews: [
         { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
@@ -886,7 +886,7 @@ function createTexturedTriangleFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D deterministic textured viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D deterministic textured viewer fixture" },
       buffers: [{ uri: "textured-triangle.bin", byteLength: buffer.byteLength }],
       bufferViews: [
         { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
@@ -934,7 +934,7 @@ function createAnimatedTexturedTriangleFixture(): {
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D deterministic animated viewer fixture" },
+      asset: { version: "2.0", generator: "Aura3D deterministic animated viewer fixture" },
       buffers: [{ uri: "animated-textured-triangle.bin", byteLength: buffer.byteLength }],
       bufferViews: [
         { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
@@ -981,7 +981,7 @@ function createTriangleGlbFixture(): Uint8Array {
   const indices = uint16Bytes([0, 1, 2]);
   const bin = concatBytes(positions, indices);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D dropped GLB fixture" },
+    asset: { version: "2.0", generator: "Aura3D dropped GLB fixture" },
     buffers: [{ byteLength: bin.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
@@ -1126,7 +1126,7 @@ async function dispatchSyntheticPointerDrag(
 
 declare global {
   interface Window {
-    __GALILEO3D_ASSET_VIEWER__?: {
+    __AURA3D_ASSET_VIEWER__?: {
       readonly status: "ready" | "error";
       readonly sourceKind?: "inline" | "external" | "custom" | "local";
       readonly url?: string;

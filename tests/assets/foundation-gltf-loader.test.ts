@@ -2,9 +2,9 @@ import { readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { GLTFLoader, LoadContext } from "@galileo3d/assets";
+import { GLTFLoader, LoadContext } from "@aura3d/assets";
 
-const root = join(process.cwd(), "fixtures/v3/assets");
+const root = join(process.cwd(), "fixtures/workflow-assets/assets");
 const originalFetch = globalThis.fetch;
 
 describe("V3 glTF loader fixtures", () => {
@@ -34,7 +34,7 @@ describe("V3 glTF loader fixtures", () => {
   it("ships required fixture directories with manifests", () => {
     for (const id of ["product-camera", "material-spheres", "animated-character", "variant-product", "compressed-product"]) {
       const manifest = JSON.parse(readFileSync(join(root, id, "manifest.json"), "utf8"));
-      expect(manifest.schema).toBe("g3d-v3-asset-fixture/v1");
+      expect(manifest.schema).toBe("a3d-v3-asset-fixture/v1");
       expect(manifest.coverage).toEqual(expect.arrayContaining(["gltf", "glb", "data-uri", "external-buffer", "external-image"]));
       expect(manifest.partCount).toBeGreaterThan(0);
       expect(manifest.materialCount).toBeGreaterThan(0);

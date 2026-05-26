@@ -23,7 +23,7 @@ const requiredReports = [
 ] as const;
 
 const requiredScreenshots = [
-  "tests/reports/current-routes/flagship/g3d-flagship-viewer.png",
+  "tests/reports/current-routes/flagship/a3d-flagship-viewer.png",
   "tests/reports/current-routes/flagship/threejs-flagship-viewer.png",
   "tests/reports/current-routes/flagship/side-by-side.png",
   "tests/reports/current-routes/animation/keyframes.png",
@@ -68,7 +68,7 @@ const failures = [
 ];
 
 const output = {
-  schema: "g3d-current-routes-completion-audit/v1",
+  schema: "a3d-current-routes-completion-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
   claimBoundary: "This audit means the V8 aggregate gate passes. It does not mean every strategic Three.js-replacement backlog item in docs/project/v8-roadmap-three-js-competitor-plan.md is complete.",

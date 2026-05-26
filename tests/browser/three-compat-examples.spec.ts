@@ -19,9 +19,9 @@ for (const example of examples) {
       ctx.fillStyle="#0b1420";ctx.fillRect(0,0,960,540);
       ctx.fillStyle="#80c7ff";for(let i=0;i<64;i++)ctx.fillRect(40+(i%16)*54,80+Math.floor(i/16)*70,34,34);
       ctx.fillStyle="#eff6ff";ctx.font="24px system-ui";ctx.fillText("${example.title}",40,44);
-      window.__g3dExample="${example.slug}";
+      window.__a3dExample="${example.slug}";
     </script></body></html>`);
-    await expect.poll(async () => page.evaluate(() => window.__g3dExample)).toBe(example.slug);
+    await expect.poll(async () => page.evaluate(() => window.__a3dExample)).toBe(example.slug);
   });
 }
 

@@ -9,4 +9,4 @@ This directory contains `CesiumMan.glb`, a pinned local copy of the externally a
 
 The upstream model metadata describes this asset as an animated and skinned character with the Cesium logo. It is used here only as animation importer and browser-renderer evidence.
 
-License: CC-BY-4.0 with Cesium trademark/logo limitations. The trademark limitation means this fixture must not be treated as Galileo3D product art or redistributed as a branded demo asset outside test evidence.
+License: CC-BY-4.0 with Cesium trademark/logo limitations. The trademark limitation means this fixture must not be treated as Aura3D product art or redistributed as a branded demo asset outside test evidence.

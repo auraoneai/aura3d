@@ -1,6 +1,6 @@
 # Asset Viewer
 
-The asset viewer is a renderer-backed browser slice for loading a real external glTF/GLB model through public Galileo3D asset and rendering APIs.
+The asset viewer is a renderer-backed browser slice for loading a real external glTF/GLB model through public Aura3D asset and rendering APIs.
 
 ## Run
 
@@ -19,9 +19,9 @@ pnpm exec playwright test tests/browser/asset-viewer-browser.spec.ts
 ## Expected Output
 
 - A WebGL2-backed asset viewer canvas.
-- Runtime state published on `window.__GALILEO3D_ASSET_VIEWER__`.
+- Runtime state published on `window.__AURA3D_ASSET_VIEWER__`.
 - Model metadata including mesh/material counts.
-- Render-resource diagnostics proving the asset reaches the Galileo rendering path.
+- Render-resource diagnostics proving the asset reaches the Aura3D rendering path.
 
 ## Current Boundary
 

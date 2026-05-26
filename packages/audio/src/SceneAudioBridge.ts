@@ -1,4 +1,4 @@
-import type { Scene, SceneNode } from "@galileo3d/scene";
+import type { Scene, SceneNode } from "@aura3d/scene";
 import type { AudioListener } from "./AudioListener";
 import type { SpatialAudio } from "./SpatialAudio";
 

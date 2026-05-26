@@ -1,6 +1,6 @@
 # WebGPU Fallback Behavior
 
-Galileo3D treats WebGPU as an explicit backend request. It does not silently replace a failed WebGPU request with WebGL2, the mock backend, or CPU-only rendering.
+Aura3D treats WebGPU as an explicit backend request. It does not silently replace a failed WebGPU request with WebGL2, the mock backend, or CPU-only rendering.
 
 ## Unavailable Runtime
 
@@ -9,7 +9,7 @@ When browser code calls `createRenderDevice({ backend: "webgpu" })` and the page
 Application code should catch that error and choose its own fallback policy. A typical browser app can then request a WebGL2 renderer with a canvas:
 
 ```ts
-import { createRenderDevice } from "@galileo3d/rendering";
+import { createRenderDevice } from "@aura3d/rendering";
 
 async function createPreferredDevice(canvas: HTMLCanvasElement) {
   try {

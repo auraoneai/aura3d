@@ -1,5 +1,5 @@
 {
-  "schema": "g3d-three-compat-example-catalog/v1",
+  "schema": "a3d-three-compat-example-catalog/v1",
   "requirements": {
     "minimumExamples": 50,
     "minimumBrowserTested": 30,
@@ -12,7 +12,7 @@
       "title": "Basic Scene",
       "threeReference": "webgl_geometry_cube",
       "browserTested": true,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/basic-scene.svg"
     },
     {
@@ -21,7 +21,7 @@
       "title": "Materials Physical",
       "threeReference": "webgl_materials_physical_clearcoat",
       "browserTested": true,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/materials-physical.svg"
     },
     {
@@ -30,7 +30,7 @@
       "title": "Gltf Loader",
       "threeReference": "webgl_loader_gltf",
       "browserTested": true,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/gltf-loader.svg"
     },
     {
@@ -39,7 +39,7 @@
       "title": "Obj Loader",
       "threeReference": "webgl_loader_obj_mtl",
       "browserTested": true,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/obj-loader.svg"
     },
     {
@@ -48,7 +48,7 @@
       "title": "Hdr Environment",
       "threeReference": "webgl_materials_envmaps_hdr",
       "browserTested": true,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/hdr-environment.svg"
     },
     {
@@ -57,7 +57,7 @@
       "title": "Postprocess Bloom",
       "threeReference": "webgl_postprocessing_unreal_bloom",
       "browserTested": true,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/postprocess-bloom.svg"
     },
     {
@@ -66,7 +66,7 @@
       "title": "Postprocess Dof",
       "threeReference": "webgl_postprocessing_dof",
       "browserTested": true,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/postprocess-dof.svg"
     },
     {
@@ -75,7 +75,7 @@
       "title": "Controls Orbit",
       "threeReference": "misc_controls_orbit",
       "browserTested": true,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/controls-orbit.svg"
     },
     {
@@ -84,7 +84,7 @@
       "title": "Controls Transform",
       "threeReference": "misc_controls_transform",
       "browserTested": true,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/controls-transform.svg"
     },
     {
@@ -93,7 +93,7 @@
       "title": "Animation Skinning",
       "threeReference": "webgl_animation_skinning_blending",
       "browserTested": true,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/animation-skinning.svg"
     },
     {
@@ -102,7 +102,7 @@
       "title": "Morph Targets",
       "threeReference": "webgl_morphtargets",
       "browserTested": true,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/morph-targets.svg"
     },
     {
@@ -111,7 +111,7 @@
       "title": "Particles",
       "threeReference": "webgl_points_sprites",
       "browserTested": true,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/particles.svg"
     },
     {
@@ -120,7 +120,7 @@
       "title": "Sprites",
       "threeReference": "webgl_sprites",
       "browserTested": true,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/sprites.svg"
     },
     {
@@ -129,7 +129,7 @@
       "title": "Lines",
       "threeReference": "webgl_lines_fat",
       "browserTested": true,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/lines.svg"
     },
     {
@@ -138,7 +138,7 @@
       "title": "Instancing",
       "threeReference": "webgl_instancing_performance",
       "browserTested": true,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/instancing.svg"
     },
     {
@@ -147,7 +147,7 @@
       "title": "Raycasting",
       "threeReference": "webgl_interactive_raycasting_points",
       "browserTested": true,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/raycasting.svg"
     },
     {
@@ -156,7 +156,7 @@
       "title": "Shader Material",
       "threeReference": "webgl_shader",
       "browserTested": true,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/shader-material.svg"
     },
     {
@@ -165,7 +165,7 @@
       "title": "Render Targets",
       "threeReference": "webgl_rtt",
       "browserTested": true,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/render-targets.svg"
     },
     {
@@ -174,7 +174,7 @@
       "title": "Large Scene",
       "threeReference": "webgl_instancing_performance",
       "browserTested": true,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/large-scene.svg"
     },
     {
@@ -183,7 +183,7 @@
       "title": "Product Configurator",
       "threeReference": "threejs-equivalent-product-configurator",
       "browserTested": true,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/product-configurator.svg"
     },
     {
@@ -192,7 +192,7 @@
       "title": "Architecture Interior",
       "threeReference": "threejs-equivalent-architecture-interior",
       "browserTested": true,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/architecture-interior.svg"
     },
     {
@@ -201,7 +201,7 @@
       "title": "Automotive Configurator",
       "threeReference": "threejs-equivalent-car-configurator",
       "browserTested": true,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/automotive-configurator.svg"
     },
     {
@@ -210,7 +210,7 @@
       "title": "Threejs Migrated Custom Scene",
       "threeReference": "threejs-custom-scene",
       "browserTested": true,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/threejs-migrated-custom-scene.svg"
     },
     {
@@ -219,7 +219,7 @@
       "title": "Pbr Clearcoat Car Paint",
       "threeReference": "threejs-reference-pbr-clearcoat-car-paint",
       "browserTested": true,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/pbr-clearcoat-car-paint.svg"
     },
     {
@@ -228,7 +228,7 @@
       "title": "Pbr Glass Transmission",
       "threeReference": "threejs-reference-pbr-glass-transmission",
       "browserTested": true,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/pbr-glass-transmission.svg"
     },
     {
@@ -237,7 +237,7 @@
       "title": "Pbr Anisotropy Disc",
       "threeReference": "threejs-reference-pbr-anisotropy-disc",
       "browserTested": true,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/pbr-anisotropy-disc.svg"
     },
     {
@@ -246,7 +246,7 @@
       "title": "Pbr Sheen Fabric",
       "threeReference": "threejs-reference-pbr-sheen-fabric",
       "browserTested": true,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/pbr-sheen-fabric.svg"
     },
     {
@@ -255,7 +255,7 @@
       "title": "Asset Damaged Helmet",
       "threeReference": "threejs-reference-asset-damaged-helmet",
       "browserTested": true,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/asset-damaged-helmet.svg"
     },
     {
@@ -264,7 +264,7 @@
       "title": "Asset Boom Box",
       "threeReference": "threejs-reference-asset-boom-box",
       "browserTested": true,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/asset-boom-box.svg"
     },
     {
@@ -273,7 +273,7 @@
       "title": "Asset Cesium Man",
       "threeReference": "threejs-reference-asset-cesium-man",
       "browserTested": true,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/asset-cesium-man.svg"
     },
     {
@@ -282,7 +282,7 @@
       "title": "Asset Milk Truck",
       "threeReference": "threejs-reference-asset-milk-truck",
       "browserTested": false,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/asset-milk-truck.svg"
     },
     {
@@ -291,7 +291,7 @@
       "title": "Environment Studio Softbox",
       "threeReference": "threejs-reference-environment-studio-softbox",
       "browserTested": false,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/environment-studio-softbox.svg"
     },
     {
@@ -300,7 +300,7 @@
       "title": "Environment Sunset",
       "threeReference": "threejs-reference-environment-sunset",
       "browserTested": false,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/environment-sunset.svg"
     },
     {
@@ -309,7 +309,7 @@
       "title": "Environment Night Neon",
       "threeReference": "threejs-reference-environment-night-neon",
       "browserTested": false,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/environment-night-neon.svg"
     },
     {
@@ -318,7 +318,7 @@
       "title": "Postprocess Color Grade",
       "threeReference": "threejs-reference-postprocess-color-grade",
       "browserTested": false,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/postprocess-color-grade.svg"
     },
     {
@@ -327,7 +327,7 @@
       "title": "Postprocess Ssao",
       "threeReference": "threejs-reference-postprocess-ssao",
       "browserTested": false,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/postprocess-ssao.svg"
     },
     {
@@ -336,7 +336,7 @@
       "title": "Postprocess Vignette",
       "threeReference": "threejs-reference-postprocess-vignette",
       "browserTested": false,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/postprocess-vignette.svg"
     },
     {
@@ -345,7 +345,7 @@
       "title": "Controls Fly",
       "threeReference": "threejs-reference-controls-fly",
       "browserTested": false,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/controls-fly.svg"
     },
     {
@@ -354,7 +354,7 @@
       "title": "Controls First Person",
       "threeReference": "threejs-reference-controls-first-person",
       "browserTested": false,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/controls-first-person.svg"
     },
     {
@@ -363,7 +363,7 @@
       "title": "Controls Map",
       "threeReference": "threejs-reference-controls-map",
       "browserTested": false,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/controls-map.svg"
     },
     {
@@ -372,7 +372,7 @@
       "title": "Controls Drag",
       "threeReference": "threejs-reference-controls-drag",
       "browserTested": false,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/controls-drag.svg"
     },
     {
@@ -381,7 +381,7 @@
       "title": "Animation Crossfade",
       "threeReference": "threejs-reference-animation-crossfade",
       "browserTested": false,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/animation-crossfade.svg"
     },
     {
@@ -390,7 +390,7 @@
       "title": "Animation Timeline Scrub",
       "threeReference": "threejs-reference-animation-timeline-scrub",
       "browserTested": false,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/animation-timeline-scrub.svg"
     },
     {
@@ -399,7 +399,7 @@
       "title": "Morph Face Controls",
       "threeReference": "threejs-reference-morph-face-controls",
       "browserTested": false,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/morph-face-controls.svg"
     },
     {
@@ -408,7 +408,7 @@
       "title": "Vfx Point Cloud",
       "threeReference": "threejs-reference-vfx-point-cloud",
       "browserTested": false,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/vfx-point-cloud.svg"
     },
     {
@@ -417,7 +417,7 @@
       "title": "Vfx Trails",
       "threeReference": null,
       "browserTested": false,
-      "publicImports": "@galileo3d/engine",
+      "publicImports": "@aura3d/engine",
       "thumbnail": "thumbnails/vfx-trails.svg"
     },
     {
@@ -426,7 +426,7 @@
       "title": "Vfx Emissive Sprites",
       "threeReference": null,
       "browserTested": false,
-      "publicImports": "@galileo3d/rendering",
+      "publicImports": "@aura3d/rendering",
       "thumbnail": "thumbnails/vfx-emissive-sprites.svg"
     },
     {
@@ -435,7 +435,7 @@
       "title": "Shader Node Material",
       "threeReference": null,
       "browserTested": false,
-      "publicImports": "@galileo3d/assets",
+      "publicImports": "@aura3d/assets",
       "thumbnail": "thumbnails/shader-node-material.svg"
     },
     {
@@ -444,7 +444,7 @@
       "title": "Shader Raw Material",
       "threeReference": null,
       "browserTested": false,
-      "publicImports": "@galileo3d/materials",
+      "publicImports": "@aura3d/materials",
       "thumbnail": "thumbnails/shader-raw-material.svg"
     },
     {
@@ -453,7 +453,7 @@
       "title": "Render Target Mrt",
       "threeReference": null,
       "browserTested": false,
-      "publicImports": "@galileo3d/three-compat",
+      "publicImports": "@aura3d/three-compat",
       "thumbnail": "thumbnails/render-target-mrt.svg"
     }
   ]

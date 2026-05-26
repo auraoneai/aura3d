@@ -5,13 +5,13 @@ import {
   type CameraFrameBounds,
   type CollectedLight,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, Scene } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, Scene } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV8InstancingPerformance?: V8InstancingPerformanceRuntime;
+    __a3dV8InstancingPerformance?: V8InstancingPerformanceRuntime;
   }
 }
 
@@ -28,7 +28,7 @@ interface V8InstancingPerformanceRuntime {
   readonly indexCount: number;
   readonly sceneRenderableCount: number;
   readonly publicSceneInstancedMesh: boolean;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly elapsedMs: number;
   readonly error?: string;
 }
@@ -58,13 +58,13 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8InstancingPerformance = runtime;
+    window.__a3dV8InstancingPerformance = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: renderSize.width,
       height: renderSize.height,
@@ -122,7 +122,7 @@ async function run(): Promise<void> {
           sceneRenderableCount: resources.scene.collectRenderables().length,
           publicSceneInstancedMesh: resources.instancedMesh.isInstancedMesh === true
         });
-        window.__g3dV8InstancingPerformance = runtime;
+        window.__a3dV8InstancingPerformance = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -298,7 +298,7 @@ function createRuntime(
     indexCount: 36,
     sceneRenderableCount: patch.sceneRenderableCount ?? 0,
     publicSceneInstancedMesh: patch.publicSceneInstancedMesh ?? false,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };
@@ -322,7 +322,7 @@ function renderUi(root: HTMLElement, runtime: V8InstancingPerformanceRuntime): v
     <section class="panel">
       <div>
         <h1>V8 Instancing Performance</h1>
-        <p>Public Scene.createInstancedMesh rendered through G3DRenderer with per-instance matrix and color attributes.</p>
+        <p>Public Scene.createInstancedMesh rendered through A3DRenderer with per-instance matrix and color attributes.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>

@@ -42,7 +42,7 @@ Missing code:
 Done criteria:
 
 - [x] Looks like an actual product configurator, not a sphere/cube demo.
-- [x] Same product scene exists in Galileo3D, Three.js, and Babylon.js benchmark folders.
+- [x] Same product scene exists in Aura3D, Three.js, and Babylon.js benchmark folders.
 
 ### Architecture Viewer
 
@@ -104,7 +104,7 @@ Missing code:
 Done criteria:
 
 - [x] Can inspect and render multiple real corpus assets.
-- [x] Same asset loads in comparison scenes for Three.js and Babylon.js. Evidence: `benchmarks/shared/scenes/asset-render.ts` feeds the Galileo3D, Three.js, and Babylon.js benchmark adapters, and `pnpm verify:v3` regenerates/passes the same-scene comparison reports.
+- [x] Same asset loads in comparison scenes for Three.js and Babylon.js. Evidence: `benchmarks/shared/scenes/asset-render.ts` feeds the Aura3D, Three.js, and Babylon.js benchmark adapters, and `pnpm verify:v3` regenerates/passes the same-scene comparison reports.
 
 ### Editor-Authored App
 
@@ -127,7 +127,7 @@ Done criteria:
 Required paths:
 
 - `benchmarks/shared/scenes/*`
-- `benchmarks/galileo/src/scenes/*`
+- `benchmarks/aura3d/src/scenes/*`
 - `benchmarks/threejs/src/scenes/*`
 - `benchmarks/babylon/src/scenes/*`
 - `tools/compare-engines/index.ts`
@@ -169,4 +169,4 @@ Each benchmark must record:
 
 ## Claim Rule
 
-A Three.js claim must be generated from benchmark data, not written manually. If Galileo3D loses or lacks feature parity, the report must say so.
+A Three.js claim must be generated from benchmark data, not written manually. If Aura3D loses or lacks feature parity, the report must say so.

@@ -245,7 +245,7 @@ Use these labels in issues, PRs, and progress docs:
 
 - [x] Create a reproducible external asset corpus manifest.
 - [x] Add Khronos glTF sample model validation.
-- [x] Add Blender-export validation with multiple real-world files. `tests/assets/corpus/blender/blender-export-fixtures.manifest.json` pins three Khronos Vulkan Samples glTF fixtures with Blender generator metadata and SHA-256 hashes, and `tests/reports/blender-export-validation.json` records 3 pass / 0 warn / 0 fail through Galileo3D's glTF loader. This is checked-in fixture validation, not a local Blender executable export round trip or broad Blender/exporter corpus claim.
+- [x] Add Blender-export validation with multiple real-world files. `tests/assets/corpus/blender/blender-export-fixtures.manifest.json` pins three Khronos Vulkan Samples glTF fixtures with Blender generator metadata and SHA-256 hashes, and `tests/reports/blender-export-validation.json` records 3 pass / 0 warn / 0 fail through Aura3D's glTF loader. This is checked-in fixture validation, not a local Blender executable export round trip or broad Blender/exporter corpus claim.
 - [x] Wire real Draco decoder integration behind the existing decoder hook. `draco3d` is a checked-in dev dependency and `tests/assets/gltf-optional-external-decoders.test.ts` loads the pinned Khronos Duck Draco asset through `createDracoDecoder()`.
 - [x] Wire real Meshopt decoder integration behind the existing decoder hook. `meshoptimizer` is a checked-in dev dependency and `tests/assets/gltf-optional-external-decoders.test.ts` loads the pinned Khronos MeshoptCubeTest asset through `createMeshoptDecoder()`.
 - [x] Wire real KTX2/Basis texture transcoding workflow or document unsupported state.
@@ -281,7 +281,7 @@ Use these labels in issues, PRs, and progress docs:
 
 - [x] At least 100 external glTF/GLB assets are classified as pass, warn, or expected fail. `tests/assets/corpus/gltf-100-classification.manifest.json` records 100 pinned Khronos GLB source entries with SHA-256 hashes, and `tests/reports/gltf-100-classification.json` classifies them as 38 pass / 62 warn / 0 expected-fail. This is source classification evidence, not 100-asset loader/render/visual parity.
 - [x] Every expected fail has a typed diagnostic and docs entry.
-- [x] Galileo3D compatibility is compared against Three.js and Babylon.js loaders. `tests/reports/asset-compatibility-threejs.json` now records pinned Three.js 0.165.0 and Babylon.js 7.16.1 loader imports for all 17 current corpus assets with zero `not-run` external loader rows; this is loader-import evidence, not visual output parity.
+- [x] Aura3D compatibility is compared against Three.js and Babylon.js loaders. `tests/reports/asset-compatibility-threejs.json` now records pinned Three.js 0.165.0 and Babylon.js 7.16.1 loader imports for all 17 current corpus assets with zero `not-run` external loader rows; this is loader-import evidence, not visual output parity.
 - [x] Asset viewer can load real external models through public APIs.
 
 ## 4. Physics Production Track
@@ -488,7 +488,7 @@ Use these labels in issues, PRs, and progress docs:
 
 ### Done Criteria
 
-- [x] Product examples prove Galileo3D can build useful browser apps.
+- [x] Product examples prove Aura3D can build useful browser apps.
 - [x] A new developer can learn from example code without reading tests.
 - [x] Demo validation fails if product examples are missing, non-renderer-backed, visually blank, or performance-regressing.
 - [x] Demo validation fails if a product example only fakes a 3D claim with 2D canvas, static screenshots, or mock-only renderer output.
@@ -506,28 +506,28 @@ Use these labels in issues, PRs, and progress docs:
 - `benchmarks/babylon/src/scenes/large-scene.ts`
 - `benchmarks/babylon/src/scenes/skinned-characters.ts`
 - `benchmarks/fixtures/assets/manifest.json`
-- `benchmarks/galileo/src/scenes/product-configurator.ts`
-- `benchmarks/galileo/src/scenes/large-scene.ts`
-- `benchmarks/galileo/src/scenes/skinned-characters.ts`
+- `benchmarks/aura3d/src/scenes/product-configurator.ts`
+- `benchmarks/aura3d/src/scenes/large-scene.ts`
+- `benchmarks/aura3d/src/scenes/skinned-characters.ts`
 - `tools/compare-engines/index.ts`
 - `docs/benchmarks/threejs-comparison.md`
 - `docs/benchmarks/babylon-comparison.md`
 
 ### Tasks
 
-- [x] Create equivalent scenes in Galileo3D, Three.js, and Babylon.js.
-- [x] Pin exact Galileo3D, Three.js, Babylon.js, browser, OS, and hardware versions in benchmark reports.
+- [x] Create equivalent scenes in Aura3D, Three.js, and Babylon.js.
+- [x] Pin exact Aura3D, Three.js, Babylon.js, browser, OS, and hardware versions in benchmark reports.
 - [x] Use the same assets, texture sizes, camera path, light setup, animation clips, render resolution, DPR, warmup, measurement window, and quality settings across engines.
 - [x] Measure startup, first frame, asset load time, memory, frame time, draw calls, bundle size, and code size. `tools/compare-engines/index.ts --write-reports` now writes capped Playwright Chromium WebGL2 microbenchmark samples plus esbuild benchmark bundle artifacts into `tests/reports/comparison-threejs.json` and `tests/reports/comparison-babylon.json`; `claimUsable` remains false for broad competitive claims, while `supportedNicheClaims` allows only exact checked-in scaffold bundle-size wording.
 - [x] Compare glTF compatibility on the same asset corpus.
 - [x] Compare controls, materials, lights, shadows, postprocess, animation, particles, and docs.
-- [x] Document where Galileo3D is worse, equal, or better.
-- [x] Add a narrow claim statement if evidence supports it. `tests/reports/comparison-threejs.json` now records `supportedNicheClaims[0].id: "equivalent-scaffold-bundle-size-threejs"` with the exact wording that Galileo3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run. Broad runtime, compatibility, maturity, visual parity, production release bundle, and broad superiority claims remain blocked.
+- [x] Document where Aura3D is worse, equal, or better.
+- [x] Add a narrow claim statement if evidence supports it. `tests/reports/comparison-threejs.json` now records `supportedNicheClaims[0].id: "equivalent-scaffold-bundle-size-threejs"` with the exact wording that Aura3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run. Broad runtime, compatibility, maturity, visual parity, production release bundle, and broad superiority claims remain blocked.
 - [x] Store raw benchmark samples, summary statistics, screenshots, and failure logs so reports can be independently audited.
 
 ### Agent 6 Verified Slices
 
-- [x] Add deterministic comparison scaffold scenes for Galileo3D, Three.js, and Babylon.js product-configurator, large-scene, and skinned-characters workloads.
+- [x] Add deterministic comparison scaffold scenes for Aura3D, Three.js, and Babylon.js product-configurator, large-scene, and skinned-characters workloads.
 - [x] Add `tools/compare-engines/index.ts` to verify scaffold equivalence and generate caveated comparison reports.
 
 ### Required Reports
@@ -541,7 +541,7 @@ Use these labels in issues, PRs, and progress docs:
 
 - [x] No "better than Three.js" claim is made without comparison reports.
 - [x] Comparison is repeatable and includes raw data.
-- [x] Docs identify the niche where Galileo3D is stronger. `docs/benchmarks/threejs-comparison.md`, `docs/comparisons/threejs.md`, `docs/project/v2-claim-registry.md`, and `docs/project/known-limits.md` define the exact checked-in scaffold bundle-size niche and list exclusions where Three.js remains stronger.
+- [x] Docs identify the niche where Aura3D is stronger. `docs/benchmarks/threejs-comparison.md`, `docs/comparisons/threejs.md`, `docs/project/v2-claim-registry.md`, and `docs/project/known-limits.md` define the exact checked-in scaffold bundle-size niche and list exclusions where Three.js remains stronger.
 - [x] Any "better" claim names the measured dimension and excludes renderer maturity, ecosystem size, and broad compatibility unless those dimensions also win.
 
 ## 9. Unity/Unreal Web Workflow Track
@@ -644,7 +644,7 @@ Use these labels in issues, PRs, and progress docs:
 
 - [x] Add known-limits documentation covering the new product demo and benchmark scaffold limits.
 - [x] Add first product-configurator tutorial, product demo index, public API entrypoint notes, and a Vite vanilla starter scaffold.
-- [x] Add bounded starter-template verifier that copies each template into a fresh temp app, installs external dependencies, copies sanitized local Galileo runtime artifacts, builds, and smoke-checks the generated bundle.
+- [x] Add bounded starter-template verifier that copies each template into a fresh temp app, installs external dependencies, copies sanitized local Aura3D runtime artifacts, builds, and smoke-checks the generated bundle.
 - [x] Add new-developer basic app tutorial for the starter-template path.
 
 ### Done Criteria
@@ -662,13 +662,13 @@ Use these labels in issues, PRs, and progress docs:
 - [x] Internal release candidate gate passes.
 - [x] Product configurator exists and is renderer-backed.
 - [x] Asset viewer exists and handles real external models. `tests/browser/asset-viewer-browser.spec.ts` now loads the pinned public Khronos Box GLB URL directly from `raw.githubusercontent.com` through the browser asset viewer and verifies public API metadata plus render-resource creation.
-- [x] Camera-driven scene rendering, PBR environment lighting, and renderer-backed demo validation are complete for the claimed niche. The exact scaffold bundle-size niche is supported, and `tests/reports/pbr-environment-validation.json` records bounded WebGL2 PBR material-lab evidence plus `examples/pbr-camera-comparison` evidence against a same-page Three.js reference scene. `tests/reports/pbr-rendering-comparison.json` now records the dedicated rendered PBR comparison report with retained Galileo/reference/diff screenshots, a pinned scene descriptor hash, ROI/full-canvas delta metrics, semantic material checks in both renderers, and claim-boundary exclusions. The checked niche is limited to one bounded perspective-camera WebGL2 scene using the default `PBRMaterial`, direct lights, sampled equirectangular RGBA8 environment-map texture uniforms, roughness-dependent mip sampling, bounded CPU-generated RGBA8 environment mip helpers, and bounded BRDF LUT modulation. `docs/rendering/environment-lighting.md`, `docs/project/known-limits.md`, `docs/comparisons/threejs.md`, `docs/benchmarks/pbr-rendering-comparison.md`, and `docs/project/v2-claim-registry.md` still block HDR environment-map input, irradiance convolution, physically calibrated specular prefiltering, production-calibrated split-sum BRDF integration, reflection probes, color-management parity, production PBR parity, and broad visual/rendering-quality claims against Three.js.
+- [x] Camera-driven scene rendering, PBR environment lighting, and renderer-backed demo validation are complete for the claimed niche. The exact scaffold bundle-size niche is supported, and `tests/reports/pbr-environment-validation.json` records bounded WebGL2 PBR material-lab evidence plus `examples/pbr-camera-comparison` evidence against a same-page Three.js reference scene. `tests/reports/pbr-rendering-comparison.json` now records the dedicated rendered PBR comparison report with retained Aura3D/reference/diff screenshots, a pinned scene descriptor hash, ROI/full-canvas delta metrics, semantic material checks in both renderers, and claim-boundary exclusions. The checked niche is limited to one bounded perspective-camera WebGL2 scene using the default `PBRMaterial`, direct lights, sampled equirectangular RGBA8 environment-map texture uniforms, roughness-dependent mip sampling, bounded CPU-generated RGBA8 environment mip helpers, and bounded BRDF LUT modulation. `docs/rendering/environment-lighting.md`, `docs/project/known-limits.md`, `docs/comparisons/threejs.md`, `docs/benchmarks/pbr-rendering-comparison.md`, and `docs/project/v2-claim-registry.md` still block HDR environment-map input, irradiance convolution, physically calibrated specular prefiltering, production-calibrated split-sum BRDF integration, reflection probes, color-management parity, production PBR parity, and broad visual/rendering-quality claims against Three.js.
 - [x] Three.js comparison report exists.
 - [x] Babylon.js comparison report exists.
 - [x] Benchmark reports pin exact versions, hardware, browser settings, raw data, and screenshots.
-- [x] Docs define the narrow niche where Galileo3D is better. The only allowed Three.js niche is smaller generated esbuild browser benchmark bundle bytes for the three checked-in equivalent scaffold scenes on this run; broad "better than Three.js" wording remains blocked.
+- [x] Docs define the narrow niche where Aura3D is better. The only allowed Three.js niche is smaller generated esbuild browser benchmark bundle bytes for the three checked-in equivalent scaffold scenes on this run; broad "better than Three.js" wording remains blocked.
 - [x] Known limits page says where Three.js remains stronger.
-- [x] Claim registry allows the exact claim text and blocks broader variants. `docs/project/v2-claim-registry.md` allows the exact scaffold bundle-size claims for Three.js and Babylon.js, while keeping unqualified "Galileo3D matches or exceeds Three.js in measured categories." blocked under Gate C.
+- [x] Claim registry allows the exact claim text and blocks broader variants. `docs/project/v2-claim-registry.md` allows the exact scaffold bundle-size claims for Three.js and Babylon.js, while keeping unqualified "Aura3D matches or exceeds Three.js in measured categories." blocked under Gate C.
 
 ### Before "Unity/Unreal For The Web"
 
@@ -693,9 +693,9 @@ Use these labels in issues, PRs, and progress docs:
 - [ ] External demos exist. Blocked: `docs/examples/external-demos.md` records no externally hosted or independently openable public demo URLs, `docs/examples/external-demo-urls.json` has no public demo entries, and `tests/reports/release-repeat.json` marks this gate as `proven: false`. Static export readiness now exists through `pnpm build:external-demos` and `tests/reports/external-demo-static-export.json`, with local exported-page smoke evidence for all three required demos. Next action: deploy durable public demo URLs, record them in `docs/examples/external-demo-urls.json`, run `pnpm verify:external-demos`, and add public-URL browser/screenshot artifacts.
 - [x] Comparative benchmark reports exist.
 - [x] Public docs and API reference exist.
-- [x] Versioned package release exists. Evidence: `package.json` is `1.0.0` with `private: false`; `release-artifacts/galileo3d-engine-1.0.0.tgz` was created from the runtime-only package manifest; `docs/project/release-artifacts.json` records the tarball path and SHA-256 `a644039a2871784a1dbe014f29c932c6107c4c041532fcbe4a457f37535bd24e`; `pnpm verify:versioned-release` passed and the verifier checks that the tarball exists with a matching SHA-256.
+- [x] Versioned package release exists. Evidence: `package.json` is `1.0.0` with `private: false`; `release-artifacts/aura3d-engine-1.0.0.tgz` was created from the runtime-only package manifest; `docs/project/release-artifacts.json` records the tarball path and SHA-256 `a644039a2871784a1dbe014f29c932c6107c4c041532fcbe4a457f37535bd24e`; `pnpm verify:versioned-release` passed and the verifier checks that the tarball exists with a matching SHA-256.
 - [x] Regression history exists.
 - [x] Issue/support process exists.
 - [x] Security, support, contribution, changelog, migration, compatibility, and claim-guideline docs exist.
-- [x] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands. Evidence: Codex sub-agent `019e011e-add3-7d31-ac08-929d8ad7b084` reproduced the current release candidate in a separate `/tmp/g3d-independent-repro-*` clone, confirmed `git status --short --untracked-files=all` had no output, and ran `pnpm verify:clean-checkout` with exit code `0`, `ok: true`, `dirty: false`, `dirtyFiles: 0`, and no blockers. The final local verifier run records this evidence through `G3D_INDEPENDENT_REPRODUCTION_EVIDENCE` in `tests/reports/clean-checkout.json`.
+- [x] Independent clean-checkout reproduction succeeds on another machine or agent from documented commands. Evidence: Codex sub-agent `019e011e-add3-7d31-ac08-929d8ad7b084` reproduced the current release candidate in a separate `/tmp/a3d-independent-repro-*` clone, confirmed `git status --short --untracked-files=all` had no output, and ran `pnpm verify:clean-checkout` with exit code `0`, `ok: true`, `dirty: false`, `dirtyFiles: 0`, and no blockers. The final local verifier run records this evidence through `A3D_INDEPENDENT_REPRODUCTION_EVIDENCE` in `tests/reports/clean-checkout.json`.
 - [x] Known limitations are explicit.

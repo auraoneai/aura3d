@@ -5,7 +5,7 @@ import { build } from "esbuild";
 import { chromium, type Page } from "@playwright/test";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
-type ShadowVisualEngine = "galileo" | "threejs" | "babylon";
+type ShadowVisualEngine = "aura3d" | "threejs" | "babylon";
 
 interface ShadowVisualRender {
   readonly engine: ShadowVisualEngine;
@@ -24,7 +24,7 @@ interface ShadowVisualRender {
 }
 
 interface ShadowVisualDiff {
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "threejs" | "babylon";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -78,7 +78,7 @@ export async function createV4ShadowVisualParityReport(root = process.cwd()): Pr
     });
     try {
       const renders: ShadowVisualRender[] = [];
-      for (const engine of ["galileo", "threejs", "babylon"] as const) {
+      for (const engine of ["aura3d", "threejs", "babylon"] as const) {
         const bundle = bundles.get(engine);
         if (!bundle) throw new Error(`Missing ${engine} shadow visual parity bundle.`);
         renders.push(await renderEngine(page, root, engine, bundle));
@@ -117,7 +117,7 @@ export async function createV4ShadowVisualParityReport(root = process.cwd()): Pr
         }),
         boundedShadowVisualParity,
         productionShadowMapParity: false,
-        claimBoundary: "This report proves a bounded same-layout caster/receiver/shadow visual scene renders in Galileo3D, Three.js, and Babylon.js in Chromium and stays within loose screenshot-diff thresholds. It is not full production shadow atlas/cascade selection, Unity parity, or Unreal parity.",
+        claimBoundary: "This report proves a bounded same-layout caster/receiver/shadow visual scene renders in Aura3D, Three.js, and Babylon.js in Chromium and stays within loose screenshot-diff thresholds. It is not full production shadow atlas/cascade selection, Unity parity, or Unreal parity.",
         renders,
         diffs,
         violations,
@@ -140,7 +140,7 @@ export function collectShadowVisualEvidencePaths(report: Pick<V4ShadowVisualPari
 
 async function buildEngineBundles(): Promise<ReadonlyMap<ShadowVisualEngine, string>> {
   const entries: Record<ShadowVisualEngine, string> = {
-    galileo: galileoBundleSource(),
+    aura3d: aura3dBundleSource(),
     threejs: threeBundleSource(),
     babylon: babylonBundleSource(),
   };
@@ -156,7 +156,7 @@ async function buildEngineBundles(): Promise<ReadonlyMap<ShadowVisualEngine, str
       bundle: true,
       platform: "browser",
       format: "iife",
-      globalName: `G3D_${engine}_shadow_visual_parity`,
+      globalName: `A3D_${engine}_shadow_visual_parity`,
       target: "es2022",
       write: false,
       minify: true,
@@ -180,7 +180,7 @@ async function renderEngine(page: Page, root: string, engine: ShadowVisualEngine
     canvas.style.width = "720px";
     canvas.style.height = "480px";
     document.body.replaceChildren(canvas);
-    const bundleName = `G3D_${engineName}_shadow_visual_parity`;
+    const bundleName = `A3D_${engineName}_shadow_visual_parity`;
     const render = (window as unknown as Record<string, { renderShadowVisualParity?: (canvas: HTMLCanvasElement) => Promise<ShadowVisualRender["metrics"]> }>)[bundleName]?.renderShadowVisualParity;
     if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderShadowVisualParity`);
     const metrics = await render(canvas);
@@ -197,7 +197,7 @@ async function renderEngine(page: Page, root: string, engine: ShadowVisualEngine
 }
 
 async function createScreenshotDiff(page: Page, root: string, renders: readonly ShadowVisualRender[], comparedEngine: "threejs" | "babylon"): Promise<ShadowVisualDiff> {
-  const baseline = renders.find((render) => render.engine === "galileo");
+  const baseline = renders.find((render) => render.engine === "aura3d");
   const compared = renders.find((render) => render.engine === comparedEngine);
   if (!baseline || !compared) throw new Error(`Missing render for shadow screenshot diff: ${comparedEngine}.`);
   const diffPath = `${artifactDir}/${comparedEngine}-shadow-diff.png`;
@@ -210,7 +210,7 @@ async function createScreenshotDiff(page: Page, root: string, renders: readonly 
   writePngDataUrl(root, diffPath, result.diffDataUrl);
   const { diffDataUrl: _diffDataUrl, ...metrics } = result;
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine,
     baselinePath: baseline.screenshotPath,
     comparedPath: compared.screenshotPath,
@@ -275,7 +275,7 @@ function sharedBrowserHelpers(): string {
   `;
 }
 
-function galileoBundleSource(): string {
+function aura3dBundleSource(): string {
   return `
     import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
     ${sharedBrowserHelpers()}
@@ -287,11 +287,11 @@ function galileoBundleSource(): string {
       const casterGold = new PBRMaterial({ name: "shadow-caster-gold", baseColor: [0.92, 0.64, 0.18, 1], metallic: 0.22, roughness: 0.36, renderState: { cullMode: "none" } });
       const shadow = new UnlitMaterial({ name: "bounded-shadow-projection", color: [0.03, 0.04, 0.05, 0.52], renderState: { blend: true, depthWrite: false, cullMode: "none" } });
       const items = [
-        { geometry: cube, material: receiver, modelMatrix: ${matrix(0, -0.48, -0.08, 1.8, 0.08, 0.46)}, label: "galileo-shadow-receiver" },
-        { geometry: cube, material: shadow, modelMatrix: ${matrix(-0.17, -0.405, 0.0, 0.82, 0.08, 0.2)}, label: "galileo-bounded-shadow-1" },
-        { geometry: cube, material: shadow, modelMatrix: ${matrix(0.42, -0.398, 0.0, 0.54, 0.07, 0.15)}, label: "galileo-bounded-shadow-2" },
-        { geometry: cube, material: casterBlue, modelMatrix: ${matrix(-0.28, -0.08, 0.08, 0.28, 0.36, 0.28)}, label: "galileo-caster-blue" },
-        { geometry: cube, material: casterGold, modelMatrix: ${matrix(0.38, 0.02, 0.06, 0.22, 0.44, 0.22)}, label: "galileo-caster-gold" },
+        { geometry: cube, material: receiver, modelMatrix: ${matrix(0, -0.48, -0.08, 1.8, 0.08, 0.46)}, label: "aura3d-shadow-receiver" },
+        { geometry: cube, material: shadow, modelMatrix: ${matrix(-0.17, -0.405, 0.0, 0.82, 0.08, 0.2)}, label: "aura3d-bounded-shadow-1" },
+        { geometry: cube, material: shadow, modelMatrix: ${matrix(0.42, -0.398, 0.0, 0.54, 0.07, 0.15)}, label: "aura3d-bounded-shadow-2" },
+        { geometry: cube, material: casterBlue, modelMatrix: ${matrix(-0.28, -0.08, 0.08, 0.28, 0.36, 0.28)}, label: "aura3d-caster-blue" },
+        { geometry: cube, material: casterGold, modelMatrix: ${matrix(0.38, 0.02, 0.06, 0.22, 0.44, 0.22)}, label: "aura3d-caster-gold" },
       ];
       const diagnostics = renderer.render({ renderItems: items, environmentLighting: createV4EnvironmentLighting("daylight").lighting });
       await nextFrame();

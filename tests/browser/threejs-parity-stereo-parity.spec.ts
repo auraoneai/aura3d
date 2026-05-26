@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/stereo-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/stereo-parity/g3d-stereo.png",
+  a3d: "tests/reports/threejs-parity/stereo-parity/a3d-stereo.png",
   threejs: "tests/reports/threejs-parity/stereo-parity/threejs-stereo.png",
   sideBySide: "tests/reports/threejs-parity/stereo-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 stereo effect same-scene Three.js parity", () => {
     await server.close();
   });
 
-  test("captures G3D side-by-side stereo against actual Three.js StereoEffect", async ({ page }) => {
+  test("captures A3D side-by-side stereo against actual Three.js StereoEffect", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -58,34 +58,34 @@ test.describe("V9 stereo effect same-scene Three.js parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-stereo-parity/v1");
-    expect(result.purpose).toBe("same-scene G3D side-by-side stereo rig vs Three.js StereoEffect baseline");
+    expect(result.schema).toBe("a3d-threejs-parity-stereo-parity/v1");
+    expect(result.purpose).toBe("same-scene A3D side-by-side stereo rig vs Three.js StereoEffect baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeStereoEffect).toBe(true);
-    expect(result.assertions.g3dPublicStereoRig).toBe(true);
-    expect(result.assertions.g3dSideBySideLayout).toBe(true);
+    expect(result.assertions.a3dPublicStereoRig).toBe(true);
+    expect(result.assertions.a3dSideBySideLayout).toBe(true);
     expect(result.assertions.threeUsesScissorHalfViewports).toBe(true);
-    expect(result.g3d.effect.rigViews).toBe(2);
-    expect(result.g3d.effect.layout).toBe("side-by-side");
-    expect(result.g3d.effect.composition).toBe("dual-canvas");
+    expect(result.a3d.effect.rigViews).toBe(2);
+    expect(result.a3d.effect.layout).toBe("side-by-side");
+    expect(result.a3d.effect.composition).toBe("dual-canvas");
     expect(result.threejs.effect.scissorViewports).toBe(true);
     expect(result.threejs.effect.halfWidthViewports).toBe(true);
-    expect(result.g3d.renderer.leftDrawCalls).toBeGreaterThan(0);
-    expect(result.g3d.renderer.rightDrawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.leftDrawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.rightDrawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.leftNonBlackPixels).toBeGreaterThan(40_000);
-    expect(result.g3d.pixels.rightNonBlackPixels).toBeGreaterThan(40_000);
+    expect(result.a3d.pixels.leftNonBlackPixels).toBeGreaterThan(40_000);
+    expect(result.a3d.pixels.rightNonBlackPixels).toBeGreaterThan(40_000);
     expect(result.threejs.pixels.leftNonBlackPixels).toBeGreaterThan(40_000);
     expect(result.threejs.pixels.rightNonBlackPixels).toBeGreaterThan(40_000);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(120);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.5);
     expect(pageErrors).toEqual([]);
     assertReferenceEffectUsesHalfViewports();
-    assertNoThreeJsInG3DStereoRuntimeSource();
+    assertNoThreeJsInA3DStereoRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -123,7 +123,7 @@ function assertReferenceEffectUsesHalfViewports(): void {
   expect(source).toContain("setViewport");
 }
 
-function assertNoThreeJsInG3DStereoRuntimeSource(): void {
+function assertNoThreeJsInA3DStereoRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/stereo-effects/src/main.ts",
@@ -153,9 +153,9 @@ function stripDataUrls(result: Extract<StereoParityResult, { readonly status: "r
 type StereoParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-stereo-parity/v1";
+      readonly schema: "a3d-threejs-parity-stereo-parity/v1";
       readonly purpose: string;
-      readonly g3d: {
+      readonly a3d: {
         readonly renderer: { readonly leftDrawCalls: number; readonly rightDrawCalls: number };
         readonly effect: { readonly composition: string; readonly layout: string; readonly rigViews: number };
         readonly pixels: { readonly leftNonBlackPixels: number; readonly rightNonBlackPixels: number; readonly uniqueColorBuckets: number };
@@ -170,15 +170,15 @@ type StereoParityResult =
         readonly sameResolution: boolean;
         readonly actualThreeRenderer: boolean;
         readonly actualThreeStereoEffect: boolean;
-        readonly g3dPublicStereoRig: boolean;
-        readonly g3dSideBySideLayout: boolean;
+        readonly a3dPublicStereoRig: boolean;
+        readonly a3dSideBySideLayout: boolean;
         readonly threeUsesScissorHalfViewports: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-stereo-parity/v1";
+      readonly schema: "a3d-threejs-parity-stereo-parity/v1";
       readonly error: string;
     };

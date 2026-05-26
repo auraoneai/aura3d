@@ -76,7 +76,7 @@ test.describe("V4 character viewer", () => {
 
 async function waitForCharacterState(page: Page, id: string): Promise<CharacterState> {
   await page.waitForFunction((expectedId) => {
-    const state = window.__G3D_V4_CHARACTER_VIEWER__ as CharacterState | undefined;
+    const state = window.__A3D_V4_CHARACTER_VIEWER__ as CharacterState | undefined;
     return state?.status === "ready" && state.id === expectedId;
   }, id, { timeout: 60_000 });
   const state = await characterState(page);
@@ -85,7 +85,7 @@ async function waitForCharacterState(page: Page, id: string): Promise<CharacterS
 }
 
 async function characterState(page: Page): Promise<CharacterState | undefined> {
-  return page.evaluate(() => window.__G3D_V4_CHARACTER_VIEWER__ as CharacterState | undefined);
+  return page.evaluate(() => window.__A3D_V4_CHARACTER_VIEWER__ as CharacterState | undefined);
 }
 
 function statePasses(state: CharacterState, id: string): boolean {
@@ -93,7 +93,7 @@ function statePasses(state: CharacterState, id: string): boolean {
   return state.id === id &&
     state.status === "ready" &&
     state.productSurface === "animation-studio-pro" &&
-    state.fixture === "fixtures/v4/characters/animated-character/manifest.json" &&
+    state.fixture === "fixtures/external-parity/characters/animated-character/manifest.json" &&
     state.characterId === "animated-character-cesium-man" &&
     state.sourceAsset === "cesium-man" &&
     state.sourceRevision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" &&
@@ -119,6 +119,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __G3D_V4_CHARACTER_VIEWER__?: CharacterState;
+    __A3D_V4_CHARACTER_VIEWER__?: CharacterState;
   }
 }

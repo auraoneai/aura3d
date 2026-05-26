@@ -17,9 +17,9 @@ const files = [
   "packages/product-studio/src/ProductStudio.ts",
   "packages/product-studio/src/ProductRenderScene.ts",
   "tools/product-studio-generate-products/index.ts",
-  "fixtures/v2/products/camera-kit/camera-kit.gltf",
-  "fixtures/v2/products/speaker/speaker.gltf",
-  "fixtures/v2/products/watch/watch.gltf"
+  "fixtures/product-studio/products/camera-kit/camera-kit.gltf",
+  "fixtures/product-studio/products/speaker/speaker.gltf",
+  "fixtures/product-studio/products/watch/watch.gltf"
 ] as const;
 
 const reports = requiredReports.map((path) => ({
@@ -29,7 +29,7 @@ const reports = requiredReports.map((path) => ({
 }));
 const implementationFiles = files.map((path) => ({ path, exists: existsSync(resolve(path)) }));
 const report = {
-  schema: "g3d-product-studio-product-readiness/v1",
+  schema: "a3d-product-studio-product-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: reports.every((entry) => entry.pass) && implementationFiles.every((entry) => entry.exists),
   reports,

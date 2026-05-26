@@ -1,5 +1,5 @@
 import {
-  G3DRenderer,
+  A3DRenderer,
   createCameraFrame,
   createGroundedStage,
   createStudioLighting,
@@ -10,8 +10,8 @@ import { createGLTFRenderResourceDiagnostics } from "/packages/assets/src/browse
 
 declare global {
   interface Window {
-    __G3D_PRODUCT_REFERENCE__?: ProductConfiguratorReferenceReport;
-    __G3D_PRODUCT_REFERENCE_PROGRESS__?: readonly string[];
+    __A3D_PRODUCT_REFERENCE__?: ProductConfiguratorReferenceReport;
+    __A3D_PRODUCT_REFERENCE_PROGRESS__?: readonly string[];
     runProductConfiguratorReferenceHarness?: typeof runProductConfiguratorReferenceHarness;
   }
 }
@@ -19,7 +19,7 @@ declare global {
 type ProductReferenceStatus = "ready" | "error";
 
 export interface ProductConfiguratorReferenceReport {
-  readonly schema: "g3d-product-configurator-reference-harness/v1";
+  readonly schema: "a3d-product-configurator-reference-harness/v1";
   readonly status: ProductReferenceStatus;
   readonly claim: "same-original-product-glb-reference-outside-advanced-gallery";
   readonly source: "tests/browser/product-configurator-reference-harness.ts";
@@ -297,13 +297,13 @@ const CAR_REFERENCE_REGIONS = [
 ] as const;
 
 export async function runProductConfiguratorReferenceHarness(): Promise<ProductConfiguratorReferenceReport> {
-  window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = ["start"];
+  window.__A3D_PRODUCT_REFERENCE_PROGRESS__ = ["start"];
   const root = document.createElement("main");
   root.id = "product-configurator-reference-root";
   root.style.cssText = "display:grid;grid-template-columns:repeat(2,640px);gap:12px;background:#05070a;padding:12px;";
   document.body.replaceChildren(root);
 
-  let renderer: Awaited<ReturnType<typeof G3DRenderer.create>> | undefined;
+  let renderer: Awaited<ReturnType<typeof A3DRenderer.create>> | undefined;
   let environment: Awaited<ReturnType<typeof loadHdrEnvironment>> | undefined;
 
   try {
@@ -315,7 +315,7 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
     canvas.style.height = `${VIEWPORT.height}px`;
     root.append(canvas);
 
-    renderer = await G3DRenderer.create({
+    renderer = await A3DRenderer.create({
       canvas,
       width: VIEWPORT.width,
       height: VIEWPORT.height,
@@ -343,7 +343,7 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
 
     const unsupportedExtensions = [...new Set(assets.flatMap((asset) => asset.extensions.unsupported))].sort();
     const report: ProductConfiguratorReferenceReport = {
-      schema: "g3d-product-configurator-reference-harness/v1",
+      schema: "a3d-product-configurator-reference-harness/v1",
       status: "ready",
       claim: "same-original-product-glb-reference-outside-advanced-gallery",
       source: "tests/browser/product-configurator-reference-harness.ts",
@@ -384,11 +384,11 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
           .map((asset) => ({ assetId: asset.id, variants: asset.materialVariants }))
       }
     };
-    window.__G3D_PRODUCT_REFERENCE__ = report;
+    window.__A3D_PRODUCT_REFERENCE__ = report;
     return report;
   } catch (error) {
     const report: ProductConfiguratorReferenceReport = {
-      schema: "g3d-product-configurator-reference-harness/v1",
+      schema: "a3d-product-configurator-reference-harness/v1",
       status: "error",
       claim: "same-original-product-glb-reference-outside-advanced-gallery",
       source: "tests/browser/product-configurator-reference-harness.ts",
@@ -421,7 +421,7 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
       },
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__G3D_PRODUCT_REFERENCE__ = report;
+    window.__A3D_PRODUCT_REFERENCE__ = report;
     return report;
   } finally {
     environment?.dispose();
@@ -430,11 +430,11 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
 }
 
 function productReferenceProgress(step: string): void {
-  window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), step].slice(-32);
+  window.__A3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__A3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), step].slice(-32);
 }
 
 async function renderReferenceAsset(
-  renderer: Awaited<ReturnType<typeof G3DRenderer.create>>,
+  renderer: Awaited<ReturnType<typeof A3DRenderer.create>>,
   environment: Awaited<ReturnType<typeof loadHdrEnvironment>>,
   assetRef: typeof PRODUCT_SOURCE_ASSETS[number],
   root: HTMLElement,
@@ -569,7 +569,7 @@ async function renderReferenceAsset(
 }
 
 function collectCarRegionAcceptanceProofs(
-  renderer: Awaited<ReturnType<typeof G3DRenderer.create>>,
+  renderer: Awaited<ReturnType<typeof A3DRenderer.create>>,
   environment: Awaited<ReturnType<typeof loadHdrEnvironment>>,
   scene: Awaited<ReturnType<typeof loadGltfScene>>,
   stage: ReturnType<typeof createGroundedStage>,

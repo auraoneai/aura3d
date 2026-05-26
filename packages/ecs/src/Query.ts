@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { Bitset } from "./Bitset.js";
 import { type ComponentCtor } from "./Component.js";
 import { type ComponentRegistry } from "./ComponentRegistry.js";

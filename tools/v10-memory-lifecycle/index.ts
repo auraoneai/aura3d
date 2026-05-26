@@ -8,7 +8,7 @@ const requiredReports = [
 const issues = requiredReports.flatMap((path) => reportPasses(path) ? [] : [issue(`memory-report:${path}`, `${path} is missing or not passing.`)]);
 
 writeReport(outputPath, {
-  schema: "g3d-v10-memory-lifecycle/v1",
+  schema: "a3d-v10-memory-lifecycle/v1",
   pass: issues.length === 0,
   decisions: [{
     category: "stability-and-memory",

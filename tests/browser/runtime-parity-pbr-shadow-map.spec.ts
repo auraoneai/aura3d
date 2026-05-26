@@ -56,7 +56,7 @@ test.describe("V7 PBR shadow-map artifact", () => {
     };
 
     expect(result.status, `${result.error ?? ""}\n${pageErrors.join("\n")}`).toBe("ready");
-    expect(result.schema).toBe("g3d-v7-pbr-shadow-map/v1");
+    expect(result.schema).toBe("a3d-v7-pbr-shadow-map/v1");
     expect(result.parity?.claim).toBe("not-claimed");
     expect(result.scene?.shadowMap).toMatchObject({ requested: true, size: 2048, pcfSamples: 16 });
     expect(result.shadowed?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(3);
@@ -79,8 +79,8 @@ test.describe("V7 PBR shadow-map artifact", () => {
     const reportDir = "tests/reports/runtime-parity/pbr-shadow-map";
     mkdirSync(resolve(reportDir), { recursive: true });
     const artifacts = ([
-      ["shadowed", `${reportDir}/g3d-pbr-shadow-map.png`, result.dataUrls?.shadowed],
-      ["unshadowed", `${reportDir}/g3d-pbr-no-shadow.png`, result.dataUrls?.unshadowed]
+      ["shadowed", `${reportDir}/a3d-pbr-shadow-map.png`, result.dataUrls?.shadowed],
+      ["unshadowed", `${reportDir}/a3d-pbr-no-shadow.png`, result.dataUrls?.unshadowed]
     ] as const).map(([id, path, dataUrl]) => {
       if (!dataUrl) throw new Error(`Missing ${id} PBR shadow data URL.`);
       writeFileSync(resolve(path), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));

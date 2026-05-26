@@ -1,4 +1,4 @@
-import "@galileo3d/assets";
+import "@aura3d/assets";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#app");
 const ctx = canvas?.getContext("2d");
@@ -11,4 +11,4 @@ if (canvas && ctx) {
   ctx.font = "24px system-ui";
   ctx.fillText("Asset Damaged Helmet", 40, 48);
 }
-(document.body as HTMLBodyElement).dataset.g3dExample = "asset-damaged-helmet";
+(document.body as HTMLBodyElement).dataset.a3dExample = "asset-damaged-helmet";

@@ -41,7 +41,7 @@ const issues = [
 ];
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-api-surface-audit/v1",
+  schema: "a3d-threejs-parity-api-surface-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   expectedExports,

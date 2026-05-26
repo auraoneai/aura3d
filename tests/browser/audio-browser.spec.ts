@@ -16,12 +16,12 @@ test.describe("audio browser runtime", () => {
     await page.goto(`${server.origin}/tests/browser/audio-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.locator("#audio-start").click();
     await page.waitForFunction(
-      () => window.__GALILEO3D_AUDIO_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_AUDIO_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_AUDIO_BROWSER_TEST__?.status === "ready" || window.__AURA3D_AUDIO_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_AUDIO_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_AUDIO_BROWSER_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.contextState).toBe("running");
@@ -33,7 +33,7 @@ test.describe("audio browser runtime", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_AUDIO_BROWSER_TEST__?: {
+    __AURA3D_AUDIO_BROWSER_TEST__?: {
       readonly status: "waiting" | "ready" | "error";
       readonly contextState: string;
       readonly clipDuration: number;

@@ -5,12 +5,12 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_SHOWROOM__?: V4ExampleState;
-    __GALILEO3D_SHADOW_LAB__?: V4ExampleState;
-    __GALILEO3D_FORWARD_SHADOW_MAP_CHECK__?: V4ForwardShadowMapCheckState;
-    __GALILEO3D_POSTPROCESS_LAB__?: V4ExampleState;
-    __GALILEO3D_WEBGPU_CAPABILITY__?: V4WebGPUCapabilityState;
-    __GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__?: V4PbrExtensionTextureVariantState;
+    __AURA3D_MATERIAL_SHOWROOM__?: V4ExampleState;
+    __AURA3D_SHADOW_LAB__?: V4ExampleState;
+    __AURA3D_FORWARD_SHADOW_MAP_CHECK__?: V4ForwardShadowMapCheckState;
+    __AURA3D_POSTPROCESS_LAB__?: V4ExampleState;
+    __AURA3D_WEBGPU_CAPABILITY__?: V4WebGPUCapabilityState;
+    __AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__?: V4PbrExtensionTextureVariantState;
   }
 }
 
@@ -44,15 +44,15 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("material showroom publishes V4 preset evidence and PBR/environment screenshot", async ({ page }) => {
     await page.goto(`${server.origin}/examples/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_MATERIAL_SHOWROOM__");
+    await waitForState(page, "__AURA3D_MATERIAL_SHOWROOM__");
     await page.getByTestId("material-showroom-environment-preset").selectOption("sunset");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_MATERIAL_SHOWROOM__?.environmentPreset)).toBe("sunset");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__?.environmentPreset)).toBe("sunset");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/material-showroom.png";
     await captureScreenshot(page, "[data-testid='material-showroom-canvas']", screenshotPath);
-    const state = await page.evaluate(() => window.__GALILEO3D_MATERIAL_SHOWROOM__);
+    const state = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
     const checks = {
       ready: state?.status === "ready",
-      preset: state?.featureEvidence?.presetId === "galileo3d-external-parity-visual-quality-preset",
+      preset: state?.featureEvidence?.presetId === "aura3d-external-parity-visual-quality-preset",
       screenshotPath: state?.featureEvidence?.screenshotPath === screenshotPath,
       claimBoundary: typeof state?.claimBoundary === "string" && state.claimBoundary.length > 40,
       pbrFeatures: includesAll(state?.featureEvidence?.activeFeatures, ["bounded-pbr", "environment-reflections", "postprocess-bloom"]),
@@ -104,7 +104,7 @@ test.describe("V4 renderer visual quality evidence", () => {
     await waitForPbrVariantState(page);
     const screenshotPath = "tests/reports/external-parity-example-screenshots/pbr-extension-texture-variants.png";
     await captureScreenshot(page, "[data-testid='pbr-extension-texture-variants-canvas']", screenshotPath);
-    const state = await page.evaluate(() => window.__GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__);
+    const state = await page.evaluate(() => window.__AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__);
     const variants = state?.variants ?? [];
     const expectedVariants = [
       "clearcoat-textures",
@@ -158,15 +158,15 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("shadow lab publishes V4 preset evidence and visible shadow screenshot", async ({ page }) => {
     await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_SHADOW_LAB__");
+    await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/shadow-lab.png";
     await captureScreenshot(page, "body", screenshotPath);
-    const state = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+    const state = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
     const shadowRgb = rgbSum(state?.shadowPixel);
     const planeRgb = rgbSum(state?.planePixel);
     const checks = {
       ready: state?.status === "ready",
-      preset: state?.featureEvidence?.presetId === "galileo3d-external-parity-visual-quality-preset",
+      preset: state?.featureEvidence?.presetId === "aura3d-external-parity-visual-quality-preset",
       screenshotPath: state?.featureEvidence?.screenshotPath === screenshotPath,
       claimBoundary: typeof state?.claimBoundary === "string" && state.claimBoundary.length > 40,
       shadowFeature: state?.featureEvidence?.activeFeatures?.includes("directional-shadows") === true,
@@ -214,19 +214,19 @@ test.describe("V4 renderer visual quality evidence", () => {
     const page = await context.newPage();
     try {
       await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
-      await waitForState(page, "__GALILEO3D_SHADOW_LAB__");
+      await waitForState(page, "__AURA3D_SHADOW_LAB__");
       const dprScreenshot = "tests/reports/external-parity-example-screenshots/shadow-lab-dpr2.png";
       await captureScreenshot(page, "body", dprScreenshot);
-      const dprState = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+      const dprState = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
       const dprShadowRgb = rgbSum(dprState?.shadowPixel);
       const dprPlaneRgb = rgbSum(dprState?.planePixel);
 
       await page.setViewportSize({ width: 740, height: 620 });
       await page.reload({ waitUntil: "domcontentloaded" });
-      await waitForState(page, "__GALILEO3D_SHADOW_LAB__");
+      await waitForState(page, "__AURA3D_SHADOW_LAB__");
       const resizedScreenshot = "tests/reports/external-parity-example-screenshots/shadow-lab-resized-dpr2.png";
       await captureScreenshot(page, "body", resizedScreenshot);
-      const resizedState = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+      const resizedState = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
       const resizedShadowRgb = rgbSum(resizedState?.shadowPixel);
       const resizedPlaneRgb = rgbSum(resizedState?.planePixel);
       const checks = {
@@ -262,10 +262,10 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("forward pass samples a bound shadow map texture in real WebGL2 rendering", async ({ page }) => {
     await page.goto(`${server.origin}/examples/forward-shadow-map-check/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_FORWARD_SHADOW_MAP_CHECK__");
+    await waitForState(page, "__AURA3D_FORWARD_SHADOW_MAP_CHECK__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/forward-shadow-map-check.png";
     await captureScreenshot(page, "[data-testid='forward-shadow-map-canvas']", screenshotPath);
-    const state = await page.evaluate(() => window.__GALILEO3D_FORWARD_SHADOW_MAP_CHECK__);
+    const state = await page.evaluate(() => window.__AURA3D_FORWARD_SHADOW_MAP_CHECK__);
     const checks = {
       ready: state?.status === "ready",
       renderer: state?.renderer === "webgl2-forward-pass-shadow-map",
@@ -306,17 +306,17 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("postprocess lab publishes V4 preset evidence and before-after screenshot", async ({ page }) => {
     await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_POSTPROCESS_LAB__");
+    await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/postprocess-lab.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", screenshotPath);
-    const state = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const state = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     const fxaaDelta =
       Math.abs(channel(state?.pixels?.fxaaBeforeEdge, 0) - channel(state?.pixels?.fxaaAfterEdge, 0)) +
       Math.abs(channel(state?.pixels?.fxaaBeforeEdge, 1) - channel(state?.pixels?.fxaaAfterEdge, 1)) +
       Math.abs(channel(state?.pixels?.fxaaBeforeEdge, 2) - channel(state?.pixels?.fxaaAfterEdge, 2));
     const checks = {
       ready: state?.status === "ready",
-      preset: state?.featureEvidence?.presetId === "galileo3d-external-parity-visual-quality-preset",
+      preset: state?.featureEvidence?.presetId === "aura3d-external-parity-visual-quality-preset",
       screenshotPath: state?.featureEvidence?.screenshotPath === screenshotPath,
       claimBoundary: typeof state?.claimBoundary === "string" && state.claimBoundary.length > 40,
       postprocessFeatures: includesAll(state?.featureEvidence?.activeFeatures, ["bounded-pbr", "tone-mapping", "postprocess-bloom", "postprocess-fxaa", "depth-textures"]),
@@ -410,18 +410,18 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("postprocess lab exposes runtime color-management controls backed by real-scene pixels", async ({ page }) => {
     await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_POSTPROCESS_LAB__");
+    await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const canvas = page.getByTestId("postprocess-lab-canvas");
     const beforeBox = await requiredBox(canvas);
-    const initial = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const initial = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     await page.getByTestId("postprocess-tone-mapper").selectOption("aces");
     await page.getByTestId("postprocess-exposure").fill("2.25");
     await page.getByTestId("postprocess-white-point").fill("1.6");
     await page.getByTestId("postprocess-input-color-space").selectOption("srgb");
     await page.getByTestId("postprocess-output-color-space").selectOption("linear");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__?.controls.toneMapper)).toBe("aces");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__?.controls.toneMapper)).toBe("aces");
     const afterBox = await requiredBox(canvas);
-    const changed = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const changed = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     const screenshotPath = "tests/reports/external-parity-example-screenshots/postprocess-lab-color-controls.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", screenshotPath);
     const initialHighlight = rgbSum(initial?.pixels?.toneMappedHighlight);
@@ -480,8 +480,8 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("postprocess lab exposes color-grading controls backed by real-scene pixels", async ({ page }) => {
     await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_POSTPROCESS_LAB__");
-    const initial = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
+    const initial = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     await page.getByTestId("postprocess-tone-mapper").selectOption("filmic");
     await page.getByTestId("postprocess-contrast").fill("1.55");
     await page.getByTestId("postprocess-temperature").fill("0.55");
@@ -490,8 +490,8 @@ test.describe("V4 renderer visual quality evidence", () => {
     await page.getByTestId("postprocess-vibrance").fill("0.55");
     await page.getByTestId("postprocess-vignette").fill("0.55");
     await page.getByTestId("postprocess-sharpening").fill("0.9");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__?.controls.toneMapper)).toBe("filmic");
-    const changed = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__?.controls.toneMapper)).toBe("filmic");
+    const changed = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     const screenshotPath = "tests/reports/external-parity-example-screenshots/postprocess-lab-color-grading.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", screenshotPath);
     const checks = {
@@ -545,30 +545,30 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("renderer runtime toggles keep layout stable and change visual state", async ({ page }) => {
     await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_POSTPROCESS_LAB__");
+    await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const postprocessCanvas = page.getByTestId("postprocess-lab-canvas");
     const postprocessBefore = await requiredBox(postprocessCanvas);
-    const initialPostprocess = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const initialPostprocess = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     await page.getByTestId("postprocess-bloom").uncheck();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__?.controls.bloom)).toBe(false);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__?.controls.bloom)).toBe(false);
     const postprocessAfter = await requiredBox(postprocessCanvas);
-    const toggledPostprocess = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const toggledPostprocess = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     const postprocessToggleScreenshot = "tests/reports/external-parity-example-screenshots/postprocess-lab-toggle-bloom-off.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", postprocessToggleScreenshot);
 
     await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_SHADOW_LAB__");
+    await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const shadowCanvas = page.getByTestId("shadow-lab-canvas");
     const shadowBefore = await requiredBox(shadowCanvas);
-    const initialShadow = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+    const initialShadow = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
     await page.getByTestId("shadow-darkness").evaluate((input) => {
       const element = input as HTMLInputElement;
       element.value = "0.85";
       element.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__?.pcf?.shadowPixel?.[0])).not.toBe(initialShadow?.pcf?.shadowPixel?.[0] ?? 0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_SHADOW_LAB__?.pcf?.shadowPixel?.[0])).not.toBe(initialShadow?.pcf?.shadowPixel?.[0] ?? 0);
     const shadowAfter = await requiredBox(shadowCanvas);
-    const toggledShadow = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+    const toggledShadow = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
     const shadowToggleScreenshot = "tests/reports/external-parity-example-screenshots/shadow-lab-toggle-darkness.png";
     await captureScreenshot(page, "[data-testid='shadow-lab-canvas']", shadowToggleScreenshot);
 
@@ -599,10 +599,10 @@ test.describe("V4 renderer visual quality evidence", () => {
 
   test("webgpu capability example publishes supported and blocked visual evidence", async ({ page }) => {
     await page.goto(`${server.origin}/examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_WEBGPU_CAPABILITY__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_WEBGPU_CAPABILITY__?.status === "ready", undefined, { timeout: 30_000 });
     const screenshotPath = "tests/reports/external-parity-example-screenshots/webgpu-capability.png";
     await captureScreenshot(page, "[data-testid='webgpu-capability-canvas']", screenshotPath);
-    const state = await page.evaluate(() => window.__GALILEO3D_WEBGPU_CAPABILITY__);
+    const state = await page.evaluate(() => window.__AURA3D_WEBGPU_CAPABILITY__);
     const checks = {
       ready: state?.status === "ready",
       screenshotPath: Boolean(screenshotPath),
@@ -642,7 +642,7 @@ test.describe("V4 renderer visual quality evidence", () => {
   }
 });
 
-async function waitForState(page: Page, stateName: "__GALILEO3D_MATERIAL_SHOWROOM__" | "__GALILEO3D_SHADOW_LAB__" | "__GALILEO3D_POSTPROCESS_LAB__"): Promise<void> {
+async function waitForState(page: Page, stateName: "__AURA3D_MATERIAL_SHOWROOM__" | "__AURA3D_SHADOW_LAB__" | "__AURA3D_POSTPROCESS_LAB__"): Promise<void> {
   await page.waitForFunction(
     (name) => {
       const state = (globalThis as Record<string, V4ExampleState | undefined>)[name];
@@ -656,7 +656,7 @@ async function waitForState(page: Page, stateName: "__GALILEO3D_MATERIAL_SHOWROO
 async function waitForPbrVariantState(page: Page): Promise<void> {
   await page.waitForFunction(
     () => {
-      const state = window.__GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__;
+      const state = window.__AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__;
       return state?.status === "ready" || state?.status === "error";
     },
     undefined,

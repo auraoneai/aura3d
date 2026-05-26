@@ -21,7 +21,7 @@ const issues = [
 ];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-physics-fidelity/v1",
+  schema: "a3d-v10-physics-fidelity/v1",
   pass: issues.length === 0,
   decisions: [{
     category: "physics-and-interaction",

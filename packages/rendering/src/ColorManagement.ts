@@ -1,5 +1,5 @@
-export type G3DColorSpace = "linear" | "srgb";
-export type G3DTextureSemantic =
+export type A3DColorSpace = "linear" | "srgb";
+export type A3DTextureSemantic =
   | "base-color"
   | "emissive"
   | "normal"
@@ -15,30 +15,30 @@ export type G3DTextureSemantic =
   | "iridescence"
   | "environment";
 
-export interface G3DColorManagementPolicy {
+export interface A3DColorManagementPolicy {
   readonly lightingColorSpace: "linear";
-  readonly outputColorSpace: G3DColorSpace;
-  readonly texturePolicy: Readonly<Record<G3DTextureSemantic, G3DColorSpace>>;
+  readonly outputColorSpace: A3DColorSpace;
+  readonly texturePolicy: Readonly<Record<A3DTextureSemantic, A3DColorSpace>>;
   readonly allowLdrFallback: boolean;
   readonly fallbackBehavior: string;
 }
 
-export interface G3DColorConversionSample {
+export interface A3DColorConversionSample {
   readonly input: number;
   readonly linear: number;
   readonly srgb: number;
   readonly roundTripError: number;
 }
 
-export interface G3DTextureColorSpaceValidation {
-  readonly semantic: G3DTextureSemantic;
-  readonly expected: G3DColorSpace;
-  readonly actual: G3DColorSpace;
+export interface A3DTextureColorSpaceValidation {
+  readonly semantic: A3DTextureSemantic;
+  readonly expected: A3DColorSpace;
+  readonly actual: A3DColorSpace;
   readonly pass: boolean;
   readonly warning?: string;
 }
 
-export const V4_TEXTURE_COLOR_POLICY: Readonly<Record<G3DTextureSemantic, G3DColorSpace>> = {
+export const V4_TEXTURE_COLOR_POLICY: Readonly<Record<A3DTextureSemantic, A3DColorSpace>> = {
   "base-color": "srgb",
   emissive: "srgb",
   normal: "linear",
@@ -56,9 +56,9 @@ export const V4_TEXTURE_COLOR_POLICY: Readonly<Record<G3DTextureSemantic, G3DCol
 };
 
 export function createV4ColorManagementPolicy(options: {
-  readonly outputColorSpace?: G3DColorSpace;
+  readonly outputColorSpace?: A3DColorSpace;
   readonly allowLdrFallback?: boolean;
-} = {}): G3DColorManagementPolicy {
+} = {}): A3DColorManagementPolicy {
   return {
     lightingColorSpace: "linear",
     outputColorSpace: options.outputColorSpace ?? "srgb",
@@ -80,8 +80,8 @@ export function linearToSrgbChannel(value: number): number {
 
 export function convertColorSpace(
   color: readonly [number, number, number, number],
-  from: G3DColorSpace,
-  to: G3DColorSpace
+  from: A3DColorSpace,
+  to: A3DColorSpace
 ): [number, number, number, number] {
   if (from === to) return [clamp01(color[0]), clamp01(color[1]), clamp01(color[2]), clamp01(color[3])];
   const convert = from === "srgb" && to === "linear" ? srgbToLinearChannel : linearToSrgbChannel;
@@ -89,10 +89,10 @@ export function convertColorSpace(
 }
 
 export function validateTextureColorSpace(
-  semantic: G3DTextureSemantic,
-  actual: G3DColorSpace,
-  policy: G3DColorManagementPolicy = createV4ColorManagementPolicy()
-): G3DTextureColorSpaceValidation {
+  semantic: A3DTextureSemantic,
+  actual: A3DColorSpace,
+  policy: A3DColorManagementPolicy = createV4ColorManagementPolicy()
+): A3DTextureColorSpaceValidation {
   const expected = policy.texturePolicy[semantic];
   const pass = expected === actual;
   return {
@@ -104,7 +104,7 @@ export function validateTextureColorSpace(
   };
 }
 
-export function createColorConversionSamples(samples: readonly number[] = [0, 0.0031308, 0.18, 0.5, 1]): readonly G3DColorConversionSample[] {
+export function createColorConversionSamples(samples: readonly number[] = [0, 0.0031308, 0.18, 0.5, 1]): readonly A3DColorConversionSample[] {
   return samples.map((input) => {
     const linear = srgbToLinearChannel(input);
     const srgb = linearToSrgbChannel(linear);

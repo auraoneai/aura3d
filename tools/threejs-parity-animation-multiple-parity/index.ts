@@ -3,8 +3,8 @@ import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
   loadV6GLTFRenderPipeline
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import {
   Geometry,
   PBRMaterial,
@@ -13,8 +13,8 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { sampleAgentPoses, spawnAgents, type AgentPose } from "/apps/animation-multiple/src/agentSpawner.ts";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
@@ -33,11 +33,11 @@ type AnimationMultipleParityResult = AnimationMultipleParityReady | AnimationMul
 
 interface AnimationMultipleParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-animation-multiple-parity/v1";
-  readonly purpose: "same-asset multi-clip G3D clone sampler vs actual Three.js AnimationMixer baseline";
+  readonly schema: "a3d-threejs-parity-animation-multiple-parity/v1";
+  readonly purpose: "same-asset multi-clip A3D clone sampler vs actual Three.js AnimationMixer baseline";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly drawCalls: number };
     readonly animation: {
       readonly cloneCount: number;
@@ -68,12 +68,12 @@ interface AnimationMultipleParityReady {
     readonly actualThreeRenderer: boolean;
     readonly actualThreeAnimationMixer: boolean;
     readonly actualThreeSkeletonClone: boolean;
-    readonly g3dCloneSamplerUpdatedSkinning: boolean;
+    readonly a3dCloneSamplerUpdatedSkinning: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
   readonly dataUrls: {
-    readonly g3d: string;
+    readonly a3d: string;
     readonly threejs: string;
     readonly sideBySide: string;
   };
@@ -82,7 +82,7 @@ interface AnimationMultipleParityReady {
 
 interface AnimationMultipleParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-animation-multiple-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-multiple-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -130,33 +130,33 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-animation-multiple", ASSET.width, ASSET.height);
+    const a3dCanvas = requiredCanvas("a3d-animation-multiple", ASSET.width, ASSET.height);
     const threeCanvas = requiredCanvas("threejs-animation-multiple", ASSET.width, ASSET.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", ASSET.width * 2, ASSET.height + 60);
-    if (status) status.textContent = "rendering G3D clone sampler";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D clone sampler";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering actual Three.js AnimationMixer reference";
-    const threejs = await renderThree(threeCanvas, g3d.activeClipNames);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const threejs = await renderThree(threeCanvas, a3d.activeClipNames);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
     const ready: AnimationMultipleParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-animation-multiple-parity/v1",
-      purpose: "same-asset multi-clip G3D clone sampler vs actual Three.js AnimationMixer baseline",
+      schema: "a3d-threejs-parity-animation-multiple-parity/v1",
+      purpose: "same-asset multi-clip A3D clone sampler vs actual Three.js AnimationMixer baseline",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls },
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls },
         animation: {
-          cloneCount: g3d.cloneCount,
-          clipNames: g3d.activeClipNames,
-          skinningPalettesUpdated: g3d.skinningPalettesUpdated,
+          cloneCount: a3d.cloneCount,
+          clipNames: a3d.activeClipNames,
+          skinningPalettesUpdated: a3d.skinningPalettesUpdated,
           sampledAtSeconds: SAMPLE_SECONDS
         },
-        pixels: g3dStats
+        pixels: a3dStats
       },
       threejs: {
         loader: {
@@ -178,17 +178,17 @@ async function run(): Promise<void> {
       diff,
       assertions: {
         sameAssetUrl: true,
-        sameClips: sameStringSet(g3d.activeClipNames, threejs.activeClipNames),
-        sameCloneCount: g3d.cloneCount === threejs.cloneCount,
+        sameClips: sameStringSet(a3d.activeClipNames, threejs.activeClipNames),
+        sameCloneCount: a3d.cloneCount === threejs.cloneCount,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeAnimationMixer: threejs.actualAnimationMixer,
         actualThreeSkeletonClone: threejs.actualSkeletonUtilsClone,
-        g3dCloneSamplerUpdatedSkinning: g3d.skinningPalettesUpdated >= g3d.cloneCount,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
+        a3dCloneSamplerUpdatedSkinning: a3d.skinningPalettesUpdated >= a3d.cloneCount,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 45_000 && threeStats.nonBlackPixels > 45_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "This is a bounded imported Soldier clone parity proof for Walk / Run / Idle using actual Three.js AnimationMixer and SkeletonUtils.clone.",
@@ -201,7 +201,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: AnimationMultipleParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-animation-multiple-parity/v1",
+      schema: "a3d-threejs-parity-animation-multiple-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
@@ -214,7 +214,7 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
+async function renderA3D(canvas: HTMLCanvasElement) {
   const pipeline = await loadV6GLTFRenderPipeline({
     url: ASSET.url,
     assetId: "v9-animation-multiple-soldier",
@@ -229,7 +229,7 @@ async function renderG3D(canvas: HTMLCanvasElement) {
       frustumCulling: false
     }
   });
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     canvas,
     width: ASSET.width,
     height: ASSET.height,
@@ -251,12 +251,12 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   const frame = computePerspectiveCameraFrame(FRAME_BOUNDS, { width: ASSET.width, height: ASSET.height }, CAMERA_FRAME);
   const source: RenderSource = {
     collectRenderItems: () => [
-      ...createG3DStageItems(),
+      ...createA3DStageItems(),
       ...collectCrowdItems(pipeline, cloneSampler, activeClips, poses, SAMPLE_SECONDS, (count) => {
         skinningPalettesUpdated += count;
       })
     ],
-    collectedLights: createG3DLights(),
+    collectedLights: createA3DLights(),
     environmentLighting: DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
     cameraPolicy: "require",
     cameraPosition: frame.cameraPosition,
@@ -356,7 +356,7 @@ function agentPlacement(pose: AgentPose): Mat4 {
   return composeMat4([pose.x, pose.y, pose.z], [0, 0, 0, 1], [scale, scale, scale]);
 }
 
-function createG3DStageItems(): readonly RenderItem[] {
+function createA3DStageItems(): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
   const shadow = Geometry.cylinder({ radius: 0.5, height: 1, segments: 48, capped: true });
   const floor = new PBRMaterial({ name: "animation-multiple-parity-floor", baseColor: [0.73, 0.73, 0.73, 1], roughness: 0.66, metallic: 0, environmentIntensity: 0.25 });
@@ -369,7 +369,7 @@ function createG3DStageItems(): readonly RenderItem[] {
   ];
 }
 
-function createG3DLights(): readonly CollectedLight[] {
+function createA3DLights(): readonly CollectedLight[] {
   const key = new DirectionalLight("v9-animation-multiple-key");
   key.intensity = 5.6;
   key.color = [1, 1, 1];
@@ -567,17 +567,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side animation comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#f2f3f5";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, ASSET.width, 0);
   context.fillStyle = "#15171c";
   context.font = "16px sans-serif";
-  context.fillText("G3D clone sampler", 18, ASSET.height + 28);
+  context.fillText("A3D clone sampler", 18, ASSET.height + 28);
   context.fillText("Three.js AnimationMixer", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#46515f";
   context.font = "12px sans-serif";

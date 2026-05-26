@@ -5,8 +5,8 @@ type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }
 
 const requiredFiles = [
-  "packages/engine/src/G3DApp.ts",
-  "packages/engine/src/G3DQualityPresets.ts",
+  "packages/engine/src/A3DApp.ts",
+  "packages/engine/src/A3DQualityPresets.ts",
   "packages/engine/src/index.ts",
   "packages/workflows/src/workflow-foundation/index.ts",
   "packages/apps/package.json",
@@ -32,26 +32,26 @@ for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} m
 
 const apiSource = text("packages/apps/src/index.ts");
 const engineSource = text("packages/engine/src/index.ts");
-const appEntrypoint = text("packages/engine/src/G3DApp.ts");
-const qualityEntrypoint = text("packages/engine/src/G3DQualityPresets.ts");
+const appEntrypoint = text("packages/engine/src/A3DApp.ts");
+const qualityEntrypoint = text("packages/engine/src/A3DQualityPresets.ts");
 const workflowEntrypoint = text("packages/workflows/src/workflow-foundation/index.ts");
 check(
   "api-surface",
   includesAll(apiSource, [
-    "createG3DApp",
-    "G3DAppQualityPreset",
-    "G3D_APP_WORKFLOW_PRESETS",
-    "resolveG3DAppQualityPreset",
+    "createA3DApp",
+    "A3DAppQualityPreset",
+    "A3D_APP_WORKFLOW_PRESETS",
+    "resolveA3DAppQualityPreset",
     "renderWorkflow",
     "diagnostics"
   ]),
-  "App API must expose createG3DApp, quality presets, workflow presets, renderWorkflow, and diagnostics."
+  "App API must expose createA3DApp, quality presets, workflow presets, renderWorkflow, and diagnostics."
 );
 check(
   "engine-entrypoints",
-  includesAll(engineSource, ["createG3DApp", "workflows", "captureScreenshot", "createDiagnosticsPanel"]) &&
-    includesAll(appEntrypoint, ["createG3DApp", "G3DApp", "G3DAppOptions"]) &&
-    includesAll(qualityEntrypoint, ["G3D_QUALITY_PRESETS", "G3D_QUALITY_PRESET_SETTINGS", "resolveG3DAppQualityPreset"]) &&
+  includesAll(engineSource, ["createA3DApp", "workflows", "captureScreenshot", "createDiagnosticsPanel"]) &&
+    includesAll(appEntrypoint, ["createA3DApp", "A3DApp", "A3DAppOptions"]) &&
+    includesAll(qualityEntrypoint, ["A3D_QUALITY_PRESETS", "A3D_QUALITY_PRESET_SETTINGS", "resolveA3DAppQualityPreset"]) &&
     includesAll(workflowEntrypoint, ["productConfigurator", "materialStudio", "assetViewer", "interactiveScene"]),
   "Engine and workflow V4 entrypoints must exist by filename and expose the public product API."
 );
@@ -69,18 +69,18 @@ check(
   "root-package-export",
   text("package.json").includes("\"./apps\": \"./dist/apps/index.js\"") &&
     text("package.json").includes("\"dist/apps\"") &&
-    text("package.json").includes("\"@galileo3d/apps\": \"workspace:*\""),
+    text("package.json").includes("\"@aura3d/apps\": \"workspace:*\""),
   "Root package must include apps dist files, subpath export, and workspace dependency."
 );
 check(
   "tsconfig-and-browser-server",
-  text("tsconfig.base.json").includes("\"@galileo3d/apps\"") &&
-    text("tests/browser/example-dev-server.ts").includes("[\"@galileo3d/apps\", \"/packages/apps/src/index.ts\"]"),
-  "TypeScript and browser test server must resolve @galileo3d/apps."
+  text("tsconfig.base.json").includes("\"@aura3d/apps\"") &&
+    text("tests/browser/example-dev-server.ts").includes("[\"@aura3d/apps\", \"/packages/apps/src/index.ts\"]"),
+  "TypeScript and browser test server must resolve @aura3d/apps."
 );
 check(
   "public-docs",
-  includesAll(text("docs/api/app-api.md"), ["createG3DApp", "quality presets", "workflow presets", "diagnostics", "full Three.js API parity"]),
+  includesAll(text("docs/api/app-api.md"), ["createA3DApp", "quality presets", "workflow presets", "diagnostics", "full Three.js API parity"]),
   "Public docs must document the API and proof boundary."
 );
 
@@ -96,7 +96,7 @@ check(
     state.workflowRuns === 1 &&
     state.lastWorkflow === "scene-showcase" &&
     Number(state.drawCalls ?? 0) > 0,
-  "Browser proof must render a workflow through createG3DApp and report diagnostics."
+  "Browser proof must render a workflow through createA3DApp and report diagnostics."
 );
 check(
   "browser-boundary",
@@ -109,7 +109,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-api-readiness/v1",
+  schema: "a3d-external-parity-api-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

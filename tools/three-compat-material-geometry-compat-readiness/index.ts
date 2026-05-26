@@ -39,7 +39,7 @@ const checks: V5MaterialGeometryCompatCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-material-geometry-compat-readiness/v1",
+  schema: "a3d-three-compat-material-geometry-compat-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   geometryTypes: V5_COMPAT_GEOMETRY_TYPES,

@@ -2,7 +2,7 @@
 
 Version: 1.0.0
 
-Use this checklist before tagging any Galileo3D release candidate.
+Use this checklist before tagging any Aura3D release candidate.
 
 ## Preflight
 

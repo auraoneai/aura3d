@@ -99,8 +99,8 @@ export {
   diagnoseV5Shader
 } from "./shaders";
 export { V5_THREE_IMPORT_MAP } from "./migration/ImportMap";
-export { migrateThreeToG3D } from "./migration/ThreeToG3DAdapter";
-export type { V5MigrationResult } from "./migration/ThreeToG3DAdapter";
+export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
+export type { V5MigrationResult } from "./migration/ThreeToA3DAdapter";
 export { createV5CompatibilityWarnings } from "./migration/CompatibilityWarnings";
 export type { V5CompatibilityWarning } from "./migration/CompatibilityWarnings";
 export {

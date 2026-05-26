@@ -34,14 +34,14 @@ test.describe("skinned animation visual pixels", () => {
     await page.goto(`${server.origin}/tests/browser/animation-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const state = (window as Window & { __GALILEO3D_ANIMATION_BROWSER_TEST__?: SkinnedAnimationVisualResult }).__GALILEO3D_ANIMATION_BROWSER_TEST__;
+        const state = (window as Window & { __AURA3D_ANIMATION_BROWSER_TEST__?: SkinnedAnimationVisualResult }).__AURA3D_ANIMATION_BROWSER_TEST__;
         return state?.status === "ready" || state?.status === "error";
       },
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => (window as Window & { __GALILEO3D_ANIMATION_BROWSER_TEST__?: SkinnedAnimationVisualResult }).__GALILEO3D_ANIMATION_BROWSER_TEST__);
+    const result = await page.evaluate(() => (window as Window & { __AURA3D_ANIMATION_BROWSER_TEST__?: SkinnedAnimationVisualResult }).__AURA3D_ANIMATION_BROWSER_TEST__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.paletteJointCount).toBe(2);
     expect(result?.paletteChildTranslation?.[0]).toBeCloseTo(0.75, 5);

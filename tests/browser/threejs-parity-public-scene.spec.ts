@@ -4,7 +4,7 @@ import { createServer, type ViteDevServer } from "vite";
 
 declare global {
   interface Window {
-    __G3D_V9_PUBLIC_SCENE__?: {
+    __A3D_V9_PUBLIC_SCENE__?: {
       readonly running: boolean;
       readonly disposed?: boolean;
       readonly width: number;
@@ -51,7 +51,7 @@ test.describe("V9 v9 public scene route", () => {
     await server.close();
   });
 
-  test("renders visible pixels through @galileo3d/engine/advanced-runtime public APIs", async ({ page }) => {
+  test("renders visible pixels through @aura3d/engine/advanced-runtime public APIs", async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("console", (message) => {
@@ -61,11 +61,11 @@ test.describe("V9 v9 public scene route", () => {
 
     await page.goto(`${origin}/apps/public-scene/`, { waitUntil: "domcontentloaded" });
     await expect.poll(
-      () => page.evaluate(() => window.__G3D_V9_PUBLIC_SCENE__?.running),
+      () => page.evaluate(() => window.__A3D_V9_PUBLIC_SCENE__?.running),
       { timeout: 20_000 }
     ).toBe(true);
 
-    const metrics = await page.evaluate(() => window.__G3D_V9_PUBLIC_SCENE__);
+    const metrics = await page.evaluate(() => window.__A3D_V9_PUBLIC_SCENE__);
     const nonBackgroundPixels = await page.evaluate(() => {
       const canvas = document.querySelector("canvas");
       const gl = canvas?.getContext("webgl2");
@@ -88,12 +88,12 @@ test.describe("V9 v9 public scene route", () => {
   test("disposes renderer, scene resources, listeners, and animation frames on route teardown", async ({ page }) => {
     await page.goto(`${origin}/apps/public-scene/`, { waitUntil: "domcontentloaded" });
     await expect.poll(
-      () => page.evaluate(() => window.__G3D_V9_PUBLIC_SCENE__?.running),
+      () => page.evaluate(() => window.__A3D_V9_PUBLIC_SCENE__?.running),
       { timeout: 20_000 }
     ).toBe(true);
 
-    await page.evaluate(() => window.dispatchEvent(new Event("g3d:public-scene-dispose")));
-    const disposed = await page.evaluate(() => window.__G3D_V9_PUBLIC_SCENE__);
+    await page.evaluate(() => window.dispatchEvent(new Event("a3d:public-scene-dispose")));
+    const disposed = await page.evaluate(() => window.__A3D_V9_PUBLIC_SCENE__);
 
     expect(disposed?.running).toBe(false);
     expect(disposed?.disposed).toBe(true);

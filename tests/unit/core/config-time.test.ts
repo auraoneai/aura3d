@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FixedStepAccumulator, Time, ValidationError, resolveEngineConfig } from "@galileo3d/core";
+import { FixedStepAccumulator, Time, ValidationError, resolveEngineConfig } from "@aura3d/core";
 
 describe("core config and time", () => {
   it("normalizes immutable config defaults", () => {

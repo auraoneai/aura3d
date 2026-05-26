@@ -1,6 +1,6 @@
 # Renderer Environment Lighting
 
-Galileo3D now has two environment-lighting tiers in the repo:
+Aura3D now has two environment-lighting tiers in the repo:
 
 - the public `Renderer.render(...)` environment input for normal WebGL2 scene rendering;
 - the production-runtime/v8 production viewer path that loads real HDR environment files, builds PMREM/BRDF resources, and renders textured glTF assets in apps such as `apps/flagship-viewer`.
@@ -34,7 +34,7 @@ renderer.render({
 
 That path feeds `u_environmentColor`, procedural sky/horizon/ground terms, optional environment texture uniforms, optional mip-aware specular sampling, and an optional BRDF LUT into the default PBR material shader. It is useful for examples, editor previews, and deterministic browser tests.
 
-The higher-fidelity path lives in `packages/rendering/src/EnvironmentPipeline.ts`, `packages/rendering/src/PMREM.ts`, `packages/rendering/src/IBL.ts`, `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`, and the production-runtime/v8 flagship apps. Current reports show real HDR parsing, RGBA16F environment sampling, PMREM/BRDF resources, WebGL2 render proofs, and visible environment deltas. `tests/reports/production-runtime-pbr-hdr-readiness.json` passes for studio/sunset HDR scenes, and `tests/reports/current-routes-threejs-parity.json` records a same-scene G3D/Three.js flagship comparison using `studio_small_08_1k.hdr`.
+The higher-fidelity path lives in `packages/rendering/src/EnvironmentPipeline.ts`, `packages/rendering/src/PMREM.ts`, `packages/rendering/src/IBL.ts`, `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`, and the production-runtime/v8 flagship apps. Current reports show real HDR parsing, RGBA16F environment sampling, PMREM/BRDF resources, WebGL2 render proofs, and visible environment deltas. `tests/reports/production-runtime-pbr-hdr-readiness.json` passes for studio/sunset HDR scenes, and `tests/reports/current-routes-threejs-parity.json` records a same-scene A3D/Three.js flagship comparison using `studio_small_08_1k.hdr`.
 
 ## Current Use Cases
 

@@ -24,7 +24,7 @@ These claims remain blocked until a future gate explicitly proves them. Passing 
 
 V4 may target this claim, but it is not allowed until `pnpm v4:release` passes:
 
-> G3D is a high-quality Three.js competitor for supported product visualization, asset review, material authoring, architecture/interior, character preview, and lightweight interactive workflows.
+> A3D is a high-quality Three.js competitor for supported product visualization, asset review, material authoring, architecture/interior, character preview, and lightweight interactive workflows.
 
 ## Required Boundary
 

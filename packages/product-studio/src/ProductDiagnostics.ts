@@ -1,4 +1,4 @@
-import type { RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import type { RenderDeviceDiagnostics } from "@aura3d/rendering";
 import type { ProductAsset, ProductDiagnostics } from "./ProductTypes";
 
 export function createProductDiagnostics(asset: ProductAsset, renderDiagnostics?: RenderDeviceDiagnostics): ProductDiagnostics {

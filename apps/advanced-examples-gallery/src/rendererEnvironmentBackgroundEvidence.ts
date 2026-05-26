@@ -6,7 +6,7 @@ import {
   type RenderDeviceDiagnostics,
   type TextureDimension,
   type V6LoadedHdrEnvironment
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 export const RENDERER_ENVIRONMENT_BACKGROUND_SOURCE = "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass" as const;
 export const RENDERER_ENVIRONMENT_LIGHTING_SOURCE = "loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture" as const;

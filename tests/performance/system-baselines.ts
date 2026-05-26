@@ -1,10 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { cpus, platform, release, totalmem } from "node:os";
 import { dirname, resolve } from "node:path";
-import { AnimationClip, AnimationMixer, AnimationTrack } from "@galileo3d/animation";
-import { AssetManager, type AssetLoader } from "@galileo3d/assets";
-import { World } from "@galileo3d/ecs";
-import { PhysicsWorld, Shape } from "@galileo3d/physics";
+import { AnimationClip, AnimationMixer, AnimationTrack } from "@aura3d/animation";
+import { AssetManager, type AssetLoader } from "@aura3d/assets";
+import { World } from "@aura3d/ecs";
+import { PhysicsWorld, Shape } from "@aura3d/physics";
 import {
   CollisionModule,
   ForceModule,
@@ -16,7 +16,7 @@ import {
   ParticleSystem,
   Renderer,
   UnlitMaterial,
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 interface Baseline {
   name: string;
@@ -265,7 +265,7 @@ async function main(): Promise<void> {
 
   const report = {
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-performance-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-performance-run",
     suite: "workstream-6-system-performance",
     environment: {
       node: process.version,

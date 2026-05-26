@@ -18,8 +18,8 @@ pnpm exec playwright test tests/browser/editor-app.spec.ts tests/browser/editor-
 
 ## What It Uses
 
-- `@galileo3d/editor-runtime` for selection, commands, history, project state, and play-mode coordination.
-- `@galileo3d/editor` for browser editor UI workflows.
+- `@aura3d/editor-runtime` for selection, commands, history, project state, and play-mode coordination.
+- `@aura3d/editor` for browser editor UI workflows.
 - Static exported project output for browser smoke validation.
 
 ## Implementation Shape

@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_SHOWROOM__?: {
+    __AURA3D_MATERIAL_SHOWROOM__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2";
       readonly visualClaim: string;
@@ -38,7 +38,7 @@ declare global {
       readonly errors: readonly string[];
       readonly error?: string;
     };
-    __GALILEO3D_RENDERER_STRESS_LAB__?: {
+    __AURA3D_RENDERER_STRESS_LAB__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2";
       readonly visualClaim: string;
@@ -75,7 +75,7 @@ declare global {
       readonly errors: readonly string[];
       readonly error?: string;
     };
-    __GALILEO3D_SHADOW_LAB__?: {
+    __AURA3D_SHADOW_LAB__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2-plus-shadow-pass";
       readonly visualClaim: string;
@@ -127,7 +127,7 @@ declare global {
       readonly canvasFrame?: { readonly width: number; readonly height: number };
       readonly error?: string;
     };
-    __GALILEO3D_POSTPROCESS_LAB__?: {
+    __AURA3D_POSTPROCESS_LAB__?: {
       readonly status: "ready" | "error";
       readonly renderer: "mock-rendergraph-2d";
       readonly visualClaim: string;
@@ -200,7 +200,7 @@ declare global {
       readonly diagnostics?: { readonly drawCalls: number; readonly lastError: string | null };
       readonly error?: string;
     };
-    __GALILEO3D_WEBGPU_CAPABILITY__?: {
+    __AURA3D_WEBGPU_CAPABILITY__?: {
       readonly status: "ready";
       readonly renderer: "webgpu" | "unavailable";
       readonly visualClaim: "webgpu-capability-probe";
@@ -344,11 +344,11 @@ test.describe("v3 renderer examples", () => {
   test("material showroom renders all bounded PBR material states with known limits", async ({ page }) => {
     await page.goto(`${server.origin}/examples/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_MATERIAL_SHOWROOM__?.status === "ready" || window.__GALILEO3D_MATERIAL_SHOWROOM__?.status === "error",
+      () => window.__AURA3D_MATERIAL_SHOWROOM__?.status === "ready" || window.__AURA3D_MATERIAL_SHOWROOM__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
-    const result = await page.evaluate(() => window.__GALILEO3D_MATERIAL_SHOWROOM__);
+    const result = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
@@ -475,15 +475,15 @@ test.describe("v3 renderer examples", () => {
   test("renderer stress lab updates object, material, and light counts and reports culling metrics", async ({ page }) => {
     await page.goto(`${server.origin}/examples/renderer-stress-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_RENDERER_STRESS_LAB__?.status === "ready" || window.__GALILEO3D_RENDERER_STRESS_LAB__?.status === "error",
+      () => window.__AURA3D_RENDERER_STRESS_LAB__?.status === "ready" || window.__AURA3D_RENDERER_STRESS_LAB__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
     await page.locator("[data-testid='stress-objects']").fill("144");
     await page.locator("[data-testid='stress-materials']").fill("10");
     await page.locator("[data-testid='stress-lights']").fill("6");
-    await page.waitForFunction(() => window.__GALILEO3D_RENDERER_STRESS_LAB__?.objectCount === 144 && window.__GALILEO3D_RENDERER_STRESS_LAB__?.materialCount === 10 && window.__GALILEO3D_RENDERER_STRESS_LAB__?.lightCount === 6);
-    const result = await page.evaluate(() => window.__GALILEO3D_RENDERER_STRESS_LAB__);
+    await page.waitForFunction(() => window.__AURA3D_RENDERER_STRESS_LAB__?.objectCount === 144 && window.__AURA3D_RENDERER_STRESS_LAB__?.materialCount === 10 && window.__AURA3D_RENDERER_STRESS_LAB__?.lightCount === 6);
+    const result = await page.evaluate(() => window.__AURA3D_RENDERER_STRESS_LAB__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
@@ -550,11 +550,11 @@ test.describe("v3 renderer examples", () => {
   test("shadow lab validates cascade metadata and projected shadow regions", async ({ page }, testInfo) => {
     await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_SHADOW_LAB__?.status === "ready" || window.__GALILEO3D_SHADOW_LAB__?.status === "error",
+      () => window.__AURA3D_SHADOW_LAB__?.status === "ready" || window.__AURA3D_SHADOW_LAB__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
-    const result = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+    const result = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2-plus-shadow-pass");
@@ -648,12 +648,12 @@ test.describe("v3 renderer examples", () => {
     await page.locator("[data-testid='shadow-darkness']").fill("0.85");
     await page.locator("[data-testid='shadow-pcf-radius']").fill("3");
     await page.waitForFunction(() =>
-      window.__GALILEO3D_SHADOW_LAB__?.controls?.mapSize === 256 &&
-      window.__GALILEO3D_SHADOW_LAB__?.controls?.bias === 0.006 &&
-      window.__GALILEO3D_SHADOW_LAB__?.controls?.darkness === 0.85 &&
-      window.__GALILEO3D_SHADOW_LAB__?.controls?.pcfRadius === 3
+      window.__AURA3D_SHADOW_LAB__?.controls?.mapSize === 256 &&
+      window.__AURA3D_SHADOW_LAB__?.controls?.bias === 0.006 &&
+      window.__AURA3D_SHADOW_LAB__?.controls?.darkness === 0.85 &&
+      window.__AURA3D_SHADOW_LAB__?.controls?.pcfRadius === 3
     );
-    const adjusted = await page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__);
+    const adjusted = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
     expect(adjusted?.controls).toEqual({ mapSize: 256, bias: 0.006, darkness: 0.85, pcfRadius: 3 });
     expect(adjusted?.pcf).toMatchObject({ mode: "pcf", radius: 3, samples: 9 });
     expect(channel(adjusted?.shadowPixel, 0)).toBeLessThan(channel(beforeControlPixel, 0));
@@ -663,11 +663,11 @@ test.describe("v3 renderer examples", () => {
   test("postprocess lab validates before and after pass pixels", async ({ page }) => {
     await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_POSTPROCESS_LAB__?.status === "ready" || window.__GALILEO3D_POSTPROCESS_LAB__?.status === "error",
+      () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
-    const result = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const result = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2-real-scene-postprocess");
@@ -804,8 +804,8 @@ test.describe("v3 renderer examples", () => {
     });
 
     await page.locator("[data-testid='postprocess-bloom']").uncheck();
-    await page.waitForFunction(() => window.__GALILEO3D_POSTPROCESS_LAB__?.controls?.bloom === false);
-    const withoutBloom = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    await page.waitForFunction(() => window.__AURA3D_POSTPROCESS_LAB__?.controls?.bloom === false);
+    const withoutBloom = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     expect(withoutBloom?.graphOrder).toEqual(["scene-depth", "depth-visualization", "tone-mapping", "fxaa"]);
     expect(withoutBloom?.enabledPasses).toEqual(["tone-mapping", "fxaa"]);
     expect(withoutBloom?.controls).toMatchObject({
@@ -826,11 +826,11 @@ test.describe("v3 renderer examples", () => {
   test("WebGPU capability example records graceful unavailable state instead of crashing", async ({ page }) => {
     await page.goto(`${server.origin}/examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_WEBGPU_CAPABILITY__?.status === "ready",
+      () => window.__AURA3D_WEBGPU_CAPABILITY__?.status === "ready",
       undefined,
       { timeout: 20_000 }
     );
-    const result = await page.evaluate(() => window.__GALILEO3D_WEBGPU_CAPABILITY__);
+    const result = await page.evaluate(() => window.__AURA3D_WEBGPU_CAPABILITY__);
 
     expect(result?.status).toBe("ready");
     expect(result?.visualClaim).toBe("webgpu-capability-probe");

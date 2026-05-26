@@ -2,7 +2,7 @@
 
 Version: 0.1.0-alpha.0
 
-Galileo3D separates real WebGPU evidence from injected adapter evidence. Browser tests that use injected adapters prove the renderer contract, fallback behavior, and submission shape. They do not prove hardware support.
+Aura3D separates real WebGPU evidence from injected adapter evidence. Browser tests that use injected adapters prove the renderer contract, fallback behavior, and submission shape. They do not prove hardware support.
 
 The real-device probe is `tests/browser/webgpu-real-device.spec.ts`. It uses `navigator.gpu` directly when the browser exposes it and writes `tests/reports/webgpu-hardware-matrix.json` with:
 
@@ -26,7 +26,7 @@ The current parity reports distinguish:
 - the hardware matrix includes real adapter/device results across the browsers, operating systems, and GPU adapters named in the release notes;
 - injected adapter render/compute contracts;
 - real `navigator.gpu` adapter/device evidence;
-- real WebGPU render-target/readback evidence through the current Galileo3D `RenderDevice` API;
+- real WebGPU render-target/readback evidence through the current Aura3D `RenderDevice` API;
 - real WebGPU/WebGL2 feature-matrix conformance for triangle, indexed draw, line, point, vertex-color, instancing, texture, and morph paths;
 - native WebGPU render-pass submission evidence;
 - native WebGPU texture-to-buffer readback evidence through `WebGPUDevice.readPixelsAsync()`;

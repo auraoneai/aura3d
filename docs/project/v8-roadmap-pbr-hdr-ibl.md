@@ -34,8 +34,8 @@ The environment should affect reflections and diffuse lighting, not merely appea
 
 PMREM or equivalent prefiltered environment lighting is required before claiming high-end PBR/IBL parity. The claim boundary is:
 
-- Allowed: "G3D has route-level PMREM/IBL evidence" only where comparison reports prove it.
-- Blocked: "G3D matches Three.js PMREM globally" until the same-scene comparison set covers the relevant materials and environments.
+- Allowed: "A3D has route-level PMREM/IBL evidence" only where comparison reports prove it.
+- Blocked: "A3D matches Three.js PMREM globally" until the same-scene comparison set covers the relevant materials and environments.
 
 ## Tone Mapping
 

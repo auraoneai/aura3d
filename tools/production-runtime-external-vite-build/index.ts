@@ -15,7 +15,7 @@ const tarballName = execFileSync("npm", ["pack", "--silent", "--pack-destination
 }).trim().split(/\r?\n/).at(-1);
 if (!tarballName) throw new Error("npm pack did not return a tarball name.");
 const tarballPath = join(packDir, basename(tarballName));
-const tempRoot = mkdtempSync(join(tmpdir(), "g3d-production-runtime-external-consumer-"));
+const tempRoot = mkdtempSync(join(tmpdir(), "a3d-production-runtime-external-consumer-"));
 const appDir = join(tempRoot, "app");
 
 try {
@@ -23,12 +23,12 @@ try {
   writeFileSync(join(appDir, "package.json"), `${JSON.stringify({
     type: "module",
     scripts: { build: "vite build" },
-    dependencies: { "@galileo3d/engine": `file:${tarballPath}` },
+    dependencies: { "@aura3d/engine": `file:${tarballPath}` },
     devDependencies: { vite: "^7.3.2", typescript: "^5.9.3" }
   }, null, 2)}\n`);
   writeFileSync(join(appDir, "vite.config.ts"), `import { defineConfig } from "vite";\nexport default defineConfig({ base: "./" });\n`);
-  writeFileSync(join(appDir, "index.html"), `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>G3D V6 External Consumer</title><style>body{margin:0;background:#070a0f;color:#eef2f6;font-family:system-ui,sans-serif}.shell{display:grid;grid-template-rows:auto 1fr;min-height:100vh}canvas{width:100vw;height:calc(100vh - 100px);display:block}.g3d-production-runtime-panel,.g3d-production-runtime-metrics{display:flex;justify-content:space-between;gap:16px;padding:14px 18px;background:#111820}.g3d-production-runtime-metrics{justify-content:flex-start;color:#b7c4cf}</style></head><body><main class="shell"><div id="app"></div><canvas id="viewport" width="960" height="540"></canvas></main><script type="module" src="./src/main.ts"></script></body></html>\n`);
-  writeFileSync(join(appDir, "src/main.ts"), `import { runV6Example } from "@galileo3d/engine/workflows/production";\n\nvoid runV6Example({\n  appId: "production-runtime-external-consumer",\n  sceneId: "external-damaged-helmet",\n  title: "External V6 Consumer",\n  workflow: "fresh Vite app importing V6 APIs from packed @galileo3d/engine",\n  assets: [{ id: "damaged-helmet", label: "Damaged Helmet", file: "damaged-helmet.glb", role: "primary" }],\n  environment: { id: "studio-small-08", label: "Studio Small 08", file: "studio_small_08_1k.hdr", exposure: 1, intensity: 1.15, rotation: 0.15 },\n  postprocess: true,\n  webgpuReport: false,\n  expectedPostprocessChain: ["tone-mapping", "color-grade", "bloom", "fxaa"]\n});\n`);
+  writeFileSync(join(appDir, "index.html"), `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>A3D V6 External Consumer</title><style>body{margin:0;background:#070a0f;color:#eef2f6;font-family:system-ui,sans-serif}.shell{display:grid;grid-template-rows:auto 1fr;min-height:100vh}canvas{width:100vw;height:calc(100vh - 100px);display:block}.a3d-production-runtime-panel,.a3d-production-runtime-metrics{display:flex;justify-content:space-between;gap:16px;padding:14px 18px;background:#111820}.a3d-production-runtime-metrics{justify-content:flex-start;color:#b7c4cf}</style></head><body><main class="shell"><div id="app"></div><canvas id="viewport" width="960" height="540"></canvas></main><script type="module" src="./src/main.ts"></script></body></html>\n`);
+  writeFileSync(join(appDir, "src/main.ts"), `import { runV6Example } from "@aura3d/engine/workflows/production";\n\nvoid runV6Example({\n  appId: "production-runtime-external-consumer",\n  sceneId: "external-damaged-helmet",\n  title: "External V6 Consumer",\n  workflow: "fresh Vite app importing V6 APIs from packed @aura3d/engine",\n  assets: [{ id: "damaged-helmet", label: "Damaged Helmet", file: "damaged-helmet.glb", role: "primary" }],\n  environment: { id: "studio-small-08", label: "Studio Small 08", file: "studio_small_08_1k.hdr", exposure: 1, intensity: 1.15, rotation: 0.15 },\n  postprocess: true,\n  webgpuReport: false,\n  expectedPostprocessChain: ["tone-mapping", "color-grade", "bloom", "fxaa"]\n});\n`);
   execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], { cwd: appDir, stdio: "pipe" });
   execFileSync("npm", ["run", "build", "--silent"], { cwd: appDir, stdio: "pipe" });
   rmSync(previewDir, { recursive: true, force: true });
@@ -36,7 +36,7 @@ try {
   const outputFiles = listFiles(previewDir).map((file) => file.slice(previewDir.length + 1).replaceAll("\\", "/"));
   const js = outputFiles.filter((file) => file.endsWith(".js")).map((file) => readFileSync(join(previewDir, file), "utf8")).join("\n");
   const report = {
-    schema: "g3d-production-runtime-external-vite-build/v1",
+    schema: "a3d-production-runtime-external-vite-build/v1",
     generatedAt: new Date().toISOString(),
     pass: existsSync(join(previewDir, "index.html")) &&
       outputFiles.some((file) => file.endsWith(".js")) &&

@@ -23,7 +23,7 @@ export interface V4ExternalEvidenceHandoffFile {
   readonly exists: boolean;
   readonly bytes?: number;
   readonly sha256?: string;
-  readonly kind: "baseline-kit" | "galileo-reference" | "local-evidence" | "runbook" | "static-export" | "tooling" | "workflow";
+  readonly kind: "baseline-kit" | "aura3d-reference" | "local-evidence" | "runbook" | "static-export" | "tooling" | "workflow";
 }
 
 export interface V4ExternalEvidenceHandoffReport {
@@ -149,26 +149,26 @@ export function createV4ExternalEvidenceHandoffReport(root = process.cwd()): V4E
         "pnpm run:v4-external-host-evidence",
       ],
       unityHost: [
-        "export G3D_UNITY_EDITOR=/absolute/path/to/Unity",
-        "export G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
-        "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
-        "node fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
+        "export A3D_UNITY_EDITOR=/absolute/path/to/Unity",
+        "export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
+        "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
+        "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
       ],
       unrealHost: [
-        "export G3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd",
-        "export G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
-        "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json",
-        "node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
+        "export A3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd",
+        "export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
+        "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json",
+        "node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
       ],
       publicDeploymentHost: [
         "pnpm build:external-demos",
         "pnpm verify:static-demo-server-smoke",
         "deploy release-artifacts/external-demos/0.1.0-alpha.0 to a durable HTTPS origin",
-        "G3D_PUBLIC_DEMO_URL=https://your-public-demo.example/ pnpm verify:public-demo-deployment",
+        "A3D_PUBLIC_DEMO_URL=https://your-public-demo.example/ pnpm verify:public-demo-deployment",
         "pnpm audit:external-parity-production-readiness",
       ],
       ingestAndFinalAudit: [
-        "node fixtures/external-engine-baselines/v4/ingest-external-baseline-artifacts.mjs path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
+        "node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
         "pnpm ingest:public-demo-deployment-reports path/to/v4-public-demo-deployment-reports",
         "pnpm refresh:v4-readiness-reports",
         "pnpm status:v4-local-port",
@@ -194,7 +194,7 @@ export function verifyV4ExternalEvidenceHandoffPackage(root = process.cwd()): V4
   const files = Array.isArray(manifest?.files) ? manifest.files.filter(isRecord) : [];
   const entryPoints = Array.isArray(manifest?.entryPoints) ? manifest.entryPoints.filter(isRecord) : [];
   const violations = [
-    ...(manifest?.schemaVersion === "g3d-external-parity-external-evidence-handoff-package-v1" ? [] : [`${packageManifestPath} is missing or has an invalid schemaVersion.`]),
+    ...(manifest?.schemaVersion === "a3d-external-parity-external-evidence-handoff-package-v1" ? [] : [`${packageManifestPath} is missing or has an invalid schemaVersion.`]),
     ...files.flatMap((file) => verifyPackagedFile(root, file)),
     ...entryPoints.flatMap((file) => verifyPackagedFile(root, file)),
     ...verifyPackageEntryPoints(root),
@@ -240,9 +240,9 @@ function fileList(root: string, baselineKit: Record<string, unknown> | null, sta
   const baselineArtifacts = Array.isArray(baselineKit?.artifacts)
     ? baselineKit.artifacts.filter(isRecord).map((artifact) => stringValue(artifact.path)).filter(Boolean)
     : [];
-  const galileoReferences = Array.isArray(baselineKit?.sceneSlots)
+  const aura3dReferences = Array.isArray(baselineKit?.sceneSlots)
     ? baselineKit.sceneSlots.filter(isRecord).flatMap((slot) => {
-      const screenshot = isRecord(slot.galileoReferenceScreenshot) ? slot.galileoReferenceScreenshot : {};
+      const screenshot = isRecord(slot.aura3dReferenceScreenshot) ? slot.aura3dReferenceScreenshot : {};
       return typeof screenshot.path === "string" ? [screenshot.path] : [];
     })
     : [];
@@ -256,7 +256,7 @@ function fileList(root: string, baselineKit: Record<string, unknown> | null, sta
   ].filter(Boolean);
   const paths = [
     ...baselineArtifacts.map((path) => ({ path, kind: "baseline-kit" as const })),
-    ...galileoReferences.map((path) => ({ path, kind: "galileo-reference" as const })),
+    ...aura3dReferences.map((path) => ({ path, kind: "aura3d-reference" as const })),
     ...localEvidencePaths(root).map((path) => ({ path, kind: "local-evidence" as const })),
     ...staticExportPaths.map((path) => ({ path, kind: "static-export" as const })),
     { path: "tests/reports/external-parity-external-host-doctor.json", kind: "runbook" as const },
@@ -279,9 +279,9 @@ function fileList(root: string, baselineKit: Record<string, unknown> | null, sta
     { path: "packages/assets/src/OBJLoader.ts", kind: "tooling" as const },
     { path: "packages/assets/src/index.ts", kind: "tooling" as const },
     { path: "packages/assets/tests/assets.test.ts", kind: "tooling" as const },
-    { path: "examples/portfolio/main.ts", kind: "local-evidence" as const },
-    { path: "examples/portfolio/README.md", kind: "local-evidence" as const },
-    { path: "tests/browser/example-portfolio.spec.ts", kind: "tooling" as const },
+    { path: "examples/external-gallery/index.html", kind: "local-evidence" as const },
+    { path: "examples/product-configurator/main.ts", kind: "local-evidence" as const },
+    { path: "tests/browser/external-parity-examples.spec.ts", kind: "tooling" as const },
     { path: "tests/browser/example-screenshot-audit-external-parity.spec.ts", kind: "tooling" as const },
     { path: "tests/unit/assets/asset-import-preflight.test.ts", kind: "tooling" as const },
     { path: "tests/unit/tools/external-parity-validation.test.ts", kind: "tooling" as const },
@@ -397,7 +397,7 @@ function stageHandoffPackage(root: string, files: readonly V4ExternalEvidenceHan
 
 function writePackageManifest(root: string, packagedFiles: V4ExternalEvidenceHandoffReport["packagedFiles"]): void {
   writeFileSync(join(root, packageManifestPath), `${JSON.stringify({
-    schemaVersion: "g3d-external-parity-external-evidence-handoff-package-v1",
+    schemaVersion: "a3d-external-parity-external-evidence-handoff-package-v1",
     claimBoundary: "Portable local input package only. It is not Unity/Unreal/public-deployment evidence.",
     generatedAt: new Date().toISOString(),
     sourceReportPath: reportPath,
@@ -440,7 +440,7 @@ function writeTransferManifest(
   archive: { readonly bytes: number; readonly sha256: string }
 ): void {
   writeFileSync(join(root, transferManifestPath), `${JSON.stringify({
-    schemaVersion: "g3d-v4-external-evidence-transfer-v1",
+    schemaVersion: "a3d-v4-external-evidence-transfer-v1",
     claimBoundary: report.claimBoundary,
     generatedAt: new Date().toISOString(),
     packageDir,
@@ -477,9 +477,9 @@ function writeTransferManifest(
       `tar -xzf ${packageArchivePath}`,
       "cd external-parity-external-evidence-handoff",
       "node VERIFY_PACKAGE_INTEGRITY.mjs",
-      "node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/G3D",
-      "node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/G3D",
-      "node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/G3D",
+      "node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/A3D",
+      "node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/A3D",
+      "node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/A3D",
       "pnpm run:v4-external-host-evidence:execute",
       "pnpm preflight:v4-parity:after-external-evidence",
       "pnpm status:v4-parity"
@@ -508,8 +508,8 @@ function tarHeader(path: string, size: number): Buffer {
   writeString(header, "0", 156, 1);
   writeString(header, "ustar", 257, 6);
   writeString(header, "00", 263, 2);
-  writeString(header, "galileo3d", 265, 32);
-  writeString(header, "galileo3d", 297, 32);
+  writeString(header, "aura3d", 265, 32);
+  writeString(header, "aura3d", 297, 32);
   writeString(header, prefix, 345, 155);
   let checksum = 0;
   for (const byte of header) checksum += byte;
@@ -624,8 +624,8 @@ function verifyPackageEntryPoints(root: string): string[] {
     verifyTextFile(root, packageReadmePath, "# V4 External Evidence Handoff Package"),
     verifyTextFile(root, packageReadmePath, "## GitHub Workflow Route"),
     verifyTextFile(root, packageReadmePath, "Patch-only transfers must copy the patch files"),
-    verifyTextFile(root, packageReadmePath, "gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/G3D2025 --ref main"),
-    verifyTextFile(root, packageReadmePath, "gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/G3D2025 --ref main -f engine=all"),
+    verifyTextFile(root, packageReadmePath, "gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/Aura3D --ref main"),
+    verifyTextFile(root, packageReadmePath, "gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/Aura3D --ref main -f engine=all"),
     verifyTextFile(root, packageReadmePath, "pnpm preflight:v4-parity:after-external-evidence"),
     verifyTextFile(root, packageStandaloneVerifyScriptPath, "VERIFY_PACKAGE_INTEGRITY"),
     verifyTextFile(root, packageRestoreScriptPath, "RESTORE_INTO_CHECKOUT"),
@@ -724,7 +724,7 @@ function verifyTransferManifest(root: string, archiveBytes: number, archiveSha25
   const manifest = readJson(root, transferManifestPath);
   const archive = isRecord(manifest?.archive) ? manifest.archive : {};
   return [
-    ...(manifest?.schemaVersion === "g3d-v4-external-evidence-transfer-v1" ? [] : [`${transferManifestPath} is missing or has an invalid schemaVersion.`]),
+    ...(manifest?.schemaVersion === "a3d-v4-external-evidence-transfer-v1" ? [] : [`${transferManifestPath} is missing or has an invalid schemaVersion.`]),
     ...(manifest?.claimBoundary === "This handoff only packages and inventories local inputs for external Unity/Unreal/public-deployment evidence capture. It is not parity evidence and does not clear any external artifact by itself." ? [] : [`${transferManifestPath} is missing the handoff claim boundary.`]),
     ...(manifest?.packageDir === packageDir ? [] : [`${transferManifestPath} packageDir does not match ${packageDir}.`]),
     ...(manifest?.packageArchivePath === packageArchivePath ? [] : [`${transferManifestPath} packageArchivePath does not match ${packageArchivePath}.`]),
@@ -745,9 +745,9 @@ function verifyTransferCommandMarkers(manifest: Record<string, unknown> | null):
     ...(text.includes(packageArchiveSha256Path) ? [] : [`${transferManifestPath} is missing the archive checksum command.`]),
     ...(text.includes(packageArchivePath) ? [] : [`${transferManifestPath} is missing the archive extraction command.`]),
     ...(text.includes("node VERIFY_PACKAGE_INTEGRITY.mjs") ? [] : [`${transferManifestPath} is missing the standalone integrity command.`]),
-    ...(text.includes("node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/G3D") ? [] : [`${transferManifestPath} is missing the restore dry-run command.`]),
-    ...(text.includes("node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/G3D") ? [] : [`${transferManifestPath} is missing the restore command.`]),
-    ...(text.includes("node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/G3D") ? [] : [`${transferManifestPath} is missing the external-host preflight command.`]),
+    ...(text.includes("node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/A3D") ? [] : [`${transferManifestPath} is missing the restore dry-run command.`]),
+    ...(text.includes("node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/A3D") ? [] : [`${transferManifestPath} is missing the restore command.`]),
+    ...(text.includes("node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/A3D") ? [] : [`${transferManifestPath} is missing the external-host preflight command.`]),
     ...(text.includes("pnpm run:v4-external-host-evidence:execute") ? [] : [`${transferManifestPath} is missing the external-host runner execution command.`]),
     ...(text.includes("pnpm preflight:v4-parity:after-external-evidence") ? [] : [`${transferManifestPath} is missing the post-external parity preflight command.`]),
     ...(text.includes("pnpm status:v4-parity") ? [] : [`${transferManifestPath} is missing the final parity status command.`]),
@@ -836,12 +836,12 @@ ${firstBlocked.blockers.map((entry) => `- ${entry}`).join("\n")}
 
 ## Restore Into A Repo Checkout
 
-This package is an overlay for a full Galileo3D checkout, not a standalone repository. On the Unity/Unreal/deployment machine, clone or update the repo first, then restore this package into that checkout:
+This package is an overlay for a full Aura3D checkout, not a standalone repository. On the Unity/Unreal/deployment machine, clone or update the repo first, then restore this package into that checkout:
 
 - \`node VERIFY_PACKAGE_INTEGRITY.mjs\`
-- \`node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/G3D\`
-- \`node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/G3D\`
-- \`node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/G3D\`
+- \`node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/A3D\`
+- \`node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/A3D\`
+- \`node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/A3D\`
 - \`pnpm doctor:v4-external-host\`
 - \`pnpm doctor:v4-external-host:strict\`
 - \`pnpm run:v4-external-host-evidence\`
@@ -870,9 +870,9 @@ Patch-only transfers must copy the patch files into \`release-artifacts/\` befor
 
 ## External Hosts
 
-- Unity: set \`G3D_UNITY_EDITOR\`, run the Unity CLI smoke, then run \`node fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project\`.
-- Unreal: set \`G3D_UNREAL_EDITOR\`, run the Unreal CLI smoke, then run \`node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject\`.
-- Public deployment: deploy \`release-artifacts/external-demos/0.1.0-alpha.0\` to durable HTTPS, then run \`G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment\`.
+- Unity: set \`A3D_UNITY_EDITOR\`, run the Unity CLI smoke, then run \`node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project\`.
+- Unreal: set \`A3D_UNREAL_EDITOR\`, run the Unreal CLI smoke, then run \`node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject\`.
+- Public deployment: deploy \`release-artifacts/external-demos/0.1.0-alpha.0\` to durable HTTPS, then run \`A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment\`.
 
 ## GitHub Workflow Route
 
@@ -881,9 +881,9 @@ If using GitHub Actions instead of running the external hosts manually:
 - Land \`.github/workflows/v4-public-demo-deploy.yml\` and \`.github/workflows/external-parity-external-engine-baselines.yml\` on the repository default branch.
 - Enable GitHub Pages.
 - Provision self-hosted runners labeled \`unity\` and \`unreal\`.
-- Configure \`G3D_UNITY_EDITOR\` and \`G3D_UNREAL_EDITOR\`; the workflow sets \`G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true\` internally.
-- Trigger \`gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/G3D2025 --ref main\`.
-- Trigger \`gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/G3D2025 --ref main -f engine=all\`.
+- Configure \`A3D_UNITY_EDITOR\` and \`A3D_UNREAL_EDITOR\`; the workflow sets \`A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true\` internally.
+- Trigger \`gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/Aura3D --ref main\`.
+- Trigger \`gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/Aura3D --ref main -f engine=all\`.
 - Download and ingest the workflow artifacts with \`pnpm ingest:public-demo-deployment-reports\` and \`pnpm ingest:v4-external-baseline-artifacts\`.
 
 After collecting and ingesting external artifacts, rerun \`pnpm preflight:v4-parity:after-external-evidence\` and \`pnpm status:v4-parity\`. Do not claim parity unless \`pnpm status:v4-parity\` reports \`ok: true\` and \`13 / 13\` criteria achieved.
@@ -911,7 +911,7 @@ const entries = [
   ...(Array.isArray(manifest.entryPoints) ? manifest.entryPoints : [])
 ];
 const violations = [
-  ...(manifest.schemaVersion === "g3d-external-parity-external-evidence-handoff-package-v1" ? [] : ["manifest schemaVersion is invalid"]),
+  ...(manifest.schemaVersion === "a3d-external-parity-external-evidence-handoff-package-v1" ? [] : ["manifest schemaVersion is invalid"]),
   ...entries.flatMap(verifyEntry)
 ];
 
@@ -977,7 +977,7 @@ const entries = [
     "package.json",
     "tools/external-demo-export",
     "tools/external-demo-validation",
-    "examples/portfolio",
+    "examples/external-gallery",
     "packages/assets/src/AssetImportPreflight.ts",
     "packages/assets/src/OBJLoader.ts",
     "packages/assets/src/index.ts",
@@ -990,7 +990,7 @@ const entries = [
     "release-artifacts/v4-current-handoff-supplement.patch",
     "tests/reports",
     "tests/unit/assets/asset-import-preflight.test.ts",
-    "tests/browser/example-portfolio.spec.ts",
+    "tests/browser/external-parity-examples.spec.ts",
     "tests/browser/example-screenshot-audit-external-parity.spec.ts",
     "tests/unit/tools/external-parity-validation.test.ts",
     "tools/external-parity-examples",
@@ -1033,7 +1033,7 @@ if (!existsSync(targetRoot)) {
   throw new Error(\`Target checkout does not exist: \${targetRoot}\`);
 }
 if (!existsSync(resolve(targetRoot, "package.json"))) {
-  throw new Error(\`Target does not look like a Galileo3D checkout because package.json is missing: \${targetRoot}\`);
+  throw new Error(\`Target does not look like a Aura3D checkout because package.json is missing: \${targetRoot}\`);
 }
 
 const restored = [];
@@ -1122,7 +1122,7 @@ const targetRoot = resolve(process.argv[2] || process.cwd());
 const doctorReportPath = "tests/reports/external-parity-external-host-doctor.json";
 
 if (!existsSync(resolve(targetRoot, "package.json"))) {
-  throw new Error(\`Target does not look like a Galileo3D checkout because package.json is missing: \${targetRoot}\`);
+  throw new Error(\`Target does not look like a Aura3D checkout because package.json is missing: \${targetRoot}\`);
 }
 
 const doctor = spawnSync("pnpm", ["doctor:v4-external-host:strict"], {
@@ -1158,11 +1158,11 @@ console.log(JSON.stringify({
   doctorReportPath,
   doctorSummary: readDoctorSummary(),
   nextCommands: [
-    "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
-    "node fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
-    "node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json",
-    "node fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
-    "G3D_PUBLIC_DEMO_URL=https://your-public-demo.example/ pnpm verify:public-demo-deployment",
+    "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
+    "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
+    "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json",
+    "node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
+    "A3D_PUBLIC_DEMO_URL=https://your-public-demo.example/ pnpm verify:public-demo-deployment",
     "pnpm run:v4-external-host-evidence:execute",
     "pnpm refresh:v4-readiness-reports",
     "pnpm status:v4-parity",

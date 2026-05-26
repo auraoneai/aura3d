@@ -1,11 +1,11 @@
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { InputSnapshot, OrbitControls, createSceneCameraControlAdapter } from "@galileo3d/input";
-import { Geometry, RenderDeviceError, UnlitMaterial } from "@galileo3d/rendering";
-import { Renderable, Scene } from "@galileo3d/scene";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { InputSnapshot, OrbitControls, createSceneCameraControlAdapter } from "@aura3d/input";
+import { Geometry, RenderDeviceError, UnlitMaterial } from "@aura3d/rendering";
+import { Renderable, Scene } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV8OrbitControls?: V8OrbitControlsRuntime;
+    __a3dV8OrbitControls?: V8OrbitControlsRuntime;
   }
 }
 
@@ -22,7 +22,7 @@ interface V8OrbitControlsRuntime {
   readonly rotateSamples: number;
   readonly panSamples: number;
   readonly wheelSamples: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly controls: "public-input-OrbitControls";
   readonly elapsedMs: number;
   readonly error?: string;
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8OrbitControls = runtime;
+    window.__a3dV8OrbitControls = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -72,7 +72,7 @@ async function run(): Promise<void> {
       "material:cyan": new UnlitMaterial({ color: [0.3, 0.82, 1, 1] }),
       "material:floor": new UnlitMaterial({ color: [0.18, 0.21, 0.25, 1] })
     };
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -139,7 +139,7 @@ async function run(): Promise<void> {
           panSamples,
           wheelSamples
         });
-        window.__g3dV8OrbitControls = runtime;
+        window.__a3dV8OrbitControls = runtime;
         if (frameCount === 1 || frameCount % 15 === 0) publish();
         requestAnimationFrame(render);
       } catch (error) {
@@ -195,7 +195,7 @@ function createRuntime(
     rotateSamples: patch.rotateSamples ?? 0,
     panSamples: patch.panSamples ?? 0,
     wheelSamples: patch.wheelSamples ?? 0,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     controls: "public-input-OrbitControls",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
@@ -207,7 +207,7 @@ function renderUi(root: HTMLElement, runtime: V8OrbitControlsRuntime): void {
     <section class="panel">
       <div>
         <h1>V8 Orbit Controls</h1>
-        <p>Public input OrbitControls driving a G3D scene camera.</p>
+        <p>Public input OrbitControls driving a A3D scene camera.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>

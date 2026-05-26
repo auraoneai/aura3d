@@ -29,16 +29,16 @@ test.describe("Product configurator same-asset reference harness", () => {
       document.body.replaceChildren();
       document.body.style.margin = "0";
       document.body.style.background = "#05070a";
-      window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = ["spec:import:start"];
+      window.__A3D_PRODUCT_REFERENCE_PROGRESS__ = ["spec:import:start"];
       void import("/tests/browser/product-configurator-reference-harness.js")
         .then((module) => {
-          window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), "spec:import:done"];
+          window.__A3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__A3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), "spec:import:done"];
           return module.runProductConfiguratorReferenceHarness();
         })
         .catch((error) => {
-          window.__G3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), `spec:import:error:${error instanceof Error ? error.message : String(error)}`];
-          window.__G3D_PRODUCT_REFERENCE__ = {
-            schema: "g3d-product-configurator-reference-harness/v1",
+          window.__A3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__A3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), `spec:import:error:${error instanceof Error ? error.message : String(error)}`];
+          window.__A3D_PRODUCT_REFERENCE__ = {
+            schema: "a3d-product-configurator-reference-harness/v1",
             status: "error",
             claim: "same-original-product-glb-reference-outside-advanced-gallery",
             galleryUiBypassed: true,
@@ -66,21 +66,21 @@ test.describe("Product configurator same-asset reference harness", () => {
     try {
       await page.waitForFunction(
         () => {
-          const report = window.__G3D_PRODUCT_REFERENCE__ as { status?: string } | undefined;
+          const report = window.__A3D_PRODUCT_REFERENCE__ as { status?: string } | undefined;
           return report?.status === "ready" || report?.status === "error";
         },
         undefined,
         { timeout: 150_000 }
       );
     } catch (error) {
-      const progress = await page.evaluate(() => window.__G3D_PRODUCT_REFERENCE_PROGRESS__ ?? []);
+      const progress = await page.evaluate(() => window.__A3D_PRODUCT_REFERENCE_PROGRESS__ ?? []);
       throw new Error(`Product reference harness did not report ready/error. Progress:\n${progress.join("\n") || "(none captured)"}\nPage errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const report = await page.evaluate(() => window.__G3D_PRODUCT_REFERENCE__) as ProductReferenceReport;
+    const report = await page.evaluate(() => window.__A3D_PRODUCT_REFERENCE__) as ProductReferenceReport;
 
     expect(report.status, report.error).toBe("ready");
-    expect(report.schema).toBe("g3d-product-configurator-reference-harness/v1");
+    expect(report.schema).toBe("a3d-product-configurator-reference-harness/v1");
     expect(report.claim).toBe("same-original-product-glb-reference-outside-advanced-gallery");
     expect(report.galleryUiBypassed).toBe(true);
     expect(report.renderer.backend).toBe("webgl2");
@@ -170,7 +170,7 @@ test.describe("Product configurator same-asset reference harness", () => {
 });
 
 interface ProductReferenceReport {
-  readonly schema: "g3d-product-configurator-reference-harness/v1";
+  readonly schema: "a3d-product-configurator-reference-harness/v1";
   readonly status: "ready" | "error";
   readonly claim: string;
   readonly galleryUiBypassed: boolean;

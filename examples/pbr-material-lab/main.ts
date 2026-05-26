@@ -1,4 +1,4 @@
-import { Renderable, Scene } from "@galileo3d/scene";
+import { Renderable, Scene } from "@aura3d/scene";
 import {
   Geometry,
   PBRMaterial,
@@ -8,11 +8,11 @@ import {
   TextureBinding,
   generateApproximateBrdfLutPixels,
   generateRgba8EnvironmentMipLevels
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_PBR_MATERIAL_LAB__?: PbrLabState;
+    __AURA3D_PBR_MATERIAL_LAB__?: PbrLabState;
   }
 }
 
@@ -39,7 +39,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_PBR_MATERIAL_LAB__ = {
+    window.__AURA3D_PBR_MATERIAL_LAB__ = {
       id: "pbr-material-lab",
       status: "error",
       renderer: "webgl2",
@@ -97,7 +97,7 @@ async function run(): Promise<void> {
     metalSmooth: findPixel(renderer, { x: 485, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 70 && g > 40 && b < 90 && a === 255),
     emissive: findPixel(renderer, { x: 610, y: 205, width: 110, height: 130 }, (r, g, b, a) => g > 90 && r < 90 && a === 255)
   };
-  window.__GALILEO3D_PBR_MATERIAL_LAB__ = {
+  window.__AURA3D_PBR_MATERIAL_LAB__ = {
     id: "pbr-material-lab",
     status: "ready",
     renderer: "webgl2",
@@ -110,7 +110,7 @@ async function run(): Promise<void> {
     canvasFrame: { width: canvas.width, height: canvas.height },
     pixels
   };
-  status.textContent = JSON.stringify(window.__GALILEO3D_PBR_MATERIAL_LAB__, null, 2);
+  status.textContent = JSON.stringify(window.__AURA3D_PBR_MATERIAL_LAB__, null, 2);
   window.addEventListener("beforeunload", () => renderer.dispose(), { once: true });
 }
 

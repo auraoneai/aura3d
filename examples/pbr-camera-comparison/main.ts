@@ -1,4 +1,4 @@
-import { Renderable, Scene } from "@galileo3d/scene";
+import { Renderable, Scene } from "@aura3d/scene";
 import {
   Geometry,
   PBRMaterial,
@@ -8,11 +8,11 @@ import {
   TextureBinding,
   generateApproximateBrdfLutPixels,
   generateRgba8EnvironmentMipLevels
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_PBR_CAMERA_COMPARISON__?: PbrCameraComparisonState;
+    __AURA3D_PBR_CAMERA_COMPARISON__?: PbrCameraComparisonState;
   }
 }
 
@@ -35,9 +35,9 @@ interface PbrCameraComparisonState {
 }
 
 interface PbrMaterialCheck {
-  readonly galileo: readonly number[];
+  readonly aura3d: readonly number[];
   readonly reference: readonly number[];
-  readonly galileoPass: boolean;
+  readonly aura3dPass: boolean;
   readonly referencePass: boolean;
 }
 
@@ -51,7 +51,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_PBR_CAMERA_COMPARISON__ = {
+    window.__AURA3D_PBR_CAMERA_COMPARISON__ = {
       id: "pbr-camera-comparison",
       status: "error",
       renderer: "webgl2",
@@ -71,32 +71,32 @@ if (typeof document !== "undefined") {
 
 async function run(): Promise<void> {
   installStyles();
-  const { galileoCanvas, threeCanvas, status } = createShell();
+  const { aura3dCanvas, threeCanvas, status } = createShell();
   const environment = createSharedEnvironmentSource(64, 32);
-  const galileoResult = await renderGalileo(galileoCanvas, environment);
+  const aura3dResult = await renderAura3D(aura3dCanvas, environment);
   const threeResult = await renderThree(threeCanvas, environment);
   const materialChecks = {
     dielectric: {
-      galileo: galileoResult.pixels.dielectric,
+      aura3d: aura3dResult.pixels.dielectric,
       reference: threeResult.pixels.dielectric,
-      galileoPass: isLitDielectric(galileoResult.pixels.dielectric),
+      aura3dPass: isLitDielectric(aura3dResult.pixels.dielectric),
       referencePass: isLitDielectric(threeResult.pixels.dielectric)
     },
     metal: {
-      galileo: galileoResult.pixels.metal,
+      aura3d: aura3dResult.pixels.metal,
       reference: threeResult.pixels.metal,
-      galileoPass: isWarmMetal(galileoResult.pixels.metal),
+      aura3dPass: isWarmMetal(aura3dResult.pixels.metal),
       referencePass: isWarmMetal(threeResult.pixels.metal)
     },
     emissive: {
-      galileo: galileoResult.pixels.emissive,
+      aura3d: aura3dResult.pixels.emissive,
       reference: threeResult.pixels.emissive,
-      galileoPass: isEmissiveGreen(galileoResult.pixels.emissive),
+      aura3dPass: isEmissiveGreen(aura3dResult.pixels.emissive),
       referencePass: isEmissiveGreen(threeResult.pixels.emissive)
     }
   };
 
-  window.__GALILEO3D_PBR_CAMERA_COMPARISON__ = {
+  window.__AURA3D_PBR_CAMERA_COMPARISON__ = {
     id: "pbr-camera-comparison",
     status: "ready",
     renderer: "webgl2",
@@ -108,15 +108,15 @@ async function run(): Promise<void> {
     environmentLighting: "sampled-environment-map-approximation",
     lightingModel: "direct-lights-plus-sampled-environment-map",
     claimBoundary: "bounded-camera-pbr-reference-comparison",
-    diagnostics: galileoResult.diagnostics,
+    diagnostics: aura3dResult.diagnostics,
     canvasFrame: { width, height },
     materialChecks
   };
-  status.textContent = JSON.stringify(window.__GALILEO3D_PBR_CAMERA_COMPARISON__, null, 2);
-  window.addEventListener("beforeunload", () => galileoResult.dispose(), { once: true });
+  status.textContent = JSON.stringify(window.__AURA3D_PBR_CAMERA_COMPARISON__, null, 2);
+  window.addEventListener("beforeunload", () => aura3dResult.dispose(), { once: true });
 }
 
-async function renderGalileo(canvas: HTMLCanvasElement, environment: RgbaEnvironmentSource) {
+async function renderAura3D(canvas: HTMLCanvasElement, environment: RgbaEnvironmentSource) {
   const renderer = await Renderer.create({
     backend: "webgl2",
     canvas,
@@ -148,7 +148,7 @@ async function renderGalileo(canvas: HTMLCanvasElement, environment: RgbaEnviron
     ["emissive", 1.7, "material:emissive"]
   ] as const;
   for (const [name, x, material] of entries) {
-    const node = scene.createNode(`galileo-${name}`);
+    const node = scene.createNode(`aura3d-${name}`);
     node.transform.setPosition(x, 0, 0);
     scene.root.addChild(node);
     scene.addRenderable(node, new Renderable({ geometry: "geometry:sphere", material }));
@@ -318,24 +318,24 @@ function isEmissiveGreen(pixel: readonly number[] | undefined): boolean {
   return channel(pixel, 1) > 75 && channel(pixel, 0) < 120 && channel(pixel, 3) === 255;
 }
 
-function createShell(): { readonly galileoCanvas: HTMLCanvasElement; readonly threeCanvas: HTMLCanvasElement; readonly status: HTMLElement } {
+function createShell(): { readonly aura3dCanvas: HTMLCanvasElement; readonly threeCanvas: HTMLCanvasElement; readonly status: HTMLElement } {
   const root = document.querySelector<HTMLElement>("#app") ?? document.body;
   root.replaceChildren();
   const shell = document.createElement("main");
   shell.innerHTML = `
     <section class="viewport">
-      <canvas data-testid="pbr-comparison-galileo-canvas" width="${width}" height="${height}"></canvas>
+      <canvas data-testid="pbr-comparison-aura3d-canvas" width="${width}" height="${height}"></canvas>
       <canvas data-testid="pbr-comparison-three-canvas" width="${width}" height="${height}"></canvas>
     </section>
     <section class="status">
       <h1>PBR Camera Comparison</h1>
-      <p>Galileo3D WebGL2 and Three.js render the same bounded perspective-camera material scene. The evidence covers camera-backed scene rendering and sampled environment lighting, not production PBR parity.</p>
+      <p>Aura3D WebGL2 and Three.js render the same bounded perspective-camera material scene. The evidence covers camera-backed scene rendering and sampled environment lighting, not production PBR parity.</p>
       <pre data-testid="pbr-camera-comparison-status">booting</pre>
     </section>
   `;
   root.append(shell);
   return {
-    galileoCanvas: shell.querySelector("[data-testid='pbr-comparison-galileo-canvas']")!,
+    aura3dCanvas: shell.querySelector("[data-testid='pbr-comparison-aura3d-canvas']")!,
     threeCanvas: shell.querySelector("[data-testid='pbr-comparison-three-canvas']")!,
     status: shell.querySelector("pre")!
   };

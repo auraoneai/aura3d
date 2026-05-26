@@ -1,6 +1,6 @@
-# G3D V4 Product Viewer Template
+# A3D V4 Product Viewer Template
 
-This template is the V4 V4 product viewer scaffold. It imports the public package API through `@galileo3d/engine/apps`, creates a `createG3DApp` runtime, and renders the `scene-showcase` workflow with production quality settings.
+This template is the V4 V4 product viewer scaffold. It imports the public package API through `@aura3d/engine/apps`, creates a `createA3DApp` runtime, and renders the `scene-showcase` workflow with production quality settings.
 
 ```sh
 npm install

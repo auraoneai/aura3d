@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Diagnostics, DisposableStack, EventBus, Logger, ResourceScope, TaskQueue } from "@galileo3d/core";
+import { Diagnostics, DisposableStack, EventBus, Logger, ResourceScope, TaskQueue } from "@aura3d/core";
 
 interface TestEvents {
   tick: number;

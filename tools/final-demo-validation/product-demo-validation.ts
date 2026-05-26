@@ -71,7 +71,7 @@ export function validateProductDemoReports(rootDir = root): ProductDemoValidatio
   return {
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-product-demo-validation-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-product-demo-validation-run",
     productExamples: [...productExamples],
     visualExamples,
     performanceExamples,

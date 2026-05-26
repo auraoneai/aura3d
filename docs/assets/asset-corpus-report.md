@@ -10,7 +10,7 @@ This page summarizes the current asset evidence. It is intentionally split betwe
 | --- | --- |
 | `tests/reports/gltf-corpus.json` | Bounded Khronos loader corpus report. |
 | `tests/reports/gltf-100-classification.json` | 100 pinned Khronos GLB source-classification report. |
-| `tests/reports/asset-compatibility-threejs.json` | Loader compatibility scaffold with Galileo3D, Three.js, and Babylon.js columns. |
+| `tests/reports/asset-compatibility-threejs.json` | Loader compatibility scaffold with Aura3D, Three.js, and Babylon.js columns. |
 | `tests/reports/blender-export-validation.json` | Three pinned Blender-export fixture validations. |
 | `tests/reports/production-runtime-asset-readiness.json` | production-runtime production asset/environment readiness across real GLBs and HDR environments. |
 | `tests/reports/v8-assets.json` | v8 route asset corpus used by flagship, animation, material, loader, and physics surfaces. |

@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { WebXRSessionController, type G3DXRFrameLike, type G3DXRSessionLike, type G3DXRSystemLike } from "../../../packages/input/src";
+import { WebXRSessionController, type A3DXRFrameLike, type A3DXRSessionLike, type A3DXRSystemLike } from "../../../packages/input/src";
 
 describe("WebXRSessionController", () => {
   it("starts an injected XR session and samples controller and hit-test state", async () => {
     let hapticPulse: readonly [number, number] | null = null;
-    const xr: G3DXRSystemLike = {
+    const xr: A3DXRSystemLike = {
       async isSessionSupported(mode) {
         return mode === "immersive-ar";
       },
-      async requestSession(): Promise<G3DXRSessionLike> {
+      async requestSession(): Promise<A3DXRSessionLike> {
         return {
           inputSources: [{
             handedness: "right",
@@ -34,7 +34,7 @@ describe("WebXRSessionController", () => {
         };
       }
     };
-    const frame: G3DXRFrameLike = {
+    const frame: A3DXRFrameLike = {
       getHitTestResults() {
         return [{ position: [0.1, 0.2, -1], normal: [0, 1, 0] }];
       },

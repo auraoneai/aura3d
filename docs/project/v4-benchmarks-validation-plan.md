@@ -9,7 +9,7 @@ Benchmarks must stop being generic scaffolds. They must compare real supported b
 
 - [x] Every comparison scene uses a shared descriptor.
 - [x] Every comparison scene records asset id, camera, viewport, DPR, lighting, material features, postprocess state, animation state, and unsupported features.
-- [x] Galileo3D, Three.js, and Babylon scenes must load the same asset class and use equivalent feature settings where the feature is supported.
+- [x] Aura3D, Three.js, and Babylon scenes must load the same asset class and use equivalent feature settings where the feature is supported.
 - [x] Unsupported features must be listed as unsupported, not silently disabled.
 
 ## Required Comparison Scenes
@@ -18,8 +18,8 @@ Benchmarks must stop being generic scaffolds. They must compare real supported b
 - [x] Architecture viewer.
 - [x] Asset render.
 - [x] PBR material scene.
-- [x] Postprocess scene if Galileo3D supports matching effects.
-- [x] Large scene with LOD/culling if implemented. Evidence: `benchmarks/shared/scenes/large-scene.ts` defines the shared large-scene comparison, the Galileo wrapper publishes LOD/batching/camera timing evidence, and `tools/external-parity-benchmarks/index.ts` requires `large-scene`.
+- [x] Postprocess scene if Aura3D supports matching effects.
+- [x] Large scene with LOD/culling if implemented. Evidence: `benchmarks/shared/scenes/large-scene.ts` defines the shared large-scene comparison, the Aura3D wrapper publishes LOD/batching/camera timing evidence, and `tools/external-parity-benchmarks/index.ts` requires `large-scene`.
 - [x] Skinned character scene.
 - [x] Morph character scene if implemented.
 - [x] Particles scene.
@@ -28,7 +28,7 @@ Benchmarks must stop being generic scaffolds. They must compare real supported b
 ## Artifacts
 
 - [x] `tests/reports/v4-engine-comparison.json`.
-- [x] `tests/reports/comparison-screenshots/galileo-*.png`.
+- [x] `tests/reports/comparison-screenshots/aura3d-*.png`.
 - [x] `tests/reports/comparison-screenshots/threejs-*.png`.
 - [x] `tests/reports/comparison-screenshots/babylon-*.png`.
 - [x] `tests/reports/comparison-diffs/*.png`.

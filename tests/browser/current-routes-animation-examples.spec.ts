@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 
-const ORIGIN = process.env.G3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";
+const ORIGIN = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";
 const REPORT_PATH = "tests/reports/current-routes-animation-examples.json";
 
 type AnimationExampleExpectation = {
@@ -274,7 +274,7 @@ test.describe("V8 animation/example routes", () => {
   test.afterAll(() => {
     mkdirSync(resolve("tests/reports"), { recursive: true });
     writeFileSync(resolve(REPORT_PATH), `${JSON.stringify({
-      schema: "g3d-v8-animation-examples/v1",
+      schema: "a3d-v8-animation-examples/v1",
       generatedAt: new Date().toISOString(),
       origin: ORIGIN,
       routes: report
@@ -282,7 +282,7 @@ test.describe("V8 animation/example routes", () => {
   });
 
   for (const expected of EXPECTED_ROUTES) {
-    test(`${expected.label} is a working G3D-only route`, async ({ page }) => {
+    test(`${expected.label} is a working A3D-only route`, async ({ page }) => {
       const consoleErrors: string[] = [];
       const responseErrors: string[] = [];
       page.on("console", (message) => {
@@ -300,12 +300,12 @@ test.describe("V8 animation/example routes", () => {
       expect(response?.status(), `${expected.path} must be directly reachable`).toBe(200);
 
       await page.waitForFunction(() => {
-        const runtime = readAnyG3DRuntime();
+        const runtime = readAnyA3DRuntime();
         return runtime?.status === "ready" || runtime?.status === "running" || runtime?.status === "error";
 
-        function readAnyG3DRuntime(): { status?: string } | undefined {
+        function readAnyA3DRuntime(): { status?: string } | undefined {
           return Object.entries(window as unknown as Record<string, unknown>)
-            .filter(([key, value]) => /^__(?:g3d|G3D|GALILEO3D)/.test(key) && typeof value === "object" && value !== null)
+            .filter(([key, value]) => /^__(?:a3d|A3D|AURA3D)/.test(key) && typeof value === "object" && value !== null)
             .map(([, value]) => value as { status?: string })
             .find((value) => typeof value.status === "string");
         }
@@ -314,7 +314,7 @@ test.describe("V8 animation/example routes", () => {
       await page.waitForTimeout(expected.settleMs ?? 800);
       const runtime = await page.evaluate(() => {
         const entries = Object.entries(window as unknown as Record<string, unknown>)
-          .filter(([key, value]) => /^__(?:g3d|G3D|GALILEO3D)/.test(key) && typeof value === "object" && value !== null);
+          .filter(([key, value]) => /^__(?:a3d|A3D|AURA3D)/.test(key) && typeof value === "object" && value !== null);
         const [runtimeKey, value] = entries.find(([, item]) => {
           const status = (item as { status?: unknown }).status;
           return status === "ready" || status === "running";
@@ -1268,7 +1268,7 @@ test.describe("V8 animation/example routes", () => {
     const response = await page.goto(`${ORIGIN}/apps/parallax-barrier/?mask=1`, { waitUntil: "domcontentloaded" });
     expect(response?.status(), "parallax barrier mask route must be directly reachable").toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__g3dV8ParallaxBarrier as {
+      const runtime = window.__a3dV8ParallaxBarrier as {
         status?: string;
         barrierMaskEnabled?: boolean;
         effectComposition?: string;
@@ -1294,7 +1294,7 @@ test.describe("V8 animation/example routes", () => {
     const response = await page.goto(`${ORIGIN}/apps/parallax-barrier/`, { waitUntil: "domcontentloaded" });
     expect(response?.status(), "parallax barrier default route must be directly reachable").toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__g3dV8ParallaxBarrier as {
+      const runtime = window.__a3dV8ParallaxBarrier as {
         status?: string;
         barrierMaskEnabled?: boolean;
         effectComposition?: string;

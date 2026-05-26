@@ -11,7 +11,7 @@ import {
 
 declare global {
   interface Window {
-    __g3dV8FlagshipViewer?: V8FlagshipRuntime;
+    __a3dV8FlagshipViewer?: V8FlagshipRuntime;
   }
 }
 
@@ -81,7 +81,7 @@ async function run(): Promise<void> {
         return screenshot;
       }
     };
-    window.__g3dV8FlagshipViewer = runtime;
+    window.__a3dV8FlagshipViewer = runtime;
     if (renderDom) renderUi(root, runtime);
   };
 
@@ -155,7 +155,7 @@ function renderUi(root: HTMLElement, runtime: V8FlagshipRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>G3D V8 Flagship Viewer</h1>
+        <h1>A3D V8 Flagship Viewer</h1>
         <p>${snapshot ? `${snapshot.asset.name} · ${snapshot.environment.label}` : "Loading local GLB and HDRI"}</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${runtime.statusLabel}</button>
@@ -240,7 +240,7 @@ function bindControls(
     if (target.id === "zoom-in") viewer.zoom(0.88);
     if (target.id === "zoom-out") viewer.zoom(1.12);
     if (target.id === "screenshot-button") {
-      window.__g3dV8FlagshipViewer?.captureScreenshot();
+      window.__a3dV8FlagshipViewer?.captureScreenshot();
     }
     onSnapshot(viewer.snapshot());
   });

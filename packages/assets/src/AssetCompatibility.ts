@@ -9,7 +9,7 @@ import {
 } from "./AssetCorpus";
 import type { BlenderExportValidationReport } from "./BlenderExportValidation";
 
-export type AssetCompatibilityLoaderName = "galileo3d" | "threejs" | "babylonjs" | "blender-export";
+export type AssetCompatibilityLoaderName = "aura3d" | "threejs" | "babylonjs" | "blender-export";
 export type AssetCompatibilityStatus = "pass" | "warn" | "expected-fail" | "not-run";
 
 export interface AssetLoaderCompatibilityResult {
@@ -40,7 +40,7 @@ export interface AssetCompatibilityReport {
   readonly blenderExportValidation?: BlenderExportValidationReport;
   readonly summary: {
     readonly assetCount: number;
-    readonly galileo3d: Record<AssetCompatibilityStatus, number>;
+    readonly aura3d: Record<AssetCompatibilityStatus, number>;
     readonly threejs: Record<AssetCompatibilityStatus, number>;
     readonly babylonjs: Record<AssetCompatibilityStatus, number>;
     readonly blenderExport: Record<AssetCompatibilityStatus, number>;
@@ -87,7 +87,7 @@ export function createAssetCompatibilityReport(
     ...(options.blenderExportValidation ? { blenderExportValidation: options.blenderExportValidation } : {}),
     summary: {
       assetCount: assets.length,
-      galileo3d: summarize(assets, "galileo3d"),
+      aura3d: summarize(assets, "aura3d"),
       threejs: summarize(assets, "threejs"),
       babylonjs: summarize(assets, "babylonjs"),
       blenderExport: summarize(assets, "blender-export")
@@ -113,7 +113,7 @@ function createCompatibilityAsset(
     importSettings: asset.importSettings,
     loaders: [
       {
-        loader: "galileo3d",
+        loader: "aura3d",
         status: asset.expectedStatus === "expected-fail" ? "expected-fail" : asset.expectedStatus,
         diagnostics: asset.diagnostics
       },

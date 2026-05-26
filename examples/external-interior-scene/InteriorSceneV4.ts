@@ -9,11 +9,11 @@ import {
   type ArchitecturalLightingPresetId,
   type LightingDefaultPreset,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __G3D_V4_INTERIOR_SCENE__?: unknown;
+    __A3D_V4_INTERIOR_SCENE__?: unknown;
   }
 }
 
@@ -68,7 +68,7 @@ export async function mountInteriorSceneV4(id: string): Promise<void> {
       status: "ready",
       renderer: "webgl2",
       productSurface: "scene-studio-pro",
-      sceneFixture: "fixtures/v4/scenes/interior-gallery/manifest.json",
+      sceneFixture: "fixtures/external-parity/scenes/interior-gallery/manifest.json",
       sceneClass: "interior-gallery",
       renderItemCount: renderItems.length,
       architecturalMaterialCount: materialSummary.materialCount,
@@ -87,7 +87,7 @@ export async function mountInteriorSceneV4(id: string): Promise<void> {
       featureChecklist: ["multi-object-interior", "architectural-materials", "lighting-presets", "tone-mapping", "contact-shadow-receivers", "app-ui"],
       claimBoundary
     };
-    window.__G3D_V4_INTERIOR_SCENE__ = state;
+    window.__A3D_V4_INTERIOR_SCENE__ = state;
     status.textContent = JSON.stringify(state, null, 2);
   }
 

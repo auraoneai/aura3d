@@ -1,6 +1,6 @@
-import { EditorRuntime, TransformCommand, type TransformLike } from "@galileo3d/editor";
-import { Geometry, UnlitMaterial } from "@galileo3d/rendering";
-import { Renderable, Scene } from "@galileo3d/scene";
+import { EditorRuntime, TransformCommand, type TransformLike } from "@aura3d/editor";
+import { Geometry, UnlitMaterial } from "@aura3d/rendering";
+import { Renderable, Scene } from "@aura3d/scene";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

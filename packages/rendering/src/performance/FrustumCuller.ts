@@ -1,4 +1,4 @@
-import { Box3, Vector3 } from "@galileo3d/math";
+import { Box3, Vector3 } from "@aura3d/math";
 import type { StaticBoundsIntersector, StaticSpatialItem } from "../SceneOptimization";
 
 export function cullStaticItems<T>(items: readonly StaticSpatialItem<T>[], frustum: StaticBoundsIntersector): readonly StaticSpatialItem<T>[] {

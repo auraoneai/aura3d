@@ -26,7 +26,7 @@ test("V5 postprocess browser proof renders before and after screenshots", async 
       for(let i=0;i<36;i++){ctx.beginPath(); ctx.arc(90+(i%9)*90,110+Math.floor(i/9)*80,24+frame.bloom*12-frame.blur*6,0,Math.PI*2); ctx.fillStyle=i%3===0?"#ffd58a":"#8bc7ff"; ctx.globalAlpha=0.45+frame.ambientOcclusion*0.12; ctx.fill();}
       ctx.globalAlpha = 1; ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2 + frame.outlines * 4; ctx.strokeRect(32,32,896,476);
       ctx.fillStyle = "rgba(0,0,0," + frame.vignette + ")"; ctx.fillRect(0,0,960,34); ctx.fillRect(0,506,960,34);
-      window.__g3dPostFrame = frame;
+      window.__a3dPostFrame = frame;
       })();
       </script></body></html>
     `);
@@ -37,7 +37,7 @@ test("V5 postprocess browser proof renders before and after screenshots", async 
   await draw(after);
   await page.screenshot({ path: "tests/reports/three-compat-postprocess-after.png" });
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dPostFrame.bloom)).toBeGreaterThan(0);
+  await expect.poll(async () => page.evaluate(() => window.__a3dPostFrame.bloom)).toBeGreaterThan(0);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

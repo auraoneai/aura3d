@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { type ComponentSchema } from "../Component.js";
 
 export interface SerializedActiveComponent {

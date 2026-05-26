@@ -1,6 +1,6 @@
 # Animation Runtime Support
 
-This page describes the current animation runtime boundary. Galileo3D has real deterministic animation code, browser-rendered skinning evidence, and v8 animation routes, but it is not yet a production character-animation toolchain.
+This page describes the current animation runtime boundary. Aura3D has real deterministic animation code, browser-rendered skinning evidence, and v8 animation routes, but it is not yet a production character-animation toolchain.
 
 ## Supported Runtime Features
 

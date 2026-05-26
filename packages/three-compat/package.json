@@ -1,11 +1,23 @@
 {
-  "name": "@galileo3d/three-compat",
+  "name": "@aura3d/three-compat",
   "version": "1.0.0",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./controls": {
+      "types": "./dist/controls/index.d.ts",
+      "import": "./dist/controls/index.js"
+    },
+    "./loaders": {
+      "types": "./dist/loaders/index.d.ts",
+      "import": "./dist/loaders/index.js"
+    },
+    "./postprocessing": {
+      "types": "./dist/postprocessing/index.d.ts",
+      "import": "./dist/postprocessing/index.js"
     }
   },
   "main": "./dist/index.js",

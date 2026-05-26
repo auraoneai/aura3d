@@ -90,7 +90,7 @@ jobs:
         with:
           files: coverage/lcov.info
           flags: unittests
-          name: codecov-g3d
+          name: codecov-a3d
           fail_ci_if_error: false
 
       - name: Archive coverage artifacts

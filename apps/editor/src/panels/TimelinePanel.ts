@@ -1,5 +1,5 @@
 import type { EditorShell } from "../EditorShell";
-import { TimelineModel, TimelineTrack, type TimelineLoopMode, type TimelineSnapshot } from "@galileo3d/editor-runtime";
+import { TimelineModel, TimelineTrack, type TimelineLoopMode, type TimelineSnapshot } from "@aura3d/editor-runtime";
 
 type PlaybackState = "playing" | "paused";
 

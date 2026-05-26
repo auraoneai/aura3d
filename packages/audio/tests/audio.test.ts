@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Scene } from "@galileo3d/scene";
+import { Scene } from "@aura3d/scene";
 import { AudioClip, AudioContextManager, AudioListener, AudioSource, SceneAudioBridge } from "../src/index";
 
 class MockParam {

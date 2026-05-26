@@ -26,7 +26,7 @@ const requiredBuildFiles = [
   "examples/foundation-product-configurator/main.ts",
   "examples/foundation-interactive-scene/main.ts",
   "examples/foundation-game-slice/main.ts",
-  "benchmarks/foundation/galileo/asset-scene.ts",
+  "benchmarks/foundation/aura3d/asset-scene.ts",
   "benchmarks/foundation/threejs/asset-scene.ts",
   "docs/project/v3-roadmap-product-positioning.md",
   "docs/project/v3-roadmap-known-gaps.md"
@@ -63,7 +63,7 @@ const releaseScriptIncludesAllGates = [
   "foundation-completion-audit"
 ].every((token) => releaseScript.includes(token));
 const report = {
-  schema: "g3d-foundation-completion-audit/v1",
+  schema: "a3d-foundation-completion-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: reportChecks.every((check) => check.pass)
     && buildFileChecks.every((check) => check.exists)

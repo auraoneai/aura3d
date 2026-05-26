@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/physical-lights-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/physical-lights-parity/g3d-physical-lights.png",
+  a3d: "tests/reports/threejs-parity/physical-lights-parity/a3d-physical-lights.png",
   threejs: "tests/reports/threejs-parity/physical-lights-parity/threejs-physical-lights.png",
   sideBySide: "tests/reports/threejs-parity/physical-lights-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 physical lights same-scene parity", () => {
     await server.close();
   });
 
-  test("captures G3D point/spot attenuation against actual Three.js PointLight and SpotLight", async ({ page }) => {
+  test("captures A3D point/spot attenuation against actual Three.js PointLight and SpotLight", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -57,35 +57,35 @@ test.describe("V9 physical lights same-scene parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-physical-lights-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-physical-lights-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
-    expect(result.assertions.g3dPointAndSpotLights).toBe(true);
+    expect(result.assertions.a3dPointAndSpotLights).toBe(true);
     expect(result.assertions.threePointAndSpotLights).toBe(true);
     expect(result.assertions.inverseSquareSamples).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
     expect(result.assertions.visibleLightGradient).toBe(true);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThanOrEqual(4);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThanOrEqual(4);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThanOrEqual(4);
-    expect(result.g3d.lights.pointLights).toBe(1);
-    expect(result.g3d.lights.spotLights).toBe(1);
-    expect(result.g3d.lights.decay).toBe(2);
-    expect(result.g3d.lights.range).toBeCloseTo(4.2, 5);
+    expect(result.a3d.lights.pointLights).toBe(1);
+    expect(result.a3d.lights.spotLights).toBe(1);
+    expect(result.a3d.lights.decay).toBe(2);
+    expect(result.a3d.lights.range).toBeCloseTo(4.2, 5);
     expect(result.threejs.lights.pointLights).toBe(1);
     expect(result.threejs.lights.spotLights).toBe(1);
     expect(result.threejs.lights.decay).toBe(2);
     expect(result.attenuationSamples.length).toBeGreaterThanOrEqual(3);
     expect(Math.max(...result.attenuationSamples.map((sample) => sample.delta))).toBeLessThanOrEqual(0.18);
-    expect(result.g3d.pixels.litPixels).toBeGreaterThan(25_000);
+    expect(result.a3d.pixels.litPixels).toBeGreaterThan(25_000);
     expect(result.threejs.pixels.litPixels).toBeGreaterThan(25_000);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(60);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(60);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(60);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(135);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.45);
     expect(pageErrors).toEqual([]);
-    assertG3DShaderUsesRangeFalloffAndInverseSquare();
-    assertNoThreeJsInG3DLightRuntimeSource();
+    assertA3DShaderUsesRangeFalloffAndInverseSquare();
+    assertNoThreeJsInA3DLightRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -116,14 +116,14 @@ test.describe("V9 physical lights same-scene parity", () => {
   });
 });
 
-function assertG3DShaderUsesRangeFalloffAndInverseSquare(): void {
+function assertA3DShaderUsesRangeFalloffAndInverseSquare(): void {
   const source = readFileSync(resolve("packages/rendering/src/ShaderLibrary.ts"), "utf8");
   expect(source).toContain("pow(distanceToLight / range, 4.0)");
   expect(source).toContain("max(distanceToLight * distanceToLight, 1.0)");
   expect(source).toContain("smoothstep(outer, inner, cone)");
 }
 
-function assertNoThreeJsInG3DLightRuntimeSource(): void {
+function assertNoThreeJsInA3DLightRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/lights-spotlight/src/main.ts",
@@ -154,8 +154,8 @@ function stripDataUrls(result: Extract<PhysicalLightsParityResult, { readonly st
 type PhysicalLightsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-physical-lights-parity/v1";
-      readonly g3d: {
+      readonly schema: "a3d-threejs-parity-physical-lights-parity/v1";
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly lights: LightStats;
         readonly pixels: PixelStats;
@@ -170,18 +170,18 @@ type PhysicalLightsParityResult =
       readonly assertions: {
         readonly sameResolution: boolean;
         readonly actualThreeRenderer: boolean;
-        readonly g3dPointAndSpotLights: boolean;
+        readonly a3dPointAndSpotLights: boolean;
         readonly threePointAndSpotLights: boolean;
         readonly inverseSquareSamples: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly visibleLightGradient: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-physical-lights-parity/v1";
+      readonly schema: "a3d-threejs-parity-physical-lights-parity/v1";
       readonly error: string;
     };
 

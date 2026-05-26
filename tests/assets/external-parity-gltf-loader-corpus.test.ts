@@ -9,7 +9,7 @@ import {
 
 describe("V4 glTF corpus", () => {
   it("defines a 25+ asset corpus with license, provenance, and feature coverage", () => {
-    const manifest = JSON.parse(readFileSync(resolve("fixtures/v4/gltf-corpus/manifest.json"), "utf8")) as V4CorpusManifest;
+    const manifest = JSON.parse(readFileSync(resolve("fixtures/external-parity/gltf-corpus/manifest.json"), "utf8")) as V4CorpusManifest;
     validateV4CorpusManifest(manifest);
     const summary = summarizeV4Corpus(manifest);
 

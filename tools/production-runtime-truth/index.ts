@@ -59,7 +59,7 @@ const checks = [
   { id: "three-compat-failure-audit", pass: threeCompatFailureAuditPasses, detail: "V5 visual failure audit report passes" }
 ];
 const report = {
-  schema: "g3d-production-runtime-truth/v1",
+  schema: "a3d-production-runtime-truth/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredFiles: requiredFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),

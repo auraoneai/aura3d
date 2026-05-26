@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { type ComponentCtor, type ComponentSchema } from "./Component.js";
 import { ComponentRegistry } from "./ComponentRegistry.js";
 import { ComponentStore } from "./ComponentStore.js";

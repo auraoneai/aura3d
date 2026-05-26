@@ -28,7 +28,7 @@ const rows = [
 ] as const;
 
 const report = {
-  schemaVersion: "g3d-engine-readiness-gltf-support-v1",
+  schemaVersion: "a3d-engine-readiness-gltf-support-v1",
   generatedAt: new Date().toISOString(),
   ok: true,
   source: "generated from existing repo-local test ownership; unsupported and partial rows remain blocked in public claims",
@@ -38,7 +38,7 @@ const report = {
 mkdirSync(dirname("tests/reports/engine-readiness-gltf-support.json"), { recursive: true });
 writeFileSync("tests/reports/engine-readiness-gltf-support.json", `${JSON.stringify(report, null, 2)}\n`);
 writeFileSync("tests/reports/engine-readiness-asset-ergonomics.json", `${JSON.stringify({
-  schemaVersion: "g3d-engine-readiness-asset-ergonomics-v1",
+  schemaVersion: "a3d-engine-readiness-asset-ergonomics-v1",
   generatedAt: report.generatedAt,
   ok: true,
   publicApis: ["loadRenderableAsset", "createRenderableScene"],

@@ -3,12 +3,12 @@ import {
   OBJLoader,
   createGLTFRenderResources,
   type GLTFRenderResources
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LoaderOBJ?: V8LoaderOBJRuntime;
+    __a3dV8LoaderOBJ?: V8LoaderOBJRuntime;
   }
 }
 
@@ -28,7 +28,7 @@ interface V8LoaderOBJRuntime {
   readonly objTexcoords: boolean;
   readonly featureCount: number;
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -57,7 +57,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LoaderOBJ = runtime;
+    window.__a3dV8LoaderOBJ = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -68,7 +68,7 @@ async function run(): Promise<void> {
       type: "obj"
     }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -115,7 +115,7 @@ async function run(): Promise<void> {
           objTexcoords: featureSet.has("obj-texcoords"),
           featureCount: featureSet.size
         });
-        window.__g3dV8LoaderOBJ = runtime;
+        window.__a3dV8LoaderOBJ = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -133,7 +133,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<G3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: { fxaa: true },
@@ -187,14 +187,14 @@ function createRuntime(
     objTexcoords: patch.objTexcoords ?? false,
     featureCount: patch.featureCount ?? 0,
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
 
 function createOBJFixtureDataUrl(): string {
   const obj = [
-    "o G3D_OBJ_Parity_Crate",
+    "o A3D_OBJ_Parity_Crate",
     "v -1.0 -0.6 -0.7",
     "v 1.0 -0.6 -0.7",
     "v 1.0 0.6 -0.7",
@@ -232,7 +232,7 @@ function renderUi(root: HTMLElement, runtime: V8LoaderOBJRuntime): void {
       <div class="panel-heading">
         <div>
           <h1>V8 Loader OBJ</h1>
-          <p>Native OBJ import routed through G3D GLTF render resources.</p>
+          <p>Native OBJ import routed through A3D GLTF render resources.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>
       </div>
@@ -252,7 +252,7 @@ function renderUi(root: HTMLElement, runtime: V8LoaderOBJRuntime): void {
         ${metric("normals", runtime.objGeneratedNormals ? "generated" : "source")}
         ${metric("uvs", runtime.objTexcoords ? "present" : "none")}
       </div>
-      <p class="note">${runtime.error ? escapeHtml(runtime.error) : "OBJ quads are parsed, triangulated, wrapped as glTF, and rendered by G3D WebGL2."}</p>
+      <p class="note">${runtime.error ? escapeHtml(runtime.error) : "OBJ quads are parsed, triangulated, wrapped as glTF, and rendered by A3D WebGL2."}</p>
     </section>
   `;
 }

@@ -57,7 +57,7 @@ const manifestEntries = entries.map(([category, title, path]) => {
 
 const pass = manifestEntries.every((entry) => entry.exists && entry.bytes > 8_000 && entry.width >= 300 && entry.height >= 180);
 const report = {
-  schema: "g3d-external-parity-screenshot-gallery/v1",
+  schema: "a3d-external-parity-screenshot-gallery/v1",
   generatedAt: new Date().toISOString(),
   pass,
   entries: manifestEntries,

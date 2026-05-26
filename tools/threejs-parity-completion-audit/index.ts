@@ -4,15 +4,15 @@ const outputPath = "tests/reports/threejs-parity/completion-audit.json";
 const inventory = readInventory();
 const checklist = countChecklist();
 const unchecked = listUncheckedChecklist();
-const openHighPriority = inventory.items.filter((item) => item.priority === "high" && item.g3dStatus !== "matched" && item.g3dStatus !== "exceeded");
+const openHighPriority = inventory.items.filter((item) => item.priority === "high" && item.a3dStatus !== "matched" && item.a3dStatus !== "exceeded");
 const pass = checklist.unchecked === 0 && openHighPriority.length === 0;
 const issues = [
   ...unchecked.slice(0, 100).map((item, index) => reportIssue(`unchecked:${index + 1}`, item, "blocker")),
-  ...openHighPriority.slice(0, 100).map((item) => reportIssue(`high-priority-open:${item.threeExampleId}`, `${item.threeExampleId} remains ${item.g3dStatus}.`, "blocker"))
+  ...openHighPriority.slice(0, 100).map((item) => reportIssue(`high-priority-open:${item.threeExampleId}`, `${item.threeExampleId} remains ${item.a3dStatus}.`, "blocker"))
 ];
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-completion-audit/v1",
+  schema: "a3d-threejs-parity-completion-audit/v1",
   generatedAt: new Date().toISOString(),
   pass,
   checklist,

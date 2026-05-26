@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { AnimationClip, AnimationTrack } from "@galileo3d/animation";
-import { Renderable, Scene } from "@galileo3d/scene";
+import { AnimationClip, AnimationTrack } from "@aura3d/animation";
+import { Renderable, Scene } from "@aura3d/scene";
 import { createGLTFSceneAnimationMixer, createGLTFSceneAnimationRuntime } from "../../packages/assets/src/GLTFAnimationRuntime";
 import type { GLTFAsset } from "../../packages/assets/src/GLTFLoader";
 

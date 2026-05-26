@@ -124,16 +124,16 @@ const requiredScreenshots = [
   "tests/reports/production-runtime-gallery/postprocess/cinematic-after-webgl2.png",
   "tests/reports/production-runtime-gallery/large-scene/large-scene-webgl2.png",
   "tests/reports/production-runtime-gallery/webgpu/webgpu-product-frame.png",
-  "tests/reports/production-runtime-gallery/threejs-comparison/product-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/product-a3d.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/product-threejs.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/product-diff.png",
-  "tests/reports/production-runtime-gallery/threejs-comparison/materials-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/materials-a3d.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/materials-threejs.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/materials-diff.png",
-  "tests/reports/production-runtime-gallery/threejs-comparison/asset-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/asset-a3d.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/asset-threejs.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/asset-diff.png",
-  "tests/reports/production-runtime-gallery/threejs-comparison/architecture-g3d.png",
+  "tests/reports/production-runtime-gallery/threejs-comparison/architecture-a3d.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/architecture-threejs.png",
   "tests/reports/production-runtime-gallery/threejs-comparison/architecture-diff.png"
 ] as const;
@@ -147,7 +147,7 @@ const requiredDirs = [
   "fixtures/environment-corpus/hdri",
   "fixtures/environment-corpus/pmrem-baselines",
   "benchmarks/production-runtime/shared",
-  "benchmarks/production-runtime/g3d",
+  "benchmarks/production-runtime/a3d",
   "benchmarks/production-runtime/threejs"
 ] as const;
 const requiredToolsTests = [
@@ -177,7 +177,7 @@ const requiredToolsTests = [
   "tests/browser/production-runtime-screenshot-gallery.spec.ts",
   "tests/unit/tools/production-runtime-visual-quality.test.ts",
   "benchmarks/production-runtime/shared/scenes.ts",
-  "benchmarks/production-runtime/g3d/renderScene.ts",
+  "benchmarks/production-runtime/a3d/renderScene.ts",
   "benchmarks/production-runtime/threejs/renderScene.ts",
   "benchmarks/production-runtime/shared/compareImages.ts",
   "tests/browser/production-runtime-threejs-visual-parity.spec.ts",
@@ -207,7 +207,7 @@ const architectureCount = assets.filter((asset) => /architecture|interior/i.test
 const productCount = assets.filter((asset) => /product|commerce/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
 const envLabels = envs.map((env) => [env.class, env.id, env.label, env.sourceName].join(' ').toLowerCase());
 const checks: Check[] = [listCheck('required-package-files', requiredPackageFiles), listCheck('required-directories', requiredDirs), listCheck('required-tools-tests-benchmarks', requiredToolsTests), listCheck('required-final-reports', requiredReports), screenshotCheck('required-final-screenshots', requiredScreenshots), { id: 'root-exports', pass: requiredExports.every((key) => typeof pkg.exports?.[key] === 'string'), detail: requiredExports.filter((key) => typeof pkg.exports?.[key] !== 'string').join(', ') }, { id: 'release-scripts', pass: requiredScripts.every((key) => typeof pkg.scripts?.[key] === 'string'), detail: requiredScripts.filter((key) => typeof pkg.scripts?.[key] !== 'string').join(', ') }, { id: 'asset-count-20', pass: assets.length >= 20, detail: String(assets.length) }, { id: 'material-stress-assets-8', pass: stressCount >= 8, detail: String(stressCount) }, { id: 'animated-skinned-morph-assets-4', pass: animationCount >= 4, detail: String(animationCount) }, { id: 'transparent-transmission-clearcoat-assets-4', pass: transparentCount >= 4, detail: String(transparentCount) }, { id: 'large-multimesh-assets-3', pass: largeCount >= 3, detail: String(largeCount) }, { id: 'architecture-interior-assets-2', pass: architectureCount >= 2, detail: String(architectureCount) }, { id: 'product-commerce-assets-2', pass: productCount >= 2, detail: String(productCount) }, { id: 'hdr-count-10', pass: envs.length >= 10, detail: String(envs.length) }, { id: 'hdr-indoor-studio-4', pass: envLabels.filter((label) => /studio|indoor/.test(label)).length >= 4, detail: String(envLabels.filter((label) => /studio|indoor/.test(label)).length) }, { id: 'hdr-outdoor-daylight-3', pass: envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length >= 3, detail: String(envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length) }, { id: 'hdr-sunset-night-2', pass: envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length >= 2, detail: String(envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length) }, { id: 'hdr-high-contrast-1', pass: envLabels.filter((label) => /high-contrast|industrial/.test(label)).length >= 1, detail: String(envLabels.filter((label) => /high-contrast|industrial/.test(label)).length) }];
-const report = { schema: 'g3d-production-runtime-literal-completion/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks };
+const report = { schema: 'a3d-production-runtime-literal-completion/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks };
 mkdirSync(dirname(resolve('tests/reports/production-runtime-literal-completion.json')), { recursive: true });
 writeFileSync(resolve('tests/reports/production-runtime-literal-completion.json'), JSON.stringify(report, null, 2) + '\n');
 if (!report.pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }

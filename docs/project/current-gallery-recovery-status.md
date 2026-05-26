@@ -6,7 +6,7 @@ Scope: current `master` checkout only. This file records the current gallery rec
 
 ## Current Checkout
 
-- Repository: `/Users/gurbakshchahal/G3D`
+- Repository: `/Users/gurbakshchahal/Aura3D`
 - Branch: `master`
 - Current HEAD during the latest pass: `29ffd53 feat: major rendering pipeline enhancements and car material stability module`
 - Process check: matching Playwright processes were from `/Users/gurbakshchahal/OneFoundry`, not this repo.
@@ -101,7 +101,7 @@ The latest completion pass ran:
 ```bash
 git diff --check
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
-G3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
 pnpm advanced-gallery:review
 pnpm advanced-gallery:audit
 pnpm v10

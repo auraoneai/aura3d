@@ -1,4 +1,4 @@
-import { Renderable, Scene } from "@galileo3d/scene";
+import { Renderable, Scene } from "@aura3d/scene";
 import {
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
   DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
@@ -12,7 +12,7 @@ import {
   TexturedPBRMaterial,
   createV4EnvironmentLighting,
   type RenderDeviceDiagnostics
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 type VariantId =
   | "clearcoat"
@@ -52,7 +52,7 @@ interface PbrExtensionTextureVariantState {
 
 declare global {
   interface Window {
-    __GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__?: PbrExtensionTextureVariantState;
+    __AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__?: PbrExtensionTextureVariantState;
   }
 }
 
@@ -68,7 +68,7 @@ const variantCenters: Record<VariantId, { readonly x: number; readonly y: number
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__ = {
+    window.__AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__ = {
       status: "error",
       renderer: "webgl2",
       visualClaim: "bounded-pbr-extension-texture-variants",
@@ -172,7 +172,7 @@ async function run(): Promise<void> {
     DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
     DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT
   ];
-  window.__GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__ = {
+  window.__AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__ = {
     status: "ready",
     renderer: "webgl2",
     visualClaim: "bounded-pbr-extension-texture-variants",
@@ -191,7 +191,7 @@ async function run(): Promise<void> {
     knownLimits: knownLimits(),
     errors: []
   };
-  status.textContent = JSON.stringify(window.__GALILEO3D_PBR_EXTENSION_TEXTURE_VARIANTS__, null, 2);
+  status.textContent = JSON.stringify(window.__AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__, null, 2);
   window.addEventListener("beforeunload", () => renderer.dispose(), { once: true });
 }
 

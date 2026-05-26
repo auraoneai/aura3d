@@ -5,12 +5,12 @@ import { V5_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scene
 
 const reportDir = "tests/reports/three-compat-threejs-visual-parity";
 
-test("V5 same-scene visual parity captures nonblank flagship G3D, Three.js, and diff screenshots", async ({ page }) => {
+test("V5 same-scene visual parity captures nonblank flagship A3D, Three.js, and diff screenshots", async ({ page }) => {
   mkdirSync(reportDir, { recursive: true });
   await page.setViewportSize({ width: 1280, height: 760 });
   const captures = [];
   for (const scene of V5_COMPARISON_SCENES) {
-    for (const engine of ["g3d", "threejs", "diff"] as const) {
+    for (const engine of ["a3d", "threejs", "diff"] as const) {
       await page.setContent(`<html><body style="margin:0;background:#05070d"><canvas id="scene" width="1280" height="720"></canvas><script>
         ${painterScript()}
         (${drawFlagshipScene.toString()})(${JSON.stringify(scene)}, "${engine}");
@@ -36,7 +36,7 @@ test("V5 same-scene visual parity captures nonblank flagship G3D, Three.js, and 
     await expect.poll(async () => page.evaluate(() => window.__visualScore)).toBeGreaterThan(0.8);
   }
   const report = {
-    schema: "g3d-three-compat-threejs-visual-parity-browser/v2",
+    schema: "a3d-three-compat-threejs-visual-parity-browser/v2",
     generatedAt: new Date().toISOString(),
     sceneCount: V5_COMPARISON_SCENES.length,
     captures
@@ -72,7 +72,7 @@ function painterScript(): string {
   ].map((helper) => helper.toString()).join("\n");
 }
 
-function drawFlagshipScene(scene: { id: string; label: string; category: string }, engine: "g3d" | "threejs" | "diff") {
+function drawFlagshipScene(scene: { id: string; label: string; category: string }, engine: "a3d" | "threejs" | "diff") {
   const canvas = document.getElementById("scene") as HTMLCanvasElement;
   const ctx = canvas.getContext("2d")!;
   const w = canvas.width;
@@ -328,7 +328,7 @@ function drawHud(ctx: CanvasRenderingContext2D, scene: { label: string }, engine
   ctx.fillText(`${scene.label} / ${engine.toUpperCase()}`, 48, 66);
   ctx.fillStyle = "rgba(210,235,255,.75)";
   ctx.font = "14px system-ui";
-  ctx.fillText("G3D V5 flagship visual evidence", 48, 88);
+  ctx.fillText("A3D V5 flagship visual evidence", 48, 88);
 }
 
 function drawSwatches(ctx: CanvasRenderingContext2D, x: number, y: number, diff: boolean) {

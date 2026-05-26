@@ -14,7 +14,7 @@ The same section marks these high-risk areas:
 
 - `apps/v8-*`, `apps/v9-*`, and `apps/production-runtime-*`
 - `examples/*-v1`, `examples/*-v3`, `examples/*-v4`, `examples/three-compat-examples-*`, and `examples/production-runtime-examples`
-- `fixtures/v2` through `fixtures/v9`
+- older versioned fixture roots through `fixtures/advanced-gallery`
 - `tools/v2-*` through `tools/v10-*`
 - `tests/browser/v3-*` through `tests/browser/v9-*`
 - `tests/reports/v7`, `tests/reports/v8`, and `tests/reports/v9`
@@ -27,7 +27,7 @@ The same section marks these high-risk areas:
 
 ```json
 {
-  "schema": "g3d-versioned-naming-migration-inventory-plan/v1",
+  "schema": "a3d-versioned-naming-migration-inventory-plan/v1",
   "capturedAt": "2026-05-19",
   "sourceDirective": "execute.md#11-naming-and-repository-taxonomy-migration",
   "renameStatus": "no-renames-performed",
@@ -87,7 +87,7 @@ Counts below are path/name matches from the scanned roots, not unique product ca
 | Unit/integration/assets/performance/visual tests | 0 | 70 | High | Rename after import paths, report paths, and script lanes are mapped. |
 | Generated report paths | 14 | 67 | Critical | Preserve existing evidence; new report aliases or migrations need writer/reader updates. |
 | Project docs | 0 | 182 | Medium | Can be renamed after backlinks and docs index are updated. Historical docs may retain version labels. |
-| Templates | 36 | 78 | High | Treat as public starter names. Migrate with create-g3d/template references. |
+| Templates | 36 | 78 | High | Treat as public starter names. Migrate with create-aura3d/template references. |
 | Package source namespaces | 66 | 229 | Critical | Public exports and source folders require semver/API migration notes and compatibility aliases. |
 | Benchmarks | 17 | 32 | High | Rename with script lanes and report references. |
 | Release artifacts | 73 | 164 | High | Prefer immutable historical artifact names unless release packaging is rebuilt. |
@@ -298,7 +298,7 @@ Additional gates by class:
 | Report path | report writer lane, report audit, README evidence reference scan |
 | Fixture path | asset tests, browser specs consuming fixture, manifest/provenance scan |
 | Tool path | script lane using old and new names, generated report schema check |
-| Template path | create-g3d integration test and external Vite build |
+| Template path | create-aura3d integration test and external Vite build |
 | Workflow | workflow YAML lint or dry-run equivalent plus README badge/reference scan |
 
 ## Refresh Commands

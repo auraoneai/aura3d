@@ -5,8 +5,8 @@ This tutorial shows the current V3 app pattern: create a public workflow, render
 ## Minimal Shape
 
 ```ts
-import { Renderer } from "@galileo3d/rendering";
-import { createSceneShowcaseWorkflow } from "@galileo3d/workflows";
+import { Renderer } from "@aura3d/rendering";
+import { createSceneShowcaseWorkflow } from "@aura3d/workflows";
 
 const canvas = document.querySelector<HTMLCanvasElement>("canvas");
 if (!canvas) throw new Error("Missing canvas.");
@@ -28,7 +28,7 @@ const diagnostics = renderer.render(workflow.source, workflow.camera);
 ## What The App Must Expose
 
 - A real canvas rendered by `Renderer`.
-- A public workflow result from `@galileo3d/workflows`.
+- A public workflow result from `@aura3d/workflows`.
 - Runtime diagnostics such as draw calls, frame count, rendered item count, and `lastError`.
 - A README or tutorial that explains the public API path without relying on test-only helpers.
 

@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportDir = resolve("tests/reports/engine-readiness-canonical-scene");
 const manifestPath = join(reportDir, "manifest.json");
 const manifest: CanonicalSceneManifest = {
-  schemaVersion: "g3d-engine-readiness-canonical-scene-manifest-v1",
+  schemaVersion: "a3d-engine-readiness-canonical-scene-manifest-v1",
   generatedAt: new Date().toISOString(),
   command: "pnpm exec playwright test tests/browser/rendering-canonical-scene.spec.ts --reporter=line",
   setupProof: {
@@ -188,7 +188,7 @@ function recordValidation(id: string, ok: boolean): void {
 }
 
 interface CanonicalSceneManifest {
-  readonly schemaVersion: "g3d-engine-readiness-canonical-scene-manifest-v1";
+  readonly schemaVersion: "a3d-engine-readiness-canonical-scene-manifest-v1";
   generatedAt: string;
   readonly command: string;
   readonly setupProof: {

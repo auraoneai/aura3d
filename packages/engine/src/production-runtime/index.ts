@@ -13,7 +13,7 @@ import {
   type RendererV6BackendPreference,
   type RendererV6BackendSelection,
   type RendererV6Options
-} from "@galileo3d/engine/rendering/production-runtime";
+} from "@aura3d/engine/rendering/production-runtime";
 import {
   createGLTFSceneAnimationRuntime,
   createV6GLTFRenderMetadata,
@@ -23,7 +23,7 @@ import {
   type GLTFSceneAnimationRuntimeSnapshot,
   type V6GLTFRenderMetadata,
   type V6GLTFRenderPipeline
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   AnimationAction,
   AnimationLayer,
@@ -32,7 +32,7 @@ import {
   type AnimationEvent,
   type AnimationMixerSnapshot,
   type AnimationTarget
-} from "@galileo3d/animation";
+} from "@aura3d/animation";
 import {
   PhysicsWorld,
   Shape,
@@ -42,7 +42,7 @@ import {
   type RigidBody,
   type RigidBodyType,
   type Vec3
-} from "@galileo3d/physics";
+} from "@aura3d/physics";
 import type {
   CameraFrameBounds,
   CameraLike,
@@ -53,7 +53,7 @@ import type {
   RenderSource,
   RendererPostProcessOptions,
   RendererShadowOptions
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import {
   Geometry,
   Material,
@@ -61,21 +61,21 @@ import {
   TextureBinding,
   computePerspectiveCameraFrame,
   createDefaultShaderLibrary
-} from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4 } from "@galileo3d/scene";
-import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@galileo3d/assets";
+} from "@aura3d/rendering";
+import { DirectionalLight, composeMat4 } from "@aura3d/scene";
+import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@aura3d/assets";
 
-export * as renderingV6 from "@galileo3d/engine/rendering/production-runtime";
-export * as workflowsV6 from "@galileo3d/engine/workflows/production";
+export * as renderingV6 from "@aura3d/engine/rendering/production-runtime";
+export * as workflowsV6 from "@aura3d/engine/workflows/production";
 
 export const assetsV6 = {
   createV6GLTFRenderMetadata,
   loadV6GLTFRenderPipeline
 };
 
-export const GALILEO3D_ENGINE_V6_PRODUCT_SURFACE = "g3d-renderer-production-runtime-sdk";
+export const AURA3D_ENGINE_V6_PRODUCT_SURFACE = "a3d-renderer-production-runtime-sdk";
 
-export const G3D_THREEJS_EXAMPLE_PARITY_TARGETS = {
+export const A3D_THREEJS_EXAMPLE_PARITY_TARGETS = {
   keyframes: "webgl_animation_keyframes",
   skinningBlending: "webgl_animation_skinning_blending",
   additiveBlending: "webgl_animation_skinning_additive_blending",
@@ -88,57 +88,57 @@ export const G3D_THREEJS_EXAMPLE_PARITY_TARGETS = {
   stereo: "webgl_effects_stereo"
 } as const;
 
-export interface G3DRendererOptions extends RendererV6Options {
+export interface A3DRendererOptions extends RendererV6Options {
   readonly backend?: RendererV6BackendPreference;
 }
 
-export interface G3DRenderResult {
+export interface A3DRenderResult {
   readonly proof: V6RenderProof;
   readonly summary: ReturnType<typeof summarizeV6ProductionProof>;
 }
 
-export interface G3DFrameRenderResult {
+export interface A3DFrameRenderResult {
   readonly backend: "webgl2" | "webgpu";
   readonly diagnostics: ReturnType<RendererV6["getDiagnostics"]>;
   readonly features: ReturnType<RendererV6["getFeatures"]>;
   readonly timing?: NonNullable<ReturnType<RendererV6["renderInteractiveFrame"]>["timing"]>;
 }
 
-export interface G3DRenderOptions {
-  readonly scene: G3DGltfScene;
-  readonly environment?: G3DHdrEnvironment;
+export interface A3DRenderOptions {
+  readonly scene: A3DGltfScene;
+  readonly environment?: A3DHdrEnvironment;
   readonly environmentLighting?: EnvironmentLightingOptions;
   readonly renderItems?: Iterable<RenderItem>;
   readonly collectedLights?: Iterable<CollectedLight>;
   readonly shadow?: RendererShadowOptions | boolean;
   readonly camera?: CameraLike;
-  readonly viewport?: G3DViewport;
+  readonly viewport?: A3DViewport;
   readonly postprocess?: RendererPostProcessOptions | boolean;
 }
 
-export class G3DRenderer {
+export class A3DRenderer {
   readonly backend: "webgl2" | "webgpu";
   readonly backendSelection: RendererV6BackendSelection;
 
   private constructor(
     private readonly renderer: RendererV6,
-    private readonly viewport: G3DViewport
+    private readonly viewport: A3DViewport
   ) {
     this.backend = renderer.backend;
     this.backendSelection = renderer.backendSelection;
   }
 
-  static async create(options: G3DRendererOptions): Promise<G3DRenderer> {
+  static async create(options: A3DRendererOptions): Promise<A3DRenderer> {
     const backendSelection = resolveRendererV6Backend(options);
-    return new G3DRenderer(
+    return new A3DRenderer(
       await RendererV6.create({ ...options, backend: backendSelection.requestedBackend }),
       { width: options.width, height: options.height }
     );
   }
 
-  captureProof(input: G3DRenderOptions): G3DRenderResult {
+  captureProof(input: A3DRenderOptions): A3DRenderResult {
     if (this.backend === "webgpu") {
-      throw new Error("G3DRenderer V6 WebGPU proof capture uses captureProofAsync() so native texture-to-buffer readback can be awaited.");
+      throw new Error("A3DRenderer V6 WebGPU proof capture uses captureProofAsync() so native texture-to-buffer readback can be awaited.");
     }
     const viewport = input.viewport ?? this.defaultViewport();
     const rendererInput = input.scene.createRendererInput({
@@ -158,13 +158,13 @@ export class G3DRenderer {
     return { proof, summary: summarizeV6ProductionProof(proof) };
   }
 
-  render(input: G3DRenderOptions): G3DRenderResult {
+  render(input: A3DRenderOptions): A3DRenderResult {
     return this.captureProof(input);
   }
 
-  renderInteractiveFrame(input: G3DRenderOptions): G3DFrameRenderResult {
+  renderInteractiveFrame(input: A3DRenderOptions): A3DFrameRenderResult {
     if (this.backend === "webgpu") {
-      throw new Error("G3DRenderer V6 WebGPU interactive rendering uses renderInteractiveFrameAsync() so native render submission can be awaited.");
+      throw new Error("A3DRenderer V6 WebGPU interactive rendering uses renderInteractiveFrameAsync() so native render submission can be awaited.");
     }
     const viewport = input.viewport ?? this.defaultViewport();
     const rendererInput = input.scene.createRendererInput({
@@ -189,11 +189,11 @@ export class G3DRenderer {
     };
   }
 
-  renderFrame(input: G3DRenderOptions): G3DFrameRenderResult {
+  renderFrame(input: A3DRenderOptions): A3DFrameRenderResult {
     return this.renderInteractiveFrame(input);
   }
 
-  async captureProofAsync(input: G3DRenderOptions): Promise<G3DRenderResult> {
+  async captureProofAsync(input: A3DRenderOptions): Promise<A3DRenderResult> {
     const viewport = input.viewport ?? this.defaultViewport();
     const rendererInput = input.scene.createRendererInput({
       viewport,
@@ -212,12 +212,12 @@ export class G3DRenderer {
     return { proof, summary: summarizeV6ProductionProof(proof) };
   }
 
-  async renderAsync(input: G3DRenderOptions): Promise<G3DRenderResult> {
+  async renderAsync(input: A3DRenderOptions): Promise<A3DRenderResult> {
     // RendererV6 keeps renderImportedAssetAsync as a backwards-compatible alias for captureProofAsync.
     return this.captureProofAsync(input);
   }
 
-  async renderInteractiveFrameAsync(input: G3DRenderOptions): Promise<G3DFrameRenderResult> {
+  async renderInteractiveFrameAsync(input: A3DRenderOptions): Promise<A3DFrameRenderResult> {
     const viewport = input.viewport ?? this.defaultViewport();
     const rendererInput = input.scene.createRendererInput({
       viewport,
@@ -241,7 +241,7 @@ export class G3DRenderer {
     };
   }
 
-  async renderFrameAsync(input: G3DRenderOptions): Promise<G3DFrameRenderResult> {
+  async renderFrameAsync(input: A3DRenderOptions): Promise<A3DFrameRenderResult> {
     return this.renderInteractiveFrameAsync(input);
   }
 
@@ -253,11 +253,11 @@ export class G3DRenderer {
     this.renderer.dispose();
   }
 
-  private defaultViewport(): G3DViewport {
+  private defaultViewport(): A3DViewport {
     return this.viewport;
   }
 
-  private metadataForRender(scene: G3DGltfScene, environment?: G3DHdrEnvironment) {
+  private metadataForRender(scene: A3DGltfScene, environment?: A3DHdrEnvironment) {
     return {
       assetId: scene.metadata.assetId,
       assetName: scene.metadata.assetName,
@@ -279,28 +279,28 @@ export class G3DRenderer {
   }
 }
 
-export interface G3DViewport {
+export interface A3DViewport {
   readonly width: number;
   readonly height: number;
 }
 
-export type G3DVec3 = readonly [number, number, number];
+export type A3DVec3 = readonly [number, number, number];
 
-export interface G3DDirectionalLightOptions {
+export interface A3DDirectionalLightOptions {
   readonly name?: string;
-  readonly direction?: G3DVec3;
-  readonly color?: G3DVec3;
+  readonly direction?: A3DVec3;
+  readonly color?: A3DVec3;
   readonly intensity?: number;
   readonly castsShadow?: boolean;
 }
 
-export interface G3DStudioLightingOptions {
+export interface A3DStudioLightingOptions {
   readonly preset?: "product" | "inspection" | "softbox";
   readonly intensityScale?: number;
   readonly shadows?: boolean;
 }
 
-export interface G3DGroundedStageOptions {
+export interface A3DGroundedStageOptions {
   readonly labelPrefix?: string;
   readonly floorColor?: readonly [number, number, number, number];
   readonly backdropColor?: readonly [number, number, number, number];
@@ -309,15 +309,15 @@ export interface G3DGroundedStageOptions {
   readonly floorMetallic?: number;
   readonly contactShadows?: boolean;
   readonly background?: boolean;
-  readonly shadowLightDirection?: G3DVec3;
+  readonly shadowLightDirection?: A3DVec3;
 }
 
-export interface G3DGroundedStageSettings {
+export interface A3DGroundedStageSettings {
   readonly backgroundBlur?: number;
   readonly backgroundVisible?: boolean;
 }
 
-export interface G3DGroundedStageDiagnostics {
+export interface A3DGroundedStageDiagnostics {
   readonly labelPrefix: string;
   readonly floorY: number;
   readonly floorItemCount: number;
@@ -325,49 +325,49 @@ export interface G3DGroundedStageDiagnostics {
   readonly contactShadow?: ContactShadowPassDiagnostics;
 }
 
-export interface G3DGroundedStage {
+export interface A3DGroundedStage {
   readonly groundingItems: readonly RenderItem[];
   readonly backgroundItems: readonly RenderItem[];
   readonly floorY: number;
-  readonly diagnostics: G3DGroundedStageDiagnostics;
-  update(settings?: G3DGroundedStageSettings): void;
+  readonly diagnostics: A3DGroundedStageDiagnostics;
+  update(settings?: A3DGroundedStageSettings): void;
   renderItems(options?: { readonly shadows?: boolean; readonly backgroundVisible?: boolean }): readonly RenderItem[];
   dispose(): void;
 }
 
-export interface G3DCameraFrameOptions {
+export interface A3DCameraFrameOptions {
   readonly bounds: CameraFrameBounds;
-  readonly viewport: G3DViewport;
+  readonly viewport: A3DViewport;
   readonly preset?: "product-hero" | "asset-inspection" | "material-inspection";
-  readonly target?: G3DVec3;
+  readonly target?: A3DVec3;
   readonly yawRadians?: number;
   readonly pitchRadians?: number;
   readonly zoom?: number;
   readonly paddingRatio?: number;
 }
 
-export interface G3DCameraFrame {
+export interface A3DCameraFrame {
   readonly camera: CameraLike;
-  readonly diagnostics: G3DProductViewerCameraDiagnostics;
+  readonly diagnostics: A3DProductViewerCameraDiagnostics;
 }
 
-export interface G3DProductionSceneOptions {
-  readonly scene: G3DGltfScene;
-  readonly environment?: G3DHdrEnvironment;
-  readonly viewport: G3DViewport;
-  readonly stage?: G3DGroundedStage;
+export interface A3DProductionSceneOptions {
+  readonly scene: A3DGltfScene;
+  readonly environment?: A3DHdrEnvironment;
+  readonly viewport: A3DViewport;
+  readonly stage?: A3DGroundedStage;
   readonly backgroundVisible?: boolean;
   readonly extraRenderItems?: Iterable<RenderItem>;
   readonly lights?: readonly CollectedLight[];
   readonly camera?: CameraLike;
-  readonly cameraFrame?: G3DCameraFrameOptions;
+  readonly cameraFrame?: A3DCameraFrameOptions;
   readonly shadows?: RendererShadowOptions | boolean;
   readonly postprocess?: RendererPostProcessOptions | boolean;
   readonly environmentLighting?: EnvironmentLightingOptions;
 }
 
-export function createDirectionalLight(options: G3DDirectionalLightOptions = {}): CollectedLight {
-  const source = new DirectionalLight(options.name ?? "g3d-production-runtime-directional-light");
+export function createDirectionalLight(options: A3DDirectionalLightOptions = {}): CollectedLight {
+  const source = new DirectionalLight(options.name ?? "a3d-production-runtime-directional-light");
   const color = options.color ?? [1, 1, 1];
   source.color = [color[0], color[1], color[2]];
   source.intensity = clamp(options.intensity ?? 1, 0, 64);
@@ -375,33 +375,33 @@ export function createDirectionalLight(options: G3DDirectionalLightOptions = {})
   return collectedDirectionalLight(source, options.direction ?? [0, -1, 0], source.castsShadow);
 }
 
-export function createStudioLighting(options: G3DStudioLightingOptions = {}): readonly CollectedLight[] {
+export function createStudioLighting(options: A3DStudioLightingOptions = {}): readonly CollectedLight[] {
   const scale = clamp(options.intensityScale ?? 1, 0, 16);
   const shadows = options.shadows ?? true;
   switch (options.preset ?? "product") {
     case "inspection":
       return [
-        createDirectionalLight({ name: "g3d-production-runtime-inspection-key", direction: [-0.35, -0.72, -0.46], color: [1, 0.98, 0.92], intensity: 2.1 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "g3d-production-runtime-inspection-fill", direction: [0.55, -0.48, -0.34], color: [0.62, 0.74, 1], intensity: 0.72 * scale }),
-        createDirectionalLight({ name: "g3d-production-runtime-inspection-rim", direction: [0.14, -0.34, 0.93], color: [1, 0.82, 0.62], intensity: 1.16 * scale })
+        createDirectionalLight({ name: "a3d-production-runtime-inspection-key", direction: [-0.35, -0.72, -0.46], color: [1, 0.98, 0.92], intensity: 2.1 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-production-runtime-inspection-fill", direction: [0.55, -0.48, -0.34], color: [0.62, 0.74, 1], intensity: 0.72 * scale }),
+        createDirectionalLight({ name: "a3d-production-runtime-inspection-rim", direction: [0.14, -0.34, 0.93], color: [1, 0.82, 0.62], intensity: 1.16 * scale })
       ];
     case "softbox":
       return [
-        createDirectionalLight({ name: "g3d-production-runtime-softbox-key", direction: [-0.2, -0.9, -0.32], color: [1, 0.97, 0.91], intensity: 1.75 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "g3d-production-runtime-softbox-fill", direction: [0.44, -0.52, -0.42], color: [0.74, 0.82, 1], intensity: 1.04 * scale })
+        createDirectionalLight({ name: "a3d-production-runtime-softbox-key", direction: [-0.2, -0.9, -0.32], color: [1, 0.97, 0.91], intensity: 1.75 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-production-runtime-softbox-fill", direction: [0.44, -0.52, -0.42], color: [0.74, 0.82, 1], intensity: 1.04 * scale })
       ];
     case "product":
     default:
       return [
-        createDirectionalLight({ name: "g3d-production-runtime-product-key-shadow", direction: [-0.42, -0.82, -0.38], color: [1, 0.95, 0.86], intensity: 2.75 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "g3d-production-runtime-product-fill", direction: [0.62, -0.42, -0.34], color: [0.55, 0.68, 1], intensity: 0.48 * scale }),
-        createDirectionalLight({ name: "g3d-production-runtime-product-rim", direction: [0.18, -0.34, 0.92], color: [1, 0.82, 0.55], intensity: 1.05 * scale })
+        createDirectionalLight({ name: "a3d-production-runtime-product-key-shadow", direction: [-0.42, -0.82, -0.38], color: [1, 0.95, 0.86], intensity: 2.75 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-production-runtime-product-fill", direction: [0.62, -0.42, -0.34], color: [0.55, 0.68, 1], intensity: 0.48 * scale }),
+        createDirectionalLight({ name: "a3d-production-runtime-product-rim", direction: [0.18, -0.34, 0.92], color: [1, 0.82, 0.55], intensity: 1.05 * scale })
       ];
   }
 }
 
-export function createGroundedStage(bounds: CameraFrameBounds, options: G3DGroundedStageOptions = {}): G3DGroundedStage {
-  const labelPrefix = options.labelPrefix ?? "g3d-production-runtime-grounded-stage";
+export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroundedStageOptions = {}): A3DGroundedStage {
+  const labelPrefix = options.labelPrefix ?? "a3d-production-runtime-grounded-stage";
   const width = Math.max(3.8, (bounds.max[0] - bounds.min[0]) * 2.4);
   const height = Math.max(2.6, (bounds.max[1] - bounds.min[1]) * 2.35);
   const depth = Math.max(3.2, (bounds.max[2] - bounds.min[2]) * 3.2 + 1.35);
@@ -450,7 +450,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: G3DGroun
       modelMatrix: composeMat4([centerX, centerY + height * 0.9, backZ], [0, 0, 0, 1], [width * 1.35, height * 2.8, 0.05])
     }
   ];
-  const diagnostics: G3DGroundedStageDiagnostics = {
+  const diagnostics: A3DGroundedStageDiagnostics = {
     labelPrefix,
     floorY,
     floorItemCount: groundingItems.length,
@@ -481,7 +481,7 @@ export function createGroundedStage(bounds: CameraFrameBounds, options: G3DGroun
   };
 }
 
-export function createCameraFrame(options: G3DCameraFrameOptions): G3DCameraFrame {
+export function createCameraFrame(options: A3DCameraFrameOptions): A3DCameraFrame {
   const preset = options.preset ?? "product-hero";
   const base = productViewerCameraPreset(preset);
   const targetOffset = productViewerTargetOffset(options.bounds, options.target ?? [0, 0, 0], preset);
@@ -515,7 +515,7 @@ export function createCameraFrame(options: G3DCameraFrameOptions): G3DCameraFram
   };
 }
 
-export function createProductionRenderOptions(options: G3DProductionSceneOptions): G3DRenderOptions {
+export function createProductionRenderOptions(options: A3DProductionSceneOptions): A3DRenderOptions {
   const extraRenderItems = options.extraRenderItems ? [...options.extraRenderItems] : [];
   const stageItems = options.stage?.renderItems({
     shadows: options.shadows !== false,
@@ -538,10 +538,10 @@ export function createProductionRenderOptions(options: G3DProductionSceneOptions
   };
 }
 
-export type G3DExampleParityTargetId = keyof typeof G3D_THREEJS_EXAMPLE_PARITY_TARGETS;
+export type A3DExampleParityTargetId = keyof typeof A3D_THREEJS_EXAMPLE_PARITY_TARGETS;
 
-export interface G3DImportedAnimationRuntime {
-  readonly scene: G3DGltfScene;
+export interface A3DImportedAnimationRuntime {
+  readonly scene: A3DGltfScene;
   readonly runtime: GLTFSceneAnimationRuntime;
   applyClip(name: string, time: number): GLTFSceneAnimationApplyResult;
   blendClips(samples: readonly { readonly clipName: string; readonly time: number; readonly weight?: number; readonly additive?: boolean }[]): GLTFSceneAnimationApplyResult;
@@ -549,7 +549,7 @@ export interface G3DImportedAnimationRuntime {
   snapshot(): GLTFSceneAnimationRuntimeSnapshot;
 }
 
-export function createImportedAnimationRuntime(scene: G3DGltfScene): G3DImportedAnimationRuntime {
+export function createImportedAnimationRuntime(scene: A3DGltfScene): A3DImportedAnimationRuntime {
   const runtime = createGLTFSceneAnimationRuntime({
     scene: scene.resources.scene,
     clips: scene.asset.animations,
@@ -573,7 +573,7 @@ export function createImportedAnimationRuntime(scene: G3DGltfScene): G3DImported
   };
 }
 
-export interface G3DAnimationActionOptions {
+export interface A3DAnimationActionOptions {
   readonly weight?: number;
   readonly timeScale?: number;
   readonly loop?: "once" | "repeat" | "pingpong";
@@ -582,7 +582,7 @@ export interface G3DAnimationActionOptions {
   readonly mask?: readonly string[];
 }
 
-export interface G3DAnimationControllerOptions {
+export interface A3DAnimationControllerOptions {
   readonly target?: AnimationTarget;
   readonly clips?: readonly AnimationClip[];
   readonly applyRootMotion?: boolean;
@@ -590,13 +590,13 @@ export interface G3DAnimationControllerOptions {
   readonly rootMotionScale?: number;
 }
 
-export interface G3DAnimationControllerSnapshot {
+export interface A3DAnimationControllerSnapshot {
   readonly mixer: AnimationMixerSnapshot;
   readonly registeredClips: readonly string[];
   readonly updateCount: number;
   readonly crossFadeCount: number;
   readonly lastEventCount: number;
-  readonly parityTargets: typeof G3D_THREEJS_EXAMPLE_PARITY_TARGETS;
+  readonly parityTargets: typeof A3D_THREEJS_EXAMPLE_PARITY_TARGETS;
   readonly capabilities: {
     readonly keyframes: true;
     readonly crossFade: true;
@@ -609,17 +609,17 @@ export interface G3DAnimationControllerSnapshot {
   };
 }
 
-export interface G3DAnimationController {
+export interface A3DAnimationController {
   readonly mixer: AnimationMixer;
   registerClip(clip: AnimationClip): AnimationClip;
-  play(clip: string | AnimationClip, options?: G3DAnimationActionOptions): AnimationAction;
+  play(clip: string | AnimationClip, options?: A3DAnimationActionOptions): AnimationAction;
   crossFade(from: string | AnimationAction, to: string | AnimationAction | AnimationClip, duration: number): void;
   update(deltaSeconds: number): readonly AnimationEvent[];
-  snapshot(): G3DAnimationControllerSnapshot;
+  snapshot(): A3DAnimationControllerSnapshot;
   dispose(): void;
 }
 
-export function createAnimationController(options: G3DAnimationControllerOptions = {}): G3DAnimationController {
+export function createAnimationController(options: A3DAnimationControllerOptions = {}): A3DAnimationController {
   const mixer = new AnimationMixer(options.target, {
     applyRootMotion: options.applyRootMotion,
     rootMotionTrack: options.rootMotionTrack,
@@ -633,7 +633,7 @@ export function createAnimationController(options: G3DAnimationControllerOptions
   let lastEvents: readonly AnimationEvent[] = [];
   for (const clip of options.clips ?? []) clips.set(clip.name, clip);
 
-  const controller: G3DAnimationController = {
+  const controller: A3DAnimationController = {
     mixer,
     registerClip(clip) {
       clips.set(clip.name, clip);
@@ -686,7 +686,7 @@ export function createAnimationController(options: G3DAnimationControllerOptions
         updateCount,
         crossFadeCount,
         lastEventCount: lastEvents.length,
-        parityTargets: G3D_THREEJS_EXAMPLE_PARITY_TARGETS,
+        parityTargets: A3D_THREEJS_EXAMPLE_PARITY_TARGETS,
         capabilities: {
           keyframes: true,
           crossFade: true,
@@ -710,48 +710,48 @@ export function createAnimationController(options: G3DAnimationControllerOptions
   return controller;
 }
 
-export interface G3DPhysicsSceneOptions {
+export interface A3DPhysicsSceneOptions {
   readonly gravity?: Vec3;
   readonly fixedDelta?: number;
   readonly solverIterations?: number;
   readonly enableSleeping?: boolean;
 }
 
-export interface G3DPhysicsBodyOptions {
+export interface A3DPhysicsBodyOptions {
   readonly type?: RigidBodyType;
-  readonly position?: G3DVec3;
-  readonly velocity?: G3DVec3;
+  readonly position?: A3DVec3;
+  readonly velocity?: A3DVec3;
   readonly mass?: number;
   readonly restitution?: number;
   readonly friction?: number;
   readonly shape?: {
     readonly kind: "box" | "sphere" | "capsule";
-    readonly halfExtents?: G3DVec3;
+    readonly halfExtents?: A3DVec3;
     readonly radius?: number;
     readonly halfHeight?: number;
   };
   readonly sensor?: boolean;
 }
 
-export interface G3DPhysicsConstraintOptions {
+export interface A3DPhysicsConstraintOptions {
   readonly type: ConstraintType;
   readonly bodyA: RigidBody;
   readonly bodyB: RigidBody;
-  readonly localAnchorA?: G3DVec3;
-  readonly localAnchorB?: G3DVec3;
+  readonly localAnchorA?: A3DVec3;
+  readonly localAnchorB?: A3DVec3;
   readonly restLength?: number;
   readonly stiffness?: number;
-  readonly axis?: G3DVec3;
+  readonly axis?: A3DVec3;
 }
 
-export interface G3DPhysicsStepOptions {
+export interface A3DPhysicsStepOptions {
   readonly dt?: number;
   readonly steps?: number;
 }
 
-export interface G3DPhysicsSceneSnapshot {
+export interface A3DPhysicsSceneSnapshot {
   readonly world: PhysicsSnapshot;
-  readonly parityTargets: Pick<typeof G3D_THREEJS_EXAMPLE_PARITY_TARGETS, "walkCycle">;
+  readonly parityTargets: Pick<typeof A3D_THREEJS_EXAMPLE_PARITY_TARGETS, "walkCycle">;
   readonly capabilities: {
     readonly dynamicRigidBodies: true;
     readonly staticColliders: true;
@@ -762,20 +762,20 @@ export interface G3DPhysicsSceneSnapshot {
   };
 }
 
-export interface G3DPhysicsScene {
+export interface A3DPhysicsScene {
   readonly world: PhysicsWorld;
-  createBody(options?: G3DPhysicsBodyOptions): RigidBody;
+  createBody(options?: A3DPhysicsBodyOptions): RigidBody;
   createGroundPlane(constant?: number): RigidBody;
-  addConstraint(options: G3DPhysicsConstraintOptions): ReturnType<PhysicsWorld["createConstraint"]>;
-  step(options?: number | G3DPhysicsStepOptions): readonly CollisionEvent[];
-  raycast(origin: G3DVec3, direction: G3DVec3, maxDistance?: number): ReturnType<PhysicsWorld["raycast"]>;
-  sphereCast(origin: G3DVec3, radius: number, direction: G3DVec3, maxDistance?: number): ReturnType<PhysicsWorld["sphereCast"]>;
-  snapshot(): G3DPhysicsSceneSnapshot;
+  addConstraint(options: A3DPhysicsConstraintOptions): ReturnType<PhysicsWorld["createConstraint"]>;
+  step(options?: number | A3DPhysicsStepOptions): readonly CollisionEvent[];
+  raycast(origin: A3DVec3, direction: A3DVec3, maxDistance?: number): ReturnType<PhysicsWorld["raycast"]>;
+  sphereCast(origin: A3DVec3, radius: number, direction: A3DVec3, maxDistance?: number): ReturnType<PhysicsWorld["sphereCast"]>;
+  snapshot(): A3DPhysicsSceneSnapshot;
 }
 
-export function createPhysicsScene(options: G3DPhysicsSceneOptions = {}): G3DPhysicsScene {
+export function createPhysicsScene(options: A3DPhysicsSceneOptions = {}): A3DPhysicsScene {
   const world = new PhysicsWorld(options);
-  const scene: G3DPhysicsScene = {
+  const scene: A3DPhysicsScene = {
     world,
     createBody(bodyOptions = {}) {
       const body = world.createRigidBody({
@@ -828,7 +828,7 @@ export function createPhysicsScene(options: G3DPhysicsSceneOptions = {}): G3DPhy
     snapshot() {
       return {
         world: world.snapshot(),
-        parityTargets: { walkCycle: G3D_THREEJS_EXAMPLE_PARITY_TARGETS.walkCycle },
+        parityTargets: { walkCycle: A3D_THREEJS_EXAMPLE_PARITY_TARGETS.walkCycle },
         capabilities: {
           dynamicRigidBodies: true,
           staticColliders: true,
@@ -843,7 +843,7 @@ export function createPhysicsScene(options: G3DPhysicsSceneOptions = {}): G3DPhy
   return scene;
 }
 
-export interface G3DGltfSceneOptions {
+export interface A3DGltfSceneOptions {
   readonly url: string;
   readonly assetId?: string;
   readonly assetName?: string;
@@ -851,13 +851,13 @@ export interface G3DGltfSceneOptions {
   readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
   readonly sceneIndex?: number;
   readonly sceneName?: string;
-  readonly viewport?: G3DViewport;
+  readonly viewport?: A3DViewport;
   readonly rendererInput?: GLTFRendererInputOptions;
 }
 
-export interface G3DGltfRendererInputOptions {
-  readonly viewport: G3DViewport;
-  readonly environment?: G3DHdrEnvironment;
+export interface A3DGltfRendererInputOptions {
+  readonly viewport: A3DViewport;
+  readonly environment?: A3DHdrEnvironment;
   readonly environmentLighting?: EnvironmentLightingOptions;
   readonly renderItems?: Iterable<RenderItem>;
   readonly collectedLights?: Iterable<CollectedLight>;
@@ -865,7 +865,7 @@ export interface G3DGltfRendererInputOptions {
   readonly postprocess?: RendererPostProcessOptions | boolean;
 }
 
-export class G3DGltfScene {
+export class A3DGltfScene {
   constructor(private readonly pipeline: V6GLTFRenderPipeline) {}
 
   get asset() {
@@ -880,7 +880,7 @@ export class G3DGltfScene {
     return this.pipeline.metadata;
   }
 
-  createRendererInput(options: G3DGltfRendererInputOptions): {
+  createRendererInput(options: A3DGltfRendererInputOptions): {
     readonly source: RenderSource;
     readonly camera: CameraLike;
     readonly bounds: CameraFrameBounds;
@@ -907,7 +907,7 @@ export class G3DGltfScene {
   }
 }
 
-export async function loadGltfScene(input: string | G3DGltfSceneOptions): Promise<G3DGltfScene> {
+export async function loadGltfScene(input: string | A3DGltfSceneOptions): Promise<A3DGltfScene> {
   const options = typeof input === "string" ? { url: input } : input;
   const viewport = options.viewport ?? { width: 1024, height: 1024 };
   const assetId = options.assetId ?? assetIdFromUrl(options.url);
@@ -923,10 +923,10 @@ export async function loadGltfScene(input: string | G3DGltfSceneOptions): Promis
     ...(options.sceneName !== undefined ? { sceneName: options.sceneName } : {}),
     ...(options.rendererInput ? { rendererInput: options.rendererInput } : {})
   });
-  return new G3DGltfScene(pipeline);
+  return new A3DGltfScene(pipeline);
 }
 
-export interface G3DHdrEnvironmentOptions {
+export interface A3DHdrEnvironmentOptions {
   readonly url: string;
   readonly id?: string;
   readonly label?: string;
@@ -941,7 +941,7 @@ export interface G3DHdrEnvironmentOptions {
   };
 }
 
-export class G3DHdrEnvironment {
+export class A3DHdrEnvironment {
   readonly id: string;
   readonly label: string;
   readonly url: string;
@@ -971,7 +971,7 @@ export class G3DHdrEnvironment {
   }
 }
 
-export async function loadHdrEnvironment(input: string | G3DHdrEnvironmentOptions): Promise<G3DHdrEnvironment> {
+export async function loadHdrEnvironment(input: string | A3DHdrEnvironmentOptions): Promise<A3DHdrEnvironment> {
   const options = typeof input === "string" ? { url: input } : input;
   const data = options.data ?? await fetchArrayBuffer(options.url);
   const id = options.id ?? assetIdFromUrl(options.url);
@@ -983,7 +983,7 @@ export async function loadHdrEnvironment(input: string | G3DHdrEnvironmentOption
     rotation: options.rotation ?? 0,
     ...(options.toneMapping ? { toneMapping: options.toneMapping } : {})
   });
-  return new G3DHdrEnvironment({
+  return new A3DHdrEnvironment({
     id,
     label: options.label ?? id,
     url: options.url,
@@ -992,7 +992,7 @@ export async function loadHdrEnvironment(input: string | G3DHdrEnvironmentOption
   });
 }
 
-export interface G3DOrbitControlsOptions {
+export interface A3DOrbitControlsOptions {
   readonly enabled?: boolean;
   readonly enablePan?: boolean;
   readonly enableZoom?: boolean;
@@ -1001,7 +1001,7 @@ export interface G3DOrbitControlsOptions {
   readonly position?: readonly [number, number, number];
 }
 
-export interface G3DOrbitControlsSnapshot {
+export interface A3DOrbitControlsSnapshot {
   readonly target: readonly [number, number, number];
   readonly position: readonly [number, number, number];
   readonly rotation: readonly [number, number];
@@ -1009,16 +1009,16 @@ export interface G3DOrbitControlsSnapshot {
   readonly enabled: boolean;
 }
 
-export interface G3DOrbitControls {
-  rotate(deltaX: number, deltaY: number): G3DOrbitControlsSnapshot;
-  pan(deltaX: number, deltaY: number): G3DOrbitControlsSnapshot;
-  dolly(scale: number): G3DOrbitControlsSnapshot;
-  reset(): G3DOrbitControlsSnapshot;
-  snapshot(): G3DOrbitControlsSnapshot;
+export interface A3DOrbitControls {
+  rotate(deltaX: number, deltaY: number): A3DOrbitControlsSnapshot;
+  pan(deltaX: number, deltaY: number): A3DOrbitControlsSnapshot;
+  dolly(scale: number): A3DOrbitControlsSnapshot;
+  reset(): A3DOrbitControlsSnapshot;
+  snapshot(): A3DOrbitControlsSnapshot;
 }
 
-export function createOrbitControls(options: G3DOrbitControlsOptions = {}): G3DOrbitControls {
-  const initial: G3DOrbitControlsSnapshot = {
+export function createOrbitControls(options: A3DOrbitControlsOptions = {}): A3DOrbitControls {
+  const initial: A3DOrbitControlsSnapshot = {
     target: options.target ?? [0, 0, 0],
     position: options.position ?? [0, 0, 5],
     rotation: [0, 0],
@@ -1060,7 +1060,7 @@ export function createOrbitControls(options: G3DOrbitControlsOptions = {}): G3DO
   };
 }
 
-export interface G3DNavigationControlsOptions {
+export interface A3DNavigationControlsOptions {
   readonly enabled?: boolean;
   readonly locked?: boolean;
   readonly position?: readonly [number, number, number];
@@ -1068,7 +1068,7 @@ export interface G3DNavigationControlsOptions {
   readonly movementSpeed?: number;
 }
 
-export interface G3DNavigationControlsSnapshot {
+export interface A3DNavigationControlsSnapshot {
   readonly position: readonly [number, number, number];
   readonly rotation: readonly [number, number, number];
   readonly movementSpeed: number;
@@ -1076,31 +1076,31 @@ export interface G3DNavigationControlsSnapshot {
   readonly locked: boolean;
 }
 
-export interface G3DFirstPersonControls {
-  moveForward(distance: number): G3DNavigationControlsSnapshot;
-  strafe(distance: number): G3DNavigationControlsSnapshot;
-  look(deltaX: number, deltaY: number): G3DNavigationControlsSnapshot;
-  reset(): G3DNavigationControlsSnapshot;
-  snapshot(): G3DNavigationControlsSnapshot;
+export interface A3DFirstPersonControls {
+  moveForward(distance: number): A3DNavigationControlsSnapshot;
+  strafe(distance: number): A3DNavigationControlsSnapshot;
+  look(deltaX: number, deltaY: number): A3DNavigationControlsSnapshot;
+  reset(): A3DNavigationControlsSnapshot;
+  snapshot(): A3DNavigationControlsSnapshot;
 }
 
-export interface G3DMapControls extends G3DOrbitControls {
-  truck(deltaX: number, deltaZ: number): G3DOrbitControlsSnapshot;
+export interface A3DMapControls extends A3DOrbitControls {
+  truck(deltaX: number, deltaZ: number): A3DOrbitControlsSnapshot;
 }
 
-export interface G3DTrackballControls extends G3DOrbitControls {
-  roll(delta: number): G3DOrbitControlsSnapshot;
+export interface A3DTrackballControls extends A3DOrbitControls {
+  roll(delta: number): A3DOrbitControlsSnapshot;
 }
 
-export interface G3DPointerLockControls {
-  lock(): G3DNavigationControlsSnapshot;
-  unlock(): G3DNavigationControlsSnapshot;
-  look(deltaX: number, deltaY: number): G3DNavigationControlsSnapshot;
-  reset(): G3DNavigationControlsSnapshot;
-  snapshot(): G3DNavigationControlsSnapshot;
+export interface A3DPointerLockControls {
+  lock(): A3DNavigationControlsSnapshot;
+  unlock(): A3DNavigationControlsSnapshot;
+  look(deltaX: number, deltaY: number): A3DNavigationControlsSnapshot;
+  reset(): A3DNavigationControlsSnapshot;
+  snapshot(): A3DNavigationControlsSnapshot;
 }
 
-export function createFirstPersonControls(options: G3DNavigationControlsOptions = {}): G3DFirstPersonControls {
+export function createFirstPersonControls(options: A3DNavigationControlsOptions = {}): A3DFirstPersonControls {
   const initial = createNavigationSnapshot(options);
   let state = cloneNavigationSnapshot(initial);
   return {
@@ -1126,8 +1126,8 @@ export function createFirstPersonControls(options: G3DNavigationControlsOptions 
   };
 }
 
-export function createMapControls(options: G3DOrbitControlsOptions = {}): G3DMapControls {
-  const initial: G3DOrbitControlsSnapshot = {
+export function createMapControls(options: A3DOrbitControlsOptions = {}): A3DMapControls {
+  const initial: A3DOrbitControlsSnapshot = {
     target: options.target ?? [0, 0, 0],
     position: options.position ?? [0, 0, 5],
     rotation: [0, 0],
@@ -1175,7 +1175,7 @@ export function createMapControls(options: G3DOrbitControlsOptions = {}): G3DMap
   };
 }
 
-export function createTrackballControls(options: G3DOrbitControlsOptions = {}): G3DTrackballControls {
+export function createTrackballControls(options: A3DOrbitControlsOptions = {}): A3DTrackballControls {
   const orbit = createOrbitControls(options);
   let rollRadians = 0;
   return {
@@ -1210,7 +1210,7 @@ export function createTrackballControls(options: G3DOrbitControlsOptions = {}): 
   };
 }
 
-export function createPointerLockControls(options: G3DNavigationControlsOptions = {}): G3DPointerLockControls {
+export function createPointerLockControls(options: A3DNavigationControlsOptions = {}): A3DPointerLockControls {
   const initial = createNavigationSnapshot({ ...options, locked: options.locked ?? false });
   let state = cloneNavigationSnapshot(initial);
   return {
@@ -1238,10 +1238,10 @@ export function createPointerLockControls(options: G3DNavigationControlsOptions 
   };
 }
 
-export interface G3DProductViewerOptions {
+export interface A3DProductViewerOptions {
   readonly canvas: HTMLCanvasElement | OffscreenCanvas;
-  readonly asset: G3DGltfScene;
-  readonly environment: G3DHdrEnvironment;
+  readonly asset: A3DGltfScene;
+  readonly environment: A3DHdrEnvironment;
   readonly backend?: "webgl2" | "webgpu";
   readonly width?: number;
   readonly height?: number;
@@ -1263,7 +1263,7 @@ export interface G3DProductViewerOptions {
   };
 }
 
-export interface G3DProductViewerSettings {
+export interface A3DProductViewerSettings {
   readonly exposure: number;
   readonly iblIntensity: number;
   readonly specularIntensity: number;
@@ -1278,7 +1278,7 @@ export interface G3DProductViewerSettings {
   readonly colorGrade: boolean;
 }
 
-export interface G3DProductViewerCameraDiagnostics {
+export interface A3DProductViewerCameraDiagnostics {
   readonly preset: "product-hero" | "asset-inspection" | "material-inspection";
   readonly yawRadians: number;
   readonly pitchRadians: number;
@@ -1288,7 +1288,7 @@ export interface G3DProductViewerCameraDiagnostics {
   readonly zoom: number;
 }
 
-export interface G3DProductViewerStageDiagnostics {
+export interface A3DProductViewerStageDiagnostics {
   readonly enabled: boolean;
   readonly itemCount: number;
   readonly floorY: number;
@@ -1298,7 +1298,7 @@ export interface G3DProductViewerStageDiagnostics {
   readonly contactShadow: ContactShadowPassDiagnostics;
 }
 
-export interface G3DProductViewerBackgroundDiagnostics {
+export interface A3DProductViewerBackgroundDiagnostics {
   readonly enabled: boolean;
   readonly itemCount: number;
   readonly mode: "visible-hdr-studio-skybox";
@@ -1306,16 +1306,16 @@ export interface G3DProductViewerBackgroundDiagnostics {
   readonly environmentRotation: number;
 }
 
-export interface G3DProductViewer {
-  readonly renderer: G3DRenderer;
-  readonly asset: G3DGltfScene;
-  readonly environment: G3DHdrEnvironment;
-  readonly controls: G3DOrbitControls;
-  render(): G3DRenderResult;
-  renderAsync(): Promise<G3DRenderResult>;
-  setSettings(settings: Partial<G3DProductViewerSettings>): G3DProductViewerSettings;
-  setEnvironment(environment: G3DHdrEnvironment): G3DHdrEnvironment;
-  getSettings(): G3DProductViewerSettings;
+export interface A3DProductViewer {
+  readonly renderer: A3DRenderer;
+  readonly asset: A3DGltfScene;
+  readonly environment: A3DHdrEnvironment;
+  readonly controls: A3DOrbitControls;
+  render(): A3DRenderResult;
+  renderAsync(): Promise<A3DRenderResult>;
+  setSettings(settings: Partial<A3DProductViewerSettings>): A3DProductViewerSettings;
+  setEnvironment(environment: A3DHdrEnvironment): A3DHdrEnvironment;
+  getSettings(): A3DProductViewerSettings;
   captureScreenshot(type?: "image/png" | "image/jpeg", quality?: number): string | undefined;
   diagnostics(): {
     readonly asset: V6GLTFRenderMetadata;
@@ -1330,19 +1330,19 @@ export interface G3DProductViewer {
       readonly cubemapMipCount: number;
       readonly brdfLut: boolean;
     };
-    readonly controls: G3DOrbitControlsSnapshot;
-    readonly settings: G3DProductViewerSettings;
-    readonly camera?: G3DProductViewerCameraDiagnostics;
-    readonly stage: G3DProductViewerStageDiagnostics;
-    readonly background: G3DProductViewerBackgroundDiagnostics;
+    readonly controls: A3DOrbitControlsSnapshot;
+    readonly settings: A3DProductViewerSettings;
+    readonly camera?: A3DProductViewerCameraDiagnostics;
+    readonly stage: A3DProductViewerStageDiagnostics;
+    readonly background: A3DProductViewerBackgroundDiagnostics;
   };
   dispose(): void;
 }
 
-export async function createProductViewer(options: G3DProductViewerOptions): Promise<G3DProductViewer> {
+export async function createProductViewer(options: A3DProductViewerOptions): Promise<A3DProductViewer> {
   const width = options.width ?? options.canvas.width;
   const height = options.height ?? options.canvas.height;
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     backend: options.backend,
     canvas: options.canvas,
     width,
@@ -1356,7 +1356,7 @@ export async function createProductViewer(options: G3DProductViewerOptions): Pro
   });
   const viewport = { width, height };
   let currentEnvironment = options.environment;
-  let settings: G3DProductViewerSettings = {
+  let settings: A3DProductViewerSettings = {
     exposure: options.postprocess?.exposure ?? 0.9,
     iblIntensity: currentEnvironment.environmentLighting.environmentMapIntensity ?? currentEnvironment.pipeline.intensity,
     specularIntensity: Math.max(
@@ -1373,13 +1373,13 @@ export async function createProductViewer(options: G3DProductViewerOptions): Pro
     fxaa: options.postprocess?.fxaa !== false,
     colorGrade: options.postprocess?.colorGrade !== false
   };
-  let lastCamera: G3DProductViewerCameraDiagnostics | undefined;
+  let lastCamera: A3DProductViewerCameraDiagnostics | undefined;
   const stage = createGroundedStage(options.asset.resources.bounds, {
-    labelPrefix: "g3d-production-product-viewer",
+    labelPrefix: "a3d-production-product-viewer",
     shadowLightDirection: [-0.42, -0.82, -0.38]
   });
   const skyboxGeometry = Geometry.uvSphere(1, 128, 64);
-  const skyboxMaterial = new G3DVisibleHdrSkyboxMaterial({
+  const skyboxMaterial = new A3DVisibleHdrSkyboxMaterial({
     texture: currentEnvironment.environmentLighting.environmentMapTexture ?? new TextureBinding({ name: "u_environmentMapTexture", required: false }),
     rotation: settings.environmentRotation,
     exposure: settings.exposure * currentEnvironment.pipeline.backgroundIntensity
@@ -1531,7 +1531,7 @@ export async function createProductViewer(options: G3DProductViewerOptions): Pro
 }
 
 function createProductViewerPostprocess(
-  options: Pick<G3DProductViewerSettings, "toneMapping" | "exposure" | "bloom" | "ssao" | "fxaa" | "colorGrade">
+  options: Pick<A3DProductViewerSettings, "toneMapping" | "exposure" | "bloom" | "ssao" | "fxaa" | "colorGrade">
 ): RendererPostProcessOptions {
   return {
     targetFormat: "rgba16f",
@@ -1555,16 +1555,16 @@ function createProductViewerPostprocess(
   };
 }
 
-const G3D_VISIBLE_HDR_SKYBOX_SHADER_NAME = "g3d-production-runtime/visible-hdr-studio-skybox";
-const G3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER = "@g3d-production-runtime-shader:visible-hdr-studio-skybox-v1";
+const A3D_VISIBLE_HDR_SKYBOX_SHADER_NAME = "a3d-production-runtime/visible-hdr-studio-skybox";
+const A3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER = "@aura3d-production-runtime-shader:visible-hdr-studio-skybox-v1";
 
 function createProductViewerShaderLibrary() {
   const library = createDefaultShaderLibrary();
   library.register({
-    name: G3D_VISIBLE_HDR_SKYBOX_SHADER_NAME,
-    marker: G3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER,
+    name: A3D_VISIBLE_HDR_SKYBOX_SHADER_NAME,
+    marker: A3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER,
     vertex: `#version 300 es
-// ${G3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER}
+// ${A3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER}
 precision highp float;
 layout(location = 0) in vec3 a_position;
 uniform mat4 u_modelViewProjection;
@@ -1575,7 +1575,7 @@ void main() {
 }
 `,
     fragment: `#version 300 es
-// ${G3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER}
+// ${A3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER}
 precision highp float;
 uniform sampler2D u_environmentMapTexture;
 uniform float u_environmentSkyboxRotation;
@@ -1586,29 +1586,29 @@ out vec4 outColor;
 
 const float PI = 3.141592653589793;
 
-vec2 g3dProductViewerEquirectUv(vec3 direction, float rotation) {
+vec2 a3dProductViewerEquirectUv(vec3 direction, float rotation) {
   vec3 d = normalize(direction);
   float u = atan(d.z, d.x) / (2.0 * PI) + 0.5 + rotation;
   float v = acos(clamp(d.y, -1.0, 1.0)) / PI;
   return vec2(fract(u), clamp(v, 0.0, 1.0));
 }
 
-vec3 g3dProductViewerFilmic(vec3 color) {
+vec3 a3dProductViewerFilmic(vec3 color) {
   color = max(color, vec3(0.0));
   return clamp((color * (2.51 * color + 0.03)) / (color * (2.43 * color + 0.59) + 0.14), vec3(0.0), vec3(1.0));
 }
 
-vec3 g3dProductViewerLinearToSrgb(vec3 color) {
+vec3 a3dProductViewerLinearToSrgb(vec3 color) {
   vec3 lo = color * 12.92;
   vec3 hi = 1.055 * pow(max(color, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055;
   return mix(lo, hi, step(vec3(0.0031308), color));
 }
 
 void main() {
-  vec2 uv = g3dProductViewerEquirectUv(v_direction, u_environmentSkyboxRotation);
+  vec2 uv = a3dProductViewerEquirectUv(v_direction, u_environmentSkyboxRotation);
   float lod = clamp(u_environmentSkyboxBlur * 6.0, 0.0, 8.0);
   vec3 hdr = textureLod(u_environmentMapTexture, uv, lod).rgb * u_environmentSkyboxExposure;
-  vec3 mapped = g3dProductViewerLinearToSrgb(g3dProductViewerFilmic(hdr));
+  vec3 mapped = a3dProductViewerLinearToSrgb(a3dProductViewerFilmic(hdr));
   outColor = vec4(mapped, 1.0);
 }
 `
@@ -1616,15 +1616,15 @@ void main() {
   return library;
 }
 
-class G3DVisibleHdrSkyboxMaterial extends Material {
+class A3DVisibleHdrSkyboxMaterial extends Material {
   constructor(options: {
     readonly texture: TextureBinding;
     readonly rotation: number;
     readonly exposure: number;
   }) {
     super({
-      name: "g3d-production-runtime-visible-hdr-studio-skybox",
-      shaderKey: G3D_VISIBLE_HDR_SKYBOX_SHADER_NAME,
+      name: "a3d-production-runtime-visible-hdr-studio-skybox",
+      shaderKey: A3D_VISIBLE_HDR_SKYBOX_SHADER_NAME,
       renderState: {
         depthTest: false,
         depthWrite: false,
@@ -1654,8 +1654,8 @@ function createProductViewerSkyboxItem(
   material: Material,
   cameraPosition: readonly [number, number, number],
   bounds: CameraFrameBounds,
-  environment: G3DHdrEnvironment,
-  settings: G3DProductViewerSettings
+  environment: A3DHdrEnvironment,
+  settings: A3DProductViewerSettings
 ): RenderItem {
   material.setParameter("u_environmentMapTexture", environment.environmentLighting.environmentMapTexture ?? new TextureBinding({ name: "u_environmentMapTexture", required: false }));
   material.setParameter("u_environmentSkyboxRotation", settings.environmentRotation);
@@ -1671,13 +1671,13 @@ function createProductViewerSkyboxItem(
   return {
     geometry,
     material,
-    label: "g3d-production-runtime-visible-hdr-studio-skybox",
+    label: "a3d-production-runtime-visible-hdr-studio-skybox",
     includeInAutoFrame: false,
     modelMatrix: composeMat4([cameraPosition[0], cameraPosition[1], cameraPosition[2]], [0, 0, 0, 1], [radius, radius, radius])
   };
 }
 
-function createProductViewerShadowOptions(settings: Pick<G3DProductViewerSettings, "shadows">): RendererShadowOptions | false {
+function createProductViewerShadowOptions(settings: Pick<A3DProductViewerSettings, "shadows">): RendererShadowOptions | false {
   if (!settings.shadows) return false;
   return {
     enabled: true,
@@ -1689,7 +1689,7 @@ function createProductViewerShadowOptions(settings: Pick<G3DProductViewerSetting
     pcfRadius: 1.65,
     pcfSamples: 16,
     pcfDistribution: "poisson",
-    label: "g3d-production-product-viewer-directional-shadow"
+    label: "a3d-production-product-viewer-directional-shadow"
   };
 }
 
@@ -1714,8 +1714,8 @@ function collectedDirectionalLight(
 }
 
 function createProductViewerEnvironmentLighting(
-  environment: G3DHdrEnvironment,
-  settings: G3DProductViewerSettings
+  environment: A3DHdrEnvironment,
+  settings: A3DProductViewerSettings
 ): EnvironmentLightingOptions {
   const lighting = environment.environmentLighting;
   return {
@@ -1727,7 +1727,7 @@ function createProductViewerEnvironmentLighting(
   };
 }
 
-function productViewerCameraPreset(preset: G3DProductViewerCameraDiagnostics["preset"]): Required<Pick<
+function productViewerCameraPreset(preset: A3DProductViewerCameraDiagnostics["preset"]): Required<Pick<
   PerspectiveCameraFrameOptions,
   "fovYRadians" | "paddingRatio" | "minDistance" | "nearPadding" | "farPadding" | "yawRadians" | "pitchRadians"
 >> {
@@ -1745,7 +1745,7 @@ function productViewerCameraPreset(preset: G3DProductViewerCameraDiagnostics["pr
 function productViewerTargetOffset(
   bounds: CameraFrameBounds,
   target: readonly [number, number, number],
-  preset: G3DProductViewerCameraDiagnostics["preset"]
+  preset: A3DProductViewerCameraDiagnostics["preset"]
 ): readonly [number, number, number] {
   const extent = Math.max(
     0.001,
@@ -1769,7 +1769,7 @@ function offsetBounds(bounds: CameraFrameBounds, offset: readonly [number, numbe
   };
 }
 
-function sanitizeProductViewerSettings(settings: G3DProductViewerSettings): G3DProductViewerSettings {
+function sanitizeProductViewerSettings(settings: A3DProductViewerSettings): A3DProductViewerSettings {
   return {
     ...settings,
     exposure: clamp(settings.exposure, 0, 4),
@@ -1783,7 +1783,7 @@ function sanitizeProductViewerSettings(settings: G3DProductViewerSettings): G3DP
 function resolveAnimationClip(clips: ReadonlyMap<string, AnimationClip>, name: string): AnimationClip {
   const clip = clips.get(name);
   if (!clip) {
-    throw new Error(`G3D animation clip "${name}" is not registered.`);
+    throw new Error(`A3D animation clip "${name}" is not registered.`);
   }
   return clip;
 }
@@ -1791,12 +1791,12 @@ function resolveAnimationClip(clips: ReadonlyMap<string, AnimationClip>, name: s
 function resolveAnimationAction(actions: ReadonlyMap<string, AnimationAction>, name: string): AnimationAction {
   const action = actions.get(name);
   if (!action) {
-    throw new Error(`G3D animation action "${name}" has not been played.`);
+    throw new Error(`A3D animation action "${name}" has not been played.`);
   }
   return action;
 }
 
-function resolvePhysicsShape(shape: NonNullable<G3DPhysicsBodyOptions["shape"]>) {
+function resolvePhysicsShape(shape: NonNullable<A3DPhysicsBodyOptions["shape"]>) {
   if (shape.kind === "box") {
     const halfExtents = shape.halfExtents ?? [0.5, 0.5, 0.5];
     return Shape.box(halfExtents[0], halfExtents[1], halfExtents[2]);
@@ -1843,7 +1843,7 @@ function assetIdFromUrl(url: string): string {
   return basename.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9_-]+/g, "-").toLowerCase();
 }
 
-function cloneOrbitSnapshot(snapshot: G3DOrbitControlsSnapshot): G3DOrbitControlsSnapshot {
+function cloneOrbitSnapshot(snapshot: A3DOrbitControlsSnapshot): A3DOrbitControlsSnapshot {
   return {
     target: [...snapshot.target] as [number, number, number],
     position: [...snapshot.position] as [number, number, number],
@@ -1853,7 +1853,7 @@ function cloneOrbitSnapshot(snapshot: G3DOrbitControlsSnapshot): G3DOrbitControl
   };
 }
 
-function createNavigationSnapshot(options: G3DNavigationControlsOptions): G3DNavigationControlsSnapshot {
+function createNavigationSnapshot(options: A3DNavigationControlsOptions): A3DNavigationControlsSnapshot {
   return {
     position: options.position ?? [0, 0, 0],
     rotation: options.rotation ?? [0, 0, 0],
@@ -1863,7 +1863,7 @@ function createNavigationSnapshot(options: G3DNavigationControlsOptions): G3DNav
   };
 }
 
-function cloneNavigationSnapshot(snapshot: G3DNavigationControlsSnapshot): G3DNavigationControlsSnapshot {
+function cloneNavigationSnapshot(snapshot: A3DNavigationControlsSnapshot): A3DNavigationControlsSnapshot {
   return {
     position: [...snapshot.position] as [number, number, number],
     rotation: [...snapshot.rotation] as [number, number, number],

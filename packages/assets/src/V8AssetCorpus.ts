@@ -61,7 +61,7 @@ export interface V8EnvironmentManifestEntry {
 }
 
 export interface V8AssetManifest {
-  readonly schema: "g3d-v8-local-asset-corpus/v1";
+  readonly schema: "a3d-v8-local-asset-corpus/v1";
   readonly claimBoundary: string;
   readonly requirements: V8AssetRequirement;
   readonly assets: readonly V8AssetManifestEntry[];
@@ -120,7 +120,7 @@ export interface V8EnvironmentReadinessEntry {
 }
 
 export interface V8AssetCorpusSummary {
-  readonly schema: "g3d-v8-asset-readiness/v1";
+  readonly schema: "a3d-v8-asset-readiness/v1";
   readonly pass: boolean;
   readonly assetCount: number;
   readonly environmentCount: number;
@@ -352,7 +352,7 @@ export function createV8AssetCorpusSummary(manifest = loadV8AssetManifest()): V8
   const materialExtensionAssetCount = entries.filter((entry) => (entry.inspection?.materialExtensionCount ?? 0) > 0).length;
   const failures = [
     ...(manifest.assets.length < manifest.requirements.minimumAssetCount ? [`asset count ${manifest.assets.length} is below ${manifest.requirements.minimumAssetCount}`] : []),
-    ...(entries.some((entry) => !entry.exists) ? ["one or more assets are missing from fixtures/v8"] : []),
+    ...(entries.some((entry) => !entry.exists) ? ["one or more assets are missing from fixtures/threejs-parity"] : []),
     ...(entries.some((entry) => !entry.bytesMatch) ? ["one or more asset byte sizes do not match manifest"] : []),
     ...(entries.some((entry) => !entry.sha256Matches) ? ["one or more asset sha256 checks do not match manifest"] : []),
     ...(entries.some((entry) => entry.missingDeclaredFields.length > 0) ? ["one or more assets are missing source/license/checksum/tags"] : []),
@@ -370,7 +370,7 @@ export function createV8AssetCorpusSummary(manifest = loadV8AssetManifest()): V8
     ...manifest.requirements.requiredFeatures.filter((feature) => !featureCoverage.includes(feature)).map((feature) => `missing corpus feature ${feature}`)
   ];
   return {
-    schema: "g3d-v8-asset-readiness/v1",
+    schema: "a3d-v8-asset-readiness/v1",
     pass: failures.length === 0,
     assetCount: manifest.assets.length,
     environmentCount: manifest.environments.length,

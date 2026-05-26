@@ -47,7 +47,7 @@ const checks = [
 ];
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-docs-readiness/v1",
+  schema: "a3d-three-compat-docs-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   guidePageCount: manifest.docs.length,

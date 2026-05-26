@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/core",
+  "name": "@aura3d/core",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,6 +11,6 @@
     }
   },
   "dependencies": {
-    "@galileo3d/math": "workspace:*"
+    "@aura3d/math": "workspace:*"
   }
 }

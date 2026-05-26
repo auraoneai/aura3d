@@ -1,4 +1,4 @@
-import type { RenderItem } from "@galileo3d/rendering";
+import type { RenderItem } from "@aura3d/rendering";
 import {
   bool,
   env,

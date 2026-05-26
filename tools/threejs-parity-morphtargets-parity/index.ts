@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4, multiplyMat4 } from "@galileo3d/scene";
+import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@aura3d/rendering";
+import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -18,12 +18,12 @@ type MorphTargetsParityResult = MorphTargetsParityReady | MorphTargetsParityErro
 
 interface MorphTargetsParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-morphtargets-parity/v1";
+  readonly schema: "a3d-threejs-parity-morphtargets-parity/v1";
   readonly purpose: "same-asset Robot Expressive manual head morph weights vs actual Three.js morphTargetInfluences";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
   readonly morph: typeof MORPH;
-  readonly g3d: {
+  readonly a3d: {
     readonly renderer: { readonly drawCalls: number; readonly triangles: number };
     readonly animation: { readonly bodyClip: string; readonly tracksApplied: number; readonly morphWeightTracksApplied: number; readonly skinningPalettesUpdated: number };
     readonly pixels: PixelStats;
@@ -42,16 +42,16 @@ interface MorphTargetsParityReady {
     readonly actualThreeRenderer: boolean;
     readonly actualThreeAnimationMixer: boolean;
     readonly actualThreeMorphTargetInfluences: boolean;
-    readonly g3dAppliedMorphWeights: boolean;
+    readonly a3dAppliedMorphWeights: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
 }
 
 interface MorphTargetsParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-morphtargets-parity/v1";
+  readonly schema: "a3d-threejs-parity-morphtargets-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -100,29 +100,29 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-morphtargets", ASSET.width, ASSET.height);
+    const a3dCanvas = requiredCanvas("a3d-morphtargets", ASSET.width, ASSET.height);
     const threeCanvas = requiredCanvas("threejs-morphtargets", ASSET.width, ASSET.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", ASSET.width * 2, ASSET.height + 60);
-    if (status) status.textContent = "rendering G3D morph targets";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D morph targets";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering Three.js morph target reference";
-    const threejs = await renderThree(threeCanvas, g3d.bodyClip);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const threejs = await renderThree(threeCanvas, a3d.bodyClip);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
     const ready: MorphTargetsParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-morphtargets-parity/v1",
+      schema: "a3d-threejs-parity-morphtargets-parity/v1",
       purpose: "same-asset Robot Expressive manual head morph weights vs actual Three.js morphTargetInfluences",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
       morph: MORPH,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls, triangles: g3d.triangles },
-        animation: { bodyClip: g3d.bodyClip, tracksApplied: g3d.tracksApplied, morphWeightTracksApplied: g3d.morphWeightTracksApplied, skinningPalettesUpdated: g3d.skinningPalettesUpdated },
-        pixels: g3dStats
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls, triangles: a3d.triangles },
+        animation: { bodyClip: a3d.bodyClip, tracksApplied: a3d.tracksApplied, morphWeightTracksApplied: a3d.morphWeightTracksApplied, skinningPalettesUpdated: a3d.skinningPalettesUpdated },
+        pixels: a3dStats
       },
       threejs: {
         loader: {
@@ -138,16 +138,16 @@ async function run(): Promise<void> {
       diff,
       assertions: {
         sameAssetUrl: true,
-        sameBodyClip: g3d.bodyClip === threejs.bodyClip,
+        sameBodyClip: a3d.bodyClip === threejs.bodyClip,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
         actualThreeAnimationMixer: threejs.actualAnimationMixer,
         actualThreeMorphTargetInfluences: threejs.actualMorphTargetInfluences,
-        g3dAppliedMorphWeights: g3d.morphWeightTracksApplied > 0,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 42_000 && threeStats.nonBlackPixels > 42_000,
+        a3dAppliedMorphWeights: a3d.morphWeightTracksApplied > 0,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 42_000 && threeStats.nonBlackPixels > 42_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
     window.__V9_MORPHTARGETS_PARITY__ = ready;
     if (status) status.textContent = "ready";
@@ -155,7 +155,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: MorphTargetsParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-morphtargets-parity/v1",
+      schema: "a3d-threejs-parity-morphtargets-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -165,8 +165,8 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
-  const renderer = await G3DRenderer.create({ canvas, width: ASSET.width, height: ASSET.height, preserveDrawingBuffer: true, clearColor: [0.006, 0.008, 0.012, 1] });
+async function renderA3D(canvas: HTMLCanvasElement) {
+  const renderer = await A3DRenderer.create({ canvas, width: ASSET.width, height: ASSET.height, preserveDrawingBuffer: true, clearColor: [0.006, 0.008, 0.012, 1] });
   const pipeline = await loadV6GLTFRenderPipeline({
     url: ASSET.url,
     assetId: "v9-morphtargets-robot",
@@ -187,8 +187,8 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   const frame = computePerspectiveCameraFrame(FRAME_BOUNDS, { width: ASSET.width, height: ASSET.height }, CAMERA_FRAME);
   const result = renderer.renderFrame({
     source: {
-      collectRenderItems: () => [...collectImportedItems(pipeline, PLACEMENT), ...createG3DStageItems()],
-      collectedLights: createG3DLights(),
+      collectRenderItems: () => [...collectImportedItems(pipeline, PLACEMENT), ...createA3DStageItems()],
+      collectedLights: createA3DLights(),
       environmentLighting: false,
       cameraPolicy: "require",
       cameraPosition: frame.cameraPosition,
@@ -245,7 +245,7 @@ function collectImportedItems(pipeline, placement) {
   return items;
 }
 
-function createG3DStageItems() {
+function createA3DStageItems() {
   const cube = Geometry.litCube(1);
   const floor = new PBRMaterial({ name: "morphtargets-floor", baseColor: [0.06, 0.075, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.72 });
   const marker = new PBRMaterial({ name: "morphtargets-marker", baseColor: [0.28, 0.95, 0.68, 1], roughness: 0.26, metallic: 0.08, emissiveColor: [0.02, 0.16, 0.08], emissiveStrength: 1.0 });
@@ -255,7 +255,7 @@ function createG3DStageItems() {
   ];
 }
 
-function createG3DLights() {
+function createA3DLights() {
   const key = new DirectionalLight("v9-morph-key");
   key.intensity = 4.8;
   key.color = [1, 0.94, 0.82];
@@ -408,17 +408,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side morph comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#090d14";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, ASSET.width, 0);
   context.fillStyle = "#f4f7fb";
   context.font = "16px sans-serif";
-  context.fillText("G3D Head.weights morph", 18, ASSET.height + 28);
+  context.fillText("A3D Head.weights morph", 18, ASSET.height + 28);
   context.fillText("Three.js morphTargetInfluences", ASSET.width + 18, ASSET.height + 28);
   context.fillStyle = "#aab5c4";
   context.font = "12px sans-serif";

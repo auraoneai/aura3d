@@ -53,7 +53,7 @@ describe("V5 animation V5", () => {
     locomotion.setInPlace(true);
     const inPlace = locomotion.sample(0.5);
 
-    expect(moving.clipName).toBe("g3d-procedural-root-walk");
+    expect(moving.clipName).toBe("a3d-procedural-root-walk");
     expect(moving.clipTime).toBeCloseTo(0);
     expect(moving.rootMotionDistance).toBeGreaterThan(0);
     expect(Math.hypot(moving.worldX, moving.worldZ)).toBeCloseTo(1.25);

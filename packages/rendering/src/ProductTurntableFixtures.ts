@@ -6,7 +6,7 @@ import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
 import { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";
 import { UnlitMaterial } from "./UnlitMaterial";
 import { createV4EnvironmentLighting } from "./V4RenderPreset";
-import { DirectionalLight } from "@galileo3d/scene";
+import { DirectionalLight } from "@aura3d/scene";
 import type { RenderItem, RenderMaterial } from "./ForwardPass";
 import type { CollectedLight } from "./LightCollector";
 import type { RendererPostProcessOptions, RenderSource } from "./Renderer";

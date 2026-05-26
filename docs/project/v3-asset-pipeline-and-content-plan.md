@@ -56,13 +56,13 @@ Expected primary code areas:
 
 Create checked-in or locally reproducible fixtures:
 
-- [x] `fixtures/assets/v3/product/`
-- [x] `fixtures/assets/v3/architecture/`
-- [x] `fixtures/assets/v3/character/`
-- [x] `fixtures/assets/v3/materials/`
-- [x] `fixtures/assets/v3/animation/`
-- [x] `fixtures/assets/v3/compression/`
-- [x] `fixtures/assets/v3/problem-cases/`
+- [x] `fixtures/workflow-assets/assets/product/`
+- [x] `fixtures/workflow-assets/assets/architecture/`
+- [x] `fixtures/workflow-assets/assets/character/`
+- [x] `fixtures/workflow-assets/assets/materials/`
+- [x] `fixtures/workflow-assets/assets/animation/`
+- [x] `fixtures/workflow-assets/assets/compression/`
+- [x] `fixtures/workflow-assets/assets/problem-cases/`
 
 Each asset entry needs:
 
@@ -94,7 +94,7 @@ Each asset entry needs:
 ### Done Criteria
 
 - [x] `tests/reports/v3-gltf-corpus.json` lists every asset, features, unsupported features, render status, screenshot path, and error state.
-- [x] Comparison scenes show the same asset in Galileo3D and Three.js/Babylon.js.
+- [x] Comparison scenes show the same asset in Aura3D and Three.js/Babylon.js.
 
 ## Compression
 

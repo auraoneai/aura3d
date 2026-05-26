@@ -52,7 +52,7 @@ function resolveExportTarget(root: string, target: unknown): string | undefined 
 
 export async function verifyPublicImports(root = process.cwd()): Promise<ImportSmokeReport> {
   const manifest = readRootManifest(root);
-  const packageName = manifest.name ?? "@galileo3d/engine";
+  const packageName = manifest.name ?? "@aura3d/engine";
   const exportsMap = manifest.exports ?? {};
   const entries: ImportSmokeEntry[] = [];
   const workspaceDependencies = verifyWorkspaceRuntimeDependencies(root);
@@ -127,7 +127,7 @@ function scanWorkspaceImports(sourceRoot: string): ReadonlySet<string> {
   const imports = new Set<string>();
   for (const path of listTypeScriptFiles(sourceRoot)) {
     const source = readFileSync(path, "utf8");
-    for (const match of source.matchAll(/(?:from\s+|import\s*\(\s*|import\s+)["'](@galileo3d\/[^/"']+)/g)) {
+    for (const match of source.matchAll(/(?:from\s+|import\s*\(\s*|import\s+)["'](@aura3d\/[^/"']+)/g)) {
       const specifier = match[1];
       if (specifier) imports.add(specifier);
     }

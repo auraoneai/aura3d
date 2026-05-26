@@ -1,4 +1,4 @@
-import type { Bounds3 } from "@galileo3d/rendering";
+import type { Bounds3 } from "@aura3d/rendering";
 
 export type Vec3 = readonly [number, number, number];
 export type Rgba = readonly [number, number, number, number];

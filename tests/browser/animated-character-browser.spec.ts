@@ -18,17 +18,17 @@ test.describe("animated character examples", () => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/animated-character/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?.status === "ready" || window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?.status === "error",
+      () => window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__?.status === "ready" || window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__?.status === "error",
       undefined,
       { timeout: 10_000 },
     );
     await page.waitForFunction(
-      () => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?.currentState === "wave",
+      () => window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__?.currentState === "wave",
       undefined,
       { timeout: 8_000 },
     );
 
-    const state = await page.evaluate(() => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__);
+    const state = await page.evaluate(() => window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__);
     expect(errors).toEqual([]);
     expect(state?.status, state?.error).toBe("ready");
     expect(state?.clipNames).toEqual(["procedural-walk", "additive-hand-wave"]);
@@ -50,8 +50,8 @@ test.describe("animated character examples", () => {
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
     await page.locator("[data-testid='state-debug-mode']").selectOption("wave");
-    await page.waitForFunction(() => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?.debugStateMode === "wave");
-    const controlled = await page.evaluate(() => window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__);
+    await page.waitForFunction(() => window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__?.debugStateMode === "wave");
+    const controlled = await page.evaluate(() => window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__);
     expect(controlled?.blendTreeWeight).toBeCloseTo(0.85);
     expect(controlled?.debugStateMode).toBe("wave");
     expect(controlled?.eventLog.length ?? 0).toBeGreaterThan(0);
@@ -63,20 +63,20 @@ test.describe("animated character examples", () => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/animation-state-machine/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__?.status === "ready" || window.__GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__?.status === "error",
+      () => window.__AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__?.status === "ready" || window.__AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__?.status === "error",
       undefined,
       { timeout: 10_000 },
     );
     await page.waitForFunction(
       () => {
-        const visited = window.__GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__?.visited ?? [];
+        const visited = window.__AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__?.visited ?? [];
         return visited.includes("jump") && visited.includes("land");
       },
       undefined,
       { timeout: 8_000 },
     );
 
-    const state = await page.evaluate(() => window.__GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__);
+    const state = await page.evaluate(() => window.__AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__);
     expect(errors).toEqual([]);
     expect(state?.status, state?.error).toBe("ready");
     expect(state?.transitionCount).toBe(5);
@@ -115,7 +115,7 @@ async function hasNonBlank2dPixels(page: Page): Promise<boolean> {
 
 declare global {
   interface Window {
-    __GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?: {
+    __AURA3D_ANIMATED_CHARACTER_EXAMPLE__?: {
       readonly status: "ready" | "error";
       readonly clipNames: readonly string[];
       readonly currentState: string;
@@ -134,7 +134,7 @@ declare global {
       };
       readonly error?: string;
     };
-    __GALILEO3D_ANIMATION_STATE_MACHINE_EXAMPLE__?: {
+    __AURA3D_ANIMATION_STATE_MACHINE_EXAMPLE__?: {
       readonly status: "ready" | "error";
       readonly currentState: string;
       readonly debugGraph: string;

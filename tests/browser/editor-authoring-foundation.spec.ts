@@ -28,22 +28,22 @@ test.describe("V3 editor authoring workflow", () => {
     await page.locator('input[data-setting="scale"]').blur();
     await page.locator('select[data-setting="orientation"]').selectOption("y-up");
     await page.getByRole("button", { name: "Import Fox GLB" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().assetCount), { timeout: 15_000 }).toBe(1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().assetCount), { timeout: 15_000 }).toBe(1);
 
     const assetCard = page.locator(".asset-browser-panel .asset-card").filter({ hasText: "Fox.glb" });
     await expect(assetCard).toContainText("Loaded real glTF");
     await expect(assetCard).toContainText("Dependencies");
     await expect(page.locator(".timeline-panel")).toContainText("3 animation clips");
     await page.locator('.timeline-panel button[data-action="timeline-preview-clip"]').filter({ hasText: "Run" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().timeline.selectedClipName)).toBe("Run");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().timeline.selectedClipName)).toBe("Run");
     await page.locator('.timeline-panel input[data-action="timeline-scrub"]').fill("0.42");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().timeline.scrubTime)).toBe(0.42);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().timeline.scrubTime)).toBe(0.42);
     await page.locator('.timeline-panel button[data-action="timeline-play"]').click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().timeline.playback)).toBe("playing");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().timeline.playback)).toBe("playing");
     const assetId = await assetCard.getAttribute("data-asset-id");
     expect(assetId).toBeTruthy();
     await dropAssetIntoViewport(page, assetId!);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().nodeCount)).toBe(3);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().nodeCount)).toBe(3);
 
     await page.getByRole("button", { name: "Move X" }).click();
     await page.getByRole("button", { name: "Rotate Z" }).click();
@@ -81,12 +81,12 @@ test.describe("V3 editor authoring workflow", () => {
     await page.screenshot({ path: editorScreenshotPath, fullPage: true });
 
     await page.getByRole("banner").getByRole("button", { name: "Play" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().mode)).toBe("play");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().mode)).toBe("play");
     await page.getByRole("banner").getByRole("button", { name: "Play" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().mode)).toBe("edit");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().mode)).toBe("edit");
 
     await page.getByRole("button", { name: "Save", exact: true }).click();
-    const savedProjectJson = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().savedProjectJson);
+    const savedProjectJson = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().savedProjectJson);
     expect(savedProjectJson).toContain('"version": 1');
     expect(savedProjectJson).toContain("Fox.glb");
     expect(savedProjectJson).toContain("Authoring Light");
@@ -105,8 +105,8 @@ test.describe("V3 editor authoring workflow", () => {
     await expect(page.getByRole("button", { name: "Gameplay Camera" })).toBeVisible();
 
     await page.getByRole("button", { name: "Export", exact: true }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().exportedFileCount)).toBe(3);
-    const exportedFiles = await page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.shell.exportedFiles());
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().exportedFileCount)).toBe(3);
+    const exportedFiles = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.shell.exportedFiles());
     const exportedByPath = new Map(exportedFiles.map((file) => [file.path, file.content]));
     await page.route(`${server.origin}/__v3_export/**`, async (route) => {
       const name = new URL(route.request().url()).pathname.split("/").pop() ?? "index.html";
@@ -119,13 +119,13 @@ test.describe("V3 editor authoring workflow", () => {
     });
 
     await page.goto(`${server.origin}/__v3_export/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EXPORTED_PROJECT__?.status === "ready");
-    await expect(page.locator("#galileo-export-status")).toContainText("Loaded");
-    expect(await nonBlankCanvasPixels(page, "#galileo-export")).toBeGreaterThan(1000);
-    await page.locator("#galileo-export").click({ position: { x: 460, y: 260 } });
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
+    await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
+    await expect(page.locator("#aura3d-export-status")).toContainText("Loaded");
+    expect(await nonBlankCanvasPixels(page, "#aura3d-export")).toBeGreaterThan(1000);
+    await page.locator("#aura3d-export").click({ position: { x: 460, y: 260 } });
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
     await page.keyboard.press("ArrowRight");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__?.interactive)).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.interactive)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath("editor-authoring-v3-export.png"), fullPage: true });
     await page.screenshot({ path: exportedScreenshotPath, fullPage: true });
   });
@@ -135,53 +135,53 @@ test.describe("V3 editor authoring workflow", () => {
     await waitForEditor(page);
 
     await page.getByRole("button", { name: "Import glTF" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().assetCount), { timeout: 10_000 }).toBe(1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().assetCount), { timeout: 10_000 }).toBe(1);
     const assetId = await page.locator(".asset-browser-panel .asset-card").first().getAttribute("data-asset-id");
     expect(assetId).toBeTruthy();
 
     await dropAssetIntoViewport(page, assetId!);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_APP__!.getState().nodeCount)).toBe(3);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().nodeCount)).toBe(3);
 
     const placedBeforeDelete = await page.evaluate((draggedAssetId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.mesh.assetId === draggedAssetId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.mesh.assetId === draggedAssetId);
     }, assetId!);
     expect(placedBeforeDelete?.mesh.assetId).toBe(assetId);
 
     await page.locator(`.asset-browser-panel input[data-action="rename-asset"][data-asset-id="${assetId}"]`).fill("Renamed Drag Fixture");
     await page.locator(`.asset-browser-panel input[data-action="rename-asset"][data-asset-id="${assetId}"]`).blur();
     const renamedAsset = await page.evaluate((draggedAssetId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
     }, assetId!);
     expect(renamedAsset?.name).toBe("Renamed Drag Fixture");
 
     await page.locator(`.asset-browser-panel button[data-action="move-asset"][data-asset-id="${assetId}"]`).click();
     const movedAsset = await page.evaluate((draggedAssetId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
     }, assetId!);
     expect(movedAsset?.folder).toBe("Imported/Moved");
     const placedAfterMove = await page.evaluate((nodeId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.id === nodeId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.id === nodeId);
     }, placedBeforeDelete!.id);
     expect(placedAfterMove?.mesh.assetId).toBe(assetId);
 
     const beforeReimport = await page.evaluate((draggedAssetId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
     }, assetId!);
     await page.locator(`.asset-browser-panel button[data-action="reimport-asset"][data-asset-id="${assetId}"]`).click();
     const reimportedAsset = await page.evaluate((draggedAssetId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.assets.find((asset) => asset.id === draggedAssetId);
     }, assetId!);
     expect(reimportedAsset?.revision).toBe((beforeReimport?.revision ?? 1) + 1);
     expect(reimportedAsset?.cacheKey).toContain(`#rev-${reimportedAsset?.revision}`);
     expect(reimportedAsset?.diagnostics.join(" ")).toContain("Cache invalidated");
     const placedAfterReimport = await page.evaluate((nodeId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.id === nodeId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.id === nodeId);
     }, placedBeforeDelete!.id);
     expect(placedAfterReimport?.mesh.assetId).toBe(assetId);
 
     await page.locator(`.asset-browser-panel button[data-action="delete-asset"][data-asset-id="${assetId}"]`).click();
     const placedAfterDelete = await page.evaluate((nodeId) => {
-      return window.__GALILEO3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.id === nodeId);
+      return window.__AURA3D_EDITOR_APP__!.shell.project.scene.nodes.find((node) => node.id === nodeId);
     }, placedBeforeDelete!.id);
     expect(placedAfterDelete?.mesh.assetId).toBeNull();
     expect(placedAfterDelete?.mesh.primitive).toBe("cube");
@@ -189,13 +189,13 @@ test.describe("V3 editor authoring workflow", () => {
 });
 
 async function waitForEditor(page: Page): Promise<void> {
-  await page.waitForFunction(() => window.__GALILEO3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
+  await page.waitForFunction(() => window.__AURA3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
 }
 
 async function dropAssetIntoViewport(page: Page, assetId: string): Promise<void> {
   await page.evaluate((draggedAssetId) => {
     const transfer = new DataTransfer();
-    transfer.setData("application/x-galileo3d-asset", draggedAssetId);
+    transfer.setData("application/x-aura3d-asset", draggedAssetId);
     const viewport = document.querySelector<HTMLElement>(".editor-viewport-panel");
     if (!viewport) throw new Error("editor viewport missing");
     viewport.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
@@ -217,7 +217,7 @@ async function nonBlankCanvasPixels(page: Page, selector: string): Promise<numbe
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): {
         readonly status: "booting" | "ready" | "error";
         readonly mode: string;
@@ -260,7 +260,7 @@ declare global {
         exportedFiles(): readonly { readonly path: string; readonly content: string; readonly type: string }[];
       };
     };
-    __GALILEO3D_EXPORTED_PROJECT__?: {
+    __AURA3D_EXPORTED_PROJECT__?: {
       readonly status: "ready";
       readonly nodeCount: number;
       readonly projectName: string;

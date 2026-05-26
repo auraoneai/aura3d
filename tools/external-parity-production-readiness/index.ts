@@ -100,9 +100,9 @@ export function createV4ProductionReadinessReport(root = process.cwd()): V4Produ
       ...(packageProvenance?.ok === true && isRecord(packageProvenance.signature) && packageProvenance.signature.verified === true ? [] : ["No npm/package registry publication or signed provenance evidence is attached."]),
     ]),
     releaseArea("operational-support", "Security, support, compatibility, deprecation, incident, and upgrade policies exist.", operationalPolicyBlockers.length === 0 ? "docs/project/security-policy.md, docs/project/support-policy.md, docs/project/compatibility.md, and docs/project/release-process.md exist and explicitly keep production claims bounded." : "Operational policy files are incomplete.", operationalPolicyBlockers),
-    releaseArea("deployment", "Public demo deployment and build artifact validation exist for required examples.", publicDemoDeploymentValidation.ok ? "Durable public demo URL validation, local static demo export, SHA-256 integrity manifest, deployment command plan, rollback plan, validated GitHub Pages deployment workflow, and local HTTP static-server smoke validation exist with per-file status/hash/content-marker evidence." : staticDemoServerSmoke?.ok === true ? "Local static demo export, SHA-256 integrity manifest, deployment command plan, rollback plan, validated GitHub Pages deployment workflow, and local HTTP static-server smoke validation exist. Public URL validation remains blocked until G3D_PUBLIC_DEMO_URL is smoke-tested." : hasStaticExportIntegrity(root, staticExport) ? "Local static demo export, SHA-256 integrity manifest, deployment command plan, validated GitHub Pages deployment workflow, and rollback plan exist." : "Local browser screenshots and reports exist for examples.", [
+    releaseArea("deployment", "Public demo deployment and build artifact validation exist for required examples.", publicDemoDeploymentValidation.ok ? "Durable public demo URL validation, local static demo export, SHA-256 integrity manifest, deployment command plan, rollback plan, validated GitHub Pages deployment workflow, and local HTTP static-server smoke validation exist with per-file status/hash/content-marker evidence." : staticDemoServerSmoke?.ok === true ? "Local static demo export, SHA-256 integrity manifest, deployment command plan, rollback plan, validated GitHub Pages deployment workflow, and local HTTP static-server smoke validation exist. Public URL validation remains blocked until A3D_PUBLIC_DEMO_URL is smoke-tested." : hasStaticExportIntegrity(root, staticExport) ? "Local static demo export, SHA-256 integrity manifest, deployment command plan, validated GitHub Pages deployment workflow, and rollback plan exist." : "Local browser screenshots and reports exist for examples.", [
       ...(publicDemoDeploymentValidation.ok ? [] : [
-        "No durable public deployment URL validation is attached for V4 examples with current per-file HTTP/hash/content-marker evidence. Run `G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment` against the deployed static demo origin.",
+        "No durable public deployment URL validation is attached for V4 examples with current per-file HTTP/hash/content-marker evidence. Run `A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment` against the deployed static demo origin.",
         "Use `tests/reports/public-demo-deployment-runbook.md` for the exact files, SHA-256 values, content markers, and validation commands required by the public deployment smoke gate.",
         ...publicDemoDeploymentValidation.blockers.map((blocker) => `public deployment evidence: ${blocker}`),
       ]),
@@ -158,7 +158,7 @@ function validatePublicDemoDeploymentWorkflow(root: string): { readonly ok: bool
     ["Pages artifact upload", "actions/upload-pages-artifact"],
     ["Pages deployment", "actions/deploy-pages"],
     ["public deployment smoke", "pnpm verify:public-demo-deployment"],
-    ["deployed Pages URL environment", "G3D_PUBLIC_DEMO_URL:"],
+    ["deployed Pages URL environment", "A3D_PUBLIC_DEMO_URL:"],
     ["production readiness audit", "pnpm audit:external-parity-production-readiness"],
     ["external evidence readiness audit", "pnpm audit:external-parity-external-evidence-readiness"],
     ["broad parity readiness audit", "pnpm audit:v4-broad-parity"],
@@ -178,7 +178,7 @@ function validatePublicDemoDeploymentWorkflow(root: string): { readonly ok: bool
     ["report freshness upload", "tests/reports/external-parity-report-freshness.json"],
   ] as const;
   const blockers = requiredMarkers.flatMap(([label, marker]) => source.includes(marker) ? [] : [`Public demo deployment workflow is missing ${label}: ${marker}`]);
-  if (!/G3D_PUBLIC_DEMO_URL:\s*\$\{\{\s*steps\.deployment\.outputs\.page_url\s*\}\}/u.test(source)) {
+  if (!/A3D_PUBLIC_DEMO_URL:\s*\$\{\{\s*steps\.deployment\.outputs\.page_url\s*\}\}/u.test(source)) {
     blockers.push("Public demo deployment workflow does not validate against the GitHub Pages deployment URL.");
   }
   return { ok: blockers.length === 0, blockers };

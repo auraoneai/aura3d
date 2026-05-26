@@ -1,8 +1,8 @@
-import { WebXRSessionController, type G3DXRFrameLike, type G3DXRSessionLike, type G3DXRSessionMode, type G3DXRSystemLike } from "@galileo3d/input";
+import { WebXRSessionController, type A3DXRFrameLike, type A3DXRSessionLike, type A3DXRSessionMode, type A3DXRSystemLike } from "@aura3d/input";
 
 declare global {
   interface Window {
-    __g3dV8WebXRInteractions?: V8WebXRInteractionsRuntime;
+    __a3dV8WebXRInteractions?: V8WebXRInteractionsRuntime;
   }
 }
 
@@ -49,13 +49,13 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__g3dV8WebXRInteractions = runtime;
+    window.__a3dV8WebXRInteractions = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const modes: readonly G3DXRSessionMode[] = ["immersive-vr", "immersive-ar", "inline"];
+    const modes: readonly A3DXRSessionMode[] = ["immersive-vr", "immersive-ar", "inline"];
     const samples = [];
     for (const mode of modes) {
       const controller = new WebXRSessionController({
@@ -106,7 +106,7 @@ async function run(): Promise<void> {
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
       });
-      window.__g3dV8WebXRInteractions = runtime;
+      window.__a3dV8WebXRInteractions = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -117,7 +117,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createInjectedXR(mode: G3DXRSessionMode): G3DXRSystemLike {
+function createInjectedXR(mode: A3DXRSessionMode): A3DXRSystemLike {
   return {
     async isSessionSupported(requestedMode) {
       return requestedMode === mode;
@@ -129,7 +129,7 @@ function createInjectedXR(mode: G3DXRSessionMode): G3DXRSystemLike {
   };
 }
 
-function createSession(mode: G3DXRSessionMode): G3DXRSessionLike {
+function createSession(mode: A3DXRSessionMode): A3DXRSessionLike {
   return {
     inputSources: mode === "immersive-ar" ? [rightController()] : [leftController(), rightController()],
     async requestReferenceSpace(type) {
@@ -167,7 +167,7 @@ function rightController() {
   };
 }
 
-function createFrame(): G3DXRFrameLike {
+function createFrame(): A3DXRFrameLike {
   return {
     getHitTestResults() {
       return [

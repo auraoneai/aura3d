@@ -32,12 +32,12 @@ def mat(name, color, metallic=0.0, roughness=0.55, emission=None, strength=0.0, 
     return material
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -56,10 +56,10 @@ def bevel(obj, amount=0.015, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.012, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -68,7 +68,7 @@ def cube(name, loc, scale, material, bevel_width=0.012, rot=(0, 0, 0)):
 
 
 def cylinder(name, loc, radius, depth, material, vertices=24, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -77,7 +77,7 @@ def cylinder(name, loc, radius, depth, material, vertices=24, rot=(0, 0, 0)):
 
 
 def text_label(name, text, loc, size, material, rot=(math.radians(75), 0, 0)):
-    bpy.ops.object.text_add(location=loc_g3d(loc), rotation=rot)
+    bpy.ops.object.text_add(location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     obj.data.body = text

@@ -21,7 +21,7 @@ test.describe("physics sandbox example", () => {
 
     await page.goto(`${server.origin}/examples/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_PHYSICS_SANDBOX__?.status === "ready" || window.__GALILEO3D_PHYSICS_SANDBOX__?.status === "error",
+      () => window.__AURA3D_PHYSICS_SANDBOX__?.status === "ready" || window.__AURA3D_PHYSICS_SANDBOX__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
@@ -34,9 +34,9 @@ test.describe("physics sandbox example", () => {
     await page.locator("[data-debug-layer='contacts']").click();
     await page.locator("[data-debug-layer='aabbs']").click();
     await page.locator("[data-debug-layer='aabbs']").click();
-    await page.waitForFunction(() => (window.__GALILEO3D_PHYSICS_SANDBOX__?.interactions ?? 0) >= 8);
+    await page.waitForFunction(() => (window.__AURA3D_PHYSICS_SANDBOX__?.interactions ?? 0) >= 8);
 
-    const state = await page.evaluate(() => window.__GALILEO3D_PHYSICS_SANDBOX__);
+    const state = await page.evaluate(() => window.__AURA3D_PHYSICS_SANDBOX__);
     expect(errors).toEqual([]);
     expect(state?.status, state?.error).toBe("ready");
     expect(state?.renderer).toBe("webgl2");
@@ -92,7 +92,7 @@ async function hasNonBlankWebGLPixels(page: import("@playwright/test").Page): Pr
 
 declare global {
   interface Window {
-    __GALILEO3D_PHYSICS_SANDBOX__?: {
+    __AURA3D_PHYSICS_SANDBOX__?: {
       readonly status: "ready" | "error";
       readonly renderer?: string;
       readonly rendererBacked?: boolean;

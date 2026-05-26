@@ -1,15 +1,15 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createProductConfiguratorWorkflow } from "@galileo3d/workflows";
+import { createProductConfiguratorWorkflow } from "@aura3d/workflows";
 
 describe("createProductConfiguratorWorkflow", () => {
   it("loads a product asset and creates a product render scene", async () => {
     const workflow = await createProductConfiguratorWorkflow({
       asset: {
         id: "camera-kit",
-        url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/camera-kit.gltf"))),
-        manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/manifest.json")))
+        url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/camera-kit.gltf"))),
+        manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/manifest.json")))
       },
       materialMode: "contrast",
       lighting: "hero-contrast",

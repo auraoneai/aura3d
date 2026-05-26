@@ -1,5 +1,5 @@
-import { InteractionControls } from "@galileo3d/controls";
-import { InputSnapshot } from "@galileo3d/input";
+import { InteractionControls } from "@aura3d/controls";
+import { InputSnapshot } from "@aura3d/input";
 import type { DemoDefinition } from "./metadata";
 import { routeReceivesWaterRipples, usesProductConfiguratorHotspotPicking } from "./galleryRoutePolicies";
 import { clamp } from "./math";

@@ -4,7 +4,7 @@ Version: 1.0.0
 
 ## Purpose
 
-This document defines the package publishing and semantic-versioning process for G3D/Galileo3D. It applies to version `1.0.0` and the current V9 parity-construction docs.
+This document defines the package publishing and semantic-versioning process for A3D/Aura3D. It applies to version `1.0.0` and the current V9 parity-construction docs.
 
 ## Versioning Policy
 

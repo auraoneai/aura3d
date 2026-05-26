@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 const products = ["camera-kit", "speaker", "watch"] as const;
-const root = resolve("fixtures/v2/products");
+const root = resolve("fixtures/product-studio/products");
 const results = products.map((id) => {
   const gltfPath = join(root, id, `${id}.gltf`);
   const manifestPath = join(root, id, "manifest.json");
@@ -24,7 +24,7 @@ const results = products.map((id) => {
 });
 
 const report = {
-  schema: "g3d-product-studio-product-assets/v1",
+  schema: "a3d-product-studio-product-assets/v1",
   generatedAt: new Date().toISOString(),
   pass: results.every((result) => result.exists && result.meshCount >= 8 && result.materialCount >= 3 && result.textureCount >= result.materialCount * 4),
   results

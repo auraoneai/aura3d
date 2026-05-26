@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { Bounds3 } from "./Bounds.js";
 import { cloneMat4, invertMat4, multiplyMat4 } from "./MathTypes.js";
 import type { Renderable } from "./Renderable.js";

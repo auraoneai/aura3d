@@ -25,7 +25,7 @@ const knownGaps = sectionBullets(progress, "## Known Gaps");
 const blockedClaims = sectionBullets(progress, "## Blocked Claims");
 
 const report = {
-  schema: "g3d-three-compat-progress/v1",
+  schema: "a3d-three-compat-progress/v1",
   generatedAt: new Date().toISOString(),
   pass: existsSync(progressPath)
     && (currentStatus === "in-progress" || currentStatus === "complete")

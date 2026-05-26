@@ -5,7 +5,7 @@
 
 ## Purpose
 
-PRDs and generated audit reports are not developer documentation. To compete with established web 3D libraries, Galileo3D needs docs and examples that help application developers build real projects.
+PRDs and generated audit reports are not developer documentation. To compete with established web 3D libraries, Aura3D needs docs and examples that help application developers build real projects.
 
 ## Documentation Set Needed
 
@@ -18,7 +18,7 @@ PRDs and generated audit reports are not developer documentation. To compete wit
 | Cookbook | Common recipes: load glTF, set up lights/shadows, orbit controls, picking, material variants, physics body sync, animation playback. |
 | Known limits | Unsupported glTF features, WebGPU support state, browser/device caveats, performance budget context. |
 | Claim guidelines | Allowed public wording, required gates, evidence links, and blocked stronger claims from `docs/project/v2-claim-registry.md`. |
-| Migration/comparison | How Galileo3D differs from Three.js and Babylon.js; when not to use it. |
+| Migration/comparison | How Aura3D differs from Three.js and Babylon.js; when not to use it. |
 | Release notes | Versioned changes, breaking changes, migration steps, performance changes. |
 | Troubleshooting | Shader errors, texture color-space issues, failed asset loads, WebGPU unavailable, audio unlock, context loss. |
 
@@ -79,7 +79,7 @@ Add demos that prove external value:
 Each learning/product example must:
 
 - Use public package APIs only.
-- Render primarily through Galileo3D's renderer, not only 2D canvas drawings.
+- Render primarily through Aura3D's renderer, not only 2D canvas drawings.
 - Use real scene cameras and transforms when demonstrating 3D engine workflow claims.
 - Include a README with purpose, run command, systems used, and known limitations.
 - Include browser tests for load/interaction.
@@ -107,7 +107,7 @@ The docs are externally usable when:
 - A new developer can build the getting-started scene in under 15 minutes.
 - A developer can load a real glTF model and understand every error or warning.
 - A developer can choose between scene graph and ECS with clear guidance.
-- A developer can compare Galileo3D against Three.js/Babylon.js with honest tradeoffs.
+- A developer can compare Aura3D against Three.js/Babylon.js with honest tradeoffs.
 - Known limitations are explicit and searchable.
 - API docs match the published package version.
 - Every example has tests and screenshots.

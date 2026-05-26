@@ -19,7 +19,7 @@ test.describe("V3 asset rendering", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-foundation-assets-browser/v1",
+      schema: "a3d-foundation-assets-browser/v1",
       generatedAt: new Date().toISOString(),
       captures,
       pass: captures.length >= 3 && captures.every((capture) => capture.bytes > 10_000 && capture.lastError === null)
@@ -29,9 +29,9 @@ test.describe("V3 asset rendering", () => {
   test("loads and renders real V3 asset fixtures through public APIs", async ({ page }) => {
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
     for (const fixture of [
-      { id: "product-camera", path: "/fixtures/v3/assets/product-camera/product-camera.gltf" },
-      { id: "material-spheres", path: "/fixtures/v3/assets/material-spheres/material-spheres.gltf" },
-      { id: "product-camera-external", path: "/fixtures/v3/assets/product-camera/product-camera-external.gltf" }
+      { id: "product-camera", path: "/fixtures/workflow-assets/assets/product-camera/product-camera.gltf" },
+      { id: "material-spheres", path: "/fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf" },
+      { id: "product-camera-external", path: "/fixtures/workflow-assets/assets/product-camera/product-camera-external.gltf" }
     ]) {
       const result = await renderAsset(page, server.origin, fixture);
       const screenshot = join(reportDir, `${fixture.id}.png`);

@@ -11,7 +11,7 @@ const catalog = JSON.parse(readFileSync(resolve("examples/three-compat-examples/
 };
 const mapped = catalog.examples.filter((example) => example.threeReference);
 const report = {
-  schema: "g3d-three-compat-example-parity/v1",
+  schema: "a3d-three-compat-example-parity/v1",
   generatedAt: new Date().toISOString(),
   pass: catalog.examples.length >= 50 && catalog.examples.filter((example) => example.browserTested).length >= 30 && mapped.length >= 20,
   exampleCount: catalog.examples.length,

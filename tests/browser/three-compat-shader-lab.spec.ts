@@ -19,13 +19,13 @@ test("V5 shader lab renders custom shader material and diagnostics", async ({ pa
     ctx.fillStyle = gradient; ctx.fillRect(0,0,960,540);
     for(let i=0;i<48;i++){ctx.fillStyle="hsl("+(190+i*4)+",70%,56%)";ctx.fillRect(40+(i%12)*74,120+Math.floor(i/12)*76,46,46);}
     ctx.fillStyle="#eef6ff";ctx.font="18px system-ui";ctx.fillText("Shader diagnostics: "+diagnostics.pass,36,48);ctx.fillText("Uniforms: "+uniforms.length,36,78);
-    window.__g3dShaderPass = diagnostics.pass;
-    window.__g3dUniformCount = uniforms.length;
+    window.__a3dShaderPass = diagnostics.pass;
+    window.__a3dUniformCount = uniforms.length;
     </script></body></html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dShaderPass)).toBe(true);
-  await expect.poll(async () => page.evaluate(() => window.__g3dUniformCount)).toBe(2);
+  await expect.poll(async () => page.evaluate(() => window.__a3dShaderPass)).toBe(true);
+  await expect.poll(async () => page.evaluate(() => window.__a3dUniformCount)).toBe(2);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

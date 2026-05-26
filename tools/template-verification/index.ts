@@ -74,11 +74,11 @@ function verifyTemplate(template: { name: string; entry: string }): TemplateResu
       checks.push("build script uses vite");
     }
 
-    const galileoDependencies = Object.keys(allDependencies).filter((dependency) => dependency.startsWith("@galileo3d/"));
-    if (galileoDependencies.length === 0) {
-      errors.push(`${packagePath} must depend on at least one public @galileo3d package`);
+    const aura3dDependencies = Object.keys(allDependencies).filter((dependency) => dependency.startsWith("@aura3d/"));
+    if (aura3dDependencies.length === 0) {
+      errors.push(`${packagePath} must depend on at least one public @aura3d package`);
     } else {
-      for (const dependency of galileoDependencies) {
+      for (const dependency of aura3dDependencies) {
         checks.push(`uses public ${dependency} package`);
       }
     }
@@ -89,21 +89,21 @@ function verifyTemplate(template: { name: string; entry: string }): TemplateResu
       checks.push("does not use workspace protocol dependencies");
     }
 
-    if (!sourceText.includes("@galileo3d/")) {
-      errors.push(`${base}/src must use public Galileo3D imports`);
+    if (!sourceText.includes("@aura3d/")) {
+      errors.push(`${base}/src must use public Aura3D imports`);
     } else {
       checks.push("entry uses required public imports");
     }
 
-    if (sourceText.includes("@galileo3d/rendering")) {
+    if (sourceText.includes("@aura3d/rendering")) {
       if (!sourceText.includes("Renderer.create") || !sourceText.includes('backend: "webgl2"')) {
-        errors.push(`${base}/src must create a WebGL2 Galileo3D renderer through public imports`);
+        errors.push(`${base}/src must create a WebGL2 Aura3D renderer through public imports`);
       } else {
         checks.push("entry creates WebGL2 renderer through public imports");
       }
     }
 
-    if (sourceText.includes("@galileo3d/assets")) {
+    if (sourceText.includes("@aura3d/assets")) {
       if (!sourceText.includes("AssetManager") || !sourceText.includes("GLTFLoader")) {
         errors.push(`${base}/src must exercise the public asset pipeline`);
       } else {
@@ -122,7 +122,7 @@ function verifyTemplate(template: { name: string; entry: string }): TemplateResu
         tempApp = verifyFreshTemplateBuild(base, packageJson, template.entry);
         checks.push("copies template into a fresh temporary app");
         checks.push("installs external dependencies without workspace protocols");
-        checks.push("copies sanitized local Galileo package artifacts into node_modules");
+        checks.push("copies sanitized local Aura3D package artifacts into node_modules");
         checks.push("builds the copied template with npm run build");
         checks.push("smoke-checks dist output for the starter renderer bundle");
       } catch (error) {
@@ -141,7 +141,7 @@ function verifyTemplate(template: { name: string; entry: string }): TemplateResu
 }
 
 function verifyFreshTemplateBuild(base: string, packageJson: TemplatePackageJson, entry: string): string {
-  const tempRoot = mkdtempSync(join(tmpdir(), "galileo3d-template-"));
+  const tempRoot = mkdtempSync(join(tmpdir(), "aura3d-template-"));
   const appDir = join(tempRoot, basename(base));
   cpSync(join(root, base), appDir, {
     recursive: true,
@@ -150,8 +150,8 @@ function verifyFreshTemplateBuild(base: string, packageJson: TemplatePackageJson
 
   const installPackageJson = {
     ...packageJson,
-    dependencies: removeGalileoDependencies(packageJson.dependencies),
-    devDependencies: removeGalileoDependencies(packageJson.devDependencies)
+    dependencies: removeAura3DDependencies(packageJson.dependencies),
+    devDependencies: removeAura3DDependencies(packageJson.devDependencies)
   };
   writeFileSync(join(appDir, "package.json"), `${JSON.stringify(installPackageJson, null, 2)}\n`);
 
@@ -170,17 +170,17 @@ function verifyFreshTemplateBuild(base: string, packageJson: TemplatePackageJson
 
   smokeBuiltTemplate(appDir, entry);
 
-  if (process.env.GALILEO3D_KEEP_TEMPLATE_TMP !== "1") {
+  if (process.env.AURA3D_KEEP_TEMPLATE_TMP !== "1") {
     rmSync(tempRoot, { recursive: true, force: true });
     return "<removed>";
   }
   return appDir;
 }
 
-function removeGalileoDependencies(dependencies: Record<string, string> | undefined): Record<string, string> {
+function removeAura3DDependencies(dependencies: Record<string, string> | undefined): Record<string, string> {
   const next: Record<string, string> = {};
   for (const [name, version] of Object.entries(dependencies ?? {})) {
-    if (!name.startsWith("@galileo3d/")) {
+    if (!name.startsWith("@aura3d/")) {
       next[name] = version;
     }
   }
@@ -188,7 +188,7 @@ function removeGalileoDependencies(dependencies: Record<string, string> | undefi
 }
 
 function copyLocalRuntimePackages(appDir: string): void {
-  const scopeDir = join(appDir, "node_modules", "@galileo3d");
+  const scopeDir = join(appDir, "node_modules", "@aura3d");
   mkdirSync(scopeDir, { recursive: true });
   for (const packageName of localRuntimePackages) {
     const sourceDir = join(root, "packages", packageName);
@@ -203,7 +203,7 @@ function copyLocalRuntimePackages(appDir: string): void {
     if (packageName === "rendering") {
       sanitizedPackageJson.dependencies = {
         ...(sanitizedPackageJson.dependencies ?? {}),
-        "@galileo3d/scene": packageVersion.version
+        "@aura3d/scene": packageVersion.version
       };
     }
     writeFileSync(join(targetDir, "package.json"), `${JSON.stringify(sanitizedPackageJson, null, 2)}\n`);
@@ -300,7 +300,7 @@ const report = {
   boundary: [
     "Each template is copied to a fresh temporary directory.",
     "External framework and Vite dependencies are installed from npm.",
-    "The unpublished Galileo3D 0.0.0-rebuild runtime packages are copied from local dist artifacts with workspace protocols sanitized.",
+    "The unpublished Aura3D 0.0.0-rebuild runtime packages are copied from local dist artifacts with workspace protocols sanitized.",
     "This is starter-template CI evidence, not registry publishing or independent clean-checkout evidence."
   ],
   templates: results

@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/scene",
+  "name": "@aura3d/scene",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@galileo3d/core": "workspace:*",
-    "@galileo3d/math": "workspace:*"
+    "@aura3d/core": "workspace:*",
+    "@aura3d/math": "workspace:*"
   }
 }

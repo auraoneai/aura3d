@@ -146,7 +146,7 @@ async function run(): Promise<void> {
   const metadata = {
     assetId: "v7-material-extension-suite",
     assetName: "V7 material extension suite",
-    assetUri: "fixtures/v7/assets/material-extensions",
+    assetUri: "fixtures/threejs-parity/assets/materials",
     meshCount: assets.reduce((total, asset) => total + asset.asset.meshes.length, 0),
     primitiveCount: assets.reduce((total, asset) => total + asset.asset.meshes.length, 0),
     materialCount: assets.reduce((total, asset) => total + asset.asset.materials.length, 0),
@@ -195,7 +195,7 @@ async function loadExtensionAsset(
   canvas: HTMLCanvasElement,
   environmentLighting: NonNullable<Parameters<typeof createV6ComposedProductionStageScene>[2]["environmentLighting"]>
 ) {
-  const assetUri = definition.url ? `${location.origin}${definition.url}` : `${location.origin}/fixtures/v7/assets/material-extensions/${definition.file}`;
+  const assetUri = definition.url ? `${location.origin}${definition.url}` : `${location.origin}/fixtures/threejs-parity/assets/materials/${definition.file}`;
   const asset = await new GLTFLoader().load({ url: assetUri }, new LoadContext());
   const resources = await createGLTFRenderResources(asset);
   const input = resources.toRendererInput({ width: canvas.width, height: canvas.height }, {

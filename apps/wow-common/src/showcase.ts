@@ -33,13 +33,13 @@ interface Runtime {
   readonly renderWidth: number;
   readonly renderHeight: number;
   readonly loadMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
 declare global {
   interface Window {
-    __g3dWowRuntime?: Runtime;
+    __a3dWowRuntime?: Runtime;
   }
 }
 
@@ -83,11 +83,11 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
       renderWidth: renderSize.width,
       renderHeight: renderSize.height,
       loadMs: Math.round((snapshot?.loading.assetMs ?? 0) + (snapshot?.loading.rendererMs ?? 0)),
-      renderer: "g3d-webgl2",
+      renderer: "a3d-webgl2",
       ...(error ? { error } : {})
     };
-    window.__g3dWowRuntime = runtime;
-    (window as unknown as Record<string, Runtime>)[`__g3d${config.appId.replaceAll("-", "")}`] = runtime;
+    window.__a3dWowRuntime = runtime;
+    (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
     const now = performance.now();
     if (force || now - lastUi > 250) {
       renderUi(root, runtime);

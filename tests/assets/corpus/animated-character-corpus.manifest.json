@@ -25,7 +25,7 @@
           "code": "ANIMATION_CORPUS_TRADEMARK_LIMIT",
           "severity": "warning",
           "message": "The external Cesium Man sample includes Cesium logo or trademark markings.",
-          "nextAction": "Use this fixture only as importer and renderer evidence; do not ship it as Galileo3D product art."
+          "nextAction": "Use this fixture only as importer and renderer evidence; do not ship it as Aura3D product art."
         }
       ],
       "importSettings": {

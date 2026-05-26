@@ -8,7 +8,7 @@ const aliasBrowser = existsSync(resolve("tests/reports/external-parity-material-
   ? JSON.parse(readFileSync(resolve("tests/reports/external-parity-material-studio-browser.json"), "utf8")) as { ok?: boolean }
   : undefined;
 const report = {
-  schema: "g3d-external-parity-material-readiness-alias/v1",
+  schema: "a3d-external-parity-material-readiness-alias/v1",
   generatedAt: new Date().toISOString(),
   pass: source?.pass === true && aliasBrowser?.ok === true,
   sourceReport: "tests/reports/external-parity-material-studio-readiness.json",

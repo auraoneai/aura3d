@@ -117,7 +117,7 @@ export class LocomotionController {
 }
 
 export function createRootMotionWalkClip(options: ProceduralWalkClipOptions = {}): AnimationClip {
-  const name = options.name ?? "g3d-procedural-root-walk";
+  const name = options.name ?? "a3d-procedural-root-walk";
   const duration = options.duration ?? 1.2;
   const distance = options.distance ?? 1.28;
   const target = options.rootMotionTrack ?? "root.position";

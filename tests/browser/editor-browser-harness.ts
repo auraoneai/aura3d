@@ -1,6 +1,6 @@
-import { Ray, Vector3 } from "@galileo3d/math";
-import { Scene } from "@galileo3d/scene";
-import { EditorRuntime } from "@galileo3d/editor-runtime";
+import { Ray, Vector3 } from "@aura3d/math";
+import { Scene } from "@aura3d/scene";
+import { EditorRuntime } from "@aura3d/editor-runtime";
 
 interface EditorBrowserResult {
   readonly status: "ready" | "error";
@@ -20,12 +20,12 @@ interface EditorBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_BROWSER_TEST__?: EditorBrowserResult;
+    __AURA3D_EDITOR_BROWSER_TEST__?: EditorBrowserResult;
   }
 }
 
 function publish(result: EditorBrowserResult): void {
-  window.__GALILEO3D_EDITOR_BROWSER_TEST__ = result;
+  window.__AURA3D_EDITOR_BROWSER_TEST__ = result;
 }
 
 try {

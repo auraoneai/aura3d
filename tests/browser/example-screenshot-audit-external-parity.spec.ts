@@ -10,7 +10,7 @@ const viewport = { width: 1280, height: 800 };
 type FlagshipExample = {
   readonly id: "product-configurator" | "architecture-viewer" | "game-slice";
   readonly path: string;
-  readonly stateKey: "__GALILEO3D_PRODUCT_DEMO__" | "__GALILEO3D_ARCHITECTURE_DEMO__" | "__GALILEO3D_GAME_DEMO__";
+  readonly stateKey: "__AURA3D_PRODUCT_DEMO__" | "__AURA3D_ARCHITECTURE_DEMO__" | "__AURA3D_GAME_DEMO__";
   readonly canvasSelector: string;
   readonly requiredEvidence: readonly string[];
 };
@@ -19,21 +19,21 @@ const examples: readonly FlagshipExample[] = [
   {
     id: "product-configurator",
     path: "/examples/product-configurator/index.html",
-    stateKey: "__GALILEO3D_PRODUCT_DEMO__",
+    stateKey: "__AURA3D_PRODUCT_DEMO__",
     canvasSelector: "[data-testid='product-configurator-canvas']",
     requiredEvidence: ["modelBacked", "v4ProductAssetLoaded", "v4RenderPreset", "generatedEnvironmentMap", "environmentReflectionEvidence", "proceduralTextureFixturesApplied", "oldBranchEcommerceTurntablePort", "productTurntableAutoRotate", "productHotspotManager", "productLightingPresetManager", "productCapturePlan", "productBatchExportPlan", "productArExportBoundary", "brdfLutValidated", "stableDirectionalShadowMap", "postprocessRealSceneReadback", "contactShadowAlternative", "annotationsVisible", "partSelection", "explodedView"],
   },
   {
     id: "architecture-viewer",
     path: "/examples/architecture-viewer/index.html",
-    stateKey: "__GALILEO3D_ARCHITECTURE_DEMO__",
+    stateKey: "__AURA3D_ARCHITECTURE_DEMO__",
     canvasSelector: "[data-testid='architecture-viewer-canvas']",
     requiredEvidence: ["roomModel", "v4ArchitectureAssetLoaded", "v4RenderPreset", "generatedEnvironmentMap", "environmentReflectionEvidence", "proceduralTextureFixturesApplied", "richArchitectureComposition", "oldBranchArchitectureCompositionPort", "oldBranchArchitecturalMaterialLibraryPort", "oldBranchMeasurementToolPort", "oldBranchSectionHatchingPort", "sectionCutHatching", "oldBranchLightingControllerPort", "kitchenBathroomFurnitureExteriorDetails", "bedroomFurnitureDetails", "brdfLutValidated", "stableDirectionalShadowMap", "postprocessRealSceneReadback", "materialRoomSelection", "measurementMetadata", "contactShadowAlternative", "orbitWalkCameraModes", "lightingPresets"],
   },
   {
     id: "game-slice",
     path: "/examples/game-slice/index.html",
-    stateKey: "__GALILEO3D_GAME_DEMO__",
+    stateKey: "__AURA3D_GAME_DEMO__",
     canvasSelector: "[data-testid='game-slice-canvas']",
     requiredEvidence: ["levelAssetLoaded", "playerAssetLoaded", "litSkinnedCharacter", "skinnedHeroAnimation", "v4RenderPreset", "generatedEnvironmentMap", "environmentReflectionEvidence", "proceduralTextureFixturesApplied", "seededStarfieldNebulaBackground", "brdfLutValidated", "stableDirectionalShadowMap", "postprocessRealSceneReadback", "physicsController", "particles", "spatialAudio", "objectiveLoop", "animationStateMachine"],
   },
@@ -71,32 +71,32 @@ test.describe("v4 flagship example screenshot audit", () => {
         await clickButton(page, "Controls");
         await clickButton(page, "Exploded view");
         await page.waitForFunction(() => (
-          window.__GALILEO3D_PRODUCT_DEMO__?.explodedView === true
-          && window.__GALILEO3D_PRODUCT_DEMO__?.featureEvidence?.explodedView === true
+          window.__AURA3D_PRODUCT_DEMO__?.explodedView === true
+          && window.__AURA3D_PRODUCT_DEMO__?.featureEvidence?.explodedView === true
         ));
         await clickButton(page, "Exploded view");
         await clickButton(page, "Hero");
         await clickButton(page, "Ear cups");
         await clickButton(page, "Export PNG");
         await page.waitForFunction(() => (
-          window.__GALILEO3D_PRODUCT_DEMO__?.export.requested === true
-          && window.__GALILEO3D_PRODUCT_DEMO__?.selectedPart === "ear-cups"
-          && window.__GALILEO3D_PRODUCT_DEMO__?.cameraPreset === "hero"
-          && window.__GALILEO3D_PRODUCT_DEMO__?.explodedView === false
-          && window.__GALILEO3D_PRODUCT_DEMO__?.featureEvidence?.explodedView === true
+          window.__AURA3D_PRODUCT_DEMO__?.export.requested === true
+          && window.__AURA3D_PRODUCT_DEMO__?.selectedPart === "ear-cups"
+          && window.__AURA3D_PRODUCT_DEMO__?.cameraPreset === "hero"
+          && window.__AURA3D_PRODUCT_DEMO__?.explodedView === false
+          && window.__AURA3D_PRODUCT_DEMO__?.featureEvidence?.explodedView === true
         ));
       } else if (example.id === "architecture-viewer") {
         await clickButton(page, "Gallery");
         await clickButton(page, "Walk");
         await clickButton(page, "Exhibit");
         await page.waitForFunction(() => (
-          window.__GALILEO3D_ARCHITECTURE_DEMO__?.cameraMode === "walk"
-          && window.__GALILEO3D_ARCHITECTURE_DEMO__?.lightPreset === "exhibit"
+          window.__AURA3D_ARCHITECTURE_DEMO__?.cameraMode === "walk"
+          && window.__AURA3D_ARCHITECTURE_DEMO__?.lightPreset === "exhibit"
         ));
         await clickButton(page, "Section");
         await page.waitForFunction(() => (
-          window.__GALILEO3D_ARCHITECTURE_DEMO__?.cameraMode === "section"
-          && window.__GALILEO3D_ARCHITECTURE_DEMO__?.lightPreset === "exhibit"
+          window.__AURA3D_ARCHITECTURE_DEMO__?.cameraMode === "section"
+          && window.__AURA3D_ARCHITECTURE_DEMO__?.lightPreset === "exhibit"
         ));
         evidenceState = await readState(page, example.stateKey);
         await page.locator("button[data-camera='orbit']").evaluate((element) => {
@@ -107,18 +107,18 @@ test.describe("v4 flagship example screenshot audit", () => {
           await sectionToggle.uncheck();
         }
         await page.waitForFunction(() => (
-          window.__GALILEO3D_ARCHITECTURE_DEMO__?.cameraMode === "orbit"
-          && window.__GALILEO3D_ARCHITECTURE_DEMO__?.sectionView === false
-          && window.__GALILEO3D_ARCHITECTURE_DEMO__?.lightPreset === "exhibit"
+          window.__AURA3D_ARCHITECTURE_DEMO__?.cameraMode === "orbit"
+          && window.__AURA3D_ARCHITECTURE_DEMO__?.sectionView === false
+          && window.__AURA3D_ARCHITECTURE_DEMO__?.lightPreset === "exhibit"
         ));
       } else {
-        await page.waitForFunction(() => window.__GALILEO3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true);
+        await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.metrics.visualAssetsLoaded === true);
         await page.locator(example.canvasSelector).focus();
         await page.keyboard.down("ArrowRight");
         releaseGameRunKey = true;
         await page.waitForFunction(() => (
-          window.__GALILEO3D_GAME_DEMO__?.metrics.playerAnimationState === "run"
-          && Number(window.__GALILEO3D_GAME_DEMO__?.metrics.playerAnimationTransitions ?? 0) > 0
+          window.__AURA3D_GAME_DEMO__?.metrics.playerAnimationState === "run"
+          && Number(window.__AURA3D_GAME_DEMO__?.metrics.playerAnimationTransitions ?? 0) > 0
         ));
         await expect(page.locator("[data-testid='runtime-diagnostics']")).not.toHaveAttribute("open", "");
         await expect(page.locator("[data-testid='inject-script-error']")).toBeHidden();
@@ -148,11 +148,11 @@ test.describe("v4 flagship example screenshot audit", () => {
         expect(claimState.featureEvidence[key], `${example.id} featureEvidence.${key}`).toBeTruthy();
       }
       expect(Number(state.diagnostics?.drawCalls ?? 0)).toBeGreaterThan(0);
-      expect(state.v4RenderPreset?.presetId).toBe("galileo3d-external-parity-visual-quality-preset");
+      expect(state.v4RenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
       expect(state.v4RenderPreset?.colorManagement?.toneMapper).toBe("reinhard");
       expect(state.v4RenderPreset?.activeFeatures).toEqual(expect.arrayContaining(["color-management", "tone-mapping", "bounded-pbr", "environment-reflections", "directional-shadows", "postprocess-bloom", "postprocess-fxaa"]));
       expect(state.directionalShadow?.mode).toBe("bounded-directional-shadow-map");
-      expect(state.directionalShadow?.presetId).toBe("galileo3d-external-parity-visual-quality-preset");
+      expect(state.directionalShadow?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
       expect(state.directionalShadow?.cascadeCount).toBeGreaterThanOrEqual(3);
       expect(state.directionalShadow?.mapSize).toBeGreaterThanOrEqual(512);
       expect(state.directionalShadow?.pcfSamples).toBeGreaterThanOrEqual(9);
@@ -199,11 +199,11 @@ test.describe("v4 flagship example screenshot audit", () => {
 
     const portfolioErrors = captureErrors(page);
     await page.goto(`${server.origin}/examples/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_PORTFOLIO__?.status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_PORTFOLIO__?.status === "ready");
     await page.waitForLoadState("networkidle");
     const portfolioScreenshotPath = `${screenshotDir}/portfolio.png`;
     await page.screenshot({ path: join(root, portfolioScreenshotPath), fullPage: true });
-    const portfolioState = await page.evaluate(() => window.__GALILEO3D_PORTFOLIO__);
+    const portfolioState = await page.evaluate(() => window.__AURA3D_PORTFOLIO__);
     const cardIds = await page.locator("[data-example-id]").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-example-id")));
     const readinessIds = await page.locator("[data-readiness-id]").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("data-readiness-id")));
 
@@ -229,7 +229,7 @@ test.describe("v4 flagship example screenshot audit", () => {
       id: "portfolio",
       url: `${server.origin}/examples/index.html`,
       screenshotPath: portfolioScreenshotPath,
-      runtimeStateKey: "__GALILEO3D_PORTFOLIO__",
+      runtimeStateKey: "__AURA3D_PORTFOLIO__",
       visualClaim: portfolioState?.visualClaim,
       knownLimits: portfolioState?.knownLimits,
       claimBoundary: portfolioState?.claimBoundary,
@@ -255,7 +255,7 @@ test.describe("v4 flagship example screenshot audit", () => {
     await page.setViewportSize(viewport);
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/architecture-viewer/index.html`, { waitUntil: "domcontentloaded" });
-    await waitForState(page, "__GALILEO3D_ARCHITECTURE_DEMO__");
+    await waitForState(page, "__AURA3D_ARCHITECTURE_DEMO__");
 
     await page.getByRole("button", { name: "Studio" }).click();
     for (let index = 0; index < 5; index += 1) {
@@ -270,7 +270,7 @@ test.describe("v4 flagship example screenshot audit", () => {
     await page.mouse.up();
     await page.waitForTimeout(250);
 
-    const state = await readState(page, "__GALILEO3D_ARCHITECTURE_DEMO__");
+    const state = await readState(page, "__AURA3D_ARCHITECTURE_DEMO__");
     const pixelStats = await canvasPixelStats(page, "[data-testid='architecture-viewer-canvas']");
     expect(errors).toEqual([]);
     expect(state.cameraMode).toBe("orbit");
@@ -457,10 +457,10 @@ async function fullCanvasVisualStats(page: Page, selector: string): Promise<{
 
 declare global {
   interface Window {
-    __GALILEO3D_PRODUCT_DEMO__?: Record<string, any>;
-    __GALILEO3D_ARCHITECTURE_DEMO__?: Record<string, any>;
-    __GALILEO3D_GAME_DEMO__?: Record<string, any>;
-    __GALILEO3D_PORTFOLIO__?: {
+    __AURA3D_PRODUCT_DEMO__?: Record<string, any>;
+    __AURA3D_ARCHITECTURE_DEMO__?: Record<string, any>;
+    __AURA3D_GAME_DEMO__?: Record<string, any>;
+    __AURA3D_PORTFOLIO__?: {
       readonly status: "ready";
       readonly examples: number;
       readonly visualClaim: string;

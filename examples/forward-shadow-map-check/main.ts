@@ -1,4 +1,4 @@
-import { DirectionalLight } from "@galileo3d/scene";
+import { DirectionalLight } from "@aura3d/scene";
 import {
   Geometry,
   DepthPass,
@@ -8,7 +8,7 @@ import {
   TextureBinding,
   UnlitMaterial,
   type RenderDeviceDiagnostics
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 type ForwardShadowMapCheckState = {
   readonly status: "ready" | "error";
@@ -40,7 +40,7 @@ type ForwardShadowMapCheckState = {
 
 declare global {
   interface Window {
-    __GALILEO3D_FORWARD_SHADOW_MAP_CHECK__?: ForwardShadowMapCheckState;
+    __AURA3D_FORWARD_SHADOW_MAP_CHECK__?: ForwardShadowMapCheckState;
   }
 }
 
@@ -51,7 +51,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_FORWARD_SHADOW_MAP_CHECK__ = {
+    window.__AURA3D_FORWARD_SHADOW_MAP_CHECK__ = {
       status: "error",
       renderer: "webgl2-forward-pass-shadow-map",
       featureEvidence: {
@@ -178,7 +178,7 @@ async function run(): Promise<void> {
   const shadowed = readAverageObjectPixel(renderer, { x: 335, y: 175, width: 150, height: 140 });
   const litRgb = rgb(lit);
   const shadowedRgb = rgb(shadowed);
-  window.__GALILEO3D_FORWARD_SHADOW_MAP_CHECK__ = {
+  window.__AURA3D_FORWARD_SHADOW_MAP_CHECK__ = {
     status: "ready",
     renderer: "webgl2-forward-pass-shadow-map",
     diagnostics,

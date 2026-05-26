@@ -1,6 +1,6 @@
 # V9 PBR And IBL
 
-G3D has PBR/HDR/IBL-facing code and matched tracked routes for several material examples. It does not yet prove better material quality than Three.js across the board.
+A3D has PBR/HDR/IBL-facing code and matched tracked routes for several material examples. It does not yet prove better material quality than Three.js across the board.
 
 ## Real Code
 
@@ -20,7 +20,7 @@ G3D has PBR/HDR/IBL-facing code and matched tracked routes for several material 
 - HDR/environment-map route support.
 - Physical material extensions for clearcoat, sheen, and transmission in scoped routes.
 - Shadow and physical-light route evidence.
-- GLTF material adaptation into G3D renderer resources.
+- GLTF material adaptation into A3D renderer resources.
 
 ## Evidence
 

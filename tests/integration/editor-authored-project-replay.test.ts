@@ -11,7 +11,7 @@ describe("editor-authored project replay", () => {
     const project = serializer.parse(source);
 
     expect(project.metadata.name).toBe("Editor Authored Sample");
-    expect(project.metadata.provenance?.evidenceHash).toBe("g3d-prov-29e66ba9");
+    expect(project.metadata.provenance?.evidenceHash).toBe("a3d-prov-198756a1");
     expect(() => serializer.verifyEditorAuthoredProvenance(project)).not.toThrow();
     expect(project.metadata.provenance?.operations.map((operation) => operation.runtimeApi)).toEqual([
       "EditorRuntime.select",
@@ -36,8 +36,8 @@ describe("editor-authored project replay", () => {
     const exported = new StaticProjectExporter().export(replayedProject);
     expect(exported.entry).toBe("index.html");
     expect(exported.files.map((file) => file.path)).toEqual(["index.html", "project.json", "runtime.js"]);
-    expect(exported.files.find((file) => file.path === "runtime.js")?.content).toContain("__GALILEO3D_EXPORTED_PROJECT__");
+    expect(exported.files.find((file) => file.path === "runtime.js")?.content).toContain("__AURA3D_EXPORTED_PROJECT__");
     expect(exported.files.find((file) => file.path === "runtime.js")?.content).toContain("provenanceHash");
-    expect(exported.files.find((file) => file.path === "runtime.js")?.content).not.toContain("__GALILEO3D_EDITOR_APP__");
+    expect(exported.files.find((file) => file.path === "runtime.js")?.content).not.toContain("__AURA3D_EDITOR_APP__");
   });
 });

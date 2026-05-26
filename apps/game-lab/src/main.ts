@@ -1,4 +1,4 @@
-import { createInteractiveSceneWorkflow } from "@galileo3d/workflows";
+import { createInteractiveSceneWorkflow } from "@aura3d/workflows";
 import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../v3-common/src/WorkflowWorkbench";
 
 const scenarios: readonly WorkflowScenario[] = [

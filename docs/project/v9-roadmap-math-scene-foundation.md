@@ -1,13 +1,13 @@
 # V9 Math And Scene Foundation
 
-G3D has first-party math and scene code. V9 does not depend on Three.js for the G3D-side transform hierarchy.
+A3D has first-party math and scene code. V9 does not depend on Three.js for the A3D-side transform hierarchy.
 
 ## Real Code
 
 - `packages/math/src/*`: vector, matrix, quaternion, ray, bounds, color, curve, transform, and interpolation utilities.
 - `packages/scene/src/*`: `Object3D`, `Scene`, `SceneNode`, `TransformNode`, cameras, lights, bounds, hierarchy, serialization, and scene queries.
-- `packages/engine/src/advanced-runtime/G3DScene.ts`: public V9 scene wrapper with geometry/material libraries and `toRenderSource()`.
-- `packages/rendering/src/advanced-runtime/RendererV9.ts` and `packages/engine/src/advanced-runtime/G3DRenderer.ts`: V9 render wrappers over the current renderer.
+- `packages/engine/src/advanced-runtime/A3DScene.ts`: public V9 scene wrapper with geometry/material libraries and `toRenderSource()`.
+- `packages/rendering/src/advanced-runtime/RendererV9.ts` and `packages/engine/src/advanced-runtime/A3DRenderer.ts`: V9 render wrappers over the current renderer.
 
 ## What Is Supported
 
@@ -16,7 +16,7 @@ G3D has first-party math and scene code. V9 does not depend on Three.js for the 
 - Perspective and orthographic camera support.
 - Renderable mesh handles through scene resources.
 - Scene-owned disposal for geometry and material libraries.
-- Auto-frame render source defaults through `G3DScene.toRenderSource()`.
+- Auto-frame render source defaults through `A3DScene.toRenderSource()`.
 
 ## Evidence
 

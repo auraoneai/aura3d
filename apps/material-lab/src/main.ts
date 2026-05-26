@@ -1,4 +1,4 @@
-import { createMaterialStudioWorkflow } from "@galileo3d/workflows";
+import { createMaterialStudioWorkflow } from "@aura3d/workflows";
 import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../v3-common/src/WorkflowWorkbench";
 
 const scenarios: readonly WorkflowScenario[] = [

@@ -117,9 +117,9 @@ const informationalSections = [
   /executive finding/i,
   /lessons from failed/i,
   /what each project/i,
-  /current g3d/i,
-  /g3d2025/i,
-  /old-g3d/i,
+  /current a3d/i,
+  /a3d2025/i,
+  /old-a3d/i,
   /failure patterns/i,
   /what to reuse/i,
   /what to discard/i,
@@ -2004,7 +2004,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/browser/input-browser.spec.ts, tests/browser/audio-browser.spec.ts, tests/browser/scripting-browser.spec.ts, tests/browser/editor-browser.spec.ts, and tests/browser/examples-runtime.spec.ts cover related runtime examples and tests");
     }
     if (/`packages\/editor\/\*\*`/.test(row.requirement) && existsSync(join(root, "packages/editor/src/index.ts")) && publicApiContracts && architecture && boundaries && exportsOk && imports) {
-      return evidence("packages/editor/src/index.ts exposes the canonical @galileo3d/editor package and passes public API, architecture, boundary, export, and import verification");
+      return evidence("packages/editor/src/index.ts exposes the canonical @aura3d/editor package and passes public API, architecture, boundary, export, and import verification");
     }
     if (/Input must support keyboard, pointer, gamepad, action maps, interaction targets, picking, orbit controls, first-person controls, editor shortcuts, and browser event lifecycle cleanup/i.test(row.requirement) && workstream5Contracts && cameraControls && inputBrowser && inputExamplesBrowser) {
       return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/unit/input/camera-controls.test.ts, tests/browser/input-browser.spec.ts, and tests/browser/examples-runtime.spec.ts cover keyboard, pointer, gamepad, action maps/chords, interaction targets, picking, orbit controls, first-person controls, editor shortcuts, browser lifecycle, and cleanup");
@@ -2326,7 +2326,7 @@ mkdirSync(reportsDir, { recursive: true });
 
 const jsonReport = {
   generatedAt: new Date().toISOString(),
-  releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-requirements-trace-run",
+  releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-requirements-trace-run",
   docs: docFiles.map((file) => `docs/${file}`).filter((file) => existsSync(join(root, file))),
   totalRequirements: finalRows.length,
   statusCounts,
@@ -2345,7 +2345,7 @@ const markdownRows = finalRows
   })
   .join("\n");
 
-const markdown = `# Galileo3D Requirements Trace
+const markdown = `# Aura3D Requirements Trace
 
 Generated from every markdown file in \`docs/*.md\`.
 

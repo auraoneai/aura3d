@@ -1,4 +1,4 @@
-import { multiplyMat4, perspectiveMat4, type Mat4, type Vec3 } from "@galileo3d/scene";
+import { multiplyMat4, perspectiveMat4, type Mat4, type Vec3 } from "@aura3d/scene";
 
 export interface CameraFrameBounds {
   readonly min: readonly [number, number, number];

@@ -8,7 +8,7 @@ const REPORT_DIR = "tests/reports/advanced-examples-gallery/product-wow-delayed-
 
 declare global {
   interface Window {
-    __g3dWowRuntime?: WowRuntime;
+    __a3dWowRuntime?: WowRuntime;
   }
 }
 
@@ -39,7 +39,7 @@ test.describe("wow neon city car delayed environment stability", () => {
     await page.goto(`${server.origin}/apps/wow-neon-city/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dWowRuntime;
+        const runtime = window.__a3dWowRuntime;
         return (runtime?.status === "ready" || runtime?.status === "running" || runtime?.status === "error")
           && (runtime?.frameCount ?? 0) >= 2;
       },
@@ -56,7 +56,7 @@ test.describe("wow neon city car delayed environment stability", () => {
 
     await page.waitForFunction(
       (firstFrameCount) => {
-        const runtime = window.__g3dWowRuntime;
+        const runtime = window.__a3dWowRuntime;
         return (runtime?.frameCount ?? 0) >= firstFrameCount + 4 || (runtime?.status === "error");
       },
       earlyRuntime.frameCount,
@@ -80,7 +80,7 @@ test.describe("wow neon city car delayed environment stability", () => {
 
     const diagnosis = diagnoseDelayedEnvironment(earlyStats, lateStats);
     const report = {
-      schema: "g3d-wow-neon-city-car-delayed-environment-diagnostic/v1",
+      schema: "a3d-wow-neon-city-car-delayed-environment-diagnostic/v1",
       source: "tests/browser/wow-neon-city-car-stability.spec.ts",
       route: "apps/wow-neon-city",
       asset: "car-concept",
@@ -138,7 +138,7 @@ interface CarArtifactStats {
 
 async function wowRuntime(page: Page): Promise<WowRuntime> {
   return await page.evaluate(() => {
-    const runtime = window.__g3dWowRuntime;
+    const runtime = window.__a3dWowRuntime;
     if (!runtime) throw new Error("Missing wow runtime.");
     return runtime;
   });

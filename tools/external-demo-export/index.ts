@@ -50,11 +50,11 @@ interface ExternalDemoExportReport {
 }
 
 interface PublicDeploymentManifest {
-  readonly schemaVersion: "g3d-public-demo-deployment-v1";
+  readonly schemaVersion: "a3d-public-demo-deployment-v1";
   readonly generatedAt: string;
   readonly version: string | null;
   readonly outputDir: string;
-  readonly requiredCommand: "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment";
+  readonly requiredCommand: "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment";
   readonly files: readonly {
     readonly id: string;
     readonly localPath: string;
@@ -77,7 +77,7 @@ const reportPath = "tests/reports/external-demo-static-export.json";
 
 export async function buildExternalDemoExport(root = process.cwd(), outputDir?: string): Promise<ExternalDemoExportReport> {
   const packageVersion = readPackageVersion(root);
-  const relativeOutputDir = outputDir ?? process.env.G3D_EXTERNAL_DEMO_EXPORT_DIR ?? `release-artifacts/external-demos/${packageVersion ?? "unknown"}`;
+  const relativeOutputDir = outputDir ?? process.env.A3D_EXTERNAL_DEMO_EXPORT_DIR ?? `release-artifacts/external-demos/${packageVersion ?? "unknown"}`;
   const resolvedOutputDir = isAbsolute(relativeOutputDir) ? relativeOutputDir : join(root, relativeOutputDir);
   const violations: string[] = [];
   const sourceFiles = new Set<string>([
@@ -141,7 +141,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
   const sourceFileHashes = hashSourceFiles(root, [...sourceFiles].sort((left, right) => left.localeCompare(right)));
   const integrityManifestPath = join(resolvedOutputDir, "static-integrity-manifest.json");
   writeFileSync(integrityManifestPath, `${JSON.stringify({
-    schemaVersion: "g3d-static-demo-integrity-v1",
+    schemaVersion: "a3d-static-demo-integrity-v1",
     generatedAt: new Date().toISOString(),
     version: packageVersion,
     gitSha: gitSha(root),
@@ -168,7 +168,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
   const report: ExternalDemoExportReport = {
     ok: violations.length === 0 && demos.length === demoIds.length,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-external-demo-export-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-external-demo-export-run",
     command: "pnpm build:external-demos",
     version: packageVersion,
     gitSha: gitSha(root),
@@ -196,7 +196,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
 
 function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymentManifest): Record<string, unknown> {
   return {
-    schemaVersion: "g3d-public-demo-deployment-command-plan-v1",
+    schemaVersion: "a3d-public-demo-deployment-command-plan-v1",
     generatedAt: new Date().toISOString(),
     outputDir,
     claimBoundary: "This command plan only describes how to deploy and verify the static demo artifact. Production readiness remains blocked until a durable HTTPS origin serves bytes that match the manifest and passes public deployment smoke validation.",
@@ -224,7 +224,7 @@ function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymen
     validationCommands: [
       "pnpm build:external-demos",
       "pnpm verify:static-demo-server-smoke",
-      "G3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
+      "A3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
       "pnpm audit:external-parity-production-readiness",
       "pnpm audit:v4-broad-parity",
       "pnpm audit:v4-completion",
@@ -242,11 +242,11 @@ function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymen
 function buildPublicDeploymentManifest(root: string, outputDir: string, resolvedOutputDir: string, version: string | null, demos: readonly ExternalDemoExportEntry[], sourceFileHashes: readonly SourceFileHash[]): PublicDeploymentManifest {
   const indexPath = relative(root, join(resolvedOutputDir, "index.html"));
   return {
-    schemaVersion: "g3d-public-demo-deployment-v1",
+    schemaVersion: "a3d-public-demo-deployment-v1",
     generatedAt: new Date().toISOString(),
     version,
     outputDir,
-    requiredCommand: "G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
+    requiredCommand: "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
     files: [
       deploymentFile(root, "index", indexPath, "index.html", 100),
       ...demos.flatMap((demo) => [
@@ -280,11 +280,11 @@ function buildIndexHtml(version: string | null, demos: readonly ExternalDemoExpo
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Galileo3D External Demo Export</title>
+    <title>Aura3D External Demo Export</title>
   </head>
   <body>
     <main>
-      <h1>Galileo3D External Demo Export</h1>
+      <h1>Aura3D External Demo Export</h1>
       <p>Version ${version ?? "unknown"}</p>
       <ul>
 ${links}
@@ -302,7 +302,7 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
   if (relativePath.endsWith("/index.html")) {
     return [
       "<script type=\"module\" src=\"./main.js\"></script>",
-      "Galileo3D",
+      "Aura3D",
     ];
   }
   const demoId = relativePath.split("/", 1)[0] ?? "";
@@ -318,10 +318,10 @@ function expectedContentMarkers(relativePath: string): readonly string[] {
 
 function workspacePackagePlugin(root: string): Plugin {
   return {
-    name: "galileo3d-workspace-packages",
+    name: "aura3d-workspace-packages",
     setup(buildApi) {
-      buildApi.onResolve({ filter: /^@galileo3d\/[^/]+$/ }, (args) => {
-        const packageName = args.path.replace(/^@galileo3d\//, "");
+      buildApi.onResolve({ filter: /^@aura3d\/[^/]+$/ }, (args) => {
+        const packageName = args.path.replace(/^@aura3d\//, "");
         const path = join(root, "packages", packageName, "src", "index.ts");
         return existsSync(path) ? { path } : undefined;
       });
@@ -331,7 +331,7 @@ function workspacePackagePlugin(root: string): Plugin {
 
 function nodeBuiltinsBrowserStubPlugin(): Plugin {
   return {
-    name: "galileo3d-browser-node-builtin-stubs",
+    name: "aura3d-browser-node-builtin-stubs",
     setup(buildApi) {
       buildApi.onResolve({ filter: /^node:/ }, (args) => ({
         path: args.path,

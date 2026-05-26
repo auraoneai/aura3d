@@ -129,9 +129,9 @@ test.describe("WebGPU parity coverage", () => {
       const { Geometry, IndexBuffer, InstancedPBRMaterial, MorphUnlitMaterial, PBRMaterial, Renderer, Sampler, SkinnedUnlitMaterial, Texture, TextureBinding, TexturedPBRMaterial, VertexBuffer, VertexFormat, WebGPUParticleBackend, createRenderDevice, createV4EnvironmentLighting, toneMapFloatPixels } = await import(moduleUrl);
       const parityShader = {
         label: "webgpu-parity-raster",
-        marker: "@galileo3d-shader:webgpu-parity-raster",
+        marker: "@aura3d-shader:webgpu-parity-raster",
         vertex: `#version 300 es
-// @galileo3d-shader:webgpu-parity-raster
+// @aura3d-shader:webgpu-parity-raster
 precision highp float;
 layout(location = 0) in vec3 position;
 void main() {
@@ -139,7 +139,7 @@ void main() {
 }
 `,
         fragment: `#version 300 es
-// @galileo3d-shader:webgpu-parity-raster
+// @aura3d-shader:webgpu-parity-raster
 precision highp float;
 uniform vec4 u_color;
 out vec4 outColor;
@@ -181,9 +181,9 @@ void main() {
 
       const textureShader = {
         label: "webgpu-parity-texture",
-        marker: "@galileo3d-shader:webgpu-parity-texture",
+        marker: "@aura3d-shader:webgpu-parity-texture",
         vertex: `#version 300 es
-// @galileo3d-shader:webgpu-parity-texture
+// @aura3d-shader:webgpu-parity-texture
 precision highp float;
 layout(location = 0) in vec3 position;
 layout(location = 2) in vec2 uv;
@@ -194,7 +194,7 @@ void main() {
 }
 `,
         fragment: `#version 300 es
-// @galileo3d-shader:webgpu-parity-texture
+// @aura3d-shader:webgpu-parity-texture
 precision highp float;
 uniform sampler2D u_texture;
 in vec2 v_uv;
@@ -249,9 +249,9 @@ void main() {
 
       const morphShader = {
         label: "webgpu-parity-morph",
-        marker: "@galileo3d-shader:webgpu-parity-morph",
+        marker: "@aura3d-shader:webgpu-parity-morph",
         vertex: `#version 300 es
-// @galileo3d-shader:webgpu-parity-morph
+// @aura3d-shader:webgpu-parity-morph
 precision highp float;
 layout(location = 0) in vec3 position;
 uniform vec4 u_morphPositionDeltas[256];
@@ -269,7 +269,7 @@ void main() {
 }
 `,
         fragment: `#version 300 es
-// @galileo3d-shader:webgpu-parity-morph
+// @aura3d-shader:webgpu-parity-morph
 precision highp float;
 uniform vec4 u_color;
 out vec4 outColor;
@@ -318,9 +318,9 @@ void main() {
 
       const linePointShader = {
         label: "webgpu-parity-line-point",
-        marker: "@galileo3d-shader:webgpu-parity-line-point",
+        marker: "@aura3d-shader:webgpu-parity-line-point",
         vertex: `#version 300 es
-// @galileo3d-shader:webgpu-parity-line-point
+// @aura3d-shader:webgpu-parity-line-point
 precision highp float;
 layout(location = 0) in vec3 position;
 void main() {
@@ -329,7 +329,7 @@ void main() {
 }
 `,
         fragment: `#version 300 es
-// @galileo3d-shader:webgpu-parity-line-point
+// @aura3d-shader:webgpu-parity-line-point
 precision highp float;
 uniform vec4 u_color;
 out vec4 outColor;
@@ -344,9 +344,9 @@ void main() {
       ], 28);
       const vertexColorShader = {
         label: "webgpu-parity-vertex-color",
-        marker: "@galileo3d-shader:webgpu-parity-vertex-color",
+        marker: "@aura3d-shader:webgpu-parity-vertex-color",
         vertex: `#version 300 es
-// @galileo3d-shader:webgpu-parity-vertex-color
+// @aura3d-shader:webgpu-parity-vertex-color
 precision highp float;
 layout(location = 0) in vec3 position;
 layout(location = 4) in vec4 color;
@@ -357,7 +357,7 @@ void main() {
 }
 `,
         fragment: `#version 300 es
-// @galileo3d-shader:webgpu-parity-vertex-color
+// @aura3d-shader:webgpu-parity-vertex-color
 precision highp float;
 uniform vec4 u_color;
 in vec4 v_color;
@@ -1199,7 +1199,7 @@ void main() {
         canvas.width = 48;
         canvas.height = 48;
         document.body.append(canvas);
-        const marker = "@galileo3d-shader:native-webgpu-material-wgsl-pbr";
+        const marker = "@aura3d-shader:native-webgpu-material-wgsl-pbr";
         try {
           const device = await createRenderDevice({ backend: "webgpu", canvas });
           const geometry = Geometry.litTriangle();
@@ -2255,7 +2255,7 @@ fn fs_main(@location(0) normalInput: vec3<f32>) -> @location(0) vec4<f32> {
     const report: WebGPUParityReport = {
       ...baseReport(process.cwd(), {
         ok: true,
-        command: "G3D_WEBGPU_PARITY_REPORT=tests/reports/external-parity-webgpu-parity.json pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts tests/browser/webgpu-parity.spec.ts",
+        command: "A3D_WEBGPU_PARITY_REPORT=tests/reports/external-parity-webgpu-parity.json pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts tests/browser/webgpu-parity.spec.ts",
         runIdPrefix: "v4-webgpu-parity",
         sourceFiles: webgpuReportSourceFiles,
         violations: validations.flatMap((entry) => entry.blockers.map((blocker) => `${entry.id}: ${blocker}`)),
@@ -2266,7 +2266,7 @@ fn fs_main(@location(0) normalInput: vec3<f32>) -> @location(0) vec4<f32> {
           "broad better-than-Babylon.js language",
         ],
       }),
-      releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-webgpu-parity-run",
+      releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-webgpu-parity-run",
       gitSha: gitSha(),
       environment: {
         platform: platform(),
@@ -2295,7 +2295,7 @@ fn fs_main(@location(0) normalInput: vec3<f32>) -> @location(0) vec4<f32> {
       note: "Injected WebGPU adapters validate render-device and compute contracts only; real hardware success is not claimed unless real-navigator-gpu-availability reports an adapter."
     };
 
-    const reportPath = process.env.G3D_WEBGPU_PARITY_REPORT ?? "tests/reports/webgpu-parity.json";
+    const reportPath = process.env.A3D_WEBGPU_PARITY_REPORT ?? "tests/reports/webgpu-parity.json";
     mkdirSync("tests/reports", { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
     if (reportPath !== "tests/reports/webgpu-parity.json") {

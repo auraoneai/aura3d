@@ -1,5 +1,5 @@
-import { AnimationClip, type SerializedAnimationClip } from "@galileo3d/animation";
-import { Renderable, Scene } from "@galileo3d/scene";
+import { AnimationClip, type SerializedAnimationClip } from "@aura3d/animation";
+import { Renderable, Scene } from "@aura3d/scene";
 import type { AssetLoadRequest, AssetLoader } from "./AssetLoader";
 import type { LoadContext } from "./LoadContext";
 

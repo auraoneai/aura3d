@@ -18,7 +18,7 @@ const checks = [
   check("comparison-scene-equivalent", Boolean(threeOutcome?.equivalent), "comparison report marks the instancing scene descriptor equivalent"),
   check("comparison-frame-time", isWinOrTie(threeOutcome?.frameTimeMedian?.result) && isWinOrTie(threeOutcome?.frameTimeP95?.result), `median=${threeOutcome?.frameTimeMedian?.result}, p95=${threeOutcome?.frameTimeP95?.result}`),
   check("comparison-draw-calls", isWinOrTie(threeOutcome?.drawCalls?.result), `drawCalls=${threeOutcome?.drawCalls?.result}`),
-  check("comparison-bundle-measured", typeof threeOutcome?.bundleBytes?.galileo === "number" && typeof threeOutcome?.bundleBytes?.competitor === "number", `bundle=${threeOutcome?.bundleBytes?.result}, galileo=${threeOutcome?.bundleBytes?.galileo}, threejs=${threeOutcome?.bundleBytes?.competitor}`),
+  check("comparison-bundle-measured", typeof threeOutcome?.bundleBytes?.aura3d === "number" && typeof threeOutcome?.bundleBytes?.competitor === "number", `bundle=${threeOutcome?.bundleBytes?.result}, aura3d=${threeOutcome?.bundleBytes?.aura3d}, threejs=${threeOutcome?.bundleBytes?.competitor}`),
   check("comparison-screenshot-diff", threeOutcome?.screenshotDiff?.pass === true, `screenshotDiff.pass=${threeOutcome?.screenshotDiff?.pass}`),
   check("route-public-scene-instanced-mesh", runtime.publicSceneInstancedMesh === true, `publicSceneInstancedMesh=${runtime.publicSceneInstancedMesh}`),
   check("route-one-draw", runtime.drawCalls === 1, `drawCalls=${runtime.drawCalls}`),
@@ -27,7 +27,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "g3d-threejs-parity-instancing-parity/v1",
+  schema: "a3d-threejs-parity-instancing-parity/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((entry) => entry.pass),
   inputs: {

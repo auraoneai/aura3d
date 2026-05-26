@@ -1,5 +1,5 @@
-const status = document.querySelector("#galileo-export-status");
-const canvas = document.querySelector("#galileo-export");
+const status = document.querySelector("#aura3d-export-status");
+const canvas = document.querySelector("#aura3d-export");
 const context = canvas.getContext("2d");
 const project = await fetch("./project.json").then((response) => response.json());
 
@@ -34,7 +34,7 @@ for (const [index, node] of project.scene.nodes.entries()) {
 }
 
 status.textContent = `Loaded ${project.metadata.name}: ${project.scene.nodes.length} nodes`;
-window.__GALILEO3D_EXPORTED_PROJECT__ = {
+window.__AURA3D_EXPORTED_PROJECT__ = {
   id: "editor-authored-project",
   status: "ready",
   renderer: "canvas2d",

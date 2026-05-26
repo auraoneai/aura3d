@@ -3,7 +3,7 @@ import {
   LoadContext,
   createGLTFRenderResources,
   inspectGLTFAsset
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   BloomPass,
   DepthVisualizationPass,
@@ -46,11 +46,11 @@ import {
   type ToneMappingPresetName,
   type RenderTarget,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_POSTPROCESS_LAB__?: PostprocessLabState;
+    __AURA3D_POSTPROCESS_LAB__?: PostprocessLabState;
   }
 }
 
@@ -183,7 +183,7 @@ const knownLimits = [
   "The postprocess passes run on readback pixels from the V4 product fixture; the final composition is still a bounded browser-audit lab, not a production full-frame compositor.",
 ] as const;
 
-const productSceneUrl = "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf";
+const productSceneUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
 const claimBoundary = "V4 postprocess-lab evidence is limited to bounded LDR tone mapping, bloom, FXAA, color grading, vignette, sharpening, depth visualization, DOF, Sobel outline, chromatic aberration, film grain, motion blur, SSAO, SSR, TAA, pass costs, and browser pixel checks on a WebGL2-rendered V4 product glTF scene; HDR render-target parity and full postprocess-suite parity are not claimed.";
 
 interface RealScenePostprocessInput {
@@ -238,7 +238,7 @@ const defaultControls: PostprocessControls = {
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_POSTPROCESS_LAB__ = {
+    window.__AURA3D_POSTPROCESS_LAB__ = {
       id: "postprocess-lab",
       status: "error",
       renderer: "webgl2-real-scene-postprocess",
@@ -317,7 +317,7 @@ async function run(): Promise<void> {
         sharpening: readSignedNumericControl(sharpeningControl, defaultControls.sharpening)
       }
     });
-    window.__GALILEO3D_POSTPROCESS_LAB__ = state;
+    window.__AURA3D_POSTPROCESS_LAB__ = state;
     renderDebugOverlay(debugOverlay, state.debugOverlay);
     status.textContent = JSON.stringify(state, null, 2);
   };
@@ -779,7 +779,7 @@ function createDebugOverlayIssues(device: MockRenderDevice): readonly RenderDebu
   try {
     device.createShaderProgram({
       label: "postprocess-debug-invalid-shader",
-      marker: "@galileo3d-postprocess-debug-overlay",
+      marker: "@aura3d-postprocess-debug-overlay",
       vertex: "void main() { gl_Position = vec4(0.0); }",
       fragment: "void main() { }"
     });

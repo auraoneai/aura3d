@@ -72,7 +72,7 @@ function hasGoClaim(text: string): boolean {
 export function scanDocContradictions(
   root = process.cwd(),
   files: readonly string[] = defaultFiles,
-  releaseRunId = process.env.G3D_RELEASE_RUN_ID ?? "standalone-doc-contradiction-scan-run"
+  releaseRunId = process.env.A3D_RELEASE_RUN_ID ?? "standalone-doc-contradiction-scan-run"
 ): DocContradictionReport {
   const checkedFiles = files.filter((file) => existsSync(join(root, resolveReadablePath(root, file))));
   const violations: DocContradictionViolation[] = [];

@@ -37,7 +37,7 @@ check("browser-postprocess", report?.ok === true && Number(bloom.changedPixels) 
 check("claim-boundary", typeof report?.productBoundary === "string" && report.productBoundary.includes("Flagship scenes still require off/on screenshots"), "Postprocess report must state flagship off/on screenshots remain required.");
 
 const pass = checks.every((entry) => entry.pass);
-const output = { schema: "g3d-external-parity-postprocess-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
+const output = { schema: "a3d-external-parity-postprocess-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-postprocess-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-postprocess-readiness.json"), `${JSON.stringify(output, null, 2)}\n`);
 if (!pass) {

@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/apps",
+  "name": "@aura3d/apps",
   "version": "1.0.0",
   "type": "module",
   "exports": {
@@ -11,8 +11,8 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@galileo3d/core": "workspace:*",
-    "@galileo3d/rendering": "workspace:*",
-    "@galileo3d/workflows": "workspace:*"
+    "@aura3d/core": "workspace:*",
+    "@aura3d/rendering": "workspace:*",
+    "@aura3d/workflows": "workspace:*"
   }
 }

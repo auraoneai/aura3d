@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { Bounds3 } from "./Bounds.js";
 import { Light } from "./Light.js";
 

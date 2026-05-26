@@ -3,21 +3,21 @@
 > Historical note: This V6 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-G3D V6 is being built as a competitor to Three.js, not a wrapper around Three.js.
+A3D V6 is being built as a competitor to Three.js, not a wrapper around Three.js.
 
 ```text
-G3D product path = G3D renderer, G3D loader, G3D controls, G3D viewer.
+A3D product path = A3D renderer, A3D loader, A3D controls, A3D viewer.
 Three.js path = external baseline for comparison and migration documentation.
 ```
 
-Three.js must not be used to render G3D product output.
+Three.js must not be used to render A3D product output.
 
 ## Comparison Artifact
 
 V7 writes the flagship comparison here:
 
 ```text
-tests/reports/v7/product-viewer/g3d-product-viewer.png
+tests/reports/v7/product-viewer/a3d-product-viewer.png
 tests/reports/v7/product-viewer/threejs-product-viewer.png
 tests/reports/v7/product-viewer/comparison.png
 tests/reports/v7/product-viewer/product-viewer-report.json
@@ -31,7 +31,7 @@ The intended developer migration flow is:
 
 ```ts
 // Three.js-style app responsibility: create renderer, load asset, set environment, add controls.
-// G3D V6 product flow:
+// A3D V6 product flow:
 const viewer = await createProductViewer({
   canvas,
   asset: await loadGltfScene("/assets/product.glb"),

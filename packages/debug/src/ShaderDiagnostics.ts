@@ -1,4 +1,4 @@
-import { type RenderShaderProgram, type ShaderSources } from "@galileo3d/rendering";
+import { type RenderShaderProgram, type ShaderSources } from "@aura3d/rendering";
 
 export interface ShaderDiagnosticReport {
   readonly label: string;

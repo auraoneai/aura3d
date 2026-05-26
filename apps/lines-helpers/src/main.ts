@@ -6,13 +6,13 @@ import {
   buildGridHelper,
   buildSkeletonHelper,
   type DebugRenderLine
-} from "@galileo3d/debug";
-import { Geometry, UnlitMaterial, type RenderItem } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/debug";
+import { Geometry, UnlitMaterial, type RenderItem } from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LinesHelpers?: V8LinesHelpersRuntime;
+    __a3dV8LinesHelpers?: V8LinesHelpersRuntime;
   }
 }
 
@@ -23,7 +23,7 @@ interface V8LinesHelpersRuntime {
   readonly drawCalls: number;
   readonly helperCount: number;
   readonly lineCount: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly elapsedMs: number;
   readonly error?: string;
 }
@@ -46,13 +46,13 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8LinesHelpers = runtime;
+    window.__a3dV8LinesHelpers = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -87,7 +87,7 @@ async function run(): Promise<void> {
           helperCount: helperSets.length,
           lineCount
         });
-        window.__g3dV8LinesHelpers = runtime;
+        window.__a3dV8LinesHelpers = runtime;
         if (frameCount === 1 || now - lastUi > 250) {
           publish();
           lastUi = now;
@@ -169,7 +169,7 @@ function createRuntime(
     drawCalls: patch.drawCalls ?? 0,
     helperCount: patch.helperCount ?? 0,
     lineCount: patch.lineCount ?? 0,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };
@@ -178,7 +178,7 @@ function createRuntime(
 function renderUi(root: HTMLElement, runtime: V8LinesHelpersRuntime): void {
   root.innerHTML = `
     <h1>V8 Lines Helpers</h1>
-    <p>Debug helper builders rendered as real G3D line-segment geometry through WebGL2.</p>
+    <p>Debug helper builders rendered as real A3D line-segment geometry through WebGL2.</p>
     <p>${runtime.helperCount} helpers · ${runtime.lineCount} line segments · ${runtime.drawCalls} draw calls · ${runtime.frameCount} frames</p>
     <span class="status">${escapeHtml(runtime.status)}</span>
     ${runtime.error ? `<p>${escapeHtml(runtime.error)}</p>` : ""}

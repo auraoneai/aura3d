@@ -20,12 +20,12 @@ import {
   VertexFormat,
   createRenderDevice,
   type RenderDeviceDiagnostics
-} from "@galileo3d/rendering";
-import { DirectionalLight, PointLight, Renderable, Scene, SpotLight } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight, PointLight, Renderable, Scene, SpotLight } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __GALILEO3D_RENDERING_TEST__?: RenderingHarnessResult;
+    __AURA3D_RENDERING_TEST__?: RenderingHarnessResult;
   }
 }
 
@@ -787,7 +787,7 @@ async function run(): Promise<void> {
 
     const contextLoss = await runContextLossCheck();
 
-    window.__GALILEO3D_RENDERING_TEST__ = {
+    window.__AURA3D_RENDERING_TEST__ = {
       status: "ready",
       diagnostics,
       lineDiagnostics,
@@ -846,7 +846,7 @@ async function run(): Promise<void> {
       contextLoss
     };
   } catch (error) {
-    window.__GALILEO3D_RENDERING_TEST__ = {
+    window.__AURA3D_RENDERING_TEST__ = {
       status: "error",
       error: error instanceof Error ? `${error.stack ?? error.message}${formatErrorDiagnostics(error)}` : String(error)
     };

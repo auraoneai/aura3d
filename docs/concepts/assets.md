@@ -2,7 +2,7 @@
 
 Version: `0.1.0-alpha.0`
 
-The asset system loads, validates, inspects, caches, and converts external files into renderable Galileo3D resources. The primary package is `@galileo3d/engine/assets`.
+The asset system loads, validates, inspects, caches, and converts external files into renderable Aura3D resources. The primary package is `@aura3d/engine/assets`.
 
 ## Package Surface
 
@@ -21,7 +21,7 @@ Core public exports include:
 For a developer-facing app, prefer the high-level helpers first:
 
 ```ts
-import { createRenderableScene, loadRenderableAsset } from "@galileo3d/engine/assets";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
 
 const asset = await loadRenderableAsset("/assets/product.glb", { type: "gltf" });
 const scene = await createRenderableScene(asset, {

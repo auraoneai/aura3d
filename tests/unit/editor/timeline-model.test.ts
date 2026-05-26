@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TimelineClip, TimelineModel, TimelineTrack } from "@galileo3d/editor-runtime";
+import { TimelineClip, TimelineModel, TimelineTrack } from "@aura3d/editor-runtime";
 
 describe("editor timeline model", () => {
   it("ports bounded track, clip, easing, loop, lock, mute, and signal evidence", () => {

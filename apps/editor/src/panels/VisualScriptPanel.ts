@@ -1,4 +1,4 @@
-import { createVisualNode, listVisualNodeDefinitions, VisualGraphExecutor, type VisualGraph } from "@galileo3d/scripting";
+import { createVisualNode, listVisualNodeDefinitions, VisualGraphExecutor, type VisualGraph } from "@aura3d/scripting";
 import type { EditorShell } from "../EditorShell";
 
 export interface VisualScriptPanelSnapshot {

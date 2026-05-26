@@ -18,7 +18,7 @@ const CUBE_POSITIONS = [
 
 describe("interactive cubes Three.js parity", () => {
   it("matches Three.js Raycaster nearest-cube hits for the V8 picking scene", () => {
-    const g3d = createG3DScene();
+    const a3d = createA3DScene();
     const three = createThreeScene();
     const cases = [
       { label: "cube-1", direction: CUBE_POSITIONS[0] },
@@ -29,32 +29,32 @@ describe("interactive cubes Three.js parity", () => {
     ] as const;
 
     for (const testCase of cases) {
-      const g3dHit = pickSceneRenderables(
-        { scene: g3d.scene, geometryLibrary: { "geometry:cube": g3d.geometry } },
+      const a3dHit = pickSceneRenderables(
+        { scene: a3d.scene, geometryLibrary: { "geometry:cube": a3d.geometry } },
         new Ray(new Vector3(0, 0, 0), new Vector3(testCase.direction[0], testCase.direction[1], testCase.direction[2]))
       );
       const threeHit = pickThreeNearestCube(three.cubes, testCase.direction);
 
-      expect(g3dHit?.node.name, testCase.label).toBe(testCase.label);
+      expect(a3dHit?.node.name, testCase.label).toBe(testCase.label);
       expect(threeHit?.object.name, testCase.label).toBe(testCase.label);
-      expect(g3dHit?.node.name, testCase.label).toBe(threeHit?.object.name);
-      expect(g3dHit?.distance ?? 0, testCase.label).toBeGreaterThan(0);
+      expect(a3dHit?.node.name, testCase.label).toBe(threeHit?.object.name);
+      expect(a3dHit?.distance ?? 0, testCase.label).toBeGreaterThan(0);
       expect(threeHit?.distance ?? 0, testCase.label).toBeGreaterThan(0);
-      expect(Math.abs((g3dHit?.distance ?? 0) - (threeHit?.distance ?? 0)), testCase.label).toBeLessThan(0.2);
+      expect(Math.abs((a3dHit?.distance ?? 0) - (threeHit?.distance ?? 0)), testCase.label).toBeLessThan(0.2);
     }
 
-    const g3dMiss = pickSceneRenderables(
-      { scene: g3d.scene, geometryLibrary: { "geometry:cube": g3d.geometry } },
+    const a3dMiss = pickSceneRenderables(
+      { scene: a3d.scene, geometryLibrary: { "geometry:cube": a3d.geometry } },
       new Ray(new Vector3(0, 0, 0), new Vector3(0, 3, -5))
     );
     const threeMiss = pickThreeNearestCube(three.cubes, [0, 3, -5]);
-    expect(g3dMiss).toBeUndefined();
+    expect(a3dMiss).toBeUndefined();
     expect(threeMiss).toBeUndefined();
-    g3d.geometry.dispose();
+    a3d.geometry.dispose();
   });
 });
 
-function createG3DScene(): { readonly scene: Scene; readonly geometry: Geometry } {
+function createA3DScene(): { readonly scene: Scene; readonly geometry: Geometry } {
   const scene = new Scene();
   CUBE_POSITIONS.forEach((position, index) => {
     const node = scene.createNode(`cube-${index + 1}`);

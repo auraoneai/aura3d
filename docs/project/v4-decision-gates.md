@@ -43,7 +43,7 @@ Required evidence:
 
 Allowed claim:
 
-> G3D has one repo-local canonical WebGL2 product-rendering path with PBR materials, textures, sane lighting, shadows, camera framing, HDR target usage, and postprocess.
+> A3D has one repo-local canonical WebGL2 product-rendering path with PBR materials, textures, sane lighting, shadows, camera framing, HDR target usage, and postprocess.
 
 ## Gate 2: Asset-To-Render SDK
 
@@ -60,7 +60,7 @@ Required evidence:
 
 Allowed claim:
 
-> G3D exposes a small asset-to-render API for supported local workflows.
+> A3D exposes a small asset-to-render API for supported local workflows.
 
 ## Gate 3: Public Demo Set
 
@@ -80,7 +80,7 @@ Required evidence:
 
 Allowed claim:
 
-> G3D has a minimal V1 public demo set backed by local screenshot tests.
+> A3D has a minimal V1 public demo set backed by local screenshot tests.
 
 ## Gate 4: Package Viability
 

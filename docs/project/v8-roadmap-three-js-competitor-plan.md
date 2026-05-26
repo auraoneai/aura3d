@@ -1,4 +1,4 @@
-# G3D V8: Build The Actual Three.js Competitor
+# A3D V8: Build The Actual Three.js Competitor
 
 > Historical note: This V8 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
@@ -17,13 +17,13 @@ V8 must stop that pattern.
 
 The product objective is not another report. The product objective is:
 
-> Build G3D into a production-quality, G3D-only WebGL2/WebGPU renderer and developer SDK that can load real GLTF/GLB assets, render high-fidelity PBR/HDR/IBL scenes, run animation/skinning/morph/IK/physics workflows, expose ergonomic public APIs, and ship examples that can stand next to the official Three.js examples without relying on Three.js runtime code.
+> Build A3D into a production-quality, A3D-only WebGL2/WebGPU renderer and developer SDK that can load real GLTF/GLB assets, render high-fidelity PBR/HDR/IBL scenes, run animation/skinning/morph/IK/physics workflows, expose ergonomic public APIs, and ship examples that can stand next to the official Three.js examples without relying on Three.js runtime code.
 
-Three.js is the competitor and reference baseline. Three.js is not allowed inside the G3D runtime, renderer, loaders, controls, materials, animation, physics, postprocess, skybox, or app implementation.
+Three.js is the competitor and reference baseline. Three.js is not allowed inside the A3D runtime, renderer, loaders, controls, materials, animation, physics, postprocess, skybox, or app implementation.
 
 ## Absolute Boundary
 
-G3D must not become a wrapper around Three.js.
+A3D must not become a wrapper around Three.js.
 
 Allowed:
 
@@ -35,8 +35,8 @@ Allowed:
 Forbidden:
 
 - Importing `three` from `packages/rendering/**`, `packages/assets/**`, `packages/animation/**`, `packages/physics/**`, `packages/engine/**`, `apps/production-runtime-*/**`, `apps/v7-*/**`, `examples/production-runtime-examples/**`, or production templates.
-- Using Three.js loaders, materials, PMREM, controls, animation mixer, decal geometry, skybox, shadows, postprocess, or physics as G3D implementation.
-- Calling a screenshot G3D proof if Three.js rendered the G3D side.
+- Using Three.js loaders, materials, PMREM, controls, animation mixer, decal geometry, skybox, shadows, postprocess, or physics as A3D implementation.
+- Calling a screenshot A3D proof if Three.js rendered the A3D side.
 
 If a product path depends on Three.js to render, load, animate, shade, or control the scene, V8 fails.
 
@@ -61,7 +61,7 @@ This section must be treated as binding context. Do not repeat these mistakes.
 - Mistake: Generated product workflows without a strong enough underlying PBR/HDR/IBL and asset pipeline.
 - Mistake: Treated "real product workflow" as mostly one app rather than the reusable renderer SDK developers need.
 - Fix required in V8:
-  - Product Studio must consume stable G3D APIs.
+  - Product Studio must consume stable A3D APIs.
   - Asset quality, HDR environments, material controls, camera controls, and screenshot export must be reusable across apps.
   - Product app code must not hide renderer limitations.
 
@@ -109,7 +109,7 @@ This section must be treated as binding context. Do not repeat these mistakes.
 
 ### docs/project/v7-roadmap-runtime-parity-plan.md Mistakes
 
-- Mistake: Correctly clarified that G3D is a competitor, not a Three.js wrapper, but still produced weak or slow app evidence.
+- Mistake: Correctly clarified that A3D is a competitor, not a Three.js wrapper, but still produced weak or slow app evidence.
 - Mistake: The V7 parity lab tried to cover too many categories in one route and became too slow to load.
 - Mistake: The V7 animation route could display "Running" while still showing `loading`, `0 frames`, and a blank viewport.
 - Mistake: The V6 character viewer was still too slow and visually weak.
@@ -139,7 +139,7 @@ Required behavior:
 - The app must not show "Running" until rendering has started.
 - The app must show visible progress or error within 2 seconds.
 - The app must reach first rendered frame within 5 seconds on the local dev machine.
-- If asset/HDR/shader loading fails, the error must be visible in the UI and in `window.__g3dV7AnimationKeyframes`.
+- If asset/HDR/shader loading fails, the error must be visible in the UI and in `window.__a3dV7AnimationKeyframes`.
 
 ### Failure 2: V6 Character Viewer Loads Too Slowly
 
@@ -200,17 +200,17 @@ Required behavior:
 
 ## V8 Objective
 
-V8 must produce a real G3D renderer product, not another reset plan.
+V8 must produce a real A3D renderer product, not another reset plan.
 
 The target product is:
 
-> G3D Renderer SDK: a G3D-only WebGL2/WebGPU real-time renderer and developer SDK with GLTF-first asset loading, high-fidelity PBR/HDR/IBL rendering, animation/skinning/morph/IK workflows, physics integration, postprocess, controls, scene composition, examples, templates, docs, and same-scene competitor comparisons against Three.js.
+> A3D Renderer SDK: a A3D-only WebGL2/WebGPU real-time renderer and developer SDK with GLTF-first asset loading, high-fidelity PBR/HDR/IBL rendering, animation/skinning/morph/IK workflows, physics integration, postprocess, controls, scene composition, examples, templates, docs, and same-scene competitor comparisons against Three.js.
 
 V8 must create the missing product depth by filename.
 
 ## Product Completion Bar
 
-G3D does not need to beat every part of Three.js in one pass, but it must make measurable progress toward exceeding Three.js in these areas:
+A3D does not need to beat every part of Three.js in one pass, but it must make measurable progress toward exceeding Three.js in these areas:
 
 - Better default GLTF/HDR/PBR viewer setup.
 - Better one-call production scene setup.
@@ -219,7 +219,7 @@ G3D does not need to beat every part of Three.js in one pass, but it must make m
 - Better product-specific examples with curated controls and route health.
 - Honest same-scene comparison against Three.js.
 
-Do not claim "G3D exceeds Three.js" globally until the gates below are actually green.
+Do not claim "A3D exceeds Three.js" globally until the gates below are actually green.
 
 ## Required Global Acceptance Gates
 
@@ -234,7 +234,7 @@ V8 is not complete unless all gates pass.
 - [ ] V6 character viewer either becomes fast and polished or is removed from working examples.
 - [x] V7 parity lab is split into dedicated routes or moved to internal stress-test status.
 - [ ] Same-scene Three.js comparison exists for flagship product viewer and at least three official Three.js example categories.
-- [x] G3D runtime packages do not import `three`.
+- [x] A3D runtime packages do not import `three`.
 - [x] Screenshots are not accepted if they are blank, gray-boxed, tiny-subject, debug-like, or visually below the stated bar.
 - [x] Docs state current gaps honestly.
 
@@ -281,7 +281,7 @@ Tasks:
 - [x] Defer HDR environment loading behind first render if HDR blocks first frame.
 - [x] Render a fast fallback lit character/material preview before heavy HDR resources finish.
 - [x] Do not call screenshot proof or readback code during normal startup.
-- [x] Keep `window.__g3dV7AnimationKeyframes` updated every state transition.
+- [x] Keep `window.__a3dV7AnimationKeyframes` updated every state transition.
 
 Acceptance:
 
@@ -403,7 +403,7 @@ Create:
 
 Tasks:
 
-- [ ] Build a G3D-only competitor to Three.js `webgl_animation_keyframes`.
+- [ ] Build a A3D-only competitor to Three.js `webgl_animation_keyframes`.
 - [ ] Use a high-quality animated scene asset with moving environment/object detail, not a single mannequin in a gray room.
 - [x] Support play/pause/speed/scrub/camera orbit.
 - [x] Show first frame quickly, then progressively load higher-quality resources.
@@ -411,7 +411,7 @@ Tasks:
 Acceptance:
 
 - [ ] Same category comparison page links to `https://threejs.org/examples/#webgl_animation_keyframes`.
-- [x] G3D route first frame under 5 seconds.
+- [x] A3D route first frame under 5 seconds.
 - [x] Visual output is not blank, gray-boxed, or placeholder-like.
 
 ### `apps/skinning-blending/`
@@ -425,10 +425,10 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_animation_skinning_blending`.
+- [ ] Build A3D competitor to Three.js `webgl_animation_skinning_blending`.
 - [x] Implement idle/walk/run blend controls.
 - [x] Display clip weights and current blended pose.
-- [x] Use G3D animation mixer only.
+- [x] Use A3D animation mixer only.
 
 Acceptance:
 
@@ -445,7 +445,7 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_animation_skinning_additive_blending`.
+- [ ] Build A3D competitor to Three.js `webgl_animation_skinning_additive_blending`.
 - [x] Add upper-body additive layer support.
 - [x] Support masks/layers and visible UI weights.
 
@@ -465,7 +465,7 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_animation_skinning_ik`.
+- [ ] Build A3D competitor to Three.js `webgl_animation_skinning_ik`.
 - [x] Render draggable IK target handles.
 - [ ] Apply IK to imported skeleton.
 - [x] Show target/reach diagnostics without debug clutter.
@@ -485,7 +485,7 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_animation_skinning_morph`.
+- [ ] Build A3D competitor to Three.js `webgl_animation_skinning_morph`.
 - [ ] Use a high-quality morph/face/character asset.
 - [x] Support morph target sliders and animated morph clips.
 
@@ -503,7 +503,7 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_animation_multiple`.
+- [ ] Build A3D competitor to Three.js `webgl_animation_multiple`.
 - [x] Render multiple animated characters/agents with varied animation offsets.
 - [ ] Use instancing or batching where appropriate.
 
@@ -522,7 +522,7 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_animation_walk`.
+- [ ] Build A3D competitor to Three.js `webgl_animation_walk`.
 - [x] Support root motion or scene movement.
 - [x] Add simple ground/path composition.
 
@@ -540,7 +540,7 @@ Create:
 
 Tasks:
 
-- [ ] Build G3D competitor to Three.js `webgl_decals`.
+- [ ] Build A3D competitor to Three.js `webgl_decals`.
 - [ ] Raycast onto imported mesh.
 - [x] Place decals interactively.
 - [ ] Decals must conform to surface and use correct material blending.
@@ -548,7 +548,7 @@ Tasks:
 Acceptance:
 
 - [ ] Click adds visible decal on imported asset.
-- [x] Decal placement uses G3D geometry, raycast, and material code.
+- [x] Decal placement uses A3D geometry, raycast, and material code.
 
 ### `apps/stereo-effects/`
 
@@ -560,7 +560,7 @@ Create:
 
 Tasks:
 
-- [x] Build G3D competitor to Three.js `webgl_effects_stereo`.
+- [x] Build A3D competitor to Three.js `webgl_effects_stereo`.
 - [x] Implement stereo camera rig controls.
 - [x] Add side-by-side and anaglyph/parallax where feasible.
 
@@ -953,7 +953,7 @@ Create:
 
 Acceptance:
 
-- [ ] Example apps import from `@galileo3d/engine/v8` or package-level stable exports.
+- [ ] Example apps import from `@aura3d/engine/v8` or package-level stable exports.
 
 ### `packages/rendering/src/threejs-example-parity/RendererV8.ts`
 
@@ -1072,17 +1072,17 @@ Create:
 - [x] Same camera.
 - [x] Same target resolution.
 
-### `benchmarks/galileo/src/scenes/flagship-viewer.ts`
+### `benchmarks/aura3d/src/scenes/flagship-viewer.ts`
 
 Create:
 
-- [x] G3D version using public v8 SDK.
+- [x] A3D version using public v8 SDK.
 
 ### `tools/current-routes-threejs-parity/index.ts`
 
 Create:
 
-- [x] Run G3D and Three.js same-scene captures.
+- [x] Run A3D and Three.js same-scene captures.
 - [x] Generate side-by-side page.
 - [x] Generate deltas and human notes.
 
@@ -1090,11 +1090,11 @@ Create:
 
 Create:
 
-- [x] Capture G3D output.
+- [x] Capture A3D output.
 - [x] Capture Three.js output.
 - [x] Assert both nonblank.
 - [x] Assert both loaded same asset and HDRI.
-- [x] Assert no G3D runtime imports Three.js.
+- [x] Assert no A3D runtime imports Three.js.
 - [x] Fail if flagship mean RGB delta is above 55 or structural similarity proxy is below 0.8.
 
 Acceptance:
@@ -1106,8 +1106,8 @@ Acceptance:
 
 Create:
 
-- [x] Scan production G3D runtime, renderer, loader, animation, physics, engine, and user-facing V6/V7/V8 app source roots.
-- [x] Fail on `three`, `three/*`, or `@galileo3d/three-compat` imports in product/runtime paths.
+- [x] Scan production A3D runtime, renderer, loader, animation, physics, engine, and user-facing V6/V7/V8 app source roots.
+- [x] Fail on `three`, `three/*`, or `@aura3d/three-compat` imports in product/runtime paths.
 - [x] Allow Three.js only in isolated comparison harnesses, tools, tests, benchmarks, docs, and the explicit `packages/three-compat/**` boundary.
 
 Acceptance:
@@ -1280,8 +1280,8 @@ Create:
 
 Create:
 
-- [x] What G3D can claim now.
-- [x] What G3D cannot claim yet.
+- [x] What A3D can claim now.
+- [x] What A3D cannot claim yet.
 - [x] Gates required before saying "exceeds Three.js."
 
 ## Phase 15: Final Reports
@@ -1307,7 +1307,7 @@ Acceptance:
 
 Required screenshots:
 
-- [x] `tests/reports/v8/flagship/g3d-flagship-viewer.png`
+- [x] `tests/reports/v8/flagship/a3d-flagship-viewer.png`
 - [x] `tests/reports/v8/flagship/threejs-flagship-viewer.png`
 - [x] `tests/reports/v8/flagship/side-by-side.png`
 - [x] `tests/reports/v8/animation/keyframes.png`
@@ -1338,10 +1338,10 @@ V8 is done only when:
 - [x] Route health gate passes.
 - [x] V7 slow/blank app failures are fixed or removed from public route list.
 - [x] V6 character viewer startup is fast or replaced.
-- [x] Flagship viewer is interactive, polished, and uses public G3D SDK APIs.
+- [x] Flagship viewer is interactive, polished, and uses public A3D SDK APIs.
 - [x] Dedicated animation/IK/morph/decals/stereo/physics routes exist and load quickly.
 - [x] Same-scene Three.js competitor comparisons exist and document deltas.
-- [x] G3D runtime code imports no Three.js.
+- [x] A3D runtime code imports no Three.js.
 - [x] Startup app paths do not do proof/readback work.
 - [x] Visual output is accepted by human review, not just metrics.
 - [x] Docs state current gaps honestly.
@@ -1372,4 +1372,4 @@ Do not start new screenshots until these routes behave truthfully.
 
 Do not stop after writing tests. Do not stop after generating screenshots. Do not stop after a report says "ready."
 
-Stop only after G3D has working, fast, visually credible, G3D-only renderer examples and a flagship viewer that a developer can actually use as the start of a Three.js competitor.
+Stop only after A3D has working, fast, visually credible, A3D-only renderer examples and a flagship viewer that a developer can actually use as the start of a Three.js competitor.

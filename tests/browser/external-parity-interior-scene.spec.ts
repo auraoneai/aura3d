@@ -99,7 +99,7 @@ test.describe("V4 interior scene", () => {
 async function waitForInteriorState(page: Page, id: string): Promise<InteriorSceneState> {
   await page.waitForFunction(
     (expectedId) => {
-      const state = window.__G3D_V4_INTERIOR_SCENE__ as InteriorSceneState | undefined;
+      const state = window.__A3D_V4_INTERIOR_SCENE__ as InteriorSceneState | undefined;
       return state?.status === "ready" && state.id === expectedId;
     },
     id,
@@ -111,7 +111,7 @@ async function waitForInteriorState(page: Page, id: string): Promise<InteriorSce
 }
 
 async function interiorState(page: Page): Promise<InteriorSceneState | undefined> {
-  return page.evaluate(() => window.__G3D_V4_INTERIOR_SCENE__ as InteriorSceneState | undefined);
+  return page.evaluate(() => window.__A3D_V4_INTERIOR_SCENE__ as InteriorSceneState | undefined);
 }
 
 function statePasses(state: InteriorSceneState, id: string): boolean {
@@ -121,7 +121,7 @@ function statePasses(state: InteriorSceneState, id: string): boolean {
     state.status === "ready" &&
     state.renderer === "webgl2" &&
     state.productSurface === "scene-studio-pro" &&
-    state.sceneFixture === "fixtures/v4/scenes/interior-gallery/manifest.json" &&
+    state.sceneFixture === "fixtures/external-parity/scenes/interior-gallery/manifest.json" &&
     state.sceneClass === "interior-gallery" &&
     Number(state.renderItemCount ?? 0) >= 28 &&
     Number(state.architecturalMaterialCount ?? 0) >= 30 &&
@@ -159,6 +159,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __G3D_V4_INTERIOR_SCENE__?: InteriorSceneState;
+    __A3D_V4_INTERIOR_SCENE__?: InteriorSceneState;
   }
 }

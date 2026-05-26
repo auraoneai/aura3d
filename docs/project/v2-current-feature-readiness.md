@@ -5,9 +5,9 @@
 
 ## Summary
 
-Galileo3D has a broad TypeScript engine surface with meaningful internal validation. It has packages for core lifecycle, math, scene, ECS, rendering, physics, animation, assets, input, audio, scripting, editor runtime, debug tooling, particles, examples, and release verification.
+Aura3D has a broad TypeScript engine surface with meaningful internal validation. It has packages for core lifecycle, math, scene, ECS, rendering, physics, animation, assets, input, audio, scripting, editor runtime, debug tooling, particles, examples, and release verification.
 
-That breadth should not be confused with market-level proof. The current examples and tests prove many bounded paths and one exact checked-in scaffold bundle-size niche against Three.js/Babylon.js. They do not yet prove that Galileo3D is broadly better than Three.js or competitive with Unity/Unreal as a web production toolchain.
+That breadth should not be confused with market-level proof. The current examples and tests prove many bounded paths and one exact checked-in scaffold bundle-size niche against Three.js/Babylon.js. They do not yet prove that Aura3D is broadly better than Three.js or competitive with Unity/Unreal as a web production toolchain.
 
 ## Readiness Matrix
 

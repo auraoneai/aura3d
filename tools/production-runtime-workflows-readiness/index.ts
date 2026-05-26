@@ -58,7 +58,7 @@ const checks = [
   { id: "gallery-manifest-exists", pass: existsSync(resolve("tests/reports/production-runtime-gallery/manifest.json")), detail: "tests/reports/production-runtime-gallery/manifest.json" }
 ];
 const report = {
-  schema: "g3d-production-runtime-workflows-readiness/v1",
+  schema: "a3d-production-runtime-workflows-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks,

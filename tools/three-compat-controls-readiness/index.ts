@@ -85,7 +85,7 @@ const checks: V5ControlsCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-controls-readiness/v1",
+  schema: "a3d-three-compat-controls-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   modes: ["orbit", "pan", "zoom", "trackball", "fly", "first-person", "map", "pointer-lock", "drag", "translate", "rotate", "scale", "picking", "selection"],

@@ -56,11 +56,11 @@ const checks = [
   { id: "claim-registry", pass: claimRegistry.pass === true && Array.isArray(claimRegistry.allowedClaims) && Array.isArray(claimRegistry.blockedClaims), detail: "tests/reports/production-runtime-claim-registry.json" },
   { id: "blocked-claims-visible", pass: allDocsContent.includes("Full Three.js API replacement") && allDocsContent.includes("Full WebGPU parity") && allDocsContent.includes("Unity replacement"), detail: "blocked claim names are present" },
   { id: "no-overclaim", pass: !/full Three\.js replacement is complete/i.test(allDocsContent) && !/full WebGPU parity is complete/i.test(allDocsContent), detail: "docs avoid completion language for blocked claims" },
-  { id: "real-app-code", pass: allDocsContent.includes("runV6Example") && allDocsContent.includes("@galileo3d/engine/workflows/production"), detail: "getting-started and API docs include real app code" },
+  { id: "real-app-code", pass: allDocsContent.includes("runV6Example") && allDocsContent.includes("@aura3d/engine/workflows/production"), detail: "getting-started and API docs include real app code" },
   { id: "profiling-workflow", pass: allDocsContent.includes("tests/reports/production-runtime-performance-readiness.json"), detail: "performance profiling evidence linked" }
 ];
 const report = {
-  schema: "g3d-production-runtime-docs-readiness/v1",
+  schema: "a3d-production-runtime-docs-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   docs: docReports,

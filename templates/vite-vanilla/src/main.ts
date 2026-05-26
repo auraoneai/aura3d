@@ -1,4 +1,4 @@
-import { Geometry, Renderer, UnlitMaterial } from "@galileo3d/rendering";
+import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#app");
 if (!canvas) {

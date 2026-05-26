@@ -43,17 +43,17 @@ test("V5 controls browser proof exposes all interaction modes", async ({ page })
             ctx.font = "12px system-ui";
             ctx.fillText(mode, x + 10, y + 94);
           });
-          window.__g3dControlModes = modes.length;
-          window.__g3dMeshX = mesh.position.x;
-          window.__g3dMeshScale = mesh.scale.x;
+          window.__a3dControlModes = modes.length;
+          window.__a3dMeshX = mesh.position.x;
+          window.__a3dMeshScale = mesh.scale.x;
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dControlModes)).toBeGreaterThanOrEqual(11);
-  await expect.poll(async () => page.evaluate(() => window.__g3dMeshX)).toBe(1);
-  await expect.poll(async () => page.evaluate(() => window.__g3dMeshScale)).toBe(1.5);
+  await expect.poll(async () => page.evaluate(() => window.__a3dControlModes)).toBeGreaterThanOrEqual(11);
+  await expect.poll(async () => page.evaluate(() => window.__a3dMeshX)).toBe(1);
+  await expect.poll(async () => page.evaluate(() => window.__a3dMeshScale)).toBe(1.5);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

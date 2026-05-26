@@ -16,9 +16,9 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@galileo3d/scene": ["../scene/src/index.ts"],
-      "@galileo3d/math": ["../math/src/index.ts"],
-      "@galileo3d/core": ["../core/src/index.ts"]
+      "@aura3d/scene": ["../scene/src/index.ts"],
+      "@aura3d/math": ["../math/src/index.ts"],
+      "@aura3d/core": ["../core/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts"],

@@ -15,17 +15,17 @@ describe("Three.js BufferGeometry parity surface", () => {
     expect(() => geometry.setDrawRange(-1, 3)).toThrow(/drawRange/i);
   });
 
-  it("maps Three.js geometry categories to concrete G3D GPU buffers", () => {
+  it("maps Three.js geometry categories to concrete A3D GPU buffers", () => {
     const compat = new BoxGeometryCompat(2, 3, 4);
     const instances = new InstancedBufferGeometryCompat();
     instances.instanceCount = 128;
 
     const vertexBuffer = new VertexBuffer(VertexFormat.P3N3T2, 3);
-    const g3d = new Geometry(vertexBuffer);
+    const a3d = new Geometry(vertexBuffer);
 
     expect(compat.type).toBe("BoxGeometry");
     expect([compat.width, compat.height, compat.depth]).toEqual([2, 3, 4]);
     expect(instances.instanceCount).toBe(128);
-    expect(g3d.vertexBuffer.vertexCount).toBe(3);
+    expect(a3d.vertexBuffer.vertexCount).toBe(3);
   });
 });

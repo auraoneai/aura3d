@@ -1,5 +1,5 @@
-import { computePerspectiveCameraFrame, type CameraFrameBounds } from "@galileo3d/rendering";
-import { multiplyMat4, type Mat4, type Vec3 } from "@galileo3d/scene";
+import { computePerspectiveCameraFrame, type CameraFrameBounds } from "@aura3d/rendering";
+import { multiplyMat4, type Mat4, type Vec3 } from "@aura3d/scene";
 
 export type StereoMode = "side-by-side" | "anaglyph-preview";
 

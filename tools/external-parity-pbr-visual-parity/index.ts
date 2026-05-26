@@ -5,7 +5,7 @@ import { build } from "esbuild";
 import { chromium, type Page } from "@playwright/test";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
-type PbrVisualEngine = "galileo" | "threejs" | "babylon";
+type PbrVisualEngine = "aura3d" | "threejs" | "babylon";
 
 interface PbrVisualRender {
   readonly engine: PbrVisualEngine;
@@ -30,7 +30,7 @@ interface PbrVisualRender {
 }
 
 interface PbrVisualDiff {
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "threejs" | "babylon";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -86,7 +86,7 @@ export async function createV4PbrVisualParityReport(root = process.cwd()): Promi
     });
     try {
       const renders: PbrVisualRender[] = [];
-      for (const engine of ["galileo", "threejs", "babylon"] as const) {
+      for (const engine of ["aura3d", "threejs", "babylon"] as const) {
         const bundle = bundles.get(engine);
         if (!bundle) throw new Error(`Missing ${engine} PBR visual parity bundle.`);
         renders.push(await renderEngine(page, root, engine, bundle));
@@ -123,7 +123,7 @@ export async function createV4PbrVisualParityReport(root = process.cwd()): Promi
         }),
         boundedPbrVisualParity,
         fullPhysicalPbrParity: false,
-        claimBoundary: "This report proves a bounded same-layout PBR material lineup renders in Galileo3D, Three.js, and Babylon.js in Chromium and stays within loose visual-diff thresholds. Local CPU reference suites cover bounded photometric and transmission/volume behavior, but this is not full physical PBR, HDR IBL, glTF material-extension, Unity, or Unreal parity.",
+        claimBoundary: "This report proves a bounded same-layout PBR material lineup renders in Aura3D, Three.js, and Babylon.js in Chromium and stays within loose visual-diff thresholds. Local CPU reference suites cover bounded photometric and transmission/volume behavior, but this is not full physical PBR, HDR IBL, glTF material-extension, Unity, or Unreal parity.",
         renders,
         diffs,
         violations,
@@ -146,7 +146,7 @@ export function collectPbrVisualEvidencePaths(report: Pick<V4PbrVisualParityRepo
 
 async function buildEngineBundles(): Promise<ReadonlyMap<PbrVisualEngine, string>> {
   const entries: Record<PbrVisualEngine, string> = {
-    galileo: galileoBundleSource(),
+    aura3d: aura3dBundleSource(),
     threejs: threeBundleSource(),
     babylon: babylonBundleSource(),
   };
@@ -162,7 +162,7 @@ async function buildEngineBundles(): Promise<ReadonlyMap<PbrVisualEngine, string
       bundle: true,
       platform: "browser",
       format: "iife",
-      globalName: `G3D_${engine}_pbr_visual_parity`,
+      globalName: `A3D_${engine}_pbr_visual_parity`,
       target: "es2022",
       write: false,
       minify: true,
@@ -186,7 +186,7 @@ async function renderEngine(page: Page, root: string, engine: PbrVisualEngine, b
     canvas.style.width = "960px";
     canvas.style.height = "540px";
     document.body.replaceChildren(canvas);
-    const bundleName = `G3D_${engineName}_pbr_visual_parity`;
+    const bundleName = `A3D_${engineName}_pbr_visual_parity`;
     const render = (window as unknown as Record<string, { renderPbrVisualParity?: (canvas: HTMLCanvasElement) => Promise<PbrVisualRender["metrics"]> }>)[bundleName]?.renderPbrVisualParity;
     if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderPbrVisualParity`);
     const metrics = await render(canvas);
@@ -203,7 +203,7 @@ async function renderEngine(page: Page, root: string, engine: PbrVisualEngine, b
 }
 
 async function createScreenshotDiff(page: Page, root: string, renders: readonly PbrVisualRender[], comparedEngine: "threejs" | "babylon"): Promise<PbrVisualDiff> {
-  const baseline = renders.find((render) => render.engine === "galileo");
+  const baseline = renders.find((render) => render.engine === "aura3d");
   const compared = renders.find((render) => render.engine === comparedEngine);
   if (!baseline || !compared) throw new Error(`Missing render for PBR screenshot diff: ${comparedEngine}.`);
   const diffPath = `${artifactDir}/${comparedEngine}-pbr-diff.png`;
@@ -216,7 +216,7 @@ async function createScreenshotDiff(page: Page, root: string, renders: readonly 
   writePngDataUrl(root, diffPath, result.diffDataUrl);
   const { diffDataUrl: _diffDataUrl, ...metrics } = result;
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine,
     baselinePath: baseline.screenshotPath,
     comparedPath: compared.screenshotPath,
@@ -333,7 +333,7 @@ function sharedBrowserHelpers(): string {
   `;
 }
 
-function galileoBundleSource(): string {
+function aura3dBundleSource(): string {
   return `
     import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
     ${sharedBrowserHelpers()}
@@ -357,8 +357,8 @@ function galileoBundleSource(): string {
       ];
       const labels = materials.map((material, index) => ({ material, x: -0.86 + index * 0.172 }));
       const items = [
-        { geometry: floor, material: new PBRMaterial({ name: "matte-floor", baseColor: [0.18, 0.19, 0.2, 1], metallic: 0, roughness: 0.84 }), modelMatrix: ${matrix(0, -0.46, -0.08, 2, 0.055, 0.28)}, label: "galileo-floor" },
-        ...labels.map(({ material, x }, index) => ({ geometry: sphere, material, modelMatrix: new Float32Array([0.13,0,0,0,0,0.13,0,0,0,0,0.13,0,x, index % 2 === 0 ? -0.1 : 0.16, 0, 1]), label: "galileo-pbr-" + material.name })),
+        { geometry: floor, material: new PBRMaterial({ name: "matte-floor", baseColor: [0.18, 0.19, 0.2, 1], metallic: 0, roughness: 0.84 }), modelMatrix: ${matrix(0, -0.46, -0.08, 2, 0.055, 0.28)}, label: "aura3d-floor" },
+        ...labels.map(({ material, x }, index) => ({ geometry: sphere, material, modelMatrix: new Float32Array([0.13,0,0,0,0,0.13,0,0,0,0,0.13,0,x, index % 2 === 0 ? -0.1 : 0.16, 0, 1]), label: "aura3d-pbr-" + material.name })),
       ];
       const diagnostics = renderer.render({ renderItems: items, environmentLighting: lighting, cameraPolicy: "identity" });
       await nextFrame();

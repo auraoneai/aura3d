@@ -1,4 +1,4 @@
-import { AssetManager, createGLTFRenderResources, GLTFLoader } from "@galileo3d/assets";
+import { AssetManager, createGLTFRenderResources, GLTFLoader } from "@aura3d/assets";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

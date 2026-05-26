@@ -13,10 +13,10 @@ const sourceFiles = [
   "tools/external-parity-external-evidence-readiness/index.ts",
   "tools/public-demo-deployment-smoke/index.ts",
   "tools/public-demo-deployment-artifacts/index.ts",
-  "fixtures/external-engine-baselines/v4/external-baseline-command-plan.json",
-  "fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs",
-  "fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs",
-  "fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs",
+  "fixtures/external-engine-baselines/external-parity/external-baseline-command-plan.json",
+  "fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs",
+  "fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs",
+  "fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs",
 ] as const;
 
 export interface V4ExternalHostRunnerCommand {
@@ -125,14 +125,14 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
     ),
     command(
       "unity-editor-cli-smoke",
-      ["node", "fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs", "unity", "tests/reports/external-parity-unity-editor-cli-smoke.json"],
+      ["node", "fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs", "unity", "tests/reports/external-parity-unity-editor-cli-smoke.json"],
       ["tests/reports/external-parity-unity-editor-cli-smoke.json"],
-      ["node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json"],
+      ["node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json"],
       "Proves the configured Unity editor binary starts and reports a version."
     ),
     command(
       "unity-baseline-captures",
-      ["node", "fixtures/external-engine-baselines/v4/unity/run-unity-baseline-captures.mjs", "--project", process.env.G3D_UNITY_PROJECT_PATH || ".tmp/v4-unity-baseline-project"],
+      ["node", "fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs", "--project", process.env.A3D_UNITY_PROJECT_PATH || ".tmp/v4-unity-baseline-project"],
       [
         "tests/reports/external-parity-unity-baseline-render.json",
         "tests/reports/external-parity-unity-product-visual-baseline.json",
@@ -141,14 +141,14 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
         "tests/reports/external-parity-unity-hdr-render-target-baseline.json",
         "tests/reports/external-parity-unity-postprocess-suite-baseline.json",
       ],
-      ["node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine unity", "pnpm verify:v4-external-baseline-reports"],
+      ["node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unity", "pnpm verify:v4-external-baseline-reports"],
       "Captures same-scene Unity product, PBR, shadow, HDR, and postprocess baselines plus render workflow evidence."
     ),
     command(
       "unreal-editor-cli-smoke",
-      ["node", "fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs", "unreal", "tests/reports/external-parity-unreal-editor-cli-smoke.json"],
+      ["node", "fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs", "unreal", "tests/reports/external-parity-unreal-editor-cli-smoke.json"],
       ["tests/reports/external-parity-unreal-editor-cli-smoke.json"],
-      ["node fixtures/external-engine-baselines/v4/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json"],
+      ["node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json"],
       "Proves the configured Unreal editor binary starts and reports a version."
     ),
     command(
@@ -162,14 +162,14 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
         "tests/reports/external-parity-unreal-hdr-render-target-baseline.json",
         "tests/reports/external-parity-unreal-postprocess-suite-baseline.json",
       ],
-      ["node fixtures/external-engine-baselines/v4/verify-baseline-reports.mjs --engine unreal", "pnpm verify:v4-external-baseline-reports"],
+      ["node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unreal", "pnpm verify:v4-external-baseline-reports"],
       "Captures same-scene Unreal product, PBR, shadow, HDR, and postprocess baselines plus render workflow evidence."
     ),
     command(
       "public-demo-deployment-smoke",
       ["pnpm", "verify:public-demo-deployment"],
       ["tests/reports/public-demo-deployment-smoke.json", "tests/reports/public-demo-deployment-runbook.md"],
-      ["G3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment", "pnpm audit:external-parity-production-readiness"],
+      ["A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment", "pnpm audit:external-parity-production-readiness"],
       "Validates a durable public HTTPS deployment against current static-export hashes and content markers."
     ),
     command(
@@ -202,8 +202,8 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
 }
 
 function unrealCaptureCommand(): readonly string[] {
-  const base = ["node", "fixtures/external-engine-baselines/v4/unreal/run-unreal-baseline-captures.mjs"];
-  return process.env.G3D_UNREAL_PROJECT_PATH ? [...base, "--project", process.env.G3D_UNREAL_PROJECT_PATH] : base;
+  const base = ["node", "fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs"];
+  return process.env.A3D_UNREAL_PROJECT_PATH ? [...base, "--project", process.env.A3D_UNREAL_PROJECT_PATH] : base;
 }
 
 function command(

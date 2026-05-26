@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Diagnostics, DisposableStack, Engine, EventBus, FixedStepAccumulator, ResourceScope, Time } from "@galileo3d/core";
+import { Diagnostics, DisposableStack, Engine, EventBus, FixedStepAccumulator, ResourceScope, Time } from "@aura3d/core";
 
 interface EdgeEvents {
   tick: number;

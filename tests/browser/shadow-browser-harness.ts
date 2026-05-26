@@ -1,9 +1,9 @@
-import { DirectionalLight } from "@galileo3d/scene";
-import { Geometry, MockRenderDevice, ShadowPass, ShadowProjectionBuilder, UnlitMaterial, type Bounds3 } from "@galileo3d/rendering";
+import { DirectionalLight } from "@aura3d/scene";
+import { Geometry, MockRenderDevice, ShadowPass, ShadowProjectionBuilder, UnlitMaterial, type Bounds3 } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_SHADOW_BROWSER_TEST__?: ShadowBrowserResult;
+    __AURA3D_SHADOW_BROWSER_TEST__?: ShadowBrowserResult;
   }
 }
 
@@ -18,7 +18,7 @@ interface ShadowBrowserResult {
 }
 
 function publish(result: ShadowBrowserResult): void {
-  window.__GALILEO3D_SHADOW_BROWSER_TEST__ = result;
+  window.__AURA3D_SHADOW_BROWSER_TEST__ = result;
 }
 
 try {

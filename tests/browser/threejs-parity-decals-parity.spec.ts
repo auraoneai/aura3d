@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/decals-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/decals-parity/g3d-decals.png",
+  a3d: "tests/reports/threejs-parity/decals-parity/a3d-decals.png",
   threejs: "tests/reports/threejs-parity/decals-parity/threejs-decals.png",
   sideBySide: "tests/reports/threejs-parity/decals-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 decals same-scene Three.js parity", () => {
     await server.close();
   });
 
-  test("captures G3D projected decals against actual Three.js DecalGeometry", async ({ page }) => {
+  test("captures A3D projected decals against actual Three.js DecalGeometry", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -58,30 +58,30 @@ test.describe("V9 decals same-scene Three.js parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-decals-parity/v1");
-    expect(result.purpose).toBe("same-scene G3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline");
+    expect(result.schema).toBe("a3d-threejs-parity-decals-parity/v1");
+    expect(result.purpose).toBe("same-scene A3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.samePlacements).toBe(true);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeDecalGeometry).toBe(true);
-    expect(result.assertions.g3dEllipseProjectedGeometry).toBe(true);
+    expect(result.assertions.a3dEllipseProjectedGeometry).toBe(true);
     expect(result.assertions.projectorSemanticsClose).toBe(true);
-    expect(result.g3d.decals.count).toBe(7);
+    expect(result.a3d.decals.count).toBe(7);
     expect(result.threejs.decals.count).toBe(7);
     expect(result.threejs.decals.decalGeometryConstructor).toBe("DecalGeometry");
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.nonBlackPixels).toBeGreaterThan(70_000);
+    expect(result.a3d.pixels.nonBlackPixels).toBeGreaterThan(70_000);
     expect(result.threejs.pixels.nonBlackPixels).toBeGreaterThan(70_000);
-    expect(result.g3d.pixels.saturatedPixels).toBeGreaterThan(1_000);
+    expect(result.a3d.pixels.saturatedPixels).toBeGreaterThan(1_000);
     expect(result.threejs.pixels.saturatedPixels).toBeGreaterThan(1_000);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(88);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.65);
     expect(result.projectorSemantics.maxHitPositionDelta).toBeLessThanOrEqual(0.035);
     expect(result.projectorSemantics.minNormalDot).toBeGreaterThanOrEqual(0.985);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DDecalRuntimeSource();
+    assertNoThreeJsInA3DDecalRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -112,7 +112,7 @@ test.describe("V9 decals same-scene Three.js parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DDecalRuntimeSource(): void {
+function assertNoThreeJsInA3DDecalRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/decals/src/main.ts",
@@ -141,9 +141,9 @@ function stripDataUrls(result: Extract<DecalsParityResult, { readonly status: "r
 type DecalsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-decals-parity/v1";
+      readonly schema: "a3d-threejs-parity-decals-parity/v1";
       readonly purpose: string;
-      readonly g3d: {
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly decals: { readonly count: number };
         readonly pixels: { readonly nonBlackPixels: number; readonly saturatedPixels: number };
@@ -166,14 +166,14 @@ type DecalsParityResult =
         readonly sameResolution: boolean;
         readonly actualThreeRenderer: boolean;
         readonly actualThreeDecalGeometry: boolean;
-        readonly g3dEllipseProjectedGeometry: boolean;
+        readonly a3dEllipseProjectedGeometry: boolean;
         readonly projectorSemanticsClose: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-decals-parity/v1";
+      readonly schema: "a3d-threejs-parity-decals-parity/v1";
       readonly error: string;
     };

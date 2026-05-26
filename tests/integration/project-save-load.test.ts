@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { EditorPluginHost, ReparentNodeCommand } from "@galileo3d/editor-runtime";
+import { EditorPluginHost, ReparentNodeCommand } from "@aura3d/editor-runtime";
 import { ProjectSerializer } from "../../apps/editor/src/project/ProjectSerializer";
 import { StaticProjectExporter } from "../../apps/editor/src/export/StaticProjectExporter";
 

@@ -95,7 +95,7 @@ async function main(): Promise<void> {
   mkdirSync(resolve(root, "tests/reports"), { recursive: true });
 
   if (!blender) {
-    const report = createBlockedReport(manifest, "Blender executable is not available locally. Install Blender or set G3D_BLENDER to a Blender binary.");
+    const report = createBlockedReport(manifest, "Blender executable is not available locally. Install Blender or set A3D_BLENDER to a Blender binary.");
     writeJson(resolve(root, sameCorpusReportPath), report);
     console.log(JSON.stringify({ ok: report.ok, report: sameCorpusReportPath, blocker: report.blockers[0] }, null, 2));
     return;
@@ -266,8 +266,8 @@ async function validateExportedAsset(
     diagnostics: [{
       code: "ASSET_BLENDER_SAME_CORPUS_EXPORT_VALIDATED",
       severity: "info",
-      message: "Asset was imported by Blender, exported as GLB, and reloaded through Galileo3D's glTF loader.",
-      nextAction: "Keep this result fresh when changing the corpus, Blender version, exporter settings, or Galileo3D loader."
+      message: "Asset was imported by Blender, exported as GLB, and reloaded through Aura3D's glTF loader.",
+      nextAction: "Keep this result fresh when changing the corpus, Blender version, exporter settings, or Aura3D loader."
     }]
   };
 }
@@ -338,7 +338,7 @@ function createReport(
   const summary = summarize(assets);
   const blockers = [
     summary["not-run"] === 0 ? "" : `${summary["not-run"]} same-corpus assets did not run through Blender.`,
-    summary["expected-fail"] === 0 ? "" : `${summary["expected-fail"]} same-corpus assets failed Blender export or Galileo3D reload.`,
+    summary["expected-fail"] === 0 ? "" : `${summary["expected-fail"]} same-corpus assets failed Blender export or Aura3D reload.`,
     assets.length === manifest.assets.length ? "" : `Blender same-corpus result count is incomplete (${assets.length}/${manifest.assets.length}).`
   ].filter((entry): entry is string => entry.length > 0);
   return {
@@ -370,7 +370,7 @@ function createBlockedReport(manifest: GLTFCorpusManifest, blocker: string): Ble
       code: "ASSET_BLENDER_SAME_CORPUS_NOT_RUN",
       severity: "error",
       message: blocker,
-      nextAction: "Install Blender or set G3D_BLENDER, then run pnpm audit:v4-blender-same-corpus-export."
+      nextAction: "Install Blender or set A3D_BLENDER, then run pnpm audit:v4-blender-same-corpus-export."
     }]
   }));
   return {
@@ -410,7 +410,7 @@ function summarize(assets: readonly BlenderSameCorpusExportAsset[]): BlenderSame
 
 function findBlenderExecutable(): string | undefined {
   const candidates = [
-    process.env.G3D_BLENDER,
+    process.env.A3D_BLENDER,
     commandOutput("command -v blender"),
     "/Applications/Blender.app/Contents/MacOS/Blender",
     "/opt/homebrew/bin/blender",

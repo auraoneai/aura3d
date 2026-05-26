@@ -1,19 +1,19 @@
-import { composeMat4 } from "@galileo3d/scene";
-import { Geometry, PBRMaterial, createLightingDefault } from "@galileo3d/rendering";
+import { composeMat4 } from "@aura3d/scene";
+import { Geometry, PBRMaterial, createLightingDefault } from "@aura3d/rendering";
 import { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 import type { ComparisonWorkflowOptions, ComparisonWorkflowResult } from "./WorkflowTypes";
 
 export function createComparisonWorkflow(options: ComparisonWorkflowOptions = {}): ComparisonWorkflowResult {
   const focus = options.focus ?? "setup";
   const lighting = createLightingDefault("studioProduct");
-  const g3dMaterial = new PBRMaterial({ name: "comparison-g3d", baseColor: [0.12, 0.48, 0.82, 1], metallic: 0.1, roughness: 0.34 });
+  const a3dMaterial = new PBRMaterial({ name: "comparison-a3d", baseColor: [0.12, 0.48, 0.82, 1], metallic: 0.1, roughness: 0.34 });
   const threeMaterial = new PBRMaterial({ name: "comparison-three-baseline", baseColor: [0.75, 0.75, 0.75, 1], metallic: 0.05, roughness: 0.5 });
   const migrationMaterial = new PBRMaterial({ name: "comparison-migration", baseColor: [0.88, 0.56, 0.2, 1], metallic: 0.18, roughness: 0.38 });
   const renderItems = [
     {
-      label: "comparison-g3d-workflow",
+      label: "comparison-a3d-workflow",
       geometry: Geometry.uvSphere(0.48, 40, 20, { textured: true }),
-      material: g3dMaterial,
+      material: a3dMaterial,
       modelMatrix: composeMat4([-1.15, 0.05, 0], [0, 0, 0, 1], [1, 1, 1])
     },
     {
@@ -31,7 +31,7 @@ export function createComparisonWorkflow(options: ComparisonWorkflowOptions = {}
   ];
   const comparison = {
     focus,
-    g3dSteps: [
+    a3dSteps: [
       "create workflow render source",
       "load optional asset/environment through public package APIs",
       "render through Renderer.create with diagnostics"
@@ -42,8 +42,8 @@ export function createComparisonWorkflow(options: ComparisonWorkflowOptions = {}
       "add diagnostics through user-land instrumentation"
     ],
     migrationNotes: [
-      "G3D comparison workflow renders a G3D-owned parity scene; it does not embed Three.js at runtime.",
-      "Use @galileo3d/three-compat for adapter coverage and warnings when moving Three.js example code."
+      "A3D comparison workflow renders a A3D-owned parity scene; it does not embed Three.js at runtime.",
+      "Use @aura3d/three-compat for adapter coverage and warnings when moving Three.js example code."
     ]
   };
   const source = {
@@ -61,7 +61,7 @@ export function createComparisonWorkflow(options: ComparisonWorkflowOptions = {}
     comparison,
     diagnostics: createWorkflowDiagnostics("comparison", {
       warnings: ["Comparison workflow summarizes migration/setup parity; same-scene Three.js visual superiority still requires benchmark reports."],
-      featureChecklist: ["g3d-workflow-source", "threejs-setup-comparison", "migration-notes", "render-diagnostics", "postprocess"]
+      featureChecklist: ["a3d-workflow-source", "threejs-setup-comparison", "migration-notes", "render-diagnostics", "postprocess"]
     }),
     dispose: () => undefined
   };

@@ -1,4 +1,4 @@
-import type { CameraFrameBounds, EnvironmentLightingCompositionOptions, RendererPostProcessOptions, RenderItem } from "@galileo3d/rendering";
+import type { CameraFrameBounds, EnvironmentLightingCompositionOptions, RendererPostProcessOptions, RenderItem } from "@aura3d/rendering";
 import type { AuthoredAssetRuntimeState } from "./authoredLayer";
 import type { ControlValues, SceneFrame } from "./sceneBuilderPrimitives";
 import type { DemoDefinition } from "./metadata";

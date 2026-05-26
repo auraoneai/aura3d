@@ -7,7 +7,7 @@ describe("V5 asset library", () => {
     const registry = loadV5AssetRegistry(manifest);
     const summary = summarizeV5AssetRegistry(manifest);
 
-    expect(manifest.schema).toBe("g3d-three-compat-asset-library/v1");
+    expect(manifest.schema).toBe("a3d-three-compat-asset-library/v1");
     expect(summary.trackedAssetCount).toBeGreaterThanOrEqual(40);
     expect(summary.visualEvidenceSlotCount).toBeGreaterThanOrEqual(12);
     expect(summary.localAssetCount).toBeGreaterThanOrEqual(12);

@@ -6,9 +6,9 @@
 Use the interactive workflow as the starting point for selection, variants, and realtime scene state.
 
 ```ts
-import { createG3DApp, workflows } from "@galileo3d/engine";
+import { createA3DApp, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({ canvas, quality: "production" });
+const app = await createA3DApp({ canvas, quality: "production" });
 const workflow = await workflows.interactiveScene({ preset: "orbiting-products" });
 app.renderer?.render(workflow.source, workflow.camera);
 

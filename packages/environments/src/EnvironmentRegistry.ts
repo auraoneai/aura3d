@@ -4,7 +4,7 @@ import { createV5EnvironmentDiagnostics, type V5HDRIEnvironmentPreset } from "./
 import { createV5EnvironmentProbePreviews } from "./EnvironmentPreview";
 
 export interface V5EnvironmentManifest {
-  readonly schema: "g3d-three-compat-environment-library/v1";
+  readonly schema: "a3d-three-compat-environment-library/v1";
   readonly requirements: {
     readonly minimumPresets: number;
     readonly minimumRealHdriSources: number;

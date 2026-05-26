@@ -17,7 +17,7 @@ test.describe("V7 Three.js example parity lab", () => {
     await server.close();
   });
 
-  test("renders the first G3D V7 parity lab for animation, IK, decals, stereo, and physics", async ({ page }) => {
+  test("renders the first A3D V7 parity lab for animation, IK, decals, stereo, and physics", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -32,7 +32,7 @@ test.describe("V7 Three.js example parity lab", () => {
     try {
       await page.waitForFunction(
         () => {
-          const runtime = window.__g3dV7ExampleParityLab as { status?: string } | undefined;
+          const runtime = window.__a3dV7ExampleParityLab as { status?: string } | undefined;
           return runtime?.status === "ready" || runtime?.status === "error";
         },
         undefined,
@@ -42,7 +42,7 @@ test.describe("V7 Three.js example parity lab", () => {
       throw new Error(`V7 example parity lab did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const runtime = await page.evaluate(() => window.__g3dV7ExampleParityLab) as {
+    const runtime = await page.evaluate(() => window.__a3dV7ExampleParityLab) as {
       status: "ready" | "error";
       error?: string;
       appId: string;
@@ -254,7 +254,7 @@ test.describe("V7 Three.js example parity lab", () => {
     const reportPath = `${reportDir}/example-parity-lab-report.json`;
     mkdirSync(dirname(resolve(reportPath)), { recursive: true });
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-v7-threejs-example-parity-lab/v1",
+      schema: "a3d-v7-threejs-example-parity-lab/v1",
       generatedAt: new Date().toISOString(),
       app: "apps/example-parity-lab",
       screenshot: screenshotPath,

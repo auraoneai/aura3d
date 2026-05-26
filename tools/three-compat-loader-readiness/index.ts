@@ -41,12 +41,12 @@ const obj = new OBJLoaderV5().load("fixtures/three-compat/loaders/sample.obj");
 const mtl = new MTLLoaderV5().load("fixtures/three-compat/loaders/sample.mtl");
 const hdr = new HDRLoaderV5().load("fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr");
 const ktx2 = new KTX2LoaderV5().load("tests/assets/corpus/ktx2/Rib_N.ktx2");
-const texture = new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png");
+const texture = new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png");
 const cube = new CubeTextureLoaderV5().load(Array.from({ length: 6 }, () => "fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr"));
 const compat = [
   new GLTFLoaderCompat().load("fixtures/three-compat/assets/corpus/boom-box.glb").diagnostic,
   new OBJLoaderCompat().load("fixtures/three-compat/loaders/sample.obj").diagnostic,
-  new ThreeCompatTextureLoader().load("tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png")
+  new ThreeCompatTextureLoader().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png")
 ];
 const loadedDiagnostics = [gltf.diagnostic, obj.diagnostic, mtl.diagnostic, hdr, ktx2, texture, ...cube, ...compat];
 const checks: V5LoaderReadinessCheck[] = [
@@ -62,7 +62,7 @@ const checks: V5LoaderReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-loader-readiness/v1",
+  schema: "a3d-three-compat-loader-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   diagnostics: loadedDiagnostics,

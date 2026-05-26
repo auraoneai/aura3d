@@ -4,9 +4,9 @@ import {
   PBRMaterial,
   computePerspectiveCameraFrame,
   type RenderItem
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, Scene, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, Scene, composeMat4, quatFromEuler } from "@aura3d/scene";
 import * as THREE from "three";
 
 declare global {
@@ -21,29 +21,29 @@ type ShadowMapParityResult = ShadowMapParityReady | ShadowMapParityError;
 
 interface ShadowMapParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-shadowmap-parity/v1";
-  readonly purpose: "same-scene G3D directional shadow map vs Three.js WebGLShadowMap PCF";
+  readonly schema: "a3d-threejs-parity-shadowmap-parity/v1";
+  readonly purpose: "same-scene A3D directional shadow map vs Three.js WebGLShadowMap PCF";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: { readonly renderer: { readonly drawCalls: number; readonly actualG3DRenderer: true }; readonly shadowMap: ShadowMapStats; readonly pixels: PixelStats };
+  readonly a3d: { readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: true }; readonly shadowMap: ShadowMapStats; readonly pixels: PixelStats };
   readonly threejs: { readonly renderer: { readonly actualThreeRenderer: true; readonly drawCalls: number; readonly triangles: number }; readonly shadowMap: ShadowMapStats; readonly pixels: PixelStats };
   readonly diff: DiffStats;
   readonly assertions: {
     readonly sameResolution: boolean;
     readonly actualThreeRenderer: boolean;
-    readonly g3dShadowMapRequested: boolean;
+    readonly a3dShadowMapRequested: boolean;
     readonly threeShadowMapEnabled: boolean;
     readonly pcfCoverage: boolean;
     readonly shadowContactVisible: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
 }
 
 interface ShadowMapParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-shadowmap-parity/v1";
+  readonly schema: "a3d-threejs-parity-shadowmap-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -90,38 +90,38 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-shadowmap", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-shadowmap", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-shadowmap", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
-    if (status) status.textContent = "rendering G3D shadow map";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D shadow map";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering Three.js shadow map";
     const threejs = await renderThree(threeCanvas);
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: ShadowMapParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-shadowmap-parity/v1",
-      purpose: "same-scene G3D directional shadow map vs Three.js WebGLShadowMap PCF",
+      schema: "a3d-threejs-parity-shadowmap-parity/v1",
+      purpose: "same-scene A3D directional shadow map vs Three.js WebGLShadowMap PCF",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: { renderer: { drawCalls: g3d.drawCalls, actualG3DRenderer: true }, shadowMap: g3d.shadowMap, pixels: g3dStats },
+      a3d: { renderer: { drawCalls: a3d.drawCalls, actualA3DRenderer: true }, shadowMap: a3d.shadowMap, pixels: a3dStats },
       threejs: { renderer: { actualThreeRenderer: threejs.actualThreeRenderer, drawCalls: threejs.drawCalls, triangles: threejs.triangles }, shadowMap: threejs.shadowMap, pixels: threeStats },
       diff,
       assertions: {
-        sameResolution: g3dPixels.width === threePixels.width && g3dPixels.height === threePixels.height,
+        sameResolution: a3dPixels.width === threePixels.width && a3dPixels.height === threePixels.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
-        g3dShadowMapRequested: g3d.shadowMap.enabled && g3d.shadowMap.size === SCENE.shadowMapSize,
+        a3dShadowMapRequested: a3d.shadowMap.enabled && a3d.shadowMap.size === SCENE.shadowMapSize,
         threeShadowMapEnabled: threejs.shadowMap.enabled && threejs.shadowMap.type === "PCFSoftShadowMap",
-        pcfCoverage: g3d.shadowMap.pcfSamples >= 16 && threejs.shadowMap.filter === "pcf-soft",
-        shadowContactVisible: Math.abs(g3dStats.contactDarkening) > 2.5 && Math.abs(threeStats.contactDarkening) > 2.5,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 170_000 && threeStats.nonBlackPixels > 180_000,
+        pcfCoverage: a3d.shadowMap.pcfSamples >= 16 && threejs.shadowMap.filter === "pcf-soft",
+        shadowContactVisible: Math.abs(a3dStats.contactDarkening) > 2.5 && Math.abs(threeStats.contactDarkening) > 2.5,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 170_000 && threeStats.nonBlackPixels > 180_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
     window.__V9_SHADOWMAP_PARITY__ = ready;
     if (status) status.textContent = "ready";
@@ -129,7 +129,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: ShadowMapParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-shadowmap-parity/v1",
+      schema: "a3d-threejs-parity-shadowmap-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -139,8 +139,8 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
-  const renderer = await G3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.012, 0.014, 0.018, 1] });
+async function renderA3D(canvas: HTMLCanvasElement) {
+  const renderer = await A3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.012, 0.014, 0.018, 1] });
   const frame = computePerspectiveCameraFrame(SCENE.frameBounds, { width: SCENE.width, height: SCENE.height }, CAMERA);
   const light = new DirectionalLight("v9-shadow-key");
   light.castsShadow = true;
@@ -151,7 +151,7 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   scene.root.addChild(light);
   const diagnostics = renderer.render({
     scene,
-    renderItems: createG3DItems(),
+    renderItems: createA3DItems(),
     environmentLighting: {
       color: [0.12, 0.16, 0.22],
       intensity: 0.34,
@@ -192,7 +192,7 @@ async function renderG3D(canvas: HTMLCanvasElement) {
   };
 }
 
-function createG3DItems(): readonly RenderItem[] {
+function createA3DItems(): readonly RenderItem[] {
   const sphere = Geometry.uvSphere(0.54, 96, 48);
   const floor = Geometry.litCube(1);
   return [
@@ -338,19 +338,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return { meanDelta: Number(meanDelta.toFixed(4)), maxDelta: Number(maxDelta.toFixed(4)), changedPixels, structuralSimilarityProxy: Number(Math.max(0, 1 - meanDelta / 255).toFixed(4)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create shadow-map side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, SCENE.width, 0, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.92)";
   context.fillRect(0, SCENE.height, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("Left: G3D directional shadow map | Right: Three.js WebGLShadowMap PCFSoftShadowMap", 20, SCENE.height + 28);
+  context.fillText("Left: A3D directional shadow map | Right: Three.js WebGLShadowMap PCFSoftShadowMap", 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
   context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height + 50);

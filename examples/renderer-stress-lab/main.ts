@@ -1,10 +1,10 @@
-import { GPUProfiler, type GPUProfilerSnapshot } from "@galileo3d/debug";
-import { Renderable, Scene } from "@galileo3d/scene";
-import { Geometry, PBRMaterial, Renderer, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { GPUProfiler, type GPUProfilerSnapshot } from "@aura3d/debug";
+import { Renderable, Scene } from "@aura3d/scene";
+import { Geometry, PBRMaterial, Renderer, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_RENDERER_STRESS_LAB__?: RendererStressLabState;
+    __AURA3D_RENDERER_STRESS_LAB__?: RendererStressLabState;
   }
 }
 
@@ -55,7 +55,7 @@ const canvasHeight = 540;
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_RENDERER_STRESS_LAB__ = {
+    window.__AURA3D_RENDERER_STRESS_LAB__ = {
       status: "error",
       renderer: "webgl2",
       visualClaim: "bounded-webgl2-renderer-stress-lab",
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
     const materialCount = Number(shell.materialInput.value);
     const lightCount = Number(shell.lightInput.value);
     const result = renderStressScene(renderer, objectCount, materialCount, lightCount);
-    window.__GALILEO3D_RENDERER_STRESS_LAB__ = result;
+    window.__AURA3D_RENDERER_STRESS_LAB__ = result;
     shell.status.textContent = JSON.stringify(result, null, 2);
   };
   shell.objectInput.addEventListener("input", render);

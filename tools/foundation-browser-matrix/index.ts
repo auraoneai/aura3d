@@ -164,7 +164,7 @@ async function probeCandidate(candidate: BrowserCandidate, origin: string): Prom
     browser = await candidate.type.launch(options);
     const page = await browser.newPage({ viewport: { width: 960, height: 540 }, deviceScaleFactor: 1 });
     await page.goto(`${origin}/examples/webgpu-capability/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window as unknown as { __GALILEO3D_WEBGPU_CAPABILITY__?: { status?: string } }).__GALILEO3D_WEBGPU_CAPABILITY__?.status === "ready", undefined, { timeout: 20_000 });
+    await page.waitForFunction(() => (window as unknown as { __AURA3D_WEBGPU_CAPABILITY__?: { status?: string } }).__AURA3D_WEBGPU_CAPABILITY__?.status === "ready", undefined, { timeout: 20_000 });
     const probe = await page.evaluate(() => {
       const canvas = document.createElement("canvas");
       const webgl2 = canvas.getContext("webgl2") !== null;
@@ -172,8 +172,8 @@ async function probeCandidate(candidate: BrowserCandidate, origin: string): Prom
         userAgent: navigator.userAgent,
         webgl2,
         navigatorGpu: "gpu" in navigator,
-        webgpuExampleStatus: (window as unknown as { __GALILEO3D_WEBGPU_CAPABILITY__?: { status?: string } }).__GALILEO3D_WEBGPU_CAPABILITY__?.status,
-        webgpuAvailability: (window as unknown as { __GALILEO3D_WEBGPU_CAPABILITY__?: { availability?: string } }).__GALILEO3D_WEBGPU_CAPABILITY__?.availability,
+        webgpuExampleStatus: (window as unknown as { __AURA3D_WEBGPU_CAPABILITY__?: { status?: string } }).__AURA3D_WEBGPU_CAPABILITY__?.status,
+        webgpuAvailability: (window as unknown as { __AURA3D_WEBGPU_CAPABILITY__?: { availability?: string } }).__AURA3D_WEBGPU_CAPABILITY__?.availability,
       };
     });
     return {

@@ -1,6 +1,6 @@
-import type { AnimationClip } from "@galileo3d/animation";
-import type { Texture } from "@galileo3d/rendering";
-import type { SceneNode } from "@galileo3d/scene";
+import type { AnimationClip } from "@aura3d/animation";
+import type { Texture } from "@aura3d/rendering";
+import type { SceneNode } from "@aura3d/scene";
 import type { AssetDiagnostic } from "./AssetCorpus";
 import type {
   GLTFAsset,

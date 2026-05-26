@@ -1,13 +1,13 @@
-# G3D vs Three.js Benchmark Evidence
+# A3D vs Three.js Benchmark Evidence
 
-This report summarizes the current local evidence for G3D against Three.js. It is intentionally claim-bounded: the repo contains useful parity and benchmark artifacts, but it does not yet prove broad Three.js replacement, broad performance superiority, or ecosystem parity.
+This report summarizes the current local evidence for A3D against Three.js. It is intentionally claim-bounded: the repo contains useful parity and benchmark artifacts, but it does not yet prove broad Three.js replacement, broad performance superiority, or ecosystem parity.
 
 ## Primary Evidence
 
 | Area | Evidence | Status |
 |---|---|---|
-| Benchmark scaffold | `tools/compare-engines/index.ts`, `benchmarks/shared/scenes/*.ts`, `benchmarks/galileo/src/scenes/*.ts`, `benchmarks/threejs/src/scenes/*.ts`, `tests/reports/comparison-threejs.json` | 11 checked-in equivalent scaffold scenes in the latest comparison report. |
-| V6 rendered parity suite | `tests/reports/production-runtime-threejs-parity-readiness.json`, `tests/reports/production-runtime-threejs-runtime-parity.json`, `tests/reports/production-runtime-threejs-visual-parity.json`, `tests/reports/production-runtime-threejs-parity/**` | Passes bounded product/material/asset/architecture scene checks with retained G3D, Three.js, and diff screenshots. |
+| Benchmark scaffold | `tools/compare-engines/index.ts`, `benchmarks/shared/scenes/*.ts`, `benchmarks/aura3d/src/scenes/*.ts`, `benchmarks/threejs/src/scenes/*.ts`, `tests/reports/comparison-threejs.json` | 11 checked-in equivalent scaffold scenes in the latest comparison report. |
+| V6 rendered parity suite | `tests/reports/production-runtime-threejs-parity-readiness.json`, `tests/reports/production-runtime-threejs-runtime-parity.json`, `tests/reports/production-runtime-threejs-visual-parity.json`, `tests/reports/production-runtime-threejs-parity/**` | Passes bounded product/material/asset/architecture scene checks with retained A3D, Three.js, and diff screenshots. |
 | V9 inventory | `tests/reports/v9/threejs-inventory.json`, `tests/reports/v9/official-example-parity.json` | 54 inventoried example categories; 30 matched, 24 partial, and 0 high-priority open in the recorded run. |
 | V9 visual review | `tests/reports/v9/visual-review.json` | 30 accepted and 24 still needing review in the recorded run. |
 | V9 same-asset parity slices | `tests/reports/v9/gltf-parity.json`, `tests/reports/v9/animation-*-parity.json`, `tests/reports/v9/skinning-*-parity.json`, `tests/reports/v9/morphtargets-parity.json`, `tests/reports/v9/*-parity/*.png` | Bounded screenshots and metrics against actual Three.js GLTFLoader, WebGLRenderer, AnimationMixer, or related examples. |
@@ -21,34 +21,34 @@ This report summarizes the current local evidence for G3D against Three.js. It i
 pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --v4 --write-reports
 ```
 
-The report records an equivalent scaffold over 11 checked-in scenes and marks broad claims as unusable. Its supported niche claim is limited to esbuild browser benchmark bundle bytes: G3D generated smaller benchmark bundles than Three.js for all 11 checked-in equivalent scaffold scenes on that run.
+The report records an equivalent scaffold over 11 checked-in scenes and marks broad claims as unusable. Its supported niche claim is limited to esbuild browser benchmark bundle bytes: A3D generated smaller benchmark bundles than Three.js for all 11 checked-in equivalent scaffold scenes on that run.
 
 That is not a release bundle-size claim, a frame-rate claim, a visual-quality claim, or a production-app claim.
 
 ## Rendered Parity Reality
 
-G3D now has more than scaffold-only evidence. The V6 and V9 reports include actual rendered screenshots, side-by-side artifacts, and diff metrics for bounded comparisons.
+A3D now has more than scaffold-only evidence. The V6 and V9 reports include actual rendered screenshots, side-by-side artifacts, and diff metrics for bounded comparisons.
 
 Representative V9 examples:
 
 | Slice | Evidence | What it proves | Boundary |
 |---|---|---|---|
-| glTF loader/render resources | `tests/reports/v9/gltf-parity.json` | Damaged Helmet is loaded and rendered through G3D and actual Three.js GLTFLoader/WebGLRenderer. | Not every glTF extension, texture compression path, animation path, or material extension. |
+| glTF loader/render resources | `tests/reports/v9/gltf-parity.json` | Damaged Helmet is loaded and rendered through A3D and actual Three.js GLTFLoader/WebGLRenderer. | Not every glTF extension, texture compression path, animation path, or material extension. |
 | Keyframe animation | `tests/reports/v9/animation-keyframes-parity.json` | Robot Expressive keyframe sampling is compared to actual Three.js AnimationMixer. | Not every clip, transition graph, IK rig, additive layer, or retargeting workflow. |
 | Walk animation | `tests/reports/v9/animation-walk-parity.json` | Soldier Walk clip is compared against actual Three.js AnimationMixer. | Does not prove all imported animation assets or all root-motion behavior. |
 | Skinning additive layer | `tests/reports/v9/skinning-additive-parity.json` | Walking plus Wave upper-body additive behavior is compared to actual Three.js additive AnimationMixer behavior. | Not a complete character animation system claim. |
 | Morph targets | `tests/reports/v9/morphtargets-parity.json` | Robot Expressive head morph weights are compared to actual Three.js morph target behavior. | Not broad morph animation or authoring parity. |
-| Bloom | `tests/reports/v9/unreal-bloom-parity.json` | G3D bloom chain is compared to actual Three.js EffectComposer plus UnrealBloomPass. | Not full postprocessing stack parity. |
+| Bloom | `tests/reports/v9/unreal-bloom-parity.json` | A3D bloom chain is compared to actual Three.js EffectComposer plus UnrealBloomPass. | Not full postprocessing stack parity. |
 
 These reports are useful because they cite real Three.js execution paths. They also still show visible deltas in several slices, so they should be used as implementation evidence and QA backlog, not as blanket equality claims.
 
 ## Where Three.js Is Still Stronger
 
-Three.js remains stronger in ecosystem maturity, public examples, docs surface, community debugging knowledge, third-party integrations, loader coverage, long browser-support history, and the breadth of production usage. G3D cannot claim to exceed Three.js in those categories from the current local evidence.
+Three.js remains stronger in ecosystem maturity, public examples, docs surface, community debugging knowledge, third-party integrations, loader coverage, long browser-support history, and the breadth of production usage. A3D cannot claim to exceed Three.js in those categories from the current local evidence.
 
-## Where G3D Can Position Itself
+## Where A3D Can Position Itself
 
-The credible G3D position is narrower:
+The credible A3D position is narrower:
 
 - TypeScript-first engine packages with a local validation culture.
 - Bounded same-scene comparison artifacts that include source scripts, reports, screenshots, and explicit claim boundaries.

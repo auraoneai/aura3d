@@ -3,7 +3,7 @@ import {
   createGLTFSceneAnimationMixer,
   loadV6GLTFRenderPipeline,
   type GLTFSceneAnimationApplyResult
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   Geometry,
   PBRMaterial,
@@ -12,14 +12,14 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { ASSET_URL, type V8KeyframeControls } from "./state.js";
 
 type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
 type AnimationRuntime = ReturnType<typeof createGLTFSceneAnimationMixer>;
-type RouteG3DRenderer = Awaited<ReturnType<typeof G3DRenderer.create>>;
+type RouteA3DRenderer = Awaited<ReturnType<typeof A3DRenderer.create>>;
 
 const FRAME_BOUNDS: CameraFrameBounds = { min: [-0.9, -0.12, -0.9], max: [0.9, 2.15, 0.9] };
 const WIDTH = 1280;
@@ -27,7 +27,7 @@ const HEIGHT = 720;
 const ASSET_TIMEOUT_MS = 5000;
 
 export interface V8KeyframeScene {
-  readonly renderer: RouteG3DRenderer;
+  readonly renderer: RouteA3DRenderer;
   readonly pipeline: LoadedPipeline;
   readonly animationRuntime: AnimationRuntime;
   readonly clips: readonly LoadedPipeline["asset"]["animations"][number][];
@@ -45,7 +45,7 @@ export async function createV8KeyframeScene(canvas: HTMLCanvasElement): Promise<
   canvas.height = HEIGHT;
   drawFallbackFrame(canvas);
 
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     canvas,
     width: WIDTH,
     height: HEIGHT,

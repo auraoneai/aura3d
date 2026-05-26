@@ -1,13 +1,16 @@
 {
-  "name": "@galileo3d/environments",
+  "name": "@aura3d/environments",
   "version": "1.0.0",
   "type": "module",
   "main": "../../dist/environments/index.js",
   "types": "../../dist/environments/index.d.ts",
   "exports": {
-    ".": "../../dist/environments/index.js"
+    ".": {
+      "types": "../../dist/environments/index.d.ts",
+      "import": "../../dist/environments/index.js"
+    }
   },
   "dependencies": {
-    "@galileo3d/rendering": "workspace:*"
+    "@aura3d/rendering": "workspace:*"
   }
 }

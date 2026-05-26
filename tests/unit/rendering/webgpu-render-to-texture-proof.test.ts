@@ -55,7 +55,7 @@ function createFakeWebGPU(): WebGPULike {
     async requestAdapter(): Promise<WebGPUAdapterLike> {
       return {
         name: "unit-webgpu-rtt-adapter",
-        info: { vendor: "galileo3d-test" },
+        info: { vendor: "aura3d-test" },
         async requestDevice() {
           return device;
         }

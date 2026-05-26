@@ -16,9 +16,9 @@ const productDemos: readonly ProductDemoId[] = [
 ];
 
 const runtimeStateByDemo: Record<ProductDemoId, string> = {
-  "product-configurator": "__GALILEO3D_PRODUCT_DEMO__",
-  "architecture-viewer": "__GALILEO3D_ARCHITECTURE_DEMO__",
-  "game-slice": "__GALILEO3D_GAME_DEMO__",
+  "product-configurator": "__AURA3D_PRODUCT_DEMO__",
+  "architecture-viewer": "__AURA3D_ARCHITECTURE_DEMO__",
+  "game-slice": "__AURA3D_GAME_DEMO__",
 };
 
 const requiredReadmeSections = [
@@ -48,7 +48,7 @@ export function validateProductDemoSources(rootDir = process.cwd()): ProductDemo
     const readme = readFileSync(readmePath, "utf8");
     const stateName = runtimeStateByDemo[demo];
 
-    requirePattern(violations, demo, main, /from\s+["']@galileo3d\/rendering["']/, "uses public @galileo3d/rendering imports");
+    requirePattern(violations, demo, main, /from\s+["']@aura3d\/rendering["']/, "uses public @aura3d/rendering imports");
     requirePattern(violations, demo, main, /\bRenderer\b/, "references the engine Renderer");
     requirePattern(violations, demo, main, /\bRenderer\.create\s*\(/, "creates an engine Renderer");
     requirePattern(violations, demo, main, /\brenderer\.render\s*\(/, "submits frames through renderer.render");

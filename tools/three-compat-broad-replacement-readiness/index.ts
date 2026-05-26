@@ -54,10 +54,10 @@ const checks = [
   { id: "blocked-claims-visible", pass: claims.pass === true && claims.claims.some((claim) => claim.status === "blocked"), detail: "blocked claims remain visible and machine-checked" }
 ];
 const report = {
-  schema: "g3d-three-compat-broad-replacement-readiness/v1",
+  schema: "a3d-three-compat-broad-replacement-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
-  position: "G3D V5 is ready to be presented as a broad Three.js replacement track for documented mainstream browser 3D workflows, not as full Three.js API/ecosystem parity.",
+  position: "A3D V5 is ready to be presented as a broad Three.js replacement track for documented mainstream browser 3D workflows, not as full Three.js API/ecosystem parity.",
   thresholds: {
     minimumInventoryEntries: 250,
     minimumOverallCoveragePercent: 60,

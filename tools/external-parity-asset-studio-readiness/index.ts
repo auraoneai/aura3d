@@ -9,7 +9,7 @@ const requiredFiles = [
   "examples/external-asset-gallery/index.html",
   "examples/external-asset-gallery/main.ts",
   "examples/external-asset-gallery/AssetGalleryV4.ts",
-  "fixtures/v4/gltf-corpus/manifest.json",
+  "fixtures/external-parity/gltf-corpus/manifest.json",
   "tests/browser/external-parity-asset-studio-pro.spec.ts",
   "tests/reports/external-parity-asset-studio-pro-browser.json"
 ] as const;
@@ -25,12 +25,12 @@ const includesAll = (source: string, phrases: readonly string[]) => phrases.ever
 for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} must exist.`);
 
 const source = text("examples/external-asset-gallery/AssetGalleryV4.ts");
-check("asset-studio-source", includesAll(source, ["summarizeV4Corpus", "corpus-browser", "asset-diagnostics", "__G3D_V4_ASSET_STUDIO__", "same-scene Three.js parity"]), "Asset Studio must use corpus APIs, expose diagnostics, and preserve proof boundaries.");
+check("asset-studio-source", includesAll(source, ["summarizeV4Corpus", "corpus-browser", "asset-diagnostics", "__A3D_V4_ASSET_STUDIO__", "same-scene Three.js parity"]), "Asset Studio must use corpus APIs, expose diagnostics, and preserve proof boundaries.");
 check("app-entry-no-example-side-effect", text("examples/external-asset-gallery/main.ts").includes("mountAssetGalleryV4(\"external-asset-gallery\")") && text("apps/asset-studio-pro/src/main.ts").includes("AssetGalleryV4") && !text("apps/asset-studio-pro/src/main.ts").includes("external-asset-gallery/main"), "Asset Studio Pro must import a side-effect-free shared module.");
 
-const manifest = json("fixtures/v4/gltf-corpus/manifest.json");
+const manifest = json("fixtures/external-parity/gltf-corpus/manifest.json");
 const assets = arr(manifest?.assets).filter(isObj);
-check("corpus-manifest", manifest?.schema === "g3d-v4-gltf-corpus/v1" && assets.length >= 25 && typeof manifest?.claimBoundary === "string" && manifest.claimBoundary.includes("not final flagship product visual proof"), "Corpus manifest must remain present and bounded.");
+check("corpus-manifest", manifest?.schema === "a3d-v4-gltf-corpus/v1" && assets.length >= 25 && typeof manifest?.claimBoundary === "string" && manifest.claimBoundary.includes("not final flagship product visual proof"), "Corpus manifest must remain present and bounded.");
 
 const browser = json("tests/reports/external-parity-asset-studio-pro-browser.json");
 const states = isObj(browser?.states) ? browser.states : {};
@@ -48,7 +48,7 @@ check("browser-screenshots", expectedScreenshots.every((path) => screenshots.inc
 check("browser-proof-boundary", typeof browser?.productBoundary === "string" && browser.productBoundary.includes("actual rendered screenshots") && browser.productBoundary.includes("same-scene Three.js parity"), "Browser report must preserve selected-asset render and parity boundaries.");
 
 const pass = checks.every((entry) => entry.pass);
-const report = { schema: "g3d-external-parity-asset-studio-readiness/v1", generatedAt: new Date().toISOString(), pass, summary: pass ? "V4 Milestone 10 Asset Studio Pro proof is ready as a corpus browser and diagnostics product milestone. Rendered asset parity remains required." : "V4 Milestone 10 Asset Studio Pro proof is incomplete.", checkedFiles: requiredFiles, checks };
+const report = { schema: "a3d-external-parity-asset-studio-readiness/v1", generatedAt: new Date().toISOString(), pass, summary: pass ? "V4 Milestone 10 Asset Studio Pro proof is ready as a corpus browser and diagnostics product milestone. Rendered asset parity remains required." : "V4 Milestone 10 Asset Studio Pro proof is incomplete.", checkedFiles: requiredFiles, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-asset-studio-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-asset-studio-readiness.json"), `${JSON.stringify(report, null, 2)}\n`);
 if (!pass) {
@@ -64,7 +64,7 @@ function statePasses(state: Obj, id: string): boolean {
   return state.id === id &&
     state.status === "ready" &&
     state.productSurface === "asset-studio-pro" &&
-    state.corpusManifest === "fixtures/v4/gltf-corpus/manifest.json" &&
+    state.corpusManifest === "fixtures/external-parity/gltf-corpus/manifest.json" &&
     typeof state.sourceRepository === "string" &&
     state.sourceRepository.includes("KhronosGroup/glTF-Sample-Assets") &&
     state.sourceRevision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" &&

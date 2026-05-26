@@ -11,14 +11,14 @@ const packageSmokePath = resolve("tests/reports/foundation-package-smoke.json");
 const packageSmoke = existsSync(packageSmokePath)
   ? JSON.parse(readFileSync(packageSmokePath, "utf8")) as { readonly tarballPath?: string; readonly tarballSha256?: string }
   : {};
-const tarballPath = resolve(packageSmoke.tarballPath ?? "tests/reports/package-install-smoke-fresh/galileo3d-engine-0.1.0-alpha.0.tgz");
-const tempProject = mkdtempSync(join(tmpdir(), "g3d-hr3-consumer-"));
+const tarballPath = resolve(packageSmoke.tarballPath ?? "tests/reports/package-install-smoke-fresh/aura3d-engine-0.1.0-alpha.0.tgz");
+const tempProject = mkdtempSync(join(tmpdir(), "a3d-hr3-consumer-"));
 const screenshotPath = resolve("tests/reports/foundation-external-consumer/external-consumer.png");
 const reportPath = resolve("tests/reports/foundation-external-consumer.json");
 const packageName = readRootPackageName();
-const assetDataUri = dataUri("model/gltf+json", readFileSync(resolve("fixtures/v3/assets/product-camera/product-camera.gltf")));
-const productGltfDataUri = dataUri("model/gltf+json", readFileSync(resolve("fixtures/v2/products/watch/watch.gltf")));
-const productManifestDataUri = dataUri("application/json", readFileSync(resolve("fixtures/v2/products/watch/manifest.json")));
+const assetDataUri = dataUri("model/gltf+json", readFileSync(resolve("fixtures/workflow-assets/assets/product-camera/product-camera.gltf")));
+const productGltfDataUri = dataUri("model/gltf+json", readFileSync(resolve("fixtures/product-studio/products/watch/watch.gltf")));
+const productManifestDataUri = dataUri("application/json", readFileSync(resolve("fixtures/product-studio/products/watch/manifest.json")));
 const violations: string[] = [];
 let state: ExternalConsumerState | undefined;
 let installStdout = "";
@@ -60,8 +60,8 @@ try {
         try {
           const page = await browser.newPage({ viewport: { width: 1180, height: 820 } });
           await page.goto(`http://127.0.0.1:${address.port}/`, { waitUntil: "domcontentloaded" });
-          await page.waitForFunction(() => (window as any).__G3D_EXTERNAL_CONSUMER__?.status === "ready", undefined, { timeout: 45_000 });
-          state = await page.evaluate(() => (window as any).__G3D_EXTERNAL_CONSUMER__);
+          await page.waitForFunction(() => (window as any).__A3D_EXTERNAL_CONSUMER__?.status === "ready", undefined, { timeout: 45_000 });
+          state = await page.evaluate(() => (window as any).__A3D_EXTERNAL_CONSUMER__);
           mkdirSync(dirname(screenshotPath), { recursive: true });
           await page.locator("[data-testid='external-consumer-canvas']").screenshot({ path: screenshotPath });
         } finally {
@@ -86,7 +86,7 @@ const requiredImports = [
   `${packageName}/workflows`
 ];
 const report = {
-  schema: "g3d-foundation-external-consumer/v1",
+  schema: "a3d-foundation-external-consumer/v1",
   generatedAt: new Date().toISOString(),
   pass: violations.length === 0
     && state?.status === "ready"
@@ -119,12 +119,12 @@ if (!report.pass) process.exitCode = 1;
 function writeConsumerProject(): void {
   mkdirSync(join(tempProject, "src"), { recursive: true });
   writeFileSync(join(tempProject, "package.json"), `${JSON.stringify({
-    name: "g3d-foundation-external-consumer",
+    name: "a3d-foundation-external-consumer",
     version: "0.0.0",
     private: true,
     type: "module"
   }, null, 2)}\n`);
-  writeFileSync(join(tempProject, "index.html"), `<!doctype html><html><head><meta charset="utf-8"><title>G3D External Consumer</title></head><body><div id="app"></div><script type="module" src="/src/main.js"></script></body></html>\n`);
+  writeFileSync(join(tempProject, "index.html"), `<!doctype html><html><head><meta charset="utf-8"><title>A3D External Consumer</title></head><body><div id="app"></div><script type="module" src="/src/main.js"></script></body></html>\n`);
   writeFileSync(join(tempProject, "src", "main.js"), consumerSource());
 }
 
@@ -153,7 +153,7 @@ document.body.style.background = "#111413";
 root.replaceChildren(canvas);
 
 const expose = (state) => {
-  globalThis.__G3D_EXTERNAL_CONSUMER__ = state;
+  globalThis.__A3D_EXTERNAL_CONSUMER__ = state;
 };
 expose({ status: "loading", imports, lastError: null });
 
@@ -218,7 +218,7 @@ function dataUri(mime: string, content: Buffer): string {
 
 function readRootPackageName(): string {
   const parsed = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { readonly name?: string };
-  return parsed.name ?? "@galileo3d/engine";
+  return parsed.name ?? "@aura3d/engine";
 }
 
 function relativeRoot(path: string): string {

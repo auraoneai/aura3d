@@ -56,8 +56,8 @@ export function createCleanCheckoutReport(root = process.cwd()): CleanCheckoutRe
   const dirtyFiles = gitStatus.status === 0 ? gitStatus.stdout.split(/\r?\n/).filter(Boolean) : [];
   const gitAvailable = gitStatus.status === 0;
   const cleanCheckout = gitAvailable && dirtyFiles.length === 0;
-  const independentEvidence = process.env.G3D_INDEPENDENT_REPRODUCTION_EVIDENCE?.trim() || null;
-  const independentMachineOrAgent = process.env.G3D_INDEPENDENT_REPRODUCTION === "1" && independentEvidence !== null;
+  const independentEvidence = process.env.A3D_INDEPENDENT_REPRODUCTION_EVIDENCE?.trim() || null;
+  const independentMachineOrAgent = process.env.A3D_INDEPENDENT_REPRODUCTION === "1" && independentEvidence !== null;
   const blockers = [
     ...(gitAvailable ? [] : ["Not a git checkout or git status failed."]),
     ...(dirtyFiles.length === 0 ? [] : [`Workspace is dirty (${dirtyFiles.length} changed paths).`])
@@ -71,7 +71,7 @@ export function createCleanCheckoutReport(root = process.cwd()): CleanCheckoutRe
   return {
     ok: cleanCheckout,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-clean-checkout-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-clean-checkout-run",
     blockers,
     git: {
       sha: run(root, "git", ["rev-parse", "HEAD"]).stdout.trim() || null,

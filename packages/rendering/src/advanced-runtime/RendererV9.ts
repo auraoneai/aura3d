@@ -11,7 +11,7 @@ import {
 } from "../Renderer";
 import type { RenderDeviceDiagnostics } from "../RenderDevice";
 import type { RenderItem } from "../ForwardPass";
-import type { Scene } from "@galileo3d/scene";
+import type { Scene } from "@aura3d/scene";
 
 export type RendererV9Options = RendererOptions;
 export type RendererV9Source = RendererInput | RenderSource | Iterable<RenderItem> | Scene;

@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/gltf-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/gltf-parity/g3d-gltf.png",
+  a3d: "tests/reports/threejs-parity/gltf-parity/a3d-gltf.png",
   threejs: "tests/reports/threejs-parity/gltf-parity/threejs-gltf.png",
   sideBySide: "tests/reports/threejs-parity/gltf-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
     await server.close();
   });
 
-  test("loads Damaged Helmet through G3D and actual Three.js GLTFLoader", async ({ page }) => {
+  test("loads Damaged Helmet through A3D and actual Three.js GLTFLoader", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -57,23 +57,23 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-gltf-parity/v1");
-    expect(result.purpose).toBe("same-asset G3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline");
+    expect(result.schema).toBe("a3d-threejs-parity-gltf-parity/v1");
+    expect(result.purpose).toBe("same-asset A3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.actualThreeGLTFLoader).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
-    expect(result.assertions.g3dPublicRenderResources).toBe(true);
+    expect(result.assertions.a3dPublicRenderResources).toBe(true);
     expect(result.assertions.requiredCountsPresent).toBe(true);
     expect(result.assertions.boundsComparable).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.metadata.unsupportedExtensions).toEqual([]);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.metadata.unsupportedExtensions).toEqual([]);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.35);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DFlagshipRuntimeSource();
+    assertNoThreeJsInA3DFlagshipRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -102,7 +102,7 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DFlagshipRuntimeSource(): void {
+function assertNoThreeJsInA3DFlagshipRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/flagship-viewer/src/main.ts",
@@ -132,9 +132,9 @@ function stripDataUrls(result: Extract<GltfParityResult, { readonly status: "rea
 type GltfParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-gltf-parity/v1";
+      readonly schema: "a3d-threejs-parity-gltf-parity/v1";
       readonly purpose: string;
-      readonly g3d: {
+      readonly a3d: {
         readonly metadata: { readonly unsupportedExtensions: readonly string[] };
         readonly renderer: { readonly drawCalls: number };
         readonly pixels: { readonly uniqueColorBuckets: number };
@@ -147,16 +147,16 @@ type GltfParityResult =
       readonly assertions: {
         readonly actualThreeGLTFLoader: boolean;
         readonly actualThreeRenderer: boolean;
-        readonly g3dPublicRenderResources: boolean;
+        readonly a3dPublicRenderResources: boolean;
         readonly requiredCountsPresent: boolean;
         readonly boundsComparable: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-gltf-parity/v1";
+      readonly schema: "a3d-threejs-parity-gltf-parity/v1";
       readonly error: string;
     };

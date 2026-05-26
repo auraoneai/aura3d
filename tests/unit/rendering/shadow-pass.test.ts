@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DirectionalLight, PointLight, SpotLight } from "@galileo3d/scene";
+import { DirectionalLight, PointLight, SpotLight } from "@aura3d/scene";
 import {
   CascadedShadowMaps,
   CascadedShadowPass,

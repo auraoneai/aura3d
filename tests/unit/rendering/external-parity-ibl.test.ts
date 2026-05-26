@@ -27,7 +27,7 @@ describe("V4 IBL and environment pipeline", () => {
         backgroundIntensity: 0.4
       });
 
-      expect(pipeline.sourceManifest).toBe("fixtures/v4/environments/manifest.json");
+      expect(pipeline.sourceManifest).toBe("fixtures/external-parity/environments/manifest.json");
       expect(pipeline.capabilities).toContain("diffuse irradiance");
       expect(pipeline.capabilities).toContain("specular prefilter mips");
       expect(pipeline.capabilities).toContain("BRDF LUT");

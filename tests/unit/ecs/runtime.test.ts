@@ -13,8 +13,8 @@ import {
   profileWorld,
   serializeWorld,
   type System
-} from "@galileo3d/ecs";
-import { Quaternion, Vector3 } from "@galileo3d/math";
+} from "@aura3d/ecs";
+import { Quaternion, Vector3 } from "@aura3d/math";
 import { describe, expect, it } from "vitest";
 
 class VelocityComponent {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Material, MaterialPresetRegistry, PBRMaterial, UnlitMaterial } from "@galileo3d/rendering";
+import { Material, MaterialPresetRegistry, PBRMaterial, UnlitMaterial } from "@aura3d/rendering";
 
 describe("MaterialPresetRegistry", () => {
   it("creates built-in unlit and pbr materials with validated options", () => {

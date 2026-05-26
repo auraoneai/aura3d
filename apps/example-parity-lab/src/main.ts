@@ -1,10 +1,10 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline, type GLTFSceneAnimationApplyResult } from "@galileo3d/assets";
+import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline, type GLTFSceneAnimationApplyResult } from "@aura3d/assets";
 import {
   AnimationClip,
   AnimationTrack,
   solveTwoBoneIk
-} from "@galileo3d/animation";
-import { createAnimationController, createPhysicsScene } from "@galileo3d/engine/production-runtime";
+} from "@aura3d/animation";
+import { createAnimationController, createPhysicsScene } from "@aura3d/engine/production-runtime";
 import {
   Geometry,
   PBRMaterial,
@@ -20,12 +20,12 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { DirectionalLight, composeMat4, multiplyMat4, transformPoint, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight, composeMat4, multiplyMat4, transformPoint, type Mat4 } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV7ExampleParityLab?: V7ExampleParityRuntime;
+    __a3dV7ExampleParityLab?: V7ExampleParityRuntime;
   }
 }
 
@@ -138,7 +138,7 @@ const APP_ID = "example-parity-lab" as const;
 const WIDTH = 2560;
 const HEIGHT = 1440;
 const FRAME_BOUNDS: CameraFrameBounds = { min: [-4.15, -0.18, -2.05], max: [4.35, 2.35, 2.05] };
-type G3DLoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type A3DLoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
 type NumericPipelineMetadataKey =
   | "meshCount"
   | "primitiveCount"
@@ -164,7 +164,7 @@ async function run(): Promise<void> {
   publish(root, { status: "loading", appId: APP_ID });
 
   try {
-    const hdrBytes = await fetchBytes("/fixtures/v7/environments/hdri/studio_small_08_4k.hdr");
+    const hdrBytes = await fetchBytes("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
     const hdr = createV6PbrHdrPipelineFromRadiance(hdrBytes, {
       id: "v7-studio-small-08-4k",
       label: "V7 Studio Small 08 4K",
@@ -175,13 +175,13 @@ async function run(): Promise<void> {
     });
     const lighting = createV6EnvironmentLightingResources(hdr);
     const [robot, soldier, morph, helmet, watch, car, shoe] = await Promise.all([
-      loadPipeline("/fixtures/v7/assets/animation/robot-expressive.glb", "robot-expressive"),
-      loadPipeline("/fixtures/v7/assets/animation/soldier.glb", "soldier"),
+      loadPipeline("/fixtures/threejs-parity/assets/character/robot-expressive.glb", "robot-expressive"),
+      loadPipeline("/fixtures/threejs-parity/assets/character/soldier.glb", "soldier"),
       loadPipeline("/fixtures/asset-corpus/animated-morph-cube.glb", "animated-morph-cube"),
       loadPipeline("/fixtures/asset-corpus/damaged-helmet.glb", "damaged-helmet"),
-      loadPipeline("/fixtures/v7/assets/flagship/chronograph-watch.glb", "chronograph-watch"),
-      loadPipeline("/fixtures/v7/assets/flagship/car-concept.glb", "car-concept"),
-      loadPipeline("/fixtures/v7/assets/flagship/materials-variants-shoe.glb", "materials-variants-shoe")
+      loadPipeline("/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb", "chronograph-watch"),
+      loadPipeline("/fixtures/threejs-parity/assets/vehicles/car-concept.glb", "car-concept"),
+      loadPipeline("/fixtures/threejs-parity/assets/vehicles/materials-variants-shoe.glb", "materials-variants-shoe")
     ]);
     const assets = [robot, soldier, morph, helmet, watch, car, shoe] as const;
     const importedAnimation = applyImportedAnimationEvidence(soldier, morph);
@@ -281,7 +281,7 @@ async function run(): Promise<void> {
       indexCount: sumMetadata(assets, "indexCount"),
       extensionsUsed: [...new Set(assets.flatMap((asset) => asset.metadata.extensionsUsed))],
       environmentId: hdr.id,
-      hdrEnvironmentUri: "/fixtures/v7/environments/hdri/studio_small_08_4k.hdr"
+      hdrEnvironmentUri: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"
     };
     const stereo = await renderStereoEvidence(source, metadata, stereoRig);
     const proof = renderer.renderImportedAsset({
@@ -352,7 +352,7 @@ async function run(): Promise<void> {
   }
 }
 
-function applyImportedAnimationEvidence(character: G3DLoadedPipeline, morph: G3DLoadedPipeline): NonNullable<V7ExampleParityRuntime["importedAnimation"]> {
+function applyImportedAnimationEvidence(character: A3DLoadedPipeline, morph: A3DLoadedPipeline): NonNullable<V7ExampleParityRuntime["importedAnimation"]> {
   const characterRuntime = createGLTFSceneAnimationRuntime({
     scene: character.resources.scene,
     clips: character.asset.animations,
@@ -437,7 +437,7 @@ function createV7StudioLights(): readonly CollectedLight[] {
   ];
 }
 
-function sumMetadata(pipelines: readonly G3DLoadedPipeline[], key: NumericPipelineMetadataKey): number {
+function sumMetadata(pipelines: readonly A3DLoadedPipeline[], key: NumericPipelineMetadataKey): number {
   return pipelines.reduce((sum, pipeline) => sum + pipeline.metadata[key], 0);
 }
 
@@ -519,7 +519,7 @@ async function renderStereoEvidence(
 }
 
 function collectImportedItems(
-  pipeline: G3DLoadedPipeline,
+  pipeline: A3DLoadedPipeline,
   placement: Mat4
 ): readonly RenderItem[] {
   const items: RenderItem[] = [];
@@ -601,7 +601,7 @@ function clip(name: string, duration: number, distance: number): AnimationClip {
   });
 }
 
-function createIkEvidence(pipeline: G3DLoadedPipeline, placement: Mat4) {
+function createIkEvidence(pipeline: A3DLoadedPipeline, placement: Mat4) {
   const jointNames = selectImportedIkJointNames(pipeline);
   pipeline.resources.scene.updateWorldTransforms();
   const currentRoot = findSceneNodeWorldPosition(pipeline, jointNames[0]) ?? [1.95, 1.2, 0.15] as const;
@@ -635,7 +635,7 @@ function createIkEvidence(pipeline: G3DLoadedPipeline, placement: Mat4) {
   };
 }
 
-function selectImportedIkJointNames(pipeline: G3DLoadedPipeline): readonly [string, string, string] {
+function selectImportedIkJointNames(pipeline: A3DLoadedPipeline): readonly [string, string, string] {
   const skin = pipeline.asset.skins.find((candidate) => candidate.name === "Armature") ?? pipeline.asset.skins[0];
   if (!skin) {
     throw new Error("V7 IK evidence requires a skinned imported GLTF asset.");
@@ -655,7 +655,7 @@ function selectImportedIkJointNames(pipeline: G3DLoadedPipeline): readonly [stri
   return [root, mid, end];
 }
 
-function findSceneNodeWorldPosition(pipeline: G3DLoadedPipeline, nodeName: string): readonly [number, number, number] | undefined {
+function findSceneNodeWorldPosition(pipeline: A3DLoadedPipeline, nodeName: string): readonly [number, number, number] | undefined {
   let position: readonly [number, number, number] | undefined;
   pipeline.resources.scene.traverse((node) => {
     if (position || node.name !== nodeName) return;
@@ -815,7 +815,7 @@ function createPhysicsRenderItems(positions: readonly (readonly [number, number,
   }));
 }
 
-function createProjectedDecalEvidence(pipeline: G3DLoadedPipeline, placement: Mat4): {
+function createProjectedDecalEvidence(pipeline: A3DLoadedPipeline, placement: Mat4): {
   readonly renderItems: readonly RenderItem[];
   readonly projectedDecalCount: number;
   readonly raycastHitCount: number;
@@ -933,14 +933,14 @@ function barBetween(a: readonly [number, number, number], b: readonly [number, n
 
 function createCategoryStatus(): NonNullable<V7ExampleParityRuntime["categories"]> {
   return {
-    keyframes: category("webgl_animation_keyframes", ["imports animated GLB data", "applies imported GLTF TRS tracks to G3D scene nodes", "renders keyframe-scene asset in G3D", "uses G3D animation mixer sample state"], ["Littlest Tokyo-quality scenic asset", "video/frame-sequence motion delta against Three.js"]),
-    skinningBlending: category("webgl_animation_skinning_blending", ["imports skinned Robot Expressive and Soldier GLBs", "applies imported joint TRS tracks to G3D scene nodes", "refreshes G3D renderable skinning palettes from animated joints", "uses imported GLTF runtime weighted clip blending", "uses G3D mixer crossfade weights", "renders skinned GLBs in same scene"], ["live blend-weight UI parity", "broader animated-character visual delta against Three.js"]),
-    additiveBlending: category("webgl_animation_skinning_additive_blending", ["uses additive upper-body action weight in G3D mixer", "applies additive imported morph-weight layer through GLTFSceneAnimationRuntime.applyClips"], ["masked skeletal additive pose applied to imported skeleton vertices"]),
-    morph: category("webgl_animation_skinning_morph", ["imports and renders animated morph cube", "applies imported blended/additive morph-weight animation tracks to G3D renderables"], ["high-quality skinned character plus facial morph asset"]),
-    ik: category("webgl_animation_skinning_ik", ["runs G3D two-bone IK solver", "applies IK to imported Cesium Man skin joints", "refreshes imported skinning palettes after IK", "renders IK joints, target, and solved handle positions"], ["CCD chain solver over arbitrary imported skeleton chains with transform controls"]),
-    decals: category("webgl_decals", ["generates clipped decal geometry from imported mesh triangles", "renders projected decal marks in G3D scene", "records clipped triangle/decal proof counters"], ["interactive raycast placement UI", "normal-oriented projector basis parity against Three.js DecalGeometry"]),
+    keyframes: category("webgl_animation_keyframes", ["imports animated GLB data", "applies imported GLTF TRS tracks to A3D scene nodes", "renders keyframe-scene asset in A3D", "uses A3D animation mixer sample state"], ["Littlest Tokyo-quality scenic asset", "video/frame-sequence motion delta against Three.js"]),
+    skinningBlending: category("webgl_animation_skinning_blending", ["imports skinned Robot Expressive and Soldier GLBs", "applies imported joint TRS tracks to A3D scene nodes", "refreshes A3D renderable skinning palettes from animated joints", "uses imported GLTF runtime weighted clip blending", "uses A3D mixer crossfade weights", "renders skinned GLBs in same scene"], ["live blend-weight UI parity", "broader animated-character visual delta against Three.js"]),
+    additiveBlending: category("webgl_animation_skinning_additive_blending", ["uses additive upper-body action weight in A3D mixer", "applies additive imported morph-weight layer through GLTFSceneAnimationRuntime.applyClips"], ["masked skeletal additive pose applied to imported skeleton vertices"]),
+    morph: category("webgl_animation_skinning_morph", ["imports and renders animated morph cube", "applies imported blended/additive morph-weight animation tracks to A3D renderables"], ["high-quality skinned character plus facial morph asset"]),
+    ik: category("webgl_animation_skinning_ik", ["runs A3D two-bone IK solver", "applies IK to imported Cesium Man skin joints", "refreshes imported skinning palettes after IK", "renders IK joints, target, and solved handle positions"], ["CCD chain solver over arbitrary imported skeleton chains with transform controls"]),
+    decals: category("webgl_decals", ["generates clipped decal geometry from imported mesh triangles", "renders projected decal marks in A3D scene", "records clipped triangle/decal proof counters"], ["interactive raycast placement UI", "normal-oriented projector basis parity against Three.js DecalGeometry"]),
     stereo: category("webgl_effects_stereo", ["renders left/right stereo evidence panels", "records eye separation"], ["real two-camera stereo render compositor"]),
-    physics: category("Three.js plus Rapier/Cannon/Ammo physics examples", ["steps G3D PhysicsWorld", "solves spring constraints", "records raycast and sphere-cast hits", "renders simulated body stack", "records contacts and kinetic energy"], ["external-engine physics benchmark parity and richer interactive sandbox"])
+    physics: category("Three.js plus Rapier/Cannon/Ammo physics examples", ["steps A3D PhysicsWorld", "solves spring constraints", "records raycast and sphere-cast hits", "renders simulated body stack", "records contacts and kinetic energy"], ["external-engine physics benchmark parity and richer interactive sandbox"])
   };
 }
 
@@ -948,7 +948,7 @@ function category(targetThreeExample: string, evidence: readonly string[], missi
   return { targetThreeExample, status: "implemented-foundation", evidence, missingForParity };
 }
 
-function assetProof(pipeline: G3DLoadedPipeline): V7AssetProof {
+function assetProof(pipeline: A3DLoadedPipeline): V7AssetProof {
   return {
     id: pipeline.metadata.assetId,
     uri: pipeline.metadata.assetUri,
@@ -963,12 +963,12 @@ function assetProof(pipeline: G3DLoadedPipeline): V7AssetProof {
 }
 
 function publish(root: HTMLElement, runtime: V7ExampleParityRuntime): void {
-  window.__g3dV7ExampleParityLab = runtime;
+  window.__a3dV7ExampleParityLab = runtime;
   root.innerHTML = `
     <section class="panel">
       <div>
         <h1>V7 Example Parity Lab</h1>
-        <p>G3D runtime work toward keyframes, skinned blending, morphs, IK, decals, stereo effects, and physics parity.</p>
+        <p>A3D runtime work toward keyframes, skinned blending, morphs, IK, decals, stereo effects, and physics parity.</p>
       </div>
       <button id="primary-action" type="button">Advance Mix</button>
     </section>
@@ -984,9 +984,9 @@ function publish(root: HTMLElement, runtime: V7ExampleParityRuntime): void {
     </section>
   `;
   root.querySelector("#primary-action")?.addEventListener("click", () => {
-    const current = window.__g3dV7ExampleParityLab;
+    const current = window.__a3dV7ExampleParityLab;
     if (!current?.mixer) return;
-    window.__g3dV7ExampleParityLab = {
+    window.__a3dV7ExampleParityLab = {
       ...current,
       mixer: {
         ...current.mixer,
@@ -994,7 +994,7 @@ function publish(root: HTMLElement, runtime: V7ExampleParityRuntime): void {
         runWeight: Math.min(1, current.mixer.runWeight + 0.03)
       }
     };
-    publish(root, window.__g3dV7ExampleParityLab);
+    publish(root, window.__a3dV7ExampleParityLab);
   });
 }
 

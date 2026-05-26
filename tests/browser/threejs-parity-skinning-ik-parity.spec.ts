@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/skinning-ik-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/skinning-ik-parity/g3d-skinning-ik.png",
+  a3d: "tests/reports/threejs-parity/skinning-ik-parity/a3d-skinning-ik.png",
   threejs: "tests/reports/threejs-parity/skinning-ik-parity/threejs-skinning-ik.png",
   sideBySide: "tests/reports/threejs-parity/skinning-ik-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 skinning IK same-asset Three.js parity", () => {
     await server.close();
   });
 
-  test("solves Robot Expressive right-arm IK through G3D and a Three.js loaded-bone reference", async ({ page }) => {
+  test("solves Robot Expressive right-arm IK through A3D and a Three.js loaded-bone reference", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -63,7 +63,7 @@ test.describe("V9 skinning IK same-asset Three.js parity", () => {
       writePng(path, dataUrl);
     }
 
-    expect(result.schema).toBe("g3d-threejs-parity-skinning-ik-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-skinning-ik-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAssetUrl).toBe(true);
     expect(result.assertions.sameBaseClip).toBe(true);
@@ -71,21 +71,21 @@ test.describe("V9 skinning IK same-asset Three.js parity", () => {
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeAnimationMixer).toBe(true);
     expect(result.assertions.actualThreeBoneTransforms).toBe(true);
-    expect(result.assertions.g3dAppliedTracksAndSkinning).toBe(true);
+    expect(result.assertions.a3dAppliedTracksAndSkinning).toBe(true);
     expect(result.assertions.endpointsNearTarget).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.solution.endDistanceToTarget).toBeLessThan(0.55);
+    expect(result.a3d.solution.endDistanceToTarget).toBeLessThan(0.55);
     expect(result.threejs.solution.endDistanceToTarget).toBeLessThan(0.55);
-    expect(result.g3d.animation.tracksApplied).toBeGreaterThan(0);
-    expect(result.g3d.animation.skinningPalettesUpdated).toBeGreaterThan(0);
+    expect(result.a3d.animation.tracksApplied).toBeGreaterThan(0);
+    expect(result.a3d.animation.skinningPalettesUpdated).toBeGreaterThan(0);
     expect(result.threejs.animation.skinnedMeshCount).toBeGreaterThan(0);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(32);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.25);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DSkinningIkRuntimeSource();
+    assertNoThreeJsInA3DSkinningIkRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const stats = readV6PngStats(resolve(path));
@@ -109,7 +109,7 @@ test.describe("V9 skinning IK same-asset Three.js parity", () => {
   });
 });
 
-function assertNoThreeJsInG3DSkinningIkRuntimeSource(): void {
+function assertNoThreeJsInA3DSkinningIkRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/skinning-ik/src/main.ts",
@@ -140,8 +140,8 @@ function stripDataUrls(result: Extract<SkinningIkParityResult, { readonly status
 type SkinningIkParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-skinning-ik-parity/v1";
-      readonly g3d: {
+      readonly schema: "a3d-threejs-parity-skinning-ik-parity/v1";
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly animation: { readonly tracksApplied: number; readonly skinningPalettesUpdated: number };
         readonly solution: { readonly endDistanceToTarget: number };
@@ -161,11 +161,11 @@ type SkinningIkParityResult =
         readonly actualThreeRenderer: boolean;
         readonly actualThreeAnimationMixer: boolean;
         readonly actualThreeBoneTransforms: boolean;
-        readonly g3dAppliedTracksAndSkinning: boolean;
+        readonly a3dAppliedTracksAndSkinning: boolean;
         readonly endpointsNearTarget: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
-  | { readonly status: "error"; readonly schema: "g3d-threejs-parity-skinning-ik-parity/v1"; readonly error: string };
+  | { readonly status: "error"; readonly schema: "a3d-threejs-parity-skinning-ik-parity/v1"; readonly error: string };

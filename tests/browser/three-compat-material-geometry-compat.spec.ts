@@ -38,15 +38,15 @@ test("migrated material and geometry showcase renders in browser proof", async (
           ctx.font = "16px system-ui";
           ctx.fillText("Geometry builders: " + geometries.length, 36, 44);
           ctx.fillText("Material types: " + materials.length, 36, 70);
-          window.__g3dGeometryCount = geometries.length;
-          window.__g3dMaterialCompatCount = materials.length;
+          window.__a3dGeometryCount = geometries.length;
+          window.__a3dMaterialCompatCount = materials.length;
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dGeometryCount)).toBe(9);
-  await expect.poll(async () => page.evaluate(() => window.__g3dMaterialCompatCount)).toBe(9);
+  await expect.poll(async () => page.evaluate(() => window.__a3dGeometryCount)).toBe(9);
+  await expect.poll(async () => page.evaluate(() => window.__a3dMaterialCompatCount)).toBe(9);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

@@ -37,7 +37,7 @@ export interface V6AssetManifestEntry {
 }
 
 export interface V6AssetManifest {
-  readonly schema: "g3d-production-runtime-real-asset-corpus/v1";
+  readonly schema: "a3d-production-runtime-real-asset-corpus/v1";
   readonly sourceManifest: string;
   readonly requirements: V6AssetCorpusRequirements;
   readonly claimBoundary: string;
@@ -77,7 +77,7 @@ export interface V6AssetReadinessEntry {
 }
 
 export interface V6AssetCorpusSummary {
-  readonly schema: "g3d-production-runtime-asset-readiness/v1";
+  readonly schema: "a3d-production-runtime-asset-readiness/v1";
   readonly pass: boolean;
   readonly assetCount: number;
   readonly existingAssetCount: number;
@@ -208,7 +208,7 @@ export function createV6AssetCorpusSummary(manifest = loadV6AssetManifest()): V6
     ...(manifest.requirements.mustRejectPrimitiveOnlyProof && !primitiveOnlyRejected ? ["primitive-only or uninspectable assets are present"] : [])
   ];
   return {
-    schema: "g3d-production-runtime-asset-readiness/v1",
+    schema: "a3d-production-runtime-asset-readiness/v1",
     pass: failures.length === 0,
     assetCount: manifest.assets.length,
     existingAssetCount: entries.filter((entry) => entry.exists).length,

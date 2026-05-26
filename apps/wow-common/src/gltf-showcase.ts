@@ -6,16 +6,16 @@ import {
   type GLTFDracoDecodeDescriptor,
   type GLTFDracoDecoder,
   type GLTFDracoDecoderModule
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   computePerspectiveCameraFrame,
   type CameraFrameBounds,
   type Material,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { multiplyMat4, type Mat4 } from "@aura3d/scene";
 
 type Pipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
 type Mixer = ReturnType<typeof createGLTFSceneAnimationMixer>;
@@ -76,8 +76,8 @@ interface Runtime {
 
 declare global {
   interface Window {
-    __g3dWowGltfRuntime?: Runtime;
-    __g3dWowGltfDiagnostics?: unknown;
+    __a3dWowGltfRuntime?: Runtime;
+    __a3dWowGltfDiagnostics?: unknown;
   }
 }
 
@@ -110,7 +110,7 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
 
   try {
     let phaseStarted = performance.now();
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: size.width,
       height: size.height,
@@ -243,11 +243,11 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
 		          clipName: clip?.name ?? (config.animateCamera ? "cinematic camera orbit" : "static scene"),
 	          timings
 	        });
-	        window.__g3dWowGltfRuntime = runtime;
-	        (window as unknown as Record<string, Runtime>)[`__g3d${config.appId.replaceAll("-", "")}`] = runtime;
+	        window.__a3dWowGltfRuntime = runtime;
+	        (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
 	        if (!diagnosticsPublished) {
 	          const diagnosticsStarted = performance.now();
-	          window.__g3dWowGltfDiagnostics = createDiagnostics(pipeline!, config);
+	          window.__a3dWowGltfDiagnostics = createDiagnostics(pipeline!, config);
 	          timings.diagnosticsMs = Math.round(performance.now() - diagnosticsStarted);
 	          diagnosticsPublished = true;
 	        }

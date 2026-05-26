@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Ray, Vector3 } from "@galileo3d/math";
-import { Scene } from "@galileo3d/scene";
+import { Ray, Vector3 } from "@aura3d/math";
+import { Scene } from "@aura3d/scene";
 import { ActionMap, InputSnapshot, InputSystem, InteractionSystem, pickingRayFromCamera } from "../src/index";
 
 test("InputSystem produces stable key transitions across frames", () => {

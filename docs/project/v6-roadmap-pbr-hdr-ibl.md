@@ -6,7 +6,7 @@
 The public HDR entrypoint is:
 
 ```ts
-import { loadHdrEnvironment } from "@galileo3d/engine/production-runtime";
+import { loadHdrEnvironment } from "@aura3d/engine/production-runtime";
 
 const environment = await loadHdrEnvironment({
   url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",

@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/benchmark-babylon",
+  "name": "@aura3d/benchmark-babylon",
   "private": true,
   "type": "module",
   "benchmarkEngine": {

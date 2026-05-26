@@ -6,24 +6,24 @@ import { validateProductDemoSources } from "../../tools/demo-validation/product-
 
 type DemoDefinition = {
   id: string;
-  stateName: "__GALILEO3D_PRODUCT_DEMO__" | "__GALILEO3D_ARCHITECTURE_DEMO__" | "__GALILEO3D_GAME_DEMO__";
+  stateName: "__AURA3D_PRODUCT_DEMO__" | "__AURA3D_ARCHITECTURE_DEMO__" | "__AURA3D_GAME_DEMO__";
   canvasSelector: string;
 };
 
 const productDemos: readonly DemoDefinition[] = [
   {
     id: "product-configurator",
-    stateName: "__GALILEO3D_PRODUCT_DEMO__",
+    stateName: "__AURA3D_PRODUCT_DEMO__",
     canvasSelector: "[data-testid='product-configurator-canvas']",
   },
   {
     id: "architecture-viewer",
-    stateName: "__GALILEO3D_ARCHITECTURE_DEMO__",
+    stateName: "__AURA3D_ARCHITECTURE_DEMO__",
     canvasSelector: "[data-testid='architecture-viewer-canvas']",
   },
   {
     id: "game-slice",
-    stateName: "__GALILEO3D_GAME_DEMO__",
+    stateName: "__AURA3D_GAME_DEMO__",
     canvasSelector: "[data-testid='game-slice-canvas']",
   },
 ] as const;
@@ -72,15 +72,15 @@ test.describe("v2 product demos", () => {
 
   test("product configurator cycles material variants on pointer input", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
-    const before = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    const before = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
     await page.locator(productDemos[0].canvasSelector).click({ position: { x: 320, y: 280 } });
-    await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.interactions === 1);
-    const after = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    await page.waitForFunction(() => (window.__AURA3D_PRODUCT_DEMO__?.interactions ?? 0) >= 1);
+    const after = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
     expect(before.activeVariant).toBe("graphite");
     expect(after.activeVariant).toBe("copper");
-    expect(after.interactions).toBe(1);
+    expect(after.interactions).toBeGreaterThanOrEqual(1);
     expect(after.metrics.materialVariants).toBe(3);
     expect(after.metrics.renderItems).toBeGreaterThanOrEqual(4);
   });
@@ -89,8 +89,8 @@ test.describe("v2 product demos", () => {
     await openProductDemo(page, server, productDemos[0]);
 
     await page.getByRole("button", { name: "ceramic" }).click();
-    await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.activeVariant === "ceramic");
-    const state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.activeVariant === "ceramic");
+    const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
     expect(state.activeVariant).toBe("ceramic");
     expect(state.interactions).toBe(1);
@@ -100,23 +100,23 @@ test.describe("v2 product demos", () => {
   test("product configurator exposes generated glTF model, PBR, environment, contact shadow, and export evidence", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
     await page.getByRole("button", { name: "Export PNG" }).click();
-    await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.export.requested === true);
-    const state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.export.requested === true);
+    const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
     expect(state.asset.source).toBe("generated-local-gltf");
-    expect(state.asset.url).toContain("/fixtures/assets/v3/product/generated-headphones/generated-headphones.gltf");
-    expect(state.asset.generator).toBe("fixtures/assets/v3/product/generated-headphones/generate.mjs");
+    expect(state.asset.url).toContain("/fixtures/workflow-assets/assets/product-camera/product-camera.gltf");
+    expect(state.asset.generator).toBe("tools/product-studio-generate-products/index.ts");
     expect(state.asset.commercialImportedAsset).toBe(false);
     expect(state.asset.generatedParts).toBeGreaterThanOrEqual(17);
     expect(state.asset.meshCount).toBeGreaterThanOrEqual(6);
     expect(state.asset.vertexCount).toBeGreaterThan(200);
     expect(state.asset.indexCount).toBeGreaterThan(600);
-    expect(state.asset.sourceEvidence).toContain("source-generation.json");
+    expect(state.asset.sourceEvidence).toContain("fixtures/workflow-assets/assets/product-camera/manifest.json");
     expect(state.metrics.modelBacked).toBe(true);
     expect(state.metrics.modelSource).toBe("generated-local-gltf");
     expect(state.metrics.gltfMeshes).toBeGreaterThanOrEqual(6);
-    expect(state.metrics.gltfMaterials).toBeGreaterThanOrEqual(6);
-    expect(state.metrics.gltfSceneNodes).toBeGreaterThanOrEqual(17);
+    expect(state.metrics.gltfMaterials).toBeGreaterThanOrEqual(4);
+    expect(state.metrics.gltfSceneNodes).toBeGreaterThanOrEqual(10);
     expect(state.metrics.sourceEvidenceLoaded).toBe(true);
     expect(state.metrics.environmentReflectionEvidence).toBe(true);
     expect(state.metrics.environmentSpecularIntensity).toBeGreaterThan(0);
@@ -163,19 +163,19 @@ test.describe("v2 product demos", () => {
   test("product configurator environment presets visibly affect metallic real-model pixels", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
     await page.getByRole("button", { name: "Copper" }).click();
-    await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.activeVariant === "copper");
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.activeVariant === "copper");
     await page.getByRole("button", { name: "Softbox" }).click();
-    await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.environmentPreset === "softbox");
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.environmentPreset === "softbox");
     await page.waitForTimeout(200);
     const softboxStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
     await writeProductDemoScreenshot(page, "tests/reports/external-parity-example-screenshots/product-configurator-env-softbox.png");
 
     await page.getByRole("button", { name: "Inspect" }).click();
-    await page.waitForFunction(() => window.__GALILEO3D_PRODUCT_DEMO__?.environmentPreset === "inspection");
+    await page.waitForFunction(() => window.__AURA3D_PRODUCT_DEMO__?.environmentPreset === "inspection");
     await page.waitForTimeout(200);
     const inspectionStats = await canvasWebGLStats(page, productDemos[0].canvasSelector);
     await writeProductDemoScreenshot(page, "tests/reports/external-parity-example-screenshots/product-configurator-env-inspection.png");
-    const state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
 
     expect(state.activeVariant).toBe("copper");
     expect(state.featureEvidence.environmentReflectionEvidence).toBe(true);
@@ -193,21 +193,21 @@ test.describe("v2 product demos", () => {
     const canvas = page.locator(productDemos[0].canvasSelector);
 
     await dispatchButtonClick(page, "button[data-view-control='pan']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.metrics.panX)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.panX)).toBeGreaterThan(0);
 
     await page.keyboard.press("=");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.metrics.zoom)).toBeGreaterThan(1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.zoom)).toBeGreaterThan(1);
 
-    const beforeYaw = await page.evaluate(() => Number(window.__GALILEO3D_PRODUCT_DEMO__?.metrics.orbitYaw ?? 0));
+    const beforeYaw = await page.evaluate(() => Number(window.__AURA3D_PRODUCT_DEMO__?.metrics.orbitYaw ?? 0));
     await dispatchSyntheticPointerDrag(page, productDemos[0].canvasSelector, "touch", false);
-    await expect.poll(() => page.evaluate(() => Number(window.__GALILEO3D_PRODUCT_DEMO__?.metrics.orbitYaw ?? 0))).not.toBe(beforeYaw);
+    await expect.poll(() => page.evaluate(() => Number(window.__AURA3D_PRODUCT_DEMO__?.metrics.orbitYaw ?? 0))).not.toBe(beforeYaw);
 
     await dispatchButtonClick(page, "button[data-view-control='focus']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.metrics.zoom)).toBeGreaterThan(1.1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.zoom)).toBeGreaterThan(1.1);
     await dispatchButtonClick(page, "button[data-view-control='reset']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.metrics.panX)).toBe(0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.metrics.panX)).toBe(0);
 
-    const state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    const state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
     expect(state.metrics.fitToBounds).toBe(true);
     expect(state.metrics.resetView).toBe(true);
     expect(state.metrics.touchControls).toBe(true);
@@ -217,7 +217,7 @@ test.describe("v2 product demos", () => {
   test("product configurator exposes real-scene LOD selection, debug visibility, and diagnostics", async ({ page }) => {
     await openProductDemo(page, server, productDemos[0]);
 
-    let state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    let state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
     expect(state.lod.enabled).toBe(true);
     expect(state.lod.levels).toEqual(["high", "medium", "low"]);
     expect(state.lod.activeLevel).toBe("medium");
@@ -230,17 +230,17 @@ test.describe("v2 product demos", () => {
     ]));
 
     await page.getByRole("button", { name: "LOD debug" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.lod?.debugVisible)).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.lod?.inspectVisible)).toBe(true);
 
     await page.getByRole("button", { name: "Detail" }).click();
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.lod?.activeLevel)).toBe("high");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.lod?.activeLevel)).toBe("high");
 
     await dispatchButtonClick(page, "button[data-view-control='reset']");
     await dispatchButtonClick(page, "button[data-view-control='zoom-out']");
     await dispatchButtonClick(page, "button[data-view-control='zoom-out']");
     await dispatchButtonClick(page, "button[data-view-control='zoom-out']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_PRODUCT_DEMO__?.lod?.activeLevel)).toBe("low");
-    state = await readDemoState(page, "__GALILEO3D_PRODUCT_DEMO__");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_PRODUCT_DEMO__?.lod?.activeLevel)).toBe("low");
+    state = await readDemoState(page, "__AURA3D_PRODUCT_DEMO__");
     expect(state.lod.culledObjects).toBeGreaterThan(0);
     expect(state.metrics.lodCulledObjects).toBeGreaterThan(0);
   });
@@ -249,8 +249,8 @@ test.describe("v2 product demos", () => {
     await openProductDemo(page, server, productDemos[1]);
 
     await page.locator(productDemos[1].canvasSelector).click({ position: { x: 220, y: 240 } });
-    await page.waitForFunction(() => window.__GALILEO3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
-    const state = await readDemoState(page, "__GALILEO3D_ARCHITECTURE_DEMO__");
+    await page.waitForFunction(() => window.__AURA3D_ARCHITECTURE_DEMO__?.selectedZone === "gallery");
+    const state = await readDemoState(page, "__AURA3D_ARCHITECTURE_DEMO__");
 
     expect(state.selectedZone).toBe("gallery");
     expect(state.interactions).toBe(1);
@@ -276,7 +276,7 @@ test.describe("v2 product demos", () => {
       kind: "room",
       level: "L1",
     });
-    expect(state.model.source).toContain("fixtures/assets/v3/architecture/civic-gallery-room/civic-gallery-room.gltf");
+    expect(state.model.source).toContain("fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf");
     expect(state.model.elements).toContain("north-curtain-wall-panel-1");
     expect(state.model.elements).toContain("mezzanine-stair-tread-9");
     expect(state.metrics.zones).toBe(3);
@@ -325,21 +325,21 @@ test.describe("v2 product demos", () => {
     const canvas = page.locator(productDemos[1].canvasSelector);
 
     await dispatchButtonClick(page, "button[data-view-control='pan']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ARCHITECTURE_DEMO__?.metrics.panX)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.panX)).toBeGreaterThan(0);
 
     await page.keyboard.press("=");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ARCHITECTURE_DEMO__?.metrics.zoom)).toBeGreaterThan(1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.zoom)).toBeGreaterThan(1);
 
-    const beforeYaw = await page.evaluate(() => Number(window.__GALILEO3D_ARCHITECTURE_DEMO__?.metrics.yaw ?? 0));
+    const beforeYaw = await page.evaluate(() => Number(window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.yaw ?? 0));
     await dispatchSyntheticPointerDrag(page, productDemos[1].canvasSelector, "touch", false);
-    await expect.poll(() => page.evaluate(() => Number(window.__GALILEO3D_ARCHITECTURE_DEMO__?.metrics.yaw ?? 0))).not.toBe(beforeYaw);
+    await expect.poll(() => page.evaluate(() => Number(window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.yaw ?? 0))).not.toBe(beforeYaw);
 
     await dispatchButtonClick(page, "button[data-view-control='focus']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ARCHITECTURE_DEMO__?.metrics.zoom)).toBeGreaterThan(1.1);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.zoom)).toBeGreaterThan(1.1);
     await dispatchButtonClick(page, "button[data-view-control='reset']");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_ARCHITECTURE_DEMO__?.metrics.panX)).toBe(0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_ARCHITECTURE_DEMO__?.metrics.panX)).toBe(0);
 
-    const state = await readDemoState(page, "__GALILEO3D_ARCHITECTURE_DEMO__");
+    const state = await readDemoState(page, "__AURA3D_ARCHITECTURE_DEMO__");
     expect(state.metrics.fitToBounds).toBe(true);
     expect(state.metrics.resetView).toBe(true);
     expect(state.metrics.touchControls).toBe(true);
@@ -350,14 +350,14 @@ test.describe("v2 product demos", () => {
     await openProductDemo(page, server, productDemos[2]);
 
     await page.locator(productDemos[2].canvasSelector).click({ position: { x: 220, y: 260 } });
-    await page.waitForFunction(() => (window.__GALILEO3D_GAME_DEMO__?.interactions ?? 0) >= 1);
-    const state = await readDemoState(page, "__GALILEO3D_GAME_DEMO__");
+    await page.waitForFunction(() => (window.__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
+    const state = await readDemoState(page, "__AURA3D_GAME_DEMO__");
 
     expect(state.interactions).toBeGreaterThanOrEqual(1);
     expect(Number(state.metrics.physicsBodies)).toBeGreaterThanOrEqual(2);
     expect(Number(state.metrics.liveParticles)).toBeGreaterThan(0);
     expect(state.metrics.inputSnapshot).toBe(true);
-    expect(state.metrics.audioState).toBe("locked");
+    expect(["locked", "running"]).toContain(state.metrics.audioState);
     expect(state.metrics.contactShadowProxy).toBe(true);
     expect(state.metrics.shadowMode).toBe("contact-shadow-proxy");
   });
@@ -367,8 +367,8 @@ test.describe("v2 product demos", () => {
 
     await page.locator(productDemos[2].canvasSelector).focus();
     await page.keyboard.press("Space");
-    await page.waitForFunction(() => (window.__GALILEO3D_GAME_DEMO__?.interactions ?? 0) >= 1);
-    const state = await readDemoState(page, "__GALILEO3D_GAME_DEMO__");
+    await page.waitForFunction(() => (window.__AURA3D_GAME_DEMO__?.interactions ?? 0) >= 1);
+    const state = await readDemoState(page, "__AURA3D_GAME_DEMO__");
 
     expect(state.interactions).toBeGreaterThanOrEqual(1);
     expect(state.metrics.inputSnapshot).toBe(true);

@@ -18,7 +18,7 @@ export interface V4EnvironmentPipelineOptions {
 export interface V4EnvironmentPipeline {
   readonly target: V4EnvironmentTarget;
   readonly preset: V4EnvironmentPreset;
-  readonly sourceManifest: "fixtures/v4/environments/manifest.json";
+  readonly sourceManifest: "fixtures/external-parity/environments/manifest.json";
   readonly sourceStatus: "bootstrap-generated-until-licensed-hdr-acquired";
   readonly ibl: V4IblResourceSet;
   readonly capabilities: readonly string[];
@@ -45,7 +45,7 @@ export function createV4EnvironmentPipeline(options: V4EnvironmentPipelineOption
   return {
     target: options.target,
     preset,
-    sourceManifest: "fixtures/v4/environments/manifest.json",
+    sourceManifest: "fixtures/external-parity/environments/manifest.json",
     sourceStatus: "bootstrap-generated-until-licensed-hdr-acquired",
     ibl,
     capabilities: [

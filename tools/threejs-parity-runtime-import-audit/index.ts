@@ -20,7 +20,7 @@ const runtimeThreeImports = files.filter((file) => {
 const issues = runtimeThreeImports.map((file) => reportIssue(`runtime-three-import:${file}`, `${file} imports Three.js at runtime.`, "blocker"));
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-runtime-import-audit/v1",
+  schema: "a3d-threejs-parity-runtime-import-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   scannedFiles: files.length,

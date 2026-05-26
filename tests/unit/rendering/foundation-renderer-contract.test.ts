@@ -9,7 +9,7 @@ import {
   analyzeRgbaFrameVisualMetrics,
   computePerspectiveCameraFrame,
   createLightingDefault
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 describe("V3 renderer contract", () => {
   it("exports the renderer foundation APIs required by V3", () => {

@@ -46,7 +46,7 @@
 
 ## Install And Ship
 
-- API/runtime package: `@galileo3d/engine`
+- API/runtime package: `@aura3d/engine`
 - Template: `templates/external-parity-product-viewer`
-- Scaffolder: `@galileo3d/engine/create-g3d`
+- Scaffolder: `@aura3d/engine/create-aura3d`
 - Evidence: `tests/reports/external-parity-package-smoke.json`, `tests/reports/external-parity-external-consumer.json`

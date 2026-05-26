@@ -5,20 +5,20 @@ import { chromium, type Browser, type Page } from "@playwright/test";
 import { readV6PngStats, type V6PngStats } from "../production-runtime-report-bridge/pngStats";
 import { legacyPathForContextualPath } from "../naming-taxonomy/contextualAliases";
 
-export const V8_ROUTE_HEALTH_ORIGIN = process.env.G3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";
+export const V8_ROUTE_HEALTH_ORIGIN = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";
 export const V8_ROUTE_HEALTH_REPORT = "tests/reports/current-routes-route-health.json";
-export const V8_ROUTE_HEALTH_ARTIFACT_DIR = process.env.G3D_ROUTE_HEALTH_ARTIFACT_DIR ?? "tests/reports/legacy-route-health";
-export const V8_ROOT_BUDGET_MS = Number(process.env.G3D_ROUTE_HEALTH_ROOT_BUDGET_MS ?? 1_500);
-export const V8_ROUTE_BUDGET_MS = Number(process.env.G3D_ROUTE_HEALTH_ROUTE_BUDGET_MS ?? 10_000);
-export const V8_FIRST_VISIBLE_BUDGET_MS = Number(process.env.G3D_ROUTE_HEALTH_FIRST_VISIBLE_BUDGET_MS ?? 1_000);
+export const V8_ROUTE_HEALTH_ARTIFACT_DIR = process.env.A3D_ROUTE_HEALTH_ARTIFACT_DIR ?? "tests/reports/legacy-route-health";
+export const V8_ROOT_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_ROOT_BUDGET_MS ?? 1_500);
+export const V8_ROUTE_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_ROUTE_BUDGET_MS ?? 10_000);
+export const V8_FIRST_VISIBLE_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_FIRST_VISIBLE_BUDGET_MS ?? 1_000);
 export const V8_ROUTE_HEALTH_VIEWPORT = {
-  width: Number(process.env.G3D_ROUTE_HEALTH_VIEWPORT_WIDTH ?? 1_280),
-  height: Number(process.env.G3D_ROUTE_HEALTH_VIEWPORT_HEIGHT ?? 800)
+  width: Number(process.env.A3D_ROUTE_HEALTH_VIEWPORT_WIDTH ?? 1_280),
+  height: Number(process.env.A3D_ROUTE_HEALTH_VIEWPORT_HEIGHT ?? 800)
 } as const;
-export const V8_ROUTE_HEALTH_DEVICE_SCALE_FACTOR = Number(process.env.G3D_ROUTE_HEALTH_DEVICE_SCALE_FACTOR ?? 1.25);
-export const V8_ROUTE_HEALTH_MOTION_SAMPLE_MS = Number(process.env.G3D_ROUTE_HEALTH_MOTION_SAMPLE_MS ?? 800);
-export const V8_ROUTE_HEALTH_MOTION_CHANGED_RATIO_MIN = Number(process.env.G3D_ROUTE_HEALTH_MOTION_CHANGED_RATIO_MIN ?? 0.002);
-export const V8_ROUTE_HEALTH_BACKING_TOLERANCE = Number(process.env.G3D_ROUTE_HEALTH_BACKING_TOLERANCE ?? 0.95);
+export const V8_ROUTE_HEALTH_DEVICE_SCALE_FACTOR = Number(process.env.A3D_ROUTE_HEALTH_DEVICE_SCALE_FACTOR ?? 1.25);
+export const V8_ROUTE_HEALTH_MOTION_SAMPLE_MS = Number(process.env.A3D_ROUTE_HEALTH_MOTION_SAMPLE_MS ?? 800);
+export const V8_ROUTE_HEALTH_MOTION_CHANGED_RATIO_MIN = Number(process.env.A3D_ROUTE_HEALTH_MOTION_CHANGED_RATIO_MIN ?? 0.002);
+export const V8_ROUTE_HEALTH_BACKING_TOLERANCE = Number(process.env.A3D_ROUTE_HEALTH_BACKING_TOLERANCE ?? 0.95);
 
 export interface V8RootRouteLink {
   readonly label: string;
@@ -53,7 +53,7 @@ export interface V8RouteHealthResult {
 }
 
 export interface V8RouteHealthReport {
-  readonly schema: "g3d-current-routes-route-health/v1";
+  readonly schema: "a3d-current-routes-route-health/v1";
   readonly generatedAt: string;
   readonly origin: string;
   readonly root: {
@@ -357,7 +357,7 @@ export async function createV8RouteHealthReport(origin = V8_ROUTE_HEALTH_ORIGIN)
       ...routes.flatMap((route) => route.failures.map((failure) => `${route.path}: ${failure}`))
     ];
     return {
-      schema: "g3d-current-routes-route-health/v1",
+      schema: "a3d-current-routes-route-health/v1",
       generatedAt: new Date().toISOString(),
       origin,
       root: {
@@ -393,8 +393,8 @@ export async function newV8RouteHealthPage(browser: Browser): Promise<Page> {
 
 async function launchRouteHealthBrowser(): Promise<Browser> {
   const defaultMacChromePath = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
-  const executablePath = process.env.G3D_WEBGPU_BROWSER_EXECUTABLE ||
-    (process.env.G3D_DISABLE_SYSTEM_WEBGPU_BROWSER === "true" ? undefined : existsSync(defaultMacChromePath) ? defaultMacChromePath : undefined);
+  const executablePath = process.env.A3D_WEBGPU_BROWSER_EXECUTABLE ||
+    (process.env.A3D_DISABLE_SYSTEM_WEBGPU_BROWSER === "true" ? undefined : existsSync(defaultMacChromePath) ? defaultMacChromePath : undefined);
   return chromium.launch({
     headless: true,
     ...(executablePath ? { executablePath } : {}),
@@ -405,7 +405,7 @@ async function launchRouteHealthBrowser(): Promise<Browser> {
 async function readRouteProbe(page: Page): Promise<RuntimeProbe> {
   return page.evaluate(() => {
     const runtimeEntries = Object.entries(window as unknown as Record<string, unknown>)
-      .filter(([key, value]) => /^__(?:g3d|G3D|GALILEO3D)/.test(key) && isRuntimeRecord(value));
+      .filter(([key, value]) => /^__(?:a3d|A3D|AURA3D)/.test(key) && isRuntimeRecord(value));
     const preferred = runtimeEntries.find(([, value]) => {
       const status = (value as { status?: unknown }).status;
       return status === "ready"
@@ -638,16 +638,16 @@ function slugifyRoutePath(path: string): string {
 
 function routeBudgetForPath(path: string): number {
   const legacyPath = legacyPathForContextualPath(path);
-  if (legacyPath === "/apps/character-viewer/") return Number(process.env.G3D_ROUTE_HEALTH_V6_CHARACTER_BUDGET_MS ?? 5_000);
-  if (legacyPath === "/apps/regression-animation-keyframes/") return Number(process.env.G3D_ROUTE_HEALTH_V7_KEYFRAMES_BUDGET_MS ?? 10_000);
+  if (legacyPath === "/apps/character-viewer/") return Number(process.env.A3D_ROUTE_HEALTH_V6_CHARACTER_BUDGET_MS ?? 5_000);
+  if (legacyPath === "/apps/regression-animation-keyframes/") return Number(process.env.A3D_ROUTE_HEALTH_V7_KEYFRAMES_BUDGET_MS ?? 10_000);
   return V8_ROUTE_BUDGET_MS;
 }
 
 function firstVisibleBudgetForPath(path: string): number {
   const legacyPath = legacyPathForContextualPath(path);
-  if (legacyPath === "/apps/character-viewer/") return Number(process.env.G3D_ROUTE_HEALTH_V6_CHARACTER_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
-  if (legacyPath === "/apps/regression-animation-keyframes/") return Number(process.env.G3D_ROUTE_HEALTH_V7_KEYFRAMES_FIRST_VISIBLE_BUDGET_MS ?? V8_FIRST_VISIBLE_BUDGET_MS);
-  if (legacyPath === "/apps/advanced-examples-gallery/") return Number(process.env.G3D_ROUTE_HEALTH_V9_GALLERY_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
+  if (legacyPath === "/apps/character-viewer/") return Number(process.env.A3D_ROUTE_HEALTH_V6_CHARACTER_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
+  if (legacyPath === "/apps/regression-animation-keyframes/") return Number(process.env.A3D_ROUTE_HEALTH_V7_KEYFRAMES_FIRST_VISIBLE_BUDGET_MS ?? V8_FIRST_VISIBLE_BUDGET_MS);
+  if (legacyPath === "/apps/advanced-examples-gallery/") return Number(process.env.A3D_ROUTE_HEALTH_V9_GALLERY_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
   return V8_FIRST_VISIBLE_BUDGET_MS;
 }
 

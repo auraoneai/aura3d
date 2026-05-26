@@ -37,7 +37,7 @@ export function runV6V6AppTest(config: V6V6AppTestConfig): void {
       try {
         await page.waitForFunction(
           () => {
-            const runtime = window.__g3dV6Runtime as { status?: string } | undefined;
+            const runtime = window.__a3dV6Runtime as { status?: string } | undefined;
             return runtime?.status === "ready" || runtime?.status === "error";
           },
           undefined,
@@ -47,7 +47,7 @@ export function runV6V6AppTest(config: V6V6AppTestConfig): void {
         throw new Error(`${config.appId} did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
       }
 
-      const beforeClick = await page.evaluate(() => window.__g3dV6Runtime) as {
+      const beforeClick = await page.evaluate(() => window.__a3dV6Runtime) as {
         status: "ready" | "error";
         error?: string;
         appId: string;
@@ -116,7 +116,7 @@ export function runV6V6AppTest(config: V6V6AppTestConfig): void {
       }
 
       await page.locator("#primary-action").click();
-      const afterClick = await page.evaluate(() => window.__g3dV6Runtime) as { interactionCount: number; lastInteraction?: string };
+      const afterClick = await page.evaluate(() => window.__a3dV6Runtime) as { interactionCount: number; lastInteraction?: string };
       expect(afterClick.interactionCount).toBeGreaterThan(beforeClick.interactionCount);
       expect(afterClick.lastInteraction).toBeTruthy();
 
@@ -124,11 +124,11 @@ export function runV6V6AppTest(config: V6V6AppTestConfig): void {
       const screenshotPath = `tests/reports/production-runtime-app-suite/${config.appId}.png`;
       await page.locator("#viewport").screenshot({ path: screenshotPath });
       writeFileSync(resolve(`tests/reports/production-runtime-app-suite/${config.appId}.json`), `${JSON.stringify({
-        schema: "g3d-production-runtime-app-runtime/v1",
+        schema: "a3d-production-runtime-app-runtime/v1",
         generatedAt: new Date().toISOString(),
         appId: config.appId,
         screenshot: screenshotPath,
-        runtime: await page.evaluate(() => window.__g3dV6Runtime)
+        runtime: await page.evaluate(() => window.__a3dV6Runtime)
       }, null, 2)}\n`);
     });
   });

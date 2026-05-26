@@ -1,5 +1,5 @@
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { AnimationMotionQualityTracker } from "@galileo3d/animation";
+import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
   PBRMaterial,
@@ -8,15 +8,15 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import { createSkinningBlendController, type SkinningBlendControls } from "./blendController.js";
 import { renderSkinningBlendingUi, type SkinningBlendingRuntime } from "./ui.js";
 
 declare global {
   interface Window {
-    __g3dV8SkinningBlending?: SkinningBlendingRuntime;
+    __a3dV8SkinningBlending?: SkinningBlendingRuntime;
   }
 }
 
@@ -67,7 +67,7 @@ async function run(): Promise<void> {
       ...patch,
       controls: patch.controls ?? controls
     };
-    window.__g3dV8SkinningBlending = runtime;
+    window.__a3dV8SkinningBlending = runtime;
     renderSkinningBlendingUi(root, runtime, setControls);
   };
   const setControls = (next: SkinningBlendControls): void => {
@@ -79,8 +79,8 @@ async function run(): Promise<void> {
   publish({});
 
   try {
-    publish({ status: "loading", loadingStep: `creating G3D renderer for ${ASSET_URL}` });
-    const renderer = await G3DRenderer.create({
+    publish({ status: "loading", loadingStep: `creating A3D renderer for ${ASSET_URL}` });
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -209,7 +209,7 @@ async function run(): Promise<void> {
           motionHealthy: motion.healthy,
           controls
         };
-        window.__g3dV8SkinningBlending = runtime;
+        window.__a3dV8SkinningBlending = runtime;
         if (frameCount === 1 || now - lastPublish > 250) {
           renderSkinningBlendingUi(root, runtime, setControls);
           lastPublish = now;

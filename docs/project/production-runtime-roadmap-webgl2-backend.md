@@ -6,7 +6,7 @@
 V6 WebGL2 setup uses the public renderer path:
 
 ```ts
-import { ProductionWebGL2Renderer } from "@galileo3d/engine/rendering";
+import { ProductionWebGL2Renderer } from "@aura3d/engine/rendering";
 
 const renderer = await ProductionWebGL2Renderer.create({
   canvas,

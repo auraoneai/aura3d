@@ -4,7 +4,7 @@ import {
   Material,
   PBRMaterial,
   UnlitMaterial
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import { buildDataGalaxyScene } from "./dataGalaxyScene";
 import type { DemoDefinition } from "./metadata";
 import { colorFromHex, type Rgba } from "./math";

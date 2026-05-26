@@ -1,4 +1,4 @@
-import { PhysicsWorld, Shape } from "@galileo3d/physics";
+import { PhysicsWorld, Shape } from "@aura3d/physics";
 import { createExample, drawCube2D, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

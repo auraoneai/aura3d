@@ -39,14 +39,14 @@ test.describe("V6 real renderer examples", () => {
       await page.goto(`${server.origin}/examples/production-runtime-examples/${example.slug}/`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(
         () => {
-          const runtime = window.__g3dV6Example as { status?: string } | undefined;
+          const runtime = window.__a3dV6Example as { status?: string } | undefined;
           return runtime?.status === "ready" || runtime?.status === "error";
         },
         undefined,
         { timeout: 90_000 }
       );
 
-      const runtime = await page.evaluate(() => window.__g3dV6Example) as {
+      const runtime = await page.evaluate(() => window.__a3dV6Example) as {
         status: "ready" | "error";
         error?: string;
         appId: string;
@@ -92,8 +92,8 @@ test.describe("V6 real renderer examples", () => {
         expect(runtime.webgpu?.doesNotBlockWebGL2Production).toBe(true);
       }
 
-      await page.locator("#g3d-production-runtime-action").click();
-      const interaction = await page.evaluate(() => window.__g3dV6Example) as { interactionCount: number; lastInteraction?: string };
+      await page.locator("#a3d-production-runtime-action").click();
+      const interaction = await page.evaluate(() => window.__a3dV6Example) as { interactionCount: number; lastInteraction?: string };
       expect(interaction.interactionCount).toBeGreaterThan(0);
       expect(interaction.lastInteraction).toBe("Inspect");
 
@@ -101,7 +101,7 @@ test.describe("V6 real renderer examples", () => {
       const screenshot = `tests/reports/production-runtime-examples/${example.slug}.png`;
       await page.locator("#viewport").screenshot({ path: screenshot });
       writeFileSync(resolve(`tests/reports/production-runtime-examples/${example.slug}.json`), `${JSON.stringify({
-        schema: "g3d-production-runtime-example-runtime/v1",
+        schema: "a3d-production-runtime-example-runtime/v1",
         generatedAt: new Date().toISOString(),
         slug: example.slug,
         screenshot,

@@ -1,1 +1,2 @@
+// @aura3d-shader:production-brdf-v1
 float distributionGGX(float nDotH, float roughness) { float a = roughness * roughness; float a2 = a * a; float denom = nDotH * nDotH * (a2 - 1.0) + 1.0; return a2 / max(3.14159265 * denom * denom, 0.0001); }

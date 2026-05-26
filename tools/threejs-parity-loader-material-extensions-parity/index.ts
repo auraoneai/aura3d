@@ -1,7 +1,7 @@
 // @ts-nocheck
-import { GLTFLoader as G3DGLTFLoader, LoadContext, createGLTFRenderResources } from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { Material, computePerspectiveCameraFrame } from "@galileo3d/rendering";
+import { GLTFLoader as A3DGLTFLoader, LoadContext, createGLTFRenderResources } from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Material, computePerspectiveCameraFrame } from "@aura3d/rendering";
 import * as THREE from "three";
 import { GLTFLoader as ThreeGLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -17,11 +17,11 @@ type LoaderMaterialExtensionsParityResult = LoaderMaterialExtensionsParityReady 
 
 interface LoaderMaterialExtensionsParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-loader-material-extensions-parity/v1";
-  readonly purpose: "same generated glTF KHR_materials_sheen/KHR_materials_transmission loaded by G3D and actual Three.js GLTFLoader";
+  readonly schema: "a3d-threejs-parity-loader-material-extensions-parity/v1";
+  readonly purpose: "same generated glTF KHR_materials_sheen/KHR_materials_transmission loaded by A3D and actual Three.js GLTFLoader";
   readonly generatedInBrowserAt: string;
   readonly fixture: typeof FIXTURE;
-  readonly g3d: {
+  readonly a3d: {
     readonly loader: { readonly extensionsUsed: readonly string[]; readonly unsupportedRequired: readonly string[]; readonly meshCount: number; readonly materialCount: number };
     readonly renderer: { readonly drawCalls: number; readonly triangles: number };
     readonly materials: MaterialExtensionStats;
@@ -38,20 +38,20 @@ interface LoaderMaterialExtensionsParityReady {
     readonly sameFixtureHash: boolean;
     readonly actualThreeGLTFLoader: boolean;
     readonly actualThreeRenderer: boolean;
-    readonly g3dImportsSheen: boolean;
-    readonly g3dImportsTransmission: boolean;
-    readonly g3dTransmissionUsesBlend: boolean;
+    readonly a3dImportsSheen: boolean;
+    readonly a3dImportsTransmission: boolean;
+    readonly a3dTransmissionUsesBlend: boolean;
     readonly threeImportsSheen: boolean;
     readonly threeImportsTransmission: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
 }
 
 interface LoaderMaterialExtensionsParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-loader-material-extensions-parity/v1";
+  readonly schema: "a3d-threejs-parity-loader-material-extensions-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -107,37 +107,37 @@ async function run(): Promise<void> {
   try {
     const fixture = createMaterialExtensionsFixtureDataUrl();
     const fixtureHash = await sha256(fixture);
-    const g3dCanvas = requiredCanvas("g3d-loader-material-extensions", FIXTURE.width, FIXTURE.height);
+    const a3dCanvas = requiredCanvas("a3d-loader-material-extensions", FIXTURE.width, FIXTURE.height);
     const threeCanvas = requiredCanvas("threejs-loader-material-extensions", FIXTURE.width, FIXTURE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", FIXTURE.width * 2, FIXTURE.height + 60);
 
-    if (status) status.textContent = "rendering G3D material-extension fixture";
-    const g3d = await renderG3D(g3dCanvas, fixture);
+    if (status) status.textContent = "rendering A3D material-extension fixture";
+    const a3d = await renderA3D(a3dCanvas, fixture);
     if (status) status.textContent = "rendering Three.js GLTFLoader material-extension reference";
     const threejs = await renderThree(threeCanvas, fixture);
 
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
 
     const ready: LoaderMaterialExtensionsParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-loader-material-extensions-parity/v1",
-      purpose: "same generated glTF KHR_materials_sheen/KHR_materials_transmission loaded by G3D and actual Three.js GLTFLoader",
+      schema: "a3d-threejs-parity-loader-material-extensions-parity/v1",
+      purpose: "same generated glTF KHR_materials_sheen/KHR_materials_transmission loaded by A3D and actual Three.js GLTFLoader",
       generatedInBrowserAt: new Date().toISOString(),
       fixture: { ...FIXTURE, hash: fixtureHash },
-      g3d: {
+      a3d: {
         loader: {
-          extensionsUsed: g3d.extensionsUsed,
-          unsupportedRequired: g3d.unsupportedRequired,
-          meshCount: g3d.meshCount,
-          materialCount: g3d.materialCount
+          extensionsUsed: a3d.extensionsUsed,
+          unsupportedRequired: a3d.unsupportedRequired,
+          meshCount: a3d.meshCount,
+          materialCount: a3d.materialCount
         },
-        renderer: { drawCalls: g3d.drawCalls, triangles: g3d.triangles },
-        materials: g3d.materials,
-        pixels: g3dStats
+        renderer: { drawCalls: a3d.drawCalls, triangles: a3d.triangles },
+        materials: a3d.materials,
+        pixels: a3dStats
       },
       threejs: {
         loader: {
@@ -152,18 +152,18 @@ async function run(): Promise<void> {
       },
       diff,
       assertions: {
-        sameFixtureHash: g3d.fixtureHash === fixtureHash && threejs.fixtureHash === fixtureHash,
+        sameFixtureHash: a3d.fixtureHash === fixtureHash && threejs.fixtureHash === fixtureHash,
         actualThreeGLTFLoader: threejs.actualGLTFLoader,
         actualThreeRenderer: threejs.actualThreeRenderer,
-        g3dImportsSheen: g3d.materials.sheenMaterials >= 1,
-        g3dImportsTransmission: g3d.materials.transmissionMaterials >= 1,
-        g3dTransmissionUsesBlend: g3d.materials.transparentMaterials >= 1,
+        a3dImportsSheen: a3d.materials.sheenMaterials >= 1,
+        a3dImportsTransmission: a3d.materials.transmissionMaterials >= 1,
+        a3dTransmissionUsesBlend: a3d.materials.transparentMaterials >= 1,
         threeImportsSheen: threejs.materials.sheenMaterials >= 1,
         threeImportsTransmission: threejs.materials.transmissionMaterials >= 1,
-        screenshotsNonBlank: g3dStats.nonBlackPixels > 70_000 && threeStats.nonBlackPixels > 70_000,
+        screenshotsNonBlank: a3dStats.nonBlackPixels > 70_000 && threeStats.nonBlackPixels > 70_000,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
 
     window.__V9_LOADER_MATERIAL_EXTENSIONS_PARITY__ = ready;
@@ -172,7 +172,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: LoaderMaterialExtensionsParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-loader-material-extensions-parity/v1",
+      schema: "a3d-threejs-parity-loader-material-extensions-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -182,10 +182,10 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement, fixtureUrl: string) {
-  const asset = await new G3DGLTFLoader().load({ url: fixtureUrl }, new LoadContext());
+async function renderA3D(canvas: HTMLCanvasElement, fixtureUrl: string) {
+  const asset = await new A3DGLTFLoader().load({ url: fixtureUrl }, new LoadContext());
   const resources = await createGLTFRenderResources(asset);
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     canvas,
     width: FIXTURE.width,
     height: FIXTURE.height,
@@ -229,7 +229,7 @@ async function renderG3D(canvas: HTMLCanvasElement, fixtureUrl: string) {
     unsupportedRequired: asset.loaderDiagnostics.unsupportedRequired ?? [],
     meshCount: asset.loaderDiagnostics.meshCount,
     materialCount: asset.loaderDiagnostics.materialCount,
-    materials: inspectG3DMaterials(resources),
+    materials: inspectA3DMaterials(resources),
     drawCalls: result.diagnostics.drawCalls,
     triangles: result.diagnostics.triangles,
     dataUrl: canvas.toDataURL("image/png")
@@ -274,7 +274,7 @@ async function renderThree(canvas: HTMLCanvasElement, fixtureUrl: string) {
   };
 }
 
-function inspectG3DMaterials(resources): MaterialExtensionStats {
+function inspectA3DMaterials(resources): MaterialExtensionStats {
   const materialUniforms = [...resources.materialLibrary.values()]
     .filter((material): material is Material => material instanceof Material)
     .map((material) => ({
@@ -350,7 +350,7 @@ function createMaterialExtensionsFixtureDataUrl(): string {
   const indices = uint16Bytes([0, 1, 2, 0, 2, 3]);
   const binary = concatAligned([positions, normals, indices], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V9 loader material extensions parity fixture" },
+    asset: { version: "2.0", generator: "Aura3D V9 loader material extensions parity fixture" },
     extensionsUsed: FIXTURE.extensions,
     extensionsRequired: FIXTURE.extensions,
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -489,17 +489,17 @@ function computeDiff(a: ImageData, b: ImageData): DiffStats {
   return { meanDelta: round(meanDelta), maxDelta: round(maxDelta), changedPixels, structuralSimilarityProxy: round(Math.max(0, 1 - meanDelta / 255)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to draw side-by-side loader material extension comparison.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#f2f3f5";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0);
+  context.drawImage(a3d, 0, 0);
   context.drawImage(three, FIXTURE.width, 0);
   context.fillStyle = "#15171c";
   context.font = "16px sans-serif";
-  context.fillText("G3D GLTFLoader + PBR uniforms", 18, FIXTURE.height + 28);
+  context.fillText("A3D GLTFLoader + PBR uniforms", 18, FIXTURE.height + 28);
   context.fillText("Three.js GLTFLoader + MeshPhysicalMaterial", FIXTURE.width + 18, FIXTURE.height + 28);
   context.fillStyle = "#46515f";
   context.font = "12px sans-serif";

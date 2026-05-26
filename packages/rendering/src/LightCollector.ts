@@ -1,4 +1,4 @@
-import { DirectionalLight, Light, PointLight, Scene, SpotLight } from "@galileo3d/scene";
+import { DirectionalLight, Light, PointLight, Scene, SpotLight } from "@aura3d/scene";
 
 export type CollectedLightKind = "directional" | "point" | "spot";
 

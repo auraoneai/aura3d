@@ -6,7 +6,7 @@ import {
   ParticleRenderer,
   ParticleSystem,
   SizeModule,
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

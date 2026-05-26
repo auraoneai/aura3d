@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/benchmark-threejs",
+  "name": "@aura3d/benchmark-threejs",
   "private": true,
   "type": "module",
   "benchmarkEngine": {

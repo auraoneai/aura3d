@@ -10,7 +10,7 @@ This document states the intended public SDK surface for V8. It is a product con
 The renderer SDK should make the common real-scene path short and explicit:
 
 ```ts
-import { Renderer, createProductionScene } from "@g3d/engine";
+import { Renderer, createProductionScene } from "@aura3d/engine";
 
 const renderer = await Renderer.create({
   canvas,

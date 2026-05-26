@@ -41,7 +41,7 @@ const checks = [
   { id: "screenshots-exist", pass: screenshots.every(existsSync), detail: screenshots.join(", ") }
 ];
 const report = {
-  schema: "g3d-production-runtime-gltf-render-readiness/v1",
+  schema: "a3d-production-runtime-gltf-render-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks

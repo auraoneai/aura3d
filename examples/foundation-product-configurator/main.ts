@@ -1,4 +1,4 @@
-import { createProductConfiguratorWorkflow } from "@galileo3d/workflows";
+import { createProductConfiguratorWorkflow } from "@aura3d/workflows";
 import { mountV3Example } from "../foundation-example-shell";
 
 void mountV3Example({
@@ -14,8 +14,8 @@ void mountV3Example({
     return createProductConfiguratorWorkflow({
       asset: {
         id: "watch",
-        url: `${location.origin}/fixtures/v2/products/watch/watch.gltf`,
-        manifestUrl: `${location.origin}/fixtures/v2/products/watch/manifest.json`
+        url: `${location.origin}/fixtures/product-studio/products/watch/watch.gltf`,
+        manifestUrl: `${location.origin}/fixtures/product-studio/products/watch/manifest.json`
       },
       materialMode: "contrast",
       lighting: "hero-contrast",

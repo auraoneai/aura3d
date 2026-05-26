@@ -11,7 +11,7 @@ const missing = evidence.filter((path) => !fileExists(path));
 const issues = missing.map((path) => reportIssue(`missing-migration-evidence:${path}`, `Missing migration evidence source ${path}.`, "blocker"));
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-migration-audit/v1",
+  schema: "a3d-threejs-parity-migration-audit/v1",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   evidence,

@@ -45,12 +45,12 @@ def assign(obj, material):
     return obj
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -69,10 +69,10 @@ def bevel(obj, amount=0.025, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.02, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -81,7 +81,7 @@ def cube(name, loc, scale, material, bevel_width=0.02, rot=(0, 0, 0)):
 
 
 def cylinder(name, loc, radius, depth, material, vertices=48, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cylinder_add(vertices=vertices, radius=radius, depth=depth, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -95,7 +95,7 @@ def cone(name, loc, radius1, radius2, depth, material, vertices=48, rot=(0, 0, 0
         radius1=radius1,
         radius2=radius2,
         depth=depth,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -106,7 +106,7 @@ def cone(name, loc, radius1, radius2, depth, material, vertices=48, rot=(0, 0, 0
 
 
 def sphere(name, loc, radius, material, segments=48):
-    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=24, radius=radius, location=loc_g3d(loc))
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=segments, ring_count=24, radius=radius, location=loc_a3d(loc))
     obj = bpy.context.object
     obj.name = name
     assign(obj, material)
@@ -118,7 +118,7 @@ def torus(name, loc, major, minor, material, rot=(0, 0, 0)):
     bpy.ops.mesh.primitive_torus_add(
         major_segments=96,
         minor_segments=12,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         major_radius=major,
         minor_radius=minor,
         rotation=rot,
@@ -379,7 +379,7 @@ def make_scene():
     bpy.context.object.data.size = 4.4
     bpy.context.object.data.color = (0.55, 0.8, 1.0)
     bpy.ops.object.camera_add(location=(4.35, 4.95, 2.85))
-    aim_at(bpy.context.object, loc_g3d((0, 0.82, -0.08)))
+    aim_at(bpy.context.object, loc_a3d((0, 0.82, -0.08)))
     bpy.context.object.data.lens = 38
     bpy.context.object.data.dof.use_dof = False
     bpy.context.scene.camera = bpy.context.object

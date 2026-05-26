@@ -8,14 +8,14 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import { bindStereoControls, DEFAULT_STEREO_CONTROLS, type StereoControlState } from "./stereoControls";
 
 declare global {
   interface Window {
-    __g3dV8StereoEffects?: V8StereoRuntime;
+    __a3dV8StereoEffects?: V8StereoRuntime;
   }
 }
 
@@ -96,8 +96,8 @@ async function run(): Promise<void> {
 
   try {
     const [leftRenderer, rightRenderer] = await Promise.all([
-      G3DRenderer.create({ canvas: leftCanvas, width: SIZE, height: SIZE, preserveDrawingBuffer: true, clearColor: [0.015, 0.018, 0.024, 1] }),
-      G3DRenderer.create({ canvas: rightCanvas, width: SIZE, height: SIZE, preserveDrawingBuffer: true, clearColor: [0.015, 0.018, 0.024, 1] })
+      A3DRenderer.create({ canvas: leftCanvas, width: SIZE, height: SIZE, preserveDrawingBuffer: true, clearColor: [0.015, 0.018, 0.024, 1] }),
+      A3DRenderer.create({ canvas: rightCanvas, width: SIZE, height: SIZE, preserveDrawingBuffer: true, clearColor: [0.015, 0.018, 0.024, 1] })
     ]);
     update({ rendererStatus: "ready", statusLabel: "Renderer ready" });
     const leftResources = createResources();
@@ -133,7 +133,7 @@ async function run(): Promise<void> {
       animationCount: 0,
       skinCount: 0,
       morphTargetCount: 0,
-      extensionsUsed: ["G3D_stereo_camera_rig"]
+      extensionsUsed: ["A3D_stereo_camera_rig"]
     };
     const baseFrame = computePerspectiveCameraFrame(FRAME_BOUNDS, { width: SIZE, height: SIZE }, {
       yawRadians: -0.42,
@@ -196,7 +196,7 @@ async function run(): Promise<void> {
           effectComposition: effectPlan.composition,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__g3dV8StereoEffects = runtime;
+        window.__a3dV8StereoEffects = runtime;
         if (nextFrame === 1 || nextFrame % 10 === 0) publish(root, runtime, controls);
         requestAnimationFrame(render);
       } catch (error) {
@@ -267,13 +267,13 @@ function createLights(): readonly CollectedLight[] {
 }
 
 function publish(root: HTMLElement, runtime: V8StereoRuntime, controls: StereoControlState): void {
-  window.__g3dV8StereoEffects = runtime;
+  window.__a3dV8StereoEffects = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "loading" ? "is-loading" : "is-running";
   root.innerHTML = `
     <section class="panel">
       <div>
         <h1>V8 Stereo Effects</h1>
-        <p>Dual G3D WebGL2 renderers draw a stereo camera rig with live IPD and parallax controls.</p>
+        <p>Dual A3D WebGL2 renderers draw a stereo camera rig with live IPD and parallax controls.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>
     </section>

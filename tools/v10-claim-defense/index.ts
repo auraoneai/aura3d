@@ -30,7 +30,7 @@ const languageIssues = publicDocs().flatMap((path) => {
 });
 const requiredReadmePhrases = [
   "matches or exceeds three.js",
-  "why g3d beats three.js",
+  "why a3d beats three.js",
   "tests/reports/v10/claim-defense.json",
   "docs/project/v10-superiority-status.md"
 ];
@@ -41,7 +41,7 @@ const readmeIssues = requiredReadmePhrases.flatMap((phrase) => readme.includes(p
 const issues = [...reportIssues, ...languageIssues, ...readmeIssues];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-claim-defense/v1",
+  schema: "a3d-v10-claim-defense/v1",
   pass: issues.length === 0,
   decisions: [{
     category: "documentation-and-gtm",

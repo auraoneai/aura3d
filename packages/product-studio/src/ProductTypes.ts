@@ -1,4 +1,4 @@
-import type { GLTFAsset, GLTFRenderResources } from "@galileo3d/assets";
+import type { GLTFAsset, GLTFRenderResources } from "@aura3d/assets";
 import type {
   CameraLike,
   CollectedLight,
@@ -11,7 +11,7 @@ import type {
   RendererPostProcessOptions,
   RendererShadowOptions,
   RenderSource
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 export type ProductAssetId = "camera-kit" | "speaker" | "watch" | (string & {});
 export type ProductLightingPreset = "catalog-softbox" | "inspection-bay" | "hero-contrast";
@@ -121,7 +121,7 @@ export interface ProductDiagnostics {
 }
 
 export interface ProductSceneManifest {
-  readonly schema: "g3d-product-studio-scene/v1";
+  readonly schema: "a3d-product-studio-scene/v1";
   readonly assetId: ProductAssetId;
   readonly title: string;
   readonly partCount: number;

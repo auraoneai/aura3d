@@ -44,7 +44,7 @@ export interface V6HDREnvironment {
 }
 
 export interface V6EnvironmentManifest {
-  readonly schema: "g3d-production-runtime-hdr-environment-corpus/v1";
+  readonly schema: "a3d-production-runtime-hdr-environment-corpus/v1";
   readonly requirements: V6EnvironmentRequirements;
   readonly claimBoundary: string;
   readonly flagshipBindings: Readonly<Record<string, string>>;
@@ -69,7 +69,7 @@ export interface V6EnvironmentReadinessEntry {
 }
 
 export interface V6EnvironmentCorpusSummary {
-  readonly schema: "g3d-production-runtime-environment-readiness/v1";
+  readonly schema: "a3d-production-runtime-environment-readiness/v1";
   readonly pass: boolean;
   readonly environmentCount: number;
   readonly existingEnvironmentCount: number;
@@ -134,7 +134,7 @@ export function createV6EnvironmentCorpusSummary(manifest = loadV6EnvironmentMan
     ...(entries.some((entry) => !entry.inspection?.hasRadianceHeader || !entry.inspection.hasFormatHeader) ? ["one or more HDR files do not expose a Radiance/RGBE header"] : [])
   ];
   return {
-    schema: "g3d-production-runtime-environment-readiness/v1",
+    schema: "a3d-production-runtime-environment-readiness/v1",
     pass: failures.length === 0,
     environmentCount: manifest.environments.length,
     existingEnvironmentCount: entries.filter((entry) => entry.exists).length,

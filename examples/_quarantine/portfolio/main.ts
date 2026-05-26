@@ -30,7 +30,7 @@ type LocalReadinessDemo = {
 
 declare global {
   interface Window {
-    __GALILEO3D_PORTFOLIO__?: {
+    __AURA3D_PORTFOLIO__?: {
       id: "portfolio";
       status: "ready";
       renderer: "html";
@@ -184,9 +184,9 @@ const examples: PortfolioExample[] = [
     title: "PBR Camera Comparison",
     href: "./pbr-camera-comparison/index.html",
     tier: "Renderer Proof",
-    summary: "Same-page bounded Galileo3D WebGL2 PBR scene next to a Three.js reference scene for claim-bounded visual comparison.",
+    summary: "Same-page bounded Aura3D WebGL2 PBR scene next to a Three.js reference scene for claim-bounded visual comparison.",
     systems: ["Perspective camera", "PBR", "Environment approximation", "Three.js reference", "Screenshot diff"],
-    proof: "PBR comparison reports retain Galileo/reference/diff screenshots, scene descriptor hash, semantic checks, and claim-boundary exclusions.",
+    proof: "PBR comparison reports retain Aura3D/reference/diff screenshots, scene descriptor hash, semantic checks, and claim-boundary exclusions.",
     caveat: "Does not prove production PBR parity, HDR IBL, loader parity, or broad visual superiority.",
   },
   {
@@ -204,7 +204,7 @@ const examples: PortfolioExample[] = [
     title: "Large Scene Harness",
     href: "./rendering-large-scene/index.html",
     tier: "Renderer Proof",
-    summary: "WebGL2 harness for thousands of static meshes and instances through the Galileo3D renderer.",
+    summary: "WebGL2 harness for thousands of static meshes and instances through the Aura3D renderer.",
     systems: ["WebGL2", "Large scene", "Instancing", "Frame diagnostics"],
     proof: "Browser tests validate 5,000 static meshes and 10,000 instances through the renderer path.",
     caveat: "This is a harness, not a production world-streaming system.",
@@ -420,7 +420,7 @@ function render(): void {
   main.innerHTML = `
     <section class="hero">
       <div class="hero-inner">
-        <p class="eyebrow">Galileo3D V4 Flagship Evidence</p>
+        <p class="eyebrow">Aura3D V4 Flagship Evidence</p>
         <h1>V4 Flagship Demos</h1>
         <p class="hero-copy">
           This page only features the flagship examples with current browser screenshot evidence: product configurator,
@@ -463,7 +463,7 @@ function render(): void {
     </section>
   `;
   root.append(main);
-  window.__GALILEO3D_PORTFOLIO__ = {
+  window.__AURA3D_PORTFOLIO__ = {
     id: "portfolio",
     status: "ready",
     renderer: "html",

@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible Galileo3D defect.
+description: Report a reproducible Aura3D defect.
 title: "[Bug]: "
 labels: ["bug"]
 body:

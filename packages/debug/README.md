@@ -1,6 +1,6 @@
-# @galileo3d/debug
+# @aura3d/debug
 
-`@galileo3d/debug` owns diagnostics helpers for rendering, materials, shaders, physics, animation, ECS, profiling, resource leaks, overlays, line rendering, and report export.
+`@aura3d/debug` owns diagnostics helpers for rendering, materials, shaders, physics, animation, ECS, profiling, resource leaks, overlays, line rendering, and report export.
 
 ## Public API
 

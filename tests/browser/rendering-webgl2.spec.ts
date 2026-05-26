@@ -17,12 +17,12 @@ test.describe("rendering WebGL2 device", () => {
   test("renders a public Renderer triangle, line segments, points, unlit cube, PBR sphere, lit cube, textured cube, optional texture fallback, normal map, scene morph target, GPU morph target, instanced unlit and PBR triangles, emissive/environment materials, point/spot light attenuation, GPU buffer readback, and render target readback", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/rendering-webgl2-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_RENDERING_TEST__?.status === "ready" || window.__GALILEO3D_RENDERING_TEST__?.status === "error",
+      () => window.__AURA3D_RENDERING_TEST__?.status === "ready" || window.__AURA3D_RENDERING_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_RENDERING_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_RENDERING_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.diagnostics?.drawCalls).toBe(1);
@@ -240,7 +240,7 @@ test.describe("rendering WebGL2 device", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_RENDERING_TEST__?: {
+    __AURA3D_RENDERING_TEST__?: {
       readonly status: "ready" | "error";
       readonly diagnostics?: { readonly drawCalls: number; readonly lastError: string | null };
       readonly lineDiagnostics?: { readonly drawCalls: number; readonly lastError: string | null };

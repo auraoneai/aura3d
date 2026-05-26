@@ -10,7 +10,7 @@ import {
   inspectGLTFAsset,
   type AssetDiagnostic,
   type DecodedGLTFImage
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 
 type CorpusCategory = "product" | "architecture" | "character" | "environment" | "materials" | "animation" | "compression" | "problem-cases";
 
@@ -66,7 +66,7 @@ type CorpusAssetReport = {
   };
 };
 
-const fixtureRoot = resolve("fixtures/assets/v3");
+const fixtureRoot = resolve("fixtures/foundation-assets");
 const reportPath = resolve("tests/reports/foundation-asset-corpus.json");
 const gltfReportPath = resolve("tests/reports/foundation-gltf-corpus.json");
 const generatedAt = new Date().toISOString();
@@ -94,7 +94,7 @@ for (const fixture of fixtures) {
   mkdirSync(directory, { recursive: true });
   writeJson(assetPath, fixture.gltf);
   writeJson(manifestPath, {
-    schemaVersion: "g3d-v3-local-asset-v1",
+    schemaVersion: "a3d-v3-local-asset-v1",
     id: fixture.id,
     category: fixture.category,
     source: fixture.source,
@@ -112,7 +112,7 @@ for (const fixture of fixtures) {
 
 const report = {
   ok: reports.every((asset) => asset.renderStatus !== "error"),
-  schemaVersion: "g3d-v3-asset-corpus-report-v1",
+  schemaVersion: "a3d-v3-asset-corpus-report-v1",
   generatedAt,
   commit: currentCommit(),
   runId: `v3-asset-corpus-${Date.now()}`,
@@ -537,7 +537,7 @@ function createCompressionFixture(): CorpusFixture {
       nextAction: "Run with a real Meshopt decoder before claiming compressed mesh browser support."
     }],
     gltf: {
-      asset: { version: "2.0", generator: "G3D v3 generated meshopt-required fixture" },
+      asset: { version: "2.0", generator: "A3D v3 generated meshopt-required fixture" },
       extensionsUsed: ["EXT_meshopt_compression"],
       extensionsRequired: ["EXT_meshopt_compression"],
       buffers: [{ uri: bytesDataUri(new Uint8Array([0, 1, 2, 3])), byteLength: 4 }],
@@ -612,7 +612,7 @@ function baseGltf(
   rest: Record<string, unknown>
 ): Record<string, unknown> {
   return {
-    asset: { version: "2.0", generator: "G3D v3 generated local fixture" },
+    asset: { version: "2.0", generator: "A3D v3 generated local fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews,
     accessors,

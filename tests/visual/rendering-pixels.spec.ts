@@ -15,12 +15,12 @@ test.describe("rendering visual pixels", () => {
   test("covers triangle, cube, PBR sphere, normal map, emissive material, scene morph target, GPU morph target, and local light pixels", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/rendering-webgl2-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_RENDERING_TEST__?.status === "ready" || window.__GALILEO3D_RENDERING_TEST__?.status === "error",
+      () => window.__AURA3D_RENDERING_TEST__?.status === "ready" || window.__AURA3D_RENDERING_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_RENDERING_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_RENDERING_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.canvasFrame).toMatchObject({ width: 64, height: 64 });
@@ -47,12 +47,12 @@ test.describe("rendering visual pixels", () => {
   test("covers projected shadow contrast on a receiving plane", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/shadow-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_SHADOW_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_SHADOW_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_SHADOW_BROWSER_TEST__?.status === "ready" || window.__AURA3D_SHADOW_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_SHADOW_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_SHADOW_BROWSER_TEST__);
     const shadow = rgbSum(result?.shadowPixel);
     const plane = rgbSum(result?.planePixel);
 
@@ -264,7 +264,7 @@ function isTexturedGreen(pixel: readonly number[] | undefined): boolean {
 
 declare global {
   interface Window {
-    __GALILEO3D_RENDERING_TEST__?: {
+    __AURA3D_RENDERING_TEST__?: {
       readonly status: "ready" | "error";
       readonly diagnostics?: { readonly drawCalls: number };
       readonly cubeDiagnostics?: { readonly drawCalls: number };
@@ -286,7 +286,7 @@ declare global {
       readonly canvasFrame?: { readonly width: number; readonly height: number };
       readonly error?: string;
     };
-    __GALILEO3D_SHADOW_BROWSER_TEST__?: {
+    __AURA3D_SHADOW_BROWSER_TEST__?: {
       readonly status: "ready" | "error";
       readonly shadowRendered?: boolean;
       readonly polygonPointCount?: number;

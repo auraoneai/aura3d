@@ -169,11 +169,11 @@ async function captureWowRoute(page: Page, route: WowRoute, origin: string): Pro
 
     function pickRuntime(): { readonly status?: unknown; readonly frameCount?: unknown; readonly frames?: unknown; readonly drawCalls?: unknown } | null {
       const globals = window as unknown as Record<string, unknown>;
-      const direct = [globals.__g3dWowRuntime, globals.__g3dWowGltfRuntime]
+      const direct = [globals.__a3dWowRuntime, globals.__a3dWowGltfRuntime]
         .find((value) => isRuntime(value));
       if (direct) return direct;
       const appRuntime = Object.entries(globals)
-        .find(([key, value]) => /^__g3dwow/i.test(key) && isRuntime(value));
+        .find(([key, value]) => /^__a3dwow/i.test(key) && isRuntime(value));
       return appRuntime ? appRuntime[1] as { readonly status?: unknown; readonly frameCount?: unknown; readonly frames?: unknown; readonly drawCalls?: unknown } : null;
     }
 
@@ -272,7 +272,7 @@ function writeWowRouteHealthReport(origin: string, results: readonly WowRouteRep
   const failures = results.flatMap((result) => result.failures.map((failure) => `${result.path}: ${failure}`));
   mkdirSync(REPORT_DIR, { recursive: true });
   writeFileSync(`${REPORT_DIR}/route-health.json`, `${JSON.stringify({
-    schema: "g3d-wow-showcase-route-health/v1",
+    schema: "a3d-wow-showcase-route-health/v1",
     generatedAt: new Date().toISOString(),
     origin,
     routeCount: results.length,
@@ -352,13 +352,13 @@ async function readWowRouteState(page: Page): Promise<WowRouteState> {
 
     function pickRuntimeEntry(): readonly [string, Partial<WowRuntimeRecord>] | null {
       const globals = window as unknown as Record<string, unknown>;
-      const preferredKeys = ["__g3dWowRuntime", "__g3dWowGltfRuntime"];
+      const preferredKeys = ["__a3dWowRuntime", "__a3dWowGltfRuntime"];
       for (const key of preferredKeys) {
         const value = globals[key];
         if (isRuntime(value)) return [key, value];
       }
       for (const [key, value] of Object.entries(globals)) {
-        if (/^__g3dwow/i.test(key) && isRuntime(value)) return [key, value];
+        if (/^__a3dwow/i.test(key) && isRuntime(value)) return [key, value];
       }
       return null;
     }
@@ -412,10 +412,10 @@ interface ViteDevServer {
 }
 
 async function startViteDevServer(): Promise<ViteDevServer> {
-  if (process.env.G3D_WOW_BASE_URL) {
-    return { origin: process.env.G3D_WOW_BASE_URL.replace(/\/$/, ""), close: async () => {} };
+  if (process.env.A3D_WOW_BASE_URL) {
+    return { origin: process.env.A3D_WOW_BASE_URL.replace(/\/$/, ""), close: async () => {} };
   }
-  const requestedPort = Number(process.env.G3D_WOW_PORT ?? 5191);
+  const requestedPort = Number(process.env.A3D_WOW_PORT ?? 5191);
   const child = spawn("pnpm", ["exec", "vite", "--host", "127.0.0.1", "--port", String(requestedPort)], {
     cwd: process.cwd(),
     env: process.env,

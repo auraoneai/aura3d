@@ -17,12 +17,12 @@ test.describe("renderer environment background", () => {
   test("renders first-class equirect and cubemap backgrounds behind scene geometry", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/environment-background-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ENVIRONMENT_BACKGROUND_TEST__?.status === "ready" || window.__GALILEO3D_ENVIRONMENT_BACKGROUND_TEST__?.status === "error",
+      () => window.__AURA3D_ENVIRONMENT_BACKGROUND_TEST__?.status === "ready" || window.__AURA3D_ENVIRONMENT_BACKGROUND_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ENVIRONMENT_BACKGROUND_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_ENVIRONMENT_BACKGROUND_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.equirectDiagnostics?.lastError).toBeNull();

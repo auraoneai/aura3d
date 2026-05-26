@@ -9,7 +9,7 @@ import {
   buildSkinningPalette,
   type AnimationStateMachineGraphSnapshot,
   type AnimationValue,
-} from "@galileo3d/animation";
+} from "@aura3d/animation";
 import { createExample, drawGrid, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 interface AnimatedCharacterExampleState {
@@ -32,7 +32,7 @@ interface AnimatedCharacterExampleState {
 
 declare global {
   interface Window {
-    __GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__?: AnimatedCharacterExampleState;
+    __AURA3D_ANIMATED_CHARACTER_EXAMPLE__?: AnimatedCharacterExampleState;
   }
 }
 
@@ -155,7 +155,7 @@ if (typeof document !== "undefined") {
         eventLog: [...eventLog],
         latestEvent: eventLog[eventLog.length - 1],
       };
-      window.__GALILEO3D_ANIMATED_CHARACTER_EXAMPLE__ = state;
+      window.__AURA3D_ANIMATED_CHARACTER_EXAMPLE__ = state;
       return state;
     }
   });

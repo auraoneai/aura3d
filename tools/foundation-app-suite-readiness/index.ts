@@ -21,13 +21,13 @@ const workflowUsage = requiredApps.map((app) => {
   const source = existsSync(sourcePath) ? readFileSync(sourcePath, "utf8") : "";
   return {
     app,
-    importsWorkflows: source.includes("@galileo3d/workflows"),
+    importsWorkflows: source.includes("@aura3d/workflows"),
     usesWorkbench: source.includes("WorkflowWorkbenchApp")
   };
 });
 
 const report = {
-  schema: "g3d-foundation-app-suite-readiness/v1",
+  schema: "a3d-foundation-app-suite-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: sourceFiles.every((file) => file.exists)
     && workflowUsage.every((usage) => usage.importsWorkflows && usage.usesWorkbench)

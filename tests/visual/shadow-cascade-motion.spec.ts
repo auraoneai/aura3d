@@ -3,7 +3,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../browser/example
 
 declare global {
   interface Window {
-    __GALILEO3D_SHADOW_LAB__?: {
+    __AURA3D_SHADOW_LAB__?: {
       status: "ready" | "error";
       renderer: "webgl2-plus-shadow-pass";
       diagnostics?: { drawCalls: number; lastError: string | null };
@@ -34,10 +34,10 @@ test.describe("shadow cascade motion visual pixels", () => {
   test("renders a WebGL2 caster and stable cascaded shadow-pass metadata for a moved caster projection", async ({ page }) => {
     await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
-      () => window.__GALILEO3D_SHADOW_LAB__?.status === "ready" || window.__GALILEO3D_SHADOW_LAB__?.status === "error",
+      () => window.__AURA3D_SHADOW_LAB__?.status === "ready" || window.__AURA3D_SHADOW_LAB__?.status === "error",
       undefined,
       { timeout: 15_000 }
-    ).then(() => page.evaluate(() => window.__GALILEO3D_SHADOW_LAB__));
+    ).then(() => page.evaluate(() => window.__AURA3D_SHADOW_LAB__));
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2-plus-shadow-pass");

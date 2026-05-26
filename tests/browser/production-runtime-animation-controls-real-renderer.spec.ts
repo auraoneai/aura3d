@@ -110,7 +110,7 @@ test.describe("V6 animation and controls real renderer", () => {
     await page.locator("#cesium-man").screenshot({ path: "tests/reports/production-runtime-animation-controls/cesium-man-animation.png" });
     await page.locator("#animated-morph-cube").screenshot({ path: "tests/reports/production-runtime-animation-controls/animated-morph-cube.png" });
     writeFileSync(resolve("tests/reports/production-runtime-animation-controls-real-renderer.json"), `${JSON.stringify({
-      schema: "g3d-production-runtime-animation-controls-real-renderer/v1",
+      schema: "a3d-production-runtime-animation-controls-real-renderer/v1",
       generatedAt: new Date().toISOString(),
       screenshots: [
         "tests/reports/production-runtime-animation-controls/cesium-man-animation.png",

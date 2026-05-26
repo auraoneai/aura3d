@@ -5,18 +5,18 @@ This file is the canonical V9 plan consumed by `tools/threejs-parity-completion-
 ## Plan State
 
 - [x] Inventory the tracked Three.js example surface.
-- [x] Build code-backed G3D routes for every high-priority tracked example.
+- [x] Build code-backed A3D routes for every high-priority tracked example.
 - [x] Generate V9 inventory, claim-registry, completion, route-health, same-scene, package, external-consumer, migration, runtime-import, performance, and visual-review reports.
 - [x] Keep broad full-parity and "exceeds Three.js" claims blocked while any inventory item remains partial.
 - [x] Document V9 as a scoped parity milestone, not a final Three.js replacement release.
 
 ## Real Public Surface
 
-- [x] `@galileo3d/engine/v9` exports `G3DRenderer`, `G3DScene`, and `G3DAppLifecycle`.
-- [x] `@galileo3d/rendering/v9` exports `RendererV9`.
-- [x] `@galileo3d/assets/v9` exports GLTF/renderable-asset helpers.
+- [x] `@aura3d/engine/v9` exports `A3DRenderer`, `A3DScene`, and `A3DAppLifecycle`.
+- [x] `@aura3d/rendering/v9` exports `RendererV9`.
+- [x] `@aura3d/assets/v9` exports GLTF/renderable-asset helpers.
 - [x] Root package exports include math, scene, rendering, controls, assets, animation, input, workflows, three-compat, debug, rendering/v9, assets/v9, and v9.
-- [x] V9 code depends on first-party G3D packages for the G3D side, not runtime Three.js rendering.
+- [x] V9 code depends on first-party A3D packages for the A3D side, not runtime Three.js rendering.
 
 ## Current Inventory Result
 

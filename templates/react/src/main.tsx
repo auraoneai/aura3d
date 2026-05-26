@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
-import { Geometry, Renderer, UnlitMaterial } from "@galileo3d/rendering";
+import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
 
 function App(): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

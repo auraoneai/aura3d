@@ -10,9 +10,9 @@ export interface StaticExportHtmlOptions {
   readonly runtimePath?: string;
 }
 
-const defaultGlobalName = "__GALILEO3D_EXPORTED_PROJECT__";
-const defaultCanvasSelector = "#galileo-export";
-const defaultStatusSelector = "#galileo-export-status";
+const defaultGlobalName = "__AURA3D_EXPORTED_PROJECT__";
+const defaultCanvasSelector = "#aura3d-export";
+const defaultStatusSelector = "#aura3d-export-status";
 const defaultProjectPath = "./project.json";
 
 export function createStaticExportRuntime(options: StaticExportRuntimeOptions = {}): string {
@@ -291,8 +291,8 @@ export function createStaticExportHtml(options: StaticExportHtmlOptions): string
   </head>
   <body>
     <main>
-      <canvas id="galileo-export" width="920" height="520"></canvas>
-      <div class="hud" id="galileo-export-status">Loading export...</div>
+      <canvas id="aura3d-export" width="920" height="520"></canvas>
+      <div class="hud" id="aura3d-export-status">Loading export...</div>
     </main>
     <script type="module" src="${escapeAttribute(runtimePath)}"></script>
   </body>

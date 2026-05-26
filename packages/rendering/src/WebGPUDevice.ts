@@ -472,7 +472,7 @@ export class WebGPUDevice implements RenderDevice {
     }
 
     const handle = this.device.createBuffer({
-      label: `galileo3d-${usage}-${this.nextId}`,
+      label: `aura3d-${usage}-${this.nextId}`,
       size: alignTo(byteLength, 4),
       usage: bufferUsageFlags(usage)
     });
@@ -552,7 +552,7 @@ export class WebGPUDevice implements RenderDevice {
       });
     }
     const nativeTexture = this.device.createTexture?.({
-      label: descriptor.label ?? "galileo3d-webgpu-render-target",
+      label: descriptor.label ?? "aura3d-webgpu-render-target",
       size: [descriptor.width, descriptor.height],
       format: webgpuTextureFormat(descriptor.format ?? "rgba8"),
       usage: TEXTURE_USAGE.RENDER_ATTACHMENT | TEXTURE_USAGE.COPY_SRC | TEXTURE_USAGE.COPY_DST | TEXTURE_USAGE.TEXTURE_BINDING
@@ -561,7 +561,7 @@ export class WebGPUDevice implements RenderDevice {
     const hasSampleableDepth = descriptor.depth === "texture";
     const nativeDepthTexture = hasDepth
       ? this.device.createTexture?.({
-        label: `${descriptor.label ?? "galileo3d-webgpu-render-target"}-depth`,
+        label: `${descriptor.label ?? "aura3d-webgpu-render-target"}-depth`,
         size: [descriptor.width, descriptor.height],
         format: DEPTH_TEXTURE_FORMAT,
         usage: TEXTURE_USAGE.RENDER_ATTACHMENT | (hasSampleableDepth ? TEXTURE_USAGE.TEXTURE_BINDING : 0)
@@ -1487,7 +1487,7 @@ export class WebGPUDevice implements RenderDevice {
     let resource = this.nativeSampledTextures.get(`fallback:${key}` as unknown as Texture);
     if (!resource) {
       const nativeTexture = this.device.createTexture({
-        label: `galileo3d-native-${key}`,
+        label: `aura3d-native-${key}`,
         size: { width: 1, height: 1, depthOrArrayLayers: 1 },
         format: colorSpace === "srgb" ? "rgba8unorm-srgb" : "rgba8unorm",
         usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST
@@ -1661,14 +1661,14 @@ function hasNativeTextureUpload(device: WebGPUDeviceLike): device is WebGPUDevic
 function hasNativeTextureReadback(device: WebGPUDeviceLike): device is WebGPUDeviceLike & Required<Pick<WebGPUDeviceLike, "createCommandEncoder" | "createTexture">> {
   if (typeof device.createCommandEncoder !== "function" || typeof device.createTexture !== "function") return false;
   const probe = device.createBuffer({
-    label: "galileo3d-native-readback-capability-probe",
+    label: "aura3d-native-readback-capability-probe",
     size: 4,
     usage: BUFFER_USAGE.MAP_READ | BUFFER_USAGE.COPY_DST
   });
   const supported = typeof probe.mapAsync === "function" &&
     typeof probe.getMappedRange === "function" &&
     typeof probe.unmap === "function" &&
-    typeof device.createCommandEncoder({ label: "galileo3d-native-readback-capability-probe" }).copyTextureToBuffer === "function";
+    typeof device.createCommandEncoder({ label: "aura3d-native-readback-capability-probe" }).copyTextureToBuffer === "function";
   probe.destroy();
   return supported;
 }
@@ -2298,7 +2298,7 @@ function nativeUniformStruct(): string {
 
 @group(0) @binding(0) var<uniform> u_draw: DrawUniforms;
 
-fn g3dWebGPUClipPosition(clipPosition: vec4<f32>) -> vec4<f32> {
+fn a3dWebGPUClipPosition(clipPosition: vec4<f32>) -> vec4<f32> {
   return vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
 }
 `;
@@ -2463,7 +2463,7 @@ struct VertexOutput {
 fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>) -> VertexOutput {
   var output: VertexOutput;
   let worldPosition = (u_draw.instance0 * vec4<f32>(position, 1.0)).xyz;
-  output.position = g3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
+  output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
   output.normal = normalize((u_draw.instance0 * vec4<f32>(normal, 0.0)).xyz);
   output.uv = vec2<f32>(0.5, 0.5);
   output.worldPosition = worldPosition;
@@ -2494,7 +2494,7 @@ struct VertexOutput {
 fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>) -> VertexOutput {
   var output: VertexOutput;
   let worldPosition = (u_draw.instance0 * vec4<f32>(position, 1.0)).xyz;
-  output.position = g3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
+  output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
   output.normal = normalize((u_draw.instance0 * vec4<f32>(normal, 0.0)).xyz);
   output.uv = uv;
   output.worldPosition = worldPosition;
@@ -2533,7 +2533,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f3
   var output: VertexOutput;
   let model = instanceMatrix(instanceIndex);
   let worldPosition = (model * vec4<f32>(position, 1.0)).xyz;
-  output.position = g3dWebGPUClipPosition(u_draw.modelViewProjection * model * vec4<f32>(position, 1.0));
+  output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * model * vec4<f32>(position, 1.0));
   output.normal = normalize((model * vec4<f32>(normal, 0.0)).xyz);
   output.uv = vec2<f32>(0.5, 0.5);
   output.worldPosition = worldPosition;
@@ -2568,7 +2568,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(5) joints: vec4<f3
   let skin = jointMatrix(joints.x) * weights.x + jointMatrix(joints.y) * weights.y + jointMatrix(joints.z) * weights.z + jointMatrix(joints.w) * weights.w;
   let weightSum = weights.x + weights.y + weights.z + weights.w;
   let skinned = select(vec4<f32>(position, 1.0), skin * vec4<f32>(position, 1.0), weightSum > 0.0001);
-  output.position = g3dWebGPUClipPosition(u_draw.modelViewProjection * skinned);
+  output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * skinned);
   return output;
 }
 `,
@@ -2606,7 +2606,7 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @builtin(vertex_index) verte
   var output: VertexOutput;
   let enabled = min(u_draw.reserved0.y, 1.0);
   let morphed = position + morphDelta(min(vertexIndex, 7u)) * u_draw.reserved0.x * enabled;
-  output.position = g3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(morphed, 1.0));
+  output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(morphed, 1.0));
   return output;
 }
 `,

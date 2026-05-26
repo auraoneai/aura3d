@@ -1,6 +1,6 @@
-# @galileo3d/physics
+# @aura3d/physics
 
-`@galileo3d/physics` owns deterministic rigid-body simulation, collision shapes, colliders, contacts, constraints, raycasts, fixed stepping, scene/ECS bridges, and debug draw extraction.
+`@aura3d/physics` owns deterministic rigid-body simulation, collision shapes, colliders, contacts, constraints, raycasts, fixed stepping, scene/ECS bridges, and debug draw extraction.
 
 ## Public API
 

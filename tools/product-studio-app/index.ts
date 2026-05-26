@@ -7,7 +7,7 @@ const browserReport = existsSync(browserReportPath)
   : null;
 const captures = browserReport?.captures ?? [];
 const report = {
-  schema: "g3d-product-studio-app/v1",
+  schema: "a3d-product-studio-app/v1",
   generatedAt: new Date().toISOString(),
   appPath: "apps/product-studio/index.html",
   browserReportPath: "tests/reports/product-studio/manifest.json",

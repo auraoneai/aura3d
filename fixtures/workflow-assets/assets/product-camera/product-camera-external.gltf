@@ -1,0 +1,1442 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "A3D V3 asset fixture generator (product-camera-external)"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "product-camera-external-scene-0",
+      "nodes": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "body",
+      "mesh": 0,
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        2.7,
+        1.55,
+        0.82
+      ]
+    },
+    {
+      "name": "rubber-grip",
+      "mesh": 1,
+      "translation": [
+        -1.15,
+        -0.05,
+        0.38
+      ],
+      "scale": [
+        0.46,
+        1.24,
+        0.28
+      ]
+    },
+    {
+      "name": "lens-barrel",
+      "mesh": 2,
+      "translation": [
+        0.42,
+        0,
+        0.82
+      ],
+      "scale": [
+        0.68,
+        0.68,
+        0.72
+      ],
+      "rotation": [
+        0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ]
+    },
+    {
+      "name": "lens-glass",
+      "mesh": 3,
+      "translation": [
+        0.42,
+        0,
+        1.23
+      ],
+      "scale": [
+        0.56,
+        0.56,
+        0.08
+      ],
+      "rotation": [
+        0.7071067811865475,
+        0,
+        0,
+        0.7071067811865476
+      ]
+    },
+    {
+      "name": "top-dial-left",
+      "mesh": 4,
+      "translation": [
+        -0.78,
+        0.86,
+        -0.08
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.16
+      ]
+    },
+    {
+      "name": "top-dial-right",
+      "mesh": 5,
+      "translation": [
+        0.82,
+        0.86,
+        -0.08
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.16
+      ]
+    },
+    {
+      "name": "shutter-button",
+      "mesh": 6,
+      "translation": [
+        1.12,
+        0.99,
+        0.16
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.08
+      ]
+    },
+    {
+      "name": "rear-screen",
+      "mesh": 7,
+      "translation": [
+        0.22,
+        -0.05,
+        -0.44
+      ],
+      "scale": [
+        1.25,
+        0.82,
+        0.06
+      ]
+    },
+    {
+      "name": "left-strap-lug",
+      "mesh": 8,
+      "translation": [
+        -1.52,
+        0.18,
+        0.05
+      ],
+      "scale": [
+        0.18,
+        0.42,
+        0.16
+      ]
+    },
+    {
+      "name": "right-strap-lug",
+      "mesh": 9,
+      "translation": [
+        1.52,
+        0.18,
+        0.05
+      ],
+      "scale": [
+        0.18,
+        0.42,
+        0.16
+      ]
+    },
+    {
+      "name": "tripod-plate",
+      "mesh": 10,
+      "translation": [
+        0,
+        -0.86,
+        0
+      ],
+      "scale": [
+        0.82,
+        0.12,
+        0.38
+      ]
+    }
+  ],
+  "meshes": [
+    {
+      "name": "body",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "indices": 3,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "rubber-grip",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 4,
+            "NORMAL": 5,
+            "TEXCOORD_0": 6
+          },
+          "indices": 7,
+          "material": 1
+        }
+      ]
+    },
+    {
+      "name": "lens-barrel",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 8,
+            "NORMAL": 9,
+            "TEXCOORD_0": 10
+          },
+          "indices": 11,
+          "material": 0
+        }
+      ]
+    },
+    {
+      "name": "lens-glass",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 12,
+            "NORMAL": 13,
+            "TEXCOORD_0": 14
+          },
+          "indices": 15,
+          "material": 3
+        }
+      ]
+    },
+    {
+      "name": "top-dial-left",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 16,
+            "NORMAL": 17,
+            "TEXCOORD_0": 18
+          },
+          "indices": 19,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "name": "top-dial-right",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 20,
+            "NORMAL": 21,
+            "TEXCOORD_0": 22
+          },
+          "indices": 23,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "name": "shutter-button",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 24,
+            "NORMAL": 25,
+            "TEXCOORD_0": 26
+          },
+          "indices": 27,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "name": "rear-screen",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 28,
+            "NORMAL": 29,
+            "TEXCOORD_0": 30
+          },
+          "indices": 31,
+          "material": 4
+        }
+      ]
+    },
+    {
+      "name": "left-strap-lug",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 32,
+            "NORMAL": 33,
+            "TEXCOORD_0": 34
+          },
+          "indices": 35,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "name": "right-strap-lug",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 36,
+            "NORMAL": 37,
+            "TEXCOORD_0": 38
+          },
+          "indices": 39,
+          "material": 2
+        }
+      ]
+    },
+    {
+      "name": "tripod-plate",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 40,
+            "NORMAL": 41,
+            "TEXCOORD_0": 42
+          },
+          "indices": 43,
+          "material": 2
+        }
+      ]
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "images": [
+    {
+      "name": "matte-black-body-base-color",
+      "mimeType": "image/png",
+      "uri": "image-0.png"
+    },
+    {
+      "name": "matte-black-body-metallic-roughness",
+      "mimeType": "image/png",
+      "uri": "image-1.png"
+    },
+    {
+      "name": "matte-black-body-normal",
+      "mimeType": "image/png",
+      "uri": "image-2.png"
+    },
+    {
+      "name": "matte-black-body-emissive",
+      "mimeType": "image/png",
+      "uri": "image-3.png"
+    },
+    {
+      "name": "rubber-grip-base-color",
+      "mimeType": "image/png",
+      "uri": "image-4.png"
+    },
+    {
+      "name": "rubber-grip-metallic-roughness",
+      "mimeType": "image/png",
+      "uri": "image-5.png"
+    },
+    {
+      "name": "rubber-grip-normal",
+      "mimeType": "image/png",
+      "uri": "image-6.png"
+    },
+    {
+      "name": "rubber-grip-emissive",
+      "mimeType": "image/png",
+      "uri": "image-7.png"
+    },
+    {
+      "name": "brushed-metal-dials-base-color",
+      "mimeType": "image/png",
+      "uri": "image-8.png"
+    },
+    {
+      "name": "brushed-metal-dials-metallic-roughness",
+      "mimeType": "image/png",
+      "uri": "image-9.png"
+    },
+    {
+      "name": "brushed-metal-dials-normal",
+      "mimeType": "image/png",
+      "uri": "image-10.png"
+    },
+    {
+      "name": "brushed-metal-dials-emissive",
+      "mimeType": "image/png",
+      "uri": "image-11.png"
+    },
+    {
+      "name": "transparent-lens-glass-base-color",
+      "mimeType": "image/png",
+      "uri": "image-12.png"
+    },
+    {
+      "name": "transparent-lens-glass-metallic-roughness",
+      "mimeType": "image/png",
+      "uri": "image-13.png"
+    },
+    {
+      "name": "transparent-lens-glass-normal",
+      "mimeType": "image/png",
+      "uri": "image-14.png"
+    },
+    {
+      "name": "transparent-lens-glass-emissive",
+      "mimeType": "image/png",
+      "uri": "image-15.png"
+    },
+    {
+      "name": "emissive-rear-screen-base-color",
+      "mimeType": "image/png",
+      "uri": "image-16.png"
+    },
+    {
+      "name": "emissive-rear-screen-metallic-roughness",
+      "mimeType": "image/png",
+      "uri": "image-17.png"
+    },
+    {
+      "name": "emissive-rear-screen-normal",
+      "mimeType": "image/png",
+      "uri": "image-18.png"
+    },
+    {
+      "name": "emissive-rear-screen-emissive",
+      "mimeType": "image/png",
+      "uri": "image-19.png"
+    }
+  ],
+  "textures": [
+    {
+      "name": "matte-black-body-base-color",
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "name": "matte-black-body-metallic-roughness",
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "name": "matte-black-body-normal",
+      "source": 2,
+      "sampler": 0
+    },
+    {
+      "name": "matte-black-body-emissive",
+      "source": 3,
+      "sampler": 0
+    },
+    {
+      "name": "rubber-grip-base-color",
+      "source": 4,
+      "sampler": 0
+    },
+    {
+      "name": "rubber-grip-metallic-roughness",
+      "source": 5,
+      "sampler": 0
+    },
+    {
+      "name": "rubber-grip-normal",
+      "source": 6,
+      "sampler": 0
+    },
+    {
+      "name": "rubber-grip-emissive",
+      "source": 7,
+      "sampler": 0
+    },
+    {
+      "name": "brushed-metal-dials-base-color",
+      "source": 8,
+      "sampler": 0
+    },
+    {
+      "name": "brushed-metal-dials-metallic-roughness",
+      "source": 9,
+      "sampler": 0
+    },
+    {
+      "name": "brushed-metal-dials-normal",
+      "source": 10,
+      "sampler": 0
+    },
+    {
+      "name": "brushed-metal-dials-emissive",
+      "source": 11,
+      "sampler": 0
+    },
+    {
+      "name": "transparent-lens-glass-base-color",
+      "source": 12,
+      "sampler": 0
+    },
+    {
+      "name": "transparent-lens-glass-metallic-roughness",
+      "source": 13,
+      "sampler": 0
+    },
+    {
+      "name": "transparent-lens-glass-normal",
+      "source": 14,
+      "sampler": 0
+    },
+    {
+      "name": "transparent-lens-glass-emissive",
+      "source": 15,
+      "sampler": 0
+    },
+    {
+      "name": "emissive-rear-screen-base-color",
+      "source": 16,
+      "sampler": 0
+    },
+    {
+      "name": "emissive-rear-screen-metallic-roughness",
+      "source": 17,
+      "sampler": 0
+    },
+    {
+      "name": "emissive-rear-screen-normal",
+      "source": 18,
+      "sampler": 0
+    },
+    {
+      "name": "emissive-rear-screen-emissive",
+      "source": 19,
+      "sampler": 0
+    }
+  ],
+  "materials": [
+    {
+      "name": "matte-black-body",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.015,
+          0.016,
+          0.018,
+          1
+        ],
+        "metallicFactor": 0.05,
+        "roughnessFactor": 0.78,
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      },
+      "normalTexture": {
+        "index": 2,
+        "scale": 0.35
+      },
+      "emissiveTexture": {
+        "index": 3
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "name": "rubber-grip",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.02,
+          0.02,
+          0.019,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.92,
+        "baseColorTexture": {
+          "index": 4
+        },
+        "metallicRoughnessTexture": {
+          "index": 5
+        }
+      },
+      "normalTexture": {
+        "index": 6,
+        "scale": 0.75
+      },
+      "emissiveTexture": {
+        "index": 7
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "name": "brushed-metal-dials",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.74,
+          0.72,
+          0.66,
+          1
+        ],
+        "metallicFactor": 1,
+        "roughnessFactor": 0.28,
+        "baseColorTexture": {
+          "index": 8
+        },
+        "metallicRoughnessTexture": {
+          "index": 9
+        }
+      },
+      "normalTexture": {
+        "index": 10,
+        "scale": 0.4
+      },
+      "emissiveTexture": {
+        "index": 11
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "name": "transparent-lens-glass",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.5,
+          0.75,
+          0.92,
+          0.36
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.04,
+        "baseColorTexture": {
+          "index": 12
+        },
+        "metallicRoughnessTexture": {
+          "index": 13
+        }
+      },
+      "normalTexture": {
+        "index": 14,
+        "scale": 0.15
+      },
+      "emissiveTexture": {
+        "index": 15
+      },
+      "emissiveFactor": [
+        0,
+        0,
+        0
+      ],
+      "alphaMode": "BLEND",
+      "doubleSided": true
+    },
+    {
+      "name": "emissive-rear-screen",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.04,
+          0.08,
+          0.1,
+          1
+        ],
+        "metallicFactor": 0,
+        "roughnessFactor": 0.22,
+        "baseColorTexture": {
+          "index": 16
+        },
+        "metallicRoughnessTexture": {
+          "index": 17
+        }
+      },
+      "normalTexture": {
+        "index": 18,
+        "scale": 0.2
+      },
+      "emissiveTexture": {
+        "index": 19
+      },
+      "emissiveFactor": [
+        0.08,
+        0.38,
+        0.7
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 22928,
+      "uri": "buffer-0.bin"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 288,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 576,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 768,
+      "byteLength": 72,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 840,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1128,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1416,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1608,
+      "byteLength": 72,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1680,
+      "byteLength": 1200,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2880,
+      "byteLength": 1200,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 4080,
+      "byteLength": 800,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 4880,
+      "byteLength": 1152,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 6032,
+      "byteLength": 1200,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 7232,
+      "byteLength": 1200,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 8432,
+      "byteLength": 800,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 9232,
+      "byteLength": 1152,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 10384,
+      "byteLength": 912,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 11296,
+      "byteLength": 912,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 12208,
+      "byteLength": 608,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 12816,
+      "byteLength": 864,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 13680,
+      "byteLength": 912,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 14592,
+      "byteLength": 912,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 15504,
+      "byteLength": 608,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 16112,
+      "byteLength": 864,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 16976,
+      "byteLength": 720,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 17696,
+      "byteLength": 720,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 18416,
+      "byteLength": 480,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 18896,
+      "byteLength": 672,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19568,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 19856,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 20144,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 20336,
+      "byteLength": 72,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 20408,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 20696,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 20984,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 21176,
+      "byteLength": 72,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 21248,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 21536,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 21824,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 22016,
+      "byteLength": 72,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 22088,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 22376,
+      "byteLength": 288,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 22664,
+      "byteLength": 192,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 22856,
+      "byteLength": 72,
+      "target": 34963
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    },
+    {
+      "bufferView": 4,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 5,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 6,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 7,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    },
+    {
+      "bufferView": 8,
+      "componentType": 5126,
+      "count": 100,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 9,
+      "componentType": 5126,
+      "count": 100,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 10,
+      "componentType": 5126,
+      "count": 100,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 11,
+      "componentType": 5123,
+      "count": 576,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        99
+      ]
+    },
+    {
+      "bufferView": 12,
+      "componentType": 5126,
+      "count": 100,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 13,
+      "componentType": 5126,
+      "count": 100,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 14,
+      "componentType": 5126,
+      "count": 100,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 15,
+      "componentType": 5123,
+      "count": 576,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        99
+      ]
+    },
+    {
+      "bufferView": 16,
+      "componentType": 5126,
+      "count": 76,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 17,
+      "componentType": 5126,
+      "count": 76,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 18,
+      "componentType": 5126,
+      "count": 76,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 19,
+      "componentType": 5123,
+      "count": 432,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        75
+      ]
+    },
+    {
+      "bufferView": 20,
+      "componentType": 5126,
+      "count": 76,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 21,
+      "componentType": 5126,
+      "count": 76,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 22,
+      "componentType": 5126,
+      "count": 76,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 23,
+      "componentType": 5123,
+      "count": 432,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        75
+      ]
+    },
+    {
+      "bufferView": 24,
+      "componentType": 5126,
+      "count": 60,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 25,
+      "componentType": 5126,
+      "count": 60,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 26,
+      "componentType": 5126,
+      "count": 60,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 27,
+      "componentType": 5123,
+      "count": 336,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        59
+      ]
+    },
+    {
+      "bufferView": 28,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 29,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 30,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 31,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    },
+    {
+      "bufferView": 32,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 33,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 34,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 35,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    },
+    {
+      "bufferView": 36,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 37,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 38,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 39,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    },
+    {
+      "bufferView": 40,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "bufferView": 41,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 42,
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 43,
+      "componentType": 5123,
+      "count": 36,
+      "type": "SCALAR",
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ]
+    }
+  ]
+}

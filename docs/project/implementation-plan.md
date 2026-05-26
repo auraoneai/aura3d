@@ -2,7 +2,7 @@
 
 ## Status
 
-G3D is a production TypeScript-first browser 3D engine and workflow SDK with V10 evidence showing parity or better results against Three.js in the measured graphics, animation, asset, physics, performance, and developer-workflow categories.
+A3D is a production TypeScript-first browser 3D engine and workflow SDK with V10 evidence showing parity or better results against Three.js in the measured graphics, animation, asset, physics, performance, and developer-workflow categories.
 
 Latest V10 report snapshot:
 
@@ -18,7 +18,7 @@ Latest V10 report snapshot:
 
 ## Product Direction
 
-Build G3D around scoped browser 3D workflows where the project can offer stronger defaults than raw Three.js:
+Build A3D around scoped browser 3D workflows where the project can offer stronger defaults than raw Three.js:
 
 - Product viewers and configurators.
 - Asset inspection and glTF/GLB validation.

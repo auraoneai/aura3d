@@ -33,7 +33,7 @@ export interface WebGPURenderToTextureProof {
   readonly disposedTextures: number;
 }
 
-const SHADER_MARKER = "@galileo3d-shader:webgpu-rtt-proof-v1";
+const SHADER_MARKER = "@aura3d-shader:webgpu-rtt-proof-v1";
 
 export function runWebGPURenderToTextureProof(
   device: RenderDevice,

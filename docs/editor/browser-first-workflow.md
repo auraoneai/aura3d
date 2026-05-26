@@ -1,6 +1,6 @@
 # Browser-First Editor Workflow
 
-This document scopes the current Galileo3D editor application to a browser-first TypeScript authoring workflow. It is not a claim that the project replaces broad native game editors or high-end DCC pipelines.
+This document scopes the current Aura3D editor application to a browser-first TypeScript authoring workflow. It is not a claim that the project replaces broad native game editors or high-end DCC pipelines.
 
 ## Current Verified Workflow
 
@@ -19,7 +19,7 @@ The checked editor slice supports a bounded authoring loop:
 
 All editor UI operations in `apps/editor/src` are routed through public `EditorRuntime` APIs. The shell and panels use `select`, `currentSelection`, `clearSelection`, `setPickTargets`, `pick`, `translateTarget`, `updateDiagnostics`, `diagnosticsSnapshot`, and command execution methods instead of reaching into runtime selection, command-history, picking, gizmo, or diagnostics internals.
 
-The checked-in `examples/editor-authored-project/project.json` includes `metadata.provenance` with the editor workflow name, runtime package, ordered authoring operations, and deterministic `evidenceHash` `g3d-prov-29e66ba9`. `ProjectSerializer.verifyEditorAuthoredProvenance()` validates that log, requires `EditorRuntime.*` operations plus static export evidence, and rejects hash mismatches.
+The checked-in `examples/editor-authored-project/project.json` includes `metadata.provenance` with the editor workflow name, runtime package, ordered authoring operations, and deterministic `evidenceHash` `a3d-prov-29e66ba9`. `ProjectSerializer.verifyEditorAuthoredProvenance()` validates that log, requires `EditorRuntime.*` operations plus static export evidence, and rejects hash mismatches.
 
 Current verification:
 
@@ -44,7 +44,7 @@ The API is a registry and discovery surface for editor UI composition. It does n
 
 ## Static Export Scope
 
-The static export workflow generates a minimal runtime that can display the authored project without loading the editor shell. The export HTML/runtime string generation is owned by `@galileo3d/editor-runtime` (`createStaticExportHtml()` and `createStaticExportRuntime()`), and the editor app exporter packages those strings with the saved project JSON. It is suitable for smoke testing project save/load/export wiring.
+The static export workflow generates a minimal runtime that can display the authored project without loading the editor shell. The export HTML/runtime string generation is owned by `@aura3d/editor-runtime` (`createStaticExportHtml()` and `createStaticExportRuntime()`), and the editor app exporter packages those strings with the saved project JSON. It is suitable for smoke testing project save/load/export wiring.
 
 The current export is not a full build pipeline. It does not bundle external assets, optimize textures, code-split scripts, emit deployment manifests, or integrate with hosting providers.
 
@@ -64,6 +64,6 @@ Before prefab claims are made, the editor needs:
 
 The allowed wording for this slice is:
 
-> Galileo3D has a browser-first editor prototype slice for TypeScript-centric scene authoring, project JSON save/load, play-mode snapshot restore, and static export smoke testing.
+> Aura3D has a browser-first editor prototype slice for TypeScript-centric scene authoring, project JSON save/load, play-mode snapshot restore, and static export smoke testing.
 
 Do not describe the current editor as production-ready, as a broad native-editor replacement, or as evidence for a general Unity or Unreal replacement claim. Any future competitive claim must remain limited to browser-first TypeScript workflows and must cite current browser tests, exported-project smoke tests, known limits, and comparison evidence.

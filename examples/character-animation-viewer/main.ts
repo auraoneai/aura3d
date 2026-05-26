@@ -6,9 +6,9 @@ import {
   type AnimationClip,
   type AnimationStateMachineGraphSnapshot,
   type AnimationValue
-} from "@galileo3d/animation";
-import { GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFSkinAsset } from "@galileo3d/assets";
-import { Geometry, IndexBuffer, Renderer, SkinnedLitMaterial, VertexBuffer, VertexFormat, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+} from "@aura3d/animation";
+import { GLTFLoader, LoadContext, type GLTFMeshAsset, type GLTFSkinAsset } from "@aura3d/assets";
+import { Geometry, IndexBuffer, Renderer, SkinnedLitMaterial, VertexBuffer, VertexFormat, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 interface CharacterAnimationViewerState {
   readonly id: "character-animation-viewer";
@@ -50,7 +50,7 @@ interface CharacterAnimationViewerState {
 
 declare global {
   interface Window {
-    __GALILEO3D_CHARACTER_ANIMATION_VIEWER__?: CharacterAnimationViewerState;
+    __AURA3D_CHARACTER_ANIMATION_VIEWER__?: CharacterAnimationViewerState;
   }
 }
 
@@ -62,7 +62,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void boot().catch((error) => {
-    window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__ = {
+    window.__AURA3D_CHARACTER_ANIMATION_VIEWER__ = {
       id: "character-animation-viewer",
       status: "error",
       renderer: "webgl2",
@@ -260,7 +260,7 @@ async function boot(): Promise<void> {
       knownLimits,
       diagnostics
     };
-    window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__ = state;
+    window.__AURA3D_CHARACTER_ANIMATION_VIEWER__ = state;
     graphStatus.textContent = `${currentGraphState}\n${debugGraph}`;
     status.textContent = JSON.stringify(state, null, 2);
     if (playing) {

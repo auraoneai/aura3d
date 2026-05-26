@@ -1,4 +1,4 @@
-# Galileo3D Portfolio
+# Aura3D Portfolio
 
 This page is the user-facing examples index for the current engine capability slice.
 

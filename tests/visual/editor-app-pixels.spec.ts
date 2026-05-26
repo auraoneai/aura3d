@@ -14,7 +14,7 @@ test.describe("editor app visual pixels", () => {
 
   test("renders viewport, overlay, diagnostics, and selected-gizmo pixels", async ({ page }, testInfo) => {
     await page.goto(`${server.origin}/apps/editor/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
+    await page.waitForFunction(() => window.__AURA3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 15_000 });
 
     await page.getByRole("button", { name: "Move X" }).click();
     await expect(page.locator('[data-role="viewport-hud"]')).toContainText("draw calls");
@@ -62,7 +62,7 @@ test.describe("editor app visual pixels", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_EDITOR_APP__?: {
+    __AURA3D_EDITOR_APP__?: {
       getState(): { readonly status: "booting" | "ready" | "error" };
     };
   }

@@ -29,7 +29,7 @@ const checks = [
   { name: "diagnostics", pass: diagnostics.warnings.length === 0, detail: diagnostics.warnings.join(", ") || "no VFX warnings" }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "g3d-three-compat-vfx-readiness/v1", generatedAt: new Date().toISOString(), pass, diagnostics, checks };
+const report = { schema: "a3d-three-compat-vfx-readiness/v1", generatedAt: new Date().toISOString(), pass, diagnostics, checks };
 const reportPath = resolve("tests/reports/three-compat-vfx-readiness.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);

@@ -5,7 +5,7 @@ const inventory = readV9Inventory();
 const visualReview = readJson<{ readonly needingReview?: number; readonly issues?: readonly unknown[] }>("tests/reports/threejs-parity/visual-review.json");
 const items = inventory.items ?? [];
 const visualBlockers = items
-  .filter((item) => item.visualStatus !== "accepted" && item.g3dStatus !== "exceeded")
+  .filter((item) => item.visualStatus !== "accepted" && item.a3dStatus !== "exceeded")
   .map((item) => issue(`visual:${item.threeExampleId}`, `${item.threeExampleId} visual status is ${item.visualStatus ?? "unknown"}.`));
 const reportIssues = [
   ...requirePassingReport("tests/reports/threejs-parity/visual-review.json", "V9 visual review"),
@@ -14,7 +14,7 @@ const reportIssues = [
 ];
 
 writeReport(outputPath, {
-  schema: "g3d-v10-visual-quality/v1",
+  schema: "a3d-v10-visual-quality/v1",
   pass: reportIssues.length === 0 && (visualReview?.needingReview ?? 0) === 0,
   decisions: [{
     category: "graphics-and-visual-quality",

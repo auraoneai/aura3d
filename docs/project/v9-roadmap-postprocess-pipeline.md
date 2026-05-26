@@ -1,6 +1,6 @@
 # V9 Postprocess Pipeline
 
-G3D has render-target and postprocess code with matched baseline/bloom routes. Advanced postprocess parity remains partial.
+A3D has render-target and postprocess code with matched baseline/bloom routes. Advanced postprocess parity remains partial.
 
 ## Real Code
 

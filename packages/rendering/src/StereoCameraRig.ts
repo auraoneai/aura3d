@@ -1,4 +1,4 @@
-import { invertMat4, multiplyMat4, type Mat4, type Vec3 } from "@galileo3d/scene";
+import { invertMat4, multiplyMat4, type Mat4, type Vec3 } from "@aura3d/scene";
 import type { PerspectiveCameraFrame } from "./CameraFraming";
 
 export type StereoEye = "left" | "right";

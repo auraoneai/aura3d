@@ -1,13 +1,13 @@
-# G3D vs Babylon.js Benchmark Evidence
+# A3D vs Babylon.js Benchmark Evidence
 
-This report summarizes the current local evidence for G3D against Babylon.js. The current repo supports a bounded benchmark-bundle claim and shared-scaffold evidence. It does not prove broad Babylon.js replacement, broad runtime superiority, or editor/tooling parity.
+This report summarizes the current local evidence for A3D against Babylon.js. The current repo supports a bounded benchmark-bundle claim and shared-scaffold evidence. It does not prove broad Babylon.js replacement, broad runtime superiority, or editor/tooling parity.
 
 ## Primary Evidence
 
 | Area | Evidence | Status |
 |---|---|---|
-| Benchmark scaffold | `tools/compare-engines/index.ts`, `benchmarks/shared/scenes/*.ts`, `benchmarks/galileo/src/scenes/*.ts`, `benchmarks/babylon/src/scenes/*.ts`, `tests/reports/comparison-babylon.json` | 11 checked-in equivalent scaffold scenes in the latest comparison report. |
-| Shared scene descriptors | `benchmarks/shared/scenes/descriptor.ts`, `benchmarks/shared/scenes/*.ts` | Used to keep G3D, Three.js, and Babylon.js workload metadata aligned. |
+| Benchmark scaffold | `tools/compare-engines/index.ts`, `benchmarks/shared/scenes/*.ts`, `benchmarks/aura3d/src/scenes/*.ts`, `benchmarks/babylon/src/scenes/*.ts`, `tests/reports/comparison-babylon.json` | 11 checked-in equivalent scaffold scenes in the latest comparison report. |
+| Shared scene descriptors | `benchmarks/shared/scenes/descriptor.ts`, `benchmarks/shared/scenes/*.ts` | Used to keep A3D, Three.js, and Babylon.js workload metadata aligned. |
 | Browser audit artifacts | `tests/reports/comparison-babylon-audit.png`, `tests/reports/comparison-bundles/**` | Captures the comparison audit page and generated browser benchmark bundles. |
 | Compatibility context | `tests/reports/asset-compatibility-threejs.json`, `docs/project/known-limits.md` | Loader import evidence and limitations; not visual output parity. |
 
@@ -19,21 +19,21 @@ This report summarizes the current local evidence for G3D against Babylon.js. Th
 pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --v4 --write-reports
 ```
 
-The report records an equivalent scaffold over 11 checked-in scenes and marks broad claims as unusable. Its supported niche claim is limited to esbuild browser benchmark bundle bytes: G3D generated smaller benchmark bundles than Babylon.js for all 11 checked-in equivalent scaffold scenes on that run.
+The report records an equivalent scaffold over 11 checked-in scenes and marks broad claims as unusable. Its supported niche claim is limited to esbuild browser benchmark bundle bytes: A3D generated smaller benchmark bundles than Babylon.js for all 11 checked-in equivalent scaffold scenes on that run.
 
 That is not a release bundle-size claim, a frame-rate claim, a rendered visual comparison, or a production-app benchmark.
 
 ## Babylon.js Reality
 
-Babylon.js remains stronger in mature loader behavior, inspector tooling, public docs, authoring/debugging workflows, WebGPU productization, broad examples, and production history. G3D has local benchmark scaffolds and web-app examples, but it does not yet have Babylon.js-level inspector depth, material tooling, asset pipeline maturity, documentation breadth, or device matrix history.
+Babylon.js remains stronger in mature loader behavior, inspector tooling, public docs, authoring/debugging workflows, WebGPU productization, broad examples, and production history. A3D has local benchmark scaffolds and web-app examples, but it does not yet have Babylon.js-level inspector depth, material tooling, asset pipeline maturity, documentation breadth, or device matrix history.
 
-## G3D Positioning Against Babylon.js
+## A3D Positioning Against Babylon.js
 
 Use a narrow product position:
 
-- G3D is a TypeScript-first browser engine with local evidence artifacts and a repo-native validation workflow.
-- G3D can target teams that want a smaller, controlled, app-embedded 3D runtime instead of a large general-purpose engine stack.
-- G3D should not position as a full Babylon.js replacement until it has broader loader, inspector, WebGPU, material, and device evidence.
+- A3D is a TypeScript-first browser engine with local evidence artifacts and a repo-native validation workflow.
+- A3D can target teams that want a smaller, controlled, app-embedded 3D runtime instead of a large general-purpose engine stack.
+- A3D should not position as a full Babylon.js replacement until it has broader loader, inspector, WebGPU, material, and device evidence.
 
 ## Required Before Broader Babylon.js Claims
 

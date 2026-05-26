@@ -12,12 +12,12 @@ import {
   type RenderItem,
   type StaticBatchInput,
   type StaticBatchResult
-} from "@galileo3d/rendering";
-import { Scene } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Scene } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __GALILEO3D_LARGE_SCENE_TEST__?: LargeSceneHarnessResult;
+    __AURA3D_LARGE_SCENE_TEST__?: LargeSceneHarnessResult;
   }
 }
 
@@ -408,7 +408,7 @@ function findPixel(
 }
 
 function publish(result: LargeSceneHarnessResult, statusElement?: HTMLElement): void {
-  window.__GALILEO3D_LARGE_SCENE_TEST__ = result;
+  window.__AURA3D_LARGE_SCENE_TEST__ = result;
   if (statusElement) {
     statusElement.textContent = JSON.stringify(result, null, 2);
   }

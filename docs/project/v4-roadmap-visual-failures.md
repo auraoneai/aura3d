@@ -17,10 +17,10 @@ The following V3 artifacts are useful evidence that rendering and workflows are 
 - `tests/reports/v3-examples/foundation-material-studio.png`
 - `tests/reports/v3-examples/foundation-product-configurator.png`
 - `tests/reports/v3-examples/foundation-interactive-scene.png`
-- `tests/reports/foundation-threejs-comparison/product-g3d.png`
-- `tests/reports/foundation-threejs-comparison/material-g3d.png`
-- `tests/reports/foundation-threejs-comparison/asset-g3d.png`
-- `tests/reports/foundation-threejs-comparison/interactive-g3d.png`
+- `tests/reports/foundation-threejs-comparison/product-a3d.png`
+- `tests/reports/foundation-threejs-comparison/material-a3d.png`
+- `tests/reports/foundation-threejs-comparison/asset-a3d.png`
+- `tests/reports/foundation-threejs-comparison/interactive-a3d.png`
 
 ## Visual Problems To Fix
 

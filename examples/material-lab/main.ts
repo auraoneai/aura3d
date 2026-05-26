@@ -1,9 +1,9 @@
-import { Renderable, Scene } from "@galileo3d/scene";
-import { Geometry, IndexBuffer, NormalMappedPBRMaterial, PBRMaterial, Renderer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, UnlitMaterial, VertexBuffer, VertexFormat } from "@galileo3d/rendering";
+import { Renderable, Scene } from "@aura3d/scene";
+import { Geometry, IndexBuffer, NormalMappedPBRMaterial, PBRMaterial, Renderer, Sampler, Texture, TexturedPBRMaterial, TexturedUnlitMaterial, UnlitMaterial, VertexBuffer, VertexFormat } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_LAB__?: LabState;
+    __AURA3D_MATERIAL_LAB__?: LabState;
   }
 }
 
@@ -22,7 +22,7 @@ const canvasHeight = 540;
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_MATERIAL_LAB__ = {
+    window.__AURA3D_MATERIAL_LAB__ = {
       status: "error",
       renderer: "webgl2",
       error: error instanceof Error ? error.stack ?? error.message : String(error)
@@ -54,7 +54,7 @@ async function run(): Promise<void> {
     alphaBlend: findPixel(renderer, { x: 690, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 65 && b > 70 && g < 90 && a === 255)
   };
 
-  window.__GALILEO3D_MATERIAL_LAB__ = {
+  window.__AURA3D_MATERIAL_LAB__ = {
     status: "ready",
     renderer: "webgl2",
     diagnostics,
@@ -62,7 +62,7 @@ async function run(): Promise<void> {
     pixels,
     materials: Object.keys(materialLibrary)
   };
-  status.textContent = JSON.stringify(window.__GALILEO3D_MATERIAL_LAB__, null, 2);
+  status.textContent = JSON.stringify(window.__AURA3D_MATERIAL_LAB__, null, 2);
 
   window.addEventListener("beforeunload", () => renderer.dispose(), { once: true });
 }

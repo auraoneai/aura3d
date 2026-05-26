@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DirectionalLight, Scene } from "@galileo3d/scene";
+import { DirectionalLight, Scene } from "@aura3d/scene";
 import { CascadedShadowMaps, LightCollector, LightingDebug } from "../../../packages/rendering/src";
 
 describe("lighting debug and cascaded shadows", () => {

@@ -79,7 +79,7 @@ test.describe("V6 PBR/HDR real renderer", () => {
     await page.locator("#sunset").screenshot({ path: "tests/reports/production-runtime-pbr-hdr/damaged-helmet-sunset-hdr.png" });
     const reportPath = "tests/reports/production-runtime-pbr-hdr-real-renderer.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-production-runtime-pbr-hdr-real-renderer/v1",
+      schema: "a3d-production-runtime-pbr-hdr-real-renderer/v1",
       generatedAt: new Date().toISOString(),
       screenshots: [
         "tests/reports/production-runtime-pbr-hdr/damaged-helmet-studio-hdr.png",

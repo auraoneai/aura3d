@@ -1,4 +1,4 @@
-import type { ProductRenderScene, ProductStudio } from "@galileo3d/product-studio";
+import type { ProductRenderScene, ProductStudio } from "@aura3d/product-studio";
 
 export interface ProductStudioViewport {
   readonly canvas: HTMLCanvasElement;

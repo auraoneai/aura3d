@@ -1,4 +1,4 @@
-import { AssetManager, GLTFLoader, createGLTFRenderResources, type GLTFAsset } from "@galileo3d/assets";
+import { AssetManager, GLTFLoader, createGLTFRenderResources, type GLTFAsset } from "@aura3d/assets";
 
 const root = document.querySelector<HTMLElement>("#app");
 if (!root) throw new Error("Missing app root.");
@@ -46,7 +46,7 @@ async function load(url: string): Promise<void> {
     vertexCount: handle.value.meshes.reduce((sum, mesh) => sum + mesh.geometry.vertexCount, 0),
     renderGeometryCount: resources.geometryLibrary.size,
     renderMaterialCount: resources.materialLibrary.size,
-    publicRuntime: ["@galileo3d/assets", "AssetManager", "GLTFLoader", "createGLTFRenderResources"],
+    publicRuntime: ["@aura3d/assets", "AssetManager", "GLTFLoader", "createGLTFRenderResources"],
   };
   status.textContent = JSON.stringify(result, null, 2);
   drawSummary(canvas, result.meshCount, result.vertexCount);
@@ -84,7 +84,7 @@ function createInlineTriangleGltfUrl(): string {
   const indices = uint16Bytes([0, 1, 2]);
   const buffer = concatBytes(positions, indices);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D asset viewer template" },
+    asset: { version: "2.0", generator: "Aura3D asset viewer template" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },

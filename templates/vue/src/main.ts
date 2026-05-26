@@ -1,5 +1,5 @@
 import { createApp, onMounted, ref } from "vue";
-import { Geometry, Renderer, UnlitMaterial } from "@galileo3d/rendering";
+import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
 
 const App = {
   setup() {

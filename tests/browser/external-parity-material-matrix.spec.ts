@@ -20,13 +20,13 @@ test.describe("V4 physical material matrix browser evidence", () => {
   test("proves visible material variation and public material diagnostics", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/_quarantine/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_MATERIAL_SHOWROOM__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_MATERIAL_SHOWROOM__?.status === "ready", undefined, { timeout: 30_000 });
 
     const screenshotPath = "tests/reports/external-gallery/materials/material-matrix.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/materials"), { recursive: true });
     await page.locator("[data-testid='material-showroom-canvas']").screenshot({ path: screenshotPath });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_MATERIAL_SHOWROOM__);
+    const state = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
     const v4Materials = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
       const matrix = rendering.analyzeV4MaterialMatrix();
@@ -98,7 +98,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_SHOWROOM__?: {
+    __AURA3D_MATERIAL_SHOWROOM__?: {
       readonly status?: "ready" | "error";
       readonly pixels?: Record<string, readonly number[]>;
     };

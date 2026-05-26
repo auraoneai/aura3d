@@ -14,15 +14,15 @@ test.describe("editor exported project", () => {
 
   test("runs the checked-in editor-authored static project without loading the editor app", async ({ page }) => {
     await page.goto(`${server.origin}/examples/editor-authored-project/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EXPORTED_PROJECT__?.status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
 
-    const result = await page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__);
+    const result = await page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__);
     expect(result?.nodeCount).toBe(2);
     expect(result?.projectName).toBe("Editor Authored Sample");
-    await expect(page.locator("#galileo-export-status")).toContainText("Loaded Editor Authored Sample");
+    await expect(page.locator("#aura3d-export-status")).toContainText("Loaded Editor Authored Sample");
 
     const nonBlankPixels = await page.evaluate(() => {
-      const canvas = document.querySelector<HTMLCanvasElement>("#galileo-export");
+      const canvas = document.querySelector<HTMLCanvasElement>("#aura3d-export");
       const data = canvas?.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height).data;
       if (!data) return 0;
       let pixels = 0;
@@ -36,9 +36,9 @@ test.describe("editor exported project", () => {
 
   test("runs the checked-in V3 editor-authored app with imported asset, material, behavior, and export provenance", async ({ page }) => {
     await page.goto(`${server.origin}/examples/foundation-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EXPORTED_PROJECT__?.status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
 
-    const result = await page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__);
+    const result = await page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__);
     expect(result?.nodeCount).toBe(2);
     expect(result?.assetCount).toBe(1);
     expect(result?.projectName).toBe("V3 Editor Authored Sample");
@@ -51,11 +51,11 @@ test.describe("editor exported project", () => {
     ]));
     expect(result?.usesPlayExportPath).toBe(true);
     expect(result?.interactive).toBe(true);
-    expect(result?.provenanceHash).toBe("g3d-prov-9bf29cd5");
-    await expect(page.locator("#galileo-export-status")).toContainText("Loaded V3 Editor Authored Sample");
+    expect(result?.provenanceHash).toBe("a3d-prov-9bf29cd5");
+    await expect(page.locator("#aura3d-export-status")).toContainText("Loaded V3 Editor Authored Sample");
 
     const nonBlankPixels = await page.evaluate(() => {
-      const canvas = document.querySelector<HTMLCanvasElement>("#galileo-export");
+      const canvas = document.querySelector<HTMLCanvasElement>("#aura3d-export");
       const data = canvas?.getContext("2d")?.getImageData(0, 0, canvas.width, canvas.height).data;
       if (!data) return 0;
       let pixels = 0;
@@ -65,17 +65,17 @@ test.describe("editor exported project", () => {
       return pixels;
     });
     expect(nonBlankPixels).toBeGreaterThan(1000);
-    await page.locator("#galileo-export").click({ position: { x: 500, y: 270 } });
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
+    await page.locator("#aura3d-export").click({ position: { x: 500, y: 270 } });
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
     await page.keyboard.press("ArrowRight");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EXPORTED_PROJECT__?.selectedNodeName)).toBeTruthy();
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.selectedNodeName)).toBeTruthy();
   });
 
   test("runs the checked-in editor-authored game export with objective and follow camera evidence", async ({ page }) => {
     await page.goto(`${server.origin}/examples/editor-authored-game/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_EDITOR_AUTHORED_GAME__?.status === "ready");
+    await page.waitForFunction(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.status === "ready");
 
-    const initial = await page.evaluate(() => window.__GALILEO3D_EDITOR_AUTHORED_GAME__);
+    const initial = await page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__);
     expect(initial?.projectName).toBe("V3 Editor Authored Game");
     expect(initial?.nodeCount).toBe(3);
     expect(initial?.assetCount).toBe(1);
@@ -93,14 +93,14 @@ test.describe("editor exported project", () => {
     await expect.poll(() => nonBlankCanvasPixels(page, "#editor-authored-game"), { timeout: 10_000 }).toBeGreaterThan(1000);
 
     await dispatchCanvasPointer(page, "#editor-authored-game", 800, 260);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_AUTHORED_GAME__?.interactions ?? 0)).toBeGreaterThan(0);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_AUTHORED_GAME__?.playerX ?? -99), { timeout: 10_000 }).toBeGreaterThan(-2.8);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.interactions ?? 0)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.playerX ?? -99), { timeout: 10_000 }).toBeGreaterThan(-2.8);
 
     for (let index = 0; index < 34; index += 1) {
       await dispatchCanvasKey(page, "#editor-authored-game", "ArrowRight");
     }
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_AUTHORED_GAME__?.won), { timeout: 15_000 }).toBe(true);
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_EDITOR_AUTHORED_GAME__?.objectiveStatus)).toBe("Objective complete");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.won), { timeout: 15_000 }).toBe(true);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.objectiveStatus)).toBe("Objective complete");
     await expect(page.locator("#editor-authored-game-status")).toContainText("Objective complete");
   });
 });
@@ -144,7 +144,7 @@ async function dispatchCanvasKey(page: import("@playwright/test").Page, selector
 
 declare global {
   interface Window {
-    __GALILEO3D_EXPORTED_PROJECT__?: {
+    __AURA3D_EXPORTED_PROJECT__?: {
       readonly status: "ready";
       readonly nodeCount: number;
       readonly assetCount?: number;
@@ -158,7 +158,7 @@ declare global {
       readonly interactions?: number;
       readonly interactive?: boolean;
     };
-    __GALILEO3D_EDITOR_AUTHORED_GAME__?: {
+    __AURA3D_EDITOR_AUTHORED_GAME__?: {
       readonly status: "ready";
       readonly projectName: string;
       readonly nodeCount: number;

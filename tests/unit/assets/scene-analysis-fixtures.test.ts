@@ -6,7 +6,7 @@ describe("gltf scene analysis fixtures", () => {
     const asset = createTestAsset();
     const evidence = createGLTFSceneAnalysisEvidence({
       asset,
-      url: "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf",
+      url: "/fixtures/product-studio/products/speaker/speaker.gltf",
       maskWidth: 32,
       maskHeight: 16,
       minCoverage: 0.1,
@@ -82,7 +82,7 @@ describe("gltf scene analysis fixtures", () => {
 
     expect(createGLTFSceneAnalysisEvidence({
       asset,
-      url: "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf",
+      url: "/fixtures/product-studio/products/speaker/speaker.gltf",
       maskWidth: 32,
       maskHeight: 16,
       minCoverage: 0.1,
@@ -104,7 +104,7 @@ describe("gltf scene analysis fixtures", () => {
 
 function createTestAsset(): GLTFAsset {
   return {
-    url: "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf",
+    url: "/fixtures/product-studio/products/speaker/speaker.gltf",
     disposed: false,
     loaderDiagnostics: {
       schemaVersion: "gltf-loader-diagnostics-v1",
@@ -217,6 +217,6 @@ function createTestAsset(): GLTFAsset {
     createScene: () => {
       throw new Error("not needed for scene-analysis fixture tests");
     },
-    toJSON: () => ({ url: "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf" })
+    toJSON: () => ({ url: "/fixtures/product-studio/products/speaker/speaker.gltf" })
   } as unknown as GLTFAsset;
 }

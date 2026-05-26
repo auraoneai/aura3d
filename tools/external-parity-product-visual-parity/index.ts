@@ -8,7 +8,7 @@ import { chromium, type Browser, type Page } from "@playwright/test";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 import { productVisualParityScene } from "./productScene.js";
 
-type ProductVisualEngine = "galileo" | "threejs" | "babylon";
+type ProductVisualEngine = "aura3d" | "threejs" | "babylon";
 
 interface ProductVisualRender {
   readonly engine: ProductVisualEngine;
@@ -36,7 +36,7 @@ interface ProductVisualRender {
 }
 
 interface ProductVisualDiff {
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "threejs" | "babylon";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -70,7 +70,7 @@ interface ProductVisualAssetPipelineEvidence {
 }
 
 interface ProductExternalBaselineDiff {
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "unity" | "unreal";
   readonly baselinePath: string;
   readonly comparedPath: string;
@@ -114,7 +114,7 @@ export interface ProductExternalBaselineValidation {
     readonly sha256?: string;
     readonly violations: readonly string[];
   };
-  readonly diffAgainstGalileo?: ProductExternalBaselineDiff;
+  readonly diffAgainstAura3D?: ProductExternalBaselineDiff;
   readonly violations: readonly string[];
 }
 
@@ -155,7 +155,7 @@ const sourceFiles = [
   "tools/external-parity-product-visual-parity/index.ts",
   "tools/external-parity-product-visual-parity/productScene.ts",
   "tools/external-parity-broad-parity-readiness/index.ts",
-  "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
+  "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json",
   "packages/rendering/src/Renderer.ts",
   "packages/rendering/src/Geometry.ts",
   "packages/rendering/src/PBRMaterial.ts",
@@ -178,16 +178,16 @@ export async function createV4ProductVisualParityReport(root = process.cwd()): P
     });
     try {
       const renders: ProductVisualRender[] = [];
-      for (const engine of ["galileo", "threejs", "babylon"] as const) {
+      for (const engine of ["aura3d", "threejs", "babylon"] as const) {
         const bundle = bundles.get(engine);
         if (!bundle) throw new Error(`Missing ${engine} visual parity bundle.`);
         renders.push(await renderEngine(page, root, engine, bundle));
       }
-      const galileoRender = renders.find((render) => render.engine === "galileo");
-      if (!galileoRender) throw new Error("Missing Galileo product render for external baseline validation.");
+      const aura3dRender = renders.find((render) => render.engine === "aura3d");
+      if (!aura3dRender) throw new Error("Missing Aura3D product render for external baseline validation.");
       const assetPipeline = productVisualAssetPipelineEvidence(root);
-      const unityExternalBaseline = validateExternalProductVisualBaseline(root, unityProductBaseline, "unity", galileoRender.screenshotPath);
-      const unrealExternalBaseline = validateExternalProductVisualBaseline(root, unrealProductBaseline, "unreal", galileoRender.screenshotPath);
+      const unityExternalBaseline = validateExternalProductVisualBaseline(root, unityProductBaseline, "unity", aura3dRender.screenshotPath);
+      const unrealExternalBaseline = validateExternalProductVisualBaseline(root, unrealProductBaseline, "unreal", aura3dRender.screenshotPath);
       const diffs = [
         await createScreenshotDiff(page, root, renders, "threejs"),
         await createScreenshotDiff(page, root, renders, "babylon"),
@@ -265,14 +265,14 @@ export function collectProductVisualEvidencePaths(report: Pick<V4ProductVisualPa
     ...report.diffs.flatMap((diff) => [diff.baselinePath, diff.comparedPath, diff.diffPath]),
     ...Object.values(report.externalBaselines).flatMap((baseline) => [
       baseline.screenshot?.path,
-      baseline.diffAgainstGalileo?.baselinePath,
-      baseline.diffAgainstGalileo?.comparedPath,
+      baseline.diffAgainstAura3D?.baselinePath,
+      baseline.diffAgainstAura3D?.comparedPath,
     ]),
   ];
   return [...new Set(paths.filter((path): path is string => typeof path === "string" && path.length > 0))];
 }
 
-export function validateExternalProductVisualBaseline(root: string, report: Record<string, unknown> | null, engine: "unity" | "unreal", galileoScreenshotPath?: string): ProductExternalBaselineValidation {
+export function validateExternalProductVisualBaseline(root: string, report: Record<string, unknown> | null, engine: "unity" | "unreal", aura3dScreenshotPath?: string): ProductExternalBaselineValidation {
   const reportPath = `tests/reports/external-parity-${engine}-product-visual-baseline.json`;
   const expectedDescriptorSha256 = productSceneDescriptorSha256(root);
   const screenshot = isRecord(report) ? validateExternalBaselineScreenshot(root, report) : { ok: false, reason: "baseline report missing" };
@@ -289,8 +289,8 @@ export function validateExternalProductVisualBaseline(root: string, report: Reco
       height: screenshot.height,
     })
     : { ok: false, violations: ["baseline report missing"] };
-  const diffAgainstGalileo = screenshot.ok && externalScreenshotPath && galileoScreenshotPath
-    ? createExternalScreenshotDiff(root, galileoScreenshotPath, externalScreenshotPath, engine)
+  const diffAgainstAura3D = screenshot.ok && externalScreenshotPath && aura3dScreenshotPath
+    ? createExternalScreenshotDiff(root, aura3dScreenshotPath, externalScreenshotPath, engine)
     : undefined;
   const metrics = isRecord(report?.metrics) ? report.metrics : {};
   const violations = [
@@ -301,7 +301,7 @@ export function validateExternalProductVisualBaseline(root: string, report: Reco
     ...(report?.sceneDescriptorId === productVisualParityScene.id ? [] : [`baseline report must use sceneDescriptorId=${productVisualParityScene.id}`]),
     ...(report?.sceneDescriptorVersion === productVisualParityScene.schemaVersion ? [] : [`baseline report must use sceneDescriptorVersion=${productVisualParityScene.schemaVersion}`]),
     ...(expectedDescriptorSha256 && report?.descriptorSha256 === expectedDescriptorSha256 ? [] : [`baseline report must use descriptorSha256=${expectedDescriptorSha256 ?? "available fixture descriptor hash"}`]),
-    ...(report?.visualDiffAgainstGalileo === true ? [] : ["baseline report must set visualDiffAgainstGalileo=true"]),
+    ...(report?.visualDiffAgainstAura3D === true ? [] : ["baseline report must set visualDiffAgainstAura3D=true"]),
     ...(Number(metrics.width) === productVisualParityScene.viewport.width ? [] : [`metrics.width must equal ${productVisualParityScene.viewport.width}`]),
     ...(Number(metrics.height) === productVisualParityScene.viewport.height ? [] : [`metrics.height must equal ${productVisualParityScene.viewport.height}`]),
     ...(Number(metrics.productParts) >= productVisualParityScene.minimumEvidence.productParts ? [] : [`metrics.productParts must be at least ${productVisualParityScene.minimumEvidence.productParts}`]),
@@ -313,7 +313,7 @@ export function validateExternalProductVisualBaseline(root: string, report: Reco
     ...(Number(metrics.colorBuckets) >= 5 ? [] : ["metrics.colorBuckets must be at least 5"]),
     ...(screenshot.ok ? [] : [`screenshot validation failed: ${screenshot.reason ?? "unknown reason"}`]),
     ...runnerEvidence.violations.map((violation) => `runner evidence validation failed: ${violation}`),
-    ...(diffAgainstGalileo?.pass === false ? [`external screenshot diff failed against current Galileo product render: ${diffAgainstGalileo.reason ?? "thresholds exceeded"}`] : []),
+    ...(diffAgainstAura3D?.pass === false ? [`external screenshot diff failed against current Aura3D product render: ${diffAgainstAura3D.reason ?? "thresholds exceeded"}`] : []),
   ];
   return {
     engine,
@@ -340,7 +340,7 @@ export function validateExternalProductVisualBaseline(root: string, report: Reco
       sha256: runnerEvidence.sha256,
       violations: runnerEvidence.violations,
     },
-    diffAgainstGalileo,
+    diffAgainstAura3D,
     violations,
   };
 }
@@ -487,7 +487,7 @@ function validateExternalBaselineScreenshot(root: string, report: Record<string,
 }
 
 function productSceneDescriptorSha256(root: string): string | null {
-  const descriptorPath = join(root, "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json");
+  const descriptorPath = join(root, "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json");
   if (!existsSync(descriptorPath)) return null;
   return createHash("sha256").update(readFileSync(descriptorPath, "utf8")).digest("hex");
 }
@@ -502,7 +502,7 @@ function productVisualAssetPipelineEvidence(root: string): ProductVisualAssetPip
     : undefined;
   const violations = [
     ...(productVisualParityScene.assetPipeline.sameDescriptorForAllEngines === true ? [] : ["asset pipeline must use the same descriptor for every engine"]),
-    ...(productVisualParityScene.assetPipeline.localEngines.join(",") === "galileo,threejs,babylon" ? [] : ["asset pipeline must name Galileo, Three.js, and Babylon as local consumers"]),
+    ...(productVisualParityScene.assetPipeline.localEngines.join(",") === "aura3d,threejs,babylon" ? [] : ["asset pipeline must name Aura3D, Three.js, and Babylon as local consumers"]),
     ...(productVisualParityScene.assetPipeline.externalEngines.join(",") === "unity,unreal" ? [] : ["asset pipeline must name Unity and Unreal as external consumers"]),
     ...(productVisualParityScene.assetPipeline.productionWorkflowEvidence.length >= 5 ? [] : ["asset pipeline must include material, hotspot, capture, batch, and AR-export boundary evidence"]),
     ...(productVisualParityScene.assetPipeline.commercialImportedAssetClaimed === false ? [] : ["asset pipeline must not claim a commercial imported product asset"]),
@@ -607,19 +607,19 @@ function readPngPixels(data: Buffer): {
   return { ok: true, width, height, pixels, nonBlankPixels, colorBuckets: buckets.size };
 }
 
-function createExternalScreenshotDiff(root: string, galileoScreenshotPath: string, comparedScreenshotPath: string, engine: "unity" | "unreal"): ProductExternalBaselineDiff {
-  const baseline = readPngPixels(readFileSync(join(root, galileoScreenshotPath)));
+function createExternalScreenshotDiff(root: string, aura3dScreenshotPath: string, comparedScreenshotPath: string, engine: "unity" | "unreal"): ProductExternalBaselineDiff {
+  const baseline = readPngPixels(readFileSync(join(root, aura3dScreenshotPath)));
   const compared = readPngPixels(readFileSync(join(root, comparedScreenshotPath)));
   if (!baseline.ok) {
-    return failedExternalDiff(engine, galileoScreenshotPath, comparedScreenshotPath, `current Galileo product screenshot failed PNG validation: ${baseline.reason}`);
+    return failedExternalDiff(engine, aura3dScreenshotPath, comparedScreenshotPath, `current Aura3D product screenshot failed PNG validation: ${baseline.reason}`);
   }
   if (!compared.ok) {
-    return failedExternalDiff(engine, galileoScreenshotPath, comparedScreenshotPath, `external ${engine} product screenshot failed PNG validation: ${compared.reason}`);
+    return failedExternalDiff(engine, aura3dScreenshotPath, comparedScreenshotPath, `external ${engine} product screenshot failed PNG validation: ${compared.reason}`);
   }
   const width = Math.min(baseline.width, compared.width);
   const height = Math.min(baseline.height, compared.height);
   if (width <= 0 || height <= 0) {
-    return failedExternalDiff(engine, galileoScreenshotPath, comparedScreenshotPath, "screenshot diff requires non-empty images");
+    return failedExternalDiff(engine, aura3dScreenshotPath, comparedScreenshotPath, "screenshot diff requires non-empty images");
   }
   let changedPixels = 0;
   let totalAbsoluteDelta = 0;
@@ -646,9 +646,9 @@ function createExternalScreenshotDiff(root: string, galileoScreenshotPath: strin
   };
   const pass = changedPixelRatio <= thresholds.maxChangedPixelRatio && meanAbsoluteError <= thresholds.maxMeanAbsoluteError;
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine: engine,
-    baselinePath: galileoScreenshotPath,
+    baselinePath: aura3dScreenshotPath,
     comparedPath: comparedScreenshotPath,
     width,
     height,
@@ -665,7 +665,7 @@ function createExternalScreenshotDiff(root: string, galileoScreenshotPath: strin
 
 function failedExternalDiff(engine: "unity" | "unreal", baselinePath: string, comparedPath: string, reason: string): ProductExternalBaselineDiff {
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine: engine,
     baselinePath,
     comparedPath,
@@ -713,7 +713,7 @@ function paethPredictor(left: number, up: number, upLeft: number): number {
 
 async function buildEngineBundles(): Promise<ReadonlyMap<ProductVisualEngine, string>> {
   const entries: Record<ProductVisualEngine, string> = {
-    galileo: galileoBundleSource(),
+    aura3d: aura3dBundleSource(),
     threejs: threeBundleSource(),
     babylon: babylonBundleSource(),
   };
@@ -729,7 +729,7 @@ async function buildEngineBundles(): Promise<ReadonlyMap<ProductVisualEngine, st
       bundle: true,
       platform: "browser",
       format: "iife",
-      globalName: `G3D_${engine}_product_visual_parity`,
+      globalName: `A3D_${engine}_product_visual_parity`,
       target: "es2022",
       write: false,
       minify: true,
@@ -753,7 +753,7 @@ async function renderEngine(page: Page, root: string, engine: ProductVisualEngin
     canvas.style.width = "720px";
     canvas.style.height = "480px";
     document.body.replaceChildren(canvas);
-    const bundleName = `G3D_${engineName}_product_visual_parity`;
+    const bundleName = `A3D_${engineName}_product_visual_parity`;
     const render = (window as unknown as Record<string, { renderProductVisualParity?: (canvas: HTMLCanvasElement) => Promise<ProductVisualRender["metrics"]> }>)[bundleName]?.renderProductVisualParity;
     if (!render) throw new Error(`Missing browser render function: ${bundleName}.renderProductVisualParity`);
     const metrics = await render(canvas);
@@ -770,7 +770,7 @@ async function renderEngine(page: Page, root: string, engine: ProductVisualEngin
 }
 
 async function createScreenshotDiff(page: Page, root: string, renders: readonly ProductVisualRender[], comparedEngine: "threejs" | "babylon"): Promise<ProductVisualDiff> {
-  const baseline = renders.find((render) => render.engine === "galileo");
+  const baseline = renders.find((render) => render.engine === "aura3d");
   const compared = renders.find((render) => render.engine === comparedEngine);
   if (!baseline || !compared) throw new Error(`Missing render for screenshot diff: ${comparedEngine}.`);
   const diffPath = `${artifactDir}/${comparedEngine}-product-diff.png`;
@@ -783,7 +783,7 @@ async function createScreenshotDiff(page: Page, root: string, renders: readonly 
   writePngDataUrl(root, diffPath, result.diffDataUrl);
   const { diffDataUrl: _diffDataUrl, ...metrics } = result;
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine,
     baselinePath: baseline.screenshotPath,
     comparedPath: compared.screenshotPath,
@@ -937,7 +937,7 @@ function sharedBrowserHelpers(): string {
   `;
 }
 
-function galileoBundleSource(): string {
+function aura3dBundleSource(): string {
   return `
     import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
     const descriptor = ${productSceneLiteral()};
@@ -972,7 +972,7 @@ function galileoBundleSource(): string {
         const geometry = geometries.get(part.geometry);
         const material = materials.get(part.material);
         if (!geometry || !material) throw new Error("Product descriptor references an unknown geometry or material: " + part.id);
-        return { geometry, material, modelMatrix: modelMatrix(part), label: "galileo-" + part.id };
+        return { geometry, material, modelMatrix: modelMatrix(part), label: "aura3d-" + part.id };
       });
       const diagnostics = renderer.render({ renderItems: items, environmentLighting: lighting });
       await nextFrame();

@@ -66,12 +66,12 @@ const tutorialText = [
 ].map((path) => text(path)).join("\n");
 check(
   "tutorial-public-api",
-  ["@galileo3d/engine", "createG3DApp", "workflows", "Evidence:", "Boundary:", "HDR/IBL", "Performance"].every((marker) => tutorialText.includes(marker)),
+  ["@aura3d/engine", "createA3DApp", "workflows", "Evidence:", "Boundary:", "HDR/IBL", "Performance"].every((marker) => tutorialText.includes(marker)),
   "Tutorials must use public SDK imports and explicitly cite evidence plus claim boundaries."
 );
 check(
   "required-v4-example-set",
-  ["examples/external-hdr-ibl/main.ts", "examples/external-postprocess/main.ts"].every((file) => existsSync(resolve(file)) && text(file).includes("@galileo3d/engine")),
+  ["examples/external-hdr-ibl/main.ts", "examples/external-postprocess/main.ts"].every((file) => existsSync(resolve(file)) && text(file).includes("@aura3d/engine")),
   "HDR/IBL and postprocess examples must exist and import the public package."
 );
 check(
@@ -82,7 +82,7 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-examples-readiness/v1",
+  schema: "a3d-external-parity-examples-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

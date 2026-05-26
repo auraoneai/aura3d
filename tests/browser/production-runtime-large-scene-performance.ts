@@ -6,7 +6,7 @@ import {
   Texture,
   TexturedUnlitMaterial,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 interface V6BrowserPerformanceReport {
   readonly status: "ready" | "error";
@@ -34,7 +34,7 @@ interface V6BrowserPerformanceReport {
 
 declare global {
   interface Window {
-    __g3dV6Performance?: V6BrowserPerformanceReport;
+    __a3dV6Performance?: V6BrowserPerformanceReport;
   }
 }
 
@@ -77,7 +77,7 @@ async function run(): Promise<void> {
     const diagnostics = renderer.render(renderItems);
     const frameMs = Number((performance.now() - frameStart).toFixed(3));
     const pixels = analyzePixels(renderer.device.readPixels(0, 0, canvas.width, canvas.height));
-    window.__g3dV6Performance = {
+    window.__a3dV6Performance = {
       status: "ready",
       realWebGL2: renderer.device.kind === "webgl2",
       frameMs,
@@ -96,7 +96,7 @@ async function run(): Promise<void> {
       ...readMemory()
     };
   } catch (error) {
-    window.__g3dV6Performance = {
+    window.__a3dV6Performance = {
       status: "error",
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       realWebGL2: false,

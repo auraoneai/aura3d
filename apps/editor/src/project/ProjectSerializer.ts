@@ -1,6 +1,6 @@
-import type { EditorPrefab } from "@galileo3d/editor-runtime";
-import { validatePrefab } from "@galileo3d/editor-runtime";
-import { Scene, SceneNode } from "@galileo3d/scene";
+import type { EditorPrefab } from "@aura3d/editor-runtime";
+import { validatePrefab } from "@aura3d/editor-runtime";
+import { Scene, SceneNode } from "@aura3d/scene";
 
 export const EDITOR_PROJECT_VERSION = 1;
 
@@ -49,9 +49,9 @@ export interface EditorProvenanceOperation {
 }
 
 export interface EditorProjectProvenance {
-  readonly authoringTool: "galileo3d-browser-editor";
+  readonly authoringTool: "aura3d-browser-editor";
   readonly workflow: "editor-import-save-export";
-  readonly runtimePackage: "@galileo3d/editor-runtime";
+  readonly runtimePackage: "@aura3d/editor-runtime";
   readonly operations: readonly EditorProvenanceOperation[];
   readonly evidenceHash: string;
 }
@@ -190,7 +190,7 @@ export class ProjectSerializer {
     return {
       version: EDITOR_PROJECT_VERSION,
       metadata: {
-        name: "Untitled Galileo3D Scene",
+        name: "Untitled Aura3D Scene",
         savedAt: now.toISOString(),
         provenance: this.createEditorProvenance([
           { id: "select-default-node", runtimeApi: "EditorRuntime.select", target: "node-hero" },
@@ -223,9 +223,9 @@ export class ProjectSerializer {
       prefabs: [],
       assets: [],
       importSettings: { ...defaultImportSettings },
-      plugins: ["galileo.default-authoring"],
+      plugins: ["aura3d.default-authoring"],
       export: {
-        title: "Galileo3D Editor Export",
+        title: "Aura3D Editor Export",
         entryNodeId: "node-hero"
       }
     };
@@ -333,9 +333,9 @@ export class ProjectSerializer {
         generateCollider: true,
         materialVariants: true
       },
-      plugins: ["galileo.default-authoring"],
+      plugins: ["aura3d.default-authoring"],
       export: {
-        title: "Galileo3D V4 Editor Export",
+        title: "Aura3D V4 Editor Export",
         entryNodeId: "node-v4-camera"
       }
     };
@@ -371,9 +371,9 @@ export class ProjectSerializer {
 
   createEditorProvenance(operations: readonly EditorProvenanceOperation[]): EditorProjectProvenance {
     const provenance = {
-      authoringTool: "galileo3d-browser-editor" as const,
+      authoringTool: "aura3d-browser-editor" as const,
       workflow: "editor-import-save-export" as const,
-      runtimePackage: "@galileo3d/editor-runtime" as const,
+      runtimePackage: "@aura3d/editor-runtime" as const,
       operations: operations.map((operation) => ({ ...operation })),
       evidenceHash: ""
     };
@@ -724,11 +724,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function validateProvenance(provenance: EditorProjectProvenance): void {
   if (
-    provenance.authoringTool !== "galileo3d-browser-editor" ||
+    provenance.authoringTool !== "aura3d-browser-editor" ||
     provenance.workflow !== "editor-import-save-export" ||
-    provenance.runtimePackage !== "@galileo3d/editor-runtime"
+    provenance.runtimePackage !== "@aura3d/editor-runtime"
   ) {
-    throw new Error("Editor project provenance must identify the Galileo3D browser editor workflow.");
+    throw new Error("Editor project provenance must identify the Aura3D browser editor workflow.");
   }
   if (provenance.operations.length === 0) {
     throw new Error("Editor project provenance must include at least one authoring operation.");
@@ -756,5 +756,5 @@ function computeProvenanceHash(provenance: Omit<EditorProjectProvenance, "eviden
     hash ^= source.charCodeAt(index);
     hash = Math.imul(hash, 0x01000193);
   }
-  return `g3d-prov-${(hash >>> 0).toString(16).padStart(8, "0")}`;
+  return `a3d-prov-${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }

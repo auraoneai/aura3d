@@ -1,14 +1,14 @@
-import { Scene, SpotLight } from "@galileo3d/scene";
+import { Scene, SpotLight } from "@aura3d/scene";
 import {
   Geometry,
   LightCollector,
   PBRMaterial
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LightsSpotlight?: V8LightsSpotlightRuntime;
+    __a3dV8LightsSpotlight?: V8LightsSpotlightRuntime;
   }
 }
 
@@ -28,7 +28,7 @@ interface V8LightsSpotlightRuntime {
   readonly rendererShadowRequested: boolean;
   readonly firstLightKind: string;
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -55,7 +55,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LightsSpotlight = runtime;
+    window.__a3dV8LightsSpotlight = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -65,7 +65,7 @@ async function run(): Promise<void> {
     const spot = scene.collectLights().find((light): light is SpotLight => light instanceof SpotLight);
     if (!spot) throw new Error("Spot light scene did not contain a SpotLight.");
     const lights = new LightCollector().collect(scene);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -128,7 +128,7 @@ async function run(): Promise<void> {
           rendererShadowRequested: true,
           firstLightKind: lights[0]?.kind ?? "none"
         });
-        window.__g3dV8LightsSpotlight = runtime;
+        window.__a3dV8LightsSpotlight = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -182,7 +182,7 @@ function createRuntime(
     rendererShadowRequested: patch.rendererShadowRequested ?? false,
     firstLightKind: patch.firstLightKind ?? "none",
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -193,7 +193,7 @@ function renderUi(root: HTMLElement, runtime: V8LightsSpotlightRuntime): void {
       <div class="panel-heading">
         <div>
           <h1>V8 Lights Spotlight</h1>
-          <p>Scene SpotLight collected and rendered by G3D WebGL2 lighting.</p>
+          <p>Scene SpotLight collected and rendered by A3D WebGL2 lighting.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>
       </div>

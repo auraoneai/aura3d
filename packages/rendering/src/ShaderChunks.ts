@@ -8,13 +8,13 @@ export const SHADER_CHUNKS: readonly ShaderChunk[] = [
   {
     name: "lighting_common",
     source: `
-struct G3DLight {
+struct A3DLight {
   vec4 colorIntensity;
   vec4 positionRange;
   vec4 directionKind;
 };
 
-vec3 g3dLambert(vec3 normal, vec3 lightDirection, vec3 lightColor, float intensity) {
+vec3 a3dLambert(vec3 normal, vec3 lightDirection, vec3 lightColor, float intensity) {
   float ndotl = max(dot(normalize(normal), normalize(lightDirection)), 0.0);
   return lightColor * intensity * ndotl;
 }
@@ -23,70 +23,70 @@ vec3 g3dLambert(vec3 normal, vec3 lightDirection, vec3 lightColor, float intensi
   {
     name: "pbr_common",
     source: `
-const float G3D_PI = 3.14159265359;
-const float G3D_INV_PI = 0.31830988618;
-const float G3D_EPSILON = 0.00001;
-const float G3D_MIN_ROUGHNESS = 0.045;
+const float A3D_PI = 3.14159265359;
+const float A3D_INV_PI = 0.31830988618;
+const float A3D_EPSILON = 0.00001;
+const float A3D_MIN_ROUGHNESS = 0.045;
 
-float g3dSaturate(float value) {
+float a3dSaturate(float value) {
   return clamp(value, 0.0, 1.0);
 }
 
-vec3 g3dFresnelSchlick(vec3 f0, float vDotH) {
-  float f = pow(g3dSaturate(1.0 - vDotH), 5.0);
+vec3 a3dFresnelSchlick(vec3 f0, float vDotH) {
+  float f = pow(a3dSaturate(1.0 - vDotH), 5.0);
   return f0 + (1.0 - f0) * f;
 }
 
-vec3 g3dFresnelSchlickSpecular(vec3 f0, float vDotH, float specularFactor) {
-  float f = pow(g3dSaturate(1.0 - vDotH), 5.0);
+vec3 a3dFresnelSchlickSpecular(vec3 f0, float vDotH, float specularFactor) {
+  float f = pow(a3dSaturate(1.0 - vDotH), 5.0);
   vec3 f90 = vec3(max(clamp(specularFactor, 0.0, 1.0), max(max(f0.r, f0.g), f0.b)));
   return f0 + (f90 - f0) * f;
 }
 
-vec3 g3dFresnelSchlickRoughness(vec3 f0, float nDotV, float roughness) {
+vec3 a3dFresnelSchlickRoughness(vec3 f0, float nDotV, float roughness) {
   float smoothness = 1.0 - clamp(roughness, 0.0, 1.0);
-  return f0 + (max(vec3(smoothness), f0) - f0) * pow(g3dSaturate(1.0 - nDotV), 5.0);
+  return f0 + (max(vec3(smoothness), f0) - f0) * pow(a3dSaturate(1.0 - nDotV), 5.0);
 }
 
-vec3 g3dFresnelSchlickRoughnessSpecular(vec3 f0, float nDotV, float roughness, float specularFactor) {
+vec3 a3dFresnelSchlickRoughnessSpecular(vec3 f0, float nDotV, float roughness, float specularFactor) {
   float smoothness = 1.0 - clamp(roughness, 0.0, 1.0);
   vec3 f90 = vec3(max(clamp(smoothness * specularFactor, 0.0, 1.0), max(max(f0.r, f0.g), f0.b)));
-  return f0 + (f90 - f0) * pow(g3dSaturate(1.0 - nDotV), 5.0);
+  return f0 + (f90 - f0) * pow(a3dSaturate(1.0 - nDotV), 5.0);
 }
 
-float g3dDistributionGGX(float nDotH, float roughness) {
-  float alpha = max(roughness, G3D_MIN_ROUGHNESS);
+float a3dDistributionGGX(float nDotH, float roughness) {
+  float alpha = max(roughness, A3D_MIN_ROUGHNESS);
   alpha *= alpha;
   float alpha2 = alpha * alpha;
   float nDotH2 = nDotH * nDotH;
   float denom = nDotH2 * (alpha2 - 1.0) + 1.0;
-  return alpha2 / max(G3D_PI * denom * denom, G3D_EPSILON);
+  return alpha2 / max(A3D_PI * denom * denom, A3D_EPSILON);
 }
 
-float g3dGeometrySmithGGXCorrelated(float nDotV, float nDotL, float roughness) {
-  float alpha = max(roughness, G3D_MIN_ROUGHNESS);
+float a3dGeometrySmithGGXCorrelated(float nDotV, float nDotL, float roughness) {
+  float alpha = max(roughness, A3D_MIN_ROUGHNESS);
   alpha *= alpha;
   float alpha2 = alpha * alpha;
-  float lambdaV = nDotL * sqrt(max((nDotV - alpha2 * nDotV) * nDotV + alpha2, G3D_EPSILON));
-  float lambdaL = nDotV * sqrt(max((nDotL - alpha2 * nDotL) * nDotL + alpha2, G3D_EPSILON));
-  return 0.5 / max(lambdaV + lambdaL, G3D_EPSILON);
+  float lambdaV = nDotL * sqrt(max((nDotV - alpha2 * nDotV) * nDotV + alpha2, A3D_EPSILON));
+  float lambdaL = nDotV * sqrt(max((nDotL - alpha2 * nDotL) * nDotL + alpha2, A3D_EPSILON));
+  return 0.5 / max(lambdaV + lambdaL, A3D_EPSILON);
 }
 
-float g3dDiffuseBurley(float nDotV, float nDotL, float lDotH, float roughness) {
+float a3dDiffuseBurley(float nDotV, float nDotL, float lDotH, float roughness) {
   float energyBias = mix(0.0, 0.5, roughness);
   float energyFactor = mix(1.0, 1.0 / 1.51, roughness);
   float fd90 = energyBias + 2.0 * lDotH * lDotH * roughness;
-  float lightScatter = 1.0 + (fd90 - 1.0) * pow(g3dSaturate(1.0 - nDotL), 5.0);
-  float viewScatter = 1.0 + (fd90 - 1.0) * pow(g3dSaturate(1.0 - nDotV), 5.0);
+  float lightScatter = 1.0 + (fd90 - 1.0) * pow(a3dSaturate(1.0 - nDotL), 5.0);
+  float viewScatter = 1.0 + (fd90 - 1.0) * pow(a3dSaturate(1.0 - nDotV), 5.0);
   return lightScatter * viewScatter * energyFactor;
 }
 
-vec3 g3dPbrF0(vec3 albedo, float metallic, float specularFactor, vec3 specularColorFactor) {
+vec3 a3dPbrF0(vec3 albedo, float metallic, float specularFactor, vec3 specularColorFactor) {
   vec3 dielectricF0 = vec3(0.04) * clamp(specularFactor, 0.0, 1.0) * clamp(specularColorFactor, vec3(0.0), vec3(1.0));
   return mix(dielectricF0, clamp(albedo, vec3(0.0), vec3(1.0)), clamp(metallic, 0.0, 1.0));
 }
 
-vec3 g3dPbrDirectLight(
+vec3 a3dPbrDirectLight(
   vec3 normal,
   vec3 viewDirection,
   vec3 lightDirection,
@@ -102,22 +102,22 @@ vec3 g3dPbrDirectLight(
   vec3 V = normalize(viewDirection);
   vec3 L = normalize(lightDirection);
   vec3 H = normalize(V + L);
-  float nDotL = g3dSaturate(dot(N, L));
-  float nDotV = max(g3dSaturate(dot(N, V)), G3D_EPSILON);
-  float nDotH = g3dSaturate(dot(N, H));
-  float vDotH = g3dSaturate(dot(V, H));
-  float lDotH = g3dSaturate(dot(L, H));
-  vec3 f0 = g3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = g3dFresnelSchlickSpecular(f0, vDotH, specularFactor);
-  float D = g3dDistributionGGX(nDotH, roughness);
-  float G = g3dGeometrySmithGGXCorrelated(nDotV, nDotL, roughness);
+  float nDotL = a3dSaturate(dot(N, L));
+  float nDotV = max(a3dSaturate(dot(N, V)), A3D_EPSILON);
+  float nDotH = a3dSaturate(dot(N, H));
+  float vDotH = a3dSaturate(dot(V, H));
+  float lDotH = a3dSaturate(dot(L, H));
+  vec3 f0 = a3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
+  vec3 F = a3dFresnelSchlickSpecular(f0, vDotH, specularFactor);
+  float D = a3dDistributionGGX(nDotH, roughness);
+  float G = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, roughness);
   vec3 specular = D * G * F;
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
-  vec3 diffuse = kd * albedo * G3D_INV_PI * g3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0));
+  vec3 diffuse = kd * albedo * A3D_INV_PI * a3dDiffuseBurley(nDotV, nDotL, lDotH, clamp(roughness, 0.0, 1.0));
   return (diffuse + specular) * lightColor * lightIntensity * nDotL;
 }
 
-vec3 g3dPbrEnvironmentLight(
+vec3 a3dPbrEnvironmentLight(
   vec3 normal,
   vec3 viewDirection,
   vec3 diffuseIrradiance,
@@ -128,16 +128,16 @@ vec3 g3dPbrEnvironmentLight(
   float specularFactor,
   vec3 specularColorFactor
 ) {
-  float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
-  vec3 f0 = g3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = g3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
+  float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
+  vec3 f0 = a3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
+  vec3 F = a3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
   vec3 diffuse = kd * albedo * diffuseIrradiance;
   vec3 specular = specularRadiance * F;
   return diffuse + specular;
 }
 
-vec3 g3dPbrEnvironmentLightSplitSum(
+vec3 a3dPbrEnvironmentLightSplitSum(
   vec3 normal,
   vec3 viewDirection,
   vec3 diffuseIrradiance,
@@ -149,9 +149,9 @@ vec3 g3dPbrEnvironmentLightSplitSum(
   float specularFactor,
   vec3 specularColorFactor
 ) {
-  float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
-  vec3 f0 = g3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
-  vec3 F = g3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
+  float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
+  vec3 f0 = a3dPbrF0(albedo, metallic, specularFactor, specularColorFactor);
+  vec3 F = a3dFresnelSchlickRoughnessSpecular(f0, nDotV, roughness, specularFactor);
   vec3 kd = (vec3(1.0) - F) * (1.0 - clamp(metallic, 0.0, 1.0));
   vec3 diffuse = kd * albedo * diffuseIrradiance;
   vec2 brdf = clamp(environmentBrdf, vec2(0.0), vec2(1.0));
@@ -161,13 +161,13 @@ vec3 g3dPbrEnvironmentLightSplitSum(
   return diffuse + specular;
 }
 
-vec3 g3dApplyMetalRough(vec3 baseColor, float metallic, float roughness) {
+vec3 a3dApplyMetalRough(vec3 baseColor, float metallic, float roughness) {
   float dielectric = clamp(1.0 - metallic, 0.0, 1.0);
   float energy = mix(0.08, 1.0, dielectric) * (1.0 - clamp(roughness, 0.0, 1.0) * 0.35);
   return baseColor * energy;
 }
 
-vec3 g3dApplyAdvancedPbrLobes(
+vec3 a3dApplyAdvancedPbrLobes(
   vec3 baseColor,
   float clearcoatFactor,
   float clearcoatRoughnessFactor,
@@ -240,14 +240,14 @@ vec3 g3dApplyAdvancedPbrLobes(
   return max(vec3(0.0), layeredBase);
 }
 
-vec3 g3dPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
+vec3 a3dPbrIridescenceColor(float minimumThickness, float maximumThickness, float iridescenceIor) {
   float thickness = clamp((minimumThickness + maximumThickness) * 0.5, 0.0, 1200.0);
   float phase = clamp((thickness - 100.0) / 1100.0, 0.0, 1.0) * 6.2831853;
   float iorShift = clamp((iridescenceIor - 1.0) / 2.0, 0.0, 1.0) * 0.65;
   return clamp(0.5 + 0.5 * cos(phase + iorShift + vec3(0.0, 2.0943951, 4.1887902)), vec3(0.0), vec3(1.0));
 }
 
-vec3 g3dPbrExtensionDirectLight(
+vec3 a3dPbrExtensionDirectLight(
   vec3 normal,
   vec3 viewDirection,
   vec3 lightDirection,
@@ -268,26 +268,26 @@ vec3 g3dPbrExtensionDirectLight(
   vec3 V = normalize(viewDirection);
   vec3 L = normalize(lightDirection);
   vec3 H = normalize(V + L);
-  float nDotL = g3dSaturate(dot(N, L));
-  float nDotV = max(g3dSaturate(dot(N, V)), G3D_EPSILON);
-  float nDotH = g3dSaturate(dot(N, H));
-  float vDotH = g3dSaturate(dot(V, H));
+  float nDotL = a3dSaturate(dot(N, L));
+  float nDotV = max(a3dSaturate(dot(N, V)), A3D_EPSILON);
+  float nDotH = a3dSaturate(dot(N, H));
+  float vDotH = a3dSaturate(dot(V, H));
   float clearcoatRough = clamp(clearcoatRoughness, 0.18, 1.0);
-  vec3 clearcoatF = g3dFresnelSchlick(vec3(0.04), vDotH);
-  float clearcoatD = g3dDistributionGGX(nDotH, clearcoatRough);
-  float clearcoatG = g3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
+  vec3 clearcoatF = a3dFresnelSchlick(vec3(0.04), vDotH);
+  float clearcoatD = a3dDistributionGGX(nDotH, clearcoatRough);
+  float clearcoatG = a3dGeometrySmithGGXCorrelated(nDotV, nDotL, clearcoatRough);
   vec3 clearcoatLobe = clearcoatF * clearcoatD * clearcoatG * clamp(clearcoat, 0.0, 1.0) * 0.12;
-  float sheenStrength = (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - vDotH), 5.0);
+  float sheenStrength = (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(a3dSaturate(1.0 - vDotH), 5.0);
   vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * sheenStrength * 0.18;
   vec3 anisotropyAxis = normalize(vec3(cos(anisotropyRotation), 0.0, sin(anisotropyRotation)));
   float anisotropyBand = pow(abs(dot(H, anisotropyAxis)), mix(28.0, 6.0, clearcoatRough));
   vec3 anisotropyLobe = vec3(clamp(anisotropy, 0.0, 1.0) * anisotropyBand * 0.055);
-  vec3 iridescenceColor = g3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(g3dSaturate(1.0 - nDotV), 2.0) * 0.22;
+  vec3 iridescenceColor = a3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
+  vec3 iridescenceLobe = iridescenceColor * clamp(iridescence, 0.0, 1.0) * clearcoatF * pow(a3dSaturate(1.0 - nDotV), 2.0) * 0.22;
   return (clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe) * lightColor * lightIntensity * nDotL;
 }
 
-vec3 g3dPbrExtensionEnvironmentLight(
+vec3 a3dPbrExtensionEnvironmentLight(
   vec3 normal,
   vec3 viewDirection,
   vec3 specularRadiance,
@@ -302,14 +302,14 @@ vec3 g3dPbrExtensionEnvironmentLight(
   float iridescenceThicknessMinimum,
   float iridescenceThicknessMaximum
 ) {
-  float nDotV = max(g3dSaturate(dot(normalize(normal), normalize(viewDirection))), G3D_EPSILON);
+  float nDotV = max(a3dSaturate(dot(normalize(normal), normalize(viewDirection))), A3D_EPSILON);
   float clearcoatGloss = pow(1.0 - clamp(clearcoatRoughness, 0.18, 1.0), 2.0);
   vec3 clearcoatLobe = specularRadiance * clamp(clearcoat, 0.0, 1.0) * (0.018 + clearcoatGloss * 0.055);
-  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(g3dSaturate(1.0 - nDotV), 5.0) * 0.12;
+  vec3 sheenLobe = clamp(sheenColor, vec3(0.0), vec3(1.0)) * (1.0 - clamp(sheenRoughness, 0.0, 1.0)) * pow(a3dSaturate(1.0 - nDotV), 5.0) * 0.12;
   float anisotropyBand = 0.5 + 0.5 * cos(anisotropyRotation * 2.0);
   vec3 anisotropyLobe = specularRadiance * clamp(anisotropy, 0.0, 1.0) * mix(0.025, 0.07, anisotropyBand);
-  vec3 iridescenceColor = g3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
-  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(g3dSaturate(1.0 - nDotV), 1.5) * 0.1;
+  vec3 iridescenceColor = a3dPbrIridescenceColor(iridescenceThicknessMinimum, iridescenceThicknessMaximum, iridescenceIor);
+  vec3 iridescenceLobe = specularRadiance * iridescenceColor * clamp(iridescence, 0.0, 1.0) * pow(a3dSaturate(1.0 - nDotV), 1.5) * 0.1;
   return clearcoatLobe + sheenLobe + anisotropyLobe + iridescenceLobe;
 }
 `
@@ -317,7 +317,7 @@ vec3 g3dPbrExtensionEnvironmentLight(
   {
     name: "shadow_common",
     source: `
-float g3dShadowVisibility(float currentDepth, float shadowDepth, float bias) {
+float a3dShadowVisibility(float currentDepth, float shadowDepth, float bias) {
   return currentDepth - bias <= shadowDepth ? 1.0 : 0.0;
 }
 `
@@ -325,7 +325,7 @@ float g3dShadowVisibility(float currentDepth, float shadowDepth, float bias) {
   {
     name: "environment_fog_common",
     source: `
-float g3dEnvironmentFogFactor(vec3 worldPosition) {
+float a3dEnvironmentFogFactor(vec3 worldPosition) {
   if (u_environmentFogEnabled < 0.5) return 0.0;
   float distanceToCamera = length(u_cameraPosition - worldPosition);
   float factor = 0.0;
@@ -343,8 +343,8 @@ float g3dEnvironmentFogFactor(vec3 worldPosition) {
   return clamp(factor * heightMultiplier, 0.0, 1.0) * clamp(u_environmentFogMaxOpacity, 0.0, 1.0);
 }
 
-vec3 g3dApplyEnvironmentFog(vec3 linearColor, vec3 worldPosition) {
-  float fogFactor = g3dEnvironmentFogFactor(worldPosition);
+vec3 a3dApplyEnvironmentFog(vec3 linearColor, vec3 worldPosition) {
+  float fogFactor = a3dEnvironmentFogFactor(worldPosition);
   return mix(linearColor, u_environmentFogColor, fogFactor);
 }
 `

@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/current-routes-threejs-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/current-routes/flagship/g3d-flagship-viewer.png",
+  a3d: "tests/reports/current-routes/flagship/a3d-flagship-viewer.png",
   threejs: "tests/reports/current-routes/flagship/threejs-flagship-viewer.png",
   sideBySide: "tests/reports/current-routes/flagship/side-by-side.png"
 } as const;
@@ -26,7 +26,7 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
     await server.close();
   });
 
-  test("captures honest G3D and actual Three.js flagship viewer deltas", async ({ page }) => {
+  test("captures honest A3D and actual Three.js flagship viewer deltas", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -65,33 +65,33 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-current-routes-threejs-parity/v1");
-    expect(result.purpose).toBe("same-scene flagship G3D vs Three.js competitor baseline");
+    expect(result.schema).toBe("a3d-current-routes-threejs-parity/v1");
+    expect(result.purpose).toBe("same-scene flagship A3D vs Three.js competitor baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAsset).toBe(true);
     expect(result.assertions.sameHdri).toBe(true);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.realThreeRenderer).toBe(true);
-    expect(result.assertions.noG3DRuntimeThreeImport).toBe(true);
-    expect(result.g3d.asset.uri).toBe(result.threejs.asset.uri);
-    expect(result.g3d.environment.uri).toBe(result.threejs.environment.uri);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.assertions.noA3DRuntimeThreeImport).toBe(true);
+    expect(result.a3d.asset.uri).toBe(result.threejs.asset.uri);
+    expect(result.a3d.environment.uri).toBe(result.threejs.environment.uri);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.actualThreeRenderer).toBe(true);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.nonBlackPixels).toBeGreaterThan(10_000);
+    expect(result.a3d.pixels.nonBlackPixels).toBeGreaterThan(10_000);
     expect(result.threejs.pixels.nonBlackPixels).toBeGreaterThan(10_000);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(64);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(64);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(64);
     expect(result.diff.meanDelta).toBeGreaterThanOrEqual(0);
     expect(result.diff.maxDelta).toBeGreaterThanOrEqual(result.diff.meanDelta);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThan(0);
     expect(result.diff.structuralSimilarityProxy).toBeLessThanOrEqual(1);
-    expect(result.diff.meanDelta, "G3D flagship visual delta vs same-scene Three.js baseline").toBeLessThanOrEqual(MAX_ACCEPTABLE_MEAN_DELTA);
-    expect(result.diff.structuralSimilarityProxy, "G3D flagship structural similarity vs same-scene Three.js baseline").toBeGreaterThanOrEqual(MIN_ACCEPTABLE_STRUCTURAL_SIMILARITY);
+    expect(result.diff.meanDelta, "A3D flagship visual delta vs same-scene Three.js baseline").toBeLessThanOrEqual(MAX_ACCEPTABLE_MEAN_DELTA);
+    expect(result.diff.structuralSimilarityProxy, "A3D flagship structural similarity vs same-scene Three.js baseline").toBeGreaterThanOrEqual(MIN_ACCEPTABLE_STRUCTURAL_SIMILARITY);
     expect(result.humanNotes.join("\n")).toMatch(/Mean RGB delta/i);
     expect(result.humanNotes.join("\n")).toMatch(/not an equality claim/i);
 
-    assertNoThreeJsInG3DRuntimeSource();
+    assertNoThreeJsInA3DRuntimeSource();
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
@@ -119,8 +119,8 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
   });
 });
 
-function assertNoThreeJsInG3DRuntimeSource(): void {
-  const sourcePath = "benchmarks/galileo/src/scenes/flagship-viewer.ts";
+function assertNoThreeJsInA3DRuntimeSource(): void {
+  const sourcePath = "benchmarks/aura3d/src/scenes/flagship-viewer.ts";
   const source = readFileSync(resolve(sourcePath), "utf8");
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   expect(forbidden.test(source), `${sourcePath} must not import or instantiate Three.js`).toBe(false);
@@ -139,10 +139,10 @@ function writeJsonReport(path: string, value: unknown): void {
 type V8ThreejsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-current-routes-threejs-parity/v1";
+      readonly schema: "a3d-current-routes-threejs-parity/v1";
       readonly purpose: string;
       readonly scene: { readonly width: number; readonly height: number };
-      readonly g3d: {
+      readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly asset: { readonly id: string; readonly uri: string };
         readonly environment: { readonly id: string; readonly uri: string };
@@ -155,20 +155,20 @@ type V8ThreejsParityResult =
         readonly pixels: { readonly nonBlackPixels: number; readonly uniqueColorBuckets: number };
       };
       readonly diff: { readonly meanDelta: number; readonly maxDelta: number; readonly changedPixels: number; readonly structuralSimilarityProxy: number };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
       readonly assertions: {
         readonly sameAsset: boolean;
         readonly sameHdri: boolean;
         readonly sameResolution: boolean;
         readonly realThreeRenderer: boolean;
-        readonly noG3DRuntimeThreeImport: boolean;
+        readonly noA3DRuntimeThreeImport: boolean;
         readonly fakeEqualityClaimed: false;
       };
       readonly humanNotes: readonly string[];
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-current-routes-threejs-parity/v1";
+      readonly schema: "a3d-current-routes-threejs-parity/v1";
       readonly missingDependency: boolean;
       readonly error: string;
       readonly report: unknown;

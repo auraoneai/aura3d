@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Engine, LifecycleError, Scheduler, SystemPhase, ValidationError } from "@galileo3d/core";
+import { Engine, LifecycleError, Scheduler, SystemPhase, ValidationError } from "@aura3d/core";
 
 describe("core scheduler and engine lifecycle", () => {
   it("orders tasks by declared dependencies without hardcoded priorities", () => {

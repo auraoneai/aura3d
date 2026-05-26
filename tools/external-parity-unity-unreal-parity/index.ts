@@ -4,7 +4,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
-import { createAssetImportPreflightReport } from "@galileo3d/assets";
+import { createAssetImportPreflightReport } from "@aura3d/assets";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
 export interface V4UnityUnrealParityReport {
@@ -83,7 +83,7 @@ interface ExternalSceneBaselineValidation {
     readonly sha256?: string;
     readonly violations: readonly string[];
   };
-  readonly diffAgainstGalileo?: ExternalSceneBaselineDiff;
+  readonly diffAgainstAura3D?: ExternalSceneBaselineDiff;
   readonly violations: readonly string[];
 }
 
@@ -106,7 +106,7 @@ interface ExternalAssetImportWorkflowBaselineValidation {
 }
 
 interface ExternalSceneBaselineDiff {
-  readonly baselineEngine: "galileo";
+  readonly baselineEngine: "aura3d";
   readonly comparedEngine: "unity" | "unreal";
   readonly baselineKind: string;
   readonly baselinePath: string;
@@ -226,11 +226,11 @@ const sourceFiles = [
   "examples/game-slice/main.ts",
   "tests/browser/runtime-external-parity.spec.ts",
   ".github/workflows/v4-public-demo-deploy.yml",
-  "fixtures/external-engine-baselines/v4/product-visual-parity-scene.json",
-  "fixtures/external-engine-baselines/v4/pbr-visual-parity-scene.json",
-  "fixtures/external-engine-baselines/v4/shadow-visual-parity-scene.json",
-  "fixtures/external-engine-baselines/v4/hdr-render-target-visual-parity-scene.json",
-  "fixtures/external-engine-baselines/v4/postprocess-suite-parity-scene.json",
+  "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json",
+  "fixtures/external-engine-baselines/external-parity/pbr-visual-parity-scene.json",
+  "fixtures/external-engine-baselines/external-parity/shadow-visual-parity-scene.json",
+  "fixtures/external-engine-baselines/external-parity/hdr-render-target-visual-parity-scene.json",
+  "fixtures/external-engine-baselines/external-parity/postprocess-suite-parity-scene.json",
   "tests/reports/external-parity-unity-product-visual-baseline.json",
   "tests/reports/external-parity-unreal-product-visual-baseline.json",
   "tests/reports/external-parity-unity-pbr-visual-baseline.json",
@@ -243,11 +243,11 @@ const sourceFiles = [
   "tests/reports/external-parity-unreal-postprocess-suite-baseline.json",
   "tests/reports/external-parity-unity-asset-import-workflow.json",
   "tests/reports/external-parity-unreal-asset-import-workflow.json",
-  "tests/reports/external-parity-product-visual-parity/galileo-product.png",
-  "tests/reports/external-parity-pbr-visual-parity/galileo-pbr.png",
-  "tests/reports/external-parity-shadow-visual-parity/galileo-shadow.png",
-  "tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png",
-  "tests/reports/comparison-screenshots/galileo-postprocess.png",
+  "tests/reports/external-parity-product-visual-parity/aura3d-product.png",
+  "tests/reports/external-parity-pbr-visual-parity/aura3d-pbr.png",
+  "tests/reports/external-parity-shadow-visual-parity/aura3d-shadow.png",
+  "tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png",
+  "tests/reports/comparison-screenshots/aura3d-postprocess.png",
 ] as const;
 
 export function createV4UnityUnrealParityReport(root = process.cwd()): V4UnityUnrealParityReport {
@@ -276,7 +276,7 @@ export function createV4UnityUnrealParityReport(root = process.cwd()): V4UnityUn
   const unreal = externalEngineBaseline(root, "unreal", baselineSlots);
   const workflowAreas = [
     workflowArea("editor-authoring", "Unity/Unreal-style durable scene authoring, hierarchy editing, inspector editing, prefab/material workflows, save/load, and exported play-mode validation.", `${editorEvidence.editorReportOk ? `V4 editor authoring passes ${editorEvidence.passedCheckCount} checks with ${editorEvidence.authoredWorkflowSignals.length} authoring workflow signals, ${editorEvidence.timelineTrackCount} timeline tracks, ${editorEvidence.visualScriptingNodeCount} visual-scripting nodes, prefab export node count ${editorEvidence.prefabExportedNodeCount}, and static export without editor code ${editorEvidence.staticExportWithoutEditorCode}.` : "V4 editor authoring report is absent or failing."} ${baselineKitEvidence}`, [
-      "Editor evidence is scoped to current Galileo3D fixtures and browser workflows, not Unity/Unreal project/workflow equivalence.",
+      "Editor evidence is scoped to current Aura3D fixtures and browser workflows, not Unity/Unreal project/workflow equivalence.",
       ...externalBaselineBlockers(unity, "Unity"),
       ...externalBaselineBlockers(unreal, "Unreal"),
     ]),
@@ -364,7 +364,7 @@ function createRenderingWorkflowEvidence(root: string): V4RenderingWorkflowEvide
     boundedHdrRenderTargetParity: boundedLocalVisualParity(hdrVisual, "boundedHdrRenderTargetParity"),
     postprocessRealSceneValidation: renderingValidations.some((entry) => isRecord(entry) && entry.name === "postprocess-lab-v4-preset" && entry.ok === true),
     forwardShadowSamplingValidation: renderingValidations.some((entry) => isRecord(entry) && entry.name === "forward-pass-shadow-map-sampling" && entry.ok === true),
-    claimBoundary: "Local browser rendering evidence covers Galileo3D, Three.js, Babylon.js, and scoped V4 renderer features, but it is not Unity/Unreal rendered-output parity until real external same-scene baselines and visual diffs pass.",
+    claimBoundary: "Local browser rendering evidence covers Aura3D, Three.js, Babylon.js, and scoped V4 renderer features, but it is not Unity/Unreal rendered-output parity until real external same-scene baselines and visual diffs pass.",
   };
 }
 
@@ -407,14 +407,14 @@ function createEditorWorkflowEvidence(root: string): V4EditorWorkflowEvidence {
     gpuPickingEvidence: isRecord(editorPicking.evidence) && editorPicking.evidence.colorIdEncoding === true && editorPicking.evidence.raycastFallback === true,
     localizationLocaleCount: Number(localizationAccessibility.localeCount ?? 0),
     accessibilityAaContrastPasses: accessibility.aaContrastPasses === true,
-    claimBoundary: "Browser editor authoring evidence covers current Galileo3D hierarchy, inspector, prefab, timeline, visual-scripting, picking, localization/accessibility, and static-export workflows, but it is not Unity Editor or Unreal Editor project/workflow equivalence.",
+    claimBoundary: "Browser editor authoring evidence covers current Aura3D hierarchy, inspector, prefab, timeline, visual-scripting, picking, localization/accessibility, and static-export workflows, but it is not Unity Editor or Unreal Editor project/workflow equivalence.",
   };
 }
 
 function createAssetImportPreflightEvidence(): V4AssetImportPreflightEvidence {
   const samples = [
-    createAssetImportPreflightReport("fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf", { profile: "high-quality", fileBytes: 256_000 }),
-    createAssetImportPreflightReport("fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.glb", { profile: "web", fileBytes: 256_000 }),
+    createAssetImportPreflightReport("fixtures/product-studio/products/speaker/speaker.gltf", { profile: "high-quality", fileBytes: 256_000 }),
+    createAssetImportPreflightReport("fixtures/asset-corpus/damaged-helmet.glb", { profile: "web", fileBytes: 256_000 }),
     createAssetImportPreflightReport("external-dcc-scene.fbx", { profile: "balanced", fileBytes: 1_024_000 }),
     createAssetImportPreflightReport("external-dcc-stage.usd", { profile: "high-quality", fileBytes: 1_024_000 }),
     createAssetImportPreflightReport("external-ar-package.usdz", { profile: "mobile", fileBytes: 768_000 }),
@@ -477,7 +477,7 @@ function createRuntimeWorkflowEvidence(root: string): V4RuntimeWorkflowEvidence 
     mobileTouchEvidence: isRecord(mobileTouch.assetViewer) && isRecord(mobileTouch.editor) && isRecord(mobileTouch.game),
     blockedTaskCount: blockedTasks.length,
     oldBranchRuntimePortEvidence,
-    claimBoundary: "Browser runtime evidence covers current Galileo3D game-slice systems and old-branch runtime concept ports, but it is not native Unity/Unreal editor play-mode, build-target, profiler, middleware, or runtime project parity.",
+    claimBoundary: "Browser runtime evidence covers current Aura3D game-slice systems and old-branch runtime concept ports, but it is not native Unity/Unreal editor play-mode, build-target, profiler, middleware, or runtime project parity.",
   };
 }
 
@@ -492,12 +492,12 @@ function workflowArea(id: string, requiredForParity: string, currentEvidence: st
 }
 
 function externalEngineBaseline(root: string, engine: "unity" | "unreal", baselineSlots: readonly Record<string, unknown>[]): ExternalEngineBaseline {
-  const envName = engine === "unity" ? "G3D_UNITY_EDITOR" : "G3D_UNREAL_EDITOR";
+  const envName = engine === "unity" ? "A3D_UNITY_EDITOR" : "A3D_UNREAL_EDITOR";
   const envPath = process.env[envName];
   const pathExecutable = findExternalEditorExecutable(engine);
   const executable = normalizeEditorExecutablePath(engine, envPath) ?? pathExecutable;
   const executableSource = executable ? (envPath && executable === envPath ? "env" : "path") : "not-found";
-  const cliSmokeRequired = process.env.G3D_RUN_UNITY_UNREAL_CLI_SMOKE === "true";
+  const cliSmokeRequired = process.env.A3D_RUN_UNITY_UNREAL_CLI_SMOKE === "true";
   const cliSmokeCommand = executable ? cliCommandFor(engine, executable) : [];
   const cliSmoke = executable && cliSmokeRequired ? runCliSmoke(cliSmokeCommand) : { ok: false, output: null };
   const baselineReportPath = engine === "unity" ? "tests/reports/external-parity-unity-baseline-render.json" : "tests/reports/external-parity-unreal-baseline-render.json";
@@ -512,7 +512,7 @@ function externalEngineBaseline(root: string, engine: "unity" | "unreal", baseli
   const sceneBaselines = baselineSlots.map((slot) => validateExternalSceneBaseline(root, engine, slot));
   const blockers = [
     ...(executable ? [] : [`${engine} editor executable not found; set ${envName} to a local editor binary or add it to PATH.`]),
-    ...(cliSmokeRequired ? (cliSmoke.ok ? [] : [`${engine} CLI smoke did not pass.`]) : [`${engine} CLI smoke was not run; set G3D_RUN_UNITY_UNREAL_CLI_SMOKE=true to verify the editor binary.`]),
+    ...(cliSmokeRequired ? (cliSmoke.ok ? [] : [`${engine} CLI smoke did not pass.`]) : [`${engine} CLI smoke was not run; set A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true to verify the editor binary.`]),
     ...(baselineReport.ok ? [] : [`${baselineReportPath} is missing or invalid; no same-scene ${engine} render/workflow baseline is attached: ${baselineReport.violations.join("; ")}`]),
     ...(assetImportWorkflowReport.ok ? [] : [`${assetImportWorkflowReportPath} is missing or invalid; no same-scene ${engine} asset-import workflow baseline is attached: ${assetImportWorkflowReport.violations.join("; ")}`]),
     ...(productVisualBaselineOk ? [] : [
@@ -557,7 +557,7 @@ function validateRenderWorkflowBaseline(root: string, engine: "unity" | "unreal"
     ...(report?.ok === true ? [] : ["baseline render report must set ok=true"]),
     ...(report?.engine === engine ? [] : [`baseline render report must set engine="${engine}"`]),
     ...(report?.sameSceneRenderWorkflowBaseline === true ? [] : ["baseline render report must set sameSceneRenderWorkflowBaseline=true"]),
-    ...(report?.kitRoot === "fixtures/external-engine-baselines/v4" ? [] : ["baseline render report must use kitRoot=fixtures/external-engine-baselines/v4"]),
+    ...(report?.kitRoot === "fixtures/external-engine-baselines/external-parity" ? [] : ["baseline render report must use kitRoot=fixtures/external-engine-baselines/external-parity"]),
     ...(Number(metrics.sceneDescriptorSlots) >= 5 ? [] : ["metrics.sceneDescriptorSlots must be at least 5"]),
     ...(metrics.editorProjectOpened === true ? [] : ["metrics.editorProjectOpened must be true"]),
     ...(metrics.descriptorSceneBuilt === true ? [] : ["metrics.descriptorSceneBuilt must be true"]),
@@ -586,7 +586,7 @@ function validateAssetImportWorkflowBaseline(root: string, engine: "unity" | "un
     ...(report?.ok === true ? [] : ["asset import workflow report must set ok=true"]),
     ...(report?.engine === engine ? [] : [`asset import workflow report must set engine="${engine}"`]),
     ...(report?.sameSceneAssetImportWorkflowBaseline === true ? [] : ["asset import workflow report must set sameSceneAssetImportWorkflowBaseline=true"]),
-    ...(report?.kitRoot === "fixtures/external-engine-baselines/v4" ? [] : ["asset import workflow report must use kitRoot=fixtures/external-engine-baselines/v4"]),
+    ...(report?.kitRoot === "fixtures/external-engine-baselines/external-parity" ? [] : ["asset import workflow report must use kitRoot=fixtures/external-engine-baselines/external-parity"]),
     ...(runnerEvidencePath ? [] : ["asset import workflow report must include runnerEvidencePath"]),
     ...(runnerEvidenceSha256?.match(/^[0-9a-f]{64}$/) ? [] : ["asset import workflow report must include runnerEvidenceSha256 as a 64-character hex hash"]),
     ...(runnerEvidencePath && existsSync(join(root, runnerEvidencePath)) ? [] : ["asset import workflow runner evidence sidecar is missing"]),
@@ -642,9 +642,9 @@ function validateExternalSceneBaseline(root: string, engine: "unity" | "unreal",
       height: screenshot.height,
     })
     : { ok: false, violations: ["baseline report missing"] };
-  const galileoScreenshotPath = galileoScreenshotPathForBaselineKind(baselineKind);
-  const diffAgainstGalileo = screenshot.ok && screenshotPath && galileoScreenshotPath
-    ? createExternalSceneScreenshotDiff(root, baselineKind, galileoScreenshotPath, screenshotPath, engine)
+  const aura3dScreenshotPath = aura3dScreenshotPathForBaselineKind(baselineKind);
+  const diffAgainstAura3D = screenshot.ok && screenshotPath && aura3dScreenshotPath
+    ? createExternalSceneScreenshotDiff(root, baselineKind, aura3dScreenshotPath, screenshotPath, engine)
     : undefined;
   const metricViolations = Object.entries(minimumEvidence).flatMap(([name, value]) => {
     if (typeof value !== "number") return [];
@@ -660,11 +660,11 @@ function validateExternalSceneBaseline(root: string, engine: "unity" | "unreal",
     ...(report?.sceneDescriptorId === sceneDescriptorId ? [] : [`baseline report must use sceneDescriptorId=${sceneDescriptorId}`]),
     ...(report?.sceneDescriptorVersion === sceneDescriptorVersion ? [] : [`baseline report must use sceneDescriptorVersion=${sceneDescriptorVersion}`]),
     ...(descriptorSha256 && report?.descriptorSha256 === descriptorSha256 ? [] : [`baseline report must use descriptorSha256=${descriptorSha256 ?? "available fixture descriptor hash"}`]),
-    ...(report?.visualDiffAgainstGalileo === true ? [] : ["baseline report must set visualDiffAgainstGalileo=true"]),
+    ...(report?.visualDiffAgainstAura3D === true ? [] : ["baseline report must set visualDiffAgainstAura3D=true"]),
     ...metricViolations,
     ...(screenshot.ok ? [] : [`screenshot validation failed: ${screenshot.reason ?? "unknown reason"}`]),
     ...runnerEvidence.violations.map((violation) => `runner evidence validation failed: ${violation}`),
-    ...(diffAgainstGalileo?.pass === false ? [`external screenshot diff failed against current Galileo ${baselineKind} render: ${diffAgainstGalileo.reason ?? "thresholds exceeded"}`] : []),
+    ...(diffAgainstAura3D?.pass === false ? [`external screenshot diff failed against current Aura3D ${baselineKind} render: ${diffAgainstAura3D.reason ?? "thresholds exceeded"}`] : []),
   ];
   return {
     engine,
@@ -693,7 +693,7 @@ function validateExternalSceneBaseline(root: string, engine: "unity" | "unreal",
       sha256: runnerEvidence.sha256,
       violations: runnerEvidence.violations,
     },
-    diffAgainstGalileo,
+    diffAgainstAura3D,
     violations,
   };
 }
@@ -968,44 +968,44 @@ function readPngPixels(data: Buffer): {
   return { ok: true, width, height, pixels, nonBlankPixels, colorBuckets: buckets.size };
 }
 
-function galileoScreenshotPathForBaselineKind(baselineKind: string): string | null {
+function aura3dScreenshotPathForBaselineKind(baselineKind: string): string | null {
   switch (baselineKind) {
     case "pbr-visual":
-      return "tests/reports/external-parity-pbr-visual-parity/galileo-pbr.png";
+      return "tests/reports/external-parity-pbr-visual-parity/aura3d-pbr.png";
     case "shadow-visual":
-      return "tests/reports/external-parity-shadow-visual-parity/galileo-shadow.png";
+      return "tests/reports/external-parity-shadow-visual-parity/aura3d-shadow.png";
     case "hdr-render-target":
-      return "tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png";
+      return "tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png";
     case "postprocess-suite":
-      return "tests/reports/comparison-screenshots/galileo-postprocess.png";
+      return "tests/reports/comparison-screenshots/aura3d-postprocess.png";
     case "product-visual":
-      return "tests/reports/external-parity-product-visual-parity/galileo-product.png";
+      return "tests/reports/external-parity-product-visual-parity/aura3d-product.png";
     default:
       return null;
   }
 }
 
-function createExternalSceneScreenshotDiff(root: string, baselineKind: string, galileoScreenshotPath: string, comparedScreenshotPath: string, engine: "unity" | "unreal"): ExternalSceneBaselineDiff {
-  const baselineFullPath = join(root, galileoScreenshotPath);
+function createExternalSceneScreenshotDiff(root: string, baselineKind: string, aura3dScreenshotPath: string, comparedScreenshotPath: string, engine: "unity" | "unreal"): ExternalSceneBaselineDiff {
+  const baselineFullPath = join(root, aura3dScreenshotPath);
   const comparedFullPath = join(root, comparedScreenshotPath);
   if (!existsSync(baselineFullPath)) {
-    return failedExternalSceneDiff(baselineKind, engine, galileoScreenshotPath, comparedScreenshotPath, `current Galileo ${baselineKind} screenshot is missing`);
+    return failedExternalSceneDiff(baselineKind, engine, aura3dScreenshotPath, comparedScreenshotPath, `current Aura3D ${baselineKind} screenshot is missing`);
   }
   if (!existsSync(comparedFullPath)) {
-    return failedExternalSceneDiff(baselineKind, engine, galileoScreenshotPath, comparedScreenshotPath, `external ${engine} ${baselineKind} screenshot is missing`);
+    return failedExternalSceneDiff(baselineKind, engine, aura3dScreenshotPath, comparedScreenshotPath, `external ${engine} ${baselineKind} screenshot is missing`);
   }
   const baseline = readPngPixels(readFileSync(baselineFullPath));
   const compared = readPngPixels(readFileSync(comparedFullPath));
   if (!baseline.ok) {
-    return failedExternalSceneDiff(baselineKind, engine, galileoScreenshotPath, comparedScreenshotPath, `current Galileo ${baselineKind} screenshot failed PNG validation: ${baseline.reason}`);
+    return failedExternalSceneDiff(baselineKind, engine, aura3dScreenshotPath, comparedScreenshotPath, `current Aura3D ${baselineKind} screenshot failed PNG validation: ${baseline.reason}`);
   }
   if (!compared.ok) {
-    return failedExternalSceneDiff(baselineKind, engine, galileoScreenshotPath, comparedScreenshotPath, `external ${engine} ${baselineKind} screenshot failed PNG validation: ${compared.reason}`);
+    return failedExternalSceneDiff(baselineKind, engine, aura3dScreenshotPath, comparedScreenshotPath, `external ${engine} ${baselineKind} screenshot failed PNG validation: ${compared.reason}`);
   }
   const width = Math.min(baseline.width, compared.width);
   const height = Math.min(baseline.height, compared.height);
   if (width <= 0 || height <= 0) {
-    return failedExternalSceneDiff(baselineKind, engine, galileoScreenshotPath, comparedScreenshotPath, "screenshot diff requires non-empty images");
+    return failedExternalSceneDiff(baselineKind, engine, aura3dScreenshotPath, comparedScreenshotPath, "screenshot diff requires non-empty images");
   }
   let changedPixels = 0;
   let totalAbsoluteDelta = 0;
@@ -1029,10 +1029,10 @@ function createExternalSceneScreenshotDiff(root: string, baselineKind: string, g
   const thresholds = externalSceneDiffThresholds(baselineKind);
   const pass = changedPixelRatio <= thresholds.maxChangedPixelRatio && meanAbsoluteError <= thresholds.maxMeanAbsoluteError;
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine: engine,
     baselineKind,
-    baselinePath: galileoScreenshotPath,
+    baselinePath: aura3dScreenshotPath,
     comparedPath: comparedScreenshotPath,
     width,
     height,
@@ -1064,7 +1064,7 @@ function externalSceneDiffThresholds(baselineKind: string): { readonly maxChange
 
 function failedExternalSceneDiff(baselineKind: string, engine: "unity" | "unreal", baselinePath: string, comparedPath: string, reason: string): ExternalSceneBaselineDiff {
   return {
-    baselineEngine: "galileo",
+    baselineEngine: "aura3d",
     comparedEngine: engine,
     baselineKind,
     baselinePath,
@@ -1175,7 +1175,7 @@ function unrealMacCandidates(): string[] {
 }
 
 function editorSearchRoots(engine: "unity" | "unreal"): readonly string[] {
-  const envName = engine === "unity" ? "G3D_UNITY_SEARCH_ROOTS" : "G3D_UNREAL_SEARCH_ROOTS";
+  const envName = engine === "unity" ? "A3D_UNITY_SEARCH_ROOTS" : "A3D_UNREAL_SEARCH_ROOTS";
   const defaults = engine === "unity"
     ? ["/Applications", "/Users/Shared/Unity"]
     : ["/Applications", "/Users/Shared/Epic Games", "/Users/Shared"];

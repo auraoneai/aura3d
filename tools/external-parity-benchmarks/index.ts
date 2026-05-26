@@ -33,7 +33,7 @@ const sourceFiles = [
   "tests/reports/foundation-editor-authoring.json",
   ...expectedScenes.flatMap((scene) => [
     `benchmarks/shared/scenes/${scene}.ts`,
-    `benchmarks/galileo/src/scenes/${scene}.ts`,
+    `benchmarks/aura3d/src/scenes/${scene}.ts`,
     `benchmarks/threejs/src/scenes/${scene}.ts`,
     `benchmarks/babylon/src/scenes/${scene}.ts`,
   ]),
@@ -41,12 +41,12 @@ const sourceFiles = [
 
 const screenshotPaths = [
   ...expectedScenes.flatMap((scene) => [
-    `tests/reports/comparison-screenshots/galileo-${scene}.png`,
+    `tests/reports/comparison-screenshots/aura3d-${scene}.png`,
     `tests/reports/comparison-screenshots/threejs-${scene}.png`,
     `tests/reports/comparison-screenshots/babylon-${scene}.png`,
   ]),
   ...expectedScenes.flatMap((scene) => [
-    `tests/reports/comparison-rendered-screenshots/galileo-${scene}.png`,
+    `tests/reports/comparison-rendered-screenshots/aura3d-${scene}.png`,
     `tests/reports/comparison-rendered-screenshots/threejs-${scene}.png`,
     `tests/reports/comparison-rendered-screenshots/babylon-${scene}.png`,
   ]),
@@ -69,7 +69,7 @@ export function createV4BenchmarkReport() {
     },
     {
       id: "same-scene-v4-engine-measurements",
-      description: "Galileo3D, Three.js, and Babylon use equivalent scene descriptors and browser measurements for every V4 comparison scene.",
+      description: "Aura3D, Three.js, and Babylon use equivalent scene descriptors and browser measurements for every V4 comparison scene.",
       passed: summary.sameSceneMeasurements,
       evidencePaths: [reportPath],
       blocker: "V4 engine comparison report is missing same-scene measurements for one or more engines.",
@@ -83,7 +83,7 @@ export function createV4BenchmarkReport() {
     },
     {
       id: "v4-screenshot-diffs",
-      description: "V4 benchmark report includes screenshots and Galileo-vs-competitor diff artifacts for every scene.",
+      description: "V4 benchmark report includes screenshots and Aura3D-vs-competitor diff artifacts for every scene.",
       passed: summary.screenshotDiffCoverage,
       evidencePaths: ["tests/reports/comparison-screenshots", "tests/reports/comparison-diffs", reportPath],
       blocker: "V4 benchmark screenshots or diff artifacts are missing.",
@@ -163,10 +163,10 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
     report.suite === "v4-engine-comparison" &&
     scenes.length === expected.size &&
     sceneIds.every((id) => typeof id === "string" && expected.has(id as typeof expectedScenes[number])) &&
-    scenes.every((scene) => isRecord(scene) && scene.equivalent === true && ["galileo", "threejs", "babylon"].every((engine) => isRecord(estimateFor(scene, engine))));
+    scenes.every((scene) => isRecord(scene) && scene.equivalent === true && ["aura3d", "threejs", "babylon"].every((engine) => isRecord(estimateFor(scene, engine))));
   const sharedDescriptors =
     sameSceneMeasurements &&
-    scenes.every((scene) => isRecord(scene) && ["galileo", "threejs", "babylon"].every((engine) => {
+    scenes.every((scene) => isRecord(scene) && ["aura3d", "threejs", "babylon"].every((engine) => {
       const estimate = estimateFor(scene, engine);
       return isRecord(estimate) &&
         typeof estimate.assetClass === "string" &&
@@ -178,7 +178,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
     }));
   const metricCoverage =
     sameSceneMeasurements &&
-    scenes.every((scene) => isRecord(scene) && ["galileo", "threejs", "babylon"].every((engine) => hasMetrics(estimateFor(scene, engine))));
+    scenes.every((scene) => isRecord(scene) && ["aura3d", "threejs", "babylon"].every((engine) => hasMetrics(estimateFor(scene, engine))));
   const diffs = Array.isArray(report?.screenshotDiffs) ? report.screenshotDiffs : [];
   const screenshotDiffCoverage =
     metricCoverage &&
@@ -188,7 +188,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
   const postprocessBounded =
     isRecord(postprocessScene) &&
     isRecord(postprocessScene.estimates) &&
-    ["galileo", "threejs", "babylon"].every((engine) => {
+    ["aura3d", "threejs", "babylon"].every((engine) => {
       const estimate = estimateFor(postprocessScene, engine);
       return isRecord(estimate) &&
         isRecord(estimate.postprocessState) &&
@@ -203,7 +203,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
   const morphWorkloadBlocked =
     isRecord(morphScene) &&
     isRecord(morphScene.estimates) &&
-    ["galileo", "threejs", "babylon"].every((engine) => {
+    ["aura3d", "threejs", "babylon"].every((engine) => {
       const estimate = estimateFor(morphScene, engine);
       return isRecord(estimate) &&
         isRecord(estimate.animationState) &&
@@ -217,7 +217,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
     isRecord(editorScene.workflow) &&
     editorScene.workflow.kind === "editor-authored-exported-app-startup" &&
     isRecord(editorScene.estimates) &&
-    ["galileo", "threejs", "babylon"].every((engine) => {
+    ["aura3d", "threejs", "babylon"].every((engine) => {
       const estimate = estimateFor(editorScene, engine);
       return isRecord(estimate) && isRecord(estimate.editorWorkflow);
     });

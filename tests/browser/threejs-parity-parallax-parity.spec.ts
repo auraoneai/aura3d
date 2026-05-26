@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/parallax-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/parallax-parity/g3d-parallax.png",
+  a3d: "tests/reports/threejs-parity/parallax-parity/a3d-parallax.png",
   threejs: "tests/reports/threejs-parity/parallax-parity/threejs-parallax.png",
   sideBySide: "tests/reports/threejs-parity/parallax-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 parallax barrier same-scene Three.js parity", () => {
     await server.close();
   });
 
-  test("captures G3D row-interleaved parallax against actual Three.js ParallaxBarrierEffect", async ({ page }) => {
+  test("captures A3D row-interleaved parallax against actual Three.js ParallaxBarrierEffect", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -58,32 +58,32 @@ test.describe("V9 parallax barrier same-scene Three.js parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-parallax-parity/v1");
-    expect(result.purpose).toBe("same-scene G3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline");
+    expect(result.schema).toBe("a3d-threejs-parity-parallax-parity/v1");
+    expect(result.purpose).toBe("same-scene A3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualThreeParallaxBarrierEffect).toBe(true);
-    expect(result.assertions.g3dRendererOwnedRowComposite).toBe(true);
-    expect(result.assertions.g3dUsesReferenceStripPitch).toBe(true);
+    expect(result.assertions.a3dRendererOwnedRowComposite).toBe(true);
+    expect(result.assertions.a3dUsesReferenceStripPitch).toBe(true);
     expect(result.assertions.threeShaderUsesRows).toBe(true);
-    expect(result.g3d.barrier.axis).toBe("y");
-    expect(result.g3d.barrier.stripPitchPx).toBe(2);
-    expect(result.g3d.barrier.dutyCycle).toBe(0.5);
+    expect(result.a3d.barrier.axis).toBe("y");
+    expect(result.a3d.barrier.stripPitchPx).toBe(2);
+    expect(result.a3d.barrier.dutyCycle).toBe(0.5);
     expect(result.threejs.effect.shaderAxis).toBe("gl_FragCoord.y");
     expect(result.threejs.effect.rigViews).toBe(2);
-    expect(result.g3d.renderer.leftDrawCalls).toBeGreaterThan(0);
-    expect(result.g3d.renderer.rightDrawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.leftDrawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.rightDrawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.nonBlackPixels).toBeGreaterThan(70_000);
+    expect(result.a3d.pixels.nonBlackPixels).toBeGreaterThan(70_000);
     expect(result.threejs.pixels.nonBlackPixels).toBeGreaterThan(70_000);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(48);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(120);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.5);
     expect(pageErrors).toEqual([]);
     assertReferenceEffectUsesRows();
-    assertNoThreeJsInG3DParallaxRuntimeSource();
+    assertNoThreeJsInA3DParallaxRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -120,7 +120,7 @@ function assertReferenceEffectUsesRows(): void {
   expect(source).toContain("mod( gl_FragCoord.y, 2.0 )");
 }
 
-function assertNoThreeJsInG3DParallaxRuntimeSource(): void {
+function assertNoThreeJsInA3DParallaxRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/parallax-barrier/src/main.ts",
@@ -149,9 +149,9 @@ function stripDataUrls(result: Extract<ParallaxParityResult, { readonly status: 
 type ParallaxParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-parallax-parity/v1";
+      readonly schema: "a3d-threejs-parity-parallax-parity/v1";
       readonly purpose: string;
-      readonly g3d: {
+      readonly a3d: {
         readonly renderer: {
           readonly leftDrawCalls: number;
           readonly rightDrawCalls: number;
@@ -183,15 +183,15 @@ type ParallaxParityResult =
         readonly sameResolution: boolean;
         readonly actualThreeRenderer: boolean;
         readonly actualThreeParallaxBarrierEffect: boolean;
-        readonly g3dRendererOwnedRowComposite: boolean;
-        readonly g3dUsesReferenceStripPitch: boolean;
+        readonly a3dRendererOwnedRowComposite: boolean;
+        readonly a3dUsesReferenceStripPitch: boolean;
         readonly threeShaderUsesRows: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-parallax-parity/v1";
+      readonly schema: "a3d-threejs-parity-parallax-parity/v1";
       readonly error: string;
     };

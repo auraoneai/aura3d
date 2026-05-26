@@ -1,5 +1,5 @@
-import type { Ray } from "@galileo3d/math";
-import type { SceneNode } from "@galileo3d/scene";
+import type { Ray } from "@aura3d/math";
+import type { SceneNode } from "@aura3d/scene";
 import type { InputSnapshot } from "./InputSnapshot";
 
 type Tuple3 = readonly [number, number, number];

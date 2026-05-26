@@ -189,7 +189,7 @@ interface AssetViewerSnapshot {
     readonly boundedControls: true;
   };
   readonly comparisonExport?: {
-    readonly schemaVersion: "g3d-v4-asset-viewer-comparison-export-v1";
+    readonly schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1";
     readonly generated: boolean;
     readonly renderer: "webgl2";
     readonly meshCount: number;
@@ -294,7 +294,7 @@ interface AssetViewerV4Validation {
   readonly ok: boolean;
 }
 
-const manifestPath = resolve("fixtures/assets/v4/manifest.json");
+const manifestPath = resolve("fixtures/asset-corpus/manifest.json");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as V4AssetManifest;
 const screenshotRoot = resolve("tests/reports/external-parity-example-screenshots/asset-viewer-v4");
 const reportPath = resolve("tests/reports/external-parity-asset-viewer-browser.json");
@@ -303,7 +303,7 @@ const report: AssetViewerV4Report = {
   ok: false,
   generatedAt: new Date().toISOString(),
   command: "pnpm exec playwright test tests/browser/asset-viewer-external-parity.spec.ts",
-  manifest: "fixtures/assets/v4/manifest.json",
+  manifest: "fixtures/asset-corpus/manifest.json",
   validations: [],
   completedTaskEvidence: [],
   blockedTasks: [],
@@ -331,7 +331,7 @@ test.describe("asset viewer V4 corpus browser evidence", () => {
     }, {
       task: "Asset viewer renders every V4 corpus asset.",
       evidence: [
-        "fixtures/assets/v4/manifest.json",
+        "fixtures/asset-corpus/manifest.json",
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
@@ -384,7 +384,7 @@ test.describe("asset viewer V4 corpus browser evidence", () => {
       evidence: [
         "packages/assets/src/AssetInspection.ts",
         "examples/asset-viewer/main.ts",
-        "fixtures/assets/v4/materials/v4-material-fidelity-card/v4-material-fidelity-card.gltf",
+        "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
       ],
@@ -399,7 +399,7 @@ test.describe("asset viewer V4 corpus browser evidence", () => {
 
   test("loads and renders every V4 corpus asset in the asset viewer", async ({ page }) => {
     test.setTimeout(120_000);
-    expect(manifest.schemaVersion).toBe("g3d-v4-asset-corpus-v1");
+    expect(manifest.schemaVersion).toBe("a3d-v4-asset-corpus-v1");
     expect(manifest.assetCount).toBe(manifest.assets.length);
     expect(manifest.assets.length).toBeGreaterThanOrEqual(7);
 
@@ -416,7 +416,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
   await page.goto(`${origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
     () => {
-      const snapshot = (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+      const snapshot = (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
       return snapshot?.status === "ready" || snapshot?.status === "error";
     },
     undefined,
@@ -424,7 +424,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
   );
 
   let result = await page.evaluate(() => {
-    return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+    return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
   });
   const nonBlankPixels = await nonBlankWebGLPixels(page, "[data-testid='asset-viewer-canvas']");
   const screenshot = `tests/reports/external-parity-example-screenshots/asset-viewer-v4/${asset.id}.png`;
@@ -436,7 +436,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
   if (asset.animations > 0) {
     await page.getByTestId("asset-viewer-animation-loop").selectOption("once");
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.loopMode;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.animationPlayback?.loopMode;
     })).toBe("once");
     await page.getByTestId("asset-viewer-animation-loop").evaluate((select) => {
       const element = select as HTMLSelectElement;
@@ -444,7 +444,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
       element.dispatchEvent(new Event("change", { bubbles: true }));
     });
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.loopMode;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.animationPlayback?.loopMode;
     })).toBe("repeat");
     await page.getByTestId("asset-viewer-animation-time").evaluate((input) => {
       const slider = input as HTMLInputElement;
@@ -452,7 +452,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
       slider.dispatchEvent(new Event("input", { bubbles: true }));
     });
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.time ?? 0;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.animationPlayback?.time ?? 0;
     })).toBeGreaterThan(0);
     await page.getByTestId("asset-viewer-animation-speed").evaluate((input) => {
       const slider = input as HTMLInputElement;
@@ -460,25 +460,25 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
       slider.dispatchEvent(new Event("input", { bubbles: true }));
     });
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.timeScale ?? 0;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.animationPlayback?.timeScale ?? 0;
     })).toBe(1.5);
     await page.getByTestId("asset-viewer-animation-play").click();
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.playing;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.animationPlayback?.playing;
     })).toBe(true);
     await page.getByTestId("asset-viewer-animation-play").click();
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.animationPlayback?.playing;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.animationPlayback?.playing;
     })).toBe(false);
     result = await page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
     });
   }
 
   if (asset.id === "v4-material-fidelity-card") {
     await page.getByTestId("asset-viewer-material-variant").selectOption("warm-alt-finish");
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.selectedMaterialVariant;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.selectedMaterialVariant;
     })).toBe("warm-alt-finish");
     await page.getByTestId("asset-viewer-material-override").selectOption("metallic");
     await page.getByTestId("asset-viewer-environment-preset").selectOption("sunset");
@@ -489,7 +489,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
     });
     await page.getByTestId("asset-viewer-postprocess-preview").selectOption("bloom-diagnostic");
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.lookControls;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.lookControls;
     })).toMatchObject({
       materialOverride: "metallic",
       environmentPreset: "sunset",
@@ -500,10 +500,10 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
     });
     await page.getByTestId("asset-viewer-comparison-export").click();
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.comparisonExport?.generated;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.comparisonExport?.generated;
     })).toBe(true);
     result = await page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
     });
   }
 
@@ -514,13 +514,13 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
       slider.dispatchEvent(new Event("input", { bubbles: true }));
     });
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.morphControls?.activeWeights?.[0] ?? -1;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.morphControls?.activeWeights?.[0] ?? -1;
     })).toBe(0.2);
     await expect.poll(() => page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.morphControls?.renderApplied;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.morphControls?.renderApplied;
     })).toBe(true);
     result = await page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
     });
   }
 
@@ -544,10 +544,10 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
 
   await page.getByTestId("asset-viewer-screenshot").click();
   await expect.poll(() => page.evaluate(() => {
-    return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.screenshot?.captured;
+    return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.screenshot?.captured;
   })).toBe(true);
   result = await page.evaluate(() => {
-    return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+    return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
   });
   const screenshotDiagnostic = parseScreenshotDiagnostic(result);
   expect(screenshotDiagnostic.loaderDiagnostics?.features).toContain("gltf");
@@ -564,10 +564,10 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
       dropzone.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
     }, gltfText);
     await page.waitForFunction(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__?.sourceKind === "local";
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.sourceKind === "local";
     }, undefined, { timeout: 10_000 });
     const dropped = await page.evaluate(() => {
-      return (window as unknown as { readonly __GALILEO3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__GALILEO3D_ASSET_VIEWER__;
+      return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
     });
     expect(dropped?.status, dropped?.error).toBe("ready");
     expect(dropped?.dependencyResolution).toEqual(expect.arrayContaining([
@@ -642,7 +642,7 @@ function assertCoreRenderEvidence(
   expect(result?.featureEvidence?.objectTrackTelemetry).toBe(true);
   expect(Number(result?.featureEvidence?.objectDetections ?? 0)).toBeGreaterThan(0);
   expect(Number(result?.featureEvidence?.objectTracks ?? 0)).toBeGreaterThan(0);
-  expect(result?.v4RenderPreset?.presetId).toBe("galileo3d-external-parity-visual-quality-preset");
+  expect(result?.v4RenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
   expect(result?.v4RenderPreset?.colorManagement?.toneMapper).toBe("reinhard");
   expect(result?.v4RenderPreset?.activeFeatures).toEqual(expect.arrayContaining(["color-management", "tone-mapping", "bounded-pbr", "environment-reflections", "postprocess-bloom", "postprocess-fxaa"]));
   expect(result?.environmentResources?.resourceSet).toBe("generated-local-linear-hdr-environment");
@@ -751,7 +751,7 @@ function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerS
     });
     expect(result?.lookControls?.materialOverrideAppliedTo.length ?? 0).toBeGreaterThan(0);
     expect(result?.comparisonExport).toMatchObject({
-      schemaVersion: "g3d-v4-asset-viewer-comparison-export-v1",
+      schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1",
       generated: true,
       renderer: "webgl2",
       meshCount: result?.meshCount,

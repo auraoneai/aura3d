@@ -1,5 +1,5 @@
 import {
-  G3DRenderer,
+  A3DRenderer,
   createCameraFrame,
   createGroundedStage,
   createStudioLighting,
@@ -16,8 +16,8 @@ import { createProductConfiguratorShowroomLighting } from "/apps/advanced-exampl
 
 declare global {
   interface Window {
-    __G3D_PRODUCT_MATERIAL_MATRIX__?: ProductConfiguratorMaterialMatrixReport;
-    __G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__?: readonly string[];
+    __A3D_PRODUCT_MATERIAL_MATRIX__?: ProductConfiguratorMaterialMatrixReport;
+    __A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__?: readonly string[];
     runProductConfiguratorMaterialMatrixHarness?: typeof runProductConfiguratorMaterialMatrixHarness;
   }
 }
@@ -54,7 +54,7 @@ interface MatrixVariantConfig {
 }
 
 export interface ProductConfiguratorMaterialMatrixReport {
-  readonly schema: "g3d-product-configurator-material-matrix/v1";
+  readonly schema: "a3d-product-configurator-material-matrix/v1";
   readonly status: MatrixStatus;
   readonly source: "tests/browser/product-configurator-material-matrix-harness.ts";
   readonly galleryUiBypassed: true;
@@ -454,7 +454,7 @@ const MATRIX_VARIANTS: readonly MatrixVariantConfig[] = [
 ];
 
 export async function runProductConfiguratorMaterialMatrixHarness(): Promise<ProductConfiguratorMaterialMatrixReport> {
-  window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = ["start"];
+  window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = ["start"];
   const root = document.createElement("main");
   root.id = "product-configurator-material-matrix-root";
   root.style.cssText = "display:grid;grid-template-columns:repeat(2,760px);gap:12px;background:#05070a;padding:12px;";
@@ -518,7 +518,7 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
     } as const;
 
     const report: ProductConfiguratorMaterialMatrixReport = {
-      schema: "g3d-product-configurator-material-matrix/v1",
+      schema: "a3d-product-configurator-material-matrix/v1",
       status: "ready",
       source: "tests/browser/product-configurator-material-matrix-harness.ts",
       galleryUiBypassed: true,
@@ -531,11 +531,11 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
       diagnostics,
       ownerConclusion
     };
-    window.__G3D_PRODUCT_MATERIAL_MATRIX__ = report;
+    window.__A3D_PRODUCT_MATERIAL_MATRIX__ = report;
     return report;
   } catch (error) {
     const report: ProductConfiguratorMaterialMatrixReport = {
-      schema: "g3d-product-configurator-material-matrix/v1",
+      schema: "a3d-product-configurator-material-matrix/v1",
       status: "error",
       source: "tests/browser/product-configurator-material-matrix-harness.ts",
       galleryUiBypassed: true,
@@ -555,7 +555,7 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
       },
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__G3D_PRODUCT_MATERIAL_MATRIX__ = report;
+    window.__A3D_PRODUCT_MATERIAL_MATRIX__ = report;
     return report;
   } finally {
     environment?.dispose();
@@ -576,7 +576,7 @@ async function renderMatrixVariant(
   canvas.dataset.variantId = config.id;
   root.append(canvas);
 
-  const renderer = await G3DRenderer.create({
+  const renderer = await A3DRenderer.create({
     canvas,
     width: VIEWPORT.width,
     height: VIEWPORT.height,
@@ -661,7 +661,7 @@ async function renderMatrixVariant(
 
 function explicitRenderItemScene(
   scene: Awaited<ReturnType<typeof loadGltfScene>>
-): Parameters<G3DRenderer["captureProof"]>[0]["scene"] {
+): Parameters<A3DRenderer["captureProof"]>[0]["scene"] {
   return {
     metadata: scene.metadata,
     createRendererInput(options) {
@@ -683,7 +683,7 @@ function explicitRenderItemScene(
         bounds: scene.resources.bounds
       };
     }
-  } as Parameters<G3DRenderer["captureProof"]>[0]["scene"];
+  } as Parameters<A3DRenderer["captureProof"]>[0]["scene"];
 }
 
 function clonedRenderableRenderItems(
@@ -1421,7 +1421,7 @@ function emptyStats(): ProductMaterialMatrixPixelStats {
 }
 
 function matrixProgress(step: string): void {
-  window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = [...(window.__G3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []), step].slice(-64);
+  window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ = [...(window.__A3D_PRODUCT_MATERIAL_MATRIX_PROGRESS__ ?? []), step].slice(-64);
 }
 
 window.runProductConfiguratorMaterialMatrixHarness = runProductConfiguratorMaterialMatrixHarness;

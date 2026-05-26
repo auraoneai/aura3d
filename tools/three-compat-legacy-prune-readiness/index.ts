@@ -61,7 +61,7 @@ const ledgerChecks = legacyPaths.map((entry) => ({
 
 const pass = [...fileChecks, ...pathChecks, ...ledgerChecks].every((entry) => entry.pass);
 const report = {
-  schema: "g3d-three-compat-legacy-prune-readiness/v1",
+  schema: "a3d-three-compat-legacy-prune-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

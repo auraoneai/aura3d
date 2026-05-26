@@ -1,4 +1,4 @@
-import { Geometry, UnlitMaterial } from "@galileo3d/rendering";
+import { Geometry, UnlitMaterial } from "@aura3d/rendering";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

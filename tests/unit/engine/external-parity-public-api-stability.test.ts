@@ -1,22 +1,22 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import {
-  G3D_APP_WORKFLOW_PRESETS,
+  A3D_APP_WORKFLOW_PRESETS,
   captureScreenshot,
   createAssetDiagnostics,
   createCompatibilityReport,
   createDiagnosticsPanel,
   createEnvironment,
-  createG3DApp,
+  createA3DApp,
   createMaterialVariantController,
   createRenderDiagnostics,
   loadAsset,
-  resolveG3DAppQualityPreset,
+  resolveA3DAppQualityPreset,
   workflows
-} from "@galileo3d/engine";
+} from "@aura3d/engine";
 
 test("V4 root package exposes the developer product API", () => {
-  expect(typeof createG3DApp).toBe("function");
+  expect(typeof createA3DApp).toBe("function");
   expect(typeof loadAsset).toBe("function");
   expect(typeof createEnvironment).toBe("function");
   expect(typeof createMaterialVariantController).toBe("function");
@@ -26,13 +26,15 @@ test("V4 root package exposes the developer product API", () => {
   expect(typeof createRenderDiagnostics).toBe("function");
   expect(typeof createCompatibilityReport).toBe("function");
   expect(Object.keys(workflows).sort()).toEqual([
+    "animationLab",
     "assetViewer",
+    "comparison",
     "interactiveScene",
     "materialStudio",
     "productConfigurator",
     "sceneShowcase"
   ]);
-  expect(G3D_APP_WORKFLOW_PRESETS).toEqual([
+  expect(A3D_APP_WORKFLOW_PRESETS).toEqual([
     "asset-viewer",
     "product-configurator",
     "material-studio",
@@ -42,7 +44,7 @@ test("V4 root package exposes the developer product API", () => {
 });
 
 test("V4 quality presets and environment API expose production defaults", () => {
-  expect(resolveG3DAppQualityPreset("production")).toMatchObject({
+  expect(resolveA3DAppQualityPreset("production")).toMatchObject({
     preset: "production",
     width: 1600,
     height: 1000,
@@ -50,7 +52,7 @@ test("V4 quality presets and environment API expose production defaults", () => 
     preserveDrawingBuffer: true,
     targetFormat: "rgba16f"
   });
-  expect(resolveG3DAppQualityPreset("draft")).toMatchObject({
+  expect(resolveA3DAppQualityPreset("draft")).toMatchObject({
     preset: "draft",
     targetFormat: "rgba8"
   });
@@ -93,16 +95,16 @@ test("V4 package manifest exposes installable product paths", () => {
     ".": "./dist/engine/index.js",
     "./apps": "./dist/apps/index.js",
     "./engine": "./dist/engine/index.js",
-    "./create-g3d": "./dist/create-g3d/index.js"
+    "./create-aura3d": "./dist/create-aura3d/index.js"
   });
   expect(manifest.files).toEqual(expect.arrayContaining([
     "dist/apps",
     "dist/engine",
-    "dist/create-g3d"
+    "dist/create-aura3d"
   ]));
   expect(manifest.devDependencies).toMatchObject({
-    "@galileo3d/apps": "workspace:*",
-    "@galileo3d/engine-runtime": "workspace:*",
-    "@galileo3d/create-g3d": "workspace:*"
+    "@aura3d/apps": "workspace:*",
+    "@aura3d/engine-runtime": "workspace:*",
+    "@aura3d/create-aura3d": "workspace:*"
   });
 });

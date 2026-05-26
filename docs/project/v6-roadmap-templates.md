@@ -11,7 +11,7 @@ V6 templates:
 - `templates/production-architecture-viewer/`
 - `templates/production-webgpu-starter/`
 
-Each template includes a package file, browser entry, source entry, asset manifest with checksums, and README fetch/copy instructions. The create-g3d mirrors live under `packages/create-g3d/templates/`.
+Each template includes a package file, browser entry, source entry, asset manifest with checksums, and README fetch/copy instructions. The create-aura3d mirrors live under `packages/create-aura3d/templates/`.
 
 Primary evidence:
 

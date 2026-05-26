@@ -20,15 +20,15 @@ test.describe("V4 IBL browser evidence", () => {
   test("shows environment reflections and generated IBL resources in the material showroom", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/_quarantine/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__GALILEO3D_MATERIAL_SHOWROOM__?.status === "ready", undefined, { timeout: 30_000 });
+    await page.waitForFunction(() => window.__AURA3D_MATERIAL_SHOWROOM__?.status === "ready", undefined, { timeout: 30_000 });
     await page.getByTestId("material-showroom-environment-preset").selectOption("sunset");
-    await expect.poll(() => page.evaluate(() => window.__GALILEO3D_MATERIAL_SHOWROOM__?.environmentPreset)).toBe("sunset");
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__?.environmentPreset)).toBe("sunset");
 
     const screenshotPath = "tests/reports/external-gallery/debug-views/ibl-material-showroom.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/debug-views"), { recursive: true });
     await page.locator("[data-testid='material-showroom-canvas']").screenshot({ path: screenshotPath });
 
-    const state = await page.evaluate(() => window.__GALILEO3D_MATERIAL_SHOWROOM__);
+    const state = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
     const v4Pipeline = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
       const pipeline = rendering.createV4EnvironmentPipeline({
@@ -101,7 +101,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_MATERIAL_SHOWROOM__?: {
+    __AURA3D_MATERIAL_SHOWROOM__?: {
       readonly status?: "ready" | "error";
       readonly environmentPreset?: string;
       readonly featureEvidence?: {

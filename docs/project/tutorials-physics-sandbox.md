@@ -18,8 +18,8 @@ pnpm exec playwright test tests/browser/physics-sandbox-browser.spec.ts
 
 ## What It Uses
 
-- `@galileo3d/physics` for rigid bodies, colliders, sensors, fixed-step simulation, broadphase stats, and debug line extraction.
-- `@galileo3d/rendering` for WebGL2-rendered cubes, ground lines, and debug geometry.
+- `@aura3d/physics` for rigid bodies, colliders, sensors, fixed-step simulation, broadphase stats, and debug line extraction.
+- `@aura3d/rendering` for WebGL2-rendered cubes, ground lines, and debug geometry.
 - Browser controls for spawning, stepping, and toggling debug layers.
 
 ## Implementation Shape

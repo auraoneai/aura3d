@@ -5,8 +5,8 @@ import {
   type RenderSource,
   type RendererPostProcessOptions,
   type RendererShadowOptions
-} from "@galileo3d/rendering";
-import { DirectionalLight } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight } from "@aura3d/scene";
 import { createAssetRenderDefaults, type AssetRenderLightingPreset } from "./AssetRenderDefaults";
 import { createGLTFRenderResources, type GLTFRendererInput, type GLTFRenderQualityPreset, type GLTFRenderResourceOptions, type GLTFRenderResources } from "./GLTFRenderResources";
 import type { RenderableAsset } from "./loadRenderableAsset";

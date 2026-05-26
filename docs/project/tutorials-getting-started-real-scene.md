@@ -24,10 +24,10 @@ pnpm exec playwright test tests/browser/product-demos.spec.ts
 
 ## Minimal Renderer Code
 
-The core shape of a Galileo3D browser scene is:
+The core shape of a Aura3D browser scene is:
 
 ```ts
-import { Geometry, PBRMaterial, Renderer, UnlitMaterial } from "@galileo3d/rendering";
+import { Geometry, PBRMaterial, Renderer, UnlitMaterial } from "@aura3d/rendering";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#viewport");
 if (!canvas) throw new Error("Missing #viewport canvas.");

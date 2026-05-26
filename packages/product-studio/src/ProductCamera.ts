@@ -1,4 +1,4 @@
-import { computePerspectiveCameraFrame } from "@galileo3d/rendering";
+import { computePerspectiveCameraFrame } from "@aura3d/rendering";
 import type { ProductAsset, ProductCameraFrame, ProductCameraOptions, ProductCameraPreset } from "./ProductTypes";
 
 const CAMERA_PRESETS: Record<ProductCameraPreset, { readonly yaw: number; readonly pitch: number; readonly padding: number }> = {

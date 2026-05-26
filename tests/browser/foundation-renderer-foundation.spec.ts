@@ -19,7 +19,7 @@ test.describe("V3 renderer foundation", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-v3-renderer-foundation/v1",
+      schema: "a3d-v3-renderer-foundation/v1",
       generatedAt: new Date().toISOString(),
       requiredFeatures: [
         "webgl2",

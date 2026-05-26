@@ -3,12 +3,12 @@ import {
   RenderDeviceError,
   UnlitMaterial,
   type RenderItemDrawRange
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8GeometryDrawRange?: V8GeometryDrawRangeRuntime;
+    __a3dV8GeometryDrawRange?: V8GeometryDrawRangeRuntime;
   }
 }
 
@@ -26,7 +26,7 @@ interface V8GeometryDrawRangeRuntime {
   readonly arrayTotalCount: number;
   readonly usesIndexedRange: boolean;
   readonly usesArrayRange: boolean;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly elapsedMs: number;
   readonly error?: string;
 }
@@ -51,13 +51,13 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8GeometryDrawRange = runtime;
+    window.__a3dV8GeometryDrawRange = runtime;
     renderUi(root, runtime);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -127,7 +127,7 @@ async function run(): Promise<void> {
           drawCalls: diagnostics.drawCalls,
           fps
         }, indexedCube.indexBuffer?.count ?? 0, arrayQuads.indexBuffer?.count ?? arrayQuads.vertexBuffer.vertexCount);
-        window.__g3dV8GeometryDrawRange = runtime;
+        window.__a3dV8GeometryDrawRange = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -166,7 +166,7 @@ function createRuntime(
     arrayTotalCount: arrayTotalCount || patch.arrayTotalCount || 0,
     usesIndexedRange: true,
     usesArrayRange: true,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
   };
@@ -199,7 +199,7 @@ function renderUi(root: HTMLElement, runtime: V8GeometryDrawRangeRuntime): void 
     <section class="panel">
       <div>
         <h1>V8 Geometry DrawRange</h1>
-        <p>Indexed and array draw ranges routed through G3D render commands.</p>
+        <p>Indexed and array draw ranges routed through A3D render commands.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>

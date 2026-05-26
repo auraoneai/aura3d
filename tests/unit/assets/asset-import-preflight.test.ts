@@ -6,7 +6,7 @@ import {
 
 describe("asset import preflight", () => {
   it("detects supported glTF and publishes old-import-profile settings", () => {
-    const report = createAssetImportPreflightReport("fixtures/assets/v4/product/v4-product-speaker/model.glb?cache=1", {
+    const report = createAssetImportPreflightReport("fixtures/asset-corpus/damaged-helmet.glb?cache=1", {
       profile: "web",
       fileBytes: 12345.4
     });

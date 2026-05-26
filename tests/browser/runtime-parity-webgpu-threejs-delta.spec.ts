@@ -41,7 +41,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
       if (availability.status !== "available") {
         return {
           status: "blocked",
-          schema: "g3d-v7-webgpu-threejs-delta/v1",
+          schema: "a3d-v7-webgpu-threejs-delta/v1",
           productionClaim: "not-claimed",
           availability,
           reason: "Browser did not expose a usable WebGPU adapter/device."
@@ -59,8 +59,8 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
 
       try {
         const viewport = { width: WIDTH, height: HEIGHT };
-        const assetUrl = `${location.origin}/fixtures/v7/assets/flagship/chronograph-watch.glb`;
-        const hdrUrl = `${location.origin}/fixtures/v7/environments/hdri/studio_small_08_4k.hdr`;
+        const assetUrl = `${location.origin}/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`;
+        const hdrUrl = `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`;
         asset = await engine.loadGltfScene({
           url: assetUrl,
           assetId: "chronograph-watch",
@@ -179,7 +179,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
           && deltaReady;
         return {
           status: visualReady ? "ready" : "blocked",
-          schema: "g3d-v7-webgpu-threejs-delta/v1",
+          schema: "a3d-v7-webgpu-threejs-delta/v1",
           productionClaim: "not-claimed",
           reason: visualReady
             ? "Bounded same-asset WebGPU-vs-Three.js visual delta evidence exists; this does not make WebGPU the production backend."
@@ -217,7 +217,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
       } catch (error) {
         return {
           status: "blocked",
-          schema: "g3d-v7-webgpu-threejs-delta/v1",
+          schema: "a3d-v7-webgpu-threejs-delta/v1",
           productionClaim: "not-claimed",
           availability,
           reason: error instanceof Error ? error.stack ?? error.message : String(error)

@@ -125,7 +125,7 @@ export function createV8LegacyPruneReport(): Record<string, unknown> {
   const failures = checks.filter((check) => !check.pass).map((check) => `${check.id}: ${check.detail}`);
 
   return {
-    schema: "g3d-current-routes-legacy-prune/v1",
+    schema: "a3d-current-routes-legacy-prune/v1",
     generatedAt: new Date().toISOString(),
     pass: failures.length === 0,
     deleted,

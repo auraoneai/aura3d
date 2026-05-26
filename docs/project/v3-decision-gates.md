@@ -19,7 +19,7 @@ Required:
 
 Allowed claim after this gate:
 
-> Galileo3D has internally verified proof slices for multiple web 3D engine subsystems.
+> Aura3D has internally verified proof slices for multiple web 3D engine subsystems.
 
 ## Gate 1: Credible Renderer Examples
 
@@ -35,7 +35,7 @@ Required:
 
 Allowed claim after this gate:
 
-> Galileo3D can render and interact with real local web 3D scenes through its own renderer.
+> Aura3D can render and interact with real local web 3D scenes through its own renderer.
 
 Still disallowed:
 
@@ -55,7 +55,7 @@ Required:
 
 Allowed claim after this gate:
 
-> Galileo3D has a local glTF asset pipeline with explicit supported and unsupported feature reporting.
+> Aura3D has a local glTF asset pipeline with explicit supported and unsupported feature reporting.
 
 Still disallowed:
 
@@ -74,7 +74,7 @@ Required:
 
 Allowed claim after this gate:
 
-> Galileo3D has a browser-first editor workflow for authoring and exporting local TypeScript/WebGL apps.
+> Aura3D has a browser-first editor workflow for authoring and exporting local TypeScript/WebGL apps.
 
 Still disallowed:
 
@@ -86,15 +86,15 @@ Still disallowed:
 
 Required:
 
-- [x] Same-scene Galileo3D/Three.js/Babylon.js benchmarks exist.
+- [x] Same-scene Aura3D/Three.js/Babylon.js benchmarks exist.
 - [x] Product, asset, PBR, large-scene, instancing, and skinned-character scenes are compared where supported.
 - [x] Reports include startup, load, frame, resource, bundle, screenshot, and unsupported-feature data.
-- [x] Reports state where Galileo3D loses.
+- [x] Reports state where Aura3D loses.
 - [x] `tests/reports/v3-engine-comparison.json` passes.
 
 Allowed claim after this gate:
 
-> Galileo3D is competitive in the measured local scenes listed in the v3 comparison report.
+> Aura3D is competitive in the measured local scenes listed in the v3 comparison report.
 
 Still disallowed:
 
@@ -114,11 +114,11 @@ Required:
 
 Allowed claim after this gate:
 
-> In the specific v3 benchmarked niche named in the report, Galileo3D outperforms or simplifies the workflow versus Three.js under the recorded conditions.
+> In the specific v3 benchmarked niche named in the report, Aura3D outperforms or simplifies the workflow versus Three.js under the recorded conditions.
 
 Still disallowed:
 
-- "Galileo3D matches or exceeds Three.js in measured categories" without niche, date, scene, and metric.
+- "Aura3D matches or exceeds Three.js in measured categories" without niche, date, scene, and metric.
 
 ## Gate 6: Browser-First Unity/Unreal-Style Workflow
 
@@ -132,7 +132,7 @@ Required:
 
 Allowed claim after this gate:
 
-> Galileo3D provides a browser-first authoring workflow for local web 3D apps.
+> Aura3D provides a browser-first authoring workflow for local web 3D apps.
 
 Still disallowed:
 
@@ -152,7 +152,7 @@ Required:
 
 Allowed claim after this gate:
 
-> Galileo3D v3 has code-complete local evidence for its specifically defined renderer, asset, editor, runtime, and benchmark claims.
+> Aura3D v3 has code-complete local evidence for its specifically defined renderer, asset, editor, runtime, and benchmark claims.
 
 Still disallowed unless future non-code gates are added:
 

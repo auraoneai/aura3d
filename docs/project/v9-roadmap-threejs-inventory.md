@@ -2,7 +2,7 @@
 
 Generated inventory for the first V9 code backlog.
 
-| Three.js example | Category | Priority | G3D status | G3D route | Construction tracks |
+| Three.js example | Category | Priority | A3D status | A3D route | Construction tracks |
 | --- | --- | --- | --- | --- | --- |
 | `webgl_animation_keyframes` | `animation` | `high` | `matched` | `/apps/animation-keyframes/` | `E` `D` `C` `K` |
 | `webgl_animation_skinning_blending` | `skinning` | `high` | `matched` | `/apps/skinning-blending/` | `E` `C` `K` |

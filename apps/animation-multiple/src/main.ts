@@ -2,8 +2,8 @@ import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
   loadV6GLTFRenderPipeline
-} from "@galileo3d/assets";
-import { AnimationMotionQualityTracker } from "@galileo3d/animation";
+} from "@aura3d/assets";
+import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
   PBRMaterial,
@@ -12,9 +12,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   createAgentSpawnerState,
   sampleAgentPoses,
@@ -25,7 +25,7 @@ import {
 
 declare global {
   interface Window {
-    __g3dV8AnimationMultiple?: V8AnimationMultipleRuntime;
+    __a3dV8AnimationMultiple?: V8AnimationMultipleRuntime;
   }
 }
 
@@ -48,7 +48,7 @@ interface V8AnimationMultipleRuntime {
   poseDiversityScore: number;
   motionHealthy: boolean;
   skinningPalettesUpdated: number;
-  renderer: "g3d-webgl2";
+  renderer: "a3d-webgl2";
   fixture: string;
   error?: string;
 }
@@ -89,14 +89,14 @@ async function run(): Promise<void> {
   });
 
   const publish = (): void => {
-    window.__g3dV8AnimationMultiple = runtime;
+    window.__a3dV8AnimationMultiple = runtime;
     renderUi(root, runtime, state);
     bindUi(root, state, publish);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -211,7 +211,7 @@ async function run(): Promise<void> {
         if (lastSkinningPalettesUpdated <= 0) {
           throw new Error("Imported multiple-character route did not update any skinning palettes.");
         }
-        window.__g3dV8AnimationMultiple = runtime;
+        window.__a3dV8AnimationMultiple = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -254,7 +254,7 @@ function createRuntime(
     poseDiversityScore: counters.poseDiversityScore ?? 0,
     motionHealthy: counters.motionHealthy ?? false,
     skinningPalettesUpdated: counters.skinningPalettesUpdated ?? 0,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     fixture: "imported soldier.glb independent Idle Run Walk clones"
   };
 }

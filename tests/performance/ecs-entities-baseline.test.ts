@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { performance } from "node:perf_hooks";
-import { TransformComponent, World } from "@galileo3d/ecs";
+import { TransformComponent, World } from "@aura3d/ecs";
 import { describe, expect, it } from "vitest";
 
 export interface ECSEntityBaselineReport {

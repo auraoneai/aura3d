@@ -1,5 +1,5 @@
-import { CreateNodeCommand, DeleteNodeCommand } from "@galileo3d/editor-runtime";
-import { SceneNode } from "@galileo3d/scene";
+import { CreateNodeCommand, DeleteNodeCommand } from "@aura3d/editor-runtime";
+import { SceneNode } from "@aura3d/scene";
 import type { EditorShell } from "../EditorShell";
 
 export class HierarchyPanel {
@@ -57,7 +57,7 @@ export class HierarchyPanel {
       if (!nodeId || nodeId === "root" || !event.dataTransfer) {
         return;
       }
-      event.dataTransfer.setData("application/x-galileo3d-node", nodeId);
+      event.dataTransfer.setData("application/x-aura3d-node", nodeId);
       event.dataTransfer.effectAllowed = "move";
     });
     this.element.addEventListener("dragover", (event) => {
@@ -72,7 +72,7 @@ export class HierarchyPanel {
     this.element.addEventListener("drop", (event) => {
       const row = (event.target as HTMLElement).closest<HTMLElement>(".hierarchy-row");
       const parentId = row?.dataset.nodeId;
-      const draggedId = event.dataTransfer?.getData("application/x-galileo3d-node");
+      const draggedId = event.dataTransfer?.getData("application/x-aura3d-node");
       if (!parentId || !draggedId) {
         return;
       }

@@ -1,6 +1,6 @@
 # V9 Skinning Limits
 
-G3D has real animation, skeleton, skinning, morph, additive, and IK code. The current V9 reports support scoped parity for tracked character examples, not unlimited character animation parity.
+A3D has real animation, skeleton, skinning, morph, additive, and IK code. The current V9 reports support scoped parity for tracked character examples, not unlimited character animation parity.
 
 ## Real Code
 

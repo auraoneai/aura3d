@@ -1,11 +1,11 @@
-import { TransformControls } from "@galileo3d/controls";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { Geometry, RenderDeviceError, UnlitMaterial } from "@galileo3d/rendering";
-import { Renderable, Scene, quatFromEuler } from "@galileo3d/scene";
+import { TransformControls } from "@aura3d/controls";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { Geometry, RenderDeviceError, UnlitMaterial } from "@aura3d/rendering";
+import { Renderable, Scene, quatFromEuler } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __g3dV8TransformControls?: V8TransformControlsRuntime;
+    __a3dV8TransformControls?: V8TransformControlsRuntime;
   }
 }
 
@@ -22,7 +22,7 @@ interface V8TransformControlsRuntime {
   readonly translateSamples: number;
   readonly rotateSamples: number;
   readonly scaleSamples: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly controls: "public-controls-TransformControls";
   readonly elapsedMs: number;
   readonly error?: string;
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__g3dV8TransformControls = runtime;
+    window.__a3dV8TransformControls = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
       if (element.id === "scale-up") applyMode("scale", { x: 0.15, y: 0.15, z: 0.15 });
     });
 
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -120,7 +120,7 @@ async function run(): Promise<void> {
           rotateSamples,
           scaleSamples
         });
-        window.__g3dV8TransformControls = runtime;
+        window.__a3dV8TransformControls = runtime;
         if (runtime.frameCount === 1 || runtime.frameCount % 15 === 0) publish();
         requestAnimationFrame(render);
       } catch (error) {
@@ -181,7 +181,7 @@ function createRuntime(
     translateSamples: patch.translateSamples ?? 0,
     rotateSamples: patch.rotateSamples ?? 0,
     scaleSamples: patch.scaleSamples ?? 0,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     controls: "public-controls-TransformControls",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})
@@ -193,7 +193,7 @@ function renderUi(root: HTMLElement, runtime: V8TransformControlsRuntime): void 
     <section class="panel">
       <div>
         <h1>V8 Transform Controls</h1>
-        <p>Public TransformControls applying translate, rotate, and scale to a G3D scene object.</p>
+        <p>Public TransformControls applying translate, rotate, and scale to a A3D scene object.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>
     </section>

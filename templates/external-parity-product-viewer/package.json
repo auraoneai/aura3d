@@ -1,5 +1,5 @@
 {
-  "name": "g3d-external-parity-product-viewer",
+  "name": "a3d-external-parity-product-viewer",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -8,7 +8,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@galileo3d/engine": "0.1.0-alpha.0"
+    "@aura3d/engine": "0.1.0-alpha.0"
   },
   "devDependencies": {
     "vite": "^7.3.2",

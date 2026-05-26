@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { validateClaimRegistry, writeClaimRegistryReport } from "../../../tools/claim-registry/index.js";
 
 function fixtureRoot(): string {
-  const root = mkdtempSync(join(tmpdir(), "g3d-claims-"));
+  const root = mkdtempSync(join(tmpdir(), "a3d-claims-"));
   mkdirSync(join(root, "docs", "v2"), { recursive: true });
   writeFileSync(join(root, "docs", "v2", "claim-registry.md"), registry());
   return root;
@@ -18,17 +18,17 @@ function registry(evidence = "Existing package surface and internal tests."): st
 
 | Claim | Gate | Evidence required | Required wording constraints |
 |---|---|---|---|
-| Galileo3D is an experimental TypeScript web 3D engine prototype. | None | ${evidence} | Must include prototype or experimental language. |
+| Aura3D is an experimental TypeScript web 3D engine prototype. | None | ${evidence} | Must include prototype or experimental language. |
 
 ## Blocked Until Gates Pass
 
 | Claim | Required gate | Additional evidence |
 |---|---|---|
-| Galileo3D is better than Three.js. | Gate C | Narrow niche and raw benchmark data. |
-| Galileo3D is Unity/Unreal for the web. | Gate D | Browser editor proof. |
-| Galileo3D is production-ready. | Gate E | Release history. |
-| Galileo3D has production PBR parity. | Gate C | Reference renderer comparison. |
-| Galileo3D has full WebGPU support. | Gate C | Real hardware matrix. |
+| Aura3D is better than Three.js. | Gate C | Narrow niche and raw benchmark data. |
+| Aura3D is Unity/Unreal for the web. | Gate D | Browser editor proof. |
+| Aura3D is production-ready. | Gate E | Release history. |
+| Aura3D has production PBR parity. | Gate C | Reference renderer comparison. |
+| Aura3D has full WebGPU support. | Gate C | Real hardware matrix. |
 `;
 }
 
@@ -42,17 +42,17 @@ describe("claim registry verifier", () => {
 
     expect(report.ok).toBe(true);
     expect(report.allowedOccurrences).toEqual(expect.arrayContaining([
-      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Galileo3D is better than Three.js.", scoped: true }),
-      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Galileo3D is production-ready.", scoped: true })
+      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Aura3D is better than Three.js.", scoped: true }),
+      expect.objectContaining({ path: "docs/project/known-limits.md", claim: "Aura3D is production-ready.", scoped: true })
     ]));
   });
 
   it("blocks unregistered stronger claims in example READMEs and package descriptions", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "examples", "bad-demo"), { recursive: true });
-    writeFileSync(join(root, "examples", "bad-demo", "README.md"), "Galileo3D is better than Three.js.\n");
+    writeFileSync(join(root, "examples", "bad-demo", "README.md"), "Aura3D is better than Three.js.\n");
     writeFileSync(join(root, "package.json"), JSON.stringify({
-      name: "@galileo3d/test",
+      name: "@aura3d/test",
       description: "A production-ready web engine"
     }));
 
@@ -60,8 +60,8 @@ describe("claim registry verifier", () => {
 
     expect(report.ok).toBe(false);
     expect(report.violations).toEqual(expect.arrayContaining([
-      expect.objectContaining({ kind: "blocked-claim", path: "examples/bad-demo/README.md", claim: "Galileo3D is better than Three.js." }),
-      expect.objectContaining({ kind: "blocked-claim", path: "package.json", claim: "Galileo3D is production-ready." })
+      expect.objectContaining({ kind: "blocked-claim", path: "examples/bad-demo/README.md", claim: "Aura3D is better than Three.js." }),
+      expect.objectContaining({ kind: "blocked-claim", path: "package.json", claim: "Aura3D is production-ready." })
     ]));
   });
 
@@ -90,7 +90,7 @@ describe("claim registry verifier", () => {
       expect.objectContaining({
         kind: "missing-evidence",
         path: "docs/project/v2-claim-registry.md",
-        claim: "Galileo3D is an experimental TypeScript web 3D engine prototype."
+        claim: "Aura3D is an experimental TypeScript web 3D engine prototype."
       })
     ]);
   });

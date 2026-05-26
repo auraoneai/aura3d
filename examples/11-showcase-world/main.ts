@@ -1,9 +1,9 @@
-import { AnimationClip, AnimationMixer, AnimationTrack, type AnimationValue } from "@galileo3d/animation";
-import { AssetManager, GLTFLoader } from "@galileo3d/assets";
-import { AudioListener, AudioSystem } from "@galileo3d/audio";
-import { EditorRuntime, TransformCommand, type TransformLike } from "@galileo3d/editor";
-import { FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, type CameraTransformLike, type Vec3Like } from "@galileo3d/input";
-import { PhysicsWorld, Shape } from "@galileo3d/physics";
+import { AnimationClip, AnimationMixer, AnimationTrack, type AnimationValue } from "@aura3d/animation";
+import { AssetManager, GLTFLoader } from "@aura3d/assets";
+import { AudioListener, AudioSystem } from "@aura3d/audio";
+import { EditorRuntime, TransformCommand, type TransformLike } from "@aura3d/editor";
+import { FirstPersonControls, InputSnapshot, InputSystem, OrbitControls, type CameraTransformLike, type Vec3Like } from "@aura3d/input";
+import { PhysicsWorld, Shape } from "@aura3d/physics";
 import {
   Geometry,
   InstancedPBRMaterial,
@@ -18,14 +18,14 @@ import {
   UnlitMaterial,
   type RenderDeviceDiagnostics,
   type RenderItem,
-} from "@galileo3d/rendering";
-import { PointLight, Scene, SpotLight } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { PointLight, Scene, SpotLight } from "@aura3d/scene";
 
 type MutableMetrics = Record<string, string | number | boolean>;
 
 declare global {
   interface Window {
-    __GALILEO3D_EXAMPLE__?: {
+    __AURA3D_EXAMPLE__?: {
       id: string;
       status: "ready" | "error";
       renderer: "webgl2";
@@ -42,7 +42,7 @@ declare global {
 
 const metadata = {
   id: "11-showcase-world",
-  title: "Galileo3D WebGL Showcase",
+  title: "Aura3D WebGL Showcase",
   purpose: "A real WebGL2 renderer scene that combines the current public engine stack.",
   acceptance: "Rendering, scene, physics, animation, glTF, input, audio, editor, and particle metrics are visible and ready.",
 };
@@ -62,7 +62,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void runShowcase().catch((error) => {
-    window.__GALILEO3D_EXAMPLE__ = {
+    window.__AURA3D_EXAMPLE__ = {
       id: metadata.id,
       status: "error",
       renderer: "webgl2",
@@ -404,7 +404,7 @@ async function runShowcase(): Promise<void> {
         firstPersonZ: Number(firstPersonCamera.position.z.toFixed(2)),
       },
     };
-    window.__GALILEO3D_EXAMPLE__ = state;
+    window.__AURA3D_EXAMPLE__ = state;
     updatePanels(statusPanel, statsPanel, state.metrics, diagnostics);
     requestAnimationFrame(frame);
   }
@@ -460,9 +460,9 @@ function createShowcaseShell(): { canvas: HTMLCanvasElement; statusPanel: HTMLEl
 }
 
 function installShowcaseStyles(): void {
-  if (document.querySelector("#galileo3d-showcase-styles")) return;
+  if (document.querySelector("#aura3d-showcase-styles")) return;
   const style = document.createElement("style");
-  style.id = "galileo3d-showcase-styles";
+  style.id = "aura3d-showcase-styles";
   style.textContent = `
     html, body, #app { margin: 0; width: 100%; min-height: 100%; background: #05080d; color: #f2f7fb; font-family: Inter, ui-sans-serif, system-ui, sans-serif; overflow: hidden; }
     .showcase-shell { position: relative; min-height: 100vh; background: #05080d; }

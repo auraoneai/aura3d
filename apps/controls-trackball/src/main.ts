@@ -1,10 +1,10 @@
-import { TrackballControls } from "@galileo3d/controls";
-import { Geometry, PBRMaterial } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+import { TrackballControls } from "@aura3d/controls";
+import { Geometry, PBRMaterial } from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8ControlsTrackball?: V8ControlsTrackballRuntime;
+    __a3dV8ControlsTrackball?: V8ControlsTrackballRuntime;
   }
 }
 
@@ -26,7 +26,7 @@ interface V8ControlsTrackballRuntime {
   readonly zoomEnabled: boolean;
   readonly trackballRollApplied: boolean;
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -53,7 +53,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8ControlsTrackball = runtime;
+    window.__a3dV8ControlsTrackball = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -64,7 +64,7 @@ async function run(): Promise<void> {
     controls.pan(0.08, -0.04);
     controls.dolly(0.86);
     controls.roll(0.22);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       backend: "webgl2",
       canvas,
       width: WIDTH,
@@ -127,7 +127,7 @@ async function run(): Promise<void> {
           zoomEnabled: controls.enableZoom,
           trackballRollApplied: Math.abs(controls.state.rotation.z) > 0.2
         });
-        window.__g3dV8ControlsTrackball = runtime;
+        window.__a3dV8ControlsTrackball = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -169,7 +169,7 @@ function createRuntime(
     zoomEnabled: patch.zoomEnabled ?? true,
     trackballRollApplied: patch.trackballRollApplied ?? false,
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }

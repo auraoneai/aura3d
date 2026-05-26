@@ -245,7 +245,7 @@ function bucketMarkdown(buckets: Record<string, TraceBucketSummary>): string {
 }
 
 export function verificationEvidenceMarkdown(report: VerifiedTraceReport): string {
-  return `# Galileo3D Verification Evidence
+  return `# Aura3D Verification Evidence
 
 ## Requirements Trace Gate
 - Total requirements: ${report.totalRequirements}

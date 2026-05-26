@@ -20,16 +20,16 @@ test.describe("V4 same-scene Three.js visual parity", () => {
     await server.close();
     const pass = captures.length === V4_THREEJS_PARITY_SCENES.length &&
       captures.every((capture) =>
-        capture.g3d.bytes > 8_000 &&
+        capture.a3d.bytes > 8_000 &&
         capture.threejs.bytes > 8_000 &&
         capture.diff.bytes > 2_000 &&
-        capture.g3d.drawCalls > 0 &&
+        capture.a3d.drawCalls > 0 &&
         capture.threejs.drawCalls > 0 &&
         Number.isFinite(capture.diff.meanDifference) &&
         capture.visualScore >= 58
       );
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-external-parity-threejs-visual-parity-browser/v1",
+      schema: "a3d-external-parity-threejs-visual-parity-browser/v1",
       generatedAt: new Date().toISOString(),
       pass,
       requiredSceneCount: V4_THREEJS_PARITY_SCENES.length,
@@ -40,26 +40,26 @@ test.describe("V4 same-scene Three.js visual parity", () => {
   });
 
   for (const scene of V4_THREEJS_PARITY_SCENES) {
-    test(`${scene.id} captures G3D, Three.js, and diff images`, async ({ page }) => {
+    test(`${scene.id} captures A3D, Three.js, and diff images`, async ({ page }) => {
       await page.goto(server.origin, { waitUntil: "domcontentloaded" });
       const metrics = await page.evaluate(async ({ origin, scene }) => {
         const productUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/BoomBox/glTF-Binary/BoomBox.glb";
-        const g3d = await renderG3D(origin, scene, productUrl);
+        const a3d = await renderA3D(origin, scene, productUrl);
         const threejs = await renderThree(origin, scene, productUrl);
-        const diff = createDiffCanvas(scene.id, g3d.canvas, threejs.canvas);
+        const diff = createDiffCanvas(scene.id, a3d.canvas, threejs.canvas);
         document.body.style.margin = "0";
         document.body.style.background = "#111413";
         document.body.style.display = "grid";
         document.body.style.gridTemplateColumns = "720px 720px 720px";
-        document.body.replaceChildren(g3d.canvas, threejs.canvas, diff);
+        document.body.replaceChildren(a3d.canvas, threejs.canvas, diff);
         return {
           sceneId: scene.id,
-          g3d: {
-            drawCalls: g3d.drawCalls,
-            itemCount: g3d.itemCount,
-            setupLines: scene.g3dSetupLines,
-            lastError: g3d.lastError,
-            workflowKind: g3d.workflowKind
+          a3d: {
+            drawCalls: a3d.drawCalls,
+            itemCount: a3d.itemCount,
+            setupLines: scene.a3dSetupLines,
+            lastError: a3d.lastError,
+            workflowKind: a3d.workflowKind
           },
           threejs: {
             drawCalls: threejs.drawCalls,
@@ -73,35 +73,35 @@ test.describe("V4 same-scene Three.js visual parity", () => {
           }
         };
 
-        async function renderG3D(origin: string, scene: typeof V4_THREEJS_PARITY_SCENES[number], productUrl: string) {
+        async function renderA3D(origin: string, scene: typeof V4_THREEJS_PARITY_SCENES[number], productUrl: string) {
           const module = await import(`${origin}/packages/engine/src/index.ts`);
           const canvas = document.createElement("canvas");
-          canvas.dataset.testid = `${scene.id}-g3d`;
+          canvas.dataset.testid = `${scene.id}-a3d`;
           canvas.width = 720;
           canvas.height = 450;
           canvas.style.width = "720px";
           canvas.style.height = "450px";
-          const app = await module.createG3DApp({ canvas, quality: "production", width: 720, height: 450 });
+          const app = await module.createA3DApp({ canvas, quality: "production", width: 720, height: 450 });
           let workflow;
-          if (scene.g3dWorkflow === "product-configurator") {
+          if (scene.a3dWorkflow === "product-configurator") {
             workflow = await app.renderWorkflow("product-configurator", {
               asset: {
                 id: "premium-boom-box",
                 title: "Premium Boom Box",
                 category: "consumer-audio",
                 url: productUrl,
-                manifestUrl: `${origin}/fixtures/v4/products/premium-product/manifest.json`
+                manifestUrl: `${origin}/fixtures/external-parity/products/premium-product/manifest.json`
               },
               lighting: "catalog-softbox",
               camera: "front-three-quarter",
               materialMode: "asset",
               viewport: { width: 720, height: 450 }
             });
-          } else if (scene.g3dWorkflow === "asset-viewer") {
+          } else if (scene.a3dWorkflow === "asset-viewer") {
             workflow = await app.renderWorkflow("asset-viewer", { url: productUrl, type: "gltf" });
-          } else if (scene.g3dWorkflow === "material-studio") {
+          } else if (scene.a3dWorkflow === "material-studio") {
             workflow = await app.renderWorkflow("material-studio", { mode: scene.threeScene === "material-transparent" ? "transparent" : "metals" });
-          } else if (scene.g3dWorkflow === "scene-showcase") {
+          } else if (scene.a3dWorkflow === "scene-showcase") {
             workflow = await app.renderWorkflow("scene-showcase", { preset: "gallery" });
           } else {
             workflow = await app.renderWorkflow("interactive-scene", { preset: "orbiting-products" });
@@ -269,23 +269,23 @@ test.describe("V4 same-scene Three.js visual parity", () => {
         }
       }, { origin: server.origin, scene });
 
-      expect(metrics.g3d.drawCalls).toBeGreaterThan(0);
+      expect(metrics.a3d.drawCalls).toBeGreaterThan(0);
       expect(metrics.threejs.drawCalls).toBeGreaterThan(0);
-      expect(metrics.g3d.lastError).toBeNull();
-      const g3d = await screenshotScene(page, scene.id, "g3d", metrics.g3d);
+      expect(metrics.a3d.lastError).toBeNull();
+      const a3d = await screenshotScene(page, scene.id, "a3d", metrics.a3d);
       const threejs = await screenshotScene(page, scene.id, "threejs", metrics.threejs);
       const diff = await screenshotScene(page, scene.id, "diff", { drawCalls: 1, itemCount: 1, setupLines: 0 });
       captures.push({
         sceneId: scene.id,
         title: scene.title,
         visualIntent: scene.visualIntent,
-        g3d,
+        a3d,
         threejs,
         diff: { ...diff, meanDifference: metrics.diff.meanDifference },
         visualScore: metrics.diff.visualScore,
-        ergonomicWin: metrics.g3d.setupLines < metrics.threejs.setupLines,
+        ergonomicWin: metrics.a3d.setupLines < metrics.threejs.setupLines,
         runtimeStats: {
-          g3dDrawCalls: metrics.g3d.drawCalls,
+          a3dDrawCalls: metrics.a3d.drawCalls,
           threejsDrawCalls: metrics.threejs.drawCalls,
           threejsTriangles: metrics.threejs.rendererInfo.triangles
         },
@@ -298,7 +298,7 @@ test.describe("V4 same-scene Three.js visual parity", () => {
 async function screenshotScene(
   page: import("@playwright/test").Page,
   sceneId: string,
-  engine: "g3d" | "threejs" | "diff",
+  engine: "a3d" | "threejs" | "diff",
   metrics: { readonly drawCalls: number; readonly itemCount: number; readonly setupLines: number }
 ): Promise<CaptureImage> {
   const path = join(reportDir, `${sceneId}-${engine}.png`);
@@ -326,13 +326,13 @@ interface ComparisonCapture {
   readonly sceneId: string;
   readonly title: string;
   readonly visualIntent: readonly string[];
-  readonly g3d: CaptureImage;
+  readonly a3d: CaptureImage;
   readonly threejs: CaptureImage;
   readonly diff: CaptureImage & { readonly meanDifference: number };
   readonly visualScore: number;
   readonly ergonomicWin: boolean;
   readonly runtimeStats: {
-    readonly g3dDrawCalls: number;
+    readonly a3dDrawCalls: number;
     readonly threejsDrawCalls: number;
     readonly threejsTriangles: number;
   };

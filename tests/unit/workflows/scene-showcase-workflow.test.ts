@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Renderer } from "@galileo3d/rendering";
-import { createSceneShowcaseWorkflow } from "@galileo3d/workflows";
+import { Renderer } from "@aura3d/rendering";
+import { createSceneShowcaseWorkflow } from "@aura3d/workflows";
 
 describe("createSceneShowcaseWorkflow", () => {
   it("creates a multi-object scene workflow", async () => {

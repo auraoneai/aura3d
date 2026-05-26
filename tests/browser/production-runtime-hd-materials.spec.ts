@@ -115,7 +115,7 @@ test.describe("V6 HD PBR material renderer", () => {
 
     const reportPath = "tests/reports/production-runtime-hd-materials.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "g3d-production-runtime-hd-materials/v1",
+      schema: "a3d-production-runtime-hd-materials/v1",
       generatedAt: new Date().toISOString(),
       pass: true,
       screenshot: screenshotPath,

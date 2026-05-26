@@ -1,6 +1,6 @@
-import { AnimationClip, AnimationMixer, AnimationTrack, ECSAnimationBridge, SceneAnimationBridge, type ECSAnimationComponent, type RootMotionSample } from "@galileo3d/animation";
-import { TransformComponent, World } from "@galileo3d/ecs";
-import { Scene } from "@galileo3d/scene";
+import { AnimationClip, AnimationMixer, AnimationTrack, ECSAnimationBridge, SceneAnimationBridge, type ECSAnimationComponent, type RootMotionSample } from "@aura3d/animation";
+import { TransformComponent, World } from "@aura3d/ecs";
+import { Scene } from "@aura3d/scene";
 import { describe, expect, it } from "vitest";
 
 describe("animation root motion scene/ECS integration", () => {

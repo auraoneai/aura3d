@@ -1,6 +1,6 @@
 import { RenderDeviceError, type RenderDevice, type RenderTarget } from "./RenderDevice";
 import { ToneMappingPass, type BloomOptions } from "./PostProcessPass";
-import { createV4ColorManagementPolicy, type G3DColorManagementPolicy } from "./ColorManagement";
+import { createV4ColorManagementPolicy, type A3DColorManagementPolicy } from "./ColorManagement";
 import { createV4ToneMappingPolicy, type V4ToneMappingIntent, type V4ToneMappingPolicy } from "./ToneMapping";
 
 export type V4HdrRenderTargetFormat = "rgba16f" | "rgba32f" | "rgba8";
@@ -20,7 +20,7 @@ export interface V4HdrPipeline {
   readonly format: V4HdrRenderTargetFormat;
   readonly colorTarget: RenderTarget;
   readonly displayTarget: RenderTarget;
-  readonly colorManagement: G3DColorManagementPolicy;
+  readonly colorManagement: A3DColorManagementPolicy;
   readonly toneMapping: V4ToneMappingPolicy;
   readonly bloom: BloomOptions | false;
   readonly warnings: readonly string[];

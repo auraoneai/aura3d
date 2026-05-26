@@ -18,7 +18,7 @@ const requiredExports = [
   "./controls",
   "./animation",
   "./three-compat",
-  "./create-g3d"
+  "./create-aura3d"
 ];
 const requiredTemplateFiles = [
   "templates/three-compat-premium-product-viewer",
@@ -39,7 +39,7 @@ const workspaceTemplateDeps = requiredTemplateFiles.filter((entry) => readFileSy
 const checks = [
   {
     id: "package-identity",
-    pass: packageJson.name === "@galileo3d/engine" && /^0\.1\.0-alpha\.0/.test(packageJson.version),
+    pass: packageJson.name === "@aura3d/engine" && /^0\.1\.0-alpha\.0/.test(packageJson.version),
     detail: `${packageJson.name}@${packageJson.version}`
   },
   {
@@ -64,7 +64,7 @@ const checks = [
   }
 ];
 const report = {
-  schema: "g3d-three-compat-package-surface-readiness/v1",
+  schema: "a3d-three-compat-package-surface-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredExports,

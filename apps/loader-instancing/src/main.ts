@@ -4,12 +4,12 @@ import {
   createGLTFRenderResources,
   evaluateGLTFExtensionSupport,
   type GLTFRenderResources
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LoaderInstancing?: V8LoaderInstancingRuntime;
+    __a3dV8LoaderInstancing?: V8LoaderInstancingRuntime;
   }
 }
 
@@ -28,7 +28,7 @@ interface V8LoaderInstancingRuntime {
   readonly extensionsUsed: readonly string[];
   readonly unsupportedRequired: readonly string[];
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LoaderInstancing = runtime;
+    window.__a3dV8LoaderInstancing = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -66,7 +66,7 @@ async function run(): Promise<void> {
   try {
     const asset = await new GLTFLoader().load({ url: createInstancingFixtureDataUrl() }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -111,7 +111,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: extensionSupport.unsupportedRequired
         });
-        window.__g3dV8LoaderInstancing = runtime;
+        window.__a3dV8LoaderInstancing = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -129,7 +129,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<G3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: false,
@@ -193,7 +193,7 @@ function createRuntime(
     extensionsUsed: patch.extensionsUsed ?? [],
     unsupportedRequired: patch.unsupportedRequired ?? [],
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -205,7 +205,7 @@ function createInstancingFixtureDataUrl(): string {
   const translations = floatBytes([-0.9, 0, 0, -0.3, 0.22, 0, 0.3, -0.08, 0, 0.9, 0.18, 0]);
   const binary = concatAligned([positions, normals, indices, translations], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V9 V8 loader instancing fixture" },
+    asset: { version: "2.0", generator: "Aura3D V9 V8 loader instancing fixture" },
     extensionsUsed: ["EXT_mesh_gpu_instancing", "KHR_materials_unlit"],
     extensionsRequired: ["EXT_mesh_gpu_instancing"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -275,7 +275,7 @@ function renderUi(root: HTMLElement, runtime: V8LoaderInstancingRuntime): void {
     <section class="panel">
       <div>
         <h1>V8 Loader Instancing</h1>
-        <p>EXT_mesh_gpu_instancing imported as G3D instance transforms and rendered through WebGL2.</p>
+        <p>EXT_mesh_gpu_instancing imported as A3D instance transforms and rendered through WebGL2.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>
     </section>

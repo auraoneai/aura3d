@@ -9,7 +9,7 @@ This file defines the gates that must pass before stronger public claims are all
 
 ## Gate A: Internal Release Candidate
 
-This gate means the repo is internally coherent. It does not mean Galileo3D beats Three.js.
+This gate means the repo is internally coherent. It does not mean Aura3D beats Three.js.
 
 Required:
 
@@ -45,19 +45,19 @@ Current status: **met for developer-preview documentation and local package cons
 
 This gate permits a narrow claim such as:
 
-> Galileo3D is a higher-level TypeScript engine for structured web 3D applications where built-in ECS, physics, animation, assets, editor runtime, diagnostics, and validation are preferred over assembling those systems around Three.js.
+> Aura3D is a higher-level TypeScript engine for structured web 3D applications where built-in ECS, physics, animation, assets, editor runtime, diagnostics, and validation are preferred over assembling those systems around Three.js.
 
 Required:
 
 - Gate B passes.
 - The Three.js and Babylon.js comparison checklist in [Filename-Level Execution Checklist](./filename-level-execution-checklist.md) is complete.
 - Three.js comparison report exists.
-- Galileo3D product configurator demo exists and is competitive on developer workflow.
-- Galileo3D asset viewer demo exists and handles a real model corpus.
+- Aura3D product configurator demo exists and is competitive on developer workflow.
+- Aura3D asset viewer demo exists and handles a real model corpus.
 - Comparative benchmarks cover startup, load time, frame time, memory, draw calls, bundle size, and asset compatibility.
 - The comparison states where Three.js remains better.
 - The claim statement names the exact niche, measured advantage, unsupported areas, benchmark versions, browser/device matrix, and date of evidence.
-- No raw renderer-performance claim is made unless Galileo3D wins the same scene on the same hardware/browser/settings with raw data attached.
+- No raw renderer-performance claim is made unless Aura3D wins the same scene on the same hardware/browser/settings with raw data attached.
 
 Current status: **met only for the exact registered niche claims**. The allowed claims are limited to checked-in scaffold bundle-size evidence and the higher-level TypeScript workflow niche. Broad "better than Three.js" wording, raw renderer-performance claims, visual parity, ecosystem maturity, and production PBR parity remain blocked.
 
@@ -73,7 +73,7 @@ Required:
 - Editor supports asset import, scene hierarchy, inspector, gizmos, material editing, save/load, and play mode.
 - Physics, animation, particles, audio, and scripting can be authored or configured through documented workflows.
 - Profiling/debugging UI exists.
-- At least one real game or interactive app is built with Galileo3D.
+- At least one real game or interactive app is built with Aura3D.
 - Build/export workflow is documented.
 - At least one app is authored through the browser editor from template creation through import, placement, material edit, script/behavior setup, play mode, static export, and exported-site browser smoke test.
 - The Unity/Unreal comparison is explicitly limited to browser-first TypeScript workflows and lists where Unity/Unreal remain stronger.
@@ -82,7 +82,7 @@ Current status: **met only for the browser-first TypeScript workflow claim**. Th
 
 ## Gate E: Production Credibility
 
-This gate means Galileo3D can be responsibly marketed as production-ready.
+This gate means Aura3D can be responsibly marketed as production-ready.
 
 Required:
 
@@ -118,4 +118,4 @@ Do not claim:
 
 Allowed claim:
 
-> Galileo3D currently has a broad internal TypeScript web 3D engine prototype with many verified subsystem slices, but it needs stable release verification, real app examples, external benchmarks, hardware validation, documentation, and ecosystem work before stronger public claims are credible.
+> Aura3D currently has a broad internal TypeScript web 3D engine prototype with many verified subsystem slices, but it needs stable release verification, real app examples, external benchmarks, hardware validation, documentation, and ecosystem work before stronger public claims are credible.

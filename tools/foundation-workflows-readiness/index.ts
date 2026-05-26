@@ -6,7 +6,7 @@ import {
   createMaterialStudioWorkflow,
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow
-} from "@galileo3d/workflows";
+} from "@aura3d/workflows";
 
 const requiredFiles = [
   "packages/workflows/package.json",
@@ -26,7 +26,7 @@ const requiredFiles = [
 ] as const;
 
 const assetViewer = await createAssetViewerWorkflow({
-  url: jsonDataUri(readFileSync(join(process.cwd(), "fixtures/v3/assets/product-camera/product-camera.gltf"), "utf8")),
+  url: jsonDataUri(readFileSync(join(process.cwd(), "fixtures/workflow-assets/assets/product-camera/product-camera.gltf"), "utf8")),
   shadows: false,
   postprocess: false,
   renderResources: {
@@ -36,8 +36,8 @@ const assetViewer = await createAssetViewerWorkflow({
 const productConfigurator = await createProductConfiguratorWorkflow({
   asset: {
     id: "camera-kit",
-    url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/camera-kit.gltf"))),
-    manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/v2/products/camera-kit/manifest.json")))
+    url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/camera-kit.gltf"))),
+    manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/camera-kit/manifest.json")))
   }
 });
 const materialStudio = createMaterialStudioWorkflow();
@@ -58,12 +58,12 @@ sceneShowcase.dispose();
 interactive.dispose();
 
 const report = {
-  schema: "g3d-foundation-workflows-readiness/v1",
+  schema: "a3d-foundation-workflows-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: requiredFiles.every((path) => existsSync(resolve(path)))
     && workflowChecks.every((workflow) => workflow.hasSource && workflow.featureCount >= 2 && workflow.warningCount === 0)
     && existsSync(resolve("docs/api/public-api.md"))
-    && readFileSync(resolve("docs/api/public-api.md"), "utf8").includes("## @galileo3d/workflows"),
+    && readFileSync(resolve("docs/api/public-api.md"), "utf8").includes("## @aura3d/workflows"),
   requiredFiles: requiredFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),
   workflowChecks
 };

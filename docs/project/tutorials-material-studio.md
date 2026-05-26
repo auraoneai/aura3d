@@ -5,7 +5,7 @@ This tutorial maps to `examples/foundation-material-studio`. It demonstrates a p
 ## Core API
 
 ```ts
-import { createMaterialStudioWorkflow } from "@galileo3d/workflows";
+import { createMaterialStudioWorkflow } from "@aura3d/workflows";
 
 const workflow = createMaterialStudioWorkflow({ mode: "comparison" });
 renderer.render(workflow.source, workflow.camera);

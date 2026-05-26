@@ -6,11 +6,11 @@ import {
   type WebGPUBufferLike,
   type WebGPUDeviceLike,
   type WebGPULike
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __g3dV8WebGPURtt?: V8WebGPURttRuntime;
+    __a3dV8WebGPURtt?: V8WebGPURttRuntime;
   }
 }
 
@@ -30,7 +30,7 @@ interface V8WebGPURttRuntime {
   readonly readbackMatchesPresentation: boolean;
   readonly disposedRenderTargets: number;
   readonly disposedTextures: number;
-  readonly renderer: "g3d-webgpu";
+  readonly renderer: "a3d-webgpu";
   readonly evidenceMode: "injected-webgpu-device";
   readonly elapsedMs: number;
   readonly error?: string;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__g3dV8WebGPURtt = runtime;
+    window.__a3dV8WebGPURtt = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -99,7 +99,7 @@ async function run(): Promise<void> {
         disposedRenderTargets: proof.disposedRenderTargets,
         disposedTextures: proof.disposedTextures
       });
-      window.__g3dV8WebGPURtt = runtime;
+      window.__a3dV8WebGPURtt = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -116,7 +116,7 @@ function createRouteWebGPU(): WebGPULike {
     async requestAdapter(): Promise<WebGPUAdapterLike> {
       return {
         name: "webgpu-rtt-adapter",
-        info: { vendor: "galileo3d-route" },
+        info: { vendor: "aura3d-route" },
         async requestDevice() {
           return device;
         }
@@ -200,7 +200,7 @@ function createRuntime(
     readbackMatchesPresentation: patch.readbackMatchesPresentation ?? false,
     disposedRenderTargets: patch.disposedRenderTargets ?? 0,
     disposedTextures: patch.disposedTextures ?? 0,
-    renderer: "g3d-webgpu",
+    renderer: "a3d-webgpu",
     evidenceMode: "injected-webgpu-device",
     elapsedMs: Math.round(performance.now() - startedAt),
     ...(patch.error ? { error: patch.error } : {})

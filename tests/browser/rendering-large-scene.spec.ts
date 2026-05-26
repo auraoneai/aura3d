@@ -30,12 +30,12 @@ test.describe("rendering large scene WebGL2 harness", () => {
       </html>
     `);
     await page.waitForFunction(
-      () => window.__GALILEO3D_LARGE_SCENE_TEST__?.status === "ready" || window.__GALILEO3D_LARGE_SCENE_TEST__?.status === "error",
+      () => window.__AURA3D_LARGE_SCENE_TEST__?.status === "ready" || window.__AURA3D_LARGE_SCENE_TEST__?.status === "error",
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_LARGE_SCENE_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_LARGE_SCENE_TEST__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
     expect(result?.staticMeshes).toBe(5_000);
@@ -77,12 +77,12 @@ test.describe("rendering large scene WebGL2 harness", () => {
   test("example page renders the large-scene WebGL2 workload", async ({ page }) => {
     await page.goto(`${server.origin}/examples/rendering-large-scene/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_LARGE_SCENE_TEST__?.status === "ready" || window.__GALILEO3D_LARGE_SCENE_TEST__?.status === "error",
+      () => window.__AURA3D_LARGE_SCENE_TEST__?.status === "ready" || window.__AURA3D_LARGE_SCENE_TEST__?.status === "error",
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_LARGE_SCENE_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_LARGE_SCENE_TEST__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
     expect(result?.staticMeshes).toBe(5_000);
@@ -104,7 +104,7 @@ test.describe("rendering large scene WebGL2 harness", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_LARGE_SCENE_TEST__?: {
+    __AURA3D_LARGE_SCENE_TEST__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2";
       readonly staticMeshes?: number;

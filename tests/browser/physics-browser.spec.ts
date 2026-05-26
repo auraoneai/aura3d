@@ -15,12 +15,12 @@ test.describe("physics browser runtime", () => {
   test("renders falling cubes and physics debug overlay from a stepped PhysicsWorld", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/physics-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_PHYSICS_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_PHYSICS_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_PHYSICS_BROWSER_TEST__?.status === "ready" || window.__AURA3D_PHYSICS_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_PHYSICS_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_PHYSICS_BROWSER_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.steps).toBe(150);
@@ -52,7 +52,7 @@ test.describe("physics browser runtime", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_PHYSICS_BROWSER_TEST__?: {
+    __AURA3D_PHYSICS_BROWSER_TEST__?: {
       readonly status: "ready" | "error";
       readonly initialHeights?: readonly number[];
       readonly finalHeights?: readonly number[];

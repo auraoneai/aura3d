@@ -9,8 +9,8 @@ import {
   type EnvironmentStage,
   type RenderItem,
   type RendererPostProcessOptions
-} from "@galileo3d/rendering";
-import { DirectionalLight, PointLight } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight, PointLight } from "@aura3d/scene";
 import type { RendererEnvironmentFogEvidence } from "./rendererEnvironmentFogEvidence";
 import type { RendererEnvironmentBackgroundEvidence } from "./rendererEnvironmentBackgroundEvidence";
 import type { DataGalaxyRuntimeEvidence } from "./dataGalaxyEvidence";

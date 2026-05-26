@@ -1,9 +1,9 @@
-import { Renderer } from "@galileo3d/rendering";
-import { createRenderableScene, loadRenderableAsset } from "@galileo3d/assets";
+import { Renderer } from "@aura3d/rendering";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/assets";
 
 declare global {
   interface Window {
-    __G3D_PRODUCT_VIEWER_V1__?: ExampleState;
+    __A3D_PRODUCT_VIEWER_V1__?: ExampleState;
   }
 }
 
@@ -38,14 +38,14 @@ async function boot(): Promise<void> {
       postprocess: "product-default"
     });
     const diagnostics = renderer.renderScene(scene.source);
-    window.__G3D_PRODUCT_VIEWER_V1__ = {
+    window.__A3D_PRODUCT_VIEWER_V1__ = {
       status: "ready",
       diagnostics,
       setupLineCount: scene.setupLineBudget,
       features: asset.canonical?.featureChecklist ?? []
     };
   } catch (error) {
-    window.__G3D_PRODUCT_VIEWER_V1__ = {
+    window.__A3D_PRODUCT_VIEWER_V1__ = {
       status: "error",
       setupLineCount: 0,
       features: [],

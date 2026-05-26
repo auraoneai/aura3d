@@ -4,7 +4,7 @@ Generated status target: V10 claim defense and superiority audit.
 
 ## Current Public Claim
 
-G3D matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
+A3D matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
 
 This status is evidence-bound. Public wording should cite the reports below instead of relying on slogans.
 
@@ -56,7 +56,7 @@ Animation evidence covers:
 - IK;
 - morph targets;
 - root-motion and clone sampling;
-- side-by-side G3D and Three.js routes for keyframes, multiple animation, walk, skinning blend, skinning additive, skinning IK, and morph targets.
+- side-by-side A3D and Three.js routes for keyframes, multiple animation, walk, skinning blend, skinning additive, skinning IK, and morph targets.
 
 Primary reports:
 
@@ -139,13 +139,13 @@ Primary reports:
 
 ## Developer Workflow
 
-G3D’s developer workflow advantage is measured through:
+A3D’s developer workflow advantage is measured through:
 
 - package smoke tests;
 - external consumer install/build tests;
 - migration audit;
 - API docs generation;
-- create-g3d templates;
+- create-aura3d templates;
 - route registry;
 - workflow-oriented packages for product, asset, material, animation, physics, WebGPU, and migration use cases.
 

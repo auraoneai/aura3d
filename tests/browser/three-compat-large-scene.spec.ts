@@ -10,8 +10,8 @@ test("V5 large scene browser proof renders object and instance scale", async ({ 
     const canvas=document.querySelector("canvas"),ctx=canvas.getContext("2d");ctx.fillStyle="#08101a";ctx.fillRect(0,0,1000,640);
     for(let n=0;n<1200;n++){ctx.fillStyle=n<c.visible/10?"#74c7ff":"#273142";ctx.fillRect(20+(n%60)*16,40+Math.floor(n/60)*18,9,9);}
     ctx.fillStyle="#ffe18a";for(let n=0;n<500;n++)ctx.fillRect(50+(n%50)*18,450+Math.floor(n/50)*12,6,6);
-    window.__g3dLargeScene={objects:c.total,visible:c.visible,instances:i.instanceCount};
+    window.__a3dLargeScene={objects:c.total,visible:c.visible,instances:i.instanceCount};
     </script></body></html>`);
-  await expect.poll(async () => page.evaluate(() => window.__g3dLargeScene.objects)).toBeGreaterThanOrEqual(10000);
-  await expect.poll(async () => page.evaluate(() => window.__g3dLargeScene.instances)).toBeGreaterThanOrEqual(50000);
+  await expect.poll(async () => page.evaluate(() => window.__a3dLargeScene.objects)).toBeGreaterThanOrEqual(10000);
+  await expect.poll(async () => page.evaluate(() => window.__a3dLargeScene.instances)).toBeGreaterThanOrEqual(50000);
 });

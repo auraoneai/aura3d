@@ -11,8 +11,8 @@ import {
   type Quat as SceneQuat,
   type SceneNode,
   type Vec3 as SceneVec3
-} from "@galileo3d/scene";
-import { AnimationClip, AnimationTrack, Skeleton, type Mat4, type Quat, type SerializedAnimationClip, type SkinningPalette, type TrackValueType, type Vec3 } from "@galileo3d/animation";
+} from "@aura3d/scene";
+import { AnimationClip, AnimationTrack, Skeleton, type Mat4, type Quat, type SerializedAnimationClip, type SkinningPalette, type TrackValueType, type Vec3 } from "@aura3d/animation";
 import type { AssetLoadProgress, AssetLoadRequest, AssetLoader } from "./AssetLoader";
 import {
   evaluateGLTFExtensionSupport,
@@ -25,7 +25,7 @@ type GLTFSparseIndexComponentType = 5121 | 5123 | 5125;
 type GLTFAccessorType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
 
 const DEFAULT_GLTF_MATERIAL_NAME = "default-material";
-const RUNTIME_MATERIAL_KEY_MARKER = "#galileo3d-runtime:";
+const RUNTIME_MATERIAL_KEY_MARKER = "#aura3d-runtime:";
 const DISPOSE_GLTF_ASSET = Symbol("disposeGLTFAsset");
 const MAX_RENDERABLE_SKIN_JOINTS = 64;
 
@@ -3786,7 +3786,7 @@ function applyGLTFNodeMetadata(node: SceneNode, source: GLTFNode, nodeIndex: num
   if (!source.extras) return;
   node.userData.gltfExtras = { ...source.extras };
   for (const [key, value] of Object.entries(source.extras)) {
-    if (key.startsWith("g3d_")) node.userData[key] = value;
+    if (key.startsWith("a3d_")) node.userData[key] = value;
   }
 }
 

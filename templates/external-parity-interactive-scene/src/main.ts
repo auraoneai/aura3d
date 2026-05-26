@@ -1,8 +1,8 @@
-import { createDiagnosticsPanel, createEnvironment, createG3DApp, workflows } from "@galileo3d/engine";
+import { createDiagnosticsPanel, createEnvironment, createA3DApp, workflows } from "@aura3d/engine";
 
 declare global {
   interface Window {
-    __G3D_TEMPLATE_INTERACTIVE_SCENE__?: unknown;
+    __A3D_TEMPLATE_INTERACTIVE_SCENE__?: unknown;
   }
 }
 
@@ -11,7 +11,7 @@ const status = document.getElementById("status");
 const step = document.getElementById("step");
 if (!canvas) throw new Error("Missing #app canvas.");
 
-const app = await createG3DApp({ canvas, quality: "production", width: 1280, height: 720 });
+const app = await createA3DApp({ canvas, quality: "production", width: 1280, height: 720 });
 const environment = createEnvironment({ target: "warehouse-industrial-hdr", intensity: 1.12, backgroundIntensity: 0.64 });
 const workflow = await workflows.interactiveScene({ preset: "orbiting-products" });
 let timeSeconds = 0;
@@ -33,7 +33,7 @@ function renderState(): void {
     timeSeconds,
     claimBoundary: "Installable interactive-scene template proof. It proves public workflow setup, not broad game-engine replacement."
   };
-  window.__G3D_TEMPLATE_INTERACTIVE_SCENE__ = state;
+  window.__A3D_TEMPLATE_INTERACTIVE_SCENE__ = state;
   if (status) status.textContent = JSON.stringify(state, null, 2);
 }
 

@@ -6,7 +6,7 @@ import { ResourceTracker } from "../../packages/debug/src/index.js";
 const outputPath = "tests/reports/v10/resource-lifecycle-100-reloads.json";
 
 interface LifecycleReport {
-  readonly schema: "g3d-v10-resource-lifecycle-100-reloads/v1";
+  readonly schema: "a3d-v10-resource-lifecycle-100-reloads/v1";
   readonly generatedAt: string;
   readonly pass: boolean;
   readonly reloads: number;
@@ -68,7 +68,7 @@ async function runLifecycleEvidence(reloads = 100): Promise<LifecycleReport> {
     ...(assertions.lateUseRejected ? [] : ["Disposed scope accepted a late resource."])
   ];
   return {
-    schema: "g3d-v10-resource-lifecycle-100-reloads/v1",
+    schema: "a3d-v10-resource-lifecycle-100-reloads/v1",
     generatedAt: new Date().toISOString(),
     pass: issues.length === 0,
     reloads,

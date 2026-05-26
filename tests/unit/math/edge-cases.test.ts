@@ -10,7 +10,7 @@ import {
   Sphere,
   Vector3,
   inverseLerp
-} from "@galileo3d/math";
+} from "@aura3d/math";
 
 describe("math edge cases", () => {
   it("keeps empty boxes inert across containment, union, and ray intersection", () => {

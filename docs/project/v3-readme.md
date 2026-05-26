@@ -1,4 +1,4 @@
-# Galileo3D v3 Code-Only Execution Index
+# Aura3D v3 Code-Only Execution Index
 
 > Historical note: This V3 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
@@ -33,7 +33,7 @@ Do not claim any of the following until the v3 gates pass:
 
 Allowed current statement:
 
-> Galileo3D is currently a TypeScript web 3D engine prototype with working internal subsystem slices. It needs substantial renderer, asset, editor, runtime, benchmark, and demo code before broad Three.js or Unity/Unreal-style claims are credible.
+> Aura3D is currently a TypeScript web 3D engine prototype with working internal subsystem slices. It needs substantial renderer, asset, editor, runtime, benchmark, and demo code before broad Three.js or Unity/Unreal-style claims are credible.
 
 ## v3 Documents
 

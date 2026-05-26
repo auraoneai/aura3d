@@ -1,4 +1,4 @@
-import { createStaticExportHtml, createStaticExportRuntime } from "@galileo3d/editor-runtime";
+import { createStaticExportHtml, createStaticExportRuntime } from "@aura3d/editor-runtime";
 import type { EditorProject } from "../project/ProjectSerializer";
 import { ProjectSerializer } from "../project/ProjectSerializer";
 

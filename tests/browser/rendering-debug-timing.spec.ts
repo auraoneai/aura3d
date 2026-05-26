@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 declare global {
   interface Window {
-    __GALILEO3D_POSTPROCESS_LAB__?: {
+    __AURA3D_POSTPROCESS_LAB__?: {
       readonly status: "ready" | "error";
       readonly renderer: "mock-rendergraph-2d";
       readonly visualClaim: string;
@@ -93,11 +93,11 @@ test.describe("renderer debug overlay and timing evidence", () => {
   test("postprocess lab publishes render-pass/shader overlay and CPU timing fallback", async ({ page }) => {
     await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_POSTPROCESS_LAB__?.status === "ready" || window.__GALILEO3D_POSTPROCESS_LAB__?.status === "error",
+      () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
-    const result = await page.evaluate(() => window.__GALILEO3D_POSTPROCESS_LAB__);
+    const result = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     const passCostKeys = Object.keys(result?.passCostsMs ?? {}).sort();
     const overlayLines = result?.debugOverlay?.lines.join("\n") ?? "";
     const timingLabels = result?.timing?.samples.map((sample) => sample.label).sort() ?? [];

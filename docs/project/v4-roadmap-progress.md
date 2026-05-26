@@ -50,12 +50,12 @@ Milestone 0 - V4 Truth, Progress, And Failure Ledger
 
 Milestone 1 - Reference Assets, Environments, And Visual Targets
 
-- [x] `fixtures/v4/manifest.json`
-- [x] `fixtures/v4/environments/manifest.json`
-- [x] `fixtures/v4/products/manifest.json`
-- [x] `fixtures/v4/materials/manifest.json`
-- [x] `fixtures/v4/scenes/manifest.json`
-- [x] `fixtures/v4/characters/manifest.json`
+- [x] `fixtures/external-parity/manifest.json`
+- [x] `fixtures/external-parity/environments/manifest.json`
+- [x] `fixtures/external-parity/products/manifest.json`
+- [x] `fixtures/external-parity/materials/manifest.json`
+- [x] `fixtures/external-parity/scenes/manifest.json`
+- [x] `fixtures/external-parity/characters/manifest.json`
 - [x] `docs/project/v4-roadmap-reference-visual-targets.md`
 - [x] `tools/external-parity-fixture-readiness/index.ts`
 - [x] Add `v4:fixtures` script.
@@ -84,7 +84,7 @@ Milestone 3 - IBL / Environment Pipeline
 - [x] `packages/rendering/src/IBL.ts`
 - [x] `packages/rendering/src/PMREM.ts`
 - [x] `packages/rendering/src/BRDFLut.ts`
-- [x] `fixtures/v4/environments/manifest.json`
+- [x] `fixtures/external-parity/environments/manifest.json`
 - [x] `tests/unit/rendering/external-parity-ibl.test.ts`
 - [x] `tests/browser/external-parity-ibl-visual.spec.ts`
 - [x] `tools/external-parity-ibl-readiness/index.ts`
@@ -135,8 +135,8 @@ Milestone 5 - Shadows, AO, And Postprocess
 
 Milestone 6 - Production glTF Corpus
 
-- [x] `fixtures/v4/gltf-corpus/manifest.json`
-- [x] `fixtures/v4/gltf-corpus/licenses.md`
+- [x] `fixtures/external-parity/gltf-corpus/manifest.json`
+- [x] `fixtures/external-parity/gltf-corpus/licenses.md`
 - [x] `packages/assets/src/V4Corpus.ts`
 - [x] `tests/assets/external-parity-gltf-loader-corpus.test.ts`
 - [x] `tests/browser/external-parity-gltf-visual-corpus.spec.ts`
@@ -148,10 +148,10 @@ Milestone 6 - Production glTF Corpus
 
 Milestone 7 - Flagship Product Configurator
 
-- [x] `fixtures/v4/products/premium-product/`
+- [x] `fixtures/external-parity/products/premium-product/`
 - [x] `apps/product-studio-pro/`
 - [x] `examples/external-product-configurator/`
-- [x] `benchmarks/external-parity/galileo/product-configurator.ts`
+- [x] `benchmarks/external-parity/aura3d/product-configurator.ts`
 - [x] `benchmarks/external-parity/threejs/product-configurator.ts`
 - [x] `tests/browser/external-parity-product-configurator.spec.ts`
 - [x] `tools/external-parity-product-readiness/index.ts`
@@ -162,11 +162,11 @@ Milestone 7 - Flagship Product Configurator
 
 Milestone 8 - Material Studio Pro
 
-- [x] `fixtures/v4/materials/material-library.json`
-- [x] `fixtures/v4/materials/textures/`
+- [x] `fixtures/external-parity/materials/material-library.json`
+- [x] `fixtures/external-parity/materials/textures/`
 - [x] `apps/material-studio-pro/`
 - [x] `examples/external-material-studio/`
-- [x] `benchmarks/external-parity/galileo/material-studio.ts`
+- [x] `benchmarks/external-parity/aura3d/material-studio.ts`
 - [x] `benchmarks/external-parity/threejs/material-studio.ts`
 - [x] `tests/browser/external-parity-material-studio-pro.spec.ts`
 - [x] `tools/external-parity-material-studio-readiness/index.ts`
@@ -177,10 +177,10 @@ Milestone 8 - Material Studio Pro
 
 Milestone 9 - Interior Scene / Scene Studio Pro
 
-- [x] `fixtures/v4/scenes/interior-gallery/`
+- [x] `fixtures/external-parity/scenes/interior-gallery/`
 - [x] `apps/scene-studio-pro/`
 - [x] `examples/external-interior-scene/`
-- [x] `benchmarks/external-parity/galileo/interior-scene.ts`
+- [x] `benchmarks/external-parity/aura3d/interior-scene.ts`
 - [x] `benchmarks/external-parity/threejs/interior-scene.ts`
 - [x] `tests/browser/external-parity-interior-scene.spec.ts`
 - [x] `tools/external-parity-scene-readiness/index.ts`
@@ -230,9 +230,9 @@ Milestone 12 - Interactive Showcase Pro
 
 Milestone 13 - Public V4 App API
 
-- [x] `createG3DApp`.
-- [x] `packages/engine/src/G3DApp.ts`
-- [x] `packages/engine/src/G3DQualityPresets.ts`
+- [x] `createA3DApp`.
+- [x] `packages/engine/src/A3DApp.ts`
+- [x] `packages/engine/src/A3DQualityPresets.ts`
 - [x] `packages/workflows/src/workflow-foundation/index.ts`
 - [x] Quality presets.
 - [x] Workflow presets.
@@ -249,23 +249,23 @@ Milestone 13 - Public V4 App API
 Milestone 14 - Installable Product SDK And Templates
 
 - [x] `packages/engine` root product API.
-- [x] `packages/create-g3d` project scaffolder.
+- [x] `packages/create-aura3d` project scaffolder.
 - [x] `templates/external-parity-product-viewer/`
 - [x] `templates/external-parity-material-studio/`
 - [x] `templates/external-parity-asset-gallery/`
 - [x] `templates/external-parity-interactive-scene/`
-- [x] `packages/create-g3d/templates/product-viewer/`
-- [x] `packages/create-g3d/templates/material-studio/`
-- [x] `packages/create-g3d/templates/asset-gallery/`
-- [x] `packages/create-g3d/templates/interactive-scene/`
-- [x] V4 templates render through public root `@galileo3d/engine` APIs.
+- [x] `packages/create-aura3d/templates/product-viewer/`
+- [x] `packages/create-aura3d/templates/material-studio/`
+- [x] `packages/create-aura3d/templates/asset-gallery/`
+- [x] `packages/create-aura3d/templates/interactive-scene/`
+- [x] V4 templates render through public root `@aura3d/engine` APIs.
 - [x] External Vite production build proof from a packed package.
 - [x] Static preview proof.
 - [x] Template docs.
-- [x] `tests/reports/v4-create-g3d-templates.json`
+- [x] `tests/reports/v4-create-aura3d-templates.json`
 - [x] Template screenshots for product viewer, material studio, asset gallery, and interactive scene.
 - [x] `tests/unit/engine/external-parity-public-api-stability.test.ts`
-- [x] `tests/integration/external-parity-create-g3d.test.ts`
+- [x] `tests/integration/external-parity-create-aura3d.test.ts`
 - [x] `tests/browser/external-parity-template-product-viewer.spec.ts`
 - [x] `tools/external-parity-template-readiness/index.ts`
 - [x] `tools/external-parity-external-vite-build/index.ts`

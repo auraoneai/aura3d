@@ -17,10 +17,10 @@ describe("WebGL2 render-state isolation", () => {
     const indexBuffer = geometry.indexBuffer?.upload(device);
     const shader = device.createShaderProgram({
       label: "resource-deletion-test",
-      marker: "@galileo3d-test:resource-deletion",
+      marker: "@aura3d-test:resource-deletion",
       vertex: `
         #version 300 es
-        // @galileo3d-test:resource-deletion
+        // @aura3d-test:resource-deletion
         in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position, 1.0);
@@ -28,7 +28,7 @@ describe("WebGL2 render-state isolation", () => {
       `,
       fragment: `
         #version 300 es
-        // @galileo3d-test:resource-deletion
+        // @aura3d-test:resource-deletion
         precision mediump float;
         out vec4 outColor;
         void main() {
@@ -124,15 +124,15 @@ describe("WebGL2 render-state isolation", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
       label: "texture-state-test",
-      marker: "@galileo3d-test:texture-state",
+      marker: "@aura3d-test:texture-state",
       vertex: `
-        // @galileo3d-test:texture-state
+        // @aura3d-test:texture-state
         void main() {
           gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
         }
       `,
       fragment: `
-        // @galileo3d-test:texture-state
+        // @aura3d-test:texture-state
         precision mediump float;
         uniform sampler2D u_textureA;
         uniform sampler2D u_textureB;
@@ -181,15 +181,15 @@ describe("WebGL2 render-state isolation", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
       label: "texture-colorspace-test",
-      marker: "@galileo3d-test:texture-colorspace",
+      marker: "@aura3d-test:texture-colorspace",
       vertex: `
-        // @galileo3d-test:texture-colorspace
+        // @aura3d-test:texture-colorspace
         void main() {
           gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
         }
       `,
       fragment: `
-        // @galileo3d-test:texture-colorspace
+        // @aura3d-test:texture-colorspace
         precision mediump float;
         uniform sampler2D u_albedo;
         uniform sampler2D u_normal;
@@ -225,15 +225,15 @@ describe("WebGL2 render-state isolation", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
       label: "mipmap-sampler-test",
-      marker: "@galileo3d-test:mipmap-sampler",
+      marker: "@aura3d-test:mipmap-sampler",
       vertex: `
-        // @galileo3d-test:mipmap-sampler
+        // @aura3d-test:mipmap-sampler
         void main() {
           gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
         }
       `,
       fragment: `
-        // @galileo3d-test:mipmap-sampler
+        // @aura3d-test:mipmap-sampler
         precision mediump float;
         uniform sampler2D u_albedo;
         out vec4 outColor;
@@ -331,15 +331,15 @@ describe("WebGL2 render-state isolation", () => {
     const target = device.createRenderTarget({ width: 8, height: 8, label: "sample-depth-bind", depth: "texture" });
     const shader = device.createShaderProgram({
       label: "sample-depth-bind-shader",
-      marker: "@galileo3d-test:sample-depth-bind",
+      marker: "@aura3d-test:sample-depth-bind",
       vertex: `
-        // @galileo3d-test:sample-depth-bind
+        // @aura3d-test:sample-depth-bind
         void main() {
           gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
         }
       `,
       fragment: `
-        // @galileo3d-test:sample-depth-bind
+        // @aura3d-test:sample-depth-bind
         precision mediump float;
         uniform sampler2D u_sceneDepth;
         out vec4 outColor;
@@ -624,7 +624,7 @@ function createFakeWebGL2Context(): WebGL2RenderingContext & { readonly state: F
     state,
     getParameter(parameter: number) {
       if (parameter === this.MAX_VERTEX_ATTRIBS) return 8;
-      if (parameter === this.VENDOR) return "galileo3d";
+      if (parameter === this.VENDOR) return "aura3d";
       if (parameter === this.RENDERER) return "fake-webgl2";
       if (parameter === this.CURRENT_PROGRAM) return state.currentProgram;
       if (parameter === this.ARRAY_BUFFER_BINDING) return state.arrayBuffer;

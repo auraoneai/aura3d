@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GroupCompat, MeshCompat, Object3DCompat, SceneCompat } from "../../../packages/three-compat/src";
-import { Group, Mesh, Scene } from "@galileo3d/scene";
+import { Group, Mesh, Scene } from "@aura3d/scene";
 
 describe("Three.js Object3D parity surface", () => {
   it("supports add/remove/traverse patterns used by Three.js scene ports", () => {
@@ -22,7 +22,7 @@ describe("Three.js Object3D parity surface", () => {
     expect(group.children).toHaveLength(0);
   });
 
-  it("keeps the native G3D scene graph aligned with the compatibility entry points", () => {
+  it("keeps the native A3D scene graph aligned with the compatibility entry points", () => {
     const sceneCompat = new SceneCompat();
     const scene = new Scene();
     const group = new Group({ name: "native-group" });

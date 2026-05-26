@@ -28,7 +28,7 @@ interface ParityResult {
   readonly id: string;
   readonly category: string;
   readonly assetId: string;
-  readonly g3d: { readonly drawCalls: number; readonly nonBlackPixels: number; readonly uniqueColorBuckets: number; readonly pass: boolean };
+  readonly a3d: { readonly drawCalls: number; readonly nonBlackPixels: number; readonly uniqueColorBuckets: number; readonly pass: boolean };
   readonly threejs: { readonly drawCalls: number; readonly triangles: number; readonly geometries: number; readonly textures: number; readonly nonBlackPixels: number; readonly uniqueColorBuckets: number };
   readonly diff: { readonly meanDelta: number; readonly maxDelta: number; readonly changedPixels: number; readonly structuralSimilarityProxy: number; readonly pass: boolean };
 }
@@ -69,14 +69,14 @@ async function run(): Promise<void> {
   const threeEnvironment = await loadThreeEnvironment(`${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`);
   const results: ParityResult[] = [];
   for (const scene of scenes) {
-    const g3dCanvas = createCanvas(`${scene.id}-g3d`);
+    const a3dCanvas = createCanvas(`${scene.id}-a3d`);
     const threeCanvas = createCanvas(`${scene.id}-threejs`);
     const diffCanvas = createCanvas(`${scene.id}-diff`);
-    root.append(g3dCanvas, threeCanvas, diffCanvas);
-    const g3d = await renderG3D(scene, g3dCanvas, hdrPipeline);
+    root.append(a3dCanvas, threeCanvas, diffCanvas);
+    const a3d = await renderA3D(scene, a3dCanvas, hdrPipeline);
     const threejs = await renderThree(scene, threeCanvas, threeEnvironment);
-    const diff = renderDiff(g3dCanvas, threeCanvas, diffCanvas);
-    results.push({ id: scene.id, category: scene.category, assetId: scene.assetId, g3d, threejs, diff });
+    const diff = renderDiff(a3dCanvas, threeCanvas, diffCanvas);
+    results.push({ id: scene.id, category: scene.category, assetId: scene.assetId, a3d, threejs, diff });
   }
   window.__V6_THREEJS_PARITY__ = {
     status: "ready",
@@ -86,7 +86,7 @@ async function run(): Promise<void> {
   };
 }
 
-async function renderG3D(scene: ParityScene, canvas: HTMLCanvasElement, hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>): Promise<ParityResult["g3d"]> {
+async function renderA3D(scene: ParityScene, canvas: HTMLCanvasElement, hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>): Promise<ParityResult["a3d"]> {
   const lighting = createV6EnvironmentLightingResources(hdrPipeline);
   const pipeline = await loadV6GLTFRenderPipeline({
     url: `${location.origin}/fixtures/asset-corpus/${scene.file}`,

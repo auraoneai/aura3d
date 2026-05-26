@@ -22,7 +22,7 @@ mkdirSync(previewRoot, { recursive: true });
 
 const templateReports = templates.map((template) => {
   const root = `templates/${template}`;
-  const mirror = `packages/create-g3d/templates/${template}`;
+  const mirror = `packages/create-aura3d/templates/${template}`;
   const main = readFileSync(resolve(root, "src/main.ts"), "utf8");
   const manifest = JSON.parse(readFileSync(resolve(root, "asset-manifest.json"), "utf8")) as { fetchInstructions?: string; assets?: readonly Obj[] };
   const packageJson = JSON.parse(readFileSync(resolve(root, "package.json"), "utf8")) as { dependencies?: Obj; devDependencies?: Obj };
@@ -33,8 +33,8 @@ const templateReports = templates.map((template) => {
     template,
     filesPresent: ["package.json", "index.html", "src/main.ts", "asset-manifest.json", "README.md"].every((file) => existsSync(resolve(root, file))) &&
       ["package.json", "index.html", "src/main.ts", "asset-manifest.json", "README.md"].every((file) => existsSync(resolve(mirror, file))),
-    publicImport: main.includes("from \"@galileo3d/engine/workflows/production\"") && !main.includes("workspace:") && !main.includes("/packages/"),
-    packageReady: packageJson.dependencies?.["@galileo3d/engine"] === "0.1.0-alpha.0" && packageJson.devDependencies?.vite !== undefined && !JSON.stringify(packageJson).includes("workspace:"),
+    publicImport: main.includes("from \"@aura3d/engine/workflows/production\"") && !main.includes("workspace:") && !main.includes("/packages/"),
+    packageReady: packageJson.dependencies?.["@aura3d/engine"] === "0.1.0-alpha.0" && packageJson.devDependencies?.vite !== undefined && !JSON.stringify(packageJson).includes("workspace:"),
     assetManifest: manifest.fetchInstructions?.includes("/fixtures/production-runtime") === true && (manifest.assets?.length ?? 0) >= 2 && manifest.assets?.every((asset) => typeof asset.sha256 === "string"),
     browserProof: runtime.runtime && obj(runtime.runtime).status === "ready" && obj(runtime.runtime).rendererBackend === "webgl2",
     screenshotPresent: existsSync(screenshotPath) && statSync(screenshotPath).size > 10_000
@@ -50,7 +50,7 @@ const tarballName = execFileSync("npm", ["pack", "--silent", "--pack-destination
 if (!tarballName) throw new Error("npm pack did not return a tarball name.");
 const tarballPath = join(packDir, basename(tarballName));
 
-const tempRoot = mkdtempSync(join(tmpdir(), "g3d-production-runtime-template-build-"));
+const tempRoot = mkdtempSync(join(tmpdir(), "a3d-production-runtime-template-build-"));
 const externalBuilds: Obj[] = [];
 try {
   for (const template of templates) {
@@ -60,7 +60,7 @@ try {
     const packageJson = JSON.parse(readFileSync(packagePath, "utf8")) as { dependencies?: Record<string, string> };
     packageJson.dependencies = {
       ...(packageJson.dependencies ?? {}),
-      "@galileo3d/engine": `file:${tarballPath}`
+      "@aura3d/engine": `file:${tarballPath}`
     };
     writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`);
     execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], { cwd: appDir, stdio: "pipe" });
@@ -95,7 +95,7 @@ const checks = [
   { id: "packed-external-vite-build", pass: externalBuilds.length === templates.length && externalBuilds.every((build) => build.ok === true), detail: externalBuilds.filter((build) => build.ok !== true).map((build) => String(build.template)).join(", ") || tarballPath }
 ];
 const report = {
-  schema: "g3d-production-runtime-template-readiness/v1",
+  schema: "a3d-production-runtime-template-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   templates: templateReports,

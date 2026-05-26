@@ -7,7 +7,7 @@ test("V5 loader corpus browser proof renders loader diagnostics", async ({ page 
     new OBJLoaderV5().load("fixtures/three-compat/loaders/sample.obj").diagnostic,
     new HDRLoaderV5().load("fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr"),
     new KTX2LoaderV5().load("tests/assets/corpus/ktx2/Rib_N.ktx2"),
-    new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/galileo-hdr.png")
+    new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png")
   ];
 
   await page.setContent(`
@@ -30,15 +30,15 @@ test("V5 loader corpus browser proof renders loader diagnostics", async ({ page 
             ctx.font = "14px system-ui";
             ctx.fillText(diagnostic.loader + " " + diagnostic.status + " " + diagnostic.bytes + " bytes", x + 12, y + 27);
           });
-          window.__g3dLoaderDiagnostics = diagnostics.length;
-          window.__g3dLoadedDiagnostics = diagnostics.filter((diagnostic) => diagnostic.status === "loaded").length;
+          window.__a3dLoaderDiagnostics = diagnostics.length;
+          window.__a3dLoadedDiagnostics = diagnostics.filter((diagnostic) => diagnostic.status === "loaded").length;
         </script>
       </body>
     </html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dLoaderDiagnostics)).toBe(5);
-  await expect.poll(async () => page.evaluate(() => window.__g3dLoadedDiagnostics)).toBe(5);
+  await expect.poll(async () => page.evaluate(() => window.__a3dLoaderDiagnostics)).toBe(5);
+  await expect.poll(async () => page.evaluate(() => window.__a3dLoadedDiagnostics)).toBe(5);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

@@ -198,8 +198,8 @@ describe("procedural texture fixtures", () => {
     expect(() => sampleSpaceEnvironmentFixture({ elapsedSeconds: Number.NaN })).toThrow(/elapsedSeconds/);
   });
 
-  it("keeps the checked-in V4 procedural manifest aligned with generated default hashes", () => {
-    const manifest = JSON.parse(readFileSync("fixtures/assets/v4/procedural/manifest.json", "utf8")) as {
+  it("keeps the checked-in procedural manifest aligned with generated default hashes", () => {
+    const manifest = JSON.parse(readFileSync("fixtures/procedural-textures/manifest.json", "utf8")) as {
       readonly fixtures: readonly { readonly id: string; readonly hash: string; readonly width: number; readonly height: number }[];
     };
     expect(manifest.fixtures.map((entry) => entry.id)).toEqual([...proceduralTextureFixtureKinds]);

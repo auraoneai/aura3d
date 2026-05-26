@@ -1,19 +1,19 @@
-# G3D V3: Build The Three.js Competitor
+# A3D V3: Build The Three.js Competitor
 
 > Historical note: This V3 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
 EngineReadiness and V2 produced bounded slices. That is not enough.
 
-V3 is the master product plan for turning G3D into a credible **Three.js competitor for modern browser 3D applications**. It is not a screenshot prompt, not a one-off product studio task, not a readiness report, and not a claim that the current repo already competes with Three.js.
+V3 is the master product plan for turning A3D into a credible **Three.js competitor for modern browser 3D applications**. It is not a screenshot prompt, not a one-off product studio task, not a readiness report, and not a claim that the current repo already competes with Three.js.
 
-The objective is to build a complete web 3D SDK that a developer can choose instead of Three.js for supported workflows because G3D is easier to start, more opinionated where Three.js is low-level, and still flexible enough for real apps.
+The objective is to build a complete web 3D SDK that a developer can choose instead of Three.js for supported workflows because A3D is easier to start, more opinionated where Three.js is low-level, and still flexible enough for real apps.
 
 ## The Product We Are Actually Building
 
 Build:
 
-**G3D Web: a TypeScript-first browser 3D SDK and toolchain for product visualization, asset viewers, configurators, interactive scenes, and lightweight web games.**
+**A3D Web: a TypeScript-first browser 3D SDK and toolchain for product visualization, asset viewers, configurators, interactive scenes, and lightweight web games.**
 
 The product must include:
 
@@ -25,7 +25,7 @@ The product must include:
 - Materials, lighting, shadows, postprocess, animation, input, audio, physics integration, editor/runtime helpers.
 - Developer-first examples that are real apps, not proof panels.
 - Package smoke tests from outside the monorepo.
-- Documentation that teaches users to build with G3D.
+- Documentation that teaches users to build with A3D.
 - Same-scene comparisons against Three.js for supported workflows.
 
 Do **not** call the project a Three.js replacement until the replacement gates in this file pass.
@@ -46,7 +46,7 @@ V3 must turn the repo from isolated product slices into a reusable platform. The
 
 The question is:
 
-> Can G3D support a developer building real browser 3D apps across multiple workflows with a stable API, package, docs, examples, and evidence?
+> Can A3D support a developer building real browser 3D apps across multiple workflows with a stable API, package, docs, examples, and evidence?
 
 ## Non-Negotiable Rule: Do Not Stop After A Slice
 
@@ -67,9 +67,9 @@ If context compacts, continue from the latest completed checklist item. Do not r
 
 ## Product Positioning
 
-G3D is not trying to copy Three.js line-by-line.
+A3D is not trying to copy Three.js line-by-line.
 
-Three.js is broad, flexible, and low-level. G3D should compete by being:
+Three.js is broad, flexible, and low-level. A3D should compete by being:
 
 - TypeScript-first.
 - Workflow-first.
@@ -79,7 +79,7 @@ Three.js is broad, flexible, and low-level. G3D should compete by being:
 - Easier to validate with repo-local evidence.
 - Better for controlled product, asset, catalog, configurator, and lightweight interactive workflows.
 
-G3D loses if:
+A3D loses if:
 
 - Developers still need to hand-wire low-level renderer state for common scenes.
 - Examples are mostly debug panels.
@@ -97,9 +97,9 @@ The target is a high-end browser 3D platform that feels like a premium, batterie
 Build toward this experience:
 
 ```ts
-import { createG3DApp, loadAsset, workflows } from "@galileo3d/engine";
+import { createA3DApp, loadAsset, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({
+const app = await createA3DApp({
   canvas,
   renderer: "webgl2",
   quality: "high",
@@ -146,14 +146,14 @@ A high-end Three.js competitor for supported workflows means:
 - **Apps:** the repo ships real browser apps that dogfood the SDK and look like serious tools.
 - **Examples:** examples teach public APIs and demonstrate polished output, not isolated internal renderer calls.
 - **Package:** the published package works outside the monorepo with root and subpath imports.
-- **Docs:** docs explain how to build actual apps with G3D, including limitations.
+- **Docs:** docs explain how to build actual apps with A3D, including limitations.
 - **Comparison:** same-scene Three.js comparisons exist for supported workflows.
 
 This is the bar. If the work being done does not improve one of these areas, it is probably not V3 work.
 
 ## Developer Experience Target
 
-G3D should compete with Three.js by reducing the amount of manual setup needed for common app workflows.
+A3D should compete with Three.js by reducing the amount of manual setup needed for common app workflows.
 
 The developer should not have to manually solve these every time:
 
@@ -174,7 +174,7 @@ The developer should not have to manually solve these every time:
 
 Required developer-facing APIs:
 
-- `createG3DApp(options)`
+- `createA3DApp(options)`
 - `createRenderer(options)`
 - `loadAsset(url, options)`
 - `createRenderableScene(asset, options)`
@@ -249,7 +249,7 @@ Current or future examples must graduate from:
 - Editor-authored runtime.
 - Performance/stress scene.
 
-Each example should answer: "Why would someone choose G3D for this workflow instead of starting from raw Three.js?"
+Each example should answer: "Why would someone choose A3D for this workflow instead of starting from raw Three.js?"
 
 ## Engine Architecture Target
 
@@ -257,25 +257,25 @@ V3 should converge the repo into a clear layered architecture.
 
 Layer 1: Foundation packages
 
-- `@galileo3d/math`
-- `@galileo3d/core`
-- `@galileo3d/scene`
-- `@galileo3d/ecs`
+- `@aura3d/math`
+- `@aura3d/core`
+- `@aura3d/scene`
+- `@aura3d/ecs`
 
 Layer 2: Runtime subsystems
 
-- `@galileo3d/rendering`
-- `@galileo3d/assets`
-- `@galileo3d/animation`
-- `@galileo3d/input`
-- `@galileo3d/audio`
-- `@galileo3d/physics`
-- `@galileo3d/debug`
+- `@aura3d/rendering`
+- `@aura3d/assets`
+- `@aura3d/animation`
+- `@aura3d/input`
+- `@aura3d/audio`
+- `@aura3d/physics`
+- `@aura3d/debug`
 
 Layer 3: Workflow SDKs
 
-- `@galileo3d/product-studio`
-- `@galileo3d/workflows`
+- `@aura3d/product-studio`
+- `@aura3d/workflows`
 
 Layer 4: Apps and examples
 
@@ -534,7 +534,7 @@ Required asset features:
 
 ### Pillar 4: Workflow SDKs
 
-G3D competes by shipping workflow-level SDKs above raw rendering.
+A3D competes by shipping workflow-level SDKs above raw rendering.
 
 Build and harden:
 
@@ -625,7 +625,7 @@ App requirements:
 - No JSON dumps as visual proof.
 - No giant marketing hero.
 - No decorative cards around the main viewport.
-- Each app must expose a stable `window.__G3D_*__` state object for browser evidence.
+- Each app must expose a stable `window.__A3D_*__` state object for browser evidence.
 - Each app must produce at least three meaningful screenshot variants.
 
 ### Pillar 6: Examples And Tutorials
@@ -673,11 +673,11 @@ Build and harden:
 
 Required package smoke cases:
 
-- Fresh temp app imports `@galileo3d/engine`.
-- Fresh temp app imports `@galileo3d/engine/rendering`.
-- Fresh temp app imports `@galileo3d/engine/assets`.
-- Fresh temp app imports `@galileo3d/engine/product-studio`.
-- Fresh temp app imports `@galileo3d/engine/workflows`.
+- Fresh temp app imports `@aura3d/engine`.
+- Fresh temp app imports `@aura3d/engine/rendering`.
+- Fresh temp app imports `@aura3d/engine/assets`.
+- Fresh temp app imports `@aura3d/engine/product-studio`.
+- Fresh temp app imports `@aura3d/engine/workflows`.
 - Fresh temp app renders a canvas scene.
 - Fresh temp app loads a product fixture.
 - Fresh temp app captures a PNG.
@@ -688,7 +688,7 @@ Comparison must be local, reproducible, and honest.
 
 Add:
 
-- `benchmarks/foundation/galileo/`
+- `benchmarks/foundation/aura3d/`
 - `benchmarks/foundation/threejs/`
 - `benchmarks/foundation/shared/`
 - `benchmarks/foundation/shared/scenes/product-scene.ts`
@@ -707,7 +707,7 @@ Required comparisons:
 
 Comparison report must include:
 
-- G3D screenshot.
+- A3D screenshot.
 - Three.js screenshot.
 - Diff image.
 - Setup code line counts.
@@ -716,7 +716,7 @@ Comparison report must include:
 - Feature comparison.
 - Honest gap list.
 
-The comparison must never say G3D is broadly superior unless the evidence proves it.
+The comparison must never say A3D is broadly superior unless the evidence proves it.
 
 ## V3 Milestones
 
@@ -819,7 +819,7 @@ V3 release must produce this artifact matrix:
 | Apps | `apps/*-lab`, `apps/product-studio` | `tests/browser/v3-*.spec.ts` | `tests/reports/v3-app-suite.json` | App screenshots |
 | Examples | `examples/*-v3` | `tests/browser/foundation-examples.spec.ts` | `tests/reports/foundation-examples-readiness.json` | Example screenshots |
 | Package | `dist`, packed tarball | package smoke tools | `tests/reports/foundation-package-smoke.json` | Temp app PNG |
-| Three.js comparison | `benchmarks/foundation` | `tests/browser/foundation-threejs-comparison.spec.ts` | `tests/reports/foundation-threejs-comparison.json` | G3D, Three.js, diff PNGs |
+| Three.js comparison | `benchmarks/foundation` | `tests/browser/foundation-threejs-comparison.spec.ts` | `tests/reports/foundation-threejs-comparison.json` | A3D, Three.js, diff PNGs |
 | Docs | `docs/project/v3-*-roadmap`, tutorials | docs readiness tool | `tests/reports/foundation-docs-readiness.json` | Public docs |
 
 If any row is missing, V3 is not done.
@@ -848,7 +848,7 @@ Add scripts:
 
 Acceptance:
 
-- [ ] The docs explicitly say G3D is not yet a Three.js replacement.
+- [ ] The docs explicitly say A3D is not yet a Three.js replacement.
 - [ ] The docs explicitly say V3 is not complete until all release gates pass.
 - [ ] `tools/foundation-truth/index.ts` fails if docs claim Unity/Unreal replacement or broad Three.js replacement before release gates.
 - [ ] `tools/foundation-progress/index.ts` writes `tests/reports/foundation-progress.json`.
@@ -952,11 +952,11 @@ Build:
 
 Add fixtures:
 
-- [ ] `fixtures/v3/assets/product-camera/`
-- [ ] `fixtures/v3/assets/material-spheres/`
-- [ ] `fixtures/v3/assets/animated-character/`
-- [ ] `fixtures/v3/assets/variant-product/`
-- [ ] `fixtures/v3/assets/compressed-product/`
+- [ ] `fixtures/workflow-assets/assets/product-camera/`
+- [ ] `fixtures/workflow-assets/assets/material-spheres/`
+- [ ] `fixtures/workflow-assets/assets/animated-character/`
+- [ ] `fixtures/workflow-assets/assets/variant-product/`
+- [ ] `fixtures/workflow-assets/assets/compressed-product/`
 
 Add tests:
 
@@ -983,7 +983,7 @@ Do not stop after Milestone 3.
 
 ### Milestone 4: Workflow SDK Package
 
-Goal: build high-level workflows that make G3D easier than raw Three.js for supported use cases.
+Goal: build high-level workflows that make A3D easier than raw Three.js for supported use cases.
 
 Create:
 
@@ -1148,7 +1148,7 @@ Do not stop after Milestone 6.
 
 ### Milestone 7: External Package Consumer Proof
 
-Goal: prove a developer can install and use G3D outside the monorepo.
+Goal: prove a developer can install and use A3D outside the monorepo.
 
 Create:
 
@@ -1177,7 +1177,7 @@ Do not stop after Milestone 7.
 
 ### Milestone 8: Same-Scene Three.js Comparison
 
-Goal: produce honest local evidence that G3D competes with Three.js for supported workflows.
+Goal: produce honest local evidence that A3D competes with Three.js for supported workflows.
 
 Create:
 
@@ -1185,10 +1185,10 @@ Create:
 - [ ] `benchmarks/foundation/shared/scenes/material-scene.ts`
 - [ ] `benchmarks/foundation/shared/scenes/asset-scene.ts`
 - [ ] `benchmarks/foundation/shared/scenes/interactive-scene.ts`
-- [ ] `benchmarks/foundation/galileo/product-scene.ts`
-- [ ] `benchmarks/foundation/galileo/material-scene.ts`
-- [ ] `benchmarks/foundation/galileo/asset-scene.ts`
-- [ ] `benchmarks/foundation/galileo/interactive-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/product-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/material-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/asset-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/interactive-scene.ts`
 - [ ] `benchmarks/foundation/threejs/product-scene.ts`
 - [ ] `benchmarks/foundation/threejs/material-scene.ts`
 - [ ] `benchmarks/foundation/threejs/asset-scene.ts`
@@ -1198,26 +1198,26 @@ Create:
 
 Evidence outputs:
 
-- [ ] `tests/reports/foundation-threejs-comparison/product-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/product-a3d.png`
 - [ ] `tests/reports/foundation-threejs-comparison/product-threejs.png`
 - [ ] `tests/reports/foundation-threejs-comparison/product-diff.png`
-- [ ] `tests/reports/foundation-threejs-comparison/material-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/material-a3d.png`
 - [ ] `tests/reports/foundation-threejs-comparison/material-threejs.png`
 - [ ] `tests/reports/foundation-threejs-comparison/material-diff.png`
-- [ ] `tests/reports/foundation-threejs-comparison/asset-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/asset-a3d.png`
 - [ ] `tests/reports/foundation-threejs-comparison/asset-threejs.png`
 - [ ] `tests/reports/foundation-threejs-comparison/asset-diff.png`
-- [ ] `tests/reports/foundation-threejs-comparison/interactive-g3d.png`
+- [ ] `tests/reports/foundation-threejs-comparison/interactive-a3d.png`
 - [ ] `tests/reports/foundation-threejs-comparison/interactive-threejs.png`
 - [ ] `tests/reports/foundation-threejs-comparison/interactive-diff.png`
 - [ ] `tests/reports/foundation-threejs-comparison.json`
 
 Acceptance:
 
-- [ ] Same scene intent is implemented in G3D and Three.js.
-- [ ] G3D setup code is shorter or materially more ergonomic for at least three of four workflows.
+- [ ] Same scene intent is implemented in A3D and Three.js.
+- [ ] A3D setup code is shorter or materially more ergonomic for at least three of four workflows.
 - [ ] Visual output is comparable enough to be credible to a human.
-- [ ] G3D report lists exact wins and exact gaps.
+- [ ] A3D report lists exact wins and exact gaps.
 - [ ] No broad replacement claim is made unless Release Gate 2 passes.
 
 Exit command:
@@ -1248,7 +1248,7 @@ Create or update:
 
 Acceptance:
 
-- [ ] Docs say G3D is a Three.js competitor for supported workflows only if comparison evidence exists.
+- [ ] Docs say A3D is a Three.js competitor for supported workflows only if comparison evidence exists.
 - [ ] Docs do not claim Unity or Unreal replacement.
 - [ ] Docs do not claim broad Three.js replacement unless release gates pass.
 - [ ] Docs link to actual examples and apps.
@@ -1264,7 +1264,7 @@ Do not stop after Milestone 9.
 
 ### Milestone 10: Release Gates
 
-Goal: decide whether the repo can honestly present G3D as a Three.js competitor.
+Goal: decide whether the repo can honestly present A3D as a Three.js competitor.
 
 Create:
 
@@ -1309,7 +1309,7 @@ V3 is not complete until this command passes.
 
 Allowed claim:
 
-**G3D is a Three.js competitor for supported web product, asset-viewer, material, scene, and lightweight interactive workflows.**
+**A3D is a Three.js competitor for supported web product, asset-viewer, material, scene, and lightweight interactive workflows.**
 
 Required evidence:
 
@@ -1327,12 +1327,12 @@ Required evidence:
 
 Allowed claim:
 
-**G3D can replace Three.js for the supported workflows listed in `docs/project/v3-roadmap-supported-workflows.md`.**
+**A3D can replace Three.js for the supported workflows listed in `docs/project/v3-roadmap-supported-workflows.md`.**
 
 Required evidence:
 
 - [ ] All Release Gate 1 requirements pass.
-- [ ] G3D setup code is shorter or more ergonomic in at least four same-scene comparisons.
+- [ ] A3D setup code is shorter or more ergonomic in at least four same-scene comparisons.
 - [ ] Package consumer app succeeds without monorepo aliases.
 - [ ] Visual output is credible in product, asset, material, scene, and interactive workflows.
 - [ ] Known gaps are explicit and do not invalidate the supported workflow claim.
@@ -1468,10 +1468,10 @@ This section exists so implementation cannot drift into vague work.
 - [ ] `benchmarks/foundation/shared/scenes/material-scene.ts`
 - [ ] `benchmarks/foundation/shared/scenes/asset-scene.ts`
 - [ ] `benchmarks/foundation/shared/scenes/interactive-scene.ts`
-- [ ] `benchmarks/foundation/galileo/product-scene.ts`
-- [ ] `benchmarks/foundation/galileo/material-scene.ts`
-- [ ] `benchmarks/foundation/galileo/asset-scene.ts`
-- [ ] `benchmarks/foundation/galileo/interactive-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/product-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/material-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/asset-scene.ts`
+- [ ] `benchmarks/foundation/aura3d/interactive-scene.ts`
 - [ ] `benchmarks/foundation/threejs/product-scene.ts`
 - [ ] `benchmarks/foundation/threejs/material-scene.ts`
 - [ ] `benchmarks/foundation/threejs/asset-scene.ts`
@@ -1501,7 +1501,7 @@ V3 is done only when:
 - [ ] Workflow SDK exists and is exported.
 - [ ] Package consumer proof passes outside the monorepo.
 - [ ] Same-scene Three.js comparisons exist.
-- [ ] Docs honestly position G3D as a competitor for supported workflows.
+- [ ] Docs honestly position A3D as a competitor for supported workflows.
 - [ ] Release readiness report passes.
 - [ ] Completion audit passes.
 

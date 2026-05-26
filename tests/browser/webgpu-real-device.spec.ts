@@ -175,7 +175,7 @@ test.describe("real WebGPU device evidence", () => {
     const results = mergeHardwareMatrixResults(existing?.results ?? [], result);
     const report: WebGPUHardwareMatrixReport = {
       generatedAt: new Date().toISOString(),
-      releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-webgpu-hardware-matrix-run",
+      releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-webgpu-hardware-matrix-run",
       gitSha: gitSha(),
       command: "pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts",
       environment: {

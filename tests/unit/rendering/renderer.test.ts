@@ -1236,7 +1236,7 @@ describe("Renderer", () => {
     expect(command?.instanceCount).toBe(2);
     expect(command?.uniforms?.get("u_instanceCount")).toBe(2);
     expect(command?.uniforms?.get("u_lightCount")).toBe(0);
-    expect(command?.shader?.label).toBe("galileo3d/instanced-pbr");
+    expect(command?.shader?.label).toBe("aura3d/instanced-pbr");
     expect(command?.shader?.reflection.uniforms.has("u_lightData")).toBe(true);
     expect(command?.vertexFormat?.hasAttribute("normal")).toBe(true);
     const matrices = command?.uniforms?.get("u_instanceMatrices");
@@ -1267,7 +1267,7 @@ describe("Renderer", () => {
       "textured-pbr-instance-fallback#instance-1"
     ]);
     expect(commands.map((command) => command.instanceCount)).toEqual([undefined, undefined]);
-    expect(commands[0]?.shader?.label).not.toBe("galileo3d/instanced-pbr");
+    expect(commands[0]?.shader?.label).not.toBe("aura3d/instanced-pbr");
     expect(commands[0]?.shader?.label).toBe(DEFAULT_TEXTURED_PBR_SHADER_NAME);
     expect(commands[0]?.vertexFormat?.hasAttribute("uv")).toBe(true);
     expect(commands[0]?.uniforms?.get("u_baseColorTexture")).toBeInstanceOf(TextureBinding);
@@ -2255,9 +2255,9 @@ describe("Renderer", () => {
 
     const shader = device.createShaderProgram({
       label: "unit-shader",
-      marker: "@galileo3d-shader:unit",
-      vertex: "// @galileo3d-shader:unit\nin vec3 position; uniform mat4 modelViewProjection;",
-      fragment: "// @galileo3d-shader:unit\nuniform vec4 color;"
+      marker: "@aura3d-shader:unit",
+      vertex: "// @aura3d-shader:unit\nin vec3 position; uniform mat4 modelViewProjection;",
+      fragment: "// @aura3d-shader:unit\nuniform vec4 color;"
     });
     expect(shader.reflection.attributes.has("position")).toBe(true);
     expect(shader.reflection.uniforms.has("modelViewProjection")).toBe(true);
@@ -2341,9 +2341,9 @@ describe("Renderer", () => {
     const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "raster-shader",
-      marker: "@galileo3d-shader:raster",
-      vertex: "// @galileo3d-shader:raster\nin vec3 position;",
-      fragment: "// @galileo3d-shader:raster\nuniform vec4 u_color;"
+      marker: "@aura3d-shader:raster",
+      vertex: "// @aura3d-shader:raster\nin vec3 position;",
+      fragment: "// @aura3d-shader:raster\nuniform vec4 u_color;"
     });
     const target = device.createRenderTarget({ width: 16, height: 16, label: "webgpu-raster-target" });
     device.setRenderTarget(target);
@@ -2377,9 +2377,9 @@ describe("Renderer", () => {
     const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "vertex-color-raster-shader",
-      marker: "@galileo3d-shader:vertex-color-raster",
-      vertex: "// @galileo3d-shader:vertex-color-raster\nin vec3 position; in vec4 a_color;",
-      fragment: "// @galileo3d-shader:vertex-color-raster\nuniform vec4 u_color; in vec4 v_vertexColor;"
+      marker: "@aura3d-shader:vertex-color-raster",
+      vertex: "// @aura3d-shader:vertex-color-raster\nin vec3 position; in vec4 a_color;",
+      fragment: "// @aura3d-shader:vertex-color-raster\nuniform vec4 u_color; in vec4 v_vertexColor;"
     });
     const target = device.createRenderTarget({ width: 16, height: 16, label: "webgpu-vertex-color-target" });
     device.setRenderTarget(target);
@@ -2412,9 +2412,9 @@ describe("Renderer", () => {
     const pointBuffer = device.createBuffer("vertex", pointVertices.byteLength, pointVertices);
     const shader = device.createShaderProgram({
       label: "webgpu-line-point-raster-shader",
-      marker: "@galileo3d-shader:webgpu-line-point-raster",
-      vertex: "// @galileo3d-shader:webgpu-line-point-raster\nin vec3 position;",
-      fragment: "// @galileo3d-shader:webgpu-line-point-raster\nuniform vec4 u_color;"
+      marker: "@aura3d-shader:webgpu-line-point-raster",
+      vertex: "// @aura3d-shader:webgpu-line-point-raster\nin vec3 position;",
+      fragment: "// @aura3d-shader:webgpu-line-point-raster\nuniform vec4 u_color;"
     });
     const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-line-point-raster-target" });
 
@@ -2461,9 +2461,9 @@ describe("Renderer", () => {
     const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "webgpu-instanced-raster-shader",
-      marker: "@galileo3d-shader:webgpu-instanced-raster",
-      vertex: "// @galileo3d-shader:webgpu-instanced-raster\nin vec3 position; uniform mat4 u_instanceMatrices[64]; uniform float u_instanceCount;",
-      fragment: "// @galileo3d-shader:webgpu-instanced-raster\nuniform vec4 u_baseColor;"
+      marker: "@aura3d-shader:webgpu-instanced-raster",
+      vertex: "// @aura3d-shader:webgpu-instanced-raster\nin vec3 position; uniform mat4 u_instanceMatrices[64]; uniform float u_instanceCount;",
+      fragment: "// @aura3d-shader:webgpu-instanced-raster\nuniform vec4 u_baseColor;"
     });
     const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-instanced-raster-target" });
 
@@ -2503,9 +2503,9 @@ describe("Renderer", () => {
     const buffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "webgpu-mvp-raster-shader",
-      marker: "@galileo3d-shader:webgpu-mvp-raster",
-      vertex: "// @galileo3d-shader:webgpu-mvp-raster\nin vec3 position; uniform mat4 u_modelViewProjection;",
-      fragment: "// @galileo3d-shader:webgpu-mvp-raster\nuniform vec4 u_color;"
+      marker: "@aura3d-shader:webgpu-mvp-raster",
+      vertex: "// @aura3d-shader:webgpu-mvp-raster\nin vec3 position; uniform mat4 u_modelViewProjection;",
+      fragment: "// @aura3d-shader:webgpu-mvp-raster\nuniform vec4 u_color;"
     });
     const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-mvp-raster-target" });
 
@@ -2547,9 +2547,9 @@ describe("Renderer", () => {
     const farBuffer = device.createBuffer("vertex", farVertices.byteLength, farVertices);
     const shader = device.createShaderProgram({
       label: "webgpu-depth-raster-shader",
-      marker: "@galileo3d-shader:webgpu-depth-raster",
-      vertex: "// @galileo3d-shader:webgpu-depth-raster\nin vec3 position;",
-      fragment: "// @galileo3d-shader:webgpu-depth-raster\nuniform vec4 u_color;"
+      marker: "@aura3d-shader:webgpu-depth-raster",
+      vertex: "// @aura3d-shader:webgpu-depth-raster\nin vec3 position;",
+      fragment: "// @aura3d-shader:webgpu-depth-raster\nuniform vec4 u_color;"
     });
     const target = device.createRenderTarget({ width: 32, height: 32, label: "webgpu-depth-raster-target" });
 
@@ -2591,9 +2591,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu",
-      marker: "@galileo3d-shader:native-webgpu",
-      vertex: "// @galileo3d-shader:native-webgpu\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu",
+      vertex: "// @aura3d-shader:native-webgpu\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu\nuniform vec4 color;"
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-target" });
 
@@ -2667,9 +2667,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-textured",
-      marker: "@galileo3d-shader:native-webgpu-textured",
-      vertex: "// @galileo3d-shader:native-webgpu-textured\nlayout(location = 0) in vec3 position;\nlayout(location = 2) in vec2 uv;",
-      fragment: "// @galileo3d-shader:native-webgpu-textured\nuniform sampler2D u_baseColorTexture;"
+      marker: "@aura3d-shader:native-webgpu-textured",
+      vertex: "// @aura3d-shader:native-webgpu-textured\nlayout(location = 0) in vec3 position;\nlayout(location = 2) in vec2 uv;",
+      fragment: "// @aura3d-shader:native-webgpu-textured\nuniform sampler2D u_baseColorTexture;"
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-textured-target" });
     const texture = new Texture({ width: 2, height: 2, colorSpace: "srgb", data: new Uint8Array([
@@ -2804,9 +2804,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-hdr-textured",
-      marker: "@galileo3d-shader:native-webgpu-hdr-textured",
-      vertex: "// @galileo3d-shader:native-webgpu-hdr-textured\nlayout(location = 0) in vec3 position;\nlayout(location = 2) in vec2 uv;",
-      fragment: "// @galileo3d-shader:native-webgpu-hdr-textured\nuniform sampler2D u_baseColorTexture;"
+      marker: "@aura3d-shader:native-webgpu-hdr-textured",
+      vertex: "// @aura3d-shader:native-webgpu-hdr-textured\nlayout(location = 0) in vec3 position;\nlayout(location = 2) in vec2 uv;",
+      fragment: "// @aura3d-shader:native-webgpu-hdr-textured\nuniform sampler2D u_baseColorTexture;"
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-hdr-textured-target", format: "rgba16f" });
     const hdrTexture = new Texture({
@@ -2879,9 +2879,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-depth",
-      marker: "@galileo3d-shader:native-webgpu-depth",
-      vertex: "// @galileo3d-shader:native-webgpu-depth\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-depth\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-depth",
+      vertex: "// @aura3d-shader:native-webgpu-depth\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-depth\nuniform vec4 color;"
     });
     const depthTarget = device.createRenderTarget({ width: 8, height: 8, label: "native-depth-target" });
     const colorOnlyTarget = device.createRenderTarget({ width: 8, height: 8, label: "native-color-only-target", depth: false });
@@ -2955,9 +2955,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-clear-tracking",
-      marker: "@galileo3d-shader:native-webgpu-clear-tracking",
-      vertex: "// @galileo3d-shader:native-webgpu-clear-tracking\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-clear-tracking\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-clear-tracking",
+      vertex: "// @aura3d-shader:native-webgpu-clear-tracking\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-clear-tracking\nuniform vec4 color;"
     });
     const first = device.createRenderTarget({ width: 8, height: 8, label: "native-clear-first" });
     const second = device.createRenderTarget({ width: 8, height: 8, label: "native-clear-second" });
@@ -3000,9 +3000,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-readback",
-      marker: "@galileo3d-shader:native-webgpu-readback",
-      vertex: "// @galileo3d-shader:native-webgpu-readback\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-readback\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-readback",
+      vertex: "// @aura3d-shader:native-webgpu-readback\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-readback\nuniform vec4 color;"
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-readback-target" });
 
@@ -3050,9 +3050,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-hdr",
-      marker: "@galileo3d-shader:native-webgpu-hdr",
-      vertex: "// @galileo3d-shader:native-webgpu-hdr\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-hdr\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-hdr",
+      vertex: "// @aura3d-shader:native-webgpu-hdr\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-hdr\nuniform vec4 color;"
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-hdr-target", format: "rgba16f" });
 
@@ -3096,9 +3096,9 @@ describe("Renderer", () => {
     const indexBuffer = device.createBuffer("index", indices.byteLength, indices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-indexed",
-      marker: "@galileo3d-shader:native-webgpu-indexed",
-      vertex: "// @galileo3d-shader:native-webgpu-indexed\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-indexed\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-indexed",
+      vertex: "// @aura3d-shader:native-webgpu-indexed\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-indexed\nuniform vec4 color;"
     });
     const target = device.createRenderTarget({ width: 8, height: 8, label: "native-indexed-target" });
 
@@ -3132,9 +3132,9 @@ describe("Renderer", () => {
     const limitedIndexBuffer = limitedDevice.createBuffer("index", indices.byteLength, indices);
     const limitedShader = limitedDevice.createShaderProgram({
       label: "native-webgpu-indexed-limited",
-      marker: "@galileo3d-shader:native-webgpu-indexed-limited",
-      vertex: "// @galileo3d-shader:native-webgpu-indexed-limited\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-indexed-limited\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-indexed-limited",
+      vertex: "// @aura3d-shader:native-webgpu-indexed-limited\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-indexed-limited\nuniform vec4 color;"
     });
     const limitedTarget = limitedDevice.createRenderTarget({ width: 8, height: 8, label: "native-indexed-limited-target" });
 
@@ -3171,9 +3171,9 @@ describe("Renderer", () => {
     const vertexBuffer = device.createBuffer("vertex", vertices.byteLength, vertices);
     const shader = device.createShaderProgram({
       label: "native-webgpu-canvas",
-      marker: "@galileo3d-shader:native-webgpu-canvas",
-      vertex: "// @galileo3d-shader:native-webgpu-canvas\nin vec3 position;",
-      fragment: "// @galileo3d-shader:native-webgpu-canvas\nuniform vec4 color;"
+      marker: "@aura3d-shader:native-webgpu-canvas",
+      vertex: "// @aura3d-shader:native-webgpu-canvas\nin vec3 position;",
+      fragment: "// @aura3d-shader:native-webgpu-canvas\nuniform vec4 color;"
     });
 
     expect(device.info.capabilities).toEqual(expect.arrayContaining(["native-render-pipeline", "canvas-surface"]));
@@ -3659,7 +3659,7 @@ function createFakeWebGPU(): WebGPULike {
     async requestAdapter(): Promise<WebGPUAdapterLike> {
       return {
         name: "unit-webgpu-adapter",
-        info: { vendor: "galileo3d-test" },
+        info: { vendor: "aura3d-test" },
         async requestDevice() {
           return device;
         }
@@ -3740,7 +3740,7 @@ function createNativeFakeWebGPU(options: { readonly indexedPassApi?: boolean } =
       async requestAdapter(): Promise<WebGPUAdapterLike> {
         return {
           name: "native-unit-webgpu-adapter",
-          info: { vendor: "galileo3d-native-test" },
+          info: { vendor: "aura3d-native-test" },
           async requestDevice() {
             return device;
           }

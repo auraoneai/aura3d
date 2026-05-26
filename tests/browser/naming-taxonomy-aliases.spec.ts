@@ -23,11 +23,11 @@ const ROUTE_ALIAS_PAIRS = [
 ] as const;
 
 const FIXTURE_ALIAS_PAIRS = [
-  ["/fixtures/asset-corpus/damaged-helmet.glb", "/fixtures/v6/assets/corpus/damaged-helmet.glb"],
-  ["/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", "/fixtures/v6/environments/hdri/studio_small_08_1k.hdr"],
-  ["/fixtures/threejs-parity/assets/vehicles/car-concept.glb", "/fixtures/v8/assets/vehicles/car-concept.glb"],
-  ["/fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb", "/fixtures/v9/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb"],
-  ["/fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr", "/fixtures/v9/environments/hdri/data_galaxy_deep_space_1k.hdr"]
+  ["/fixtures/asset-corpus/damaged-helmet.glb", "/fixtures/asset-corpus/damaged-helmet.glb"],
+  ["/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"],
+  ["/fixtures/threejs-parity/assets/vehicles/car-concept.glb", "/fixtures/threejs-parity/assets/vehicles/car-concept.glb"],
+  ["/fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb", "/fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb"],
+  ["/fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr", "/fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr"]
 ] as const;
 
 test.describe("naming taxonomy browser aliases", () => {

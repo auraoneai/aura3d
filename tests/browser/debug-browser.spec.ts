@@ -15,12 +15,12 @@ test.describe("debug browser runtime", () => {
   test("renders debug overlay plus physics, camera, and bounds lines without mutating base output", async ({ page }) => {
     await page.goto(`${server.origin}/tests/browser/debug-browser-harness.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_DEBUG_BROWSER_TEST__?.status === "ready" || window.__GALILEO3D_DEBUG_BROWSER_TEST__?.status === "error",
+      () => window.__AURA3D_DEBUG_BROWSER_TEST__?.status === "ready" || window.__AURA3D_DEBUG_BROWSER_TEST__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_DEBUG_BROWSER_TEST__);
+    const result = await page.evaluate(() => window.__AURA3D_DEBUG_BROWSER_TEST__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.physicsLineCount).toBe(12);
@@ -58,7 +58,7 @@ test.describe("debug browser runtime", () => {
 
 declare global {
   interface Window {
-    __GALILEO3D_DEBUG_BROWSER_TEST__?: {
+    __AURA3D_DEBUG_BROWSER_TEST__?: {
       readonly status: "ready" | "error";
       readonly physicsLineCount?: number;
       readonly cameraLineCount?: number;

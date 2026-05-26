@@ -8,14 +8,14 @@ if (!root) {
 
 installEditorStyles();
 const shell = new EditorShell(root);
-window.__GALILEO3D_EDITOR_APP__ = {
+window.__AURA3D_EDITOR_APP__ = {
   shell,
   getState: () => shell.getState()
 };
 
 shell.mount().catch((error) => {
   shell.fail(error);
-  window.__GALILEO3D_EDITOR_APP__ = {
+  window.__AURA3D_EDITOR_APP__ = {
     shell,
     getState: () => shell.getState()
   };

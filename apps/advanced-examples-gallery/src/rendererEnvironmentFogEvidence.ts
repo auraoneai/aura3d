@@ -2,7 +2,7 @@ import {
   createEnvironmentFogProfile,
   type EnvironmentFogProfile,
   type ForwardEnvironmentFogOptions
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import type { RouteEvidencePayload } from "./advancedRouteEvidence";
 
 export const RENDERER_ENVIRONMENT_FOG_SOURCE = "Renderer.environmentFog -> ForwardPass.environmentFog" as const;

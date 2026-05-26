@@ -5,7 +5,7 @@ import {
   inspectGLTFAsset,
   type GLTFAssetInspectionReport,
   type GLTFRenderResources,
-} from "@galileo3d/assets";
+} from "@aura3d/assets";
 import {
   PBRMaterial,
   Renderer,
@@ -32,8 +32,8 @@ import {
   type V4EnvironmentLightingBundle,
   type V4LdrPostprocessSummary,
   type V4RenderPresetEvidence,
-} from "@galileo3d/rendering";
-import { Scene, type PerspectiveCamera } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
 type MaterialVariant = {
   readonly name: "graphite" | "copper" | "ceramic";
@@ -187,7 +187,7 @@ type DemoStatus = {
 
 declare global {
   interface Window {
-    __GALILEO3D_PRODUCT_DEMO__?: DemoStatus;
+    __AURA3D_PRODUCT_DEMO__?: DemoStatus;
   }
 }
 
@@ -198,11 +198,11 @@ const variants: readonly MaterialVariant[] = [
 ];
 
 const materialSlots = ["ear-cups", "headband", "hinges", "cushions", "controls", "status-led", "contact-shadow"] as const;
-const productAssetUrl = "/fixtures/assets/v3/product/generated-headphones/generated-headphones.gltf";
-const productManifestUrl = "/fixtures/assets/v3/product/generated-headphones/manifest.json";
-const productSourceEvidenceUrl = "/fixtures/assets/v3/product/generated-headphones/source-generation.json";
-const v4ProductAssetUrl = "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf";
-const v4ProductManifestUrl = "/fixtures/assets/v4/product/v4-product-speaker/manifest.json";
+const productAssetUrl = "/fixtures/workflow-assets/assets/product-camera/product-camera.gltf";
+const productManifestUrl = "/fixtures/workflow-assets/assets/product-camera/manifest.json";
+const productSourceEvidenceUrl = "/fixtures/workflow-assets/assets/product-camera/manifest.json";
+const v4ProductAssetUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
+const v4ProductManifestUrl = "/fixtures/product-studio/products/speaker/manifest.json";
 const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/product-configurator.png";
 const productLodGeometries = {
   highEarcup: Geometry.capsule({ radius: 0.34, height: 1.02, segments: 32, rings: 8 }),
@@ -273,11 +273,11 @@ const productMaterials = new Map<string, ReturnType<typeof createProductMaterial
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_PRODUCT_DEMO__ = {
+    window.__AURA3D_PRODUCT_DEMO__ = {
       id: "product-configurator",
       status: "error",
       renderer: "webgl2",
-      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Galileo3D WebGL2.",
+      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
       knownLimits,
       screenshotPath: v4ScreenshotPath,
       featureEvidence: {},
@@ -287,7 +287,7 @@ if (typeof document !== "undefined") {
         source: "generated-local-gltf",
         url: productAssetUrl,
         manifestUrl: productManifestUrl,
-        generator: "fixtures/assets/v3/product/generated-headphones/generate.mjs",
+        generator: "tools/product-studio-generate-products/index.ts",
         commercialImportedAsset: false,
         materialSlots,
         generatedParts: 0,
@@ -565,11 +565,11 @@ async function run(): Promise<void> {
       lodEvidence: true
     });
 
-    window.__GALILEO3D_PRODUCT_DEMO__ = {
+    window.__AURA3D_PRODUCT_DEMO__ = {
       id: "product-configurator",
       status: "ready",
       renderer: "webgl2",
-      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Galileo3D WebGL2.",
+      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
       knownLimits,
       screenshotPath: v4ScreenshotPath,
       featureEvidence: {
@@ -751,7 +751,7 @@ async function run(): Promise<void> {
         rendererBacked: true,
       },
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_PRODUCT_DEMO__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_PRODUCT_DEMO__, null, 2);
     if (running) requestAnimationFrame(render);
   };
 
@@ -772,7 +772,7 @@ async function loadProductModel(): Promise<ProductModelRuntime> {
   const [manifest, sourceGeneration, asset] = await Promise.all([
     fetchJson<ProductAssetManifest>(productManifestUrl),
     fetchJson<ProductSourceGeneration>(productSourceEvidenceUrl),
-    new GLTFLoader().load({ url: productAssetUrl }, new LoadContext({ baseUrl: window.location.origin })),
+    new GLTFLoader().load({ url: runtimeAssetUrl(productAssetUrl) }, new LoadContext()),
   ]);
   if (manifest.source.commercialImportedAsset || sourceGeneration.commercialImportedAsset) {
     throw new Error("Product configurator fixture must not claim a commercial imported asset.");
@@ -785,7 +785,7 @@ async function loadProductModel(): Promise<ProductModelRuntime> {
 async function loadV4ProductAsset(): Promise<LoadedV4ProductAsset> {
   const [manifest, asset] = await Promise.all([
     fetchJson<V4ProductAssetManifest>(v4ProductManifestUrl),
-    new GLTFLoader().load({ url: v4ProductAssetUrl }, new LoadContext({ baseUrl: window.location.origin })),
+    new GLTFLoader().load({ url: runtimeAssetUrl(v4ProductAssetUrl) }, new LoadContext()),
   ]);
   const resources = await createGLTFRenderResources(asset);
   const inspection = inspectGLTFAsset(asset);
@@ -804,6 +804,10 @@ async function fetchJson<T>(url: string): Promise<T> {
     throw new Error(`Failed to load ${url}: HTTP ${response.status}`);
   }
   return response.json() as Promise<T>;
+}
+
+function runtimeAssetUrl(url: string): string {
+  return new URL(url, window.location.origin).toString();
 }
 
 function buildRenderItems(productModel: ProductModelRuntime, v4ProductAsset: LoadedV4ProductAsset, variant: MaterialVariant, yaw: number, pitch: number, zoom: number, panX: number, panY: number, selectedPart: ProductPart, explodedView: boolean, lodInspectMode: ProductLodInspectMode): ProductRenderBuild {

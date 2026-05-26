@@ -87,7 +87,7 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
         height: this.height,
         colorSpace: "srgb",
         mipLevels,
-        label: "g3d-renderer-owned-scene-color-transmission-backdrop"
+        label: "a3d-renderer-owned-scene-color-transmission-backdrop"
       });
       const materialBindings = bindTransmissionBackdropCapture(input.source, transmissionBackdropTexture, captureOptions);
       transmissionBackdropCapture = {
@@ -150,7 +150,7 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
         "scene-color-transmission-capture",
         input?.transmissionBackdropCapture ? "supported" : "partial",
         input?.transmissionBackdropCapture
-          ? "Renderer-owned first-pass scene-color readback is rebound as u_transmissionBackdropTexture for the final G3D transmission pass."
+          ? "Renderer-owned first-pass scene-color readback is rebound as u_transmissionBackdropTexture for the final A3D transmission pass."
           : "Transmission backdrop capture was not requested for this proof."
       )
     ];

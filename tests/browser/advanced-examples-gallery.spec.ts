@@ -13,7 +13,7 @@ import { ADVANCED_GALLERY_CONTEXTUAL_ROUTE } from "../../tools/naming-taxonomy/c
 
 type DemoId = typeof DEMO_DEFINITIONS[number]["id"];
 const DEMO_IDS: readonly DemoId[] = DEMO_DEFINITIONS.map((demo) => demo.id);
-const evidenceMode = process.env.G3D_ADVANCED_GALLERY_EVIDENCE_MODE === "full-gallery" ? "full-gallery" : "focused-route";
+const evidenceMode = process.env.A3D_ADVANCED_GALLERY_EVIDENCE_MODE === "full-gallery" ? "full-gallery" : "focused-route";
 const ADVANCED_GALLERY_FULL_REPORT_DIR = ADVANCED_GALLERY_CONTEXTUAL_REPORT_DIR;
 
 interface AdvancedGalleryRuntime {
@@ -336,7 +336,7 @@ test.describe("V9 advanced examples gallery", () => {
   });
 
   for (const demo of DEMO_IDS) {
-    test(`${demo} renders as a complex animated G3D demo`, async () => {
+    test(`${demo} renders as a complex animated A3D demo`, async () => {
       test.setTimeout(captureTimeoutMs(demo));
       const browser = await chromium.launch({ headless: true });
       const page = await browser.newPage({ viewport: { width: 1440, height: 920 }, deviceScaleFactor: 1.25 });
@@ -345,7 +345,7 @@ test.describe("V9 advanced examples gallery", () => {
         if (!server) throw new Error("Vite dev server was not initialized.");
         await page.goto(`${server.origin}${ADVANCED_GALLERY_CONTEXTUAL_ROUTE}#${demo}`, { waitUntil: "domcontentloaded" });
         await page.waitForFunction(({ expectedDemo, authoredRequired, backgroundRequired }) => {
-          const runtime = (window as unknown as { readonly __G3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__G3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+          const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
           if (!runtime || runtime.demoId !== expectedDemo) return false;
           if (runtime.status === "error") return true;
           if (runtime.frameCount < 4 || runtime.drawCalls <= 0) return false;
@@ -430,7 +430,7 @@ test.describe("V9 advanced examples gallery", () => {
         writeFileSync(
           `${reportDir}/${demo}.json`,
           `${JSON.stringify({
-            schema: "g3d-v9-advanced-gallery-route-report/v1",
+            schema: "a3d-v9-advanced-gallery-route-report/v1",
             capturedAt: new Date().toISOString(),
             evidenceMode,
             evidenceScope: {
@@ -1035,7 +1035,7 @@ async function waitForScreenshotReady(
   reviewCapture: ReviewCaptureMode
 ): Promise<CaptureReadinessEvidence> {
   await page.waitForFunction(({ expectedDemo, frameFloor, expectedCapture }) => {
-    const runtime = (window as unknown as { readonly __G3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__G3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+    const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
     const loading = document.querySelector<HTMLElement>("#loading");
     const loadingStyle = loading ? getComputedStyle(loading) : undefined;
     const canvas = document.querySelector<HTMLCanvasElement>("#viewport");
@@ -1076,7 +1076,7 @@ async function setReviewCaptureMode(page: Page, mode: ReviewCaptureMode): Promis
 
 async function readCaptureReadiness(page: Page, label: CaptureLabel): Promise<CaptureReadinessEvidence> {
   return page.evaluate((captureLabel) => {
-    const runtime = (window as unknown as { readonly __G3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__G3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+    const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
     const loading = document.querySelector<HTMLElement>("#loading");
     const loadingStyle = loading ? getComputedStyle(loading) : undefined;
     const loadingRect = loading?.getBoundingClientRect();
@@ -1290,15 +1290,15 @@ function isAuthoredRoute(demo: DemoId): boolean {
 
 async function readRuntime(page: Page): Promise<AdvancedGalleryRuntime> {
   return page.evaluate(() => {
-    const runtime = (window as unknown as { readonly __G3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__G3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+    const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
     if (!runtime) throw new Error("Advanced gallery runtime was not published.");
     return runtime;
   });
 }
 
 async function startViteDevServer(): Promise<ViteDevServer> {
-  if (process.env.G3D_ADVANCED_GALLERY_BASE_URL) {
-    return { origin: process.env.G3D_ADVANCED_GALLERY_BASE_URL.replace(/\/$/, ""), close: async () => {} };
+  if (process.env.A3D_ADVANCED_GALLERY_BASE_URL) {
+    return { origin: process.env.A3D_ADVANCED_GALLERY_BASE_URL.replace(/\/$/, ""), close: async () => {} };
   }
   const port = await resolveVitePort();
   const child = spawn("pnpm", [
@@ -1313,7 +1313,7 @@ async function startViteDevServer(): Promise<ViteDevServer> {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      G3D_VITE_TEST_SERVER: "advanced-gallery",
+      A3D_VITE_TEST_SERVER: "advanced-gallery",
       VITE_FORCE_HMR_DISABLED: "1"
     },
     stdio: ["ignore", "pipe", "pipe"]
@@ -1326,7 +1326,7 @@ async function startViteDevServer(): Promise<ViteDevServer> {
 }
 
 async function resolveVitePort(): Promise<number> {
-  const explicit = Number(process.env.G3D_ADVANCED_GALLERY_PORT ?? 0);
+  const explicit = Number(process.env.A3D_ADVANCED_GALLERY_PORT ?? 0);
   if (Number.isInteger(explicit) && explicit > 0) return explicit;
   return new Promise((resolvePort, reject) => {
     const server = createNetServer();

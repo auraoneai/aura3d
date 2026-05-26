@@ -1,4 +1,4 @@
-import { AudioClip, AudioSource, AudioSystem } from "@galileo3d/audio";
+import { AudioClip, AudioSource, AudioSystem } from "@aura3d/audio";
 
 interface AudioBrowserResult {
   readonly status: "waiting" | "ready" | "error";
@@ -11,12 +11,12 @@ interface AudioBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_AUDIO_BROWSER_TEST__?: AudioBrowserResult;
+    __AURA3D_AUDIO_BROWSER_TEST__?: AudioBrowserResult;
   }
 }
 
 function publish(result: AudioBrowserResult): void {
-  window.__GALILEO3D_AUDIO_BROWSER_TEST__ = result;
+  window.__AURA3D_AUDIO_BROWSER_TEST__ = result;
 }
 
 function createToneBuffer(context: AudioContext): AudioBuffer {

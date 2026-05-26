@@ -242,10 +242,10 @@ test.describe("V4 editor authoring workflow", () => {
 
     await page.getByRole("button", { name: "Export", exact: true }).click();
     await expect.poll(() => editorState(page).then((state) => state.exportedFileCount)).toBe(3);
-    const exportedFiles = await page.evaluate(() => (window as any).__GALILEO3D_EDITOR_APP__!.shell.exportedFiles());
+    const exportedFiles = await page.evaluate(() => (window as any).__AURA3D_EDITOR_APP__!.shell.exportedFiles());
     const runtime = exportedFiles.find((file) => file.path === "runtime.js")?.content ?? "";
     expect(runtime).not.toContain("EditorShell");
-    expect(runtime).not.toContain("__GALILEO3D_EDITOR_APP__");
+    expect(runtime).not.toContain("__AURA3D_EDITOR_APP__");
     const exportedByPath = new Map(exportedFiles.map((file) => [file.path, file.content]));
     await page.route(`${server.origin}/__v4_editor_export/**`, async (route) => {
       const name = new URL(route.request().url()).pathname.split("/").pop() ?? "index.html";
@@ -258,8 +258,8 @@ test.describe("V4 editor authoring workflow", () => {
     });
 
     await page.goto(`${server.origin}/__v4_editor_export/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window as any).__GALILEO3D_EXPORTED_PROJECT__?.status === "ready");
-    await page.waitForFunction(() => ((window as any).__GALILEO3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
+    await page.waitForFunction(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.status === "ready");
+    await page.waitForFunction(() => ((window as any).__AURA3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
     const exportedState = await exportedProjectState(page);
     expect(exportedState.assetCount).toBe(1);
     expect(exportedState.importedAssetNames).toContain("Fox.glb");
@@ -270,14 +270,14 @@ test.describe("V4 editor authoring workflow", () => {
     expect(exportedState.playBehaviorActive).toBe(true);
     expect(exportedState.featureEvidence.usesEditorCode).toBe(false);
     expect(exportedState.claimBoundary.blocked).toContain("Unity replacement");
-    expect(await nonBlankCanvasPixels(page, "#galileo-export")).toBeGreaterThan(5000);
-    await page.locator("#galileo-export").click({ position: { x: 520, y: 260 } });
+    expect(await nonBlankCanvasPixels(page, "#aura3d-export")).toBeGreaterThan(5000);
+    await page.locator("#aura3d-export").click({ position: { x: 520, y: 260 } });
     await page.keyboard.press("ArrowRight");
-    await expect.poll(() => page.evaluate(() => (window as any).__GALILEO3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
+    await expect.poll(() => page.evaluate(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
     await page.screenshot({ path: exportedScreenshotPath, fullPage: true });
 
     writeFileSync(reportPath, JSON.stringify({
-      schemaVersion: "g3d-external-parity-editor-authoring-report-v1",
+      schemaVersion: "a3d-external-parity-editor-authoring-report-v1",
       ok: true,
       generatedAt: new Date().toISOString(),
       command: "pnpm exec playwright test tests/browser/editor-authoring-external-parity.spec.ts",
@@ -319,8 +319,8 @@ test.describe("V4 editor authoring workflow", () => {
   test("runs the checked-in V4 editor-authored app without editor code", async ({ page }) => {
     mkdirSync(screenshotDir, { recursive: true });
     await page.goto(`${server.origin}/examples/external-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window as any).__GALILEO3D_EXPORTED_PROJECT__?.status === "ready");
-    await page.waitForFunction(() => ((window as any).__GALILEO3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
+    await page.waitForFunction(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.status === "ready");
+    await page.waitForFunction(() => ((window as any).__AURA3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
     const state = await exportedProjectState(page);
 
     expect(state.projectName).toBe("V4 Editor Authored Sample");
@@ -335,33 +335,33 @@ test.describe("V4 editor authoring workflow", () => {
     expect(state.featureEvidence.configuredBehaviors.length).toBeGreaterThanOrEqual(2);
     expect(state.playBehaviorActive).toBe(true);
     expect(state.claimBoundary.blocked).toEqual(expect.arrayContaining(["Unity replacement", "Unreal replacement"]));
-    expect(await nonBlankCanvasPixels(page, "#galileo-export")).toBeGreaterThan(5000);
-    await page.locator("#galileo-export").click({ position: { x: 520, y: 260 } });
-    await expect.poll(() => page.evaluate(() => (window as any).__GALILEO3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
+    expect(await nonBlankCanvasPixels(page, "#aura3d-export")).toBeGreaterThan(5000);
+    await page.locator("#aura3d-export").click({ position: { x: 520, y: 260 } });
+    await expect.poll(() => page.evaluate(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
     await page.screenshot({ path: checkedInScreenshotPath, fullPage: true });
   });
 });
 
 async function waitForEditor(page: Page): Promise<void> {
-  await page.waitForFunction(() => (window as any).__GALILEO3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 20_000 });
+  await page.waitForFunction(() => (window as any).__AURA3D_EDITOR_APP__?.getState().status === "ready", undefined, { timeout: 20_000 });
 }
 
 async function editorState(page: Page): Promise<EditorState> {
-  return page.evaluate(() => (window as any).__GALILEO3D_EDITOR_APP__!.getState());
+  return page.evaluate(() => (window as any).__AURA3D_EDITOR_APP__!.getState());
 }
 
 async function selectedProjectNode(page: Page): Promise<EditorProjectNodeSnapshot> {
-  return page.evaluate(() => (window as any).__GALILEO3D_EDITOR_APP__!.shell.selectedProjectNode());
+  return page.evaluate(() => (window as any).__AURA3D_EDITOR_APP__!.shell.selectedProjectNode());
 }
 
 async function exportedProjectState(page: Page): Promise<ExportedProjectState> {
-  return page.evaluate(() => (window as any).__GALILEO3D_EXPORTED_PROJECT__!);
+  return page.evaluate(() => (window as any).__AURA3D_EXPORTED_PROJECT__!);
 }
 
 async function dropAssetIntoViewport(page: Page, assetId: string): Promise<void> {
   await page.evaluate((draggedAssetId) => {
     const transfer = new DataTransfer();
-    transfer.setData("application/x-galileo3d-asset", draggedAssetId);
+    transfer.setData("application/x-aura3d-asset", draggedAssetId);
     const viewport = document.querySelector<HTMLElement>(".editor-viewport-panel");
     if (!viewport) throw new Error("editor viewport missing");
     viewport.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));

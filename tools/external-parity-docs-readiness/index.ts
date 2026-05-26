@@ -33,7 +33,7 @@ for (const file of requiredFiles) check(`file:${file}`, existsSync(resolve(file)
 
 const docs = requiredFiles.filter((file) => file.endsWith(".md") || file === "README.md").map(read).join("\n");
 const normalizedDocs = docs.toLowerCase();
-check("product-positioning", docs.includes("G3D Visual Engine V4") && docs.includes("@galileo3d/engine") && docs.includes("createG3DApp"), "Docs must state the product, package, and runtime API.");
+check("product-positioning", docs.includes("A3D Visual Engine V4") && docs.includes("@aura3d/engine") && docs.includes("createA3DApp"), "Docs must state the product, package, and runtime API.");
 check(
   "named-product-docs",
   [
@@ -61,7 +61,7 @@ check("package-script", read("package.json").includes("\"v4:docs\""), "package.j
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-external-parity-docs-readiness/v1",
+  schema: "a3d-external-parity-docs-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass

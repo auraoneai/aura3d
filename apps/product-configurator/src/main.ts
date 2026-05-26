@@ -2,12 +2,12 @@ import {
   createProductViewer,
   loadGltfScene,
   loadHdrEnvironment,
-  type G3DGltfScene,
-  type G3DHdrEnvironment,
-  type G3DProductViewer,
-  type G3DProductViewerSettings,
-  type G3DRenderResult
-} from "@galileo3d/engine/production-runtime";
+  type A3DGltfScene,
+  type A3DHdrEnvironment,
+  type A3DProductViewer,
+  type A3DProductViewerSettings,
+  type A3DRenderResult
+} from "@aura3d/engine/production-runtime";
 import { scene } from "./scene";
 import { ui } from "./ui";
 
@@ -20,9 +20,9 @@ const environmentOptions = [
 const FLAGSHIP_RENDER_LONG_EDGE = 5120;
 const FLAGSHIP_RENDER_SHORT_EDGE = 2880;
 
-let loadedEnvironments = new Map<string, G3DHdrEnvironment>();
+let loadedEnvironments = new Map<string, A3DHdrEnvironment>();
 
-interface G3DV6RuntimeMetrics {
+interface A3DV6RuntimeMetrics {
   readonly appId: string;
   readonly sceneId: string;
   readonly workflow: string;
@@ -55,28 +55,28 @@ interface G3DV6RuntimeMetrics {
   readonly screenshotPath: string;
 }
 
-interface G3DV6Runtime {
+interface A3DV6Runtime {
   readonly status: "loading" | "ready" | "error";
   readonly error?: string;
   readonly appId: string;
   readonly sceneId: string;
   readonly selectedAssetId?: string;
   readonly rendererBackend?: "webgl2";
-  readonly runtime?: G3DV6RuntimeMetrics;
-  readonly metadata?: G3DGltfScene["metadata"];
-  readonly secondaryMetadata?: readonly G3DGltfScene["metadata"][];
-  readonly proof?: G3DRenderResult["proof"];
-  readonly proofSummary?: G3DRenderResult["summary"];
+  readonly runtime?: A3DV6RuntimeMetrics;
+  readonly metadata?: A3DGltfScene["metadata"];
+  readonly secondaryMetadata?: readonly A3DGltfScene["metadata"][];
+  readonly proof?: A3DRenderResult["proof"];
+  readonly proofSummary?: A3DRenderResult["summary"];
   readonly interactionCount: number;
   readonly lastInteraction?: string;
   readonly sdkSurface?: string;
-  readonly viewerDiagnostics?: ReturnType<G3DProductViewer["diagnostics"]>;
+  readonly viewerDiagnostics?: ReturnType<A3DProductViewer["diagnostics"]>;
   readonly screenshotDataUrl?: string;
 }
 
 declare global {
   interface Window {
-    __g3dV6Runtime?: G3DV6Runtime;
+    __a3dV6Runtime?: A3DV6Runtime;
   }
 }
 
@@ -90,12 +90,12 @@ async function runProductConfigurator(): Promise<void> {
   }
   const renderResolution = configureFlagshipCanvas(canvas);
 
-  const loading: G3DV6Runtime = {
+  const loading: A3DV6Runtime = {
     status: "loading",
     appId: scene.appId,
     sceneId: scene.sceneId,
     interactionCount: 0,
-    sdkSurface: "@galileo3d/engine/production-runtime"
+    sdkSurface: "@aura3d/engine/production-runtime"
   };
   publishRuntime(root, loading);
 
@@ -152,21 +152,21 @@ async function runProductConfigurator(): Promise<void> {
       appId: scene.appId,
       sceneId: scene.sceneId,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
-      interactionCount: window.__g3dV6Runtime?.interactionCount ?? 0,
-      sdkSurface: "@galileo3d/engine/production-runtime"
+      interactionCount: window.__a3dV6Runtime?.interactionCount ?? 0,
+      sdkSurface: "@aura3d/engine/production-runtime"
     });
   }
 }
 
 function createReadyRuntime(
-  asset: G3DGltfScene,
-  environment: G3DHdrEnvironment,
-  viewer: G3DProductViewer,
-  result: G3DRenderResult,
+  asset: A3DGltfScene,
+  environment: A3DHdrEnvironment,
+  viewer: A3DProductViewer,
+  result: A3DRenderResult,
   frameTimeMs: number,
-  renderResolution: G3DV6RuntimeMetrics["renderResolution"],
+  renderResolution: A3DV6RuntimeMetrics["renderResolution"],
   selectedAssetId: string
-): G3DV6Runtime {
+): A3DV6Runtime {
   const metadata = asset.metadata;
   return {
     status: "ready",
@@ -205,17 +205,17 @@ function createReadyRuntime(
     proof: result.proof,
     proofSummary: result.summary,
     interactionCount: 0,
-    sdkSurface: "@galileo3d/engine/production-runtime",
+    sdkSurface: "@aura3d/engine/production-runtime",
     viewerDiagnostics: viewer.diagnostics()
   };
 }
 
-function publishRuntime(root: HTMLElement, runtime: G3DV6Runtime, viewer?: G3DProductViewer): void {
-  window.__g3dV6Runtime = runtime;
+function publishRuntime(root: HTMLElement, runtime: A3DV6Runtime, viewer?: A3DProductViewer): void {
+  window.__a3dV6Runtime = runtime;
   mountProductConfigurator(root, runtime, viewer);
 }
 
-function mountProductConfigurator(root: HTMLElement, runtime: G3DV6Runtime, viewer?: G3DProductViewer): void {
+function mountProductConfigurator(root: HTMLElement, runtime: A3DV6Runtime, viewer?: A3DProductViewer): void {
   const metrics = runtime.runtime;
   const settings = viewer?.getSettings() ?? runtime.viewerDiagnostics?.settings;
   const material = runtime.metadata;
@@ -229,11 +229,11 @@ function mountProductConfigurator(root: HTMLElement, runtime: G3DV6Runtime, view
     </section>
     <section class="metrics">
       <span>${runtime.status}</span>
-      <span>${metrics ? `${metrics.drawCalls} draw calls` : "loading G3D renderer"}</span>
+      <span>${metrics ? `${metrics.drawCalls} draw calls` : "loading A3D renderer"}</span>
       <span>${metrics ? `${metrics.triangleCount} triangles` : scene.environment.label}</span>
       <span>${metrics ? `${metrics.textureCount} textures` : scene.assets.map((asset) => asset.id).join(", ")}</span>
       <span>${metrics ? `${metrics.renderResolution.width}x${metrics.renderResolution.height} render` : "flagship render target"}</span>
-      <span>${runtime.sdkSurface ?? "@galileo3d/engine/production-runtime"}</span>
+      <span>${runtime.sdkSurface ?? "@aura3d/engine/production-runtime"}</span>
     </section>
     <section class="controls">
       <label>
@@ -372,20 +372,20 @@ function mountProductConfigurator(root: HTMLElement, runtime: G3DV6Runtime, view
     rerenderViewer(root, viewer, "Reset Camera");
   });
   root.querySelector("#capture-screenshot")?.addEventListener("click", () => {
-    const current = window.__g3dV6Runtime;
+    const current = window.__a3dV6Runtime;
     if (!current || !viewer) return;
-    window.__g3dV6Runtime = {
+    window.__a3dV6Runtime = {
       ...current,
       interactionCount: current.interactionCount + 1,
       lastInteraction: "Capture Screenshot",
       screenshotDataUrl: viewer.captureScreenshot(),
       viewerDiagnostics: viewer.diagnostics()
     };
-    mountProductConfigurator(root, window.__g3dV6Runtime, viewer);
+    mountProductConfigurator(root, window.__a3dV6Runtime, viewer);
   });
 }
 
-function configureFlagshipCanvas(canvas: HTMLCanvasElement): G3DV6RuntimeMetrics["renderResolution"] {
+function configureFlagshipCanvas(canvas: HTMLCanvasElement): A3DV6RuntimeMetrics["renderResolution"] {
   const cssWidth = Math.max(1, Math.round(canvas.getBoundingClientRect().width || canvas.clientWidth || 1024));
   const cssHeight = Math.max(1, Math.round(canvas.getBoundingClientRect().height || canvas.clientHeight || cssWidth));
   const deviceScale = Math.min(3.25, globalThis.devicePixelRatio || 1);
@@ -422,8 +422,8 @@ function selectedAssetFromLocation() {
 function bindRange(
   root: HTMLElement,
   selector: string,
-  viewer: G3DProductViewer | undefined,
-  update: (value: number) => Partial<G3DProductViewerSettings>,
+  viewer: A3DProductViewer | undefined,
+  update: (value: number) => Partial<A3DProductViewerSettings>,
   label: string
 ): void {
   const input = root.querySelector(selector);
@@ -437,8 +437,8 @@ function bindRange(
 function bindCheckbox(
   root: HTMLElement,
   selector: string,
-  viewer: G3DProductViewer | undefined,
-  update: (checked: boolean) => Partial<G3DProductViewerSettings>,
+  viewer: A3DProductViewer | undefined,
+  update: (checked: boolean) => Partial<A3DProductViewerSettings>,
   label: string
 ): void {
   const input = root.querySelector(selector);
@@ -449,13 +449,13 @@ function bindCheckbox(
   });
 }
 
-function rerenderViewer(root: HTMLElement, viewer: G3DProductViewer | undefined, interaction: string): void {
-  const current = window.__g3dV6Runtime;
+function rerenderViewer(root: HTMLElement, viewer: A3DProductViewer | undefined, interaction: string): void {
+  const current = window.__a3dV6Runtime;
   if (!current || !viewer) return;
   const frameStart = performance.now();
   const result = viewer.render();
   const diagnostics = viewer.diagnostics();
-  window.__g3dV6Runtime = {
+  window.__a3dV6Runtime = {
     ...current,
     runtime: current.runtime ? {
       ...current.runtime,
@@ -469,5 +469,5 @@ function rerenderViewer(root: HTMLElement, viewer: G3DProductViewer | undefined,
     lastInteraction: interaction,
     viewerDiagnostics: diagnostics
   };
-  mountProductConfigurator(root, window.__g3dV6Runtime, viewer);
+  mountProductConfigurator(root, window.__a3dV6Runtime, viewer);
 }

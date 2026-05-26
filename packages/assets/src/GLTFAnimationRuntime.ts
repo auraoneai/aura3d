@@ -1,5 +1,5 @@
-import { AnimationAction, AnimationClip, AnimationMixer, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@galileo3d/animation";
-import { invertMat4, multiplyMat4, Renderable, Scene, transformPoint, type Mat4, type SceneNode, type Vec3 } from "@galileo3d/scene";
+import { AnimationAction, AnimationClip, AnimationMixer, normalizeQuat, slerpQuat, solveTwoBoneIk, type AnimationEvent, type AnimationMixerOptions, type AnimationValue, type LoopMode, type TrackValueType, type TwoBoneIkResult } from "@aura3d/animation";
+import { invertMat4, multiplyMat4, Renderable, Scene, transformPoint, type Mat4, type SceneNode, type Vec3 } from "@aura3d/scene";
 import type { GLTFAsset, GLTFMeshAsset, GLTFSkinAsset } from "./GLTFLoader";
 
 export interface GLTFSceneAnimationRuntimeOptions {

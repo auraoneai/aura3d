@@ -2,5 +2,5 @@ import type { V6AppUiDefinition } from "../../production-runtime-common/src/runt
 
 export const ui: V6AppUiDefinition = {
   primaryActionLabel: "Lock Camera",
-  secondaryLabel: "Same-scene setup for the later Three.js parity gate using real G3D pixels now."
+  secondaryLabel: "Same-scene setup for the later Three.js parity gate using real A3D pixels now."
 };

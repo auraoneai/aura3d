@@ -12,8 +12,8 @@
     "derivativeOfExternalAsset": true,
     "sourceAsset": {
       "path": "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
-      "byteSize": 11778688,
-      "sha256": "c272098089d78c5cd9fd9f24ff50ee8acf8d932c55f2d55fc10adb6c8998966b"
+      "byteSize": 15499812,
+      "sha256": "1d1df2377481bd7f6b9d5a746a997747347009826b68ff74753181b737c5cd50"
     }
   },
   "outputs": {

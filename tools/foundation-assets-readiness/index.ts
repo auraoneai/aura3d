@@ -12,7 +12,7 @@ const requiredSourceFiles = [
   "packages/assets/src/AssetImportPreflight.ts"
 ] as const;
 const requiredFixtures = ["product-camera", "material-spheres", "animated-character", "variant-product", "compressed-product"] as const;
-const fixtureRoot = resolve("fixtures/v3/assets");
+const fixtureRoot = resolve("fixtures/workflow-assets/assets");
 const browserManifestPath = resolve("tests/reports/foundation-assets/manifest.json");
 const browserManifest = existsSync(browserManifestPath) ? JSON.parse(readFileSync(browserManifestPath, "utf8")) : null;
 const sourceFiles = requiredSourceFiles.map((path) => ({ path, exists: existsSync(resolve(path)) }));
@@ -35,7 +35,7 @@ const fixtureChecks = requiredFixtures.map((id) => {
   return {
     id,
     exists: existsSync(join(fixtureRoot, id)),
-    manifestPath: `fixtures/v3/assets/${id}/manifest.json`,
+    manifestPath: `fixtures/workflow-assets/assets/${id}/manifest.json`,
     manifestExists: existsSync(manifestPath),
     coverage: manifest?.coverage ?? [],
     gltfExists: manifest ? existsSync(join(fixtureRoot, id, manifest.gltf)) : false,
@@ -57,7 +57,7 @@ const captureChecks: AssetCaptureCheck[] = (browserManifest?.captures ?? []).map
 const requiredCoverage = ["gltf", "glb", "data-uri", "external-buffer", "external-image"] as const;
 
 const report = {
-  schema: "g3d-foundation-assets-readiness/v1",
+  schema: "a3d-foundation-assets-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: sourceFiles.every((file) => file.exists)
     && fixtureChecks.every((fixture) => fixture.exists && fixture.manifestExists && fixture.gltfExists && fixture.glbExists && fixture.externalExists && requiredCoverage.every((item) => fixture.coverage.includes(item)))

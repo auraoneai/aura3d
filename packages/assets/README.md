@@ -1,6 +1,6 @@
-# @galileo3d/assets
+# @aura3d/assets
 
-`@galileo3d/assets` owns asset identity, loading, caching, dependency tracking, import pipelines, worker job boundaries, and built-in loaders for runtime data.
+`@aura3d/assets` owns asset identity, loading, caching, dependency tracking, import pipelines, worker job boundaries, and built-in loaders for runtime data.
 
 ## Public API
 

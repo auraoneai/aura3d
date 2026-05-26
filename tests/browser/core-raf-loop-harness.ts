@@ -1,4 +1,4 @@
-import { EngineLoop, type FrameContext } from "@galileo3d/core";
+import { EngineLoop, type FrameContext } from "@aura3d/core";
 
 interface CoreRafLoopResult {
   readonly status: "running" | "ready" | "error";
@@ -10,12 +10,12 @@ interface CoreRafLoopResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_CORE_RAF_TEST__?: CoreRafLoopResult;
+    __AURA3D_CORE_RAF_TEST__?: CoreRafLoopResult;
   }
 }
 
 function publish(result: CoreRafLoopResult): void {
-  window.__GALILEO3D_CORE_RAF_TEST__ = result;
+  window.__AURA3D_CORE_RAF_TEST__ = result;
 }
 
 try {

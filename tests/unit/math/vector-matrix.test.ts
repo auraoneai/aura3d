@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Box3, Euler, Matrix3, Matrix4, Quaternion, Transform, Vector2, Vector3, Vector4 } from "@galileo3d/math";
+import { Box3, Euler, Matrix3, Matrix4, Quaternion, Transform, Vector2, Vector3, Vector4 } from "@aura3d/math";
 
 describe("math vectors and matrices", () => {
   it("normalizes a zero vector without NaN", () => {

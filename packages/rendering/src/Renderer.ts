@@ -15,8 +15,8 @@ import {
   type Mat4,
   type Vec3,
   type SceneNode
-} from "@galileo3d/scene";
-import type { Ray } from "@galileo3d/math";
+} from "@aura3d/scene";
+import type { Ray } from "@aura3d/math";
 import { createRenderDevice, type RenderBackendOptions } from "./RenderBackend";
 import { type LdrPostprocessPassDescriptor, type RenderDevice, RenderDeviceError, type RenderDeviceDiagnostics, type RenderTarget, type RenderTargetDescriptor } from "./RenderDevice";
 import { ENVIRONMENT_BACKGROUND_COLOR_RESOURCE, EnvironmentBackgroundPass, type EnvironmentBackgroundOptions } from "./EnvironmentBackgroundPass";

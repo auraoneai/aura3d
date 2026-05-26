@@ -22,8 +22,8 @@ describe("V8 explicit interactive renderer API", () => {
     expect(rendererV6).toContain("return this.renderInteractiveFrame(input);");
     expect(rendererV6).toContain("renderImportedAsset(input: V6RendererInput)");
     expect(rendererV6).toContain("return this.captureProof(input);");
-    expect(sdk).toContain("renderInteractiveFrame(input: G3DRenderOptions)");
-    expect(sdk).toContain("captureProof(input: G3DRenderOptions)");
+    expect(sdk).toContain("renderInteractiveFrame(input: A3DRenderOptions)");
+    expect(sdk).toContain("captureProof(input: A3DRenderOptions)");
     expect(sdk).toContain("return this.renderInteractiveFrame(input);");
     expect(sdk).toContain("return this.captureProof(input);");
   });
@@ -126,7 +126,7 @@ function createInput(): V6RendererInput {
     source: { renderItems: [] },
     metadata: {
       assetId: "v8-unit-asset",
-      assetUri: "fixtures/v8/unit.glb",
+      assetUri: "fixtures/threejs-parity/unit.glb",
       meshCount: 1,
       primitiveCount: 1,
       materialCount: 1,

@@ -16,7 +16,7 @@ test.describe("V6 same-scene Three.js parity", () => {
     await server.close();
   });
 
-  test("renders 12 real GLB scenes through G3D and Three.js with diff metrics", async ({ page }) => {
+  test("renders 12 real GLB scenes through A3D and Three.js with diff metrics", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -47,7 +47,7 @@ test.describe("V6 same-scene Three.js parity", () => {
         id: string;
         category: string;
         assetId: string;
-        g3d: { drawCalls: number; nonBlackPixels: number; uniqueColorBuckets: number; pass: boolean };
+        a3d: { drawCalls: number; nonBlackPixels: number; uniqueColorBuckets: number; pass: boolean };
         threejs: { drawCalls: number; triangles: number; geometries: number; textures: number; nonBlackPixels: number; uniqueColorBuckets: number };
         diff: { meanDelta: number; maxDelta: number; changedPixels: number; structuralSimilarityProxy: number; pass: boolean };
       }[];
@@ -59,10 +59,10 @@ test.describe("V6 same-scene Three.js parity", () => {
       expect(categories.has(required), `missing category ${required}`).toBe(true);
     }
     for (const scene of result.results ?? []) {
-      expect(scene.g3d.pass, `${scene.id} G3D proof`).toBe(true);
-      expect(scene.g3d.drawCalls).toBeGreaterThan(0);
-      expect(scene.g3d.nonBlackPixels).toBeGreaterThan(1000);
-      expect(scene.g3d.uniqueColorBuckets, `${scene.id} G3D color buckets`).toBeGreaterThanOrEqual(50);
+      expect(scene.a3d.pass, `${scene.id} A3D proof`).toBe(true);
+      expect(scene.a3d.drawCalls).toBeGreaterThan(0);
+      expect(scene.a3d.nonBlackPixels).toBeGreaterThan(1000);
+      expect(scene.a3d.uniqueColorBuckets, `${scene.id} A3D color buckets`).toBeGreaterThanOrEqual(50);
       expect(scene.threejs.drawCalls, `${scene.id} Three.js draw calls`).toBeGreaterThan(0);
       expect(scene.threejs.nonBlackPixels, `${scene.id} Three.js nonblack pixels`).toBeGreaterThan(1000);
       expect(scene.threejs.uniqueColorBuckets, `${scene.id} Three.js color buckets`).toBeGreaterThanOrEqual(50);
@@ -75,7 +75,7 @@ test.describe("V6 same-scene Three.js parity", () => {
     mkdirSync(resolve("tests/reports/production-runtime-threejs-parity"), { recursive: true });
     mkdirSync(resolve("tests/reports/production-runtime-gallery/threejs-comparison"), { recursive: true });
     for (const scene of result.results ?? []) {
-      await saveCanvasPng(page, `${scene.id}-g3d`, `tests/reports/production-runtime-threejs-parity/${scene.id}-g3d.png`);
+      await saveCanvasPng(page, `${scene.id}-a3d`, `tests/reports/production-runtime-threejs-parity/${scene.id}-a3d.png`);
       await saveCanvasPng(page, `${scene.id}-threejs`, `tests/reports/production-runtime-threejs-parity/${scene.id}-threejs.png`);
       await saveCanvasPng(page, `${scene.id}-diff`, `tests/reports/production-runtime-threejs-parity/${scene.id}-diff.png`);
     }
@@ -86,15 +86,15 @@ test.describe("V6 same-scene Three.js parity", () => {
       { sceneId: "architecture-camera", galleryId: "architecture" }
     ] as const;
     for (const item of galleryPairs) {
-      await saveCanvasPng(page, `${item.sceneId}-g3d`, `tests/reports/production-runtime-gallery/threejs-comparison/${item.galleryId}-g3d.png`);
+      await saveCanvasPng(page, `${item.sceneId}-a3d`, `tests/reports/production-runtime-gallery/threejs-comparison/${item.galleryId}-a3d.png`);
       await saveCanvasPng(page, `${item.sceneId}-threejs`, `tests/reports/production-runtime-gallery/threejs-comparison/${item.galleryId}-threejs.png`);
       await saveCanvasPng(page, `${item.sceneId}-diff`, `tests/reports/production-runtime-gallery/threejs-comparison/${item.galleryId}-diff.png`);
     }
     writeFileSync(resolve("tests/reports/production-runtime-threejs-parity/browser-report.json"), `${JSON.stringify({
-      schema: "g3d-production-runtime-threejs-parity-browser/v1",
+      schema: "a3d-production-runtime-threejs-parity-browser/v1",
       generatedAt: new Date().toISOString(),
       screenshots: (result.results ?? []).flatMap((scene) => [
-        `tests/reports/production-runtime-threejs-parity/${scene.id}-g3d.png`,
+        `tests/reports/production-runtime-threejs-parity/${scene.id}-a3d.png`,
         `tests/reports/production-runtime-threejs-parity/${scene.id}-threejs.png`,
         `tests/reports/production-runtime-threejs-parity/${scene.id}-diff.png`
       ]),

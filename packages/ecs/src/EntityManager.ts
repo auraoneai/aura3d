@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { type Entity } from "./Entity.js";
 
 export class EntityManager {

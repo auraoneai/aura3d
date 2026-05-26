@@ -1,6 +1,6 @@
 <script>
   import { onMount } from "svelte";
-  import { Geometry, Renderer, UnlitMaterial } from "@galileo3d/rendering";
+  import { Geometry, Renderer, UnlitMaterial } from "@aura3d/rendering";
 
   let canvas;
 

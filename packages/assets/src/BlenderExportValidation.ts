@@ -183,7 +183,7 @@ function resultForAsset(
     diagnostics: diagnostics.length > 0 ? diagnostics : [{
       code: "ASSET_BLENDER_EXPORT_VALIDATED",
       severity: "info",
-      message: "Fixture was confirmed as Blender-exported glTF and loaded through Galileo3D's glTF loader.",
+      message: "Fixture was confirmed as Blender-exported glTF and loaded through Aura3D's glTF loader.",
       nextAction: "Keep this fixture current when changing loader validation, importer settings, or fixture source revision."
     }]
   };

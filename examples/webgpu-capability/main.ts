@@ -1,8 +1,8 @@
-import { RenderDeviceError, createRenderDevice, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { RenderDeviceError, createRenderDevice, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __GALILEO3D_WEBGPU_CAPABILITY__?: WebGPUCapabilityState;
+    __AURA3D_WEBGPU_CAPABILITY__?: WebGPUCapabilityState;
   }
 }
 
@@ -39,7 +39,7 @@ async function run(): Promise<void> {
   const shell = createShell();
   const context = require2d(shell.canvas);
   const state = await probeWebGPU(shell.canvas, context);
-  window.__GALILEO3D_WEBGPU_CAPABILITY__ = state;
+  window.__AURA3D_WEBGPU_CAPABILITY__ = state;
   shell.status.textContent = JSON.stringify(state, null, 2);
 }
 

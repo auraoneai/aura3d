@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { Camera } from "./Camera.js";
 import { DirectionalLight } from "./DirectionalLight.js";
 import { Light } from "./Light.js";

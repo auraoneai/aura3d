@@ -1,4 +1,4 @@
-import type { Material, RenderState, UniformValue } from "@galileo3d/rendering";
+import type { Material, RenderState, UniformValue } from "@aura3d/rendering";
 import type { GLTFMaterialRenderStateOverride } from "./GLTFRenderResources";
 
 export type CarConceptMaterialStabilityProfile = "gallery" | "cinematic";

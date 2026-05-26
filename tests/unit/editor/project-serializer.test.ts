@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createStaticExportHtml, createStaticExportRuntime } from "@galileo3d/editor-runtime";
+import { createStaticExportHtml, createStaticExportRuntime } from "@aura3d/editor-runtime";
 import { ProjectSerializer, type EditorProject } from "../../../apps/editor/src/project/ProjectSerializer";
 import { StaticProjectExporter } from "../../../apps/editor/src/export/StaticProjectExporter";
 
@@ -13,8 +13,8 @@ describe("ProjectSerializer", () => {
 
     expect(loaded.version).toBe(1);
     expect(loaded.metadata.savedAt).toBe("2026-03-04T05:06:07.000Z");
-    expect(loaded.metadata.provenance?.runtimePackage).toBe("@galileo3d/editor-runtime");
-    expect(loaded.metadata.provenance?.evidenceHash).toMatch(/^g3d-prov-[0-9a-f]{8}$/);
+    expect(loaded.metadata.provenance?.runtimePackage).toBe("@aura3d/editor-runtime");
+    expect(loaded.metadata.provenance?.evidenceHash).toMatch(/^a3d-prov-[0-9a-f]{8}$/);
     expect(loaded.scene.nodes[0]?.particleEmitter).toMatchObject({
       enabled: false,
       preset: "none",
@@ -41,7 +41,7 @@ describe("ProjectSerializer", () => {
     expect(capturedHero?.transform.position).toEqual([2, 3, 4]);
     expect(capturedHero?.material.name).toBe("Mint Material");
     expect(captured.importSettings).toEqual(project.importSettings);
-    expect(captured.plugins).toEqual(["galileo.default-authoring"]);
+    expect(captured.plugins).toEqual(["aura3d.default-authoring"]);
   });
 
   it("rejects unsupported versions, duplicate node ids, missing parents, and invalid import scale", () => {
@@ -101,7 +101,7 @@ describe("ProjectSerializer", () => {
 
     expect(migrated.version).toBe(1);
     expect(migrated.metadata.name).toBe("Legacy Browser Scene");
-    expect(migrated.metadata.provenance?.authoringTool).toBe("galileo3d-browser-editor");
+    expect(migrated.metadata.provenance?.authoringTool).toBe("aura3d-browser-editor");
     expect(migrated.scene.nodes[0]?.transform.position).toEqual([1, 2, 3]);
     expect(migrated.scene.nodes[0]?.material.textureSlots).toEqual({
       baseColor: "",
@@ -181,10 +181,10 @@ describe("ProjectSerializer", () => {
     const runtime = createStaticExportRuntime();
 
     expect(html).toContain('<script type="module" src="./runtime.js"></script>');
-    expect(runtime).toContain("__GALILEO3D_EXPORTED_PROJECT__");
+    expect(runtime).toContain("__AURA3D_EXPORTED_PROJECT__");
     expect(runtime).toContain('fetch("./project.json")');
     expect(runtime).toContain("provenanceHash");
-    expect(runtime).not.toContain("__GALILEO3D_EDITOR_APP__");
+    expect(runtime).not.toContain("__AURA3D_EDITOR_APP__");
     expect(runtime).not.toContain("EditorShell");
   });
 
@@ -201,7 +201,7 @@ describe("ProjectSerializer", () => {
         ...project.metadata,
         provenance: {
           ...project.metadata.provenance!,
-          evidenceHash: "g3d-prov-forged"
+          evidenceHash: "a3d-prov-forged"
         }
       }
     };

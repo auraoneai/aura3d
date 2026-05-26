@@ -76,7 +76,7 @@ const checks: V5AssetReadinessCheck[] = [
   ),
   check(
     "schema",
-    manifest.schema === "g3d-three-compat-asset-library/v1",
+    manifest.schema === "a3d-three-compat-asset-library/v1",
     `schema=${manifest.schema}`
   ),
   check(
@@ -143,7 +143,7 @@ const checks: V5AssetReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-asset-readiness/v1",
+  schema: "a3d-three-compat-asset-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary,

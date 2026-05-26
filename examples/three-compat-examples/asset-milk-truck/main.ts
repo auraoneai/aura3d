@@ -1,4 +1,4 @@
-import "@galileo3d/engine";
+import "@aura3d/engine";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#app");
 const ctx = canvas?.getContext("2d");
@@ -11,4 +11,4 @@ if (canvas && ctx) {
   ctx.font = "24px system-ui";
   ctx.fillText("Asset Milk Truck", 40, 48);
 }
-(document.body as HTMLBodyElement).dataset.g3dExample = "asset-milk-truck";
+(document.body as HTMLBodyElement).dataset.a3dExample = "asset-milk-truck";

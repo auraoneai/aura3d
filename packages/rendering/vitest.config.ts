@@ -7,10 +7,10 @@ const root = resolve(here, "../..");
 export default {
   resolve: {
     alias: {
-      "@galileo3d/rendering": resolve(root, "packages/rendering/src/index.ts"),
-      "@galileo3d/scene": resolve(root, "packages/scene/src/index.ts"),
-      "@galileo3d/math": resolve(root, "packages/math/src/index.ts"),
-      "@galileo3d/core": resolve(root, "packages/core/src/index.ts")
+      "@aura3d/rendering": resolve(root, "packages/rendering/src/index.ts"),
+      "@aura3d/scene": resolve(root, "packages/scene/src/index.ts"),
+      "@aura3d/math": resolve(root, "packages/math/src/index.ts"),
+      "@aura3d/core": resolve(root, "packages/core/src/index.ts")
     }
   },
   test: {

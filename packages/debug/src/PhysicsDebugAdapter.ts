@@ -1,4 +1,4 @@
-import { PhysicsDebugDraw, type DebugLine, type PhysicsWorld } from "@galileo3d/physics";
+import { PhysicsDebugDraw, type DebugLine, type PhysicsWorld } from "@aura3d/physics";
 
 export type PhysicsDebugSnapshot = {
   readonly bodyCount: number;

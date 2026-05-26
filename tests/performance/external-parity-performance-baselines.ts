@@ -4,7 +4,7 @@ import {
   evaluateV4ResourceBudget,
   selectV4LodLevel,
   sortV4RenderItems
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 const stats = createV4RendererStats({
   objectCount: 640,
@@ -26,7 +26,7 @@ const sorted = sortV4RenderItems([
 ]);
 
 export const V4_PERFORMANCE_BASELINE = {
-  schema: "g3d-v4-performance-baseline/v1",
+  schema: "a3d-v4-performance-baseline/v1",
   stats,
   budget,
   lod,

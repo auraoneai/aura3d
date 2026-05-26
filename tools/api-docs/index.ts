@@ -63,7 +63,7 @@ export function collectPublicPackageApis(root = process.cwd()): readonly PublicP
 
 export function renderApiDocs(packages: readonly PublicPackageApi[]): string {
   const lines: string[] = [
-    "# Galileo3D Public API Reference",
+    "# Aura3D Public API Reference",
     "",
     "This file is generated from every non-private package entrypoint under `packages/*/src/index.ts`.",
     "It documents the public export surface that package consumers can import today.",

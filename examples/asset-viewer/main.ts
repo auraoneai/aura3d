@@ -18,8 +18,8 @@ import {
   type GLTFRenderResources,
   type GLTFAssetInspectionReport,
   type GLTFSceneAnalysisEvidence
-} from "@galileo3d/assets";
-import { AnimationMixer, SceneAnimationBridge, type AnimationAction, type LoopMode, type RootMotionSample } from "@galileo3d/animation";
+} from "@aura3d/assets";
+import { AnimationMixer, SceneAnimationBridge, type AnimationAction, type LoopMode, type RootMotionSample } from "@aura3d/animation";
 import {
   Material,
   Renderer,
@@ -30,15 +30,15 @@ import {
   type V4EnvironmentLightingBundle,
   type V4LdrPostprocessSummary,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
-import { Camera, type Light } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Camera, type Light } from "@aura3d/scene";
 import { installExampleStyles } from "../shared/exampleHarness.js";
 
 const KHRONOS_BOX_GLB =
   "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb";
 const KHRONOS_DAMAGED_HELMET_GLTF =
   "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF/DamagedHelmet.gltf";
-const DEFAULT_V4_ASSET_GLTF = "/fixtures/assets/v4/product/v4-product-speaker/v4-product-speaker.gltf";
+const DEFAULT_V4_ASSET_GLTF = "/fixtures/product-studio/products/speaker/speaker.gltf";
 
 interface AssetViewerResult {
   readonly id: "asset-viewer";
@@ -207,7 +207,7 @@ interface MutableAssetViewerLookControls {
 }
 
 interface AssetViewerComparisonExport {
-  readonly schemaVersion: "g3d-v4-asset-viewer-comparison-export-v1";
+  readonly schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1";
   readonly generated: boolean;
   readonly generatedAt: string;
   readonly renderer: "webgl2";
@@ -299,7 +299,7 @@ interface AssetViewerAnimationRuntime {
 
 declare global {
   interface Window {
-    __GALILEO3D_ASSET_VIEWER__?: AssetViewerResult;
+    __AURA3D_ASSET_VIEWER__?: AssetViewerResult;
   }
 }
 
@@ -1771,7 +1771,7 @@ function isLoopMode(value: string | undefined): value is LoopMode {
 }
 
 function publish(result: AssetViewerResult): void {
-  window.__GALILEO3D_ASSET_VIEWER__ = result;
+  window.__AURA3D_ASSET_VIEWER__ = result;
 }
 
 function assetViewerErrorMessage(error: unknown): string {
@@ -1918,7 +1918,7 @@ function environmentPreset(preset: AssetViewerEnvironmentPreset, intensity: numb
 
 function createComparisonExport(result: AssetViewerResult): AssetViewerComparisonExport {
   const base = {
-    schemaVersion: "g3d-v4-asset-viewer-comparison-export-v1" as const,
+    schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1" as const,
     generated: true,
     generatedAt: new Date().toISOString(),
     renderer: "webgl2" as const,
@@ -2327,7 +2327,7 @@ function createInlineTriangleGltfUrl(): string {
   const indices = uint16Bytes([0, 1, 2]);
   const buffer = concatBytes(positions, colors, indices);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D asset viewer fixture" },
+    asset: { version: "2.0", generator: "Aura3D asset viewer fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },
@@ -2381,9 +2381,9 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 function installAssetViewerStyles(): void {
-  if (document.querySelector("#galileo3d-asset-viewer-styles")) return;
+  if (document.querySelector("#aura3d-asset-viewer-styles")) return;
   const style = document.createElement("style");
-  style.id = "galileo3d-asset-viewer-styles";
+  style.id = "aura3d-asset-viewer-styles";
   style.textContent = `
     .asset-viewer { height: 100vh; overflow: hidden; grid-template-rows: minmax(0, 1fr) minmax(13rem, 21rem); }
     .asset-viewer-stage { position: relative; min-height: 0; background: radial-gradient(circle at 50% 34%, #314756 0, #141f28 55%, #090e13 100%); }

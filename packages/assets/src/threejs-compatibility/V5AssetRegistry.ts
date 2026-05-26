@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { createV5AssetProvenance, type V5AssetProvenance, type V5SourceAsset, type V5TrackedAssetInput } from "./V5AssetProvenance";
 
 export interface V5AssetManifest {
-  readonly schema: "g3d-three-compat-asset-library/v1";
+  readonly schema: "a3d-three-compat-asset-library/v1";
   readonly sourceManifest: string;
   readonly requirements: {
     readonly minimumTrackedAssets: number;

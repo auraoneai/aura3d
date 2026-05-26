@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This demo is a v3 architecture-viewer product slice. It renders a generated production-like civic gallery room fixture through Galileo3D's public WebGL2 renderer, supports room-element selection, camera modes, section-view toggling, projected contact-shadow receiver decals, and reports hierarchy, measurement, known-limit, and frame diagnostics.
+This demo is a v3 architecture-viewer product slice. It renders a generated production-like civic gallery room fixture through Aura3D's public WebGL2 renderer, supports room-element selection, camera modes, section-view toggling, projected contact-shadow receiver decals, and reports hierarchy, measurement, known-limit, and frame diagnostics.
 
 ## Run
 
@@ -34,22 +34,22 @@ Read `main.ts` before reading the tests; the app code contains the complete view
 2. `Renderer.create({ backend: "webgl2" })` creates the engine-backed viewport.
 3. `buildRenderItems` turns the generated floor slabs, rooms, curtain-wall bays, mullions, entry doors, stair treads, railings, structural columns, benches, measurement guides, projected contact-shadow decals, and selected-element outline into render items.
 4. The `pointerdown`, wheel, zone button, camera button, and section toggle handlers update selection and viewer state.
-5. `render` submits the scene through `renderer.render` and publishes `window.__GALILEO3D_ARCHITECTURE_DEMO__` with renderer diagnostics.
+5. `render` submits the scene through `renderer.render` and publishes `window.__AURA3D_ARCHITECTURE_DEMO__` with renderer diagnostics.
 
-Use the visible status panel or `window.__GALILEO3D_ARCHITECTURE_DEMO__` in DevTools to inspect selected zone, selected model element, area, span, hierarchy, camera mode, section state, known limits, architecture element count, contact-shadow evidence, draw calls, renderer backend, and diagnostics while interacting with the viewport.
+Use the visible status panel or `window.__AURA3D_ARCHITECTURE_DEMO__` in DevTools to inspect selected zone, selected model element, area, span, hierarchy, camera mode, section state, known limits, architecture element count, contact-shadow evidence, draw calls, renderer backend, and diagnostics while interacting with the viewport.
 
 ## Expected Output
 
-A renderer-backed generated civic gallery scene appears with recognizable room zones, curtain wall, mullions, doors, stairs, columns, furniture, contact-shadow decals, a selection outline, measurement guides, camera modes, and section-view state. Clicking a viewport region selects the matching room element and updates measurement data on `window.__GALILEO3D_ARCHITECTURE_DEMO__`.
+A renderer-backed generated civic gallery scene appears with recognizable room zones, curtain wall, mullions, doors, stairs, columns, furniture, contact-shadow decals, a selection outline, measurement guides, camera modes, and section-view state. Clicking a viewport region selects the matching room element and updates measurement data on `window.__AURA3D_ARCHITECTURE_DEMO__`.
 
 ## Acceptance Target
 
-- `window.__GALILEO3D_ARCHITECTURE_DEMO__.status` is `ready`.
+- `window.__AURA3D_ARCHITECTURE_DEMO__.status` is `ready`.
 - `renderer` is `webgl2`.
 - `metrics.rendererBacked` is `true`.
 - `diagnostics.drawCalls` is greater than zero.
 - `diagnostics.contextLost` is `false` and `diagnostics.lastError` is `null`.
-- `visualClaim` and `knownLimits` are present in `window.__GALILEO3D_ARCHITECTURE_DEMO__`.
+- `visualClaim` and `knownLimits` are present in `window.__AURA3D_ARCHITECTURE_DEMO__`.
 - Runtime model metadata lists hierarchy nodes and selectable zones.
 - Pointer input selects the `gallery` room element and updates area/span measurements.
 - Runtime metrics report the zone count, selected-element metadata, architecture element count, contact-shadow decal count, and selected-area metadata.

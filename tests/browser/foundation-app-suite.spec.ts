@@ -47,7 +47,7 @@ test.describe("V3 real app suite", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "g3d-v3-app-suite-browser/v1",
+      schema: "a3d-v3-app-suite-browser/v1",
       generatedAt: new Date().toISOString(),
       apps: apps.map((app) => app.id),
       captures,
@@ -71,7 +71,7 @@ test.describe("V3 real app suite", () => {
       await captureApp(page, app.id, "default");
 
       await page.evaluate(async (scenarioId) => {
-        await (window as any).__G3D_V3_APP__?.loadScenario?.(scenarioId);
+        await (window as any).__A3D_V3_APP__?.loadScenario?.(scenarioId);
       }, app.alternateScenario);
       await expect.poll(() => readState(page).then((state) => state?.selectedScenarioId), { timeout: 40_000 }).toBe(app.alternateScenario);
       await expect.poll(() => readState(page).then((state) => state?.status), { timeout: 40_000 }).toBe("ready");
@@ -85,7 +85,7 @@ test.describe("V3 real app suite", () => {
 
 async function readState(page: import("@playwright/test").Page): Promise<AppState | undefined> {
   return page.evaluate(() => {
-    const state = (window as any).__G3D_V3_APP__?.captureState?.() ?? (window as any).__G3D_V3_APP__;
+    const state = (window as any).__A3D_V3_APP__?.captureState?.() ?? (window as any).__A3D_V3_APP__;
     if (!state) return undefined;
     return {
       appId: state.appId,

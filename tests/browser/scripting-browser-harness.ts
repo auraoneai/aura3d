@@ -1,5 +1,5 @@
-import { Scene, type SceneNode } from "@galileo3d/scene";
-import { BehaviorHost, BehaviorSystem, type ScriptContext } from "@galileo3d/scripting";
+import { Scene, type SceneNode } from "@aura3d/scene";
+import { BehaviorHost, BehaviorSystem, type ScriptContext } from "@aura3d/scripting";
 
 interface ScriptingBrowserResult {
   readonly status: "ready" | "error";
@@ -11,12 +11,12 @@ interface ScriptingBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_SCRIPTING_BROWSER_TEST__?: ScriptingBrowserResult;
+    __AURA3D_SCRIPTING_BROWSER_TEST__?: ScriptingBrowserResult;
   }
 }
 
 function publish(result: ScriptingBrowserResult): void {
-  window.__GALILEO3D_SCRIPTING_BROWSER_TEST__ = result;
+  window.__AURA3D_SCRIPTING_BROWSER_TEST__ = result;
 }
 
 try {

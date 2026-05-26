@@ -1,4 +1,4 @@
-import { loadV6GLTFRenderPipeline, type V6GLTFRenderMetadata } from "@galileo3d/engine/assets/browser";
+import { loadV6GLTFRenderPipeline, type V6GLTFRenderMetadata } from "@aura3d/engine/assets/browser";
 import {
   ProductionWebGL2Renderer,
   createV6EnvironmentLightingResources,
@@ -7,7 +7,7 @@ import {
   summarizeV6WebGL2Proof,
   type V6RenderProof,
   type V6WebGPUReport
-} from "@galileo3d/engine/rendering";
+} from "@aura3d/engine/rendering";
 
 export interface V6ExampleAsset {
   readonly id: string;
@@ -73,7 +73,7 @@ export interface V6ExampleRuntime {
 
 declare global {
   interface Window {
-    __g3dV6Example?: V6ExampleRuntime;
+    __a3dV6Example?: V6ExampleRuntime;
   }
 }
 
@@ -84,13 +84,13 @@ export async function runV6Example(definition: V6ExampleDefinition): Promise<voi
     throw new Error(`${definition.appId} requires #app and canvas#viewport.`);
   }
 
-  window.__g3dV6Example = {
+  window.__a3dV6Example = {
     status: "loading",
     appId: definition.appId,
     sceneId: definition.sceneId,
     interactionCount: 0
   };
-  mountV6ExampleShell(root, definition, window.__g3dV6Example);
+  mountV6ExampleShell(root, definition, window.__a3dV6Example);
 
   try {
     const primary = definition.assets.find((asset) => asset.role === "primary") ?? definition.assets[0];
@@ -182,46 +182,46 @@ export async function runV6Example(definition: V6ExampleDefinition): Promise<voi
       ...(webgpu ? { webgpu } : {}),
       interactionCount: 0
     };
-    window.__g3dV6Example = runtime;
+    window.__a3dV6Example = runtime;
     mountV6ExampleShell(root, definition, runtime);
   } catch (error) {
-    window.__g3dV6Example = {
+    window.__a3dV6Example = {
       status: "error",
       appId: definition.appId,
       sceneId: definition.sceneId,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
-      interactionCount: window.__g3dV6Example?.interactionCount ?? 0
+      interactionCount: window.__a3dV6Example?.interactionCount ?? 0
     };
-    mountV6ExampleShell(root, definition, window.__g3dV6Example);
+    mountV6ExampleShell(root, definition, window.__a3dV6Example);
   }
 }
 
 function mountV6ExampleShell(root: HTMLElement, definition: V6ExampleDefinition, runtime: V6ExampleRuntime): void {
   const metrics = runtime.runtime;
   root.innerHTML = `
-    <section class="g3d-production-runtime-panel">
+    <section class="a3d-production-runtime-panel">
       <div>
         <h1>${definition.title}</h1>
         <p>${definition.workflow}</p>
       </div>
-      <button id="g3d-production-runtime-action" type="button">Inspect</button>
+      <button id="a3d-production-runtime-action" type="button">Inspect</button>
     </section>
-    <section class="g3d-production-runtime-metrics">
+    <section class="a3d-production-runtime-metrics">
       <span>${runtime.status}</span>
       <span>${metrics ? `${metrics.drawCalls} draw calls` : definition.environment.label}</span>
       <span>${metrics ? `${metrics.triangleCount} triangles` : definition.assets.map((asset) => asset.id).join(", ")}</span>
       <span>${metrics ? `${metrics.textureCount} textures` : "HDR IBL"}</span>
     </section>
   `;
-  root.querySelector("#g3d-production-runtime-action")?.addEventListener("click", () => {
-    const current = window.__g3dV6Example;
+  root.querySelector("#a3d-production-runtime-action")?.addEventListener("click", () => {
+    const current = window.__a3dV6Example;
     if (!current) return;
-    window.__g3dV6Example = {
+    window.__a3dV6Example = {
       ...current,
       interactionCount: current.interactionCount + 1,
       lastInteraction: "Inspect"
     };
-    mountV6ExampleShell(root, definition, window.__g3dV6Example);
+    mountV6ExampleShell(root, definition, window.__a3dV6Example);
   });
 }
 

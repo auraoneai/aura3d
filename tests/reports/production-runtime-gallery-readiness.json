@@ -1,5 +1,5 @@
 {
-  "schema": "g3d-production-runtime-gallery-readiness/v1",
+  "schema": "aura3d-production-runtime-gallery-readiness/v1",
   "generatedAt": "2026-05-26T01:16:59.908Z",
   "pass": false,
   "generatedManifest": "tests/reports/production-runtime-gallery/manifest.json",

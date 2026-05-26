@@ -1,5 +1,5 @@
 import { performance } from "node:perf_hooks";
-import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette } from "@galileo3d/animation";
+import { AnimationClip, AnimationMixer, AnimationTrack, Bone, Skeleton, buildSkinningPalette } from "@aura3d/animation";
 
 interface AnimationCrowdBaseline {
   readonly name: string;

@@ -19,7 +19,7 @@ The next work remains code construction, not more claim machinery.
 - Skinning blend route now uses public mixer clip actions: `apps/skinning-blending/src/main.ts`
 - Skinning blend route publishes motion samples, time range, pose diversity, and healthy-motion diagnostics: `apps/skinning-blending/src/main.ts`
 - Hardware skinning now has a public bone hierarchy, inherited skeleton world-matrix update, inverse bind matrices, and matrix-palette generation: `packages/animation/src/Bone.ts`, `packages/animation/src/Skeleton.ts`, `packages/animation/src/Skinning.ts`
-- glTF `JOINTS_0` and `WEIGHTS_0` import into G3D vertex `joints` and `weights` attributes and the render-resource path builds skinned vertex formats for imported assets: `packages/assets/src/GLTFLoader.ts`, `packages/assets/src/GLTFRenderResources.ts`
+- glTF `JOINTS_0` and `WEIGHTS_0` import into A3D vertex `joints` and `weights` attributes and the render-resource path builds skinned vertex formats for imported assets: `packages/assets/src/GLTFLoader.ts`, `packages/assets/src/GLTFRenderResources.ts`
 - glTF `JOINTS_1` / `WEIGHTS_1` are now reported as explicit unsupported skinning-extra-influence diagnostics instead of being silently counted as full skinning import: `packages/assets/src/GLTFLoader.ts`, `tests/assets/gltf-animation-corpus.test.ts`
 - glTF skins without authored inverse-bind matrices now report the identity fallback through `skinning-default-inverse-bind-matrices`: `packages/assets/src/GLTFLoader.ts`, `tests/assets/gltf-animation-corpus.test.ts`
 - ForwardPass now validates skinning geometry before GPU submission, including missing joint/weight attributes, four-influence layouts, finite integer joint indices, in-palette joint references, and normalized non-negative weights: `packages/rendering/src/ForwardPass.ts`, `tests/unit/rendering/renderer.test.ts`
@@ -53,7 +53,7 @@ The next work remains code construction, not more claim machinery.
 - Loader instancing route renders required EXT_mesh_gpu_instancing data through public loader/runtime hooks: `apps/loader-instancing/src/main.ts`
 - Loader material-extension route renders required clearcoat, sheen, and transmission glTF extensions through public loader/runtime hooks: `apps/loader-material-extensions/src/main.ts`
 - Loader GLTF variants route selects KHR_materials_variants through public GLTF render resources: `apps/loader-gltf-variants/src/main.ts`
-- Loader KTX2 route transcodes required KHR_texture_basisu data into G3D compressed texture resources with fallback mips: `apps/loader-ktx2/src/main.ts`
+- Loader KTX2 route transcodes required KHR_texture_basisu data into A3D compressed texture resources with fallback mips: `apps/loader-ktx2/src/main.ts`
 - Loader OBJ route parses native OBJ geometry through public OBJLoader and renders the converted GLTF resources: `apps/loader-obj/src/main.ts`
 - Public render queue sorter drives ForwardPass opaque front-to-back and transparent back-to-front ordering with focused tests: `packages/rendering/src/performance/RenderItemSorting.ts`
 - Public render queue plans now report object count, estimated draw calls, total instances, batchable groups, largest batch, material switches, and pipeline transitions: `packages/rendering/src/performance/RenderItemSorting.ts`, `tests/unit/rendering/render-queue-sorting.test.ts`
@@ -64,7 +64,7 @@ The next work remains code construction, not more claim machinery.
 - Renderer-owned postprocess now returns pass count, renderer-owned render-target count, texture count, and target dimensions in RenderDeviceDiagnostics: `packages/rendering/src/Renderer.ts`, `packages/rendering/src/RenderDevice.ts`, `tests/unit/rendering/renderer.test.ts`
 - SceneOptimization now exposes a public static bounds BVH with broad-phase branch rejection, rebuild-based dynamic updates, accelerated bounds raycasts, and traversal diagnostics for total, visible, culled, node, bounds-test, leaf-test, hit, and traversal-time counts: `packages/rendering/src/SceneOptimization.ts`, `tests/unit/rendering/scene-optimization.test.ts`
 - RenderDeviceDiagnostics now reports live buffer bytes and approximate GPU memory bytes alongside buffer, texture, shader/program, and render-target counts: `packages/rendering/src/RenderDevice.ts`, `packages/rendering/src/WebGL2Device.ts`, `packages/rendering/src/WebGPUDevice.ts`, `tests/unit/rendering/resource-lifetime.test.ts`
-- Instancing performance route renders thousands of dynamic public Scene.createInstancedMesh instances through G3DRenderer with per-instance matrix and color attributes: `apps/instancing-performance/src/main.ts`, `packages/scene/src/Renderable.ts`, `packages/rendering/src/Renderer.ts`
+- Instancing performance route renders thousands of dynamic public Scene.createInstancedMesh instances through A3DRenderer with per-instance matrix and color attributes: `apps/instancing-performance/src/main.ts`, `packages/scene/src/Renderable.ts`, `packages/rendering/src/Renderer.ts`
 - Texture anisotropy route proves WebGL anisotropic sampler uploads through public TextureBinding/Sampler code: `apps/texture-anisotropy/src/main.ts`
 - Interactive picking route proves public camera-ray, transformed cube, and point-cloud threshold scene picking: `apps/interactive-picking/src/main.ts`
 - Decals route now builds ellipse-clipped surface decals through public ProjectedDecalGeometry and createRaycastProjectedDecalGeometry instead of route-local cylinder/rectangle stand-ins, its decal PBR materials use alpha blending, disabled depth writes, no culling, and polygon offset with browser diagnostics, and `tests/browser/threejs-parity-decals-parity.spec.ts` compares the same scene against actual Three.js DecalGeometry projector output: `apps/decals/src/main.ts`
@@ -75,19 +75,19 @@ The next work remains code construction, not more claim machinery.
 - Materials transmission route proves PBRMaterial transmission/IOR/volume uniforms through renderer-owned WebGL2 shading: `apps/materials-transmission/src/main.ts`
 - Spotlight route proves Scene SpotLight collection, local PBR lighting uniforms, and renderer-owned shadow request: `apps/lights-spotlight/src/main.ts`
 - Shadowmap viewer route proves ShadowPass depth texture readback and diagnostic preview: `apps/shadowmap-viewer/src/main.ts`
-- Camera multiple views route proves separate WebGL DOM elements and distinct cameras rendering one shared G3D scene definition: `apps/camera-multiple-views/src/main.ts`
+- Camera multiple views route proves separate WebGL DOM elements and distinct cameras rendering one shared A3D scene definition: `apps/camera-multiple-views/src/main.ts`
 - Stereo and parallax routes now drive left/right views through public createStereoCameraRig and public stereo effect planning APIs with browser diagnostics proving the public paths: `packages/rendering/src/StereoEffects.ts`, `apps/stereo-effects/src/main.ts`, `apps/parallax-barrier/src/main.ts`
 - WebGPU RTT route proves public WebGPU render-target draw/readback/present/disposal behavior through package code: `apps/webgpu-rtt/src/main.ts`
 - WebGPU compute route proves public WebGPUParticleBackend storage-buffer compute dispatch and CPU-reference readback parity: `apps/webgpu-compute/src/main.ts`
-- WebGPU materials route proves public PBR and textured PBR material rendering through the G3D WebGPU backend: `apps/webgpu-materials/src/main.ts`
-- WebGPU instance-uniform route proves public InstancedPBRMaterial per-instance uniform matrices through one G3D WebGPU instanced draw: `apps/webgpu-instance-uniform/src/main.ts`
+- WebGPU materials route proves public PBR and textured PBR material rendering through the A3D WebGPU backend: `apps/webgpu-materials/src/main.ts`
+- WebGPU instance-uniform route proves public InstancedPBRMaterial per-instance uniform matrices through one A3D WebGPU instanced draw: `apps/webgpu-instance-uniform/src/main.ts`
 - WebXR interactions route proves public WebXRSessionController session negotiation, controller input sampling, and AR hit-test sampling with injected XR evidence: `apps/webxr-interactions/src/main.ts`
 - Postprocessing bloom route runs renderer-owned bloom/tone-mapping/FXAA over real WebGL2 scene pixels: `apps/postprocessing-bloom/src/main.ts`
 - Depth postprocess route runs renderer-owned depth-of-field, SSAO, and outline over real WebGL2 scene pixels: `apps/postprocessing-depth-outline/src/main.ts`
 
 ## Binding Code Parity Floor
 
-V9 cannot claim full Three.js parity or that G3D exceeds Three.js in every sense until these systems exist as public package/runtime code:
+V9 cannot claim full Three.js parity or that A3D exceeds Three.js in every sense until these systems exist as public package/runtime code:
 
 - First-party math engine: vectors, matrices, quaternions, rays, bounds, frustums, projection, and transform math.
 - Scene graph: Object3D-style hierarchy, inherited transforms, matrix auto-update traversal, cameras, lights, visibility, render order, and disposal.

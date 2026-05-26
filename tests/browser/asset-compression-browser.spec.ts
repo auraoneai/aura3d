@@ -43,12 +43,12 @@ test.describe("asset viewer compression decode evidence", () => {
     const url = `${server.origin}/fixtures/asset-viewer/meshopt-triangle.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("custom");
@@ -132,12 +132,12 @@ test.describe("asset viewer compression decode evidence", () => {
     const url = `${server.origin}/fixtures/asset-viewer/draco-triangle.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 10_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.sourceKind).toBe("custom");
@@ -221,12 +221,12 @@ test.describe("asset viewer compression decode evidence", () => {
     const url = `${server.origin}/fixtures/asset-viewer/ktx2-basis-texture.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+      () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
       undefined,
       { timeout: 30_000 }
     );
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
     const texture = result?.decodedTextures?.[0];
     const runtimeTexture = result?.inspection?.textures[0]?.runtime;
 
@@ -398,7 +398,7 @@ async function createMeshoptCompressedTriangleFixture(): Promise<{
     buffer: binary.buffer,
     compressedByteLength: compressedPositions.byteLength,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D browser Meshopt compression evidence fixture" },
+      asset: { version: "2.0", generator: "Aura3D browser Meshopt compression evidence fixture" },
       extensionsUsed: ["EXT_meshopt_compression", "KHR_materials_unlit"],
       extensionsRequired: ["EXT_meshopt_compression"],
       buffers: [{ uri: "meshopt-triangle.bin", byteLength: binary.buffer.byteLength }],
@@ -469,7 +469,7 @@ function createKtx2BasisTextureFixture(ktx2Bytes: Uint8Array): {
     buffer: binary.buffer,
     ktx2ByteLength: ktx2Bytes.byteLength,
     gltf: {
-      asset: { version: "2.0", generator: "Galileo3D browser KTX2/BasisU texture evidence fixture" },
+      asset: { version: "2.0", generator: "Aura3D browser KTX2/BasisU texture evidence fixture" },
       extensionsUsed: ["KHR_texture_basisu"],
       buffers: [{ uri: "ktx2-basis-texture.bin", byteLength: binary.buffer.byteLength }],
       bufferViews: [
@@ -572,7 +572,7 @@ async function createDracoCompressedTriangleFixture(): Promise<{
     return {
       buffer,
       gltf: {
-        asset: { version: "2.0", generator: "Galileo3D browser Draco compression evidence fixture" },
+        asset: { version: "2.0", generator: "Aura3D browser Draco compression evidence fixture" },
         extensionsUsed: ["KHR_draco_mesh_compression", "KHR_materials_unlit"],
         extensionsRequired: ["KHR_draco_mesh_compression"],
         buffers: [{ uri: "draco-triangle.drc", byteLength: buffer.byteLength }],

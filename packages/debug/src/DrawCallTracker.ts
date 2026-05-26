@@ -1,4 +1,4 @@
-import { type DrawCommand, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
+import { type DrawCommand, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 
 export interface DrawCallRecord {
   readonly label: string;

@@ -113,7 +113,7 @@ function isObject(value: unknown): value is JsonObject {
 }
 
 function packageNameFor(name: string): string {
-  return `@galileo3d/${name}`;
+  return `@aura3d/${name}`;
 }
 
 function hasPath(root: string, relativePath: string): boolean {

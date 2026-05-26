@@ -1,4 +1,4 @@
-import { MigrationRegistry, SaveSlot, ValidationError, VersionedSchema } from "@galileo3d/core";
+import { MigrationRegistry, SaveSlot, ValidationError, VersionedSchema } from "@aura3d/core";
 import { describe, expect, it } from "vitest";
 
 describe("versioned serialization utilities", () => {

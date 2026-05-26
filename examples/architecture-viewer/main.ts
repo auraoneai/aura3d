@@ -1,4 +1,4 @@
-import { GLTFLoader, LoadContext, createGLTFRenderResources, inspectGLTFAsset, type GLTFAssetInspectionReport, type GLTFRenderResources } from "@galileo3d/assets";
+import { GLTFLoader, LoadContext, createGLTFRenderResources, inspectGLTFAsset, type GLTFAssetInspectionReport, type GLTFRenderResources } from "@aura3d/assets";
 import {
   Geometry,
   PBRMaterial,
@@ -22,8 +22,8 @@ import {
   type V4EnvironmentLightingBundle,
   type V4LdrPostprocessSummary,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
-import { Scene, type PerspectiveCamera } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
 type ZoneId = "atrium" | "gallery" | "studio";
 type CameraMode = "orbit" | "walk" | "plan" | "section";
@@ -157,13 +157,13 @@ type LoadedV4ArchitectureAsset = {
 
 declare global {
   interface Window {
-    __GALILEO3D_ARCHITECTURE_DEMO__?: DemoStatus;
+    __AURA3D_ARCHITECTURE_DEMO__?: DemoStatus;
   }
 }
 
-const architectureModelSource = "fixtures/assets/v3/architecture/civic-gallery-room/civic-gallery-room.gltf";
-const v4ArchitectureAssetUrl = "/fixtures/assets/v4/architecture/external-gallery-corner/external-gallery-corner.gltf";
-const v4ArchitectureManifestUrl = "/fixtures/assets/v4/architecture/external-gallery-corner/manifest.json";
+const architectureModelSource = "fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf";
+const v4ArchitectureAssetUrl = "/fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf";
+const v4ArchitectureManifestUrl = "/fixtures/advanced-gallery/assets/smart-city-district/manifest.json";
 const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/architecture-viewer.png";
 const claimBoundary = "V4 architecture viewer evidence is limited to this generated civic-gallery room scene, authored metadata selection, and WebGL2 contact-shadow alternatives; it is not BIM/IFC import or CAD-accurate measurement.";
 const architectureInteriorDetailCount = 34;
@@ -312,11 +312,11 @@ const architectureGeometry = {
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_ARCHITECTURE_DEMO__ = {
+    window.__AURA3D_ARCHITECTURE_DEMO__ = {
       id: "architecture-viewer",
       status: "error",
       renderer: "webgl2",
-      visualClaim: "Generated production-like civic gallery room fixture rendered through Galileo3D WebGL2.",
+      visualClaim: "Generated production-like civic gallery room fixture rendered through Aura3D WebGL2.",
       knownLimits,
       screenshotPath: v4ScreenshotPath,
       featureEvidence: {},
@@ -561,11 +561,11 @@ async function run(): Promise<void> {
     });
     const oldBranchMeasurements = createArchitecturalMeasurementFixture({ unit: "metric", precision: 2 });
 
-    window.__GALILEO3D_ARCHITECTURE_DEMO__ = {
+    window.__AURA3D_ARCHITECTURE_DEMO__ = {
       id: "architecture-viewer",
       status: "ready",
       renderer: "webgl2",
-      visualClaim: "Generated production-like civic gallery room fixture rendered through Galileo3D WebGL2.",
+      visualClaim: "Generated production-like civic gallery room fixture rendered through Aura3D WebGL2.",
       knownLimits,
       screenshotPath: v4ScreenshotPath,
       featureEvidence: {
@@ -788,7 +788,7 @@ async function run(): Promise<void> {
         rendererBacked: true,
       },
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_ARCHITECTURE_DEMO__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_ARCHITECTURE_DEMO__, null, 2);
     if (running) requestAnimationFrame(render);
   };
 
@@ -805,7 +805,7 @@ async function run(): Promise<void> {
 async function loadV4ArchitectureAsset(): Promise<LoadedV4ArchitectureAsset> {
   const [manifest, asset] = await Promise.all([
     fetchJson<V4ArchitectureAssetManifest>(v4ArchitectureManifestUrl),
-    new GLTFLoader().load({ url: v4ArchitectureAssetUrl }, new LoadContext({ baseUrl: window.location.origin })),
+    new GLTFLoader().load({ url: runtimeAssetUrl(v4ArchitectureAssetUrl) }, new LoadContext()),
   ]);
   const resources = await createGLTFRenderResources(asset);
   const inspection = inspectGLTFAsset(asset);
@@ -824,6 +824,10 @@ async function fetchJson<T>(url: string): Promise<T> {
     throw new Error(`Failed to load ${url}: HTTP ${response.status}`);
   }
   return response.json() as Promise<T>;
+}
+
+function runtimeAssetUrl(url: string): string {
+  return new URL(url, window.location.origin).toString();
 }
 
 function buildRenderItems(selectedZoneIndex: number, sectionView: boolean, cameraMode: CameraMode, v4ArchitectureAsset: LoadedV4ArchitectureAsset, yaw: number, zoom: number, panX = 0, panY = 0): RenderItem[] {

@@ -37,7 +37,7 @@ describe("V6 docs and claims", () => {
 
   it("documents proof-backed workflows without claiming full replacement", () => {
     const joined = docs.map((doc) => readFileSync(docPath(doc), "utf8")).join("\n");
-    expect(joined).toContain("@galileo3d/engine/workflows/production");
+    expect(joined).toContain("@aura3d/engine/workflows/production");
     expect(joined).toContain("WebGL2");
     expect(joined).toContain("HDR");
     expect(joined).toContain("Three.js");

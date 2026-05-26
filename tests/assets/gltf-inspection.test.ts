@@ -456,9 +456,9 @@ describe("glTF asset inspection", () => {
       const unskinned = renderables.find((renderable) => renderable.skinning === undefined);
       const skinned = renderables.find((renderable) => renderable.skinning !== undefined);
       expect(unskinned?.material).toBe("shared-pbr");
-      expect(skinned?.material).toBe("shared-pbr#galileo3d-runtime:skinned");
+      expect(skinned?.material).toBe("shared-pbr#aura3d-runtime:skinned");
       expect(resources.materialLibrary.get("shared-pbr")?.shaderKey).toBe(DEFAULT_PBR_SHADER_NAME);
-      expect(resources.materialLibrary.get("shared-pbr#galileo3d-runtime:skinned")?.shaderKey).toBe(DEFAULT_SKINNED_LIT_SHADER_NAME);
+      expect(resources.materialLibrary.get("shared-pbr#aura3d-runtime:skinned")?.shaderKey).toBe(DEFAULT_SKINNED_LIT_SHADER_NAME);
 
       const renderer = await Renderer.create({ backend: "mock", width: 4, height: 4 });
       try {
@@ -629,7 +629,7 @@ function createTexturedMorphAnimationGltfUrl(): string {
   const offsets = byteOffsets([positions, texcoords, morphPositions, indices, times, translations]);
   const imageDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAABCAYAAAD0In+KAAAADklEQVR4nGP4z8AAQv8BD/kD/YURmXYAAAAASUVORK5CYII=";
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D inspection fixture" },
+    asset: { version: "2.0", generator: "Aura3D inspection fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
@@ -691,7 +691,7 @@ function createMaterialFidelityTexcoordGltfUrl(): string {
   const offsets = byteOffsets([positions, texcoords0, texcoords1, texcoords2, indices]);
   const imageDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPj/HwAEAQH/0bRJsgAAAABJRU5ErkJggg==";
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D material fidelity texcoord fixture" },
+    asset: { version: "2.0", generator: "Aura3D material fidelity texcoord fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
@@ -741,7 +741,7 @@ function createGlossyClearcoatNormalGltfUrl(): string {
   const offsets = byteOffsets([positions, texcoords, indices]);
   const imageDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPj/HwAEAQH/0bRJsgAAAABJRU5ErkJggg==";
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D glossy clearcoat fixture" },
+    asset: { version: "2.0", generator: "Aura3D glossy clearcoat fixture" },
     extensionsUsed: ["KHR_materials_clearcoat"],
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
@@ -790,7 +790,7 @@ function createMixedExtensionTextureGltfUrl(): string {
   const offsets = byteOffsets([positions, texcoords, indices]);
   const imageDataUri = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPj/HwAEAQH/0bRJsgAAAABJRU5ErkJggg==";
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D mixed extension texture fixture" },
+    asset: { version: "2.0", generator: "Aura3D mixed extension texture fixture" },
     extensionsUsed: ["KHR_materials_clearcoat", "KHR_materials_specular"],
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
@@ -846,7 +846,7 @@ function createUnsupportedExtensionsGltfUrl(): string {
   const buffer = concatBytes(positions, indices);
   const offsets = byteOffsets([positions, indices]);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D unsupported extension inspection fixture" },
+    asset: { version: "2.0", generator: "Aura3D unsupported extension inspection fixture" },
     extensionsUsed: ["VENDOR_scene_magic", "VENDOR_material_magic"],
     extensions: { VENDOR_scene_magic: { enabled: true } },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
@@ -880,7 +880,7 @@ function createTransmissionGlassGltfUrl(alphaMode?: "OPAQUE" | "MASK" | "BLEND",
   const buffer = concatBytes(positions, indices);
   const offsets = byteOffsets([positions, indices]);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D transmission glass fixture" },
+    asset: { version: "2.0", generator: "Aura3D transmission glass fixture" },
     extensionsUsed: ["KHR_materials_transmission"],
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
@@ -923,7 +923,7 @@ function createDuplicateAnimatedNodeNamesGltfUrl(): string {
   const buffer = concatBytes(times, translations);
   const offsets = byteOffsets([times, translations]);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D duplicate node animation fixture" },
+    asset: { version: "2.0", generator: "Aura3D duplicate node animation fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: offsets[0], byteLength: times.byteLength },
@@ -955,7 +955,7 @@ function createMissingNormalsGltfUrl(): string {
   const buffer = concatBytes(positions, texcoords, indices);
   const offsets = byteOffsets([positions, texcoords, indices]);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D missing normal fixture" },
+    asset: { version: "2.0", generator: "Aura3D missing normal fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
@@ -994,7 +994,7 @@ function createDefaultMaterialGltfUrl(): string {
   const buffer = concatBytes(positions, indices);
   const offsets = byteOffsets([positions, indices]);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D default material fixture" },
+    asset: { version: "2.0", generator: "Aura3D default material fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },
@@ -1029,7 +1029,7 @@ function createSharedSkinnedMaterialGltfUrl(): string {
   const buffer = concatBytes(positions, normals, joints, weights, inverseBindMatrix);
   const offsets = byteOffsets([positions, normals, joints, weights, inverseBindMatrix]);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D shared skin material fixture" },
+    asset: { version: "2.0", generator: "Aura3D shared skin material fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: offsets[0], byteLength: positions.byteLength },

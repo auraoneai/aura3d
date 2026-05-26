@@ -10,9 +10,9 @@ V4 provides product workflows that reduce boilerplate for supported scenes. It i
 Three.js application code usually assembles renderer, scene, camera, loaders, controls, lights, environment maps, postprocess passes, diagnostics, and screenshots directly. V4 moves those concerns behind public workflow APIs:
 
 ```ts
-import { createG3DApp, workflows } from "@galileo3d/engine";
+import { createA3DApp, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({ canvas, quality: "production" });
+const app = await createA3DApp({ canvas, quality: "production" });
 const scene = await workflows.productConfigurator({
   asset: "/assets/product.glb",
   environment: "studio-softbox-hdr",
@@ -23,7 +23,7 @@ const scene = await workflows.productConfigurator({
 ## Evidence
 
 - Same-scene comparison report: `tests/reports/external-parity-threejs-visual-parity.json`
-- Large-scene comparison images: `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-g3d.png`, `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-threejs.png`
+- Large-scene comparison images: `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-a3d.png`, `tests/reports/external-parity-threejs-visual-parity/large-scene-performance-threejs.png`
 - Bounded status: `docs/project/v4-roadmap-threejs-parity-status.md`
 
 Boundary: full Three.js API compatibility remains blocked. Migrate supported product, material, asset, scene, character, and interactive workflows first.

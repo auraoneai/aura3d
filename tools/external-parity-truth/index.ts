@@ -84,7 +84,7 @@ const requiredPlanPatterns = [
 const requiredFailurePaths = [
   "tests/reports/foundation-app-suite/asset-lab-default.png",
   "tests/reports/foundation-examples/foundation-asset-viewer.png",
-  "tests/reports/foundation-threejs-comparison/product-g3d.png"
+  "tests/reports/foundation-threejs-comparison/product-a3d.png"
 ] as const;
 const missingStatusPhrases = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);
 const missingPlanPhrases = requiredPlanPatterns.filter((pattern) => !pattern.test(v4)).map(String);
@@ -92,7 +92,7 @@ const missingFailureReferences = requiredFailurePaths.filter((path) => !visualFa
 const progressHasAllMilestones = Array.from({ length: 20 }, (_, index) => `Milestone ${index}`).every((milestone) => progress.includes(milestone));
 
 const report = {
-  schema: "g3d-external-parity-truth/v1",
+  schema: "a3d-external-parity-truth/v1",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0
     && findings.length === 0

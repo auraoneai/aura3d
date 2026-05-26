@@ -35,7 +35,7 @@ const roots = [
 ] as const;
 
 const sourceExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
-const threeImportPattern = /\b(?:import\s+(?:type\s+)?(?:[^'"]+\s+from\s+)?|export\s+[^'"]+\s+from\s+|import\s*\(|require\s*\()\s*["'](?:three|three\/[^"']*|@galileo3d\/three-compat(?:\/[^"']*)?)["']/g;
+const threeImportPattern = /\b(?:import\s+(?:type\s+)?(?:[^'"]+\s+from\s+)?|export\s+[^'"]+\s+from\s+|import\s*\(|require\s*\()\s*["'](?:three|three\/[^"']*|@aura3d\/three-compat(?:\/[^"']*)?)["']/g;
 const reportPath = "tests/reports/current-routes-runtime-import-audit.json";
 
 const findings: Finding[] = [];
@@ -46,9 +46,9 @@ for (const root of roots) {
 }
 
 const report = {
-  schema: "g3d-current-routes-runtime-import-audit/v1",
+  schema: "a3d-current-routes-runtime-import-audit/v1",
   pass: findings.length === 0,
-  claim: "G3D product/runtime source roots do not import Three.js or @galileo3d/three-compat implementation paths.",
+  claim: "A3D product/runtime source roots do not import Three.js or @aura3d/three-compat implementation paths.",
   scannedRoots: roots,
   scannedFiles: scannedFiles.length,
   allowedThreeUsage: [

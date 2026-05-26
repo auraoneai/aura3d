@@ -9,16 +9,16 @@ const rejectedInputs = [
 ] as const;
 
 const report = {
-  schema: "g3d-product-studio-truth/v1",
+  schema: "a3d-product-studio-truth/v1",
   generatedAt: new Date().toISOString(),
   verdict: "build-product-studio",
-  productTarget: "G3D Product Studio V1",
+  productTarget: "A3D Product Studio V1",
   rejectedInputs,
   buildFirstFiles: [
     "tools/product-studio-generate-products/index.ts",
-    "fixtures/v2/products/camera-kit/camera-kit.gltf",
-    "fixtures/v2/products/speaker/speaker.gltf",
-    "fixtures/v2/products/watch/watch.gltf",
+    "fixtures/product-studio/products/camera-kit/camera-kit.gltf",
+    "fixtures/product-studio/products/speaker/speaker.gltf",
+    "fixtures/product-studio/products/watch/watch.gltf",
     "packages/product-studio/src/ProductStudio.ts",
     "apps/product-studio/src/ProductStudioApp.ts"
   ],

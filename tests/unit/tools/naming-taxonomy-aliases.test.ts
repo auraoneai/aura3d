@@ -3,20 +3,20 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:f
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import * as advancedRuntime from "@galileo3d/engine/advanced-runtime";
-import * as advancedRuntimeLegacy from "@galileo3d/engine/v9";
-import * as advancedRendering from "@galileo3d/engine/rendering/advanced-runtime";
-import * as advancedRenderingLegacy from "@galileo3d/engine/rendering/v9";
-import * as advancedAssets from "@galileo3d/engine/assets/advanced-gallery";
-import * as advancedAssetsLegacy from "@galileo3d/engine/assets/v9";
-import * as productionRuntime from "@galileo3d/engine/production-runtime";
-import * as productionRuntimeLegacy from "@galileo3d/engine/v6";
-import * as productionRendering from "@galileo3d/engine/rendering/production-runtime";
-import * as productionRenderingLegacy from "@galileo3d/engine/rendering/v6";
-import * as assetCorpus from "@galileo3d/engine/assets/asset-corpus";
-import * as assetCorpusLegacy from "@galileo3d/engine/assets/v6";
-import * as productionWorkflows from "@galileo3d/engine/workflows/production";
-import * as productionWorkflowsLegacy from "@galileo3d/engine/workflows/v6";
+import * as advancedRuntime from "@aura3d/engine/advanced-runtime";
+import * as advancedRuntimeLegacy from "@aura3d/engine/v9";
+import * as advancedRendering from "@aura3d/engine/rendering/advanced-runtime";
+import * as advancedRenderingLegacy from "@aura3d/engine/rendering/v9";
+import * as advancedAssets from "@aura3d/engine/assets/advanced-gallery";
+import * as advancedAssetsLegacy from "@aura3d/engine/assets/v9";
+import * as productionRuntime from "@aura3d/engine/production-runtime";
+import * as productionRuntimeLegacy from "@aura3d/engine/v6";
+import * as productionRendering from "@aura3d/engine/rendering/production-runtime";
+import * as productionRenderingLegacy from "@aura3d/engine/rendering/v6";
+import * as assetCorpus from "@aura3d/engine/assets/asset-corpus";
+import * as assetCorpusLegacy from "@aura3d/engine/assets/v6";
+import * as productionWorkflows from "@aura3d/engine/workflows/production";
+import * as productionWorkflowsLegacy from "@aura3d/engine/workflows/v6";
 import {
   ADVANCED_GALLERY_CONTEXTUAL_REPORT_DIR,
   ADVANCED_GALLERY_LEGACY_REPORT_DIR,
@@ -34,12 +34,12 @@ import {
 
 describe("naming taxonomy contextual aliases", () => {
   it("keeps contextual package exports equivalent to legacy version aliases", () => {
-    expect(advancedRuntime.G3DRenderer).toBe(advancedRuntimeLegacy.G3DRenderer);
-    expect(advancedRuntime.G3DScene).toBe(advancedRuntimeLegacy.G3DScene);
+    expect(advancedRuntime.A3DRenderer).toBe(advancedRuntimeLegacy.A3DRenderer);
+    expect(advancedRuntime.A3DScene).toBe(advancedRuntimeLegacy.A3DScene);
     expect(advancedRendering.RendererV9).toBe(advancedRenderingLegacy.RendererV9);
     expect(advancedAssets.GLTFLoader).toBe(advancedAssetsLegacy.GLTFLoader);
 
-    expect(productionRuntime.G3DRenderer).toBe(productionRuntimeLegacy.G3DRenderer);
+    expect(productionRuntime.A3DRenderer).toBe(productionRuntimeLegacy.A3DRenderer);
     expect(productionRuntime.createProductViewer).toBe(productionRuntimeLegacy.createProductViewer);
     expect(productionRendering.RendererV6).toBe(productionRenderingLegacy.RendererV6);
     expect(assetCorpus.loadV6AssetManifest).toBe(assetCorpusLegacy.loadV6AssetManifest);
@@ -85,11 +85,11 @@ describe("naming taxonomy contextual aliases", () => {
     expect(CONTEXTUAL_FIXTURE_ALIASES.length).toBeGreaterThanOrEqual(5);
 
     const filePairs = [
-      ["fixtures/asset-corpus/damaged-helmet.glb", "fixtures/v6/assets/corpus/damaged-helmet.glb"],
-      ["fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", "fixtures/v6/environments/hdri/studio_small_08_1k.hdr"],
-      ["fixtures/threejs-parity/assets/vehicles/car-concept.glb", "fixtures/v8/assets/vehicles/car-concept.glb"],
-      ["fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb", "fixtures/v9/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb"],
-      ["fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr", "fixtures/v9/environments/hdri/data_galaxy_deep_space_1k.hdr"]
+      ["fixtures/asset-corpus/damaged-helmet.glb", "fixtures/asset-corpus/damaged-helmet.glb"],
+      ["fixtures/environment-corpus/hdri/studio_small_08_1k.hdr", "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"],
+      ["fixtures/threejs-parity/assets/vehicles/car-concept.glb", "fixtures/threejs-parity/assets/vehicles/car-concept.glb"],
+      ["fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb", "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb"],
+      ["fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr", "fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr"]
     ] as const;
 
     for (const [contextual, legacy] of filePairs) {
@@ -101,7 +101,7 @@ describe("naming taxonomy contextual aliases", () => {
   });
 
   it("resolves contextual report directories first while preserving legacy report-reader fallback", () => {
-    const root = mkdtempSync(join(tmpdir(), "g3d-advanced-gallery-report-alias-"));
+    const root = mkdtempSync(join(tmpdir(), "a3d-advanced-gallery-report-alias-"));
     try {
       mkdirSync(join(root, ADVANCED_GALLERY_LEGACY_REPORT_DIR), { recursive: true });
       expect(resolveAdvancedGalleryReportDir(root)).toBe(ADVANCED_GALLERY_LEGACY_REPORT_DIR);

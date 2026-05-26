@@ -1,5 +1,5 @@
-import { Quaternion, Vector3 } from "@galileo3d/math";
-import { type Camera } from "@galileo3d/scene";
+import { Quaternion, Vector3 } from "@aura3d/math";
+import { type Camera } from "@aura3d/scene";
 import { type CameraTransformLike, type EulerLike, type Vec3Like } from "./ControlTypes";
 
 export interface SceneCameraControlAdapter extends CameraTransformLike {

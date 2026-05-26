@@ -77,7 +77,7 @@ function rewriteJavaScriptSpecifiers(dir: string, distRoot: string, rewriteWorks
 function rewriteSpecifier(file: string, distRoot: string, specifier: string, rewriteWorkspacePackages: boolean): string {
   const sourcePackageMatch = /(?:^|\/)([a-z0-9-]+)\/src\/index\.js$/i.exec(specifier);
   if (sourcePackageMatch && packageNameSet.has(sourcePackageMatch[1]!)) {
-    if (!rewriteWorkspacePackages) return `@galileo3d/${sourcePackageMatch[1]!}`;
+    if (!rewriteWorkspacePackages) return `@aura3d/${sourcePackageMatch[1]!}`;
     const target = join(distRoot, sourcePackageMatch[1]!, "index.js");
     let next = relative(dirname(file), target).replaceAll("\\", "/");
     if (!next.startsWith(".")) next = `./${next}`;
@@ -92,7 +92,7 @@ function rewriteSpecifier(file: string, distRoot: string, specifier: string, rew
     return specifier;
   }
 
-  const match = /^@galileo3d\/([^/]+)$/.exec(specifier);
+  const match = /^@aura3d\/([^/]+)$/.exec(specifier);
   if (!rewriteWorkspacePackages || !match || !packageNameSet.has(match[1]!)) return specifier;
   const target = match[1] === "animation" && file.includes(`${distRoot}/assets/`)
     ? join(distRoot, "animation", "browser-index.js")

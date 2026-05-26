@@ -1,5 +1,5 @@
-import { type MorphTargetDelta } from "@galileo3d/rendering";
-import type { Geometry } from "@galileo3d/rendering";
+import { type MorphTargetDelta } from "@aura3d/rendering";
+import type { Geometry } from "@aura3d/rendering";
 
 export interface MorphControlState {
   smile: number;

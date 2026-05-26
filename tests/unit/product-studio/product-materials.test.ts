@@ -1,14 +1,14 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { applyProductMaterialMode, createProductMaterialMode, loadProductAsset } from "@galileo3d/product-studio";
+import { applyProductMaterialMode, createProductMaterialMode, loadProductAsset } from "@aura3d/product-studio";
 
 describe("product material modes", () => {
   it("preserves asset materials and creates override material libraries", async () => {
     const asset = await loadProductAsset({
       id: "speaker",
-      url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/v2/products/speaker/speaker.gltf"))),
-      manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/v2/products/speaker/manifest.json")))
+      url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/speaker/speaker.gltf"))),
+      manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), "fixtures/product-studio/products/speaker/manifest.json")))
     });
     const assetMode = applyProductMaterialMode(asset, createProductMaterialMode("asset"));
     const contrastMode = applyProductMaterialMode(asset, createProductMaterialMode("contrast"));

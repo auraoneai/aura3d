@@ -13,9 +13,9 @@ import {
   type RenderItem,
   type V4LdrPostprocessSummary,
   type V4RenderPresetEvidence
-} from "@galileo3d/rendering";
-import { sampleArcadeVehicleDynamics, samplePacejkaTireForces, sampleRacingAiDriver, sampleVehicleDamage, sampleVehicleDrivetrain, sampleVehicleEffectEmitters } from "@galileo3d/physics";
-import { Scene, type PerspectiveCamera } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { sampleArcadeVehicleDynamics, samplePacejkaTireForces, sampleRacingAiDriver, sampleVehicleDamage, sampleVehicleDrivetrain, sampleVehicleEffectEmitters } from "@aura3d/physics";
+import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
 type RacingShowcaseState = {
   readonly status: "ready" | "error";
@@ -36,7 +36,7 @@ type RacingShowcaseState = {
 
 declare global {
   interface Window {
-    __GALILEO3D_RACING_SHOWCASE__?: RacingShowcaseState;
+    __AURA3D_RACING_SHOWCASE__?: RacingShowcaseState;
   }
 }
 
@@ -50,7 +50,7 @@ const knownLimits = [
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
-    window.__GALILEO3D_RACING_SHOWCASE__ = {
+    window.__AURA3D_RACING_SHOWCASE__ = {
       status: "error",
       renderer: "webgl2",
       visualClaim: "Racing showcase failed before first frame.",
@@ -82,7 +82,7 @@ async function run(): Promise<void> {
       <canvas data-testid="racing-minimap" width="180" height="180"></canvas>
     </section>
     <section class="race-panel race-panel-board" aria-label="Racing leaderboard">
-      <span data-testid="racing-leaderboard">1. Galileo</span>
+      <span data-testid="racing-leaderboard">1. Aura3D</span>
     </section>
     <section class="hud" aria-label="Racing telemetry">
       <div class="gauge"><canvas data-testid="racing-speed-gauge" width="112" height="112"></canvas><span>Speed</span><strong data-testid="racing-speed">0</strong></div>
@@ -134,7 +134,7 @@ async function run(): Promise<void> {
     position!.textContent = `${telemetry.leaderboardPosition}st`;
     lapTime!.textContent = formatRaceTime(telemetry.raceElapsedSeconds * 1000);
     bestLap!.textContent = telemetry.bestLapMs > 0 ? `Best ${formatRaceTime(telemetry.bestLapMs)}` : "Best --:--.---";
-    leaderboard!.textContent = `${telemetry.leaderboardPosition}. Galileo  ${formatRaceTime(Math.max(0, telemetry.raceElapsedSeconds * 1000))}`;
+    leaderboard!.textContent = `${telemetry.leaderboardPosition}. Aura3D  ${formatRaceTime(Math.max(0, telemetry.raceElapsedSeconds * 1000))}`;
     drawRacingHud({
       speedGauge,
       rpmGauge,
@@ -162,7 +162,7 @@ async function run(): Promise<void> {
       lodEvidence: false
     });
     const textureFixtures = resources.fixtureEvidence;
-    window.__GALILEO3D_RACING_SHOWCASE__ = {
+    window.__AURA3D_RACING_SHOWCASE__ = {
       status: "ready",
       renderer: "webgl2",
       visualClaim: "Bounded V4 procedural racing showcase with a current-engine textured sports car, generated track, HUD telemetry, and screenshot evidence.",

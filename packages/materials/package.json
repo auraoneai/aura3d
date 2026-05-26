@@ -1,14 +1,17 @@
 {
-  "name": "@galileo3d/materials",
+  "name": "@aura3d/materials",
   "version": "1.0.0",
   "type": "module",
   "main": "../../dist/materials/index.js",
   "types": "../../dist/materials/index.d.ts",
   "exports": {
-    ".": "../../dist/materials/index.js"
+    ".": {
+      "types": "../../dist/materials/index.d.ts",
+      "import": "../../dist/materials/index.js"
+    }
   },
   "dependencies": {
-    "@galileo3d/assets": "workspace:*",
-    "@galileo3d/rendering": "workspace:*"
+    "@aura3d/assets": "workspace:*",
+    "@aura3d/rendering": "workspace:*"
   }
 }

@@ -5,19 +5,19 @@ const claims = [
   {
     id: "three-compat-broad-threejs-replacement-track",
     status: "target-not-yet-supported",
-    claim: "G3D V5 is targeting a broad Three.js replacement for documented mainstream browser 3D use cases.",
+    claim: "A3D V5 is targeting a broad Three.js replacement for documented mainstream browser 3D use cases.",
     evidence: ["docs/project/three-compat-roadmap-visual-engine-plan.md", "docs/project/three-compat-roadmap-known-gaps.md", "docs/project/three-compat-roadmap-blocked-claims.md"]
   },
   {
     id: "full-threejs-api-parity",
     status: "blocked",
-    claim: "G3D fully replaces the Three.js API.",
+    claim: "A3D fully replaces the Three.js API.",
     evidence: ["docs/project/three-compat-roadmap-blocked-claims.md", "docs/project/three-compat-roadmap-known-gaps.md"]
   },
   {
     id: "unity-unreal-replacement",
     status: "blocked",
-    claim: "G3D replaces Unity or Unreal.",
+    claim: "A3D replaces Unity or Unreal.",
     evidence: ["docs/project/three-compat-roadmap-blocked-claims.md", "docs/project/three-compat-roadmap-known-gaps.md"]
   }
 ] as const;
@@ -38,7 +38,7 @@ checks.push({
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "g3d-three-compat-claim-registry/v1",
+  schema: "a3d-three-compat-claim-registry/v1",
   generatedAt: new Date().toISOString(),
   pass,
   claims,

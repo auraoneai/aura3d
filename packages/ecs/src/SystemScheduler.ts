@@ -1,4 +1,4 @@
-import { ValidationError } from "@galileo3d/core";
+import { ValidationError } from "@aura3d/core";
 import { type System, type SystemContext, type SystemPhase } from "./System.js";
 import { type World } from "./World.js";
 

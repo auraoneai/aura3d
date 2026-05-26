@@ -22,12 +22,12 @@ test("V5 VFX browser proof renders particles, sprites, lines, points, and trails
     ctx.globalAlpha=1;ctx.strokeStyle="#7dffb2";ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<d.trailPointCount;i++){const x=80+i*14,y=420+Math.sin(i/4)*28;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
     ctx.fillStyle="#ffcc66";ctx.beginPath();ctx.arc(820,110,44,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle="#ffffff";ctx.lineWidth=4;ctx.strokeRect(650,330,220,120);
-    window.__g3dVfx=d;
+    window.__a3dVfx=d;
     </script></body></html>
   `);
 
-  await expect.poll(async () => page.evaluate(() => window.__g3dVfx.particleCount)).toBeGreaterThan(1500);
-  await expect.poll(async () => page.evaluate(() => window.__g3dVfx.pointCount)).toBeGreaterThan(40000);
+  await expect.poll(async () => page.evaluate(() => window.__a3dVfx.particleCount)).toBeGreaterThan(1500);
+  await expect.poll(async () => page.evaluate(() => window.__a3dVfx.pointCount)).toBeGreaterThan(40000);
   const litPixels = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
     const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;

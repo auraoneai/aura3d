@@ -5,7 +5,7 @@ import {
   type PhysicsStepStats,
   type RigidBody,
   type Vec3
-} from "@galileo3d/physics";
+} from "@aura3d/physics";
 
 export type PhysicsVisualKind = "cube" | "sphere" | "capsule";
 export type PhysicsVisualMaterial = "wood" | "rubber";

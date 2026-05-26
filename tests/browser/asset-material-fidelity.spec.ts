@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 declare global {
   interface Window {
-    __GALILEO3D_ASSET_VIEWER__?: {
+    __AURA3D_ASSET_VIEWER__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2";
       readonly inspection?: {
@@ -130,7 +130,7 @@ test.describe("asset material fidelity browser evidence", () => {
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     try {
       await page.waitForFunction(
-        () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+        () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
         undefined,
         { timeout: 15_000 }
       );
@@ -138,7 +138,7 @@ test.describe("asset material fidelity browser evidence", () => {
       throw new Error(`${error instanceof Error ? error.message : String(error)}\nPage errors:\n${pageErrors.join("\n")}`);
     }
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
     expect(result?.diagnostics?.drawCalls).toBe(1);
@@ -284,7 +284,7 @@ test.describe("asset material fidelity browser evidence", () => {
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     try {
       await page.waitForFunction(
-        () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+        () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
         undefined,
         { timeout: 15_000 }
       );
@@ -292,7 +292,7 @@ test.describe("asset material fidelity browser evidence", () => {
       throw new Error(`${error instanceof Error ? error.message : String(error)}\nPage errors:\n${pageErrors.join("\n")}`);
     }
 
-    const result = await page.evaluate(() => window.__GALILEO3D_ASSET_VIEWER__);
+    const result = await page.evaluate(() => window.__AURA3D_ASSET_VIEWER__);
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.diagnostics?.drawCalls).toBeGreaterThanOrEqual(8);
     expect(result?.diagnostics?.lastError).toBeNull();
@@ -403,7 +403,7 @@ function createMaterialFidelityFixture(): { readonly gltf: unknown; readonly buf
   return {
     buffer,
     gltf: {
-      asset: { version: "2.0", generator: "galileo3d-material-fidelity-browser-test" },
+      asset: { version: "2.0", generator: "aura3d-material-fidelity-browser-test" },
       extensionsUsed: [
         "KHR_materials_emissive_strength",
         "KHR_materials_clearcoat",
@@ -537,7 +537,7 @@ function createVisualMaterialFixture(): { readonly gltf: unknown; readonly buffe
     ]),
     whitePng: encodeRgbaPng(1, 1, [255, 255, 255, 255]),
     gltf: {
-      asset: { version: "2.0", generator: "galileo3d-visual-material-state-browser-test" },
+      asset: { version: "2.0", generator: "aura3d-visual-material-state-browser-test" },
       extensionsUsed: ["KHR_texture_transform"],
       buffers: [{ uri: "v3-visual-materials.bin", byteLength: builder.byteLength }],
       bufferViews: builder.bufferViews,

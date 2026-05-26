@@ -1,5 +1,5 @@
-import { PhysicsDebugDraw, PhysicsWorld, Shape, samplePhysicsSandboxFixture, type DebugLine, type PhysicsSandboxFixture } from "@galileo3d/physics";
-import { Geometry, Renderer, UnlitMaterial, type RenderDeviceDiagnostics, type RenderItem } from "@galileo3d/rendering";
+import { PhysicsDebugDraw, PhysicsWorld, Shape, samplePhysicsSandboxFixture, type DebugLine, type PhysicsSandboxFixture } from "@aura3d/physics";
+import { Geometry, Renderer, UnlitMaterial, type RenderDeviceDiagnostics, type RenderItem } from "@aura3d/rendering";
 
 interface PhysicsSandboxState {
   readonly id: "physics-sandbox";
@@ -19,7 +19,7 @@ interface PhysicsSandboxState {
 
 declare global {
   interface Window {
-    __GALILEO3D_PHYSICS_SANDBOX__?: PhysicsSandboxState;
+    __AURA3D_PHYSICS_SANDBOX__?: PhysicsSandboxState;
   }
 }
 
@@ -99,7 +99,7 @@ async function boot(): Promise<void> {
     sandbox.render();
     window.addEventListener("beforeunload", () => renderer.dispose());
   } catch (error) {
-    window.__GALILEO3D_PHYSICS_SANDBOX__ = {
+    window.__AURA3D_PHYSICS_SANDBOX__ = {
       id: "physics-sandbox",
       status: "error",
       renderer: "webgl2",
@@ -111,7 +111,7 @@ async function boot(): Promise<void> {
       interactions: 0,
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_PHYSICS_SANDBOX__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_PHYSICS_SANDBOX__, null, 2);
   }
 }
 
@@ -347,7 +347,7 @@ function createSandbox(renderer: Renderer, status: HTMLElement): {
     const snapshot = world.snapshot();
     const rayHit = world.raycast([-2.7, 2.8, 0], [1, -0.55, 0], { maxDistance: 6, includeSensors: true });
     const sphereHit = world.sphereCast([-0.8, 1.08, 0], 0.18, [1, 0.02, 0], { maxDistance: 3.4, includeSensors: true });
-    window.__GALILEO3D_PHYSICS_SANDBOX__ = {
+    window.__AURA3D_PHYSICS_SANDBOX__ = {
       id: "physics-sandbox",
       status: "ready",
       renderer: "webgl2",
@@ -401,7 +401,7 @@ function createSandbox(renderer: Renderer, status: HTMLElement): {
         stressBodies: 18
       }
     };
-    status.textContent = JSON.stringify(window.__GALILEO3D_PHYSICS_SANDBOX__, null, 2);
+    status.textContent = JSON.stringify(window.__AURA3D_PHYSICS_SANDBOX__, null, 2);
   }
 }
 

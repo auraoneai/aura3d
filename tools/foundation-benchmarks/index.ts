@@ -29,7 +29,7 @@ const sourceFiles = [
     "editor-authored-startup",
   ].flatMap((scene) => [
     `benchmarks/shared/scenes/${scene}.ts`,
-    `benchmarks/galileo/src/scenes/${scene}.ts`,
+    `benchmarks/aura3d/src/scenes/${scene}.ts`,
     `benchmarks/threejs/src/scenes/${scene}.ts`,
     `benchmarks/babylon/src/scenes/${scene}.ts`,
   ]),
@@ -62,21 +62,21 @@ const checks: readonly V3EvidenceCheck[] = [
   },
   {
     id: "defined-niche-advantage",
-    description: "A generated report defines exact narrow Galileo3D advantage with explicit caveats.",
+    description: "A generated report defines exact narrow Aura3D advantage with explicit caveats.",
     passed: supportedNicheClaims.length > 0,
     evidencePaths: ["tests/reports/foundation-engine-comparison.json"],
     blocker: "No v3 benchmark report currently proves a defined niche advantage.",
   },
   {
     id: "same-scene-measurements",
-    description: "Every benchmark scene records Galileo3D, Three.js, and Babylon.js estimates from equivalent scene descriptors.",
+    description: "Every benchmark scene records Aura3D, Three.js, and Babylon.js estimates from equivalent scene descriptors.",
     passed: benchmarkSummary.sameSceneMeasurements,
     evidencePaths: ["tests/reports/foundation-engine-comparison.json", "tests/browser/engine-comparison.spec.ts"],
     blocker: "Benchmark report is missing same-scene measurements for one or more engines.",
   },
   {
     id: "editor-authored-exported-app-startup",
-    description: "Editor-authored exported app startup is compared as a same exported-project workflow across Galileo3D, Three.js, and Babylon.js benchmark wrappers.",
+    description: "Editor-authored exported app startup is compared as a same exported-project workflow across Aura3D, Three.js, and Babylon.js benchmark wrappers.",
     passed: benchmarkSummary.editorAuthoredStartupWorkflow,
     evidencePaths: ["benchmarks/shared/scenes/editor-authored-startup.ts", "examples/foundation-editor-authored-app/project.json", "tests/reports/foundation-editor-authoring.json", "tests/reports/foundation-engine-comparison.json"],
     blocker: "Editor-authored exported app startup workflow is missing or is not compared across all three benchmark engines.",
@@ -152,14 +152,14 @@ function inspectComparisonReport(report: Record<string, unknown> | null): {
     scenes.every((scene) => {
       if (!isRecord(scene) || scene.equivalent !== true || typeof scene.id !== "string" || !expectedScenes.has(scene.id)) return false;
       const estimates = isRecord(scene.estimates) ? scene.estimates : {};
-      return ["galileo", "threejs", "babylon"].every((engine) => isRecord(estimates[engine]));
+      return ["aura3d", "threejs", "babylon"].every((engine) => isRecord(estimates[engine]));
     });
   const metricCoverage =
     sameSceneMeasurements &&
     scenes.every((scene) => {
       if (!isRecord(scene) || !isRecord(scene.estimates)) return false;
       const estimates = scene.estimates;
-      return ["galileo", "threejs", "babylon"].every((engine) => hasRequiredMetrics(estimates[engine]));
+      return ["aura3d", "threejs", "babylon"].every((engine) => hasRequiredMetrics(estimates[engine]));
     });
   const outcomes = isRecord(report?.comparisonOutcomes) && isRecord(report.comparisonOutcomes.byCompetitor)
     ? report.comparisonOutcomes.byCompetitor
@@ -183,7 +183,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null): {
     isRecord(editorStartupScene) &&
     isRecord(editorStartupScene.workflow) &&
     editorStartupScene.workflow.kind === "editor-authored-exported-app-startup" &&
-    ["galileo", "threejs", "babylon"].every((engine) => {
+    ["aura3d", "threejs", "babylon"].every((engine) => {
       const estimates = isRecord(editorStartupScene.estimates) ? editorStartupScene.estimates : {};
       const estimate = estimates[engine];
       return isRecord(estimate) &&

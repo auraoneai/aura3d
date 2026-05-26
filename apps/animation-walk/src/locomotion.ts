@@ -1,4 +1,4 @@
-import { AnimationClip, AnimationTrack, applyRootMotion, extractRootMotion } from "@galileo3d/animation";
+import { AnimationClip, AnimationTrack, applyRootMotion, extractRootMotion } from "@aura3d/animation";
 
 export interface LocomotionState {
   speed: number;
@@ -27,7 +27,7 @@ export function createLocomotionState(): LocomotionState {
 
 export function createWalkClip(): AnimationClip {
   return new AnimationClip({
-    name: "g3d-procedural-root-walk",
+    name: "a3d-procedural-root-walk",
     duration: 1.2,
     tracks: [
       new AnimationTrack({

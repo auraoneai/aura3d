@@ -90,31 +90,31 @@ export const CONTEXTUAL_ROUTE_ALIASES: readonly PathAlias[] = [
 export const CONTEXTUAL_FIXTURE_ALIASES: readonly PathAlias[] = [
   {
     contextual: "/fixtures/advanced-gallery/assets/",
-    legacy: "/fixtures/v9/assets/",
+    legacy: "/fixtures/advanced-gallery/assets/",
     classification: "active-alias",
     reason: "Advanced gallery authored assets use contextual fixture URLs while the old fixture path remains fetchable."
   },
   {
     contextual: "/fixtures/advanced-gallery/environments/",
-    legacy: "/fixtures/v9/environments/",
+    legacy: "/fixtures/advanced-gallery/environments/",
     classification: "active-alias",
     reason: "Advanced gallery environment fixtures use contextual fixture URLs while the old fixture path remains fetchable."
   },
   {
     contextual: "/fixtures/threejs-parity/assets/",
-    legacy: "/fixtures/v8/assets/",
+    legacy: "/fixtures/threejs-parity/assets/",
     classification: "active-alias",
     reason: "Three.js parity fixtures use capability-based URLs while the old fixture path remains fetchable."
   },
   {
     contextual: "/fixtures/asset-corpus/",
-    legacy: "/fixtures/v6/assets/corpus/",
+    legacy: "/fixtures/asset-corpus/",
     classification: "active-alias",
     reason: "Production asset corpus fixtures use contextual URLs while the old fixture path remains fetchable."
   },
   {
     contextual: "/fixtures/environment-corpus/",
-    legacy: "/fixtures/v6/environments/",
+    legacy: "/fixtures/environment-corpus/",
     classification: "active-alias",
     reason: "Production environment corpus fixtures use contextual URLs while the old fixture path remains fetchable."
   }

@@ -1,9 +1,9 @@
-# G3D V2: Build A Real Product
+# A3D V2: Build A Real Product
 
 > Historical note: This V2 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
-EngineReadiness 1 reset the repo direction and created local gates. It did **not** prove that G3D is a real product.
+EngineReadiness 1 reset the repo direction and created local gates. It did **not** prove that A3D is a real product.
 
 The screenshots below are not product success:
 
@@ -27,11 +27,11 @@ The next step is not another visual-quality tool. The next step is to build one 
 
 ## Product Decision
 
-G3D is not currently a game engine, Unity replacement, Unreal replacement, Three.js replacement, or broad renderer parity project.
+A3D is not currently a game engine, Unity replacement, Unreal replacement, Three.js replacement, or broad renderer parity project.
 
 The next real product is:
 
-**G3D Product Studio: a local browser tool and TypeScript SDK for importing a glTF/GLB product asset, applying sane lighting/material/camera defaults, inspecting problems, and exporting clean product renders.**
+**A3D Product Studio: a local browser tool and TypeScript SDK for importing a glTF/GLB product asset, applying sane lighting/material/camera defaults, inspecting problems, and exporting clean product renders.**
 
 The product is real only if a developer can use it to complete this workflow:
 
@@ -43,7 +43,7 @@ The product is real only if a developer can use it to complete this workflow:
 6. Export a screenshot and a compact scene manifest.
 7. Install the package in a clean app and use the same API.
 
-If that workflow is not usable, G3D still does not have a product.
+If that workflow is not usable, A3D still does not have a product.
 
 ## Non-Negotiable Standards
 
@@ -91,7 +91,7 @@ The EngineReadiness 2 implementation must produce new evidence from `apps/produc
 
 Build one coherent product slice:
 
-**G3D Product Studio V1**
+**A3D Product Studio V1**
 
 The deliverable is not four demos. The deliverable is one product-quality workflow with a small SDK behind it.
 
@@ -129,13 +129,13 @@ packages/product-studio/
   src/ProductExport.ts
   src/ProductDiagnostics.ts
 
-fixtures/v2/products/
+fixtures/product-studio/products/
   camera-kit/
   speaker/
   watch/
 ```
 
-If the repo structure makes a new package too expensive, build the SDK under `packages/assets/src/product-studio/` and export it from `@galileo3d/assets`, but keep the same public function names.
+If the repo structure makes a new package too expensive, build the SDK under `packages/assets/src/product-studio/` and export it from `@aura3d/assets`, but keep the same public function names.
 
 ## Start Here: Filename-By-Filename Build Order
 
@@ -151,12 +151,12 @@ This file must write the product assets. It is not a verifier.
 
 It must:
 
-- [ ] Create `fixtures/v2/products/camera-kit/camera-kit.gltf`.
-- [ ] Create `fixtures/v2/products/camera-kit/manifest.json`.
-- [ ] Create `fixtures/v2/products/speaker/speaker.gltf`.
-- [ ] Create `fixtures/v2/products/speaker/manifest.json`.
-- [ ] Create `fixtures/v2/products/watch/watch.gltf`.
-- [ ] Create `fixtures/v2/products/watch/manifest.json`.
+- [ ] Create `fixtures/product-studio/products/camera-kit/camera-kit.gltf`.
+- [ ] Create `fixtures/product-studio/products/camera-kit/manifest.json`.
+- [ ] Create `fixtures/product-studio/products/speaker/speaker.gltf`.
+- [ ] Create `fixtures/product-studio/products/speaker/manifest.json`.
+- [ ] Create `fixtures/product-studio/products/watch/watch.gltf`.
+- [ ] Create `fixtures/product-studio/products/watch/manifest.json`.
 - [ ] Write embedded or sidecar texture data referenced by the glTF files.
 - [ ] Use valid glTF 2.0 JSON with named nodes, meshes, materials, textures, images, accessors, bufferViews, and buffers.
 - [ ] Generate products with actual product-like structure, not render-time `RenderItem` arrays.
@@ -492,7 +492,7 @@ Must:
 - [ ] load `camera-kit` by default.
 - [ ] re-render when controls change.
 - [ ] show compact warnings and asset summary.
-- [ ] expose `window.__G3D_PRODUCT_STUDIO__`.
+- [ ] expose `window.__A3D_PRODUCT_STUDIO__`.
 - [ ] never depend on `examples/legacy-product-viewer`, `examples/legacy-material-studio`, `examples/legacy-asset-viewer`, or `examples/legacy-rendering-showcase`.
 - [ ] never load or copy the rejected V1 screenshots.
 
@@ -554,7 +554,7 @@ Create:
 
 - `tools/product-studio-generate-products/index.ts`
 
-This script must generate real glTF or GLB files under `fixtures/v2/products/`. Do not hand-wave with render items. Do not use `createProductTurntableRenderKit` as the product.
+This script must generate real glTF or GLB files under `fixtures/product-studio/products/`. Do not hand-wave with render items. Do not use `createProductTurntableRenderKit` as the product.
 
 Generate these three assets:
 
@@ -772,7 +772,7 @@ Required app behavior:
 - Export PNG button writes or exposes the PNG.
 - Export manifest button writes or exposes JSON.
 - Warnings panel lists unsupported/fallback features.
-- The app exposes a compact `window.__G3D_PRODUCT_STUDIO__` state for tests.
+- The app exposes a compact `window.__A3D_PRODUCT_STUDIO__` state for tests.
 
 Default screenshot must be mostly viewport/product, not UI.
 
@@ -802,10 +802,10 @@ import {
   loadProductAsset,
   createProductRenderScene,
   exportProductRender
-} from "@galileo3d/product-studio";
+} from "@aura3d/product-studio";
 
 const studio = await createProductStudio({ canvas });
-const asset = await loadProductAsset("/fixtures/v2/products/camera-kit/camera-kit.glb");
+const asset = await loadProductAsset("/fixtures/product-studio/products/camera-kit/camera-kit.glb");
 const scene = await createProductRenderScene(asset, {
   lighting: "softbox",
   camera: "auto",
@@ -857,7 +857,7 @@ The UI must not dominate the screenshot. Default screenshot evidence should be v
 
 EngineReadiness 2 requires repo-local product assets under:
 
-- `fixtures/v2/products/`
+- `fixtures/product-studio/products/`
 
 Minimum required products:
 
@@ -945,12 +945,12 @@ Acceptance:
 Deliverables:
 
 - [ ] `tools/product-studio-generate-products/index.ts`
-- [ ] `fixtures/v2/products/camera-kit/camera-kit.glb`
-- [ ] `fixtures/v2/products/camera-kit/manifest.json`
-- [ ] `fixtures/v2/products/speaker/speaker.glb`
-- [ ] `fixtures/v2/products/speaker/manifest.json`
-- [ ] `fixtures/v2/products/watch/watch.glb`
-- [ ] `fixtures/v2/products/watch/manifest.json`
+- [ ] `fixtures/product-studio/products/camera-kit/camera-kit.glb`
+- [ ] `fixtures/product-studio/products/camera-kit/manifest.json`
+- [ ] `fixtures/product-studio/products/speaker/speaker.glb`
+- [ ] `fixtures/product-studio/products/speaker/manifest.json`
+- [ ] `fixtures/product-studio/products/watch/watch.glb`
+- [ ] `fixtures/product-studio/products/watch/manifest.json`
 - [ ] `tools/product-studio-product-assets/index.ts`
 - [ ] `tests/assets/product-studio-product-assets.test.ts`
 
@@ -1135,9 +1135,9 @@ Acceptance:
 
 ## Prompt To Run
 
-You are working in `/Users/gurbakshchahal/G3D`.
+You are working in `/Users/gurbakshchahal/Aura3D`.
 
-Your job is to execute `docs/project/v2-roadmap-product-asset-pipeline-plan.md` and build a real product slice: **G3D Product Studio V1**.
+Your job is to execute `docs/project/v2-roadmap-product-asset-pipeline-plan.md` and build a real product slice: **A3D Product Studio V1**.
 
 Do not continue polishing the EngineReadiness 1 V1 example screenshots. Treat those screenshots as pipeline evidence only. The user has rejected them as looking like the same weak demo output, and that rejection is valid.
 
@@ -1160,7 +1160,7 @@ Before declaring EngineReadiness 2 complete, verify all of these against real fi
 
 - [ ] `docs/project/v2-roadmap-product-asset-pipeline-plan.md` exists.
 - [ ] `docs/project/v2-roadmap-status.md` exists.
-- [ ] Product assets exist under `fixtures/v2/products/`.
+- [ ] Product assets exist under `fixtures/product-studio/products/`.
 - [ ] Product assets load through the normal loader.
 - [ ] Product Studio SDK exists and is exported.
 - [ ] Product Studio app exists.
@@ -1192,4 +1192,4 @@ Kill or pivot the custom renderer if any of these remain true after a serious En
 - Exported screenshots are copied from monorepo reports instead of generated by the product workflow.
 - The only way to make the product look acceptable is to add fake visual detail, proof grids, or metric bait.
 
-If killed, preserve the useful editor/assets/runtime code and pivot G3D to a higher-level tooling layer on top of Three.js or Babylon.js instead of continuing the custom renderer as the core product.
+If killed, preserve the useful editor/assets/runtime code and pivot A3D to a higher-level tooling layer on top of Three.js or Babylon.js instead of continuing the custom renderer as the core product.

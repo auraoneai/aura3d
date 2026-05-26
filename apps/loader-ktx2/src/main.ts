@@ -4,12 +4,12 @@ import {
   createGLTFRenderResources,
   evaluateGLTFExtensionSupport,
   type GLTFRenderResources
-} from "@galileo3d/assets";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LoaderKtx2?: V8LoaderKtx2Runtime;
+    __a3dV8LoaderKtx2?: V8LoaderKtx2Runtime;
   }
 }
 
@@ -34,7 +34,7 @@ interface V8LoaderKtx2Runtime {
   readonly extensionsUsed: readonly string[];
   readonly unsupportedRequired: readonly string[];
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -76,7 +76,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LoaderKtx2 = runtime;
+    window.__a3dV8LoaderKtx2 = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -88,7 +88,7 @@ async function run(): Promise<void> {
 
     const asset = await new GLTFLoader().load({ url: createKtx2FixtureDataUrl(ktx2Bytes) }, new LoadContext());
     const resources = await createGLTFRenderResources(asset, { ktx2BasisTargetFormat: "etc2-rgba8unorm" });
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -131,7 +131,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: extensionSupport.unsupportedRequired
         });
-        window.__g3dV8LoaderKtx2 = runtime;
+        window.__a3dV8LoaderKtx2 = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -149,7 +149,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<G3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: false,
@@ -224,7 +224,7 @@ function createRuntime(
     extensionsUsed: patch.extensionsUsed ?? [],
     unsupportedRequired: patch.unsupportedRequired ?? [],
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -236,7 +236,7 @@ function createKtx2FixtureDataUrl(ktx2Bytes: Uint8Array): string {
   const indices = padChunk(uint16Bytes([0, 1, 2]), 0);
   const binary = concatAligned([positions, normals, texcoords, indices, ktx2Bytes], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V9 V8 loader KTX2/Basis fixture" },
+    asset: { version: "2.0", generator: "Aura3D V9 V8 loader KTX2/Basis fixture" },
     extensionsUsed: ["KHR_texture_basisu"],
     extensionsRequired: ["KHR_texture_basisu"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -322,7 +322,7 @@ function renderUi(root: HTMLElement, runtime: V8LoaderKtx2Runtime): void {
     <section class="panel">
       <div>
         <h1>V8 Loader KTX2</h1>
-        <p>KHR_texture_basisu texture imported, transcoded, and rendered through G3D WebGL2.</p>
+        <p>KHR_texture_basisu texture imported, transcoded, and rendered through A3D WebGL2.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>
     </section>

@@ -37,12 +37,12 @@ def assign(obj, material):
     return obj
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
@@ -57,10 +57,10 @@ def bevel(obj, amount=0.02, segments=2):
 
 
 def cube(name, loc, scale, material, bevel_width=0.018, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     assign(obj, material)
     if bevel_width:
@@ -73,7 +73,7 @@ def cylinder(name, loc, radius, depth, material, vertices=32, rot=(0, 0, 0)):
         vertices=vertices,
         radius=radius,
         depth=depth,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -88,7 +88,7 @@ def sphere(name, loc, radius, material, segments=32):
         segments=segments,
         ring_count=max(8, segments // 2),
         radius=radius,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
     )
     obj = bpy.context.object
     obj.name = name
@@ -136,7 +136,7 @@ def cone(name, loc, radius1, radius2, depth, material, vertices=40, rot=(0, 0, 0
         radius1=radius1,
         radius2=radius2,
         depth=depth,
-        location=loc_g3d(loc),
+        location=loc_a3d(loc),
         rotation=rot,
     )
     obj = bpy.context.object
@@ -161,7 +161,7 @@ def ramp(name, x, z, width, height, depth, material, angle=0):
     mesh.update()
     obj = bpy.data.objects.new(name, mesh)
     bpy.context.collection.objects.link(obj)
-    obj.location = loc_g3d((x, 0.02, z))
+    obj.location = loc_a3d((x, 0.02, z))
     obj.rotation_euler[1] = angle
     assign(obj, material)
     bevel(obj, 0.012)
@@ -169,7 +169,7 @@ def ramp(name, x, z, width, height, depth, material, angle=0):
 
 
 def text_label(name, body, loc, size, material, rot=(math.radians(72), 0, 0)):
-    bpy.ops.object.text_add(location=loc_g3d(loc), rotation=rot)
+    bpy.ops.object.text_add(location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
     obj.data.body = body

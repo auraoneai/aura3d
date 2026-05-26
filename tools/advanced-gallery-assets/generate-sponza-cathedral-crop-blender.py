@@ -35,28 +35,28 @@ def mat(name, color, metallic=0.0, roughness=0.55, emission=None, strength=0.0, 
     return material
 
 
-def loc_g3d(value):
+def loc_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
-def scale_g3d(value):
+def scale_a3d(value):
     x, y, z = value
     return (x, z, y)
 
 
 def cube(name, loc, scale, material, rot=(0, 0, 0)):
-    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_g3d(loc), rotation=rot)
+    bpy.ops.mesh.primitive_cube_add(size=1, location=loc_a3d(loc), rotation=rot)
     obj = bpy.context.object
     obj.name = name
-    obj.dimensions = scale_g3d(scale)
+    obj.dimensions = scale_a3d(scale)
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
     obj.data.materials.append(material)
     return obj
 
 
 def beam_mesh(name, points, material):
-    verts = [loc_g3d(point) for point in points]
+    verts = [loc_a3d(point) for point in points]
     mesh = bpy.data.meshes.new(f"{name} mesh")
     mesh.from_pydata(verts, [], [(0, 1, 2, 3)])
     mesh.update()
@@ -102,10 +102,10 @@ def crop_sponza_mesh(obj) -> None:
 
 
 def add_atmosphere() -> None:
-    cyan = mat("G3D soft aperture light shaft material", (0.58, 0.82, 0.96, 0.09), roughness=0.14, emission=(0.045, 0.18, 0.3, 1), strength=0.34, alpha=0.09)
-    amber = mat("G3D warm lantern accents", (1.0, 0.58, 0.18, 1), roughness=0.24, emission=(1.0, 0.35, 0.06, 1), strength=2.5)
-    fog = mat("G3D layered low interior haze", (0.56, 0.7, 0.78, 0.075), roughness=0.28, emission=(0.035, 0.08, 0.1, 1), strength=0.09, alpha=0.075)
-    dark = mat("G3D foreground dark plinth silhouettes", (0.025, 0.03, 0.034, 1), metallic=0.25, roughness=0.55)
+    cyan = mat("A3D soft aperture light shaft material", (0.58, 0.82, 0.96, 0.09), roughness=0.14, emission=(0.045, 0.18, 0.3, 1), strength=0.34, alpha=0.09)
+    amber = mat("A3D warm lantern accents", (1.0, 0.58, 0.18, 1), roughness=0.24, emission=(1.0, 0.35, 0.06, 1), strength=2.5)
+    fog = mat("A3D layered low interior haze", (0.56, 0.7, 0.78, 0.075), roughness=0.28, emission=(0.035, 0.08, 0.1, 1), strength=0.09, alpha=0.075)
+    dark = mat("A3D foreground dark plinth silhouettes", (0.025, 0.03, 0.034, 1), metallic=0.25, roughness=0.55)
 
     for i, z in enumerate([4.8, 3.5, 2.2, 0.9, -0.4, -1.7, -3.0, -4.3]):
         cube(f"curated low fog volume card {i:02d}", (0, 0.18 + (i % 3) * 0.045, z), (13.2 - i * 0.48, 0.11, 0.035), fog)

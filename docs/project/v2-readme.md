@@ -1,11 +1,11 @@
-# Galileo3D v2 Documentation Index
+# Aura3D v2 Documentation Index
 
 > Historical note: This V2 document is retained as project history after the V9 parity reset. Current planning, claim boundaries, and code-backed parity status live in `docs/project/v9-roadmap-status.md`, `docs/project/v9-roadmap-parity-matrix.md`, and `docs/project/v9-roadmap-three-js-parity-plan.md`. Treat unchecked tasks or old claims here as historical unless they are restated in the V9 docs.
 
 
 ## Purpose
 
-This v2 documentation set restates Galileo3D's current feature evidence and the work required before external claims such as "better than Three.js" or "competitive with Unity/Unreal for the web" are credible.
+This v2 documentation set restates Aura3D's current feature evidence and the work required before external claims such as "better than Three.js" or "competitive with Unity/Unreal for the web" are credible.
 
 The existing `docs/*.md` corpus is a rebuild specification, PRD set, trace system, and generated audit record. It is useful, but it mixes product ambition, internal gate status, generated trace evidence, stale gap language, and completion claims. The v2 docs are intentionally different:
 
@@ -102,4 +102,4 @@ Use these terms consistently:
 | Externally credible | Real-world assets, browsers, devices, examples, docs, and comparative benchmarks support a public claim. |
 | Production credible | External apps, regression history, compatibility matrix, documented limits, and support process exist. |
 
-Galileo3D currently has many internal slices and one exact checked-in scaffold bundle-size niche. It is not yet externally credible as broadly "better than Three.js" or "Unity/Unreal for the web."
+Aura3D currently has many internal slices and one exact checked-in scaffold bundle-size niche. It is not yet externally credible as broadly "better than Three.js" or "Unity/Unreal for the web."

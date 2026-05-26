@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    __G3D_V4_INTERACTIVE_SHOWCASE__?: unknown;
+    __A3D_V4_INTERACTIVE_SHOWCASE__?: unknown;
   }
 }
 
@@ -51,7 +51,7 @@ export async function mountInteractiveShowcaseV4(id: string): Promise<void> {
       featureChecklist: ["camera-controls", "selection", "material-variants", "diagnostics", "app-ui"],
       claimBoundary
     };
-    window.__G3D_V4_INTERACTIVE_SHOWCASE__ = state;
+    window.__A3D_V4_INTERACTIVE_SHOWCASE__ = state;
     status.textContent = JSON.stringify(state, null, 2);
   }
   camera.addEventListener("input", () => { interactions += 1; render(); });

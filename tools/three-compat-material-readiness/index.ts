@@ -9,7 +9,7 @@ import {
 } from "../../packages/materials/src";
 
 interface V5MaterialManifest {
-  readonly schema: "g3d-three-compat-material-library/v1";
+  readonly schema: "a3d-three-compat-material-library/v1";
   readonly requirements: {
     readonly minimumMaterialPresets: number;
     readonly minimumRealTextureBackedPresets: number;
@@ -56,7 +56,7 @@ const checks: V5MaterialReadinessCheck[] = [
     requiredFiles.every((file) => existsSync(resolve(file))),
     requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 material files exist"
   ),
-  check("schema", manifest.schema === "g3d-three-compat-material-library/v1", `schema=${manifest.schema}`),
+  check("schema", manifest.schema === "a3d-three-compat-material-library/v1", `schema=${manifest.schema}`),
   check(
     "material-floor",
     summary.materialCount >= manifest.requirements.minimumMaterialPresets,
@@ -106,7 +106,7 @@ const checks: V5MaterialReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "g3d-three-compat-material-readiness/v1",
+  schema: "a3d-three-compat-material-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass,
   summary,

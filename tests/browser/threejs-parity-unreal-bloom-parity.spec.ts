@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/unreal-bloom-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/unreal-bloom-parity/g3d-unreal-bloom.png",
+  a3d: "tests/reports/threejs-parity/unreal-bloom-parity/a3d-unreal-bloom.png",
   threejs: "tests/reports/threejs-parity/unreal-bloom-parity/threejs-unreal-bloom.png",
   sideBySide: "tests/reports/threejs-parity/unreal-bloom-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 UnrealBloomPass same-scene parity", () => {
     await server.close();
   });
 
-  test("captures G3D bloom chain against actual Three.js UnrealBloomPass", async ({ page }) => {
+  test("captures A3D bloom chain against actual Three.js UnrealBloomPass", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -58,41 +58,41 @@ test.describe("V9 UnrealBloomPass same-scene parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-unreal-bloom-parity/v1");
-    expect(result.purpose).toBe("same-scene G3D bloom chain vs Three.js EffectComposer UnrealBloomPass");
+    expect(result.schema).toBe("a3d-threejs-parity-unreal-bloom-parity/v1");
+    expect(result.purpose).toBe("same-scene A3D bloom chain vs Three.js EffectComposer UnrealBloomPass");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
     expect(result.assertions.actualEffectComposer).toBe(true);
     expect(result.assertions.actualUnrealBloomPass).toBe(true);
-    expect(result.assertions.g3dBloomChain).toBe(true);
+    expect(result.assertions.a3dBloomChain).toBe(true);
     expect(result.assertions.brightOutput).toBe(true);
     expect(result.assertions.haloOutput).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.renderer.actualG3DRenderer).toBe(true);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.postprocess.chain).toEqual(["bloom", "tone-mapping", "fxaa"]);
-    expect(result.g3d.postprocess.threshold).toBeCloseTo(0.08, 5);
-    expect(result.g3d.postprocess.radius).toBeCloseTo(2, 5);
+    expect(result.a3d.renderer.actualA3DRenderer).toBe(true);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.postprocess.chain).toEqual(["bloom", "tone-mapping", "fxaa"]);
+    expect(result.a3d.postprocess.threshold).toBeCloseTo(0.08, 5);
+    expect(result.a3d.postprocess.radius).toBeCloseTo(2, 5);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.triangles).toBeGreaterThan(0);
     expect(result.threejs.postprocess.actualEffectComposer).toBe(true);
     expect(result.threejs.postprocess.actualRenderPass).toBe(true);
     expect(result.threejs.postprocess.actualUnrealBloomPass).toBe(true);
     expect(result.threejs.postprocess.threshold).toBeCloseTo(0.08, 5);
-    expect(result.g3d.pixels.nonBlackPixels).toBeGreaterThan(20_000);
+    expect(result.a3d.pixels.nonBlackPixels).toBeGreaterThan(20_000);
     expect(result.threejs.pixels.nonBlackPixels).toBeGreaterThan(20_000);
-    expect(result.g3d.pixels.brightPixels).toBeGreaterThan(4_000);
+    expect(result.a3d.pixels.brightPixels).toBeGreaterThan(4_000);
     expect(result.threejs.pixels.brightPixels).toBeGreaterThan(4_000);
-    expect(result.g3d.pixels.haloPixels).toBeGreaterThan(3_000);
+    expect(result.a3d.pixels.haloPixels).toBeGreaterThan(3_000);
     expect(result.threejs.pixels.haloPixels).toBeGreaterThan(8_000);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThan(16);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThan(16);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThan(16);
     expect(result.diff.meanDelta).toBeLessThanOrEqual(140);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.45);
     expect(pageErrors).toEqual([]);
     assertReferenceUnrealBloomPassUsed();
-    assertNoThreeJsInG3DBloomRuntimeSource();
+    assertNoThreeJsInA3DBloomRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -133,7 +133,7 @@ function assertReferenceUnrealBloomPassUsed(): void {
   expect(passSource).toContain("separableBlurMaterials");
 }
 
-function assertNoThreeJsInG3DBloomRuntimeSource(): void {
+function assertNoThreeJsInA3DBloomRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/postprocessing-bloom/src/main.ts",
@@ -165,10 +165,10 @@ function stripDataUrls(result: Extract<UnrealBloomParityResult, { readonly statu
 type UnrealBloomParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-unreal-bloom-parity/v1";
+      readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
       readonly purpose: string;
-      readonly g3d: {
-        readonly renderer: { readonly drawCalls: number; readonly actualG3DRenderer: boolean };
+      readonly a3d: {
+        readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: boolean };
         readonly postprocess: { readonly chain: readonly string[]; readonly threshold: number; readonly radius: number };
         readonly pixels: { readonly nonBlackPixels: number; readonly brightPixels: number; readonly haloPixels: number; readonly uniqueColorBuckets: number };
       };
@@ -188,16 +188,16 @@ type UnrealBloomParityResult =
         readonly actualThreeRenderer: boolean;
         readonly actualEffectComposer: boolean;
         readonly actualUnrealBloomPass: boolean;
-        readonly g3dBloomChain: boolean;
+        readonly a3dBloomChain: boolean;
         readonly brightOutput: boolean;
         readonly haloOutput: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
   | {
       readonly status: "error";
-      readonly schema: "g3d-threejs-parity-unreal-bloom-parity/v1";
+      readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
       readonly error: string;
     };

@@ -8,14 +8,14 @@ import {
   type ProjectedDecalTriangleMesh,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, type Vec3 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, type Vec3 } from "@aura3d/scene";
 import { placeDecalFromPointer, seededDecals, type DecalPlacement } from "./decalPlacement";
 
 declare global {
   interface Window {
-    __g3dV8Decals?: V8DecalsRuntime;
+    __a3dV8Decals?: V8DecalsRuntime;
   }
 }
 
@@ -96,7 +96,7 @@ async function run(): Promise<void> {
   };
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: renderSize.width,
       height: renderSize.height,
@@ -140,7 +140,7 @@ async function run(): Promise<void> {
           ...decalMaterialStats(resources),
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__g3dV8Decals = runtime;
+        window.__a3dV8Decals = runtime;
         if (nextFrame === 1 || nextFrame % 8 === 0) publish(root, runtime);
         requestAnimationFrame(render);
       } catch (error) {
@@ -410,13 +410,13 @@ function createLights(): readonly CollectedLight[] {
 }
 
 function publish(root: HTMLElement, runtime: V8DecalsRuntime): void {
-  window.__g3dV8Decals = runtime;
+  window.__a3dV8Decals = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "loading" ? "is-loading" : "is-running";
   root.innerHTML = `
     <section class="panel">
       <div>
         <h1>V8 Decals</h1>
-        <p>Click the curved fixture to add G3D-rendered decals from a pointer raycast.</p>
+        <p>Click the curved fixture to add A3D-rendered decals from a pointer raycast.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>
     </section>
@@ -435,7 +435,7 @@ function publish(root: HTMLElement, runtime: V8DecalsRuntime): void {
       <span>raycast ${escapeHtml(runtime.raycastStatus)}</span>
       <span>renderer ${escapeHtml(runtime.rendererStatus)}</span>
       <span>${runtime.elapsedMs}ms elapsed</span>
-      <span>WebGL2 G3D renderer</span>
+      <span>WebGL2 A3D renderer</span>
     </section>
     <section class="controls">
       <label>Placement target<input type="range" min="0" max="1" value="${runtime.raycastStatus === "miss" ? "0" : "1"}" disabled></label>
@@ -445,7 +445,7 @@ function publish(root: HTMLElement, runtime: V8DecalsRuntime): void {
     <section class="diagnostics">
       <h2>Diagnostics</h2>
       <span>Last placement: ${escapeHtml(runtime.lastPlacement)}</span>
-      <span>Surface decals are G3D ProjectedDecalGeometry ellipse meshes clipped to the raycast target with transparent depth-safe PBR decal materials.</span>
+      <span>Surface decals are A3D ProjectedDecalGeometry ellipse meshes clipped to the raycast target with transparent depth-safe PBR decal materials.</span>
     </section>
     ${runtime.error ? `<pre class="runtime-error">${escapeHtml(runtime.error)}</pre>` : ""}
   `;

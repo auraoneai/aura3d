@@ -7,7 +7,7 @@ import {
   createProductMaterialMode,
   createProductRenderScene,
   loadProductAsset
-} from "@galileo3d/product-studio";
+} from "@aura3d/product-studio";
 
 const products = ["camera-kit", "speaker", "watch"] as const;
 const results = [];
@@ -15,8 +15,8 @@ const results = [];
 for (const id of products) {
   const asset = await loadProductAsset({
     id,
-    url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), `fixtures/v2/products/${id}/${id}.gltf`))),
-    manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), `fixtures/v2/products/${id}/manifest.json`)))
+    url: dataUri("model/gltf+json", readFileSync(join(process.cwd(), `fixtures/product-studio/products/${id}/${id}.gltf`))),
+    manifestUrl: dataUri("application/json", readFileSync(join(process.cwd(), `fixtures/product-studio/products/${id}/manifest.json`)))
   });
   const scene = createProductRenderScene(asset, {
     lighting: createProductLightingPreset("catalog-softbox"),
@@ -39,7 +39,7 @@ for (const id of products) {
 }
 
 const report = {
-  schema: "g3d-product-studio-sdk/v1",
+  schema: "a3d-product-studio-sdk/v1",
   generatedAt: new Date().toISOString(),
   pass: results.every((result) => result.partCount >= 8 && result.materialCount >= 3 && result.textureCount >= 12 && result.warnings.length === 0),
   results

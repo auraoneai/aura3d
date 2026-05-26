@@ -9,7 +9,7 @@ This document lists the workflow surfaces that V3 currently builds and verifies.
 
 Public API:
 
-- `createAssetViewerWorkflow()` from `@galileo3d/workflows`.
+- `createAssetViewerWorkflow()` from `@aura3d/workflows`.
 
 Evidence:
 
@@ -21,8 +21,8 @@ Evidence:
 
 Public API:
 
-- `createProductConfiguratorWorkflow()` from `@galileo3d/workflows`.
-- Product Studio APIs from `@galileo3d/product-studio`.
+- `createProductConfiguratorWorkflow()` from `@aura3d/workflows`.
+- Product Studio APIs from `@aura3d/product-studio`.
 
 Evidence:
 
@@ -34,7 +34,7 @@ Evidence:
 
 Public API:
 
-- `createMaterialStudioWorkflow()` from `@galileo3d/workflows`.
+- `createMaterialStudioWorkflow()` from `@aura3d/workflows`.
 
 Evidence:
 
@@ -46,7 +46,7 @@ Evidence:
 
 Public API:
 
-- `createSceneShowcaseWorkflow()` from `@galileo3d/workflows`.
+- `createSceneShowcaseWorkflow()` from `@aura3d/workflows`.
 
 Evidence:
 
@@ -58,13 +58,13 @@ Evidence:
 
 Public API:
 
-- `createInteractiveSceneWorkflow()` from `@galileo3d/workflows`.
+- `createInteractiveSceneWorkflow()` from `@aura3d/workflows`.
 
 Evidence:
 
 - App: `apps/game-lab`.
 - Examples: `examples/foundation-interactive-scene`, `examples/foundation-game-slice`.
-- Same-scene comparison: `tests/reports/foundation-threejs-comparison/interactive-g3d.png`.
+- Same-scene comparison: `tests/reports/foundation-threejs-comparison/interactive-a3d.png`.
 
 ## Required Gates
 

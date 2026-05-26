@@ -11,7 +11,7 @@ const missing = evidence.filter((path) => !fileExists(path));
 const issues = missing.map((path) => reportIssue(`missing-external-consumer-evidence:${path}`, `Missing external consumer evidence source ${path}.`, "warning"));
 
 writeJson(outputPath, {
-  schema: "g3d-threejs-parity-external-consumer/v1",
+  schema: "a3d-threejs-parity-external-consumer/v1",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0,
   evidence,

@@ -1,5 +1,5 @@
-import { PBRMaterial } from "@galileo3d/rendering";
-import type { Material } from "@galileo3d/rendering";
+import { PBRMaterial } from "@aura3d/rendering";
+import type { Material } from "@aura3d/rendering";
 import type { ProductAsset, ProductMaterialMode, ProductMaterialModeId } from "./ProductTypes";
 
 export function createProductMaterialMode(id: ProductMaterialModeId = "asset"): ProductMaterialMode {

@@ -1,5 +1,5 @@
 export const APP_ID = "animation-keyframes" as const;
-export const RUNTIME_KEY = "__g3dV8AnimationKeyframes" as const;
+export const RUNTIME_KEY = "__a3dV8AnimationKeyframes" as const;
 export const ASSET_URL = "/fixtures/threejs-parity/assets/character/robot-expressive.glb";
 
 export type V8RuntimeStatus = "loading" | "ready" | "running" | "error";
@@ -39,7 +39,7 @@ export interface V8AnimationKeyframesRuntime {
 
 declare global {
   interface Window {
-    __g3dV8AnimationKeyframes?: V8AnimationKeyframesRuntime;
+    __a3dV8AnimationKeyframes?: V8AnimationKeyframesRuntime;
   }
 }
 

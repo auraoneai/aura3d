@@ -82,7 +82,7 @@ function main(): void {
   const unchecked = scopedTasks.filter((task) => !task.checked);
   const docs = listV3Docs();
   const commit = gitSha();
-  const runId = process.env.G3D_RELEASE_RUN_ID ?? `v3-${args.track}-${Date.now()}`;
+  const runId = process.env.A3D_RELEASE_RUN_ID ?? `v3-${args.track}-${Date.now()}`;
 
   if (args.track === "examples" || args.track === "all") {
     runCommand("node --experimental-strip-types tools/example-truth-audit/index.ts", runId);
@@ -300,7 +300,7 @@ function runCommand(command: string, runId: string): void {
     cwd: root,
     shell: true,
     stdio: "inherit",
-    env: { ...process.env, G3D_RELEASE_RUN_ID: runId },
+    env: { ...process.env, A3D_RELEASE_RUN_ID: runId },
   });
 }
 

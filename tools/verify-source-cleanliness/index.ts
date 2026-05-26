@@ -179,7 +179,7 @@ export function verifySourceCleanliness(root = process.cwd(), options: SourceCle
   return {
     ok: violations.length === 0,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-source-cleanliness-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-source-cleanliness-run",
     checkedFiles: files.length,
     checkedTextFiles,
     scannedRoots: scannedRoots.map((entry) => relative(root, entry) || "."),

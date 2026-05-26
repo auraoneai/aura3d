@@ -14,8 +14,8 @@ import {
   type UnlitMaterial,
   VertexBuffer,
   VertexFormat
-} from "@galileo3d/rendering";
-import { DirectionalLight, PointLight } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { DirectionalLight, PointLight } from "@aura3d/scene";
 import type { GalleryState, Resources, SceneFrame } from "./sceneBuilderPrimitives";
 import { activeSlice, type RouteEvidencePayload } from "./advancedRouteEvidence";
 import { bounds, hash01, modelMatrix, type Vec3 } from "./math";
@@ -56,7 +56,7 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     backend: {
       supported: false,
       backend: "none",
-      reason: "The V9 data-galaxy route renders through g3d-webgl2 and has no native compute-particle solver bound to it."
+      reason: "The V9 data-galaxy route renders through a3d-webgl2 and has no native compute-particle solver bound to it."
     },
     targetFrameMs: 34
   });

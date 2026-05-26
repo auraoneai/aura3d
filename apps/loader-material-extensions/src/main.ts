@@ -4,13 +4,13 @@ import {
   createGLTFRenderResources,
   evaluateGLTFExtensionSupport,
   type GLTFRenderResources
-} from "@galileo3d/assets";
-import { Material } from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
+} from "@aura3d/assets";
+import { Material } from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __g3dV8LoaderMaterialExtensions?: V8LoaderMaterialExtensionsRuntime;
+    __a3dV8LoaderMaterialExtensions?: V8LoaderMaterialExtensionsRuntime;
   }
 }
 
@@ -31,7 +31,7 @@ interface V8LoaderMaterialExtensionsRuntime {
   readonly extensionsUsed: readonly string[];
   readonly unsupportedRequired: readonly string[];
   readonly elapsedMs: number;
-  readonly renderer: "g3d-webgl2";
+  readonly renderer: "a3d-webgl2";
   readonly error?: string;
 }
 
@@ -71,7 +71,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__g3dV8LoaderMaterialExtensions = runtime;
+    window.__a3dV8LoaderMaterialExtensions = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -79,7 +79,7 @@ async function run(): Promise<void> {
   try {
     const asset = await new GLTFLoader().load({ url: createMaterialExtensionsFixtureDataUrl() }, new LoadContext());
     const resources = await createGLTFRenderResources(asset);
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -122,7 +122,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: extensionSupport.unsupportedRequired
         });
-        window.__g3dV8LoaderMaterialExtensions = runtime;
+        window.__a3dV8LoaderMaterialExtensions = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -140,7 +140,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<G3DRenderer["renderFrame"]>[0] {
+function createRendererInput(resources: GLTFRenderResources, time: number): Parameters<A3DRenderer["renderFrame"]>[0] {
   const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
     qualityPreset: "studio-preview",
     postprocess: {
@@ -255,7 +255,7 @@ function createRuntime(
     extensionsUsed: patch.extensionsUsed ?? [],
     unsupportedRequired: patch.unsupportedRequired ?? [],
     elapsedMs: Math.round(performance.now() - startedAt),
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     ...(patch.error ? { error: patch.error } : {})
   };
 }
@@ -266,7 +266,7 @@ function createMaterialExtensionsFixtureDataUrl(): string {
   const indices = uint16Bytes([0, 1, 2, 0, 2, 3]);
   const binary = concatAligned([positions, normals, indices], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D V9 V8 loader material extensions fixture" },
+    asset: { version: "2.0", generator: "Aura3D V9 V8 loader material extensions fixture" },
     extensionsUsed: ["KHR_materials_clearcoat", "KHR_materials_sheen", "KHR_materials_transmission"],
     extensionsRequired: ["KHR_materials_clearcoat", "KHR_materials_sheen", "KHR_materials_transmission"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -355,7 +355,7 @@ function renderUi(root: HTMLElement, runtime: V8LoaderMaterialExtensionsRuntime)
     <section class="panel">
       <div>
         <h1>V8 Loader Material Extensions</h1>
-        <p>Required glTF physical material extensions imported into G3D PBR uniforms.</p>
+        <p>Required glTF physical material extensions imported into A3D PBR uniforms.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>
     </section>

@@ -1,6 +1,6 @@
-# @galileo3d/audio
+# @aura3d/audio
 
-`@galileo3d/audio` owns browser audio-context lifecycle control, clips, sources, buses, mixing, listener transforms, spatial attenuation, effects, and scene audio bridges.
+`@aura3d/audio` owns browser audio-context lifecycle control, clips, sources, buses, mixing, listener transforms, spatial attenuation, effects, and scene audio bridges.
 
 ## Public API
 

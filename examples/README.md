@@ -1,4 +1,4 @@
-# Galileo3D Current Example Truth
+# Aura3D Current Example Truth
 
 Open `examples/index.html` first. It is the current truth page for checked-in engine proof slices.
 
@@ -26,4 +26,4 @@ The old numbered validation examples are no longer presented as the primary page
 
 ## Claim Boundary
 
-These examples show the strongest current checked-in capability, but that capability is still visually primitive. They do not make Galileo3D production-ready, broadly better than Three.js, or a Unity/Unreal replacement for the web.
+These examples show the strongest current checked-in capability, but that capability is still visually primitive. They do not make Aura3D production-ready, broadly better than Three.js, or a Unity/Unreal replacement for the web.

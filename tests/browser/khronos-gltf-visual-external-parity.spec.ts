@@ -74,7 +74,7 @@ test.describe("V4 Khronos glTF visual corpus evidence", () => {
       excludedAssetIds.length === 0 &&
       validations.every((entry) => entry.ok);
     const report = {
-      schemaVersion: "g3d-v4-khronos-gltf-visuals-v1",
+      schemaVersion: "a3d-v4-khronos-gltf-visuals-v1",
       generatedAt: new Date().toISOString(),
       command: "pnpm verify:v4-khronos-visuals",
       sourceManifest: "tests/assets/corpus/gltf-corpus.manifest.json",
@@ -86,7 +86,7 @@ test.describe("V4 Khronos glTF visual corpus evidence", () => {
       fullPinnedCorpusVisualParity,
       fullCorpusVisualParity: fullPinnedCorpusVisualParity,
       fullKhronosSampleAssetsRepositoryParity: false,
-      claimBoundary: "This report proves browser visual execution for every asset in the checked-in pinned Khronos manifest through Galileo3D's asset viewer, including pass/warn GLB assets and browser-decoder-backed Meshopt GLTF. It is not full upstream Khronos Sample Assets repository parity, broad loader extension parity, or Three.js/Babylon visual parity.",
+      claimBoundary: "This report proves browser visual execution for every asset in the checked-in pinned Khronos manifest through Aura3D's asset viewer, including pass/warn GLB assets and browser-decoder-backed Meshopt GLTF. It is not full upstream Khronos Sample Assets repository parity, broad loader extension parity, or Three.js/Babylon visual parity.",
       ok: validations.length === expectedVisualAssets.length && validations.every((entry) => entry.ok),
       validations,
     };
@@ -107,12 +107,12 @@ async function renderKhronosAsset(
   const url = localKhronosUrl(origin, asset) ?? asset.source.uri;
   await page.goto(`${origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
-    () => window.__GALILEO3D_ASSET_VIEWER__?.status === "ready" || window.__GALILEO3D_ASSET_VIEWER__?.status === "error",
+    () => window.__AURA3D_ASSET_VIEWER__?.status === "ready" || window.__AURA3D_ASSET_VIEWER__?.status === "error",
     undefined,
     { timeout: 30_000 }
   );
   const state = await page.evaluate(() => {
-    const result = window.__GALILEO3D_ASSET_VIEWER__;
+    const result = window.__AURA3D_ASSET_VIEWER__;
     return {
       status: result?.status,
       error: result?.error,
@@ -198,7 +198,7 @@ function visualStatus(status: string | undefined, pixels: { readonly nonBlankPix
 }
 
 function failureReason(
-  state: Window["__GALILEO3D_ASSET_VIEWER__"],
+  state: Window["__AURA3D_ASSET_VIEWER__"],
   pixels: { readonly nonBlankPixels: number; readonly colorBuckets: number }
 ): string | undefined {
   if (state?.status !== "ready") return state?.error ?? "asset viewer did not reach ready state";
@@ -218,7 +218,7 @@ function relativeReportPath(path: string): string {
 
 declare global {
   interface Window {
-    __GALILEO3D_ASSET_VIEWER__?: {
+    __AURA3D_ASSET_VIEWER__?: {
       readonly status?: "ready" | "error";
       readonly meshCount?: number;
       readonly vertexCount?: number;

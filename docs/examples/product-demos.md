@@ -4,9 +4,9 @@ These examples are early product-style proof slices. They are separate from vali
 
 | Demo | Path | Runtime state | Current proof |
 |---|---|---|---|
-| Product configurator | `examples/product-configurator` | `window.__GALILEO3D_PRODUCT_DEMO__` | Public `Renderer.create({ backend: "webgl2" })`, `renderer.render(...)`, material swatch buttons, pointer cycling, draw-call diagnostics, and nonblank WebGL pixels. |
-| Architecture viewer | `examples/architecture-viewer` | `window.__GALILEO3D_ARCHITECTURE_DEMO__` | Public WebGL2 renderer path, viewport zone selection, measurement metadata, draw-call diagnostics, and nonblank WebGL pixels. |
-| Game slice | `examples/game-slice` | `window.__GALILEO3D_GAME_DEMO__` | Public WebGL2 renderer path with physics, animation, input, particles, audio state, pointer and keyboard interactions, draw-call diagnostics, and nonblank WebGL pixels. |
+| Product configurator | `examples/product-configurator` | `window.__AURA3D_PRODUCT_DEMO__` | Public `Renderer.create({ backend: "webgl2" })`, `renderer.render(...)`, material swatch buttons, pointer cycling, draw-call diagnostics, and nonblank WebGL pixels. |
+| Architecture viewer | `examples/architecture-viewer` | `window.__AURA3D_ARCHITECTURE_DEMO__` | Public WebGL2 renderer path, viewport zone selection, measurement metadata, draw-call diagnostics, and nonblank WebGL pixels. |
+| Game slice | `examples/game-slice` | `window.__AURA3D_GAME_DEMO__` | Public WebGL2 renderer path with physics, animation, input, particles, audio state, pointer and keyboard interactions, draw-call diagnostics, and nonblank WebGL pixels. |
 
 ## Learnability Contract
 
@@ -16,9 +16,9 @@ The app source must expose a runtime state object that can be inspected from the
 
 Use these source entry points when learning from the examples:
 
-- `examples/product-configurator/main.ts`: material variants, swatch UI, render-item construction, and `window.__GALILEO3D_PRODUCT_DEMO__`.
-- `examples/architecture-viewer/main.ts`: zone metadata, selection, measurement reporting, and `window.__GALILEO3D_ARCHITECTURE_DEMO__`.
-- `examples/game-slice/main.ts`: renderer, physics, animation, particles, input, audio state, and `window.__GALILEO3D_GAME_DEMO__`.
+- `examples/product-configurator/main.ts`: material variants, swatch UI, render-item construction, and `window.__AURA3D_PRODUCT_DEMO__`.
+- `examples/architecture-viewer/main.ts`: zone metadata, selection, measurement reporting, and `window.__AURA3D_ARCHITECTURE_DEMO__`.
+- `examples/game-slice/main.ts`: renderer, physics, animation, particles, input, audio state, and `window.__AURA3D_GAME_DEMO__`.
 
 ## Verification
 
@@ -45,7 +45,7 @@ A valid demo state must include:
 - clean renderer diagnostics with no context loss or last error
 - nonblank WebGL pixels from the demo canvas
 - demo-specific pointer interaction assertions
-- source validation proving each demo imports `@galileo3d/rendering`, creates `Renderer`, calls `renderer.render`, exposes the documented runtime state, has a README, and does not use 2D canvas or static-image shortcuts
+- source validation proving each demo imports `@aura3d/rendering`, creates `Renderer`, calls `renderer.render`, exposes the documented runtime state, has a README, and does not use 2D canvas or static-image shortcuts
 
 The product visual report is written to `tests/reports/product-visual.json`. It records each stable state, canvas dimensions, semantic pixel checks, a same-state screenshot-diff threshold, an interaction-state screenshot-diff threshold, platform-aware tolerance, and a CI retention note for `tests/reports/product-*.json` plus Playwright `test-results`.
 
@@ -53,6 +53,6 @@ The product performance report is written to `tests/reports/product-performance.
 
 ## Claim Language
 
-These demos are app-scale proof slices. They must not be described as production-ready applications or as evidence that Galileo3D is broadly better than Three.js, Babylon.js, Unity, or Unreal.
+These demos are app-scale proof slices. They must not be described as production-ready applications or as evidence that Aura3D is broadly better than Three.js, Babylon.js, Unity, or Unreal.
 
 They are local checked-in examples, not externally hosted demos. External demo status is tracked separately in `docs/examples/external-demos.md`.

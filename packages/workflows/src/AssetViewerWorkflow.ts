@@ -1,5 +1,5 @@
-import { createRenderableScene, loadRenderableAsset } from "@galileo3d/assets";
-import type { LoadRenderableAssetOptions } from "@galileo3d/assets";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/assets";
+import type { LoadRenderableAssetOptions } from "@aura3d/assets";
 import { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
 import type { AssetViewerWorkflowOptions, AssetViewerWorkflowResult } from "./WorkflowTypes";
 

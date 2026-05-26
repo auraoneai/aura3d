@@ -16,3 +16,5 @@ export * from "./LocomotionController.js";
 export * from "./SceneAnimationBridge.js";
 export * from "./ECSAnimationBridge.js";
 export * from "./IK.js";
+export * from "./MotionMatchingFixtures.js";
+export * from "./SecondaryAnimationFixtures.js";

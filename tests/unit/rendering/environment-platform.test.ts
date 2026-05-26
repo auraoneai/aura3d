@@ -99,7 +99,7 @@ describe("environment stage helpers", () => {
     }
   });
 
-  it("returns real G3D render items for grids, sky domes, floors, walls, and accents", () => {
+  it("returns real A3D render items for grids, sky domes, floors, walls, and accents", () => {
     const stage = createEnvironmentStage({ preset: "indoor-studio", size: 8, gridDivisions: 8 });
 
     expect(stage.items.some((item) => item.label?.includes("procedural sky dome") && item.material instanceof UnlitMaterial)).toBe(true);

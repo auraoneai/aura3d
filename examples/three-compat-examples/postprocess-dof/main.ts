@@ -1,4 +1,4 @@
-import "@galileo3d/rendering";
+import "@aura3d/rendering";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#app");
 const ctx = canvas?.getContext("2d");
@@ -11,4 +11,4 @@ if (canvas && ctx) {
   ctx.font = "24px system-ui";
   ctx.fillText("Postprocess Dof", 40, 48);
 }
-(document.body as HTMLBodyElement).dataset.g3dExample = "postprocess-dof";
+(document.body as HTMLBodyElement).dataset.a3dExample = "postprocess-dof";

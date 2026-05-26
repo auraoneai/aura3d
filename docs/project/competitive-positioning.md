@@ -1,20 +1,20 @@
 # Competitive Positioning
 
-G3D is a production browser 3D engine and workflow SDK that matches or exceeds Three.js in the measured categories documented by the V10 superiority audit.
+A3D is a production browser 3D engine and workflow SDK that matches or exceeds Three.js in the measured categories documented by the V10 superiority audit.
 
 ## Positioning Statement
 
-G3D gives web teams a first-party 3D engine stack with product-viewer, material-review, asset-inspection, animation, physics, WebGPU/WebGL2, WebXR, migration, and renderer-diagnostic workflows built in. It is strongest where a team wants a productized browser 3D SDK instead of assembling raw Three.js primitives, loaders, postprocessing, diagnostics, and app scaffolding by hand.
+A3D gives web teams a first-party 3D engine stack with product-viewer, material-review, asset-inspection, animation, physics, WebGPU/WebGL2, WebXR, migration, and renderer-diagnostic workflows built in. It is strongest where a team wants a productized browser 3D SDK instead of assembling raw Three.js primitives, loaders, postprocessing, diagnostics, and app scaffolding by hand.
 
 Current claim:
 
-> G3D matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by `tests/reports/v10/superiority-audit.json` and `docs/project/v10-superiority-status.md`.
+> A3D matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by `tests/reports/v10/superiority-audit.json` and `docs/project/v10-superiority-status.md`.
 
 ## Versus Three.js
 
-Three.js remains an important ecosystem benchmark with a long history, broad community knowledge, and a large examples catalog. G3D competes by shipping workflow-level outcomes as first-party package code and by requiring generated evidence before public claims advance.
+Three.js remains an important ecosystem benchmark with a long history, broad community knowledge, and a large examples catalog. A3D competes by shipping workflow-level outcomes as first-party package code and by requiring generated evidence before public claims advance.
 
-G3D differentiates through:
+A3D differentiates through:
 
 - workflow-level APIs for product viewers, configurators, material studios, asset inspection, animation review, physics showcases, WebGPU/WebGL2 rendering, and migration labs;
 - built-in diagnostics for route health, renderer behavior, assets, animation motion quality, materials, resources, and reports;
@@ -25,9 +25,9 @@ G3D differentiates through:
 
 ## Versus Babylon.js
 
-Babylon.js is a mature engine-style web 3D framework. G3D’s wedge is not generic engine sprawl; it is TypeScript-first browser workflow delivery with auditable package boundaries, diagnostics, and route evidence.
+Babylon.js is a mature engine-style web 3D framework. A3D’s wedge is not generic engine sprawl; it is TypeScript-first browser workflow delivery with auditable package boundaries, diagnostics, and route evidence.
 
-G3D should compete where teams need:
+A3D should compete where teams need:
 
 - repeatable product/asset/material workflows;
 - renderer and asset diagnostics as part of the SDK;
@@ -37,7 +37,7 @@ G3D should compete where teams need:
 
 ## Versus Unity And Unreal
 
-Unity and Unreal target broader native/editor/game-engine markets. G3D’s competitive claim is browser workflow scope:
+Unity and Unreal target broader native/editor/game-engine markets. A3D’s competitive claim is browser workflow scope:
 
 - faster web deployment for selected 3D product tools;
 - lower runtime and workflow overhead for product viewers, asset inspection, material review, and internal browser tools;

@@ -13,7 +13,7 @@ import {
   TexturedUnlitMaterial,
   UnlitMaterial,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 interface RenderingBudget {
   readonly name: string;

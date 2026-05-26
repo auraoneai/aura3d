@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { AssetManager, GLTFLoader, type GLTFAsset } from "@galileo3d/assets";
+import { AssetManager, GLTFLoader, type GLTFAsset } from "@aura3d/assets";
 
 interface LoadSample {
   readonly name: string;
@@ -118,7 +118,7 @@ function createTriangleGltfDataUri(seed: number): string {
   const indices = uint16Bytes([0, 1, 2]);
   const buffer = concatBytes(positions, indices);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D asset load performance fixture" },
+    asset: { version: "2.0", generator: "Aura3D asset load performance fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews: [
       { buffer: 0, byteOffset: 0, byteLength: positions.byteLength },

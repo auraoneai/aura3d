@@ -4,7 +4,7 @@ import {
   type OceanFixturePreset,
   type OceanFoamPatch,
   type OceanWaveDescriptor
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 import { resolveGalleryWaterFrameParameters } from "./showcaseShaders";
 
 export interface WaterRippleInput {
@@ -198,7 +198,7 @@ export interface OceanRouteProfile {
 const WATER_NATIVE_GAPS: readonly GalleryWaterNativeGap[] = [
   {
     system: "native GPGPU water heightfield",
-    currentFallback: "CPU-sampled procedural ripple field rendered as a dense G3D mesh.",
+    currentFallback: "CPU-sampled procedural ripple field rendered as a dense A3D mesh.",
     consequence: "The route can prove animated interaction ripples and measured foam probes, but not GPU solver parity.",
     evidenceBoundary: "Runtime telemetry reports CPU samples, active ripples, foam coverage, and blocked solver claims."
   },
@@ -770,7 +770,7 @@ export function sampleWaterLabTelemetry(options: {
   });
   return createTelemetry({
     route: "water-lab",
-    source: "g3d-gallery-cpu-ripple-field",
+    source: "a3d-gallery-cpu-ripple-field",
     sourceFiles: [
       "apps/advanced-examples-gallery/src/waterSystems.ts",
       "apps/advanced-examples-gallery/src/showcaseShaders.ts"

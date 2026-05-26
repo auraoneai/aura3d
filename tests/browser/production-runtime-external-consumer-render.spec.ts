@@ -27,13 +27,13 @@ test.describe("V6 external consumer render", () => {
     await page.goto(`${server.origin}/tests/reports/production-runtime-external-consumer-preview/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__g3dV6Example as { status?: string } | undefined;
+        const runtime = window.__a3dV6Example as { status?: string } | undefined;
         return runtime?.status === "ready" || runtime?.status === "error";
       },
       undefined,
       { timeout: 60_000 }
     );
-    const runtime = await page.evaluate(() => window.__g3dV6Example) as {
+    const runtime = await page.evaluate(() => window.__a3dV6Example) as {
       status: "ready" | "error";
       error?: string;
       rendererBackend?: string;
@@ -56,7 +56,7 @@ test.describe("V6 external consumer render", () => {
     const screenshot = "tests/reports/production-runtime-external-consumer/external-consumer-render.png";
     await page.locator("#viewport").screenshot({ path: screenshot });
     writeFileSync(resolve("tests/reports/production-runtime-external-consumer-render.json"), `${JSON.stringify({
-      schema: "g3d-production-runtime-external-consumer-render/v1",
+      schema: "a3d-production-runtime-external-consumer-render/v1",
       generatedAt: new Date().toISOString(),
       pass: true,
       screenshot,

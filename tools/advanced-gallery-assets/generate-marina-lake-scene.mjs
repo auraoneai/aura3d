@@ -163,7 +163,7 @@ writeFileSync(join(outDir, "marina-lake-scene.bin"), bin);
 writeFileSync(join(outDir, "marina-lake-scene.gltf"), `${JSON.stringify({
   asset: {
     version: "2.0",
-    generator: "G3D v9 advanced gallery authored marina lake generator"
+    generator: "A3D v9 advanced gallery authored marina lake generator"
   },
   scene: 0,
   scenes: [{ name: "Marina Lake Scene", nodes: nodes.map((_, index) => index) }],

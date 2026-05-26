@@ -1,5 +1,5 @@
 {
-  "name": "g3d-external-parity-material-studio",
+  "name": "a3d-external-parity-material-studio",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "@galileo3d/engine": "0.1.0-alpha.0"
+    "@aura3d/engine": "0.1.0-alpha.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.0",

@@ -5,28 +5,28 @@
 
 ## Claim Tiers
 
-Galileo3D needs different proof depending on the claim being made.
+Aura3D needs different proof depending on the claim being made.
 
 | Claim | Current credibility | Required proof |
 |---|---|---|
-| "Galileo3D is a production TypeScript-first browser 3D engine and workflow SDK." | Credible | V10 feature, visual, performance, animation, physics, memory, workflow, and claim-defense reports. |
-| "Galileo3D is a usable internal engine prototype." | Partly credible | Stable `pnpm verify:release`, richer public examples, known-limits docs, and app-scale smoke demos. |
-| "Galileo3D is production-ready." | Credible with V10 evidence | Stable releases, real app adoption, device/browser matrix, asset corpus, regression history, docs, support process. |
-| "Galileo3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run." | Credible only with exact wording | `tests/reports/comparison-threejs.json`, `docs/benchmarks/threejs-comparison.md`, and `docs/comparisons/threejs.md`; must include exclusions for runtime, release bundle size, visual parity, loader parity, ecosystem maturity, and broad superiority. |
-| "Galileo3D matches or exceeds Three.js in measured categories." | Not credible yet | A feature-by-feature comparison plus benchmarks and developer-experience proof in domains where Galileo3D is intentionally higher level. |
-| "Galileo3D is competitive with Unity/Unreal for the web." | Not credible yet | A browser editor, authoring workflows, asset pipeline UX, profiling/debugging tools, build pipeline, sample projects, and production proof. |
+| "Aura3D is a production TypeScript-first browser 3D engine and workflow SDK." | Credible | V10 feature, visual, performance, animation, physics, memory, workflow, and claim-defense reports. |
+| "Aura3D is a usable internal engine prototype." | Partly credible | Stable `pnpm verify:release`, richer public examples, known-limits docs, and app-scale smoke demos. |
+| "Aura3D is production-ready." | Credible with V10 evidence | Stable releases, real app adoption, device/browser matrix, asset corpus, regression history, docs, support process. |
+| "Aura3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run." | Credible only with exact wording | `tests/reports/comparison-threejs.json`, `docs/benchmarks/threejs-comparison.md`, and `docs/comparisons/threejs.md`; must include exclusions for runtime, release bundle size, visual parity, loader parity, ecosystem maturity, and broad superiority. |
+| "Aura3D matches or exceeds Three.js in measured categories." | Not credible yet | A feature-by-feature comparison plus benchmarks and developer-experience proof in domains where Aura3D is intentionally higher level. |
+| "Aura3D is competitive with Unity/Unreal for the web." | Not credible yet | A browser editor, authoring workflows, asset pipeline UX, profiling/debugging tools, build pipeline, sample projects, and production proof. |
 
 Every claim above must also be registered in `docs/project/v2-claim-registry.md` before it appears in public docs, README text, release notes, package descriptions, or marketing copy.
 
 ## What "Better Than Three.js" Could Mean
 
-Three.js is a mature rendering toolkit and ecosystem. Galileo3D should not try to beat it on every axis. A realistic claim is narrower:
+Three.js is a mature rendering toolkit and ecosystem. Aura3D should not try to beat it on every axis. A realistic claim is narrower:
 
-> Galileo3D is a higher-level, TypeScript-native web 3D engine for structured applications, with built-in ECS, physics, animation, assets, editor runtime, diagnostics, and validation.
+> Aura3D is a higher-level, TypeScript-native web 3D engine for structured applications, with built-in ECS, physics, animation, assets, editor runtime, diagnostics, and validation.
 
-To support that claim, Galileo3D needs evidence in these areas:
+To support that claim, Aura3D needs evidence in these areas:
 
-| Dimension | Three.js baseline expectation | Galileo3D proof required |
+| Dimension | Three.js baseline expectation | Aura3D proof required |
 |---|---|---|
 | Renderer features | Mature WebGL renderer, broad materials, examples, postprocessing ecosystem, WebGPU work in progress. | WebGL2/WebGPU feature matrix, advanced materials, real hardware tests, postprocess stack, large-scene performance, documented gaps. |
 | Scene workflow | Cameras, object transforms, controls, loaders, examples, and renderer integration are ordinary expectations. | Camera-driven scene rendering, per-node transforms, view/projection/model/normal matrices, culling, picking, resize, and screenshot proof in real examples. |
@@ -40,9 +40,9 @@ To support that claim, Galileo3D needs evidence in these areas:
 
 Unity and Unreal are not just renderers. They are authoring ecosystems. A realistic web claim is:
 
-> Galileo3D provides a lightweight, browser-native engine and editor workflow for web-first 3D applications where TypeScript integration, deployment size, and direct web platform access matter more than AAA authoring depth.
+> Aura3D provides a lightweight, browser-native engine and editor workflow for web-first 3D applications where TypeScript integration, deployment size, and direct web platform access matter more than AAA authoring depth.
 
-To support that, Galileo3D needs:
+To support that, Aura3D needs:
 
 | Capability | Current evidence | Required external proof |
 |---|---|---|
@@ -65,7 +65,7 @@ The external claims should be blocked until these demos exist and are verified i
 | Architectural scene | large scene, lighting, shadows, camera navigation, picking, measurements | Handles a heavy glTF scene, stable camera controls, visible shadows, selection/measurement, performance report. |
 | Game slice | physics, animation, input, particles, audio, scene/ECS, renderer | Playable loop with collision, animated actors, effects, sound, stable frame time, no hidden validation shortcuts. |
 | Editor app | editor runtime, scene graph, assets, renderer, inspector, hierarchy, gizmos | Browser editor can import asset, place object, edit transform/material, save/load scene, enter play mode. |
-| Benchmark suite | Galileo3D, Three.js, Babylon.js, optionally Unity WebGL | Apples-to-apples scenes for startup, load time, memory, frame time, draw calls, asset compatibility, bundle size. |
+| Benchmark suite | Aura3D, Three.js, Babylon.js, optionally Unity WebGL | Apples-to-apples scenes for startup, load time, memory, frame time, draw calls, asset compatibility, bundle size. |
 
 ## Claim Blockers
 

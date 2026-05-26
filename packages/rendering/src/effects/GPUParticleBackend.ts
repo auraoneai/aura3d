@@ -228,11 +228,11 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
 
     this.device = await this.adapter.requestDevice();
     const module = this.device.createShaderModule({
-      label: "galileo3d-particles-update",
+      label: "aura3d-particles-update",
       code: this.shaderSource,
     });
     this.updatePipeline = this.device.createComputePipeline({
-      label: "galileo3d-particles-update",
+      label: "aura3d-particles-update",
       layout: "auto",
       compute: {
         module,
@@ -240,7 +240,7 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
       },
     });
     this.spawnPipeline = this.device.createComputePipeline({
-      label: "galileo3d-particles-spawn",
+      label: "aura3d-particles-spawn",
       layout: "auto",
       compute: {
         module,
@@ -268,17 +268,17 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
     const pipeline = this.requireSpawnPipeline();
     const byteLength = input.count * 4 * Float32Array.BYTES_PER_ELEMENT;
 
-    const positionBuffer = createStorageBuffer(device, "galileo3d-particles-spawn-positions", byteLength);
-    const velocityBuffer = createStorageBuffer(device, "galileo3d-particles-spawn-velocities", byteLength);
-    const accelerationBuffer = createStorageBuffer(device, "galileo3d-particles-spawn-accelerations", byteLength);
+    const positionBuffer = createStorageBuffer(device, "aura3d-particles-spawn-positions", byteLength);
+    const velocityBuffer = createStorageBuffer(device, "aura3d-particles-spawn-velocities", byteLength);
+    const accelerationBuffer = createStorageBuffer(device, "aura3d-particles-spawn-accelerations", byteLength);
     const paramsBuffer = device.createBuffer({
-      label: "galileo3d-particles-spawn-params",
+      label: "aura3d-particles-spawn-params",
       size: 16,
       usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST,
     });
-    const positionReadback = createReadbackBuffer(device, "galileo3d-particles-spawn-positions-readback", byteLength);
-    const velocityReadback = createReadbackBuffer(device, "galileo3d-particles-spawn-velocities-readback", byteLength);
-    const accelerationReadback = createReadbackBuffer(device, "galileo3d-particles-spawn-accelerations-readback", byteLength);
+    const positionReadback = createReadbackBuffer(device, "aura3d-particles-spawn-positions-readback", byteLength);
+    const velocityReadback = createReadbackBuffer(device, "aura3d-particles-spawn-velocities-readback", byteLength);
+    const accelerationReadback = createReadbackBuffer(device, "aura3d-particles-spawn-accelerations-readback", byteLength);
 
     try {
       device.queue.writeBuffer(positionBuffer, 0, viewParticleSlice(input.positions, input.count));
@@ -287,7 +287,7 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
       device.queue.writeBuffer(paramsBuffer, 0, createParamsBuffer(0, input.count));
 
       const bindGroup = device.createBindGroup({
-        label: "galileo3d-particles-spawn-bind-group",
+        label: "aura3d-particles-spawn-bind-group",
         layout: pipeline.getBindGroupLayout(0),
         entries: [
           { binding: 0, resource: { buffer: positionBuffer } },
@@ -296,8 +296,8 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
           { binding: 3, resource: { buffer: paramsBuffer } },
         ],
       });
-      const commandEncoder = device.createCommandEncoder({ label: "galileo3d-particles-spawn-encoder" });
-      const computePass = commandEncoder.beginComputePass({ label: "galileo3d-particles-spawn-pass" });
+      const commandEncoder = device.createCommandEncoder({ label: "aura3d-particles-spawn-encoder" });
+      const computePass = commandEncoder.beginComputePass({ label: "aura3d-particles-spawn-pass" });
       computePass.setPipeline(pipeline);
       computePass.setBindGroup(0, bindGroup);
       const workgroups = Math.ceil(input.count / WORKGROUP_SIZE);
@@ -352,16 +352,16 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
     const pipeline = this.requireUpdatePipeline();
     const byteLength = input.count * 4 * Float32Array.BYTES_PER_ELEMENT;
 
-    const positionBuffer = createStorageBuffer(device, "galileo3d-particles-positions", byteLength);
-    const velocityBuffer = createStorageBuffer(device, "galileo3d-particles-velocities", byteLength);
-    const accelerationBuffer = createStorageBuffer(device, "galileo3d-particles-accelerations", byteLength);
+    const positionBuffer = createStorageBuffer(device, "aura3d-particles-positions", byteLength);
+    const velocityBuffer = createStorageBuffer(device, "aura3d-particles-velocities", byteLength);
+    const accelerationBuffer = createStorageBuffer(device, "aura3d-particles-accelerations", byteLength);
     const paramsBuffer = device.createBuffer({
-      label: "galileo3d-particles-params",
+      label: "aura3d-particles-params",
       size: 16,
       usage: BUFFER_USAGE.UNIFORM | BUFFER_USAGE.COPY_DST,
     });
-    const positionReadback = createReadbackBuffer(device, "galileo3d-particles-positions-readback", byteLength);
-    const velocityReadback = createReadbackBuffer(device, "galileo3d-particles-velocities-readback", byteLength);
+    const positionReadback = createReadbackBuffer(device, "aura3d-particles-positions-readback", byteLength);
+    const velocityReadback = createReadbackBuffer(device, "aura3d-particles-velocities-readback", byteLength);
 
     try {
       device.queue.writeBuffer(positionBuffer, 0, viewParticleSlice(input.positions, input.count));
@@ -370,7 +370,7 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
       device.queue.writeBuffer(paramsBuffer, 0, createParamsBuffer(input.deltaTime, input.count));
 
       const bindGroup = device.createBindGroup({
-        label: "galileo3d-particles-update-bind-group",
+        label: "aura3d-particles-update-bind-group",
         layout: pipeline.getBindGroupLayout(0),
         entries: [
           { binding: 0, resource: { buffer: positionBuffer } },
@@ -379,8 +379,8 @@ export class WebGPUParticleBackend implements GPUParticleBackend {
           { binding: 3, resource: { buffer: paramsBuffer } },
         ],
       });
-      const commandEncoder = device.createCommandEncoder({ label: "galileo3d-particles-update-encoder" });
-      const computePass = commandEncoder.beginComputePass({ label: "galileo3d-particles-update-pass" });
+      const commandEncoder = device.createCommandEncoder({ label: "aura3d-particles-update-encoder" });
+      const computePass = commandEncoder.beginComputePass({ label: "aura3d-particles-update-pass" });
       computePass.setPipeline(pipeline);
       computePass.setBindGroup(0, bindGroup);
       const workgroups = Math.ceil(input.count / WORKGROUP_SIZE);

@@ -1,5 +1,5 @@
-import { createStudioLighting } from "@galileo3d/engine/production-runtime";
-import { createLightingRig, type CollectedLight } from "@galileo3d/rendering";
+import { createStudioLighting } from "@aura3d/engine/production-runtime";
+import { createLightingRig, type CollectedLight } from "@aura3d/rendering";
 import type { SceneFrame } from "./sceneBuilderPrimitives";
 
 export type ProductConfiguratorLightingControl = "studio" | "inspection" | string;

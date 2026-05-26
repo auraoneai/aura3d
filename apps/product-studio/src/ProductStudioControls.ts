@@ -3,7 +3,7 @@ import type {
   ProductCameraPreset,
   ProductLightingPreset,
   ProductMaterialModeId
-} from "@galileo3d/product-studio";
+} from "@aura3d/product-studio";
 import type { ProductStudioAppState } from "./ProductStudioState";
 
 export interface ProductStudioControlHandlers {

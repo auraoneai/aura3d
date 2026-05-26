@@ -1,6 +1,6 @@
 # V9 Shader, Material, And State System
 
-G3D has a renderer-owned shader/material/state stack. It is strong enough for the matched V9 routes, but not a full clone of every Three.js material behavior.
+A3D has a renderer-owned shader/material/state stack. It is strong enough for the matched V9 routes, but not a full clone of every Three.js material behavior.
 
 ## Real Code
 

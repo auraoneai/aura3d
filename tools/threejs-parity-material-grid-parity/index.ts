@@ -8,9 +8,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, quatFromEuler } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 import * as THREE from "three";
 
 declare global {
@@ -25,12 +25,12 @@ type MaterialGridParityResult = MaterialGridParityReady | MaterialGridParityErro
 
 interface MaterialGridParityReady {
   readonly status: "ready";
-  readonly schema: "g3d-threejs-parity-material-grid-parity/v1";
-  readonly purpose: "same-scene G3D material grid vs Three.js MeshBasic/Standard/Physical material grid";
+  readonly schema: "a3d-threejs-parity-material-grid-parity/v1";
+  readonly purpose: "same-scene A3D material grid vs Three.js MeshBasic/Standard/Physical material grid";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
-  readonly g3d: {
-    readonly renderer: { readonly drawCalls: number; readonly triangles: number; readonly actualG3DRenderer: true };
+  readonly a3d: {
+    readonly renderer: { readonly drawCalls: number; readonly triangles: number; readonly actualA3DRenderer: true };
     readonly materials: MaterialStats;
     readonly pixels: PixelStats;
   };
@@ -43,19 +43,19 @@ interface MaterialGridParityReady {
   readonly assertions: {
     readonly sameResolution: boolean;
     readonly actualThreeRenderer: boolean;
-    readonly g3dMaterialCoverage: boolean;
+    readonly a3dMaterialCoverage: boolean;
     readonly threeMaterialCoverage: boolean;
     readonly screenshotsNonBlank: boolean;
     readonly visibleMaterialVariation: boolean;
     readonly fakeEqualityClaimed: false;
   };
-  readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+  readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
   readonly humanNotes: readonly string[];
 }
 
 interface MaterialGridParityError {
   readonly status: "error";
-  readonly schema: "g3d-threejs-parity-material-grid-parity/v1";
+  readonly schema: "a3d-threejs-parity-material-grid-parity/v1";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -103,31 +103,31 @@ async function run(): Promise<void> {
   const status = document.getElementById("report-status");
   const json = document.getElementById("report-json");
   try {
-    const g3dCanvas = requiredCanvas("g3d-material-grid", SCENE.width, SCENE.height);
+    const a3dCanvas = requiredCanvas("a3d-material-grid", SCENE.width, SCENE.height);
     const threeCanvas = requiredCanvas("threejs-material-grid", SCENE.width, SCENE.height);
     const sideBySideCanvas = requiredCanvas("side-by-side", SCENE.width * 2, SCENE.height + 60);
 
-    if (status) status.textContent = "rendering G3D material grid";
-    const g3d = await renderG3D(g3dCanvas);
+    if (status) status.textContent = "rendering A3D material grid";
+    const a3d = await renderA3D(a3dCanvas);
     if (status) status.textContent = "rendering Three.js material grid";
     const threejs = await renderThree(threeCanvas);
 
-    const [g3dPixels, threePixels] = await Promise.all([dataUrlToPixels(g3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
-    const g3dStats = analyzeImageData(g3dPixels);
+    const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
+    const a3dStats = analyzeImageData(a3dPixels);
     const threeStats = analyzeImageData(threePixels);
-    const diff = computeDiff(g3dPixels, threePixels);
-    const sideBySide = await drawSideBySide(sideBySideCanvas, g3d.dataUrl, threejs.dataUrl, diff);
+    const diff = computeDiff(a3dPixels, threePixels);
+    const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
 
     const ready: MaterialGridParityReady = {
       status: "ready",
-      schema: "g3d-threejs-parity-material-grid-parity/v1",
-      purpose: "same-scene G3D material grid vs Three.js MeshBasic/Standard/Physical material grid",
+      schema: "a3d-threejs-parity-material-grid-parity/v1",
+      purpose: "same-scene A3D material grid vs Three.js MeshBasic/Standard/Physical material grid",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
-      g3d: {
-        renderer: { drawCalls: g3d.drawCalls, triangles: g3d.triangles, actualG3DRenderer: true },
-        materials: g3d.materials,
-        pixels: g3dStats
+      a3d: {
+        renderer: { drawCalls: a3d.drawCalls, triangles: a3d.triangles, actualA3DRenderer: true },
+        materials: a3d.materials,
+        pixels: a3dStats
       },
       threejs: {
         renderer: { actualThreeRenderer: threejs.actualThreeRenderer, drawCalls: threejs.drawCalls, triangles: threejs.triangles },
@@ -136,15 +136,15 @@ async function run(): Promise<void> {
       },
       diff,
       assertions: {
-        sameResolution: g3dPixels.width === threePixels.width && g3dPixels.height === threePixels.height,
+        sameResolution: a3dPixels.width === threePixels.width && a3dPixels.height === threePixels.height,
         actualThreeRenderer: threejs.actualThreeRenderer,
-        g3dMaterialCoverage: hasMaterialCoverage(g3d.materials),
+        a3dMaterialCoverage: hasMaterialCoverage(a3d.materials),
         threeMaterialCoverage: hasMaterialCoverage(threejs.materials),
-        screenshotsNonBlank: g3dStats.foregroundPixels > 65_000 && threeStats.foregroundPixels > 65_000,
-        visibleMaterialVariation: g3dStats.uniqueColorBuckets > 80 && threeStats.uniqueColorBuckets > 80,
+        screenshotsNonBlank: a3dStats.foregroundPixels > 65_000 && threeStats.foregroundPixels > 65_000,
+        visibleMaterialVariation: a3dStats.uniqueColorBuckets > 80 && threeStats.uniqueColorBuckets > 80,
         fakeEqualityClaimed: false
       },
-      dataUrls: { g3d: g3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
+      dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide },
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "The same grid covers unlit/basic, matte, metallic, rough, emissive, clearcoat, and transparent material behavior.",
@@ -157,7 +157,7 @@ async function run(): Promise<void> {
   } catch (error) {
     const failure: MaterialGridParityError = {
       status: "error",
-      schema: "g3d-threejs-parity-material-grid-parity/v1",
+      schema: "a3d-threejs-parity-material-grid-parity/v1",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
@@ -167,16 +167,16 @@ async function run(): Promise<void> {
   }
 }
 
-async function renderG3D(canvas: HTMLCanvasElement) {
-  const renderer = await G3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.64, 0.64, 0.64, 1] });
+async function renderA3D(canvas: HTMLCanvasElement) {
+  const renderer = await A3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.64, 0.64, 0.64, 1] });
   const frame = computePerspectiveCameraFrame(SCENE.frameBounds, { width: SCENE.width, height: SCENE.height }, CAMERA);
-  const source = createG3DSource();
+  const source = createA3DSource();
   const result = renderer.render({ source, camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix } });
   await waitFrames(2);
   return {
     drawCalls: result.drawCalls,
     triangles: result.triangles,
-    materials: createMaterialStats("g3d"),
+    materials: createMaterialStats("a3d"),
     dataUrl: canvas.toDataURL("image/png")
   };
 }
@@ -206,9 +206,9 @@ async function renderThree(canvas: HTMLCanvasElement) {
   };
 }
 
-function createG3DSource(): RenderSource {
+function createA3DSource(): RenderSource {
   return {
-    collectRenderItems: () => createG3DItems(),
+    collectRenderItems: () => createA3DItems(),
     collectedLights: createLights(),
     cameraPolicy: "require",
     cameraFrameBounds: SCENE.frameBounds,
@@ -232,11 +232,11 @@ function createG3DSource(): RenderSource {
   };
 }
 
-function createG3DItems(): readonly RenderItem[] {
+function createA3DItems(): readonly RenderItem[] {
   const sphere = Geometry.uvSphere(0.5, 56, 28);
   const floor = new PBRMaterial({ name: "material-grid-floor", baseColor: [0.78, 0.78, 0.76, 1], roughness: 0.64, metallic: 0, environmentIntensity: 0.38 });
   const backdrop = new PBRMaterial({ name: "material-grid-backdrop", baseColor: [0.62, 0.62, 0.61, 1], roughness: 0.72, metallic: 0, environmentIntensity: 0.24 });
-  const materials = createG3DMaterials();
+  const materials = createA3DMaterials();
   return [
     { label: "material-grid-floor", geometry: Geometry.litCube(1), material: floor, modelMatrix: composeMat4([0, -0.58, 0.02], [0, 0, 0, 1], [6.2, 0.05, 1.65]) },
     { label: "material-grid-backdrop", geometry: Geometry.litCube(1), material: backdrop, modelMatrix: composeMat4([0, 0.38, -0.74], [0, 0, 0, 1], [6.2, 2.0, 0.05]) },
@@ -249,7 +249,7 @@ function createG3DItems(): readonly RenderItem[] {
   ];
 }
 
-function createG3DMaterials() {
+function createA3DMaterials() {
   return [
     new UnlitMaterial({ name: "unlit", color: [0.93, 0.16, 0.12, 1] }),
     new PBRMaterial({ name: "matte", baseColor: [0.1, 0.48, 0.86, 1], roughness: 0.82, metallic: 0, environmentIntensity: 0.44 }),
@@ -314,7 +314,7 @@ function createThreeMaterials(): THREE.Material[] {
   ];
 }
 
-function createMaterialStats(engine: "g3d" | "threejs"): MaterialStats {
+function createMaterialStats(engine: "a3d" | "threejs"): MaterialStats {
   return {
     total: SCENE.materialNames.length,
     unlit: 1,
@@ -400,19 +400,19 @@ function computeDiff(left: ImageData, right: ImageData): DiffStats {
   return { meanDelta: Number(meanDelta.toFixed(4)), maxDelta: Number(maxDelta.toFixed(4)), changedPixels, structuralSimilarityProxy: Number(Math.max(0, 1 - meanDelta / 255).toFixed(4)) };
 }
 
-async function drawSideBySide(canvas: HTMLCanvasElement, g3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
+async function drawSideBySide(canvas: HTMLCanvasElement, a3dDataUrl: string, threeDataUrl: string, diff: DiffStats): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create material-grid side-by-side canvas.");
-  const [g3d, three] = await Promise.all([loadImage(g3dDataUrl), loadImage(threeDataUrl)]);
+  const [a3d, three] = await Promise.all([loadImage(a3dDataUrl), loadImage(threeDataUrl)]);
   context.fillStyle = "#07090d";
   context.fillRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(g3d, 0, 0, SCENE.width, SCENE.height);
+  context.drawImage(a3d, 0, 0, SCENE.width, SCENE.height);
   context.drawImage(three, SCENE.width, 0, SCENE.width, SCENE.height);
   context.fillStyle = "rgba(7, 9, 13, 0.92)";
   context.fillRect(0, SCENE.height, canvas.width, 60);
   context.fillStyle = "#f3f6f8";
   context.font = "20px system-ui, sans-serif";
-  context.fillText("Left: G3D material grid | Right: Three.js material grid", 20, SCENE.height + 28);
+  context.fillText("Left: A3D material grid | Right: Three.js material grid", 20, SCENE.height + 28);
   context.fillStyle = "#aeb8c6";
   context.font = "16px system-ui, sans-serif";
   context.fillText(`mean delta ${diff.meanDelta} | changed ${diff.changedPixels} | SSIM proxy ${diff.structuralSimilarityProxy}`, 20, SCENE.height + 50);

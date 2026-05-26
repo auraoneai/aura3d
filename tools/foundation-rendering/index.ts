@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { MockRenderDevice, createRendererFeatureReport, rendererFeatureCatalog } from "@galileo3d/rendering";
+import { MockRenderDevice, createRendererFeatureReport, rendererFeatureCatalog } from "@aura3d/rendering";
 import { createSubsystemReport, pathExists, reportOk } from "../foundation-subsystem-report/index.js";
 import { readJson, writeJson } from "../foundation-reporting/index.js";
 
@@ -52,14 +52,14 @@ const baseReport = createSubsystemReport(root, {
     "tests/reports/visual-browser.json",
   ],
   screenshotPaths: [
-    "tests/reports/pbr-material-lab-galileo.png",
+    "tests/reports/pbr-material-lab-aura3d.png",
     "tests/reports/pbr-material-lab-threejs.png",
     "tests/reports/pbr-material-lab-diff.png",
   ],
   checks: [
     {
       id: "pbr-comparison-report",
-      description: "Bounded same-page Galileo3D/Three.js PBR comparison report exists and passes.",
+      description: "Bounded same-page Aura3D/Three.js PBR comparison report exists and passes.",
       passed: reportOk(root, "tests/reports/pbr-rendering-comparison.json"),
       evidencePaths: ["tests/reports/pbr-rendering-comparison.json"],
       blocker: "PBR comparison report is missing or failing.",

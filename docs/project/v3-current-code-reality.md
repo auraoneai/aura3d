@@ -35,7 +35,7 @@ But the visible output is still mostly primitive. The current examples demonstra
 | glTF fidelity | Loader parses many features and creates resources. | Visual compatibility against real corpus, texture fidelity, skinning/morph/animation playback from glTF, material extensions rendered correctly, unsupported cases surfaced. |
 | WebGPU | Contracts and limited checks. | Real WebGPU renderer path on hardware, feature matrix, fallback, compute particles, performance comparison, shader diagnostics. |
 | Editor | Editor-runtime APIs and an app scaffold exist. | Usable browser editor: viewport, hierarchy, inspector, asset browser, import settings, material editor, gizmos, play mode, save/load, prefab/template workflow, profiler. |
-| Benchmarks | Some reports and comparisons exist. | Same-scene Three.js/Babylon/Galileo benchmark harnesses with real assets, screenshots, frame/memory/startup/load metrics, reproducible local runner. |
+| Benchmarks | Some reports and comparisons exist. | Same-scene Three.js/Babylon/Aura3D benchmark harnesses with real assets, screenshots, frame/memory/startup/load metrics, reproducible local runner. |
 
 ## Why v2 "Completed" Did Not Equal The Big Claim
 

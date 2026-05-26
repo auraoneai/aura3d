@@ -1,4 +1,4 @@
-import { AudioListener, AudioSystem } from "@galileo3d/audio";
+import { AudioListener, AudioSystem } from "@aura3d/audio";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

@@ -8,7 +8,7 @@ import { startExampleDevServer, type ExampleDevServer } from "../browser/example
 
 declare global {
   interface Window {
-    __GALILEO3D_PBR_MATERIAL_LAB__?: {
+    __AURA3D_PBR_MATERIAL_LAB__?: {
       status: "ready" | "error";
       renderer: "webgl2";
       environmentLighting: "sampled-environment-map-approximation";
@@ -18,7 +18,7 @@ declare global {
       pixels?: Record<string, readonly number[]>;
       error?: string;
     };
-    __GALILEO3D_PBR_CAMERA_COMPARISON__?: {
+    __AURA3D_PBR_CAMERA_COMPARISON__?: {
       status: "ready" | "error";
       renderer: "webgl2";
       referenceRenderer: "three";
@@ -28,7 +28,7 @@ declare global {
       claimBoundary: "bounded-camera-pbr-reference-comparison";
       diagnostics?: { drawCalls: number; lastError: string | null };
       canvasFrame?: { width: number; height: number };
-      materialChecks?: Record<string, { galileo: readonly number[]; reference: readonly number[]; galileoPass: boolean; referencePass: boolean }>;
+      materialChecks?: Record<string, { aura3d: readonly number[]; reference: readonly number[]; aura3dPass: boolean; referencePass: boolean }>;
       error?: string;
     };
   }
@@ -39,7 +39,7 @@ test.describe("PBR material lab pixels", () => {
   const report: PbrEnvironmentValidationReport = {
     ok: false,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-pbr-environment-validation-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-pbr-environment-validation-run",
     gitSha: gitSha(),
     command: "pnpm exec playwright test tests/visual/pbr-environment-pixels.spec.ts",
     environment: {
@@ -103,10 +103,10 @@ test.describe("PBR material lab pixels", () => {
   test("renders PBR material pixels with a bounded sampled environment-map approximation and documents that physically correct IBL is not claimed", async ({ page }) => {
     await page.goto(`${server.origin}/examples/pbr-material-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
-      () => window.__GALILEO3D_PBR_MATERIAL_LAB__?.status === "ready" || window.__GALILEO3D_PBR_MATERIAL_LAB__?.status === "error",
+      () => window.__AURA3D_PBR_MATERIAL_LAB__?.status === "ready" || window.__AURA3D_PBR_MATERIAL_LAB__?.status === "error",
       undefined,
       { timeout: 15_000 }
-    ).then(() => page.evaluate(() => window.__GALILEO3D_PBR_MATERIAL_LAB__));
+    ).then(() => page.evaluate(() => window.__AURA3D_PBR_MATERIAL_LAB__));
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
@@ -154,10 +154,10 @@ test.describe("PBR material lab pixels", () => {
   test("renders a perspective-camera PBR scene next to a Three.js reference scene for the bounded claim niche", async ({ page }) => {
     await page.goto(`${server.origin}/examples/pbr-camera-comparison/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
-      () => window.__GALILEO3D_PBR_CAMERA_COMPARISON__?.status === "ready" || window.__GALILEO3D_PBR_CAMERA_COMPARISON__?.status === "error",
+      () => window.__AURA3D_PBR_CAMERA_COMPARISON__?.status === "ready" || window.__AURA3D_PBR_CAMERA_COMPARISON__?.status === "error",
       undefined,
       { timeout: 15_000 }
-    ).then(() => page.evaluate(() => window.__GALILEO3D_PBR_CAMERA_COMPARISON__));
+    ).then(() => page.evaluate(() => window.__AURA3D_PBR_CAMERA_COMPARISON__));
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2");
@@ -182,7 +182,7 @@ test.describe("PBR material lab pixels", () => {
       canvasFrame: result?.canvasFrame ?? { width: 0, height: 0 },
       materialChecks: result?.materialChecks ?? {},
       checks: {
-        allGalileoMaterialsVisible: checks.length === 3 && checks.every(([, check]) => check.galileoPass),
+        allAura3DMaterialsVisible: checks.length === 3 && checks.every(([, check]) => check.aura3dPass),
         allReferenceMaterialsVisible: checks.length === 3 && checks.every(([, check]) => check.referencePass)
       }
     };
@@ -202,7 +202,7 @@ test.describe("PBR material lab pixels", () => {
       report.violations.push({ target: validation.name, message: JSON.stringify(validation) });
     }
 
-    expect(validation.checks.allGalileoMaterialsVisible, JSON.stringify(validation.materialChecks)).toBe(true);
+    expect(validation.checks.allAura3DMaterialsVisible, JSON.stringify(validation.materialChecks)).toBe(true);
     expect(validation.checks.allReferenceMaterialsVisible, JSON.stringify(validation.materialChecks)).toBe(true);
   });
 });
@@ -216,17 +216,17 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
   readonly lightingModel: string;
   readonly drawCalls: number;
   readonly canvasFrame: { readonly width: number; readonly height: number };
-  readonly materialChecks: Record<string, { readonly galileo: readonly number[]; readonly reference: readonly number[]; readonly galileoPass: boolean; readonly referencePass: boolean }>;
+  readonly materialChecks: Record<string, { readonly aura3d: readonly number[]; readonly reference: readonly number[]; readonly aura3dPass: boolean; readonly referencePass: boolean }>;
   readonly checks: Record<string, boolean>;
 }): Promise<void> {
   const artifactPaths = {
-    galileo: "tests/reports/pbr-material-lab-galileo.png",
+    aura3d: "tests/reports/pbr-material-lab-aura3d.png",
     threejs: "tests/reports/pbr-material-lab-threejs.png",
     diff: "tests/reports/pbr-material-lab-diff.png",
     report: "tests/reports/pbr-rendering-comparison.json"
   };
   mkdirSync(dirname(resolve(artifactPaths.report)), { recursive: true });
-  await page.locator("[data-testid='pbr-comparison-galileo-canvas']").screenshot({ path: artifactPaths.galileo });
+  await page.locator("[data-testid='pbr-comparison-aura3d-canvas']").screenshot({ path: artifactPaths.aura3d });
   await page.locator("[data-testid='pbr-comparison-three-canvas']").screenshot({ path: artifactPaths.threejs });
   const capture = await page.evaluate(() => {
     function readCanvas(selector: string): { width: number; height: number; data: number[] } {
@@ -238,28 +238,28 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
       gl.readPixels(0, 0, canvas.width, canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, data);
       return { width: canvas.width, height: canvas.height, data: Array.from(data) };
     }
-    const galileo = readCanvas("[data-testid='pbr-comparison-galileo-canvas']");
+    const aura3d = readCanvas("[data-testid='pbr-comparison-aura3d-canvas']");
     const threejs = readCanvas("[data-testid='pbr-comparison-three-canvas']");
     const diffCanvas = document.createElement("canvas");
-    diffCanvas.width = galileo.width;
-    diffCanvas.height = galileo.height;
+    diffCanvas.width = aura3d.width;
+    diffCanvas.height = aura3d.height;
     const context = diffCanvas.getContext("2d");
     if (!context) throw new Error("Missing 2D context for PBR diff canvas.");
-    const image = context.createImageData(galileo.width, galileo.height);
+    const image = context.createImageData(aura3d.width, aura3d.height);
     for (let index = 0; index < image.data.length; index += 4) {
-      image.data[index] = Math.min(255, Math.abs((galileo.data[index] ?? 0) - (threejs.data[index] ?? 0)) * 3);
-      image.data[index + 1] = Math.min(255, Math.abs((galileo.data[index + 1] ?? 0) - (threejs.data[index + 1] ?? 0)) * 3);
-      image.data[index + 2] = Math.min(255, Math.abs((galileo.data[index + 2] ?? 0) - (threejs.data[index + 2] ?? 0)) * 3);
+      image.data[index] = Math.min(255, Math.abs((aura3d.data[index] ?? 0) - (threejs.data[index] ?? 0)) * 3);
+      image.data[index + 1] = Math.min(255, Math.abs((aura3d.data[index + 1] ?? 0) - (threejs.data[index + 1] ?? 0)) * 3);
+      image.data[index + 2] = Math.min(255, Math.abs((aura3d.data[index + 2] ?? 0) - (threejs.data[index + 2] ?? 0)) * 3);
       image.data[index + 3] = 255;
     }
     context.putImageData(image, 0, 0);
-    return { galileo, threejs, diffPngBase64: diffCanvas.toDataURL("image/png").split(",")[1] ?? "" };
+    return { aura3d, threejs, diffPngBase64: diffCanvas.toDataURL("image/png").split(",")[1] ?? "" };
   });
   writeFileSync(resolve(artifactPaths.diff), Buffer.from(capture.diffPngBase64, "base64"));
 
   const sceneDescriptor = {
     claim: "bounded-perspective-camera-pbr-comparison",
-    galileoRenderer: "webgl2",
+    aura3dRenderer: "webgl2",
     referenceRenderer: "three",
     referencePackage: "three@^0.165.0",
     resolution: validation.canvasFrame,
@@ -276,8 +276,8 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
     environment: {
       kind: "bounded-sampled-equirectangular-rgba8",
       size: [64, 32],
-      galileoMipCount: 3,
-      galileoBrdfLutSize: [32, 32],
+      aura3dMipCount: 3,
+      aura3dBrdfLutSize: [32, 32],
       hdr: false,
       irradianceConvolution: false,
       generatedSpecularPrefilter: false
@@ -294,10 +294,10 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
     { name: "metal", x: 210, y: 135, width: 80, height: 100 },
     { name: "emissive", x: 310, y: 135, width: 90, height: 100 }
   ] as const;
-  const fullCanvas = comparePixelBuffers(capture.galileo, capture.threejs, { x: 0, y: 0, width: capture.galileo.width, height: capture.galileo.height }, 8);
+  const fullCanvas = comparePixelBuffers(capture.aura3d, capture.threejs, { x: 0, y: 0, width: capture.aura3d.width, height: capture.aura3d.height }, 8);
   const roiMetrics = regions.map((region) => ({
     name: region.name,
-    ...comparePixelBuffers(capture.galileo, capture.threejs, region, 8)
+    ...comparePixelBuffers(capture.aura3d, capture.threejs, region, 8)
   }));
   const semanticChecksPassed = Object.values(validation.checks).every(Boolean);
   const deltaThresholdsPassed =
@@ -307,7 +307,7 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
   const report = {
     ok: semanticChecksPassed && deltaThresholdsPassed,
     generatedAt: new Date().toISOString(),
-    releaseRunId: process.env.G3D_RELEASE_RUN_ID ?? "standalone-pbr-rendering-comparison-run",
+    releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-pbr-rendering-comparison-run",
     gitSha: gitSha(),
     command: "pnpm exec playwright test tests/visual/pbr-environment-pixels.spec.ts",
     sourceInputs: [
@@ -320,7 +320,7 @@ async function writePbrRenderingComparisonReport(page: import("@playwright/test"
       "packages/rendering/src/EnvironmentMapResources.ts"
     ],
     claimBoundary: {
-      supported: "One bounded perspective-camera WebGL2 PBR scene is rendered in Galileo3D and a same-page Three.js reference with retained screenshots, semantic material checks, and recorded delta metrics.",
+      supported: "One bounded perspective-camera WebGL2 PBR scene is rendered in Aura3D and a same-page Three.js reference with retained screenshots, semantic material checks, and recorded delta metrics.",
       unsupported: [
         "No production PBR parity claim.",
         "No HDR environment map input.",
@@ -420,7 +420,7 @@ interface PbrEnvironmentValidation {
   drawCalls: number;
   canvasFrame: { width: number; height: number };
   pixels?: Record<string, readonly number[]>;
-  materialChecks?: Record<string, { galileo: readonly number[]; reference: readonly number[]; galileoPass: boolean; referencePass: boolean }>;
+  materialChecks?: Record<string, { aura3d: readonly number[]; reference: readonly number[]; aura3dPass: boolean; referencePass: boolean }>;
   checks: Record<string, boolean>;
 }
 

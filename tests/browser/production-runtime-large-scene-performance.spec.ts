@@ -24,13 +24,13 @@ test.describe("V6 large scene performance", () => {
     await page.goto(`${server.origin}/tests/browser/production-runtime-large-scene-performance.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const report = window.__g3dV6Performance as { status?: string } | undefined;
+        const report = window.__a3dV6Performance as { status?: string } | undefined;
         return report?.status === "ready" || report?.status === "error";
       },
       undefined,
       { timeout: 60_000 }
     );
-    const report = await page.evaluate(() => window.__g3dV6Performance) as {
+    const report = await page.evaluate(() => window.__a3dV6Performance) as {
       status: "ready" | "error";
       error?: string;
       realWebGL2: boolean;
@@ -63,7 +63,7 @@ test.describe("V6 large scene performance", () => {
     mkdirSync(resolve("tests/reports/production-runtime-performance"), { recursive: true });
     await page.locator("#viewport").screenshot({ path: "tests/reports/production-runtime-performance/large-scene-performance.png" });
     writeFileSync(resolve("tests/reports/production-runtime-large-scene-performance.json"), `${JSON.stringify({
-      schema: "g3d-production-runtime-large-scene-performance/v1",
+      schema: "a3d-production-runtime-large-scene-performance/v1",
       generatedAt: new Date().toISOString(),
       pass: true,
       report

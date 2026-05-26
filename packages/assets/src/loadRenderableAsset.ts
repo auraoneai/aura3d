@@ -1,4 +1,4 @@
-import { createCanonicalProductSceneRenderKit, type CanonicalProductSceneFixture } from "@galileo3d/rendering";
+import { createCanonicalProductSceneRenderKit, type CanonicalProductSceneFixture } from "@aura3d/rendering";
 import { GLTFLoader, type GLTFAsset } from "./GLTFLoader";
 import { LoadContext, type LoadContextOptions } from "./LoadContext";
 

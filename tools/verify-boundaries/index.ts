@@ -88,7 +88,7 @@ function packageRootFromFile(root: string, file: string): string | undefined {
 }
 
 function packageFromSpecifier(specifier: string): PackageName | undefined {
-  const match = /^@galileo3d\/([^/]+)/.exec(specifier);
+  const match = /^@aura3d\/([^/]+)/.exec(specifier);
   if (!match) return undefined;
   return packageOrder.includes(match[1] as PackageName) ? (match[1] as PackageName) : undefined;
 }
@@ -169,7 +169,7 @@ export function verifyBoundaries(root = process.cwd()): BoundaryReport {
       const importedPackage = packageFromSpecifier(specifier);
       if (!importedPackage) continue;
 
-      if (/^@galileo3d\/[^/]+\/.+/.test(specifier)) {
+      if (/^@aura3d\/[^/]+\/.+/.test(specifier)) {
         violations.push({
           file,
           importer,

@@ -6,9 +6,9 @@
 Use the public SDK root. Do not import monorepo paths.
 
 ```ts
-import { createEnvironment, createG3DApp, workflows } from "@galileo3d/engine";
+import { createEnvironment, createA3DApp, workflows } from "@aura3d/engine";
 
-const app = await createG3DApp({ canvas, quality: "production" });
+const app = await createA3DApp({ canvas, quality: "production" });
 const environment = createEnvironment({ target: "studio-softbox-hdr" });
 const workflow = await workflows.productConfigurator({
   asset: {

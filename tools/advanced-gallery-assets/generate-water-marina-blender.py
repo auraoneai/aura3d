@@ -169,7 +169,7 @@ def make_scene():
     lamp = mat("dock lantern glow", (1.0, 0.72, 0.34, 1), roughness=0.18, emission=(1.0, 0.47, 0.14, 1), strength=3.4)
     mountain = mat("soft dusk mountains", (0.08, 0.1, 0.14, 1), roughness=0.86)
     shoreline = mat("sand and gravel shoreline", (0.55, 0.45, 0.32, 1), roughness=0.8)
-    water = mat("G3D procedural marina water reference surface", (0.025, 0.2, 0.3, 0.3), roughness=0.08, emission=(0.0, 0.03, 0.05, 1), strength=0.12, alpha=0.3)
+    water = mat("A3D procedural marina water reference surface", (0.025, 0.2, 0.3, 0.3), roughness=0.08, emission=(0.0, 0.03, 0.05, 1), strength=0.12, alpha=0.3)
     foam = mat("measured shoreline foam and wake strips", (0.84, 0.96, 1.0, 0.62), roughness=0.32, emission=(0.18, 0.36, 0.46, 1), strength=0.28, alpha=0.62)
     glint = mat("painted fresnel glint evidence", (0.74, 0.94, 1.0, 0.46), roughness=0.12, emission=(0.2, 0.5, 0.66, 1), strength=0.42, alpha=0.46)
     ripple = mat("visible ripple ring markers", (0.64, 0.9, 1.0, 0.5), roughness=0.2, emission=(0.14, 0.36, 0.46, 1), strength=0.32, alpha=0.5)

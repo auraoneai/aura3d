@@ -11,12 +11,12 @@ const arr = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
 const obj = (value: unknown): Obj => value && typeof value === "object" && !Array.isArray(value) ? value as Obj : {};
 for (const file of required) checks.push({ id: `file:${file}`, pass: exists(file), detail: `${file} must exist.` });
 const source = text("examples/external-interactive-showcase/InteractiveShowcaseV4.ts");
-checks.push({ id: "source", pass: ["cameraControls", "selectionInteraction", "variantInteraction", "__G3D_V4_INTERACTIVE_SHOWCASE__", "same-scene Three.js comparison"].every((phrase) => source.includes(phrase)), detail: "Interactive source must expose camera, selection, variants, state, and boundary." });
+checks.push({ id: "source", pass: ["cameraControls", "selectionInteraction", "variantInteraction", "__A3D_V4_INTERACTIVE_SHOWCASE__", "same-scene Three.js comparison"].every((phrase) => source.includes(phrase)), detail: "Interactive source must expose camera, selection, variants, state, and boundary." });
 const report = json("tests/reports/external-parity-interactive-showcase-browser.json");
 const states = obj(report.states);
 checks.push({ id: "browser", pass: report.ok === true && passes(obj(states.example), "external-interactive-showcase") && passes(obj(states.interacted), "external-interactive-showcase") && passes(obj(states.app), "interactive-showcase-pro"), detail: "Browser report must prove example, interacted state, and app." });
 const pass = checks.every((entry) => entry.pass);
-const output = { schema: "g3d-external-parity-interactive-readiness/v1", generatedAt: new Date().toISOString(), pass, summary: pass ? "V4 Milestone 12 interactive showcase product surface is ready. Production 3D/Three.js parity remains required." : "V4 Milestone 12 is incomplete.", checkedFiles: required, checks };
+const output = { schema: "a3d-external-parity-interactive-readiness/v1", generatedAt: new Date().toISOString(), pass, summary: pass ? "V4 Milestone 12 interactive showcase product surface is ready. Production 3D/Three.js parity remains required." : "V4 Milestone 12 is incomplete.", checkedFiles: required, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-interactive-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-interactive-readiness.json"), `${JSON.stringify(output, null, 2)}\n`);
 if (!pass) { console.error(JSON.stringify(output, null, 2)); process.exit(1); }

@@ -1,5 +1,5 @@
 {
-  "name": "@galileo3d/audio",
+  "name": "@aura3d/audio",
   "version": "1.0.0",
   "type": "module",
   "exports": {
@@ -11,6 +11,6 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@galileo3d/scene": "workspace:*"
+    "@aura3d/scene": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
-# @galileo3d/input
+# @aura3d/input
 
-`@galileo3d/input` owns keyboard, pointer, gamepad, gesture, action-map, interaction, picking-ray, and camera-control runtime contracts.
+`@aura3d/input` owns keyboard, pointer, gamepad, gesture, action-map, interaction, picking-ray, and camera-control runtime contracts.
 
 ## Public API
 

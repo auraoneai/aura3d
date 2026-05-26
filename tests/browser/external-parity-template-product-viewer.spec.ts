@@ -5,10 +5,10 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-template-product-viewer-browser.json";
 const templates = [
-  { id: "external-parity-product-viewer", globalName: "__G3D_TEMPLATE_PRODUCT_VIEWER__", workflowKind: "scene-showcase" },
-  { id: "external-parity-material-studio", globalName: "__G3D_TEMPLATE_MATERIAL_STUDIO__", workflowKind: "material-studio" },
-  { id: "external-parity-asset-gallery", globalName: "__G3D_TEMPLATE_ASSET_GALLERY__", workflowKind: "asset-viewer" },
-  { id: "external-parity-interactive-scene", globalName: "__G3D_TEMPLATE_INTERACTIVE_SCENE__", workflowKind: "interactive-scene" }
+  { id: "external-parity-product-viewer", globalName: "__A3D_TEMPLATE_PRODUCT_VIEWER__", workflowKind: "scene-showcase" },
+  { id: "external-parity-material-studio", globalName: "__A3D_TEMPLATE_MATERIAL_STUDIO__", workflowKind: "material-studio" },
+  { id: "external-parity-asset-gallery", globalName: "__A3D_TEMPLATE_ASSET_GALLERY__", workflowKind: "asset-viewer" },
+  { id: "external-parity-interactive-scene", globalName: "__A3D_TEMPLATE_INTERACTIVE_SCENE__", workflowKind: "interactive-scene" }
 ] as const;
 
 test.describe("V4 V4 product viewer template", () => {
@@ -26,7 +26,7 @@ test.describe("V4 V4 product viewer template", () => {
       await page.goto(`${server.origin}/templates/${template.id}/index.html`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction((globalName) => (window as unknown as Record<string, TemplateState | undefined>)[globalName]?.status === "ready", template.globalName, { timeout: 60_000 });
       const screenshotPath = `tests/reports/external-gallery/templates/${template.id}.png`;
-      await page.locator("[data-testid='g3d-template-canvas']").screenshot({ path: screenshotPath });
+      await page.locator("[data-testid='a3d-template-canvas']").screenshot({ path: screenshotPath });
       const state = await page.evaluate((globalName) => (window as unknown as Record<string, TemplateState | undefined>)[globalName], template.globalName);
       captures.push({ ...template, screenshotPath, state });
     }
@@ -63,10 +63,10 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __G3D_TEMPLATE_PRODUCT_VIEWER__?: TemplateState;
-    __G3D_TEMPLATE_MATERIAL_STUDIO__?: TemplateState;
-    __G3D_TEMPLATE_ASSET_GALLERY__?: TemplateState;
-    __G3D_TEMPLATE_INTERACTIVE_SCENE__?: TemplateState;
+    __A3D_TEMPLATE_PRODUCT_VIEWER__?: TemplateState;
+    __A3D_TEMPLATE_MATERIAL_STUDIO__?: TemplateState;
+    __A3D_TEMPLATE_ASSET_GALLERY__?: TemplateState;
+    __A3D_TEMPLATE_INTERACTIVE_SCENE__?: TemplateState;
   }
 }
 

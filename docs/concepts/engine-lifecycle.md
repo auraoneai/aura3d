@@ -2,33 +2,33 @@
 
 Version: `0.1.0-alpha.0`
 
-Galileo3D applications should make ownership explicit: create browser resources deliberately, advance systems from a known loop, collect diagnostics, and dispose GPU/audio/listener resources when the view unmounts.
+Aura3D applications should make ownership explicit: create browser resources deliberately, advance systems from a known loop, collect diagnostics, and dispose GPU/audio/listener resources when the view unmounts.
 
 ## Startup
 
 Typical startup has four steps:
 
 1. Create or locate the host surface, usually a `<canvas>`.
-2. Create app/runtime systems with public APIs such as `createG3DApp(...)`, `G3DRenderer.create(...)`, `Renderer.create(...)`, `AssetManager`, or `PhysicsWorld`.
+2. Create app/runtime systems with public APIs such as `createA3DApp(...)`, `A3DRenderer.create(...)`, `Renderer.create(...)`, `AssetManager`, or `PhysicsWorld`.
 3. Load or construct scene content.
 4. Render once for a deterministic preview or start an application-owned frame loop.
 
 High-level app path:
 
 ```ts
-import { createG3DApp } from "@galileo3d/engine";
+import { createA3DApp } from "@aura3d/engine";
 
-const app = await createG3DApp({ canvas, quality: "balanced" });
+const app = await createA3DApp({ canvas, quality: "balanced" });
 await app.renderWorkflow("scene-showcase", { preset: "gallery" });
 ```
 
 Direct runtime path:
 
 ```ts
-import { G3DRenderer, G3DScene } from "@galileo3d/engine/v9";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/v9";
 
-const renderer = await G3DRenderer.create({ backend: "webgl2", canvas });
-const scene = new G3DScene();
+const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
+const scene = new A3DScene();
 renderer.render(scene);
 ```
 
@@ -43,7 +43,7 @@ Interactive apps normally update in this order:
 5. render submission;
 6. diagnostics and UI.
 
-Galileo3D exposes pieces of this loop, but your app still owns UI state, route changes, framework hooks, and data loading.
+Aura3D exposes pieces of this loop, but your app still owns UI state, route changes, framework hooks, and data loading.
 
 ## Disposal
 
@@ -61,7 +61,7 @@ Also remove event listeners, abort outstanding asset loads, and release editor p
 
 Use diagnostics snapshots to prove route behavior and detect leaks:
 
-- app diagnostics from `createG3DApp`;
+- app diagnostics from `createA3DApp`;
 - renderer diagnostics from render calls;
 - asset diagnostics from loaded resources;
 - route-health reports under `tests/reports`.
@@ -81,7 +81,7 @@ Keep lifecycle claims tied to tests and routes.
 
 ## Boundary
 
-The engine lifecycle boundary is between app-owned UI/framework state and Galileo3D-owned runtime resources.
+The engine lifecycle boundary is between app-owned UI/framework state and Aura3D-owned runtime resources.
 
 ## Current Limits
 

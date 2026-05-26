@@ -19,7 +19,7 @@ export interface V3ApiAuditPackage {
 }
 
 export interface V3ApiAuditReport {
-  readonly schema: "g3d-foundation-api-audit/v1";
+  readonly schema: "a3d-foundation-api-audit/v1";
   readonly generatedAt: string;
   readonly pass: boolean;
   readonly packageCount: number;
@@ -56,7 +56,7 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
     const hasTsconfigPath = Array.isArray(tsconfigPaths[pkg.packageName]) && tsconfigPaths[pkg.packageName]?.includes(pkg.entrypointPath);
     const documentedInPublicApi = publicApiDocs.includes(`## ${pkg.packageName}`);
     const documentedInV3Map = apiMap.includes(`\`${pkg.packageName}\``);
-    const hasRootSubpathExport = pkg.packageName === "@galileo3d/engine"
+    const hasRootSubpathExport = pkg.packageName === "@aura3d/engine"
       ? true
       : rootSubpath !== undefined && typeof rootExports[rootSubpath] === "string";
 
@@ -88,21 +88,21 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
 
   const futurePackages = [
     {
-      packageName: "@galileo3d/workflows",
+      packageName: "@aura3d/workflows",
       expectedAtMilestone: "Milestone 4 - Workflow SDK Package",
       exists: existsSync(join(workspaceRoot, "packages/workflows/package.json"))
     }
   ];
   const violations = auditedPackages.flatMap((pkg) => pkg.violations);
-  if (!privatePackages.includes("@galileo3d/test-utils")) {
-    violations.push("@galileo3d/test-utils must remain private and excluded from public package docs.");
+  if (!privatePackages.includes("@aura3d/test-utils")) {
+    violations.push("@aura3d/test-utils must remain private and excluded from public package docs.");
   }
-  if (!auditedPackages.some((pkg) => pkg.packageName === "@galileo3d/product-studio")) {
-    violations.push("@galileo3d/product-studio must be part of the V3 public API surface.");
+  if (!auditedPackages.some((pkg) => pkg.packageName === "@aura3d/product-studio")) {
+    violations.push("@aura3d/product-studio must be part of the V3 public API surface.");
   }
 
   return {
-    schema: "g3d-foundation-api-audit/v1",
+    schema: "a3d-foundation-api-audit/v1",
     generatedAt: new Date().toISOString(),
     pass: violations.length === 0,
     packageCount: auditedPackages.length,
@@ -142,8 +142,8 @@ function collectPrivatePackages(workspaceRoot: string): string[] {
 }
 
 function rootSubpathFor(packageName: string): string | undefined {
-  if (!packageName.startsWith("@galileo3d/")) return undefined;
-  const leaf = packageName.slice("@galileo3d/".length);
+  if (!packageName.startsWith("@aura3d/")) return undefined;
+  const leaf = packageName.slice("@aura3d/".length);
   if (leaf === "engine" || leaf === "test-utils") return undefined;
   return `./${leaf}`;
 }

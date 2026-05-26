@@ -1,5 +1,5 @@
-import { Renderable, Scene } from "@galileo3d/scene";
-import { Geometry, MockRenderDevice, ShadowPass, UnlitMaterial } from "@galileo3d/rendering";
+import { Renderable, Scene } from "@aura3d/scene";
+import { Geometry, MockRenderDevice, ShadowPass, UnlitMaterial } from "@aura3d/rendering";
 import { createExample, installExampleStyles, type ExampleMetadata } from "../shared/exampleHarness.js";
 
 const metadata: ExampleMetadata = {

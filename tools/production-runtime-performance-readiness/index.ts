@@ -21,7 +21,7 @@ const checks = [
   { id: "screenshot", pass: existsSync(resolve(screenshot)) && statSync(resolve(screenshot)).size > 10_000, detail: screenshot }
 ];
 const report = {
-  schema: "g3d-production-runtime-performance-readiness/v1",
+  schema: "a3d-production-runtime-performance-readiness/v1",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   baseline,

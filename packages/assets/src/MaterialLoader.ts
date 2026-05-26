@@ -7,7 +7,7 @@ import {
   type PBRMaterialOptions,
   type RenderState,
   type UnlitMaterialOptions
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 export interface MaterialDescriptorAsset {
   readonly url: string;

@@ -335,7 +335,7 @@ function createGLTFDataUrl(parsed: ParsedOBJ, materialDefinitions: ReadonlyMap<s
   });
   const bytes = buffer.bytes();
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D OBJLoader geometry and MTL importer" },
+    asset: { version: "2.0", generator: "Aura3D OBJLoader geometry and MTL importer" },
     buffers: [{ uri: `data:application/octet-stream;base64,${bytesToBase64(bytes)}`, byteLength: bytes.byteLength }],
     bufferViews: buffer.views,
     accessors,

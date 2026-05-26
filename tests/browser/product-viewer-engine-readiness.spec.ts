@@ -16,8 +16,8 @@ test.describe("product viewer v1", () => {
 
   test("renders a clean SDK-backed product viewer screenshot", async ({ page }) => {
     await page.goto(`${server.origin}/examples/legacy-product-viewer/index.html`, { waitUntil: "domcontentloaded" });
-    await expect.poll(() => page.evaluate(() => window.__G3D_PRODUCT_VIEWER_V1__?.status)).toBe("ready");
-    const state = await page.evaluate(() => window.__G3D_PRODUCT_VIEWER_V1__);
+    await expect.poll(() => page.evaluate(() => window.__A3D_PRODUCT_VIEWER_V1__?.status)).toBe("ready");
+    const state = await page.evaluate(() => window.__A3D_PRODUCT_VIEWER_V1__);
     const screenshot = "tests/reports/legacy-product-viewer/product-viewer.png";
     mkdirSync(dirname(screenshot), { recursive: true });
     await page.locator("[data-testid='legacy-product-viewer-canvas']").screenshot({ path: screenshot });

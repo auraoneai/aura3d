@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const REPORT_PATH = "tests/reports/threejs-parity/loader-material-extensions-parity.json";
 const ARTIFACTS = {
-  g3d: "tests/reports/threejs-parity/loader-material-extensions-parity/g3d-loader-material-extensions.png",
+  a3d: "tests/reports/threejs-parity/loader-material-extensions-parity/a3d-loader-material-extensions.png",
   threejs: "tests/reports/threejs-parity/loader-material-extensions-parity/threejs-loader-material-extensions.png",
   sideBySide: "tests/reports/threejs-parity/loader-material-extensions-parity/side-by-side.png"
 } as const;
@@ -24,7 +24,7 @@ test.describe("V9 loader material extensions same-scene Three.js parity", () => 
     await server.close();
   });
 
-  test("loads KHR_materials_sheen and KHR_materials_transmission through G3D and actual Three.js GLTFLoader", async ({ page }) => {
+  test("loads KHR_materials_sheen and KHR_materials_transmission through A3D and actual Three.js GLTFLoader", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -57,32 +57,32 @@ test.describe("V9 loader material extensions same-scene Three.js parity", () => 
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("g3d-threejs-parity-loader-material-extensions-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-loader-material-extensions-parity/v1");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameFixtureHash).toBe(true);
     expect(result.assertions.actualThreeGLTFLoader).toBe(true);
     expect(result.assertions.actualThreeRenderer).toBe(true);
-    expect(result.assertions.g3dImportsSheen).toBe(true);
-    expect(result.assertions.g3dImportsTransmission).toBe(true);
-    expect(result.assertions.g3dTransmissionUsesBlend).toBe(true);
+    expect(result.assertions.a3dImportsSheen).toBe(true);
+    expect(result.assertions.a3dImportsTransmission).toBe(true);
+    expect(result.assertions.a3dTransmissionUsesBlend).toBe(true);
     expect(result.assertions.threeImportsSheen).toBe(true);
     expect(result.assertions.threeImportsTransmission).toBe(true);
     expect(result.assertions.screenshotsNonBlank).toBe(true);
-    expect(result.g3d.loader.unsupportedRequired).toEqual([]);
-    expect(result.g3d.materials.clearcoatMaterials).toBeGreaterThanOrEqual(1);
-    expect(result.g3d.materials.sheenMaterials).toBeGreaterThanOrEqual(1);
-    expect(result.g3d.materials.transmissionMaterials).toBeGreaterThanOrEqual(1);
-    expect(result.g3d.materials.transparentMaterials).toBeGreaterThanOrEqual(1);
+    expect(result.a3d.loader.unsupportedRequired).toEqual([]);
+    expect(result.a3d.materials.clearcoatMaterials).toBeGreaterThanOrEqual(1);
+    expect(result.a3d.materials.sheenMaterials).toBeGreaterThanOrEqual(1);
+    expect(result.a3d.materials.transmissionMaterials).toBeGreaterThanOrEqual(1);
+    expect(result.a3d.materials.transparentMaterials).toBeGreaterThanOrEqual(1);
     expect(result.threejs.materials.clearcoatMaterials).toBeGreaterThanOrEqual(1);
     expect(result.threejs.materials.sheenMaterials).toBeGreaterThanOrEqual(1);
     expect(result.threejs.materials.transmissionMaterials).toBeGreaterThanOrEqual(1);
-    expect(result.g3d.renderer.drawCalls).toBeGreaterThan(0);
+    expect(result.a3d.renderer.drawCalls).toBeGreaterThan(0);
     expect(result.threejs.renderer.drawCalls).toBeGreaterThan(0);
-    expect(result.g3d.pixels.uniqueColorBuckets).toBeGreaterThanOrEqual(8);
+    expect(result.a3d.pixels.uniqueColorBuckets).toBeGreaterThanOrEqual(8);
     expect(result.threejs.pixels.uniqueColorBuckets).toBeGreaterThanOrEqual(8);
     expect(result.diff.structuralSimilarityProxy).toBeGreaterThanOrEqual(0.35);
     expect(pageErrors).toEqual([]);
-    assertNoThreeJsInG3DMaterialExtensionRuntimeSource();
+    assertNoThreeJsInA3DMaterialExtensionRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
@@ -109,7 +109,7 @@ test.describe("V9 loader material extensions same-scene Three.js parity", () => 
   });
 });
 
-function assertNoThreeJsInG3DMaterialExtensionRuntimeSource(): void {
+function assertNoThreeJsInA3DMaterialExtensionRuntimeSource(): void {
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/loader-material-extensions/src/main.ts",
@@ -140,8 +140,8 @@ function stripDataUrls(result: Extract<LoaderMaterialExtensionsParityResult, { r
 type LoaderMaterialExtensionsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "g3d-threejs-parity-loader-material-extensions-parity/v1";
-      readonly g3d: {
+      readonly schema: "a3d-threejs-parity-loader-material-extensions-parity/v1";
+      readonly a3d: {
         readonly loader: { readonly unsupportedRequired: readonly string[] };
         readonly renderer: { readonly drawCalls: number };
         readonly materials: MaterialStats;
@@ -157,17 +157,17 @@ type LoaderMaterialExtensionsParityResult =
         readonly sameFixtureHash: boolean;
         readonly actualThreeGLTFLoader: boolean;
         readonly actualThreeRenderer: boolean;
-        readonly g3dImportsSheen: boolean;
-        readonly g3dImportsTransmission: boolean;
-        readonly g3dTransmissionUsesBlend: boolean;
+        readonly a3dImportsSheen: boolean;
+        readonly a3dImportsTransmission: boolean;
+        readonly a3dTransmissionUsesBlend: boolean;
         readonly threeImportsSheen: boolean;
         readonly threeImportsTransmission: boolean;
         readonly screenshotsNonBlank: boolean;
         readonly fakeEqualityClaimed: false;
       };
-      readonly dataUrls: { readonly g3d: string; readonly threejs: string; readonly sideBySide: string };
+      readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
-  | { readonly status: "error"; readonly schema: "g3d-threejs-parity-loader-material-extensions-parity/v1"; readonly error: string };
+  | { readonly status: "error"; readonly schema: "a3d-threejs-parity-loader-material-extensions-parity/v1"; readonly error: string };
 
 interface MaterialStats {
   readonly clearcoatMaterials: number;

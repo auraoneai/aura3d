@@ -14,13 +14,13 @@ const reportDir = resolve("tests/reports/external-parity-external-consumer");
 const staticDir = join(reportDir, "static");
 const screenshotPath = join(reportDir, "external-consumer.png");
 const reportPath = resolve("tests/reports/external-parity-external-consumer.json");
-const tempRoot = mkdtempSync(join(tmpdir(), "g3d-external-consumer-"));
+const tempRoot = mkdtempSync(join(tmpdir(), "a3d-external-consumer-"));
 
 mkdirSync(reportDir, { recursive: true });
 
 try {
   writeFileSync(join(tempRoot, "package.json"), `${JSON.stringify({
-    name: "g3d-external-parity-external-consumer",
+    name: "a3d-external-parity-external-consumer",
     version: "0.0.0",
     private: true,
     type: "module",
@@ -28,7 +28,7 @@ try {
       build: "vite build"
     },
     dependencies: {
-      "@galileo3d/engine": `file:${tarballPath}`
+      "@aura3d/engine": `file:${tarballPath}`
     },
     devDependencies: {
       vite: "^7.3.2",
@@ -49,19 +49,19 @@ try {
   try {
     const page = await browser.newPage({ viewport: { width: 980, height: 620 } });
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window as typeof window & { __G3D_V4_EXTERNAL_CONSUMER__?: { readonly status?: string } }).__G3D_V4_EXTERNAL_CONSUMER__?.status === "ready", undefined, { timeout: 90_000 });
+    await page.waitForFunction(() => (window as typeof window & { __A3D_V4_EXTERNAL_CONSUMER__?: { readonly status?: string } }).__A3D_V4_EXTERNAL_CONSUMER__?.status === "ready", undefined, { timeout: 90_000 });
     await page.locator("[data-testid='external-consumer-canvas']").screenshot({ path: screenshotPath });
-    const state = await page.evaluate(() => (window as typeof window & { __G3D_V4_EXTERNAL_CONSUMER__?: {
+    const state = await page.evaluate(() => (window as typeof window & { __A3D_V4_EXTERNAL_CONSUMER__?: {
       readonly status?: string;
       readonly publicApiOnly?: boolean;
       readonly assetKind?: string;
       readonly textureCount?: number;
       readonly drawCalls?: number;
       readonly screenshotPrefix?: string;
-    } }).__G3D_V4_EXTERNAL_CONSUMER__);
+    } }).__A3D_V4_EXTERNAL_CONSUMER__);
     const outputFiles = listFiles(staticDir).map((file) => file.slice(staticDir.length + 1).replaceAll("\\", "/"));
     const report = {
-      schema: "g3d-external-parity-external-consumer/v1",
+      schema: "a3d-external-parity-external-consumer/v1",
       generatedAt: new Date().toISOString(),
       ok: state?.status === "ready" &&
         state.publicApiOnly === true &&
@@ -72,14 +72,14 @@ try {
         state.screenshotPrefix.startsWith("data:image/png") &&
         statSync(screenshotPath).size > 8_000 &&
         !source.includes("/packages/") &&
-        !source.includes("@galileo3d/engine/"),
+        !source.includes("@aura3d/engine/"),
       tarballPath,
       staticDir,
       screenshotPath: screenshotPath.replace(`${root}/`, ""),
       outputFiles,
-      sourceImportsOnlyPublicRoot: !source.includes("/packages/") && !source.includes("@galileo3d/engine/"),
+      sourceImportsOnlyPublicRoot: !source.includes("/packages/") && !source.includes("@aura3d/engine/"),
       state,
-      productBoundary: "External consumer proof runs from a production Vite build and imports only the public root @galileo3d/engine API."
+      productBoundary: "External consumer proof runs from a production Vite build and imports only the public root @aura3d/engine API."
     };
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
     if (!report.ok) {
@@ -97,11 +97,11 @@ try {
 
 function externalConsumerSource(): string {
   return `
-import { captureScreenshot, createAssetDiagnostics, createDiagnosticsPanel, createG3DApp, loadAsset, workflows } from "@galileo3d/engine";
+import { captureScreenshot, createAssetDiagnostics, createDiagnosticsPanel, createA3DApp, loadAsset, workflows } from "@aura3d/engine";
 
 declare global {
   interface Window {
-    __G3D_V4_EXTERNAL_CONSUMER__?: unknown;
+    __A3D_V4_EXTERNAL_CONSUMER__?: unknown;
   }
 }
 
@@ -109,7 +109,7 @@ const productUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-A
 const canvas = document.getElementById("app") as HTMLCanvasElement | null;
 if (!canvas) throw new Error("Missing external consumer canvas.");
 
-const app = await createG3DApp({ canvas, quality: "production", width: 960, height: 540 });
+const app = await createA3DApp({ canvas, quality: "production", width: 960, height: 540 });
 const asset = await loadAsset(productUrl, { type: "gltf" });
 const workflow = await workflows.assetViewer({ url: productUrl, type: "gltf" });
 const render = app.renderer?.render(workflow.source, workflow.camera);
@@ -117,7 +117,7 @@ const assetDiagnostics = createAssetDiagnostics(asset);
 const panel = createDiagnosticsPanel({ render, asset: assetDiagnostics });
 const screenshot = captureScreenshot(canvas);
 
-window.__G3D_V4_EXTERNAL_CONSUMER__ = {
+window.__A3D_V4_EXTERNAL_CONSUMER__ = {
   status: "ready",
   publicApiOnly: true,
   workflowKind: workflow.kind,

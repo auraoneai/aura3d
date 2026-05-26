@@ -1,5 +1,5 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@galileo3d/assets";
-import { AnimationMotionQualityTracker } from "@galileo3d/animation";
+import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
   PBRMaterial,
@@ -8,9 +8,9 @@ import {
   type CollectedLight,
   type RenderItem,
   type RenderSource
-} from "@galileo3d/rendering";
-import { G3DRenderer } from "@galileo3d/engine/advanced-runtime";
-import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@galileo3d/scene";
+} from "@aura3d/rendering";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
+import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
 import {
   clamp,
   createMorphControlState,
@@ -20,7 +20,7 @@ import {
 
 declare global {
   interface Window {
-    __g3dV8SkinningMorph?: V8SkinningMorphRuntime;
+    __a3dV8SkinningMorph?: V8SkinningMorphRuntime;
   }
 }
 
@@ -46,7 +46,7 @@ interface V8SkinningMorphRuntime {
   motionTimeRange: number;
   poseDiversityScore: number;
   motionHealthy: boolean;
-  renderer: "g3d-webgl2";
+  renderer: "a3d-webgl2";
   fixture: string;
   error?: string;
 }
@@ -88,14 +88,14 @@ async function run(): Promise<void> {
   });
 
   const publish = (): void => {
-    window.__g3dV8SkinningMorph = runtime;
+    window.__a3dV8SkinningMorph = runtime;
     renderUi(root, runtime, state);
     bindUi(root, state, publish);
   };
   publish();
 
   try {
-    const renderer = await G3DRenderer.create({
+    const renderer = await A3DRenderer.create({
       canvas,
       width: WIDTH,
       height: HEIGHT,
@@ -212,7 +212,7 @@ async function run(): Promise<void> {
           poseDiversityScore: motion.poseDiversityScore,
           motionHealthy: motion.healthy
         });
-        window.__g3dV8SkinningMorph = runtime;
+        window.__a3dV8SkinningMorph = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -260,7 +260,7 @@ function createRuntime(
     motionTimeRange: counters.motionTimeRange ?? 0,
     poseDiversityScore: counters.poseDiversityScore ?? 0,
     motionHealthy: counters.motionHealthy ?? false,
-    renderer: "g3d-webgl2",
+    renderer: "a3d-webgl2",
     fixture: "imported robot-expressive.glb skinning + Head.weights morph targets"
   };
 }
@@ -314,7 +314,7 @@ function createStageItems(): { readonly materialCount: number; readonly items: (
 }
 
 function renderUi(root: HTMLElement, runtime: V8SkinningMorphRuntime, state: MorphControlState): void {
-  window.__g3dV8SkinningMorph = runtime;
+  window.__a3dV8SkinningMorph = runtime;
   root.innerHTML = `
     <section class="panel">
       <h1>V8 Skinning Morph</h1>

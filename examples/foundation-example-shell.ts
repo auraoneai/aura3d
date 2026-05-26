@@ -1,5 +1,5 @@
-import { Renderer, type RenderDeviceDiagnostics } from "@galileo3d/rendering";
-import type { G3DWorkflowResult } from "@galileo3d/workflows";
+import { Renderer, type RenderDeviceDiagnostics } from "@aura3d/rendering";
+import type { A3DWorkflowResult } from "@aura3d/workflows";
 
 export interface V3ExampleOptions {
   readonly id: string;
@@ -7,7 +7,7 @@ export interface V3ExampleOptions {
   readonly summary: string;
   readonly notes: readonly string[];
   readonly dynamic?: boolean;
-  createWorkflow(): Promise<G3DWorkflowResult> | G3DWorkflowResult;
+  createWorkflow(): Promise<A3DWorkflowResult> | A3DWorkflowResult;
 }
 
 export interface V3ExampleState {
@@ -23,7 +23,7 @@ export interface V3ExampleState {
 
 declare global {
   interface Window {
-    __G3D_V3_EXAMPLE__?: V3ExampleState & {
+    __A3D_V3_EXAMPLE__?: V3ExampleState & {
       captureState?: () => V3ExampleState;
     };
   }
@@ -71,7 +71,7 @@ export async function mountV3Example(options: V3ExampleOptions): Promise<void> {
     lastError: null
   };
   const expose = () => {
-    window.__G3D_V3_EXAMPLE__ = Object.assign({}, state, { captureState: () => state });
+    window.__A3D_V3_EXAMPLE__ = Object.assign({}, state, { captureState: () => state });
   };
   expose();
 

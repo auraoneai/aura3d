@@ -11,7 +11,7 @@ export interface V9InventoryReport {
     readonly threeExampleId: string;
     readonly category: string;
     readonly priority: string;
-    readonly g3dStatus: string;
+    readonly a3dStatus: string;
     readonly constructionTracks: readonly string[];
     readonly sameSceneAvailable: boolean;
     readonly visualStatus: string;

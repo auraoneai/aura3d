@@ -1,4 +1,4 @@
-import { PhysicsDebugDraw, PhysicsWorld, Shape } from "@galileo3d/physics";
+import { PhysicsDebugDraw, PhysicsWorld, Shape } from "@aura3d/physics";
 
 interface PhysicsBrowserResult {
   readonly status: "ready" | "error";
@@ -15,7 +15,7 @@ interface PhysicsBrowserResult {
 
 declare global {
   interface Window {
-    __GALILEO3D_PHYSICS_BROWSER_TEST__?: PhysicsBrowserResult;
+    __AURA3D_PHYSICS_BROWSER_TEST__?: PhysicsBrowserResult;
   }
 }
 
@@ -71,7 +71,7 @@ try {
   }
 
   const first = dynamicBodies[0]!;
-  window.__GALILEO3D_PHYSICS_BROWSER_TEST__ = {
+  window.__AURA3D_PHYSICS_BROWSER_TEST__ = {
     status: "ready",
     initialHeights,
     finalHeights,
@@ -84,7 +84,7 @@ try {
     groundPixel: readPixel(context, 80, worldToCanvasY(-0.5))
   };
 } catch (error) {
-  window.__GALILEO3D_PHYSICS_BROWSER_TEST__ = {
+  window.__AURA3D_PHYSICS_BROWSER_TEST__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

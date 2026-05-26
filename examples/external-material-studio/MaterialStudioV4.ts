@@ -11,11 +11,11 @@ import {
   type V4PhysicalMaterialDescriptor,
   type LightingDefaultPreset,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __G3D_V4_MATERIAL_STUDIO__?: unknown;
+    __A3D_V4_MATERIAL_STUDIO__?: unknown;
   }
 }
 
@@ -70,8 +70,8 @@ export async function mountMaterialStudioV4(id: string): Promise<void> {
       status: "ready",
       renderer: "webgl2",
       productSurface: "material-studio-pro",
-      materialLibrary: "fixtures/v4/materials/material-library.json",
-      textureDirectory: "fixtures/v4/materials/textures",
+      materialLibrary: "fixtures/external-parity/materials/material-library.json",
+      textureDirectory: "fixtures/external-parity/materials/textures",
       materialIds: V4_PHYSICAL_MATERIAL_MATRIX.map((material) => material.id),
       materialCount: V4_PHYSICAL_MATERIAL_MATRIX.length,
       reflectanceClasses: analyses.map((entry) => entry.reflectanceClass),
@@ -86,7 +86,7 @@ export async function mountMaterialStudioV4(id: string): Promise<void> {
       featureChecklist: ["12-material-matrix", "hdr-ibl", "tone-mapping", "texture-backed-materials", "extension-diagnostics", "app-ui"],
       claimBoundary
     };
-    window.__G3D_V4_MATERIAL_STUDIO__ = state;
+    window.__A3D_V4_MATERIAL_STUDIO__ = state;
     status.textContent = JSON.stringify(state, null, 2);
   }
 

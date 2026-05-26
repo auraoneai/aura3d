@@ -214,7 +214,7 @@ function createInlineSkinnedAnimationFixture(options: { readonly extraInfluences
   }
   const binary = Buffer.concat(chunks);
   const gltf = {
-    asset: { version: "2.0", generator: "Galileo3D inline animation corpus" },
+    asset: { version: "2.0", generator: "Aura3D inline animation corpus" },
     extensionsUsed: ["KHR_materials_emissive_strength", "KHR_materials_variants"],
     extensions: { KHR_materials_variants: { variants: [{ name: "cool-skin" }] } },
     buffers: [{ byteLength: binary.byteLength }],

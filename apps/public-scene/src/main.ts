@@ -1,5 +1,5 @@
-import { G3DAppLifecycle, G3DRenderer, G3DScene, Geometry, PBRMaterial, UnlitMaterial } from "@galileo3d/engine/advanced-runtime";
-import type { Quat, Vec3 } from "@galileo3d/scene";
+import { A3DAppLifecycle, A3DRenderer, A3DScene, Geometry, PBRMaterial, UnlitMaterial } from "@aura3d/engine/advanced-runtime";
+import type { Quat, Vec3 } from "@aura3d/scene";
 
 const canvas = document.querySelector<HTMLCanvasElement>("#viewport");
 const statusEl = document.querySelector<HTMLElement>("#status");
@@ -12,8 +12,8 @@ if (!canvas || !statusEl || !objectsEl || !drawCallsEl || !firstFrameEl) {
 }
 
 const startedAt = performance.now();
-const lifecycle = new G3DAppLifecycle();
-const scene = new G3DScene();
+const lifecycle = new A3DAppLifecycle();
+const scene = new A3DScene();
 lifecycle.addDisposable(scene);
 
 const floor = scene.createRenderableMesh({
@@ -54,7 +54,7 @@ const marker = scene.createRenderableMesh({
 });
 marker.transform.setPosition(0.55, 0.08, -2.0);
 
-const renderer = await G3DRenderer.create({
+const renderer = await A3DRenderer.create({
   canvas,
   antialias: true,
   preserveDrawingBuffer: true,
@@ -84,7 +84,7 @@ function frame(time: number): void {
   marker.transform.setRotation(...multiplyQuat(tilt, marker.quaternion));
   const diagnostics = renderer.render(scene);
   Object.assign(window, {
-    __G3D_V9_PUBLIC_SCENE__: {
+    __A3D_V9_PUBLIC_SCENE__: {
       running: true,
       disposed: false,
       width: canvas.width,
@@ -113,7 +113,7 @@ lifecycle.addEventListener(window, "beforeunload", () => {
   lifecycle.dispose();
   publishDisposedRuntime();
 }, { once: true });
-lifecycle.addEventListener(window, "g3d:public-scene-dispose", () => {
+lifecycle.addEventListener(window, "a3d:public-scene-dispose", () => {
   lifecycle.dispose();
   publishDisposedRuntime();
 });
@@ -129,7 +129,7 @@ lifecycle.requestAnimationFrame(frame);
 function publishDisposedRuntime(): void {
   const diagnostics = renderer.getDiagnostics();
   Object.assign(window, {
-    __G3D_V9_PUBLIC_SCENE__: {
+    __A3D_V9_PUBLIC_SCENE__: {
       running: false,
       disposed: true,
       width: canvas.width,

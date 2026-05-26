@@ -1,5 +1,5 @@
-import type { GLTFRenderResources } from "@galileo3d/assets";
-import { Material, type RenderState, type UniformValue } from "@galileo3d/rendering";
+import type { GLTFRenderResources } from "@aura3d/assets";
+import { Material, type RenderState, type UniformValue } from "@aura3d/rendering";
 import type { GLTFMaterialRenderStateOverride } from "../../../packages/assets/src/GLTFRenderResources";
 import type { AuthoredAssetCandidateId } from "./authoredAssets";
 import type { DemoId } from "./metadata";

@@ -11,7 +11,7 @@ import {
   TexturedUnlitMaterial,
   UnlitMaterial,
   type RenderItem
-} from "@galileo3d/rendering";
+} from "@aura3d/rendering";
 
 interface V6PerformanceBaseline {
   readonly name: string;
@@ -42,7 +42,7 @@ interface V6PerformanceBaseline {
 async function main(): Promise<void> {
   const baseline = await retryBaseline(createLargeSceneBaseline);
   const report = {
-    schema: "g3d-production-runtime-performance-baselines/v1",
+    schema: "a3d-production-runtime-performance-baselines/v1",
     generatedAt: new Date().toISOString(),
     pass: baseline.withinBudget &&
       baseline.drawCalls > 0 &&

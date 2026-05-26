@@ -18,17 +18,17 @@ test.describe("character animation viewer", () => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/character-animation-viewer/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
-      () => window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__?.status === "ready" || window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__?.status === "error",
+      () => window.__AURA3D_CHARACTER_ANIMATION_VIEWER__?.status === "ready" || window.__AURA3D_CHARACTER_ANIMATION_VIEWER__?.status === "error",
       undefined,
       { timeout: 20_000 }
     );
     await page.waitForFunction(
-      () => Number(window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__?.changedPixels ?? 0) > 20,
+      () => Number(window.__AURA3D_CHARACTER_ANIMATION_VIEWER__?.changedPixels ?? 0) > 20,
       undefined,
       { timeout: 12_000 }
     );
 
-    const running = await page.evaluate(() => window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__);
+    const running = await page.evaluate(() => window.__AURA3D_CHARACTER_ANIMATION_VIEWER__);
     expect(errors).toEqual([]);
     expect(running?.status, running?.error).toBe("ready");
     expect(running?.renderer).toBe("webgl2");
@@ -63,8 +63,8 @@ test.describe("character animation viewer", () => {
       input.value = "1.25";
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
-    await page.waitForFunction(() => Math.abs(Number(window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__?.time ?? 0) - 1.25) < 0.02);
-    const scrubbed = await page.evaluate(() => window.__GALILEO3D_CHARACTER_ANIMATION_VIEWER__);
+    await page.waitForFunction(() => Math.abs(Number(window.__AURA3D_CHARACTER_ANIMATION_VIEWER__?.time ?? 0) - 1.25) < 0.02);
+    const scrubbed = await page.evaluate(() => window.__AURA3D_CHARACTER_ANIMATION_VIEWER__);
     expect(scrubbed?.playing).toBe(false);
     expect(scrubbed?.time).toBeCloseTo(1.25, 2);
     expect(scrubbed?.playbackSpeed).toBe(1.5);
@@ -89,7 +89,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __GALILEO3D_CHARACTER_ANIMATION_VIEWER__?: {
+    __AURA3D_CHARACTER_ANIMATION_VIEWER__?: {
       readonly status: "ready" | "error";
       readonly renderer: "webgl2";
       readonly assetId: "cesium-man";
