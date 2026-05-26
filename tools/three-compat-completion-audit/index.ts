@@ -34,7 +34,6 @@ const requiredReports = [
   "tests/reports/three-compat-migration-readiness.json",
   "tests/reports/three-compat-app-suite-readiness.json",
   "tests/reports/three-compat-template-readiness.json",
-  "tests/reports/three-compat-examples-readiness.json",
   "tests/reports/three-compat-threejs-visual-parity.json",
   "tests/reports/three-compat-threejs-runtime-parity.json",
   "tests/reports/three-compat-package-surface-readiness.json",

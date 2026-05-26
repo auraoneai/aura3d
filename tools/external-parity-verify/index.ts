@@ -10,7 +10,6 @@ const commands = [
   "verify:external-parity-khronos-visuals",
   "verify:external-parity-editor",
   "verify:external-parity-runtime",
-  "verify:external-parity-examples",
   "verify:external-parity-benchmarks",
   "verify:external-parity-visual-quality",
   "audit:external-parity-product-visual-parity",

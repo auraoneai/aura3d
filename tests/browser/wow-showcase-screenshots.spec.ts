@@ -94,7 +94,11 @@ const CURRENT_WOW_ROUTES: readonly WowRoute[] = [
   { slug: "wow-physics-arena", label: "Physics Arena", path: "/apps/wow-physics-arena/" },
   { slug: "wow-material-cathedral", label: "Material Cathedral", path: "/apps/wow-material-cathedral/" },
   { slug: "wow-astral-garden", label: "Astral Garden", path: "/apps/wow-astral-garden/" },
-  { slug: "wow-quantum-stage", label: "Quantum Stage", path: "/apps/wow-quantum-stage/" }
+  { slug: "wow-quantum-stage", label: "Quantum Stage", path: "/apps/wow-quantum-stage/" },
+  { slug: "wow-boombox-texture-lab", label: "Boom Box Texture Lab", path: "/apps/wow-boombox-texture-lab/" },
+  { slug: "wow-avocado-pbr-study", label: "Avocado PBR Study", path: "/apps/wow-avocado-pbr-study/" },
+  { slug: "wow-clearcoat-material-sample", label: "Clearcoat Material Sample", path: "/apps/wow-clearcoat-material-sample/" },
+  { slug: "wow-sheen-material-grid", label: "Sheen Material Grid", path: "/apps/wow-sheen-material-grid/" }
 ];
 
 const REPORT_DIR = "tests/reports/wow-showcase";

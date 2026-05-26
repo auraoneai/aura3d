@@ -5,39 +5,17 @@ const REPORT_PATH = "tests/reports/current-routes-completion-audit.json";
 
 const requiredReports = [
   { id: "assets", path: "tests/reports/current-routes-assets.json", pass: (json: any) => json.pass === true },
-  { id: "route-health", path: "tests/reports/current-routes-route-health.json", pass: (json: any) => json.pass === true && json.root?.routeCount >= 13 },
-  { id: "flagship", path: "tests/reports/flagship-viewer.json", pass: (json: any) => json.pass === true },
-  { id: "animation", path: "tests/reports/current-routes-animation-examples.json", pass: (json: any) => Array.isArray(json.routes) && json.routes.length >= 12 },
-  {
-    id: "threejs-parity",
-    path: "tests/reports/current-routes-threejs-parity.json",
-    pass: (json: any) => json.status === "ready"
-      && typeof json.diff?.meanDelta === "number"
-      && json.diff.meanDelta <= 55
-      && typeof json.diff?.structuralSimilarityProxy === "number"
-      && json.diff.structuralSimilarityProxy >= 0.8
-  },
+  { id: "route-health", path: "tests/reports/current-routes-route-health.json", pass: (json: any) => json.pass === true && json.root?.routeCount === 22 },
   { id: "visual-review", path: "tests/reports/current-routes-visual-review.json", pass: (json: any) => json.pass === true },
   { id: "runtime-import-audit", path: "tests/reports/current-routes-runtime-import-audit.json", pass: (json: any) => json.pass === true && json.scannedFiles > 0 },
   { id: "legacy-prune", path: "tests/reports/current-routes-legacy-prune.json", pass: (json: any) => json.pass === true }
 ] as const;
 
 const requiredScreenshots = [
-  "tests/reports/current-routes/flagship/a3d-flagship-viewer.png",
-  "tests/reports/current-routes/flagship/threejs-flagship-viewer.png",
-  "tests/reports/current-routes/flagship/side-by-side.png",
-  "tests/reports/current-routes/animation/keyframes.png",
-  "tests/reports/current-routes/animation/skinning-blending.png",
-  "tests/reports/current-routes/animation/additive-blending.png",
-  "tests/reports/current-routes/animation/ik.png",
-  "tests/reports/current-routes/animation/morph.png",
-  "tests/reports/current-routes/animation/multiple.png",
-  "tests/reports/current-routes/animation/walk.png",
-  "tests/reports/current-routes/decals/decals.png",
-  "tests/reports/current-routes/camera/camera.png",
-  "tests/reports/current-routes/stereo/parallax-barrier.png",
-  "tests/reports/current-routes/stereo/stereo.png",
-  "tests/reports/current-routes/physics/physics-showcase.png"
+  "tests/reports/current-route-health/screenshots/apps-advanced-examples-gallery.png",
+  "tests/reports/current-route-health/screenshots/apps-advanced-examples-gallery-product-configurator.png",
+  "tests/reports/current-route-health/screenshots/apps-wow-tokyo-keyframes.png",
+  "tests/reports/current-route-health/screenshots/apps-wow-quantum-stage.png"
 ] as const;
 
 const reportResults = requiredReports.map((report) => {

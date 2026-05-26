@@ -1,6 +1,6 @@
 # Three.js parity Parity Matrix
 
-This matrix is generated from the current inventory. `partial` means some route or infrastructure exists, but the implementation is not yet accepted as full parity.
+This matrix is generated from the current inventory. `partial` means some route or infrastructure exists, but the implementation is not accepted as matched for that inventoried row. A zero-partial matrix is still scoped to the inventoried examples and does not prove complete Three.js replacement.
 
 | Category | Unsupported | Partial | Matched | Exceeded |
 | --- | ---: | ---: | ---: | ---: |

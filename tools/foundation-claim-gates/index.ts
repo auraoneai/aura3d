@@ -50,7 +50,6 @@ export function validateFoundationClaimGates(root = process.cwd()): FoundationCl
     "docs/comparisons",
     "docs/benchmarks",
     "docs/examples",
-    "examples",
     "packages",
   ], [".md", ".ts", "package.json"]);
   const scopedOccurrences: FoundationClaimOccurrence[] = [];

@@ -23,7 +23,24 @@ const EXPECTED_CURRENT_WOW_ROUTES = [
   "/apps/wow-physics-arena/",
   "/apps/wow-material-cathedral/",
   "/apps/wow-astral-garden/",
-  "/apps/wow-quantum-stage/"
+  "/apps/wow-quantum-stage/",
+  "/apps/wow-boombox-texture-lab/",
+  "/apps/wow-avocado-pbr-study/",
+  "/apps/wow-clearcoat-material-sample/",
+  "/apps/wow-sheen-material-grid/"
+] as const;
+
+const EXPECTED_ADVANCED_GALLERY_ROUTES = [
+  "/apps/advanced-examples-gallery/#water-lab",
+  "/apps/advanced-examples-gallery/#ocean-observatory",
+  "/apps/advanced-examples-gallery/#reactor-post",
+  "/apps/advanced-examples-gallery/#smart-city",
+  "/apps/advanced-examples-gallery/#data-galaxy",
+  "/apps/advanced-examples-gallery/#product-configurator",
+  "/apps/advanced-examples-gallery/#robotics-lab",
+  "/apps/advanced-examples-gallery/#physics-playground",
+  "/apps/advanced-examples-gallery/#fog-cathedral",
+  "/apps/advanced-examples-gallery/#digital-twin"
 ] as const;
 
 test.describe("current route health", () => {
@@ -47,7 +64,9 @@ test.describe("current route health", () => {
 
     expect(root.responseStatus, root.failures.join("\n")).toBe(200);
     expect(root.links.length, root.failures.join("\n")).toBeGreaterThan(0);
-    expect(root.links.map((link) => link.path)).toContain("/apps/advanced-examples-gallery/");
+    for (const path of EXPECTED_ADVANCED_GALLERY_ROUTES) {
+      expect(root.links.map((link) => link.path)).toContain(path);
+    }
     for (const path of EXPECTED_CURRENT_WOW_ROUTES) {
       expect(root.links.map((link) => link.path)).toContain(path);
     }
@@ -67,7 +86,7 @@ test.describe("current route health", () => {
         expect(result.pageErrors, formatRouteFailure(result.failures)).toEqual([]);
         expect(result.responseErrors, formatRouteFailure(result.failures)).toEqual([]);
         expect(result.canvas?.pass, formatRouteFailure(result.failures)).toBe(true);
-        const minimumBackingScale = result.path === "/apps/advanced-examples-gallery/" ? 0.85 : 1.18;
+        const minimumBackingScale = result.path.startsWith("/apps/advanced-examples-gallery/") ? 0.85 : 1.18;
         expect(result.canvas?.backingScaleX ?? 0, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(minimumBackingScale);
         expect(result.canvas?.backingScaleY ?? 0, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(minimumBackingScale);
         expect(result.screenshot?.pass, formatRouteFailure(result.failures)).toBe(true);
@@ -92,7 +111,7 @@ test.describe("current route health", () => {
       generatedAt: new Date().toISOString(),
       origin,
       root: {
-        url: `${origin}/examples/index.html`,
+        url: `${origin}/index.html`,
         status: root.responseStatus,
         ok: root.failures.length === 0,
         loadTimeMs: root.loadTimeMs,

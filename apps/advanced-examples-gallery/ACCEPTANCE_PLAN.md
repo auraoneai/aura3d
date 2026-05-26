@@ -1,41 +1,26 @@
 # Advanced Examples Gallery 10/10 Acceptance Plan
 
-This is the operating contract for keeping the ThreejsParity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
+This is the operating contract for keeping the Three.js parity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
 
 A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced Three.js-style category.
 
-## Current Release State
+## Acceptance Claim Requirements
 
-Preserve this truth until evidence changes it:
+The gallery can be described as accepted only when all of these are true for the same generated report set:
 
-- Full ThreejsParity route runtime/screenshot coverage passes for all ten routes.
+- Full advanced-gallery route runtime/screenshot coverage passes for all ten routes.
 - `pnpm advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`.
 - Current accepted demo count is `10/10`.
 - `pnpm advanced-gallery:audit` passes with zero blockers and zero warnings.
 - `tests/reports/advanced-examples-gallery/current-contact-sheet.png` exists and is current accepted evidence only while its route screenshots, hashes, runtime JSON, review report, and report audit remain current.
 
-Current release-state check:
+After running `pnpm advanced-gallery:pipeline`, inspect the generated review summary:
 
 ```bash
-node -e 'const r=require("./tests/reports/advanced-examples-gallery/visual-review-report.json"); const s=r.summary; console.log(JSON.stringify({pass:r.pass,releaseGate:r.releaseGate,summary:{demoCount:s.demoCount,acceptedCount:s.acceptedCount,candidateCount:s.candidateCount,failedCount:s.failedCount,blockedCount:s.blockedCount,contactSheetExists:s.contactSheetExists}},null,2))'
+node -e 'const fs=require("fs"); const p="./tests/reports/advanced-examples-gallery/visual-review-report.json"; if(!fs.existsSync(p)) throw new Error(`${p} is missing; run pnpm advanced-gallery:pipeline first`); const r=require(p); const s=r.summary; console.log(JSON.stringify({pass:r.pass,releaseGate:r.releaseGate,summary:{demoCount:s.demoCount,acceptedCount:s.acceptedCount,candidateCount:s.candidateCount,failedCount:s.failedCount,blockedCount:s.blockedCount,contactSheetExists:s.contactSheetExists}},null,2))'
 ```
 
-```json
-{
-  "pass": true,
-  "releaseGate": "accepted",
-  "summary": {
-    "demoCount": 10,
-    "acceptedCount": 10,
-    "candidateCount": 0,
-    "failedCount": 0,
-    "blockedCount": 0,
-    "contactSheetExists": true
-  }
-}
-```
-
-If this changes to accepted without all ten routes meeting the gates below, the review process has been weakened and must be fixed.
+If a generated report changes to accepted without all ten routes meeting the gates below, the review process has been weakened and must be fixed.
 
 ## Non-Negotiable Acceptance Gates
 
@@ -62,7 +47,7 @@ This table must be updated from source evidence only, not from desired copy.
 | Area | Native A3D / Repo Capability | Local Helper Approximation | Not Yet Acceptable As Native | Demo Risk |
 | --- | --- | --- | --- | --- |
 | WebGL2 rendering | A3D render items, geometry, materials, lights, depth, transparency, readback, diagnostics. | Route scene builders, camera presets, composition helpers. | Film-quality renderer parity is not proven by smoke tests. | All demos. |
-| WebGPU | Existing WebGPU examples and proof routes exist. | Gallery currently routes through WebGL2-oriented runtime paths. | WebGPU water/compute showcase is not proven in ThreejsParity gallery. | Ocean, water, particles. |
+| WebGPU | Existing WebGPU examples and proof routes exist. | Gallery currently routes through WebGL2-oriented runtime paths. | WebGPU water/compute showcase is not proven in the advanced gallery. | Ocean, water, particles. |
 | PBR/materials | PBR-style materials, emissive, metallic/roughness, and supported loader/material paths. | Asset-specific material corrections and route material presets. | Premium glass/transmission sorting and perfect configurator material response are not proven. | Product, reactor, fog, ocean. |
 | GLB/glTF loading | Authored GLB fixtures and browser loading are active in multiple routes. | Asset exclusion, framing, material correction, node inspection layers. | Bad imported assets cannot become accepted evidence without diagnosis. | Product, robotics, smart city, fog. |
 | Animation | Animation mixer/clip playback is used in animated GLB routes. | Deterministic prop, camera, and overlay motion. | IK solver parity and full state-machine quality are not proven. | Robotics, smart city. |
@@ -71,7 +56,7 @@ This table must be updated from source evidence only, not from desired copy.
 | Postprocess | Bloom/postprocess-style controls and FXAA/color/vignette effects exist in routes. | CSS/canvas/compositor overlays and route-specific toggles where needed. | Effects-composer-class bloom/DOF/motion blur quality and cost are not accepted. | Reactor. |
 | Fog/light shafts | Transparent geometry, haze cards, dust particles, lighting choreography. | Layered fog cards and god-ray approximations. | True volumetric raymarch fog/light scattering is not exposed. | Fog cathedral. |
 | Water | Procedural mesh waves/ripples and pointer disturbance can be implemented. | CPU ripple fields, normal/foam/color approximations. | Native GPGPU water, SSR, refraction, FFT ocean stack is not exposed as complete. | Water lab, ocean. |
-| Physics | `@aura3d/physics` exists and ThreejsParity playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
+| Physics | `@aura3d/physics` exists and the advanced-gallery playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
 | Controls/UI | Orbit/camera presets, panels, toggles, sliders, capture, reset, status HUD. | Route dashboards and labels. | Controls must be visually tested per route, not inferred from UI existence. | All demos. |
 | Screenshots/review | Playwright capture and visual-review tooling exist. | Human acceptance metadata and screenshot hashes. | Runtime pass cannot promote visual status by itself. | All demos. |
 
@@ -110,7 +95,7 @@ Every route owner must define and then prove:
 
 ## Canonical Route Acceptance Order
 
-Use this order everywhere. It matches `execute.md`.
+Use this order everywhere. It matches `docs/examples/advanced-gallery.md`.
 
 | Order | Route | Shared Blockers | Acceptance Target |
 | --- | --- | --- | --- |
@@ -133,7 +118,7 @@ Every demo must have a final audit row with current evidence for each item:
 - Hero screenshot path and SHA-256.
 - Viewport screenshot path and SHA-256.
 - Runtime JSON path.
-- Current `visual-review-report.json` route record.
+- Current `tests/reports/advanced-examples-gallery/visual-review-report.json` route record.
 - Named Three.js-style reference category.
 - At least five visible systems, listed by actual rendered system names.
 - At least three interactions with screenshot/runtime evidence or explicit test coverage.
@@ -154,7 +139,7 @@ The gallery cannot reach `10/10` if these are handled as route cosmetics.
 | P0 | Slow authored GLB first visible frame and poor frame cadence on heavy routes. | Cache decoders/assets, reduce re-render/readback churn, split load state from accepted runtime stats. |
 | P0 | Animated/skinned asset material fidelity, including Kira-style white/default material failures. | Align skinned textured path with normal textured PBR path or exclude failing assets from accepted demos. |
 | P1 | Reactor/postprocess noise and cost. | Rework effect stack and scene lighting so postprocess is demonstrably additive and performant. |
-| P1 | Fog/cathedral crop and non-volumetric approximation. | Reframe/rebuild authored environment or keep candidate/failed status. |
+| P1 | Fog/cathedral crop and non-volumetric approximation. | Reframe/rebuild authored environment or keep the route unaccepted until the screenshot and audit evidence support it. |
 | P1 | Water/ocean shader quality. | Implement best procedural material possible and keep native GPGPU/WebGPU gaps explicit. |
 | P1 | Physics route realism. | Promote only after screenshot review proves clarity, or continue toward mesh colliders/articulated dynamics with honest limits. |
 | P2 | Gallery copy and route cards. | Remove `wow`, accepted, parity, or production-grade language until review passes. |
@@ -167,6 +152,7 @@ Baseline gate:
 pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
 pnpm advanced-gallery
 pnpm advanced-gallery:review
+pnpm advanced-gallery:audit
 ```
 
 Focused route gate:
@@ -194,7 +180,7 @@ Do not set a route to `accepted` unless all of this is true:
 6. Unsupported features are documented as gaps and are not described as native A3D features.
 7. `pnpm advanced-gallery:review` accepts the route.
 
-The final gallery is complete only when every route is accepted and the full report says `Release gate: accepted (10/10 accepted)`.
+The final gallery is complete only when every route is accepted and the full generated report says `Release gate: accepted (10/10 accepted)`.
 
 ## Parallel Agent Safety
 
@@ -213,7 +199,7 @@ Recommended lanes:
 - Route lane: one route implementation and its route-local assets/styles.
 - Evidence lane: screenshots, runtime JSON, contact sheet, review report.
 - Metadata lane: `src/metadata.ts` and acceptance hashes/statuses.
-- Documentation lane: `execute.md`, `ACCEPTANCE_PLAN.md`, README/plan files when assigned.
+- Documentation lane: `docs/examples/advanced-gallery.md`, `ACCEPTANCE_PLAN.md`, README/plan files when assigned.
 
 Rules:
 

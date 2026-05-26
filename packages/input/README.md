@@ -14,4 +14,4 @@
 
 ## Verification
 
-Input snapshots, transitions, action maps, keyboard chords, pointer/gamepad behavior, gestures, interaction targets, picking rays, camera controls, browser input lifecycle, and example input metrics are covered by `tests/unit/workstream5-input-audio-scripting-editor.test.ts`, `tests/unit/input/camera-controls.test.ts`, `tests/browser/input-browser.spec.ts`, and `tests/browser/examples-runtime.spec.ts`. Export and import consistency is covered by `pnpm verify:exports` and `pnpm verify:imports`.
+Input snapshots, transitions, action maps, keyboard chords, pointer/gamepad behavior, gestures, interaction targets, picking rays, camera controls, and browser input lifecycle are covered by `tests/unit/workstream5-input-audio-scripting-editor.test.ts`, `tests/unit/input/camera-controls.test.ts`, and `tests/browser/input-browser.spec.ts`. Export and import consistency is covered by `pnpm verify:exports` and `pnpm verify:imports`.

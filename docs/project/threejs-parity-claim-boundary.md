@@ -4,21 +4,21 @@ Generated from the Three.js parity Three.js inventory.
 
 ## Current Claim
 
-A3D is not yet a full Three.js replacement. This inventory is a code backlog, not a parity proof.
+A3D has passing local generated Three.js parity evidence for the currently inventoried examples and routes. This inventory is still a scoped measurement surface, not proof that A3D is a complete replacement for every Three.js API, example, ecosystem workflow, or browser/device combination.
 
 ## Blocked Claims
 
-- Full Three.js parity.
-- Exceeds Three.js.
-- Exceeds Three.js in every sense.
+- Unqualified full Three.js replacement.
+- Unqualified "exceeds Three.js" without naming the measured categories and report files.
+- Any claim that A3D exceeds Three.js in every sense.
 
 ## Why
 
-- High-priority open examples: 0
-- Unsupported examples: 0
-- Partial examples: 0
+- High-priority open examples in the current inventory: 0
+- Unsupported examples in the current inventory: 0
+- Partial examples in the current inventory: 0
 
-Claims can advance only after construction tracks A through K produce real package/runtime code and Track L verification proves the result.
+Claims can advance only when the relevant package/runtime code exists and the current verification reports prove the exact category being claimed. Keep wording tied to `tests/reports/threejs-parity/`, `tests/reports/superiority/`, and the current claim-guideline docs.
 
 ## Binding Code Parity Floor
 

@@ -31,7 +31,6 @@ const requiredReports = [
   "tests/reports/external-parity-external-vite-build.json",
   "tests/reports/external-parity-static-preview-smoke.json",
   "tests/reports/external-parity-threejs-visual-parity.json",
-  "tests/reports/external-parity-examples-readiness.json",
   "tests/reports/external-parity-visual-quality.json",
   "tests/reports/external-parity-package-smoke.json",
   "tests/reports/external-parity-external-consumer.json",

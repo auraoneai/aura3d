@@ -8,7 +8,6 @@ const requiredFiles = [
   "packages/three-compat/src/migration/ThreeToA3DAdapter.ts",
   "packages/three-compat/src/migration/CompatibilityWarnings.ts",
   "tools/three-compat-migrate-three/index.ts",
-  "tools/three-compat-threejs-example-migrator/index.ts",
   "tests/unit/three-compat/three-compat-migration.test.ts",
   "tests/integration/three-compat-threejs-migration.test.ts",
   "tests/browser/three-compat-threejs-migration.spec.ts"

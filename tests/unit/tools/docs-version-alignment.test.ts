@@ -21,7 +21,6 @@ describe("docs version alignment", () => {
       "docs/project/release-process.md",
       "docs/project/tutorials-getting-started-real-scene.md",
       "docs/project/tutorials-product-configurator.md",
-      "docs/examples/product-demos.md",
       "packages/rendering/package.json",
       "packages/assets/package.json",
       "packages/editor-runtime/package.json"
@@ -29,9 +28,7 @@ describe("docs version alignment", () => {
     expect(report.linkedPaths).toEqual(expect.arrayContaining([
       "docs/api/public-api.md",
       "docs/project/tutorials-getting-started-real-scene.md",
-      "examples/product-configurator/index.html",
-      "examples/architecture-viewer/index.html",
-      "examples/game-slice/index.html",
+      "apps/advanced-examples-gallery/index.html",
       "CHANGELOG.md"
     ]));
   });

@@ -22,18 +22,15 @@ http://127.0.0.1:5180/
 
 ## Useful Routes
 
-- `/apps/product-configurator/`
-- `/apps/asset-inspector/`
-- `/apps/material-studio/`
-- `/apps/architecture-viewer/`
-- `/apps/character-viewer/`
-- `/apps/cinematic-postprocess/`
-- `/apps/threejs-parity-lab/`
-- `/apps/webgpu-lab/`
-- `/apps/flagship-viewer/`
-- `/apps/postprocessing-bloom/`
-- `/apps/postprocessing-depth-outline/`
-- `/apps/webxr-interactions/`
+Use the root registry at `http://127.0.0.1:5180/`. It is the single allowlist for local browser examples.
+
+Current route groups:
+
+- ten advanced gallery demos under `/apps/advanced-examples-gallery/#...`;
+- four focused Aura3D library examples under `/apps/wow-*`;
+- twelve authored showcase apps under `/apps/wow-*`.
+
+The legacy `examples/` tree and older standalone app route folders are pruned from the current checkout.
 
 ## Minimal SDK Example
 
@@ -43,14 +40,15 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
 const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");
-const scene = createRenderableScene(asset, {
+const scene = await createRenderableScene(asset, {
   camera: "auto-frame",
   lighting: "studio-product",
   shadows: true,
   postprocess: "product-default"
 });
 
-renderer.render(scene.source, scene.camera);
+renderer.render(scene.source);
+scene.dispose();
 renderer.dispose();
 ```
 

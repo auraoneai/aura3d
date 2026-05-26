@@ -13,11 +13,21 @@ This file is the deployment manifest for the current documentation set.
 - [Verification evidence](verification-evidence.md)
 - [Completion audit](completion-audit.md)
 - [Three.js superiority status](threejs-superiority-status.md)
+- [Superiority evidence workflow](superiority-evidence-workflow.md)
 - [Three.js parity status](threejs-parity-status.md)
 - [Claim guidelines](claim-guidelines.md)
 - [Known limits](known-limits.md)
 - [Migration](migration.md)
 - [Compatibility](compatibility.md)
+
+## Agent Docs
+
+- [AI agent orientation](../agents/README.md)
+- [Agent context pack](../agents/agent-context.md)
+- [Codebase map for agents](../agents/codebase-map.md)
+- [Build playbook for agents](../agents/build-playbook.md)
+- [Agent verification guide](../agents/verification.md)
+- [Claims and boundaries for agents](../agents/claims-and-boundaries.md)
 
 ## API
 
@@ -35,11 +45,16 @@ This file is the deployment manifest for the current documentation set.
 - [Animation runtime support](../animation/runtime-support.md)
 - [Asset corpus report](../assets/asset-corpus-report.md)
 - [Benchmark evidence](../benchmarks/readme.md)
+- [Controls, interaction, and picking](../controls/interaction-and-picking.md)
+- [Profiling and diagnostics](../debug/profiling-and-diagnostics.md)
 - [Three.js comparison](../comparisons/threejs.md)
+- [Advanced examples gallery](../examples/advanced-gallery.md)
+- [Physics runtime](../physics/runtime.md)
 - [Rendering concept](../concepts/rendering.md)
 - [Renderer lifecycle](../rendering/renderer-lifecycle.md)
 - [WebGPU hardware matrix](../rendering/webgpu-hardware-matrix.md)
 - [create-aura3d templates](../templates/create-aura3d-templates.md)
+- [Product and authoring workflows](../workflows/product-and-authoring-workflows.md)
 
 ## Release And Governance
 
@@ -53,9 +68,7 @@ This file is the deployment manifest for the current documentation set.
 
 ## Examples
 
-- [Product demos](../examples/product-demos.md)
-- [External demos](../examples/external-demos.md)
-- [Product configurator example](../../examples/product-configurator/index.html)
-- [Architecture viewer example](../../examples/architecture-viewer/index.html)
-- [Game slice example](../../examples/game-slice/index.html)
-- [Physics sandbox example](../../examples/physics-sandbox/index.html)
+- [Advanced examples gallery](../examples/advanced-gallery.md)
+- Root local route registry: `../../index.html`
+- Advanced gallery route app: `../../apps/advanced-examples-gallery/index.html`
+- Authored showcase route apps: `../../apps/wow-*`

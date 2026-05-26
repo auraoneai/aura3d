@@ -328,6 +328,13 @@ const runtimeStartedAt = performance.now();
 const resources = createResources();
 const authoredLayer = createAuthoredGalleryLayer();
 const rendererEnvironmentBackgrounds = new Map<string, RendererEnvironmentBackgroundLoadState>();
+
+// "Clean" mode for embedded marketing previews: hide all UI chrome,
+// show only the rendered 3D canvas. Activated by ?chrome=hidden.
+if (new URLSearchParams(location.search).get("chrome") === "hidden") {
+  document.documentElement.setAttribute("data-chrome", "hidden");
+}
+
 let routeId = normalizeHash(location.hash);
 let galleryMode = isGalleryRoute(routeId);
 let selectedDemo = getDemo(galleryMode ? null : routeId);

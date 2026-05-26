@@ -720,3 +720,31 @@ ul {
     display: none;
   }
 }
+
+/* ── Clean mode ─────────────────────────────────────
+   Activated when the gallery loads with ?chrome=hidden
+   (used for marketing-site iframe embeds). Hides every
+   piece of overlay UI so only the rendered 3D shows.
+   ───────────────────────────────────────────────── */
+html[data-chrome="hidden"] .top-hud,
+html[data-chrome="hidden"] .right-panel,
+html[data-chrome="hidden"] .caption-strip,
+html[data-chrome="hidden"] .left-rail,
+html[data-chrome="hidden"] .gallery-ui,
+html[data-chrome="hidden"] .gallery-home,
+html[data-chrome="hidden"] .wide-command,
+html[data-chrome="hidden"] .capture-toast,
+html[data-chrome="hidden"] #loading {
+  display: none !important;
+}
+html[data-chrome="hidden"] body,
+html[data-chrome="hidden"] body::before {
+  background: transparent;
+}
+html[data-chrome="hidden"] #app {
+  background: transparent;
+}
+html[data-chrome="hidden"] #viewport {
+  width: 100vw !important;
+  height: 100vh !important;
+}

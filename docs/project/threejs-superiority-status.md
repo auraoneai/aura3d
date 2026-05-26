@@ -9,7 +9,7 @@ This page documents the current Three.js superiority gate status against the rep
 The Three.js superiority gate is currently passing in this workspace based on freshly generated local report evidence from `pnpm superiority`.
 
 - Latest local audit report: `tests/reports/superiority/superiority-audit.json`
-- Latest local audit timestamp: `2026-05-26T10:24:24.625Z`
+- Latest local audit timestamp: `2026-05-26T12:06:41.986Z`
 - Report namespace: `tests/reports/superiority/`
 
 The report files live under `tests/reports/`, which is ignored by git, so clean checkouts must regenerate them before making the same claim.

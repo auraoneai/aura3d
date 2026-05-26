@@ -293,7 +293,7 @@ export class CurrentRoutesFlagshipViewer {
   zoom(scale: number): CurrentRoutesViewerControls {
     this.controls = {
       ...this.controls,
-      zoom: clamp(this.controls.zoom * scale, 0.55, 1.65)
+      zoom: clamp(this.controls.zoom * scale, 0.25, 1.65)
     };
     this.cameraFrame = this.createCamera();
     return this.controls;
@@ -315,7 +315,7 @@ export class CurrentRoutesFlagshipViewer {
       ...next,
       yaw: clamp(next.yaw ?? this.controls.yaw, -Math.PI, Math.PI),
       pitch: clamp(next.pitch ?? this.controls.pitch, -0.75, 0.75),
-      zoom: clamp(next.zoom ?? this.controls.zoom, 0.55, 1.65),
+      zoom: clamp(next.zoom ?? this.controls.zoom, 0.25, 1.65),
       exposure: clamp(next.exposure ?? this.controls.exposure, 0.25, 2.5),
       environmentRotation: clamp(next.environmentRotation ?? this.controls.environmentRotation, -Math.PI, Math.PI),
       backgroundBlur: clamp(next.backgroundBlur ?? this.controls.backgroundBlur, 0, 1),

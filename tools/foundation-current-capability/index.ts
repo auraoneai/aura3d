@@ -50,8 +50,6 @@ export function createFoundationCurrentCapabilityReport(root = process.cwd()): F
     ? "tests/reports/foundation-task-assignments.json"
     : null;
   const claimGates = readJson(root, "tests/reports/foundation-claim-gates.json");
-  const exampleTruth = readJson(root, "tests/reports/foundation-example-truth-audit.json");
-  const screenshots = readJson(root, "tests/reports/foundation-example-screenshots/manifest.json");
   const rendering = readJson(root, "tests/reports/foundation-rendering.json");
   const assets = readJson(root, "tests/reports/foundation-asset-corpus.json");
   const editor = readJson(root, "tests/reports/foundation-editor-authoring.json");
@@ -62,18 +60,16 @@ export function createFoundationCurrentCapabilityReport(root = process.cwd()): F
   const gates: FoundationGateStatus[] = [
     {
       gate: "Gate 0: Honest Current State",
-      passed: claimGates?.ok === true && exampleTruth?.ok === true,
+      passed: claimGates?.ok === true,
       blockers: [
         ...(claimGates?.ok === true ? [] : ["foundation claim-gate report is missing or failing"]),
-        ...(exampleTruth?.ok === true ? [] : ["example truth audit report is missing or failing"]),
       ],
     },
     {
-      gate: "Gate 1: Credible Renderer Examples",
-      passed: rendering?.ok === true && screenshots?.ok === true,
+      gate: "Gate 1: Credible Renderer Evidence",
+      passed: rendering?.ok === true,
       blockers: [
         ...(rendering?.ok === true ? [] : ["foundation rendering report is missing, failing, or reports incomplete renderer evidence"]),
-        ...(screenshots?.ok === true ? [] : ["foundation example screenshot manifest is missing or failing"]),
       ],
     },
     {
@@ -119,7 +115,7 @@ export function createFoundationCurrentCapabilityReport(root = process.cwd()): F
     ok: true,
     command: "pnpm verify:foundation-code",
     runIdPrefix: "foundation-current-capability",
-    sourceFiles: [...docs, "tests/reports/foundation-task-assignments.json", "tests/reports/foundation-claim-gates.json", "tests/reports/foundation-example-truth-audit.json", "tests/reports/foundation-verify.json"],
+    sourceFiles: [...docs, "tests/reports/foundation-task-assignments.json", "tests/reports/foundation-claim-gates.json", "tests/reports/foundation-verify.json"],
     violations,
   });
   return {

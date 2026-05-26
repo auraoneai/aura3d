@@ -1,12 +1,12 @@
 # Aura3D
 
-Aura3D, or A3D, is a production browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the Three.js superiority superiority audit.
+Aura3D, or A3D, is a production browser 3D engine and workflow SDK with first-party rendering, asset, animation, physics, controls, workflow, diagnostics, and Three.js migration packages. Current generated reports show passing measured Three.js parity and superiority slices for the categories covered by the local superiority audit.
 
 A3D is not a runtime wrapper around Three.js. The renderer, scene graph, math, animation, asset pipeline, controls, physics, postprocess, WebGPU/WebGL2 backends, diagnostics, and workflow APIs live in first-party A3D packages. Three.js is used only as a reference implementation for tests, benchmark baselines, migration analysis, and compatibility checks.
 
-## Why A3D Beats Three.js
+## Where A3D Is Measured Against Three.js
 
-A3D beats Three.js in the measured workflow categories that matter for browser 3D product delivery:
+A3D compares against Three.js through measured workflow categories that matter for browser 3D product delivery:
 
 - Workflow speed: product viewers, material studios, animation viewers, physics sandboxes, asset inspectors, screenshots, and diagnostics are first-party workflows instead of hand-assembled demo code.
 - Diagnostics: renderer state, route health, asset import, animation motion quality, material extension handling, resource lifecycle, and benchmark evidence are generated into auditable reports.
@@ -15,17 +15,19 @@ A3D beats Three.js in the measured workflow categories that matter for browser 3
 - Performance evidence: current reports show equivalent benchmark scaffolds tying frame-time and draw-call outcomes, smaller generated benchmark bundles than Three.js, instancing one-draw parity, accelerated raycast/culling baselines, and a passing 100-reload resource lifecycle gate.
 - Product rendering quality: PBR/HDR/IBL, material-extension routes, shadow routes, postprocess routes, visual review, and same-scene render reports are part of the release gate.
 
-The current claim is evidence-bound: A3D matches or exceeds Three.js in the measured categories covered by `tests/reports/superiority/superiority-audit.json`, `tests/reports/superiority/claim-defense.json`, and [docs/project/threejs-superiority-status.md](/Users/gurbakshchahal/Aura3D/docs/project/threejs-superiority-status.md).
+The current claim is evidence-bound: A3D matches or exceeds Three.js only in the measured categories covered by `tests/reports/superiority/superiority-audit.json`, `tests/reports/superiority/claim-defense.json`, and [docs/project/threejs-superiority-status.md](docs/project/threejs-superiority-status.md).
 
 ## Advanced Gallery Boundary
 
-The Three.js parity advanced examples gallery is current accepted showcase evidence as of the latest report set. `pnpm advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`, and `pnpm advanced-gallery:audit` verifies ten current route reports, screenshot hashes, runtime JSON, reusable-system disclosures, unsupported disclosures, measured performance evidence, and image-quality evidence with zero blockers.
+The Three.js parity advanced examples gallery is a separate heavyweight showcase evidence lane. The source metadata currently defines ten accepted gallery routes, but accepted-gallery wording is valid only after regenerating the ignored local evidence files under `tests/reports/advanced-examples-gallery/` and confirming `pnpm advanced-gallery:review` and `pnpm advanced-gallery:audit` pass for that same report set.
 
 The claim remains evidence-bound: if source changes invalidate screenshots, route JSON, hashes, review output, or audit output, rerun `pnpm advanced-gallery`, `pnpm advanced-gallery:review`, and `pnpm advanced-gallery:audit` before reusing the gallery as accepted evidence.
 
 The full advanced-gallery capture is intentionally not part of aggregate `pnpm threejs-parity`; it is a heavyweight visual acceptance lane that must be run explicitly through `pnpm advanced-gallery:pipeline` when gallery source, route composition, renderer output, or evidence files change. `pnpm test:visual` remains the generic visual baseline command for nonblank/pixel smoke coverage and is not an advanced-gallery acceptance gate.
 
 ## Package Surface
+
+The publish surface is the root `@aura3d/engine` package plus public subpaths such as `@aura3d/engine/rendering`, `@aura3d/engine/assets`, and `@aura3d/engine/production-runtime`. The monorepo also contains first-party workspace packages with matching standalone names for package-level development and API docs.
 
 The repo builds these first-party package surfaces:
 
@@ -73,46 +75,33 @@ Open:
 http://127.0.0.1:5180/
 ```
 
-Useful routes include:
+The root page is the allowlisted local route registry. It links only:
 
-- `/apps/flagship-viewer/`
-- `/apps/animation-keyframes/`
-- `/apps/animation-multiple/`
-- `/apps/animation-walk/`
-- `/apps/skinning-blending/`
-- `/apps/skinning-additive/`
-- `/apps/skinning-ik/`
-- `/apps/skinning-morph/`
-- `/apps/decals/`
-- `/apps/postprocessing-bloom/`
-- `/apps/postprocessing-depth-outline/`
-- `/apps/instancing-performance/`
-- `/apps/loader-compression/`
-- `/apps/loader-material-extensions/`
-- `/apps/loader-gltf-variants/`
-- `/apps/webgpu-rtt/`
-- `/apps/webgpu-compute/`
-- `/apps/webgpu-materials/`
-- `/apps/webgpu-instance-uniform/`
-- `/apps/webxr-interactions/`
-- `/apps/public-scene/`
+- ten advanced gallery deep links under `/apps/advanced-examples-gallery/#...`;
+- four focused Aura3D library examples under `/apps/wow-*`;
+- twelve authored showcase apps under `/apps/wow-*`;
+- shared runtime code under `/apps/wow-common/` that is not a standalone route.
+
+The legacy `examples/` tree and older app route folders have been pruned from the checkout. Do not document, test, or link local examples outside the root registry unless they are intentionally restored and added to the allowlist.
 
 ## Basic SDK Shape
 
 ```ts
-import { Renderer } from "@aura3d/rendering";
-import { createRenderableScene, loadRenderableAsset } from "@aura3d/assets";
+import { Renderer } from "@aura3d/engine/rendering";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
 
 const renderer = await Renderer.create({ canvas });
 const asset = await loadRenderableAsset("/fixtures/engine-readiness/canonical-product-scene.glb");
-const scene = createRenderableScene(asset, {
+const scene = await createRenderableScene(asset, {
   camera: "auto-frame",
   lighting: "studio-product",
   shadows: true,
   postprocess: "product-default"
 });
 
-await renderer.renderScene(scene);
+renderer.render(scene.source);
+scene.dispose();
+renderer.dispose();
 ```
 
 ## Verification
@@ -129,7 +118,7 @@ Run the current parity and evidence suite:
 pnpm threejs-parity
 ```
 
-`pnpm threejs-parity` keeps the broad Three.js parity parity/readiness suite fast enough for aggregate verification. Run the heavyweight advanced-gallery evidence lane explicitly after gallery-visible changes:
+`pnpm threejs-parity` keeps the broad Three.js parity/readiness suite fast enough for aggregate verification. Run the heavyweight advanced-gallery evidence lane explicitly after gallery-visible changes:
 
 ```sh
 pnpm advanced-gallery:pipeline
@@ -165,7 +154,7 @@ Primary evidence:
 - `tests/reports/threejs-parity/threejs-inventory.json`
 - `tests/reports/threejs-parity/visual-review.json`
 - `tests/reports/threejs-parity/same-scene-render.json`
-- `tests/reports/advanced-examples-gallery/` (current accepted advanced-gallery evidence; rerun capture, review, and audit after visual/source changes)
+- `tests/reports/advanced-examples-gallery/` (ignored generated advanced-gallery evidence; rerun capture, review, and audit after visual/source changes)
 - `tests/reports/threejs-parity/performance.json`
 - `tests/reports/superiority/feature-parity.json`
 - `tests/reports/superiority/visual-quality.json`
@@ -199,12 +188,13 @@ The defensible claim is not slogan-based. It is tied to report files, route scre
 
 Current high-signal docs:
 
-- [docs/project/current-state.md](/Users/gurbakshchahal/Aura3D/docs/project/current-state.md)
-- [docs/project/getting-started.md](/Users/gurbakshchahal/Aura3D/docs/project/getting-started.md)
-- [docs/project/documentation-index.md](/Users/gurbakshchahal/Aura3D/docs/project/documentation-index.md)
-- [docs/project/competitive-positioning.md](/Users/gurbakshchahal/Aura3D/docs/project/competitive-positioning.md)
-- [docs/project/go-to-market-strategy.md](/Users/gurbakshchahal/Aura3D/docs/project/go-to-market-strategy.md)
-- [docs/project/threejs-superiority-status.md](/Users/gurbakshchahal/Aura3D/docs/project/threejs-superiority-status.md)
+- [docs/agents/README.md](docs/agents/README.md)
+- [docs/project/current-state.md](docs/project/current-state.md)
+- [docs/project/getting-started.md](docs/project/getting-started.md)
+- [docs/project/documentation-index.md](docs/project/documentation-index.md)
+- [docs/project/competitive-positioning.md](docs/project/competitive-positioning.md)
+- [docs/project/go-to-market-strategy.md](docs/project/go-to-market-strategy.md)
+- [docs/project/threejs-superiority-status.md](docs/project/threejs-superiority-status.md)
 - `docs/api/`
 - `docs/concepts/`
 - `docs/rendering/`

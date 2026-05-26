@@ -17,8 +17,10 @@ Three.js comparison evidence is split across benchmark scenes, same-scene browse
 - `tests/reports/threejs-parity/threejs-inventory.json`: `pass: true`, 54 tracked rows, all currently marked `matched`.
 - `tests/reports/threejs-parity/same-scene-render.json`: `pass: true`.
 - `tests/reports/threejs-parity/visual-review.json`: `pass: true`.
-- `tests/reports/threejs-parity/performance.json`: currently `pass: false` because several performance evidence reports are missing from the local report tree.
-- `tests/reports/superiority/performance.json`: currently `pass: false` for the same performance-report gap.
+- `tests/reports/threejs-parity/performance.json`: `pass: true` in the current regenerated local report tree.
+- `tests/reports/superiority/performance.json`: `pass: true` in the current regenerated local report tree.
+
+`tests/reports/` is ignored by git, so clean checkouts and release jobs must regenerate these reports before using this snapshot as claim evidence.
 
 ## Boundary
 

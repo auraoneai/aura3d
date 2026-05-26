@@ -13,28 +13,6 @@ const root = process.cwd();
 
 const targets: readonly FlakeTarget[] = [
   {
-    id: "browser-visual-examples",
-    command: ["pnpm", "--silent", "verify:foundation-examples"],
-    reportPath: "tests/reports/foundation-example-screenshots/manifest.json",
-    stableSignature: (report) => {
-      const entries = Array.isArray(report.entries) ? report.entries : [];
-      return {
-        ok: report.ok,
-        screenshotCount: Array.isArray(report.screenshotPaths) ? report.screenshotPaths.length : 0,
-        entries: entries.map((entry) => isRecord(entry) ? {
-          id: entry.id,
-          runtimeStateKey: entry.runtimeStateKey,
-          runtimeStatus: entry.runtimeStatus,
-          renderer: entry.renderer,
-          diagnosticsPresent: entry.diagnosticsPresent,
-          errorsPresent: entry.errorsPresent,
-          visualClaim: entry.visualClaim,
-          knownLimitsCount: entry.knownLimitsCount,
-        } : entry),
-      };
-    },
-  },
-  {
     id: "benchmark-comparison",
     command: ["pnpm", "--silent", "verify:foundation-benchmarks"],
     reportPath: "tests/reports/foundation-engine-comparison.json",
@@ -68,10 +46,8 @@ export function runFoundationFlakeDetection(iterations = 2): number {
       sourceFiles: [
         "package.json",
         "tools/foundation-flake-detection/index.ts",
-        "tests/browser/example-screenshot-audit.spec.ts",
         "tests/browser/engine-comparison.spec.ts",
         "tools/compare-engines/index.ts",
-        "tools/example-truth-audit/index.ts",
       ],
       screenshotPaths: collectScreenshotPaths(),
       violations,

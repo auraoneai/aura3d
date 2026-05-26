@@ -1,0 +1,19 @@
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  server: {
+    host: "127.0.0.1",
+    port: 7782,
+    strictPort: true
+  },
+  build: {
+    target: "es2022",
+    sourcemap: true,
+    assetsInlineLimit: 0
+  },
+  optimizeDeps: {
+    include: [
+      "@aura3d/engine/production-runtime"
+    ]
+  }
+});

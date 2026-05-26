@@ -4,6 +4,9 @@ import type { ProductionGLTFRenderPipeline, ProductionGLTFRenderPipelineOptions 
 export type CurrentRoutesFlagshipAssetId =
   | "damaged-helmet"
   | "boom-box"
+  | "avocado"
+  | "clear-coat-test"
+  | "sheen-test-grid"
   | "lantern"
   | "chronograph-watch"
   | "car-concept"
@@ -43,6 +46,30 @@ export const CURRENT_ROUTES_FLAGSHIP_ASSETS: readonly CurrentRoutesFlagshipAsset
     role: "flagship-product",
     license: "CC0-1.0",
     expectedFeatures: ["baseColorTexture", "metallicRoughnessTexture", "normalTexture", "occlusionTexture", "hdrIbl"]
+  },
+  {
+    id: "avocado",
+    name: "Avocado",
+    localPath: "fixtures/asset-corpus/avocado.glb",
+    role: "flagship-organic-pbr",
+    license: "CC-BY-4.0",
+    expectedFeatures: ["baseColorTexture", "normalTexture", "roughnessVariation", "organicProduct", "hdrIbl"]
+  },
+  {
+    id: "clear-coat-test",
+    name: "Clear Coat Test",
+    localPath: "fixtures/asset-corpus/clear-coat-test.glb",
+    role: "flagship-clearcoat-materials",
+    license: "CC-BY-4.0",
+    expectedFeatures: ["KHR_materials_clearcoat", "baseColorTexture", "normalTexture", "materialGrid", "hdrIbl"]
+  },
+  {
+    id: "sheen-test-grid",
+    name: "Sheen Test Grid",
+    localPath: "fixtures/asset-corpus/sheen-test-grid.glb",
+    role: "flagship-sheen-materials",
+    license: "CC-BY-4.0",
+    expectedFeatures: ["KHR_materials_sheen", "baseColorTexture", "materialGrid", "fabricResponse", "hdrIbl"]
   },
   {
     id: "lantern",

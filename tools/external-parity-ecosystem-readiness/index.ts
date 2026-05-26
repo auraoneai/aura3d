@@ -21,6 +21,13 @@ type ExternalParityEcosystemReadinessReport = {
   readonly violations: readonly string[];
 };
 
+type AccessibilityTarget = {
+  readonly id: string;
+  readonly path: string;
+  readonly canvasId: string;
+  readonly markers: readonly string[];
+};
+
 const reportPath = "tests/reports/external-parity-ecosystem-readiness.json";
 
 const documentationFiles = [
@@ -31,8 +38,6 @@ const documentationFiles = [
   "docs/project/tutorials-product-configurator.md",
   "docs/project/tutorials-asset-viewer.md",
   "docs/project/tutorials-editor-app.md",
-  "docs/examples/product-demos.md",
-  "docs/examples/external-demos.md",
   "docs/project/compatibility.md",
   "docs/project/browser-hardware-matrix.md",
   "docs/project/site-map.md",
@@ -40,17 +45,7 @@ const documentationFiles = [
   "docs/project/known-limits.md",
 ] as const;
 
-const accessibilityTargets = [
-  { id: "product-configurator", path: "examples/product-configurator/main.ts", canvasId: "product-configurator-canvas", markers: ["aria-label", "aria-pressed", "tabindex"] },
-  { id: "architecture-viewer", path: "examples/architecture-viewer/main.ts", canvasId: "architecture-viewer-canvas", markers: ["aria-label", "aria-pressed", "tabindex"] },
-  { id: "game-slice", path: "examples/game-slice/main.ts", canvasId: "game-slice-canvas", markers: ["aria-label", "tabindex"] },
-  { id: "asset-viewer", path: "examples/asset-viewer/main.ts", canvasId: "asset-viewer-canvas", markers: ["aria-label", "tabIndex"] },
-  { id: "material-showroom", path: "examples/material-showroom/main.ts", canvasId: "material-showroom-canvas", markers: ["aria-label", "tabindex"] },
-  { id: "shadow-lab", path: "examples/shadow-lab/main.ts", canvasId: "shadow-lab-render-canvas", markers: ["aria-label", "tabindex"] },
-  { id: "postprocess-lab", path: "examples/postprocess-lab/main.ts", canvasId: "postprocess-lab-canvas", markers: ["aria-label", "tabindex"] },
-  { id: "large-world-streaming", path: "examples/large-world-streaming/main.ts", canvasId: "large-world-canvas", markers: ["aria-label", "tabindex"] },
-  { id: "racing-showcase", path: "examples/racing-showcase/main.ts", canvasId: "racing-showcase-canvas", markers: ["aria-label", "tabindex"] },
-] as const;
+const accessibilityTargets: readonly AccessibilityTarget[] = [];
 
 const sourceFiles = [
   "tools/external-parity-ecosystem-readiness/index.ts",

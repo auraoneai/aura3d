@@ -8,8 +8,7 @@ const claims = [
     claim: "A3D is a high-quality Three.js competitor for supported External parity workflows.",
     evidence: [
       "tests/reports/external-parity-threejs-visual-parity.json",
-      "tests/reports/external-parity-external-consumer.json",
-      "tests/reports/external-parity-examples-readiness.json"
+      "tests/reports/external-parity-external-consumer.json"
     ]
   },
   {

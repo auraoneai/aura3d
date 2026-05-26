@@ -4,7 +4,7 @@ const outputPath = "tests/reports/threejs-parity/migration-audit.json";
 const evidence = [
   "packages/three-compat/src/ThreeApiInventory.ts",
   "packages/three-compat/src/ThreeCompatibilityMatrix.ts",
-  "tools/three-compat-threejs-example-migrator/index.ts",
+  "tools/three-compat-migrate-three/index.ts",
   "tests/integration/three-compat-threejs-migration.test.ts"
 ] as const;
 const missing = evidence.filter((path) => !fileExists(path));

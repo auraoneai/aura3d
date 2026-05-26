@@ -33,13 +33,14 @@ Verification:
 pnpm typecheck
 pnpm advanced-gallery
 pnpm advanced-gallery:review
+pnpm advanced-gallery:audit
 ```
 
-`pnpm advanced-gallery` is intentionally a release gate, not just a smoke test. The current screenshots pass the route gates and visual review, but any visual/source change must rerun capture, review, and audit before the accepted state can be reused.
+`pnpm advanced-gallery` is intentionally a release gate, not just a smoke test. The source metadata currently marks the ten routes as accepted, but that status can be cited only when the generated full-gallery screenshots, route JSON, visual review report, and audit report are current in `tests/reports/advanced-examples-gallery/`.
 
 `accepted` is not a visual opinion flag. It requires a current browser screenshot, a recorded screenshot hash, non-empty reviewer metadata, and human review notes tied to that exact artifact. Browser metrics can prove that a route runs, animates, and captures pixels; they do not by themselves prove Three.js showcase quality.
 
-`pnpm advanced-gallery:review` writes a machine-readable release evidence report that joins the metadata status, screenshot artifacts, screenshot hashes, runtime JSON, authored GLB telemetry, motion samples, and PNG detail metrics. Its `pass` field is currently `true` because every demo has explicit accepted visual review evidence.
+`pnpm advanced-gallery:review` writes a machine-readable release evidence report that joins the metadata status, screenshot artifacts, screenshot hashes, runtime JSON, authored GLB telemetry, motion samples, and PNG detail metrics. `pnpm advanced-gallery:audit` then checks the route reports, reusable-system disclosures, unsupported disclosures, measured performance evidence, screenshot hashes, and image-quality evidence.
 
 Screenshot and metric artifacts are written to:
 
@@ -49,13 +50,14 @@ tests/reports/advanced-examples-gallery/
 
 Primary visual review artifacts:
 
-- `current-contact-sheet.png` - current screenshot contact sheet for human review.
-- `visual-review-report.json` - generated evidence report; this is the anti-regression record that keeps smoke pass separate from showcase acceptance.
+- `tests/reports/advanced-examples-gallery/current-contact-sheet.png` - current screenshot contact sheet for human review.
+- `tests/reports/advanced-examples-gallery/visual-review-report.json` - generated evidence report; this is the anti-regression record that keeps smoke pass separate from showcase acceptance.
+- `tests/reports/advanced-examples-gallery/reusable-systems-disclosure-audit.json` - generated structural audit report.
 - `ACCEPTANCE_PLAN.md` - the 10/10 execution contract: gates, capability boundaries, per-route blockers, promotion rules, and evidence commands.
 
-## Current Visual Review State
+## Source Acceptance State
 
-The current report set is accepted: `pnpm advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`, and `pnpm advanced-gallery:audit` passes with zero blockers and zero warnings.
+The source metadata currently describes ten accepted routes. Because `tests/reports/` is ignored by git, a checkout may not contain the full generated report set. Do not reuse accepted-gallery wording for release notes, public claims, or screenshots until `pnpm advanced-gallery:pipeline` regenerates the reports and both the review and audit pass for the same artifacts.
 
 | Demo | Status | Implementation mode | Evidence boundary |
 | --- | --- | --- | --- |
@@ -72,16 +74,14 @@ The current report set is accepted: `pnpm advanced-gallery:review` reports `Rele
 
 ## Capability Boundaries
 
-The gallery uses real A3D WebGL2 rendering, A3D geometry/material APIs, render items, instancing, points, postprocess options, authored GLB render pipelines, animation mixers, and browser runtime instrumentation. It does not claim unsupported systems as native. The current scenes are accepted only because automated browser screenshots, runtime reports, direct visual review, screenshot hash verification, and report audit all pass for the ten active routes.
+The gallery uses real A3D WebGL2 rendering, A3D geometry/material APIs, render items, instancing, points, postprocess options, authored GLB render pipelines, animation mixers, and browser runtime instrumentation. It does not claim unsupported systems as native. A route is accepted only when automated browser screenshots, runtime reports, direct visual review, screenshot hash verification, and report audit all pass for that route.
 
 The current authored-asset layer loads GLB content for water-lab, ocean-observatory, reactor-post, smart-city, data-galaxy, product-configurator, robotics-lab, physics-playground, fog-cathedral, and digital-twin. The browser gate now verifies authored readiness for those routes and samples the WebGL canvas over time to prove visible motion. Those checks are necessary but not sufficient for acceptance.
-
-Additional Khronos `glTF-Sample-Assets` fixtures used during this pass are documented under `fixtures/advanced-gallery/assets/khronos-showcase/README.md`. Assets that hurt screenshot quality remain documented but are not treated as accepted route evidence.
 
 | Capability area | Native A3D / repo capability used here | Gallery helper approximation | Not claimed as native | Primary risk |
 | --- | --- | --- | --- | --- |
 | Rendering | WebGL2 render path, render items, geometry, materials, lights, depth, transparency, diagnostics, screenshot readback. | Route-specific camera presets, scene composition helpers, dashboard overlays. | Film-quality renderer parity from smoke tests alone. | All routes. |
-| WebGPU / compute | WebGPU proof routes exist elsewhere in the repo. | ThreejsParity gallery currently uses WebGL2-oriented showcase routes. | WebGPU water, WebGPU ocean, and GPU compute particles. | Water, ocean, data galaxy. |
+| WebGPU / compute | WebGPU proof routes exist elsewhere in the repo. | The advanced gallery currently uses WebGL2-oriented showcase routes. | WebGPU water, WebGPU ocean, and GPU compute particles. | Water, ocean, data galaxy. |
 | Materials | PBR-style material properties, emissive, metallic/roughness, clearcoat/transmission where loader/material path supports them. | Route-side material correction for assets that render poorly in the current path. | Perfect glass/transmission sorting or premium configurator material response. | Product, reactor, fog, ocean. |
 | glTF / GLB assets | Browser GLB loading, authored fixture layering, material variants where supported by the imported asset path. | Asset exclusions, route-side material overrides, camera framing, local Blender fixtures. | Any imported asset as accepted evidence until screenshot-reviewed. | Product, robotics, smart city, fog. |
 | Animation | Animation mixer/clip playback is used by animated GLB candidates and route motion systems. | Deterministic prop, camera, overlay, timeline, and simulation motion. | Full IK parity, root-motion production state machines, or character controller parity in this gallery. | Robotics, smart city. |
@@ -96,15 +96,15 @@ Additional Khronos `glTF-Sample-Assets` fixtures used during this pass are docum
 
 - Water and ocean demos use CPU/procedural wave geometry. A3D does not currently expose a complete native GPGPU water solver.
 - Particle demos use A3D point geometry and animated transforms. A3D does not currently expose a public GPU-compute particle update API.
-- Fog and light shafts are translucent geometry and particle approximations. A true volumetric raymarch pass is not exposed; the active fog-cathedral route uses a curated Sponza crop and remains failed until crop edges, load time, and cinematic visual quality improve.
-- The robotics character demo now layers imported Soldier and Robot Expressive GLBs over authored lab context; XBot remains available as a fixture but is not active in this route because its current screenshot quality failed review.
-- The physics playground now uses `@aura3d/physics` rigid bodies and contacts for runtime objects; mesh-derived colliders and full articulated robotics dynamics remain out of scope for this candidate route.
+- Fog and light shafts are translucent geometry and particle approximations. A true volumetric raymarch pass is not exposed; the active fog-cathedral route uses curated Sponza/cathedral staging and needs current screenshot/review/audit evidence before any accepted claim is reused.
+- The robotics character demo now layers imported Soldier and Robot Expressive GLBs over authored lab context; XBot remains available as a fixture but is not active in this route because it did not meet the accepted screenshot-quality bar.
+- The physics playground now uses `@aura3d/physics` rigid bodies and contacts for runtime objects; mesh-derived colliders and full articulated robotics dynamics remain out of scope for this gallery route.
 
 Each demo page includes a "What this proves" section, known gaps, acceptance criteria, controls, reset, capture, camera presets, and runtime stats.
 
-## Reference And Art-Direction Lock
+## Reference And Regression Boundaries
 
-These are the visual targets and failure boundaries for the next rebuild pass. A route can improve from `failed` to `candidate` when it materially moves toward this target; it can move to `accepted` only when the screenshot and review gate prove it.
+These are the visual targets and failure boundaries used by the route metadata, screenshot review, and audit tooling. If a route regresses into one of the failure modes, it must not be treated as accepted until the source, screenshot, metadata, review, and audit agree again.
 
 | Demo | Three.js-style reference | Hero screenshot intent | Must not ship as |
 | --- | --- | --- | --- |

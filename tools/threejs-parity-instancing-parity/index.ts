@@ -4,7 +4,7 @@ import instancingScene from "../../benchmarks/shared/scenes/instancing.js";
 
 const OUTPUT_PATH = "tests/reports/threejs-parity/instancing-parity.json";
 const comparisonPath = "tests/reports/comparison-threejs.json";
-const routePath = "tests/reports/current-routes-animation-examples.json";
+const routePath = "tests/reports/current-routes-route-health.json";
 
 const comparison = readJson(comparisonPath);
 const routeReport = readJson(routePath);

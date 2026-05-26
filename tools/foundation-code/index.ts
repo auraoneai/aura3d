@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 
 const commands = [
   ["pnpm", ["--silent", "tsx", "--tsconfig", "tsconfig.base.json", "tools/foundation-claim-gates/index.ts"]],
-  ["pnpm", ["--silent", "tsx", "--tsconfig", "tsconfig.base.json", "tools/example-truth-audit/index.ts"]],
   ["pnpm", ["--silent", "tsx", "--tsconfig", "tsconfig.base.json", "tools/foundation-current-capability/index.ts"]],
 ] as const;
 

@@ -2,7 +2,7 @@
 
 Version: 1.0.0
 
-This tutorial points to the current product configurator example and app surfaces.
+This tutorial points to the current allowlisted product configurator surface inside the advanced gallery.
 
 ## Run
 
@@ -14,27 +14,19 @@ pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
 Open:
 
 ```text
-http://127.0.0.1:5180/examples/product-configurator/index.html
-```
-
-The production app route is also available at:
-
-```text
-http://127.0.0.1:5180/apps/product-configurator/
+http://127.0.0.1:5180/apps/advanced-examples-gallery/index.html#product-configurator
 ```
 
 ## Source
 
-- `examples/product-configurator/`
-- `apps/product-configurator/`
+- `apps/advanced-examples-gallery/`
 - `packages/product-studio/src/index.ts`
 - `packages/workflows/src/index.ts`
 
 ## Verify
 
 ```sh
-pnpm exec playwright test tests/browser/product-demos.spec.ts
-pnpm exec playwright test tests/browser/production-runtime-product-configurator.spec.ts
+pnpm advanced-gallery
 ```
 
 ## Boundary

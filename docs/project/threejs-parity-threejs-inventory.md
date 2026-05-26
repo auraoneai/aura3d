@@ -1,6 +1,6 @@
 # Three.js parity Three.js Inventory
 
-Generated inventory for the first Three.js parity code backlog.
+Generated inventory for the current Three.js parity route and construction-track matrix.
 
 | Three.js example | Category | Priority | A3D status | A3D route | Construction tracks |
 | --- | --- | --- | --- | --- | --- |

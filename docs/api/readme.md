@@ -4,6 +4,8 @@ Version: `1.0.0`
 
 This directory documents the public package surface exposed by the root `@aura3d/engine` package and the first-party workspace packages under `packages/`.
 
+The root publish package is `@aura3d/engine`. The workspace package in `packages/engine` is named `@aura3d/engine-runtime` and provides the internal engine/runtime source that the root package re-exports through its aggregate subpaths.
+
 ## Source Of Truth
 
 - Root export map: `package.json`
@@ -131,14 +133,15 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
 const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");
-const scene = createRenderableScene(asset, {
+const scene = await createRenderableScene(asset, {
   camera: "auto-frame",
   lighting: "studio-product",
   shadows: true,
   postprocess: "product-default"
 });
 
-renderer.render(scene.source, scene.camera);
+renderer.render(scene.source);
+scene.dispose();
 renderer.dispose();
 ```
 

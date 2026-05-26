@@ -30,7 +30,7 @@ The product/material fixture manifest currently lists seven local GLB assets. Th
 Useful focused commands:
 
 ```sh
-pnpm exec vitest run tests/assets
+pnpm exec vitest run --config tests/assets/vitest.config.ts
 pnpm threejs-parity:inventory
 pnpm superiority:feature-parity
 ```

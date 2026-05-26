@@ -24,7 +24,7 @@ Aura3D has public hooks for mesh and texture compression paths in the asset pipe
 Useful focused checks:
 
 ```sh
-pnpm exec vitest run tests/assets
+pnpm exec vitest run --config tests/assets/vitest.config.ts
 pnpm exec playwright test tests/browser/asset-compression-browser.spec.ts
 pnpm threejs-parity:inventory
 ```

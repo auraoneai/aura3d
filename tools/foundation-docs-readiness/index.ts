@@ -16,7 +16,7 @@ const requiredFiles = [
 ] as const;
 const evidencePaths = [
   "tests/reports/foundation-app-suite",
-  "tests/reports/foundation-examples",
+  "tests/reports/current-routes-route-health.json",
   "tests/reports/foundation-external-consumer.json",
   "tests/reports/foundation-threejs-comparison.json"
 ] as const;

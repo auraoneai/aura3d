@@ -1,0 +1,18 @@
+{
+  "name": "aura3d-marketing",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 7782 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 7782 --strictPort"
+  },
+  "dependencies": {
+    "@aura3d/engine": "file:../release-artifacts/aura3d-engine-1.0.0.tgz"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10",
+    "typescript": "^5.5.4"
+  }
+}

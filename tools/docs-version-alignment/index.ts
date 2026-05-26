@@ -35,9 +35,7 @@ const tutorialDocs = [
   "docs/project/tutorials-product-configurator.md"
 ] as const;
 
-const exampleDocs = [
-  "docs/examples/product-demos.md"
-] as const;
+const exampleDocs = [] as const;
 
 export function validateDocsVersionAlignment(root = process.cwd()): DocsVersionAlignmentReport {
   const rootPackage = JSON.parse(readText(root, "package.json")) as { readonly version?: string };
@@ -91,10 +89,10 @@ export function validateDocsVersionAlignment(root = process.cwd()): DocsVersionA
 
   for (const path of tutorialDocs) {
     const text = readText(root, path);
-    if (!/\/examples\/[a-z0-9-]+\/index\.html/.test(text)) {
+    if (!/\/apps\/advanced-examples-gallery\/(?:index\.html)?#[a-z0-9-]+/.test(text)) {
       violations.push(`${path} does not link to a running example index.html path.`);
     }
-    if (!text.includes("pnpm exec playwright test")) {
+    if (!text.includes("pnpm exec playwright test") && !text.includes("pnpm advanced-gallery")) {
       violations.push(`${path} does not include a runnable Playwright verification command.`);
     }
   }

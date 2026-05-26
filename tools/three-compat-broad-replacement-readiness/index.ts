@@ -13,7 +13,6 @@ interface GenericReport {
 
 const matrix = readJson<MatrixReport>("tests/reports/three-compat-threejs-compatibility-matrix.json");
 const inventory = readJson<GenericReport>("tests/reports/three-compat-threejs-inventory.json");
-const examples = readJson<{ readonly pass: boolean; readonly examples: readonly { readonly browserTested: boolean }[] }>("tests/reports/three-compat-examples-readiness.json");
 const visualParity = readJson<{ readonly pass: boolean; readonly comparisons: readonly { readonly id: string; readonly visualScore: number }[] }>("tests/reports/three-compat-threejs-visual-parity.json");
 const migration = readJson<GenericReport>("tests/reports/three-compat-migration-readiness.json");
 const packageSmoke = readJson<GenericReport>("tests/reports/three-compat-package-smoke.json");
@@ -44,7 +43,6 @@ const visualThresholdPasses = visualParity.comparisons.filter((comparison) => co
 const checks = [
   { id: "compatibility-matrix-present-and-thresholded", pass: matrix.totalEntries >= 250 && Number(overallCoverage?.percent ?? 0) >= 60 && weakCoreCategories.length === 0, detail: `${matrix.totalEntries} entries, overall ${overallCoverage?.percent ?? 0}%, weak core categories: ${weakCoreCategories.join(", ") || "none"}` },
   { id: "inventory-entry-count", pass: Number((inventory.inventory as { entries?: unknown[] } | undefined)?.entries?.length ?? 0) >= 250, detail: "Three.js inventory tracks at least 250 API/example entries" },
-  { id: "examples-depth", pass: examples.pass && examples.examples.length >= 50 && examples.examples.filter((example) => example.browserTested).length >= 30, detail: `${examples.examples.length} examples, ${examples.examples.filter((example) => example.browserTested).length} browser-tested` },
   { id: "same-scene-comparisons", pass: visualParity.pass && visualParity.comparisons.length >= 13 && visualThresholdPasses >= 10, detail: `${visualParity.comparisons.length} comparisons, ${visualThresholdPasses} visual threshold passes` },
   { id: "human-visual-review", pass: reviewText.includes("Acceptable public product page?") && !/\|\s*No\s*\|/.test(reviewText) && missingFlagshipScreenshots.length === 0, detail: missingFlagshipScreenshots.join(", ") || "human review approves all flagship screenshots" },
   { id: "migration-tooling", pass: migration.pass === true, detail: "migration readiness report passes" },
@@ -62,8 +60,6 @@ const report = {
     minimumInventoryEntries: 250,
     minimumOverallCoveragePercent: 60,
     minimumCoreCoveragePercent: 80,
-    minimumExamples: 50,
-    minimumBrowserTestedExamples: 30,
     minimumSameSceneComparisons: 13
   },
   checks

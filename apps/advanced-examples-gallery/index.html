@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>A3D Advanced Examples Gallery</title>
+    <script>
+      // When loaded with ?chrome=hidden (used by marketing iframe embeds),
+      // tag the document at parse time so the inline rules below apply
+      // before any CSS or DOM paints. Without this, the iframe flashes
+      // a white "Loading advanced A3D gallery..." panel before the app
+      // boots — three.js demos don't do that because they ship one HTML
+      // per demo, but our gallery boots a router shell.
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("chrome") === "hidden") {
+            document.documentElement.setAttribute("data-chrome", "hidden");
+          }
+        } catch (_e) { /* ignore */ }
+      })();
+    </script>
+    <style>
+      html[data-chrome="hidden"],
+      html[data-chrome="hidden"] body { background: #000 !important; color: transparent !important; }
+      html[data-chrome="hidden"] #loading,
+      html[data-chrome="hidden"] .loading-state { display: none !important; }
+      html[data-chrome="hidden"] body::before { background: transparent !important; }
+    </style>
   </head>
   <body>
     <div id="app">

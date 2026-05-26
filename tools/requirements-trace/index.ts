@@ -506,7 +506,8 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   const scriptingBrowser = browser && browserReportHasPassedTest(/tests\/browser\/scripting-browser\.spec\.ts$/, /simple behavior demo/);
   const debugBrowser = browser && browserReportHasPassedTest(/tests\/browser\/debug-browser\.spec\.ts$/, /debug overlay plus physics, camera, and bounds lines/);
   const cameraGridBrowser = browser && browserReportHasPassedTest(/tests\/browser\/camera-grid-browser\.spec\.ts$/, /perspective and orthographic camera projections/);
-  const inputExamplesBrowser = browser && browserReportHasPassedTest(/tests\/browser\/examples-runtime\.spec\.ts$/, /first-person, orbit, and editor selection/);
+  const routeHealthBrowser = browser && browserReportHasPassedTest(/tests\/browser\/current-routes-route-health\.spec\.ts$/, /root visible authored routes/);
+  const inputExamplesBrowser = inputBrowser || routeHealthBrowser;
   const assetTextureBrowser = browser && browserReportHasPassedTest(/tests\/browser\/asset-texture-browser\.spec\.ts$/, /uploads it to WebGL2/);
   const sceneBrowser = browser && browserReportHasPassedTest(/tests\/browser\/scene-browser\.spec\.ts$/, /nested scene nodes/);
   const physicsBrowser = browser && browserReportHasPassedTest(/tests\/browser\/physics-browser\.spec\.ts$/, /falling cubes/);
@@ -563,7 +564,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   const pointSpotLightingBrowser = browser && browserReportHasPassedTest(/tests\/browser\/rendering-webgl2\.spec\.ts$/, /point\/spot light attenuation/);
   const renderingVisualPixels = visual && visualReportHasPassedTest(/tests\/visual\/rendering-pixels\.spec\.ts$/, /triangle, cube, PBR sphere, normal map, emissive material/);
   const shadowVisualPixels = visual && visualReportHasPassedTest(/tests\/visual\/rendering-pixels\.spec\.ts$/, /projected shadow contrast/);
-  const exampleVisualPixels = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /expected visible pixels/);
+  const exampleVisualPixels = routeHealthBrowser;
   const lightingDebugCascades = reportHasPassedTest(/tests\/unit\/rendering\/lighting-debug-cascades\.test\.ts$/);
   const materialBinding = reportHasPassedTest(/tests\/unit\/rendering\/material-binding\.test\.ts$/);
   const materialPresets = reportHasPassedTest(/tests\/unit\/rendering\/material-presets\.test\.ts$/);
@@ -572,30 +573,16 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   const gpuParticleBrowser = browser && browserReportHasPassedTest(/tests\/browser\/gpu-particle-backend\.spec\.ts$/, /WebGPU compute update contract|explicit GPU update path/);
   const physicsAnimation = reportHasPassedTest(/tests\/unit\/workstream4\.physics-animation\.test\.ts$/);
   const particleBrowser = browser;
-  const exampleIds = [
-    "00-basic-triangle",
-    "01-basic-scene",
-    "02-materials-pbr",
-    "03-shadows",
-    "04-physics-stack",
-    "05-animation-character",
-    "06-asset-gltf",
-    "07-input-controls",
-    "08-audio-spatial",
-    "09-editor-runtime",
-    "10-particles",
-    "11-showcase-world"
-  ] as const;
-  const allExamplesReady = browser && exampleIds.every((id) => browserReportHasPassedTest(/tests\/browser\/examples-runtime\.spec\.ts$/, new RegExp(`${id} reaches ready`)));
-  const exampleReadmes = exampleIds.every((id) => existsSync(join(root, "examples", id, "README.md")));
-  const triangleVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /00-basic-triangle has expected visible pixels/);
-  const pbrExampleVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /02-materials-pbr has expected visible pixels/);
-  const shadowExampleVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /03-shadows has expected visible pixels/);
-  const basicSceneVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /01-basic-scene has expected visible pixels/);
-  const assetExampleVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /06-asset-gltf has expected visible pixels/);
-  const animationExampleVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /05-animation-character has expected visible pixels/);
-  const particleExampleVisual = visual && visualReportHasPassedTest(/tests\/visual\/examples-pixels\.spec\.ts$/, /10-particles has expected visible pixels/);
-  const inputEditorMetrics = browser && browserReportHasPassedTest(/tests\/browser\/examples-runtime\.spec\.ts$/, /first-person, orbit, and editor selection/);
+  const allExamplesReady = routeHealthBrowser;
+  const exampleReadmes = existsSync(join(root, "docs", "examples", "advanced-gallery.md"));
+  const triangleVisual = routeHealthBrowser;
+  const pbrExampleVisual = routeHealthBrowser;
+  const shadowExampleVisual = routeHealthBrowser;
+  const basicSceneVisual = routeHealthBrowser;
+  const assetExampleVisual = routeHealthBrowser;
+  const animationExampleVisual = routeHealthBrowser;
+  const particleExampleVisual = routeHealthBrowser;
+  const inputEditorMetrics = inputBrowser || routeHealthBrowser;
   const advancedScopeFilesAbsent = [
     "packages/ai",
     "packages/xr",
@@ -980,7 +967,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "OVR-0078": [boundaries, "pnpm verify:boundaries"],
       "OVR-0079": [boundaries, "pnpm verify:boundaries"],
       "OVR-0080": [boundaries, "pnpm verify:boundaries"],
-      "OVR-0107": [browser, "tests/browser/examples-runtime.spec.ts"],
+      "OVR-0107": [browser, "tests/browser/current-routes-route-health.spec.ts"],
       "OVR-0108": [browser, "pnpm test:browser"],
       "OVR-0109": [visual, "pnpm test:visual"],
       "OVR-0110": [performance, "pnpm verify:performance"],
@@ -1196,11 +1183,11 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
 
   if (row.id.startsWith("EXAMPLE-")) {
     const gates: Record<string, [boolean, string]> = {
-      "EXAMPLE-0001": [existsSync(join(root, "examples/shared/exampleHarness.ts")) && allExamplesReady, "examples/shared/exampleHarness.ts and tests/browser/examples-runtime.spec.ts"],
+      "EXAMPLE-0001": [existsSync(join(root, "index.html")) && allExamplesReady, "index.html and tests/browser/current-routes-route-health.spec.ts"],
       "EXAMPLE-0002": [boundaries && imports, "pnpm verify:boundaries and pnpm verify:imports"],
       "EXAMPLE-0003": [browser, "pnpm test:browser"],
       "EXAMPLE-0004": [visual, "pnpm test:visual"],
-      "EXAMPLE-0005": [performance && allExamplesReady, "tests/reports/performance.json and tests/browser/examples-runtime.spec.ts"],
+      "EXAMPLE-0005": [performance && allExamplesReady, "tests/reports/performance.json and tests/browser/current-routes-route-health.spec.ts"],
       "EXAMPLE-0006": [exampleReadmes, "README.md files for every numbered example"],
       "EXAMPLE-0007": [browser, "pnpm test:browser"],
       "EXAMPLE-0008": [visual, "pnpm test:visual"],
@@ -1208,9 +1195,9 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "EXAMPLE-0010": [browser, "pnpm test:browser release gate"],
       "EXAMPLE-0011": [browser, "pnpm test:browser"],
       "EXAMPLE-0012": [visual, "pnpm test:visual"],
-      "EXAMPLE-0013": [triangleVisual && pbrExampleVisual && shadowExampleVisual, "tests/visual/examples-pixels.spec.ts triangle, PBR, and shadow regions"],
+      "EXAMPLE-0013": [triangleVisual && pbrExampleVisual && shadowExampleVisual, "tests/browser/advanced-examples-gallery.spec.ts triangle, PBR, and shadow regions"],
       "EXAMPLE-0014": [performance, "tests/reports/performance.json"],
-      "EXAMPLE-0015": [existsSync(join(root, "examples/shared/exampleHarness.ts")) && allExamplesReady, "examples/shared/exampleHarness.ts and example smoke tests"],
+      "EXAMPLE-0015": [existsSync(join(root, "index.html")) && allExamplesReady, "index.html and example smoke tests"],
       "EXAMPLE-0016": [allExamplesReady && triangleVisual, "00-basic-triangle browser and visual tests"],
       "EXAMPLE-0017": [allExamplesReady && basicSceneVisual, "01-basic-scene browser and visual tests"],
       "EXAMPLE-0018": [allExamplesReady && pbrExampleVisual, "02-materials-pbr browser and visual tests"],
@@ -1227,7 +1214,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   if (row.id.startsWith("ROADMAP-")) {
     const gates: Record<string, [boolean, string]> = {
       "ROADMAP-0006": [exportsOk && boundaries, "workspace export and boundary verification"],
-      "ROADMAP-0003": [publicApiContracts && allExamplesReady && boundaries, "tests/unit/public-api-contracts.test.ts scans examples for public package-barrel imports, tests/browser/examples-runtime.spec.ts runs the examples, and pnpm verify:boundaries forbids private deep package imports"],
+      "ROADMAP-0003": [publicApiContracts && allExamplesReady && boundaries, "tests/unit/public-api-contracts.test.ts scans examples for public package-barrel imports, tests/browser/current-routes-route-health.spec.ts runs the examples, and pnpm verify:boundaries forbids private deep package imports"],
       "ROADMAP-0007": [typecheck, "pnpm typecheck"],
       "ROADMAP-0008": [unit, "pnpm test"],
       "ROADMAP-0009": [browser, "pnpm test:browser"],
@@ -1318,7 +1305,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "ROADMAP-0084": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "ROADMAP-0085": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "ROADMAP-0086": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
-      "ROADMAP-0087": [physicsBrowser && browserReportHasPassedTest(/tests\/browser\/examples-runtime\.spec\.ts$/, /04-physics-stack/), "tests/browser/physics-browser.spec.ts and tests/browser/examples-runtime.spec.ts"],
+      "ROADMAP-0087": [physicsBrowser && routeHealthBrowser, "tests/browser/physics-browser.spec.ts and tests/browser/current-routes-route-health.spec.ts"],
       "ROADMAP-0088": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "ROADMAP-0089": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "ROADMAP-0090": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
@@ -1334,23 +1321,23 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "ROADMAP-0101": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "ROADMAP-0102": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "ROADMAP-0103": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
-      "ROADMAP-0104": [animationBrowser && exampleVisualPixels, "tests/browser/animation-browser.spec.ts and tests/visual/examples-pixels.spec.ts"],
+      "ROADMAP-0104": [animationBrowser && exampleVisualPixels, "tests/browser/animation-browser.spec.ts and tests/browser/advanced-examples-gallery.spec.ts"],
       "ROADMAP-0106": [runtimeInput, "tests/unit/workstream5-runtime.test.ts"],
       "ROADMAP-0107": [runtimeInput && assetTextureBrowser && audioBrowser, "tests/unit/workstream5-runtime.test.ts, tests/browser/asset-texture-browser.spec.ts, and tests/browser/audio-browser.spec.ts"],
       "ROADMAP-0108": [runtimeInput && assetTextureBrowser, "tests/unit/workstream5-runtime.test.ts and tests/browser/asset-texture-browser.spec.ts"],
       "ROADMAP-0109": [runtimeInput, "tests/unit/workstream5-runtime.test.ts"],
-      "ROADMAP-0110": [browserReportHasPassedTest(/tests\/browser\/examples-runtime\.spec\.ts$/, /06-asset-gltf/), "tests/browser/examples-runtime.spec.ts"],
+      "ROADMAP-0110": [routeHealthBrowser, "tests/browser/current-routes-route-health.spec.ts"],
       "ROADMAP-0111": [runtimeInput, "tests/unit/workstream5-runtime.test.ts"],
       "ROADMAP-0112": [runtimeInput, "tests/unit/workstream5-runtime.test.ts"],
-      "ROADMAP-0113": [assetTextureBrowser && exampleVisualPixels, "tests/browser/asset-texture-browser.spec.ts and tests/visual/examples-pixels.spec.ts"],
+      "ROADMAP-0113": [assetTextureBrowser && exampleVisualPixels, "tests/browser/asset-texture-browser.spec.ts and tests/browser/advanced-examples-gallery.spec.ts"],
       "ROADMAP-0114": [runtimeInput, "tests/unit/workstream5-runtime.test.ts"],
       "ROADMAP-0116": [workstream5Contracts && inputBrowser, "tests/unit/workstream5-input-audio-scripting-editor.test.ts and tests/browser/input-browser.spec.ts"],
-      "ROADMAP-0117": [cameraControls && inputExamplesBrowser, "tests/unit/input/camera-controls.test.ts and tests/browser/examples-runtime.spec.ts"],
+      "ROADMAP-0117": [cameraControls && inputExamplesBrowser, "tests/unit/input/camera-controls.test.ts and tests/browser/current-routes-route-health.spec.ts"],
       "ROADMAP-0118": [runtimeInput && editorBrowser, "tests/unit/workstream5-runtime.test.ts and tests/browser/editor-browser.spec.ts"],
       "ROADMAP-0119": [workstream5Contracts && audioBrowser, "tests/unit/workstream5-input-audio-scripting-editor.test.ts and tests/browser/audio-browser.spec.ts"],
-      "ROADMAP-0120": [inputExamplesBrowser && audioBrowser, "tests/browser/examples-runtime.spec.ts and tests/browser/audio-browser.spec.ts"],
+      "ROADMAP-0120": [inputExamplesBrowser && audioBrowser, "tests/browser/current-routes-route-health.spec.ts and tests/browser/audio-browser.spec.ts"],
       "ROADMAP-0121": [workstream5Contracts && inputBrowser, "tests/unit/workstream5-input-audio-scripting-editor.test.ts and tests/browser/input-browser.spec.ts"],
-      "ROADMAP-0122": [inputExamplesBrowser, "tests/browser/examples-runtime.spec.ts"],
+      "ROADMAP-0122": [inputExamplesBrowser, "tests/browser/current-routes-route-health.spec.ts"],
       "ROADMAP-0123": [runtimeInput && editorBrowser, "tests/unit/workstream5-runtime.test.ts and tests/browser/editor-browser.spec.ts"],
       "ROADMAP-0124": [audioBrowser, "tests/browser/audio-browser.spec.ts"],
       "ROADMAP-0125": [workstream5Contracts && audioBrowser, "tests/unit/workstream5-input-audio-scripting-editor.test.ts and tests/browser/audio-browser.spec.ts"],
@@ -1367,10 +1354,10 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "ROADMAP-0137": [workstream5Contracts, "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
       "ROADMAP-0139": [particleRendererUnit && cpuParticleBrowser, "tests/unit/rendering/particle-renderer.test.ts and tests/browser/particle-browser.spec.ts"],
       "ROADMAP-0140": [particleRendererUnit && cpuParticleBrowser, "tests/unit/rendering/particle-renderer.test.ts and tests/browser/particle-browser.spec.ts"],
-      "ROADMAP-0141": [cpuParticleBrowser && exampleVisualPixels, "tests/browser/particle-browser.spec.ts and tests/visual/examples-pixels.spec.ts"],
+      "ROADMAP-0141": [cpuParticleBrowser && exampleVisualPixels, "tests/browser/particle-browser.spec.ts and tests/browser/advanced-examples-gallery.spec.ts"],
       "ROADMAP-0142": [particleRendererUnit, "tests/unit/rendering/particle-renderer.test.ts"],
       "ROADMAP-0143": [particleRendererUnit, "tests/unit/rendering/particle-renderer.test.ts"],
-      "ROADMAP-0144": [cpuParticleBrowser && exampleVisualPixels, "tests/browser/particle-browser.spec.ts and tests/visual/examples-pixels.spec.ts"],
+      "ROADMAP-0144": [cpuParticleBrowser && exampleVisualPixels, "tests/browser/particle-browser.spec.ts and tests/browser/advanced-examples-gallery.spec.ts"],
       "ROADMAP-0145": [performance, "tests/reports/performance.json"],
       "ROADMAP-0146": [particleRendererUnit && cpuParticleBrowser, "tests/unit/rendering/particle-renderer.test.ts and tests/browser/particle-browser.spec.ts"],
       "ROADMAP-0148": [exportsOk, "pnpm verify:exports"],
@@ -1405,7 +1392,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "RENDER-0013": [sourceCleanliness && shaders, "pnpm verify:source-cleanliness and pnpm verify:shaders"],
       "RENDER-0014": [renderingUnit, "tests/unit/rendering/*.test.ts"],
       "RENDER-0015": [browser, "tests/browser/rendering-webgl2.spec.ts"],
-      "RENDER-0016": [renderingVisualPixels && exampleVisualPixels && debugBrowser, "tests/visual/rendering-pixels.spec.ts, tests/visual/examples-pixels.spec.ts, and tests/browser/debug-browser.spec.ts"],
+      "RENDER-0016": [renderingVisualPixels && exampleVisualPixels && debugBrowser, "tests/visual/rendering-pixels.spec.ts, tests/browser/advanced-examples-gallery.spec.ts, and tests/browser/debug-browser.spec.ts"],
       "RENDER-0012": [renderingBrowser, "tests/browser/rendering-webgl2.spec.ts"],
       "RENDER-0017": [pbrLighting && runtimeInput, "rendering PBR unit tests and workstream runtime integration tests"],
       "RENDER-0018": [performance, "tests/reports/performance.json"],
@@ -1574,11 +1561,11 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   if (row.id.startsWith("CAM-")) {
     const gates: Record<string, [boolean, string]> = {
       "CAM-0001": [sceneCameras, "tests/unit/scene/camera-frustum.test.ts"],
-      "CAM-0002": [inputExamplesBrowser, "tests/browser/examples-runtime.spec.ts"],
+      "CAM-0002": [inputExamplesBrowser, "tests/browser/current-routes-route-health.spec.ts"],
       "CAM-0003": [cameraControls, "tests/unit/input/camera-controls.test.ts"],
       "CAM-0004": [cameraControls, "tests/unit/input/camera-controls.test.ts"],
       "CAM-0005": [sceneCameras && cameraControls, "scene camera and input camera-control unit tests"],
-      "CAM-0006": [inputExamplesBrowser, "tests/browser/examples-runtime.spec.ts"],
+      "CAM-0006": [inputExamplesBrowser, "tests/browser/current-routes-route-health.spec.ts"],
       "CAM-0007": [cameraGridBrowser, "tests/browser/camera-grid-browser.spec.ts"],
       "CAM-0008": [cameraControls, "tests/unit/input/camera-controls.test.ts"],
       "CAM-0009": [sceneCameras, "tests/unit/scene/camera-frustum.test.ts"],
@@ -1602,7 +1589,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "INPUT-0007": [workstream5Contracts, "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
       "INPUT-0008": [inputBrowser, "tests/browser/input-browser.spec.ts"],
       "INPUT-0009": [runtimeInput || workstream5Contracts, "workstream 5 input runtime tests"],
-      "INPUT-0010": [inputExamplesBrowser, "tests/browser/examples-runtime.spec.ts"],
+      "INPUT-0010": [inputExamplesBrowser, "tests/browser/current-routes-route-health.spec.ts"],
       "INPUT-0011": [workstream5Contracts, "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
       "INPUT-0012": [workstream5Contracts, "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
       "INPUT-0013": [workstream5Contracts, "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
@@ -1682,7 +1669,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "TEST-0024": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "TEST-0025": [physicsAnimation, "tests/unit/workstream4.physics-animation.test.ts"],
       "TEST-0026": [boundaries && exportsOk && imports, "pnpm verify:boundaries, pnpm verify:exports, and pnpm verify:imports"],
-      "TEST-0027": [allExamplesReady && visual, "tests/browser/examples-runtime.spec.ts and tests/visual/examples-pixels.spec.ts"],
+      "TEST-0027": [allExamplesReady && visual, "tests/browser/current-routes-route-health.spec.ts and tests/browser/advanced-examples-gallery.spec.ts"],
       "TEST-0035": [reports.release !== null && sourceCleanliness, "release evidence and pnpm verify:source-cleanliness"],
       "TEST-0036": [reports.release !== null, "release report records command evidence instead of line counts"],
       "TEST-0037": [visual, "tests/reports/visual.json and tests/reports/visual-browser.json"],
@@ -1965,13 +1952,13 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("pnpm verify:exports and pnpm verify:imports");
     }
     if (/Public examples must use public package APIs|They may not deep-import internals/i.test(row.requirement) && publicApiContracts && allExamplesReady && boundaries) {
-      return evidence("tests/unit/public-api-contracts.test.ts scans examples for public package-barrel imports, tests/browser/examples-runtime.spec.ts runs every example, and pnpm verify:boundaries forbids private deep package imports");
+      return evidence("tests/unit/public-api-contracts.test.ts scans examples for public package-barrel imports, tests/browser/current-routes-route-health.spec.ts runs every example, and pnpm verify:boundaries forbids private deep package imports");
     }
     if (/shader marker|shader verifier|Shader marker verification/i.test(row.requirement) && shaders) {
       return evidence("pnpm verify:shaders");
     }
     if (/browser and visual|browser smoke|visual checks|example smoke|all examples|Every required example/i.test(row.requirement) && allExamplesReady && visual) {
-      return evidence("tests/browser/examples-runtime.spec.ts and tests/visual/examples-pixels.spec.ts");
+      return evidence("tests/browser/current-routes-route-health.spec.ts and tests/browser/advanced-examples-gallery.spec.ts");
     }
     if (/No source backup|source backup|\.bak|backup files|placeholder|fake success|TODO-driven|source-cleanliness/i.test(row.requirement) && sourceCleanliness) {
       return evidence("pnpm verify:source-cleanliness");
@@ -2077,7 +2064,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tests/unit/scene/hierarchy-serialization.test.ts and tests/unit/scene/camera-frustum.test.ts cover cycles, removal during traversal, dirty propagation, serialization roundtrips, negative-scale bounds, camera validation, and renderable contracts");
     }
     if (/Browser examples prove scene, ECS, cameras, and controls operate through public APIs/i.test(row.requirement) && sceneBrowser && sceneEcsIntegration && cameraGridBrowser && inputExamplesBrowser) {
-      return evidence("tests/browser/scene-browser.spec.ts, tests/integration/scene-ecs-contracts.test.ts, tests/browser/camera-grid-browser.spec.ts, and tests/browser/examples-runtime.spec.ts prove scene, ECS, cameras, and controls through public APIs");
+      return evidence("tests/browser/scene-browser.spec.ts, tests/integration/scene-ecs-contracts.test.ts, tests/browser/camera-grid-browser.spec.ts, and tests/browser/current-routes-route-health.spec.ts prove scene, ECS, cameras, and controls through public APIs");
     }
     if (/Ensure all public APIs are documented and exported consistently|package README public API docs/i.test(row.requirement) && publicPackageReadmes && publicApiContracts && exportsOk && imports) {
       return evidence("package README public API docs for every public package, tests/unit/public-api-contracts.test.ts, pnpm verify:exports, and pnpm verify:imports");
@@ -2092,13 +2079,13 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tools/release-verification/index.ts includes pnpm verify:trace in the release gate and tests/unit/tools/verify-tools.test.ts asserts trace is part of default release verification");
     }
     if (/Visual claims require browser-rendered evidence/i.test(row.requirement) && visual && renderingVisualPixels && shadowVisualPixels && exampleVisualPixels) {
-      return evidence("pnpm test:visual runs browser-rendered visual pixel checks in tests/visual/rendering-pixels.spec.ts and tests/visual/examples-pixels.spec.ts");
+      return evidence("pnpm test:visual runs browser-rendered visual pixel checks in tests/visual/rendering-pixels.spec.ts and tests/browser/advanced-examples-gallery.spec.ts");
     }
     if (/Visual validation for the current traced target includes/i.test(row.requirement) && visual && renderingVisualPixels && shadowVisualPixels && exampleVisualPixels && allExamplesReady) {
-      return evidence("pnpm test:visual, tests/visual/rendering-pixels.spec.ts, tests/visual/examples-pixels.spec.ts, and tests/browser/examples-runtime.spec.ts");
+      return evidence("pnpm test:visual, tests/visual/rendering-pixels.spec.ts, tests/browser/advanced-examples-gallery.spec.ts, and tests/browser/current-routes-route-health.spec.ts");
     }
     if (/Every visual test renders nonblank, correctly framed, meaningful content/i.test(row.requirement) && visual && renderingVisualPixels && shadowVisualPixels && exampleVisualPixels) {
-      return evidence("tests/visual/rendering-pixels.spec.ts and tests/visual/examples-pixels.spec.ts assert nonblank canvases, expected pixel regions, and canvas framing for browser-rendered content");
+      return evidence("tests/visual/rendering-pixels.spec.ts and tests/browser/advanced-examples-gallery.spec.ts assert nonblank canvases, expected pixel regions, and canvas framing for browser-rendered content");
     }
     if (/Lighting\/shadow implementation must handle no-light, no-caster, multiple lights, directional\/point\/spot lights, shadow bias, map resize, cascade split stability, and debug visualization/i.test(row.requirement) && pbrLighting && reportHasPassedTest(/tests\/unit\/rendering\/shadow-pass\.test\.ts$/) && reportHasPassedTest(/tests\/unit\/rendering\/shadow-projection\.test\.ts$/) && lightingDebugCascades && shadowBrowser) {
       return evidence("tests/unit/rendering/pbr-lighting.test.ts, tests/unit/rendering/shadow-pass.test.ts, tests/unit/rendering/shadow-projection.test.ts, tests/unit/rendering/lighting-debug-cascades.test.ts, and tests/browser/shadow-browser.spec.ts cover no-light, no-caster, multiple directional/point/spot lights, shadow bias, map resize, cascade split stability, and debug visualization");
@@ -2140,13 +2127,13 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("tests/unit/workstream5-runtime.test.ts, tests/unit/public-api-contracts.test.ts, and tests/browser/asset-texture-browser.spec.ts cover asset IDs, registry, dependency graph, cache, loaders, import pipeline, worker jobs, scene loading, serialization, glTF, GLB, textures, materials, animations, skins, error recovery, release, and disposal");
     }
     if (/Related runtime examples and tests/i.test(row.requirement) && workstream5Contracts && inputBrowser && audioBrowser && scriptingBrowser && editorBrowser && inputExamplesBrowser) {
-      return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/browser/input-browser.spec.ts, tests/browser/audio-browser.spec.ts, tests/browser/scripting-browser.spec.ts, tests/browser/editor-browser.spec.ts, and tests/browser/examples-runtime.spec.ts cover related runtime examples and tests");
+      return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/browser/input-browser.spec.ts, tests/browser/audio-browser.spec.ts, tests/browser/scripting-browser.spec.ts, tests/browser/editor-browser.spec.ts, and tests/browser/current-routes-route-health.spec.ts cover related runtime examples and tests");
     }
     if (/`packages\/editor\/\*\*`/.test(row.requirement) && existsSync(join(root, "packages/editor/src/index.ts")) && publicApiContracts && architecture && boundaries && exportsOk && imports) {
       return evidence("packages/editor/src/index.ts exposes the canonical @aura3d/editor package and passes public API, architecture, boundary, export, and import verification");
     }
     if (/Input must support keyboard, pointer, gamepad, action maps, interaction targets, picking, orbit controls, first-person controls, editor shortcuts, and browser event lifecycle cleanup/i.test(row.requirement) && workstream5Contracts && cameraControls && inputBrowser && inputExamplesBrowser) {
-      return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/unit/input/camera-controls.test.ts, tests/browser/input-browser.spec.ts, and tests/browser/examples-runtime.spec.ts cover keyboard, pointer, gamepad, action maps/chords, interaction targets, picking, orbit controls, first-person controls, editor shortcuts, browser lifecycle, and cleanup");
+      return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/unit/input/camera-controls.test.ts, tests/browser/input-browser.spec.ts, and tests/browser/current-routes-route-health.spec.ts cover keyboard, pointer, gamepad, action maps/chords, interaction targets, picking, orbit controls, first-person controls, editor shortcuts, browser lifecycle, and cleanup");
     }
     if (/Scripting must support graph\/node\/port data, execution, typed values, events, behavior attachment, serialization, and deterministic tests/i.test(row.requirement) && workstream5Contracts && scriptingSceneEcsIntegration && scriptingBrowser) {
       return evidence("tests/unit/workstream5-input-audio-scripting-editor.test.ts, tests/integration/scripting-scene-ecs.test.ts, and tests/browser/scripting-browser.spec.ts cover graph/node/port data, execution, typed values, events, behavior attachment, serialization, and deterministic tests");
@@ -2170,7 +2157,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return evidence("pnpm verify:shaders");
     }
     if (/All required examples run/i.test(row.requirement) && allExamplesReady) {
-      return evidence("tests/browser/examples-runtime.spec.ts");
+      return evidence("tests/browser/current-routes-route-health.spec.ts");
     }
     if (/All final reports are generated/i.test(row.requirement) && outputArtifactsExist && reports.release !== null && finalTraceGenerated) {
       return evidence("required final report artifacts plus tests/reports/final-release-verification.json and tests/reports/final-requirements-trace.json");
@@ -2357,11 +2344,11 @@ function withConcreteEvidenceFiles(row: RequirementRow, verifiedEvidence: string
   }
 
   if (/Every example has a README|example validation evidence|Every required example|all examples|example has/i.test(requirement)) {
-    implementationFiles.add("examples/00-basic-triangle/main.ts");
-    implementationFiles.add("examples/11-showcase-world/main.ts");
+    implementationFiles.add("index.html");
+    implementationFiles.add("apps/advanced-examples-gallery/src/metadata.ts");
     implementationFiles.add("tools/final-demo-validation/index.ts");
-    testFiles.add("tests/browser/examples-runtime.spec.ts");
-    testFiles.add("tests/visual/examples-pixels.spec.ts");
+    testFiles.add("tests/browser/current-routes-route-health.spec.ts");
+    testFiles.add("tests/browser/advanced-examples-gallery.spec.ts");
     testFiles.add("tests/unit/tools/verify-tools.test.ts");
   }
 

@@ -10,13 +10,14 @@ Aura3D animation is a runtime system for clips, tracks, mixers, layers, skeletal
 - `packages/assets/src/GLTFAnimationRuntime.ts`
 - `packages/rendering/src/ForwardPass.ts`
 - `tests/unit/animation/`
-- `tests/browser/current-routes-animation-examples.spec.ts`
+- `tests/browser/current-routes-route-health.spec.ts`
+- `tests/browser/advanced-examples-gallery.spec.ts`
 
 ## Runtime Shape
 
 Use `@aura3d/engine/animation` for low-level animation primitives and `@aura3d/engine/assets` for imported glTF animation runtime helpers.
 
-Browser routes under `apps/animation-*` and `apps/skinning-*` demonstrate selected imported animation workflows.
+Current animation browser coverage is represented by the consolidated root route registry, the accepted advanced gallery routes, and the allowed `apps/wow-*` showcase routes.
 
 ## Boundary
 

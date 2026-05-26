@@ -55,7 +55,7 @@ const broadClaimPatterns = [
 
 const requiredReportsByTrack: Record<Track, readonly string[]> = {
   code: ["tests/reports/foundation-current-capability.json", "tests/reports/foundation-task-assignments.json"],
-  examples: ["tests/reports/foundation-example-truth-audit.json", "tests/reports/foundation-example-screenshots/manifest.json"],
+  examples: ["tests/reports/current-routes-route-health.json"],
   rendering: ["tests/reports/foundation-rendering.json"],
   assets: ["tests/reports/foundation-asset-corpus.json"],
   editor: ["tests/reports/foundation-editor-authoring.json"],
@@ -64,8 +64,7 @@ const requiredReportsByTrack: Record<Track, readonly string[]> = {
   all: [
     "tests/reports/foundation-current-capability.json",
     "tests/reports/foundation-task-assignments.json",
-    "tests/reports/foundation-example-truth-audit.json",
-    "tests/reports/foundation-example-screenshots/manifest.json",
+    "tests/reports/current-routes-route-health.json",
     "tests/reports/foundation-rendering.json",
     "tests/reports/foundation-asset-corpus.json",
     "tests/reports/foundation-editor-authoring.json",
@@ -85,7 +84,7 @@ function main(): void {
   const runId = process.env.A3D_RELEASE_RUN_ID ?? `foundation-${args.track}-${Date.now()}`;
 
   if (args.track === "examples" || args.track === "all") {
-    runCommand("node --experimental-strip-types tools/example-truth-audit/index.ts", runId);
+    runCommand("node --experimental-strip-types tools/current-routes-route-health/index.ts", runId);
   }
 
   const broadClaims = scanBroadClaims();

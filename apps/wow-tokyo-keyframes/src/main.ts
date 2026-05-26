@@ -1,5 +1,17 @@
 import { startWowGltfShowcase } from "/apps/wow-common/src/gltf-showcase.ts";
 
+// When embedded in the marketing site (?chrome=hidden) the surrounding
+// page is dark, so swap the authored beige clearColor for black so the
+// canvas blends with the marketing stage instead of showing a white
+// panel inside it.
+const isCleanEmbed =
+  typeof location !== "undefined" &&
+  new URLSearchParams(location.search).get("chrome") === "hidden";
+
+const clearColor: [number, number, number, number] = isCleanEmbed
+  ? [0, 0, 0, 1]
+  : [0.86, 0.86, 0.84, 1];
+
 void startWowGltfShowcase({
   appId: "wow-tokyo-keyframes",
   title: "A3D Authored Tokyo Keyframes",
@@ -9,7 +21,7 @@ void startWowGltfShowcase({
   attribution: "Model: Littlest Tokyo by Glen Fox, CC Attribution.",
   requiresDraco: true,
   preferredClip: /Take|animation|default/i,
-  clearColor: [0.86, 0.86, 0.84, 1],
+  clearColor,
   frame: {
     yawRadians: -0.72,
     pitchRadians: -0.2,

@@ -8,623 +8,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@200;300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
-
-<style>
-:root {
-  --bg:          #0A0A0B;
-  --bg-elev:    #111114;
-  --bg-card:    #16161A;
-  --line:       #23232A;
-  --line-soft:  #1B1B20;
-  --fg:         #F5F5F4;
-  --fg-dim:     #B5B5B0;
-  --fg-mute:    #7A7A78;
-  --accent:     #C7F5E5;
-  --accent-dim: #5EEAD4;
-  --maxw:       1240px;
-  --gutter:     clamp(24px, 5vw, 64px);
-}
-
-*, *::before, *::after { box-sizing: border-box; }
-
-html { background: var(--bg); color: var(--fg); }
-body {
-  margin: 0;
-  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-feature-settings: "ss01", "ss02", "cv11";
-  font-weight: 400;
-  line-height: 1.45;
-  letter-spacing: -0.005em;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  background: var(--bg);
-  color: var(--fg);
-  overflow-x: hidden;
-}
-
-::selection { background: var(--accent); color: #0A0A0B; }
-
-a { color: inherit; text-decoration: none; }
-
-img { display: block; max-width: 100%; height: auto; }
-
-/* ── NAV ───────────────────────────────────────────── */
-.nav {
-  position: fixed; top: 0; left: 0; right: 0;
-  z-index: 50;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px var(--gutter);
-  background: color-mix(in srgb, var(--bg) 78%, transparent);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  border-bottom: 1px solid transparent;
-  transition: border-color .3s, background .3s;
-}
-.nav.is-scrolled { border-bottom-color: var(--line-soft); }
-.nav__brand {
-  display: flex; align-items: center; gap: 10px;
-  font-weight: 600; font-size: 16px; letter-spacing: -0.01em;
-}
-.nav__mark {
-  width: 22px; height: 22px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, var(--accent) 0%, var(--accent-dim) 35%, #1B6F66 75%, #0A0A0B 100%);
-  box-shadow: 0 0 18px -2px color-mix(in srgb, var(--accent-dim) 60%, transparent);
-}
-.nav__links {
-  display: flex; align-items: center; gap: 36px;
-  font-size: 14px; color: var(--fg-dim);
-}
-.nav__links a:hover { color: var(--fg); }
-.nav__cta {
-  padding: 8px 16px; border-radius: 999px;
-  background: var(--fg); color: var(--bg);
-  font-size: 14px; font-weight: 500;
-  transition: transform .15s, background .15s;
-}
-.nav__cta:hover { transform: translateY(-1px); background: var(--accent); }
-@media (max-width: 720px) {
-  .nav__links a:not(.nav__cta) { display: none; }
-}
-
-/* ── TYPE SYSTEM ───────────────────────────────────── */
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 10px;
-  font-size: 12px; font-weight: 500;
-  letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--fg-mute);
-}
-.eyebrow::before {
-  content: ""; width: 24px; height: 1px; background: currentColor;
-}
-
-h1, h2, h3 {
-  font-weight: 600; letter-spacing: -0.035em; line-height: 0.98;
-  margin: 0;
-  text-wrap: balance;
-}
-
-.hero h1 {
-  font-size: clamp(48px, 8.2vw, 116px);
-  font-weight: 500;
-  letter-spacing: -0.045em;
-}
-section h2 {
-  font-size: clamp(40px, 6.5vw, 88px);
-  font-weight: 500;
-  letter-spacing: -0.04em;
-}
-h3 {
-  font-size: clamp(22px, 2.2vw, 28px);
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-
-p { text-wrap: pretty; }
-.lede {
-  font-size: clamp(18px, 1.6vw, 22px);
-  color: var(--fg-dim);
-  line-height: 1.5;
-  max-width: 38ch;
-}
-.body {
-  font-size: clamp(16px, 1.25vw, 18px);
-  color: var(--fg-dim);
-  line-height: 1.6;
-  max-width: 56ch;
-}
-
-code, pre, .mono {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-feature-settings: "ss01", "zero";
-}
-
-/* ── SHARED LAYOUT ─────────────────────────────────── */
-.wrap {
-  width: 100%;
-  max-width: var(--maxw);
-  margin: 0 auto;
-  padding: 0 var(--gutter);
-}
-
-section {
-  position: relative;
-  padding: clamp(96px, 14vw, 200px) 0;
-  border-top: 1px solid var(--line-soft);
-}
-section:first-of-type { border-top: 0; }
-
-/* ── HERO ──────────────────────────────────────────── */
-.hero {
-  position: relative;
-  padding-top: clamp(140px, 18vh, 200px);
-  padding-bottom: 0;
-  overflow: hidden;
-}
-.hero__inner {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(40px, 6vw, 80px);
-  align-items: end;
-}
-@media (min-width: 980px) {
-  .hero__inner {
-    grid-template-columns: 1.05fr 0.95fr;
-    align-items: center;
-  }
-}
-.hero__copy { max-width: 720px; }
-.hero h1 {
-  margin: 24px 0 28px;
-}
-.hero__lede {
-  font-size: clamp(18px, 1.5vw, 21px);
-  color: var(--fg-dim);
-  line-height: 1.5;
-  max-width: 40ch;
-  margin: 0 0 40px;
-}
-.hero__actions {
-  display: flex; flex-wrap: wrap; gap: 14px;
-  margin-bottom: clamp(60px, 9vw, 96px);
-}
-.btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 14px 22px;
-  border-radius: 999px;
-  font-size: 15px; font-weight: 500;
-  letter-spacing: -0.005em;
-  transition: transform .15s, background .15s, color .15s, border-color .15s;
-}
-.btn--primary {
-  background: var(--fg); color: var(--bg);
-}
-.btn--primary:hover { background: var(--accent); transform: translateY(-1px); }
-.btn--ghost {
-  border: 1px solid var(--line);
-  color: var(--fg);
-}
-.btn--ghost:hover { border-color: var(--fg); background: var(--bg-elev); }
-.btn__arrow { font-size: 18px; transition: transform .2s; }
-.btn:hover .btn__arrow { transform: translateX(3px); }
-
-.hero__visual {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 5 / 4;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #000;
-  border: 1px solid var(--line-soft);
-}
-@media (min-width: 980px) {
-  .hero__visual { aspect-ratio: 4 / 3.4; }
-}
-.hero__visual img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-  filter: contrast(1.05) saturate(1.05);
-}
-.hero__visual::after {
-  content: "";
-  position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 60% 80% at 50% 110%, transparent 50%, rgba(10,10,11,0.6) 100%);
-  pointer-events: none;
-}
-.hero__caption {
-  position: absolute; left: 20px; bottom: 18px;
-  font-size: 12px; color: var(--fg-mute);
-  letter-spacing: 0.08em; text-transform: uppercase;
-}
-
-/* ── MANIFESTO ─────────────────────────────────────── */
-.manifesto {
-  text-align: center;
-}
-.manifesto__inner {
-  max-width: 22ch;
-  margin: 0 auto;
-}
-.manifesto__lead {
-  font-size: clamp(20px, 2vw, 26px);
-  color: var(--fg-mute);
-  line-height: 1.4;
-  margin: 0 0 32px;
-  text-wrap: balance;
-}
-.manifesto__big {
-  font-family: "Instrument Serif", "Iowan Old Style", Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: clamp(48px, 7vw, 96px);
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-  color: var(--fg);
-  margin: 0;
-  text-wrap: balance;
-}
-.manifesto__big em {
-  font-style: italic;
-  color: var(--accent);
-}
-
-/* ── CAPABILITY SECTIONS ───────────────────────────── */
-.cap__grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(48px, 7vw, 96px);
-  align-items: center;
-}
-@media (min-width: 980px) {
-  .cap__grid {
-    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  }
-  .cap--flip .cap__copy { order: 2; }
-  .cap--flip .cap__media { order: 1; }
-}
-.cap__num {
-  font-size: 13px; font-weight: 500;
-  color: var(--fg-mute);
-  letter-spacing: 0.12em; text-transform: uppercase;
-  margin: 0 0 24px;
-}
-.cap__copy h2 { margin-bottom: 28px; }
-.cap__copy p { margin: 0 0 18px; }
-.cap__copy .body:last-child { margin-bottom: 0; }
-.cap__snippet {
-  display: block;
-  margin-top: 32px;
-  padding: 20px 22px;
-  background: var(--bg-card);
-  border: 1px solid var(--line-soft);
-  border-radius: 12px;
-  font-size: 14px;
-  color: var(--fg);
-  white-space: pre;
-  overflow-x: auto;
-  line-height: 1.55;
-}
-.cap__snippet .k { color: #C7F5E5; }
-.cap__snippet .s { color: #FCD4A8; }
-.cap__snippet .c { color: var(--fg-mute); }
-.cap__snippet .fn { color: #F5F5F4; }
-
-.cap__media {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #000;
-  border: 1px solid var(--line-soft);
-  aspect-ratio: 4 / 3;
-}
-.cap__media img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-.cap__media--contain img { object-fit: contain; padding: 4%; }
-.cap__media__tag {
-  position: absolute;
-  left: 16px; bottom: 14px;
-  font-size: 11px;
-  color: var(--fg-mute);
-  letter-spacing: 0.1em; text-transform: uppercase;
-}
-
-/* spec rail under capability */
-.spec-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px 32px;
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line-soft);
-}
-.spec-list li {
-  list-style: none;
-  font-size: 13px;
-  color: var(--fg-dim);
-  padding: 0;
-}
-.spec-list li::before {
-  content: "·"; color: var(--accent-dim);
-  margin-right: 8px; font-weight: 700;
-}
-
-/* ── GALLERY ───────────────────────────────────────── */
-.gallery__header {
-  display: flex; align-items: end; justify-content: space-between;
-  gap: 40px; flex-wrap: wrap;
-  margin-bottom: clamp(48px, 7vw, 80px);
-}
-.gallery__header h2 { max-width: 14ch; }
-.gallery__header .body { max-width: 36ch; margin: 0; }
-
-.gallery__grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 16px;
-}
-.gtile {
-  position: relative;
-  background: #000;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--line-soft);
-  aspect-ratio: 4 / 3;
-  transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .25s;
-}
-.gtile:hover {
-  transform: translateY(-2px);
-  border-color: var(--line);
-}
-.gtile img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform .8s cubic-bezier(.2,.7,.2,1);
-}
-.gtile:hover img { transform: scale(1.04); }
-.gtile figcaption {
-  position: absolute; left: 0; right: 0; bottom: 0;
-  padding: 32px 18px 16px;
-  background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.55) 55%, transparent 100%);
-  font-size: 13px;
-  color: var(--fg);
-}
-.gtile figcaption b {
-  display: block;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-}
-.gtile__tag {
-  position: absolute;
-  top: 14px; right: 14px;
-  z-index: 2;
-  font-size: 10px;
-  color: var(--fg);
-  background: rgba(10,10,11,0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.08);
-  padding: 5px 10px;
-  border-radius: 999px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 500;
-}
-
-/* tile sizes */
-.gtile--lg { grid-column: span 8; aspect-ratio: 16/9; }
-.gtile--md { grid-column: span 4; aspect-ratio: 4/5; }
-.gtile--sm { grid-column: span 4; }
-.gtile--wide { grid-column: span 6; }
-
-@media (max-width: 880px) {
-  .gtile--lg, .gtile--md, .gtile--sm, .gtile--wide { grid-column: span 12; }
-}
-
-/* ── DEPTH / PACKAGES ──────────────────────────────── */
-.depth__lead {
-  max-width: 64ch;
-  margin: 0 0 clamp(48px, 6vw, 80px);
-  font-size: clamp(18px, 1.5vw, 22px);
-  color: var(--fg-dim);
-  line-height: 1.5;
-}
-.pkgs {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1px;
-  background: var(--line-soft);
-  border: 1px solid var(--line-soft);
-  border-radius: 14px;
-  overflow: hidden;
-}
-.pkg {
-  background: var(--bg);
-  padding: 26px 28px 28px;
-  transition: background .2s;
-}
-.pkg:hover { background: var(--bg-elev); }
-.pkg__name {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 13px;
-  color: var(--accent-dim);
-  margin: 0 0 10px;
-  letter-spacing: -0.005em;
-}
-.pkg__what {
-  font-size: 14px;
-  color: var(--fg-dim);
-  line-height: 1.5;
-  margin: 0;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0;
-  margin-top: clamp(64px, 8vw, 96px);
-  border-top: 1px solid var(--line-soft);
-  border-bottom: 1px solid var(--line-soft);
-}
-.stat {
-  padding: 32px 8px 32px 0;
-  border-right: 1px solid var(--line-soft);
-}
-.stat:last-child { border-right: 0; }
-@media (max-width: 720px) {
-  .stat { border-right: 0; border-bottom: 1px solid var(--line-soft); }
-  .stat:last-child { border-bottom: 0; }
-}
-.stat__n {
-  font-size: clamp(40px, 5.5vw, 64px);
-  font-weight: 500;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--fg);
-}
-.stat__l {
-  margin-top: 12px;
-  font-size: 13px;
-  color: var(--fg-mute);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* ── CTA ───────────────────────────────────────────── */
-.cta {
-  text-align: center;
-  padding: clamp(120px, 18vw, 220px) 0;
-  border-top: 1px solid var(--line-soft);
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 100%,
-      color-mix(in srgb, var(--accent-dim) 12%, transparent) 0%,
-      transparent 70%);
-}
-.cta h2 {
-  font-size: clamp(56px, 9vw, 128px);
-  font-weight: 500;
-  margin: 0 0 32px;
-  letter-spacing: -0.045em;
-}
-.cta p {
-  font-size: clamp(16px, 1.3vw, 19px);
-  color: var(--fg-dim);
-  max-width: 38ch;
-  margin: 0 auto 48px;
-}
-.cta__install {
-  display: inline-flex;
-  align-items: center;
-  gap: 18px;
-  padding: 18px 24px 18px 26px;
-  background: var(--bg-card);
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 15px;
-  color: var(--fg);
-  margin-bottom: 36px;
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-}
-.cta__install:hover { border-color: var(--fg-dim); background: var(--bg-elev); }
-.cta__install::before {
-  content: "$";
-  color: var(--fg-mute);
-}
-.cta__install__copy {
-  font-family: "Geist", sans-serif;
-  font-size: 12px;
-  color: var(--fg-mute);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  border-left: 1px solid var(--line);
-  padding-left: 18px;
-  margin-left: 4px;
-  transition: color .15s;
-}
-.cta__install:hover .cta__install__copy { color: var(--fg-dim); }
-.cta__install.is-copied .cta__install__copy { color: var(--accent); }
-
-.cta__links {
-  display: flex; justify-content: center; gap: 28px;
-  font-size: 14px;
-  color: var(--fg-dim);
-}
-.cta__links a { display: inline-flex; align-items: center; gap: 6px; }
-.cta__links a:hover { color: var(--fg); }
-.cta__links a::after { content: "→"; transition: transform .2s; }
-.cta__links a:hover::after { transform: translateX(3px); }
-
-/* ── FOOTER ────────────────────────────────────────── */
-footer {
-  padding: 56px var(--gutter) 64px;
-  border-top: 1px solid var(--line-soft);
-  font-size: 13px;
-  color: var(--fg-mute);
-}
-.foot {
-  max-width: var(--maxw);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
-  gap: 40px;
-}
-@media (max-width: 760px) {
-  .foot { grid-template-columns: 1fr 1fr; }
-}
-.foot__brand {
-  display: flex; align-items: center; gap: 10px;
-  font-family: "Geist", sans-serif;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--fg);
-}
-.foot__brand .nav__mark { width: 18px; height: 18px; }
-.foot__claim {
-  margin: 16px 0 0;
-  font-size: 12px;
-  line-height: 1.55;
-  color: var(--fg-mute);
-  max-width: 38ch;
-}
-.foot__col h4 {
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--fg);
-  margin: 4px 0 16px;
-}
-.foot__col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-.foot__col a { color: var(--fg-mute); }
-.foot__col a:hover { color: var(--fg); }
-.foot__bottom {
-  max-width: var(--maxw);
-  margin: 56px auto 0;
-  padding-top: 24px;
-  border-top: 1px solid var(--line-soft);
-  display: flex; justify-content: space-between;
-  flex-wrap: wrap; gap: 12px;
-  font-size: 12px;
-  color: var(--fg-mute);
-}
-
-/* ── REVEAL ANIMATION ──────────────────────────────── */
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity .9s cubic-bezier(.2,.7,.2,1), transform .9s cubic-bezier(.2,.7,.2,1);
-}
-.reveal.is-in {
-  opacity: 1;
-  transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-}
-</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
 </head>
 <body>
 
@@ -645,278 +29,218 @@ footer {
 
   <!-- HERO ─────────────────────────────────────────── -->
   <section class="hero">
-    <div class="wrap">
-      <div class="hero__inner">
-        <div class="hero__copy">
-          <span class="eyebrow reveal">Aura3D · Version 1.0</span>
-          <h1 class="reveal">Browser&nbsp;3D, with the work done.</h1>
-          <p class="hero__lede reveal">A production 3D engine and workflow SDK. Renderer, scene, assets, animation, physics, diagnostics — first&#8209;party, end to end, written in TypeScript.</p>
-          <div class="hero__actions reveal">
-            <a href="#start" class="btn btn--primary">Get started <span class="btn__arrow">→</span></a>
-            <a href="#gallery" class="btn btn--ghost">See the proof</a>
-          </div>
-        </div>
-        <div class="hero__visual reveal">
-          <img src="assets/hero-car.png" alt="A red sports car rendered by the Aura3D production product configurator.">
-          <span class="hero__caption">Production product configurator · captured from the suite</span>
-        </div>
+    <div class="hero__head reveal">
+      <span class="eyebrow">Aura3D · Version 1.0</span>
+      <h1>Browser&nbsp;3D,<br>with the work done.</h1>
+      <p class="hero__lede">A production 3D engine and workflow SDK. Renderer, scene, assets, animation, physics, diagnostics — first&#8209;party, end to end, written in TypeScript.</p>
+      <div class="hero__actions">
+        <a href="#start" class="btn btn--primary">Get started <span class="btn__arrow">→</span></a>
+        <a href="#gallery" class="btn btn--ghost">See the proof</a>
       </div>
+    </div>
+    <div class="stage stage--wide stage--16x9 reveal" style="margin-top: clamp(48px, 6vw, 96px);">
+      <iframe data-demo="product-configurator" title="Physically based product configurator — live"></iframe>
+      <span class="stage__caption">Physically based product configurator · live</span>
     </div>
   </section>
 
   <!-- MANIFESTO ────────────────────────────────────── -->
   <section class="manifesto" id="capabilities">
-    <div class="wrap">
-      <div class="manifesto__inner">
-        <p class="manifesto__lead reveal">Most browser 3D libraries hand you a renderer. Then they hand you a thousand decisions.</p>
-        <p class="manifesto__big reveal">Aura3D hands you <em>the&nbsp;shipping&nbsp;product.</em></p>
-      </div>
+    <div class="manifesto__inner">
+      <p class="manifesto__lead reveal">Most browser 3D libraries hand you a renderer.<br>Then they hand you a thousand decisions.</p>
+      <p class="manifesto__big reveal">Aura3D hands you <em>the&nbsp;shipping&nbsp;product.</em></p>
     </div>
   </section>
 
   <!-- 01 — WORKFLOWS ───────────────────────────────── -->
   <section class="cap">
-    <div class="wrap">
-      <div class="cap__grid">
-        <div class="cap__copy reveal">
-          <p class="cap__num">01 — Workflows</p>
-          <h2>Workflows,<br>not primitives.</h2>
-          <p class="body">Product viewer. Material studio. Asset inspector. Animation lab. Scene showcase. Each one a first-party API, not a folder of demo code you have to keep in sync with the renderer underneath.</p>
-          <p class="body">Pick a preset. Load a model. Ship.</p>
-          <pre class="cap__snippet"><span class="c">// One workflow. Production defaults baked in.</span>
-<span class="k">const</span> app = <span class="k">await</span> <span class="fn">createA3DApp</span>({
-  workflow: <span class="s">"product-configurator"</span>,
-  quality:  <span class="s">"production"</span>
-});
-
-<span class="k">await</span> app.<span class="fn">loadAsset</span>(<span class="s">"product.glb"</span>);</pre>
-        </div>
-        <figure class="cap__media cap__media--contain reveal">
-          <img src="assets/helmet.png" alt="A sci-fi helmet rendered with full PBR materials and HDR image-based lighting.">
-          <span class="cap__media__tag">DamagedHelmet · HDR + IBL</span>
-        </figure>
+    <header class="cap__head reveal">
+      <p class="cap__num">01 — Workflows</p>
+      <h2>Workflows,<br>not primitives.</h2>
+      <p class="body">Product viewer. Material studio. Asset inspector. Animation lab. Scene showcase. Each one a first&#8209;party API, not a folder of demo code you have to keep in sync with the renderer underneath.</p>
+      <p class="body">Pick a preset. Load a model. Ship.</p>
+    </header>
+    <div class="cap__stage-wrap">
+      <div class="stage stage--wide stage--16x9 reveal">
+        <iframe data-demo="reactor-post" title="Cinematic post-processing pipeline — live"></iframe>
+        <span class="stage__caption">Cinematic post-processing pipeline · live</span>
       </div>
+    </div>
+    <div class="cap__details reveal">
+<pre class="cap__snippet"><span class="c">// One workflow. Production defaults baked in.</span>
+<span class="k">const</span> viewer = <span class="k">await</span> <span class="fn">createProductViewer</span>({
+  canvas, asset, environment,
+  camera:      { preset: <span class="s">"product-hero"</span>, orbit: true },
+  lighting:    { ibl: true, shadows: true },
+  postprocess: { toneMapping: <span class="s">"aces"</span>, bloom: true }
+});</pre>
     </div>
   </section>
 
   <!-- 02 — DIAGNOSTICS ─────────────────────────────── -->
   <section class="cap">
-    <div class="wrap">
-      <div class="cap__grid cap--flip">
-        <div class="cap__copy reveal">
-          <p class="cap__num">02 — Diagnostics</p>
-          <h2>Every frame, accountable.</h2>
-          <p class="body">Draw calls. FPS. Motion quality. Render-state leaks. Resource lifecycle. The engine reports on itself — in JSON, on every route, on every CI run.</p>
-          <p class="body">When something drifts, you find out before the customer does.</p>
-          <ul class="spec-list">
-            <li>Draw-call tracker</li>
-            <li>GPU profiler</li>
-            <li>Render-state inspector</li>
-            <li>Motion-quality reports</li>
-            <li>Resource leak tracker</li>
-            <li>Chrome trace export</li>
-          </ul>
-        </div>
-        <figure class="cap__media reveal">
-          <img src="assets/robot-ik.png" alt="A robot character driven by inverse kinematics next to a panel of live motion diagnostics.">
-          <span class="cap__media__tag">Expressive IK · live motion diagnostics</span>
-        </figure>
+    <header class="cap__head reveal">
+      <p class="cap__num">02 — Diagnostics</p>
+      <h2>Every frame,<br>accountable.</h2>
+      <p class="body">Draw calls. FPS. Triangles. Resource lifecycle. The engine reports on itself — in JSON, on every route, on every CI run.</p>
+      <p class="body">When something drifts, you find out before the customer does.</p>
+    </header>
+    <div class="cap__stage-wrap">
+      <div class="stage stage--wide stage--16x9 reveal">
+        <iframe data-demo="robotics-lab" title="Animated glTF character + robot scene — live"></iframe>
+        <span class="stage__caption">Robotics lab · animated glTF · live</span>
       </div>
+    </div>
+    <div class="cap__details reveal">
+      <ul class="spec-list">
+        <li>Draw-call tracker</li>
+        <li>GPU profiler</li>
+        <li>Render-state inspector</li>
+        <li>Motion-quality reports</li>
+        <li>Resource leak tracker</li>
+        <li>Chrome trace export</li>
+      </ul>
     </div>
   </section>
 
   <!-- 03 — BACKENDS ────────────────────────────────── -->
   <section class="cap">
-    <div class="wrap">
-      <div class="cap__grid">
-        <div class="cap__copy reveal">
-          <p class="cap__num">03 — Backends</p>
-          <h2>Two backends.<br>One scene.</h2>
-          <p class="body">WebGL2 ships today. WebGPU ships tomorrow. The same scene graph runs on both — no parallel codebase, no feature flag spaghetti.</p>
-          <p class="body">Compute particles. Hardware-tested PBR. Instanced uniforms. Render-to-texture. Real <code class="mono">navigator.gpu</code>, real evidence.</p>
-        </div>
-        <figure class="cap__media reveal">
-          <img src="assets/webgpu-materials.png" alt="WebGPU material lab showing a glTF reference scene rendered through the WebGPU backend.">
-          <span class="cap__media__tag">WebGPU materials route · live device</span>
-        </figure>
+    <header class="cap__head reveal">
+      <p class="cap__num">03 — Backends</p>
+      <h2>Two backends.<br>One scene.</h2>
+      <p class="body">WebGL2 ships today. WebGPU ships tomorrow. The same scene graph runs on both — no parallel codebase, no feature&nbsp;flag spaghetti.</p>
+      <p class="body">Compute particles. Hardware-tested PBR. Instanced uniforms. Render-to-texture. Real <code class="mono">navigator.gpu</code>, real evidence.</p>
+    </header>
+    <div class="cap__stage-wrap">
+      <div class="stage stage--wide stage--16x9 reveal">
+        <iframe data-demo="ocean-observatory" title="WebGPU/WebGL ocean surface showcase — live"></iframe>
+        <span class="stage__caption">Ocean observatory · WebGPU + WebGL · live</span>
       </div>
     </div>
   </section>
 
   <!-- 04 — glTF ────────────────────────────────────── -->
   <section class="cap">
-    <div class="wrap">
-      <div class="cap__grid cap--flip">
-        <div class="cap__copy reveal">
-          <p class="cap__num">04 — glTF</p>
-          <h2>glTF, all the way through.</h2>
-          <p class="body">The full standard, not a polite subset. Transmission. Clearcoat. Sheen. Specular. Volume. Material variants. KTX2/Basis textures. HDR and EXR environments. Skinning, morph targets, root motion, inverse kinematics — the runtime understands it all.</p>
-          <ul class="spec-list">
-            <li>KHR_materials_transmission</li>
-            <li>KHR_materials_clearcoat</li>
-            <li>KHR_materials_sheen</li>
-            <li>KHR_materials_specular</li>
-            <li>KHR_materials_volume</li>
-            <li>KHR_materials_variants</li>
-            <li>KHR_texture_basisu</li>
-            <li>KHR_draco_mesh_compression</li>
-            <li>EXT_meshopt_compression</li>
-          </ul>
-        </div>
-        <figure class="cap__media cap__media--contain reveal">
-          <img src="assets/camera-tripod.png" alt="A vintage view camera on a wooden tripod, rendered with full PBR textures.">
-          <span class="cap__media__tag">BoomBox · imported glTF · PBR</span>
-        </figure>
+    <header class="cap__head reveal">
+      <p class="cap__num">04 — glTF</p>
+      <h2>glTF, all<br>the way through.</h2>
+      <p class="body">The full standard, not a polite subset. Transmission. Clearcoat. Sheen. Specular. Volume. Material variants. KTX2/Basis textures. HDR and EXR environments. Skinning, morph targets, root motion, inverse kinematics — the runtime understands it all.</p>
+    </header>
+    <div class="cap__stage-wrap">
+      <div class="stage stage--wide stage--16x9 reveal">
+        <iframe data-url="http://127.0.0.1:5180/apps/wow-tokyo-keyframes/" title="Littlest Tokyo animated glTF scene — live"></iframe>
+        <span class="stage__caption">Littlest Tokyo · authored glTF + animation · live</span>
       </div>
+    </div>
+    <div class="cap__details reveal">
+      <ul class="spec-list">
+        <li>KHR_materials_transmission</li>
+        <li>KHR_materials_clearcoat</li>
+        <li>KHR_materials_sheen</li>
+        <li>KHR_materials_specular</li>
+        <li>KHR_materials_volume</li>
+        <li>KHR_materials_variants</li>
+        <li>KHR_texture_basisu</li>
+        <li>KHR_draco_mesh_compression</li>
+        <li>EXT_meshopt_compression</li>
+      </ul>
     </div>
   </section>
 
   <!-- 05 — MIGRATION ───────────────────────────────── -->
   <section class="cap">
-    <div class="wrap">
-      <div class="cap__grid">
-        <div class="cap__copy reveal">
-          <p class="cap__num">05 — Migration</p>
-          <h2>Move from Three.js. Without moving everything.</h2>
-          <p class="body">A real migration is a long migration. <code class="mono">@aura3d/three-compat</code> lets your existing Three.js code keep running while you move the parts that matter — at your pace, on your schedule.</p>
-          <p class="body">Same-scene comparison routes prove the parity, file by file.</p>
-          <pre class="cap__snippet"><span class="c">// Existing Three.js imports keep working.</span>
+    <header class="cap__head reveal">
+      <p class="cap__num">05 — Migration</p>
+      <h2>Move from Three.js.<br>Without moving everything.</h2>
+      <p class="body">A real migration is a long migration. <code class="mono">@aura3d/three-compat</code> lets your existing Three.js code keep running while you move the parts that matter — at your pace, on your schedule.</p>
+      <p class="body">Same-scene comparison routes prove the parity, file by file.</p>
+    </header>
+    <div class="cap__details reveal">
+<pre class="cap__snippet"><span class="c">// Existing Three.js imports keep working.</span>
 <span class="k">import</span> { Scene, PerspectiveCamera, Mesh } <span class="k">from</span> <span class="s">"@aura3d/three-compat"</span>;
 
 <span class="c">// Reach for the workflow APIs when you're ready.</span>
-<span class="k">import</span> { createMaterialStudioWorkflow } <span class="k">from</span> <span class="s">"@aura3d/workflows"</span>;</pre>
-        </div>
-        <figure class="cap__media cap__media--contain reveal">
-          <img src="assets/character.png" alt="A weathered armored character rendered with full skinning and PBR.">
-          <span class="cap__media__tag">Production character viewer · skinning + PBR</span>
-        </figure>
-      </div>
+<span class="k">import</span> { createProductViewer } <span class="k">from</span> <span class="s">"@aura3d/engine/production-runtime"</span>;</pre>
     </div>
   </section>
 
-  <!-- GALLERY ──────────────────────────────────────── -->
+  <!-- GALLERY — bento of live demos ─────────────────── -->
   <section class="gallery" id="gallery">
-    <div class="wrap">
-      <header class="gallery__header reveal">
-        <h2>Proof.</h2>
-        <p class="body">Every frame on this page came directly out of the test suite. Not stock photography. Not Photoshop. Real output from real packages, captured headlessly in CI.</p>
-      </header>
+    <header class="gallery__head reveal">
+      <p class="eyebrow" style="justify-content:center;">The advanced gallery</p>
+      <h2>Ten scenes,<br>ten kinds of hard.</h2>
+      <p class="body">Water. Ocean. Post-processing. Instancing. Particles. Configurators. Animation. Physics. Fog. A digital twin. Each one running, each one auditable, each one in your browser.</p>
+    </header>
 
-      <div class="gallery__grid">
-        <figure class="gtile gtile--lg reveal">
-          <span class="gtile__tag">Apps · Production</span>
-          <img src="assets/hero-car.png" alt="Red sports car render">
-          <figcaption><b>Production product configurator</b></figcaption>
-        </figure>
-        <figure class="gtile gtile--md reveal">
-          <span class="gtile__tag">Runtime</span>
-          <img src="assets/helmet.png" alt="HDR helmet render">
-          <figcaption><b>HDR + image-based lighting</b></figcaption>
-        </figure>
-
-        <figure class="gtile gtile--sm reveal">
-          <span class="gtile__tag">Materials</span>
-          <img src="assets/transmission.png" alt="PBR transmission and IOR">
-          <figcaption><b>Transmission · IOR</b></figcaption>
-        </figure>
-        <figure class="gtile gtile--sm reveal">
-          <span class="gtile__tag">Postprocess</span>
-          <img src="assets/bloom.png" alt="Bloom postprocess">
-          <figcaption><b>Bloom · tone-map · FXAA</b></figcaption>
-        </figure>
-        <figure class="gtile gtile--sm reveal">
-          <span class="gtile__tag">Animation</span>
-          <img src="assets/robot-morph.png" alt="Morph targets robot">
-          <figcaption><b>Morph targets</b></figcaption>
-        </figure>
-
-        <figure class="gtile gtile--wide reveal">
-          <span class="gtile__tag">Animation</span>
-          <img src="assets/robot-ik.png" alt="Inverse kinematics with live diagnostics">
-          <figcaption><b>Inverse kinematics · live diagnostics</b></figcaption>
-        </figure>
-        <figure class="gtile gtile--wide reveal">
-          <span class="gtile__tag">WebGPU</span>
-          <img src="assets/webgpu-materials.png" alt="WebGPU material lab">
-          <figcaption><b>WebGPU material lab</b></figcaption>
-        </figure>
-
-        <figure class="gtile gtile--sm reveal">
-          <span class="gtile__tag">Skinning</span>
-          <img src="assets/walk.png" alt="Walk-cycle skinning">
-          <figcaption><b>Walk cycle</b></figcaption>
-        </figure>
-        <figure class="gtile gtile--sm reveal">
-          <span class="gtile__tag">Skinning · PBR</span>
-          <img src="assets/character.png" alt="Armored character">
-          <figcaption><b>Production character</b></figcaption>
-        </figure>
-        <figure class="gtile gtile--sm reveal">
-          <span class="gtile__tag">Renderer</span>
-          <img src="assets/instancing.png" alt="Colored cube grid demonstrating instanced rendering">
-          <figcaption><b>Instanced rendering</b></figcaption>
-        </figure>
+    <div class="bento reveal">
+      <div class="stage stage--feature">
+        <iframe data-demo="water-lab" title="Interactive GPGPU-style water lab — live"></iframe>
+        <span class="stage__caption">Interactive GPGPU water lab · live</span>
       </div>
+      <div class="stage stage--third">
+        <iframe data-demo="digital-twin" title="Industrial digital twin — live"></iframe>
+        <span class="stage__caption">Industrial digital twin · live</span>
+      </div>
+      <div class="stage stage--third">
+        <iframe data-demo="physics-playground" title="Physics playground — live"></iframe>
+        <span class="stage__caption">Physics playground · live</span>
+      </div>
+      <div class="stage stage--third">
+        <iframe data-demo="data-galaxy" title="Particle data galaxy — live"></iframe>
+        <span class="stage__caption">Data galaxy · live</span>
+      </div>
+    </div>
+
+    <div class="gallery__foot reveal">
+      <a href="http://127.0.0.1:5180/apps/advanced-examples-gallery/" target="_blank" rel="noopener">Open the full gallery</a>
     </div>
   </section>
 
   <!-- DEPTH / PACKAGES ─────────────────────────────── -->
   <section class="depth" id="depth">
-    <div class="wrap">
-      <p class="eyebrow reveal">Under the hood</p>
-      <h2 class="reveal" style="margin: 24px 0 0">Twenty-three packages.<br>One engine.</h2>
-      <p class="depth__lead reveal" style="margin-top: 36px">Renderer, scene, assets, animation, physics, controls, input, audio, materials, environments — every layer is a first-party package, with its own tests, its own API surface, and its own report. Import what you need. Tree-shake the rest.</p>
+    <span class="eyebrow reveal">Under the hood</span>
+    <h2 class="reveal">Twenty-three packages.<br>One engine.</h2>
+    <p class="depth__lead reveal">Renderer, scene, assets, animation, physics, controls, input, audio, materials, environments — every layer is a first&#8209;party package, with its own tests, its own API surface, and its own report. Import what you need. Tree-shake the rest.</p>
 
+    <div class="depth__inner">
       <div class="pkgs reveal">
-        <div class="pkg"><p class="pkg__name">@aura3d/rendering</p><p class="pkg__what">WebGL2 + WebGPU devices, forward pass, queues, shadows, postprocess, instancing, diagnostics.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/scene</p><p class="pkg__what">Object3D-style hierarchy, transforms, cameras, lights, renderables, serialization.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/assets</p><p class="pkg__what">glTF / GLB, Draco, Meshopt, KTX2 / Basis, HDR / EXR, OBJ, render-resource conversion, diagnostics.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/animation</p><p class="pkg__what">Clips, tracks, mixers, layers, skinning, morphs, IK, root motion, motion-quality reports.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/physics</p><p class="pkg__what">Rigid bodies, colliders, raycasts, constraints, character controllers, scene sync, debug.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/math</p><p class="pkg__what">Vectors, matrices, quaternions, rays, bounds, planes, frustums, projection — branded types.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/materials</p><p class="pkg__what">PBR, transmission, clearcoat, sheen, specular, volume. Material extensions, end to end.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/environments</p><p class="pkg__what">HDRI environments, PMREM, image-based lighting, environment registry and presets.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/controls</p><p class="pkg__what">Orbit, trackball, fly, first-person, drag, transform, map, pointer-lock, picking.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/input</p><p class="pkg__what">Keyboard, pointer, gamepad, gestures, virtual joystick, WebXR sessions, AR hit-test.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/audio</p><p class="pkg__what">Spatial audio, mixer, effects, scene bridge, adaptive music, reverb and filters.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/workflows</p><p class="pkg__what">Product configurator, material studio, asset viewer, scene showcase, animation lab — composable.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/product-studio</p><p class="pkg__what">Product viewer pipeline — asset import, presets, screenshots, diagnostics, variants.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/editor-runtime</p><p class="pkg__what">Commands, history, gizmos, selection, prefabs, timeline, project serializer.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/ecs</p><p class="pkg__what">Entity / component / system, archetypes, queries, command buffer, system scheduler.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/debug</p><p class="pkg__what">Draw-call tracker, GPU profiler, render-state inspector, helpers, report exporter.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/scripting</p><p class="pkg__what">Lifecycle scripts, scheduler bindings, sandboxed eval, scripting host.</p></div>
-        <div class="pkg"><p class="pkg__name">@aura3d/three-compat</p><p class="pkg__what">Three.js-shaped imports backed by Aura3D. Move at the pace your team can absorb.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/rendering</p><p class="pkg__what">WebGL2 + WebGPU devices, forward pass, queues, shadows, postprocess, instancing, diagnostics.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/scene</p><p class="pkg__what">Object3D-style hierarchy, transforms, cameras, lights, renderables, serialization.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/assets</p><p class="pkg__what">glTF / GLB, Draco, Meshopt, KTX2 / Basis, HDR / EXR, OBJ, render-resource conversion.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/animation</p><p class="pkg__what">Clips, tracks, mixers, layers, skinning, morphs, IK, root motion, motion-quality reports.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/physics</p><p class="pkg__what">Rigid bodies, colliders, raycasts, constraints, character controllers, scene sync, debug.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/math</p><p class="pkg__what">Vectors, matrices, quaternions, rays, bounds, planes, frustums, projection — branded types.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/materials</p><p class="pkg__what">PBR, transmission, clearcoat, sheen, specular, volume. Material extensions, end to end.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/environments</p><p class="pkg__what">HDRI environments, PMREM, image-based lighting, environment registry and presets.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/controls</p><p class="pkg__what">Orbit, trackball, fly, first-person, drag, transform, map, pointer-lock, picking.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/input</p><p class="pkg__what">Keyboard, pointer, gamepad, gestures, virtual joystick, WebXR sessions, AR hit-test.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/audio</p><p class="pkg__what">Spatial audio, mixer, effects, scene bridge, adaptive music, reverb and filters.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/workflows</p><p class="pkg__what">Product configurator, material studio, asset viewer, scene showcase — composable.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/product-studio</p><p class="pkg__what">Product viewer pipeline — asset import, presets, screenshots, diagnostics, variants.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/editor-runtime</p><p class="pkg__what">Commands, history, gizmos, selection, prefabs, timeline, project serializer.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/ecs</p><p class="pkg__what">Entity / component / system, archetypes, queries, command buffer, system scheduler.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/debug</p><p class="pkg__what">Draw-call tracker, GPU profiler, render-state inspector, helpers, report exporter.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/scripting</p><p class="pkg__what">Lifecycle scripts, scheduler bindings, sandboxed eval, scripting host.</p></div>
+        <div class="pkg"><p class="pkg__name">@aura3d/engine/three-compat</p><p class="pkg__what">Three.js-shaped imports backed by Aura3D. Move at the pace your team can absorb.</p></div>
       </div>
 
       <div class="stats reveal">
-        <div class="stat">
-          <div class="stat__n">89</div>
-          <div class="stat__l">Example apps</div>
-        </div>
-        <div class="stat">
-          <div class="stat__n">23</div>
-          <div class="stat__l">First-party packages</div>
-        </div>
-        <div class="stat">
-          <div class="stat__n">9</div>
-          <div class="stat__l">glTF material extensions</div>
-        </div>
-        <div class="stat">
-          <div class="stat__n">100</div>
-          <div class="stat__l">Reload lifecycle gate</div>
-        </div>
+        <div class="stat"><div class="stat__n">10</div><div class="stat__l">Advanced gallery demos</div></div>
+        <div class="stat"><div class="stat__n">23</div><div class="stat__l">First-party packages</div></div>
+        <div class="stat"><div class="stat__n">9</div><div class="stat__l">glTF material extensions</div></div>
+        <div class="stat"><div class="stat__n">2</div><div class="stat__l">Backends · WebGL2 + WebGPU</div></div>
       </div>
     </div>
   </section>
 
   <!-- CTA ──────────────────────────────────────────── -->
   <section class="cta" id="start">
-    <div class="wrap">
+    <div class="cta__inner">
       <h2 class="reveal">Start building.</h2>
       <p class="reveal">A workflow template, a model, and a renderer that ships with the diagnostics already wired in.</p>
 
       <button class="cta__install reveal" id="copyInstall" type="button" aria-label="Copy install command">
-        <span>npm&nbsp;create&nbsp;@aura3d/engine</span>
+        <span>npm&nbsp;install&nbsp;@aura3d/engine</span>
         <span class="cta__install__copy" id="copyLabel">Copy</span>
       </button>
 
@@ -973,44 +297,6 @@ footer {
   </div>
 </footer>
 
-<script>
-  // nav border on scroll
-  const nav = document.getElementById('nav');
-  const onScroll = () => nav.classList.toggle('is-scrolled', window.scrollY > 12);
-  window.addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  // reveal-on-scroll
-  const io = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        e.target.classList.add('is-in');
-        io.unobserve(e.target);
-      }
-    }
-  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
-
-  document.querySelectorAll('.reveal').forEach((el, i) => {
-    // stagger reveals slightly when in a row
-    el.style.transitionDelay = (i % 4) * 60 + 'ms';
-    io.observe(el);
-  });
-
-  // copy install command
-  const btn = document.getElementById('copyInstall');
-  const label = document.getElementById('copyLabel');
-  btn?.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText('npm create @aura3d/engine');
-      btn.classList.add('is-copied');
-      label.textContent = 'Copied';
-      setTimeout(() => {
-        btn.classList.remove('is-copied');
-        label.textContent = 'Copy';
-      }, 1800);
-    } catch (_) { /* ignore */ }
-  });
-</script>
-
+<script type="module" src="/src/main.ts"></script>
 </body>
 </html>

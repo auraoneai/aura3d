@@ -8,7 +8,7 @@ import {
 } from "../../../packages/rendering/src";
 
 describe("cinematic postprocess diagnostics", () => {
-  it("reports the execute.md postprocess checklist with honest implemented, conditional, and unsupported states", () => {
+  it("reports the advanced-gallery postprocess checklist with honest implemented, conditional, and unsupported states", () => {
     const report = createCinematicDiagnosticsReport(new MockRenderDevice());
     const byId = indexById(report.postprocess);
 

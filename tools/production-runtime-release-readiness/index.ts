@@ -33,7 +33,6 @@ const requiredReports = [
   "tests/reports/production-runtime-threejs-runtime-parity.json",
   "tests/reports/production-runtime-workflows-readiness.json",
   "tests/reports/production-runtime-workflow-readiness.json",
-  "tests/reports/production-runtime-examples-readiness.json",
   "tests/reports/production-runtime-template-readiness.json",
   "tests/reports/production-runtime-performance-readiness.json",
   "tests/reports/production-runtime-package-surface-readiness.json",

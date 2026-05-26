@@ -82,14 +82,14 @@ export default {
     },
     warmup: {
       clientFiles: [
-        "apps/flagship-viewer/src/main.ts",
-        "apps/decals/src/main.ts",
-        "apps/parallax-barrier/src/main.ts",
+        "apps/advanced-examples-gallery/src/main.ts",
+        "apps/wow-common/src/showcase.ts",
+        "apps/wow-common/src/gltf-showcase.ts",
       ],
     },
   },
   optimizeDeps: {
-    entries: ["examples/**/*.html", "apps/**/*.html"],
+    entries: ["apps/**/*.html"],
   },
 };
 

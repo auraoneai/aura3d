@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { mkdtempSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { auditExampleTruth } from "../../../tools/example-truth-audit/index.js";
 import { validateFoundationClaimGates } from "../../../tools/foundation-claim-gates/index.js";
 import { validateFoundationReportFreshness, writeJson, baseReport } from "../../../tools/foundation-reporting/index.js";
 
@@ -14,42 +13,19 @@ function fixtureRoot(): string {
 describe("foundation validation tools", () => {
   it("blocks unscoped foundation competitor and production claims", () => {
     const root = fixtureRoot();
-    mkdirSync(join(root, "examples", "bad"), { recursive: true });
-    writeFileSync(join(root, "examples", "bad", "README.md"), "Aura3D is better than Three.js.\n");
+    mkdirSync(join(root, "docs", "examples", "bad"), { recursive: true });
+    writeFileSync(join(root, "docs", "examples", "bad", "README.md"), "Aura3D is better than Three.js.\n");
     writeFileSync(join(root, "README.md"), "Aura3D is not production-ready.\n");
 
     const report = validateFoundationClaimGates(root);
 
     expect(report.ok).toBe(false);
     expect(report.blockedOccurrences).toEqual(expect.arrayContaining([
-      expect.objectContaining({ path: "examples/bad/README.md", claim: "broad better-than-Three.js language" }),
+      expect.objectContaining({ path: "docs/examples/bad/README.md", claim: "broad better-than-Three.js language" }),
     ]));
     expect(report.scopedOccurrences).toEqual(expect.arrayContaining([
       expect.objectContaining({ path: "README.md", claim: "production-ready language", scoped: true }),
     ]));
-  });
-
-  it("audits portfolio cards for screenshot, browser test, and caveat evidence", () => {
-    const root = fixtureRoot();
-    mkdirSync(join(root, "examples", "portfolio", "screenshots"), { recursive: true });
-    mkdirSync(join(root, "tests", "browser"), { recursive: true });
-    writeFileSync(join(root, "examples", "portfolio", "screenshots", "demo.png"), "png");
-    writeFileSync(join(root, "tests", "browser", "demo.spec.ts"), "test('demo', () => 'demo');\n");
-    writeFileSync(join(root, "examples", "portfolio", "main.ts"), `
-const examples = [{
-  id: "demo",
-  title: "Demo",
-  href: "./demo/index.html",
-  caveat: "This is not production-ready and remains bounded."
-}];
-`);
-
-    const report = auditExampleTruth(root);
-
-    expect(report.ok).toBe(true);
-    expect(report.examples).toEqual([
-      expect.objectContaining({ id: "demo", screenshotPath: "examples/portfolio/screenshots/demo.png", hasKnownLimitNote: true }),
-    ]);
   });
 
   it("detects stale foundation reports by source hash", () => {

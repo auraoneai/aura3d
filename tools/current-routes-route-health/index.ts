@@ -7,7 +7,7 @@ import { legacyPathForContextualPath } from "../naming-taxonomy/contextualAliase
 
 export const CURRENT_ROUTE_HEALTH_ORIGIN = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";
 export const CURRENT_ROUTE_HEALTH_REPORT = "tests/reports/current-routes-route-health.json";
-export const CURRENT_ROUTE_REGISTRY_PATH = process.env.A3D_ROUTE_REGISTRY_PATH ?? "/examples/index.html";
+export const CURRENT_ROUTE_REGISTRY_PATH = process.env.A3D_ROUTE_REGISTRY_PATH ?? "/index.html";
 export const CURRENT_ROUTE_HEALTH_ARTIFACT_DIR = process.env.A3D_ROUTE_HEALTH_ARTIFACT_DIR ?? "tests/reports/current-route-health";
 export const CURRENT_ROOT_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_ROOT_BUDGET_MS ?? 1_500);
 export const CURRENT_ROUTE_BUDGET_MS = Number(process.env.A3D_ROUTE_HEALTH_ROUTE_BUDGET_MS ?? 10_000);
@@ -177,7 +177,7 @@ export async function discoverCurrentRootLinks(page: Page, origin = CURRENT_ROUT
           declaredStatus: card.dataset.status
         };
       })
-      .filter((link) => (link.path.startsWith("/apps/") || link.path.startsWith("/examples/")) && link.declaredStatus !== "internal");
+      .filter((link) => link.path.startsWith("/apps/") && link.declaredStatus !== "internal");
     if (registryCards.length > 0) return registryCards;
     return Array.from(document.querySelectorAll<HTMLAnchorElement>("a[href]"))
       .map((link) => {
@@ -189,7 +189,7 @@ export async function discoverCurrentRootLinks(page: Page, origin = CURRENT_ROUT
           declaredStatus: undefined
         };
       })
-      .filter((link) => link.path.startsWith("/apps/") || link.path.startsWith("/examples/"));
+      .filter((link) => link.path.startsWith("/apps/"));
   }).catch(() => [] as CurrentRootRouteLink[]);
 
   const legacySurfaceVisibility = summarizeLegacySurfaceVisibility(links);
@@ -197,7 +197,7 @@ export async function discoverCurrentRootLinks(page: Page, origin = CURRENT_ROUT
     failures.push(`${rootUrl} exposes ${legacySurfaceVisibility.visibleLegacyRouteCount} visible historical route(s)`);
   }
   if (links.length === 0) {
-    failures.push(`${rootUrl} did not expose any linked working /apps or /examples routes`);
+    failures.push(`${rootUrl} did not expose any linked working /apps routes`);
   }
 
   return {
@@ -484,7 +484,7 @@ async function readRouteProbe(page: Page): Promise<RuntimeProbe> {
 }
 
 async function readCanvasEvidence(page: Page, route: CurrentRootRouteLink): Promise<CurrentCanvasEvidence | null> {
-  const policy = route.path === "/apps/advanced-examples-gallery/"
+  const policy = route.path.startsWith("/apps/advanced-examples-gallery/")
     ? { minBackingScale: CURRENT_ROUTE_HEALTH_BACKING_TOLERANCE, minClientWidth: 560, minClientHeight: 280 }
     : { minBackingScale: CURRENT_ROUTE_HEALTH_BACKING_TOLERANCE, minClientWidth: 640, minClientHeight: 360 };
   return page.evaluate(({ minBackingScale, minClientWidth, minClientHeight }) => {
@@ -645,16 +645,13 @@ function slugifyRoutePath(path: string): string {
 }
 
 function routeBudgetForPath(path: string): number {
-  const legacyPath = legacyPathForContextualPath(path);
-  if (legacyPath === "/apps/character-viewer/") return Number(process.env.A3D_ROUTE_HEALTH_CHARACTER_BUDGET_MS ?? 5_000);
-  if (legacyPath === "/apps/regression-animation-keyframes/") return Number(process.env.A3D_ROUTE_HEALTH_KEYFRAMES_BUDGET_MS ?? 10_000);
   return CURRENT_ROUTE_BUDGET_MS;
 }
 
 function firstVisibleBudgetForPath(path: string): number {
+  if (path.startsWith("/apps/advanced-examples-gallery/")) return Number(process.env.A3D_ROUTE_HEALTH_ADVANCED_GALLERY_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
+  if (path.startsWith("/apps/wow-")) return Number(process.env.A3D_ROUTE_HEALTH_WOW_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
   const legacyPath = legacyPathForContextualPath(path);
-  if (legacyPath === "/apps/character-viewer/") return Number(process.env.A3D_ROUTE_HEALTH_CHARACTER_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
-  if (legacyPath === "/apps/regression-animation-keyframes/") return Number(process.env.A3D_ROUTE_HEALTH_KEYFRAMES_FIRST_VISIBLE_BUDGET_MS ?? CURRENT_FIRST_VISIBLE_BUDGET_MS);
   if (legacyPath === "/apps/advanced-examples-gallery/") return Number(process.env.A3D_ROUTE_HEALTH_ADVANCED_GALLERY_FIRST_VISIBLE_BUDGET_MS ?? 5_000);
   return CURRENT_FIRST_VISIBLE_BUDGET_MS;
 }

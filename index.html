@@ -20,14 +20,26 @@
 
       main {
         box-sizing: border-box;
-        width: min(1120px, calc(100vw - 48px));
+        width: min(1180px, calc(100vw - 48px));
         margin: 0 auto;
-        padding: 48px 0;
+        padding: 44px 0 56px;
+      }
+
+      .registry-header {
+        border-bottom: 1px solid #263041;
+        margin-bottom: 30px;
+        padding-bottom: 22px;
       }
 
       h1 {
         margin: 0 0 8px;
         font-size: 28px;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
         letter-spacing: 0;
       }
 
@@ -38,18 +50,79 @@
         line-height: 1.5;
       }
 
+      .summary-row {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        margin-top: 22px;
+        max-width: 760px;
+      }
+
+      .summary-item {
+        border: 1px solid #273142;
+        border-radius: 8px;
+        background: #101720;
+        padding: 12px 14px;
+      }
+
+      .summary-item b {
+        display: block;
+        font-size: 22px;
+        line-height: 1;
+      }
+
+      .summary-item span {
+        color: #9ba8b8;
+        display: block;
+        font-size: 12px;
+        line-height: 1.35;
+        margin-top: 6px;
+      }
+
+      .route-sections {
+        display: grid;
+        gap: 34px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 14px;
+      }
+
+      .section-copy {
+        min-width: 0;
+      }
+
+      .section-copy p {
+        margin-top: 6px;
+        max-width: 720px;
+      }
+
+      .section-count {
+        flex: none;
+        border: 1px solid #2b3544;
+        border-radius: 999px;
+        color: #9fb0c2;
+        font-size: 12px;
+        line-height: 1;
+        padding: 8px 10px;
+      }
+
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 14px;
-        margin-top: 28px;
       }
 
       a,
       .route-card {
         display: grid;
-        gap: 8px;
-        min-height: 142px;
+        grid-template-rows: auto auto 1fr auto;
+        gap: 9px;
+        min-height: 156px;
         box-sizing: border-box;
         border: 1px solid #2d3544;
         border-radius: 8px;
@@ -65,279 +138,101 @@
 
       strong {
         font-size: 17px;
+        line-height: 1.2;
       }
 
-      span {
+      .route-summary {
         color: #aab5c4;
         font-size: 13px;
         line-height: 1.45;
       }
 
-      small {
-        align-self: end;
-        color: #79c0ff;
+      .route-kicker,
+      .route-status {
+        color: #8fa1b4;
         font-size: 12px;
+      }
+
+      .route-kicker {
+        text-transform: uppercase;
+      }
+
+      .route-status {
+        align-self: end;
       }
 
       .route-card {
         opacity: 0.76;
       }
 
-      .route-card[data-status="internal"] small,
-      .route-card[data-status="blocked"] small,
-      .route-card[data-status="slow"] small {
+      .route-card[data-status="internal"] .route-status,
+      .route-card[data-status="blocked"] .route-status,
+      .route-card[data-status="slow"] .route-status {
         color: #f0883e;
       }
 
-      .route-card[data-status="working"] small {
+      .route-card[data-status="working"] .route-status {
         color: #56d364;
+      }
+
+      @media (max-width: 720px) {
+        main {
+          width: min(100% - 32px, 1180px);
+          padding-top: 28px;
+        }
+
+        .section-header {
+          align-items: start;
+          flex-direction: column;
+        }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>A3D Local Route Registry</h1>
-      <p>
-        Current showcase and gallery routes are listed here as live links. Historical Production/RuntimeParity/CurrentRoutes
-        route-health proof routes are intentionally pruned from this local registry so localhost
-        does not look like a backlog of old blocked examples.
-      </p>
-      <section id="route-grid" class="grid" aria-label="Example routes">
-        <article class="route-card" data-status="blocked">
-          <strong>Loading current routes</strong>
-          <span>Rendering current showcase and gallery routes.</span>
-          <small>loading</small>
-        </article>
-      </section>
+      <header class="registry-header">
+        <h1>A3D Local Route Registry</h1>
+        <p>
+          This is the consolidated local index for advanced gallery demos and current showcase routes.
+          Historical Production/RuntimeParity/CurrentRoutes route-health proof routes are intentionally pruned
+          from this local registry so localhost does not look like a backlog of old blocked examples.
+        </p>
+        <div id="registry-summary" class="summary-row" aria-label="Registry summary">
+          <div class="summary-item">
+            <b>...</b>
+            <span>Loading routes</span>
+          </div>
+        </div>
+      </header>
+      <div id="route-sections" class="route-sections" aria-label="Example route groups">
+        <section class="route-section">
+          <div class="grid">
+            <article class="route-card" data-status="blocked">
+              <small class="route-kicker">Loading</small>
+              <strong>Loading current routes</strong>
+              <span class="route-summary">Rendering current showcase and gallery routes.</span>
+              <small class="route-status">loading</small>
+            </article>
+          </div>
+        </section>
+      </div>
     </main>
     <script type="module">
-      const ROUTES = [
-        {
-          path: "/apps/regression-animation-keyframes/",
-          label: "Regression Animation Keyframes",
-          summary: "Legacy startup route kept for regression coverage. Use Animation Keyframes for the current example.",
-          internal: true
-        },
-        {
-          path: "/apps/character-viewer/",
-          label: "Character Viewer",
-          summary: "Legacy character route kept for regression coverage. Use the animation examples for current visual work.",
-          internal: true
-        },
-        {
-          path: "/apps/example-parity-lab/",
-          label: "Example Parity Lab",
-          summary: "Internal stress lab. Not listed as working until route-health proves it can start quickly.",
-          internal: true
-        },
-        {
-          path: "/apps/animation-keyframes/",
-          label: "Animation Keyframes",
-          summary: "Dedicated A3D-only route for keyframe animation parity work."
-        },
-        {
-          path: "/apps/flagship-viewer/",
-          label: "Flagship Viewer",
-          summary: "Main A3D-only product viewer route for GLB/HDR/PBR SDK workflow proof."
-        },
-        {
-          path: "/apps/skinning-blending/",
-          label: "Skinning Blending",
-          summary: "Dedicated A3D-only route for skinned clip blending parity work."
-        },
-        {
-          path: "/apps/skinning-additive/",
-          label: "Skinning Additive",
-          summary: "Dedicated A3D-only route for additive skeletal animation parity work."
-        },
-        {
-          path: "/apps/skinning-ik/",
-          label: "Robot Expressive IK",
-          summary: "Dedicated A3D-only route for imported Robot Expressive skeleton IK, animated target motion, controls, and motion telemetry."
-        },
-        {
-          path: "/apps/skinning-morph/",
-          label: "Skinning Morph",
-          summary: "Dedicated A3D-only route for morph target animation work."
-        },
-        {
-          path: "/apps/animation-multiple/",
-          label: "Animation Multiple",
-          summary: "Dedicated A3D-only route for many animated agents."
-        },
-        {
-          path: "/apps/animation-walk/",
-          label: "Animation Walk",
-          summary: "Dedicated A3D-only route for locomotion and path movement."
-        },
-        {
-          path: "/apps/decals/",
-          label: "Decals",
-          summary: "Dedicated A3D-only route for interactive decal placement."
-        },
-        {
-          path: "/apps/camera/",
-          label: "Camera",
-          summary: "Dedicated A3D-only route for camera helpers, preset views, and frustum visualization."
-        },
-        {
-          path: "/apps/camera-multiple-views/",
-          label: "Camera Multiple Views",
-          summary: "Dedicated A3D-only route for multiple DOM elements and camera views."
-        },
-        {
-          path: "/apps/parallax-barrier/",
-          label: "Parallax Barrier",
-          summary: "Dedicated A3D-only route for interleaved parallax-barrier stereo rendering."
-        },
-        {
-          path: "/apps/stereo-effects/",
-          label: "Stereo Effects",
-          summary: "Dedicated A3D-only route for stereo camera effects."
-        },
-        {
-          path: "/apps/physics-showcase/",
-          label: "Physics Showcase",
-          summary: "Dedicated A3D-only route for rendered physics interaction."
-        },
-        {
-          path: "/apps/loader-compression/",
-          label: "Loader Compression",
-          summary: "Dedicated A3D-only route for browser glTF compression decoder evidence."
-        },
-        {
-          path: "/apps/loader-instancing/",
-          label: "Loader Instancing",
-          summary: "Dedicated A3D-only route for EXT_mesh_gpu_instancing loader/runtime evidence."
-        },
-        {
-          path: "/apps/loader-material-extensions/",
-          label: "Loader Material Extensions",
-          summary: "Dedicated A3D-only route for clearcoat, sheen, and transmission glTF material extension evidence."
-        },
-        {
-          path: "/apps/loader-gltf-variants/",
-          label: "Loader GLTF Variants",
-          summary: "Dedicated A3D-only route for KHR_materials_variants selection through public render resources."
-        },
-        {
-          path: "/apps/loader-ktx2/",
-          label: "Loader KTX2",
-          summary: "Dedicated A3D-only route for KHR_texture_basisu/KTX2 transcoding evidence."
-        },
-        {
-          path: "/apps/loader-obj/",
-          label: "Loader OBJ",
-          summary: "Dedicated A3D-only route for native OBJ parsing through public render resources."
-        },
-        {
-          path: "/apps/instancing-performance/",
-          label: "Instancing Performance",
-          summary: "Dedicated A3D-only route for large per-instance attribute batches."
-        },
-        {
-          path: "/apps/texture-anisotropy/",
-          label: "Texture Anisotropy",
-          summary: "Dedicated A3D-only route for anisotropic texture sampler evidence."
-        },
-        {
-          path: "/apps/interactive-picking/",
-          label: "Interactive Picking",
-          summary: "Dedicated A3D-only route for cube and point raycasting evidence."
-        },
-        {
-          path: "/apps/controls-trackball/",
-          label: "Controls Trackball",
-          summary: "Dedicated A3D-only route for public TrackballControls state and rendering evidence."
-        },
-        {
-          path: "/apps/controls-orbit/",
-          label: "Controls Orbit",
-          summary: "Dedicated A3D-only route for public OrbitControls rotation, pan, and wheel evidence."
-        },
-        {
-          path: "/apps/controls-transform/",
-          label: "Controls Transform",
-          summary: "Dedicated A3D-only route for public TransformControls translate, rotate, and scale evidence."
-        },
-        {
-          path: "/apps/geometry-drawrange/",
-          label: "Geometry DrawRange",
-          summary: "Dedicated A3D-only route for indexed and array drawRange evidence."
-        },
-        {
-          path: "/apps/materials-transmission/",
-          label: "Materials Transmission",
-          summary: "Dedicated A3D-only route for physical transmission material evidence."
-        },
-        {
-          path: "/apps/lights-spotlight/",
-          label: "Lights Spotlight",
-          summary: "Dedicated A3D-only route for scene SpotLight collection and WebGL2 lighting evidence."
-        },
-        {
-          path: "/apps/shadowmap-viewer/",
-          label: "Shadowmap Viewer",
-          summary: "Dedicated A3D-only route for ShadowPass depth texture diagnostics and preview."
-        },
-        {
-          path: "/apps/webgpu-rtt/",
-          label: "WebGPU RTT",
-          summary: "Proof route for WebGPU render-target, readback, presentation, and disposal plumbing. Visual fidelity is intentionally minimal.",
-          proofOnly: true
-        },
-        {
-          path: "/apps/webgpu-materials/",
-          label: "WebGPU Materials",
-          summary: "Proof route for WebGPU PBR and textured material plumbing. Not a final product-quality material gallery.",
-          proofOnly: true
-        },
-        {
-          path: "/apps/webgpu-instance-uniform/",
-          label: "WebGPU Instance Uniform",
-          summary: "Proof route for WebGPU instanced PBR uniform-matrix submission. Visuals are diagnostic.",
-          proofOnly: true
-        },
-        {
-          path: "/apps/webgpu-compute/",
-          label: "WebGPU Compute",
-          summary: "Proof route for WebGPU particle compute, storage buffers, and readback evidence. Visuals are diagnostic.",
-          proofOnly: true
-        },
-        {
-          path: "/apps/webxr-interactions/",
-          label: "WebXR Interactions",
-          summary: "Dedicated A3D-only route for injected WebXR controller, dragging, and AR hit-test evidence."
-        },
-        {
-          path: "/apps/postprocessing-bloom/",
-          label: "Postprocessing Bloom",
-          summary: "Proof route for renderer-owned bloom postprocess evidence. It is not yet a cinematic-quality postprocessing example.",
-          proofOnly: true
-        },
-        {
-          path: "/apps/postprocessing-depth-outline/",
-          label: "Postprocessing Depth Outline",
-          summary: "Dedicated A3D-only route for visible outline, depth-of-field, SSAO, tone mapping, and FXAA evidence."
-        },
-	        {
-	          path: "/apps/advanced-examples-gallery/",
-	          label: "Advanced Examples Gallery",
-	          summary: "Advanced examples scaffold with ten complex interactive demos, runtime controls, stats, and a red visual-review gate until screenshots are accepted.",
-	          alwaysVisible: true
-	        },
+      import { DEMOS as ADVANCED_GALLERY_DEMOS } from "/apps/advanced-examples-gallery/src/metadata.ts";
+
+      const AUTHORED_SHOWCASE_ROUTES = [
         {
           path: "/apps/wow-tokyo-keyframes/",
           label: "Authored Tokyo Keyframes",
           summary: "Imported Littlest Tokyo GLB running through the A3D glTF animation pipeline, with authored scene detail instead of primitives.",
           alwaysVisible: true
         },
-	        {
-	          path: "/apps/wow-kira-ik-room/",
-	          label: "Authored Robot Expressive Rig",
-	          summary: "Current checkout live route for the available Robot Expressive GLB; the old Kira IK fixture is not present.",
-	          alwaysVisible: true
-	        },
+        {
+          path: "/apps/wow-kira-ik-room/",
+          label: "Authored Robot Expressive Rig",
+          summary: "Current checkout live route for the available Robot Expressive GLB; the old Kira IK fixture is not present.",
+          alwaysVisible: true
+        },
         {
           path: "/apps/wow-neon-city/",
           label: "Authored Concept Car Viewer",
@@ -400,8 +295,76 @@
         }
       ];
 
-      const grid = document.getElementById("route-grid");
-      const visibleRoutes = ROUTES.filter((route) => route.alwaysVisible);
+      const AURA3D_LIBRARY_EXAMPLE_ROUTES = [
+        {
+          path: "/apps/wow-boombox-texture-lab/",
+          label: "A3D Boom Box Texture Lab",
+          summary: "Imported Boom Box GLB rendered through A3D with texture maps, occlusion, HDR lighting, and grounded product staging.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-avocado-pbr-study/",
+          label: "A3D Avocado PBR Study",
+          summary: "Imported Avocado GLB as an organic-material example for color texture, roughness variation, normal detail, and close product framing.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-clearcoat-material-sample/",
+          label: "A3D Clearcoat Material Sample",
+          summary: "Imported clearcoat material test GLB with reflective studio lighting, normal-map response, and material-extension diagnostics.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-sheen-material-grid/",
+          label: "A3D Sheen Material Grid",
+          summary: "Imported sheen material grid GLB rendered as a fabric-response example with studio HDR lighting and texture detail.",
+          alwaysVisible: true
+        }
+      ];
+
+      const ADVANCED_GALLERY_ROUTES = ADVANCED_GALLERY_DEMOS.map((demo) => ({
+        path: `/apps/advanced-examples-gallery/#${demo.id}`,
+        label: demo.title,
+        summary: demo.subtitle,
+        alwaysVisible: true,
+        kicker: `Advanced gallery / ${demo.difficulty} / ${reviewLabel(demo.visualReview.status)}`,
+        statusText: "open advanced demo"
+      }));
+
+      const routeSections = document.getElementById("route-sections");
+      const registrySummary = document.getElementById("registry-summary");
+      const authoredShowcaseRoutes = AUTHORED_SHOWCASE_ROUTES
+        .map((route) => ({
+          ...route,
+          kicker: "Authored showcase",
+          statusText: "open live route"
+        }));
+      const aura3dLibraryExampleRoutes = AURA3D_LIBRARY_EXAMPLE_ROUTES
+        .map((route) => ({
+          ...route,
+          kicker: "Aura3D library example",
+          statusText: "open live route"
+        }));
+      const routeGroups = [
+        {
+          id: "advanced-gallery-demos",
+          title: "Advanced Gallery Demos",
+          summary: "Ten deep-linked heavyweight A3D showcase demos from the advanced gallery.",
+          routes: ADVANCED_GALLERY_ROUTES
+        },
+        {
+          id: "aura3d-library-examples",
+          title: "Aura3D Library Examples",
+          summary: "New focused examples using reusable A3D route runtime, real GLB fixtures, HDR lighting, diagnostics, and route-health coverage.",
+          routes: aura3dLibraryExampleRoutes
+        },
+        {
+          id: "authored-showcase-routes",
+          title: "Authored Showcase Routes",
+          summary: "Current standalone app routes for authored assets, animation, materials, and production-style visual checks.",
+          routes: authoredShowcaseRoutes
+        }
+      ];
       const healthByPath = new Map();
 
       try {
@@ -416,7 +379,43 @@
         // The registry still renders blocked cards when the report does not exist yet.
       }
 
-      grid.replaceChildren(...visibleRoutes.map((route) => renderRoute(route)));
+      registrySummary.replaceChildren(
+        renderSummaryItem(ADVANCED_GALLERY_ROUTES.length, "advanced gallery demos"),
+        renderSummaryItem(aura3dLibraryExampleRoutes.length, "Aura3D library examples"),
+        renderSummaryItem(authoredShowcaseRoutes.length, "authored showcase routes"),
+        renderSummaryItem(routeGroups.reduce((sum, group) => sum + group.routes.length, 0), "live links")
+      );
+      routeSections.replaceChildren(...routeGroups.map((group) => renderRouteSection(group)));
+
+      function renderSummaryItem(value, label) {
+        const item = document.createElement("div");
+        item.className = "summary-item";
+        item.innerHTML = `<b>${escapeHtml(value)}</b><span>${escapeHtml(label)}</span>`;
+        return item;
+      }
+
+      function renderRouteSection(group) {
+        const section = document.createElement("section");
+        section.className = "route-section";
+        section.setAttribute("aria-labelledby", `${group.id}-title`);
+
+        const header = document.createElement("div");
+        header.className = "section-header";
+        header.innerHTML = `
+          <div class="section-copy">
+            <h2 id="${escapeHtml(group.id)}-title">${escapeHtml(group.title)}</h2>
+            <p>${escapeHtml(group.summary)}</p>
+          </div>
+          <span class="section-count">${escapeHtml(group.routes.length)} routes</span>
+        `;
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+        grid.replaceChildren(...group.routes.map((route) => renderRoute(route)));
+
+        section.replaceChildren(header, grid);
+        return section;
+      }
 
       function renderRoute(route) {
         const health = healthByPath.get(route.path);
@@ -426,7 +425,9 @@
         const statusText = route.internal
           ? "internal"
           : working
-            ? route.alwaysVisible
+            ? route.statusText
+              ? route.statusText
+              : route.alwaysVisible
               ? "showcase: live route"
               : `${route.proofOnly ? "proof route" : slow ? "slow" : "working"}: ${health.drawCalls ?? 0} draw calls`
             : "blocked until route-health passes";
@@ -436,9 +437,10 @@
         element.dataset.routePath = route.path;
         if (working && !route.internal) element.href = route.path;
         element.innerHTML = `
+          <small class="route-kicker">${escapeHtml(route.kicker ?? (route.proofOnly ? "Proof route" : "Route"))}</small>
           <strong>${escapeHtml(route.label)}</strong>
-          <span>${escapeHtml(route.summary)}</span>
-          <small>${escapeHtml(statusText)}</small>
+          <span class="route-summary">${escapeHtml(route.summary)}</span>
+          <small class="route-status">${escapeHtml(statusText)}</small>
         `;
         return element;
       }
@@ -450,6 +452,12 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#039;");
+      }
+
+      function reviewLabel(status) {
+        if (status === "accepted") return "accepted";
+        if (status === "candidate") return "candidate";
+        return "failed";
       }
     </script>
   </body>

@@ -4,7 +4,6 @@ import { baseReport, writeJson } from "../foundation-reporting/index.js";
 
 const root = process.cwd();
 const commands = [
-  "verify:foundation-examples",
   "verify:foundation-rendering",
   "verify:foundation-assets",
   "verify:foundation-editor",

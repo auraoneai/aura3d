@@ -7,9 +7,8 @@ const RUNTIME_ROOTS = [
   "packages/rendering/src",
   "packages/assets/src",
   "packages/controls/src",
-  "apps/product-configurator",
-  "templates/production-product-viewer",
-  "examples/production-runtime-examples"
+  "apps/advanced-examples-gallery",
+  "apps/wow-common"
 ] as const;
 
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"]);
@@ -22,7 +21,7 @@ const BANNED_RUNTIME_PATTERNS: readonly { readonly id: string; readonly pattern:
 ];
 
 describe("RuntimeParity Production runtime boundary", () => {
-  it("keeps the product renderer, app, template, and Production examples independent from Three.js runtime delegation", () => {
+  it("keeps the product renderer and allowed local route surface independent from Three.js runtime delegation", () => {
     const scannedFiles = RUNTIME_ROOTS.flatMap((root) => collectSourceFiles(resolve(root)));
     const violations = scannedFiles.flatMap((file) => {
       const source = readFileSync(file, "utf8");

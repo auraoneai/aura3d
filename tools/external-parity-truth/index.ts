@@ -83,7 +83,7 @@ const requiredPlanPatterns = [
 ] as const;
 const requiredFailurePaths = [
   "tests/reports/foundation-app-suite/asset-lab-default.png",
-  "tests/reports/foundation-examples/foundation-asset-viewer.png",
+  "tests/reports/current-routes-route-health.json",
   "tests/reports/foundation-threejs-comparison/product-a3d.png"
 ] as const;
 const missingStatusPhrases = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);

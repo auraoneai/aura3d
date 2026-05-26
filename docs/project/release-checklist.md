@@ -14,7 +14,7 @@ Use this checklist before publishing package, docs, or demo claims.
 - [ ] `pnpm build` passes.
 - [ ] `pnpm verify:api-docs -- --write` has been run after export changes.
 - [ ] `pnpm threejs-parity` has been run before Three.js parity claims.
-- [ ] `pnpm superiority` has been run before Three.js superiority superiority claims.
+- [ ] `pnpm superiority` has been run before measured Three.js superiority claims.
 - [ ] `docs/project/threejs-superiority-status.md` matches the generated report state.
 - [ ] Public claims follow `docs/project/claim-guidelines.md`.
 

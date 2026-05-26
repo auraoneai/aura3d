@@ -15,11 +15,11 @@ The current docs gate is evidence-scoped:
 
 ## Current Status
 
-The local documentation state is not a full Three.js superiority superiority GO because `tests/reports/superiority/performance.json` is currently failing and several generated Three.js superiority category reports are absent until their commands run.
+The latest local generated report set shows the measured Three.js parity and superiority gates passing in this workspace. Because `tests/reports/` is ignored by git, a clean checkout or release job must regenerate the relevant reports before using the same public claim.
 
 ## Required Before Strong Public Claims
 
 - Regenerate the relevant Three.js parity reports.
 - Regenerate the relevant Three.js superiority reports.
-- Confirm `pnpm superiority` passes before using full Three.js superiority superiority language.
+- Confirm `pnpm superiority` passes before using full measured Three.js superiority language.
 - Keep `docs/project/claim-guidelines.md` and `docs/project/threejs-superiority-status.md` in sync with generated reports.

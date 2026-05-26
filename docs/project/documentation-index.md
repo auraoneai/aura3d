@@ -28,11 +28,14 @@ Current package areas include:
 
 | Purpose | Doc |
 |---|---|
+| AI agent orientation | `docs/agents/README.md` |
+| AI agent context pack | `docs/agents/agent-context.md` |
 | Current state | `docs/project/current-state.md` |
 | Getting started | `docs/project/getting-started.md` |
 | API overview | `docs/api/readme.md` |
 | Generated public API | `docs/api/public-api.md` |
 | Three.js superiority status | `docs/project/threejs-superiority-status.md` |
+| Superiority evidence workflow | `docs/project/superiority-evidence-workflow.md` |
 | Three.js parity status | `docs/project/threejs-parity-status.md` |
 | Verification summary | `docs/project/verification-evidence.md` |
 | Completion audit | `docs/project/completion-audit.md` |
@@ -44,16 +47,21 @@ Current package areas include:
 
 ## Domain Docs
 
+- `docs/agents/`
 - `docs/api/`
 - `docs/animation/`
 - `docs/assets/`
 - `docs/benchmarks/`
 - `docs/comparisons/`
 - `docs/concepts/`
+- `docs/controls/`
+- `docs/debug/`
 - `docs/editor/`
 - `docs/examples/`
+- `docs/physics/`
 - `docs/rendering/`
 - `docs/templates/`
+- `docs/workflows/`
 
 ## Evidence Layout
 

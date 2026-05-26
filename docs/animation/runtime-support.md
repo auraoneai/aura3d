@@ -25,18 +25,7 @@ Primary entrypoints:
 
 ## Browser Evidence
 
-Current app routes exercise imported clips, skinning blend/additive paths, IK, morph targets, multiple animated agents, and walk-cycle locomotion:
-
-- `apps/animation-keyframes/`
-- `apps/animation-multiple/`
-- `apps/animation-walk/`
-- `apps/skinning-blending/`
-- `apps/skinning-additive/`
-- `apps/skinning-ik/`
-- `apps/skinning-morph/`
-- `apps/character-viewer/`
-
-Focused browser tests include `tests/browser/current-routes-animation-examples.spec.ts` and the `tests/browser/threejs-parity-*-parity.spec.ts` animation/skinning specs.
+Current app-route evidence is limited to the consolidated local registry: `apps/advanced-examples-gallery/` plus the allowed `apps/wow-*` showcase routes. Focused browser tests include `tests/browser/current-routes-route-health.spec.ts`, `tests/browser/advanced-examples-gallery.spec.ts`, and the retained `tests/browser/threejs-parity-*-parity.spec.ts` animation/skinning specs.
 
 ## Limits
 
