@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "generatedAt": "2026-05-26T01:15:32.063Z",
+  "releaseRunId": "standalone-versioned-release-run",
+  "command": "pnpm verify:versioned-release",
+  "packageVersion": "1.0.0",
+  "packagePrivate": false,
+  "manifestPath": "docs/project/release-artifacts.json",
+  "artifactCount": 1,
+  "artifacts": [
+    {
+      "type": "tarball",
+      "name": "@galileo3d/engine",
+      "version": "1.0.0",
+      "pathOrUrl": "release-artifacts/galileo3d-engine-1.0.0.tgz",
+      "sha256": "107bcb03004876ee9bf2e2f8dfdeaa0409b6f94748f9627acb6169bf71110344",
+      "createdAt": "2026-05-25T18:15:00.000-07:00"
+    }
+  ],
+  "violations": []
+}

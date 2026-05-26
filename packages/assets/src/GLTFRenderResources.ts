@@ -1538,7 +1538,7 @@ function renderStateForGLTFMaterial(
   material: GLTFMaterialAsset,
   overrides: readonly GLTFMaterialRenderStateOverride[] = []
 ): Partial<RenderState> {
-  const blend = material.alphaMode === "BLEND";
+  const blend = requiresTransparentRenderState(material);
   const cullBack = usesUnbackedScalarTransmission(material) || usesOpaqueDoubleSidedClearcoatShell(material);
   const baseState: Partial<RenderState> = {
     cullMode: cullBack ? "back" : material.doubleSided ? "none" : "back",
@@ -1547,6 +1547,16 @@ function renderStateForGLTFMaterial(
   };
   const override = overrides.find((entry) => matchesTextOrPattern(material.name, entry.materialName));
   return override ? { ...baseState, ...override.renderState } : baseState;
+}
+
+function requiresTransparentRenderState(material: GLTFMaterialAsset): boolean {
+  if (material.alphaMode === "BLEND") return true;
+  if (material.alphaMode !== "OPAQUE") return false;
+  if (usesUnbackedScalarTransmission(material)) return false;
+  return (material.transmission?.factor ?? 0) > 0.001
+    || (material.diffuseTransmission?.factor ?? 0) > 0.001
+    || (material.volume?.thicknessFactor ?? 0) > 0.001
+    || material.volume?.thicknessTexture !== undefined;
 }
 
 function usesUnbackedScalarTransmission(material: GLTFMaterialAsset): boolean {

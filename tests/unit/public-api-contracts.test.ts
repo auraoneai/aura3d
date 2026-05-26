@@ -1,4 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { AnimationClip, AnimationMixer, AnimationTrack } from "@galileo3d/animation";
 import { AssetManager, type AssetLoader } from "@galileo3d/assets";
@@ -49,7 +50,15 @@ describe("public package API contracts", () => {
   });
 
   it("keeps examples on public package barrels instead of package internals", () => {
-    const allowedPublicSpecifiers = new Set(publicPackages.map((packageName) => `@galileo3d/${packageName}`));
+    const rootManifest = JSON.parse(readFileSync("package.json", "utf8")) as { exports?: Record<string, unknown>; name?: string };
+    const rootExportSpecifiers = Object.keys(rootManifest.exports ?? {}).map((exportPath) =>
+      exportPath === "." ? rootManifest.name ?? "@galileo3d/engine" : `${rootManifest.name ?? "@galileo3d/engine"}/${exportPath.slice(2)}`
+    );
+    const allowedPublicSpecifiers = new Set([
+      ...publicPackages.map((packageName) => `@galileo3d/${packageName}`),
+      ...publicWorkspacePackageSpecifiers(),
+      ...rootExportSpecifiers
+    ]);
     const exampleSources = collectSourceFiles("examples");
 
     expect(exampleSources.length).toBeGreaterThan(0);
@@ -64,7 +73,7 @@ describe("public package API contracts", () => {
           expect(allowedPublicSpecifiers.has(specifier), `${file} imports ${specifier}`).toBe(true);
           continue;
         }
-        expect(specifier.startsWith("../shared/") || specifier.startsWith("./"), `${file} imports ${specifier}`).toBe(true);
+        expect(isLocalExampleImport(file, specifier), `${file} imports ${specifier}`).toBe(true);
       }
     }
   });
@@ -238,6 +247,23 @@ describe("public package API contracts", () => {
     expect(editor.materialVariants.renderOptions("hero.gltf")).toEqual({ materialVariant: "damaged" });
   });
 });
+
+function publicWorkspacePackageSpecifiers(): string[] {
+  return readdirSync("packages")
+    .map((packageName) => `packages/${packageName}/package.json`)
+    .filter((manifestPath) => existsSync(manifestPath))
+    .map((manifestPath) => JSON.parse(readFileSync(manifestPath, "utf8")) as { exports?: Record<string, unknown>; name?: string; private?: boolean })
+    .filter((manifest) => manifest.private !== true && manifest.name?.startsWith("@galileo3d/") && manifest.exports?.["."] !== undefined)
+    .map((manifest) => manifest.name!)
+    .sort();
+}
+
+function isLocalExampleImport(file: string, specifier: string): boolean {
+  if (!specifier.startsWith(".")) return false;
+  const resolved = resolve(dirname(file), specifier);
+  const relativeToRoot = relative(process.cwd(), resolved).replaceAll("\\", "/");
+  return relativeToRoot === "examples" || relativeToRoot.startsWith("examples/");
+}
 
 function collectSourceFiles(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {

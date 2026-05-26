@@ -79,3 +79,10 @@ Current lifecycle work does not yet prove:
 
 Keep lifecycle claims tied to tests and routes.
 
+## Boundary
+
+The engine lifecycle boundary is between app-owned UI/framework state and Galileo3D-owned runtime resources.
+
+## Current Limits
+
+Current limits remain the long-running soak, full context-loss recovery, and broad browser/GPU lifecycle coverage listed above.

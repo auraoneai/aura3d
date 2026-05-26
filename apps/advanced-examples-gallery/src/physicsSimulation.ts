@@ -189,7 +189,7 @@ export class PhysicsPlaygroundSimulation {
     const material: PhysicsVisualMaterial = index % 3 === 0 ? "rubber" : "wood";
     const radius = kind === "sphere" ? 0.105 : kind === "capsule" ? 0.082 : 0.095;
     const halfHeight = 0.15;
-    const scenarioOffset = ((this.scenario % 7) - 3) * 0.018;
+    const scenarioOffset = ((this.scenario % 7) - 3) * 0.032;
     const placement = initialBodyPlacement(index, radius, jitter, scenarioOffset, this.scenario);
     const body = this.world.createRigidBody({
       type: "dynamic",

@@ -1,0 +1,66 @@
+{
+  "id": "product-configurator-car-batched",
+  "routeLinkage": {
+    "routeId": "product-configurator",
+    "runtimeRole": "support derivative, not current source-of-truth hero"
+  },
+  "source": {
+    "sourceScript": "tools/advanced-gallery-assets/optimize-product-car-blender.py",
+    "inputAssets": [
+      "fixtures/threejs-parity/assets/vehicles/car-concept.glb"
+    ],
+    "derivativeOfExternalAsset": true,
+    "sourceAsset": {
+      "path": "fixtures/threejs-parity/assets/vehicles/car-concept.glb",
+      "byteSize": 11778688,
+      "sha256": "c272098089d78c5cd9fd9f24ff50ee8acf8d932c55f2d55fc10adb6c8998966b"
+    }
+  },
+  "outputs": {
+    "glb": {
+      "path": "fixtures/advanced-gallery/assets/product-configurator-car-batched/car-concept-batched.glb",
+      "byteSize": 10288,
+      "sha256": "d2654cdc46b64b9269b72b0359e11c52a99168392c1848282003bb91ff02ecf0"
+    }
+  },
+  "status": {
+    "generated": true,
+    "derivative": true,
+    "textureBacked": true,
+    "generatedNoTexture": false,
+    "supportOnly": true,
+    "acceptableAsFocalHero": false,
+    "acceptedAsOriginalHeroReplacement": false,
+    "visualReviewAccepted": false
+  },
+  "sourceGlb": {
+    "materialCount": 29,
+    "textureCount": 15,
+    "imageCount": 14,
+    "meshCount": 97,
+    "nodeCount": 101,
+    "textureBackedMaterialCount": 25
+  },
+  "exportedGlb": {
+    "materialCount": 29,
+    "textureCount": 50,
+    "imageCount": 13,
+    "meshCount": 94,
+    "nodeCount": 98,
+    "textureBackedMaterialCount": 25
+  },
+  "counts": {
+    "sourceMeshes": 97,
+    "exportedMeshes": 94
+  },
+  "supportTruth": {
+    "role": "support-only derivative",
+    "cannotReplace": [
+      "fixtures/threejs-parity/assets/vehicles/car-concept.glb"
+    ]
+  },
+  "acceptanceBoundary": "This derivative cannot replace fixtures/threejs-parity/assets/vehicles/car-concept.glb; use it only as support evidence.",
+  "limitations": [
+    "Mesh and node topology differ from the source hero asset."
+  ]
+}

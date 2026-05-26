@@ -56,3 +56,5 @@ Allowed: "WebGPU is an explicit backend with bounded render-target, material, in
 Not allowed: "full WebGPU support", "automatic WebGPU/WebGL2 parity", or "better than Three.js WebGPU" unless broader hardware, visual, feature, and performance reports exist for the specific claim.
 
 Full public WebGPU claims still require broader production-renderer feature coverage, broader browser/OS/GPU coverage, performance comparisons, fallback evidence, and a passing broad-parity gate.
+
+This document does not claim full real-hardware WebGPU support.

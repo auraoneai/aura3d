@@ -883,7 +883,11 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
     depthWrite: false,
     cullMode: "none",
     blend: true,
-    depthCompare: "less-equal"
+    depthCompare: "less-equal",
+    colorWrite: [true, true, true, true],
+    scissor: null,
+    stencil: null,
+    polygonOffset: null
   });
   assert.equal(transparent?.getParameter("u_alphaCutoff"), 0);
   assert.deepEqual(masked?.renderState, {
@@ -891,7 +895,11 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
     depthWrite: true,
     cullMode: "back",
     blend: false,
-    depthCompare: "less-equal"
+    depthCompare: "less-equal",
+    colorWrite: [true, true, true, true],
+    scissor: null,
+    stencil: null,
+    polygonOffset: null
   });
   assert.equal(masked?.getParameter("u_alphaCutoff"), 0.35);
   assert.deepEqual(transmissive?.renderState, {
@@ -899,7 +907,11 @@ test("workstream5 glTF render resources apply alpha and double-sided material st
     depthWrite: false,
     cullMode: "back",
     blend: true,
-    depthCompare: "less-equal"
+    depthCompare: "less-equal",
+    colorWrite: [true, true, true, true],
+    scissor: null,
+    stencil: null,
+    polygonOffset: null
   });
 
   resources.dispose();

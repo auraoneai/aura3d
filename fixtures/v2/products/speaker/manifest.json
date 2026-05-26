@@ -1,0 +1,111 @@
+{
+  "schema": "g3d-v2-product-manifest/v1",
+  "id": "speaker",
+  "title": "Bookshelf Speaker",
+  "category": "audio",
+  "gltf": "speaker.gltf",
+  "rejectedInputs": [
+    "tests/reports/legacy-product-viewer/product-viewer.png",
+    "tests/reports/legacy-material-studio/material-studio.png",
+    "tests/reports/legacy-asset-viewer/asset-viewer.png",
+    "tests/reports/legacy-rendering-showcase/rendering-showcase.png"
+  ],
+  "parts": [
+    {
+      "name": "cabinet",
+      "shape": "box",
+      "material": "satin-cabinet"
+    },
+    {
+      "name": "front-grille",
+      "shape": "box",
+      "material": "patterned-grille"
+    },
+    {
+      "name": "woofer-cone",
+      "shape": "cylinder",
+      "material": "rubber-cone"
+    },
+    {
+      "name": "tweeter",
+      "shape": "cylinder",
+      "material": "metallic-knobs"
+    },
+    {
+      "name": "left-knob",
+      "shape": "cylinder",
+      "material": "metallic-knobs"
+    },
+    {
+      "name": "right-knob",
+      "shape": "cylinder",
+      "material": "metallic-knobs"
+    },
+    {
+      "name": "rear-port",
+      "shape": "cylinder",
+      "material": "rubber-cone"
+    },
+    {
+      "name": "front-left-rubber-foot",
+      "shape": "box",
+      "material": "rubber-cone"
+    },
+    {
+      "name": "front-right-rubber-foot",
+      "shape": "box",
+      "material": "rubber-cone"
+    },
+    {
+      "name": "rear-left-rubber-foot",
+      "shape": "box",
+      "material": "rubber-cone"
+    },
+    {
+      "name": "rear-right-rubber-foot",
+      "shape": "box",
+      "material": "rubber-cone"
+    }
+  ],
+  "materials": [
+    {
+      "name": "satin-cabinet",
+      "metallic": 0,
+      "roughness": 0.44,
+      "alphaMode": "OPAQUE",
+      "textureSet": "satin"
+    },
+    {
+      "name": "patterned-grille",
+      "metallic": 0.2,
+      "roughness": 0.66,
+      "alphaMode": "OPAQUE",
+      "textureSet": "grille"
+    },
+    {
+      "name": "rubber-cone",
+      "metallic": 0,
+      "roughness": 0.9,
+      "alphaMode": "OPAQUE",
+      "textureSet": "rubber"
+    },
+    {
+      "name": "metallic-knobs",
+      "metallic": 1,
+      "roughness": 0.22,
+      "alphaMode": "OPAQUE",
+      "textureSet": "metal"
+    }
+  ],
+  "requirements": {
+    "namedNodes": true,
+    "namedMeshes": true,
+    "materialTextureSlots": [
+      "baseColorTexture",
+      "metallicRoughnessTexture",
+      "normalTexture",
+      "emissiveTexture"
+    ],
+    "generatedFor": "G3D Product Studio V1"
+  }
+}

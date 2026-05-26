@@ -33,6 +33,12 @@ const statusAgreementFiles = [
   "docs/project/v2-decision-gates.md"
 ] as const;
 
+const canonicalPathFallbacks: Record<string, readonly string[]> = {
+  "docs/project/completion-audit.md": ["docs/completion-audit.md"],
+  "docs/project/implementation-plan.md": ["docs/implementation-plan-final.md"],
+  "docs/project/v2-decision-gates.md": ["docs/v2/decision-gates.md"]
+};
+
 const goClaimPatterns = [
   /^\s*GO\.\s*$/i,
   /\bfinal status is GO\b/i,
@@ -68,11 +74,11 @@ export function scanDocContradictions(
   files: readonly string[] = defaultFiles,
   releaseRunId = process.env.G3D_RELEASE_RUN_ID ?? "standalone-doc-contradiction-scan-run"
 ): DocContradictionReport {
-  const checkedFiles = files.filter((file) => existsSync(join(root, file)));
+  const checkedFiles = files.filter((file) => existsSync(join(root, resolveReadablePath(root, file))));
   const violations: DocContradictionViolation[] = [];
 
   for (const file of checkedFiles) {
-    const text = readFileSync(join(root, file), "utf8");
+    const text = readFileSync(join(root, resolveReadablePath(root, file)), "utf8");
     const lines = text.split(/\r?\n/);
     const goClaim = hasGoClaim(text);
 
@@ -103,7 +109,7 @@ export function scanDocContradictions(
 
   const statusPolarities = statusAgreementFiles
     .filter((file) => checkedFiles.includes(file))
-    .map((file) => ({ file, ...detectStatusPolarity(readFileSync(join(root, file), "utf8")) }));
+    .map((file) => ({ file, ...detectStatusPolarity(readFileSync(join(root, resolveReadablePath(root, file)), "utf8")) }));
   const concretePolarities = statusPolarities.filter((entry) => entry.polarity !== "unknown");
   const hasPositive = concretePolarities.some((entry) => entry.polarity === "positive");
   const hasNegative = concretePolarities.some((entry) => entry.polarity === "negative");
@@ -126,6 +132,14 @@ export function scanDocContradictions(
     checkedFiles,
     violations
   };
+}
+
+function resolveReadablePath(root: string, file: string): string {
+  if (existsSync(join(root, file))) return file;
+  for (const fallback of canonicalPathFallbacks[file] ?? []) {
+    if (existsSync(join(root, fallback))) return fallback;
+  }
+  return file;
 }
 
 function detectStatusPolarity(text: string): { polarity: "positive" | "negative" | "unknown"; line: number; text: string } {

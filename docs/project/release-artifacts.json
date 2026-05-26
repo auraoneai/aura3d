@@ -1,13 +1,13 @@
 {
-  "version": "0.1.0-alpha.0",
+  "version": "1.0.0",
   "artifacts": [
     {
       "type": "tarball",
       "name": "@galileo3d/engine",
-      "version": "0.1.0-alpha.0",
-      "pathOrUrl": "release-artifacts/galileo3d-engine-0.1.0-alpha.0.tgz",
-      "sha256": "4a605de8afd4fcddc3ec5d1bc77d74b75fa51c82f77557c76b89f6e6f82f96c4",
-      "createdAt": "2026-05-13T04:54:35.465Z"
+      "version": "1.0.0",
+      "pathOrUrl": "release-artifacts/galileo3d-engine-1.0.0.tgz",
+      "sha256": "107bcb03004876ee9bf2e2f8dfdeaa0409b6f94748f9627acb6169bf71110344",
+      "createdAt": "2026-05-25T18:15:00.000-07:00"
     }
   ]
 }

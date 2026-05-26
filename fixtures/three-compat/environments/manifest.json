@@ -1,0 +1,411 @@
+{
+  "schema": "g3d-three-compat-environment-library/v1",
+  "requirements": {
+    "minimumPresets": 12,
+    "minimumRealHdriSources": 6,
+    "requiredProbeTypes": [
+      "emissive",
+      "reflective",
+      "rough",
+      "transmissive"
+    ],
+    "everyFlagshipRequiresNamedEnvironment": true
+  },
+  "claimBoundary": "Environment presets are library fixtures and not flagship visual proof until rendered by the browser visual gates.",
+  "flagshipBindings": {
+    "product-viewer": "studio-small-08",
+    "product-configurator": "studio-small-08",
+    "material-studio": "autumn-field-puresky",
+    "asset-inspector": "kloppenheim-puresky",
+    "architecture-viewer": "industrial-sunset-puresky",
+    "character-viewer": "spruit-sunrise",
+    "cinematic-postprocess": "venice-sunset",
+    "webgpu-product": "studio-small-08"
+  },
+  "presets": [
+    {
+      "id": "studio-small-08",
+      "label": "Studio Small 08",
+      "kind": "real-hdri",
+      "class": "studio",
+      "license": "Fixture HDRI license for local G3D validation only",
+      "author": "G3D fixture corpus",
+      "sourceName": "studio_small_08_1k",
+      "sourceUri": "local://studio_small_08_1k",
+      "downloadUri": "local://fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "localPath": "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
+      "bytes": 1508872,
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "rgbe-hdr",
+      "intensity": 1.2,
+      "backgroundIntensity": 0.9,
+      "exposure": 1.05,
+      "whitePoint": 1.25,
+      "rotation": 0.15,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "studio-small-08:v5-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "autumn-field-puresky",
+      "label": "Autumn Field Puresky",
+      "kind": "real-hdri",
+      "class": "outdoor",
+      "license": "Fixture HDRI license for local G3D validation only",
+      "author": "G3D fixture corpus",
+      "sourceName": "autumn_field_puresky_1k",
+      "sourceUri": "local://autumn_field_puresky_1k",
+      "downloadUri": "local://fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
+      "localPath": "fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
+      "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0",
+      "bytes": 1092974,
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "rgbe-hdr",
+      "intensity": 1.05,
+      "backgroundIntensity": 0.86,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": -0.2,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "autumn-field-puresky:v5-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "kloppenheim-puresky",
+      "label": "Kloppenheim Puresky",
+      "kind": "real-hdri",
+      "class": "daylight",
+      "license": "Fixture HDRI license for local G3D validation only",
+      "author": "G3D fixture corpus",
+      "sourceName": "kloppenheim_06_puresky_1k",
+      "sourceUri": "local://kloppenheim_06_puresky_1k",
+      "downloadUri": "local://fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
+      "localPath": "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
+      "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+      "bytes": 1173154,
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "rgbe-hdr",
+      "intensity": 1.12,
+      "backgroundIntensity": 0.92,
+      "exposure": 1.02,
+      "whitePoint": 1.22,
+      "rotation": 0.05,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "kloppenheim-puresky:v5-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "industrial-sunset-puresky",
+      "label": "Industrial Sunset Puresky",
+      "kind": "real-hdri",
+      "class": "industrial",
+      "license": "Fixture HDRI license for local G3D validation only",
+      "author": "G3D fixture corpus",
+      "sourceName": "autumn_field_puresky_1k",
+      "sourceUri": "local://autumn_field_puresky_1k",
+      "downloadUri": "local://fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
+      "localPath": "fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr",
+      "sha256": "e60470d3a0f219585df1d74c393b472361c5400a7ff8d071ebe6eca29b7fe2b0",
+      "bytes": 1092974,
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "rgbe-hdr",
+      "intensity": 0.98,
+      "backgroundIntensity": 0.82,
+      "exposure": 0.96,
+      "whitePoint": 1.18,
+      "rotation": 0.35,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "industrial-sunset-puresky:v5-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "spruit-sunrise",
+      "label": "Spruit Sunrise",
+      "kind": "real-hdri",
+      "class": "sunrise",
+      "license": "Fixture HDRI license for local G3D validation only",
+      "author": "G3D fixture corpus",
+      "sourceName": "kloppenheim_06_puresky_1k",
+      "sourceUri": "local://kloppenheim_06_puresky_1k",
+      "downloadUri": "local://fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
+      "localPath": "fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr",
+      "sha256": "206c67e3a1b992282821cf06662bdd69bbb4915c1c4444a66338a40d6a7d4e34",
+      "bytes": 1173154,
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "rgbe-hdr",
+      "intensity": 1.18,
+      "backgroundIntensity": 0.88,
+      "exposure": 1.06,
+      "whitePoint": 1.2,
+      "rotation": -0.32,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "spruit-sunrise:v5-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "venice-sunset",
+      "label": "Venice Sunset",
+      "kind": "real-hdri",
+      "class": "outdoor",
+      "license": "Fixture HDRI license for local G3D validation only",
+      "author": "G3D fixture corpus",
+      "sourceName": "studio_small_08_1k",
+      "sourceUri": "local://studio_small_08_1k",
+      "downloadUri": "local://fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "localPath": "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
+      "sha256": "f6a989f89432eb4eee3191364a9c1ceed195c4ec3544173a3c04fd96cb91d0ba",
+      "bytes": 1508872,
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "rgbe-hdr",
+      "intensity": 1,
+      "backgroundIntensity": 0.8,
+      "exposure": 0.98,
+      "whitePoint": 1.16,
+      "rotation": 0.48,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "venice-sunset:v5-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "studio-softbox-procedural",
+      "label": "studio softbox procedural",
+      "kind": "procedural-hdr",
+      "class": "studio",
+      "license": "Generated procedural fixture",
+      "author": "G3D fixture generator",
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "procedural-linear-hdr",
+      "intensity": 0.9,
+      "backgroundIntensity": 0.75,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": 0,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "studio-softbox:procedural-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "gallery-neutral-procedural",
+      "label": "gallery neutral procedural",
+      "kind": "procedural-hdr",
+      "class": "gallery",
+      "license": "Generated procedural fixture",
+      "author": "G3D fixture generator",
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "procedural-linear-hdr",
+      "intensity": 0.9400000000000001,
+      "backgroundIntensity": 0.77,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": 0.1,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "gallery-neutral:procedural-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "outdoor-overcast-procedural",
+      "label": "outdoor overcast procedural",
+      "kind": "procedural-hdr",
+      "class": "outdoor",
+      "license": "Generated procedural fixture",
+      "author": "G3D fixture generator",
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "procedural-linear-hdr",
+      "intensity": 0.98,
+      "backgroundIntensity": 0.79,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": 0.2,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "outdoor-overcast:procedural-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "night-neon-procedural",
+      "label": "night neon procedural",
+      "kind": "procedural-hdr",
+      "class": "night",
+      "license": "Generated procedural fixture",
+      "author": "G3D fixture generator",
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "procedural-linear-hdr",
+      "intensity": 1.02,
+      "backgroundIntensity": 0.81,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": 0.30000000000000004,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "night-neon:procedural-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "warm-sunrise-procedural",
+      "label": "warm sunrise procedural",
+      "kind": "procedural-hdr",
+      "class": "sunrise",
+      "license": "Generated procedural fixture",
+      "author": "G3D fixture generator",
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "procedural-linear-hdr",
+      "intensity": 1.06,
+      "backgroundIntensity": 0.83,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": 0.4,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "warm-sunrise:procedural-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    },
+    {
+      "id": "cool-industrial-procedural",
+      "label": "cool industrial procedural",
+      "kind": "procedural-hdr",
+      "class": "industrial",
+      "license": "Generated procedural fixture",
+      "author": "G3D fixture generator",
+      "resolution": [
+        1024,
+        512
+      ],
+      "format": "procedural-linear-hdr",
+      "intensity": 1.1,
+      "backgroundIntensity": 0.85,
+      "exposure": 1,
+      "whitePoint": 1.2,
+      "rotation": 0.5,
+      "pmrem": {
+        "faceSize": 256,
+        "mipCount": 9,
+        "cacheKey": "cool-industrial:procedural-pmrem-256"
+      },
+      "probes": [
+        "emissive",
+        "reflective",
+        "rough",
+        "transmissive"
+      ]
+    }
+  ]
+}

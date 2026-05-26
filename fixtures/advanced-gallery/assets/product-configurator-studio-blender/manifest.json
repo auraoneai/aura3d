@@ -1,0 +1,55 @@
+{
+  "id": "product-configurator-studio-blender",
+  "routeLinkage": {
+    "routeId": "product-configurator",
+    "runtimeRole": "support-only studio context asset"
+  },
+  "source": {
+    "sourceScript": "tools/advanced-gallery-assets/generate-product-configurator-studio-blender.py",
+    "inputAssets": [],
+    "derivativeOfExternalAsset": false
+  },
+  "outputs": {
+    "glb": {
+      "path": "fixtures/advanced-gallery/assets/product-configurator-studio-blender/product-configurator-studio-blender.glb",
+      "byteSize": 46648,
+      "sha256": "a7ebcb15e052e4558cf980c6981201dd7bf06a18f0f8131a10223dffa3cf1901"
+    }
+  },
+  "status": {
+    "generated": true,
+    "derivative": false,
+    "textureBacked": false,
+    "generatedNoTexture": true,
+    "supportOnly": true,
+    "acceptableAsFocalHero": false,
+    "acceptedAsPremiumTextureBackedHero": false,
+    "visualReviewAccepted": false
+  },
+  "counts": {
+    "exportedMaterials": 25,
+    "exportedTextures": 0,
+    "exportedImages": 0,
+    "exportedMeshes": 651,
+    "exportedNodes": 655,
+    "exportedTextureBackedMaterials": 0
+  },
+  "exportedGlb": {
+    "materialCount": 25,
+    "textureCount": 0,
+    "imageCount": 0,
+    "meshCount": 651,
+    "nodeCount": 655,
+    "textureBackedMaterialCount": 0
+  },
+  "supportTruth": {
+    "role": "support-only",
+    "cannotReplace": [
+      "fixtures/threejs-parity/assets/vehicles/car-concept.glb"
+    ]
+  },
+  "acceptanceBoundary": "This support-only generated studio GLB must not replace the original texture-backed Product hero assets.",
+  "limitations": [
+    "Zero texture-backed material evidence; useful only as studio/support context."
+  ]
+}

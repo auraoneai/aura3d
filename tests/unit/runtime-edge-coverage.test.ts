@@ -43,6 +43,22 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     ],
     edgeTerms: [/rejects?/i, /throws?/i, /disposed/i, /deterministic/i, /listener failures?/i]
   },
+  controls: {
+    suites: [
+      "tests/unit/controls/interaction-controls.test.ts",
+      "tests/unit/controls/picking-contract.test.ts",
+      "tests/unit/controls/three-compat-controls.test.ts",
+      "tests/unit/controls/transform-controls-three-parity.test.ts"
+    ],
+    edgeTerms: [/pointer/i, /drag/i, /dispose/i, /invalid/i, /selection/i]
+  },
+  "create-g3d": {
+    suites: [
+      "tests/integration/production-runtime-create-g3d.test.ts",
+      "tests/integration/three-compat-create-g3d.test.ts"
+    ],
+    edgeTerms: [/template/i, /dependencies/i, /README/i, /package/i, /throws?/i]
+  },
   debug: {
     suites: [
       "tests/unit/debug/debug-runtime.test.ts",
@@ -55,9 +71,26 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/ecs/runtime.test.ts", "tests/integration/scene-ecs-contracts.test.ts"],
     edgeTerms: [/stale/i, /cycle/i, /mutation/i, /serialization/i, /edge-case/i]
   },
+  engine: {
+    suites: [
+      "tests/unit/engine/runtime-parity-production-runtime-public-sdk.test.ts",
+      "tests/unit/engine/runtime-parity-production-runtime-runtime-boundary.test.ts",
+      "tests/unit/engine/threejs-parity-public-runtime.test.ts",
+      "tests/browser/production-runtime-webgl2-context-loss.spec.ts"
+    ],
+    edgeTerms: [/fallback/i, /unavailable/i, /dispose/i, /diagnostics?/i, /runtime/i]
+  },
   "editor-runtime": {
     suites: ["tests/unit/workstream5-runtime.test.ts", "tests/unit/workstream5-input-audio-scripting-editor.test.ts"],
     edgeTerms: [/undo/i, /redo/i, /rollback/i, /delete/i, /selection/i]
+  },
+  environments: {
+    suites: [
+      "tests/unit/environments/production-runtime-hdr-environment-corpus.test.ts",
+      "tests/unit/environments/three-compat-environments.test.ts",
+      "tests/unit/rendering/environment-platform.test.ts"
+    ],
+    edgeTerms: [/HDR/i, /missing/i, /diagnostics?/i, /fallback/i, /PMREM/i]
   },
   input: {
     suites: [
@@ -71,9 +104,28 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/math/edge-cases.test.ts", "tests/unit/math/geometry-random.test.ts", "tests/unit/math/vector-matrix.test.ts"],
     edgeTerms: [/degenerate/i, /rejects?/i, /undefined/i, /deterministic/i, /singular/i]
   },
+  materials: {
+    suites: [
+      "tests/unit/materials/three-compat-material-library.test.ts",
+      "tests/unit/rendering/material-binding.test.ts",
+      "tests/unit/rendering/material-presets.test.ts",
+      "tests/unit/rendering/physical-material-presets.test.ts"
+    ],
+    edgeTerms: [/invalid/i, /texture/i, /diagnostics?/i, /preset/i, /material/i]
+  },
   physics: {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
     edgeTerms: [/deterministic/i, /collision/i, /sensor/i, /raycast/i, /constraints?/i]
+  },
+  "product-studio": {
+    suites: [
+      "tests/unit/product-studio/product-asset-loader.test.ts",
+      "tests/unit/product-studio/product-camera.test.ts",
+      "tests/unit/product-studio/product-export.test.ts",
+      "tests/unit/product-studio/product-materials.test.ts",
+      "tests/unit/product-studio/product-showcase-layout.test.ts"
+    ],
+    edgeTerms: [/missing/i, /bounds/i, /manifest/i, /export/i, /asset/i]
   },
   rendering: {
     suites: [
@@ -102,6 +154,24 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
   scripting: {
     suites: ["tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/integration/scripting-scene-ecs.test.ts"],
     edgeTerms: [/validation/i, /execution order/i, /event/i, /serialization/i, /deterministic/i]
+  },
+  "three-compat": {
+    suites: [
+      "tests/unit/three-compat/three-compat-core-compat.test.ts",
+      "tests/unit/three-compat/three-compat-material-geometry-compat.test.ts",
+      "tests/unit/three-compat/three-compat-migration.test.ts",
+      "tests/unit/three-compat/three-compat-threejs-inventory.test.ts"
+    ],
+    edgeTerms: [/compat/i, /migration/i, /warnings?/i, /unsupported/i, /inventory/i]
+  },
+  workflows: {
+    suites: [
+      "tests/unit/workflows/asset-viewer-workflow.test.ts",
+      "tests/unit/workflows/product-configurator-workflow.test.ts",
+      "tests/unit/workflows/material-studio-workflow.test.ts",
+      "tests/unit/workflows/production-runtime-workflows.test.ts"
+    ],
+    edgeTerms: [/workflow/i, /diagnostics?/i, /asset/i, /missing/i, /runtime/i]
   }
 };
 
@@ -270,7 +340,24 @@ describe("runtime edge-case coverage audit", () => {
       "packages/rendering/src/RendererFeatureGates.ts:\"WebGPU compute is unavailable on this backend or adapter.\"",
       "packages/rendering/src/RendererTiming.ts:this.fallbackReason = options.fallbackReason ?? this.gpuBackend.unavailableReason ?? \"GPU timing unavailable; using CPU timing fallback.\";",
       "packages/rendering/src/RendererTiming.ts:unavailableReason = \"GPU timing unavailable; using CPU timing fallback.\"",
-      "packages/rendering/src/RendererTiming.ts:return createCpuFallbackGpuTimingBackend(\"EXT_disjoint_timer_query_webgl2 unavailable; using CPU timing fallback.\");"
+      "packages/rendering/src/RendererTiming.ts:return createCpuFallbackGpuTimingBackend(\"EXT_disjoint_timer_query_webgl2 unavailable; using CPU timing fallback.\");",
+      "packages/rendering/src/EnvironmentPlatform.ts:capability(\"cube-camera-reflections\", \"Cube Camera Reflections\", \"missing\", false, [], \"ReflectionProbe is a descriptor helper; live six-direction capture is not implemented.\", \"Implement cube camera/probe capture and reflective material binding.\"),",
+      "packages/rendering/src/EnvironmentPlatform.ts:\"Requested reflective floor falls back to staged geometry; planar reflector/cube-camera floor reflections are not implemented.\"",
+      "packages/rendering/src/EnvironmentPlatform.ts:\"Requested terrain ground falls back to outdoor backdrop geometry; reusable terrain/heightfield generation is not implemented.\"",
+      "packages/rendering/src/EnvironmentPlatform.ts:\"Softbox preset uses emissive panels and environment lighting; true rectangular area-light shading is not implemented.\"",
+      "packages/rendering/src/EnvironmentPlatform.ts:\"Cube-camera reflection requests remain unsupported; live six-direction probe capture and reflective material binding are not implemented.\"",
+      "packages/rendering/src/ReflectionSurfaces.ts:return [\"Planar reflector helper is not implemented; no mirror render target or clip-plane path exists in this contract.\"];",
+      "packages/rendering/src/ReflectionSurfaces.ts:return [\"Glass/refractor helper is not implemented; material alpha/transmission must not be claimed as scene-space refraction.\"];",
+      "packages/rendering/src/ReflectionSurfaces.ts:return [\"Water reflection/refraction helper is not implemented; procedural water remains separate and must disclose no true refraction.\"];",
+      "packages/rendering/src/effects/ParticleDiagnostics.ts:warnings.push(backend.reason ?? \"GPU particle backend is unavailable in this runtime\");",
+      "packages/rendering/src/postprocess/CinematicDiagnostics.ts:...(supportsDepthTexture ? [] : [\"Renderer-owned DOF injection is unavailable without depth-textures; callers may still provide a depth binding to the pixel kernel.\"]),",
+      "packages/rendering/src/postprocess/CinematicDiagnostics.ts:...(supportsDepthTexture ? [] : [\"Renderer-owned SSAO injection is unavailable without depth-textures; callers may still provide a depth binding to the pixel kernel.\"]),",
+      "packages/rendering/src/postprocess/EffectComposer.ts:reason: \"SMAA is not implemented in the public G3D postprocess pass catalog; use FXAA or TAA.\"",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:export type V6WebGPUStatus = \"available\" | \"unavailable\" | \"blocked\";",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"navigator.gpu is not exposed in this browser/runtime.\");",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"WebGPU requestAdapter returned null.\");",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:function unavailable(reason: string): V6WebGPUReport {",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:status: \"unavailable\","
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;
     const failures: string[] = [];

@@ -53,3 +53,10 @@ Do not claim:
 
 The current editor runtime is best described as an alpha browser authoring foundation with verified command, state, selection, prefab, gizmo, timeline, and export slices.
 
+## Boundary
+
+The editor-runtime boundary is authoring state, command history, selection, gizmos, prefab validation, and export helpers; product routing and renderer internals stay outside it.
+
+## Current Limits
+
+Current limits include Unity/Unreal editor replacement, complete visual scripting, complete timeline authoring, complete profiling/resource inspection, and stable plugin ABI.

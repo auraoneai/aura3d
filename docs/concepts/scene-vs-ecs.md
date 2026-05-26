@@ -61,3 +61,10 @@ This is useful when you need explicit renderer-facing resource libraries. Import
 
 The current repo proves bounded scene, ECS, physics, editor, and renderer integration slices. It does not prove a large production editor where every object has a complete ECS mirror, a mature prefab system, or a full game-engine composition model.
 
+## Boundary
+
+The package boundary is that scene graph owns authored hierarchy while ECS owns scheduled data-oriented behavior.
+
+## Current Limits
+
+Current limits include full editor-scale prefab mirroring, complete ECS scene ownership, and large production composition workflows.

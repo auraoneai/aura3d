@@ -16,18 +16,18 @@ export interface V5TextureSet {
 }
 
 const CHECKED_IN_ASSETS = [
-  ["damaged-helmet", "fixtures/three-compat/assets/corpus/damaged-helmet.glb"],
-  ["boom-box", "fixtures/three-compat/assets/corpus/boom-box.glb"],
-  ["lantern", "fixtures/three-compat/assets/corpus/lantern.glb"],
-  ["avocado", "fixtures/three-compat/assets/corpus/avocado.glb"],
-  ["duck", "fixtures/three-compat/assets/corpus/duck.glb"],
-  ["antique-camera", "fixtures/three-compat/assets/corpus/antique-camera.glb"],
-  ["cesium-milk-truck", "fixtures/three-compat/assets/corpus/cesium-milk-truck.glb"],
-  ["clear-coat-test", "fixtures/three-compat/assets/corpus/clear-coat-test.glb"],
-  ["sheen-test-grid", "fixtures/three-compat/assets/corpus/sheen-test-grid.glb"],
-  ["specular-test", "fixtures/three-compat/assets/corpus/specular-test.glb"],
-  ["animated-colors-cube", "fixtures/three-compat/assets/corpus/animated-colors-cube.glb"],
-  ["cesium-man", "fixtures/three-compat/assets/corpus/cesium-man.glb"]
+  ["damaged-helmet", "fixtures/asset-corpus/damaged-helmet.glb"],
+  ["boom-box", "fixtures/asset-corpus/boom-box.glb"],
+  ["avocado", "fixtures/asset-corpus/avocado.glb"],
+  ["duck", "fixtures/asset-corpus/duck.glb"],
+  ["antique-camera", "fixtures/asset-corpus/antique-camera.glb"],
+  ["clear-coat-test", "fixtures/asset-corpus/clear-coat-test.glb"],
+  ["sheen-test-grid", "fixtures/asset-corpus/sheen-test-grid.glb"],
+  ["cesium-milk-truck", "fixtures/threejs-parity/assets/physics/cesium-milk-truck.glb"],
+  ["transmission-comparison", "fixtures/threejs-parity/assets/materials/compare-transmission.glb"],
+  ["robot-expressive", "fixtures/threejs-parity/assets/character/robot-expressive.glb"],
+  ["soldier", "fixtures/threejs-parity/assets/character/soldier.glb"],
+  ["car-concept", "fixtures/threejs-parity/assets/vehicles/car-concept.glb"]
 ] as const;
 
 const MAPS: readonly V5TextureMapReference[] = [

@@ -5,7 +5,7 @@
 
 Version: 1.0.0
 
-This page maps selected master checklist rows to artifacts that can be objectively checked in this repository. It does not assert production readiness, public registry publication, external demo hosting, or broad superiority over another engine.
+This page maps selected master checklist rows to artifacts that can be objectively checked in this repository. It does not assert production readiness, public registry publication, external demo hosting, or broad superiority over another engine; these artifacts are not production readiness.
 
 ## Rows With Objective Evidence
 
@@ -37,6 +37,6 @@ The following rows remain unmarked unless a separate worker proves them with str
 
 `tests/reports/clean-checkout.json` must have `ok: true`, `git.dirty: false`, and `reproduction.cleanCheckout: true` before it can support rows 81 or 686. Dirty workspace evidence is a blocker, not a passing clean-checkout artifact. Row 696 additionally requires `reproduction.independentMachineOrAgent: true` with recorded evidence from outside this current workspace.
 
-`package.json` currently uses version `1.0.0`, and `docs/project/release-artifacts.json` records a local alpha tarball artifact. This is package-release evidence only for the checked alpha artifact; it is not a public registry publication or production-readiness claim.
+`package.json` currently uses version `1.0.0`, and `docs/project/release-artifacts.json` records a local `1.0.0` tarball artifact. This is package-release evidence only for the checked local artifact; it is not a public registry publication or production-readiness claim.
 
-`docs/examples/external-demos.md` records why local product examples do not mark the external demo row: no public hosted demo URLs or public-URL browser artifacts are checked in.
+`docs/examples/external-demos.md` records why local product examples do not mark the external demo row: they are not externally hosted demos, and no public hosted demo URLs or public-URL browser artifacts are checked in.

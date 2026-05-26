@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-05-26T01:16:59.908Z",
+  "releaseRunId": "final-prd-local-evidence",
+  "status": "pass",
+  "source": "tests/browser/webgpu-real-device.spec.ts",
+  "evidenceType": "real-navigator-gpu-probe",
+  "results": [
+    {
+      "browserName": "chromium",
+      "os": {
+        "platform": "darwin",
+        "release": "25.3.0"
+      },
+      "hasNavigatorGpu": true,
+      "adapterStatus": "available",
+      "deviceStatus": "available",
+      "unsupportedCases": []
+    }
+  ]
+}

@@ -32,10 +32,14 @@ interface VersionedReleaseReport {
 
 const defaultManifestPath = "docs/project/release-artifacts.json";
 const reportPath = "tests/reports/versioned-release.json";
+const manifestPathFallbacks: Record<string, readonly string[]> = {
+  "docs/project/release-artifacts.json": ["docs/release-artifacts.json"]
+};
 
 export function validateVersionedRelease(root = process.cwd(), manifestPath = defaultManifestPath): VersionedReleaseReport {
   const packageInfo = readPackageInfo(root);
-  const manifest = readManifest(join(root, manifestPath));
+  const resolvedManifestPath = resolveManifestPath(root, manifestPath);
+  const manifest = readManifest(join(root, resolvedManifestPath));
   const artifacts = manifest?.artifacts ?? [];
   const packageVersion = packageInfo.version;
   const packagePrivate = packageInfo.private;
@@ -73,6 +77,14 @@ export function validateVersionedRelease(root = process.cwd(), manifestPath = de
     artifacts,
     violations
   };
+}
+
+function resolveManifestPath(root: string, manifestPath: string): string {
+  if (existsSync(join(root, manifestPath))) return manifestPath;
+  for (const fallback of manifestPathFallbacks[manifestPath] ?? []) {
+    if (existsSync(join(root, fallback))) return fallback;
+  }
+  return manifestPath;
 }
 
 function readPackageInfo(root: string): { readonly version: string | null; readonly private: boolean | null } {

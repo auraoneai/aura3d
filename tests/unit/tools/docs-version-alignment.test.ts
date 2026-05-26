@@ -6,7 +6,7 @@ describe("docs version alignment", () => {
     const report = validateDocsVersionAlignment(process.cwd());
 
     expect(report.ok).toBe(true);
-    expect(report.version).toBe("0.1.0-alpha.0");
+    expect(report.version).toBe("1.0.0");
     expect(report.violations).toEqual([]);
     expect(report.checkedFiles).toEqual(expect.arrayContaining([
       "package.json",

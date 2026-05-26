@@ -1,10 +1,10 @@
 # Contributing Guide
 
-Version: 0.1.0-alpha.0
+Version: 1.0.0
 
 ## Scope
 
-Contributions for version `0.1.0-alpha.0` must preserve the v2 governance rules:
+Contributions for version `1.0.0` must preserve the current governance rules:
 
 - keep implementation edits scoped to the owning package or tool;
 - do not revert unrelated work from other agents or contributors;

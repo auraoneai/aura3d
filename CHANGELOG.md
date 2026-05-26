@@ -1,8 +1,15 @@
 # Changelog
 
-Version: 0.1.0-alpha.0
+Version: 1.0.0
 
 All notable changes for Galileo3D are tracked here. This project follows source-controlled release notes until a public package release process is approved.
+
+## 1.0.0
+
+### Current Release
+
+- Aligned public package metadata, API documentation, tutorials, examples, and governance docs on the 1.0.0 release line.
+- Kept bounded claim language tied to generated evidence and current readiness reports.
 
 ## 0.1.0-alpha.0
 

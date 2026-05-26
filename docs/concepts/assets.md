@@ -66,3 +66,10 @@ The checked asset corpus is not the entire glTF ecosystem. Do not imply:
 
 When documenting an asset claim, cite the fixture, route, test, or report that proves it.
 
+## Boundary
+
+The asset boundary is parsing, validation, inspection, caching, and conversion into renderable resources; rendering quality is proven separately.
+
+## Current Limits
+
+Current limits include full Khronos corpus parity, all exporter round trips, every compressed texture path, and broad commercial asset compatibility.

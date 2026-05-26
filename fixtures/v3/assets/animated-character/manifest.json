@@ -1,0 +1,25 @@
+{
+  "schema": "g3d-v3-asset-fixture/v1",
+  "id": "animated-character",
+  "source": "speaker",
+  "description": "V3 animation placeholder fixture used to validate loader summaries and warnings.",
+  "gltf": "animated-character.gltf",
+  "glb": "animated-character.glb",
+  "externalGltf": "animated-character-external.gltf",
+  "partCount": 11,
+  "materialCount": 4,
+  "textureCount": 16,
+  "expectedWarnings": [
+    "animation coverage fixture does not include skinned motion yet"
+  ],
+  "coverage": [
+    "gltf",
+    "glb",
+    "data-uri",
+    "external-buffer",
+    "external-image",
+    "materials",
+    "textures",
+    "bounds"
+  ]
+}

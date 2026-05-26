@@ -1,0 +1,25 @@
+{
+  "schema": "g3d-v3-asset-fixture/v1",
+  "id": "variant-product",
+  "source": "camera-kit",
+  "description": "V3 product variant fixture used for material variant readiness tracking.",
+  "gltf": "variant-product.gltf",
+  "glb": "variant-product.glb",
+  "externalGltf": "variant-product-external.gltf",
+  "partCount": 11,
+  "materialCount": 5,
+  "textureCount": 20,
+  "expectedWarnings": [
+    "material variant fixture records variant readiness before full variant switching workflow"
+  ],
+  "coverage": [
+    "gltf",
+    "glb",
+    "data-uri",
+    "external-buffer",
+    "external-image",
+    "materials",
+    "textures",
+    "bounds"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "generatedAt": "2026-05-26T01:16:59.908Z",
+  "sourceManifest": {
+    "assetCount": 11,
+    "sourceRevision": "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf"
+  },
+  "summary": {
+    "pass": 11,
+    "warn": 0,
+    "expectedFail": 0
+  },
+  "entries": []
+}

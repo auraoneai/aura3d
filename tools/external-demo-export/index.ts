@@ -117,7 +117,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
       minify: true,
       treeShaking: true,
       metafile: true,
-      plugins: [workspacePackagePlugin(root)],
+      plugins: [nodeBuiltinsBrowserStubPlugin(), workspacePackagePlugin(root)],
       logLevel: "silent"
     });
     for (const input of Object.keys(result.metafile.inputs)) {
@@ -327,6 +327,42 @@ function workspacePackagePlugin(root: string): Plugin {
       });
     }
   };
+}
+
+function nodeBuiltinsBrowserStubPlugin(): Plugin {
+  return {
+    name: "galileo3d-browser-node-builtin-stubs",
+    setup(buildApi) {
+      buildApi.onResolve({ filter: /^node:/ }, (args) => ({
+        path: args.path,
+        namespace: "node-browser-stub"
+      }));
+      buildApi.onLoad({ filter: /.*/, namespace: "node-browser-stub" }, (args) => ({
+        contents: browserStubModule(args.path),
+        loader: "js"
+      }));
+    }
+  };
+}
+
+function browserStubModule(specifier: string): string {
+  const unavailable = `const unavailable = () => { throw new Error(${JSON.stringify(`${specifier} is not available in browser demo exports.`)}); };\n`;
+  if (specifier === "node:crypto") {
+    return `${unavailable}export const createHash = unavailable;\nexport default {};\n`;
+  }
+  if (specifier === "node:fs" || specifier === "node:fs/promises") {
+    return `${unavailable}export const existsSync = unavailable;\nexport const readFileSync = unavailable;\nexport const statSync = unavailable;\nexport const writeFileSync = unavailable;\nexport default {};\n`;
+  }
+  if (specifier === "node:module") {
+    return `${unavailable}export const createRequire = unavailable;\nexport default {};\n`;
+  }
+  if (specifier === "node:path") {
+    return `${unavailable}export const dirname = unavailable;\nexport const extname = unavailable;\nexport const join = unavailable;\nexport const relative = unavailable;\nexport const resolve = unavailable;\nexport default {};\n`;
+  }
+  if (specifier === "node:vm") {
+    return `${unavailable}export const Script = unavailable;\nexport const createContext = unavailable;\nexport const runInContext = unavailable;\nexport default {};\n`;
+  }
+  return `${unavailable}export default {};\n`;
 }
 
 function addSourceFile(root: string, sourceFiles: Set<string>, path: string): void {

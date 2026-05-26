@@ -58,3 +58,10 @@ Do not claim:
 
 Physics route screenshots and diagnostics prove the specific route, not a general-purpose game physics stack.
 
+## Boundary
+
+The physics boundary is deterministic simulation and query data; DOM events, UI state, and renderer presentation stay app-owned.
+
+## Current Limits
+
+Current limits include native physics-engine parity, production vehicles, cloth, fluids, fracture, continuous collision detection, and large-world physics streaming.

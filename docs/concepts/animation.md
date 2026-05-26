@@ -56,3 +56,10 @@ Do not claim:
 
 Claims should name the exact route, package export, fixture, or report behind them.
 
+## Boundary
+
+The animation boundary is clip/action sampling, skeletal palette data, morph weights, and runtime bindings; renderer and authoring workflow ownership stay separate.
+
+## Current Limits
+
+Current limits include broad retargeting parity, complete IK authoring, motion matching production readiness, full timeline authoring, and every official Three.js animation example.

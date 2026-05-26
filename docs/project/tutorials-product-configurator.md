@@ -2,6 +2,8 @@
 
 This tutorial maps to the V7 flagship viewer in `apps/product-configurator/` and the reusable template in `templates/production-product-viewer/`.
 
+Running example: `/examples/product-configurator/index.html`
+
 The product path is G3D only. Three.js is used only by the comparison report, not by the app runtime.
 
 ## Core API

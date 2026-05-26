@@ -2,6 +2,8 @@
 
 This tutorial maps to `examples/foundation-asset-viewer`. It is the current public API path for loading a glTF asset and rendering it inside a browser app.
 
+Running example: `/examples/asset-viewer/index.html`
+
 ## Core API
 
 ```ts

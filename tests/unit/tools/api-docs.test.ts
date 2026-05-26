@@ -9,20 +9,27 @@ describe("public API docs", () => {
 
     expect(packageNames).toEqual([
       "@galileo3d/animation",
+      "@galileo3d/apps",
       "@galileo3d/assets",
       "@galileo3d/audio",
+      "@galileo3d/controls",
       "@galileo3d/core",
+      "@galileo3d/create-g3d",
       "@galileo3d/debug",
       "@galileo3d/ecs",
       "@galileo3d/editor",
       "@galileo3d/editor-runtime",
+      "@galileo3d/engine-runtime",
+      "@galileo3d/environments",
       "@galileo3d/input",
+      "@galileo3d/materials",
       "@galileo3d/math",
       "@galileo3d/physics",
       "@galileo3d/product-studio",
       "@galileo3d/rendering",
       "@galileo3d/scene",
       "@galileo3d/scripting",
+      "@galileo3d/three-compat",
       "@galileo3d/workflows"
     ]);
     expect(packageNames).not.toContain("@galileo3d/test-utils");

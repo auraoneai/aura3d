@@ -25,6 +25,8 @@ This rebuild does not yet have production service-level commitments. Maintainers
 
 Known limitations belong in `docs/project/known-limits.md`, `docs/project/v9-roadmap-claim-boundary.md`, `docs/project/v9-roadmap-parity-matrix.md`, or the relevant historical roadmap document. Public support responses must not claim production readiness, full Three.js parity, stronger competitive positioning, full WebGPU support, Unity/Unreal replacement, or ecosystem completeness unless `docs/project/claim-guidelines.md` allows the exact wording.
 
+Public support wording is also bound by `docs/project/v2-claim-registry.md`; use the registry when deciding whether a claim is allowed, blocked, or evidence-limited.
+
 ## Current V9 Support Boundary
 
 Support questions about the current renderer should start from the V9 docs:

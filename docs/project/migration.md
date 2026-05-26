@@ -1,6 +1,8 @@
 # Migration From Three.js
 
-Version: `1.0.0`
+Version: 1.0.0
+
+Claim wording in this migration guide is bounded by `docs/project/v2-claim-registry.md`.
 
 Galileo3D includes migration helpers and a partial Three.js compatibility layer, but the current project is not a drop-in replacement for Three.js. Treat migration as an incremental rewrite toward G3D package APIs.
 
@@ -146,4 +148,3 @@ Delay migration or keep Three.js in place when the app depends on:
 - Public docs must use package exports, not private source paths.
 - Migration docs must not claim production stability or full Three.js replacement.
 - Re-run `pnpm verify:exports`, `pnpm verify:imports`, `pnpm verify:claims`, and the relevant V8/V9 route checks after migration-related API changes.
-

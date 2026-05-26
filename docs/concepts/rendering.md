@@ -70,3 +70,10 @@ Do not claim:
 
 Use route reports and same-scene comparisons as scoped evidence only.
 
+## Boundary
+
+The rendering boundary is GPU-facing resource ownership, draw submission, diagnostics, and disposal; app state and product workflow ownership stay outside the renderer.
+
+## Current Limits
+
+Current limits include complete Three.js renderer parity, broad WebGPU engine coverage, production-complete IBL, and exhaustive material-extension visual parity.

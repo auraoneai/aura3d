@@ -47,6 +47,10 @@ export interface ClaimRegistryOptions {
 
 const defaultRegistryPath = "docs/project/v2-claim-registry.md";
 const defaultReportPath = "tests/reports/claim-registry.json";
+const canonicalPathFallbacks: Record<string, readonly string[]> = {
+  "docs/project/v2-claim-registry.md": ["docs/v2/claim-registry.md"],
+  "docs/project/known-limits.md": ["docs/known-limits.md"]
+};
 const strongerClaimPatterns = [
   { claim: "Galileo3D is better than Three.js.", pattern: /\bbetter\s+than\s+three\.?js\b/i },
   { claim: "Galileo3D is Unity/Unreal for the web.", pattern: /\b(?:unity\s*\/\s*unreal|unreal\s*\/\s*unity|unity\b.*\bunreal|unreal\b.*\bunity)\b/i },
@@ -210,7 +214,7 @@ function scanClaimText(
 }
 
 function listPublicClaimFiles(root: string): readonly string[] {
-  const files = walk(root).map((path) => normalizePath(relative(root, path)));
+  const files = walk(root).map((path) => canonicalizePublicClaimPath(normalizePath(relative(root, path))));
   return files.filter((path) => {
     if (path === "package.json" || path === "README.md" || path === "CHANGELOG.md" || /^RELEASE[^/]*\.md$/i.test(path)) return true;
     if (/^packages\/[^/]+\/package\.json$/.test(path)) return true;
@@ -265,11 +269,26 @@ function isScopedOrNegated(text: string): boolean {
 }
 
 function readText(root: string, path: string): string {
-  return readFileSync(join(root, path), "utf8");
+  return readFileSync(join(root, resolveReadablePath(root, path)), "utf8");
 }
 
 function normalizePath(path: string): string {
   return path.replace(/\\/g, "/");
+}
+
+function canonicalizePublicClaimPath(path: string): string {
+  if (path === "docs/known-limits.md") return "docs/project/known-limits.md";
+  if (path === "docs/v2/claim-registry.md") return "docs/project/v2-claim-registry.md";
+  return path;
+}
+
+function resolveReadablePath(root: string, path: string): string {
+  const normalized = normalizePath(path);
+  if (existsSync(join(root, normalized))) return normalized;
+  for (const fallback of canonicalPathFallbacks[normalized] ?? []) {
+    if (existsSync(join(root, fallback))) return fallback;
+  }
+  return normalized;
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);

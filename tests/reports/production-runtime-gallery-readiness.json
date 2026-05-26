@@ -1,0 +1,13 @@
+{
+  "schema": "g3d-production-runtime-gallery-readiness/v1",
+  "generatedAt": "2026-05-26T01:16:59.908Z",
+  "pass": false,
+  "generatedManifest": "tests/reports/production-runtime-gallery/manifest.json",
+  "checks": [
+    {
+      "id": "manifest-placeholder",
+      "pass": true,
+      "detail": "Focused unit gate requires manifest presence; full visual gallery remains separately generated."
+    }
+  ]
+}
