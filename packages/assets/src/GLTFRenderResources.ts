@@ -13,7 +13,7 @@ import {
   TexturedUnlitMaterial,
   UnlitMaterial,
   VertexBuffer,
-  createV4EnvironmentLighting,
+  createExternalParityEnvironmentLighting,
   computePerspectiveCameraFrame,
   computeSkinnedMorphTargetEnvelopeBounds,
   type CameraFrameBounds,
@@ -279,7 +279,7 @@ export const DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING: EnvironmentLighti
 };
 
 export function createDefaultGLTFHdrStudioPreviewEnvironmentLighting(): EnvironmentLightingOptions {
-  return createV4EnvironmentLighting("studio").lighting;
+  return createExternalParityEnvironmentLighting("studio").lighting;
 }
 
 export const DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS: RendererPostProcessOptions = {

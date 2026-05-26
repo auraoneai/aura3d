@@ -17,11 +17,11 @@ import { type StereoControlState } from "../../stereo-effects/src/stereoControls
 
 declare global {
   interface Window {
-    __a3dV8ParallaxBarrier?: V8ParallaxBarrierRuntime;
+    __a3dParallaxBarrier?: ParallaxBarrierRuntime;
   }
 }
 
-interface V8ParallaxBarrierRuntime {
+interface ParallaxBarrierRuntime {
   readonly appId: "parallax-barrier";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -80,7 +80,7 @@ async function run(): Promise<void> {
 
   const startedAt = performance.now();
   let frameCount = 0;
-  let runtime: V8ParallaxBarrierRuntime = {
+  let runtime: ParallaxBarrierRuntime = {
     appId: APP_ID,
     status: "loading",
     statusLabel: "Loading",
@@ -103,9 +103,9 @@ async function run(): Promise<void> {
     compositeRightPixels: 0,
     elapsedMs: 0
   };
-  const publish = (patch: Partial<V8ParallaxBarrierRuntime>): void => {
+  const publish = (patch: Partial<ParallaxBarrierRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
-    window.__a3dV8ParallaxBarrier = runtime;
+    window.__a3dParallaxBarrier = runtime;
     renderUi(root, runtime);
   };
 
@@ -212,7 +212,7 @@ async function run(): Promise<void> {
           compositeRightPixels: composite?.rightPixelCount ?? 0,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__a3dV8ParallaxBarrier = runtime;
+        window.__a3dParallaxBarrier = runtime;
         if (frameCount === 1 || frameCount % 12 === 0) renderUi(root, runtime);
         requestAnimationFrame(render);
       } catch (error) {
@@ -312,10 +312,10 @@ function createItems(resources: BarrierResources, time: number): readonly Render
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-barrier-key");
+  const key = new DirectionalLight("current-barrier-key");
   key.intensity = 3.6;
   key.color = [1, 0.94, 0.84];
-  const rim = new DirectionalLight("v8-barrier-rim");
+  const rim = new DirectionalLight("current-barrier-rim");
   rim.intensity = 1.8;
   rim.color = [0.55, 0.74, 1];
   return [
@@ -324,11 +324,11 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function renderUi(root: HTMLElement, runtime: V8ParallaxBarrierRuntime): void {
+function renderUi(root: HTMLElement, runtime: ParallaxBarrierRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <p id="runtime-state" class="runtime-pill is-${runtime.status}">${runtime.statusLabel}</p>
-      <h1>V8 Parallax Barrier</h1>
+      <h1>Parallax Barrier</h1>
       <p>${runtime.barrierMaskEnabled ? "A3D-only interleaved stereo route for webgl_effects_parallaxbarrier parity work." : "Single-view preview. Add ?mask=1 to inspect the interleaved parallax barrier mask."}</p>
       <dl>
         <dt>Frames</dt><dd>${runtime.frameCount}</dd>

@@ -402,7 +402,7 @@ export interface GLTFGeometryAsset {
 }
 
 export interface GLTFLoaderDiagnostics {
-  readonly schemaVersion: "gltf-loader-diagnostics-v1";
+  readonly schemaVersion: "gltf-loader-diagnostics";
   readonly features: readonly string[];
   readonly extensionsUsed: readonly string[];
   readonly extensionsRequired: readonly string[];
@@ -430,7 +430,7 @@ export interface GLTFLoaderDiagnostics {
 }
 
 export interface GLTFLoaderLoadProfileDiagnostics {
-  readonly schemaVersion: "gltf-loader-load-profile-v1";
+  readonly schemaVersion: "gltf-loader-load-profile";
   readonly documentBytes: number;
   readonly binaryChunkBytes: number;
   readonly bufferBytes: number;
@@ -955,7 +955,7 @@ function createGLTFLoaderLoadProfileDiagnostics(
   const profile = accessorCache.profile;
   const embeddedImageBytes = images.reduce((sum, image) => sum + (image.data?.byteLength ?? 0), 0);
   return {
-    schemaVersion: "gltf-loader-load-profile-v1",
+    schemaVersion: "gltf-loader-load-profile",
     documentBytes: document.byteLength,
     binaryChunkBytes: document.binaryChunk?.byteLength ?? 0,
     bufferBytes: buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0),
@@ -1048,7 +1048,7 @@ function createGLTFLoaderDiagnostics(
   if (compression.ktx2Basis) features.add("compression:ktx2-basis");
 
   return {
-    schemaVersion: "gltf-loader-diagnostics-v1",
+    schemaVersion: "gltf-loader-diagnostics",
     features: [...features].sort(),
     extensionsUsed,
     extensionsRequired: [...(json.extensionsRequired ?? [])].sort(),

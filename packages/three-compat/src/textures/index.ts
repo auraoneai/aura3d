@@ -23,4 +23,4 @@ export class TextureLoaderCompat {
   }
 }
 
-export const V5_COMPAT_TEXTURE_SETTINGS = ["wrapS", "wrapT", "magFilter", "minFilter", "colorSpace", "flipY"] as const;
+export const THREE_COMPAT_COMPAT_TEXTURE_SETTINGS = ["wrapS", "wrapT", "magFilter", "minFilter", "colorSpace", "flipY"] as const;

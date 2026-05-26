@@ -44,7 +44,7 @@ export interface OceanBuoyancySample {
 }
 
 export interface OceanFixtureSample {
-  readonly id: "v4-old-branch-ocean-fixture";
+  readonly id: "external-parity-old-branch-ocean-fixture";
   readonly source: "origin-master-ocean-gerstner-foam-buoyancy-adapted";
   readonly sourceFiles: readonly string[];
   readonly preset: OceanFixturePreset;
@@ -130,7 +130,7 @@ export function sampleOceanFixture(options: OceanFixtureOptions = {}): OceanFixt
     buoyancy.force.join(",")
   ].join("#"));
   return {
-    id: "v4-old-branch-ocean-fixture",
+    id: "external-parity-old-branch-ocean-fixture",
     source: "origin-master-ocean-gerstner-foam-buoyancy-adapted",
     sourceFiles,
     preset,

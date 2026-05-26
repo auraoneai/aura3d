@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "pbr-materials",
   sceneVersion: 1,
-  assetId: "generated-pbr-material-grid-v3",
+  assetId: "generated-pbr-material-grid-foundation",
   assetClass: "generated-local-pbr-material-grid",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 60,

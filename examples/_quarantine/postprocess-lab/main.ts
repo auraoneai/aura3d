@@ -22,7 +22,7 @@ import {
   createDepthTextureBinding,
   createProceduralTextureFixture,
   createToneMappingCalibration,
-  createV4RenderPresetEvidence,
+  createExternalParityRenderPresetEvidence,
   depthOfFieldPixels,
   filmGrainPixels,
   motionBlurPixels,
@@ -30,8 +30,8 @@ import {
   ssaoPixels,
   ssrPixels,
   taaPixels,
-  v4ActiveFeature,
-  v4BlockedFeature,
+  externalParityActiveFeature,
+  externalParityBlockedFeature,
   type DepthTextureBinding,
   type DepthTextureStats,
   type RenderDebugIssue,
@@ -45,7 +45,7 @@ import {
   type ToneMappingOperator,
   type ToneMappingPresetName,
   type RenderTarget,
-  type V4RenderPresetEvidence
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 
 declare global {
@@ -69,7 +69,7 @@ interface PostprocessLabState {
   readonly timing?: RendererTimingSnapshot;
   readonly debugOverlay?: RenderDebugOverlaySnapshot;
   readonly screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png";
-  readonly featureEvidence?: V4RenderPresetEvidence;
+  readonly featureEvidence?: ExternalParityRenderPresetEvidence;
   readonly claimBoundary: string;
   readonly canvasFrame?: { readonly width: number; readonly height: number };
   readonly pixels?: Record<string, readonly number[]>;
@@ -178,16 +178,16 @@ interface PostprocessLabState {
 }
 
 const knownLimits = [
-  "This lab validates RenderGraph pass order by feeding a real WebGL2-rendered V4 glTF scene into deterministic LDR postprocess targets.",
+  "This lab validates RenderGraph pass order by feeding a real WebGL2-rendered ExternalParity glTF scene into deterministic LDR postprocess targets.",
   "Depth plumbing is a normalized depth texture resource with visualized readback; bounded DOF/outline/motion-blur/chromatic-aberration/film-grain/SSAO/SSR/TAA pixel primitives are audited but production parity is not claimed.",
-  "The postprocess passes run on readback pixels from the V4 product fixture; the final composition is still a bounded browser-audit lab, not a production full-frame compositor.",
+  "The postprocess passes run on readback pixels from the ExternalParity product fixture; the final composition is still a bounded browser-audit lab, not a production full-frame compositor.",
 ] as const;
 
 const productSceneUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
-const claimBoundary = "V4 postprocess-lab evidence is limited to bounded LDR tone mapping, bloom, FXAA, color grading, vignette, sharpening, depth visualization, DOF, Sobel outline, chromatic aberration, film grain, motion blur, SSAO, SSR, TAA, pass costs, and browser pixel checks on a WebGL2-rendered V4 product glTF scene; HDR render-target parity and full postprocess-suite parity are not claimed.";
+const claimBoundary = "ExternalParity postprocess-lab evidence is limited to bounded LDR tone mapping, bloom, FXAA, color grading, vignette, sharpening, depth visualization, DOF, Sobel outline, chromatic aberration, film grain, motion blur, SSAO, SSR, TAA, pass costs, and browser pixel checks on a WebGL2-rendered ExternalParity product glTF scene; HDR render-target parity and full postprocess-suite parity are not claimed.";
 
 interface RealScenePostprocessInput {
-  readonly source: "v4-product-gltf-webgl2-readback";
+  readonly source: "external-parity-product-gltf-webgl2-readback";
   readonly assetUrl: string;
   readonly assetName: string;
   readonly meshCount: number;
@@ -561,7 +561,7 @@ function renderPostprocessLab(options: {
     debugOverlay,
     screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png",
     claimBoundary,
-    featureEvidence: createV4RenderPresetEvidence({
+    featureEvidence: createExternalParityRenderPresetEvidence({
       exampleId: "postprocess-lab",
       screenshotPath: "tests/reports/external-parity-example-screenshots/postprocess-lab.png",
       toneMapper: controls.toneMapper,
@@ -570,16 +570,16 @@ function renderPostprocessLab(options: {
       exposure: controls.exposure,
       whitePoint: controls.whitePoint,
       features: [
-        v4ActiveFeature("color-management", `ToneMappingPass converts real-scene WebGL2 readback pixels from ${controls.inputColorSpace} input into ${controls.outputColorSpace} output bytes.`),
-        v4ActiveFeature("tone-mapping", `${controls.toneMapper} tone mapping changes the WebGL2 real-scene input highlight into bounded LDR pixels.`),
-        v4ActiveFeature("exposure", `Runtime controls publish exposure ${controls.exposure} and white point ${controls.whitePoint} color calibration evidence.`),
-        v4ActiveFeature("postprocess-bloom", "BloomPass bright-pixel metrics and neighbor pixels are validated by browser tests."),
-        v4ActiveFeature("postprocess-fxaa", "FXAAPass reports a changed edge pixel before and after filtering."),
-        v4ActiveFeature("depth-textures", "DepthVisualizationPass consumes generated depth texture data and publishes depth stats."),
-        v4BlockedFeature("gpu-timing", "GPU timer query is unavailable in this postprocess lab; RendererTimingCollector publishes CPU fallback timing samples."),
-        v4ActiveFeature("bounded-pbr", "Postprocess source is rendered from the V4 product glTF scene through the bounded WebGL2 PBR renderer before postprocess readback."),
-        v4BlockedFeature("directional-shadows", "Postprocess lab does not claim shadow rendering."),
-        v4BlockedFeature("hdr", "HDR render targets remain blocked; this lab uses bounded HDR-like Uint8 source pixels.")
+        externalParityActiveFeature("color-management", `ToneMappingPass converts real-scene WebGL2 readback pixels from ${controls.inputColorSpace} input into ${controls.outputColorSpace} output bytes.`),
+        externalParityActiveFeature("tone-mapping", `${controls.toneMapper} tone mapping changes the WebGL2 real-scene input highlight into bounded LDR pixels.`),
+        externalParityActiveFeature("exposure", `Runtime controls publish exposure ${controls.exposure} and white point ${controls.whitePoint} color calibration evidence.`),
+        externalParityActiveFeature("postprocess-bloom", "BloomPass bright-pixel metrics and neighbor pixels are validated by browser tests."),
+        externalParityActiveFeature("postprocess-fxaa", "FXAAPass reports a changed edge pixel before and after filtering."),
+        externalParityActiveFeature("depth-textures", "DepthVisualizationPass consumes generated depth texture data and publishes depth stats."),
+        externalParityBlockedFeature("gpu-timing", "GPU timer query is unavailable in this postprocess lab; RendererTimingCollector publishes CPU fallback timing samples."),
+        externalParityActiveFeature("bounded-pbr", "Postprocess source is rendered from the ExternalParity product glTF scene through the bounded WebGL2 PBR renderer before postprocess readback."),
+        externalParityBlockedFeature("directional-shadows", "Postprocess lab does not claim shadow rendering."),
+        externalParityBlockedFeature("hdr", "HDR render targets remain blocked; this lab uses bounded HDR-like Uint8 source pixels.")
       ]
     }),
     canvasFrame: { width: canvas.width, height: canvas.height },
@@ -722,9 +722,9 @@ async function createRealScenePostprocessInput(): Promise<RealScenePostprocessIn
     });
     const pixels = amplifyRealScenePixels(renderer.device.readPixels(0, 0, 96, 54));
     return {
-      source: "v4-product-gltf-webgl2-readback",
+      source: "external-parity-product-gltf-webgl2-readback",
       assetUrl: productSceneUrl,
-      assetName: "v4-product-speaker",
+      assetName: "external-parity-product-speaker",
       meshCount: inspection.meshes.length,
       materialCount: inspection.materials.length,
       textureCount: inspection.textures.length,
@@ -1054,7 +1054,7 @@ function createShell(): {
     <canvas data-testid="postprocess-lab-canvas" width="960" height="540" tabindex="0" aria-label="Postprocess lab WebGL viewport"></canvas>
     <section>
       <h1>Postprocess Lab</h1>
-      <p>RenderGraph order: WebGL2 V4 product scene readback, depth visualization, tone mapping, bloom, and FXAA.</p>
+      <p>RenderGraph order: WebGL2 ExternalParity product scene readback, depth visualization, tone mapping, bloom, and FXAA.</p>
       <div class="debug-overlay" data-testid="render-debug-overlay"></div>
       <div class="controls">
         <label><input data-testid="postprocess-tone" type="checkbox" checked /> Tone map</label>

@@ -3,7 +3,7 @@ import {
   createGLTFRenderResourceDiagnostics,
   createGLTFRenderResources,
   createGLTFSceneAnimationMixer,
-  createV6GLTFRenderMetadata,
+  createProductionGLTFRenderMetadata,
   GLTFLoader,
   LoadContext,
   type GLTFAsset,
@@ -11,7 +11,7 @@ import {
   type GLTFDracoDecoder,
   type GLTFDracoDecoderModule,
   type GLTFRenderResources,
-  type V6GLTFRenderMetadata
+  type ProductionGLTFRenderMetadata
 } from "@aura3d/assets";
 import { Material, TextureBinding, type RenderItem } from "@aura3d/rendering";
 import { composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
@@ -39,7 +39,7 @@ import {
 interface Pipeline {
   readonly asset: GLTFAsset;
   readonly resources: GLTFRenderResources;
-  readonly metadata: V6GLTFRenderMetadata;
+  readonly metadata: ProductionGLTFRenderMetadata;
   readonly materialInstanceCache: Map<string, Material>;
   readonly mixer?: Mixer;
   dispose(): void;
@@ -489,7 +489,7 @@ async function createPipeline(
   return {
     asset,
     resources,
-    metadata: createV6GLTFRenderMetadata(asset, `v9-gallery-${candidate.id}`, candidate.title),
+    metadata: createProductionGLTFRenderMetadata(asset, `advanced-gallery-${candidate.id}`, candidate.title),
     materialInstanceCache,
     ...(asset.animations.length > 0
       ? {

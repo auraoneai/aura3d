@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { createRendererV5, summarizeV5RendererDiagnostics } from "../../packages/rendering/src";
+import { createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics } from "../../packages/rendering/src";
 
-test("RendererV5 browser proof draws a complex scene using every required category", async ({ page }) => {
-  const renderer = createRendererV5({ backend: "webgl2", width: 1200, height: 760 });
+test("ThreeCompatRenderer browser proof draws a complex scene using every required category", async ({ page }) => {
+  const renderer = createThreeCompatRenderer({ backend: "webgl2", width: 1200, height: 760 });
   const diagnostics = renderer.createDiagnostics();
-  const summary = summarizeV5RendererDiagnostics(diagnostics);
+  const summary = summarizeThreeCompatRendererDiagnostics(diagnostics);
   const plan = renderer.createComplexScenePlan();
 
   await page.setContent(`

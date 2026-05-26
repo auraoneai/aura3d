@@ -1,93 +1,42 @@
-# Tutorial: A3D V6 Product Configurator
+# Tutorial: Product Configurator
 
-This tutorial maps to the V7 flagship viewer in `apps/product-configurator/` and the reusable template in `templates/production-product-viewer/`.
+Version: 1.0.0
 
-Running example: `/examples/product-configurator/index.html`
+This tutorial points to the current product configurator example and app surfaces.
 
-The product path is A3D only. Three.js is used only by the comparison report, not by the app runtime.
-
-## Core API
-
-```ts
-import {
-  createProductViewer,
-  loadGltfScene,
-  loadHdrEnvironment
-} from "@aura3d/engine/production-runtime";
-
-const asset = await loadGltfScene({
-  url: "/fixtures/asset-corpus/damaged-helmet.glb",
-  assetId: "damaged-helmet",
-  assetName: "Damaged Helmet"
-});
-
-const environment = await loadHdrEnvironment({
-  url: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
-  id: "studio-small-08",
-  label: "Studio Small 08",
-  intensity: 1.2
-});
-
-const viewer = await createProductViewer({
-  canvas,
-  asset,
-  environment,
-  camera: { preset: "product-hero", orbit: true },
-  lighting: { ibl: true, shadows: true },
-  postprocess: {
-    toneMapping: "filmic",
-    exposure: 1.08,
-    bloom: true,
-    fxaa: true,
-    colorGrade: true
-  }
-});
-
-viewer.render();
-```
-
-## Controls
-
-The viewer exposes a public controller:
-
-- `viewer.controls.rotate(dx, dy)`
-- `viewer.controls.pan(dx, dy)`
-- `viewer.controls.dolly(scale)`
-- `viewer.controls.reset()`
-- `viewer.setEnvironment(environment)`
-- `viewer.setSettings(settings)`
-- `viewer.captureScreenshot()`
-- `viewer.diagnostics()`
-
-Useful settings:
-
-```ts
-viewer.setSettings({
-  exposure: 1.15,
-  iblIntensity: 1.4,
-  specularIntensity: 1.1,
-  environmentRotation: 0.2,
-  backgroundVisible: true,
-  backgroundBlur: 0.35,
-  shadows: true,
-  bloom: true,
-  fxaa: true,
-  colorGrade: true
-});
-
-viewer.render();
-```
-
-## Verification
+## Run
 
 ```sh
-pnpm exec playwright test tests/browser/runtime-parity-product-viewer.spec.ts --reporter=line
+pnpm install
+pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
 ```
 
-The comparison artifact is written to:
+Open:
 
 ```text
-tests/reports/v7/product-viewer/product-viewer-report.json
+http://127.0.0.1:5180/examples/product-configurator/index.html
 ```
 
-That report compares A3D against Three.js using the same asset and HDRI. It must be treated as an honest comparison artifact, not proof of full Three.js parity.
+The production app route is also available at:
+
+```text
+http://127.0.0.1:5180/apps/product-configurator/
+```
+
+## Source
+
+- `examples/product-configurator/`
+- `apps/product-configurator/`
+- `packages/product-studio/src/index.ts`
+- `packages/workflows/src/index.ts`
+
+## Verify
+
+```sh
+pnpm exec playwright test tests/browser/product-demos.spec.ts
+pnpm exec playwright test tests/browser/production-runtime-product-configurator.spec.ts
+```
+
+## Boundary
+
+The product configurator route is local browser evidence. Do not describe it as externally hosted or production-proven unless deployment evidence exists.

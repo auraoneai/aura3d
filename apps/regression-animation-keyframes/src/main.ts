@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import {
   Geometry,
   PBRMaterial,
@@ -13,14 +13,14 @@ import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/
 
 declare global {
   interface Window {
-    __a3dV7AnimationKeyframes?: V7AnimationKeyframesRuntime;
+    __a3dRuntimeParityAnimationKeyframes?: RuntimeParityAnimationKeyframesRuntime;
   }
 }
 
 type LifecycleState = "booting" | "loading-assets" | "compiling-renderer" | "first-frame" | "running" | "error";
 type AssetStatus = "pending" | "ready" | "error" | "deferred";
 
-interface V7AnimationKeyframesRuntime {
+interface RuntimeParityAnimationKeyframesRuntime {
   readonly status: LifecycleState;
   readonly appId: "regression-animation-keyframes";
   readonly statusLabel: string;
@@ -53,7 +53,7 @@ const HDR_ENVIRONMENT_URI = "/fixtures/environment-corpus/hdri/studio_small_08_1
 const ASSET_TIMEOUT_MS = 30_000;
 const FIRST_FRAME_TIMEOUT_MS = 5_000;
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
 void run();
 
@@ -69,7 +69,7 @@ async function run(): Promise<void> {
 
   const startedAt = performance.now();
   let animationFrame = 0;
-  let runtime: V7AnimationKeyframesRuntime = {
+  let runtime: RuntimeParityAnimationKeyframesRuntime = {
     status: "booting",
     appId: APP_ID,
     statusLabel: "Booting",
@@ -81,7 +81,7 @@ async function run(): Promise<void> {
     frameCount: 0
   };
 
-  const update = (patch: Partial<V7AnimationKeyframesRuntime>): void => {
+  const update = (patch: Partial<RuntimeParityAnimationKeyframesRuntime>): void => {
     runtime = {
       ...runtime,
       ...patch,
@@ -155,7 +155,7 @@ async function run(): Promise<void> {
         `Asset timeout: ${ASSET_TIMEOUT_MS / 1000}s.`
       ]
     });
-    const pipeline = await withTimeout(loadV6GLTFRenderPipeline({
+    const pipeline = await withTimeout(loadProductionGLTFRenderPipeline({
       url: ANIMATED_CHARACTER_URI,
       assetId: "soldier-keyframes",
       assetName: "Soldier Keyframes",
@@ -180,7 +180,7 @@ async function run(): Promise<void> {
       ?? pipeline.asset.animations.find((animation) => /run|dance|wave/i.test(animation.name))
       ?? pipeline.asset.animations[0];
     if (!clip) {
-      throw new Error("V7 animation keyframes requires an imported GLB with at least one animation clip.");
+      throw new Error("RuntimeParity animation keyframes requires an imported GLB with at least one animation clip.");
     }
 
     const animationRuntime = createGLTFSceneAnimationRuntime({
@@ -215,7 +215,7 @@ async function run(): Promise<void> {
     };
     const metadata = {
       assetId: APP_ID,
-      assetName: "V7 Animation Keyframes",
+      assetName: "RuntimeParity Animation Keyframes",
       assetUri: "/apps/regression-animation-keyframes/",
       meshCount: pipeline.metadata.meshCount,
       primitiveCount: pipeline.metadata.primitiveCount,
@@ -270,7 +270,7 @@ async function run(): Promise<void> {
           fpsLast = now;
         }
 
-        const nextRuntime: V7AnimationKeyframesRuntime = {
+        const nextRuntime: RuntimeParityAnimationKeyframesRuntime = {
           ...runtime,
           status: frameCount === 1 ? "first-frame" : "running",
           statusLabel: frameCount === 1 ? "First frame rendered" : "Running",
@@ -297,7 +297,7 @@ async function run(): Promise<void> {
         };
         runtime = nextRuntime;
         if (frameCount === 1) window.clearTimeout(firstFrameGuard);
-        window.__a3dV7AnimationKeyframes = runtime;
+        window.__a3dRuntimeParityAnimationKeyframes = runtime;
         if (frameCount === 1 || now - lastPublish >= 250) {
           publish(root, runtime);
           lastPublish = now;
@@ -341,7 +341,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v7-animation:${node.name}`,
+      label: `runtime-parity-animation:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -356,7 +356,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
 function createStageItems(): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
   const floor = new PBRMaterial({
-    name: "v7-animation-floor",
+    name: "runtime-parity-animation-floor",
     baseColor: [0.1, 0.108, 0.118, 1],
     metallic: 0,
     roughness: 0.44,
@@ -365,7 +365,7 @@ function createStageItems(): readonly RenderItem[] {
     environmentIntensity: 0.92
   });
   const back = new PBRMaterial({
-    name: "v7-animation-backdrop",
+    name: "runtime-parity-animation-backdrop",
     baseColor: [0.018, 0.022, 0.028, 1],
     metallic: 0,
     roughness: 0.62,
@@ -373,13 +373,13 @@ function createStageItems(): readonly RenderItem[] {
   });
   return [
     {
-      label: "v7-animation-floor",
+      label: "runtime-parity-animation-floor",
       geometry: cube,
       material: floor,
       modelMatrix: composeMat4([0, -0.055, 0], [0, 0, 0, 1], [2.8, 0.04, 1.8])
     },
     {
-      label: "v7-animation-backdrop",
+      label: "runtime-parity-animation-backdrop",
       geometry: cube,
       material: back,
       modelMatrix: composeMat4([0, 0.78, -0.78], [0, 0, 0, 1], [2.8, 1.7, 0.04])
@@ -388,11 +388,11 @@ function createStageItems(): readonly RenderItem[] {
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v7-animation-key");
+  const key = new DirectionalLight("runtime-parity-animation-key");
   key.castsShadow = false;
   key.intensity = 4.2;
   key.color = [1, 0.93, 0.82];
-  const rim = new DirectionalLight("v7-animation-rim");
+  const rim = new DirectionalLight("runtime-parity-animation-rim");
   rim.castsShadow = false;
   rim.intensity = 2.2;
   rim.color = [0.7, 0.82, 1];
@@ -426,13 +426,13 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function publish(root: HTMLElement, runtime: V7AnimationKeyframesRuntime): void {
-  window.__a3dV7AnimationKeyframes = runtime;
+function publish(root: HTMLElement, runtime: RuntimeParityAnimationKeyframesRuntime): void {
+  window.__a3dRuntimeParityAnimationKeyframes = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "running" ? "is-running" : "is-loading";
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V7 Animation Keyframes</h1>
+        <h1>RuntimeParity Animation Keyframes</h1>
         <p>Imported GLB clip sampled and rendered every frame by A3D WebGL2.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>

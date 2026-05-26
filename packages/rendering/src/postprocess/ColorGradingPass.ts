@@ -1,18 +1,18 @@
 import { colorGradePixels, type ColorGradeOptions, type ColorGradeResult } from "../PostProcessPass";
 
-export type V4ColorGradePreset = "catalog-hero" | "material-neutral" | "interior-balanced";
+export type ExternalParityColorGradePreset = "catalog-hero" | "material-neutral" | "interior-balanced";
 
-export function runV4ColorGrade(
+export function runExternalParityColorGrade(
   pixels: Uint8Array,
   width: number,
   height: number,
-  preset: V4ColorGradePreset,
+  preset: ExternalParityColorGradePreset,
   overrides: ColorGradeOptions = {}
 ): ColorGradeResult {
   return colorGradePixels(pixels, width, height, { ...presetOptions(preset), ...overrides });
 }
 
-function presetOptions(preset: V4ColorGradePreset): Required<ColorGradeOptions> {
+function presetOptions(preset: ExternalParityColorGradePreset): Required<ColorGradeOptions> {
   switch (preset) {
     case "catalog-hero":
       return { contrast: 1.12, temperature: 0.04, tint: 0, saturation: 1.04, vibrance: 0.12, vignette: 0.08, sharpening: 0.25 };

@@ -3,31 +3,31 @@ import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
 import {
-  createV6ComposedProductionStageScene,
-  createV6HeroShaderLibrary,
-  createV6PbrReferenceItems
+  createProductionComposedProductionStageScene,
+  createProductionHeroShaderLibrary,
+  createProductionPbrReferenceItems
 } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
   interface Window {
-    __V6_HD_PRODUCT_HERO__?: unknown;
+    __PRODUCTION_HD_PRODUCT_HERO__?: unknown;
   }
 }
 
 async function run(): Promise<void> {
   const canvas = document.getElementById("production-runtime-hd-product-hero");
   if (!(canvas instanceof HTMLCanvasElement)) {
-    throw new Error("V6 HD product hero canvas is missing.");
+    throw new Error("Production HD product hero canvas is missing.");
   }
 
   const hdrUri = `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`;
   const hdr = await fetchBytes(hdrUri);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
     id: "studio-small-08",
     label: "Studio Small 08",
     intensity: 1.52,
@@ -35,7 +35,7 @@ async function run(): Promise<void> {
     rotation: -0.22,
     toneMapping: { operator: "filmic", exposure: 1, whitePoint: 8.8 }
   });
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const assetUri = `${location.origin}/fixtures/asset-corpus/damaged-helmet.glb`;
   const asset = await new GLTFLoader().load({ url: assetUri }, new LoadContext());
   const resources = await createGLTFRenderResources(asset);
@@ -76,13 +76,13 @@ async function run(): Promise<void> {
     height: canvas.height,
     preserveDrawingBuffer: true,
     clearColor: [0.006, 0.008, 0.012, 1],
-    shaderLibrary: createV6HeroShaderLibrary()
+    shaderLibrary: createProductionHeroShaderLibrary()
   });
   const skyboxTexture = lighting.lighting.environmentMapTexture;
   if (!skyboxTexture) {
-    throw new Error("V6 HD product hero requires a sampled HDR environment texture for the visible skybox.");
+    throw new Error("Production HD product hero requires a sampled HDR environment texture for the visible skybox.");
   }
-  const staged = createV6ComposedProductionStageScene([{
+  const staged = createProductionComposedProductionStageScene([{
     source: input.source,
     resources,
     metadata: { assetId: "damaged-helmet" }
@@ -103,7 +103,7 @@ async function run(): Promise<void> {
       exposure: 0.62
     }
   });
-  const heroReferenceItems = createV6PbrReferenceItems(staged.frameBounds, lighting.lighting);
+  const heroReferenceItems = createProductionPbrReferenceItems(staged.frameBounds, lighting.lighting);
   const proof = renderer.renderImportedAsset({
     source: {
       ...staged.source,
@@ -130,11 +130,11 @@ async function run(): Promise<void> {
     }
   });
 
-  window.__V6_HD_PRODUCT_HERO__ = {
+  window.__PRODUCTION_HD_PRODUCT_HERO__ = {
     status: "ready",
     assetId: "damaged-helmet",
     proof,
-    summary: summarizeV6WebGL2Proof(proof),
+    summary: summarizeProductionWebGL2Proof(proof),
     hdrPipeline: hdrPipeline.diagnostics
   };
 }
@@ -148,7 +148,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_HD_PRODUCT_HERO__ = {
+  window.__PRODUCTION_HD_PRODUCT_HERO__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

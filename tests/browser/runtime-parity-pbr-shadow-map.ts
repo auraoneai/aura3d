@@ -10,7 +10,7 @@ import { DirectionalLight, Scene, composeMat4, quatFromEuler } from "/packages/s
 
 declare global {
   interface Window {
-    __V7_PBR_SHADOW_MAP__?: unknown;
+    __RUNTIME_PBR_SHADOW_MAP__?: unknown;
   }
 }
 
@@ -33,7 +33,7 @@ const HEIGHT = 768;
 const FLOOR_Y = -0.62;
 
 void run().catch((error) => {
-  window.__V7_PBR_SHADOW_MAP__ = {
+  window.__RUNTIME_PBR_SHADOW_MAP__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };
@@ -42,8 +42,8 @@ void run().catch((error) => {
 async function run(): Promise<void> {
   const root = document.getElementById("shadow-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing PBR shadow root.");
-  const shadowCanvas = createCanvas("v7-pbr-shadow-map-enabled");
-  const noShadowCanvas = createCanvas("v7-pbr-shadow-map-disabled");
+  const shadowCanvas = createCanvas("runtime-pbr-shadow-map-enabled");
+  const noShadowCanvas = createCanvas("runtime-pbr-shadow-map-disabled");
   root.append(shadowCanvas, noShadowCanvas);
 
   const shadowed = await renderScene(shadowCanvas, true);
@@ -51,9 +51,9 @@ async function run(): Promise<void> {
   const shadowStats = analyzePatches(shadowed.pixels);
   const noShadowStats = analyzePatches(unshadowed.pixels);
 
-  window.__V7_PBR_SHADOW_MAP__ = {
+  window.__RUNTIME_PBR_SHADOW_MAP__ = {
     status: "ready",
-    schema: "a3d-v7-pbr-shadow-map/v1",
+    schema: "a3d-runtime-pbr-shadow-map",
     purpose: "renderer-owned PBR directional shadow-map visual proof",
     parity: {
       claim: "not-claimed",
@@ -113,10 +113,10 @@ async function renderScene(canvas: HTMLCanvasElement, shadows: boolean): Promise
   const floor = Geometry.litCube(1);
   const renderItems: RenderItem[] = [
     {
-      label: "v7-pbr-shadow-floor",
+      label: "runtime-pbr-shadow-floor",
       geometry: floor,
       material: new PBRMaterial({
-        name: "v7-pbr-shadow-floor-material",
+        name: "runtime-pbr-shadow-floor-material",
         baseColor: [0.42, 0.44, 0.47, 1],
         metallic: 0,
         roughness: 0.78,
@@ -125,10 +125,10 @@ async function renderScene(canvas: HTMLCanvasElement, shadows: boolean): Promise
       modelMatrix: composeMat4([0, FLOOR_Y - 0.04, 0.18], [0, 0, 0, 1], [4.8, 0.08, 4.3])
     },
     {
-      label: "v7-pbr-shadow-sphere",
+      label: "runtime-pbr-shadow-sphere",
       geometry: sphere,
       material: new PBRMaterial({
-        name: "v7-pbr-shadow-sphere-material",
+        name: "runtime-pbr-shadow-sphere-material",
         baseColor: [0.82, 0.86, 0.9, 1],
         metallic: 0.3,
         roughness: 0.34,
@@ -138,7 +138,7 @@ async function renderScene(canvas: HTMLCanvasElement, shadows: boolean): Promise
     }
   ];
   const scene = new Scene();
-  const light = new DirectionalLight("v7-pbr-shadow-key");
+  const light = new DirectionalLight("runtime-pbr-shadow-key");
   light.castsShadow = true;
   light.intensity = 3.2;
   light.color = [1, 0.94, 0.84];
@@ -180,7 +180,7 @@ async function renderScene(canvas: HTMLCanvasElement, shadows: boolean): Promise
         pcfRadius: 1.35,
         pcfSamples: 16,
         pcfDistribution: "poisson" as const,
-        label: "v7-pbr-shadow-map"
+        label: "runtime-pbr-shadow-map"
       }
     } : {}),
     cameraPolicy: "require",

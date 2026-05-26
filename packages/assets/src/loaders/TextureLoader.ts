@@ -1,14 +1,14 @@
-import { createV5FileLoaderDiagnostic } from "./LoaderDiagnostics";
+import { createThreeCompatFileLoaderDiagnostic } from "./LoaderDiagnostics";
 
-export type V5BrowserTextureFormat = "png" | "jpg" | "jpeg" | "webp";
+export type ThreeCompatBrowserTextureFormat = "png" | "jpg" | "jpeg" | "webp";
 
-export class TextureLoaderV5 {
-  readonly supportedFormats: readonly V5BrowserTextureFormat[] = ["png", "jpg", "jpeg", "webp"];
+export class TextureLoaderThreeCompat {
+  readonly supportedFormats: readonly ThreeCompatBrowserTextureFormat[] = ["png", "jpg", "jpeg", "webp"];
 
   load(uri: string) {
     const extension = uri.split(".").pop()?.toLowerCase() ?? "";
-    return createV5FileLoaderDiagnostic("TextureLoaderV5", uri, {
-      warnings: this.supportedFormats.includes(extension as V5BrowserTextureFormat) ? [] : [`Texture format ${extension || "unknown"} requires browser support check.`]
+    return createThreeCompatFileLoaderDiagnostic("TextureLoaderThreeCompat", uri, {
+      warnings: this.supportedFormats.includes(extension as ThreeCompatBrowserTextureFormat) ? [] : [`Texture format ${extension || "unknown"} requires browser support check.`]
     });
   }
 }

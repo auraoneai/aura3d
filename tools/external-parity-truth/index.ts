@@ -9,11 +9,11 @@ interface Finding {
 }
 
 const requiredFiles = [
-  "docs/project/v4-roadmap-visual-engine-plan.md",
-  "docs/project/v4-roadmap-status.md",
-  "docs/project/v4-roadmap-progress.md",
-  "docs/project/v4-roadmap-blocked-claims.md",
-  "docs/project/v4-roadmap-visual-failures.md"
+  "docs/project/implementation-plan.md",
+  "docs/project/threejs-parity-status.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/verification-evidence.md"
 ] as const;
 
 const blockedPatterns: readonly { readonly pattern: RegExp; readonly reason: string }[] = [
@@ -43,7 +43,7 @@ const safeLinePatterns = [
 
 const publicDocRoots = [
   "README.md",
-  "docs/project/v4-roadmap-visual-engine-plan.md",
+  "docs/project/implementation-plan.md",
   "docs/project"
 ] as const;
 const missing = requiredFiles.filter((path) => !existsSync(resolve(path)));
@@ -65,13 +65,13 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = readIfExists("docs/project/v4-roadmap-status.md");
-const progress = readIfExists("docs/project/v4-roadmap-progress.md");
-const visualFailures = readIfExists("docs/project/v4-roadmap-visual-failures.md");
-const v4 = readIfExists("docs/project/v4-roadmap-visual-engine-plan.md");
+const status = readIfExists("docs/project/threejs-parity-status.md");
+const progress = readIfExists("docs/project/verification-evidence.md");
+const visualFailures = readIfExists("docs/project/verification-evidence.md");
+const externalParity = readIfExists("docs/project/implementation-plan.md");
 const requiredStatusPatterns = [
-  /\bnot complete until\b[\s\S]*pnpm v4:release/i,
-  /\bV3 screenshots prove wiring\b/i,
+  /\bnot complete until\b[\s\S]*pnpm external-parity:release/i,
+  /\bFoundation screenshots prove wiring\b/i,
   /\bdoes not currently prove\b/i
 ] as const;
 const requiredPlanPatterns = [
@@ -87,12 +87,12 @@ const requiredFailurePaths = [
   "tests/reports/foundation-threejs-comparison/product-a3d.png"
 ] as const;
 const missingStatusPhrases = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);
-const missingPlanPhrases = requiredPlanPatterns.filter((pattern) => !pattern.test(v4)).map(String);
+const missingPlanPhrases = requiredPlanPatterns.filter((pattern) => !pattern.test(externalParity)).map(String);
 const missingFailureReferences = requiredFailurePaths.filter((path) => !visualFailures.includes(path));
 const progressHasAllMilestones = Array.from({ length: 20 }, (_, index) => `Milestone ${index}`).every((milestone) => progress.includes(milestone));
 
 const report = {
-  schema: "a3d-external-parity-truth/v1",
+  schema: "a3d-external-parity-truth",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0
     && findings.length === 0

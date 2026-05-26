@@ -151,15 +151,66 @@ export type { LoadContextOptions } from "./LoadContext";
 export { TextureLoader } from "./TextureLoader";
 export type { TextureDescriptorAsset } from "./TextureLoader";
 export {
-  createV6GLTFRenderMetadata,
-  loadV6GLTFRenderPipeline
-} from "./asset-corpus/V6GLTFRenderPipeline";
+  assertValidGLTFCorpusManifest,
+  createGLTFCorpusReport,
+  normalizeAssetImportSettings,
+  validateGLTFCorpusManifest
+} from "./AssetCorpus";
 export type {
-  V6GLTFRenderMetadata,
-  V6GLTFRenderWarning,
-  V6GLTFRenderPipeline,
-  V6GLTFRenderPipelineOptions
-} from "./asset-corpus/V6GLTFRenderPipeline";
+  AssetDiagnostic,
+  AssetDiagnosticSeverity,
+  AssetImportSettings,
+  GLTFCorpusAsset,
+  GLTFCorpusAssetFormat,
+  GLTFCorpusAssetReport,
+  GLTFCorpusExpectedStatus,
+  GLTFCorpusManifest,
+  GLTFCorpusReport,
+  GLTFCorpusSchemaVersion,
+  GLTFCorpusSource,
+  GLTFCorpusValidationResult
+} from "./AssetCorpus";
+export {
+  createAssetCompatibilityReport
+} from "./AssetCompatibility";
+export type {
+  AssetCompatibilityLoaderName,
+  AssetCompatibilityReport,
+  AssetCompatibilityReportAsset,
+  AssetCompatibilityReportOptions,
+  AssetCompatibilityStatus,
+  AssetLoaderCompatibilityResult,
+  BlenderExportCompatibilityResult,
+  ExternalAssetLoaderCompatibilityResult
+} from "./AssetCompatibility";
+export {
+  summarizeExternalParityGLTFCorpus,
+  summarizeExternalParityCorpus,
+  validateExternalParityGLTFCorpusManifest,
+  validateExternalParityCorpusManifest
+} from "./ExternalParityGLTFCorpus";
+export type {
+  ExternalParityGLTFCorpusAsset,
+  ExternalParityGLTFCorpusManifest,
+  ExternalParityGLTFCorpusSummary,
+  ExternalParityCorpusAsset,
+  ExternalParityCorpusManifest,
+  ExternalParityCorpusSummary
+} from "./ExternalParityGLTFCorpus";
+export { loadRenderableAsset } from "./loadRenderableAsset";
+export type { LoadRenderableAssetOptions, RenderableAsset, RenderableAssetKind } from "./loadRenderableAsset";
+export { createRenderableScene } from "./createRenderableScene";
+export type { CreateRenderableSceneOptions, RenderableScene } from "./createRenderableScene";
+export {
+  createProductionGLTFRenderMetadata,
+  loadProductionGLTFRenderPipeline
+} from "./asset-corpus/ProductionGLTFRenderPipeline";
+export type {
+  ProductionGLTFRenderMetadata,
+  ProductionGLTFRenderWarning,
+  ProductionGLTFRenderPipeline,
+  ProductionGLTFRenderPipelineOptions
+} from "./asset-corpus/ProductionGLTFRenderPipeline";
 export { createDracoDecoder, createMeshoptDecoder } from "./GLTFCompressionDecoders";
 export type {
   GLTFDracoAttribute,

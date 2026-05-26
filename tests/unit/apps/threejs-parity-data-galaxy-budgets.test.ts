@@ -9,7 +9,7 @@ import {
 import { createDataGalaxyEvidence, createDataGalaxyRuntimeEvidence } from "../../../apps/advanced-examples-gallery/src/dataGalaxyEvidence";
 import { getAuthoredAssetCandidate } from "../../../apps/advanced-examples-gallery/src/authoredAssets";
 
-describe("v9 data galaxy budgets", () => {
+describe("threejsParity data galaxy budgets", () => {
   it("keeps the active generated authored GLB catalogued as support-only provenance", () => {
     expect(getAuthoredAssetCandidate("data-galaxy-core-blender").provenance).toMatchObject({
       sourceKind: "generated-local-fixture",

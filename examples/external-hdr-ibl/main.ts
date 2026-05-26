@@ -2,7 +2,7 @@ import { createDiagnosticsPanel, createEnvironment, createA3DApp, workflows } fr
 
 declare global {
   interface Window {
-    __A3D_V4_HDR_IBL_EXAMPLE__?: unknown;
+    __A3D_EXTERNAL_PARITY_HDR_IBL_EXAMPLE__?: unknown;
   }
 }
 
@@ -27,7 +27,7 @@ const state = {
   capabilities: environments.flatMap((environment) => environment.capabilities),
   diagnosticsPanel: panel.snapshot(),
   drawCalls: render?.drawCalls ?? 0,
-  claimBoundary: "HDR/IBL tutorial example for supported V4 workflows; not a full HDR renderer parity claim."
+  claimBoundary: "HDR/IBL tutorial example for supported ExternalParity workflows; not a full HDR renderer parity claim."
 };
-window.__A3D_V4_HDR_IBL_EXAMPLE__ = state;
+window.__A3D_EXTERNAL_PARITY_HDR_IBL_EXAMPLE__ = state;
 if (status) status.textContent = JSON.stringify(state, null, 2);

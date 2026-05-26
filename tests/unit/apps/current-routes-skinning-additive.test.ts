@@ -5,7 +5,7 @@ import {
   createMaskedAdditiveClips
 } from "../../../apps/skinning-additive/src/additiveLayers";
 
-describe("V8 skinning additive layer masks", () => {
+describe("CurrentRoutes skinning additive layer masks", () => {
   it("keeps upper-body, right-arm, and expression masks scoped to their intended tracks", () => {
     const clips = [
       clip("Walking", ["Root.translation", "Body.rotation", "UpperArm.R.rotation", "UpperArm.L.rotation", "Head.rotation"]),

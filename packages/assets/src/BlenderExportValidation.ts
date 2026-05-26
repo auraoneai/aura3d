@@ -4,7 +4,7 @@ import { LoadContext } from "./LoadContext";
 export type BlenderExportValidationStatus = "pass" | "warn" | "fail";
 
 export interface BlenderExportFixtureManifest {
-  readonly schemaVersion: "blender-export-fixtures-v1";
+  readonly schemaVersion: "blender-export-fixtures";
   readonly sourceName: string;
   readonly sourceRepository: string;
   readonly sourceRevision: string;
@@ -29,7 +29,7 @@ export interface BlenderExportFixtureInput extends BlenderExportFixture {
 }
 
 export interface BlenderExportValidationReport {
-  readonly schemaVersion: "blender-export-validation-v1";
+  readonly schemaVersion: "blender-export-validation";
   readonly generatedAt: string;
   readonly sourceManifest: Omit<BlenderExportFixtureManifest, "fixtures"> & { readonly fixtureCount: number };
   readonly summary: Record<BlenderExportValidationStatus, number> & { readonly fixtureCount: number };
@@ -74,7 +74,7 @@ export async function createBlenderExportValidationReport(
   const inputById = new Map(fixtureInputs.map((fixture) => [fixture.id, fixture]));
   const fixtures = await Promise.all(manifest.fixtures.map(async (fixture) => validateFixture(fixture, inputById.get(fixture.id))));
   return {
-    schemaVersion: "blender-export-validation-v1",
+    schemaVersion: "blender-export-validation",
     generatedAt,
     sourceManifest: {
       schemaVersion: manifest.schemaVersion,
@@ -96,8 +96,8 @@ export async function createBlenderExportValidationReport(
 }
 
 export function assertValidBlenderExportFixtureManifest(manifest: BlenderExportFixtureManifest): BlenderExportFixtureManifest {
-  if (manifest.schemaVersion !== "blender-export-fixtures-v1") {
-    throw new Error("Blender export fixture manifest schemaVersion must be blender-export-fixtures-v1");
+  if (manifest.schemaVersion !== "blender-export-fixtures") {
+    throw new Error("Blender export fixture manifest schemaVersion must be blender-export-fixtures");
   }
   if (!manifest.sourceRepository || !/^https:\/\/github\.com\/KhronosGroup\/Vulkan-Samples-Assets/.test(manifest.sourceRepository)) {
     throw new Error("Blender export fixture manifest must reference KhronosGroup/Vulkan-Samples-Assets");

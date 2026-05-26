@@ -1,16 +1,16 @@
 import { test, expect } from "@playwright/test";
-import { BloomPassV5, ColorGradingPassV5, DepthOfFieldPassV5, EffectComposerV5, FXAAPassV5, RenderPassV5, SSAOPassV5, VignettePassV5, createV5BaseFrame } from "../../packages/rendering/src";
+import { BloomPassThreeCompat, ColorGradingPassThreeCompat, DepthOfFieldPassThreeCompat, EffectComposerThreeCompat, FXAAPassThreeCompat, RenderPassThreeCompat, SSAOPassThreeCompat, VignettePassThreeCompat, createThreeCompatBaseFrame } from "../../packages/rendering/src";
 
-test("V5 postprocess browser proof renders before and after screenshots", async ({ page }) => {
-  const composer = new EffectComposerV5()
-    .addPass(new RenderPassV5())
-    .addPass(new BloomPassV5(0.65))
-    .addPass(new SSAOPassV5(0.75))
-    .addPass(new DepthOfFieldPassV5(0.4))
-    .addPass(new ColorGradingPassV5(1.22, 1.12))
-    .addPass(new FXAAPassV5())
-    .addPass(new VignettePassV5(0.28));
-  const before = createV5BaseFrame("before");
+test("ThreeCompat postprocess browser proof renders before and after screenshots", async ({ page }) => {
+  const composer = new EffectComposerThreeCompat()
+    .addPass(new RenderPassThreeCompat())
+    .addPass(new BloomPassThreeCompat(0.65))
+    .addPass(new SSAOPassThreeCompat(0.75))
+    .addPass(new DepthOfFieldPassThreeCompat(0.4))
+    .addPass(new ColorGradingPassThreeCompat(1.22, 1.12))
+    .addPass(new FXAAPassThreeCompat())
+    .addPass(new VignettePassThreeCompat(0.28));
+  const before = createThreeCompatBaseFrame("before");
   const after = composer.render(before);
 
   async function draw(frame: typeof before) {

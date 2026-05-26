@@ -1,16 +1,16 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  AnimationClipV5,
-  AnimationMixerV5,
-  MorphTargetMixerV5,
-  SkeletonV5,
-  SkinnedMeshV5,
-  createV5AnimationDiagnostics,
-  inspectV5AnimatedAssets
+  AnimationClipThreeCompat,
+  AnimationMixerThreeCompat,
+  MorphTargetMixerThreeCompat,
+  SkeletonThreeCompat,
+  SkinnedMeshThreeCompat,
+  createThreeCompatAnimationDiagnostics,
+  inspectThreeCompatAnimatedAssets
 } from "../../packages/animation/src";
 
-interface V5AnimationCheck {
+interface ThreeCompatAnimationCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
@@ -29,24 +29,24 @@ const requiredFiles = [
   "tests/browser/three-compat-animation.spec.ts"
 ] as const;
 
-function check(name: string, pass: boolean, detail: string): V5AnimationCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatAnimationCheck {
   return { name, pass, detail };
 }
 
-const mixer = new AnimationMixerV5();
-const idle = mixer.clipAction(new AnimationClipV5("idle", 2, [{ target: "hips", property: "rotation", times: [0, 1], values: [0, 1] }])).play();
-const run = mixer.clipAction(new AnimationClipV5("run", 1, [{ target: "hips", property: "position", times: [0, 1], values: [0, 2] }]));
+const mixer = new AnimationMixerThreeCompat();
+const idle = mixer.clipAction(new AnimationClipThreeCompat("idle", 2, [{ target: "hips", property: "rotation", times: [0, 1], values: [0, 1] }])).play();
+const run = mixer.clipAction(new AnimationClipThreeCompat("run", 1, [{ target: "hips", property: "position", times: [0, 1], values: [0, 2] }]));
 idle.crossFadeTo(run, 0.5);
 run.scrub(0.25);
 mixer.update(0.25);
-const skeleton = new SkeletonV5([{ name: "root", parentIndex: -1 }, { name: "spine", parentIndex: 0 }]);
-const skinned = new SkinnedMeshV5(skeleton);
-const morphs = new MorphTargetMixerV5();
+const skeleton = new SkeletonThreeCompat([{ name: "root", parentIndex: -1 }, { name: "spine", parentIndex: 0 }]);
+const skinned = new SkinnedMeshThreeCompat(skeleton);
+const morphs = new MorphTargetMixerThreeCompat();
 morphs.setWeight("smile", 0.7);
-const diagnostics = createV5AnimationDiagnostics(mixer, skinned, morphs);
-const assets = inspectV5AnimatedAssets();
-const checks: V5AnimationCheck[] = [
-  check("required-files-present", requiredFiles.every((file) => existsSync(resolve(file))), requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 animation files exist"),
+const diagnostics = createThreeCompatAnimationDiagnostics(mixer, skinned, morphs);
+const assets = inspectThreeCompatAnimatedAssets();
+const checks: ThreeCompatAnimationCheck[] = [
+  check("required-files-present", requiredFiles.every((file) => existsSync(resolve(file))), requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility animation files exist"),
   check("animated-asset-floor", assets.filter((asset) => asset.loaded).length >= 5, assets.map((asset) => `${asset.id}:${asset.loaded}`).join(", ")),
   check("skinning", diagnostics.skinnedBoneCount >= 2 && assets.some((asset) => asset.capabilities.includes("skinning")), `${diagnostics.skinnedBoneCount} bones`),
   check("morph-targets", diagnostics.morphTargetCount >= 1 && assets.some((asset) => asset.capabilities.includes("morph-target")), `${diagnostics.morphTargetCount} morph targets`),
@@ -56,7 +56,7 @@ const checks: V5AnimationCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-animation-readiness/v1",
+  schema: "a3d-three-compat-animation-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   diagnostics,
@@ -72,4 +72,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log(`V5 animation readiness passed: ${diagnostics.loadedAnimatedAssets} animated assets, ${diagnostics.skinnedBoneCount} bones.`);
+console.log(`Three.js compatibility animation readiness passed: ${diagnostics.loadedAnimatedAssets} animated assets, ${diagnostics.skinnedBoneCount} bones.`);

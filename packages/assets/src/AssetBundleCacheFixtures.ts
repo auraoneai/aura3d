@@ -24,7 +24,7 @@ export interface AssetBundleCacheEvidence {
   readonly source: "origin-master-asset-bundle-cache-adapted";
   readonly manifest: {
     readonly id: string;
-    readonly version: "v4-generated";
+    readonly version: "external-parity-generated";
     readonly assetCount: number;
     readonly totalBytes: number;
     readonly entries: readonly AssetBundleManifestEvidenceEntry[];
@@ -71,7 +71,7 @@ export function createAssetBundleCacheEvidence(input: AssetBundleCacheInput): As
   const cache = simulateCache(loadOrder, entries);
   const manifest = {
     id: `${rootId}-bundle`,
-    version: "v4-generated" as const,
+    version: "external-parity-generated" as const,
     assetCount: entries.length,
     totalBytes: sumBytes(entries),
     entries
@@ -106,7 +106,7 @@ export function createAssetBundleCacheEvidence(input: AssetBundleCacheInput): As
       "CDN cache invalidation and patch streaming parity",
       "native platform asset bundle packaging parity"
     ],
-    claimBoundary: "This evidence ports the old branch asset bundle/cache concepts into deterministic V4 manifest, dependency-order, and memory-budget telemetry for loaded glTF assets. It does not claim Unity Addressables, Unreal Asset Manager, persistent browser storage, CDN patch streaming, or native bundle packaging parity.",
+    claimBoundary: "This evidence ports the old branch asset bundle/cache concepts into deterministic ExternalParity manifest, dependency-order, and memory-budget telemetry for loaded glTF assets. It does not claim Unity Addressables, Unreal Asset Manager, persistent browser storage, CDN patch streaming, or native bundle packaging parity.",
     hash: stableHash(JSON.stringify(evidenceCore))
   };
 }

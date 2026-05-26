@@ -12,13 +12,13 @@ import { DirectionalLight, composeMat4, quatFromEuler } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __a3dV8Camera?: V8CameraRuntime;
+    __a3dCurrentRoutesCamera?: CurrentRoutesCameraRuntime;
   }
 }
 
 type CameraMode = "hero" | "top" | "detail";
 
-interface V8CameraRuntime {
+interface CurrentRoutesCameraRuntime {
   readonly appId: "camera";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -56,7 +56,7 @@ async function run(): Promise<void> {
   let fps = 0;
   let fpsFrames = 0;
   let fpsLast = performance.now();
-  let runtime: V8CameraRuntime = {
+  let runtime: CurrentRoutesCameraRuntime = {
     appId: APP_ID,
     status: "loading",
     statusLabel: "Loading",
@@ -69,9 +69,9 @@ async function run(): Promise<void> {
     elapsedMs: 0
   };
 
-  const publish = (patch: Partial<V8CameraRuntime>): void => {
+  const publish = (patch: Partial<CurrentRoutesCameraRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
-    window.__a3dV8Camera = runtime;
+    window.__a3dCurrentRoutesCamera = runtime;
     renderUi(root, runtime, mode, (next) => {
       mode = next;
       publish({ activeCamera: mode });
@@ -137,7 +137,7 @@ async function run(): Promise<void> {
           camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
           metadata: {
             assetId: APP_ID,
-            assetName: "V8 Camera",
+            assetName: "CurrentRoutes Camera",
             assetUri: "/apps/camera/",
             meshCount: 18,
             primitiveCount: 18,
@@ -162,7 +162,7 @@ async function run(): Promise<void> {
           frustumHelpers: 3,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__a3dV8Camera = runtime;
+        window.__a3dCurrentRoutesCamera = runtime;
         if (frameCount === 1 || frameCount % 12 === 0 || delta === 0) {
           renderUi(root, runtime, mode, (next) => {
             mode = next;
@@ -266,11 +266,11 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function renderUi(root: HTMLElement, runtime: V8CameraRuntime, mode: CameraMode, onMode: (mode: CameraMode) => void): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesCameraRuntime, mode: CameraMode, onMode: (mode: CameraMode) => void): void {
   root.innerHTML = `
     <section class="panel">
       <p id="runtime-state" class="runtime-pill is-${runtime.status}">${runtime.statusLabel}</p>
-      <h1>V8 Camera</h1>
+      <h1>CurrentRoutes Camera</h1>
       <p>A3D-only camera/frustum route for webgl_camera parity work.</p>
       <dl>
         <dt>Frames</dt><dd>${runtime.frameCount}</dd>

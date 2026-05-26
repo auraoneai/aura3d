@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This demo is a v3 architecture-viewer product slice. It renders a generated production-like civic gallery room fixture through Aura3D's public WebGL2 renderer, supports room-element selection, camera modes, section-view toggling, projected contact-shadow receiver decals, and reports hierarchy, measurement, known-limit, and frame diagnostics.
+This demo is a foundation architecture-viewer product slice. It renders a generated production-like civic gallery room fixture through Aura3D's public WebGL2 renderer, supports room-element selection, camera modes, section-view toggling, projected contact-shadow receiver decals, and reports hierarchy, measurement, known-limit, and frame diagnostics.
 
 ## Run
 

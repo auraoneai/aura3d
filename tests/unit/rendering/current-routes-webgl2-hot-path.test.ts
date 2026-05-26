@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { Geometry, Texture, TextureBinding, WebGL2Device } from "../../../packages/rendering/src";
 
-describe("V8 WebGL2 hot path caches", () => {
+describe("CurrentRoutes WebGL2 hot path caches", () => {
   it("caches uniform locations so repeated draws do not call getUniformLocation again", () => {
     const { canvas, gl } = createCountingWebGL2Canvas();
     const device = WebGL2Device.create({ canvas });
     const geometry = Geometry.triangle();
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
-      label: "v8-uniform-cache",
-      marker: "@aura3d-test:v8-uniform-cache",
+      label: "current-routes-uniform-cache",
+      marker: "@aura3d-test:current-routes-uniform-cache",
       vertex: `
         #version 300 es
-        // @aura3d-test:v8-uniform-cache
+        // @aura3d-test:current-routes-uniform-cache
         layout(location = 0) in vec3 a_position;
         uniform mat4 u_modelViewProjection;
         void main() {
@@ -21,7 +21,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @aura3d-test:v8-uniform-cache
+        // @aura3d-test:current-routes-uniform-cache
         precision mediump float;
         uniform float u_alpha;
         out vec4 outColor;
@@ -65,11 +65,11 @@ describe("V8 WebGL2 hot path caches", () => {
     const geometry = Geometry.triangle();
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
-      label: "v8-texture-cache",
-      marker: "@aura3d-test:v8-texture-cache",
+      label: "current-routes-texture-cache",
+      marker: "@aura3d-test:current-routes-texture-cache",
       vertex: `
         #version 300 es
-        // @aura3d-test:v8-texture-cache
+        // @aura3d-test:current-routes-texture-cache
         layout(location = 0) in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position, 1.0);
@@ -77,7 +77,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @aura3d-test:v8-texture-cache
+        // @aura3d-test:current-routes-texture-cache
         precision mediump float;
         uniform sampler2D u_texture;
         out vec4 outColor;
@@ -129,11 +129,11 @@ describe("V8 WebGL2 hot path caches", () => {
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const vertexArrayBindsAfterUpload = gl.state.vertexArrayBinds;
     const shader = device.createShaderProgram({
-      label: "v9-vao-cache",
-      marker: "@aura3d-test:v9-vao-cache",
+      label: "threejs-parity-vao-cache",
+      marker: "@aura3d-test:threejs-parity-vao-cache",
       vertex: `
         #version 300 es
-        // @aura3d-test:v9-vao-cache
+        // @aura3d-test:threejs-parity-vao-cache
         layout(location = 0) in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position, 1.0);
@@ -141,7 +141,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @aura3d-test:v9-vao-cache
+        // @aura3d-test:threejs-parity-vao-cache
         precision mediump float;
         out vec4 outColor;
         void main() {
@@ -179,11 +179,11 @@ describe("V8 WebGL2 hot path caches", () => {
     const geometry = Geometry.triangle();
     const vertexBuffer = geometry.vertexBuffer.upload(device);
     const shader = device.createShaderProgram({
-      label: "v9-native-instancing-diagnostics",
-      marker: "@aura3d-test:v9-native-instancing-diagnostics",
+      label: "threejs-parity-native-instancing-diagnostics",
+      marker: "@aura3d-test:threejs-parity-native-instancing-diagnostics",
       vertex: `
         #version 300 es
-        // @aura3d-test:v9-native-instancing-diagnostics
+        // @aura3d-test:threejs-parity-native-instancing-diagnostics
         layout(location = 0) in vec3 a_position;
         void main() {
           gl_Position = vec4(a_position.xy + vec2(float(gl_InstanceID) * 0.01, 0.0), a_position.z, 1.0);
@@ -191,7 +191,7 @@ describe("V8 WebGL2 hot path caches", () => {
       `,
       fragment: `
         #version 300 es
-        // @aura3d-test:v9-native-instancing-diagnostics
+        // @aura3d-test:threejs-parity-native-instancing-diagnostics
         precision mediump float;
         out vec4 outColor;
         void main() {

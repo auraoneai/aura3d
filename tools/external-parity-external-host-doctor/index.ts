@@ -1,13 +1,13 @@
 import { fileURLToPath } from "node:url";
 import { isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 import { externalEvidenceLocalPreflight } from "../external-parity-external-evidence-readiness/index.js";
-import { verifyV4ExternalEvidenceHandoffPackage } from "../external-parity-external-evidence-handoff/index.js";
+import { verifyExternalParityExternalEvidenceHandoffPackage } from "../external-parity-external-evidence-handoff/index.js";
 
 const reportPath = "tests/reports/external-parity-external-host-doctor.json";
 const readinessReportPath = "tests/reports/external-parity-external-evidence-readiness.json";
 const missingArtifactRunbookPath = "tests/reports/external-parity-external-evidence-missing-artifacts.md" as const;
 
-export interface V4ExternalHostDoctorReport {
+export interface ExternalParityExternalHostDoctorReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly externalHostReady: boolean;
@@ -26,7 +26,7 @@ export interface V4ExternalHostDoctorReport {
     readonly firstBlockedArtifact?: string;
   };
   readonly localPreflight: ReturnType<typeof externalEvidenceLocalPreflight>;
-  readonly handoffPackage: ReturnType<typeof verifyV4ExternalEvidenceHandoffPackage>;
+  readonly handoffPackage: ReturnType<typeof verifyExternalParityExternalEvidenceHandoffPackage>;
   readonly nextCommands: readonly string[];
   readonly reportPath: typeof reportPath;
 }
@@ -43,25 +43,25 @@ export interface ExternalHostBlockedArtifactDetails {
   readonly blockers: readonly string[];
 }
 
-export function createV4ExternalHostDoctorReport(root = process.cwd()): V4ExternalHostDoctorReport {
+export function createExternalParityExternalHostDoctorReport(root = process.cwd()): ExternalParityExternalHostDoctorReport {
   const externalReadiness = externalEvidenceReadinessForDoctor(root);
   const localPreflight = externalEvidenceLocalPreflight();
-  const handoffPackage = verifyV4ExternalEvidenceHandoffPackage(root);
+  const handoffPackage = verifyExternalParityExternalEvidenceHandoffPackage(root);
   const externalHostReady = localPreflight.canRunExternalEvidenceHere && handoffPackage.ok;
   const nextCommands = externalHostReady
     ? [
       localPreflight.unity.smokeCommand,
-      "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
+      "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/external-parity-unity-baseline-project",
       localPreflight.unreal.smokeCommand,
       "node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
       localPreflight.publicDeployment.command,
-      "pnpm run:v4-external-host-evidence:execute",
-      "pnpm refresh:v4-readiness-reports",
-      "pnpm status:v4-parity",
-      "pnpm preflight:v4-parity:after-external-evidence",
+      "pnpm run:external-parity-external-host-evidence:execute",
+      "pnpm refresh:external-parity-readiness-reports",
+      "pnpm status:external-parity-parity",
+      "pnpm preflight:external-parity-parity:after-external-evidence",
     ]
     : blockedNextCommands(localPreflight, handoffPackage);
-  const report: V4ExternalHostDoctorReport = {
+  const report: ExternalParityExternalHostDoctorReport = {
     ok: true,
     auditComplete: true,
     externalHostReady,
@@ -143,7 +143,7 @@ function stringArray(value: unknown): string[] {
 
 function blockedNextCommands(
   localPreflight: ReturnType<typeof externalEvidenceLocalPreflight>,
-  handoffPackage: ReturnType<typeof verifyV4ExternalEvidenceHandoffPackage>
+  handoffPackage: ReturnType<typeof verifyExternalParityExternalEvidenceHandoffPackage>
 ): readonly string[] {
   return [
     ...(!handoffPackage.ok ? ["pnpm prepare:external-parity-external-evidence-handoff && pnpm verify:external-parity-external-evidence-handoff"] : []),
@@ -151,13 +151,13 @@ function blockedNextCommands(
     ...(localPreflight.unreal.executableAvailable ? [] : ["export A3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd"]),
     ...(localPreflight.unity.cliSmokeOptIn && localPreflight.unreal.cliSmokeOptIn ? [] : ["export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true"]),
     ...(localPreflight.publicDeployment.durableHttpsCandidate ? [] : ["export A3D_PUBLIC_DEMO_URL=https://your-public-demo.example/"]),
-    "pnpm doctor:v4-external-host",
-    "pnpm run:v4-external-host-evidence",
+    "pnpm doctor:external-parity-external-host",
+    "pnpm run:external-parity-external-host-evidence",
   ];
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const report = createV4ExternalHostDoctorReport();
+  const report = createExternalParityExternalHostDoctorReport();
   console.log(JSON.stringify({
     ok: report.ok,
     externalHostReady: report.externalHostReady,

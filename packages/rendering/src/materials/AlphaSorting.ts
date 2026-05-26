@@ -1,11 +1,11 @@
-export interface V4AlphaSortItem {
+export interface ExternalParityAlphaSortItem {
   readonly id: string;
   readonly depth: number;
   readonly alphaMode: "opaque" | "mask" | "blend";
   readonly renderOrder?: number;
 }
 
-export function sortV4AlphaItems(items: readonly V4AlphaSortItem[]): readonly V4AlphaSortItem[] {
+export function sortExternalParityAlphaItems(items: readonly ExternalParityAlphaSortItem[]): readonly ExternalParityAlphaSortItem[] {
   return [...items].sort((a, b) => {
     const orderA = a.renderOrder ?? 0;
     const orderB = b.renderOrder ?? 0;
@@ -18,7 +18,7 @@ export function sortV4AlphaItems(items: readonly V4AlphaSortItem[]): readonly V4
   });
 }
 
-function alphaGroup(mode: V4AlphaSortItem["alphaMode"]): number {
+function alphaGroup(mode: ExternalParityAlphaSortItem["alphaMode"]): number {
   switch (mode) {
     case "opaque":
       return 0;

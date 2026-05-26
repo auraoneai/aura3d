@@ -6,7 +6,7 @@ import {
   type Vector3Like
 } from "./NativeControlTypes";
 
-export interface V5PickResult {
+export interface ThreeCompatPickResult {
   readonly object: ControlObject3DLike;
   readonly distance: number;
   readonly distanceAlongRay: number;
@@ -39,8 +39,8 @@ export interface PickingDiagnostics {
 }
 
 export interface PickingReport {
-  readonly hit: V5PickResult | null;
-  readonly hits: readonly V5PickResult[];
+  readonly hit: ThreeCompatPickResult | null;
+  readonly hits: readonly ThreeCompatPickResult[];
   readonly diagnostics: PickingDiagnostics;
 }
 
@@ -50,7 +50,7 @@ export class Picking {
     origin: Vector3Like = new ControlVector3(),
     direction: Vector3Like = new ControlVector3(0, 0, -1),
     options: PickingOptions = {}
-  ): V5PickResult | null {
+  ): ThreeCompatPickResult | null {
     return this.report(root, origin, direction, options).hit;
   }
 
@@ -59,7 +59,7 @@ export class Picking {
     origin: Vector3Like = new ControlVector3(),
     direction: Vector3Like = new ControlVector3(0, 0, -1),
     options: PickingOptions = {}
-  ): readonly V5PickResult[] {
+  ): readonly ThreeCompatPickResult[] {
     return this.report(root, origin, direction, options).hits;
   }
 
@@ -73,7 +73,7 @@ export class Picking {
     const near = finiteRange(options.near ?? 0, "near", 0);
     const far = finiteRange(options.far ?? Number.POSITIVE_INFINITY, "far", near);
     const tolerance = finiteRange(options.tolerance ?? 0, "tolerance", 0);
-    const hits: V5PickResult[] = [];
+    const hits: ThreeCompatPickResult[] = [];
     const counters = {
       testedObjects: 0,
       candidateObjects: 0,
@@ -219,13 +219,13 @@ function pointOnRay(origin: Vector3Like, direction: Vector3Like, distance: numbe
   );
 }
 
-function compareHits(left: V5PickResult, right: V5PickResult): number {
+function compareHits(left: ThreeCompatPickResult, right: ThreeCompatPickResult): number {
   const distanceDelta = left.distance - right.distance;
   if (Math.abs(distanceDelta) > 1e-8) return distanceDelta;
   return pickPriority(right) - pickPriority(left);
 }
 
-function pickPriority(hit: V5PickResult): number {
+function pickPriority(hit: ThreeCompatPickResult): number {
   return hit.metadata?.priority ?? hit.object.pickPriority ?? 0;
 }
 

@@ -9,11 +9,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8MaterialsTransmission?: V8MaterialsTransmissionRuntime;
+    __a3dCurrentRoutesMaterialsTransmission?: CurrentRoutesMaterialsTransmissionRuntime;
   }
 }
 
-interface V8MaterialsTransmissionRuntime {
+interface CurrentRoutesMaterialsTransmissionRuntime {
   readonly appId: "materials-transmission";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -52,7 +52,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8MaterialsTransmission = runtime;
+    window.__a3dCurrentRoutesMaterialsTransmission = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -157,7 +157,7 @@ async function run(): Promise<void> {
           outputNonDarkPixels: metrics.nonDark,
           outputColorBuckets: metrics.colorBuckets
         });
-        window.__a3dV8MaterialsTransmission = runtime;
+        window.__a3dCurrentRoutesMaterialsTransmission = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -223,9 +223,9 @@ function pixelMetrics(pixels: Uint8Array, width: number, height: number): { read
 
 function createRuntime(
   startedAt: number,
-  status: V8MaterialsTransmissionRuntime["status"],
-  patch: Partial<Omit<V8MaterialsTransmissionRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "transmissionFactor" | "ior" | "volumeThicknessFactor" | "attenuationBlueBias">> = {}
-): V8MaterialsTransmissionRuntime {
+  status: CurrentRoutesMaterialsTransmissionRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesMaterialsTransmissionRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "transmissionFactor" | "ior" | "volumeThicknessFactor" | "attenuationBlueBias">> = {}
+): CurrentRoutesMaterialsTransmissionRuntime {
   return {
     appId: APP_ID,
     status,
@@ -266,11 +266,11 @@ function multiply(left: Float32Array, right: Float32Array): Float32Array {
   return output;
 }
 
-function renderUi(root: HTMLElement, runtime: V8MaterialsTransmissionRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesMaterialsTransmissionRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Materials Transmission</h1>
+        <h1>CurrentRoutes Materials Transmission</h1>
         <p>PBR transmission, IOR, volume attenuation, clearcoat, tone mapping, and FXAA.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

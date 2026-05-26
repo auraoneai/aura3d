@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportPath = resolve(process.cwd(), "tests/reports/external-parity-runtime.json");
 const screenshotPath = resolve(process.cwd(), "tests/reports/external-parity-example-screenshots/game-slice-runtime.png");
 
-type V4RuntimeReport = {
+type ExternalParityRuntimeReport = {
   ok: boolean;
   generatedAt: string;
   screenshots: string[];
@@ -19,13 +19,13 @@ type V4RuntimeReport = {
   mobileTouch?: unknown;
 };
 
-const report: V4RuntimeReport = {
+const report: ExternalParityRuntimeReport = {
   ok: false,
   generatedAt: new Date().toISOString(),
   screenshots: ["tests/reports/external-parity-example-screenshots/game-slice-runtime.png"],
   completedTasks: [
     {
-      task: "Add runtime scene orchestration used by the V4 game slice.",
+      task: "Add runtime scene orchestration used by the ExternalParity game slice.",
       evidence: ["examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
@@ -33,51 +33,51 @@ const report: V4RuntimeReport = {
       evidence: ["packages/physics/src/CharacterController.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic AI navigation pathfinding and agent-steering evidence to the V4 game slice.",
+      task: "Add deterministic AI navigation pathfinding and agent-steering evidence to the ExternalParity game slice.",
       evidence: ["packages/physics/src/Navigation.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic arrive/steering behavior evidence to the V4 game slice.",
+      task: "Add deterministic arrive/steering behavior evidence to the ExternalParity game slice.",
       evidence: ["packages/physics/src/Steering.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic flee, pursuit, evade, and wander steering evidence to the V4 game slice.",
+      task: "Add deterministic flee, pursuit, evade, and wander steering evidence to the ExternalParity game slice.",
       evidence: ["packages/physics/src/Steering.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic flocking, obstacle avoidance, wall avoidance, and steering-pipeline evidence to the V4 game slice.",
+      task: "Add deterministic flocking, obstacle avoidance, wall avoidance, and steering-pipeline evidence to the ExternalParity game slice.",
       evidence: ["packages/physics/src/Steering.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic crowd formation and neighbor-avoidance evidence to the V4 game slice.",
+      task: "Add deterministic crowd formation and neighbor-avoidance evidence to the ExternalParity game slice.",
       evidence: ["packages/physics/src/Crowd.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add deterministic AI perception and memory evidence to the V4 game slice.",
+      task: "Add deterministic AI perception and memory evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/Perception.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add behavior-tree blackboard runtime decision evidence to the V4 game slice.",
+      task: "Add behavior-tree blackboard runtime decision evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/BehaviorTree.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add decision-tree branch/action selection evidence to the V4 game slice.",
+      task: "Add decision-tree branch/action selection evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/DecisionTree.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add utility-AI action scoring and selected-decision evidence to the V4 game slice.",
+      task: "Add utility-AI action scoring and selected-decision evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/UtilityAI.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add finite-state-machine AI lifecycle and transition evidence to the V4 game slice.",
+      task: "Add finite-state-machine AI lifecycle and transition evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/StateMachine.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add GOAP objective planning evidence to the V4 game slice.",
+      task: "Add GOAP objective planning evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/GOAP.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
-      task: "Add hierarchical-task-network objective decomposition evidence to the V4 game slice.",
+      task: "Add hierarchical-task-network objective decomposition evidence to the ExternalParity game slice.",
       evidence: ["packages/scripting/src/HTN.ts", "examples/game-slice/main.ts", "tests/browser/runtime-external-parity.spec.ts", "tests/reports/external-parity-runtime.json"]
     },
     {
@@ -158,12 +158,12 @@ const report: V4RuntimeReport = {
     }
   ],
   blockedTasks: [
-    "The V4 game slice uses generated local glTF validation assets, not externally licensed production art.",
+    "The ExternalParity game slice uses generated local glTF validation assets, not externally licensed production art.",
     "The player asset is rendered as a generated glTF model; lit skinning and animation state machine claims remain blocked here."
   ]
 };
 
-test.describe("v4 runtime systems", () => {
+test.describe("externalParity runtime systems", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -180,7 +180,7 @@ test.describe("v4 runtime systems", () => {
     await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });
 
-  test("game slice produces v4 runtime systems, restart, screenshot, and report evidence", async ({ page }) => {
+  test("game slice produces externalParity runtime systems, restart, screenshot, and report evidence", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/game-slice/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_GAME_DEMO__?.status === "ready", undefined, { timeout: 45_000 });

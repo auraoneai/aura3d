@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { createV5EnvironmentGalleryModel } from "../../packages/environments/src";
+import { createThreeCompatEnvironmentGalleryModel } from "../../packages/environments/src";
 
-test("V5 environment gallery renders all probe types for every environment", async ({ page }) => {
-  const gallery = createV5EnvironmentGalleryModel();
+test("ThreeCompat environment gallery renders all probe types for every environment", async ({ page }) => {
+  const gallery = createThreeCompatEnvironmentGalleryModel();
   const compact = gallery.map((entry) => ({
     id: entry.preset.id,
     label: entry.preset.label,

@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "asset-render",
   sceneVersion: 1,
-  assetId: "generated-asset-inspection-corpus-v3",
+  assetId: "generated-asset-inspection-corpus-foundation",
   assetClass: "generated-local-asset-inspection-gltf",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 45,

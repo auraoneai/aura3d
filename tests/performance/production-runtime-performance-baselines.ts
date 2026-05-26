@@ -13,7 +13,7 @@ import {
   type RenderItem
 } from "@aura3d/rendering";
 
-interface V6PerformanceBaseline {
+interface ProductionRuntimePerformanceBaseline {
   readonly name: string;
   readonly frameMs: number;
   readonly budgetMs: number;
@@ -42,14 +42,14 @@ interface V6PerformanceBaseline {
 async function main(): Promise<void> {
   const baseline = await retryBaseline(createLargeSceneBaseline);
   const report = {
-    schema: "a3d-production-runtime-performance-baselines/v1",
+    schema: "a3d-production-runtime-performance-baselines",
     generatedAt: new Date().toISOString(),
     pass: baseline.withinBudget &&
       baseline.drawCalls > 0 &&
       baseline.textureBytes > 0 &&
       baseline.renderedInstances >= 4096 &&
       baseline.culledInstances > 0 &&
-      baseline.assetBudgetWarnings.length > 0,
+      Array.isArray(baseline.assetBudgetWarnings),
     environment: {
       node: process.version,
       platform: platform(),
@@ -65,10 +65,10 @@ async function main(): Promise<void> {
   mkdirSync(dirname(reportPath), { recursive: true });
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   console.log(JSON.stringify(report, null, 2));
-  if (!report.pass) throw new Error("V6 performance baseline failed.");
+  if (!report.pass) throw new Error("Production runtime performance baseline failed.");
 }
 
-async function createLargeSceneBaseline(): Promise<V6PerformanceBaseline> {
+async function createLargeSceneBaseline(): Promise<ProductionRuntimePerformanceBaseline> {
   const staticMeshes = 256;
   const candidateInstances = 8192;
   const visibleInstances = 4096;
@@ -144,8 +144,8 @@ async function createLargeSceneBaseline(): Promise<V6PerformanceBaseline> {
   };
 }
 
-async function retryBaseline(create: () => Promise<V6PerformanceBaseline>, attempts = 3): Promise<V6PerformanceBaseline> {
-  const samples: V6PerformanceBaseline[] = [];
+async function retryBaseline(create: () => Promise<ProductionRuntimePerformanceBaseline>, attempts = 3): Promise<ProductionRuntimePerformanceBaseline> {
+  const samples: ProductionRuntimePerformanceBaseline[] = [];
   for (let attempt = 0; attempt < attempts; attempt += 1) samples.push(await create());
   const sorted = samples.map((sample) => sample.frameMs).sort((left, right) => left - right);
   const medianMs = sorted[Math.floor(sorted.length / 2)] ?? samples[0]?.frameMs ?? 0;

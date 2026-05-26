@@ -1,36 +1,37 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline, type V6GLTFRenderMetadata } from "@aura3d/assets";
+import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline, type ProductionGLTFRenderMetadata } from "@aura3d/assets";
 import {
   computePerspectiveCameraFrame,
   Geometry,
   PBRMaterial,
   ProductionWebGL2Renderer,
   UnlitMaterial,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  createV6WebGPUReport,
-  summarizeV6AnimationWorkflow,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  createProductionWebGPUReport,
+  summarizeProductionWebGL2Proof,
+  summarizeProductionAnimationWorkflow,
   type CameraFrameBounds,
-  type V6ImportedAssetRenderMetadata,
-  type V6RenderProof,
+  type ProductionImportedAssetRenderMetadata,
+  type ProductionRenderProof,
   type RenderItem,
   type RenderSource,
-  type V6WebGPUReport
+  type ProductionWebGPUReport
 } from "@aura3d/rendering";
 import { composeMat4, multiplyMat4, transformPoint, type Mat4 } from "@aura3d/scene";
 
-export interface V6AppAsset {
+export interface ProductionAppAsset {
   readonly id: string;
   readonly label: string;
   readonly file: string;
   readonly role: "primary" | "secondary";
 }
 
-export interface V6AppSceneDefinition {
+export interface ProductionAppSceneDefinition {
   readonly appId: string;
   readonly sceneId: string;
   readonly title: string;
   readonly workflow: string;
-  readonly assets: readonly V6AppAsset[];
+  readonly assets: readonly ProductionAppAsset[];
   readonly environment: {
     readonly id: string;
     readonly label: string;
@@ -59,12 +60,12 @@ export interface V6AppSceneDefinition {
   };
 }
 
-export interface V6AppUiDefinition {
+export interface ProductionAppUiDefinition {
   readonly primaryActionLabel: string;
   readonly secondaryLabel: string;
 }
 
-export interface A3DV6RuntimeMetrics {
+export interface A3DProductionRuntimeMetrics {
   readonly appId: string;
   readonly sceneId: string;
   readonly workflow: string;
@@ -100,7 +101,7 @@ export interface A3DV6RuntimeMetrics {
   readonly animationClipCount?: number;
 }
 
-export type A3DV6RuntimeStatus =
+export type A3DProductionRuntimeStatus =
   | "loading"
   | "loading-environment"
   | "loading-asset"
@@ -110,74 +111,75 @@ export type A3DV6RuntimeStatus =
   | "animating"
   | "error";
 
-export interface A3DV6RuntimeLifecycle {
-  readonly status: A3DV6RuntimeStatus;
+export interface A3DProductionRuntimeLifecycle {
+  readonly status: A3DProductionRuntimeStatus;
   readonly message: string;
   readonly startedAtMs: number;
   readonly updatedAtMs: number;
   readonly elapsedMs: number;
-  readonly timings: readonly A3DV6RuntimeTiming[];
+  readonly timings: readonly A3DProductionRuntimeTiming[];
 }
 
-export interface A3DV6RuntimeTiming {
-  readonly phase: A3DV6RuntimeStatus | "load-secondary-assets";
+export interface A3DProductionRuntimeTiming {
+  readonly phase: A3DProductionRuntimeStatus | "load-secondary-assets";
   readonly durationMs: number;
 }
 
-export interface A3DV6Runtime {
-  readonly status: A3DV6RuntimeStatus;
+export interface A3DProductionRuntime {
+  readonly status: A3DProductionRuntimeStatus;
   readonly error?: string;
   readonly appId: string;
   readonly sceneId: string;
   readonly rendererBackend?: "webgl2";
-  readonly lifecycle: A3DV6RuntimeLifecycle;
-  readonly runtime?: A3DV6RuntimeMetrics;
-  readonly metadata?: V6GLTFRenderMetadata;
-  readonly secondaryMetadata?: readonly V6GLTFRenderMetadata[];
-  readonly proof?: V6RenderProof;
+  readonly lifecycle: A3DProductionRuntimeLifecycle;
+  readonly runtime?: A3DProductionRuntimeMetrics;
+  readonly metadata?: ProductionGLTFRenderMetadata;
+  readonly secondaryMetadata?: readonly ProductionGLTFRenderMetadata[];
+  readonly proof?: ProductionRenderProof;
+  readonly proofSummary?: ReturnType<typeof summarizeProductionWebGL2Proof>;
   readonly frame?: ReturnType<ProductionWebGL2Renderer["renderFrame"]>;
-  readonly webgpu?: V6WebGPUReport;
+  readonly webgpu?: ProductionWebGPUReport;
   readonly interactionCount: number;
   readonly lastInteraction?: string;
 }
 
 declare global {
   interface Window {
-    __a3dV6Runtime?: A3DV6Runtime;
-    __a3dV6Controls?: A3DV6AnimationControls;
+    __a3dProductionRuntime?: A3DProductionRuntime;
+    __a3dProductionControls?: A3DProductionAnimationControls;
   }
 }
 
-export interface A3DV6AnimationControls {
+export interface A3DProductionAnimationControls {
   paused: boolean;
   clipIndex: number;
   scrubTime: number;
   speed: number;
 }
 
-export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinition): Promise<void> {
+export async function runProductionApp(scene: ProductionAppSceneDefinition, ui: ProductionAppUiDefinition): Promise<void> {
   const root = document.getElementById("app");
   const canvas = document.getElementById("viewport");
   if (!(root instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
     throw new Error(`${scene.appId} requires #app and canvas#viewport.`);
   }
   const startedAtMs = performance.now();
-  const timings: A3DV6RuntimeTiming[] = [];
-  const initial: A3DV6Runtime = {
+  const timings: A3DProductionRuntimeTiming[] = [];
+  const initial: A3DProductionRuntime = {
     status: "loading",
     appId: scene.appId,
     sceneId: scene.sceneId,
-    lifecycle: createLifecycle("loading", "Preparing V6 interactive renderer startup.", startedAtMs, timings),
+    lifecycle: createLifecycle("loading", "Preparing production interactive renderer startup.", startedAtMs, timings),
     interactionCount: 0
   };
-  publishV6Runtime(root, scene, ui, initial);
+  publishProductionRuntime(root, scene, ui, initial);
 
   try {
     const primary = scene.assets.find((asset) => asset.role === "primary") ?? scene.assets[0];
-    if (!primary) throw new Error(`${scene.appId} has no configured V6 asset.`);
-    const publishPhase = (status: A3DV6RuntimeStatus, message: string) => {
-      publishV6Runtime(root, scene, ui, {
-        ...(window.__a3dV6Runtime ?? initial),
+    if (!primary) throw new Error(`${scene.appId} has no configured production asset.`);
+    const publishPhase = (status: A3DProductionRuntimeStatus, message: string) => {
+      publishProductionRuntime(root, scene, ui, {
+        ...(window.__a3dProductionRuntime ?? initial),
         status,
         appId: scene.appId,
         sceneId: scene.sceneId,
@@ -187,10 +189,10 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
 
     publishPhase("loading-environment", `Loading HDR environment ${scene.environment.label}.`);
     const hdrStart = performance.now();
-    const hdr = await fetchBytes(`/fixtures/environment-corpus/hdri/${scene.environment.file}`);
+    const hdr = await fetchBytes(resolveProductionEnvironmentUrl(scene.environment.file));
     timings.push(createTiming("loading-environment", hdrStart));
 
-    const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+    const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
       id: scene.environment.id,
       label: scene.environment.label,
       intensity: scene.environment.intensity,
@@ -198,12 +200,12 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
       rotation: scene.environment.rotation,
       toneMapping: { operator: "filmic", exposure: scene.environment.exposure, whitePoint: 11.2 }
     });
-    const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+    const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
 
     publishPhase("loading-asset", `Loading primary GLB ${primary.label}.`);
     const assetStart = performance.now();
-    const pipeline = await loadV6GLTFRenderPipeline({
-      url: resolveV6AssetUrl(primary.file),
+    const pipeline = await loadProductionGLTFRenderPipeline({
+      url: resolveProductionAssetUrl(primary.file),
       assetId: primary.id,
       assetName: primary.label,
       width: canvas.width,
@@ -256,14 +258,16 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
     publishPhase("rendering-first-frame", "Rendering first interactive frame.");
     const frameStart = performance.now();
     const importedAssetMetadata = createImportedAssetMetadata(composed.metadata, scene);
-    const frame = renderer.renderFrame({
+    const renderInput = {
       source: composed.source,
       camera: composed.camera,
       metadata: importedAssetMetadata
-    });
+    };
+    const frame = renderer.renderFrame(renderInput);
+    const proof = renderer.renderImportedAsset(renderInput);
     const frameTimeMs = Number((performance.now() - frameStart).toFixed(3));
     timings.push(createTiming("rendering-first-frame", frameStart));
-    const animation = summarizeV6AnimationWorkflow({
+    const animation = summarizeProductionAnimationWorkflow({
       assetId: pipeline.metadata.assetId,
       animationCount: pipeline.metadata.animationCount,
       skinCount: pipeline.metadata.skinCount,
@@ -272,9 +276,9 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
       materialCount: pipeline.metadata.materialCount
     });
     const webgpu = scene.webgpuReport
-      ? await createV6WebGPUReport((navigator as Navigator & { gpu?: unknown }).gpu as Parameters<typeof createV6WebGPUReport>[0])
+      ? await createProductionWebGPUReport((navigator as Navigator & { gpu?: unknown }).gpu as Parameters<typeof createProductionWebGPUReport>[0])
       : undefined;
-    const runtime: A3DV6Runtime = {
+    const runtime: A3DProductionRuntime = {
       status: "ready",
       appId: scene.appId,
       sceneId: scene.sceneId,
@@ -311,12 +315,14 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
       metadata: pipeline.metadata,
       secondaryMetadata,
       frame,
+      proof,
+      proofSummary: summarizeProductionWebGL2Proof(proof),
       ...(webgpu ? { webgpu } : {}),
       interactionCount: 0
     };
-    publishV6Runtime(root, scene, ui, runtime);
+    publishProductionRuntime(root, scene, ui, runtime);
     if (secondaryPipelines.length === 0 && pipeline.asset.animations.length > 0) {
-      startV6AnimationLoop({
+      startProductionAnimationLoop({
         root,
         scene,
         ui,
@@ -330,32 +336,32 @@ export async function runV6App(scene: V6AppSceneDefinition, ui: V6AppUiDefinitio
       });
     }
   } catch (error) {
-    publishV6Runtime(root, scene, ui, {
+    publishProductionRuntime(root, scene, ui, {
       status: "error",
       appId: scene.appId,
       sceneId: scene.sceneId,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
-      lifecycle: createLifecycle("error", "V6 app startup failed before a usable interactive frame.", startedAtMs, timings),
-      interactionCount: window.__a3dV6Runtime?.interactionCount ?? 0
+      lifecycle: createLifecycle("error", "production app startup failed before a usable interactive frame.", startedAtMs, timings),
+      interactionCount: window.__a3dProductionRuntime?.interactionCount ?? 0
     });
   }
 }
 
-export async function runV6InteractiveApp(scene: V6AppSceneDefinition, ui: V6AppUiDefinition): Promise<void> {
-  return runV6App(scene, ui);
+export async function runProductionInteractiveApp(scene: ProductionAppSceneDefinition, ui: ProductionAppUiDefinition): Promise<void> {
+  return runProductionApp(scene, ui);
 }
 
-function publishV6Runtime(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6AppUiDefinition, runtime: A3DV6Runtime): void {
-  window.__a3dV6Runtime = runtime;
-  mountV6AppShell(root, scene, ui, runtime);
+function publishProductionRuntime(root: HTMLElement, scene: ProductionAppSceneDefinition, ui: ProductionAppUiDefinition, runtime: A3DProductionRuntime): void {
+  window.__a3dProductionRuntime = runtime;
+  mountProductionAppShell(root, scene, ui, runtime);
 }
 
 function createLifecycle(
-  status: A3DV6RuntimeStatus,
+  status: A3DProductionRuntimeStatus,
   message: string,
   startedAtMs: number,
-  timings: readonly A3DV6RuntimeTiming[]
-): A3DV6RuntimeLifecycle {
+  timings: readonly A3DProductionRuntimeTiming[]
+): A3DProductionRuntimeLifecycle {
   const now = performance.now();
   return {
     status,
@@ -367,7 +373,7 @@ function createLifecycle(
   };
 }
 
-function createTiming(phase: A3DV6RuntimeTiming["phase"], startMs: number): A3DV6RuntimeTiming {
+function createTiming(phase: A3DProductionRuntimeTiming["phase"], startMs: number): A3DProductionRuntimeTiming {
   return {
     phase,
     durationMs: Number((performance.now() - startMs).toFixed(3))
@@ -375,9 +381,9 @@ function createTiming(phase: A3DV6RuntimeTiming["phase"], startMs: number): A3DV
 }
 
 function createImportedAssetMetadata(
-  metadata: V6GLTFRenderMetadata,
-  scene: V6AppSceneDefinition
-): V6ImportedAssetRenderMetadata {
+  metadata: ProductionGLTFRenderMetadata,
+  scene: ProductionAppSceneDefinition
+): ProductionImportedAssetRenderMetadata {
   return {
     assetId: metadata.assetId,
     assetName: metadata.assetName,
@@ -392,11 +398,11 @@ function createImportedAssetMetadata(
     morphTargetCount: metadata.morphTargetCount,
     extensionsUsed: metadata.extensionsUsed,
     environmentId: scene.environment.id,
-    hdrEnvironmentUri: `/fixtures/environment-corpus/hdri/${scene.environment.file}`
+    hdrEnvironmentUri: resolveProductionEnvironmentUrl(scene.environment.file)
   };
 }
 
-function mountV6AppShell(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6AppUiDefinition, runtime: A3DV6Runtime): void {
+function mountProductionAppShell(root: HTMLElement, scene: ProductionAppSceneDefinition, ui: ProductionAppUiDefinition, runtime: A3DProductionRuntime): void {
   const metrics = runtime.runtime;
   const lifecycle = runtime.lifecycle;
   root.innerHTML = `
@@ -421,34 +427,34 @@ function mountV6AppShell(root: HTMLElement, scene: V6AppSceneDefinition, ui: V6A
       ${metrics?.animationFps !== undefined ? `<span>${metrics.animationFps} fps</span>` : ""}
       ${runtime.error ? `<span>${runtime.error}</span>` : ""}
     </section>
-    ${metrics?.animationClipName ? renderV6AnimationControls(runtime) : ""}
+    ${metrics?.animationClipName ? renderProductionAnimationControls(runtime) : ""}
   `;
   root.querySelector("#primary-action")?.addEventListener("click", () => {
-    const current = window.__a3dV6Runtime;
-    const controls = getV6AnimationControls();
+    const current = window.__a3dProductionRuntime;
+    const controls = getProductionAnimationControls();
     controls.paused = !controls.paused;
     if (!current) return;
-    window.__a3dV6Runtime = {
+    window.__a3dProductionRuntime = {
       ...current,
       interactionCount: current.interactionCount + 1,
       lastInteraction: ui.primaryActionLabel
     };
-    mountV6AppShell(root, scene, ui, window.__a3dV6Runtime);
+    mountProductionAppShell(root, scene, ui, window.__a3dProductionRuntime);
   });
   root.querySelector<HTMLSelectElement>("#clip-select")?.addEventListener("change", (event) => {
-    const controls = getV6AnimationControls();
+    const controls = getProductionAnimationControls();
     controls.clipIndex = Number((event.currentTarget as HTMLSelectElement).value) || 0;
     controls.scrubTime = 0;
   });
   root.querySelector<HTMLInputElement>("#clip-scrub")?.addEventListener("input", (event) => {
-    const controls = getV6AnimationControls();
+    const controls = getProductionAnimationControls();
     controls.paused = true;
     controls.scrubTime = Number((event.currentTarget as HTMLInputElement).value) || 0;
   });
 }
 
-function renderV6AnimationControls(runtime: A3DV6Runtime): string {
-  const controls = getV6AnimationControls();
+function renderProductionAnimationControls(runtime: A3DProductionRuntime): string {
+  const controls = getProductionAnimationControls();
   const clipCount = Math.max(1, runtime.runtime?.animationClipCount ?? 1);
   const duration = Math.max(0.1, runtime.runtime?.animationClipTime ?? controls.scrubTime ?? 1);
   return `
@@ -468,18 +474,18 @@ function renderV6AnimationControls(runtime: A3DV6Runtime): string {
   `;
 }
 
-type V6Pipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type ProductionPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
 async function loadSecondaryPipelines(
-  scene: V6AppSceneDefinition,
+  scene: ProductionAppSceneDefinition,
   primaryAssetId: string,
   width: number,
   height: number
-): Promise<readonly V6Pipeline[]> {
-  const results: V6Pipeline[] = [];
+): Promise<readonly ProductionPipeline[]> {
+  const results: ProductionPipeline[] = [];
   for (const asset of scene.assets.filter((item) => item.id !== primaryAssetId)) {
-    const pipeline = await loadV6GLTFRenderPipeline({
-      url: resolveV6AssetUrl(asset.file),
+    const pipeline = await loadProductionGLTFRenderPipeline({
+      url: resolveProductionAssetUrl(asset.file),
       assetId: asset.id,
       assetName: asset.label,
       width,
@@ -495,22 +501,22 @@ async function loadSecondaryPipelines(
   return results;
 }
 
-function startV6AnimationLoop(options: {
+function startProductionAnimationLoop(options: {
   readonly root: HTMLElement;
-  readonly scene: V6AppSceneDefinition;
-  readonly ui: V6AppUiDefinition;
+  readonly scene: ProductionAppSceneDefinition;
+  readonly ui: ProductionAppUiDefinition;
   readonly renderer: ProductionWebGL2Renderer;
-  readonly pipeline: V6Pipeline;
+  readonly pipeline: ProductionPipeline;
   readonly source: RenderSource;
-  readonly camera: V6Pipeline["camera"];
-  readonly metadata: V6ImportedAssetRenderMetadata;
+  readonly camera: ProductionPipeline["camera"];
+  readonly metadata: ProductionImportedAssetRenderMetadata;
   readonly startedAtMs: number;
-  readonly timings: readonly A3DV6RuntimeTiming[];
+  readonly timings: readonly A3DProductionRuntimeTiming[];
 }): void {
   const clips = options.pipeline.asset.animations;
   const initialClip = clips.find((animation) => /walk|run|idle/i.test(animation.name)) ?? clips[0];
   if (!initialClip) return;
-  window.__a3dV6Controls = {
+  window.__a3dProductionControls = {
     paused: false,
     clipIndex: Math.max(0, clips.indexOf(initialClip)),
     scrubTime: 0,
@@ -547,16 +553,18 @@ function startV6AnimationLoop(options: {
     }
     const animationFrameStart = performance.now();
     let result: ReturnType<ProductionWebGL2Renderer["renderFrame"]>;
+    let activeClip = initialClip;
+    let activeControls = getProductionAnimationControls();
     try {
       const elapsedSeconds = Math.max(0, (now - startTime) / 1000);
-      const controls = getV6AnimationControls();
-      const clip = clips[Math.max(0, Math.min(clips.length - 1, controls.clipIndex))] ?? initialClip;
-      const animatedTime = elapsedSeconds * Math.max(0, controls.speed);
-      const clipTime = controls.paused
-        ? Math.max(0, Math.min(clip.duration || 0, controls.scrubTime))
-        : clip.duration > 0 ? animatedTime % clip.duration : animatedTime;
-      controls.scrubTime = clipTime;
-      runtime.applyClip(clip, clipTime);
+      activeControls = getProductionAnimationControls();
+      activeClip = clips[Math.max(0, Math.min(clips.length - 1, activeControls.clipIndex))] ?? initialClip;
+      const animatedTime = elapsedSeconds * Math.max(0, activeControls.speed);
+      const clipTime = activeControls.paused
+        ? Math.max(0, Math.min(activeClip.duration || 0, activeControls.scrubTime))
+        : activeClip.duration > 0 ? animatedTime % activeClip.duration : animatedTime;
+      activeControls.scrubTime = clipTime;
+      runtime.applyClip(activeClip, clipTime);
       result = options.renderer.renderFrame({
         source: options.source,
         camera: options.camera,
@@ -564,8 +572,8 @@ function startV6AnimationLoop(options: {
       });
     } catch (error) {
       stopped = true;
-      const current = window.__a3dV6Runtime;
-      publishV6Runtime(options.root, options.scene, options.ui, {
+      const current = window.__a3dProductionRuntime;
+      publishProductionRuntime(options.root, options.scene, options.ui, {
         ...(current ?? {
           appId: options.scene.appId,
           sceneId: options.scene.sceneId,
@@ -587,9 +595,9 @@ function startV6AnimationLoop(options: {
       fpsFrames = 0;
       fpsStart = now;
     }
-    const current = window.__a3dV6Runtime;
+    const current = window.__a3dProductionRuntime;
     if (current?.runtime && now - lastPublish >= 250) {
-      publishV6Runtime(options.root, options.scene, options.ui, {
+      publishProductionRuntime(options.root, options.scene, options.ui, {
         ...current,
         status: "ready",
         lifecycle: createLifecycle("animating", "Animation loop is rendering imported GLB frames.", options.startedAtMs, options.timings),
@@ -598,9 +606,9 @@ function startV6AnimationLoop(options: {
           ...current.runtime,
           drawCalls: result.diagnostics.drawCalls,
           animationFrameCount,
-          animationClipName: clip.name,
+          animationClipName: activeClip.name,
           animationClipCount: clips.length,
-          animationClipTime: Number(controls.scrubTime.toFixed(3)),
+          animationClipTime: Number(activeControls.scrubTime.toFixed(3)),
           animationFps: fps,
           animationLoopStarted: true,
           animationLastFrameTimeMs
@@ -613,37 +621,45 @@ function startV6AnimationLoop(options: {
   animationFrameId = requestAnimationFrame(tick);
 }
 
-function getV6AnimationControls(): A3DV6AnimationControls {
-  window.__a3dV6Controls ??= {
+function getProductionAnimationControls(): A3DProductionAnimationControls {
+  window.__a3dProductionControls ??= {
     paused: false,
     clipIndex: 0,
     scrubTime: 0,
     speed: 1
   };
-  return window.__a3dV6Controls;
+  return window.__a3dProductionControls;
 }
 
-function resolveV6AssetUrl(file: string): string {
+function resolveProductionAssetUrl(file: string): string {
   if (file.startsWith("/")) return file;
+  if (file.startsWith("fixtures/")) return `/${file}`;
   if (file.includes("/")) return `/fixtures/production-runtime/assets/${file}`;
   return `/fixtures/asset-corpus/${file}`;
 }
 
+function resolveProductionEnvironmentUrl(file: string): string {
+  if (file.startsWith("/")) return file;
+  if (file.startsWith("fixtures/")) return `/${file}`;
+  if (file.includes("/")) return `/fixtures/${file}`;
+  return `/fixtures/environment-corpus/hdri/${file}`;
+}
+
 interface ComposedRenderInput {
   readonly source: RenderSource;
-  readonly camera: V6Pipeline["camera"];
+  readonly camera: ProductionPipeline["camera"];
   readonly frameBounds: CameraFrameBounds;
-  readonly metadata: V6GLTFRenderMetadata;
+  readonly metadata: ProductionGLTFRenderMetadata;
 }
 
 function createComposedRenderInput(
-  pipelines: readonly V6Pipeline[],
+  pipelines: readonly ProductionPipeline[],
   options: {
     readonly width: number;
     readonly height: number;
     readonly environmentLighting: NonNullable<RenderSource["environmentLighting"]>;
     readonly postprocess: RenderSource["postprocess"];
-    readonly frameOptions?: V6AppSceneDefinition["cameraFrameOptions"];
+    readonly frameOptions?: ProductionAppSceneDefinition["cameraFrameOptions"];
     readonly studioStage?: boolean;
   }
 ): ComposedRenderInput {
@@ -704,7 +720,7 @@ function createComposedRenderInput(
   };
 }
 
-function createAssetPlacements(pipelines: readonly V6Pipeline[]): readonly Mat4[] {
+function createAssetPlacements(pipelines: readonly ProductionPipeline[]): readonly Mat4[] {
   if (pipelines.length <= 1) return [identityPlacement()];
   const spacing = pipelines.length === 2 ? 1.45 : 1.22;
   const center = (pipelines.length - 1) / 2;
@@ -832,9 +848,9 @@ function unionBounds(bounds: readonly CameraFrameBounds[]): CameraFrameBounds {
   };
 }
 
-function mergePipelineMetadata(pipelines: readonly V6Pipeline[]): V6GLTFRenderMetadata {
+function mergePipelineMetadata(pipelines: readonly ProductionPipeline[]): ProductionGLTFRenderMetadata {
   const primary = pipelines[0]!.metadata;
-  const sum = (field: keyof Pick<V6GLTFRenderMetadata, "meshCount" | "primitiveCount" | "materialCount" | "textureCount" | "imageCount" | "animationCount" | "skinCount" | "morphTargetCount" | "vertexCount" | "indexCount" | "normalMapCount" | "ormTextureCount" | "emissiveTextureCount">): number =>
+  const sum = (field: keyof Pick<ProductionGLTFRenderMetadata, "meshCount" | "primitiveCount" | "materialCount" | "textureCount" | "imageCount" | "animationCount" | "skinCount" | "morphTargetCount" | "vertexCount" | "indexCount" | "normalMapCount" | "ormTextureCount" | "emissiveTextureCount">): number =>
     pipelines.reduce((total, item) => total + Number(item.metadata[field] ?? 0), 0);
   return {
     ...primary,

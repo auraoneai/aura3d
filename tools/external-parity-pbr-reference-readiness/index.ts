@@ -16,7 +16,7 @@ import {
 } from "../../packages/rendering/src/index.js";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4PbrReferenceReadinessReport {
+export interface ExternalParityPbrReferenceReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly boundedPbrReferenceEvidence: boolean;
@@ -61,7 +61,7 @@ const sourceFiles = [
   "tests/reports/external-parity-external-engine-baselines.json",
 ] as const;
 
-export function createV4PbrReferenceReadinessReport(root = process.cwd()): V4PbrReferenceReadinessReport {
+export function createExternalParityPbrReferenceReadinessReport(root = process.cwd()): ExternalParityPbrReferenceReadinessReport {
   const pbrVisual = readJson(root, "tests/reports/external-parity-pbr-visual-parity.json");
   const hdrIbl = readJson(root, "tests/reports/external-parity-hdr-ibl-readiness.json");
   const externalBaselines = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
@@ -224,7 +224,7 @@ function validation(id: string, passed: boolean, evidence: string, blockers: rea
   };
 }
 
-function deterministicSamplesMatch(metrics: V4PbrReferenceReadinessReport["metrics"]): boolean {
+function deterministicSamplesMatch(metrics: ExternalParityPbrReferenceReadinessReport["metrics"]): boolean {
   return close(metrics.ggxDistributionSample, 0.034966) &&
     close(metrics.smithCorrelatedSample, 0.529646) &&
     close(metrics.burleyDiffuseSample, 0.87961) &&
@@ -275,7 +275,7 @@ function close(left: number, right: number): boolean {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4PbrReferenceReadinessReport();
+  const report = createExternalParityPbrReferenceReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

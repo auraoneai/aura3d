@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
-import { GLTFLoaderV5, HDRLoaderV5, KTX2LoaderV5, OBJLoaderV5, TextureLoaderV5 } from "../../packages/assets/src";
+import { ThreeCompatGLTFLoader, HDRLoaderThreeCompat, KTX2LoaderThreeCompat, OBJLoaderThreeCompat, TextureLoaderThreeCompat } from "../../packages/assets/src";
 
-test("V5 loader corpus browser proof renders loader diagnostics", async ({ page }) => {
+test("three-compat loader corpus browser proof renders loader diagnostics", async ({ page }) => {
   const diagnostics = [
-    new GLTFLoaderV5().load("fixtures/three-compat/assets/corpus/damaged-helmet.glb").diagnostic,
-    new OBJLoaderV5().load("fixtures/three-compat/loaders/sample.obj").diagnostic,
-    new HDRLoaderV5().load("fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr"),
-    new KTX2LoaderV5().load("tests/assets/corpus/ktx2/Rib_N.ktx2"),
-    new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png")
+    new ThreeCompatGLTFLoader().load("fixtures/asset-corpus/damaged-helmet.glb").diagnostic,
+    new OBJLoaderThreeCompat().load("fixtures/three-compat/loaders/sample.obj").diagnostic,
+    new HDRLoaderThreeCompat().load("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"),
+    new KTX2LoaderThreeCompat().load("tests/assets/corpus/ktx2/Rib_N.ktx2"),
+    new TextureLoaderThreeCompat().load("fixtures/external-parity-assets/product/external-parity-product-speaker/screenshot-baseline.svg")
   ];
 
   await page.setContent(`

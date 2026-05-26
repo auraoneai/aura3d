@@ -2,20 +2,20 @@
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 import { RGBELoader } from "/node_modules/three/examples/jsm/loaders/RGBELoader.js";
-import type { V8FlagshipViewerSceneConfig } from "../../../aura3d/src/scenes/flagship-viewer.js";
+import type { CurrentFlagshipViewerSceneConfig } from "../../../aura3d/src/scenes/current-routes-flagship-viewer.js";
 
-export interface V8ThreeFlagshipCamera {
+export interface CurrentThreeFlagshipCamera {
   readonly cameraPosition: readonly [number, number, number];
   readonly target: readonly [number, number, number];
   readonly fovYRadians: number;
 }
 
-export interface V8ThreeFlagshipBounds {
+export interface CurrentThreeFlagshipBounds {
   readonly min: readonly [number, number, number];
   readonly max: readonly [number, number, number];
 }
 
-export interface V8ThreeFlagshipRenderResult {
+export interface CurrentThreeFlagshipRenderResult {
   readonly engine: "threejs";
   readonly status: "ready";
   readonly renderer: {
@@ -37,7 +37,7 @@ export interface V8ThreeFlagshipRenderResult {
     readonly uri: string;
     readonly pmremGenerator: true;
   };
-  readonly camera: V8ThreeFlagshipCamera;
+  readonly camera: CurrentThreeFlagshipCamera;
   readonly pixels: {
     readonly nonBlackPixels: number;
     readonly uniqueColorBuckets: number;
@@ -49,10 +49,10 @@ export interface V8ThreeFlagshipRenderResult {
 
 export async function renderThreeFlagshipViewer(options: {
   readonly canvas: HTMLCanvasElement;
-  readonly scene: V8FlagshipViewerSceneConfig;
-  readonly camera: V8ThreeFlagshipCamera;
-  readonly bounds: V8ThreeFlagshipBounds;
-}): Promise<V8ThreeFlagshipRenderResult> {
+  readonly scene: CurrentFlagshipViewerSceneConfig;
+  readonly camera: CurrentThreeFlagshipCamera;
+  readonly bounds: CurrentThreeFlagshipBounds;
+}): Promise<CurrentThreeFlagshipRenderResult> {
   const { canvas, scene, camera: cameraSpec, bounds } = options;
   canvas.width = scene.width;
   canvas.height = scene.height;
@@ -62,7 +62,7 @@ export async function renderThreeFlagshipViewer(options: {
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = scene.render.exposure;
   if (!(renderer instanceof THREE.WebGLRenderer)) {
-    throw new Error("V8 Three.js parity requires an actual THREE.WebGLRenderer.");
+    throw new Error("Three.js parity requires an actual THREE.WebGLRenderer.");
   }
 
   const pmrem = new THREE.PMREMGenerator(renderer);
@@ -104,7 +104,7 @@ export async function renderThreeFlagshipViewer(options: {
   const dataUrl = pixelsToDataUrl(pixels, scene.width, scene.height, true);
   const pixelStats = analyzePixels(pixels);
   const meshStats = countMeshesAndMaterials(model);
-  const result: V8ThreeFlagshipRenderResult = {
+  const result: CurrentThreeFlagshipRenderResult = {
     engine: "threejs",
     status: "ready",
     renderer: {
@@ -137,7 +137,7 @@ export async function renderThreeFlagshipViewer(options: {
   return result;
 }
 
-function addReferenceStage(scene: THREE.Scene, bounds: V8ThreeFlagshipBounds): void {
+function addReferenceStage(scene: THREE.Scene, bounds: CurrentThreeFlagshipBounds): void {
   const width = Math.max(0.2, bounds.max[0] - bounds.min[0]);
   const height = Math.max(0.2, bounds.max[1] - bounds.min[1]);
   const depth = Math.max(0.2, bounds.max[2] - bounds.min[2]);
@@ -179,7 +179,7 @@ function readRendererPixels(renderer: THREE.WebGLRenderer, width: number, height
   return new Uint8ClampedArray(pixels);
 }
 
-function analyzePixels(pixels: Uint8ClampedArray): V8ThreeFlagshipRenderResult["pixels"] {
+function analyzePixels(pixels: Uint8ClampedArray): CurrentThreeFlagshipRenderResult["pixels"] {
   let nonBlackPixels = 0;
   let lumaTotal = 0;
   let maxLuma = 0;

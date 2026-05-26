@@ -1,4 +1,4 @@
-# Game Slice V3
+# Game Slice Foundation
 
 This example is a small realtime viewport slice built from public A3D APIs.
 

@@ -1,9 +1,9 @@
-export interface V5Bone {
+export interface ThreeCompatBone {
   readonly name: string;
   readonly parentIndex: number;
 }
 
-export class SkeletonV5 {
-  constructor(public readonly bones: readonly V5Bone[]) {}
+export class SkeletonThreeCompat {
+  constructor(public readonly bones: readonly ThreeCompatBone[]) {}
   get boneCount(): number { return this.bones.length; }
 }

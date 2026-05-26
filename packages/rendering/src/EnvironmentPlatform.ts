@@ -2,7 +2,7 @@ import { Geometry, type Bounds3 } from "./Geometry";
 import { type EnvironmentLightingOptions, type RenderItem } from "./ForwardPass";
 import { PBRMaterial, type PBRProceduralEnvironmentMapOptions } from "./PBRMaterial";
 import { UnlitMaterial } from "./UnlitMaterial";
-import { createV4ContactShadowPlan, type V4ContactShadowPlan } from "./shadows/ContactShadows";
+import { createExternalParityContactShadowPlan, type ExternalParityContactShadowPlan } from "./shadows/ContactShadows";
 
 export type EnvironmentCapabilityId =
   | "cubemap-renderer"
@@ -166,7 +166,7 @@ export interface EnvironmentContactGroundingOptions {
 
 export interface EnvironmentContactGrounding {
   readonly mode: "contact-shadow";
-  readonly plan: V4ContactShadowPlan;
+  readonly plan: ExternalParityContactShadowPlan;
   readonly items: readonly RenderItem[];
   readonly receiverLabel: string;
   readonly limitations: readonly string[];
@@ -227,7 +227,7 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
   capability("cubemap-renderer", "Cubemap Renderer", "partial", true, [
     "Texture supports six cube faces.",
     "WebGL2Device binds cubemap faces.",
-    "V6 environment lighting resources create PMREM cube textures.",
+    "Production environment lighting resources create PMREM cube textures.",
     "Renderer schedules EnvironmentBackgroundPass for camera-correct cubemap backgrounds."
   ], "Renderer cubemap background path exists, but no accepted gallery route/screenshot proves six-face visual sampling yet.", "Add visible six-face skybox/background rendering and screenshot gates."),
   capability("equirectangular-projection", "Equirectangular Projection Engine", "partial", true, [
@@ -254,10 +254,10 @@ const ENVIRONMENT_CAPABILITIES: readonly EnvironmentCapability[] = [
     "Renderer and ForwardPass bind exponential fog uniforms into active PBR-family shader paths."
   ], "Renderer shader path exists, but no accepted gallery route/screenshot proves FogExp2-style blending yet.", "Add visual gates before claiming FogExp2 parity."),
   capability("rgbe-hdr-parser", "RGBE HDR Parser", "partial", true, [
-    "parseV6RadianceHDR decodes Radiance/RGBE RLE buffers.",
+    "parseProductionRadianceHDR decodes Radiance/RGBE RLE buffers.",
     "decodeRgbeEnvironmentMap converts RGBE pixels to linear HDR data."
-  ], "Public HDRLoaderV5 remains diagnostic-only.", "Expose an end-to-end public HDR file-to-environment loader path."),
-  capability("exr-parser", "EXR Parser", "missing", false, [], "EXRLoaderV5 is diagnostic-only and does not decode OpenEXR pixels.", "Implement real EXR decode or document EXR as unsupported."),
+  ], "Public HDRLoaderThreeCompat remains diagnostic-only.", "Expose an end-to-end public HDR file-to-environment loader path."),
+  capability("exr-parser", "EXR Parser", "missing", false, [], "EXRLoaderThreeCompat is diagnostic-only and does not decode OpenEXR pixels.", "Implement real EXR decode or document EXR as unsupported."),
   capability("cube-camera-reflections", "Cube Camera Reflections", "missing", false, [], "ReflectionProbe is a descriptor helper; live six-direction capture is not implemented.", "Implement cube camera/probe capture and reflective material binding."),
   capability("dynamic-ocean-plane", "Dynamic Ocean Plane", "helper", true, [
     "OceanFixtures and waterSystems provide Gerstner/procedural water telemetry.",
@@ -761,7 +761,7 @@ function createStageContactGrounding(
   const casterRadius = positive(options.casterRadius ?? size * (defaultProductGrounding ? 0.28 : 0.34), "contact grounding casterRadius");
   const receiverDistance = positive(options.receiverDistance ?? size * 0.075, "contact grounding receiverDistance");
   const label = options.label ?? `${preset} product grounding`;
-  const plan = createV4ContactShadowPlan({
+  const plan = createExternalParityContactShadowPlan({
     casterRadius,
     receiverDistance,
     softness: options.softness ?? (defaultProductGrounding ? 0.62 : 0.52),

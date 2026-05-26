@@ -6,11 +6,11 @@ const sourceRoot = join(root, "fixtures/product-studio/products");
 const targetRoot = join(root, "fixtures/workflow-assets/assets");
 
 const fixtures = [
-  { id: "product-camera", source: "camera-kit", description: "V3 product camera fixture with data URI buffers and textures." },
-  { id: "material-spheres", source: "watch", description: "V3 material-rich fixture with metal, glass, emissive, and strap materials." },
-  { id: "animated-character", source: "speaker", description: "V3 animation placeholder fixture used to validate loader summaries and warnings." },
-  { id: "variant-product", source: "camera-kit", description: "V3 product variant fixture used for material variant readiness tracking." },
-  { id: "compressed-product", source: "speaker", description: "V3 compression placeholder fixture used for compression warning coverage." }
+  { id: "product-camera", source: "camera-kit", description: "Foundation product camera fixture with data URI buffers and textures." },
+  { id: "material-spheres", source: "watch", description: "Foundation material-rich fixture with metal, glass, emissive, and strap materials." },
+  { id: "animated-character", source: "speaker", description: "Foundation animation placeholder fixture used to validate loader summaries and warnings." },
+  { id: "variant-product", source: "camera-kit", description: "Foundation product variant fixture used for material variant readiness tracking." },
+  { id: "compressed-product", source: "speaker", description: "Foundation compression placeholder fixture used for compression warning coverage." }
 ] as const;
 
 async function main(): Promise<void> {
@@ -30,7 +30,7 @@ async function main(): Promise<void> {
     await writeFile(glbPath, createJsonOnlyGlb(renameAsset(sourceGltf, `${fixture.id}-glb`)));
     await writeExternalFixture(renameAsset(sourceGltf, `${fixture.id}-external`), externalGltfPath);
     await writeFile(manifestPath, `${JSON.stringify({
-      schema: "a3d-v3-asset-fixture/v1",
+      schema: "a3d-foundation-asset-fixture",
       id: fixture.id,
       source: fixture.source,
       description: fixture.description,
@@ -51,7 +51,7 @@ function renameAsset(gltf: any, id: string): any {
     ...gltf,
     asset: {
       ...(gltf.asset ?? {}),
-      generator: `A3D V3 asset fixture generator (${id})`
+      generator: `A3D Foundation asset fixture generator (${id})`
     },
     scenes: (gltf.scenes ?? []).map((scene: any, index: number) => ({
       ...scene,

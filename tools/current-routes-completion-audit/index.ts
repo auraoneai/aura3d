@@ -57,7 +57,7 @@ const screenshotResults = requiredScreenshots.map((path) => ({
   pass: existsSync(resolve(path))
 }));
 
-const uncheckedChecklistItems = readFileSync(resolve("docs/project/v8-roadmap-three-js-competitor-plan.md"), "utf8")
+const uncheckedChecklistItems = readFileSync(resolve("docs/project/threejs-parity-status.md"), "utf8")
   .split("\n")
   .map((line, index) => ({ line: index + 1, text: line.trim() }))
   .filter((entry) => entry.text.startsWith("- [ ]"));
@@ -68,10 +68,10 @@ const failures = [
 ];
 
 const output = {
-  schema: "a3d-current-routes-completion-audit/v1",
+  schema: "a3d-current-routes-completion-audit",
   generatedAt: new Date().toISOString(),
   pass: failures.length === 0,
-  claimBoundary: "This audit means the V8 aggregate gate passes. It does not mean every strategic Three.js-replacement backlog item in docs/project/v8-roadmap-three-js-competitor-plan.md is complete.",
+  claimBoundary: "This audit means the CurrentRoutes aggregate gate passes. It does not mean every strategic Three.js-replacement backlog item in docs/project/threejs-parity-status.md is complete.",
   reports: reportResults,
   screenshots: screenshotResults,
   openBacklogItems: uncheckedChecklistItems,
@@ -82,7 +82,7 @@ mkdirSync(dirname(resolve(REPORT_PATH)), { recursive: true });
 writeFileSync(resolve(REPORT_PATH), `${JSON.stringify(output, null, 2)}\n`);
 
 if (failures.length > 0) {
-  throw new Error(`V8 completion audit failed:\n${failures.join("\n")}`);
+  throw new Error(`CurrentRoutes completion audit failed:\n${failures.join("\n")}`);
 }
 
-console.log(`V8 completion audit passed. Report: ${REPORT_PATH}`);
+console.log(`CurrentRoutes completion audit passed. Report: ${REPORT_PATH}`);

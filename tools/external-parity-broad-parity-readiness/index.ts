@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export type V4BroadParityClaimId =
+export type ExternalParityBroadParityClaimId =
   | "threejs-broad-superiority"
   | "babylonjs-broad-superiority"
   | "unity-parity"
@@ -16,8 +16,8 @@ export type V4BroadParityClaimId =
   | "full-postprocess-suite-parity"
   | "rendered-product-visual-parity";
 
-export interface V4BroadParityClaimReadiness {
-  readonly id: V4BroadParityClaimId;
+export interface ExternalParityBroadParityClaimReadiness {
+  readonly id: ExternalParityBroadParityClaimId;
   readonly claim: string;
   readonly ready: boolean;
   readonly requiredEvidence: readonly string[];
@@ -25,7 +25,7 @@ export interface V4BroadParityClaimReadiness {
   readonly blockers: readonly string[];
 }
 
-export interface V4SupportedNarrowClaim {
+export interface ExternalParitySupportedNarrowClaim {
   readonly id: string;
   readonly status: "supported";
   readonly claim: string;
@@ -33,9 +33,9 @@ export interface V4SupportedNarrowClaim {
   readonly exclusions: readonly string[];
 }
 
-export interface V4ObjectiveCompletionChecklistItem {
+export interface ExternalParityObjectiveCompletionChecklistItem {
   readonly requirement: string;
-  readonly claimId: V4BroadParityClaimId;
+  readonly claimId: ExternalParityBroadParityClaimId;
   readonly successCriteria: readonly string[];
   readonly requiredCommands: readonly string[];
   readonly evidencePaths: readonly string[];
@@ -51,9 +51,9 @@ const comparisonPaths = [
 ] as const;
 const sourceFiles = [
   "tools/external-parity-broad-parity-readiness/index.ts",
-  "docs/project/v4-decision-gates.md",
-  "docs/project/v4-readme.md",
-  "docs/project/v4-old-codebase-port-plan.md",
+  "docs/project/product-studio-decision-gates.md",
+  "docs/project/documentation-index.md",
+  "docs/project/migration.md",
   "tests/reports/external-parity-current-capability.json",
   "tests/reports/external-parity-rendering.json",
   "tests/reports/external-parity-asset-corpus.json",
@@ -71,7 +71,7 @@ const sourceFiles = [
   "tests/reports/external-parity-ecosystem-readiness.json",
 ] as const;
 
-export function createV4BroadParityReadinessReport(root = process.cwd()) {
+export function createExternalParityBroadParityReadinessReport(root = process.cwd()) {
   const currentCapability = readJson(root, "tests/reports/external-parity-current-capability.json");
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const assets = readJson(root, "tests/reports/external-parity-asset-corpus.json");
@@ -87,7 +87,7 @@ export function createV4BroadParityReadinessReport(root = process.cwd()) {
   const hdrRenderTargetReadiness = readJson(root, "tests/reports/external-parity-hdr-render-target-readiness.json");
   const pbrGltfReadiness = readJson(root, "tests/reports/external-parity-pbr-gltf-readiness.json");
 
-  const claims: V4BroadParityClaimReadiness[] = [
+  const claims: ExternalParityBroadParityClaimReadiness[] = [
     broadEngineClaim("threejs-broad-superiority", "Three.js broad superiority.", "threejs", three),
     broadEngineClaim("babylonjs-broad-superiority", "Babylon.js broad superiority.", "babylonjs", babylon),
     externalParityClaim("unity-parity", "Unity parity.", unityUnreal, "unityParity"),
@@ -138,7 +138,7 @@ export function createV4BroadParityReadinessReport(root = process.cwd()) {
   const report = {
     ...baseReport(root, {
       ok: blockers.length === 0,
-      command: "pnpm audit:v4-broad-parity",
+      command: "pnpm audit:external-parity-broad-parity",
       runIdPrefix: "external-parity-broad-parity-readiness",
       sourceFiles,
       violations: blockers,
@@ -162,13 +162,13 @@ export function createV4BroadParityReadinessReport(root = process.cwd()) {
       readyClaims: claims.filter((claim) => claim.ready).length,
       blockedClaims: claims.filter((claim) => !claim.ready).length,
       supportedNarrowClaims: supportedNarrowClaims.length,
-      currentV4CapabilityOk: currentCapability?.ok === true,
+      currentExternalParityCapabilityOk: currentCapability?.ok === true,
     },
   };
   return report;
 }
 
-function webgpuParityClaim(webgpu: Record<string, unknown> | null): V4BroadParityClaimReadiness {
+function webgpuParityClaim(webgpu: Record<string, unknown> | null): ExternalParityBroadParityClaimReadiness {
   const evidenceBlockers = webgpuFullParityEvidenceBlockers(webgpu);
   return readiness({
     id: "full-webgpu-parity",
@@ -185,8 +185,8 @@ function webgpuParityClaim(webgpu: Record<string, unknown> | null): V4BroadParit
   });
 }
 
-function blockedLanguageForClaims(claims: readonly V4BroadParityClaimReadiness[]): readonly string[] {
-  const labels: Partial<Record<V4BroadParityClaimId, readonly string[]>> = {
+function blockedLanguageForClaims(claims: readonly ExternalParityBroadParityClaimReadiness[]): readonly string[] {
+  const labels: Partial<Record<ExternalParityBroadParityClaimId, readonly string[]>> = {
     "threejs-broad-superiority": ["better than Three.js"],
     "babylonjs-broad-superiority": ["better than Babylon.js"],
     "unity-parity": ["Unity parity"],
@@ -204,7 +204,7 @@ function blockedLanguageForClaims(claims: readonly V4BroadParityClaimReadiness[]
   return [...new Set(claims.flatMap((claim) => claim.ready ? [] : labels[claim.id] ?? [claim.claim]))];
 }
 
-function nextEvidenceForClaims(claims: readonly V4BroadParityClaimReadiness[]): readonly string[] {
+function nextEvidenceForClaims(claims: readonly ExternalParityBroadParityClaimReadiness[]): readonly string[] {
   const evidence = new Set<string>();
   for (const claim of claims) {
     if (claim.ready) continue;
@@ -213,7 +213,7 @@ function nextEvidenceForClaims(claims: readonly V4BroadParityClaimReadiness[]): 
   return [...evidence];
 }
 
-function objectiveCompletionChecklist(claims: readonly V4BroadParityClaimReadiness[]): readonly V4ObjectiveCompletionChecklistItem[] {
+function objectiveCompletionChecklist(claims: readonly ExternalParityBroadParityClaimReadiness[]): readonly ExternalParityObjectiveCompletionChecklistItem[] {
   return claims.map((claim) => {
     const requiredCommands = requiredCommandsForClaim(claim.id);
     return {
@@ -234,35 +234,35 @@ function objectiveCompletionChecklist(claims: readonly V4BroadParityClaimReadine
   });
 }
 
-function requiredCommandsForClaim(id: V4BroadParityClaimId): readonly string[] {
+function requiredCommandsForClaim(id: ExternalParityBroadParityClaimId): readonly string[] {
   switch (id) {
     case "threejs-broad-superiority":
     case "babylonjs-broad-superiority":
-      return ["pnpm verify:external-parity-benchmarks", "pnpm audit:v4-broad-parity", "pnpm verify:external-parity-report-freshness"];
+      return ["pnpm verify:external-parity-benchmarks", "pnpm audit:external-parity-broad-parity", "pnpm verify:external-parity-report-freshness"];
     case "unity-parity":
     case "unreal-parity":
     case "unity-unreal-replacement":
-      return ["pnpm verify:external-parity-external-engine-baselines", "pnpm audit:external-parity-product-visual-parity", "pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity-external-engine-baselines", "pnpm audit:external-parity-product-visual-parity", "pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:external-parity-broad-parity"];
     case "production-readiness":
-      return ["pnpm verify:v4", "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment", "pnpm audit:external-parity-production-readiness", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity", "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment", "pnpm audit:external-parity-production-readiness", "pnpm audit:external-parity-broad-parity"];
     case "full-pbr-parity":
-      return ["pnpm audit:external-parity-pbr-visual-parity", "pnpm audit:external-parity-pbr-reference-readiness", "pnpm audit:external-parity-pbr-gltf-readiness", "pnpm audit:v4-broad-parity"];
+      return ["pnpm audit:external-parity-pbr-visual-parity", "pnpm audit:external-parity-pbr-reference-readiness", "pnpm audit:external-parity-pbr-gltf-readiness", "pnpm audit:external-parity-broad-parity"];
     case "full-gltf-parity":
-      return ["pnpm verify:external-parity-assets", "pnpm verify:v4-khronos-visuals", "pnpm audit:external-parity-gltf-loader-visual-parity", "pnpm audit:external-parity-pbr-gltf-readiness", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity-assets", "pnpm verify:external-parity-khronos-visuals", "pnpm audit:external-parity-gltf-loader-visual-parity", "pnpm audit:external-parity-pbr-gltf-readiness", "pnpm audit:external-parity-broad-parity"];
     case "full-webgpu-parity":
-      return ["pnpm verify:external-parity-rendering", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-broad-parity"];
     case "production-hdr-render-target-parity":
-      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-hdr-visual-parity", "pnpm audit:external-parity-hdr-render-target-readiness", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-hdr-visual-parity", "pnpm audit:external-parity-hdr-render-target-readiness", "pnpm audit:external-parity-broad-parity"];
     case "production-shadow-map-parity":
-      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-shadow-visual-parity", "pnpm audit:external-parity-shadow-map-readiness", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-shadow-visual-parity", "pnpm audit:external-parity-shadow-map-readiness", "pnpm audit:external-parity-broad-parity"];
     case "full-postprocess-suite-parity":
-      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-postprocess-suite", "pnpm audit:v4-broad-parity"];
+      return ["pnpm verify:external-parity-rendering", "pnpm audit:external-parity-postprocess-suite", "pnpm audit:external-parity-broad-parity"];
     case "rendered-product-visual-parity":
-      return ["pnpm audit:external-parity-product-visual-parity", "pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:v4-broad-parity"];
+      return ["pnpm audit:external-parity-product-visual-parity", "pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:external-parity-broad-parity"];
   }
 }
 
-function broadEngineClaim(id: V4BroadParityClaimId, claim: string, engine: "threejs" | "babylonjs", report: Record<string, unknown> | null): V4BroadParityClaimReadiness {
+function broadEngineClaim(id: ExternalParityBroadParityClaimId, claim: string, engine: "threejs" | "babylonjs", report: Record<string, unknown> | null): ExternalParityBroadParityClaimReadiness {
   const unsupported = stringArray(report?.unsupportedByThisReport);
   const requiredMarker = engine === "threejs" ? "broad better-than-Three.js claims" : "broad better-than-Babylon.js claims";
   const broadSuperiority = isRecord(report?.broadSuperiority) ? report.broadSuperiority : {};
@@ -290,7 +290,7 @@ function broadEngineClaim(id: V4BroadParityClaimId, claim: string, engine: "thre
   });
 }
 
-function externalParityClaim(id: V4BroadParityClaimId, claim: string, report: Record<string, unknown> | null, evidenceKey: string): V4BroadParityClaimReadiness {
+function externalParityClaim(id: ExternalParityBroadParityClaimId, claim: string, report: Record<string, unknown> | null, evidenceKey: string): ExternalParityBroadParityClaimReadiness {
   return readiness({
     id,
     claim,
@@ -309,14 +309,14 @@ function externalParityClaim(id: V4BroadParityClaimId, claim: string, report: Re
 }
 
 function featureParityClaim(
-  id: V4BroadParityClaimId,
+  id: ExternalParityBroadParityClaimId,
   claim: string,
   rendering: Record<string, unknown> | null,
   assets: Record<string, unknown> | null,
   comparison: Record<string, unknown> | null,
   requiredEvidence: readonly string[],
   evidenceKeys: readonly string[],
-): V4BroadParityClaimReadiness {
+): ExternalParityBroadParityClaimReadiness {
   return readiness({
     id,
     claim,
@@ -331,7 +331,7 @@ function featureParityClaim(
   });
 }
 
-function reportBackedClaim(id: V4BroadParityClaimId, claim: string, report: Record<string, unknown> | null, requiredEvidence: readonly string[], evidencePaths: readonly string[], evidenceKeys: readonly string[]): V4BroadParityClaimReadiness {
+function reportBackedClaim(id: ExternalParityBroadParityClaimId, claim: string, report: Record<string, unknown> | null, requiredEvidence: readonly string[], evidencePaths: readonly string[], evidenceKeys: readonly string[]): ExternalParityBroadParityClaimReadiness {
   return readiness({
     id,
     claim,
@@ -410,7 +410,7 @@ function renderedProductVisualParityClaim(
   babylon: Record<string, unknown> | null,
   comparison: Record<string, unknown> | null,
   productVisualParity: Record<string, unknown> | null
-): V4BroadParityClaimReadiness {
+): ExternalParityBroadParityClaimReadiness {
   return readiness({
     id: "rendered-product-visual-parity",
     claim: "Rendered product visual parity against Three.js/Babylon/Unity/Unreal.",
@@ -470,12 +470,12 @@ function hasProductVisualRenderQuality(productVisualParity: Record<string, unkno
 }
 
 function readiness(options: {
-  readonly id: V4BroadParityClaimId;
+  readonly id: ExternalParityBroadParityClaimId;
   readonly claim: string;
   readonly requiredEvidence: readonly string[];
   readonly evidencePaths: readonly string[];
   readonly checks: readonly (readonly [boolean, string])[];
-}): V4BroadParityClaimReadiness {
+}): ExternalParityBroadParityClaimReadiness {
   const blockers = options.checks.flatMap(([passed, blocker]) => passed ? [] : [blocker]);
   return {
     id: options.id,
@@ -491,9 +491,9 @@ function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((entry): entry is string => typeof entry === "string") : [];
 }
 
-function supportedNarrowClaimsFromComparison(comparison: Record<string, unknown> | null): V4SupportedNarrowClaim[] {
+function supportedNarrowClaimsFromComparison(comparison: Record<string, unknown> | null): ExternalParitySupportedNarrowClaim[] {
   if (!comparison || !Array.isArray(comparison.supportedNicheClaims)) return [];
-  return comparison.supportedNicheClaims.flatMap((entry): V4SupportedNarrowClaim[] => {
+  return comparison.supportedNicheClaims.flatMap((entry): ExternalParitySupportedNarrowClaim[] => {
     if (!isRecord(entry) || entry.status !== "supported" || typeof entry.id !== "string" || typeof entry.claim !== "string") {
       return [];
     }
@@ -511,7 +511,7 @@ function supportedNarrowClaimsFromComparison(comparison: Record<string, unknown>
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4BroadParityReadinessReport();
+  const report = createExternalParityBroadParityReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

@@ -12,13 +12,13 @@ export type {
   A3DAppWorkflowPreset
 } from "@aura3d/apps";
 export { Engine } from "@aura3d/core";
-export { Renderer, createV4EnvironmentPipeline, listV4EnvironmentTargets } from "@aura3d/rendering";
+export { Renderer, createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "@aura3d/rendering";
 export {
   GLTFLoader,
   createAssetCompatibilityReport,
   inspectGLTFAsset,
   loadRenderableAsset,
-  summarizeV4Corpus
+  summarizeExternalParityGLTFCorpus
 } from "@aura3d/assets";
 export { loadProductAsset } from "@aura3d/product-studio";
 export {
@@ -30,7 +30,6 @@ export {
   createProductConfiguratorWorkflow,
   createSceneShowcaseWorkflow
 } from "@aura3d/workflows";
-export * as v9 from "./advanced-runtime/index.js";
 export {
   A3DRenderer,
   A3DScene,
@@ -54,9 +53,9 @@ import {
   createSceneShowcaseWorkflow
 } from "@aura3d/workflows";
 import {
-  createV4EnvironmentPipeline,
-  type V4EnvironmentPipeline,
-  type V4EnvironmentPipelineOptions,
+  createExternalParityEnvironmentPipeline,
+  type ExternalParityEnvironmentPipeline,
+  type ExternalParityEnvironmentPipelineOptions,
   type RenderDeviceDiagnostics
 } from "@aura3d/rendering";
 import {
@@ -84,11 +83,11 @@ export const workflows = {
 
 export type A3DWorkflowApi = typeof workflows;
 
-export type A3DEnvironmentOptions = V4EnvironmentPipelineOptions;
-export type A3DEnvironment = V4EnvironmentPipeline;
+export type A3DEnvironmentOptions = ExternalParityEnvironmentPipelineOptions;
+export type A3DEnvironment = ExternalParityEnvironmentPipeline;
 
 export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment {
-  return createV4EnvironmentPipeline(options);
+  return createExternalParityEnvironmentPipeline(options);
 }
 
 export async function loadAsset(urlOrAsset: string | RenderableAsset, options: LoadRenderableAssetOptions = {}): Promise<RenderableAsset> {

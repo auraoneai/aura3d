@@ -50,7 +50,7 @@ interface ExternalDemoExportReport {
 }
 
 interface PublicDeploymentManifest {
-  readonly schemaVersion: "a3d-public-demo-deployment-v1";
+  readonly schemaVersion: "a3d-public-demo-deployment";
   readonly generatedAt: string;
   readonly version: string | null;
   readonly outputDir: string;
@@ -141,7 +141,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
   const sourceFileHashes = hashSourceFiles(root, [...sourceFiles].sort((left, right) => left.localeCompare(right)));
   const integrityManifestPath = join(resolvedOutputDir, "static-integrity-manifest.json");
   writeFileSync(integrityManifestPath, `${JSON.stringify({
-    schemaVersion: "a3d-static-demo-integrity-v1",
+    schemaVersion: "a3d-static-demo-integrity",
     generatedAt: new Date().toISOString(),
     version: packageVersion,
     gitSha: gitSha(root),
@@ -196,7 +196,7 @@ export async function buildExternalDemoExport(root = process.cwd(), outputDir?: 
 
 function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymentManifest): Record<string, unknown> {
   return {
-    schemaVersion: "a3d-public-demo-deployment-command-plan-v1",
+    schemaVersion: "a3d-public-demo-deployment-command-plan",
     generatedAt: new Date().toISOString(),
     outputDir,
     claimBoundary: "This command plan only describes how to deploy and verify the static demo artifact. Production readiness remains blocked until a durable HTTPS origin serves bytes that match the manifest and passes public deployment smoke validation.",
@@ -215,7 +215,7 @@ function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymen
       "Do not rewrite, minify, gzip-only, or transform bytes before validation; the public response body must match sha256.",
       "Serve HTML as text/html and JavaScript as text/javascript or application/javascript.",
     ],
-    githubPagesWorkflow: ".github/workflows/v4-public-demo-deploy.yml",
+    githubPagesWorkflow: ".github/workflows/public-demo-deploy.yml",
     githubPagesWorkflowNotes: [
       "The workflow builds the static export, runs local static-server smoke validation, deploys the exact artifact to GitHub Pages, and then runs verify:public-demo-deployment against the Pages URL.",
       "A workflow pass is public deployment evidence only when the uploaded public-demo-deployment-smoke and external-parity-production-readiness reports are retained with the run and the deployed URL is durable.",
@@ -226,8 +226,8 @@ function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymen
       "pnpm verify:static-demo-server-smoke",
       "A3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
       "pnpm audit:external-parity-production-readiness",
-      "pnpm audit:v4-broad-parity",
-      "pnpm audit:v4-completion",
+      "pnpm audit:external-parity-broad-parity",
+      "pnpm audit:external-parity-completion",
       "pnpm verify:external-parity-report-freshness",
     ],
     blockedUntilPublicValidationPasses: [
@@ -242,7 +242,7 @@ function buildDeploymentCommandPlan(outputDir: string, manifest: PublicDeploymen
 function buildPublicDeploymentManifest(root: string, outputDir: string, resolvedOutputDir: string, version: string | null, demos: readonly ExternalDemoExportEntry[], sourceFileHashes: readonly SourceFileHash[]): PublicDeploymentManifest {
   const indexPath = relative(root, join(resolvedOutputDir, "index.html"));
   return {
-    schemaVersion: "a3d-public-demo-deployment-v1",
+    schemaVersion: "a3d-public-demo-deployment",
     generatedAt: new Date().toISOString(),
     version,
     outputDir,

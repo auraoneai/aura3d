@@ -28,10 +28,10 @@ const requiredBuildFiles = [
   "examples/foundation-game-slice/main.ts",
   "benchmarks/foundation/aura3d/asset-scene.ts",
   "benchmarks/foundation/threejs/asset-scene.ts",
-  "docs/project/v3-roadmap-product-positioning.md",
-  "docs/project/v3-roadmap-known-gaps.md"
+  "docs/project/competitive-positioning.md",
+  "docs/project/known-limits.md"
 ] as const;
-const progress = existsSync(resolve("docs/project/v3-roadmap-progress.md")) ? readFileSync(resolve("docs/project/v3-roadmap-progress.md"), "utf8") : "";
+const progress = existsSync(resolve("docs/project/verification-evidence.md")) ? readFileSync(resolve("docs/project/verification-evidence.md"), "utf8") : "";
 const packageJson = JSON.parse(readFileSync(resolve("package.json"), "utf8")) as { readonly scripts?: Record<string, string> };
 const reportChecks = milestoneReports.map((path) => {
   const report = existsSync(resolve(path)) ? JSON.parse(readFileSync(resolve(path), "utf8")) as Record<string, unknown> : undefined;
@@ -46,24 +46,24 @@ const completedMilestones = Array.from({ length: 11 }, (_, index) => ({
   milestone: `Milestone ${index}`,
   checked: new RegExp(`- \\[x\\] Milestone ${index}\\b`, "i").test(progress)
 }));
-const releaseScript = packageJson.scripts?.["v3:release"] ?? "";
+const releaseScript = packageJson.scripts?.["foundation:release"] ?? "";
 const releaseScriptIncludesAllGates = [
-  "v3:truth",
-  "v3:progress",
+  "foundation:truth",
+  "foundation:progress",
   "typecheck",
-  "v3:renderer",
-  "v3:assets",
-  "v3:workflows",
-  "v3:apps",
-  "v3:examples",
-  "v3:package",
-  "v3:compare-threejs",
-  "v3:docs",
+  "foundation:renderer",
+  "foundation:assets",
+  "foundation:workflows",
+  "foundation:apps",
+  "foundation:examples",
+  "foundation:package",
+  "foundation:compare-threejs",
+  "foundation:docs",
   "foundation-release-readiness",
   "foundation-completion-audit"
 ].every((token) => releaseScript.includes(token));
 const report = {
-  schema: "a3d-foundation-completion-audit/v1",
+  schema: "a3d-foundation-completion-audit",
   generatedAt: new Date().toISOString(),
   pass: reportChecks.every((check) => check.pass)
     && buildFileChecks.every((check) => check.exists)

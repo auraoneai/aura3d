@@ -92,10 +92,10 @@ async function run(): Promise<void> {
     }
   });
   const pixels = {
-    dielectricSmooth: findPixel(renderer, { x: 245, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 45 && g > 40 && b > 35 && a === 255),
-    dielectricRough: findPixel(renderer, { x: 365, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 45 && g > 40 && b > 35 && a === 255),
-    metalSmooth: findPixel(renderer, { x: 485, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 70 && g > 40 && b < 90 && a === 255),
-    emissive: findPixel(renderer, { x: 610, y: 205, width: 110, height: 130 }, (r, g, b, a) => g > 90 && r < 90 && a === 255)
+    dielectricSmooth: findPixel(renderer, { x: 90, y: 165, width: 200, height: 190 }, (r, g, b, a) => r > 45 && g > 40 && b > 35 && a === 255),
+    dielectricRough: findPixel(renderer, { x: 290, y: 165, width: 200, height: 190 }, (r, g, b, a) => r > 45 && g > 40 && b > 35 && a === 255),
+    metalSmooth: findPixel(renderer, { x: 480, y: 165, width: 195, height: 190 }, (r, g, b, a) => r > 70 && g > 40 && b < 90 && a === 255),
+    emissive: findPixel(renderer, { x: 670, y: 165, width: 205, height: 190 }, (r, g, b, a) => g > 90 && r < 140 && a === 255)
   };
   window.__AURA3D_PBR_MATERIAL_LAB__ = {
     id: "pbr-material-lab",

@@ -80,12 +80,12 @@ interface AssetViewerMaterialSnapshot {
   readonly featureEvidence?: Record<string, unknown>;
 }
 
-interface V4MaterialFidelityReport {
+interface ExternalParityMaterialFidelityReport {
   ok: boolean;
   generatedAt: string;
   readonly command: string;
   readonly asset: string;
-  readonly validations: V4MaterialFidelityValidation[];
+  readonly validations: ExternalParityMaterialFidelityValidation[];
   completedTaskEvidence: readonly {
     readonly task: string;
     readonly evidence: readonly string[];
@@ -93,23 +93,23 @@ interface V4MaterialFidelityReport {
   blockedTasks: readonly string[];
 }
 
-interface V4MaterialFidelityValidation {
+interface ExternalParityMaterialFidelityValidation {
   readonly name: string;
   readonly ok: boolean;
   readonly evidence: Record<string, unknown>;
 }
 
-const report: V4MaterialFidelityReport = {
+const report: ExternalParityMaterialFidelityReport = {
   ok: false,
   generatedAt: new Date().toISOString(),
   command: "pnpm exec playwright test tests/browser/asset-material-fidelity-external-parity.spec.ts",
-  asset: "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
+  asset: "fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf",
   validations: [],
   completedTaskEvidence: [],
   blockedTasks: [],
 };
 
-test.describe("V4 asset material fidelity report", () => {
+test.describe("external-parity asset material fidelity report", () => {
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -123,14 +123,14 @@ test.describe("V4 asset material fidelity report", () => {
     report.completedTaskEvidence = [{
       task: "`tests/reports/external-parity-asset-material-fidelity.json` passes.",
       evidence: [
-        "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
+        "fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf",
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-material-fidelity-external-parity.spec.ts",
         "tests/reports/external-parity-asset-material-fidelity.json",
       ],
     }];
     report.blockedTasks = [
-      "This report proves V4 loader, inspector, texture decode, render-resource, variant, and asset-viewer reporting for the generated material fidelity card.",
+      "This report proves loader, inspector, texture decode, render-resource, variant, and asset-viewer reporting for the generated material fidelity card.",
       "It is not a pixel-perfect BRDF, reference-grade physical IBL, shadow, tone-mapping, or real-world textured model parity claim.",
     ];
     const reportPath = resolve("tests/reports/external-parity-asset-material-fidelity.json");
@@ -138,8 +138,8 @@ test.describe("V4 asset material fidelity report", () => {
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });
 
-  test("loads the V4 material fidelity corpus asset and reports supported material features", async ({ page }) => {
-    const url = `${server.origin}/fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf`;
+  test("loads the material fidelity corpus asset and reports supported material features", async ({ page }) => {
+    const url = `${server.origin}/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
@@ -154,7 +154,7 @@ test.describe("V4 asset material fidelity report", () => {
     expect(result?.status, result?.error).toBe("ready");
     expect(await nonBlankWebGLPixels(page, "[data-testid='asset-viewer-canvas']")).toBeGreaterThan(1000);
 
-    const material = result?.inspection?.materials?.find((entry) => entry.name === "v4-textured-alpha-emissive");
+    const material = result?.inspection?.materials?.find((entry) => entry.name === "external-parity-textured-alpha-emissive");
     expect(material).toBeTruthy();
     const slots = material?.textures.map((texture) => texture.slot).sort() ?? [];
     expect(slots).toEqual(["baseColor", "emissive", "metallicRoughness", "normal", "occlusion"]);
@@ -211,10 +211,10 @@ test.describe("V4 asset material fidelity report", () => {
     await expect.poll(() => snapshot(page).then((next) => next?.selectedMaterialVariant)).toBe("warm-alt-finish");
     result = await snapshot(page);
     expect(result?.variantSwitching).toEqual({ available: true, applied: true });
-    expect(result?.activeRenderMaterials).toContain("v4-warm-alt-finish");
+    expect(result?.activeRenderMaterials).toContain("external-parity-warm-alt-finish");
 
     report.validations.push({
-      name: "v4-material-fidelity-card",
+      name: "external-parity-material-fidelity-card",
       ok: true,
       evidence: {
         textureSlots: result?.loaderDiagnostics?.textureSlots ?? [],

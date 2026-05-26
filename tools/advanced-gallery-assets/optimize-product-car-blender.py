@@ -8,8 +8,8 @@ import bpy
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "fixtures" / "v8" / "assets" / "vehicles" / "car-concept.glb"
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "product-configurator-car-batched"
+SOURCE = ROOT / "fixtures" / "currentRoutes" / "assets" / "vehicles" / "car-concept.glb"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "product-configurator-car-batched"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "car-concept-batched.glb"
 MANIFEST = OUT_DIR / "manifest.json"
@@ -99,12 +99,12 @@ def write_manifest(before_mesh_objects, after_mesh_objects):
         "routeUse": "product-configurator",
         "routeLinkage": {
             "routeId": "product-configurator",
-            "app": "apps/v9-advanced-examples-gallery",
+            "app": "apps/threejs-parity-advanced-examples-gallery",
             "catalogAssetId": "product-configurator-car-batched",
             "runtimeRole": "optimization experiment and support evidence only; not current source-of-truth hero",
         },
         "source": {
-            "sourceScript": "tools/v9-advanced-gallery-assets/optimize-product-car-blender.py",
+            "sourceScript": "tools/advanced-gallery-assets/optimize-product-car-blender.py",
             "generator": "Blender Python GLB optimization script",
             "inputAssets": [rel(SOURCE)],
             "derivativeOfExternalAsset": True,
@@ -115,7 +115,7 @@ def write_manifest(before_mesh_objects, after_mesh_objects):
             "glb": file_info(OUT),
             "manifest": {"path": rel(MANIFEST)},
         },
-        "generator": "tools/v9-advanced-gallery-assets/optimize-product-car-blender.py",
+        "generator": "tools/advanced-gallery-assets/optimize-product-car-blender.py",
         "asset": rel(OUT),
         "status": {
             "generated": True,

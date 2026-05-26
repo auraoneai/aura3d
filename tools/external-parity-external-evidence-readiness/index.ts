@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 import { validatePublicDemoDeploymentSmokeEvidence } from "../external-parity-production-readiness/index.js";
 
-export interface V4ExternalEvidenceReadinessReport {
+export interface ExternalParityExternalEvidenceReadinessReport {
   readonly ok: boolean;
   readonly sourceFileHashes: readonly { readonly path: string; readonly sha256: string }[];
   readonly auditComplete: true;
@@ -119,14 +119,14 @@ const reportPath = "tests/reports/external-parity-external-evidence-readiness.js
 const missingArtifactRunbookPath = "tests/reports/external-parity-external-evidence-missing-artifacts.md" as const;
 const sourceFiles = [
   ".github/workflows/external-parity-external-engine-baselines.yml",
-  ".github/workflows/v4-public-demo-deploy.yml",
+  ".github/workflows/public-demo-deploy.yml",
   "package.json",
   "tools/external-parity-external-evidence-readiness/index.ts",
   "tools/external-parity-external-host-doctor/index.ts",
   "tools/external-parity-external-host-runner/index.ts",
   "tools/external-parity-github-external-readiness/index.ts",
   "tools/external-parity-external-evidence-handoff/index.ts",
-  "docs/project/v4-external-evidence-execution-prompt.md",
+  "docs/project/verification-evidence.md",
   "fixtures/external-engine-baselines/external-parity/RUNBOOK.md",
   "fixtures/external-engine-baselines/external-parity/external-baseline-command-plan.json",
   "tests/reports/external-parity-external-engine-baselines.json",
@@ -141,7 +141,7 @@ const sourceFiles = [
   "tools/public-demo-deployment-artifacts/index.ts",
 ] as const;
 
-export function createV4ExternalEvidenceReadinessReport(root = process.cwd()): V4ExternalEvidenceReadinessReport {
+export function createExternalParityExternalEvidenceReadinessReport(root = process.cwd()): ExternalParityExternalEvidenceReadinessReport {
   const baselineKit = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
   const unityUnreal = readJson(root, "tests/reports/external-parity-unity-unreal-parity.json");
   const productVisual = readJson(root, "tests/reports/external-parity-product-visual-parity.json");
@@ -181,29 +181,29 @@ export function createV4ExternalEvidenceReadinessReport(root = process.cwd()): V
   ];
   const externalEvidenceReady = areas.every((area) => area.ready) && artifactChecklist.every((artifact) => artifact.ready);
   const requiredCommands = [
-    "pnpm status:v4-local-port",
-    "pnpm status:v4-parity",
+    "pnpm status:external-parity-local-port",
+    "pnpm status:external-parity-parity",
     "pnpm prepare:external-parity-external-evidence-handoff",
-    "pnpm doctor:v4-external-host",
-    "pnpm run:v4-external-host-evidence",
-    "pnpm run:v4-external-host-evidence:execute",
+    "pnpm doctor:external-parity-external-host",
+    "pnpm run:external-parity-external-host-evidence",
+    "pnpm run:external-parity-external-host-evidence:execute",
     "pnpm audit:external-parity-github-external-readiness",
-    "pnpm preflight:v4-parity:after-external-evidence",
-    "pnpm preflight:v4-parity",
+    "pnpm preflight:external-parity-parity:after-external-evidence",
+    "pnpm preflight:external-parity-parity",
     "pnpm verify:external-parity-external-engine-baselines",
-    "pnpm dry-run:v4-unity-baselines",
-    "pnpm dry-run:v4-unreal-baselines",
-    "pnpm write:v4-external-baseline-reports",
-    "pnpm verify:v4-external-baseline-reports",
+    "pnpm dry-run:external-parity-unity-baselines",
+    "pnpm dry-run:external-parity-unreal-baselines",
+    "pnpm write:external-parity-external-baseline-reports",
+    "pnpm verify:external-parity-external-baseline-reports",
     "pnpm preflight:external-parity-production-readiness",
     "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
     "pnpm audit:external-parity-unity-unreal-parity",
     "pnpm audit:external-parity-production-readiness",
     "pnpm audit:external-parity-pbr-gltf-readiness",
-    "pnpm audit:v4-broad-parity",
-    "pnpm audit:v4-completion",
+    "pnpm audit:external-parity-broad-parity",
+    "pnpm audit:external-parity-completion",
     "pnpm verify:external-parity-report-freshness",
-    "pnpm verify:v4",
+    "pnpm verify:external-parity",
   ] as const;
   const nextActions = areas
     .filter((area) => !area.ready)
@@ -265,11 +265,11 @@ export function createV4ExternalEvidenceReadinessReport(root = process.cwd()): V
   return report;
 }
 
-function renderMissingArtifactRunbook(report: V4ExternalEvidenceReadinessReport): string {
+function renderMissingArtifactRunbook(report: ExternalParityExternalEvidenceReadinessReport): string {
   const blockedArtifacts = report.artifactChecklist.filter((artifact) => !artifact.ready);
   const readyArtifacts = report.artifactChecklist.filter((artifact) => artifact.ready);
   const lines = [
-    "# V4 External Evidence Missing Artifacts",
+    "# External parity External Evidence Missing Artifacts",
     "",
     "Generated by `pnpm audit:external-parity-external-evidence-readiness` from `tests/reports/external-parity-external-evidence-readiness.json`.",
     "",
@@ -299,13 +299,13 @@ function renderMissingArtifactRunbook(report: V4ExternalEvidenceReadinessReport)
     "",
     "## Local Refresh Commands",
     "",
-    "- `pnpm status:v4-local-port`: prints a read-only JSON summary that separates completed local docs and old-codebase port rows from blocked external parity evidence.",
-    "- `pnpm status:v4-parity`: prints a quick read-only JSON summary of achieved criteria, missing criteria, first blocked external artifact, and the preflight/refresh commands to run next.",
+    "- `pnpm status:external-parity-local-port`: prints a read-only JSON summary that separates completed local docs and old-codebase port rows from blocked external parity evidence.",
+    "- `pnpm status:external-parity-parity`: prints a quick read-only JSON summary of achieved criteria, missing criteria, first blocked external artifact, and the preflight/refresh commands to run next.",
     "- `pnpm prepare:external-parity-external-evidence-handoff`: inventories the current external baseline kit, Aura3D references, static export, blocked artifacts, and command plan for a Unity/Unreal/public-deployment handoff.",
     "- `pnpm audit:external-parity-github-external-readiness`: checks remote branch, default-branch workflow discoverability, GitHub Pages, self-hosted runners, and required Actions variables/secrets without pushing or dispatching workflows.",
-    "- `pnpm preflight:v4-parity`: rebuilds local static demo evidence, enumerates Unity/Unreal dry-run capture commands, refreshes dependent readiness reports, reruns completion, and verifies report freshness. This is a local status command, not external evidence.",
-    "- `pnpm preflight:v4-parity:after-external-evidence`: reruns the final parity preflight after real external artifacts are present without overwriting an execute-mode external-host runner report with a dry run.",
-    "- `pnpm refresh:v4-readiness-reports`: refreshes dependent report JSON and report freshness after source/report edits when local export and external dry-run outputs are already current.",
+    "- `pnpm preflight:external-parity-parity`: rebuilds local static demo evidence, enumerates Unity/Unreal dry-run capture commands, refreshes dependent readiness reports, reruns completion, and verifies report freshness. This is a local status command, not external evidence.",
+    "- `pnpm preflight:external-parity-parity:after-external-evidence`: reruns the final parity preflight after real external artifacts are present without overwriting an execute-mode external-host runner report with a dry run.",
+    "- `pnpm refresh:external-parity-readiness-reports`: refreshes dependent report JSON and report freshness after source/report edits when local export and external dry-run outputs are already current.",
     "",
     "## Next Actions",
     "",
@@ -548,7 +548,7 @@ function externalBaselineCiWorkflowArtifact(root: string): ExternalEvidenceArtif
     ready: validation.ready,
     path: validation.path,
     command: "gh workflow run external-parity-external-engine-baselines.yml -f engine=all",
-    validationCommands: ["pnpm audit:external-parity-external-evidence-readiness", "pnpm audit:v4-completion"],
+    validationCommands: ["pnpm audit:external-parity-external-evidence-readiness", "pnpm audit:external-parity-completion"],
     localEvidence: [
       "The self-hosted Unity/Unreal workflow file exists and contains the required smoke, capture, ingest, and final-audit steps.",
     ],
@@ -583,7 +583,7 @@ function publicDeploymentCiWorkflowArtifact(root: string): ExternalEvidenceArtif
     kind: "ci-workflow",
     ready: validation.ready,
     path: validation.path,
-    command: "gh workflow run v4-public-demo-deploy.yml",
+    command: "gh workflow run public-demo-deploy.yml",
     validationCommands: ["pnpm audit:external-parity-production-readiness", "pnpm audit:external-parity-external-evidence-readiness"],
     localEvidence: [
       "The GitHub Pages workflow file exists and contains static export, deployment, public smoke, production audit, external evidence audit, completion audit, and report upload steps.",
@@ -611,7 +611,7 @@ function githubRemoteExternalReadinessArea(githubExternal: Record<string, unknow
       ] : []),
     ],
     requiredExternalEvidence: [
-      "The V4 workflow files must be landed on the repository default branch.",
+      "The External parity workflow files must be landed on the repository default branch.",
       "GitHub Pages must be enabled for the repository.",
       "Self-hosted GitHub Actions runners labeled unity and unreal must be registered.",
       "A3D_UNITY_EDITOR and A3D_UNREAL_EDITOR must be configured as Actions variables or secrets; the checked-in workflow sets A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true internally.",
@@ -641,13 +641,13 @@ function externalBaselineWorkflowValidation(root: string): { readonly path: ".gi
     ["Unity batch capture helper", "run-unity-baseline-captures.mjs --project"],
     ["Unreal batch capture helper", "run-unreal-baseline-captures.mjs --project"],
     ["merged final audit job", "final-audits:"],
-    ["baseline evidence artifact download", "pattern: v4-*-baseline-evidence"],
+    ["baseline evidence artifact download", "pattern: external-parity-*-baseline-evidence"],
     ["merged artifact restore", "merge-multiple: true"],
     ["allowlisted artifact ingestion", "ingest-external-baseline-artifacts.mjs --no-audit _v4-external-baseline-evidence"],
-    ["final audit artifact upload", "v4-external-baseline-final-audits"],
+    ["final audit artifact upload", "external-parity-external-baseline-final-audits"],
     ["external evidence runbook upload", "tests/reports/external-parity-external-evidence-missing-artifacts.md"],
     ["completion runbook upload", "tests/reports/external-parity-completion-audit-runbook.md"],
-    ["artifact upload", "actions/upload-artifact@v4"],
+    ["artifact upload", "actions/upload-artifact@external-parity"],
     ["Unity editor smoke report upload", "tests/reports/external-parity-unity-editor-cli-smoke.json"],
     ["Unity render workflow report upload", "tests/reports/external-parity-unity-baseline-render.json"],
     ["Unity product baseline report upload", "tests/reports/external-parity-unity-product-visual-baseline.json"],
@@ -678,8 +678,8 @@ function externalBaselineWorkflowValidation(root: string): { readonly path: ".gi
   return { path, ready: blockers.length === 0, blockers };
 }
 
-function publicDeploymentWorkflowValidation(root: string): { readonly path: ".github/workflows/v4-public-demo-deploy.yml"; readonly ready: boolean; readonly blockers: readonly string[] } {
-  const path = ".github/workflows/v4-public-demo-deploy.yml" as const;
+function publicDeploymentWorkflowValidation(root: string): { readonly path: ".github/workflows/public-demo-deploy.yml"; readonly ready: boolean; readonly blockers: readonly string[] } {
+  const path = ".github/workflows/public-demo-deploy.yml" as const;
   const fullPath = join(root, path);
   if (!existsSync(fullPath)) {
     return { path, ready: false, blockers: [`${path} is missing; durable public deployment validation has no GitHub Pages workflow entry point`] };
@@ -697,8 +697,8 @@ function publicDeploymentWorkflowValidation(root: string): { readonly path: ".gi
     ["deployed Pages URL environment", "A3D_PUBLIC_DEMO_URL:"],
     ["production readiness audit", "pnpm audit:external-parity-production-readiness"],
     ["external evidence readiness audit", "pnpm audit:external-parity-external-evidence-readiness"],
-    ["broad parity audit", "pnpm audit:v4-broad-parity"],
-    ["completion audit", "pnpm audit:v4-completion"],
+    ["broad parity audit", "pnpm audit:external-parity-broad-parity"],
+    ["completion audit", "pnpm audit:external-parity-completion"],
     ["freshness verification", "pnpm verify:external-parity-report-freshness"],
     ["public deployment smoke report upload", "tests/reports/public-demo-deployment-smoke.json"],
     ["production readiness report upload", "tests/reports/external-parity-production-readiness.json"],
@@ -790,23 +790,23 @@ function commandsForArea(areaId: string): readonly string[] {
         "register self-hosted GitHub Actions runners labeled unity and unreal",
         "set repository variables or secrets for A3D_UNITY_EDITOR and A3D_UNREAL_EDITOR",
         "gh workflow run external-parity-external-engine-baselines.yml -f engine=all",
-        "download v4-unity-baseline-evidence and v4-unreal-baseline-evidence artifacts",
-        "pnpm ingest:v4-external-baseline-artifacts --dry-run path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
-        "pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
+        "download external-parity-unity-baseline-evidence and external-parity-unreal-baseline-evidence artifacts",
+        "pnpm ingest:external-parity-external-baseline-artifacts --dry-run path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
+        "pnpm ingest:external-parity-external-baseline-artifacts path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
       ];
     case "public-deployment-ci-workflow":
       return [
-        "gh workflow run v4-public-demo-deploy.yml",
-        "download v4-public-demo-deployment-reports",
-        "pnpm ingest:public-demo-deployment-reports --dry-run path/to/v4-public-demo-deployment-reports",
-        "pnpm ingest:public-demo-deployment-reports path/to/v4-public-demo-deployment-reports",
+        "gh workflow run public-demo-deploy.yml",
+        "download public-demo-deployment-reports",
+        "pnpm ingest:public-demo-deployment-reports --dry-run path/to/public-demo-deployment-reports",
+        "pnpm ingest:public-demo-deployment-reports path/to/public-demo-deployment-reports",
         "review tests/reports/public-demo-deployment-runbook.md if deployment smoke remains blocked",
       ];
     case "github-remote-external-readiness":
       return [
         "pnpm audit:external-parity-github-external-readiness",
         "git push origin <current-branch>",
-        "open and merge a PR that lands .github/workflows/external-parity-external-engine-baselines.yml and .github/workflows/v4-public-demo-deploy.yml on the default branch",
+        "open and merge a PR that lands .github/workflows/external-parity-external-engine-baselines.yml and .github/workflows/public-demo-deploy.yml on the default branch",
         "enable GitHub Pages for the repository",
         "register self-hosted GitHub Actions runners labeled unity and unreal",
         "configure A3D_UNITY_EDITOR and A3D_UNREAL_EDITOR as Actions variables or secrets; the workflow sets A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true internally",
@@ -817,18 +817,18 @@ function commandsForArea(areaId: string): readonly string[] {
         "export A3D_UNITY_EDITOR=/absolute/path/to/Unity",
         "optional: export A3D_UNITY_SEARCH_ROOTS=/Applications:/Users/Shared/Unity",
         "export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
-        "pnpm doctor:v4-external-host:strict",
-        "pnpm run:v4-external-host-evidence",
-        "pnpm run:v4-external-host-evidence:execute",
-        "pnpm preflight:v4-parity:after-external-evidence",
-        "pnpm dry-run:v4-unity-baselines",
+        "pnpm doctor:external-parity-external-host:strict",
+        "pnpm run:external-parity-external-host-evidence",
+        "pnpm run:external-parity-external-host-evidence:execute",
+        "pnpm preflight:external-parity-parity:after-external-evidence",
+        "pnpm dry-run:external-parity-unity-baselines",
         "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
         "follow fixtures/external-engine-baselines/external-parity/external-baseline-command-plan.json for every unity capture",
         "or run .github/workflows/external-parity-external-engine-baselines.yml on a self-hosted runner labeled unity",
-        "pnpm ingest:v4-external-baseline-artifacts --dry-run path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
-        "pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
+        "pnpm ingest:external-parity-external-baseline-artifacts --dry-run path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
+        "pnpm ingest:external-parity-external-baseline-artifacts path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
         "node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unity",
-        "pnpm verify:v4-external-baseline-reports",
+        "pnpm verify:external-parity-external-baseline-reports",
         "node fixtures/external-engine-baselines/external-parity/write-render-workflow-report.mjs unity tests/reports/external-parity-unity-baseline-render.json",
         "node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unity tests/reports/external-parity-unity-asset-import-workflow.evidence.json tests/reports/external-parity-unity-asset-import-workflow.json",
         "pnpm audit:external-parity-unity-unreal-parity",
@@ -838,18 +838,18 @@ function commandsForArea(areaId: string): readonly string[] {
         "export A3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd",
         "optional: export A3D_UNREAL_SEARCH_ROOTS=/Applications:/Users/Shared/Epic Games",
         "export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
-        "pnpm doctor:v4-external-host:strict",
-        "pnpm run:v4-external-host-evidence",
-        "pnpm run:v4-external-host-evidence:execute",
-        "pnpm preflight:v4-parity:after-external-evidence",
-        "pnpm dry-run:v4-unreal-baselines",
+        "pnpm doctor:external-parity-external-host:strict",
+        "pnpm run:external-parity-external-host-evidence",
+        "pnpm run:external-parity-external-host-evidence:execute",
+        "pnpm preflight:external-parity-parity:after-external-evidence",
+        "pnpm dry-run:external-parity-unreal-baselines",
         "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json",
         "follow fixtures/external-engine-baselines/external-parity/external-baseline-command-plan.json for every unreal capture",
         "or run .github/workflows/external-parity-external-engine-baselines.yml on a self-hosted runner labeled unreal",
-        "pnpm ingest:v4-external-baseline-artifacts --dry-run path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
-        "pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
+        "pnpm ingest:external-parity-external-baseline-artifacts --dry-run path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
+        "pnpm ingest:external-parity-external-baseline-artifacts path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
         "node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unreal",
-        "pnpm verify:v4-external-baseline-reports",
+        "pnpm verify:external-parity-external-baseline-reports",
         "node fixtures/external-engine-baselines/external-parity/write-render-workflow-report.mjs unreal tests/reports/external-parity-unreal-baseline-render.json",
         "node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unreal tests/reports/external-parity-unreal-asset-import-workflow.evidence.json tests/reports/external-parity-unreal-asset-import-workflow.json",
         "pnpm audit:external-parity-unity-unreal-parity",
@@ -866,13 +866,13 @@ function commandsForArea(areaId: string): readonly string[] {
         "pnpm build:external-demos",
         "review tests/reports/public-demo-deployment-runbook.md for exact public paths, hashes, and content markers",
         "deploy release-artifacts/external-demos/0.1.0-alpha.0 to a durable public HTTPS origin",
-        "pnpm doctor:v4-external-host:strict",
-        "pnpm run:v4-external-host-evidence",
-        "pnpm run:v4-external-host-evidence:execute",
-        "pnpm preflight:v4-parity:after-external-evidence",
+        "pnpm doctor:external-parity-external-host:strict",
+        "pnpm run:external-parity-external-host-evidence",
+        "pnpm run:external-parity-external-host-evidence:execute",
+        "pnpm preflight:external-parity-parity:after-external-evidence",
         "A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment",
-        "or run .github/workflows/v4-public-demo-deploy.yml and download v4-public-demo-deployment-reports",
-        "pnpm ingest:public-demo-deployment-reports path/to/v4-public-demo-deployment-reports",
+        "or run .github/workflows/public-demo-deploy.yml and download public-demo-deployment-reports",
+        "pnpm ingest:public-demo-deployment-reports path/to/public-demo-deployment-reports",
         "pnpm audit:external-parity-production-readiness",
       ];
     case "blender-same-corpus-export-coverage":
@@ -893,9 +893,9 @@ function commandsForArea(areaId: string): readonly string[] {
         "pnpm audit:external-parity-unity-unreal-parity",
         "pnpm audit:external-parity-production-readiness",
         "pnpm audit:external-parity-pbr-gltf-readiness",
-        "pnpm audit:v4-broad-parity",
-        "pnpm audit:v4-completion",
-        "pnpm preflight:v4-parity:after-external-evidence",
+        "pnpm audit:external-parity-broad-parity",
+        "pnpm audit:external-parity-completion",
+        "pnpm preflight:external-parity-parity:after-external-evidence",
       ];
     default:
       return ["pnpm audit:external-parity-external-evidence-readiness"];
@@ -1130,7 +1130,7 @@ function publicDeploymentArea(root: string, publicDeployment: Record<string, unk
         "public deployment smoke report is missing, failing, or lacks current per-file HTTP/hash/content-marker evidence",
         ...validation.blockers.map((blocker) => `public deployment evidence: ${blocker}`),
       ]),
-      ...(production?.productionReady === true ? [] : ["v4 production readiness remains false"]),
+      ...(production?.productionReady === true ? [] : ["external-parity production readiness remains false"]),
     ],
   };
 }
@@ -1418,7 +1418,7 @@ function stringArray(value: unknown): string[] {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4ExternalEvidenceReadinessReport();
+  const report = createExternalParityExternalEvidenceReadinessReport();
   console.log(JSON.stringify({
     ok: report.ok,
     auditComplete: report.auditComplete,

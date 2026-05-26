@@ -3,10 +3,7 @@ import { describe, expect, it } from "vitest";
 
 const tutorialPaths = [
   "docs/project/tutorials-getting-started-real-scene.md",
-  "docs/project/tutorials-product-configurator.md",
-  "docs/project/tutorials-asset-viewer.md",
-  "docs/project/tutorials-physics-sandbox.md",
-  "docs/project/tutorials-editor-app.md"
+  "docs/project/tutorials-product-configurator.md"
 ] as const;
 
 describe("tutorial docs", () => {

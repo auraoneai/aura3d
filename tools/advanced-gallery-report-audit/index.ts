@@ -257,7 +257,7 @@ interface RouteAudit {
 }
 
 interface AuditReport {
-  readonly schema: "a3d-v9-advanced-gallery-report-disclosure-audit/v1";
+  readonly schema: "a3d-threejs-parity-advanced-gallery-report-disclosure-audit";
   readonly generatedAt: string;
   readonly sourceDir: string;
   readonly outputPath: string;
@@ -371,7 +371,7 @@ function main(): void {
     blockers.unshift(`report folder contains unexpected route JSON reports: ${unexpectedRouteReports.join(", ")}`);
   }
   const audit: AuditReport = {
-    schema: "a3d-v9-advanced-gallery-report-disclosure-audit/v1",
+    schema: "a3d-threejs-parity-advanced-gallery-report-disclosure-audit",
     generatedAt: new Date().toISOString(),
     sourceDir: reportDir,
     outputPath,
@@ -529,7 +529,7 @@ function auditRouteReport(reportPath: string): RouteAudit {
     && report.evidenceScope?.focusedRouteOnly === false
     && report.evidenceScope?.expectedRouteCount === expectedRouteIds.length;
   if (report && !fullGalleryEvidence) {
-    blockers.push("route report is focused/partial evidence, not a full-gallery capture report; run pnpm v9:advanced-gallery before release audit claims");
+    blockers.push("route report is focused/partial evidence, not a full-gallery capture report; run pnpm threejs-parity:advanced-gallery before release audit claims");
   }
   if (systems.length < 5) blockers.push(`runtime.systems has ${systems.length} entries; expected at least 5 reusable/visible systems`);
   if (disclosures.length === 0) blockers.push("runtime.approximations has no unsupported-feature disclosure entries");
@@ -1030,7 +1030,7 @@ function hasRendererEnvironmentBackgroundVisualDeltaEvidence(routeId: string, re
   const offPath = join(reportDir, `${routeId}-renderer-environment-background-off.png`);
   return Boolean(report?.rendererEnvironmentBackgroundEvidence)
     && evidence.source === "renderer-environment-background-on-off-screenshot-delta"
-    && evidence.rendererSource === "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass"
+    && evidence.rendererSource === "loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass"
     && evidence.passed === true
     && isFiniteNumber(evidence.changedRatio)
     && isFiniteNumber(evidence.meanDelta)
@@ -1049,7 +1049,7 @@ function hasRendererEnvironmentLightingEvidence(routeId: string, report: RouteRe
     ? evidence.uniformKeys.filter((value): value is string => typeof value === "string")
     : [];
   return isRecord(evidence)
-    && getString(evidence, "source") === "loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture"
+    && getString(evidence, "source") === "loadProductionHdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture"
     && getString(evidence, "routeId") === routeId
     && getString(evidence, "rendererField") === "source.environmentLighting"
     && getString(evidence, "forwardPassField") === "ForwardPassOptions.environmentLighting"
@@ -1236,7 +1236,7 @@ function finiteOrZero(value: unknown): number {
 }
 
 function printSummary(audit: AuditReport): void {
-  console.log(`V9 advanced gallery report disclosure audit: ${audit.summary.presentRouteReports}/${audit.summary.expectedRouteReports} expected route reports present`);
+  console.log(`Three.js parity advanced gallery report disclosure audit: ${audit.summary.presentRouteReports}/${audit.summary.expectedRouteReports} expected route reports present`);
   if (audit.summary.missingRouteReports > 0) console.log(`Missing route reports: ${audit.summary.missingRouteReports}`);
   if (audit.summary.unexpectedRouteReports > 0) console.log(`Unexpected route reports: ${audit.summary.unexpectedRouteReports}`);
   console.log(`Reusable systems: ${audit.summary.routesWithReusableSystems}/${audit.summary.routeReports}`);

@@ -26,9 +26,9 @@ export type {
   CinematicPostProcessEffectId
 } from "./CinematicDiagnostics";
 
-export { createV4BloomEvidence, runV4Bloom } from "./BloomPass";
-export type { V4BloomEvidence } from "./BloomPass";
-export { runV4ColorGrade } from "./ColorGradingPass";
-export type { V4ColorGradePreset } from "./ColorGradingPass";
-export { runV4DepthOfField } from "./DepthOfFieldPass";
-export { createV4DepthBinding, runV4SSAO } from "./SSAOPass";
+export { createExternalParityBloomEvidence, runExternalParityBloom } from "./BloomPass";
+export type { ExternalParityBloomEvidence } from "./BloomPass";
+export { runExternalParityColorGrade } from "./ColorGradingPass";
+export type { ExternalParityColorGradePreset } from "./ColorGradingPass";
+export { runExternalParityDepthOfField } from "./DepthOfFieldPass";
+export { createExternalParityDepthBinding, runExternalParitySSAO } from "./SSAOPass";

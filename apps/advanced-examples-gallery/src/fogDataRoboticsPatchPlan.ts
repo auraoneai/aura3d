@@ -36,6 +36,6 @@ export const sharedIntegrationNotes = [
   "Do not edit sceneBuilders.ts until its owner is clear; the app directory is currently untracked in git status, so existing route code should be treated as shared.",
   "All helper outputs are plain transforms/items/labels and can be adapted through existing item(...) and instancedItem(...) helpers.",
   "Helpers intentionally document unsupported volumetric fog, GPU-compute particles, CAD import, live telemetry, IK, and articulated robot dynamics instead of faking those gates.",
-  "After integration, run the focused route Playwright gate for fog-cathedral, data-galaxy, and robotics-lab plus pnpm v9:advanced-gallery:review."
+  "After integration, run the focused route Playwright gate for fog-cathedral, data-galaxy, and robotics-lab plus pnpm threejsParity:advanced-gallery:review."
 ] as const;
 

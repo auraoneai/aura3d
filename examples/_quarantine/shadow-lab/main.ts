@@ -10,13 +10,13 @@ import {
   ShadowPass,
   ShadowProjectionBuilder,
   UnlitMaterial,
-  createV4RenderPresetEvidence,
-  v4ActiveFeature,
-  v4BlockedFeature,
+  createExternalParityRenderPresetEvidence,
+  externalParityActiveFeature,
+  externalParityBlockedFeature,
   type Bounds3,
   type RenderItem,
   type ShadowFilterKernel,
-  type V4RenderPresetEvidence
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 
 declare global {
@@ -34,7 +34,7 @@ interface ShadowLabState {
   readonly errors: readonly string[];
   readonly diagnostics?: { readonly drawCalls: number; readonly lastError: string | null };
   readonly screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png";
-  readonly featureEvidence?: V4RenderPresetEvidence;
+  readonly featureEvidence?: ExternalParityRenderPresetEvidence;
   readonly claimBoundary: string;
   readonly cascadeCount?: number;
   readonly cascadeSplits?: readonly { readonly index: number; readonly near: number; readonly far: number }[];
@@ -113,7 +113,7 @@ const knownLimits = [
   "The debug canvas shows cascade/caster/receiver/frustum fitting evidence; product-scene shadow integration still needs separate screenshots.",
 ] as const;
 
-const claimBoundary = "V4 shadow-lab evidence is limited to directional, point, and spot shadow-pass metadata, cascade/debug, PCF, and darker-region browser pixel checks on a lab scene; production forward-pass shadow sampling and full flagship-scene shadow parity are not claimed.";
+const claimBoundary = "ExternalParity shadow-lab evidence is limited to directional, point, and spot shadow-pass metadata, cascade/debug, PCF, and darker-region browser pixel checks on a lab scene; production forward-pass shadow sampling and full flagship-scene shadow parity are not claimed.";
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
@@ -247,16 +247,16 @@ async function run(): Promise<void> {
       diagnostics,
       screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png",
       claimBoundary,
-      featureEvidence: createV4RenderPresetEvidence({
+      featureEvidence: createExternalParityRenderPresetEvidence({
         exampleId: "shadow-lab",
         screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png",
         features: [
-          v4ActiveFeature("directional-shadows", "CascadedShadowPass renders three directional shadow cascades with stable camera fits."),
-          v4ActiveFeature("color-management", "Debug and WebGL canvases publish opaque pixel evidence for lit and shadowed regions."),
-          v4ActiveFeature("bounded-pbr", "Visible WebGL2 caster uses the bounded PBR material path."),
-          v4BlockedFeature("contact-shadows", "Contact shadows are not implemented in this lab; it validates directional projected shadows only."),
-          v4BlockedFeature("postprocess-fxaa", "Shadow lab does not run a postprocess pass; PCF is shadow filtering, not FXAA."),
-          v4BlockedFeature("hdr", "Shadow lab does not use HDR targets or HDR IBL.")
+          externalParityActiveFeature("directional-shadows", "CascadedShadowPass renders three directional shadow cascades with stable camera fits."),
+          externalParityActiveFeature("color-management", "Debug and WebGL canvases publish opaque pixel evidence for lit and shadowed regions."),
+          externalParityActiveFeature("bounded-pbr", "Visible WebGL2 caster uses the bounded PBR material path."),
+          externalParityBlockedFeature("contact-shadows", "Contact shadows are not implemented in this lab; it validates directional projected shadows only."),
+          externalParityBlockedFeature("postprocess-fxaa", "Shadow lab does not run a postprocess pass; PCF is shadow filtering, not FXAA."),
+          externalParityBlockedFeature("hdr", "Shadow lab does not use HDR targets or HDR IBL.")
         ]
       }),
       cascadeCount: cascades.cascadeCount,

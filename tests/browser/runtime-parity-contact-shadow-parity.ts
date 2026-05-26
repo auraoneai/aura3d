@@ -13,7 +13,7 @@ import * as THREE from "/node_modules/three/build/three.module.js";
 
 declare global {
   interface Window {
-    __V7_CONTACT_SHADOW_PARITY__?: unknown;
+    __RUNTIME_CONTACT_SHADOW_PARITY__?: unknown;
   }
 }
 
@@ -86,18 +86,18 @@ function createContactFrame() {
 async function run(): Promise<void> {
   const root = document.getElementById("contact-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing contact shadow root.");
-  const a3dCanvas = createCanvas("v7-contact-a3d");
-  const threeCanvas = createCanvas("v7-contact-threejs");
-  const diffCanvas = createCanvas("v7-contact-diff");
+  const a3dCanvas = createCanvas("runtime-contact-a3d");
+  const threeCanvas = createCanvas("runtime-contact-threejs");
+  const diffCanvas = createCanvas("runtime-contact-diff");
   root.append(a3dCanvas, threeCanvas, diffCanvas);
 
   const a3d = await renderA3D(a3dCanvas);
   const threejs = renderThree(threeCanvas);
   const diff = renderDiff(a3d.pixels, threejs.pixels, diffCanvas);
 
-  window.__V7_CONTACT_SHADOW_PARITY__ = {
+  window.__RUNTIME_CONTACT_SHADOW_PARITY__ = {
     status: "ready",
-    schema: "a3d-v7-contact-shadow-parity/v1",
+    schema: "a3d-runtime-contact-shadow-parity",
     purpose: "same-scene contact/shadow delta gate",
     parity: {
       claim: "bounded-threejs-soft-contact-shadow-delta-parity",
@@ -168,7 +168,7 @@ async function renderA3D(canvas: HTMLCanvasElement): Promise<{
   const contacts = CONTACT_CASTERS.map((caster) => createContactShadowPass({
     bounds: caster.bounds,
     floorY: FLOOR_Y,
-    labelPrefix: `v7-contact-shadow-${caster.id}`,
+    labelPrefix: `runtime-contact-shadow-${caster.id}`,
     lightDirection: LIGHT_DIRECTION,
     softness: caster.type === "cube" ? 0.74 : 0.82,
     opacity: caster.type === "cube" ? 0.24 : 0.3,
@@ -176,10 +176,10 @@ async function renderA3D(canvas: HTMLCanvasElement): Promise<{
   }));
   const renderItems: RenderItem[] = [
     {
-      label: "v7-contact-floor",
+      label: "runtime-contact-floor",
       geometry: floor,
       material: new PBRMaterial({
-        name: "v7-contact-floor-material",
+        name: "runtime-contact-floor-material",
         baseColor: [0.23, 0.245, 0.265, 1],
         metallic: 0,
         roughness: 0.82,
@@ -188,10 +188,10 @@ async function renderA3D(canvas: HTMLCanvasElement): Promise<{
       modelMatrix: composeMat4([0, FLOOR_Y - 0.035, 0.18], [0, 0, 0, 1], [4.8, 0.07, 4.4])
     },
     ...CONTACT_CASTERS.map((caster): RenderItem => ({
-      label: `v7-contact-${caster.id}`,
+      label: `runtime-contact-${caster.id}`,
       geometry: caster.type === "cube" ? cube : caster.id === "right-small-sphere" ? smallSphere : sphere,
       material: new PBRMaterial({
-        name: `v7-contact-${caster.id}-material`,
+        name: `runtime-contact-${caster.id}-material`,
         baseColor: caster.color,
         metallic: caster.metallic,
         roughness: caster.roughness,
@@ -227,7 +227,7 @@ async function renderA3D(canvas: HTMLCanvasElement): Promise<{
       pcfRadius: 1.6,
       pcfSamples: 16,
       pcfDistribution: "poisson",
-      label: "v7-contact-parity-directional-shadow"
+      label: "runtime-contact-parity-directional-shadow"
     },
     cameraPolicy: "require",
     cameraPosition: frame.cameraPosition,
@@ -268,11 +268,11 @@ function createFootprintPoints(
 }
 
 function createA3DContactLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v7-contact-parity-key");
+  const key = new DirectionalLight("runtime-contact-parity-key");
   key.color = [1, 0.94, 0.82];
   key.intensity = 1.75;
   key.castsShadow = true;
-  const fill = new DirectionalLight("v7-contact-parity-fill");
+  const fill = new DirectionalLight("runtime-contact-parity-fill");
   fill.color = [0.52, 0.62, 0.84];
   fill.intensity = 0.18;
   return [
@@ -489,7 +489,7 @@ function createCanvas(id: string): HTMLCanvasElement {
 }
 
 run().catch((error) => {
-  window.__V7_CONTACT_SHADOW_PARITY__ = {
+  window.__RUNTIME_CONTACT_SHADOW_PARITY__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

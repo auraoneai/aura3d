@@ -14,7 +14,7 @@ import {
 } from "/packages/rendering/src/index.js";
 import { composeMat4, multiplyMat4, transformPoint, type Mat4 } from "/packages/scene/src/index.js";
 
-export interface V6StagedScene {
+export interface ProductionStagedScene {
   readonly source: RenderSource;
   readonly camera: {
     readonly viewProjectionMatrix: readonly number[];
@@ -23,7 +23,7 @@ export interface V6StagedScene {
   };
 }
 
-interface V6ComposablePipeline {
+interface ProductionComposablePipeline {
   readonly source: RenderSource;
   readonly resources: {
     readonly bounds: CameraFrameBounds;
@@ -49,7 +49,7 @@ interface V6ComposablePipeline {
   };
 }
 
-export function createV6ProductionStageScene(
+export function createProductionProductionStageScene(
   source: RenderSource,
   bounds: CameraFrameBounds,
   viewport: { readonly width: number; readonly height: number },
@@ -63,10 +63,10 @@ export function createV6ProductionStageScene(
     readonly includeSoftboxes?: boolean;
     readonly includeBackdrop?: boolean;
     readonly environmentLighting?: EnvironmentLightingOptions;
-    readonly hdrSkybox?: V6HdrSkyboxOptions;
+    readonly hdrSkybox?: ProductionHdrSkyboxOptions;
   } = {}
-): V6StagedScene {
-  const stageItems = createV6ProductionStageItems(bounds, options);
+): ProductionStagedScene {
+  const stageItems = createProductionProductionStageItems(bounds, options);
   const frame = computePerspectiveCameraFrame(bounds, viewport, {
     yawRadians: options.yawRadians ?? -0.34,
     pitchRadians: options.pitchRadians ?? -0.16,
@@ -75,7 +75,7 @@ export function createV6ProductionStageScene(
     farPadding: 3.5
   });
   const skyboxItems = options.hdrSkybox
-    ? [createV6HdrSkyboxItem(frame.cameraPosition, Math.max(frame.far * 0.42, 8), options.hdrSkybox)]
+    ? [createProductionHdrSkyboxItem(frame.cameraPosition, Math.max(frame.far * 0.42, 8), options.hdrSkybox)]
     : [];
   return {
     source: {
@@ -95,8 +95,8 @@ export function createV6ProductionStageScene(
   };
 }
 
-export function createV6ComposedProductionStageScene(
-  pipelines: readonly V6ComposablePipeline[],
+export function createProductionComposedProductionStageScene(
+  pipelines: readonly ProductionComposablePipeline[],
   viewport: { readonly width: number; readonly height: number },
   options: {
     readonly yawRadians?: number;
@@ -109,11 +109,11 @@ export function createV6ComposedProductionStageScene(
     readonly includeBackdrop?: boolean;
     readonly environmentLighting?: RenderSource["environmentLighting"];
     readonly postprocess?: RenderSource["postprocess"];
-    readonly hdrSkybox?: V6HdrSkyboxOptions;
+    readonly hdrSkybox?: ProductionHdrSkyboxOptions;
   } = {}
-): V6StagedScene & { readonly frameBounds: CameraFrameBounds } {
+): ProductionStagedScene & { readonly frameBounds: CameraFrameBounds } {
   if (pipelines.length === 0) {
-    throw new Error("V6 composed production scene requires at least one imported asset pipeline.");
+    throw new Error("Production composed production scene requires at least one imported asset pipeline.");
   }
   const placements = createAssetPlacements(pipelines.map((pipeline) => pipeline.resources.bounds));
   const items: RenderItem[] = [];
@@ -141,7 +141,7 @@ export function createV6ComposedProductionStageScene(
   }
   const frameBounds = unionBounds(transformedBounds);
   const base = pipelines[0]!.source;
-  const staged = createV6ProductionStageScene({
+  const staged = createProductionProductionStageScene({
     ...base,
     scene: undefined,
     collectRenderItems: undefined,
@@ -152,7 +152,7 @@ export function createV6ComposedProductionStageScene(
   return { ...staged, frameBounds };
 }
 
-export function createV6ProductionStageItems(
+export function createProductionProductionStageItems(
   bounds: CameraFrameBounds,
   options: {
     readonly floorColor?: readonly [number, number, number, number];
@@ -172,7 +172,7 @@ export function createV6ProductionStageItems(
   const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
   const floorY = bounds.min[1] - radius * 0.055;
   const cube = Geometry.litCube(1);
-  const floor = createV6StageFloorMaterial(options);
+  const floor = createProductionStageFloorMaterial(options);
   const backdrop = new UnlitMaterial({
     color: [...(options.backdropColor ?? [0.18, 0.2, 0.22, 1])] as [number, number, number, number]
   });
@@ -218,22 +218,22 @@ export function createV6ProductionStageItems(
   return items;
 }
 
-export interface V6HdrSkyboxOptions {
+export interface ProductionHdrSkyboxOptions {
   readonly texture: TextureBinding;
   readonly rotation?: number;
   readonly exposure?: number;
 }
 
-const V6_HDR_SKYBOX_SHADER_NAME = "production-runtime/hdr-skybox";
-const V6_HDR_SKYBOX_SHADER_MARKER = "@production-runtime-shader:hdr-skybox-v1";
+const PRODUCTION_HDR_SKYBOX_SHADER_NAME = "production-runtime/hdr-skybox";
+const PRODUCTION_HDR_SKYBOX_SHADER_MARKER = "@production-runtime-shader:hdr-skybox";
 
-export function createV6HeroShaderLibrary(): ShaderLibrary {
+export function createProductionHeroShaderLibrary(): ShaderLibrary {
   const library = createDefaultShaderLibrary();
   library.register({
-    name: V6_HDR_SKYBOX_SHADER_NAME,
-    marker: V6_HDR_SKYBOX_SHADER_MARKER,
+    name: PRODUCTION_HDR_SKYBOX_SHADER_NAME,
+    marker: PRODUCTION_HDR_SKYBOX_SHADER_MARKER,
     vertex: `#version 300 es
-// ${V6_HDR_SKYBOX_SHADER_MARKER}
+// ${PRODUCTION_HDR_SKYBOX_SHADER_MARKER}
 precision highp float;
 layout(location = 0) in vec3 a_position;
 uniform mat4 u_modelViewProjection;
@@ -244,7 +244,7 @@ void main() {
 }
 `,
     fragment: `#version 300 es
-// ${V6_HDR_SKYBOX_SHADER_MARKER}
+// ${PRODUCTION_HDR_SKYBOX_SHADER_MARKER}
 precision highp float;
 uniform sampler2D u_environmentMapTexture;
 uniform float u_environmentSkyboxRotation;
@@ -282,11 +282,11 @@ void main() {
   return library;
 }
 
-class V6HdrSkyboxMaterial extends Material {
-  constructor(options: V6HdrSkyboxOptions) {
+class ProductionHdrSkyboxMaterial extends Material {
+  constructor(options: ProductionHdrSkyboxOptions) {
     super({
       name: "production-runtime-hdr-skybox",
-      shaderKey: V6_HDR_SKYBOX_SHADER_NAME,
+      shaderKey: PRODUCTION_HDR_SKYBOX_SHADER_NAME,
       renderState: {
         depthTest: false,
         depthWrite: false,
@@ -309,21 +309,21 @@ class V6HdrSkyboxMaterial extends Material {
   }
 }
 
-function createV6HdrSkyboxItem(
+function createProductionHdrSkyboxItem(
   cameraPosition: readonly [number, number, number],
   radius: number,
-  options: V6HdrSkyboxOptions
+  options: ProductionHdrSkyboxOptions
 ): RenderItem {
   return {
     geometry: Geometry.uvSphere(1, 96, 48),
-    material: new V6HdrSkyboxMaterial(options),
+    material: new ProductionHdrSkyboxMaterial(options),
     label: "production-runtime-visible-hdr-skybox",
     includeInAutoFrame: false,
     modelMatrix: composeMat4(cameraPosition, [0, 0, 0, 1], [radius, radius, radius])
   };
 }
 
-export function createV6PbrReferenceItems(
+export function createProductionPbrReferenceItems(
   bounds: CameraFrameBounds,
   environmentLighting: EnvironmentLightingOptions
 ): readonly RenderItem[] {
@@ -391,7 +391,7 @@ export function createV6PbrReferenceItems(
   }));
 }
 
-function createV6StageFloorMaterial(options: {
+function createProductionStageFloorMaterial(options: {
   readonly floorColor?: readonly [number, number, number, number];
   readonly environmentLighting?: EnvironmentLightingOptions;
 }): PBRMaterial | UnlitMaterial {

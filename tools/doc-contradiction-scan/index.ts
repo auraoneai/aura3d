@@ -23,21 +23,16 @@ const defaultFiles = [
   "docs/project/implementation-plan.md",
   "docs/project/requirements-trace.md",
   "docs/project/verification-evidence.md",
-  "docs/project/rebuild-progress.md",
-  "docs/project/v2-decision-gates.md"
+  "docs/project/product-studio-decision-gates.md"
 ] as const;
 
 const statusAgreementFiles = [
   "docs/project/completion-audit.md",
   "docs/project/implementation-plan.md",
-  "docs/project/v2-decision-gates.md"
+  "docs/project/product-studio-decision-gates.md"
 ] as const;
 
-const canonicalPathFallbacks: Record<string, readonly string[]> = {
-  "docs/project/completion-audit.md": ["docs/completion-audit.md"],
-  "docs/project/implementation-plan.md": ["docs/implementation-plan-final.md"],
-  "docs/project/v2-decision-gates.md": ["docs/v2/decision-gates.md"]
-};
+const canonicalPathFallbacks: Record<string, readonly string[]> = {};
 
 const goClaimPatterns = [
   /^\s*GO\.\s*$/i,
@@ -120,7 +115,7 @@ export function scanDocContradictions(
         line: entry.line,
         kind: "status-disagreement",
         text: entry.text,
-        reason: "Completion audit, final implementation plan, and v2 decision gates disagree on GO/NO-GO status."
+        reason: "Completion audit, final implementation plan, and product-studio decision gates disagree on GO/NO-GO status."
       });
     }
   }

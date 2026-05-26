@@ -9,15 +9,15 @@ import {
   type ShaderSources
 } from "../../../packages/rendering/src";
 
-describe("V8 ForwardPass shader cache", () => {
+describe("CurrentRoutes ForwardPass shader cache", () => {
   it("does not compile a shader program again for subsequent frames on the same pass", () => {
     const device = new CountingMockRenderDevice();
     const pass = new ForwardPass({
       items: [
         {
           geometry: Geometry.triangle(),
-          material: new UnlitMaterial({ name: "v8-unlit" }),
-          label: "v8-cache-item"
+          material: new UnlitMaterial({ name: "current-routes-unlit" }),
+          label: "current-routes-cache-item"
         }
       ]
     });
@@ -33,19 +33,19 @@ describe("V8 ForwardPass shader cache", () => {
     const device = new CountingMockRenderDevice();
     const shaderLibrary = createDefaultShaderLibrary();
     const geometry = Geometry.triangle();
-    const material = new UnlitMaterial({ name: "v8-shared-library-unlit" });
+    const material = new UnlitMaterial({ name: "current-routes-shared-library-unlit" });
 
     executeFrame(
       device,
       new ForwardPass({
-        items: [{ geometry, material, label: "v8-cache-pass-a" }],
+        items: [{ geometry, material, label: "current-routes-cache-pass-a" }],
         shaderLibrary
       })
     );
     executeFrame(
       device,
       new ForwardPass({
-        items: [{ geometry, material, label: "v8-cache-pass-b" }],
+        items: [{ geometry, material, label: "current-routes-cache-pass-b" }],
         shaderLibrary
       })
     );
@@ -55,7 +55,7 @@ describe("V8 ForwardPass shader cache", () => {
 
   it("compiles once per render device so shader programs are not shared across device ownership boundaries", () => {
     const shaderLibrary = createDefaultShaderLibrary();
-    const material = new UnlitMaterial({ name: "v8-device-owned-unlit" });
+    const material = new UnlitMaterial({ name: "current-routes-device-owned-unlit" });
     const geometry = Geometry.triangle();
     const firstDevice = new CountingMockRenderDevice();
     const secondDevice = new CountingMockRenderDevice();
@@ -63,14 +63,14 @@ describe("V8 ForwardPass shader cache", () => {
     executeFrame(
       firstDevice,
       new ForwardPass({
-        items: [{ geometry, material, label: "v8-cache-device-a" }],
+        items: [{ geometry, material, label: "current-routes-cache-device-a" }],
         shaderLibrary
       })
     );
     executeFrame(
       secondDevice,
       new ForwardPass({
-        items: [{ geometry, material, label: "v8-cache-device-b" }],
+        items: [{ geometry, material, label: "current-routes-cache-device-b" }],
         shaderLibrary
       })
     );

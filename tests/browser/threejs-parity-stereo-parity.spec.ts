@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const REPORT_PATH = "tests/reports/threejs-parity/stereo-parity.json";
@@ -11,7 +11,7 @@ const ARTIFACTS = {
   sideBySide: "tests/reports/threejs-parity/stereo-parity/side-by-side.png"
 } as const;
 
-test.describe("V9 stereo effect same-scene Three.js parity", () => {
+test.describe("stereo effect same-scene Three.js parity", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -39,14 +39,14 @@ test.describe("V9 stereo effect same-scene Three.js parity", () => {
     await page.goto(`${server.origin}/tools/threejs-parity-stereo-parity/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const result = window.__V9_STEREO_PARITY__ as { readonly status?: string } | undefined;
+        const result = window.__THREEJS_PARITY_STEREO_PARITY__ as { readonly status?: string } | undefined;
         return result?.status === "ready" || result?.status === "error";
       },
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__V9_STEREO_PARITY__) as StereoParityResult;
+    const result = await page.evaluate(() => window.__THREEJS_PARITY_STEREO_PARITY__) as StereoParityResult;
     const report = {
       ...(result.status === "ready" ? stripDataUrls(result) : result),
       generatedAt: new Date().toISOString(),
@@ -58,7 +58,7 @@ test.describe("V9 stereo effect same-scene Three.js parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("a3d-threejs-parity-stereo-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-stereo-parity");
     expect(result.purpose).toBe("same-scene A3D side-by-side stereo rig vs Three.js StereoEffect baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
@@ -91,7 +91,7 @@ test.describe("V9 stereo effect same-scene Three.js parity", () => {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
       writePng(path, dataUrl);
-      const stats = readV6PngStats(resolve(path));
+      const stats = readProductionPngStats(resolve(path));
       expect(stats.width, `${kind} width`).toBe(1280);
       expect(stats.height, `${kind} height`).toBe(kind === "sideBySide" ? 1020 : 480);
       expect(stats.nonBlackPixels, `${kind} nonblank pixels`).toBeGreaterThan(kind === "sideBySide" ? 180_000 : 80_000);
@@ -108,7 +108,7 @@ test.describe("V9 stereo effect same-scene Three.js parity", () => {
         {
           path,
           size: statSync(resolve(path)).size,
-          pixels: readV6PngStats(resolve(path))
+          pixels: readProductionPngStats(resolve(path))
         }
       ])),
       pageErrors
@@ -153,7 +153,7 @@ function stripDataUrls(result: Extract<StereoParityResult, { readonly status: "r
 type StereoParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "a3d-threejs-parity-stereo-parity/v1";
+      readonly schema: "a3d-threejs-parity-stereo-parity";
       readonly purpose: string;
       readonly a3d: {
         readonly renderer: { readonly leftDrawCalls: number; readonly rightDrawCalls: number };
@@ -179,6 +179,6 @@ type StereoParityResult =
     }
   | {
       readonly status: "error";
-      readonly schema: "a3d-threejs-parity-stereo-parity/v1";
+      readonly schema: "a3d-threejs-parity-stereo-parity";
       readonly error: string;
     };

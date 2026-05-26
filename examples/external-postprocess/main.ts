@@ -2,7 +2,7 @@ import { createDiagnosticsPanel, createA3DApp, workflows } from "@aura3d/engine"
 
 declare global {
   interface Window {
-    __A3D_V4_POSTPROCESS_EXAMPLE__?: unknown;
+    __A3D_EXTERNAL_PARITY_POSTPROCESS_EXAMPLE__?: unknown;
   }
 }
 
@@ -17,8 +17,8 @@ const render = app.renderer?.render({
   postprocess: {
     toneMapping: "aces",
     exposure: 1.08,
-    bloom: { threshold: 1.05, intensity: 0.18 },
-    ssao: { radius: 0.58, intensity: 0.34 },
+    bloom: { threshold: 0.86, intensity: 0.18 },
+    ssao: { radius: 2, intensity: 0.34 },
     depthOfField: { focusDistance: 3.4, aperture: 0.02 },
     colorGrade: { contrast: 1.08, saturation: 1.04 }
   }
@@ -31,7 +31,7 @@ const state = {
   effects: ["tone-mapping", "bloom", "ssao", "depth-of-field", "color-grade"],
   diagnosticsPanel: panel.snapshot(),
   drawCalls: render?.drawCalls ?? 0,
-  claimBoundary: "Postprocess tutorial example for supported V4 workflows; effects must not hide poor lighting or material failures."
+  claimBoundary: "Postprocess tutorial example for supported ExternalParity workflows; effects must not hide poor lighting or material failures."
 };
-window.__A3D_V4_POSTPROCESS_EXAMPLE__ = state;
+window.__A3D_EXTERNAL_PARITY_POSTPROCESS_EXAMPLE__ = state;
 if (status) status.textContent = JSON.stringify(state, null, 2);

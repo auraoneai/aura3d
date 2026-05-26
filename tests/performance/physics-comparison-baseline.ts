@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { PhysicsWorld, Shape } from "../../packages/physics/src/index.js";
 
 export interface PhysicsComparisonBaselineReport {
-  readonly schema: "a3d-v10-physics-comparison-baseline/v1";
+  readonly schema: "a3d-superiority-physics-comparison-baseline";
   readonly generatedAt: string;
   readonly pass: boolean;
   readonly samples: {
@@ -32,7 +32,7 @@ export interface PhysicsComparisonBaselineReport {
   readonly issues: readonly string[];
 }
 
-const outputPath = "tests/reports/v10/physics-comparison-baseline.json";
+const outputPath = "tests/reports/superiority/physics-comparison-baseline.json";
 const showcaseOutputPath = "tests/reports/physics-showcase.json";
 
 export function runPhysicsComparisonBaseline(): PhysicsComparisonBaselineReport {
@@ -115,7 +115,7 @@ export function runPhysicsComparisonBaseline(): PhysicsComparisonBaselineReport 
   ];
 
   return {
-    schema: "a3d-v10-physics-comparison-baseline/v1",
+    schema: "a3d-superiority-physics-comparison-baseline",
     generatedAt: new Date().toISOString(),
     pass: issues.length === 0,
     samples,
@@ -139,7 +139,7 @@ export function writePhysicsComparisonBaseline(path = outputPath): PhysicsCompar
   mkdirSync(dirname(path), { recursive: true });
   writeFileSync(path, `${JSON.stringify(report, null, 2)}\n`);
   const showcaseReport = {
-    schema: "a3d-physics-showcase-evidence/v1",
+    schema: "a3d-physics-showcase-evidence",
     generatedAt: report.generatedAt,
     pass: report.pass,
     route: "apps/physics-showcase",

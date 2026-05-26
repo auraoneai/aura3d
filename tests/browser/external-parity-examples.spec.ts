@@ -6,14 +6,14 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportPath = "tests/reports/external-parity-examples-browser.json";
 const screenshotPath = "tests/reports/external-gallery/gallery/external-gallery.png";
 
-test.describe("V4 examples and gallery", () => {
+test.describe("ExternalParity examples and gallery", () => {
   test.setTimeout(90_000);
   let server: ExampleDevServer;
 
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
 
-  test("loads the V4 gallery with real screenshots and example links", async ({ page }) => {
+  test("loads the ExternalParity gallery with real screenshots and example links", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/external-gallery/index.html`, { waitUntil: "domcontentloaded" });
     await expect(page.getByTestId("hr4-gallery-card")).toHaveCount(8);
@@ -42,7 +42,7 @@ test.describe("V4 examples and gallery", () => {
       screenshotPath,
       cards,
       errors,
-      productBoundary: "V4 gallery page proves example/tutorial navigation and screenshot evidence only. It does not replace release readiness."
+      productBoundary: "ExternalParity gallery page proves example/tutorial navigation and screenshot evidence only. It does not replace release readiness."
     };
     writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
     expect(report.ok).toBe(true);

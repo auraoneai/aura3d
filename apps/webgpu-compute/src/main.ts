@@ -2,11 +2,11 @@ import { WebGPUParticleBackend } from "@aura3d/rendering";
 
 declare global {
   interface Window {
-    __a3dV8WebGPUCompute?: V8WebGPUComputeRuntime;
+    __a3dCurrentRoutesWebGPUCompute?: CurrentRoutesWebGPUComputeRuntime;
   }
 }
 
-interface V8WebGPUComputeRuntime {
+interface CurrentRoutesWebGPUComputeRuntime {
   readonly appId: "webgpu-compute";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -56,7 +56,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__a3dV8WebGPUCompute = runtime;
+    window.__a3dCurrentRoutesWebGPUCompute = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -97,7 +97,7 @@ async function run(): Promise<void> {
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
       });
-      window.__a3dV8WebGPUCompute = runtime;
+      window.__a3dCurrentRoutesWebGPUCompute = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -334,11 +334,11 @@ function analyzePixels(pixels: Uint8ClampedArray): { readonly nonDark: number; r
 }
 
 function createRuntime(
-  status: V8WebGPUComputeRuntime["status"],
+  status: CurrentRoutesWebGPUComputeRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8WebGPUComputeRuntime, "appId" | "status" | "statusLabel" | "backend" | "evidenceMode" | "elapsedMs">> = {}
-): V8WebGPUComputeRuntime {
+  patch: Partial<Omit<CurrentRoutesWebGPUComputeRuntime, "appId" | "status" | "statusLabel" | "backend" | "evidenceMode" | "elapsedMs">> = {}
+): CurrentRoutesWebGPUComputeRuntime {
   return {
     appId: APP_ID,
     status,
@@ -362,12 +362,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8WebGPUComputeRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesWebGPUComputeRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 WebGPU Compute</h1>
+          <h1>CurrentRoutes WebGPU Compute</h1>
           <p>Public WebGPUParticleBackend compute update with storage buffers, readback, and CPU reference parity.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

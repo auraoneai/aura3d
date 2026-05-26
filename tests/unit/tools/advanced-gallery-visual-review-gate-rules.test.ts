@@ -11,7 +11,7 @@ const validAcceptedMetadata = {
   knownGaps: ["Known limit: no scene-space refraction parity; transparent product material remains a bounded approximation."]
 };
 
-describe("V9 advanced gallery visual review gate rules", () => {
+describe("ThreejsParity advanced gallery visual review gate rules", () => {
   it("blocks failed and candidate metadata before accepted review evidence is considered", () => {
     expect(acceptedMetadataBlockers({
       ...validAcceptedMetadata,

@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { V5_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
+import { THREE_COMPAT_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
 import { validatePngVisual } from "../three-compat-visual-quality/visualStats";
 
 const screenshotDir = "tests/reports/three-compat-threejs-visual-parity";
-const comparisons = V5_COMPARISON_SCENES.map((scene) => ({
+const comparisons = THREE_COMPAT_COMPARISON_SCENES.map((scene) => ({
   ...scene,
   a3dScreenshot: `${screenshotDir}/${scene.id}-a3d.png`,
   threejsScreenshot: `${screenshotDir}/${scene.id}-threejs.png`,
@@ -29,7 +29,7 @@ const checks = [
   { name: "gap-boundary", pass: comparisons.some((comparison) => comparison.warnings.some((warning) => /blocked/i.test(warning))), detail: "unsupported/broad superiority gap warning preserved" }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "a3d-three-compat-threejs-visual-parity/v2", generatedAt: new Date().toISOString(), pass, comparisons, visualValidations, checks };
+const report = { schema: "a3d-three-compat-threejs-visual-parity/product-studio", generatedAt: new Date().toISOString(), pass, comparisons, visualValidations, checks };
 const reportPath = resolve("tests/reports/three-compat-threejs-visual-parity.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -37,4 +37,4 @@ if (!pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 Three.js visual parity passed: ${comparisons.length} comparisons, ${thresholdPassCount} visual passes.`);
+console.log(`Three.js compatibility Three.js visual parity passed: ${comparisons.length} comparisons, ${thresholdPassCount} visual passes.`);

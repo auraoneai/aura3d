@@ -1,7 +1,7 @@
 export {
-  NodeMaterialV5 as NodeMaterialCompat,
-  RawShaderMaterialV5 as RawShaderMaterialCompat,
-  ShaderMaterialV5 as CustomShaderMaterialCompat,
-  UniformsV5 as UniformsCompat
-} from "../../../rendering/src/threejs-compatibility/shaders";
-export { SHADER_CHUNKS_V5, diagnoseV5Shader } from "../../../rendering/src/threejs-compatibility/shaders";
+  NodeMaterialThreeCompat as NodeMaterialCompat,
+  RawShaderMaterialThreeCompat as RawShaderMaterialCompat,
+  ShaderMaterialThreeCompat as CustomShaderMaterialCompat,
+  UniformsThreeCompat as UniformsCompat
+} from "@aura3d/rendering";
+export { SHADER_CHUNKS_THREE_COMPAT, diagnoseThreeCompatShader } from "@aura3d/rendering";

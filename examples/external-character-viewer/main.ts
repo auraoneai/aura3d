@@ -1,3 +1,3 @@
-import { mountCharacterViewerV4 } from "./CharacterViewerV4";
+import { mountExternalCharacterViewer } from "./ExternalCharacterViewer";
 
-void mountCharacterViewerV4("external-character-viewer");
+void mountExternalCharacterViewer("external-character-viewer");

@@ -7,13 +7,13 @@ const PRODUCTS = ["camera-kit", "speaker", "watch"] as const;
 const ROOT = join(process.cwd(), "fixtures", "product-studio", "products");
 const REQUIRED_SLOTS = ["base-color", "metallic-roughness", "normal", "emissive"] as const;
 
-describe("V2 product assets", () => {
+describe("ProductStudio product assets", () => {
   it.each(PRODUCTS)("ships a real product glTF fixture for %s", async (id) => {
     const gltfJson = readJson(join(ROOT, id, `${id}.gltf`));
     const manifest = readJson(join(ROOT, id, "manifest.json"));
     const asset = await new GLTFLoader().load({ url: jsonDataUri(gltfJson) }, new LoadContext());
 
-    expect(manifest.schema).toBe("a3d-v2-product-manifest/v1");
+    expect(manifest.schema).toBe("a3d-product-studio-product-manifest");
     expect(manifest.id).toBe(id);
     expect(asset.meshes.length).toBeGreaterThanOrEqual(8);
     expect(asset.materials.length).toBeGreaterThanOrEqual(3);

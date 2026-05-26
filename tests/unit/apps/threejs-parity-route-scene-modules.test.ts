@@ -5,7 +5,7 @@ import { buildProductConfiguratorScene } from "../../../apps/advanced-examples-g
 import { buildReactorPostScene } from "../../../apps/advanced-examples-gallery/src/reactorPostScene";
 import { buildScene, createResources, type GalleryState } from "../../../apps/advanced-examples-gallery/src/sceneBuilders";
 
-describe("v9 route-owned scene modules", () => {
+describe("threejsParity route-owned scene modules", () => {
   it("builds the product configurator scene through its route-owned module", () => {
     const frame = buildProductConfiguratorScene(createResources(), 1.25, state({
       explode: true,

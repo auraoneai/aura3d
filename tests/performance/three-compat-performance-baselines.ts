@@ -1,22 +1,22 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  BVHV5,
-  InstancingV5,
-  TextureStreamingV5,
-  createV5RendererProfile,
-  estimateV5AcceleratedRaycast,
-  runV5FrustumCulling,
-  runV5OcclusionCulling
+  BVHThreeCompat,
+  InstancingThreeCompat,
+  TextureStreamingThreeCompat,
+  createThreeCompatRendererProfile,
+  estimateThreeCompatAcceleratedRaycast,
+  runThreeCompatFrustumCulling,
+  runThreeCompatOcclusionCulling
 } from "../../packages/rendering/src";
 
-const frustum = runV5FrustumCulling(12000);
-const occlusion = runV5OcclusionCulling(frustum);
-const instancing = new InstancingV5(50000);
-const bvh = new BVHV5(250000);
-const raycast = estimateV5AcceleratedRaycast(bvh, 128);
-const textures = new TextureStreamingV5(48, 2);
-const profile = createV5RendererProfile({
+const frustum = runThreeCompatFrustumCulling(12000);
+const occlusion = runThreeCompatOcclusionCulling(frustum);
+const instancing = new InstancingThreeCompat(50000);
+const bvh = new BVHThreeCompat(250000);
+const raycast = estimateThreeCompatAcceleratedRaycast(bvh, 128);
+const textures = new TextureStreamingThreeCompat(48, 2);
+const profile = createThreeCompatRendererProfile({
   objectCount: occlusion.total,
   instanceCount: instancing.instanceCount,
   triangleCount: bvh.triangleCount,
@@ -26,7 +26,7 @@ const profile = createV5RendererProfile({
 });
 
 const report = {
-  schema: "a3d-three-compat-performance-baselines/v1",
+  schema: "a3d-three-compat-performance-baselines",
   generatedAt: new Date().toISOString(),
   frustum,
   occlusion,

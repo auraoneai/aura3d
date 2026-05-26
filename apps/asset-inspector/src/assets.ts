@@ -1,6 +1,6 @@
-import type { V6AppAsset } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppAsset } from "../../common/src/runtime";
 
-export const assets: readonly V6AppAsset[] = [
+export const assets: readonly ProductionAppAsset[] = [
   { id: "antique-camera", label: "Antique Camera", file: "antique-camera.glb", role: "primary" },
   { id: "damaged-helmet", label: "Damaged Helmet", file: "damaged-helmet.glb", role: "secondary" },
   { id: "clear-coat-test", label: "Clear Coat Test", file: "clear-coat-test.glb", role: "secondary" }

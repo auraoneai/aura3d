@@ -14,7 +14,7 @@ const root = process.cwd();
 const targets: readonly FlakeTarget[] = [
   {
     id: "browser-visual-examples",
-    command: ["pnpm", "--silent", "verify:v3-examples"],
+    command: ["pnpm", "--silent", "verify:foundation-examples"],
     reportPath: "tests/reports/foundation-example-screenshots/manifest.json",
     stableSignature: (report) => {
       const entries = Array.isArray(report.entries) ? report.entries : [];
@@ -57,13 +57,13 @@ const targets: readonly FlakeTarget[] = [
   },
 ];
 
-export function runV3FlakeDetection(iterations = 2): number {
+export function runFoundationFlakeDetection(iterations = 2): number {
   const targetResults = targets.map((target) => runTarget(target, iterations));
   const violations = targetResults.flatMap((target) => target.violations.map((violation) => `${target.id}: ${violation}`));
   const report = {
     ...baseReport(root, {
       ok: violations.length === 0,
-      command: "pnpm verify:v3-flakes",
+      command: "pnpm verify:foundation-flakes",
       runIdPrefix: "foundation-flake-detection",
       sourceFiles: [
         "package.json",
@@ -157,5 +157,5 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  process.exitCode = runV3FlakeDetection();
+  process.exitCode = runFoundationFlakeDetection();
 }

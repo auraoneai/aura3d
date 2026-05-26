@@ -2,7 +2,7 @@
 import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
-  loadV6GLTFRenderPipeline
+  loadProductionGLTFRenderPipeline
 } from "@aura3d/assets";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import {
@@ -22,18 +22,18 @@ import { clone as cloneSkeleton } from "/node_modules/three/examples/jsm/utils/S
 
 declare global {
   interface Window {
-    __V9_ANIMATION_MULTIPLE_PARITY__?: AnimationMultipleParityResult;
+    __THREEJS_PARITY_ANIMATION_MULTIPLE_PARITY__?: AnimationMultipleParityResult;
   }
 }
 
 export {};
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 type AnimationMultipleParityResult = AnimationMultipleParityReady | AnimationMultipleParityError;
 
 interface AnimationMultipleParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-animation-multiple-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-multiple-parity";
   readonly purpose: "same-asset multi-clip A3D clone sampler vs actual Three.js AnimationMixer baseline";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -82,7 +82,7 @@ interface AnimationMultipleParityReady {
 
 interface AnimationMultipleParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-animation-multiple-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-multiple-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -144,7 +144,7 @@ async function run(): Promise<void> {
     const threeStats = analyzeImageData(threePixels);
     const ready: AnimationMultipleParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-animation-multiple-parity/v1",
+      schema: "a3d-threejs-parity-animation-multiple-parity",
       purpose: "same-asset multi-clip A3D clone sampler vs actual Three.js AnimationMixer baseline",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -195,29 +195,29 @@ async function run(): Promise<void> {
         "It is not a blanket claim for every animation-blending, IK, morph-target, retargeting, or crowd-behavior path."
       ]
     };
-    window.__V9_ANIMATION_MULTIPLE_PARITY__ = ready;
+    window.__THREEJS_PARITY_ANIMATION_MULTIPLE_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: AnimationMultipleParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-animation-multiple-parity/v1",
+      schema: "a3d-threejs-parity-animation-multiple-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
       expectedReferenceAnimation: "AnimationMixer",
       expectedRenderer: "THREE.WebGLRenderer"
     };
-    window.__V9_ANIMATION_MULTIPLE_PARITY__ = failure;
+    window.__THREEJS_PARITY_ANIMATION_MULTIPLE_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
 }
 
 async function renderA3D(canvas: HTMLCanvasElement) {
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: ASSET.url,
-    assetId: "v9-animation-multiple-soldier",
+    assetId: "threejs-parity-animation-multiple-soldier",
     assetName: ASSET.name,
     width: ASSET.width,
     height: ASSET.height,
@@ -341,7 +341,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
       ? { jointCount: renderable.skinning.jointCount, matrices: new Float32Array(renderable.skinning.matrices) }
       : undefined;
     items.push({
-      label: `v9-animation-multiple:${node.name}`,
+      label: `threejs-parity-animation-multiple:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -370,10 +370,10 @@ function createA3DStageItems(): readonly RenderItem[] {
 }
 
 function createA3DLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v9-animation-multiple-key");
+  const key = new DirectionalLight("threejs-parity-animation-multiple-key");
   key.intensity = 5.6;
   key.color = [1, 1, 1];
-  const rim = new DirectionalLight("v9-animation-multiple-rim");
+  const rim = new DirectionalLight("threejs-parity-animation-multiple-rim");
   rim.intensity = 2.4;
   rim.color = [0.78, 0.82, 0.9];
   return [

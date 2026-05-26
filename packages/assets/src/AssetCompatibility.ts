@@ -31,7 +31,7 @@ export interface AssetCompatibilityReportAsset {
 }
 
 export interface AssetCompatibilityReport {
-  readonly schemaVersion: "asset-compatibility-report-v1";
+  readonly schemaVersion: "asset-compatibility-report";
   readonly generatedAt: string;
   readonly sourceManifest: GLTFCorpusReport["sourceManifest"];
   readonly fixtureStatus: {
@@ -78,7 +78,7 @@ export function createAssetCompatibilityReport(
   const assets = corpusReport.assets.map((asset) => createCompatibilityAsset(asset, blenderExportFixturesPresent, externalResults, blenderExportResults));
 
   return {
-    schemaVersion: "asset-compatibility-report-v1",
+    schemaVersion: "asset-compatibility-report",
     generatedAt: corpusReport.generatedAt,
     sourceManifest: corpusReport.sourceManifest,
     fixtureStatus: {

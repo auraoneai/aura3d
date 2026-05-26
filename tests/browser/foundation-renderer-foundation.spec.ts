@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportDir = resolve("tests/reports/foundation-renderer-foundation");
 const captures: RendererFoundationCapture[] = [];
 
-test.describe("V3 renderer foundation", () => {
+test.describe("Foundation renderer foundation", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -19,7 +19,7 @@ test.describe("V3 renderer foundation", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "a3d-v3-renderer-foundation/v1",
+      schema: "a3d-foundation-renderer-foundation",
       generatedAt: new Date().toISOString(),
       requiredFeatures: [
         "webgl2",

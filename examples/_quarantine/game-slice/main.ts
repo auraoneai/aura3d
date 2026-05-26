@@ -46,22 +46,22 @@ import {
   UnlitMaterial,
   VertexBuffer,
   VertexFormat,
-  createV4DirectionalShadowEvidence,
-  createV4EnvironmentLighting,
-  createV4FlagshipRenderPresetEvidence,
+  createExternalParityDirectionalShadowEvidence,
+  createExternalParityEnvironmentLighting,
+  createExternalParityFlagshipRenderPresetEvidence,
   createProceduralTextureFixture,
   sampleSpaceEnvironmentFixture,
-  sampleV4LdrPostprocessReadback,
+  sampleExternalParityLdrPostprocessReadback,
   type ParticleRenderBatch,
   type ParticleSortMode,
   type ProceduralTextureFixture,
   type RenderDeviceDiagnostics,
   type RenderItem,
   type SpaceEnvironmentFixture,
-  type V4DirectionalShadowEvidence,
-  type V4EnvironmentLightingBundle,
-  type V4LdrPostprocessSummary,
-  type V4RenderPresetEvidence
+  type ExternalParityDirectionalShadowEvidence,
+  type ExternalParityEnvironmentLightingBundle,
+  type ExternalParityLdrPostprocessSummary,
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 import {
   BehaviorAction,
@@ -121,10 +121,10 @@ type DemoStatus = {
   knownLimits: readonly string[];
   screenshotPath: string;
   featureEvidence: Record<string, number | string | boolean>;
-  v4RenderPreset?: V4RenderPresetEvidence;
-  postprocess?: V4LdrPostprocessSummary;
-  environmentResources?: V4EnvironmentLightingBundle["resources"];
-  directionalShadow?: V4DirectionalShadowEvidence;
+  externalParityRenderPreset?: ExternalParityRenderPresetEvidence;
+  postprocess?: ExternalParityLdrPostprocessSummary;
+  environmentResources?: ExternalParityEnvironmentLightingBundle["resources"];
+  directionalShadow?: ExternalParityDirectionalShadowEvidence;
   claimBoundary: string;
   diagnostics?: RenderDeviceDiagnostics;
   errors?: readonly RuntimeError[];
@@ -232,8 +232,8 @@ const exitPosition: readonly [number, number, number] = [1.16, -0.12, 0];
 const hazardPosition: readonly [number, number, number] = [-1.18, -0.12, 0];
 const objectiveTimeLimitSeconds = 18;
 const playerAnimationStates: readonly PlayerAnimationState[] = ["idle", "run", "jump", "win", "fail"] as const;
-const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/game-slice.png";
-const claimBoundary = "V4 game slice evidence is limited to this generated local glTF arena/player, lit skinned V4 hero render item, bounded directional shadow-map metrics with visible receiver darkening, contact-shadow proxy, and browser-proven runtime loop; production forward-pass shadow sampling is not claimed.";
+const externalParityScreenshotPath = "tests/reports/external-parity-example-screenshots/game-slice.png";
+const claimBoundary = "ExternalParity game slice evidence is limited to this generated local glTF arena/player, lit skinned ExternalParity hero render item, bounded directional shadow-map metrics with visible receiver darkening, contact-shadow proxy, and browser-proven runtime loop; production forward-pass shadow sampling is not claimed.";
 
 declare global {
   interface Window {
@@ -252,7 +252,7 @@ if (typeof document !== "undefined") {
       metrics: {},
       visualClaim: "Runtime systems failed before first frame.",
       knownLimits: ["The example uses procedural geometry instead of a streamed production level."],
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       featureEvidence: {},
       claimBoundary,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
@@ -1066,17 +1066,17 @@ async function run(): Promise<void> {
     updateGameVisualAssetTransforms(visualAssets, renderPlayerPosition, time, playerAnimationStateMachine.current, playerAnimationStateMachine.stateTime);
     const renderItems = buildRenderItems(renderResources, visualAssets, player.position[0], player.position[1], platform.position[0], pickupScale, particleBatch, time);
     visualAssetState.renderItems = renderItems.filter((item) => item.label?.startsWith("game-asset-")).length;
-    const lightingBundle = createV4EnvironmentLighting("gameplay");
+    const lightingBundle = createExternalParityEnvironmentLighting("gameplay");
     const renderStart = performance.now();
     diagnostics = renderer.render({ scene, renderItems, environmentLighting: lightingBundle.lighting });
     renderMs = renderMs * 0.8 + (performance.now() - renderStart) * 0.2;
-    const postprocess = sampleV4LdrPostprocessReadback({
+    const postprocess = sampleExternalParityLdrPostprocessReadback({
       device: renderer.device,
       framebufferWidth: canvas.width,
       framebufferHeight: canvas.height,
       exposure: 1.12
     });
-    const directionalShadow = createV4DirectionalShadowEvidence({
+    const directionalShadow = createExternalParityDirectionalShadowEvidence({
       exampleId: "game-slice",
       casterCount: Math.max(1, visualAssetState.renderItems),
       receiverCount: 2,
@@ -1084,9 +1084,9 @@ async function run(): Promise<void> {
       mapSize: 512,
       lightDirection: [-0.38, -0.82, -0.43]
     });
-    const v4RenderPreset = createV4FlagshipRenderPresetEvidence({
+    const externalParityRenderPreset = createExternalParityFlagshipRenderPresetEvidence({
       exampleId: "game-slice",
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       exposure: postprocess.exposure,
       directionalShadowEvidence: directionalShadow.visibleReceiverDarkening,
       postprocessEvidence: postprocess.changedPixels > 0,
@@ -1286,20 +1286,20 @@ async function run(): Promise<void> {
       interactions,
       diagnostics,
       errors: runtimeErrors,
-      visualClaim: "Interactive runtime slice with generated glTF player and arena assets, a lit skinned V4 hero render item, contact-shadow proxy, physics movement/triggers, third-person follow camera, objective win/fail loop, animation, input bindings, particles, audio unlock/playback state, and behavior scripts.",
+      visualClaim: "Interactive runtime slice with generated glTF player and arena assets, a lit skinned ExternalParity hero render item, contact-shadow proxy, physics movement/triggers, third-person follow camera, objective win/fail loop, animation, input bindings, particles, audio unlock/playback state, and behavior scripts.",
       knownLimits: [
         "Generated local glTF fixtures are production-like validation assets, not externally licensed production art.",
-        "The game slice includes one bounded lit skinned V4 hero render item; broad character animation parity remains unclaimed here.",
+        "The game slice includes one bounded lit skinned ExternalParity hero render item; broad character animation parity remains unclaimed here.",
         "The game slice uses bounded directional shadow-map metrics plus a contact-shadow proxy because production forward-pass shadow sampling and point/spot shadow maps remain unclaimed here."
       ],
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       featureEvidence: {
         levelAssetLoaded: visualAssetState.loaded,
         playerAssetLoaded: visualAssetState.loaded,
         litSkinnedCharacter: Boolean(visualAssets) && renderItems.some((item) => item.label === "game-asset-lit-skinned-hero" && item.skinning !== undefined),
         skinnedHeroAnimation: Boolean(visualAssets?.skinnedHeroClip.duration),
-        v4RenderPreset: true,
-        sharedV4Preset: v4RenderPreset.presetId,
+        externalParityRenderPreset: true,
+        sharedExternalParityPreset: externalParityRenderPreset.presetId,
         generatedEnvironmentMap: true,
         environmentResourceSet: lightingBundle.resources.resourceSet,
         environmentReflectionEvidence: Boolean(lightingBundle.lighting.environmentMapTexture),
@@ -1479,9 +1479,9 @@ async function run(): Promise<void> {
         xrGazeLodTelemetry: xrRuntimeEvidence.evidence.gazeBasedLodTelemetry && xrRuntimeEvidence.gazeLod.selectedLevels.includes("high"),
         objectiveLoop: objectiveState.phase !== undefined,
         animationStateMachine: true,
-        screenshotEvidencePath: v4ScreenshotPath,
+        screenshotEvidencePath: externalParityScreenshotPath,
       },
-      v4RenderPreset,
+      externalParityRenderPreset,
       postprocess,
       environmentResources: lightingBundle.resources,
       directionalShadow,
@@ -1500,10 +1500,10 @@ async function run(): Promise<void> {
         skinnedHeroJointCount: visualAssets?.skinnedHeroJointCount ?? 0,
         skinnedHeroTrackCount: visualAssets?.skinnedHeroTrackCount ?? 0,
         skinnedHeroRenderItems: renderItems.filter((item) => item.label === "game-asset-lit-skinned-hero" && item.skinning !== undefined).length,
-        v4RenderPreset: v4RenderPreset.presetId,
-        v4RenderPresetVersion: v4RenderPreset.presetVersion,
-        v4PresetActiveFeatures: v4RenderPreset.activeFeatures.length,
-        v4PresetBlockedFeatures: v4RenderPreset.blockedFeatures.length,
+        externalParityRenderPreset: externalParityRenderPreset.presetId,
+        externalParityRenderPresetVersion: externalParityRenderPreset.presetVersion,
+        externalParityPresetActiveFeatures: externalParityRenderPreset.activeFeatures.length,
+        externalParityPresetBlockedFeatures: externalParityRenderPreset.blockedFeatures.length,
         generatedEnvironmentManifest: lightingBundle.manifestPath,
         proceduralTextureFixtureCount: renderResources.materialFixtures.length,
         starfieldNebulaTextureHash: renderResources.starfieldFixture.hash,
@@ -2443,11 +2443,11 @@ async function loadGameVisualAssets(): Promise<LoadedGameVisualAssets> {
   const skinnedHeroSkin = skinnedHeroAsset.skins[0];
   const skinnedHeroClip = skinnedHeroAsset.animations[0];
   if (!skinnedHeroMesh || !skinnedHeroSkin || !skinnedHeroClip) {
-    throw new Error("V4 game skinned hero did not import a skinned mesh, skin, and animation clip.");
+    throw new Error("ExternalParity game skinned hero did not import a skinned mesh, skin, and animation clip.");
   }
   const skinnedHeroGeometry = createSkinnedGLTFGeometry(skinnedHeroMesh);
   const skinnedHeroMaterial = new SkinnedLitMaterial({
-    name: "game-v4-lit-skinned-hero",
+    name: "game-external-parity-lit-skinned-hero",
     color: [0.2, 0.86, 1, 1],
     lightIntensity: 1.55
   });

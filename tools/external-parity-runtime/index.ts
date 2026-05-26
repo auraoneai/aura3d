@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { baseReport, blockedV4Claims, isRecord, readJson, sourceFilesFromReport, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, blockedExternalParityClaims, isRecord, readJson, sourceFilesFromReport, writeJson } from "../external-parity-reporting/index.js";
 
 const root = process.cwd();
 const reportPath = "tests/reports/external-parity-runtime.json";
@@ -19,7 +19,7 @@ const screenshot = Array.isArray(existing?.screenshots) && typeof existing.scree
   : "tests/reports/external-parity-example-screenshots/game-slice-runtime.png";
 
 const checks = [
-  check("external-parity-runtime-report-produced-by-runtime-agent", existing?.ok === true, [reportPath], "V4 runtime systems report is not yet passing."),
+  check("external-parity-runtime-report-produced-by-runtime-agent", existing?.ok === true, [reportPath], "External parity runtime systems report is not yet passing."),
   check("game-slice-ready", state?.status === "ready", [reportPath], "Game slice did not publish a ready runtime state."),
   check("game-slice-screenshot", hasFreshScreenshot(screenshot), [screenshot], "Game slice runtime screenshot is missing or too small."),
   check("nonblank-runtime-screenshot-pixels", numberAt(pixels, "nonBlankPixels") > 300 && numberAt(pixels, "colorBuckets") >= 1, [reportPath, screenshot], "Runtime screenshot pixel evidence is missing or blank."),
@@ -81,14 +81,14 @@ const audit = {
       "packages/scripting/src/WeaponSystem.ts",
       "packages/audio/src/SceneAudioBridge.ts"
     ],
-    blockedClaims: blockedV4Claims,
+    blockedClaims: blockedExternalParityClaims,
     screenshotPaths: [screenshot],
     violations,
   }),
   subsystem: "runtime-systems",
   checks,
   blockedRuntimeClaims: [
-    "The V4 game slice uses generated local glTF validation assets, not externally licensed production art.",
+    "The External parity game slice uses generated local glTF validation assets, not externally licensed production art.",
     "Lit skinning and animation state-machine completion remain blocked by runtime evidence."
   ]
 };

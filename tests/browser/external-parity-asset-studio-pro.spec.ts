@@ -27,7 +27,7 @@ type AssetStudioState = {
   readonly claimBoundary?: string;
 };
 
-test.describe("V4 Asset Studio Pro", () => {
+test.describe("Asset Studio Pro", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -69,12 +69,12 @@ test.describe("V4 Asset Studio Pro", () => {
         `${screenshotDir}/external-asset-gallery-cesium-man.png`,
         `${screenshotDir}/asset-studio-pro.png`
       ],
-      productBoundary: "Milestone 10 proves Asset Studio Pro corpus browsing and diagnostics UI. Full V4 release still requires actual rendered screenshots for selected assets and same-scene Three.js parity.",
+      productBoundary: "Asset Studio Pro proves corpus browsing and diagnostics UI. Full release still requires actual rendered screenshots for selected assets and same-scene Three.js parity.",
       requiredNextProof: [
         "render selected corpus assets as WebGL screenshots",
         "same assets rendered in Three.js",
         "visual diffs for selected corpus assets",
-        "full V4 release audit"
+        "full ExternalParity release audit"
       ],
       errors,
       states: { example: exampleState, selected: selectedState, app: appState }
@@ -92,7 +92,7 @@ test.describe("V4 Asset Studio Pro", () => {
 
 async function waitForAssetState(page: Page, id: string): Promise<AssetStudioState> {
   await page.waitForFunction((expectedId) => {
-    const state = window.__A3D_V4_ASSET_STUDIO__ as AssetStudioState | undefined;
+    const state = window.__AURA3D_ASSET_STUDIO__ as AssetStudioState | undefined;
     return state?.status === "ready" && state.id === expectedId;
   }, id, { timeout: 60_000 });
   const state = await assetState(page);
@@ -101,7 +101,7 @@ async function waitForAssetState(page: Page, id: string): Promise<AssetStudioSta
 }
 
 async function assetState(page: Page): Promise<AssetStudioState | undefined> {
-  return page.evaluate(() => window.__A3D_V4_ASSET_STUDIO__ as AssetStudioState | undefined);
+  return page.evaluate(() => window.__AURA3D_ASSET_STUDIO__ as AssetStudioState | undefined);
 }
 
 function statePasses(state: AssetStudioState, id: string): boolean {
@@ -110,7 +110,7 @@ function statePasses(state: AssetStudioState, id: string): boolean {
   return state.id === id &&
     state.status === "ready" &&
     state.productSurface === "asset-studio-pro" &&
-    state.corpusManifest === "fixtures/external-parity/gltf-corpus/manifest.json" &&
+    state.corpusManifest === "/tests/assets/corpus/gltf-corpus.manifest.json" &&
     typeof state.sourceRepository === "string" &&
     state.sourceRepository.includes("KhronosGroup/glTF-Sample-Assets") &&
     state.sourceRevision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" &&
@@ -128,7 +128,7 @@ function statePasses(state: AssetStudioState, id: string): boolean {
     state.releaseProofComplete === false &&
     typeof state.selectedAsset?.license === "string" &&
     typeof state.selectedAsset?.provenance === "string" &&
-    state.selectedAsset?.renderStatus === "queued-for-milestone-15-threejs-parity" &&
+    state.selectedAsset?.renderStatus === "queued-for-threejs-parity" &&
     checklist.includes("corpus-browser") &&
     checklist.includes("asset-diagnostics") &&
     checklist.includes("license-provenance") &&
@@ -147,6 +147,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __A3D_V4_ASSET_STUDIO__?: AssetStudioState;
+    __AURA3D_ASSET_STUDIO__?: AssetStudioState;
   }
 }

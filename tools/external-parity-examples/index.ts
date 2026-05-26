@@ -25,16 +25,16 @@ const sourceFiles = [
 ] as const;
 const checks = [
   {
-    id: "v4-example-screenshot-manifest-produced-by-example-agent",
+    id: "external-parity-example-screenshot-manifest-produced-by-example-agent",
     passed: manifest?.pass === true && screenshotPaths.length >= 4,
     evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json"],
-    blocker: "V4 example screenshot manifest is not yet passing.",
+    blocker: "External parity example screenshot manifest is not yet passing.",
   },
   {
-    id: "v4-racing-showcase-screenshot-produced-by-example-agent",
+    id: "external-parity-racing-showcase-screenshot-produced-by-example-agent",
     passed: existsSync(`${root}/${racingScreenshotPath}`),
     evidencePaths: [racingScreenshotPath, "tests/browser/racing-showcase-external-parity.spec.ts"],
-    blocker: "V4 racing showcase screenshot is missing; run the racing showcase browser test.",
+    blocker: "External parity racing showcase screenshot is missing; run the racing showcase browser test.",
   },
 ] as const;
 const violations = checks.filter((check) => !check.passed).map((check) => check.blocker);

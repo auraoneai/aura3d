@@ -1,7 +1,7 @@
 import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationMixer,
-  loadV6GLTFRenderPipeline,
+  loadProductionGLTFRenderPipeline,
   type GLTFSceneAnimationApplyResult
 } from "@aura3d/assets";
 import {
@@ -15,9 +15,9 @@ import {
 } from "@aura3d/rendering";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
-import { ASSET_URL, type V8KeyframeControls } from "./state.js";
+import { ASSET_URL, type CurrentRoutesKeyframeControls } from "./state.js";
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 type AnimationRuntime = ReturnType<typeof createGLTFSceneAnimationMixer>;
 type RouteA3DRenderer = Awaited<ReturnType<typeof A3DRenderer.create>>;
 
@@ -26,21 +26,21 @@ const WIDTH = 1280;
 const HEIGHT = 720;
 const ASSET_TIMEOUT_MS = 5000;
 
-export interface V8KeyframeScene {
+export interface CurrentRoutesKeyframeScene {
   readonly renderer: RouteA3DRenderer;
   readonly pipeline: LoadedPipeline;
   readonly animationRuntime: AnimationRuntime;
   readonly clips: readonly LoadedPipeline["asset"]["animations"][number][];
-  render(controls: V8KeyframeControls, timeSeconds: number): V8KeyframeFrame;
+  render(controls: CurrentRoutesKeyframeControls, timeSeconds: number): CurrentRoutesKeyframeFrame;
 }
 
-export interface V8KeyframeFrame {
+export interface CurrentRoutesKeyframeFrame {
   readonly drawCalls: number;
   readonly triangles: number;
   readonly apply: GLTFSceneAnimationApplyResult;
 }
 
-export async function createV8KeyframeScene(canvas: HTMLCanvasElement): Promise<V8KeyframeScene> {
+export async function createCurrentRoutesKeyframeScene(canvas: HTMLCanvasElement): Promise<CurrentRoutesKeyframeScene> {
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
   drawFallbackFrame(canvas);
@@ -53,7 +53,7 @@ export async function createV8KeyframeScene(canvas: HTMLCanvasElement): Promise<
     clearColor: [0.005, 0.008, 0.013, 1]
   });
 
-  const pipeline = await withTimeout(loadV6GLTFRenderPipeline({
+  const pipeline = await withTimeout(loadProductionGLTFRenderPipeline({
     url: ASSET_URL,
     assetId: "animation-keyframes-robot",
     assetName: "Robot Expressive Keyframes",
@@ -126,7 +126,7 @@ export async function createV8KeyframeScene(canvas: HTMLCanvasElement): Promise<
         },
         metadata: {
           assetId: "animation-keyframes",
-          assetName: "V8 Animation Keyframes",
+          assetName: "CurrentRoutes Animation Keyframes",
           assetUri: "/apps/animation-keyframes/",
           meshCount: pipeline.metadata.meshCount,
           primitiveCount: pipeline.metadata.primitiveCount,
@@ -137,7 +137,7 @@ export async function createV8KeyframeScene(canvas: HTMLCanvasElement): Promise<
           skinCount: pipeline.metadata.skinCount,
           morphTargetCount: pipeline.metadata.morphTargetCount,
           extensionsUsed: pipeline.metadata.extensionsUsed,
-          environmentId: "v8-fast-studio",
+          environmentId: "current-routes-fast-studio",
           hdrEnvironmentUri: "deferred"
         }
       });
@@ -150,7 +150,7 @@ export async function createV8KeyframeScene(canvas: HTMLCanvasElement): Promise<
   };
 }
 
-function selectClip(clips: V8KeyframeScene["clips"], requested: string): V8KeyframeScene["clips"][number] {
+function selectClip(clips: CurrentRoutesKeyframeScene["clips"], requested: string): CurrentRoutesKeyframeScene["clips"][number] {
   return clips.find((clip) => clip.name === requested)
     ?? clips.find((clip) => /dance|walk|run/i.test(clip.name))
     ?? clips[0]!;
@@ -165,7 +165,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v8-keyframes:${node.name}`,
+      label: `current-routes-keyframes:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -179,29 +179,29 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
 
 function createStageItems(): { readonly materialCount: number; readonly items: (time: number) => readonly RenderItem[] } {
   const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({ name: "v8-keyframes-floor", baseColor: [0.055, 0.075, 0.09, 1], roughness: 0.38, metallic: 0.05, environmentIntensity: 0.8 });
-  const wall = new PBRMaterial({ name: "v8-keyframes-wall", baseColor: [0.018, 0.024, 0.032, 1], roughness: 0.5, metallic: 0, environmentIntensity: 0.5 });
-  const cyan = new PBRMaterial({ name: "v8-keyframes-cyan", baseColor: [0.06, 0.75, 0.86, 1], roughness: 0.26, metallic: 0.2, emissiveColor: [0.02, 0.16, 0.18], emissiveStrength: 1.2 });
-  const amber = new PBRMaterial({ name: "v8-keyframes-amber", baseColor: [1, 0.48, 0.16, 1], roughness: 0.3, metallic: 0.12, emissiveColor: [0.22, 0.08, 0.01], emissiveStrength: 1.1 });
+  const floor = new PBRMaterial({ name: "current-routes-keyframes-floor", baseColor: [0.055, 0.075, 0.09, 1], roughness: 0.38, metallic: 0.05, environmentIntensity: 0.8 });
+  const wall = new PBRMaterial({ name: "current-routes-keyframes-wall", baseColor: [0.018, 0.024, 0.032, 1], roughness: 0.5, metallic: 0, environmentIntensity: 0.5 });
+  const cyan = new PBRMaterial({ name: "current-routes-keyframes-cyan", baseColor: [0.06, 0.75, 0.86, 1], roughness: 0.26, metallic: 0.2, emissiveColor: [0.02, 0.16, 0.18], emissiveStrength: 1.2 });
+  const amber = new PBRMaterial({ name: "current-routes-keyframes-amber", baseColor: [1, 0.48, 0.16, 1], roughness: 0.3, metallic: 0.12, emissiveColor: [0.22, 0.08, 0.01], emissiveStrength: 1.1 });
   return {
     materialCount: 4,
     items: (time) => {
       const sweep = Math.sin(time * 1.4) * 0.55;
       return [
-        { label: "v8-keyframes-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.2, 0.04, 2.2]) },
-        { label: "v8-keyframes-back", geometry: cube, material: wall, modelMatrix: composeMat4([0, 0.78, -0.92], [0, 0, 0, 1], [3.2, 1.75, 0.04]) },
-        { label: "v8-keyframes-moving-cyan", geometry: cube, material: cyan, modelMatrix: composeMat4([-1.15 + sweep, 0.45, -0.55], [0, 0, 0, 1], [0.08, 0.7, 0.08]) },
-        { label: "v8-keyframes-moving-amber", geometry: cube, material: amber, modelMatrix: composeMat4([1.12 - sweep * 0.7, 0.36, -0.52], [0, 0, 0, 1], [0.08, 0.55, 0.08]) }
+        { label: "current-routes-keyframes-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.2, 0.04, 2.2]) },
+        { label: "current-routes-keyframes-back", geometry: cube, material: wall, modelMatrix: composeMat4([0, 0.78, -0.92], [0, 0, 0, 1], [3.2, 1.75, 0.04]) },
+        { label: "current-routes-keyframes-moving-cyan", geometry: cube, material: cyan, modelMatrix: composeMat4([-1.15 + sweep, 0.45, -0.55], [0, 0, 0, 1], [0.08, 0.7, 0.08]) },
+        { label: "current-routes-keyframes-moving-amber", geometry: cube, material: amber, modelMatrix: composeMat4([1.12 - sweep * 0.7, 0.36, -0.52], [0, 0, 0, 1], [0.08, 0.55, 0.08]) }
       ];
     }
   };
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-keyframes-key");
+  const key = new DirectionalLight("current-routes-keyframes-key");
   key.intensity = 4.5;
   key.color = [1, 0.94, 0.84];
-  const fill = new DirectionalLight("v8-keyframes-fill");
+  const fill = new DirectionalLight("current-routes-keyframes-fill");
   fill.intensity = 2.1;
   fill.color = [0.55, 0.74, 1];
   return [

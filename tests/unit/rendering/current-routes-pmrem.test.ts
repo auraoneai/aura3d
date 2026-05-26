@@ -3,12 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
   auditCubemapPMREMResources,
   createCubemapPMREMShaderContract,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
   generateCubemapPMREMResources
 } from "../../../packages/rendering/src/production-runtime";
 
-describe("V8 PMREM production contract", () => {
+describe("CurrentRoutes PMREM production contract", () => {
   it("generates cube PMREM mips that are wired to the renderer cube-map LOD contract", () => {
     const source = createHighContrastEnvironment();
     const pmrem = generateCubemapPMREMResources(source, { faceSize: 16, mipCount: 5, sampleCount: 16 });
@@ -33,23 +33,23 @@ describe("V8 PMREM production contract", () => {
 
   it("binds the cube PMREM mip count, not the equirectangular fallback mip count, into environment lighting", () => {
     const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
-    const pipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
-      id: "v8-studio-small-08",
-      label: "V8 Studio Small 08",
+    const pipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
+      id: "current-routes-studio-small-08",
+      label: "CurrentRoutes Studio Small 08",
       specularLevels: 4,
       intensity: 1,
       backgroundIntensity: 1,
       rotation: 0,
       toneMapping: { operator: "aces", exposure: 1, whitePoint: 11.2 }
     });
-    const lighting = createV6EnvironmentLightingResources(pipeline);
+    const lighting = createProductionEnvironmentLightingResources(pipeline);
 
     expect(pipeline.environmentMipLevels.length).toBe(4);
     expect(pipeline.cubemapPMREM.mipCount).toBeGreaterThan(4);
     expect(lighting.lighting.environmentMapMipCount).toBe(pipeline.cubemapPMREM.mipCount);
     expect(lighting.lighting.environmentMapMipCount).toBe(lighting.environmentCubeTexture.cubeFaces[0]?.mipLevels.length);
     lighting.dispose();
-  });
+  }, 15_000);
 });
 
 function createHighContrastEnvironment() {

@@ -14,7 +14,7 @@ import * as THREE from "three";
 
 declare global {
   interface Window {
-    __V9_PHYSICAL_LIGHTS_PARITY__?: PhysicalLightsParityResult;
+    __THREEJS_PARITY_PHYSICAL_LIGHTS_PARITY__?: PhysicalLightsParityResult;
   }
 }
 
@@ -24,7 +24,7 @@ type PhysicalLightsParityResult = PhysicalLightsParityReady | PhysicalLightsPari
 
 interface PhysicalLightsParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-physical-lights-parity/v1";
+  readonly schema: "a3d-threejs-parity-physical-lights-parity";
   readonly purpose: "same-scene A3D point/spot range attenuation vs Three.js PointLight/SpotLight decay scene";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -47,7 +47,7 @@ interface PhysicalLightsParityReady {
 
 interface PhysicalLightsParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-physical-lights-parity/v1";
+  readonly schema: "a3d-threejs-parity-physical-lights-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -84,7 +84,7 @@ interface DiffStats {
 }
 
 const SCENE = {
-  id: "v9-physical-lights",
+  id: "threejs-parity-physical-lights",
   width: 900,
   height: 520,
   range: 4.2,
@@ -117,7 +117,7 @@ async function run(): Promise<void> {
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: PhysicalLightsParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-physical-lights-parity/v1",
+      schema: "a3d-threejs-parity-physical-lights-parity",
       purpose: "same-scene A3D point/spot range attenuation vs Three.js PointLight/SpotLight decay scene",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -137,17 +137,17 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
-    window.__V9_PHYSICAL_LIGHTS_PARITY__ = ready;
+    window.__THREEJS_PARITY_PHYSICAL_LIGHTS_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: PhysicalLightsParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-physical-lights-parity/v1",
+      schema: "a3d-threejs-parity-physical-lights-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__V9_PHYSICAL_LIGHTS_PARITY__ = failure;
+    window.__THREEJS_PARITY_PHYSICAL_LIGHTS_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -223,17 +223,17 @@ function createA3DItems(): readonly RenderItem[] {
 }
 
 function createCollectedLights(): readonly CollectedLight[] {
-  const point = new PointLight("v9-point");
+  const point = new PointLight("threejs-parity-point");
   point.intensity = 8.6;
   point.color = [1, 0.72, 0.44];
   point.range = SCENE.range;
-  const spot = new SpotLight("v9-spot");
+  const spot = new SpotLight("threejs-parity-spot");
   spot.intensity = 11.5;
   spot.color = [0.42, 0.64, 1];
   spot.range = SCENE.range;
   spot.angle = SCENE.spotAngle;
   spot.penumbra = SCENE.penumbra;
-  const fill = new DirectionalLight("v9-light-fill");
+  const fill = new DirectionalLight("threejs-parity-light-fill");
   fill.intensity = 0.18;
   fill.color = [0.7, 0.78, 1];
   return [

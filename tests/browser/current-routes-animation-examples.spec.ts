@@ -1,8 +1,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
+import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-const ORIGIN = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? "http://localhost:5180";
 const REPORT_PATH = "tests/reports/current-routes-animation-examples.json";
 
 type AnimationExampleExpectation = {
@@ -18,7 +18,7 @@ type AnimationExampleExpectation = {
 const EXPECTED_ROUTES: readonly AnimationExampleExpectation[] = [
   {
     path: "/apps/animation-keyframes/",
-    label: "V8 Animation Keyframes",
+    label: "Animation Keyframes",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_keyframes",
     screenshotPath: "tests/reports/current-routes/animation/keyframes.png",
@@ -26,119 +26,119 @@ const EXPECTED_ROUTES: readonly AnimationExampleExpectation[] = [
   },
   {
     path: "/apps/skinning-blending/",
-    label: "V8 Skinning Blending",
+    label: "Skinning Blending",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_skinning_blending",
     screenshotPath: "tests/reports/current-routes/animation/skinning-blending.png"
   },
   {
     path: "/apps/skinning-additive/",
-    label: "V8 Skinning Additive",
+    label: "Skinning Additive",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_skinning_additive_blending",
     screenshotPath: "tests/reports/current-routes/animation/additive-blending.png"
   },
   {
     path: "/apps/skinning-ik/",
-    label: "V8 Skinning IK",
+    label: "Skinning IK",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_skinning_ik",
     screenshotPath: "tests/reports/current-routes/animation/ik.png"
   },
   {
     path: "/apps/skinning-morph/",
-    label: "V8 Skinning Morph",
+    label: "Skinning Morph",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_skinning_morph",
     screenshotPath: "tests/reports/current-routes/animation/morph.png"
   },
   {
     path: "/apps/animation-multiple/",
-    label: "V8 Animation Multiple",
+    label: "Animation Multiple",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_multiple",
     screenshotPath: "tests/reports/current-routes/animation/multiple.png"
   },
   {
     path: "/apps/animation-walk/",
-    label: "V8 Animation Walk",
+    label: "Animation Walk",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_walk",
     screenshotPath: "tests/reports/current-routes/animation/walk.png"
   },
   {
     path: "/apps/decals/",
-    label: "V8 Decals",
+    label: "Decals",
     requiresFrameProgress: false,
     threeExample: "https://threejs.org/examples/#webgl_decals",
     screenshotPath: "tests/reports/current-routes/decals/decals.png"
   },
   {
     path: "/apps/camera/",
-    label: "V8 Camera",
+    label: "Camera",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_camera",
     screenshotPath: "tests/reports/current-routes/camera/camera.png"
   },
   {
     path: "/apps/camera-multiple-views/",
-    label: "V8 Camera Multiple Views",
+    label: "Camera Multiple Views",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_multiple_views",
     screenshotPath: "tests/reports/current-routes/camera/multiple-views.png"
   },
   {
     path: "/apps/parallax-barrier/",
-    label: "V8 Parallax Barrier",
+    label: "Parallax Barrier",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_effects_parallaxbarrier",
     screenshotPath: "tests/reports/current-routes/stereo/parallax-barrier.png"
   },
   {
     path: "/apps/stereo-effects/",
-    label: "V8 Stereo Effects",
+    label: "Stereo Effects",
     requiresFrameProgress: false,
     threeExample: "https://threejs.org/examples/#webgl_effects_stereo",
     screenshotPath: "tests/reports/current-routes/stereo/stereo.png"
   },
   {
     path: "/apps/physics-showcase/",
-    label: "V8 Physics Showcase",
+    label: "Physics Showcase",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_animation_keyframes",
     screenshotPath: "tests/reports/current-routes/physics/physics-showcase.png"
   },
   {
     path: "/apps/loader-compression/",
-    label: "V8 Loader Compression",
+    label: "Loader Compression",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_loader_gltf_compressed",
     screenshotPath: "tests/reports/current-routes/loaders/loader-compression.png"
   },
   {
     path: "/apps/loader-instancing/",
-    label: "V8 Loader Instancing",
+    label: "Loader Instancing",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_loader_gltf_instancing",
     screenshotPath: "tests/reports/current-routes/loaders/loader-instancing.png"
   },
   {
     path: "/apps/loader-material-extensions/",
-    label: "V8 Loader Material Extensions",
+    label: "Loader Material Extensions",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_loader_gltf_sheen",
     screenshotPath: "tests/reports/current-routes/loaders/loader-material-extensions.png"
   },
   {
     path: "/apps/loader-gltf-variants/",
-    label: "V8 Loader GLTF Variants",
+    label: "Loader GLTF Variants",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_loader_gltf_variants",
     screenshotPath: "tests/reports/current-routes/loaders/loader-gltf-variants.png"
   },
   {
     path: "/apps/loader-ktx2/",
-    label: "V8 Loader KTX2",
+    label: "Loader KTX2",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_loader_texture_ktx2",
     screenshotPath: "tests/reports/current-routes/loaders/loader-ktx2.png",
@@ -146,119 +146,119 @@ const EXPECTED_ROUTES: readonly AnimationExampleExpectation[] = [
   },
   {
     path: "/apps/loader-obj/",
-    label: "V8 Loader OBJ",
+    label: "Loader OBJ",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_loader_obj",
     screenshotPath: "tests/reports/current-routes/loaders/loader-obj.png"
   },
   {
     path: "/apps/instancing-performance/",
-    label: "V8 Instancing Performance",
+    label: "Instancing Performance",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_instancing_performance",
     screenshotPath: "tests/reports/current-routes/instancing/performance.png"
   },
   {
     path: "/apps/texture-anisotropy/",
-    label: "V8 Texture Anisotropy",
+    label: "Texture Anisotropy",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_materials_texture_anisotropy",
     screenshotPath: "tests/reports/current-routes/textures/anisotropy.png"
   },
   {
     path: "/apps/interactive-picking/",
-    label: "V8 Interactive Picking",
+    label: "Interactive Picking",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_interactive_cubes",
     screenshotPath: "tests/reports/current-routes/interactive/picking.png"
   },
   {
     path: "/apps/controls-trackball/",
-    label: "V8 Controls Trackball",
+    label: "Controls Trackball",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#misc_controls_trackball",
     screenshotPath: "tests/reports/current-routes/controls/trackball.png"
   },
   {
     path: "/apps/geometry-drawrange/",
-    label: "V8 Geometry DrawRange",
+    label: "Geometry DrawRange",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_buffergeometry_drawrange",
     screenshotPath: "tests/reports/current-routes/geometry/drawrange.png"
   },
   {
     path: "/apps/lines-helpers/",
-    label: "V8 Lines Helpers",
+    label: "Lines Helpers",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#misc_helpers",
     screenshotPath: "tests/reports/current-routes/geometry/lines-helpers.png"
   },
   {
     path: "/apps/materials-transmission/",
-    label: "V8 Materials Transmission",
+    label: "Materials Transmission",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_materials_physical_transmission",
     screenshotPath: "tests/reports/current-routes/materials/transmission.png"
   },
   {
     path: "/apps/lights-spotlight/",
-    label: "V8 Lights Spotlight",
+    label: "Lights Spotlight",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_lights_spotlight",
     screenshotPath: "tests/reports/current-routes/lights/spotlight.png"
   },
   {
     path: "/apps/shadowmap-viewer/",
-    label: "V8 Shadowmap Viewer",
+    label: "Shadowmap Viewer",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_shadowmap_viewer",
     screenshotPath: "tests/reports/current-routes/shadow/shadowmap-viewer.png"
   },
   {
     path: "/apps/webgpu-rtt/",
-    label: "V8 WebGPU RTT",
+    label: "WebGPU RTT",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgpu_rtt",
     screenshotPath: "tests/reports/current-routes/webgpu/rtt.png"
   },
   {
     path: "/apps/webgpu-materials/",
-    label: "V8 WebGPU Materials",
+    label: "WebGPU Materials",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgpu_materials",
     screenshotPath: "tests/reports/current-routes/webgpu/materials.png"
   },
   {
     path: "/apps/webgpu-instance-uniform/",
-    label: "V8 WebGPU Instance Uniform",
+    label: "WebGPU Instance Uniform",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgpu_instance_uniform",
     screenshotPath: "tests/reports/current-routes/webgpu/instance-uniform.png"
   },
   {
     path: "/apps/webgpu-compute/",
-    label: "V8 WebGPU Compute",
+    label: "WebGPU Compute",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgpu_compute",
     screenshotPath: "tests/reports/current-routes/webgpu/compute.png"
   },
   {
     path: "/apps/webxr-interactions/",
-    label: "V8 WebXR Interactions",
+    label: "WebXR Interactions",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webxr_vr_ballshooter",
     screenshotPath: "tests/reports/current-routes/webxr/interactions.png"
   },
   {
     path: "/apps/postprocessing-bloom/",
-    label: "V8 Postprocessing Bloom",
+    label: "Postprocessing Bloom",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_postprocessing_unreal_bloom",
     screenshotPath: "tests/reports/current-routes/postprocessing/bloom.png"
   },
   {
     path: "/apps/postprocessing-depth-outline/",
-    label: "V8 Postprocessing Depth Outline",
+    label: "Postprocessing Depth Outline",
     requiresFrameProgress: true,
     threeExample: "https://threejs.org/examples/#webgl_postprocessing_outline",
     screenshotPath: "tests/reports/current-routes/postprocessing/depth-outline.png",
@@ -266,17 +266,23 @@ const EXPECTED_ROUTES: readonly AnimationExampleExpectation[] = [
   }
 ];
 
-test.describe("V8 animation/example routes", () => {
+test.describe("current animation and example routes", () => {
   test.setTimeout(120_000);
 
+  let server: ExampleDevServer;
   const report: unknown[] = [];
 
-  test.afterAll(() => {
+  test.beforeAll(async () => {
+    server = await startExampleDevServer();
+  });
+
+  test.afterAll(async () => {
+    await server.close();
     mkdirSync(resolve("tests/reports"), { recursive: true });
     writeFileSync(resolve(REPORT_PATH), `${JSON.stringify({
-      schema: "a3d-v8-animation-examples/v1",
+      schema: "a3d-current-routes-animation-examples",
       generatedAt: new Date().toISOString(),
-      origin: ORIGIN,
+      origin: server.origin,
       routes: report
     }, null, 2)}\n`);
   });
@@ -296,7 +302,7 @@ test.describe("V8 animation/example routes", () => {
       });
 
       await page.setViewportSize({ width: 1440, height: 1000 });
-      const response = await page.goto(`${ORIGIN}${expected.path}`, { waitUntil: "domcontentloaded" });
+      const response = await page.goto(`${server.origin}${expected.path}`, { waitUntil: "domcontentloaded" });
       expect(response?.status(), `${expected.path} must be directly reachable`).toBe(200);
 
       await page.waitForFunction(() => {
@@ -1263,12 +1269,12 @@ test.describe("V8 animation/example routes", () => {
     });
   }
 
-  test("V8 Parallax Barrier mask mode uses renderer-owned pixel compositing", async ({ page }) => {
+  test("Parallax Barrier mask mode uses renderer-owned pixel compositing", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    const response = await page.goto(`${ORIGIN}/apps/parallax-barrier/?mask=1`, { waitUntil: "domcontentloaded" });
+    const response = await page.goto(`${server.origin}/apps/parallax-barrier/?mask=1`, { waitUntil: "domcontentloaded" });
     expect(response?.status(), "parallax barrier mask route must be directly reachable").toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8ParallaxBarrier as {
+      const runtime = window.__a3dParallaxBarrier as {
         status?: string;
         barrierMaskEnabled?: boolean;
         effectComposition?: string;
@@ -1289,12 +1295,12 @@ test.describe("V8 animation/example routes", () => {
     }, undefined, { timeout: 15_000 });
   });
 
-  test("V8 Parallax Barrier defaults to a clean non-striped preview", async ({ page }) => {
+  test("Parallax Barrier defaults to a clean non-striped preview", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    const response = await page.goto(`${ORIGIN}/apps/parallax-barrier/`, { waitUntil: "domcontentloaded" });
+    const response = await page.goto(`${server.origin}/apps/parallax-barrier/`, { waitUntil: "domcontentloaded" });
     expect(response?.status(), "parallax barrier default route must be directly reachable").toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8ParallaxBarrier as {
+      const runtime = window.__a3dParallaxBarrier as {
         status?: string;
         barrierMaskEnabled?: boolean;
         effectComposition?: string;

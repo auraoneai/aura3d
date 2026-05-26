@@ -29,7 +29,7 @@ export interface ArchitecturalInteriorLight {
 }
 
 export interface ArchitecturalLightingFixture {
-  readonly id: "v4-old-branch-architectural-lighting-fixture";
+  readonly id: "external-parity-old-branch-architectural-lighting-fixture";
   readonly source: "origin-master-arch-viz-lighting-controller-adapted";
   readonly preset: ArchitecturalLightingPresetId;
   readonly presetLabel: string;
@@ -158,7 +158,7 @@ export function createArchitecturalLightingFixture(options: ArchitecturalLightin
   const kelvinValues = interiorLights.map((light) => light.temperatureKelvin);
   const sunDirection = directionForTimeOfDay(descriptor.timeOfDayHours);
   return {
-    id: "v4-old-branch-architectural-lighting-fixture",
+    id: "external-parity-old-branch-architectural-lighting-fixture",
     source: "origin-master-arch-viz-lighting-controller-adapted",
     preset,
     presetLabel: descriptor.label,

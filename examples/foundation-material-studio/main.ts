@@ -1,9 +1,9 @@
 import { createMaterialStudioWorkflow } from "@aura3d/workflows";
-import { mountV3Example } from "../foundation-example-shell";
+import { mountFoundationExample } from "../foundation-example-shell";
 
-void mountV3Example({
+void mountFoundationExample({
   id: "foundation-material-studio",
-  title: "Material Studio V3",
+  title: "Material Studio Foundation",
   summary: "Render a compact material review scene with metal, textured PBR, and normal-mapped materials through one public workflow.",
   notes: [
     "The example creates a workflow result, then renders its public RenderSource.",

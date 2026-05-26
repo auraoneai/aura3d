@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { inflateSync } from "node:zlib";
 
-export interface V6PngStats {
+export interface ProductionPngStats {
   readonly width: number;
   readonly height: number;
   readonly nonTransparentPixels: number;
@@ -18,7 +18,7 @@ export interface V6PngStats {
   readonly localContrast: number;
 }
 
-export function readV6PngStats(path: string): V6PngStats {
+export function readProductionPngStats(path: string): ProductionPngStats {
   const buffer = readFileSync(path);
   if (buffer.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") {
     throw new Error(`${path} is not a PNG file.`);
@@ -69,7 +69,7 @@ export function readV6PngStats(path: string): V6PngStats {
   return analyzePixels(pixels, width, height, channels);
 }
 
-function analyzePixels(pixels: Uint8Array, width: number, height: number, channels: number): V6PngStats {
+function analyzePixels(pixels: Uint8Array, width: number, height: number, channels: number): ProductionPngStats {
   let nonTransparentPixels = 0;
   let nonBlackPixels = 0;
   let lumaTotal = 0;

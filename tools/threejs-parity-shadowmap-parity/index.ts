@@ -11,7 +11,7 @@ import * as THREE from "three";
 
 declare global {
   interface Window {
-    __V9_SHADOWMAP_PARITY__?: ShadowMapParityResult;
+    __THREEJS_PARITY_SHADOWMAP_PARITY__?: ShadowMapParityResult;
   }
 }
 
@@ -21,7 +21,7 @@ type ShadowMapParityResult = ShadowMapParityReady | ShadowMapParityError;
 
 interface ShadowMapParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-shadowmap-parity/v1";
+  readonly schema: "a3d-threejs-parity-shadowmap-parity";
   readonly purpose: "same-scene A3D directional shadow map vs Three.js WebGLShadowMap PCF";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -43,7 +43,7 @@ interface ShadowMapParityReady {
 
 interface ShadowMapParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-shadowmap-parity/v1";
+  readonly schema: "a3d-threejs-parity-shadowmap-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -74,7 +74,7 @@ interface DiffStats {
 }
 
 const SCENE = {
-  id: "v9-shadowmap",
+  id: "threejs-parity-shadowmap",
   width: 900,
   height: 620,
   shadowMapSize: 2048,
@@ -104,7 +104,7 @@ async function run(): Promise<void> {
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
     const ready: ShadowMapParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-shadowmap-parity/v1",
+      schema: "a3d-threejs-parity-shadowmap-parity",
       purpose: "same-scene A3D directional shadow map vs Three.js WebGLShadowMap PCF",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -123,17 +123,17 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
-    window.__V9_SHADOWMAP_PARITY__ = ready;
+    window.__THREEJS_PARITY_SHADOWMAP_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: ShadowMapParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-shadowmap-parity/v1",
+      schema: "a3d-threejs-parity-shadowmap-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__V9_SHADOWMAP_PARITY__ = failure;
+    window.__THREEJS_PARITY_SHADOWMAP_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -142,7 +142,7 @@ async function run(): Promise<void> {
 async function renderA3D(canvas: HTMLCanvasElement) {
   const renderer = await A3DRenderer.create({ canvas, width: SCENE.width, height: SCENE.height, backend: "webgl2", preserveDrawingBuffer: true, antialias: true, clearColor: [0.012, 0.014, 0.018, 1] });
   const frame = computePerspectiveCameraFrame(SCENE.frameBounds, { width: SCENE.width, height: SCENE.height }, CAMERA);
-  const light = new DirectionalLight("v9-shadow-key");
+  const light = new DirectionalLight("threejs-parity-shadow-key");
   light.castsShadow = true;
   light.intensity = 3.2;
   light.color = [1, 0.94, 0.84];
@@ -197,15 +197,15 @@ function createA3DItems(): readonly RenderItem[] {
   const floor = Geometry.litCube(1);
   return [
     {
-      label: "v9-shadow-floor",
+      label: "threejs-parity-shadow-floor",
       geometry: floor,
-      material: new PBRMaterial({ name: "v9-shadow-floor-material", baseColor: [0.42, 0.44, 0.47, 1], metallic: 0, roughness: 0.78, environmentIntensity: 0.18 }),
+      material: new PBRMaterial({ name: "threejs-parity-shadow-floor-material", baseColor: [0.42, 0.44, 0.47, 1], metallic: 0, roughness: 0.78, environmentIntensity: 0.18 }),
       modelMatrix: composeMat4([0, -0.66, 0.18], [0, 0, 0, 1], [4.8, 0.08, 4.3])
     },
     {
-      label: "v9-shadow-sphere",
+      label: "threejs-parity-shadow-sphere",
       geometry: sphere,
-      material: new PBRMaterial({ name: "v9-shadow-sphere-material", baseColor: [0.82, 0.86, 0.9, 1], metallic: 0.3, roughness: 0.34, environmentIntensity: 0.2 }),
+      material: new PBRMaterial({ name: "threejs-parity-shadow-sphere-material", baseColor: [0.82, 0.86, 0.9, 1], metallic: 0.3, roughness: 0.34, environmentIntensity: 0.2 }),
       modelMatrix: composeMat4([0, -0.04, 0], [0, 0, 0, 1], [1, 1, 1])
     }
   ];

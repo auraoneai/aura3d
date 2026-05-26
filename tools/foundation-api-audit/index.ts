@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join, resolve } from "node:path";
 import { collectPublicPackageApis } from "../api-docs/index.js";
 
-export interface V3ApiAuditPackage {
+export interface FoundationApiAuditPackage {
   readonly packageName: string;
   readonly packageDir: string;
   readonly entrypointPath: string;
@@ -12,19 +12,19 @@ export interface V3ApiAuditPackage {
   readonly hasPackageImport: boolean;
   readonly hasTsconfigPath: boolean;
   readonly documentedInPublicApi: boolean;
-  readonly documentedInV3Map: boolean;
+  readonly documentedInFoundationMap: boolean;
   readonly hasRootSubpathExport: boolean;
   readonly rootSubpath?: string;
   readonly violations: readonly string[];
 }
 
-export interface V3ApiAuditReport {
-  readonly schema: "a3d-foundation-api-audit/v1";
+export interface FoundationApiAuditReport {
+  readonly schema: "a3d-foundation-api-audit";
   readonly generatedAt: string;
   readonly pass: boolean;
   readonly packageCount: number;
   readonly privatePackages: readonly string[];
-  readonly packages: readonly V3ApiAuditPackage[];
+  readonly packages: readonly FoundationApiAuditPackage[];
   readonly violations: readonly string[];
   readonly futurePackages: readonly {
     readonly packageName: string;
@@ -35,17 +35,17 @@ export interface V3ApiAuditReport {
 
 const root = process.cwd();
 
-export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
+export function createFoundationApiAuditReport(workspaceRoot = root): FoundationApiAuditReport {
   const rootPackage = readJson(join(workspaceRoot, "package.json"));
   const tsconfig = readJson(join(workspaceRoot, "tsconfig.base.json"));
   const publicApiDocs = readText(join(workspaceRoot, "docs/api/public-api.md"));
-  const apiMap = readText(join(workspaceRoot, "docs/project/v3-roadmap-public-api-map.md"));
+  const apiMap = publicApiDocs;
   const packages = collectPublicPackageApis(workspaceRoot);
   const privatePackages = collectPrivatePackages(workspaceRoot);
   const rootExports = rootPackage.exports ?? {};
   const tsconfigPaths = tsconfig.compilerOptions?.paths ?? {};
 
-  const auditedPackages = packages.map((pkg): V3ApiAuditPackage => {
+  const auditedPackages = packages.map((pkg): FoundationApiAuditPackage => {
     const packageJson = readJson(join(workspaceRoot, pkg.packagePath, "package.json"));
     const packageExport = packageJson.exports?.["."];
     const rootSubpath = rootSubpathFor(pkg.packageName);
@@ -55,7 +55,7 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
     const hasPackageImport = typeof packageExport?.import === "string";
     const hasTsconfigPath = Array.isArray(tsconfigPaths[pkg.packageName]) && tsconfigPaths[pkg.packageName]?.includes(pkg.entrypointPath);
     const documentedInPublicApi = publicApiDocs.includes(`## ${pkg.packageName}`);
-    const documentedInV3Map = apiMap.includes(`\`${pkg.packageName}\``);
+    const documentedInFoundationMap = apiMap.includes(`## ${pkg.packageName}`) || apiMap.includes(`\`${pkg.packageName}\``);
     const hasRootSubpathExport = pkg.packageName === "@aura3d/engine"
       ? true
       : rootSubpath !== undefined && typeof rootExports[rootSubpath] === "string";
@@ -65,7 +65,7 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
     if (!hasPackageImport) violations.push(`${pkg.packageName} exports["."] is missing an import target.`);
     if (!hasTsconfigPath) violations.push(`${pkg.packageName} is missing a tsconfig.base.json path alias to ${pkg.entrypointPath}.`);
     if (!documentedInPublicApi) violations.push(`${pkg.packageName} is missing from docs/api/public-api.md.`);
-    if (!documentedInV3Map) violations.push(`${pkg.packageName} is missing from docs/project/v3-roadmap-public-api-map.md.`);
+    if (!documentedInFoundationMap) violations.push(`${pkg.packageName} is missing from docs/api/public-api.md contextual package coverage.`);
     if (rootSubpath && !hasRootSubpathExport) violations.push(`${pkg.packageName} is missing root package export ${rootSubpath}.`);
     if (pkg.exportStatements.length === 0) violations.push(`${pkg.packageName} has no public export declarations.`);
 
@@ -79,7 +79,7 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
       hasPackageImport,
       hasTsconfigPath,
       documentedInPublicApi,
-      documentedInV3Map,
+      documentedInFoundationMap,
       hasRootSubpathExport,
       ...(rootSubpath ? { rootSubpath } : {}),
       violations
@@ -98,11 +98,11 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
     violations.push("@aura3d/test-utils must remain private and excluded from public package docs.");
   }
   if (!auditedPackages.some((pkg) => pkg.packageName === "@aura3d/product-studio")) {
-    violations.push("@aura3d/product-studio must be part of the V3 public API surface.");
+    violations.push("@aura3d/product-studio must be part of the Foundation public API surface.");
   }
 
   return {
-    schema: "a3d-foundation-api-audit/v1",
+    schema: "a3d-foundation-api-audit",
     generatedAt: new Date().toISOString(),
     pass: violations.length === 0,
     packageCount: auditedPackages.length,
@@ -113,8 +113,8 @@ export function createV3ApiAuditReport(workspaceRoot = root): V3ApiAuditReport {
   };
 }
 
-export function writeV3ApiAuditReport(workspaceRoot = root, outputPath = "tests/reports/foundation-api-audit.json"): V3ApiAuditReport {
-  const report = createV3ApiAuditReport(workspaceRoot);
+export function writeFoundationApiAuditReport(workspaceRoot = root, outputPath = "tests/reports/foundation-api-audit.json"): FoundationApiAuditReport {
+  const report = createFoundationApiAuditReport(workspaceRoot);
   const fullOutputPath = resolve(workspaceRoot, outputPath);
   mkdirSync(resolve(workspaceRoot, "tests/reports"), { recursive: true });
   writeFileSync(fullOutputPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -122,7 +122,7 @@ export function writeV3ApiAuditReport(workspaceRoot = root, outputPath = "tests/
 }
 
 if (process.argv[1] && process.argv[1].endsWith("tools/foundation-api-audit/index.ts")) {
-  const report = writeV3ApiAuditReport();
+  const report = writeFoundationApiAuditReport();
   console.log(JSON.stringify(report, null, 2));
   if (!report.pass) {
     process.exitCode = 1;

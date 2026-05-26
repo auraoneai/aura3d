@@ -3,12 +3,12 @@ import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const screenshotDir = "tests/reports/external-parity-example-screenshots";
-const editorScreenshotPath = `${screenshotDir}/editor-authoring-v4.png`;
-const exportedScreenshotPath = `${screenshotDir}/editor-authoring-v4-export.png`;
-const checkedInScreenshotPath = `${screenshotDir}/editor-authored-v4-checked-in.png`;
+const editorScreenshotPath = `${screenshotDir}/editor-authoring-external-parity.png`;
+const exportedScreenshotPath = `${screenshotDir}/editor-authoring-external-parity-export.png`;
+const checkedInScreenshotPath = `${screenshotDir}/editor-authored-external-parity-checked-in.png`;
 const reportPath = "tests/reports/external-parity-editor-authoring.json";
 
-test.describe("V4 editor authoring workflow", () => {
+test.describe("ExternalParity editor authoring workflow", () => {
   test.setTimeout(150_000);
 
   let server: ExampleDevServer;
@@ -21,7 +21,7 @@ test.describe("V4 editor authoring workflow", () => {
     await server.close();
   });
 
-  test("authors, saves, reloads, plays, exports, and smoke-tests a V4 app", async ({ page }) => {
+  test("authors, saves, reloads, plays, exports, and smoke-tests a ExternalParity app", async ({ page }) => {
     mkdirSync(screenshotDir, { recursive: true });
     let timelineEvidence: EditorState["timeline"]["model"] | undefined;
     let visualScriptingEvidence: EditorState["visualScripting"] | undefined;
@@ -175,14 +175,14 @@ test.describe("V4 editor authoring workflow", () => {
     await page.locator('select[data-path="particleEmitter.preset"]').selectOption("fountain");
 
     await page.getByRole("button", { name: "Create", exact: true }).click();
-    await page.getByLabel("Rename New Node").fill("V4 Key Light");
+    await page.getByLabel("Rename New Node").fill("ExternalParity Key Light");
     await page.getByLabel("Rename New Node").blur();
     await page.locator('select[data-path="light.kind"]').selectOption("point");
     await page.locator('input[data-path="light.intensity"]').fill("2.4");
     await page.locator('input[data-path="light.intensity"]').blur();
 
     await page.getByRole("button", { name: "Create", exact: true }).click();
-    await page.getByLabel("Rename New Node").fill("V4 Export Camera");
+    await page.getByLabel("Rename New Node").fill("ExternalParity Export Camera");
     await page.getByLabel("Rename New Node").blur();
     await page.locator('input[data-path="camera.enabled"]').setChecked(true);
     await page.locator('input[data-path="camera.fov"]').fill("52");
@@ -202,8 +202,8 @@ test.describe("V4 editor authoring workflow", () => {
     expect(savedProjectJson).toContain("Fox.glb");
     expect(savedProjectJson).toContain("\"orientation\": \"z-up\"");
     expect(savedProjectJson).toContain("Fox_external_metallicRoughness.ktx2");
-    expect(savedProjectJson).toContain("V4 Key Light");
-    expect(savedProjectJson).toContain("V4 Export Camera");
+    expect(savedProjectJson).toContain("ExternalParity Key Light");
+    expect(savedProjectJson).toContain("ExternalParity Export Camera");
     expect(savedProjectJson).toContain("BounceBehavior");
     expect(savedProjectJson).toContain("fountain");
 
@@ -216,8 +216,8 @@ test.describe("V4 editor authoring workflow", () => {
     }, savedProjectJson);
     await page.getByRole("button", { name: "Load", exact: true }).click();
     await expect(page.getByRole("button", { name: "Fox.glb" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "V4 Key Light" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "V4 Export Camera" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "ExternalParity Key Light" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "ExternalParity Export Camera" })).toBeVisible();
     await page.getByRole("button", { name: "Fox.glb" }).click();
     await expect(page.locator('.material-panel input[data-material-path="baseColor"]')).toHaveValue("#ff8844");
     await expect(page.locator('.material-panel input[data-material-path="metallic"]')).toHaveValue("0.22");
@@ -253,7 +253,7 @@ test.describe("V4 editor authoring workflow", () => {
       await route.fulfill({
         status: content ? 200 : 404,
         contentType: name.endsWith(".html") ? "text/html" : name.endsWith(".js") ? "text/javascript" : "application/json",
-        body: content ?? "missing V4 export fixture"
+        body: content ?? "missing ExternalParity export fixture"
       });
     });
 
@@ -277,7 +277,7 @@ test.describe("V4 editor authoring workflow", () => {
     await page.screenshot({ path: exportedScreenshotPath, fullPage: true });
 
     writeFileSync(reportPath, JSON.stringify({
-      schemaVersion: "a3d-external-parity-editor-authoring-report-v1",
+      schemaVersion: "a3d-external-parity-editor-authoring-report",
       ok: true,
       generatedAt: new Date().toISOString(),
       command: "pnpm exec playwright test tests/browser/editor-authoring-external-parity.spec.ts",
@@ -289,8 +289,8 @@ test.describe("V4 editor authoring workflow", () => {
         importedAsset: "Fox.glb",
         placedObject: true,
         editedMaterial: "#ff8844",
-        addedLight: "V4 Key Light",
-        addedCamera: "V4 Export Camera",
+        addedLight: "ExternalParity Key Light",
+        addedCamera: "ExternalParity Export Camera",
         savedAndReloaded: true,
         hierarchyPersisted: true,
         inspectorEditsPersisted: true,
@@ -316,14 +316,14 @@ test.describe("V4 editor authoring workflow", () => {
     }, null, 2));
   });
 
-  test("runs the checked-in V4 editor-authored app without editor code", async ({ page }) => {
+  test("runs the checked-in ExternalParity editor-authored app without editor code", async ({ page }) => {
     mkdirSync(screenshotDir, { recursive: true });
     await page.goto(`${server.origin}/examples/external-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => (window as any).__AURA3D_EXPORTED_PROJECT__?.status === "ready");
     await page.waitForFunction(() => ((window as any).__AURA3D_EXPORTED_PROJECT__?.diagnostics.scriptTickCount ?? 0) > 2);
     const state = await exportedProjectState(page);
 
-    expect(state.projectName).toBe("V4 Editor Authored Sample");
+    expect(state.projectName).toBe("ExternalParity Editor Authored Sample");
     expect(state.nodeCount).toBe(4);
     expect(state.assetCount).toBe(1);
     expect(state.importedAssetNames).toContain("Fox.glb");

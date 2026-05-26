@@ -24,7 +24,7 @@ const results = products.map((id) => {
 });
 
 const report = {
-  schema: "a3d-product-studio-product-assets/v1",
+  schema: "a3d-product-studio-product-assets",
   generatedAt: new Date().toISOString(),
   pass: results.every((result) => result.exists && result.meshCount >= 8 && result.materialCount >= 3 && result.textureCount >= result.materialCount * 4),
   results

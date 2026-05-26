@@ -9,5 +9,5 @@ export {
   SelectionManager,
   TrackballControls,
   TransformControls
-} from "../../../controls/src/index";
-export type { TransformControlMode, V5ControlState, V5PickResult } from "../../../controls/src/index";
+} from "@aura3d/controls";
+export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "@aura3d/controls";

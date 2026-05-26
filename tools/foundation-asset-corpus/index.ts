@@ -94,7 +94,7 @@ for (const fixture of fixtures) {
   mkdirSync(directory, { recursive: true });
   writeJson(assetPath, fixture.gltf);
   writeJson(manifestPath, {
-    schemaVersion: "a3d-v3-local-asset-v1",
+    schemaVersion: "a3d-foundation-local-asset",
     id: fixture.id,
     category: fixture.category,
     source: fixture.source,
@@ -112,10 +112,10 @@ for (const fixture of fixtures) {
 
 const report = {
   ok: reports.every((asset) => asset.renderStatus !== "error"),
-  schemaVersion: "a3d-v3-asset-corpus-report-v1",
+  schemaVersion: "a3d-foundation-asset-corpus-report",
   generatedAt,
   commit: currentCommit(),
-  runId: `v3-asset-corpus-${Date.now()}`,
+  runId: `foundation-asset-corpus-${Date.now()}`,
   command: "pnpm exec tsx --tsconfig tsconfig.base.json tools/foundation-asset-corpus/index.ts",
   blockedClaims: [
     "broad better-than-Three.js language",
@@ -143,7 +143,7 @@ const report = {
 writeJson(reportPath, report);
 writeJson(gltfReportPath, report);
 
-console.log(`Wrote ${reports.length} v3 asset corpus entries to ${reportPath}`);
+console.log(`Wrote ${reports.length} foundation asset corpus entries to ${reportPath}`);
 
 async function inspectFixture(
   fixture: CorpusFixture,
@@ -222,10 +222,10 @@ async function inspectFixture(
     const errorState = error instanceof Error ? error.message : String(error);
     const expected = fixture.unsupportedFeatures.length > 0;
     const allDiagnostics = diagnostics.length > 0 ? diagnostics : [{
-      code: "ASSET_V3_CORPUS_LOAD_ERROR",
+      code: "ASSET_FOUNDATION_CORPUS_LOAD_ERROR",
       severity: expected ? "warning" : "error",
       message: errorState,
-      nextAction: expected ? "Keep this fixture classified as unsupported until the required feature is implemented." : "Fix the generated v3 fixture or loader regression."
+      nextAction: expected ? "Keep this fixture classified as unsupported until the required feature is implemented." : "Fix the generated foundation fixture or loader regression."
     } satisfies AssetDiagnostic];
     writeJson(diagnosticsPath, allDiagnostics);
     return {
@@ -537,7 +537,7 @@ function createCompressionFixture(): CorpusFixture {
       nextAction: "Run with a real Meshopt decoder before claiming compressed mesh browser support."
     }],
     gltf: {
-      asset: { version: "2.0", generator: "A3D v3 generated meshopt-required fixture" },
+      asset: { version: "2.0", generator: "A3D foundation generated meshopt-required fixture" },
       extensionsUsed: ["EXT_meshopt_compression"],
       extensionsRequired: ["EXT_meshopt_compression"],
       buffers: [{ uri: bytesDataUri(new Uint8Array([0, 1, 2, 3])), byteLength: 4 }],
@@ -612,7 +612,7 @@ function baseGltf(
   rest: Record<string, unknown>
 ): Record<string, unknown> {
   return {
-    asset: { version: "2.0", generator: "A3D v3 generated local fixture" },
+    asset: { version: "2.0", generator: "A3D foundation generated local fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews,
     accessors,

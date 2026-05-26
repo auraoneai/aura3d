@@ -2,16 +2,16 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  summarizeV4Corpus,
-  validateV4CorpusManifest,
-  type V4CorpusManifest
+  summarizeExternalParityGLTFCorpus,
+  validateExternalParityGLTFCorpusManifest,
+  type ExternalParityGLTFCorpusManifest
 } from "../../packages/assets/src";
 
-describe("V4 glTF corpus", () => {
+describe("ExternalParity glTF corpus", () => {
   it("defines a 25+ asset corpus with license, provenance, and feature coverage", () => {
-    const manifest = JSON.parse(readFileSync(resolve("fixtures/external-parity/gltf-corpus/manifest.json"), "utf8")) as V4CorpusManifest;
-    validateV4CorpusManifest(manifest);
-    const summary = summarizeV4Corpus(manifest);
+    const manifest = JSON.parse(readFileSync(resolve("fixtures/external-parity/gltf-corpus/manifest.json"), "utf8")) as ExternalParityGLTFCorpusManifest;
+    validateExternalParityGLTFCorpusManifest(manifest);
+    const summary = summarizeExternalParityGLTFCorpus(manifest);
 
     expect(summary.assetCount).toBeGreaterThanOrEqual(25);
     expect(summary.visualEvidenceSlots).toBeGreaterThanOrEqual(12);

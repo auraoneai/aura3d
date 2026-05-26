@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV4BrdfLut,
-  createV4EnvironmentPipeline,
-  createV4IblResources,
-  createV4Pmrem,
-  listV4EnvironmentTargets
+  createExternalParityBrdfLut,
+  createExternalParityEnvironmentPipeline,
+  createExternalParityIblResources,
+  createExternalParityPmrem,
+  listExternalParityEnvironmentTargets
 } from "../../../packages/rendering/src";
 
-describe("V4 IBL and environment pipeline", () => {
+describe("ExternalParity IBL and environment pipeline", () => {
   it("builds every required environment target with IBL resources and explicit release blockers", () => {
-    const targets = listV4EnvironmentTargets();
+    const targets = listExternalParityEnvironmentTargets();
 
     expect(targets).toEqual([
       "studio-softbox-hdr",
@@ -20,7 +20,7 @@ describe("V4 IBL and environment pipeline", () => {
     ]);
 
     for (const target of targets) {
-      const pipeline = createV4EnvironmentPipeline({
+      const pipeline = createExternalParityEnvironmentPipeline({
         target,
         rotation: 0.25,
         intensity: 1.4,
@@ -39,11 +39,11 @@ describe("V4 IBL and environment pipeline", () => {
       expect(pipeline.ibl.diagnostics.notFlagshipProof).toBe(true);
       expect(pipeline.releaseBlockers.join(" ")).toContain("licensed HDR");
     }
-  });
+  }, 15_000);
 
   it("creates a PMREM-style prefiltered mip chain with roughness levels", () => {
-    const ibl = createV4IblResources({ preset: "softbox", width: 64, height: 32 });
-    const pmrem = createV4Pmrem(ibl.resources.base, { levels: 5 });
+    const ibl = createExternalParityIblResources({ preset: "softbox", width: 64, height: 32 });
+    const pmrem = createExternalParityPmrem(ibl.resources.base, { levels: 5 });
 
     expect(pmrem.diagnostics.mipCount).toBeGreaterThanOrEqual(5);
     expect(pmrem.diagnostics.directionalReflectionReady).toBe(true);
@@ -53,7 +53,7 @@ describe("V4 IBL and environment pipeline", () => {
   });
 
   it("creates a BRDF LUT with non-zero roughness response", () => {
-    const lut = createV4BrdfLut(32);
+    const lut = createExternalParityBrdfLut(32);
 
     expect(lut.width).toBe(32);
     expect(lut.height).toBe(32);
@@ -63,7 +63,7 @@ describe("V4 IBL and environment pipeline", () => {
   });
 
   it("keeps environment rotation, intensity, and background separation explicit", () => {
-    const ibl = createV4IblResources({
+    const ibl = createExternalParityIblResources({
       preset: "evening",
       rotation: 0.5,
       intensity: 2,

@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const requiredFiles = [
-  "docs/project/production-runtime-roadmap-three-compat-visual-failure-audit.md",
-  "docs/project/production-runtime-roadmap-no-fake-visual-proof.md",
-  "docs/project/production-runtime-roadmap-production-renderer-plan.md"
+  "docs/project/threejs-parity-status.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/current-state.md"
 ] as const;
 const combined = requiredFiles
   .filter((path) => existsSync(resolve(path)))
@@ -33,7 +33,7 @@ const checks = [
   }))
 ];
 const report = {
-  schema: "a3d-production-runtime-three-compat-visual-failure-audit/v1",
+  schema: "a3d-production-runtime-three-compat-visual-failure-audit",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks
@@ -43,7 +43,7 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log("V6 V5 visual failure audit passed.");
+console.log("Production runtime Three.js compatibility visual failure audit passed.");
 
 function writeJson(path: string, value: unknown): void {
   mkdirSync(dirname(resolve(path)), { recursive: true });

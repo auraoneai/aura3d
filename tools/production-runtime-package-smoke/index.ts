@@ -32,19 +32,19 @@ try {
     const assets = await import("@aura3d/engine/assets/browser");
     const animation = await import("@aura3d/engine/animation/browser");
     console.log(JSON.stringify({
-      hasRunV6Example: typeof workflows.runV6Example === "function",
-      contextualWorkflowsMatchLegacy: workflows.runV6Example === workflowsLegacy.runV6Example,
+      hasRunProductionExample: typeof workflows.runProductionExample === "function",
+      contextualWorkflowsMatchLegacy: workflows.runProductionExample === workflowsLegacy.runProductionExample,
       contextualRuntimeMatchesLegacy: productionRuntime.A3DRenderer === productionRuntimeLegacy.A3DRenderer,
-      contextualRenderingMatchesLegacy: renderingProduction.RendererV6 === renderingProductionLegacy.RendererV6,
-      contextualAssetsMatchLegacy: assetCorpus.loadV6AssetManifest === assetCorpusLegacy.loadV6AssetManifest,
+      contextualRenderingMatchesLegacy: renderingProduction.ProductionRuntimeRenderer === renderingProductionLegacy.ProductionRuntimeRenderer,
+      contextualAssetsMatchLegacy: assetCorpus.loadProductionAssetManifest === assetCorpusLegacy.loadProductionAssetManifest,
       hasProductionWebGL2Renderer: typeof rendering.ProductionWebGL2Renderer === "function",
-      hasLoadV6GLTFRenderPipeline: typeof assets.loadV6GLTFRenderPipeline === "function",
+      hasLoadProductionGLTFRenderPipeline: typeof assets.loadProductionGLTFRenderPipeline === "function",
       hasAnimationClip: typeof animation.AnimationClip === "function"
     }));
   `], { cwd: tempRoot, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
   const imports = JSON.parse(stdout.trim()) as Record<string, boolean>;
   const report = {
-    schema: "a3d-production-runtime-package-smoke/v1",
+    schema: "a3d-production-runtime-package-smoke",
     generatedAt: new Date().toISOString(),
     pass: existsSync(tarballPath) && Object.values(imports).every(Boolean),
     tarballPath,

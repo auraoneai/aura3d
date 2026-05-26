@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4HdrRenderTargetReadinessReport {
+export interface ExternalParityHdrRenderTargetReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly hdrRenderTargetParity: boolean;
@@ -41,7 +41,7 @@ const sourceFiles = [
   "tests/reports/external-parity-external-engine-baselines.json",
 ] as const;
 
-export function createV4HdrRenderTargetReadinessReport(root = process.cwd()): V4HdrRenderTargetReadinessReport {
+export function createExternalParityHdrRenderTargetReadinessReport(root = process.cwd()): ExternalParityHdrRenderTargetReadinessReport {
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const webgpu = readJson(root, "tests/reports/external-parity-webgpu-parity.json");
   const comparison = readJson(root, "tests/reports/external-parity-engine-comparison.json");
@@ -52,7 +52,7 @@ export function createV4HdrRenderTargetReadinessReport(root = process.cwd()): V4
   const externalBaselines = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
   const validations = Array.isArray(rendering?.validations) ? rendering.validations : [];
   const postprocess = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-runtime-color-management-controls");
-  const postprocessPreset = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-v4-preset");
+  const postprocessPreset = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-external-parity-preset");
   const postprocessChecks = isRecord(postprocess) && isRecord(postprocess.checks) ? postprocess.checks : {};
   const presetChecks = isRecord(postprocessPreset) && isRecord(postprocessPreset.checks) ? postprocessPreset.checks : {};
   const boundedHdrVisualParity = hasBoundedHdrVisualParity(hdrVisual);
@@ -238,7 +238,7 @@ function hasExternalBaselineSlot(report: Record<string, unknown> | null, baselin
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4HdrRenderTargetReadinessReport();
+  const report = createExternalParityHdrRenderTargetReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

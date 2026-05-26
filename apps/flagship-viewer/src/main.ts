@@ -1,32 +1,32 @@
 import {
-  createV8FlagshipViewer,
-  listV8Environments,
-  listV8FlagshipAssets,
-  type V8EnvironmentId,
-  type V8FlagshipAssetId,
-  type V8FlagshipViewer,
-  type V8Screenshot,
-  type V8ViewerSnapshot
+  createCurrentRoutesFlagshipViewer,
+  listCurrentRoutesEnvironments,
+  listCurrentRoutesFlagshipAssets,
+  type CurrentRoutesEnvironmentId,
+  type CurrentRoutesFlagshipAssetId,
+  type CurrentRoutesFlagshipViewer,
+  type CurrentRoutesScreenshot,
+  type CurrentRoutesViewerSnapshot
 } from "../../../packages/engine/src/threejs-example-parity/index";
 
 declare global {
   interface Window {
-    __a3dV8FlagshipViewer?: V8FlagshipRuntime;
+    __a3dFlagshipViewer?: CurrentRoutesFlagshipRuntime;
   }
 }
 
-interface V8FlagshipRuntime {
+interface CurrentRoutesFlagshipRuntime {
   readonly appId: "flagship-viewer";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
-  readonly snapshot?: V8ViewerSnapshot;
-  readonly screenshot?: Pick<V8Screenshot, "mimeType" | "width" | "height"> & { readonly byteLength: number };
+  readonly snapshot?: CurrentRoutesViewerSnapshot;
+  readonly screenshot?: Pick<CurrentRoutesScreenshot, "mimeType" | "width" | "height"> & { readonly byteLength: number };
   readonly error?: string;
   orbit(deltaYaw: number, deltaPitch: number): void;
   resize(width: number, height: number): void;
-  setEnvironment(id: V8EnvironmentId): Promise<void>;
-  setAsset(id: V8FlagshipAssetId): Promise<void>;
-  captureScreenshot(): V8Screenshot | undefined;
+  setEnvironment(id: CurrentRoutesEnvironmentId): Promise<void>;
+  setAsset(id: CurrentRoutesFlagshipAssetId): Promise<void>;
+  captureScreenshot(): CurrentRoutesScreenshot | undefined;
 }
 
 const APP_ID = "flagship-viewer" as const;
@@ -45,15 +45,15 @@ async function run(): Promise<void> {
   }
   let renderSize = syncCanvasRenderSize(canvas);
 
-  let viewer: V8FlagshipViewer | undefined;
-  let snapshot: V8ViewerSnapshot | undefined;
-  let lastScreenshot: V8FlagshipRuntime["screenshot"] | undefined;
+  let viewer: CurrentRoutesFlagshipViewer | undefined;
+  let snapshot: CurrentRoutesViewerSnapshot | undefined;
+  let lastScreenshot: CurrentRoutesFlagshipRuntime["screenshot"] | undefined;
   let pendingRender = false;
   let pointer: { readonly x: number; readonly y: number } | undefined;
   let renderedReadyUi = false;
 
-  const publish = (status: V8FlagshipRuntime["status"], error?: string, renderDom = false): void => {
-    const runtime: V8FlagshipRuntime = {
+  const publish = (status: CurrentRoutesFlagshipRuntime["status"], error?: string, renderDom = false): void => {
+    const runtime: CurrentRoutesFlagshipRuntime = {
       appId: APP_ID,
       status,
       statusLabel: status === "loading" ? "Loading" : status === "error" ? "Error" : status === "ready" ? "Ready" : "Running",
@@ -81,13 +81,13 @@ async function run(): Promise<void> {
         return screenshot;
       }
     };
-    window.__a3dV8FlagshipViewer = runtime;
+    window.__a3dFlagshipViewer = runtime;
     if (renderDom) renderUi(root, runtime);
   };
 
   publish("loading", undefined, true);
   try {
-    viewer = await createV8FlagshipViewer({
+    viewer = await createCurrentRoutesFlagshipViewer({
       canvas,
       width: renderSize.width,
       height: renderSize.height,
@@ -150,12 +150,12 @@ function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: numb
   return { width, height };
 }
 
-function renderUi(root: HTMLElement, runtime: V8FlagshipRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesFlagshipRuntime): void {
   const snapshot = runtime.snapshot;
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>A3D V8 Flagship Viewer</h1>
+        <h1>A3D Flagship Viewer</h1>
         <p>${snapshot ? `${snapshot.asset.name} · ${snapshot.environment.label}` : "Loading local GLB and HDRI"}</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${runtime.statusLabel}</button>
@@ -226,8 +226,8 @@ function renderUi(root: HTMLElement, runtime: V8FlagshipRuntime): void {
 
 function bindControls(
   root: HTMLElement,
-  getViewer: () => V8FlagshipViewer | undefined,
-  onSnapshot: (snapshot: V8ViewerSnapshot) => void
+  getViewer: () => CurrentRoutesFlagshipViewer | undefined,
+  onSnapshot: (snapshot: CurrentRoutesViewerSnapshot) => void
 ): void {
   root.addEventListener("click", (event) => {
     const target = event.target;
@@ -240,7 +240,7 @@ function bindControls(
     if (target.id === "zoom-in") viewer.zoom(0.88);
     if (target.id === "zoom-out") viewer.zoom(1.12);
     if (target.id === "screenshot-button") {
-      window.__a3dV8FlagshipViewer?.captureScreenshot();
+      window.__a3dFlagshipViewer?.captureScreenshot();
     }
     onSnapshot(viewer.snapshot());
   });
@@ -263,10 +263,10 @@ function bindControls(
     const viewer = getViewer();
     if (!(target instanceof HTMLSelectElement) || !viewer) return;
     if (target.id === "asset-picker") {
-      void viewer.setAsset(target.value as V8FlagshipAssetId).then(() => onSnapshot(viewer.snapshot()));
+      void viewer.setAsset(target.value as CurrentRoutesFlagshipAssetId).then(() => onSnapshot(viewer.snapshot()));
     }
     if (target.id === "environment-picker") {
-      void viewer.setEnvironment(target.value as V8EnvironmentId).then(() => onSnapshot(viewer.snapshot()));
+      void viewer.setEnvironment(target.value as CurrentRoutesEnvironmentId).then(() => onSnapshot(viewer.snapshot()));
     }
   });
 }
@@ -289,18 +289,18 @@ function bindCanvasOrbit(
 }
 
 function assetOptions(selected?: string): string {
-  return listV8FlagshipAssets().map((asset) => (
+  return listCurrentRoutesFlagshipAssets().map((asset) => (
     `<option value="${asset.id}" ${asset.id === selected ? "selected" : ""}>${asset.name}</option>`
   )).join("");
 }
 
 function environmentOptions(selected?: string): string {
-  return listV8Environments().map((environment) => (
+  return listCurrentRoutesEnvironments().map((environment) => (
     `<option value="${environment.id}" ${environment.id === selected ? "selected" : ""}>${environment.label}</option>`
   )).join("");
 }
 
-function summarizeScreenshot(screenshot: V8Screenshot): V8FlagshipRuntime["screenshot"] {
+function summarizeScreenshot(screenshot: CurrentRoutesScreenshot): CurrentRoutesFlagshipRuntime["screenshot"] {
   return {
     mimeType: screenshot.mimeType,
     width: screenshot.width,

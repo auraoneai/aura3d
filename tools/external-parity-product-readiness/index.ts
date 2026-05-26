@@ -15,7 +15,7 @@ const requiredFiles = [
   "apps/product-studio-pro/src/main.ts",
   "examples/external-product-configurator/index.html",
   "examples/external-product-configurator/main.ts",
-  "examples/external-product-configurator/ProductConfiguratorV4.ts",
+  "examples/external-product-configurator/ExternalProductConfigurator.ts",
   "benchmarks/external-parity/aura3d/product-configurator.ts",
   "benchmarks/external-parity/threejs/product-configurator.ts",
   "tests/browser/external-parity-product-configurator.spec.ts",
@@ -56,7 +56,7 @@ for (const file of requiredFiles) {
 
 const manifest = readJson("fixtures/external-parity/products/premium-product/manifest.json");
 const source = isObj(manifest?.source) ? manifest.source : {};
-check("fixture-schema", manifest?.schema === "a3d-v4-premium-product/v1", "Premium product fixture must use the V4 schema.");
+check("fixture-schema", manifest?.schema === "a3d-external-parity-premium-product", "Premium product fixture must use the External parity schema.");
 check("fixture-product-id", manifest?.id === "premium-boom-box" && manifest?.category === "consumer-audio", "Premium product fixture must identify the product and category.");
 check(
   "fixture-external-source",
@@ -79,23 +79,23 @@ check(
   "Premium product fixture must state that same-scene Three.js visual parity remains required."
 );
 
-const shared = readText("examples/external-product-configurator/ProductConfiguratorV4.ts");
+const shared = readText("examples/external-product-configurator/ExternalProductConfigurator.ts");
 check(
   "public-workflow-example",
   includesAll(shared, [
     "createProductConfiguratorWorkflow",
     "premium-boom-box",
     "KhronosGroup/glTF-Sample-Assets",
-    "__A3D_V4_PRODUCT_CONFIGURATOR__",
+    "__A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__",
     "featureChecklist",
-    "V4 release still requires"
+    "External parity release still requires"
   ]),
   "Product configurator example must call the public workflow, use the pinned external product, expose diagnostics, and preserve proof boundaries."
 );
 check(
   "example-entry-no-app-side-effect",
-  readText("examples/external-product-configurator/main.ts").includes("mountProductConfiguratorV4(\"external-product-configurator\")") &&
-    readText("apps/product-studio-pro/src/main.ts").includes("ProductConfiguratorV4") &&
+  readText("examples/external-product-configurator/main.ts").includes("mountExternalProductConfigurator(\"external-product-configurator\")") &&
+    readText("apps/product-studio-pro/src/main.ts").includes("ExternalProductConfigurator") &&
     !readText("apps/product-studio-pro/src/main.ts").includes("external-product-configurator/main"),
   "Example and app must share a side-effect-free module instead of importing the example entry."
 );
@@ -146,12 +146,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-product-readiness/v1",
+  schema: "a3d-external-parity-product-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 7 flagship product configurator proof is ready as a real product workflow/app milestone. Full release still requires installable SDK/templates and same-scene Three.js parity."
-    : "V4 Milestone 7 flagship product configurator proof is incomplete.",
+    ? "External parity Milestone 7 flagship product configurator proof is ready as a real product workflow/app milestone. Full release still requires installable SDK/templates and same-scene Three.js parity."
+    : "External parity Milestone 7 flagship product configurator proof is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };
@@ -186,5 +186,5 @@ function statePasses(state: Obj, id: string): boolean {
     typeof state.externalSource === "string" &&
     state.externalSource.includes("KhronosGroup/glTF-Sample-Assets") &&
     typeof state.claimBoundary === "string" &&
-    state.claimBoundary.includes("V4 release still requires");
+    state.claimBoundary.includes("External parity release still requires");
 }

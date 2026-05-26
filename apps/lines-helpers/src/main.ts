@@ -12,11 +12,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LinesHelpers?: V8LinesHelpersRuntime;
+    __a3dCurrentRoutesLinesHelpers?: CurrentRoutesLinesHelpersRuntime;
   }
 }
 
-interface V8LinesHelpersRuntime {
+interface CurrentRoutesLinesHelpersRuntime {
   readonly appId: "lines-helpers";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8LinesHelpers = runtime;
+    window.__a3dCurrentRoutesLinesHelpers = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -87,7 +87,7 @@ async function run(): Promise<void> {
           helperCount: helperSets.length,
           lineCount
         });
-        window.__a3dV8LinesHelpers = runtime;
+        window.__a3dCurrentRoutesLinesHelpers = runtime;
         if (frameCount === 1 || now - lastUi > 250) {
           publish();
           lastUi = now;
@@ -159,9 +159,9 @@ function composeModelMatrix(x: number, y: number, z: number): Float32Array {
 
 function createRuntime(
   startedAt: number,
-  status: V8LinesHelpersRuntime["status"],
-  patch: Partial<Omit<V8LinesHelpersRuntime, "appId" | "status" | "renderer" | "elapsedMs">> = {}
-): V8LinesHelpersRuntime {
+  status: CurrentRoutesLinesHelpersRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesLinesHelpersRuntime, "appId" | "status" | "renderer" | "elapsedMs">> = {}
+): CurrentRoutesLinesHelpersRuntime {
   return {
     appId: APP_ID,
     status,
@@ -175,9 +175,9 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8LinesHelpersRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLinesHelpersRuntime): void {
   root.innerHTML = `
-    <h1>V8 Lines Helpers</h1>
+    <h1>CurrentRoutes Lines Helpers</h1>
     <p>Debug helper builders rendered as real A3D line-segment geometry through WebGL2.</p>
     <p>${runtime.helperCount} helpers · ${runtime.lineCount} line segments · ${runtime.drawCalls} draw calls · ${runtime.frameCount} frames</p>
     <span class="status">${escapeHtml(runtime.status)}</span>

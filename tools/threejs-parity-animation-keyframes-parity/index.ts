@@ -1,13 +1,13 @@
 // @ts-nocheck
 import { computePerspectiveCameraFrame } from "@aura3d/rendering";
-import { createV8KeyframeScene } from "/apps/animation-keyframes/src/scene.ts";
-import { ASSET_URL, type V8KeyframeControls } from "/apps/animation-keyframes/src/state.ts";
+import { createCurrentRoutesKeyframeScene } from "/apps/animation-keyframes/src/scene.ts";
+import { ASSET_URL, type CurrentRoutesKeyframeControls } from "/apps/animation-keyframes/src/state.ts";
 import * as THREE from "three";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
 
 declare global {
   interface Window {
-    __V9_ANIMATION_KEYFRAMES_PARITY__?: AnimationKeyframesParityResult;
+    __THREEJS_PARITY_ANIMATION_KEYFRAMES_PARITY__?: AnimationKeyframesParityResult;
   }
 }
 
@@ -17,7 +17,7 @@ type AnimationKeyframesParityResult = AnimationKeyframesParityReady | AnimationK
 
 interface AnimationKeyframesParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-animation-keyframes-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-keyframes-parity";
   readonly purpose: "same-asset Robot Expressive A3D keyframe sampling vs actual Three.js AnimationMixer baseline";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -65,7 +65,7 @@ interface AnimationKeyframesParityReady {
 
 interface AnimationKeyframesParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-animation-keyframes-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-keyframes-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -127,7 +127,7 @@ async function run(): Promise<void> {
     const threeStats = analyzeImageData(threePixels);
     const ready: AnimationKeyframesParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-animation-keyframes-parity/v1",
+      schema: "a3d-threejs-parity-animation-keyframes-parity",
       purpose: "same-asset Robot Expressive A3D keyframe sampling vs actual Three.js AnimationMixer baseline",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -176,28 +176,28 @@ async function run(): Promise<void> {
         "It is not a blanket claim for every animation clip, transition, blending layer, IK, or retargeting behavior."
       ]
     };
-    window.__V9_ANIMATION_KEYFRAMES_PARITY__ = ready;
+    window.__THREEJS_PARITY_ANIMATION_KEYFRAMES_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: AnimationKeyframesParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-animation-keyframes-parity/v1",
+      schema: "a3d-threejs-parity-animation-keyframes-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
       expectedReferenceAnimation: "AnimationMixer",
       expectedRenderer: "THREE.WebGLRenderer"
     };
-    window.__V9_ANIMATION_KEYFRAMES_PARITY__ = failure;
+    window.__THREEJS_PARITY_ANIMATION_KEYFRAMES_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
 }
 
 async function renderA3D(canvas: HTMLCanvasElement) {
-  const scene = await createV8KeyframeScene(canvas);
-  const controls: V8KeyframeControls = {
+  const scene = await createCurrentRoutesKeyframeScene(canvas);
+  const controls: CurrentRoutesKeyframeControls = {
     playing: true,
     speed: 1,
     scrub: 0,

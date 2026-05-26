@@ -1,4 +1,4 @@
-# A3D V4 Material Studio Template
+# A3D ExternalParity Material Studio Template
 
 This template starts a material review workflow from the public `@aura3d/engine` package.
 

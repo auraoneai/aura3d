@@ -3,12 +3,12 @@ import {
   type EnvironmentMapResourceSet,
   type LinearHdrEnvironmentMapSource
 } from "./EnvironmentMapResources";
-import { createV4GeneratedHdrEnvironmentMapSource, type V4EnvironmentPreset } from "./V4RenderPreset";
-import { createV4BrdfLut, type V4BrdfLut } from "./BRDFLut";
-import { createV4Pmrem, type V4Pmrem } from "./PMREM";
+import { createExternalParityGeneratedHdrEnvironmentMapSource, type ExternalParityEnvironmentPreset } from "./ExternalParityRenderPreset";
+import { createExternalParityBrdfLut, type ExternalParityBrdfLut } from "./BRDFLut";
+import { createExternalParityPmrem, type ExternalParityPmrem } from "./PMREM";
 
-export interface V4IblOptions {
-  readonly preset: V4EnvironmentPreset;
+export interface ExternalParityIblOptions {
+  readonly preset: ExternalParityEnvironmentPreset;
   readonly width?: number;
   readonly height?: number;
   readonly rotation?: number;
@@ -17,12 +17,12 @@ export interface V4IblOptions {
   readonly sourceQuality?: "bootstrap-generated" | "licensed-hdr";
 }
 
-export interface V4IblResourceSet {
-  readonly preset: V4EnvironmentPreset;
+export interface ExternalParityIblResourceSet {
+  readonly preset: ExternalParityEnvironmentPreset;
   readonly source: LinearHdrEnvironmentMapSource;
   readonly resources: EnvironmentMapResourceSet;
-  readonly pmrem: V4Pmrem;
-  readonly brdfLut: V4BrdfLut;
+  readonly pmrem: ExternalParityPmrem;
+  readonly brdfLut: ExternalParityBrdfLut;
   readonly rotation: number;
   readonly intensity: number;
   readonly backgroundIntensity: number;
@@ -40,8 +40,8 @@ export interface V4IblResourceSet {
   };
 }
 
-export function createV4IblResources(options: V4IblOptions): V4IblResourceSet {
-  const source = createV4GeneratedHdrEnvironmentMapSource(options.preset, options.width ?? 128, options.height ?? 64);
+export function createExternalParityIblResources(options: ExternalParityIblOptions): ExternalParityIblResourceSet {
+  const source = createExternalParityGeneratedHdrEnvironmentMapSource(options.preset, options.width ?? 128, options.height ?? 64);
   const resources = createEnvironmentMapResourceSet({ ...source, encoding: "linear-hdr" }, {
     outputColorSpace: "srgb",
     exposure: 1,
@@ -53,12 +53,12 @@ export function createV4IblResources(options: V4IblOptions): V4IblResourceSet {
     irradianceBlurRadius: 8,
     brdfLutSize: 64
   });
-  const pmrem = createV4Pmrem(resources.base, {
+  const pmrem = createExternalParityPmrem(resources.base, {
     levels: 6,
     blurRadius: 3,
-    textureLabel: `v4-${options.preset}-pmrem`
+    textureLabel: `external-parity-${options.preset}-pmrem`
   });
-  const brdfLut = createV4BrdfLut(64);
+  const brdfLut = createExternalParityBrdfLut(64);
   const sourceQuality = options.sourceQuality ?? "bootstrap-generated";
 
   return {

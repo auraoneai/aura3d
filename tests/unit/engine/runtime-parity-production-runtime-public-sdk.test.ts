@@ -3,10 +3,10 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { legacyPathForContextualPath } from "../../../tools/naming-taxonomy/contextualAliases";
 import {
-  AURA3D_ENGINE_V6_PRODUCT_SURFACE,
+  AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE,
   A3D_THREEJS_EXAMPLE_PARITY_TARGETS,
   A3DRenderer,
-  assetsV6,
+  productionAssets,
   createAnimationController,
   createCameraFrame,
   createDirectionalLight,
@@ -25,9 +25,9 @@ import {
 } from "@aura3d/engine/production-runtime";
 import { AnimationClip, AnimationTrack } from "@aura3d/animation";
 
-describe("V7 V6 public SDK", () => {
+describe("RuntimeParity production public SDK", () => {
   it("exports the developer-facing renderer product API", () => {
-    expect(AURA3D_ENGINE_V6_PRODUCT_SURFACE).toBe("a3d-renderer-production-runtime-sdk");
+    expect(AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE).toBe("a3d-renderer-production-runtime-sdk");
     expect(typeof A3DRenderer.create).toBe("function");
     expect(typeof loadGltfScene).toBe("function");
     expect(typeof loadHdrEnvironment).toBe("function");
@@ -48,7 +48,7 @@ describe("V7 V6 public SDK", () => {
     expect(A3D_THREEJS_EXAMPLE_PARITY_TARGETS.skinningIk).toBe("webgl_animation_skinning_ik");
   });
 
-  it("keeps the A3D V6 SDK entrypoint independent from Three.js runtime imports", () => {
+  it("keeps the A3D production SDK entrypoint independent from Three.js runtime imports", () => {
     const source = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
 
     expect(source).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
@@ -76,9 +76,9 @@ describe("V7 V6 public SDK", () => {
 
   it("exposes WebGPU as a public async production SDK backend instead of a report-only claim", () => {
     const source = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
-    const rendererSource = readFileSync(resolve("packages/rendering/src/production-runtime/RendererV6.ts"), "utf8");
+    const rendererSource = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8");
 
-    expect(source).toContain("resolveRendererV6Backend(options)");
+    expect(source).toContain("resolveProductionRuntimeRendererBackend(options)");
     expect(source).toContain("readonly backendSelection");
     expect(source).toContain("renderFrame(input: A3DRenderOptions)");
     expect(source).toContain("renderFrameAsync(input: A3DRenderOptions)");
@@ -204,7 +204,7 @@ describe("V7 V6 public SDK", () => {
     stage.dispose();
   });
 
-  it("exposes native animation and physics SDK helpers for the V7 example parity ladder", () => {
+  it("exposes native animation and physics SDK helpers for the RuntimeParity example parity ladder", () => {
     const target = {
       position: [0, 0, 0] as [number, number, number],
       values: new Map<string, unknown>(),
@@ -299,7 +299,7 @@ describe("V7 V6 public SDK", () => {
   });
 
 
-  it("wires the flagship product configurator to the public V6 SDK", () => {
+  it("wires the flagship product configurator to the public production SDK", () => {
     const appFiles = [
       "apps/product-configurator/src/main.ts",
       "apps/product-configurator/src/assets.ts",
@@ -320,7 +320,7 @@ describe("V7 V6 public SDK", () => {
 
   it("exposes GLTF scene and material variant selection through loadGltfScene", () => {
     const engineSource = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
-    const pipelineSource = readFileSync(resolve("packages/assets/src/asset-corpus/V6GLTFRenderPipeline.ts"), "utf8");
+    const pipelineSource = readFileSync(resolve("packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.ts"), "utf8");
 
     expect(engineSource).toContain("readonly materialVariant?: string");
     expect(engineSource).toContain("readonly sceneIndex?: number");
@@ -331,10 +331,10 @@ describe("V7 V6 public SDK", () => {
   });
 
   it("surfaces unsupported glTF feature metadata through the public SDK assets helper", () => {
-    const metadata = assetsV6.createV6GLTFRenderMetadata({
+    const metadata = productionAssets.createProductionGLTFRenderMetadata({
       url: "memory://unsupported-extension.glb",
       loaderDiagnostics: {
-        schemaVersion: "gltf-loader-diagnostics-v1",
+        schemaVersion: "gltf-loader-diagnostics",
         features: ["gltf", "pbr"],
         extensionsUsed: ["VENDOR_magic_surface", "KHR_materials_transmission"],
         extensionsRequired: [],
@@ -360,7 +360,7 @@ describe("V7 V6 public SDK", () => {
         transmission: { transmissionFactor: 0.5 }
       }],
       meshes: []
-    } as unknown as Parameters<typeof assetsV6.createV6GLTFRenderMetadata>[0], "unsupported-extension", "Unsupported Extension");
+    } as unknown as Parameters<typeof productionAssets.createProductionGLTFRenderMetadata>[0], "unsupported-extension", "Unsupported Extension");
 
     expect(metadata.extensionsUsed).toContain("VENDOR_magic_surface");
     expect(metadata.unsupportedExtensions).toEqual(["VENDOR_magic_surface"]);
@@ -395,7 +395,7 @@ describe("V7 V6 public SDK", () => {
     expect(environment.environmentLighting.environmentMapMipCount).toBeGreaterThanOrEqual(4);
 
     environment.dispose();
-  });
+  }, 15_000);
 
   it("writes a bounded SDK replacement-readiness artifact instead of claiming broad Three.js ecosystem parity", () => {
     const engineSource = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
@@ -414,6 +414,10 @@ describe("V7 V6 public SDK", () => {
     const externalConsumerReportPath = resolve("tests/reports/production-runtime-external-consumer.json");
     const externalConsumer = existsSync(externalConsumerReportPath)
       ? JSON.parse(readFileSync(externalConsumerReportPath, "utf8")) as { readonly pass?: boolean }
+      : undefined;
+    const externalConsumerRenderReportPath = resolve("tests/reports/production-runtime-external-consumer-render.json");
+    const externalConsumerRender = existsSync(externalConsumerRenderReportPath)
+      ? JSON.parse(readFileSync(externalConsumerRenderReportPath, "utf8")) as { readonly pass?: boolean }
       : undefined;
     const checks = [
       {
@@ -446,7 +450,7 @@ describe("V7 V6 public SDK", () => {
           && flagshipSource.includes("loadGltfScene")
           && flagshipSource.includes("loadHdrEnvironment")
           && flagshipSource.includes("createProductViewer"),
-        evidence: "apps/product-configurator/src/main.ts imports and uses public V6 SDK APIs."
+        evidence: "apps/product-configurator/src/main.ts imports and uses public production SDK APIs."
       },
       {
         id: "template-uses-public-sdk",
@@ -454,7 +458,7 @@ describe("V7 V6 public SDK", () => {
           && templateSource.includes("loadGltfScene")
           && templateSource.includes("loadHdrEnvironment")
           && templateSource.includes("createProductViewer"),
-        evidence: "templates/production-product-viewer/src/main.ts uses public V6 SDK APIs."
+        evidence: "templates/production-product-viewer/src/main.ts uses public production SDK APIs."
       },
       {
         id: "native-controls-no-three-compat-runtime",
@@ -476,7 +480,7 @@ describe("V7 V6 public SDK", () => {
         id: "public-sdk-frame-render-api",
         pass: engineSource.includes("renderFrame(input: A3DRenderOptions)")
           && engineSource.includes("renderFrameAsync(input: A3DRenderOptions)")
-          && readFileSync(resolve("packages/rendering/src/production-runtime/RendererV6.ts"), "utf8").includes("renderFrame(input: V6RendererInput)"),
+          && readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8").includes("renderFrame(input: ProductionRendererInput)"),
         evidence: "@aura3d/engine/production-runtime exposes frame rendering APIs for real apps instead of forcing every render through screenshot proof/readback."
       },
       {
@@ -492,8 +496,10 @@ describe("V7 V6 public SDK", () => {
       },
       {
         id: "external-consumer-render-proof",
-        pass: externalConsumer?.pass === true,
-        evidence: "tests/reports/production-runtime-external-consumer.json"
+        pass: externalConsumer?.pass === true || externalConsumerRender?.pass === true,
+        evidence: externalConsumer?.pass === true
+          ? "tests/reports/production-runtime-external-consumer.json"
+          : "tests/reports/production-runtime-external-consumer-render.json"
       }
     ];
     const blockers = [
@@ -502,9 +508,9 @@ describe("V7 V6 public SDK", () => {
       "WebGPU production SDK coverage is bounded to the async imported GLTF/HDR/PBR path until broader examples and parity gates prove the full ecosystem."
     ];
     const report = {
-      schema: "a3d-v7-sdk-replacement-readiness/v1",
+      schema: "a3d-runtime-parity-sdk-replacement-readiness",
       generatedAt: new Date().toISOString(),
-      productSurface: AURA3D_ENGINE_V6_PRODUCT_SURFACE,
+      productSurface: AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE,
       status: checks.every((check) => check.pass) ? "bounded-sdk-ready" : "blocked",
       broadThreeJsReplacement: false,
       checks,

@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { loadV5AssetManifest, loadV5AssetRegistry, summarizeV5AssetRegistry } from "../../packages/assets/src/threejs-compatibility/V5AssetRegistry";
+import { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "../../packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry";
 
-interface V5AssetReadinessCheck {
+interface ThreeCompatAssetReadinessCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
@@ -24,8 +24,8 @@ const requiredFiles = [
   "fixtures/three-compat/architecture/manifest.json",
   "fixtures/three-compat/characters/manifest.json",
   "fixtures/three-compat/vfx/manifest.json",
-  "packages/assets/src/threejs-compatibility/V5AssetProvenance.ts",
-  "packages/assets/src/threejs-compatibility/V5AssetRegistry.ts",
+  "packages/assets/src/threejs-compatibility/ThreeCompatAssetProvenance.ts",
+  "packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry.ts",
   "tests/assets/three-compat-asset-library.test.ts"
 ] as const;
 
@@ -41,13 +41,13 @@ function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as T;
 }
 
-function check(name: string, pass: boolean, detail: string): V5AssetReadinessCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatAssetReadinessCheck {
   return { name, pass, detail };
 }
 
-const manifest = loadV5AssetManifest();
-const registry = loadV5AssetRegistry(manifest);
-const summary = summarizeV5AssetRegistry(manifest);
+const manifest = loadThreeCompatAssetManifest();
+const registry = loadThreeCompatAssetRegistry(manifest);
+const summary = summarizeThreeCompatAssetRegistry(manifest);
 const registryIds = new Set(registry.map((asset) => asset.id));
 const requiredClasses = ["product", "automotive", "architecture", "character", "materials", "animation", "large-scene"];
 const provenanceCompleteCount = registry.filter(
@@ -68,15 +68,15 @@ const missingDomainFlagshipContracts = domainManifests.flatMap(({ path, manifest
   const flagships = [manifest.requiredFlagship, ...(manifest.requiredFlagships ?? [])].filter(Boolean);
   return flagships.length > 0 ? [] : [path];
 });
-const checks: V5AssetReadinessCheck[] = [
+const checks: ThreeCompatAssetReadinessCheck[] = [
   check(
     "required-files-present",
     requiredFiles.every((file) => existsSync(resolve(file))),
-    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all required V5 asset files exist"
+    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all required Three.js compatibility asset files exist"
   ),
   check(
     "schema",
-    manifest.schema === "a3d-three-compat-asset-library/v1",
+    manifest.schema === "a3d-three-compat-asset-library",
     `schema=${manifest.schema}`
   ),
   check(
@@ -97,7 +97,7 @@ const checks: V5AssetReadinessCheck[] = [
   check(
     "source-id-resolution",
     summary.missingSourceIds.length === 0,
-    summary.missingSourceIds.join(", ") || "every V5 asset ID resolves to the pinned source corpus"
+    summary.missingSourceIds.join(", ") || "every Three.js compatibility asset ID resolves to the pinned source corpus"
   ),
   check(
     "provenance-complete",
@@ -127,7 +127,7 @@ const checks: V5AssetReadinessCheck[] = [
   check(
     "domain-manifest-assets-resolve",
     missingDomainAssets.length === 0,
-    missingDomainAssets.join(", ") || "all domain manifests reference V5 registry assets"
+    missingDomainAssets.join(", ") || "all domain manifests reference Three.js compatibility registry assets"
   ),
   check(
     "domain-flagship-contracts",
@@ -143,7 +143,7 @@ const checks: V5AssetReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-asset-readiness/v1",
+  schema: "a3d-three-compat-asset-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary,
@@ -161,4 +161,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log(`V5 asset readiness passed: ${summary.trackedAssetCount} tracked, ${summary.localAssetCount} local, ${summary.visualEvidenceSlotCount} visual slots.`);
+console.log(`Three.js compatibility asset readiness passed: ${summary.trackedAssetCount} tracked, ${summary.localAssetCount} local, ${summary.visualEvidenceSlotCount} visual slots.`);

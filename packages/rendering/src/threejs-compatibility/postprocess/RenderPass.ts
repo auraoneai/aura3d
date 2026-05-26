@@ -1,9 +1,9 @@
-import type { V5PostProcessFrame, V5PostProcessPass } from "./PostProcessTypes";
+import type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
 
-export class RenderPassV5 implements V5PostProcessPass {
+export class RenderPassThreeCompat implements ThreeCompatPostProcessPass {
   readonly name = "RenderPass";
   readonly enabled = true;
-  apply(frame: V5PostProcessFrame): V5PostProcessFrame {
+  apply(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame {
     return { ...frame, label: "rendered-scene" };
   }
 }

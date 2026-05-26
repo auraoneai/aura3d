@@ -26,7 +26,7 @@
       "notes": "Shared deterministic gameplay placeholder with physics, animation, particles, and audio-state metrics."
     },
     {
-      "id": "generated-headphone-configurator-v3",
+      "id": "generated-headphone-configurator-foundation",
       "kind": "generated-local-model",
       "triangles": 18324,
       "materials": 6,
@@ -34,7 +34,7 @@
       "notes": "Shared generated headphone configurator asset descriptor used by Aura3D, Three.js, and Babylon.js benchmark scenes."
     },
     {
-      "id": "generated-civic-gallery-v3",
+      "id": "generated-civic-gallery-foundation",
       "kind": "generated-local-model",
       "triangles": 6120,
       "materials": 7,
@@ -42,7 +42,7 @@
       "notes": "Shared generated architecture viewer model descriptor with zone, hierarchy, selection, and section-view metadata."
     },
     {
-      "id": "generated-asset-inspection-corpus-v3",
+      "id": "generated-asset-inspection-corpus-foundation",
       "kind": "generated-local-model",
       "triangles": 42000,
       "materials": 9,
@@ -50,7 +50,7 @@
       "notes": "Generated asset inspection workload descriptor for same-scene load/render comparison."
     },
     {
-      "id": "generated-pbr-material-grid-v3",
+      "id": "generated-pbr-material-grid-foundation",
       "kind": "generated-local-model",
       "triangles": 196608,
       "materials": 16,
@@ -58,7 +58,7 @@
       "notes": "Generated PBR material grid descriptor for bounded material comparison."
     },
     {
-      "id": "generated-architecture-district-v3",
+      "id": "generated-architecture-district-foundation",
       "kind": "generated-local-model",
       "triangles": 240000,
       "materials": 12,
@@ -66,7 +66,7 @@
       "notes": "Generated large static architecture district workload descriptor."
     },
     {
-      "id": "generated-instanced-product-parts-v3",
+      "id": "generated-instanced-product-parts-foundation",
       "kind": "generated-local-model",
       "triangles": 153600,
       "materials": 4,
@@ -74,7 +74,7 @@
       "notes": "Generated instancing workload descriptor with 4096 equivalent instances."
     },
     {
-      "id": "generated-skinned-character-crowd-v3",
+      "id": "generated-skinned-character-crowd-foundation",
       "kind": "generated-local-model",
       "triangles": 9600,
       "materials": 4,
@@ -82,7 +82,7 @@
       "notes": "Generated skinned-character benchmark descriptor; real skinned glTF parity remains unsupported."
     },
     {
-      "id": "generated-particle-field-v3",
+      "id": "generated-particle-field-foundation",
       "kind": "generated-local-model",
       "triangles": 96000,
       "materials": 5,
@@ -90,15 +90,15 @@
       "notes": "Generated particle-field benchmark descriptor for bounded same-scaffold particle workload comparison."
     },
     {
-      "id": "generated-postprocess-lab-v4",
+      "id": "generated-postprocess-lab-external-parity",
       "kind": "generated-local-model",
       "triangles": 65536,
       "materials": 8,
       "textures": 4,
-      "notes": "Bounded V4 postprocess workload descriptor using Aura3D tone-mapping, bloom, FXAA, and depth-readback evidence; HDR/postprocess parity remains unsupported."
+      "notes": "Bounded ExternalParity postprocess workload descriptor using Aura3D tone-mapping, bloom, FXAA, and depth-readback evidence; HDR/postprocess parity remains unsupported."
     },
     {
-      "id": "generated-morph-character-v4",
+      "id": "generated-morph-character-external-parity",
       "kind": "generated-local-model",
       "triangles": 12288,
       "materials": 3,

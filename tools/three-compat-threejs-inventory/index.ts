@@ -31,17 +31,17 @@ const checks = [
     pass: matrix.thresholds.some((entry) => entry.category === "overall" && entry.minimumSupportedOrPartialPercent === 60) &&
       matrix.thresholds.some((entry) => entry.category === "materials" && entry.minimumSupportedOrPartialPercent === 80) &&
       matrix.thresholds.some((entry) => entry.category === "controls" && entry.minimumSupportedOrPartialPercent === 60),
-    detail: "Compatibility matrix must define the V5 broad replacement thresholds."
+    detail: "Compatibility matrix must define the Three.js compatibility broad replacement thresholds."
   },
   {
     id: "status-taxonomy",
     pass: matrix.entries.every((entry) => ["supported", "partial", "planned", "blocked", "out-of-scope"].includes(entry.status)),
-    detail: "Matrix must use the V5 status taxonomy."
+    detail: "Matrix must use the Three.js compatibility status taxonomy."
   }
 ];
 
 const report = {
-  schema: "a3d-three-compat-threejs-inventory/v1",
+  schema: "a3d-three-compat-threejs-inventory",
   generatedAt: new Date().toISOString(),
   pass: checks.every((entry) => entry.pass),
   inventory,

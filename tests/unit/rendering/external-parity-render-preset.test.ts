@@ -1,25 +1,25 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV4EnvironmentLighting,
-  createV4DirectionalShadowEvidence,
-  createV4FlagshipRenderPresetEvidence,
-  createV4GeneratedHdrEnvironmentMapSource,
-  createV4RenderPresetEvidence,
-  v4ActiveFeature,
-  v4BlockedFeature
+  createExternalParityEnvironmentLighting,
+  createExternalParityDirectionalShadowEvidence,
+  createExternalParityFlagshipRenderPresetEvidence,
+  createExternalParityGeneratedHdrEnvironmentMapSource,
+  createExternalParityRenderPresetEvidence,
+  externalParityActiveFeature,
+  externalParityBlockedFeature
 } from "../../../packages/rendering/src";
 
-describe("V4 render preset evidence", () => {
+describe("ExternalParity render preset evidence", () => {
   it("summarizes active and blocked renderer features for screenshot reports", () => {
-    const evidence = createV4RenderPresetEvidence({
+    const evidence = createExternalParityRenderPresetEvidence({
       exampleId: "material-showroom",
       screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",
       exposure: 1.25,
       whitePoint: 1,
       features: [
-        v4ActiveFeature("bounded-pbr", "Browser material pixels passed."),
-        v4ActiveFeature("environment-reflections", "Metallic material changed under environment lighting."),
-        v4BlockedFeature("hdr", "HDR render targets are not implemented.")
+        externalParityActiveFeature("bounded-pbr", "Browser material pixels passed."),
+        externalParityActiveFeature("environment-reflections", "Metallic material changed under environment lighting."),
+        externalParityBlockedFeature("hdr", "HDR render targets are not implemented.")
       ]
     });
 
@@ -43,25 +43,25 @@ describe("V4 render preset evidence", () => {
 
   it("rejects duplicate features", () => {
     expect(() =>
-      createV4RenderPresetEvidence({
+      createExternalParityRenderPresetEvidence({
         exampleId: "shadow-lab",
         screenshotPath: "tests/reports/external-parity-example-screenshots/shadow-lab.png",
         features: [
-          v4ActiveFeature("directional-shadows", "first"),
-          v4BlockedFeature("directional-shadows", "second")
+          externalParityActiveFeature("directional-shadows", "first"),
+          externalParityBlockedFeature("directional-shadows", "second")
         ]
       })
-    ).toThrow(/Duplicate V4 render preset feature/);
+    ).toThrow(/Duplicate ExternalParity render preset feature/);
   });
 
   it("builds deterministic HDR environment resources for the shared preset", () => {
-    const source = createV4GeneratedHdrEnvironmentMapSource("studio", 16, 8);
+    const source = createExternalParityGeneratedHdrEnvironmentMapSource("studio", 16, 8);
     const maxValue = Math.max(...source.data);
     expect(source.width).toBe(16);
     expect(source.height).toBe(8);
     expect(maxValue).toBeGreaterThan(1);
 
-    const bundle = createV4EnvironmentLighting("studio");
+    const bundle = createExternalParityEnvironmentLighting("studio");
     expect(bundle.resources.resourceSet).toBe("generated-local-linear-hdr-environment");
     expect(bundle.resources.inputEncoding).toBe("linear-hdr");
     expect(bundle.resources.hdrSource).toBe(true);
@@ -75,7 +75,7 @@ describe("V4 render preset evidence", () => {
   });
 
   it("does not hard-block HDR, depth textures, or production shadow sampling when evidence is provided", () => {
-    const evidence = createV4FlagshipRenderPresetEvidence({
+    const evidence = createExternalParityFlagshipRenderPresetEvidence({
       exampleId: "root-rendering-quality",
       screenshotPath: "tests/reports/external-parity-root-rendering-quality.png",
       productionPbrEvidence: true,
@@ -119,7 +119,7 @@ describe("V4 render preset evidence", () => {
   });
 
   it("marks directional shadow evidence as production sampling only when explicitly provided", () => {
-    expect(createV4DirectionalShadowEvidence({
+    expect(createExternalParityDirectionalShadowEvidence({
       exampleId: "bounded-shadow",
       casterCount: 1,
       receiverCount: 1,
@@ -130,7 +130,7 @@ describe("V4 render preset evidence", () => {
       knownLimit: "directional-shadow-map-fit-and-visible-receiver-evidence-without-production-forward-shadow-sampling"
     });
 
-    expect(createV4DirectionalShadowEvidence({
+    expect(createExternalParityDirectionalShadowEvidence({
       exampleId: "root-shadow",
       casterCount: 2,
       receiverCount: 1,

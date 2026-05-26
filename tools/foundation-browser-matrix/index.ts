@@ -37,7 +37,7 @@ type BrowserCandidate = {
 const root = process.cwd();
 const reportPath = "tests/reports/foundation-browser-matrix.json";
 
-export async function runV3BrowserMatrix(): Promise<number> {
+export async function runFoundationBrowserMatrix(): Promise<number> {
   const server = await startExampleDevServer(root);
   const entries: BrowserMatrixEntry[] = [];
   try {
@@ -213,7 +213,7 @@ async function probeCandidate(candidate: BrowserCandidate, origin: string): Prom
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  runV3BrowserMatrix().then((exitCode) => {
+  runFoundationBrowserMatrix().then((exitCode) => {
     process.exitCode = exitCode;
   }, (error) => {
     console.error(error);

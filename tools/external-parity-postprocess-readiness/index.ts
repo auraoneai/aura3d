@@ -21,14 +21,14 @@ const all = (source: string, phrases: readonly string[]) => phrases.every((phras
 
 for (const file of requiredFiles) check(`file:${file}`, existsSync(resolve(file)), `${file} must exist.`);
 const index = text("packages/rendering/src/index.ts");
-check("exports", all(index, ["runV4Bloom", "runV4SSAO", "runV4DepthOfField", "runV4ColorGrade"]), "Postprocess APIs must be exported.");
+check("exports", all(index, ["runExternalParityBloom", "runExternalParitySSAO", "runExternalParityDepthOfField", "runExternalParityColorGrade"]), "Postprocess APIs must be exported.");
 check("bloom", all(text("packages/rendering/src/postprocess/BloomPass.ts"), ["bloomFloatPixels", "bloomPixels", "hiding poor lighting"]), "Bloom wrapper must support HDR/LDR and avoid hiding poor lighting.");
 check("ssao", all(text("packages/rendering/src/postprocess/SSAOPass.ts"), ["ssaoPixels", "createDepthTextureBinding"]), "SSAO wrapper must use depth texture binding.");
 check("dof", all(text("packages/rendering/src/postprocess/DepthOfFieldPass.ts"), ["depthOfFieldPixels", "focusDepth"]), "DOF wrapper must expose focus-depth behavior.");
-check("color-grade", all(text("packages/rendering/src/postprocess/ColorGradingPass.ts"), ["catalog-hero", "material-neutral", "interior-balanced", "colorGradePixels"]), "Color grade wrapper must expose V4 presets.");
+check("color-grade", all(text("packages/rendering/src/postprocess/ColorGradingPass.ts"), ["catalog-hero", "material-neutral", "interior-balanced", "colorGradePixels"]), "Color grade wrapper must expose External parity presets.");
 
 const report = json("tests/reports/external-parity-postprocess-suite-browser.json");
-const post = rec(report?.v4Postprocess) ? report.v4Postprocess : {};
+const post = rec(report?.externalParityPostprocess) ? report.externalParityPostprocess : {};
 const bloom = rec(post.bloomEvidence) ? post.bloomEvidence : {};
 const ssao = rec(post.ssao) ? post.ssao : {};
 const dof = rec(post.dof) ? post.dof : {};
@@ -37,7 +37,7 @@ check("browser-postprocess", report?.ok === true && Number(bloom.changedPixels) 
 check("claim-boundary", typeof report?.productBoundary === "string" && report.productBoundary.includes("Flagship scenes still require off/on screenshots"), "Postprocess report must state flagship off/on screenshots remain required.");
 
 const pass = checks.every((entry) => entry.pass);
-const output = { schema: "a3d-external-parity-postprocess-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
+const output = { schema: "a3d-external-parity-postprocess-readiness", generatedAt: new Date().toISOString(), pass, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-postprocess-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-postprocess-readiness.json"), `${JSON.stringify(output, null, 2)}\n`);
 if (!pass) {

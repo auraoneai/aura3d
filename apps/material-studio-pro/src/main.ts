@@ -1,3 +1,3 @@
-import { mountMaterialStudioV4 } from "../../../examples/external-material-studio/MaterialStudioV4";
+import { mountExternalMaterialStudio } from "../../../examples/external-material-studio/ExternalMaterialStudio";
 
-void mountMaterialStudioV4("material-studio-pro");
+void mountExternalMaterialStudio("material-studio-pro");

@@ -1,29 +1,29 @@
 export {
-  V6_WORKFLOWS,
-  createV6AssetPreflight,
-  createV6ProductionRendererDefaults,
-  createV6VisualQAResult,
-  createV6WorkflowPlan,
-  listV6WorkflowDefinitions
-} from "./V6Workflows";
+  PRODUCTION_WORKFLOWS,
+  createProductionAssetPreflight,
+  createProductionRendererDefaults,
+  createProductionVisualQAResult,
+  createProductionWorkflowPlan,
+  listProductionWorkflowDefinitions
+} from "./ProductionWorkflows";
 export type {
-  V6AssetPreflightInput,
-  V6AssetPreflightResult,
-  V6ProductionRendererDefaults,
-  V6VisualQAInput,
-  V6VisualQAResult,
-  V6WorkflowDefinition,
-  V6WorkflowId,
-  V6WorkflowPlan
-} from "./V6Workflows";
-export { runV6Example } from "./V6ExampleRuntime";
+  ProductionAssetPreflightInput,
+  ProductionAssetPreflightResult,
+  ProductionRendererDefaults,
+  ProductionVisualQAInput,
+  ProductionVisualQAResult,
+  ProductionWorkflowDefinition,
+  ProductionWorkflowId,
+  ProductionWorkflowPlan
+} from "./ProductionWorkflows";
+export { runProductionExample } from "./ProductionExampleRuntime";
 export type {
-  V6ExampleAsset,
-  V6ExampleDefinition,
-  V6ExampleEnvironment,
-  V6ExampleRuntime,
-  V6ExampleRuntimeMetrics
-} from "./V6ExampleRuntime";
+  ProductionExampleAsset,
+  ProductionExampleDefinition,
+  ProductionExampleEnvironment,
+  ProductionExampleRuntime,
+  ProductionExampleRuntimeMetrics
+} from "./ProductionExampleRuntime";
 export * from './ProductRenderWorkflow';
 export * from './AssetInspectionWorkflow';
 export * from './MaterialAuthoringWorkflow';

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { createShadowAtlasLayout } from "../../packages/rendering/src/index.js";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4ShadowMapReadinessReport {
+export interface ExternalParityShadowMapReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly shadowMapParity: boolean;
@@ -41,14 +41,14 @@ const sourceFiles = [
   "tests/reports/external-parity-external-engine-baselines.json",
 ] as const;
 
-export function createV4ShadowMapReadinessReport(root = process.cwd()): V4ShadowMapReadinessReport {
+export function createExternalParityShadowMapReadinessReport(root = process.cwd()): ExternalParityShadowMapReadinessReport {
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const comparison = readJson(root, "tests/reports/external-parity-engine-comparison.json");
   const shadowVisual = readJson(root, "tests/reports/external-parity-shadow-visual-parity.json");
   const rootQuality = readJson(root, "tests/reports/external-parity-root-rendering-quality.json");
   const externalBaselines = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
   const validations = Array.isArray(rendering?.validations) ? rendering.validations : [];
-  const shadowLab = validations.find((entry) => isRecord(entry) && entry.name === "shadow-lab-v4-preset");
+  const shadowLab = validations.find((entry) => isRecord(entry) && entry.name === "shadow-lab-external-parity-preset");
   const shadowResize = validations.find((entry) => isRecord(entry) && entry.name === "shadow-lab-resize-dpr2-stability");
   const forwardShadowMap = validations.find((entry) => isRecord(entry) && entry.name === "forward-pass-shadow-map-sampling");
   const shadowChecks = isRecord(shadowLab) && isRecord(shadowLab.checks) ? shadowLab.checks : {};
@@ -95,7 +95,7 @@ export function createV4ShadowMapReadinessReport(root = process.cwd()): V4Shadow
     "Unity/Unreal-shadow-atlas-cascade-selection-parity",
   ];
   const validationRows = [
-    validation("directional-cascaded-pcf-browser-evidence", supportedEvidence.length >= 7, "tests/reports/external-parity-rendering.json:shadow-lab-v4-preset + tests/reports/external-parity-root-rendering-quality.json", [
+    validation("directional-cascaded-pcf-browser-evidence", supportedEvidence.length >= 7, "tests/reports/external-parity-rendering.json:shadow-lab-external-parity-preset + tests/reports/external-parity-root-rendering-quality.json", [
       `only ${supportedEvidence.length} supported shadow evidence rows are present`,
     ]),
     validation("shadow-resize-dpr-stability", resizeChecks.dprShadowDarker === true && resizeChecks.resizedShadowDarker === true || rootShadowResizeStability, "tests/reports/external-parity-rendering.json:shadow-lab-resize-dpr2-stability + tests/reports/external-parity-root-rendering-quality.json", [
@@ -104,7 +104,7 @@ export function createV4ShadowMapReadinessReport(root = process.cwd()): V4Shadow
     validation("competitor-shadow-visual-parity", comparison?.shadowMapParity === true || boundedShadowVisualParity, "tests/reports/external-parity-shadow-visual-parity.json", [
       "bounded same-layout shadow visual parity against Three.js and Babylon.js is not proven",
     ]),
-    validation("directional-plus-point-spot-shadow-pass-diagnostics", pointSpotShadowPassDiagnostics || rootPointSpotDirectionalDiagnostics, "tests/reports/external-parity-rendering.json:shadow-lab-v4-preset + packages/rendering root tests", [
+    validation("directional-plus-point-spot-shadow-pass-diagnostics", pointSpotShadowPassDiagnostics || rootPointSpotDirectionalDiagnostics, "tests/reports/external-parity-rendering.json:shadow-lab-external-parity-preset + packages/rendering root tests", [
       "directional shadow-map evidence plus bounded point/spot diagnostic pass evidence is not complete",
     ]),
     validation("production-spot-forward-shadow-map-sampling", productionSpotForwardSampling, "packages/rendering/src/Renderer.ts + packages/rendering/src/LightUniforms.ts + tests/unit/rendering/renderer.test.ts", [
@@ -269,7 +269,7 @@ function hasExternalBaselineSlot(report: Record<string, unknown> | null, baselin
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4ShadowMapReadinessReport();
+  const report = createExternalParityShadowMapReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

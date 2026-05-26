@@ -126,7 +126,7 @@ test.describe("WebGPU parity coverage", () => {
     await page.goto(`${server.origin}/tests/browser/rendering-webgpu-harness.html`, { waitUntil: "domcontentloaded" });
 
     const result = await page.evaluate(async (moduleUrl) => {
-      const { Geometry, IndexBuffer, InstancedPBRMaterial, MorphUnlitMaterial, PBRMaterial, Renderer, Sampler, SkinnedUnlitMaterial, Texture, TextureBinding, TexturedPBRMaterial, VertexBuffer, VertexFormat, WebGPUParticleBackend, createRenderDevice, createV4EnvironmentLighting, toneMapFloatPixels } = await import(moduleUrl);
+      const { Geometry, IndexBuffer, InstancedPBRMaterial, MorphUnlitMaterial, PBRMaterial, Renderer, Sampler, SkinnedUnlitMaterial, Texture, TextureBinding, TexturedPBRMaterial, VertexBuffer, VertexFormat, WebGPUParticleBackend, createRenderDevice, createExternalParityEnvironmentLighting, toneMapFloatPixels } = await import(moduleUrl);
       const parityShader = {
         label: "webgpu-parity-raster",
         marker: "@aura3d-shader:webgpu-parity-raster",
@@ -1025,7 +1025,7 @@ void main() {
         document.body.append(canvas);
         try {
           const renderer = await Renderer.create({ backend: "webgpu", canvas, width: canvas.width, height: canvas.height, clearColor: [0, 0, 0, 1] });
-          const lightingBundle = createV4EnvironmentLighting("studio");
+          const lightingBundle = createExternalParityEnvironmentLighting("studio");
           const target = renderer.device.createRenderTarget({ width: 48, height: 48, label: "real-webgpu-environment-pbr-forward-pass-target" });
           const diagnostics = renderer.render({
             renderItems: [{
@@ -2256,7 +2256,7 @@ fn fs_main(@location(0) normalInput: vec3<f32>) -> @location(0) vec4<f32> {
       ...baseReport(process.cwd(), {
         ok: true,
         command: "A3D_WEBGPU_PARITY_REPORT=tests/reports/external-parity-webgpu-parity.json pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts tests/browser/webgpu-parity.spec.ts",
-        runIdPrefix: "v4-webgpu-parity",
+        runIdPrefix: "external-parity-webgpu-parity",
         sourceFiles: webgpuReportSourceFiles,
         violations: validations.flatMap((entry) => entry.blockers.map((blocker) => `${entry.id}: ${blocker}`)),
         blockedClaims: [

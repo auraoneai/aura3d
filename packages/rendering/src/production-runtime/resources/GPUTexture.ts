@@ -1,2 +1,2 @@
-export interface GPUTextureDescriptorV6 { readonly label: string; readonly width: number; readonly height: number; readonly format: string; readonly mipLevels?: number; }
-export class GPUTexture { constructor(readonly descriptor: GPUTextureDescriptorV6) {} }
+export interface GPUTextureDescriptorProduction { readonly label: string; readonly width: number; readonly height: number; readonly format: string; readonly mipLevels?: number; }
+export class GPUTexture { constructor(readonly descriptor: GPUTextureDescriptorProduction) {} }

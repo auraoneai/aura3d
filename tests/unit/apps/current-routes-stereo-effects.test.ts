@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createStereoEyeFrames, DEFAULT_STEREO_CONTROLS } from "../../../apps/stereo-effects/src/stereoControls";
 
-describe("V8 stereo effects camera math", () => {
+describe("CurrentRoutes stereo effects camera math", () => {
   const bounds = { min: [-1, -1, -1] as const, max: [1, 1, 1] as const };
   const viewport = { width: 1280, height: 720 };
 

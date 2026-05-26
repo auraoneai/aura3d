@@ -1,6 +1,6 @@
-import type { V6AppUiDefinition } from "./types";
+import type { ProductionAppUiDefinition } from "./types";
 
-export const ui: V6AppUiDefinition = {
+export const ui: ProductionAppUiDefinition = {
   primaryActionLabel: "Cycle Finish",
   secondaryLabel: "Imported product asset with HDR lighting, PBR textures, and renderer metrics."
 };

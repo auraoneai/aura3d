@@ -1,10 +1,10 @@
 import {
-  createV4MaterialExtensionDiagnostics,
-  type V4MaterialExtension,
-  type V4MaterialExtensionState
+  createExternalParityMaterialExtensionDiagnostics,
+  type ExternalParityMaterialExtension,
+  type ExternalParityMaterialExtensionState
 } from "./MaterialExtensions";
 
-export type V4MaterialKind =
+export type ExternalParityMaterialKind =
   | "chrome"
   | "brushed-metal"
   | "gold"
@@ -18,8 +18,8 @@ export type V4MaterialKind =
   | "emissive"
   | "textured-ceramic-stone";
 
-export interface V4PhysicalMaterialDescriptor {
-  readonly id: V4MaterialKind;
+export interface ExternalParityPhysicalMaterialDescriptor {
+  readonly id: ExternalParityMaterialKind;
   readonly label: string;
   readonly baseColor: readonly [number, number, number, number];
   readonly metallic: number;
@@ -31,13 +31,13 @@ export interface V4PhysicalMaterialDescriptor {
   readonly alphaMode?: "opaque" | "mask" | "blend";
   readonly alphaCutoff?: number;
   readonly doubleSided?: boolean;
-  readonly extensions: readonly V4MaterialExtension[];
+  readonly extensions: readonly ExternalParityMaterialExtension[];
   readonly visualGoal: string;
 }
 
-export interface V4PhysicalMaterialAnalysis {
-  readonly descriptor: V4PhysicalMaterialDescriptor;
-  readonly extensionDiagnostics: readonly V4MaterialExtensionState[];
+export interface ExternalParityPhysicalMaterialAnalysis {
+  readonly descriptor: ExternalParityPhysicalMaterialDescriptor;
+  readonly extensionDiagnostics: readonly ExternalParityMaterialExtensionState[];
   readonly reflectanceClass: "mirror-metal" | "rough-metal" | "dielectric" | "transparent" | "emissive";
   readonly requiresIbl: boolean;
   readonly requiresTransmissionPass: boolean;
@@ -45,16 +45,16 @@ export interface V4PhysicalMaterialAnalysis {
   readonly warnings: readonly string[];
 }
 
-export class V4PhysicalMaterial {
-  public readonly descriptor: V4PhysicalMaterialDescriptor;
+export class ExternalParityPhysicalMaterial {
+  public readonly descriptor: ExternalParityPhysicalMaterialDescriptor;
 
-  constructor(descriptor: V4PhysicalMaterialDescriptor) {
+  constructor(descriptor: ExternalParityPhysicalMaterialDescriptor) {
     validateDescriptor(descriptor);
     this.descriptor = descriptor;
   }
 
-  analyze(): V4PhysicalMaterialAnalysis {
-    const extensionDiagnostics = createV4MaterialExtensionDiagnostics(this.descriptor.extensions);
+  analyze(): ExternalParityPhysicalMaterialAnalysis {
+    const extensionDiagnostics = createExternalParityMaterialExtensionDiagnostics(this.descriptor.extensions);
     const reflectanceClass = classifyMaterial(this.descriptor);
     const requiresTransmissionPass = this.descriptor.extensions.includes("transmission") || this.descriptor.id === "glass-transmission";
     const requiresAlphaSorting = this.descriptor.alphaMode === "blend" || requiresTransmissionPass;
@@ -75,7 +75,7 @@ export class V4PhysicalMaterial {
   }
 }
 
-export const V4_PHYSICAL_MATERIAL_MATRIX: readonly V4PhysicalMaterialDescriptor[] = [
+export const EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX: readonly ExternalParityPhysicalMaterialDescriptor[] = [
   material("chrome", "Chrome", [0.92, 0.94, 0.95, 1], 1, 0.04, [], "Mirror-like metal must reflect environment directionally."),
   material("brushed-metal", "Brushed Metal", [0.78, 0.76, 0.72, 1], 1, 0.32, ["anisotropy"], "Brushed metal must show rough directional response."),
   material("gold", "Gold", [1, 0.72, 0.28, 1], 1, 0.18, [], "Gold must read as tinted metal, not yellow plastic."),
@@ -90,40 +90,40 @@ export const V4_PHYSICAL_MATERIAL_MATRIX: readonly V4PhysicalMaterialDescriptor[
   material("textured-ceramic-stone", "Textured Ceramic / Stone", [0.62, 0.58, 0.52, 1], 0, 0.58, ["texture-transform", "multi-uv"], "Stone/ceramic must show texture, normal, and roughness detail.")
 ];
 
-export function createV4PhysicalMaterial(kind: V4MaterialKind): V4PhysicalMaterial {
-  const descriptor = V4_PHYSICAL_MATERIAL_MATRIX.find((entry) => entry.id === kind);
-  if (!descriptor) throw new Error(`Unknown V4 material kind: ${kind}`);
-  return new V4PhysicalMaterial(descriptor);
+export function createExternalParityPhysicalMaterial(kind: ExternalParityMaterialKind): ExternalParityPhysicalMaterial {
+  const descriptor = EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX.find((entry) => entry.id === kind);
+  if (!descriptor) throw new Error(`Unknown ExternalParity material kind: ${kind}`);
+  return new ExternalParityPhysicalMaterial(descriptor);
 }
 
-export function analyzeV4MaterialMatrix(): readonly V4PhysicalMaterialAnalysis[] {
-  return V4_PHYSICAL_MATERIAL_MATRIX.map((descriptor) => new V4PhysicalMaterial(descriptor).analyze());
+export function analyzeExternalParityMaterialMatrix(): readonly ExternalParityPhysicalMaterialAnalysis[] {
+  return EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX.map((descriptor) => new ExternalParityPhysicalMaterial(descriptor).analyze());
 }
 
 function material(
-  id: V4MaterialKind,
+  id: ExternalParityMaterialKind,
   label: string,
   baseColor: readonly [number, number, number, number],
   metallic: number,
   roughness: number,
-  extensions: readonly V4MaterialExtension[],
+  extensions: readonly ExternalParityMaterialExtension[],
   visualGoal: string,
   emissive?: readonly [number, number, number],
   emissiveStrength?: number
-): V4PhysicalMaterialDescriptor {
+): ExternalParityPhysicalMaterialDescriptor {
   return { id, label, baseColor, metallic, roughness, extensions, visualGoal, ...(emissive ? { emissive } : {}), ...(emissiveStrength ? { emissiveStrength } : {}), ...(id === "glass-transmission" ? { alphaMode: "blend" as const, doubleSided: true } : {}) };
 }
 
-function validateDescriptor(descriptor: V4PhysicalMaterialDescriptor): void {
-  if (!descriptor.id || !descriptor.label) throw new Error("V4 physical material requires id and label.");
+function validateDescriptor(descriptor: ExternalParityPhysicalMaterialDescriptor): void {
+  if (!descriptor.id || !descriptor.label) throw new Error("ExternalParity physical material requires id and label.");
   if (descriptor.baseColor.length !== 4 || descriptor.baseColor.some((value) => !Number.isFinite(value) || value < 0 || value > 1)) {
-    throw new Error(`V4 physical material ${descriptor.id} has invalid baseColor.`);
+    throw new Error(`ExternalParity physical material ${descriptor.id} has invalid baseColor.`);
   }
-  if (!Number.isFinite(descriptor.metallic) || descriptor.metallic < 0 || descriptor.metallic > 1) throw new Error(`V4 physical material ${descriptor.id} has invalid metallic.`);
-  if (!Number.isFinite(descriptor.roughness) || descriptor.roughness < 0 || descriptor.roughness > 1) throw new Error(`V4 physical material ${descriptor.id} has invalid roughness.`);
+  if (!Number.isFinite(descriptor.metallic) || descriptor.metallic < 0 || descriptor.metallic > 1) throw new Error(`ExternalParity physical material ${descriptor.id} has invalid metallic.`);
+  if (!Number.isFinite(descriptor.roughness) || descriptor.roughness < 0 || descriptor.roughness > 1) throw new Error(`ExternalParity physical material ${descriptor.id} has invalid roughness.`);
 }
 
-function classifyMaterial(descriptor: V4PhysicalMaterialDescriptor): V4PhysicalMaterialAnalysis["reflectanceClass"] {
+function classifyMaterial(descriptor: ExternalParityPhysicalMaterialDescriptor): ExternalParityPhysicalMaterialAnalysis["reflectanceClass"] {
   if ((descriptor.emissiveStrength ?? 0) > 0) return "emissive";
   if (descriptor.extensions.includes("transmission")) return "transparent";
   if (descriptor.metallic > 0.8 && descriptor.roughness < 0.18) return "mirror-metal";

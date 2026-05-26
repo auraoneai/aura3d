@@ -45,10 +45,10 @@ export interface ClaimRegistryOptions {
   readonly startedAt?: Date;
 }
 
-const defaultRegistryPath = "docs/project/v2-claim-registry.md";
+const defaultRegistryPath = "docs/project/product-studio-claim-registry.md";
 const defaultReportPath = "tests/reports/claim-registry.json";
 const canonicalPathFallbacks: Record<string, readonly string[]> = {
-  "docs/project/v2-claim-registry.md": ["docs/v2/claim-registry.md"],
+  "docs/project/product-studio-claim-registry.md": ["docs/product-studio/claim-registry.md"],
   "docs/project/known-limits.md": ["docs/known-limits.md"]
 };
 const strongerClaimPatterns = [
@@ -278,7 +278,7 @@ function normalizePath(path: string): string {
 
 function canonicalizePublicClaimPath(path: string): string {
   if (path === "docs/known-limits.md") return "docs/project/known-limits.md";
-  if (path === "docs/v2/claim-registry.md") return "docs/project/v2-claim-registry.md";
+  if (path === "docs/product-studio/claim-registry.md") return "docs/project/product-studio-claim-registry.md";
   return path;
 }
 

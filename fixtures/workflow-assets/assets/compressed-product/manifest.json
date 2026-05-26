@@ -1,8 +1,8 @@
 {
-  "schema": "a3d-v3-asset-fixture/v1",
+  "schema": "a3d-foundation-asset-fixture",
   "id": "compressed-product",
   "source": "speaker",
-  "description": "V3 compression placeholder fixture used for compression warning coverage.",
+  "description": "Foundation compression placeholder fixture used for compression warning coverage.",
   "gltf": "compressed-product.gltf",
   "glb": "compressed-product.glb",
   "externalGltf": "compressed-product-external.gltf",

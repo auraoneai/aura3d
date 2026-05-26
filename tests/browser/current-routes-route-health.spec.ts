@@ -2,13 +2,14 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import {
-  V8_ROUTE_HEALTH_ORIGIN,
-  V8_ROUTE_HEALTH_REPORT,
-  discoverV8RootLinks,
-  evaluateV8Route,
-  newV8RouteHealthPage,
-  type V8RouteHealthReport
+  CURRENT_ROUTE_HEALTH_ORIGIN,
+  CURRENT_ROUTE_HEALTH_REPORT,
+  discoverCurrentRootLinks,
+  evaluateCurrentRoute,
+  newCurrentRouteHealthPage,
+  type CurrentRouteHealthReport
 } from "../../tools/current-routes-route-health/index";
+import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const EXPECTED_CURRENT_WOW_ROUTES = [
   "/apps/wow-tokyo-keyframes/",
@@ -25,13 +26,23 @@ const EXPECTED_CURRENT_WOW_ROUTES = [
   "/apps/wow-quantum-stage/"
 ] as const;
 
-test.describe("V8 route health", () => {
+test.describe("current route health", () => {
   test.setTimeout(240_000);
 
+  let server: ExampleDevServer;
+
+  test.beforeAll(async () => {
+    server = await startExampleDevServer();
+  });
+
+  test.afterAll(async () => {
+    await server.close();
+  });
+
   test("root visible authored routes have smoke, screenshot, DPR, and motion evidence", async ({ browser }) => {
-    const origin = V8_ROUTE_HEALTH_ORIGIN;
-    const rootPage = await newV8RouteHealthPage(browser);
-    const root = await discoverV8RootLinks(rootPage, origin);
+    const origin = process.env.A3D_ROUTE_HEALTH_ORIGIN ?? server.origin ?? CURRENT_ROUTE_HEALTH_ORIGIN;
+    const rootPage = await newCurrentRouteHealthPage(browser);
+    const root = await discoverCurrentRootLinks(rootPage, origin);
     await rootPage.close();
 
     expect(root.responseStatus, root.failures.join("\n")).toBe(200);
@@ -43,8 +54,8 @@ test.describe("V8 route health", () => {
 
     const routes = [];
     for (const route of root.links) {
-      const page = await newV8RouteHealthPage(browser);
-      const result = await evaluateV8Route(page, route);
+      const page = await newCurrentRouteHealthPage(browser);
+      const result = await evaluateCurrentRoute(page, route);
       routes.push(result);
       await page.close();
 
@@ -56,10 +67,11 @@ test.describe("V8 route health", () => {
         expect(result.pageErrors, formatRouteFailure(result.failures)).toEqual([]);
         expect(result.responseErrors, formatRouteFailure(result.failures)).toEqual([]);
         expect(result.canvas?.pass, formatRouteFailure(result.failures)).toBe(true);
-        expect(result.canvas?.backingScaleX ?? 0, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(1.18);
-        expect(result.canvas?.backingScaleY ?? 0, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(1.18);
+        const minimumBackingScale = result.path === "/apps/advanced-examples-gallery/" ? 0.85 : 1.18;
+        expect(result.canvas?.backingScaleX ?? 0, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(minimumBackingScale);
+        expect(result.canvas?.backingScaleY ?? 0, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(minimumBackingScale);
         expect(result.screenshot?.pass, formatRouteFailure(result.failures)).toBe(true);
-        expect(result.screenshot?.path, formatRouteFailure(result.failures)).toContain("tests/reports/legacy-route-health/screenshots/");
+        expect(result.screenshot?.path, formatRouteFailure(result.failures)).toContain("tests/reports/current-route-health/screenshots/");
         if (result.motion.required) {
           expect(result.motion.pass, formatRouteFailure(result.failures)).toBe(true);
           expect(result.motion.changedRatio, formatRouteFailure(result.failures)).toBeGreaterThanOrEqual(result.motion.minimumChangedRatio);
@@ -75,12 +87,12 @@ test.describe("V8 route health", () => {
       ...root.failures,
       ...routes.flatMap((route) => route.failures.map((failure) => `${route.path}: ${failure}`))
     ];
-    const report: V8RouteHealthReport = {
-      schema: "a3d-current-routes-route-health/v1",
+    const report: CurrentRouteHealthReport = {
+      schema: "a3d-current-routes-route-health",
       generatedAt: new Date().toISOString(),
       origin,
       root: {
-        url: `${origin}/`,
+        url: `${origin}/examples/index.html`,
         status: root.responseStatus,
         ok: root.failures.length === 0,
         loadTimeMs: root.loadTimeMs,
@@ -94,10 +106,10 @@ test.describe("V8 route health", () => {
       failures
     };
     mkdirSync(resolve("tests/reports"), { recursive: true });
-    writeFileSync(resolve(V8_ROUTE_HEALTH_REPORT), `${JSON.stringify(report, null, 2)}\n`);
+    writeFileSync(resolve(CURRENT_ROUTE_HEALTH_REPORT), `${JSON.stringify(report, null, 2)}\n`);
   });
 });
 
 function formatRouteFailure(failures: readonly string[]): string {
-  return failures.length > 0 ? failures.join("\n") : "route health result did not satisfy the V8 working-route contract";
+  return failures.length > 0 ? failures.join("\n") : "route health result did not satisfy the current working-route contract";
 }

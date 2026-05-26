@@ -10,7 +10,7 @@ type PortfolioExample = {
   readonly screenshotPath?: string;
   readonly knownLimits?: readonly string[];
   readonly visualGate?: {
-    readonly status: "blocked-external-parity-visual-quality" | "passed-v4-screenshot-audit";
+    readonly status: "blocked-external-parity-visual-quality" | "passed-external-parity-screenshot-audit";
     readonly reportPath: string;
     readonly visualQualityReportPath: string;
     readonly blocker?: string;
@@ -51,7 +51,7 @@ declare global {
         readonly screenshotPath: string;
         readonly knownLimits: readonly string[];
         readonly visualGate: {
-          readonly status: "blocked-external-parity-visual-quality" | "passed-v4-screenshot-audit";
+          readonly status: "blocked-external-parity-visual-quality" | "passed-external-parity-screenshot-audit";
           readonly reportPath: string;
           readonly visualQualityReportPath: string;
           readonly blocker?: string;
@@ -62,18 +62,18 @@ declare global {
   }
 }
 
-const v4ScreenshotReportPath = "/tests/reports/external-parity-example-screenshots/manifest.json";
-const v4VisualQualityReportPath = "/tests/reports/external-parity-visual-quality.json";
+const externalParityScreenshotReportPath = "/tests/reports/external-parity-example-screenshots/manifest.json";
+const externalParityVisualQualityReportPath = "/tests/reports/external-parity-visual-quality.json";
 const blockedVisualGate = {
   status: "blocked-external-parity-visual-quality",
-  reportPath: v4ScreenshotReportPath,
-  visualQualityReportPath: v4VisualQualityReportPath,
-  blocker: "Current screenshots fail the V4 visual-quality gate and must not be used as PBR, product visual, production rendering, or competitor-parity proof.",
+  reportPath: externalParityScreenshotReportPath,
+  visualQualityReportPath: externalParityVisualQualityReportPath,
+  blocker: "Current screenshots fail the ExternalParity visual-quality gate and must not be used as PBR, product visual, production rendering, or competitor-parity proof.",
 } as const;
 const passedScreenshotGate = {
-  status: "passed-v4-screenshot-audit",
-  reportPath: v4ScreenshotReportPath,
-  visualQualityReportPath: v4VisualQualityReportPath,
+  status: "passed-external-parity-screenshot-audit",
+  reportPath: externalParityScreenshotReportPath,
+  visualQualityReportPath: externalParityVisualQualityReportPath,
 } as const;
 
 const hiddenValidationExamples = [
@@ -103,12 +103,12 @@ const examples: PortfolioExample[] = [
   },
   {
     id: "product-configurator",
-    title: "V4 Product Configurator",
+    title: "ExternalParity Product Configurator",
     href: "./product-configurator/index.html",
     tier: "Renderer Proof",
     summary: "Generated local over-ear headphone glTF with material variants, camera controls, procedural environment lighting, contact-shadow receiver geometry, export state, and diagnostics.",
     systems: ["WebGL2", "Generated glTF", "PBR variants", "Environment lighting", "Contact shadow alternative", "Screenshot export"],
-    proof: "The page loads, publishes renderer metrics, and passes the current V4 screenshot-health gate with generated product, lighting, postprocess, and contact-shadow evidence.",
+    proof: "The page loads, publishes renderer metrics, and passes the current ExternalParity screenshot-health gate with generated product, lighting, postprocess, and contact-shadow evidence.",
     caveat: "This is still a generated local product fixture. It is not product visual parity, PBR parity, or production commerce output.",
     screenshotPath: "/tests/reports/external-parity-example-screenshots/product-configurator.png",
     visualGate: passedScreenshotGate,
@@ -120,7 +120,7 @@ const examples: PortfolioExample[] = [
   },
   {
     id: "architecture-viewer",
-    title: "V4 Architecture Viewer",
+    title: "ExternalParity Architecture Viewer",
     href: "./architecture-viewer/index.html",
     tier: "Renderer Proof",
     summary: "Generated civic-gallery room scene with authored room hierarchy, selectable zones, measurement metadata, orbit/plan/section controls, materials, and contact-shadow decals.",
@@ -137,7 +137,7 @@ const examples: PortfolioExample[] = [
   },
   {
     id: "game-slice",
-    title: "V4 Game Slice",
+    title: "ExternalParity Game Slice",
     href: "./game-slice/index.html",
     tier: "Runtime Proof",
     summary: "Generated local glTF player and arena with physics controller, camera follow, particles, spatial audio state, behavior scripts, objective win/fail loop, and contact-shadow proxy.",
@@ -154,7 +154,7 @@ const examples: PortfolioExample[] = [
   },
   {
     id: "racing-showcase",
-    title: "V4 Racing Showcase",
+    title: "ExternalParity Racing Showcase",
     href: "./racing-showcase/index.html",
     tier: "Combined Proof",
     summary: "Current-engine procedural sports car and track scene ported from the old racing concepts with metallic paint, carbon fiber, tire tread, HUD telemetry, countdown, checkpoint, lap, and leaderboard evidence.",
@@ -270,7 +270,7 @@ const localReadinessDemos: readonly LocalReadinessDemo[] = [
     title: "Product Visual Local Proof",
     href: "./product-configurator/index.html",
     status: "local-ready",
-    summary: "The live product scene publishes shared V4 preset, generated HDR environment resources, real-scene postprocess readback, directional-shadow evidence, and LOD/product metrics.",
+    summary: "The live product scene publishes shared ExternalParity preset, generated HDR environment resources, real-scene postprocess readback, directional-shadow evidence, and LOD/product metrics.",
     proofCommand: "pnpm audit:external-parity-product-visual-parity",
     reportPath: "/tests/reports/external-parity-product-visual-parity.json",
     caveat: "Local browser proof now passes the visual-quality gate, but rendered product visual parity still requires real Unity/Unreal same-scene baselines and external reports.",
@@ -420,12 +420,12 @@ function render(): void {
   main.innerHTML = `
     <section class="hero">
       <div class="hero-inner">
-        <p class="eyebrow">Aura3D V4 Flagship Evidence</p>
-        <h1>V4 Flagship Demos</h1>
+        <p class="eyebrow">Aura3D ExternalParity Flagship Evidence</p>
+        <h1>ExternalParity Flagship Demos</h1>
         <p class="hero-copy">
           This page only features the flagship examples with current browser screenshot evidence: product configurator,
           architecture viewer, game slice, and racing showcase. Low-level primitive tutorials remain in the repo, but they are not
-          presented here as V4 visual capability.
+          presented here as ExternalParity visual capability.
         </p>
         <div class="claim-strip">
           <span>Current: four screenshot-backed flagship slices</span>
@@ -437,7 +437,7 @@ function render(): void {
     <section class="main">
       <div class="section-head">
         <h2>Flagship Screenshots</h2>
-        <p>Open these pages first when evaluating V4 example visuals. Each card points at the screenshot path generated by the V4 browser audit.</p>
+        <p>Open these pages first when evaluating ExternalParity example visuals. Each card points at the screenshot path generated by the ExternalParity browser audit.</p>
       </div>
       <div class="grid">
           ${featuredExamples.map(renderCard).join("")}

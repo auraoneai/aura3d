@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import { createA3DProject, writeCreateA3DReport } from "@aura3d/create-aura3d";
 
-test("create-aura3d scaffolds every V4 template from public package imports", () => {
+test("create-aura3d scaffolds every ExternalParity template from public package imports", () => {
   const tempRoot = mkdtempSync(join(tmpdir(), "a3d-create-"));
   try {
     const templates = ["external-parity-product-viewer", "external-parity-material-studio", "external-parity-asset-gallery", "external-parity-interactive-scene"] as const;

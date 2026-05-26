@@ -9,7 +9,7 @@ const routePath = "tests/reports/current-routes-animation-examples.json";
 const comparison = readJson(comparisonPath);
 const routeReport = readJson(routePath);
 const threeOutcome = comparison.comparisonOutcomes?.byCompetitor?.threejs?.scenes?.find((scene: { readonly id?: unknown }) => scene.id === "instancing");
-const route = routeReport.routes?.find((entry: { readonly label?: unknown }) => entry.label === "V8 Instancing Performance");
+const route = routeReport.routes?.find((entry: { readonly label?: unknown }) => entry.label === "CurrentRoutes Instancing Performance");
 const runtime = route?.runtime ?? {};
 
 const checks = [
@@ -27,7 +27,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "a3d-threejs-parity-instancing-parity/v1",
+  schema: "a3d-threejs-parity-instancing-parity",
   generatedAt: new Date().toISOString(),
   pass: checks.every((entry) => entry.pass),
   inputs: {
@@ -42,9 +42,9 @@ const report = {
 
 writeJson(OUTPUT_PATH, report);
 if (!report.pass) {
-  throw new Error(`V9 instancing parity failed: ${OUTPUT_PATH}`);
+  throw new Error(`Three.js parity instancing parity failed: ${OUTPUT_PATH}`);
 }
-console.log(`V9 instancing parity report written: ${OUTPUT_PATH}`);
+console.log(`Three.js parity instancing parity report written: ${OUTPUT_PATH}`);
 
 function check(id: string, pass: boolean, detail: string): { readonly id: string; readonly pass: boolean; readonly detail: string } {
   return { id, pass, detail };

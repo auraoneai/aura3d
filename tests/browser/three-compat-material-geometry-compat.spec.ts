@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { V5_COMPAT_GEOMETRY_TYPES, V5_COMPAT_MATERIAL_TYPES } from "../../packages/three-compat/src";
+import { THREE_COMPAT_COMPAT_GEOMETRY_TYPES, THREE_COMPAT_COMPAT_MATERIAL_TYPES } from "../../packages/three-compat/src";
 
 test("migrated material and geometry showcase renders in browser proof", async ({ page }) => {
   await page.setContent(`
@@ -7,8 +7,8 @@ test("migrated material and geometry showcase renders in browser proof", async (
       <body style="margin:0;background:#080b10">
         <canvas id="showcase" width="1080" height="720"></canvas>
         <script>
-          const geometries = ${JSON.stringify(V5_COMPAT_GEOMETRY_TYPES)};
-          const materials = ${JSON.stringify(V5_COMPAT_MATERIAL_TYPES)};
+          const geometries = ${JSON.stringify(THREE_COMPAT_COMPAT_GEOMETRY_TYPES)};
+          const materials = ${JSON.stringify(THREE_COMPAT_COMPAT_MATERIAL_TYPES)};
           const canvas = document.getElementById("showcase");
           const ctx = canvas.getContext("2d");
           ctx.fillStyle = "#0b1018";

@@ -11,7 +11,7 @@ const arr = (v: unknown): Obj[] => Array.isArray(v) ? v as Obj[] : [];
 const required = [
   "fixtures/external-parity/gltf-corpus/manifest.json",
   "fixtures/external-parity/gltf-corpus/licenses.md",
-  "packages/assets/src/V4Corpus.ts",
+  "packages/assets/src/ExternalParityGLTFCorpus.ts",
   "tests/assets/external-parity-gltf-loader-corpus.test.ts",
   "tests/browser/external-parity-gltf-visual-corpus.spec.ts",
   "tests/reports/external-parity-gltf-visual-corpus-browser.json"
@@ -25,10 +25,10 @@ const sourceAssets = arr(sourceCorpus.assets);
 const ids = new Set(sourceAssets.map((asset) => asset.id));
 const features = new Set(assets.flatMap((asset) => Array.isArray(asset.features) ? asset.features as string[] : []));
 
-check("schema", manifest.schema === "a3d-v4-gltf-corpus/v1", "Manifest schema must be V4 corpus v1.");
+check("schema", manifest.schema === "a3d-external-parity-gltf-corpus", "Manifest schema must be External parity corpus legacy.");
 check("source-pin", (manifest.source as Obj | undefined)?.revision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf", "Manifest must pin the Khronos source revision.");
 check("asset-count", assets.length >= 25, "Corpus must include at least 25 assets.");
-check("source-cross-reference", assets.every((asset) => ids.has(asset.id)), "Every V4 corpus asset must exist in the pinned source corpus.");
+check("source-cross-reference", assets.every((asset) => ids.has(asset.id)), "Every External parity corpus asset must exist in the pinned source corpus.");
 check("license-provenance", assets.every((asset) => typeof asset.license === "string" && typeof asset.provenance === "string"), "Every asset must have license and provenance.");
 check("visual-slots", assets.filter((asset) => asset.visualEvidenceSlot === true).length >= 12, "Corpus must reserve at least 12 visual evidence slots.");
 check("advanced-materials", assets.filter((asset) => asset.advancedMaterial === true).length >= 5, "Corpus must include at least 5 advanced material assets.");
@@ -41,7 +41,7 @@ const summary = browser.summary as Obj | undefined;
 check("browser-board", browser.ok === true && Number(summary?.assetCount) >= 25 && typeof browser.productBoundary === "string" && browser.productBoundary.includes("not final rendered glTF visual proof"), "Browser report must prove corpus board and preserve proof boundary.");
 
 const pass = checks.every((entry) => entry.pass);
-const report = { schema: "a3d-external-parity-gltf-corpus-readiness/v1", generatedAt: new Date().toISOString(), pass, checks };
+const report = { schema: "a3d-external-parity-gltf-corpus-readiness", generatedAt: new Date().toISOString(), pass, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-gltf-corpus-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-gltf-corpus-readiness.json"), `${JSON.stringify(report, null, 2)}\n`);
 if (!pass) {

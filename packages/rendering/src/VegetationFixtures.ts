@@ -53,7 +53,7 @@ export interface VegetationLSystemFixture {
 }
 
 export interface VegetationFixtureSample {
-  readonly id: "v4-old-branch-vegetation-fixture";
+  readonly id: "external-parity-old-branch-vegetation-fixture";
   readonly source: "origin-master-vegetation-system-adapted";
   readonly seed: number;
   readonly instanceCount: number;
@@ -116,7 +116,7 @@ export function sampleVegetationFixture(options: VegetationFixtureOptions): Vege
   const maxWindOffset = Math.max(0, ...instances.map((instance) => Math.hypot(instance.windOffsetX, instance.windOffsetZ)));
   const lsystem = createVegetationLSystemFixture(instances, seed);
   return {
-    id: "v4-old-branch-vegetation-fixture",
+    id: "external-parity-old-branch-vegetation-fixture",
     source: "origin-master-vegetation-system-adapted",
     seed,
     instanceCount: instances.length,

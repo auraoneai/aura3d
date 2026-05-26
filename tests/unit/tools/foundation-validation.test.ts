@@ -4,21 +4,21 @@ import { join } from "node:path";
 import { mkdtempSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { auditExampleTruth } from "../../../tools/example-truth-audit/index.js";
-import { validateV3ClaimGates } from "../../../tools/foundation-claim-gates/index.js";
-import { validateV3ReportFreshness, writeJson, baseReport } from "../../../tools/foundation-reporting/index.js";
+import { validateFoundationClaimGates } from "../../../tools/foundation-claim-gates/index.js";
+import { validateFoundationReportFreshness, writeJson, baseReport } from "../../../tools/foundation-reporting/index.js";
 
 function fixtureRoot(): string {
-  return mkdtempSync(join(tmpdir(), "a3d-v3-validation-"));
+  return mkdtempSync(join(tmpdir(), "a3d-foundation-validation-"));
 }
 
-describe("v3 validation tools", () => {
-  it("blocks unscoped v3 competitor and production claims", () => {
+describe("foundation validation tools", () => {
+  it("blocks unscoped foundation competitor and production claims", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "examples", "bad"), { recursive: true });
     writeFileSync(join(root, "examples", "bad", "README.md"), "Aura3D is better than Three.js.\n");
     writeFileSync(join(root, "README.md"), "Aura3D is not production-ready.\n");
 
-    const report = validateV3ClaimGates(root);
+    const report = validateFoundationClaimGates(root);
 
     expect(report.ok).toBe(false);
     expect(report.blockedOccurrences).toEqual(expect.arrayContaining([
@@ -52,20 +52,20 @@ const examples = [{
     ]);
   });
 
-  it("detects stale v3 reports by source hash", () => {
+  it("detects stale foundation reports by source hash", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "docs", "project"), { recursive: true });
-    writeFileSync(join(root, "docs", "project", "v3-readme.md"), "before\n");
+    writeFileSync(join(root, "docs", "project", "documentation-index.md"), "before\n");
     const report = baseReport(root, {
       ok: true,
       command: "test",
       runIdPrefix: "test",
-      sourceFiles: ["docs/project/v3-readme.md"],
+      sourceFiles: ["docs/project/documentation-index.md"],
     });
     writeJson(root, "tests/reports/foundation-current-capability.json", report);
-    writeFileSync(join(root, "docs", "project", "v3-readme.md"), "after\n");
+    writeFileSync(join(root, "docs", "project", "documentation-index.md"), "after\n");
 
-    const issues = validateV3ReportFreshness(root, ["tests/reports/foundation-current-capability.json"]);
+    const issues = validateFoundationReportFreshness(root, ["tests/reports/foundation-current-capability.json"]);
 
     expect(issues).toEqual([
       expect.objectContaining({ path: "tests/reports/foundation-current-capability.json", message: expect.stringContaining("Freshness source changed") }),

@@ -1,6 +1,6 @@
-import { ShaderMaterialV5 } from "./ShaderMaterial";
+import { ShaderMaterialThreeCompat } from "./ShaderMaterial";
 
-export class RawShaderMaterialV5 extends ShaderMaterialV5 {
+export class RawShaderMaterialThreeCompat extends ShaderMaterialThreeCompat {
   override readonly type = "RawShaderMaterial";
   glslVersion: "300 es" | "100" = "300 es";
 }

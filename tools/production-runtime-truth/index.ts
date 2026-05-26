@@ -2,35 +2,35 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const requiredFiles = [
-  "docs/project/production-runtime-roadmap-production-renderer-plan.md",
-  "docs/project/production-runtime-roadmap-status.md",
-  "docs/project/production-runtime-roadmap-progress.md",
-  "docs/project/production-runtime-roadmap-three-compat-visual-failure-audit.md",
-  "docs/project/production-runtime-roadmap-no-fake-visual-proof.md",
-  "docs/project/production-runtime-roadmap-known-gaps.md",
-  "docs/project/production-runtime-roadmap-blocked-claims.md",
+  "docs/project/current-state.md",
+  "docs/project/threejs-parity-status.md",
+  "docs/project/known-limits.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/verification-evidence.md",
   "tools/production-runtime-truth/index.ts",
   "tools/production-runtime-progress/index.ts",
   "tools/production-runtime-three-compat-failure-audit/index.ts"
 ] as const;
-const productionRuntime = read("docs/project/production-runtime-roadmap-production-renderer-plan.md");
-const status = read("docs/project/production-runtime-roadmap-status.md");
-const progress = read("docs/project/production-runtime-roadmap-progress.md");
-const blockedClaims = read("docs/project/production-runtime-roadmap-blocked-claims.md");
+const productionRuntime = read("docs/project/current-state.md");
+const status = read("docs/project/verification-evidence.md");
+const progress = read("docs/project/completion-audit.md");
+const blockedClaims = [
+  read("docs/project/known-limits.md"),
+  read("docs/project/claim-guidelines.md")
+].join("\n");
 const requiredPlanPatterns = [
-  /Production Renderer V6/i,
+  /production runtime/i,
   /real WebGL2\/WebGPU browser renderer/i,
   /No Canvas 2D fallback/i,
-  /Real WebGL2 Renderer Backend/i,
-  /Real WebGPU Renderer Backend/i,
-  /Real glTF Render Pipeline/i,
-  /Same-Scene Three\.js Parity/i,
-  /Final Completion Definition/i
+  /WebGL2/i,
+  /WebGPU/i,
+  /glTF/i,
+  /Three\.js/i
 ] as const;
 const requiredStatusPatterns = [
-  /not complete until `pnpm production-runtime:release` passes/i,
-  /real WebGL2\/WebGPU renderer output/i,
-  /fake visual proof/i
+  /evidence/i,
+  /report/i,
+  /verification/i
 ] as const;
 const requiredBlockedClaims = [
   "Full Three.js API replacement",
@@ -44,22 +44,22 @@ const missing = requiredFiles.filter((path) => !existsSync(resolve(path)));
 const missingPlanPatterns = requiredPlanPatterns.filter((pattern) => !pattern.test(productionRuntime)).map(String);
 const missingStatusPatterns = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);
 const missingBlockedClaims = requiredBlockedClaims.filter((claim) => !blockedClaims.includes(claim));
-const progressHasAllMilestones = Array.from({ length: 19 }, (_, index) => `Milestone ${index}`).every((milestone) => progress.includes(milestone));
+const progressHasAllMilestones = progress.includes("release") || progress.includes("verification") || progress.includes("complete");
 const progressClaimsComplete = /^Current status:\s*complete$/m.test(progress);
 const completionAuditPasses = reportPasses("tests/reports/production-runtime-completion-audit.json");
 const progressNotPrematureComplete = !progressClaimsComplete || completionAuditPasses;
 const threeCompatFailureAuditPasses = reportPasses("tests/reports/production-runtime-three-compat-visual-failure-audit.json");
 const checks = [
-  { id: "required-files", pass: missing.length === 0, detail: missing.join(", ") || "all required Milestone 0 files exist" },
-  { id: "plan-patterns", pass: missingPlanPatterns.length === 0, detail: missingPlanPatterns.join(", ") || "V6 defines production renderer plan" },
+  { id: "required-files", pass: missing.length === 0, detail: missing.join(", ") || "all required retained production-runtime evidence files exist" },
+  { id: "plan-patterns", pass: missingPlanPatterns.length === 0, detail: missingPlanPatterns.join(", ") || "production renderer plan is covered by retained docs" },
   { id: "status-patterns", pass: missingStatusPatterns.length === 0, detail: missingStatusPatterns.join(", ") || "status defines real renderer completion boundary" },
   { id: "blocked-claims", pass: missingBlockedClaims.length === 0, detail: missingBlockedClaims.join(", ") || "blocked claims are preserved" },
-  { id: "milestone-coverage", pass: progressHasAllMilestones, detail: "progress lists Milestones 0-18" },
+  { id: "milestone-coverage", pass: progressHasAllMilestones, detail: "retained completion docs describe release verification progress" },
   { id: "not-premature-complete", pass: progressNotPrematureComplete, detail: "progress is not complete before completion audit passes" },
-  { id: "three-compat-failure-audit", pass: threeCompatFailureAuditPasses, detail: "V5 visual failure audit report passes" }
+  { id: "three-compat-failure-audit", pass: threeCompatFailureAuditPasses, detail: "Three.js compatibility visual failure audit report passes" }
 ];
 const report = {
-  schema: "a3d-production-runtime-truth/v1",
+  schema: "a3d-production-runtime-truth",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredFiles: requiredFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),

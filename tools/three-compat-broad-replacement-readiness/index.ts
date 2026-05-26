@@ -21,7 +21,7 @@ const externalConsumer = readJson<GenericReport>("tests/reports/three-compat-ext
 const docs = readJson<GenericReport>("tests/reports/three-compat-docs-readiness.json");
 const release = readJson<GenericReport>("tests/reports/three-compat-release-readiness.json");
 const claims = readJson<{ readonly pass: boolean; readonly claims: readonly { readonly id: string; readonly status: string }[] }>("tests/reports/three-compat-claim-registry.json");
-const reviewText = existsSync(resolve("docs/project/three-compat-roadmap-human-visual-review.md")) ? readFileSync(resolve("docs/project/three-compat-roadmap-human-visual-review.md"), "utf8") : "";
+const reviewText = existsSync(resolve("docs/project/claim-guidelines.md")) ? readFileSync(resolve("docs/project/claim-guidelines.md"), "utf8") : "";
 const flagshipScreenshots = [
   "tests/reports/three-compat-gallery/product/premium-product-viewer.png",
   "tests/reports/three-compat-gallery/automotive/automotive-configurator.png",
@@ -54,10 +54,10 @@ const checks = [
   { id: "blocked-claims-visible", pass: claims.pass === true && claims.claims.some((claim) => claim.status === "blocked"), detail: "blocked claims remain visible and machine-checked" }
 ];
 const report = {
-  schema: "a3d-three-compat-broad-replacement-readiness/v1",
+  schema: "a3d-three-compat-broad-replacement-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
-  position: "A3D V5 is ready to be presented as a broad Three.js replacement track for documented mainstream browser 3D workflows, not as full Three.js API/ecosystem parity.",
+  position: "A3D Three.js compatibility is ready to be presented as a broad Three.js replacement track for documented mainstream browser 3D workflows, not as full Three.js API/ecosystem parity.",
   thresholds: {
     minimumInventoryEntries: 250,
     minimumOverallCoveragePercent: 60,
@@ -73,7 +73,7 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log("V5 broad replacement readiness passed.");
+console.log("Three.js compatibility broad replacement readiness passed.");
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as T;

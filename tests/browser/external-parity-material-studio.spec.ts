@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "@playwright/test";
 
-test("Material Studio alias report maps the V4 requested filename to Material Studio Pro proof", async () => {
+test("Material Studio alias report maps the ExternalParity requested filename to Material Studio Pro proof", async () => {
   const source = JSON.parse(readFileSync("tests/reports/external-parity-material-studio-pro-browser.json", "utf8")) as {
     ok?: boolean;
     states?: { readonly example?: { readonly materialCount?: number; readonly hdrIbl?: boolean } };

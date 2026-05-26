@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { loadV5AssetManifest, loadV5AssetRegistry, summarizeV5AssetRegistry } from "../../packages/assets/src/threejs-compatibility/V5AssetRegistry";
+import { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "../../packages/assets/src/threejs-compatibility/ThreeCompatAssetRegistry";
 
-describe("V5 asset library", () => {
+describe("ThreeCompat asset library", () => {
   it("tracks a broad, pinned production asset corpus with provenance", () => {
-    const manifest = loadV5AssetManifest();
-    const registry = loadV5AssetRegistry(manifest);
-    const summary = summarizeV5AssetRegistry(manifest);
+    const manifest = loadThreeCompatAssetManifest();
+    const registry = loadThreeCompatAssetRegistry(manifest);
+    const summary = summarizeThreeCompatAssetRegistry(manifest);
 
-    expect(manifest.schema).toBe("a3d-three-compat-asset-library/v1");
+    expect(manifest.schema).toBe("a3d-three-compat-asset-library");
     expect(summary.trackedAssetCount).toBeGreaterThanOrEqual(40);
     expect(summary.visualEvidenceSlotCount).toBeGreaterThanOrEqual(12);
     expect(summary.localAssetCount).toBeGreaterThanOrEqual(12);

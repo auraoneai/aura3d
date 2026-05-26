@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 PBR/HDR real renderer", () => {
+test.describe("Production PBR/HDR real renderer", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -29,17 +29,17 @@ test.describe("V6 PBR/HDR real renderer", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V6_PBR_HDR__ as { status?: string } | undefined;
+          const result = window.__PRODUCTION_PBR_HDR__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 30_000 }
       );
     } catch (error) {
-      throw new Error(`V6 PBR/HDR harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Production PBR/HDR harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V6_PBR_HDR__) as {
+    const result = await page.evaluate(() => window.__PRODUCTION_PBR_HDR__) as {
       status: "ready" | "error";
       error?: string;
       studioSummary?: { pass: boolean; missing: readonly string[] };
@@ -79,7 +79,7 @@ test.describe("V6 PBR/HDR real renderer", () => {
     await page.locator("#sunset").screenshot({ path: "tests/reports/production-runtime-pbr-hdr/damaged-helmet-sunset-hdr.png" });
     const reportPath = "tests/reports/production-runtime-pbr-hdr-real-renderer.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "a3d-production-runtime-pbr-hdr-real-renderer/v1",
+      schema: "a3d-production-runtime-pbr-hdr-real-renderer",
       generatedAt: new Date().toISOString(),
       screenshots: [
         "tests/reports/production-runtime-pbr-hdr/damaged-helmet-studio-hdr.png",

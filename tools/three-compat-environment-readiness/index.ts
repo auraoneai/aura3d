@@ -2,12 +2,12 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  createV5EnvironmentGalleryModel,
-  loadV5EnvironmentManifest,
-  summarizeV5EnvironmentLibrary
+  createThreeCompatEnvironmentGalleryModel,
+  loadThreeCompatEnvironmentManifest,
+  summarizeThreeCompatEnvironmentLibrary
 } from "../../packages/environments/src";
 
-interface V5EnvironmentReadinessCheck {
+interface ThreeCompatEnvironmentReadinessCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
@@ -24,13 +24,13 @@ const requiredFiles = [
   "tests/browser/three-compat-environment-gallery.spec.ts"
 ] as const;
 
-function check(name: string, pass: boolean, detail: string): V5EnvironmentReadinessCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatEnvironmentReadinessCheck {
   return { name, pass, detail };
 }
 
-const manifest = loadV5EnvironmentManifest();
-const summary = summarizeV5EnvironmentLibrary(manifest);
-const gallery = createV5EnvironmentGalleryModel(manifest);
+const manifest = loadThreeCompatEnvironmentManifest();
+const summary = summarizeThreeCompatEnvironmentLibrary(manifest);
+const gallery = createThreeCompatEnvironmentGalleryModel(manifest);
 const realHdriFailures = manifest.presets
   .filter((preset) => preset.kind === "real-hdri")
   .filter((preset) => {
@@ -43,13 +43,13 @@ const realHdriFailures = manifest.presets
   .map((preset) => preset.id);
 const probeFailures = gallery.filter((entry) => entry.probes.length < manifest.requirements.requiredProbeTypes.length).map((entry) => entry.preset.id);
 
-const checks: V5EnvironmentReadinessCheck[] = [
+const checks: ThreeCompatEnvironmentReadinessCheck[] = [
   check(
     "required-files-present",
     requiredFiles.every((file) => existsSync(resolve(file))),
-    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 environment files exist"
+    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility environment files exist"
   ),
-  check("schema", manifest.schema === "a3d-three-compat-environment-library/v1", `schema=${manifest.schema}`),
+  check("schema", manifest.schema === "a3d-three-compat-environment-library", `schema=${manifest.schema}`),
   check(
     "preset-floor",
     summary.presetCount >= manifest.requirements.minimumPresets,
@@ -89,7 +89,7 @@ const checks: V5EnvironmentReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-environment-readiness/v1",
+  schema: "a3d-three-compat-environment-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary,
@@ -105,4 +105,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log(`V5 environment readiness passed: ${summary.presetCount} presets, ${summary.checkedRealHdriCount} checked real HDRIs.`);
+console.log(`Three.js compatibility environment readiness passed: ${summary.presetCount} presets, ${summary.checkedRealHdriCount} checked real HDRIs.`);

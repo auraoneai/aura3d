@@ -1,9 +1,9 @@
 import { createProductConfiguratorWorkflow } from "@aura3d/workflows";
-import { mountV3Example } from "../foundation-example-shell";
+import { mountFoundationExample } from "../foundation-example-shell";
 
-void mountV3Example({
+void mountFoundationExample({
   id: "foundation-product-configurator",
-  title: "Product Configurator V3",
+  title: "Product Configurator Foundation",
   summary: "Load a generated product asset, apply product camera and material policies, and render a configurator-ready scene.",
   notes: [
     "The example uses generated product fixtures and the public product configurator workflow.",

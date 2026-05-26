@@ -107,7 +107,7 @@ function createTestAsset(): GLTFAsset {
     url: "/fixtures/product-studio/products/speaker/speaker.gltf",
     disposed: false,
     loaderDiagnostics: {
-      schemaVersion: "gltf-loader-diagnostics-v1",
+      schemaVersion: "gltf-loader-diagnostics",
       features: ["meshes", "materials", "animations", "skins", "morph-targets"],
       extensionsUsed: ["KHR_materials_clearcoat"],
       extensionsRequired: [],

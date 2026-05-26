@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const SCREENSHOT_PATH = "tests/reports/threejs-parity/orbit-controls/orbit-controls.png";
 
-test.describe("V9 OrbitControls route parity evidence", () => {
+test.describe("ThreejsParity OrbitControls route parity evidence", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -33,7 +33,7 @@ test.describe("V9 OrbitControls route parity evidence", () => {
     const response = await page.goto(`${server.origin}/apps/controls-orbit/`, { waitUntil: "domcontentloaded" });
     expect(response?.status()).toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8OrbitControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
+      const runtime = window.__a3dCurrentRoutesOrbitControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
       return (runtime?.status === "ready" || runtime?.status === "running") && (runtime.drawCalls ?? 0) > 0;
     }, undefined, { timeout: 20_000 });
 
@@ -55,7 +55,7 @@ test.describe("V9 OrbitControls route parity evidence", () => {
     await page.keyboard.up("Shift");
 
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8OrbitControls as {
+      const runtime = window.__a3dCurrentRoutesOrbitControls as {
         readonly rotateSamples?: number;
         readonly panSamples?: number;
         readonly wheelSamples?: number;
@@ -90,7 +90,7 @@ async function readRuntime(page: import("@playwright/test").Page): Promise<{
   readonly wheelSamples: number;
 }> {
   return page.evaluate(() => {
-    const runtime = window.__a3dV8OrbitControls as {
+    const runtime = window.__a3dCurrentRoutesOrbitControls as {
       readonly controls?: string;
       readonly renderer?: string;
       readonly distance?: number;

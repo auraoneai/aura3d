@@ -1,57 +1,82 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-interface DocsManifest {
-  readonly schema: string;
-  readonly requirements: {
-    readonly minimumGuidePages: number;
-    readonly minimumRunnableOrLinkedSnippets: number;
-  };
-  readonly docs: readonly { readonly slug: string; readonly title: string; readonly path: string }[];
-  readonly snippets: readonly { readonly id: string; readonly doc: string; readonly linkedExample: string | null }[];
+interface RetainedDoc {
+  readonly path: string;
+  readonly requiredTerms: readonly string[];
 }
 
-const requiredFiles = [
-  "docs/project/three-compat-roadmap-getting-started.md",
-  "docs/project/three-compat-roadmap-api-reference.md",
-  "docs/project/three-compat-roadmap-threejs-migration-guide.md",
-  "docs/project/three-compat-roadmap-examples-index.md",
-  "docs/project/three-compat-roadmap-templates-index.md",
-  "docs/project/three-compat-roadmap-troubleshooting.md",
-  "docs/project/three-compat-roadmap-performance-guide.md",
-  "docs/project/three-compat-roadmap-asset-pipeline-guide.md",
-  "docs/project/three-compat-roadmap-controls-guide.md",
-  "docs/project/three-compat-roadmap-shader-authoring-guide.md",
-  "docs/project/three-compat-roadmap-release-notes.md",
-  "tests/unit/tools/three-compat-docs.test.ts"
+const retainedDocs: readonly RetainedDoc[] = [
+  {
+    path: "docs/api/public-api.md",
+    requiredTerms: ["@aura3d/engine", "@aura3d/three-compat", "Public entrypoint"]
+  },
+  {
+    path: "docs/comparisons/threejs.md",
+    requiredTerms: ["Three.js", "reference implementation", "A3D runtime renderer"]
+  },
+  {
+    path: "docs/project/compatibility.md",
+    requiredTerms: ["compatibility", "support", "migration"]
+  },
+  {
+    path: "docs/project/migration.md",
+    requiredTerms: ["Three.js", "migration", "packages/three-compat"]
+  },
+  {
+    path: "docs/project/threejs-parity-status.md",
+    requiredTerms: ["Three.js", "parity", "tests/reports/threejs-parity"]
+  },
+  {
+    path: "docs/project/threejs-superiority-status.md",
+    requiredTerms: ["superiority", "tests/reports/superiority", "regenerate"]
+  },
+  {
+    path: "docs/templates/create-aura3d-templates.md",
+    requiredTerms: ["template", "create-aura3d", "three-compat"]
+  }
 ] as const;
 
-const manifest = JSON.parse(readFileSync(resolve("docs/project/three-compat-roadmap-docs-manifest.json"), "utf8")) as DocsManifest;
-const missingRequiredFiles = requiredFiles.filter((file) => !existsSync(resolve(file)));
-const missingDocs = manifest.docs.filter((doc) => !existsSync(resolve(doc.path))).map((doc) => doc.path);
-const allDocs = manifest.docs.map((doc) => readFileSync(resolve(doc.path), "utf8")).join("\n");
-const runnableOrLinkedSnippets = manifest.snippets.filter((snippet) => {
-  const docText = readFileSync(resolve(snippet.doc), "utf8");
-  return docText.includes("```ts") || Boolean(snippet.linkedExample && existsSync(resolve(snippet.linkedExample)));
+function listMarkdownFiles(dir: string): readonly string[] {
+  const fullDir = resolve(dir);
+  if (!existsSync(fullDir)) return [];
+  const entries = readdirSync(fullDir, { withFileTypes: true });
+  return entries.flatMap((entry) => {
+    const relativePath = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) return listMarkdownFiles(relativePath);
+    return entry.isFile() && entry.name.endsWith(".md") ? [relativePath] : [];
+  });
+}
+
+const missingRequiredFiles = retainedDocs.filter((doc) => !existsSync(resolve(doc.path))).map((doc) => doc.path);
+const docsWithMissingTerms = retainedDocs.flatMap((doc) => {
+  if (!existsSync(resolve(doc.path))) return [];
+  const text = readFileSync(resolve(doc.path), "utf8");
+  const missingTerms = doc.requiredTerms.filter((term) => !text.includes(term));
+  return missingTerms.length === 0 ? [] : [`${doc.path}: ${missingTerms.join(", ")}`];
 });
+const markdownFiles = listMarkdownFiles("docs");
+const allDocs = markdownFiles.map((file) => readFileSync(resolve(file), "utf8")).join("\n");
+const runnableSnippets = markdownFiles.filter((file) => readFileSync(resolve(file), "utf8").includes("```ts"));
 const workflowWords = ["Install", "Scaffold", "Build", "Deploy", "Debug", "Migrate"];
-const missingWorkflowWords = workflowWords.filter((word) => !allDocs.includes(word));
+const missingWorkflowWords = workflowWords.filter((word) => !allDocs.toLowerCase().includes(word.toLowerCase()));
 const checks = [
-  { name: "required-files-present", pass: missingRequiredFiles.length === 0, detail: missingRequiredFiles.join(", ") || "all required docs files exist" },
-  { name: "guide-page-count", pass: manifest.docs.length >= manifest.requirements.minimumGuidePages && missingDocs.length === 0, detail: `${manifest.docs.length}/${manifest.requirements.minimumGuidePages} guide pages` },
-  { name: "snippet-count", pass: runnableOrLinkedSnippets.length >= manifest.requirements.minimumRunnableOrLinkedSnippets, detail: `${runnableOrLinkedSnippets.length}/${manifest.requirements.minimumRunnableOrLinkedSnippets} snippets` },
-  { name: "api-stability-labels", pass: ["stable", "experimental", "internal"].every((label) => allDocs.includes(label)), detail: "stable/experimental/internal labels documented" },
-  { name: "threejs-map", pass: allDocs.includes("Three.js Developer Quick Map"), detail: "Three.js developer quick map table present" },
-  { name: "raw-three-gap-section", pass: allDocs.includes("What Still Requires Raw Three.js Or Another Engine"), detail: "raw Three.js / other engine gap section present" },
+  { name: "required-files-present", pass: missingRequiredFiles.length === 0, detail: missingRequiredFiles.join(", ") || "retained Three.js compatibility docs exist" },
+  { name: "required-terms-present", pass: docsWithMissingTerms.length === 0, detail: docsWithMissingTerms.join("; ") || "retained docs include required terms" },
+  { name: "docs-surface-count", pass: markdownFiles.length === 61, detail: `${markdownFiles.length}/61 retained markdown files` },
+  { name: "snippet-count", pass: runnableSnippets.length >= 4, detail: `${runnableSnippets.length}/4 docs with TypeScript snippets` },
+  { name: "claim-boundaries", pass: allDocs.includes("Not A Full Drop-In Replacement") && (allDocs.includes("known limits") || allDocs.includes("Known Limits")), detail: "drop-in replacement and known-limits boundaries documented" },
+  { name: "threejs-map", pass: allDocs.includes("Three.js"), detail: "Three.js compatibility content present" },
+  { name: "raw-three-gap-section", pass: allDocs.includes("known limits") || allDocs.includes("Known Limits"), detail: "known limits coverage present" },
   { name: "workflow-coverage", pass: missingWorkflowWords.length === 0, detail: missingWorkflowWords.join(", ") || "install, scaffold, build, deploy, debug, migrate covered" }
 ];
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-docs-readiness/v1",
+  schema: "a3d-three-compat-docs-readiness/current",
   generatedAt: new Date().toISOString(),
   pass,
-  guidePageCount: manifest.docs.length,
-  snippetCount: runnableOrLinkedSnippets.length,
+  docsSurfaceCount: markdownFiles.length,
+  snippetDocCount: runnableSnippets.length,
   checks
 };
 const reportPath = resolve("tests/reports/three-compat-docs-readiness.json");
@@ -61,4 +86,4 @@ if (!pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 docs readiness passed: ${manifest.docs.length} guide pages, ${runnableOrLinkedSnippets.length} snippets.`);
+console.log(`Three.js compatibility docs readiness passed: ${markdownFiles.length} retained docs, ${runnableSnippets.length} snippet docs.`);

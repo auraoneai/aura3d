@@ -1,7 +1,7 @@
 import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
-  loadV6GLTFRenderPipeline
+  loadProductionGLTFRenderPipeline
 } from "@aura3d/assets";
 import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
@@ -25,13 +25,13 @@ import {
 
 declare global {
   interface Window {
-    __a3dV8AnimationMultiple?: V8AnimationMultipleRuntime;
+    __a3dCurrentRoutesAnimationMultiple?: CurrentRoutesAnimationMultipleRuntime;
   }
 }
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
-interface V8AnimationMultipleRuntime {
+interface CurrentRoutesAnimationMultipleRuntime {
   appId: "animation-multiple";
   status: "loading" | "ready" | "running" | "error";
   statusLabel: string;
@@ -89,7 +89,7 @@ async function run(): Promise<void> {
   });
 
   const publish = (): void => {
-    window.__a3dV8AnimationMultiple = runtime;
+    window.__a3dCurrentRoutesAnimationMultiple = runtime;
     renderUi(root, runtime, state);
     bindUi(root, state, publish);
   };
@@ -104,7 +104,7 @@ async function run(): Promise<void> {
       antialias: true,
       clearColor: [0.62, 0.62, 0.62, 1]
     });
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: ASSET_URL,
       assetId: "animation-multiple-soldier-crowd",
       assetName: "Soldier Multiple Characters",
@@ -165,7 +165,7 @@ async function run(): Promise<void> {
           camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
           metadata: {
             assetId: APP_ID,
-            assetName: "V8 Animation Multiple",
+            assetName: "CurrentRoutes Animation Multiple",
             assetUri: "/apps/animation-multiple/",
             meshCount: pipeline.metadata.meshCount * poses.length,
             primitiveCount: pipeline.metadata.primitiveCount * poses.length,
@@ -176,7 +176,7 @@ async function run(): Promise<void> {
             skinCount: pipeline.metadata.skinCount,
             morphTargetCount: pipeline.metadata.morphTargetCount,
             extensionsUsed: pipeline.metadata.extensionsUsed,
-            environmentId: "v8-fast-studio",
+            environmentId: "current-routes-fast-studio",
             hdrEnvironmentUri: "deferred"
           }
         });
@@ -211,7 +211,7 @@ async function run(): Promise<void> {
         if (lastSkinningPalettesUpdated <= 0) {
           throw new Error("Imported multiple-character route did not update any skinning palettes.");
         }
-        window.__a3dV8AnimationMultiple = runtime;
+        window.__a3dCurrentRoutesAnimationMultiple = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -231,12 +231,12 @@ async function run(): Promise<void> {
 }
 
 function createRuntime(
-  status: V8AnimationMultipleRuntime["status"],
+  status: CurrentRoutesAnimationMultipleRuntime["status"],
   statusLabel: string,
   startedAt: number,
   state: AgentSpawnerState,
-  counters: Partial<Pick<V8AnimationMultipleRuntime, "frameCount" | "drawCalls" | "fps" | "averageStride" | "motionSamples" | "motionTimeRange" | "poseDiversityScore" | "motionHealthy" | "clipName" | "animatedAgents" | "skinningPalettesUpdated">> = {}
-): V8AnimationMultipleRuntime {
+  counters: Partial<Pick<CurrentRoutesAnimationMultipleRuntime, "frameCount" | "drawCalls" | "fps" | "averageStride" | "motionSamples" | "motionTimeRange" | "poseDiversityScore" | "motionHealthy" | "clipName" | "animatedAgents" | "skinningPalettesUpdated">> = {}
+): CurrentRoutesAnimationMultipleRuntime {
   return {
     appId: APP_ID,
     status,
@@ -333,7 +333,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
       ? { jointCount: renderable.skinning.jointCount, matrices: new Float32Array(renderable.skinning.matrices) }
       : undefined;
     items.push({
-      label: `v8-multiple:${node.name}`,
+      label: `current-routes-multiple:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -364,10 +364,10 @@ function createStageItems(): readonly RenderItem[] {
   ];
 }
 
-function renderUi(root: HTMLElement, runtime: V8AnimationMultipleRuntime, state: AgentSpawnerState): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesAnimationMultipleRuntime, state: AgentSpawnerState): void {
   root.innerHTML = `
     <section class="panel">
-      <h1>V8 Animation Multiple</h1>
+      <h1>CurrentRoutes Animation Multiple</h1>
       <span class="status" data-state="${runtime.status}">${escapeHtml(runtime.statusLabel)}</span>
       <p>3 independent Soldier clones</p>
       <p>${escapeHtml(runtime.clipName)}</p>
@@ -407,10 +407,10 @@ function bindRange(root: HTMLElement, selector: string, update: (value: number) 
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-multiple-key");
+  const key = new DirectionalLight("current-routes-multiple-key");
   key.intensity = 5.6;
   key.color = [1, 1, 1];
-  const rim = new DirectionalLight("v8-multiple-rim");
+  const rim = new DirectionalLight("current-routes-multiple-rim");
   rim.intensity = 2.4;
   rim.color = [0.78, 0.82, 0.9];
   return [

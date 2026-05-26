@@ -1,18 +1,18 @@
-export type V5UniformValue = number | boolean | string | readonly number[];
+export type ThreeCompatUniformValue = number | boolean | string | readonly number[];
 
-export class UniformsV5 {
-  private readonly values = new Map<string, V5UniformValue>();
+export class UniformsThreeCompat {
+  private readonly values = new Map<string, ThreeCompatUniformValue>();
 
-  set(name: string, value: V5UniformValue): this {
+  set(name: string, value: ThreeCompatUniformValue): this {
     this.values.set(name, value);
     return this;
   }
 
-  get(name: string): V5UniformValue | undefined {
+  get(name: string): ThreeCompatUniformValue | undefined {
     return this.values.get(name);
   }
 
-  entries(): readonly [string, V5UniformValue][] {
+  entries(): readonly [string, ThreeCompatUniformValue][] {
     return [...this.values.entries()];
   }
 }

@@ -6,6 +6,12 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportDir = resolve("tests/reports/foundation-examples");
 const captures: ExampleCapture[] = [];
 
+declare global {
+  interface Window {
+    __AURA3D_PORTFOLIO__?: { readonly status?: string };
+  }
+}
+
 const examples = [
   { id: "foundation-asset-viewer", path: "/examples/foundation-asset-viewer/index.html", minItems: 1 },
   { id: "foundation-material-studio", path: "/examples/foundation-material-studio/index.html", minItems: 3 },
@@ -14,7 +20,7 @@ const examples = [
   { id: "foundation-game-slice", path: "/examples/foundation-game-slice/index.html", minItems: 2, dynamic: true }
 ] as const;
 
-test.describe("V3 V3 examples", () => {
+test.describe("foundation examples", () => {
   test.setTimeout(160_000);
 
   let server: ExampleDevServer;
@@ -27,7 +33,7 @@ test.describe("V3 V3 examples", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "a3d-v3-examples-browser/v1",
+      schema: "a3d-foundation-examples-browser",
       generatedAt: new Date().toISOString(),
       examples: examples.map((example) => example.id),
       captures,
@@ -52,24 +58,24 @@ test.describe("V3 V3 examples", () => {
     });
   }
 
-  test("example index promotes only the current V3 examples", async ({ page }) => {
+  test("example index promotes the current proof portfolio", async ({ page }) => {
     await page.goto(`${server.origin}/examples/index.html`, { waitUntil: "domcontentloaded" });
-    const links = await page.locator("nav a").evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href")));
+    await page.waitForFunction(() => window.__AURA3D_PORTFOLIO__?.status === "ready");
+    const links = await page.locator("[data-example-id] a.open").evaluateAll((anchors) => anchors.map((anchor) => anchor.getAttribute("href")));
     expect(links).toEqual([
-      "./foundation-asset-viewer/",
-      "./foundation-material-studio/",
-      "./foundation-product-configurator/",
-      "./foundation-interactive-scene/",
-      "./foundation-game-slice/"
+      "./product-configurator/",
+      "./architecture-viewer/",
+      "./game-slice/",
+      "./racing-showcase/"
     ]);
-    await expect(page.getByText("Product Viewer V1")).toHaveCount(0);
-    await expect(page.getByText("Rendering Showcase V1")).toHaveCount(0);
+    await expect(page.getByText("Product Viewer")).toHaveCount(0);
+    await expect(page.getByText("Rendering Showcase")).toHaveCount(0);
   });
 });
 
 async function readExampleState(page: import("@playwright/test").Page): Promise<ExampleState | undefined> {
   return page.evaluate(() => {
-    const state = (window as any).__A3D_V3_EXAMPLE__?.captureState?.() ?? (window as any).__A3D_V3_EXAMPLE__;
+    const state = (window as any).__A3D_FOUNDATION_EXAMPLE__?.captureState?.() ?? (window as any).__A3D_FOUNDATION_EXAMPLE__ ?? (window as any).__A3D_FOUNDATION_EXAMPLE__?.captureState?.() ?? (window as any).__A3D_FOUNDATION_EXAMPLE__;
     if (!state) return undefined;
     return {
       id: state.id,

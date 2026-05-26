@@ -5,7 +5,7 @@ const claims = [
   {
     id: "supported-workflow-competitor",
     status: "conditional-until-release",
-    claim: "A3D is a high-quality Three.js competitor for supported V4 workflows.",
+    claim: "A3D is a high-quality Three.js competitor for supported External parity workflows.",
     evidence: [
       "tests/reports/external-parity-threejs-visual-parity.json",
       "tests/reports/external-parity-external-consumer.json",
@@ -25,13 +25,13 @@ const claims = [
     id: "broad-threejs-replacement",
     status: "blocked",
     claim: "A3D is a broad Three.js replacement.",
-    evidence: ["docs/project/v4-roadmap-blocked-claims.md", "docs/project/v4-roadmap-known-gaps.md"]
+    evidence: ["docs/project/claim-guidelines.md", "docs/project/known-limits.md"]
   },
   {
     id: "unity-unreal-replacement",
     status: "blocked",
     claim: "A3D replaces Unity or Unreal.",
-    evidence: ["docs/project/v4-roadmap-blocked-claims.md", "docs/project/v4-roadmap-known-gaps.md"]
+    evidence: ["docs/project/claim-guidelines.md", "docs/project/known-limits.md"]
   }
 ] as const;
 
@@ -41,8 +41,8 @@ const checks = claims.flatMap((claim) => claim.evidence.map((path) => ({
   detail: `${claim.id} evidence must exist: ${path}`
 })));
 
-const blockedClaims = read("docs/project/v4-roadmap-blocked-claims.md");
-const knownGaps = read("docs/project/v4-roadmap-known-gaps.md");
+const blockedClaims = read("docs/project/claim-guidelines.md");
+const knownGaps = read("docs/project/known-limits.md");
 checks.push({
   id: "blocked-claims-preserved",
   pass: ["Broad Three.js replacement", "Unity replacement", "Unreal replacement", "Full game engine replacement"].every((phrase) => blockedClaims.includes(phrase) && knownGaps.includes(phrase)),
@@ -51,7 +51,7 @@ checks.push({
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-claim-registry/v1",
+  schema: "a3d-external-parity-claim-registry",
   generatedAt: new Date().toISOString(),
   pass,
   claims,

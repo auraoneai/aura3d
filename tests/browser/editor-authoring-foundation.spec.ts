@@ -3,10 +3,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const editorScreenshotDir = "tests/reports/foundation-editor-screenshots";
-const editorScreenshotPath = `${editorScreenshotDir}/editor-authoring-v3.png`;
-const exportedScreenshotPath = `${editorScreenshotDir}/editor-authoring-v3-export.png`;
+const editorScreenshotPath = `${editorScreenshotDir}/editor-authoring-foundation.png`;
+const exportedScreenshotPath = `${editorScreenshotDir}/editor-authoring-foundation-export.png`;
 
-test.describe("V3 editor authoring workflow", () => {
+test.describe("Foundation editor authoring workflow", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -76,7 +76,7 @@ test.describe("V3 editor authoring workflow", () => {
 
     await page.locator('select[data-action="view-mode"]').selectOption("collider");
     await expect(page.locator('[data-role="viewport-hud"]')).toContainText("collider");
-    await page.screenshot({ path: testInfo.outputPath("editor-authoring-v3.png"), fullPage: true });
+    await page.screenshot({ path: testInfo.outputPath("editor-authoring-foundation.png"), fullPage: true });
     mkdirSync(editorScreenshotDir, { recursive: true });
     await page.screenshot({ path: editorScreenshotPath, fullPage: true });
 
@@ -126,7 +126,7 @@ test.describe("V3 editor authoring workflow", () => {
     await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.interactions ?? 0)).toBeGreaterThan(0);
     await page.keyboard.press("ArrowRight");
     await expect.poll(() => page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__?.interactive)).toBe(true);
-    await page.screenshot({ path: testInfo.outputPath("editor-authoring-v3-export.png"), fullPage: true });
+    await page.screenshot({ path: testInfo.outputPath("editor-authoring-foundation-export.png"), fullPage: true });
     await page.screenshot({ path: exportedScreenshotPath, fullPage: true });
   });
 

@@ -1,70 +1,37 @@
 # Scene Graph Versus ECS
 
-Version: `0.1.0-alpha.0`
+Version: `1.0.0`
 
-Aura3D exposes both scene graph and ECS-style runtime concepts. Use them for different jobs and bridge them deliberately.
+Aura3D has both a scene graph package and an ECS package. They serve different roles.
 
 ## Scene Graph
 
-Use the scene graph when hierarchy and authored spatial relationships matter:
+Use `@aura3d/engine/scene` for Object3D-style hierarchy, transforms, cameras, lights, renderables, instancing, serialization, and renderer traversal.
 
-- imported glTF node trees;
-- cameras, lights, and transforms;
-- parent/child transform inheritance;
-- editor hierarchy panels;
-- product scene authoring;
-- renderer-facing objects with stable visual identity.
+Important code:
 
-Relevant packages:
-
-- `@aura3d/engine/scene`;
-- `@aura3d/engine/v9`;
-- `@aura3d/engine/assets`;
-- `@aura3d/engine/editor-runtime`.
+- `packages/scene/src/Object3D.ts`
+- `packages/scene/src/Renderable.ts`
+- `packages/scene/src/Camera.ts`
+- `packages/scene/src/Light.ts`
 
 ## ECS
 
-Use ECS when behavior is data-oriented, repeated, and scheduled:
+Use `@aura3d/engine/ecs` for entity/component/system style runtime organization.
 
-- gameplay state;
-- many similar objects;
-- fixed system ordering;
-- physics synchronization;
-- simulation or interaction state that does not need authored hierarchy.
+Important code:
 
-Relevant package:
-
-```ts
-import { World } from "@aura3d/engine/ecs";
-```
-
-## Bridge Rule
-
-Avoid two independent sources of truth for one transform. If physics drives a scene node, physics writes and scene reads. If editor commands drive a node, editor state writes and ECS systems observe or mirror intentionally.
-
-## V9 Runtime Shape
-
-`A3DScene` is a direct runtime scene surface for renderer usage:
-
-```ts
-import { A3DScene } from "@aura3d/engine/v9";
-
-const scene = new A3DScene();
-scene.addGeometry("mesh", geometry);
-scene.addMaterial("mat", material);
-scene.createRenderableMesh({ geometry: "mesh", material: "mat" });
-```
-
-This is useful when you need explicit renderer-facing resource libraries. Imported assets and editor scenes may still carry richer authored hierarchy before conversion.
-
-## Boundaries
-
-The current repo proves bounded scene, ECS, physics, editor, and renderer integration slices. It does not prove a large production editor where every object has a complete ECS mirror, a mature prefab system, or a full game-engine composition model.
+- `packages/ecs/src/index.ts`
+- `packages/ecs/tests/ecs.test.ts`
 
 ## Boundary
 
-The package boundary is that scene graph owns authored hierarchy while ECS owns scheduled data-oriented behavior.
+Renderer-facing examples mostly use scene graph structures. ECS is available for runtime organization, but docs should not imply every scene feature has an ECS-first authoring path unless that path exists in code and tests.
 
 ## Current Limits
 
-Current limits include full editor-scale prefab mirroring, complete ECS scene ownership, and large production composition workflows.
+Scene graph and ECS APIs are both available, but not every scene feature has a mirrored ECS authoring workflow. Claims should stay tied to package APIs, examples, and tests that exercise the specific path.
+
+## Current Limits
+
+- Scene and ECS APIs coexist, but not every scene feature has a complete ECS authoring workflow.

@@ -78,14 +78,14 @@ interface ExternalBaselineExecutionPlan {
     readonly editorEnv: "A3D_UNITY_EDITOR";
     readonly searchRootsEnv: "A3D_UNITY_SEARCH_ROOTS";
     readonly cliSmokeEnv: "A3D_RUN_UNITY_UNREAL_CLI_SMOKE";
-    readonly runnerPath: "fixtures/external-engine-baselines/external-parity/unity/V4ExternalVisualBaselineRunner.cs";
+    readonly runnerPath: "fixtures/external-engine-baselines/external-parity/unity/ExternalParityExternalVisualBaselineRunner.cs";
     readonly steps: readonly ExternalBaselineExecutionStep[];
   };
   readonly unreal: {
     readonly editorEnv: "A3D_UNREAL_EDITOR";
     readonly searchRootsEnv: "A3D_UNREAL_SEARCH_ROOTS";
     readonly cliSmokeEnv: "A3D_RUN_UNITY_UNREAL_CLI_SMOKE";
-    readonly runnerPath: "fixtures/external-engine-baselines/external-parity/unreal/v4_external_visual_baseline_runner.py";
+    readonly runnerPath: "fixtures/external-engine-baselines/external-parity/unreal/externalParity_external_visual_baseline_runner.py";
     readonly steps: readonly ExternalBaselineExecutionStep[];
   };
   readonly finalAuditCommands: readonly string[];
@@ -102,7 +102,7 @@ interface Aura3DReferenceScreenshot {
   readonly reason?: string;
 }
 
-export interface V4ExternalEngineBaselineKitReport {
+export interface ExternalParityExternalEngineBaselineKitReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly kitRoot: string;
@@ -156,7 +156,7 @@ const externalBaselineScenes: readonly ExternalBaselineSceneSlot[] = [
       unreal: "tests/reports/external-parity-unreal-product-visual-baseline.json",
     },
   },
-  externalSceneSlot("pbr-visual", "external-parity-pbr-visual-parity-scene", "external-parity-pbr-visual-parity-scene-v1", "pbr-visual-parity-scene.json", {
+  externalSceneSlot("pbr-visual", "external-parity-pbr-visual-parity-scene", "external-parity-pbr-visual-parity-scene", "pbr-visual-parity-scene.json", {
     width: 960,
     height: 540,
     nonBlankPixels: 30_001,
@@ -165,7 +165,7 @@ const externalBaselineScenes: readonly ExternalBaselineSceneSlot[] = [
     materialCount: 11,
     featureCount: 11,
   }),
-  externalSceneSlot("shadow-visual", "external-parity-shadow-visual-parity-scene", "external-parity-shadow-visual-parity-scene-v1", "shadow-visual-parity-scene.json", {
+  externalSceneSlot("shadow-visual", "external-parity-shadow-visual-parity-scene", "external-parity-shadow-visual-parity-scene", "shadow-visual-parity-scene.json", {
     width: 720,
     height: 480,
     nonBlankPixels: 60_001,
@@ -173,7 +173,7 @@ const externalBaselineScenes: readonly ExternalBaselineSceneSlot[] = [
     drawCalls: 5,
     shadowEvidencePixels: 701,
   }),
-  externalSceneSlot("hdr-render-target", "v4-hdr-render-target-visual-parity-scene", "v4-hdr-render-target-visual-parity-scene-v1", "hdr-render-target-visual-parity-scene.json", {
+  externalSceneSlot("hdr-render-target", "external-parity-hdr-render-target-visual-parity-scene", "external-parity-hdr-render-target-visual-parity-scene", "hdr-render-target-visual-parity-scene.json", {
     width: 720,
     height: 420,
     nonBlankPixels: 30_001,
@@ -181,7 +181,7 @@ const externalBaselineScenes: readonly ExternalBaselineSceneSlot[] = [
     drawCalls: 4,
     toneMappedPatches: 3,
   }),
-  externalSceneSlot("postprocess-suite", "external-parity-postprocess-suite-parity-scene", "external-parity-postprocess-suite-parity-scene-v1", "postprocess-suite-parity-scene.json", {
+  externalSceneSlot("postprocess-suite", "external-parity-postprocess-suite-parity-scene", "external-parity-postprocess-suite-parity-scene", "postprocess-suite-parity-scene.json", {
     width: 960,
     height: 540,
     nonBlankPixels: 30_001,
@@ -192,7 +192,7 @@ const externalBaselineScenes: readonly ExternalBaselineSceneSlot[] = [
   }),
 ];
 
-export function createV4ExternalEngineBaselineKit(root = process.cwd()): V4ExternalEngineBaselineKitReport {
+export function createExternalParityExternalEngineBaselineKit(root = process.cwd()): ExternalParityExternalEngineBaselineKitReport {
   const baselineExecutionPlan = externalBaselineExecutionPlan();
   const artifacts: BaselineKitArtifact[] = [
     ...externalBaselineScenes.map((scene) =>
@@ -212,23 +212,23 @@ export function createV4ExternalEngineBaselineKit(root = process.cwd()): V4Exter
     writeArtifact(root, "external-baseline-command-plan.json", "command-plan", ["unity", "unreal"], externalBaselineCommandPlanSource(baselineExecutionPlan)),
     writeArtifact(root, "unity/run-unity-baseline-captures.mjs", "unity-batch-runner", ["unity"], unityBatchCaptureRunnerSource()),
     writeArtifact(root, "unity/ProductVisualParityBaseline.cs", "unity-runner", ["unity"], unityRunnerSource()),
-    writeArtifact(root, "unity/V4ExternalVisualBaselineRunner.cs", "unity-runner", ["unity"], unityMultiSlotRunnerSource()),
-    writeArtifact(root, "unity/V4ExternalAssetImportWorkflowRunner.cs", "unity-runner", ["unity"], unityAssetImportWorkflowRunnerSource()),
+    writeArtifact(root, "unity/ExternalParityExternalVisualBaselineRunner.cs", "unity-runner", ["unity"], unityMultiSlotRunnerSource()),
+    writeArtifact(root, "unity/ExternalParityExternalAssetImportWorkflowRunner.cs", "unity-runner", ["unity"], unityAssetImportWorkflowRunnerSource()),
     writeArtifact(root, "unity/README.md", "readme", ["unity"], unityReadme()),
-    writeArtifact(root, "unity/v4-unity-baseline-render.template.json", "template", ["unity"], stableJson(baselineRenderTemplate("unity"))),
-    writeArtifact(root, "unity/v4-unity-asset-import-workflow.template.json", "template", ["unity"], stableJson(assetImportWorkflowTemplate("unity"))),
+    writeArtifact(root, "unity/external-parity-unity-baseline-render.template.json", "template", ["unity"], stableJson(baselineRenderTemplate("unity"))),
+    writeArtifact(root, "unity/external-parity-unity-asset-import-workflow.template.json", "template", ["unity"], stableJson(assetImportWorkflowTemplate("unity"))),
     ...externalBaselineScenes.map((scene) =>
-      writeArtifact(root, `unity/v4-unity-${scene.reportStem}-baseline.template.json`, "template", ["unity"], stableJson(baselineTemplate("unity", scene)))
+      writeArtifact(root, `unity/external-parity-unity-${scene.reportStem}-baseline.template.json`, "template", ["unity"], stableJson(baselineTemplate("unity", scene)))
     ),
     writeArtifact(root, "unreal/product_visual_parity_baseline.py", "unreal-runner", ["unreal"], unrealRunnerSource()),
-    writeArtifact(root, "unreal/v4_external_visual_baseline_runner.py", "unreal-runner", ["unreal"], unrealMultiSlotRunnerSource()),
-    writeArtifact(root, "unreal/v4_external_asset_import_workflow_runner.py", "unreal-runner", ["unreal"], unrealAssetImportWorkflowRunnerSource()),
+    writeArtifact(root, "unreal/externalParity_external_visual_baseline_runner.py", "unreal-runner", ["unreal"], unrealMultiSlotRunnerSource()),
+    writeArtifact(root, "unreal/externalParity_external_asset_import_workflow_runner.py", "unreal-runner", ["unreal"], unrealAssetImportWorkflowRunnerSource()),
     writeArtifact(root, "unreal/run-unreal-baseline-captures.mjs", "unreal-batch-runner", ["unreal"], unrealBatchCaptureRunnerSource()),
     writeArtifact(root, "unreal/README.md", "readme", ["unreal"], unrealReadme()),
-    writeArtifact(root, "unreal/v4-unreal-baseline-render.template.json", "template", ["unreal"], stableJson(baselineRenderTemplate("unreal"))),
-    writeArtifact(root, "unreal/v4-unreal-asset-import-workflow.template.json", "template", ["unreal"], stableJson(assetImportWorkflowTemplate("unreal"))),
+    writeArtifact(root, "unreal/external-parity-unreal-baseline-render.template.json", "template", ["unreal"], stableJson(baselineRenderTemplate("unreal"))),
+    writeArtifact(root, "unreal/external-parity-unreal-asset-import-workflow.template.json", "template", ["unreal"], stableJson(assetImportWorkflowTemplate("unreal"))),
     ...externalBaselineScenes.map((scene) =>
-      writeArtifact(root, `unreal/v4-unreal-${scene.reportStem}-baseline.template.json`, "template", ["unreal"], stableJson(baselineTemplate("unreal", scene)))
+      writeArtifact(root, `unreal/external-parity-unreal-${scene.reportStem}-baseline.template.json`, "template", ["unreal"], stableJson(baselineTemplate("unreal", scene)))
     ),
   ];
   const referenceScreenshots = new Map(externalBaselineScenes.map((scene) => [
@@ -245,7 +245,7 @@ export function createV4ExternalEngineBaselineKit(root = process.cwd()): V4Exter
     "external-engine-cli: Unity and Unreal must still be run on machines with licensed/editor installations before parity can be claimed.",
     "external-engine-render: baseline templates are not a substitute for real Unity/Unreal screenshots and metrics.",
   ];
-  const report: V4ExternalEngineBaselineKitReport = {
+  const report: ExternalParityExternalEngineBaselineKitReport = {
     ...baseReport(root, {
       ok: artifacts.every((artifact) => artifact.ok) && referenceViolations.length === 0,
       command: "pnpm verify:external-parity-external-engine-baselines",
@@ -528,7 +528,7 @@ function baselineTemplate(engine: "unity" | "unreal", scene: ExternalBaselineSce
     sceneDescriptorId: scene.id,
     sceneDescriptorVersion: scene.schemaVersion,
     descriptorSha256: "replace-with-sha256-of-scene-descriptor",
-    generatedBy: engine === "unity" ? "V4ExternalVisualBaselineRunner.cs" : "v4_external_visual_baseline_runner.py",
+    generatedBy: engine === "unity" ? "ExternalParityExternalVisualBaselineRunner.cs" : "externalParity_external_visual_baseline_runner.py",
     screenshotPath: `tests/reports/external-parity-${scene.reportStem}/${engine}-${scene.reportStem}-baseline.png`,
     screenshotSha256: "replace-with-sha256-of-screenshot",
     runnerEvidencePath: `tests/reports/external-parity-${scene.reportStem}/${engine}-${scene.reportStem}-baseline.png.evidence.json`,
@@ -557,7 +557,7 @@ function baselineRenderTemplate(engine: "unity" | "unreal") {
     ok: false,
     engine,
     sameSceneRenderWorkflowBaseline: true,
-    generatedBy: engine === "unity" ? "V4ExternalVisualBaselineRunner.cs" : "v4_external_visual_baseline_runner.py",
+    generatedBy: engine === "unity" ? "ExternalParityExternalVisualBaselineRunner.cs" : "externalParity_external_visual_baseline_runner.py",
     editorExecutableEnv: engine === "unity" ? "A3D_UNITY_EDITOR" : "A3D_UNREAL_EDITOR",
     cliSmokeEnv: "A3D_RUN_UNITY_UNREAL_CLI_SMOKE",
     cliSmokeReportPath: engine === "unity" ? "tests/reports/external-parity-unity-editor-cli-smoke.json" : "tests/reports/external-parity-unreal-editor-cli-smoke.json",
@@ -574,7 +574,7 @@ function baselineRenderTemplate(engine: "unity" | "unreal") {
       renderedFrameCaptured: false,
       cliSmokeRan: false,
     },
-    claimBoundary: "This template is not evidence. The real report must be produced by a Unity/Unreal editor run that opens the external baseline scene kit, builds at least one descriptor scene, captures a rendered frame, and then passes the V4 parity audits.",
+    claimBoundary: "This template is not evidence. The real report must be produced by a Unity/Unreal editor run that opens the external baseline scene kit, builds at least one descriptor scene, captures a rendered frame, and then passes the External parity parity audits.",
   };
 }
 
@@ -639,10 +639,10 @@ function externalBaselineExecutionPlan(): ExternalBaselineExecutionPlan {
     "pnpm audit:external-parity-postprocess-suite",
     "pnpm audit:external-parity-unity-unreal-parity",
     "pnpm audit:external-parity-production-readiness",
-    "pnpm audit:v4-broad-parity",
-    "pnpm audit:v4-completion",
+    "pnpm audit:external-parity-broad-parity",
+    "pnpm audit:external-parity-completion",
     "pnpm verify:external-parity-report-freshness",
-    "pnpm verify:v4",
+    "pnpm verify:external-parity",
   ] as const;
   return {
     claimBoundary: "This plan only makes Unity/Unreal baseline capture reproducible. Parity remains blocked until real Unity and Unreal editor runs produce screenshots and reports that pass the current Aura3D diff gates.",
@@ -650,14 +650,14 @@ function externalBaselineExecutionPlan(): ExternalBaselineExecutionPlan {
       editorEnv: "A3D_UNITY_EDITOR",
       searchRootsEnv: "A3D_UNITY_SEARCH_ROOTS",
       cliSmokeEnv: "A3D_RUN_UNITY_UNREAL_CLI_SMOKE",
-      runnerPath: "fixtures/external-engine-baselines/external-parity/unity/V4ExternalVisualBaselineRunner.cs",
+      runnerPath: "fixtures/external-engine-baselines/external-parity/unity/ExternalParityExternalVisualBaselineRunner.cs",
       steps: externalBaselineScenes.map((scene) => executionStep("unity", scene)),
     },
     unreal: {
       editorEnv: "A3D_UNREAL_EDITOR",
       searchRootsEnv: "A3D_UNREAL_SEARCH_ROOTS",
       cliSmokeEnv: "A3D_RUN_UNITY_UNREAL_CLI_SMOKE",
-      runnerPath: "fixtures/external-engine-baselines/external-parity/unreal/v4_external_visual_baseline_runner.py",
+      runnerPath: "fixtures/external-engine-baselines/external-parity/unreal/externalParity_external_visual_baseline_runner.py",
       steps: externalBaselineScenes.map((scene) => executionStep("unreal", scene)),
     },
     finalAuditCommands,
@@ -673,21 +673,21 @@ function executionStep(engine: "unity" | "unreal", scene: ExternalBaselineSceneS
     baselineKind: scene.baselineKind,
     descriptorPath,
     runnerPath: engine === "unity"
-      ? "fixtures/external-engine-baselines/external-parity/unity/V4ExternalVisualBaselineRunner.cs"
-      : "fixtures/external-engine-baselines/external-parity/unreal/v4_external_visual_baseline_runner.py",
+      ? "fixtures/external-engine-baselines/external-parity/unity/ExternalParityExternalVisualBaselineRunner.cs"
+      : "fixtures/external-engine-baselines/external-parity/unreal/externalParity_external_visual_baseline_runner.py",
     expectedScreenshotPath,
     targetReportPath,
     minimumEvidence: scene.minimumEvidence,
     captureInstruction: engine === "unity"
-      ? `Run V4ExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor "${descriptorPath}" --baseline-kind "${scene.baselineKind}" --screenshot "${expectedScreenshotPath}". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.`
-      : `Run v4_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor "${descriptorPath}" and screenshot path "${expectedScreenshotPath}". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.`,
+      ? `Run ExternalParityExternalVisualBaselineRunner.cs in a real Unity editor, preferably in batchmode with -executeMethod ExternalParityExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor "${descriptorPath}" --baseline-kind "${scene.baselineKind}" --screenshot "${expectedScreenshotPath}". The component path with SceneDescriptor/BaselineKind/ScreenshotPath is retained for manual editor capture.`
+      : `Run externalParity_external_visual_baseline_runner.py inside a real Unreal editor Python session with descriptor "${descriptorPath}" and screenshot path "${expectedScreenshotPath}". The runner requests a high-res screenshot at the descriptor resolution when the Unreal Python API supports it; otherwise capture the viewport manually to that PNG.`,
     reportCommand,
     validationCommands: validationCommandsForBaselineKind(scene.baselineKind),
   };
 }
 
 function validationCommandsForBaselineKind(baselineKind: ExternalBaselineSceneSlot["baselineKind"]): readonly string[] {
-  const shared = ["pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:v4-broad-parity"] as const;
+  const shared = ["pnpm audit:external-parity-unity-unreal-parity", "pnpm audit:external-parity-broad-parity"] as const;
   switch (baselineKind) {
     case "product-visual":
       return ["pnpm audit:external-parity-product-visual-parity", ...shared];
@@ -704,7 +704,7 @@ function validationCommandsForBaselineKind(baselineKind: ExternalBaselineSceneSl
 
 function externalBaselineCommandPlanSource(plan: ExternalBaselineExecutionPlan): string {
   return stableJson({
-    schemaVersion: "a3d-v4-external-baseline-command-plan-v1",
+    schemaVersion: "a3d-external-parity-external-baseline-command-plan",
     generatedBy: "tools/external-parity-external-engine-baselines/index.ts",
     claimBoundary: plan.claimBoundary,
     requiredEnvironment: {
@@ -733,7 +733,7 @@ function externalBaselineCommandPlanSource(plan: ExternalBaselineExecutionPlan):
     renderWorkflowBaselineReports: [
       {
         engine: "unity",
-        templatePath: "fixtures/external-engine-baselines/external-parity/unity/v4-unity-baseline-render.template.json",
+        templatePath: "fixtures/external-engine-baselines/external-parity/unity/external-parity-unity-baseline-render.template.json",
         targetReportPath: "tests/reports/external-parity-unity-baseline-render.json",
         cliSmokeReportPath: "tests/reports/external-parity-unity-editor-cli-smoke.json",
         schemaPath: "fixtures/external-engine-baselines/external-parity/baseline-render-report.schema.json",
@@ -749,7 +749,7 @@ function externalBaselineCommandPlanSource(plan: ExternalBaselineExecutionPlan):
       },
       {
         engine: "unreal",
-        templatePath: "fixtures/external-engine-baselines/external-parity/unreal/v4-unreal-baseline-render.template.json",
+        templatePath: "fixtures/external-engine-baselines/external-parity/unreal/external-parity-unreal-baseline-render.template.json",
         targetReportPath: "tests/reports/external-parity-unreal-baseline-render.json",
         cliSmokeReportPath: "tests/reports/external-parity-unreal-editor-cli-smoke.json",
         schemaPath: "fixtures/external-engine-baselines/external-parity/baseline-render-report.schema.json",
@@ -767,28 +767,28 @@ function externalBaselineCommandPlanSource(plan: ExternalBaselineExecutionPlan):
     assetImportWorkflowReports: [
       {
         engine: "unity",
-        templatePath: "fixtures/external-engine-baselines/external-parity/unity/v4-unity-asset-import-workflow.template.json",
-        runnerPath: "fixtures/external-engine-baselines/external-parity/unity/V4ExternalAssetImportWorkflowRunner.cs",
+        templatePath: "fixtures/external-engine-baselines/external-parity/unity/external-parity-unity-asset-import-workflow.template.json",
+        runnerPath: "fixtures/external-engine-baselines/external-parity/unity/ExternalParityExternalAssetImportWorkflowRunner.cs",
         targetReportPath: "tests/reports/external-parity-unity-asset-import-workflow.json",
         runnerEvidencePath: "tests/reports/external-parity-unity-asset-import-workflow.evidence.json",
         schemaPath: "fixtures/external-engine-baselines/external-parity/asset-import-workflow-report.schema.json",
         reportCommand: "node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unity tests/reports/external-parity-unity-asset-import-workflow.evidence.json tests/reports/external-parity-unity-asset-import-workflow.json",
         requiredBeforeClaim: [
-          "A real Unity editor opens an import project and imports the current V4 glTF/glb corpus sample or export fixture.",
+          "A real Unity editor opens an import project and imports the current External parity glTF/glb corpus sample or export fixture.",
           "The Unity import runner writes tests/reports/external-parity-unity-asset-import-workflow.evidence.json with project-open, import, material, texture, mesh, and animation metrics.",
           "Unsupported FBX/USD/USDZ/DAE formats remain recorded as external-conversion-required; OBJ is only a bounded native geometry-import path.",
         ],
       },
       {
         engine: "unreal",
-        templatePath: "fixtures/external-engine-baselines/external-parity/unreal/v4-unreal-asset-import-workflow.template.json",
-        runnerPath: "fixtures/external-engine-baselines/external-parity/unreal/v4_external_asset_import_workflow_runner.py",
+        templatePath: "fixtures/external-engine-baselines/external-parity/unreal/external-parity-unreal-asset-import-workflow.template.json",
+        runnerPath: "fixtures/external-engine-baselines/external-parity/unreal/externalParity_external_asset_import_workflow_runner.py",
         targetReportPath: "tests/reports/external-parity-unreal-asset-import-workflow.json",
         runnerEvidencePath: "tests/reports/external-parity-unreal-asset-import-workflow.evidence.json",
         schemaPath: "fixtures/external-engine-baselines/external-parity/asset-import-workflow-report.schema.json",
         reportCommand: "node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unreal tests/reports/external-parity-unreal-asset-import-workflow.evidence.json tests/reports/external-parity-unreal-asset-import-workflow.json",
         requiredBeforeClaim: [
-          "A real Unreal editor opens an import project and imports the current V4 glTF/glb corpus sample or export fixture.",
+          "A real Unreal editor opens an import project and imports the current External parity glTF/glb corpus sample or export fixture.",
           "The Unreal import runner writes tests/reports/external-parity-unreal-asset-import-workflow.evidence.json with project-open, import, material, texture, mesh, and animation metrics.",
           "Unsupported FBX/USD/USDZ/DAE formats remain recorded as external-conversion-required; OBJ is only a bounded native geometry-import path.",
         ],
@@ -834,7 +834,7 @@ function commandPlanCapture(engine: "unity" | "unreal", step: ExternalBaselineEx
 function baselineRunbookSource(plan: ExternalBaselineExecutionPlan): string {
   const unitySteps = plan.unity.steps.map((step, index) => runbookStep("Unity", index + 1, step)).join("\n");
   const unrealSteps = plan.unreal.steps.map((step, index) => runbookStep("Unreal", index + 1, step)).join("\n");
-  return `# V4 External Engine Baseline Runbook
+  return `# External parity External Engine Baseline Runbook
 
 ${plan.claimBoundary}
 
@@ -845,7 +845,7 @@ ${plan.claimBoundary}
 - If editor binaries are not in the default macOS locations, set \`${plan.unity.searchRootsEnv}\` to colon-separated roots that contain Unity Hub installs, version folders, or \`Unity.app\` bundles.
 - If editor binaries are not in the default macOS locations, set \`${plan.unreal.searchRootsEnv}\` to colon-separated roots that contain Epic Games installs, engine version folders, \`UnrealEditor-Cmd\`, or \`UnrealEditor.app\`.
 - Set \`${plan.unity.cliSmokeEnv}=true\` when you want the parity audit to verify the editor binaries.
-- Generate current Aura3D reference screenshots first with \`pnpm verify:v4\`.
+- Generate current Aura3D reference screenshots first with \`pnpm verify:external-parity\`.
 - Run \`pnpm audit:external-parity-external-evidence-readiness\` and use \`tests/reports/external-parity-external-evidence-missing-artifacts.md\` as the authoritative missing-artifact checklist before and after every capture session.
 - Cross-check \`tests/reports/external-parity-external-evidence-readiness.json\` under \`artifactChecklist\`; every Unity/Unreal item must have \`ready: true\` before any Unity/Unreal parity or replacement claim is allowed.
 - For CI capture sessions, use \`.github/workflows/external-parity-external-engine-baselines.yml\` on self-hosted runners labeled \`unity\` and/or \`unreal\`; it runs the same batch helpers and uploads the resulting reports/screenshots without weakening parity gates.
@@ -858,12 +858,12 @@ ${plan.claimBoundary}
 Runner: \`${plan.unity.runnerPath}\`
 Batch capture helper: \`fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs\`
 
-Generic render/workflow baseline template: \`fixtures/external-engine-baselines/external-parity/unity/v4-unity-baseline-render.template.json\`
+Generic render/workflow baseline template: \`fixtures/external-engine-baselines/external-parity/unity/external-parity-unity-baseline-render.template.json\`
 Target report: \`tests/reports/external-parity-unity-baseline-render.json\`
 CLI smoke report: \`tests/reports/external-parity-unity-editor-cli-smoke.json\`
 Write report after Unity slot reports pass: \`node fixtures/external-engine-baselines/external-parity/write-render-workflow-report.mjs unity tests/reports/external-parity-unity-baseline-render.json\`
-Asset import workflow template: \`fixtures/external-engine-baselines/external-parity/unity/v4-unity-asset-import-workflow.template.json\`
-Asset import workflow runner: \`fixtures/external-engine-baselines/external-parity/unity/V4ExternalAssetImportWorkflowRunner.cs\`
+Asset import workflow template: \`fixtures/external-engine-baselines/external-parity/unity/external-parity-unity-asset-import-workflow.template.json\`
+Asset import workflow runner: \`fixtures/external-engine-baselines/external-parity/unity/ExternalParityExternalAssetImportWorkflowRunner.cs\`
 Asset import workflow evidence sidecar: \`tests/reports/external-parity-unity-asset-import-workflow.evidence.json\`
 Write asset import workflow report after a real Unity import run: \`node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unity tests/reports/external-parity-unity-asset-import-workflow.evidence.json tests/reports/external-parity-unity-asset-import-workflow.json\`
 Generate all Unity visual slot captures and reports on a Unity-capable host: \`node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/unity-project\`
@@ -876,12 +876,12 @@ ${unitySteps}
 Runner: \`${plan.unreal.runnerPath}\`
 Batch capture helper: \`fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs\`
 
-Generic render/workflow baseline template: \`fixtures/external-engine-baselines/external-parity/unreal/v4-unreal-baseline-render.template.json\`
+Generic render/workflow baseline template: \`fixtures/external-engine-baselines/external-parity/unreal/external-parity-unreal-baseline-render.template.json\`
 Target report: \`tests/reports/external-parity-unreal-baseline-render.json\`
 CLI smoke report: \`tests/reports/external-parity-unreal-editor-cli-smoke.json\`
 Write report after Unreal slot reports pass: \`node fixtures/external-engine-baselines/external-parity/write-render-workflow-report.mjs unreal tests/reports/external-parity-unreal-baseline-render.json\`
-Asset import workflow template: \`fixtures/external-engine-baselines/external-parity/unreal/v4-unreal-asset-import-workflow.template.json\`
-Asset import workflow runner: \`fixtures/external-engine-baselines/external-parity/unreal/v4_external_asset_import_workflow_runner.py\`
+Asset import workflow template: \`fixtures/external-engine-baselines/external-parity/unreal/external-parity-unreal-asset-import-workflow.template.json\`
+Asset import workflow runner: \`fixtures/external-engine-baselines/external-parity/unreal/externalParity_external_asset_import_workflow_runner.py\`
 Asset import workflow evidence sidecar: \`tests/reports/external-parity-unreal-asset-import-workflow.evidence.json\`
 Write asset import workflow report after a real Unreal import run: \`node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unreal tests/reports/external-parity-unreal-asset-import-workflow.evidence.json tests/reports/external-parity-unreal-asset-import-workflow.json\`
 Generate all Unreal visual slot captures and reports on an Unreal-capable host: \`node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject\`
@@ -909,13 +909,13 @@ Before running the final parity audits, validate all written report/sidecar pair
 
 If the captures were produced by \`.github/workflows/external-parity-external-engine-baselines.yml\`, download the workflow artifacts and merge them into a checkout with:
 
-- \`node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits\`
+- \`node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits\`
 
 Use \`--dry-run\` first to list the report and screenshot files that would be restored. The ingester only accepts artifact contents under \`tests/reports/\` and \`fixtures/external-engine-baselines/external-parity/\`.
 
 Do not copy template JSON files into \`tests/reports\` as evidence. The report writer must consume a real PNG and matching \`.evidence.json\` sidecar produced by the external editor run, compute the descriptor, screenshot, and runner-evidence SHA-256 values, reject dimension/pixel-evidence/slot-metric mismatches, and the parity audits must diff that PNG against the current Aura3D reference screenshot.
 
-The final handoff must include the summary from \`tests/reports/external-parity-external-evidence-missing-artifacts.md\`. Completion remains blocked until that generated runbook reports \`Blocked artifacts: 0\` and \`pnpm audit:v4-completion\` reports all top-level criteria achieved.
+The final handoff must include the summary from \`tests/reports/external-parity-external-evidence-missing-artifacts.md\`. Completion remains blocked until that generated runbook reports \`Blocked artifacts: 0\` and \`pnpm audit:external-parity-completion\` reports all top-level criteria achieved.
 `;
 }
 
@@ -959,7 +959,7 @@ function baselineReportSchema() {
   const sceneVersions = externalBaselineScenes.map((scene) => scene.schemaVersion);
   return {
     $schema: "https://json-schema.org/draft/2020-12/schema",
-    title: "Aura3D V4 external engine visual baseline report",
+    title: "Aura3D External parity external engine visual baseline report",
     type: "object",
     additionalProperties: true,
     required: [
@@ -1093,7 +1093,7 @@ function metricMinimumProperties(scene: ExternalBaselineSceneSlot): Record<strin
 function baselineRenderReportSchema() {
   return {
     $schema: "https://json-schema.org/draft/2020-12/schema",
-    title: "Aura3D V4 external engine render/workflow baseline report",
+    title: "Aura3D External parity external engine render/workflow baseline report",
     type: "object",
     additionalProperties: true,
     required: [
@@ -1128,7 +1128,7 @@ function baselineRenderReportSchema() {
 function assetImportWorkflowReportSchema() {
   return {
     $schema: "https://json-schema.org/draft/2020-12/schema",
-    title: "Aura3D V4 external engine asset import workflow report",
+    title: "Aura3D External parity external engine asset import workflow report",
     type: "object",
     additionalProperties: true,
     required: [
@@ -1329,15 +1329,15 @@ const repoRoot = resolve(scriptDir, "../../../..");
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
 const unityEditor = valueAfter("--editor") || process.env.A3D_UNITY_EDITOR || "";
-const unityProjectPath = valueAfter("--project") || process.env.A3D_UNITY_PROJECT_PATH || resolve(repoRoot, ".tmp/v4-unity-baseline-project");
+const unityProjectPath = valueAfter("--project") || process.env.A3D_UNITY_PROJECT_PATH || resolve(repoRoot, ".tmp/external-parity-unity-baseline-project");
 const commandPlan = JSON.parse(readFileSync(resolve(kitRoot, "external-baseline-command-plan.json"), "utf8"));
 const unityCaptures = (commandPlan.captures || []).filter((capture) => capture.engine === "unity");
 const assetImportWorkflow = (commandPlan.assetImportWorkflowReports || []).find((report) => report.engine === "unity");
 const assetImportAssetPath = valueAfter("--asset") || process.env.A3D_EXTERNAL_ASSET_IMPORT_SAMPLE || resolve(repoRoot, "tests/assets/corpus/khronos/Fox/Fox.glb");
-const runnerSourcePath = resolve(scriptDir, "V4ExternalVisualBaselineRunner.cs");
-const runnerTargetPath = resolve(unityProjectPath, "Assets/Aura3D/V4ExternalBaselines/V4ExternalVisualBaselineRunner.cs");
-const assetImportRunnerSourcePath = resolve(scriptDir, "V4ExternalAssetImportWorkflowRunner.cs");
-const assetImportRunnerTargetPath = resolve(unityProjectPath, "Assets/Aura3D/V4ExternalBaselines/V4ExternalAssetImportWorkflowRunner.cs");
+const runnerSourcePath = resolve(scriptDir, "ExternalParityExternalVisualBaselineRunner.cs");
+const runnerTargetPath = resolve(unityProjectPath, "Assets/Aura3D/ExternalParityExternalBaselines/ExternalParityExternalVisualBaselineRunner.cs");
+const assetImportRunnerSourcePath = resolve(scriptDir, "ExternalParityExternalAssetImportWorkflowRunner.cs");
+const assetImportRunnerTargetPath = resolve(unityProjectPath, "Assets/Aura3D/ExternalParityExternalBaselines/ExternalParityExternalAssetImportWorkflowRunner.cs");
 
 const plannedCommands = [
   ...(!existsSync(resolve(unityProjectPath, "Assets")) ? [[unityEditor || "$A3D_UNITY_EDITOR", "-batchmode", "-quit", "-createProject", unityProjectPath]] : []),
@@ -1351,7 +1351,7 @@ const plannedCommands = [
     "-projectPath",
     unityProjectPath,
     "-executeMethod",
-    "V4ExternalVisualBaselineRunner.CaptureFromCommandLine",
+    "ExternalParityExternalVisualBaselineRunner.CaptureFromCommandLine",
     "--descriptor",
     resolve(repoRoot, capture.descriptorPath),
     "--baseline-kind",
@@ -1368,7 +1368,7 @@ const plannedCommands = [
     "-projectPath",
     unityProjectPath,
     "-executeMethod",
-    "V4ExternalAssetImportWorkflowRunner.CaptureFromCommandLine",
+    "ExternalParityExternalAssetImportWorkflowRunner.CaptureFromCommandLine",
     "--asset",
     assetImportAssetPath,
     "--evidence",
@@ -1415,7 +1415,7 @@ for (const capture of unityCaptures) {
     "-projectPath",
     unityProjectPath,
     "-executeMethod",
-    "V4ExternalVisualBaselineRunner.CaptureFromCommandLine",
+    "ExternalParityExternalVisualBaselineRunner.CaptureFromCommandLine",
     "--descriptor",
     resolve(repoRoot, capture.descriptorPath),
     "--baseline-kind",
@@ -1433,7 +1433,7 @@ run([
   "-projectPath",
   unityProjectPath,
   "-executeMethod",
-  "V4ExternalAssetImportWorkflowRunner.CaptureFromCommandLine",
+  "ExternalParityExternalAssetImportWorkflowRunner.CaptureFromCommandLine",
   "--asset",
   assetImportAssetPath,
   "--evidence",
@@ -1482,8 +1482,8 @@ const commandPlan = JSON.parse(readFileSync(resolve(kitRoot, "external-baseline-
 const unrealCaptures = (commandPlan.captures || []).filter((capture) => capture.engine === "unreal");
 const assetImportWorkflow = (commandPlan.assetImportWorkflowReports || []).find((report) => report.engine === "unreal");
 const assetImportAssetPath = valueAfter("--asset") || process.env.A3D_EXTERNAL_ASSET_IMPORT_SAMPLE || resolve(repoRoot, "tests/assets/corpus/khronos/Fox/Fox.glb");
-const runnerPath = resolve(scriptDir, "v4_external_visual_baseline_runner.py");
-const assetImportRunnerPath = resolve(scriptDir, "v4_external_asset_import_workflow_runner.py");
+const runnerPath = resolve(scriptDir, "externalParity_external_visual_baseline_runner.py");
+const assetImportRunnerPath = resolve(scriptDir, "externalParity_external_asset_import_workflow_runner.py");
 
 const captureCommands = unrealCaptures.map((capture) => [
   unrealEditor || "$A3D_UNREAL_EDITOR",
@@ -2306,8 +2306,8 @@ const auditCommands = [
   ["pnpm", ["audit:external-parity-pbr-gltf-readiness"]],
   ["pnpm", ["audit:external-parity-unity-unreal-parity"]],
   ["pnpm", ["audit:external-parity-production-readiness"]],
-  ["pnpm", ["audit:v4-broad-parity"]],
-  ["pnpm", ["audit:v4-completion"]],
+  ["pnpm", ["audit:external-parity-broad-parity"]],
+  ["pnpm", ["audit:external-parity-completion"]],
   ["pnpm", ["verify:external-parity-report-freshness"]],
 ];
 const auditResults = [];
@@ -2376,7 +2376,7 @@ using UnityEngine;
 public sealed class ProductVisualParityBaseline : MonoBehaviour
 {
     // Consumes product-visual-parity-scene.json from this directory and renders the
-    // deterministic V4 product scene. The generated report must be copied to
+    // deterministic External parity product scene. The generated report must be copied to
     // tests/reports/external-parity-unity-product-visual-baseline.json.
     public TextAsset SceneDescriptor;
     public string ScreenshotPath = "tests/reports/external-parity-product-visual-parity/unity-product-baseline.png";
@@ -2441,7 +2441,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-public sealed class V4ExternalVisualBaselineRunner : MonoBehaviour
+public sealed class ExternalParityExternalVisualBaselineRunner : MonoBehaviour
 {
     // Assign one of the generated *-scene.json descriptors and set BaselineKind
     // to product-visual, pbr-visual, shadow-visual, hdr-render-target, or postprocess-suite.
@@ -2458,27 +2458,27 @@ public sealed class V4ExternalVisualBaselineRunner : MonoBehaviour
         var baselineKind = CommandLineValue("--baseline-kind");
         if (string.IsNullOrEmpty(descriptorPath))
         {
-            throw new InvalidOperationException("Missing --descriptor <path> for V4 Unity baseline capture.");
+            throw new InvalidOperationException("Missing --descriptor <path> for External parity Unity baseline capture.");
         }
         if (string.IsNullOrEmpty(screenshotPath))
         {
-            throw new InvalidOperationException("Missing --screenshot <path> for V4 Unity baseline capture.");
+            throw new InvalidOperationException("Missing --screenshot <path> for External parity Unity baseline capture.");
         }
         if (!File.Exists(descriptorPath))
         {
-            throw new FileNotFoundException("V4 Unity baseline descriptor was not found.", descriptorPath);
+            throw new FileNotFoundException("External parity Unity baseline descriptor was not found.", descriptorPath);
         }
         var descriptor = JsonUtility.FromJson<BaselineSceneDescriptor>(File.ReadAllText(descriptorPath));
         var resolvedKind = string.IsNullOrEmpty(baselineKind) ? descriptor.baselineKind : baselineKind;
         CaptureDescriptor(descriptor, resolvedKind, screenshotPath);
-        Debug.Log("Aura3D V4 Unity baseline command-line capture completed for " + resolvedKind + ": " + screenshotPath);
+        Debug.Log("Aura3D External parity Unity baseline command-line capture completed for " + resolvedKind + ": " + screenshotPath);
     }
 
     private IEnumerator Start()
     {
         if (SceneDescriptor == null)
         {
-            throw new InvalidOperationException("Assign a generated V4 external baseline scene descriptor.");
+            throw new InvalidOperationException("Assign a generated External parity external baseline scene descriptor.");
         }
         var descriptor = JsonUtility.FromJson<BaselineSceneDescriptor>(SceneDescriptor.text);
         var baselineKind = string.IsNullOrEmpty(descriptor.baselineKind) ? BaselineKind : descriptor.baselineKind;
@@ -2514,7 +2514,7 @@ public sealed class V4ExternalVisualBaselineRunner : MonoBehaviour
             throw new InvalidOperationException("Synchronous Unity baseline capture wrote an empty PNG: " + screenshotPath);
         }
         WriteRunnerEvidence(descriptor, baselineKind, screenshotPath, targetWidth, targetHeight);
-        Debug.Log("Aura3D V4 external baseline screenshot captured: " + screenshotPath + " at " + targetWidth + "x" + targetHeight + " (" + screenshotBytes + " bytes)");
+        Debug.Log("Aura3D External parity external baseline screenshot captured: " + screenshotPath + " at " + targetWidth + "x" + targetHeight + " (" + screenshotBytes + " bytes)");
     }
 
     private static string CommandLineValue(string key)
@@ -2608,7 +2608,7 @@ public sealed class V4ExternalVisualBaselineRunner : MonoBehaviour
 
     private static void AddLighting(string baselineKind)
     {
-        var lightObject = new GameObject("v4-external-baseline-key-light");
+        var lightObject = new GameObject("external-parity-external-baseline-key-light");
         var light = lightObject.AddComponent<Light>();
         light.type = LightType.Directional;
         light.intensity = baselineKind == "hdr-render-target" ? 1.6f : 1.1f;
@@ -2745,7 +2745,7 @@ public sealed class V4ExternalVisualBaselineRunner : MonoBehaviour
             renderedFrameCaptured = true,
             cameraConfigured = true,
             metrics = metrics,
-            claimBoundary = "Runner evidence proves the Unity scaffold built the descriptor scene and synchronously wrote a rendered camera PNG. It is not parity evidence until the Node writer validates the PNG and V4 audits diff it against Aura3D."
+            claimBoundary = "Runner evidence proves the Unity scaffold built the descriptor scene and synchronously wrote a rendered camera PNG. It is not parity evidence until the Node writer validates the PNG and External parity audits diff it against Aura3D."
         };
         var evidencePath = screenshotPath + ".evidence.json";
         var directory = Path.GetDirectoryName(evidencePath);
@@ -2884,10 +2884,10 @@ public sealed class V4ExternalVisualBaselineRunner : MonoBehaviour
 }
 
 function unityAssetImportWorkflowRunnerSource(): string {
-  return `// Aura3D V4 Unity asset-import workflow evidence runner.
-// Copy this file into a real Unity project under Assets/Aura3D/V4ExternalBaselines.
+  return `// Aura3D External parity Unity asset-import workflow evidence runner.
+// Copy this file into a real Unity project under Assets/Aura3D/ExternalParityExternalBaselines.
 // Run in batchmode with:
-//   -executeMethod V4ExternalAssetImportWorkflowRunner.CaptureFromCommandLine --asset <path-to-gltf-or-glb> --evidence <repo>/tests/reports/external-parity-unity-asset-import-workflow.evidence.json
+//   -executeMethod ExternalParityExternalAssetImportWorkflowRunner.CaptureFromCommandLine --asset <path-to-gltf-or-glb> --evidence <repo>/tests/reports/external-parity-unity-asset-import-workflow.evidence.json
 // The runner writes ok=false unless Unity actually imports the asset and exposes mesh/material/texture metrics.
 
 #if UNITY_EDITOR
@@ -2897,7 +2897,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-public static class V4ExternalAssetImportWorkflowRunner
+public static class ExternalParityExternalAssetImportWorkflowRunner
 {
     public static void CaptureFromCommandLine()
     {
@@ -2905,7 +2905,7 @@ public static class V4ExternalAssetImportWorkflowRunner
         string evidencePath = Arg("--evidence");
         if (string.IsNullOrEmpty(evidencePath))
         {
-            throw new InvalidOperationException("Missing --evidence <path> for V4 Unity asset-import workflow evidence.");
+            throw new InvalidOperationException("Missing --evidence <path> for External parity Unity asset-import workflow evidence.");
         }
         Directory.CreateDirectory(Path.GetDirectoryName(evidencePath));
         var conversionRequired = new[] { "dae", "fbx", "usd", "usdz" };
@@ -2966,7 +2966,7 @@ public static class V4ExternalAssetImportWorkflowRunner
     private static string CopyIntoAssets(string sourcePath)
     {
         string extension = Path.GetExtension(sourcePath);
-        string target = "Assets/Aura3D/V4ExternalBaselines/Imported/v4-import-workflow" + extension;
+        string target = "Assets/Aura3D/ExternalParityExternalBaselines/Imported/external-parity-import-workflow" + extension;
         Directory.CreateDirectory(Path.GetDirectoryName(target));
         File.Copy(sourcePath, target, true);
         return target;
@@ -2981,8 +2981,8 @@ public static class V4ExternalAssetImportWorkflowRunner
 
 function unrealRunnerSource(): string {
   return `"""
-Compatibility wrapper for the Aura3D V4 Unreal product visual baseline.
-The maintained implementation is v4_external_visual_baseline_runner.py; this
+Compatibility wrapper for the Aura3D External parity Unreal product visual baseline.
+The maintained implementation is externalParity_external_visual_baseline_runner.py; this
 entry point delegates to it so the legacy product runner cannot drift into a
 blank or weaker capture path.
 """
@@ -2994,12 +2994,12 @@ import unreal
 SCENE_PATH = "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json"
 SCREENSHOT_PATH = "tests/reports/external-parity-product-visual-parity/unreal-product-baseline.png"
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals() else "fixtures/external-engine-baselines/external-parity/unreal"
-GENERIC_RUNNER = os.path.join(CURRENT_DIR, "v4_external_visual_baseline_runner.py")
+GENERIC_RUNNER = os.path.join(CURRENT_DIR, "externalParity_external_visual_baseline_runner.py")
 
 if not os.path.exists(GENERIC_RUNNER):
     raise RuntimeError("Missing maintained Unreal baseline runner: " + GENERIC_RUNNER)
 
-unreal.log("Delegating Aura3D V4 product visual baseline to " + GENERIC_RUNNER)
+unreal.log("Delegating Aura3D External parity product visual baseline to " + GENERIC_RUNNER)
 sys.argv = [GENERIC_RUNNER, SCENE_PATH, SCREENSHOT_PATH]
 runpy.run_path(GENERIC_RUNNER, run_name="__main__")
 `;
@@ -3007,7 +3007,7 @@ runpy.run_path(GENERIC_RUNNER, run_name="__main__")
 
 function unrealMultiSlotRunnerSource(): string {
   return `"""
-Generic Unreal Python scaffold for Aura3D V4 external visual baseline slots.
+Generic Unreal Python scaffold for Aura3D External parity external visual baseline slots.
 Run inside a real Unreal Editor Python session. This builds deterministic proxy
 geometry for the descriptor's baselineKind; the resulting screenshot/report are
 the evidence, not this scaffold.
@@ -3033,7 +3033,7 @@ with open(SCENE_PATH, "r", encoding="utf-8") as scene_file:
     scene = json.load(scene_file)
 
 baseline_kind = scene.get("baselineKind", "product-visual")
-unreal.EditorLevelLibrary.new_level("/Game/Aura3D_V4_" + baseline_kind.replace("-", "_"))
+unreal.EditorLevelLibrary.new_level("/Game/Aura3D_EXTERNAL_PARITY_" + baseline_kind.replace("-", "_"))
 
 def sanitize_asset_name(value):
     return "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in value)[:48] or "material"
@@ -3059,7 +3059,7 @@ def material_for_descriptor(descriptor):
     metallic = float(descriptor.get("metallic", 0.0))
     roughness = float(descriptor.get("roughness", 0.5))
     try:
-        package_path = "/Game/Aura3D_V4_ExternalBaseline/Materials"
+        package_path = "/Game/Aura3D_EXTERNAL_PARITY_ExternalBaseline/Materials"
         unreal.EditorAssetLibrary.make_directory(package_path)
         asset_name = "M_" + sanitize_asset_name(material_id)
         existing = unreal.EditorAssetLibrary.load_asset(package_path + "/" + asset_name + "." + asset_name)
@@ -3080,7 +3080,7 @@ def material_for_descriptor(descriptor):
         unreal.MaterialEditingLibrary.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
         unreal.MaterialEditingLibrary.recompile_material(material)
     except Exception as error:
-        unreal.log_warning("Aura3D V4 baseline material fallback for " + material_id + ": " + str(error))
+        unreal.log_warning("Aura3D External parity baseline material fallback for " + material_id + ": " + str(error))
         material = fallback
     MATERIAL_CACHE[material_id] = material
     return material
@@ -3162,7 +3162,7 @@ for light_index, light_color in enumerate([[1.0, 0.82, 0.62], [0.35, 0.62, 1.0],
 try:
     unreal.EditorLevelLibrary.set_level_viewport_camera_info(camera.get_actor_location(), camera.get_actor_rotation())
 except Exception as error:
-    unreal.log_warning("Aura3D V4 baseline could not set viewport camera automatically: " + str(error))
+    unreal.log_warning("Aura3D External parity baseline could not set viewport camera automatically: " + str(error))
 
 minimum = scene.get("minimumEvidence", {})
 viewport = scene.get("viewport", {})
@@ -3170,9 +3170,9 @@ width = int(minimum.get("width", viewport.get("width", 720)))
 height = int(minimum.get("height", viewport.get("height", 480)))
 try:
     unreal.AutomationLibrary.take_high_res_screenshot(width, height, SCREENSHOT_PATH)
-    unreal.log("Aura3D V4 external baseline screenshot requested for " + baseline_kind + ": " + SCREENSHOT_PATH + " at " + str(width) + "x" + str(height))
+    unreal.log("Aura3D External parity external baseline screenshot requested for " + baseline_kind + ": " + SCREENSHOT_PATH + " at " + str(width) + "x" + str(height))
 except Exception as error:
-    unreal.log_warning("Aura3D V4 baseline automatic screenshot failed; capture the viewport manually to " + SCREENSHOT_PATH + ": " + str(error))
+    unreal.log_warning("Aura3D External parity baseline automatic screenshot failed; capture the viewport manually to " + SCREENSHOT_PATH + ": " + str(error))
 screenshot_captured = False
 for _attempt in range(60):
     if os.path.exists(SCREENSHOT_PATH) and os.path.getsize(SCREENSHOT_PATH) > 0:
@@ -3180,7 +3180,7 @@ for _attempt in range(60):
         break
     time.sleep(1.0)
 if not screenshot_captured:
-    unreal.log_warning("Aura3D V4 baseline screenshot was not present after waiting; runner evidence will remain non-capturing until a real PNG exists at " + SCREENSHOT_PATH)
+    unreal.log_warning("Aura3D External parity baseline screenshot was not present after waiting; runner evidence will remain non-capturing until a real PNG exists at " + SCREENSHOT_PATH)
 evidence_path = SCREENSHOT_PATH + ".evidence.json"
 evidence_directory = os.path.dirname(evidence_path)
 if evidence_directory:
@@ -3210,22 +3210,22 @@ runner_evidence = {
     "renderedFrameCaptured": screenshot_captured,
     "cameraConfigured": True,
     "metrics": evidence_metrics,
-    "claimBoundary": "Runner evidence proves the Unreal scaffold built the descriptor scene and waited for a rendered PNG. It is not parity evidence until the Node writer validates the PNG and V4 audits diff it against Aura3D.",
+    "claimBoundary": "Runner evidence proves the Unreal scaffold built the descriptor scene and waited for a rendered PNG. It is not parity evidence until the Node writer validates the PNG and External parity audits diff it against Aura3D.",
 }
 with open(evidence_path, "w", encoding="utf-8") as evidence_file:
     json.dump(runner_evidence, evidence_file, indent=2)
     evidence_file.write("\\n")
-unreal.log("Aura3D V4 external baseline runner evidence written: " + evidence_path)
-unreal.log("Aura3D V4 external baseline scene built for " + baseline_kind + ". Expected screenshot: " + SCREENSHOT_PATH)
+unreal.log("Aura3D External parity external baseline runner evidence written: " + evidence_path)
+unreal.log("Aura3D External parity external baseline scene built for " + baseline_kind + ". Expected screenshot: " + SCREENSHOT_PATH)
 `;
 }
 
 function unrealAssetImportWorkflowRunnerSource(): string {
   return `"""
-Aura3D V4 Unreal asset-import workflow evidence runner.
+Aura3D External parity Unreal asset-import workflow evidence runner.
 
 Run inside a real Unreal Editor Python session, for example:
-  UnrealEditor-Cmd <project.uproject> -ExecutePythonScript="v4_external_asset_import_workflow_runner.py <asset-path> <repo>/tests/reports/external-parity-unreal-asset-import-workflow.evidence.json"
+  UnrealEditor-Cmd <project.uproject> -ExecutePythonScript="externalParity_external_asset_import_workflow_runner.py <asset-path> <repo>/tests/reports/external-parity-unreal-asset-import-workflow.evidence.json"
 
 The script writes ok=false unless Unreal actually imports the asset and exposes
 mesh/material/texture metrics. It allows Aura3D bounded native OBJ geometry
@@ -3238,7 +3238,7 @@ import unreal
 
 ASSET_PATH = sys.argv[1] if len(sys.argv) > 1 else ""
 EVIDENCE_PATH = sys.argv[2] if len(sys.argv) > 2 else "tests/reports/external-parity-unreal-asset-import-workflow.evidence.json"
-DESTINATION_PATH = "/Game/Aura3D/V4AssetImportWorkflow"
+DESTINATION_PATH = "/Game/Aura3D/ExternalParityAssetImportWorkflow"
 CONVERSION_REQUIRED_FORMATS = ["dae", "fbx", "usd", "usdz"]
 NATIVE_SUPPORTED_FORMATS = ["glb", "gltf", "obj"]
 
@@ -3306,7 +3306,7 @@ if directory:
 with open(EVIDENCE_PATH, "w", encoding="utf-8") as evidence_file:
     json.dump(evidence, evidence_file, indent=2)
     evidence_file.write("\\n")
-unreal.log("Aura3D V4 Unreal asset-import workflow evidence written: " + EVIDENCE_PATH)
+unreal.log("Aura3D External parity Unreal asset-import workflow evidence written: " + EVIDENCE_PATH)
 if not ok:
     raise RuntimeError("Unreal asset-import workflow did not expose enough imported mesh/material/texture metrics. Evidence written to " + EVIDENCE_PATH)
 `;
@@ -3315,7 +3315,7 @@ if not ok:
 function unityReadme(): string {
   return `# Unity External Visual Baselines
 
-This directory contains Unity baseline scaffolds for the Aura3D V4 external visual parity slots:
+This directory contains Unity baseline scaffolds for the Aura3D External parity external visual parity slots:
 
 - product visual: \`product-visual-parity-scene.json\` -> \`tests/reports/external-parity-unity-product-visual-baseline.json\`
 - PBR visual: \`pbr-visual-parity-scene.json\` -> \`tests/reports/external-parity-unity-pbr-visual-baseline.json\`
@@ -3327,14 +3327,14 @@ Use \`../RUNBOOK.md\` for the exact per-slot commands and validation sequence ge
 
 1. Create or open a Unity project.
 2. Add the relevant \`*-scene.json\` descriptor as a TextAsset.
-3. Add \`V4ExternalVisualBaselineRunner.cs\` for any visual slot and \`V4ExternalAssetImportWorkflowRunner.cs\` for asset-import workflow evidence. \`ProductVisualParityBaseline.cs\` is retained only as the explicit product-scene scaffold.
-4. Preferred automation: run Unity in batchmode with \`-executeMethod V4ExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor <descriptor-path> --baseline-kind <baseline-kind> --screenshot <screenshot-path>\`.
+3. Add \`ExternalParityExternalVisualBaselineRunner.cs\` for any visual slot and \`ExternalParityExternalAssetImportWorkflowRunner.cs\` for asset-import workflow evidence. \`ProductVisualParityBaseline.cs\` is retained only as the explicit product-scene scaffold.
+4. Preferred automation: run Unity in batchmode with \`-executeMethod ExternalParityExternalVisualBaselineRunner.CaptureFromCommandLine --descriptor <descriptor-path> --baseline-kind <baseline-kind> --screenshot <screenshot-path>\`.
 5. For the full Unity set, run \`node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/unity-project\`; use \`--dry-run\` first to inspect the exact commands.
 6. Manual fallback: run the component in a real Unity editor with \`SceneDescriptor\`, \`BaselineKind\`, and \`ScreenshotPath\` assigned from the template.
 7. Confirm the Unity runner wrote \`<screenshot-path>.evidence.json\` next to the screenshot.
-8. Run \`node fixtures/external-engine-baselines/external-parity/write-baseline-report.mjs unity <baseline-kind> <screenshot-path> <target-report-path>\`. The writer computes descriptor, screenshot, and runner-evidence SHA-256 values, validates descriptor dimensions, pixel evidence, and runner slot metrics, then writes the JSON report consumed by the V4 parity gates.
+8. Run \`node fixtures/external-engine-baselines/external-parity/write-baseline-report.mjs unity <baseline-kind> <screenshot-path> <target-report-path>\`. The writer computes descriptor, screenshot, and runner-evidence SHA-256 values, validates descriptor dimensions, pixel evidence, and runner slot metrics, then writes the JSON report consumed by the External parity parity gates.
 9. Run \`pnpm audit:external-parity-unity-unreal-parity\` and the relevant parity audit. The report is still rejected if the captured screenshot does not pass the current Aura3D diff thresholds.
-10. For asset-import workflow evidence, run \`V4ExternalAssetImportWorkflowRunner.CaptureFromCommandLine --asset <path-to-gltf-or-glb> --evidence <repo>/tests/reports/external-parity-unity-asset-import-workflow.evidence.json\`, then run \`node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unity tests/reports/external-parity-unity-asset-import-workflow.evidence.json tests/reports/external-parity-unity-asset-import-workflow.json\`.
+10. For asset-import workflow evidence, run \`ExternalParityExternalAssetImportWorkflowRunner.CaptureFromCommandLine --asset <path-to-gltf-or-glb> --evidence <repo>/tests/reports/external-parity-unity-asset-import-workflow.evidence.json\`, then run \`node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unity tests/reports/external-parity-unity-asset-import-workflow.evidence.json tests/reports/external-parity-unity-asset-import-workflow.json\`.
 
 Templates are not parity evidence until a real Unity editor run produces screenshots and metrics.
 `;
@@ -3343,7 +3343,7 @@ Templates are not parity evidence until a real Unity editor run produces screens
 function unrealReadme(): string {
   return `# Unreal External Visual Baselines
 
-This directory contains Unreal baseline scaffolds for the Aura3D V4 external visual parity slots:
+This directory contains Unreal baseline scaffolds for the Aura3D External parity external visual parity slots:
 
 - product visual: \`product-visual-parity-scene.json\` -> \`tests/reports/external-parity-unreal-product-visual-baseline.json\`
 - PBR visual: \`pbr-visual-parity-scene.json\` -> \`tests/reports/external-parity-unreal-pbr-visual-baseline.json\`
@@ -3354,13 +3354,13 @@ This directory contains Unreal baseline scaffolds for the Aura3D V4 external vis
 Use \`../RUNBOOK.md\` for the exact per-slot commands and validation sequence generated from the current descriptors.
 
 1. Open a real Unreal project with Python editor scripting enabled.
-2. Run \`v4_external_visual_baseline_runner.py <descriptor-path> <screenshot-path>\` for any visual slot. \`product_visual_parity_baseline.py\` is retained only as the explicit product-scene scaffold.
+2. Run \`externalParity_external_visual_baseline_runner.py <descriptor-path> <screenshot-path>\` for any visual slot. \`product_visual_parity_baseline.py\` is retained only as the explicit product-scene scaffold.
 3. For the full Unreal set, run \`node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject\`; use \`--dry-run\` first to inspect the exact commands.
 4. Capture the screenshot path named by the matching template.
 5. Confirm the Unreal runner wrote \`<screenshot-path>.evidence.json\` next to the screenshot.
-6. Run \`node fixtures/external-engine-baselines/external-parity/write-baseline-report.mjs unreal <baseline-kind> <screenshot-path> <target-report-path>\`. The writer computes descriptor, screenshot, and runner-evidence SHA-256 values, validates descriptor dimensions, pixel evidence, and runner slot metrics, then writes the JSON report consumed by the V4 parity gates.
+6. Run \`node fixtures/external-engine-baselines/external-parity/write-baseline-report.mjs unreal <baseline-kind> <screenshot-path> <target-report-path>\`. The writer computes descriptor, screenshot, and runner-evidence SHA-256 values, validates descriptor dimensions, pixel evidence, and runner slot metrics, then writes the JSON report consumed by the External parity parity gates.
 7. Run \`pnpm audit:external-parity-unity-unreal-parity\` and the relevant parity audit. The report is still rejected if the captured screenshot does not pass the current Aura3D diff thresholds.
-8. For asset-import workflow evidence, run \`v4_external_asset_import_workflow_runner.py <path-to-gltf-or-glb> <repo>/tests/reports/external-parity-unreal-asset-import-workflow.evidence.json\`, then run \`node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unreal tests/reports/external-parity-unreal-asset-import-workflow.evidence.json tests/reports/external-parity-unreal-asset-import-workflow.json\`.
+8. For asset-import workflow evidence, run \`externalParity_external_asset_import_workflow_runner.py <path-to-gltf-or-glb> <repo>/tests/reports/external-parity-unreal-asset-import-workflow.evidence.json\`, then run \`node fixtures/external-engine-baselines/external-parity/write-asset-import-workflow-report.mjs unreal tests/reports/external-parity-unreal-asset-import-workflow.evidence.json tests/reports/external-parity-unreal-asset-import-workflow.json\`.
 
 Templates are not parity evidence until a real Unreal editor run produces screenshots and metrics.
 `;
@@ -3368,7 +3368,7 @@ Templates are not parity evidence until a real Unreal editor run produces screen
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4ExternalEngineBaselineKit();
+  const report = createExternalParityExternalEngineBaselineKit();
   console.log(JSON.stringify({
     ok: report.ok,
     auditComplete: report.auditComplete,

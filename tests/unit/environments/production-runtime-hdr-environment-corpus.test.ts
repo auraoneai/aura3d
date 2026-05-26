@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV6EnvironmentCorpusSummary,
-  inspectV6HDR,
-  loadV6EnvironmentManifest
+  createProductionEnvironmentCorpusSummary,
+  inspectProductionHDR,
+  loadProductionEnvironmentManifest
 } from "../../../packages/environments/src/production-runtime";
 
-describe("V6 HDR environment corpus", () => {
+describe("Production HDR environment corpus", () => {
   it("pins real HDRI files for IBL and PMREM work", () => {
-    const manifest = loadV6EnvironmentManifest();
-    const summary = createV6EnvironmentCorpusSummary(manifest);
+    const manifest = loadProductionEnvironmentManifest();
+    const summary = createProductionEnvironmentCorpusSummary(manifest);
 
-    expect(manifest.schema).toBe("a3d-production-runtime-hdr-environment-corpus/v1");
+    expect(manifest.schema).toBe("a3d-production-runtime-hdr-environment-corpus");
     expect(summary.pass, summary.failures.join("\n")).toBe(true);
     expect(summary.environmentCount).toBeGreaterThanOrEqual(manifest.requirements.minimumRealHdriSources);
     expect(summary.existingEnvironmentCount).toBe(summary.environmentCount);
@@ -25,10 +25,10 @@ describe("V6 HDR environment corpus", () => {
   });
 
   it("reads Radiance RGBE headers from the real HDR files", () => {
-    const manifest = loadV6EnvironmentManifest();
+    const manifest = loadProductionEnvironmentManifest();
 
     for (const environment of manifest.environments) {
-      const inspection = inspectV6HDR(environment.localPath, environment.resolution);
+      const inspection = inspectProductionHDR(environment.localPath, environment.resolution);
       expect(inspection.hasRadianceHeader || inspection.hasFormatHeader).toBe(true);
       expect(inspection.declaredResolution).toEqual(environment.resolution);
       expect(inspection.dataBytes).toBe(environment.bytes);

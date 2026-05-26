@@ -29,10 +29,10 @@ Every execution pass starts with exactly these commands:
 ~~~bash
 git status --short
 git log -1 --oneline
-pgrep -af "playwright|vite|v9-advanced|advanced-examples-gallery|tsx.*v9|vitest|pnpm.*v9"
+pgrep -af "playwright|vite|threejs-parity-advanced|advanced-examples-gallery|tsx.*threejs parity|vitest|pnpm.*threejs parity"
 ~~~
 
-If matching Playwright/Vite/Vitest/pnpm/v9 processes belong to /Users/gurbakshchahal/Aura3D, stop only those A3D-owned processes and continue. Do not kill unrelated processes from other repos.
+If matching Playwright/Vite/Vitest/pnpm/threejs-parity processes belong to /Users/gurbakshchahal/Aura3D, stop only those A3D-owned processes and continue. Do not kill unrelated processes from other repos.
 
 ## 0B. Worktree Safety
 
@@ -153,13 +153,13 @@ This checkpoint records completed work with current evidence. It does not conver
 Completed current-branch organization and route-health work:
 
 - [x] Branch execution source consolidated to `master`; deleted/old branches, wrong-branch stashes, and stale backup folders are not source truth.
-- [x] Root localhost registry pruned to current live/showcase routes instead of exposing the historical V6/V7/V8 blocked backlog as if it were current work.
+- [x] Root localhost registry pruned to current live/showcase routes instead of exposing the historical Production/RuntimeParity/CurrentRoutes blocked backlog as if it were current work.
 - [x] Root registry smoke verified `13` visible live links with `0` blocked/internal cards exposed on `/`.
 - [x] The seven user-reported broken authored `wow-*` URLs were remapped to current existing GLB fixtures instead of missing/stale asset paths.
 - [x] Direct runtime smoke cleared the seven reported authored route URLs: `wow-kira-ik-room`, `wow-orbital-fleet`, `wow-crystal-cavern`, `wow-robot-parade`, `wow-particle-vortex`, `wow-ocean-temple`, and `wow-quantum-stage`.
 - [x] All twelve current authored `wow-*` routes runtime-smoke pass with running status, nonzero draw calls, and no page-level load failure.
-- [x] V9 Advanced Examples Gallery home runtime-smoke pass with `10` current route cards.
-- [x] All ten V9 advanced gallery hash routes runtime-smoke pass from the current server.
+- [x] ThreejsParity Advanced Examples Gallery home runtime-smoke pass with `10` current route cards.
+- [x] All ten ThreejsParity advanced gallery hash routes runtime-smoke pass from the current server.
 - [x] Smart City current screenshot review is quality-pass: authored city asset is visible, detailed, framed, and not blocked by the prior Product/Data issue.
 - [x] Reactor Post current screenshot review is quality-pass: authored reactor scene is visible, readable, and framed with acceptable post-processing disclosure.
 - [x] Current source passes `pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false` after the latest route-registry and authored-route fixes.
@@ -168,8 +168,8 @@ Completed current-branch organization and route-health work:
 Open current-branch completion items:
 
 - [x] Regenerate stale or deleted report artifacts under `tests/reports/*` from the current source tree.
-- [x] Rerun the full V9 advanced gallery capture/review/audit pipeline after report regeneration so JSON, PNGs, visual review, and audit hashes are current.
-- [x] Produce focused screenshot evidence for legacy route-health surfaces if any historical V8/V7/V6 route remains visible or is reintroduced.
+- [x] Rerun the full ThreejsParity advanced gallery capture/review/audit pipeline after report regeneration so JSON, PNGs, visual review, and audit hashes are current.
+- [x] Produce focused screenshot evidence for legacy route-health surfaces if any historical CurrentRoutes/RuntimeParity/Production route remains visible or is reintroduced.
 - [x] Commit the current registry/source fixes after the remaining report and visual evidence is current.
 
 ## 1A. Current Execution Mode
@@ -517,9 +517,9 @@ The work must happen in this order. A later phase may start only when it does no
 | P5 | Active visual regression recovery | Product Configurator, Data Galaxy, Reactor Post. | Broken screenshots are mapped to source owners and fixed without asset replacement or hiding. |
 | P6 | Remaining route remediation | Digital Twin, Robotics Lab, Smart City, Fog Cathedral, Physics Playground, Water Lab, Ocean Observatory. | Every route has file-owned fixes, current runtime evidence, and honest known gaps. |
 | P7 | Core platform parity backlog | Reflection/refraction, postprocess composer, material presets, procedural helpers, WebGPU/compute boundaries, docs/examples. | Reusable package APIs, tests, examples, reports, or explicit unsupported status. |
-| P8 | Naming and repository taxonomy migration | Remove turn-history `v1..v10` naming from active product taxonomy without breaking routes, reports, exports, fixtures, or docs. | Checked-in migration map, aliases, and alias tests pass before renames. |
+| P8 | Naming and repository taxonomy migration | Remove turn-history version naming from active product taxonomy without breaking routes, reports, exports, fixtures, or docs. | Checked-in migration map, aliases, and alias tests pass before renames. |
 | P9 | Cinematic / AI-native tier | Cinematic camera, timeline, render layers, MaterialX/USD strategy, character systems, prompt-to-scene metadata, review workflow. | Implemented as reusable systems with evidence, or kept non-claiming. |
-| P10 | Final acceptance | Ten route visual review, report audit, screenshots, run docs, final output. | `pnpm v9:advanced-gallery:review` reports `accepted (10/10 accepted)`. |
+| P10 | Final acceptance | Ten route visual review, report audit, screenshots, run docs, final output. | `pnpm threejs-parity:advanced-gallery:review` reports `accepted (10/10 accepted)`. |
 
 ## 5. Required Workflow For Every Task
 
@@ -549,13 +549,13 @@ Purpose: stop false progress. Tooling must make it impossible to claim acceptanc
 | ID | Status | Task | Files To Modify | Required Fix | Tests / Evidence |
 | --- | --- | --- | --- | --- | --- |
 | P0.1 | Required | Screenshot discipline | `execute.md`, `tests/browser/advanced-examples-gallery.spec.ts`, `tools/advanced-gallery-visual-review/index.ts` | Screenshots are verification only after a named source-owner fix. Focused route captures must not look like complete gallery runs. | Typecheck; review output clearly distinguishes partial/focused artifacts from full gallery evidence. |
-| P0.2 | Current-branch review required | Visual regression inventory | `tools/advanced-gallery-visual-review/*`, `tests/reports/v9/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the current-branch source-owner review before preserving. |
+| P0.2 | Current-branch review required | Visual regression inventory | `tools/advanced-gallery-visual-review/*`, `tests/reports/threejs-parity/advanced-examples-gallery/visual-regression-inventory.json` | Historical screenshot inventories may exist, but they are forensic evidence only. Do not use Product/Data inventories, hashes, or recovered labels as active proof. | Review inventory/tool changes through the current-branch source-owner review before preserving. |
 | P0.3 | Required | Review gate hardening | `tools/advanced-gallery-visual-review/index.ts`, tests under `tests/unit/tools/*` | Block accepted state for stale hashes, partial route reports, missing direct-review notes, missing known-gaps notes, asset/scaffold dominance, material failure, crop artifacts, bad cadence, or generated-asset overclaim. | Unit tests prove each blocker. |
 | P0.4 | Done / Non-Promotional Audit | Report audit hardening | `tools/advanced-gallery-report-audit/index.ts`, tests under `tests/unit/tools/*` | Audit route reports for reusable-system evidence, unsupported disclosures, screenshot hashes, image stats, material/texture evidence, generated-asset disclosure, CPU/GPU mode, performance, and full-gallery evidence mode. | Audit ignores non-route support reports such as `visual-regression-inventory.json`, blocks focused/partial route reports, and does not mark routes accepted. |
 | P0.5 | Required | No-regression workflow | `tests/browser/advanced-examples-gallery.spec.ts`, review tool, report audit | Any renderer/material/loader/environment/postprocess/gallery-shell change requires focused tests before one capture and full sweep only after focused gates pass. | Tooling or docs enforce sequence; no repeated screenshot loops. |
 | P0.6 | Current-branch review required | Partial report folder blocker | `package.json`, `tools/advanced-gallery-report-audit/index.ts`, `tools/advanced-gallery-visual-review/index.ts`, `tests/browser/advanced-examples-gallery.spec.ts` | Focused route captures must not leave a report folder that audit/review can mistake for complete ten-route evidence. Audit must require exactly the expected ten route JSON reports before full-gallery claims. | Review audit/review/test changes through the current-branch source-owner review before preserving. |
 | P0.7 | Required | Route-local hack containment | `apps/advanced-examples-gallery/src/main.ts`, `sceneBuilders.ts`, `authoredLayer.ts`, `galleryRoutePolicies.ts`, Product/Data route modules | Route-specific camera, postprocess, visibility, product policy, and data density logic must move out of shared orchestration. `main.ts` stays renderer/shell orchestration. | Typecheck, route module tests, focused route tests, and no new route-specific `if` branches without PRD owner. |
-| P0.8 | Done | Package script accountability | `package.json` | Keep scripts for full gallery capture, review, audit, and pipeline explicit. The audit script must be non-promotional and pipeline must run capture, review, and audit in order. | `package.json` exposes `v9:advanced-gallery:audit` and `v9:advanced-gallery:pipeline`; pipeline runs capture, review, and audit in order. |
+| P0.8 | Done | Package script accountability | `package.json` | Keep scripts for full gallery capture, review, audit, and pipeline explicit. The audit script must be non-promotional and pipeline must run capture, review, and audit in order. | `package.json` exposes `threejs-parity:advanced-gallery:audit` and `threejs-parity:advanced-gallery:pipeline`; pipeline runs capture, review, and audit in order. |
 | P0.9 | Required | Current-route source-owner map | `execute.md`, route modules, focused tests | Map Product/Data and the remaining eight routes to current branch owner files, visible blockers, first source-owned fixes, focused tests, and allowed visual verification. This is not a stop gate; implementation continues route by route. | Source changes proceed after a named owner task/write set is selected from the current branch. |
 
 P0 acceptance checklist:
@@ -615,7 +615,7 @@ Purpose: stop rebuilding visual environments inside each route. A3D needs reusab
 | P3.1 | Required | Environment preset API | `packages/rendering/src/EnvironmentPlatform.ts`, future `EnvironmentPreset.ts`, `packages/environments/*`, gallery environment adapters | One-call presets for studio, outdoor, city, warehouse, deep-space, ocean, and clean-void with lighting/background/ground options. | Preset tests, minimal examples, screenshots, route reports. |
 | P3.2 | Required | Cubemap background | `EnvironmentBackgroundPass.ts`, `EnvironmentBackgroundResources.ts`, `Renderer.ts`, `ForwardPass.ts`, `ShaderLibrary.ts` | Six-face cubemap background with camera-correct inverse-view-projection sampling. | Browser pixel proof and Data background-on/off evidence. |
 | P3.3 | Required | Equirect background | Same renderer background files plus HDR/RGBE loader path | Panorama background rendering with rotation/intensity/output color controls. | Browser pixel proof and Product background-on/off evidence. |
-| P3.4 | Required | Public RGBE/HDR loader | `packages/rendering/src/production-runtime/environment/HDRLoader.ts`, `PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | Public `loadV6HdrEnvironment(...)` path with real Radiance/RGBE decode, resource creation, disposal, malformed scanline rejection. | HDR loader tests and focused gallery evidence. |
+| P3.4 | Required | Public RGBE/HDR loader | `packages/rendering/src/production-runtime/environment/HDRLoader.ts`, `PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | Public `loadProductionHdrEnvironment(...)` path with real Radiance/RGBE decode, resource creation, disposal, malformed scanline rejection. | HDR loader tests and focused gallery evidence. |
 | P3.5 | Required | PMREM roughness proof | PMREM files, `TextureBinding.ts`, `MaterialBinding.ts`, `ForwardPass.ts`, `Material.ts` | Cube-only sampled environment binding exists, but Three.js-class PMREM parity needs roughness-specific visual pixel proof. | Unit tests plus WebGL2/browser material-response proof. |
 | P3.6 | Required | Renderer fog | `EnvironmentPlatform.ts`, `Renderer.ts`, `ForwardPass.ts`, shader chunks | Linear, exponential, exponential-squared fog uniforms and fragment blending for PBR paths. | Fog on/off delta evidence for Fog Cathedral/Robotics; no volumetric overclaim. |
 | P3.7 | Required | Product studio stage | `EnvironmentPlatform.ts`, `LightingRig.ts`, `LightingDefaults.ts`, shadow/contact helpers | Reusable premium product stage with cove/void option, controlled key/fill/rim/softbox lighting, contact grounding or explicit shadow limitation. No gray slab/crop artifact. | Unit tests and Product reference harness. |
@@ -675,9 +675,9 @@ These items are existing platform progress and must not be broken while recoveri
 | Renderer fog platform | `packages/rendering/src/EnvironmentPlatform.ts`, `ForwardPass.ts`, `Renderer.ts`, shader files, gallery fog evidence | Linear/exponential fog profile math, uniforms, PBR fragment blending, fog on/off evidence. | Volumetric raymarching, shadowed light volumes, weather, god rays. |
 | Cubemap/equirect background rendering | `EnvironmentBackgroundPass.ts`, `EnvironmentBackgroundResources.ts`, `ForwardPass.ts`, `Renderer.ts`, `ShaderLibrary.ts`, gallery background evidence | Renderer-owned cubemap/equirect background pass, inverse-view-projection sampling, background-on/off proof. | Dynamic cube cameras, reflection probes, physical sky, EXR. |
 | Cube-only sampled environment binding | `TextureBinding.ts`, `Material.ts`, `MaterialBinding.ts`, `ForwardPass.ts` | `textureCube` schema, cube texture validation, PMREM/environment cube binding into PBR shaders. | Three.js PMREM visual parity, SSR, planar reflection/refraction. |
-| Public RGBE/HDR loader | `packages/rendering/src/production-runtime/environment/HDRLoader.ts`, `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | `loadV6HdrEnvironment(...)`, Radiance/RGBE decode, malformed scanline rejection, renderer-ready resources. | EXR or broad HDR format support. |
+| Public RGBE/HDR loader | `packages/rendering/src/production-runtime/environment/HDRLoader.ts`, `packages/rendering/src/production-runtime/PBRHDRPipeline.ts`, `packages/rendering/src/index.ts` | `loadProductionHdrEnvironment(...)`, Radiance/RGBE decode, malformed scanline rejection, renderer-ready resources. | EXR or broad HDR format support. |
 | Evidence/report audit | `tools/advanced-gallery-report-audit/index.ts` | Structural audit for reusable evidence, unsupported disclosures, performance, screenshot hashes, image stats. | Acceptance decision. |
-| Environment registry/corpus readiness | `packages/environments/src/EnvironmentRegistry.ts`, `HDRIEnvironment.ts`, `EnvironmentPreview.ts`, `production-runtime/V6EnvironmentCorpus.ts`, fixtures manifests | Reusable environment manifests, HDRI diagnostics, probe preview metadata. | Route visual acceptance or full environment parity. |
+| Environment registry/corpus readiness | `packages/environments/src/EnvironmentRegistry.ts`, `HDRIEnvironment.ts`, `EnvironmentPreview.ts`, `production-runtime/ProductionEnvironmentCorpus.ts`, fixtures manifests | Reusable environment manifests, HDRI diagnostics, probe preview metadata. | Route visual acceptance or full environment parity. |
 
 Preservation checklist:
 
@@ -787,9 +787,9 @@ This section lists the concrete files that must be created, modified, or promote
 
 Package script checklist carried forward:
 
-- [x] `v9:advanced-gallery:audit` runs the structural audit and remains non-promotional.
-- [x] `v9:advanced-gallery:pipeline` runs full capture, review, and audit in order.
-- [x] Decide whether the heavy advanced-gallery pipeline belongs in aggregate `pnpm v9`.
+- [x] `threejs-parity:advanced-gallery:audit` runs the structural audit and remains non-promotional.
+- [x] `threejs-parity:advanced-gallery:pipeline` runs full capture, review, and audit in order.
+- [x] Decide whether the heavy advanced-gallery pipeline belongs in aggregate `pnpm threejs parity`.
 - [x] Keep `test:visual` documented as generic visual baseline, not advanced gallery acceptance.
 
 Generated asset tool instructions:
@@ -878,7 +878,7 @@ This carries forward the old F-004 and F-005 instructions.
 
 Partial report folder problem:
 
-- A focused Playwright run can leave `tests/reports/v9/advanced-examples-gallery/` containing only a subset of route artifacts.
+- A focused Playwright run can leave `tests/reports/threejs-parity/advanced-examples-gallery/` containing only a subset of route artifacts.
 - Review/audit tooling must not treat that partial folder as full-gallery evidence.
 - The audit must require exactly the ten expected route JSON reports before release-state claims.
 - Review must clearly report missing route artifacts.
@@ -886,8 +886,8 @@ Partial report folder problem:
 
 Required package/report tasks:
 
-- [x] `package.json`: keep or add `v9:advanced-gallery:audit`.
-- [x] `package.json`: keep or add `v9:advanced-gallery:pipeline` that runs capture, review, and audit in order.
+- [x] `package.json`: keep or add `threejs-parity:advanced-gallery:audit`.
+- [x] `package.json`: keep or add `threejs-parity:advanced-gallery:pipeline` that runs capture, review, and audit in order.
 - [x] `tools/advanced-gallery-report-audit/index.ts`: fail partial report folders.
 - [x] `tools/advanced-gallery-report-audit/index.ts`: require exactly the ten expected route JSON reports.
 - [x] `tools/advanced-gallery-report-audit/index.ts`: require current full, viewport, and hero PNG artifacts to exist on disk and match the route JSON hashes before audit evidence counts as current.
@@ -1157,12 +1157,12 @@ Files/directories to inspect and fix:
 
 Current cleanup progress:
 
-- [x] The root route registry no longer exposes old blocked V6/V7/V8 backlog cards as the default localhost experience.
+- [x] The root route registry no longer exposes old blocked Production/RuntimeParity/CurrentRoutes backlog cards as the default localhost experience.
 - [x] The seven user-reported authored `wow-*` routes no longer fail from missing/stale GLB asset paths in runtime smoke.
 - [x] `wow-kira-ik-room` is no longer shown as a broken Kira asset route; it is mapped to a current Robot Expressive authored route with runtime draw evidence.
 - [x] `wow-particle-vortex` resolves through the current Antique Camera Interior asset mapping instead of an absent asset key.
 - [x] Console/page load failure smoke is clear for the current authored route set covered by the route-health pass.
-- [x] Focused screenshot artifacts for current visible route-health surfaces were regenerated; no historical V8/V7/V6 route remains visible on `/`.
+- [x] Focused screenshot artifacts for current visible route-health surfaces were regenerated; no historical CurrentRoutes/RuntimeParity/Production route remains visible on `/`.
 - [x] DPR/backing-size and motion evidence now have explicit route-health artifacts beyond runtime smoke.
 
 Required checklist:
@@ -1227,7 +1227,7 @@ Do not imply Three.js-class environment parity unless a reusable renderer/runtim
 | Cubemap renderer | Renderer path and focused proof exist. | Keep bounded to static cubemap background until dynamic cube camera/probes exist. |
 | Equirectangular projection | Renderer path and focused proof exist. | Keep bounded to panorama background until physical sky/reflection probes exist. |
 | PMREM roughness IBL | Binding exists; visual parity still bounded. | Add roughness-specific material-response pixel proof before Three.js PMREM parity claim. |
-| RGBE `.hdr` parser | Public V6 Radiance/RGBE path exists. | Keep EXR/broad HDR claims out unless implemented. |
+| RGBE `.hdr` parser | Public Production Radiance/RGBE path exists. | Keep EXR/broad HDR claims out unless implemented. |
 | EXR parser | Missing/diagnostic-only. | Implement real EXR decode or document unsupported. |
 | Atmospheric scattering shader | Missing. | Implement Rayleigh/Mie-style sky shader or keep unsupported. |
 | Analytical studio box | Not production-grade. | Promote product studio to reusable cove/softbox helper with tests. |
@@ -1246,7 +1246,7 @@ Do not imply Three.js-class environment parity unless a reusable renderer/runtim
 
 ## 17. Phase P8 - Repository Naming And Product Taxonomy Migration
 
-The codebase contains many version-turn names such as `v1`, `v2`, `v3`, `v4`, `three-compat`, `production-runtime`, `v7`, `v8`, `v9`, and `v10`. Those names are historical breadcrumbs, not product taxonomy.
+The codebase contains historical turn names that were useful during earlier migrations but are not product taxonomy. Active names should use the actual capability or evidence context.
 
 This migration is required, but it must not be a blind rename. Many versioned paths are load-bearing: package export maps, TypeScript imports, app route URLs, fixture fetch URLs, Playwright report paths, screenshot hashes, generated JSON reports, docs links, and historical report readers.
 
@@ -1274,8 +1274,8 @@ Required phases:
 3. Define contextual target names before renaming:
    - `advanced-examples-gallery` -> `advanced-examples-gallery` or `cinematic-examples-gallery`
    - `production-runtime/environment` -> `hdr-environment` or `environment-lighting`
-   - `v8-animation-*` -> capability-based animation names
-   - `v10/superiority-audit` -> `claim-defense-audit` or `release-claim-audit`
+   - historical animation route names -> capability-based animation names
+   - superiority audit report paths -> `claim-defense-audit` or `release-claim-audit`
 4. Add compatibility shims where old paths may still be referenced:
    - route redirects or index aliases
    - package export aliases with deprecation comments
@@ -1298,7 +1298,7 @@ Naming acceptance checklist:
 - [x] Old public URLs or package exports still work through aliases/redirects or are intentionally documented as removed.
 - [x] Generated evidence paths do not break visual-review/report-audit tooling.
 - [x] Alias tests cover browser routes, package exports, fixture URLs, and historical report readers before old names are removed.
-- [x] `rg "v[0-9]"` only finds classified active aliases or archival records.
+- [x] `rg "version-style"` only finds classified active aliases or archival records.
 
 Completed naming/taxonomy subtasks:
 
@@ -1504,22 +1504,22 @@ A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/a
 Full gallery sweep, only after focused gates pass:
 
 ```bash
-A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm v9:advanced-gallery
-pnpm v9:advanced-gallery:review
+A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm threejs-parity:advanced-gallery
+pnpm threejs-parity:advanced-gallery:review
 ```
 
 Report audit:
 
 ```bash
-pnpm v9:advanced-gallery:review
+pnpm threejs-parity:advanced-gallery:review
 node tools/advanced-gallery-report-audit/index.ts
 ```
 
 Preferred report audit and pipeline commands when scripts exist:
 
 ```bash
-pnpm v9:advanced-gallery:audit
-pnpm v9:advanced-gallery:pipeline
+pnpm threejs-parity:advanced-gallery:audit
+pnpm threejs-parity:advanced-gallery:pipeline
 ```
 
 Renderer-focused gates after renderer edits:
@@ -1543,7 +1543,7 @@ pnpm exec tsc -p tsconfig.build.json --noEmit --pretty false
 A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm advanced-gallery
 pnpm advanced-gallery:review
 pnpm advanced-gallery:audit
-pnpm v10
+pnpm superiority
 ```
 
 Current state inspection:
@@ -1609,7 +1609,7 @@ A route is accepted only when all gates pass:
 - It has foreground, midground, background, focal point, lighting hierarchy, material contrast, readable silhouettes, and visible depth/scale.
 - It avoids debug-only composition, placeholder geometry, noisy output, stretched canvas, low backing resolution, crop artifacts, and obvious material failures.
 - It has accepted metadata with screenshot path, lowercase SHA-256, reviewer, ISO timestamp, detailed notes, and named Three.js-style comparison basis.
-- `pnpm v9:advanced-gallery:review` accepts the route.
+- `pnpm threejs-parity:advanced-gallery:review` accepts the route.
 
 Acceptance states:
 

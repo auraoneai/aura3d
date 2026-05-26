@@ -1,4 +1,4 @@
-export interface V5RenderTargetDescriptor {
+export interface ThreeCompatRenderTargetDescriptor {
   readonly width: number;
   readonly height: number;
   readonly format: "rgba8" | "rgba16f" | "rgba32f";
@@ -6,20 +6,20 @@ export interface V5RenderTargetDescriptor {
   readonly attachments: number;
 }
 
-export class V5RenderTargetSystem {
-  private descriptor: V5RenderTargetDescriptor;
+export class ThreeCompatRenderTargetSystem {
+  private descriptor: ThreeCompatRenderTargetDescriptor;
 
-  constructor(descriptor: V5RenderTargetDescriptor) {
+  constructor(descriptor: ThreeCompatRenderTargetDescriptor) {
     this.descriptor = descriptor;
   }
 
-  get current(): V5RenderTargetDescriptor {
+  get current(): ThreeCompatRenderTargetDescriptor {
     return this.descriptor;
   }
 
-  resize(width: number, height: number): V5RenderTargetDescriptor {
+  resize(width: number, height: number): ThreeCompatRenderTargetDescriptor {
     if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
-      throw new Error("V5 render targets require positive integer dimensions.");
+      throw new Error("ThreeCompat render targets require positive integer dimensions.");
     }
     this.descriptor = { ...this.descriptor, width, height };
     return this.descriptor;

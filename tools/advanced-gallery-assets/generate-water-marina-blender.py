@@ -6,7 +6,7 @@ from mathutils import Vector
 
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "marina-lake-blender"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "marina-lake-blender"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "marina-lake-blender.glb"
 

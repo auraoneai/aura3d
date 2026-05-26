@@ -21,6 +21,11 @@ interface PackageJson {
   main?: string;
 }
 
+const allowedSubpathExports: Record<string, readonly string[]> = {
+  "@aura3d/engine-runtime": ["./advanced-runtime"],
+  "@aura3d/three-compat": ["./controls", "./loaders", "./postprocessing"]
+};
+
 function readJson(path: string): PackageJson {
   return JSON.parse(readFileSync(path, "utf8")) as PackageJson;
 }
@@ -68,8 +73,10 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
     if (!exportsMap || typeof exportsMap !== "object" || !("." in exportsMap)) {
       violations.push({ packageName: name, message: "Package must expose only an explicit \".\" export." });
     } else {
-      if (Object.keys(exportsMap).some((key) => key !== ".")) {
-        violations.push({ packageName: name, message: "Unapproved package subpath export found." });
+      const allowedSubpaths = allowedSubpathExports[name] ?? [];
+      const unapprovedSubpaths = Object.keys(exportsMap).filter((key) => key !== "." && !allowedSubpaths.includes(key));
+      if (unapprovedSubpaths.length > 0) {
+        violations.push({ packageName: name, message: `Unapproved package subpath export found: ${unapprovedSubpaths.join(", ")}.` });
       }
       const mainExport = exportsMap["."];
       if (typeof mainExport === "object" && mainExport !== null) {
@@ -82,6 +89,21 @@ export function verifyExports(root = process.cwd(), options: VerifyExportsOption
         }
       } else if (mainExport !== "./dist/index.js") {
         violations.push({ packageName: name, message: "Package string export must point to ./dist/index.js." });
+      }
+      for (const subpath of allowedSubpaths) {
+        const subpathExport = exportsMap[subpath];
+        if (typeof subpathExport !== "object" || subpathExport === null) {
+          violations.push({ packageName: name, message: `Package subpath export ${subpath} must be an explicit object export.` });
+          continue;
+        }
+        const exportObject = subpathExport as Record<string, unknown>;
+        const distPath = `./dist/${subpath.slice(2)}/index`;
+        if (exportObject.types !== `${distPath}.d.ts`) {
+          violations.push({ packageName: name, message: `Package subpath export ${subpath} types must point to ${distPath}.d.ts.` });
+        }
+        if (exportObject.import !== `${distPath}.js`) {
+          violations.push({ packageName: name, message: `Package subpath export ${subpath} import must point to ${distPath}.js.` });
+        }
       }
     }
 

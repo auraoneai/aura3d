@@ -21,7 +21,7 @@ const requiredFiles = [
   "apps/material-studio-pro/src/main.ts",
   "examples/external-material-studio/index.html",
   "examples/external-material-studio/main.ts",
-  "examples/external-material-studio/MaterialStudioV4.ts",
+  "examples/external-material-studio/ExternalMaterialStudio.ts",
   "benchmarks/external-parity/aura3d/material-studio.ts",
   "benchmarks/external-parity/threejs/material-studio.ts",
   "tests/browser/external-parity-material-studio-pro.spec.ts",
@@ -64,12 +64,12 @@ const library = readJson("fixtures/external-parity/materials/material-library.js
 const materials = arr(library?.materials);
 const textureSets = arr(library?.textureSets);
 const materialIds = materials.map((entry) => isObj(entry) ? entry.id : undefined);
-check("library-schema", library?.schema === "a3d-v4-material-library/v1", "Material library must use the V4 schema.");
+check("library-schema", library?.schema === "a3d-external-parity-material-library", "Material library must use the External parity schema.");
 check("library-material-count", materials.length === 12, "Material library must include exactly 12 material targets.");
 check(
   "library-required-targets",
   ["chrome", "brushed-metal", "gold", "painted-metal", "matte-plastic", "glossy-plastic", "rubber", "glass-transmission", "clearcoat-car-paint", "fabric-sheen", "emissive", "textured-ceramic-stone"].every((id) => materialIds.includes(id)),
-  "Material library must include every V4 material target."
+  "Material library must include every External parity material target."
 );
 check(
   "library-texture-provenance",
@@ -90,7 +90,7 @@ for (const texturePath of textureSets) {
   const texture = readJson(texturePath);
   check(
     `texture:${texturePath}`,
-    texture?.schema === "a3d-v4-procedural-texture/v1" &&
+    texture?.schema === "a3d-external-parity-procedural-texture" &&
       texture.license === "CC0-1.0" &&
       texture.notFinalTextureProof === true &&
       typeof texture.provenance === "string",
@@ -98,24 +98,24 @@ for (const texturePath of textureSets) {
   );
 }
 
-const shared = readText("examples/external-material-studio/MaterialStudioV4.ts");
+const shared = readText("examples/external-material-studio/ExternalMaterialStudio.ts");
 check(
   "material-studio-product-surface",
   includesAll(shared, [
-    "V4_PHYSICAL_MATERIAL_MATRIX",
-    "analyzeV4MaterialMatrix",
+    "EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX",
+    "analyzeExternalParityMaterialMatrix",
     "createLightingDefault",
     "TexturedPBRMaterial",
-    "__A3D_V4_MATERIAL_STUDIO__",
+    "__A3D_EXTERNAL_PARITY_MATERIAL_STUDIO__",
     "12-material-matrix",
     "same-scene Three.js visual parity"
   ]),
-  "Material Studio V4 must render the V4 matrix with public rendering APIs and expose browser diagnostics."
+  "Material Studio External parity must render the External parity matrix with public rendering APIs and expose browser diagnostics."
 );
 check(
   "app-entry-no-example-side-effect",
-  readText("examples/external-material-studio/main.ts").includes("mountMaterialStudioV4(\"external-material-studio\")") &&
-    readText("apps/material-studio-pro/src/main.ts").includes("MaterialStudioV4") &&
+  readText("examples/external-material-studio/main.ts").includes("mountExternalMaterialStudio(\"external-material-studio\")") &&
+    readText("apps/material-studio-pro/src/main.ts").includes("ExternalMaterialStudio") &&
     !readText("apps/material-studio-pro/src/main.ts").includes("external-material-studio/main"),
   "Material Studio Pro must import a side-effect-free shared module."
 );
@@ -124,7 +124,7 @@ const aura3dBenchmark = readText("benchmarks/external-parity/aura3d/material-stu
 const threeBenchmark = readText("benchmarks/external-parity/threejs/material-studio.ts");
 check(
   "benchmark-sources",
-  includesAll(aura3dBenchmark, ["V4_PHYSICAL_MATERIAL_MATRIX", "12 material balls", "HDR/IBL-sensitive lighting"]) &&
+  includesAll(aura3dBenchmark, ["EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX", "12 material balls", "HDR/IBL-sensitive lighting"]) &&
     includesAll(threeBenchmark, ["threejs", "same 12 material targets", "same HDR/IBL intent", "visual diff"]),
   "Milestone 8 must add Aura3D and Three.js material benchmark source descriptors."
 );
@@ -165,12 +165,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-material-studio-readiness/v1",
+  schema: "a3d-external-parity-material-studio-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 8 Material Studio Pro proof is ready as a real product app/example milestone. Full release still requires licensed production textures and same-scene Three.js parity."
-    : "V4 Milestone 8 Material Studio Pro proof is incomplete.",
+    ? "External parity Milestone 8 Material Studio Pro proof is ready as a real product app/example milestone. Full release still requires licensed production textures and same-scene Three.js parity."
+    : "External parity Milestone 8 Material Studio Pro proof is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

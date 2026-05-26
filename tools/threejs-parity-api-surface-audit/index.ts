@@ -41,7 +41,7 @@ const issues = [
 ];
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-api-surface-audit/v1",
+  schema: "a3d-threejs-parity-api-surface-audit",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   expectedExports,
@@ -50,4 +50,4 @@ writeJson(outputPath, {
   missingSources,
   issues
 });
-console.log(`V9 API surface audit written: ${outputPath}`);
+console.log(`Three.js parity API surface audit written: ${outputPath}`);

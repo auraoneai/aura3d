@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 PBR shadow-map artifact", () => {
+test.describe("runtime PBR shadow-map artifact", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -30,14 +30,14 @@ test.describe("V7 PBR shadow-map artifact", () => {
     await page.goto(`${server.origin}/tests/browser/runtime-parity-pbr-shadow-map.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const result = window.__V7_PBR_SHADOW_MAP__ as { status?: string } | undefined;
+        const result = window.__RUNTIME_PBR_SHADOW_MAP__ as { status?: string } | undefined;
         return result?.status === "ready" || result?.status === "error";
       },
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__V7_PBR_SHADOW_MAP__) as {
+    const result = await page.evaluate(() => window.__RUNTIME_PBR_SHADOW_MAP__) as {
       status: "ready" | "error";
       error?: string;
       schema?: string;
@@ -56,7 +56,7 @@ test.describe("V7 PBR shadow-map artifact", () => {
     };
 
     expect(result.status, `${result.error ?? ""}\n${pageErrors.join("\n")}`).toBe("ready");
-    expect(result.schema).toBe("a3d-v7-pbr-shadow-map/v1");
+    expect(result.schema).toBe("a3d-runtime-pbr-shadow-map");
     expect(result.parity?.claim).toBe("not-claimed");
     expect(result.scene?.shadowMap).toMatchObject({ requested: true, size: 2048, pcfSamples: 16 });
     expect(result.shadowed?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(3);
@@ -84,7 +84,7 @@ test.describe("V7 PBR shadow-map artifact", () => {
     ] as const).map(([id, path, dataUrl]) => {
       if (!dataUrl) throw new Error(`Missing ${id} PBR shadow data URL.`);
       writeFileSync(resolve(path), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
-      const pixelStats = readV6PngStats(resolve(path));
+      const pixelStats = readProductionPngStats(resolve(path));
       const fileSize = statSync(resolve(path)).size;
       expect(pixelStats.width).toBe(1024);
       expect(pixelStats.height).toBe(768);

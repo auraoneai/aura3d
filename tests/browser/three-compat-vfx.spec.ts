@@ -1,17 +1,17 @@
 import { test, expect } from "@playwright/test";
-import { GPUPointCloudV5, LineRendererV5, ParticleSystemV5, SpriteSystemV5, TrailRendererV5, createV5VfxDiagnostics } from "../../packages/rendering/src";
+import { GPUPointCloudThreeCompat, LineThreeCompatRenderer, ParticleSystemThreeCompat, SpriteSystemThreeCompat, TrailThreeCompatRenderer, createThreeCompatVfxDiagnostics } from "../../packages/rendering/src";
 
-test("V5 VFX browser proof renders particles, sprites, lines, points, and trails", async ({ page }) => {
-  const particles = new ParticleSystemV5();
+test("ThreeCompat VFX browser proof renders particles, sprites, lines, points, and trails", async ({ page }) => {
+  const particles = new ParticleSystemThreeCompat();
   particles.emit(1600);
-  const pointCloud = new GPUPointCloudV5(50000);
-  const sprites = new SpriteSystemV5();
+  const pointCloud = new GPUPointCloudThreeCompat(50000);
+  const sprites = new SpriteSystemThreeCompat();
   sprites.add({ id: "flare", x: 100, y: 90, size: 56 });
-  const lines = new LineRendererV5();
+  const lines = new LineThreeCompatRenderer();
   lines.addSegment({ from: [0, 0, 0], to: [1, 1, 0], width: 3 });
-  const trails = new TrailRendererV5();
+  const trails = new TrailThreeCompatRenderer();
   for (let index = 0; index < 48; index++) trails.push([index, Math.sin(index / 4) * 20, 0]);
-  const diagnostics = createV5VfxDiagnostics({ particles, pointCloud, sprites, lines, trails });
+  const diagnostics = createThreeCompatVfxDiagnostics({ particles, pointCloud, sprites, lines, trails });
 
   await page.setContent(`
     <html><body style="margin:0;background:#05070b"><canvas width="960" height="540"></canvas><script>

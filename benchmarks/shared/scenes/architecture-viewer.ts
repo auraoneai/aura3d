@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "architecture-viewer",
   sceneVersion: 1,
-  assetId: "generated-civic-gallery-v3",
+  assetId: "generated-civic-gallery-foundation",
   assetClass: "generated-local-architecture-gltf",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 45,

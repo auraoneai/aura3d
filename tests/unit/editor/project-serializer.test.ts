@@ -63,7 +63,7 @@ describe("ProjectSerializer", () => {
     })).toThrow(/scale must be a positive finite number/);
   });
 
-  it("migrates legacy v0 projects into the current v1 project format", () => {
+  it("migrates legacy v0 projects into the current legacy project format", () => {
     const serializer = new ProjectSerializer();
     const migrated = serializer.parse(JSON.stringify({
       version: 0,

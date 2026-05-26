@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const SCREENSHOT_PATH = "tests/reports/threejs-parity/transform-controls/transform-controls.png";
 
-test.describe("V9 TransformControls route evidence", () => {
+test.describe("ThreejsParity TransformControls route evidence", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -33,7 +33,7 @@ test.describe("V9 TransformControls route evidence", () => {
     const response = await page.goto(`${server.origin}/apps/controls-transform/`, { waitUntil: "domcontentloaded" });
     expect(response?.status()).toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8TransformControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
+      const runtime = window.__a3dCurrentRoutesTransformControls as { readonly status?: string; readonly drawCalls?: number } | undefined;
       return (runtime?.status === "ready" || runtime?.status === "running") && (runtime.drawCalls ?? 0) > 0;
     }, undefined, { timeout: 20_000 });
 
@@ -42,7 +42,7 @@ test.describe("V9 TransformControls route evidence", () => {
     await page.locator("#rotate-y").click();
     await page.locator("#scale-up").click();
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8TransformControls as {
+      const runtime = window.__a3dCurrentRoutesTransformControls as {
         readonly translateSamples?: number;
         readonly rotateSamples?: number;
         readonly scaleSamples?: number;
@@ -50,7 +50,7 @@ test.describe("V9 TransformControls route evidence", () => {
       return (runtime?.translateSamples ?? 0) >= 2 && (runtime?.rotateSamples ?? 0) >= 1 && (runtime?.scaleSamples ?? 0) >= 1;
     }, undefined, { timeout: 10_000 });
 
-    const runtime = await page.evaluate(() => window.__a3dV8TransformControls) as {
+    const runtime = await page.evaluate(() => window.__a3dCurrentRoutesTransformControls) as {
       readonly controls?: string;
       readonly renderer?: string;
       readonly attached?: boolean;

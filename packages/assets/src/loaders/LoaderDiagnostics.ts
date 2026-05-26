@@ -1,12 +1,12 @@
 import { existsSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 
-export type V5LoaderStatus = "loaded" | "blocked" | "missing" | "diagnostic-only";
+export type ThreeCompatLoaderStatus = "loaded" | "blocked" | "missing" | "diagnostic-only";
 
-export interface V5LoaderDiagnostic {
+export interface ThreeCompatLoaderDiagnostic {
   readonly loader: string;
   readonly uri: string;
-  readonly status: V5LoaderStatus;
+  readonly status: ThreeCompatLoaderStatus;
   readonly bytes: number;
   readonly warnings: readonly string[];
   readonly unsupportedExtensions: readonly string[];
@@ -14,12 +14,12 @@ export interface V5LoaderDiagnostic {
   readonly memoryEstimateBytes: number;
 }
 
-export function createV5FileLoaderDiagnostic(loader: string, uri: string, options: {
-  readonly status?: Exclude<V5LoaderStatus, "missing">;
+export function createThreeCompatFileLoaderDiagnostic(loader: string, uri: string, options: {
+  readonly status?: Exclude<ThreeCompatLoaderStatus, "missing">;
   readonly unsupportedExtensions?: readonly string[];
   readonly decoderNeeds?: readonly string[];
   readonly warnings?: readonly string[];
-} = {}): V5LoaderDiagnostic {
+} = {}): ThreeCompatLoaderDiagnostic {
   const path = resolve(uri);
   const exists = existsSync(path);
   const bytes = exists ? statSync(path).size : 0;

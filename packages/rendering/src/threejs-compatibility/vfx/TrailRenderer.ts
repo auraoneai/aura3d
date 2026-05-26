@@ -1,4 +1,4 @@
-export class TrailRendererV5 {
+export class TrailThreeCompatRenderer {
   readonly points: Array<readonly [number, number, number]> = [];
 
   push(point: readonly [number, number, number]): void {

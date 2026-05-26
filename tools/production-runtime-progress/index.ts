@@ -6,7 +6,7 @@ interface ProgressItem {
   readonly text: string;
 }
 
-const progressPath = "docs/project/production-runtime-roadmap-progress.md";
+const progressPath = "docs/project/completion-audit.md";
 const progress = existsSync(resolve(progressPath)) ? readFileSync(resolve(progressPath), "utf8") : "";
 const items = parseChecklist(progress);
 const requiredMilestones = Array.from({ length: 19 }, (_, index) => `Milestone ${index}`);
@@ -19,7 +19,7 @@ const knownGaps = sectionBullets(progress, "## Known Gaps");
 const blockedClaims = sectionBullets(progress, "## Blocked Claims");
 const milestoneCoverage = requiredMilestones.map((milestone) => ({ milestone, present: progress.includes(milestone) }));
 const report = {
-  schema: "a3d-production-runtime-progress/v1",
+  schema: "a3d-production-runtime-progress",
   generatedAt: new Date().toISOString(),
   pass: existsSync(resolve(progressPath))
     && (currentStatus === "in-progress" || currentStatus === "complete")

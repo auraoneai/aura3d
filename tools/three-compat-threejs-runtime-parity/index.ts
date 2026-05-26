@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { V5_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
+import { THREE_COMPAT_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
 
-const comparisons = V5_COMPARISON_SCENES.map((scene) => ({
+const comparisons = THREE_COMPAT_COMPARISON_SCENES.map((scene) => ({
   sceneId: scene.id,
   a3dSetupLines: scene.a3dSetupLines,
   threeSetupLines: scene.threeSetupLines,
@@ -22,7 +22,7 @@ const checks = [
   { name: "large-scene", pass: Boolean(comparisons.find((comparison) => comparison.sceneId === "large-scene-instancing")?.largeScene), detail: "large-scene object, instance, triangle, frame time, texture memory metrics present" }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "a3d-three-compat-threejs-runtime-parity/v1", generatedAt: new Date().toISOString(), pass, comparisons, checks };
+const report = { schema: "a3d-three-compat-threejs-runtime-parity", generatedAt: new Date().toISOString(), pass, comparisons, checks };
 const reportPath = resolve("tests/reports/three-compat-threejs-runtime-parity.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -30,4 +30,4 @@ if (!pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 Three.js runtime parity passed: ${comparisons.length} comparisons.`);
+console.log(`Three.js compatibility Three.js runtime parity passed: ${comparisons.length} comparisons.`);

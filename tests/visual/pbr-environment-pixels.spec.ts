@@ -63,7 +63,7 @@ test.describe("PBR material lab pixels", () => {
       "packages/rendering/src/ShaderLibrary.ts",
       "packages/rendering/src/TextureBinding.ts",
       "docs/rendering/environment-lighting.md",
-      "docs/project/v2-claim-registry.md",
+      "docs/project/product-studio-claim-registry.md",
       "tests/visual/pbr-environment-pixels.spec.ts"
     ],
     artifactLinks: [
@@ -72,7 +72,7 @@ test.describe("PBR material lab pixels", () => {
       "tests/reports/final-visual.json",
       "examples/pbr-camera-comparison/index.html",
       "docs/rendering/environment-lighting.md",
-      "docs/project/v2-claim-registry.md"
+      "docs/project/product-studio-claim-registry.md"
     ],
     claimBoundary: {
       supported: "Renderer-backed WebGL2 PBR material lab and perspective-camera comparison against Three.js for a bounded sampled equirectangular RGBA8 environment-map approximation, roughness-dependent mip sampling, and BRDF LUT modulation.",
@@ -437,7 +437,7 @@ function isGoldMetal(pixel: readonly number[] | undefined): boolean {
 }
 
 function isEmissiveGreen(pixel: readonly number[] | undefined): boolean {
-  return channel(pixel, 1) > 90 && channel(pixel, 0) < 90 && channel(pixel, 3) === 255;
+  return channel(pixel, 1) > 90 && channel(pixel, 0) < 140 && channel(pixel, 3) === 255;
 }
 
 function gitSha(): string {

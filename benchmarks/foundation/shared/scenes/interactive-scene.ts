@@ -1,6 +1,6 @@
-import type { V3ComparisonScene } from "./scene-types";
+import type { FoundationComparisonScene } from "./scene-types";
 
-export const interactiveComparisonScene: V3ComparisonScene = {
+export const interactiveComparisonScene: FoundationComparisonScene = {
   id: "interactive",
   title: "Interactive Scene",
   intent: "Animated two-object orbit scene at a fixed comparison timestamp.",

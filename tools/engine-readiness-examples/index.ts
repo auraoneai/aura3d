@@ -16,7 +16,7 @@ const checks = screenshots.map((path) => ({
 }));
 
 const report = {
-  schemaVersion: "a3d-engine-readiness-examples-v1",
+  schemaVersion: "a3d-engine-readiness-examples",
   generatedAt: new Date().toISOString(),
   ok: checks.every((check) => check.ok),
   publicExamples: [

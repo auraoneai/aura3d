@@ -73,7 +73,7 @@ check(
     "createRenderDiagnostics",
     "createCompatibilityReport"
   ].every((marker) => engineSource.includes(marker)),
-  "packages/engine must expose the root developer product API required by V4."
+  "packages/engine must expose the root developer product API required by External parity."
 );
 
 const rootPackage = json("package.json");
@@ -130,7 +130,7 @@ check(
         exists(screenshotPath) &&
         statSync(path(screenshotPath)).size > 10_000;
     }),
-  "Template browser proof must render non-empty flagship screenshots for every V4 template."
+  "Template browser proof must render non-empty flagship screenshots for every External parity template."
 );
 
 const externalBuild = json("tests/reports/external-parity-external-vite-build.json");
@@ -143,7 +143,7 @@ check(
       const entry = obj(build);
       return entry.ok === true && typeof entry.outputDir === "string" && exists(String(entry.outputDir)) && arr(entry.outputFiles).some((file) => String(file).endsWith(".js"));
     }),
-  "External Vite proof must build every V4 template from a packed @aura3d/engine package."
+  "External Vite proof must build every External parity template from a packed @aura3d/engine package."
 );
 
 const staticSmoke = json("tests/reports/external-parity-static-preview-smoke.json");
@@ -155,7 +155,7 @@ check(
       const entry = obj(preview);
       return entry.ok === true && typeof entry.previewDir === "string" && exists(String(entry.previewDir)) && arr(entry.files).includes("index.html");
     }),
-  "Static preview smoke must verify every built V4 template."
+  "Static preview smoke must verify every built External parity template."
 );
 
 check(
@@ -166,12 +166,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-template-readiness/v1",
+  schema: "a3d-external-parity-template-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 14 installable SDK/template proof is ready. Three.js visual parity and release readiness remain open."
-    : "V4 Milestone 14 installable SDK/template proof is incomplete.",
+    ? "External parity Milestone 14 installable SDK/template proof is ready. Three.js visual parity and release readiness remain open."
+    : "External parity Milestone 14 installable SDK/template proof is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

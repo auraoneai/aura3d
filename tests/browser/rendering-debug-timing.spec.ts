@@ -91,7 +91,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
   });
 
   test("postprocess lab publishes render-pass/shader overlay and CPU timing fallback", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,
@@ -104,7 +104,7 @@ test.describe("renderer debug overlay and timing evidence", () => {
 
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2-real-scene-postprocess");
-    expect(result?.realScene?.source).toBe("v4-product-gltf-webgl2-readback");
+    expect(result?.realScene?.source).toBe("external-parity-product-gltf-webgl2-readback");
     expect(result?.realScene?.drawCalls ?? 0).toBeGreaterThanOrEqual(1);
     expect(result?.diagnostics?.lastError).toBeNull();
     expect(result?.debugOverlay).toMatchObject({

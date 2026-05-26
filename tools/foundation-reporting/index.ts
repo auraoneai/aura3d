@@ -3,29 +3,29 @@ import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 
-export interface V3SourceFileHash {
+export interface FoundationSourceFileHash {
   readonly path: string;
   readonly sha256: string;
 }
 
-export interface V3ReportBase {
+export interface FoundationReportBase {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly commit: string;
   readonly runId: string;
   readonly command: string;
-  readonly sourceFileHashes: readonly V3SourceFileHash[];
+  readonly sourceFileHashes: readonly FoundationSourceFileHash[];
   readonly blockedClaims: readonly string[];
   readonly screenshotPaths: readonly string[];
   readonly violations: readonly string[];
 }
 
-export interface V3FreshnessIssue {
+export interface FoundationFreshnessIssue {
   readonly path: string;
   readonly message: string;
 }
 
-export const v3ReportPaths = [
+export const foundationReportPaths = [
   "tests/reports/foundation-current-capability.json",
   "tests/reports/foundation-example-screenshots/manifest.json",
   "tests/reports/foundation-rendering.json",
@@ -37,7 +37,7 @@ export const v3ReportPaths = [
   "tests/reports/foundation-claim-gates.json",
 ] as const;
 
-export const blockedV3Claims = [
+export const blockedFoundationClaims = [
   "broad better-than-Three.js language",
   "Unity/Unreal replacement language",
   "production-ready language",
@@ -68,14 +68,14 @@ export function hashText(text: string): string {
   return createHash("sha256").update(text).digest("hex");
 }
 
-export function hashFile(root: string, path: string): V3SourceFileHash {
+export function hashFile(root: string, path: string): FoundationSourceFileHash {
   return {
     path,
     sha256: hashText(readFileSync(join(root, path), "utf8")),
   };
 }
 
-export function hashExistingFiles(root: string, paths: readonly string[]): readonly V3SourceFileHash[] {
+export function hashExistingFiles(root: string, paths: readonly string[]): readonly FoundationSourceFileHash[] {
   return paths
     .filter((path) => existsSync(join(root, path)) && statSync(join(root, path)).isFile())
     .map((path) => hashFile(root, path));
@@ -105,7 +105,7 @@ export function baseReport(
     readonly screenshotPaths?: readonly string[];
     readonly violations?: readonly string[];
   },
-): V3ReportBase {
+): FoundationReportBase {
   return {
     ok: options.ok,
     generatedAt: new Date().toISOString(),
@@ -113,7 +113,7 @@ export function baseReport(
     runId: createRunId(options.runIdPrefix),
     command: options.command,
     sourceFileHashes: hashExistingFiles(root, options.sourceFiles),
-    blockedClaims: [...(options.blockedClaims ?? blockedV3Claims)],
+    blockedClaims: [...(options.blockedClaims ?? blockedFoundationClaims)],
     screenshotPaths: [...(options.screenshotPaths ?? [])],
     violations: [...(options.violations ?? [])],
   };
@@ -145,13 +145,13 @@ export function listFiles(root: string, startsWith: readonly string[], extension
   }
 }
 
-export function validateV3ReportFreshness(root = process.cwd(), paths: readonly string[] = v3ReportPaths): readonly V3FreshnessIssue[] {
+export function validateFoundationReportFreshness(root = process.cwd(), paths: readonly string[] = foundationReportPaths): readonly FoundationFreshnessIssue[] {
   const commit = currentCommit(root);
-  const issues: V3FreshnessIssue[] = [];
+  const issues: FoundationFreshnessIssue[] = [];
   for (const reportPath of paths) {
     const report = readJson(root, reportPath);
     if (!report) {
-      issues.push({ path: reportPath, message: "Missing v3 report." });
+      issues.push({ path: reportPath, message: "Missing foundation report." });
       continue;
     }
     if (report.commit !== commit) {

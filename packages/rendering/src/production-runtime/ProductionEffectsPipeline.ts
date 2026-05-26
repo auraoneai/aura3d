@@ -1,13 +1,13 @@
 import type { RenderSource, RendererPostProcessOptions, RendererShadowOptions } from "../Renderer";
-import type { V6RenderProof } from "./ProductionRendererTypes";
+import type { ProductionRenderProof } from "./ProductionRendererTypes";
 
-export interface V6EffectsOptions {
+export interface ProductionEffectsOptions {
   readonly shadow?: RendererShadowOptions | boolean;
   readonly postprocess?: RendererPostProcessOptions | boolean;
   readonly transparentItemCount?: number;
 }
 
-export interface V6EffectsSummary {
+export interface ProductionEffectsSummary {
   readonly pass: boolean;
   readonly shadowProof: boolean;
   readonly transparencyProof: boolean;
@@ -18,7 +18,7 @@ export interface V6EffectsSummary {
   readonly failures: readonly string[];
 }
 
-export function createV6EffectsRenderSource(source: RenderSource, options: V6EffectsOptions = {}): RenderSource {
+export function createProductionEffectsRenderSource(source: RenderSource, options: ProductionEffectsOptions = {}): RenderSource {
   return {
     ...source,
     shadow: options.shadow ?? {
@@ -59,7 +59,7 @@ export function createV6EffectsRenderSource(source: RenderSource, options: V6Eff
   };
 }
 
-export function summarizeV6EffectsProof(proof: V6RenderProof, options: V6EffectsOptions = {}): V6EffectsSummary {
+export function summarizeProductionEffectsProof(proof: ProductionRenderProof, options: ProductionEffectsOptions = {}): ProductionEffectsSummary {
   const shadowProof = proof.diagnostics.drawCalls >= 2;
   const transparencyProof = (options.transparentItemCount ?? 0) > 0;
   const postprocessProof = proof.pixels.uniqueColorBuckets > 12 && proof.pixels.maxLuma > 40;

@@ -6,9 +6,9 @@ import {
   SkeletonCompat,
   SkinnedMeshCompat
 } from "../../../packages/three-compat/src";
-import { LocomotionController, createRootMotionWalkClip, createV5AnimationDiagnostics, inspectV5AnimatedAssets } from "../../../packages/animation/src";
+import { LocomotionController, createRootMotionWalkClip, createThreeCompatAnimationDiagnostics, inspectThreeCompatAnimatedAssets } from "../../../packages/animation/src";
 
-describe("V5 animation V5", () => {
+describe("ThreeCompat animation ThreeCompat", () => {
   it("supports mixer actions, crossfade, pause/play/scrub, skinning, morph targets, and animated asset diagnostics", () => {
     const idle = new AnimationClipCompat("idle", 2, [{ target: "root", property: "rotation.y", times: [0, 2], values: [0, 1] }]);
     const run = new AnimationClipCompat("run", 1, [{ target: "root", property: "position.z", times: [0, 1], values: [0, 3] }]);
@@ -24,9 +24,9 @@ describe("V5 animation V5", () => {
     const morphs = new MorphTargetMixerCompat();
     morphs.setWeight("smile", 0.8);
     morphs.setWeight("blink", 0.25);
-    const diagnostics = createV5AnimationDiagnostics(mixer, skinned, morphs);
+    const diagnostics = createThreeCompatAnimationDiagnostics(mixer, skinned, morphs);
 
-    expect(inspectV5AnimatedAssets().filter((asset) => asset.loaded)).toHaveLength(5);
+    expect(inspectThreeCompatAnimatedAssets().filter((asset) => asset.loaded)).toHaveLength(5);
     expect(runAction.playing).toBe(true);
     expect(runAction.time).toBeGreaterThan(0);
     expect(idleAction.weight).toBeCloseTo(0.35);

@@ -17,17 +17,17 @@ import { StereoEffect } from "/node_modules/three/examples/jsm/effects/StereoEff
 
 declare global {
   interface Window {
-    __V9_STEREO_PARITY__?: V9StereoParityResult;
+    __THREEJS_PARITY_STEREO_PARITY__?: ThreeJsParityStereoParityResult;
   }
 }
 
 export {};
 
-type V9StereoParityResult = V9StereoParityReady | V9StereoParityError;
+type ThreeJsParityStereoParityResult = ThreeJsParityStereoParityReady | ThreeJsParityStereoParityError;
 
-interface V9StereoParityReady {
+interface ThreeJsParityStereoParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-stereo-parity/v1";
+  readonly schema: "a3d-threejs-parity-stereo-parity";
   readonly purpose: "same-scene A3D side-by-side stereo rig vs Three.js StereoEffect baseline";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -59,9 +59,9 @@ interface V9StereoParityReady {
   readonly humanNotes: readonly string[];
 }
 
-interface V9StereoParityError {
+interface ThreeJsParityStereoParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-stereo-parity/v1";
+  readonly schema: "a3d-threejs-parity-stereo-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -97,7 +97,7 @@ interface StereoResources {
 }
 
 const SCENE = {
-  id: "v9-stereo-effect",
+  id: "threejs-parity-stereo-effect",
   width: 1280,
   height: 480,
   eyeWidth: 640,
@@ -123,9 +123,9 @@ async function run(): Promise<void> {
     const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
     const diff = computeDiff(a3dPixels, threePixels);
     const sideBySide = await drawStacked(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
-    const ready: V9StereoParityReady = {
+    const ready: ThreeJsParityStereoParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-stereo-parity/v1",
+      schema: "a3d-threejs-parity-stereo-parity",
       purpose: "same-scene A3D side-by-side stereo rig vs Three.js StereoEffect baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -164,19 +164,19 @@ async function run(): Promise<void> {
         "This artifact proves A3D public stereo-rig side-by-side semantics against a bounded same-scene workload. It is not a blanket visual equality claim."
       ]
     };
-    window.__V9_STEREO_PARITY__ = ready;
+    window.__THREEJS_PARITY_STEREO_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
-    const failure: V9StereoParityError = {
+    const failure: ThreeJsParityStereoParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-stereo-parity/v1",
+      schema: "a3d-threejs-parity-stereo-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
       expectedReferenceEffect: "StereoEffect"
     };
-    window.__V9_STEREO_PARITY__ = failure;
+    window.__THREEJS_PARITY_STEREO_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -501,7 +501,7 @@ async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   return image;
 }
 
-function stripDataUrls(result: V9StereoParityReady): Omit<V9StereoParityReady, "dataUrls"> {
+function stripDataUrls(result: ThreeJsParityStereoParityReady): Omit<ThreeJsParityStereoParityReady, "dataUrls"> {
   const { dataUrls: _dataUrls, ...rest } = result;
   return rest;
 }

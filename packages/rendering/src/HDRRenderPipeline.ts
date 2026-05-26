@@ -1,45 +1,45 @@
 import { RenderDeviceError, type RenderDevice, type RenderTarget } from "./RenderDevice";
 import { ToneMappingPass, type BloomOptions } from "./PostProcessPass";
-import { createV4ColorManagementPolicy, type A3DColorManagementPolicy } from "./ColorManagement";
-import { createV4ToneMappingPolicy, type V4ToneMappingIntent, type V4ToneMappingPolicy } from "./ToneMapping";
+import { createExternalParityColorManagementPolicy, type A3DColorManagementPolicy } from "./ColorManagement";
+import { createExternalParityToneMappingPolicy, type ExternalParityToneMappingIntent, type ExternalParityToneMappingPolicy } from "./ToneMapping";
 
-export type V4HdrRenderTargetFormat = "rgba16f" | "rgba32f" | "rgba8";
-export type V4HdrPipelineMode = "hdr" | "ldr-fallback";
+export type ExternalParityHdrRenderTargetFormat = "rgba16f" | "rgba32f" | "rgba8";
+export type ExternalParityHdrPipelineMode = "hdr" | "ldr-fallback";
 
-export interface V4HdrPipelineDescriptor {
+export interface ExternalParityHdrPipelineDescriptor {
   readonly width: number;
   readonly height: number;
-  readonly intent?: V4ToneMappingIntent;
-  readonly preferredFormat?: Extract<V4HdrRenderTargetFormat, "rgba16f" | "rgba32f">;
+  readonly intent?: ExternalParityToneMappingIntent;
+  readonly preferredFormat?: Extract<ExternalParityHdrRenderTargetFormat, "rgba16f" | "rgba32f">;
   readonly allowLdrFallback?: boolean;
   readonly bloom?: BloomOptions | false;
 }
 
-export interface V4HdrPipeline {
-  readonly mode: V4HdrPipelineMode;
-  readonly format: V4HdrRenderTargetFormat;
+export interface ExternalParityHdrPipeline {
+  readonly mode: ExternalParityHdrPipelineMode;
+  readonly format: ExternalParityHdrRenderTargetFormat;
   readonly colorTarget: RenderTarget;
   readonly displayTarget: RenderTarget;
   readonly colorManagement: A3DColorManagementPolicy;
-  readonly toneMapping: V4ToneMappingPolicy;
+  readonly toneMapping: ExternalParityToneMappingPolicy;
   readonly bloom: BloomOptions | false;
   readonly warnings: readonly string[];
 }
 
-export function createV4HdrPipeline(device: RenderDevice, descriptor: V4HdrPipelineDescriptor): V4HdrPipeline {
+export function createExternalParityHdrPipeline(device: RenderDevice, descriptor: ExternalParityHdrPipelineDescriptor): ExternalParityHdrPipeline {
   validateDimensions(descriptor.width, descriptor.height);
-  const colorManagement = createV4ColorManagementPolicy({
+  const colorManagement = createExternalParityColorManagementPolicy({
     outputColorSpace: "srgb",
     allowLdrFallback: descriptor.allowLdrFallback ?? true
   });
-  const toneMapping = createV4ToneMappingPolicy(descriptor.intent ?? "product-catalog");
+  const toneMapping = createExternalParityToneMappingPolicy(descriptor.intent ?? "product-catalog");
   const capabilities = new Set(device.info.capabilities ?? []);
   const supportsHdr = capabilities.has("hdr-render-targets") || device.kind === "mock";
   const preferredFormat = descriptor.preferredFormat ?? "rgba16f";
   const allowLdrFallback = descriptor.allowLdrFallback ?? true;
-  const format: V4HdrRenderTargetFormat = supportsHdr ? preferredFormat : "rgba8";
+  const format: ExternalParityHdrRenderTargetFormat = supportsHdr ? preferredFormat : "rgba8";
   if (!supportsHdr && !allowLdrFallback) {
-    throw new RenderDeviceError("V4 HDR pipeline requires HDR render targets or an explicit LDR fallback.", "V4_HDR_UNSUPPORTED", {
+    throw new RenderDeviceError("ExternalParity HDR pipeline requires HDR render targets or an explicit LDR fallback.", "EXTERNAL_PARITY_HDR_UNSUPPORTED", {
       backend: device.kind
     });
   }
@@ -47,14 +47,14 @@ export function createV4HdrPipeline(device: RenderDevice, descriptor: V4HdrPipel
   const colorTarget = device.createRenderTarget({
     width: descriptor.width,
     height: descriptor.height,
-    label: "v4-hdr-color",
+    label: "external-parity-hdr-color",
     format,
     depth: "texture"
   });
   const displayTarget = device.createRenderTarget({
     width: descriptor.width,
     height: descriptor.height,
-    label: "v4-display-color",
+    label: "external-parity-display-color",
     format: "rgba8"
   });
 
@@ -72,7 +72,7 @@ export function createV4HdrPipeline(device: RenderDevice, descriptor: V4HdrPipel
   };
 }
 
-export function executeV4ToneMapPass(device: RenderDevice, pipeline: V4HdrPipeline): ToneMappingPass {
+export function executeExternalParityToneMapPass(device: RenderDevice, pipeline: ExternalParityHdrPipeline): ToneMappingPass {
   const pass = new ToneMappingPass({
     source: pipeline.colorTarget,
     target: pipeline.displayTarget,
@@ -89,6 +89,6 @@ export function executeV4ToneMapPass(device: RenderDevice, pipeline: V4HdrPipeli
 
 function validateDimensions(width: number, height: number): void {
   if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
-    throw new Error("V4 HDR pipeline dimensions must be positive integers.");
+    throw new Error("ExternalParity HDR pipeline dimensions must be positive integers.");
   }
 }

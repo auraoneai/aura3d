@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { A3D_APP_WORKFLOW_PRESETS, createA3DApp, resolveA3DAppQualityPreset } from "@aura3d/apps";
 import type { RenderDeviceDiagnostics } from "@aura3d/rendering";
 
-describe("V4 public app API", () => {
+describe("ExternalParity public app API", () => {
   it("exposes stable workflow presets and quality presets", () => {
     expect(A3D_APP_WORKFLOW_PRESETS).toEqual([
       "asset-viewer",

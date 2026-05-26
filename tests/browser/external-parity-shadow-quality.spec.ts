@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-shadow-quality-browser.json";
 
-test.describe("V4 shadow quality browser evidence", () => {
+test.describe("ExternalParity shadow quality browser evidence", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -17,7 +17,7 @@ test.describe("V4 shadow quality browser evidence", () => {
     await server.close();
   });
 
-  test("proves shadow lab output plus V4 contact/cascade/debug APIs", async ({ page }) => {
+  test("proves shadow lab output plus ExternalParity contact/cascade/debug APIs", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_SHADOW_LAB__?.status === "ready", undefined, { timeout: 30_000 });
@@ -26,11 +26,11 @@ test.describe("V4 shadow quality browser evidence", () => {
     await page.locator("[data-testid='shadow-lab-canvas']").screenshot({ path: screenshotPath });
 
     const state = await page.evaluate(() => window.__AURA3D_SHADOW_LAB__);
-    const v4Shadow = await page.evaluate(async () => {
+    const externalParityShadow = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
-      const contact = rendering.createV4ContactShadow({ casterRadius: 1.2, receiverDistance: 0.35, softness: 0.45, opacity: 0.58 });
-      const cascade = rendering.createV4CascadedShadowPipeline({ cascadeCount: 4, mapSize: 256, atlasSize: 512 });
-      const debugViews = rendering.createV4ShadowDebugViews({ cascade, contact });
+      const contact = rendering.createExternalParityContactShadow({ casterRadius: 1.2, receiverDistance: 0.35, softness: 0.45, opacity: 0.58 });
+      const cascade = rendering.createExternalParityCascadedShadowPipeline({ cascadeCount: 4, mapSize: 256, atlasSize: 512 });
+      const debugViews = rendering.createExternalParityShadowDebugViews({ cascade, contact });
       return {
         contact,
         cascadeCount: cascade.cascades.length,
@@ -46,16 +46,16 @@ test.describe("V4 shadow quality browser evidence", () => {
       ok: errors.length === 0 &&
         state?.status === "ready" &&
         litRgb > shadowRgb &&
-        v4Shadow.contact.anchorStrength > 0 &&
-        v4Shadow.cascadeCount === 4 &&
-        v4Shadow.pcfSamples >= 9 &&
-        v4Shadow.debugViewIds.includes("shadow-atlas"),
+        externalParityShadow.contact.anchorStrength > 0 &&
+        externalParityShadow.cascadeCount === 4 &&
+        externalParityShadow.pcfSamples >= 9 &&
+        externalParityShadow.debugViewIds.includes("shadow-atlas"),
       generatedAt: new Date().toISOString(),
       screenshotPath,
-      productBoundary: "Shadow evidence for V4 Milestone 5 only. Flagship product/interior screenshots must still prove shadow grounding without acne or peter-panning.",
+      productBoundary: "Shadow evidence for ExternalParity Milestone 5 only. Flagship product/interior screenshots must still prove shadow grounding without acne or peter-panning.",
       errors,
       state,
-      v4Shadow
+      externalParityShadow
     };
     mkdirSync(join(process.cwd(), "tests/reports"), { recursive: true });
     writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
@@ -63,9 +63,9 @@ test.describe("V4 shadow quality browser evidence", () => {
     expect(errors).toEqual([]);
     expect(state?.status).toBe("ready");
     expect(litRgb).toBeGreaterThan(shadowRgb);
-    expect(v4Shadow.contact.anchorStrength).toBeGreaterThan(0);
-    expect(v4Shadow.cascadeCount).toBe(4);
-    expect(v4Shadow.pcfSamples).toBeGreaterThanOrEqual(9);
+    expect(externalParityShadow.contact.anchorStrength).toBeGreaterThan(0);
+    expect(externalParityShadow.cascadeCount).toBe(4);
+    expect(externalParityShadow.pcfSamples).toBeGreaterThanOrEqual(9);
   });
 });
 

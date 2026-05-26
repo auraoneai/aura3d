@@ -1,4 +1,4 @@
-name: V4 External Engine Baselines
+name: External Parity Engine Baselines
 
 on:
   workflow_dispatch:
@@ -63,7 +63,7 @@ jobs:
       - name: Upload external baseline kit
         uses: actions/upload-artifact@v4
         with:
-          name: v4-external-engine-baseline-kit
+          name: external-parity-engine-baseline-kit
           path: |
             fixtures/external-engine-baselines/external-parity/**
             tests/reports/external-parity-external-engine-baselines.json
@@ -114,13 +114,13 @@ jobs:
         run: pnpm audit:external-parity-external-evidence-readiness || true
 
       - name: Audit completion state
-        run: pnpm audit:v4-completion || true
+        run: pnpm audit:external-parity-completion || true
 
       - name: Upload Unity baseline evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v4-unity-baseline-evidence
+          name: external-parity-unity-baseline-evidence
           path: |
             tests/reports/external-parity-unity-editor-cli-smoke.json
             tests/reports/external-parity-unity-baseline-render.json
@@ -188,13 +188,13 @@ jobs:
         run: pnpm audit:external-parity-external-evidence-readiness || true
 
       - name: Audit completion state
-        run: pnpm audit:v4-completion || true
+        run: pnpm audit:external-parity-completion || true
 
       - name: Upload Unreal baseline evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v4-unreal-baseline-evidence
+          name: external-parity-unreal-baseline-evidence
           path: |
             tests/reports/external-parity-unreal-editor-cli-smoke.json
             tests/reports/external-parity-unreal-baseline-render.json
@@ -250,14 +250,14 @@ jobs:
         uses: actions/download-artifact@v4
         continue-on-error: true
         with:
-          pattern: v4-*-baseline-evidence
-          path: _v4-external-baseline-evidence
+          pattern: external-parity-*-baseline-evidence
+          path: _external-parity-baseline-evidence
           merge-multiple: true
 
       - name: Ingest downloaded evidence
         run: |
-          if [ -d _v4-external-baseline-evidence ]; then
-            node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs --no-audit _v4-external-baseline-evidence
+          if [ -d _external-parity-baseline-evidence ]; then
+            node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs --no-audit _external-parity-baseline-evidence
           fi
 
       - name: Audit external evidence readiness
@@ -288,19 +288,19 @@ jobs:
         run: pnpm audit:external-parity-production-readiness || true
 
       - name: Audit broad parity
-        run: pnpm audit:v4-broad-parity || true
+        run: pnpm audit:external-parity-broad-parity || true
 
       - name: Audit completion
-        run: pnpm audit:v4-completion || true
+        run: pnpm audit:external-parity-completion || true
 
-      - name: Verify V4 report freshness
+      - name: Verify external parity report freshness
         run: pnpm verify:external-parity-report-freshness || true
 
       - name: Upload merged external evidence audit reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: v4-external-baseline-final-audits
+          name: external-parity-baseline-final-audits
           path: |
             tests/reports/external-parity-external-engine-baselines.json
             tests/reports/external-parity-external-evidence-readiness.json

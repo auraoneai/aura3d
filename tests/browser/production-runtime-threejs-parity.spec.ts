@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 same-scene Three.js parity", () => {
+test.describe("Production same-scene Three.js parity", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -29,17 +29,17 @@ test.describe("V6 same-scene Three.js parity", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V6_THREEJS_PARITY__ as { status?: string } | undefined;
+          const result = window.__PRODUCTION_THREEJS_PARITY__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 120_000 }
       );
     } catch (error) {
-      throw new Error(`V6 Three.js parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Production Three.js parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V6_THREEJS_PARITY__) as {
+    const result = await page.evaluate(() => window.__PRODUCTION_THREEJS_PARITY__) as {
       status: "ready" | "error";
       error?: string;
       sceneCount?: number;
@@ -91,7 +91,7 @@ test.describe("V6 same-scene Three.js parity", () => {
       await saveCanvasPng(page, `${item.sceneId}-diff`, `tests/reports/production-runtime-gallery/threejs-comparison/${item.galleryId}-diff.png`);
     }
     writeFileSync(resolve("tests/reports/production-runtime-threejs-parity/browser-report.json"), `${JSON.stringify({
-      schema: "a3d-production-runtime-threejs-parity-browser/v1",
+      schema: "a3d-production-runtime-threejs-parity-browser",
       generatedAt: new Date().toISOString(),
       screenshots: (result.results ?? []).flatMap((scene) => [
         `tests/reports/production-runtime-threejs-parity/${scene.id}-a3d.png`,

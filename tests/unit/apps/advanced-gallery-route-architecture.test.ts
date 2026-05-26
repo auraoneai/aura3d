@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-describe("v9 advanced gallery route architecture containment", () => {
+describe("threejsParity advanced gallery route architecture containment", () => {
   it("keeps sceneBuilders as shared resource setup plus route dispatch", () => {
     const sceneBuilders = readFileSync("apps/advanced-examples-gallery/src/sceneBuilders.ts", "utf8");
 

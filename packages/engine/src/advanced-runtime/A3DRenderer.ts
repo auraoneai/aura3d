@@ -2,9 +2,9 @@ import { Scene } from "@aura3d/scene";
 import {
   Renderer,
   type CameraLike,
-  type V6RendererFeature,
-  type V6RendererInput,
-  type V7FrameRenderResult,
+  type ProductionRendererFeature,
+  type ProductionRendererInput,
+  type RuntimeParityFrameRenderResult,
   type RenderDeviceDiagnostics,
   type RendererAnimationLoop,
   type RendererFrameCapture,
@@ -66,7 +66,7 @@ export class A3DRenderer {
     return this.renderer.renderAsync(normalizeSource(sourceOrInput), camera);
   }
 
-  renderFrame(input: V6RendererInput): V7FrameRenderResult {
+  renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     const diagnostics = this.render({ source: input.source, camera: input.camera });
     return {
       backend: this.device.kind === "webgpu" ? "webgpu" : "webgl2",
@@ -98,8 +98,8 @@ function isRendererInput(value: RendererInput | A3DScene | RenderSource | Iterab
 
 function createPublicFrameFeatures(
   diagnostics: RenderDeviceDiagnostics,
-  input: V6RendererInput
-): readonly V6RendererFeature[] {
+  input: ProductionRendererInput
+): readonly ProductionRendererFeature[] {
   return [
     {
       id: "public-a3d-renderer-frame",

@@ -5,7 +5,7 @@ import {
   type A3DProductViewer
 } from "@aura3d/engine/production-runtime";
 
-export interface V8FlagshipViewerSceneConfig {
+export interface CurrentFlagshipViewerSceneConfig {
   readonly id: "flagship-viewer";
   readonly assetId: "chronograph-watch";
   readonly assetName: "Chronograph Watch";
@@ -33,9 +33,9 @@ export interface V8FlagshipViewerSceneConfig {
   };
 }
 
-export interface V8FlagshipRenderResult {
+export interface CurrentFlagshipRenderResult {
   readonly engine: "aura3d";
-  readonly scene: V8FlagshipViewerSceneConfig;
+  readonly scene: CurrentFlagshipViewerSceneConfig;
   readonly status: "ready";
   readonly renderer: {
     readonly backend: "webgl2" | "webgpu";
@@ -86,11 +86,11 @@ export interface V8FlagshipRenderResult {
   readonly dataUrl: string;
 }
 
-export const v8FlagshipViewerScene: V8FlagshipViewerSceneConfig = {
+export const currentFlagshipViewerScene: CurrentFlagshipViewerSceneConfig = {
   id: "flagship-viewer",
   assetId: "chronograph-watch",
   assetName: "Chronograph Watch",
-  assetUri: "/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb",
+  assetUri: "/fixtures/product-studio/products/watch/watch.gltf",
   hdrId: "studio-small-08-1k",
   hdrUri: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
   width: 1280,
@@ -116,8 +116,8 @@ export const v8FlagshipViewerScene: V8FlagshipViewerSceneConfig = {
 
 export async function renderA3DFlagshipViewer(
   canvas: HTMLCanvasElement,
-  scene: V8FlagshipViewerSceneConfig = v8FlagshipViewerScene
-): Promise<V8FlagshipRenderResult> {
+  scene: CurrentFlagshipViewerSceneConfig = currentFlagshipViewerScene
+): Promise<CurrentFlagshipRenderResult> {
   canvas.width = scene.width;
   canvas.height = scene.height;
   const assetUri = absoluteUrl(scene.assetUri);

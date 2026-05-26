@@ -1,79 +1,33 @@
 # Rendering
 
-Version: `0.1.0-alpha.0`
+Version: `1.0.0`
 
-The rendering package owns browser graphics resources, materials, textures, render queues, state application, frame submission, postprocessing, diagnostics, and disposal. The public package is `@aura3d/engine/rendering`.
+Aura3D rendering is implemented in the first-party `@aura3d/rendering` package and exposed through root package subpaths.
 
-## Backend Position
+## Code
 
-WebGL2 is the main externally usable backend today. WebGPU exists as scoped implementation and proof routes for render-to-texture, materials, compute, and instancing work, but Aura3D does not yet claim complete WebGPU renderer parity.
+- `packages/rendering/src/index.ts`
+- `packages/rendering/src/Renderer.ts`
+- `packages/rendering/src/WebGL2Device.ts`
+- `packages/rendering/src/WebGPUDevice.ts`
+- `packages/rendering/src/ForwardPass.ts`
+- `packages/rendering/src/ShaderLibrary.ts`
 
-## Package Surface
+## Current Areas
 
-Current public exports cover:
-
-- render devices and backend creation;
-- WebGL2/WebGPU devices and state/cache helpers;
-- geometry, vertex/index buffers, attributes, bounds, morph target bounds, and skinning bounds;
-- textures, color management, HDR, tone mapping, exposure, BRDF LUT, PMREM, IBL, and environment resources;
-- physical materials, material-extension diagnostics, alpha sorting, transmission helpers;
-- shadows, contact shadows, cascaded shadow pipeline, debug views;
-- bloom, SSAO, depth of field, color grading, postprocess composer;
-- renderer stats, resource budgets, render-item sorting, LOD, BVH, batching, instancing, and frustum helpers;
-- V6 production renderer surfaces and V9 renderer wrappers.
-
-## Direct Usage
-
-```ts
-import { Geometry, PBRMaterial } from "@aura3d/engine/rendering";
-import { A3DRenderer, A3DScene } from "@aura3d/engine/v9";
-
-const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
-
-const scene = new A3DScene();
-scene.addGeometry("cube", Geometry.box());
-scene.addMaterial("paint", new PBRMaterial({
-  baseColor: [0.75, 0.65, 0.48, 1],
-  roughness: 0.4,
-  metalness: 0.1
-}));
-scene.createRenderableMesh({ geometry: "cube", material: "paint" });
-
-const diagnostics = renderer.render(scene);
-console.log(diagnostics.drawCalls);
-```
-
-## Renderer Boundary
-
-The renderer does not own the entire application. It expects the app to provide the current scene, camera, viewport, resources, and timing. It owns GPU-facing resource creation, state management, draw submission, diagnostics, and disposal.
-
-## Current Strengths
-
-- WebGL2 route rendering with diagnostics;
-- state caching and render queue sorting work;
-- PBR/HDR/IBL foundations;
-- postprocess chain foundations;
-- instancing and batching evidence;
-- bounds, culling, and resource lifecycle APIs;
-- V8/V9 routes for materials, decals, cameras, shadows, postprocessing, lines/helpers, picking, and WebGPU proofs.
-
-## Boundaries
-
-Do not claim:
-
-- complete Three.js renderer parity;
-- production physically complete IBL;
-- every glTF material extension rendered visually correctly;
-- broad large-scene performance superiority;
-- full WebGPU engine;
-- complete shadow/postprocess parity.
-
-Use route reports and same-scene comparisons as scoped evidence only.
+- WebGL2 and WebGPU-facing device implementations.
+- Geometry, vertex/index buffers, textures, render targets, materials, shaders, render queues, and diagnostics.
+- PBR, environment resources, shadows, postprocess, instancing, culling, stereo/effects, decals, and resource disposal.
+- Route coverage across material, loader, shadow, postprocess, camera, controls, WebGPU, and parity apps.
 
 ## Boundary
 
-The rendering boundary is GPU-facing resource ownership, draw submission, diagnostics, and disposal; app state and product workflow ownership stay outside the renderer.
+Renderer docs must distinguish package capability, route evidence, generated report status, and public claims. A route screenshot does not prove broad renderer parity by itself.
 
 ## Current Limits
 
-Current limits include complete Three.js renderer parity, broad WebGPU engine coverage, production-complete IBL, and exhaustive material-extension visual parity.
+Rendering support is bounded by the implemented WebGL2/WebGPU device paths, route coverage, and generated reports. Broad claims about all materials, postprocess chains, browsers, GPUs, or Three.js parity need dedicated evidence.
+
+## Current Limits
+
+- Rendering support is bounded to documented APIs, routes, and reports; it is not a blanket parity claim for every renderer feature or hardware target.

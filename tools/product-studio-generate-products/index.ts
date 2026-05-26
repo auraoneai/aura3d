@@ -197,7 +197,7 @@ function createGLTF(product: ProductDefinition): Record<string, unknown> {
   const textures = images.map((image, index) => ({ name: image.name, source: index, sampler: 0 }));
 
   return {
-    asset: { version: "2.0", generator: "A3D V2 product generator" },
+    asset: { version: "2.0", generator: "A3D Product studio product generator" },
     scene: 0,
     scenes: [{ name: `${product.id}-scene`, nodes: nodes.map((_, index) => index) }],
     nodes,
@@ -228,7 +228,7 @@ function createGLTF(product: ProductDefinition): Record<string, unknown> {
 
 function createManifest(product: ProductDefinition): Record<string, unknown> {
   return {
-    schema: "a3d-v2-product-manifest/v1",
+    schema: "a3d-product-studio-product-manifest",
     id: product.id,
     title: product.title,
     category: product.category,
@@ -255,7 +255,7 @@ function createManifest(product: ProductDefinition): Record<string, unknown> {
       namedNodes: true,
       namedMeshes: true,
       materialTextureSlots: ["baseColorTexture", "metallicRoughnessTexture", "normalTexture", "emissiveTexture"],
-      generatedFor: "A3D Product Studio V1"
+      generatedFor: "A3D Product Studio Legacy"
     }
   };
 }

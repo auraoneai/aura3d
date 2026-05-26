@@ -92,7 +92,7 @@ export function createProceduralTextureFixture(kind: ProceduralTextureFixtureKin
   const descriptor = descriptorFor(kind);
   return {
     id: kind,
-    label: options.label ?? `v4-procedural-${kind}`,
+    label: options.label ?? `external-parity-procedural-${kind}`,
     width,
     height,
     seed,

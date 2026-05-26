@@ -24,14 +24,14 @@ pnpm verify:api-docs
 | `@aura3d/ecs` | `1.0.0` | `packages/ecs/src/index.ts` | 21 |
 | `@aura3d/editor` | `1.0.0` | `packages/editor/src/index.ts` | 1 |
 | `@aura3d/editor-runtime` | `1.0.0` | `packages/editor-runtime/src/index.ts` | 46 |
-| `@aura3d/engine-runtime` | `1.0.0` | `packages/engine/src/index.ts` | 28 |
+| `@aura3d/engine-runtime` | `1.0.0` | `packages/engine/src/index.ts` | 27 |
 | `@aura3d/environments` | `1.0.0` | `packages/environments/src/index.ts` | 10 |
 | `@aura3d/input` | `1.0.0` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.0.0` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.0.0` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/physics` | `1.0.0` | `packages/physics/src/index.ts` | 24 |
 | `@aura3d/product-studio` | `1.0.0` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 259 |
+| `@aura3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 258 |
 | `@aura3d/scene` | `1.0.0` | `packages/scene/src/index.ts` | 20 |
 | `@aura3d/scripting` | `1.0.0` | `packages/scripting/src/index.ts` | 49 |
 | `@aura3d/three-compat` | `1.0.0` | `packages/three-compat/src/index.ts` | 31 |
@@ -125,16 +125,16 @@ export { createAssetImportPreflightReport, detectAssetImportFormat } from "./Ass
 export type { AssetImportPreflightFormat, AssetImportPreflightOptions, AssetImportPreflightProfile, AssetImportPreflightReport, AssetImportPreflightSettings, AssetImportPreflightStatus } from "./AssetImportPreflight";
 export { createAssetCompatibilityReport } from "./AssetCompatibility";
 export type { AssetCompatibilityLoaderName, AssetCompatibilityReport, AssetCompatibilityReportAsset, AssetCompatibilityReportOptions, AssetCompatibilityStatus, AssetLoaderCompatibilityResult, BlenderExportCompatibilityResult, ExternalAssetLoaderCompatibilityResult } from "./AssetCompatibility";
-export { summarizeV4Corpus, validateV4CorpusManifest } from "./V4Corpus";
-export type { V4CorpusAsset, V4CorpusManifest, V4CorpusSummary } from "./V4Corpus";
-export { loadV5AssetManifest, loadV5AssetRegistry, summarizeV5AssetRegistry } from "./threejs-compatibility/V5AssetRegistry";
-export { createV5AssetProvenance } from "./threejs-compatibility/V5AssetProvenance";
-export type { V5AssetManifest, V5AssetRegistrySummary } from "./threejs-compatibility/V5AssetRegistry";
-export type { V5AssetProvenance, V5SourceAsset, V5TrackedAssetInput } from "./threejs-compatibility/V5AssetProvenance";
-export { createV6GLTFRenderMetadata, createV6AssetCorpusSummary, inspectV6Glb, loadV6GLTFRenderPipeline, loadV6AssetManifest } from "./asset-corpus";
-export type { V6AssetClass, V6AssetCorpusRequirements, V6AssetCorpusSummary, V6AssetManifest, V6AssetManifestEntry, V6AssetReadinessEntry, V6GLTFRenderMetadata, V6GLTFRenderWarning, V6GLTFRenderPipeline, V6GLTFRenderPipelineOptions, V6GlbInspection } from "./asset-corpus";
-export { createV8AssetCorpusSummary, inspectV8Glb, loadV8AssetManifest, writeV8AssetCorpusReport } from "./V8AssetCorpus";
-export type { V8AssetClass, V8AssetCorpusSummary, V8AssetManifest, V8AssetManifestEntry, V8AssetReadinessEntry, V8AssetRequirement, V8EnvironmentManifestEntry, V8EnvironmentReadinessEntry, V8GlbInspection } from "./V8AssetCorpus";
+export { summarizeExternalParityGLTFCorpus, summarizeExternalParityCorpus, validateExternalParityGLTFCorpusManifest, validateExternalParityCorpusManifest } from "./ExternalParityGLTFCorpus";
+export type { ExternalParityGLTFCorpusAsset, ExternalParityGLTFCorpusManifest, ExternalParityGLTFCorpusSummary, ExternalParityCorpusAsset, ExternalParityCorpusManifest, ExternalParityCorpusSummary } from "./ExternalParityGLTFCorpus";
+export { loadThreeCompatAssetManifest, loadThreeCompatAssetRegistry, summarizeThreeCompatAssetRegistry } from "./threejs-compatibility/ThreeCompatAssetRegistry";
+export { createThreeCompatAssetProvenance } from "./threejs-compatibility/ThreeCompatAssetProvenance";
+export type { ThreeCompatAssetManifest, ThreeCompatAssetRegistrySummary } from "./threejs-compatibility/ThreeCompatAssetRegistry";
+export type { ThreeCompatAssetProvenance, ThreeCompatSourceAsset, ThreeCompatTrackedAssetInput } from "./threejs-compatibility/ThreeCompatAssetProvenance";
+export { createProductionGLTFRenderMetadata, createProductionAssetCorpusSummary, inspectProductionGlb, loadProductionGLTFRenderPipeline, loadProductionAssetManifest } from "./asset-corpus";
+export type { ProductionAssetClass, ProductionAssetCorpusRequirements, ProductionAssetCorpusSummary, ProductionAssetManifest, ProductionAssetManifestEntry, ProductionAssetReadinessEntry, ProductionGLTFRenderMetadata, ProductionGLTFRenderWarning, ProductionGLTFRenderPipeline, ProductionGLTFRenderPipelineOptions, ProductionGlbInspection } from "./asset-corpus";
+export { createAdvancedAssetCorpusSummary, inspectCurrentRoutesGlb, loadCurrentRoutesAssetManifest, writeAdvancedAssetCorpusReport } from "./AdvancedAssetCorpus";
+export type { CurrentRoutesAssetClass, AdvancedAssetCorpusSummary, CurrentRoutesAssetManifest, CurrentRoutesAssetManifestEntry, CurrentRoutesAssetReadinessEntry, CurrentRoutesAssetRequirement, CurrentRoutesEnvironmentManifestEntry, CurrentRoutesEnvironmentReadinessEntry, CurrentRoutesGlbInspection } from "./AdvancedAssetCorpus";
 export * from "./loaders";
 export { DEFAULT_ASSET_IMPORT_SETTINGS, assertValidGLTFCorpusManifest, createGLTFCorpusReport, normalizeAssetImportSettings, validateGLTFCorpusManifest } from "./AssetCorpus";
 export type { AssetDiagnostic, AssetDiagnosticSeverity, AssetImportSettings, GLTFCorpusAsset, GLTFCorpusAssetFormat, GLTFCorpusAssetReport, GLTFCorpusExpectedStatus, GLTFCorpusManifest, GLTFCorpusReport, GLTFCorpusSchemaVersion, GLTFCorpusSource, GLTFCorpusValidationResult } from "./AssetCorpus";
@@ -241,13 +241,13 @@ export { SelectionManager } from "./SelectionManager";
 export { InteractionControls } from "./InteractionControls";
 export type { HotspotHandler, InteractionControlMode, InteractionControlsEvent, InteractionControlsEventType, InteractionControlsListener, InteractionControlsOptions, InteractionControlsUpdate, InteractionRay, InteractionRayProvider, InteractionRootProvider } from "./InteractionControls";
 export { Picking } from "./Picking";
-export type { PickingDiagnostics, PickingOptions, PickingReport, V5PickResult } from "./Picking";
+export type { PickingDiagnostics, PickingOptions, PickingReport, ThreeCompatPickResult } from "./Picking";
 export { annotationFromPickHit, createDistrictPickingAnnotations, createEntityPickingAnnotations, createImportedGlbHotspotAnnotations, createPickingAnnotationObject, createPickingAnnotationRoot, createRobotPickingAnnotations, pickAnnotation, pickScreenSpaceAnnotation } from "./PickingAnnotations";
 export type { BuildingPickingDescriptor, DistrictPickingDescriptor, EntityPickingDescriptor, ImportedGlbHotspotDescriptor, PickingAnnotation, PickingAnnotationHitPolicy, PickingAnnotationKind, PickingAnnotationObject, PickingAnnotationOptions, PickingAnnotationReport, PickingAnnotationRoot, PickingAnnotationSource, ScreenPickingAnnotation, ScreenPickingHit, ScreenPickingOptions, ScreenPickingReport } from "./PickingAnnotations";
 export { ControlVector3 } from "./NativeControlTypes";
 export type { ControlObject3DLike, ControlPickMetadata, Vector3Like } from "./NativeControlTypes";
 export { createDefaultControlState } from "./ControlState";
-export type { V5ControlEvent, V5ControlState } from "./ControlState";
+export type { ThreeCompatControlEvent, ThreeCompatControlState } from "./ControlState";
 ```
 
 ## @aura3d/core
@@ -445,18 +445,17 @@ export type { SceneTransformTargetLike, TransformLike, TransformTarget } from ".
 export { A3D_APP_WORKFLOW_PRESETS, createA3DApp, resolveA3DAppQualityPreset } from "@aura3d/apps";
 export type { A3DApp, A3DAppDiagnostics, A3DAppOptions, A3DAppQualityPreset, A3DAppQualitySettings, A3DAppWorkflowPreset } from "@aura3d/apps";
 export { Engine } from "@aura3d/core";
-export { Renderer, createV4EnvironmentPipeline, listV4EnvironmentTargets } from "@aura3d/rendering";
-export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeV4Corpus } from "@aura3d/assets";
+export { Renderer, createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "@aura3d/rendering";
+export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRenderableAsset, summarizeExternalParityGLTFCorpus } from "@aura3d/assets";
 export { loadProductAsset } from "@aura3d/product-studio";
 export { createAnimationLabWorkflow, createAssetViewerWorkflow, createComparisonWorkflow, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createSceneShowcaseWorkflow } from "@aura3d/workflows";
-export * as v9 from "./advanced-runtime/index.js";
 export { A3DRenderer, A3DScene, A3DAppLifecycle } from "./advanced-runtime/index.js";
 export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
 export const workflows = { assetViewer: createAssetViewerWorkflow, productConfigurator: createProductConfiguratorWorkflow, materialStudio: createMaterialStudioWorkflow, sceneShowcase: createSceneShowcaseWorkflow, interactiveScene: createInteractiveSceneWorkflow, animationLab: createAnimationLabWorkflow, comparison: createComparisonWorkflow } as const;
 export type A3DWorkflowApi = typeof workflows;
-export type A3DEnvironmentOptions = V4EnvironmentPipelineOptions;
-export type A3DEnvironment = V4EnvironmentPipeline;
-export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment { return createV4EnvironmentPipeline(options);
+export type A3DEnvironmentOptions = ExternalParityEnvironmentPipelineOptions;
+export type A3DEnvironment = ExternalParityEnvironmentPipeline;
+export function createEnvironment(options: A3DEnvironmentOptions): A3DEnvironment { return createExternalParityEnvironmentPipeline(options);
 export async function loadAsset(urlOrAsset: string | RenderableAsset, options: LoadRenderableAssetOptions = {}): Promise<RenderableAsset> { return await loadRenderableAsset(urlOrAsset, options);
 export interface A3DMaterialVariantController<TVariantId extends string = string> { readonly current: TVariantId;
 export function createMaterialVariantController<TVariantId extends string>(
@@ -481,16 +480,16 @@ export function createDiagnosticsPanel(initial: { readonly render?: RenderDevice
 ### Export Declarations
 
 ```ts
-export { findV5EnvironmentPreset, listV5EnvironmentPresets, loadV5EnvironmentManifest, createV5EnvironmentGalleryModel, summarizeV5EnvironmentLibrary } from "./EnvironmentRegistry";
-export type { V5EnvironmentLibrarySummary, V5EnvironmentManifest } from "./EnvironmentRegistry";
-export { createV5EnvironmentDiagnostics, verifyV5HdriFile } from "./HDRIEnvironment";
-export type { V5EnvironmentDiagnostics, V5EnvironmentKind, V5EnvironmentProbeType, V5HDRIEnvironmentPreset } from "./HDRIEnvironment";
-export { createV5PMREMDiagnostics } from "./PMREMPreset";
-export type { V5PMREMDiagnostics, V5PMREMPreset } from "./PMREMPreset";
-export { createV5EnvironmentProbePreviews } from "./EnvironmentPreview";
-export type { V5EnvironmentProbePreview } from "./EnvironmentPreview";
-export { createV6EnvironmentCorpusSummary, inspectV6HDR, loadV6EnvironmentManifest } from "./production-runtime/V6EnvironmentCorpus";
-export type { V6HDREnvironment, V6HDRInspection, V6EnvironmentCorpusSummary, V6EnvironmentManifest, V6EnvironmentProbeType, V6EnvironmentReadinessEntry, V6EnvironmentRequirements, V6PMREMPreset } from "./production-runtime/V6EnvironmentCorpus";
+export { findThreeCompatEnvironmentPreset, listThreeCompatEnvironmentPresets, loadThreeCompatEnvironmentManifest, createThreeCompatEnvironmentGalleryModel, summarizeThreeCompatEnvironmentLibrary } from "./EnvironmentRegistry";
+export type { ThreeCompatEnvironmentLibrarySummary, ThreeCompatEnvironmentManifest } from "./EnvironmentRegistry";
+export { createThreeCompatEnvironmentDiagnostics, verifyThreeCompatHdriFile } from "./HDRIEnvironment";
+export type { ThreeCompatEnvironmentDiagnostics, ThreeCompatEnvironmentKind, ThreeCompatEnvironmentProbeType, ThreeCompatHDRIEnvironmentPreset } from "./HDRIEnvironment";
+export { createThreeCompatPMREMDiagnostics } from "./PMREMPreset";
+export type { ThreeCompatPMREMDiagnostics, ThreeCompatPMREMPreset } from "./PMREMPreset";
+export { createThreeCompatEnvironmentProbePreviews } from "./EnvironmentPreview";
+export type { ThreeCompatEnvironmentProbePreview } from "./EnvironmentPreview";
+export { createProductionEnvironmentCorpusSummary, inspectProductionHDR, loadProductionEnvironmentManifest } from "./production-runtime/ProductionEnvironmentCorpus";
+export type { ProductionHDREnvironment, ProductionHDRInspection, ProductionEnvironmentCorpusSummary, ProductionEnvironmentManifest, ProductionEnvironmentProbeType, ProductionEnvironmentReadinessEntry, ProductionEnvironmentRequirements, ProductionPMREMPreset } from "./production-runtime/ProductionEnvironmentCorpus";
 ```
 
 ## @aura3d/input
@@ -559,14 +558,14 @@ export type { ThirdPersonFollowControlsOptions } from "./controls/ThirdPersonFol
 ### Export Declarations
 
 ```ts
-export { findV5PbrMaterial, listV5MaterialProofChannels, listV5PbrMaterials, V5_PBR_MATERIAL_LIBRARY, V5_REQUIRED_MATERIAL_CLASSES } from "./PBRMaterialLibrary";
-export { findV5TextureSet, V5_TEXTURE_SETS } from "./TextureSet";
-export { summarizeV5MaterialLibrary } from "./MaterialValidation";
-export { createV5MaterialPreviewScene, createV5MaterialPreviewTile } from "./MaterialPreviewScene";
-export type { V5MaterialClass, V5MaterialParameters, V5MaterialPreset, V5MaterialProofChannel } from "./MaterialPreset";
-export type { V5TextureMapReference, V5TextureSemantic, V5TextureSet } from "./TextureSet";
-export type { V5MaterialLibrarySummary } from "./MaterialValidation";
-export type { V5MaterialPreviewTile } from "./MaterialPreviewScene";
+export { findThreeCompatPbrMaterial, listThreeCompatMaterialProofChannels, listThreeCompatPbrMaterials, THREE_COMPAT_PBR_MATERIAL_LIBRARY, THREE_COMPAT_REQUIRED_MATERIAL_CLASSES } from "./PBRMaterialLibrary";
+export { findThreeCompatTextureSet, THREE_COMPAT_TEXTURE_SETS } from "./TextureSet";
+export { summarizeThreeCompatMaterialLibrary } from "./MaterialValidation";
+export { createThreeCompatMaterialPreviewScene, createThreeCompatMaterialPreviewTile } from "./MaterialPreviewScene";
+export type { ThreeCompatMaterialClass, ThreeCompatMaterialParameters, ThreeCompatMaterialPreset, ThreeCompatMaterialProofChannel } from "./MaterialPreset";
+export type { ThreeCompatTextureMapReference, ThreeCompatTextureSemantic, ThreeCompatTextureSet } from "./TextureSet";
+export type { ThreeCompatMaterialLibrarySummary } from "./MaterialValidation";
+export type { ThreeCompatMaterialPreviewTile } from "./MaterialPreviewScene";
 export * from "./MaterialPresets.js";
 export * from "./NodeMaterial.js";
 ```
@@ -679,8 +678,8 @@ export { WebGPUDevice } from "./WebGPUDevice";
 export type { WebGPUAdapterLike, WebGPUBufferDescriptorLike, WebGPUBufferLike, WebGPUDeviceLike, WebGPUDeviceOptions, WebGPULike, WebGPUQueueLike, WebGPUSamplerDescriptorLike } from "./WebGPUDevice";
 export { isWebGPURenderTarget, runWebGPURenderToTextureProof } from "./WebGPURenderToTextureProof";
 export type { WebGPURenderToTextureProof, WebGPURenderToTextureProofOptions } from "./WebGPURenderToTextureProof";
-export { RendererV9 } from "./advanced-runtime";
-export type { RendererV9Options, RendererV9Source } from "./advanced-runtime";
+export { AdvancedRenderer } from "./advanced-runtime";
+export type { AdvancedRendererOptions, AdvancedRendererSource } from "./advanced-runtime";
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
 export { VertexBuffer } from "./VertexBuffer";
@@ -700,58 +699,58 @@ export { createEnvironmentPresetReport, createNamedEnvironmentPreset, listNamedE
 export type { EnvironmentPresetReport, NamedEnvironmentPresetDescriptor, NamedEnvironmentPresetId } from "./EnvironmentPreset";
 export { composeEnvironmentLighting } from "./EnvironmentLighting";
 export type { EnvironmentLightingCompositionOptions } from "./EnvironmentLighting";
-export { V4_TEXTURE_COLOR_POLICY, convertColorSpace, createColorConversionSamples, createV4ColorManagementPolicy, linearToSrgbChannel, srgbToLinearChannel, validateTextureColorSpace } from "./ColorManagement";
+export { EXTERNAL_PARITY_TEXTURE_COLOR_POLICY, convertColorSpace, createColorConversionSamples, createExternalParityColorManagementPolicy, linearToSrgbChannel, srgbToLinearChannel, validateTextureColorSpace } from "./ColorManagement";
 export type { A3DColorConversionSample, A3DColorManagementPolicy, A3DColorSpace, A3DTextureColorSpaceValidation, A3DTextureSemantic } from "./ColorManagement";
-export { applyV4ToneMappingPreset, createV4ToneMappingPolicy, listV4ToneMappingPresets, toneMapV4HdrPixels, toneMapV4Pixels } from "./ToneMapping";
-export type { V4ToneMappingIntent, V4ToneMappingPolicy } from "./ToneMapping";
-export { analyzeV4Exposure, createV4ExposurePolicy } from "./Exposure";
-export type { V4ExposureAnalysis, V4ExposurePolicy } from "./Exposure";
-export { createV4HdrPipeline, executeV4ToneMapPass } from "./HDRRenderPipeline";
-export type { V4HdrPipeline, V4HdrPipelineDescriptor, V4HdrPipelineMode, V4HdrRenderTargetFormat } from "./HDRRenderPipeline";
+export { applyExternalParityToneMappingPreset, createExternalParityToneMappingPolicy, listExternalParityToneMappingPresets, toneMapExternalParityHdrPixels, toneMapExternalParityPixels } from "./ToneMapping";
+export type { ExternalParityToneMappingIntent, ExternalParityToneMappingPolicy } from "./ToneMapping";
+export { analyzeExternalParityExposure, createExternalParityExposurePolicy } from "./Exposure";
+export type { ExternalParityExposureAnalysis, ExternalParityExposurePolicy } from "./Exposure";
+export { createExternalParityHdrPipeline, executeExternalParityToneMapPass } from "./HDRRenderPipeline";
+export type { ExternalParityHdrPipeline, ExternalParityHdrPipelineDescriptor, ExternalParityHdrPipelineMode, ExternalParityHdrRenderTargetFormat } from "./HDRRenderPipeline";
 export { createRendererVisualPipelineReport, evaluateRendererCanvasBacking, evaluateRendererCaptureQuality, evaluateRendererFrameCadence, evaluateRendererScreenshotConsistency } from "./RendererVisualPipelineReport";
 export type { RendererCanvasBackingInput, RendererCanvasBackingReport, RendererCaptureQualityInput, RendererCaptureQualityReport, RendererFrameCadenceInput, RendererFrameCadenceReport, RendererScreenshotConsistencyInput, RendererScreenshotConsistencyReport, RendererUnsupportedVisualCapability, RendererVisualColorReport, RendererVisualHdrTargetReport, RendererVisualPipelineReport, RendererVisualPipelineReportOptions, RendererVisualPipelineStatus, RendererVisualPostprocessDescriptor, RendererVisualPostprocessPassName, RendererVisualPostprocessReport, RendererVisualTargetFormat, RendererVisualToneMappingReport } from "./RendererVisualPipelineReport";
-export { V4_REQUIRED_DEBUG_VIEWS, createV4DebugView, createV4DebugViewSet, encodeLinearDebugColor } from "./RenderDebugViews";
-export type { V4DebugViewInput, V4DebugViewResult, V4RenderDebugView } from "./RenderDebugViews";
-export { createV4BrdfLut } from "./BRDFLut";
-export type { V4BrdfLut } from "./BRDFLut";
-export { createV4Pmrem } from "./PMREM";
-export type { V4Pmrem, V4PmremLevel } from "./PMREM";
-export { createV4IblResources } from "./IBL";
-export type { V4IblOptions, V4IblResourceSet } from "./IBL";
-export { createV4EnvironmentPipeline, listV4EnvironmentTargets } from "./EnvironmentPipeline";
-export type { V4EnvironmentPipeline, V4EnvironmentPipelineOptions, V4EnvironmentTarget } from "./EnvironmentPipeline";
-export { V4_MATERIAL_EXTENSION_SUPPORT, createV4MaterialExtensionDiagnostics, getV4MaterialExtensionState } from "./materials/MaterialExtensions";
-export type { V4MaterialExtension, V4MaterialExtensionState } from "./materials/MaterialExtensions";
-export { V4_PHYSICAL_MATERIAL_MATRIX, V4PhysicalMaterial, analyzeV4MaterialMatrix, createV4PhysicalMaterial } from "./materials/PhysicalMaterial";
-export type { V4MaterialKind, V4PhysicalMaterialAnalysis, V4PhysicalMaterialDescriptor } from "./materials/PhysicalMaterial";
-export { sortV4AlphaItems } from "./materials/AlphaSorting";
-export type { V4AlphaSortItem } from "./materials/AlphaSorting";
-export { evaluateV4Transmission } from "./materials/TransmissionPass";
-export type { V4TransmissionResult, V4TransmissionSample } from "./materials/TransmissionPass";
-export { createV4ContactShadow } from "./shadows/ContactShadows";
-export type { V4ContactShadow, V4ContactShadowOptions } from "./shadows/ContactShadows";
-export { createV4CascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
-export type { V4CascadeDescriptor, V4CascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
-export { createV4ShadowDebugViews } from "./shadows/ShadowDebugViews";
-export type { V4ShadowDebugView } from "./shadows/ShadowDebugViews";
-export { createV4BloomEvidence, runV4Bloom } from "./postprocess/BloomPass";
-export type { V4BloomEvidence } from "./postprocess/BloomPass";
-export { createV4DepthBinding, runV4SSAO } from "./postprocess/SSAOPass";
-export { runV4DepthOfField } from "./postprocess/DepthOfFieldPass";
-export { runV4ColorGrade } from "./postprocess/ColorGradingPass";
-export type { V4ColorGradePreset } from "./postprocess/ColorGradingPass";
+export { EXTERNAL_PARITY_REQUIRED_DEBUG_VIEWS, createExternalParityDebugView, createExternalParityDebugViewSet, encodeLinearDebugColor } from "./RenderDebugViews";
+export type { ExternalParityDebugViewInput, ExternalParityDebugViewResult, ExternalParityRenderDebugView } from "./RenderDebugViews";
+export { createExternalParityBrdfLut } from "./BRDFLut";
+export type { ExternalParityBrdfLut } from "./BRDFLut";
+export { createExternalParityPmrem } from "./PMREM";
+export type { ExternalParityPmrem, ExternalParityPmremLevel } from "./PMREM";
+export { createExternalParityIblResources } from "./IBL";
+export type { ExternalParityIblOptions, ExternalParityIblResourceSet } from "./IBL";
+export { createExternalParityEnvironmentPipeline, listExternalParityEnvironmentTargets } from "./EnvironmentPipeline";
+export type { ExternalParityEnvironmentPipeline, ExternalParityEnvironmentPipelineOptions, ExternalParityEnvironmentTarget } from "./EnvironmentPipeline";
+export { EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT, createExternalParityMaterialExtensionDiagnostics, getExternalParityMaterialExtensionState } from "./materials/MaterialExtensions";
+export type { ExternalParityMaterialExtension, ExternalParityMaterialExtensionState } from "./materials/MaterialExtensions";
+export { EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX, ExternalParityPhysicalMaterial, analyzeExternalParityMaterialMatrix, createExternalParityPhysicalMaterial } from "./materials/PhysicalMaterial";
+export type { ExternalParityMaterialKind, ExternalParityPhysicalMaterialAnalysis, ExternalParityPhysicalMaterialDescriptor } from "./materials/PhysicalMaterial";
+export { sortExternalParityAlphaItems } from "./materials/AlphaSorting";
+export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
+export { evaluateExternalParityTransmission } from "./materials/TransmissionPass";
+export type { ExternalParityTransmissionResult, ExternalParityTransmissionSample } from "./materials/TransmissionPass";
+export { createExternalParityContactShadow } from "./shadows/ContactShadows";
+export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
+export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
+export type { ExternalParityCascadeDescriptor, ExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
+export { createExternalParityShadowDebugViews } from "./shadows/ShadowDebugViews";
+export type { ExternalParityShadowDebugView } from "./shadows/ShadowDebugViews";
+export { createExternalParityBloomEvidence, runExternalParityBloom } from "./postprocess/BloomPass";
+export type { ExternalParityBloomEvidence } from "./postprocess/BloomPass";
+export { createExternalParityDepthBinding, runExternalParitySSAO } from "./postprocess/SSAOPass";
+export { runExternalParityDepthOfField } from "./postprocess/DepthOfFieldPass";
+export { runExternalParityColorGrade } from "./postprocess/ColorGradingPass";
+export type { ExternalParityColorGradePreset } from "./postprocess/ColorGradingPass";
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./postprocess/EffectComposer";
 export type { PostProcessCapabilityReport, PostProcessComposerDiagnostics, PostProcessComposerOptions, PostProcessComposerPass, PostProcessComposerRenderOptions, PostProcessUnsupportedEffect } from "./postprocess/EffectComposer";
 export { CINEMATIC_POSTPROCESS_EFFECT_IDS, analyzeCinematicPostprocessClarity, createCinematicDiagnosticsReport } from "./postprocess/CinematicDiagnostics";
 export type { CinematicCapabilityArea, CinematicCapabilityEntry, CinematicCapabilityStatus, CinematicDiagnosticId, CinematicDiagnosticsBackendInfo, CinematicDiagnosticsReport, CinematicPostprocessClarityFinding, CinematicPostprocessClarityFindingId, CinematicPostprocessClarityInput, CinematicPostprocessClarityReport, CinematicPostprocessClaritySeverity, CinematicPostprocessClarityStatus, CinematicPostprocessFrameMetrics, CinematicPostprocessPipelineDescriptor, CinematicPostProcessEffectId } from "./postprocess/CinematicDiagnostics";
-export { createV4RendererStats } from "./performance/RendererStats";
-export type { V4RendererStats, V4RendererStatsInput } from "./performance/RendererStats";
-export { evaluateV4ResourceBudget } from "./performance/ResourceBudget";
-export type { V4ResourceBudget, V4ResourceBudgetReport, V4ResourceBudgetUsage } from "./performance/ResourceBudget";
-export { sortV4RenderItems, sortRenderQueueItems } from "./performance/RenderItemSorting";
-export type { V4SortableRenderItem, RenderQueueBucket, RenderQueuePlan, RenderQueueSortDiagnostics, RenderQueueSortItem, RenderQueueSortOptions } from "./performance/RenderItemSorting";
-export { createV4DefaultLodLevels, selectV4LodLevel } from "./performance/LOD";
-export type { V4LodLevel } from "./performance/LOD";
+export { createRendererStats } from "./performance/RendererStats";
+export type { RendererStats, RendererStatsInput } from "./performance/RendererStats";
+export { evaluateResourceBudget } from "./performance/ResourceBudget";
+export type { ResourceBudget, ResourceBudgetReport, ResourceBudgetUsage } from "./performance/ResourceBudget";
+export { sortRenderItems, sortRenderQueueItems } from "./performance/RenderItemSorting";
+export type { SortableRenderItem, RenderQueueBucket, RenderQueuePlan, RenderQueueSortDiagnostics, RenderQueueSortItem, RenderQueueSortOptions } from "./performance/RenderItemSorting";
+export { createDefaultPerformanceLodLevels, selectPerformanceLodLevel } from "./performance/LOD";
+export type { PerformanceLodLevel } from "./performance/LOD";
 export type { BrdfLutDescriptor, DiffuseIrradianceGenerationOptions, EnvironmentColorSpace, EnvironmentHdrEncodeOptions, EnvironmentInputEncoding, EnvironmentMapResourceInput, EnvironmentMapResourceSet, EnvironmentMipGenerationOptions, EnvironmentResourceSetOptions, EnvironmentToneMappingOperator, LinearHdrEnvironmentMapSource, Rgba8EnvironmentMapSource, RgbeEnvironmentMapSource } from "./EnvironmentMapResources";
 export { Sampler } from "./Sampler";
 export type { SamplerDescriptor, TextureAddressMode, TextureFilter, TextureMagFilter, TextureMinFilter } from "./Sampler";
@@ -759,14 +758,14 @@ export { UniformLayout } from "./UniformLayout";
 export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } from "./UniformLayout";
 export { TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
-export { RendererV5, createRendererV5, summarizeV5RendererDiagnostics, V5_REQUIRED_RENDERER_FEATURES } from "./threejs-compatibility";
-export type { V5InstancingSystemStatus, V5LightDescriptor, V5LightKind, V5MaterialMode, V5RenderTargetDescriptor, V5RendererBackend, V5RendererDiagnostics, V5RendererFeatureStatus, V5RendererOptions, V5RendererSupportState, V5SceneRenderPlan, V5ShadowSystemStatus, V5TextureCapability, V5TransparencySystemStatus } from "./threejs-compatibility";
+export { ThreeCompatRenderer, createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics, THREE_COMPAT_REQUIRED_RENDERER_FEATURES } from "./threejs-compatibility";
+export type { ThreeCompatInstancingSystemStatus, ThreeCompatLightDescriptor, ThreeCompatLightKind, ThreeCompatMaterialMode, ThreeCompatRenderTargetDescriptor, ThreeCompatRendererBackend, ThreeCompatRendererDiagnostics, ThreeCompatRendererFeatureStatus, ThreeCompatRendererOptions, ThreeCompatRendererSupportState, ThreeCompatSceneRenderPlan, ThreeCompatShadowSystemStatus, ThreeCompatTextureCapability, ThreeCompatTransparencySystemStatus } from "./threejs-compatibility";
 export * from "./threejs-compatibility/postprocess";
 export * from "./threejs-compatibility/shaders";
 export * from "./threejs-compatibility/vfx";
 export * from "./threejs-compatibility/performance";
-export { ProductionWebGL2Renderer, ProductionWebGPURenderer, analyzePixels, createV6OrbitControlPreset, createV6EnvironmentLightingResources, createV6EffectsRenderSource, createV6PbrHdrPipelineFromRadiance, createV6ToneMappingPolicy, createV6WebGPUReport, loadV6HdrEnvironment, parseV6RadianceHDR, summarizeV6AnimationWorkflow, summarizeV6EffectsProof, summarizeV6ProductionProof, summarizeV6WebGL2Proof } from "./production-runtime";
-export type { V6EffectsOptions, V6EffectsSummary, V6AnimationMetadataInput, V6AnimationWorkflowSummary, V6OrbitControlPreset, V6EnvironmentLightingResources, V6HdrEnvironmentLoaderOptions, V6LoadedHdrEnvironment, V6ImportedAssetRenderMetadata, V6PbrHdrPipeline, V6PbrHdrPipelineOptions, V6PixelMetrics, V6ProductionRenderer, V6RadianceHDR, V6RenderProof, V6RendererBackend, V6RendererFeature, V6RendererFeatureState, V6RendererInput, V7FrameRenderResult, V6ToneMappingOperator, V6ToneMappingPolicy, V6WebGPUAdapterLike, V6WebGPULike, V6WebGPUReport, V6WebGPUStatus, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./production-runtime";
+export { ProductionWebGL2Renderer, ProductionRuntimeRenderer, ProductionWebGPURenderer, analyzePixels, createContactShadowPass, createProductionOrbitControlPreset, createProductionEnvironmentLightingResources, createProductionEffectsRenderSource, createProductionPbrHdrPipelineFromRadiance, createProductionToneMappingPolicy, createProductionWebGPUReport, resolveProductionRuntimeRendererBackend, loadProductionHdrEnvironment, parseProductionRadianceHDR, summarizeProductionAnimationWorkflow, summarizeProductionEffectsProof, summarizeProductionProductionProof, summarizeProductionWebGL2Proof } from "./production-runtime";
+export type { ProductionEffectsOptions, ProductionEffectsSummary, ProductionAnimationMetadataInput, ProductionAnimationWorkflowSummary, ProductionOrbitControlPreset, ProductionEnvironmentLightingResources, ProductionHdrEnvironmentLoaderOptions, ProductionLoadedHdrEnvironment, ProductionImportedAssetRenderMetadata, ProductionPbrHdrPipeline, ProductionPbrHdrPipelineOptions, ProductionPixelMetrics, ProductionProductionRenderer, ProductionRadianceHDR, ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererFeatureState, ProductionRendererInput, RuntimeParityFrameRenderResult, ProductionToneMappingOperator, ProductionToneMappingPolicy, ProductionWebGPUAdapterLike, ProductionWebGPULike, ProductionWebGPUReport, ProductionWebGPUStatus, ContactShadowPassDiagnostics, ProductionRuntimeRendererBackendPreference, ProductionRuntimeRendererBackendSelection, ProductionRuntimeRendererOptions, ProductionWebGL2RendererOptions, ProductionWebGPURendererOptions } from "./production-runtime";
 export { ShaderModule } from "./ShaderModule";
 export { RenderPipeline } from "./RenderPipeline";
 export type { PipelineDrawDescriptor, RenderPipelineDescriptor } from "./RenderPipeline";
@@ -885,8 +884,8 @@ export { createRendererPostprocessPasses, createRendererPostprocessPlanDiagnosti
 export type { RendererPostProcessPassName, RendererPostProcessPassPlan, RendererPostprocessExecutionMode, RendererPostprocessPassDiagnostics, RendererPostprocessPlanContext, RendererPostprocessPlanDiagnostics, RendererPostprocessPlanOptions, RendererPostprocessTargetFormat } from "./RendererPostprocessPlan";
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
 export type { RendererFeature, RendererFeatureReport, RendererFeatureStatus } from "./RendererFeatureGates";
-export { createV4EnvironmentLighting, createV4DirectionalShadowEvidence, createV4FlagshipRenderPresetEvidence, createV4GeneratedEnvironmentMapSource, createV4GeneratedHdrEnvironmentMapSource, createV4RenderPresetEvidence, sampleV4LdrPostprocessReadback, v4ActiveFeature, v4BlockedFeature, v4UnsupportedFeature } from "./V4RenderPreset";
-export type { V4EnvironmentLightingBundle, V4EnvironmentPreset, V4DirectionalShadowEvidence, V4LdrPostprocessSummary, V4ReadbackDevice, V4RenderPresetEvidence, V4RenderPresetEvidenceOptions, V4RenderPresetFeature, V4RenderPresetFeatureStatus } from "./V4RenderPreset";
+export { createExternalParityEnvironmentLighting, createExternalParityDirectionalShadowEvidence, createExternalParityFlagshipRenderPresetEvidence, createExternalParityGeneratedEnvironmentMapSource, createExternalParityGeneratedHdrEnvironmentMapSource, createExternalParityRenderPresetEvidence, sampleExternalParityLdrPostprocessReadback, externalParityActiveFeature, externalParityBlockedFeature, externalParityUnsupportedFeature } from "./ExternalParityRenderPreset";
+export type { ExternalParityEnvironmentLightingBundle, ExternalParityEnvironmentPreset, ExternalParityDirectionalShadowEvidence, ExternalParityLdrPostprocessSummary, ExternalParityReadbackDevice, ExternalParityRenderPresetEvidence, ExternalParityRenderPresetEvidenceOptions, ExternalParityRenderPresetFeature, ExternalParityRenderPresetFeatureStatus } from "./ExternalParityRenderPreset";
 export { PBR_REFERENCE_EPSILON, PBR_REFERENCE_INV_PI, PBR_REFERENCE_MIN_ROUGHNESS, PBR_REFERENCE_PI, pbrCausticsConformanceSuite, pbrCausticsTransmissionResponse, pbrDiffuseBurley, pbrDirectLight, pbrDistributionGgx, pbrEnvironmentLight, pbrF0, pbrFresnelSchlick, pbrFresnelSchlickRoughness, pbrFresnelSchlickRoughnessSpecular, pbrFresnelSchlickSpecular, pbrGeometrySmithGgxCorrelated, pbrPhotometricConformanceSuite, pbrReferenceFinite, pbrReferenceLuminance, pbrSaturate, pbrTransmissionVolumeConformanceSuite, pbrTransmissionVolumeResponse } from "./PbrReference";
 export type { PbrDirectLightInput, PbrEnvironmentLightInput, PbrCausticsConformanceReport, PbrCausticsTransmissionInput, PbrCausticsTransmissionResponse, PbrPhotometricConformanceCategory, PbrPhotometricConformanceCheck, PbrPhotometricConformanceReport, PbrPhotometricConformanceSample, PbrTransmissionVolumeConformanceReport, PbrTransmissionVolumeInput, PbrTransmissionVolumeResponse, Vec3 } from "./PbrReference";
 export * from "./production-runtime/geometry/ProjectedDecalGeometry";
@@ -907,7 +906,6 @@ export * from "./performance/BVH.js";
 export * from "./performance/Octree.js";
 export * from "./performance/Batcher.js";
 export * from "./webgpu/WebGPUBuffer.js";
-export * from "./webgpu/WebGPUCompute.js";
 export * from "./webgpu/WebGPUPipelineCache.js";
 export * from "./webgpu/WebGPUPostProcess.js";
 export * from "./webgpu/WebGPUTexture.js";
@@ -1036,27 +1034,27 @@ export { RaycasterCompat } from "./core/RaycasterCompat";
 export type { RaycasterCompatIntersection } from "./core/RaycasterCompat";
 export { ColorCompat, Matrix4Compat, QuaternionCompat, Vector3Compat } from "./math";
 export { CameraCompat, OrthographicCameraCompat, PerspectiveCameraCompat } from "./cameras";
-export { BoxGeometryCompat, BufferGeometryCompat, CircleGeometryCompat, ConeGeometryCompat, CylinderGeometryCompat, InstancedBufferGeometryCompat, PlaneGeometryCompat, SphereGeometryCompat, TorusGeometryCompat, V5_COMPAT_GEOMETRY_TYPES } from "./geometries";
+export { BoxGeometryCompat, BufferGeometryCompat, CircleGeometryCompat, ConeGeometryCompat, CylinderGeometryCompat, InstancedBufferGeometryCompat, PlaneGeometryCompat, SphereGeometryCompat, TorusGeometryCompat, THREE_COMPAT_COMPAT_GEOMETRY_TYPES } from "./geometries";
 export type { BufferAttributeCompat } from "./geometries";
-export { LineBasicMaterialCompat, MaterialCompat, MeshBasicMaterialCompat, MeshLambertMaterialCompat, MeshPhongMaterialCompat, MeshPhysicalMaterialCompat, MeshStandardMaterialCompat, PointsMaterialCompat, ShaderMaterialCompat, SpriteMaterialCompat, V5_COMPAT_MATERIAL_TYPES } from "./materials";
+export { LineBasicMaterialCompat, MaterialCompat, MeshBasicMaterialCompat, MeshLambertMaterialCompat, MeshPhongMaterialCompat, MeshPhysicalMaterialCompat, MeshStandardMaterialCompat, PointsMaterialCompat, ShaderMaterialCompat, SpriteMaterialCompat, THREE_COMPAT_COMPAT_MATERIAL_TYPES } from "./materials";
 export type { MaterialCompatParameters } from "./materials";
-export { TextureCompat, TextureLoaderCompat, V5_COMPAT_TEXTURE_SETTINGS } from "./textures";
+export { TextureCompat, TextureLoaderCompat, THREE_COMPAT_COMPAT_TEXTURE_SETTINGS } from "./textures";
 export type { TextureFilterCompat, TextureWrapCompat } from "./textures";
 export { WebGLMultipleRenderTargetsCompat, WebGLRenderTargetCompat } from "./render-targets";
 export { CubeTextureLoaderCompat, EXRLoaderCompat, GLTFLoaderCompat, HDRLoaderCompat, KTX2LoaderCompat, MTLLoaderCompat, OBJLoaderCompat, ThreeCompatTextureLoader } from "./loaders";
 export { DragControls, FirstPersonControls, FlyControls, MapControls, OrbitControls, Picking, PointerLockControls, SelectionManager, TrackballControls, TransformControls } from "./controls";
-export type { TransformControlMode, V5ControlState, V5PickResult } from "./controls";
+export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
 export { AnimationActionCompat, AnimationClipCompat, AnimationMixerCompat, MorphTargetMixerCompat, SkeletonCompat, SkinnedMeshCompat } from "./animation";
 export { ColorGradingPassCompat, DepthOfFieldPassCompat, EffectComposerCompat, FXAAPassCompat, OutlinePassCompat, RenderPassCompat, ShaderPassCompat, SMAAPassCompat, SSAOPassCompat, TAAPassCompat, UnrealBloomPassCompat, VignettePassCompat } from "./postprocessing";
-export { NodeMaterialCompat, RawShaderMaterialCompat, CustomShaderMaterialCompat, UniformsCompat, SHADER_CHUNKS_V5, diagnoseV5Shader } from "./shaders";
-export { V5_THREE_IMPORT_MAP } from "./migration/ImportMap";
+export { NodeMaterialCompat, RawShaderMaterialCompat, CustomShaderMaterialCompat, UniformsCompat, SHADER_CHUNKS_THREE_COMPAT, diagnoseThreeCompatShader } from "./shaders";
+export { THREE_COMPAT_THREE_IMPORT_MAP } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
-export type { V5MigrationResult } from "./migration/ThreeToA3DAdapter";
-export { createV5CompatibilityWarnings } from "./migration/CompatibilityWarnings";
-export type { V5CompatibilityWarning } from "./migration/CompatibilityWarnings";
+export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
+export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";
+export type { ThreeCompatCompatibilityWarning } from "./migration/CompatibilityWarnings";
 export { AmbientLightCompat, DirectionalLightCompat, HemisphereLightCompat, LightCompat, PointLightCompat, RectAreaLightCompat, SpotLightCompat } from "./lights";
 export { AxesHelperCompat, BoxHelperCompat, CameraHelperCompat, DirectionalLightHelperCompat, GridHelperCompat, HelperLineSegmentsCompat, SkeletonHelperCompat } from "./helpers";
-export { V5_COMPATIBILITY_THRESHOLDS, buildInitialCompatibilityMatrix, supportedOrPartial } from "./ThreeCompatibilityMatrix";
+export { THREE_COMPAT_COMPATIBILITY_THRESHOLDS, buildInitialCompatibilityMatrix, supportedOrPartial } from "./ThreeCompatibilityMatrix";
 export type { ThreeApiCategory, ThreeApiInventory, ThreeApiInventoryEntry } from "./ThreeApiInventory";
 export type { ThreeCompatibilityEntry, ThreeCompatibilityMatrix, ThreeCompatibilityStatus, ThreeCompatibilityThreshold } from "./ThreeCompatibilityMatrix";
 ```
@@ -1078,8 +1076,8 @@ export { createInteractiveSceneWorkflow } from "./InteractiveSceneWorkflow";
 export { createAnimationLabWorkflow } from "./AnimationLabWorkflow";
 export { createComparisonWorkflow } from "./ComparisonWorkflow";
 export { createWorkflowDiagnostics } from "./WorkflowDiagnostics";
-export { workflows as v4Workflows } from "./workflow-foundation/index";
-export { V6_WORKFLOWS, createV6AssetPreflight, createV6ProductionRendererDefaults, createV6VisualQAResult, createV6WorkflowPlan, listV6WorkflowDefinitions, runV6Example } from "./production-runtime";
-export type { V6AssetPreflightInput, V6AssetPreflightResult, V6ExampleAsset, V6ExampleDefinition, V6ExampleEnvironment, V6ExampleRuntime, V6ExampleRuntimeMetrics, V6ProductionRendererDefaults, V6VisualQAInput, V6VisualQAResult, V6WorkflowDefinition, V6WorkflowId, V6WorkflowPlan } from "./production-runtime";
+export { workflows as externalParityWorkflows } from "./workflow-foundation/index";
+export { PRODUCTION_WORKFLOWS, createProductionAssetPreflight, createProductionRendererDefaults, createProductionVisualQAResult, createProductionWorkflowPlan, listProductionWorkflowDefinitions, runProductionExample } from "./production-runtime";
+export type { ProductionAssetPreflightInput, ProductionAssetPreflightResult, ProductionExampleAsset, ProductionExampleDefinition, ProductionExampleEnvironment, ProductionExampleRuntime, ProductionExampleRuntimeMetrics, ProductionRendererDefaults, ProductionVisualQAInput, ProductionVisualQAResult, ProductionWorkflowDefinition, ProductionWorkflowId, ProductionWorkflowPlan } from "./production-runtime";
 export type * from "./WorkflowTypes";
 ```

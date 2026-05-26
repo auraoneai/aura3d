@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportDir = resolve("tests/reports/engine-readiness-canonical-scene");
 const manifestPath = join(reportDir, "manifest.json");
 const manifest: CanonicalSceneManifest = {
-  schemaVersion: "a3d-engine-readiness-canonical-scene-manifest-v1",
+  schemaVersion: "a3d-engine-readiness-canonical-scene-manifest",
   generatedAt: new Date().toISOString(),
   command: "pnpm exec playwright test tests/browser/rendering-canonical-scene.spec.ts --reporter=line",
   setupProof: {
@@ -101,7 +101,7 @@ test.describe("engine-readiness canonical renderer scene", () => {
 async function renderCanonical(page: import("@playwright/test").Page, id: string, options: Record<string, unknown>): Promise<CanonicalRenderResult> {
   return await page.evaluate(async ({ id, options, origin }) => {
     const rendering = await import(`${origin}/packages/rendering/src/index.ts`);
-    const assets = await import(`${origin}/packages/assets/src/index.ts`);
+    const assets = await import(`${origin}/packages/assets/src/browser-index.ts`);
     const { Renderer, analyzeRgbaFrameVisualMetrics } = rendering;
     const { loadRenderableAsset, createRenderableScene } = assets;
     const width = 960;
@@ -188,7 +188,7 @@ function recordValidation(id: string, ok: boolean): void {
 }
 
 interface CanonicalSceneManifest {
-  readonly schemaVersion: "a3d-engine-readiness-canonical-scene-manifest-v1";
+  readonly schemaVersion: "a3d-engine-readiness-canonical-scene-manifest";
   generatedAt: string;
   readonly command: string;
   readonly setupProof: {

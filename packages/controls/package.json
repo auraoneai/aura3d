@@ -2,12 +2,12 @@
   "name": "@aura3d/controls",
   "version": "1.0.0",
   "type": "module",
-  "main": "../../dist/controls/index.js",
-  "types": "../../dist/controls/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "../../dist/controls/index.d.ts",
-      "import": "../../dist/controls/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "dependencies": {

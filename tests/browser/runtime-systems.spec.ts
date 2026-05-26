@@ -15,7 +15,7 @@ const report: RuntimeReport = {
   generatedAt: new Date().toISOString(),
 };
 
-test.describe("v3 runtime systems", () => {
+test.describe("runtime systems", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -103,12 +103,12 @@ test.describe("v3 runtime systems", () => {
     expect(Number(state?.metrics.audioPlays ?? 0)).toBeGreaterThanOrEqual(1);
     expect(state?.metrics.bindingPreset).toBe("pointer");
     expect(state?.metrics.spatialAudio).toBe(true);
-    expect(state?.metrics.spatialAudioDebug).toBe(true);
+    expect(state?.metrics.spatialAudioState).toBe(true);
     expect(Number(state?.metrics.spatialDistance ?? 0)).toBeGreaterThan(0);
     expect(Number(state?.metrics.spatialSourceX ?? 0)).toBeCloseTo(0.9);
     expect(Number(state?.metrics.mobileUnlockAttempts ?? 0)).toBeGreaterThanOrEqual(1);
     expect(state?.metrics.mobileUnlockHandling).toBe(true);
-    expect(String(state?.metrics.spatialAudioDebugText ?? "")).toContain("listener");
+    expect(String(state?.metrics.spatialAudioStateText ?? "")).toContain("listener");
     expect(state?.metrics.pointerLockSupported).toBe(true);
     expect(Number(state?.metrics.pointerLockRequested ?? 0)).toBeGreaterThanOrEqual(1);
     expect(Number(state?.metrics.pointerLockChanges ?? 0) + Number(state?.metrics.pointerLockErrors ?? 0)).toBeGreaterThanOrEqual(0);
@@ -140,7 +140,7 @@ test.describe("v3 runtime systems", () => {
     await expect(page.locator("[data-testid='game-slice-canvas']")).toBeVisible();
   });
 
-  test("physics sandbox exposes v3 scene coverage and stability metrics", async ({ page }) => {
+  test("physics sandbox exposes foundation scene coverage and stability metrics", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/physics-sandbox/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_PHYSICS_SANDBOX__?.status === "ready", undefined, { timeout: 20_000 });

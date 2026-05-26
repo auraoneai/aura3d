@@ -194,7 +194,7 @@ writeFileSync(join(outDir, "smart-city-district.bin"), bin);
 writeFileSync(join(outDir, "smart-city-district.gltf"), `${JSON.stringify({
   asset: {
     version: "2.0",
-    generator: "A3D v9 advanced gallery authored smart-city generator"
+    generator: "A3D threejs-parity advanced gallery authored smart-city generator"
   },
   scene: 0,
   scenes: [{ name: "Smart City District", nodes: nodes.map((_, index) => index) }],

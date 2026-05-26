@@ -1,42 +1,37 @@
 # Completion Audit
 
+Version: 1.0.0
+
+The documentation audit found that older docs overstated the current report state. The current local Three.js superiority report snapshot is passing after regenerating the retained contextual report set.
+
 ## Current Result
 
-A3D has a passing V10 superiority audit for the measured browser 3D categories.
+The codebase has broad first-party implementation coverage and passing local reports for feature parity, visual quality, performance, animation fidelity, physics fidelity, lifecycle, developer workflow, claim defense, and the aggregate superiority audit.
 
-The current claim is evidence-scoped: A3D matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the V10 reports.
+## Current Local Snapshot
 
-## Latest V10 Snapshot
-
-| Source | Result |
+| Source | Current local status |
 |---|---|
-| `tests/reports/v10/superiority-audit.json` | Pass |
-| `tests/reports/v10/feature-parity.json` | Pass |
-| `tests/reports/v10/visual-quality.json` | Pass |
-| `tests/reports/v10/performance.json` | Pass |
-| `tests/reports/v10/animation-fidelity.json` | Pass |
-| `tests/reports/v10/physics-fidelity.json` | Pass |
-| `tests/reports/v10/memory-lifecycle.json` | Pass |
-| `tests/reports/v10/developer-workflow.json` | Pass |
-| `tests/reports/v10/claim-defense.json` | Pass |
-
-## What Can Be Claimed
-
-A3D has evidence-backed parity/exceeds claims for:
-
-- Product and asset viewer workflows.
-- Public package-backed renderer foundations.
-- glTF/GLB loading and render-resource conversion.
-- PBR/HDR/material work.
-- Animation, skinning, morph, IK, retargeting, and crowd workflows.
-- Physics and interaction workflows.
-- WebGL2/WebGPU route evidence.
-- Same-scene comparison work against Three.js examples.
+| `tests/reports/threejs-parity/threejs-inventory.json` | Pass |
+| `tests/reports/threejs-parity/same-scene-render.json` | Pass |
+| `tests/reports/threejs-parity/visual-review.json` | Pass |
+| `tests/reports/threejs-parity/performance.json` | Pass |
+| `tests/reports/superiority/feature-parity.json` | Pass |
+| `tests/reports/superiority/visual-quality.json` | Pass |
+| `tests/reports/superiority/performance.json` | Pass |
+| `tests/reports/superiority/animation-fidelity.json` | Pass |
+| `tests/reports/superiority/physics-comparison-baseline.json` | Pass |
+| `tests/reports/superiority/physics-fidelity.json` | Pass |
+| `tests/reports/superiority/resource-lifecycle-100-reloads.json` | Pass |
+| `tests/reports/superiority/memory-lifecycle.json` | Pass |
+| `tests/reports/superiority/developer-workflow.json` | Pass |
+| `tests/reports/superiority/claim-defense.json` | Pass |
+| `tests/reports/superiority/superiority-audit.json` | Pass |
 
 ## Claim Discipline
 
-Public claims must link to `tests/reports/v10/claim-defense.json` and `docs/project/v10-superiority-status.md`. Claims outside the measured categories need a new report and gate before they become public copy.
+Public claims must be as narrow as the generated evidence. The full `pnpm superiority` command has been run locally and the generated superiority audit report passes in this workspace; publish claims only with fresh regenerated evidence from the target release or CI run.
 
-## Audit Rule
+## Documentation Audit Outcome
 
-A feature remains in the parity/exceeds set only when package code, tests, route evidence where relevant, reports, and docs all agree.
+Historical milestone, roadmap, prompt, and checklist documents were pruned because they duplicated or contradicted current package code and report paths. Current documentation should point to active packages, scripts, routes, and report generators instead.

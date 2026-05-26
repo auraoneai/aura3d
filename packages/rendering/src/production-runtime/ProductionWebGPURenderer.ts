@@ -6,13 +6,13 @@ import {
   type ProductionWebGL2RendererOptions
 } from "./ProductionWebGL2Renderer";
 import type {
-  V6PixelMetrics,
-  V6ProductionRenderer,
-  V6RenderProof,
-  V6RendererFeature,
-  V6RendererInput,
-  V7FrameRenderResult,
-  V7TransmissionBackdropCaptureProof
+  ProductionPixelMetrics,
+  ProductionProductionRenderer,
+  ProductionRenderProof,
+  ProductionRendererFeature,
+  ProductionRendererInput,
+  RuntimeParityFrameRenderResult,
+  RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";
 import {
   bindTransmissionBackdropCapture,
@@ -20,7 +20,7 @@ import {
   normalizeTransmissionBackdropCapture
 } from "./TransmissionBackdropCapture";
 
-export type V6WebGPUStatus = "available" | "unavailable" | "blocked";
+export type ProductionWebGPUStatus = "available" | "unavailable" | "blocked";
 
 export interface ProductionWebGPURendererOptions extends Omit<RendererOptions, "backend"> {
   readonly canvas?: HTMLCanvasElement | OffscreenCanvas;
@@ -28,7 +28,7 @@ export interface ProductionWebGPURendererOptions extends Omit<RendererOptions, "
   readonly height: number;
 }
 
-export class ProductionWebGPURenderer implements V6ProductionRenderer {
+export class ProductionWebGPURenderer implements ProductionProductionRenderer {
   readonly backend = "webgpu" as const;
 
   private constructor(private readonly renderer: Renderer, private readonly width: number, private readonly height: number) {}
@@ -41,19 +41,19 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     });
     if (renderer.device.kind !== "webgpu") {
       renderer.dispose();
-      throw new Error(`V7 production WebGPU renderer requires a real WebGPU device, got ${renderer.device.kind}.`);
+      throw new Error(`Production WebGPU renderer requires a real WebGPU device, got ${renderer.device.kind}.`);
     }
     const capabilities = new Set<string>(renderer.device.info.capabilities ?? []);
     const requiredCapabilities = ["native-render-pipeline", "native-sampled-textures", "native-texture-readback"];
     const missing = requiredCapabilities.filter((capability) => !capabilities.has(capability));
     if (missing.length > 0 || !renderer.device.readPixelsAsync) {
       renderer.dispose();
-      throw new Error(`V7 production WebGPU renderer requires native render pipeline, sampled textures, and texture-to-buffer readback. Missing: ${missing.join(", ") || "readPixelsAsync"}.`);
+      throw new Error(`Production WebGPU renderer requires native render pipeline, sampled textures, and texture-to-buffer readback. Missing: ${missing.join(", ") || "readPixelsAsync"}.`);
     }
     return new ProductionWebGPURenderer(renderer, options.width, options.height);
   }
 
-  renderFrame(input: V6RendererInput): V7FrameRenderResult {
+  renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     this.validateImportedAsset(input);
     const diagnostics = this.renderer.render(input.source, input.camera);
     return {
@@ -63,7 +63,7 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     };
   }
 
-  async renderFrameAsync(input: V6RendererInput): Promise<V7FrameRenderResult> {
+  async renderFrameAsync(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
     this.validateImportedAsset(input);
     const diagnostics = await this.renderer.renderAsync(input.source, input.camera);
     return {
@@ -73,10 +73,10 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     };
   }
 
-  renderImportedAsset(input: V6RendererInput): V6RenderProof {
+  renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof {
     this.validateImportedAsset(input);
     const target = this.createProofTarget();
-    let transmissionBackdropCapture: V7TransmissionBackdropCaptureProof | undefined;
+    let transmissionBackdropCapture: RuntimeParityTransmissionBackdropCaptureProof | undefined;
     let transmissionBackdropTexture: Texture | undefined;
     try {
       const captureOptions = normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture);
@@ -115,10 +115,10 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     }
   }
 
-  async renderImportedAssetAsync(input: V6RendererInput): Promise<V6RenderProof> {
+  async renderImportedAssetAsync(input: ProductionRendererInput): Promise<ProductionRenderProof> {
     this.validateImportedAsset(input);
     const target = this.createProofTarget();
-    let transmissionBackdropCapture: V7TransmissionBackdropCaptureProof | undefined;
+    let transmissionBackdropCapture: RuntimeParityTransmissionBackdropCaptureProof | undefined;
     let transmissionBackdropTexture: Texture | undefined;
     try {
       const readPixelsAsync = this.renderer.device.readPixelsAsync;
@@ -163,9 +163,9 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     }
   }
 
-  getFeatures(diagnostics = this.getDiagnostics(), input?: V6RendererInput, pixels?: V6PixelMetrics): readonly V6RendererFeature[] {
+  getFeatures(diagnostics = this.getDiagnostics(), input?: ProductionRendererInput, pixels?: ProductionPixelMetrics): readonly ProductionRendererFeature[] {
     const capabilities = new Set(this.renderer.device.info.capabilities ?? []);
-    const feature = (id: string, state: V6RendererFeature["state"], detail: string): V6RendererFeature => ({ id, state, detail });
+    const feature = (id: string, state: ProductionRendererFeature["state"], detail: string): ProductionRendererFeature => ({ id, state, detail });
     const nativePbrSubmissions = diagnostics.nativePbrSubmissions ?? 0;
     return [
       feature("real-webgpu-context", this.renderer.device.kind === "webgpu" ? "supported" : "blocked", `backend=${this.renderer.device.kind}`),
@@ -200,12 +200,12 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
     this.renderer.dispose();
   }
 
-  private validateImportedAsset(input: V6RendererInput): void {
+  private validateImportedAsset(input: ProductionRendererInput): void {
     if (input.metadata.primitiveCount <= 0 || input.metadata.meshCount <= 0) {
-      throw new Error("V7 WebGPU imported-asset render proof requires real glTF mesh primitives.");
+      throw new Error("WebGPU imported-asset render proof requires real glTF mesh primitives.");
     }
     if (input.metadata.materialCount <= 0) {
-      throw new Error("V7 WebGPU imported-asset render proof requires real material data.");
+      throw new Error("WebGPU imported-asset render proof requires real material data.");
     }
   }
 
@@ -220,12 +220,12 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
   }
 
   private createProof(
-    input: V6RendererInput,
+    input: ProductionRendererInput,
     diagnostics: RenderDeviceDiagnostics,
-    features: readonly V6RendererFeature[],
-    pixels: V6PixelMetrics,
-    transmissionBackdropCapture?: V7TransmissionBackdropCaptureProof
-  ): V6RenderProof {
+    features: readonly ProductionRendererFeature[],
+    pixels: ProductionPixelMetrics,
+    transmissionBackdropCapture?: RuntimeParityTransmissionBackdropCaptureProof
+  ): ProductionRenderProof {
     return {
       backend: "webgpu",
       realWebGL2: false,
@@ -240,9 +240,9 @@ export class ProductionWebGPURenderer implements V6ProductionRenderer {
   }
 }
 
-export interface V6WebGPUReport {
-  readonly schema: "a3d-production-runtime-webgpu-report/v1";
-  readonly status: V6WebGPUStatus;
+export interface ProductionWebGPUReport {
+  readonly schema: "a3d-production-runtime-webgpu-report";
+  readonly status: ProductionWebGPUStatus;
   readonly adapterName: string | null;
   readonly preferredFormat: string | null;
   readonly canCreateDevice: boolean;
@@ -251,28 +251,28 @@ export interface V6WebGPUReport {
   readonly warnings: readonly string[];
 }
 
-export interface V7WebGPUReadinessItem {
+export interface ProductionWebGPUReadinessItem {
   readonly id: string;
   readonly status: "ready" | "missing" | "blocked";
   readonly evidence: string;
 }
 
-export interface V7WebGPUReadinessReport {
-  readonly schema: "a3d-v7-webgpu-readiness/v1";
-  readonly availability: V6WebGPUReport;
+export interface ProductionWebGPUReadinessReport {
+  readonly schema: "a3d-production-runtime-webgpu-readiness";
+  readonly availability: ProductionWebGPUReport;
   readonly productionBackend: "webgpu-production-sdk-path";
   readonly primaryRendererClaim: true;
-  readonly safetyChecks: readonly V7WebGPUReadinessItem[];
-  readonly requiredForCompletion: readonly V7WebGPUReadinessItem[];
+  readonly safetyChecks: readonly ProductionWebGPUReadinessItem[];
+  readonly requiredForCompletion: readonly ProductionWebGPUReadinessItem[];
   readonly blockers: readonly string[];
 }
 
-export interface V6WebGPULike {
-  requestAdapter(): Promise<V6WebGPUAdapterLike | null>;
+export interface ProductionWebGPULike {
+  requestAdapter(): Promise<ProductionWebGPUAdapterLike | null>;
   getPreferredCanvasFormat?(): string;
 }
 
-export interface V6WebGPUAdapterLike {
+export interface ProductionWebGPUAdapterLike {
   readonly name?: string;
   readonly info?: {
     readonly vendor?: string;
@@ -283,11 +283,11 @@ export interface V6WebGPUAdapterLike {
   requestDevice(): Promise<unknown>;
 }
 
-export async function createV6WebGPUReport(gpu: V6WebGPULike | undefined | null): Promise<V6WebGPUReport> {
+export async function createProductionWebGPUReport(gpu: ProductionWebGPULike | undefined | null): Promise<ProductionWebGPUReport> {
   if (!gpu) {
     return unavailable("navigator.gpu is not exposed in this browser/runtime.");
   }
-  let adapter: V6WebGPUAdapterLike | null = null;
+  let adapter: ProductionWebGPUAdapterLike | null = null;
   try {
     adapter = await gpu.requestAdapter();
   } catch (error) {
@@ -302,7 +302,7 @@ export async function createV6WebGPUReport(gpu: V6WebGPULike | undefined | null)
     return blocked(`requestDevice failed: ${error instanceof Error ? error.message : String(error)}`);
   }
   return {
-    schema: "a3d-production-runtime-webgpu-report/v1",
+    schema: "a3d-production-runtime-webgpu-report",
     status: "available",
     adapterName: adapter.name ?? adapter.info?.description ?? adapter.info?.device ?? "unknown-adapter",
     preferredFormat: gpu.getPreferredCanvasFormat?.() ?? null,
@@ -313,9 +313,9 @@ export async function createV6WebGPUReport(gpu: V6WebGPULike | undefined | null)
   };
 }
 
-export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefined | null): Promise<V7WebGPUReadinessReport> {
-  const availability = await createV6WebGPUReport(gpu);
-  const requiredForCompletion: readonly V7WebGPUReadinessItem[] = [
+export async function createProductionWebGPUReadinessReport(gpu: ProductionWebGPULike | undefined | null): Promise<ProductionWebGPUReadinessReport> {
+  const availability = await createProductionWebGPUReport(gpu);
+  const requiredForCompletion: readonly ProductionWebGPUReadinessItem[] = [
     {
       id: "real-browser-webgpu-device",
       status: availability.status === "available" && availability.canCreateDevice ? "ready" : "blocked",
@@ -331,24 +331,24 @@ export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefine
     {
       id: "gltf-hdr-pbr-webgpu-product-viewer",
       status: "ready",
-      evidence: "tests/reports/runtime-parity/webgpu-product-viewer/webgpu-product-viewer-report.json renders a flagship chronograph GLTF/HDR/PBR product-viewer scene through native WebGPU using public V6 SDK scene-composition helpers, native texture-to-buffer readback, PBR submissions, texture bindings, environment bindings, and a bounded WebGPU-vs-WebGL2 visual delta."
+      evidence: "tests/reports/runtime-parity/webgpu-product-viewer/webgpu-product-viewer-report.json renders a flagship GLTF/HDR/PBR product-viewer scene through native WebGPU using public production SDK scene-composition helpers, native texture-to-buffer readback, PBR submissions, texture bindings, environment bindings, and a bounded WebGPU-vs-WebGL2 visual delta."
     },
     {
       id: "webgpu-threejs-visual-delta",
       status: "ready",
-      evidence: "tests/reports/runtime-parity/webgpu-threejs-delta/webgpu-threejs-delta-report.json captures same-asset native WebGPU and Three.js product-viewer evidence with the same chronograph GLB, HDR environment, camera intent, Three.js PMREM reference, PNG artifacts, and bounded visual delta."
+      evidence: "tests/reports/runtime-parity/webgpu-threejs-delta/webgpu-threejs-delta-report.json captures same-asset native WebGPU and Three.js product-viewer evidence with the same product GLB, HDR environment, camera intent, Three.js PMREM reference, PNG artifacts, and bounded visual delta."
     },
     {
       id: "webgpu-sdk-production-backend",
       status: "ready",
-      evidence: "RendererV6 and A3DRenderer now accept backend='webgpu' and expose an async imported GLTF/HDR/PBR production render path backed by native render-pipeline submission, sampled textures, and texture-to-buffer readback."
+      evidence: "ProductionRuntimeRenderer and A3DRenderer now accept backend='webgpu' and expose an async imported GLTF/HDR/PBR production render path backed by native render-pipeline submission, sampled textures, and texture-to-buffer readback."
     }
   ];
-  const safetyChecks: readonly V7WebGPUReadinessItem[] = [
+  const safetyChecks: readonly ProductionWebGPUReadinessItem[] = [
     {
       id: "renderer-production-runtime-webgpu-uses-production-webgpu-path",
       status: "ready",
-      evidence: "RendererV6.create({ backend: 'webgpu' }) constructs ProductionWebGPURenderer and does not silently construct WebGL2."
+      evidence: "ProductionRuntimeRenderer.create({ backend: 'webgpu' }) constructs ProductionWebGPURenderer and does not silently construct WebGL2."
     },
     {
       id: "sdk-webgpu-exposes-async-production-render",
@@ -357,7 +357,7 @@ export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefine
     }
   ];
   return {
-    schema: "a3d-v7-webgpu-readiness/v1",
+    schema: "a3d-production-runtime-webgpu-readiness",
     availability,
     productionBackend: "webgpu-production-sdk-path",
     primaryRendererClaim: true,
@@ -369,22 +369,22 @@ export async function createV7WebGPUReadinessReport(gpu: V6WebGPULike | undefine
   };
 }
 
-function unavailable(reason: string): V6WebGPUReport {
+function unavailable(reason: string): ProductionWebGPUReport {
   return {
-    schema: "a3d-production-runtime-webgpu-report/v1",
+    schema: "a3d-production-runtime-webgpu-report",
     status: "unavailable",
     adapterName: null,
     preferredFormat: null,
     canCreateDevice: false,
     realHardwareRequiredForParity: true,
     doesNotBlockWebGL2Production: true,
-    warnings: [reason, "WebGL2 remains the V6 production renderer baseline for this release gate."]
+    warnings: [reason, "WebGL2 remains the production renderer baseline for this release gate."]
   };
 }
 
-function blocked(reason: string): V6WebGPUReport {
+function blocked(reason: string): ProductionWebGPUReport {
   return {
-    schema: "a3d-production-runtime-webgpu-report/v1",
+    schema: "a3d-production-runtime-webgpu-report",
     status: "blocked",
     adapterName: null,
     preferredFormat: null,

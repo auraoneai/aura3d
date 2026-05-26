@@ -4,60 +4,37 @@ Version: 1.0.0
 
 ## Rule
 
-All public claim language for Aura3D version `1.0.0` must be backed by the current V10 claim-defense evidence:
+Public claims must be backed by current package code, tests, routes, and generated reports. If docs and reports disagree, use the narrower claim.
 
-- current V10 status: `docs/project/v10-superiority-status.md`
-- claim-defense report: `tests/reports/v10/claim-defense.json`
-- superiority audit: `tests/reports/v10/superiority-audit.json`
-- current state: `docs/project/current-state.md`
-
-If those documents disagree, use the narrower claim until the report and docs are regenerated together.
-
-This applies to:
-
-- root README text;
-- package descriptions;
-- release notes;
-- example README files;
-- tutorials and API docs;
-- marketing copy;
-- issue or support responses that may be copied into public docs.
+The current local report state is passing after regenerating the contextual Three.js parity and superiority report suites. Because `tests/reports/` is ignored by git, clean checkouts and release jobs must regenerate those reports before repeating the claim.
 
 ## Allowed Baseline Wording
 
 Use wording such as:
 
-> A3D is a production TypeScript-first browser 3D engine and workflow SDK that matches or exceeds Three.js across the measured graphics, animation, asset, physics, performance, and developer-workflow categories documented by the A3D superiority audit.
+> A3D is a TypeScript-first browser 3D engine and workflow SDK with first-party renderer, asset, animation, physics, controls, workflow, diagnostics, and Three.js migration packages. Current generated reports show passing measured Three.js parity and superiority slices for the categories covered by `tests/reports/superiority/superiority-audit.json`.
 
-Keep the scope evidence-backed. Prefer "measured category", "published V10 report", "claim-defense evidence", and "route-backed proof" over unsupported market claims.
-
-The current V10 audit may be described with its explicit status:
-
-> The V10 superiority audit passes with parity or exceeds decisions across feature coverage, graphics and visual quality, animation fidelity, physics and interaction, performance, asset pipeline, WebGPU/WebGL2, developer workflow, stability and memory, and documentation/GTM.
-
-The historical bundle-size niche remains allowed only with the exact evidence boundary:
-
-> Aura3D generated smaller esbuild browser benchmark bundles than Three.js for all three checked-in equivalent scaffold scenes on this run.
-
-This wording must keep the evidence links from `tests/reports/v10/claim-defense.json` and must not be shortened into an unmeasured "better at everything" claim.
+Stronger wording may cite the generated superiority audit report only for the exact categories it covers and only after `pnpm superiority` has been run in the current workspace or release job.
 
 ## Blocked Wording
 
 Do not use unqualified language such as:
 
-- unqualified better than Three.js;
+- better than Three.js;
 - exceeds Three.js in every sense;
+- full Three.js replacement;
 - Unity/Unreal replacement;
-- every possible WebGPU browser/device combination;
-- every glTF extension and asset in the ecosystem;
-- every official Three.js example exceeded.
-
-These claims require new gates and evidence in the V10 report suite before they can appear in public copy.
+- complete WebGPU support across browsers and devices;
+- complete glTF ecosystem support;
+- every official Three.js example exceeded;
+- production-ready for every browser 3D use case.
 
 ## Review Checklist
 
-- Does the claim appear in `docs/project/v9-roadmap-claim-boundary.md` or `docs/project/v2-claim-registry.md`?
-- Does the claim cite current evidence with the same release-run ID or current V9 report path?
-- Does the claim list known exclusions or unsupported areas?
-- Does the claim distinguish matched, partial, unsupported, and exceeded coverage?
-- Would a new developer interpret the wording as broader than the evidence?
+- Does the claim cite current package code, test files, route evidence, or generated reports?
+- Does the claim use the current report directory `tests/reports/threejs-parity/`?
+- Does the claim match the current pass/fail state in `docs/project/threejs-superiority-status.md`?
+- Does the claim name exclusions and unsupported areas?
+- Would a reader interpret the claim as broader than the evidence?
+
+Claim wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.

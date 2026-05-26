@@ -1,3 +1,3 @@
-import { mountInteriorSceneV4 } from "../../../examples/external-interior-scene/InteriorSceneV4";
+import { mountExternalInteriorScene } from "../../../examples/external-interior-scene/ExternalInteriorScene";
 
-void mountInteriorSceneV4("scene-studio-pro");
+void mountExternalInteriorScene("scene-studio-pro");

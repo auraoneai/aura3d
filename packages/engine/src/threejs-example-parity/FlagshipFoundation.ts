@@ -9,16 +9,16 @@ import {
   type ContactShadowPassDiagnostics
 } from "../../../rendering/src/production-runtime/passes/ContactShadowPass";
 import {
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  type V6EnvironmentLightingResources,
-  type V6PbrHdrPipeline,
-  type V6ToneMappingOperator
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  type ProductionEnvironmentLightingResources,
+  type ProductionPbrHdrPipeline,
+  type ProductionToneMappingOperator
 } from "../../../rendering/src/production-runtime/PBRHDRPipeline";
 import {
-  loadV6GLTFRenderPipeline,
-  type V6GLTFRenderPipeline
-} from "../../../assets/src/asset-corpus/V6GLTFRenderPipeline";
+  loadProductionGLTFRenderPipeline,
+  type ProductionGLTFRenderPipeline
+} from "../../../assets/src/asset-corpus/ProductionGLTFRenderPipeline";
 import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "../../../assets/src/GLTFRenderResources";
 import { DirectionalLight, composeMat4 } from "../../../scene/src/index";
 
@@ -119,7 +119,7 @@ export interface A3DGltfRendererInputOptions {
 }
 
 export class A3DGltfScene {
-  constructor(private readonly pipeline: V6GLTFRenderPipeline) {}
+  constructor(private readonly pipeline: ProductionGLTFRenderPipeline) {}
 
   get asset() {
     return this.pipeline.asset;
@@ -170,7 +170,7 @@ export interface A3DHdrEnvironmentOptions {
   readonly backgroundIntensity?: number;
   readonly rotation?: number;
   readonly toneMapping?: {
-    readonly operator?: V6ToneMappingOperator;
+    readonly operator?: ProductionToneMappingOperator;
     readonly exposure?: number;
     readonly whitePoint?: number;
   };
@@ -180,15 +180,15 @@ export class A3DHdrEnvironment {
   readonly id: string;
   readonly label: string;
   readonly url: string;
-  readonly pipeline: V6PbrHdrPipeline;
-  readonly lighting: V6EnvironmentLightingResources;
+  readonly pipeline: ProductionPbrHdrPipeline;
+  readonly lighting: ProductionEnvironmentLightingResources;
 
   constructor(options: {
     readonly id: string;
     readonly label: string;
     readonly url: string;
-    readonly pipeline: V6PbrHdrPipeline;
-    readonly lighting: V6EnvironmentLightingResources;
+    readonly pipeline: ProductionPbrHdrPipeline;
+    readonly lighting: ProductionEnvironmentLightingResources;
   }) {
     this.id = options.id;
     this.label = options.label;
@@ -210,7 +210,7 @@ export async function loadGltfScene(input: string | A3DGltfSceneOptions): Promis
   const options = typeof input === "string" ? { url: input } : input;
   const viewport = options.viewport ?? { width: 1024, height: 1024 };
   const assetId = options.assetId ?? assetIdFromUrl(options.url);
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: options.url,
     assetId,
     assetName: options.assetName ?? assetId,
@@ -230,7 +230,7 @@ export async function loadHdrEnvironment(input: string | A3DHdrEnvironmentOption
   const data = options.data ?? await fetchArrayBuffer(options.url);
   const id = options.id ?? assetIdFromUrl(options.url);
   const interactive = options.quality === "interactive";
-  const pipeline = createV6PbrHdrPipelineFromRadiance(data, {
+  const pipeline = createProductionPbrHdrPipelineFromRadiance(data, {
     id,
     label: options.label ?? id,
     intensity: options.intensity ?? 1,
@@ -254,7 +254,7 @@ export async function loadHdrEnvironment(input: string | A3DHdrEnvironmentOption
     label: options.label ?? id,
     url: options.url,
     pipeline,
-    lighting: createV6EnvironmentLightingResources(pipeline)
+    lighting: createProductionEnvironmentLightingResources(pipeline)
   });
 }
 
@@ -264,27 +264,27 @@ export function createStudioLighting(options: A3DStudioLightingOptions = {}): re
   switch (options.preset ?? "product") {
     case "inspection":
       return [
-        createDirectionalLight({ name: "a3d-v8-inspection-key", direction: [-0.35, -0.72, -0.46], color: [1, 0.98, 0.92], intensity: 2.1 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "a3d-v8-inspection-fill", direction: [0.55, -0.48, -0.34], color: [0.62, 0.74, 1], intensity: 0.72 * scale }),
-        createDirectionalLight({ name: "a3d-v8-inspection-rim", direction: [0.14, -0.34, 0.93], color: [1, 0.82, 0.62], intensity: 1.16 * scale })
+        createDirectionalLight({ name: "a3d-current-routes-inspection-key", direction: [-0.35, -0.72, -0.46], color: [1, 0.98, 0.92], intensity: 2.1 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-current-routes-inspection-fill", direction: [0.55, -0.48, -0.34], color: [0.62, 0.74, 1], intensity: 0.72 * scale }),
+        createDirectionalLight({ name: "a3d-current-routes-inspection-rim", direction: [0.14, -0.34, 0.93], color: [1, 0.82, 0.62], intensity: 1.16 * scale })
       ];
     case "softbox":
       return [
-        createDirectionalLight({ name: "a3d-v8-softbox-key", direction: [-0.2, -0.9, -0.32], color: [1, 0.97, 0.91], intensity: 1.75 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "a3d-v8-softbox-fill", direction: [0.44, -0.52, -0.42], color: [0.74, 0.82, 1], intensity: 1.04 * scale })
+        createDirectionalLight({ name: "a3d-current-routes-softbox-key", direction: [-0.2, -0.9, -0.32], color: [1, 0.97, 0.91], intensity: 1.75 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-current-routes-softbox-fill", direction: [0.44, -0.52, -0.42], color: [0.74, 0.82, 1], intensity: 1.04 * scale })
       ];
     case "product":
     default:
       return [
-        createDirectionalLight({ name: "a3d-v8-product-key-shadow", direction: [-0.42, -0.82, -0.38], color: [1, 0.95, 0.86], intensity: 2.75 * scale, castsShadow: shadows }),
-        createDirectionalLight({ name: "a3d-v8-product-fill", direction: [0.62, -0.42, -0.34], color: [0.55, 0.68, 1], intensity: 0.48 * scale }),
-        createDirectionalLight({ name: "a3d-v8-product-rim", direction: [0.18, -0.34, 0.92], color: [1, 0.82, 0.55], intensity: 1.05 * scale })
+        createDirectionalLight({ name: "a3d-current-routes-product-key-shadow", direction: [-0.42, -0.82, -0.38], color: [1, 0.95, 0.86], intensity: 2.75 * scale, castsShadow: shadows }),
+        createDirectionalLight({ name: "a3d-current-routes-product-fill", direction: [0.62, -0.42, -0.34], color: [0.55, 0.68, 1], intensity: 0.48 * scale }),
+        createDirectionalLight({ name: "a3d-current-routes-product-rim", direction: [0.18, -0.34, 0.92], color: [1, 0.82, 0.55], intensity: 1.05 * scale })
       ];
   }
 }
 
 export function createGroundedStage(bounds: CameraFrameBounds, options: A3DGroundedStageOptions = {}): A3DGroundedStage {
-  const labelPrefix = options.labelPrefix ?? "a3d-v8-grounded-stage";
+  const labelPrefix = options.labelPrefix ?? "a3d-current-routes-grounded-stage";
   const width = Math.max(3.8, (bounds.max[0] - bounds.min[0]) * 2.4);
   const height = Math.max(2.6, (bounds.max[1] - bounds.min[1]) * 2.35);
   const depth = Math.max(3.2, (bounds.max[2] - bounds.min[2]) * 3.2 + 1.35);
@@ -405,7 +405,7 @@ function createDirectionalLight(options: {
   readonly intensity?: number;
   readonly castsShadow?: boolean;
 } = {}): CollectedLight {
-  const source = new DirectionalLight(options.name ?? "a3d-v8-directional-light");
+  const source = new DirectionalLight(options.name ?? "a3d-current-routes-directional-light");
   const color = options.color ?? [1, 1, 1];
   source.color = [color[0], color[1], color[2]];
   source.intensity = clamp(options.intensity ?? 1, 0, 64);

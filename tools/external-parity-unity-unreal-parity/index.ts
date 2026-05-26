@@ -7,7 +7,7 @@ import { inflateSync } from "node:zlib";
 import { createAssetImportPreflightReport } from "@aura3d/assets";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4UnityUnrealParityReport {
+export interface ExternalParityUnityUnrealParityReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly unityParity: boolean;
@@ -17,8 +17,8 @@ export interface V4UnityUnrealParityReport {
     readonly unity: ExternalEngineBaseline;
     readonly unreal: ExternalEngineBaseline;
   };
-  readonly editorEvidence: V4EditorWorkflowEvidence;
-  readonly renderingEvidence: V4RenderingWorkflowEvidence;
+  readonly editorEvidence: ExternalParityEditorWorkflowEvidence;
+  readonly renderingEvidence: ExternalParityRenderingWorkflowEvidence;
   readonly workflowAreas: readonly {
     readonly id: string;
     readonly requiredForParity: string;
@@ -26,9 +26,9 @@ export interface V4UnityUnrealParityReport {
     readonly ready: boolean;
     readonly blockers: readonly string[];
   }[];
-  readonly assetImportPreflight: V4AssetImportPreflightEvidence;
-  readonly deploymentEvidence: V4DeploymentWorkflowEvidence;
-  readonly runtimeEvidence: V4RuntimeWorkflowEvidence;
+  readonly assetImportPreflight: ExternalParityAssetImportPreflightEvidence;
+  readonly deploymentEvidence: ExternalParityDeploymentWorkflowEvidence;
+  readonly runtimeEvidence: ExternalParityRuntimeWorkflowEvidence;
   readonly violations: readonly string[];
 }
 
@@ -126,7 +126,7 @@ interface ExternalSceneBaselineDiff {
   readonly reason?: string;
 }
 
-interface V4AssetImportPreflightEvidence {
+interface ExternalParityAssetImportPreflightEvidence {
   readonly source: "origin-master-asset-importer-adapted";
   readonly currentPipeline: "gltf-first";
   readonly supportedFormats: readonly string[];
@@ -137,18 +137,18 @@ interface V4AssetImportPreflightEvidence {
   readonly claimBoundary: string;
 }
 
-interface V4DeploymentWorkflowEvidence {
+interface ExternalParityDeploymentWorkflowEvidence {
   readonly staticExportOk: boolean;
   readonly staticExportOutputDir?: string;
   readonly staticDemoServerSmokeOk: boolean;
   readonly publicDeploymentSmokeOk: boolean;
   readonly publicDeploymentUrl?: string;
   readonly publicDeploymentRunbookPath: "tests/reports/public-demo-deployment-runbook.md";
-  readonly githubPagesWorkflowPath: ".github/workflows/v4-public-demo-deploy.yml";
+  readonly githubPagesWorkflowPath: ".github/workflows/public-demo-deploy.yml";
   readonly claimBoundary: string;
 }
 
-interface V4RuntimeWorkflowEvidence {
+interface ExternalParityRuntimeWorkflowEvidence {
   readonly runtimeReportOk: boolean;
   readonly completedRuntimeTaskCount: number;
   readonly gameSliceStatus?: string;
@@ -161,7 +161,7 @@ interface V4RuntimeWorkflowEvidence {
   readonly claimBoundary: string;
 }
 
-interface V4EditorWorkflowEvidence {
+interface ExternalParityEditorWorkflowEvidence {
   readonly editorReportOk: boolean;
   readonly prefabReportOk: boolean;
   readonly passedCheckCount: number;
@@ -180,7 +180,7 @@ interface V4EditorWorkflowEvidence {
   readonly claimBoundary: string;
 }
 
-interface V4RenderingWorkflowEvidence {
+interface ExternalParityRenderingWorkflowEvidence {
   readonly renderingReportOk: boolean;
   readonly renderingValidationCount: number;
   readonly renderingScreenshotCount: number;
@@ -225,7 +225,7 @@ const sourceFiles = [
   "tests/reports/external-parity-runtime.json",
   "examples/game-slice/main.ts",
   "tests/browser/runtime-external-parity.spec.ts",
-  ".github/workflows/v4-public-demo-deploy.yml",
+  ".github/workflows/public-demo-deploy.yml",
   "fixtures/external-engine-baselines/external-parity/product-visual-parity-scene.json",
   "fixtures/external-engine-baselines/external-parity/pbr-visual-parity-scene.json",
   "fixtures/external-engine-baselines/external-parity/shadow-visual-parity-scene.json",
@@ -250,7 +250,7 @@ const sourceFiles = [
   "tests/reports/comparison-screenshots/aura3d-postprocess.png",
 ] as const;
 
-export function createV4UnityUnrealParityReport(root = process.cwd()): V4UnityUnrealParityReport {
+export function createExternalParityUnityUnrealParityReport(root = process.cwd()): ExternalParityUnityUnrealParityReport {
   const editorEvidence = createEditorWorkflowEvidence(root);
   const baselineKit = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
   const baselineKitSlots = externalBaselineSlotSummary(baselineKit);
@@ -266,27 +266,27 @@ export function createV4UnityUnrealParityReport(root = process.cwd()): V4UnityUn
     : "Local static demo export or local static-server smoke is missing; run pnpm preflight:external-parity-production-readiness.";
   const runtimeEvidence = createRuntimeWorkflowEvidence(root);
   const runtimeEvidenceText = runtimeEvidence.runtimeReportOk
-    ? `V4 runtime report passes with ${runtimeEvidence.completedRuntimeTaskCount} completed runtime tasks, ${runtimeEvidence.gameSliceFeatureEvidenceCount} game-slice feature evidence keys, ${runtimeEvidence.gameSliceDrawCalls} draw calls, ${runtimeEvidence.gameSliceNonBlankPixels} nonblank browser pixels, and mobile/touch evidence ${runtimeEvidence.mobileTouchEvidence ? "present" : "absent"}.`
-    : "V4 runtime report is missing or failing; run pnpm verify:external-parity-runtime.";
+    ? `External parity runtime report passes with ${runtimeEvidence.completedRuntimeTaskCount} completed runtime tasks, ${runtimeEvidence.gameSliceFeatureEvidenceCount} game-slice feature evidence keys, ${runtimeEvidence.gameSliceDrawCalls} draw calls, ${runtimeEvidence.gameSliceNonBlankPixels} nonblank browser pixels, and mobile/touch evidence ${runtimeEvidence.mobileTouchEvidence ? "present" : "absent"}.`
+    : "External parity runtime report is missing or failing; run pnpm verify:external-parity-runtime.";
   const renderingEvidence = createRenderingWorkflowEvidence(root);
   const renderingEvidenceText = renderingEvidence.renderingReportOk
-    ? `V4 rendering report passes with ${renderingEvidence.renderingValidationCount} browser validations, ${renderingEvidence.renderingScreenshotCount} screenshot paths, product visual parity against Three.js=${renderingEvidence.productVisualThreeJs} and Babylon.js=${renderingEvidence.productVisualBabylon}, bounded PBR=${renderingEvidence.boundedPbrVisualParity}, bounded shadows=${renderingEvidence.boundedShadowVisualParity}, and bounded HDR targets=${renderingEvidence.boundedHdrRenderTargetParity}.`
-    : "V4 rendering report is missing or failing; run pnpm verify:external-parity-rendering.";
+    ? `External parity rendering report passes with ${renderingEvidence.renderingValidationCount} browser validations, ${renderingEvidence.renderingScreenshotCount} screenshot paths, product visual parity against Three.js=${renderingEvidence.productVisualThreeJs} and Babylon.js=${renderingEvidence.productVisualBabylon}, bounded PBR=${renderingEvidence.boundedPbrVisualParity}, bounded shadows=${renderingEvidence.boundedShadowVisualParity}, and bounded HDR targets=${renderingEvidence.boundedHdrRenderTargetParity}.`
+    : "External parity rendering report is missing or failing; run pnpm verify:external-parity-rendering.";
   const unity = externalEngineBaseline(root, "unity", baselineSlots);
   const unreal = externalEngineBaseline(root, "unreal", baselineSlots);
   const workflowAreas = [
-    workflowArea("editor-authoring", "Unity/Unreal-style durable scene authoring, hierarchy editing, inspector editing, prefab/material workflows, save/load, and exported play-mode validation.", `${editorEvidence.editorReportOk ? `V4 editor authoring passes ${editorEvidence.passedCheckCount} checks with ${editorEvidence.authoredWorkflowSignals.length} authoring workflow signals, ${editorEvidence.timelineTrackCount} timeline tracks, ${editorEvidence.visualScriptingNodeCount} visual-scripting nodes, prefab export node count ${editorEvidence.prefabExportedNodeCount}, and static export without editor code ${editorEvidence.staticExportWithoutEditorCode}.` : "V4 editor authoring report is absent or failing."} ${baselineKitEvidence}`, [
+    workflowArea("editor-authoring", "Unity/Unreal-style durable scene authoring, hierarchy editing, inspector editing, prefab/material workflows, save/load, and exported play-mode validation.", `${editorEvidence.editorReportOk ? `External parity editor authoring passes ${editorEvidence.passedCheckCount} checks with ${editorEvidence.authoredWorkflowSignals.length} authoring workflow signals, ${editorEvidence.timelineTrackCount} timeline tracks, ${editorEvidence.visualScriptingNodeCount} visual-scripting nodes, prefab export node count ${editorEvidence.prefabExportedNodeCount}, and static export without editor code ${editorEvidence.staticExportWithoutEditorCode}.` : "External parity editor authoring report is absent or failing."} ${baselineKitEvidence}`, [
       "Editor evidence is scoped to current Aura3D fixtures and browser workflows, not Unity/Unreal project/workflow equivalence.",
       ...externalBaselineBlockers(unity, "Unity"),
       ...externalBaselineBlockers(unreal, "Unreal"),
     ]),
-    workflowArea("asset-import", "Importer parity for production glTF/FBX/USD/material/animation pipelines and editor import settings.", `V4 has glTF asset-corpus, compression evidence, and bounded import preflight evidence. ${assetImportEvidence} ${baselineKitEvidence}`, [
+    workflowArea("asset-import", "Importer parity for production glTF/FBX/USD/material/animation pipelines and editor import settings.", `External parity has glTF asset-corpus, compression evidence, and bounded import preflight evidence. ${assetImportEvidence} ${baselineKitEvidence}`, [
       "Native FBX/USD/USDZ/DAE import is not implemented; those formats are preflighted as external-conversion-required before glTF browser evidence is valid. OBJ support is bounded to native geometry-only import through OBJLoader.",
       ...externalAssetImportWorkflowBlockers(unity, "Unity"),
       ...externalAssetImportWorkflowBlockers(unreal, "Unreal"),
-      "glTF coverage remains bounded by the local V4 corpus and does not prove full DCC pipeline parity without external Unity/Unreal import baselines.",
+      "glTF coverage remains bounded by the local External parity corpus and does not prove full DCC pipeline parity without external Unity/Unreal import baselines.",
     ]),
-    workflowArea("runtime-systems", "Comparable physics, animation, particles, audio, scripting, scene streaming, and gameplay runtime workflows.", `${runtimeEvidenceText} V4 also has scoped game-slice and large-world streaming evidence. ${baselineKitEvidence}`, [
+    workflowArea("runtime-systems", "Comparable physics, animation, particles, audio, scripting, scene streaming, and gameplay runtime workflows.", `${runtimeEvidenceText} External parity also has scoped game-slice and large-world streaming evidence. ${baselineKitEvidence}`, [
       "No Unity/Unreal runtime project with the same gameplay systems is built and measured.",
       "Current runtime evidence is browser-focused and does not cover native build targets or engine editor play mode.",
       ...externalBaselineBlockers(unity, "Unity"),
@@ -341,7 +341,7 @@ export function createV4UnityUnrealParityReport(root = process.cwd()): V4UnityUn
   };
 }
 
-function createRenderingWorkflowEvidence(root: string): V4RenderingWorkflowEvidence {
+function createRenderingWorkflowEvidence(root: string): ExternalParityRenderingWorkflowEvidence {
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const productVisual = readJson(root, "tests/reports/external-parity-product-visual-parity.json");
   const pbrVisual = readJson(root, "tests/reports/external-parity-pbr-visual-parity.json");
@@ -362,9 +362,9 @@ function createRenderingWorkflowEvidence(root: string): V4RenderingWorkflowEvide
     boundedPbrVisualParity: boundedLocalVisualParity(pbrVisual, "boundedPbrVisualParity"),
     boundedShadowVisualParity: boundedLocalVisualParity(shadowVisual, "boundedShadowVisualParity"),
     boundedHdrRenderTargetParity: boundedLocalVisualParity(hdrVisual, "boundedHdrRenderTargetParity"),
-    postprocessRealSceneValidation: renderingValidations.some((entry) => isRecord(entry) && entry.name === "postprocess-lab-v4-preset" && entry.ok === true),
+    postprocessRealSceneValidation: renderingValidations.some((entry) => isRecord(entry) && entry.name === "postprocess-lab-external-parity-preset" && entry.ok === true),
     forwardShadowSamplingValidation: renderingValidations.some((entry) => isRecord(entry) && entry.name === "forward-pass-shadow-map-sampling" && entry.ok === true),
-    claimBoundary: "Local browser rendering evidence covers Aura3D, Three.js, Babylon.js, and scoped V4 renderer features, but it is not Unity/Unreal rendered-output parity until real external same-scene baselines and visual diffs pass.",
+    claimBoundary: "Local browser rendering evidence covers Aura3D, Three.js, Babylon.js, and scoped External parity renderer features, but it is not Unity/Unreal rendered-output parity until real external same-scene baselines and visual diffs pass.",
   };
 }
 
@@ -374,7 +374,7 @@ function boundedLocalVisualParity(report: Record<string, unknown> | null, field:
   return isRecord(value) && value.threejs === true && value.babylon === true;
 }
 
-function createEditorWorkflowEvidence(root: string): V4EditorWorkflowEvidence {
+function createEditorWorkflowEvidence(root: string): ExternalParityEditorWorkflowEvidence {
   const editor = readJson(root, "tests/reports/external-parity-editor-authoring.json");
   const prefab = readJson(root, "tests/reports/external-parity-editor-prefab-workflow.json");
   const authoredWorkflow = isRecord(editor?.authoredWorkflow) ? editor.authoredWorkflow : {};
@@ -411,7 +411,7 @@ function createEditorWorkflowEvidence(root: string): V4EditorWorkflowEvidence {
   };
 }
 
-function createAssetImportPreflightEvidence(): V4AssetImportPreflightEvidence {
+function createAssetImportPreflightEvidence(): ExternalParityAssetImportPreflightEvidence {
   const samples = [
     createAssetImportPreflightReport("fixtures/product-studio/products/speaker/speaker.gltf", { profile: "high-quality", fileBytes: 256_000 }),
     createAssetImportPreflightReport("fixtures/asset-corpus/damaged-helmet.glb", { profile: "web", fileBytes: 256_000 }),
@@ -440,7 +440,7 @@ function createAssetImportPreflightEvidence(): V4AssetImportPreflightEvidence {
   };
 }
 
-function createDeploymentWorkflowEvidence(root: string): V4DeploymentWorkflowEvidence {
+function createDeploymentWorkflowEvidence(root: string): ExternalParityDeploymentWorkflowEvidence {
   const staticExport = readJson(root, "tests/reports/external-demo-static-export.json");
   const staticServerSmoke = readJson(root, "tests/reports/static-demo-server-smoke.json");
   const publicDeploymentSmoke = readJson(root, "tests/reports/public-demo-deployment-smoke.json");
@@ -451,12 +451,12 @@ function createDeploymentWorkflowEvidence(root: string): V4DeploymentWorkflowEvi
     publicDeploymentSmokeOk: publicDeploymentSmoke?.ok === true,
     ...(typeof publicDeploymentSmoke?.deploymentUrl === "string" ? { publicDeploymentUrl: publicDeploymentSmoke.deploymentUrl } : {}),
     publicDeploymentRunbookPath: "tests/reports/public-demo-deployment-runbook.md",
-    githubPagesWorkflowPath: ".github/workflows/v4-public-demo-deploy.yml",
+    githubPagesWorkflowPath: ".github/workflows/public-demo-deploy.yml",
     claimBoundary: "Local static export, GitHub Pages workflow, and static-server smoke evidence do not prove Unity/Unreal deployment parity or production readiness until durable public HTTPS validation and native engine deployment baselines pass.",
   };
 }
 
-function createRuntimeWorkflowEvidence(root: string): V4RuntimeWorkflowEvidence {
+function createRuntimeWorkflowEvidence(root: string): ExternalParityRuntimeWorkflowEvidence {
   const runtime = readJson(root, "tests/reports/external-parity-runtime.json");
   const gameSlice = isRecord(runtime?.gameSlice) ? runtime.gameSlice : {};
   const state = isRecord(gameSlice.state) ? gameSlice.state : {};
@@ -1225,7 +1225,7 @@ function uniqueSorted(values: readonly string[]): string[] {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4UnityUnrealParityReport();
+  const report = createExternalParityUnityUnrealParityReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

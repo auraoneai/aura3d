@@ -15,10 +15,10 @@ import {
   type ToneMappingResult
 } from "./PostProcessPass";
 
-export type V4ToneMappingIntent = "product-catalog" | "material-review" | "interior" | "interactive" | "debug";
+export type ExternalParityToneMappingIntent = "product-catalog" | "material-review" | "interior" | "interactive" | "debug";
 
-export interface V4ToneMappingPolicy {
-  readonly intent: V4ToneMappingIntent;
+export interface ExternalParityToneMappingPolicy {
+  readonly intent: ExternalParityToneMappingIntent;
   readonly operator: ToneMappingOperator;
   readonly exposure: number;
   readonly whitePoint: number;
@@ -29,7 +29,7 @@ export interface V4ToneMappingPolicy {
   readonly calibration: ToneMappingCalibration;
 }
 
-const INTENT_PRESETS: Readonly<Record<V4ToneMappingIntent, ToneMappingPresetName>> = {
+const INTENT_PRESETS: Readonly<Record<ExternalParityToneMappingIntent, ToneMappingPresetName>> = {
   "product-catalog": "cinematic",
   "material-review": "realistic",
   interior: "natural",
@@ -37,10 +37,10 @@ const INTENT_PRESETS: Readonly<Record<V4ToneMappingIntent, ToneMappingPresetName
   debug: "natural"
 };
 
-export function createV4ToneMappingPolicy(
-  intent: V4ToneMappingIntent,
+export function createExternalParityToneMappingPolicy(
+  intent: ExternalParityToneMappingIntent,
   overrides: ToneMappingOptions = {}
-): V4ToneMappingPolicy {
+): ExternalParityToneMappingPolicy {
   const presetName = INTENT_PRESETS[intent];
   const preset = toneMappingPresets[presetName];
   const toneMapping = {
@@ -60,11 +60,11 @@ export function createV4ToneMappingPolicy(
   };
 }
 
-export function toneMapV4Pixels(
+export function toneMapExternalParityPixels(
   pixels: Uint8Array,
   width: number,
   height: number,
-  policy: V4ToneMappingPolicy
+  policy: ExternalParityToneMappingPolicy
 ): ToneMappingResult {
   return toneMapPixels(pixels, width, height, {
     exposure: policy.exposure,
@@ -76,11 +76,11 @@ export function toneMapV4Pixels(
   });
 }
 
-export function toneMapV4HdrPixels(
+export function toneMapExternalParityHdrPixels(
   pixels: Float32Array,
   width: number,
   height: number,
-  policy: V4ToneMappingPolicy
+  policy: ExternalParityToneMappingPolicy
 ): HdrToneMappingResult {
   return toneMapFloatPixels(pixels, width, height, {
     exposure: policy.exposure,
@@ -91,15 +91,15 @@ export function toneMapV4HdrPixels(
   });
 }
 
-export function applyV4ToneMappingPreset(
+export function applyExternalParityToneMappingPreset(
   pixels: Uint8Array,
   width: number,
   height: number,
-  intent: V4ToneMappingIntent
+  intent: ExternalParityToneMappingIntent
 ): ToneMappingPresetResult {
   return applyToneMappingPreset(pixels, width, height, INTENT_PRESETS[intent]);
 }
 
-export function listV4ToneMappingPresets(): readonly ToneMappingPreset[] {
+export function listExternalParityToneMappingPresets(): readonly ToneMappingPreset[] {
   return Object.values(toneMappingPresets);
 }

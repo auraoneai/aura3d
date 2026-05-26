@@ -2,11 +2,11 @@ import { WebXRSessionController, type A3DXRFrameLike, type A3DXRSessionLike, typ
 
 declare global {
   interface Window {
-    __a3dV8WebXRInteractions?: V8WebXRInteractionsRuntime;
+    __a3dCurrentRoutesWebXRInteractions?: CurrentRoutesWebXRInteractionsRuntime;
   }
 }
 
-interface V8WebXRInteractionsRuntime {
+interface CurrentRoutesWebXRInteractionsRuntime {
   readonly appId: "webxr-interactions";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -49,7 +49,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__a3dV8WebXRInteractions = runtime;
+    window.__a3dCurrentRoutesWebXRInteractions = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -106,7 +106,7 @@ async function run(): Promise<void> {
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
       });
-      window.__a3dV8WebXRInteractions = runtime;
+      window.__a3dCurrentRoutesWebXRInteractions = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -246,11 +246,11 @@ function analyzePixels(pixels: Uint8ClampedArray): { readonly nonDark: number; r
 }
 
 function createRuntime(
-  status: V8WebXRInteractionsRuntime["status"],
+  status: CurrentRoutesWebXRInteractionsRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8WebXRInteractionsRuntime, "appId" | "status" | "statusLabel" | "evidenceMode" | "realDeviceClaimed" | "elapsedMs">> = {}
-): V8WebXRInteractionsRuntime {
+  patch: Partial<Omit<CurrentRoutesWebXRInteractionsRuntime, "appId" | "status" | "statusLabel" | "evidenceMode" | "realDeviceClaimed" | "elapsedMs">> = {}
+): CurrentRoutesWebXRInteractionsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -276,12 +276,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8WebXRInteractionsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesWebXRInteractionsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 WebXR Interactions</h1>
+          <h1>CurrentRoutes WebXR Interactions</h1>
           <p>Public WebXR session controller for VR controller input, dragging, and AR hit-test placement using injected session evidence.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

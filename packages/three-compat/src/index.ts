@@ -21,7 +21,7 @@ export {
   PlaneGeometryCompat,
   SphereGeometryCompat,
   TorusGeometryCompat,
-  V5_COMPAT_GEOMETRY_TYPES
+  THREE_COMPAT_COMPAT_GEOMETRY_TYPES
 } from "./geometries";
 export type { BufferAttributeCompat } from "./geometries";
 export {
@@ -35,13 +35,13 @@ export {
   PointsMaterialCompat,
   ShaderMaterialCompat,
   SpriteMaterialCompat,
-  V5_COMPAT_MATERIAL_TYPES
+  THREE_COMPAT_COMPAT_MATERIAL_TYPES
 } from "./materials";
 export type { MaterialCompatParameters } from "./materials";
 export {
   TextureCompat,
   TextureLoaderCompat,
-  V5_COMPAT_TEXTURE_SETTINGS
+  THREE_COMPAT_COMPAT_TEXTURE_SETTINGS
 } from "./textures";
 export type { TextureFilterCompat, TextureWrapCompat } from "./textures";
 export { WebGLMultipleRenderTargetsCompat, WebGLRenderTargetCompat } from "./render-targets";
@@ -67,7 +67,7 @@ export {
   TrackballControls,
   TransformControls
 } from "./controls";
-export type { TransformControlMode, V5ControlState, V5PickResult } from "./controls";
+export type { TransformControlMode, ThreeCompatControlState, ThreeCompatPickResult } from "./controls";
 export {
   AnimationActionCompat,
   AnimationClipCompat,
@@ -95,14 +95,14 @@ export {
   RawShaderMaterialCompat,
   CustomShaderMaterialCompat,
   UniformsCompat,
-  SHADER_CHUNKS_V5,
-  diagnoseV5Shader
+  SHADER_CHUNKS_THREE_COMPAT,
+  diagnoseThreeCompatShader
 } from "./shaders";
-export { V5_THREE_IMPORT_MAP } from "./migration/ImportMap";
+export { THREE_COMPAT_THREE_IMPORT_MAP } from "./migration/ImportMap";
 export { migrateThreeToA3D } from "./migration/ThreeToA3DAdapter";
-export type { V5MigrationResult } from "./migration/ThreeToA3DAdapter";
-export { createV5CompatibilityWarnings } from "./migration/CompatibilityWarnings";
-export type { V5CompatibilityWarning } from "./migration/CompatibilityWarnings";
+export type { ThreeCompatMigrationResult } from "./migration/ThreeToA3DAdapter";
+export { createThreeCompatCompatibilityWarnings } from "./migration/CompatibilityWarnings";
+export type { ThreeCompatCompatibilityWarning } from "./migration/CompatibilityWarnings";
 export {
   AmbientLightCompat,
   DirectionalLightCompat,
@@ -122,7 +122,7 @@ export {
   SkeletonHelperCompat
 } from "./helpers";
 export {
-  V5_COMPATIBILITY_THRESHOLDS,
+  THREE_COMPAT_COMPATIBILITY_THRESHOLDS,
   buildInitialCompatibilityMatrix,
   supportedOrPartial
 } from "./ThreeCompatibilityMatrix";

@@ -43,12 +43,21 @@ const publicPackages = [
   "scene",
   "ecs",
   "rendering",
+  "controls",
+  "environments",
+  "materials",
+  "engine",
+  "apps",
   "physics",
+  "product-studio",
   "animation",
   "assets",
   "input",
   "audio",
+  "create-aura3d",
+  "three-compat",
   "scripting",
+  "workflows",
   "editor-runtime",
   "editor",
   "debug"
@@ -113,6 +122,7 @@ function isObject(value: unknown): value is JsonObject {
 }
 
 function packageNameFor(name: string): string {
+  if (name === "engine") return "@aura3d/engine-runtime";
   return `@aura3d/${name}`;
 }
 

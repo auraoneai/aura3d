@@ -9,17 +9,17 @@ interface LegacyPath {
 }
 
 const requiredFiles = [
-  "docs/project/three-compat-roadmap-legacy-prune-ledger.md",
+  "docs/project/compatibility.md",
   "tools/three-compat-legacy-prune-readiness/index.ts"
 ] as const;
 
 const legacyPaths: readonly LegacyPath[] = [
-  { path: "examples/architecture-viewer/", reason: "Legacy architecture demo replaced by V5 architecture workflow/template track.", allowedToReturn: false, replacement: "examples/three-compat-examples/architecture-interior/" },
-  { path: "examples/game-slice/", reason: "Legacy game slice is not a V5 product claim.", allowedToReturn: false, replacement: "none" },
+  { path: "examples/architecture-viewer/", reason: "Legacy architecture demo replaced by Three.js compatibility architecture workflow/template track.", allowedToReturn: false, replacement: "examples/three-compat-examples/architecture-interior/" },
+  { path: "examples/game-slice/", reason: "Legacy game slice is not a Three.js compatibility product claim.", allowedToReturn: false, replacement: "none" },
   { path: "examples/portfolio/", reason: "Legacy static screenshot portfolio must not be release proof.", allowedToReturn: false, replacement: "tests/reports/three-compat-gallery/" },
-  { path: "examples/postprocess-lab/", reason: "Legacy postprocess lab replaced by V5 postprocess pipeline and examples.", allowedToReturn: false, replacement: "examples/three-compat-examples/postprocess-bloom/" },
-  { path: "examples/product-configurator/", reason: "Legacy product configurator replaced by versioned V5 workflow example.", allowedToReturn: false, replacement: "examples/three-compat-examples/product-configurator/" },
-  { path: "examples/shadow-lab/", reason: "Legacy shadow lab replaced by V5 renderer/architecture evidence.", allowedToReturn: false, replacement: "examples/three-compat-examples/architecture-interior/" },
+  { path: "examples/postprocess-lab/", reason: "Legacy postprocess lab replaced by Three.js compatibility postprocess pipeline and examples.", allowedToReturn: false, replacement: "examples/three-compat-examples/postprocess-bloom/" },
+  { path: "examples/product-configurator/", reason: "Legacy product configurator replaced by versioned Three.js compatibility workflow example.", allowedToReturn: false, replacement: "examples/three-compat-examples/product-configurator/" },
+  { path: "examples/shadow-lab/", reason: "Legacy shadow lab replaced by Three.js compatibility renderer/architecture evidence.", allowedToReturn: false, replacement: "examples/three-compat-examples/architecture-interior/" },
   { path: "examples/portfolio/screenshots/animation-state-machine.png", reason: "Static legacy screenshot.", allowedToReturn: false, replacement: "tests/reports/three-compat-gallery/character/character-animation.png" },
   { path: "examples/portfolio/screenshots/architecture-viewer.png", reason: "Static legacy screenshot.", allowedToReturn: false, replacement: "tests/reports/three-compat-gallery/architecture-day/interior-daylight.png" },
   { path: "examples/portfolio/screenshots/asset-viewer.png", reason: "Static legacy screenshot.", allowedToReturn: false, replacement: "tests/reports/three-compat-gallery/assets/asset-inspector.png" },
@@ -35,8 +35,8 @@ const legacyPaths: readonly LegacyPath[] = [
   { path: "examples/portfolio/screenshots/showcase-world.png", reason: "Static legacy screenshot.", allowedToReturn: false, replacement: "tests/reports/three-compat-gallery/vfx/particle-vfx.png" }
 ] as const;
 
-const ledger = existsSync(resolve("docs/project/three-compat-roadmap-legacy-prune-ledger.md"))
-  ? readFileSync(resolve("docs/project/three-compat-roadmap-legacy-prune-ledger.md"), "utf8")
+const ledger = existsSync(resolve("docs/project/compatibility.md"))
+  ? readFileSync(resolve("docs/project/compatibility.md"), "utf8")
   : "";
 const fileChecks = requiredFiles.map((path) => ({ id: `file:${path}`, pass: existsSync(resolve(path)), detail: `${path} must exist.` }));
 const pathChecks = legacyPaths.map((entry) => {
@@ -61,12 +61,12 @@ const ledgerChecks = legacyPaths.map((entry) => ({
 
 const pass = [...fileChecks, ...pathChecks, ...ledgerChecks].every((entry) => entry.pass);
 const report = {
-  schema: "a3d-three-compat-legacy-prune-readiness/v1",
+  schema: "a3d-three-compat-legacy-prune-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V5 legacy prune gate is ready; deleted demo-era files remain deleted."
-    : "V5 legacy prune gate failed; deleted demo-era files returned or ledger is incomplete.",
+    ? "Three.js compatibility legacy prune gate is ready; deleted demo-era files remain deleted."
+    : "Three.js compatibility legacy prune gate failed; deleted demo-era files returned or ledger is incomplete.",
   legacyPaths,
   checks: [...fileChecks, ...pathChecks, ...ledgerChecks]
 };

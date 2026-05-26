@@ -12,12 +12,12 @@ const requiredScreenshots: readonly RequiredScreenshot[] = [
   { id: "game-slice", path: "tests/reports/external-parity-example-screenshots/game-slice.png", source: "manifest", minNonBlankPixels: 12_000, minColorBuckets: 6, minOccupiedAreaRatio: 0.18, minOccupiedQuadrants: 3, minImageColorBuckets: 24, minMeanLuma: 42, maxDarkPixelRatio: 0.34, maxDominantBucketRatio: 0.5, minEdgePixelRatio: 0.05, maxFlatPixelRatio: 0.68, minLocalContrastRatio: 0.12, minCanvasColorBuckets: 220, minCanvasEdgePixelRatio: 0.045, maxCanvasDominantBucketRatio: 0.28, maxCanvasFlatPixelRatio: 0.68, minCanvasLocalContrastRatio: 0.12 },
   { id: "racing-showcase", path: "tests/reports/external-parity-example-screenshots/racing-showcase.png", source: "standalone", minNonBlankPixels: 8_000, minColorBuckets: 6, minImageColorBuckets: 22, minMeanLuma: 50, maxDarkPixelRatio: 0.42, maxDominantBucketRatio: 0.52, minEdgePixelRatio: 0.043, maxFlatPixelRatio: 0.7, minLocalContrastRatio: 0.1 },
   { id: "asset-viewer", path: "tests/reports/external-parity-example-screenshots/asset-viewer.png", source: "asset-viewer" },
-  { id: "material-showroom", path: "tests/reports/external-parity-example-screenshots/material-showroom.png", source: "rendering", validationName: "material-showroom-v4-preset", minImageColorBuckets: 24, minMeanLuma: 70, maxDarkPixelRatio: 0.5, maxDominantBucketRatio: 0.48, minEdgePixelRatio: 0.037, maxFlatPixelRatio: 0.66, minLocalContrastRatio: 0.11 },
-  { id: "postprocess-lab", path: "tests/reports/external-parity-example-screenshots/postprocess-lab.png", source: "rendering", validationName: "postprocess-lab-v4-preset", minImageColorBuckets: 10, minMeanLuma: 18, maxDarkPixelRatio: 0.82, maxDominantBucketRatio: 0.78, minEdgePixelRatio: 0.03, maxFlatPixelRatio: 0.76, minLocalContrastRatio: 0.07 },
-  { id: "shadow-lab", path: "tests/reports/external-parity-example-screenshots/shadow-lab.png", source: "rendering", validationName: "shadow-lab-v4-preset", minImageColorBuckets: 8, minMeanLuma: 42, maxDarkPixelRatio: 0.48, maxDominantBucketRatio: 0.72, minEdgePixelRatio: 0.04, maxFlatPixelRatio: 0.68, minLocalContrastRatio: 0.09 },
+  { id: "material-showroom", path: "tests/reports/external-parity-example-screenshots/material-showroom.png", source: "rendering", validationName: "material-showroom-external-parity-preset", minImageColorBuckets: 24, minMeanLuma: 70, maxDarkPixelRatio: 0.5, maxDominantBucketRatio: 0.48, minEdgePixelRatio: 0.037, maxFlatPixelRatio: 0.66, minLocalContrastRatio: 0.11 },
+  { id: "postprocess-lab", path: "tests/reports/external-parity-example-screenshots/postprocess-lab.png", source: "rendering", validationName: "postprocess-lab-external-parity-preset", minImageColorBuckets: 10, minMeanLuma: 18, maxDarkPixelRatio: 0.82, maxDominantBucketRatio: 0.78, minEdgePixelRatio: 0.03, maxFlatPixelRatio: 0.76, minLocalContrastRatio: 0.07 },
+  { id: "shadow-lab", path: "tests/reports/external-parity-example-screenshots/shadow-lab.png", source: "rendering", validationName: "shadow-lab-external-parity-preset", minImageColorBuckets: 8, minMeanLuma: 42, maxDarkPixelRatio: 0.48, maxDominantBucketRatio: 0.72, minEdgePixelRatio: 0.04, maxFlatPixelRatio: 0.68, minLocalContrastRatio: 0.09 },
 ] as const;
 
-export function createV4VisualQualityReport(root = defaultRoot) {
+export function createExternalParityVisualQualityReport(root = defaultRoot) {
   const manifest = readJson(root, "tests/reports/external-parity-example-screenshots/manifest.json");
   const renderingReport = readJson(root, "tests/reports/external-parity-rendering.json");
   const assetViewerReport = readJson(root, "tests/reports/external-parity-asset-viewer-browser.json");
@@ -39,13 +39,13 @@ export function createV4VisualQualityReport(root = defaultRoot) {
   const staticSceneComposition = validateStaticSceneComposition(root);
   const primaryAssetChecks = [
     ...manifestCoverage.map((entry) => ({
-      id: `v4-primary-asset-visible-${entry.id}`,
+      id: `external-parity-primary-asset-visible-${entry.id}`,
       passed: entry.passed,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json"],
       blocker: `${entry.id} primary asset is missing, tiny, or visually under-evidenced: ${entry.reason}`,
     })),
     {
-      id: "v4-primary-asset-visible-asset-viewer",
+      id: "external-parity-primary-asset-visible-asset-viewer",
       passed: assetViewerEvidence.primaryAssetVisible,
       evidencePaths: ["tests/reports/external-parity-asset-viewer-browser.json", "tests/reports/external-parity-example-screenshots/asset-viewer.png"],
       blocker: assetViewerEvidence.primaryAssetBlocker,
@@ -53,13 +53,13 @@ export function createV4VisualQualityReport(root = defaultRoot) {
   ];
   const realAssetChecks = [
     ...manifestCoverage.map((entry) => ({
-      id: `v4-real-asset-claimed-${entry.id}`,
+      id: `external-parity-real-asset-claimed-${entry.id}`,
       passed: entry.realAssetClaimed,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json"],
       blocker: `${entry.id} does not expose required real/generated-asset feature evidence.`,
     })),
     {
-      id: "v4-real-asset-claimed-asset-viewer",
+      id: "external-parity-real-asset-claimed-asset-viewer",
       passed: assetViewerEvidence.realTexturedAsset,
       evidencePaths: ["tests/reports/external-parity-asset-viewer-browser.json"],
       blocker: assetViewerEvidence.realAssetBlocker,
@@ -67,19 +67,19 @@ export function createV4VisualQualityReport(root = defaultRoot) {
   ];
   const shadowChecks = [
     {
-      id: "v4-shadows-visible-product",
+      id: "external-parity-shadows-visible-product",
       passed: manifestCoverage.find((entry) => entry.id === "product-configurator")?.shadowClaimed === true,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json"],
       blocker: "Product configurator does not expose visible shadow/contact-shadow evidence.",
     },
     {
-      id: "v4-shadows-visible-architecture",
+      id: "external-parity-shadows-visible-architecture",
       passed: manifestCoverage.find((entry) => entry.id === "architecture-viewer")?.shadowClaimed === true,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json"],
       blocker: "Architecture viewer does not expose visible shadow/contact-shadow evidence.",
     },
     {
-      id: "v4-shadows-visible-shadow-lab",
+      id: "external-parity-shadows-visible-shadow-lab",
       passed: renderingEvidence.find((entry) => entry.id === "shadow-lab")?.passed === true,
       evidencePaths: ["tests/reports/external-parity-rendering.json", "tests/reports/external-parity-example-screenshots/shadow-lab.png"],
       blocker: renderingEvidence.find((entry) => entry.id === "shadow-lab")?.reason ?? "Shadow lab evidence is missing.",
@@ -87,13 +87,13 @@ export function createV4VisualQualityReport(root = defaultRoot) {
   ];
   const postprocessChecks = [
     {
-      id: "v4-postprocess-changes-pixels-postprocess-lab",
+      id: "external-parity-postprocess-changes-pixels-postprocess-lab",
       passed: renderingEvidence.find((entry) => entry.id === "postprocess-lab")?.postprocessChanged === true,
       evidencePaths: ["tests/reports/external-parity-rendering.json", "tests/reports/external-parity-example-screenshots/postprocess-lab.png"],
       blocker: renderingEvidence.find((entry) => entry.id === "postprocess-lab")?.reason ?? "Postprocess lab pixel-change evidence is missing.",
     },
     {
-      id: "v4-postprocess-evidence-material-showroom",
+      id: "external-parity-postprocess-evidence-material-showroom",
       passed: renderingEvidence.find((entry) => entry.id === "material-showroom")?.postprocessChanged === true,
       evidencePaths: ["tests/reports/external-parity-rendering.json", "tests/reports/external-parity-example-screenshots/material-showroom.png"],
       blocker: renderingEvidence.find((entry) => entry.id === "material-showroom")?.reason ?? "Material showroom postprocess evidence is missing.",
@@ -103,41 +103,41 @@ export function createV4VisualQualityReport(root = defaultRoot) {
   const manualVisualApproval = validateManualVisualApproval(visualReview, requiredScreenshots.map((screenshot) => screenshot.id));
   const checks = [
     {
-      id: "v4-example-screenshots-present",
+      id: "external-parity-example-screenshots-present",
       passed: missingScreenshots.length === 0,
       evidencePaths: requiredScreenshots.map((screenshot) => screenshot.path),
-      blocker: "V4 screenshots are missing; visual credibility gate remains blocked.",
+      blocker: "External parity screenshots are missing; visual credibility gate remains blocked.",
     },
     {
-      id: "v4-screenshot-files-valid",
+      id: "external-parity-screenshot-files-valid",
       passed: invalidScreenshots.length === 0,
       evidencePaths: requiredScreenshots.map((screenshot) => screenshot.path),
-      blocker: `V4 screenshots are blank, tiny, corrupt, or badly framed: ${invalidScreenshots.map((entry) => entry.id).join(", ")}`,
+      blocker: `External parity screenshots are blank, tiny, corrupt, or badly framed: ${invalidScreenshots.map((entry) => entry.id).join(", ")}`,
     },
     {
-      id: "v4-screenshot-manifest-passes",
+      id: "external-parity-screenshot-manifest-passes",
       passed: manifestPasses,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json"],
-      blocker: "V4 screenshot manifest is missing or failing.",
+      blocker: "External parity screenshot manifest is missing or failing.",
     },
     ...primaryAssetChecks,
     ...realAssetChecks,
     ...shadowChecks,
     ...postprocessChecks,
     {
-      id: "v4-portfolio-screenshot-fresh",
+      id: "external-parity-portfolio-screenshot-fresh",
       passed: portfolioFreshness.passed,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json", "tests/reports/external-parity-example-screenshots/portfolio.png"],
       blocker: portfolioFreshness.reason,
     },
     {
-      id: "v4-portfolio-has-no-visual-blocked-featured-cards",
+      id: "external-parity-portfolio-has-no-visual-blocked-featured-cards",
       passed: portfolioBlockedCards.blockedCardIds.length === 0,
       evidencePaths: ["tests/reports/external-parity-example-screenshots/manifest.json", "examples/portfolio/main.ts"],
       blocker: `Portfolio still marks featured cards as visual-blocked: ${portfolioBlockedCards.blockedCardIds.join(", ") || "none"}. These pages must not be treated as completed visual-quality evidence until the cards are visually approved.`,
     },
     {
-      id: "v4-not-debug-or-primitive-dominated",
+      id: "external-parity-not-debug-or-primitive-dominated",
       passed: primitiveDominance.passed && staticSceneComposition.passed,
       evidencePaths: [
         "tests/reports/external-parity-example-screenshots/manifest.json",
@@ -148,13 +148,13 @@ export function createV4VisualQualityReport(root = defaultRoot) {
       blocker: `${primitiveDominance.reason}; ${staticSceneComposition.reason}`,
     },
     {
-      id: "v4-current-screenshots-have-explicit-visual-approval",
+      id: "external-parity-current-screenshots-have-explicit-visual-approval",
       passed: manualVisualApproval.passed,
       evidencePaths: [visualReviewPath],
       blocker: manualVisualApproval.reason,
     },
     {
-      id: "v4-manual-review-cannot-override-automation",
+      id: "external-parity-manual-review-cannot-override-automation",
       passed: true,
       evidencePaths: ["tools/external-parity-visual-quality/index.ts"],
       blocker: "Manual review notes must not override automated visual gate failures.",
@@ -195,7 +195,7 @@ export function createV4VisualQualityReport(root = defaultRoot) {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4VisualQualityReport();
+  const report = createExternalParityVisualQualityReport();
   console.log(JSON.stringify({ ok: report.ok, violations: report.violations.length }, null, 2));
   if (!report.ok) process.exitCode = 1;
 }
@@ -448,7 +448,7 @@ function validateManifestEvidence(screenshot: RequiredScreenshot, entries: reado
   const passed = quality.passed && canvasQuality.passed;
   const realAssetClaimed = Boolean(
     featureEvidence?.modelBacked
-    || featureEvidence?.v4ProductAssetLoaded
+    || featureEvidence?.externalParityProductAssetLoaded
     || featureEvidence?.roomModel
     || featureEvidence?.levelAssetLoaded
     || featureEvidence?.playerAssetLoaded,
@@ -522,11 +522,11 @@ export function validateVisualGateEntry(entry: unknown, screenshot: Pick<Require
   const debugDominated = /\b(debug|wireframe|placeholder)\b/i.test(`${visualClaim} ${claimBoundary}`) && featureEvidence.screenshotEvidencePath !== expectedPath;
   const primitiveOnly = !(
     featureEvidence.proceduralTextureFixturesApplied === true
-    || featureEvidence.v4ProductAssetLoaded === true
-    || featureEvidence.v4ArchitectureAssetLoaded === true
+    || featureEvidence.externalParityProductAssetLoaded === true
+    || featureEvidence.externalParityArchitectureAssetLoaded === true
     || featureEvidence.levelAssetLoaded === true
     || featureEvidence.playerAssetLoaded === true
-    || featureEvidence.v4RenderPreset === true
+    || featureEvidence.externalParityRenderPreset === true
   );
   const failures = [
     darkOrFlat ? "dark-or-flat" : "",
@@ -573,7 +573,7 @@ function validateRenderingEvidence(screenshot: RequiredScreenshot, renderingRepo
 
 function validateAssetViewerEvidence(assetViewerReport: Record<string, unknown> | null) {
   const validations = Array.isArray(assetViewerReport?.validations) ? assetViewerReport.validations : [];
-  const materialAsset = validations.find((candidate) => isRecord(candidate) && candidate.assetId === "v4-material-fidelity-card");
+  const materialAsset = validations.find((candidate) => isRecord(candidate) && candidate.assetId === "external-parity-material-fidelity-card");
   const okValidations = validations.filter((candidate) => isRecord(candidate) && candidate.ok === true);
   const primaryAssetVisible = assetViewerReport?.ok === true
     && okValidations.length >= 7
@@ -608,7 +608,7 @@ function validatePortfolioFreshness(root: string, manifest: Record<string, unkno
     const visualGate = isRecord(card.visualGate) ? card.visualGate : null;
     return typeof card.screenshotPath === "string"
       && card.screenshotPath.includes("/tests/reports/external-parity-example-screenshots/")
-      && (visualGate?.status === "passed-v4-screenshot-audit" || visualGate?.status === "blocked-external-parity-visual-quality")
+      && (visualGate?.status === "passed-external-parity-screenshot-audit" || visualGate?.status === "blocked-external-parity-visual-quality")
       && visualGate?.reportPath === "/tests/reports/external-parity-example-screenshots/manifest.json"
       && visualGate?.visualQualityReportPath === "/tests/reports/external-parity-visual-quality.json";
   });

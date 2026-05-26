@@ -34,14 +34,14 @@ test.describe("editor exported project", () => {
     expect(nonBlankPixels).toBeGreaterThan(1000);
   });
 
-  test("runs the checked-in V3 editor-authored app with imported asset, material, behavior, and export provenance", async ({ page }) => {
+  test("runs the checked-in editor-authored app with imported asset, material, behavior, and export provenance", async ({ page }) => {
     await page.goto(`${server.origin}/examples/foundation-editor-authored-app/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_EXPORTED_PROJECT__?.status === "ready");
 
     const result = await page.evaluate(() => window.__AURA3D_EXPORTED_PROJECT__);
     expect(result?.nodeCount).toBe(2);
     expect(result?.assetCount).toBe(1);
-    expect(result?.projectName).toBe("V3 Editor Authored Sample");
+    expect(result?.projectName).toBe("Editor Authored Sample");
     expect(result?.importedAssetNames).toContain("Fox.glb");
     expect(result?.editedMaterials).toEqual(expect.arrayContaining([
       expect.objectContaining({ node: "Imported Fox GLB", name: "Edited Fox Material", baseColor: "#ff8844" })
@@ -51,8 +51,8 @@ test.describe("editor exported project", () => {
     ]));
     expect(result?.usesPlayExportPath).toBe(true);
     expect(result?.interactive).toBe(true);
-    expect(result?.provenanceHash).toBe("a3d-prov-9bf29cd5");
-    await expect(page.locator("#aura3d-export-status")).toContainText("Loaded V3 Editor Authored Sample");
+    expect(result?.provenanceHash).toBe("a3d-prov-b1c7b66d");
+    await expect(page.locator("#aura3d-export-status")).toContainText("Loaded Editor Authored Sample");
 
     const nonBlankPixels = await page.evaluate(() => {
       const canvas = document.querySelector<HTMLCanvasElement>("#aura3d-export");
@@ -76,7 +76,7 @@ test.describe("editor exported project", () => {
     await page.waitForFunction(() => window.__AURA3D_EDITOR_AUTHORED_GAME__?.status === "ready");
 
     const initial = await page.evaluate(() => window.__AURA3D_EDITOR_AUTHORED_GAME__);
-    expect(initial?.projectName).toBe("V3 Editor Authored Game");
+    expect(initial?.projectName).toBe("Editor Authored Game");
     expect(initial?.nodeCount).toBe(3);
     expect(initial?.assetCount).toBe(1);
     expect(initial?.importedAssetNames).toContain("Fox.glb");

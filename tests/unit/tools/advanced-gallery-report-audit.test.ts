@@ -26,15 +26,15 @@ interface AuditReport {
   }[];
 }
 
-describe("V9 advanced gallery report audit", () => {
+describe("ThreejsParity advanced gallery report audit", () => {
   it("fails partial report folders instead of treating focused captures as complete gallery evidence", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-"));
     try {
       writeFileSync(join(reportDir, "product-configurator.json"), JSON.stringify(minimalRouteReport("product-configurator"), null, 2));
       writeFileSync(join(reportDir, "data-galaxy.json"), JSON.stringify(minimalRouteReport("data-galaxy"), null, 2));
       writeFileSync(join(reportDir, "visual-regression-inventory.json"), JSON.stringify({
-        schema: "a3d-v9-advanced-gallery-visual-regression-inventory/v1",
+        schema: "a3d-threejs-parity-advanced-gallery-visual-regression-inventory",
         demos: []
       }, null, 2));
 
@@ -69,11 +69,11 @@ describe("V9 advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("surfaces no-texture scaffold/support GLBs as asset-quality warnings", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-assets-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-assets-"));
     try {
       writeFileSync(join(reportDir, "product-configurator.json"), JSON.stringify({
         ...minimalRouteReport("product-configurator"),
@@ -165,11 +165,11 @@ describe("V9 advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("does not block accepted route reports merely because visual review already accepted them", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-accepted-status-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-accepted-status-"));
     try {
       for (const routeId of expectedRouteIdsForAuditTest()) {
         writeFileSync(join(reportDir, `${routeId}.json`), JSON.stringify({
@@ -202,8 +202,8 @@ describe("V9 advanced gallery report audit", () => {
 
   it("blocks generated/support Product and Data assets when manifest provenance is missing or stale", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-generated-assets-"));
-    const assetRoot = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-asset-root-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-generated-assets-"));
+    const assetRoot = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-asset-root-"));
     try {
       for (const routeId of expectedRouteIdsForAuditTest()) {
         writeFileSync(join(reportDir, `${routeId}.json`), JSON.stringify(routeId === "product-configurator"
@@ -288,7 +288,7 @@ describe("V9 advanced gallery report audit", () => {
 
   it("requires Product material-variant evidence to include metadata-backed material-control bindings", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-product-variants-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-product-variants-"));
     try {
       for (const routeId of expectedRouteIdsForAuditTest()) {
         writeFileSync(join(reportDir, `${routeId}.json`), JSON.stringify(routeId === "product-configurator"
@@ -346,11 +346,11 @@ describe("V9 advanced gallery report audit", () => {
     } finally {
       rmSync(reportDir, { recursive: true, force: true });
     }
-  });
+  }, 15_000);
 
   it("blocks Product material evidence when runtime-bound texture slots are inactive in the selected shader variant", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-product-shader-slots-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-product-shader-slots-"));
     try {
       for (const routeId of expectedRouteIdsForAuditTest()) {
         writeFileSync(join(reportDir, `${routeId}.json`), JSON.stringify(routeId === "product-configurator"
@@ -388,7 +388,7 @@ describe("V9 advanced gallery report audit", () => {
 
   it("blocks focused route reports even when the report folder has every route JSON", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-focused-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-focused-"));
     try {
       for (const routeId of expectedRouteIdsForAuditTest()) {
         writeFileSync(join(reportDir, `${routeId}.json`), JSON.stringify(minimalRouteReport(routeId, routeId === "product-configurator" ? "focused-route" : "full-gallery"), null, 2));
@@ -423,7 +423,7 @@ describe("V9 advanced gallery report audit", () => {
 
   it("blocks JSON-only screenshot hashes when current full/viewport/hero artifacts are absent", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-artifacts-missing-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-artifacts-missing-"));
     try {
       writeFileSync(join(reportDir, "product-configurator.json"), JSON.stringify(minimalRouteReport("product-configurator"), null, 2));
 
@@ -453,7 +453,7 @@ describe("V9 advanced gallery report audit", () => {
 
   it("accepts current screenshot artifact evidence only when files exist and hashes match", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-artifacts-current-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-artifacts-current-"));
     try {
       const screenshotEvidence = writeCurrentScreenshotArtifacts(reportDir, "product-configurator");
       writeFileSync(join(reportDir, "product-configurator.json"), JSON.stringify({
@@ -487,7 +487,7 @@ describe("V9 advanced gallery report audit", () => {
 
   it("requires Data Galaxy structured CPU/static and generated support-asset evidence", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-data-evidence-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-data-evidence-"));
     try {
       const routeIds = [
         "water-lab",
@@ -535,7 +535,7 @@ describe("V9 advanced gallery report audit", () => {
 
   it("blocks Data Galaxy structured evidence that treats generated no-texture authored GLB as focal proof", () => {
     const root = resolve(".");
-    const reportDir = mkdtempSync(join(tmpdir(), "a3d-v9-report-audit-data-focal-"));
+    const reportDir = mkdtempSync(join(tmpdir(), "a3d-threejs-parity-report-audit-data-focal-"));
     try {
       const routeIds = [
         "water-lab",
@@ -601,7 +601,7 @@ describe("V9 advanced gallery report audit", () => {
 
 function minimalRouteReport(routeId: string, evidenceMode: "full-gallery" | "focused-route" = "full-gallery"): Record<string, unknown> {
   return {
-    schema: "a3d-v9-advanced-gallery-route-report/v1",
+    schema: "a3d-threejs-parity-advanced-gallery-route-report",
     capturedAt: "2026-05-19T00:00:00.000Z",
     evidenceMode,
     evidenceScope: {

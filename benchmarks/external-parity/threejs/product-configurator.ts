@@ -1,4 +1,4 @@
-export const v4ThreeProductConfiguratorBenchmark = {
+export const externalParityThreeProductConfiguratorBenchmark = {
   engine: "threejs",
   scene: "premium-boom-box-product-configurator",
   asset: "fixtures/external-parity/products/premium-product/manifest.json",

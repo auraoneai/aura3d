@@ -28,7 +28,7 @@ const productDemos: readonly DemoDefinition[] = [
   },
 ] as const;
 
-test.describe("v2 product demos", () => {
+test.describe("productStudio product demos", () => {
   test.describe.configure({ timeout: 180_000 });
 
   let server: ExampleDevServer;
@@ -317,7 +317,7 @@ test.describe("v2 product demos", () => {
     expect(Number(state.metrics.contactShadowCount)).toBeGreaterThanOrEqual(12);
     expect(Number(state.metrics.shadowReceiverElements)).toBeGreaterThanOrEqual(3);
 
-    await writeProductDemoScreenshot(page, "tests/reports/architecture-viewer-v3.png");
+    await writeProductDemoScreenshot(page, "tests/reports/architecture-viewer-product-demo.png");
   });
 
   test("architecture viewer exposes orbit, pan, zoom, focus, reset, keyboard, and touch controls", async ({ page }) => {

@@ -53,13 +53,13 @@ const index = readText("packages/rendering/src/index.ts");
 check(
   "public-rendering-exports",
   includesAll(index, [
-    "createV4ColorManagementPolicy",
-    "createV4HdrPipeline",
-    "createV4ToneMappingPolicy",
-    "createV4ExposurePolicy",
-    "createV4DebugViewSet"
+    "createExternalParityColorManagementPolicy",
+    "createExternalParityHdrPipeline",
+    "createExternalParityToneMappingPolicy",
+    "createExternalParityExposurePolicy",
+    "createExternalParityDebugViewSet"
   ]),
-  "Rendering package index must export the V4 HDR/color API surface."
+  "Rendering package index must export the External parity HDR/color API surface."
 );
 
 const colorManagement = readText("packages/rendering/src/ColorManagement.ts");
@@ -85,7 +85,7 @@ check(
     "toneMapFloatPixels",
     "createToneMappingCalibration"
   ]),
-  "ToneMapping must expose V4 intent presets and HDR float tone mapping."
+  "ToneMapping must expose External parity intent presets and HDR float tone mapping."
 );
 
 const exposure = readText("packages/rendering/src/Exposure.ts");
@@ -127,7 +127,7 @@ check(
     "specular-ibl",
     "tone-mapped-output"
   ]),
-  "RenderDebugViews must define every V4 required debug view."
+  "RenderDebugViews must define every External parity required debug view."
 );
 
 const browser = readJson("tests/reports/external-parity-hdr-browser.json");
@@ -167,12 +167,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-hdr-readiness/v1",
+  schema: "a3d-external-parity-hdr-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 2 HDR/color-management foundation is ready. This is still renderer foundation work, not product visual completion."
-    : "V4 Milestone 2 HDR/color-management foundation is incomplete.",
+    ? "External parity Milestone 2 HDR/color-management foundation is ready. This is still renderer foundation work, not product visual completion."
+    : "External parity Milestone 2 HDR/color-management foundation is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

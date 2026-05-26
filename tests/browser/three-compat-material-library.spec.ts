@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { createV5MaterialPreviewScene, listV5PbrMaterials } from "../../packages/materials/src";
+import { createThreeCompatMaterialPreviewScene, listThreeCompatPbrMaterials } from "../../packages/materials/src";
 
-test("V5 material browser renders the PBR library matrix", async ({ page }) => {
-  const materials = listV5PbrMaterials();
-  const tiles = createV5MaterialPreviewScene();
+test("ThreeCompat material browser renders the PBR library matrix", async ({ page }) => {
+  const materials = listThreeCompatPbrMaterials();
+  const tiles = createThreeCompatMaterialPreviewScene();
 
   await page.setContent(`
     <html>

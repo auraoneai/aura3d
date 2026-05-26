@@ -1,5 +1,5 @@
 import { createMaterialStudioWorkflow } from "@aura3d/workflows";
-import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../v3-common/src/WorkflowWorkbench";
+import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../legacy-common/src/WorkflowWorkbench";
 
 const scenarios: readonly WorkflowScenario[] = [
   {
@@ -29,7 +29,7 @@ const app = new WorkflowWorkbenchApp(root, {
   appId: "material-lab",
   title: "Material Lab",
   subtitle: "A material authoring workbench for PBR, texture, normal map, lighting, and postprocess review.",
-  suiteLabel: "V3 App Suite",
+  suiteLabel: "Foundation App Suite",
   accent: "#e0a64d",
   scenarios,
   defaultScenarioId: "comparison",

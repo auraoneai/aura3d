@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { readV6PngStats } from "../production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../production-runtime-report-bridge/pngStats";
 
 const reportPath = resolve("tests/reports/production-runtime-hd-flagship.json");
 const readinessPath = resolve("tests/reports/production-runtime-hd-flagship-readiness.json");
@@ -14,7 +14,7 @@ const diagnostics = asObj(proof.diagnostics);
 const importedAsset = asObj(proof.importedAsset);
 const screenshot = String(report.screenshot ?? "");
 const screenshotPath = resolve(screenshot || expectedScreenshot);
-const pixelStats = existsSync(screenshotPath) ? readV6PngStats(screenshotPath) : null;
+const pixelStats = existsSync(screenshotPath) ? readProductionPngStats(screenshotPath) : null;
 const fileSize = existsSync(screenshotPath) ? statSync(screenshotPath).size : 0;
 const assetIds = Array.isArray(report.assetIds) ? report.assetIds.map(String) : [];
 
@@ -71,7 +71,7 @@ const checks = [
 ];
 
 const readiness = {
-  schema: "a3d-production-runtime-hd-flagship-readiness/v1",
+  schema: "a3d-production-runtime-hd-flagship-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   screenshot: expectedScreenshot,

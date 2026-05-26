@@ -26,7 +26,7 @@ export interface ProductShowcaseFrame {
 }
 
 export interface ProductShowcaseLayout {
-  readonly schema: "a3d-product-showcase-layout/v1";
+  readonly schema: "a3d-product-showcase-layout";
   readonly mode: "hero-product-with-secondary-detail";
   readonly items: readonly ProductShowcaseLayoutItem[];
   readonly frame: ProductShowcaseFrame;
@@ -72,7 +72,7 @@ const COMPACT_FRAME: ProductShowcaseFrame = {
 
 export function createProductShowcaseLayout(slots: readonly ProductShowcaseSlotInput[]): ProductShowcaseLayout {
   return {
-    schema: "a3d-product-showcase-layout/v1",
+    schema: "a3d-product-showcase-layout",
     mode: "hero-product-with-secondary-detail",
     items: slots.map((slot) => ({
       assetId: slot.assetId,

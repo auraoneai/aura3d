@@ -1,6 +1,6 @@
-import type { V3ComparisonScene } from "./scene-types";
+import type { FoundationComparisonScene } from "./scene-types";
 
-export const materialComparisonScene: V3ComparisonScene = {
+export const materialComparisonScene: FoundationComparisonScene = {
   id: "material",
   title: "Material Scene",
   intent: "Three material samples under the same studio intent: polished metal, matte product plastic, and colored rough material.",

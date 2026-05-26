@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "blender-export-fixtures-v1",
+  "schemaVersion": "blender-export-fixtures",
   "sourceName": "Khronos Vulkan Samples Assets",
   "sourceRepository": "https://github.com/KhronosGroup/Vulkan-Samples-Assets",
   "sourceRevision": "8db8ce9c528330f0b1261b07531b009732b08731",

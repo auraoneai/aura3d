@@ -48,7 +48,7 @@ interface HdrVisualDiff {
   };
 }
 
-export interface V4HdrVisualParityReport {
+export interface ExternalParityHdrVisualParityReport {
   readonly ok: boolean;
   readonly screenshotPaths: readonly string[];
   readonly boundedHdrRenderTargetParity: {
@@ -72,7 +72,7 @@ const sourceFiles = [
   "packages/rendering/src/WebGL2Device.ts",
 ] as const;
 
-export async function createV4HdrVisualParityReport(root = process.cwd()): Promise<V4HdrVisualParityReport> {
+export async function createExternalParityHdrVisualParityReport(root = process.cwd()): Promise<ExternalParityHdrVisualParityReport> {
   mkdirSync(join(root, artifactDir), { recursive: true });
   const browser = await chromium.launch({ headless: true });
   try {
@@ -134,7 +134,7 @@ export async function createV4HdrVisualParityReport(root = process.cwd()): Promi
   }
 }
 
-export function collectHdrVisualEvidencePaths(report: Pick<V4HdrVisualParityReport, "renders" | "diffs">): readonly string[] {
+export function collectHdrVisualEvidencePaths(report: Pick<ExternalParityHdrVisualParityReport, "renders" | "diffs">): readonly string[] {
   const paths = [
     ...report.renders.map((render) => render.screenshotPath),
     ...report.diffs.flatMap((diff) => [diff.baselinePath, diff.comparedPath, diff.diffPath]),
@@ -573,13 +573,13 @@ async (input) => {
 }
 `;
 
-function writeReport(root: string, report: V4HdrVisualParityReport): void {
+function writeReport(root: string, report: ExternalParityHdrVisualParityReport): void {
   writeJson(root, reportPath, report);
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = await createV4HdrVisualParityReport();
+  const report = await createExternalParityHdrVisualParityReport();
   writeReport(process.cwd(), report);
   console.log(JSON.stringify({
     ok: report.ok,

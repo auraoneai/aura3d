@@ -1,1 +1,1 @@
-export { EXRLoaderV5 as EXRLoader } from "./loaders/EXRLoader";
+export { EXRLoaderThreeCompat as EXRLoader } from "./loaders/EXRLoader";

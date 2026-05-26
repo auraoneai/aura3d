@@ -1,8 +1,8 @@
 {
-  "schema": "a3d-v3-asset-fixture/v1",
+  "schema": "a3d-foundation-asset-fixture",
   "id": "material-spheres",
   "source": "watch",
-  "description": "V3 material-rich fixture with metal, glass, emissive, and strap materials.",
+  "description": "Foundation material-rich fixture with metal, glass, emissive, and strap materials.",
   "gltf": "material-spheres.gltf",
   "glb": "material-spheres.glb",
   "externalGltf": "material-spheres-external.gltf",

@@ -441,7 +441,7 @@ async function main(): Promise<void> {
   const warningIssueCount = issues.filter((issue) => issue.severity === "warning").length;
   const pass = acceptedCount === DEMOS.length && blockerIssueCount === 0;
   const visualReviewReport = {
-    schema: "a3d-advanced-gallery-visual-review/v1",
+    schema: "a3d-advanced-gallery-visual-review",
     generatedAt: new Date().toISOString(),
     pass,
     releaseGate: pass ? "accepted" : "blocked",
@@ -490,9 +490,9 @@ async function main(): Promise<void> {
   const visualRegressionInventory = buildVisualRegressionInventory(demos, contactSheet);
   writeFileSync(visualRegressionInventoryPath, `${JSON.stringify(visualRegressionInventory, null, 2)}\n`);
 
-  console.log(`V9 advanced gallery contact sheet ${contactSheet.generated ? "generated" : "validated"}: ${contactSheetPath}`);
-  console.log(`V9 advanced gallery visual regression inventory written: ${visualRegressionInventoryPath}`);
-  console.log(`V9 advanced gallery visual review report written: ${outputPath}`);
+  console.log(`Three.js parity advanced gallery contact sheet ${contactSheet.generated ? "generated" : "validated"}: ${contactSheetPath}`);
+  console.log(`Three.js parity advanced gallery visual regression inventory written: ${visualRegressionInventoryPath}`);
+  console.log(`Three.js parity advanced gallery visual review report written: ${outputPath}`);
   console.log(`Release gate: ${pass ? "accepted" : "blocked"} (${acceptedCount}/${DEMOS.length} accepted)`);
   if (!pass) {
     for (const issue of issues.slice(0, 20)) {
@@ -632,7 +632,7 @@ function buildVisualRegressionInventory(
   );
   const visualReviewReport = fileEvidence(outputPath);
   return {
-    schema: "a3d-v9-advanced-gallery-visual-regression-inventory/v1",
+    schema: "a3d-threejs-parity-advanced-gallery-visual-regression-inventory",
     generatedAt,
     source: "tools/advanced-gallery-visual-review",
     reportDir,
@@ -780,7 +780,7 @@ function artifactBlockers(
   if (getString(runtimeReport, "evidenceMode") !== "full-gallery"
     || getBoolean(evidenceScope, "fullGalleryRun") !== true
     || getBoolean(evidenceScope, "focusedRouteOnly") !== false) {
-    blockers.push(`${demoId} runtime report is focused/partial evidence, not a full-gallery capture report; run pnpm v9:advanced-gallery before release review claims.`);
+    blockers.push(`${demoId} runtime report is focused/partial evidence, not a full-gallery capture report; run pnpm threejs-parity:advanced-gallery before release review claims.`);
   }
   if (getString(runtimeReport, "visualReviewStatus") !== demo.visualReview.status) {
     blockers.push(`${demoId} runtime report visualReviewStatus does not match metadata status ${demo.visualReview.status}.`);
@@ -994,8 +994,8 @@ function rendererEnvironmentBackgroundVisualDeltaBlockers(demoId: string, eviden
   if (getString(evidence, "source") !== "renderer-environment-background-on-off-screenshot-delta") {
     blockers.push(`${demoId} renderer environment background visual-delta evidence has an invalid source.`);
   }
-  if (getString(evidence, "rendererSource") !== "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass") {
-    blockers.push(`${demoId} renderer environment background visual-delta evidence does not cite loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass.`);
+  if (getString(evidence, "rendererSource") !== "loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass") {
+    blockers.push(`${demoId} renderer environment background visual-delta evidence does not cite loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass.`);
   }
   if (evidence.passed !== true) blockers.push(`${demoId} renderer environment background visual-delta evidence is not marked passed.`);
   if (changedRatio <= minimumChangedRatio) {

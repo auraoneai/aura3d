@@ -127,23 +127,23 @@ function variantCacheKey(name: string, variantName: string, options: ShaderPrepr
 }
 
 export const DEFAULT_UNLIT_SHADER_NAME = "aura3d/unlit";
-export const DEFAULT_UNLIT_SHADER_MARKER = "@aura3d-shader:unlit-v1";
+export const DEFAULT_UNLIT_SHADER_MARKER = "@aura3d-shader:unlit";
 export const DEFAULT_INSTANCED_UNLIT_SHADER_NAME = "aura3d/instanced-unlit";
-export const DEFAULT_INSTANCED_UNLIT_SHADER_MARKER = "@aura3d-shader:instanced-unlit-v1";
+export const DEFAULT_INSTANCED_UNLIT_SHADER_MARKER = "@aura3d-shader:instanced-unlit";
 export const DEFAULT_INSTANCED_PBR_SHADER_NAME = "aura3d/instanced-pbr";
-export const DEFAULT_INSTANCED_PBR_SHADER_MARKER = "@aura3d-shader:instanced-pbr-v1";
+export const DEFAULT_INSTANCED_PBR_SHADER_MARKER = "@aura3d-shader:instanced-pbr";
 export const DEFAULT_TEXTURED_UNLIT_SHADER_NAME = "aura3d/textured-unlit";
-export const DEFAULT_TEXTURED_UNLIT_SHADER_MARKER = "@aura3d-shader:textured-unlit-v1";
+export const DEFAULT_TEXTURED_UNLIT_SHADER_MARKER = "@aura3d-shader:textured-unlit";
 export const DEFAULT_SKINNED_UNLIT_SHADER_NAME = "aura3d/skinned-unlit";
-export const DEFAULT_SKINNED_UNLIT_SHADER_MARKER = "@aura3d-shader:skinned-unlit-v1";
+export const DEFAULT_SKINNED_UNLIT_SHADER_MARKER = "@aura3d-shader:skinned-unlit";
 export const DEFAULT_SKINNED_LIT_SHADER_NAME = "aura3d/skinned-lit";
-export const DEFAULT_SKINNED_LIT_SHADER_MARKER = "@aura3d-shader:skinned-lit-v1";
+export const DEFAULT_SKINNED_LIT_SHADER_MARKER = "@aura3d-shader:skinned-lit";
 export const DEFAULT_MORPH_UNLIT_SHADER_NAME = "aura3d/morph-unlit";
-export const DEFAULT_MORPH_UNLIT_SHADER_MARKER = "@aura3d-shader:morph-unlit-v1";
+export const DEFAULT_MORPH_UNLIT_SHADER_MARKER = "@aura3d-shader:morph-unlit";
 export const DEFAULT_NORMAL_MAPPED_PBR_SHADER_NAME = "aura3d/pbr-normal-map";
-export const DEFAULT_NORMAL_MAPPED_PBR_SHADER_MARKER = "@aura3d-shader:pbr-normal-map-v1";
+export const DEFAULT_NORMAL_MAPPED_PBR_SHADER_MARKER = "@aura3d-shader:pbr-normal-map";
 export const DEFAULT_TEXTURED_PBR_SHADER_NAME = "aura3d/pbr-textured";
-export const DEFAULT_TEXTURED_PBR_SHADER_MARKER = "@aura3d-shader:pbr-textured-v1";
+export const DEFAULT_TEXTURED_PBR_SHADER_MARKER = "@aura3d-shader:pbr-textured";
 export const DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT = "clearcoat-textures";
 export const DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT = "transmission-volume-textures";
 export const DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT = "specular-sheen-anisotropy-textures";
@@ -152,9 +152,9 @@ export const DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT
 export const DEFAULT_TEXTURED_PBR_CLEARCOAT_SPECULAR_TEXTURES_VARIANT = "clearcoat-specular-textures";
 export const DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT = "specular-sheen-anisotropy-iridescence-textures";
 export const DEFAULT_DEPTH_SHADER_NAME = "aura3d/depth";
-export const DEFAULT_DEPTH_SHADER_MARKER = "@aura3d-shader:depth-v1";
+export const DEFAULT_DEPTH_SHADER_MARKER = "@aura3d-shader:depth";
 export const DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_NAME = "aura3d/environment-background";
-export const DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER = "@aura3d-shader:environment-background-v1";
+export const DEFAULT_ENVIRONMENT_BACKGROUND_SHADER_MARKER = "@aura3d-shader:environment-background";
 
 export function createDefaultShaderLibrary(): ShaderLibrary {
   const library = new ShaderLibrary();

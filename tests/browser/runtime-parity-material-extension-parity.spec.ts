@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 material extension parity artifact", () => {
+test.describe("runtime material extension parity artifact", () => {
   test.setTimeout(240_000);
 
   let server: ExampleDevServer;
@@ -31,17 +31,17 @@ test.describe("V7 material extension parity artifact", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V7_MATERIAL_EXTENSION_PARITY__ as { status?: string } | undefined;
+          const result = window.__RUNTIME_MATERIAL_EXTENSION_PARITY__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 150_000 }
       );
     } catch (error) {
-      throw new Error(`V7 material extension parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`runtime material extension parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V7_MATERIAL_EXTENSION_PARITY__) as {
+    const result = await page.evaluate(() => window.__RUNTIME_MATERIAL_EXTENSION_PARITY__) as {
       status: "ready" | "error";
       error?: string;
       schema?: string;
@@ -80,7 +80,7 @@ test.describe("V7 material extension parity artifact", () => {
     };
 
     expect(result.status, result.error).toBe("ready");
-    expect(result.schema).toBe("a3d-v7-material-extension-parity/v1");
+    expect(result.schema).toBe("a3d-runtime-material-extension-parity");
     expect(result.parity?.claim).toBe("bounded-eleven-extension-material-delta-coverage");
     expect(result.cases).toHaveLength(11);
 
@@ -127,7 +127,7 @@ test.describe("V7 material extension parity artifact", () => {
         expect(dataUrl).toMatch(/^data:image\/png;base64,/);
         const path = `${reportDir}/${entry.id}-${kind}.png`;
         writeFileSync(resolve(path), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
-        const pixelStats = readV6PngStats(resolve(path));
+        const pixelStats = readProductionPngStats(resolve(path));
         const fileSize = statSync(resolve(path)).size;
         expect(pixelStats.width).toBe(512);
         expect(pixelStats.height).toBe(512);

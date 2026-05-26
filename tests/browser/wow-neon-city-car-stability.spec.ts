@@ -80,7 +80,7 @@ test.describe("wow neon city car delayed environment stability", () => {
 
     const diagnosis = diagnoseDelayedEnvironment(earlyStats, lateStats);
     const report = {
-      schema: "a3d-wow-neon-city-car-delayed-environment-diagnostic/v1",
+      schema: "a3d-wow-neon-city-car-delayed-environment-diagnostic",
       source: "tests/browser/wow-neon-city-car-stability.spec.ts",
       route: "apps/wow-neon-city",
       asset: "car-concept",
@@ -255,7 +255,7 @@ function diagnoseDelayedEnvironment(early: CarArtifactStats, late: CarArtifactSt
     : {
       delayedHdrTakeoverDetected,
       sourceOwner: "packages/assets/src/CarConceptMaterialStability.ts Product gallery material profile",
-      nextSourceChange: "Delayed v8 HDR did not reproduce a white takeover with the current code; keep Product failed and tune the gallery car material profile/material richness before the next Product route capture.",
+      nextSourceChange: "Delayed currentRoutes HDR did not reproduce a white takeover with the current code; keep Product failed and tune the gallery car material profile/material richness before the next Product route capture.",
       routeCaptureAllowed: false
     };
 }

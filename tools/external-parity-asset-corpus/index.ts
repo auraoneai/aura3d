@@ -14,11 +14,11 @@ import {
   type GLTFLoaderDiagnostics
 } from "@aura3d/assets";
 
-type V4Category = "product" | "architecture" | "environment" | "character" | "materials" | "morph" | "animation";
+type ExternalParityCategory = "product" | "architecture" | "environment" | "character" | "materials" | "morph" | "animation";
 
-interface V4Fixture {
+interface ExternalParityFixture {
   readonly id: string;
-  readonly category: V4Category;
+  readonly category: ExternalParityCategory;
   readonly fileName: string;
   readonly displayName: string;
   readonly license: "CC0-1.0";
@@ -33,13 +33,13 @@ interface V4Fixture {
   readonly gltf: Record<string, unknown>;
 }
 
-interface V4CorpusAssetReport {
+interface ExternalParityGLTFCorpusAssetReport {
   readonly id: string;
-  readonly category: V4Category;
+  readonly category: ExternalParityCategory;
   readonly displayName: string;
   readonly assetPath: string;
   readonly license: string;
-  readonly source: V4Fixture["source"];
+  readonly source: ExternalParityFixture["source"];
   readonly features: readonly string[];
   readonly materialFeatures: readonly string[];
   readonly unsupportedFeatures: readonly string[];
@@ -77,7 +77,7 @@ interface CorpusInspectionSummary {
 const fixtureRoot = resolve("fixtures/external-parity-assets");
 const reportPath = resolve("tests/reports/external-parity-asset-corpus.json");
 const generatedAt = new Date().toISOString();
-const fixtures: readonly V4Fixture[] = [
+const fixtures: readonly ExternalParityFixture[] = [
   createProductFixture(),
   createArchitectureFixture(),
   createEnvironmentFixture(),
@@ -88,7 +88,7 @@ const fixtures: readonly V4Fixture[] = [
   createAnimationFixture()
 ];
 
-const reports: V4CorpusAssetReport[] = [];
+const reports: ExternalParityGLTFCorpusAssetReport[] = [];
 for (const fixture of fixtures) {
   const directory = resolve(fixtureRoot, fixture.category, fixture.id);
   const assetPath = resolve(directory, fixture.fileName);
@@ -99,7 +99,7 @@ for (const fixture of fixtures) {
 }
 
 writeJson(resolve(fixtureRoot, "manifest.json"), {
-  schemaVersion: "a3d-v4-asset-corpus-v1",
+  schemaVersion: "a3d-external-parity-asset-corpus",
   generatedAt,
   source: {
     kind: "generated-local",
@@ -128,7 +128,7 @@ writeJson(resolve(fixtureRoot, "manifest.json"), {
 
 const report = {
   ok: reports.every((entry) => entry.renderStatus === "render-resources-created"),
-  schemaVersion: "a3d-v4-asset-corpus-report-v1",
+  schemaVersion: "a3d-external-parity-asset-corpus-report",
   generatedAt,
   commit: currentCommit(),
   command: "pnpm exec tsx --tsconfig tsconfig.base.json tools/external-parity-asset-corpus/index.ts",
@@ -145,8 +145,8 @@ const report = {
     "complete glTF support",
     "loader parity with Three.js",
     "production asset pipeline",
-    "broad skinned visual parity beyond the generated V4 corpus",
-    "broad morph animation parity beyond the generated V4 corpus"
+    "broad skinned visual parity beyond the generated External parity corpus",
+    "broad morph animation parity beyond the generated External parity corpus"
   ],
   sourceFileHashes: [
     hashSource("tools/external-parity-asset-corpus/index.ts"),
@@ -157,14 +157,14 @@ const report = {
   assets: reports
 };
 writeJson(reportPath, report);
-console.log(`Wrote ${reports.length} V4 asset corpus fixtures and ${relativePath(reportPath)}`);
+console.log(`Wrote ${reports.length} External parity asset corpus fixtures and ${relativePath(reportPath)}`);
 
 async function inspectFixture(
-  fixture: V4Fixture,
+  fixture: ExternalParityFixture,
   assetPath: string,
   diagnosticsPath: string,
   screenshotPath: string
-): Promise<V4CorpusAssetReport> {
+): Promise<ExternalParityGLTFCorpusAssetReport> {
   const loader = new GLTFLoader();
   const totalStart = performance.now();
   let loadMs = 0;
@@ -224,14 +224,14 @@ async function inspectFixture(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const diagnostics = [...fixture.expectedDiagnostics, {
-      code: "ASSET_V4_CORPUS_LOAD_ERROR",
+      code: "ASSET_EXTERNAL_PARITY_CORPUS_LOAD_ERROR",
       severity: "error",
       message,
-      nextAction: "Fix the generated V4 corpus fixture or the loader/render-resource regression before marking this asset complete.",
+      nextAction: "Fix the generated External parity corpus fixture or the loader/render-resource regression before marking this asset complete.",
       assetId: fixture.id
     } satisfies AssetDiagnostic];
     const emptyDiagnostics: GLTFLoaderDiagnostics = {
-      schemaVersion: "gltf-loader-diagnostics-v1",
+      schemaVersion: "gltf-loader-diagnostics",
       features: [],
       extensionsUsed: [],
       extensionsRequired: [],
@@ -282,7 +282,7 @@ async function inspectFixture(
 }
 
 function createAssetManifest(
-  fixture: V4Fixture,
+  fixture: ExternalParityFixture,
   assetPath: string,
   diagnosticsPath: string,
   screenshotPath: string,
@@ -290,7 +290,7 @@ function createAssetManifest(
   inspection: CorpusInspectionSummary
 ): Record<string, unknown> {
   return {
-    schemaVersion: "a3d-v4-local-asset-v1",
+    schemaVersion: "a3d-external-parity-local-asset",
     id: fixture.id,
     category: fixture.category,
     displayName: fixture.displayName,
@@ -325,7 +325,7 @@ function summarizeInspection(inspection: GLTFAssetInspectionReport): CorpusInspe
   };
 }
 
-function createProductFixture(): V4Fixture {
+function createProductFixture(): ExternalParityFixture {
   const productRects = [
     rectVertices(-0.92, -0.54, 0, 0.92, -0.4),
     rectVertices(-0.62, -0.3, 0, -0.12, 0.3),
@@ -342,10 +342,10 @@ function createProductFixture(): V4Fixture {
   const buffer = concatBytes(positions, normals, texcoords, bodyIndices, grilleIndices, coneIndices, accentIndices);
   const offsets = byteOffsets([positions, normals, texcoords, bodyIndices, grilleIndices, coneIndices, accentIndices]);
   return {
-    id: "v4-product-speaker",
+    id: "external-parity-product-speaker",
     category: "product",
-    fileName: "v4-product-speaker.gltf",
-    displayName: "Generated V4 Product Speaker",
+    fileName: "external-parity-product-speaker.gltf",
+    displayName: "Generated External parity Product Speaker",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["product", "pbr", "metallic-roughness", "base-color-texture", "multi-primitive-scene", "normals", "indexed-geometry", "hdr-studio-environment-resource"],
@@ -393,7 +393,7 @@ function createProductFixture(): V4Fixture {
   };
 }
 
-function createArchitectureFixture(): V4Fixture {
+function createArchitectureFixture(): ExternalParityFixture {
   const positions = floatBytes([-1.5, 0, 0, 1.5, 0, 0, 1.5, 1.8, 0, -1.5, 1.8, 0, -1.5, 0, -1.8, 1.5, 0, -1.8]);
   const normals = floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0]);
   const indices = uint16Bytes([0, 1, 2, 0, 2, 3, 4, 5, 1, 4, 1, 0]);
@@ -403,7 +403,7 @@ function createArchitectureFixture(): V4Fixture {
     id: "external-gallery-corner",
     category: "architecture",
     fileName: "external-gallery-corner.gltf",
-    displayName: "Generated V4 Gallery Corner",
+    displayName: "Generated External parity Gallery Corner",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["architecture", "room-corner", "double-sided", "camera", "punctual-light"],
@@ -427,7 +427,7 @@ function createArchitectureFixture(): V4Fixture {
   };
 }
 
-function createEnvironmentFixture(): V4Fixture {
+function createEnvironmentFixture(): ExternalParityFixture {
   const positions = floatBytes([-2, 0, -2, 2, 0, -2, 2, 0, 2, -2, 0, 2, -0.35, 0, -0.25, 0.35, 0, -0.25, 0, 0.72, 0]);
   const colors = floatBytes([0.12, 0.26, 0.18, 1, 0.12, 0.26, 0.18, 1, 0.22, 0.36, 0.24, 1, 0.22, 0.36, 0.24, 1, 0.52, 0.44, 0.3, 1, 0.52, 0.44, 0.3, 1, 0.32, 0.54, 0.72, 1]);
   const indices = uint16Bytes([0, 1, 2, 0, 2, 3, 4, 5, 6]);
@@ -439,10 +439,10 @@ function createEnvironmentFixture(): V4Fixture {
   const buffer = concatBytes(positions, colors, indices, instanceTranslations);
   const offsets = byteOffsets([positions, colors, indices, instanceTranslations]);
   return {
-    id: "v4-game-outpost",
+    id: "external-parity-game-outpost",
     category: "environment",
-    fileName: "v4-game-outpost.gltf",
-    displayName: "Generated V4 Game Outpost",
+    fileName: "external-parity-game-outpost.gltf",
+    displayName: "Generated External parity Game Outpost",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["game-environment", "vertex-colors", "multi-primitive-scene", "level-marker", "mesh-gpu-instancing"],
@@ -465,7 +465,7 @@ function createEnvironmentFixture(): V4Fixture {
   };
 }
 
-function createCharacterFixture(): V4Fixture {
+function createCharacterFixture(): ExternalParityFixture {
   const positions = floatBytes([-0.25, 0, 0, 0.25, 0, 0, 0, 0.8, 0]);
   const normals = floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1]);
   const joints = uint16Bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
@@ -477,10 +477,10 @@ function createCharacterFixture(): V4Fixture {
   const buffer = concatBytes(positions, normals, joints, weights, indices, ibm, times, rotations);
   const offsets = byteOffsets([positions, normals, joints, weights, indices, ibm, times, rotations]);
   return {
-    id: "v4-skinned-hero",
+    id: "external-parity-skinned-hero",
     category: "character",
-    fileName: "v4-skinned-hero.gltf",
-    displayName: "Generated V4 Skinned Hero",
+    fileName: "external-parity-skinned-hero.gltf",
+    displayName: "Generated External parity Skinned Hero",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["character", "skin", "joint-weights", "inverse-bind-matrix", "animation"],
@@ -508,7 +508,7 @@ function createCharacterFixture(): V4Fixture {
   };
 }
 
-function createMaterialFixture(): V4Fixture {
+function createMaterialFixture(): ExternalParityFixture {
   const positions = floatBytes([-0.8, -0.45, 0, 0.8, -0.45, 0, 0, 0.75, 0]);
   const normals = floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1]);
   const texcoords = floatBytes([0, 1, 1, 1, 0.5, 0]);
@@ -516,10 +516,10 @@ function createMaterialFixture(): V4Fixture {
   const buffer = concatBytes(positions, normals, texcoords, indices);
   const offsets = byteOffsets([positions, normals, texcoords, indices]);
   return {
-    id: "v4-material-fidelity-card",
+    id: "external-parity-material-fidelity-card",
     category: "materials",
-    fileName: "v4-material-fidelity-card.gltf",
-    displayName: "Generated V4 Material Fidelity Card",
+    fileName: "external-parity-material-fidelity-card.gltf",
+    displayName: "Generated External parity Material Fidelity Card",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["material-test", "base-color", "normal", "metallic-roughness", "emissive", "occlusion", "alpha", "texture-transform", "avif-texture-source", "webp-texture-source", "double-sided", "material-variant", "advanced-pbr-material-extensions", "linear-hdr-ibl-resource"],
@@ -542,7 +542,7 @@ function createMaterialFixture(): V4Fixture {
       textures: [{ name: "base", source: 0, extensions: { EXT_texture_webp: { source: 1 }, EXT_texture_avif: { source: 2 } } }, { name: "normal", source: 0 }, { name: "orm", source: 0 }, { name: "emissive", source: 0 }],
       materials: [
         {
-          name: "v4-textured-alpha-emissive",
+          name: "external-parity-textured-alpha-emissive",
           alphaMode: "BLEND",
           doubleSided: true,
           emissiveFactor: [0.2, 0.55, 0.8],
@@ -570,7 +570,7 @@ function createMaterialFixture(): V4Fixture {
           }
         },
         {
-          name: "v4-warm-alt-finish",
+          name: "external-parity-warm-alt-finish",
           doubleSided: true,
           pbrMetallicRoughness: { baseColorFactor: [0.95, 0.6, 0.32, 1], metallicFactor: 0.15, roughnessFactor: 0.28 }
         }
@@ -591,17 +591,17 @@ function createMaterialFixture(): V4Fixture {
   };
 }
 
-function createSpecularGlossinessFixture(): V4Fixture {
+function createSpecularGlossinessFixture(): ExternalParityFixture {
   const positions = floatBytes([-0.65, -0.42, 0, 0.65, -0.42, 0, 0, 0.68, 0]);
   const normals = floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1]);
   const indices = uint16Bytes([0, 1, 2]);
   const buffer = concatBytes(positions, normals, indices);
   const offsets = byteOffsets([positions, normals, indices]);
   return {
-    id: "v4-specular-glossiness-card",
+    id: "external-parity-specular-glossiness-card",
     category: "materials",
-    fileName: "v4-specular-glossiness-card.gltf",
-    displayName: "Generated V4 Specular Glossiness Card",
+    fileName: "external-parity-specular-glossiness-card.gltf",
+    displayName: "Generated External parity Specular Glossiness Card",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["material-test", "pbr-specular-glossiness", "extension-material", "indexed-geometry"],
@@ -615,7 +615,7 @@ function createSpecularGlossinessFixture(): V4Fixture {
     ], {
       extensionsUsed: ["KHR_materials_pbrSpecularGlossiness"],
       materials: [{
-        name: "v4-specular-glossiness-blue",
+        name: "external-parity-specular-glossiness-blue",
         doubleSided: true,
         extensions: {
           KHR_materials_pbrSpecularGlossiness: {
@@ -633,7 +633,7 @@ function createSpecularGlossinessFixture(): V4Fixture {
   };
 }
 
-function createMorphFixture(): V4Fixture {
+function createMorphFixture(): ExternalParityFixture {
   const positions = floatBytes([-0.55, -0.35, 0, 0.55, -0.35, 0, 0, 0.55, 0]);
   const normals = floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1]);
   const morphPositions = floatBytes([0, 0, 0, 0, 0, 0, 0, 0.35, 0.25]);
@@ -643,10 +643,10 @@ function createMorphFixture(): V4Fixture {
   const buffer = concatBytes(positions, normals, morphPositions, indices, times, morphWeights);
   const offsets = byteOffsets([positions, normals, morphPositions, indices, times, morphWeights]);
   return {
-    id: "v4-morph-expression",
+    id: "external-parity-morph-expression",
     category: "morph",
-    fileName: "v4-morph-expression.gltf",
-    displayName: "Generated V4 Morph Expression",
+    fileName: "external-parity-morph-expression.gltf",
+    displayName: "Generated External parity Morph Expression",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["morph-target", "morph-position-deltas", "visible-morph-control", "animated-morph-weights"],
@@ -671,7 +671,7 @@ function createMorphFixture(): V4Fixture {
   };
 }
 
-function createAnimationFixture(): V4Fixture {
+function createAnimationFixture(): ExternalParityFixture {
   const positions = normalizedInt16Bytes([-0.5, -0.35, 0, 0.5, -0.35, 0, 0, 0.55, 0]);
   const normals = floatBytes([0, 0, 1, 0, 0, 1, 0, 0, 1]);
   const indices = uint16Bytes([0, 1, 2]);
@@ -680,10 +680,10 @@ function createAnimationFixture(): V4Fixture {
   const buffer = concatBytes(positions, normals, indices, times, translations);
   const offsets = byteOffsets([positions, normals, indices, times, translations]);
   return {
-    id: "v4-root-motion-clip",
+    id: "external-parity-root-motion-clip",
     category: "animation",
-    fileName: "v4-root-motion-clip.gltf",
-    displayName: "Generated V4 Root Motion Clip",
+    fileName: "external-parity-root-motion-clip.gltf",
+    displayName: "Generated External parity Root Motion Clip",
     license: "CC0-1.0",
     source: generatedSource(),
     features: ["animation", "translation-track", "root-motion-diagnostic", "mesh-quantization"],
@@ -708,7 +708,7 @@ function createAnimationFixture(): V4Fixture {
   };
 }
 
-function generatedSource(): V4Fixture["source"] {
+function generatedSource(): ExternalParityFixture["source"] {
   return { kind: "generated-local", generator: "tools/external-parity-asset-corpus/index.ts" };
 }
 
@@ -719,7 +719,7 @@ function baseGltf(
   rest: Record<string, unknown>
 ): Record<string, unknown> {
   return {
-    asset: { version: "2.0", generator: "A3D V4 generated local fixture" },
+    asset: { version: "2.0", generator: "A3D External parity generated local fixture" },
     buffers: [{ uri: bytesDataUri(buffer), byteLength: buffer.byteLength }],
     bufferViews,
     accessors,
@@ -751,7 +751,7 @@ async function decodeFixtureImage(): Promise<DecodedGLTFImage> {
   };
 }
 
-function createPreviewSvg(fixture: V4Fixture, inspection: CorpusInspectionSummary): string {
+function createPreviewSvg(fixture: ExternalParityFixture, inspection: CorpusInspectionSummary): string {
   const color = fixture.unsupportedFeatures.length > 0 ? "#ffd166" : "#62d68f";
   return `<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
   <rect width="960" height="540" fill="#101820"/>
@@ -766,7 +766,7 @@ function createPreviewSvg(fixture: V4Fixture, inspection: CorpusInspectionSummar
 `;
 }
 
-function createTimings(loadMs: number, renderResourceMs: number, decodeMs: number, totalStart: number): V4CorpusAssetReport["timings"] {
+function createTimings(loadMs: number, renderResourceMs: number, decodeMs: number, totalStart: number): ExternalParityGLTFCorpusAssetReport["timings"] {
   return {
     loadMs: roundMs(loadMs),
     renderResourceMs: roundMs(renderResourceMs),

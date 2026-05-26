@@ -10,11 +10,11 @@ const issues = needingReview.map((item) => reportIssue(
 ));
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-visual-review/v1",
+  schema: "a3d-threejs-parity-visual-review",
   generatedAt: new Date().toISOString(),
   pass: !issues.some((issue) => issue.severity === "blocker"),
   accepted: inventory.items.length - needingReview.length,
   needingReview: needingReview.length,
   issues
 });
-console.log(`V9 visual review report written: ${outputPath}`);
+console.log(`Three.js parity visual review report written: ${outputPath}`);

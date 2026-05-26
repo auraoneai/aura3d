@@ -1,41 +1,41 @@
 import type { EnvironmentLightingOptions } from "../../ForwardPass";
 import {
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  parseV6RadianceHDR,
-  type V6EnvironmentLightingResources,
-  type V6PbrHdrPipeline,
-  type V6PbrHdrPipelineOptions,
-  type V6RadianceHDR
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  parseProductionRadianceHDR,
+  type ProductionEnvironmentLightingResources,
+  type ProductionPbrHdrPipeline,
+  type ProductionPbrHdrPipelineOptions,
+  type ProductionRadianceHDR
 } from "../PBRHDRPipeline";
 
-export interface V6HdrEnvironmentLoaderOptions extends Omit<V6PbrHdrPipelineOptions, "id" | "label"> {
+export interface ProductionHdrEnvironmentLoaderOptions extends Omit<ProductionPbrHdrPipelineOptions, "id" | "label"> {
   readonly id?: string;
   readonly label?: string;
 }
 
-export interface V6LoadedHdrEnvironment {
+export interface ProductionLoadedHdrEnvironment {
   readonly id: string;
   readonly label: string;
-  readonly radiance: V6RadianceHDR;
-  readonly pipeline: V6PbrHdrPipeline;
+  readonly radiance: ProductionRadianceHDR;
+  readonly pipeline: ProductionPbrHdrPipeline;
   readonly lighting: EnvironmentLightingOptions;
-  readonly resources: V6EnvironmentLightingResources;
+  readonly resources: ProductionEnvironmentLightingResources;
   dispose(): void;
 }
 
-export function loadV6HdrEnvironment(
+export function loadProductionHdrEnvironment(
   buffer: ArrayBuffer | Uint8Array,
-  options: V6HdrEnvironmentLoaderOptions = {}
-): V6LoadedHdrEnvironment {
+  options: ProductionHdrEnvironmentLoaderOptions = {}
+): ProductionLoadedHdrEnvironment {
   const id = options.id ?? "production-runtime-radiance-hdr-environment";
   const label = options.label ?? id;
-  const pipeline = createV6PbrHdrPipelineFromRadiance(buffer, {
+  const pipeline = createProductionPbrHdrPipelineFromRadiance(buffer, {
     ...options,
     id,
     label
   });
-  const resources = createV6EnvironmentLightingResources(pipeline);
+  const resources = createProductionEnvironmentLightingResources(pipeline);
 
   return {
     id: pipeline.id,
@@ -48,10 +48,10 @@ export function loadV6HdrEnvironment(
   };
 }
 
-export { parseV6RadianceHDR as parseRadianceHDR };
+export { parseProductionRadianceHDR as parseRadianceHDR };
 export type {
-  V6EnvironmentLightingResources,
-  V6PbrHdrPipeline,
-  V6PbrHdrPipelineOptions,
-  V6RadianceHDR as RadianceHDR
+  ProductionEnvironmentLightingResources,
+  ProductionPbrHdrPipeline,
+  ProductionPbrHdrPipelineOptions,
+  ProductionRadianceHDR as RadianceHDR
 };

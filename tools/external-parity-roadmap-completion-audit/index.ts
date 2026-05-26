@@ -17,8 +17,8 @@ const visualQuality = json("tests/reports/external-parity-visual-quality.json");
 const threejsParity = json("tests/reports/external-parity-threejs-visual-parity.json");
 const performance = json("tests/reports/external-parity-performance-readiness.json");
 const appSuite = json("tests/reports/external-parity-app-suite-readiness.json");
-const progressDoc = read("docs/project/v4-roadmap-progress.md");
-const blockedClaims = read("docs/project/v4-roadmap-blocked-claims.md");
+const progressDoc = read("docs/project/verification-evidence.md");
+const blockedClaims = read("docs/project/claim-guidelines.md");
 const preFinalProgress = progress?.currentStatus === "in-progress"
   && progress?.activeMilestone === "Milestone 19 - Release Readiness"
   && Number(progress?.completedMilestoneCount ?? 0) >= 19
@@ -30,11 +30,11 @@ const finalProgress = progress?.currentStatus === "complete"
 
 check("release-readiness", releaseReadiness?.pass === true, "Release readiness report must pass.");
 check("progress-release-state", preFinalProgress || finalProgress, "Release command must run with Milestones 0-18 complete and Milestone 19 either active before final mark or complete after final mark.");
-check("milestone-ledger", preFinalProgress || finalProgress, "Progress ledger must preserve all 20 V4 milestones and reflect the release state.");
+check("milestone-ledger", preFinalProgress || finalProgress, "Progress ledger must preserve all 20 External parity milestones and reflect the release state.");
 check("external-consumer", externalConsumer?.ok === true && (externalConsumer as { readonly sourceImportsOnlyPublicRoot?: boolean }).sourceImportsOnlyPublicRoot === true, "External consumer must pass and import only public root APIs.");
-check("visual-quality", visualQuality?.pass === true, "V4 visual-quality report must pass.");
-check("performance", performance?.pass === true, "V4 performance readiness report must pass.");
-check("app-suite", appSuite?.pass === true, "V4 Pro app suite readiness report must pass.");
+check("visual-quality", visualQuality?.pass === true, "External parity visual-quality report must pass.");
+check("performance", performance?.pass === true, "External parity performance readiness report must pass.");
+check("app-suite", appSuite?.pass === true, "External parity Pro app suite readiness report must pass.");
 check("threejs-parity", threejsParity?.pass === true, "Same-scene Three.js visual parity report must pass.");
 check("claim-registry", claimRegistry?.pass === true, "Claim registry must pass.");
 check(
@@ -44,18 +44,18 @@ check(
 );
 check(
   "human-review",
-  existsSync(resolve("docs/project/v4-roadmap-human-visual-review.md")) && read("docs/project/v4-roadmap-human-visual-review.md").includes("No reviewed flagship scene is rejected as primitive test output"),
+  existsSync(resolve("docs/project/verification-evidence.md")) && read("docs/project/verification-evidence.md").includes("No reviewed flagship scene is rejected as primitive test output"),
   "Human visual review must approve bounded flagship screenshot quality."
 );
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-completion-audit/v1",
+  schema: "a3d-external-parity-completion-audit",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 completion audit passed."
-    : "V4 completion audit failed.",
+    ? "External parity completion audit passed."
+    : "External parity completion audit failed.",
   checks
 };
 

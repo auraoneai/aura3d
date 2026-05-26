@@ -1,8 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import type { V3SourceFileHash } from "../foundation-reporting/index.js";
+import type { FoundationSourceFileHash } from "../foundation-reporting/index.js";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
-import { createV4ExternalHostDoctorReport, type ExternalHostBlockedArtifactDetails } from "../external-parity-external-host-doctor/index.js";
+import { createExternalParityExternalHostDoctorReport, type ExternalHostBlockedArtifactDetails } from "../external-parity-external-host-doctor/index.js";
 
 const reportPath = "tests/reports/external-parity-external-host-runner.json";
 const sourceFiles = [
@@ -19,7 +19,7 @@ const sourceFiles = [
   "fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs",
 ] as const;
 
-export interface V4ExternalHostRunnerCommand {
+export interface ExternalParityExternalHostRunnerCommand {
   readonly id: string;
   readonly command: readonly string[];
   readonly requiredForParity: boolean;
@@ -28,20 +28,20 @@ export interface V4ExternalHostRunnerCommand {
   readonly claimBoundary: string;
 }
 
-export interface V4ExternalHostRunnerResult extends V4ExternalHostRunnerCommand {
+export interface ExternalParityExternalHostRunnerResult extends ExternalParityExternalHostRunnerCommand {
   readonly skipped: boolean;
   readonly exitCode?: number | null;
   readonly signal?: string | null;
   readonly ok?: boolean;
 }
 
-export interface V4ExternalHostRunnerReport {
+export interface ExternalParityExternalHostRunnerReport {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly commit: string;
   readonly runId: string;
   readonly command: string;
-  readonly sourceFileHashes: readonly V3SourceFileHash[];
+  readonly sourceFileHashes: readonly FoundationSourceFileHash[];
   readonly blockedClaims: readonly string[];
   readonly screenshotPaths: readonly string[];
   readonly violations: readonly string[];
@@ -63,20 +63,20 @@ export interface V4ExternalHostRunnerReport {
     readonly firstBlockedArtifact?: string;
   };
   readonly doctorReportPath: "tests/reports/external-parity-external-host-doctor.json";
-  readonly commands: readonly V4ExternalHostRunnerCommand[];
-  readonly results: readonly V4ExternalHostRunnerResult[];
+  readonly commands: readonly ExternalParityExternalHostRunnerCommand[];
+  readonly results: readonly ExternalParityExternalHostRunnerResult[];
   readonly reportPath: typeof reportPath;
 }
 
-export function createV4ExternalHostRunnerReport(
+export function createExternalParityExternalHostRunnerReport(
   root = process.cwd(),
   options: { readonly execute?: boolean } = {}
-): V4ExternalHostRunnerReport {
+): ExternalParityExternalHostRunnerReport {
   const execute = options.execute === true;
-  const doctor = createV4ExternalHostDoctorReport(root);
+  const doctor = createExternalParityExternalHostDoctorReport(root);
   const commands = externalHostCommands();
   const readyToExecute = doctor.externalHostReady;
-  const results: readonly V4ExternalHostRunnerResult[] = execute && readyToExecute
+  const results: readonly ExternalParityExternalHostRunnerResult[] = execute && readyToExecute
     ? commands.map((command) => runCommand(root, command))
     : commands.map((command) => ({ ...command, skipped: true }));
   const failures = results.filter((result) => result.ok === false);
@@ -85,10 +85,10 @@ export function createV4ExternalHostRunnerReport(
     ...(execute && !readyToExecute ? [`external host is not ready: ${doctor.firstMissingCapability ?? "unknown capability"}`] : []),
     ...failures.map((failure) => `external-host command failed: ${failure.id}`),
   ];
-  const report: V4ExternalHostRunnerReport = {
+  const report: ExternalParityExternalHostRunnerReport = {
     ...baseReport(root, {
       ok,
-      command: execute ? "pnpm run:v4-external-host-evidence:execute" : "pnpm run:v4-external-host-evidence",
+      command: execute ? "pnpm run:external-parity-external-host-evidence:execute" : "pnpm run:external-parity-external-host-evidence",
       runIdPrefix: "external-parity-external-host-runner",
       sourceFiles,
       violations,
@@ -114,13 +114,13 @@ export function createV4ExternalHostRunnerReport(
   return report;
 }
 
-function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
+function externalHostCommands(): readonly ExternalParityExternalHostRunnerCommand[] {
   return [
     command(
       "external-host-doctor",
-      ["pnpm", "doctor:v4-external-host:strict"],
+      ["pnpm", "doctor:external-parity-external-host:strict"],
       ["tests/reports/external-parity-external-host-doctor.json"],
-      ["pnpm doctor:v4-external-host"],
+      ["pnpm doctor:external-parity-external-host"],
       "Confirms Unity, Unreal, public deployment URL, and handoff package readiness before any evidence capture."
     ),
     command(
@@ -132,7 +132,7 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
     ),
     command(
       "unity-baseline-captures",
-      ["node", "fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs", "--project", process.env.A3D_UNITY_PROJECT_PATH || ".tmp/v4-unity-baseline-project"],
+      ["node", "fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs", "--project", process.env.A3D_UNITY_PROJECT_PATH || ".tmp/external-parity-unity-baseline-project"],
       [
         "tests/reports/external-parity-unity-baseline-render.json",
         "tests/reports/external-parity-unity-product-visual-baseline.json",
@@ -141,7 +141,7 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
         "tests/reports/external-parity-unity-hdr-render-target-baseline.json",
         "tests/reports/external-parity-unity-postprocess-suite-baseline.json",
       ],
-      ["node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unity", "pnpm verify:v4-external-baseline-reports"],
+      ["node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unity", "pnpm verify:external-parity-external-baseline-reports"],
       "Captures same-scene Unity product, PBR, shadow, HDR, and postprocess baselines plus render workflow evidence."
     ),
     command(
@@ -162,7 +162,7 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
         "tests/reports/external-parity-unreal-hdr-render-target-baseline.json",
         "tests/reports/external-parity-unreal-postprocess-suite-baseline.json",
       ],
-      ["node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unreal", "pnpm verify:v4-external-baseline-reports"],
+      ["node fixtures/external-engine-baselines/external-parity/verify-baseline-reports.mjs --engine unreal", "pnpm verify:external-parity-external-baseline-reports"],
       "Captures same-scene Unreal product, PBR, shadow, HDR, and postprocess baselines plus render workflow evidence."
     ),
     command(
@@ -174,7 +174,7 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
     ),
     command(
       "refresh-readiness-reports",
-      ["pnpm", "refresh:v4-readiness-reports"],
+      ["pnpm", "refresh:external-parity-readiness-reports"],
       [
         "tests/reports/external-parity-external-evidence-readiness.json",
         "tests/reports/external-parity-unity-unreal-parity.json",
@@ -182,20 +182,20 @@ function externalHostCommands(): readonly V4ExternalHostRunnerCommand[] {
         "tests/reports/external-parity-completion-audit.json",
       ],
       ["pnpm verify:external-parity-report-freshness"],
-      "Refreshes all dependent V4 readiness reports after external artifacts are generated."
+      "Refreshes all dependent External parity readiness reports after external artifacts are generated."
     ),
     command(
       "final-parity-status",
-      ["pnpm", "status:v4-parity"],
+      ["pnpm", "status:external-parity-parity"],
       ["tests/reports/external-parity-completion-audit.json"],
-      ["pnpm status:v4-parity"],
+      ["pnpm status:external-parity-parity"],
       "Prints the final achieved and missing parity criteria."
     ),
     command(
       "final-parity-preflight",
-      ["pnpm", "preflight:v4-parity:after-external-evidence"],
+      ["pnpm", "preflight:external-parity-parity:after-external-evidence"],
       ["tests/reports/external-parity-completion-audit.json", "tests/reports/external-parity-completion-audit-runbook.md"],
-      ["pnpm preflight:v4-parity:after-external-evidence"],
+      ["pnpm preflight:external-parity-parity:after-external-evidence"],
       "Runs the full parity preflight against the external artifacts now present without overwriting this execute-runner report with a dry run."
     ),
   ];
@@ -212,7 +212,7 @@ function command(
   expectedEvidencePaths: readonly string[],
   validationCommands: readonly string[],
   claimBoundary: string
-): V4ExternalHostRunnerCommand {
+): ExternalParityExternalHostRunnerCommand {
   return {
     id,
     command: commandLine,
@@ -223,7 +223,7 @@ function command(
   };
 }
 
-function runCommand(root: string, commandInfo: V4ExternalHostRunnerCommand): V4ExternalHostRunnerResult {
+function runCommand(root: string, commandInfo: ExternalParityExternalHostRunnerCommand): ExternalParityExternalHostRunnerResult {
   const result = spawnSync(commandInfo.command[0] ?? "", commandInfo.command.slice(1), {
     cwd: root,
     stdio: "inherit",
@@ -239,7 +239,7 @@ function runCommand(root: string, commandInfo: V4ExternalHostRunnerCommand): V4E
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const report = createV4ExternalHostRunnerReport(process.cwd(), { execute: process.argv.includes("--execute") });
+  const report = createExternalParityExternalHostRunnerReport(process.cwd(), { execute: process.argv.includes("--execute") });
   console.log(JSON.stringify({
     ok: report.ok,
     execute: report.execute,
@@ -252,7 +252,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     commandCount: report.commands.length,
     failedCommands: report.results.filter((result) => result.ok === false).map((result) => result.id),
     report: report.reportPath,
-    nextCommand: report.readyToExecute ? "pnpm run:v4-external-host-evidence:execute" : "pnpm doctor:v4-external-host",
+    nextCommand: report.readyToExecute ? "pnpm run:external-parity-external-host-evidence:execute" : "pnpm doctor:external-parity-external-host",
   }, null, 2));
   process.exit(report.ok ? 0 : 1);
 }

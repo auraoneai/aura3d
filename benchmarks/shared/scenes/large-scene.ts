@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "large-scene",
   sceneVersion: 2,
-  assetId: "generated-architecture-district-v3",
+  assetId: "generated-architecture-district-foundation",
   assetClass: "generated-local-large-architecture-workload",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 60,

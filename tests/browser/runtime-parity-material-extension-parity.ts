@@ -7,13 +7,13 @@ import {
 } from "/packages/rendering/src/index.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
 import {
-  createV6ComposedProductionStageScene,
-  createV6HeroShaderLibrary
+  createProductionComposedProductionStageScene,
+  createProductionHeroShaderLibrary
 } from "/tests/browser/production-runtime-production-scene-tools.js";
 import * as THREE from "/node_modules/three/build/three.module.js";
 import { GLTFLoader as ThreeGLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
@@ -21,7 +21,7 @@ import { RGBELoader } from "/node_modules/three/examples/jsm/loaders/RGBELoader.
 
 declare global {
   interface Window {
-    __V7_MATERIAL_EXTENSION_PARITY__?: unknown;
+    __RUNTIME_MATERIAL_EXTENSION_PARITY__?: unknown;
   }
 }
 
@@ -40,36 +40,36 @@ interface DiffStats {
 }
 
 const SIZE = 512;
-const HDR_URI = "/fixtures/environment-corpus/hdri/industrial_high_contrast_1k.hdr";
+const HDR_URI = "/fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr";
 const NEUTRAL_BACKGROUND = 0x171a1d;
 const NEUTRAL_BACKGROUND_LINEAR = [0.009, 0.011, 0.013, 1] as const;
 const MATERIAL_EXTENSION_ASSETS = [
-  { id: "compare-anisotropy", uri: "/fixtures/threejs-parity/assets/materials/compare-anisotropy.glb", expectedExtension: "KHR_materials_anisotropy", expectedFeature: "anisotropy" },
-  { id: "compare-iridescence", uri: "/fixtures/threejs-parity/assets/materials/compare-iridescence.glb", expectedExtension: "KHR_materials_iridescence", expectedFeature: "iridescence" },
-  { id: "compare-transmission", uri: "/fixtures/threejs-parity/assets/materials/compare-transmission.glb", expectedExtension: "KHR_materials_transmission", expectedFeature: "transmission" },
-  { id: "compare-volume", uri: "/fixtures/threejs-parity/assets/materials/compare-volume.glb", expectedExtension: "KHR_materials_volume", expectedFeature: "volume" },
-  { id: "compare-clearcoat", uri: "/fixtures/threejs-parity/assets/materials/compare-clearcoat.glb", expectedExtension: "KHR_materials_clearcoat", expectedFeature: "clearcoat" },
-  { id: "compare-sheen", uri: "/fixtures/threejs-parity/assets/materials/compare-sheen.glb", expectedExtension: "KHR_materials_sheen", expectedFeature: "sheen" },
-  { id: "compare-specular", uri: "/fixtures/threejs-parity/assets/materials/compare-specular.glb", expectedExtension: "KHR_materials_specular", expectedFeature: "specular" },
-  { id: "compare-ior", uri: "/fixtures/threejs-parity/assets/materials/compare-ior.glb", expectedExtension: "KHR_materials_ior", expectedFeature: "ior" },
-  { id: "compare-dispersion", uri: "/fixtures/threejs-parity/assets/materials/compare-dispersion.glb", expectedExtension: "KHR_materials_dispersion", expectedFeature: "dispersion" },
-  { id: "compare-emissive-strength", uri: "/fixtures/threejs-parity/assets/materials/compare-emissive-strength.glb", expectedExtension: "KHR_materials_emissive_strength", expectedFeature: "emissive" },
-  { id: "diffuse-transmission-test", uri: "/fixtures/threejs-parity/assets/materials/diffuse-transmission-test.glb", expectedExtension: "KHR_materials_diffuse_transmission", expectedFeature: "diffuse-transmission" }
+  { id: "compare-anisotropy", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_anisotropy", expectedFeature: "anisotropy" },
+  { id: "compare-iridescence", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_iridescence", expectedFeature: "iridescence" },
+  { id: "compare-transmission", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_transmission", expectedFeature: "transmission" },
+  { id: "compare-volume", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_volume", expectedFeature: "volume" },
+  { id: "compare-clearcoat", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_clearcoat", expectedFeature: "clearcoat" },
+  { id: "compare-sheen", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_sheen", expectedFeature: "sheen" },
+  { id: "compare-specular", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_specular", expectedFeature: "specular" },
+  { id: "compare-ior", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_ior", expectedFeature: "ior" },
+  { id: "compare-dispersion", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_dispersion", expectedFeature: "dispersion" },
+  { id: "compare-emissive-strength", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_emissive_strength", expectedFeature: "emissive" },
+  { id: "diffuse-transmission-test", uri: "/fixtures/external-parity-assets/materials/external-parity-material-fidelity-card/external-parity-material-fidelity-card.gltf", expectedExtension: "KHR_materials_diffuse_transmission", expectedFeature: "diffuse-transmission" }
 ] as const;
 
 async function run(): Promise<void> {
   const root = document.getElementById("material-extension-parity-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing material extension parity root.");
   const hdr = await fetchBytes(`${location.origin}${HDR_URI}`);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
-    id: "v7-material-extension-parity-hdr",
-    label: "V7 Material Extension Parity HDR",
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
+    id: "runtime-material-extension-parity-hdr",
+    label: "Runtime Material Extension Parity HDR",
     intensity: 2.25,
     backgroundIntensity: 1.0,
     rotation: 0.29,
     toneMapping: { operator: "filmic", exposure: 1.08, whitePoint: 10.8 }
   });
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const cases = [];
   for (const asset of MATERIAL_EXTENSION_ASSETS) {
     const a3dCanvas = createCanvas(`${asset.id}-a3d`);
@@ -87,7 +87,7 @@ async function run(): Promise<void> {
       a3d: {
         diagnostics: a3d.proof.diagnostics,
         importedAsset: a3d.proof.importedAsset,
-        summary: summarizeV6WebGL2Proof(a3d.proof),
+        summary: summarizeProductionWebGL2Proof(a3d.proof),
         pixelStats: analyzePixels(a3d.pixels),
         extensionsUsed: a3d.asset.loaderDiagnostics.extensionsUsed,
         materialFeatures: a3d.asset.loaderDiagnostics.materialFeatures,
@@ -108,9 +108,9 @@ async function run(): Promise<void> {
     });
   }
   lighting.dispose();
-  window.__V7_MATERIAL_EXTENSION_PARITY__ = {
+  window.__RUNTIME_MATERIAL_EXTENSION_PARITY__ = {
     status: "ready",
-    schema: "a3d-v7-material-extension-parity/v1",
+    schema: "a3d-runtime-material-extension-parity",
     purpose: "same-extension A3D vs Three.js material delta gate",
     parity: {
       claim: "bounded-eleven-extension-material-delta-coverage",
@@ -136,8 +136,8 @@ async function run(): Promise<void> {
 async function renderA3D(
   asset: typeof MATERIAL_EXTENSION_ASSETS[number],
   canvas: HTMLCanvasElement,
-  environmentLighting: NonNullable<Parameters<typeof createV6ComposedProductionStageScene>[2]["environmentLighting"]>,
-  hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
+  environmentLighting: NonNullable<Parameters<typeof createProductionComposedProductionStageScene>[2]["environmentLighting"]>,
+  hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>
 ) {
   const assetUri = `${location.origin}${asset.uri}`;
   const loaded = await new A3DGLTFLoader().load({ url: assetUri }, new LoadContext());
@@ -147,7 +147,7 @@ async function renderA3D(
     environmentLighting,
     cameraPolicy: "require"
   });
-  const staged = createV6ComposedProductionStageScene([{
+  const staged = createProductionComposedProductionStageScene([{
     source: input.source,
     resources,
     metadata: { assetId: asset.id, assetName: asset.id }
@@ -167,7 +167,7 @@ async function renderA3D(
     height: SIZE,
     preserveDrawingBuffer: true,
     clearColor: NEUTRAL_BACKGROUND_LINEAR,
-    shaderLibrary: createV6HeroShaderLibrary()
+    shaderLibrary: createProductionHeroShaderLibrary()
   });
   const proof = renderer.renderImportedAsset({
     source: staged.source,
@@ -365,7 +365,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V7_MATERIAL_EXTENSION_PARITY__ = {
+  window.__RUNTIME_MATERIAL_EXTENSION_PARITY__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

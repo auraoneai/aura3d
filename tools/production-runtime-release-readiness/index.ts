@@ -49,8 +49,8 @@ const requiredReports = [
 const reports = requiredReports.map((path) => ({ path, exists: existsSync(resolve(path)), report: json(path) }));
 const gallery = json("tests/reports/production-runtime-gallery/manifest.json");
 const galleryEntries = Array.isArray(gallery.entries) ? gallery.entries.map(obj) : [];
-const knownGaps = read("docs/project/production-runtime-roadmap-known-gaps.md");
-const blocked = read("docs/project/production-runtime-roadmap-blocked-claims.md");
+const knownGaps = read("docs/project/known-limits.md");
+const blocked = read("docs/project/known-limits.md");
 const checks = [
   { id: "reports-exist", pass: reports.every((item) => item.exists), detail: reports.filter((item) => !item.exists).map((item) => item.path).join(", ") },
   { id: "reports-pass", pass: reports.every((item) => item.path.endsWith("/manifest.json") || item.report.pass === true), detail: reports.filter((item) => !item.path.endsWith("/manifest.json") && item.report.pass !== true).map((item) => item.path).join(", ") },
@@ -61,11 +61,11 @@ const checks = [
   { id: "hd-materials", pass: json("tests/reports/production-runtime-hd-materials-readiness.json").pass === true, detail: "1920x1080 PBR material-extension HDR proof passes" },
   { id: "webgpu-boundary", pass: json("tests/reports/production-runtime-webgpu-readiness.json").pass === true && blocked.includes("Full WebGPU parity"), detail: "WebGPU proof exists and full parity remains blocked" },
   { id: "external-render", pass: json("tests/reports/production-runtime-external-consumer.json").pass === true, detail: "external consumer render report passes" },
-  { id: "product-decision", pass: json("tests/reports/production-runtime-product-decision-record.json").pass === true, detail: "product decision record answers V6 boundary, public screenshots, blocked claims, and roadmap" },
+  { id: "product-decision", pass: json("tests/reports/production-runtime-product-decision-record.json").pass === true, detail: "product decision record answers Production runtime boundary, public screenshots, blocked claims, and roadmap" },
   { id: "known-gaps-visible", pass: knownGaps.includes("incomplete") && blocked.includes("Full Three.js API replacement"), detail: "known gaps and blocked claims docs are visible" }
 ];
 const report = {
-  schema: "a3d-production-runtime-release-readiness/v1",
+  schema: "a3d-production-runtime-release-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checkedReports: reports.map(({ path, exists, report }) => ({ path, exists, pass: path.endsWith("/manifest.json") ? exists : report.pass === true })),

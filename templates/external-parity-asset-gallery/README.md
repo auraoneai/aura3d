@@ -1,4 +1,4 @@
-# A3D V4 Asset Gallery Template
+# A3D ExternalParity Asset Gallery Template
 
 This template starts a glTF asset review workflow from the public `@aura3d/engine` package.
 

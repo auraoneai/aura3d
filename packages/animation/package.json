@@ -10,5 +10,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
+  },
+  "dependencies": {
+    "@aura3d/math": "workspace:*"
   }
 }

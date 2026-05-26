@@ -2,7 +2,7 @@ import { chromium, test, expect, type Page } from "@playwright/test";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { readV6PngStats, type V6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats, type ProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 
 interface WowRoute {
   readonly slug: string;
@@ -66,7 +66,7 @@ interface WowRouteReport {
   readonly runtime: WowRuntimeRecord;
   readonly screenshot: string;
   readonly screenshotSha256: string;
-  readonly screenshotStats: V6PngStats;
+  readonly screenshotStats: ProductionPngStats;
   readonly motionScreenshot: string;
   readonly motionScreenshotSha256: string;
   readonly canvas: WowRouteState["canvas"];
@@ -272,7 +272,7 @@ function writeWowRouteHealthReport(origin: string, results: readonly WowRouteRep
   const failures = results.flatMap((result) => result.failures.map((failure) => `${result.path}: ${failure}`));
   mkdirSync(REPORT_DIR, { recursive: true });
   writeFileSync(`${REPORT_DIR}/route-health.json`, `${JSON.stringify({
-    schema: "a3d-wow-showcase-route-health/v1",
+    schema: "a3d-wow-showcase-route-health",
     generatedAt: new Date().toISOString(),
     origin,
     routeCount: results.length,
@@ -369,7 +369,7 @@ async function readWowRouteState(page: Page): Promise<WowRouteState> {
   });
 }
 
-function passesScreenshotThresholds(stats: V6PngStats): boolean {
+function passesScreenshotThresholds(stats: ProductionPngStats): boolean {
   const minNonBlackPixels = Math.floor(stats.width * stats.height * 0.04);
   return stats.width >= 1000
     && stats.height >= 700
@@ -379,7 +379,7 @@ function passesScreenshotThresholds(stats: V6PngStats): boolean {
     && stats.detailEdgeDensity >= 0.0005;
 }
 
-function emptyPngStats(): V6PngStats {
+function emptyPngStats(): ProductionPngStats {
   return {
     width: 0,
     height: 0,
@@ -398,8 +398,8 @@ function emptyPngStats(): V6PngStats {
   };
 }
 
-function readScreenshotStats(path: string): V6PngStats {
-  return existsSync(path) && statSync(path).size > 0 ? readV6PngStats(path) : emptyPngStats();
+function readScreenshotStats(path: string): ProductionPngStats {
+  return existsSync(path) && statSync(path).size > 0 ? readProductionPngStats(path) : emptyPngStats();
 }
 
 function hashFile(path: string): string {

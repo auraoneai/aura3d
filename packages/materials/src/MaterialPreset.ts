@@ -1,4 +1,4 @@
-export type V5MaterialClass =
+export type ThreeCompatMaterialClass =
   | "brushed metal"
   | "polished metal"
   | "clearcoat automotive paint"
@@ -20,7 +20,7 @@ export type V5MaterialClass =
   | "normal-mapped material"
   | "ORM-packed material";
 
-export type V5MaterialProofChannel =
+export type ThreeCompatMaterialProofChannel =
   | "roughness"
   | "metalness"
   | "normal"
@@ -31,7 +31,7 @@ export type V5MaterialProofChannel =
   | "alpha"
   | "color-space";
 
-export interface V5MaterialParameters {
+export interface ThreeCompatMaterialParameters {
   readonly baseColor: readonly [number, number, number];
   readonly roughness: number;
   readonly metalness: number;
@@ -50,12 +50,12 @@ export interface V5MaterialParameters {
   readonly sheen?: number;
 }
 
-export interface V5MaterialPreset {
+export interface ThreeCompatMaterialPreset {
   readonly id: string;
   readonly label: string;
-  readonly class: V5MaterialClass;
+  readonly class: ThreeCompatMaterialClass;
   readonly textureSetId?: string;
   readonly colorSpace: "linear-srgb";
-  readonly parameters: V5MaterialParameters;
-  readonly proofChannels: readonly V5MaterialProofChannel[];
+  readonly parameters: ThreeCompatMaterialParameters;
+  readonly proofChannels: readonly ThreeCompatMaterialProofChannel[];
 }

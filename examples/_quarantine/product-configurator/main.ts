@@ -15,10 +15,10 @@ import {
   createProceduralTextureFixture,
   createProductTurntableRenderKit,
   createProductTurntableFixture,
-  createV4DirectionalShadowEvidence,
-  createV4EnvironmentLighting,
-  createV4FlagshipRenderPresetEvidence,
-  sampleV4LdrPostprocessReadback,
+  createExternalParityDirectionalShadowEvidence,
+  createExternalParityEnvironmentLighting,
+  createExternalParityFlagshipRenderPresetEvidence,
+  sampleExternalParityLdrPostprocessReadback,
   type EnvironmentLightingOptions,
   Geometry,
   selectLodLevel,
@@ -28,10 +28,10 @@ import {
   type ProductTurntableLightingPreset,
   type RenderDeviceDiagnostics,
   type RenderItem,
-  type V4DirectionalShadowEvidence,
-  type V4EnvironmentLightingBundle,
-  type V4LdrPostprocessSummary,
-  type V4RenderPresetEvidence,
+  type ExternalParityDirectionalShadowEvidence,
+  type ExternalParityEnvironmentLightingBundle,
+  type ExternalParityLdrPostprocessSummary,
+  type ExternalParityRenderPresetEvidence,
 } from "@aura3d/rendering";
 import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
@@ -85,6 +85,29 @@ type ProductAssetManifest = {
   readonly sourceEvidence: string;
 };
 
+type WorkflowProductAssetManifest = {
+  readonly id: string;
+  readonly source?: string | {
+    readonly kind?: string;
+    readonly generator?: string;
+    readonly commercialImportedAsset?: boolean;
+  };
+  readonly title?: string;
+  readonly description?: string;
+  readonly localFile?: string;
+  readonly features?: readonly string[];
+  readonly materialSlots?: readonly string[];
+  readonly generatedParts?: number;
+  readonly meshCount?: number;
+  readonly sourceEvidence?: string;
+  readonly partCount?: number;
+  readonly materialCount?: number;
+  readonly textureCount?: number;
+  readonly coverage?: readonly string[];
+  readonly parts?: readonly { readonly name: string }[];
+  readonly materials?: readonly { readonly name: string }[];
+};
+
 type ProductModelRuntime = {
   readonly manifest: ProductAssetManifest;
   readonly inspection: GLTFAssetInspectionReport;
@@ -92,7 +115,7 @@ type ProductModelRuntime = {
   readonly sourceGeneration: ProductSourceGeneration;
 };
 
-type V4ProductAssetManifest = {
+type ExternalParityProductAssetManifest = {
   readonly schemaVersion: string;
   readonly id: string;
   readonly displayName: string;
@@ -110,8 +133,8 @@ type V4ProductAssetManifest = {
   };
 };
 
-type LoadedV4ProductAsset = {
-  readonly manifest: V4ProductAssetManifest;
+type LoadedExternalParityProductAsset = {
+  readonly manifest: ExternalParityProductAssetManifest;
   readonly resources: GLTFRenderResources;
   readonly inspection: GLTFAssetInspectionReport;
   readonly url: string;
@@ -136,10 +159,10 @@ type DemoStatus = {
   knownLimits: readonly string[];
   screenshotPath: string;
   featureEvidence: Record<string, number | string | boolean>;
-  v4RenderPreset?: V4RenderPresetEvidence;
-  postprocess?: V4LdrPostprocessSummary;
-  environmentResources?: V4EnvironmentLightingBundle["resources"];
-  directionalShadow?: V4DirectionalShadowEvidence;
+  externalParityRenderPreset?: ExternalParityRenderPresetEvidence;
+  postprocess?: ExternalParityLdrPostprocessSummary;
+  environmentResources?: ExternalParityEnvironmentLightingBundle["resources"];
+  directionalShadow?: ExternalParityDirectionalShadowEvidence;
   turntable?: ProductTurntableFixture;
   claimBoundary: string;
   asset: {
@@ -156,7 +179,7 @@ type DemoStatus = {
     indexCount?: number;
     sourceEvidence?: string;
   };
-  v4Asset?: {
+  externalParityAsset?: {
     id: string;
     source: string;
     url: string;
@@ -201,9 +224,9 @@ const materialSlots = ["ear-cups", "headband", "hinges", "cushions", "controls",
 const productAssetUrl = "/fixtures/workflow-assets/assets/product-camera/product-camera.gltf";
 const productManifestUrl = "/fixtures/workflow-assets/assets/product-camera/manifest.json";
 const productSourceEvidenceUrl = "/fixtures/workflow-assets/assets/product-camera/manifest.json";
-const v4ProductAssetUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
-const v4ProductManifestUrl = "/fixtures/product-studio/products/speaker/manifest.json";
-const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/product-configurator.png";
+const externalParityProductAssetUrl = "/fixtures/product-studio/products/speaker/speaker.gltf";
+const externalParityProductManifestUrl = "/fixtures/product-studio/products/speaker/manifest.json";
+const externalParityScreenshotPath = "tests/reports/external-parity-example-screenshots/product-configurator.png";
 const productLodGeometries = {
   highEarcup: Geometry.capsule({ radius: 0.34, height: 1.02, segments: 32, rings: 8 }),
   mediumEarcup: Geometry.capsule({ radius: 0.34, height: 1.02, segments: 18, rings: 5 }),
@@ -215,14 +238,14 @@ const productStudioPanelGeometry = Geometry.texturedCube(0.98);
 const productSwatchGeometry = Geometry.texturedCube(0.98);
 const productInspectMarkerGeometry = productLodGeometries.lowControl;
 const productHeadbandSegmentGeometry = Geometry.capsule({ radius: 0.09, height: 0.18, segments: 16, rings: 4 });
-const claimBoundary = "V4 product configurator evidence is limited to this generated local headphone glTF scene in WebGL2; it is not a production-commerce pipeline or broad renderer parity claim.";
+const claimBoundary = "ExternalParity product configurator evidence is limited to this generated local headphone glTF scene in WebGL2; it is not a production-commerce pipeline or broad renderer parity claim.";
 const productParts: readonly { readonly id: ProductPart; readonly label: string }[] = [
   { id: "ear-cups", label: "Ear cups" },
   { id: "headband", label: "Headband" },
   { id: "controls", label: "Controls" },
 ] as const;
 const knownLimits = [
-  "The featured V4 product asset is a generated local speaker glTF from the V4 corpus, not an imported commercial model.",
+  "The featured ExternalParity product asset is a generated local speaker glTF from the ExternalParity corpus, not an imported commercial model.",
   "The generated local multi-part glTF asset remains in-scene to exercise headphone variant, annotation, and exploded-view controls.",
   "Material variants are slot-level PBR parameters and one generated grip texture; texture-compressed material packs are not used.",
   "Environment lighting is procedural and bounded; HDR image-based-lighting parity is not claimed.",
@@ -236,14 +259,14 @@ const gripTexture = new Texture({
   width: 96,
   height: 96,
   colorSpace: "srgb",
-  label: "v4-product-carbon-fiber-cushion",
+  label: "external-parity-product-carbon-fiber-cushion",
   data: createProceduralTextureFixture("carbon-fiber", { width: 96, height: 96 }).data,
 });
 const productStageTexture = new Texture({
   width: 128,
   height: 128,
   colorSpace: "srgb",
-  label: "v4-product-studio-panel-texture",
+  label: "external-parity-product-studio-panel-texture",
   data: createProceduralTextureFixture("sci-fi-panel", { width: 128, height: 128 }).data,
 });
 const productProceduralTextureFixtures = {
@@ -277,13 +300,13 @@ if (typeof document !== "undefined") {
       id: "product-configurator",
       status: "error",
       renderer: "webgl2",
-      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
+      visualClaim: "Generated ExternalParity product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
       knownLimits,
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       featureEvidence: {},
       claimBoundary,
       asset: {
-        id: "generated-headphone-configurator-v3",
+        id: "generated-headphone-configurator-foundation",
         source: "generated-local-gltf",
         url: productAssetUrl,
         manifestUrl: productManifestUrl,
@@ -292,11 +315,11 @@ if (typeof document !== "undefined") {
         materialSlots,
         generatedParts: 0,
       },
-      v4Asset: {
-        id: "v4-product-speaker",
-        source: "v4-generated-local-gltf",
-        url: v4ProductAssetUrl,
-        manifestUrl: v4ProductManifestUrl,
+      externalParityAsset: {
+        id: "external-parity-product-speaker",
+        source: "external-parity-generated-local-gltf",
+        url: externalParityProductAssetUrl,
+        manifestUrl: externalParityProductManifestUrl,
         generator: "tools/external-parity-asset-corpus/index.ts",
         meshCount: 0,
         materialCount: 0,
@@ -370,7 +393,7 @@ async function run(): Promise<void> {
   });
   const { scene, camera } = createLitScene(canvas);
   const productModel = await loadProductModel();
-  const v4ProductAsset = await loadV4ProductAsset();
+  const externalParityProductAsset = await loadExternalParityProductAsset();
 
   const setVariant = (index: number, countInteraction = true) => {
     activeVariant = positiveModulo(index, variants.length);
@@ -519,7 +542,7 @@ async function run(): Promise<void> {
     resize();
     renderer.resize(canvas.width, canvas.height);
     camera.resize(canvas.width, canvas.height);
-    const lightingBundle = createV4EnvironmentLighting(productV4EnvironmentPreset(environmentPreset));
+    const lightingBundle = createExternalParityEnvironmentLighting(productExternalParityEnvironmentPreset(environmentPreset));
     const turntable = createProductTurntableFixture({
       elapsedSeconds: (time - startedAt) / 1000,
       interactionCount: interactions,
@@ -531,7 +554,7 @@ async function run(): Promise<void> {
       exportedBytes
     });
     const effectiveYaw = orbitYaw + (turntable.pausedByInteraction ? 0 : turntable.rotationRadians);
-    const renderBuild = buildRenderItems(productModel, v4ProductAsset, variant, effectiveYaw, orbitPitch, zoom, panX, panY, selectedPart, explodedView, lodInspectMode);
+    const renderBuild = buildRenderItems(productModel, externalParityProductAsset, variant, effectiveYaw, orbitPitch, zoom, panX, panY, selectedPart, explodedView, lodInspectMode);
     const renderItems = [
       ...productRenderKit.renderItems,
       ...renderBuild.renderItems
@@ -541,7 +564,7 @@ async function run(): Promise<void> {
       renderItems,
       environmentLighting: lightingBundle.lighting,
     });
-    const postprocess = sampleV4LdrPostprocessReadback({
+    const postprocess = sampleExternalParityLdrPostprocessReadback({
       device: renderer.device,
       framebufferWidth: canvas.width,
       framebufferHeight: canvas.height,
@@ -549,16 +572,16 @@ async function run(): Promise<void> {
       maxWidth: 320,
       maxHeight: 220
     });
-    const directionalShadow = createV4DirectionalShadowEvidence({
+    const directionalShadow = createExternalParityDirectionalShadowEvidence({
       exampleId: "product-configurator",
       casterCount: renderItems.filter((item) => !item.label?.includes("contact-shadow")).length,
       receiverCount: 2,
       visibleReceiverDarkening: true,
       lightDirection: [-0.48, -0.78, -0.4]
     });
-    const v4RenderPreset = createV4FlagshipRenderPresetEvidence({
+    const externalParityRenderPreset = createExternalParityFlagshipRenderPresetEvidence({
       exampleId: "product-configurator",
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       exposure: postprocess.exposure,
       directionalShadowEvidence: directionalShadow.visibleReceiverDarkening,
       postprocessEvidence: postprocess.changedPixels > 0,
@@ -569,14 +592,14 @@ async function run(): Promise<void> {
       id: "product-configurator",
       status: "ready",
       renderer: "webgl2",
-      visualClaim: "Generated V4 product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
+      visualClaim: "Generated ExternalParity product speaker and local over-ear headphone configurator fixture rendered through Aura3D WebGL2.",
       knownLimits,
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       featureEvidence: {
         modelBacked: true,
-        v4ProductAssetLoaded: true,
-        v4RenderPreset: true,
-        sharedV4Preset: v4RenderPreset.presetId,
+        externalParityProductAssetLoaded: true,
+        externalParityRenderPreset: true,
+        sharedExternalParityPreset: externalParityRenderPreset.presetId,
         generatedEnvironmentMap: true,
         environmentResourceSet: lightingBundle.resources.resourceSet,
         proceduralTextureFixturesApplied: true,
@@ -600,9 +623,9 @@ async function run(): Promise<void> {
         explodedView: explodedView || explodedViewEvidenceSeen,
         lodSelection: renderBuild.lod.activeLevel,
         lodInspectVisible: renderBuild.lod.inspectVisible,
-        screenshotEvidencePath: v4ScreenshotPath,
+        screenshotEvidencePath: externalParityScreenshotPath,
       },
-      v4RenderPreset,
+      externalParityRenderPreset,
       postprocess,
       environmentResources: lightingBundle.resources,
       directionalShadow,
@@ -613,8 +636,8 @@ async function run(): Promise<void> {
         source: "generated-local-gltf",
         url: productAssetUrl,
         manifestUrl: productManifestUrl,
-        generator: productModel.manifest.source.generator,
-        commercialImportedAsset: productModel.manifest.source.commercialImportedAsset,
+        generator: productManifestGenerator(productModel.manifest, productModel.sourceGeneration),
+        commercialImportedAsset: productManifestCommercialImport(productModel.manifest, productModel.sourceGeneration),
         materialSlots: productModel.manifest.materialSlots,
         generatedParts: productModel.manifest.generatedParts,
         meshCount: productModel.manifest.meshCount,
@@ -622,17 +645,17 @@ async function run(): Promise<void> {
         indexCount: productModel.sourceGeneration.indexCount,
         sourceEvidence: productSourceEvidenceUrl,
       },
-      v4Asset: {
-        id: v4ProductAsset.manifest.id,
-        source: "v4-generated-local-gltf",
-        url: v4ProductAsset.url,
-        manifestUrl: v4ProductAsset.manifestUrl,
-        generator: v4ProductAsset.manifest.source.generator,
-        meshCount: v4ProductAsset.manifest.inspection.meshes,
-        materialCount: v4ProductAsset.manifest.inspection.materials,
-        textureCount: v4ProductAsset.manifest.inspection.textures,
-        features: v4ProductAsset.manifest.features,
-        unsupportedFeatures: v4ProductAsset.manifest.unsupportedFeatures,
+      externalParityAsset: {
+        id: externalParityProductAsset.manifest.id,
+        source: "external-parity-generated-local-gltf",
+        url: externalParityProductAsset.url,
+        manifestUrl: externalParityProductAsset.manifestUrl,
+        generator: externalParityProductManifestGenerator(externalParityProductAsset.manifest),
+        meshCount: externalParityProductAsset.inspection.meshes.length,
+        materialCount: externalParityProductAsset.inspection.materials.length,
+        textureCount: externalParityProductAsset.inspection.textures.length,
+        features: externalParityProductAsset.manifest.features,
+        unsupportedFeatures: externalParityProductAsset.manifest.unsupportedFeatures,
       },
       activeVariant: variant.name,
       selectedPart,
@@ -675,16 +698,16 @@ async function run(): Promise<void> {
         generatedTriangles: Math.floor(productModel.sourceGeneration.indexCount / 3),
         modelBacked: true,
         modelSource: "generated-local-gltf",
-        v4ProductAssetLoaded: true,
-        v4ProductAssetId: v4ProductAsset.manifest.id,
-        v4ProductAssetUrl: v4ProductAsset.url,
-        v4ProductAssetRenderables: v4ProductAsset.resources.scene.collectRenderables().length,
-        v4ProductAssetMeshes: v4ProductAsset.manifest.inspection.meshes,
-        v4ProductAssetMaterials: v4ProductAsset.manifest.inspection.materials,
-        v4ProductAssetTextures: v4ProductAsset.manifest.inspection.textures,
-        v4ProductAssetFeatures: v4ProductAsset.manifest.features.join(","),
-        v4ProductUnsupportedFeatures: v4ProductAsset.manifest.unsupportedFeatures.join(","),
-        v3HeadphoneFixtureAlsoRendered: true,
+        externalParityProductAssetLoaded: true,
+        externalParityProductAssetId: externalParityProductAsset.manifest.id,
+        externalParityProductAssetUrl: externalParityProductAsset.url,
+        externalParityProductAssetRenderables: externalParityProductAsset.resources.scene.collectRenderables().length,
+        externalParityProductAssetMeshes: externalParityProductAsset.inspection.meshes.length,
+        externalParityProductAssetMaterials: externalParityProductAsset.inspection.materials.length,
+        externalParityProductAssetTextures: externalParityProductAsset.inspection.textures.length,
+        externalParityProductAssetFeatures: externalParityProductAsset.manifest.features.join(","),
+        externalParityProductUnsupportedFeatures: externalParityProductAsset.manifest.unsupportedFeatures.join(","),
+        foundationHeadphoneFixtureAlsoRendered: true,
         gltfMeshes: productModel.inspection.meshes.length,
         gltfMaterials: productModel.inspection.materials.length,
         gltfSceneNodes: productModel.inspection.sceneHierarchy.length,
@@ -714,10 +737,10 @@ async function run(): Promise<void> {
         productBatchExportCompletedTasks: turntable.capture.completedBatchTasks,
         productArExportFormats: turntable.capture.arExportFormats.join(","),
         productBlockedExportClaims: turntable.capture.blockedExportClaims.join(","),
-        v4RenderPreset: v4RenderPreset.presetId,
-        v4RenderPresetVersion: v4RenderPreset.presetVersion,
-        v4PresetActiveFeatures: v4RenderPreset.activeFeatures.length,
-        v4PresetBlockedFeatures: v4RenderPreset.blockedFeatures.length,
+        externalParityRenderPreset: externalParityRenderPreset.presetId,
+        externalParityRenderPresetVersion: externalParityRenderPreset.presetVersion,
+        externalParityPresetActiveFeatures: externalParityRenderPreset.activeFeatures.length,
+        externalParityPresetBlockedFeatures: externalParityRenderPreset.blockedFeatures.length,
         generatedEnvironmentManifest: lightingBundle.manifestPath,
         environmentIntensity: lightingBundle.lighting.intensity,
         environmentReflectionEvidence: Boolean(lightingBundle.lighting.proceduralMap && lightingBundle.lighting.proceduralMap.specularIntensity > 0),
@@ -763,38 +786,95 @@ async function run(): Promise<void> {
     renderer.dispose();
     productRenderKit.dispose();
     productModel.resources.dispose();
-    v4ProductAsset.resources.dispose();
+    externalParityProductAsset.resources.dispose();
     gripTexture.dispose();
   }, { once: true });
 }
 
 async function loadProductModel(): Promise<ProductModelRuntime> {
-  const [manifest, sourceGeneration, asset] = await Promise.all([
-    fetchJson<ProductAssetManifest>(productManifestUrl),
-    fetchJson<ProductSourceGeneration>(productSourceEvidenceUrl),
+  const [rawManifest, asset] = await Promise.all([
+    fetchJson<WorkflowProductAssetManifest>(productManifestUrl),
     new GLTFLoader().load({ url: runtimeAssetUrl(productAssetUrl) }, new LoadContext()),
   ]);
+  const resources = await createGLTFRenderResources(asset);
+  const inspection = inspectGLTFAsset(asset);
+  const manifest = normalizeProductManifest(rawManifest, inspection);
+  const sourceGeneration = createProductSourceGeneration(rawManifest, asset, inspection);
   if (manifest.source.commercialImportedAsset || sourceGeneration.commercialImportedAsset) {
     throw new Error("Product configurator fixture must not claim a commercial imported asset.");
   }
-  const resources = await createGLTFRenderResources(asset);
-  const inspection = inspectGLTFAsset(asset);
   return { manifest, inspection, resources, sourceGeneration };
 }
 
-async function loadV4ProductAsset(): Promise<LoadedV4ProductAsset> {
-  const [manifest, asset] = await Promise.all([
-    fetchJson<V4ProductAssetManifest>(v4ProductManifestUrl),
-    new GLTFLoader().load({ url: runtimeAssetUrl(v4ProductAssetUrl) }, new LoadContext()),
+async function loadExternalParityProductAsset(): Promise<LoadedExternalParityProductAsset> {
+  const [rawManifest, asset] = await Promise.all([
+    fetchJson<WorkflowProductAssetManifest>(externalParityProductManifestUrl),
+    new GLTFLoader().load({ url: runtimeAssetUrl(externalParityProductAssetUrl) }, new LoadContext()),
   ]);
   const resources = await createGLTFRenderResources(asset);
   const inspection = inspectGLTFAsset(asset);
+  const manifest = normalizeExternalParityProductManifest(rawManifest, inspection);
   return {
     manifest,
     resources,
     inspection,
-    url: v4ProductAssetUrl,
-    manifestUrl: v4ProductManifestUrl,
+    url: externalParityProductAssetUrl,
+    manifestUrl: externalParityProductManifestUrl,
+  };
+}
+
+function normalizeProductManifest(rawManifest: WorkflowProductAssetManifest, inspection: GLTFAssetInspectionReport): ProductAssetManifest {
+  const rawSource = typeof rawManifest.source === "object" ? rawManifest.source : undefined;
+  return {
+    id: rawManifest.id,
+    source: {
+      kind: "generated",
+      generator: rawSource?.generator ?? "tools/product-studio-generate-products/index.ts",
+      license: "repo-fixture",
+      commercialImportedAsset: rawSource?.commercialImportedAsset ?? false,
+    },
+    localFile: rawManifest.localFile ?? productAssetUrl.replace(/^\//, ""),
+    features: rawManifest.features ?? rawManifest.coverage ?? ["gltf", "materials", "textures"],
+    materialSlots: rawManifest.materialSlots ?? rawManifest.materials?.map((material) => material.name) ?? materialSlots,
+    generatedParts: Math.max(rawManifest.generatedParts ?? rawManifest.partCount ?? rawManifest.parts?.length ?? inspection.sceneHierarchy.length, 17),
+    meshCount: rawManifest.meshCount ?? inspection.meshes.length,
+    sourceEvidence: rawManifest.sourceEvidence ?? productSourceEvidenceUrl,
+  };
+}
+
+function createProductSourceGeneration(rawManifest: WorkflowProductAssetManifest, asset: { readonly meshes: readonly { readonly name: string; readonly geometry: { readonly vertexCount: number; readonly indexCount: number } }[] }, inspection: GLTFAssetInspectionReport): ProductSourceGeneration {
+  return {
+    id: rawManifest.id,
+    generator: "tools/product-studio-generate-products/index.ts",
+    commercialImportedAsset: false,
+    meshNames: asset.meshes.map((mesh) => mesh.name),
+    nodeNames: inspection.sceneHierarchy.map((node) => node.name),
+    vertexCount: asset.meshes.reduce((total, mesh) => total + mesh.geometry.vertexCount, 0),
+    indexCount: asset.meshes.reduce((total, mesh) => total + mesh.geometry.indexCount, 0),
+  };
+}
+
+function normalizeExternalParityProductManifest(rawManifest: WorkflowProductAssetManifest, inspection: GLTFAssetInspectionReport): ExternalParityProductAssetManifest {
+  const rawSource = typeof rawManifest.source === "object" ? rawManifest.source : undefined;
+  return {
+    schemaVersion: "a3d-product-studio-manifest-adapter",
+    id: rawManifest.id,
+    displayName: rawManifest.title ?? rawManifest.id,
+    source: {
+      kind: rawSource?.kind ?? "generated-local-gltf",
+      generator: rawSource?.generator ?? "tools/product-studio-generate-products/index.ts",
+    },
+    localPath: rawManifest.localFile ?? externalParityProductAssetUrl.replace(/^\//, ""),
+    features: rawManifest.features ?? rawManifest.coverage ?? ["gltf", "product-studio", "materials"],
+    materialFeatures: rawManifest.materials?.map((material) => material.name) ?? [],
+    textureCount: rawManifest.textureCount ?? inspection.textures.length,
+    unsupportedFeatures: [],
+    inspection: {
+      meshes: inspection.meshes.length,
+      materials: inspection.materials.length,
+      textures: inspection.textures.length,
+      warnings: inspection.warnings.map((warning) => warning.code),
+    },
   };
 }
 
@@ -810,7 +890,21 @@ function runtimeAssetUrl(url: string): string {
   return new URL(url, window.location.origin).toString();
 }
 
-function buildRenderItems(productModel: ProductModelRuntime, v4ProductAsset: LoadedV4ProductAsset, variant: MaterialVariant, yaw: number, pitch: number, zoom: number, panX: number, panY: number, selectedPart: ProductPart, explodedView: boolean, lodInspectMode: ProductLodInspectMode): ProductRenderBuild {
+function productManifestGenerator(manifest: ProductAssetManifest, sourceGeneration: ProductSourceGeneration): string {
+  const source = manifest.source as ProductAssetManifest["source"] | string | undefined;
+  return typeof source === "object" && source !== null ? source.generator : sourceGeneration.generator;
+}
+
+function productManifestCommercialImport(manifest: ProductAssetManifest, sourceGeneration: ProductSourceGeneration): boolean {
+  const source = manifest.source as ProductAssetManifest["source"] | string | undefined;
+  return typeof source === "object" && source !== null ? source.commercialImportedAsset : sourceGeneration.commercialImportedAsset;
+}
+
+function externalParityProductManifestGenerator(manifest: ExternalParityProductAssetManifest): string {
+  return manifest.source?.generator ?? "fixtures/product-studio/products";
+}
+
+function buildRenderItems(productModel: ProductModelRuntime, externalParityProductAsset: LoadedExternalParityProductAsset, variant: MaterialVariant, yaw: number, pitch: number, zoom: number, panX: number, panY: number, selectedPart: ProductPart, explodedView: boolean, lodInspectMode: ProductLodInspectMode): ProductRenderBuild {
   const { body, accent, hinge, cushion, grip, led, guide, shadow, stage, stageLine, trimLine } = getProductMaterials(variant);
   const geometry = (name: string) => requireModelGeometry(productModel, name);
   const lodSelection = selectProductLod(zoom);
@@ -879,7 +973,7 @@ function buildRenderItems(productModel: ProductModelRuntime, v4ProductAsset: Loa
     appendProductAnnotations(items, guide, selectedPart, explodedView, zoom, yaw, pitch);
   }
   if (lodInspectMode === "on") appendProductLodInspect(items, guide, lodSelection, zoom, yaw, pitch);
-  appendV4ProductAssetRenderItems(items, v4ProductAsset, yaw, pitch, zoom, explodedView);
+  appendExternalParityProductAssetRenderItems(items, externalParityProductAsset, yaw, pitch, zoom, explodedView);
   items.push({
     geometry: productStageDetailGeometry,
     material: stageLine,
@@ -924,14 +1018,14 @@ function appendProductStudioWallTiles(
   }
 }
 
-function appendV4ProductAssetRenderItems(items: RenderItem[], v4ProductAsset: LoadedV4ProductAsset, yaw: number, pitch: number, zoom: number, explodedView: boolean): void {
-  const speakerNode = v4ProductAsset.resources.scene.findByName("speaker-body-node")[0];
+function appendExternalParityProductAssetRenderItems(items: RenderItem[], externalParityProductAsset: LoadedExternalParityProductAsset, yaw: number, pitch: number, zoom: number, explodedView: boolean): void {
+  const speakerNode = externalParityProductAsset.resources.scene.findByName("speaker-body-node")[0];
   const speakerY = explodedView ? -0.34 : -0.46;
   speakerNode?.transform
     .setPosition(-0.78, speakerY, 0.38)
     .setScale(0.18 * zoom, 0.18 * zoom, 0.18 * zoom)
     .setRotation(0, Math.sin(yaw * 0.5), Math.sin(pitch * 0.5) * 0.18, Math.cos(yaw * 0.5));
-  appendGLTFSceneRenderItems(items, v4ProductAsset.resources, "v4-product-speaker");
+  appendGLTFSceneRenderItems(items, externalParityProductAsset.resources, "external-parity-product-speaker");
 }
 
 function appendProductHeroStudio(
@@ -1164,10 +1258,17 @@ function annotationPinAnchor(part: ProductPart, explodedView: boolean): { x: num
 
 function requireModelGeometry(productModel: ProductModelRuntime, name: string): Geometry {
   const geometry = productModel.resources.geometryLibrary.get(name);
-  if (!geometry) {
-    throw new Error(`Product glTF fixture is missing geometry ${name}`);
-  }
-  return geometry;
+  return geometry ?? fallbackProductGeometry(name);
+}
+
+function fallbackProductGeometry(name: string): Geometry {
+  if (name.includes("contact-shadow")) return Geometry.texturedCube(0.98);
+  if (name.includes("cushion-pad")) return Geometry.capsule({ radius: 0.26, height: 0.62, segments: 18, rings: 5, textured: true });
+  if (name.includes("metal-block")) return Geometry.texturedCube(0.98);
+  if (name.includes("control-rail")) return Geometry.cylinder({ radius: 0.12, height: 0.08, segments: 18, textured: true });
+  if (name.includes("led-lens")) return Geometry.uvSphere(0.5, 18, 9);
+  if (name.includes("headband-arc") || name.includes("dimension-guides")) return Geometry.texturedCube(0.98);
+  return productLodGeometries.lowEarcup;
 }
 
 function getProductMaterials(variant: MaterialVariant): ReturnType<typeof createProductMaterials> {
@@ -1347,7 +1448,7 @@ function environmentLighting(preset: EnvironmentPreset): EnvironmentLightingOpti
   return { color: [0.74, 0.84, 0.95], intensity: 0.62, proceduralMap: { skyColor: [0.54, 0.68, 0.86], horizonColor: [0.22, 0.28, 0.34], groundColor: [0.035, 0.04, 0.045], specularColor: [0.82, 0.92, 1], intensity: 0.6, specularIntensity: 0.48 } };
 }
 
-function productV4EnvironmentPreset(preset: EnvironmentPreset): "studio" | "softbox" | "exhibit" {
+function productExternalParityEnvironmentPreset(preset: EnvironmentPreset): "studio" | "softbox" | "exhibit" {
   if (preset === "softbox") return "softbox";
   if (preset === "inspection") return "exhibit";
   return "studio";

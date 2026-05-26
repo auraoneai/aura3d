@@ -9,11 +9,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LoaderGLTFVariants?: V8LoaderGLTFVariantsRuntime;
+    __a3dCurrentRoutesLoaderGLTFVariants?: CurrentRoutesLoaderGLTFVariantsRuntime;
   }
 }
 
-interface V8LoaderGLTFVariantsRuntime {
+interface CurrentRoutesLoaderGLTFVariantsRuntime {
   readonly appId: "loader-gltf-variants";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -62,7 +62,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LoaderGLTFVariants = runtime;
+    window.__a3dCurrentRoutesLoaderGLTFVariants = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -123,7 +123,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: []
         });
-        window.__a3dV8LoaderGLTFVariants = runtime;
+        window.__a3dCurrentRoutesLoaderGLTFVariants = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -175,7 +175,7 @@ function createRendererInput(resources: GLTFRenderResources, activeVariant: stri
     camera: input.camera,
     metadata: {
       assetId: APP_ID,
-      assetName: `V8 Loader GLTF Variants ${activeVariant}`,
+      assetName: `CurrentRoutes Loader GLTF Variants ${activeVariant}`,
       assetUri: "/apps/loader-gltf-variants/",
       meshCount: 1,
       primitiveCount: 1,
@@ -191,11 +191,11 @@ function createRendererInput(resources: GLTFRenderResources, activeVariant: stri
 }
 
 function createRuntime(
-  status: V8LoaderGLTFVariantsRuntime["status"],
+  status: CurrentRoutesLoaderGLTFVariantsRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LoaderGLTFVariantsRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LoaderGLTFVariantsRuntime {
+  patch: Partial<Omit<CurrentRoutesLoaderGLTFVariantsRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLoaderGLTFVariantsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -238,7 +238,7 @@ function createVariantFixtureDataUrl(): string {
   const indexView = buffer.appendUint16(indices);
   const bytes = buffer.bytes();
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V8 variants fixture" },
+    asset: { version: "2.0", generator: "Aura3D CurrentRoutes variants fixture" },
     extensionsUsed: ["KHR_materials_variants"],
     extensionsRequired: ["KHR_materials_variants"],
     extensions: {
@@ -339,12 +339,12 @@ function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function renderUi(root: HTMLElement, runtime: V8LoaderGLTFVariantsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderGLTFVariantsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 Loader GLTF Variants</h1>
+          <h1>CurrentRoutes Loader GLTF Variants</h1>
           <p>KHR_materials_variants selected through public GLTF render resources.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

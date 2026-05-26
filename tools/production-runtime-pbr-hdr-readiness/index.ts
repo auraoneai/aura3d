@@ -32,7 +32,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "a3d-production-runtime-pbr-hdr-readiness/v1",
+  schema: "a3d-production-runtime-pbr-hdr-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks

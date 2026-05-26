@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const REPORT_PATH = "tests/reports/threejs-parity/unreal-bloom-parity.json";
@@ -11,7 +11,7 @@ const ARTIFACTS = {
   sideBySide: "tests/reports/threejs-parity/unreal-bloom-parity/side-by-side.png"
 } as const;
 
-test.describe("V9 UnrealBloomPass same-scene parity", () => {
+test.describe("UnrealBloomPass same-scene parity", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -39,14 +39,14 @@ test.describe("V9 UnrealBloomPass same-scene parity", () => {
     await page.goto(`${server.origin}/tools/threejs-parity-unreal-bloom-parity/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const result = window.__V9_UNREAL_BLOOM_PARITY__ as { readonly status?: string } | undefined;
+        const result = window.__THREEJS_PARITY_UNREAL_BLOOM_PARITY__ as { readonly status?: string } | undefined;
         return result?.status === "ready" || result?.status === "error";
       },
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__V9_UNREAL_BLOOM_PARITY__) as UnrealBloomParityResult;
+    const result = await page.evaluate(() => window.__THREEJS_PARITY_UNREAL_BLOOM_PARITY__) as UnrealBloomParityResult;
     const report = {
       ...(result.status === "ready" ? stripDataUrls(result) : result),
       generatedAt: new Date().toISOString(),
@@ -58,7 +58,7 @@ test.describe("V9 UnrealBloomPass same-scene parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("a3d-threejs-parity-unreal-bloom-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-unreal-bloom-parity");
     expect(result.purpose).toBe("same-scene A3D bloom chain vs Three.js EffectComposer UnrealBloomPass");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameResolution).toBe(true);
@@ -98,7 +98,7 @@ test.describe("V9 UnrealBloomPass same-scene parity", () => {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
       writePng(path, dataUrl);
-      const stats = readV6PngStats(resolve(path));
+      const stats = readProductionPngStats(resolve(path));
       expect(stats.width, `${kind} width`).toBe(kind === "sideBySide" ? 1440 : 720);
       expect(stats.height, `${kind} height`).toBe(kind === "sideBySide" ? 465 : 405);
       expect(stats.nonBlackPixels, `${kind} nonblank pixels`).toBeGreaterThan(kind === "sideBySide" ? 45_000 : 20_000);
@@ -115,7 +115,7 @@ test.describe("V9 UnrealBloomPass same-scene parity", () => {
         {
           path,
           size: statSync(resolve(path)).size,
-          pixels: readV6PngStats(resolve(path))
+          pixels: readProductionPngStats(resolve(path))
         }
       ])),
       pageErrors
@@ -165,7 +165,7 @@ function stripDataUrls(result: Extract<UnrealBloomParityResult, { readonly statu
 type UnrealBloomParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
+      readonly schema: "a3d-threejs-parity-unreal-bloom-parity";
       readonly purpose: string;
       readonly a3d: {
         readonly renderer: { readonly drawCalls: number; readonly actualA3DRenderer: boolean };
@@ -198,6 +198,6 @@ type UnrealBloomParityResult =
     }
   | {
       readonly status: "error";
-      readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
+      readonly schema: "a3d-threejs-parity-unreal-bloom-parity";
       readonly error: string;
     };

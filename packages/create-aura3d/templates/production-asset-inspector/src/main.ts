@@ -1,9 +1,9 @@
-import { runV6Example } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows/production";
 
-void runV6Example({
+void runProductionExample({
   appId: "production-runtime-template-asset-inspector",
   sceneId: "asset-inspector",
-  title: "V6 Asset Inspector",
+  title: "Production Asset Inspector",
   workflow: "starter asset inspector with imported geometry, metadata, texture counts, and renderer proof",
   assets: [
     { id: "antique-camera", label: "Antique Camera", file: "antique-camera.glb", role: "primary" },

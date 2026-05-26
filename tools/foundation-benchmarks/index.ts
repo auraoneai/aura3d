@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url";
-import { pathExists, reportOk, type V3EvidenceCheck } from "../foundation-subsystem-report/index.js";
+import { pathExists, reportOk, type FoundationEvidenceCheck } from "../foundation-subsystem-report/index.js";
 import { baseReport, isRecord, readJson, writeJson } from "../foundation-reporting/index.js";
 
 const root = process.cwd();
@@ -7,7 +7,7 @@ const comparisonReport = readJson(root, "tests/reports/foundation-engine-compari
 const supportedNicheClaims = Array.isArray(comparisonReport?.supportedNicheClaims) ? comparisonReport.supportedNicheClaims : [];
 const benchmarkSummary = inspectComparisonReport(comparisonReport);
 const sourceFiles = [
-  "docs/project/v3-examples-and-benchmarks-plan.md",
+  "docs/project/verification-evidence.md",
   "tools/compare-engines/index.ts",
   "tests/browser/engine-comparison.spec.ts",
   "tests/reports/foundation-comparison-threejs.json",
@@ -38,7 +38,7 @@ const screenshotPaths = [
   "tests/reports/comparison-threejs-audit.png",
   "tests/reports/comparison-babylon-audit.png",
 ];
-const checks: readonly V3EvidenceCheck[] = [
+const checks: readonly FoundationEvidenceCheck[] = [
   {
     id: "threejs-comparison-report",
     description: "Three.js comparison report exists and passes.",
@@ -54,8 +54,8 @@ const checks: readonly V3EvidenceCheck[] = [
     blocker: "Babylon.js comparison report is missing or failing.",
   },
   {
-    id: "shared-v3-scene-descriptors",
-    description: "Shared v3 benchmark scene descriptors exist.",
+    id: "shared-foundation-scene-descriptors",
+    description: "Shared foundation benchmark scene descriptors exist.",
     passed: pathExists(root, "benchmarks/shared/scenes"),
     evidencePaths: ["benchmarks/shared/scenes"],
     blocker: "benchmarks/shared/scenes is not implemented yet.",
@@ -65,7 +65,7 @@ const checks: readonly V3EvidenceCheck[] = [
     description: "A generated report defines exact narrow Aura3D advantage with explicit caveats.",
     passed: supportedNicheClaims.length > 0,
     evidencePaths: ["tests/reports/foundation-engine-comparison.json"],
-    blocker: "No v3 benchmark report currently proves a defined niche advantage.",
+    blocker: "No foundation benchmark report currently proves a defined niche advantage.",
   },
   {
     id: "same-scene-measurements",
@@ -115,7 +115,7 @@ const base = baseReport(root, {
 const report = {
   ...comparisonReport,
   ...base,
-  suite: comparisonReport?.suite ?? "v3-engine-comparison",
+  suite: comparisonReport?.suite ?? "foundation-engine-comparison",
   subsystem: "same-scene-engine-comparison",
   checks,
   comparisonReportPreserved: true,

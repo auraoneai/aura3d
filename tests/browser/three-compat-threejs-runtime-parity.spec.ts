@@ -1,10 +1,10 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { test, expect } from "@playwright/test";
-import { V5_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
+import { THREE_COMPAT_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
 
-test("V5 runtime parity reports setup, draw calls, frame time, and warnings", async ({ page }) => {
-  const comparisons = V5_COMPARISON_SCENES.map((scene) => ({
+test("ThreeCompat runtime parity reports setup, draw calls, frame time, and warnings", async ({ page }) => {
+  const comparisons = THREE_COMPAT_COMPARISON_SCENES.map((scene) => ({
     sceneId: scene.id,
     a3dSetupLines: scene.a3dSetupLines,
     threeSetupLines: scene.threeSetupLines,
@@ -18,7 +18,7 @@ test("V5 runtime parity reports setup, draw calls, frame time, and warnings", as
   await page.setContent(`<html><body><script>window.__runtime=${JSON.stringify(comparisons)}</script></body></html>`);
   await expect.poll(async () => page.evaluate(() => window.__runtime.length)).toBe(13);
   const report = {
-    schema: "a3d-three-compat-threejs-runtime-parity-browser/v1",
+    schema: "a3d-three-compat-threejs-runtime-parity-browser",
     generatedAt: new Date().toISOString(),
     comparisons
   };

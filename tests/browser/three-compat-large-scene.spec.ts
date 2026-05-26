@@ -1,9 +1,9 @@
 import { test, expect } from "@playwright/test";
-import { InstancingV5, runV5FrustumCulling, runV5OcclusionCulling } from "../../packages/rendering/src";
+import { InstancingThreeCompat, runThreeCompatFrustumCulling, runThreeCompatOcclusionCulling } from "../../packages/rendering/src";
 
-test("V5 large scene browser proof renders object and instance scale", async ({ page }) => {
-  const culling = runV5OcclusionCulling(runV5FrustumCulling(12000));
-  const instancing = new InstancingV5(50000);
+test("ThreeCompat large scene browser proof renders object and instance scale", async ({ page }) => {
+  const culling = runThreeCompatOcclusionCulling(runThreeCompatFrustumCulling(12000));
+  const instancing = new InstancingThreeCompat(50000);
   await page.setContent(`
     <html><body style="margin:0;background:#05070b"><canvas width="1000" height="640"></canvas><script>
     const c=${JSON.stringify(culling)}, i=${JSON.stringify({ instanceCount: instancing.instanceCount })};

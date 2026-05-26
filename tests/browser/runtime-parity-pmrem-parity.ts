@@ -12,20 +12,20 @@ import {
   type RenderItem
 } from "/packages/rendering/src/index.js";
 import {
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance
 } from "/packages/rendering/src/production-runtime/index.js";
 import { composeMat4 } from "/packages/scene/src/index.js";
 import {
-  createV6HeroShaderLibrary,
-  createV6ProductionStageScene
+  createProductionHeroShaderLibrary,
+  createProductionProductionStageScene
 } from "/tests/browser/production-runtime-production-scene-tools.js";
 import * as THREE from "/node_modules/three/build/three.module.js";
 import { RGBELoader } from "/node_modules/three/examples/jsm/loaders/RGBELoader.js";
 
 declare global {
   interface Window {
-    __V7_PMREM_PARITY__?: unknown;
+    __RUNTIME_PMREM_PARITY__?: unknown;
   }
 }
 
@@ -47,7 +47,7 @@ interface DiffStats {
 const WIDTH = 1024;
 const HEIGHT = 768;
 const HDR_URI = "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr";
-const SKYBOX_HDR_URI = "/fixtures/environment-corpus/hdri/industrial_high_contrast_1k.hdr";
+const SKYBOX_HDR_URI = "/fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr";
 const ROUGHNESS_SWATCHES = [
   { id: "mirror", roughness: 0.02, color: [1, 1, 1, 1] as const, x: -1.65 },
   { id: "low-roughness", roughness: 0.16, color: [0.95, 0.9, 0.82, 1] as const, x: -0.55 },
@@ -85,21 +85,21 @@ function createTransmissionFrame() {
 async function run(): Promise<void> {
   const root = document.getElementById("pmrem-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing PMREM root.");
-  const a3dCanvas = createCanvas("v7-pmrem-a3d");
-  const threeCanvas = createCanvas("v7-pmrem-threejs");
-  const diffCanvas = createCanvas("v7-pmrem-diff");
-  const atlasCanvas = createCanvas("v7-pmrem-cubemap-atlas", 1024, 512);
-  const a3dSkyboxCanvas = createCanvas("v7-pmrem-skybox-a3d");
-  const threeSkyboxCanvas = createCanvas("v7-pmrem-skybox-threejs");
-  const skyboxDiffCanvas = createCanvas("v7-pmrem-skybox-diff");
-  const a3dTransmissionCanvas = createCanvas("v7-pmrem-transmission-a3d");
-  const threeTransmissionCanvas = createCanvas("v7-pmrem-transmission-threejs");
-  const transmissionDiffCanvas = createCanvas("v7-pmrem-transmission-diff");
-  const a3dTexturedParallaxCanvas = createCanvas("v7-pmrem-textured-parallax-a3d");
-  const a3dTexturedFlatCanvas = createCanvas("v7-pmrem-textured-flat-a3d");
-  const texturedParallaxDiffCanvas = createCanvas("v7-pmrem-textured-parallax-diff");
-  const threeTexturedTransmissionCanvas = createCanvas("v7-pmrem-textured-transmission-threejs");
-  const texturedTransmissionDiffCanvas = createCanvas("v7-pmrem-textured-transmission-diff");
+  const a3dCanvas = createCanvas("runtime-pmrem-a3d");
+  const threeCanvas = createCanvas("runtime-pmrem-threejs");
+  const diffCanvas = createCanvas("runtime-pmrem-diff");
+  const atlasCanvas = createCanvas("runtime-pmrem-cubemap-atlas", 1024, 512);
+  const a3dSkyboxCanvas = createCanvas("runtime-pmrem-skybox-a3d");
+  const threeSkyboxCanvas = createCanvas("runtime-pmrem-skybox-threejs");
+  const skyboxDiffCanvas = createCanvas("runtime-pmrem-skybox-diff");
+  const a3dTransmissionCanvas = createCanvas("runtime-pmrem-transmission-a3d");
+  const threeTransmissionCanvas = createCanvas("runtime-pmrem-transmission-threejs");
+  const transmissionDiffCanvas = createCanvas("runtime-pmrem-transmission-diff");
+  const a3dTexturedParallaxCanvas = createCanvas("runtime-pmrem-textured-parallax-a3d");
+  const a3dTexturedFlatCanvas = createCanvas("runtime-pmrem-textured-flat-a3d");
+  const texturedParallaxDiffCanvas = createCanvas("runtime-pmrem-textured-parallax-diff");
+  const threeTexturedTransmissionCanvas = createCanvas("runtime-pmrem-textured-transmission-threejs");
+  const texturedTransmissionDiffCanvas = createCanvas("runtime-pmrem-textured-transmission-diff");
   root.append(
     a3dCanvas,
     threeCanvas,
@@ -119,7 +119,7 @@ async function run(): Promise<void> {
   );
 
   const hdr = await fetchBytes(`${location.origin}${HDR_URI}`);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
     id: "studio-small-08-pmrem-delta",
     label: "Studio Small 08 PMREM Delta",
     intensity: 1.35,
@@ -129,7 +129,7 @@ async function run(): Promise<void> {
     cubemapFaceSize: 128
   });
   const skyboxHdr = await fetchBytes(`${location.origin}${SKYBOX_HDR_URI}`);
-  const skyboxHdrPipeline = createV6PbrHdrPipelineFromRadiance(skyboxHdr, {
+  const skyboxHdrPipeline = createProductionPbrHdrPipelineFromRadiance(skyboxHdr, {
     id: "industrial-high-contrast-skybox-coverage",
     label: "Industrial High Contrast Skybox Coverage",
     intensity: 1.28,
@@ -154,9 +154,9 @@ async function run(): Promise<void> {
   const threejsTexturedTransmission = await renderThreeTexturedTransmission(threeTexturedTransmissionCanvas, `${location.origin}${HDR_URI}`);
   const texturedTransmissionDiff = renderDiff(a3dTexturedFlat.pixels, threejsTexturedTransmission.pixels, texturedTransmissionDiffCanvas);
 
-  window.__V7_PMREM_PARITY__ = {
+  window.__RUNTIME_PMREM_PARITY__ = {
     status: "ready",
-    schema: "a3d-v7-pmrem-parity/v1",
+    schema: "a3d-runtime-pmrem-parity",
     purpose: "same-scene PMREM/reflection delta gate",
     parity: {
       claim: "bounded-threejs-cubemap-pmrem-parity",
@@ -298,7 +298,7 @@ async function run(): Promise<void> {
 }
 
 function renderCubemapAtlas(
-  hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>,
+  hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>,
   canvas: HTMLCanvasElement
 ): {
   readonly faceSize: number;
@@ -362,9 +362,9 @@ function renderCubemapAtlas(
 
 async function renderA3D(
   canvas: HTMLCanvasElement,
-  hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
+  hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>
 ): Promise<{ readonly diagnostics: RenderDeviceDiagnostics; readonly pixels: Uint8Array }> {
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const sphere = Geometry.uvSphere(0.54, 96, 48);
   const renderItems: RenderItem[] = ROUGHNESS_SWATCHES.map((swatch) => ({
     label: `a3d-pmrem-${swatch.id}`,
@@ -413,9 +413,9 @@ async function renderA3D(
 
 async function renderA3DSkybox(
   canvas: HTMLCanvasElement,
-  hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
+  hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>
 ): Promise<{ readonly diagnostics: RenderDeviceDiagnostics; readonly pixels: Uint8Array }> {
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const rawSkyboxTexture = createRawHdrSkyboxTexture(hdrPipeline);
   const rawSkyboxBinding = new TextureBinding({
     name: "u_environmentMapTexture",
@@ -423,7 +423,7 @@ async function renderA3DSkybox(
     sampler: new Sampler({ minFilter: "linear-mipmap-linear", magFilter: "linear", addressU: "repeat", addressV: "clamp-to-edge" }),
     expectedColorSpace: "linear"
   });
-  const staged = createV6ProductionStageScene({
+  const staged = createProductionProductionStageScene({
     renderItems: [],
     cameraPolicy: "require"
   }, { min: [-1, -1, -1], max: [1, 1, 1] }, { width: WIDTH, height: HEIGHT }, {
@@ -443,7 +443,7 @@ async function renderA3DSkybox(
     backend: "webgl2",
     preserveDrawingBuffer: true,
     clearColor: [0.006, 0.008, 0.012, 1],
-    shaderLibrary: createV6HeroShaderLibrary(),
+    shaderLibrary: createProductionHeroShaderLibrary(),
     requiredFeatures: ["basic-rendering", "pixel-readback", "render-targets", "hdr-image-based-lighting"]
   });
   const diagnostics = renderer.render(staged.source, staged.camera);
@@ -456,9 +456,9 @@ async function renderA3DSkybox(
 
 async function renderA3DTransmission(
   canvas: HTMLCanvasElement,
-  hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>
+  hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>
 ): Promise<{ readonly diagnostics: RenderDeviceDiagnostics; readonly pixels: Uint8Array }> {
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const sphere = Geometry.uvSphere(0.44, 96, 48, { textured: true });
   const backdrop = Geometry.uvSphere(0.5, 64, 32);
   const backdropItems: RenderItem[] = TRANSMISSION_PROBES.map((probe) => ({
@@ -532,7 +532,7 @@ async function renderA3DTransmission(
 
 async function renderA3DTexturedParallaxTransmission(
   canvas: HTMLCanvasElement,
-  hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>,
+  hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>,
   parallaxEnabled: boolean
 ): Promise<{
   readonly diagnostics: RenderDeviceDiagnostics;
@@ -545,7 +545,7 @@ async function renderA3DTexturedParallaxTransmission(
     readonly transmissionCausticStrength: number;
   };
 }> {
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const baseColorTexture = new Texture({
     width: 4,
     height: 4,
@@ -651,14 +651,14 @@ async function renderA3DTexturedParallaxTransmission(
   };
 }
 
-function createRawHdrSkyboxTexture(hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>): Texture {
+function createRawHdrSkyboxTexture(hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>): Texture {
   const level = encodeLinearHdrEnvironmentToRgba16f(hdrPipeline.linear);
   return new Texture({
     width: level.width,
     height: level.height,
     format: "rgba16f",
     colorSpace: "linear",
-    label: `v7-${hdrPipeline.id}-raw-visible-skybox`,
+    label: `runtime--raw-visible-skybox`,
     data: level.data
   });
 }
@@ -1108,7 +1108,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V7_PMREM_PARITY__ = {
+  window.__RUNTIME_PMREM_PARITY__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

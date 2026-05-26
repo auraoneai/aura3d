@@ -1,9 +1,9 @@
-import { runV6Example } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows/production";
 
-void runV6Example({
+void runProductionExample({
   appId: "production-runtime-template-architecture-viewer",
   sceneId: "architecture-viewer",
-  title: "V6 Architecture Viewer",
+  title: "Production Architecture Viewer",
   workflow: "starter inspection viewer with daylight HDR environment and imported reference assets",
   assets: [
     { id: "antique-camera", label: "Antique Camera", file: "antique-camera.glb", role: "primary" },

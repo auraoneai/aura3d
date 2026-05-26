@@ -27,7 +27,7 @@ const canvasWidth = 960;
 const canvasHeight = 540;
 const knownLimits = [
   "This sandbox validates current physics scenes and debug rendering, not a Rapier/Ammo/Cannon advantage claim.",
-  "Editor collider authoring, production material editing, robust joint tooling, and full CCD evidence remain incomplete.",
+  "Editor collider authoring, production material editing, robust joint tooling, and full CCD evidence are outside this sandbox's claim boundary.",
   "The scene uses generated debug geometry for repeatable browser validation.",
 ] as const;
 

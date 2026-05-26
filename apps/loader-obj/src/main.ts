@@ -8,11 +8,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LoaderOBJ?: V8LoaderOBJRuntime;
+    __a3dCurrentRoutesLoaderOBJ?: CurrentRoutesLoaderOBJRuntime;
   }
 }
 
-interface V8LoaderOBJRuntime {
+interface CurrentRoutesLoaderOBJRuntime {
   readonly appId: "loader-obj";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -57,7 +57,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LoaderOBJ = runtime;
+    window.__a3dCurrentRoutesLoaderOBJ = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -115,7 +115,7 @@ async function run(): Promise<void> {
           objTexcoords: featureSet.has("obj-texcoords"),
           featureCount: featureSet.size
         });
-        window.__a3dV8LoaderOBJ = runtime;
+        window.__a3dCurrentRoutesLoaderOBJ = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -150,7 +150,7 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
     camera: input.camera,
     metadata: {
       assetId: APP_ID,
-      assetName: "V8 Loader OBJ",
+      assetName: "CurrentRoutes Loader OBJ",
       assetUri: "/apps/loader-obj/",
       meshCount: 1,
       primitiveCount: 1,
@@ -166,11 +166,11 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
 }
 
 function createRuntime(
-  status: V8LoaderOBJRuntime["status"],
+  status: CurrentRoutesLoaderOBJRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LoaderOBJRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LoaderOBJRuntime {
+  patch: Partial<Omit<CurrentRoutesLoaderOBJRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLoaderOBJRuntime {
   return {
     appId: APP_ID,
     status,
@@ -226,12 +226,12 @@ function createOBJFixtureDataUrl(): string {
   return `data:text/plain;base64,${btoa(obj)}`;
 }
 
-function renderUi(root: HTMLElement, runtime: V8LoaderOBJRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderOBJRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 Loader OBJ</h1>
+          <h1>CurrentRoutes Loader OBJ</h1>
           <p>Native OBJ import routed through A3D GLTF render resources.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

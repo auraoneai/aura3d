@@ -1,7 +1,7 @@
-import { createDefaultControlState, type V5ControlState } from "./ControlState";
+import { createDefaultControlState, type ThreeCompatControlState } from "./ControlState";
 
 export class OrbitControls {
-  readonly state: V5ControlState = createDefaultControlState();
+  readonly state: ThreeCompatControlState = createDefaultControlState();
   enablePan = true;
   enableZoom = true;
   enableRotate = true;

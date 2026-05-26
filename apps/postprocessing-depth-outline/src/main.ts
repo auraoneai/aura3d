@@ -7,11 +7,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8PostprocessingDepthOutline?: V8PostprocessingDepthOutlineRuntime;
+    __a3dCurrentRoutesPostprocessingDepthOutline?: CurrentRoutesPostprocessingDepthOutlineRuntime;
   }
 }
 
-interface V8PostprocessingDepthOutlineRuntime {
+interface CurrentRoutesPostprocessingDepthOutlineRuntime {
   readonly appId: "postprocessing-depth-outline";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -48,7 +48,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8PostprocessingDepthOutline = runtime;
+    window.__a3dCurrentRoutesPostprocessingDepthOutline = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -122,7 +122,7 @@ async function run(): Promise<void> {
           outputColorBuckets: metrics.colorBuckets,
           edgeContrastPixels: metrics.edgeContrast
         });
-        window.__a3dV8PostprocessingDepthOutline = runtime;
+        window.__a3dCurrentRoutesPostprocessingDepthOutline = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -167,9 +167,9 @@ function pixelMetrics(pixels: Uint8Array, width: number, height: number): { read
 
 function createRuntime(
   startedAt: number,
-  status: V8PostprocessingDepthOutlineRuntime["status"],
-  patch: Partial<Omit<V8PostprocessingDepthOutlineRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "postprocessChain" | "outlineEnabled" | "depthOfFieldEnabled" | "ssaoEnabled">> = {}
-): V8PostprocessingDepthOutlineRuntime {
+  status: CurrentRoutesPostprocessingDepthOutlineRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesPostprocessingDepthOutlineRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "postprocessChain" | "outlineEnabled" | "depthOfFieldEnabled" | "ssaoEnabled">> = {}
+): CurrentRoutesPostprocessingDepthOutlineRuntime {
   return {
     appId: APP_ID,
     status,
@@ -211,11 +211,11 @@ function multiply(left: Float32Array, right: Float32Array): Float32Array {
   return output;
 }
 
-function renderUi(root: HTMLElement, runtime: V8PostprocessingDepthOutlineRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesPostprocessingDepthOutlineRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Depth Outline</h1>
+        <h1>CurrentRoutes Depth Outline</h1>
         <p>Renderer-owned depth-of-field, SSAO, outline, tone mapping, and FXAA.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

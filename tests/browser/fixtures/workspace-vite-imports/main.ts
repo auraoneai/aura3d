@@ -8,7 +8,7 @@ import { EditorRuntime } from "@aura3d/editor-runtime";
 import { InputSystem } from "@aura3d/input";
 import { Matrix4 } from "@aura3d/math";
 import { PhysicsWorld } from "@aura3d/physics";
-import { Geometry, PBRMaterial, Renderer, createV4EnvironmentLighting } from "@aura3d/rendering";
+import { Geometry, PBRMaterial, Renderer, createExternalParityEnvironmentLighting } from "@aura3d/rendering";
 import { Scene } from "@aura3d/scene";
 import { BehaviorSystem } from "@aura3d/scripting";
 
@@ -26,7 +26,7 @@ declare global {
 
 const cube = Geometry.litCube(1);
 const material = new PBRMaterial({ name: "workspace-vite-pbr", baseColor: [0.7, 0.3, 0.2, 1] });
-const lighting = createV4EnvironmentLighting("studio");
+const lighting = createExternalParityEnvironmentLighting("studio");
 
 window.__AURA3D_WORKSPACE_VITE_IMPORT_SMOKE__ = {
   ok: true,

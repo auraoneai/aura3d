@@ -1,4 +1,4 @@
-export type GLTFCorpusSchemaVersion = "gltf-corpus-v1";
+export type GLTFCorpusSchemaVersion = "gltf-corpus";
 export type GLTFCorpusAssetFormat = "gltf" | "glb";
 export type GLTFCorpusExpectedStatus = "pass" | "warn" | "expected-fail";
 export type AssetDiagnosticSeverity = "info" | "warning" | "error";
@@ -66,7 +66,7 @@ export interface GLTFCorpusAssetReport {
 }
 
 export interface GLTFCorpusReport {
-  readonly schemaVersion: "gltf-corpus-report-v1";
+  readonly schemaVersion: "gltf-corpus-report";
   readonly generatedAt: string;
   readonly sourceManifest: {
     readonly schemaVersion: GLTFCorpusSchemaVersion;
@@ -134,8 +134,8 @@ export function validateGLTFCorpusManifest(input: unknown): GLTFCorpusValidation
     };
   }
 
-  if (input.schemaVersion !== "gltf-corpus-v1") {
-    diagnostics.push(diagnostic("ASSET_CORPUS_SCHEMA_VERSION", "error", "glTF corpus manifest schemaVersion must be gltf-corpus-v1.", "Regenerate the corpus manifest with the v1 schema."));
+  if (input.schemaVersion !== "gltf-corpus") {
+    diagnostics.push(diagnostic("ASSET_CORPUS_SCHEMA_VERSION", "error", "glTF corpus manifest schemaVersion must be gltf-corpus.", "Regenerate the corpus manifest with the legacy schema."));
   }
 
   const generatedFrom = isRecord(input.generatedFrom) ? input.generatedFrom : undefined;
@@ -189,7 +189,7 @@ export function createGLTFCorpusReport(manifest: GLTFCorpusManifest, generatedAt
   }));
 
   return {
-    schemaVersion: "gltf-corpus-report-v1",
+    schemaVersion: "gltf-corpus-report",
     generatedAt,
     sourceManifest: {
       schemaVersion: validated.schemaVersion,

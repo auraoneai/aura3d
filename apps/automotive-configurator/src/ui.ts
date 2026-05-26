@@ -1,6 +1,6 @@
-import type { V6AppUiDefinition } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppUiDefinition } from "../../common/src/runtime";
 
-export const ui: V6AppUiDefinition = {
+export const ui: ProductionAppUiDefinition = {
   primaryActionLabel: "Switch Paint",
   secondaryLabel: "Vehicle-scale imported asset rendered with HDR studio lighting and runtime diagnostics."
 };

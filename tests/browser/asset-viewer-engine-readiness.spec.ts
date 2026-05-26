@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("asset viewer v1", () => {
+test.describe("asset viewer readiness", () => {
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -16,8 +16,8 @@ test.describe("asset viewer v1", () => {
 
   test("renders the loaded asset as the dominant viewport subject", async ({ page }) => {
     await page.goto(`${server.origin}/examples/legacy-asset-viewer/index.html`, { waitUntil: "domcontentloaded" });
-    await expect.poll(() => page.evaluate(() => window.__A3D_ASSET_VIEWER_V1__?.status)).toBe("ready");
-    const state = await page.evaluate(() => window.__A3D_ASSET_VIEWER_V1__);
+    await expect.poll(() => page.evaluate(() => window.__AURA3D_LEGACY_ASSET_VIEWER__?.status)).toBe("ready");
+    const state = await page.evaluate(() => window.__AURA3D_LEGACY_ASSET_VIEWER__);
     const screenshot = "tests/reports/legacy-asset-viewer/asset-viewer.png";
     mkdirSync(dirname(screenshot), { recursive: true });
     await page.locator("[data-testid='legacy-asset-viewer-canvas']").screenshot({ path: screenshot });

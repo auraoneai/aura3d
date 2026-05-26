@@ -81,7 +81,7 @@ interface GltfVisualAssetValidation {
   readonly visualQualityWarnings: readonly string[];
 }
 
-export interface V4GltfLoaderVisualParityReport {
+export interface ExternalParityGltfLoaderVisualParityReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly assets: readonly GltfVisualAsset[];
@@ -128,7 +128,7 @@ const renderTimeoutMs = 45_000;
 const localGltfVisualAssets: readonly LocalGltfVisualAsset[] = [
   {
     sourceKind: "local-gltf-text",
-    id: "v4-root-motion-clip",
+    id: "external-parity-root-motion-clip",
     path: "fixtures/workflow-assets/assets/animated-character/animated-character.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
@@ -142,42 +142,42 @@ const localGltfVisualAssets: readonly LocalGltfVisualAsset[] = [
   },
   {
     sourceKind: "local-gltf-text",
-    id: "v4-skinned-hero",
+    id: "external-parity-skinned-hero",
     path: "fixtures/workflow-assets/assets/animated-character/animated-character.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
-    id: "v4-game-outpost",
+    id: "external-parity-game-outpost",
     path: "fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 7,
   },
   {
     sourceKind: "local-gltf-text",
-    id: "v4-material-fidelity-card",
+    id: "external-parity-material-fidelity-card",
     path: "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
-    id: "v4-specular-glossiness-card",
+    id: "external-parity-specular-glossiness-card",
     path: "fixtures/workflow-assets/assets/material-spheres/material-spheres.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
-    id: "v4-morph-expression",
+    id: "external-parity-morph-expression",
     path: "fixtures/workflow-assets/assets/variant-product/variant-product.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 3,
   },
   {
     sourceKind: "local-gltf-text",
-    id: "v4-product-speaker",
+    id: "external-parity-product-speaker",
     path: "fixtures/product-studio/products/speaker/speaker.gltf",
     minimumColorBuckets: 2,
     minimumVertexCount: 8,
@@ -192,7 +192,7 @@ const sourceFiles = [
   "packages/rendering/src/Renderer.ts",
 ] as const;
 
-export async function createV4GltfLoaderVisualParityReport(root = process.cwd()): Promise<V4GltfLoaderVisualParityReport> {
+export async function createExternalParityGltfLoaderVisualParityReport(root = process.cwd()): Promise<ExternalParityGltfLoaderVisualParityReport> {
   mkdirSync(join(root, artifactDir), { recursive: true });
   const externalAssets = readExternalKhronosVisualAssets(root);
   const gltfVisualAssets = filterAssets([...localGltfVisualAssets, ...externalAssets]);
@@ -337,7 +337,7 @@ function readExternalKhronosVisualAssets(root: string): readonly ExternalGltfVis
   });
 }
 
-function externalCorpusStatusBreakdown(validations: readonly GltfVisualAssetValidation[]): V4GltfLoaderVisualParityReport["externalCorpus"]["statusBreakdown"] {
+function externalCorpusStatusBreakdown(validations: readonly GltfVisualAssetValidation[]): ExternalParityGltfLoaderVisualParityReport["externalCorpus"]["statusBreakdown"] {
   return (["pass", "warn", "expected-fail"] as const)
     .map((expectedStatus) => {
       const matching = validations.filter((validation) => validation.asset.sourceKind === "external-url" && validation.asset.expectedStatus === expectedStatus);
@@ -351,7 +351,7 @@ function externalCorpusStatusBreakdown(validations: readonly GltfVisualAssetVali
     .filter((entry) => entry.total > 0);
 }
 
-function externalStrictVisualFailures(validations: readonly GltfVisualAssetValidation[]): V4GltfLoaderVisualParityReport["externalCorpus"]["strictVisualFailures"] {
+function externalStrictVisualFailures(validations: readonly GltfVisualAssetValidation[]): ExternalParityGltfLoaderVisualParityReport["externalCorpus"]["strictVisualFailures"] {
   return validations.flatMap((validation) => {
     if (validation.asset.sourceKind !== "external-url") return [];
     const failedDiffs = validation.diffs.filter((diff) => !diff.pass);
@@ -583,7 +583,7 @@ function sharedBrowserHelpers(): string {
 function aura3dBundleSource(gltfLiteral: string): string {
   return `
     import { GLTFLoader, LoadContext, createGLTFRenderResources, createMeshoptDecoder } from "./packages/assets/src/index.ts";
-    import { Geometry, Renderer, computeMorphTargetEnvelopeBounds, computeSkinnedGeometryBounds, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, Renderer, computeMorphTargetEnvelopeBounds, computeSkinnedGeometryBounds, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     import { MeshoptDecoder } from "meshoptimizer";
     const gltfTextById = ${gltfLiteral};
     ${sharedBrowserHelpers()}
@@ -677,7 +677,7 @@ function aura3dBundleSource(gltfLiteral: string): string {
     function aura3dAuditEnvironment(visualAsset) {
       return usesSceneAuthoredLights(visualAsset)
         ? { color: [0, 0, 0], intensity: 0 }
-        : createV4EnvironmentLighting("studio").lighting;
+        : createExternalParityEnvironmentLighting("studio").lighting;
     }
     function usesSceneAuthoredLights(visualAsset) {
       return visualAsset.id === "point-light-intensity-test";
@@ -922,18 +922,18 @@ function babylonBundleSource(gltfLiteral: string): string {
       return { width: canvas.width, height: canvas.height, ...stats, drawCalls, meshCount: meshes.length, materialCount: materials.size, vertexCount };
     }
     const babylonNormalizedFixtureAssets = new Set([
-      "v4-root-motion-clip",
-      "v4-skinned-hero",
-      "v4-game-outpost",
-      "v4-specular-glossiness-card",
-      "v4-morph-expression",
+      "external-parity-root-motion-clip",
+      "external-parity-skinned-hero",
+      "external-parity-game-outpost",
+      "external-parity-specular-glossiness-card",
+      "external-parity-morph-expression",
       "animated-morph-cube"
     ]);
     function babylonNormalizedFixtureColor(assetId) {
-      if (assetId === "v4-root-motion-clip") return new BABYLON.Color3(0.1, 0.8, 0.85);
-      if (assetId === "v4-skinned-hero") return new BABYLON.Color3(0.16, 0.42, 0.9);
-      if (assetId === "v4-game-outpost") return new BABYLON.Color3(0.42, 0.62, 0.44);
-      if (assetId === "v4-specular-glossiness-card") return new BABYLON.Color3(0.12, 0.34, 0.92);
+      if (assetId === "external-parity-root-motion-clip") return new BABYLON.Color3(0.1, 0.8, 0.85);
+      if (assetId === "external-parity-skinned-hero") return new BABYLON.Color3(0.16, 0.42, 0.9);
+      if (assetId === "external-parity-game-outpost") return new BABYLON.Color3(0.42, 0.62, 0.44);
+      if (assetId === "external-parity-specular-glossiness-card") return new BABYLON.Color3(0.12, 0.34, 0.92);
       if (assetId === "animated-morph-cube") return new BABYLON.Color3(0.86, 0.82, 0.72);
       return new BABYLON.Color3(0.95, 0.42, 0.1);
     }
@@ -1052,7 +1052,7 @@ async (input) => {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = await createV4GltfLoaderVisualParityReport();
+  const report = await createExternalParityGltfLoaderVisualParityReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

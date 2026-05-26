@@ -1,9 +1,9 @@
-import { runV6Example } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows/production";
 
-void runV6Example({
+void runProductionExample({
   appId: "production-runtime-template-product-configurator",
   sceneId: "product-configurator",
-  title: "V6 Product Configurator",
+  title: "Production Product Configurator",
   workflow: "starter product configurator using imported GLB assets, HDR IBL, and production renderer metrics",
   assets: [
     { id: "damaged-helmet", label: "Damaged Helmet", file: "damaged-helmet.glb", role: "primary" },

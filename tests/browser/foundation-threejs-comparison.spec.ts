@@ -13,7 +13,7 @@ const scenes = [
   { id: "interactive", a3dModule: "interactive-scene", a3dExport: "renderAura3DInteractiveScene", threeModule: "interactive-scene", threeExport: "renderThreeInteractiveScene" }
 ] as const;
 
-test.describe("V3 same-scene Three.js comparison", () => {
+test.describe("Foundation same-scene Three.js comparison", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -26,7 +26,7 @@ test.describe("V3 same-scene Three.js comparison", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "a3d-foundation-threejs-comparison-browser/v1",
+      schema: "a3d-foundation-threejs-comparison-browser",
       generatedAt: new Date().toISOString(),
       scenes: scenes.map((scene) => scene.id),
       captures,

@@ -3,15 +3,15 @@ import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
-import { createV6ComposedProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
+import { createProductionComposedProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
   interface Window {
-    __V6_PBR_HDR__?: unknown;
+    __PRODUCTION_PBR_HDR__?: unknown;
   }
 }
 
@@ -19,8 +19,8 @@ async function run(): Promise<void> {
   const studioCanvas = requireCanvas("studio");
   const sunsetCanvas = requireCanvas("sunset");
   const studioHdr = await fetchBytes(`${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`);
-  const sunsetHdr = await fetchBytes(`${location.origin}/fixtures/environment-corpus/hdri/venice_sunset_1k.hdr`);
-  const studioPipeline = createV6PbrHdrPipelineFromRadiance(studioHdr, {
+  const sunsetHdr = await fetchBytes(`${location.origin}/fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr`);
+  const studioPipeline = createProductionPbrHdrPipelineFromRadiance(studioHdr, {
     id: "studio-small-08",
     label: "Studio Small 08",
     intensity: 1.15,
@@ -28,16 +28,16 @@ async function run(): Promise<void> {
     rotation: 0.15,
     toneMapping: { operator: "filmic", exposure: 1, whitePoint: 11.2 }
   });
-  const sunsetPipeline = createV6PbrHdrPipelineFromRadiance(sunsetHdr, {
-    id: "venice-sunset",
-    label: "Venice Sunset",
+  const sunsetPipeline = createProductionPbrHdrPipelineFromRadiance(sunsetHdr, {
+    id: "autumn-field-puresky",
+    label: "Autumn Field Pure Sky",
     intensity: 1.35,
     backgroundIntensity: 0.95,
     rotation: 0.62,
     toneMapping: { operator: "aces", exposure: 0.9, whitePoint: 10.4 }
   });
-  const studioLighting = createV6EnvironmentLightingResources(studioPipeline);
-  const sunsetLighting = createV6EnvironmentLightingResources(sunsetPipeline);
+  const studioLighting = createProductionEnvironmentLightingResources(studioPipeline);
+  const sunsetLighting = createProductionEnvironmentLightingResources(sunsetPipeline);
   const studioAssets = await Promise.all([
     loadSceneAsset("damaged-helmet", "damaged-helmet.glb", "Damaged Helmet", studioCanvas, studioLighting.lighting),
     loadSceneAsset("boom-box", "boom-box.glb", "Boom Box", studioCanvas, studioLighting.lighting),
@@ -45,7 +45,7 @@ async function run(): Promise<void> {
   ]);
   const sunsetAssets = await Promise.all([
     loadSceneAsset("damaged-helmet", "damaged-helmet.glb", "Damaged Helmet", sunsetCanvas, sunsetLighting.lighting),
-    loadSceneAsset("lantern", "lantern.glb", "Lantern", sunsetCanvas, sunsetLighting.lighting),
+    loadSceneAsset("duck", "duck.glb", "Duck", sunsetCanvas, sunsetLighting.lighting),
     loadSceneAsset("antique-camera", "antique-camera.glb", "Antique Camera", sunsetCanvas, sunsetLighting.lighting)
   ]);
   const studioRenderer = await ProductionWebGL2Renderer.create({
@@ -78,7 +78,7 @@ async function run(): Promise<void> {
     vertexCount: studioAssets.reduce((total, item) => total + item.asset.loaderDiagnostics.vertexCount, 0),
     indexCount: studioAssets.reduce((total, item) => total + item.asset.loaderDiagnostics.indexCount, 0)
   };
-  const studioStage = createV6ComposedProductionStageScene(studioAssets.map((asset) => asset.pipeline), {
+  const studioStage = createProductionComposedProductionStageScene(studioAssets.map((asset) => asset.pipeline), {
     width: studioCanvas.width,
     height: studioCanvas.height
   }, {
@@ -90,7 +90,7 @@ async function run(): Promise<void> {
     environmentLighting: studioLighting.lighting,
     postprocess: studioAssets[0]!.pipeline.source.postprocess
   });
-  const sunsetStage = createV6ComposedProductionStageScene(sunsetAssets.map((asset) => asset.pipeline), {
+  const sunsetStage = createProductionComposedProductionStageScene(sunsetAssets.map((asset) => asset.pipeline), {
     width: sunsetCanvas.width,
     height: sunsetCanvas.height
   }, {
@@ -116,19 +116,19 @@ async function run(): Promise<void> {
     camera: sunsetStage.camera,
     metadata: {
       ...metadata,
-      environmentId: "venice-sunset",
-      hdrEnvironmentUri: `${location.origin}/fixtures/environment-corpus/hdri/venice_sunset_1k.hdr`
+      environmentId: "autumn-field-puresky",
+      hdrEnvironmentUri: `${location.origin}/fixtures/environment-corpus/hdri/autumn_field_puresky_1k.hdr`
     }
   });
 
-  window.__V6_PBR_HDR__ = {
+  window.__PRODUCTION_PBR_HDR__ = {
     status: "ready",
     studioAssetIds: studioAssets.map((asset) => asset.id),
     sunsetAssetIds: sunsetAssets.map((asset) => asset.id),
     studioProof,
     sunsetProof,
-    studioSummary: summarizeV6WebGL2Proof(studioProof),
-    sunsetSummary: summarizeV6WebGL2Proof(sunsetProof),
+    studioSummary: summarizeProductionWebGL2Proof(studioProof),
+    sunsetSummary: summarizeProductionWebGL2Proof(sunsetProof),
     studioPipeline: studioPipeline.diagnostics,
     sunsetPipeline: sunsetPipeline.diagnostics,
     pixelDelta: Math.abs(studioProof.pixels.averageLuma - sunsetProof.pixels.averageLuma)
@@ -141,7 +141,7 @@ async function loadSceneAsset(
   file: string,
   label: string,
   canvas: HTMLCanvasElement,
-  environmentLighting: NonNullable<Parameters<typeof createV6ComposedProductionStageScene>[2]["environmentLighting"]>
+  environmentLighting: NonNullable<Parameters<typeof createProductionComposedProductionStageScene>[2]["environmentLighting"]>
 ) {
   const assetUri = `${location.origin}/fixtures/asset-corpus/${file}`;
   const asset = await new GLTFLoader().load({ url: assetUri }, new LoadContext());
@@ -180,7 +180,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_PBR_HDR__ = {
+  window.__PRODUCTION_PBR_HDR__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

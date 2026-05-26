@@ -1,8 +1,9 @@
 export {
-  AnimationActionV5 as AnimationActionCompat,
-  AnimationClipV5 as AnimationClipCompat,
-  AnimationMixerV5 as AnimationMixerCompat,
-  MorphTargetMixerV5 as MorphTargetMixerCompat,
-  SkeletonV5 as SkeletonCompat,
-  SkinnedMeshV5 as SkinnedMeshCompat
-} from "../../../animation/src/threejs-compatibility";
+  AnimationActionThreeCompat as AnimationActionCompat,
+  AnimationClipThreeCompat as AnimationClipCompat,
+  AnimationMixerThreeCompat as AnimationMixerCompat,
+  MorphTargetMixerThreeCompat as MorphTargetMixerCompat,
+  SkeletonThreeCompat as SkeletonCompat,
+  SkinnedMeshThreeCompat as SkinnedMeshCompat
+} from "@aura3d/animation";
+export type { ThreeCompatBone, ThreeCompatKeyframeTrack, ThreeCompatLoopMode, ThreeCompatMorphTargetWeight } from "@aura3d/animation";

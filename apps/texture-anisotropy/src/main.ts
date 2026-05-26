@@ -12,11 +12,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8TextureAnisotropy?: V8TextureAnisotropyRuntime;
+    __a3dCurrentRoutesTextureAnisotropy?: CurrentRoutesTextureAnisotropyRuntime;
   }
 }
 
-interface V8TextureAnisotropyRuntime {
+interface CurrentRoutesTextureAnisotropyRuntime {
   readonly appId: "texture-anisotropy";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -50,7 +50,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8TextureAnisotropy = runtime;
+    window.__a3dCurrentRoutesTextureAnisotropy = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -60,9 +60,9 @@ async function run(): Promise<void> {
     const device = renderer.device;
     const shader = device.createShaderProgram({
       label: "texture-anisotropy-shader",
-      marker: "@aura3d-shader:texture-anisotropy-v1",
+      marker: "@aura3d-shader:texture-anisotropy",
       vertex: `#version 300 es
-// @aura3d-shader:texture-anisotropy-v1
+// @aura3d-shader:texture-anisotropy
 precision highp float;
 in vec3 a_position;
 in vec2 a_uv;
@@ -74,7 +74,7 @@ void main() {
 }
 `,
       fragment: `#version 300 es
-// @aura3d-shader:texture-anisotropy-v1
+// @aura3d-shader:texture-anisotropy
 precision highp float;
 uniform sampler2D u_texture;
 in vec2 v_uv;
@@ -157,7 +157,7 @@ void main() {
           samplerAnisotropyUploads: diagnostics.samplerAnisotropyUploads ?? 0,
           samplerMaxAnisotropy: sampler.maxAnisotropy
         });
-        window.__a3dV8TextureAnisotropy = runtime;
+        window.__a3dCurrentRoutesTextureAnisotropy = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -209,9 +209,9 @@ function createCheckerTexture(width: number, height: number): Uint8Array {
 
 function createRuntime(
   startedAt: number,
-  status: V8TextureAnisotropyRuntime["status"],
-  patch: Partial<Omit<V8TextureAnisotropyRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "requestedAnisotropy">> = {}
-): V8TextureAnisotropyRuntime {
+  status: CurrentRoutesTextureAnisotropyRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesTextureAnisotropyRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "requestedAnisotropy">> = {}
+): CurrentRoutesTextureAnisotropyRuntime {
   return {
     appId: APP_ID,
     status,
@@ -229,11 +229,11 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8TextureAnisotropyRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesTextureAnisotropyRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Texture Anisotropy</h1>
+        <h1>CurrentRoutes Texture Anisotropy</h1>
         <p>TextureBinding sampler uses WebGL anisotropic filtering when available.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

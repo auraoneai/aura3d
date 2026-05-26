@@ -1,6 +1,6 @@
-import { createV4ToneMappingPolicy, toneMapV4HdrPixels } from "../ToneMapping";
+import { createExternalParityToneMappingPolicy, toneMapExternalParityHdrPixels } from "../ToneMapping";
 
-export interface V4TransmissionSample {
+export interface ExternalParityTransmissionSample {
   readonly baseColor: readonly [number, number, number];
   readonly thickness: number;
   readonly attenuationColor: readonly [number, number, number];
@@ -9,14 +9,14 @@ export interface V4TransmissionSample {
   readonly intensity: number;
 }
 
-export interface V4TransmissionResult {
+export interface ExternalParityTransmissionResult {
   readonly transmittedColor: readonly [number, number, number];
   readonly displayColor: readonly [number, number, number];
   readonly bounded: true;
   readonly diagnostic: string;
 }
 
-export function evaluateV4Transmission(sample: V4TransmissionSample): V4TransmissionResult {
+export function evaluateExternalParityTransmission(sample: ExternalParityTransmissionSample): ExternalParityTransmissionResult {
   validateSample(sample);
   const attenuation = Math.exp(-sample.thickness / Math.max(0.0001, sample.attenuationDistance));
   const fresnelScale = Math.max(0, Math.min(1, (sample.ior - 1) / (sample.ior + 1)));
@@ -25,11 +25,11 @@ export function evaluateV4Transmission(sample: V4TransmissionSample): V4Transmis
     sample.baseColor[1] * sample.attenuationColor[1] * attenuation * sample.intensity * (1 - fresnelScale),
     sample.baseColor[2] * sample.attenuationColor[2] * attenuation * sample.intensity * (1 - fresnelScale)
   ];
-  const toneMapped = toneMapV4HdrPixels(
+  const toneMapped = toneMapExternalParityHdrPixels(
     new Float32Array([transmitted[0], transmitted[1], transmitted[2], 1]),
     1,
     1,
-    createV4ToneMappingPolicy("material-review", { operator: "reinhard", exposure: 1, gamma: 1, outputColorSpace: "srgb" })
+    createExternalParityToneMappingPolicy("material-review", { operator: "reinhard", exposure: 1, gamma: 1, outputColorSpace: "srgb" })
   );
   return {
     transmittedColor: transmitted.map(round) as [number, number, number],
@@ -39,7 +39,7 @@ export function evaluateV4Transmission(sample: V4TransmissionSample): V4Transmis
   };
 }
 
-function validateSample(sample: V4TransmissionSample): void {
+function validateSample(sample: ExternalParityTransmissionSample): void {
   if (sample.baseColor.length !== 3 || sample.attenuationColor.length !== 3) throw new Error("Transmission colors must be RGB tuples.");
   for (const value of [...sample.baseColor, ...sample.attenuationColor, sample.thickness, sample.attenuationDistance, sample.ior, sample.intensity]) {
     if (!Number.isFinite(value) || value < 0) throw new Error("Transmission sample values must be finite and non-negative.");

@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-hdr-browser.json";
 
-test.describe("V4 HDR pipeline browser evidence", () => {
+test.describe("ExternalParity HDR pipeline browser evidence", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -32,7 +32,7 @@ test.describe("V4 HDR pipeline browser evidence", () => {
         state.featureEvidence.hdrPostprocessToneMapping === true,
       generatedAt: new Date().toISOString(),
       source: "examples/hdr-render-target-check/index.html",
-      productBoundary: "Browser evidence for the V4 HDR pipeline milestone only. This is not flagship visual completion.",
+      productBoundary: "Browser evidence for the ExternalParity HDR pipeline milestone only. This is not flagship visual completion.",
       requiredNextProof: [
         "real HDR/IBL environments",
         "material matrix screenshots",

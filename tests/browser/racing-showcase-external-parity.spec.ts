@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const screenshotPath = "tests/reports/external-parity-example-screenshots/racing-showcase.png";
 
-test.describe("racing showcase V4 example", () => {
+test.describe("racing showcase ExternalParity example", () => {
   test.setTimeout(180_000);
   let server: ExampleDevServer;
 
@@ -70,8 +70,8 @@ test.describe("racing showcase V4 example", () => {
     expect(state?.featureEvidence?.concreteAsphaltTexture).toBe(true);
     expect(state?.featureEvidence?.starfieldNebulaTexture).toBe(true);
     expect(state?.featureEvidence?.fullVehiclePhysicsClaimed).toBe(false);
-    expect(state?.v4RenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
-    expect(state?.v4RenderPreset?.blockedFeatures?.map((entry) => entry.feature)).toEqual(expect.arrayContaining(["directional-shadows", "depth-textures", "hdr"]));
+    expect(state?.externalParityRenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
+    expect(state?.externalParityRenderPreset?.blockedFeatures?.map((entry) => entry.feature)).toEqual(expect.arrayContaining(["directional-shadows", "depth-textures", "hdr"]));
     expect(state?.textureFixtures.map((entry) => entry.hash)).toHaveLength(new Set(state?.textureFixtures.map((entry) => entry.hash)).size);
     expect(Number(state?.metrics?.aeroParts ?? 0)).toBeGreaterThanOrEqual(10);
     expect(state?.metrics?.raceState).toBe("finished");
@@ -202,7 +202,7 @@ declare global {
       readonly featureEvidence?: Record<string, unknown>;
       readonly metrics?: Record<string, unknown>;
       readonly textureFixtures: readonly { readonly id: string; readonly hash: string }[];
-      readonly v4RenderPreset?: { readonly presetId?: string; readonly blockedFeatures?: readonly { readonly feature?: string }[] };
+      readonly externalParityRenderPreset?: { readonly presetId?: string; readonly blockedFeatures?: readonly { readonly feature?: string }[] };
       readonly postprocess?: { readonly outputNonDarkPixels?: number };
     };
   }

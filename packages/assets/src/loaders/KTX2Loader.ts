@@ -1,7 +1,7 @@
-import { createV5FileLoaderDiagnostic } from "./LoaderDiagnostics";
+import { createThreeCompatFileLoaderDiagnostic } from "./LoaderDiagnostics";
 
-export class KTX2LoaderV5 {
+export class KTX2LoaderThreeCompat {
   load(uri: string) {
-    return createV5FileLoaderDiagnostic("KTX2LoaderV5", uri, { decoderNeeds: ["basis-universal-transcoder"] });
+    return createThreeCompatFileLoaderDiagnostic("KTX2LoaderThreeCompat", uri, { decoderNeeds: ["basis-universal-transcoder"] });
   }
 }

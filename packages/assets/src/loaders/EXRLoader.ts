@@ -1,10 +1,10 @@
-import { createV5FileLoaderDiagnostic } from "./LoaderDiagnostics";
+import { createThreeCompatFileLoaderDiagnostic } from "./LoaderDiagnostics";
 
-export class EXRLoaderV5 {
+export class EXRLoaderThreeCompat {
   load(uri: string) {
-    return createV5FileLoaderDiagnostic("EXRLoaderV5", uri, {
+    return createThreeCompatFileLoaderDiagnostic("EXRLoaderThreeCompat", uri, {
       status: "diagnostic-only",
-      warnings: ["EXR parsing is diagnostic-only until binary EXR decode is enabled in V5 renderer integration."]
+      warnings: ["EXR parsing is diagnostic-only until binary EXR decode is enabled in ThreeCompat renderer integration."]
     });
   }
 }

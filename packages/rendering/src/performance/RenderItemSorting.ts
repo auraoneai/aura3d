@@ -88,14 +88,14 @@ export function sortRenderQueueItems<T>(
   };
 }
 
-export interface V4SortableRenderItem {
+export interface SortableRenderItem {
   readonly id: string;
   readonly materialBucket: RenderQueueBucket;
   readonly pipelineKey: string;
   readonly depth: number;
 }
 
-export function sortV4RenderItems(items: readonly V4SortableRenderItem[]): V4SortableRenderItem[] {
+export function sortRenderItems(items: readonly SortableRenderItem[]): SortableRenderItem[] {
   return [...sortRenderQueueItems(items.map((item) => ({
     item,
     bucket: item.materialBucket,

@@ -4,18 +4,18 @@ import { baseReport, writeJson } from "../foundation-reporting/index.js";
 
 const root = process.cwd();
 const commands = [
-  "verify:v3-examples",
+  "verify:foundation-examples",
   "verify:foundation-rendering",
   "verify:foundation-assets",
   "verify:foundation-editor",
   "verify:foundation-runtime",
   "verify:foundation-benchmarks",
-  "verify:v3-flakes",
+  "verify:foundation-flakes",
   "verify:foundation-code",
   "verify:foundation-report-freshness",
 ] as const;
 
-export function runV3Verification(): number {
+export function runFoundationVerification(): number {
   const results = commands.map((script) => {
     const result = spawnSync("pnpm", ["--silent", script], { stdio: "inherit", env: process.env });
     return {
@@ -27,7 +27,7 @@ export function runV3Verification(): number {
   const report = {
     ...baseReport(root, {
       ok: violations.length === 0,
-      command: "pnpm verify:v3",
+      command: "pnpm verify:foundation",
       runIdPrefix: "foundation-verify",
       sourceFiles: ["package.json", "tools/foundation-verify/index.ts"],
       violations,
@@ -41,5 +41,5 @@ export function runV3Verification(): number {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  process.exitCode = runV3Verification();
+  process.exitCode = runFoundationVerification();
 }

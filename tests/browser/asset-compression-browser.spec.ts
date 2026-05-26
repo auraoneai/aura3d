@@ -283,7 +283,7 @@ function writeCompressionReport(): void {
     ok: validations.length >= 3 && validations.every((validation) => validation.ok && Object.values(validation.checks).every(Boolean)),
     generatedAt: new Date().toISOString(),
     commit: currentCommit(),
-    runId: `v4-asset-compression-${new Date().toISOString().replace(/[^0-9A-Za-z]/g, "-")}`,
+    runId: `external-parity-asset-compression-${new Date().toISOString().replace(/[^0-9A-Za-z]/g, "-")}`,
     command: "pnpm exec playwright test tests/browser/asset-compression-browser.spec.ts",
     sourceFileHashes: sourceFileHashes([
       "tests/browser/asset-compression-browser.spec.ts",

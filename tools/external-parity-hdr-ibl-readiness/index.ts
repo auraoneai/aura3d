@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4HdrIblReadinessReport {
+export interface ExternalParityHdrIblReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly boundedHdrIblEvidence: boolean;
@@ -21,7 +21,7 @@ const reportPath = "tests/reports/external-parity-hdr-ibl-readiness.json";
 const sourceFiles = [
   "tools/external-parity-hdr-ibl-readiness/index.ts",
   "packages/rendering/src/EnvironmentMapResources.ts",
-  "packages/rendering/src/V4RenderPreset.ts",
+  "packages/rendering/src/ExternalParityRenderPreset.ts",
   "fixtures/environment-corpus/manifest.json",
   "examples/asset-viewer/main.ts",
   "examples/product-configurator/main.ts",
@@ -36,7 +36,7 @@ const sourceFiles = [
   "tests/reports/external-parity-examples.json",
 ] as const;
 
-export function createV4HdrIblReadinessReport(root = process.cwd()): V4HdrIblReadinessReport {
+export function createExternalParityHdrIblReadinessReport(root = process.cwd()): ExternalParityHdrIblReadinessReport {
   const materialFidelity = readJson(root, "tests/reports/external-parity-asset-material-fidelity.json");
   const screenshotManifest = readJson(root, "tests/reports/external-parity-example-screenshots/manifest.json");
   const examples = readJson(root, "tests/reports/external-parity-examples.json");
@@ -57,14 +57,14 @@ export function createV4HdrIblReadinessReport(root = process.cwd()): V4HdrIblRea
     "licensed-production-HDRI-capture-and-reference-BRDF-parity",
   ] as const;
   const validationRows = [
-    validation("asset-material-linear-hdr-ibl", materialEvidence, "tests/reports/external-parity-asset-material-fidelity.json:v4-material-fidelity-card", [
-      "V4 material fidelity report does not prove a linear-HDR IBL resource, BRDF LUT, specular mips, diffuse irradiance, and material render state.",
+    validation("asset-material-linear-hdr-ibl", materialEvidence, "tests/reports/external-parity-asset-material-fidelity.json:external-parity-material-fidelity-card", [
+      "External parity material fidelity report does not prove a linear-HDR IBL resource, BRDF LUT, specular mips, diffuse irradiance, and material render state.",
     ]),
     validation("flagship-linear-hdr-ibl-state", flagshipEvidence, "tests/reports/external-parity-example-screenshots/manifest.json", [
       "Product, architecture, and game flagship screenshot states do not all publish linear-HDR environment resources and reflection evidence.",
     ]),
     validation("fresh-example-manifest", examplesFresh, "tests/reports/external-parity-examples.json", [
-      "V4 example screenshot verifier report is missing or failing.",
+      "External parity example screenshot verifier report is missing or failing.",
     ]),
     validation("production-hdr-ibl-boundary", true, "tools/external-parity-hdr-ibl-readiness/index.ts", []),
   ];
@@ -106,7 +106,7 @@ function validation(id: string, passed: boolean, evidence: string, blockers: rea
 function hasMaterialHdrIblEvidence(report: Record<string, unknown> | null): boolean {
   if (report?.ok !== true || !Array.isArray(report.validations)) return false;
   return report.validations.some((entry) => {
-    if (!isRecord(entry) || entry.name !== "v4-material-fidelity-card" || entry.ok !== true || !isRecord(entry.evidence)) return false;
+    if (!isRecord(entry) || entry.name !== "external-parity-material-fidelity-card" || entry.ok !== true || !isRecord(entry.evidence)) return false;
     const evidence = entry.evidence;
     return evidence.environmentResourceSet === "generated-local-linear-hdr-environment" &&
       evidence.hdrSource === true &&
@@ -142,7 +142,7 @@ function hasFlagshipHdrIblEvidence(report: Record<string, unknown> | null): bool
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4HdrIblReadinessReport();
+  const report = createExternalParityHdrIblReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

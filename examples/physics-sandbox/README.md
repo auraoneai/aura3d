@@ -1,6 +1,6 @@
 # Physics Sandbox
 
-Interactive renderer-backed physics sandbox for the v2 physics track.
+Interactive renderer-backed physics sandbox for the product studio physics track.
 
 ## Run
 

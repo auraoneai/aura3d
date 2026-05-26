@@ -1,6 +1,6 @@
 export {
   sortRenderQueueItems,
-  sortV4RenderItems
+  sortRenderItems
 } from "./performance/RenderItemSorting";
 export type {
   RenderQueueBucket,
@@ -8,5 +8,5 @@ export type {
   RenderQueueSortDiagnostics,
   RenderQueueSortItem,
   RenderQueueSortOptions,
-  V4SortableRenderItem
+  SortableRenderItem
 } from "./performance/RenderItemSorting";

@@ -24,7 +24,7 @@ const baseline = JSON.parse(readFileSync(baselinePath, "utf8")) as {
   readonly claimBoundary: string;
 };
 const checks = [
-  { name: "required-files-present", pass: requiredFiles.every((file) => existsSync(resolve(file))), detail: requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 performance files exist" },
+  { name: "required-files-present", pass: requiredFiles.every((file) => existsSync(resolve(file))), detail: requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility performance files exist" },
   { name: "large-scene-floor", pass: baseline.occlusion.total >= 10000, detail: `${baseline.occlusion.total} objects` },
   { name: "instancing-floor", pass: baseline.instancing.instanceCount >= 50000, detail: `${baseline.instancing.instanceCount} instances` },
   { name: "bvh-raycast", pass: baseline.raycast.speedup > 100, detail: `${baseline.raycast.speedup}x speedup` },
@@ -32,7 +32,7 @@ const checks = [
   { name: "claim-boundary", pass: /cannot be claimed without external/i.test(baseline.claimBoundary), detail: baseline.claimBoundary }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "a3d-three-compat-performance-readiness/v1", generatedAt: new Date().toISOString(), pass, baseline, checks };
+const report = { schema: "a3d-three-compat-performance-readiness", generatedAt: new Date().toISOString(), pass, baseline, checks };
 const reportPath = resolve("tests/reports/three-compat-performance-readiness.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -40,4 +40,4 @@ if (!pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 performance readiness passed: ${baseline.occlusion.total} objects, ${baseline.instancing.instanceCount} instances.`);
+console.log(`Three.js compatibility performance readiness passed: ${baseline.occlusion.total} objects, ${baseline.instancing.instanceCount} instances.`);

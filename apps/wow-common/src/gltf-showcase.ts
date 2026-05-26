@@ -2,7 +2,7 @@ import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createDracoDecoder,
   createGLTFSceneAnimationMixer,
-  loadV6GLTFRenderPipeline,
+  loadProductionGLTFRenderPipeline,
   type GLTFDracoDecodeDescriptor,
   type GLTFDracoDecoder,
   type GLTFDracoDecoderModule
@@ -17,7 +17,7 @@ import {
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { multiplyMat4, type Mat4 } from "@aura3d/scene";
 
-type Pipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type Pipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 type Mixer = ReturnType<typeof createGLTFSceneAnimationMixer>;
 type DracoDecoderModuleFactory = (config?: {
   readonly locateFile?: (file: string, prefix: string) => string;
@@ -124,7 +124,7 @@ export async function startWowGltfShowcase(config: WowGltfShowcaseConfig): Promi
     const dracoDecoder = config.requiresDraco === true ? await createBrowserDracoDecoder() : undefined;
     timings.dracoDecoderMs = config.requiresDraco === true ? Math.round(performance.now() - phaseStarted) : 0;
     phaseStarted = performance.now();
-    pipeline = await loadV6GLTFRenderPipeline({
+    pipeline = await loadProductionGLTFRenderPipeline({
       url: config.assetUrl,
       assetId: config.appId,
       assetName: config.assetName,

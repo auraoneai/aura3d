@@ -1,4 +1,4 @@
-export interface V5ComparisonScene {
+export interface ThreeCompatComparisonScene {
   readonly id: string;
   readonly label: string;
   readonly category: string;
@@ -18,7 +18,7 @@ export interface V5ComparisonScene {
   };
 }
 
-export const V5_COMPARISON_SCENES: readonly V5ComparisonScene[] = [
+export const THREE_COMPAT_COMPARISON_SCENES: readonly ThreeCompatComparisonScene[] = [
   { id: "product-configurator", label: "Product Configurator", category: "product", visualScore: 0.91, a3dSetupLines: 42, threeSetupLines: 68, a3dDrawCalls: 38, threeDrawCalls: 44, a3dFrameMs: 8.7, threeFrameMs: 9.6, warnings: [] },
   { id: "automotive-configurator", label: "Automotive Configurator", category: "automotive", visualScore: 0.89, a3dSetupLines: 48, threeSetupLines: 86, a3dDrawCalls: 52, threeDrawCalls: 61, a3dFrameMs: 10.9, threeFrameMs: 12.8, warnings: [] },
   { id: "material-library", label: "Material Library", category: "materials", visualScore: 0.93, a3dSetupLines: 34, threeSetupLines: 59, a3dDrawCalls: 72, threeDrawCalls: 74, a3dFrameMs: 11.2, threeFrameMs: 11.9, warnings: [] },

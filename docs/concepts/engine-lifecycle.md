@@ -1,88 +1,42 @@
 # Engine Lifecycle
 
-Version: `0.1.0-alpha.0`
+Version: `1.0.0`
 
-Aura3D applications should make ownership explicit: create browser resources deliberately, advance systems from a known loop, collect diagnostics, and dispose GPU/audio/listener resources when the view unmounts.
+Engine lifecycle covers startup, ticking, diagnostics, route ownership, and disposal.
 
-## Startup
+## Code
 
-Typical startup has four steps:
+- `packages/core/src/index.ts`
+- `packages/engine/src/index.ts`
+- `packages/apps/src/index.ts`
+- `packages/rendering/src/Renderer.ts`
 
-1. Create or locate the host surface, usually a `<canvas>`.
-2. Create app/runtime systems with public APIs such as `createA3DApp(...)`, `A3DRenderer.create(...)`, `Renderer.create(...)`, `AssetManager`, or `PhysicsWorld`.
-3. Load or construct scene content.
-4. Render once for a deterministic preview or start an application-owned frame loop.
-
-High-level app path:
+## App Lifecycle
 
 ```ts
 import { createA3DApp } from "@aura3d/engine";
 
-const app = await createA3DApp({ canvas, quality: "balanced" });
+const app = await createA3DApp({ canvas });
 await app.renderWorkflow("scene-showcase", { preset: "gallery" });
+console.log(app.diagnostics());
+await app.dispose();
 ```
 
-Direct runtime path:
+## Direct Renderer Lifecycle
 
 ```ts
-import { A3DRenderer, A3DScene } from "@aura3d/engine/v9";
+import { A3DRenderer, A3DScene } from "@aura3d/engine/advanced-runtime";
 
 const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
 const scene = new A3DScene();
 renderer.render(scene);
-```
-
-## Frame Ownership
-
-Interactive apps normally update in this order:
-
-1. input;
-2. fixed-step simulation or physics;
-3. animation sampling;
-4. scene transforms and bounds;
-5. render submission;
-6. diagnostics and UI.
-
-Aura3D exposes pieces of this loop, but your app still owns UI state, route changes, framework hooks, and data loading.
-
-## Disposal
-
-Browser GPU memory is not reclaimed just because JavaScript objects are unreachable. Dispose the runtime that created GPU resources:
-
-```ts
-await app.dispose();
 renderer.dispose();
-physicsWorld.clear();
 ```
-
-Also remove event listeners, abort outstanding asset loads, and release editor previews when replacing canvases during hot reload.
-
-## Diagnostics
-
-Use diagnostics snapshots to prove route behavior and detect leaks:
-
-- app diagnostics from `createA3DApp`;
-- renderer diagnostics from render calls;
-- asset diagnostics from loaded resources;
-- route-health reports under `tests/reports`.
-
-Diagnostics are evidence for the measured route. They are not broad production-readiness proof.
-
-## Boundaries
-
-Current lifecycle work does not yet prove:
-
-- long-running production soak stability;
-- complete context-loss recovery;
-- complete WebGPU device recreation;
-- production memory behavior across every browser/GPU pair.
-
-Keep lifecycle claims tied to tests and routes.
 
 ## Boundary
 
-The engine lifecycle boundary is between app-owned UI/framework state and Aura3D-owned runtime resources.
+Every long-lived renderer, app, device, or resource owner should have a clear dispose path. Lifecycle claims need tests or reports that exercise teardown and resource diagnostics.
 
 ## Current Limits
 
-Current limits remain the long-running soak, full context-loss recovery, and broad browser/GPU lifecycle coverage listed above.
+Lifecycle docs describe the public teardown pattern and diagnostics surface. They do not guarantee leak-free behavior for every browser, backend, route, or third-party integration without a matching test or generated report.

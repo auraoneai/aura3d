@@ -1,4 +1,4 @@
-export interface V5TransparencySystemStatus {
+export interface ThreeCompatTransparencySystemStatus {
   readonly alphaTest: boolean;
   readonly alphaBlend: boolean;
   readonly sortedBackToFront: boolean;
@@ -6,8 +6,8 @@ export interface V5TransparencySystemStatus {
   readonly doubleSidedNormals: boolean;
 }
 
-export class V5TransparencySystem {
-  getStatus(): V5TransparencySystemStatus {
+export class ThreeCompatTransparencySystem {
+  getStatus(): ThreeCompatTransparencySystemStatus {
     return {
       alphaTest: true,
       alphaBlend: true,

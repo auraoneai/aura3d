@@ -1,7 +1,7 @@
-import type { V5PostProcessFrame, V5PostProcessPass } from "./PostProcessTypes";
+import type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
 
-export class ShaderPassV5 implements V5PostProcessPass {
+export class ShaderPassThreeCompat implements ThreeCompatPostProcessPass {
   readonly enabled = true;
-  constructor(public readonly name: string, private readonly transform: (frame: V5PostProcessFrame) => V5PostProcessFrame) {}
-  apply(frame: V5PostProcessFrame): V5PostProcessFrame { return this.transform(frame); }
+  constructor(public readonly name: string, private readonly transform: (frame: ThreeCompatPostProcessFrame) => ThreeCompatPostProcessFrame) {}
+  apply(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame { return this.transform(frame); }
 }

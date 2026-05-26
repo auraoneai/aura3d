@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 glTF render pipeline", () => {
+test.describe("Production glTF render pipeline", () => {
   test.setTimeout(90_000);
 
   let server: ExampleDevServer;
@@ -29,16 +29,16 @@ test.describe("V6 glTF render pipeline", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V6_GLTF_RENDER__ as { status?: string } | undefined;
+          const result = window.__PRODUCTION_GLTF_RENDER__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 45_000 }
       );
     } catch (error) {
-      throw new Error(`V6 glTF render harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Production glTF render harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
-    const result = await page.evaluate(() => window.__V6_GLTF_RENDER__) as {
+    const result = await page.evaluate(() => window.__PRODUCTION_GLTF_RENDER__) as {
       status: "ready" | "error";
       error?: string;
       hdr?: { realRadianceHdr: boolean; specularMipCount: number };
@@ -84,7 +84,7 @@ test.describe("V6 glTF render pipeline", () => {
     await page.locator("#clearcoat").screenshot({ path: "tests/reports/production-runtime-gltf-render/clearcoat.png" });
     await page.locator("#cesium-man").screenshot({ path: "tests/reports/production-runtime-gltf-render/cesium-man.png" });
     writeFileSync(resolve("tests/reports/production-runtime-gltf-render-real-renderer.json"), `${JSON.stringify({
-      schema: "a3d-production-runtime-gltf-render-real-renderer/v1",
+      schema: "a3d-production-runtime-gltf-render-real-renderer",
       generatedAt: new Date().toISOString(),
       screenshots: [
         "tests/reports/production-runtime-gltf-render/damaged-helmet.png",

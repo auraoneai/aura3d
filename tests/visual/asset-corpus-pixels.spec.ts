@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "../browser/example-dev-server";
 
@@ -9,6 +10,18 @@ type Region = {
 };
 
 type Matcher = "green" | "yellow" | "red" | "bright";
+
+const corpusManifest = JSON.parse(readFileSync("tests/assets/corpus/gltf-corpus.manifest.json", "utf8")) as {
+  readonly generatedFrom?: { readonly revision?: string };
+  readonly assets?: readonly { readonly expectedStatus?: string }[];
+};
+const expectedCorpus = {
+  assetCount: corpusManifest.assets?.length ?? 0,
+  pass: corpusManifest.assets?.filter((asset) => asset.expectedStatus === "pass").length ?? 0,
+  warn: corpusManifest.assets?.filter((asset) => asset.expectedStatus === "warn").length ?? 0,
+  expectedFail: corpusManifest.assets?.filter((asset) => asset.expectedStatus === "expected-fail").length ?? 0,
+  sourceRevision: corpusManifest.generatedFrom?.revision ?? "",
+};
 
 declare global {
   interface Window {
@@ -47,12 +60,12 @@ test.describe("glTF corpus gallery visual pixels", () => {
 
     const state = await page.evaluate(() => window.__AURA3D_GLTF_CORPUS_GALLERY__);
     expect(state?.status, state?.error).toBe("ready");
-    expect(state?.assetCount).toBe(17);
-    expect(state?.pass).toBe(13);
-    expect(state?.warn).toBe(4);
-    expect(state?.expectedFail).toBe(0);
-    expect(state?.renderedCards).toBe(17);
-    expect(state?.sourceRevision).toMatch(/^[a-f0-9]{40}$/);
+    expect(state?.assetCount).toBe(expectedCorpus.assetCount);
+    expect(state?.pass).toBe(expectedCorpus.pass);
+    expect(state?.warn).toBe(expectedCorpus.warn);
+    expect(state?.expectedFail).toBe(expectedCorpus.expectedFail);
+    expect(state?.renderedCards).toBe(expectedCorpus.assetCount);
+    expect(state?.sourceRevision).toBe(expectedCorpus.sourceRevision);
 
     await expectCanvasFrame(page);
     await expect(countMatchingPixels(page, { x: 0, y: 0, width: 960, height: 540 }, "bright")).resolves.toBeGreaterThan(1_000);

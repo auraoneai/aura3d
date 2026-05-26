@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationMixer, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { computePerspectiveCameraFrame, Geometry, PBRMaterial } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
@@ -9,7 +9,7 @@ import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.
 
 declare global {
   interface Window {
-    __V9_SKINNING_ADDITIVE_PARITY__?: SkinningAdditiveParityResult;
+    __THREEJS_PARITY_SKINNING_ADDITIVE_PARITY__?: SkinningAdditiveParityResult;
   }
 }
 
@@ -19,7 +19,7 @@ type SkinningAdditiveParityResult = SkinningAdditiveParityReady | SkinningAdditi
 
 interface SkinningAdditiveParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-skinning-additive-parity/v1";
+  readonly schema: "a3d-threejs-parity-skinning-additive-parity";
   readonly purpose: "same-asset Robot Expressive A3D masked additive layer vs actual Three.js additive AnimationMixer action";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -70,7 +70,7 @@ interface SkinningAdditiveParityReady {
 
 interface SkinningAdditiveParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-skinning-additive-parity/v1";
+  readonly schema: "a3d-threejs-parity-skinning-additive-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -132,7 +132,7 @@ async function run(): Promise<void> {
     const threeStats = analyzeImageData(threePixels);
     const ready: SkinningAdditiveParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-skinning-additive-parity/v1",
+      schema: "a3d-threejs-parity-skinning-additive-parity",
       purpose: "same-asset Robot Expressive A3D masked additive layer vs actual Three.js additive AnimationMixer action",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -189,20 +189,20 @@ async function run(): Promise<void> {
         "It is not a blanket claim for every additive clip, retargeted skeleton, IK rig, transition graph, or mask authoring workflow."
       ]
     };
-    window.__V9_SKINNING_ADDITIVE_PARITY__ = ready;
+    window.__THREEJS_PARITY_SKINNING_ADDITIVE_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: SkinningAdditiveParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-skinning-additive-parity/v1",
+      schema: "a3d-threejs-parity-skinning-additive-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
       expectedReferenceAnimation: "AnimationMixer",
       expectedRenderer: "THREE.WebGLRenderer"
     };
-    window.__V9_SKINNING_ADDITIVE_PARITY__ = failure;
+    window.__THREEJS_PARITY_SKINNING_ADDITIVE_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -216,9 +216,9 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     preserveDrawingBuffer: true,
     clearColor: [0.007, 0.009, 0.013, 1]
   });
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: ASSET.url,
-    assetId: "v9-skinning-additive-robot",
+    assetId: "threejs-parity-skinning-additive-robot",
     assetName: "Robot Expressive Additive Parity",
     width: ASSET.width,
     height: ASSET.height,
@@ -271,7 +271,7 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     },
     metadata: {
       assetId: "threejs-parity-skinning-additive-parity",
-      assetName: "V9 Skinning Additive Parity",
+      assetName: "Three.js parity Skinning Additive Parity",
       assetUri: "/tools/threejs-parity-skinning-additive-parity/",
       meshCount: pipeline.metadata.meshCount,
       primitiveCount: pipeline.metadata.primitiveCount,
@@ -282,7 +282,7 @@ async function renderA3D(canvas: HTMLCanvasElement) {
       skinCount: pipeline.metadata.skinCount,
       morphTargetCount: pipeline.metadata.morphTargetCount,
       extensionsUsed: pipeline.metadata.extensionsUsed,
-      environmentId: "v8-fast-studio",
+      environmentId: "current-routes-fast-studio",
       hdrEnvironmentUri: "none"
     }
   });
@@ -379,7 +379,7 @@ function collectImportedItems(pipeline, placement) {
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v9-additive:${node.name}`,
+      label: `threejs-parity-additive:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -392,21 +392,21 @@ function collectImportedItems(pipeline, placement) {
 
 function createA3DStageItems(weight: number) {
   const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({ name: "v9-additive-floor", baseColor: [0.065, 0.075, 0.085, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
-  const base = new PBRMaterial({ name: "v9-additive-base-marker", baseColor: [0.18, 0.31, 0.5, 1], roughness: 0.32, metallic: 0.18, environmentIntensity: 0.8 });
-  const layer = new PBRMaterial({ name: "v9-additive-layer-marker", baseColor: [0.94, 0.58, 0.14, 1], roughness: 0.28, metallic: 0.1, environmentIntensity: 0.8 });
+  const floor = new PBRMaterial({ name: "threejs-parity-additive-floor", baseColor: [0.065, 0.075, 0.085, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
+  const base = new PBRMaterial({ name: "threejs-parity-additive-base-marker", baseColor: [0.18, 0.31, 0.5, 1], roughness: 0.32, metallic: 0.18, environmentIntensity: 0.8 });
+  const layer = new PBRMaterial({ name: "threejs-parity-additive-layer-marker", baseColor: [0.94, 0.58, 0.14, 1], roughness: 0.28, metallic: 0.1, environmentIntensity: 0.8 });
   return [
-    { label: "v9-additive-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
-    { label: "v9-additive-base-marker", geometry: cube, material: base, modelMatrix: composeMat4([-1.18, 0.34, -0.62], [0, 0, 0, 1], [0.06, 0.85, 0.06]) },
-    { label: "v9-additive-layer-marker", geometry: cube, material: layer, modelMatrix: composeMat4([1.18, 0.18 + weight * 0.38, -0.62], [0, 0, 0, 1], [0.08, 0.32 + weight * 0.55, 0.08]) }
+    { label: "threejs-parity-additive-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
+    { label: "threejs-parity-additive-base-marker", geometry: cube, material: base, modelMatrix: composeMat4([-1.18, 0.34, -0.62], [0, 0, 0, 1], [0.06, 0.85, 0.06]) },
+    { label: "threejs-parity-additive-layer-marker", geometry: cube, material: layer, modelMatrix: composeMat4([1.18, 0.18 + weight * 0.38, -0.62], [0, 0, 0, 1], [0.08, 0.32 + weight * 0.55, 0.08]) }
   ];
 }
 
 function createA3DLights() {
-  const key = new DirectionalLight("v9-additive-key");
+  const key = new DirectionalLight("threejs-parity-additive-key");
   key.intensity = 4.5;
   key.color = [1, 0.94, 0.82];
-  const fill = new DirectionalLight("v9-additive-fill");
+  const fill = new DirectionalLight("threejs-parity-additive-fill");
   fill.intensity = 2.2;
   fill.color = [0.62, 0.8, 1];
   return [

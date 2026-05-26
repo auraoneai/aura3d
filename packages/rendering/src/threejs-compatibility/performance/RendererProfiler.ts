@@ -1,4 +1,4 @@
-export interface V5RendererProfile {
+export interface ThreeCompatRendererProfile {
   readonly objectCount: number;
   readonly instanceCount: number;
   readonly triangleCount: number;
@@ -8,7 +8,7 @@ export interface V5RendererProfile {
   readonly warnings: readonly string[];
 }
 
-export function createV5RendererProfile(input: Omit<V5RendererProfile, "warnings">): V5RendererProfile {
+export function createThreeCompatRendererProfile(input: Omit<ThreeCompatRendererProfile, "warnings">): ThreeCompatRendererProfile {
   return {
     ...input,
     warnings: [

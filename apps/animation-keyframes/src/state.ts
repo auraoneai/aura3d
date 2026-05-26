@@ -1,10 +1,10 @@
 export const APP_ID = "animation-keyframes" as const;
-export const RUNTIME_KEY = "__a3dV8AnimationKeyframes" as const;
+export const RUNTIME_KEY = "__a3dCurrentRoutesAnimationKeyframes" as const;
 export const ASSET_URL = "/fixtures/threejs-parity/assets/character/robot-expressive.glb";
 
-export type V8RuntimeStatus = "loading" | "ready" | "running" | "error";
+export type CurrentRoutesRuntimeStatus = "loading" | "ready" | "running" | "error";
 
-export interface V8KeyframeControls {
+export interface CurrentRoutesKeyframeControls {
   playing: boolean;
   speed: number;
   scrub: number;
@@ -12,9 +12,9 @@ export interface V8KeyframeControls {
   clipName: string;
 }
 
-export interface V8AnimationKeyframesRuntime {
+export interface CurrentRoutesAnimationKeyframesRuntime {
   readonly appId: typeof APP_ID;
-  readonly status: V8RuntimeStatus;
+  readonly status: CurrentRoutesRuntimeStatus;
   readonly loadingStep: string;
   readonly error?: string;
   readonly assetUrl: string;
@@ -34,16 +34,16 @@ export interface V8AnimationKeyframesRuntime {
   readonly poseDiversityScore: number;
   readonly motionHealthy: boolean;
   readonly elapsedMs: number;
-  readonly controls: V8KeyframeControls;
+  readonly controls: CurrentRoutesKeyframeControls;
 }
 
 declare global {
   interface Window {
-    __a3dV8AnimationKeyframes?: V8AnimationKeyframesRuntime;
+    __a3dCurrentRoutesAnimationKeyframes?: CurrentRoutesAnimationKeyframesRuntime;
   }
 }
 
-export function createInitialRuntime(now = performance.now()): V8AnimationKeyframesRuntime {
+export function createInitialRuntime(now = performance.now()): CurrentRoutesAnimationKeyframesRuntime {
   return {
     appId: APP_ID,
     status: "loading",
@@ -75,15 +75,15 @@ export function createInitialRuntime(now = performance.now()): V8AnimationKeyfra
   };
 }
 
-export function publishRuntime(runtime: V8AnimationKeyframesRuntime): void {
+export function publishRuntime(runtime: CurrentRoutesAnimationKeyframesRuntime): void {
   window[RUNTIME_KEY] = runtime;
 }
 
 export function updateRuntime(
-  runtime: V8AnimationKeyframesRuntime,
+  runtime: CurrentRoutesAnimationKeyframesRuntime,
   startedAt: number,
-  patch: Partial<V8AnimationKeyframesRuntime>
-): V8AnimationKeyframesRuntime {
+  patch: Partial<CurrentRoutesAnimationKeyframesRuntime>
+): CurrentRoutesAnimationKeyframesRuntime {
   const next = {
     ...runtime,
     ...patch,

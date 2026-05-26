@@ -1,17 +1,17 @@
-import type { V6RenderProof, V6RendererBackend, V6RendererFeature, V6RendererInput } from '../ProductionRendererTypes';
+import type { ProductionRenderProof, ProductionRendererBackend, ProductionRendererFeature, ProductionRendererInput } from '../ProductionRendererTypes';
 
 export interface RendererBackendDiagnostics {
-  readonly backend: V6RendererBackend;
+  readonly backend: ProductionRendererBackend;
   readonly contextType: string;
   readonly realDevice: boolean;
   readonly fallback?: string;
 }
 
 export interface RendererBackend {
-  readonly backend: V6RendererBackend;
+  readonly backend: ProductionRendererBackend;
   readonly contextType: string;
-  renderImportedAsset(input: V6RendererInput): V6RenderProof;
-  getFeatures(): readonly V6RendererFeature[];
+  renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof;
+  getFeatures(): readonly ProductionRendererFeature[];
   getDiagnostics(): RendererBackendDiagnostics;
   dispose(): void;
 }

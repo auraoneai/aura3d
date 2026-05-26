@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { A3DAppLifecycle, A3DRenderer, A3DScene, Geometry, PBRMaterial } from "@aura3d/engine/advanced-runtime";
 import { MockRenderDevice } from "@aura3d/rendering";
-import { RendererV9 } from "@aura3d/engine/rendering/advanced-runtime";
+import { AdvancedRenderer } from "@aura3d/engine/rendering/advanced-runtime";
 import { GLTFLoader, createRenderableScene } from "@aura3d/engine/assets/advanced-gallery";
 
-describe("V9 v9 public runtime", () => {
+describe("ThreejsParity threejsParity public runtime", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -40,7 +40,7 @@ describe("V9 v9 public runtime", () => {
     renderer.dispose();
   });
 
-  it("keeps resize, frame capture, and diagnostics on the public v9 renderer wrapper", async () => {
+  it("keeps resize, frame capture, and diagnostics on the public threejsParity renderer wrapper", async () => {
     const scene = new A3DScene();
     scene.createRenderableMesh({
       name: "capture-subject",
@@ -59,20 +59,20 @@ describe("V9 v9 public runtime", () => {
     renderer.dispose();
   });
 
-  it("exposes the rendering v9 facade over the tested renderer implementation", async () => {
-    const renderer = await RendererV9.create({ backend: "mock", width: 8, height: 8 });
+  it("exposes the rendering threejsParity facade over the tested renderer implementation", async () => {
+    const renderer = await AdvancedRenderer.create({ backend: "mock", width: 8, height: 8 });
     const diagnostics = renderer.render([{
       geometry: Geometry.litCube(0.5),
-      material: new PBRMaterial({ name: "renderer-v9-material" }),
-      label: "renderer-v9-cube"
+      material: new PBRMaterial({ name: "renderer-threejs-parity-material" }),
+      label: "renderer-threejs-parity-cube"
     }]);
 
     expect(diagnostics.drawCalls).toBe(1);
-    expect((renderer.device as MockRenderDevice).drawCommands[0]?.label).toBe("renderer-v9-cube");
+    expect((renderer.device as MockRenderDevice).drawCommands[0]?.label).toBe("renderer-threejs-parity-cube");
     renderer.dispose();
   });
 
-  it("exposes the assets v9 facade for GLTF loading and renderable scene creation", () => {
+  it("exposes the assets threejsParity facade for GLTF loading and renderable scene creation", () => {
     expect(GLTFLoader).toBeTypeOf("function");
     expect(createRenderableScene).toBeTypeOf("function");
   });
@@ -109,7 +109,7 @@ describe("V9 v9 public runtime", () => {
     });
   });
 
-  it("disposes v9 scene-owned geometry and material resources", () => {
+  it("disposes threejsParity scene-owned geometry and material resources", () => {
     const scene = new A3DScene();
     const geometry = Geometry.litCube(1);
     const material = new PBRMaterial({ name: "owned-material" });

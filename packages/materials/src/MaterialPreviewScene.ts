@@ -1,7 +1,7 @@
-import type { V5MaterialPreset } from "./MaterialPreset";
-import { listV5PbrMaterials } from "./PBRMaterialLibrary";
+import type { ThreeCompatMaterialPreset } from "./MaterialPreset";
+import { listThreeCompatPbrMaterials } from "./PBRMaterialLibrary";
 
-export interface V5MaterialPreviewTile {
+export interface ThreeCompatMaterialPreviewTile {
   readonly materialId: string;
   readonly label: string;
   readonly class: string;
@@ -10,7 +10,7 @@ export interface V5MaterialPreviewTile {
   readonly requiredChannels: readonly string[];
 }
 
-export function createV5MaterialPreviewTile(material: V5MaterialPreset): V5MaterialPreviewTile {
+export function createThreeCompatMaterialPreviewTile(material: ThreeCompatMaterialPreset): ThreeCompatMaterialPreviewTile {
   const previewGeometry =
     material.parameters.alphaMode === "mask" ? "foliage-card" :
     material.parameters.transmission ? "thin-glass" :
@@ -27,6 +27,6 @@ export function createV5MaterialPreviewTile(material: V5MaterialPreset): V5Mater
   };
 }
 
-export function createV5MaterialPreviewScene(): readonly V5MaterialPreviewTile[] {
-  return listV5PbrMaterials().map(createV5MaterialPreviewTile);
+export function createThreeCompatMaterialPreviewScene(): readonly ThreeCompatMaterialPreviewTile[] {
+  return listThreeCompatPbrMaterials().map(createThreeCompatMaterialPreviewTile);
 }

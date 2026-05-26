@@ -1878,7 +1878,7 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     const length = 0.28 + hash01(i * 43) * 0.46;
     const yaw = -0.24 + Math.sin(i * 0.31) * 0.32;
     pushPlanarLine(foamLines, [x, -0.09 + h, z], length, yaw);
-    (i % 9 === 0 ? brightFoamSlivers : foamSlivers).push({
+    (i % 6 === 0 ? brightFoamSlivers : foamSlivers).push({
       center: [x + Math.sin(i * 0.78) * 0.12, -0.068 + h, z + Math.cos(i * 0.51) * 0.12],
       length: length * 0.72,
       thickness: 0.018 + hash01(i * 67) * 0.018,
@@ -1888,7 +1888,7 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
       appendCueInstance(
         detailBatches,
         "cube",
-        i % 8 === 0 ? "white" : "transparentCyan",
+        i % 6 === 0 ? "white" : "transparentCyan",
         [x + Math.sin(i * 0.78) * 0.16, -0.075 + h, z + Math.cos(i * 0.51) * 0.18],
         [0.18 + hash01(i * 59) * 0.28, 0.008, 0.016 + hash01(i * 67) * 0.016],
         [0, -0.22 + Math.sin(i * 0.37 + time * 0.09) * 0.28, 0],
@@ -1905,7 +1905,7 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     const yaw = -0.18 + Math.sin(i * 0.23 + row) * 0.28;
     const length = 0.42 + hash01(i * 79) * 0.64;
     pushPlanarLine(foamLines, [x, -0.07 + h, z], length, yaw);
-    (i % 6 === 0 ? brightFoamSlivers : foamSlivers).push({
+    (i % 4 === 0 ? brightFoamSlivers : foamSlivers).push({
       center: [x + Math.cos(i * 0.31) * 0.1, -0.05 + h, z + Math.sin(i * 0.37) * 0.1],
       length: length * 0.68,
       thickness: 0.02 + hash01(i * 89) * 0.018,
@@ -1914,7 +1914,7 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     appendCueInstance(
       detailBatches,
       "cube",
-      i % 6 === 0 ? "white" : "transparentCyan",
+      i % 4 === 0 ? "white" : "transparentCyan",
       [x + Math.cos(i * 0.31) * 0.12, -0.058 + h, z + Math.sin(i * 0.37) * 0.12],
       [0.26 + hash01(i * 83) * 0.34, 0.008, 0.018 + hash01(i * 89) * 0.02],
       [0, yaw, 0],
@@ -1931,7 +1931,7 @@ function addOceanDetailOverlays(r: Resources, items: RenderItem[], time: number,
     const yaw = -0.08 + Math.sin(i * 0.29 + row * 0.37) * 0.18;
     const length = 0.2 + hash01(i * 101) * 0.4;
     pushPlanarLine(foamLines, [x, -0.052 + h, z], length, yaw);
-    (i % 14 === 0 ? brightFoamSlivers : foamSlivers).push({
+    (i % 10 === 0 ? brightFoamSlivers : foamSlivers).push({
       center: [x + Math.sin(i * 0.23) * 0.06, -0.048 + h, z + Math.cos(i * 0.19) * 0.06],
       length: length * 0.68,
       thickness: 0.012 + hash01(i * 103) * 0.014,

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { readV6PngStats } from "../production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../production-runtime-report-bridge/pngStats";
 
 const reportPath = resolve("tests/reports/production-runtime-hd-product-hero.json");
 const readinessPath = resolve("tests/reports/production-runtime-hd-product-hero-readiness.json");
@@ -15,7 +15,7 @@ const importedAsset = asObj(proof.importedAsset);
 const hdrPipeline = asObj(report.hdrPipeline);
 const screenshot = String(report.screenshot ?? "");
 const screenshotPath = resolve(screenshot || expectedScreenshot);
-const pixelStats = existsSync(screenshotPath) ? readV6PngStats(screenshotPath) : null;
+const pixelStats = existsSync(screenshotPath) ? readProductionPngStats(screenshotPath) : null;
 const fileSize = existsSync(screenshotPath) ? statSync(screenshotPath).size : 0;
 
 const checks = [
@@ -82,7 +82,7 @@ const checks = [
 ];
 
 const readiness = {
-  schema: "a3d-production-runtime-hd-product-hero-readiness/v1",
+  schema: "a3d-production-runtime-hd-product-hero-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   screenshot: expectedScreenshot,

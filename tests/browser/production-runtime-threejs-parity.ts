@@ -1,9 +1,9 @@
-import { loadV6GLTFRenderPipeline } from "/packages/assets/src/asset-corpus/V6GLTFRenderPipeline.js";
+import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
 import * as THREE from "/node_modules/three/build/three.module.js";
 import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
@@ -14,7 +14,7 @@ interface ParityScene {
   readonly category: "product" | "materials" | "asset" | "architecture" | "character" | "automotive";
   readonly assetId: string;
   readonly assetName: string;
-  readonly file: string;
+  readonly url: string;
   readonly yawRadians: number;
   readonly pitchRadians: number;
   readonly exposure: number;
@@ -34,23 +34,23 @@ interface ParityResult {
 }
 
 const scenes: readonly ParityScene[] = [
-  { id: "product-helmet", category: "product", assetId: "damaged-helmet", assetName: "Damaged Helmet", file: "damaged-helmet.glb", yawRadians: -0.38, pitchRadians: -0.16, exposure: 1.08 },
-  { id: "product-boombox", category: "product", assetId: "boom-box", assetName: "Boom Box", file: "boom-box.glb", yawRadians: -0.34, pitchRadians: -0.12, exposure: 1.1, frameBounds: { min: [-0.08, -0.045, -0.035], max: [0.08, 0.055, 0.035] } },
-  { id: "product-camera", category: "product", assetId: "antique-camera", assetName: "Antique Camera", file: "antique-camera.glb", yawRadians: -0.45, pitchRadians: -0.18, exposure: 1.12 },
-  { id: "materials-clearcoat", category: "materials", assetId: "clear-coat-test", assetName: "Clear Coat Test", file: "clear-coat-test.glb", yawRadians: -0.38, pitchRadians: -0.16, exposure: 1.12 },
-  { id: "materials-sheen", category: "materials", assetId: "sheen-test-grid", assetName: "Sheen Test Grid", file: "sheen-test-grid.glb", yawRadians: -0.4, pitchRadians: -0.14, exposure: 1.12 },
-  { id: "materials-specular", category: "materials", assetId: "specular-test", assetName: "Specular Test", file: "specular-test.glb", yawRadians: -0.35, pitchRadians: -0.14, exposure: 1.12 },
-  { id: "asset-duck", category: "asset", assetId: "duck", assetName: "Duck", file: "duck.glb", yawRadians: -0.28, pitchRadians: -0.1, exposure: 1.05 },
-  { id: "asset-avocado", category: "asset", assetId: "avocado", assetName: "Avocado", file: "avocado.glb", yawRadians: -0.35, pitchRadians: -0.12, exposure: 1.08 },
-  { id: "architecture-duck", category: "architecture", assetId: "duck", assetName: "Duck", file: "duck.glb", yawRadians: -0.55, pitchRadians: -0.2, exposure: 0.95 },
-  { id: "architecture-camera", category: "architecture", assetId: "antique-camera", assetName: "Antique Camera", file: "antique-camera.glb", yawRadians: -0.52, pitchRadians: -0.18, exposure: 1.0 },
-  { id: "character-cesium-man", category: "character", assetId: "cesium-man", assetName: "Cesium Man", file: "cesium-man.glb", yawRadians: -0.32, pitchRadians: -0.12, exposure: 1.05 },
-  { id: "automotive-milk-truck", category: "automotive", assetId: "cesium-milk-truck", assetName: "Cesium Milk Truck", file: "cesium-milk-truck.glb", yawRadians: -0.36, pitchRadians: -0.12, exposure: 1.05 }
+  { id: "product-helmet", category: "product", assetId: "damaged-helmet", assetName: "Damaged Helmet", url: "/fixtures/asset-corpus/damaged-helmet.glb", yawRadians: -0.38, pitchRadians: -0.16, exposure: 1.08 },
+  { id: "product-boombox", category: "product", assetId: "boom-box", assetName: "Boom Box", url: "/fixtures/asset-corpus/boom-box.glb", yawRadians: -0.34, pitchRadians: -0.12, exposure: 1.1, frameBounds: { min: [-0.08, -0.045, -0.035], max: [0.08, 0.055, 0.035] } },
+  { id: "product-camera", category: "product", assetId: "antique-camera", assetName: "Antique Camera", url: "/fixtures/asset-corpus/antique-camera.glb", yawRadians: -0.45, pitchRadians: -0.18, exposure: 1.12 },
+  { id: "materials-clearcoat", category: "materials", assetId: "clear-coat-test", assetName: "Clear Coat Test", url: "/fixtures/asset-corpus/clear-coat-test.glb", yawRadians: -0.38, pitchRadians: -0.16, exposure: 1.12 },
+  { id: "materials-sheen", category: "materials", assetId: "sheen-test-grid", assetName: "Sheen Test Grid", url: "/fixtures/asset-corpus/sheen-test-grid.glb", yawRadians: -0.4, pitchRadians: -0.14, exposure: 1.12 },
+  { id: "materials-transmission", category: "materials", assetId: "compare-transmission", assetName: "Compare Transmission", url: "/fixtures/threejs-parity/assets/materials/compare-transmission.glb", yawRadians: -0.35, pitchRadians: -0.14, exposure: 1.12 },
+  { id: "asset-duck", category: "asset", assetId: "duck", assetName: "Duck", url: "/fixtures/asset-corpus/duck.glb", yawRadians: -0.28, pitchRadians: -0.1, exposure: 1.05 },
+  { id: "asset-avocado", category: "asset", assetId: "avocado", assetName: "Avocado", url: "/fixtures/asset-corpus/avocado.glb", yawRadians: -0.35, pitchRadians: -0.12, exposure: 1.08 },
+  { id: "architecture-duck", category: "architecture", assetId: "duck", assetName: "Duck", url: "/fixtures/asset-corpus/duck.glb", yawRadians: -0.55, pitchRadians: -0.2, exposure: 0.95 },
+  { id: "architecture-camera", category: "architecture", assetId: "antique-camera", assetName: "Antique Camera", url: "/fixtures/asset-corpus/antique-camera.glb", yawRadians: -0.52, pitchRadians: -0.18, exposure: 1.0 },
+  { id: "character-robot", category: "character", assetId: "robot-expressive", assetName: "Robot Expressive", url: "/fixtures/threejs-parity/assets/character/robot-expressive.glb", yawRadians: -0.32, pitchRadians: -0.12, exposure: 1.05 },
+  { id: "automotive-concept-car", category: "automotive", assetId: "car-concept", assetName: "Car Concept", url: "/fixtures/threejs-parity/assets/vehicles/car-concept.glb", yawRadians: -0.36, pitchRadians: -0.12, exposure: 1.05 }
 ];
 
 declare global {
   interface Window {
-    __V6_THREEJS_PARITY__?: unknown;
+    __PRODUCTION_THREEJS_PARITY__?: unknown;
   }
 }
 
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   const root = document.getElementById("parity-root");
   if (!(root instanceof HTMLElement)) throw new Error("Missing parity root.");
   const hdr = await fetchBytes(`${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
     id: "studio-small-08",
     label: "Studio Small 08",
     intensity: 1.18,
@@ -78,7 +78,7 @@ async function run(): Promise<void> {
     const diff = renderDiff(a3dCanvas, threeCanvas, diffCanvas);
     results.push({ id: scene.id, category: scene.category, assetId: scene.assetId, a3d, threejs, diff });
   }
-  window.__V6_THREEJS_PARITY__ = {
+  window.__PRODUCTION_THREEJS_PARITY__ = {
     status: "ready",
     sceneCount: scenes.length,
     hdr: hdrPipeline.diagnostics,
@@ -86,10 +86,10 @@ async function run(): Promise<void> {
   };
 }
 
-async function renderA3D(scene: ParityScene, canvas: HTMLCanvasElement, hdrPipeline: ReturnType<typeof createV6PbrHdrPipelineFromRadiance>): Promise<ParityResult["a3d"]> {
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
-  const pipeline = await loadV6GLTFRenderPipeline({
-    url: `${location.origin}/fixtures/asset-corpus/${scene.file}`,
+async function renderA3D(scene: ParityScene, canvas: HTMLCanvasElement, hdrPipeline: ReturnType<typeof createProductionPbrHdrPipelineFromRadiance>): Promise<ParityResult["a3d"]> {
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
+  const pipeline = await loadProductionGLTFRenderPipeline({
+    url: `${location.origin}${scene.url}`,
     assetId: scene.assetId,
     assetName: scene.assetName,
     width: canvas.width,
@@ -136,7 +136,7 @@ async function renderA3D(scene: ParityScene, canvas: HTMLCanvasElement, hdrPipel
     }
   });
   canvas.dataset.captureDataUrl = pixelsToDataUrl(readCanvasWebGLPixels(canvas), canvas.width, canvas.height, true);
-  const summary = summarizeV6WebGL2Proof(proof);
+  const summary = summarizeProductionWebGL2Proof(proof);
   return {
     drawCalls: proof.diagnostics.drawCalls,
     nonBlackPixels: proof.pixels.nonBlackPixels,
@@ -162,7 +162,7 @@ async function renderThree(scene: ParityScene, canvas: HTMLCanvasElement, enviro
   key.position.set(3.5, 4.2, 2.8);
   threeScene.add(key);
   const gltf = await new Promise<{ scene: THREE.Object3D }>((resolve, reject) => {
-    new GLTFLoader().load(`${location.origin}/fixtures/asset-corpus/${scene.file}`, resolve, undefined, reject);
+    new GLTFLoader().load(`${location.origin}${scene.url}`, resolve, undefined, reject);
   });
   const model = gltf.scene;
   frameThreeObject(model);
@@ -314,7 +314,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_THREEJS_PARITY__ = {
+  window.__PRODUCTION_THREEJS_PARITY__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

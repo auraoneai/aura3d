@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-postprocess-suite-browser.json";
 
-test.describe("V4 postprocess suite browser evidence", () => {
+test.describe("ExternalParity postprocess suite browser evidence", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -17,7 +17,7 @@ test.describe("V4 postprocess suite browser evidence", () => {
     await server.close();
   });
 
-  test("proves postprocess lab output plus V4 bloom/SSAO/DOF/color-grade APIs", async ({ page }) => {
+  test("proves postprocess lab output plus ExternalParity bloom/SSAO/DOF/color-grade APIs", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(() => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready", undefined, { timeout: 30_000 });
@@ -26,7 +26,7 @@ test.describe("V4 postprocess suite browser evidence", () => {
     await page.locator("[data-testid='postprocess-lab-canvas']").screenshot({ path: screenshotPath });
 
     const state = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
-    const v4Postprocess = await page.evaluate(async () => {
+    const externalParityPostprocess = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
       const width = 4;
       const height = 4;
@@ -37,11 +37,11 @@ test.describe("V4 postprocess suite browser evidence", () => {
         pixels[i + 2] = i % 24 === 0 ? 180 : 130;
         pixels[i + 3] = 255;
       }
-      const bloom = rendering.runV4Bloom(pixels, width, height, { threshold: 0.55, intensity: 0.55, radius: 1 });
-      const bloomEvidence = rendering.createV4BloomEvidence(bloom);
-      const ssao = rendering.runV4SSAO(pixels, width, height, { radius: 2, intensity: 0.5 });
-      const dof = rendering.runV4DepthOfField(pixels, width, height, { focusDepth: 0.35, focusRange: 0.08, maxRadius: 2 });
-      const colorGrade = rendering.runV4ColorGrade(pixels, width, height, "catalog-hero");
+      const bloom = rendering.runExternalParityBloom(pixels, width, height, { threshold: 0.55, intensity: 0.55, radius: 1 });
+      const bloomEvidence = rendering.createExternalParityBloomEvidence(bloom);
+      const ssao = rendering.runExternalParitySSAO(pixels, width, height, { radius: 2, intensity: 0.5 });
+      const dof = rendering.runExternalParityDepthOfField(pixels, width, height, { focusDepth: 0.35, focusRange: 0.08, maxRadius: 2 });
+      const colorGrade = rendering.runExternalParityColorGrade(pixels, width, height, "catalog-hero");
       return {
         bloomEvidence,
         ssao: { occludedPixels: ssao.occludedPixels, averageOcclusion: ssao.averageOcclusion },
@@ -52,26 +52,26 @@ test.describe("V4 postprocess suite browser evidence", () => {
     const report = {
       ok: errors.length === 0 &&
         state?.status === "ready" &&
-        v4Postprocess.bloomEvidence.changedPixels > 0 &&
-        v4Postprocess.ssao.occludedPixels > 0 &&
-        v4Postprocess.dof.blurredPixels > 0 &&
-        v4Postprocess.colorGrade.changedPixels > 0,
+        externalParityPostprocess.bloomEvidence.changedPixels > 0 &&
+        externalParityPostprocess.ssao.occludedPixels > 0 &&
+        externalParityPostprocess.dof.blurredPixels > 0 &&
+        externalParityPostprocess.colorGrade.changedPixels > 0,
       generatedAt: new Date().toISOString(),
       screenshotPath,
-      productBoundary: "Postprocess evidence for V4 Milestone 5 only. Flagship scenes still require off/on screenshots and Three.js comparison context.",
+      productBoundary: "Postprocess evidence for ExternalParity Milestone 5 only. Flagship scenes still require off/on screenshots and Three.js comparison context.",
       errors,
       state,
-      v4Postprocess
+      externalParityPostprocess
     };
     mkdirSync(join(process.cwd(), "tests/reports"), { recursive: true });
     writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
 
     expect(errors).toEqual([]);
     expect(state?.status).toBe("ready");
-    expect(v4Postprocess.bloomEvidence.changedPixels).toBeGreaterThan(0);
-    expect(v4Postprocess.ssao.occludedPixels).toBeGreaterThan(0);
-    expect(v4Postprocess.dof.blurredPixels).toBeGreaterThan(0);
-    expect(v4Postprocess.colorGrade.changedPixels).toBeGreaterThan(0);
+    expect(externalParityPostprocess.bloomEvidence.changedPixels).toBeGreaterThan(0);
+    expect(externalParityPostprocess.ssao.occludedPixels).toBeGreaterThan(0);
+    expect(externalParityPostprocess.dof.blurredPixels).toBeGreaterThan(0);
+    expect(externalParityPostprocess.colorGrade.changedPixels).toBeGreaterThan(0);
   });
 });
 

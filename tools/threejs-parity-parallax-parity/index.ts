@@ -18,17 +18,17 @@ import { ParallaxBarrierEffect } from "/node_modules/three/examples/jsm/effects/
 
 declare global {
   interface Window {
-    __V9_PARALLAX_PARITY__?: V9ParallaxParityResult;
+    __THREEJS_PARITY_PARALLAX_PARITY__?: ThreeJsParityParallaxParityResult;
   }
 }
 
 export {};
 
-type V9ParallaxParityResult = V9ParallaxParityReady | V9ParallaxParityError;
+type ThreeJsParityParallaxParityResult = ThreeJsParityParallaxParityReady | ThreeJsParityParallaxParityError;
 
-interface V9ParallaxParityReady {
+interface ThreeJsParityParallaxParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-parallax-parity/v1";
+  readonly schema: "a3d-threejs-parity-parallax-parity";
   readonly purpose: "same-scene A3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -60,9 +60,9 @@ interface V9ParallaxParityReady {
   readonly humanNotes: readonly string[];
 }
 
-interface V9ParallaxParityError {
+interface ThreeJsParityParallaxParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-parallax-parity/v1";
+  readonly schema: "a3d-threejs-parity-parallax-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -96,7 +96,7 @@ interface BarrierResources {
 }
 
 const SCENE = {
-  id: "v9-parallax-barrier",
+  id: "threejs-parity-parallax-barrier",
   width: 640,
   height: 480,
   frameBounds: { min: [-1.75, -0.92, -1.55], max: [1.75, 1.55, 1.55] } as CameraFrameBounds,
@@ -123,9 +123,9 @@ async function run(): Promise<void> {
     const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
     const diff = computeDiff(a3dPixels, threePixels);
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
-    const ready: V9ParallaxParityReady = {
+    const ready: ThreeJsParityParallaxParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-parallax-parity/v1",
+      schema: "a3d-threejs-parity-parallax-parity",
       purpose: "same-scene A3D row-interleaved parallax barrier vs Three.js ParallaxBarrierEffect baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -177,19 +177,19 @@ async function run(): Promise<void> {
         "This artifact proves the A3D compositor uses the same row axis and strip pitch on a bounded same-scene workload. It is not a blanket visual equality claim."
       ]
     };
-    window.__V9_PARALLAX_PARITY__ = ready;
+    window.__THREEJS_PARITY_PARALLAX_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
-    const failure: V9ParallaxParityError = {
+    const failure: ThreeJsParityParallaxParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-parallax-parity/v1",
+      schema: "a3d-threejs-parity-parallax-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
       expectedReferenceEffect: "ParallaxBarrierEffect"
     };
-    window.__V9_PARALLAX_PARITY__ = failure;
+    window.__THREEJS_PARITY_PARALLAX_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -502,7 +502,7 @@ async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   return image;
 }
 
-function stripDataUrls(result: V9ParallaxParityReady): Omit<V9ParallaxParityReady, "dataUrls"> {
+function stripDataUrls(result: ThreeJsParityParallaxParityReady): Omit<ThreeJsParityParallaxParityReady, "dataUrls"> {
   const { dataUrls: _dataUrls, ...rest } = result;
   return rest;
 }

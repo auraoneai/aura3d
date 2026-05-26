@@ -17,11 +17,11 @@ const source = 'import * as THREE from "three"; import { OrbitControls } from "t
 const result = migrateThreeToA3D(source);
 const checks = [
   { name: "required-files-present", pass: requiredFiles.every((file) => existsSync(resolve(file))), detail: requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all migration files exist" },
-  { name: "rewrites", pass: result.rewrittenImports >= 3 && result.code.includes("createRendererV5") && result.code.includes("renderer.resize"), detail: result.code },
+  { name: "rewrites", pass: result.rewrittenImports >= 3 && result.code.includes("createThreeCompatRenderer") && result.code.includes("renderer.resize"), detail: result.code },
   { name: "warnings", pass: result.warnings.length >= 3, detail: result.warnings.map((warning) => warning.code).join(", ") }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "a3d-three-compat-migration-readiness/v1", generatedAt: new Date().toISOString(), pass, result, checks };
+const report = { schema: "a3d-three-compat-migration-readiness", generatedAt: new Date().toISOString(), pass, result, checks };
 const reportPath = resolve("tests/reports/three-compat-migration-readiness.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
@@ -29,4 +29,4 @@ if (!pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 migration readiness passed: ${result.rewrittenImports} import groups rewritten.`);
+console.log(`Three.js compatibility migration readiness passed: ${result.rewrittenImports} import groups rewritten.`);

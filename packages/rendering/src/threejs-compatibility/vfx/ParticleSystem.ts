@@ -1,12 +1,12 @@
-export interface V5Particle {
+export interface ThreeCompatParticle {
   readonly x: number;
   readonly y: number;
   readonly z: number;
   readonly life: number;
 }
 
-export class ParticleSystemV5 {
-  readonly particles: V5Particle[] = [];
+export class ParticleSystemThreeCompat {
+  readonly particles: ThreeCompatParticle[] = [];
 
   emit(count: number): void {
     for (let index = 0; index < count; index++) {

@@ -57,7 +57,7 @@ const displayStats = [
 const knownLimits = [
   "This is a combined bounded WebGL2 proof scene, not a flagship production visual demo.",
   "It uses generated and inline assets for subsystem evidence and does not prove broad Three.js superiority.",
-  "Unity/Unreal-style authoring, production asset workflows, and full renderer parity remain gated elsewhere in v3 docs.",
+  "Unity/Unreal-style authoring, production asset workflows, and full renderer parity remain gated elsewhere in foundation docs.",
 ] as const;
 
 if (typeof document !== "undefined") {

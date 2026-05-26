@@ -24,5 +24,5 @@ window.__A3D_TEMPLATE_PRODUCT_VIEWER__ = {
   diagnosticsPanel: panel.snapshot(),
   quality: diagnostics.quality.preset,
   drawCalls: render?.drawCalls ?? 0,
-  claimBoundary: "Installable template proof for V4 Milestone 14. Same-scene Three.js parity remains required."
+  claimBoundary: "Installable template proof for ExternalParity Milestone 14. Same-scene Three.js parity remains required."
 };

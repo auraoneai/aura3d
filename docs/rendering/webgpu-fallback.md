@@ -1,60 +1,38 @@
 # WebGPU Fallback Behavior
 
-Aura3D treats WebGPU as an explicit backend request. It does not silently replace a failed WebGPU request with WebGL2, the mock backend, or CPU-only rendering.
+Version: `1.0.0`
 
-## Unavailable Runtime
+Aura3D has WebGPU device code and WebGPU app routes, but browser/device availability remains conditional.
 
-When browser code calls `createRenderDevice({ backend: "webgpu" })` and the page has no usable `navigator.gpu`, backend creation fails with `RenderDeviceError` code `WEBGPU_RUNTIME_MISSING`.
+## Current Code
 
-Application code should catch that error and choose its own fallback policy. A typical browser app can then request a WebGL2 renderer with a canvas:
+- `packages/rendering/src/WebGPUDevice.ts`
+- `packages/rendering/src/WebGPURenderToTextureProof.ts`
+- `apps/webgpu-rtt/`
+- `apps/webgpu-compute/`
+- `apps/webgpu-materials/`
+- `apps/webgpu-instance-uniform/`
+- `apps/webgpu-lab/`
 
-```ts
-import { createRenderDevice } from "@aura3d/rendering";
+## Current Behavior
 
-async function createPreferredDevice(canvas: HTMLCanvasElement) {
-  try {
-    return await createRenderDevice({ backend: "webgpu", canvas });
-  } catch (error) {
-    if ((error as { code?: string }).code !== "WEBGPU_RUNTIME_MISSING") {
-      throw error;
-    }
-    return createRenderDevice({ backend: "webgl2", canvas });
-  }
-}
+- WebGPU helpers probe `navigator.gpu` when browser support exists.
+- Aura3D does not silently replace a failed WebGPU request with a success claim; the failure must surface as an explicit diagnostic.
+- Expected diagnostic codes include `WEBGPU_RUNTIME_MISSING`, `WEBGPU_ADAPTER_MISSING`, `WEBGPU_DEVICE_REQUEST_FAILED`, `WEBGPU_CANVAS_CONTEXT_MISSING`, and `WEBGPU_CANVAS_CONTEXT_INVALID`.
+- Routes should publish explicit unavailable/unsupported diagnostics instead of pretending hardware support.
+- WebGL2 remains the primary broadly available route backend in this repository.
+
+## Verification
+
+Useful focused checks:
+
+```sh
+pnpm exec vitest run tests/unit/rendering/webgpu-render-to-texture-proof.test.ts tests/unit/rendering/production-runtime-webgpu-renderer.test.ts
+pnpm exec playwright test tests/browser/production-runtime-webgpu-capability.spec.ts tests/browser/rendering-webgpu.spec.ts
 ```
 
-The fallback is intentionally app-owned so product code can show user-facing copy, collect diagnostics, or disable WebGPU-only features before choosing WebGL2.
+## Boundaries
 
-## Missing Adapter
+Do not document full WebGPU parity across browsers and GPUs. The current supported claim is route and device-probe evidence for named WebGPU workflows.
 
-If a browser exposes `navigator.gpu` but `requestAdapter()` returns `null`, backend creation fails with `RenderDeviceError` code `WEBGPU_ADAPTER_MISSING`.
-
-Common causes include unsupported hardware, blocked GPU access, browser flags, enterprise policy, remote desktop sessions, or power-saving adapter selection. Apps should treat this as a capability failure, not as a successful WebGPU initialization.
-
-## Failed Device Request
-
-If an adapter exists but `requestDevice()` rejects, backend creation fails with `RenderDeviceError` code `WEBGPU_DEVICE_REQUEST_FAILED`. The error details include the adapter description and rejection reason when available.
-
-## Unsupported Canvas Presentation
-
-WebGPU device creation can succeed without canvas presentation. If a canvas is supplied but cannot provide a usable `webgpu` context, creation fails with either `WEBGPU_CANVAS_CONTEXT_MISSING` or `WEBGPU_CANVAS_CONTEXT_INVALID`.
-
-## Current Repo Status
-
-The current repo has WebGPU coverage in three forms:
-
-- low-level `WebGPUDevice` and render-to-texture/readback tests;
-- production-runtime WebGPU readiness and app-suite routes;
-- v8 route evidence for WebGPU RTT, materials, instance-uniform submission, and compute particles.
-
-The v8 route registry and visual review include WebGPU app surfaces, but those are still evidence routes. They are not a claim that the full renderer is better than Three.js WebGPU across browsers and GPUs.
-
-## Claim Boundary
-
-Allowed: "WebGPU is an explicit backend with bounded render-target, material, instancing, compute, fallback, and route evidence."
-
-Not allowed: "full WebGPU support", "automatic WebGPU/WebGL2 parity", or "better than Three.js WebGPU" unless broader hardware, visual, feature, and performance reports exist for the specific claim.
-
-Full public WebGPU claims still require broader production-renderer feature coverage, broader browser/OS/GPU coverage, performance comparisons, fallback evidence, and a passing broad-parity gate.
-
-This document does not claim full real-hardware WebGPU support.
+This does not claim full real-hardware WebGPU support.

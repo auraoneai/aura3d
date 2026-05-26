@@ -2,7 +2,7 @@ import { Renderer, createCanonicalProductSceneRenderKit } from "@aura3d/renderin
 
 declare global {
   interface Window {
-    __A3D_RENDERING_SHOWCASE_V1__?: ExampleState;
+    __A3D_RENDERING_SHOWCASE_LEGACY__?: ExampleState;
   }
 }
 
@@ -31,14 +31,14 @@ async function boot(): Promise<void> {
       preserveDrawingBuffer: true
     });
     const diagnostics = renderer.renderScene(kit.source);
-    window.__A3D_RENDERING_SHOWCASE_V1__ = {
+    window.__A3D_RENDERING_SHOWCASE_LEGACY__ = {
       status: "ready",
       diagnostics,
       shadowEnabled: typeof kit.source.shadow === "object" && kit.source.shadow.enabled === true,
       postprocessEnabled: Boolean(kit.source.postprocess)
     };
   } catch (error) {
-    window.__A3D_RENDERING_SHOWCASE_V1__ = {
+    window.__A3D_RENDERING_SHOWCASE_LEGACY__ = {
       status: "error",
       shadowEnabled: false,
       postprocessEnabled: false,

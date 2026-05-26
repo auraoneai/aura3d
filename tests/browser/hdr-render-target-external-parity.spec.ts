@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-hdr-render-target-browser.json";
 
-test.describe("V4 HDR render target browser evidence", () => {
+test.describe("ExternalParity HDR render target browser evidence", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 

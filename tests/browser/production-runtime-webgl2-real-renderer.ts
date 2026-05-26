@@ -2,28 +2,28 @@ import { GLTFLoader } from "/packages/assets/src/GLTFLoader.js";
 import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
   ProductionWebGL2Renderer,
-  summarizeV6WebGL2Proof
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
-import { createV6ComposedProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
+import { createProductionComposedProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
   interface Window {
-    __V6_WEBGL2__?: unknown;
+    __PRODUCTION_WEBGL2__?: unknown;
   }
 }
 
 async function run(): Promise<void> {
   const canvas = document.getElementById("production-runtime-webgl2");
   if (!(canvas instanceof HTMLCanvasElement)) {
-    throw new Error("V6 WebGL2 harness canvas is missing.");
+    throw new Error("Production WebGL2 harness canvas is missing.");
   }
 
   const hdrUri = `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`;
   const hdr = await fetchBytes(hdrUri);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
     id: "studio-small-08",
     label: "Studio Small 08",
     intensity: 1.75,
@@ -31,7 +31,7 @@ async function run(): Promise<void> {
     rotation: -0.18,
     toneMapping: { operator: "filmic", exposure: 1.16, whitePoint: 9.6 }
   });
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const assets = await Promise.all([
     loadSceneAsset("damaged-helmet", "damaged-helmet.glb", "Damaged Helmet", canvas, lighting.lighting),
     loadSceneAsset("boom-box", "boom-box.glb", "Boom Box", canvas, lighting.lighting),
@@ -44,7 +44,7 @@ async function run(): Promise<void> {
     preserveDrawingBuffer: true,
     clearColor: [0.015, 0.018, 0.024, 1]
   });
-  const staged = createV6ComposedProductionStageScene(assets.map((asset) => asset.pipeline), {
+  const staged = createProductionComposedProductionStageScene(assets.map((asset) => asset.pipeline), {
     width: canvas.width,
     height: canvas.height
   }, {
@@ -106,11 +106,11 @@ async function run(): Promise<void> {
     }
   });
 
-  window.__V6_WEBGL2__ = {
+  window.__PRODUCTION_WEBGL2__ = {
     status: "ready",
     assetIds: assets.map((asset) => asset.id),
     proof,
-    summary: summarizeV6WebGL2Proof(proof)
+    summary: summarizeProductionWebGL2Proof(proof)
   };
 }
 
@@ -119,7 +119,7 @@ async function loadSceneAsset(
   file: string,
   label: string,
   canvas: HTMLCanvasElement,
-  environmentLighting: NonNullable<Parameters<typeof createV6ComposedProductionStageScene>[2]["environmentLighting"]>
+  environmentLighting: NonNullable<Parameters<typeof createProductionComposedProductionStageScene>[2]["environmentLighting"]>
 ) {
   const assetUri = `${location.origin}/fixtures/asset-corpus/${file}`;
   const asset = await new GLTFLoader().load({ url: assetUri }, new LoadContext());
@@ -150,7 +150,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_WEBGL2__ = {
+  window.__PRODUCTION_WEBGL2__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

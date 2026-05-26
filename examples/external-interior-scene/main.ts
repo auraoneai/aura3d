@@ -1,3 +1,3 @@
-import { mountInteriorSceneV4 } from "./InteriorSceneV4";
+import { mountExternalInteriorScene } from "./ExternalInteriorScene";
 
-void mountInteriorSceneV4("external-interior-scene");
+void mountExternalInteriorScene("external-interior-scene");

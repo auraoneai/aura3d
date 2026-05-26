@@ -1,7 +1,7 @@
-import type { V6AppSceneDefinition } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppSceneDefinition } from "../../common/src/runtime";
 import { assets } from "./assets";
 
-export const scene: V6AppSceneDefinition = {
+export const scene: ProductionAppSceneDefinition = {
   appId: "webgpu-lab",
   sceneId: "webgpu-lab",
   title: "WebGPU Lab",

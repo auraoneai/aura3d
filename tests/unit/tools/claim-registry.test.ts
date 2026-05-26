@@ -6,8 +6,8 @@ import { validateClaimRegistry, writeClaimRegistryReport } from "../../../tools/
 
 function fixtureRoot(): string {
   const root = mkdtempSync(join(tmpdir(), "a3d-claims-"));
-  mkdirSync(join(root, "docs", "v2"), { recursive: true });
-  writeFileSync(join(root, "docs", "v2", "claim-registry.md"), registry());
+  mkdirSync(join(root, "docs", "project"), { recursive: true });
+  writeFileSync(join(root, "docs", "project", "product-studio-claim-registry.md"), registry());
   return root;
 }
 
@@ -35,8 +35,7 @@ function registry(evidence = "Existing package surface and internal tests."): st
 describe("claim registry verifier", () => {
   it("allows scoped known-limits language while scanning public docs", () => {
     const root = fixtureRoot();
-    mkdirSync(join(root, "docs"), { recursive: true });
-    writeFileSync(join(root, "docs", "known-limits.md"), "No better than Three.js or production-ready claim is currently supported.\n");
+    writeFileSync(join(root, "docs", "project", "known-limits.md"), "No better than Three.js or production-ready claim is currently supported.\n");
 
     const report = validateClaimRegistry(root);
 
@@ -68,7 +67,7 @@ describe("claim registry verifier", () => {
   it("does not scan release-artifacts as top-level release claim documents", () => {
     const root = fixtureRoot();
     mkdirSync(join(root, "release-artifacts", "external-parity-external-evidence-handoff", "docs", "project"), { recursive: true });
-    writeFileSync(join(root, "release-artifacts", "external-parity-external-evidence-handoff", "docs/project/v4-parity-execution-prompt.md"), "Unity/Unreal replacement remains blocked.\n");
+    writeFileSync(join(root, "release-artifacts", "external-parity-external-evidence-handoff", "docs/project/verification-evidence.md"), "Unity/Unreal replacement remains blocked.\n");
     writeFileSync(join(root, "release-artifacts", "codingrelated-completion-audit.md"), "Full WebGPU support is not achieved.\n");
     writeFileSync(join(root, "RELEASE-NOTES.md"), "No production-ready claim is currently supported.\n");
 
@@ -81,7 +80,7 @@ describe("claim registry verifier", () => {
 
   it("reports missing evidence paths required by allowed registered claims", () => {
     const root = fixtureRoot();
-    writeFileSync(join(root, "docs", "v2", "claim-registry.md"), registry("`tests/reports/missing-claim-evidence.json`"));
+    writeFileSync(join(root, "docs", "project", "product-studio-claim-registry.md"), registry("`tests/reports/missing-claim-evidence.json`"));
 
     const report = validateClaimRegistry(root);
 
@@ -89,7 +88,7 @@ describe("claim registry verifier", () => {
     expect(report.violations).toEqual([
       expect.objectContaining({
         kind: "missing-evidence",
-        path: "docs/project/v2-claim-registry.md",
+        path: "docs/project/product-studio-claim-registry.md",
         claim: "Aura3D is an experimental TypeScript web 3D engine prototype."
       })
     ]);
@@ -97,7 +96,7 @@ describe("claim registry verifier", () => {
 
   it("rejects stale or mismatched JSON evidence for a release run", () => {
     const root = fixtureRoot();
-    writeFileSync(join(root, "docs", "v2", "claim-registry.md"), registry("`tests/reports/claim-evidence.json`"));
+    writeFileSync(join(root, "docs", "project", "product-studio-claim-registry.md"), registry("`tests/reports/claim-evidence.json`"));
     mkdirSync(join(root, "tests", "reports"), { recursive: true });
     writeFileSync(join(root, "tests", "reports", "claim-evidence.json"), JSON.stringify({
       generatedAt: "2026-01-01T00:00:00.000Z",

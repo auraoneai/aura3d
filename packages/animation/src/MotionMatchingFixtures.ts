@@ -39,7 +39,7 @@ export interface MotionMatchingCandidateScore {
 }
 
 export interface MotionMatchingFixtureSample {
-  readonly id: "v4-old-branch-motion-matching-fixture";
+  readonly id: "external-parity-old-branch-motion-matching-fixture";
   readonly source: "origin-master-motion-matching-system-adapted";
   readonly databasePoseCount: number;
   readonly candidateScores: readonly MotionMatchingCandidateScore[];
@@ -91,7 +91,7 @@ export function sampleMotionMatchingFixture(options: MotionMatchingFixtureOption
   const transitionDurationSeconds = 0.18;
   const blendWeight = transitioned ? clamp(elapsedSeconds / transitionDurationSeconds, 0, 1) : 1;
   return {
-    id: "v4-old-branch-motion-matching-fixture",
+    id: "external-parity-old-branch-motion-matching-fixture",
     source: "origin-master-motion-matching-system-adapted",
     databasePoseCount: database.length,
     candidateScores: scored.slice(0, 6),

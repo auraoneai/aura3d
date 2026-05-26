@@ -6,13 +6,13 @@ import {
   UnlitMaterial,
   createProceduralTexture,
   createProceduralTextureFixture,
-  createV4EnvironmentLighting,
-  createV4FlagshipRenderPresetEvidence,
-  sampleV4LdrPostprocessReadback,
+  createExternalParityEnvironmentLighting,
+  createExternalParityFlagshipRenderPresetEvidence,
+  sampleExternalParityLdrPostprocessReadback,
   type RenderDeviceDiagnostics,
   type RenderItem,
-  type V4LdrPostprocessSummary,
-  type V4RenderPresetEvidence
+  type ExternalParityLdrPostprocessSummary,
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 import { sampleArcadeVehicleDynamics, samplePacejkaTireForces, sampleRacingAiDriver, sampleVehicleDamage, sampleVehicleDrivetrain, sampleVehicleEffectEmitters } from "@aura3d/physics";
 import { Scene, type PerspectiveCamera } from "@aura3d/scene";
@@ -28,8 +28,8 @@ type RacingShowcaseState = {
   readonly featureEvidence: Record<string, number | string | boolean>;
   readonly metrics: Record<string, number | string | boolean>;
   readonly textureFixtures: readonly { readonly id: string; readonly hash: string; readonly semantic: string }[];
-  readonly v4RenderPreset?: V4RenderPresetEvidence;
-  readonly postprocess?: V4LdrPostprocessSummary;
+  readonly externalParityRenderPreset?: ExternalParityRenderPresetEvidence;
+  readonly postprocess?: ExternalParityLdrPostprocessSummary;
   readonly errors: readonly string[];
   readonly error?: string;
 };
@@ -41,11 +41,11 @@ declare global {
 }
 
 const screenshotPath = "tests/reports/external-parity-example-screenshots/racing-showcase.png" as const;
-const claimBoundary = "V4 racing showcase evidence is limited to a deterministic procedural car, generated track, seeded texture fixtures, browser screenshot checks, and bounded race telemetry; full racing-game, vehicle-simulation, Unity, or Unreal parity is not claimed.";
+const claimBoundary = "ExternalParity racing showcase evidence is limited to a deterministic procedural car, generated track, seeded texture fixtures, browser screenshot checks, and bounded race telemetry; full racing-game, vehicle-simulation, Unity, or Unreal parity is not claimed.";
 const knownLimits = [
   "The car, track, and HUD are deterministic local showcase assets, not imported production vehicle content.",
   "Vehicle motion and race management are bounded deterministic browser telemetry, not a full tire, suspension, drivetrain, or collision simulation.",
-  "The scene is intended to improve V4 browser visual evidence while broad engine parity claims remain blocked."
+  "The scene is intended to improve ExternalParity browser visual evidence while broad engine parity claims remain blocked."
 ] as const;
 
 if (typeof document !== "undefined") {
@@ -145,15 +145,15 @@ async function run(): Promise<void> {
     const diagnostics = renderer.render({
       scene,
       renderItems,
-      environmentLighting: createV4EnvironmentLighting("daylight").lighting
+      environmentLighting: createExternalParityEnvironmentLighting("daylight").lighting
     });
-    const postprocess = sampleV4LdrPostprocessReadback({
+    const postprocess = sampleExternalParityLdrPostprocessReadback({
       device: renderer.device,
       framebufferWidth: canvas.width,
       framebufferHeight: canvas.height,
       exposure: 1.08
     });
-    const v4RenderPreset = createV4FlagshipRenderPresetEvidence({
+    const externalParityRenderPreset = createExternalParityFlagshipRenderPresetEvidence({
       exampleId: "racing-showcase",
       screenshotPath,
       exposure: postprocess.exposure,
@@ -165,7 +165,7 @@ async function run(): Promise<void> {
     window.__AURA3D_RACING_SHOWCASE__ = {
       status: "ready",
       renderer: "webgl2",
-      visualClaim: "Bounded V4 procedural racing showcase with a current-engine textured sports car, generated track, HUD telemetry, and screenshot evidence.",
+      visualClaim: "Bounded ExternalParity procedural racing showcase with a current-engine textured sports car, generated track, HUD telemetry, and screenshot evidence.",
       screenshotPath,
       claimBoundary,
       knownLimits,
@@ -271,7 +271,7 @@ async function run(): Promise<void> {
         racingAiRubberbandBoost: telemetry.racingAiRubberbandBoost
       },
       textureFixtures,
-      v4RenderPreset,
+      externalParityRenderPreset,
       postprocess,
       errors: []
     };

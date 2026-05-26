@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { baseReport, blockedV4Claims, listFiles, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, blockedExternalParityClaims, listFiles, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4ClaimOccurrence {
+export interface ExternalParityClaimOccurrence {
   readonly path: string;
   readonly line: number;
   readonly claim: string;
@@ -22,7 +22,7 @@ const claimPatterns = [
 
 const scopedPattern = /\b(no|not|never|without|unsupported|blocked|disallowed|must not|do not|not yet|cannot|can't|does not|future|before|until|unless|lacks?|remain|limited|unclaimed|bounded|claim|language|target|workflow|equivalent|absence|failure|still disallowed|not true|outside|exclusions?|allowed claim|required|gate)\b/i;
 
-export function validateV4ClaimGates(root = process.cwd()) {
+export function validateExternalParityClaimGates(root = process.cwd()) {
   const scannedFiles = listFiles(root, [
     "README.md",
     "package.json",
@@ -38,11 +38,11 @@ export function validateV4ClaimGates(root = process.cwd()) {
     "tools/external-parity-current-capability",
     "tools/external-parity-benchmarks",
   ], [".md", ".ts", "package.json"]);
-  const scopedOccurrences: V4ClaimOccurrence[] = [];
-  const blockedOccurrences: V4ClaimOccurrence[] = [];
+  const scopedOccurrences: ExternalParityClaimOccurrence[] = [];
+  const blockedOccurrences: ExternalParityClaimOccurrence[] = [];
 
   for (const path of scannedFiles) {
-    if (path.startsWith("docs/project/v2-") || path.startsWith("docs/project/v3-")) continue;
+    if (path.startsWith("docs/project/product-studio-")) continue;
     const text = readFileSync(`${root}/${path}`, "utf8");
     const lines = text.split(/\r?\n/);
     for (let index = 0; index < lines.length; index += 1) {
@@ -64,7 +64,7 @@ export function validateV4ClaimGates(root = process.cwd()) {
   }
 
   const violations = blockedOccurrences.map((occurrence) =>
-    `${occurrence.path}:${occurrence.line} contains unscoped disallowed v4 claim language: ${occurrence.claim}`,
+    `${occurrence.path}:${occurrence.line} contains unscoped disallowed external-parity claim language: ${occurrence.claim}`,
   );
   const report = {
     ...baseReport(root, {
@@ -72,7 +72,7 @@ export function validateV4ClaimGates(root = process.cwd()) {
       command: "pnpm verify:external-parity-code",
       runIdPrefix: "external-parity-claim-gates",
       sourceFiles: scannedFiles,
-      blockedClaims: blockedV4Claims,
+      blockedClaims: blockedExternalParityClaims,
       violations,
     }),
     scannedFiles,
@@ -84,7 +84,7 @@ export function validateV4ClaimGates(root = process.cwd()) {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = validateV4ClaimGates();
+  const report = validateExternalParityClaimGates();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

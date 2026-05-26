@@ -25,7 +25,7 @@ import {
   getAuthoredAssetCandidate
 } from "../../../apps/advanced-examples-gallery/src/authoredAssets";
 
-describe("v9 product configurator policy", () => {
+describe("threejsParity product configurator policy", () => {
   it("keeps original Product GLB corrections texture-preserving and out of generated fixture paths", () => {
     const authoredLayerSource = readFileSync("apps/advanced-examples-gallery/src/authoredLayer.ts", "utf8");
     const authoredLayerPolicySource = readFileSync("apps/advanced-examples-gallery/src/authoredLayerPolicies.ts", "utf8");

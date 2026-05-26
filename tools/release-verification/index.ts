@@ -105,6 +105,8 @@ export const defaultCommands = [
   ["demo-validation", "pnpm verify:demos"],
   ["docs-consistency", "pnpm verify:docs-consistency"],
   ["docs-version", "pnpm verify:docs-version"],
+  ["threejs-parity", "pnpm threejs-parity"],
+  ["superiority", "pnpm superiority"],
   ["claims", "pnpm verify:claims"],
   ["requirements-trace", "pnpm trace:requirements"],
   ["trace", "pnpm verify:trace"]
@@ -273,7 +275,7 @@ function writeBrowserHardwareMatrix(root: string, releaseRunId: string): void {
       "tests/reports/webgpu-hardware-matrix.json",
       "docs/project/browser-hardware-matrix.md",
       "docs/project/compatibility.md",
-      "docs/project/v2-claim-registry.md",
+      "docs/project/product-studio-claim-registry.md",
       "docs/rendering/webgpu-hardware-matrix.md"
     ],
     artifactLinks: [
@@ -282,7 +284,7 @@ function writeBrowserHardwareMatrix(root: string, releaseRunId: string): void {
       "tests/reports/webgpu-hardware-matrix.json",
       "docs/project/browser-hardware-matrix.md",
       "docs/project/compatibility.md",
-      "docs/project/v2-claim-registry.md",
+      "docs/project/product-studio-claim-registry.md",
       "docs/rendering/webgpu-hardware-matrix.md"
     ],
     browserRows,

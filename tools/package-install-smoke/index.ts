@@ -167,7 +167,7 @@ export function runPackageInstallSmoke(
       "assets export map resolves",
       "Geometry.litCube creates vertex/index buffers",
       "PBRMaterial can be instantiated",
-      "V4 generated environment lighting validates BRDF LUT and diffuse irradiance resources",
+      "External parity generated environment lighting validates BRDF LUT and diffuse irradiance resources",
       "clean Vite browser build resolves engine export map and subpath imports"
     ],
     installStdoutTail: installStdout.split("\n").slice(-12).join("\n"),
@@ -205,7 +205,7 @@ const material = new rendering.PBRMaterial({ name: "external-smoke-pbr", baseCol
 assert.equal(material.name, "external-smoke-pbr");
 assert.equal(typeof rendering.Renderer.prototype.renderScene, "function");
 
-const lighting = rendering.createV4EnvironmentLighting("studio");
+const lighting = rendering.createExternalParityEnvironmentLighting("studio");
 assert.equal(lighting.presetId, "aura3d-external-parity-visual-quality-preset");
 assert.equal(lighting.resources.validation.brdfLutTexture, true);
 assert.equal(lighting.resources.validation.diffuseIrradiance, true);
@@ -225,13 +225,13 @@ console.log(JSON.stringify({
 function viteSmokeSource(packageName: string): string {
   return `
 import { Engine } from ${JSON.stringify(packageName)};
-import { Geometry, PBRMaterial, Renderer, createV4EnvironmentLighting } from ${JSON.stringify(`${packageName}/rendering`)};
+import { Geometry, PBRMaterial, Renderer, createExternalParityEnvironmentLighting } from ${JSON.stringify(`${packageName}/rendering`)};
 import { Scene } from ${JSON.stringify(`${packageName}/scene`)};
 import { GLTFLoader, createRenderableScene, loadRenderableAsset } from ${JSON.stringify(`${packageName}/assets`)};
 
 const cube = Geometry.litCube(1);
 const material = new PBRMaterial({ name: "vite-smoke-pbr", baseColor: [0.7, 0.3, 0.2, 1] });
-const lighting = createV4EnvironmentLighting("studio");
+const lighting = createExternalParityEnvironmentLighting("studio");
 const scene = new Scene();
 const loader = new GLTFLoader();
 

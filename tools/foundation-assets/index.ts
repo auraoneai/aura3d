@@ -3,8 +3,8 @@ import { createSubsystemReport, pathExists, reportOk } from "../foundation-subsy
 import { readJson } from "../foundation-reporting/index.js";
 
 const root = process.cwd();
-const v3CorpusReport = readJson(root, "tests/reports/foundation-asset-corpus.json");
-const v3GltfCorpusReport = readJson(root, "tests/reports/foundation-gltf-corpus.json");
+const foundationCorpusReport = readJson(root, "tests/reports/foundation-asset-corpus.json");
+const foundationGltfCorpusReport = readJson(root, "tests/reports/foundation-gltf-corpus.json");
 const materialFidelityReport = readJson(root, "tests/reports/foundation-asset-material-fidelity.json");
 const report = createSubsystemReport(root, {
   subsystem: "asset-pipeline-and-content",
@@ -12,7 +12,7 @@ const report = createSubsystemReport(root, {
   reportPath: "tests/reports/foundation-assets.json",
   runIdPrefix: "foundation-assets",
   sourceFiles: [
-    "docs/project/v3-asset-pipeline-and-content-plan.md",
+    "docs/project/getting-started.md",
     "packages/assets/src/GLTFLoader.ts",
     "packages/assets/src/GLTFRenderResources.ts",
     "packages/assets/src/AssetManager.ts",
@@ -33,23 +33,23 @@ const report = createSubsystemReport(root, {
       blocker: "examples/asset-viewer is missing.",
     },
     {
-      id: "v3-corpus-fixtures",
-      description: "v3 asset corpus fixtures exist.",
+      id: "foundation-corpus-fixtures",
+      description: "foundation asset corpus fixtures exist.",
       passed: pathExists(root, "fixtures/foundation-assets"),
       evidencePaths: ["fixtures/foundation-assets"],
       blocker: "fixtures/foundation-assets corpus is not implemented yet.",
     },
     {
       id: "gltf-corpus-report",
-      description: "v3 local glTF corpus report passes.",
-      passed: v3CorpusReport?.ok === true,
+      description: "foundation local glTF corpus report passes.",
+      passed: foundationCorpusReport?.ok === true,
       evidencePaths: ["tests/reports/foundation-asset-corpus.json"],
-      blocker: "v3 asset corpus report is missing or failing.",
+      blocker: "foundation asset corpus report is missing or failing.",
     },
     {
-      id: "v3-visual-corpus-runner",
-      description: "v3 visual corpus runner stores screenshots and diagnostics.",
-      passed: v3GltfCorpusReport?.ok === true,
+      id: "foundation-visual-corpus-runner",
+      description: "foundation visual corpus runner stores screenshots and diagnostics.",
+      passed: foundationGltfCorpusReport?.ok === true,
       evidencePaths: ["tests/reports/foundation-gltf-corpus.json"],
       blocker: "tests/reports/foundation-gltf-corpus.json is not generated yet.",
     },
@@ -58,7 +58,7 @@ const report = createSubsystemReport(root, {
       description: "Asset viewer browser tests verify material factors, texture slots, advanced material extensions, variants, alpha, double-sided state, and decoded runtime textures.",
       passed: materialFidelityReport?.ok === true,
       evidencePaths: ["tests/browser/asset-material-fidelity.spec.ts", "tests/reports/foundation-asset-material-fidelity.json"],
-      blocker: "v3 asset material fidelity browser evidence is missing or failing.",
+      blocker: "foundation asset material fidelity browser evidence is missing or failing.",
     },
     {
       id: "gltf-skinning-joints-inverse-bind-matrices",

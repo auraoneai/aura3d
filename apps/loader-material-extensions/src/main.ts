@@ -10,11 +10,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LoaderMaterialExtensions?: V8LoaderMaterialExtensionsRuntime;
+    __a3dCurrentRoutesLoaderMaterialExtensions?: CurrentRoutesLoaderMaterialExtensionsRuntime;
   }
 }
 
-interface V8LoaderMaterialExtensionsRuntime {
+interface CurrentRoutesLoaderMaterialExtensionsRuntime {
   readonly appId: "loader-material-extensions";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -71,7 +71,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LoaderMaterialExtensions = runtime;
+    window.__a3dCurrentRoutesLoaderMaterialExtensions = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -122,7 +122,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: extensionSupport.unsupportedRequired
         });
-        window.__a3dV8LoaderMaterialExtensions = runtime;
+        window.__a3dCurrentRoutesLoaderMaterialExtensions = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -162,7 +162,7 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
     camera: input.camera,
     metadata: {
       assetId: APP_ID,
-      assetName: "V8 Loader Material Extensions",
+      assetName: "CurrentRoutes Loader Material Extensions",
       assetUri: "/apps/loader-material-extensions/",
       meshCount: 3,
       primitiveCount: 3,
@@ -178,7 +178,7 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
 }
 
 function inspectMaterialExtensions(resources: GLTFRenderResources): Pick<
-  V8LoaderMaterialExtensionsRuntime,
+  CurrentRoutesLoaderMaterialExtensionsRuntime,
   "clearcoatMaterials" | "sheenMaterials" | "transmissionMaterials" | "transparentMaterials" | "materialUniforms"
 > {
   const materialUniforms = [...resources.materialLibrary.values()]
@@ -233,11 +233,11 @@ function finiteNumber(value: unknown): number {
 }
 
 function createRuntime(
-  status: V8LoaderMaterialExtensionsRuntime["status"],
+  status: CurrentRoutesLoaderMaterialExtensionsRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LoaderMaterialExtensionsRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LoaderMaterialExtensionsRuntime {
+  patch: Partial<Omit<CurrentRoutesLoaderMaterialExtensionsRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLoaderMaterialExtensionsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -266,7 +266,7 @@ function createMaterialExtensionsFixtureDataUrl(): string {
   const indices = uint16Bytes([0, 1, 2, 0, 2, 3]);
   const binary = concatAligned([positions, normals, indices], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V9 V8 loader material extensions fixture" },
+    asset: { version: "2.0", generator: "Aura3D ThreejsParity CurrentRoutes loader material extensions fixture" },
     extensionsUsed: ["KHR_materials_clearcoat", "KHR_materials_sheen", "KHR_materials_transmission"],
     extensionsRequired: ["KHR_materials_clearcoat", "KHR_materials_sheen", "KHR_materials_transmission"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -350,11 +350,11 @@ function base64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function renderUi(root: HTMLElement, runtime: V8LoaderMaterialExtensionsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderMaterialExtensionsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Loader Material Extensions</h1>
+        <h1>CurrentRoutes Loader Material Extensions</h1>
         <p>Required glTF physical material extensions imported into A3D PBR uniforms.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>

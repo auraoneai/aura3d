@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { baseReport, listFiles, writeJson } from "../foundation-reporting/index.js";
 
-export interface V3ClaimOccurrence {
+export interface FoundationClaimOccurrence {
   readonly path: string;
   readonly line: number;
   readonly claim: string;
@@ -10,7 +10,7 @@ export interface V3ClaimOccurrence {
   readonly scoped: boolean;
 }
 
-export interface V3ClaimGateReport {
+export interface FoundationClaimGateReport {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly commit: string;
@@ -21,8 +21,8 @@ export interface V3ClaimGateReport {
   readonly screenshotPaths: readonly string[];
   readonly violations: readonly string[];
   readonly scannedFiles: readonly string[];
-  readonly scopedOccurrences: readonly V3ClaimOccurrence[];
-  readonly blockedOccurrences: readonly V3ClaimOccurrence[];
+  readonly scopedOccurrences: readonly FoundationClaimOccurrence[];
+  readonly blockedOccurrences: readonly FoundationClaimOccurrence[];
 }
 
 const reportPath = "tests/reports/foundation-claim-gates.json";
@@ -40,7 +40,7 @@ const claimPatterns = [
 
 const scopedPattern = /\b(no|not|never|without|unsupported|blocked|disallowed|must not|do not|not yet|cannot|can't|does not|future|before|until|unless|lacks?|remain|limited|unclaimed|bounded|claim reset|claim|language|target|workflow|equivalent|absence|tried|failure|still disallowed|not true|stronger|outside this comparison scope|exclusions?)\b/i;
 
-export function validateV3ClaimGates(root = process.cwd()): V3ClaimGateReport {
+export function validateFoundationClaimGates(root = process.cwd()): FoundationClaimGateReport {
   const scannedFiles = listFiles(root, [
     "README.md",
     "package.json",
@@ -53,11 +53,11 @@ export function validateV3ClaimGates(root = process.cwd()): V3ClaimGateReport {
     "examples",
     "packages",
   ], [".md", ".ts", "package.json"]);
-  const scopedOccurrences: V3ClaimOccurrence[] = [];
-  const blockedOccurrences: V3ClaimOccurrence[] = [];
+  const scopedOccurrences: FoundationClaimOccurrence[] = [];
+  const blockedOccurrences: FoundationClaimOccurrence[] = [];
 
   for (const path of scannedFiles) {
-    if (path.startsWith("docs/project/v2-")) continue;
+    if (path.startsWith("docs/project/product-studio-")) continue;
     const text = readFileSync(`${root}/${path}`, "utf8");
     const lines = text.split(/\r?\n/);
     for (let index = 0; index < lines.length; index += 1) {
@@ -82,7 +82,7 @@ export function validateV3ClaimGates(root = process.cwd()): V3ClaimGateReport {
   }
 
   const violations = blockedOccurrences.map((occurrence) =>
-    `${occurrence.path}:${occurrence.line} contains unscoped disallowed v3 claim language: ${occurrence.claim}`,
+    `${occurrence.path}:${occurrence.line} contains unscoped disallowed foundation claim language: ${occurrence.claim}`,
   );
   const base = baseReport(root, {
     ok: violations.length === 0,
@@ -101,7 +101,7 @@ export function validateV3ClaimGates(root = process.cwd()): V3ClaimGateReport {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = validateV3ClaimGates();
+  const report = validateFoundationClaimGates();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

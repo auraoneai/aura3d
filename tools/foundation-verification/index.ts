@@ -5,7 +5,7 @@ import { execSync, spawnSync } from "node:child_process";
 
 type Track = "code" | "examples" | "rendering" | "assets" | "editor" | "runtime" | "benchmarks" | "all";
 
-interface V3Task {
+interface FoundationTask {
   readonly document: string;
   readonly line: number;
   readonly text: string;
@@ -13,7 +13,7 @@ interface V3Task {
   readonly owner: Track;
 }
 
-interface V3ReportFreshness {
+interface FoundationReportFreshness {
   readonly path: string;
   readonly exists: boolean;
   readonly modifiedAt?: string;
@@ -24,7 +24,7 @@ interface V3ReportFreshness {
   readonly messages: readonly string[];
 }
 
-interface V3VerificationReport {
+interface FoundationVerificationReport {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly runId: string;
@@ -37,8 +37,8 @@ interface V3VerificationReport {
   readonly totalTasks: number;
   readonly checkedTasks: number;
   readonly uncheckedTasks: number;
-  readonly scopedUncheckedTasks: readonly V3Task[];
-  readonly requiredReports: readonly V3ReportFreshness[];
+  readonly scopedUncheckedTasks: readonly FoundationTask[];
+  readonly requiredReports: readonly FoundationReportFreshness[];
   readonly blockedClaims: readonly string[];
   readonly failures: readonly string[];
 }
@@ -77,12 +77,12 @@ const requiredReportsByTrack: Record<Track, readonly string[]> = {
 
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
-  const tasks = readV3Tasks();
+  const tasks = readFoundationTasks();
   const scopedTasks = tasks.filter((task) => args.track === "all" || task.owner === args.track || args.track === "code");
   const unchecked = scopedTasks.filter((task) => !task.checked);
-  const docs = listV3Docs();
+  const docs = listFoundationDocs();
   const commit = gitSha();
-  const runId = process.env.A3D_RELEASE_RUN_ID ?? `v3-${args.track}-${Date.now()}`;
+  const runId = process.env.A3D_RELEASE_RUN_ID ?? `foundation-${args.track}-${Date.now()}`;
 
   if (args.track === "examples" || args.track === "all") {
     runCommand("node --experimental-strip-types tools/example-truth-audit/index.ts", runId);
@@ -96,7 +96,7 @@ function main(): void {
     ...broadClaims.map((claim) => `blocked broad claim wording appears in public source: ${claim}`),
   ];
 
-  const report: V3VerificationReport = {
+  const report: FoundationVerificationReport = {
     ok: failures.length === 0,
     generatedAt: new Date().toISOString(),
     runId,
@@ -131,18 +131,18 @@ function parseArgs(argv: readonly string[]): { track: Track; strict: boolean } {
   return { track, strict: argv.includes("--strict") };
 }
 
-function listV3Docs(): readonly string[] {
+function listFoundationDocs(): readonly string[] {
   return readdirSync(join(root, "docs/project"))
-    .filter((file) => file.startsWith("v3-"))
+    .filter((file) => file.startsWith("foundation-"))
     .filter((file) => file.endsWith(".md"))
     .map((file) => `docs/project/${file}`)
     .sort((left, right) => left.localeCompare(right));
 }
 
-function readV3Tasks(): readonly V3Task[] {
-  return listV3Docs().flatMap((document) => {
+function readFoundationTasks(): readonly FoundationTask[] {
+  return listFoundationDocs().flatMap((document) => {
     const lines = readFileSync(join(root, document), "utf8").split(/\r?\n/);
-    return lines.flatMap((line, index): V3Task[] => {
+    return lines.flatMap((line, index): FoundationTask[] => {
       const match = line.match(/^- \[([ x])\] (.+)$/);
       if (!match) return [];
       const text = match[2] ?? "";
@@ -167,7 +167,7 @@ function ownerForTask(document: string, text: string): Track {
   return "all";
 }
 
-function inspectReport(path: string, commit: string): V3ReportFreshness {
+function inspectReport(path: string, commit: string): FoundationReportFreshness {
   const absolute = join(root, path);
   if (!existsSync(absolute)) {
     return { path, exists: false, freshForCurrentCommit: false, messages: ["missing required report"] };
@@ -207,7 +207,7 @@ function scanBroadClaims(): readonly string[] {
     "examples/README.md",
     "examples/portfolio/README.md",
     "examples/portfolio/main.ts",
-    ...listV3Docs(),
+    ...listFoundationDocs(),
   ];
   const blocked: string[] = [];
   for (const path of paths) {
@@ -229,8 +229,8 @@ function isNegatedOrScoped(line: string): boolean {
 function writeClaimGateReport(
   commit: string,
   runId: string,
-  tasks: readonly V3Task[],
-  requiredReports: readonly V3ReportFreshness[],
+  tasks: readonly FoundationTask[],
+  requiredReports: readonly FoundationReportFreshness[],
   broadClaims: readonly string[],
 ): void {
   const unchecked = tasks.filter((task) => !task.checked);
@@ -257,8 +257,8 @@ function writeClaimGateReport(
 function writeCurrentCapabilityReport(
   commit: string,
   runId: string,
-  tasks: readonly V3Task[],
-  requiredReports: readonly V3ReportFreshness[],
+  tasks: readonly FoundationTask[],
+  requiredReports: readonly FoundationReportFreshness[],
   broadClaims: readonly string[],
 ): void {
   const byOwner = tasks.reduce<Record<string, { total: number; checked: number; unchecked: number }>>((acc, task) => {
@@ -275,7 +275,7 @@ function writeCurrentCapabilityReport(
     commit,
     command: "node --experimental-strip-types tools/foundation-verification/index.ts --track code",
     status: "blocked",
-    reason: "V3 docs still contain unchecked implementation, example, benchmark, report, and decision-gate tasks.",
+    reason: "Foundation docs still contain unchecked implementation, example, benchmark, report, and decision-gate tasks.",
     totalTasks: tasks.length,
     checkedTasks: tasks.filter((task) => task.checked).length,
     uncheckedTasks: tasks.filter((task) => !task.checked).length,

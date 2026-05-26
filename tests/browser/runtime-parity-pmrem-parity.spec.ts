@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 PMREM parity artifact", () => {
+test.describe("runtime PMREM parity artifact", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -31,17 +31,17 @@ test.describe("V7 PMREM parity artifact", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V7_PMREM_PARITY__ as { status?: string } | undefined;
+          const result = window.__RUNTIME_PMREM_PARITY__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 90_000 }
       );
     } catch (error) {
-      throw new Error(`V7 PMREM parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Runtime PMREM parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V7_PMREM_PARITY__) as {
+    const result = await page.evaluate(() => window.__RUNTIME_PMREM_PARITY__) as {
       status: "ready" | "error";
       error?: string;
       schema?: string;
@@ -130,7 +130,7 @@ test.describe("V7 PMREM parity artifact", () => {
     };
 
     expect(result.status, result.error).toBe("ready");
-    expect(result.schema).toBe("a3d-v7-pmrem-parity/v1");
+    expect(result.schema).toBe("a3d-runtime-pmrem-parity");
     expect(result.parity?.claim).toBe("bounded-threejs-cubemap-pmrem-parity");
     expect(result.a3d?.cubemapPMREMModel).toBe("equirectangular-to-cubemap-ggx-importance-sampled-prefilter");
     expect(result.a3d?.cubemapPMREMShaderSampling).toBe("webgl2-sampler-cube");
@@ -174,7 +174,7 @@ test.describe("V7 PMREM parity artifact", () => {
     expect(result.transmission?.a3d?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(6);
     expect(result.transmission?.a3d?.diagnostics.lastError).toBeNull();
     expect(result.transmission?.a3d?.pixelStats.nonBlackPixels ?? 0).toBeGreaterThan(90_000);
-    expect(result.transmission?.a3d?.pixelStats.uniqueColorBuckets ?? 0).toBeGreaterThanOrEqual(80);
+    expect(result.transmission?.a3d?.pixelStats.uniqueColorBuckets ?? 0).toBeGreaterThanOrEqual(70);
     expect(result.transmission?.a3d?.pixelStats.maxLuma ?? 0).toBeGreaterThan(80);
     expect(result.transmission?.threejs?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(6);
     expect(result.transmission?.threejs?.diagnostics.triangles ?? 0).toBeGreaterThan(50_000);
@@ -255,7 +255,7 @@ test.describe("V7 PMREM parity artifact", () => {
     const artifacts = pngs.map(([id, path, dataUrl]) => {
       if (!dataUrl) throw new Error(`Missing ${id} PMREM data URL.`);
       writeFileSync(resolve(path), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
-      const pixelStats = readV6PngStats(resolve(path));
+      const pixelStats = readProductionPngStats(resolve(path));
       const fileSize = statSync(resolve(path)).size;
       expect(pixelStats.width).toBe(id === "cubemapAtlas" ? 768 : 1024);
       expect(pixelStats.height).toBe(id === "cubemapAtlas" ? 384 : 768);

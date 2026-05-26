@@ -1,4 +1,4 @@
-export interface V6AppAsset {
+export interface ProductionAppAsset {
   readonly id: string;
   readonly label: string;
   readonly file: string;
@@ -6,12 +6,12 @@ export interface V6AppAsset {
   readonly role: "primary" | "secondary";
 }
 
-export interface V6AppSceneDefinition {
+export interface ProductionAppSceneDefinition {
   readonly appId: string;
   readonly sceneId: string;
   readonly title: string;
   readonly workflow: string;
-  readonly assets: readonly V6AppAsset[];
+  readonly assets: readonly ProductionAppAsset[];
   readonly environment: {
     readonly id: string;
     readonly label: string;
@@ -26,7 +26,7 @@ export interface V6AppSceneDefinition {
   readonly expectedPostprocessChain: readonly string[];
 }
 
-export interface V6AppUiDefinition {
+export interface ProductionAppUiDefinition {
   readonly primaryActionLabel: string;
   readonly secondaryLabel: string;
 }

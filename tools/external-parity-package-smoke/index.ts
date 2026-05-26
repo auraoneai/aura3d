@@ -72,7 +72,7 @@ console.log(JSON.stringify({ ok: true, templates: results, publicRootImport: tru
   };
   const tarballBytes = statSync(tarballPath).size;
   const report = {
-    schema: "a3d-external-parity-package-smoke/v1",
+    schema: "a3d-external-parity-package-smoke",
     generatedAt: new Date().toISOString(),
     ok: stdout.includes("\"ok\":true") &&
       manifest.exports["."] === "./dist/engine/index.js" &&

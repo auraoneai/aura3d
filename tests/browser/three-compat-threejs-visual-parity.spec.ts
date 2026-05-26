@@ -1,15 +1,15 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { V5_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
+import { THREE_COMPAT_COMPARISON_SCENES } from "../../benchmarks/three-compat/shared/scenes";
 
 const reportDir = "tests/reports/three-compat-threejs-visual-parity";
 
-test("V5 same-scene visual parity captures nonblank flagship A3D, Three.js, and diff screenshots", async ({ page }) => {
+test("ThreeCompat same-scene visual parity captures nonblank flagship A3D, Three.js, and diff screenshots", async ({ page }) => {
   mkdirSync(reportDir, { recursive: true });
   await page.setViewportSize({ width: 1280, height: 760 });
   const captures = [];
-  for (const scene of V5_COMPARISON_SCENES) {
+  for (const scene of THREE_COMPAT_COMPARISON_SCENES) {
     for (const engine of ["a3d", "threejs", "diff"] as const) {
       await page.setContent(`<html><body style="margin:0;background:#05070d"><canvas id="scene" width="1280" height="720"></canvas><script>
         ${painterScript()}
@@ -36,15 +36,15 @@ test("V5 same-scene visual parity captures nonblank flagship A3D, Three.js, and 
     await expect.poll(async () => page.evaluate(() => window.__visualScore)).toBeGreaterThan(0.8);
   }
   const report = {
-    schema: "a3d-three-compat-threejs-visual-parity-browser/v2",
+    schema: "a3d-three-compat-threejs-visual-parity-browser",
     generatedAt: new Date().toISOString(),
-    sceneCount: V5_COMPARISON_SCENES.length,
+    sceneCount: THREE_COMPAT_COMPARISON_SCENES.length,
     captures
   };
   const reportPath = resolve("tests/reports/three-compat-threejs-visual-parity-browser.json");
   mkdirSync(dirname(reportPath), { recursive: true });
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-  expect(captures).toHaveLength(V5_COMPARISON_SCENES.length * 3);
+  expect(captures).toHaveLength(THREE_COMPAT_COMPARISON_SCENES.length * 3);
 });
 
 function painterScript(): string {
@@ -328,7 +328,7 @@ function drawHud(ctx: CanvasRenderingContext2D, scene: { label: string }, engine
   ctx.fillText(`${scene.label} / ${engine.toUpperCase()}`, 48, 66);
   ctx.fillStyle = "rgba(210,235,255,.75)";
   ctx.font = "14px system-ui";
-  ctx.fillText("A3D V5 flagship visual evidence", 48, 88);
+  ctx.fillText("A3D ThreeCompat flagship visual evidence", 48, 88);
 }
 
 function drawSwatches(ctx: CanvasRenderingContext2D, x: number, y: number, diff: boolean) {

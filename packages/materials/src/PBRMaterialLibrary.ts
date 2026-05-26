@@ -1,7 +1,7 @@
-import type { V5MaterialClass, V5MaterialPreset, V5MaterialProofChannel } from "./MaterialPreset";
-import { V5_TEXTURE_SETS } from "./TextureSet";
+import type { ThreeCompatMaterialClass, ThreeCompatMaterialPreset, ThreeCompatMaterialProofChannel } from "./MaterialPreset";
+import { THREE_COMPAT_TEXTURE_SETS } from "./TextureSet";
 
-export const V5_REQUIRED_MATERIAL_CLASSES: readonly V5MaterialClass[] = [
+export const THREE_COMPAT_REQUIRED_MATERIAL_CLASSES: readonly ThreeCompatMaterialClass[] = [
   "brushed metal",
   "polished metal",
   "clearcoat automotive paint",
@@ -24,7 +24,7 @@ export const V5_REQUIRED_MATERIAL_CLASSES: readonly V5MaterialClass[] = [
   "ORM-packed material"
 ];
 
-const REQUIRED_PROOF_CHANNELS: readonly V5MaterialProofChannel[] = [
+const REQUIRED_PROOF_CHANNELS: readonly ThreeCompatMaterialProofChannel[] = [
   "roughness",
   "metalness",
   "normal",
@@ -36,8 +36,8 @@ const REQUIRED_PROOF_CHANNELS: readonly V5MaterialProofChannel[] = [
   "color-space"
 ];
 
-function createPreset(index: number, materialClass: V5MaterialClass): V5MaterialPreset {
-  const textureSet = index < V5_TEXTURE_SETS.length ? V5_TEXTURE_SETS[index] : undefined;
+function createPreset(index: number, materialClass: ThreeCompatMaterialClass): ThreeCompatMaterialPreset {
+  const textureSet = index < THREE_COMPAT_TEXTURE_SETS.length ? THREE_COMPAT_TEXTURE_SETS[index] : undefined;
   const hue = (index * 41) % 255;
   const isMetal = /metal|automotive|anisotropic|ORM/i.test(materialClass);
   const isGlass = /glass|transmission|translucent/i.test(materialClass);
@@ -45,7 +45,7 @@ function createPreset(index: number, materialClass: V5MaterialClass): V5Material
   const isAlpha = materialClass === "alpha-cutout foliage/card material";
   return {
     id: `three-compat-${materialClass.replace(/[^a-z0-9]+/g, "-")}-${String(index + 1).padStart(2, "0")}`,
-    label: `V5 ${materialClass} ${index + 1}`,
+    label: `ThreeCompat ${materialClass} ${index + 1}`,
     class: materialClass,
     textureSetId: textureSet?.id,
     colorSpace: "linear-srgb",
@@ -77,18 +77,18 @@ function createPreset(index: number, materialClass: V5MaterialClass): V5Material
   };
 }
 
-export const V5_PBR_MATERIAL_LIBRARY: readonly V5MaterialPreset[] = Array.from({ length: 50 }, (_, index) =>
-  createPreset(index, V5_REQUIRED_MATERIAL_CLASSES[index % V5_REQUIRED_MATERIAL_CLASSES.length])
+export const THREE_COMPAT_PBR_MATERIAL_LIBRARY: readonly ThreeCompatMaterialPreset[] = Array.from({ length: 50 }, (_, index) =>
+  createPreset(index, THREE_COMPAT_REQUIRED_MATERIAL_CLASSES[index % THREE_COMPAT_REQUIRED_MATERIAL_CLASSES.length])
 );
 
-export function listV5PbrMaterials(): readonly V5MaterialPreset[] {
-  return V5_PBR_MATERIAL_LIBRARY;
+export function listThreeCompatPbrMaterials(): readonly ThreeCompatMaterialPreset[] {
+  return THREE_COMPAT_PBR_MATERIAL_LIBRARY;
 }
 
-export function findV5PbrMaterial(id: string): V5MaterialPreset | undefined {
-  return V5_PBR_MATERIAL_LIBRARY.find((material) => material.id === id);
+export function findThreeCompatPbrMaterial(id: string): ThreeCompatMaterialPreset | undefined {
+  return THREE_COMPAT_PBR_MATERIAL_LIBRARY.find((material) => material.id === id);
 }
 
-export function listV5MaterialProofChannels(): readonly V5MaterialProofChannel[] {
+export function listThreeCompatMaterialProofChannels(): readonly ThreeCompatMaterialProofChannel[] {
   return REQUIRED_PROOF_CHANNELS;
 }

@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { computePerspectiveCameraFrame } from "@aura3d/rendering";
 import * as THREE from "three";
@@ -7,17 +7,17 @@ import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.
 
 declare global {
   interface Window {
-    __V9_GLTF_PARITY__?: V9GltfParityResult;
+    __THREEJS_PARITY_GLTF_PARITY__?: ThreeJsParityGltfParityResult;
   }
 }
 
 export {};
 
-type V9GltfParityResult = V9GltfParityReady | V9GltfParityError;
+type ThreeJsParityGltfParityResult = ThreeJsParityGltfParityReady | ThreeJsParityGltfParityError;
 
-interface V9GltfParityReady {
+interface ThreeJsParityGltfParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-gltf-parity/v1";
+  readonly schema: "a3d-threejs-parity-gltf-parity";
   readonly purpose: "same-asset A3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -66,9 +66,9 @@ interface V9GltfParityReady {
   readonly humanNotes: readonly string[];
 }
 
-interface V9GltfParityError {
+interface ThreeJsParityGltfParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-gltf-parity/v1";
+  readonly schema: "a3d-threejs-parity-gltf-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -128,9 +128,9 @@ async function run(): Promise<void> {
     const [a3dPixels, threePixels] = await Promise.all([dataUrlToPixels(a3d.dataUrl), dataUrlToPixels(threejs.dataUrl)]);
     const diff = computeDiff(a3dPixels, threePixels);
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
-    const ready: V9GltfParityReady = {
+    const ready: ThreeJsParityGltfParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-gltf-parity/v1",
+      schema: "a3d-threejs-parity-gltf-parity",
       purpose: "same-asset A3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -179,26 +179,26 @@ async function run(): Promise<void> {
         "It is not a blanket claim for every glTF extension, texture compression format, animation path, or material extension."
       ]
     };
-    window.__V9_GLTF_PARITY__ = ready;
+    window.__THREEJS_PARITY_GLTF_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
-    const failure: V9GltfParityError = {
+    const failure: ThreeJsParityGltfParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-gltf-parity/v1",
+      schema: "a3d-threejs-parity-gltf-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
       expectedRenderer: "THREE.WebGLRenderer"
     };
-    window.__V9_GLTF_PARITY__ = failure;
+    window.__THREEJS_PARITY_GLTF_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
 }
 
 async function renderA3D(canvas: HTMLCanvasElement) {
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: ASSET.url,
     assetId: ASSET.id,
     assetName: ASSET.name,
@@ -429,7 +429,7 @@ async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   return image;
 }
 
-function stripDataUrls(result: V9GltfParityReady): Omit<V9GltfParityReady, "dataUrls"> {
+function stripDataUrls(result: ThreeJsParityGltfParityReady): Omit<ThreeJsParityGltfParityReady, "dataUrls"> {
   const { dataUrls: _dataUrls, ...rest } = result;
   return rest;
 }

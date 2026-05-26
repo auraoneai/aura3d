@@ -12,7 +12,7 @@ import {
 
 declare global {
   interface Window {
-    __A3D_MATERIAL_STUDIO_V1__?: ExampleState;
+    __A3D_MATERIAL_STUDIO_LEGACY__?: ExampleState;
   }
 }
 
@@ -77,13 +77,13 @@ async function boot(): Promise<void> {
       postprocess: lighting.postprocess,
       frustumCulling: false
     });
-    window.__A3D_MATERIAL_STUDIO_V1__ = {
+    window.__A3D_MATERIAL_STUDIO_LEGACY__ = {
       status: "ready",
       diagnostics,
       materials: materials.map((material) => material.name)
     };
   } catch (error) {
-    window.__A3D_MATERIAL_STUDIO_V1__ = {
+    window.__A3D_MATERIAL_STUDIO_LEGACY__ = {
       status: "error",
       materials: [],
       error: error instanceof Error ? error.message : String(error)

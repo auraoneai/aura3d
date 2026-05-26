@@ -1,2 +1,2 @@
-// @aura3d-shader:production-shadows-v1
+// @aura3d-shader:production-shadows
 float applyShadowBias(float depth, float bias) { return depth - bias; }

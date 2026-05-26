@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV6AssetCorpusSummary,
-  inspectV6Glb,
-  loadV6AssetManifest
+  createProductionAssetCorpusSummary,
+  inspectProductionGlb,
+  loadProductionAssetManifest
 } from "../../packages/assets/src/asset-corpus";
 
-describe("V6 real asset corpus", () => {
+describe("production real asset corpus", () => {
   it("pins real imported GLB assets instead of primitive-only proof", () => {
-    const manifest = loadV6AssetManifest();
-    const summary = createV6AssetCorpusSummary(manifest);
+    const manifest = loadProductionAssetManifest();
+    const summary = createProductionAssetCorpusSummary(manifest);
 
-    expect(manifest.schema).toBe("a3d-production-runtime-real-asset-corpus/v1");
+    expect(manifest.schema).toBe("a3d-production-runtime-real-asset-corpus");
     expect(summary.pass, summary.failures.join("\n")).toBe(true);
     expect(summary.assetCount).toBeGreaterThanOrEqual(manifest.requirements.minimumRealGlbAssets);
     expect(summary.existingAssetCount).toBe(summary.assetCount);
@@ -27,7 +27,7 @@ describe("V6 real asset corpus", () => {
   });
 
   it("extracts actual glTF scene structure from flagship files", () => {
-    const manifest = loadV6AssetManifest();
+    const manifest = loadProductionAssetManifest();
     const damagedHelmet = manifest.assets.find((asset) => asset.id === "damaged-helmet");
     const cesiumMan = manifest.assets.find((asset) => asset.id === "cesium-man");
     const morphCube = manifest.assets.find((asset) => asset.id === "animated-morph-cube");
@@ -36,9 +36,9 @@ describe("V6 real asset corpus", () => {
     expect(cesiumMan).toBeDefined();
     expect(morphCube).toBeDefined();
 
-    const helmet = inspectV6Glb(damagedHelmet!.localPath);
-    const character = inspectV6Glb(cesiumMan!.localPath);
-    const morph = inspectV6Glb(morphCube!.localPath);
+    const helmet = inspectProductionGlb(damagedHelmet!.localPath);
+    const character = inspectProductionGlb(cesiumMan!.localPath);
+    const morph = inspectProductionGlb(morphCube!.localPath);
 
     expect(helmet.validGlb).toBe(true);
     expect(helmet.texturedPbrMaterialCount).toBeGreaterThan(0);

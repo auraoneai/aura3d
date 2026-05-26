@@ -27,7 +27,7 @@ type MaterialStudioState = {
   readonly claimBoundary?: string;
 };
 
-test.describe("V4 Material Studio Pro", () => {
+test.describe("ExternalParity Material Studio Pro", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -69,12 +69,12 @@ test.describe("V4 Material Studio Pro", () => {
         `${screenshotDir}/external-material-studio-outdoor.png`,
         `${screenshotDir}/material-studio-pro.png`
       ],
-      productBoundary: "Milestone 8 proves a real Material Studio Pro app/example with the V4 12-material matrix. Full V4 release still requires licensed production textures and same-scene Three.js visual parity.",
+      productBoundary: "Milestone 8 proves a real Material Studio Pro app/example with the ExternalParity 12-material matrix. Full ExternalParity release still requires licensed production textures and same-scene Three.js visual parity.",
       requiredNextProof: [
         "same material matrix rendered in Three.js",
         "licensed production texture set",
         "visual diff against Three.js material matrix",
-        "full V4 release audit"
+        "full ExternalParity release audit"
       ],
       errors,
       states: {
@@ -97,7 +97,7 @@ test.describe("V4 Material Studio Pro", () => {
 async function waitForMaterialState(page: Page, id: string): Promise<MaterialStudioState> {
   await page.waitForFunction(
     (expectedId) => {
-      const state = window.__A3D_V4_MATERIAL_STUDIO__ as MaterialStudioState | undefined;
+      const state = window.__A3D_EXTERNAL_PARITY_MATERIAL_STUDIO__ as MaterialStudioState | undefined;
       return state?.status === "ready" && state.id === expectedId;
     },
     id,
@@ -109,7 +109,7 @@ async function waitForMaterialState(page: Page, id: string): Promise<MaterialStu
 }
 
 async function materialState(page: Page): Promise<MaterialStudioState | undefined> {
-  return page.evaluate(() => window.__A3D_V4_MATERIAL_STUDIO__ as MaterialStudioState | undefined);
+  return page.evaluate(() => window.__A3D_EXTERNAL_PARITY_MATERIAL_STUDIO__ as MaterialStudioState | undefined);
 }
 
 function statePasses(state: MaterialStudioState, id: string): boolean {
@@ -160,6 +160,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __A3D_V4_MATERIAL_STUDIO__?: MaterialStudioState;
+    __A3D_EXTERNAL_PARITY_MATERIAL_STUDIO__?: MaterialStudioState;
   }
 }

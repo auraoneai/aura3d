@@ -87,7 +87,7 @@ const requiredFiles = [
   "fixtures/external-parity/materials/manifest.json",
   "fixtures/external-parity/scenes/manifest.json",
   "fixtures/external-parity/characters/manifest.json",
-  "docs/project/v4-roadmap-reference-visual-targets.md"
+  "docs/project/verification-evidence.md"
 ];
 
 for (const file of requiredFiles) {
@@ -100,7 +100,7 @@ const products = readJson("fixtures/external-parity/products/manifest.json");
 const materials = readJson("fixtures/external-parity/materials/manifest.json");
 const scenes = readJson("fixtures/external-parity/scenes/manifest.json");
 const characters = readJson("fixtures/external-parity/characters/manifest.json");
-const targetsDoc = readText("docs/project/v4-roadmap-reference-visual-targets.md");
+const targetsDoc = readText("docs/project/verification-evidence.md");
 
 const sourceManifests = root.sourceManifests as JsonObject | undefined;
 const expectedSourceManifests = [
@@ -114,7 +114,7 @@ const expectedSourceManifests = [
 check(
   "root-source-manifests",
   Boolean(sourceManifests) && expectedSourceManifests.every((file) => Object.values(sourceManifests ?? {}).includes(file)),
-  "Root manifest must reference every V4 source manifest."
+  "Root manifest must reference every External parity source manifest."
 );
 
 const flagshipTargets = asArray(root.flagshipTargets);
@@ -204,19 +204,19 @@ check(
   includesAll(targetsDoc, [
     "This document is not visual completion",
     "Generated local fixtures cannot satisfy flagship proof",
-    "V4 remains partial progress until `pnpm v4:release` passes"
+    "External parity remains partial progress until `pnpm external-parity:release` passes"
   ]),
   "Reference visual targets doc must block demo-only or generated-fixture completion claims."
 );
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-external-parity-fixture-readiness/v1",
+  schema: "a3d-external-parity-fixture-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 1 fixture and visual target plan is ready. This is not visual completion; it only unlocks HDR/color-management work."
-    : "V4 Milestone 1 fixture and visual target plan is incomplete.",
+    ? "External parity Milestone 1 fixture and visual target plan is ready. This is not visual completion; it only unlocks HDR/color-management work."
+    : "External parity Milestone 1 fixture and visual target plan is incomplete.",
   checkedFiles: requiredFiles,
   counts: {
     flagshipTargets: flagshipTargets.length,

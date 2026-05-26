@@ -11,7 +11,7 @@ type RootCheck = {
 
 const reportPath = "tests/reports/external-parity-codebase-root-readiness.json";
 
-export interface V4CodebaseRootReadinessGateOptions {
+export interface ExternalParityCodebaseRootReadinessGateOptions {
   readonly rootBlockers: readonly string[];
   readonly completionBlockers: readonly string[];
   readonly broadParityBlockers: readonly string[];
@@ -19,17 +19,17 @@ export interface V4CodebaseRootReadinessGateOptions {
   readonly visualQualityOk: boolean;
 }
 
-export type V4CodebaseRootReadinessCliMode = "strict" | "contracts-only";
+export type ExternalParityCodebaseRootReadinessCliMode = "strict" | "contracts-only";
 
-export interface V4CodebaseRootReadinessCliStatus {
+export interface ExternalParityCodebaseRootReadinessCliStatus {
   readonly ok: boolean;
   readonly rootContractsReady: boolean;
   readonly allCodebaseObjectiveRequirementsCovered: boolean;
 }
 
-export function shouldV4CodebaseRootReadinessCliPass(
-  report: V4CodebaseRootReadinessCliStatus,
-  mode: V4CodebaseRootReadinessCliMode = "strict"
+export function shouldExternalParityCodebaseRootReadinessCliPass(
+  report: ExternalParityCodebaseRootReadinessCliStatus,
+  mode: ExternalParityCodebaseRootReadinessCliMode = "strict"
 ): boolean {
   if (mode === "contracts-only") {
     return report.rootContractsReady === true && report.allCodebaseObjectiveRequirementsCovered === true;
@@ -37,7 +37,7 @@ export function shouldV4CodebaseRootReadinessCliPass(
   return report.ok === true;
 }
 
-export function evaluateV4CodebaseRootReadinessGate(options: V4CodebaseRootReadinessGateOptions): {
+export function evaluateExternalParityCodebaseRootReadinessGate(options: ExternalParityCodebaseRootReadinessGateOptions): {
   readonly rootContractsReady: boolean;
   readonly localVisualQualityReady: boolean;
   readonly exampleImplementationMayResume: boolean;
@@ -73,7 +73,7 @@ export function evaluateV4CodebaseRootReadinessGate(options: V4CodebaseRootReadi
   };
 }
 
-export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
+export function createExternalParityCodebaseRootReadinessReport(root = process.cwd()) {
   const webgpu = readJson(root, "tests/reports/external-parity-webgpu-parity.json");
   const pbrGltf = readJson(root, "tests/reports/external-parity-pbr-gltf-readiness.json");
   const hdr = readJson(root, "tests/reports/external-parity-hdr-render-target-readiness.json");
@@ -94,7 +94,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
 
   const packageJson = readText(root, "package.json");
   const rendererSource = readText(root, "packages/rendering/src/Renderer.ts");
-  const v4RenderPresetSource = readText(root, "packages/rendering/src/V4RenderPreset.ts");
+  const externalParityRenderPresetSource = readText(root, "packages/rendering/src/ExternalParityRenderPreset.ts");
   const forwardPassSource = readText(root, "packages/rendering/src/ForwardPass.ts");
   const pbrMaterialSource = readText(root, "packages/rendering/src/PBRMaterial.ts");
   const samplerSource = readText(root, "packages/rendering/src/Sampler.ts");
@@ -113,7 +113,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
   const rootQualitySpec = readText(root, "tests/browser/rendering-root-quality-gate.spec.ts");
   const rendererUnitSpec = readText(root, "tests/unit/rendering/renderer.test.ts");
   const inputCameraControlsSpec = readText(root, "tests/unit/input/camera-controls.test.ts");
-  const v4RenderPresetUnitSpec = readText(root, "tests/unit/rendering/external-parity-render-preset.test.ts");
+  const externalParityRenderPresetUnitSpec = readText(root, "tests/unit/rendering/external-parity-render-preset.test.ts");
   const renderStateLeaksSpec = readText(root, "tests/unit/rendering/render-state-leaks.test.ts");
   const frameVisualMetricsSource = readText(root, "packages/rendering/src/FrameVisualMetrics.ts");
   const frameVisualMetricsSpec = readText(root, "tests/unit/rendering/frame-visual-metrics.test.ts");
@@ -275,7 +275,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
         && gltfResourcesSource.includes("DEFAULT_GLTF_STUDIO_PREVIEW_POSTPROCESS")
         && gltfResourcesSource.includes("DEFAULT_GLTF_HDR_STUDIO_PREVIEW_POSTPROCESS")
         && gltfResourcesSource.includes("createDefaultGLTFHdrStudioPreviewEnvironmentLighting")
-        && gltfResourcesSource.includes("createV4EnvironmentLighting(\"studio\")")
+        && gltfResourcesSource.includes("createExternalParityEnvironmentLighting(\"studio\")")
         && gltfResourcesSource.includes("targetFormat: \"rgba16f\"")
         && gltfResourcesSource.includes("cameraPolicy")
         && gltfResourcesSource.includes("readonly cameraFrameOptions?: PerspectiveCameraFrameOptions")
@@ -320,7 +320,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
         && productTurntableSource.includes("createProceduralTexture(\"metallic-paint\"")
         && productTurntableSource.includes("createProceduralTexture(\"carbon-fiber\"")
         && productTurntableSource.includes("createProceduralTexture(\"concrete-asphalt\"")
-        && productTurntableSource.includes("createV4EnvironmentLighting")
+        && productTurntableSource.includes("createExternalParityEnvironmentLighting")
         && proceduralTextureSpec.includes("creates a ready-to-render product turntable source with lighting, textures, and postprocess")
         && rootQualitySpec.includes("renders a package-level product turntable kit without example-specific assembly")
         && hasProductTurntableRenderKitEvidence(rootQuality)
@@ -334,22 +334,22 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
       ["GLTF render resources do not expose a Renderer.render()-ready camera/frame/source contract with package-level preview lighting, HDR postprocess, package-level textured render-kit evidence, and postprocess defaults."]
     ),
     check(
-      "v4-render-preset-capability-contract",
-      v4RenderPresetSource.includes("productionShadowSamplingEvidence")
-        && v4RenderPresetSource.includes("productionPbrEvidence")
-        && v4RenderPresetSource.includes("depthTextureEvidence")
-        && v4RenderPresetSource.includes("hdrRenderTargetEvidence")
-        && v4RenderPresetSource.includes("root renderer material/shader PBR evidence")
-        && v4RenderPresetSource.includes("renderer-owned directional shadow-map sampling evidence")
-        && v4RenderPresetSource.includes("renderer-owned-directional-shadow-map")
-        && v4RenderPresetSource.includes("renderer-owned-forward-shadow-map-sampling-evidence")
-        && v4RenderPresetSource.includes("renderer-owned sampleable depth texture evidence")
-        && v4RenderPresetSource.includes("renderer-owned HDR render-target evidence")
-        && !v4RenderPresetSource.includes("Flagship scenes do not yet bind a production depth texture")
-        && !v4RenderPresetSource.includes("V4 flagship scenes use bounded LDR postprocess readback, not HDR render targets")
-        && v4RenderPresetUnitSpec.includes("does not hard-block HDR, depth textures, or production shadow sampling when evidence is provided"),
-      ["packages/rendering/src/V4RenderPreset.ts", "tests/unit/rendering/external-parity-render-preset.test.ts"],
-      ["V4 render preset evidence still hard-blocks root HDR, depth texture, or production shadow-map capability even when callers provide real evidence."]
+      "external-parity-render-preset-capability-contract",
+      externalParityRenderPresetSource.includes("productionShadowSamplingEvidence")
+        && externalParityRenderPresetSource.includes("productionPbrEvidence")
+        && externalParityRenderPresetSource.includes("depthTextureEvidence")
+        && externalParityRenderPresetSource.includes("hdrRenderTargetEvidence")
+        && externalParityRenderPresetSource.includes("root renderer material/shader PBR evidence")
+        && externalParityRenderPresetSource.includes("renderer-owned directional shadow-map sampling evidence")
+        && externalParityRenderPresetSource.includes("renderer-owned-directional-shadow-map")
+        && externalParityRenderPresetSource.includes("renderer-owned-forward-shadow-map-sampling-evidence")
+        && externalParityRenderPresetSource.includes("renderer-owned sampleable depth texture evidence")
+        && externalParityRenderPresetSource.includes("renderer-owned HDR render-target evidence")
+        && !externalParityRenderPresetSource.includes("Flagship scenes do not yet bind a production depth texture")
+        && !externalParityRenderPresetSource.includes("External parity flagship scenes use bounded LDR postprocess readback, not HDR render targets")
+        && externalParityRenderPresetUnitSpec.includes("does not hard-block HDR, depth textures, or production shadow sampling when evidence is provided"),
+      ["packages/rendering/src/ExternalParityRenderPreset.ts", "tests/unit/rendering/external-parity-render-preset.test.ts"],
+      ["External parity render preset evidence still hard-blocks root HDR, depth texture, or production shadow-map capability even when callers provide real evidence."]
     ),
     check(
       "root-material-shader-pbr-behavior",
@@ -517,7 +517,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
         && visualQualityToolSource.includes("readonly minCanvasLocalContrastRatio")
         && visualQualityToolSource.includes("flatPixelRatio")
         && visualQualityToolSource.includes("localContrastRatio")
-        && visualQualityToolSource.includes("v4-manual-review-cannot-override-automation"),
+        && visualQualityToolSource.includes("external-parity-manual-review-cannot-override-automation"),
       [
         "tests/reports/external-parity-visual-quality.json",
         "tools/external-parity-visual-quality/index.ts",
@@ -529,7 +529,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
   ];
   const blockers = checks.flatMap((entry) => entry.passed ? [] : entry.blockers.map((blocker) => `${entry.id}: ${blocker}`));
   const objectiveChecklist = buildObjectiveChecklist(checks);
-  const gate = evaluateV4CodebaseRootReadinessGate({
+  const gate = evaluateExternalParityCodebaseRootReadinessGate({
     rootBlockers: blockers,
     completionBlockers: completionAuditBlockers(completionAudit),
     broadParityBlockers: broadParityBlockers(broadParity),
@@ -563,7 +563,7 @@ export function createV4CodebaseRootReadinessReport(root = process.cwd()) {
         "tools/verify-trace/index.ts",
         "package.json",
         "packages/rendering/src/Renderer.ts",
-        "packages/rendering/src/V4RenderPreset.ts",
+        "packages/rendering/src/ExternalParityRenderPreset.ts",
         "packages/rendering/src/ProductTurntableFixtures.ts",
         "packages/rendering/src/FrameVisualMetrics.ts",
         "packages/rendering/src/Sampler.ts",
@@ -645,7 +645,7 @@ function buildObjectiveChecklist(checks: readonly RootCheck[]): readonly {
   const groups = [
     {
       requirement: "Renderer path and render-target behavior are fixed independent of examples.",
-      checkIds: ["workspace-package-imports-resolve-in-vite", "renderer-explicit-render-target-contract", "v4-render-preset-capability-contract"],
+      checkIds: ["workspace-package-imports-resolve-in-vite", "renderer-explicit-render-target-contract", "external-parity-render-preset-capability-contract"],
     },
     {
       requirement: "Material and shader behavior is proven through root PBR/material evidence.",
@@ -695,7 +695,7 @@ function buildObjectiveChecklist(checks: readonly RootCheck[]): readonly {
 
 function buildPromptToArtifactChecklist(context: {
   readonly checks: readonly RootCheck[];
-  readonly gate: ReturnType<typeof evaluateV4CodebaseRootReadinessGate>;
+  readonly gate: ReturnType<typeof evaluateExternalParityCodebaseRootReadinessGate>;
   readonly pbrGltf: Record<string, unknown> | null;
   readonly hdr: Record<string, unknown> | null;
   readonly shadow: Record<string, unknown> | null;
@@ -937,7 +937,7 @@ function hasProductTurntableRenderKitEvidence(report: Record<string, unknown> | 
     evidence.shadowEnabled === true &&
     Number(evidence.collectedLightCount) >= 3 &&
     Number(evidence.shadowCastingLightCount) === 1 &&
-    fixture.id === "v4-old-branch-product-turntable-fixture" &&
+    fixture.id === "external-parity-old-branch-product-turntable-fixture" &&
     Number(fixture.visibleHotspotCount) > 0 &&
     fixture.lightingPreset === "studio" &&
     typeof fixture.manifestHash === "string" &&
@@ -1184,7 +1184,7 @@ function completionAuditBlockers(report: Record<string, unknown> | null): string
   if (failedCriteria.length > 0) {
     return [`completion: ${failedCriteria.length} criteria remain blocked (${failedCriteria.join(", ")})`];
   }
-  return ["completion: v4 completion audit is not green"];
+  return ["completion: external-parity completion audit is not green"];
 }
 
 function broadParityBlockers(report: Record<string, unknown> | null): string[] {
@@ -1234,9 +1234,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const cliMode: V4CodebaseRootReadinessCliMode = process.argv.includes("--contracts-only") ? "contracts-only" : "strict";
-  const report = createV4CodebaseRootReadinessReport();
-  const cliPass = shouldV4CodebaseRootReadinessCliPass(report, cliMode);
+  const cliMode: ExternalParityCodebaseRootReadinessCliMode = process.argv.includes("--contracts-only") ? "contracts-only" : "strict";
+  const report = createExternalParityCodebaseRootReadinessReport();
+  const cliPass = shouldExternalParityCodebaseRootReadinessCliPass(report, cliMode);
   console.log(JSON.stringify({
     cliMode,
     cliPass,

@@ -3,7 +3,7 @@ import { createProductViewer, loadGltfScene, loadHdrEnvironment } from "@aura3d/
 const canvas = document.getElementById("viewport");
 const metrics = document.getElementById("metrics");
 if (!(canvas instanceof HTMLCanvasElement) || !(metrics instanceof HTMLElement)) {
-  throw new Error("A3D V6 Product Viewer requires canvas#viewport and #metrics.");
+  throw new Error("A3D Product Viewer requires canvas#viewport and #metrics.");
 }
 
 const asset = await loadGltfScene({

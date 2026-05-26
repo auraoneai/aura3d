@@ -1,7 +1,7 @@
 import { Renderer, type RenderDeviceDiagnostics } from "@aura3d/rendering";
 import type { A3DWorkflowResult } from "@aura3d/workflows";
 
-export interface V3ExampleOptions {
+export interface FoundationExampleOptions {
   readonly id: string;
   readonly title: string;
   readonly summary: string;
@@ -10,7 +10,7 @@ export interface V3ExampleOptions {
   createWorkflow(): Promise<A3DWorkflowResult> | A3DWorkflowResult;
 }
 
-export interface V3ExampleState {
+export interface FoundationExampleState {
   readonly id: string;
   readonly status: "loading" | "ready" | "error";
   readonly workflowKind?: string;
@@ -23,13 +23,13 @@ export interface V3ExampleState {
 
 declare global {
   interface Window {
-    __A3D_V3_EXAMPLE__?: V3ExampleState & {
-      captureState?: () => V3ExampleState;
+    __A3D_FOUNDATION_EXAMPLE__?: FoundationExampleState & {
+      captureState?: () => FoundationExampleState;
     };
   }
 }
 
-export async function mountV3Example(options: V3ExampleOptions): Promise<void> {
+export async function mountFoundationExample(options: FoundationExampleOptions): Promise<void> {
   installExampleStyles();
   const root = document.getElementById("app");
   if (!root) throw new Error(`Missing #app root for ${options.id}.`);
@@ -38,7 +38,7 @@ export async function mountV3Example(options: V3ExampleOptions): Promise<void> {
   shell.className = "example-shell";
   shell.innerHTML = `
     <section class="example-copy">
-      <span>V3 Current Example</span>
+      <span>Foundation Current Example</span>
       <h1>${options.title}</h1>
       <p>${options.summary}</p>
       <ol>${options.notes.map((note) => `<li>${note}</li>`).join("")}</ol>
@@ -61,7 +61,7 @@ export async function mountV3Example(options: V3ExampleOptions): Promise<void> {
     throw new Error(`Example shell failed to mount for ${options.id}.`);
   }
 
-  let state: V3ExampleState = {
+  let state: FoundationExampleState = {
     id: options.id,
     status: "loading",
     featureChecklist: [],
@@ -71,7 +71,7 @@ export async function mountV3Example(options: V3ExampleOptions): Promise<void> {
     lastError: null
   };
   const expose = () => {
-    window.__A3D_V3_EXAMPLE__ = Object.assign({}, state, { captureState: () => state });
+    window.__A3D_FOUNDATION_EXAMPLE__ = Object.assign({}, state, { captureState: () => state });
   };
   expose();
 
@@ -143,9 +143,9 @@ function chip(label: string): HTMLElement {
 }
 
 function installExampleStyles(): void {
-  if (document.getElementById("v3-example-styles")) return;
+  if (document.getElementById("foundation-example-styles")) return;
   const style = document.createElement("style");
-  style.id = "v3-example-styles";
+  style.id = "foundation-example-styles";
   style.textContent = `
     html, body, #app {
       height: 100%;

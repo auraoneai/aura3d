@@ -1,8 +1,8 @@
-import type { V5PostProcessFrame, V5PostProcessPass } from "./PostProcessTypes";
+import type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
 
-export class OutlinePassV5 implements V5PostProcessPass {
+export class OutlinePassThreeCompat implements ThreeCompatPostProcessPass {
   readonly name = "OutlinePass";
   readonly enabled = true;
   constructor(public readonly strength = 0.5) {}
-  apply(frame: V5PostProcessFrame): V5PostProcessFrame { return { ...frame, outlines: frame.outlines + this.strength }; }
+  apply(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame { return { ...frame, outlines: frame.outlines + this.strength }; }
 }

@@ -54,7 +54,7 @@ describe("glTF extension support matrix", () => {
       ["KHR_draco_mesh_compression", "KHR_animation_pointer", "EXT_vendor_required"]
     );
 
-    expect(evaluation.schemaVersion).toBe("gltf-extension-support-v1");
+    expect(evaluation.schemaVersion).toBe("gltf-extension-support");
     expect(evaluation.runtimeSupported.map((entry) => entry.name)).toEqual([]);
     expect(evaluation.decoderRequired.map((entry) => entry.name)).toEqual([
       "KHR_draco_mesh_compression",
@@ -82,7 +82,7 @@ describe("glTF extension support matrix", () => {
 
     const asset = await new GLTFLoader().load({ url: dataGLTF(gltf), type: "gltf" }, new LoadContext());
 
-    expect(asset.loaderDiagnostics.extensionSupport.schemaVersion).toBe("gltf-extension-support-v1");
+    expect(asset.loaderDiagnostics.extensionSupport.schemaVersion).toBe("gltf-extension-support");
     expect(asset.loaderDiagnostics.extensionSupport.parsedWithLimits.map((entry) => entry.name)).toEqual(["KHR_materials_transmission"]);
     expect(asset.loaderDiagnostics.extensionSupport.diagnosticOnly.map((entry) => entry.name)).toEqual(["KHR_animation_pointer"]);
     expect(asset.loaderDiagnostics.extensionSupport.unsupportedUsed).toEqual(["EXT_vendor_unknown"]);
@@ -106,11 +106,11 @@ describe("glTF extension support matrix", () => {
   it("keeps HDR and EXR loader diagnostics honest about decode parity", () => {
     const existingHdr = "fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr";
     expect(new HDRLoader().load(existingHdr)).toMatchObject({
-      loader: "HDRLoaderV5",
+      loader: "HDRLoaderThreeCompat",
       status: "loaded"
     });
     expect(new EXRLoader().load(existingHdr)).toMatchObject({
-      loader: "EXRLoaderV5",
+      loader: "EXRLoaderThreeCompat",
       status: "diagnostic-only",
       warnings: [expect.stringContaining("diagnostic-only")]
     });

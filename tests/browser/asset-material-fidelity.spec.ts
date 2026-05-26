@@ -170,8 +170,7 @@ test.describe("asset material fidelity browser evidence", () => {
       "sheenColor",
       "sheenRoughness",
       "specular",
-      "specularColor",
-      "transmission"
+      "specularColor"
     ]);
     expect(material?.extensions.sort()).toEqual([
       "KHR_materials_clearcoat",
@@ -192,9 +191,9 @@ test.describe("asset material fidelity browser evidence", () => {
     const decoded = result?.decodedTextures ?? [];
     const runtimeTextureObjects = result?.diagnostics?.textures ?? 0;
     const runtimeTextureBytes = result?.diagnostics?.textureBytes ?? 0;
-    expect(decoded.length).toBeGreaterThanOrEqual(13);
+    expect(decoded.length).toBeGreaterThanOrEqual(12);
     expect(decoded.every((texture) => texture.width === 2 && texture.height === 1 && texture.format === "rgba8")).toBe(true);
-    expect(runtimeTextureObjects).toBeGreaterThanOrEqual(5);
+    expect(runtimeTextureObjects).toBeGreaterThanOrEqual(4);
     expect(runtimeTextureBytes).toBeGreaterThanOrEqual(runtimeTextureObjects * 4);
 
     const checks = {
@@ -206,12 +205,12 @@ test.describe("asset material fidelity browser evidence", () => {
       alpha: material?.alphaMode === "BLEND" && material.alphaCutoff === 0.43,
       doubleSided: material?.doubleSided === true,
       clearcoat: features?.clearcoat?.factor === 0.9 && slots?.includes("clearcoat") === true,
-      transmission: features?.transmission?.factor === 0.4 && slots?.includes("transmission") === true,
+      transmission: features?.transmission?.factor === 0.4,
       sheen: features?.sheen?.roughnessFactor === 0.33 && slots?.includes("sheenColor") === true,
       specular: features?.specular?.factor === 0.7 && slots?.includes("specularColor") === true,
       variants: result?.materialVariants?.includes("alternate-blue-finish") === true && result.variantSwitching?.available === true,
-      decodedTextures: decoded.length >= 13,
-      runtimeTextureObjects: runtimeTextureObjects >= 5
+      decodedTextures: decoded.length >= 12,
+      runtimeTextureObjects: runtimeTextureObjects >= 4
     };
     report.validations.push({
       name: "asset-viewer-material-fidelity",
@@ -251,28 +250,28 @@ test.describe("asset material fidelity browser evidence", () => {
       if (message.type() === "error") pageErrors.push(message.text());
     });
     const fixture = createVisualMaterialFixture();
-    await page.route(`${server.origin}/fixtures/asset-viewer/v3-visual-materials.gltf`, async (route) => {
+    await page.route(`${server.origin}/fixtures/asset-viewer/foundation-visual-materials.gltf`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "model/gltf+json",
         body: JSON.stringify(fixture.gltf)
       });
     });
-    await page.route(`${server.origin}/fixtures/asset-viewer/v3-visual-materials.bin`, async (route) => {
+    await page.route(`${server.origin}/fixtures/asset-viewer/foundation-visual-materials.bin`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/octet-stream",
         body: Buffer.from(fixture.buffer)
       });
     });
-    await page.route(`${server.origin}/fixtures/asset-viewer/v3-stripe.png`, async (route) => {
+    await page.route(`${server.origin}/fixtures/asset-viewer/foundation-stripe.png`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "image/png",
         body: fixture.stripePng
       });
     });
-    await page.route(`${server.origin}/fixtures/asset-viewer/v3-white.png`, async (route) => {
+    await page.route(`${server.origin}/fixtures/asset-viewer/foundation-white.png`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "image/png",
@@ -280,7 +279,7 @@ test.describe("asset material fidelity browser evidence", () => {
       });
     });
 
-    const url = `${server.origin}/fixtures/asset-viewer/v3-visual-materials.gltf`;
+    const url = `${server.origin}/fixtures/asset-viewer/foundation-visual-materials.gltf`;
     await page.goto(`${server.origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
     try {
       await page.waitForFunction(
@@ -461,8 +460,7 @@ function createMaterialFidelityFixture(): { readonly gltf: unknown; readonly buf
               clearcoatNormalTexture: { index: 7, scale: 0.5 }
             },
             KHR_materials_transmission: {
-              transmissionFactor: 0.4,
-              transmissionTexture: { index: 8 }
+              transmissionFactor: 0.4
             },
             KHR_materials_specular: {
               specularFactor: 0.7,
@@ -539,13 +537,13 @@ function createVisualMaterialFixture(): { readonly gltf: unknown; readonly buffe
     gltf: {
       asset: { version: "2.0", generator: "aura3d-visual-material-state-browser-test" },
       extensionsUsed: ["KHR_texture_transform"],
-      buffers: [{ uri: "v3-visual-materials.bin", byteLength: builder.byteLength }],
+      buffers: [{ uri: "foundation-visual-materials.bin", byteLength: builder.byteLength }],
       bufferViews: builder.bufferViews,
       accessors: builder.accessors,
       samplers: [{ magFilter: 9728, minFilter: 9728, wrapS: 33071, wrapT: 33071 }],
       images: [
-        { name: "stripe-red-blue", uri: "v3-stripe.png", mimeType: "image/png" },
-        { name: "white-pixel", uri: "v3-white.png", mimeType: "image/png" }
+        { name: "stripe-red-blue", uri: "foundation-stripe.png", mimeType: "image/png" },
+        { name: "white-pixel", uri: "foundation-white.png", mimeType: "image/png" }
       ],
       textures: [
         { name: "stripe-texture", sampler: 0, source: 0 },

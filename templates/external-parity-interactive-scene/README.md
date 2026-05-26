@@ -1,4 +1,4 @@
-# A3D V4 Interactive Scene Template
+# A3D ExternalParity Interactive Scene Template
 
 This template starts an interactive workflow from the public `@aura3d/engine` package.
 

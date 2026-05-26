@@ -37,12 +37,12 @@ const previews = templates.map((template) => {
 });
 
 const report = {
-  schema: "a3d-external-parity-static-preview-smoke/v1",
+  schema: "a3d-external-parity-static-preview-smoke",
   generatedAt: new Date().toISOString(),
   ok: previews.every((preview) => preview.ok),
   previewRoot,
   previews,
-  productBoundary: "Static file integrity smoke for every built V4 template. Full hosted browser deployment remains a release gate."
+  productBoundary: "Static file integrity smoke for every built External parity template. Full hosted browser deployment remains a release gate."
 };
 
 mkdirSync(dirname(reportPath), { recursive: true });

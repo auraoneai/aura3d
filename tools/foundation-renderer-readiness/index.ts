@@ -48,7 +48,7 @@ const captureChecks = captures.map((capture) => ({
 }));
 
 const report = {
-  schema: "a3d-foundation-renderer-readiness/v1",
+  schema: "a3d-foundation-renderer-readiness",
   generatedAt: new Date().toISOString(),
   pass: sourceFiles.every((file) => file.exists)
     && manifest?.pass === true

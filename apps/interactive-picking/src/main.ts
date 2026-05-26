@@ -12,11 +12,11 @@ import { Renderable, Scene, type SceneNode } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __a3dV8InteractivePicking?: V8InteractivePickingRuntime;
+    __a3dCurrentRoutesInteractivePicking?: CurrentRoutesInteractivePickingRuntime;
   }
 }
 
-interface V8InteractivePickingRuntime {
+interface CurrentRoutesInteractivePickingRuntime {
   readonly appId: "interactive-picking";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -71,7 +71,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8InteractivePicking = runtime;
+    window.__a3dCurrentRoutesInteractivePicking = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -164,7 +164,7 @@ async function run(): Promise<void> {
           nearestPointIndex: cachedNearestPointIndex,
           lastPointerHit
         });
-        window.__a3dV8InteractivePicking = runtime;
+        window.__a3dCurrentRoutesInteractivePicking = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -215,9 +215,9 @@ function animateCubes(cubeNodes: readonly SceneNode[], now: number): void {
 
 function createRuntime(
   startedAt: number,
-  status: V8InteractivePickingRuntime["status"],
-  patch: Partial<Omit<V8InteractivePickingRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "cubeCount" | "pointCount">> = {}
-): V8InteractivePickingRuntime {
+  status: CurrentRoutesInteractivePickingRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesInteractivePickingRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "cubeCount" | "pointCount">> = {}
+): CurrentRoutesInteractivePickingRuntime {
   return {
     appId: APP_ID,
     status,
@@ -238,11 +238,11 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8InteractivePickingRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesInteractivePickingRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Interactive Picking</h1>
+        <h1>CurrentRoutes Interactive Picking</h1>
         <p>Scene ray picking for transformed cubes and thresholded point clouds.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

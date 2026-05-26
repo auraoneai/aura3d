@@ -1,15 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  createV5MaterialPreviewScene,
-  listV5MaterialProofChannels,
-  listV5PbrMaterials,
-  summarizeV5MaterialLibrary,
-  V5_REQUIRED_MATERIAL_CLASSES
+  createThreeCompatMaterialPreviewScene,
+  listThreeCompatMaterialProofChannels,
+  listThreeCompatPbrMaterials,
+  summarizeThreeCompatMaterialLibrary,
+  THREE_COMPAT_REQUIRED_MATERIAL_CLASSES
 } from "../../packages/materials/src";
 
-interface V5MaterialManifest {
-  readonly schema: "a3d-three-compat-material-library/v1";
+interface ThreeCompatMaterialManifest {
+  readonly schema: "a3d-three-compat-material-library";
   readonly requirements: {
     readonly minimumMaterialPresets: number;
     readonly minimumRealTextureBackedPresets: number;
@@ -21,7 +21,7 @@ interface V5MaterialManifest {
   readonly requiredScreenshot: string;
 }
 
-interface V5MaterialReadinessCheck {
+interface ThreeCompatMaterialReadinessCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
@@ -39,24 +39,24 @@ const requiredFiles = [
   "tests/browser/three-compat-material-library.spec.ts"
 ] as const;
 
-function check(name: string, pass: boolean, detail: string): V5MaterialReadinessCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatMaterialReadinessCheck {
   return { name, pass, detail };
 }
 
-const manifest = JSON.parse(readFileSync(resolve("fixtures/three-compat/materials/manifest.json"), "utf8")) as V5MaterialManifest;
-const summary = summarizeV5MaterialLibrary();
-const materials = listV5PbrMaterials();
-const previewScene = createV5MaterialPreviewScene();
+const manifest = JSON.parse(readFileSync(resolve("fixtures/three-compat/materials/manifest.json"), "utf8")) as ThreeCompatMaterialManifest;
+const summary = summarizeThreeCompatMaterialLibrary();
+const materials = listThreeCompatPbrMaterials();
+const previewScene = createThreeCompatMaterialPreviewScene();
 const missingCheckedInSources = manifest.checkedInTextureSources.filter((path) => !existsSync(resolve(path)));
-const materialClasses = new Set(V5_REQUIRED_MATERIAL_CLASSES);
+const materialClasses = new Set(THREE_COMPAT_REQUIRED_MATERIAL_CLASSES);
 const unsupportedManifestClasses = manifest.requirements.requiredClasses.filter((materialClass) => !materialClasses.has(materialClass as never));
-const checks: V5MaterialReadinessCheck[] = [
+const checks: ThreeCompatMaterialReadinessCheck[] = [
   check(
     "required-files-present",
     requiredFiles.every((file) => existsSync(resolve(file))),
-    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 material files exist"
+    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility material files exist"
   ),
-  check("schema", manifest.schema === "a3d-three-compat-material-library/v1", `schema=${manifest.schema}`),
+  check("schema", manifest.schema === "a3d-three-compat-material-library", `schema=${manifest.schema}`),
   check(
     "material-floor",
     summary.materialCount >= manifest.requirements.minimumMaterialPresets,
@@ -79,7 +79,7 @@ const checks: V5MaterialReadinessCheck[] = [
   ),
   check(
     "proof-channels",
-    summary.missingProofChannels.length === 0 && manifest.requirements.requiredProofChannels.every((channel) => listV5MaterialProofChannels().includes(channel as never)),
+    summary.missingProofChannels.length === 0 && manifest.requirements.requiredProofChannels.every((channel) => listThreeCompatMaterialProofChannels().includes(channel as never)),
     summary.missingProofChannels.join(", ") || `channels=${summary.proofChannels.join(", ")}`
   ),
   check(
@@ -106,7 +106,7 @@ const checks: V5MaterialReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-material-readiness/v1",
+  schema: "a3d-three-compat-material-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary,
@@ -122,4 +122,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log(`V5 material readiness passed: ${summary.materialCount} presets, ${summary.textureBackedMaterialCount} texture-backed.`);
+console.log(`Three.js compatibility material readiness passed: ${summary.materialCount} presets, ${summary.textureBackedMaterialCount} texture-backed.`);

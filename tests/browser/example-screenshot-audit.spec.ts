@@ -9,7 +9,7 @@ const manifestPath = `${screenshotDir}/manifest.json`;
 const viewport = { width: 1280, height: 800 };
 const auditTimeoutMs = 420_000;
 
-test.describe("v3 example screenshot audit", () => {
+test.describe("example screenshot audit", () => {
   test.setTimeout(180_000);
   let server: ExampleDevServer;
 
@@ -21,7 +21,7 @@ test.describe("v3 example screenshot audit", () => {
     await server.close();
   });
 
-  test("opens every portfolio example and writes the v3 screenshot manifest", async ({ page, browserName }) => {
+  test("opens every portfolio example and writes the screenshot manifest", async ({ page, browserName }) => {
     test.setTimeout(auditTimeoutMs);
     await page.setViewportSize(viewport);
     const root = process.cwd();
@@ -136,8 +136,8 @@ test.describe("v3 example screenshot audit", () => {
     const report = {
       ...baseReport(root, {
         ok: violations.length === 0,
-        command: "pnpm verify:v3-examples",
-        runIdPrefix: "v3-example-screenshot-audit",
+        command: "pnpm verify:foundation-examples",
+        runIdPrefix: "example-screenshot-audit",
         sourceFiles: [
           "tests/browser/example-screenshot-audit.spec.ts",
           "examples/portfolio/main.ts",
@@ -193,6 +193,7 @@ async function waitForKnownRuntimeState(page: Page, timeoutMs = 45_000): Promise
     "__AURA3D_PRODUCT_DEMO__",
     "__AURA3D_ARCHITECTURE_DEMO__",
     "__AURA3D_GAME_DEMO__",
+    "__AURA3D_RACING_SHOWCASE__",
     "__AURA3D_ASSET_VIEWER__",
     "__AURA3D_PBR_CAMERA_COMPARISON__",
     "__AURA3D_PBR_MATERIAL_LAB__",

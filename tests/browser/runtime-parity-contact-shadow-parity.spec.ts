@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 contact shadow parity artifact", () => {
+test.describe("runtime contact shadow parity artifact", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -31,17 +31,17 @@ test.describe("V7 contact shadow parity artifact", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V7_CONTACT_SHADOW_PARITY__ as { status?: string } | undefined;
+          const result = window.__RUNTIME_CONTACT_SHADOW_PARITY__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 90_000 }
       );
     } catch (error) {
-      throw new Error(`V7 contact-shadow parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`runtime contact-shadow parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V7_CONTACT_SHADOW_PARITY__) as {
+    const result = await page.evaluate(() => window.__RUNTIME_CONTACT_SHADOW_PARITY__) as {
       status: "ready" | "error";
       error?: string;
       schema?: string;
@@ -84,7 +84,7 @@ test.describe("V7 contact shadow parity artifact", () => {
     };
 
     expect(result.status, result.error).toBe("ready");
-    expect(result.schema).toBe("a3d-v7-contact-shadow-parity/v1");
+    expect(result.schema).toBe("a3d-runtime-contact-shadow-parity");
     expect(result.parity?.claim).toBe("bounded-threejs-soft-contact-shadow-delta-parity");
     expect(result.parity?.reason).toContain("not full screen-space, ray, or general contact-shadow parity");
     expect(result.a3d?.diagnostics.drawCalls ?? 0).toBeGreaterThanOrEqual(30);
@@ -145,7 +145,7 @@ test.describe("V7 contact shadow parity artifact", () => {
     const artifacts = pngs.map(([id, path, dataUrl]) => {
       if (!dataUrl) throw new Error(`Missing ${id} contact-shadow data URL.`);
       writeFileSync(resolve(path), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
-      const pixelStats = readV6PngStats(resolve(path));
+      const pixelStats = readProductionPngStats(resolve(path));
       const fileSize = statSync(resolve(path)).size;
       expect(pixelStats.width).toBe(1024);
       expect(pixelStats.height).toBe(768);

@@ -1,12 +1,12 @@
 declare global {
   interface Window {
-    __V8_THREEJS_PARITY__?: V8ThreejsParityWindowResult;
+    __AURA3D_THREEJS_PARITY__?: CurrentThreejsParityWindowResult;
   }
 }
 
 export {};
 
-interface V8FlagshipViewerSceneConfig {
+interface CurrentFlagshipViewerSceneConfig {
   readonly id: "flagship-viewer";
   readonly assetId: "chronograph-watch";
   readonly assetName: "Chronograph Watch";
@@ -18,9 +18,9 @@ interface V8FlagshipViewerSceneConfig {
   readonly camera: { readonly fovYRadians: number };
 }
 
-interface V8FlagshipRenderResult {
+interface CurrentFlagshipRenderResult {
   readonly engine: "aura3d";
-  readonly scene: V8FlagshipViewerSceneConfig;
+  readonly scene: CurrentFlagshipViewerSceneConfig;
   readonly status: "ready";
   readonly renderer: { readonly drawCalls: number };
   readonly asset: { readonly id: string; readonly uri: string };
@@ -42,7 +42,7 @@ interface V8FlagshipRenderResult {
   readonly dataUrl: string;
 }
 
-interface V8ThreeFlagshipRenderResult {
+interface CurrentThreeFlagshipRenderResult {
   readonly engine: "threejs";
   readonly status: "ready";
   readonly renderer: {
@@ -61,14 +61,14 @@ interface V8ThreeFlagshipRenderResult {
 }
 
 interface Aura3DModule {
-  readonly v8FlagshipViewerScene: V8FlagshipViewerSceneConfig;
-  renderA3DFlagshipViewer(canvas: HTMLCanvasElement, scene?: V8FlagshipViewerSceneConfig): Promise<V8FlagshipRenderResult>;
+  readonly currentFlagshipViewerScene: CurrentFlagshipViewerSceneConfig;
+  renderA3DFlagshipViewer(canvas: HTMLCanvasElement, scene?: CurrentFlagshipViewerSceneConfig): Promise<CurrentFlagshipRenderResult>;
 }
 
 interface ThreejsModule {
   renderThreeFlagshipViewer(options: {
     readonly canvas: HTMLCanvasElement;
-    readonly scene: V8FlagshipViewerSceneConfig;
+    readonly scene: CurrentFlagshipViewerSceneConfig;
     readonly camera: {
       readonly cameraPosition: readonly [number, number, number];
       readonly target: readonly [number, number, number];
@@ -78,7 +78,7 @@ interface ThreejsModule {
       readonly min: readonly [number, number, number];
       readonly max: readonly [number, number, number];
     };
-  }): Promise<V8ThreeFlagshipRenderResult>;
+  }): Promise<CurrentThreeFlagshipRenderResult>;
 }
 
 interface DiffStats {
@@ -89,14 +89,14 @@ interface DiffStats {
   readonly averageLumaDelta: number;
 }
 
-interface V8ThreejsParityReady {
+interface CurrentThreejsParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-current-routes-threejs-parity/v1";
+  readonly schema: "a3d-current-routes-threejs-parity";
   readonly purpose: "same-scene flagship A3D vs Three.js competitor baseline";
   readonly generatedInBrowserAt: string;
-  readonly scene: V8FlagshipViewerSceneConfig;
-  readonly a3d: Omit<V8FlagshipRenderResult, "dataUrl">;
-  readonly threejs: Omit<V8ThreeFlagshipRenderResult, "dataUrl">;
+  readonly scene: CurrentFlagshipViewerSceneConfig;
+  readonly a3d: Omit<CurrentFlagshipRenderResult, "dataUrl">;
+  readonly threejs: Omit<CurrentThreeFlagshipRenderResult, "dataUrl">;
   readonly diff: DiffStats;
   readonly dataUrls: {
     readonly a3d: string;
@@ -115,9 +115,9 @@ interface V8ThreejsParityReady {
   readonly openGaps: readonly string[];
 }
 
-interface V8ThreejsParityError {
+interface CurrentThreejsParityError {
   readonly status: "error";
-  readonly schema: "a3d-current-routes-threejs-parity/v1";
+  readonly schema: "a3d-current-routes-threejs-parity";
   readonly generatedInBrowserAt: string;
   readonly missingDependency: boolean;
   readonly error: string;
@@ -129,13 +129,13 @@ interface V8ThreejsParityError {
   };
 }
 
-type V8ThreejsParityWindowResult = V8ThreejsParityReady | V8ThreejsParityError;
+type CurrentThreejsParityWindowResult = CurrentThreejsParityReady | CurrentThreejsParityError;
 
 const MAX_ACCEPTABLE_MEAN_DELTA = 55;
 const MIN_ACCEPTABLE_STRUCTURAL_SIMILARITY = 0.8;
 
 const FALLBACK_SCENE = {
-  assetUri: "/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb",
+  assetUri: "/fixtures/product-studio/products/watch/watch.gltf",
   hdrUri: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr"
 } as const;
 
@@ -150,11 +150,11 @@ async function validateNodeReport(): Promise<void> {
   const { resolve } = await import("node:path");
   const reportPath = "tests/reports/current-routes-threejs-parity.json";
   if (!existsSync(resolve(reportPath))) {
-    throw new Error(`Missing V8 Three.js parity report: ${reportPath}`);
+    throw new Error(`Missing Three.js parity report: ${reportPath}`);
   }
   const report = JSON.parse(readFileSync(resolve(reportPath), "utf8")) as {
     readonly status?: string;
-    readonly assertions?: V8ThreejsParityReady["assertions"];
+    readonly assertions?: CurrentThreejsParityReady["assertions"];
     readonly diff?: Partial<DiffStats>;
     readonly artifacts?: Record<string, string>;
     readonly pageErrors?: readonly string[];
@@ -184,14 +184,14 @@ async function validateNodeReport(): Promise<void> {
     if (size < 20 * 1024) failures.push(`${kind} artifact ${path} is too small: ${size} bytes`);
   }
   const result = {
-    schema: "a3d-current-routes-threejs-parity-node-validation/v1",
+    schema: "a3d-current-routes-threejs-parity-node-validation",
     pass: failures.length === 0,
     reportPath,
     failures
   };
   console.log(JSON.stringify(result, null, 2));
   if (failures.length > 0) {
-    throw new Error(`V8 Three.js parity report validation failed:\n${failures.join("\n")}`);
+    throw new Error(`Three.js parity report validation failed:\n${failures.join("\n")}`);
   }
 }
 
@@ -209,7 +209,7 @@ async function run(): Promise<void> {
       45_000,
       "Three.js benchmark module import timed out before the parity harness could run."
     );
-    const scene = aura3d.v8FlagshipViewerScene;
+    const scene = aura3d.currentFlagshipViewerScene;
     const a3dCanvas = requiredCanvas("a3d-flagship-viewer", scene);
     const threeCanvas = requiredCanvas("threejs-flagship-viewer", scene);
     const sideBySideCanvas = requiredCanvas("side-by-side", scene);
@@ -232,9 +232,9 @@ async function run(): Promise<void> {
     }), 75_000, "Three.js flagship viewer render timed out before publishing a capture.");
     const diff = computeDiff(await dataUrlToPixels(a3d.dataUrl), await dataUrlToPixels(threejs.dataUrl));
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff, scene);
-    const ready: V8ThreejsParityReady = {
+    const ready: CurrentThreejsParityReady = {
       status: "ready",
-      schema: "a3d-current-routes-threejs-parity/v1",
+      schema: "a3d-current-routes-threejs-parity",
       purpose: "same-scene flagship A3D vs Three.js competitor baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene,
@@ -268,13 +268,13 @@ async function run(): Promise<void> {
         "This covers one flagship product viewer scene, not broad Three.js replacement."
       ]
     };
-    window.__V8_THREEJS_PARITY__ = ready;
+    window.__AURA3D_THREEJS_PARITY__ = ready;
     if (status) status.textContent = JSON.stringify({ status: ready.status, diff: ready.diff }, null, 2);
   } catch (error) {
     const message = error instanceof Error ? error.stack ?? error.message : String(error);
-    const failure: V8ThreejsParityError = {
+    const failure: CurrentThreejsParityError = {
       status: "error",
-      schema: "a3d-current-routes-threejs-parity/v1",
+      schema: "a3d-current-routes-threejs-parity",
       generatedInBrowserAt: new Date().toISOString(),
       missingDependency: /three|webgl|renderer|GLTFLoader|RGBELoader|module|import/i.test(message),
       error: message,
@@ -285,12 +285,12 @@ async function run(): Promise<void> {
         policy: "fail-honestly-no-faked-equality"
       }
     };
-    window.__V8_THREEJS_PARITY__ = failure;
+    window.__AURA3D_THREEJS_PARITY__ = failure;
     if (status) status.textContent = JSON.stringify(failure, null, 2);
   }
 }
 
-function requiredCanvas(id: string, scene: V8FlagshipViewerSceneConfig): HTMLCanvasElement {
+function requiredCanvas(id: string, scene: CurrentFlagshipViewerSceneConfig): HTMLCanvasElement {
   const element = document.getElementById(id);
   if (!(element instanceof HTMLCanvasElement)) throw new Error(`Missing canvas #${id}.`);
   element.width = id === "side-by-side" ? scene.width * 2 : scene.width;
@@ -364,7 +364,7 @@ async function drawSideBySide(
   a3dDataUrl: string,
   threeDataUrl: string,
   diff: DiffStats,
-  scene: V8FlagshipViewerSceneConfig
+  scene: CurrentFlagshipViewerSceneConfig
 ): Promise<string> {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Unable to create side-by-side context.");

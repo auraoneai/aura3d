@@ -1,15 +1,16 @@
+import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-interface V4AssetManifest {
+interface ExternalParityAssetManifest {
   readonly schemaVersion: string;
   readonly assetCount: number;
-  readonly assets: readonly V4AssetManifestEntry[];
+  readonly assets: readonly ExternalParityAssetManifestEntry[];
 }
 
-interface V4AssetManifestEntry {
+interface ExternalParityAssetManifestEntry {
   readonly id: string;
   readonly category: string;
   readonly displayName: string;
@@ -21,6 +22,22 @@ interface V4AssetManifestEntry {
   readonly morphTargets: number;
 }
 
+interface ExternalParityAssetCorpusReport {
+  readonly schemaVersion: string;
+  readonly assetCount: number;
+  readonly assets: readonly {
+    readonly id: string;
+    readonly category: string;
+    readonly displayName: string;
+    readonly assetPath: string;
+    readonly features: readonly string[];
+    readonly textureCount: number;
+    readonly animationCount: number;
+    readonly skinCount: number;
+    readonly morphTargetCount: number;
+  }[];
+}
+
 interface AssetViewerSnapshot {
   readonly status?: "ready" | "error";
   readonly error?: string;
@@ -28,7 +45,7 @@ interface AssetViewerSnapshot {
   readonly screenshotPath?: string;
   readonly claimBoundary?: string;
   readonly featureEvidence?: Record<string, unknown>;
-  readonly v4RenderPreset?: {
+  readonly externalParityRenderPreset?: {
     readonly presetId?: string;
     readonly activeFeatures?: readonly string[];
     readonly colorManagement?: { readonly toneMapper?: string };
@@ -189,7 +206,7 @@ interface AssetViewerSnapshot {
     readonly boundedControls: true;
   };
   readonly comparisonExport?: {
-    readonly schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1";
+    readonly schemaVersion: "a3d-external-parity-asset-viewer-comparison-export";
     readonly generated: boolean;
     readonly renderer: "webgl2";
     readonly meshCount: number;
@@ -250,12 +267,12 @@ interface AssetViewerSnapshot {
   };
 }
 
-interface AssetViewerV4Report {
+interface AssetViewerExternalParityReport {
   ok: boolean;
   readonly generatedAt: string;
   readonly command: string;
   readonly manifest: string;
-  readonly validations: AssetViewerV4Validation[];
+  readonly validations: AssetViewerExternalParityValidation[];
   completedTaskEvidence: readonly {
     readonly task: string;
     readonly evidence: readonly string[];
@@ -263,7 +280,7 @@ interface AssetViewerV4Report {
   blockedTasks: readonly string[];
 }
 
-interface AssetViewerV4Validation {
+interface AssetViewerExternalParityValidation {
   readonly assetId: string;
   readonly category: string;
   readonly url: string;
@@ -294,22 +311,62 @@ interface AssetViewerV4Validation {
   readonly ok: boolean;
 }
 
-const manifestPath = resolve("fixtures/asset-corpus/manifest.json");
-const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as V4AssetManifest;
-const screenshotRoot = resolve("tests/reports/external-parity-example-screenshots/asset-viewer-v4");
+const manifestPath = resolve("tests/reports/external-parity-asset-corpus.json");
+const EXPECTED_ASSET_CORPUS_REPORT_SCHEMA = "a3d-external-parity-asset-corpus-report";
+const manifest = loadExternalParityAssetManifest(manifestPath);
+const screenshotRoot = resolve("tests/reports/external-parity-example-screenshots/asset-viewer-external-parity");
 const reportPath = resolve("tests/reports/external-parity-asset-viewer-browser.json");
 
-const report: AssetViewerV4Report = {
+const report: AssetViewerExternalParityReport = {
   ok: false,
   generatedAt: new Date().toISOString(),
   command: "pnpm exec playwright test tests/browser/asset-viewer-external-parity.spec.ts",
-  manifest: "fixtures/asset-corpus/manifest.json",
+  manifest: "tests/reports/external-parity-asset-corpus.json",
   validations: [],
   completedTaskEvidence: [],
   blockedTasks: [],
 };
 
-test.describe("asset viewer V4 corpus browser evidence", () => {
+function loadExternalParityAssetManifest(path: string): ExternalParityAssetManifest {
+  if (shouldRegenerateExternalParityAssetManifest(path)) {
+    const result = spawnSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/external-parity-asset-corpus/index.ts"], {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      stdio: "inherit"
+    });
+    if (result.status !== 0) {
+      throw new Error("Failed to generate external parity asset corpus before browser validation.");
+    }
+  }
+  const report = JSON.parse(readFileSync(path, "utf8")) as ExternalParityAssetCorpusReport;
+  return {
+    schemaVersion: report.schemaVersion,
+    assetCount: report.assetCount,
+    assets: report.assets.map((asset) => ({
+      id: asset.id,
+      category: asset.category,
+      displayName: asset.displayName,
+      localPath: asset.assetPath,
+      features: asset.features,
+      textureCount: asset.textureCount,
+      animations: asset.animationCount,
+      skins: asset.skinCount,
+      morphTargets: asset.morphTargetCount
+    }))
+  };
+}
+
+function shouldRegenerateExternalParityAssetManifest(path: string): boolean {
+  if (!existsSync(path)) return true;
+  try {
+    const report = JSON.parse(readFileSync(path, "utf8")) as Partial<ExternalParityAssetCorpusReport>;
+    return report.schemaVersion !== EXPECTED_ASSET_CORPUS_REPORT_SCHEMA || !Array.isArray(report.assets);
+  } catch {
+    return true;
+  }
+}
+
+test.describe("asset viewer external parity corpus browser evidence", () => {
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -326,12 +383,12 @@ test.describe("asset viewer V4 corpus browser evidence", () => {
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
-        "tests/reports/external-parity-example-screenshots/asset-viewer-v4/*.png",
+        "tests/reports/external-parity-example-screenshots/asset-viewer-external-parity/*.png",
       ],
     }, {
-      task: "Asset viewer renders every V4 corpus asset.",
+      task: "Asset viewer renders every external parity corpus asset.",
       evidence: [
-        "fixtures/asset-corpus/manifest.json",
+        "tests/reports/external-parity-asset-corpus.json",
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
@@ -356,24 +413,24 @@ test.describe("asset viewer V4 corpus browser evidence", () => {
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
-        "tests/reports/external-parity-example-screenshots/asset-viewer-v4/*.png",
+        "tests/reports/external-parity-example-screenshots/asset-viewer-external-parity/*.png",
       ],
     }, {
-      task: "Allow drag/drop local glTF import in the V4 asset viewer.",
+      task: "Allow drag/drop local glTF import in the external parity asset viewer.",
       evidence: [
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
       ],
     }, {
-      task: "Allow material/environment/postprocess controls in the V4 asset viewer.",
+      task: "Allow material/environment/postprocess controls in the external parity asset viewer.",
       evidence: [
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
         "tests/reports/external-parity-asset-viewer-browser.json",
       ],
     }, {
-      task: "Add same-asset comparison export data from the V4 asset viewer.",
+      task: "Add same-asset comparison export data from the external parity asset viewer.",
       evidence: [
         "examples/asset-viewer/main.ts",
         "tests/browser/asset-viewer-external-parity.spec.ts",
@@ -390,28 +447,28 @@ test.describe("asset viewer V4 corpus browser evidence", () => {
       ],
     }];
     report.blockedTasks = [
-      "The generated V4 corpus validates loader diagnostics, render resource creation, and asset-viewer rendering, but it is not a claim that all assets are production-quality textured models.",
+      "The generated external parity corpus validates loader diagnostics, render resource creation, and asset-viewer rendering, but it is not a claim that all assets are production-quality textured models.",
       "Skinned and morph assets are loaded and rendered with explicit bounded warnings where render-resource parity is not complete.",
     ];
     mkdirSync(dirname(reportPath), { recursive: true });
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });
 
-  test("loads and renders every V4 corpus asset in the asset viewer", async ({ page }) => {
+  test("loads and renders every external parity corpus asset in the asset viewer", async ({ page }) => {
     test.setTimeout(120_000);
-    expect(manifest.schemaVersion).toBe("a3d-v4-asset-corpus-v1");
+    expect(manifest.schemaVersion).toBe(EXPECTED_ASSET_CORPUS_REPORT_SCHEMA);
     expect(manifest.assetCount).toBe(manifest.assets.length);
     expect(manifest.assets.length).toBeGreaterThanOrEqual(7);
 
     for (const asset of manifest.assets) {
       const validation = await validateAsset(page, server.origin, asset);
       report.validations.push(validation);
-      expect(validation.ok, `${asset.id} failed V4 asset-viewer validation`).toBe(true);
+      expect(validation.ok, `${asset.id} failed external parity asset-viewer validation`).toBe(true);
     }
   });
 });
 
-async function validateAsset(page: Page, origin: string, asset: V4AssetManifestEntry): Promise<AssetViewerV4Validation> {
+async function validateAsset(page: Page, origin: string, asset: ExternalParityAssetManifestEntry): Promise<AssetViewerExternalParityValidation> {
   const url = `${origin}/${asset.localPath}`;
   await page.goto(`${origin}/examples/asset-viewer/?model=custom&url=${encodeURIComponent(url)}`, { waitUntil: "domcontentloaded" });
   await page.waitForFunction(
@@ -427,9 +484,9 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
     return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__;
   });
   const nonBlankPixels = await nonBlankWebGLPixels(page, "[data-testid='asset-viewer-canvas']");
-  const screenshot = `tests/reports/external-parity-example-screenshots/asset-viewer-v4/${asset.id}.png`;
+  const screenshot = `tests/reports/external-parity-example-screenshots/asset-viewer-external-parity/${asset.id}.png`;
   await page.getByTestId("asset-viewer-canvas").screenshot({ path: resolve(screenshot) });
-  if (asset.id === "v4-material-fidelity-card") {
+  if (asset.id === "external-parity-material-fidelity-card") {
     await page.screenshot({ path: resolve("tests/reports/external-parity-example-screenshots/asset-viewer.png"), fullPage: true });
   }
 
@@ -475,7 +532,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
     });
   }
 
-  if (asset.id === "v4-material-fidelity-card") {
+  if (asset.id === "external-parity-material-fidelity-card") {
     await page.getByTestId("asset-viewer-material-variant").selectOption("warm-alt-finish");
     await expect.poll(() => page.evaluate(() => {
       return (window as unknown as { readonly __AURA3D_ASSET_VIEWER__?: AssetViewerSnapshot }).__AURA3D_ASSET_VIEWER__?.selectedMaterialVariant;
@@ -507,7 +564,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
     });
   }
 
-  if (asset.id === "v4-morph-expression") {
+  if (asset.id === "external-parity-morph-expression") {
     await page.getByTestId("asset-viewer-morph-weight-0").evaluate((input) => {
       const slider = input as HTMLInputElement;
       slider.value = "0.2";
@@ -554,11 +611,11 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
   expect(result?.screenshot?.diagnosticJsonByteLength ?? 0).toBeGreaterThan(500);
 
   let dragDropLocalDocumentLoaded = false;
-  if (asset.id === "v4-material-fidelity-card") {
+  if (asset.id === "external-parity-material-fidelity-card") {
     const gltfText = readFileSync(resolve(asset.localPath), "utf8");
     await page.evaluate((text) => {
       const transfer = new DataTransfer();
-      transfer.items.add(new File([text], "v4-material-fidelity-card.gltf", { type: "model/gltf+json" }));
+      transfer.items.add(new File([text], "external-parity-material-fidelity-card.gltf", { type: "model/gltf+json" }));
       const dropzone = document.querySelector<HTMLElement>("[data-testid='asset-viewer-dropzone']");
       if (!dropzone) throw new Error("asset-viewer-dropzone missing");
       dropzone.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer: transfer }));
@@ -571,7 +628,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
     });
     expect(dropped?.status, dropped?.error).toBe("ready");
     expect(dropped?.dependencyResolution).toEqual(expect.arrayContaining([
-      expect.objectContaining({ uri: "v4-material-fidelity-card.gltf", fileName: "v4-material-fidelity-card.gltf", kind: "document" }),
+      expect.objectContaining({ uri: "external-parity-material-fidelity-card.gltf", fileName: "external-parity-material-fidelity-card.gltf", kind: "document" }),
     ]));
     dragDropLocalDocumentLoaded = true;
   }
@@ -607,7 +664,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
       selectedAnimationLoopMode: result?.animationPlayback?.loopMode,
       scrubbedAnimationTime: result?.animationPlayback?.time,
     } : {}),
-    ...(asset.id === "v4-morph-expression" ? {
+    ...(asset.id === "external-parity-morph-expression" ? {
       activeMorphWeights: result?.morphControls?.activeWeights ?? [],
       morphRenderApplied: result?.morphControls?.renderApplied ?? false,
     } : {}),
@@ -616,7 +673,7 @@ async function validateAsset(page: Page, origin: string, asset: V4AssetManifestE
 }
 
 function assertCoreRenderEvidence(
-  asset: V4AssetManifestEntry,
+  asset: ExternalParityAssetManifestEntry,
   result: AssetViewerSnapshot | undefined,
   url: string,
   nonBlankPixels: number,
@@ -628,7 +685,7 @@ function assertCoreRenderEvidence(
   expect(typeof result?.claimBoundary).toBe("string");
   expect(result?.claimBoundary?.length ?? 0).toBeGreaterThan(40);
   expect(result?.featureEvidence?.loaded).toBe(true);
-  expect(result?.featureEvidence?.v4RenderPreset).toBe(true);
+  expect(result?.featureEvidence?.externalParityRenderPreset).toBe(true);
   expect(result?.featureEvidence?.generatedEnvironmentMap).toBe(true);
   expect(result?.featureEvidence?.brdfLutValidated).toBe(true);
   expect(result?.featureEvidence?.postprocessRealSceneReadback).toBe(true);
@@ -642,9 +699,9 @@ function assertCoreRenderEvidence(
   expect(result?.featureEvidence?.objectTrackTelemetry).toBe(true);
   expect(Number(result?.featureEvidence?.objectDetections ?? 0)).toBeGreaterThan(0);
   expect(Number(result?.featureEvidence?.objectTracks ?? 0)).toBeGreaterThan(0);
-  expect(result?.v4RenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
-  expect(result?.v4RenderPreset?.colorManagement?.toneMapper).toBe("reinhard");
-  expect(result?.v4RenderPreset?.activeFeatures).toEqual(expect.arrayContaining(["color-management", "tone-mapping", "bounded-pbr", "environment-reflections", "postprocess-bloom", "postprocess-fxaa"]));
+  expect(result?.externalParityRenderPreset?.presetId).toBe("aura3d-external-parity-visual-quality-preset");
+  expect(result?.externalParityRenderPreset?.colorManagement?.toneMapper).toBe("reinhard");
+  expect(result?.externalParityRenderPreset?.activeFeatures).toEqual(expect.arrayContaining(["color-management", "tone-mapping", "bounded-pbr", "environment-reflections", "postprocess-bloom", "postprocess-fxaa"]));
   expect(result?.environmentResources?.resourceSet).toBe("generated-local-linear-hdr-environment");
   expect(result?.environmentResources?.hdrSource).toBe(true);
   expect(Number(result?.environmentResources?.maxLinearValue ?? 0)).toBeGreaterThan(1);
@@ -652,7 +709,7 @@ function assertCoreRenderEvidence(
   expect(result?.environmentResources?.validation?.brdfLutTexture).toBe(true);
   expect(result?.environmentResources?.validation?.diffuseIrradiance).toBe(true);
   expect(result?.postprocess?.source).toBe("webgl2-backbuffer-readback");
-  expect(result?.postprocess?.path).toBe("V4RenderPreset.toneMapPixels.bloomPixels.fxaaPixels");
+  expect(result?.postprocess?.path).toBe("ExternalParityRenderPreset.toneMapPixels.bloomPixels.fxaaPixels");
   expect(Math.max(result?.postprocess?.inputNonDarkPixels ?? 0, result?.postprocess?.outputNonDarkPixels ?? 0)).toBeGreaterThan(0);
   expect(result?.postprocess?.outputColorBuckets ?? -1).toBeGreaterThanOrEqual(0);
   expect(result?.assetBundleCache?.source).toBe("origin-master-asset-bundle-cache-adapted");
@@ -732,12 +789,12 @@ function assertCoreRenderEvidence(
   expect(result?.loaderDiagnostics?.morphTargetCount ?? 0).toBe(asset.morphTargets);
 }
 
-function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerSnapshot | undefined): void {
+function assertFeatureEvidence(asset: ExternalParityAssetManifestEntry, result: AssetViewerSnapshot | undefined): void {
   const features = result?.loaderDiagnostics?.features ?? [];
   const textureSlots = result?.loaderDiagnostics?.textureSlots ?? [];
   const warnings = result?.warnings?.map((warning) => String(warning.code ?? "unknown")) ?? [];
 
-  if (asset.id === "v4-material-fidelity-card") {
+  if (asset.id === "external-parity-material-fidelity-card") {
     expect(result?.materialVariants).toEqual(["warm-alt-finish"]);
     expect(result?.selectedMaterialVariant).toBe("warm-alt-finish");
     expect(result?.variantSwitching).toEqual({ available: true, applied: true });
@@ -751,7 +808,7 @@ function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerS
     });
     expect(result?.lookControls?.materialOverrideAppliedTo.length ?? 0).toBeGreaterThan(0);
     expect(result?.comparisonExport).toMatchObject({
-      schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1",
+      schemaVersion: "a3d-external-parity-asset-viewer-comparison-export",
       generated: true,
       renderer: "webgl2",
       meshCount: result?.meshCount,
@@ -802,7 +859,7 @@ function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerS
     ]));
   }
 
-  if (asset.id === "v4-specular-glossiness-card") {
+  if (asset.id === "external-parity-specular-glossiness-card") {
     expect(features).toEqual(expect.arrayContaining([
       "extension:KHR_materials_pbrSpecularGlossiness",
       "material:pbr-specular-glossiness",
@@ -813,7 +870,7 @@ function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerS
     expect(warnings).not.toContain("GLTF_UNSUPPORTED_EXTENSION");
   }
 
-  if (asset.id === "v4-skinned-hero") {
+  if (asset.id === "external-parity-skinned-hero") {
     expect(features).toEqual(expect.arrayContaining(["animations", "skins", "skinning"]));
     expect(result?.animationPlayback?.clipName).toBe("hero-root-sway");
     expect(result?.animationPlayback?.loopMode).toBe("repeat");
@@ -831,7 +888,7 @@ function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerS
     expect(warnings).not.toContain("ASSET_VIEWER_SKINNING_INSPECT_ONLY");
   }
 
-  if (asset.id === "v4-morph-expression") {
+  if (asset.id === "external-parity-morph-expression") {
     expect(features).toContain("morph-targets");
     expect(features).toContain("animations");
     expect(result?.animationPlayback?.clipName).toBe("morph-weight-smile");
@@ -846,7 +903,7 @@ function assertFeatureEvidence(asset: V4AssetManifestEntry, result: AssetViewerS
     expect(warnings).not.toContain("ASSET_VIEWER_MORPH_PLAYBACK_BOUNDED");
   }
 
-  if (asset.id === "v4-root-motion-clip") {
+  if (asset.id === "external-parity-root-motion-clip") {
     expect(features).toContain("animations");
     expect(result?.animationPlayback?.clipName).toBe("root-translation-loop");
     expect(result?.animationPlayback?.loopMode).toBe("repeat");

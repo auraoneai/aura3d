@@ -66,7 +66,7 @@ export interface AdaptiveDifficultyAdjustment {
 }
 
 export interface AdaptiveDifficultyFixture {
-  readonly id: "v4-old-branch-adaptive-difficulty-fixture";
+  readonly id: "external-parity-old-branch-adaptive-difficulty-fixture";
   readonly source: "origin-master-ai-balancing-smart-difficulty-adapted";
   readonly strategy: AdaptiveDifficultyStrategy;
   readonly metrics: readonly AdaptiveDifficultyMetricSummary[];
@@ -182,7 +182,7 @@ export function sampleAdaptiveDifficultyFixture(options: AdaptiveDifficultyFixtu
   const adjustment = applyRules(triggeredRules);
 
   return {
-    id: "v4-old-branch-adaptive-difficulty-fixture",
+    id: "external-parity-old-branch-adaptive-difficulty-fixture",
     source: "origin-master-ai-balancing-smart-difficulty-adapted",
     strategy,
     metrics,

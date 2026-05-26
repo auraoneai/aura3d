@@ -77,13 +77,13 @@ try {
     });
   }
   const report = {
-    schema: "a3d-external-parity-external-vite-build/v1",
+    schema: "a3d-external-parity-external-vite-build",
     generatedAt: new Date().toISOString(),
     ok: builds.length === templates.length && builds.every((build) => build.ok),
     tarballPath,
     builds,
     staticPreviewRoot,
-    productBoundary: "Fresh Vite production builds for all V4 templates from a packed package. Browser static screenshot proof remains a later release gate."
+    productBoundary: "Fresh Vite production builds for all External parity templates from a packed package. Browser static screenshot proof remains a later release gate."
   };
   writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   if (!report.ok) {

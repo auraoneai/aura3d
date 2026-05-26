@@ -19,7 +19,7 @@ declare global {
 type ProductReferenceStatus = "ready" | "error";
 
 export interface ProductConfiguratorReferenceReport {
-  readonly schema: "a3d-product-configurator-reference-harness/v1";
+  readonly schema: "a3d-product-configurator-reference-harness";
   readonly status: ProductReferenceStatus;
   readonly claim: "same-original-product-glb-reference-outside-advanced-gallery";
   readonly source: "tests/browser/product-configurator-reference-harness.ts";
@@ -343,7 +343,7 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
 
     const unsupportedExtensions = [...new Set(assets.flatMap((asset) => asset.extensions.unsupported))].sort();
     const report: ProductConfiguratorReferenceReport = {
-      schema: "a3d-product-configurator-reference-harness/v1",
+      schema: "a3d-product-configurator-reference-harness",
       status: "ready",
       claim: "same-original-product-glb-reference-outside-advanced-gallery",
       source: "tests/browser/product-configurator-reference-harness.ts",
@@ -388,7 +388,7 @@ export async function runProductConfiguratorReferenceHarness(): Promise<ProductC
     return report;
   } catch (error) {
     const report: ProductConfiguratorReferenceReport = {
-      schema: "a3d-product-configurator-reference-harness/v1",
+      schema: "a3d-product-configurator-reference-harness",
       status: "error",
       claim: "same-original-product-glb-reference-outside-advanced-gallery",
       source: "tests/browser/product-configurator-reference-harness.ts",

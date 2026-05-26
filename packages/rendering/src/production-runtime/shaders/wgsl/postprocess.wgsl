@@ -1,2 +1,2 @@
-// @aura3d-shader:production-wgsl-postprocess-v1
+// @aura3d-shader:production-wgsl-postprocess
 @fragment fn fs_postprocess(@location(0) color: vec4<f32>) -> @location(0) vec4<f32> { return color; }

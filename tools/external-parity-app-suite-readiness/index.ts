@@ -40,16 +40,16 @@ for (const reportPath of requiredReports) {
 
 check(
   "app-suite-script",
-  readFileSync(resolve("package.json"), "utf8").includes("\"v4:app-suite\""),
-  "package.json must expose v4:app-suite."
+  readFileSync(resolve("package.json"), "utf8").includes("\"external-parity:app-suite\""),
+  "package.json must expose external-parity:app-suite."
 );
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-app-suite-readiness/v1",
+  schema: "a3d-external-parity-app-suite-readiness",
   generatedAt: new Date().toISOString(),
   pass,
-  summary: pass ? "V4 Pro app suite is explicitly covered." : "V4 Pro app suite coverage is incomplete.",
+  summary: pass ? "External parity Pro app suite is explicitly covered." : "External parity Pro app suite coverage is incomplete.",
   checkedFiles: requiredFiles,
   requiredReports,
   checks

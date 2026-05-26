@@ -1,22 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
-  GLTFLoaderV5,
-  HDRLoaderV5,
-  KTX2LoaderV5,
-  MTLLoaderV5,
-  OBJLoaderV5,
-  TextureLoaderV5
+  ThreeCompatGLTFLoader,
+  HDRLoaderThreeCompat,
+  KTX2LoaderThreeCompat,
+  MTLLoaderThreeCompat,
+  OBJLoaderThreeCompat,
+  TextureLoaderThreeCompat
 } from "../../packages/assets/src";
 import { GLTFLoaderCompat, OBJLoaderCompat, ThreeCompatTextureLoader } from "../../packages/three-compat/src";
 
-describe("V5 loader corpus", () => {
+describe("ThreeCompat loader corpus", () => {
   it("loads real local GLB, OBJ/MTL, HDR, KTX2, and browser texture samples with diagnostics", () => {
-    const gltf = new GLTFLoaderV5().load("fixtures/three-compat/assets/corpus/damaged-helmet.glb");
-    const obj = new OBJLoaderV5().load("fixtures/three-compat/loaders/sample.obj");
-    const mtl = new MTLLoaderV5().load("fixtures/three-compat/loaders/sample.mtl");
-    const hdr = new HDRLoaderV5().load("fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr");
-    const ktx2 = new KTX2LoaderV5().load("tests/assets/corpus/ktx2/Rib_N.ktx2");
-    const texture = new TextureLoaderV5().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png");
+    const gltf = new ThreeCompatGLTFLoader().load("fixtures/three-compat/assets/corpus/damaged-helmet.glb");
+    const obj = new OBJLoaderThreeCompat().load("fixtures/three-compat/loaders/sample.obj");
+    const mtl = new MTLLoaderThreeCompat().load("fixtures/three-compat/loaders/sample.mtl");
+    const hdr = new HDRLoaderThreeCompat().load("fixtures/three-compat/environments/hdri/studio_small_08_1k.hdr");
+    const ktx2 = new KTX2LoaderThreeCompat().load("tests/assets/corpus/ktx2/Rib_N.ktx2");
+    const texture = new TextureLoaderThreeCompat().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png");
     const compatGltf = new GLTFLoaderCompat().load("fixtures/three-compat/assets/corpus/boom-box.glb");
     const compatObj = new OBJLoaderCompat().load("fixtures/three-compat/loaders/sample.obj");
     const compatTexture = new ThreeCompatTextureLoader().load("tests/reports/external-parity-hdr-visual-parity/aura3d-hdr.png");

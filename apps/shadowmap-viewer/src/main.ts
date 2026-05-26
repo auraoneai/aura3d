@@ -10,11 +10,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8ShadowmapViewer?: V8ShadowmapViewerRuntime;
+    __a3dCurrentRoutesShadowmapViewer?: CurrentRoutesShadowmapViewerRuntime;
   }
 }
 
-interface V8ShadowmapViewerRuntime {
+interface CurrentRoutesShadowmapViewerRuntime {
   readonly appId: "shadowmap-viewer";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -62,7 +62,7 @@ async function run(): Promise<void> {
   let latestDepth: Float32Array | null = null;
 
   const publish = (): void => {
-    window.__a3dV8ShadowmapViewer = runtime;
+    window.__a3dCurrentRoutesShadowmapViewer = runtime;
     renderUi(root, runtime);
     if (latestDepth) drawDepthPreview(root, latestDepth, SHADOW_SIZE, SHADOW_SIZE);
   };
@@ -208,7 +208,7 @@ async function run(): Promise<void> {
           pcfSamples: shadowMap.filterKernel.samples.length,
           pcfRadius: shadowMap.filterKernel.radius
         });
-        window.__a3dV8ShadowmapViewer = runtime;
+        window.__a3dCurrentRoutesShadowmapViewer = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -295,11 +295,11 @@ function multiply(left: Float32Array, right: Float32Array): Float32Array {
 }
 
 function createRuntime(
-  status: V8ShadowmapViewerRuntime["status"],
+  status: CurrentRoutesShadowmapViewerRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8ShadowmapViewerRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8ShadowmapViewerRuntime {
+  patch: Partial<Omit<CurrentRoutesShadowmapViewerRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesShadowmapViewerRuntime {
   return {
     appId: APP_ID,
     status,
@@ -324,12 +324,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8ShadowmapViewerRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesShadowmapViewerRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 Shadowmap Viewer</h1>
+          <h1>CurrentRoutes Shadowmap Viewer</h1>
           <p>Renderer ShadowPass depth texture readback and diagnostic preview.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

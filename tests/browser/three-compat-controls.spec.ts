@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { MeshCompat, OrbitControls, SceneCompat, TransformControls, Vector3Compat } from "../../packages/three-compat/src";
 
-test("V5 controls browser proof exposes all interaction modes", async ({ page }) => {
+test("ThreeCompat controls browser proof exposes all interaction modes", async ({ page }) => {
   const scene = new SceneCompat();
   const mesh = new MeshCompat();
   scene.add(mesh);

@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { DEMOS as DEMO_DEFINITIONS } from "../../apps/advanced-examples-gallery/src/metadata";
 import { configuredAuthoredAssetIdsForDemo, expectedAuthoredAssetCountForDemo } from "../../apps/advanced-examples-gallery/src/authoredLayer";
 import { assertNoRejectedVisualReviews } from "./advanced-gallery-visual-acceptance";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { ADVANCED_GALLERY_CONTEXTUAL_REPORT_DIR } from "../../tools/advanced-gallery-evidence-paths";
 import { ADVANCED_GALLERY_CONTEXTUAL_ROUTE } from "../../tools/naming-taxonomy/contextualAliases";
 
@@ -212,7 +212,7 @@ interface AdvancedGalleryRuntime {
 }
 
 interface RendererEnvironmentBackgroundRuntimeEvidence {
-  readonly source: "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
+  readonly source: "loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
   readonly routeId: string;
   readonly enabled: true;
   readonly rendererField: "source.environmentBackground";
@@ -232,7 +232,7 @@ interface RendererEnvironmentBackgroundRuntimeEvidence {
   readonly lightingIntensity: number;
   readonly backgroundIntensity: number;
   readonly hdr: {
-    readonly loader: "loadV6HdrEnvironment";
+    readonly loader: "loadProductionHdrEnvironment";
     readonly uri: string;
     readonly id: string;
     readonly label: string;
@@ -249,7 +249,7 @@ interface RendererEnvironmentBackgroundRuntimeEvidence {
 }
 
 interface RendererEnvironmentLightingRuntimeEvidence {
-  readonly source: "loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture";
+  readonly source: "loadProductionHdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture";
   readonly routeId: string;
   readonly enabled: true;
   readonly rendererField: "source.environmentLighting";
@@ -318,7 +318,7 @@ interface ViteDevServer {
   close(): Promise<void>;
 }
 
-test.describe("V9 advanced examples gallery", () => {
+test.describe("ThreejsParity advanced examples gallery", () => {
   let server: ViteDevServer | undefined;
 
   test.beforeAll(async () => {
@@ -345,7 +345,7 @@ test.describe("V9 advanced examples gallery", () => {
         if (!server) throw new Error("Vite dev server was not initialized.");
         await page.goto(`${server.origin}${ADVANCED_GALLERY_CONTEXTUAL_ROUTE}#${demo}`, { waitUntil: "domcontentloaded" });
         await page.waitForFunction(({ expectedDemo, authoredRequired, backgroundRequired }) => {
-          const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+          const runtime = (window as unknown as { readonly __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
           if (!runtime || runtime.demoId !== expectedDemo) return false;
           if (runtime.status === "error") return true;
           if (runtime.frameCount < 4 || runtime.drawCalls <= 0) return false;
@@ -404,7 +404,7 @@ test.describe("V9 advanced examples gallery", () => {
         expect(statSync(screenshotPath).size).toBeGreaterThan(30_000);
         expect(statSync(viewportScreenshotPath).size).toBeGreaterThan(30_000);
         expect(statSync(heroScreenshotPath).size).toBeGreaterThan(30_000);
-        const stats = readV6PngStats(heroScreenshotPath);
+        const stats = readProductionPngStats(heroScreenshotPath);
         expect(stats.width).toBeGreaterThanOrEqual(1000);
         expect(stats.height).toBeGreaterThanOrEqual(920);
         if (getVisualReviewStatus(demo) === "accepted") {
@@ -430,7 +430,7 @@ test.describe("V9 advanced examples gallery", () => {
         writeFileSync(
           `${reportDir}/${demo}.json`,
           `${JSON.stringify({
-            schema: "a3d-v9-advanced-gallery-route-report/v1",
+            schema: "a3d-threejs-parity-advanced-gallery-route-report",
             capturedAt: new Date().toISOString(),
             evidenceMode,
             evidenceScope: {
@@ -557,7 +557,7 @@ interface RendererFogVisualDeltaEvidence {
 interface RendererEnvironmentBackgroundVisualDeltaEvidence {
   readonly source: "renderer-environment-background-on-off-screenshot-delta";
   readonly demoId: DemoId;
-  readonly rendererSource: "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
+  readonly rendererSource: "loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
   readonly backgroundOnScreenshot: ReturnType<typeof screenshotEvidence>;
   readonly backgroundOffScreenshot: ReturnType<typeof screenshotEvidence>;
   readonly changedRatio: number;
@@ -759,14 +759,14 @@ function assertRendererEnvironmentBackgroundRuntime(demo: DemoId, runtime: Advan
   if (!isRendererEnvironmentBackgroundRoute(demo)) return;
   const evidence = runtime.environmentBackground;
   expect(evidence, `${demo} renderer environment background runtime evidence`).toBeDefined();
-  expect(evidence?.source, `${demo} renderer background source`).toBe("loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass");
+  expect(evidence?.source, `${demo} renderer background source`).toBe("loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass");
   expect(evidence?.rendererField, `${demo} renderer background field`).toBe("source.environmentBackground");
   expect(evidence?.passName, `${demo} renderer background pass`).toBe("environment-background");
   expect(evidence?.enabled, `${demo} renderer background enabled`).toBe(true);
   expect(evidence?.routeId, `${demo} renderer background route`).toBe(demo);
   expect(evidence?.encoding, `${demo} background encoding`).toBe("linear");
   expect(evidence?.outputColorSpace, `${demo} background output color space`).toBe("srgb");
-  expect(evidence?.hdr.loader, `${demo} HDR loader`).toBe("loadV6HdrEnvironment");
+  expect(evidence?.hdr.loader, `${demo} HDR loader`).toBe("loadProductionHdrEnvironment");
   expect(evidence?.hdr.realRadianceHdr, `${demo} real Radiance HDR`).toBe(true);
   expect(evidence?.hdr.format, `${demo} HDR format`).toBe("rgbe-hdr");
   expect(evidence?.hdr.radianceWidth ?? 0, `${demo} HDR radiance width`).toBeGreaterThanOrEqual(512);
@@ -783,7 +783,7 @@ function assertRendererEnvironmentBackgroundRuntime(demo: DemoId, runtime: Advan
     expect(evidence?.visibleBackgroundUsage, `${demo} visible background usage policy`).toBe("diagnostic-proof-only");
     expect(evidence?.backgroundIntensity ?? 1, `${demo} diagnostic background intensity is separated from lighting intensity`).toBeLessThan(evidence?.lightingIntensity ?? 0);
   }
-  expect(evidence?.rendererEvidence, `${demo} renderer background evidence trail`).toContain("loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass");
+  expect(evidence?.rendererEvidence, `${demo} renderer background evidence trail`).toContain("loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass");
   expect(evidence?.claimBoundary, `${demo} background claim boundary`).toMatch(/does not prove/i);
   if (demo === "product-configurator") {
     expect(evidence?.projection, `${demo} background projection`).toBe("equirect");
@@ -800,7 +800,7 @@ function assertRendererEnvironmentLightingRuntime(demo: DemoId, runtime: Advance
   if (!isRendererEnvironmentBackgroundRoute(demo)) return;
   const evidence = runtime.environmentLighting;
   expect(evidence, `${demo} renderer environment lighting runtime evidence`).toBeDefined();
-  expect(evidence?.source, `${demo} renderer lighting source`).toBe("loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture");
+  expect(evidence?.source, `${demo} renderer lighting source`).toBe("loadProductionHdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture");
   expect(evidence?.rendererField, `${demo} renderer lighting field`).toBe("source.environmentLighting");
   expect(evidence?.forwardPassField, `${demo} forward lighting field`).toBe("ForwardPassOptions.environmentLighting");
   expect(evidence?.enabled, `${demo} renderer lighting enabled`).toBe(true);
@@ -828,7 +828,7 @@ function assertRendererEnvironmentLightingRuntime(demo: DemoId, runtime: Advance
     "u_environmentBrdfLutTexture",
     "u_environmentBrdfLutEnabled"
   ]));
-  expect(evidence?.rendererEvidence, `${demo} renderer lighting evidence trail`).toContain("loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture");
+  expect(evidence?.rendererEvidence, `${demo} renderer lighting evidence trail`).toContain("loadProductionHdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture");
   expect(evidence?.claimBoundary, `${demo} lighting claim boundary`).toMatch(/does not prove.*live cube cameras/i);
 }
 
@@ -1035,7 +1035,7 @@ async function waitForScreenshotReady(
   reviewCapture: ReviewCaptureMode
 ): Promise<CaptureReadinessEvidence> {
   await page.waitForFunction(({ expectedDemo, frameFloor, expectedCapture }) => {
-    const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+    const runtime = (window as unknown as { readonly __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
     const loading = document.querySelector<HTMLElement>("#loading");
     const loadingStyle = loading ? getComputedStyle(loading) : undefined;
     const canvas = document.querySelector<HTMLCanvasElement>("#viewport");
@@ -1076,7 +1076,7 @@ async function setReviewCaptureMode(page: Page, mode: ReviewCaptureMode): Promis
 
 async function readCaptureReadiness(page: Page, label: CaptureLabel): Promise<CaptureReadinessEvidence> {
   return page.evaluate((captureLabel) => {
-    const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+    const runtime = (window as unknown as { readonly __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
     const loading = document.querySelector<HTMLElement>("#loading");
     const loadingStyle = loading ? getComputedStyle(loading) : undefined;
     const loadingRect = loading?.getBoundingClientRect();
@@ -1290,7 +1290,7 @@ function isAuthoredRoute(demo: DemoId): boolean {
 
 async function readRuntime(page: Page): Promise<AdvancedGalleryRuntime> {
   return page.evaluate(() => {
-    const runtime = (window as unknown as { readonly __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_V9_ADVANCED_EXAMPLES_GALLERY__;
+    const runtime = (window as unknown as { readonly __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime }).__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__;
     if (!runtime) throw new Error("Advanced gallery runtime was not published.");
     return runtime;
   });

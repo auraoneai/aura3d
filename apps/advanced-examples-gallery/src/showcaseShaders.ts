@@ -5,7 +5,7 @@ import {
 } from "@aura3d/rendering";
 
 const GALLERY_WATER_SHADER = "a3d-gallery/animated-water";
-const GALLERY_WATER_MARKER = "@aura3d-gallery-shader:animated-water-v4";
+const GALLERY_WATER_MARKER = "@aura3d-gallery-shader:animated-water-external-parity";
 
 export interface GalleryWaterMaterialOptions {
   readonly name: string;

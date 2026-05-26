@@ -1,75 +1,49 @@
 # Getting Started: Render A Real Scene
 
-This tutorial uses the current WebGL2 renderer path. It does not require reading test files, and it points at a running example you can open in the browser.
+Version: 1.0.0
 
-## Run A Known Scene
+This tutorial uses the current asset and renderer APIs with a local GLB fixture.
 
-Start the example dev server through Playwright or your local static server and open:
-
-```text
-/examples/01-basic-scene/index.html
-```
-
-For a product-style scene, open:
-
-```text
-/examples/product-configurator/index.html
-```
-
-The committed browser coverage for the product-style examples is:
+## Run The Route Registry
 
 ```sh
-pnpm exec playwright test tests/browser/product-demos.spec.ts
+pnpm install
+pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
 ```
 
-## Minimal Renderer Code
+Open a related running example:
 
-The core shape of a Aura3D browser scene is:
+```text
+http://127.0.0.1:5180/examples/asset-viewer/index.html
+```
+
+## Minimal Code
 
 ```ts
-import { Geometry, PBRMaterial, Renderer, UnlitMaterial } from "@aura3d/rendering";
+import { createRenderableScene, loadRenderableAsset } from "@aura3d/engine/assets";
+import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
-const canvas = document.querySelector<HTMLCanvasElement>("#viewport");
-if (!canvas) throw new Error("Missing #viewport canvas.");
-
-const renderer = await Renderer.create({
-  backend: "webgl2",
-  canvas,
-  preserveDrawingBuffer: true
+const renderer = await A3DRenderer.create({ backend: "webgl2", canvas });
+const asset = await loadRenderableAsset("/fixtures/asset-corpus/damaged-helmet.glb");
+const scene = createRenderableScene(asset, {
+  camera: "auto-frame",
+  lighting: "studio-product",
+  shadows: true,
+  postprocess: "product-default"
 });
 
-const diagnostics = renderer.render([
-  {
-    label: "lit-sphere",
-    geometry: Geometry.uvSphere(0.45, 32, 16),
-    material: new PBRMaterial({
-      baseColor: [0.95, 0.35, 0.15, 1],
-      roughness: 0.42,
-      metallic: 0.15
-    })
-  },
-  {
-    label: "ground-line",
-    geometry: Geometry.lineSegments([
-      [-0.75, -0.65, 0],
-      [0.75, -0.65, 0]
-    ]),
-    material: new UnlitMaterial({
-      color: [0.1, 0.75, 1, 1],
-      renderState: { depthTest: false, depthWrite: false, cullMode: "none" }
-    })
-  }
-]);
-
-console.log(diagnostics.drawCalls);
+renderer.render(scene.source, scene.camera);
+renderer.dispose();
 ```
 
-## What This Proves
+For a procedural renderer smoke path, create `Geometry.uvSphere`, shade it with `PBRMaterial`, render with `Renderer.create({ backend: "webgl2" })`, and inspect `diagnostics.drawCalls`. This does not require reading test files.
 
-- The app creates a real `Renderer` with the `webgl2` backend.
-- Scene content is submitted as renderer geometry and materials, not as a static screenshot.
-- Diagnostics expose draw calls so browser tests can reject blank or non-renderer-backed demos.
+## Verify
 
-## Current Limits
+```sh
+pnpm exec playwright test tests/browser/asset-viewer-browser.spec.ts
+```
 
-The getting-started path does not claim production PBR, environment lighting, large-scene culling, WebGPU hardware coverage, or a Unity/Unreal-style editor workflow. Those remain tracked by `docs/project/v2-filename-level-execution-checklist.md`.
+## Boundary
+
+This tutorial proves one local fixture workflow. It is not a broad glTF ecosystem or visual parity claim.

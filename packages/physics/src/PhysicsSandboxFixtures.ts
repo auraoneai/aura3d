@@ -47,7 +47,7 @@ export interface PhysicsSandboxToolSummary {
 }
 
 export interface PhysicsSandboxFixture {
-  readonly id: "v4-old-branch-physics-sandbox-fixture";
+  readonly id: "external-parity-old-branch-physics-sandbox-fixture";
   readonly source: "origin-master-physics-sandbox-tools-spawners-adapted";
   readonly spawners: readonly PhysicsSandboxSpawnSummary[];
   readonly tools: readonly PhysicsSandboxToolSummary[];
@@ -132,7 +132,7 @@ export function samplePhysicsSandboxFixture(options: PhysicsSandboxFixtureOption
     blockedToolCount
   };
   return {
-    id: "v4-old-branch-physics-sandbox-fixture",
+    id: "external-parity-old-branch-physics-sandbox-fixture",
     source: "origin-master-physics-sandbox-tools-spawners-adapted",
     spawners,
     tools,

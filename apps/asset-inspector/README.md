@@ -1,3 +1,3 @@
-# A3D V6 Asset Inspector
+# A3D Production Asset Inspector
 
-Real V6 app for inspecting imported GLB metadata, animation/skinning/morph coverage, HDR lighting, renderer proof, and user interaction state.
+Real Production app for inspecting imported GLB metadata, animation/skinning/morph coverage, HDR lighting, renderer proof, and user interaction state.

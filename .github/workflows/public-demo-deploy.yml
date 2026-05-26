@@ -1,0 +1,147 @@
+name: External Parity Public Demo Deploy
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: public-demo-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build static external parity demos
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build external static demos
+        run: pnpm build:external-demos
+
+      - name: Smoke local static export
+        run: pnpm verify:static-demo-server-smoke
+
+      - name: Resolve static demo path
+        id: demo-path
+        run: |
+          VERSION="$(node -p "require('./package.json').version")"
+          DEMO_DIR="release-artifacts/external-demos/${VERSION}"
+          test -f "${DEMO_DIR}/public-deployment-manifest.json"
+          echo "path=${DEMO_DIR}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.demo-path.outputs.path }}
+
+      - name: Upload deployment manifests
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-parity-public-demo-manifests
+          path: |
+            ${{ steps.demo-path.outputs.path }}/static-integrity-manifest.json
+            ${{ steps.demo-path.outputs.path }}/public-deployment-manifest.json
+            ${{ steps.demo-path.outputs.path }}/deployment-command-plan.json
+            tests/reports/external-demo-static-export.json
+            tests/reports/static-demo-server-smoke.json
+          retention-days: 30
+
+  deploy:
+    name: Deploy and validate public URL
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download deployment manifests
+        uses: actions/download-artifact@v4
+        with:
+          name: external-parity-public-demo-manifests
+          path: _external-parity-public-demo-manifests
+
+      - name: Restore report inputs
+        run: |
+          cp -R _external-parity-public-demo-manifests/. .
+          test -f tests/reports/external-demo-static-export.json
+          test -f tests/reports/static-demo-server-smoke.json
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Verify public deployment bytes
+        run: pnpm verify:public-demo-deployment
+        env:
+          A3D_PUBLIC_DEMO_URL: ${{ steps.deployment.outputs.page_url }}
+
+      - name: Audit production readiness after public smoke
+        run: pnpm audit:external-parity-production-readiness
+
+      - name: Audit external evidence readiness after public smoke
+        run: pnpm audit:external-parity-external-evidence-readiness
+
+      - name: Audit broad parity readiness after public smoke
+        run: pnpm audit:external-parity-broad-parity || true
+
+      - name: Audit completion after public smoke
+        run: pnpm audit:external-parity-completion || true
+
+      - name: Verify external parity report freshness after public smoke
+        run: pnpm verify:external-parity-report-freshness
+
+      - name: Upload public deployment reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-demo-deployment-reports
+          path: |
+            tests/reports/public-demo-deployment-smoke.json
+            tests/reports/public-demo-deployment-runbook.md
+            tests/reports/external-parity-production-readiness.json
+            tests/reports/external-parity-external-evidence-readiness.json
+            tests/reports/external-parity-external-evidence-missing-artifacts.md
+            tests/reports/external-parity-broad-parity-readiness.json
+            tests/reports/external-parity-completion-audit.json
+            tests/reports/external-parity-completion-audit-runbook.md
+            tests/reports/external-parity-report-freshness.json
+          retention-days: 30

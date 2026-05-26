@@ -1,6 +1,6 @@
-import type { V6AppUiDefinition } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppUiDefinition } from "../../common/src/runtime";
 
-export const ui: V6AppUiDefinition = {
+export const ui: ProductionAppUiDefinition = {
   primaryActionLabel: "Lock Camera",
   secondaryLabel: "Same-scene setup for the later Three.js parity gate using real A3D pixels now."
 };

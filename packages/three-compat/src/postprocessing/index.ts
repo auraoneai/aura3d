@@ -1,14 +1,14 @@
 export {
-  BloomPassV5 as UnrealBloomPassCompat,
-  ColorGradingPassV5 as ColorGradingPassCompat,
-  DepthOfFieldPassV5 as DepthOfFieldPassCompat,
-  EffectComposerV5 as EffectComposerCompat,
-  FXAAPassV5 as FXAAPassCompat,
-  OutlinePassV5 as OutlinePassCompat,
-  RenderPassV5 as RenderPassCompat,
-  ShaderPassV5 as ShaderPassCompat,
-  SMAAPassV5 as SMAAPassCompat,
-  SSAOPassV5 as SSAOPassCompat,
-  TAAPassV5 as TAAPassCompat,
-  VignettePassV5 as VignettePassCompat
-} from "../../../rendering/src/threejs-compatibility/postprocess";
+  BloomPassThreeCompat as UnrealBloomPassCompat,
+  ColorGradingPassThreeCompat as ColorGradingPassCompat,
+  DepthOfFieldPassThreeCompat as DepthOfFieldPassCompat,
+  EffectComposerThreeCompat as EffectComposerCompat,
+  FXAAPassThreeCompat as FXAAPassCompat,
+  OutlinePassThreeCompat as OutlinePassCompat,
+  RenderPassThreeCompat as RenderPassCompat,
+  ShaderPassThreeCompat as ShaderPassCompat,
+  SMAAPassThreeCompat as SMAAPassCompat,
+  SSAOPassThreeCompat as SSAOPassCompat,
+  TAAPassThreeCompat as TAAPassCompat,
+  VignettePassThreeCompat as VignettePassCompat
+} from "@aura3d/rendering";

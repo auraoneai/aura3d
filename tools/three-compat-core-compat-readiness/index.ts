@@ -17,7 +17,7 @@ import {
   Vector3Compat
 } from "../../packages/three-compat/src";
 
-interface V5CoreCompatCheck {
+interface ThreeCompatCoreCompatCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
@@ -35,7 +35,7 @@ const requiredFiles = [
   "tests/browser/three-compat-core-compat.spec.ts"
 ] as const;
 
-function check(name: string, pass: boolean, detail: string): V5CoreCompatCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatCoreCompatCheck {
   return { name, pass, detail };
 }
 
@@ -61,7 +61,7 @@ scene.traverse((object) => visited.push(object.type));
 const raycaster = new RaycasterCompat();
 raycaster.set(new Vector3Compat(0, 0, 0), new Vector3Compat(0, 0, -1));
 const intersections = raycaster.intersectObject(scene, true);
-const checks: V5CoreCompatCheck[] = [
+const checks: ThreeCompatCoreCompatCheck[] = [
   check(
     "required-files-present",
     requiredFiles.every((file) => existsSync(resolve(file))),
@@ -96,7 +96,7 @@ const checks: V5CoreCompatCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-core-compat-readiness/v1",
+  schema: "a3d-three-compat-core-compat-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   visitedTypes: visited,
@@ -113,4 +113,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log(`V5 core compat readiness passed: ${visited.length} traversed objects, ${intersections.length} intersections.`);
+console.log(`Three.js compatibility core compat readiness passed: ${visited.length} traversed objects, ${intersections.length} intersections.`);

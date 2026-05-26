@@ -24,7 +24,7 @@ const issues = [
 ];
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-package-smoke/v1",
+  schema: "a3d-threejs-parity-package-smoke",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   requiredFiles,
@@ -32,4 +32,4 @@ writeJson(outputPath, {
   exportCount: Object.keys(packageJson.exports ?? {}).length,
   issues
 });
-console.log(`V9 package smoke report written: ${outputPath}`);
+console.log(`Three.js parity package smoke report written: ${outputPath}`);

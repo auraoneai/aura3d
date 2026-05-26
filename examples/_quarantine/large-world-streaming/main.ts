@@ -4,7 +4,7 @@ import {
   Renderer,
   UnlitMaterial,
   createTerrainHeightfieldFixture,
-  createV4EnvironmentLighting,
+  createExternalParityEnvironmentLighting,
   sampleCullingFixture,
   sampleOceanFixture,
   sampleTerrainHeightfield,
@@ -69,7 +69,7 @@ const knownLimits = [
   "Chunks are generated modular WebGL2 geometry and deterministic terrain-heightfield state, not a full terrain ECS or network streaming stack.",
   "LOD selection is distance-based with explicit metrics; occlusion culling is bounded BVH/Hi-Z telemetry only, while production GPU occlusion, hierarchical streaming, persistence, and volumetric weather are not claimed."
 ] as const;
-const claimBoundary = "V4 large-world-streaming evidence is limited to generated modular cells, deterministic terrain-heightfield/biome telemetry, async load/unload simulation, distance LOD, frustum culling, bounded BVH/Hi-Z occlusion telemetry, camera-path metrics, and browser screenshot checks.";
+const claimBoundary = "ExternalParity large-world-streaming evidence is limited to generated modular cells, deterministic terrain-heightfield/biome telemetry, async load/unload simulation, distance LOD, frustum culling, bounded BVH/Hi-Z occlusion telemetry, camera-path metrics, and browser screenshot checks.";
 const terrainFixture = createTerrainHeightfieldFixture({ width: 32, height: 32, seed: 0x3d2025 });
 const voxelFixture = sampleVoxelWorldFixture({ seed: 0x3d2025, chunkSize: 16, viewDistance: 4 });
 
@@ -209,7 +209,7 @@ async function run(): Promise<void> {
     diagnostics = renderer.render({
       renderItems: withOceanRenderItems(withWeatherRenderItems(build.items, weather, cameraX, geometry, materials), ocean, cameraX, geometry, materials),
       cameraPosition: [cameraX, 0.28, 3.8],
-      environmentLighting: createV4EnvironmentLighting("gameplay").lighting
+      environmentLighting: createExternalParityEnvironmentLighting("gameplay").lighting
     });
     const memoryBytes = [...loaded.values()].reduce((sum, cell) => sum + cell.bytes, 0);
     const p95FrameMs = percentile(frameSamples, 0.95);

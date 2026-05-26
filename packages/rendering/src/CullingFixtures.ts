@@ -57,7 +57,7 @@ export interface CullingFeatureEvidence {
 }
 
 export interface CullingFixture {
-  readonly id: "v4-old-branch-bvh-hiz-culling-fixture";
+  readonly id: "external-parity-old-branch-bvh-hiz-culling-fixture";
   readonly source: "origin-master-bvh-hiz-occlusion-adapted";
   readonly sourceFiles: readonly string[];
   readonly seed: number;
@@ -155,7 +155,7 @@ export function sampleCullingFixture(options: CullingFixtureOptions = {}): Culli
     `${bvh.nodeCount}:${bvh.maxDepth}:${frustum.visibleObjects}:${hiz.occludedObjects}:${hiz.visibleObjects}:${hiz.unknownResults}`
   ].join("#"));
   return {
-    id: "v4-old-branch-bvh-hiz-culling-fixture",
+    id: "external-parity-old-branch-bvh-hiz-culling-fixture",
     source: "origin-master-bvh-hiz-occlusion-adapted",
     sourceFiles,
     seed,

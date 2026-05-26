@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
@@ -8,7 +8,7 @@ import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.
 
 declare global {
   interface Window {
-    __V9_MORPHTARGETS_PARITY__?: MorphTargetsParityResult;
+    __THREEJS_PARITY_MORPHTARGETS_PARITY__?: MorphTargetsParityResult;
   }
 }
 
@@ -18,7 +18,7 @@ type MorphTargetsParityResult = MorphTargetsParityReady | MorphTargetsParityErro
 
 interface MorphTargetsParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-morphtargets-parity/v1";
+  readonly schema: "a3d-threejs-parity-morphtargets-parity";
   readonly purpose: "same-asset Robot Expressive manual head morph weights vs actual Three.js morphTargetInfluences";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -51,7 +51,7 @@ interface MorphTargetsParityReady {
 
 interface MorphTargetsParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-morphtargets-parity/v1";
+  readonly schema: "a3d-threejs-parity-morphtargets-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -114,7 +114,7 @@ async function run(): Promise<void> {
     const threeStats = analyzeImageData(threePixels);
     const ready: MorphTargetsParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-morphtargets-parity/v1",
+      schema: "a3d-threejs-parity-morphtargets-parity",
       purpose: "same-asset Robot Expressive manual head morph weights vs actual Three.js morphTargetInfluences",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -149,17 +149,17 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
-    window.__V9_MORPHTARGETS_PARITY__ = ready;
+    window.__THREEJS_PARITY_MORPHTARGETS_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: MorphTargetsParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-morphtargets-parity/v1",
+      schema: "a3d-threejs-parity-morphtargets-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__V9_MORPHTARGETS_PARITY__ = failure;
+    window.__THREEJS_PARITY_MORPHTARGETS_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -167,9 +167,9 @@ async function run(): Promise<void> {
 
 async function renderA3D(canvas: HTMLCanvasElement) {
   const renderer = await A3DRenderer.create({ canvas, width: ASSET.width, height: ASSET.height, preserveDrawingBuffer: true, clearColor: [0.006, 0.008, 0.012, 1] });
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: ASSET.url,
-    assetId: "v9-morphtargets-robot",
+    assetId: "threejs-parity-morphtargets-robot",
     assetName: ASSET.name,
     width: ASSET.width,
     height: ASSET.height,
@@ -199,7 +199,7 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
     metadata: {
       assetId: "threejs-parity-morphtargets-parity",
-      assetName: "V9 Morph Targets Parity",
+      assetName: "Three.js parity Morph Targets Parity",
       assetUri: "/tools/threejs-parity-morphtargets-parity/",
       meshCount: pipeline.metadata.meshCount,
       primitiveCount: pipeline.metadata.primitiveCount,
@@ -210,7 +210,7 @@ async function renderA3D(canvas: HTMLCanvasElement) {
       skinCount: pipeline.metadata.skinCount,
       morphTargetCount: pipeline.metadata.morphTargetCount,
       extensionsUsed: pipeline.metadata.extensionsUsed,
-      environmentId: "v8-fast-studio",
+      environmentId: "current-routes-fast-studio",
       hdrEnvironmentUri: "none"
     }
   });
@@ -234,7 +234,7 @@ function collectImportedItems(pipeline, placement) {
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v9-morph:${node.name}`,
+      label: `threejs-parity-morph:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -256,10 +256,10 @@ function createA3DStageItems() {
 }
 
 function createA3DLights() {
-  const key = new DirectionalLight("v9-morph-key");
+  const key = new DirectionalLight("threejs-parity-morph-key");
   key.intensity = 4.8;
   key.color = [1, 0.94, 0.82];
-  const rim = new DirectionalLight("v9-morph-rim");
+  const rim = new DirectionalLight("threejs-parity-morph-rim");
   rim.intensity = 2.4;
   rim.color = [0.54, 0.8, 1];
   return [

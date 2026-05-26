@@ -1,15 +1,15 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { createRendererV5, summarizeV5RendererDiagnostics, V5_REQUIRED_RENDERER_FEATURES } from "../../packages/rendering/src";
+import { createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics, THREE_COMPAT_REQUIRED_RENDERER_FEATURES } from "../../packages/rendering/src";
 
-interface V5RendererReadinessCheck {
+interface ThreeCompatRendererReadinessCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
 }
 
 const requiredFiles = [
-  "packages/rendering/src/threejs-compatibility/RendererV5.ts",
+  "packages/rendering/src/threejs-compatibility/ThreeCompatRenderer.ts",
   "packages/rendering/src/threejs-compatibility/SceneRenderer.ts",
   "packages/rendering/src/threejs-compatibility/RenderTargetSystem.ts",
   "packages/rendering/src/threejs-compatibility/TextureSystem.ts",
@@ -23,25 +23,25 @@ const requiredFiles = [
   "tests/browser/three-compat-renderer-three-compat.spec.ts"
 ] as const;
 
-function check(name: string, pass: boolean, detail: string): V5RendererReadinessCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatRendererReadinessCheck {
   return { name, pass, detail };
 }
 
-const renderer = createRendererV5({ backend: "webgl2", width: 1600, height: 900 });
+const renderer = createThreeCompatRenderer({ backend: "webgl2", width: 1600, height: 900 });
 const diagnostics = renderer.createDiagnostics();
-const summary = summarizeV5RendererDiagnostics(diagnostics);
+const summary = summarizeThreeCompatRendererDiagnostics(diagnostics);
 const plan = renderer.createComplexScenePlan();
 const featureNames = diagnostics.features.map((feature) => feature.feature);
 
-const checks: V5RendererReadinessCheck[] = [
+const checks: ThreeCompatRendererReadinessCheck[] = [
   check(
     "required-files-present",
     requiredFiles.every((file) => existsSync(resolve(file))),
-    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 renderer files exist"
+    requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility renderer files exist"
   ),
   check(
     "required-feature-coverage",
-    summary.missing.length === 0 && V5_REQUIRED_RENDERER_FEATURES.every((feature) => featureNames.includes(feature)),
+    summary.missing.length === 0 && THREE_COMPAT_REQUIRED_RENDERER_FEATURES.every((feature) => featureNames.includes(feature)),
     summary.missing.join(", ") || `${featureNames.length} renderer features reported`
   ),
   check(
@@ -78,7 +78,7 @@ const checks: V5RendererReadinessCheck[] = [
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-renderer-readiness/v1",
+  schema: "a3d-three-compat-renderer-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary,
@@ -96,4 +96,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log(`V5 renderer readiness passed: ${summary.featureCount} features, ${plan.sceneComplexity.instances} instances.`);
+console.log(`Three.js compatibility renderer readiness passed: ${summary.featureCount} features, ${plan.sceneComplexity.instances} instances.`);

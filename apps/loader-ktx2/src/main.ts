@@ -9,11 +9,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LoaderKtx2?: V8LoaderKtx2Runtime;
+    __a3dCurrentRoutesLoaderKtx2?: CurrentRoutesLoaderKtx2Runtime;
   }
 }
 
-interface V8LoaderKtx2Runtime {
+interface CurrentRoutesLoaderKtx2Runtime {
   readonly appId: "loader-ktx2";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -76,7 +76,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LoaderKtx2 = runtime;
+    window.__a3dCurrentRoutesLoaderKtx2 = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -131,7 +131,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: extensionSupport.unsupportedRequired
         });
-        window.__a3dV8LoaderKtx2 = runtime;
+        window.__a3dCurrentRoutesLoaderKtx2 = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -166,7 +166,7 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
     camera: input.camera,
     metadata: {
       assetId: APP_ID,
-      assetName: "V8 Loader KTX2",
+      assetName: "CurrentRoutes Loader KTX2",
       assetUri: "/apps/loader-ktx2/",
       meshCount: 1,
       primitiveCount: 1,
@@ -198,11 +198,11 @@ function inspectTextureEvidence(resources: GLTFRenderResources): TextureEvidence
 }
 
 function createRuntime(
-  status: V8LoaderKtx2Runtime["status"],
+  status: CurrentRoutesLoaderKtx2Runtime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LoaderKtx2Runtime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LoaderKtx2Runtime {
+  patch: Partial<Omit<CurrentRoutesLoaderKtx2Runtime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLoaderKtx2Runtime {
   return {
     appId: APP_ID,
     status,
@@ -236,7 +236,7 @@ function createKtx2FixtureDataUrl(ktx2Bytes: Uint8Array): string {
   const indices = padChunk(uint16Bytes([0, 1, 2]), 0);
   const binary = concatAligned([positions, normals, texcoords, indices, ktx2Bytes], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V9 V8 loader KTX2/Basis fixture" },
+    asset: { version: "2.0", generator: "Aura3D ThreejsParity CurrentRoutes loader KTX2/Basis fixture" },
     extensionsUsed: ["KHR_texture_basisu"],
     extensionsRequired: ["KHR_texture_basisu"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -317,11 +317,11 @@ function base64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function renderUi(root: HTMLElement, runtime: V8LoaderKtx2Runtime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderKtx2Runtime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Loader KTX2</h1>
+        <h1>CurrentRoutes Loader KTX2</h1>
         <p>KHR_texture_basisu texture imported, transcoded, and rendered through A3D WebGL2.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>

@@ -1,16 +1,16 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readV6PngStats, type V6PngStats } from "../production-runtime-report-bridge/pngStats";
+import { readProductionPngStats, type ProductionPngStats } from "../production-runtime-report-bridge/pngStats";
 
 const DEFAULT_SCREENSHOT_ROOTS = ["tests/reports/current-routes"] as const;
 const REPORT_PATH = "tests/reports/current-routes-visual-review.json";
-const NOTES_PATH = process.env.A3D_V8_VISUAL_NOTES ?? "tests/reports/current-routes-visual-review-notes.json";
+const NOTES_PATH = process.env.A3D_CURRENT_ROUTES_VISUAL_NOTES ?? "tests/reports/current-routes-visual-review-notes.json";
 
 interface ScreenshotReview {
   readonly screenshot: string;
   readonly fileSize: number;
-  readonly metrics: V6PngStats | null;
+  readonly metrics: ProductionPngStats | null;
   readonly metricFailures: readonly string[];
   readonly noteFailures: readonly string[];
   readonly notes: ScreenshotNotes | null;
@@ -55,7 +55,7 @@ const gate = {
   strongerDetailLocalContrast: 12
 } as const;
 
-export function createV8VisualReviewReport(): Record<string, unknown> {
+export function createCurrentRoutesVisualReviewReport(): Record<string, unknown> {
   const screenshotRoots = screenshotRootsFromEnv();
   const screenshots = screenshotRoots.flatMap((root) => findPngFiles(root));
   const notesResult = loadNotesFile(NOTES_PATH);
@@ -75,7 +75,7 @@ export function createV8VisualReviewReport(): Record<string, unknown> {
   ];
 
   return {
-    schema: "a3d-current-routes-visual-review/v1",
+    schema: "a3d-current-routes-visual-review",
     generatedAt: new Date().toISOString(),
     pass: screenshots.length > 0 && failures.length === 0,
     screenshotRoots,
@@ -96,13 +96,13 @@ export function createV8VisualReviewReport(): Record<string, unknown> {
   };
 }
 
-export function writeV8VisualReviewReport(report: Record<string, unknown>): void {
+export function writeCurrentRoutesVisualReviewReport(report: Record<string, unknown>): void {
   mkdirSync(dirname(resolve(REPORT_PATH)), { recursive: true });
   writeFileSync(resolve(REPORT_PATH), `${JSON.stringify(report, null, 2)}\n`);
 }
 
 function screenshotRootsFromEnv(): readonly string[] {
-  const raw = process.env.A3D_V8_VISUAL_ROOTS;
+  const raw = process.env.A3D_CURRENT_ROUTES_VISUAL_ROOTS;
   if (!raw) return DEFAULT_SCREENSHOT_ROOTS;
   return raw.split(",").map((entry) => entry.trim()).filter(Boolean);
 }
@@ -144,14 +144,14 @@ function loadNotesFile(path: string): { readonly notes: NotesFile | null; readon
 function reviewScreenshot(screenshot: string, notesFile: NotesFile | null): ScreenshotReview {
   const absolutePath = resolve(screenshot);
   const metricFailures: string[] = [];
-  let metrics: V6PngStats | null = null;
+  let metrics: ProductionPngStats | null = null;
   const fileSize = existsSync(absolutePath) ? statSync(absolutePath).size : 0;
 
   if (!existsSync(absolutePath)) {
     metricFailures.push("screenshot file is missing");
   } else {
     try {
-      metrics = readV6PngStats(absolutePath);
+      metrics = readProductionPngStats(absolutePath);
       metricFailures.push(...evaluateMetrics(screenshot, fileSize, metrics));
     } catch (error) {
       metricFailures.push(`could not read PNG metrics: ${error instanceof Error ? error.message : String(error)}`);
@@ -171,7 +171,7 @@ function reviewScreenshot(screenshot: string, notesFile: NotesFile | null): Scre
   };
 }
 
-function evaluateMetrics(screenshot: string, fileSize: number, metrics: V6PngStats): string[] {
+function evaluateMetrics(screenshot: string, fileSize: number, metrics: ProductionPngStats): string[] {
   const failures: string[] = [];
   const totalPixels = Math.max(1, metrics.width * metrics.height);
   const nonBlackCoverage = metrics.nonBlackPixels / totalPixels;
@@ -197,7 +197,7 @@ function evaluateMetrics(screenshot: string, fileSize: number, metrics: V6PngSta
     failures.push("image is flat across color, edge, and contrast metrics");
   }
   if (/debug|sandbox|proof|placeholder|reference/i.test(screenshot)) {
-    failures.push("path name is debug-like; V8 approval screenshots must be product or comparison outputs");
+    failures.push("path name is debug-like; CurrentRoutes approval screenshots must be product or comparison outputs");
   }
 
   return failures;
@@ -264,16 +264,16 @@ function round(value: number): number {
 }
 
 async function main(): Promise<void> {
-  const report = createV8VisualReviewReport();
-  writeV8VisualReviewReport(report);
+  const report = createCurrentRoutesVisualReviewReport();
+  writeCurrentRoutesVisualReviewReport(report);
   if (report.pass !== true) {
-    console.error(`V8 visual review failed. Report: ${REPORT_PATH}`);
+    console.error(`CurrentRoutes visual review failed. Report: ${REPORT_PATH}`);
     const failures = Array.isArray(report.failures) ? report.failures : [];
     for (const failure of failures) console.error(`- ${String(failure)}`);
     process.exitCode = 1;
     return;
   }
-  console.log(`V8 visual review passed. Report: ${REPORT_PATH}`);
+  console.log(`CurrentRoutes visual review passed. Report: ${REPORT_PATH}`);
 }
 
 const isCli = process.argv[1] ? fileURLToPath(import.meta.url) === resolve(process.argv[1]) : false;

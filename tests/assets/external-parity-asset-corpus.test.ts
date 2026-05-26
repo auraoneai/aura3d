@@ -7,13 +7,13 @@ const fixtureRoot = resolve("fixtures/external-parity-assets");
 const reportPath = resolve("tests/reports/external-parity-asset-corpus.json");
 const expectedCategories = ["product", "architecture", "environment", "character", "materials", "morph", "animation"];
 
-describe("v4 local asset corpus", () => {
-  it("contains a generated V4 corpus manifest with required local asset categories and metadata", () => {
+describe("externalParity local asset corpus", () => {
+  it("contains a generated ExternalParity corpus manifest with required local asset categories and metadata", () => {
     const manifestPath = resolve(fixtureRoot, "manifest.json");
     expect(existsSync(manifestPath), `${manifestPath} missing`).toBe(true);
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as V4Manifest;
+    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as ExternalParityManifest;
 
-    expect(manifest.schemaVersion).toBe("a3d-v4-asset-corpus-v1");
+    expect(manifest.schemaVersion).toBe("a3d-external-parity-asset-corpus");
     expect(manifest.assetCount).toBeGreaterThanOrEqual(expectedCategories.length);
     expect(manifest.categories).toEqual([...expectedCategories].sort());
     for (const category of expectedCategories) {
@@ -21,7 +21,7 @@ describe("v4 local asset corpus", () => {
     }
 
     for (const asset of manifest.assets) {
-      expect(asset.id).toMatch(/^v4-[a-z0-9-]+$/);
+      expect(asset.id).toMatch(/^external-parity-[a-z0-9-]+$/);
       expect(asset.license).toBe("CC0-1.0");
       expect(asset.features.length).toBeGreaterThan(0);
       expect(existsSync(resolve(asset.localPath))).toBe(true);
@@ -42,8 +42,8 @@ describe("v4 local asset corpus", () => {
       expect(entries.length, `${category} should contain at least one fixture`).toBeGreaterThanOrEqual(1);
       for (const entry of entries) {
         const directory = resolve(categoryPath, entry.name);
-        const manifest = JSON.parse(readFileSync(resolve(directory, "manifest.json"), "utf8")) as V4AssetManifest;
-        expect(manifest.schemaVersion).toBe("a3d-v4-local-asset-v1");
+        const manifest = JSON.parse(readFileSync(resolve(directory, "manifest.json"), "utf8")) as ExternalParityAssetManifest;
+        expect(manifest.schemaVersion).toBe("a3d-external-parity-local-asset");
         expect(manifest.category).toBe(category);
         expect(manifest.features.length).toBeGreaterThan(0);
         expect(existsSync(resolve(directory, manifest.localFile))).toBe(true);
@@ -53,10 +53,10 @@ describe("v4 local asset corpus", () => {
     }
   });
 
-  it("emits a passing V4 asset corpus report with loader/render diagnostics for every asset", () => {
-    const report = JSON.parse(readFileSync(reportPath, "utf8")) as V4Report;
+  it("emits a passing ExternalParity asset corpus report with loader/render diagnostics for every asset", () => {
+    const report = JSON.parse(readFileSync(reportPath, "utf8")) as ExternalParityReport;
 
-    expect(report.schemaVersion).toBe("a3d-v4-asset-corpus-report-v1");
+    expect(report.schemaVersion).toBe("a3d-external-parity-asset-corpus-report");
     expect(report.ok).toBe(true);
     expect(report.assetCount).toBe(8);
     expect(report.summary).toMatchObject({
@@ -70,7 +70,7 @@ describe("v4 local asset corpus", () => {
 
     for (const asset of report.assets) {
       expect(asset.renderStatus).toBe("render-resources-created");
-      expect(asset.loaderDiagnostics.schemaVersion).toBe("gltf-loader-diagnostics-v1");
+      expect(asset.loaderDiagnostics.schemaVersion).toBe("gltf-loader-diagnostics");
       expect(asset.loaderDiagnostics.features).toContain("gltf");
       expect(asset.loaderDiagnostics.meshCount).toBeGreaterThan(0);
       expect(asset.loaderDiagnostics.vertexCount).toBeGreaterThan(0);
@@ -82,23 +82,23 @@ describe("v4 local asset corpus", () => {
       expect(existsSync(resolve(asset.diagnosticsPath))).toBe(true);
     }
 
-    expect(report.assets.find((asset) => asset.id === "v4-material-fidelity-card")?.loaderDiagnostics.textureSlots).toEqual(expect.arrayContaining([
+    expect(report.assets.find((asset) => asset.id === "external-parity-material-fidelity-card")?.loaderDiagnostics.textureSlots).toEqual(expect.arrayContaining([
       "base-color",
       "metallic-roughness",
       "normal",
       "occlusion",
       "emissive"
     ]));
-    expect(report.assets.find((asset) => asset.id === "v4-material-fidelity-card")?.loaderDiagnostics.extensionsUsed).toContain("EXT_texture_avif");
-    expect(report.assets.find((asset) => asset.id === "v4-material-fidelity-card")?.loaderDiagnostics.extensionsUsed).toContain("EXT_texture_webp");
-    expect(report.assets.find((asset) => asset.id === "v4-skinned-hero")?.loaderDiagnostics.features).toEqual(expect.arrayContaining(["animations", "skins", "skinning"]));
-    expect(report.assets.find((asset) => asset.id === "v4-morph-expression")?.loaderDiagnostics.features).toContain("morph-targets");
-    expect(report.assets.find((asset) => asset.id === "v4-game-outpost")?.loaderDiagnostics.extensionsUsed).toContain("EXT_mesh_gpu_instancing");
-    expect(report.assets.find((asset) => asset.id === "v4-root-motion-clip")?.loaderDiagnostics.extensionsUsed).toContain("KHR_mesh_quantization");
+    expect(report.assets.find((asset) => asset.id === "external-parity-material-fidelity-card")?.loaderDiagnostics.extensionsUsed).toContain("EXT_texture_avif");
+    expect(report.assets.find((asset) => asset.id === "external-parity-material-fidelity-card")?.loaderDiagnostics.extensionsUsed).toContain("EXT_texture_webp");
+    expect(report.assets.find((asset) => asset.id === "external-parity-skinned-hero")?.loaderDiagnostics.features).toEqual(expect.arrayContaining(["animations", "skins", "skinning"]));
+    expect(report.assets.find((asset) => asset.id === "external-parity-morph-expression")?.loaderDiagnostics.features).toContain("morph-targets");
+    expect(report.assets.find((asset) => asset.id === "external-parity-game-outpost")?.loaderDiagnostics.extensionsUsed).toContain("EXT_mesh_gpu_instancing");
+    expect(report.assets.find((asset) => asset.id === "external-parity-root-motion-clip")?.loaderDiagnostics.extensionsUsed).toContain("KHR_mesh_quantization");
   });
 
   it("exposes GLTFLoader diagnostics on loaded assets and serialized assets", async () => {
-    const fixture = JSON.parse(readFileSync(resolve(fixtureRoot, "materials", "v4-material-fidelity-card", "v4-material-fidelity-card.gltf"), "utf8")) as Record<string, unknown>;
+    const fixture = JSON.parse(readFileSync(resolve(fixtureRoot, "materials", "external-parity-material-fidelity-card", "external-parity-material-fidelity-card.gltf"), "utf8")) as Record<string, unknown>;
     const asset = await new GLTFLoader().load({ url: dataGLTF(fixture), type: "gltf" }, new LoadContext());
 
     expect(asset.loaderDiagnostics.features).toEqual(expect.arrayContaining([
@@ -114,14 +114,14 @@ describe("v4 local asset corpus", () => {
   });
 });
 
-interface V4Manifest {
+interface ExternalParityManifest {
   readonly schemaVersion: string;
   readonly assetCount: number;
   readonly categories: readonly string[];
-  readonly assets: readonly V4AssetManifest[];
+  readonly assets: readonly ExternalParityAssetManifest[];
 }
 
-interface V4AssetManifest {
+interface ExternalParityAssetManifest {
   readonly schemaVersion?: string;
   readonly id: string;
   readonly category: string;
@@ -137,7 +137,7 @@ interface V4AssetManifest {
   readonly loaderDiagnostics: string;
 }
 
-interface V4Report {
+interface ExternalParityReport {
   readonly schemaVersion: string;
   readonly ok: boolean;
   readonly assetCount: number;

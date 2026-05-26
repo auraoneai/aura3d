@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { V4_THREEJS_PARITY_SCENES } from "../../benchmarks/external-parity/shared/threejs-visual-parity-scenes";
+import { EXTERNAL_PARITY_THREEJS_PARITY_SCENES } from "../../benchmarks/external-parity/shared/threejs-visual-parity-scenes";
 
 type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }
@@ -15,9 +15,9 @@ const obj = (value: unknown): Obj => value && typeof value === "object" && !Arra
 const arr = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
 
 check("browser-manifest", manifest?.pass === true, "Browser manifest must pass.");
-check("scene-count", captures.length >= 7 && captures.length === V4_THREEJS_PARITY_SCENES.length, "At least seven same-scene captures are required, including large-scene/performance.");
+check("scene-count", captures.length >= 7 && captures.length === EXTERNAL_PARITY_THREEJS_PARITY_SCENES.length, "At least seven same-scene captures are required, including large-scene/performance.");
 
-const screenshotChecks = V4_THREEJS_PARITY_SCENES.flatMap((scene) => ["a3d", "threejs", "diff"].map((kind) => {
+const screenshotChecks = EXTERNAL_PARITY_THREEJS_PARITY_SCENES.flatMap((scene) => ["a3d", "threejs", "diff"].map((kind) => {
   const path = `${reportDir}/${scene.id}-${kind}.png`;
   const exists = existsSync(resolve(path));
   const bytes = exists ? statSync(resolve(path)).size : 0;
@@ -76,7 +76,7 @@ check(
 
 const gapReportPath = `${reportDir}/gap-report.md`;
 writeFileSync(resolve(gapReportPath), [
-  "# V4 Three.js Visual Parity Gap Report",
+  "# External parity Three.js Visual Parity Gap Report",
   "",
   "This report covers six supported workflow comparisons only. It does not claim broad Three.js API replacement.",
   "",
@@ -96,19 +96,19 @@ check("gap-report", existsSync(resolve(gapReportPath)) && readFileSync(resolve(g
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-threejs-visual-parity/v1",
+  schema: "a3d-external-parity-threejs-visual-parity",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 15 same-scene Three.js visual parity proof is ready for the supported workflow comparisons, including large-scene/performance."
-    : "V4 Milestone 15 same-scene Three.js visual parity proof is incomplete.",
-  scenes: V4_THREEJS_PARITY_SCENES.map((scene) => scene.id),
+    ? "External parity Milestone 15 same-scene Three.js visual parity proof is ready for the supported workflow comparisons, including large-scene/performance."
+    : "External parity Milestone 15 same-scene Three.js visual parity proof is incomplete.",
+  scenes: EXTERNAL_PARITY_THREEJS_PARITY_SCENES.map((scene) => scene.id),
   screenshotChecks,
   setupLineCounts,
   runtimeStats,
   gapReportPath,
   browserManifestPath: manifestPath,
-  claimBoundary: "Bounded same-scene parity for supported V4 workflows only; broad Three.js replacement remains blocked.",
+  claimBoundary: "Bounded same-scene parity for supported External parity workflows only; broad Three.js replacement remains blocked.",
   checks
 };
 

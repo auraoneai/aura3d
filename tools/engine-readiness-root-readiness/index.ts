@@ -54,9 +54,9 @@ const checks = [
   },
   {
     id: "parity-claims-blocked",
-    ok: readFileIfExists("docs/project/v4-engine-readiness-status.md").includes("broad Three.js replacement") &&
-      readFileIfExists("docs/project/v4-engine-readiness-status.md").includes("Unity replacement"),
-    evidence: "docs/project/v4-engine-readiness-status.md"
+    ok: readFileIfExists("docs/project/current-state.md").includes("broad Three.js replacement") &&
+      readFileIfExists("docs/project/current-state.md").includes("Unity replacement"),
+    evidence: "docs/project/current-state.md"
   },
   {
     id: "visual-quality-pass-report",
@@ -66,7 +66,7 @@ const checks = [
 ];
 
 const report = {
-  schemaVersion: "a3d-engine-readiness-root-readiness-v1",
+  schemaVersion: "a3d-engine-readiness-root-readiness",
   generatedAt: new Date().toISOString(),
   ok: checks.every((check) => check.ok),
   checks

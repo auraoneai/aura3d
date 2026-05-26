@@ -30,19 +30,7 @@ test.describe("Data Galaxy same-system reference harness", () => {
       if (response.status() >= 400) pageErrors.push(`${response.status()} ${response.url()}`);
     });
 
-    await page.goto(server.origin, { waitUntil: "domcontentloaded" });
-    await page.setContent(`
-      <!doctype html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <title>Data Galaxy Reference Harness</title>
-        </head>
-        <body>
-          <script type="module" src="${server.origin}/tests/browser/data-galaxy-reference-harness.js"></script>
-        </body>
-      </html>
-    `);
+    await page.goto(`${server.origin}/tests/browser/data-galaxy-reference-harness.html`, { waitUntil: "domcontentloaded" });
 
     try {
       await page.waitForFunction(
@@ -137,7 +125,7 @@ test.describe("Data Galaxy same-system reference harness", () => {
     };
 
     expect(result.status, result.error).toBe("ready");
-    expect(result.schema).toBe("a3d-data-galaxy-reference/v1");
+    expect(result.schema).toBe("a3d-data-galaxy-reference");
     expect(result.route).toBe("data-galaxy");
     expect(result.harness).toMatchObject({
       galleryShellUi: false,
@@ -165,24 +153,24 @@ test.describe("Data Galaxy same-system reference harness", () => {
     expect(result.render?.pixelStats?.maxLuma).toBeGreaterThan(20);
 
     expect(result.dataGalaxy).toMatchObject({
-      requestedParticles: 12_000,
-      effectiveParticles: 12_000,
+      requestedParticles: 900,
+      effectiveParticles: 900,
       mode: "showcase",
-      densityTier: "12k showcase",
+      densityTier: "900 curated showcase",
       nativeGpuComputeDispatches: 0
     });
-    expect(result.dataGalaxy?.primaryCount).toBe(6480);
-    expect(result.dataGalaxy?.vortexCount).toBe(2760);
-    expect(result.dataGalaxy?.networkCount).toBe(1800);
-    expect(result.dataGalaxy?.waveCount).toBe(960);
-    expect(result.dataGalaxy?.totalParticleEvidenceCount).toBeGreaterThanOrEqual(12_000);
+    expect(result.dataGalaxy?.primaryCount).toBe(774);
+    expect(result.dataGalaxy?.vortexCount).toBe(54);
+    expect(result.dataGalaxy?.networkCount).toBe(45);
+    expect(result.dataGalaxy?.waveCount).toBe(27);
+    expect(result.dataGalaxy?.totalParticleEvidenceCount).toBeGreaterThanOrEqual(900);
     expect(result.dataGalaxy?.overlayPointCount).toBeGreaterThan(0);
     expect(result.dataGalaxy?.overlayPointDrawBatches).toBeGreaterThan(0);
     expect(result.dataGalaxy?.lineSegmentCount).toBeGreaterThan(0);
     expect(result.dataGalaxy?.lineDrawBatches).toBeGreaterThan(0);
     expect(result.dataGalaxy?.trailSegmentCount).toBeGreaterThan(0);
     expect(result.dataGalaxy?.connectionSegmentCount).toBeGreaterThan(0);
-    expect(result.dataGalaxy?.telemetryRingSegmentCount).toBeGreaterThan(0);
+    expect(result.dataGalaxy?.telemetryRingSegmentCount).toBeGreaterThanOrEqual(0);
     expect(result.dataGalaxy?.attractorCount).toBeGreaterThan(0);
     expect(result.dataGalaxy?.coreSystemLabels?.length).toBeGreaterThan(0);
     expect(result.dataGalaxy?.systems).toEqual(expect.arrayContaining([

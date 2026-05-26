@@ -1,5 +1,5 @@
 #version 300 es
-// @aura3d-shader:production-pbr-vert-v1
+// @aura3d-shader:production-pbr-vert
 precision highp float;
 layout(location=0) in vec3 position;
 layout(location=1) in vec3 normal;

@@ -1,9 +1,10 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 external consumer render", () => {
+test.describe("external consumer render", () => {
   test.setTimeout(90_000);
   let server: ExampleDevServer;
 
@@ -16,6 +17,13 @@ test.describe("V6 external consumer render", () => {
   });
 
   test("renders the built external Vite consumer from the packed package", async ({ page }) => {
+    if (shouldRebuildPreview()) {
+      const result = spawnSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/production-runtime-external-vite-build/index.ts"], {
+        cwd: process.cwd(),
+        encoding: "utf8"
+      });
+      expect(result.status, result.stderr || result.stdout).toBe(0);
+    }
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.stack ?? error.message));
     page.on("console", (message) => {
@@ -27,13 +35,13 @@ test.describe("V6 external consumer render", () => {
     await page.goto(`${server.origin}/tests/reports/production-runtime-external-consumer-preview/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__a3dV6Example as { status?: string } | undefined;
+        const runtime = window.__a3dProductionExample as { status?: string } | undefined;
         return runtime?.status === "ready" || runtime?.status === "error";
       },
       undefined,
       { timeout: 60_000 }
     );
-    const runtime = await page.evaluate(() => window.__a3dV6Example) as {
+    const runtime = await page.evaluate(() => window.__a3dProductionExample) as {
       status: "ready" | "error";
       error?: string;
       rendererBackend?: string;
@@ -56,7 +64,7 @@ test.describe("V6 external consumer render", () => {
     const screenshot = "tests/reports/production-runtime-external-consumer/external-consumer-render.png";
     await page.locator("#viewport").screenshot({ path: screenshot });
     writeFileSync(resolve("tests/reports/production-runtime-external-consumer-render.json"), `${JSON.stringify({
-      schema: "a3d-production-runtime-external-consumer-render/v1",
+      schema: "a3d-production-runtime-external-consumer-render",
       generatedAt: new Date().toISOString(),
       pass: true,
       screenshot,
@@ -64,3 +72,19 @@ test.describe("V6 external consumer render", () => {
     }, null, 2)}\n`);
   });
 });
+
+function shouldRebuildPreview(): boolean {
+  const previewRoot = resolve("tests/reports/production-runtime-external-consumer-preview");
+  const previewIndex = resolve(previewRoot, "index.html");
+  const assetsDir = resolve(previewRoot, "assets");
+  if (!existsSync(previewIndex) || !existsSync(assetsDir)) return true;
+  try {
+    const bundleText = readdirSync(assetsDir)
+      .filter((entry) => entry.endsWith(".js"))
+      .map((entry) => readFileSync(resolve(assetsDir, entry), "utf8"))
+      .join("\n");
+    return !bundleText.includes("__a3dProductionExample") || bundleText.includes("__a3dV");
+  } catch {
+    return true;
+  }
+}

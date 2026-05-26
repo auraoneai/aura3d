@@ -12,12 +12,12 @@ export interface MarkdownUncheckedSummary {
   }[];
 }
 
-export interface V4LocalPortStatusSummary {
+export interface ExternalParityLocalPortStatusSummary {
   readonly ok: boolean;
   readonly localDocsComplete: boolean;
   readonly oldCodebasePortPlanComplete: boolean;
-  readonly docsV3: MarkdownUncheckedSummary;
-  readonly docsV4: MarkdownUncheckedSummary;
+  readonly docsFoundation: MarkdownUncheckedSummary;
+  readonly docsExternalParity: MarkdownUncheckedSummary;
   readonly oldCodebasePortPlan: MarkdownUncheckedSummary;
   readonly achievedCriteria: number;
   readonly totalCriteria: number;
@@ -50,26 +50,26 @@ export interface V4LocalPortStatusSummary {
   };
   readonly claimBoundary: string;
   readonly evidencePaths: {
-    readonly oldCodebasePortPlan: "docs/project/v4-old-codebase-port-plan.md";
+    readonly oldCodebasePortPlan: "docs/project/migration.md";
     readonly completionAudit: "tests/reports/external-parity-completion-audit.json";
     readonly externalEvidence: "tests/reports/external-parity-external-evidence-readiness.json";
     readonly completionRunbook: "tests/reports/external-parity-completion-audit-runbook.md";
     readonly externalEvidenceRunbook: "tests/reports/external-parity-external-evidence-missing-artifacts.md";
   };
   readonly commands: {
-    readonly localPortStatus: "pnpm status:v4-local-port";
-    readonly parityStatus: "pnpm status:v4-parity";
-    readonly localPreflight: "pnpm preflight:v4-parity";
-    readonly postExternalEvidencePreflight: "pnpm preflight:v4-parity:after-external-evidence";
-    readonly reportRefresh: "pnpm refresh:v4-readiness-reports";
-    readonly externalEvidencePreflight: "pnpm preflight:v4-external-evidence";
+    readonly localPortStatus: "pnpm status:external-parity-local-port";
+    readonly parityStatus: "pnpm status:external-parity-parity";
+    readonly localPreflight: "pnpm preflight:external-parity-parity";
+    readonly postExternalEvidencePreflight: "pnpm preflight:external-parity-parity:after-external-evidence";
+    readonly reportRefresh: "pnpm refresh:external-parity-readiness-reports";
+    readonly externalEvidencePreflight: "pnpm preflight:external-parity-external-evidence";
   };
 }
 
-export function createV4LocalPortStatusSummary(root = process.cwd()): V4LocalPortStatusSummary {
-  const docsV3 = scanMarkdownUnchecked(root, "docs/project", "v3-");
-  const docsV4 = scanMarkdownUnchecked(root, "docs/project", "v4-");
-  const oldCodebasePortPlan = scanMarkdownUnchecked(root, "docs/project/v4-old-codebase-port-plan.md");
+export function createExternalParityLocalPortStatusSummary(root = process.cwd()): ExternalParityLocalPortStatusSummary {
+  const docsFoundation = scanMarkdownUnchecked(root, "docs/project", "foundation-");
+  const docsExternalParity = scanMarkdownUnchecked(root, "docs/project", "external-parity-");
+  const oldCodebasePortPlan = scanMarkdownUnchecked(root, "docs/project/migration.md");
   const completion = readJson(root, "tests/reports/external-parity-completion-audit.json");
   const externalEvidence = readJson(root, "tests/reports/external-parity-external-evidence-readiness.json");
   const githubExternal = readJson(root, "tests/reports/external-parity-github-external-readiness.json");
@@ -81,7 +81,7 @@ export function createV4LocalPortStatusSummary(root = process.cwd()): V4LocalPor
   const missingCriteriaIds = criteria
     .filter((entry) => entry.achieved !== true && typeof entry.id === "string")
     .map((entry) => String(entry.id));
-  const localDocsComplete = docsV3.total === 0 && docsV4.total === 0;
+  const localDocsComplete = docsFoundation.total === 0 && docsExternalParity.total === 0;
   const oldCodebasePortPlanComplete = oldCodebasePortPlan.total === 0;
   const productionReady = production?.productionReady === true;
   const externalEvidenceReady = externalEvidence?.externalEvidenceReady === true;
@@ -89,8 +89,8 @@ export function createV4LocalPortStatusSummary(root = process.cwd()): V4LocalPor
     ok: localDocsComplete && oldCodebasePortPlanComplete && completion?.ok === true,
     localDocsComplete,
     oldCodebasePortPlanComplete,
-    docsV3,
-    docsV4,
+    docsFoundation,
+    docsExternalParity: docsExternalParity,
     oldCodebasePortPlan,
     achievedCriteria: numberOrZero(completion?.achievedCriteria),
     totalCriteria: numberOrZero(completion?.totalCriteria),
@@ -106,19 +106,19 @@ export function createV4LocalPortStatusSummary(root = process.cwd()): V4LocalPor
     githubExternalReadiness: githubExternalReadiness(githubExternal),
     claimBoundary: claimBoundary(localDocsComplete, oldCodebasePortPlanComplete, productionReady, externalEvidenceReady, completion?.ok === true),
     evidencePaths: {
-      oldCodebasePortPlan: "docs/project/v4-old-codebase-port-plan.md",
+      oldCodebasePortPlan: "docs/project/migration.md",
       completionAudit: "tests/reports/external-parity-completion-audit.json",
       externalEvidence: "tests/reports/external-parity-external-evidence-readiness.json",
       completionRunbook: "tests/reports/external-parity-completion-audit-runbook.md",
       externalEvidenceRunbook: "tests/reports/external-parity-external-evidence-missing-artifacts.md",
     },
     commands: {
-      localPortStatus: "pnpm status:v4-local-port",
-      parityStatus: "pnpm status:v4-parity",
-      localPreflight: "pnpm preflight:v4-parity",
-      postExternalEvidencePreflight: "pnpm preflight:v4-parity:after-external-evidence",
-      reportRefresh: "pnpm refresh:v4-readiness-reports",
-      externalEvidencePreflight: "pnpm preflight:v4-external-evidence",
+      localPortStatus: "pnpm status:external-parity-local-port",
+      parityStatus: "pnpm status:external-parity-parity",
+      localPreflight: "pnpm preflight:external-parity-parity",
+      postExternalEvidencePreflight: "pnpm preflight:external-parity-parity:after-external-evidence",
+      reportRefresh: "pnpm refresh:external-parity-readiness-reports",
+      externalEvidencePreflight: "pnpm preflight:external-parity-external-evidence",
     },
   };
 }
@@ -134,7 +134,7 @@ function firstBlockedExternalArea(externalEvidence: Record<string, unknown> | nu
   return typeof artifact?.areaId === "string" ? artifact.areaId : undefined;
 }
 
-function firstBlockedArtifactDetails(externalEvidence: Record<string, unknown> | null): V4LocalPortStatusSummary["firstBlockedExternalArtifactDetails"] {
+function firstBlockedArtifactDetails(externalEvidence: Record<string, unknown> | null): ExternalParityLocalPortStatusSummary["firstBlockedExternalArtifactDetails"] {
   const artifacts = Array.isArray(externalEvidence?.artifactChecklist) ? externalEvidence.artifactChecklist.filter(isRecord) : [];
   const artifact = artifacts.find((entry) => entry.ready !== true && typeof entry.id === "string");
   if (!artifact || typeof artifact.id !== "string") return undefined;
@@ -151,7 +151,7 @@ function firstBlockedArtifactDetails(externalEvidence: Record<string, unknown> |
   };
 }
 
-function githubExternalReadiness(githubExternal: Record<string, unknown> | null): V4LocalPortStatusSummary["githubExternalReadiness"] {
+function githubExternalReadiness(githubExternal: Record<string, unknown> | null): ExternalParityLocalPortStatusSummary["githubExternalReadiness"] {
   if (!githubExternal || typeof githubExternal.githubExternalReady !== "boolean") return undefined;
   return {
     repo: typeof githubExternal.repo === "string" ? githubExternal.repo : undefined,
@@ -216,5 +216,5 @@ function stringArray(value: unknown): string[] {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  console.log(JSON.stringify(createV4LocalPortStatusSummary(), null, 2));
+  console.log(JSON.stringify(createExternalParityLocalPortStatusSummary(), null, 2));
 }

@@ -9,11 +9,11 @@ const issues = missing
   .map((item) => reportIssue(`same-scene-missing:${item.threeExampleId}`, `${item.threeExampleId} has no same-scene A3D route yet.`, "blocker"));
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-same-scene-render/v1",
+  schema: "a3d-threejs-parity-same-scene-render",
   generatedAt: new Date().toISOString(),
   pass: issues.length === 0,
   sameSceneCandidateCount: candidates.length,
   missingSameSceneCount: missing.length,
   issues
 });
-console.log(`V9 same-scene render report written: ${outputPath}`);
+console.log(`Three.js parity same-scene render report written: ${outputPath}`);

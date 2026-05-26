@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
-const progress = readFileSync(resolve("docs/project/production-runtime-roadmap-progress.md"), "utf8");
+const progress = readFileSync(resolve("docs/project/completion-audit.md"), "utf8");
 const completed = Array.from(progress.matchAll(/- \[x\] Milestone (\d+) -/g)).map((match) => Number(match[1]));
 const incomplete = Array.from(progress.matchAll(/- \[ \] Milestone (\d+) -/g)).map((match) => Number(match[1]));
 const active = /Current milestone: (Milestone \d+)/.exec(progress)?.[1] ?? "unknown";
@@ -14,7 +14,7 @@ const pass =
   || (completed.includes(17) && active === "Milestone 18" && incomplete.includes(18) && productDecisionPasses)
   || (currentStatus === "complete" && completed.includes(18) && productDecisionPasses && literalCompletionPasses));
 const report = {
-  schema: "a3d-production-runtime-completion-audit/v1",
+  schema: "a3d-production-runtime-completion-audit",
   generatedAt: new Date().toISOString(),
   pass,
   completionState: currentStatus === "complete" && completed.includes(18) && productDecisionPasses && literalCompletionPasses ? "complete" : "not-complete-yet",
@@ -25,7 +25,7 @@ const report = {
   productDecisionPasses,
   literalCompletionPasses,
   remainingReleaseWork: ["Milestone 16 - Release Readiness", "Milestone 17 - Full Release Command", "Milestone 18 - Product Decision Record"],
-  decision: "Do not mark V6 complete until release command and product decision record pass."
+  decision: "Do not mark Production runtime complete until release command and product decision record pass."
 };
 mkdirSync(dirname(resolve("tests/reports/production-runtime-completion-audit.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/production-runtime-completion-audit.json"), `${JSON.stringify(report, null, 2)}\n`);

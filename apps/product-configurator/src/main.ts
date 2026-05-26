@@ -13,8 +13,8 @@ import { ui } from "./ui";
 
 const environmentOptions = [
   { id: scene.environment.id, label: scene.environment.label, file: scene.environment.file, url: scene.environment.url, exposure: scene.environment.exposure, intensity: scene.environment.intensity, rotation: scene.environment.rotation },
-  { id: "venice-sunset", label: "Venice Sunset", file: "venice_sunset_1k.hdr", exposure: 1.1, intensity: 1.25, rotation: -0.18 },
-  { id: "industrial-high-contrast", label: "Industrial Contrast", file: "industrial_high_contrast_1k.hdr", exposure: 1.0, intensity: 1.32, rotation: 0.34 }
+  { id: "autumn-field", label: "Autumn Field", file: "autumn_field_puresky_1k.hdr", exposure: 1.1, intensity: 1.25, rotation: -0.18 },
+  { id: "kloppenheim-sky", label: "Kloppenheim Sky", file: "kloppenheim_06_puresky_1k.hdr", exposure: 1.0, intensity: 1.32, rotation: 0.34 }
 ] as const;
 
 const FLAGSHIP_RENDER_LONG_EDGE = 5120;
@@ -22,7 +22,7 @@ const FLAGSHIP_RENDER_SHORT_EDGE = 2880;
 
 let loadedEnvironments = new Map<string, A3DHdrEnvironment>();
 
-interface A3DV6RuntimeMetrics {
+interface A3DProductionRuntimeMetrics {
   readonly appId: string;
   readonly sceneId: string;
   readonly workflow: string;
@@ -55,14 +55,14 @@ interface A3DV6RuntimeMetrics {
   readonly screenshotPath: string;
 }
 
-interface A3DV6Runtime {
+interface A3DProductionRuntime {
   readonly status: "loading" | "ready" | "error";
   readonly error?: string;
   readonly appId: string;
   readonly sceneId: string;
   readonly selectedAssetId?: string;
   readonly rendererBackend?: "webgl2";
-  readonly runtime?: A3DV6RuntimeMetrics;
+  readonly runtime?: A3DProductionRuntimeMetrics;
   readonly metadata?: A3DGltfScene["metadata"];
   readonly secondaryMetadata?: readonly A3DGltfScene["metadata"][];
   readonly proof?: A3DRenderResult["proof"];
@@ -76,7 +76,7 @@ interface A3DV6Runtime {
 
 declare global {
   interface Window {
-    __a3dV6Runtime?: A3DV6Runtime;
+    __a3dProductionRuntime?: A3DProductionRuntime;
   }
 }
 
@@ -90,7 +90,7 @@ async function runProductConfigurator(): Promise<void> {
   }
   const renderResolution = configureFlagshipCanvas(canvas);
 
-  const loading: A3DV6Runtime = {
+  const loading: A3DProductionRuntime = {
     status: "loading",
     appId: scene.appId,
     sceneId: scene.sceneId,
@@ -132,6 +132,7 @@ async function runProductConfigurator(): Promise<void> {
     if (!environment) throw new Error(`${scene.appId} did not load an HDR environment.`);
 
     const viewer = await createProductViewer({
+      backend: "webgl2",
       canvas,
       asset,
       environment,
@@ -152,7 +153,7 @@ async function runProductConfigurator(): Promise<void> {
       appId: scene.appId,
       sceneId: scene.sceneId,
       error: error instanceof Error ? error.stack ?? error.message : String(error),
-      interactionCount: window.__a3dV6Runtime?.interactionCount ?? 0,
+      interactionCount: window.__a3dProductionRuntime?.interactionCount ?? 0,
       sdkSurface: "@aura3d/engine/production-runtime"
     });
   }
@@ -164,9 +165,9 @@ function createReadyRuntime(
   viewer: A3DProductViewer,
   result: A3DRenderResult,
   frameTimeMs: number,
-  renderResolution: A3DV6RuntimeMetrics["renderResolution"],
+  renderResolution: A3DProductionRuntimeMetrics["renderResolution"],
   selectedAssetId: string
-): A3DV6Runtime {
+): A3DProductionRuntime {
   const metadata = asset.metadata;
   return {
     status: "ready",
@@ -210,12 +211,12 @@ function createReadyRuntime(
   };
 }
 
-function publishRuntime(root: HTMLElement, runtime: A3DV6Runtime, viewer?: A3DProductViewer): void {
-  window.__a3dV6Runtime = runtime;
+function publishRuntime(root: HTMLElement, runtime: A3DProductionRuntime, viewer?: A3DProductViewer): void {
+  window.__a3dProductionRuntime = runtime;
   mountProductConfigurator(root, runtime, viewer);
 }
 
-function mountProductConfigurator(root: HTMLElement, runtime: A3DV6Runtime, viewer?: A3DProductViewer): void {
+function mountProductConfigurator(root: HTMLElement, runtime: A3DProductionRuntime, viewer?: A3DProductViewer): void {
   const metrics = runtime.runtime;
   const settings = viewer?.getSettings() ?? runtime.viewerDiagnostics?.settings;
   const material = runtime.metadata;
@@ -372,20 +373,20 @@ function mountProductConfigurator(root: HTMLElement, runtime: A3DV6Runtime, view
     rerenderViewer(root, viewer, "Reset Camera");
   });
   root.querySelector("#capture-screenshot")?.addEventListener("click", () => {
-    const current = window.__a3dV6Runtime;
+    const current = window.__a3dProductionRuntime;
     if (!current || !viewer) return;
-    window.__a3dV6Runtime = {
+    window.__a3dProductionRuntime = {
       ...current,
       interactionCount: current.interactionCount + 1,
       lastInteraction: "Capture Screenshot",
       screenshotDataUrl: viewer.captureScreenshot(),
       viewerDiagnostics: viewer.diagnostics()
     };
-    mountProductConfigurator(root, window.__a3dV6Runtime, viewer);
+    mountProductConfigurator(root, window.__a3dProductionRuntime, viewer);
   });
 }
 
-function configureFlagshipCanvas(canvas: HTMLCanvasElement): A3DV6RuntimeMetrics["renderResolution"] {
+function configureFlagshipCanvas(canvas: HTMLCanvasElement): A3DProductionRuntimeMetrics["renderResolution"] {
   const cssWidth = Math.max(1, Math.round(canvas.getBoundingClientRect().width || canvas.clientWidth || 1024));
   const cssHeight = Math.max(1, Math.round(canvas.getBoundingClientRect().height || canvas.clientHeight || cssWidth));
   const deviceScale = Math.min(3.25, globalThis.devicePixelRatio || 1);
@@ -450,12 +451,12 @@ function bindCheckbox(
 }
 
 function rerenderViewer(root: HTMLElement, viewer: A3DProductViewer | undefined, interaction: string): void {
-  const current = window.__a3dV6Runtime;
+  const current = window.__a3dProductionRuntime;
   if (!current || !viewer) return;
   const frameStart = performance.now();
   const result = viewer.render();
   const diagnostics = viewer.diagnostics();
-  window.__a3dV6Runtime = {
+  window.__a3dProductionRuntime = {
     ...current,
     runtime: current.runtime ? {
       ...current.runtime,
@@ -469,5 +470,5 @@ function rerenderViewer(root: HTMLElement, viewer: A3DProductViewer | undefined,
     lastInteraction: interaction,
     viewerDiagnostics: diagnostics
   };
-  mountProductConfigurator(root, window.__a3dV6Runtime, viewer);
+  mountProductConfigurator(root, window.__a3dProductionRuntime, viewer);
 }

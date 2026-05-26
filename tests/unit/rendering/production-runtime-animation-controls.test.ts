@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV6OrbitControlPreset,
-  summarizeV6AnimationWorkflow
+  createProductionOrbitControlPreset,
+  summarizeProductionAnimationWorkflow
 } from "../../../packages/rendering/src/production-runtime";
 
-describe("V6 animation and controls production workflow", () => {
+describe("Production animation and controls production workflow", () => {
   it("recognizes imported skinned animation and morph target animation readiness", () => {
-    expect(summarizeV6AnimationWorkflow({
+    expect(summarizeProductionAnimationWorkflow({
       assetId: "cesium-man",
       animationCount: 1,
       skinCount: 1,
@@ -22,7 +22,7 @@ describe("V6 animation and controls production workflow", () => {
       warnings: []
     });
 
-    expect(summarizeV6AnimationWorkflow({
+    expect(summarizeProductionAnimationWorkflow({
       assetId: "animated-morph-cube",
       animationCount: 1,
       skinCount: 0,
@@ -40,7 +40,7 @@ describe("V6 animation and controls production workflow", () => {
   });
 
   it("creates finite orbit controls from real asset bounds and viewport dimensions", () => {
-    const preset = createV6OrbitControlPreset(
+    const preset = createProductionOrbitControlPreset(
       {
         min: [-0.45, 0, -0.25],
         max: [0.45, 1.82, 0.25]
@@ -61,7 +61,7 @@ describe("V6 animation and controls production workflow", () => {
   });
 
   it("flags metadata-only animation claims as incomplete", () => {
-    const summary = summarizeV6AnimationWorkflow({
+    const summary = summarizeProductionAnimationWorkflow({
       assetId: "static-placeholder",
       animationCount: 0,
       skinCount: 0,

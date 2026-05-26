@@ -1,6 +1,6 @@
 import { computePerspectiveCameraFrame, type CameraFrameBounds, type PerspectiveCameraFrame } from "../CameraFraming";
 
-export interface V6AnimationMetadataInput {
+export interface ProductionAnimationMetadataInput {
   readonly assetId: string;
   readonly animationCount: number;
   readonly skinCount: number;
@@ -9,7 +9,7 @@ export interface V6AnimationMetadataInput {
   readonly materialCount: number;
 }
 
-export interface V6AnimationWorkflowSummary {
+export interface ProductionAnimationWorkflowSummary {
   readonly assetId: string;
   readonly importedAnimation: boolean;
   readonly skinningReady: boolean;
@@ -18,7 +18,7 @@ export interface V6AnimationWorkflowSummary {
   readonly warnings: readonly string[];
 }
 
-export interface V6OrbitControlPreset {
+export interface ProductionOrbitControlPreset {
   readonly target: readonly [number, number, number];
   readonly distance: number;
   readonly yawRadians: number;
@@ -27,7 +27,7 @@ export interface V6OrbitControlPreset {
   readonly maxDistance: number;
 }
 
-export function summarizeV6AnimationWorkflow(input: V6AnimationMetadataInput): V6AnimationWorkflowSummary {
+export function summarizeProductionAnimationWorkflow(input: ProductionAnimationMetadataInput): ProductionAnimationWorkflowSummary {
   const importedAnimation = input.animationCount > 0;
   const skinningReady = input.skinCount > 0;
   const morphTargetsReady = input.morphTargetCount > 0;
@@ -41,16 +41,16 @@ export function summarizeV6AnimationWorkflow(input: V6AnimationMetadataInput): V
     warnings: [
       ...(!importedAnimation ? ["No imported animation clips were detected."] : []),
       ...(!skinningReady && !morphTargetsReady ? ["No skinning or morph target deformation metadata was detected."] : []),
-      ...(!renderable ? ["Asset is not renderable through the V6 glTF render pipeline."] : [])
+      ...(!renderable ? ["Asset is not renderable through the Production glTF render pipeline."] : [])
     ]
   };
 }
 
-export function createV6OrbitControlPreset(
+export function createProductionOrbitControlPreset(
   bounds: CameraFrameBounds,
   viewport: { readonly width: number; readonly height: number },
   options: { readonly yawRadians?: number; readonly pitchRadians?: number; readonly paddingRatio?: number } = {}
-): V6OrbitControlPreset & { readonly frame: PerspectiveCameraFrame } {
+): ProductionOrbitControlPreset & { readonly frame: PerspectiveCameraFrame } {
   const yawRadians = options.yawRadians ?? -0.42;
   const pitchRadians = options.pitchRadians ?? -0.18;
   const frame = computePerspectiveCameraFrame(bounds, viewport, {

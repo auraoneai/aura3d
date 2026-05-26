@@ -58,7 +58,7 @@ sceneShowcase.dispose();
 interactive.dispose();
 
 const report = {
-  schema: "a3d-foundation-workflows-readiness/v1",
+  schema: "a3d-foundation-workflows-readiness",
   generatedAt: new Date().toISOString(),
   pass: requiredFiles.every((path) => existsSync(resolve(path)))
     && workflowChecks.every((workflow) => workflow.hasSource && workflow.featureCount >= 2 && workflow.warningCount === 0)

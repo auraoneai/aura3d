@@ -23,13 +23,13 @@ import { AnimationMixer, SceneAnimationBridge, type AnimationAction, type LoopMo
 import {
   Material,
   Renderer,
-  createV4EnvironmentLighting,
-  createV4FlagshipRenderPresetEvidence,
-  sampleV4LdrPostprocessReadback,
+  createExternalParityEnvironmentLighting,
+  createExternalParityFlagshipRenderPresetEvidence,
+  sampleExternalParityLdrPostprocessReadback,
   type RenderDeviceDiagnostics,
-  type V4EnvironmentLightingBundle,
-  type V4LdrPostprocessSummary,
-  type V4RenderPresetEvidence
+  type ExternalParityEnvironmentLightingBundle,
+  type ExternalParityLdrPostprocessSummary,
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 import { Camera, type Light } from "@aura3d/scene";
 import { installExampleStyles } from "../shared/exampleHarness.js";
@@ -38,7 +38,7 @@ const KHRONOS_BOX_GLB =
   "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf/Models/Box/glTF-Binary/Box.glb";
 const KHRONOS_DAMAGED_HELMET_GLTF =
   "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/DamagedHelmet/glTF/DamagedHelmet.gltf";
-const DEFAULT_V4_ASSET_GLTF = "/fixtures/product-studio/products/speaker/speaker.gltf";
+const DEFAULT_EXTERNAL_PARITY_ASSET_GLTF = "/fixtures/product-studio/products/speaker/speaker.gltf";
 
 interface AssetViewerResult {
   readonly id: "asset-viewer";
@@ -50,9 +50,9 @@ interface AssetViewerResult {
   readonly screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png";
   readonly claimBoundary: string;
   readonly featureEvidence: Record<string, string | number | boolean>;
-  readonly v4RenderPreset?: V4RenderPresetEvidence;
-  readonly postprocess?: V4LdrPostprocessSummary;
-  readonly environmentResources?: V4EnvironmentLightingBundle["resources"];
+  readonly externalParityRenderPreset?: ExternalParityRenderPresetEvidence;
+  readonly postprocess?: ExternalParityLdrPostprocessSummary;
+  readonly environmentResources?: ExternalParityEnvironmentLightingBundle["resources"];
   readonly assetBundleCache?: AssetBundleCacheEvidence;
   readonly sceneAnalysis?: GLTFSceneAnalysisEvidence;
   readonly sourceKind?: "inline" | "external" | "custom" | "local";
@@ -207,7 +207,7 @@ interface MutableAssetViewerLookControls {
 }
 
 interface AssetViewerComparisonExport {
-  readonly schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1";
+  readonly schemaVersion: "a3d-external-parity-asset-viewer-comparison-export";
   readonly generated: boolean;
   readonly generatedAt: string;
   readonly renderer: "webgl2";
@@ -309,7 +309,7 @@ const knownLimits = [
   "Unsupported extensions are surfaced as warnings rather than hidden behind fake visuals.",
 ] as const;
 
-const claimBoundary = "V4 asset-viewer evidence is limited to the checked-in V4 local corpus, bounded glTF inspection/render-resource creation, browser screenshots, and explicit unsupported-feature warnings; complete glTF loader parity is not claimed.";
+const claimBoundary = "ExternalParity asset-viewer evidence is limited to the checked-in ExternalParity local corpus, bounded glTF inspection/render-resource creation, browser screenshots, and explicit unsupported-feature warnings; complete glTF loader parity is not claimed.";
 
 function failedFeatureEvidence(message: string): Record<string, string | number | boolean> {
   return {
@@ -1415,7 +1415,7 @@ function resolveInitialModel(): { readonly kind: "inline" | "external" | "custom
   if (model === "inline") return { kind: "inline", url: createInlineTriangleGltfUrl() };
   if (model === "external") return { kind: "external", url: url ?? KHRONOS_DAMAGED_HELMET_GLTF };
   if (model === "custom" && url) return { kind: "custom", url };
-  return { kind: "custom", url: DEFAULT_V4_ASSET_GLTF };
+  return { kind: "custom", url: DEFAULT_EXTERNAL_PARITY_ASSET_GLTF };
 }
 
 function summarize(
@@ -1425,8 +1425,8 @@ function summarize(
   resources: GLTFRenderResources,
   diagnostics: RenderDeviceDiagnostics,
   frameTiming: AssetViewerFrameTiming,
-  postprocess: V4LdrPostprocessSummary,
-  environmentResources: V4EnvironmentLightingBundle["resources"],
+  postprocess: ExternalParityLdrPostprocessSummary,
+  environmentResources: ExternalParityEnvironmentLightingBundle["resources"],
   inspection: GLTFAssetInspectionReport,
   renderMode: AssetViewerRenderMode,
   lookControls: MutableAssetViewerLookControls,
@@ -1439,7 +1439,7 @@ function summarize(
 ): AssetViewerResult {
   const firstMesh = asset.meshes[0];
   const realScenePostprocessReadback = postprocess.inputNonDarkPixels > 0 || postprocess.outputNonDarkPixels > 0;
-  const v4RenderPreset = createV4FlagshipRenderPresetEvidence({
+  const externalParityRenderPreset = createExternalParityFlagshipRenderPresetEvidence({
     exampleId: "asset-viewer",
     screenshotPath: "tests/reports/external-parity-example-screenshots/asset-viewer.png",
     exposure: postprocess.exposure,
@@ -1482,8 +1482,8 @@ function summarize(
       morphTargetCount: asset.meshes.reduce((sum, mesh) => sum + mesh.morphTargets.length, 0),
       unsupportedFeaturesVisible: inspection.warnings.length > 0 || asset.loaderDiagnostics.unsupportedExtensions.length > 0,
       fallbackMaterialVisible: fallbackMaterialsFor(inspection, asset).length > 0,
-      v4RenderPreset: true,
-      sharedV4Preset: v4RenderPreset.presetId,
+      externalParityRenderPreset: true,
+      sharedExternalParityPreset: externalParityRenderPreset.presetId,
       generatedEnvironmentMap: true,
       environmentResourceSet: environmentResources.resourceSet,
       environmentReflectionEvidence: true,
@@ -1506,7 +1506,7 @@ function summarize(
       lookControls: true,
       comparisonExport: true
     },
-    v4RenderPreset,
+    externalParityRenderPreset,
     postprocess,
     environmentResources,
     assetBundleCache,
@@ -1809,7 +1809,7 @@ function asEnvironmentPreset(value: string): AssetViewerEnvironmentPreset {
   return value === "neutral" || value === "sunset" ? value : "studio";
 }
 
-function assetViewerV4EnvironmentPreset(preset: AssetViewerEnvironmentPreset): "studio" | "inspection" | "evening" {
+function assetViewerExternalParityEnvironmentPreset(preset: AssetViewerEnvironmentPreset): "studio" | "inspection" | "evening" {
   if (preset === "neutral") return "inspection";
   if (preset === "sunset") return "evening";
   return "studio";
@@ -1918,7 +1918,7 @@ function environmentPreset(preset: AssetViewerEnvironmentPreset, intensity: numb
 
 function createComparisonExport(result: AssetViewerResult): AssetViewerComparisonExport {
   const base = {
-    schemaVersion: "a3d-v4-asset-viewer-comparison-export-v1" as const,
+    schemaVersion: "a3d-external-parity-asset-viewer-comparison-export" as const,
     generated: true,
     generatedAt: new Date().toISOString(),
     renderer: "webgl2" as const,
@@ -1960,8 +1960,8 @@ function renderLoadedAsset(
 ): {
   readonly diagnostics: RenderDeviceDiagnostics;
   readonly frameTiming: AssetViewerFrameTiming;
-  readonly postprocess: V4LdrPostprocessSummary;
-  readonly environmentResources: V4EnvironmentLightingBundle["resources"];
+  readonly postprocess: ExternalParityLdrPostprocessSummary;
+  readonly environmentResources: ExternalParityEnvironmentLightingBundle["resources"];
 } {
   const frameStartedAt = performance.now();
   renderer.resize(canvas.width, canvas.height);
@@ -1995,7 +1995,7 @@ function renderLoadedAsset(
 
   const fill = getOrCreateLight(scene, "point", "asset-viewer-fill");
   const environment = environmentPreset(lookControls.environmentPreset, lookControls.environmentIntensity);
-  const lightingBundle = createV4EnvironmentLighting(assetViewerV4EnvironmentPreset(lookControls.environmentPreset));
+  const lightingBundle = createExternalParityEnvironmentLighting(assetViewerExternalParityEnvironmentPreset(lookControls.environmentPreset));
   key.intensity = environment.keyIntensity;
   key.color = environment.keyColor;
   fill.intensity = environment.fillIntensity;
@@ -2011,7 +2011,7 @@ function renderLoadedAsset(
     morphTargetLibrary: resources.morphTargetLibrary,
     environmentLighting: lightingBundle.lighting
   });
-  const postprocess = sampleV4LdrPostprocessReadback({
+  const postprocess = sampleExternalParityLdrPostprocessReadback({
     device: renderer.device,
     framebufferWidth: canvas.width,
     framebufferHeight: canvas.height,

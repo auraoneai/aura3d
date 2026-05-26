@@ -1,9 +1,9 @@
 import { createAssetViewerWorkflow } from "@aura3d/workflows";
-import { mountV3Example } from "../foundation-example-shell";
+import { mountFoundationExample } from "../foundation-example-shell";
 
-void mountV3Example({
+void mountFoundationExample({
   id: "foundation-asset-viewer",
-  title: "Asset Viewer V3",
+  title: "Asset Viewer Foundation",
   summary: "Load a glTF product fixture through the public workflow SDK, create render resources, auto-frame the camera, and draw it with the renderer.",
   notes: [
     "The example imports only @aura3d/workflows and the shared public example shell.",

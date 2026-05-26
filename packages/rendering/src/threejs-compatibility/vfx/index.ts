@@ -1,9 +1,9 @@
-export { ParticleSystemV5 } from "./ParticleSystem";
-export type { V5Particle } from "./ParticleSystem";
-export { GPUPointCloudV5 } from "./GPUPointCloud";
-export { SpriteSystemV5 } from "./SpriteSystem";
-export type { V5Sprite } from "./SpriteSystem";
-export { LineRendererV5 } from "./LineRenderer";
-export type { V5LineSegment } from "./LineRenderer";
-export { TrailRendererV5 } from "./TrailRenderer";
-export { createV5VfxDiagnostics } from "./VFXDiagnostics";
+export { ParticleSystemThreeCompat } from "./ParticleSystem";
+export type { ThreeCompatParticle } from "./ParticleSystem";
+export { GPUPointCloudThreeCompat } from "./GPUPointCloud";
+export { SpriteSystemThreeCompat } from "./SpriteSystem";
+export type { ThreeCompatSprite } from "./SpriteSystem";
+export { LineThreeCompatRenderer } from "./LineRenderer";
+export type { ThreeCompatLineSegment } from "./LineRenderer";
+export { TrailThreeCompatRenderer } from "./TrailRenderer";
+export { createThreeCompatVfxDiagnostics } from "./VFXDiagnostics";

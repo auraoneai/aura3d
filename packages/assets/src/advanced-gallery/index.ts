@@ -4,7 +4,7 @@ export {
   loadRenderableAsset,
   inspectGLTFAsset,
   createAssetCompatibilityReport,
-  summarizeV4Corpus
+  summarizeExternalParityGLTFCorpus
 } from "../index";
 export type {
   GLTFAsset,
@@ -14,5 +14,5 @@ export type {
   RenderableAsset,
   RenderableScene,
   AssetCompatibilityReport,
-  V4CorpusManifest
+  ExternalParityGLTFCorpusManifest
 } from "../index";

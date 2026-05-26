@@ -2,7 +2,7 @@
 import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
-  loadV6GLTFRenderPipeline
+  loadProductionGLTFRenderPipeline
 } from "@aura3d/assets";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { Geometry, PBRMaterial, computePerspectiveCameraFrame } from "@aura3d/rendering";
@@ -12,7 +12,7 @@ import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.
 
 declare global {
   interface Window {
-    __V9_ANIMATION_WALK_PARITY__?: AnimationWalkParityResult;
+    __THREEJS_PARITY_ANIMATION_WALK_PARITY__?: AnimationWalkParityResult;
   }
 }
 
@@ -22,7 +22,7 @@ type AnimationWalkParityResult = AnimationWalkParityReady | AnimationWalkParityE
 
 interface AnimationWalkParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-animation-walk-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-walk-parity";
   readonly purpose: "same-asset Soldier Walk clip A3D imported animation runtime vs actual Three.js AnimationMixer";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -53,7 +53,7 @@ interface AnimationWalkParityReady {
 
 interface AnimationWalkParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-animation-walk-parity/v1";
+  readonly schema: "a3d-threejs-parity-animation-walk-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -111,7 +111,7 @@ async function run(): Promise<void> {
     const threeStats = analyzeImageData(threePixels);
     const ready: AnimationWalkParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-animation-walk-parity/v1",
+      schema: "a3d-threejs-parity-animation-walk-parity",
       purpose: "same-asset Soldier Walk clip A3D imported animation runtime vs actual Three.js AnimationMixer",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -143,26 +143,26 @@ async function run(): Promise<void> {
       },
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
-    window.__V9_ANIMATION_WALK_PARITY__ = ready;
+    window.__THREEJS_PARITY_ANIMATION_WALK_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: AnimationWalkParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-animation-walk-parity/v1",
+      schema: "a3d-threejs-parity-animation-walk-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__V9_ANIMATION_WALK_PARITY__ = failure;
+    window.__THREEJS_PARITY_ANIMATION_WALK_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
 }
 
 async function renderA3D(canvas: HTMLCanvasElement) {
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: ASSET.url,
-    assetId: "v9-animation-walk-soldier",
+    assetId: "threejs-parity-animation-walk-soldier",
     assetName: ASSET.name,
     width: ASSET.width,
     height: ASSET.height,
@@ -226,7 +226,7 @@ function collectImportedItems(pipeline, placement) {
       ? { jointCount: renderable.skinning.jointCount, matrices: new Float32Array(renderable.skinning.matrices) }
       : undefined;
     items.push({
-      label: `v9-animation-walk:${node.name}`,
+      label: `threejs-parity-animation-walk:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -248,10 +248,10 @@ function createA3DStageItems() {
 }
 
 function createA3DLights() {
-  const key = new DirectionalLight("v9-animation-walk-key");
+  const key = new DirectionalLight("threejs-parity-animation-walk-key");
   key.intensity = 5.6;
   key.color = [1, 1, 1];
-  const rim = new DirectionalLight("v9-animation-walk-rim");
+  const rim = new DirectionalLight("threejs-parity-animation-walk-rim");
   rim.intensity = 2.4;
   rim.color = [0.78, 0.82, 0.9];
   return [

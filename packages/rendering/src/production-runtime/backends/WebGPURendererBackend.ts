@@ -1,20 +1,20 @@
-import { createV6WebGPUReport, type V6WebGPULike, type V6WebGPUReport } from '../ProductionWebGPURenderer';
+import { createProductionWebGPUReport, type ProductionWebGPULike, type ProductionWebGPUReport } from '../ProductionWebGPURenderer';
 
 export interface WebGPURendererBackendOptions {
-  readonly navigatorGpu?: V6WebGPULike | null;
+  readonly navigatorGpu?: ProductionWebGPULike | null;
   readonly userAgent?: string;
 }
 
 export class WebGPURendererBackend {
   readonly backend = 'webgpu' as const;
   readonly contextType = 'webgpu';
-  private constructor(private readonly report: V6WebGPUReport) {}
+  private constructor(private readonly report: ProductionWebGPUReport) {}
 
   static async create(options: WebGPURendererBackendOptions = {}): Promise<WebGPURendererBackend> {
-    return new WebGPURendererBackend(await createV6WebGPUReport(options.navigatorGpu ?? null));
+    return new WebGPURendererBackend(await createProductionWebGPUReport(options.navigatorGpu ?? null));
   }
 
-  getReport(): V6WebGPUReport {
+  getReport(): ProductionWebGPUReport {
     return this.report;
   }
 

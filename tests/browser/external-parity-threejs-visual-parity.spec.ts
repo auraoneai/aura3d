@@ -1,13 +1,13 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { V4_THREEJS_PARITY_SCENES } from "../../benchmarks/external-parity/shared/threejs-visual-parity-scenes";
+import { EXTERNAL_PARITY_THREEJS_PARITY_SCENES } from "../../benchmarks/external-parity/shared/threejs-visual-parity-scenes";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const reportDir = resolve("tests/reports/external-parity-threejs-visual-parity");
 const captures: ComparisonCapture[] = [];
 
-test.describe("V4 same-scene Three.js visual parity", () => {
+test.describe("ExternalParity same-scene Three.js visual parity", () => {
   test.setTimeout(240_000);
   let server: ExampleDevServer;
 
@@ -18,7 +18,7 @@ test.describe("V4 same-scene Three.js visual parity", () => {
 
   test.afterAll(async () => {
     await server.close();
-    const pass = captures.length === V4_THREEJS_PARITY_SCENES.length &&
+    const pass = captures.length === EXTERNAL_PARITY_THREEJS_PARITY_SCENES.length &&
       captures.every((capture) =>
         capture.a3d.bytes > 8_000 &&
         capture.threejs.bytes > 8_000 &&
@@ -29,17 +29,17 @@ test.describe("V4 same-scene Three.js visual parity", () => {
         capture.visualScore >= 58
       );
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "a3d-external-parity-threejs-visual-parity-browser/v1",
+      schema: "a3d-external-parity-threejs-visual-parity-browser",
       generatedAt: new Date().toISOString(),
       pass,
-      requiredSceneCount: V4_THREEJS_PARITY_SCENES.length,
-      scenes: V4_THREEJS_PARITY_SCENES.map((scene) => scene.id),
+      requiredSceneCount: EXTERNAL_PARITY_THREEJS_PARITY_SCENES.length,
+      scenes: EXTERNAL_PARITY_THREEJS_PARITY_SCENES.map((scene) => scene.id),
       captures,
-      productBoundary: "V4 same-scene visual parity proof for supported workflows including large-scene/performance. This is not broad Three.js API replacement."
+      productBoundary: "ExternalParity same-scene visual parity proof for supported workflows including large-scene/performance. This is not broad Three.js API replacement."
     }, null, 2)}\n`);
   });
 
-  for (const scene of V4_THREEJS_PARITY_SCENES) {
+  for (const scene of EXTERNAL_PARITY_THREEJS_PARITY_SCENES) {
     test(`${scene.id} captures A3D, Three.js, and diff images`, async ({ page }) => {
       await page.goto(server.origin, { waitUntil: "domcontentloaded" });
       const metrics = await page.evaluate(async ({ origin, scene }) => {
@@ -73,7 +73,7 @@ test.describe("V4 same-scene Three.js visual parity", () => {
           }
         };
 
-        async function renderA3D(origin: string, scene: typeof V4_THREEJS_PARITY_SCENES[number], productUrl: string) {
+        async function renderA3D(origin: string, scene: typeof EXTERNAL_PARITY_THREEJS_PARITY_SCENES[number], productUrl: string) {
           const module = await import(`${origin}/packages/engine/src/index.ts`);
           const canvas = document.createElement("canvas");
           canvas.dataset.testid = `${scene.id}-a3d`;
@@ -116,7 +116,7 @@ test.describe("V4 same-scene Three.js visual parity", () => {
           };
         }
 
-        async function renderThree(origin: string, scene: typeof V4_THREEJS_PARITY_SCENES[number], productUrl: string) {
+        async function renderThree(origin: string, scene: typeof EXTERNAL_PARITY_THREEJS_PARITY_SCENES[number], productUrl: string) {
           const THREE = await import(`${origin}/node_modules/three/build/three.module.js`);
           const { GLTFLoader } = await import(`${origin}/node_modules/three/examples/jsm/loaders/GLTFLoader.js`);
           const canvas = document.createElement("canvas");

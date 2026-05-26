@@ -54,7 +54,7 @@ const gaps = [
   "Interactive comparison is a fixed timestamp capture, not input latency or long-run stability evidence."
 ];
 const report = {
-  schema: "a3d-foundation-threejs-comparison/v1",
+  schema: "a3d-foundation-threejs-comparison",
   generatedAt: new Date().toISOString(),
   pass: fileChecks.every((file) => file.exists)
     && manifest?.pass === true

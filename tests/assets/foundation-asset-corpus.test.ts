@@ -7,7 +7,7 @@ const reportPath = resolve("tests/reports/foundation-asset-corpus.json");
 const gltfReportPath = resolve("tests/reports/foundation-gltf-corpus.json");
 const expectedCategories = ["product", "architecture", "character", "environment", "materials", "animation", "compression", "problem-cases"];
 
-describe("v3 local asset corpus", () => {
+describe("foundation local asset corpus", () => {
   it("contains generated category fixtures with manifests, diagnostics baselines, and preview baselines", () => {
     for (const category of expectedCategories) {
       const categoryPath = resolve(fixtureRoot, category);
@@ -25,7 +25,7 @@ describe("v3 local asset corpus", () => {
           readonly screenshotBaseline: string;
           readonly loaderDiagnosticsBaseline: string;
         };
-        expect(manifest.schemaVersion).toBe("a3d-v3-local-asset-v1");
+        expect(manifest.schemaVersion).toBe("a3d-foundation-local-asset");
         expect(manifest.category).toBe(category);
         expect(manifest.features.length).toBeGreaterThan(0);
         expect(existsSync(resolve(directory, manifest.localFile))).toBe(true);
@@ -35,7 +35,7 @@ describe("v3 local asset corpus", () => {
     }
   });
 
-  it("emits a v3 asset corpus report with explicit expected errors instead of silent placeholders", () => {
+  it("emits a foundation asset corpus report with explicit expected errors instead of silent placeholders", () => {
     const report = JSON.parse(readFileSync(reportPath, "utf8")) as {
       readonly schemaVersion: string;
       readonly assetCount: number;
@@ -54,7 +54,7 @@ describe("v3 local asset corpus", () => {
       }[];
     };
 
-    expect(report.schemaVersion).toBe("a3d-v3-asset-corpus-report-v1");
+    expect(report.schemaVersion).toBe("a3d-foundation-asset-corpus-report");
     expect(report.assetCount).toBe(8);
     expect(report.summary).toEqual({ renderResourcesCreated: 7, expectedError: 1, error: 0 });
     expect(report.assets.find((asset) => asset.id === "compression-meshopt-required")).toMatchObject({
@@ -88,7 +88,7 @@ describe("v3 local asset corpus", () => {
       }[];
     };
 
-    expect(report.schemaVersion).toBe("a3d-v3-asset-corpus-report-v1");
+    expect(report.schemaVersion).toBe("a3d-foundation-asset-corpus-report");
     expect(report.assets.length).toBeGreaterThan(0);
     for (const asset of report.assets) {
       expect(asset.id.length).toBeGreaterThan(0);
@@ -97,7 +97,7 @@ describe("v3 local asset corpus", () => {
       expect(["render-resources-created", "expected-error", "error"]).toContain(asset.renderStatus);
       expectValidContentEvidence(asset.contentEvidence, asset.renderStatus);
       expectValidTiming(asset.timings);
-      expect(asset.screenshotPath).toMatch(/^fixtures\/assets\/v3\/.+\/screenshot-baseline\.svg$/);
+      expect(asset.screenshotPath).toMatch(/^fixtures\/assets\/foundation\/.+\/screenshot-baseline\.svg$/);
       expect(existsSync(resolve(asset.screenshotPath))).toBe(true);
       expect(existsSync(resolve(asset.diagnosticsPath))).toBe(true);
       if (asset.renderStatus === "expected-error" || asset.renderStatus === "error") {

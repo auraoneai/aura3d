@@ -49,7 +49,7 @@ interface PbrVisualDiff {
   };
 }
 
-export interface V4PbrVisualParityReport {
+export interface ExternalParityPbrVisualParityReport {
   readonly ok: boolean;
   readonly screenshotPaths: readonly string[];
   readonly boundedPbrVisualParity: {
@@ -72,10 +72,10 @@ const sourceFiles = [
   "packages/rendering/src/Renderer.ts",
   "packages/rendering/src/ShaderChunks.ts",
   "packages/rendering/src/ShaderLibrary.ts",
-  "packages/rendering/src/V4RenderPreset.ts",
+  "packages/rendering/src/ExternalParityRenderPreset.ts",
 ] as const;
 
-export async function createV4PbrVisualParityReport(root = process.cwd()): Promise<V4PbrVisualParityReport> {
+export async function createExternalParityPbrVisualParityReport(root = process.cwd()): Promise<ExternalParityPbrVisualParityReport> {
   mkdirSync(join(root, artifactDir), { recursive: true });
   const browser = await chromium.launch({ headless: true });
   try {
@@ -136,7 +136,7 @@ export async function createV4PbrVisualParityReport(root = process.cwd()): Promi
   }
 }
 
-export function collectPbrVisualEvidencePaths(report: Pick<V4PbrVisualParityReport, "renders" | "diffs">): readonly string[] {
+export function collectPbrVisualEvidencePaths(report: Pick<ExternalParityPbrVisualParityReport, "renders" | "diffs">): readonly string[] {
   const paths = [
     ...report.renders.map((render) => render.screenshotPath),
     ...report.diffs.flatMap((diff) => [diff.baselinePath, diff.comparedPath, diff.diffPath]),
@@ -335,13 +335,13 @@ function sharedBrowserHelpers(): string {
 
 function aura3dBundleSource(): string {
   return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     ${sharedBrowserHelpers()}
     export async function renderPbrVisualParity(canvas) {
       const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.045, 0.052, 0.065, 1], antialias: true, preserveDrawingBuffer: true });
       const sphere = Geometry.uvSphere(1, 40, 20);
       const floor = Geometry.litCube(1);
-      const lighting = createV4EnvironmentLighting("studio").lighting;
+      const lighting = createExternalParityEnvironmentLighting("studio").lighting;
       const materials = [
         new PBRMaterial({ name: "dielectric-rough", baseColor: [0.78, 0.2, 0.12, 1], metallic: 0.02, roughness: 0.72 }),
         new PBRMaterial({ name: "metallic-smooth", baseColor: [0.82, 0.74, 0.55, 1], metallic: 1, roughness: 0.18 }),
@@ -586,13 +586,13 @@ async (input) => {
 }
 `;
 
-function writeReport(root: string, report: V4PbrVisualParityReport): void {
+function writeReport(root: string, report: ExternalParityPbrVisualParityReport): void {
   writeJson(root, reportPath, report);
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = await createV4PbrVisualParityReport();
+  const report = await createExternalParityPbrVisualParityReport();
   writeReport(process.cwd(), report);
   console.log(JSON.stringify({
     ok: report.ok,

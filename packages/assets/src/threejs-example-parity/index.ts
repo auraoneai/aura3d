@@ -1,7 +1,7 @@
-import { loadV6GLTFRenderPipeline } from "../asset-corpus/V6GLTFRenderPipeline";
-import type { V6GLTFRenderPipeline, V6GLTFRenderPipelineOptions } from "../asset-corpus/V6GLTFRenderPipeline";
+import { loadProductionGLTFRenderPipeline } from "../asset-corpus/ProductionGLTFRenderPipeline";
+import type { ProductionGLTFRenderPipeline, ProductionGLTFRenderPipelineOptions } from "../asset-corpus/ProductionGLTFRenderPipeline";
 
-export type V8FlagshipAssetId =
+export type CurrentRoutesFlagshipAssetId =
   | "damaged-helmet"
   | "boom-box"
   | "lantern"
@@ -18,8 +18,8 @@ export type V8FlagshipAssetId =
   | "cesium-milk-truck"
   | "duck";
 
-export interface V8FlagshipAsset {
-  readonly id: V8FlagshipAssetId;
+export interface CurrentRoutesFlagshipAsset {
+  readonly id: CurrentRoutesFlagshipAssetId;
   readonly name: string;
   readonly localPath: string;
   readonly role: string;
@@ -27,7 +27,7 @@ export interface V8FlagshipAsset {
   readonly expectedFeatures: readonly string[];
 }
 
-export const V8_FLAGSHIP_ASSETS: readonly V8FlagshipAsset[] = [
+export const CURRENT_ROUTES_FLAGSHIP_ASSETS: readonly CurrentRoutesFlagshipAsset[] = [
   {
     id: "damaged-helmet",
     name: "Damaged Helmet",
@@ -150,31 +150,31 @@ export const V8_FLAGSHIP_ASSETS: readonly V8FlagshipAsset[] = [
   }
 ] as const;
 
-export interface V8LoadFlagshipAssetOptions extends Omit<V6GLTFRenderPipelineOptions, "url" | "assetId" | "assetName"> {
-  readonly id?: V8FlagshipAssetId;
+export interface CurrentRoutesLoadFlagshipAssetOptions extends Omit<ProductionGLTFRenderPipelineOptions, "url" | "assetId" | "assetName"> {
+  readonly id?: CurrentRoutesFlagshipAssetId;
   readonly origin?: string;
 }
 
-export function listV8FlagshipAssets(): readonly V8FlagshipAsset[] {
-  return V8_FLAGSHIP_ASSETS;
+export function listCurrentRoutesFlagshipAssets(): readonly CurrentRoutesFlagshipAsset[] {
+  return CURRENT_ROUTES_FLAGSHIP_ASSETS;
 }
 
-export function resolveV8FlagshipAsset(id: V8FlagshipAssetId = "damaged-helmet"): V8FlagshipAsset {
-  const asset = V8_FLAGSHIP_ASSETS.find((entry) => entry.id === id);
-  if (!asset) throw new Error(`Unknown V8 flagship asset: ${id}`);
+export function resolveCurrentRoutesFlagshipAsset(id: CurrentRoutesFlagshipAssetId = "damaged-helmet"): CurrentRoutesFlagshipAsset {
+  const asset = CURRENT_ROUTES_FLAGSHIP_ASSETS.find((entry) => entry.id === id);
+  if (!asset) throw new Error(`Unknown CurrentRoutes flagship asset: ${id}`);
   return asset;
 }
 
-export function v8AssetUrl(asset: V8FlagshipAsset, origin = ""): string {
+export function currentRoutesAssetUrl(asset: CurrentRoutesFlagshipAsset, origin = ""): string {
   const prefix = origin.endsWith("/") ? origin.slice(0, -1) : origin;
   return `${prefix}/${asset.localPath}`;
 }
 
-export async function loadV8FlagshipAsset(options: V8LoadFlagshipAssetOptions = {}): Promise<V6GLTFRenderPipeline> {
-  const asset = resolveV8FlagshipAsset(options.id);
-  return loadV6GLTFRenderPipeline({
+export async function loadCurrentRoutesFlagshipAsset(options: CurrentRoutesLoadFlagshipAssetOptions = {}): Promise<ProductionGLTFRenderPipeline> {
+  const asset = resolveCurrentRoutesFlagshipAsset(options.id);
+  return loadProductionGLTFRenderPipeline({
     ...options,
-    url: v8AssetUrl(asset, options.origin),
+    url: currentRoutesAssetUrl(asset, options.origin),
     assetId: asset.id,
     assetName: asset.name
   });

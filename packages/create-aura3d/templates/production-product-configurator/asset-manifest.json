@@ -1,6 +1,6 @@
 {
-  "schema": "a3d-production-runtime-template-assets/v1",
-  "fetchInstructions": "Serve the V6 fixture assets at /fixtures/production-runtime or copy the listed files into that same public path before running the template.",
+  "schema": "a3d-production-runtime-template-assets",
+  "fetchInstructions": "Serve the production fixture assets at /fixtures/production-runtime or copy the listed files into that same public path before running the template.",
   "assets": [
     { "id": "damaged-helmet", "path": "fixtures/asset-corpus/damaged-helmet.glb", "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656" },
     { "id": "boom-box", "path": "fixtures/asset-corpus/boom-box.glb", "sha256": "de9d5954855c16ff2593e914ae672baaeb4cf23a3262022b32164cc4621f93d6" },

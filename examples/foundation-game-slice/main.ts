@@ -1,9 +1,9 @@
 import { createInteractiveSceneWorkflow } from "@aura3d/workflows";
-import { mountV3Example } from "../foundation-example-shell";
+import { mountFoundationExample } from "../foundation-example-shell";
 
-void mountV3Example({
+void mountFoundationExample({
   id: "foundation-game-slice",
-  title: "Game Slice V3",
+  title: "Game Slice Foundation",
   summary: "A small realtime slice that proves the renderer and workflow SDK can drive a product-style game viewport.",
   notes: [
     "This is deliberately scoped as a game slice, not a claim that A3D replaces full game engines.",

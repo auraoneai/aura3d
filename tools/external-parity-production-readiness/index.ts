@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4ProductionReadinessReport {
+export interface ExternalParityProductionReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly productionReady: boolean;
@@ -35,8 +35,8 @@ const sourceFiles = [
   "docs/project/compatibility.md",
   "docs/project/deployment-rollback.md",
   "docs/project/release-process.md",
-  "docs/project/v4-decision-gates.md",
-  "docs/project/v4-readme.md",
+  "docs/project/product-studio-decision-gates.md",
+  "docs/project/documentation-index.md",
   "tests/reports/external-parity-current-capability.json",
   "tests/reports/external-parity-rendering.json",
   "tests/reports/external-parity-asset-corpus.json",
@@ -52,10 +52,10 @@ const sourceFiles = [
   "tools/static-demo-server-smoke/index.ts",
   "tools/public-demo-deployment-smoke/index.ts",
   "tools/public-demo-deployment-artifacts/index.ts",
-  ".github/workflows/v4-public-demo-deploy.yml",
+  ".github/workflows/public-demo-deploy.yml",
 ] as const;
 
-export function createV4ProductionReadinessReport(root = process.cwd()): V4ProductionReadinessReport {
+export function createExternalParityProductionReadinessReport(root = process.cwd()): ExternalParityProductionReadinessReport {
   const currentCapability = readJson(root, "tests/reports/external-parity-current-capability.json");
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const assets = readJson(root, "tests/reports/external-parity-asset-corpus.json");
@@ -83,11 +83,11 @@ export function createV4ProductionReadinessReport(root = process.cwd()): V4Produ
     .filter((path) => !existsSync(join(root, path)))
     .map((path) => `Required operational policy file is missing: ${path}`);
   const releaseAreas = [
-    releaseArea("local-verification", "All scoped V4 verification commands pass on this checkout.", "Core V4 reports are present and locally generated.", [
+    releaseArea("local-verification", "All scoped External parity verification commands pass on this checkout.", "Core External parity reports are present and locally generated.", [
       ...(currentCapability?.ok === true ? [] : ["external-parity-current-capability report is missing or failing"]),
       ...(rendering?.ok === true ? [] : ["external-parity-rendering report is missing or failing"]),
-      ...(assets?.ok === true ? [] : ["v4-asset-corpus report is missing or failing"]),
-      ...(engineComparison?.ok === true ? [] : ["v4-engine-comparison report is missing or failing"]),
+      ...(assets?.ok === true ? [] : ["external-parity-asset-corpus report is missing or failing"]),
+      ...(engineComparison?.ok === true ? [] : ["external-parity-engine-comparison report is missing or failing"]),
       ...(visualQuality?.ok === true ? [] : ["external-parity-visual-quality report is missing or failing"]),
     ]),
     releaseArea("claim-boundary", "Production claim boundaries are clean and broad competitor/replacement claims are blocked until evidence exists.", "Broad readiness report exists and currently blocks broad claims.", [
@@ -102,7 +102,7 @@ export function createV4ProductionReadinessReport(root = process.cwd()): V4Produ
     releaseArea("operational-support", "Security, support, compatibility, deprecation, incident, and upgrade policies exist.", operationalPolicyBlockers.length === 0 ? "docs/project/security-policy.md, docs/project/support-policy.md, docs/project/compatibility.md, and docs/project/release-process.md exist and explicitly keep production claims bounded." : "Operational policy files are incomplete.", operationalPolicyBlockers),
     releaseArea("deployment", "Public demo deployment and build artifact validation exist for required examples.", publicDemoDeploymentValidation.ok ? "Durable public demo URL validation, local static demo export, SHA-256 integrity manifest, deployment command plan, rollback plan, validated GitHub Pages deployment workflow, and local HTTP static-server smoke validation exist with per-file status/hash/content-marker evidence." : staticDemoServerSmoke?.ok === true ? "Local static demo export, SHA-256 integrity manifest, deployment command plan, rollback plan, validated GitHub Pages deployment workflow, and local HTTP static-server smoke validation exist. Public URL validation remains blocked until A3D_PUBLIC_DEMO_URL is smoke-tested." : hasStaticExportIntegrity(root, staticExport) ? "Local static demo export, SHA-256 integrity manifest, deployment command plan, validated GitHub Pages deployment workflow, and rollback plan exist." : "Local browser screenshots and reports exist for examples.", [
       ...(publicDemoDeploymentValidation.ok ? [] : [
-        "No durable public deployment URL validation is attached for V4 examples with current per-file HTTP/hash/content-marker evidence. Run `A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment` against the deployed static demo origin.",
+        "No durable public deployment URL validation is attached for External parity examples with current per-file HTTP/hash/content-marker evidence. Run `A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment` against the deployed static demo origin.",
         "Use `tests/reports/public-demo-deployment-runbook.md` for the exact files, SHA-256 values, content markers, and validation commands required by the public deployment smoke gate.",
         ...publicDemoDeploymentValidation.blockers.map((blocker) => `public deployment evidence: ${blocker}`),
       ]),
@@ -141,7 +141,7 @@ export function createV4ProductionReadinessReport(root = process.cwd()): V4Produ
 }
 
 function validatePublicDemoDeploymentWorkflow(root: string): { readonly ok: boolean; readonly blockers: readonly string[] } {
-  const workflowPath = ".github/workflows/v4-public-demo-deploy.yml";
+  const workflowPath = ".github/workflows/public-demo-deploy.yml";
   const fullPath = join(root, workflowPath);
   if (!existsSync(fullPath)) {
     return { ok: false, blockers: ["No public demo deployment workflow is attached for the static demo artifact."] };
@@ -161,11 +161,11 @@ function validatePublicDemoDeploymentWorkflow(root: string): { readonly ok: bool
     ["deployed Pages URL environment", "A3D_PUBLIC_DEMO_URL:"],
     ["production readiness audit", "pnpm audit:external-parity-production-readiness"],
     ["external evidence readiness audit", "pnpm audit:external-parity-external-evidence-readiness"],
-    ["broad parity readiness audit", "pnpm audit:v4-broad-parity"],
-    ["completion audit", "pnpm audit:v4-completion"],
+    ["broad parity readiness audit", "pnpm audit:external-parity-broad-parity"],
+    ["completion audit", "pnpm audit:external-parity-completion"],
     ["report freshness verification", "pnpm verify:external-parity-report-freshness"],
-    ["non-blocking broad parity audit capture", "pnpm audit:v4-broad-parity || true"],
-    ["non-blocking completion audit capture", "pnpm audit:v4-completion || true"],
+    ["non-blocking broad parity audit capture", "pnpm audit:external-parity-broad-parity || true"],
+    ["non-blocking completion audit capture", "pnpm audit:external-parity-completion || true"],
     ["always-upload public deployment reports", "if: always()"],
     ["public deployment smoke report upload", "tests/reports/public-demo-deployment-smoke.json"],
     ["public deployment runbook upload", "tests/reports/public-demo-deployment-runbook.md"],
@@ -372,7 +372,7 @@ function isDurablePublicHost(hostname: string): boolean {
   }
   const ipVersion = isIP(host);
   if (ipVersion === 4) return isPublicIpv4(host);
-  if (ipVersion === 6) return isPublicIpV6(host);
+  if (ipVersion === 6) return isPublicIpProduction(host);
   return host.includes(".");
 }
 
@@ -397,7 +397,7 @@ function isPublicIpv4(host: string): boolean {
   );
 }
 
-function isPublicIpV6(host: string): boolean {
+function isPublicIpProduction(host: string): boolean {
   const normalized = host.toLowerCase();
   return !(
     normalized === "::1" ||
@@ -410,7 +410,7 @@ function isPublicIpV6(host: string): boolean {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4ProductionReadinessReport();
+  const report = createExternalParityProductionReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

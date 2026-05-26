@@ -1,4 +1,4 @@
-export interface V5PostProcessFrame {
+export interface ThreeCompatPostProcessFrame {
   readonly label: string;
   readonly exposure: number;
   readonly contrast: number;
@@ -11,13 +11,13 @@ export interface V5PostProcessFrame {
   readonly outlines: number;
 }
 
-export interface V5PostProcessPass {
+export interface ThreeCompatPostProcessPass {
   readonly name: string;
   readonly enabled: boolean;
-  apply(frame: V5PostProcessFrame): V5PostProcessFrame;
+  apply(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame;
 }
 
-export function createV5BaseFrame(label = "source"): V5PostProcessFrame {
+export function createThreeCompatBaseFrame(label = "source"): ThreeCompatPostProcessFrame {
   return {
     label,
     exposure: 1,

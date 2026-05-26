@@ -1,28 +1,28 @@
 import {
-  RendererV6,
+  ProductionRuntimeRenderer,
   createContactShadowPass,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  resolveRendererV6Backend,
-  summarizeV6ProductionProof,
-  type V6EnvironmentLightingResources,
-  type V6PbrHdrPipeline,
-  type V6ToneMappingOperator,
-  type V6RenderProof,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  resolveProductionRuntimeRendererBackend,
+  summarizeProductionProductionProof,
+  type ProductionEnvironmentLightingResources,
+  type ProductionPbrHdrPipeline,
+  type ProductionToneMappingOperator,
+  type ProductionRenderProof,
   type ContactShadowPassDiagnostics,
-  type RendererV6BackendPreference,
-  type RendererV6BackendSelection,
-  type RendererV6Options
-} from "@aura3d/engine/rendering/production-runtime";
+  type ProductionRuntimeRendererBackendPreference,
+  type ProductionRuntimeRendererBackendSelection,
+  type ProductionRuntimeRendererOptions
+} from "@aura3d/rendering";
 import {
   createGLTFSceneAnimationRuntime,
-  createV6GLTFRenderMetadata,
-  loadV6GLTFRenderPipeline,
+  createProductionGLTFRenderMetadata,
+  loadProductionGLTFRenderPipeline,
   type GLTFSceneAnimationApplyResult,
   type GLTFSceneAnimationRuntime,
   type GLTFSceneAnimationRuntimeSnapshot,
-  type V6GLTFRenderMetadata,
-  type V6GLTFRenderPipeline
+  type ProductionGLTFRenderMetadata,
+  type ProductionGLTFRenderPipeline
 } from "@aura3d/assets";
 import {
   AnimationAction,
@@ -65,15 +65,15 @@ import {
 import { DirectionalLight, composeMat4 } from "@aura3d/scene";
 import type { GLTFMaterialRenderStateOverride, GLTFRendererInputOptions } from "@aura3d/assets";
 
-export * as renderingV6 from "@aura3d/engine/rendering/production-runtime";
-export * as workflowsV6 from "@aura3d/engine/workflows/production";
+export * as productionRendering from "@aura3d/rendering";
+export * as productionWorkflows from "@aura3d/workflows";
 
-export const assetsV6 = {
-  createV6GLTFRenderMetadata,
-  loadV6GLTFRenderPipeline
+export const productionAssets = {
+  createProductionGLTFRenderMetadata,
+  loadProductionGLTFRenderPipeline
 };
 
-export const AURA3D_ENGINE_V6_PRODUCT_SURFACE = "a3d-renderer-production-runtime-sdk";
+export const AURA3D_ENGINE_PRODUCTION_PRODUCT_SURFACE = "a3d-renderer-production-runtime-sdk";
 
 export const A3D_THREEJS_EXAMPLE_PARITY_TARGETS = {
   keyframes: "webgl_animation_keyframes",
@@ -88,20 +88,20 @@ export const A3D_THREEJS_EXAMPLE_PARITY_TARGETS = {
   stereo: "webgl_effects_stereo"
 } as const;
 
-export interface A3DRendererOptions extends RendererV6Options {
-  readonly backend?: RendererV6BackendPreference;
+export interface A3DRendererOptions extends ProductionRuntimeRendererOptions {
+  readonly backend?: ProductionRuntimeRendererBackendPreference;
 }
 
 export interface A3DRenderResult {
-  readonly proof: V6RenderProof;
-  readonly summary: ReturnType<typeof summarizeV6ProductionProof>;
+  readonly proof: ProductionRenderProof;
+  readonly summary: ReturnType<typeof summarizeProductionProductionProof>;
 }
 
 export interface A3DFrameRenderResult {
   readonly backend: "webgl2" | "webgpu";
-  readonly diagnostics: ReturnType<RendererV6["getDiagnostics"]>;
-  readonly features: ReturnType<RendererV6["getFeatures"]>;
-  readonly timing?: NonNullable<ReturnType<RendererV6["renderInteractiveFrame"]>["timing"]>;
+  readonly diagnostics: ReturnType<ProductionRuntimeRenderer["getDiagnostics"]>;
+  readonly features: ReturnType<ProductionRuntimeRenderer["getFeatures"]>;
+  readonly timing?: NonNullable<ReturnType<ProductionRuntimeRenderer["renderInteractiveFrame"]>["timing"]>;
 }
 
 export interface A3DRenderOptions {
@@ -118,10 +118,10 @@ export interface A3DRenderOptions {
 
 export class A3DRenderer {
   readonly backend: "webgl2" | "webgpu";
-  readonly backendSelection: RendererV6BackendSelection;
+  readonly backendSelection: ProductionRuntimeRendererBackendSelection;
 
   private constructor(
-    private readonly renderer: RendererV6,
+    private readonly renderer: ProductionRuntimeRenderer,
     private readonly viewport: A3DViewport
   ) {
     this.backend = renderer.backend;
@@ -129,16 +129,16 @@ export class A3DRenderer {
   }
 
   static async create(options: A3DRendererOptions): Promise<A3DRenderer> {
-    const backendSelection = resolveRendererV6Backend(options);
+    const backendSelection = resolveProductionRuntimeRendererBackend(options);
     return new A3DRenderer(
-      await RendererV6.create({ ...options, backend: backendSelection.requestedBackend }),
+      await ProductionRuntimeRenderer.create({ ...options, backend: backendSelection.requestedBackend }),
       { width: options.width, height: options.height }
     );
   }
 
   captureProof(input: A3DRenderOptions): A3DRenderResult {
     if (this.backend === "webgpu") {
-      throw new Error("A3DRenderer V6 WebGPU proof capture uses captureProofAsync() so native texture-to-buffer readback can be awaited.");
+      throw new Error("A3DRenderer Production WebGPU proof capture uses captureProofAsync() so native texture-to-buffer readback can be awaited.");
     }
     const viewport = input.viewport ?? this.defaultViewport();
     const rendererInput = input.scene.createRendererInput({
@@ -155,7 +155,7 @@ export class A3DRenderer {
       camera: input.camera ?? rendererInput.camera,
       metadata: this.metadataForRender(input.scene, input.environment)
     });
-    return { proof, summary: summarizeV6ProductionProof(proof) };
+    return { proof, summary: summarizeProductionProductionProof(proof) };
   }
 
   render(input: A3DRenderOptions): A3DRenderResult {
@@ -164,7 +164,7 @@ export class A3DRenderer {
 
   renderInteractiveFrame(input: A3DRenderOptions): A3DFrameRenderResult {
     if (this.backend === "webgpu") {
-      throw new Error("A3DRenderer V6 WebGPU interactive rendering uses renderInteractiveFrameAsync() so native render submission can be awaited.");
+      throw new Error("A3DRenderer Production WebGPU interactive rendering uses renderInteractiveFrameAsync() so native render submission can be awaited.");
     }
     const viewport = input.viewport ?? this.defaultViewport();
     const rendererInput = input.scene.createRendererInput({
@@ -209,11 +209,11 @@ export class A3DRenderer {
       camera: input.camera ?? rendererInput.camera,
       metadata: this.metadataForRender(input.scene, input.environment)
     });
-    return { proof, summary: summarizeV6ProductionProof(proof) };
+    return { proof, summary: summarizeProductionProductionProof(proof) };
   }
 
   async renderAsync(input: A3DRenderOptions): Promise<A3DRenderResult> {
-    // RendererV6 keeps renderImportedAssetAsync as a backwards-compatible alias for captureProofAsync.
+    // ProductionRuntimeRenderer keeps renderImportedAssetAsync as a backwards-compatible alias for captureProofAsync.
     return this.captureProofAsync(input);
   }
 
@@ -866,7 +866,7 @@ export interface A3DGltfRendererInputOptions {
 }
 
 export class A3DGltfScene {
-  constructor(private readonly pipeline: V6GLTFRenderPipeline) {}
+  constructor(private readonly pipeline: ProductionGLTFRenderPipeline) {}
 
   get asset() {
     return this.pipeline.asset;
@@ -911,7 +911,7 @@ export async function loadGltfScene(input: string | A3DGltfSceneOptions): Promis
   const options = typeof input === "string" ? { url: input } : input;
   const viewport = options.viewport ?? { width: 1024, height: 1024 };
   const assetId = options.assetId ?? assetIdFromUrl(options.url);
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: options.url,
     assetId,
     assetName: options.assetName ?? assetId,
@@ -935,7 +935,7 @@ export interface A3DHdrEnvironmentOptions {
   readonly backgroundIntensity?: number;
   readonly rotation?: number;
   readonly toneMapping?: {
-    readonly operator?: V6ToneMappingOperator;
+    readonly operator?: ProductionToneMappingOperator;
     readonly exposure?: number;
     readonly whitePoint?: number;
   };
@@ -945,15 +945,15 @@ export class A3DHdrEnvironment {
   readonly id: string;
   readonly label: string;
   readonly url: string;
-  readonly pipeline: V6PbrHdrPipeline;
-  readonly lighting: V6EnvironmentLightingResources;
+  readonly pipeline: ProductionPbrHdrPipeline;
+  readonly lighting: ProductionEnvironmentLightingResources;
 
   constructor(options: {
     readonly id: string;
     readonly label: string;
     readonly url: string;
-    readonly pipeline: V6PbrHdrPipeline;
-    readonly lighting: V6EnvironmentLightingResources;
+    readonly pipeline: ProductionPbrHdrPipeline;
+    readonly lighting: ProductionEnvironmentLightingResources;
   }) {
     this.id = options.id;
     this.label = options.label;
@@ -975,7 +975,7 @@ export async function loadHdrEnvironment(input: string | A3DHdrEnvironmentOption
   const options = typeof input === "string" ? { url: input } : input;
   const data = options.data ?? await fetchArrayBuffer(options.url);
   const id = options.id ?? assetIdFromUrl(options.url);
-  const pipeline = createV6PbrHdrPipelineFromRadiance(data, {
+  const pipeline = createProductionPbrHdrPipelineFromRadiance(data, {
     id,
     label: options.label ?? id,
     intensity: options.intensity ?? 1,
@@ -988,7 +988,7 @@ export async function loadHdrEnvironment(input: string | A3DHdrEnvironmentOption
     label: options.label ?? id,
     url: options.url,
     pipeline,
-    lighting: createV6EnvironmentLightingResources(pipeline)
+    lighting: createProductionEnvironmentLightingResources(pipeline)
   });
 }
 
@@ -1318,7 +1318,7 @@ export interface A3DProductViewer {
   getSettings(): A3DProductViewerSettings;
   captureScreenshot(type?: "image/png" | "image/jpeg", quality?: number): string | undefined;
   diagnostics(): {
-    readonly asset: V6GLTFRenderMetadata;
+    readonly asset: ProductionGLTFRenderMetadata;
     readonly environment: {
       readonly id: string;
       readonly url: string;
@@ -1556,7 +1556,7 @@ function createProductViewerPostprocess(
 }
 
 const A3D_VISIBLE_HDR_SKYBOX_SHADER_NAME = "a3d-production-runtime/visible-hdr-studio-skybox";
-const A3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER = "@aura3d-production-runtime-shader:visible-hdr-studio-skybox-v1";
+const A3D_VISIBLE_HDR_SKYBOX_SHADER_MARKER = "@aura3d-production-runtime-shader:visible-hdr-studio-skybox";
 
 function createProductViewerShaderLibrary() {
   const library = createDefaultShaderLibrary();

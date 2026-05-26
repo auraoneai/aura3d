@@ -91,11 +91,11 @@ const checks = [
   { id: "package-json", pass: templateReports.every((report) => report.packageReady), detail: templateReports.filter((report) => !report.packageReady).map((report) => report.template).join(", ") },
   { id: "asset-manifest", pass: templateReports.every((report) => report.assetManifest), detail: templateReports.filter((report) => !report.assetManifest).map((report) => report.template).join(", ") },
   { id: "browser-proof", pass: templateReports.every((report) => report.browserProof && report.screenshotPresent), detail: templateReports.filter((report) => !report.browserProof || !report.screenshotPresent).map((report) => report.template).join(", ") },
-  { id: "package-files", pass: templates.every((template) => rootPackage.files?.includes(`templates/${template}`)), detail: "root package includes V6 templates" },
+  { id: "package-files", pass: templates.every((template) => rootPackage.files?.includes(`templates/${template}`)), detail: "root package includes Production runtime templates" },
   { id: "packed-external-vite-build", pass: externalBuilds.length === templates.length && externalBuilds.every((build) => build.ok === true), detail: externalBuilds.filter((build) => build.ok !== true).map((build) => String(build.template)).join(", ") || tarballPath }
 ];
 const report = {
-  schema: "a3d-production-runtime-template-readiness/v1",
+  schema: "a3d-production-runtime-template-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   templates: templateReports,

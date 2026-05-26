@@ -22,7 +22,7 @@ test.describe("editor import workflow", () => {
     await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().assetCount)).toBe(1);
     const assetCard = page.locator(".asset-browser-panel .asset-card").filter({ hasText: "sample-triangle" });
     await expect(assetCard.getByText("sample-triangle", { exact: true })).toBeVisible();
-    await expect(assetCard.getByText("Loaded with scale 1.5")).toBeVisible();
+    await expect(assetCard.getByText("Scale: 1.5")).toBeVisible();
 
     await assetCard.getByRole("button", { name: "Place", exact: true }).click();
     await expect.poll(() => page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().nodeCount)).toBe(3);

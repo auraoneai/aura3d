@@ -9,7 +9,7 @@ const requiredFiles = [
   "apps/animation-studio-pro/src/main.ts",
   "examples/external-character-viewer/index.html",
   "examples/external-character-viewer/main.ts",
-  "examples/external-character-viewer/CharacterViewerV4.ts",
+  "examples/external-character-viewer/ExternalCharacterViewer.ts",
   "tests/browser/external-parity-character-viewer.spec.ts",
   "tests/reports/external-parity-character-viewer-browser.json"
 ] as const;
@@ -25,11 +25,11 @@ const includesAll = (source: string, phrases: readonly string[]) => phrases.ever
 for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} must exist.`);
 const fixture = json("fixtures/external-parity/characters/animated-character/manifest.json");
 const source = isObj(fixture?.source) ? fixture.source : {};
-check("fixture-schema", fixture?.schema === "a3d-v4-character/v1" && fixture.id === "animated-character-cesium-man", "Character fixture must use V4 schema.");
+check("fixture-schema", fixture?.schema === "a3d-external-parity-character" && fixture.id === "animated-character-cesium-man", "Character fixture must use External parity schema.");
 check("fixture-source", source.corpusAssetId === "cesium-man" && source.revision === "2bac6f8c57bf471df0d2a1e8a8ec023c7801dddf" && source.licenseReviewRequired === true, "Character fixture must pin Cesium Man source and license review.");
 check("fixture-boundary", typeof fixture?.claimBoundary === "string" && fixture.claimBoundary.includes("Three.js"), "Character fixture must preserve Three.js parity boundary.");
-check("viewer-source", includesAll(text("examples/external-character-viewer/CharacterViewerV4.ts"), ["timeline-scrub", "play-pause", "__A3D_V4_CHARACTER_VIEWER__", "real skinned glTF rendered animation parity"]), "Character viewer must expose timeline/play state and proof boundary.");
-check("app-entry-no-example-side-effect", text("examples/external-character-viewer/main.ts").includes("mountCharacterViewerV4(\"external-character-viewer\")") && text("apps/animation-studio-pro/src/main.ts").includes("CharacterViewerV4") && !text("apps/animation-studio-pro/src/main.ts").includes("external-character-viewer/main"), "Animation Studio Pro must import side-effect-free shared module.");
+check("viewer-source", includesAll(text("examples/external-character-viewer/ExternalCharacterViewer.ts"), ["timeline-scrub", "play-pause", "__A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__", "real skinned glTF rendered animation parity"]), "Character viewer must expose timeline/play state and proof boundary.");
+check("app-entry-no-example-side-effect", text("examples/external-character-viewer/main.ts").includes("mountExternalCharacterViewer(\"external-character-viewer\")") && text("apps/animation-studio-pro/src/main.ts").includes("ExternalCharacterViewer") && !text("apps/animation-studio-pro/src/main.ts").includes("external-character-viewer/main"), "Animation Studio Pro must import side-effect-free shared module.");
 
 const browser = json("tests/reports/external-parity-character-viewer-browser.json");
 const states = isObj(browser?.states) ? browser.states : {};
@@ -43,7 +43,7 @@ check("browser-screenshots", expectedScreenshots.every((path) => screenshots.inc
 check("browser-boundary", typeof browser?.productBoundary === "string" && browser.productBoundary.includes("real skinned glTF rendered animation parity"), "Browser report must preserve real animation parity boundary.");
 
 const pass = checks.every((entry) => entry.pass);
-const report = { schema: "a3d-external-parity-character-readiness/v1", generatedAt: new Date().toISOString(), pass, summary: pass ? "V4 Milestone 11 character product surface is ready. Real skinned glTF/Three.js animation parity remains required." : "V4 Milestone 11 character proof is incomplete.", checkedFiles: requiredFiles, checks };
+const report = { schema: "a3d-external-parity-character-readiness", generatedAt: new Date().toISOString(), pass, summary: pass ? "External parity Milestone 11 character product surface is ready. Real skinned glTF/Three.js animation parity remains required." : "External parity Milestone 11 character proof is incomplete.", checkedFiles: requiredFiles, checks };
 mkdirSync(dirname(resolve("tests/reports/external-parity-character-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-character-readiness.json"), `${JSON.stringify(report, null, 2)}\n`);
 if (!pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }

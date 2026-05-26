@@ -36,7 +36,7 @@ export interface WorkflowWorkbenchState {
 
 declare global {
   interface Window {
-    __A3D_V3_APP__?: WorkflowWorkbenchState & {
+    __A3D_FOUNDATION_APP__?: WorkflowWorkbenchState & {
       loadScenario?: (id: string) => Promise<void>;
       captureState?: () => WorkflowWorkbenchState;
     };
@@ -294,14 +294,14 @@ function metric(label: string, value: string): HTMLElement {
   return element;
 }
 
-function exposeAppState(state: WorkflowWorkbenchState, methods: Pick<NonNullable<Window["__A3D_V3_APP__"]>, "loadScenario" | "captureState">): void {
-  window.__A3D_V3_APP__ = Object.assign({}, state, methods);
+function exposeAppState(state: WorkflowWorkbenchState, methods: Pick<NonNullable<Window["__A3D_FOUNDATION_APP__"]>, "loadScenario" | "captureState">): void {
+  window.__A3D_FOUNDATION_APP__ = Object.assign({}, state, methods);
 }
 
 function installWorkflowWorkbenchStyles(): void {
-  if (document.getElementById("v3-workbench-styles")) return;
+  if (document.getElementById("foundation-workbench-styles")) return;
   const style = document.createElement("style");
-  style.id = "v3-workbench-styles";
+  style.id = "foundation-workbench-styles";
   style.textContent = `
     html, body, #app {
       width: 100%;

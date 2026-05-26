@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-ibl-browser.json";
 
-test.describe("V4 IBL browser evidence", () => {
+test.describe("ExternalParity IBL browser evidence", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -29,9 +29,9 @@ test.describe("V4 IBL browser evidence", () => {
     await page.locator("[data-testid='material-showroom-canvas']").screenshot({ path: screenshotPath });
 
     const state = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
-    const v4Pipeline = await page.evaluate(async () => {
+    const externalParityPipeline = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
-      const pipeline = rendering.createV4EnvironmentPipeline({
+      const pipeline = rendering.createExternalParityEnvironmentPipeline({
         target: "studio-softbox-hdr",
         rotation: 0.2,
         intensity: 1.25,
@@ -56,14 +56,14 @@ test.describe("V4 IBL browser evidence", () => {
         state?.status === "ready" &&
         state.featureEvidence?.activeFeatures?.includes("environment-reflections") === true &&
         Number(state.environmentResources?.specularMipCount ?? 0) >= 4 &&
-        v4Pipeline.diagnostics.hdrSource === true &&
-        v4Pipeline.diagnostics.diffuseIrradiance === true &&
-        v4Pipeline.diagnostics.specularPrefilter === true &&
-        v4Pipeline.diagnostics.brdfLut === true &&
-        v4Pipeline.diagnostics.notFlagshipProof === true,
+        externalParityPipeline.diagnostics.hdrSource === true &&
+        externalParityPipeline.diagnostics.diffuseIrradiance === true &&
+        externalParityPipeline.diagnostics.specularPrefilter === true &&
+        externalParityPipeline.diagnostics.brdfLut === true &&
+        externalParityPipeline.diagnostics.notFlagshipProof === true,
       generatedAt: new Date().toISOString(),
       screenshotPath,
-      productBoundary: "Browser IBL evidence for V4 Milestone 3 only. Generated local environments are bootstrap-only and are not flagship visual proof.",
+      productBoundary: "Browser IBL evidence for ExternalParity Milestone 3 only. Generated local environments are bootstrap-only and are not flagship visual proof.",
       requiredNextProof: [
         "licensed HDR environment files with provenance",
         "rough metal/chrome screenshots under at least three environments",
@@ -71,7 +71,7 @@ test.describe("V4 IBL browser evidence", () => {
       ],
       errors,
       state,
-      v4Pipeline
+      externalParityPipeline
     };
     mkdirSync(join(process.cwd(), "tests/reports"), { recursive: true });
     writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
@@ -80,13 +80,13 @@ test.describe("V4 IBL browser evidence", () => {
     expect(state?.status).toBe("ready");
     expect(state?.featureEvidence?.activeFeatures).toContain("environment-reflections");
     expect(Number(state?.environmentResources?.specularMipCount ?? 0)).toBeGreaterThanOrEqual(4);
-    expect(v4Pipeline.diagnostics.hdrSource).toBe(true);
-    expect(v4Pipeline.diagnostics.diffuseIrradiance).toBe(true);
-    expect(v4Pipeline.diagnostics.specularPrefilter).toBe(true);
-    expect(v4Pipeline.diagnostics.brdfLut).toBe(true);
-    expect(v4Pipeline.diagnostics.notFlagshipProof).toBe(true);
-    expect(v4Pipeline.pmremMipCount).toBeGreaterThanOrEqual(4);
-    expect(v4Pipeline.brdfNonZeroPixels).toBeGreaterThan(0);
+    expect(externalParityPipeline.diagnostics.hdrSource).toBe(true);
+    expect(externalParityPipeline.diagnostics.diffuseIrradiance).toBe(true);
+    expect(externalParityPipeline.diagnostics.specularPrefilter).toBe(true);
+    expect(externalParityPipeline.diagnostics.brdfLut).toBe(true);
+    expect(externalParityPipeline.diagnostics.notFlagshipProof).toBe(true);
+    expect(externalParityPipeline.pmremMipCount).toBeGreaterThanOrEqual(4);
+    expect(externalParityPipeline.brdfNonZeroPixels).toBeGreaterThan(0);
   });
 });
 

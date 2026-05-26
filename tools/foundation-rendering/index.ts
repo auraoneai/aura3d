@@ -27,8 +27,8 @@ const baseReport = createSubsystemReport(root, {
   reportPath: "tests/reports/foundation-rendering.json",
   runIdPrefix: "foundation-rendering",
   sourceFiles: [
-    "docs/project/v3-renderer-and-gpu-plan.md",
-    "docs/project/v3-testing-and-validation-plan.md",
+    "docs/project/implementation-plan.md",
+    "docs/project/verification-evidence.md",
     "packages/rendering/src/Renderer.ts",
     "packages/rendering/src/RendererFeatureGates.ts",
     "packages/rendering/src/WebGPUDevice.ts",
@@ -73,7 +73,7 @@ const baseReport = createSubsystemReport(root, {
     },
     {
       id: "material-showroom",
-      description: "v3 material showroom example exists.",
+      description: "foundation material showroom example exists.",
       passed: pathExists(root, "examples/material-showroom/index.html"),
       evidencePaths: ["examples/material-showroom/index.html"],
       blocker: "examples/material-showroom is not implemented yet.",
@@ -87,7 +87,7 @@ const baseReport = createSubsystemReport(root, {
         browserCompletedTasks.some((task) => task.includes("Calibrated tone mapping/color management")) &&
         browserCompletedTasks.some((task) => task.includes("Bloom operates on bright pixels")),
       evidencePaths: ["packages/rendering/src/PostProcessPass.ts", "examples/postprocess-lab/main.ts", "examples/material-showroom/main.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"],
-      blocker: "Postprocess depth/color/bloom browser evidence is missing; run the rendering-v3 browser lab first.",
+      blocker: "Postprocess depth/color/bloom browser evidence is missing; run the rendering-foundation browser lab first.",
     },
     {
       id: "material-showroom-real-scene-bloom-readback",
@@ -98,7 +98,7 @@ const baseReport = createSubsystemReport(root, {
     },
     {
       id: "renderer-stress-lab",
-      description: "v3 renderer stress lab exists.",
+      description: "foundation renderer stress lab exists.",
       passed: pathExists(root, "examples/renderer-stress-lab/index.html"),
       evidencePaths: ["examples/renderer-stress-lab/index.html"],
       blocker: "examples/renderer-stress-lab is not implemented yet.",
@@ -143,7 +143,7 @@ const baseReport = createSubsystemReport(root, {
       description: "WebGPU real hardware evidence exists or full WebGPU claims remain blocked.",
       passed: reportOk(root, "tests/reports/webgpu-hardware-matrix.json") || fullWebGpuBlocked,
       evidencePaths: ["tests/reports/webgpu-hardware-matrix.json", "tests/reports/foundation-claim-gates.json"],
-      blocker: "WebGPU real-hardware v3 evidence is missing or failing; full WebGPU claims must remain blocked.",
+      blocker: "WebGPU real-hardware foundation evidence is missing or failing; full WebGPU claims must remain blocked.",
     },
     {
       id: "local-browser-matrix",

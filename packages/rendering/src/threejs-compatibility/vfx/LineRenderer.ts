@@ -1,13 +1,13 @@
-export interface V5LineSegment {
+export interface ThreeCompatLineSegment {
   readonly from: readonly [number, number, number];
   readonly to: readonly [number, number, number];
   readonly width: number;
 }
 
-export class LineRendererV5 {
-  readonly segments: V5LineSegment[] = [];
+export class LineThreeCompatRenderer {
+  readonly segments: ThreeCompatLineSegment[] = [];
 
-  addSegment(segment: V5LineSegment): void {
+  addSegment(segment: ThreeCompatLineSegment): void {
     this.segments.push(segment);
   }
 }

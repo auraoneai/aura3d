@@ -1,5 +1,5 @@
 #version 300 es
-// @aura3d-shader:pbr-direct-v1
+// @aura3d-shader:pbr-direct
 precision highp float;
 struct A3DLight {
   vec4 colorIntensity;

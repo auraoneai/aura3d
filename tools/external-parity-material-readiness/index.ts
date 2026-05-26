@@ -8,12 +8,12 @@ const aliasBrowser = existsSync(resolve("tests/reports/external-parity-material-
   ? JSON.parse(readFileSync(resolve("tests/reports/external-parity-material-studio-browser.json"), "utf8")) as { ok?: boolean }
   : undefined;
 const report = {
-  schema: "a3d-external-parity-material-readiness-alias/v1",
+  schema: "a3d-external-parity-material-readiness-alias",
   generatedAt: new Date().toISOString(),
   pass: source?.pass === true && aliasBrowser?.ok === true,
   sourceReport: "tests/reports/external-parity-material-studio-readiness.json",
   browserAliasReport: "tests/reports/external-parity-material-studio-browser.json",
-  productBoundary: "Filename compatibility gate for the original V4 Material Studio required file list."
+  productBoundary: "Filename compatibility gate for the original External parity Material Studio required file list."
 };
 mkdirSync(dirname(resolve("tests/reports/external-parity-material-readiness.json")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-parity-material-readiness.json"), `${JSON.stringify(report, null, 2)}\n`);

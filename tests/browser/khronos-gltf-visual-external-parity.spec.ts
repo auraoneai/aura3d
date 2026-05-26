@@ -43,7 +43,7 @@ const reportPath = resolve("tests/reports/external-parity-khronos-gltf-visuals.j
 const screenshotRoot = resolve("tests/reports/external-parity-khronos-gltf-visuals");
 const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as KhronosCorpusManifest;
 
-test.describe("V4 Khronos glTF visual corpus evidence", () => {
+test.describe("ExternalParity Khronos glTF visual corpus evidence", () => {
   test.setTimeout(Math.max(600_000, manifest.assets.length * 10_000));
   let server: ExampleDevServer;
 
@@ -74,9 +74,9 @@ test.describe("V4 Khronos glTF visual corpus evidence", () => {
       excludedAssetIds.length === 0 &&
       validations.every((entry) => entry.ok);
     const report = {
-      schemaVersion: "a3d-v4-khronos-gltf-visuals-v1",
+      schemaVersion: "a3d-external-parity-khronos-gltf-visuals",
       generatedAt: new Date().toISOString(),
-      command: "pnpm verify:v4-khronos-visuals",
+      command: "pnpm verify:external-parity-khronos-visuals",
       sourceManifest: "tests/assets/corpus/gltf-corpus.manifest.json",
       sourceAssetCount: manifest.assets.length,
       visualAssetCount: validations.length,

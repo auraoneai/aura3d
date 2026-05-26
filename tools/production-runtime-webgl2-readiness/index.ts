@@ -65,7 +65,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "a3d-production-runtime-webgl2-readiness/v1",
+  schema: "a3d-production-runtime-webgl2-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks

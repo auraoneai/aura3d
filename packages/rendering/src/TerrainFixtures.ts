@@ -18,7 +18,7 @@ export interface TerrainHeightfieldSample {
 }
 
 export interface TerrainHeightfieldFixture {
-  readonly id: "v4-old-branch-terrain-heightfield";
+  readonly id: "external-parity-old-branch-terrain-heightfield";
   readonly width: number;
   readonly height: number;
   readonly seed: number;
@@ -82,7 +82,7 @@ export function createTerrainHeightfieldFixture(options: TerrainHeightfieldFixtu
     }
   }
   return {
-    id: "v4-old-branch-terrain-heightfield",
+    id: "external-parity-old-branch-terrain-heightfield",
     width,
     height,
     seed,

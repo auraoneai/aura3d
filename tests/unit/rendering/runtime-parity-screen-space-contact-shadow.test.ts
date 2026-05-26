@@ -4,7 +4,7 @@ import {
   createDepthTextureBinding
 } from "../../../packages/rendering/src";
 
-describe("V7 screen-space contact shadow postprocess", () => {
+describe("RuntimeParity screen-space contact shadow postprocess", () => {
   it("darkens receiver pixels near closer depth casters without changing distant floor pixels", () => {
     const width = 5;
     const height = 5;

@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 effects real renderer", () => {
+test.describe("Production effects real renderer", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -29,16 +29,16 @@ test.describe("V6 effects real renderer", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V6_EFFECTS__ as { status?: string } | undefined;
+          const result = window.__PRODUCTION_EFFECTS__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 30_000 }
       );
     } catch (error) {
-      throw new Error(`V6 effects harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Production effects harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
-    const result = await page.evaluate(() => window.__V6_EFFECTS__) as {
+    const result = await page.evaluate(() => window.__PRODUCTION_EFFECTS__) as {
       status: "ready" | "error";
       error?: string;
       webglSummary?: { pass: boolean; missing: readonly string[] };
@@ -65,7 +65,7 @@ test.describe("V6 effects real renderer", () => {
     mkdirSync(resolve("tests/reports/production-runtime-effects"), { recursive: true });
     await page.locator("#effects").screenshot({ path: "tests/reports/production-runtime-effects/damaged-helmet-effects.png" });
     writeFileSync(resolve("tests/reports/production-runtime-effects-real-renderer.json"), `${JSON.stringify({
-      schema: "a3d-production-runtime-effects-real-renderer/v1",
+      schema: "a3d-production-runtime-effects-real-renderer",
       generatedAt: new Date().toISOString(),
       screenshot: "tests/reports/production-runtime-effects/damaged-helmet-effects.png",
       ...result

@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV5EnvironmentGalleryModel,
-  loadV5EnvironmentManifest,
-  summarizeV5EnvironmentLibrary
+  createThreeCompatEnvironmentGalleryModel,
+  loadThreeCompatEnvironmentManifest,
+  summarizeThreeCompatEnvironmentLibrary
 } from "../../../packages/environments/src";
 
-describe("V5 environment library", () => {
+describe("ThreeCompat environment library", () => {
   it("provides real HDRI sources, procedural HDR presets, PMREM diagnostics, and probe previews", () => {
-    const manifest = loadV5EnvironmentManifest();
-    const summary = summarizeV5EnvironmentLibrary(manifest);
-    const gallery = createV5EnvironmentGalleryModel(manifest);
+    const manifest = loadThreeCompatEnvironmentManifest();
+    const summary = summarizeThreeCompatEnvironmentLibrary(manifest);
+    const gallery = createThreeCompatEnvironmentGalleryModel(manifest);
 
-    expect(manifest.schema).toBe("a3d-three-compat-environment-library/v1");
+    expect(manifest.schema).toBe("a3d-three-compat-environment-library");
     expect(summary.presetCount).toBeGreaterThanOrEqual(12);
     expect(summary.realHdriCount).toBeGreaterThanOrEqual(6);
     expect(summary.checkedRealHdriCount).toBeGreaterThanOrEqual(6);

@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "particles",
   sceneVersion: 1,
-  assetId: "generated-particle-field-v3",
+  assetId: "generated-particle-field-foundation",
   assetClass: "generated-local-particle-field-workload",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 60,

@@ -93,7 +93,7 @@ const checks = [
   }
 ];
 const report = {
-  schema: "a3d-production-runtime-app-suite-readiness/v1",
+  schema: "a3d-production-runtime-app-suite-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   appCount: requiredApps.length,

@@ -8,7 +8,7 @@ const drawCallsEl = document.querySelector<HTMLElement>("#draw-calls");
 const firstFrameEl = document.querySelector<HTMLElement>("#first-frame");
 
 if (!canvas || !statusEl || !objectsEl || !drawCallsEl || !firstFrameEl) {
-  throw new Error("V9 public scene route is missing required DOM nodes.");
+  throw new Error("ThreejsParity public scene route is missing required DOM nodes.");
 }
 
 const startedAt = performance.now();
@@ -84,7 +84,7 @@ function frame(time: number): void {
   marker.transform.setRotation(...multiplyQuat(tilt, marker.quaternion));
   const diagnostics = renderer.render(scene);
   Object.assign(window, {
-    __A3D_V9_PUBLIC_SCENE__: {
+    __A3D_THREEJS_PARITY_PUBLIC_SCENE__: {
       running: true,
       disposed: false,
       width: canvas.width,
@@ -129,7 +129,7 @@ lifecycle.requestAnimationFrame(frame);
 function publishDisposedRuntime(): void {
   const diagnostics = renderer.getDiagnostics();
   Object.assign(window, {
-    __A3D_V9_PUBLIC_SCENE__: {
+    __A3D_THREEJS_PARITY_PUBLIC_SCENE__: {
       running: false,
       disposed: true,
       width: canvas.width,

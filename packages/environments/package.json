@@ -2,12 +2,12 @@
   "name": "@aura3d/environments",
   "version": "1.0.0",
   "type": "module",
-  "main": "../../dist/environments/index.js",
-  "types": "../../dist/environments/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "../../dist/environments/index.d.ts",
-      "import": "../../dist/environments/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "dependencies": {

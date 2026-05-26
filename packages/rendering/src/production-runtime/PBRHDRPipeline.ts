@@ -18,22 +18,22 @@ import {
   type CubemapPMREMShaderContract
 } from "./environment/PMREMGenerator";
 
-export type V6ToneMappingOperator = "aces" | "filmic" | "linear" | "reinhard";
+export type ProductionToneMappingOperator = "aces" | "filmic" | "linear" | "reinhard";
 
-export interface V6ToneMappingPolicy {
-  readonly operator: V6ToneMappingOperator;
+export interface ProductionToneMappingPolicy {
+  readonly operator: ProductionToneMappingOperator;
   readonly exposure: number;
   readonly whitePoint: number;
   readonly outputColorSpace: "srgb" | "linear";
 }
 
-export interface V6PbrHdrPipelineOptions {
+export interface ProductionPbrHdrPipelineOptions {
   readonly id: string;
   readonly label: string;
   readonly intensity?: number;
   readonly backgroundIntensity?: number;
   readonly rotation?: number;
-  readonly toneMapping?: Partial<V6ToneMappingPolicy>;
+  readonly toneMapping?: Partial<ProductionToneMappingPolicy>;
   readonly specularLevels?: number;
   readonly cubemapFaceSize?: number;
   readonly cubemapMipCount?: number;
@@ -45,7 +45,7 @@ export interface V6PbrHdrPipelineOptions {
   readonly cubemapSampleCount?: number;
 }
 
-export interface V6RadianceHDR {
+export interface ProductionRadianceHDR {
   readonly width: number;
   readonly height: number;
   readonly rgbe: Uint8Array;
@@ -53,16 +53,16 @@ export interface V6RadianceHDR {
   readonly format: "32-bit_rle_rgbe";
 }
 
-export interface V6PbrHdrPipeline {
+export interface ProductionPbrHdrPipeline {
   readonly id: string;
   readonly label: string;
-  readonly radiance: V6RadianceHDR;
+  readonly radiance: ProductionRadianceHDR;
   readonly linear: LinearHdrEnvironmentMapSource;
   readonly resources: EnvironmentMapResourceSet;
   readonly environmentMipLevels: ReturnType<typeof generateRgba16fSpecularPrefilterMipLevels>;
   readonly cubemapPMREM: CubemapPMREMResources;
   readonly cubemapPMREMShaderContract: CubemapPMREMShaderContract;
-  readonly toneMapping: V6ToneMappingPolicy;
+  readonly toneMapping: ProductionToneMappingPolicy;
   readonly intensity: number;
   readonly backgroundIntensity: number;
   readonly rotation: number;
@@ -88,7 +88,7 @@ export interface V6PbrHdrPipeline {
   };
 }
 
-export interface V6EnvironmentLightingResources {
+export interface ProductionEnvironmentLightingResources {
   readonly lighting: EnvironmentLightingOptions;
   readonly environmentTexture: Texture;
   readonly environmentCubeTexture: Texture;
@@ -96,7 +96,7 @@ export interface V6EnvironmentLightingResources {
   dispose(): void;
 }
 
-const DEFAULT_TONE_MAPPING: V6ToneMappingPolicy = {
+const DEFAULT_TONE_MAPPING: ProductionToneMappingPolicy = {
   operator: "filmic",
   exposure: 1,
   whitePoint: 11.2,
@@ -105,23 +105,23 @@ const DEFAULT_TONE_MAPPING: V6ToneMappingPolicy = {
 
 const CUBE_TEXTURE_FACES: readonly TextureCubeFace[] = ["px", "nx", "py", "ny", "pz", "nz"];
 
-export function parseV6RadianceHDR(buffer: ArrayBuffer | Uint8Array): V6RadianceHDR {
+export function parseProductionRadianceHDR(buffer: ArrayBuffer | Uint8Array): ProductionRadianceHDR {
   const bytes = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
   const headerProbe = new TextDecoder("ascii").decode(bytes.slice(0, Math.min(bytes.length, 4096)));
   const resolutionMatch = /(^|\n)-Y\s+(\d+)\s+\+X\s+(\d+)\s*\n/.exec(headerProbe);
   if (!/^#\?RADIANCE/m.test(headerProbe) && !/^#\?RGBE/m.test(headerProbe)) {
-    throw new Error("V6 HDR parser requires a Radiance/RGBE header.");
+    throw new Error("Production HDR parser requires a Radiance/RGBE header.");
   }
   if (!/FORMAT=32-bit_rle_rgbe/.test(headerProbe)) {
-    throw new Error("V6 HDR parser requires FORMAT=32-bit_rle_rgbe.");
+    throw new Error("Production HDR parser requires FORMAT=32-bit_rle_rgbe.");
   }
   if (!resolutionMatch || resolutionMatch.index === undefined) {
-    throw new Error("V6 HDR parser could not find -Y +X resolution.");
+    throw new Error("Production HDR parser could not find -Y +X resolution.");
   }
   const height = Number(resolutionMatch[2]);
   const width = Number(resolutionMatch[3]);
   if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
-    throw new Error("V6 HDR parser found invalid dimensions.");
+    throw new Error("Production HDR parser found invalid dimensions.");
   }
   const dataOffset = resolutionMatch.index + resolutionMatch[0].length;
   const rgbe = decodeRadianceRle(bytes.subarray(dataOffset), width, height);
@@ -134,18 +134,18 @@ export function parseV6RadianceHDR(buffer: ArrayBuffer | Uint8Array): V6Radiance
   };
 }
 
-export function createV6PbrHdrPipelineFromRadiance(
+export function createProductionPbrHdrPipelineFromRadiance(
   buffer: ArrayBuffer | Uint8Array,
-  options: V6PbrHdrPipelineOptions
-): V6PbrHdrPipeline {
-  const radiance = parseV6RadianceHDR(buffer);
+  options: ProductionPbrHdrPipelineOptions
+): ProductionPbrHdrPipeline {
+  const radiance = parseProductionRadianceHDR(buffer);
   const rgbeSource: RgbeEnvironmentMapSource = {
     width: radiance.width,
     height: radiance.height,
     data: radiance.rgbe
   };
   const linear = decodeRgbeEnvironmentMap(rgbeSource);
-  const toneMapping = createV6ToneMappingPolicy(options.toneMapping);
+  const toneMapping = createProductionToneMappingPolicy(options.toneMapping);
   const resources = createEnvironmentMapResourceSet({ ...rgbeSource, encoding: "rgbe" }, {
     textureEncoding: "rgbe",
     outputColorSpace: toneMapping.outputColorSpace,
@@ -209,9 +209,9 @@ export function createV6PbrHdrPipelineFromRadiance(
   };
 }
 
-export function createV6EnvironmentLightingResources(
-  pipeline: V6PbrHdrPipeline
-): V6EnvironmentLightingResources {
+export function createProductionEnvironmentLightingResources(
+  pipeline: ProductionPbrHdrPipeline
+): ProductionEnvironmentLightingResources {
   const environmentTexture = new Texture({
     width: pipeline.resources.base.width,
     height: pipeline.resources.base.height,
@@ -296,18 +296,18 @@ export function createV6EnvironmentLightingResources(
   };
 }
 
-export function createV6ToneMappingPolicy(overrides: Partial<V6ToneMappingPolicy> = {}): V6ToneMappingPolicy {
+export function createProductionToneMappingPolicy(overrides: Partial<ProductionToneMappingPolicy> = {}): ProductionToneMappingPolicy {
   const policy = { ...DEFAULT_TONE_MAPPING, ...overrides };
   if (!Number.isFinite(policy.exposure) || policy.exposure < 0) {
-    throw new RangeError("V6 tone mapping exposure must be finite and non-negative.");
+    throw new RangeError("Production tone mapping exposure must be finite and non-negative.");
   }
   if (!Number.isFinite(policy.whitePoint) || policy.whitePoint <= 0) {
-    throw new RangeError("V6 tone mapping whitePoint must be finite and positive.");
+    throw new RangeError("Production tone mapping whitePoint must be finite and positive.");
   }
   return policy;
 }
 
-function environmentToneMappingOperator(operator: V6ToneMappingOperator): EnvironmentToneMappingOperator {
+function environmentToneMappingOperator(operator: ProductionToneMappingOperator): EnvironmentToneMappingOperator {
   return operator === "linear" ? "linear" : "reinhard";
 }
 
@@ -316,7 +316,7 @@ function decodeRadianceRle(data: Uint8Array, width: number, height: number): Uin
   let offset = 0;
   for (let y = 0; y < height; y += 1) {
     if (offset + 4 > data.length) {
-      throw new Error(`V6 HDR scanline ${y} is truncated.`);
+      throw new Error(`Production HDR scanline ${y} is truncated.`);
     }
     const b0 = data[offset] ?? 0;
     const b1 = data[offset + 1] ?? 0;
@@ -325,7 +325,7 @@ function decodeRadianceRle(data: Uint8Array, width: number, height: number): Uin
     if (width >= 8 && width < 32768 && b0 === 2 && b1 === 2 && (b2 & 0x80) === 0) {
       const scanlineWidth = (b2 << 8) | b3;
       if (scanlineWidth !== width) {
-        throw new Error(`V6 HDR scanline ${y} width ${scanlineWidth} does not match ${width}.`);
+        throw new Error(`Production HDR scanline ${y} width ${scanlineWidth} does not match ${width}.`);
       }
       offset += 4;
       const scanline = new Uint8Array(width * 4);
@@ -334,19 +334,19 @@ function decodeRadianceRle(data: Uint8Array, width: number, height: number): Uin
         while (x < width) {
           const count = data[offset++];
           if (count === undefined) {
-            throw new Error(`V6 HDR scanline ${y} channel ${channel} is truncated.`);
+            throw new Error(`Production HDR scanline ${y} channel ${channel} is truncated.`);
           }
           if (count === 0) {
-            throw new Error(`V6 HDR scanline ${y} channel ${channel} has invalid zero run length.`);
+            throw new Error(`Production HDR scanline ${y} channel ${channel} has invalid zero run length.`);
           }
           if (count > 128) {
             const runLength = count - 128;
             if (x + runLength > width) {
-              throw new Error(`V6 HDR scanline ${y} channel ${channel} run exceeds width ${width}.`);
+              throw new Error(`Production HDR scanline ${y} channel ${channel} run exceeds width ${width}.`);
             }
             const value = data[offset++];
             if (value === undefined) {
-              throw new Error(`V6 HDR scanline ${y} channel ${channel} run is truncated.`);
+              throw new Error(`Production HDR scanline ${y} channel ${channel} run is truncated.`);
             }
             for (let index = 0; index < runLength; index += 1) {
               scanline[(x + index) * 4 + channel] = value;
@@ -354,12 +354,12 @@ function decodeRadianceRle(data: Uint8Array, width: number, height: number): Uin
             x += runLength;
           } else {
             if (x + count > width) {
-              throw new Error(`V6 HDR scanline ${y} channel ${channel} literal exceeds width ${width}.`);
+              throw new Error(`Production HDR scanline ${y} channel ${channel} literal exceeds width ${width}.`);
             }
             for (let index = 0; index < count; index += 1) {
               const value = data[offset++];
               if (value === undefined) {
-                throw new Error(`V6 HDR scanline ${y} channel ${channel} literal is truncated.`);
+                throw new Error(`Production HDR scanline ${y} channel ${channel} literal is truncated.`);
               }
               scanline[(x + index) * 4 + channel] = value;
             }
@@ -371,7 +371,7 @@ function decodeRadianceRle(data: Uint8Array, width: number, height: number): Uin
     } else {
       const byteLength = width * 4;
       if (offset + byteLength > data.length) {
-        throw new Error(`V6 HDR scanline ${y} is truncated.`);
+        throw new Error(`Production HDR scanline ${y} is truncated.`);
       }
       output.set(data.subarray(offset, offset + byteLength), y * byteLength);
       offset += byteLength;

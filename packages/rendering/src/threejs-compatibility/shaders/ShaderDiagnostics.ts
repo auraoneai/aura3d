@@ -1,10 +1,10 @@
-export interface V5ShaderDiagnostic {
+export interface ThreeCompatShaderDiagnostic {
   readonly pass: boolean;
   readonly errors: readonly string[];
   readonly warnings: readonly string[];
 }
 
-export function diagnoseV5Shader(vertexShader: string, fragmentShader: string): V5ShaderDiagnostic {
+export function diagnoseThreeCompatShader(vertexShader: string, fragmentShader: string): ThreeCompatShaderDiagnostic {
   const errors = [
     ...(!vertexShader.includes("void main") ? ["vertex shader missing void main"] : []),
     ...(!fragmentShader.includes("void main") ? ["fragment shader missing void main"] : []),

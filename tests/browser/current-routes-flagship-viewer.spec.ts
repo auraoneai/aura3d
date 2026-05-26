@@ -1,10 +1,28 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test, type Page } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V8 flagship viewer", () => {
+declare global {
+  interface Window {
+    __a3dFlagshipViewer?: {
+      readonly status?: string;
+      readonly error?: string;
+      readonly screenshot?: { readonly mimeType: string; readonly width: number; readonly height: number; readonly byteLength: number };
+      readonly snapshot?: {
+        readonly asset?: { readonly id?: string; readonly name?: string; readonly primitiveCount?: number; readonly materialCount?: number };
+        readonly environment?: { readonly id?: string; readonly exposure?: number; readonly rotation?: number };
+        readonly controls?: { readonly roughnessScale?: number };
+        readonly camera?: { readonly yawRadians?: number; readonly zoom?: number };
+        readonly metrics?: { readonly frameCount?: number; readonly drawCalls?: number; readonly backend?: string };
+        readonly screenshotCount?: number;
+      };
+    };
+  }
+}
+
+test.describe("flagship viewer", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -30,7 +48,7 @@ test.describe("V8 flagship viewer", () => {
     await page.goto(`${server.origin}/apps/flagship-viewer/`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const runtime = window.__a3dV8FlagshipViewer as {
+        const runtime = window.__a3dFlagshipViewer as {
           status?: string;
           snapshot?: { metrics?: { frameCount?: number; drawCalls?: number } };
         } | undefined;
@@ -53,7 +71,7 @@ test.describe("V8 flagship viewer", () => {
     await page.locator("#orbit-right").click();
     await page.waitForFunction(
       (beforeYaw) => {
-        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { camera?: { yawRadians?: number } } } | undefined;
+        const runtime = window.__a3dFlagshipViewer as { snapshot?: { camera?: { yawRadians?: number } } } | undefined;
         return (runtime?.snapshot?.camera?.yawRadians ?? 0) > beforeYaw;
       },
       firstFrame.snapshot.camera.yawRadians,
@@ -65,7 +83,7 @@ test.describe("V8 flagship viewer", () => {
     await setRange(page, "#exposure-control", "1.42");
     await page.waitForFunction(
       () => {
-        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { environment?: { exposure?: number } } } | undefined;
+        const runtime = window.__a3dFlagshipViewer as { snapshot?: { environment?: { exposure?: number } } } | undefined;
         return Math.abs((runtime?.snapshot?.environment?.exposure ?? 0) - 1.42) < 0.02;
       },
       undefined,
@@ -77,7 +95,7 @@ test.describe("V8 flagship viewer", () => {
     await page.locator("#environment-picker").selectOption("venice-sunset");
     await page.waitForFunction(
       () => {
-        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { environment?: { id?: string } } } | undefined;
+        const runtime = window.__a3dFlagshipViewer as { snapshot?: { environment?: { id?: string } } } | undefined;
         return runtime?.snapshot?.environment?.id === "venice-sunset";
       },
       undefined,
@@ -90,7 +108,7 @@ test.describe("V8 flagship viewer", () => {
     await setRange(page, "#roughness-control", "1.26");
     await page.waitForFunction(
       () => {
-        const runtime = window.__a3dV8FlagshipViewer as { snapshot?: { controls?: { roughnessScale?: number } } } | undefined;
+        const runtime = window.__a3dFlagshipViewer as { snapshot?: { controls?: { roughnessScale?: number } } } | undefined;
         return Math.abs((runtime?.snapshot?.controls?.roughnessScale ?? 0) - 1.26) < 0.02;
       },
       undefined,
@@ -102,7 +120,7 @@ test.describe("V8 flagship viewer", () => {
     await page.locator("#screenshot-button").click();
     await page.waitForFunction(
       () => {
-        const runtime = window.__a3dV8FlagshipViewer as {
+        const runtime = window.__a3dFlagshipViewer as {
           screenshot?: { byteLength?: number };
           snapshot?: { screenshotCount?: number };
         } | undefined;
@@ -117,13 +135,13 @@ test.describe("V8 flagship viewer", () => {
     const screenshotPath = `${reportDir}/flagship-viewer.png`;
     mkdirSync(resolve(reportDir), { recursive: true });
     await page.locator("#viewport").screenshot({ path: screenshotPath });
-    const pngStats = readV6PngStats(resolve(screenshotPath));
+    const pngStats = readProductionPngStats(resolve(screenshotPath));
     expect(pngStats.nonBlackPixels).toBeGreaterThan(50_000);
     expect(pngStats.uniqueColorBuckets).toBeGreaterThan(24);
     expect(pngStats.localContrast).toBeGreaterThan(8);
 
     const report = {
-      schema: "a3d-flagship-viewer/v1",
+      schema: "a3d-flagship-viewer",
       generatedAt: new Date().toISOString(),
       url: `${server.origin}/apps/flagship-viewer/`,
       screenshot: screenshotPath,
@@ -175,8 +193,8 @@ async function runtimeSnapshot(page: Page): Promise<{
   };
 }> {
   return await page.evaluate(() => {
-    const runtime = window.__a3dV8FlagshipViewer;
-    if (!runtime?.snapshot) throw new Error("Missing V8 flagship runtime snapshot.");
+    const runtime = window.__a3dFlagshipViewer;
+    if (!runtime?.snapshot) throw new Error("Missing flagship runtime snapshot.");
     return {
       status: runtime.status,
       ...(runtime.error ? { error: runtime.error } : {}),

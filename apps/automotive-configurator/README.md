@@ -1,3 +1,3 @@
-# A3D V6 Automotive Configurator
+# A3D Production Automotive Configurator
 
-Real V6 app for imported vehicle-style assets with HDR lighting, WebGL2 renderer proof, runtime metrics, and a paint-selection interaction.
+Real Production app for imported vehicle-style assets with HDR lighting, WebGL2 renderer proof, runtime metrics, and a paint-selection interaction.

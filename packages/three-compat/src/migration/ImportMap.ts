@@ -1,4 +1,4 @@
-export const V5_THREE_IMPORT_MAP: Readonly<Record<string, string>> = {
+export const THREE_COMPAT_THREE_IMPORT_MAP: Readonly<Record<string, string>> = {
   three: "@aura3d/three-compat",
   "three/addons/controls/OrbitControls.js": "@aura3d/three-compat/controls",
   "three/examples/jsm/controls/OrbitControls.js": "@aura3d/three-compat/controls",

@@ -12,7 +12,7 @@ const issues = [
 ];
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-completion-audit/v1",
+  schema: "a3d-threejs-parity-completion-audit",
   generatedAt: new Date().toISOString(),
   pass,
   checklist,
@@ -20,7 +20,7 @@ writeJson(outputPath, {
   openHighPriority: openHighPriority.map((item) => item.threeExampleId),
   issues
 });
-console.log(`V9 completion audit written: ${outputPath}`);
+console.log(`Three.js parity completion audit written: ${outputPath}`);
 if (!pass && !process.argv.includes("--report-only")) {
-  throw new Error(`V9 is incomplete: ${checklist.unchecked} checklist items and ${openHighPriority.length} high-priority inventory items remain open.`);
+  throw new Error(`Three.js parity is incomplete: ${checklist.unchecked} checklist items and ${openHighPriority.length} high-priority inventory items remain open.`);
 }

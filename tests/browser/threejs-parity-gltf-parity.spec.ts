@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const REPORT_PATH = "tests/reports/threejs-parity/gltf-parity.json";
@@ -11,7 +11,7 @@ const ARTIFACTS = {
   sideBySide: "tests/reports/threejs-parity/gltf-parity/side-by-side.png"
 } as const;
 
-test.describe("V9 GLTF same-asset Three.js parity", () => {
+test.describe("GLTF same-asset Three.js parity", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -39,14 +39,14 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
     await page.goto(`${server.origin}/tools/threejs-parity-gltf-parity/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const result = window.__V9_GLTF_PARITY__ as { readonly status?: string } | undefined;
+        const result = window.__THREEJS_PARITY_GLTF_PARITY__ as { readonly status?: string } | undefined;
         return result?.status === "ready" || result?.status === "error";
       },
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__V9_GLTF_PARITY__) as GltfParityResult;
+    const result = await page.evaluate(() => window.__THREEJS_PARITY_GLTF_PARITY__) as GltfParityResult;
     writeJson(REPORT_PATH, {
       ...(result.status === "ready" ? stripDataUrls(result) : result),
       generatedAt: new Date().toISOString(),
@@ -57,7 +57,7 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("a3d-threejs-parity-gltf-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-gltf-parity");
     expect(result.purpose).toBe("same-asset A3D GLTF loader/render resources vs actual Three.js GLTFLoader baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.actualThreeGLTFLoader).toBe(true);
@@ -79,7 +79,7 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
       writePng(path, dataUrl);
-      const stats = readV6PngStats(resolve(path));
+      const stats = readProductionPngStats(resolve(path));
       expect(stats.nonBlackPixels, `${kind} nonblank pixels`).toBeGreaterThan(kind === "sideBySide" ? 90_000 : 25_000);
       expect(stats.uniqueColorBuckets, `${kind} unique color buckets`).toBeGreaterThan(48);
       expect(statSync(resolve(path)).size, `${kind} PNG size`).toBeGreaterThan(12 * 1024);
@@ -94,7 +94,7 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
         {
           path,
           size: statSync(resolve(path)).size,
-          pixels: readV6PngStats(resolve(path))
+          pixels: readProductionPngStats(resolve(path))
         }
       ])),
       pageErrors
@@ -103,7 +103,7 @@ test.describe("V9 GLTF same-asset Three.js parity", () => {
 });
 
 function assertNoThreeJsInA3DFlagshipRuntimeSource(): void {
-  const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
+  const forbidden = /from\s+["'](?:three(?:\/[^"']*)?|\/node_modules\/three[^"']*)["']|node_modules\/three|new\s+THREE\.|THREE\./i;
   for (const sourcePath of [
     "apps/flagship-viewer/src/main.ts",
     "packages/assets/src/GLTFLoader.ts",
@@ -132,7 +132,7 @@ function stripDataUrls(result: Extract<GltfParityResult, { readonly status: "rea
 type GltfParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "a3d-threejs-parity-gltf-parity/v1";
+      readonly schema: "a3d-threejs-parity-gltf-parity";
       readonly purpose: string;
       readonly a3d: {
         readonly metadata: { readonly unsupportedExtensions: readonly string[] };
@@ -157,6 +157,6 @@ type GltfParityResult =
     }
   | {
       readonly status: "error";
-      readonly schema: "a3d-threejs-parity-gltf-parity/v1";
+      readonly schema: "a3d-threejs-parity-gltf-parity";
       readonly error: string;
     };

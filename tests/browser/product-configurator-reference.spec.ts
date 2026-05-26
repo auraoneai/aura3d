@@ -38,7 +38,7 @@ test.describe("Product configurator same-asset reference harness", () => {
         .catch((error) => {
           window.__A3D_PRODUCT_REFERENCE_PROGRESS__ = [...(window.__A3D_PRODUCT_REFERENCE_PROGRESS__ ?? []), `spec:import:error:${error instanceof Error ? error.message : String(error)}`];
           window.__A3D_PRODUCT_REFERENCE__ = {
-            schema: "a3d-product-configurator-reference-harness/v1",
+            schema: "a3d-product-configurator-reference-harness",
             status: "error",
             claim: "same-original-product-glb-reference-outside-advanced-gallery",
             galleryUiBypassed: true,
@@ -80,7 +80,7 @@ test.describe("Product configurator same-asset reference harness", () => {
     const report = await page.evaluate(() => window.__A3D_PRODUCT_REFERENCE__) as ProductReferenceReport;
 
     expect(report.status, report.error).toBe("ready");
-    expect(report.schema).toBe("a3d-product-configurator-reference-harness/v1");
+    expect(report.schema).toBe("a3d-product-configurator-reference-harness");
     expect(report.claim).toBe("same-original-product-glb-reference-outside-advanced-gallery");
     expect(report.galleryUiBypassed).toBe(true);
     expect(report.renderer.backend).toBe("webgl2");
@@ -170,7 +170,7 @@ test.describe("Product configurator same-asset reference harness", () => {
 });
 
 interface ProductReferenceReport {
-  readonly schema: "a3d-product-configurator-reference-harness/v1";
+  readonly schema: "a3d-product-configurator-reference-harness";
   readonly status: "ready" | "error";
   readonly claim: string;
   readonly galleryUiBypassed: boolean;

@@ -3,11 +3,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8CameraMultipleViews?: V8CameraMultipleViewsRuntime;
+    __a3dCurrentRoutesCameraMultipleViews?: CurrentRoutesCameraMultipleViewsRuntime;
   }
 }
 
-interface V8CameraMultipleViewsRuntime {
+interface CurrentRoutesCameraMultipleViewsRuntime {
   readonly appId: "camera-multiple-views";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8CameraMultipleViews = runtime;
+    window.__a3dCurrentRoutesCameraMultipleViews = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -113,7 +113,7 @@ async function run(): Promise<void> {
           distinctCameraViews: true,
           viewLabels: viewports.map((viewport) => viewport.label)
         });
-        window.__a3dV8CameraMultipleViews = runtime;
+        window.__a3dCurrentRoutesCameraMultipleViews = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -270,11 +270,11 @@ function composeMatrix(
 }
 
 function createRuntime(
-  status: V8CameraMultipleViewsRuntime["status"],
+  status: CurrentRoutesCameraMultipleViewsRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8CameraMultipleViewsRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8CameraMultipleViewsRuntime {
+  patch: Partial<Omit<CurrentRoutesCameraMultipleViewsRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesCameraMultipleViewsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -294,12 +294,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8CameraMultipleViewsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesCameraMultipleViewsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 Camera Multiple Views</h1>
+          <h1>CurrentRoutes Camera Multiple Views</h1>
           <p>Three independent WebGL elements render one shared A3D scene definition through distinct camera views.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

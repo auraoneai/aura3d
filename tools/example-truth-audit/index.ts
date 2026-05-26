@@ -58,7 +58,7 @@ export function auditExampleTruth(root = process.cwd()): ExampleTruthAuditReport
   const base = baseReport(root, {
     ok: violations.length === 0,
     command: "pnpm verify:foundation-code",
-    runIdPrefix: "v3-example-truth-audit",
+    runIdPrefix: "foundation-example-truth-audit",
     sourceFiles: [portfolioPath, ...browserTestPaths, ...examples.map((entry) => entry.screenshotPath)],
     screenshotPaths: examples.map((entry) => entry.screenshotPath),
     violations,

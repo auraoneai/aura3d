@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
+test.describe("WebGPU vs Three.js bounded visual delta", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -37,11 +37,11 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
         import("/node_modules/three/examples/jsm/loaders/GLTFLoader.js"),
         import("/node_modules/three/examples/jsm/loaders/RGBELoader.js")
       ]);
-      const availability = await (await import("/packages/rendering/src/production-runtime/index.js")).createV6WebGPUReport(navigator.gpu);
+      const availability = await (await import("/packages/rendering/src/production-runtime/index.js")).createProductionWebGPUReport(navigator.gpu);
       if (availability.status !== "available") {
         return {
           status: "blocked",
-          schema: "a3d-v7-webgpu-threejs-delta/v1",
+          schema: "a3d-runtime-webgpu-threejs-delta",
           productionClaim: "not-claimed",
           availability,
           reason: "Browser did not expose a usable WebGPU adapter/device."
@@ -59,12 +59,12 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
 
       try {
         const viewport = { width: WIDTH, height: HEIGHT };
-        const assetUrl = `${location.origin}/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`;
+        const assetUrl = `${location.origin}/fixtures/threejs-parity/assets/vehicles/car-concept.glb`;
         const hdrUrl = `${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`;
         asset = await engine.loadGltfScene({
           url: assetUrl,
-          assetId: "chronograph-watch",
-          assetName: "Chronograph Watch",
+          assetId: "car-concept",
+          assetName: "Car Concept",
           viewport
         });
         environment = await engine.loadHdrEnvironment({
@@ -77,7 +77,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
           toneMapping: { operator: "filmic", exposure: 0.96, whitePoint: 11.2 }
         });
         stage = engine.createGroundedStage(asset.resources.bounds, {
-          labelPrefix: "v7-webgpu-threejs-delta",
+          labelPrefix: "runtime-webgpu-threejs-delta",
           shadowLightDirection: [-0.42, -0.82, -0.38]
         });
         stage.update({ backgroundBlur: 0.08, backgroundVisible: true });
@@ -108,7 +108,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
         const renderTarget = renderer.device.createRenderTarget({
           width: WIDTH,
           height: HEIGHT,
-          label: "v7-webgpu-threejs-delta-target",
+          label: "runtime-webgpu-threejs-delta-target",
           format: "rgba8",
           depth: true
         });
@@ -179,7 +179,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
           && deltaReady;
         return {
           status: visualReady ? "ready" : "blocked",
-          schema: "a3d-v7-webgpu-threejs-delta/v1",
+          schema: "a3d-runtime-webgpu-threejs-delta",
           productionClaim: "not-claimed",
           reason: visualReady
             ? "Bounded same-asset WebGPU-vs-Three.js visual delta evidence exists; this does not make WebGPU the production backend."
@@ -217,7 +217,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
       } catch (error) {
         return {
           status: "blocked",
-          schema: "a3d-v7-webgpu-threejs-delta/v1",
+          schema: "a3d-runtime-webgpu-threejs-delta",
           productionClaim: "not-claimed",
           availability,
           reason: error instanceof Error ? error.stack ?? error.message : String(error)
@@ -347,7 +347,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
       Object.assign(report, {
         screenshot,
         fileSize: statSync(resolve(screenshot)).size,
-        pngStats: readV6PngStats(resolve(screenshot))
+        pngStats: readProductionPngStats(resolve(screenshot))
       });
     }
     if (threejsDataUrl) {
@@ -355,7 +355,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
       writeFileSync(resolve(screenshot), Buffer.from(threejsDataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         threejsScreenshot: screenshot,
-        threejsPngStats: readV6PngStats(resolve(screenshot))
+        threejsPngStats: readProductionPngStats(resolve(screenshot))
       });
     }
     if (diffDataUrl) {
@@ -363,7 +363,7 @@ test.describe("V7 WebGPU vs Three.js bounded visual delta", () => {
       writeFileSync(resolve(screenshot), Buffer.from(diffDataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         diffScreenshot: screenshot,
-        diffPngStats: readV6PngStats(resolve(screenshot))
+        diffPngStats: readProductionPngStats(resolve(screenshot))
       });
     }
     writeFileSync(resolve(reportPath), `${JSON.stringify({ generatedAt: new Date().toISOString(), ...report }, null, 2)}\n`);

@@ -12,7 +12,7 @@ const navigatorGpuProbeDetails = isRecord(navigatorGpuProbe) && isRecord(navigat
 const realHardwarePassed = navigatorGpuProbeDetails.adapterStatus === "available";
 const renderingValidations = Array.isArray(existing?.validations) ? existing.validations : [];
 const webgpuCapabilityVisual = renderingValidations.find((entry) => isRecord(entry) && entry.name === "webgpu-capability-visual-boundary" && entry.ok === true);
-const postprocessRealSceneValidation = renderingValidations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-v4-preset" && entry.ok === true);
+const postprocessRealSceneValidation = renderingValidations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-external-parity-preset" && entry.ok === true);
 const screenshotPaths = uniqueStrings([
   ...(Array.isArray(existing?.screenshots) ? existing.screenshots : []),
   ...(Array.isArray(existing?.screenshotPaths) ? existing.screenshotPaths : []),
@@ -24,43 +24,43 @@ const checks = [
     id: "external-parity-rendering-report-produced-by-renderer-agent",
     passed: existing?.ok === true,
     evidencePaths: ["tests/reports/external-parity-rendering.json"],
-    blocker: "V4 renderer visual quality report is not yet passing.",
+    blocker: "External parity renderer visual quality report is not yet passing.",
   },
   {
     id: "external-parity-rendering-screenshots-exist-and-are-valid-pngs",
     passed: screenshotValidations.length >= 5 && screenshotValidations.every((entry) => entry.ok),
     evidencePaths: screenshotPaths,
-    blocker: `V4 renderer screenshots are missing, corrupt, tiny, or empty: ${screenshotValidations.filter((entry) => !entry.ok).map((entry) => `${entry.path} (${entry.reason})`).join(", ") || "screenshot list incomplete"}.`,
+    blocker: `External parity renderer screenshots are missing, corrupt, tiny, or empty: ${screenshotValidations.filter((entry) => !entry.ok).map((entry) => `${entry.path} (${entry.reason})`).join(", ") || "screenshot list incomplete"}.`,
   },
   {
-    id: "v4-postprocess-lab-uses-real-scene-input",
+    id: "external-parity-postprocess-lab-uses-real-scene-input",
     passed: hasRealScenePostprocessEvidence(postprocessRealSceneValidation),
     evidencePaths: ["examples/postprocess-lab/main.ts", "tests/browser/rendering-external-parity-visuals.spec.ts", "tests/reports/external-parity-example-screenshots/postprocess-lab.png"],
-    blocker: "V4 postprocess lab does not prove a real WebGL2 scene input before postprocess.",
+    blocker: "External parity postprocess lab does not prove a real WebGL2 scene input before postprocess.",
   },
   {
-    id: "v4-webgpu-injected-contracts-distinguished",
+    id: "external-parity-webgpu-injected-contracts-distinguished",
     passed: webgpuParity?.status === "pass" && injectedContractCases.length >= 5,
     evidencePaths: ["tests/reports/external-parity-webgpu-parity.json", "tests/browser/webgpu-parity.spec.ts"],
-    blocker: "V4 WebGPU report does not distinguish injected contract evidence.",
+    blocker: "External parity WebGPU report does not distinguish injected contract evidence.",
   },
   {
-    id: "v4-webgpu-real-navigator-probe-distinguished",
+    id: "external-parity-webgpu-real-navigator-probe-distinguished",
     passed: isRecord(navigatorGpuProbe) && typeof navigatorGpuProbeDetails.adapterStatus === "string",
     evidencePaths: ["tests/reports/external-parity-webgpu-parity.json", "tests/browser/webgpu-parity.spec.ts"],
-    blocker: "V4 WebGPU report does not include a real navigator.gpu availability probe.",
+    blocker: "External parity WebGPU report does not include a real navigator.gpu availability probe.",
   },
   {
-    id: "v4-webgpu-real-hardware-claim-blocked-unless-adapter-passes",
+    id: "external-parity-webgpu-real-hardware-claim-blocked-unless-adapter-passes",
     passed: realHardwarePassed || webgpuParity?.note?.toString().includes("real hardware success is not claimed"),
-    evidencePaths: ["tests/reports/external-parity-webgpu-parity.json", "docs/project/v4-decision-gates.md"],
-    blocker: "V4 WebGPU hardware claim is neither backed by real adapter evidence nor explicitly blocked.",
+    evidencePaths: ["tests/reports/external-parity-webgpu-parity.json", "docs/project/product-studio-decision-gates.md"],
+    blocker: "External parity WebGPU hardware claim is neither backed by real adapter evidence nor explicitly blocked.",
   },
   {
-    id: "v4-webgpu-capability-visual-boundary",
+    id: "external-parity-webgpu-capability-visual-boundary",
     passed: Boolean(webgpuCapabilityVisual),
     evidencePaths: ["examples/webgpu-capability/main.ts", "tests/browser/rendering-external-parity-visuals.spec.ts", "tests/reports/external-parity-example-screenshots/webgpu-capability.png"],
-    blocker: "V4 WebGPU capability visual does not prove supported and blocked feature presentation.",
+    blocker: "External parity WebGPU capability visual does not prove supported and blocked feature presentation.",
   },
 ] as const;
 
@@ -91,7 +91,7 @@ if (isMain) {
         sourceFiles: sourceFilesFromReport(existing, [
           "tools/external-parity-rendering/index.ts",
           "tests/browser/rendering-external-parity-visuals.spec.ts",
-          "packages/rendering/src/V4RenderPreset.ts",
+          "packages/rendering/src/ExternalParityRenderPreset.ts",
           "packages/rendering/src/WebGPUDevice.ts",
           "examples/material-showroom/main.ts",
           "examples/postprocess-lab/main.ts",

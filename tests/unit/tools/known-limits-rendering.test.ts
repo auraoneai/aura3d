@@ -12,7 +12,7 @@ describe("renderer known limits", () => {
     expect(knownLimits).toContain("one primary UV path for glTF render resources");
     expect(knownLimits).toContain("bounded KTX2/Basis transcoding coverage");
     expect(knownLimits).toContain("GPU capability-driven format selection");
-    expect(knownLimits).toContain("no v2 material-matrix visual coverage");
+    expect(knownLimits).toContain("no product-studio material-matrix visual coverage");
     expect(knownLimits).toContain("unit-level moving-camera cascade split stress");
     expect(knownLimits).toContain("point/spot shadow maps");
     expect(knownLimits).toContain("browser visual stress for long moving-camera paths");

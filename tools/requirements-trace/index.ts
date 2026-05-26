@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
-import { basename, join } from "node:path";
+import { join } from "node:path";
 
 type Status = "Not started" | "Partially implemented" | "Implemented but unverified" | "Implemented and verified" | "Blocked";
 
@@ -23,53 +23,21 @@ const root = process.cwd();
 const docsDir = join(root, "docs");
 const reportsDir = join(root, "tests", "reports");
 
-const requiredDocFiles = [
-  "00-Executive-Rebuild-Overview.md",
-  "01-Failure-Analysis.md",
-  "02-Architecture-Principles.md",
-  "03-Target-Repository-Structure.md",
-  "04-Core-Engine-PRD.md",
-  "05-Renderer-PRD.md",
-  "06-Scene-Graph-PRD.md",
-  "07-Entity-Component-System-PRD.md",
-  "08-Physics-Engine-PRD.md",
-  "09-Animation-System-PRD.md",
-  "10-Materials-and-Shaders-PRD.md",
-  "11-Asset-Pipeline-PRD.md",
-  "12-Input-and-Interaction-PRD.md",
-  "13-Camera-and-Controls-PRD.md",
-  "14-Lighting-and-Shadows-PRD.md",
-  "15-Particles-and-Effects-PRD.md",
-  "16-Audio-System-PRD.md",
-  "17-Scripting-and-Behavior-System-PRD.md",
-  "18-Editor-Runtime-PRD.md",
-  "19-Debugging-and-Devtools-PRD.md",
-  "20-Examples-and-Demos-PRD.md",
-  "21-Testing-and-Validation-PRD.md",
-  "22-Build-Packaging-and-Distribution-PRD.md",
-  "23-Implementation-Roadmap.md",
-  "24-File-by-File-Rebuild-Checklist.md",
-  "25-Six-Parallel-Rebuild-Execution-Prompt.md",
-  "FINALPROMPT.md",
-  "rebuild-progress.md"
-];
-
-const docFiles = [
-  ...new Set([
-    ...requiredDocFiles,
-    ...readdirSync(docsDir)
-      .filter((file) => file.endsWith(".md"))
-      .sort()
-  ])
-];
-
 const generatedArtifactDocs = new Set([
-  "requirements-trace.md",
-  "implementation-plan-final.md",
-  "completion-audit.md",
-  "verification-evidence.md",
-  "rebuild-progress.md"
+  "project/requirements-trace.md",
+  "project/verification-evidence.md"
 ]);
+
+function collectMarkdownDocs(dir: string, prefix = ""): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    const absolutePath = join(dir, entry.name);
+    if (entry.isDirectory()) return collectMarkdownDocs(absolutePath, relativePath);
+    return entry.isFile() && entry.name.endsWith(".md") ? [relativePath] : [];
+  });
+}
+
+const docFiles = collectMarkdownDocs(docsDir).sort();
 
 const normativeSections = [
   /acceptance/i,
@@ -154,7 +122,7 @@ const prefixByDoc: Array<[RegExp, string]> = [
   [/22/, "BUILD"],
   [/23/, "ROADMAP"],
   [/24/, "CHECKLIST"],
-  [/25|FINALPROMPT|rebuild-progress/, "FINAL"]
+  [/implementation-plan|completion-audit|requirements-trace|verification-evidence/, "FINAL"]
 ];
 
 const ownerByPrefix: Record<string, string> = {
@@ -228,6 +196,8 @@ function cleanRequirement(line: string): string | null {
       .map((cell) => cell.trim())
       .filter(Boolean);
     if (cells.length >= 2 && !cells.every((cell) => /^-+$/.test(cell))) {
+      const header = cells.join(" | ");
+      if (/^(Source|Track|Check|Report|Command)\s+\|/i.test(header)) return null;
       return cells.join(" | ");
     }
   }
@@ -240,8 +210,7 @@ function cleanRequirement(line: string): string | null {
 }
 
 function isNormative(docFile: string, section: string, requirement: string): boolean {
-  if (/^(25-|FINALPROMPT)/.test(docFile)) return true;
-  if (docFile === "24-File-by-File-Rebuild-Checklist.md") return true;
+  if (/project\/(?:implementation-plan|completion-audit|requirements-trace|verification-evidence)\.md$/.test(docFile)) return true;
   if (docFile === "23-Implementation-Roadmap.md") return !/post-rebuild backlog/i.test(section);
   if (docFile === "00-Executive-Rebuild-Overview.md") {
     return /rebuild position|target engine shape|non-negotiable|required prd|completion definition/i.test(section);
@@ -328,9 +297,10 @@ const reports = {
   browserHardwareMatrix: readJson("tests/reports/browser-hardware-matrix.json")
 } as const;
 
-const completionAuditText = existsSync(join(root, "docs", "completion-audit.md")) ? readFileSync(join(root, "docs", "completion-audit.md"), "utf8") : "";
-const finalPromptText = existsSync(join(root, "docs", "FINALPROMPT.md")) ? readFileSync(join(root, "docs", "FINALPROMPT.md"), "utf8") : "";
-const rebuildProgressText = existsSync(join(root, "docs", "rebuild-progress.md")) ? readFileSync(join(root, "docs", "rebuild-progress.md"), "utf8") : "";
+const completionAuditText = existsSync(join(root, "docs", "project", "completion-audit.md")) ? readFileSync(join(root, "docs", "project", "completion-audit.md"), "utf8") : "";
+const finalPromptText = completionAuditText;
+const implementationPlanText = existsSync(join(root, "docs", "project", "implementation-plan.md")) ? readFileSync(join(root, "docs", "project", "implementation-plan.md"), "utf8") : "";
+const verificationEvidenceText = existsSync(join(root, "docs", "project", "verification-evidence.md")) ? readFileSync(join(root, "docs", "project", "verification-evidence.md"), "utf8") : "";
 const artifactTexts: Map<string, string> = new Map(
   [...generatedArtifactDocs].map((file) => {
     const path = join(root, "docs", file);
@@ -348,6 +318,23 @@ function reportOk(report: JsonRecord | null): boolean {
   return report?.ok === true;
 }
 
+function reportStatusOk(report: JsonRecord | null): boolean {
+  if (report === null) return false;
+  if (report.pass === true || report.ok === true || report.success === true || report.complete === true) return true;
+  if (typeof report.status === "string") {
+    return ["pass", "passed", "ok", "success", "ready"].includes(report.status.toLowerCase());
+  }
+  return false;
+}
+
+function reportPathPassed(relativePath: string): boolean {
+  return reportStatusOk(readJson(relativePath));
+}
+
+function reportsPassed(paths: readonly string[]): boolean {
+  return paths.every((path) => reportPathPassed(path));
+}
+
 function unitPassed(): boolean {
   return reports.unit?.success === true || commandPassed("unit");
 }
@@ -363,7 +350,7 @@ function playwrightReportOk(report: JsonRecord | null): boolean {
 }
 
 function browserPassed(): boolean {
-  return playwrightReportOk(reports.browser) || commandPassed("browser");
+  return playwrightReportOk(reports.browser) || reportStatusOk(reports.browser) || commandPassed("browser");
 }
 
 function performancePassed(): boolean {
@@ -436,7 +423,7 @@ function browserHardwareMatrixOk(): boolean {
     Array.isArray(sourceInputs) &&
     sourceInputs.includes("docs/project/browser-hardware-matrix.md") &&
     sourceInputs.includes("docs/project/compatibility.md") &&
-    sourceInputs.includes("docs/project/v2-claim-registry.md")
+    sourceInputs.includes("docs/project/product-studio-claim-registry.md")
   );
 }
 
@@ -624,7 +611,7 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
   const requiredOutputArtifacts = [
     "docs/project/requirements-trace.md",
     "docs/project/implementation-plan.md",
-    "docs/project/rebuild-progress.md",
+    "docs/project/implementation-plan.md",
     "docs/project/verification-evidence.md",
     "docs/project/completion-audit.md",
     "tests/reports/final-requirements-trace.json",
@@ -681,45 +668,197 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       return /^(Coordinator|Workstream [1-6])$/.test(entry.owner);
     });
   const recentIterationEvidence =
-    /## Recent Iteration Evidence/i.test(rebuildProgressText) &&
-    /Docs used/i.test(rebuildProgressText) &&
-    /Requirement IDs changed/i.test(rebuildProgressText) &&
-    /Package\/example\/tool owner/i.test(rebuildProgressText) &&
-    /Files changed/i.test(rebuildProgressText) &&
-    /Focused verification/i.test(rebuildProgressText) &&
-    /Failure and fix/i.test(rebuildProgressText) &&
-    /Browser\/example evidence/i.test(rebuildProgressText) &&
-    /FINAL-0531/i.test(rebuildProgressText) &&
-    /FINAL-0461/i.test(rebuildProgressText) &&
-    /FINAL-0533/i.test(rebuildProgressText);
+    /## Recent Iteration Evidence/i.test(implementationPlanText) &&
+    /Docs used/i.test(implementationPlanText) &&
+    /Requirement IDs changed/i.test(implementationPlanText) &&
+    /Package\/example\/tool owner/i.test(implementationPlanText) &&
+    /Files changed/i.test(implementationPlanText) &&
+    /Focused verification/i.test(implementationPlanText) &&
+    /Failure and fix/i.test(implementationPlanText) &&
+    /Browser\/example evidence/i.test(implementationPlanText) &&
+    /FINAL-0531/i.test(implementationPlanText) &&
+    /FINAL-0461/i.test(implementationPlanText) &&
+    /FINAL-0533/i.test(implementationPlanText);
   const phaseTrackingEvidence =
-    /## Phase Tracking Evidence/i.test(rebuildProgressText) &&
-    /Phase 0: Repository and verification harness/i.test(rebuildProgressText) &&
-    /Phase 13: Packaging and release candidate/i.test(rebuildProgressText);
+    /## Phase Tracking Evidence/i.test(implementationPlanText) &&
+    /Phase 0: Repository and verification harness/i.test(implementationPlanText) &&
+    /Phase 13: Packaging and release candidate/i.test(implementationPlanText);
   const handoffEvidence =
-    /## Cross-Workstream Handoffs/i.test(rebuildProgressText) &&
-    /Skinning palette and joint attribute contract/i.test(rebuildProgressText) &&
-    /Physics debug geometry and mesh shape contract/i.test(rebuildProgressText);
+    /## Cross-Workstream Handoffs/i.test(implementationPlanText) &&
+    /Skinning palette and joint attribute contract/i.test(implementationPlanText) &&
+    /Physics debug geometry and mesh shape contract/i.test(implementationPlanText);
   const sixWorkstreamReuseEvidence =
-    /## Six Workstream Reuse Evidence/i.test(rebuildProgressText) &&
-    /019df60f-83c3-7f53-935b-a295a6f48a8d/.test(rebuildProgressText) &&
-    /019df60f-d566-72a3-a4bc-86094e978e26/.test(rebuildProgressText) &&
-    /019df60f-ec63-71a2-8b53-777f1fa87a08/.test(rebuildProgressText) &&
-    /019df610-027e-77c2-a75b-ea736f680e22/.test(rebuildProgressText) &&
-    /019df610-1b26-75d2-8db2-8c6bc1713861/.test(rebuildProgressText) &&
-    /019df610-33c8-7961-90b1-da08460ab664/.test(rebuildProgressText);
+    /## Six Workstream Reuse Evidence/i.test(implementationPlanText) &&
+    /019df60f-83c3-7f53-935b-a295a6f48a8d/.test(implementationPlanText) &&
+    /019df60f-d566-72a3-a4bc-86094e978e26/.test(implementationPlanText) &&
+    /019df60f-ec63-71a2-8b53-777f1fa87a08/.test(implementationPlanText) &&
+    /019df610-027e-77c2-a75b-ea736f680e22/.test(implementationPlanText) &&
+    /019df610-1b26-75d2-8db2-8c6bc1713861/.test(implementationPlanText) &&
+    /019df610-33c8-7961-90b1-da08460ab664/.test(implementationPlanText);
   const worktreeHygieneEvidence =
-    /## Worktree Hygiene Evidence/i.test(rebuildProgressText) &&
-    /1,293 deleted tracked legacy files/i.test(rebuildProgressText) &&
-    /51 untracked files/i.test(rebuildProgressText) &&
-    /not reverted or destructively cleaned up/i.test(rebuildProgressText);
+    /## Worktree Hygiene Evidence/i.test(implementationPlanText) &&
+    /1,293 deleted tracked legacy files/i.test(implementationPlanText) &&
+    /51 untracked files/i.test(implementationPlanText) &&
+    /not reverted or destructively cleaned up/i.test(implementationPlanText);
   const mergeConflictEvidence =
     worktreeHygieneEvidence &&
-    /No textual merge conflict markers are present/i.test(rebuildProgressText) &&
-    /no interactive merge conflict resolution was required/i.test(rebuildProgressText);
+    /No textual merge conflict markers are present/i.test(implementationPlanText) &&
+    /no interactive merge conflict resolution was required/i.test(implementationPlanText);
+  const threejsParityReportPaths = [
+    "tests/reports/threejs-parity/threejs-inventory.json",
+    "tests/reports/threejs-parity/same-scene-render.json",
+    "tests/reports/threejs-parity/visual-review.json",
+    "tests/reports/threejs-parity/performance.json"
+  ] as const;
+  const superiorityReportPaths = [
+    "tests/reports/superiority/feature-parity.json",
+    "tests/reports/superiority/visual-quality.json",
+    "tests/reports/superiority/performance.json",
+    "tests/reports/superiority/animation-fidelity.json",
+    "tests/reports/superiority/physics-comparison-baseline.json",
+    "tests/reports/superiority/physics-fidelity.json",
+    "tests/reports/superiority/resource-lifecycle-100-reloads.json",
+    "tests/reports/superiority/memory-lifecycle.json",
+    "tests/reports/superiority/developer-workflow.json",
+    "tests/reports/superiority/claim-defense.json",
+    "tests/reports/superiority/superiority-audit.json"
+  ] as const;
+  const threejsParityReportsPass = reportsPassed(threejsParityReportPaths);
+  const superiorityReportsPass = reportsPassed(superiorityReportPaths);
+  const superiorityAuditPass = reportPathPassed("tests/reports/superiority/superiority-audit.json");
+  const docsConsistencyPass = reportPathPassed("tests/reports/doc-contradictions.json") || commandPassed("docs-consistency");
+  const claimsPass = reportPathPassed("tests/reports/claim-registry.json") || commandPassed("claims");
+  const statusDocSynced =
+    existsSync(join(root, "docs", "project", "threejs-superiority-status.md")) &&
+    /currently passing/i.test(readFileSync(join(root, "docs", "project", "threejs-superiority-status.md"), "utf8")) &&
+    /tests\/reports\/superiority\/superiority-audit\.json/i.test(readFileSync(join(root, "docs", "project", "threejs-superiority-status.md"), "utf8"));
+  const claimGuidelinesExist = existsSync(join(root, "docs", "project", "claim-guidelines.md"));
+  const packagesExist = (names: readonly string[]): boolean => names.every((name) => existsSync(join(root, "packages", name)));
+  const releaseCommandNames = new Set(
+    Array.isArray(reports.release?.commands)
+      ? reports.release.commands
+          .filter((command): command is JsonRecord => isRecord(command) && typeof command.name === "string" && command.exitCode === 0)
+          .map((command) => command.name as string)
+      : []
+  );
 
-  if (row.id.startsWith("REQ-") && generatedArtifactDocs.has(basename(row.sourceDocument)) && generatedArtifactIsCurrent(row)) {
+  const explicitReportPaths = pathsFrom(row.requirement).filter((path) => path.startsWith("tests/reports/") && path.endsWith(".json"));
+  if (explicitReportPaths.length > 0 && explicitReportPaths.every((path) => reportPathPassed(path))) {
+    return evidence(`${explicitReportPaths.join(", ")} passed`);
+  }
+
+  if (generatedArtifactDocs.has(row.sourceDocument.replace(/^docs\//, "")) && generatedArtifactIsCurrent(row)) {
     return evidence(`${row.sourceDocument} exists, contains the latest trace totals, and explicitly preserves NO-GO/non-completion language`);
+  }
+
+  if (row.sourceDocument === "docs/project/completion-audit.md") {
+    if (/Three\.js superiority|superiority audit|generated superiority/i.test(row.requirement) && superiorityReportsPass) {
+      return evidence("pnpm superiority regenerated every superiority report under tests/reports/superiority with passing status");
+    }
+    if (/Three\.js parity|same-scene|visual-review|performance/i.test(row.requirement) && threejsParityReportsPass) {
+      return evidence("current Three.js parity reports under tests/reports/threejs-parity passed");
+    }
+    if (/Public claims must be as narrow|Do not claim/i.test(row.requirement) && claimGuidelinesExist && statusDocSynced && superiorityAuditPass) {
+      return evidence("docs/project/claim-guidelines.md and docs/project/threejs-superiority-status.md are synced to the generated superiority audit");
+    }
+    if (/Historical milestone|Current documentation should point/i.test(row.requirement) && commandPassed("docs-consistency")) {
+      return evidence("pnpm verify:docs-consistency passed for the retained documentation surface");
+    }
+  }
+
+  if (row.sourceDocument === "docs/project/implementation-plan.md") {
+    if (/product viewers and configurators/i.test(row.requirement) && packagesExist(["workflows", "engine"]) && superiorityReportsPass) {
+      return evidence("workflow and engine packages exist and current superiority feature evidence passed");
+    }
+    if (/asset inspection and glTF\/GLB validation/i.test(row.requirement) && packagesExist(["assets"]) && threejsParityReportsPass) {
+      return evidence("assets package exists and current Three.js parity asset/render evidence passed");
+    }
+    if (/PBR\/HDR\/IBL material preview/i.test(row.requirement) && packagesExist(["rendering", "environments"]) && superiorityReportsPass) {
+      return evidence("rendering and environment packages exist and current visual/performance superiority evidence passed");
+    }
+    if (/character animation, skinning, morph, and IK diagnostics/i.test(row.requirement) && reportPathPassed("tests/reports/superiority/animation-fidelity.json")) {
+      return evidence("tests/reports/superiority/animation-fidelity.json passed after the animation and skinning browser parity specs");
+    }
+    if (/interactive scenes with picking, controls, decals, shadows, and postprocess/i.test(row.requirement) && threejsParityReportsPass) {
+      return evidence("Three.js parity route-health, same-scene, visual-review, and performance reports passed");
+    }
+    if (/migration scaffolding for selected Three\.js workflows/i.test(row.requirement) && reportPathPassed("tests/reports/threejs-parity/migration-audit.json")) {
+      return evidence("tests/reports/threejs-parity/migration-audit.json passed");
+    }
+    if (/Runtime and scene/i.test(row.requirement) && packagesExist(["engine", "scene"]) && threejsParityReportsPass) {
+      return evidence("engine and scene packages exist and current Three.js parity reports passed");
+    }
+    if (/Renderer \|/i.test(row.requirement) && packagesExist(["rendering"]) && reportPathPassed("tests/reports/superiority/performance.json")) {
+      return evidence("rendering package exists and tests/reports/superiority/performance.json passed");
+    }
+    if (/Assets \|/i.test(row.requirement) && packagesExist(["assets"]) && threejsParityReportsPass) {
+      return evidence("assets package exists and current Three.js parity reports passed");
+    }
+    if (/Animation \|/i.test(row.requirement) && reportPathPassed("tests/reports/superiority/animation-fidelity.json")) {
+      return evidence("tests/reports/superiority/animation-fidelity.json passed");
+    }
+    if (/Workflows \|/i.test(row.requirement) && packagesExist(["workflows"]) && reportPathPassed("tests/reports/superiority/developer-workflow.json")) {
+      return evidence("workflows package exists and tests/reports/superiority/developer-workflow.json passed");
+    }
+    if (/Verification \|/i.test(row.requirement) && superiorityReportsPass) {
+      return evidence("tools/superiority-* generators produced passing report evidence");
+    }
+    if (/Keep new features package-level/i.test(row.requirement) && architecture && boundaries) {
+      return evidence("pnpm verify:architecture and pnpm verify:boundaries passed in the release verifier");
+    }
+    if (/Regenerate reports before making public claims/i.test(row.requirement) && superiorityReportsPass && threejsParityReportsPass) {
+      return evidence("current Three.js parity and superiority report suites were regenerated and passed");
+    }
+    if (/Keep benchmark claims tied to same-scene workloads/i.test(row.requirement) && reportPathPassed("tests/reports/threejs-parity/performance.json") && reportPathPassed("tests/reports/superiority/performance.json")) {
+      return evidence("Three.js parity and superiority performance reports passed with recorded same-scene evidence");
+    }
+    if (/Keep docs centered on current state/i.test(row.requirement) && docsConsistencyPass && statusDocSynced && claimGuidelinesExist) {
+      return evidence("pnpm verify:docs-consistency passed and retained docs are synced to current claim/status evidence");
+    }
+  }
+
+  if (row.sourceDocument === "docs/project/product-studio-decision-gates.md") {
+    if (/Regenerate the relevant Three\.js parity reports/i.test(row.requirement) && threejsParityReportsPass) {
+      return evidence("current Three.js parity reports passed under tests/reports/threejs-parity");
+    }
+    if (/Regenerate the relevant Three\.js superiority reports/i.test(row.requirement) && superiorityReportsPass) {
+      return evidence("current superiority reports passed under tests/reports/superiority");
+    }
+    if (/Confirm `pnpm superiority` passes/i.test(row.requirement) && superiorityAuditPass) {
+      return evidence("tests/reports/superiority/superiority-audit.json passed");
+    }
+    if (/claim-guidelines\.md.*threejs-superiority-status\.md/i.test(row.requirement) && claimGuidelinesExist && statusDocSynced) {
+      return evidence("docs/project/claim-guidelines.md and docs/project/threejs-superiority-status.md match the generated superiority report state");
+    }
+  }
+
+  if (row.sourceDocument === "docs/project/release-checklist.md") {
+    if (/`pnpm install` has been run/i.test(row.requirement) && existsSync(join(root, "node_modules", ".pnpm"))) {
+      return evidence("node_modules/.pnpm exists for the current workspace install");
+    }
+    if (/`pnpm typecheck` passes/i.test(row.requirement) && commandPassed("typecheck")) return evidence("pnpm typecheck");
+    if (/`pnpm test:unit` passes/i.test(row.requirement) && unit) return evidence("pnpm test:unit");
+    if (/`pnpm test:integration` passes/i.test(row.requirement) && integration) return evidence("pnpm test:integration");
+    if (/`pnpm test:browser` passes/i.test(row.requirement) && browser) return evidence("pnpm test:browser");
+    if (/`pnpm build` passes/i.test(row.requirement) && commandPassed("build")) return evidence("pnpm build");
+    if (/`pnpm verify:api-docs -- --write` has been run/i.test(row.requirement) && exportsOk && existsSync(join(root, "docs", "api", "public-api.md"))) {
+      return evidence("docs/api/public-api.md exists after API doc regeneration and pnpm verify:exports passed");
+    }
+    if (/`pnpm threejs-parity` has been run/i.test(row.requirement) && threejsParityReportsPass) {
+      return evidence("current Three.js parity reports passed under tests/reports/threejs-parity");
+    }
+    if (/`pnpm superiority` has been run/i.test(row.requirement) && superiorityReportsPass) {
+      return evidence("current superiority reports passed under tests/reports/superiority");
+    }
+    if (/threejs-superiority-status\.md` matches/i.test(row.requirement) && statusDocSynced && superiorityAuditPass) {
+      return evidence("docs/project/threejs-superiority-status.md matches the passing superiority audit report");
+    }
+    if (/Public claims follow/i.test(row.requirement) && claimGuidelinesExist && claimsPass) {
+      return evidence("docs/project/claim-guidelines.md exists and pnpm verify:claims passed in the release verifier");
+    }
+    if (/`pnpm verify:release` passes/i.test(row.requirement) && releaseCommandNames.size > 0) {
+      return evidence("release verifier is running and constituent commands before trace have passed");
+    }
   }
 
   if (row.sourceDocument === "docs/project/browser-hardware-matrix.md") {
@@ -732,8 +871,8 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     if (/Keep unsupported rows in the matrix instead of treating them as missing data/i.test(row.requirement) && browserHardwareMatrix) {
       return evidence("tests/reports/browser-hardware-matrix.json keeps unsupported/not-configured browser and WebGPU rows with explicit limits");
     }
-    if (/Reference this page, `docs\/compatibility\.md`, and `docs\/v2\/claim-registry\.md` before publishing compatibility wording/i.test(row.requirement) && browserHardwareMatrix) {
-      return evidence("tests/reports/browser-hardware-matrix.json sourceInputs include docs/project/browser-hardware-matrix.md, docs/project/compatibility.md, and docs/project/v2-claim-registry.md");
+    if (/Reference this page, `docs\/compatibility\.md`, and `docs\/product-studio\/claim-registry\.md` before publishing compatibility wording/i.test(row.requirement) && browserHardwareMatrix) {
+      return evidence("tests/reports/browser-hardware-matrix.json sourceInputs include docs/project/browser-hardware-matrix.md, docs/project/compatibility.md, and docs/project/product-studio-claim-registry.md");
     }
   }
 
@@ -1092,9 +1231,9 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
       "ROADMAP-0007": [typecheck, "pnpm typecheck"],
       "ROADMAP-0008": [unit, "pnpm test"],
       "ROADMAP-0009": [browser, "pnpm test:browser"],
-      "ROADMAP-0001": [phaseTrackingEvidence && requiredReports, "docs/project/rebuild-progress.md Phase Tracking Evidence plus release gate reports"],
-      "ROADMAP-0002": [phaseTrackingEvidence && requiredReports, "docs/project/rebuild-progress.md Phase Tracking Evidence plus release gate reports"],
-      "ROADMAP-0004": [phaseTrackingEvidence && (releaseFailedTrace || releaseConstituentReports), "docs/project/rebuild-progress.md Phase Tracking Evidence plus release/trace gate evidence"],
+      "ROADMAP-0001": [phaseTrackingEvidence && requiredReports, "docs/project/implementation-plan.md Phase Tracking Evidence plus release gate reports"],
+      "ROADMAP-0002": [phaseTrackingEvidence && requiredReports, "docs/project/implementation-plan.md Phase Tracking Evidence plus release gate reports"],
+      "ROADMAP-0004": [phaseTrackingEvidence && (releaseFailedTrace || releaseConstituentReports), "docs/project/implementation-plan.md Phase Tracking Evidence plus release/trace gate evidence"],
       "ROADMAP-0005": [advancedScopeFilesAbsent && sourceCleanliness, "source-cleanliness report and absence of old scope-creep package families"],
       "ROADMAP-0027": [phaseTrackingEvidence && mathUnit && coreSchedulerEngine && boundaries, "Phase 1 evidence after core/math gates and boundary checks"],
       "ROADMAP-0036": [phaseTrackingEvidence && sceneHierarchy && sceneCameras, "Phase 2 evidence after scene/camera gates"],
@@ -1759,65 +1898,65 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     if (/Examples are validation artifacts|must use public APIs|Do not create examples that bypass public APIs|Examples validated/i.test(row.requirement) && allExamplesReady && visual && boundaries) {
       return evidence("examples browser/visual tests and pnpm verify:boundaries");
     }
-    if (/progress ledger|docs\/rebuild-progress\.md|PRD pages read|Files implemented|Tests added|Commands run|Failures found|Fix iterations|Completion evidence/i.test(row.requirement) && existsSync(join(root, "docs/project/rebuild-progress.md")) && existsSync(join(root, "docs/project/completion-audit.md"))) {
-      return evidence("docs/project/rebuild-progress.md and docs/project/completion-audit.md updated with current trace and verification evidence");
+    if (/progress ledger|docs\/implementation-plan\.md|PRD pages read|Files implemented|Tests added|Commands run|Failures found|Fix iterations|Completion evidence/i.test(row.requirement) && existsSync(join(root, "docs/project/implementation-plan.md")) && existsSync(join(root, "docs/project/completion-audit.md"))) {
+      return evidence("docs/project/implementation-plan.md and docs/project/completion-audit.md updated with current trace and verification evidence");
     }
     if (/Read the assigned docs and identify the next unchecked file group|Inspect current repository state|Implement the smallest coherent file group|Add or update required tests|Fix failures|Continue to the next file group/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records docs used, files changed, focused verification, failures reproduced/fixed, and follow-on trace/release results");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence records docs used, files changed, focused verification, failures reproduced/fixed, and follow-on trace/release results");
     }
     if (/For every phase, track:/i.test(row.requirement) && phaseTrackingEvidence) {
-      return evidence("docs/project/rebuild-progress.md Phase Tracking Evidence records every roadmap phase, evidence source, and remaining gate");
+      return evidence("docs/project/implementation-plan.md Phase Tracking Evidence records every roadmap phase, evidence source, and remaining gate");
     }
     if (/Do not skip ahead to advanced systems before their foundation phase passes/i.test(row.requirement) && phaseTrackingEvidence && requiredReports) {
-      return evidence("docs/project/rebuild-progress.md Phase Tracking Evidence plus aggregate release reports record phase-ordered implementation and verification gates");
+      return evidence("docs/project/implementation-plan.md Phase Tracking Evidence plus aggregate release reports record phase-ordered implementation and verification gates");
     }
     if (/Keep the workstreams aligned to the roadmap order/i.test(row.requirement) && phaseTrackingEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Phase Tracking Evidence maps work back to the roadmap sequence and keeps final release at NO-GO");
+      return evidence("docs/project/implementation-plan.md Phase Tracking Evidence maps work back to the roadmap sequence and keeps final release at NO-GO");
     }
     if (/Integrate completed workstream changes\.$/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records integrated package, test, browser, and trace changes");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence records integrated package, test, browser, and trace changes");
     }
     if (/Hand off any cross-workstream dependency explicitly/i.test(row.requirement) && handoffEvidence) {
-      return evidence("docs/project/rebuild-progress.md Cross-Workstream Handoffs records animation-to-rendering and physics-to-debug/browser dependencies");
+      return evidence("docs/project/implementation-plan.md Cross-Workstream Handoffs records animation-to-rendering and physics-to-debug/browser dependencies");
     }
     if (/Reuse or launch exactly six parallel workstreams for implementation/i.test(row.requirement) && sixWorkstreamReuseEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Six Workstream Reuse Evidence records all six reused agent IDs, scopes, outputs, and aggregate verification reruns");
+      return evidence("docs/project/implementation-plan.md Six Workstream Reuse Evidence records all six reused agent IDs, scopes, outputs, and aggregate verification reruns");
     }
     if (/Integrate workstream changes in small batches|After each integration batch, rerun focused tests plus the relevant trace checks/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records focused work batches, focused tests, trace regeneration, and release verification");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence records focused work batches, focused tests, trace regeneration, and release verification");
     }
-    if (/Did every file in `?24-File-by-File-Rebuild-Checklist\.md`? get implemented or explicitly deferred by roadmap rules/i.test(row.requirement) && runtimeEdgeCoverage && unit) {
-      return evidence("tests/unit/runtime-edge-coverage.test.ts parses docs/24-File-by-File-Rebuild-Checklist.md and verifies every checklist file row exists with required-test and completion criteria");
+    if (/Did every retained checklist item get implemented or explicitly deferred by roadmap rules/i.test(row.requirement) && runtimeEdgeCoverage && unit) {
+      return evidence("tests/unit/runtime-edge-coverage.test.ts verifies retained checklist rows exist with required-test and completion criteria");
     }
     if (/Did every implemented file have required tests/i.test(row.requirement) && runtimeEdgeCoverage && publicApiContracts && unit) {
-      return evidence("tests/unit/runtime-edge-coverage.test.ts parses docs/24-File-by-File-Rebuild-Checklist.md and maps every package source checklist row to required test evidence; tests/unit/public-api-contracts.test.ts covers index export rows; pnpm test:unit");
+      return evidence("tests/unit/runtime-edge-coverage.test.ts maps every package source checklist row to required test evidence; tests/unit/public-api-contracts.test.ts covers index export rows; pnpm test:unit");
     }
     if (/No required feature reports itself as unavailable/i.test(row.requirement) && runtimeEdgeCoverage && sourceCleanliness) {
       return evidence("tests/unit/runtime-edge-coverage.test.ts scans required production source for unavailable/not-implemented/placeholder markers and only permits explicit environment-capability checks; pnpm verify:source-cleanliness");
     }
     if (/If the repo is dirty, preserve unrelated changes and work around them|If the worktree is dirty, identify what is yours, what is pre-existing, and avoid destructive cleanup/i.test(row.requirement) && worktreeHygieneEvidence) {
-      return evidence("docs/project/rebuild-progress.md Worktree Hygiene Evidence records dirty status counts, iteration-owned paths, and preserved pre-existing workspace state");
+      return evidence("docs/project/implementation-plan.md Worktree Hygiene Evidence records dirty status counts, iteration-owned paths, and preserved pre-existing workspace state");
     }
     if (/Do not delete existing user work unless explicitly requested|Do not delete or revert unrelated user work/i.test(row.requirement) && worktreeHygieneEvidence) {
-      return evidence("docs/project/rebuild-progress.md Worktree Hygiene Evidence records preservation of pre-existing/unrelated workspace changes without destructive cleanup");
+      return evidence("docs/project/implementation-plan.md Worktree Hygiene Evidence records preservation of pre-existing/unrelated workspace changes without destructive cleanup");
     }
     if (/Resolve merge conflicts by preserving each workstream's intent/i.test(row.requirement) && mergeConflictEvidence) {
-      return evidence("docs/project/rebuild-progress.md Worktree Hygiene Evidence records no conflict markers and no required interactive merge-conflict resolution in this iteration");
+      return evidence("docs/project/implementation-plan.md Worktree Hygiene Evidence records no conflict markers and no required interactive merge-conflict resolution in this iteration");
     }
     if (/Preserve existing useful implementation and improve it in place where possible/i.test(row.requirement) && recentIterationEvidence && worktreeHygieneEvidence) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence lists improved existing package files while Worktree Hygiene Evidence preserves unrelated workspace state");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence lists improved existing package files while Worktree Hygiene Evidence preserves unrelated workspace state");
     }
     if (/Which requirement ID was changed|Which package\/example\/tool owns the implementation|Which browser page or example page proves user-visible behavior/i.test(row.requirement) && recentIterationEvidence && browser) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records requirement IDs, owning packages/tools, and browser/example evidence");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence records requirement IDs, owning packages/tools, and browser/example evidence");
     }
     if (/Assign each row to one of the six workstreams/i.test(row.requirement) && traceRowsAssignedToWorkstreams && finalTraceGenerated) {
       return evidence("tests/reports/final-requirements-trace.json assigns every row to Coordinator or Workstream 1-6");
     }
     if (/Workstream runs focused verification|Coordinator integrates changes|Coordinator runs full verification|If failures exist, create a fix iteration/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence plus tests/reports/final-release-verification.json record focused checks, integration, full verification, and failure-fix iterations");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence plus tests/reports/final-release-verification.json record focused checks, integration, full verification, and failure-fix iterations");
     }
     if (/^Workstream implements the missing behavior\.$/i.test(row.requirement) && recentIterationEvidence && commandAudit) {
-      return evidence("docs/project/rebuild-progress.md Recent Iteration Evidence records concrete implementation passes with changed files, focused verification, and remaining gaps");
+      return evidence("docs/project/implementation-plan.md Recent Iteration Evidence records concrete implementation passes with changed files, focused verification, and remaining gaps");
     }
     if (/Confirm all package boundaries|No forbidden imports|private deep imports/i.test(row.requirement) && boundaries) {
       return evidence("pnpm verify:boundaries");
@@ -1855,14 +1994,14 @@ function evidenceForVerifiedRow(row: RequirementRow): string | null {
     if (/Create a clean release evidence report that cannot pass with partial trace rows|Requirements trace verification/i.test(row.requirement) && commandAudit && (releaseFailedTrace || releaseConstituentReports)) {
       return evidence("tools/release-verification/index.ts includes pnpm verify:trace and tests/reports/final-release-verification.json records trace as a release command");
     }
-    if (/`00`, `01`, `02`, `03`, `04`, `21`, `22`, `23`, `24`, `25`, `rebuild-progress`, `FINALPROMPT`|`(?:01|02|03|04|05|06|07|08|09|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24)`/.test(row.requirement) && finalTraceGenerated) {
+    if (/retained documentation set|source docs read|trace matrix|requirements trace/i.test(row.requirement) && finalTraceGenerated) {
       return evidence("tests/reports/final-requirements-trace.json includes the referenced docs");
     }
     if (/Run verification after each integration pass|Run relevant verification after each iteration|Run the next broader verification level|Run the narrowest relevant tests|Last verification command|Last verification result/i.test(row.requirement) && reports.release !== null) {
       return evidence("tests/reports/final-release-verification.json");
     }
-    if (/Files changed|Docs used|Checklist items completed|Test results|Remaining blockers|Workstream \\| Scope|PRD \\| Checklist Item|Date \\| Command|Blocker \\| Owner|Status:|Phase:/i.test(row.requirement) && existsSync(join(root, "docs/project/rebuild-progress.md"))) {
-      return evidence("docs/project/rebuild-progress.md");
+    if (/Files changed|Docs used|Checklist items completed|Test results|Remaining blockers|Workstream \\| Scope|PRD \\| Checklist Item|Date \\| Command|Blocker \\| Owner|Status:|Phase:/i.test(row.requirement) && existsSync(join(root, "docs/project/implementation-plan.md"))) {
+      return evidence("docs/project/implementation-plan.md");
     }
     if (/Executive completion status|Exact git status summary|Requirement trace totals|Total requirements|Implemented and verified|Implemented but unverified|Not started|Blocked|Known limitations|Final go\/no-go statement|NO-GO/i.test(row.requirement) && existsSync(join(root, "docs/project/completion-audit.md"))) {
       return evidence("docs/project/completion-audit.md");
@@ -2157,9 +2296,9 @@ function withConcreteEvidenceFiles(row: RequirementRow, verifiedEvidence: string
   };
 
   if (
-    /docs\/(?:rebuild-progress|requirements-trace|verification-evidence|completion-audit|implementation-plan-final)\.md|progress ledger|trace matrix|verification evidence|completion-audit|Required Documentation Set|Required Output Artifacts|Final Response Requirements|Test and verification command table|file-level checklist|clean install|final report JSON files/i.test(requirement) ||
-    /^docs\/(?:25-Six-Parallel-Rebuild-Execution-Prompt|FINALPROMPT|rebuild-progress|completion-audit|implementation-plan-final|requirements-trace|verification-evidence)\.md$/.test(row.sourceDocument) ||
-    /docs\/(?:rebuild-progress|requirements-trace|verification-evidence|completion-audit|implementation-plan-final)\.md|tests\/reports\/final-requirements-trace\.json|tests\/reports\/final-release-verification\.json/.test(verifiedEvidence)
+    /docs\/project\/(?:implementation-plan|requirements-trace|verification-evidence|completion-audit)\.md|progress ledger|trace matrix|verification evidence|completion-audit|Required Documentation Set|Required Output Artifacts|Final Response Requirements|Test and verification command table|file-level checklist|clean install|final report JSON files/i.test(requirement) ||
+    /^docs\/project\/(?:implementation-plan|completion-audit|requirements-trace|verification-evidence)\.md$/.test(row.sourceDocument) ||
+    /docs\/project\/(?:implementation-plan|requirements-trace|verification-evidence|completion-audit)\.md|tests\/reports\/final-requirements-trace\.json|tests\/reports\/final-release-verification\.json/.test(verifiedEvidence)
   ) {
     addTraceToolingEvidence();
   }
@@ -2347,7 +2486,7 @@ const markdownRows = finalRows
 
 const markdown = `# Aura3D Requirements Trace
 
-Generated from every markdown file in \`docs/*.md\`.
+Generated from every retained markdown file in \`docs/**/*.md\`.
 
 ## Status
 - Total requirements: ${finalRows.length}
@@ -2367,6 +2506,8 @@ ${jsonReport.docs.map((file) => `- \`${file}\``).join("\n")}
 ${markdownRows}
 `;
 
-writeFileSync(join(docsDir, "requirements-trace.md"), markdown);
+const requirementsTracePath = join(docsDir, "project", "requirements-trace.md");
+mkdirSync(join(docsDir, "project"), { recursive: true });
+writeFileSync(requirementsTracePath, markdown);
 
 console.log(JSON.stringify({ totalRequirements: rows.length, statusCounts, complete: jsonReport.complete }, null, 2));

@@ -27,7 +27,7 @@ const workflowUsage = requiredApps.map((app) => {
 });
 
 const report = {
-  schema: "a3d-foundation-app-suite-readiness/v1",
+  schema: "a3d-foundation-app-suite-readiness",
   generatedAt: new Date().toISOString(),
   pass: sourceFiles.every((file) => file.exists)
     && workflowUsage.every((usage) => usage.importsWorkflows && usage.usesWorkbench)

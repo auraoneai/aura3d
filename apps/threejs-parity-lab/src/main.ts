@@ -1,5 +1,5 @@
-import { runV6App } from "../../production-runtime-common/src/runtime";
+import { runProductionApp } from "../../common/src/runtime";
 import { scene } from "./scene";
 import { ui } from "./ui";
 
-void runV6App(scene, ui);
+void runProductionApp(scene, ui);

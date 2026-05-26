@@ -9,7 +9,7 @@ from mathutils import Vector
 
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "data-galaxy-core-blender"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "data-galaxy-core-blender"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "data-galaxy-core-blender.glb"
 MANIFEST = OUT_DIR / "manifest.json"
@@ -286,7 +286,7 @@ def data_texture(name, base, accent, width=64, height=64):
             ))
     image.pixels.foreach_set(pixels)
     image.pack()
-    image["v9_generated_texture_role"] = "embedded route-native data glyph texture"
+    image["advanced_gallery_generated_texture_role"] = "embedded route-native data glyph texture"
     return image
 
 
@@ -300,7 +300,7 @@ def attach_base_color_texture(material, image):
     tex.name = f"{image.name} sampler"
     tex.image = image
     material.node_tree.links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
-    material["v9_texture_backed"] = True
+    material["advanced_gallery_texture_backed"] = True
     return material
 
 
@@ -790,7 +790,7 @@ def make_scene():
     bpy.context.object.name = "data galaxy authored preview camera"
     bpy.context.scene.camera = bpy.context.object
 
-    bpy.context.scene["v9_gallery_target"] = "advanced gallery data-galaxy"
+    bpy.context.scene["advanced_gallery_gallery_target"] = "advanced gallery data-galaxy"
     bpy.context.scene["fixture_role"] = "generated texture-backed support fixture"
     bpy.context.scene["runtime_batching_contract"] = "Export joins static meshes by material; the TypeScript route owns dense point-buffer particles and batched line/point overlays."
     bpy.context.scene["limitations"] = "Static authored GLB fixture with embedded procedural data-glyph textures on key materials; it is support-only until visual review and material diagnostics prove otherwise. It does not provide native GPU particle compute, bloom, or runtime simulation."
@@ -839,12 +839,12 @@ def write_metadata():
         "routeUse": "data-galaxy",
         "routeLinkage": {
             "routeId": "data-galaxy",
-            "app": "apps/v9-advanced-examples-gallery",
+            "app": "apps/threejs-parity-advanced-examples-gallery",
             "catalogAssetId": "data-galaxy-core-blender",
             "runtimeRole": "support scenery and central-core context only",
         },
         "source": {
-            "sourceScript": "tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py",
+            "sourceScript": "tools/advanced-gallery-assets/generate-data-galaxy-core-blender.py",
             "generator": "Blender Python procedural mesh generator",
             "inputAssets": [],
             "derivativeOfExternalAsset": False,
@@ -858,7 +858,7 @@ def write_metadata():
                 "path": rel(MANIFEST),
             },
         },
-        "generator": "tools/v9-advanced-gallery-assets/generate-data-galaxy-core-blender.py",
+        "generator": "tools/advanced-gallery-assets/generate-data-galaxy-core-blender.py",
         "asset": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.glb",
         "blend": "fixtures/advanced-gallery/assets/data-galaxy-core-blender/data-galaxy-core-blender.blend",
         "status": {
@@ -954,7 +954,7 @@ def write_metadata():
     MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     README.write_text(
         "# Data Galaxy Core Blender Fixture\n\n"
-        "Authored Blender fixture for the V9 advanced gallery `data-galaxy` route.\n\n"
+        "Authored Blender fixture for the ThreeJsParity advanced gallery `data-galaxy` route.\n\n"
         "Generated files:\n\n"
         "- `data-galaxy-core-blender.glb`\n"
         "- `data-galaxy-core-blender.blend`\n"

@@ -6,9 +6,9 @@ const reportPath = "tests/reports/external-parity-github-external-readiness.json
 
 const sourceFiles = [
   "package.json",
-  "docs/project/v4-parity-execution-prompt.md",
+  "docs/project/verification-evidence.md",
   ".github/workflows/external-parity-external-engine-baselines.yml",
-  ".github/workflows/v4-public-demo-deploy.yml",
+  ".github/workflows/public-demo-deploy.yml",
   "tools/external-parity-github-external-readiness/index.ts",
   "tools/external-parity-external-evidence-readiness/index.ts",
   "tools/external-parity-external-host-doctor/index.ts",
@@ -22,7 +22,7 @@ export interface CommandResult {
 
 export type CommandRunner = (command: string, args: readonly string[], cwd: string) => CommandResult;
 
-export interface V4GithubExternalReadinessReport {
+export interface ExternalParityGithubExternalReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly githubExternalReady: boolean;
@@ -48,7 +48,7 @@ export interface GithubReadinessCheck {
   readonly blockers: readonly string[];
 }
 
-export function createV4GithubExternalReadinessReport(root = process.cwd(), runner: CommandRunner = defaultCommandRunner): V4GithubExternalReadinessReport {
+export function createExternalParityGithubExternalReadinessReport(root = process.cwd(), runner: CommandRunner = defaultCommandRunner): ExternalParityGithubExternalReadinessReport {
   const remoteUrl = runText(runner, root, "git", ["config", "--get", "remote.origin.url"]);
   const repo = parseGithubRepo(remoteUrl.stdout) ?? process.env.A3D_GITHUB_REPOSITORY;
   const currentBranchResult = runText(runner, root, "git", ["rev-parse", "--abbrev-ref", "HEAD"]);
@@ -114,11 +114,11 @@ export function createV4GithubExternalReadinessReport(root = process.cwd(), runn
     checks,
     blockers,
     nextCommands: blockers.length === 0 ? [
-      "gh workflow run v4-public-demo-deploy.yml --repo <owner/repo> --ref <default-branch>",
+      "gh workflow run public-demo-deploy.yml --repo <owner/repo> --ref <default-branch>",
       "gh workflow run external-parity-external-engine-baselines.yml --repo <owner/repo> --ref <default-branch> -f engine=all",
-      "pnpm ingest:public-demo-deployment-reports path/to/v4-public-demo-deployment-reports",
-      "pnpm ingest:v4-external-baseline-artifacts path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
-      "pnpm preflight:v4-parity:after-external-evidence",
+      "pnpm ingest:public-demo-deployment-reports path/to/public-demo-deployment-reports",
+      "pnpm ingest:external-parity-external-baseline-artifacts path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
+      "pnpm preflight:external-parity-parity:after-external-evidence",
     ] : blockedNextCommands(repo, defaultBranch, currentBranch),
     reportPath,
   };
@@ -151,7 +151,7 @@ function checkCurrentBranchOnRemote(root: string, runner: CommandRunner, current
 function checkWorkflowsOnDefaultBranch(root: string, runner: CommandRunner, repo: string, defaultBranch: string): GithubReadinessCheck {
   const required = [
     ".github/workflows/external-parity-external-engine-baselines.yml",
-    ".github/workflows/v4-public-demo-deploy.yml",
+    ".github/workflows/public-demo-deploy.yml",
   ] as const;
   const results = required.map((path) => ({
     path,
@@ -162,12 +162,12 @@ function checkWorkflowsOnDefaultBranch(root: string, runner: CommandRunner, repo
   const workflowsDiscoverable =
     workflowList.status === 0 &&
     workflowListText.includes("external-parity-external-engine-baselines") &&
-    workflowListText.includes("v4-public-demo-deploy");
+    workflowListText.includes("public-demo-deploy");
   const blockers = [
     ...results.flatMap(({ path, result }) => result.status === 0 ? [] : [`${path} is not readable on default branch ${defaultBranch}.`]),
     ...(workflowsDiscoverable
       ? []
-      : ["gh workflow list does not show both V4 external evidence workflows as discoverable."]),
+      : ["gh workflow list does not show both External parity external evidence workflows as discoverable."]),
   ];
   const evidence = [
     `defaultBranch=${defaultBranch}`,
@@ -283,18 +283,18 @@ function blockedNextCommands(repo: string | undefined, defaultBranch: string | u
   return [
     "git status --short",
     ...(currentBranch ? [`git push origin ${currentBranch}`] : ["git push origin <current-branch>"]),
-    `Open and merge a PR that lands the V4 workflow files on ${defaultBranch ?? "the default branch"}.`,
+    `Open and merge a PR that lands the External parity workflow files on ${defaultBranch ?? "the default branch"}.`,
     "Enable GitHub Pages for the repository.",
     "Register self-hosted GitHub Actions runners labeled unity and unreal.",
     "Configure A3D_UNITY_EDITOR and A3D_UNREAL_EDITOR as Actions variables or secrets.",
-    repo && defaultBranch ? `gh workflow run v4-public-demo-deploy.yml --repo ${repo} --ref ${defaultBranch}` : "gh workflow run v4-public-demo-deploy.yml --repo <owner/repo> --ref <default-branch>",
+    repo && defaultBranch ? `gh workflow run public-demo-deploy.yml --repo ${repo} --ref ${defaultBranch}` : "gh workflow run public-demo-deploy.yml --repo <owner/repo> --ref <default-branch>",
     repo && defaultBranch ? `gh workflow run external-parity-external-engine-baselines.yml --repo ${repo} --ref ${defaultBranch} -f engine=all` : "gh workflow run external-parity-external-engine-baselines.yml --repo <owner/repo> --ref <default-branch> -f engine=all",
-    "pnpm preflight:v4-parity:after-external-evidence",
+    "pnpm preflight:external-parity-parity:after-external-evidence",
   ];
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const report = createV4GithubExternalReadinessReport();
+  const report = createExternalParityGithubExternalReadinessReport();
   console.log(JSON.stringify({
     ok: report.ok,
     githubExternalReady: report.githubExternalReady,

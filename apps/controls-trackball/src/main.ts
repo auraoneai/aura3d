@@ -4,11 +4,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8ControlsTrackball?: V8ControlsTrackballRuntime;
+    __a3dCurrentRoutesControlsTrackball?: CurrentRoutesControlsTrackballRuntime;
   }
 }
 
-interface V8ControlsTrackballRuntime {
+interface CurrentRoutesControlsTrackballRuntime {
   readonly appId: "controls-trackball";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -53,7 +53,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8ControlsTrackball = runtime;
+    window.__a3dCurrentRoutesControlsTrackball = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -127,7 +127,7 @@ async function run(): Promise<void> {
           zoomEnabled: controls.enableZoom,
           trackballRollApplied: Math.abs(controls.state.rotation.z) > 0.2
         });
-        window.__a3dV8ControlsTrackball = runtime;
+        window.__a3dCurrentRoutesControlsTrackball = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -146,11 +146,11 @@ async function run(): Promise<void> {
 }
 
 function createRuntime(
-  status: V8ControlsTrackballRuntime["status"],
+  status: CurrentRoutesControlsTrackballRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8ControlsTrackballRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8ControlsTrackballRuntime {
+  patch: Partial<Omit<CurrentRoutesControlsTrackballRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesControlsTrackballRuntime {
   return {
     appId: APP_ID,
     status,
@@ -174,12 +174,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8ControlsTrackballRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesControlsTrackballRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 Controls Trackball</h1>
+          <h1>CurrentRoutes Controls Trackball</h1>
           <p>Public TrackballControls driving camera orbit, pan, dolly, and roll state.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

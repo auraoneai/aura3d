@@ -315,7 +315,7 @@ const scenes: BenchmarkScene[] = [
   babylonEditorAuthoredStartup,
 ];
 
-const v3ComparedSceneIds = [
+const foundationComparedSceneIds = [
   "product-configurator",
   "architecture-viewer",
   "asset-render",
@@ -326,7 +326,7 @@ const v3ComparedSceneIds = [
   "particles",
   "editor-authored-startup",
 ] as const;
-const v4ComparedSceneIds = [
+const externalParityComparedSceneIds = [
   "product-configurator",
   "architecture-viewer",
   "asset-render",
@@ -339,8 +339,8 @@ const v4ComparedSceneIds = [
   "particles",
   "editor-authored-startup",
 ] as const;
-const isV4Run = process.argv.includes("--v4");
-const comparedSceneIds = isV4Run ? v4ComparedSceneIds : v3ComparedSceneIds;
+const isExternalParityRun = process.argv.includes("--external-parity");
+const comparedSceneIds = isExternalParityRun ? externalParityComparedSceneIds : foundationComparedSceneIds;
 const require = createRequire(import.meta.url);
 
 async function main(): Promise<void> {
@@ -363,7 +363,7 @@ async function main(): Promise<void> {
     writeJson(comparisonReportPath("babylon"), babylonReport);
     writeJson("tests/reports/comparison-threejs.json", threejsReport);
     writeJson("tests/reports/comparison-babylon.json", babylonReport);
-    writeJson(isV4Run ? "tests/reports/external-parity-engine-comparison.json" : "tests/reports/foundation-engine-comparison.json", report);
+    writeJson(isExternalParityRun ? "tests/reports/external-parity-engine-comparison.json" : "tests/reports/foundation-engine-comparison.json", report);
   }
 
   if (process.argv.includes("--write-docs")) {
@@ -489,9 +489,9 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
   const rootPackage = readJson("package.json") as PackageJson;
   const threePackage = readJson("benchmarks/threejs/package.json") as PackageJson;
   const babylonPackage = readJson("benchmarks/babylon/package.json") as PackageJson;
-  const productVisualParity = isV4Run ? productVisualParityEvidence() : { status: "not-applicable-to-v3" };
+  const productVisualParity = isExternalParityRun ? productVisualParityEvidence() : { status: "not-applicable-to-foundation" };
   const productVisualParityReady = isRecord(productVisualParity) && productVisualParity.aura3dThreeBabylon === true;
-  const gltfLoaderVisualParity = isV4Run ? gltfLoaderVisualParityEvidence() : { status: "not-applicable-to-v3" };
+  const gltfLoaderVisualParity = isExternalParityRun ? gltfLoaderVisualParityEvidence() : { status: "not-applicable-to-foundation" };
   const gltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.aura3dThreeBabylon === true;
   const fullGltfLoaderVisualParityReady = isRecord(gltfLoaderVisualParity) && gltfLoaderVisualParity.fullCorpusThreeBabylon === true;
   const featureRuntimeCoverage = featureRuntimeCoverageMatrix();
@@ -500,18 +500,18 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
     generatedAt: new Date().toISOString(),
     releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-compare-engines-run",
     gitSha: gitSha(),
-    command: isV4Run
-      ? "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --v4 --write-reports"
+    command: isExternalParityRun
+      ? "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --external-parity --write-reports"
       : "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --write-reports",
     sourceInputs: sourceInputPaths(),
-    suite: isV4Run ? "v4-engine-comparison" : "v3-engine-comparison",
+    suite: isExternalParityRun ? "external-parity-engine-comparison" : "foundation-engine-comparison",
     ok,
     claimUsable: false,
     claimCaveat: "This report validates equivalent benchmark scaffolds, browser WebGL2 microbenchmark measurements, and bundle artifacts. Broad competitive claims remain unsupported; only exact supportedNicheClaims may be used.",
     supportedNicheClaims: [] as SupportedNicheClaim[],
     repeatability: {
-      command: isV4Run
-        ? "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --v4 --write-reports"
+      command: isExternalParityRun
+        ? "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --external-parity --write-reports"
         : "pnpm exec tsx --tsconfig tsconfig.base.json tools/compare-engines/index.ts --write-reports",
       deterministic: false,
       sampleSource: "Checked-in scene definitions plus Playwright Chromium WebGL2 microbenchmark timers; measurements vary by browser, GPU backend, and machine load.",
@@ -596,10 +596,10 @@ function createReport(comparisons: SceneComparison[]): Record<string, unknown> {
       ...(productVisualParityReady ? ["Unity/Unreal product-render visual parity"] : ["external engine product-render visual parity beyond the benchmark canvas screenshots"]),
       ...(gltfLoaderVisualParityReady ? [] : ["visual pixel parity for external Three.js/Babylon.js glTF loader output"]),
       ...(fullGltfLoaderVisualParityReady ? [] : ["full-corpus and extension visual pixel parity for external Three.js/Babylon.js glTF loader output"]),
-      isV4Run
+      isExternalParityRun
         ? "full external-engine controls/materials/lights/shadows/postprocess runtime scoring with Unity/Unreal remains blocked"
         : "controls/materials/lights/shadows/postprocess runtime feature scoring",
-      ...(isV4Run ? [
+      ...(isExternalParityRun ? [
         "broad better-than-Three.js claims",
         "broad better-than-Babylon.js claims",
         "Unity/Unreal replacement claims",
@@ -624,10 +624,10 @@ function sourceInputPaths(): string[] {
     "examples/foundation-editor-authored-app/project.json",
     "examples/foundation-editor-authored-app/runtime.js",
     "tests/reports/foundation-editor-authoring.json",
-    ...(isV4Run ? [
-      "docs/project/external-parity-benchmarks-validation-plan.md",
-      "docs/project/v4-decision-gates.md",
-      "docs/project/v4-master-code-checklist.md",
+    ...(isExternalParityRun ? [
+      "docs/project/verification-evidence.md",
+      "docs/project/product-studio-decision-gates.md",
+      "docs/project/implementation-plan.md",
       "tests/reports/foundation-rendering.json",
       "tests/reports/external-parity-product-visual-parity.json",
       "tools/external-parity-product-visual-parity/index.ts",
@@ -657,7 +657,7 @@ function productVisualParityEvidence(): Record<string, unknown> {
       status: "missing",
       reportPath,
       aura3dThreeBabylon: false,
-      blockers: ["Run `pnpm audit:external-parity-product-visual-parity` before writing V4 engine-comparison reports."],
+      blockers: ["Run `pnpm audit:external-parity-product-visual-parity` before writing External parity engine-comparison reports."],
     };
   }
   const report = readJson(reportPath);
@@ -666,7 +666,7 @@ function productVisualParityEvidence(): Record<string, unknown> {
       status: "invalid",
       reportPath,
       aura3dThreeBabylon: false,
-      blockers: ["V4 product visual parity report is not a JSON object."],
+      blockers: ["External parity product visual parity report is not a JSON object."],
     };
   }
   const rendered = isRecord(report.renderedProductVisualParity) ? report.renderedProductVisualParity : {};
@@ -705,7 +705,7 @@ function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
       status: "missing",
       reportPath,
       aura3dThreeBabylon: false,
-      blockers: ["Run `pnpm audit:external-parity-gltf-loader-visual-parity` before writing V4 engine-comparison reports."],
+      blockers: ["Run `pnpm audit:external-parity-gltf-loader-visual-parity` before writing External parity engine-comparison reports."],
     };
   }
   const report = readJson(reportPath);
@@ -714,7 +714,7 @@ function gltfLoaderVisualParityEvidence(): Record<string, unknown> {
       status: "invalid",
       reportPath,
       aura3dThreeBabylon: false,
-      blockers: ["V4 glTF loader visual parity report is not a JSON object."],
+      blockers: ["External parity glTF loader visual parity report is not a JSON object."],
     };
   }
   const bounded = isRecord(report.boundedGltfLoaderVisualParity) ? report.boundedGltfLoaderVisualParity : {};
@@ -1127,7 +1127,7 @@ function broadSuperiorityEvidenceMatrix(report: Record<string, unknown>, byCompe
         "ecosystem-docs-accessibility-device-matrix",
         "Ecosystem, documentation, accessibility, and device matrix",
         ecosystem?.ok === true && ecosystem.boundedEcosystemDocsAccessibilityDeviceMatrix === true,
-        ["tests/reports/external-parity-ecosystem-readiness.json", "docs/project/v4-decision-gates.md", "tests/reports/browser-hardware-matrix.json"],
+        ["tests/reports/external-parity-ecosystem-readiness.json", "docs/project/product-studio-decision-gates.md", "tests/reports/browser-hardware-matrix.json"],
         ["bounded documentation, accessibility, and device-matrix audit must pass; this still does not prove ecosystem superiority"]
       ),
     ];
@@ -1271,9 +1271,9 @@ function bundleSizeNicheClaims(report: Record<string, unknown>): SupportedNicheC
 }
 
 function comparisonReportPath(competitor: "threejs" | "babylon"): string {
-  return isV4Run
+  return isExternalParityRun
     ? `tests/reports/external-parity-comparison-${competitor}.json`
-    : `tests/reports/v3-comparison-${competitor}.json`;
+    : `tests/reports/foundation-comparison-.json`;
 }
 
 function numeric(value: unknown): number | undefined {
@@ -1720,7 +1720,7 @@ function benchmarkVisualSharedHelpers(): string {
 
 function aura3dBenchmarkVisualBundleSource(): string {
   return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     ${benchmarkVisualSharedHelpers()}
     export async function renderBenchmarkVisualScene(canvas, scene) {
       const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.015, 0.02, 0.03, 1], antialias: scene.quality.antialias, preserveDrawingBuffer: true });
@@ -1738,7 +1738,7 @@ function aura3dBenchmarkVisualBundleSource(): string {
         modelMatrix: modelMatrix(spec),
         label: scene.id + "-" + spec.index,
       }));
-      const diagnostics = renderer.render({ renderItems: items, environmentLighting: createV4EnvironmentLighting(scene.id.includes("large") ? "daylight" : scene.id.includes("particles") ? "gameplay" : "studio").lighting });
+      const diagnostics = renderer.render({ renderItems: items, environmentLighting: createExternalParityEnvironmentLighting(scene.id.includes("large") ? "daylight" : scene.id.includes("particles") ? "gameplay" : "studio").lighting });
       await nextFrame();
       const stats = pixelStats(canvas);
       renderer.dispose();
@@ -2517,11 +2517,11 @@ function gltfCompatibilitySummary(): Record<string, unknown> {
 }
 
 function featureRuntimeCoverageMatrix(): Array<Record<string, unknown>> {
-  if (!isV4Run) {
+  if (!isExternalParityRun) {
     return [{
-      area: "V4 runtime feature coverage",
-      status: "not-applicable-to-v3",
-      claimImpact: "V3 comparison reports do not consume V4 feature-readiness reports.",
+      area: "External parity runtime feature coverage",
+      status: "not-applicable-to-foundation",
+      claimImpact: "Foundation comparison reports do not consume External parity feature-readiness reports.",
     }];
   }
 

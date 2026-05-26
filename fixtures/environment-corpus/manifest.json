@@ -1,5 +1,5 @@
 {
-  "schema": "a3d-production-runtime-hdr-environment-corpus/v1",
+  "schema": "a3d-production-runtime-hdr-environment-corpus",
   "requirements": {
     "minimumRealHdriSources": 6,
     "minimumResolution": [

@@ -47,14 +47,14 @@ function publish() {
     id: "external-editor-authored-app",
     status: "ready",
     renderer: "canvas2d-static-export",
-    visualClaim: "Browser-first local authoring and static export workflow for the shown V4 app.",
+    visualClaim: "Browser-first local authoring and static export workflow for the shown ExternalParity app.",
     knownLimits: [
       "This exported app proves a browser editor author/export workflow, not a Unity or Unreal replacement.",
       "The static export visualizes project-authored model metadata with canvas2D shapes; it does not load the editor shell.",
       "Imported glTF asset references, material edits, lights, cameras, physics, scripts, and play behavior are preserved in project data and runtime evidence."
     ],
     claimBoundary: {
-      allowed: "browser-first local authoring workflow for the shown V4 app",
+      allowed: "browser-first local authoring workflow for the shown ExternalParity app",
       blocked: ["Unity replacement", "Unreal replacement", "broad Unity/Unreal for the web"]
     },
     errors: [],
@@ -64,7 +64,7 @@ function publish() {
       frameTimeMs: Number((performance.now() - startedAt).toFixed(2)),
       scriptTickCount
     },
-    screenshotPath: "tests/reports/external-parity-example-screenshots/editor-authored-v4-checked-in.png",
+    screenshotPath: "tests/reports/external-parity-example-screenshots/editor-authored-external-parity-checked-in.png",
     nodeCount: project.scene.nodes.length,
     assetCount: project.assets.length,
     projectName: project.metadata.name,

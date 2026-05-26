@@ -27,7 +27,7 @@ export function renderSkinningBlendingUi(
   root.innerHTML = `
     <section class="panel">
       <div class="header">
-        <h1>V8 Skinning Blending</h1>
+        <h1>CurrentRoutes Skinning Blending</h1>
         <span class="status ${runtime.status}">${runtime.status}</span>
       </div>
       <div class="metrics">

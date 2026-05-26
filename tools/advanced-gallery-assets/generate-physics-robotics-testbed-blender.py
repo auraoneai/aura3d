@@ -5,7 +5,7 @@ import bpy
 
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "physics-robotics-testbed-blender"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "physics-robotics-testbed-blender"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "physics-robotics-testbed-blender.glb"
 

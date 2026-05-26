@@ -9,19 +9,19 @@ import {
   createArchitecturalMeasurementFixture,
   createArchitecturalMaterial,
   createProceduralTextureFixture,
-  createV4DirectionalShadowEvidence,
-  createV4EnvironmentLighting,
-  createV4FlagshipRenderPresetEvidence,
-  sampleV4LdrPostprocessReadback,
+  createExternalParityDirectionalShadowEvidence,
+  createExternalParityEnvironmentLighting,
+  createExternalParityFlagshipRenderPresetEvidence,
+  sampleExternalParityLdrPostprocessReadback,
   type ArchitecturalLightingFixture,
   type ArchitecturalMeasurementFixture,
   type EnvironmentLightingOptions,
   type RenderDeviceDiagnostics,
   type RenderItem,
-  type V4DirectionalShadowEvidence,
-  type V4EnvironmentLightingBundle,
-  type V4LdrPostprocessSummary,
-  type V4RenderPresetEvidence
+  type ExternalParityDirectionalShadowEvidence,
+  type ExternalParityEnvironmentLightingBundle,
+  type ExternalParityLdrPostprocessSummary,
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 import { Scene, type PerspectiveCamera } from "@aura3d/scene";
 
@@ -72,10 +72,10 @@ type DemoStatus = {
   knownLimits: readonly string[];
   screenshotPath: string;
   featureEvidence: Record<string, number | string | boolean>;
-  v4RenderPreset?: V4RenderPresetEvidence;
-  postprocess?: V4LdrPostprocessSummary;
-  environmentResources?: V4EnvironmentLightingBundle["resources"];
-  directionalShadow?: V4DirectionalShadowEvidence;
+  externalParityRenderPreset?: ExternalParityRenderPresetEvidence;
+  postprocess?: ExternalParityLdrPostprocessSummary;
+  environmentResources?: ExternalParityEnvironmentLightingBundle["resources"];
+  directionalShadow?: ExternalParityDirectionalShadowEvidence;
   oldBranchLighting?: ArchitecturalLightingFixture;
   oldBranchSectionHatching?: ArchitectureSectionHatchingEvidence;
   claimBoundary: string;
@@ -86,7 +86,7 @@ type DemoStatus = {
     zones: readonly ZoneId[];
     elements: readonly string[];
   };
-  v4Asset?: {
+  externalParityAsset?: {
     id: string;
     source: string;
     url: string;
@@ -130,7 +130,7 @@ type DemoStatus = {
   error?: string;
 };
 
-type V4ArchitectureAssetManifest = {
+type ExternalParityArchitectureAssetManifest = {
   readonly schemaVersion: string;
   readonly id: string;
   readonly displayName: string;
@@ -147,8 +147,8 @@ type V4ArchitectureAssetManifest = {
   };
 };
 
-type LoadedV4ArchitectureAsset = {
-  readonly manifest: V4ArchitectureAssetManifest;
+type LoadedExternalParityArchitectureAsset = {
+  readonly manifest: ExternalParityArchitectureAssetManifest;
   readonly resources: GLTFRenderResources;
   readonly inspection: GLTFAssetInspectionReport;
   readonly url: string;
@@ -162,10 +162,10 @@ declare global {
 }
 
 const architectureModelSource = "fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf";
-const v4ArchitectureAssetUrl = "/fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf";
-const v4ArchitectureManifestUrl = "/fixtures/advanced-gallery/assets/smart-city-district/manifest.json";
-const v4ScreenshotPath = "tests/reports/external-parity-example-screenshots/architecture-viewer.png";
-const claimBoundary = "V4 architecture viewer evidence is limited to this generated civic-gallery room scene, authored metadata selection, and WebGL2 contact-shadow alternatives; it is not BIM/IFC import or CAD-accurate measurement.";
+const externalParityArchitectureAssetUrl = "/fixtures/advanced-gallery/assets/smart-city-district/smart-city-district.gltf";
+const externalParityArchitectureManifestUrl = "/fixtures/advanced-gallery/assets/smart-city-district/manifest.json";
+const externalParityScreenshotPath = "tests/reports/external-parity-example-screenshots/architecture-viewer.png";
+const claimBoundary = "ExternalParity architecture viewer evidence is limited to this generated civic-gallery room scene, authored metadata selection, and WebGL2 contact-shadow alternatives; it is not BIM/IFC import or CAD-accurate measurement.";
 const architectureInteriorDetailCount = 34;
 
 const zones: readonly Zone[] = [
@@ -188,7 +188,7 @@ const hierarchy = [
 ] as const;
 
 const knownLimits = [
-  "The viewer renders a generated V4 gallery-corner asset plus a generated local civic-gallery fixture; it is not an IFC/BIM import workflow.",
+  "The viewer renders a generated ExternalParity gallery-corner asset plus a generated local civic-gallery fixture; it is not an IFC/BIM import workflow.",
   "Selection targets authored model element metadata and viewport hit regions; it is not triangle-accurate ray picking against CAD geometry.",
   "Measurements are authored room and element metadata with in-scene dimension strokes, not computed CAD dimension annotations.",
   "Directional shadow-map evidence is bounded to cascade/map/filter metrics plus visible receiver decals; full forward-pass shadow sampling and arbitrary clipping planes are not implemented here.",
@@ -318,21 +318,21 @@ if (typeof document !== "undefined") {
       renderer: "webgl2",
       visualClaim: "Generated production-like civic gallery room fixture rendered through Aura3D WebGL2.",
       knownLimits,
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       featureEvidence: {},
       claimBoundary,
       model: {
-        id: "generated-civic-gallery-v3",
+        id: "generated-civic-gallery-foundation",
         source: architectureModelSource,
         hierarchy,
         zones: zones.map((zone) => zone.id),
         elements: architectureElements.map((element) => element.id),
       },
-      v4Asset: {
+      externalParityAsset: {
         id: "external-gallery-corner",
-        source: "v4-generated-local-gltf",
-        url: v4ArchitectureAssetUrl,
-        manifestUrl: v4ArchitectureManifestUrl,
+        source: "external-parity-generated-local-gltf",
+        url: externalParityArchitectureAssetUrl,
+        manifestUrl: externalParityArchitectureManifestUrl,
         generator: "tools/external-parity-asset-corpus/index.ts",
         meshCount: 0,
         materialCount: 0,
@@ -388,7 +388,7 @@ async function run(): Promise<void> {
   let zoom = 1.12;
   let dragStart: { x: number; y: number; yaw: number; panX: number; panY: number; mode: "orbit" | "pan" } | undefined;
   const { scene, camera } = createLitScene(canvas);
-  const v4ArchitectureAsset = await loadV4ArchitectureAsset();
+  const externalParityArchitectureAsset = await loadExternalParityArchitectureAsset();
 
   const selectZone = (index: number) => {
     selectedZoneIndex = Math.max(0, Math.min(zones.length - 1, index));
@@ -529,21 +529,21 @@ async function run(): Promise<void> {
     resize();
     renderer.resize(canvas.width, canvas.height);
     camera.resize(canvas.width, canvas.height);
-    const lightingBundle = createV4EnvironmentLighting(architectureV4EnvironmentPreset(lightPreset));
+    const lightingBundle = createExternalParityEnvironmentLighting(architectureExternalParityEnvironmentPreset(lightPreset));
     const oldBranchLighting = createArchitecturalLightingFixture({ preset: architectureLightingPreset(lightPreset) });
-    const renderItems = buildRenderItems(selectedZoneIndex, sectionView, cameraMode, v4ArchitectureAsset, yaw, zoom, panX, panY);
+    const renderItems = buildRenderItems(selectedZoneIndex, sectionView, cameraMode, externalParityArchitectureAsset, yaw, zoom, panX, panY);
     diagnostics = renderer.render({
       scene,
       renderItems,
       environmentLighting: lightingBundle.lighting,
     });
-    const postprocess = sampleV4LdrPostprocessReadback({
+    const postprocess = sampleExternalParityLdrPostprocessReadback({
       device: renderer.device,
       framebufferWidth: canvas.width,
       framebufferHeight: canvas.height,
       exposure: lightPreset === "evening" ? 1.14 : 1.04
     });
-    const directionalShadow = createV4DirectionalShadowEvidence({
+    const directionalShadow = createExternalParityDirectionalShadowEvidence({
       exampleId: "architecture-viewer",
       casterCount: contactShadowCasters.length,
       receiverCount: contactShadowReceivers.length,
@@ -551,9 +551,9 @@ async function run(): Promise<void> {
       mapSize: 768,
       lightDirection: oldBranchLighting.sunDirection
     });
-    const v4RenderPreset = createV4FlagshipRenderPresetEvidence({
+    const externalParityRenderPreset = createExternalParityFlagshipRenderPresetEvidence({
       exampleId: "architecture-viewer",
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       exposure: postprocess.exposure,
       directionalShadowEvidence: directionalShadow.visibleReceiverDarkening,
       postprocessEvidence: postprocess.changedPixels > 0,
@@ -567,7 +567,7 @@ async function run(): Promise<void> {
       renderer: "webgl2",
       visualClaim: "Generated production-like civic gallery room fixture rendered through Aura3D WebGL2.",
       knownLimits,
-      screenshotPath: v4ScreenshotPath,
+      screenshotPath: externalParityScreenshotPath,
       featureEvidence: {
         roomModel: true,
         materialRoomSelection: true,
@@ -580,9 +580,9 @@ async function run(): Promise<void> {
         oldBranchSectionHatchingPort: sectionHatchingEvidence.lineCount >= 24 && sectionHatchingEvidence.layerCount === 2,
         sectionCutHatching: sectionView && cameraMode === "section",
         contactShadowAlternative: true,
-        v4ArchitectureAssetLoaded: true,
-        v4RenderPreset: true,
-        sharedV4Preset: v4RenderPreset.presetId,
+        externalParityArchitectureAssetLoaded: true,
+        externalParityRenderPreset: true,
+        sharedExternalParityPreset: externalParityRenderPreset.presetId,
         generatedEnvironmentMap: true,
         environmentResourceSet: lightingBundle.resources.resourceSet,
         environmentReflectionEvidence: Boolean(lightingBundle.lighting.environmentMapTexture),
@@ -611,9 +611,9 @@ async function run(): Promise<void> {
         postprocessRealSceneReadback: postprocess.changedPixels > 0,
         orbitWalkCameraModes: true,
         lightingPresets: true,
-        screenshotEvidencePath: v4ScreenshotPath,
+        screenshotEvidencePath: externalParityScreenshotPath,
       },
-      v4RenderPreset,
+      externalParityRenderPreset,
       postprocess,
       environmentResources: lightingBundle.resources,
       directionalShadow,
@@ -621,24 +621,24 @@ async function run(): Promise<void> {
       oldBranchSectionHatching: sectionHatchingEvidence,
       claimBoundary,
       model: {
-        id: "generated-civic-gallery-v3",
+        id: "generated-civic-gallery-foundation",
         source: architectureModelSource,
         hierarchy,
         zones: zones.map((entry) => entry.id),
         elements: architectureElements.map((element) => element.id),
       },
-      v4Asset: {
-        id: v4ArchitectureAsset.manifest.id,
-        source: "v4-generated-local-gltf",
-        url: v4ArchitectureAsset.url,
-        manifestUrl: v4ArchitectureAsset.manifestUrl,
-        generator: v4ArchitectureAsset.manifest.source.generator,
-        meshCount: v4ArchitectureAsset.manifest.inspection.meshes,
-        materialCount: v4ArchitectureAsset.manifest.inspection.materials,
-        cameraCount: v4ArchitectureAsset.manifest.inspection.cameras,
-        lightCount: v4ArchitectureAsset.manifest.inspection.lights,
-        features: v4ArchitectureAsset.manifest.features,
-        unsupportedFeatures: v4ArchitectureAsset.manifest.unsupportedFeatures,
+      externalParityAsset: {
+        id: externalParityArchitectureAsset.manifest.id,
+        source: "external-parity-generated-local-gltf",
+        url: externalParityArchitectureAsset.url,
+        manifestUrl: externalParityArchitectureAsset.manifestUrl,
+        generator: externalParityArchitectureAsset.manifest.source.generator,
+        meshCount: externalParityArchitectureAsset.manifest.inspection.meshes,
+        materialCount: externalParityArchitectureAsset.manifest.inspection.materials,
+        cameraCount: externalParityArchitectureAsset.manifest.inspection.cameras,
+        lightCount: externalParityArchitectureAsset.manifest.inspection.lights,
+        features: externalParityArchitectureAsset.manifest.features,
+        unsupportedFeatures: externalParityArchitectureAsset.manifest.unsupportedFeatures,
       },
       selectedZone: zone.id,
       selectedElement: {
@@ -680,10 +680,10 @@ async function run(): Promise<void> {
         gpuTimingSource: "cpu-fallback",
         gpuTimingFallbackReason: "EXT_disjoint_timer_query_webgl2 is not required for this flagship demo; GPU readout mirrors CPU frame timing.",
         drawCalls: diagnostics.drawCalls,
-        v4RenderPreset: v4RenderPreset.presetId,
-        v4RenderPresetVersion: v4RenderPreset.presetVersion,
-        v4PresetActiveFeatures: v4RenderPreset.activeFeatures.length,
-        v4PresetBlockedFeatures: v4RenderPreset.blockedFeatures.length,
+        externalParityRenderPreset: externalParityRenderPreset.presetId,
+        externalParityRenderPresetVersion: externalParityRenderPreset.presetVersion,
+        externalParityPresetActiveFeatures: externalParityRenderPreset.activeFeatures.length,
+        externalParityPresetBlockedFeatures: externalParityRenderPreset.blockedFeatures.length,
         generatedEnvironmentManifest: lightingBundle.manifestPath,
         environmentTextureMipCount: lightingBundle.resources.specularMipCount,
         proceduralTextureFixtureCount: Object.keys(architectureProceduralTextureFixtures).length,
@@ -730,16 +730,16 @@ async function run(): Promise<void> {
         generatedModelParts: sectionView ? architectureElements.length - 9 : architectureElements.length,
         productionLikeArchitectureModel: true,
         localArchitectureFixture: true,
-        v4ArchitectureAssetLoaded: true,
-        v4ArchitectureAssetId: v4ArchitectureAsset.manifest.id,
-        v4ArchitectureAssetUrl: v4ArchitectureAsset.url,
-        v4ArchitectureAssetRenderables: v4ArchitectureAsset.resources.scene.collectRenderables().length,
-        v4ArchitectureAssetMeshes: v4ArchitectureAsset.manifest.inspection.meshes,
-        v4ArchitectureAssetMaterials: v4ArchitectureAsset.manifest.inspection.materials,
-        v4ArchitectureAssetCameras: v4ArchitectureAsset.manifest.inspection.cameras,
-        v4ArchitectureAssetLights: v4ArchitectureAsset.manifest.inspection.lights,
-        v4ArchitectureAssetFeatures: v4ArchitectureAsset.manifest.features.join(","),
-        v4ArchitectureUnsupportedFeatures: v4ArchitectureAsset.manifest.unsupportedFeatures.join(","),
+        externalParityArchitectureAssetLoaded: true,
+        externalParityArchitectureAssetId: externalParityArchitectureAsset.manifest.id,
+        externalParityArchitectureAssetUrl: externalParityArchitectureAsset.url,
+        externalParityArchitectureAssetRenderables: externalParityArchitectureAsset.resources.scene.collectRenderables().length,
+        externalParityArchitectureAssetMeshes: externalParityArchitectureAsset.manifest.inspection.meshes,
+        externalParityArchitectureAssetMaterials: externalParityArchitectureAsset.manifest.inspection.materials,
+        externalParityArchitectureAssetCameras: externalParityArchitectureAsset.manifest.inspection.cameras,
+        externalParityArchitectureAssetLights: externalParityArchitectureAsset.manifest.inspection.lights,
+        externalParityArchitectureAssetFeatures: externalParityArchitectureAsset.manifest.features.join(","),
+        externalParityArchitectureUnsupportedFeatures: externalParityArchitectureAsset.manifest.unsupportedFeatures.join(","),
         actualElementSelection: true,
         selectedElementId: selectedElement.id,
         selectedElementKind: selectedElement.kind,
@@ -797,15 +797,15 @@ async function run(): Promise<void> {
     running = false;
     window.removeEventListener("resize", resize);
     window.removeEventListener("keydown", handleKeyDown);
-    v4ArchitectureAsset.resources.dispose();
+    externalParityArchitectureAsset.resources.dispose();
     renderer.dispose();
   }, { once: true });
 }
 
-async function loadV4ArchitectureAsset(): Promise<LoadedV4ArchitectureAsset> {
+async function loadExternalParityArchitectureAsset(): Promise<LoadedExternalParityArchitectureAsset> {
   const [manifest, asset] = await Promise.all([
-    fetchJson<V4ArchitectureAssetManifest>(v4ArchitectureManifestUrl),
-    new GLTFLoader().load({ url: runtimeAssetUrl(v4ArchitectureAssetUrl) }, new LoadContext()),
+    fetchJson<ExternalParityArchitectureAssetManifest>(externalParityArchitectureManifestUrl),
+    new GLTFLoader().load({ url: runtimeAssetUrl(externalParityArchitectureAssetUrl) }, new LoadContext()),
   ]);
   const resources = await createGLTFRenderResources(asset);
   const inspection = inspectGLTFAsset(asset);
@@ -813,8 +813,8 @@ async function loadV4ArchitectureAsset(): Promise<LoadedV4ArchitectureAsset> {
     manifest,
     resources,
     inspection,
-    url: v4ArchitectureAssetUrl,
-    manifestUrl: v4ArchitectureManifestUrl,
+    url: externalParityArchitectureAssetUrl,
+    manifestUrl: externalParityArchitectureManifestUrl,
   };
 }
 
@@ -830,7 +830,7 @@ function runtimeAssetUrl(url: string): string {
   return new URL(url, window.location.origin).toString();
 }
 
-function buildRenderItems(selectedZoneIndex: number, sectionView: boolean, cameraMode: CameraMode, v4ArchitectureAsset: LoadedV4ArchitectureAsset, yaw: number, zoom: number, panX = 0, panY = 0): RenderItem[] {
+function buildRenderItems(selectedZoneIndex: number, sectionView: boolean, cameraMode: CameraMode, externalParityArchitectureAsset: LoadedExternalParityArchitectureAsset, yaw: number, zoom: number, panX = 0, panY = 0): RenderItem[] {
   const floor = new PBRMaterial({ name: "architecture-concrete-floor-explicit-pbr", baseColor: [0.54, 0.56, 0.54, 1], roughness: 0.62, metallic: 0.03, emissiveColor: [0.06, 0.06, 0.055], emissiveStrength: 0.2, renderState: { cullMode: "none" } });
   const wall = new PBRMaterial({ name: "architecture-limestone-wall-explicit-pbr", baseColor: [0.74, 0.72, 0.62, 1], roughness: 0.56, metallic: 0.02, emissiveColor: [0.08, 0.075, 0.06], emissiveStrength: 0.2, renderState: { cullMode: "none" } });
   const glass = new PBRMaterial({ name: "architecture-tinted-glass-explicit-pbr", baseColor: [0.58, 0.74, 0.82, 0.52], roughness: 0.08, metallic: 0.02, emissiveColor: [0.08, 0.18, 0.24], emissiveStrength: 0.35, renderState: { blend: true, depthWrite: false, cullMode: "none" } });
@@ -1140,7 +1140,7 @@ function buildRenderItems(selectedZoneIndex: number, sectionView: boolean, camer
     });
   }
 
-  appendV4ArchitectureAssetRenderItems(items, v4ArchitectureAsset, yaw, zoom, sectionView);
+  appendExternalParityArchitectureAssetRenderItems(items, externalParityArchitectureAsset, yaw, zoom, sectionView);
 
   if (cameraMode === "section" || cameraMode === "walk") {
     items.push({
@@ -1189,13 +1189,13 @@ function createArchitectureMaterialSamplePalette(): readonly UnlitMaterial[] {
   }));
 }
 
-function appendV4ArchitectureAssetRenderItems(items: RenderItem[], v4ArchitectureAsset: LoadedV4ArchitectureAsset, yaw: number, zoom: number, sectionView: boolean): void {
-  const galleryShell = v4ArchitectureAsset.resources.scene.findByName("gallery-shell")[0];
+function appendExternalParityArchitectureAssetRenderItems(items: RenderItem[], externalParityArchitectureAsset: LoadedExternalParityArchitectureAsset, yaw: number, zoom: number, sectionView: boolean): void {
+  const galleryShell = externalParityArchitectureAsset.resources.scene.findByName("gallery-shell")[0];
   galleryShell?.transform
     .setPosition(-1.08, sectionView ? 0.42 : 0.38, 0.42)
     .setScale(0.18 * zoom, 0.18 * zoom, 0.18 * zoom)
     .setRotation(0, Math.sin(yaw * 0.5), 0, Math.cos(yaw * 0.5));
-  appendGLTFSceneRenderItems(items, v4ArchitectureAsset.resources, "external-gallery-corner");
+  appendGLTFSceneRenderItems(items, externalParityArchitectureAsset.resources, "external-gallery-corner");
 }
 
 function appendGLTFSceneRenderItems(items: RenderItem[], resources: GLTFRenderResources, labelPrefix: string): void {
@@ -1338,7 +1338,7 @@ function environmentLighting(preset: LightPreset, sectionView: boolean): Environ
   };
 }
 
-function architectureV4EnvironmentPreset(preset: LightPreset): "daylight" | "exhibit" | "evening" {
+function architectureExternalParityEnvironmentPreset(preset: LightPreset): "daylight" | "exhibit" | "evening" {
   if (preset === "exhibit") return "exhibit";
   if (preset === "evening") return "evening";
   return "daylight";

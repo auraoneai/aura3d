@@ -1,18 +1,18 @@
 # Current A3D State
 
-This document summarizes the current repository state for the V10 superiority gate on May 17, 2026.
+Version: 1.0.0
+
+This document summarizes the current repository state as of this documentation audit.
 
 ## What A3D Is
 
-A3D is a TypeScript browser 3D engine and workflow SDK with package-level runtime code for math, scene graphs, rendering, assets, animation, controls, input, physics, workflows, debugging, editor/runtime utilities, and Three.js migration helpers.
-
-The current release position is evidence-bound: A3D matches or exceeds Three.js in the measured categories covered by the V10 audit reports and by [docs/project/v10-superiority-status.md](/Users/gurbakshchahal/Aura3D/docs/project/v10-superiority-status.md).
+A3D is a TypeScript-first browser 3D engine and workflow SDK with package-level runtime code for math, scene graphs, rendering, assets, animation, controls, input, physics, workflows, debugging, editor/runtime utilities, and Three.js migration helpers.
 
 ## Package Surface
 
-The root package is `@aura3d/engine`. Public exports include:
+The root package is `@aura3d/engine`. Public subpaths are defined in `package.json` and include:
 
-- `.` and `./engine`
+- `.`, `./engine`, and `./engine-runtime`
 - `./core`
 - `./math`
 - `./scene`
@@ -23,85 +23,51 @@ The root package is `@aura3d/engine`. Public exports include:
 - `./materials`
 - `./physics`
 - `./product-studio`
-- `./animation`
-- `./animation/browser`
-- `./assets`
-- `./assets/browser`
+- `./animation` and `./animation/browser`
+- `./assets` and `./assets/browser`
 - `./input`
 - `./audio`
 - `./apps`
 - `./three-compat`
 - `./create-aura3d`
 - `./scripting`
-- `./workflows`
-- `./workflows/production-runtime`
+- `./workflows`, `./workflows/production`, and `./workflows/production-runtime`
 - `./editor-runtime`
 - `./editor`
 - `./debug`
-- `./rendering/production-runtime`
-- `./rendering/v9`
-- `./assets/production-runtime`
-- `./assets/v9`
 - `./production-runtime`
-- `./v9`
+- `./advanced-runtime`
 
-Workspace packages include `animation`, `apps`, `assets`, `audio`, `controls`, `core`, `create-aura3d`, `debug`, `ecs`, `editor`, `editor-runtime`, `engine`, `environments`, `input`, `materials`, `math`, `physics`, `product-studio`, `rendering`, `scene`, `scripting`, `three-compat`, and `workflows`.
-
-## V9 And V10 Evidence
-
-V9 provides the feature inventory, same-scene comparison routes, visual review, performance report, migration audit, package smoke tests, and route-health evidence.
-
-V10 consumes that evidence and produces the current superiority decision matrix:
-
-- `tests/reports/v10/feature-parity.json`
-- `tests/reports/v10/visual-quality.json`
-- `tests/reports/v10/performance.json`
-- `tests/reports/v10/animation-fidelity.json`
-- `tests/reports/v10/physics-fidelity.json`
-- `tests/reports/v10/memory-lifecycle.json`
-- `tests/reports/v10/developer-workflow.json`
-- `tests/reports/v10/claim-defense.json`
-- `tests/reports/v10/superiority-audit.json`
-
-`tests/reports/v9/threejs-inventory.json` currently tracks 54 Three.js example/workflow rows with all rows marked `matched`, zero high-priority open rows, and browser/unit/report evidence attached to the inventory entries.
+Versioned compatibility aliases have been removed from the public export map. Use contextual entrypoints such as `./production-runtime`, `./three-compat`, `./advanced-runtime`, `./rendering`, and `./assets`.
 
 ## Real Code Areas
 
-Real runtime code exists for:
+Runtime code exists for:
 
-- Vectors, matrices, quaternions, colors, rays, bounds, frustums, projection, transforms, cameras, and hierarchy math.
-- Object3D-style parent/child transform inheritance, matrix auto-update, cameras, lights, renderables, layers, serialization, and renderer traversal.
-- WebGL2 rendering, renderer diagnostics, render targets, shader/material binding, PBR materials, state caching, render queue sorting, culling, instancing, shadows, postprocess, and explicit resource disposal.
-- WebGPU render-targets, compute particles, PBR materials, instanced uniform submission, hardware probe reports, texture/readback paths, and fallback diagnostics.
-- GLTF, GLB, OBJ/MTL, HDR/EXR, image/texture/KTX2/Basis-facing loading helpers, material extensions, variant selection, renderable-scene conversion, and asset diagnostics.
-- Animation clips, tracks, mixers, layers, skinning, skeletons, root motion, IK, locomotion, clone sampling, morph targets, and motion-quality diagnostics.
-- Orbit, trackball, transform, drag, map, first-person, fly, pointer-lock, picking, point thresholds, decals, WebXR controller sampling, AR hit-test sampling, and selection controls.
-- Debug helpers, GPU/resource diagnostics, report exporters, scene helper line builders, route health, and resource leak detection.
-- Workflow templates and routes for product, asset, material, scene, architecture, character, WebGPU, WebXR, postprocess, physics, and migration usage.
-- Three.js compatibility and migration-adapter code in `packages/three-compat`.
+- vectors, matrices, quaternions, colors, rays, bounds, planes, frustums, projection, transforms, cameras, and hierarchy math;
+- Object3D-style scene hierarchy, cameras, lights, renderables, instancing, serialization, and renderer traversal;
+- WebGL2 and WebGPU-facing renderer/device code, state caching, render queues, materials, shaders, textures, render targets, postprocess, shadows, diagnostics, and disposal;
+- glTF/GLB, OBJ/MTL, HDR/EXR, image/texture/KTX2-facing helpers, material extensions, variants, render-resource conversion, and asset diagnostics;
+- animation clips, tracks, mixers, layers, skeletons, skinning, root motion, IK, retargeting, crowd animation, morph targets, and motion diagnostics;
+- orbit, trackball, transform, drag, map, first-person, fly, pointer-lock, picking, decals, WebXR controller sampling, AR hit-test sampling, and interaction controls;
+- rigid bodies, colliders, constraints, broadphase, raycasts, character helpers, and scene sync;
+- workflow templates and routes for product, asset, material, scene, architecture, character, WebGPU, WebXR, postprocess, physics, and migration usage.
 
-## How Users Should Interpret The Current State
+## Current Evidence Snapshot
 
-Use A3D when evaluating:
+The local report tree currently contains passing feature/visual parity reports and a failing performance aggregate:
 
-- Product viewers and configurators.
-- Asset ingestion, diagnostics, and GLB/glTF inspection.
-- PBR/HDR material review and environment setup.
-- Animation, skinning, morph, IK, root-motion, and clone-sampling workflows.
-- Physics, picking, controls, decals, postprocess, WebGPU/WebGL2, and WebXR route coverage.
-- Migration from selected Three.js patterns into package-owned A3D workflows.
+- `tests/reports/threejs-parity/threejs-inventory.json`: passing, 54 tracked rows marked matched.
+- `tests/reports/threejs-parity/same-scene-render.json`: passing.
+- `tests/reports/threejs-parity/visual-review.json`: passing.
+- `tests/reports/threejs-parity/performance.json`: failing because several performance evidence reports are missing locally.
+- `tests/reports/superiority/feature-parity.json`: passing.
+- `tests/reports/superiority/visual-quality.json`: passing.
+- `tests/reports/superiority/performance.json`: failing because it consumes the failing performance report.
+- `tests/reports/superiority/resource-lifecycle-100-reloads.json`: passing.
 
-The current claim should stay tied to generated evidence:
+Other Three.js superiority category reports are generated by package scripts but are not present in the current report tree until those commands run.
 
-> A3D matches or exceeds Three.js in the measured graphics, animation, asset, physics, performance, memory, and developer-workflow categories documented by the V10 superiority audit.
+## Current Claim Boundary
 
-## GTM Framing
-
-The accurate GTM story is workflow-first browser 3D with measurable superiority where the reports cover the claim:
-
-- faster time to product viewer and asset inspector;
-- built-in diagnostics for assets, renderer state, route health, animation motion, and resource lifecycle;
-- first-party package boundaries across renderer, assets, animation, controls, materials, environments, product-studio, physics, input, and workflows;
-- parity and superiority reports that point to source code, tests, browser routes, screenshots, and benchmark evidence.
-
-Lead with developer trust, diagnostics, workflow speed, and reproducible proof. The current evidence files are the source of truth for public claims.
+Use evidence-scoped language. It is accurate to say A3D has first-party packages and passing local generated evidence for the currently measured feature inventory and visual parity reports. It is not accurate to claim the full Three.js superiority superiority gate is currently passing in this worktree while the performance aggregate is failing and several generated Three.js superiority reports are absent.

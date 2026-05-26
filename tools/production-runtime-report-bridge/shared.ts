@@ -1,15 +1,15 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, statSync, copyFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { createV6AssetCorpusSummary, loadV6AssetManifest } from '../../packages/assets/src/asset-corpus/V6AssetCorpus';
-import { createV6EnvironmentCorpusSummary, loadV6EnvironmentManifest } from '../../packages/environments/src/production-runtime/V6EnvironmentCorpus';
-import { readV6PngStats, type V6PngStats } from './pngStats';
+import { createProductionAssetCorpusSummary, loadProductionAssetManifest } from '../../packages/assets/src/asset-corpus/ProductionAssetCorpus';
+import { createProductionEnvironmentCorpusSummary, loadProductionEnvironmentManifest } from '../../packages/environments/src/production-runtime/ProductionEnvironmentCorpus';
+import { readProductionPngStats, type ProductionPngStats } from './pngStats';
 
 type Json = Record<string, unknown>;
 export function writeJsonReport(path: string, report: Json): Json { mkdirSync(dirname(resolve(path)), { recursive: true }); writeFileSync(resolve(path), JSON.stringify(report, null, 2) + '\n'); if (report.pass !== true) { console.error(JSON.stringify(report, null, 2)); process.exit(1); } console.log(JSON.stringify(report, null, 2)); return report; }
 export function readJson(path: string): Json { return existsSync(resolve(path)) ? JSON.parse(readFileSync(resolve(path), 'utf8')) as Json : {}; }
 export function bridgeReport(source: string, target: string, schema: string, extra: Json = {}): Json { const sourceReport = readJson(source); return writeJsonReport(target, { schema, generatedAt: new Date().toISOString(), pass: sourceReport.pass === true, sourceReport: source, sourcePass: sourceReport.pass === true, ...extra }); }
-export function writeAssetAudit(): Json { const summary = createV6AssetCorpusSummary(loadV6AssetManifest()); const manifest = loadV6AssetManifest(); const stressCount = manifest.assets.filter((asset) => /material-stress|clearcoat|sheen|specular|transmission|transparent|alpha|glass/i.test([asset.role, ...asset.tags].join(' '))).length; const animationCount = manifest.assets.filter((asset) => /animation|skinning|morph/i.test([asset.role, ...asset.tags].join(' '))).length; const transparentCount = manifest.assets.filter((asset) => /transparent|transmission|clearcoat|alpha|glass/i.test([asset.role, ...asset.tags].join(' '))).length; const largeCount = manifest.assets.filter((asset) => /large-scene|multi-mesh|multiple primitives/i.test([asset.role, ...asset.tags].join(' '))).length; const architectureCount = manifest.assets.filter((asset) => /architecture|interior/i.test([asset.class, asset.role, ...asset.tags].join(' '))).length; const productCount = manifest.assets.filter((asset) => /product|commerce/i.test([asset.class, asset.role, ...asset.tags].join(' '))).length; const checks = [{ id: 'asset-count-20', pass: summary.assetCount >= 20, detail: String(summary.assetCount) }, { id: 'material-stress-8', pass: stressCount >= 8, detail: String(stressCount) }, { id: 'animated-skinned-morph-4', pass: animationCount >= 4, detail: String(animationCount) }, { id: 'transparent-transmission-clearcoat-4', pass: transparentCount >= 4, detail: String(transparentCount) }, { id: 'large-or-multimesh-3', pass: largeCount >= 3, detail: String(largeCount) }, { id: 'architecture-interior-2', pass: architectureCount >= 2, detail: String(architectureCount) }, { id: 'product-commerce-2', pass: productCount >= 2, detail: String(productCount) }, { id: 'corpus-summary-pass', pass: summary.pass, detail: summary.failures.join(', ') }]; return writeJsonReport('tests/reports/production-runtime-asset-audit.json', { schema: 'a3d-production-runtime-asset-audit/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks, summary }); }
-export function writeEnvironmentReadiness(): Json { const summary = createV6EnvironmentCorpusSummary(loadV6EnvironmentManifest()); const manifest = loadV6EnvironmentManifest(); const labels = manifest.environments.map((env) => [env.class, env.id, env.label, env.sourceName].join(' ').toLowerCase()); const indoorStudio = labels.filter((label) => /studio|indoor/.test(label)).length; const outdoorDaylight = labels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length; const sunsetNight = labels.filter((label) => /sunset|night|sunrise/.test(label)).length; const highContrast = labels.filter((label) => /high-contrast|industrial/.test(label)).length; const checks = [{ id: 'hdr-count-10', pass: summary.environmentCount >= 10, detail: String(summary.environmentCount) }, { id: 'indoor-studio-4', pass: indoorStudio >= 4, detail: String(indoorStudio) }, { id: 'outdoor-daylight-3', pass: outdoorDaylight >= 3, detail: String(outdoorDaylight) }, { id: 'sunset-night-2', pass: sunsetNight >= 2, detail: String(sunsetNight) }, { id: 'high-contrast-1', pass: highContrast >= 1, detail: String(highContrast) }, { id: 'environment-summary-pass', pass: summary.pass, detail: summary.failures.join(', ') }]; return writeJsonReport('tests/reports/production-runtime-environment-readiness.json', { schema: 'a3d-production-runtime-environment-readiness-report/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks, summary }); }
+export function writeAssetAudit(): Json { const summary = createProductionAssetCorpusSummary(loadProductionAssetManifest()); const manifest = loadProductionAssetManifest(); const stressCount = manifest.assets.filter((asset) => /material-stress|clearcoat|sheen|specular|transmission|transparent|alpha|glass/i.test([asset.role, ...asset.tags].join(' '))).length; const animationCount = manifest.assets.filter((asset) => /animation|skinning|morph/i.test([asset.role, ...asset.tags].join(' '))).length; const transparentCount = manifest.assets.filter((asset) => /transparent|transmission|clearcoat|alpha|glass/i.test([asset.role, ...asset.tags].join(' '))).length; const largeCount = manifest.assets.filter((asset) => /large-scene|multi-mesh|multiple primitives/i.test([asset.role, ...asset.tags].join(' '))).length; const architectureCount = manifest.assets.filter((asset) => /architecture|interior/i.test([asset.class, asset.role, ...asset.tags].join(' '))).length; const productCount = manifest.assets.filter((asset) => /product|commerce/i.test([asset.class, asset.role, ...asset.tags].join(' '))).length; const checks = [{ id: 'asset-count-20', pass: summary.assetCount >= 20, detail: String(summary.assetCount) }, { id: 'material-stress-8', pass: stressCount >= 8, detail: String(stressCount) }, { id: 'animated-skinned-morph-4', pass: animationCount >= 4, detail: String(animationCount) }, { id: 'transparent-transmission-clearcoat-4', pass: transparentCount >= 4, detail: String(transparentCount) }, { id: 'large-or-multimesh-3', pass: largeCount >= 3, detail: String(largeCount) }, { id: 'architecture-interior-2', pass: architectureCount >= 2, detail: String(architectureCount) }, { id: 'product-commerce-2', pass: productCount >= 2, detail: String(productCount) }, { id: 'corpus-summary-pass', pass: summary.pass, detail: summary.failures.join(', ') }]; return writeJsonReport('tests/reports/production-runtime-asset-audit.json', { schema: 'a3d-production-runtime-asset-audit', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks, summary }); }
+export function writeEnvironmentReadiness(): Json { const summary = createProductionEnvironmentCorpusSummary(loadProductionEnvironmentManifest()); const manifest = loadProductionEnvironmentManifest(); const labels = manifest.environments.map((env) => [env.class, env.id, env.label, env.sourceName].join(' ').toLowerCase()); const indoorStudio = labels.filter((label) => /studio|indoor/.test(label)).length; const outdoorDaylight = labels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length; const sunsetNight = labels.filter((label) => /sunset|night|sunrise/.test(label)).length; const highContrast = labels.filter((label) => /high-contrast|industrial/.test(label)).length; const checks = [{ id: 'hdr-count-10', pass: summary.environmentCount >= 10, detail: String(summary.environmentCount) }, { id: 'indoor-studio-4', pass: indoorStudio >= 4, detail: String(indoorStudio) }, { id: 'outdoor-daylight-3', pass: outdoorDaylight >= 3, detail: String(outdoorDaylight) }, { id: 'sunset-night-2', pass: sunsetNight >= 2, detail: String(sunsetNight) }, { id: 'high-contrast-1', pass: highContrast >= 1, detail: String(highContrast) }, { id: 'environment-summary-pass', pass: summary.pass, detail: summary.failures.join(', ') }]; return writeJsonReport('tests/reports/production-runtime-environment-readiness.json', { schema: 'a3d-production-runtime-environment-readiness-report', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks, summary }); }
 export function copyScreenshotIfNeeded(source: string, target: string): void { if (!existsSync(resolve(target)) && existsSync(resolve(source))) { mkdirSync(dirname(resolve(target)), { recursive: true }); copyFileSync(resolve(source), resolve(target)); } }
 export function copyScreenshot(source: string, target: string): void { if (existsSync(resolve(source))) { mkdirSync(dirname(resolve(target)), { recursive: true }); copyFileSync(resolve(source), resolve(target)); } }
 export function writeVisualQualityReports(): void {
@@ -37,7 +37,7 @@ export function writeVisualQualityReports(): void {
     const exists = existsSync(resolve(screenshot));
     const fileSize = exists ? statSync(resolve(screenshot)).size : 0;
     const minimumFileSize = minimumRequiredScreenshotSize(screenshot);
-    const pixelStats = exists ? readV6PngStats(resolve(screenshot)) : null;
+    const pixelStats = exists ? readProductionPngStats(resolve(screenshot)) : null;
     const pixelPass = pixelStats ? passesRequiredScreenshotPixelStats(screenshot, pixelStats) : false;
     return {
       id: screenshot,
@@ -51,7 +51,7 @@ export function writeVisualQualityReports(): void {
   const checks = [...entryChecks, ...requiredScreenshotChecks];
   const pass = entryChecks.length > 0 && checks.every((check) => check.pass);
   writeJsonReport('tests/reports/production-runtime-visual-quality.json', {
-    schema: 'a3d-production-runtime-visual-quality/v2',
+    schema: 'a3d-production-runtime-visual-quality/product-studio',
     generatedAt: new Date().toISOString(),
     pass,
     gate: {
@@ -68,7 +68,7 @@ export function writeVisualQualityReports(): void {
     checks
   });
   writeJsonReport('tests/reports/production-runtime-real-renderer-proof.json', {
-    schema: 'a3d-production-runtime-real-renderer-proof/v2',
+    schema: 'a3d-production-runtime-real-renderer-proof/product-studio',
     generatedAt: new Date().toISOString(),
     pass,
     checks: entries.map((entry) => ({
@@ -84,7 +84,7 @@ export function writeVisualQualityReports(): void {
     }))
   });
   writeJsonReport('tests/reports/production-runtime-human-visual-review.json', {
-    schema: 'a3d-production-runtime-human-visual-review/v2',
+    schema: 'a3d-production-runtime-human-visual-review/product-studio',
     generatedAt: new Date().toISOString(),
     pass,
     status: pass ? 'machine-gate-passed-pending-human-art-direction-review' : 'machine-rejected-before-human-review',
@@ -147,7 +147,7 @@ function minimumRequiredScreenshotSize(path: string): number {
   return path.includes('/threejs-comparison/') ? 16 * 1024 : 32 * 1024;
 }
 
-function passesRequiredScreenshotPixelStats(path: string, stats: V6PngStats): boolean {
+function passesRequiredScreenshotPixelStats(path: string, stats: ProductionPngStats): boolean {
   if (!path.includes('/threejs-comparison/')) return passesManifestPixelStats(stats as unknown as Json);
   return stats.width >= 768
     && stats.height >= 768
@@ -157,5 +157,5 @@ function passesRequiredScreenshotPixelStats(path: string, stats: V6PngStats): bo
     && stats.detailEdgeDensity >= 0.001
     && stats.localContrast >= 6;
 }
-export function writeThreeJsParityReports(): void { const readiness = readJson('tests/reports/production-runtime-threejs-parity-readiness.json'); writeJsonReport('tests/reports/production-runtime-threejs-visual-parity.json', { schema: 'a3d-production-runtime-threejs-visual-parity/v1', generatedAt: new Date().toISOString(), pass: readiness.pass === true, sourceReport: 'tests/reports/production-runtime-threejs-parity-readiness.json' }); writeJsonReport('tests/reports/production-runtime-threejs-runtime-parity.json', { schema: 'a3d-production-runtime-threejs-runtime-parity/v1', generatedAt: new Date().toISOString(), pass: readiness.pass === true, sourceReport: 'tests/reports/production-runtime-threejs-parity-readiness.json' }); }
-export function writeWorkflowReadiness(): Json { return bridgeReport('tests/reports/production-runtime-workflows-readiness.json', 'tests/reports/production-runtime-workflow-readiness.json', 'a3d-production-runtime-workflow-readiness/v1'); }
+export function writeThreeJsParityReports(): void { const readiness = readJson('tests/reports/production-runtime-threejs-parity-readiness.json'); writeJsonReport('tests/reports/production-runtime-threejs-visual-parity.json', { schema: 'a3d-production-runtime-threejs-visual-parity', generatedAt: new Date().toISOString(), pass: readiness.pass === true, sourceReport: 'tests/reports/production-runtime-threejs-parity-readiness.json' }); writeJsonReport('tests/reports/production-runtime-threejs-runtime-parity.json', { schema: 'a3d-production-runtime-threejs-runtime-parity', generatedAt: new Date().toISOString(), pass: readiness.pass === true, sourceReport: 'tests/reports/production-runtime-threejs-parity-readiness.json' }); }
+export function writeWorkflowReadiness(): Json { return bridgeReport('tests/reports/production-runtime-workflows-readiness.json', 'tests/reports/production-runtime-workflow-readiness.json', 'a3d-production-runtime-workflow-readiness'); }

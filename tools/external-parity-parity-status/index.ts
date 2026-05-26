@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { isRecord, readJson } from "../external-parity-reporting/index.js";
 
-export interface V4ParityStatusSummary {
+export interface ExternalParityParityStatusSummary {
   readonly ok: boolean;
   readonly achievedCriteria: number;
   readonly totalCriteria: number;
@@ -47,15 +47,15 @@ export interface V4ParityStatusSummary {
   readonly completionRunbookPath: "tests/reports/external-parity-completion-audit-runbook.md";
   readonly externalEvidenceRunbookPath: "tests/reports/external-parity-external-evidence-missing-artifacts.md";
   readonly commands: {
-    readonly localPreflight: "pnpm preflight:v4-parity";
-    readonly postExternalEvidencePreflight: "pnpm preflight:v4-parity:after-external-evidence";
-    readonly reportRefresh: "pnpm refresh:v4-readiness-reports";
-    readonly externalEvidencePreflight: "pnpm preflight:v4-external-evidence";
+    readonly localPreflight: "pnpm preflight:external-parity-parity";
+    readonly postExternalEvidencePreflight: "pnpm preflight:external-parity-parity:after-external-evidence";
+    readonly reportRefresh: "pnpm refresh:external-parity-readiness-reports";
+    readonly externalEvidencePreflight: "pnpm preflight:external-parity-external-evidence";
     readonly productionPreflight: "pnpm preflight:external-parity-production-readiness";
   };
 }
 
-export function createV4ParityStatusSummary(root = process.cwd()): V4ParityStatusSummary {
+export function createExternalParityParityStatusSummary(root = process.cwd()): ExternalParityParityStatusSummary {
   const completion = readJson(root, "tests/reports/external-parity-completion-audit.json");
   const externalEvidence = readJson(root, "tests/reports/external-parity-external-evidence-readiness.json");
   const githubExternal = readJson(root, "tests/reports/external-parity-github-external-readiness.json");
@@ -90,10 +90,10 @@ export function createV4ParityStatusSummary(root = process.cwd()): V4ParityStatu
     completionRunbookPath: "tests/reports/external-parity-completion-audit-runbook.md",
     externalEvidenceRunbookPath: "tests/reports/external-parity-external-evidence-missing-artifacts.md",
     commands: {
-      localPreflight: "pnpm preflight:v4-parity",
-      postExternalEvidencePreflight: "pnpm preflight:v4-parity:after-external-evidence",
-      reportRefresh: "pnpm refresh:v4-readiness-reports",
-      externalEvidencePreflight: "pnpm preflight:v4-external-evidence",
+      localPreflight: "pnpm preflight:external-parity-parity",
+      postExternalEvidencePreflight: "pnpm preflight:external-parity-parity:after-external-evidence",
+      reportRefresh: "pnpm refresh:external-parity-readiness-reports",
+      externalEvidencePreflight: "pnpm preflight:external-parity-external-evidence",
       productionPreflight: "pnpm preflight:external-parity-production-readiness",
     },
   };
@@ -110,7 +110,7 @@ function firstBlockedExternalArea(externalEvidence: Record<string, unknown> | nu
   return typeof artifact?.areaId === "string" ? artifact.areaId : undefined;
 }
 
-function firstBlockedArtifactDetails(externalEvidence: Record<string, unknown> | null): V4ParityStatusSummary["firstBlockedExternalArtifactDetails"] {
+function firstBlockedArtifactDetails(externalEvidence: Record<string, unknown> | null): ExternalParityParityStatusSummary["firstBlockedExternalArtifactDetails"] {
   const artifacts = Array.isArray(externalEvidence?.artifactChecklist) ? externalEvidence.artifactChecklist.filter(isRecord) : [];
   const artifact = artifacts.find((entry) => entry.ready !== true && typeof entry.id === "string");
   if (!artifact || typeof artifact.id !== "string") return undefined;
@@ -127,7 +127,7 @@ function firstBlockedArtifactDetails(externalEvidence: Record<string, unknown> |
   };
 }
 
-function githubExternalReadiness(githubExternal: Record<string, unknown> | null): V4ParityStatusSummary["githubExternalReadiness"] {
+function githubExternalReadiness(githubExternal: Record<string, unknown> | null): ExternalParityParityStatusSummary["githubExternalReadiness"] {
   if (!githubExternal || typeof githubExternal.githubExternalReady !== "boolean") return undefined;
   return {
     repo: typeof githubExternal.repo === "string" ? githubExternal.repo : undefined,
@@ -139,7 +139,7 @@ function githubExternalReadiness(githubExternal: Record<string, unknown> | null)
   };
 }
 
-function firstMissingCriterionSummary(criteria: readonly Record<string, unknown>[]): V4ParityStatusSummary["firstMissingCriterion"] {
+function firstMissingCriterionSummary(criteria: readonly Record<string, unknown>[]): ExternalParityParityStatusSummary["firstMissingCriterion"] {
   const entry = criteria.find((criterion) => criterion.achieved !== true && typeof criterion.id === "string");
   if (!entry || typeof entry.id !== "string") return undefined;
   return {
@@ -162,5 +162,5 @@ function stringArray(value: unknown): string[] {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  console.log(JSON.stringify(createV4ParityStatusSummary(), null, 2));
+  console.log(JSON.stringify(createExternalParityParityStatusSummary(), null, 2));
 }

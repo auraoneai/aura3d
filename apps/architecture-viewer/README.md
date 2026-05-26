@@ -1,3 +1,3 @@
-# A3D V6 Architecture Viewer
+# A3D Production Architecture Viewer
 
-Real V6 app for inspecting HDR-lit imported scene assets, renderer diagnostics, and an interactive lighting workflow.
+Real Production app for inspecting HDR-lit imported scene assets, renderer diagnostics, and an interactive lighting workflow.

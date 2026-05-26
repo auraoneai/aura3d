@@ -3,7 +3,7 @@ import { DEFAULT_PBR_ENVIRONMENT_INTENSITY, DEFAULT_PBR_PROCEDURAL_ENVIRONMENT_M
 import { TextureBinding } from "./TextureBinding";
 
 export const DEFAULT_PBR_SHADER_NAME = "aura3d/pbr-direct";
-export const DEFAULT_PBR_SHADER_MARKER = "@aura3d-shader:pbr-direct-v1";
+export const DEFAULT_PBR_SHADER_MARKER = "@aura3d-shader:pbr-direct";
 
 export interface PBRMaterialOptions {
   readonly name?: string;

@@ -5,7 +5,7 @@ import { Sampler } from "./Sampler";
 import { TexturedPBRMaterial } from "./TexturedPBRMaterial";
 import { TexturedUnlitMaterial } from "./TexturedUnlitMaterial";
 import { UnlitMaterial } from "./UnlitMaterial";
-import { createV4EnvironmentLighting } from "./V4RenderPreset";
+import { createExternalParityEnvironmentLighting } from "./ExternalParityRenderPreset";
 import { DirectionalLight } from "@aura3d/scene";
 import type { RenderItem, RenderMaterial } from "./ForwardPass";
 import type { CollectedLight } from "./LightCollector";
@@ -72,7 +72,7 @@ export interface ProductTurntableCapturePlan {
 }
 
 export interface ProductTurntableFixture {
-  readonly id: "v4-old-branch-product-turntable-fixture";
+  readonly id: "external-product-turntable-fixture";
   readonly source: "origin-master-ecommerce-turntable-adapted";
   readonly sourceFiles: readonly string[];
   readonly autoRotate: true;
@@ -200,7 +200,7 @@ export function createProductTurntableFixture(options: ProductTurntableFixtureOp
   ]);
 
   return {
-    id: "v4-old-branch-product-turntable-fixture",
+    id: "external-product-turntable-fixture",
     source: "origin-master-ecommerce-turntable-adapted",
     sourceFiles,
     autoRotate: true,
@@ -219,13 +219,13 @@ export function createProductTurntableFixture(options: ProductTurntableFixtureOp
     lighting,
     capture,
     manifestHash: hash,
-    claimBoundary: "This fixture adapts old ecommerce turntable concepts into deterministic V4 product evidence. It does not claim a complete ecommerce pipeline, native USDZ export, video capture, PIM integration, or AR platform parity."
+    claimBoundary: "This fixture adapts old ecommerce turntable concepts into deterministic external product evidence. It does not claim a complete ecommerce pipeline, native USDZ export, video capture, PIM integration, or AR platform parity."
   };
 }
 
 export function createProductTurntableRenderKit(options: ProductTurntableRenderKitOptions = {}): ProductTurntableRenderKit {
   const fixture = createProductTurntableFixture(options);
-  const environment = createV4EnvironmentLighting(productTurntableEnvironmentPreset(fixture.lighting.activePreset));
+  const environment = createExternalParityEnvironmentLighting(productTurntableEnvironmentPreset(fixture.lighting.activePreset));
   const sampler = new Sampler({ minFilter: "linear-mipmap-linear", magFilter: "linear", addressU: "repeat", addressV: "repeat" });
   const detailSampler = new Sampler({ minFilter: "linear", magFilter: "linear", addressU: "repeat", addressV: "repeat" });
   const textures = [

@@ -1,2 +1,2 @@
-import type { V6PixelMetrics } from '../ProductionRendererTypes';
-export interface FrameCapture { readonly path: string; readonly backend: string; readonly metrics: V6PixelMetrics; }
+import type { ProductionPixelMetrics } from '../ProductionRendererTypes';
+export interface FrameCapture { readonly path: string; readonly backend: string; readonly metrics: ProductionPixelMetrics; }

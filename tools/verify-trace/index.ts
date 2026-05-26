@@ -90,10 +90,10 @@ export interface VerifiedTraceReport extends TraceReport {
 
 const root = process.cwd();
 const reportPath = join(root, "tests", "reports", "final-requirements-trace.json");
-const evidencePath = join(root, "docs", "verification-evidence.md");
+const evidencePath = join(root, "docs", "project", "verification-evidence.md");
 const completeStatus = "Implemented and verified";
 const sampleLimit = 25;
-const generatedAuditArtifactPattern = /^docs\/(?:completion-audit|implementation-plan-final|rebuild-progress|requirements-trace|verification-evidence)\.md$|^tests\/reports\/final-(?:requirements-trace|release-verification)\.json$/;
+const generatedAuditArtifactPattern = /^docs\/project\/(?:completion-audit|implementation-plan|requirements-trace|verification-evidence)\.md$|^tests\/reports\/final-(?:requirements-trace|release-verification)\.json$/;
 
 function emptyStatusCounts(): Record<string, number> {
   return Object.fromEntries(allowedStatuses.map((status) => [status, 0]));
@@ -137,7 +137,7 @@ function hasWeakEvidence(row: TraceRow): boolean {
   if (row.status !== completeStatus) return false;
   const evidence = row.evidence.toLowerCase();
   const citesGeneratedAuditOnly = hasOnlyGeneratedAuditEvidence(row) || /generated audit artifact|final release report passed|requirements trace report passed/.test(evidence);
-  const citesRebuildProgressPass = /docs\/rebuild-progress\.md\s+passed|rebuild-progress\.md\s+passed/.test(evidence);
+  const citesRebuildProgressPass = /docs\/implementation-plan\.md\s+passed|implementation-plan\.md\s+passed/.test(evidence);
   return (citesGeneratedAuditOnly || citesRebuildProgressPass) && (!hasConcreteSourceEvidence(row) || !hasConcreteTestEvidence(row));
 }
 
@@ -292,7 +292,7 @@ ${report.weakEvidence.rows
 
 export function verifyTrace(rootDir = root): VerifiedTraceReport {
   const traceReportPath = join(rootDir, "tests", "reports", "final-requirements-trace.json");
-  const traceEvidencePath = join(rootDir, "docs", "verification-evidence.md");
+  const traceEvidencePath = join(rootDir, "docs", "project", "verification-evidence.md");
 
   if (!existsSync(traceReportPath)) {
     throw new Error(`Missing trace report: ${traceReportPath}`);

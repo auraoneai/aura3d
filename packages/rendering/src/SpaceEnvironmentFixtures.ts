@@ -26,7 +26,7 @@ export interface SpaceEnvironmentDustParticle {
 }
 
 export interface SpaceEnvironmentFixture {
-  readonly id: "v4-old-branch-space-environment";
+  readonly id: "external-parity-old-branch-space-environment";
   readonly source: "origin-master-space-environment-adapted";
   readonly sourceFiles: readonly string[];
   readonly width: number;
@@ -96,7 +96,7 @@ export function sampleSpaceEnvironmentFixture(options: {
   const nebulaCoverage = nebulae.reduce((sum, nebula) => sum + Math.PI * nebula.radius * nebula.radius, 0) / (width * height);
   const dustAlpha = dust.reduce((sum, particle) => sum + particle.alpha, 0) / dust.length;
   const fixtureWithoutHash = {
-    id: "v4-old-branch-space-environment" as const,
+    id: "external-parity-old-branch-space-environment" as const,
     source: "origin-master-space-environment-adapted" as const,
     sourceFiles,
     width,

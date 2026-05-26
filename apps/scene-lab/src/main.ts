@@ -29,7 +29,7 @@ const app = new WorkflowWorkbenchApp(root, {
   appId: "scene-lab",
   title: "Scene Lab",
   subtitle: "A scene composition surface for renderer presets, object staging, camera policy, and diagnostics.",
-  suiteLabel: "V3 App Suite",
+  suiteLabel: "Foundation App Suite",
   accent: "#62a9e8",
   scenarios,
   defaultScenarioId: "studio",

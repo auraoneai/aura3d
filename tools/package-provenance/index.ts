@@ -7,8 +7,8 @@ interface PackageProvenanceReport {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly command: string;
-  readonly statementType: "https://slsa.dev/provenance/v1";
-  readonly predicateType: "https://slsa.dev/provenance/v1";
+  readonly statementType: "https://slsa.dev/provenance";
+  readonly predicateType: "https://slsa.dev/provenance";
   readonly subject: {
     readonly name: string;
     readonly digest: { readonly sha256: string };
@@ -55,8 +55,8 @@ export function createPackageProvenanceReport(root = process.cwd()): PackageProv
   const subjectName = typeof tarball?.pathOrUrl === "string" ? tarball.pathOrUrl : "unknown";
   const subjectSha = typeof tarball?.sha256 === "string" ? tarball.sha256 : "";
   const statement = {
-    statementType: "https://slsa.dev/provenance/v1" as const,
-    predicateType: "https://slsa.dev/provenance/v1" as const,
+    statementType: "https://slsa.dev/provenance" as const,
+    predicateType: "https://slsa.dev/provenance" as const,
     subject: {
       name: subjectName,
       digest: { sha256: subjectSha }

@@ -13,7 +13,7 @@ const catalog = JSON.parse(readFileSync("examples/three-compat-examples/catalog.
 const examples = catalog.examples.filter((example) => example.browserTested);
 
 for (const example of examples) {
-  test(`V5 example parity renders ${example.slug}`, async ({ page }) => {
+  test(`ThreeCompat example parity renders ${example.slug}`, async ({ page }) => {
     await page.setContent(`<html><body style="margin:0;background:#07101a"><canvas width="960" height="540"></canvas><script>
       const canvas=document.querySelector("canvas"),ctx=canvas.getContext("2d");
       ctx.fillStyle="#0b1420";ctx.fillRect(0,0,960,540);
@@ -25,7 +25,7 @@ for (const example of examples) {
   });
 }
 
-test("V5 example gallery lists categories with screenshot thumbnails", async ({ page }) => {
+test("ThreeCompat example gallery lists categories with screenshot thumbnails", async ({ page }) => {
   await page.goto(`file://${process.cwd()}/examples/three-compat-examples/index.html`);
   await expect(page.locator("article")).toHaveCount(catalog.examples.length);
   await expect(page.locator("img[alt*='screenshot thumbnail']")).toHaveCount(catalog.examples.length);

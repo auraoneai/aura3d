@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationMixer, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { computePerspectiveCameraFrame, Geometry, PBRMaterial } from "@aura3d/rendering";
 import { DirectionalLight, composeMat4, multiplyMat4 } from "@aura3d/scene";
@@ -9,7 +9,7 @@ import { GLTFLoader } from "/node_modules/three/examples/jsm/loaders/GLTFLoader.
 
 declare global {
   interface Window {
-    __V9_SKINNING_BLENDING_PARITY__?: SkinningBlendingParityResult;
+    __THREEJS_PARITY_SKINNING_BLENDING_PARITY__?: SkinningBlendingParityResult;
   }
 }
 
@@ -19,7 +19,7 @@ type SkinningBlendingParityResult = SkinningBlendingParityReady | SkinningBlendi
 
 interface SkinningBlendingParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-skinning-blending-parity/v1";
+  readonly schema: "a3d-threejs-parity-skinning-blending-parity";
   readonly purpose: "same-asset Robot Expressive A3D skinning blend vs actual Three.js AnimationMixer blend";
   readonly generatedInBrowserAt: string;
   readonly asset: typeof ASSET;
@@ -63,7 +63,7 @@ interface SkinningBlendingParityReady {
 
 interface SkinningBlendingParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-skinning-blending-parity/v1";
+  readonly schema: "a3d-threejs-parity-skinning-blending-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedReferenceLoader: "GLTFLoader";
@@ -124,7 +124,7 @@ async function run(): Promise<void> {
     const threeStats = analyzeImageData(threePixels);
     const ready: SkinningBlendingParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-skinning-blending-parity/v1",
+      schema: "a3d-threejs-parity-skinning-blending-parity",
       purpose: "same-asset Robot Expressive A3D skinning blend vs actual Three.js AnimationMixer blend",
       generatedInBrowserAt: new Date().toISOString(),
       asset: ASSET,
@@ -173,20 +173,20 @@ async function run(): Promise<void> {
         "It is not a blanket claim for every transition scheduler, additive layer, IK rig, retargeting setup, or animation controller behavior."
       ]
     };
-    window.__V9_SKINNING_BLENDING_PARITY__ = ready;
+    window.__THREEJS_PARITY_SKINNING_BLENDING_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: SkinningBlendingParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-skinning-blending-parity/v1",
+      schema: "a3d-threejs-parity-skinning-blending-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedReferenceLoader: "GLTFLoader",
       expectedReferenceAnimation: "AnimationMixer",
       expectedRenderer: "THREE.WebGLRenderer"
     };
-    window.__V9_SKINNING_BLENDING_PARITY__ = failure;
+    window.__THREEJS_PARITY_SKINNING_BLENDING_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -200,9 +200,9 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     preserveDrawingBuffer: true,
     clearColor: [0.006, 0.01, 0.014, 1]
   });
-  const pipeline = await loadV6GLTFRenderPipeline({
+  const pipeline = await loadProductionGLTFRenderPipeline({
     url: ASSET.url,
-    assetId: "v9-skinning-blending-robot-expressive",
+    assetId: "threejs-parity-skinning-blending-robot-expressive",
     assetName: "Robot Expressive Skinning Blend Parity",
     width: ASSET.width,
     height: ASSET.height,
@@ -250,7 +250,7 @@ async function renderA3D(canvas: HTMLCanvasElement) {
     },
     metadata: {
       assetId: "threejs-parity-skinning-blending-parity",
-      assetName: "V9 Skinning Blending Parity",
+      assetName: "Three.js parity Skinning Blending Parity",
       assetUri: "/tools/threejs-parity-skinning-blending-parity/",
       meshCount: pipeline.metadata.meshCount,
       primitiveCount: pipeline.metadata.primitiveCount,
@@ -261,7 +261,7 @@ async function renderA3D(canvas: HTMLCanvasElement) {
       skinCount: pipeline.metadata.skinCount,
       morphTargetCount: pipeline.metadata.morphTargetCount,
       extensionsUsed: pipeline.metadata.extensionsUsed,
-      environmentId: "v8-fast-studio",
+      environmentId: "current-routes-fast-studio",
       hdrEnvironmentUri: "none"
     }
   });
@@ -346,7 +346,7 @@ function collectImportedItems(pipeline, placement) {
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v9-blending:${node.name}`,
+      label: `threejs-parity-blending:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -359,20 +359,20 @@ function collectImportedItems(pipeline, placement) {
 
 function createA3DStageItems() {
   const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({ name: "v9-blend-floor", baseColor: [0.06, 0.08, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
-  const rail = new PBRMaterial({ name: "v9-blend-rail", baseColor: [0.11, 0.23, 0.34, 1], roughness: 0.32, metallic: 0.22, environmentIntensity: 0.8 });
+  const floor = new PBRMaterial({ name: "threejs-parity-blend-floor", baseColor: [0.06, 0.08, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
+  const rail = new PBRMaterial({ name: "threejs-parity-blend-rail", baseColor: [0.11, 0.23, 0.34, 1], roughness: 0.32, metallic: 0.22, environmentIntensity: 0.8 });
   return [
-    { label: "v9-blend-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
-    { label: "v9-blend-left-rail", geometry: cube, material: rail, modelMatrix: composeMat4([-1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
-    { label: "v9-blend-right-rail", geometry: cube, material: rail, modelMatrix: composeMat4([1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) }
+    { label: "threejs-parity-blend-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
+    { label: "threejs-parity-blend-left-rail", geometry: cube, material: rail, modelMatrix: composeMat4([-1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
+    { label: "threejs-parity-blend-right-rail", geometry: cube, material: rail, modelMatrix: composeMat4([1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) }
   ];
 }
 
 function createA3DLights() {
-  const key = new DirectionalLight("v9-blend-key");
+  const key = new DirectionalLight("threejs-parity-blend-key");
   key.intensity = 4.4;
   key.color = [1, 0.94, 0.84];
-  const fill = new DirectionalLight("v9-blend-fill");
+  const fill = new DirectionalLight("threejs-parity-blend-fill");
   fill.intensity = 2.0;
   fill.color = [0.6, 0.78, 1];
   return [

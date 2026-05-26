@@ -37,7 +37,7 @@ describe("governance documentation", () => {
     }
   });
 
-  it("binds public claims and release notes to the v2 claim registry", () => {
+  it("binds public claims and release notes to the productStudio claim registry", () => {
     for (const path of [
       "docs/project/security-policy.md",
       "docs/project/support-policy.md",
@@ -49,7 +49,7 @@ describe("governance documentation", () => {
       "docs/project/migration.md",
       "docs/project/compatibility.md"
     ]) {
-      expect(read(path), `${path} should bind wording to the claim registry`).toContain("docs/project/v2-claim-registry.md");
+      expect(read(path), `${path} should bind wording to the claim registry`).toContain("docs/project/product-studio-claim-registry.md");
     }
   });
 

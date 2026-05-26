@@ -1,8 +1,8 @@
-import type { V5PostProcessFrame, V5PostProcessPass } from "./PostProcessTypes";
+import type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
 
-export class MotionBlurPassV5 implements V5PostProcessPass {
+export class MotionBlurPassThreeCompat implements ThreeCompatPostProcessPass {
   readonly name = "MotionBlurPass";
   readonly enabled = true;
   constructor(public readonly blur = 0.18) {}
-  apply(frame: V5PostProcessFrame): V5PostProcessFrame { return { ...frame, blur: frame.blur + this.blur }; }
+  apply(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame { return { ...frame, blur: frame.blur + this.blur }; }
 }

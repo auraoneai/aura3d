@@ -15,7 +15,7 @@ import * as THREE from "three";
 
 declare global {
   interface Window {
-    __V9_MATERIAL_GRID_PARITY__?: MaterialGridParityResult;
+    __THREEJS_PARITY_MATERIAL_GRID_PARITY__?: MaterialGridParityResult;
   }
 }
 
@@ -25,7 +25,7 @@ type MaterialGridParityResult = MaterialGridParityReady | MaterialGridParityErro
 
 interface MaterialGridParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-material-grid-parity/v1";
+  readonly schema: "a3d-threejs-parity-material-grid-parity";
   readonly purpose: "same-scene A3D material grid vs Three.js MeshBasic/Standard/Physical material grid";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -55,7 +55,7 @@ interface MaterialGridParityReady {
 
 interface MaterialGridParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-material-grid-parity/v1";
+  readonly schema: "a3d-threejs-parity-material-grid-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -88,7 +88,7 @@ interface DiffStats {
 }
 
 const SCENE = {
-  id: "v9-material-grid",
+  id: "threejs-parity-material-grid",
   width: 960,
   height: 540,
   frameBounds: { min: [-2.55, -0.85, -0.55], max: [2.55, 0.75, 0.55] } as CameraFrameBounds,
@@ -120,7 +120,7 @@ async function run(): Promise<void> {
 
     const ready: MaterialGridParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-material-grid-parity/v1",
+      schema: "a3d-threejs-parity-material-grid-parity",
       purpose: "same-scene A3D material grid vs Three.js MeshBasic/Standard/Physical material grid",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -151,17 +151,17 @@ async function run(): Promise<void> {
         "This is a bounded material-grid comparison, not a blanket claim for every Three.js material class."
       ]
     };
-    window.__V9_MATERIAL_GRID_PARITY__ = ready;
+    window.__THREEJS_PARITY_MATERIAL_GRID_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: MaterialGridParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-material-grid-parity/v1",
+      schema: "a3d-threejs-parity-material-grid-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__V9_MATERIAL_GRID_PARITY__ = failure;
+    window.__THREEJS_PARITY_MATERIAL_GRID_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }

@@ -11,8 +11,8 @@ import {
   createLightingDefault
 } from "@aura3d/rendering";
 
-describe("V3 renderer contract", () => {
-  it("exports the renderer foundation APIs required by V3", () => {
+describe("Foundation renderer contract", () => {
+  it("exports the renderer foundation APIs required by Foundation", () => {
     expect(Renderer).toBeTypeOf("function");
     expect(Geometry.texturedCube).toBeTypeOf("function");
     expect(PBRMaterial).toBeTypeOf("function");

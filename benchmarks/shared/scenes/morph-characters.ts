@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "morph-characters",
   sceneVersion: 1,
-  assetId: "generated-morph-character-v4",
+  assetId: "generated-morph-character-external-parity",
   assetClass: "generated-local-morph-character-workload",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 60,

@@ -27,7 +27,7 @@ test.describe("postprocess graph lab pixels", () => {
   });
 
   test("runs tone mapping, bloom, and FXAA in render-graph dependency order", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
       () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,
@@ -35,9 +35,11 @@ test.describe("postprocess graph lab pixels", () => {
     ).then(() => page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__));
 
     expect(result?.status, result?.error).toBe("ready");
-    expect(result?.graphOrder).toEqual(["tone-mapping", "bloom", "fxaa"]);
+    expect(result?.graphOrder).toEqual(["scene-depth", "depth-visualization", "tone-mapping", "bloom", "fxaa"]);
     expect(result?.resources).toEqual([
       "hdr-color:hdr-input->tone-mapping",
+      "scene-depth:scene-depth->depth-visualization",
+      "depth-visualization:depth-visualization->present",
       "tone-mapped-color:tone-mapping->bloom",
       "bloom-color:bloom->fxaa",
       "fxaa-color:fxaa->present"
@@ -48,7 +50,8 @@ test.describe("postprocess graph lab pixels", () => {
     const detail = JSON.stringify(result?.pixels);
     expect(channel(result?.pixels?.toneMappedHighlight, 0), detail).toBeGreaterThan(120);
     expect(channel(result?.pixels?.bloomNeighbor, 0), detail).toBeGreaterThan(channel(result?.pixels?.toneMappedHighlight, 2));
-    expect(channel(result?.pixels?.fxaaEdge, 0), detail).toBeGreaterThan(20);
+    expect(channel(result?.pixels?.fxaaAfterEdge, 0), detail).toBeGreaterThan(20);
+    expect(channel(result?.pixels?.fxaaAfterEdge, 0), detail).toBeGreaterThan(channel(result?.pixels?.fxaaBeforeEdge, 0));
     expect(channel(result?.pixels?.presentation, 3), detail).toBe(255);
   });
 });

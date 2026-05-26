@@ -10,7 +10,7 @@ const requiredFiles = [
   "apps/scene-studio-pro/src/main.ts",
   "examples/external-interior-scene/index.html",
   "examples/external-interior-scene/main.ts",
-  "examples/external-interior-scene/InteriorSceneV4.ts",
+  "examples/external-interior-scene/ExternalInteriorScene.ts",
   "benchmarks/external-parity/aura3d/interior-scene.ts",
   "benchmarks/external-parity/threejs/interior-scene.ts",
   "tests/browser/external-parity-interior-scene.spec.ts",
@@ -30,11 +30,11 @@ for (const file of requiredFiles) check(`file:${file}`, exists(file), `${file} m
 
 const manifest = json("fixtures/external-parity/scenes/interior-gallery/manifest.json");
 const targets = isObj(manifest?.targets) ? manifest.targets : {};
-check("fixture-schema", manifest?.schema === "a3d-v4-interior-gallery/v1", "Interior fixture must use the V4 schema.");
+check("fixture-schema", manifest?.schema === "a3d-external-parity-interior-gallery", "Interior fixture must use the External parity schema.");
 check("fixture-targets", Number(targets.minimumRenderItems ?? 0) >= 28 && Number(targets.minimumMaterialCategories ?? 0) >= 5, "Interior fixture must define complexity targets.");
 check("fixture-proof-boundary", typeof manifest?.claimBoundary === "string" && manifest.claimBoundary.includes("same-scene Three.js visual parity"), "Interior fixture must preserve Three.js parity boundary.");
 
-const sceneSource = text("examples/external-interior-scene/InteriorSceneV4.ts");
+const sceneSource = text("examples/external-interior-scene/ExternalInteriorScene.ts");
 check(
   "scene-product-surface",
   includesAll(sceneSource, [
@@ -42,15 +42,15 @@ check(
     "createArchitecturalLightingFixture",
     "multi-object-interior",
     "contact-shadow-receiver-geometry",
-    "__A3D_V4_INTERIOR_SCENE__",
+    "__A3D_EXTERNAL_PARITY_INTERIOR_SCENE__",
     "same-scene Three.js visual parity"
   ]),
   "Interior scene must render architectural materials, lighting fixture metadata, contact-shadow receivers, and browser state."
 );
 check(
   "app-entry-no-example-side-effect",
-  text("examples/external-interior-scene/main.ts").includes("mountInteriorSceneV4(\"external-interior-scene\")") &&
-    text("apps/scene-studio-pro/src/main.ts").includes("InteriorSceneV4") &&
+  text("examples/external-interior-scene/main.ts").includes("mountExternalInteriorScene(\"external-interior-scene\")") &&
+    text("apps/scene-studio-pro/src/main.ts").includes("ExternalInteriorScene") &&
     !text("apps/scene-studio-pro/src/main.ts").includes("external-interior-scene/main"),
   "Scene Studio Pro must import a side-effect-free shared module."
 );
@@ -79,10 +79,10 @@ check("browser-proof-boundary", typeof browser?.productBoundary === "string" && 
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-scene-readiness/v1",
+  schema: "a3d-external-parity-scene-readiness",
   generatedAt: new Date().toISOString(),
   pass,
-  summary: pass ? "V4 Milestone 9 interior scene proof is ready as a real product app/example milestone. Same-scene Three.js parity remains required." : "V4 Milestone 9 interior scene proof is incomplete.",
+  summary: pass ? "External parity Milestone 9 interior scene proof is ready as a real product app/example milestone. Same-scene Three.js parity remains required." : "External parity Milestone 9 interior scene proof is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

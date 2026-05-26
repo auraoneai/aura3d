@@ -34,7 +34,7 @@ studio.dispose();
 asset.resources.dispose();
 
 const report = {
-  schema: "a3d-product-studio-package-smoke/v1",
+  schema: "a3d-product-studio-package-smoke",
   generatedAt: new Date().toISOString(),
   packageImport: "../../dist/product-studio/index.js",
   diagnostics,

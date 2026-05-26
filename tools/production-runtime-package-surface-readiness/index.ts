@@ -20,20 +20,20 @@ const requiredDist = [
   "dist/assets/browser-index.js",
   "dist/animation/browser-index.js",
   "dist/workflows/production-runtime/index.js",
-  "dist/workflows/production-runtime/V6ExampleRuntime.js"
+  "dist/workflows/production-runtime/ProductionExampleRuntime.js"
 ];
-const workflowRuntime = existsSync(resolve("dist/workflows/production-runtime/V6ExampleRuntime.js"))
-  ? readFileSync(resolve("dist/workflows/production-runtime/V6ExampleRuntime.js"), "utf8")
+const workflowRuntime = existsSync(resolve("dist/workflows/production-runtime/ProductionExampleRuntime.js"))
+  ? readFileSync(resolve("dist/workflows/production-runtime/ProductionExampleRuntime.js"), "utf8")
   : "";
 const checks = [
   { id: "required-exports", pass: requiredExports.every((key) => packageJson.exports?.[key]), detail: requiredExports.join(", ") },
   { id: "required-dist", pass: requiredDist.every((file) => existsSync(resolve(file))), detail: requiredDist.join(", ") },
-  { id: "production-runtime-template-files", pass: ["templates/production-product-viewer", "templates/production-product-configurator", "templates/production-asset-inspector", "templates/production-material-studio", "templates/production-architecture-viewer", "templates/production-webgpu-starter"].every((file) => packageJson.files?.includes(file)), detail: "root package files include V6 templates" },
-  { id: "browser-safe-production-runtime-runtime", pass: workflowRuntime.includes("@aura3d/engine/assets/browser") && workflowRuntime.includes("@aura3d/engine/rendering") && !workflowRuntime.includes("@aura3d/assets\""), detail: "V6 runtime imports browser-safe package subpaths" },
+  { id: "production-runtime-template-files", pass: ["templates/production-product-viewer", "templates/production-product-configurator", "templates/production-asset-inspector", "templates/production-material-studio", "templates/production-architecture-viewer", "templates/production-webgpu-starter"].every((file) => packageJson.files?.includes(file)), detail: "root package files include Production runtime templates" },
+  { id: "browser-safe-production-runtime-runtime", pass: workflowRuntime.includes("@aura3d/engine/assets/browser") && workflowRuntime.includes("@aura3d/engine/rendering") && !workflowRuntime.includes("@aura3d/assets\""), detail: "Production runtime runtime imports browser-safe package subpaths" },
   { id: "browser-safe-animation-dist", pass: read("dist/assets/GLTFLoader.js").includes("../animation/browser-index.js"), detail: "GLTFLoader uses browser-safe animation dist" }
 ];
 const report = {
-  schema: "a3d-production-runtime-package-surface-readiness/v1",
+  schema: "a3d-production-runtime-package-surface-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks

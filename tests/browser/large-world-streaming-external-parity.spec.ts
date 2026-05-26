@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const screenshotPath = "tests/reports/external-parity-example-screenshots/large-world-streaming.png";
 
-test.describe("large-world streaming V4 example", () => {
+test.describe("large-world streaming ExternalParity example", () => {
   test.setTimeout(180_000);
   let server: ExampleDevServer;
 

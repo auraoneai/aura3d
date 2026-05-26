@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createV5EnvironmentDiagnostics, type V5HDRIEnvironmentPreset } from "./HDRIEnvironment";
-import { createV5EnvironmentProbePreviews } from "./EnvironmentPreview";
+import { createThreeCompatEnvironmentDiagnostics, type ThreeCompatHDRIEnvironmentPreset } from "./HDRIEnvironment";
+import { createThreeCompatEnvironmentProbePreviews } from "./EnvironmentPreview";
 
-export interface V5EnvironmentManifest {
-  readonly schema: "a3d-three-compat-environment-library/v1";
+export interface ThreeCompatEnvironmentManifest {
+  readonly schema: "a3d-three-compat-environment-library";
   readonly requirements: {
     readonly minimumPresets: number;
     readonly minimumRealHdriSources: number;
@@ -13,10 +13,10 @@ export interface V5EnvironmentManifest {
   };
   readonly claimBoundary: string;
   readonly flagshipBindings: Readonly<Record<string, string>>;
-  readonly presets: readonly V5HDRIEnvironmentPreset[];
+  readonly presets: readonly ThreeCompatHDRIEnvironmentPreset[];
 }
 
-export interface V5EnvironmentLibrarySummary {
+export interface ThreeCompatEnvironmentLibrarySummary {
   readonly presetCount: number;
   readonly realHdriCount: number;
   readonly checkedRealHdriCount: number;
@@ -29,21 +29,21 @@ export interface V5EnvironmentLibrarySummary {
   readonly totalEstimatedMemoryBytes: number;
 }
 
-export function loadV5EnvironmentManifest(path = "fixtures/three-compat/environments/manifest.json"): V5EnvironmentManifest {
-  return JSON.parse(readFileSync(resolve(path), "utf8")) as V5EnvironmentManifest;
+export function loadThreeCompatEnvironmentManifest(path = "fixtures/three-compat/environments/manifest.json"): ThreeCompatEnvironmentManifest {
+  return JSON.parse(readFileSync(resolve(path), "utf8")) as ThreeCompatEnvironmentManifest;
 }
 
-export function listV5EnvironmentPresets(manifest = loadV5EnvironmentManifest()): readonly V5HDRIEnvironmentPreset[] {
+export function listThreeCompatEnvironmentPresets(manifest = loadThreeCompatEnvironmentManifest()): readonly ThreeCompatHDRIEnvironmentPreset[] {
   return manifest.presets;
 }
 
-export function findV5EnvironmentPreset(id: string, manifest = loadV5EnvironmentManifest()): V5HDRIEnvironmentPreset | undefined {
+export function findThreeCompatEnvironmentPreset(id: string, manifest = loadThreeCompatEnvironmentManifest()): ThreeCompatHDRIEnvironmentPreset | undefined {
   return manifest.presets.find((preset) => preset.id === id);
 }
 
-export function summarizeV5EnvironmentLibrary(manifest = loadV5EnvironmentManifest()): V5EnvironmentLibrarySummary {
+export function summarizeThreeCompatEnvironmentLibrary(manifest = loadThreeCompatEnvironmentManifest()): ThreeCompatEnvironmentLibrarySummary {
   const ids = new Set(manifest.presets.map((preset) => preset.id));
-  const diagnostics = manifest.presets.map(createV5EnvironmentDiagnostics);
+  const diagnostics = manifest.presets.map(createThreeCompatEnvironmentDiagnostics);
   const checkedRealHdriCount = diagnostics.filter((diagnostic) => diagnostic.kind === "real-hdri" && diagnostic.warnings.length === 0).length;
   const probeTypes = [...new Set(manifest.presets.flatMap((preset) => preset.probes))].sort();
   return {
@@ -60,10 +60,10 @@ export function summarizeV5EnvironmentLibrary(manifest = loadV5EnvironmentManife
   };
 }
 
-export function createV5EnvironmentGalleryModel(manifest = loadV5EnvironmentManifest()) {
+export function createThreeCompatEnvironmentGalleryModel(manifest = loadThreeCompatEnvironmentManifest()) {
   return manifest.presets.map((preset) => ({
     preset,
-    diagnostics: createV5EnvironmentDiagnostics(preset),
-    probes: createV5EnvironmentProbePreviews(preset)
+    diagnostics: createThreeCompatEnvironmentDiagnostics(preset),
+    probes: createThreeCompatEnvironmentProbePreviews(preset)
   }));
 }

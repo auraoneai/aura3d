@@ -44,8 +44,8 @@ export type {
   WebGPURenderToTextureProof,
   WebGPURenderToTextureProofOptions
 } from "./WebGPURenderToTextureProof";
-export { RendererV9 } from "./advanced-runtime";
-export type { RendererV9Options, RendererV9Source } from "./advanced-runtime";
+export { AdvancedRenderer } from "./advanced-runtime";
+export type { AdvancedRendererOptions, AdvancedRendererSource } from "./advanced-runtime";
 
 export { VertexAttribute, VertexFormat } from "./VertexFormat";
 export type { VertexAttributeDescriptor, VertexAttributeSemantic, VertexAttributeType } from "./VertexFormat";
@@ -129,10 +129,10 @@ export type {
   EnvironmentLightingCompositionOptions
 } from "./EnvironmentLighting";
 export {
-  V4_TEXTURE_COLOR_POLICY,
+  EXTERNAL_PARITY_TEXTURE_COLOR_POLICY,
   convertColorSpace,
   createColorConversionSamples,
-  createV4ColorManagementPolicy,
+  createExternalParityColorManagementPolicy,
   linearToSrgbChannel,
   srgbToLinearChannel,
   validateTextureColorSpace
@@ -145,33 +145,33 @@ export type {
   A3DTextureSemantic
 } from "./ColorManagement";
 export {
-  applyV4ToneMappingPreset,
-  createV4ToneMappingPolicy,
-  listV4ToneMappingPresets,
-  toneMapV4HdrPixels,
-  toneMapV4Pixels
+  applyExternalParityToneMappingPreset,
+  createExternalParityToneMappingPolicy,
+  listExternalParityToneMappingPresets,
+  toneMapExternalParityHdrPixels,
+  toneMapExternalParityPixels
 } from "./ToneMapping";
 export type {
-  V4ToneMappingIntent,
-  V4ToneMappingPolicy
+  ExternalParityToneMappingIntent,
+  ExternalParityToneMappingPolicy
 } from "./ToneMapping";
 export {
-  analyzeV4Exposure,
-  createV4ExposurePolicy
+  analyzeExternalParityExposure,
+  createExternalParityExposurePolicy
 } from "./Exposure";
 export type {
-  V4ExposureAnalysis,
-  V4ExposurePolicy
+  ExternalParityExposureAnalysis,
+  ExternalParityExposurePolicy
 } from "./Exposure";
 export {
-  createV4HdrPipeline,
-  executeV4ToneMapPass
+  createExternalParityHdrPipeline,
+  executeExternalParityToneMapPass
 } from "./HDRRenderPipeline";
 export type {
-  V4HdrPipeline,
-  V4HdrPipelineDescriptor,
-  V4HdrPipelineMode,
-  V4HdrRenderTargetFormat
+  ExternalParityHdrPipeline,
+  ExternalParityHdrPipelineDescriptor,
+  ExternalParityHdrPipelineMode,
+  ExternalParityHdrRenderTargetFormat
 } from "./HDRRenderPipeline";
 export {
   createRendererVisualPipelineReport,
@@ -202,80 +202,80 @@ export type {
   RendererVisualToneMappingReport
 } from "./RendererVisualPipelineReport";
 export {
-  V4_REQUIRED_DEBUG_VIEWS,
-  createV4DebugView,
-  createV4DebugViewSet,
+  EXTERNAL_PARITY_REQUIRED_DEBUG_VIEWS,
+  createExternalParityDebugView,
+  createExternalParityDebugViewSet,
   encodeLinearDebugColor
 } from "./RenderDebugViews";
 export type {
-  V4DebugViewInput,
-  V4DebugViewResult,
-  V4RenderDebugView
+  ExternalParityDebugViewInput,
+  ExternalParityDebugViewResult,
+  ExternalParityRenderDebugView
 } from "./RenderDebugViews";
 export {
-  createV4BrdfLut
+  createExternalParityBrdfLut
 } from "./BRDFLut";
-export type { V4BrdfLut } from "./BRDFLut";
+export type { ExternalParityBrdfLut } from "./BRDFLut";
 export {
-  createV4Pmrem
+  createExternalParityPmrem
 } from "./PMREM";
-export type { V4Pmrem, V4PmremLevel } from "./PMREM";
+export type { ExternalParityPmrem, ExternalParityPmremLevel } from "./PMREM";
 export {
-  createV4IblResources
+  createExternalParityIblResources
 } from "./IBL";
-export type { V4IblOptions, V4IblResourceSet } from "./IBL";
+export type { ExternalParityIblOptions, ExternalParityIblResourceSet } from "./IBL";
 export {
-  createV4EnvironmentPipeline,
-  listV4EnvironmentTargets
+  createExternalParityEnvironmentPipeline,
+  listExternalParityEnvironmentTargets
 } from "./EnvironmentPipeline";
 export type {
-  V4EnvironmentPipeline,
-  V4EnvironmentPipelineOptions,
-  V4EnvironmentTarget
+  ExternalParityEnvironmentPipeline,
+  ExternalParityEnvironmentPipelineOptions,
+  ExternalParityEnvironmentTarget
 } from "./EnvironmentPipeline";
 export {
-  V4_MATERIAL_EXTENSION_SUPPORT,
-  createV4MaterialExtensionDiagnostics,
-  getV4MaterialExtensionState
+  EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT,
+  createExternalParityMaterialExtensionDiagnostics,
+  getExternalParityMaterialExtensionState
 } from "./materials/MaterialExtensions";
 export type {
-  V4MaterialExtension,
-  V4MaterialExtensionState
+  ExternalParityMaterialExtension,
+  ExternalParityMaterialExtensionState
 } from "./materials/MaterialExtensions";
 export {
-  V4_PHYSICAL_MATERIAL_MATRIX,
-  V4PhysicalMaterial,
-  analyzeV4MaterialMatrix,
-  createV4PhysicalMaterial
+  EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX,
+  ExternalParityPhysicalMaterial,
+  analyzeExternalParityMaterialMatrix,
+  createExternalParityPhysicalMaterial
 } from "./materials/PhysicalMaterial";
 export type {
-  V4MaterialKind,
-  V4PhysicalMaterialAnalysis,
-  V4PhysicalMaterialDescriptor
+  ExternalParityMaterialKind,
+  ExternalParityPhysicalMaterialAnalysis,
+  ExternalParityPhysicalMaterialDescriptor
 } from "./materials/PhysicalMaterial";
 export {
-  sortV4AlphaItems
+  sortExternalParityAlphaItems
 } from "./materials/AlphaSorting";
-export type { V4AlphaSortItem } from "./materials/AlphaSorting";
+export type { ExternalParityAlphaSortItem } from "./materials/AlphaSorting";
 export {
-  evaluateV4Transmission
+  evaluateExternalParityTransmission
 } from "./materials/TransmissionPass";
 export type {
-  V4TransmissionResult,
-  V4TransmissionSample
+  ExternalParityTransmissionResult,
+  ExternalParityTransmissionSample
 } from "./materials/TransmissionPass";
-export { createV4ContactShadow } from "./shadows/ContactShadows";
-export type { V4ContactShadow, V4ContactShadowOptions } from "./shadows/ContactShadows";
-export { createV4CascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
-export type { V4CascadeDescriptor, V4CascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
-export { createV4ShadowDebugViews } from "./shadows/ShadowDebugViews";
-export type { V4ShadowDebugView } from "./shadows/ShadowDebugViews";
-export { createV4BloomEvidence, runV4Bloom } from "./postprocess/BloomPass";
-export type { V4BloomEvidence } from "./postprocess/BloomPass";
-export { createV4DepthBinding, runV4SSAO } from "./postprocess/SSAOPass";
-export { runV4DepthOfField } from "./postprocess/DepthOfFieldPass";
-export { runV4ColorGrade } from "./postprocess/ColorGradingPass";
-export type { V4ColorGradePreset } from "./postprocess/ColorGradingPass";
+export { createExternalParityContactShadow } from "./shadows/ContactShadows";
+export type { ExternalParityContactShadow, ExternalParityContactShadowOptions } from "./shadows/ContactShadows";
+export { createExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
+export type { ExternalParityCascadeDescriptor, ExternalParityCascadedShadowPipeline } from "./shadows/CascadedShadowPipeline";
+export { createExternalParityShadowDebugViews } from "./shadows/ShadowDebugViews";
+export type { ExternalParityShadowDebugView } from "./shadows/ShadowDebugViews";
+export { createExternalParityBloomEvidence, runExternalParityBloom } from "./postprocess/BloomPass";
+export type { ExternalParityBloomEvidence } from "./postprocess/BloomPass";
+export { createExternalParityDepthBinding, runExternalParitySSAO } from "./postprocess/SSAOPass";
+export { runExternalParityDepthOfField } from "./postprocess/DepthOfFieldPass";
+export { runExternalParityColorGrade } from "./postprocess/ColorGradingPass";
+export type { ExternalParityColorGradePreset } from "./postprocess/ColorGradingPass";
 export { PostProcessComposer, createPostProcessCapabilityReport } from "./postprocess/EffectComposer";
 export type {
   PostProcessCapabilityReport,
@@ -303,21 +303,21 @@ export type {
   CinematicPostprocessPipelineDescriptor,
   CinematicPostProcessEffectId
 } from "./postprocess/CinematicDiagnostics";
-export { createV4RendererStats } from "./performance/RendererStats";
-export type { V4RendererStats, V4RendererStatsInput } from "./performance/RendererStats";
-export { evaluateV4ResourceBudget } from "./performance/ResourceBudget";
-export type { V4ResourceBudget, V4ResourceBudgetReport, V4ResourceBudgetUsage } from "./performance/ResourceBudget";
-export { sortV4RenderItems, sortRenderQueueItems } from "./performance/RenderItemSorting";
+export { createRendererStats } from "./performance/RendererStats";
+export type { RendererStats, RendererStatsInput } from "./performance/RendererStats";
+export { evaluateResourceBudget } from "./performance/ResourceBudget";
+export type { ResourceBudget, ResourceBudgetReport, ResourceBudgetUsage } from "./performance/ResourceBudget";
+export { sortRenderItems, sortRenderQueueItems } from "./performance/RenderItemSorting";
 export type {
-  V4SortableRenderItem,
+  SortableRenderItem,
   RenderQueueBucket,
   RenderQueuePlan,
   RenderQueueSortDiagnostics,
   RenderQueueSortItem,
   RenderQueueSortOptions
 } from "./performance/RenderItemSorting";
-export { createV4DefaultLodLevels, selectV4LodLevel } from "./performance/LOD";
-export type { V4LodLevel } from "./performance/LOD";
+export { createDefaultPerformanceLodLevels, selectPerformanceLodLevel } from "./performance/LOD";
+export type { PerformanceLodLevel } from "./performance/LOD";
 export type {
   BrdfLutDescriptor,
   DiffuseIrradianceGenerationOptions,
@@ -340,26 +340,26 @@ export type { UniformFieldDescriptor, UniformFieldLayout, UniformFieldType } fro
 export { TextureBinding } from "./TextureBinding";
 export type { TextureBindingDescriptor, TextureBindingValidation, TextureTransformDescriptor } from "./TextureBinding";
 export {
-  RendererV5,
-  createRendererV5,
-  summarizeV5RendererDiagnostics,
-  V5_REQUIRED_RENDERER_FEATURES
+  ThreeCompatRenderer,
+  createThreeCompatRenderer,
+  summarizeThreeCompatRendererDiagnostics,
+  THREE_COMPAT_REQUIRED_RENDERER_FEATURES
 } from "./threejs-compatibility";
 export type {
-  V5InstancingSystemStatus,
-  V5LightDescriptor,
-  V5LightKind,
-  V5MaterialMode,
-  V5RenderTargetDescriptor,
-  V5RendererBackend,
-  V5RendererDiagnostics,
-  V5RendererFeatureStatus,
-  V5RendererOptions,
-  V5RendererSupportState,
-  V5SceneRenderPlan,
-  V5ShadowSystemStatus,
-  V5TextureCapability,
-  V5TransparencySystemStatus
+  ThreeCompatInstancingSystemStatus,
+  ThreeCompatLightDescriptor,
+  ThreeCompatLightKind,
+  ThreeCompatMaterialMode,
+  ThreeCompatRenderTargetDescriptor,
+  ThreeCompatRendererBackend,
+  ThreeCompatRendererDiagnostics,
+  ThreeCompatRendererFeatureStatus,
+  ThreeCompatRendererOptions,
+  ThreeCompatRendererSupportState,
+  ThreeCompatSceneRenderPlan,
+  ThreeCompatShadowSystemStatus,
+  ThreeCompatTextureCapability,
+  ThreeCompatTransparencySystemStatus
 } from "./threejs-compatibility";
 export * from "./threejs-compatibility/postprocess";
 export * from "./threejs-compatibility/shaders";
@@ -367,48 +367,55 @@ export * from "./threejs-compatibility/vfx";
 export * from "./threejs-compatibility/performance";
 export {
   ProductionWebGL2Renderer,
+  ProductionRuntimeRenderer,
   ProductionWebGPURenderer,
   analyzePixels,
-  createV6OrbitControlPreset,
-  createV6EnvironmentLightingResources,
-  createV6EffectsRenderSource,
-  createV6PbrHdrPipelineFromRadiance,
-  createV6ToneMappingPolicy,
-  createV6WebGPUReport,
-  loadV6HdrEnvironment,
-  parseV6RadianceHDR,
-  summarizeV6AnimationWorkflow,
-  summarizeV6EffectsProof,
-  summarizeV6ProductionProof,
-  summarizeV6WebGL2Proof
+  createContactShadowPass,
+  createProductionOrbitControlPreset,
+  createProductionEnvironmentLightingResources,
+  createProductionEffectsRenderSource,
+  createProductionPbrHdrPipelineFromRadiance,
+  createProductionToneMappingPolicy,
+  createProductionWebGPUReport,
+  resolveProductionRuntimeRendererBackend,
+  loadProductionHdrEnvironment,
+  parseProductionRadianceHDR,
+  summarizeProductionAnimationWorkflow,
+  summarizeProductionEffectsProof,
+  summarizeProductionProductionProof,
+  summarizeProductionWebGL2Proof
 } from "./production-runtime";
 export type {
-  V6EffectsOptions,
-  V6EffectsSummary,
-  V6AnimationMetadataInput,
-  V6AnimationWorkflowSummary,
-  V6OrbitControlPreset,
-  V6EnvironmentLightingResources,
-  V6HdrEnvironmentLoaderOptions,
-  V6LoadedHdrEnvironment,
-  V6ImportedAssetRenderMetadata,
-  V6PbrHdrPipeline,
-  V6PbrHdrPipelineOptions,
-  V6PixelMetrics,
-  V6ProductionRenderer,
-  V6RadianceHDR,
-  V6RenderProof,
-  V6RendererBackend,
-  V6RendererFeature,
-  V6RendererFeatureState,
-  V6RendererInput,
-  V7FrameRenderResult,
-  V6ToneMappingOperator,
-  V6ToneMappingPolicy,
-  V6WebGPUAdapterLike,
-  V6WebGPULike,
-  V6WebGPUReport,
-  V6WebGPUStatus,
+  ProductionEffectsOptions,
+  ProductionEffectsSummary,
+  ProductionAnimationMetadataInput,
+  ProductionAnimationWorkflowSummary,
+  ProductionOrbitControlPreset,
+  ProductionEnvironmentLightingResources,
+  ProductionHdrEnvironmentLoaderOptions,
+  ProductionLoadedHdrEnvironment,
+  ProductionImportedAssetRenderMetadata,
+  ProductionPbrHdrPipeline,
+  ProductionPbrHdrPipelineOptions,
+  ProductionPixelMetrics,
+  ProductionProductionRenderer,
+  ProductionRadianceHDR,
+  ProductionRenderProof,
+  ProductionRendererBackend,
+  ProductionRendererFeature,
+  ProductionRendererFeatureState,
+  ProductionRendererInput,
+  RuntimeParityFrameRenderResult,
+  ProductionToneMappingOperator,
+  ProductionToneMappingPolicy,
+  ProductionWebGPUAdapterLike,
+  ProductionWebGPULike,
+  ProductionWebGPUReport,
+  ProductionWebGPUStatus,
+  ContactShadowPassDiagnostics,
+  ProductionRuntimeRendererBackendPreference,
+  ProductionRuntimeRendererBackendSelection,
+  ProductionRuntimeRendererOptions,
   ProductionWebGL2RendererOptions,
   ProductionWebGPURendererOptions
 } from "./production-runtime";
@@ -807,28 +814,28 @@ export type { RendererPostProcessPassName, RendererPostProcessPassPlan, Renderer
 export { assertRendererFeatures, createRendererFeatureReport, rendererFeatureCatalog } from "./RendererFeatureGates";
 export type { RendererFeature, RendererFeatureReport, RendererFeatureStatus } from "./RendererFeatureGates";
 export {
-  createV4EnvironmentLighting,
-  createV4DirectionalShadowEvidence,
-  createV4FlagshipRenderPresetEvidence,
-  createV4GeneratedEnvironmentMapSource,
-  createV4GeneratedHdrEnvironmentMapSource,
-  createV4RenderPresetEvidence,
-  sampleV4LdrPostprocessReadback,
-  v4ActiveFeature,
-  v4BlockedFeature,
-  v4UnsupportedFeature
-} from "./V4RenderPreset";
+  createExternalParityEnvironmentLighting,
+  createExternalParityDirectionalShadowEvidence,
+  createExternalParityFlagshipRenderPresetEvidence,
+  createExternalParityGeneratedEnvironmentMapSource,
+  createExternalParityGeneratedHdrEnvironmentMapSource,
+  createExternalParityRenderPresetEvidence,
+  sampleExternalParityLdrPostprocessReadback,
+  externalParityActiveFeature,
+  externalParityBlockedFeature,
+  externalParityUnsupportedFeature
+} from "./ExternalParityRenderPreset";
 export type {
-  V4EnvironmentLightingBundle,
-  V4EnvironmentPreset,
-  V4DirectionalShadowEvidence,
-  V4LdrPostprocessSummary,
-  V4ReadbackDevice,
-  V4RenderPresetEvidence,
-  V4RenderPresetEvidenceOptions,
-  V4RenderPresetFeature,
-  V4RenderPresetFeatureStatus
-} from "./V4RenderPreset";
+  ExternalParityEnvironmentLightingBundle,
+  ExternalParityEnvironmentPreset,
+  ExternalParityDirectionalShadowEvidence,
+  ExternalParityLdrPostprocessSummary,
+  ExternalParityReadbackDevice,
+  ExternalParityRenderPresetEvidence,
+  ExternalParityRenderPresetEvidenceOptions,
+  ExternalParityRenderPresetFeature,
+  ExternalParityRenderPresetFeatureStatus
+} from "./ExternalParityRenderPreset";
 export {
   PBR_REFERENCE_EPSILON,
   PBR_REFERENCE_INV_PI,
@@ -886,7 +893,6 @@ export * from "./performance/BVH.js";
 export * from "./performance/Octree.js";
 export * from "./performance/Batcher.js";
 export * from "./webgpu/WebGPUBuffer.js";
-export * from "./webgpu/WebGPUCompute.js";
 export * from "./webgpu/WebGPUPipelineCache.js";
 export * from "./webgpu/WebGPUPostProcess.js";
 export * from "./webgpu/WebGPUTexture.js";

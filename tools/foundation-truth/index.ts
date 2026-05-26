@@ -9,10 +9,10 @@ interface Finding {
 }
 
 const requiredFiles = [
-  "docs/project/v3-roadmap-product-workflow-plan.md",
-  "docs/project/v3-roadmap-status.md",
-  "docs/project/v3-roadmap-progress.md",
-  "docs/project/v3-roadmap-blocked-claims.md"
+  "docs/project/implementation-plan.md",
+  "docs/project/current-state.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/claim-guidelines.md"
 ] as const;
 
 const blockedPatterns: readonly { readonly pattern: RegExp; readonly reason: string }[] = [
@@ -44,11 +44,11 @@ const publicDocRoots = [
   "README.md",
   "docs/api",
   "docs/tutorials",
-  "docs/project/v3-roadmap-status.md",
-  "docs/project/v3-roadmap-product-positioning.md",
-  "docs/project/v3-roadmap-threejs-competitor-status.md",
-  "docs/project/v3-roadmap-supported-workflows.md",
-  "docs/project/v3-roadmap-known-gaps.md"
+  "docs/project/current-state.md",
+  "docs/project/competitive-positioning.md",
+  "docs/project/threejs-parity-status.md",
+  "docs/project/compatibility.md",
+  "docs/project/known-limits.md"
 ] as const;
 const missing = requiredFiles.filter((path) => !existsSync(resolve(path)));
 const findings: Finding[] = [];
@@ -70,16 +70,16 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = existsSync(resolve("docs/project/v3-roadmap-status.md"))
-  ? readFileSync(resolve("docs/project/v3-roadmap-status.md"), "utf8")
+const status = existsSync(resolve("docs/project/current-state.md"))
+  ? readFileSync(resolve("docs/project/current-state.md"), "utf8")
   : "";
-const progress = existsSync(resolve("docs/project/v3-roadmap-progress.md"))
-  ? readFileSync(resolve("docs/project/v3-roadmap-progress.md"), "utf8")
+const progress = existsSync(resolve("docs/project/verification-evidence.md"))
+  ? readFileSync(resolve("docs/project/verification-evidence.md"), "utf8")
   : "";
 
 const requiredStatusPatterns = [
   /\bnot\W+currently\W+a\W+Unity\W+replacement\b/i,
-  /\bnot\W+complete\W+until\W+`pnpm v3:release`\W+passes\b/i
+  /\bnot\W+complete\W+until\W+`pnpm foundation:release`\W+passes\b/i
 ] as const;
 const missingStatusPhrases = requiredStatusPatterns
   .filter((pattern) => !pattern.test(status))
@@ -88,7 +88,7 @@ const progressHasReleaseGate = progress.includes("Milestone 10 - Release Gates")
   && (progress.includes("Current status: in-progress") || progress.includes("Current status: complete"));
 
 const report = {
-  schema: "a3d-foundation-truth/v1",
+  schema: "a3d-foundation-truth",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0 && findings.length === 0 && missingStatusPhrases.length === 0 && progressHasReleaseGate,
   requiredFiles: requiredFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),

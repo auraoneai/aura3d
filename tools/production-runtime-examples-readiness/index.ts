@@ -73,7 +73,7 @@ const reports = catalog.examples.map((example) => {
   };
 });
 const checks = [
-  { id: "schema", pass: catalog.schema === "a3d-production-runtime-example-catalog/v1", detail: catalog.schema },
+  { id: "schema", pass: catalog.schema === "a3d-production-runtime-example-catalog", detail: catalog.schema },
   { id: "required-slugs", pass: requiredSlugs.every((slug) => catalog.examples.some((example) => example.slug === slug)), detail: catalog.examples.map((example) => example.slug).join(", ") },
   { id: "example-count", pass: catalog.examples.length >= catalog.requirements.minimumExamples, detail: `${catalog.examples.length}/${catalog.requirements.minimumExamples}` },
   { id: "browser-tested-count", pass: catalog.examples.filter((example) => example.browserTested).length >= catalog.requirements.minimumBrowserTested, detail: `${catalog.examples.filter((example) => example.browserTested).length}/${catalog.requirements.minimumBrowserTested}` },
@@ -85,7 +85,7 @@ const checks = [
   { id: "screenshots", pass: reports.every((report) => report.screenshotPresent), detail: reports.filter((report) => !report.screenshotPresent).map((report) => report.slug).join(", ") }
 ];
 const report = {
-  schema: "a3d-production-runtime-examples-readiness/v1",
+  schema: "a3d-production-runtime-examples-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   examples: reports,

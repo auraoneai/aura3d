@@ -1,23 +1,23 @@
-import { loadV6GLTFRenderPipeline } from "/packages/assets/src/asset-corpus/V6GLTFRenderPipeline.js";
+import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6OrbitControlPreset,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6AnimationWorkflow,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionOrbitControlPreset,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionAnimationWorkflow,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
-import { createV6ProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
+import { createProductionProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
   interface Window {
-    __V6_ANIMATION_CONTROLS__?: unknown;
+    __PRODUCTION_ANIMATION_CONTROLS__?: unknown;
   }
 }
 
 async function run(): Promise<void> {
   const hdr = await fetchBytes(`${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
     id: "studio-small-08",
     label: "Studio Small 08",
     intensity: 1.2,
@@ -29,16 +29,16 @@ async function run(): Promise<void> {
     {
       id: "cesium-man",
       name: "Cesium Man",
-      path: "cesium-man.glb",
+      url: `${location.origin}/fixtures/three-compat/assets/corpus/cesium-man.glb`,
       canvas: "cesium-man",
       yawRadians: -0.38,
       pitchRadians: -0.12,
       expected: "skinning"
     },
     {
-      id: "animated-morph-cube",
-      name: "Animated Morph Cube",
-      path: "animated-morph-cube.glb",
+      id: "external-parity-morph-expression",
+      name: "Morph Expression",
+      url: `${location.origin}/fixtures/external-parity-assets/morph/external-parity-morph-expression/external-parity-morph-expression.gltf`,
       canvas: "animated-morph-cube",
       yawRadians: 0.42,
       pitchRadians: -0.2,
@@ -49,9 +49,9 @@ async function run(): Promise<void> {
   const results = [];
   for (const item of assets) {
     const canvas = requireCanvas(item.canvas);
-    const lighting = createV6EnvironmentLightingResources(hdrPipeline);
-    const pipeline = await loadV6GLTFRenderPipeline({
-      url: `${location.origin}/fixtures/asset-corpus/${item.path}`,
+    const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
+    const pipeline = await loadProductionGLTFRenderPipeline({
+      url: item.url,
       assetId: item.id,
       assetName: item.name,
       width: canvas.width,
@@ -64,12 +64,12 @@ async function run(): Promise<void> {
         postprocess: false
       }
     });
-    const orbit = createV6OrbitControlPreset(
+    const orbit = createProductionOrbitControlPreset(
       pipeline.resources.bounds,
       { width: canvas.width, height: canvas.height },
       { yawRadians: item.yawRadians, pitchRadians: item.pitchRadians, paddingRatio: 0.22 }
     );
-    const animation = summarizeV6AnimationWorkflow({
+    const animation = summarizeProductionAnimationWorkflow({
       assetId: pipeline.metadata.assetId,
       animationCount: pipeline.metadata.animationCount,
       skinCount: pipeline.metadata.skinCount,
@@ -84,7 +84,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.012, 0.015, 0.02, 1]
     });
-    const staged = createV6ProductionStageScene(pipeline.source, pipeline.resources.bounds, {
+    const staged = createProductionProductionStageScene(pipeline.source, pipeline.resources.bounds, {
       width: canvas.width,
       height: canvas.height
     }, {
@@ -113,12 +113,12 @@ async function run(): Promise<void> {
         projectionMatrixFinite: orbit.frame.projectionMatrix.every(Number.isFinite),
         viewProjectionMatrixFinite: orbit.frame.viewProjectionMatrix.every(Number.isFinite)
       },
-      summary: summarizeV6WebGL2Proof(proof),
+      summary: summarizeProductionWebGL2Proof(proof),
       proof
     });
   }
 
-  window.__V6_ANIMATION_CONTROLS__ = {
+  window.__PRODUCTION_ANIMATION_CONTROLS__ = {
     status: "ready",
     hdr: hdrPipeline.diagnostics,
     results
@@ -127,8 +127,8 @@ async function run(): Promise<void> {
 
 function renderWithAssetContext(
   renderer: ProductionWebGL2Renderer,
-  pipeline: Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>,
-  staged: ReturnType<typeof createV6ProductionStageScene>,
+  pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>,
+  staged: ReturnType<typeof createProductionProductionStageScene>,
   hdrEnvironmentUri: string
 ) {
   try {
@@ -156,7 +156,7 @@ function renderWithAssetContext(
     });
   } catch (error) {
     const message = error instanceof Error ? error.stack ?? error.message : String(error);
-    throw new Error(`V6 animation-controls render failed for ${pipeline.metadata.assetId}: ${message}`);
+    throw new Error(`Production animation-controls render failed for ${pipeline.metadata.assetId}: ${message}`);
   }
 }
 
@@ -175,7 +175,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_ANIMATION_CONTROLS__ = {
+  window.__PRODUCTION_ANIMATION_CONTROLS__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

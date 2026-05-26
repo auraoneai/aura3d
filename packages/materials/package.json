@@ -2,12 +2,12 @@
   "name": "@aura3d/materials",
   "version": "1.0.0",
   "type": "module",
-  "main": "../../dist/materials/index.js",
-  "types": "../../dist/materials/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "../../dist/materials/index.d.ts",
-      "import": "../../dist/materials/index.js"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     }
   },
   "dependencies": {

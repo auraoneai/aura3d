@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
 import { AnimationClipCompat, AnimationMixerCompat, MorphTargetMixerCompat, SkeletonCompat, SkinnedMeshCompat } from "../../packages/three-compat/src";
-import { createV5AnimationDiagnostics } from "../../packages/animation/src";
+import { createThreeCompatAnimationDiagnostics } from "../../packages/animation/src";
 
-test("V5 animation browser proof renders skinned and morphed state", async ({ page }) => {
+test("ThreeCompat animation browser proof renders skinned and morphed state", async ({ page }) => {
   const clip = new AnimationClipCompat("walk", 2, [{ target: "hips", property: "position.z", times: [0, 2], values: [0, 2] }]);
   const mixer = new AnimationMixerCompat();
   const action = mixer.clipAction(clip).play();
@@ -12,7 +12,7 @@ test("V5 animation browser proof renders skinned and morphed state", async ({ pa
   const morphs = new MorphTargetMixerCompat();
   morphs.setWeight("jaw-open", 0.55);
   morphs.setWeight("brow", 0.3);
-  const diagnostics = createV5AnimationDiagnostics(mixer, skinned, morphs);
+  const diagnostics = createThreeCompatAnimationDiagnostics(mixer, skinned, morphs);
 
   await page.setContent(`
     <html>

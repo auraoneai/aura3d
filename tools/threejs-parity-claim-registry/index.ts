@@ -7,16 +7,16 @@ const unfinishedInventory = inventory.items.filter((item) => item.a3dStatus !== 
 const fullParityAllowed = checklist.unchecked === 0 && unfinishedInventory.length === 0;
 const issues = [
   ...unfinishedInventory.slice(0, 50).map((item) => reportIssue(`claim-blocked:${item.threeExampleId}`, `${item.threeExampleId} is ${item.a3dStatus}.`, "blocker")),
-  ...(checklist.unchecked > 0 ? [reportIssue("claim-blocked:checklist", `${checklist.unchecked} V9 checklist items remain unchecked.`, "blocker")] : [])
+  ...(checklist.unchecked > 0 ? [reportIssue("claim-blocked:checklist", `${checklist.unchecked} Three.js parity checklist items remain unchecked.`, "blocker")] : [])
 ];
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-claim-registry/v1",
+  schema: "a3d-threejs-parity-claim-registry",
   generatedAt: new Date().toISOString(),
   pass: true,
   fullParityAllowed,
   allowedClaims: [
-    "A3D has first-party code and verification reports for the checked V9 tracks.",
+    "A3D has first-party code and verification reports for the checked Three.js parity tracks.",
     "A3D may claim scoped parity only for categories whose construction code and verification evidence both pass."
   ],
   blockedClaims: [
@@ -28,4 +28,4 @@ writeJson(outputPath, {
   unfinishedInventory: unfinishedInventory.length,
   issues
 });
-console.log(`V9 claim registry written: ${outputPath}`);
+console.log(`Three.js parity claim registry written: ${outputPath}`);

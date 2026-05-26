@@ -1,5 +1,5 @@
 {
-  "schema": "a3d-v7-template-assets/v1",
+  "schema": "a3d-production-template-assets",
   "fetchInstructions": "Serve the listed files at /fixtures/production-runtime before running the template, or copy them into the same public path.",
   "assets": [
     { "id": "damaged-helmet", "path": "fixtures/asset-corpus/damaged-helmet.glb", "sha256": "4028ccbce11eb924936dad9bfee2af2aecf4b72203feb8a6b9dfdc458093e656" },

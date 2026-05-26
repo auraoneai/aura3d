@@ -3,7 +3,7 @@ import { createRenderableScene, loadRenderableAsset } from "@aura3d/assets";
 
 declare global {
   interface Window {
-    __A3D_ASSET_VIEWER_V1__?: ExampleState;
+    __AURA3D_LEGACY_ASSET_VIEWER__?: ExampleState;
   }
 }
 
@@ -38,14 +38,14 @@ async function boot(): Promise<void> {
       postprocess: "product-default"
     });
     const diagnostics = renderer.renderScene(scene.source);
-    window.__A3D_ASSET_VIEWER_V1__ = {
+    window.__AURA3D_LEGACY_ASSET_VIEWER__ = {
       status: "ready",
       diagnostics,
       warnings: scene.warnings,
       setupLineCount: scene.setupLineBudget
     };
   } catch (error) {
-    window.__A3D_ASSET_VIEWER_V1__ = {
+    window.__AURA3D_LEGACY_ASSET_VIEWER__ = {
       status: "error",
       warnings: [],
       setupLineCount: 0,

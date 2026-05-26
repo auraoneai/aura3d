@@ -24,7 +24,7 @@ describe("product scene export manifest", () => {
     });
     const manifest = exportProductSceneManifest(scene);
 
-    expect(manifest.schema).toBe("a3d-product-studio-scene/v1");
+    expect(manifest.schema).toBe("a3d-product-studio-scene");
     expect(manifest.assetId).toBe("watch");
     expect(manifest.cameraPreset).toBe("macro-detail");
     expect(manifest.lightingPreset).toBe("hero-contrast");

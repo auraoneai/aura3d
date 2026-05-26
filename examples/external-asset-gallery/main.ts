@@ -1,3 +1,3 @@
-import { mountAssetGalleryV4 } from "./AssetGalleryV4";
+import { mountExternalAssetGallery } from "./ExternalAssetGallery";
 
-void mountAssetGalleryV4("external-asset-gallery");
+void mountExternalAssetGallery("external-asset-gallery");

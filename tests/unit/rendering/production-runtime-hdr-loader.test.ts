@@ -2,19 +2,19 @@ import { Buffer } from "node:buffer";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  loadV6HdrEnvironment,
+  loadProductionHdrEnvironment,
   parseRadianceHDR
 } from "../../../packages/rendering/src/production-runtime";
 
-describe("V6 HDRLoader contract", () => {
+describe("Production HDRLoader contract", () => {
   it("exports the Radiance HDR parser and public environment loader helper", () => {
     expect(parseRadianceHDR).toBeTypeOf("function");
-    expect(loadV6HdrEnvironment).toBeTypeOf("function");
+    expect(loadProductionHdrEnvironment).toBeTypeOf("function");
   });
 
   it("loads a real Radiance RGBE fixture into renderer-ready environment resources", () => {
     const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
-    const environment = loadV6HdrEnvironment(hdr, {
+    const environment = loadProductionHdrEnvironment(hdr, {
       id: "studio-small-08-loader-test",
       label: "Studio Small 08 Loader Test",
       intensity: 1.2,
@@ -56,12 +56,12 @@ describe("V6 HDRLoader contract", () => {
     expect(environment.resources.environmentTexture.disposed).toBe(true);
     expect(environment.resources.environmentCubeTexture.disposed).toBe(true);
     expect(environment.resources.brdfLutTexture.disposed).toBe(true);
-  });
+  }, 15_000);
 
   it("rejects malformed input instead of producing diagnostic or fallback resources", () => {
-    expect(() => loadV6HdrEnvironment(new Uint8Array([0x45, 0x58, 0x52]))).toThrow(/Radiance\/RGBE header/);
-    expect(() => loadV6HdrEnvironment(createFlatHdrWithoutPixels(4, 1))).toThrow(/scanline 0 is truncated/);
-    expect(() => loadV6HdrEnvironment(createRleHdrWithZeroRun())).toThrow(/invalid zero run length/);
+    expect(() => loadProductionHdrEnvironment(new Uint8Array([0x45, 0x58, 0x52]))).toThrow(/Radiance\/RGBE header/);
+    expect(() => loadProductionHdrEnvironment(createFlatHdrWithoutPixels(4, 1))).toThrow(/scanline 0 is truncated/);
+    expect(() => loadProductionHdrEnvironment(createRleHdrWithZeroRun())).toThrow(/invalid zero run length/);
   });
 });
 

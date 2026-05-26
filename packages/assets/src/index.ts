@@ -100,68 +100,73 @@ export type {
   ExternalAssetLoaderCompatibilityResult
 } from "./AssetCompatibility";
 export {
-  summarizeV4Corpus,
-  validateV4CorpusManifest
-} from "./V4Corpus";
+  summarizeExternalParityGLTFCorpus,
+  summarizeExternalParityCorpus,
+  validateExternalParityGLTFCorpusManifest,
+  validateExternalParityCorpusManifest
+} from "./ExternalParityGLTFCorpus";
 export type {
-  V4CorpusAsset,
-  V4CorpusManifest,
-  V4CorpusSummary
-} from "./V4Corpus";
+  ExternalParityGLTFCorpusAsset,
+  ExternalParityGLTFCorpusManifest,
+  ExternalParityGLTFCorpusSummary,
+  ExternalParityCorpusAsset,
+  ExternalParityCorpusManifest,
+  ExternalParityCorpusSummary
+} from "./ExternalParityGLTFCorpus";
 export {
-  loadV5AssetManifest,
-  loadV5AssetRegistry,
-  summarizeV5AssetRegistry
-} from "./threejs-compatibility/V5AssetRegistry";
+  loadThreeCompatAssetManifest,
+  loadThreeCompatAssetRegistry,
+  summarizeThreeCompatAssetRegistry
+} from "./threejs-compatibility/ThreeCompatAssetRegistry";
 export {
-  createV5AssetProvenance
-} from "./threejs-compatibility/V5AssetProvenance";
+  createThreeCompatAssetProvenance
+} from "./threejs-compatibility/ThreeCompatAssetProvenance";
 export type {
-  V5AssetManifest,
-  V5AssetRegistrySummary
-} from "./threejs-compatibility/V5AssetRegistry";
+  ThreeCompatAssetManifest,
+  ThreeCompatAssetRegistrySummary
+} from "./threejs-compatibility/ThreeCompatAssetRegistry";
 export type {
-  V5AssetProvenance,
-  V5SourceAsset,
-  V5TrackedAssetInput
-} from "./threejs-compatibility/V5AssetProvenance";
+  ThreeCompatAssetProvenance,
+  ThreeCompatSourceAsset,
+  ThreeCompatTrackedAssetInput
+} from "./threejs-compatibility/ThreeCompatAssetProvenance";
 export {
-  createV6GLTFRenderMetadata,
-  createV6AssetCorpusSummary,
-  inspectV6Glb,
-  loadV6GLTFRenderPipeline,
-  loadV6AssetManifest
+  createProductionGLTFRenderMetadata,
+  createProductionAssetCorpusSummary,
+  inspectProductionGlb,
+  loadProductionGLTFRenderPipeline,
+  loadProductionAssetManifest
 } from "./asset-corpus";
 export type {
-  V6AssetClass,
-  V6AssetCorpusRequirements,
-  V6AssetCorpusSummary,
-  V6AssetManifest,
-  V6AssetManifestEntry,
-  V6AssetReadinessEntry,
-  V6GLTFRenderMetadata,
-  V6GLTFRenderWarning,
-  V6GLTFRenderPipeline,
-  V6GLTFRenderPipelineOptions,
-  V6GlbInspection
+  ProductionAssetClass,
+  ProductionAssetCorpusRequirements,
+  ProductionAssetCorpusSummary,
+  ProductionAssetManifest,
+  ProductionAssetManifestEntry,
+  ProductionAssetReadinessEntry,
+  ProductionGLTFRenderMetadata,
+  ProductionGLTFRenderWarning,
+  ProductionGLTFRenderPipeline,
+  ProductionGLTFRenderPipelineOptions,
+  ProductionGlbInspection
 } from "./asset-corpus";
 export {
-  createV8AssetCorpusSummary,
-  inspectV8Glb,
-  loadV8AssetManifest,
-  writeV8AssetCorpusReport
-} from "./V8AssetCorpus";
+  createAdvancedAssetCorpusSummary,
+  inspectCurrentRoutesGlb,
+  loadCurrentRoutesAssetManifest,
+  writeAdvancedAssetCorpusReport
+} from "./AdvancedAssetCorpus";
 export type {
-  V8AssetClass,
-  V8AssetCorpusSummary,
-  V8AssetManifest,
-  V8AssetManifestEntry,
-  V8AssetReadinessEntry,
-  V8AssetRequirement,
-  V8EnvironmentManifestEntry,
-  V8EnvironmentReadinessEntry,
-  V8GlbInspection
-} from "./V8AssetCorpus";
+  CurrentRoutesAssetClass,
+  AdvancedAssetCorpusSummary,
+  CurrentRoutesAssetManifest,
+  CurrentRoutesAssetManifestEntry,
+  CurrentRoutesAssetReadinessEntry,
+  CurrentRoutesAssetRequirement,
+  CurrentRoutesEnvironmentManifestEntry,
+  CurrentRoutesEnvironmentReadinessEntry,
+  CurrentRoutesGlbInspection
+} from "./AdvancedAssetCorpus";
 export * from "./loaders";
 export {
   DEFAULT_ASSET_IMPORT_SETTINGS,

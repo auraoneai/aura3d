@@ -18,8 +18,6 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/engine", "/packages/engine/src/index.ts"],
   ["@aura3d/engine/production-runtime", "/packages/engine/src/production-runtime/index.ts"],
   ["@aura3d/engine/advanced-runtime", "/packages/engine/src/advanced-runtime/index.ts"],
-  ["@aura3d/engine/v6", "/packages/engine/src/production-runtime/index.ts"],
-  ["@aura3d/engine/v9", "/packages/engine/src/advanced-runtime/index.ts"],
   ["@aura3d/apps", "/packages/apps/src/index.ts"],
   ["@aura3d/engine/apps", "/packages/apps/src/index.ts"],
   ["@aura3d/engine/engine", "/packages/engine/src/index.ts"],
@@ -29,21 +27,16 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/assets", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/engine/assets/asset-corpus", "/packages/assets/src/asset-corpus/index.ts"],
   ["@aura3d/engine/assets/advanced-gallery", "/packages/assets/src/advanced-gallery/index.ts"],
-  ["@aura3d/engine/assets/v6", "/packages/assets/src/asset-corpus/index.ts"],
-  ["@aura3d/engine/assets/v9", "/packages/assets/src/advanced-gallery/index.ts"],
   ["@aura3d/engine/assets/browser", "/packages/assets/src/browser-index.ts"],
   ["@aura3d/engine/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine/rendering/production-runtime", "/packages/rendering/src/production-runtime/index.ts"],
   ["@aura3d/engine/rendering/advanced-runtime", "/packages/rendering/src/advanced-runtime/index.ts"],
-  ["@aura3d/engine/rendering/v6", "/packages/rendering/src/production-runtime/index.ts"],
-  ["@aura3d/engine/rendering/v9", "/packages/rendering/src/advanced-runtime/index.ts"],
   ["@aura3d/input", "/packages/input/src/index.ts"],
   ["@aura3d/controls", "/packages/controls/src/index.ts"],
   ["@aura3d/audio", "/packages/audio/src/index.ts"],
   ["@aura3d/scripting", "/packages/scripting/src/index.ts"],
   ["@aura3d/workflows", "/packages/workflows/src/index.ts"],
   ["@aura3d/engine/workflows/production", "/packages/workflows/src/production-runtime/index.ts"],
-  ["@aura3d/engine/workflows/v6", "/packages/workflows/src/production-runtime/index.ts"],
   ["@aura3d/engine/workflows", "/packages/workflows/src/index.ts"],
   ["@aura3d/editor-runtime", "/packages/editor-runtime/src/index.ts"],
   ["@aura3d/editor", "/packages/editor/src/index.ts"],
@@ -202,7 +195,8 @@ function browserMappedLoadersGLPath(pathname: string): string | undefined {
 }
 
 function transpileForBrowser(source: string, fileName: string): string {
-  const rewritten = rewritePackageImports(source);
+  const withoutCssSideEffects = source.replace(/^\s*import\s+["'][^"']+\.css["'];?\s*$/gm, "");
+  const rewritten = rewritePackageImports(withoutCssSideEffects);
   const result = ts.transpileModule(rewritten, {
     fileName,
     compilerOptions: {
@@ -222,10 +216,25 @@ function transpileForBrowser(source: string, fileName: string): string {
 function rewritePackageImports(source: string): string {
   let output = source;
   for (const [specifier, target] of packageEntryPoints) {
-    output = output.replaceAll(`"${specifier}"`, `"${target}"`);
-    output = output.replaceAll(`'${specifier}'`, `'${target}'`);
+    const escapedSpecifier = escapeRegExp(specifier);
+    output = output.replace(
+      new RegExp(`(\\bfrom\\s*["'])${escapedSpecifier}(["'])`, "g"),
+      `$1${target}$2`,
+    );
+    output = output.replace(
+      new RegExp(`(\\bimport\\s*["'])${escapedSpecifier}(["'])`, "g"),
+      `$1${target}$2`,
+    );
+    output = output.replace(
+      new RegExp(`(\\bimport\\s*\\(\\s*(?:/\\*[^]*?\\*/\\s*)?["'])${escapedSpecifier}(["']\\s*\\))`, "g"),
+      `$1${target}$2`,
+    );
   }
   return output;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function contentType(file: string): string {
@@ -244,6 +253,8 @@ function contentType(file: string): string {
       return "image/jpeg";
     case ".webp":
       return "image/webp";
+    case ".svg":
+      return "image/svg+xml; charset=utf-8";
     case ".glb":
       return "model/gltf-binary";
     case ".gltf":

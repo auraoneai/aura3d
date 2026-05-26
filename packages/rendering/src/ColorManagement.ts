@@ -38,7 +38,7 @@ export interface A3DTextureColorSpaceValidation {
   readonly warning?: string;
 }
 
-export const V4_TEXTURE_COLOR_POLICY: Readonly<Record<A3DTextureSemantic, A3DColorSpace>> = {
+export const EXTERNAL_PARITY_TEXTURE_COLOR_POLICY: Readonly<Record<A3DTextureSemantic, A3DColorSpace>> = {
   "base-color": "srgb",
   emissive: "srgb",
   normal: "linear",
@@ -55,14 +55,14 @@ export const V4_TEXTURE_COLOR_POLICY: Readonly<Record<A3DTextureSemantic, A3DCol
   environment: "linear"
 };
 
-export function createV4ColorManagementPolicy(options: {
+export function createExternalParityColorManagementPolicy(options: {
   readonly outputColorSpace?: A3DColorSpace;
   readonly allowLdrFallback?: boolean;
 } = {}): A3DColorManagementPolicy {
   return {
     lightingColorSpace: "linear",
     outputColorSpace: options.outputColorSpace ?? "srgb",
-    texturePolicy: V4_TEXTURE_COLOR_POLICY,
+    texturePolicy: EXTERNAL_PARITY_TEXTURE_COLOR_POLICY,
     allowLdrFallback: options.allowLdrFallback ?? true,
     fallbackBehavior: "HDR render targets are preferred. LDR fallback must keep linear lighting and tone-map to the configured output color space."
   };
@@ -91,7 +91,7 @@ export function convertColorSpace(
 export function validateTextureColorSpace(
   semantic: A3DTextureSemantic,
   actual: A3DColorSpace,
-  policy: A3DColorManagementPolicy = createV4ColorManagementPolicy()
+  policy: A3DColorManagementPolicy = createExternalParityColorManagementPolicy()
 ): A3DTextureColorSpaceValidation {
   const expected = policy.texturePolicy[semantic];
   const pass = expected === actual;

@@ -1,7 +1,7 @@
-import { createV5FileLoaderDiagnostic } from "./LoaderDiagnostics";
+import { createThreeCompatFileLoaderDiagnostic } from "./LoaderDiagnostics";
 
-export class HDRLoaderV5 {
+export class HDRLoaderThreeCompat {
   load(uri: string) {
-    return createV5FileLoaderDiagnostic("HDRLoaderV5", uri, { warnings: ["RGBE HDR decoded to linear float environment before PMREM."] });
+    return createThreeCompatFileLoaderDiagnostic("HDRLoaderThreeCompat", uri, { warnings: ["RGBE HDR decoded to linear float environment before PMREM."] });
   }
 }

@@ -1,16 +1,16 @@
-export interface V4ResourceBudget {
+export interface ResourceBudget {
   readonly textureBudgetBytes: number;
   readonly geometryBudgetBytes: number;
   readonly drawCallBudget: number;
 }
 
-export interface V4ResourceBudgetUsage {
+export interface ResourceBudgetUsage {
   readonly textureBytes: number;
   readonly geometryBytes: number;
   readonly drawCalls: number;
 }
 
-export interface V4ResourceBudgetReport {
+export interface ResourceBudgetReport {
   readonly withinBudget: boolean;
   readonly texturePercent: number;
   readonly geometryPercent: number;
@@ -18,10 +18,10 @@ export interface V4ResourceBudgetReport {
   readonly warnings: readonly string[];
 }
 
-export function evaluateV4ResourceBudget(
-  budget: V4ResourceBudget,
-  usage: V4ResourceBudgetUsage
-): V4ResourceBudgetReport {
+export function evaluateResourceBudget(
+  budget: ResourceBudget,
+  usage: ResourceBudgetUsage
+): ResourceBudgetReport {
   const texturePercent = ratio(usage.textureBytes, budget.textureBudgetBytes);
   const geometryPercent = ratio(usage.geometryBytes, budget.geometryBudgetBytes);
   const drawCallPercent = ratio(usage.drawCalls, budget.drawCallBudget);

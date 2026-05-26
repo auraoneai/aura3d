@@ -1,8 +1,8 @@
-import { createV5FileLoaderDiagnostic } from "./LoaderDiagnostics";
+import { createThreeCompatFileLoaderDiagnostic } from "./LoaderDiagnostics";
 
-export class CubeTextureLoaderV5 {
+export class CubeTextureLoaderThreeCompat {
   load(uris: readonly string[]) {
-    if (uris.length !== 6) throw new Error("CubeTextureLoaderV5 requires six faces.");
-    return uris.map((uri) => createV5FileLoaderDiagnostic("CubeTextureLoaderV5", uri));
+    if (uris.length !== 6) throw new Error("CubeTextureLoaderThreeCompat requires six faces.");
+    return uris.map((uri) => createThreeCompatFileLoaderDiagnostic("CubeTextureLoaderThreeCompat", uri));
   }
 }

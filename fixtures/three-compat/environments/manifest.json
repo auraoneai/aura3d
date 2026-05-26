@@ -1,5 +1,5 @@
 {
-  "schema": "a3d-three-compat-environment-library/v1",
+  "schema": "a3d-three-compat-environment-library",
   "requirements": {
     "minimumPresets": 12,
     "minimumRealHdriSources": 6,
@@ -49,7 +49,7 @@
       "pmrem": {
         "faceSize": 256,
         "mipCount": 9,
-        "cacheKey": "studio-small-08:v5-pmrem-256"
+        "cacheKey": "studio-small-08:three-compat-pmrem-256"
       },
       "probes": [
         "emissive",
@@ -84,7 +84,7 @@
       "pmrem": {
         "faceSize": 256,
         "mipCount": 9,
-        "cacheKey": "autumn-field-puresky:v5-pmrem-256"
+        "cacheKey": "autumn-field-puresky:three-compat-pmrem-256"
       },
       "probes": [
         "emissive",
@@ -119,7 +119,7 @@
       "pmrem": {
         "faceSize": 256,
         "mipCount": 9,
-        "cacheKey": "kloppenheim-puresky:v5-pmrem-256"
+        "cacheKey": "kloppenheim-puresky:three-compat-pmrem-256"
       },
       "probes": [
         "emissive",
@@ -154,7 +154,7 @@
       "pmrem": {
         "faceSize": 256,
         "mipCount": 9,
-        "cacheKey": "industrial-sunset-puresky:v5-pmrem-256"
+        "cacheKey": "industrial-sunset-puresky:three-compat-pmrem-256"
       },
       "probes": [
         "emissive",
@@ -189,7 +189,7 @@
       "pmrem": {
         "faceSize": 256,
         "mipCount": 9,
-        "cacheKey": "spruit-sunrise:v5-pmrem-256"
+        "cacheKey": "spruit-sunrise:three-compat-pmrem-256"
       },
       "probes": [
         "emissive",
@@ -224,7 +224,7 @@
       "pmrem": {
         "faceSize": 256,
         "mipCount": 9,
-        "cacheKey": "venice-sunset:v5-pmrem-256"
+        "cacheKey": "venice-sunset:three-compat-pmrem-256"
       },
       "probes": [
         "emissive",

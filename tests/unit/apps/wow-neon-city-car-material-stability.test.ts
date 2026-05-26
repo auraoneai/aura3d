@@ -8,7 +8,7 @@ import {
 describe("wow neon city car material stability", () => {
   it("keeps the delayed HDR environment from reintroducing white car speckle", () => {
     const wowSource = readFileSync("apps/wow-neon-city/src/main.ts", "utf8");
-    const v8Source = readFileSync("packages/engine/src/threejs-example-parity/index.ts", "utf8");
+    const currentRoutesSource = readFileSync("packages/engine/src/threejs-example-parity/index.ts", "utf8");
     const carProfileSource = readFileSync("packages/assets/src/CarConceptMaterialStability.ts", "utf8");
     const pmremSource = readFileSync("packages/rendering/src/production-runtime/environment/PMREMGenerator.ts", "utf8");
     const materialSource = readFileSync("packages/rendering/src/TexturedPBRMaterial.ts", "utf8");
@@ -17,11 +17,11 @@ describe("wow neon city car material stability", () => {
     expect(wowSource).toContain("clearcoatBoost: 0");
     expect(wowSource).not.toContain("clearcoatBoost: 0.28");
 
-    expect(v8Source).toContain("environmentMapSpecularIntensity: carConcept ? Math.min(environmentMapSpecularIntensity, 0.012)");
-    expect(v8Source).toContain("Math.min(base.proceduralMap.specularIntensity * exposure, 0.01)");
-    expect(v8Source).toContain("applyCarConceptMaterialStability(material, {");
-    expect(v8Source).toContain('profile: "cinematic"');
-    expect(v8Source).toContain('carConceptMaterialRenderStateOverrides("v8-flagship")');
+    expect(currentRoutesSource).toContain("environmentMapSpecularIntensity: carConcept ? Math.min(environmentMapSpecularIntensity, 0.012)");
+    expect(currentRoutesSource).toContain("Math.min(base.proceduralMap.specularIntensity * exposure, 0.01)");
+    expect(currentRoutesSource).toContain("applyCarConceptMaterialStability(material, {");
+    expect(currentRoutesSource).toContain('profile: "cinematic"');
+    expect(currentRoutesSource).toContain('carConceptMaterialRenderStateOverrides("current-routes-flagship")');
     expect(carProfileSource).toContain('material.setParameter("u_normalTextureEnabled", 0);');
     expect(carProfileSource).toContain('material.setParameter("u_specularTextureEnabled", 0);');
     expect(carProfileSource).toContain('material.setParameter("u_specularColorTextureEnabled", 0);');

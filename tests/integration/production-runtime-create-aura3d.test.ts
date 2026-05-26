@@ -13,8 +13,8 @@ const templates: readonly CreateA3DTemplate[] = [
   "production-webgpu-starter"
 ];
 
-describe("V6 create-aura3d templates", () => {
-  it("mirrors every V6 template and can scaffold it", () => {
+describe("Production create-aura3d templates", () => {
+  it("mirrors every Production template and can scaffold it", () => {
     const tempRoot = mkdtempSync(join(tmpdir(), "a3d-production-runtime-create-"));
     try {
       for (const template of templates) {

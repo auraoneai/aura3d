@@ -1,4 +1,4 @@
-# Asset Viewer V3
+# Asset Viewer Foundation
 
 This example shows the recommended public path for loading and rendering a glTF asset with A3D.
 
@@ -10,4 +10,4 @@ Run it through the repo dev server or browser tests:
 pnpm exec playwright test tests/browser/foundation-examples.spec.ts -g "foundation-asset-viewer"
 ```
 
-The example intentionally uses the V3 product-camera fixture rather than the old V1 screenshots.
+The example intentionally uses the Foundation product-camera fixture rather than the old Legacy screenshots.

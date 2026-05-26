@@ -12,7 +12,7 @@ Scope: this record replaces the original planning prompt. It is intentionally sa
 - [x] Create package and CLI references use `create-aura3d` / `npm create aura3d@latest`.
 - [x] Adapter, app, and quality-preset class/file names use A3D naming.
 - [x] Product, workflow, environment, and asset fixture directories have been flattened away from numbered fixture roots.
-- [x] Actual directory scan for `v1` through `v9` directory basenames is clean outside dependency caches.
+- [x] Actual directory scan for `legacy` through `threejs parity` directory basenames is clean outside dependency caches.
 - [x] Removed fixture path references such as numbered fixture roots and numbered asset fixture roots are clean outside generated reports.
 - [x] Root package export map includes the Aura3D runtime, advanced runtime, workflow, asset-corpus, production-runtime asset alias, and create package surfaces.
 - [x] `@aura3d/three-compat` exposes migration target subpaths for controls, loaders, and postprocessing.
@@ -51,7 +51,7 @@ rg --hidden --no-ignore -n "$LEGACY_PATTERN" . \
   -g '!**/*.csv'
 
 find . -path './.git' -prune -o -path './node_modules' -prune -o \
-  -type d \( -name 'v1' -o -name 'v2' -o -name 'v3' -o -name 'v4' -o -name 'v5' -o -name 'v6' -o -name 'v7' -o -name 'v8' -o -name 'v9' \) -print
+  -type d \( -name 'legacy' -o -name 'product studio' -o -name 'foundation' -o -name 'external parity' -o -name 'three compatibility' -o -name 'production' -o -name 'runtime parity' -o -name 'current routes' -o -name 'threejs parity' \) -print
 
 rg --hidden --no-ignore -n 'fixtures/(assets/)?v[1-9](/|$)|/fixtures/(assets/)?v[1-9](/|$)|fixtures/external-engine-baselines/v[1-9](/|$)' . \
   -g '!**/.git/**' \
@@ -63,7 +63,7 @@ rg --hidden --no-ignore -n 'fixtures/(assets/)?v[1-9](/|$)|/fixtures/(assets/)?v
 
 - [x] Legacy brand/content scan returned no matches outside generated reports and excluded binary/image/CSV files.
 - [x] Legacy path/name scan returned no matches outside dependency caches.
-- [x] Numbered directory scan returned no actual `v1` through `v9` directory basenames outside dependency caches.
+- [x] Numbered directory scan returned no actual `legacy` through `threejs parity` directory basenames outside dependency caches.
 - [x] Numbered fixture path scan returned no matches outside generated reports.
 - [x] `pnpm typecheck` passed.
 - [x] `pnpm build` passed and finalized dist exports.

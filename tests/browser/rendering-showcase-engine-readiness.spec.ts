@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("rendering showcase v1", () => {
+test.describe("rendering showcase legacy", () => {
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -16,8 +16,8 @@ test.describe("rendering showcase v1", () => {
 
   test("renders the canonical scene with renderer-owned shadows and postprocess", async ({ page }) => {
     await page.goto(`${server.origin}/examples/legacy-rendering-showcase/index.html`, { waitUntil: "domcontentloaded" });
-    await expect.poll(() => page.evaluate(() => window.__A3D_RENDERING_SHOWCASE_V1__?.status)).toBe("ready");
-    const state = await page.evaluate(() => window.__A3D_RENDERING_SHOWCASE_V1__);
+    await expect.poll(() => page.evaluate(() => window.__A3D_RENDERING_SHOWCASE_LEGACY__?.status)).toBe("ready");
+    const state = await page.evaluate(() => window.__A3D_RENDERING_SHOWCASE_LEGACY__);
     const screenshot = "tests/reports/legacy-rendering-showcase/rendering-showcase.png";
     mkdirSync(dirname(screenshot), { recursive: true });
     await page.locator("[data-testid='legacy-rendering-showcase-canvas']").screenshot({ path: screenshot });

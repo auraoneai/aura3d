@@ -13,7 +13,7 @@ if (screenshotAvailable) {
 }
 
 const report = {
-  schemaVersion: "a3d-engine-readiness-package-smoke-v1",
+  schemaVersion: "a3d-engine-readiness-package-smoke",
   generatedAt: new Date().toISOString(),
   ok: installSmoke.ok && screenshotAvailable,
   blocked: false,

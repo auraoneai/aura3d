@@ -1,10 +1,10 @@
-export interface V5PMREMPreset {
+export interface ThreeCompatPMREMPreset {
   readonly faceSize: number;
   readonly mipCount: number;
   readonly cacheKey: string;
 }
 
-export interface V5PMREMDiagnostics {
+export interface ThreeCompatPMREMDiagnostics {
   readonly cacheKey: string;
   readonly faceSize: number;
   readonly mipCount: number;
@@ -12,7 +12,7 @@ export interface V5PMREMDiagnostics {
   readonly warnings: readonly string[];
 }
 
-export function createV5PMREMDiagnostics(pmrem: V5PMREMPreset, format: string): V5PMREMDiagnostics {
+export function createThreeCompatPMREMDiagnostics(pmrem: ThreeCompatPMREMPreset, format: string): ThreeCompatPMREMDiagnostics {
   const bytesPerPixel = format === "rgbe-hdr" ? 4 : 8;
   const estimatedBytes = Array.from({ length: pmrem.mipCount }, (_, mip) => {
     const size = Math.max(1, pmrem.faceSize >> mip);
@@ -23,8 +23,8 @@ export function createV5PMREMDiagnostics(pmrem: V5PMREMPreset, format: string): 
     ...pmrem,
     estimatedBytes,
     warnings: [
-      ...(pmrem.faceSize < 256 ? ["PMREM face size is below V5 flagship quality floor."] : []),
-      ...(pmrem.mipCount < 8 ? ["PMREM mip count is below V5 roughness coverage floor."] : [])
+      ...(pmrem.faceSize < 256 ? ["PMREM face size is below ThreeCompat flagship quality floor."] : []),
+      ...(pmrem.mipCount < 8 ? ["PMREM mip count is below ThreeCompat roughness coverage floor."] : [])
     ]
   };
 }

@@ -1,4 +1,4 @@
-import { Picking, type PickingOptions, type PickingReport, type V5PickResult } from "./Picking";
+import { Picking, type PickingOptions, type PickingReport, type ThreeCompatPickResult } from "./Picking";
 import { ControlVector3, type ControlObject3DLike, type ControlPickMetadata, type Vector3Like } from "./NativeControlTypes";
 
 export type PickingAnnotationKind = "hotspot" | "label" | "district" | "building" | "robot" | "entity";
@@ -198,7 +198,7 @@ export function pickAnnotation<TPayload = unknown>(
 }
 
 export function annotationFromPickHit<TPayload = unknown>(
-  hit: V5PickResult | null | undefined
+  hit: ThreeCompatPickResult | null | undefined
 ): PickingAnnotation<TPayload> | null {
   const value = hit?.object.userData?.a3dPickingAnnotation;
   return isPickingAnnotation(value) ? value as PickingAnnotation<TPayload> : null;
@@ -359,7 +359,7 @@ function readableLabel(value: string): string {
   return value.replace(/[_:-]+/g, " ").replace(/\s+/g, " ").trim() || "Picking target";
 }
 
-function compareAnnotationHitsByPriority(left: V5PickResult, right: V5PickResult): number {
+function compareAnnotationHitsByPriority(left: ThreeCompatPickResult, right: ThreeCompatPickResult): number {
   const priorityDelta = (right.metadata?.priority ?? 0) - (left.metadata?.priority ?? 0);
   if (Math.abs(priorityDelta) > 1e-8) return priorityDelta;
   return left.distance - right.distance;

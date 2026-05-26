@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildInitialCompatibilityMatrix } from "../../../packages/three-compat/src/ThreeCompatibilityMatrix";
 import { buildThreeApiInventory, REQUIRED_THREE_API_CATEGORIES } from "../../../packages/three-compat/src/ThreeApiInventory";
 
-describe("V5 Three.js inventory", () => {
+describe("ThreeCompat Three.js inventory", () => {
   it("builds a broad categorized inventory and compatibility matrix", () => {
     const sampleExports = [
       "Object3D",

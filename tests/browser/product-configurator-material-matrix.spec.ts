@@ -49,7 +49,7 @@ test.describe("Product configurator material diagnostic matrix", () => {
             `spec:import:error:${error instanceof Error ? error.message : String(error)}`
           ];
           window.__A3D_PRODUCT_MATERIAL_MATRIX__ = {
-            schema: "a3d-product-configurator-material-matrix/v1",
+            schema: "a3d-product-configurator-material-matrix",
             status: "error",
             source: "tests/browser/product-configurator-material-matrix-harness.ts",
             galleryUiBypassed: true,
@@ -104,7 +104,7 @@ test.describe("Product configurator material diagnostic matrix", () => {
 
     const report = await page.evaluate(() => window.__A3D_PRODUCT_MATERIAL_MATRIX__) as ProductMaterialMatrixReport;
     expect(report.status, report.error).toBe("ready");
-    expect(report.schema).toBe("a3d-product-configurator-material-matrix/v1");
+    expect(report.schema).toBe("a3d-product-configurator-material-matrix");
     expect(report.galleryUiBypassed).toBe(true);
     expect(report.asset).toEqual({
       id: "car-concept",
@@ -319,7 +319,7 @@ function pngBufferFromDataUrl(dataUrl: string): Buffer {
 }
 
 interface ProductMaterialMatrixReport {
-  readonly schema: "a3d-product-configurator-material-matrix/v1";
+  readonly schema: "a3d-product-configurator-material-matrix";
   readonly status: "ready" | "error";
   readonly source: string;
   readonly galleryUiBypassed: true;

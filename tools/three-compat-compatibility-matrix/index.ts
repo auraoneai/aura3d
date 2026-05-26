@@ -26,7 +26,7 @@ const checks = [
   {
     id: "status-coverage",
     pass: Array.isArray(matrix?.entries) && matrix.entries.every((entry) => ["supported", "partial", "planned", "blocked", "out-of-scope"].includes(entry.status)),
-    detail: "Every matrix entry must use a valid V5 compatibility status."
+    detail: "Every matrix entry must use a valid Three.js compatibility compatibility status."
   },
   {
     id: "blocked-boundary",
@@ -36,7 +36,7 @@ const checks = [
 ];
 
 const report = {
-  schema: "a3d-three-compat-compatibility-matrix-readiness/v1",
+  schema: "a3d-three-compat-compatibility-matrix-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((entry) => entry.pass),
   matrixPath,

@@ -32,7 +32,7 @@ test.describe("shadow cascade motion visual pixels", () => {
   });
 
   test("renders a WebGL2 caster and stable cascaded shadow-pass metadata for a moved caster projection", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     const result = await page.waitForFunction(
       () => window.__AURA3D_SHADOW_LAB__?.status === "ready" || window.__AURA3D_SHADOW_LAB__?.status === "error",
       undefined,

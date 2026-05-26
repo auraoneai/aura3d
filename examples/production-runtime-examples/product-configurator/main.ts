@@ -1,6 +1,6 @@
-import { runV6Example } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows/production";
 
-void runV6Example({
+void runProductionExample({
   appId: "production-runtime-example-product-configurator",
   sceneId: "product-configurator",
   title: "Product Configurator",

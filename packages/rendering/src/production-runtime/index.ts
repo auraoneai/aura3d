@@ -1,71 +1,71 @@
 export {
   ProductionWebGL2Renderer,
   analyzePixels,
-  summarizeV6ProductionProof,
-  summarizeV6WebGL2Proof
+  summarizeProductionProductionProof,
+  summarizeProductionWebGL2Proof
 } from "./ProductionWebGL2Renderer";
 export type { ProductionWebGL2RendererOptions } from "./ProductionWebGL2Renderer";
 export {
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  createV6ToneMappingPolicy,
-  parseV6RadianceHDR
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  createProductionToneMappingPolicy,
+  parseProductionRadianceHDR
 } from "./PBRHDRPipeline";
 export {
-  createV6EffectsRenderSource,
-  summarizeV6EffectsProof
+  createProductionEffectsRenderSource,
+  summarizeProductionEffectsProof
 } from "./ProductionEffectsPipeline";
 export {
   ProductionWebGPURenderer,
-  createV6WebGPUReport,
-  createV7WebGPUReadinessReport
+  createProductionWebGPUReport,
+  createProductionWebGPUReadinessReport
 } from "./ProductionWebGPURenderer";
 export {
-  createV6OrbitControlPreset,
-  summarizeV6AnimationWorkflow
+  createProductionOrbitControlPreset,
+  summarizeProductionAnimationWorkflow
 } from "./AnimationControlsPipeline";
 export type {
-  V6EnvironmentLightingResources,
-  V6PbrHdrPipeline,
-  V6PbrHdrPipelineOptions,
-  V6RadianceHDR,
-  V6ToneMappingOperator,
-  V6ToneMappingPolicy
+  ProductionEnvironmentLightingResources,
+  ProductionPbrHdrPipeline,
+  ProductionPbrHdrPipelineOptions,
+  ProductionRadianceHDR,
+  ProductionToneMappingOperator,
+  ProductionToneMappingPolicy
 } from "./PBRHDRPipeline";
 export type {
-  V6EffectsOptions,
-  V6EffectsSummary
+  ProductionEffectsOptions,
+  ProductionEffectsSummary
 } from "./ProductionEffectsPipeline";
 export type {
-  V6WebGPUAdapterLike,
-  V6WebGPULike,
-  V6WebGPUReport,
-  V6WebGPUStatus,
-  V7WebGPUReadinessItem,
-  V7WebGPUReadinessReport,
+  ProductionWebGPUAdapterLike,
+  ProductionWebGPULike,
+  ProductionWebGPUReport,
+  ProductionWebGPUStatus,
+  ProductionWebGPUReadinessItem,
+  ProductionWebGPUReadinessReport,
   ProductionWebGPURendererOptions
 } from "./ProductionWebGPURenderer";
 export type {
-  V6AnimationMetadataInput,
-  V6AnimationWorkflowSummary,
-  V6OrbitControlPreset
+  ProductionAnimationMetadataInput,
+  ProductionAnimationWorkflowSummary,
+  ProductionOrbitControlPreset
 } from "./AnimationControlsPipeline";
 export {
-  V6_WEBGL2_REQUIRED_FEATURES,
-  V7_WEBGPU_REQUIRED_FEATURES
+  PRODUCTION_WEBGL2_REQUIRED_FEATURES,
+  RUNTIME_PARITY_WEBGPU_REQUIRED_FEATURES
 } from "./ProductionRendererTypes";
 export type {
-  V6ImportedAssetRenderMetadata,
-  V6PixelMetrics,
-  V6ProductionRenderer,
-  V6RenderProof,
-  V6RendererBackend,
-  V6RendererFeature,
-  V6RendererFeatureState,
-  V6RendererInput,
-  V7FrameRenderResult
+  ProductionImportedAssetRenderMetadata,
+  ProductionPixelMetrics,
+  ProductionProductionRenderer,
+  ProductionRenderProof,
+  ProductionRendererBackend,
+  ProductionRendererFeature,
+  ProductionRendererFeatureState,
+  ProductionRendererInput,
+  RuntimeParityFrameRenderResult
 } from "./ProductionRendererTypes";
-export * from "./RendererV6";
+export * from "./ProductionRuntimeRenderer";
 export * from "./backends/RendererBackend";
 export * from "./backends/WebGL2RendererBackend";
 export * from "./backends/WebGPURendererBackend";
@@ -98,7 +98,7 @@ export * from "./passes/OpaquePass";
 export * from "./passes/TransparentPass";
 export * from "./passes/SkyboxPass";
 export * from "./passes/ToneMappingPass";
-export * from "./postprocess/EffectComposerV6";
+export * from "./postprocess/ProductionEffectComposer";
 export * from "./postprocess/BloomPass";
 export * from "./postprocess/SSAOPass";
 export * from "./postprocess/DOFPass";

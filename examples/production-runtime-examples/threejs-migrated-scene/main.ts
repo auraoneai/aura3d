@@ -1,10 +1,10 @@
-import { runV6Example } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows/production";
 
-void runV6Example({
+void runProductionExample({
   appId: "production-runtime-example-threejs-migrated-scene",
   sceneId: "threejs-migrated-scene",
   title: "Three.js Migrated Scene",
-  workflow: "same real corpus scene used by Three.js parity harness, rendered through A3D V6 public workflow API",
+  workflow: "same real corpus scene used by Three.js parity harness, rendered through A3D Production public workflow API",
   assets: [
     { id: "damaged-helmet", label: "Damaged Helmet", file: "damaged-helmet.glb", role: "primary" },
     { id: "clear-coat-test", label: "Clear Coat Test", file: "clear-coat-test.glb", role: "secondary" }

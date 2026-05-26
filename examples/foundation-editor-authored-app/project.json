@@ -1,7 +1,7 @@
 {
   "version": 1,
   "metadata": {
-    "name": "V3 Editor Authored Sample",
+    "name": "Editor Authored Sample",
     "savedAt": "2026-05-07T00:00:00.000Z",
     "provenance": {
       "authoringTool": "aura3d-browser-editor",
@@ -95,7 +95,7 @@
   },
   "plugins": ["aura3d.default-authoring"],
   "export": {
-    "title": "Aura3D V3 Editor Export",
+    "title": "Aura3D Editor Export",
     "entryNodeId": "node-hero"
   }
 }

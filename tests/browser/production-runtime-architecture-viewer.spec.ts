@@ -1,3 +1,3 @@
-import { runV6V6AppTest } from "./production-runtime-production-runtime-app-test";
+import { runProductionProductionAppTest } from "./production-runtime-production-runtime-app-test";
 
-runV6V6AppTest({ appId: "production-architecture-viewer", path: "/apps/architecture-viewer/" });
+runProductionProductionAppTest({ appId: "production-architecture-viewer", path: "/apps/architecture-viewer/" });

@@ -8,11 +8,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8GeometryDrawRange?: V8GeometryDrawRangeRuntime;
+    __a3dCurrentRoutesGeometryDrawRange?: CurrentRoutesGeometryDrawRangeRuntime;
   }
 }
 
-interface V8GeometryDrawRangeRuntime {
+interface CurrentRoutesGeometryDrawRangeRuntime {
   readonly appId: "geometry-drawrange";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -51,7 +51,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8GeometryDrawRange = runtime;
+    window.__a3dCurrentRoutesGeometryDrawRange = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -127,7 +127,7 @@ async function run(): Promise<void> {
           drawCalls: diagnostics.drawCalls,
           fps
         }, indexedCube.indexBuffer?.count ?? 0, arrayQuads.indexBuffer?.count ?? arrayQuads.vertexBuffer.vertexCount);
-        window.__a3dV8GeometryDrawRange = runtime;
+        window.__a3dCurrentRoutesGeometryDrawRange = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -147,11 +147,11 @@ async function run(): Promise<void> {
 
 function createRuntime(
   startedAt: number,
-  status: V8GeometryDrawRangeRuntime["status"],
-  patch: Partial<Omit<V8GeometryDrawRangeRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "indexedRangeStart" | "indexedRangeCount" | "arrayRangeStart" | "arrayRangeCount" | "usesIndexedRange" | "usesArrayRange">> = {},
+  status: CurrentRoutesGeometryDrawRangeRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesGeometryDrawRangeRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "indexedRangeStart" | "indexedRangeCount" | "arrayRangeStart" | "arrayRangeCount" | "usesIndexedRange" | "usesArrayRange">> = {},
   indexedTotalCount = 0,
   arrayTotalCount = 0
-): V8GeometryDrawRangeRuntime {
+): CurrentRoutesGeometryDrawRangeRuntime {
   return {
     appId: APP_ID,
     status,
@@ -194,11 +194,11 @@ function multiply(left: Float32Array, right: Float32Array): Float32Array {
   return output;
 }
 
-function renderUi(root: HTMLElement, runtime: V8GeometryDrawRangeRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesGeometryDrawRangeRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Geometry DrawRange</h1>
+        <h1>CurrentRoutes Geometry DrawRange</h1>
         <p>Indexed and array draw ranges routed through A3D render commands.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

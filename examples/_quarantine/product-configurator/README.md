@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This demo is a v3 product-app slice for Aura3D. It loads a generated local over-ear headphone glTF fixture, renders the model geometry through the public `@aura3d/rendering` WebGL2 path, and exposes runtime evidence for material variants, camera controls, environment controls, frame timing, draw calls, screenshot export state, and user interaction.
+This demo is a foundation product-app slice for Aura3D. It loads a generated local over-ear headphone glTF fixture, renders the model geometry through the public `@aura3d/rendering` WebGL2 path, and exposes runtime evidence for material variants, camera controls, environment controls, frame timing, draw calls, screenshot export state, and user interaction.
 
 ## Run
 

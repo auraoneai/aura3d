@@ -37,10 +37,10 @@ type BlenderSameCorpusExportAsset = {
 };
 
 type BlenderSameCorpusExportReport = {
-  readonly schemaVersion: "blender-same-corpus-export-v1";
+  readonly schemaVersion: "blender-same-corpus-export";
   readonly ok: boolean;
   readonly generatedAt: string;
-  readonly command: "pnpm audit:v4-blender-same-corpus-export";
+  readonly command: "pnpm audit:external-parity-blender-same-corpus-export";
   readonly blender: {
     readonly executable?: string;
     readonly version?: string;
@@ -342,10 +342,10 @@ function createReport(
     assets.length === manifest.assets.length ? "" : `Blender same-corpus result count is incomplete (${assets.length}/${manifest.assets.length}).`
   ].filter((entry): entry is string => entry.length > 0);
   return {
-    schemaVersion: "blender-same-corpus-export-v1",
+    schemaVersion: "blender-same-corpus-export",
     ok: blockers.length === 0,
     generatedAt: new Date().toISOString(),
-    command: "pnpm audit:v4-blender-same-corpus-export",
+    command: "pnpm audit:external-parity-blender-same-corpus-export",
     blender: { executable: blender, version, available: true },
     sourceManifest: {
       path: manifestPath,
@@ -370,14 +370,14 @@ function createBlockedReport(manifest: GLTFCorpusManifest, blocker: string): Ble
       code: "ASSET_BLENDER_SAME_CORPUS_NOT_RUN",
       severity: "error",
       message: blocker,
-      nextAction: "Install Blender or set A3D_BLENDER, then run pnpm audit:v4-blender-same-corpus-export."
+      nextAction: "Install Blender or set A3D_BLENDER, then run pnpm audit:external-parity-blender-same-corpus-export."
     }]
   }));
   return {
-    schemaVersion: "blender-same-corpus-export-v1",
+    schemaVersion: "blender-same-corpus-export",
     ok: false,
     generatedAt: new Date().toISOString(),
-    command: "pnpm audit:v4-blender-same-corpus-export",
+    command: "pnpm audit:external-parity-blender-same-corpus-export",
     blender: { available: false },
     sourceManifest: {
       path: manifestPath,

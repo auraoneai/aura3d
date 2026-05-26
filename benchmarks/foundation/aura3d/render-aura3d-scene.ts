@@ -1,7 +1,7 @@
 import { createAssetViewerWorkflow, createInteractiveSceneWorkflow } from "@aura3d/workflows";
 import { Geometry, PBRMaterial, Renderer, createLightingDefault, type RenderDeviceDiagnostics, type RenderItem } from "@aura3d/rendering";
 import { composeMat4 } from "@aura3d/scene";
-import type { V3ComparisonObject, V3ComparisonScene } from "../shared/scenes";
+import type { FoundationComparisonObject, FoundationComparisonScene } from "../shared/scenes";
 
 export interface Aura3DComparisonResult {
   readonly engine: "a3d";
@@ -14,7 +14,7 @@ export interface Aura3DComparisonResult {
   readonly gaps: readonly string[];
 }
 
-export async function renderAura3DComparisonScene(scene: V3ComparisonScene, options: { readonly origin: string; readonly setupLines: number }): Promise<Aura3DComparisonResult> {
+export async function renderAura3DComparisonScene(scene: FoundationComparisonScene, options: { readonly origin: string; readonly setupLines: number }): Promise<Aura3DComparisonResult> {
   const canvas = createComparisonCanvas(`${scene.id}-a3d`);
   const renderer = await Renderer.create({
     backend: "webgl2",
@@ -72,7 +72,7 @@ export async function renderAura3DComparisonScene(scene: V3ComparisonScene, opti
   };
 }
 
-function toAura3DRenderItem(object: V3ComparisonObject): RenderItem {
+function toAura3DRenderItem(object: FoundationComparisonObject): RenderItem {
   return {
     label: object.label,
     geometry: toAura3DGeometry(object),
@@ -86,7 +86,7 @@ function toAura3DRenderItem(object: V3ComparisonObject): RenderItem {
   };
 }
 
-function toAura3DGeometry(object: V3ComparisonObject) {
+function toAura3DGeometry(object: FoundationComparisonObject) {
   if (object.geometry === "sphere") return Geometry.uvSphere(1, 48, 24, { textured: true });
   if (object.geometry === "cylinder") return Geometry.cylinder({ radius: 1, height: 1, textured: true });
   return Geometry.texturedCube(1);

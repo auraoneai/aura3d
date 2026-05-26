@@ -22,14 +22,14 @@ import {
   SpriteMaterialCompat,
   TextureLoaderCompat,
   TorusGeometryCompat,
-  V5_COMPAT_GEOMETRY_TYPES,
-  V5_COMPAT_MATERIAL_TYPES,
-  V5_COMPAT_TEXTURE_SETTINGS,
+  THREE_COMPAT_COMPAT_GEOMETRY_TYPES,
+  THREE_COMPAT_COMPAT_MATERIAL_TYPES,
+  THREE_COMPAT_COMPAT_TEXTURE_SETTINGS,
   WebGLMultipleRenderTargetsCompat,
   WebGLRenderTargetCompat
 } from "../../../packages/three-compat/src";
 
-describe("V5 material and geometry compatibility", () => {
+describe("ThreeCompat material and geometry compatibility", () => {
   it("covers common Three.js geometry, material, texture, and render target APIs", () => {
     const geometries = [
       new BoxGeometryCompat(),
@@ -68,13 +68,13 @@ describe("V5 material and geometry compatibility", () => {
     const mrt = new WebGLMultipleRenderTargetsCompat(256, 256, 4);
     target.setSize(1024, 512);
 
-    expect(geometries.map((geometry) => geometry.type)).toEqual([...V5_COMPAT_GEOMETRY_TYPES]);
+    expect(geometries.map((geometry) => geometry.type)).toEqual([...THREE_COMPAT_COMPAT_GEOMETRY_TYPES]);
     expect(bufferGeometry.getAttribute("normal")?.array).toEqual([0, 1, 0]);
     expect(bufferGeometry.drawRange).toEqual({ start: 3, count: 6 });
     bufferGeometry.deleteAttribute("normal");
     expect(bufferGeometry.getAttribute("normal")).toBeUndefined();
     expect(() => bufferGeometry.setDrawRange(-1, 2)).toThrow(/drawRange/);
-    expect(materials.map((material) => material.type)).toEqual([...V5_COMPAT_MATERIAL_TYPES]);
+    expect(materials.map((material) => material.type)).toEqual([...THREE_COMPAT_COMPAT_MATERIAL_TYPES]);
     expect((materials[6] as PointsMaterialCompat).sizeAttenuation).toBe(false);
     expect((materials[8] as SpriteMaterialCompat).rotation).toBe(0.25);
     expect(points.type).toBe("Points");
@@ -84,7 +84,7 @@ describe("V5 material and geometry compatibility", () => {
       rotation: 0.25
     })]);
     expect(spriteBatch.children).toContain(sprite);
-    expect(V5_COMPAT_TEXTURE_SETTINGS).toEqual(["wrapS", "wrapT", "magFilter", "minFilter", "colorSpace", "flipY"]);
+    expect(THREE_COMPAT_COMPAT_TEXTURE_SETTINGS).toEqual(["wrapS", "wrapT", "magFilter", "minFilter", "colorSpace", "flipY"]);
     expect(texture.needsUpdate).toBe(true);
     expect(target.width).toBe(1024);
     expect(mrt.textures).toHaveLength(4);

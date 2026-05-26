@@ -9,11 +9,11 @@ const entries = [
   ["scene", "Interior Scene", "tests/reports/external-gallery/scenes/external-interior-scene.png"],
   ["character", "Character Viewer", "tests/reports/external-gallery/characters/external-character-viewer.png"],
   ["interactive", "Interactive Showcase", "tests/reports/external-gallery/interactive/external-interactive-showcase.png"],
-  ["template", "V4 Product Viewer Template", "tests/reports/external-gallery/templates/external-parity-product-viewer.png"],
-  ["template", "V4 Material Studio Template", "tests/reports/external-gallery/templates/external-parity-material-studio.png"],
-  ["template", "V4 Asset Gallery Template", "tests/reports/external-gallery/templates/external-parity-asset-gallery.png"],
-  ["template", "V4 Interactive Scene Template", "tests/reports/external-gallery/templates/external-parity-interactive-scene.png"],
-  ["gallery", "V4 Gallery", "tests/reports/external-gallery/gallery/external-gallery.png"],
+  ["template", "External parity Product Viewer Template", "tests/reports/external-gallery/templates/external-parity-product-viewer.png"],
+  ["template", "External parity Material Studio Template", "tests/reports/external-gallery/templates/external-parity-material-studio.png"],
+  ["template", "External parity Asset Gallery Template", "tests/reports/external-gallery/templates/external-parity-asset-gallery.png"],
+  ["template", "External parity Interactive Scene Template", "tests/reports/external-gallery/templates/external-parity-interactive-scene.png"],
+  ["gallery", "External parity Gallery", "tests/reports/external-gallery/gallery/external-gallery.png"],
   ["threejs", "Three.js Product Parity", "tests/reports/external-parity-threejs-visual-parity/product-configurator-threejs.png"],
   ["diff", "Product Parity Diff", "tests/reports/external-parity-threejs-visual-parity/product-configurator-diff.png"],
   ["performance", "Large Scene Performance", "tests/reports/external-gallery/performance/large-scene-performance.png"]
@@ -57,21 +57,21 @@ const manifestEntries = entries.map(([category, title, path]) => {
 
 const pass = manifestEntries.every((entry) => entry.exists && entry.bytes > 8_000 && entry.width >= 300 && entry.height >= 180);
 const report = {
-  schema: "a3d-external-parity-screenshot-gallery/v1",
+  schema: "a3d-external-parity-screenshot-gallery",
   generatedAt: new Date().toISOString(),
   pass,
   entries: manifestEntries,
   categoryCoverage: [...new Set(manifestEntries.map((entry) => entry.category))],
-  productBoundary: "Screenshot gallery is evidence for V4 supported workflows and examples. It is not a release audit."
+  productBoundary: "Screenshot gallery is evidence for External parity supported workflows and examples. It is not a release audit."
 };
 
 mkdirSync(dirname(resolve("tests/reports/external-parity-screenshot-gallery.json")), { recursive: true });
 mkdirSync(dirname(resolve("tests/reports/external-gallery/index.html")), { recursive: true });
 writeFileSync(resolve("tests/reports/external-gallery/index.html"), [
   "<!doctype html>",
-  "<html><head><meta charset=\"utf-8\"><title>V4 Screenshot Gallery</title></head>",
+  "<html><head><meta charset=\"utf-8\"><title>External parity Screenshot Gallery</title></head>",
   "<body>",
-  "<h1>V4 Screenshot Gallery</h1>",
+  "<h1>External parity Screenshot Gallery</h1>",
   ...manifestEntries.map((entry) => `<figure><img src="../../${entry.path.replace("tests/reports/", "")}" width="320"><figcaption>${entry.title} - ${entry.sceneId} - ${entry.rendererBackend} - ${entry.resolution} - ${entry.environmentPreset} - ${entry.materialMode} - draw calls: ${entry.drawCalls} - assets: ${entry.assetCount} - warnings: ${entry.warnings.length}</figcaption></figure>`),
   "</body></html>"
 ].join("\n"));
@@ -106,12 +106,12 @@ function metadataFor(category: string, title: string, path: string, width: numbe
     performance: "tests/browser/external-parity-large-scene.spec.ts"
   };
   const sourceByCategory: Record<string, string> = {
-    product: "examples/external-product-configurator/ProductConfiguratorV4.ts",
-    material: "examples/external-material-studio/MaterialStudioV4.ts",
-    asset: "examples/external-asset-gallery/AssetGalleryV4.ts",
-    scene: "examples/external-interior-scene/InteriorSceneV4.ts",
-    character: "examples/external-character-viewer/CharacterViewerV4.ts",
-    interactive: "examples/external-interactive-showcase/InteractiveShowcaseV4.ts",
+    product: "examples/external-product-configurator/ExternalProductConfigurator.ts",
+    material: "examples/external-material-studio/ExternalMaterialStudio.ts",
+    asset: "examples/external-asset-gallery/ExternalAssetGallery.ts",
+    scene: "examples/external-interior-scene/ExternalInteriorScene.ts",
+    character: "examples/external-character-viewer/ExternalCharacterViewer.ts",
+    interactive: "examples/external-interactive-showcase/ExternalInteractiveShowcase.ts",
     template: appByCategory.template ? `${appByCategory.template}/src/main.ts` : "templates/external-parity-product-viewer/src/main.ts",
     gallery: "tools/external-parity-screenshot-gallery/index.ts",
     threejs: "benchmarks/external-parity/threejs/product-configurator.ts",

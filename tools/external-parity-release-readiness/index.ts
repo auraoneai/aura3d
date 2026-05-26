@@ -79,7 +79,7 @@ for (const path of requiredScreenshots) {
   check(`screenshot:${path}`, existsSync(absolute) && statSync(absolute).size > 8_000, `${path} must exist and be non-placeholder.`);
 }
 
-const humanReview = existsSync(resolve("docs/project/v4-roadmap-human-visual-review.md")) ? read("docs/project/v4-roadmap-human-visual-review.md") : "";
+const humanReview = existsSync(resolve("docs/project/verification-evidence.md")) ? read("docs/project/verification-evidence.md") : "";
 check(
   "human-visual-review",
   humanReview.includes("No reviewed flagship scene is rejected as primitive test output") &&
@@ -90,21 +90,21 @@ check(
 const releaseScript = read("package.json");
 check(
   "release-script",
-  releaseScript.includes("\"v4:release\"") &&
-    releaseScript.includes("v4:package") &&
+  releaseScript.includes("\"external-parity:release\"") &&
+    releaseScript.includes("external-parity:package") &&
     releaseScript.includes("tools/external-parity-release-readiness/index.ts") &&
     releaseScript.includes("tools/external-parity-roadmap-completion-audit/index.ts"),
-  "package.json must expose the full v4:release command."
+  "package.json must expose the full external-parity:release command."
 );
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-release-readiness/v1",
+  schema: "a3d-external-parity-release-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 release readiness evidence is present and passing."
-    : "V4 release readiness evidence is incomplete.",
+    ? "External parity release readiness evidence is present and passing."
+    : "External parity release readiness evidence is incomplete.",
   requiredReports,
   requiredScreenshots,
   checks

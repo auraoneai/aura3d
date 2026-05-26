@@ -20,7 +20,7 @@ import {
   Vector3Compat
 } from "../../../packages/three-compat/src";
 
-describe("V5 Three.js core compatibility", () => {
+describe("ThreeCompat Three.js core compatibility", () => {
   it("supports a migrated Three.js-style scene graph with cameras, lights, helpers, and raycasting", () => {
     const scene = new SceneCompat();
     const group = new GroupCompat();

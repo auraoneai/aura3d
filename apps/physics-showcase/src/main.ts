@@ -14,13 +14,13 @@ import { applyShowcaseImpulse, createPhysicsScene, raycastImpulse, stepPhysicsSc
 
 declare global {
   interface Window {
-    __a3dV8PhysicsShowcase?: V8PhysicsRuntime;
+    __a3dCurrentRoutesPhysicsShowcase?: CurrentRoutesPhysicsRuntime;
   }
 }
 
 type RuntimeStatus = "loading" | "ready" | "running" | "error";
 
-interface V8PhysicsRuntime {
+interface CurrentRoutesPhysicsRuntime {
   readonly status: RuntimeStatus;
   readonly appId: "physics-showcase";
   readonly statusLabel: string;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let controls: PhysicsControlState = DEFAULT_PHYSICS_CONTROLS;
   let fixture = createPhysicsScene();
   let snapshot = fixture.world.snapshot();
-  let runtime: V8PhysicsRuntime = {
+  let runtime: CurrentRoutesPhysicsRuntime = {
     status: "loading",
     appId: APP_ID,
     statusLabel: "Loading",
@@ -74,7 +74,7 @@ async function run(): Promise<void> {
     rendererStatus: "pending",
     elapsedMs: 0
   };
-  const update = (patch: Partial<V8PhysicsRuntime>): void => {
+  const update = (patch: Partial<CurrentRoutesPhysicsRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
     publish(root, runtime, controls);
   };
@@ -130,7 +130,7 @@ async function run(): Promise<void> {
     };
     const metadata = {
       assetId: APP_ID,
-      assetName: "V8 Physics Showcase Fixture",
+      assetName: "CurrentRoutes Physics Showcase Fixture",
       assetUri: "/apps/physics-showcase/",
       meshCount: fixture.bodies.length + 4,
       primitiveCount: fixture.bodies.length + 4,
@@ -181,7 +181,7 @@ async function run(): Promise<void> {
           debugOverlay: controls.debugOverlay,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__a3dV8PhysicsShowcase = runtime;
+        window.__a3dCurrentRoutesPhysicsShowcase = runtime;
         if (nextFrame === 1 || nextFrame % 8 === 0) publish(root, runtime, controls);
         requestAnimationFrame(render);
       } catch (error) {
@@ -268,10 +268,10 @@ function bodyItem(resources: PhysicsResources, view: PhysicsBodyView): RenderIte
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-physics-key");
+  const key = new DirectionalLight("current-routes-physics-key");
   key.intensity = 3.5;
   key.color = [1, 0.94, 0.84];
-  const fill = new DirectionalLight("v8-physics-fill");
+  const fill = new DirectionalLight("current-routes-physics-fill");
   fill.intensity = 1.5;
   fill.color = [0.58, 0.72, 1];
   return [
@@ -280,13 +280,13 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function publish(root: HTMLElement, runtime: V8PhysicsRuntime, controls: PhysicsControlState): void {
-  window.__a3dV8PhysicsShowcase = runtime;
+function publish(root: HTMLElement, runtime: CurrentRoutesPhysicsRuntime, controls: PhysicsControlState): void {
+  window.__a3dCurrentRoutesPhysicsShowcase = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "loading" ? "is-loading" : "is-running";
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Physics Showcase</h1>
+        <h1>CurrentRoutes Physics Showcase</h1>
         <p>A3D physics rigid bodies, a spring constraint, raycast impulse, and rendered contact diagnostics.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>

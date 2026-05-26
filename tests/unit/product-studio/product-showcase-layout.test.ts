@@ -10,7 +10,7 @@ describe("product showcase layout", () => {
       { assetId: "materials-variants-shoe", slot: "right-variant", materialVariantControl: "shoeVariant", defaultMaterialVariant: "beach" }
     ]);
 
-    expect(layout.schema).toBe("a3d-product-showcase-layout/v1");
+    expect(layout.schema).toBe("a3d-product-showcase-layout");
     expect(layout.mode).toBe("hero-product-with-secondary-detail");
     expect(layout.items.map((item) => item.assetId)).toEqual([
       "chronograph-watch",

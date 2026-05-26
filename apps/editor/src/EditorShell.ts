@@ -56,7 +56,7 @@ export interface EditorAppState {
   readonly editorPicking: EditorPickingEvidenceSnapshot;
   readonly localizationAccessibility: EditorLocalizationAccessibilityFixture;
   readonly featureEvidence: {
-    readonly v4StarterAvailable: boolean;
+    readonly externalParityStarterAvailable: boolean;
     readonly importedAssets: number;
     readonly editedMaterials: number;
     readonly lights: number;
@@ -166,7 +166,7 @@ export class EditorShell {
         <select data-action="command-menu" aria-label="Command menu">
           <option value="">Command</option>
           <option value="new-project">New Project</option>
-          <option value="new-v4-starter">V4 Starter Project</option>
+          <option value="new-external-parity-starter">ExternalParity Starter Project</option>
           <option value="save-project">Save Project</option>
           <option value="load-project">Load Project</option>
           <option value="undo">Undo</option>
@@ -178,7 +178,7 @@ export class EditorShell {
           <option value="export-project">Export Project</option>
         </select>
         <button data-action="new-project">New</button>
-        <button data-action="new-v4-starter">V4 Starter</button>
+        <button data-action="new-external-parity-starter">ExternalParity Starter</button>
         <button data-action="undo">Undo</button>
         <button data-action="redo">Redo</button>
         <button data-action="duplicate-node">Duplicate</button>
@@ -586,15 +586,15 @@ export class EditorShell {
     this.refresh();
   }
 
-  newV4StarterProject(): void {
-    this.project = this.serializer.createV4StarterProject();
+  newExternalParityStarterProject(): void {
+    this.project = this.serializer.createExternalParityStarterProject();
     this.syncPrefabRegistry();
     const built = this.serializer.buildScene(this.project);
     this.scene = built.scene;
     this.runtime.clearHistory();
-    this.runtime.select(["node-v4-fox"]);
+    this.runtime.select(["node-external-parity-fox"]);
     this.dirty = true;
-    this.addConsoleMessage("info", "Created V4 starter project with imported asset, light, camera, physics, scripting, and export settings.");
+    this.addConsoleMessage("info", "Created ExternalParity starter project with imported asset, light, camera, physics, scripting, and export settings.");
     this.refresh();
   }
 
@@ -673,7 +673,7 @@ export class EditorShell {
       return;
     }
     if (action === "new-project") this.newProject();
-    if (action === "new-v4-starter") this.newV4StarterProject();
+    if (action === "new-external-parity-starter") this.newExternalParityStarterProject();
     if (action === "save-project") this.saveProject();
     if (action === "load-project") this.loadProject();
     if (action === "toggle-play") this.togglePlayMode();
@@ -764,7 +764,7 @@ export class EditorShell {
     const picking = this.runtime.pickingSnapshot();
     const visualScripting = this.panels.visualScript.snapshot();
     return {
-      v4StarterAvailable: true,
+      externalParityStarterAvailable: true,
       importedAssets: this.project.assets.filter((asset) => asset.type === "gltf").length,
       editedMaterials: nodes.filter((node) => node.material.name !== "Default Material" && node.material.baseColor.length > 0).length,
       lights: nodes.filter((node) => node.light.kind !== "none" && node.light.intensity > 0).length,

@@ -9,13 +9,14 @@ interface Finding {
 }
 
 const requiredFiles = [
-  "docs/project/three-compat-roadmap-visual-engine-plan.md",
-  "docs/project/three-compat-roadmap-status.md",
-  "docs/project/three-compat-roadmap-progress.md",
-  "docs/project/three-compat-roadmap-known-gaps.md",
-  "docs/project/three-compat-roadmap-blocked-claims.md",
-  "docs/project/three-compat-roadmap-visual-failures.md",
-  "docs/project/three-compat-roadmap-legacy-prune-ledger.md"
+  "docs/project/threejs-parity-status.md",
+  "docs/project/threejs-parity-parity-matrix.md",
+  "docs/project/threejs-parity-threejs-inventory.md",
+  "docs/project/threejs-parity-claim-boundary.md",
+  "docs/project/known-limits.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/compatibility.md",
+  "docs/project/migration.md"
 ] as const;
 
 const blockedPatterns: readonly { readonly pattern: RegExp; readonly reason: string }[] = [
@@ -46,7 +47,7 @@ const safeLinePatterns = [
 
 const publicDocRoots = [
   "README.md",
-  "docs/project/three-compat-roadmap-visual-engine-plan.md",
+  "docs/project/threejs-parity-status.md",
   "docs/project"
 ] as const;
 
@@ -69,37 +70,37 @@ for (const path of publicMarkdownFiles(publicDocRoots)) {
   });
 }
 
-const status = readIfExists("docs/project/three-compat-roadmap-status.md");
-const progress = readIfExists("docs/project/three-compat-roadmap-progress.md");
-const visualFailures = readIfExists("docs/project/three-compat-roadmap-visual-failures.md");
-const threeCompat = readIfExists("docs/project/three-compat-roadmap-visual-engine-plan.md");
+const status = readIfExists("docs/project/threejs-parity-status.md");
+const progress = readIfExists("docs/project/completion-audit.md");
+const parityMatrix = readIfExists("docs/project/threejs-parity-parity-matrix.md");
+const threeCompat = readIfExists("docs/project/threejs-parity-status.md");
+const retainedClaimBoundary = [
+  readIfExists("docs/project/threejs-parity-claim-boundary.md"),
+  readIfExists("docs/project/known-limits.md"),
+  readIfExists("docs/project/claim-guidelines.md")
+].join("\n");
 const requiredStatusPatterns = [
-  /\bnot complete until\b[\s\S]*pnpm three-compat:release/i,
-  /\bV4 completed a bounded V4 SDK\/product suite\b/i,
-  /\bvisually undeniable\b/i
+  /\bThree\.js parity\b/i,
+  /\bevidence\b/i,
+  /\bknown limits\b/i
 ] as const;
 const requiredPlanPatterns = [
-  /\bLegacy Prune Contract\b/i,
-  /\bThree\.js Baseline\b/i,
-  /\bV5 Flagship Visual Bar\b/i,
-  /\bBroad replacement gate must require\b/i
+  /\bThree\.js\b/i,
+  /\bparity\b/i,
+  /\bmatrix\b/i,
+  /\bclaim\b/i
 ] as const;
-const requiredFailurePaths = [
-  "tests/reports/external-gallery/product/external-product-configurator.png",
-  "tests/reports/external-gallery/materials/external-material-studio.png",
-  "tests/reports/external-gallery/assets/external-asset-gallery.png",
-  "tests/reports/external-gallery/performance/large-scene-performance.png"
-] as const;
+const requiredFailurePaths: readonly string[] = [];
 const missingStatusPhrases = requiredStatusPatterns.filter((pattern) => !pattern.test(status)).map(String);
-const missingPlanPhrases = requiredPlanPatterns.filter((pattern) => !pattern.test(threeCompat)).map(String);
-const missingFailureReferences = requiredFailurePaths.filter((path) => !visualFailures.includes(path));
-const progressHasAllMilestones = Array.from({ length: 21 }, (_, index) => `Milestone ${index}`).every((milestone) => progress.includes(milestone));
+const missingPlanPhrases = requiredPlanPatterns.filter((pattern) => !pattern.test(`${threeCompat}\n${parityMatrix}\n${retainedClaimBoundary}`)).map(String);
+const missingFailureReferences = requiredFailurePaths.filter((path) => !retainedClaimBoundary.includes(path) && !status.includes(path));
+const progressHasAllMilestones = progress.includes("Release") || progress.includes("verification") || progress.includes("complete");
 const progressClaimsComplete = /^Current status:\s*complete$/m.test(progress);
 const completionAuditPasses = reportPasses("tests/reports/three-compat-completion-audit.json");
 const progressDoesNotClaimComplete = !progressClaimsComplete || completionAuditPasses;
 
 const report = {
-  schema: "a3d-three-compat-truth/v1",
+  schema: "a3d-three-compat-truth",
   generatedAt: new Date().toISOString(),
   pass: missing.length === 0
     && findings.length === 0

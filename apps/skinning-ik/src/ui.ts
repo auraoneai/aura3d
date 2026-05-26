@@ -1,10 +1,10 @@
 import type { IkTargetState } from "./ikTargets.js";
 
-export type V8IkStatus = "loading" | "ready" | "running" | "error";
+export type CurrentRoutesIkStatus = "loading" | "ready" | "running" | "error";
 
-export interface V8SkinningIkRuntime {
+export interface CurrentRoutesSkinningIkRuntime {
   appId: "skinning-ik";
-  status: V8IkStatus;
+  status: CurrentRoutesIkStatus;
   statusLabel: string;
   frameCount: number;
   drawCalls: number;
@@ -32,7 +32,7 @@ export interface V8SkinningIkRuntime {
   error?: string;
 }
 
-export function renderIkUi(root: HTMLElement, runtime: V8SkinningIkRuntime, state: IkTargetState): void {
+export function renderIkUi(root: HTMLElement, runtime: CurrentRoutesSkinningIkRuntime, state: IkTargetState): void {
   root.innerHTML = `
     <section class="panel">
       <h1>Robot Expressive IK</h1>

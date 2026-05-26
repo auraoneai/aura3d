@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createPhysicsPlaygroundSimulation } from "../../../apps/advanced-examples-gallery/src/physicsSimulation";
 
-describe("v9 physics playground simulation", () => {
+describe("threejsParity physics playground simulation", () => {
   it("advances gallery objects through the real PhysicsWorld contact path", () => {
     const simulation = createPhysicsPlaygroundSimulation();
     const initial = simulation.advance({

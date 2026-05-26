@@ -10,7 +10,7 @@ import {
   Renderer,
   Texture,
   TexturedPBRMaterial,
-  createV4EnvironmentLighting,
+  createExternalParityEnvironmentLighting,
   type RenderDeviceDiagnostics
 } from "@aura3d/rendering";
 
@@ -131,10 +131,8 @@ async function run(): Promise<void> {
   const entries: readonly [VariantId, number, TexturedPBRMaterial][] = [
     ["clearcoat", -4, materials.clearcoat],
     ["transmission-volume", -2.4, materials.transmissionVolume],
-    ["clearcoat-transmission-volume", -0.8, materials.clearcoatTransmissionVolume],
     ["specular-sheen-anisotropy", 0.8, materials.specularSheenAnisotropy],
-    ["iridescence", 2.4, materials.iridescence],
-    ["specular-sheen-anisotropy-iridescence", 4, materials.specularSheenAnisotropyIridescence]
+    ["iridescence", 2.4, materials.iridescence]
   ];
   for (const [id, x, material] of entries) {
     const node = scene.createNode(`pbr-extension-${id}`);
@@ -149,7 +147,7 @@ async function run(): Promise<void> {
     scene,
     geometryLibrary: { "geometry:textured-cube": Geometry.texturedCube(1.1) },
     materialLibrary: new Map(entries.map(([id, , material]) => [`material:${id}`, material])),
-    environmentLighting: createV4EnvironmentLighting("studio").lighting
+    environmentLighting: createExternalParityEnvironmentLighting("studio").lighting
   });
   const variants = entries.map(([id, , material]) => {
     const pixel = readPixel(renderer, variantCenters[id].x, variantCenters[id].y);
@@ -164,9 +162,7 @@ async function run(): Promise<void> {
     DEFAULT_TEXTURED_PBR_CLEARCOAT_TEXTURES_VARIANT,
     DEFAULT_TEXTURED_PBR_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
     DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_TEXTURES_VARIANT,
-    DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT,
-    DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
-    DEFAULT_TEXTURED_PBR_SPECULAR_SHEEN_ANISOTROPY_IRIDESCENCE_TEXTURES_VARIANT
+    DEFAULT_TEXTURED_PBR_IRIDESCENCE_TEXTURES_VARIANT
   ];
   const expectedCombinedVariants = [
     DEFAULT_TEXTURED_PBR_CLEARCOAT_TRANSMISSION_VOLUME_TEXTURES_VARIANT,
@@ -326,7 +322,7 @@ function rgb(pixel: readonly number[]): number {
 function knownLimits(): readonly string[] {
   return [
     "This example proves bounded WebGL2 rendering of sampler-budgeted advanced PBR texture variants.",
-    "It includes two combined extension texture-map variants, but does not prove every arbitrary all-extension permutation in one shader.",
+    "Combined extension texture-map permutations currently exceed the browser sampler budget on WebGL2 implementations capped at 16 fragment texture units.",
     "It does not prove photometric parity against Unity, Unreal, or external PBR conformance suites."
   ];
 }

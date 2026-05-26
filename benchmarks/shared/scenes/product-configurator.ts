@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "product-configurator",
   sceneVersion: 2,
-  assetId: "generated-headphone-configurator-v3",
+  assetId: "generated-headphone-configurator-foundation",
   assetClass: "generated-local-product-gltf",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 45,

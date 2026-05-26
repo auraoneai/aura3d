@@ -1,10 +1,10 @@
-import type { V5LightDescriptor } from "./LightingSystem";
-import type { V5MaterialMode } from "./MaterialSystem";
+import type { ThreeCompatLightDescriptor } from "./LightingSystem";
+import type { ThreeCompatMaterialMode } from "./MaterialSystem";
 
-export interface V5SceneRenderPlan {
+export interface ThreeCompatSceneRenderPlan {
   readonly cameras: readonly ("perspective" | "orthographic" | "cube-environment")[];
-  readonly lights: readonly V5LightDescriptor[];
-  readonly materialModes: readonly V5MaterialMode[];
+  readonly lights: readonly ThreeCompatLightDescriptor[];
+  readonly materialModes: readonly ThreeCompatMaterialMode[];
   readonly renderPasses: readonly string[];
   readonly sceneComplexity: {
     readonly meshes: number;
@@ -15,8 +15,8 @@ export interface V5SceneRenderPlan {
   };
 }
 
-export class V5SceneRenderer {
-  createComplexScenePlan(lights: readonly V5LightDescriptor[], materialModes: readonly V5MaterialMode[]): V5SceneRenderPlan {
+export class ThreeCompatSceneRenderer {
+  createComplexScenePlan(lights: readonly ThreeCompatLightDescriptor[], materialModes: readonly ThreeCompatMaterialMode[]): ThreeCompatSceneRenderPlan {
     return {
       cameras: ["perspective", "orthographic", "cube-environment"],
       lights,

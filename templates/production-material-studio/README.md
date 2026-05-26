@@ -1,4 +1,4 @@
-# A3D V6 Material Studio
+# A3D Material Studio
 
 This starter renders material-extension GLB assets with HDR IBL and postprocess through `@aura3d/engine/workflows`.
 

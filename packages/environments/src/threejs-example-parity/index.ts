@@ -1,7 +1,7 @@
-export type V8EnvironmentId = "studio-small-08" | "venice-sunset" | "industrial-sunset-puresky";
+export type CurrentRoutesEnvironmentId = "studio-small-08" | "venice-sunset" | "industrial-sunset-puresky";
 
-export interface V8EnvironmentPreset {
-  readonly id: V8EnvironmentId;
+export interface CurrentRoutesEnvironmentPreset {
+  readonly id: CurrentRoutesEnvironmentId;
   readonly label: string;
   readonly localPath: string;
   readonly class: "studio" | "outdoor" | "industrial";
@@ -12,7 +12,7 @@ export interface V8EnvironmentPreset {
   readonly rotation: number;
 }
 
-export const V8_ENVIRONMENTS: readonly V8EnvironmentPreset[] = [
+export const CURRENT_ROUTES_ENVIRONMENTS: readonly CurrentRoutesEnvironmentPreset[] = [
   {
     id: "studio-small-08",
     label: "Studio Small 08",
@@ -27,7 +27,7 @@ export const V8_ENVIRONMENTS: readonly V8EnvironmentPreset[] = [
   {
     id: "venice-sunset",
     label: "Venice Sunset",
-    localPath: "fixtures/environment-corpus/hdri/venice_sunset_1k.hdr",
+    localPath: "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
     class: "outdoor",
     intensity: 1.35,
     backgroundIntensity: 0.95,
@@ -38,7 +38,7 @@ export const V8_ENVIRONMENTS: readonly V8EnvironmentPreset[] = [
   {
     id: "industrial-sunset-puresky",
     label: "Industrial Sunset Pure Sky",
-    localPath: "fixtures/environment-corpus/hdri/industrial_sunset_puresky_1k.hdr",
+    localPath: "fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
     class: "industrial",
     intensity: 1.28,
     backgroundIntensity: 0.92,
@@ -48,17 +48,17 @@ export const V8_ENVIRONMENTS: readonly V8EnvironmentPreset[] = [
   }
 ] as const;
 
-export function listV8Environments(): readonly V8EnvironmentPreset[] {
-  return V8_ENVIRONMENTS;
+export function listCurrentRoutesEnvironments(): readonly CurrentRoutesEnvironmentPreset[] {
+  return CURRENT_ROUTES_ENVIRONMENTS;
 }
 
-export function resolveV8Environment(id: V8EnvironmentId = "studio-small-08"): V8EnvironmentPreset {
-  const environment = V8_ENVIRONMENTS.find((entry) => entry.id === id);
-  if (!environment) throw new Error(`Unknown V8 environment: ${id}`);
+export function resolveCurrentRoutesEnvironment(id: CurrentRoutesEnvironmentId = "studio-small-08"): CurrentRoutesEnvironmentPreset {
+  const environment = CURRENT_ROUTES_ENVIRONMENTS.find((entry) => entry.id === id);
+  if (!environment) throw new Error(`Unknown CurrentRoutes environment: ${id}`);
   return environment;
 }
 
-export function v8EnvironmentUrl(environment: V8EnvironmentPreset, origin = ""): string {
+export function currentRoutesEnvironmentUrl(environment: CurrentRoutesEnvironmentPreset, origin = ""): string {
   const prefix = origin.endsWith("/") ? origin.slice(0, -1) : origin;
   return `${prefix}/${environment.localPath}`;
 }

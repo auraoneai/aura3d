@@ -217,10 +217,10 @@ declare global {
   }
 }
 
-test.describe("v3 renderer examples", () => {
+test.describe("foundation renderer examples", () => {
   let server: ExampleDevServer;
   const reportRunId = `foundation-rendering-${Date.now()}`;
-  const report: V3RenderingReport = {
+  const report: FoundationRenderingReport = {
     ok: false,
     generatedAt: new Date().toISOString(),
     command: "pnpm exec playwright test tests/browser/rendering-foundation-labs.spec.ts --grep \"shadow lab\"",
@@ -323,7 +323,7 @@ test.describe("v3 renderer examples", () => {
         evidence: ["packages/rendering/src/RendererTiming.ts", "examples/postprocess-lab/main.ts", "examples/renderer-stress-lab/main.ts", "tests/unit/rendering/renderer-timing.test.ts", "tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
-        task: "V3 visual tests verify expected color/material/geometry regions instead of accepting nonblank pixels.",
+        task: "Foundation visual tests verify expected color/material/geometry regions instead of accepting nonblank pixels.",
         evidence: ["tests/browser/rendering-foundation-labs.spec.ts", "tests/reports/foundation-rendering.json"]
       },
       {
@@ -384,7 +384,10 @@ test.describe("v3 renderer examples", () => {
       "physical-glass",
       "physical-water",
       "physical-skin",
-      "physical-hair"
+      "physical-eye",
+      "physical-hair",
+      "physical-terrain",
+      "physical-toon"
     ]);
     expect(result?.knownLimits.join(" ")).toContain("HDR environment input is blocked");
     expect(Object.keys(result?.materialKnownLimits ?? {}).sort()).toEqual([
@@ -400,10 +403,13 @@ test.describe("v3 renderer examples", () => {
       "metal-rough",
       "normal-mapped",
       "physical-copper",
+      "physical-eye",
       "physical-glass",
       "physical-gold",
       "physical-hair",
       "physical-skin",
+      "physical-terrain",
+      "physical-toon",
       "physical-water",
       "sheen-like",
       "transmission-like"
@@ -548,7 +554,7 @@ test.describe("v3 renderer examples", () => {
   });
 
   test("shadow lab validates cascade metadata and projected shadow regions", async ({ page }, testInfo) => {
-    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_SHADOW_LAB__?.status === "ready" || window.__AURA3D_SHADOW_LAB__?.status === "error",
       undefined,
@@ -661,7 +667,7 @@ test.describe("v3 renderer examples", () => {
   });
 
   test("postprocess lab validates before and after pass pixels", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => window.__AURA3D_POSTPROCESS_LAB__?.status === "ready" || window.__AURA3D_POSTPROCESS_LAB__?.status === "error",
       undefined,
@@ -672,7 +678,7 @@ test.describe("v3 renderer examples", () => {
     expect(result?.status, result?.error).toBe("ready");
     expect(result?.renderer).toBe("webgl2-real-scene-postprocess");
     expect(result?.visualClaim).toBe("bounded-real-scene-postprocess-lab");
-    expect(result?.realScene?.source).toBe("v4-product-gltf-webgl2-readback");
+    expect(result?.realScene?.source).toBe("external-parity-product-gltf-webgl2-readback");
     expect(result?.realScene?.drawCalls ?? 0).toBeGreaterThanOrEqual(1);
     expect(result?.errors).toEqual([]);
     expect(result?.diagnostics?.lastError).toBeNull();
@@ -867,18 +873,18 @@ test.describe("v3 renderer examples", () => {
   });
 });
 
-interface V3RenderingReport {
+interface FoundationRenderingReport {
   ok: boolean;
   generatedAt: string;
   command: string;
-  run: V3RenderingRun;
+  run: FoundationRenderingRun;
   evidence: Record<string, unknown>;
-  validations: V3RenderingValidation[];
+  validations: FoundationRenderingValidation[];
   completedTaskEvidence: Array<{ readonly task: string; readonly evidence: readonly string[] }>;
   blockedTasks: readonly string[];
 }
 
-interface V3RenderingRun {
+interface FoundationRenderingRun {
   readonly id: string;
   readonly agent: string;
   readonly startedAt: string;
@@ -886,7 +892,7 @@ interface V3RenderingRun {
   finishedAt?: string;
 }
 
-interface V3RenderingValidation {
+interface FoundationRenderingValidation {
   readonly name: string;
   readonly ok: boolean;
   readonly metrics: Record<string, number>;

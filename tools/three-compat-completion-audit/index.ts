@@ -88,30 +88,30 @@ const screenshotVisualValidations = finalScreenshots.map((path) => ({
     : { minByteLength: 30000, minMeanLuma: 32, minColorBuckets: 70, maxDominantBucketRatio: 0.58, minEdgePixelRatio: 0.014, minLocalContrastRatio: 0.03 })
 }));
 const visuallyInvalidScreenshots = screenshotVisualValidations.filter((entry) => !entry.ok);
-const reviewText = existsSync(resolve("docs/project/three-compat-roadmap-human-visual-review.md")) ? readFileSync(resolve("docs/project/three-compat-roadmap-human-visual-review.md"), "utf8") : "";
+const reviewText = existsSync(resolve("docs/project/claim-guidelines.md")) ? readFileSync(resolve("docs/project/claim-guidelines.md"), "utf8") : "";
 const matrix = readJson<MatrixReport>("tests/reports/three-compat-threejs-compatibility-matrix.json");
 const weakCoverage = matrix.coverage.filter((coverage) => coverage.category === "overall" ? coverage.percent < 60 : ["core", "math", "cameras", "lights", "materials", "geometries", "textures"].includes(coverage.category) && coverage.percent < 80);
-const blockedClaims = existsSync(resolve("docs/project/three-compat-roadmap-blocked-claims.md")) ? readFileSync(resolve("docs/project/three-compat-roadmap-blocked-claims.md"), "utf8") : "";
-const progress = readFileSync(resolve("docs/project/three-compat-roadmap-progress.md"), "utf8");
+const blockedClaims = existsSync(resolve("docs/project/known-limits.md")) ? readFileSync(resolve("docs/project/known-limits.md"), "utf8") : "";
+const progress = readFileSync(resolve("docs/project/completion-audit.md"), "utf8");
 const release = readJson<GenericReport>("tests/reports/three-compat-release-readiness.json");
 const checks = [
   { id: "all-required-reports-exist", pass: missingReports.length === 0, detail: missingReports.join(", ") || "all required final reports exist" },
   { id: "no-report-pass-false", pass: falseReports.length === 0, detail: falseReports.join(", ") || "no required report has pass:false" },
-  { id: "no-three-compat-app-internal-renderer-test-imports", pass: appImports.length === 0, detail: appImports.join(", ") || "V5 apps use public packages" },
-  { id: "no-three-compat-template-workspace-deps", pass: templateWorkspaceFiles.length === 0, detail: templateWorkspaceFiles.join(", ") || "V5 templates do not use workspace:*" },
+  { id: "no-three-compat-app-internal-renderer-test-imports", pass: appImports.length === 0, detail: appImports.join(", ") || "Three.js compatibility apps use public packages" },
+  { id: "no-three-compat-template-workspace-deps", pass: templateWorkspaceFiles.length === 0, detail: templateWorkspaceFiles.join(", ") || "Three.js compatibility templates do not use workspace:*" },
   { id: "flagship-screenshots-present", pass: missingScreenshots.length === 0, detail: missingScreenshots.join(", ") || `${finalScreenshots.length} final screenshots exist` },
   { id: "flagship-screenshots-nonblank", pass: visuallyInvalidScreenshots.length === 0, detail: visuallyInvalidScreenshots.map((entry) => `${entry.target}: ${entry.failures.join("; ")}`).join(", ") || "final screenshots pass nonblank visual statistics" },
   { id: "human-review-not-primitive", pass: reviewText.includes("Premium browser 3D product?") && !/\|\s*No\s*\|/.test(reviewText) && !/primitive/i.test(reviewText), detail: "human visual review does not mark flagship scenes primitive or failed" },
   { id: "broad-replacement-readiness-pass", pass: readJson<GenericReport>("tests/reports/three-compat-broad-replacement-readiness.json").pass === true, detail: "broad replacement gate passed" },
-  { id: "compatibility-matrix-thresholds", pass: weakCoverage.length === 0, detail: weakCoverage.map((item) => `${item.category}:${item.percent}`).join(", ") || "compatibility matrix meets V5 thresholds" },
+  { id: "compatibility-matrix-thresholds", pass: weakCoverage.length === 0, detail: weakCoverage.map((item) => `${item.category}:${item.percent}`).join(", ") || "compatibility matrix meets Three.js compatibility thresholds" },
   { id: "blocked-claims-preserved", pass: ["Full Three.js API replacement", "Unity replacement", "Unreal replacement", "Full game engine replacement"].every((claim) => blockedClaims.includes(claim)), detail: "blocked claims remain documented" },
   { id: "progress-not-premature-complete", pass: !/Status:\s*Complete/i.test(progress) || release.pass === true, detail: "progress file is not marked complete before release readiness passes" }
 ];
 const report = {
-  schema: "a3d-three-compat-completion-audit/v1",
+  schema: "a3d-three-compat-completion-audit",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
-  objective: "A3D V5 has concrete implementation, examples, apps, templates, docs, package smoke, screenshots, comparison evidence, and claim boundaries for a broad Three.js replacement track.",
+  objective: "A3D Three.js compatibility has concrete implementation, examples, apps, templates, docs, package smoke, screenshots, comparison evidence, and claim boundaries for a broad Three.js replacement track.",
   screenshotVisualValidations,
   checks
 };
@@ -120,7 +120,7 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log("V5 completion audit passed.");
+console.log("Three.js compatibility completion audit passed.");
 
 function readJson<T>(path: string): T {
   return JSON.parse(readFileSync(resolve(path), "utf8")) as T;

@@ -419,15 +419,15 @@ test.describe("rendering WebGPU backend", () => {
         label: "browser-canvas-triangle-draw-bind-group"
       })
     ]);
-    expect(result.uniformWrites).toEqual([
-      [
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1,
-        1, 1, 1, 1
-      ]
+    expect(result.uniformWrites).toHaveLength(1);
+    expect(result.uniformWrites[0]?.slice(0, 20)).toEqual([
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1,
+      1, 1, 1, 1
     ]);
+    expect(result.uniformWrites[0]?.length).toBeGreaterThanOrEqual(20);
     expect(result.submissions).toBeGreaterThanOrEqual(1);
     expect(result.unconfigured).toBe(true);
   });

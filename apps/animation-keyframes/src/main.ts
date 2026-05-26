@@ -1,5 +1,5 @@
-import { ASSET_URL, createInitialRuntime, publishRuntime, updateRuntime, type V8AnimationKeyframesRuntime, type V8KeyframeControls } from "./state.js";
-import { createV8KeyframeScene, drawFallbackFrame } from "./scene.js";
+import { ASSET_URL, createInitialRuntime, publishRuntime, updateRuntime, type CurrentRoutesAnimationKeyframesRuntime, type CurrentRoutesKeyframeControls } from "./state.js";
+import { createCurrentRoutesKeyframeScene, drawFallbackFrame } from "./scene.js";
 import { renderKeyframeUi } from "./ui.js";
 import { AnimationMotionQualityTracker } from "@aura3d/animation";
 
@@ -30,12 +30,12 @@ async function run(): Promise<void> {
     minimumPoseDiversityScore: 0.01
   });
 
-  const setControls = (next: V8KeyframeControls): void => {
+  const setControls = (next: CurrentRoutesKeyframeControls): void => {
     controls = next;
     runtime = updateRuntime(runtime, startedAt, { controls });
     renderKeyframeUi(root, { runtime, clips: clipNames, onControls: setControls });
   };
-  const publish = (patch: Partial<V8AnimationKeyframesRuntime>): void => {
+  const publish = (patch: Partial<CurrentRoutesAnimationKeyframesRuntime>): void => {
     runtime = updateRuntime(runtime, startedAt, patch);
     renderKeyframeUi(root, { runtime, clips: clipNames, onControls: setControls });
   };
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
 
   try {
     publish({ status: "loading", loadingStep: `creating A3D renderer and loading ${ASSET_URL}` });
-    const scene = await createV8KeyframeScene(canvas);
+    const scene = await createCurrentRoutesKeyframeScene(canvas);
     clipNames = scene.clips.map((clip) => clip.name);
     const preferred = scene.clips.find((clip) => clip.name === controls.clipName) ?? scene.clips.find((clip) => /dance|walk/i.test(clip.name)) ?? scene.clips[0];
     controls = { ...controls, clipName: preferred?.name ?? controls.clipName };

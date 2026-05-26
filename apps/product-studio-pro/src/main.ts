@@ -1,3 +1,3 @@
-import { mountProductConfiguratorV4 } from "../../../examples/external-product-configurator/ProductConfiguratorV4";
+import { mountExternalProductConfigurator } from "../../../examples/external-product-configurator/ExternalProductConfigurator";
 
-void mountProductConfiguratorV4("product-studio-pro");
+void mountExternalProductConfigurator("product-studio-pro");

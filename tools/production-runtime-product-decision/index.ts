@@ -7,21 +7,21 @@ interface Check {
   readonly detail: string;
 }
 
-const docPath = "docs/project/production-runtime-roadmap-product-decision-record.md";
+const docPath = "docs/project/competitive-positioning.md";
 const reportPath = "tests/reports/production-runtime-product-decision-record.json";
 const doc = existsSync(resolve(docPath)) ? readFileSync(resolve(docPath), "utf8") : "";
 
 const requiredHeadings = [
   "## Decision",
-  "## What A3D V6 Does Better Than Raw Three.js Today",
-  "## What A3D V6 Matches Three.js On Today",
+  "## What A3D Production runtime Does Better Than Raw Three.js Today",
+  "## What A3D Production runtime Matches Three.js On Today",
   "## What Three.js Still Does Better",
-  "## Production-Ready V6 Workflows",
-  "## Experimental V6 Workflows",
-  "## Blocked Claims After V6",
+  "## Production-Ready Production runtime Workflows",
+  "## Experimental Production runtime Workflows",
+  "## Blocked Claims After Production runtime",
   "## Public-Worthy Screenshots",
   "## Screenshots Not Public-Worthy",
-  "## Next Product Roadmap After V6",
+  "## Next Product Roadmap After Production runtime",
   "## Evidence"
 ] as const;
 
@@ -85,12 +85,12 @@ const checks: Check[] = [
       "does better than raw Three.js",
       "matches Three.js",
       "Three.js still does better",
-      "Production-Ready V6 Workflows",
-      "Experimental V6 Workflows",
-      "Blocked Claims After V6",
+      "Production-Ready Production runtime Workflows",
+      "Experimental Production runtime Workflows",
+      "Blocked Claims After Production runtime",
       "Public-Worthy Screenshots",
       "Screenshots Not Public-Worthy",
-      "Next Product Roadmap After V6"
+      "Next Product Roadmap After Production runtime"
     ].every((phrase) => doc.toLowerCase().includes(phrase.toLowerCase())),
     detail: "required product decision questions are answered"
   },
@@ -118,7 +118,7 @@ const checks: Check[] = [
       "tests/reports/legacy-rendering-showcase/rendering-showcase.png",
       "tests/reports/three-compat-gallery/product/premium-product-viewer.png"
     ].every((path) => doc.includes(path)),
-    detail: "V1 and V5 failure screenshots are explicitly not public-worthy"
+    detail: "legacy and Three.js compatibility failure screenshots are explicitly not public-worthy"
   },
   {
     id: "evidence-reports-pass",
@@ -135,13 +135,13 @@ const checks: Check[] = [
   },
   {
     id: "roadmap-depth",
-    pass: sectionLineCount(doc, "## Next Product Roadmap After V6") >= 10,
+    pass: sectionLineCount(doc, "## Next Product Roadmap After Production runtime") >= 10,
     detail: "roadmap has at least 10 concrete next steps"
   }
 ];
 
 const report = {
-  schema: "a3d-production-runtime-product-decision-record/v1",
+  schema: "a3d-production-runtime-product-decision-record",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   docPath,

@@ -1,1 +1,1 @@
-export const V6_BENCHMARK_SCENES = ['product', 'materials', 'asset', 'architecture', 'large-scene'] as const;
+export const PRODUCTION_BENCHMARK_SCENES = ['product', 'materials', 'asset', 'architecture', 'large-scene'] as const;

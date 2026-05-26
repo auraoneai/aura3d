@@ -29,7 +29,7 @@ const reports = requiredReports.map((path) => ({
 }));
 const implementationFiles = files.map((path) => ({ path, exists: existsSync(resolve(path)) }));
 const report = {
-  schema: "a3d-product-studio-product-readiness/v1",
+  schema: "a3d-product-studio-product-readiness",
   generatedAt: new Date().toISOString(),
   pass: reports.every((entry) => entry.pass) && implementationFiles.every((entry) => entry.exists),
   reports,

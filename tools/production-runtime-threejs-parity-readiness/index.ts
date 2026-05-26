@@ -46,7 +46,7 @@ const checks = [
   { id: "gallery-comparison-screenshots-exist", pass: requiredGalleryScreenshots.every((path) => existsSync(resolve(path))), detail: requiredGalleryScreenshots.filter((path) => !existsSync(resolve(path))).join(", ") }
 ];
 const report = {
-  schema: "a3d-production-runtime-threejs-parity-readiness/v1",
+  schema: "a3d-production-runtime-threejs-parity-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks,

@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 WebGPU public SDK production path", () => {
+test.describe("runtime WebGPU public SDK production path", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -26,14 +26,14 @@ test.describe("V7 WebGPU public SDK production path", () => {
       canvas.height = HEIGHT;
       document.body.append(canvas);
 
-      const [engine, renderingV6] = await Promise.all([
+      const [engine, renderingProduction] = await Promise.all([
         import("/packages/engine/src/production-runtime/index.js"),
         import("/packages/rendering/src/production-runtime/index.js")
       ]);
-      const availability = await renderingV6.createV6WebGPUReport(navigator.gpu);
+      const availability = await renderingProduction.createProductionWebGPUReport(navigator.gpu);
       if (availability.status !== "available") {
         return {
-          schema: "a3d-v7-webgpu-sdk-production/v1",
+          schema: "a3d-runtime-webgpu-sdk-production",
           status: "blocked",
           productionClaim: "hardware-unavailable",
           availability,
@@ -48,9 +48,9 @@ test.describe("V7 WebGPU public SDK production path", () => {
       try {
         const viewport = { width: WIDTH, height: HEIGHT };
         asset = await engine.loadGltfScene({
-          url: `${location.origin}/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`,
-          assetId: "chronograph-watch",
-          assetName: "Chronograph Watch",
+          url: `${location.origin}/fixtures/threejs-parity/assets/vehicles/car-concept.glb`,
+          assetId: "car-concept",
+          assetName: "Car Concept",
           viewport
         });
         environment = await engine.loadHdrEnvironment({
@@ -63,7 +63,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
           toneMapping: { operator: "filmic", exposure: 0.96, whitePoint: 11.2 }
         });
         stage = engine.createGroundedStage(asset.resources.bounds, {
-          labelPrefix: "v7-webgpu-sdk-production",
+          labelPrefix: "runtime-webgpu-sdk-production",
           shadowLightDirection: [-0.42, -0.82, -0.38]
         });
         stage.update({ backgroundBlur: 0.08, backgroundVisible: true });
@@ -116,7 +116,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
           && result.proof.pixels.uniqueColorBuckets >= 40
           && result.proof.pixels.maxLuma > 80;
         return {
-          schema: "a3d-v7-webgpu-sdk-production/v1",
+          schema: "a3d-runtime-webgpu-sdk-production",
           status: ready ? "ready" : "blocked",
           productionClaim: ready ? "public-sdk-webgpu-production-path" : "not-ready",
           availability,
@@ -151,7 +151,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
         };
       } catch (error) {
         return {
-          schema: "a3d-v7-webgpu-sdk-production/v1",
+          schema: "a3d-runtime-webgpu-sdk-production",
           status: "blocked",
           productionClaim: "not-ready",
           availability,
@@ -172,7 +172,7 @@ test.describe("V7 WebGPU public SDK production path", () => {
       ...report
     }, null, 2)}\n`);
 
-    expect(report.schema).toBe("a3d-v7-webgpu-sdk-production/v1");
+    expect(report.schema).toBe("a3d-runtime-webgpu-sdk-production");
     if (report.status === "blocked" && report.productionClaim === "hardware-unavailable") {
       test.skip(true, report.reason);
       return;

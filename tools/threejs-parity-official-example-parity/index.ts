@@ -11,7 +11,7 @@ const issues = highPriorityIncomplete.map((item) => reportIssue(
 ));
 
 writeJson(outputPath, {
-  schema: "a3d-threejs-parity-official-example-parity/v1",
+  schema: "a3d-threejs-parity-official-example-parity",
   generatedAt: new Date().toISOString(),
   pass: highPriorityIncomplete.length === 0,
   examples: inventory.items.length,
@@ -19,4 +19,4 @@ writeJson(outputPath, {
   highPriorityIncomplete: highPriorityIncomplete.length,
   issues
 });
-console.log(`V9 official example parity report written: ${outputPath}`);
+console.log(`Three.js parity official example parity report written: ${outputPath}`);

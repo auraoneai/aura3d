@@ -11,7 +11,7 @@ const templates = [
   "production-webgpu-starter"
 ] as const;
 
-test.describe("V6 V6 templates", () => {
+test.describe("production production templates", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -37,13 +37,13 @@ test.describe("V6 V6 templates", () => {
       await page.goto(`${server.origin}/templates/${template}/`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(
         () => {
-          const runtime = window.__a3dV6Example as { status?: string } | undefined;
+          const runtime = window.__a3dProductionExample as { status?: string } | undefined;
           return runtime?.status === "ready" || runtime?.status === "error";
         },
         undefined,
         { timeout: 90_000 }
       );
-      const runtime = await page.evaluate(() => window.__a3dV6Example) as {
+      const runtime = await page.evaluate(() => window.__a3dProductionExample) as {
         status: "ready" | "error";
         error?: string;
         rendererBackend?: string;
@@ -66,7 +66,7 @@ test.describe("V6 V6 templates", () => {
       const screenshot = `tests/reports/production-runtime-templates/${template}.png`;
       await page.locator("#viewport").screenshot({ path: screenshot });
       writeFileSync(resolve(`tests/reports/production-runtime-templates/${template}.json`), `${JSON.stringify({
-        schema: "a3d-production-runtime-template-runtime/v1",
+        schema: "a3d-production-runtime-template-runtime",
         generatedAt: new Date().toISOString(),
         template,
         screenshot,

@@ -7,7 +7,7 @@ const commands = [
   ["pnpm", ["--silent", "tsx", "--tsconfig", "tsconfig.base.json", "tools/foundation-current-capability/index.ts"]],
 ] as const;
 
-export function runV3CodeGate(): number {
+export function runFoundationCodeGate(): number {
   let exitCode = 0;
   for (const [command, args] of commands) {
     const result = spawnSync(command, args, { stdio: "inherit", env: process.env });
@@ -18,5 +18,5 @@ export function runV3CodeGate(): number {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  process.exitCode = runV3CodeGate();
+  process.exitCode = runFoundationCodeGate();
 }

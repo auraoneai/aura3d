@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { baseReport, blockedV4Claims, listFiles, readJson, writeJson } from "../external-parity-reporting/index.js";
+import { baseReport, blockedExternalParityClaims, listFiles, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4GateStatus {
+export interface ExternalParityGateStatus {
   readonly gate: string;
   readonly passed: boolean;
   readonly blockers: readonly string[];
@@ -10,8 +10,17 @@ export interface V4GateStatus {
 
 const reportPath = "tests/reports/external-parity-current-capability.json";
 
-export function createV4CurrentCapabilityReport(root = process.cwd()) {
-  const docs = listFiles(root, ["docs/project"], [".md"]).filter((path) => path.startsWith("docs/project/v4-"));
+export function createExternalParityCurrentCapabilityReport(root = process.cwd()) {
+  const retainedDocs = new Set([
+    "docs/project/current-state.md",
+    "docs/project/threejs-parity-status.md",
+    "docs/project/threejs-parity-claim-boundary.md",
+    "docs/project/threejs-parity-parity-matrix.md",
+    "docs/project/verification-evidence.md",
+    "docs/project/claim-guidelines.md",
+    "docs/project/known-limits.md"
+  ]);
+  const docs = listFiles(root, ["docs/project"], [".md"]).filter((path) => retainedDocs.has(path));
   const docsText = docs.map((path) => readFileSync(`${root}/${path}`, "utf8")).join("\n");
   const uncheckedTaskCount = (docsText.match(/- \[ \]/g) ?? []).length;
   const checkedTaskCount = (docsText.match(/- \[x\]/gi) ?? []).length;
@@ -25,40 +34,40 @@ export function createV4CurrentCapabilityReport(root = process.cwd()) {
   const comparison = readJson(root, "tests/reports/external-parity-engine-comparison.json");
   const examplesPass = examples?.ok === true || examples?.pass === true;
 
-  const gates: V4GateStatus[] = [
+  const gates: ExternalParityGateStatus[] = [
     {
       gate: "Gate 1: Visual Credibility",
       passed: examplesPass && visualQuality?.ok === true,
       blockers: [
-        ...(examplesPass ? [] : ["v4 example screenshot manifest is missing or failing"]),
-        ...(visualQuality?.ok === true ? [] : ["v4 visual quality report is missing or failing"]),
+        ...(examplesPass ? [] : ["external-parity example screenshot manifest is missing or failing"]),
+        ...(visualQuality?.ok === true ? [] : ["external-parity visual quality report is missing or failing"]),
       ],
     },
     {
       gate: "Gate 2: Renderer Feature Evidence",
       passed: rendering?.ok === true,
-      blockers: rendering?.ok === true ? [] : ["v4 rendering report is missing or failing"],
+      blockers: rendering?.ok === true ? [] : ["external-parity rendering report is missing or failing"],
     },
     {
       gate: "Gate 3: Asset Fidelity",
       passed: assets?.ok === true,
-      blockers: assets?.ok === true ? [] : ["v4 asset corpus report is missing or failing"],
+      blockers: assets?.ok === true ? [] : ["external-parity asset corpus report is missing or failing"],
     },
     {
       gate: "Gate 4: Editor-Authored App",
       passed: editor?.ok === true,
-      blockers: editor?.ok === true ? [] : ["v4 editor authoring report is missing or failing"],
+      blockers: editor?.ok === true ? [] : ["external-parity editor authoring report is missing or failing"],
     },
     {
       gate: "Gate 5: Same-Scene Comparisons",
       passed: comparison?.ok === true,
-      blockers: comparison?.ok === true ? [] : ["v4 engine comparison report is missing or failing"],
+      blockers: comparison?.ok === true ? [] : ["external-parity engine comparison report is missing or failing"],
     },
     {
-      gate: "Gate 6: V4 Code Complete",
+      gate: "Gate 6: External parity Code Complete",
       passed: uncheckedTaskCount === 0,
       blockers: [
-        ...(uncheckedTaskCount === 0 ? [] : [`${uncheckedTaskCount} unchecked v4 markdown tasks remain`]),
+        ...(uncheckedTaskCount === 0 ? [] : [`${uncheckedTaskCount} unchecked external-parity markdown tasks remain`]),
       ],
     },
   ];
@@ -66,7 +75,7 @@ export function createV4CurrentCapabilityReport(root = process.cwd()) {
     gate.passed ? [] : gate.blockers.map((blocker) => `${gate.gate}: ${blocker}`),
   );
   const violations = [
-    ...(claimGates?.ok === true ? [] : ["v4 claim gate report is missing or failing"]),
+    ...(claimGates?.ok === true ? [] : ["external-parity claim gate report is missing or failing"]),
     ...blockedGateViolations,
   ];
   const report = {
@@ -84,16 +93,16 @@ export function createV4CurrentCapabilityReport(root = process.cwd()) {
         "tests/reports/external-parity-runtime.json",
         "tests/reports/external-parity-visual-quality.json",
       ],
-      blockedClaims: blockedV4Claims,
+      blockedClaims: blockedExternalParityClaims,
       violations,
     }),
     uncheckedTaskCount,
     checkedTaskCount,
     gates,
     blockedGateViolations,
-    decisionGateSource: existsSync(`${root}/docs/project/v4-decision-gates.md`) ? "docs/project/v4-decision-gates.md" : null,
+    decisionGateSource: existsSync(`${root}/docs/project/product-studio-decision-gates.md`) ? "docs/project/product-studio-decision-gates.md" : null,
     allowedClaims: [
-      "Only the exact narrowed claims in docs/project/v4-decision-gates.md may be used when their matching report gates pass.",
+      "Only the exact narrowed claims in docs/project/product-studio-decision-gates.md may be used when their matching report gates pass.",
     ],
   };
   return report;
@@ -101,7 +110,7 @@ export function createV4CurrentCapabilityReport(root = process.cwd()) {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4CurrentCapabilityReport();
+  const report = createExternalParityCurrentCapabilityReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

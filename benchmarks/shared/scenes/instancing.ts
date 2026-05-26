@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "instancing",
   sceneVersion: 1,
-  assetId: "generated-instanced-product-parts-v3",
+  assetId: "generated-instanced-product-parts-foundation",
   assetClass: "generated-local-instanced-product-parts",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 60,

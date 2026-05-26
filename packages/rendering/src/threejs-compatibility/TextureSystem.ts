@@ -1,10 +1,10 @@
-export interface V5TextureCapability {
+export interface ThreeCompatTextureCapability {
   readonly name: string;
   readonly supported: boolean;
 }
 
-export class V5TextureSystem {
-  readonly capabilities: readonly V5TextureCapability[] = [
+export class ThreeCompatTextureSystem {
+  readonly capabilities: readonly ThreeCompatTextureCapability[] = [
     { name: "srgb-textures", supported: true },
     { name: "linear-textures", supported: true },
     { name: "normal-maps", supported: true },

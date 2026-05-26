@@ -31,16 +31,16 @@ const scores = entries.map((entry) => {
 
 check("visual-scores", scores.every((entry) => entry.score >= 72), "Every gallery screenshot must meet minimum resolution/category/file-size visual evidence score.");
 check("threejs-parity-present", scores.some((entry) => entry.category === "threejs") && scores.some((entry) => entry.category === "diff"), "Gallery must include Three.js parity and diff evidence.");
-check("no-legacy-v1-gallery", entries.every((entry) => !String(entry.path).includes("legacy-product-viewer") && !String(entry.path).includes("legacy-material-studio")), "V4 gallery must not depend on the rejected V1 screenshots.");
+check("no-legacy-gallery", entries.every((entry) => !String(entry.path).includes("legacy-product-viewer") && !String(entry.path).includes("legacy-material-studio")), "External parity gallery must not depend on the rejected Legacy screenshots.");
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-visual-quality/v1",
+  schema: "a3d-external-parity-visual-quality",
   generatedAt: new Date().toISOString(),
   pass,
   scores,
   checks,
-  productBoundary: "Visual QA validates V4 gallery evidence only. It does not claim broad rendering parity or final release readiness."
+  productBoundary: "Visual QA validates External parity gallery evidence only. It does not claim broad rendering parity or final release readiness."
 };
 
 mkdirSync(dirname(resolve("tests/reports/external-parity-visual-quality.json")), { recursive: true });

@@ -23,8 +23,8 @@ export class MaterialCompat {
 }
 
 export class MeshBasicMaterialCompat extends MaterialCompat { override readonly type = "MeshBasicMaterial"; color = new ColorCompat(); }
-export class MeshLambertMaterialCompat extends MaterialCompat { override readonly type = "MeshLambertMaterial"; approximation = "V5 diffuse lighting approximation"; }
-export class MeshPhongMaterialCompat extends MaterialCompat { override readonly type = "MeshPhongMaterial"; shininess = 30; approximation = "V5 specular lighting approximation"; }
+export class MeshLambertMaterialCompat extends MaterialCompat { override readonly type = "MeshLambertMaterial"; approximation = "ThreeCompat diffuse lighting approximation"; }
+export class MeshPhongMaterialCompat extends MaterialCompat { override readonly type = "MeshPhongMaterial"; shininess = 30; approximation = "ThreeCompat specular lighting approximation"; }
 export class MeshStandardMaterialCompat extends MaterialCompat { override readonly type: string = "MeshStandardMaterial"; roughness = 0.5; metalness = 0; }
 export class MeshPhysicalMaterialCompat extends MeshStandardMaterialCompat { override readonly type = "MeshPhysicalMaterial"; clearcoat = 0; transmission = 0; ior = 1.5; }
 export class ShaderMaterialCompat extends MaterialCompat { override readonly type = "ShaderMaterial"; uniforms: Record<string, unknown> = {}; vertexShader = ""; fragmentShader = ""; }
@@ -53,7 +53,7 @@ export class SpriteMaterialCompat extends MaterialCompat {
   }
 }
 
-export const V5_COMPAT_MATERIAL_TYPES = [
+export const THREE_COMPAT_COMPAT_MATERIAL_TYPES = [
   "MeshBasicMaterial",
   "MeshLambertMaterial",
   "MeshPhongMaterial",

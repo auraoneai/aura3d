@@ -17,7 +17,7 @@ const CUBE_POSITIONS = [
 ] as const;
 
 describe("interactive cubes Three.js parity", () => {
-  it("matches Three.js Raycaster nearest-cube hits for the V8 picking scene", () => {
+  it("matches Three.js Raycaster nearest-cube hits for the CurrentRoutes picking scene", () => {
     const a3d = createA3DScene();
     const three = createThreeScene();
     const cases = [

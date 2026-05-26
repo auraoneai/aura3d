@@ -1,5 +1,5 @@
-export { RendererV9 } from "./RendererV9";
-export type { RendererV9Options, RendererV9Source } from "./RendererV9";
+export { AdvancedRenderer } from "./AdvancedRenderer";
+export type { AdvancedRendererOptions, AdvancedRendererSource } from "./AdvancedRenderer";
 export * from "../Renderer";
 export * from "../RenderDevice";
 export * from "../Geometry";

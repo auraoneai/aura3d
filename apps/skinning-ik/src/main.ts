@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
@@ -11,16 +11,16 @@ import {
 } from "@aura3d/rendering";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/scene";
-import { bindIkUi, renderIkUi, type V8SkinningIkRuntime } from "./ui.js";
+import { bindIkUi, renderIkUi, type CurrentRoutesSkinningIkRuntime } from "./ui.js";
 import { createDefaultIkTargetState, targetFromCanvasPoint, type IkTargetState, type Vec3 } from "./ikTargets.js";
 
 declare global {
   interface Window {
-    __a3dV8SkinningIk?: V8SkinningIkRuntime;
+    __a3dCurrentRoutesSkinningIk?: CurrentRoutesSkinningIkRuntime;
   }
 }
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
 const APP_ID = "skinning-ik" as const;
 const ASSET_URL = "/fixtures/threejs-parity/assets/character/robot-expressive.glb";
@@ -65,7 +65,7 @@ async function run(): Promise<void> {
   });
 
   const publish = (): void => {
-    window.__a3dV8SkinningIk = runtime;
+    window.__a3dCurrentRoutesSkinningIk = runtime;
     renderIkUi(root, runtime, state);
     bindControls(root, state, publish);
   };
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
       renderer.resize(size.width, size.height);
     });
     resizeObserver.observe(canvas);
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: ASSET_URL,
       assetId: "skinning-ik-robot-expressive",
       assetName: "Robot Expressive Imported Skeleton IK",
@@ -176,7 +176,7 @@ async function run(): Promise<void> {
             skinCount: pipeline.metadata.skinCount,
             morphTargetCount: pipeline.metadata.morphTargetCount,
             extensionsUsed: pipeline.metadata.extensionsUsed,
-            environmentId: "v8-fast-studio",
+            environmentId: "current-routes-fast-studio",
             hdrEnvironmentUri: "deferred"
           }
         });
@@ -216,7 +216,7 @@ async function run(): Promise<void> {
           renderer: "a3d-webgl2",
           fixture: "imported robot-expressive.glb skeleton IK"
         };
-        window.__a3dV8SkinningIk = runtime;
+        window.__a3dCurrentRoutesSkinningIk = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -236,7 +236,7 @@ async function run(): Promise<void> {
   }
 }
 
-function createRuntime(status: V8SkinningIkRuntime["status"], statusLabel: string, startedAt: number, state: IkTargetState): V8SkinningIkRuntime {
+function createRuntime(status: CurrentRoutesSkinningIkRuntime["status"], statusLabel: string, startedAt: number, state: IkTargetState): CurrentRoutesSkinningIkRuntime {
   return {
     appId: APP_ID,
     status,
@@ -347,7 +347,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v8-ik:${node.name}`,
+      label: `current-routes-ik:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -363,40 +363,40 @@ function createStageItems(): { readonly materialCount: number; readonly items: (
   const cube = Geometry.litCube(1);
   const targetSphere = Geometry.uvSphere(0.055, 24, 12);
   const sensorSphere = Geometry.uvSphere(0.042, 18, 10);
-  const floor = new PBRMaterial({ name: "v8-ik-floor", baseColor: [0.035, 0.045, 0.055, 1], roughness: 0.5, metallic: 0.06, environmentIntensity: 0.72 });
-  const deck = new PBRMaterial({ name: "v8-ik-deck", baseColor: [0.07, 0.09, 0.11, 1], roughness: 0.38, metallic: 0.16, environmentIntensity: 0.78 });
-  const rail = new PBRMaterial({ name: "v8-ik-chain-rail", baseColor: [0.12, 0.28, 0.42, 1], roughness: 0.34, metallic: 0.18, environmentIntensity: 0.8 });
-  const wall = new PBRMaterial({ name: "v8-ik-lab-wall", baseColor: [0.025, 0.035, 0.052, 1], roughness: 0.44, metallic: 0.12, environmentIntensity: 0.62 });
-  const glass = new PBRMaterial({ name: "v8-ik-glass-panel", baseColor: [0.08, 0.2, 0.28, 0.72], roughness: 0.18, metallic: 0.02, transmissionFactor: 0.2, emissiveColor: [0.01, 0.06, 0.08], emissiveStrength: 0.8 });
-  const emissiveBlue = new PBRMaterial({ name: "v8-ik-blue-light", baseColor: [0.12, 0.5, 0.82, 1], roughness: 0.22, metallic: 0.05, emissiveColor: [0.03, 0.28, 0.62], emissiveStrength: 2.4 });
-  const emissiveAmber = new PBRMaterial({ name: "v8-ik-amber-light", baseColor: [0.9, 0.52, 0.18, 1], roughness: 0.28, metallic: 0.04, emissiveColor: [0.45, 0.18, 0.04], emissiveStrength: 2.1 });
-  const target = new PBRMaterial({ name: "v8-ik-target", baseColor: [0.28, 0.95, 0.68, 1], roughness: 0.26, metallic: 0.08, emissiveColor: [0.02, 0.16, 0.08], emissiveStrength: 1.35 });
-  const ghost = new PBRMaterial({ name: "v8-ik-target-history", baseColor: [0.16, 0.52, 0.84, 0.82], roughness: 0.28, metallic: 0.02, emissiveColor: [0.02, 0.16, 0.32], emissiveStrength: 1.4 });
+  const floor = new PBRMaterial({ name: "current-routes-ik-floor", baseColor: [0.035, 0.045, 0.055, 1], roughness: 0.5, metallic: 0.06, environmentIntensity: 0.72 });
+  const deck = new PBRMaterial({ name: "current-routes-ik-deck", baseColor: [0.07, 0.09, 0.11, 1], roughness: 0.38, metallic: 0.16, environmentIntensity: 0.78 });
+  const rail = new PBRMaterial({ name: "current-routes-ik-chain-rail", baseColor: [0.12, 0.28, 0.42, 1], roughness: 0.34, metallic: 0.18, environmentIntensity: 0.8 });
+  const wall = new PBRMaterial({ name: "current-routes-ik-lab-wall", baseColor: [0.025, 0.035, 0.052, 1], roughness: 0.44, metallic: 0.12, environmentIntensity: 0.62 });
+  const glass = new PBRMaterial({ name: "current-routes-ik-glass-panel", baseColor: [0.08, 0.2, 0.28, 0.72], roughness: 0.18, metallic: 0.02, transmissionFactor: 0.2, emissiveColor: [0.01, 0.06, 0.08], emissiveStrength: 0.8 });
+  const emissiveBlue = new PBRMaterial({ name: "current-routes-ik-blue-light", baseColor: [0.12, 0.5, 0.82, 1], roughness: 0.22, metallic: 0.05, emissiveColor: [0.03, 0.28, 0.62], emissiveStrength: 2.4 });
+  const emissiveAmber = new PBRMaterial({ name: "current-routes-ik-amber-light", baseColor: [0.9, 0.52, 0.18, 1], roughness: 0.28, metallic: 0.04, emissiveColor: [0.45, 0.18, 0.04], emissiveStrength: 2.1 });
+  const target = new PBRMaterial({ name: "current-routes-ik-target", baseColor: [0.28, 0.95, 0.68, 1], roughness: 0.26, metallic: 0.08, emissiveColor: [0.02, 0.16, 0.08], emissiveStrength: 1.35 });
+  const ghost = new PBRMaterial({ name: "current-routes-ik-target-history", baseColor: [0.16, 0.52, 0.84, 0.82], roughness: 0.28, metallic: 0.02, emissiveColor: [0.02, 0.16, 0.32], emissiveStrength: 1.4 });
   return {
     materialCount: 9,
     items: (targetPosition, timeSeconds) => {
       const items: RenderItem[] = [
-        { label: "v8-ik-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.085, 0.15], [0, 0, 0, 1], [4.1, 0.05, 2.75]) },
-        { label: "v8-ik-deck", geometry: cube, material: deck, modelMatrix: composeMat4([0, -0.045, 0.22], [0, 0, 0, 1], [2.35, 0.05, 1.7]) },
-        { label: "v8-ik-back-wall", geometry: cube, material: wall, modelMatrix: composeMat4([0, 1.15, -1.35], [0, 0, 0, 1], [4.2, 2.35, 0.06]) },
-        { label: "v8-ik-left-workcell", geometry: cube, material: wall, modelMatrix: composeMat4([-1.85, 0.56, -0.58], [0, 0, 0, 1], [0.14, 1.05, 1.12]) },
-        { label: "v8-ik-right-workcell", geometry: cube, material: wall, modelMatrix: composeMat4([1.85, 0.56, -0.58], [0, 0, 0, 1], [0.14, 1.05, 1.12]) },
-        { label: "v8-ik-left-rail", geometry: cube, material: rail, modelMatrix: composeMat4([-1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
-        { label: "v8-ik-right-rail", geometry: cube, material: rail, modelMatrix: composeMat4([1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
-        { label: "v8-ik-target", geometry: targetSphere, material: target, modelMatrix: composeMat4(targetPosition, [0, 0, 0, 1], [1.3, 1.3, 1.3]) }
+        { label: "current-routes-ik-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.085, 0.15], [0, 0, 0, 1], [4.1, 0.05, 2.75]) },
+        { label: "current-routes-ik-deck", geometry: cube, material: deck, modelMatrix: composeMat4([0, -0.045, 0.22], [0, 0, 0, 1], [2.35, 0.05, 1.7]) },
+        { label: "current-routes-ik-back-wall", geometry: cube, material: wall, modelMatrix: composeMat4([0, 1.15, -1.35], [0, 0, 0, 1], [4.2, 2.35, 0.06]) },
+        { label: "current-routes-ik-left-workcell", geometry: cube, material: wall, modelMatrix: composeMat4([-1.85, 0.56, -0.58], [0, 0, 0, 1], [0.14, 1.05, 1.12]) },
+        { label: "current-routes-ik-right-workcell", geometry: cube, material: wall, modelMatrix: composeMat4([1.85, 0.56, -0.58], [0, 0, 0, 1], [0.14, 1.05, 1.12]) },
+        { label: "current-routes-ik-left-rail", geometry: cube, material: rail, modelMatrix: composeMat4([-1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
+        { label: "current-routes-ik-right-rail", geometry: cube, material: rail, modelMatrix: composeMat4([1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
+        { label: "current-routes-ik-target", geometry: targetSphere, material: target, modelMatrix: composeMat4(targetPosition, [0, 0, 0, 1], [1.3, 1.3, 1.3]) }
       ];
 
       const floorXTransforms: Mat4[] = [];
       for (let index = 0; index < 9; index += 1) {
         floorXTransforms.push(composeMat4([-1.8 + index * 0.45, -0.035, 0.22], [0, 0, 0, 1], [0.012, 0.012, 2.58]));
       }
-      items.push({ label: "v8-ik-floor-grid-x", geometry: cube, material: rail, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(floorXTransforms) });
+      items.push({ label: "current-routes-ik-floor-grid-x", geometry: cube, material: rail, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(floorXTransforms) });
 
       const floorZTransforms: Mat4[] = [];
       for (let index = 0; index < 7; index += 1) {
         floorZTransforms.push(composeMat4([0, -0.032, -1.02 + index * 0.4], [0, 0, 0, 1], [3.85, 0.012, 0.012]));
       }
-      items.push({ label: "v8-ik-floor-grid-z", geometry: cube, material: rail, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(floorZTransforms) });
+      items.push({ label: "current-routes-ik-floor-grid-z", geometry: cube, material: rail, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(floorZTransforms) });
 
       const trailTransforms: Mat4[] = [];
       for (let index = 0; index < 5; index += 1) {
@@ -407,7 +407,7 @@ function createStageItems(): { readonly materialCount: number; readonly items: (
           targetPosition[2] - 0.08 - index * 0.055
         ], [0, 0, 0, 1], [1, 1, 1]));
       }
-      items.push({ label: "v8-ik-target-trail", geometry: sensorSphere, material: ghost, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(trailTransforms) });
+      items.push({ label: "current-routes-ik-target-trail", geometry: sensorSphere, material: ghost, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(trailTransforms) });
 
       const blueStatusTransforms: Mat4[] = [];
       const amberStatusTransforms: Mat4[] = [];
@@ -417,22 +417,22 @@ function createStageItems(): { readonly materialCount: number; readonly items: (
         targetTransforms.push(composeMat4([-2.03, y, -1.3], [0, 0, 0, 1], [0.18, 0.018, 0.018]));
         targetTransforms.push(composeMat4([2.03, y, -1.3], [0, 0, 0, 1], [0.18, 0.018, 0.018]));
       }
-      items.push({ label: "v8-ik-status-strip-blue", geometry: cube, material: emissiveBlue, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(blueStatusTransforms) });
-      items.push({ label: "v8-ik-status-strip-amber", geometry: cube, material: emissiveAmber, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(amberStatusTransforms) });
+      items.push({ label: "current-routes-ik-status-strip-blue", geometry: cube, material: emissiveBlue, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(blueStatusTransforms) });
+      items.push({ label: "current-routes-ik-status-strip-amber", geometry: cube, material: emissiveAmber, modelMatrix: identityMatrix(), instanceTransforms: flattenMatrices(amberStatusTransforms) });
       const scanY = 0.36 + (Math.sin(timeSeconds * 1.7) * 0.5 + 0.5) * 1.25;
-      items.push({ label: "v8-ik-scanline", geometry: cube, material: emissiveBlue, modelMatrix: composeMat4([0, scanY, -1.305], [0, 0, 0, 1], [3.5, 0.014, 0.014]) });
-      items.push({ label: "v8-ik-glass-left", geometry: cube, material: glass, modelMatrix: composeMat4([-1.42, 0.82, -0.98], [0, 0, 0, 1], [0.34, 0.62, 0.026]) });
-      items.push({ label: "v8-ik-glass-right", geometry: cube, material: glass, modelMatrix: composeMat4([1.42, 0.82, -0.98], [0, 0, 0, 1], [0.34, 0.62, 0.026]) });
+      items.push({ label: "current-routes-ik-scanline", geometry: cube, material: emissiveBlue, modelMatrix: composeMat4([0, scanY, -1.305], [0, 0, 0, 1], [3.5, 0.014, 0.014]) });
+      items.push({ label: "current-routes-ik-glass-left", geometry: cube, material: glass, modelMatrix: composeMat4([-1.42, 0.82, -0.98], [0, 0, 0, 1], [0.34, 0.62, 0.026]) });
+      items.push({ label: "current-routes-ik-glass-right", geometry: cube, material: glass, modelMatrix: composeMat4([1.42, 0.82, -0.98], [0, 0, 0, 1], [0.34, 0.62, 0.026]) });
       return items;
     }
   };
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-ik-key");
+  const key = new DirectionalLight("current-routes-ik-key");
   key.intensity = 4.4;
   key.color = [1, 0.94, 0.82];
-  const rim = new DirectionalLight("v8-ik-rim");
+  const rim = new DirectionalLight("current-routes-ik-rim");
   rim.intensity = 2;
   rim.color = [0.64, 0.78, 1];
   return [

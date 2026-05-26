@@ -11,11 +11,11 @@ import { DirectionalLight, Scene } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __a3dV8InstancingPerformance?: V8InstancingPerformanceRuntime;
+    __a3dCurrentRoutesInstancingPerformance?: CurrentRoutesInstancingPerformanceRuntime;
   }
 }
 
-interface V8InstancingPerformanceRuntime {
+interface CurrentRoutesInstancingPerformanceRuntime {
   readonly appId: "instancing-performance";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8InstancingPerformance = runtime;
+    window.__a3dCurrentRoutesInstancingPerformance = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -122,7 +122,7 @@ async function run(): Promise<void> {
           sceneRenderableCount: resources.scene.collectRenderables().length,
           publicSceneInstancedMesh: resources.instancedMesh.isInstancedMesh === true
         });
-        window.__a3dV8InstancingPerformance = runtime;
+        window.__a3dCurrentRoutesInstancingPerformance = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -171,7 +171,7 @@ function createResources(): InstancingResources {
     instancedMesh,
     geometry: Geometry.litCube(1),
     material: new InstancedPBRMaterial({
-      name: "v8-instancing-public-scene-pbr",
+      name: "current-routes-instancing-public-scene-pbr",
       baseColor: [1, 1, 1, 1],
       roughness: 0.48,
       metallic: 0.05,
@@ -282,9 +282,9 @@ function palette(t: number): readonly [number, number, number] {
 
 function createRuntime(
   startedAt: number,
-  status: V8InstancingPerformanceRuntime["status"],
-  patch: Partial<Omit<V8InstancingPerformanceRuntime, "appId" | "status" | "renderer" | "elapsedMs">> = {}
-): V8InstancingPerformanceRuntime {
+  status: CurrentRoutesInstancingPerformanceRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesInstancingPerformanceRuntime, "appId" | "status" | "renderer" | "elapsedMs">> = {}
+): CurrentRoutesInstancingPerformanceRuntime {
   return {
     appId: APP_ID,
     status,
@@ -305,10 +305,10 @@ function createRuntime(
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-instancing-key");
+  const key = new DirectionalLight("current-routes-instancing-key");
   key.intensity = 3.1;
   key.color = [1, 0.94, 0.86];
-  const fill = new DirectionalLight("v8-instancing-fill");
+  const fill = new DirectionalLight("current-routes-instancing-fill");
   fill.intensity = 1.2;
   fill.color = [0.52, 0.68, 1];
   return [
@@ -317,11 +317,11 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function renderUi(root: HTMLElement, runtime: V8InstancingPerformanceRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesInstancingPerformanceRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Instancing Performance</h1>
+        <h1>CurrentRoutes Instancing Performance</h1>
         <p>Public Scene.createInstancedMesh rendered through A3DRenderer with per-instance matrix and color attributes.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

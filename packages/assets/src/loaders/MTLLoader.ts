@@ -1,20 +1,20 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { createV5FileLoaderDiagnostic, type V5LoaderDiagnostic } from "./LoaderDiagnostics";
+import { createThreeCompatFileLoaderDiagnostic, type ThreeCompatLoaderDiagnostic } from "./LoaderDiagnostics";
 
-export interface V5LoadedMtlAsset {
+export interface ThreeCompatLoadedMtlAsset {
   readonly uri: string;
   readonly materials: readonly string[];
-  readonly diagnostic: V5LoaderDiagnostic;
+  readonly diagnostic: ThreeCompatLoaderDiagnostic;
 }
 
-export class MTLLoaderV5 {
-  load(uri: string): V5LoadedMtlAsset {
+export class MTLLoaderThreeCompat {
+  load(uri: string): ThreeCompatLoadedMtlAsset {
     const text = readFileSync(resolve(uri), "utf8");
     return {
       uri,
       materials: text.split("\n").filter((line) => line.startsWith("newmtl ")).map((line) => line.slice("newmtl ".length).trim()),
-      diagnostic: createV5FileLoaderDiagnostic("MTLLoaderV5", uri)
+      diagnostic: createThreeCompatFileLoaderDiagnostic("MTLLoaderThreeCompat", uri)
     };
   }
 }

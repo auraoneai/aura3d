@@ -15,11 +15,11 @@ interface ViteDevServer {
 
 const ROUTE_ALIAS_PAIRS = [
   [ADVANCED_GALLERY_CONTEXTUAL_ROUTE, ADVANCED_GALLERY_LEGACY_ROUTE],
-  ["/apps/flagship-viewer/", "/apps/v8-flagship-viewer/"],
-  ["/apps/character-viewer/", "/apps/v6-character-viewer/"],
-  ["/apps/regression-animation-keyframes/", "/apps/v7-animation-keyframes/"],
-  ["/apps/public-scene/", "/apps/v9-public-scene/"],
-  ["/apps/common/src/styles.css", "/apps/v6-common/src/styles.css"]
+  ["/apps/flagship-viewer/", "/apps/current-routes-flagship-viewer/"],
+  ["/apps/character-viewer/", "/apps/production-character-viewer/"],
+  ["/apps/regression-animation-keyframes/", "/apps/runtime-parity-animation-keyframes/"],
+  ["/apps/public-scene/", "/apps/threejs-parity-public-scene/"],
+  ["/apps/common/src/styles.css", "/apps/production-common/src/styles.css"]
 ] as const;
 
 const FIXTURE_ALIAS_PAIRS = [

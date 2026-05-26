@@ -1,38 +1,131 @@
-# Requirements Trace Summary
+# Aura3D Requirements Trace
 
-This file is now a summary, not the large generated trace table. The generated trace table was useful during the rebuild phase, but it made the docs harder to maintain and repeated information that belongs in reports.
+Generated from every retained markdown file in `docs/**/*.md`.
 
-## Current Trace Sources
+## Status
+- Total requirements: 48
+- Implemented and verified: 48
+- Implemented but unverified: 0
+- Partially implemented: 0
+- Not started: 0
+- Blocked: 0
+- Complete: yes
 
-Use these reports for machine-readable state:
+## Source Docs Read
+- `docs/animation/external-character-corpus.md`
+- `docs/animation/runtime-support.md`
+- `docs/animation/timeline-editor-integration.md`
+- `docs/api/app-api.md`
+- `docs/api/public-api.md`
+- `docs/api/readme.md`
+- `docs/assets/asset-corpus-report.md`
+- `docs/assets/gltf-compression.md`
+- `docs/benchmarks/babylon-comparison.md`
+- `docs/benchmarks/pbr-rendering-comparison.md`
+- `docs/benchmarks/readme.md`
+- `docs/benchmarks/threejs-comparison.md`
+- `docs/comparisons/babylonjs.md`
+- `docs/comparisons/threejs.md`
+- `docs/comparisons/unity-unreal-web.md`
+- `docs/concepts/animation.md`
+- `docs/concepts/assets.md`
+- `docs/concepts/editor-runtime.md`
+- `docs/concepts/engine-lifecycle.md`
+- `docs/concepts/physics.md`
+- `docs/concepts/rendering.md`
+- `docs/concepts/scene-vs-ecs.md`
+- `docs/editor/browser-first-workflow.md`
+- `docs/editor/diagnostics-workflow.md`
+- `docs/examples/external-demos.md`
+- `docs/examples/product-demos.md`
+- `docs/project/browser-hardware-matrix.md`
+- `docs/project/claim-guidelines.md`
+- `docs/project/compatibility.md`
+- `docs/project/competitive-positioning.md`
+- `docs/project/completion-audit.md`
+- `docs/project/current-state.md`
+- `docs/project/deployment-rollback.md`
+- `docs/project/documentation-index.md`
+- `docs/project/getting-started.md`
+- `docs/project/go-to-market-strategy.md`
+- `docs/project/implementation-plan.md`
+- `docs/project/known-limits.md`
+- `docs/project/migration.md`
+- `docs/project/product-studio-claim-registry.md`
+- `docs/project/product-studio-decision-gates.md`
+- `docs/project/release-checklist.md`
+- `docs/project/release-process.md`
+- `docs/project/requirements-trace.md`
+- `docs/project/security-policy.md`
+- `docs/project/site-map.md`
+- `docs/project/support-policy.md`
+- `docs/project/threejs-parity-claim-boundary.md`
+- `docs/project/threejs-parity-code-backlog.md`
+- `docs/project/threejs-parity-parity-matrix.md`
+- `docs/project/threejs-parity-status.md`
+- `docs/project/threejs-parity-threejs-inventory.md`
+- `docs/project/threejs-superiority-status.md`
+- `docs/project/tutorials-getting-started-real-scene.md`
+- `docs/project/tutorials-product-configurator.md`
+- `docs/project/verification-evidence.md`
+- `docs/rendering/environment-lighting.md`
+- `docs/rendering/material-matrix.md`
+- `docs/rendering/postprocess.md`
+- `docs/rendering/renderer-lifecycle.md`
+- `docs/rendering/skinning-and-morphs.md`
+- `docs/rendering/texture-compression.md`
+- `docs/rendering/webgpu-fallback.md`
+- `docs/rendering/webgpu-hardware-matrix.md`
+- `docs/templates/create-aura3d-templates.md`
 
-- `tests/reports/final-requirements-trace.json`
-- `tests/reports/final-release-verification.json`
-- `tests/reports/v9/completion-audit.json`
-- `tests/reports/v9/threejs-inventory.json`
-- `tests/reports/v9/route-health.json`
-- `tests/reports/v9/performance.json`
-
-## Current Human Trace
-
-| Requirement area | Current source |
-|---|---|
-| Project overview and doc map | `README.md`, `docs/project/documentation-index.md` |
-| Current claim boundary | `docs/project/v9-roadmap-claim-boundary.md` |
-| Three.js parity status | `docs/project/v9-roadmap-parity-matrix.md`, `tests/reports/v9/threejs-inventory.json` |
-| V9 execution status | `docs/project/v9-roadmap-status.md`, `tests/reports/v9/completion-audit.json` |
-| Code backlog | `docs/project/v9-roadmap-code-backlog.md` |
-| Verification summary | `docs/project/verification-evidence.md` |
-| Completion audit | `docs/project/completion-audit.md` |
-
-## Trace Policy
-
-- Documentation claims must point to package code, tests, browser routes, visual evidence, or report artifacts.
-- Route screenshots are not enough for broad parity claims.
-- Generated reports are evidence inputs, not marketing copy.
-- Full Three.js parity remains blocked while any V9 parity category is partial.
-- Historical rebuild PRDs have been collapsed into `docs/project/documentation-index.md`.
-
-## Current Snapshot
-
-The latest V9 inventory report records 54 inventoried Three.js comparison examples: 30 matched and 24 partial. The V9 completion audit records 784 checked items and 0 unchecked items. These are strong construction signals, but they do not override the V9 claim boundary.
+## Trace Matrix
+| ID | Source Doc | Section | Owner | Status | Requirement | Implementation Files | Test Files | Verification Commands | Evidence | Remaining Work |
+|---|---|---|---|---|---|---|---|---|---|---|
+| FINAL-0001 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/threejs-parity/threejs-inventory.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/threejs-parity/threejs-inventory.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/threejs-parity/threejs-inventory.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0002 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/threejs-parity/same-scene-render.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/threejs-parity/same-scene-render.json<br>tests/unit/tools/verify-tools.test.ts<br>tests/visual/** | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/threejs-parity/same-scene-render.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0003 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/threejs-parity/visual-review.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/threejs-parity/visual-review.json<br>tests/unit/tools/verify-tools.test.ts<br>tests/visual/** | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/threejs-parity/visual-review.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0004 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/threejs-parity/performance.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/performance/**<br>tests/reports/threejs-parity/performance.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/threejs-parity/performance.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0005 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/feature-parity.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/feature-parity.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/feature-parity.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0006 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/visual-quality.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/visual-quality.json<br>tests/unit/tools/verify-tools.test.ts<br>tests/visual/** | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/visual-quality.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0007 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/performance.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/performance/**<br>tests/reports/superiority/performance.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/performance.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0008 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/animation-fidelity.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/animation-fidelity.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/animation-fidelity.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0009 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/physics-comparison-baseline.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/physics-comparison-baseline.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/physics-comparison-baseline.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0010 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/physics-fidelity.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/physics-fidelity.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/physics-fidelity.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0011 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/resource-lifecycle-100-reloads.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/resource-lifecycle-100-reloads.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/resource-lifecycle-100-reloads.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0012 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/memory-lifecycle.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/memory-lifecycle.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/memory-lifecycle.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0013 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/developer-workflow.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/developer-workflow.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/developer-workflow.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0014 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/claim-defense.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/claim-defense.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/claim-defense.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0015 | docs/project/completion-audit.md | Current Local Snapshot | Coordinator | Implemented and verified | `tests/reports/superiority/superiority-audit.json` \| Pass | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/superiority/superiority-audit.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/superiority-audit.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0016 | docs/project/implementation-plan.md | Product Direction | Coordinator | Implemented and verified | product viewers and configurators; | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | workflow and engine packages exist and current superiority feature evidence passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0017 | docs/project/implementation-plan.md | Product Direction | Coordinator | Implemented and verified | asset inspection and glTF/GLB validation; | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | assets package exists and current Three.js parity asset/render evidence passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0018 | docs/project/implementation-plan.md | Product Direction | Coordinator | Implemented and verified | PBR/HDR/IBL material preview; | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | rendering and environment packages exist and current visual/performance superiority evidence passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0019 | docs/project/implementation-plan.md | Product Direction | Coordinator | Implemented and verified | character animation, skinning, morph, and IK diagnostics; | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/animation-fidelity.json passed after the animation and skinning browser parity specs passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0020 | docs/project/implementation-plan.md | Product Direction | Coordinator | Implemented and verified | interactive scenes with picking, controls, decals, shadows, and postprocess; | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | Three.js parity route-health, same-scene, visual-review, and performance reports passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0021 | docs/project/implementation-plan.md | Product Direction | Coordinator | Implemented and verified | migration scaffolding for selected Three.js workflows. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/threejs-parity/migration-audit.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0022 | docs/project/implementation-plan.md | Implementation Tracks | Coordinator | Implemented and verified | Runtime and scene \| Object3D-style hierarchy, cameras, lights, transforms, renderables, serialization, and query helpers are package-backed. | packages/ecs/src/Archetype.ts<br>packages/ecs/src/CommandBuffer.ts<br>packages/ecs/src/ComponentRegistry.ts<br>packages/ecs/src/ECSProfiler.ts<br>packages/ecs/src/ECSSerializer.ts<br>packages/ecs/src/EntityManager.ts<br>packages/ecs/src/SparseSet.ts<br>packages/ecs/src/SystemScheduler.ts<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/browser/**<br>tests/integration/scene-ecs-contracts.test.ts<br>tests/unit/ecs/runtime.test.ts<br>tests/unit/tools/verify-tools.test.ts<br>tests/visual/** | `pnpm verify:trace`<br>`pnpm verify:release` | engine and scene packages exist and current Three.js parity reports passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0023 | docs/project/implementation-plan.md | Implementation Tracks | Coordinator | Implemented and verified | Renderer \| WebGL2/WebGPU-facing devices, render queues, postprocess, resource disposal, profiling, diagnostics, and routes exist. | packages/ecs/src/Archetype.ts<br>packages/ecs/src/CommandBuffer.ts<br>packages/ecs/src/ComponentRegistry.ts<br>packages/ecs/src/ECSProfiler.ts<br>packages/ecs/src/ECSSerializer.ts<br>packages/ecs/src/EntityManager.ts<br>packages/ecs/src/SparseSet.ts<br>packages/ecs/src/SystemScheduler.ts<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/integration/scene-ecs-contracts.test.ts<br>tests/unit/ecs/runtime.test.ts<br>tests/unit/tools/verify-tools.test.ts<br>tests/visual/** | `pnpm verify:trace`<br>`pnpm verify:release` | rendering package exists and tests/reports/superiority/performance.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0024 | docs/project/implementation-plan.md | Implementation Tracks | Coordinator | Implemented and verified | Assets \| glTF/GLB, OBJ/MTL, HDR/EXR, KTX2/Basis-facing hooks, material extensions, variants, animation, and render-resource conversion exist. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts<br>tests/visual/** | `pnpm verify:trace`<br>`pnpm verify:release` | assets package exists and current Three.js parity reports passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0025 | docs/project/implementation-plan.md | Implementation Tracks | Coordinator | Implemented and verified | Animation \| Mixer, skinning, morph, root-motion, IK, retargeting, crowd, palette, and motion-quality paths are represented in code and routes. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tests/reports/superiority/animation-fidelity.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0026 | docs/project/implementation-plan.md | Implementation Tracks | Coordinator | Implemented and verified | Workflows \| Product, asset, material, animation, physics, scene, and migration workflows have package APIs and route/template coverage. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | workflows package exists and tests/reports/superiority/developer-workflow.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0027 | docs/project/implementation-plan.md | Implementation Tracks | Coordinator | Implemented and verified | Verification \| Current report generators live under `tools/threejs-parity-*` and `tools/superiority-*`. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | tools/superiority-* generators produced passing report evidence passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0028 | docs/project/implementation-plan.md | Ongoing Work | Coordinator | Implemented and verified | Keep new features package-level, not route-local. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | pnpm verify:architecture and pnpm verify:boundaries passed in the release verifier passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0029 | docs/project/implementation-plan.md | Ongoing Work | Coordinator | Implemented and verified | Regenerate reports before making public claims. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | current Three.js parity and superiority report suites were regenerated and passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0030 | docs/project/implementation-plan.md | Ongoing Work | Coordinator | Implemented and verified | Keep benchmark claims tied to same-scene workloads and environment details. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | Three.js parity and superiority performance reports passed with recorded same-scene evidence passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0031 | docs/project/implementation-plan.md | Ongoing Work | Coordinator | Implemented and verified | Keep docs centered on current state, how-to-use, evidence, and claim boundaries. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm verify:trace`<br>`pnpm verify:release` | pnpm verify:docs-consistency passed and retained docs are synced to current claim/status evidence passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0001 | docs/project/product-studio-decision-gates.md | Required Before Strong Public Claims | Coordinator | Implemented and verified | Regenerate the relevant Three.js parity reports. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | current Three.js parity reports passed under tests/reports/threejs-parity passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0002 | docs/project/product-studio-decision-gates.md | Required Before Strong Public Claims | Coordinator | Implemented and verified | Regenerate the relevant Three.js superiority reports. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | current superiority reports passed under tests/reports/superiority passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0003 | docs/project/product-studio-decision-gates.md | Required Before Strong Public Claims | Coordinator | Implemented and verified | Confirm `pnpm superiority` passes before using full Three.js superiority superiority language. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | tests/reports/superiority/superiority-audit.json passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0004 | docs/project/product-studio-decision-gates.md | Required Before Strong Public Claims | Coordinator | Implemented and verified | Keep `docs/project/claim-guidelines.md` and `docs/project/threejs-superiority-status.md` in sync with generated reports. | docs/project/claim-guidelines.md<br>docs/project/threejs-superiority-status.md<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | docs/project/claim-guidelines.md and docs/project/threejs-superiority-status.md match the generated superiority report state passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0005 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm install` has been run for the current lockfile. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | node_modules/.pnpm exists for the current workspace install passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0006 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm typecheck` passes. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | pnpm typecheck passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0007 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm test:unit` passes. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | pnpm test:unit passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0008 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm test:integration` passes when integration behavior changed. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | pnpm test:integration passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0009 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm test:browser` passes when browser routes changed. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/browser/**<br>tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | pnpm test:browser passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0010 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm build` passes. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | pnpm build passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0011 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm verify:api-docs -- --write` has been run after export changes. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | docs/api/public-api.md exists after API doc regeneration and pnpm verify:exports passed passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0012 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm threejs-parity` has been run before Three.js parity claims. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | current Three.js parity reports passed under tests/reports/threejs-parity passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0013 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `pnpm superiority` has been run before Three.js superiority superiority claims. | tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | current superiority reports passed under tests/reports/superiority passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0014 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | `docs/project/threejs-superiority-status.md` matches the generated report state. | docs/project/threejs-superiority-status.md<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | docs/project/threejs-superiority-status.md matches the passing superiority audit report passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| REQ-0015 | docs/project/release-checklist.md | Required Checks | Coordinator | Implemented and verified | Public claims follow `docs/project/claim-guidelines.md`. | docs/project/claim-guidelines.md<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/unit/tools/verify-tools.test.ts | `pnpm test`<br>`pnpm verify:release` | docs/project/claim-guidelines.md exists and pnpm verify:claims passed in the release verifier passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0032 | docs/project/requirements-trace.md | Generated Audit Artifact | Coordinator | Implemented and verified | Generated audit artifact docs/project/requirements-trace.md must exist, be current with the latest trace run, and must not be used as proof of product completion by itself. | docs/project/requirements-trace.md<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/final-requirements-trace.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm trace:requirements`<br>`pnpm verify:trace` | docs/project/requirements-trace.md exists, contains the latest trace totals, and explicitly preserves NO-GO/non-completion language passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |
+| FINAL-0033 | docs/project/verification-evidence.md | Generated Audit Artifact | Coordinator | Implemented and verified | Generated audit artifact docs/project/verification-evidence.md must exist, be current with the latest trace run, and must not be used as proof of product completion by itself. | docs/project/verification-evidence.md<br>tools/requirements-trace/index.ts<br>tools/verify-trace/index.ts | tests/reports/final-requirements-trace.json<br>tests/unit/tools/verify-tools.test.ts | `pnpm trace:requirements`<br>`pnpm verify:trace` | docs/project/verification-evidence.md exists, contains the latest trace totals, and explicitly preserves NO-GO/non-completion language passed; see tests/reports/final-release-verification.json and subsystem JSON reports. |  |

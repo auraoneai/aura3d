@@ -54,7 +54,7 @@ interface MatrixVariantConfig {
 }
 
 export interface ProductConfiguratorMaterialMatrixReport {
-  readonly schema: "a3d-product-configurator-material-matrix/v1";
+  readonly schema: "a3d-product-configurator-material-matrix";
   readonly status: MatrixStatus;
   readonly source: "tests/browser/product-configurator-material-matrix-harness.ts";
   readonly galleryUiBypassed: true;
@@ -518,7 +518,7 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
     } as const;
 
     const report: ProductConfiguratorMaterialMatrixReport = {
-      schema: "a3d-product-configurator-material-matrix/v1",
+      schema: "a3d-product-configurator-material-matrix",
       status: "ready",
       source: "tests/browser/product-configurator-material-matrix-harness.ts",
       galleryUiBypassed: true,
@@ -535,7 +535,7 @@ export async function runProductConfiguratorMaterialMatrixHarness(): Promise<Pro
     return report;
   } catch (error) {
     const report: ProductConfiguratorMaterialMatrixReport = {
-      schema: "a3d-product-configurator-material-matrix/v1",
+      schema: "a3d-product-configurator-material-matrix",
       status: "error",
       source: "tests/browser/product-configurator-material-matrix-harness.ts",
       galleryUiBypassed: true,

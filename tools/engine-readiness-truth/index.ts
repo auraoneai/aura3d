@@ -33,18 +33,18 @@ const checks = [
   },
   {
     id: "engine-readiness-status-doc",
-    ok: readFileIfExists("docs/project/v4-engine-readiness-status.md").includes("pnpm engine-readiness:root"),
-    evidence: "docs/project/v4-engine-readiness-status.md"
+    ok: readFileIfExists("docs/project/current-state.md").includes("pnpm engine-readiness:root"),
+    evidence: "docs/project/current-state.md"
   },
   {
-    id: "stale-v4-completion-report-removed",
+    id: "stale-external-parity-completion-report-removed",
     ok: !existsSync("tests/reports/external-parity-completion-audit.json"),
     evidence: "tests/reports/external-parity-completion-audit.json"
   }
 ];
 
 const report = {
-  schemaVersion: "a3d-engine-readiness-truth-v1",
+  schemaVersion: "a3d-engine-readiness-truth",
   generatedAt: new Date().toISOString(),
   ok: checks.every((check) => check.ok),
   checks

@@ -99,7 +99,7 @@ export class EditorStateModel {
 
   constructor(options: EditorStateModelOptions = {}) {
     this.storage = options.storage;
-    this.storageKey = options.storageKey ?? "aura3d:editor-state:v4";
+    this.storageKey = options.storageKey ?? "aura3d:editor-state:externalParity";
     this.load();
   }
 

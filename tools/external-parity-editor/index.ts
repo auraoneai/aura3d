@@ -33,31 +33,31 @@ const checks = [
     id: "external-parity-editor-authoring-report-produced-by-editor-agent",
     passed: existing?.ok === true,
     evidencePaths: ["tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor authoring report is not yet passing.",
+    blocker: "External parity editor authoring report is not yet passing.",
   },
   {
     id: "external-parity-editor-hierarchy-save-load-export",
     passed: existing?.ok === true && authoredWorkflow.hierarchyPersisted === true && authoredWorkflow.savedAndReloaded === true && authoredWorkflow.exportedStaticApp === true,
     evidencePaths: ["tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor hierarchy operations are not proven through save/load/export evidence.",
+    blocker: "External parity editor hierarchy operations are not proven through save/load/export evidence.",
   },
   {
     id: "external-parity-editor-inspector-edits-persist",
     passed: existing?.ok === true && authoredWorkflow.inspectorEditsPersisted === true,
     evidencePaths: ["tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor inspector edits are not proven to persist for material, physics, script, animation, audio, and particles.",
+    blocker: "External parity editor inspector edits are not proven to persist for material, physics, script, animation, audio, and particles.",
   },
   {
     id: "external-parity-editor-prefab-round-trip",
     passed: prefabWorkflow?.ok === true,
     evidencePaths: ["tests/browser/editor-prefab-workflow.spec.ts", "tests/reports/external-parity-editor-prefab-workflow.json", "packages/editor-runtime/src/PrefabRegistry.ts"],
-    blocker: "V4 editor prefab workflow is not proven through create, instantiate, save, reload, and export evidence.",
+    blocker: "External parity editor prefab workflow is not proven through create, instantiate, save, reload, and export evidence.",
   },
   {
     id: "external-parity-editor-profiler-debug-panels",
     passed: existing?.ok === true && authoredWorkflow.profilerDiagnosticsVisible === true,
     evidencePaths: ["apps/editor/src/panels/ProfilerPanel.ts", "tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor profiler/debug diagnostics are not visible in the browser authoring flow.",
+    blocker: "External parity editor profiler/debug diagnostics are not visible in the browser authoring flow.",
   },
   {
     id: "external-parity-editor-timeline-track-clip-authoring",
@@ -73,7 +73,7 @@ const checks = [
       timelineModelEvidence.loopPlayback === true &&
       timelineModelEvidence.signalMarkers === true,
     evidencePaths: ["packages/editor-runtime/src/TimelineModel.ts", "apps/editor/src/panels/TimelinePanel.ts", "tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor timeline does not prove real track/clip/easing/blending/loop/signal authoring evidence.",
+    blocker: "External parity editor timeline does not prove real track/clip/easing/blending/loop/signal authoring evidence.",
   },
   {
     id: "external-parity-editor-visual-scripting-authoring",
@@ -91,7 +91,7 @@ const checks = [
       visualScriptingModelEvidence.deterministicExecution === true &&
       visualScriptingModelEvidence.blockedUnityUnrealVisualScriptingParity === true,
     evidencePaths: ["packages/scripting/src/VisualNodeCatalog.ts", "packages/scripting/src/VisualGraphExecutor.ts", "apps/editor/src/panels/VisualScriptPanel.ts", "tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor does not prove visible bounded visual-scripting graph authoring and deterministic execution evidence.",
+    blocker: "External parity editor does not prove visible bounded visual-scripting graph authoring and deterministic execution evidence.",
   },
   {
     id: "external-parity-editor-gizmo-snap-space-pivot-authoring",
@@ -104,7 +104,7 @@ const checks = [
       gizmoEvidence.spaceMode === "world" &&
       gizmoEvidence.pivotMode === "center",
     evidencePaths: ["packages/editor-runtime/src/Gizmo.ts", "packages/editor-runtime/src/EditorRuntime.ts", "apps/editor/src/viewport/EditorViewport.ts", "tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor gizmos do not prove snap, space, and pivot authoring evidence.",
+    blocker: "External parity editor gizmos do not prove snap, space, and pivot authoring evidence.",
   },
   {
     id: "external-parity-editor-persistent-state-model",
@@ -117,7 +117,7 @@ const checks = [
       editorStateModelEvidence.gridSnapSettings === true &&
       editorStateModelEvidence.transformSpacePivotMode === true,
     evidencePaths: ["packages/editor-runtime/src/EditorStateModel.ts", "packages/editor-runtime/src/EditorRuntime.ts", "apps/editor/src/EditorShell.ts", "apps/editor/src/viewport/EditorViewport.ts", "tests/browser/editor-authoring-external-parity.spec.ts", "tests/reports/external-parity-editor-authoring.json"],
-    blocker: "V4 editor does not prove persistent active-tool, viewport, grid/snap, transform-space, and pivot state evidence.",
+    blocker: "External parity editor does not prove persistent active-tool, viewport, grid/snap, transform-space, and pivot state evidence.",
   },
 ] as const;
 const violations = checks.filter((check) => !check.passed).map((check) => check.blocker);

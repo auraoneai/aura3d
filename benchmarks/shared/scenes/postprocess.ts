@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "postprocess",
   sceneVersion: 1,
-  assetId: "generated-postprocess-lab-v4",
+  assetId: "generated-postprocess-lab-external-parity",
   assetClass: "bounded-local-postprocess-real-scene-readback",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 45,

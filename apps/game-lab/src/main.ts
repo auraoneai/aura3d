@@ -1,5 +1,5 @@
 import { createInteractiveSceneWorkflow } from "@aura3d/workflows";
-import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../v3-common/src/WorkflowWorkbench";
+import { WorkflowWorkbenchApp, type WorkflowScenario } from "../../legacy-common/src/WorkflowWorkbench";
 
 const scenarios: readonly WorkflowScenario[] = [
   {
@@ -23,7 +23,7 @@ const app = new WorkflowWorkbenchApp(root, {
   appId: "game-lab",
   title: "Game Lab",
   subtitle: "A realtime workflow surface for animation loops, renderer diagnostics, and interaction-ready scenes.",
-  suiteLabel: "V3 App Suite",
+  suiteLabel: "Foundation App Suite",
   accent: "#db6d65",
   scenarios,
   defaultScenarioId: "orbiting-products",

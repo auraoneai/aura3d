@@ -12,11 +12,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8WebGPUInstanceUniform?: V8WebGPUInstanceUniformRuntime;
+    __a3dCurrentRoutesWebGPUInstanceUniform?: CurrentRoutesWebGPUInstanceUniformRuntime;
   }
 }
 
-interface V8WebGPUInstanceUniformRuntime {
+interface CurrentRoutesWebGPUInstanceUniformRuntime {
   readonly appId: "webgpu-instance-uniform";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -76,7 +76,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__a3dV8WebGPUInstanceUniform = runtime;
+    window.__a3dCurrentRoutesWebGPUInstanceUniform = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -149,7 +149,7 @@ async function run(): Promise<void> {
         renderTargetWidth: SIZE,
         renderTargetHeight: SIZE
       });
-      window.__a3dV8WebGPUInstanceUniform = runtime;
+      window.__a3dCurrentRoutesWebGPUInstanceUniform = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -281,11 +281,11 @@ function analyzePixels(pixels: Uint8Array): { readonly nonDark: number; readonly
 }
 
 function createRuntime(
-  status: V8WebGPUInstanceUniformRuntime["status"],
+  status: CurrentRoutesWebGPUInstanceUniformRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8WebGPUInstanceUniformRuntime, "appId" | "status" | "statusLabel" | "renderer" | "evidenceMode" | "elapsedMs">> = {}
-): V8WebGPUInstanceUniformRuntime {
+  patch: Partial<Omit<CurrentRoutesWebGPUInstanceUniformRuntime, "appId" | "status" | "statusLabel" | "renderer" | "evidenceMode" | "elapsedMs">> = {}
+): CurrentRoutesWebGPUInstanceUniformRuntime {
   return {
     appId: APP_ID,
     status,
@@ -309,12 +309,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8WebGPUInstanceUniformRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesWebGPUInstanceUniformRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 WebGPU Instance Uniform</h1>
+          <h1>CurrentRoutes WebGPU Instance Uniform</h1>
           <p>Public InstancedPBRMaterial submitted through one WebGPU instanced draw using per-instance uniform matrices.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

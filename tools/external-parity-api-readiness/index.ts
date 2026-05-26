@@ -53,7 +53,7 @@ check(
     includesAll(appEntrypoint, ["createA3DApp", "A3DApp", "A3DAppOptions"]) &&
     includesAll(qualityEntrypoint, ["A3D_QUALITY_PRESETS", "A3D_QUALITY_PRESET_SETTINGS", "resolveA3DAppQualityPreset"]) &&
     includesAll(workflowEntrypoint, ["productConfigurator", "materialStudio", "assetViewer", "interactiveScene"]),
-  "Engine and workflow V4 entrypoints must exist by filename and expose the public product API."
+  "Engine and workflow External parity entrypoints must exist by filename and expose the public product API."
 );
 check(
   "workflow-preset-coverage",
@@ -109,12 +109,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-api-readiness/v1",
+  schema: "a3d-external-parity-api-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 13 public V4 app API is ready. Installable templates, external package proof, and Three.js parity remain required."
-    : "V4 Milestone 13 public V4 app API is incomplete.",
+    ? "External parity Milestone 13 public External parity app API is ready. Installable templates, external package proof, and Three.js parity remain required."
+    : "External parity Milestone 13 public External parity app API is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

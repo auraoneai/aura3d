@@ -13,7 +13,7 @@ const catalog = JSON.parse(readFileSync(resolve("examples/production-runtime-exa
   }[];
 };
 
-test.describe("V6 real renderer examples", () => {
+test.describe("production real renderer examples", () => {
   test.setTimeout(180_000);
   let server: ExampleDevServer;
 
@@ -26,7 +26,7 @@ test.describe("V6 real renderer examples", () => {
   });
 
   for (const example of catalog.examples.filter((item) => item.browserTested)) {
-    test(`renders ${example.slug} through the V6 public workflow API`, async ({ page }) => {
+    test(`renders ${example.slug} through the production public workflow API`, async ({ page }) => {
       const pageErrors: string[] = [];
       page.on("pageerror", (error) => pageErrors.push(error.stack ?? error.message));
       page.on("console", (message) => {
@@ -39,14 +39,14 @@ test.describe("V6 real renderer examples", () => {
       await page.goto(`${server.origin}/examples/production-runtime-examples/${example.slug}/`, { waitUntil: "domcontentloaded" });
       await page.waitForFunction(
         () => {
-          const runtime = window.__a3dV6Example as { status?: string } | undefined;
+          const runtime = window.__a3dProductionExample as { status?: string } | undefined;
           return runtime?.status === "ready" || runtime?.status === "error";
         },
         undefined,
         { timeout: 90_000 }
       );
 
-      const runtime = await page.evaluate(() => window.__a3dV6Example) as {
+      const runtime = await page.evaluate(() => window.__a3dProductionExample) as {
         status: "ready" | "error";
         error?: string;
         appId: string;
@@ -93,7 +93,7 @@ test.describe("V6 real renderer examples", () => {
       }
 
       await page.locator("#a3d-production-runtime-action").click();
-      const interaction = await page.evaluate(() => window.__a3dV6Example) as { interactionCount: number; lastInteraction?: string };
+      const interaction = await page.evaluate(() => window.__a3dProductionExample) as { interactionCount: number; lastInteraction?: string };
       expect(interaction.interactionCount).toBeGreaterThan(0);
       expect(interaction.lastInteraction).toBe("Inspect");
 
@@ -101,7 +101,7 @@ test.describe("V6 real renderer examples", () => {
       const screenshot = `tests/reports/production-runtime-examples/${example.slug}.png`;
       await page.locator("#viewport").screenshot({ path: screenshot });
       writeFileSync(resolve(`tests/reports/production-runtime-examples/${example.slug}.json`), `${JSON.stringify({
-        schema: "a3d-production-runtime-example-runtime/v1",
+        schema: "a3d-production-runtime-example-runtime",
         generatedAt: new Date().toISOString(),
         slug: example.slug,
         screenshot,
@@ -110,7 +110,7 @@ test.describe("V6 real renderer examples", () => {
     });
   }
 
-  test("lists the V6 example catalog", async ({ page }) => {
+  test("lists the production example catalog", async ({ page }) => {
     await page.goto(`${server.origin}/examples/production-runtime-examples/`, { waitUntil: "domcontentloaded" });
     await expect(page.locator("article")).toHaveCount(catalog.examples.length);
   });

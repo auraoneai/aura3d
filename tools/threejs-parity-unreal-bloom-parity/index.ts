@@ -8,17 +8,17 @@ import { UnrealBloomPass } from "/node_modules/three/examples/jsm/postprocessing
 
 declare global {
   interface Window {
-    __V9_UNREAL_BLOOM_PARITY__?: V9UnrealBloomParityResult;
+    __THREEJS_PARITY_UNREAL_BLOOM_PARITY__?: ThreeJsParityUnrealBloomParityResult;
   }
 }
 
 export {};
 
-type V9UnrealBloomParityResult = V9UnrealBloomParityReady | V9UnrealBloomParityError;
+type ThreeJsParityUnrealBloomParityResult = ThreeJsParityUnrealBloomParityReady | ThreeJsParityUnrealBloomParityError;
 
-interface V9UnrealBloomParityReady {
+interface ThreeJsParityUnrealBloomParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
+  readonly schema: "a3d-threejs-parity-unreal-bloom-parity";
   readonly purpose: "same-scene A3D bloom chain vs Three.js EffectComposer UnrealBloomPass";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -48,9 +48,9 @@ interface V9UnrealBloomParityReady {
   readonly humanNotes: readonly string[];
 }
 
-interface V9UnrealBloomParityError {
+interface ThreeJsParityUnrealBloomParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-unreal-bloom-parity/v1";
+  readonly schema: "a3d-threejs-parity-unreal-bloom-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -74,7 +74,7 @@ interface DiffStats {
 }
 
 const SCENE = {
-  id: "v9-unreal-bloom",
+  id: "threejs-parity-unreal-bloom",
   width: 720,
   height: 405,
   clearColor: [0.006, 0.008, 0.012, 1],
@@ -103,9 +103,9 @@ async function run(): Promise<void> {
     const diff = computeDiff(a3dPixels, threePixels);
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
 
-    const ready: V9UnrealBloomParityReady = {
+    const ready: ThreeJsParityUnrealBloomParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-unreal-bloom-parity/v1",
+      schema: "a3d-threejs-parity-unreal-bloom-parity",
       purpose: "same-scene A3D bloom chain vs Three.js EffectComposer UnrealBloomPass",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -142,23 +142,23 @@ async function run(): Promise<void> {
       humanNotes: [
         `Mean RGB delta is ${diff.meanDelta}; structural similarity proxy is ${diff.structuralSimilarityProxy}.`,
         "Three.js reference uses an actual EffectComposer with RenderPass and UnrealBloomPass.",
-        "This artifact gates bounded threshold/radius/halo behavior for the V8 bloom workload; it is not a blanket postprocessing equality claim."
+        "This artifact gates bounded threshold/radius/halo behavior for the CurrentRoutes bloom workload; it is not a blanket postprocessing equality claim."
       ]
     };
 
-    window.__V9_UNREAL_BLOOM_PARITY__ = ready;
+    window.__THREEJS_PARITY_UNREAL_BLOOM_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
-    const failure: V9UnrealBloomParityError = {
+    const failure: ThreeJsParityUnrealBloomParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-unreal-bloom-parity/v1",
+      schema: "a3d-threejs-parity-unreal-bloom-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
       expectedReferencePass: "UnrealBloomPass"
     };
-    window.__V9_UNREAL_BLOOM_PARITY__ = failure;
+    window.__THREEJS_PARITY_UNREAL_BLOOM_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -388,7 +388,7 @@ async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
   return image;
 }
 
-function stripDataUrls(result: V9UnrealBloomParityReady): Omit<V9UnrealBloomParityReady, "dataUrls"> {
+function stripDataUrls(result: ThreeJsParityUnrealBloomParityReady): Omit<ThreeJsParityUnrealBloomParityReady, "dataUrls"> {
   const { dataUrls: _dataUrls, ...rest } = result;
   return rest;
 }

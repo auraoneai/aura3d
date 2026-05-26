@@ -1,8 +1,8 @@
 {
-  "schema": "a3d-v3-asset-fixture/v1",
+  "schema": "a3d-foundation-asset-fixture",
   "id": "product-camera",
   "source": "camera-kit",
-  "description": "V3 product camera fixture with data URI buffers and textures.",
+  "description": "Foundation product camera fixture with data URI buffers and textures.",
   "gltf": "product-camera.gltf",
   "glb": "product-camera.glb",
   "externalGltf": "product-camera-external.gltf",

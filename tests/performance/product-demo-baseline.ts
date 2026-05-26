@@ -98,7 +98,7 @@ async function main(): Promise<void> {
     const report = {
       generatedAt: new Date().toISOString(),
       releaseRunId: process.env.A3D_RELEASE_RUN_ID ?? "standalone-product-performance-run",
-      suite: "v2-product-demo-performance",
+      suite: "product-demo-performance",
       environment: {
         node: process.version,
         platform: platform(),

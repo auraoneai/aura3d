@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
 const REPORT_PATH = "tests/reports/threejs-parity/morphtargets-parity.json";
@@ -11,7 +11,7 @@ const ARTIFACTS = {
   sideBySide: "tests/reports/threejs-parity/morphtargets-parity/side-by-side.png"
 } as const;
 
-test.describe("V9 morph targets same-asset Three.js parity", () => {
+test.describe("Three.js parity morph targets same-asset Three.js parity", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -39,14 +39,14 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
     await page.goto(`${server.origin}/tools/threejs-parity-morphtargets-parity/index.html`, { waitUntil: "domcontentloaded" });
     await page.waitForFunction(
       () => {
-        const result = window.__V9_MORPHTARGETS_PARITY__ as { readonly status?: string } | undefined;
+        const result = window.__THREEJS_PARITY_MORPHTARGETS_PARITY__ as { readonly status?: string } | undefined;
         return result?.status === "ready" || result?.status === "error";
       },
       undefined,
       { timeout: 90_000 }
     );
 
-    const result = await page.evaluate(() => window.__V9_MORPHTARGETS_PARITY__) as MorphTargetsParityResult;
+    const result = await page.evaluate(() => window.__THREEJS_PARITY_MORPHTARGETS_PARITY__) as MorphTargetsParityResult;
     writeJson(REPORT_PATH, {
       ...(result.status === "ready" ? stripDataUrls(result) : result),
       generatedAt: new Date().toISOString(),
@@ -63,7 +63,7 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
       writePng(path, dataUrl);
     }
 
-    expect(result.schema).toBe("a3d-threejs-parity-morphtargets-parity/v1");
+    expect(result.schema).toBe("a3d-threejs-parity-morphtargets-parity");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAssetUrl).toBe(true);
     expect(result.assertions.sameBodyClip).toBe(true);
@@ -85,7 +85,7 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
     assertNoThreeJsInA3DMorphRuntimeSource();
 
     for (const [kind, path] of Object.entries(ARTIFACTS)) {
-      const stats = readV6PngStats(resolve(path));
+      const stats = readProductionPngStats(resolve(path));
       expect(stats.width, `${kind} width`).toBe(kind === "sideBySide" ? 1440 : 720);
       expect(stats.height, `${kind} height`).toBe(kind === "sideBySide" ? 540 : 480);
       expect(stats.nonBlackPixels, `${kind} nonblank pixels`).toBeGreaterThan(kind === "sideBySide" ? 84_000 : 42_000);
@@ -99,7 +99,7 @@ test.describe("V9 morph targets same-asset Three.js parity", () => {
       artifacts: ARTIFACTS,
       artifactStats: Object.fromEntries(Object.entries(ARTIFACTS).map(([kind, path]) => [
         kind,
-        { path, size: statSync(resolve(path)).size, pixels: readV6PngStats(resolve(path)) }
+        { path, size: statSync(resolve(path)).size, pixels: readProductionPngStats(resolve(path)) }
       ])),
       pageErrors
     });
@@ -136,7 +136,7 @@ function stripDataUrls(result: Extract<MorphTargetsParityResult, { readonly stat
 type MorphTargetsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "a3d-threejs-parity-morphtargets-parity/v1";
+      readonly schema: "a3d-threejs-parity-morphtargets-parity";
       readonly a3d: {
         readonly renderer: { readonly drawCalls: number };
         readonly animation: { readonly morphWeightTracksApplied: number };
@@ -161,4 +161,4 @@ type MorphTargetsParityResult =
       };
       readonly dataUrls: { readonly a3d: string; readonly threejs: string; readonly sideBySide: string };
     }
-  | { readonly status: "error"; readonly schema: "a3d-threejs-parity-morphtargets-parity/v1"; readonly error: string };
+  | { readonly status: "error"; readonly schema: "a3d-threejs-parity-morphtargets-parity"; readonly error: string };

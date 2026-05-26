@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportDir = resolve("tests/reports/product-studio");
 const captures: Array<{ readonly id: string; readonly path: string; readonly bytes: number; readonly hash: string }> = [];
 
-test.describe("V2 Product Studio app", () => {
+test.describe("ProductStudio Product Studio app", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -19,7 +19,7 @@ test.describe("V2 Product Studio app", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "a3d-v2-product-studio-browser-report/v1",
+      schema: "a3d-product-studio-product-studio-browser-report",
       generatedAt: new Date().toISOString(),
       app: "apps/product-studio/index.html",
       rejectedInputs: [

@@ -24,7 +24,7 @@ type ProductState = {
   readonly claimBoundary?: string;
 };
 
-test.describe("V4 flagship product configurator", () => {
+test.describe("ExternalParity flagship product configurator", () => {
   test.setTimeout(180_000);
   let server: ExampleDevServer;
 
@@ -73,12 +73,12 @@ test.describe("V4 flagship product configurator", () => {
         `${screenshotDir}/external-product-configurator-variant.png`,
         `${screenshotDir}/product-studio-pro.png`
       ],
-      productBoundary: "Milestone 7 proves a real product-configurator workflow and app using a pinned external Khronos asset. Full V4 release still requires installable SDK/templates and same-scene Three.js parity.",
+      productBoundary: "Milestone 7 proves a real product-configurator workflow and app using a pinned external Khronos asset. Full ExternalParity release still requires installable SDK/templates and same-scene Three.js parity.",
       requiredNextProof: [
         "create-aura3d installable product template",
         "packed-package external consumer proof",
         "same-scene Three.js rendered comparison",
-        "full V4 release audit"
+        "full ExternalParity release audit"
       ],
       errors,
       states: {
@@ -102,7 +102,7 @@ test.describe("V4 flagship product configurator", () => {
 async function waitForProductState(page: Page, id: string): Promise<ProductState> {
   await page.waitForFunction(
     (expectedId) => {
-      const state = window.__A3D_V4_PRODUCT_CONFIGURATOR__ as ProductState | undefined;
+      const state = window.__A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__ as ProductState | undefined;
       return state?.status === "ready" && state.id === expectedId;
     },
     id,
@@ -114,7 +114,7 @@ async function waitForProductState(page: Page, id: string): Promise<ProductState
 }
 
 async function productState(page: Page): Promise<ProductState | undefined> {
-  return page.evaluate(() => window.__A3D_V4_PRODUCT_CONFIGURATOR__ as ProductState | undefined);
+  return page.evaluate(() => window.__A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__ as ProductState | undefined);
 }
 
 function statePasses(state: ProductState): boolean {
@@ -135,7 +135,7 @@ function statePasses(state: ProductState): boolean {
     typeof state.externalSource === "string" &&
     state.externalSource.includes("KhronosGroup/glTF-Sample-Assets") &&
     typeof state.claimBoundary === "string" &&
-    state.claimBoundary.includes("V4 release still requires");
+    state.claimBoundary.includes("ExternalParity release still requires");
 }
 
 function captureErrors(page: Page): string[] {
@@ -149,6 +149,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __A3D_V4_PRODUCT_CONFIGURATOR__?: ProductState;
+    __A3D_EXTERNAL_PARITY_PRODUCT_CONFIGURATOR__?: ProductState;
   }
 }

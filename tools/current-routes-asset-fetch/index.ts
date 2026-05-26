@@ -1,15 +1,15 @@
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  createV8AssetCorpusSummary,
-  writeV8AssetCorpusReport
-} from "../../packages/assets/src/V8AssetCorpus";
+  createAdvancedAssetCorpusSummary,
+  writeAdvancedAssetCorpusReport
+} from "../../packages/assets/src/AdvancedAssetCorpus";
 
 const REPORT_PATH = "tests/reports/current-routes-assets.json";
 
 mkdirSync(dirname(resolve(REPORT_PATH)), { recursive: true });
 
-const summary = writeV8AssetCorpusReport(REPORT_PATH);
+const summary = writeAdvancedAssetCorpusReport(REPORT_PATH);
 
 console.log(JSON.stringify({
   schema: summary.schema,
@@ -32,10 +32,10 @@ console.log(JSON.stringify({
 }, null, 2));
 
 if (!summary.pass) {
-  throw new Error(`V8 asset corpus failed:\n${summary.failures.join("\n")}`);
+  throw new Error(`CurrentRoutes asset corpus failed:\n${summary.failures.join("\n")}`);
 }
 
-const postCheck = createV8AssetCorpusSummary();
+const postCheck = createAdvancedAssetCorpusSummary();
 if (!postCheck.pass) {
-  throw new Error("V8 asset corpus became invalid after report write.");
+  throw new Error("CurrentRoutes asset corpus became invalid after report write.");
 }

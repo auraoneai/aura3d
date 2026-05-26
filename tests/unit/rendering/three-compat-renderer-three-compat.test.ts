@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { createRendererV5, summarizeV5RendererDiagnostics, V5_REQUIRED_RENDERER_FEATURES } from "../../../packages/rendering/src";
+import { createThreeCompatRenderer, summarizeThreeCompatRendererDiagnostics, THREE_COMPAT_REQUIRED_RENDERER_FEATURES } from "../../../packages/rendering/src";
 
-describe("RendererV5 breadth contract", () => {
+describe("ThreeCompatRenderer breadth contract", () => {
   it("exposes the renderer systems expected by a broad Three.js replacement track", () => {
-    const renderer = createRendererV5({ backend: "webgl2", width: 1440, height: 900 });
+    const renderer = createThreeCompatRenderer({ backend: "webgl2", width: 1440, height: 900 });
     const diagnostics = renderer.createDiagnostics();
-    const summary = summarizeV5RendererDiagnostics(diagnostics);
+    const summary = summarizeThreeCompatRendererDiagnostics(diagnostics);
     const plan = renderer.createComplexScenePlan();
 
     expect(summary.missing).toEqual([]);
     expect(summary.canClaimRendererBreadth).toBe(true);
-    expect(diagnostics.features.map((feature) => feature.feature)).toEqual(expect.arrayContaining([...V5_REQUIRED_RENDERER_FEATURES]));
+    expect(diagnostics.features.map((feature) => feature.feature)).toEqual(expect.arrayContaining([...THREE_COMPAT_REQUIRED_RENDERER_FEATURES]));
     expect(renderer.renderTargets.current.format).toBe("rgba16f");
     expect(renderer.renderTargets.supportsMultipleRenderTargets()).toBe(true);
     expect(renderer.renderTargets.supportsHdr()).toBe(true);

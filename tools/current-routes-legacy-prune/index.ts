@@ -13,13 +13,13 @@ interface LegacyEntry {
 }
 
 const blockedLegacyPaths: readonly LegacyEntry[] = [
-  { path: "examples/product-configurator/", phase: "docs/project/v4-engine-readiness-plan.md/docs/project/v4-roadmap-visual-engine-plan.md", reason: "Unversioned product demo was replaced by versioned product viewer routes.", replacement: "examples/three-compat-examples/product-configurator/", quarantinePath: "examples/_quarantine/product-configurator/" },
-  { path: "examples/postprocess-lab/", phase: "docs/project/v4-engine-readiness-plan.md/docs/project/v4-roadmap-visual-engine-plan.md", reason: "Unversioned postprocess lab was replaced by versioned postprocess examples.", replacement: "examples/three-compat-examples/postprocess-bloom/", quarantinePath: "examples/_quarantine/postprocess-lab/" },
-  { path: "examples/shadow-lab/", phase: "docs/project/v4-engine-readiness-plan.md", reason: "Unversioned shadow lab is legacy renderer evidence.", replacement: "examples/three-compat-examples/architecture-interior/", quarantinePath: "examples/_quarantine/shadow-lab/" },
-  { path: "examples/portfolio/", phase: "docs/project/v2-roadmap-product-asset-pipeline-plan.md", reason: "Static screenshot portfolio must not be used as product proof.", replacement: "tests/reports/current-routes/", quarantinePath: "examples/_quarantine/portfolio/" },
-  { path: "examples/architecture-viewer/", phase: "docs/project/v3-roadmap-product-workflow-plan.md", reason: "Unversioned architecture viewer was replaced by versioned architecture routes.", replacement: "apps/architecture-viewer/", quarantinePath: "examples/_quarantine/architecture-viewer/" },
-  { path: "examples/game-slice/", phase: "docs/project/v3-roadmap-product-workflow-plan.md", reason: "Legacy game slice is not a V8 product claim.", replacement: "none", quarantinePath: "examples/_quarantine/game-slice/" },
-  { path: "examples/portfolio/screenshots/", phase: "docs/project/v2-roadmap-product-asset-pipeline-plan.md", reason: "Old static screenshots are failed evidence.", replacement: "tests/reports/current-routes/" }
+  { path: "examples/product-configurator/", phase: "docs/project/implementation-plan.md/docs/project/implementation-plan.md", reason: "Unversioned product demo was replaced by versioned product viewer routes.", replacement: "examples/three-compat-examples/product-configurator/", quarantinePath: "examples/_quarantine/product-configurator/" },
+  { path: "examples/postprocess-lab/", phase: "docs/project/implementation-plan.md/docs/project/implementation-plan.md", reason: "Unversioned postprocess lab was replaced by versioned postprocess examples.", replacement: "examples/three-compat-examples/postprocess-bloom/", quarantinePath: "examples/_quarantine/postprocess-lab/" },
+  { path: "examples/shadow-lab/", phase: "docs/project/implementation-plan.md", reason: "Unversioned shadow lab is legacy renderer evidence.", replacement: "examples/three-compat-examples/architecture-interior/", quarantinePath: "examples/_quarantine/shadow-lab/" },
+  { path: "examples/portfolio/", phase: "docs/project/product-studio-product-asset-pipeline-plan.md", reason: "Static screenshot portfolio must not be used as product proof.", replacement: "tests/reports/current-routes/", quarantinePath: "examples/_quarantine/portfolio/" },
+  { path: "examples/architecture-viewer/", phase: "docs/project/implementation-plan.md", reason: "Unversioned architecture viewer was replaced by versioned architecture routes.", replacement: "apps/architecture-viewer/", quarantinePath: "examples/_quarantine/architecture-viewer/" },
+  { path: "examples/game-slice/", phase: "docs/project/implementation-plan.md", reason: "Legacy game slice is not a CurrentRoutes product claim.", replacement: "none", quarantinePath: "examples/_quarantine/game-slice/" },
+  { path: "examples/portfolio/screenshots/", phase: "docs/project/product-studio-product-asset-pipeline-plan.md", reason: "Old static screenshots are failed evidence.", replacement: "tests/reports/current-routes/" }
 ] as const;
 
 const retainedHistoricalArtifacts = [
@@ -38,12 +38,12 @@ const currentEvidenceFiles = [
   "tests/reports/current-routes-threejs-parity.json",
   "tests/reports/current-routes-visual-review.json",
   "tests/reports/current-routes-completion-audit.json",
-  "docs/project/v8-roadmap-status.md",
-  "docs/project/v8-roadmap-renderer-sdk.md",
-  "docs/project/v8-roadmap-gltf-animation.md",
-  "docs/project/v8-roadmap-pbr-hdr-ibl.md",
-  "docs/project/v8-roadmap-threejs-comparison.md",
-  "docs/project/v8-roadmap-claim-boundary.md"
+  "docs/project/current-state.md",
+  "docs/project/compatibility.md",
+  "docs/project/threejs-parity-parity-matrix.md",
+  "docs/project/threejs-parity-parity-matrix.md",
+  "docs/project/threejs-parity-status.md",
+  "docs/project/claim-guidelines.md"
 ] as const;
 
 const staleEvidencePatterns = [
@@ -56,7 +56,7 @@ const staleEvidencePatterns = [
   "examples/game-slice/"
 ] as const;
 
-export function createV8LegacyPruneReport(): Record<string, unknown> {
+export function createCurrentRoutesLegacyPruneReport(): Record<string, unknown> {
   const deleted = blockedLegacyPaths.map((entry) => {
     const exists = existsSync(resolve(entry.path));
     return {
@@ -106,14 +106,14 @@ export function createV8LegacyPruneReport(): Record<string, unknown> {
       detail: obsoleteRootLinks.length === 0 ? "Root route registry does not link obsolete examples." : `${obsoleteRootLinks.length} obsolete root link(s) found.`
     },
     {
-      id: "root-links-no-v7-parity-lab-working-link",
+      id: "root-links-no-runtime-parity-parity-lab-working-link",
       pass: internalStressLinks.length === 0,
-      detail: internalStressLinks.length === 0 ? "V7 parity lab is not linked as a working route." : "V7 parity lab is linked as a working route."
+      detail: internalStressLinks.length === 0 ? "RuntimeParity parity lab is not linked as a working route." : "RuntimeParity parity lab is linked as a working route."
     },
     {
       id: "current-evidence-no-stale-screenshots",
       pass: currentEvidenceReferences.length === 0,
-      detail: currentEvidenceReferences.length === 0 ? "Current V8 evidence does not reference stale screenshot sets." : `${currentEvidenceReferences.length} stale current-evidence reference(s) found.`
+      detail: currentEvidenceReferences.length === 0 ? "Current CurrentRoutes evidence does not reference stale screenshot sets." : `${currentEvidenceReferences.length} stale current-evidence reference(s) found.`
     },
     {
       id: "quarantine-readme",
@@ -125,7 +125,7 @@ export function createV8LegacyPruneReport(): Record<string, unknown> {
   const failures = checks.filter((check) => !check.pass).map((check) => `${check.id}: ${check.detail}`);
 
   return {
-    schema: "a3d-current-routes-legacy-prune/v1",
+    schema: "a3d-current-routes-legacy-prune",
     generatedAt: new Date().toISOString(),
     pass: failures.length === 0,
     deleted,
@@ -141,7 +141,7 @@ export function createV8LegacyPruneReport(): Record<string, unknown> {
   };
 }
 
-export function writeV8LegacyPruneReport(report: Record<string, unknown>): void {
+export function writeCurrentRoutesLegacyPruneReport(report: Record<string, unknown>): void {
   mkdirSync(dirname(resolve(REPORT_PATH)), { recursive: true });
   writeFileSync(resolve(REPORT_PATH), `${JSON.stringify(report, null, 2)}\n`);
 }
@@ -211,16 +211,16 @@ function routeObjectForPath(html: string, path: string): string {
 }
 
 async function main(): Promise<void> {
-  const report = createV8LegacyPruneReport();
-  writeV8LegacyPruneReport(report);
+  const report = createCurrentRoutesLegacyPruneReport();
+  writeCurrentRoutesLegacyPruneReport(report);
   if (report.pass !== true) {
-    console.error(`V8 legacy prune failed. Report: ${REPORT_PATH}`);
+    console.error(`CurrentRoutes legacy prune failed. Report: ${REPORT_PATH}`);
     const failures = Array.isArray(report.failures) ? report.failures : [];
     for (const failure of failures) console.error(`- ${String(failure)}`);
     process.exitCode = 1;
     return;
   }
-  console.log(`V8 legacy prune passed. Report: ${REPORT_PATH}`);
+  console.log(`CurrentRoutes legacy prune passed. Report: ${REPORT_PATH}`);
 }
 
 const isCli = process.argv[1] ? fileURLToPath(import.meta.url) === resolve(process.argv[1]) : false;

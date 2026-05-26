@@ -11,7 +11,7 @@ const catalog = JSON.parse(readFileSync(resolve("examples/three-compat-examples/
 };
 const mapped = catalog.examples.filter((example) => example.threeReference);
 const report = {
-  schema: "a3d-three-compat-example-parity/v1",
+  schema: "a3d-three-compat-example-parity",
   generatedAt: new Date().toISOString(),
   pass: catalog.examples.length >= 50 && catalog.examples.filter((example) => example.browserTested).length >= 30 && mapped.length >= 20,
   exampleCount: catalog.examples.length,
@@ -26,4 +26,4 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 example parity passed: ${report.exampleCount} examples, ${report.threeReferenceMappingCount} mappings.`);
+console.log(`Three.js compatibility example parity passed: ${report.exampleCount} examples, ${report.threeReferenceMappingCount} mappings.`);

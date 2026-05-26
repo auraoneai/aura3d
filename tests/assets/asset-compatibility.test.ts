@@ -44,7 +44,7 @@ describe("asset compatibility diagnostics", () => {
       externalLoaderResults
     });
 
-    expect(report.schemaVersion).toBe("asset-compatibility-report-v1");
+    expect(report.schemaVersion).toBe("asset-compatibility-report");
     expect(report.fixtureStatus.blenderExportFixtures).toBe("present");
     expect(report.summary.assetCount).toBe(77);
     expect(report.summary.aura3d).toEqual({ pass: 70, warn: 7, "expected-fail": 0, "not-run": 0 });

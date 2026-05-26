@@ -21,4 +21,4 @@ Related checked evidence:
 
 ## Current Boundary
 
-The editor app is a browser-first authoring slice with hierarchy, inspector, import, play mode, profiler/debug, plugin, and export evidence. It is not evidence for broad Unity/Unreal workflow parity outside the scoped v2 claim language.
+The editor app is a browser-first authoring slice with hierarchy, inspector, import, play mode, profiler/debug, plugin, and export evidence. It is not evidence for broad Unity/Unreal workflow parity outside the scoped product studio claim language.

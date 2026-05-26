@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-material-matrix-browser.json";
 
-test.describe("V4 physical material matrix browser evidence", () => {
+test.describe("ExternalParity physical material matrix browser evidence", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -27,10 +27,10 @@ test.describe("V4 physical material matrix browser evidence", () => {
     await page.locator("[data-testid='material-showroom-canvas']").screenshot({ path: screenshotPath });
 
     const state = await page.evaluate(() => window.__AURA3D_MATERIAL_SHOWROOM__);
-    const v4Materials = await page.evaluate(async () => {
+    const externalParityMaterials = await page.evaluate(async () => {
       const rendering = await import("/packages/rendering/src/index.ts") as typeof import("../../packages/rendering/src");
-      const matrix = rendering.analyzeV4MaterialMatrix();
-      const transmission = rendering.evaluateV4Transmission({
+      const matrix = rendering.analyzeExternalParityMaterialMatrix();
+      const transmission = rendering.evaluateExternalParityTransmission({
         baseColor: [0.8, 0.95, 1],
         thickness: 0.2,
         attenuationColor: [0.95, 0.98, 1],
@@ -43,7 +43,7 @@ test.describe("V4 physical material matrix browser evidence", () => {
         reflectanceClasses: matrix.map((entry) => entry.reflectanceClass),
         boundedDiagnostics: matrix.flatMap((entry) => entry.extensionDiagnostics.filter((extension) => extension.support === "bounded").map((extension) => extension.extension)),
         transmission,
-        alphaSorted: rendering.sortV4AlphaItems([
+        alphaSorted: rendering.sortExternalParityAlphaItems([
           { id: "glass-near", depth: 2, alphaMode: "blend" },
           { id: "opaque-mid", depth: 5, alphaMode: "opaque" },
           { id: "glass-far", depth: 8, alphaMode: "blend" }
@@ -55,14 +55,14 @@ test.describe("V4 physical material matrix browser evidence", () => {
     const report = {
       ok: errors.length === 0 &&
         state?.status === "ready" &&
-        v4Materials.materialIds.length === 12 &&
-        v4Materials.boundedDiagnostics.includes("clearcoat") &&
-        v4Materials.boundedDiagnostics.includes("transmission") &&
-        v4Materials.transmission.bounded === true &&
+        externalParityMaterials.materialIds.length === 12 &&
+        externalParityMaterials.boundedDiagnostics.includes("clearcoat") &&
+        externalParityMaterials.boundedDiagnostics.includes("transmission") &&
+        externalParityMaterials.transmission.bounded === true &&
         pixelBuckets.size >= 8,
       generatedAt: new Date().toISOString(),
       screenshotPath,
-      productBoundary: "Browser material matrix evidence for V4 Milestone 4 only. Same-scene Three.js material screenshots and licensed material textures are still required before flagship proof.",
+      productBoundary: "Browser material matrix evidence for ExternalParity Milestone 4 only. Same-scene Three.js material screenshots and licensed material textures are still required before flagship proof.",
       requiredNextProof: [
         "same material matrix in Three.js",
         "texture-backed material library",
@@ -72,17 +72,17 @@ test.describe("V4 physical material matrix browser evidence", () => {
       errors,
       pixelBucketCount: pixelBuckets.size,
       state,
-      v4Materials
+      externalParityMaterials
     };
     mkdirSync(join(process.cwd(), "tests/reports"), { recursive: true });
     writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
 
     expect(errors).toEqual([]);
     expect(state?.status).toBe("ready");
-    expect(v4Materials.materialIds).toHaveLength(12);
-    expect(v4Materials.boundedDiagnostics).toContain("clearcoat");
-    expect(v4Materials.boundedDiagnostics).toContain("transmission");
-    expect(v4Materials.transmission.bounded).toBe(true);
+    expect(externalParityMaterials.materialIds).toHaveLength(12);
+    expect(externalParityMaterials.boundedDiagnostics).toContain("clearcoat");
+    expect(externalParityMaterials.boundedDiagnostics).toContain("transmission");
+    expect(externalParityMaterials.transmission.bounded).toBe(true);
     expect(pixelBuckets.size).toBeGreaterThanOrEqual(8);
   });
 });

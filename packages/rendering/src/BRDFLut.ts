@@ -1,6 +1,6 @@
 import { generateApproximateBrdfLutPixels, type Rgba8EnvironmentMapSource } from "./EnvironmentMapResources";
 
-export interface V4BrdfLut {
+export interface ExternalParityBrdfLut {
   readonly width: number;
   readonly height: number;
   readonly data: Uint8Array;
@@ -12,16 +12,16 @@ export interface V4BrdfLut {
   };
 }
 
-export function createV4BrdfLut(size = 64): V4BrdfLut {
+export function createExternalParityBrdfLut(size = 64): ExternalParityBrdfLut {
   if (!Number.isInteger(size) || size < 16) {
-    throw new RangeError("V4 BRDF LUT size must be an integer >= 16.");
+    throw new RangeError("ExternalParity BRDF LUT size must be an integer >= 16.");
   }
   const source = generateApproximateBrdfLutPixels({ width: size, height: size });
   return {
     width: source.width,
     height: source.height,
     data: new Uint8Array(source.data),
-    textureLabel: "v4-brdf-lut",
+    textureLabel: "external-parity-brdf-lut",
     diagnostics: {
       byteLength: source.data.byteLength,
       nonZeroPixels: countNonZeroPixels(source),

@@ -1,6 +1,6 @@
-import type { V6AppUiDefinition } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppUiDefinition } from "../../common/src/runtime";
 
-export const ui: V6AppUiDefinition = {
+export const ui: ProductionAppUiDefinition = {
   primaryActionLabel: "Toggle Light",
   secondaryLabel: "Scene viewer for HDR-lit imported props and architecture workflow metrics."
 };

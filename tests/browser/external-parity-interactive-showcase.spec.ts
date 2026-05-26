@@ -10,7 +10,7 @@ type InteractiveState = {
   readonly id?: string; readonly status?: string; readonly productSurface?: string; readonly cameraControls?: boolean; readonly selectionInteraction?: boolean; readonly variantInteraction?: boolean; readonly selectedObject?: string; readonly cameraOrbitDegrees?: number; readonly variant?: string; readonly interactions?: number; readonly objectCount?: number; readonly featureChecklist?: readonly string[]; readonly claimBoundary?: string;
 };
 
-test.describe("V4 interactive showcase", () => {
+test.describe("ExternalParity interactive showcase", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
   test.beforeAll(async () => { server = await startExampleDevServer(); });
@@ -32,7 +32,7 @@ test.describe("V4 interactive showcase", () => {
     await page.goto(`${server.origin}/apps/interactive-showcase-pro/index.html`, { waitUntil: "domcontentloaded" });
     const app = await waitForState(page, "interactive-showcase-pro");
     await page.locator("[data-testid='hr4-interactive-canvas']").screenshot({ path: `${screenshotDir}/interactive-showcase-pro.png` });
-    const report = { ok: errors.length === 0 && passes(example, "external-interactive-showcase") && passes(interacted, "external-interactive-showcase") && passes(app, "interactive-showcase-pro") && interacted.variant === "emissive" && interacted.cameraOrbitDegrees === 42, generatedAt: new Date().toISOString(), screenshots: [`${screenshotDir}/external-interactive-showcase.png`, `${screenshotDir}/external-interactive-showcase-interacted.png`, `${screenshotDir}/interactive-showcase-pro.png`], productBoundary: "Milestone 12 proves interaction product state. Full V4 release still requires production 3D interaction parity, packaged API proof, and same-scene Three.js comparison.", errors, states: { example, interacted, app } };
+    const report = { ok: errors.length === 0 && passes(example, "external-interactive-showcase") && passes(interacted, "external-interactive-showcase") && passes(app, "interactive-showcase-pro") && interacted.variant === "emissive" && interacted.cameraOrbitDegrees === 42, generatedAt: new Date().toISOString(), screenshots: [`${screenshotDir}/external-interactive-showcase.png`, `${screenshotDir}/external-interactive-showcase-interacted.png`, `${screenshotDir}/interactive-showcase-pro.png`], productBoundary: "Milestone 12 proves interaction product state. Full ExternalParity release still requires production 3D interaction parity, packaged API proof, and same-scene Three.js comparison.", errors, states: { example, interacted, app } };
     writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
     expect(report.ok).toBe(true);
   });
@@ -40,7 +40,7 @@ test.describe("V4 interactive showcase", () => {
 
 async function waitForState(page: Page, id: string): Promise<InteractiveState> {
   await page.waitForFunction((expectedId) => {
-    const state = window.__A3D_V4_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined;
+    const state = window.__A3D_EXTERNAL_PARITY_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined;
     return state?.status === "ready" && state.id === expectedId;
   }, id, { timeout: 60_000 });
   const current = await state(page);
@@ -48,7 +48,7 @@ async function waitForState(page: Page, id: string): Promise<InteractiveState> {
   return current;
 }
 async function state(page: Page): Promise<InteractiveState | undefined> {
-  return page.evaluate(() => window.__A3D_V4_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined);
+  return page.evaluate(() => window.__A3D_EXTERNAL_PARITY_INTERACTIVE_SHOWCASE__ as InteractiveState | undefined);
 }
 function passes(value: InteractiveState, id: string): boolean {
   const checklist = value.featureChecklist ?? [];
@@ -60,4 +60,4 @@ function captureErrors(page: Page): string[] {
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
   return errors;
 }
-declare global { interface Window { __A3D_V4_INTERACTIVE_SHOWCASE__?: InteractiveState; } }
+declare global { interface Window { __A3D_EXTERNAL_PARITY_INTERACTIVE_SHOWCASE__?: InteractiveState; } }

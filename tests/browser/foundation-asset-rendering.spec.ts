@@ -6,7 +6,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 const reportDir = resolve("tests/reports/foundation-assets");
 const captures: AssetRenderCapture[] = [];
 
-test.describe("V3 asset rendering", () => {
+test.describe("asset rendering", () => {
   test.setTimeout(120_000);
 
   let server: ExampleDevServer;
@@ -19,14 +19,14 @@ test.describe("V3 asset rendering", () => {
   test.afterAll(async () => {
     await server.close();
     writeFileSync(join(reportDir, "manifest.json"), `${JSON.stringify({
-      schema: "a3d-foundation-assets-browser/v1",
+      schema: "a3d-foundation-assets-browser",
       generatedAt: new Date().toISOString(),
       captures,
       pass: captures.length >= 3 && captures.every((capture) => capture.bytes > 10_000 && capture.lastError === null)
     }, null, 2)}\n`);
   });
 
-  test("loads and renders real V3 asset fixtures through public APIs", async ({ page }) => {
+  test("loads and renders real asset fixtures through public APIs", async ({ page }) => {
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
     for (const fixture of [
       { id: "product-camera", path: "/fixtures/workflow-assets/assets/product-camera/product-camera.gltf" },
@@ -60,7 +60,7 @@ test.describe("V3 asset rendering", () => {
 async function renderAsset(page: import("@playwright/test").Page, origin: string, fixture: { readonly id: string; readonly path: string }): Promise<AssetRenderResult> {
   return page.evaluate(async ({ origin, fixture }) => {
     const rendering = await import(`${origin}/packages/rendering/src/index.ts`);
-    const assets = await import(`${origin}/packages/assets/src/index.ts`);
+    const assets = await import(`${origin}/packages/assets/src/browser-index.ts`);
     const { Renderer } = rendering;
     const { loadRenderableAsset, createRenderableScene } = assets;
     const width = 900;

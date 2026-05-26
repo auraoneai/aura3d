@@ -1,15 +1,15 @@
-export type V5LightKind = "directional" | "point" | "spot" | "hemisphere" | "ambient" | "rect-area";
+export type ThreeCompatLightKind = "directional" | "point" | "spot" | "hemisphere" | "ambient" | "rect-area";
 
-export interface V5LightDescriptor {
-  readonly kind: V5LightKind;
+export interface ThreeCompatLightDescriptor {
+  readonly kind: ThreeCompatLightKind;
   readonly intensity: number;
   readonly castsShadow?: boolean;
 }
 
-export class V5LightingSystem {
-  readonly lightKinds: readonly V5LightKind[] = ["directional", "point", "spot", "hemisphere", "ambient", "rect-area"];
+export class ThreeCompatLightingSystem {
+  readonly lightKinds: readonly ThreeCompatLightKind[] = ["directional", "point", "spot", "hemisphere", "ambient", "rect-area"];
 
-  createDefaultRig(): readonly V5LightDescriptor[] {
+  createDefaultRig(): readonly ThreeCompatLightDescriptor[] {
     return [
       { kind: "ambient", intensity: 0.18 },
       { kind: "hemisphere", intensity: 0.42 },

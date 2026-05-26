@@ -1,11 +1,11 @@
-export interface V5BvhNode {
+export interface ThreeCompatBvhNode {
   readonly id: number;
   readonly triangleStart: number;
   readonly triangleCount: number;
 }
 
-export class BVHV5 {
-  readonly nodes: V5BvhNode[];
+export class BVHThreeCompat {
+  readonly nodes: ThreeCompatBvhNode[];
 
   constructor(public readonly triangleCount: number) {
     const nodeCount = Math.max(1, Math.ceil(triangleCount / 64));

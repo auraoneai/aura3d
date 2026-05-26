@@ -10,9 +10,9 @@ const checks = [
   { name: "no-monorepo-fixtures", pass: monorepoFixtureImports.length === 0, detail: monorepoFixtureImports.join(", ") || "no template imports monorepo fixtures" }
 ];
 const pass = checks.every((item) => item.pass);
-const report = { schema: "a3d-three-compat-template-readiness/v1", generatedAt: new Date().toISOString(), pass, templates, checks };
+const report = { schema: "a3d-three-compat-template-readiness", generatedAt: new Date().toISOString(), pass, templates, checks };
 const reportPath = resolve("tests/reports/three-compat-template-readiness.json");
 mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 if (!pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }
-console.log(`V5 template readiness passed: ${templates.length} templates.`);
+console.log(`Three.js compatibility template readiness passed: ${templates.length} templates.`);

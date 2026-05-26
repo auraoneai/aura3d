@@ -54,8 +54,8 @@ const targetByArtifactPath = new Map([
 const auditCommands = [
   ["pnpm", ["audit:external-parity-production-readiness"]],
   ["pnpm", ["audit:external-parity-external-evidence-readiness"]],
-  ["pnpm", ["audit:v4-broad-parity"]],
-  ["pnpm", ["audit:v4-completion"]],
+  ["pnpm", ["audit:external-parity-broad-parity"]],
+  ["pnpm", ["audit:external-parity-completion"]],
   ["pnpm", ["verify:external-parity-report-freshness"]],
 ] as const;
 

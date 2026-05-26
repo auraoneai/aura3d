@@ -1,20 +1,20 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  createV8AssetCorpusSummary,
+  createAdvancedAssetCorpusSummary,
   GLTFLoader,
-  inspectV8Glb,
-  loadV8AssetManifest,
+  inspectCurrentRoutesGlb,
+  loadCurrentRoutesAssetManifest,
   loadRenderableAsset
 } from "../../packages/assets/src";
 import { LoadContext } from "../../packages/assets/src/LoadContext";
 
-describe("V8 GLTF loader corpus", () => {
+describe("CurrentRoutes GLTF loader corpus", () => {
   it("pins a local, checksummed GLB/HDR corpus with real renderer features", () => {
-    const manifest = loadV8AssetManifest();
-    const summary = createV8AssetCorpusSummary(manifest);
+    const manifest = loadCurrentRoutesAssetManifest();
+    const summary = createAdvancedAssetCorpusSummary(manifest);
 
-    expect(manifest.schema).toBe("a3d-v8-local-asset-corpus/v1");
+    expect(manifest.schema).toBe("a3d-current-routes-local-asset-corpus");
     expect(summary.pass, summary.failures.join("\n")).toBe(true);
     expect(summary.assetCount).toBeGreaterThanOrEqual(manifest.requirements.minimumAssetCount);
     expect(summary.environmentCount).toBe(2);
@@ -33,10 +33,10 @@ describe("V8 GLTF loader corpus", () => {
   });
 
   it("extracts declared per-asset metadata from the GLB JSON chunks", () => {
-    const manifest = loadV8AssetManifest();
+    const manifest = loadCurrentRoutesAssetManifest();
 
     for (const asset of manifest.assets) {
-      const inspection = inspectV8Glb(asset.localPath);
+      const inspection = inspectCurrentRoutesGlb(asset.localPath);
       expect(inspection.validGlb).toBe(true);
       expect(inspection.triangleCount, asset.id).toBe(asset.triangleCount);
       expect(inspection.textureCount, asset.id).toBe(asset.textureCount);
@@ -50,7 +50,7 @@ describe("V8 GLTF loader corpus", () => {
   });
 
   it("loads representative production assets through the public GLTFLoader without blank-output diagnostics", async () => {
-    const manifest = loadV8AssetManifest();
+    const manifest = loadCurrentRoutesAssetManifest();
     const sampleIds = [
       "damaged-helmet",
       "chronograph-watch",
@@ -88,7 +88,7 @@ describe("V8 GLTF loader corpus", () => {
   }, 30000);
 
   it("loads GLB assets through the one-call renderable asset API", async () => {
-    const manifest = loadV8AssetManifest();
+    const manifest = loadCurrentRoutesAssetManifest();
     const helmet = manifest.assets.find((asset) => asset.id === "damaged-helmet");
 
     expect(helmet).toBeDefined();

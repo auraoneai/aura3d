@@ -1,7 +1,7 @@
-import type { V6AppSceneDefinition } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppSceneDefinition } from "../../common/src/runtime";
 import { assets } from "./assets";
 
-export const scene: V6AppSceneDefinition = {
+export const scene: ProductionAppSceneDefinition = {
   appId: "threejs-parity-lab",
   sceneId: "threejs-parity-lab",
   title: "Three.js Parity Lab",

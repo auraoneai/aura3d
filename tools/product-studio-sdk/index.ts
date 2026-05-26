@@ -39,7 +39,7 @@ for (const id of products) {
 }
 
 const report = {
-  schema: "a3d-product-studio-sdk/v1",
+  schema: "a3d-product-studio-sdk",
   generatedAt: new Date().toISOString(),
   pass: results.every((result) => result.partCount >= 8 && result.materialCount >= 3 && result.textureCount >= 12 && result.warnings.length === 0),
   results

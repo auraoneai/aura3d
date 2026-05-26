@@ -6,7 +6,7 @@ describe("editor shader graph model", () => {
     const fixture = createOldBranchShaderGraphFixture();
     const repeat = createOldBranchShaderGraphFixture();
 
-    expect(fixture.id).toBe("v4-old-branch-shader-graph-fixture");
+    expect(fixture.id).toBe("external-parity-old-branch-shader-graph-fixture");
     expect(fixture.source).toBe("origin-master-shader-graph-adapted");
     expect(fixture.sourceFiles).toEqual([
       "origin/master:src/shaders/graph/ShaderGraph.ts",

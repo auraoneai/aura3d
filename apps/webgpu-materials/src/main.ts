@@ -15,11 +15,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8WebGPUMaterials?: V8WebGPUMaterialsRuntime;
+    __a3dCurrentRoutesWebGPUMaterials?: CurrentRoutesWebGPUMaterialsRuntime;
   }
 }
 
-interface V8WebGPUMaterialsRuntime {
+interface CurrentRoutesWebGPUMaterialsRuntime {
   readonly appId: "webgpu-materials";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -63,7 +63,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__a3dV8WebGPUMaterials = runtime;
+    window.__a3dCurrentRoutesWebGPUMaterials = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -148,7 +148,7 @@ async function run(): Promise<void> {
         outputNonDarkPixels: pixelStats.nonDark,
         outputColorBuckets: pixelStats.buckets
       });
-      window.__a3dV8WebGPUMaterials = runtime;
+      window.__a3dCurrentRoutesWebGPUMaterials = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -293,11 +293,11 @@ function analyzePixels(pixels: Uint8Array): { readonly nonDark: number; readonly
 }
 
 function createRuntime(
-  status: V8WebGPUMaterialsRuntime["status"],
+  status: CurrentRoutesWebGPUMaterialsRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8WebGPUMaterialsRuntime, "appId" | "status" | "statusLabel" | "renderer" | "evidenceMode" | "elapsedMs">> = {}
-): V8WebGPUMaterialsRuntime {
+  patch: Partial<Omit<CurrentRoutesWebGPUMaterialsRuntime, "appId" | "status" | "statusLabel" | "renderer" | "evidenceMode" | "elapsedMs">> = {}
+): CurrentRoutesWebGPUMaterialsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -320,12 +320,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8WebGPUMaterialsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesWebGPUMaterialsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 WebGPU Materials</h1>
+          <h1>CurrentRoutes WebGPU Materials</h1>
           <p>Public PBR and textured PBR materials rendered through the A3D WebGPU backend.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

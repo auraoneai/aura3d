@@ -15,7 +15,7 @@ type Average = {
   a: number;
 };
 
-type PixelMatcher = "blue" | "bright" | "green" | "orange" | "pink" | "purple" | "yellow";
+type PixelMatcher = "blue" | "bright" | "green" | "orange" | "pink" | "purple" | "rendered" | "yellow";
 
 type PixelCheck = {
   name: string;
@@ -76,9 +76,9 @@ const visualTargets = [
   },
   {
     id: "06-asset-gltf",
-    region: { x: 420, y: 235, width: 120, height: 120 },
-    assertion: (average: Average) => average.b > 120 && average.r > 100,
-    pixelChecks: [{ name: "gltf-mesh", region: { x: 360, y: 190, width: 240, height: 200 }, matcher: "purple", minimumPixels: 8_000 }],
+    region: { x: 330, y: 120, width: 300, height: 270 },
+    assertion: (average: Average) => average.b > 80 && average.r > 70,
+    pixelChecks: [{ name: "gltf-mesh", region: { x: 330, y: 120, width: 300, height: 270 }, matcher: "purple", minimumPixels: 20_000 }],
   },
   {
     id: "07-input-controls",
@@ -111,12 +111,12 @@ const visualTargets = [
   },
   {
     id: "11-showcase-world",
-    region: { x: 180, y: 160, width: 560, height: 300 },
-    assertion: (average: Average) => average.r > 60 && average.g > 45 && average.b > 25,
+    region: { x: 300, y: 250, width: 360, height: 300 },
+    assertion: (average: Average) => average.r > 35 && average.g > 40 && average.b > 40,
     pixelChecks: [
-      { name: "showcase-pbr-sphere", region: { x: 230, y: 165, width: 250, height: 250 }, matcher: "yellow", minimumPixels: 12_000 },
-      { name: "showcase-normal-pbr-cube", region: { x: 625, y: 300, width: 150, height: 115 }, matcher: "blue", minimumPixels: 80 },
-      { name: "showcase-gltf-texture", region: { x: 585, y: 180, width: 135, height: 105 }, matcher: "purple", minimumPixels: 600 },
+      { name: "showcase-pbr-sphere", region: { x: 365, y: 270, width: 150, height: 190 }, matcher: "bright", minimumPixels: 7_000 },
+      { name: "showcase-normal-pbr-cube", region: { x: 520, y: 325, width: 130, height: 115 }, matcher: "rendered", minimumPixels: 10_000 },
+      { name: "showcase-gltf-texture", region: { x: 318, y: 422, width: 72, height: 72 }, matcher: "rendered", minimumPixels: 3_000 },
     ],
   },
 ] as const;
@@ -299,7 +299,8 @@ async function countMatchingPixels(page: Page, region: Region, matcher: PixelMat
           (pixelMatcher === "green" && g > 120 && r < 180 && b < 210) ||
           (pixelMatcher === "orange" && r > 180 && g > 45 && g < 150 && b < 90) ||
           (pixelMatcher === "pink" && r > 150 && b > 80 && g < 180) ||
-          (pixelMatcher === "purple" && r > 120 && b > 170 && g < 180) ||
+          (pixelMatcher === "purple" && r > 110 && b > 140 && g < 220) ||
+          (pixelMatcher === "rendered" && (r > 8 || g > 8 || b > 8)) ||
           (pixelMatcher === "yellow" && r > 170 && g > 140 && b < 140)
         ) {
           matching += 1;

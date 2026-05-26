@@ -20,7 +20,7 @@ import {
 } from "../../../packages/rendering/src";
 
 describe("procedural texture fixtures", () => {
-  it("generates deterministic local texture fixtures for every V4 material category", () => {
+  it("generates deterministic local texture fixtures for every ExternalParity material category", () => {
     const expectedKinds = [
       "metallic-paint",
       "metallic-roughness-map",
@@ -146,7 +146,7 @@ describe("procedural texture fixtures", () => {
   it("creates Texture resources with the expected color-space contract", () => {
     const albedo = createProceduralTexture("carbon-fiber", { width: 16, height: 16 });
     expect(albedo).toBeInstanceOf(Texture);
-    expect(albedo).toMatchObject({ width: 16, height: 16, colorSpace: "srgb", label: "v4-procedural-carbon-fiber" });
+    expect(albedo).toMatchObject({ width: 16, height: 16, colorSpace: "srgb", label: "external-parity-procedural-carbon-fiber" });
     expect(albedo.data?.byteLength).toBe(16 * 16 * 4);
 
     const normal = createProceduralTexture("normal-from-height", { width: 16, height: 16 });
@@ -175,7 +175,7 @@ describe("procedural texture fixtures", () => {
     const repeat = sampleSpaceEnvironmentFixture({ width: 320, height: 180, elapsedSeconds: 1.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
     const advanced = sampleSpaceEnvironmentFixture({ width: 320, height: 180, elapsedSeconds: 2.25, seed: 2026, starCount: 24, nebulaCount: 3, dustCount: 32 });
 
-    expect(fixture.id).toBe("v4-old-branch-space-environment");
+    expect(fixture.id).toBe("external-parity-old-branch-space-environment");
     expect(fixture.source).toBe("origin-master-space-environment-adapted");
     expect(fixture.sourceFiles).toContain("origin/master:examples/space-shooter/src/SpaceEnvironment.ts");
     expect(fixture.hash).toBe(repeat.hash);
@@ -224,7 +224,7 @@ describe("procedural texture fixtures", () => {
     const sample = sampleTerrainHeightfield(terrain, 0.45, 0.52);
 
     expect(terrain.source).toBe("origin-master-terrain-generator-adapted");
-    expect(terrain.id).toBe("v4-old-branch-terrain-heightfield");
+    expect(terrain.id).toBe("external-parity-old-branch-terrain-heightfield");
     expect(terrain.hash).toBe(repeated.hash);
     expect(Array.from(terrain.data)).toEqual(Array.from(repeated.data));
     expect(terrain.data.byteLength).toBe(24 * 24 * 4);
@@ -273,7 +273,7 @@ describe("procedural texture fixtures", () => {
     const repeat = sampleVegetationFixture({ terrain, seed: 2025, cameraX: 0, elapsedSeconds: 1.25, maxInstances: 120 });
     const shifted = sampleVegetationFixture({ terrain, seed: 2025, cameraX: 2.2, elapsedSeconds: 1.25, maxInstances: 120 });
 
-    expect(vegetation.id).toBe("v4-old-branch-vegetation-fixture");
+    expect(vegetation.id).toBe("external-parity-old-branch-vegetation-fixture");
     expect(vegetation.source).toBe("origin-master-vegetation-system-adapted");
     expect(vegetation.hash).toBe(repeat.hash);
     expect(vegetation.instanceCount).toBeGreaterThan(0);
@@ -303,7 +303,7 @@ describe("procedural texture fixtures", () => {
     const repeat = sampleVoxelWorldFixture({ seed: 4096, chunkSize: 16, viewDistance: 4 });
     const shifted = sampleVoxelWorldFixture({ seed: 4096, chunkSize: 16, viewDistance: 4, cameraChunkX: 2 });
 
-    expect(fixture.id).toBe("v4-old-branch-voxel-world-fixture");
+    expect(fixture.id).toBe("external-parity-old-branch-voxel-world-fixture");
     expect(fixture.source).toBe("origin-master-voxel-world-adapted");
     expect(fixture.hash).toBe(repeat.hash);
     expect(fixture.hash).not.toBe(shifted.hash);
@@ -334,7 +334,7 @@ describe("procedural texture fixtures", () => {
     const repeat = sampleOceanFixture({ preset: "rough", seed: 9090, elapsedSeconds: 2.25, sampleCount: 11, cameraX: 0.4 });
     const shifted = sampleOceanFixture({ preset: "rough", seed: 9090, elapsedSeconds: 2.25, sampleCount: 11, cameraX: 1.2 });
 
-    expect(fixture.id).toBe("v4-old-branch-ocean-fixture");
+    expect(fixture.id).toBe("external-parity-old-branch-ocean-fixture");
     expect(fixture.source).toBe("origin-master-ocean-gerstner-foam-buoyancy-adapted");
     expect(fixture.sourceFiles).toContain("origin/master:src/ocean/GerstnerWaves.ts");
     expect(fixture.sourceFiles).toContain("origin/master:src/ocean/FoamGenerator.ts");
@@ -364,7 +364,7 @@ describe("procedural texture fixtures", () => {
     const repeat = sampleCullingFixture({ seed: 0xc0111, objectCount: 32, cameraX: 0.15, depthResolution: [320, 180] });
     const shifted = sampleCullingFixture({ seed: 0xc0111, objectCount: 32, cameraX: 1.1, depthResolution: [320, 180] });
 
-    expect(fixture.id).toBe("v4-old-branch-bvh-hiz-culling-fixture");
+    expect(fixture.id).toBe("external-parity-old-branch-bvh-hiz-culling-fixture");
     expect(fixture.source).toBe("origin-master-bvh-hiz-occlusion-adapted");
     expect(fixture.sourceFiles).toContain("origin/master:src/rendering/culling/BVH.ts");
     expect(fixture.sourceFiles).toContain("origin/master:src/rendering/culling/HiZCulling.ts");

@@ -10,7 +10,7 @@ const consumerSource = requiredSubpaths.map((subpath) => {
 }).join("\n");
 const monorepoInternalImports = /\.\.\/|packages\//.test(consumerSource);
 const report = {
-  schema: "a3d-three-compat-external-consumer/v1",
+  schema: "a3d-three-compat-external-consumer",
   generatedAt: new Date().toISOString(),
   pass: missingSubpaths.length === 0 && !monorepoInternalImports,
   requiredSubpaths,
@@ -27,4 +27,4 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 external consumer passed: ${requiredSubpaths.length} public subpaths.`);
+console.log(`Three.js compatibility external consumer passed: ${requiredSubpaths.length} public subpaths.`);

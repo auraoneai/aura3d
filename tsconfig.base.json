@@ -71,16 +71,7 @@
       "@aura3d/engine/rendering/advanced-runtime": [
         "packages/rendering/src/advanced-runtime/index.ts"
       ],
-      "@aura3d/engine/rendering/v6": [
-        "packages/rendering/src/production-runtime/index.ts"
-      ],
-      "@aura3d/engine/rendering/v9": [
-        "packages/rendering/src/advanced-runtime/index.ts"
-      ],
       "@aura3d/engine/workflows/production": [
-        "packages/workflows/src/production-runtime/index.ts"
-      ],
-      "@aura3d/engine/workflows/v6": [
         "packages/workflows/src/production-runtime/index.ts"
       ],
       "@aura3d/engine/workflows/production-runtime": [
@@ -134,22 +125,10 @@
       "@aura3d/engine/assets/advanced-gallery": [
         "packages/assets/src/advanced-gallery/index.ts"
       ],
-      "@aura3d/engine/assets/v6": [
-        "packages/assets/src/asset-corpus/index.ts"
-      ],
-      "@aura3d/engine/assets/v9": [
-        "packages/assets/src/advanced-gallery/index.ts"
-      ],
       "@aura3d/engine/production-runtime": [
         "packages/engine/src/production-runtime/index.ts"
       ],
       "@aura3d/engine/advanced-runtime": [
-        "packages/engine/src/advanced-runtime/index.ts"
-      ],
-      "@aura3d/engine/v6": [
-        "packages/engine/src/production-runtime/index.ts"
-      ],
-      "@aura3d/engine/v9": [
         "packages/engine/src/advanced-runtime/index.ts"
       ]
     }

@@ -9,7 +9,7 @@ const baseReport = createSubsystemReport(root, {
   reportPath: "tests/reports/foundation-editor-authoring.json",
   runIdPrefix: "foundation-editor",
   sourceFiles: [
-    "docs/project/foundation-editor-authoring-plan.md",
+    "docs/project/implementation-plan.md",
     "apps/editor/index.html",
     "apps/editor/src/main.ts",
     "apps/editor/src/EditorShell.ts",
@@ -25,8 +25,8 @@ const baseReport = createSubsystemReport(root, {
     "tests/browser/editor-exported-project.spec.ts",
   ],
   screenshotPaths: [
-    "tests/reports/foundation-editor-screenshots/editor-authoring-v3.png",
-    "tests/reports/foundation-editor-screenshots/editor-authoring-v3-export.png",
+    "tests/reports/foundation-editor-screenshots/editor-authoring-foundation.png",
+    "tests/reports/foundation-editor-screenshots/editor-authoring-foundation-export.png",
   ],
   checks: [
     {
@@ -51,19 +51,19 @@ const baseReport = createSubsystemReport(root, {
       blocker: "Editor-authored exported app example is missing.",
     },
     {
-      id: "v3-end-to-end-authoring-report",
-      description: "v3 editor authoring report proves create/import/place/edit/play/save/reload/export/open workflow.",
+      id: "foundation-end-to-end-authoring-report",
+      description: "foundation editor authoring report proves create/import/place/edit/play/save/reload/export/open workflow.",
       passed: pathExists(root, "examples/foundation-editor-authored-app/index.html") && pathExists(root, "tests/browser/editor-authoring-foundation.spec.ts"),
       evidencePaths: ["tests/browser/editor-authoring-foundation.spec.ts", "examples/foundation-editor-authored-app/index.html"],
-      blocker: "The v3 end-to-end editor authoring workflow is not fully proven yet.",
+      blocker: "The foundation end-to-end editor authoring workflow is not fully proven yet.",
     },
     {
       id: "editor-authoring-screenshots",
-      description: "Stable v3 editor and exported-app screenshots are stored under tests/reports.",
-      passed: pathExists(root, "tests/reports/foundation-editor-screenshots/editor-authoring-v3.png") && pathExists(root, "tests/reports/foundation-editor-screenshots/editor-authoring-v3-export.png"),
+      description: "Stable foundation editor and exported-app screenshots are stored under tests/reports.",
+      passed: pathExists(root, "tests/reports/foundation-editor-screenshots/editor-authoring-foundation.png") && pathExists(root, "tests/reports/foundation-editor-screenshots/editor-authoring-foundation-export.png"),
       evidencePaths: [
-        "tests/reports/foundation-editor-screenshots/editor-authoring-v3.png",
-        "tests/reports/foundation-editor-screenshots/editor-authoring-v3-export.png"
+        "tests/reports/foundation-editor-screenshots/editor-authoring-foundation.png",
+        "tests/reports/foundation-editor-screenshots/editor-authoring-foundation-export.png"
       ],
       blocker: "Stable editor authoring screenshot evidence is missing.",
     },
@@ -91,7 +91,7 @@ const baseReport = createSubsystemReport(root, {
   ],
 });
 const passedCheckIds = new Set(baseReport.checks.filter((check) => check.passed).map((check) => check.id));
-const exportedAppVerified = passedCheckIds.has("editor-authored-export") && passedCheckIds.has("v3-end-to-end-authoring-report");
+const exportedAppVerified = passedCheckIds.has("editor-authored-export") && passedCheckIds.has("foundation-end-to-end-authoring-report");
 const exportedAppVisuallyCredible = exportedAppVerified && passedCheckIds.has("editor-authoring-screenshots") && passedCheckIds.has("editor-exported-app-interactive");
 const report = {
   ...baseReport,

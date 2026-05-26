@@ -1,6 +1,6 @@
-import type { V6AppUiDefinition } from "../../production-runtime-common/src/runtime";
+import type { ProductionAppUiDefinition } from "../../common/src/runtime";
 
-export const ui: V6AppUiDefinition = {
+export const ui: ProductionAppUiDefinition = {
   primaryActionLabel: "Swap HDR",
   secondaryLabel: "PBR extension assets with HDR lighting, material metadata, and renderer pixel proof."
 };

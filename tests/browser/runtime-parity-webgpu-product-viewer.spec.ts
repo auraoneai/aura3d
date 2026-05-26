@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 WebGPU product-viewer artifact", () => {
+test.describe("WebGPU product-viewer artifact", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -34,11 +34,11 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
         import("/packages/rendering/src/index.js"),
         import("/packages/engine/src/production-runtime/index.js")
       ]);
-      const availability = await (await import("/packages/rendering/src/production-runtime/index.js")).createV6WebGPUReport(navigator.gpu);
+      const availability = await (await import("/packages/rendering/src/production-runtime/index.js")).createProductionWebGPUReport(navigator.gpu);
       if (availability.status !== "available") {
         return {
           status: "blocked",
-          schema: "a3d-v7-webgpu-product-viewer/v1",
+          schema: "a3d-runtime-webgpu-product-viewer",
           productionClaim: "not-claimed",
           availability,
           reason: "Browser did not expose a usable WebGPU adapter/device."
@@ -56,9 +56,9 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       try {
         const viewport = { width: WIDTH, height: HEIGHT };
         const assetOptions = {
-          url: `${location.origin}/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb`,
-          assetId: "chronograph-watch",
-          assetName: "Chronograph Watch",
+          url: `${location.origin}/fixtures/threejs-parity/assets/vehicles/car-concept.glb`,
+          assetId: "car-concept",
+          assetName: "Car Concept",
           viewport
         };
         asset = await engine.loadGltfScene(assetOptions);
@@ -75,11 +75,11 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
         environment = await engine.loadHdrEnvironment(environmentOptions);
         webgl2Environment = await engine.loadHdrEnvironment(environmentOptions);
         stage = engine.createGroundedStage(asset.resources.bounds, {
-          labelPrefix: "v7-webgpu-product-viewer",
+          labelPrefix: "runtime-webgpu-product-viewer",
           shadowLightDirection: [-0.42, -0.82, -0.38]
         });
         webgl2Stage = engine.createGroundedStage(webgl2Asset.resources.bounds, {
-          labelPrefix: "v7-webgpu-product-viewer-webgl2",
+          labelPrefix: "runtime-webgpu-product-viewer-webgl2",
           shadowLightDirection: [-0.42, -0.82, -0.38]
         });
         stage.update({ backgroundBlur: 0.08, backgroundVisible: true });
@@ -128,7 +128,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
         const renderTarget = renderer.device.createRenderTarget({
           width: WIDTH,
           height: HEIGHT,
-          label: "v7-webgpu-product-viewer-target",
+          label: "runtime-webgpu-product-viewer-target",
           format: "rgba8",
           depth: true
         });
@@ -178,10 +178,10 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
           && deltaReady;
         return {
           status: visualReady ? "ready" : "blocked",
-          schema: "a3d-v7-webgpu-product-viewer/v1",
+          schema: "a3d-runtime-webgpu-product-viewer",
           productionClaim: "not-claimed",
           reason: visualReady
-            ? "This is a bounded native WebGPU product-viewer visual artifact using public V6 scene-composition helpers; public SDK production-backend proof is covered by v7-webgpu-sdk-production.spec.ts."
+            ? "This is a bounded native WebGPU product-viewer visual artifact using public production scene-composition helpers; public SDK production-backend proof is covered by runtime-parity-webgpu-sdk-production.spec.ts."
             : `WebGPU rendered the product-viewer path, but the output did not meet the minimum visual-product artifact thresholds; WebGPU-vs-WebGL2 meanDelta=${webgpuVsWebgl2Diff.meanDelta}, structuralSimilarityProxy=${webgpuVsWebgl2Diff.structuralSimilarityProxy}.`,
           availability,
           readbackMode,
@@ -223,7 +223,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       } catch (error) {
         return {
           status: "blocked",
-          schema: "a3d-v7-webgpu-product-viewer/v1",
+          schema: "a3d-runtime-webgpu-product-viewer",
           productionClaim: "not-claimed",
           availability,
           reason: error instanceof Error ? error.stack ?? error.message : String(error)
@@ -345,7 +345,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       Object.assign(report, {
         screenshot: screenshotPath,
         fileSize: statSync(resolve(screenshotPath)).size,
-        pngStats: readV6PngStats(resolve(screenshotPath))
+        pngStats: readProductionPngStats(resolve(screenshotPath))
       });
     }
     if (webgl2DataUrl) {
@@ -353,7 +353,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       writeFileSync(resolve(webgl2Path), Buffer.from(webgl2DataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         webgl2Screenshot: webgl2Path,
-        webgl2PngStats: readV6PngStats(resolve(webgl2Path))
+        webgl2PngStats: readProductionPngStats(resolve(webgl2Path))
       });
     }
     if (webgpuVsWebgl2DiffDataUrl) {
@@ -361,7 +361,7 @@ test.describe("V7 WebGPU product-viewer artifact", () => {
       writeFileSync(resolve(diffPath), Buffer.from(webgpuVsWebgl2DiffDataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         webgpuVsWebgl2DiffScreenshot: diffPath,
-        webgpuVsWebgl2DiffPngStats: readV6PngStats(resolve(diffPath))
+        webgpuVsWebgl2DiffPngStats: readProductionPngStats(resolve(diffPath))
       });
     }
     writeFileSync(resolve(reportPath), `${JSON.stringify({ generatedAt: new Date().toISOString(), ...report }, null, 2)}\n`);

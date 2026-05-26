@@ -17,11 +17,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LoaderCompression?: V8LoaderCompressionRuntime;
+    __a3dCurrentRoutesLoaderCompression?: CurrentRoutesLoaderCompressionRuntime;
   }
 }
 
-interface V8LoaderCompressionRuntime {
+interface CurrentRoutesLoaderCompressionRuntime {
   readonly appId: "loader-compression";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -97,7 +97,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LoaderCompression = runtime;
+    window.__a3dCurrentRoutesLoaderCompression = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -174,7 +174,7 @@ async function run(): Promise<void> {
           extensionsUsed: [...asset.loaderDiagnostics.extensionsUsed, ...dracoAsset.loaderDiagnostics.extensionsUsed],
           unsupportedRequired: [...extensionSupport.unsupportedRequired, ...evaluateGLTFExtensionSupport(dracoAsset.loaderDiagnostics.extensionsUsed, dracoAsset.loaderDiagnostics.extensionsRequired).unsupportedRequired]
         });
-        window.__a3dV8LoaderCompression = runtime;
+        window.__a3dCurrentRoutesLoaderCompression = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -210,7 +210,7 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
     camera: input.camera,
     metadata: {
       assetId: APP_ID,
-      assetName: "V8 Loader Compression",
+      assetName: "CurrentRoutes Loader Compression",
       assetUri: "/apps/loader-compression/",
       meshCount: 1,
       primitiveCount: 1,
@@ -226,11 +226,11 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
 }
 
 function createRuntime(
-  status: V8LoaderCompressionRuntime["status"],
+  status: CurrentRoutesLoaderCompressionRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LoaderCompressionRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LoaderCompressionRuntime {
+  patch: Partial<Omit<CurrentRoutesLoaderCompressionRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLoaderCompressionRuntime {
   return {
     appId: APP_ID,
     status,
@@ -357,7 +357,7 @@ async function loadMeshoptDecoderModule(): Promise<GLTFMeshoptDecoderModule> {
 function createMeshoptFixtureDataUrl(): string {
   const buffer = concatBytes([COMPRESSED_POSITION_BYTES, NORMAL_BYTES, INDEX_BYTES], [0, 88, 124], 130);
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V9 V8 loader compression fixture" },
+    asset: { version: "2.0", generator: "Aura3D ThreejsParity CurrentRoutes loader compression fixture" },
     extensionsUsed: ["EXT_meshopt_compression", "KHR_materials_unlit"],
     extensionsRequired: ["EXT_meshopt_compression"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(buffer)}`, byteLength: buffer.byteLength }],
@@ -406,7 +406,7 @@ function createMeshoptFixtureDataUrl(): string {
 function createDracoFixtureDataUrl(): string {
   const compressed = DRACO_COMPRESSED_TRIANGLE_BYTES;
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V9 V8 loader Draco compression fixture" },
+    asset: { version: "2.0", generator: "Aura3D ThreejsParity CurrentRoutes loader Draco compression fixture" },
     extensionsUsed: ["KHR_draco_mesh_compression", "KHR_materials_unlit"],
     extensionsRequired: ["KHR_draco_mesh_compression"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(compressed)}`, byteLength: compressed.byteLength }],
@@ -454,11 +454,11 @@ function base64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function renderUi(root: HTMLElement, runtime: V8LoaderCompressionRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderCompressionRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Loader Compression</h1>
+        <h1>CurrentRoutes Loader Compression</h1>
         <p>EXT_meshopt_compression and KHR_draco_mesh_compression decoded through public A3D loader hooks.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>

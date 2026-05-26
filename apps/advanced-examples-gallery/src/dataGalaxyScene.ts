@@ -56,7 +56,7 @@ export function buildDataGalaxyScene(r: Resources, time: number, state: GalleryS
     backend: {
       supported: false,
       backend: "none",
-      reason: "The V9 data-galaxy route renders through a3d-webgl2 and has no native compute-particle solver bound to it."
+      reason: "The ThreejsParity data-galaxy route renders through a3d-webgl2 and has no native compute-particle solver bound to it."
     },
     targetFrameMs: 34
   });
@@ -186,7 +186,7 @@ function dataGalaxyFrame(
   };
 }
 
-function getPointCloud(r: Resources, formation: string, count: number, turbulence: number): Geometry {
+export function getPointCloud(r: Resources, formation: string, count: number, turbulence: number): Geometry {
   const key = `${formation}:${count}:${turbulence.toFixed(2)}`;
   const cached = r.pointClouds.get(key);
   if (cached) return cached;

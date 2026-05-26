@@ -1,6 +1,6 @@
 import { linearToSrgbChannel } from "./ColorManagement";
 
-export type V4RenderDebugView =
+export type ExternalParityRenderDebugView =
   | "base-color"
   | "normal"
   | "roughness"
@@ -11,7 +11,7 @@ export type V4RenderDebugView =
   | "specular-ibl"
   | "tone-mapped-output";
 
-export interface V4DebugViewInput {
+export interface ExternalParityDebugViewInput {
   readonly width: number;
   readonly height: number;
   readonly baseColor?: Uint8Array;
@@ -25,15 +25,15 @@ export interface V4DebugViewInput {
   readonly toneMappedOutput?: Uint8Array;
 }
 
-export interface V4DebugViewResult {
-  readonly view: V4RenderDebugView;
+export interface ExternalParityDebugViewResult {
+  readonly view: ExternalParityRenderDebugView;
   readonly width: number;
   readonly height: number;
   readonly pixels: Uint8Array;
   readonly source: string;
 }
 
-export const V4_REQUIRED_DEBUG_VIEWS: readonly V4RenderDebugView[] = [
+export const EXTERNAL_PARITY_REQUIRED_DEBUG_VIEWS: readonly ExternalParityRenderDebugView[] = [
   "base-color",
   "normal",
   "roughness",
@@ -45,7 +45,7 @@ export const V4_REQUIRED_DEBUG_VIEWS: readonly V4RenderDebugView[] = [
   "tone-mapped-output"
 ];
 
-export function createV4DebugView(input: V4DebugViewInput, view: V4RenderDebugView): V4DebugViewResult {
+export function createExternalParityDebugView(input: ExternalParityDebugViewInput, view: ExternalParityRenderDebugView): ExternalParityDebugViewResult {
   validateInput(input);
   const pixels = sourcePixels(input, view);
   if (pixels) {
@@ -63,8 +63,8 @@ export function createV4DebugView(input: V4DebugViewInput, view: V4RenderDebugVi
   return { view, width: input.width, height: input.height, pixels: fallback, source: "diagnostic-fallback" };
 }
 
-export function createV4DebugViewSet(input: V4DebugViewInput): readonly V4DebugViewResult[] {
-  return V4_REQUIRED_DEBUG_VIEWS.map((view) => createV4DebugView(input, view));
+export function createExternalParityDebugViewSet(input: ExternalParityDebugViewInput): readonly ExternalParityDebugViewResult[] {
+  return EXTERNAL_PARITY_REQUIRED_DEBUG_VIEWS.map((view) => createExternalParityDebugView(input, view));
 }
 
 export function encodeLinearDebugColor(color: readonly [number, number, number, number]): [number, number, number, number] {
@@ -76,7 +76,7 @@ export function encodeLinearDebugColor(color: readonly [number, number, number, 
   ];
 }
 
-function sourcePixels(input: V4DebugViewInput, view: V4RenderDebugView): Uint8Array | undefined {
+function sourcePixels(input: ExternalParityDebugViewInput, view: ExternalParityRenderDebugView): Uint8Array | undefined {
   switch (view) {
     case "base-color":
       return input.baseColor;
@@ -99,7 +99,7 @@ function sourcePixels(input: V4DebugViewInput, view: V4RenderDebugView): Uint8Ar
   }
 }
 
-function fallbackColor(view: V4RenderDebugView): readonly [number, number, number] {
+function fallbackColor(view: ExternalParityRenderDebugView): readonly [number, number, number] {
   switch (view) {
     case "base-color":
       return [180, 180, 180];
@@ -122,13 +122,13 @@ function fallbackColor(view: V4RenderDebugView): readonly [number, number, numbe
   }
 }
 
-function validateInput(input: V4DebugViewInput): void {
+function validateInput(input: ExternalParityDebugViewInput): void {
   if (!Number.isInteger(input.width) || !Number.isInteger(input.height) || input.width <= 0 || input.height <= 0) {
-    throw new Error("V4 debug view dimensions must be positive integers.");
+    throw new Error("ExternalParity debug view dimensions must be positive integers.");
   }
   for (const [name, pixels] of Object.entries(input)) {
     if (pixels instanceof Uint8Array && pixels.length !== input.width * input.height * 4) {
-      throw new Error(`V4 debug view buffer ${name} must contain width * height * 4 RGBA bytes.`);
+      throw new Error(`ExternalParity debug view buffer ${name} must contain width * height * 4 RGBA bytes.`);
     }
   }
 }

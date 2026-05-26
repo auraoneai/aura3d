@@ -8,11 +8,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LightsSpotlight?: V8LightsSpotlightRuntime;
+    __a3dCurrentRoutesLightsSpotlight?: CurrentRoutesLightsSpotlightRuntime;
   }
 }
 
-interface V8LightsSpotlightRuntime {
+interface CurrentRoutesLightsSpotlightRuntime {
   readonly appId: "lights-spotlight";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -55,7 +55,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LightsSpotlight = runtime;
+    window.__a3dCurrentRoutesLightsSpotlight = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -128,7 +128,7 @@ async function run(): Promise<void> {
           rendererShadowRequested: true,
           firstLightKind: lights[0]?.kind ?? "none"
         });
-        window.__a3dV8LightsSpotlight = runtime;
+        window.__a3dCurrentRoutesLightsSpotlight = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -148,7 +148,7 @@ async function run(): Promise<void> {
 
 function createSpotScene(): Scene {
   const scene = new Scene();
-  const spot = scene.createLight("spot", "v8-spotlight-key") as SpotLight;
+  const spot = scene.createLight("spot", "current-routes-spotlight-key") as SpotLight;
   spot.intensity = 4.2;
   spot.color = [1, 0.72, 0.42];
   spot.transform.setPosition(0, 0, 2.4);
@@ -161,11 +161,11 @@ function createSpotScene(): Scene {
 }
 
 function createRuntime(
-  status: V8LightsSpotlightRuntime["status"],
+  status: CurrentRoutesLightsSpotlightRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LightsSpotlightRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LightsSpotlightRuntime {
+  patch: Partial<Omit<CurrentRoutesLightsSpotlightRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLightsSpotlightRuntime {
   return {
     appId: APP_ID,
     status,
@@ -187,12 +187,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8LightsSpotlightRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLightsSpotlightRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 Lights Spotlight</h1>
+          <h1>CurrentRoutes Lights Spotlight</h1>
           <p>Scene SpotLight collected and rendered by A3D WebGL2 lighting.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

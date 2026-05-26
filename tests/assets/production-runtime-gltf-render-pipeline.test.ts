@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { loadV6GLTFRenderPipeline } from "../../packages/assets/src/asset-corpus";
+import { loadProductionGLTFRenderPipeline } from "../../packages/assets/src/asset-corpus";
 
 const imageDecoder = () => ({
   width: 4,
@@ -14,9 +14,9 @@ function dataUri(path: string): string {
   return `data:model/gltf-binary;base64,${data}`;
 }
 
-describe("V6 glTF render pipeline", () => {
+describe("production glTF render pipeline", () => {
   it("maps real GLB PBR texture assets into renderer metadata and render resources", async () => {
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: dataUri("fixtures/asset-corpus/damaged-helmet.glb"),
       assetId: "damaged-helmet",
       assetName: "Damaged Helmet",
@@ -41,17 +41,17 @@ describe("V6 glTF render pipeline", () => {
   });
 
   it("detects material extension, skinning, animation, and morph target coverage", async () => {
-    const clearcoat = await loadV6GLTFRenderPipeline({
+    const clearcoat = await loadProductionGLTFRenderPipeline({
       url: dataUri("fixtures/asset-corpus/clear-coat-test.glb"),
       assetId: "clear-coat-test",
       imageDecoder
     });
-    const character = await loadV6GLTFRenderPipeline({
+    const character = await loadProductionGLTFRenderPipeline({
       url: dataUri("fixtures/asset-corpus/cesium-man.glb"),
       assetId: "cesium-man",
       imageDecoder
     });
-    const morph = await loadV6GLTFRenderPipeline({
+    const morph = await loadProductionGLTFRenderPipeline({
       url: dataUri("fixtures/asset-corpus/animated-morph-cube.glb"),
       assetId: "animated-morph-cube",
       imageDecoder

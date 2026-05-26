@@ -1,31 +1,31 @@
-import { type V4EnvironmentPreset } from "./V4RenderPreset";
-import { createV4IblResources, type V4IblResourceSet } from "./IBL";
+import { type ExternalParityEnvironmentPreset } from "./ExternalParityRenderPreset";
+import { createExternalParityIblResources, type ExternalParityIblResourceSet } from "./IBL";
 
-export type V4EnvironmentTarget =
+export type ExternalParityEnvironmentTarget =
   | "studio-softbox-hdr"
   | "gallery-neutral-hdr"
   | "outdoor-overcast-hdr"
   | "warehouse-industrial-hdr"
   | "night-neon-hdr";
 
-export interface V4EnvironmentPipelineOptions {
-  readonly target: V4EnvironmentTarget;
+export interface ExternalParityEnvironmentPipelineOptions {
+  readonly target: ExternalParityEnvironmentTarget;
   readonly rotation?: number;
   readonly intensity?: number;
   readonly backgroundIntensity?: number;
 }
 
-export interface V4EnvironmentPipeline {
-  readonly target: V4EnvironmentTarget;
-  readonly preset: V4EnvironmentPreset;
+export interface ExternalParityEnvironmentPipeline {
+  readonly target: ExternalParityEnvironmentTarget;
+  readonly preset: ExternalParityEnvironmentPreset;
   readonly sourceManifest: "fixtures/external-parity/environments/manifest.json";
   readonly sourceStatus: "bootstrap-generated-until-licensed-hdr-acquired";
-  readonly ibl: V4IblResourceSet;
+  readonly ibl: ExternalParityIblResourceSet;
   readonly capabilities: readonly string[];
   readonly releaseBlockers: readonly string[];
 }
 
-const TARGET_TO_PRESET: Readonly<Record<V4EnvironmentTarget, V4EnvironmentPreset>> = {
+const TARGET_TO_PRESET: Readonly<Record<ExternalParityEnvironmentTarget, ExternalParityEnvironmentPreset>> = {
   "studio-softbox-hdr": "softbox",
   "gallery-neutral-hdr": "exhibit",
   "outdoor-overcast-hdr": "daylight",
@@ -33,9 +33,9 @@ const TARGET_TO_PRESET: Readonly<Record<V4EnvironmentTarget, V4EnvironmentPreset
   "night-neon-hdr": "evening"
 };
 
-export function createV4EnvironmentPipeline(options: V4EnvironmentPipelineOptions): V4EnvironmentPipeline {
+export function createExternalParityEnvironmentPipeline(options: ExternalParityEnvironmentPipelineOptions): ExternalParityEnvironmentPipeline {
   const preset = TARGET_TO_PRESET[options.target];
-  const ibl = createV4IblResources({
+  const ibl = createExternalParityIblResources({
     preset,
     rotation: options.rotation,
     intensity: options.intensity,
@@ -64,6 +64,6 @@ export function createV4EnvironmentPipeline(options: V4EnvironmentPipelineOption
   };
 }
 
-export function listV4EnvironmentTargets(): readonly V4EnvironmentTarget[] {
-  return Object.keys(TARGET_TO_PRESET) as V4EnvironmentTarget[];
+export function listExternalParityEnvironmentTargets(): readonly ExternalParityEnvironmentTarget[] {
+  return Object.keys(TARGET_TO_PRESET) as ExternalParityEnvironmentTarget[];
 }

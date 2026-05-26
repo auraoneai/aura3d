@@ -9,11 +9,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8LoaderInstancing?: V8LoaderInstancingRuntime;
+    __a3dCurrentRoutesLoaderInstancing?: CurrentRoutesLoaderInstancingRuntime;
   }
 }
 
-interface V8LoaderInstancingRuntime {
+interface CurrentRoutesLoaderInstancingRuntime {
   readonly appId: "loader-instancing";
   readonly status: "loading" | "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let lastUi = 0;
 
   const publish = (): void => {
-    window.__a3dV8LoaderInstancing = runtime;
+    window.__a3dCurrentRoutesLoaderInstancing = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -111,7 +111,7 @@ async function run(): Promise<void> {
           extensionsUsed: asset.loaderDiagnostics.extensionsUsed,
           unsupportedRequired: extensionSupport.unsupportedRequired
         });
-        window.__a3dV8LoaderInstancing = runtime;
+        window.__a3dCurrentRoutesLoaderInstancing = runtime;
         if (frameCount === 1 || now - lastUi > 220 || delta === 0) {
           publish();
           lastUi = now;
@@ -146,7 +146,7 @@ function createRendererInput(resources: GLTFRenderResources, time: number): Para
     camera: input.camera,
     metadata: {
       assetId: APP_ID,
-      assetName: "V8 Loader Instancing",
+      assetName: "CurrentRoutes Loader Instancing",
       assetUri: "/apps/loader-instancing/",
       meshCount: 1,
       primitiveCount: 1,
@@ -173,11 +173,11 @@ function countInstances(resources: GLTFRenderResources): { readonly instanceCoun
 }
 
 function createRuntime(
-  status: V8LoaderInstancingRuntime["status"],
+  status: CurrentRoutesLoaderInstancingRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8LoaderInstancingRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
-): V8LoaderInstancingRuntime {
+  patch: Partial<Omit<CurrentRoutesLoaderInstancingRuntime, "appId" | "status" | "statusLabel" | "elapsedMs" | "renderer">> = {}
+): CurrentRoutesLoaderInstancingRuntime {
   return {
     appId: APP_ID,
     status,
@@ -205,7 +205,7 @@ function createInstancingFixtureDataUrl(): string {
   const translations = floatBytes([-0.9, 0, 0, -0.3, 0.22, 0, 0.3, -0.08, 0, 0.9, 0.18, 0]);
   const binary = concatAligned([positions, normals, indices, translations], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V9 V8 loader instancing fixture" },
+    asset: { version: "2.0", generator: "Aura3D ThreejsParity CurrentRoutes loader instancing fixture" },
     extensionsUsed: ["EXT_mesh_gpu_instancing", "KHR_materials_unlit"],
     extensionsRequired: ["EXT_mesh_gpu_instancing"],
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -270,11 +270,11 @@ function base64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 
-function renderUi(root: HTMLElement, runtime: V8LoaderInstancingRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesLoaderInstancingRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Loader Instancing</h1>
+        <h1>CurrentRoutes Loader Instancing</h1>
         <p>EXT_mesh_gpu_instancing imported as A3D instance transforms and rendered through WebGL2.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.statusLabel)}</button>

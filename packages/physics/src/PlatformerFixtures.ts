@@ -28,7 +28,7 @@ export interface PlatformerCollectibleSummary {
 }
 
 export interface PlatformerControllerFixture {
-  readonly id: "v4-old-branch-platformer-controller-fixture";
+  readonly id: "external-parity-old-branch-platformer-controller-fixture";
   readonly source: "origin-master-platformer-controller-adapted";
   readonly config: {
     readonly walkSpeed: number;
@@ -123,7 +123,7 @@ export function samplePlatformerControllerFixture(options: PlatformerFixtureOpti
   const goalPosition = [56, 9, 0] as const;
   const goalDistance = Number(Math.hypot(goalPosition[0] - startPosition[0], goalPosition[1] - startPosition[1], goalPosition[2] - startPosition[2]).toFixed(4));
   return {
-    id: "v4-old-branch-platformer-controller-fixture",
+    id: "external-parity-old-branch-platformer-controller-fixture",
     source: "origin-master-platformer-controller-adapted",
     config: {
       walkSpeed: 5,

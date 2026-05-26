@@ -6,7 +6,7 @@ interface ProgressItem {
   readonly checked: boolean;
 }
 
-const progressPath = resolve("docs/project/three-compat-roadmap-progress.md");
+const progressPath = resolve("docs/project/completion-audit.md");
 const progress = existsSync(progressPath) ? readFileSync(progressPath, "utf8") : "";
 const items = parseChecklist(progress);
 const completedMilestones = items.filter((item) => item.checked && /^Milestone \d+/.test(item.text));
@@ -25,7 +25,7 @@ const knownGaps = sectionBullets(progress, "## Known Gaps");
 const blockedClaims = sectionBullets(progress, "## Blocked Claims");
 
 const report = {
-  schema: "a3d-three-compat-progress/v1",
+  schema: "a3d-three-compat-progress",
   generatedAt: new Date().toISOString(),
   pass: existsSync(progressPath)
     && (currentStatus === "in-progress" || currentStatus === "complete")
@@ -34,7 +34,7 @@ const report = {
     && (activeItems.length > 0 || currentStatus === "complete")
     && knownGaps.length > 0
     && blockedClaims.length > 0,
-  progressPath: "docs/project/three-compat-roadmap-progress.md",
+  progressPath: "docs/project/completion-audit.md",
   currentStatus,
   activeMilestone,
   lastVerifiedCommand,

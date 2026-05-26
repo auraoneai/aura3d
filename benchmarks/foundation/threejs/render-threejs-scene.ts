@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import type { V3ComparisonObject, V3ComparisonScene } from "../shared/scenes";
+import type { FoundationComparisonObject, FoundationComparisonScene } from "../shared/scenes";
 
 export interface ThreeComparisonResult {
   readonly engine: "threejs";
@@ -12,7 +12,7 @@ export interface ThreeComparisonResult {
   readonly gaps: readonly string[];
 }
 
-export async function renderThreeComparisonScene(sceneDescriptor: V3ComparisonScene, options: { readonly origin: string; readonly setupLines: number }): Promise<ThreeComparisonResult> {
+export async function renderThreeComparisonScene(sceneDescriptor: FoundationComparisonScene, options: { readonly origin: string; readonly setupLines: number }): Promise<ThreeComparisonResult> {
   const canvas = createComparisonCanvas(`${sceneDescriptor.id}-threejs`);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
   renderer.setSize(900, 620, false);
@@ -57,7 +57,7 @@ export async function renderThreeComparisonScene(sceneDescriptor: V3ComparisonSc
   };
 }
 
-function toThreeMesh(object: V3ComparisonObject): THREE.Mesh {
+function toThreeMesh(object: FoundationComparisonObject): THREE.Mesh {
   const material = new THREE.MeshStandardMaterial({
     color: new THREE.Color(object.color[0], object.color[1], object.color[2]),
     metalness: object.metallic,
@@ -70,7 +70,7 @@ function toThreeMesh(object: V3ComparisonObject): THREE.Mesh {
   return mesh;
 }
 
-function toThreeGeometry(object: V3ComparisonObject): THREE.BufferGeometry {
+function toThreeGeometry(object: FoundationComparisonObject): THREE.BufferGeometry {
   if (object.geometry === "sphere") return new THREE.SphereGeometry(1, 48, 24);
   if (object.geometry === "cylinder") return new THREE.CylinderGeometry(1, 1, 1, 48);
   return new THREE.BoxGeometry(1, 1, 1);

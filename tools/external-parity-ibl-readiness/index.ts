@@ -53,13 +53,13 @@ const index = readText("packages/rendering/src/index.ts");
 check(
   "public-rendering-exports",
   includesAll(index, [
-    "createV4EnvironmentPipeline",
-    "createV4IblResources",
-    "createV4Pmrem",
-    "createV4BrdfLut",
-    "listV4EnvironmentTargets"
+    "createExternalParityEnvironmentPipeline",
+    "createExternalParityIblResources",
+    "createExternalParityPmrem",
+    "createExternalParityBrdfLut",
+    "listExternalParityEnvironmentTargets"
   ]),
-  "Rendering package index must export V4 IBL/environment APIs."
+  "Rendering package index must export External parity IBL/environment APIs."
 );
 
 const pipeline = readText("packages/rendering/src/EnvironmentPipeline.ts");
@@ -72,7 +72,7 @@ check(
     "warehouse-industrial-hdr",
     "night-neon-hdr"
   ]),
-  "EnvironmentPipeline must name all five required V4 environment targets."
+  "EnvironmentPipeline must name all five required External parity environment targets."
 );
 check(
   "environment-release-boundary",
@@ -136,26 +136,26 @@ const state = isRecord(browser?.state) ? browser.state : {};
 const featureEvidence = isRecord(state.featureEvidence) ? state.featureEvidence : {};
 const activeFeatures = Array.isArray(featureEvidence.activeFeatures) ? featureEvidence.activeFeatures : [];
 const environmentResources = isRecord(state.environmentResources) ? state.environmentResources : {};
-const v4Pipeline = isRecord(browser?.v4Pipeline) ? browser.v4Pipeline : {};
-const v4Diagnostics = isRecord(v4Pipeline.diagnostics) ? v4Pipeline.diagnostics : {};
+const externalParityPipeline = isRecord(browser?.externalParityPipeline) ? browser.externalParityPipeline : {};
+const externalParityDiagnostics = isRecord(externalParityPipeline.diagnostics) ? externalParityPipeline.diagnostics : {};
 check(
   "browser-ibl-evidence",
   browser?.ok === true &&
     state.status === "ready" &&
     activeFeatures.includes("environment-reflections") &&
     Number(environmentResources.specularMipCount) >= 4 &&
-    v4Diagnostics.hdrSource === true &&
-    v4Diagnostics.notFlagshipProof === true,
-  "Browser report must prove material-showroom environment reflections and V4 generated linear HDR IBL resources."
+    externalParityDiagnostics.hdrSource === true &&
+    externalParityDiagnostics.notFlagshipProof === true,
+  "Browser report must prove material-showroom environment reflections and External parity generated linear HDR IBL resources."
 );
 check(
   "browser-ibl-validation",
-  v4Diagnostics.diffuseIrradiance === true &&
-    v4Diagnostics.specularPrefilter === true &&
-    v4Diagnostics.brdfLut === true &&
-    Number(v4Pipeline.pmremMipCount) >= 4 &&
-    Number(v4Pipeline.brdfNonZeroPixels) > 0,
-  "Browser report must prove V4 BRDF LUT, specular mips, PMREM, and diffuse irradiance validation."
+  externalParityDiagnostics.diffuseIrradiance === true &&
+    externalParityDiagnostics.specularPrefilter === true &&
+    externalParityDiagnostics.brdfLut === true &&
+    Number(externalParityPipeline.pmremMipCount) >= 4 &&
+    Number(externalParityPipeline.brdfNonZeroPixels) > 0,
+  "Browser report must prove External parity BRDF LUT, specular mips, PMREM, and diffuse irradiance validation."
 );
 check(
   "browser-claim-boundary",
@@ -168,12 +168,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-ibl-readiness/v1",
+  schema: "a3d-external-parity-ibl-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 3 IBL/environment pipeline is ready. Generated environments remain bootstrap-only until licensed HDR sources and flagship comparisons are added."
-    : "V4 Milestone 3 IBL/environment pipeline is incomplete.",
+    ? "External parity Milestone 3 IBL/environment pipeline is ready. Generated environments remain bootstrap-only until licensed HDR sources and flagship comparisons are added."
+    : "External parity Milestone 3 IBL/environment pipeline is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

@@ -1,4 +1,4 @@
-export type EditorPrefabSchemaVersion = "aura3d-prefab-v1";
+export type EditorPrefabSchemaVersion = "aura3d-prefab";
 
 export interface EditorPrefabNodeBase {
   readonly id: string;
@@ -36,7 +36,7 @@ export class PrefabRegistry<TNode extends EditorPrefabNodeBase = EditorPrefabNod
 
   create(options: CreatePrefabOptions<TNode>): EditorPrefab<TNode> {
     const prefab: EditorPrefab<TNode> = {
-      schemaVersion: "aura3d-prefab-v1",
+      schemaVersion: "aura3d-prefab",
       id: normalizeId(options.id, "prefab id"),
       name: normalizeName(options.name, "prefab name"),
       rootNodeId: normalizeId(options.rootNodeId, "prefab rootNodeId"),
@@ -108,7 +108,7 @@ export class PrefabRegistry<TNode extends EditorPrefabNodeBase = EditorPrefabNod
 }
 
 export function validatePrefab<TNode extends EditorPrefabNodeBase>(prefab: EditorPrefab<TNode>): void {
-  if (prefab.schemaVersion !== "aura3d-prefab-v1") {
+  if (prefab.schemaVersion !== "aura3d-prefab") {
     throw new Error(`Unsupported prefab schemaVersion: ${String(prefab.schemaVersion)}`);
   }
   normalizeId(prefab.id, "prefab id");

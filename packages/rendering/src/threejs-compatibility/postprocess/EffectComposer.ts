@@ -1,14 +1,14 @@
-import type { V5PostProcessFrame, V5PostProcessPass } from "./PostProcessTypes";
+import type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
 
-export class EffectComposerV5 {
-  readonly passes: V5PostProcessPass[] = [];
+export class EffectComposerThreeCompat {
+  readonly passes: ThreeCompatPostProcessPass[] = [];
 
-  addPass(pass: V5PostProcessPass): this {
+  addPass(pass: ThreeCompatPostProcessPass): this {
     this.passes.push(pass);
     return this;
   }
 
-  render(frame: V5PostProcessFrame): V5PostProcessFrame {
+  render(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame {
     return this.passes.reduce((current, pass) => pass.enabled ? pass.apply(current) : current, frame);
   }
 }

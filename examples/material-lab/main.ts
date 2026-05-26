@@ -46,12 +46,12 @@ async function run(): Promise<void> {
   const { scene, geometryLibrary, materialLibrary } = createScene(canvas.width / canvas.height);
   const diagnostics = renderer.render({ scene, geometryLibrary, materialLibrary });
   const pixels = {
-    baseColor: findPixel(renderer, { x: 190, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 180 && g < 85 && b < 70 && a === 255),
-    vertexColor: findPixel(renderer, { x: 315, y: 205, width: 110, height: 130 }, (r, g, b, a) => g > 145 && r < 90 && b < 120 && a === 255),
-    normalMap: findPixel(renderer, { x: 410, y: 205, width: 110, height: 130 }, (r, g, b, a) => b > 95 && r < 120 && a === 255),
-    metallic: findPixel(renderer, { x: 500, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 80 && g > 45 && b < 95 && a === 255),
-    alphaMask: findPixel(renderer, { x: 595, y: 205, width: 110, height: 130 }, (r, g, b, a) => g > 145 && b > 120 && r < 80 && a === 255),
-    alphaBlend: findPixel(renderer, { x: 690, y: 205, width: 110, height: 130 }, (r, g, b, a) => r > 65 && b > 70 && g < 90 && a === 255)
+    baseColor: findPixel(renderer, { x: 0, y: 185, width: 160, height: 150 }, (r, g, b, a) => r > 180 && g < 85 && b < 70 && a === 255),
+    vertexColor: findPixel(renderer, { x: 165, y: 185, width: 150, height: 150 }, (r, g, b, a) => g > 145 && r < 90 && b < 120 && a === 255),
+    normalMap: findPixel(renderer, { x: 320, y: 185, width: 155, height: 150 }, (r, g, b, a) => b > 95 && r < 190 && a === 255),
+    metallic: findPixel(renderer, { x: 480, y: 185, width: 155, height: 150 }, (r, g, b, a) => r > 80 && g > 45 && b < 95 && a === 255),
+    alphaMask: findPixel(renderer, { x: 635, y: 185, width: 60, height: 150 }, (r, g, b, a) => g > 145 && b > 120 && r < 80 && a === 255),
+    alphaBlend: findPixel(renderer, { x: 795, y: 185, width: 150, height: 150 }, (r, g, b, a) => r > 65 && b > 70 && g < 170 && a === 255)
   };
 
   window.__AURA3D_MATERIAL_LAB__ = {

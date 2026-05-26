@@ -7,7 +7,7 @@ import { GLTFLoader as ThreeGLTFLoader } from "/node_modules/three/examples/jsm/
 
 declare global {
   interface Window {
-    __V9_LOADER_MATERIAL_EXTENSIONS_PARITY__?: LoaderMaterialExtensionsParityResult;
+    __THREEJS_PARITY_LOADER_MATERIAL_EXTENSIONS_PARITY__?: LoaderMaterialExtensionsParityResult;
   }
 }
 
@@ -17,7 +17,7 @@ type LoaderMaterialExtensionsParityResult = LoaderMaterialExtensionsParityReady 
 
 interface LoaderMaterialExtensionsParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-loader-material-extensions-parity/v1";
+  readonly schema: "a3d-threejs-parity-loader-material-extensions-parity";
   readonly purpose: "same generated glTF KHR_materials_sheen/KHR_materials_transmission loaded by A3D and actual Three.js GLTFLoader";
   readonly generatedInBrowserAt: string;
   readonly fixture: typeof FIXTURE;
@@ -51,7 +51,7 @@ interface LoaderMaterialExtensionsParityReady {
 
 interface LoaderMaterialExtensionsParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-loader-material-extensions-parity/v1";
+  readonly schema: "a3d-threejs-parity-loader-material-extensions-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
 }
@@ -89,7 +89,7 @@ interface DiffStats {
 }
 
 const FIXTURE = {
-  id: "v9-loader-material-extensions",
+  id: "threejs-parity-loader-material-extensions",
   width: 720,
   height: 480,
   extensions: ["KHR_materials_clearcoat", "KHR_materials_sheen", "KHR_materials_transmission"],
@@ -124,7 +124,7 @@ async function run(): Promise<void> {
 
     const ready: LoaderMaterialExtensionsParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-loader-material-extensions-parity/v1",
+      schema: "a3d-threejs-parity-loader-material-extensions-parity",
       purpose: "same generated glTF KHR_materials_sheen/KHR_materials_transmission loaded by A3D and actual Three.js GLTFLoader",
       generatedInBrowserAt: new Date().toISOString(),
       fixture: { ...FIXTURE, hash: fixtureHash },
@@ -166,17 +166,17 @@ async function run(): Promise<void> {
       dataUrls: { a3d: a3d.dataUrl, threejs: threejs.dataUrl, sideBySide }
     };
 
-    window.__V9_LOADER_MATERIAL_EXTENSIONS_PARITY__ = ready;
+    window.__THREEJS_PARITY_LOADER_MATERIAL_EXTENSIONS_PARITY__ = ready;
     if (status) status.textContent = "ready";
     if (json) json.textContent = JSON.stringify(stripDataUrls(ready), null, 2);
   } catch (error) {
     const failure: LoaderMaterialExtensionsParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-loader-material-extensions-parity/v1",
+      schema: "a3d-threejs-parity-loader-material-extensions-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error)
     };
-    window.__V9_LOADER_MATERIAL_EXTENSIONS_PARITY__ = failure;
+    window.__THREEJS_PARITY_LOADER_MATERIAL_EXTENSIONS_PARITY__ = failure;
     if (status) status.textContent = "error";
     if (json) json.textContent = JSON.stringify(failure, null, 2);
   }
@@ -210,7 +210,7 @@ async function renderA3D(canvas: HTMLCanvasElement, fixtureUrl: string) {
     camera: input.camera,
     metadata: {
       assetId: FIXTURE.id,
-      assetName: "V9 Loader Material Extensions",
+      assetName: "Three.js parity Loader Material Extensions",
       assetUri: fixtureUrl,
       meshCount: 3,
       primitiveCount: 3,
@@ -350,7 +350,7 @@ function createMaterialExtensionsFixtureDataUrl(): string {
   const indices = uint16Bytes([0, 1, 2, 0, 2, 3]);
   const binary = concatAligned([positions, normals, indices], 4);
   const gltf = {
-    asset: { version: "2.0", generator: "Aura3D V9 loader material extensions parity fixture" },
+    asset: { version: "2.0", generator: "Aura3D Three.js parity loader material extensions parity fixture" },
     extensionsUsed: FIXTURE.extensions,
     extensionsRequired: FIXTURE.extensions,
     buffers: [{ uri: `data:application/octet-stream;base64,${base64(binary.buffer)}`, byteLength: binary.buffer.byteLength }],
@@ -391,7 +391,7 @@ function createMaterialExtensionsFixtureDataUrl(): string {
       { name: "sheen-panel-node", mesh: 1, translation: [0, 0, 0] },
       { name: "transmission-panel-node", mesh: 2, translation: [1.08, 0, 0] }
     ],
-    scenes: [{ name: "v9-loader-material-extensions-scene", nodes: [0, 1, 2] }],
+    scenes: [{ name: "threejs-parity-loader-material-extensions-scene", nodes: [0, 1, 2] }],
     scene: 0
   };
   return `data:model/gltf+json;base64,${base64(new TextEncoder().encode(JSON.stringify(gltf)))}`;

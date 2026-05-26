@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 const reportPath = "tests/reports/external-parity-large-scene-browser.json";
 const screenshotPath = "tests/reports/external-gallery/performance/large-scene-performance.png";
 
-test("V4 large scene captures object count, draw calls, frame budget, and screenshot proof", async ({ page }) => {
+test("ExternalParity large scene captures object count, draw calls, frame budget, and screenshot proof", async ({ page }) => {
   await page.setContent("<canvas data-testid='large-scene' width='1280' height='720' style='width:1280px;height:720px'></canvas>");
   const state = await page.evaluate(() => {
     const canvas = document.querySelector("canvas") as HTMLCanvasElement;
@@ -30,7 +30,7 @@ test("V4 large scene captures object count, draw calls, frame budget, and screen
     }
     context.fillStyle = "#f4f0e8";
     context.font = "24px system-ui";
-    context.fillText("V4 large scene performance proof", 40, 52);
+    context.fillText("ExternalParity large scene performance proof", 40, 52);
     return {
       status: "ready",
       objectCount: 640,
@@ -54,7 +54,7 @@ test("V4 large scene captures object count, draw calls, frame budget, and screen
     generatedAt: new Date().toISOString(),
     screenshotPath,
     state,
-    productBoundary: "Large-scene performance evidence for V4 supported workflow scale. It does not claim broad performance superiority."
+    productBoundary: "Large-scene performance evidence for ExternalParity supported workflow scale. It does not claim broad performance superiority."
   };
   writeFileSync(join(process.cwd(), reportPath), `${JSON.stringify(report, null, 2)}\n`);
   expect(report.ok).toBe(true);

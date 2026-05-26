@@ -17,7 +17,7 @@ export interface ArchitecturalMeasurementResult {
 }
 
 export interface ArchitecturalMeasurementFixture {
-  readonly id: "v4-old-branch-architectural-measurement-fixture";
+  readonly id: "external-parity-old-branch-architectural-measurement-fixture";
   readonly source: "origin-master-arch-viz-measurement-tool-adapted";
   readonly snapEnabled: boolean;
   readonly snapTolerance: number;
@@ -51,7 +51,7 @@ export function createArchitecturalMeasurementFixture(options: ArchitecturalMeas
   const angle = measurement("angle", anglePoints, unit, precision);
   const height = measurement("height", heightPoints, unit, precision);
   return {
-    id: "v4-old-branch-architectural-measurement-fixture",
+    id: "external-parity-old-branch-architectural-measurement-fixture",
     source: "origin-master-arch-viz-measurement-tool-adapted",
     snapEnabled: true,
     snapTolerance,

@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationMixer, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
@@ -16,11 +16,11 @@ import { renderSkinningBlendingUi, type SkinningBlendingRuntime } from "./ui.js"
 
 declare global {
   interface Window {
-    __a3dV8SkinningBlending?: SkinningBlendingRuntime;
+    __a3dCurrentRoutesSkinningBlending?: SkinningBlendingRuntime;
   }
 }
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
 const APP_ID = "skinning-blending" as const;
 const ASSET_URL = "/fixtures/threejs-parity/assets/character/robot-expressive.glb";
@@ -67,7 +67,7 @@ async function run(): Promise<void> {
       ...patch,
       controls: patch.controls ?? controls
     };
-    window.__a3dV8SkinningBlending = runtime;
+    window.__a3dCurrentRoutesSkinningBlending = runtime;
     renderSkinningBlendingUi(root, runtime, setControls);
   };
   const setControls = (next: SkinningBlendControls): void => {
@@ -87,7 +87,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.006, 0.01, 0.014, 1]
     });
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: ASSET_URL,
       assetId: "skinning-blending-robot-expressive",
       assetName: "Robot Expressive Skinning Blend",
@@ -170,7 +170,7 @@ async function run(): Promise<void> {
           camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
           metadata: {
             assetId: APP_ID,
-            assetName: "V8 Skinning Blending",
+            assetName: "CurrentRoutes Skinning Blending",
             assetUri: "/apps/skinning-blending/",
             meshCount: pipeline.metadata.meshCount,
             primitiveCount: pipeline.metadata.primitiveCount,
@@ -181,7 +181,7 @@ async function run(): Promise<void> {
             skinCount: pipeline.metadata.skinCount,
             morphTargetCount: pipeline.metadata.morphTargetCount,
             extensionsUsed: pipeline.metadata.extensionsUsed,
-            environmentId: "v8-fast-studio",
+            environmentId: "current-routes-fast-studio",
             hdrEnvironmentUri: "deferred"
           }
         });
@@ -209,7 +209,7 @@ async function run(): Promise<void> {
           motionHealthy: motion.healthy,
           controls
         };
-        window.__a3dV8SkinningBlending = runtime;
+        window.__a3dCurrentRoutesSkinningBlending = runtime;
         if (frameCount === 1 || now - lastPublish > 250) {
           renderSkinningBlendingUi(root, runtime, setControls);
           lastPublish = now;
@@ -256,7 +256,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v8-blending:${node.name}`,
+      label: `current-routes-blending:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -270,20 +270,20 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
 
 function createStageItems(): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({ name: "v8-blend-floor", baseColor: [0.06, 0.08, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
-  const rail = new PBRMaterial({ name: "v8-blend-rail", baseColor: [0.11, 0.23, 0.34, 1], roughness: 0.32, metallic: 0.22, environmentIntensity: 0.8 });
+  const floor = new PBRMaterial({ name: "current-routes-blend-floor", baseColor: [0.06, 0.08, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
+  const rail = new PBRMaterial({ name: "current-routes-blend-rail", baseColor: [0.11, 0.23, 0.34, 1], roughness: 0.32, metallic: 0.22, environmentIntensity: 0.8 });
   return [
-    { label: "v8-blend-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
-    { label: "v8-blend-left-rail", geometry: cube, material: rail, modelMatrix: composeMat4([-1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
-    { label: "v8-blend-right-rail", geometry: cube, material: rail, modelMatrix: composeMat4([1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) }
+    { label: "current-routes-blend-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
+    { label: "current-routes-blend-left-rail", geometry: cube, material: rail, modelMatrix: composeMat4([-1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) },
+    { label: "current-routes-blend-right-rail", geometry: cube, material: rail, modelMatrix: composeMat4([1.18, 0.3, -0.62], [0, 0, 0, 1], [0.06, 0.75, 0.06]) }
   ];
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-blend-key");
+  const key = new DirectionalLight("current-routes-blend-key");
   key.intensity = 4.4;
   key.color = [1, 0.94, 0.84];
-  const fill = new DirectionalLight("v8-blend-fill");
+  const fill = new DirectionalLight("current-routes-blend-fill");
   fill.intensity = 2.0;
   fill.color = [0.6, 0.78, 1];
   return [

@@ -1,13 +1,13 @@
-export interface V5ShaderNode {
+export interface ThreeCompatShaderNode {
   readonly id: string;
   readonly kind: "color" | "float" | "texture" | "math" | "output";
 }
 
-export class NodeMaterialV5 {
+export class NodeMaterialThreeCompat {
   readonly type = "NodeMaterial";
-  readonly nodes: V5ShaderNode[] = [];
+  readonly nodes: ThreeCompatShaderNode[] = [];
 
-  addNode(node: V5ShaderNode): this {
+  addNode(node: ThreeCompatShaderNode): this {
     this.nodes.push(node);
     return this;
   }

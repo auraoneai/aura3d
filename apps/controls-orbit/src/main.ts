@@ -5,11 +5,11 @@ import { Renderable, Scene } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __a3dV8OrbitControls?: V8OrbitControlsRuntime;
+    __a3dCurrentRoutesOrbitControls?: CurrentRoutesOrbitControlsRuntime;
   }
 }
 
-interface V8OrbitControlsRuntime {
+interface CurrentRoutesOrbitControlsRuntime {
   readonly appId: "controls-orbit";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8OrbitControls = runtime;
+    window.__a3dCurrentRoutesOrbitControls = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -139,7 +139,7 @@ async function run(): Promise<void> {
           panSamples,
           wheelSamples
         });
-        window.__a3dV8OrbitControls = runtime;
+        window.__a3dCurrentRoutesOrbitControls = runtime;
         if (frameCount === 1 || frameCount % 15 === 0) publish();
         requestAnimationFrame(render);
       } catch (error) {
@@ -179,9 +179,9 @@ function createScene(): Scene {
 
 function createRuntime(
   startedAt: number,
-  status: V8OrbitControlsRuntime["status"],
-  patch: Partial<Omit<V8OrbitControlsRuntime, "appId" | "status" | "renderer" | "controls" | "elapsedMs">> = {}
-): V8OrbitControlsRuntime {
+  status: CurrentRoutesOrbitControlsRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesOrbitControlsRuntime, "appId" | "status" | "renderer" | "controls" | "elapsedMs">> = {}
+): CurrentRoutesOrbitControlsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -202,11 +202,11 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8OrbitControlsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesOrbitControlsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Orbit Controls</h1>
+        <h1>CurrentRoutes Orbit Controls</h1>
         <p>Public input OrbitControls driving a A3D scene camera.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

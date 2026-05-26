@@ -3,7 +3,7 @@ import type { BenchmarkSceneDescriptor } from "./descriptor.js";
 const scene: BenchmarkSceneDescriptor = {
   id: "skinned-characters",
   sceneVersion: 2,
-  assetId: "generated-skinned-character-crowd-v3",
+  assetId: "generated-skinned-character-crowd-foundation",
   assetClass: "generated-local-skinned-character-workload",
   resolution: { width: 1280, height: 720, dpr: 1 },
   warmupFrames: 60,

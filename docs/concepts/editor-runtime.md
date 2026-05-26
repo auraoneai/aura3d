@@ -1,62 +1,32 @@
 # Editor Runtime
 
-Version: `0.1.0-alpha.0`
+Version: `1.0.0`
 
-The editor runtime provides browser-first authoring primitives without requiring every consumer to import the full editor UI. The public package is `@aura3d/engine/editor-runtime`.
+Editor-runtime code provides reusable browser authoring primitives. It is separate from the full `apps/editor` shell.
 
-## Package Surface
+## Code
 
-Current exports include:
+- `packages/editor-runtime/src/index.ts`
+- `packages/editor/src/index.ts`
+- `apps/editor/`
+- `tests/unit/tools/editor*` and editor browser specs under `tests/browser/`
 
-- command history and undo/redo command primitives;
-- editor state storage and runtime snapshots;
-- hierarchy, inspector, selection, and picking models;
-- translate, rotate, scale, and generic gizmo helpers;
-- prefab validation and instantiation helpers;
-- material variant workflow state;
-- timeline clips/tracks/model data;
-- play-mode bridge;
-- plugin host and contribution types;
-- static export runtime helpers;
-- diagnostics overlay models and accessibility/localization fixtures.
+## Current Areas
 
-## Intended Use
-
-Use editor-runtime when building:
-
-- browser asset or scene editors;
-- internal product-scene authoring tools;
-- material variant editors;
-- lightweight prefab or hierarchy panels;
-- static exported previews;
-- tests that need editor state without booting the full UI.
-
-The package owns authoring state and commands. It should not own product routing, authentication, framework lifecycle, or renderer internals.
-
-## App Boundary
-
-The full editor UI under `apps/editor` consumes editor-runtime primitives and V9 rendering surfaces. Exported apps should depend on smaller runtime APIs where possible instead of carrying the full editor shell.
-
-## Plugin Boundary
-
-Plugin APIs should expose panels, tools, importers, scripting nodes, and runtime hooks through the plugin host. Plugins should not bypass project serialization, claim verification, or command-history ownership.
-
-## Boundaries
-
-Do not claim:
-
-- Unity/Unreal editor replacement;
-- complete visual scripting;
-- complete timeline authoring;
-- complete profiler/resource inspector;
-- stable plugin ABI.
-
-The current editor runtime is best described as an alpha browser authoring foundation with verified command, state, selection, prefab, gizmo, timeline, and export slices.
+- Selection and editor state.
+- Command history.
+- Prefab and scene authoring primitives.
+- Gizmo/timeline-facing runtime helpers.
+- Static export and diagnostics helpers.
 
 ## Boundary
 
-The editor-runtime boundary is authoring state, command history, selection, gizmos, prefab validation, and export helpers; product routing and renderer internals stay outside it.
+The editor runtime is a package surface, not a complete product guarantee for a Unity/Unreal-style editor. UI behavior must be verified against `apps/editor/` and browser tests before being documented as supported.
 
 ## Current Limits
 
-Current limits include Unity/Unreal editor replacement, complete visual scripting, complete timeline authoring, complete profiling/resource inspection, and stable plugin ABI.
+Editor-runtime docs cover reusable primitives and known app integration points. Full editor-product claims, authoring UX guarantees, and broad export/import workflows require app-level browser tests and generated evidence.
+
+## Current Limits
+
+- Editor-runtime docs cover package primitives; complete DCC-style editor workflows require app-level browser evidence before being presented as supported.

@@ -2,17 +2,17 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "no
 import { dirname, resolve } from "node:path";
 
 const requiredScripts = [
-  "v3:truth",
-  "v3:progress",
-  "v3:renderer",
-  "v3:assets",
-  "v3:workflows",
-  "v3:apps",
-  "v3:examples",
-  "v3:package",
-  "v3:compare-threejs",
-  "v3:docs",
-  "v3:release"
+  "foundation:truth",
+  "foundation:progress",
+  "foundation:renderer",
+  "foundation:assets",
+  "foundation:workflows",
+  "foundation:apps",
+  "foundation:examples",
+  "foundation:package",
+  "foundation:compare-threejs",
+  "foundation:docs",
+  "foundation:release"
 ] as const;
 const requiredReports = [
   "tests/reports/foundation-truth.json",
@@ -81,7 +81,7 @@ const releaseGate2 = {
     && (comparison?.gaps?.length ?? 0) > 0
 };
 const report = {
-  schema: "a3d-foundation-release-readiness/v1",
+  schema: "a3d-foundation-release-readiness",
   generatedAt: new Date().toISOString(),
   pass: scriptChecks.every((check) => check.exists)
     && reportChecks.every((check) => check.pass)
@@ -89,7 +89,7 @@ const report = {
     && releaseGate1.pass
     && releaseGate2.pass,
   allowedClaim: "A3D is a Three.js competitor for supported web product, asset-viewer, material, scene, and lightweight interactive workflows.",
-  limitedReplacementClaim: "A3D can replace Three.js for the supported workflows listed in docs/project/v3-roadmap-supported-workflows.md.",
+  limitedReplacementClaim: "A3D can replace Three.js for the supported workflows listed in docs/project/compatibility.md.",
   blockedClaimsRemainBlocked: [
     "Unity replacement",
     "Unreal replacement",

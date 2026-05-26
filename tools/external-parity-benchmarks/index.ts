@@ -18,9 +18,9 @@ const expectedScenes = [
 ] as const;
 
 const sourceFiles = [
-  "docs/project/external-parity-benchmarks-validation-plan.md",
-  "docs/project/v4-decision-gates.md",
-  "docs/project/v4-master-code-checklist.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/product-studio-decision-gates.md",
+  "docs/project/implementation-plan.md",
   "tools/compare-engines/index.ts",
   "tools/external-parity-benchmarks/index.ts",
   "benchmarks/fixtures/assets/manifest.json",
@@ -56,72 +56,72 @@ const screenshotPaths = [
   ]),
 ];
 
-export function createV4BenchmarkReport() {
+export function createExternalParityBenchmarkReport() {
   const comparisonReport = readJson(root, reportPath);
   const summary = inspectComparisonReport(comparisonReport);
   const checks = [
     {
-      id: "shared-v4-scene-descriptors",
-      description: "Every required V4 benchmark scene uses a shared descriptor with material, postprocess, animation, and unsupported-feature metadata.",
+      id: "shared-external-parity-scene-descriptors",
+      description: "Every required External parity benchmark scene uses a shared descriptor with material, postprocess, animation, and unsupported-feature metadata.",
       passed: summary.sharedDescriptors,
       evidencePaths: expectedScenes.map((scene) => `benchmarks/shared/scenes/${scene}.ts`),
-      blocker: "One or more V4 shared benchmark descriptors are missing required metadata.",
+      blocker: "One or more External parity shared benchmark descriptors are missing required metadata.",
     },
     {
-      id: "same-scene-v4-engine-measurements",
-      description: "Aura3D, Three.js, and Babylon use equivalent scene descriptors and browser measurements for every V4 comparison scene.",
+      id: "same-scene-external-parity-engine-measurements",
+      description: "Aura3D, Three.js, and Babylon use equivalent scene descriptors and browser measurements for every External parity comparison scene.",
       passed: summary.sameSceneMeasurements,
       evidencePaths: [reportPath],
-      blocker: "V4 engine comparison report is missing same-scene measurements for one or more engines.",
+      blocker: "External parity engine comparison report is missing same-scene measurements for one or more engines.",
     },
     {
-      id: "v4-metric-coverage",
-      description: "V4 benchmark report includes startup, asset load, first frame, steady frame time, resource counts, memory estimate, and bundle size.",
+      id: "external-parity-metric-coverage",
+      description: "External parity benchmark report includes startup, asset load, first frame, steady frame time, resource counts, memory estimate, and bundle size.",
       passed: summary.metricCoverage,
       evidencePaths: [reportPath],
-      blocker: "V4 benchmark report is missing required metrics.",
+      blocker: "External parity benchmark report is missing required metrics.",
     },
     {
-      id: "v4-screenshot-diffs",
-      description: "V4 benchmark report includes screenshots and Aura3D-vs-competitor diff artifacts for every scene.",
+      id: "external-parity-screenshot-diffs",
+      description: "External parity benchmark report includes screenshots and Aura3D-vs-competitor diff artifacts for every scene.",
       passed: summary.screenshotDiffCoverage,
       evidencePaths: ["tests/reports/comparison-screenshots", "tests/reports/comparison-diffs", reportPath],
-      blocker: "V4 benchmark screenshots or diff artifacts are missing.",
+      blocker: "External parity benchmark screenshots or diff artifacts are missing.",
     },
     {
-      id: "v4-postprocess-bounded-scene",
+      id: "external-parity-postprocess-bounded-scene",
       description: "Postprocess comparison is present only as bounded LDR tone-mapping/bloom/FXAA evidence linked to renderer reports.",
       passed: summary.postprocessBounded,
       evidencePaths: ["benchmarks/shared/scenes/postprocess.ts", "tests/reports/foundation-rendering.json", reportPath],
-      blocker: "V4 postprocess scene is missing bounded effect metadata or renderer evidence linkage.",
+      blocker: "External parity postprocess scene is missing bounded effect metadata or renderer evidence linkage.",
     },
     {
-      id: "v4-morph-workload-blocks-real-parity",
+      id: "external-parity-morph-workload-blocks-real-parity",
       description: "Morph character workload is compared while real morph glTF parity remains explicitly unsupported.",
       passed: summary.morphWorkloadBlocked,
       evidencePaths: ["benchmarks/shared/scenes/morph-characters.ts", reportPath],
-      blocker: "V4 morph character workload is missing or does not block real morph glTF parity.",
+      blocker: "External parity morph character workload is missing or does not block real morph glTF parity.",
     },
     {
       id: "external-parity-editor-authored-startup",
       description: "Editor-authored exported startup workflow is measured across the three benchmark wrappers with external workflow parity blocked.",
       passed: summary.editorAuthoredStartup,
       evidencePaths: ["benchmarks/shared/scenes/editor-authored-startup.ts", "tests/reports/foundation-editor-authoring.json", reportPath],
-      blocker: "V4 editor-authored startup workflow evidence is missing.",
+      blocker: "External parity editor-authored startup workflow evidence is missing.",
     },
     {
-      id: "v4-honest-outcomes",
+      id: "external-parity-honest-outcomes",
       description: "Report includes win/tie/loss/unavailable outcomes and keeps broad competitive claims blocked.",
       passed: summary.honestOutcomes,
       evidencePaths: [reportPath],
-      blocker: "V4 comparison report is missing honest outcomes or broad-claim caveats.",
+      blocker: "External parity comparison report is missing honest outcomes or broad-claim caveats.",
     },
     {
-      id: "v4-broad-superiority-evidence-matrix",
+      id: "external-parity-broad-superiority-evidence-matrix",
       description: "Report includes a machine-readable broad-superiority evidence matrix for Three.js and Babylon.js instead of relying on narrow benchmark wins.",
       passed: summary.broadSuperiorityEvidenceMatrix,
       evidencePaths: [reportPath, "tests/reports/external-parity-comparison-threejs.json", "tests/reports/external-parity-comparison-babylon.json"],
-      blocker: "V4 comparison report is missing broad-superiority evidence dimensions for Three.js and Babylon.js.",
+      blocker: "External parity comparison report is missing broad-superiority evidence dimensions for Three.js and Babylon.js.",
     },
   ];
   const violations = checks.filter((check) => !check.passed).map((check) => check.blocker);
@@ -136,7 +136,7 @@ export function createV4BenchmarkReport() {
   const report = {
     ...(comparisonReport ?? {}),
     ...base,
-    suite: "v4-engine-comparison",
+    suite: "external-parity-engine-comparison",
     subsystem: "same-scene-engine-comparison",
     expectedScenes,
     checks,
@@ -149,7 +149,7 @@ export function createV4BenchmarkReport() {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4BenchmarkReport();
+  const report = createExternalParityBenchmarkReport();
   console.log(JSON.stringify({ ok: report.ok, subsystem: report.subsystem, violations: report.violations.length }, null, 2));
   if (!report.ok) process.exitCode = 1;
 }
@@ -160,7 +160,7 @@ function inspectComparisonReport(report: Record<string, unknown> | null) {
   const expected = new Set(expectedScenes);
   const sameSceneMeasurements =
     report?.ok === true &&
-    report.suite === "v4-engine-comparison" &&
+    report.suite === "external-parity-engine-comparison" &&
     scenes.length === expected.size &&
     sceneIds.every((id) => typeof id === "string" && expected.has(id as typeof expectedScenes[number])) &&
     scenes.every((scene) => isRecord(scene) && scene.equivalent === true && ["aura3d", "threejs", "babylon"].every((engine) => isRecord(estimateFor(scene, engine))));

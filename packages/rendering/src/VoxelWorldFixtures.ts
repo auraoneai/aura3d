@@ -53,7 +53,7 @@ export interface VoxelVisibleBlock {
 }
 
 export interface VoxelWorldFixture {
-  readonly id: "v4-old-branch-voxel-world-fixture";
+  readonly id: "external-parity-old-branch-voxel-world-fixture";
   readonly source: "origin-master-voxel-world-adapted";
   readonly seed: number;
   readonly chunkSize: number;
@@ -146,7 +146,7 @@ export function sampleVoxelWorldFixture(options: VoxelFixtureOptions = {}): Voxe
   const chunkQueueSize = Object.values(lodCounts).reduce((sum, count) => sum + count, 0);
   const memoryBytes = chunkQueueSize * chunkSize * chunkSize * chunkSize * 2;
   return {
-    id: "v4-old-branch-voxel-world-fixture",
+    id: "external-parity-old-branch-voxel-world-fixture",
     source: "origin-master-voxel-world-adapted",
     seed,
     chunkSize,

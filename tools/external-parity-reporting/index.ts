@@ -1,4 +1,4 @@
-import { baseReport as baseV3Report, validateV3ReportFreshness } from "../foundation-reporting/index.js";
+import { baseReport as baseFoundationReport, validateFoundationReportFreshness } from "../foundation-reporting/index.js";
 
 export {
   currentCommit,
@@ -9,7 +9,7 @@ export {
   writeJson,
 } from "../foundation-reporting/index.js";
 
-export const blockedV4Claims = [
+export const blockedExternalParityClaims = [
   "broad better-than-Three.js language",
   "broad better-than-Babylon.js language",
   "Unity/Unreal replacement language",
@@ -17,7 +17,7 @@ export const blockedV4Claims = [
   "complete PBR parity language",
 ] as const;
 
-export const v4ReportPaths = [
+export const externalParityReportPaths = [
   "tests/reports/external-parity-current-capability.json",
   "tests/reports/external-parity-claim-gates.json",
   "tests/reports/external-parity-engine-comparison.json",
@@ -51,15 +51,15 @@ export const v4ReportPaths = [
   "tests/reports/external-parity-codebase-root-readiness.json",
 ] as const;
 
-export function baseReport(root: string, options: Parameters<typeof baseV3Report>[1]) {
-  return baseV3Report(root, {
+export function baseReport(root: string, options: Parameters<typeof baseFoundationReport>[1]) {
+  return baseFoundationReport(root, {
     ...options,
-    blockedClaims: options.blockedClaims ?? blockedV4Claims,
+    blockedClaims: options.blockedClaims ?? blockedExternalParityClaims,
   });
 }
 
-export function validateV4ReportFreshness(root = process.cwd(), paths: readonly string[] = v4ReportPaths) {
-  return validateV3ReportFreshness(root, paths);
+export function validateExternalParityReportFreshness(root = process.cwd(), paths: readonly string[] = externalParityReportPaths) {
+  return validateFoundationReportFreshness(root, paths);
 }
 
 export function sourceFilesFromReport(report: Record<string, unknown> | null, fallback: readonly string[], selfPath: string): readonly string[] {

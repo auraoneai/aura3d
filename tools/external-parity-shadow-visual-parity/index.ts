@@ -43,7 +43,7 @@ interface ShadowVisualDiff {
   };
 }
 
-export interface V4ShadowVisualParityReport {
+export interface ExternalParityShadowVisualParityReport {
   readonly ok: boolean;
   readonly screenshotPaths: readonly string[];
   readonly boundedShadowVisualParity: {
@@ -67,7 +67,7 @@ const sourceFiles = [
   "examples/shadow-lab/main.ts",
 ] as const;
 
-export async function createV4ShadowVisualParityReport(root = process.cwd()): Promise<V4ShadowVisualParityReport> {
+export async function createExternalParityShadowVisualParityReport(root = process.cwd()): Promise<ExternalParityShadowVisualParityReport> {
   mkdirSync(join(root, artifactDir), { recursive: true });
   const browser = await chromium.launch({ headless: true });
   try {
@@ -130,7 +130,7 @@ export async function createV4ShadowVisualParityReport(root = process.cwd()): Pr
   }
 }
 
-export function collectShadowVisualEvidencePaths(report: Pick<V4ShadowVisualParityReport, "renders" | "diffs">): readonly string[] {
+export function collectShadowVisualEvidencePaths(report: Pick<ExternalParityShadowVisualParityReport, "renders" | "diffs">): readonly string[] {
   const paths = [
     ...report.renders.map((render) => render.screenshotPath),
     ...report.diffs.flatMap((diff) => [diff.baselinePath, diff.comparedPath, diff.diffPath]),
@@ -277,7 +277,7 @@ function sharedBrowserHelpers(): string {
 
 function aura3dBundleSource(): string {
   return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     ${sharedBrowserHelpers()}
     export async function renderShadowVisualParity(canvas) {
       const renderer = await Renderer.create({ backend: "webgl2", canvas, width: canvas.width, height: canvas.height, clearColor: [0.62, 0.72, 0.8, 1], antialias: true, preserveDrawingBuffer: true });
@@ -293,7 +293,7 @@ function aura3dBundleSource(): string {
         { geometry: cube, material: casterBlue, modelMatrix: ${matrix(-0.28, -0.08, 0.08, 0.28, 0.36, 0.28)}, label: "aura3d-caster-blue" },
         { geometry: cube, material: casterGold, modelMatrix: ${matrix(0.38, 0.02, 0.06, 0.22, 0.44, 0.22)}, label: "aura3d-caster-gold" },
       ];
-      const diagnostics = renderer.render({ renderItems: items, environmentLighting: createV4EnvironmentLighting("daylight").lighting });
+      const diagnostics = renderer.render({ renderItems: items, environmentLighting: createExternalParityEnvironmentLighting("daylight").lighting });
       await nextFrame();
       const stats = pixelStats(canvas);
       return { width: canvas.width, height: canvas.height, ...stats, drawCalls: diagnostics.drawCalls, casterCount: 2, receiverCount: 1 };
@@ -483,13 +483,13 @@ async (input) => {
 }
 `;
 
-function writeReport(root: string, report: V4ShadowVisualParityReport): void {
+function writeReport(root: string, report: ExternalParityShadowVisualParityReport): void {
   writeJson(root, reportPath, report);
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = await createV4ShadowVisualParityReport();
+  const report = await createExternalParityShadowVisualParityReport();
   writeReport(process.cwd(), report);
   console.log(JSON.stringify({
     ok: report.ok,

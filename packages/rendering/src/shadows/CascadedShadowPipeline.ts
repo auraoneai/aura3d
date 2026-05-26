@@ -1,14 +1,14 @@
 import { createShadowAtlasLayout, createShadowFilterKernel, type ShadowAtlasLayout, type ShadowFilterKernel } from "../ShadowMap";
 
-export interface V4CascadeDescriptor {
+export interface ExternalParityCascadeDescriptor {
   readonly index: number;
   readonly near: number;
   readonly far: number;
   readonly mapSize: number;
 }
 
-export interface V4CascadedShadowPipeline {
-  readonly cascades: readonly V4CascadeDescriptor[];
+export interface ExternalParityCascadedShadowPipeline {
+  readonly cascades: readonly ExternalParityCascadeDescriptor[];
   readonly atlas: ShadowAtlasLayout;
   readonly filter: ShadowFilterKernel;
   readonly bias: number;
@@ -16,7 +16,7 @@ export interface V4CascadedShadowPipeline {
   readonly diagnostic: string;
 }
 
-export function createV4CascadedShadowPipeline(options: {
+export function createExternalParityCascadedShadowPipeline(options: {
   readonly cameraNear?: number;
   readonly cameraFar?: number;
   readonly cascadeCount?: number;
@@ -24,14 +24,14 @@ export function createV4CascadedShadowPipeline(options: {
   readonly atlasSize?: number;
   readonly bias?: number;
   readonly pcfRadius?: number;
-} = {}): V4CascadedShadowPipeline {
+} = {}): ExternalParityCascadedShadowPipeline {
   const cameraNear = options.cameraNear ?? 0.1;
   const cameraFar = options.cameraFar ?? 80;
   const cascadeCount = options.cascadeCount ?? 4;
   const mapSize = options.mapSize ?? 512;
   const atlasSize = options.atlasSize ?? 1024;
   if (!Number.isFinite(cameraNear) || !Number.isFinite(cameraFar) || cameraNear <= 0 || cameraFar <= cameraNear) throw new RangeError("Invalid cascaded shadow camera range.");
-  if (!Number.isInteger(cascadeCount) || cascadeCount < 2 || cascadeCount > 4) throw new RangeError("V4 cascadeCount must be 2-4.");
+  if (!Number.isInteger(cascadeCount) || cascadeCount < 2 || cascadeCount > 4) throw new RangeError("ExternalParity cascadeCount must be 2-4.");
   const cascades = Array.from({ length: cascadeCount }, (_, index) => {
     const start = index / cascadeCount;
     const end = (index + 1) / cascadeCount;

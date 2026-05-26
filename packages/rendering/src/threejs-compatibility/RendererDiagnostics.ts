@@ -1,15 +1,15 @@
-export type V5RendererBackend = "webgl2" | "webgpu" | "mock";
-export type V5RendererSupportState = "supported" | "fallback" | "partial" | "unsupported";
+export type ThreeCompatRendererBackend = "webgl2" | "webgpu" | "mock";
+export type ThreeCompatRendererSupportState = "supported" | "fallback" | "partial" | "unsupported";
 
-export interface V5RendererFeatureStatus {
+export interface ThreeCompatRendererFeatureStatus {
   readonly feature: string;
-  readonly state: V5RendererSupportState;
+  readonly state: ThreeCompatRendererSupportState;
   readonly detail: string;
 }
 
-export interface V5RendererDiagnostics {
-  readonly backend: V5RendererBackend;
-  readonly features: readonly V5RendererFeatureStatus[];
+export interface ThreeCompatRendererDiagnostics {
+  readonly backend: ThreeCompatRendererBackend;
+  readonly features: readonly ThreeCompatRendererFeatureStatus[];
   readonly cpuTimingAvailable: boolean;
   readonly gpuTimingAvailable: boolean;
   readonly screenshotCapture: boolean;
@@ -18,7 +18,7 @@ export interface V5RendererDiagnostics {
   readonly warnings: readonly string[];
 }
 
-export const V5_REQUIRED_RENDERER_FEATURES = [
+export const THREE_COMPAT_REQUIRED_RENDERER_FEATURES = [
   "perspective-camera",
   "orthographic-camera",
   "environment-capture",
@@ -44,8 +44,8 @@ export const V5_REQUIRED_RENDERER_FEATURES = [
   "device-loss-handling"
 ] as const;
 
-export function summarizeV5RendererDiagnostics(diagnostics: V5RendererDiagnostics) {
-  const missing = V5_REQUIRED_RENDERER_FEATURES.filter((feature) => {
+export function summarizeThreeCompatRendererDiagnostics(diagnostics: ThreeCompatRendererDiagnostics) {
+  const missing = THREE_COMPAT_REQUIRED_RENDERER_FEATURES.filter((feature) => {
     const status = diagnostics.features.find((item) => item.feature === feature);
     return !status || status.state === "unsupported";
   });

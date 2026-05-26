@@ -4,7 +4,7 @@ type Check = { readonly id: string; readonly pass: boolean; readonly detail: str
 type Json = Record<string, unknown>;
 const requiredPackageFiles = [
   "packages/rendering/src/production-runtime/index.ts",
-  "packages/rendering/src/production-runtime/RendererV6.ts",
+  "packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts",
   "packages/rendering/src/production-runtime/backends/WebGL2RendererBackend.ts",
   "packages/rendering/src/production-runtime/backends/WebGPURendererBackend.ts",
   "packages/rendering/src/production-runtime/backends/RendererBackend.ts",
@@ -38,7 +38,7 @@ const requiredPackageFiles = [
   "packages/rendering/src/production-runtime/passes/TransparentPass.ts",
   "packages/rendering/src/production-runtime/passes/SkyboxPass.ts",
   "packages/rendering/src/production-runtime/passes/ToneMappingPass.ts",
-  "packages/rendering/src/production-runtime/postprocess/EffectComposerV6.ts",
+  "packages/rendering/src/production-runtime/postprocess/ProductionEffectComposer.ts",
   "packages/rendering/src/production-runtime/postprocess/BloomPass.ts",
   "packages/rendering/src/production-runtime/postprocess/SSAOPass.ts",
   "packages/rendering/src/production-runtime/postprocess/DOFPass.ts",
@@ -50,10 +50,10 @@ const requiredPackageFiles = [
   "packages/rendering/src/production-runtime/diagnostics/RendererStats.ts",
   "packages/rendering/src/production-runtime/diagnostics/GPUCapabilities.ts",
   "packages/assets/src/asset-corpus/GLTFSceneLoader.ts",
-  "packages/assets/src/asset-corpus/TextureLoaderV6.ts",
-  "packages/assets/src/asset-corpus/KTX2TextureLoaderV6.ts",
-  "packages/assets/src/asset-corpus/HDRTextureLoaderV6.ts",
-  "packages/assets/src/asset-corpus/AssetPipelineV6.ts",
+  "packages/assets/src/asset-corpus/ProductionTextureLoader.ts",
+  "packages/assets/src/asset-corpus/ProductionKTX2TextureLoader.ts",
+  "packages/assets/src/asset-corpus/ProductionHDRTextureLoader.ts",
+  "packages/assets/src/asset-corpus/ProductionAssetPipeline.ts",
   "packages/assets/src/asset-corpus/index.ts",
   "packages/engine/src/production-runtime/index.ts",
   "packages/rendering/src/production-runtime/materials/PBRShaderFeatures.ts",
@@ -207,7 +207,7 @@ const architectureCount = assets.filter((asset) => /architecture|interior/i.test
 const productCount = assets.filter((asset) => /product|commerce/i.test([asset.class, asset.role, ...(asset.tags ?? [])].join(' '))).length;
 const envLabels = envs.map((env) => [env.class, env.id, env.label, env.sourceName].join(' ').toLowerCase());
 const checks: Check[] = [listCheck('required-package-files', requiredPackageFiles), listCheck('required-directories', requiredDirs), listCheck('required-tools-tests-benchmarks', requiredToolsTests), listCheck('required-final-reports', requiredReports), screenshotCheck('required-final-screenshots', requiredScreenshots), { id: 'root-exports', pass: requiredExports.every((key) => typeof pkg.exports?.[key] === 'string'), detail: requiredExports.filter((key) => typeof pkg.exports?.[key] !== 'string').join(', ') }, { id: 'release-scripts', pass: requiredScripts.every((key) => typeof pkg.scripts?.[key] === 'string'), detail: requiredScripts.filter((key) => typeof pkg.scripts?.[key] !== 'string').join(', ') }, { id: 'asset-count-20', pass: assets.length >= 20, detail: String(assets.length) }, { id: 'material-stress-assets-8', pass: stressCount >= 8, detail: String(stressCount) }, { id: 'animated-skinned-morph-assets-4', pass: animationCount >= 4, detail: String(animationCount) }, { id: 'transparent-transmission-clearcoat-assets-4', pass: transparentCount >= 4, detail: String(transparentCount) }, { id: 'large-multimesh-assets-3', pass: largeCount >= 3, detail: String(largeCount) }, { id: 'architecture-interior-assets-2', pass: architectureCount >= 2, detail: String(architectureCount) }, { id: 'product-commerce-assets-2', pass: productCount >= 2, detail: String(productCount) }, { id: 'hdr-count-10', pass: envs.length >= 10, detail: String(envs.length) }, { id: 'hdr-indoor-studio-4', pass: envLabels.filter((label) => /studio|indoor/.test(label)).length >= 4, detail: String(envLabels.filter((label) => /studio|indoor/.test(label)).length) }, { id: 'hdr-outdoor-daylight-3', pass: envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length >= 3, detail: String(envLabels.filter((label) => /outdoor|daylight|puresky|field|kloppenheim/.test(label)).length) }, { id: 'hdr-sunset-night-2', pass: envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length >= 2, detail: String(envLabels.filter((label) => /sunset|night|sunrise/.test(label)).length) }, { id: 'hdr-high-contrast-1', pass: envLabels.filter((label) => /high-contrast|industrial/.test(label)).length >= 1, detail: String(envLabels.filter((label) => /high-contrast|industrial/.test(label)).length) }];
-const report = { schema: 'a3d-production-runtime-literal-completion/v1', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks };
+const report = { schema: 'a3d-production-runtime-literal-completion', generatedAt: new Date().toISOString(), pass: checks.every((check) => check.pass), checks };
 mkdirSync(dirname(resolve('tests/reports/production-runtime-literal-completion.json')), { recursive: true });
 writeFileSync(resolve('tests/reports/production-runtime-literal-completion.json'), JSON.stringify(report, null, 2) + '\n');
 if (!report.pass) { console.error(JSON.stringify(report, null, 2)); process.exit(1); }

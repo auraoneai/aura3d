@@ -1341,7 +1341,7 @@ test("platformer fixture ports old controller camera and level telemetry with bo
   const repeat = samplePlatformerControllerFixture({ seed: 0x3d2025, elapsedSeconds: 0.32 });
   const shifted = samplePlatformerControllerFixture({ seed: 0x3d2026, elapsedSeconds: 0.32 });
 
-  assert.equal(fixture.id, "v4-old-branch-platformer-controller-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-platformer-controller-fixture");
   assert.equal(fixture.source, "origin-master-platformer-controller-adapted");
   assert.equal(fixture.hash, repeat.hash);
   assert.notEqual(fixture.hash, shifted.hash);
@@ -1390,7 +1390,7 @@ test("cloth fixture ports old PBD collision tearing and material telemetry with 
   const repeat = sampleClothSimulationFixture({ seed: 0x3d2025, elapsedSeconds: 0.4, segmentsX: 12, segmentsY: 8 });
   const shifted = sampleClothSimulationFixture({ seed: 0x3d2026, elapsedSeconds: 0.4, segmentsX: 12, segmentsY: 8 });
 
-  assert.equal(fixture.id, "v4-old-branch-cloth-simulation-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-cloth-simulation-fixture");
   assert.equal(fixture.source, "origin-master-cloth-pbd-material-adapted");
   assert.deepEqual(fixture.sourceFiles, [
     "origin/master:src/simulation/cloth/ClothSimulation.ts",
@@ -1440,7 +1440,7 @@ test("soft-body fixture ports old tetrahedral PBD telemetry with bounded claims"
   const repeat = sampleSoftBodyFixture({ seed: 0x50fb0d, elapsedSeconds: 0.36, divisions: 2 });
   const shifted = sampleSoftBodyFixture({ seed: 0x50fb0e, elapsedSeconds: 0.36, divisions: 2 });
 
-  assert.equal(fixture.id, "v4-old-branch-soft-body-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-soft-body-fixture");
   assert.equal(fixture.source, "origin-master-softbody-tet-pbd-adapted");
   assert.deepEqual(fixture.sourceFiles, [
     "origin/master:src/simulation/softbody/SoftBody.ts",
@@ -1489,7 +1489,7 @@ test("fracture fixture ports old Voronoi and hierarchical destruction telemetry 
   const repeat = sampleFractureFixture({ seed: 0xf24c7, fragmentCount: 18, impactStrength: 82 });
   const shifted = sampleFractureFixture({ seed: 0xf24c8, fragmentCount: 18, impactStrength: 82 });
 
-  assert.equal(fixture.id, "v4-old-branch-fracture-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-fracture-fixture");
   assert.equal(fixture.source, "origin-master-voronoi-hierarchical-fracture-adapted");
   assert.deepEqual(fixture.sourceFiles, [
     "origin/master:src/simulation/fracture/VoronoiFractureSystem.ts",
@@ -1538,7 +1538,7 @@ test("fluid fixture ports old SPH MPM and screen-space telemetry with bounded cl
   const repeat = sampleFluidFixture({ seed: 0xf10d, particleGrid: [4, 3, 3], elapsedSeconds: 0.42 });
   const shifted = sampleFluidFixture({ seed: 0xf10e, particleGrid: [4, 3, 3], elapsedSeconds: 0.42 });
 
-  assert.equal(fixture.id, "v4-old-branch-fluid-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-fluid-fixture");
   assert.equal(fixture.source, "origin-master-sph-mpm-fluid-adapted");
   assert.deepEqual(fixture.sourceFiles, [
     "origin/master:src/simulation/sph/SPHFluidFramework.ts",
@@ -1591,7 +1591,7 @@ test("fire smoke fixture ports old combustion particle and volume telemetry with
   const repeat = sampleFireSmokeFixture({ seed: 0xf17e, gridResolution: [8, 6, 8], elapsedSeconds: 0.5, sourceCount: 3 });
   const shifted = sampleFireSmokeFixture({ seed: 0xf17f, gridResolution: [8, 6, 8], elapsedSeconds: 0.5, sourceCount: 3 });
 
-  assert.equal(fixture.id, "v4-old-branch-fire-smoke-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-fire-smoke-fixture");
   assert.equal(fixture.source, "origin-master-fire-smoke-volume-adapted");
   assert.deepEqual(fixture.sourceFiles, [
     "origin/master:src/simulation/fire/FireSimulation.ts",
@@ -1694,7 +1694,7 @@ test("motion matching fixture scores trajectory poses with bounded old-system ev
   });
   const slower = sampleMotionMatchingFixture({ speed: 0.18, previousPoseId: "idle-0", seed: 0x3d2025 });
 
-  assert.equal(fixture.id, "v4-old-branch-motion-matching-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-motion-matching-fixture");
   assert.equal(fixture.source, "origin-master-motion-matching-system-adapted");
   assert.equal(fixture.hash, repeat.hash);
   assert.notEqual(fixture.hash, slower.hash);
@@ -1720,7 +1720,7 @@ test("physics sandbox fixture adapts old spawners and tools as bounded rigid-bod
   const repeat = samplePhysicsSandboxFixture({ seed: 0x3d2025, steps: 24 });
   const shifted = samplePhysicsSandboxFixture({ seed: 0x3d2026, steps: 24 });
 
-  assert.equal(fixture.id, "v4-old-branch-physics-sandbox-fixture");
+  assert.equal(fixture.id, "external-parity-old-branch-physics-sandbox-fixture");
   assert.equal(fixture.source, "origin-master-physics-sandbox-tools-spawners-adapted");
   assert.equal(fixture.hash, repeat.hash);
   assert.notEqual(fixture.hash, shifted.hash);

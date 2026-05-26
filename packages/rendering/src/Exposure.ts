@@ -8,7 +8,7 @@ import {
   type PostProcessColorSpace
 } from "./PostProcessPass";
 
-export interface V4ExposurePolicy {
+export interface ExternalParityExposurePolicy {
   readonly targetLuminance: number;
   readonly minExposure: number;
   readonly maxExposure: number;
@@ -17,7 +17,7 @@ export interface V4ExposurePolicy {
   readonly histogramBins: number;
 }
 
-export interface V4ExposureAnalysis {
+export interface ExternalParityExposureAnalysis {
   readonly histogram: ExposureHistogram;
   readonly autoExposure: AutoExposureResult;
   readonly underExposed: boolean;
@@ -25,7 +25,7 @@ export interface V4ExposureAnalysis {
   readonly exposureStable: boolean;
 }
 
-export function createV4ExposurePolicy(options: Partial<V4ExposurePolicy> = {}): V4ExposurePolicy {
+export function createExternalParityExposurePolicy(options: Partial<ExternalParityExposurePolicy> = {}): ExternalParityExposurePolicy {
   return {
     targetLuminance: options.targetLuminance ?? 0.18,
     minExposure: options.minExposure ?? 0.25,
@@ -36,13 +36,13 @@ export function createV4ExposurePolicy(options: Partial<V4ExposurePolicy> = {}):
   };
 }
 
-export function analyzeV4Exposure(
+export function analyzeExternalParityExposure(
   pixels: Uint8Array,
   width: number,
   height: number,
-  policy: V4ExposurePolicy = createV4ExposurePolicy(),
+  policy: ExternalParityExposurePolicy = createExternalParityExposurePolicy(),
   options: Pick<AutoExposureOptions, "previousExposure" | "deltaTimeSeconds"> = {}
-): V4ExposureAnalysis {
+): ExternalParityExposureAnalysis {
   const histogramOptions: ExposureHistogramOptions = {
     inputColorSpace: policy.inputColorSpace,
     binCount: policy.histogramBins

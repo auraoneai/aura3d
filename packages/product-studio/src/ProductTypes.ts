@@ -121,7 +121,7 @@ export interface ProductDiagnostics {
 }
 
 export interface ProductSceneManifest {
-  readonly schema: "a3d-product-studio-scene/v1";
+  readonly schema: "a3d-product-studio-scene";
   readonly assetId: ProductAssetId;
   readonly title: string;
   readonly partCount: number;

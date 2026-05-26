@@ -1,4 +1,4 @@
-export interface V4RendererStatsInput {
+export interface RendererStatsInput {
   readonly objectCount: number;
   readonly visibleObjectCount: number;
   readonly drawCalls: number;
@@ -9,7 +9,7 @@ export interface V4RendererStatsInput {
   readonly warnings?: readonly string[];
 }
 
-export interface V4RendererStats {
+export interface RendererStats {
   readonly objectCount: number;
   readonly visibleObjectCount: number;
   readonly culledObjectCount: number;
@@ -21,7 +21,7 @@ export interface V4RendererStats {
   readonly warnings: readonly string[];
 }
 
-export function createV4RendererStats(input: V4RendererStatsInput): V4RendererStats {
+export function createRendererStats(input: RendererStatsInput): RendererStats {
   const objectCount = Math.max(0, Math.floor(input.objectCount));
   const visibleObjectCount = Math.max(0, Math.min(objectCount, Math.floor(input.visibleObjectCount)));
   const drawCalls = Math.max(0, Math.floor(input.drawCalls));

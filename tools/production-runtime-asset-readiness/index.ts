@@ -1,13 +1,13 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { createV6AssetCorpusSummary } from "../../packages/assets/src/asset-corpus";
-import { createV6EnvironmentCorpusSummary } from "../../packages/environments/src/production-runtime";
+import { createProductionAssetCorpusSummary } from "../../packages/assets/src/asset-corpus";
+import { createProductionEnvironmentCorpusSummary } from "../../packages/environments/src/production-runtime";
 
 const reportPath = resolve("tests/reports/production-runtime-asset-readiness.json");
-const assetSummary = createV6AssetCorpusSummary();
-const environmentSummary = createV6EnvironmentCorpusSummary();
+const assetSummary = createProductionAssetCorpusSummary();
+const environmentSummary = createProductionEnvironmentCorpusSummary();
 const report = {
-  schema: "a3d-production-runtime-asset-environment-readiness/v1",
+  schema: "a3d-production-runtime-asset-environment-readiness",
   generatedAt: new Date().toISOString(),
   pass: assetSummary.pass && environmentSummary.pass,
   assetSummary,
@@ -31,7 +31,7 @@ const report = {
     {
       id: "hdr-bound-to-flagships",
       pass: environmentSummary.unresolvedFlagshipBindings.length === 0 && environmentSummary.flagshipBindingCount >= 8,
-      detail: "Every V6 flagship visual slot has a named HDR environment binding"
+      detail: "Every Production runtime flagship visual slot has a named HDR environment binding"
     }
   ]
 };

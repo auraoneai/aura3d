@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline, type GLTFSceneAnimationApplyResult } from "@aura3d/assets";
+import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline, type GLTFSceneAnimationApplyResult } from "@aura3d/assets";
 import {
   AnimationClip,
   AnimationTrack,
@@ -13,9 +13,9 @@ import {
   computePerspectiveCameraFrame,
   createStereoCameraRig,
   createRaycastProjectedDecalGeometry,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof,
   type CameraFrameBounds,
   type CollectedLight,
   type RenderItem,
@@ -25,26 +25,26 @@ import { DirectionalLight, composeMat4, multiplyMat4, transformPoint, type Mat4 
 
 declare global {
   interface Window {
-    __a3dV7ExampleParityLab?: V7ExampleParityRuntime;
+    __a3dExampleParityLab?: ExampleParityRuntime;
   }
 }
 
-interface V7ExampleParityRuntime {
+interface ExampleParityRuntime {
   readonly status: "loading" | "ready" | "error";
   readonly error?: string;
   readonly appId: "example-parity-lab";
   readonly rendererBackend?: "webgl2";
   readonly categories?: {
-    readonly keyframes: V7CategoryStatus;
-    readonly skinningBlending: V7CategoryStatus;
-    readonly additiveBlending: V7CategoryStatus;
-    readonly morph: V7CategoryStatus;
-    readonly ik: V7CategoryStatus;
-    readonly decals: V7CategoryStatus;
-    readonly stereo: V7CategoryStatus;
-    readonly physics: V7CategoryStatus;
+    readonly keyframes: ExampleParityCategoryStatus;
+    readonly skinningBlending: ExampleParityCategoryStatus;
+    readonly additiveBlending: ExampleParityCategoryStatus;
+    readonly morph: ExampleParityCategoryStatus;
+    readonly ik: ExampleParityCategoryStatus;
+    readonly decals: ExampleParityCategoryStatus;
+    readonly stereo: ExampleParityCategoryStatus;
+    readonly physics: ExampleParityCategoryStatus;
   };
-  readonly assets?: readonly V7AssetProof[];
+  readonly assets?: readonly ExampleParityAssetProof[];
   readonly mixer?: {
     readonly actionCount: number;
     readonly idleWeight: number;
@@ -57,7 +57,8 @@ interface V7ExampleParityRuntime {
   readonly importedAnimation?: {
     readonly characterClip: GLTFSceneAnimationApplyResult;
     readonly characterBlendClip: GLTFSceneAnimationApplyResult;
-    readonly morphClip: GLTFSceneAnimationApplyResult;
+    readonly morphClip?: GLTFSceneAnimationApplyResult;
+    readonly morphAnimationAvailable: boolean;
     readonly sceneRuntimeCount: number;
   };
   readonly ik?: {
@@ -106,7 +107,7 @@ interface V7ExampleParityRuntime {
     readonly maxContactPenetration: number;
   };
   readonly proof?: {
-    readonly summary: ReturnType<typeof summarizeV6WebGL2Proof>;
+    readonly summary: ReturnType<typeof summarizeProductionWebGL2Proof>;
     readonly drawCalls: number;
     readonly triangles: number;
     readonly textureBytes: number;
@@ -115,14 +116,14 @@ interface V7ExampleParityRuntime {
   };
 }
 
-interface V7CategoryStatus {
+interface ExampleParityCategoryStatus {
   readonly targetThreeExample: string;
   readonly status: "implemented-foundation" | "blocked";
   readonly evidence: readonly string[];
   readonly missingForParity: readonly string[];
 }
 
-interface V7AssetProof {
+interface ExampleParityAssetProof {
   readonly id: string;
   readonly uri: string;
   readonly animationCount: number;
@@ -138,7 +139,7 @@ const APP_ID = "example-parity-lab" as const;
 const WIDTH = 2560;
 const HEIGHT = 1440;
 const FRAME_BOUNDS: CameraFrameBounds = { min: [-4.15, -0.18, -2.05], max: [4.35, 2.35, 2.05] };
-type A3DLoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type A3DLoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 type NumericPipelineMetadataKey =
   | "meshCount"
   | "primitiveCount"
@@ -165,25 +166,25 @@ async function run(): Promise<void> {
 
   try {
     const hdrBytes = await fetchBytes("/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
-    const hdr = createV6PbrHdrPipelineFromRadiance(hdrBytes, {
-      id: "v7-studio-small-08-4k",
-      label: "V7 Studio Small 08 4K",
+    const hdr = createProductionPbrHdrPipelineFromRadiance(hdrBytes, {
+      id: "example-parity-studio-small-08-4k",
+      label: "Studio Small 08 4K",
       intensity: 1.38,
       backgroundIntensity: 0.9,
       rotation: 0.22,
       toneMapping: { operator: "filmic", exposure: 1.22, whitePoint: 11.2 }
     });
-    const lighting = createV6EnvironmentLightingResources(hdr);
-    const [robot, soldier, morph, helmet, watch, car, shoe] = await Promise.all([
+    const lighting = createProductionEnvironmentLightingResources(hdr);
+    const [robot, soldier, morph, helmet, materialAsset, car, sheenGrid] = await Promise.all([
       loadPipeline("/fixtures/threejs-parity/assets/character/robot-expressive.glb", "robot-expressive"),
       loadPipeline("/fixtures/threejs-parity/assets/character/soldier.glb", "soldier"),
-      loadPipeline("/fixtures/asset-corpus/animated-morph-cube.glb", "animated-morph-cube"),
+      loadPipeline("/fixtures/external-parity-assets/morph/external-parity-morph-expression/external-parity-morph-expression.gltf", "external-parity-morph-expression"),
       loadPipeline("/fixtures/asset-corpus/damaged-helmet.glb", "damaged-helmet"),
-      loadPipeline("/fixtures/threejs-parity/assets/vehicles/chronograph-watch.glb", "chronograph-watch"),
+      loadPipeline("/fixtures/threejs-parity/assets/materials/compare-transmission.glb", "compare-transmission"),
       loadPipeline("/fixtures/threejs-parity/assets/vehicles/car-concept.glb", "car-concept"),
-      loadPipeline("/fixtures/threejs-parity/assets/vehicles/materials-variants-shoe.glb", "materials-variants-shoe")
+      loadPipeline("/fixtures/asset-corpus/sheen-test-grid.glb", "sheen-test-grid")
     ]);
-    const assets = [robot, soldier, morph, helmet, watch, car, shoe] as const;
+    const assets = [robot, soldier, morph, helmet, materialAsset, car, sheenGrid] as const;
     const importedAnimation = applyImportedAnimationEvidence(soldier, morph);
     const mixer = createMixerEvidence();
     const soldierPlacement = composeMat4([-2.62, 0.03, -0.48], [0, 0.26, 0, 0.965], [0.42, 0.42, 0.42]);
@@ -196,8 +197,8 @@ async function run(): Promise<void> {
       ...collectImportedItems(morph, composeMat4([2.86, 0.28, 0.78], [0, -0.12, 0, 0.9928], [0.24, 0.24, 0.24])),
       ...collectImportedItems(helmet, helmetPlacement),
       ...collectImportedItems(car, composeMat4([0.18, 0.3, -0.22], [0, -0.38, 0, 0.925], [0.98, 0.98, 0.98])),
-      ...collectImportedItems(watch, composeMat4([2.1, 0.38, 0.1], [0, 0.42, 0, 0.907], [0.27, 0.27, 0.27])),
-      ...collectImportedItems(shoe, composeMat4([3.2, 0.26, -0.48], [0, -0.28, 0, 0.96], [0.52, 0.52, 0.52])),
+      ...collectImportedItems(materialAsset, composeMat4([2.1, 0.38, 0.1], [0, 0.42, 0, 0.907], [0.27, 0.27, 0.27])),
+      ...collectImportedItems(sheenGrid, composeMat4([3.2, 0.26, -0.48], [0, -0.28, 0, 0.96], [0.52, 0.52, 0.52])),
       ...createStageItems(),
       ...createMaterialReferenceItems(),
       ...createIkRenderItems(ik.points),
@@ -235,7 +236,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.012, 0.014, 0.018, 1]
     });
-    const lights = createV7StudioLights();
+    const lights = createExampleParityStudioLights();
     const source: RenderSource = {
       renderItems,
       collectedLights: lights,
@@ -259,7 +260,7 @@ async function run(): Promise<void> {
         pcfRadius: 1.55,
         pcfSamples: 16,
         pcfDistribution: "poisson",
-        label: "v7-example-parity-shadow",
+        label: "example-parity-example-parity-shadow",
         light: lights[0]!.source
       },
       cameraFrameBounds: FRAME_BOUNDS,
@@ -267,7 +268,7 @@ async function run(): Promise<void> {
     };
     const metadata = {
       assetId: APP_ID,
-      assetName: "V7 Example Parity Lab",
+      assetName: "Example Parity Lab",
       assetUri: "/apps/example-parity-lab/",
       meshCount: sumMetadata(assets, "meshCount"),
       primitiveCount: sumMetadata(assets, "primitiveCount"),
@@ -293,8 +294,8 @@ async function run(): Promise<void> {
       },
       metadata
     });
-    const summary = summarizeV6WebGL2Proof(proof);
-    const runtime: V7ExampleParityRuntime = {
+    const summary = summarizeProductionWebGL2Proof(proof);
+    const runtime: ExampleParityRuntime = {
       status: "ready",
       appId: APP_ID,
       rendererBackend: "webgl2",
@@ -352,46 +353,49 @@ async function run(): Promise<void> {
   }
 }
 
-function applyImportedAnimationEvidence(character: A3DLoadedPipeline, morph: A3DLoadedPipeline): NonNullable<V7ExampleParityRuntime["importedAnimation"]> {
+function applyImportedAnimationEvidence(character: A3DLoadedPipeline, morph: A3DLoadedPipeline): NonNullable<ExampleParityRuntime["importedAnimation"]> {
   const characterRuntime = createGLTFSceneAnimationRuntime({
     scene: character.resources.scene,
     clips: character.asset.animations,
     asset: character.asset
   });
-  const morphRuntime = createGLTFSceneAnimationRuntime({
+  const characterClip = character.asset.animations[0];
+  const morphClip = morph.asset.animations[0];
+  if (!characterClip) {
+    throw new Error("Example parity lab requires an imported character animation clip.");
+  }
+  const morphRuntime = morphClip ? createGLTFSceneAnimationRuntime({
     scene: morph.resources.scene,
     clips: morph.asset.animations,
     asset: morph.asset
-  });
-  const characterClip = character.asset.animations[0];
-  const morphClip = morph.asset.animations[0];
-  if (!characterClip || !morphClip) {
-    throw new Error("V7 example parity lab requires imported animation clips for character and morph assets.");
-  }
+  }) : undefined;
   return {
     characterClip: characterRuntime.applyClip(characterClip, 0.72),
     characterBlendClip: characterRuntime.applyClips([
       { clipName: characterClip.name, time: 0.42, weight: 0.35 },
       { clipName: characterClip.name, time: 0.92, weight: 0.65 }
     ]),
-    morphClip: morphRuntime.applyClips([
-      { clipName: morphClip.name, time: 0.42, weight: 0.35 },
-      { clipName: morphClip.name, time: 1.35, weight: 0.65 },
-      { clipName: morphClip.name, time: 1, weight: 0.2, additive: true }
-    ]),
-    sceneRuntimeCount: 2
+    ...(morphRuntime && morphClip ? {
+      morphClip: morphRuntime.applyClips([
+        { clipName: morphClip.name, time: 0.42, weight: 0.35 },
+        { clipName: morphClip.name, time: 1.35, weight: 0.65 },
+        { clipName: morphClip.name, time: 1, weight: 0.2, additive: true }
+      ])
+    } : {}),
+    morphAnimationAvailable: Boolean(morphClip),
+    sceneRuntimeCount: morphClip ? 2 : 1
   };
 }
 
-function createV7StudioLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v7-example-parity-key-light");
+function createExampleParityStudioLights(): readonly CollectedLight[] {
+  const key = new DirectionalLight("example-parity-example-parity-key-light");
   key.castsShadow = true;
   key.intensity = 5.0;
   key.color = [1, 0.94, 0.84];
-  const fill = new DirectionalLight("v7-example-parity-soft-fill-light");
+  const fill = new DirectionalLight("example-parity-example-parity-soft-fill-light");
   fill.intensity = 1.36;
   fill.color = [0.66, 0.78, 1];
-  const rim = new DirectionalLight("v7-example-parity-rim-light");
+  const rim = new DirectionalLight("example-parity-example-parity-rim-light");
   rim.intensity = 2.1;
   rim.color = [0.9, 0.72, 0.48];
   return [
@@ -442,7 +446,7 @@ function sumMetadata(pipelines: readonly A3DLoadedPipeline[], key: NumericPipeli
 }
 
 async function loadPipeline(url: string, assetId: string) {
-  return loadV6GLTFRenderPipeline({
+  return loadProductionGLTFRenderPipeline({
     url,
     assetId,
     assetName: assetId,
@@ -462,7 +466,7 @@ async function renderStereoEvidence(
   source: RenderSource,
   metadata: Parameters<ProductionWebGL2Renderer["renderImportedAsset"]>[0]["metadata"],
   rig: ReturnType<typeof createStereoCameraRig>
-): Promise<NonNullable<V7ExampleParityRuntime["stereo"]>> {
+): Promise<NonNullable<ExampleParityRuntime["stereo"]>> {
   const [left, right] = rig.views;
   const proofs = [];
   for (const view of rig.views) {
@@ -499,7 +503,7 @@ async function renderStereoEvidence(
   }
   const [leftProof, rightProof] = proofs;
   if (!leftProof || !rightProof) {
-    throw new Error("V7 stereo evidence requires left and right WebGL render proofs.");
+    throw new Error("Example parity stereo evidence requires left and right WebGL render proofs.");
   }
   return {
     leftViewItems: source.renderItems ? [...source.renderItems].length : 0,
@@ -530,7 +534,7 @@ function collectImportedItems(
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v7-${pipeline.metadata.assetId}:${node.name}`,
+      label: `example-parity-${pipeline.metadata.assetId}:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -542,7 +546,7 @@ function collectImportedItems(
   return items;
 }
 
-function createMixerEvidence(): V7ExampleParityRuntime["mixer"] {
+function createMixerEvidence(): ExampleParityRuntime["mixer"] {
   const target = { position: [0, 0, 0] as [number, number, number] };
   const idleClip = clip("idle", 1.2, 0.02);
   const walkClip = clip("walk", 1.0, 0.42);
@@ -638,7 +642,7 @@ function createIkEvidence(pipeline: A3DLoadedPipeline, placement: Mat4) {
 function selectImportedIkJointNames(pipeline: A3DLoadedPipeline): readonly [string, string, string] {
   const skin = pipeline.asset.skins.find((candidate) => candidate.name === "Armature") ?? pipeline.asset.skins[0];
   if (!skin) {
-    throw new Error("V7 IK evidence requires a skinned imported GLTF asset.");
+    throw new Error("Example parity IK evidence requires a skinned imported GLTF asset.");
   }
   const preferred = [
     "Skeleton_arm_joint_L__4_",
@@ -650,7 +654,7 @@ function selectImportedIkJointNames(pipeline: A3DLoadedPipeline): readonly [stri
   }
   const [root, mid, end] = skin.jointNames;
   if (!root || !mid || !end) {
-    throw new Error("V7 IK evidence requires at least three imported skeleton joints.");
+    throw new Error("Example parity IK evidence requires at least three imported skeleton joints.");
   }
   return [root, mid, end];
 }
@@ -701,7 +705,7 @@ function createPhysicsEvidence() {
 function createStageItems(): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
   const floor = new PBRMaterial({
-    name: "v7-parity-floor-material",
+    name: "example-parity-parity-floor-material",
     baseColor: [0.12, 0.13, 0.142, 1],
     roughness: 0.42,
     metallic: 0.02,
@@ -710,14 +714,14 @@ function createStageItems(): readonly RenderItem[] {
     environmentIntensity: 1.05
   });
   const backdrop = new PBRMaterial({
-    name: "v7-parity-backdrop-material",
+    name: "example-parity-parity-backdrop-material",
     baseColor: [0.018, 0.022, 0.03, 1],
     roughness: 0.56,
     metallic: 0,
     environmentIntensity: 0.9
   });
   const warmSoftbox = new PBRMaterial({
-    name: "v7-parity-warm-softbox-material",
+    name: "example-parity-parity-warm-softbox-material",
     baseColor: [1, 0.74, 0.42, 1],
     roughness: 0.18,
     metallic: 0,
@@ -725,7 +729,7 @@ function createStageItems(): readonly RenderItem[] {
     emissiveStrength: 1.1
   });
   const coolSoftbox = new PBRMaterial({
-    name: "v7-parity-cool-softbox-material",
+    name: "example-parity-parity-cool-softbox-material",
     baseColor: [0.28, 0.54, 1, 1],
     roughness: 0.2,
     metallic: 0,
@@ -734,25 +738,25 @@ function createStageItems(): readonly RenderItem[] {
   });
   return [
     {
-      label: "v7-parity-floor",
+      label: "example-parity-parity-floor",
       geometry: cube,
       material: floor,
       modelMatrix: composeMat4([0.06, -0.075, 0.05], [0, 0, 0, 1], [9.6, 0.055, 4.6])
     },
     {
-      label: "v7-parity-backdrop",
+      label: "example-parity-parity-backdrop",
       geometry: cube,
       material: backdrop,
       modelMatrix: composeMat4([0.06, 1.32, -2.05], [0, 0, 0, 1], [9.6, 3.15, 0.055])
     },
     {
-      label: "v7-parity-left-softbox",
+      label: "example-parity-parity-left-softbox",
       geometry: cube,
       material: coolSoftbox,
       modelMatrix: composeMat4([-3.82, 1.2, -1.68], [0, 0, 0, 1], [0.055, 1.68, 0.72])
     },
     {
-      label: "v7-parity-right-softbox",
+      label: "example-parity-parity-right-softbox",
       geometry: cube,
       material: warmSoftbox,
       modelMatrix: composeMat4([4.08, 1.06, -1.66], [0, 0, 0, 1], [0.055, 1.42, 0.62])
@@ -763,17 +767,17 @@ function createStageItems(): readonly RenderItem[] {
 function createMaterialReferenceItems(): readonly RenderItem[] {
   const sphere = Geometry.uvSphere(0.105, 64, 32);
   const materials = [
-    new PBRMaterial({ name: "v7-reference-brushed-blue-metal", baseColor: [0.16, 0.42, 0.95, 1], metallic: 1, roughness: 0.18, environmentIntensity: 1.25 }),
-    new PBRMaterial({ name: "v7-reference-polished-copper", baseColor: [0.95, 0.43, 0.18, 1], metallic: 1, roughness: 0.12, environmentIntensity: 1.3 }),
-    new PBRMaterial({ name: "v7-reference-clearcoat-red", baseColor: [0.92, 0.06, 0.04, 1], metallic: 0, roughness: 0.28, clearcoatFactor: 0.85, clearcoatRoughnessFactor: 0.08, environmentIntensity: 1.1 }),
-    new PBRMaterial({ name: "v7-reference-ceramic-white", baseColor: [0.92, 0.94, 0.9, 1], metallic: 0, roughness: 0.52, clearcoatFactor: 0.28, clearcoatRoughnessFactor: 0.2, environmentIntensity: 0.88 }),
-    new PBRMaterial({ name: "v7-reference-emissive-cyan", baseColor: [0.02, 0.28, 0.38, 1], metallic: 0, roughness: 0.3, emissiveColor: [0.0, 0.65, 0.95], emissiveStrength: 1.15 }),
-    new PBRMaterial({ name: "v7-reference-sheen-violet", baseColor: [0.44, 0.2, 0.76, 1], metallic: 0, roughness: 0.68, sheenColorFactor: [0.95, 0.75, 1], sheenRoughnessFactor: 0.32, environmentIntensity: 0.95 }),
-    new PBRMaterial({ name: "v7-reference-dark-clearcoat", baseColor: [0.006, 0.008, 0.01, 1], metallic: 0.1, roughness: 0.16, clearcoatFactor: 1, clearcoatRoughnessFactor: 0.04, environmentIntensity: 1.5 }),
-    new PBRMaterial({ name: "v7-reference-gold-roughness", baseColor: [1.0, 0.72, 0.25, 1], metallic: 1, roughness: 0.36, environmentIntensity: 1.1 })
+    new PBRMaterial({ name: "example-parity-reference-brushed-blue-metal", baseColor: [0.16, 0.42, 0.95, 1], metallic: 1, roughness: 0.18, environmentIntensity: 1.25 }),
+    new PBRMaterial({ name: "example-parity-reference-polished-copper", baseColor: [0.95, 0.43, 0.18, 1], metallic: 1, roughness: 0.12, environmentIntensity: 1.3 }),
+    new PBRMaterial({ name: "example-parity-reference-clearcoat-red", baseColor: [0.92, 0.06, 0.04, 1], metallic: 0, roughness: 0.28, clearcoatFactor: 0.85, clearcoatRoughnessFactor: 0.08, environmentIntensity: 1.1 }),
+    new PBRMaterial({ name: "example-parity-reference-ceramic-white", baseColor: [0.92, 0.94, 0.9, 1], metallic: 0, roughness: 0.52, clearcoatFactor: 0.28, clearcoatRoughnessFactor: 0.2, environmentIntensity: 0.88 }),
+    new PBRMaterial({ name: "example-parity-reference-emissive-cyan", baseColor: [0.02, 0.28, 0.38, 1], metallic: 0, roughness: 0.3, emissiveColor: [0.0, 0.65, 0.95], emissiveStrength: 1.15 }),
+    new PBRMaterial({ name: "example-parity-reference-sheen-violet", baseColor: [0.44, 0.2, 0.76, 1], metallic: 0, roughness: 0.68, sheenColorFactor: [0.95, 0.75, 1], sheenRoughnessFactor: 0.32, environmentIntensity: 0.95 }),
+    new PBRMaterial({ name: "example-parity-reference-dark-clearcoat", baseColor: [0.006, 0.008, 0.01, 1], metallic: 0.1, roughness: 0.16, clearcoatFactor: 1, clearcoatRoughnessFactor: 0.04, environmentIntensity: 1.5 }),
+    new PBRMaterial({ name: "example-parity-reference-gold-roughness", baseColor: [1.0, 0.72, 0.25, 1], metallic: 1, roughness: 0.36, environmentIntensity: 1.1 })
   ];
   return materials.map((material, index) => ({
-    label: `v7-material-reference-${index}`,
+    label: `example-parity-material-reference-${index}`,
     geometry: sphere,
     material,
     modelMatrix: composeMat4([3.12 + (index % 4) * 0.25, 0.2 + Math.floor(index / 4) * 0.24, 0.78], [0, 0, 0, 1], [0.92, 0.92, 0.92])
@@ -783,10 +787,10 @@ function createMaterialReferenceItems(): readonly RenderItem[] {
 function createIkRenderItems(points: readonly (readonly [number, number, number])[]): readonly RenderItem[] {
   const sphere = Geometry.uvSphere(0.055, 32, 16);
   const bone = Geometry.litCube(1);
-  const material = new PBRMaterial({ name: "v7-ik-joint-material", baseColor: [0.05, 0.75, 1, 1], metallic: 0.2, roughness: 0.22, emissiveColor: [0.02, 0.16, 0.22], emissiveStrength: 0.9 });
-  const target = new PBRMaterial({ name: "v7-ik-target-material", baseColor: [1, 0.38, 0.16, 1], metallic: 0.05, roughness: 0.18, emissiveColor: [0.45, 0.06, 0.02], emissiveStrength: 0.75 });
+  const material = new PBRMaterial({ name: "example-parity-ik-joint-material", baseColor: [0.05, 0.75, 1, 1], metallic: 0.2, roughness: 0.22, emissiveColor: [0.02, 0.16, 0.22], emissiveStrength: 0.9 });
+  const target = new PBRMaterial({ name: "example-parity-ik-target-material", baseColor: [1, 0.38, 0.16, 1], metallic: 0.05, roughness: 0.18, emissiveColor: [0.45, 0.06, 0.02], emissiveStrength: 0.75 });
   const items: RenderItem[] = points.map((point, index) => ({
-    label: `v7-ik-${index === points.length - 1 ? "target" : "joint"}-${index}`,
+    label: `example-parity-ik-${index === points.length - 1 ? "target" : "joint"}-${index}`,
     geometry: sphere,
     material: index === points.length - 1 ? target : material,
     modelMatrix: composeMat4(point, [0, 0, 0, 1], [1, 1, 1])
@@ -795,7 +799,7 @@ function createIkRenderItems(points: readonly (readonly [number, number, number]
     const a = points[i]!;
     const b = points[i + 1]!;
     items.push({
-      label: `v7-ik-bone-${i}`,
+      label: `example-parity-ik-bone-${i}`,
       geometry: bone,
       material,
       modelMatrix: barBetween(a, b, 0.035)
@@ -806,9 +810,9 @@ function createIkRenderItems(points: readonly (readonly [number, number, number]
 
 function createPhysicsRenderItems(positions: readonly (readonly [number, number, number])[]): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
-  const material = new PBRMaterial({ name: "v7-physics-body-material", baseColor: [0.95, 0.61, 0.18, 1], metallic: 0.24, roughness: 0.26, clearcoatFactor: 0.42, clearcoatRoughnessFactor: 0.12, environmentIntensity: 1.2 });
+  const material = new PBRMaterial({ name: "example-parity-physics-body-material", baseColor: [0.95, 0.61, 0.18, 1], metallic: 0.24, roughness: 0.26, clearcoatFactor: 0.42, clearcoatRoughnessFactor: 0.12, environmentIntensity: 1.2 });
   return positions.map((position, index) => ({
-    label: `v7-physics-body-${index}`,
+    label: `example-parity-physics-body-${index}`,
     geometry: cube,
     material,
     modelMatrix: composeMat4([position[0] + 3.02, position[1] - 0.02, position[2] + 0.34], [0, 0, 0, 1], [0.13, 0.13, 0.13])
@@ -873,7 +877,7 @@ function createProjectedDecalEvidence(pipeline: A3DLoadedPipeline, placement: Ma
       if (result.box.basis) orientedProjectorCount += 1;
       const color = decalColors[index % decalColors.length]!;
       const material = new PBRMaterial({
-        name: `v7-raycast-decal-material-${index}`,
+        name: `example-parity-raycast-decal-material-${index}`,
         baseColor: [color[0], color[1], color[2], 0.5],
         metallic: 0,
         roughness: 0.38,
@@ -882,7 +886,7 @@ function createProjectedDecalEvidence(pipeline: A3DLoadedPipeline, placement: Ma
         renderState: { blend: true, depthWrite: false, cullMode: "none" }
       });
       renderItems.push({
-        label: `v7-raycast-oriented-mesh-decal-${index}`,
+        label: `example-parity-raycast-oriented-mesh-decal-${index}`,
         geometry: result.geometry,
         material,
         modelMatrix: composeMat4([0, 0, 0], [0, 0, 0, 1], [1, 1, 1])
@@ -892,7 +896,7 @@ function createProjectedDecalEvidence(pipeline: A3DLoadedPipeline, placement: Ma
     }
   });
   if (renderItems.length === 0) {
-    throw new Error("V7 projected decal proof failed to generate clipped mesh decals.");
+    throw new Error("Example parity projected decal proof failed to generate clipped mesh decals.");
   }
   return {
     renderItems,
@@ -907,17 +911,17 @@ function createProjectedDecalEvidence(pipeline: A3DLoadedPipeline, placement: Ma
 
 function createStereoReferenceItems(): readonly RenderItem[] {
   const cube = Geometry.litCube(1);
-  const left = new UnlitMaterial({ name: "v7-stereo-left-material", color: [0.05, 0.38, 1, 0.28] });
-  const right = new UnlitMaterial({ name: "v7-stereo-right-material", color: [1, 0.16, 0.08, 0.28] });
+  const left = new UnlitMaterial({ name: "example-parity-stereo-left-material", color: [0.05, 0.38, 1, 0.28] });
+  const right = new UnlitMaterial({ name: "example-parity-stereo-right-material", color: [1, 0.16, 0.08, 0.28] });
   return [
     {
-      label: "v7-stereo-left-view",
+      label: "example-parity-stereo-left-view",
       geometry: cube,
       material: left,
       modelMatrix: composeMat4([3.68, 0.86, 0.9], [0, 0, 0, 1], [0.3, 0.2, 0.018])
     },
     {
-      label: "v7-stereo-right-view",
+      label: "example-parity-stereo-right-view",
       geometry: cube,
       material: right,
       modelMatrix: composeMat4([3.91, 0.86, 0.9], [0, 0, 0, 1], [0.3, 0.2, 0.018])
@@ -931,7 +935,7 @@ function barBetween(a: readonly [number, number, number], b: readonly [number, n
   return composeMat4(mid, [0, 0, 0, 1], [thickness, length, thickness]);
 }
 
-function createCategoryStatus(): NonNullable<V7ExampleParityRuntime["categories"]> {
+function createCategoryStatus(): NonNullable<ExampleParityRuntime["categories"]> {
   return {
     keyframes: category("webgl_animation_keyframes", ["imports animated GLB data", "applies imported GLTF TRS tracks to A3D scene nodes", "renders keyframe-scene asset in A3D", "uses A3D animation mixer sample state"], ["Littlest Tokyo-quality scenic asset", "video/frame-sequence motion delta against Three.js"]),
     skinningBlending: category("webgl_animation_skinning_blending", ["imports skinned Robot Expressive and Soldier GLBs", "applies imported joint TRS tracks to A3D scene nodes", "refreshes A3D renderable skinning palettes from animated joints", "uses imported GLTF runtime weighted clip blending", "uses A3D mixer crossfade weights", "renders skinned GLBs in same scene"], ["live blend-weight UI parity", "broader animated-character visual delta against Three.js"]),
@@ -944,11 +948,11 @@ function createCategoryStatus(): NonNullable<V7ExampleParityRuntime["categories"
   };
 }
 
-function category(targetThreeExample: string, evidence: readonly string[], missingForParity: readonly string[]): V7CategoryStatus {
+function category(targetThreeExample: string, evidence: readonly string[], missingForParity: readonly string[]): ExampleParityCategoryStatus {
   return { targetThreeExample, status: "implemented-foundation", evidence, missingForParity };
 }
 
-function assetProof(pipeline: A3DLoadedPipeline): V7AssetProof {
+function assetProof(pipeline: A3DLoadedPipeline): ExampleParityAssetProof {
   return {
     id: pipeline.metadata.assetId,
     uri: pipeline.metadata.assetUri,
@@ -962,12 +966,12 @@ function assetProof(pipeline: A3DLoadedPipeline): V7AssetProof {
   };
 }
 
-function publish(root: HTMLElement, runtime: V7ExampleParityRuntime): void {
-  window.__a3dV7ExampleParityLab = runtime;
+function publish(root: HTMLElement, runtime: ExampleParityRuntime): void {
+  window.__a3dExampleParityLab = runtime;
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V7 Example Parity Lab</h1>
+        <h1>Example Parity Lab</h1>
         <p>A3D runtime work toward keyframes, skinned blending, morphs, IK, decals, stereo effects, and physics parity.</p>
       </div>
       <button id="primary-action" type="button">Advance Mix</button>
@@ -984,9 +988,9 @@ function publish(root: HTMLElement, runtime: V7ExampleParityRuntime): void {
     </section>
   `;
   root.querySelector("#primary-action")?.addEventListener("click", () => {
-    const current = window.__a3dV7ExampleParityLab;
+    const current = window.__a3dExampleParityLab;
     if (!current?.mixer) return;
-    window.__a3dV7ExampleParityLab = {
+    window.__a3dExampleParityLab = {
       ...current,
       mixer: {
         ...current.mixer,
@@ -994,7 +998,7 @@ function publish(root: HTMLElement, runtime: V7ExampleParityRuntime): void {
         runWeight: Math.min(1, current.mixer.runWeight + 0.03)
       }
     };
-    publish(root, window.__a3dV7ExampleParityLab);
+    publish(root, window.__a3dExampleParityLab);
   });
 }
 

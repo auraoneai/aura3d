@@ -46,7 +46,7 @@ for (const root of roots) {
 }
 
 const report = {
-  schema: "a3d-current-routes-runtime-import-audit/v1",
+  schema: "a3d-current-routes-runtime-import-audit",
   pass: findings.length === 0,
   claim: "A3D product/runtime source roots do not import Three.js or @aura3d/three-compat implementation paths.",
   scannedRoots: roots,
@@ -65,14 +65,14 @@ mkdirSync(dirname(reportPath), { recursive: true });
 writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 
 if (!report.pass) {
-  console.error(`V8 runtime import audit failed. Report: ${reportPath}`);
+  console.error(`CurrentRoutes runtime import audit failed. Report: ${reportPath}`);
   for (const finding of findings.slice(0, 20)) {
     console.error(`${finding.file}:${finding.line} ${finding.match}`);
   }
   process.exit(1);
 }
 
-console.log(`V8 runtime import audit passed. Report: ${reportPath}`);
+console.log(`CurrentRoutes runtime import audit passed. Report: ${reportPath}`);
 
 function walk(path: string): void {
   let entries: Dirent[];

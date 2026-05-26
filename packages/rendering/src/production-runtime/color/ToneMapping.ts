@@ -1,5 +1,5 @@
-export type ToneMappingOperatorV6 = 'linear' | 'neutral' | 'aces';
-export function toneMap(value: number, operator: ToneMappingOperatorV6 = 'aces', exposure = 1): number {
+export type ToneMappingOperatorProduction = 'linear' | 'neutral' | 'aces';
+export function toneMap(value: number, operator: ToneMappingOperatorProduction = 'aces', exposure = 1): number {
   const x = Math.max(0, value * exposure);
   if (operator === 'linear') return Math.min(1, x);
   if (operator === 'neutral') return x / (1 + x);

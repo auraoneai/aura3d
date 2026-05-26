@@ -16,7 +16,7 @@ const reports = inputs.map((path) => ({
 }));
 
 const report = {
-  schema: "a3d-product-studio-product-evidence/v1",
+  schema: "a3d-product-studio-product-evidence",
   generatedAt: new Date().toISOString(),
   pass: reports.every((entry) => entry.exists && entry.content && entry.content.pass !== false),
   reports

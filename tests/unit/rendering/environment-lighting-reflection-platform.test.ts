@@ -9,7 +9,7 @@ import {
   createLightingRig,
   listLightingRigPresets
 } from "../../../packages/rendering/src/LightingRig";
-import { createV4ContactShadowPlan } from "../../../packages/rendering/src/shadows/ContactShadows";
+import { createExternalParityContactShadowPlan } from "../../../packages/rendering/src/shadows/ContactShadows";
 import {
   createReflectiveFloorSurface,
   createReflectionSurface,
@@ -210,7 +210,7 @@ describe("lighting rig platform helpers", () => {
   });
 
   it("creates layered contact-shadow plans without claiming a renderer contact pass", () => {
-    const plan = createV4ContactShadowPlan({
+    const plan = createExternalParityContactShadowPlan({
       casterRadius: 0.8,
       receiverDistance: 0.22,
       softness: 0.6,
@@ -233,7 +233,7 @@ describe("lighting rig platform helpers", () => {
     expect(plan.layers[3]?.opacity).toBeLessThan(plan.layers[0]?.opacity ?? 1);
     expect(plan.unsupportedRendererFeatures).toContain("screen-space-contact-shadow");
     expect(plan.claimBoundary).toMatch(/not a renderer contact-shadow pass/i);
-    expect(() => createV4ContactShadowPlan({ casterRadius: 0.8, receiverDistance: 0.22, layerCount: 7 })).toThrow(/layerCount/);
+    expect(() => createExternalParityContactShadowPlan({ casterRadius: 0.8, receiverDistance: 0.22, layerCount: 7 })).toThrow(/layerCount/);
   });
 });
 

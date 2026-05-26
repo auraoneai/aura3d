@@ -5,7 +5,7 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const reportPath = "tests/reports/external-parity-public-api-app-browser.json";
 
-test.describe("V4 public API browser app", () => {
+test.describe("ExternalParity public API browser app", () => {
   test.setTimeout(90_000);
   let server: ExampleDevServer;
 
@@ -15,11 +15,11 @@ test.describe("V4 public API browser app", () => {
   test("renders through createA3DApp and reports diagnostics", async ({ page }) => {
     const errors = captureErrors(page);
     await page.goto(`${server.origin}/tests/browser/fixtures/external-parity-public-api-app/index.html`, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => window.__A3D_V4_PUBLIC_API_APP__?.status === "ready", undefined, { timeout: 60_000 });
+    await page.waitForFunction(() => window.__A3D_EXTERNAL_PARITY_PUBLIC_API_APP__?.status === "ready", undefined, { timeout: 60_000 });
     const screenshotPath = "tests/reports/external-gallery/api/public-api-app.png";
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/api"), { recursive: true });
     await page.locator("[data-testid='hr4-public-api-canvas']").screenshot({ path: screenshotPath });
-    const state = await page.evaluate(() => window.__A3D_V4_PUBLIC_API_APP__);
+    const state = await page.evaluate(() => window.__A3D_EXTERNAL_PARITY_PUBLIC_API_APP__);
     const report = {
       ok: errors.length === 0 &&
         state?.workflowKind === "scene-showcase" &&
@@ -50,7 +50,7 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __A3D_V4_PUBLIC_API_APP__?: {
+    __A3D_EXTERNAL_PARITY_PUBLIC_API_APP__?: {
       readonly status?: string;
       readonly workflowKind?: string;
       readonly appState?: string;

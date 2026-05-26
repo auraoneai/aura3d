@@ -14,7 +14,7 @@ export interface ClothSampleParticle {
 }
 
 export interface ClothSimulationFixture {
-  readonly id: "v4-old-branch-cloth-simulation-fixture";
+  readonly id: "external-parity-old-branch-cloth-simulation-fixture";
   readonly source: "origin-master-cloth-pbd-material-adapted";
   readonly sourceFiles: readonly [
     "origin/master:src/simulation/cloth/ClothSimulation.ts",
@@ -223,7 +223,7 @@ export function sampleClothSimulationFixture(options: ClothSimulationFixtureOpti
   ];
 
   return {
-    id: "v4-old-branch-cloth-simulation-fixture",
+    id: "external-parity-old-branch-cloth-simulation-fixture",
     source: "origin-master-cloth-pbd-material-adapted",
     sourceFiles,
     config: {

@@ -27,13 +27,13 @@ const exampleChecks = examples.map((example) => {
   return {
     example,
     importsWorkflows: main.includes("@aura3d/workflows"),
-    usesPublicShell: main.includes("mountV3Example"),
-    readmeMentionsGate: readme.includes("v3-examples.spec.ts"),
-    avoidsV1Proof: !main.includes("-v1") && !readme.includes("-v1")
+    usesPublicShell: main.includes("mountFoundationExample"),
+    readmeMentionsGate: readme.includes("foundation-examples.spec.ts"),
+    avoidsLegacyProof: !main.includes("") && !readme.includes("")
   };
 });
 const index = existsSync(resolve("examples/index.html")) ? readFileSync(resolve("examples/index.html"), "utf8") : "";
-const indexPromotesOnlyV3 = examples.every((example) => index.includes(`./${example}/`))
+const indexPromotesOnlyFoundation = examples.every((example) => index.includes(`./${example}/`))
   && !index.includes("./legacy-product-viewer/")
   && !index.includes("./legacy-material-studio/")
   && !index.includes("./legacy-asset-viewer/")
@@ -46,18 +46,18 @@ const captureChecks = (manifest?.captures ?? []).map((capture) => ({
 const examplesWithCaptures = new Set(captureChecks.map((capture) => capture.id));
 
 const report = {
-  schema: "a3d-foundation-examples-readiness/v1",
+  schema: "a3d-foundation-examples-readiness",
   generatedAt: new Date().toISOString(),
   pass: fileChecks.every((file) => file.exists)
-    && exampleChecks.every((example) => example.importsWorkflows && example.usesPublicShell && example.readmeMentionsGate && example.avoidsV1Proof)
-    && indexPromotesOnlyV3
+    && exampleChecks.every((example) => example.importsWorkflows && example.usesPublicShell && example.readmeMentionsGate && example.avoidsLegacyProof)
+    && indexPromotesOnlyFoundation
     && manifest?.pass === true
     && examples.every((example) => examplesWithCaptures.has(example))
     && captureChecks.every((capture) => capture.exists && capture.actualBytes > 10_000 && capture.drawCalls > 0 && capture.renderedItems > 0 && capture.lastError === null),
   fileChecks,
   exampleChecks,
   tutorialFiles: tutorialFiles.map((path) => ({ path, exists: existsSync(resolve(path)) })),
-  indexPromotesOnlyV3,
+  indexPromotesOnlyFoundation,
   browserManifestPath: "tests/reports/foundation-examples/manifest.json",
   browserManifestExists: existsSync(manifestPath),
   captureChecks

@@ -14,7 +14,7 @@ export interface ThreeCompatibilityThreshold {
 }
 
 export interface ThreeCompatibilityMatrix {
-  readonly schema: "a3d-three-compat-threejs-compatibility-matrix/v1";
+  readonly schema: "a3d-three-compat-threejs-compatibility-matrix";
   readonly threeVersion: string;
   readonly totalEntries: number;
   readonly entries: readonly ThreeCompatibilityEntry[];
@@ -32,7 +32,7 @@ export interface ThreeCompatibilityMatrix {
 const coreTargetCategories: readonly ThreeApiCategory[] = ["core", "math", "cameras", "lights", "materials", "geometries", "textures"];
 const secondaryTargetCategories: readonly ThreeApiCategory[] = ["controls", "loaders", "postprocessing", "animation", "helpers"];
 
-export const V5_COMPATIBILITY_THRESHOLDS: readonly ThreeCompatibilityThreshold[] = [
+export const THREE_COMPAT_COMPATIBILITY_THRESHOLDS: readonly ThreeCompatibilityThreshold[] = [
   { category: "overall", minimumSupportedOrPartialPercent: 60 },
   ...coreTargetCategories.map((category) => ({ category, minimumSupportedOrPartialPercent: 80 })),
   ...secondaryTargetCategories.map((category) => ({ category, minimumSupportedOrPartialPercent: 60 }))
@@ -41,11 +41,11 @@ export const V5_COMPATIBILITY_THRESHOLDS: readonly ThreeCompatibilityThreshold[]
 export function buildInitialCompatibilityMatrix(inventory: ThreeApiInventory): ThreeCompatibilityMatrix {
   const entries = inventory.entries.map((entry) => ({ ...entry, ...initialCompatibilityFor(entry) }));
   return {
-    schema: "a3d-three-compat-threejs-compatibility-matrix/v1",
+    schema: "a3d-three-compat-threejs-compatibility-matrix",
     threeVersion: inventory.threeVersion,
     totalEntries: entries.length,
     entries,
-    thresholds: V5_COMPATIBILITY_THRESHOLDS,
+    thresholds: THREE_COMPAT_COMPATIBILITY_THRESHOLDS,
     coverage: coverageFor(entries)
   };
 }
@@ -72,25 +72,25 @@ function initialCompatibilityFor(entry: ThreeApiInventoryEntry): Pick<ThreeCompa
     return {
       status: "partial",
       a3dEquivalent: `@aura3d/engine/three-compat:${entry.name}`,
-      notes: "V5 target entry. Partial until direct API tests and browser migrated examples prove behavior."
+      notes: "ThreeCompat target entry. Partial until direct API tests and browser migrated examples prove behavior."
     };
   }
   if (entry.category === "renderers" || entry.category === "webxr") {
     return {
       status: "blocked",
       a3dEquivalent: "none",
-      notes: "Renderer/WebXR parity is blocked until explicit V5 implementation and external evidence exist."
+      notes: "Renderer/WebXR parity is blocked until explicit ThreeCompat implementation and external evidence exist."
     };
   }
   return {
     status: "planned",
     a3dEquivalent: `@aura3d/engine/three-compat:${entry.name}`,
-    notes: "Tracked for V5 migration and parity work."
+    notes: "Tracked for ThreeCompat migration and parity work."
   };
 }
 
 function coverageFor(entries: readonly ThreeCompatibilityEntry[]): ThreeCompatibilityMatrix["coverage"] {
-  return V5_COMPATIBILITY_THRESHOLDS.map((threshold) => {
+  return THREE_COMPAT_COMPATIBILITY_THRESHOLDS.map((threshold) => {
     const scoped = threshold.category === "overall" ? entries : entries.filter((entry) => entry.category === threshold.category);
     const supportedOrPartialCount = scoped.filter((entry) => supportedOrPartial(entry.status)).length;
     const percent = scoped.length === 0 ? 0 : Math.round((supportedOrPartialCount / scoped.length) * 1000) / 10;

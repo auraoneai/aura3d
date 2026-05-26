@@ -5,23 +5,23 @@ import {
   ProductionWebGL2Renderer
 } from "../../../packages/rendering/src/production-runtime";
 import type {
-  V6RendererInput,
-  V7FrameRenderResult
+  ProductionRendererInput,
+  RuntimeParityFrameRenderResult
 } from "../../../packages/rendering/src/production-runtime/ProductionRendererTypes";
 
-describe("V8 explicit interactive renderer API", () => {
-  it("publishes renderInteractiveFrame and captureProof as the primary V6 renderer names", () => {
+describe("CurrentRoutes explicit interactive renderer API", () => {
+  it("publishes renderInteractiveFrame and captureProof as the primary Production renderer names", () => {
     const types = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRendererTypes.ts"), "utf8");
-    const rendererV6 = readFileSync(resolve("packages/rendering/src/production-runtime/RendererV6.ts"), "utf8");
+    const rendererProduction = readFileSync(resolve("packages/rendering/src/production-runtime/ProductionRuntimeRenderer.ts"), "utf8");
     const sdk = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
 
-    expect(types).toContain("export interface V8ProductionRenderer");
-    expect(types).toContain("renderInteractiveFrame(input: V6RendererInput)");
-    expect(types).toContain("captureProof(input: V6RendererInput)");
-    expect(rendererV6).toContain("renderFrame(input: V6RendererInput)");
-    expect(rendererV6).toContain("return this.renderInteractiveFrame(input);");
-    expect(rendererV6).toContain("renderImportedAsset(input: V6RendererInput)");
-    expect(rendererV6).toContain("return this.captureProof(input);");
+    expect(types).toContain("export interface CurrentRoutesProductionRenderer");
+    expect(types).toContain("renderInteractiveFrame(input: ProductionRendererInput)");
+    expect(types).toContain("captureProof(input: ProductionRendererInput)");
+    expect(rendererProduction).toContain("renderFrame(input: ProductionRendererInput)");
+    expect(rendererProduction).toContain("return this.renderInteractiveFrame(input);");
+    expect(rendererProduction).toContain("renderImportedAsset(input: ProductionRendererInput)");
+    expect(rendererProduction).toContain("return this.captureProof(input);");
     expect(sdk).toContain("renderInteractiveFrame(input: A3DRenderOptions)");
     expect(sdk).toContain("captureProof(input: A3DRenderOptions)");
     expect(sdk).toContain("return this.renderInteractiveFrame(input);");
@@ -31,7 +31,7 @@ describe("V8 explicit interactive renderer API", () => {
   it("renders an interactive frame without pixel metrics or readback", () => {
     const { renderer, render, readPixels } = createRenderer();
 
-    const result = renderer.renderInteractiveFrame(createInput()) as V7FrameRenderResult & {
+    const result = renderer.renderInteractiveFrame(createInput()) as RuntimeParityFrameRenderResult & {
       readonly pixels?: unknown;
     };
 
@@ -71,7 +71,7 @@ describe("V8 explicit interactive renderer API", () => {
 
   it("keeps renderFrame and renderImportedAsset as compatible aliases", () => {
     const interactive = createRenderer();
-    const frame = interactive.renderer.renderFrame(createInput()) as V7FrameRenderResult & {
+    const frame = interactive.renderer.renderFrame(createInput()) as RuntimeParityFrameRenderResult & {
       readonly pixels?: unknown;
     };
 
@@ -121,11 +121,11 @@ function createRenderer() {
   };
 }
 
-function createInput(): V6RendererInput {
+function createInput(): ProductionRendererInput {
   return {
     source: { renderItems: [] },
     metadata: {
-      assetId: "v8-unit-asset",
+      assetId: "current-routes-unit-asset",
       assetUri: "fixtures/threejs-parity/unit.glb",
       meshCount: 1,
       primitiveCount: 1,

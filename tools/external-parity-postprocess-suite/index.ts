@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4PostprocessSuiteReadinessReport {
+export interface ExternalParityPostprocessSuiteReadinessReport {
   readonly ok: boolean;
   readonly screenshotPaths: readonly string[];
   readonly auditComplete: true;
@@ -35,7 +35,7 @@ const sourceFiles = [
   "tests/reports/external-parity-external-engine-baselines.json",
 ] as const;
 
-export function createV4PostprocessSuiteReadinessReport(root = process.cwd()): V4PostprocessSuiteReadinessReport {
+export function createExternalParityPostprocessSuiteReadinessReport(root = process.cwd()): ExternalParityPostprocessSuiteReadinessReport {
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const webgpu = readJson(root, "tests/reports/external-parity-webgpu-parity.json");
   const comparison = readJson(root, "tests/reports/external-parity-engine-comparison.json");
@@ -45,7 +45,7 @@ export function createV4PostprocessSuiteReadinessReport(root = process.cwd()): V
   const externalBaselines = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
   const screenshotPaths = collectPostprocessSuiteEvidencePaths({ rendering, comparison, hdrBrowser });
   const validations = Array.isArray(rendering?.validations) ? rendering.validations : [];
-  const preset = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-v4-preset");
+  const preset = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-external-parity-preset");
   const colorManagement = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-runtime-color-management-controls");
   const grading = validations.find((entry) => isRecord(entry) && entry.name === "postprocess-lab-runtime-color-grading-controls");
   const presetChecks = isRecord(preset) && isRecord(preset.checks) ? preset.checks : {};
@@ -383,7 +383,7 @@ function validation(id: string, passed: boolean, evidence: string, blockers: rea
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4PostprocessSuiteReadinessReport();
+  const report = createExternalParityPostprocessSuiteReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

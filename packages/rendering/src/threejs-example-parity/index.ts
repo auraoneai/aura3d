@@ -1,19 +1,19 @@
-import { RendererV6, resolveRendererV6Backend, type RendererV6BackendPreference, type RendererV6BackendSelection } from "../production-runtime/RendererV6";
-import type { V6RendererInput, V7FrameRenderResult } from "../production-runtime/ProductionRendererTypes";
+import { ProductionRuntimeRenderer, resolveProductionRuntimeRendererBackend, type ProductionRuntimeRendererBackendPreference, type ProductionRuntimeRendererBackendSelection } from "../production-runtime/ProductionRuntimeRenderer";
+import type { ProductionRendererInput, RuntimeParityFrameRenderResult } from "../production-runtime/ProductionRendererTypes";
 import type { RenderDeviceDiagnostics } from "../RenderDevice";
 import type { RendererPostProcessOptions } from "../Renderer";
 
-export interface V8InteractiveRendererOptions {
+export interface CurrentRoutesInteractiveRendererOptions {
   readonly canvas: HTMLCanvasElement | OffscreenCanvas;
   readonly width: number;
   readonly height: number;
-  readonly backend?: RendererV6BackendPreference;
+  readonly backend?: ProductionRuntimeRendererBackendPreference;
   readonly preserveDrawingBuffer?: boolean;
   readonly errorCheckMode?: "strict" | "frame";
   readonly clearColor?: readonly [number, number, number, number];
 }
 
-export interface V8RuntimeMetrics {
+export interface CurrentRoutesRuntimeMetrics {
   readonly frameCount: number;
   readonly lastFrameMs: number;
   readonly averageFrameMs: number;
@@ -33,37 +33,37 @@ export interface V8RuntimeMetrics {
   readonly stateCacheSamplerBinds?: number;
 }
 
-export interface V8Screenshot {
+export interface CurrentRoutesScreenshot {
   readonly mimeType: "image/png";
   readonly dataUrl: string;
   readonly width: number;
   readonly height: number;
 }
 
-export class V8InteractiveRenderer {
+export class CurrentRoutesInteractiveRenderer {
   readonly backend: "webgl2" | "webgpu";
-  readonly backendSelection: RendererV6BackendSelection;
+  readonly backendSelection: ProductionRuntimeRendererBackendSelection;
 
-  private readonly metrics = createV8RuntimeMetrics();
+  private readonly metrics = createCurrentRoutesRuntimeMetrics();
 
   private constructor(
-    private readonly renderer: RendererV6,
+    private readonly renderer: ProductionRuntimeRenderer,
     readonly canvas: HTMLCanvasElement | OffscreenCanvas
   ) {
     this.backend = renderer.backend;
     this.backendSelection = renderer.backendSelection;
   }
 
-  static async create(options: V8InteractiveRendererOptions): Promise<V8InteractiveRenderer> {
-    const selection = resolveRendererV6Backend(options);
-    const renderer = await RendererV6.create({
+  static async create(options: CurrentRoutesInteractiveRendererOptions): Promise<CurrentRoutesInteractiveRenderer> {
+    const selection = resolveProductionRuntimeRendererBackend(options);
+    const renderer = await ProductionRuntimeRenderer.create({
       ...options,
       backend: selection.requestedBackend
     });
-    return new V8InteractiveRenderer(renderer, options.canvas);
+    return new CurrentRoutesInteractiveRenderer(renderer, options.canvas);
   }
 
-  async renderFrame(input: V6RendererInput): Promise<V7FrameRenderResult> {
+  async renderFrame(input: ProductionRendererInput): Promise<RuntimeParityFrameRenderResult> {
     const started = now();
     const result = await this.renderer.renderInteractiveFrameAsync(input);
     this.metrics.record({
@@ -83,12 +83,12 @@ export class V8InteractiveRenderer {
     return this.renderer.getDiagnostics();
   }
 
-  getMetrics(): V8RuntimeMetrics {
+  getMetrics(): CurrentRoutesRuntimeMetrics {
     return this.metrics.snapshot(this.backend);
   }
 
-  screenshot(): V8Screenshot {
-    return captureV8CanvasScreenshot(this.canvas);
+  screenshot(): CurrentRoutesScreenshot {
+    return captureCurrentRoutesCanvasScreenshot(this.canvas);
   }
 
   dispose(): void {
@@ -96,11 +96,11 @@ export class V8InteractiveRenderer {
   }
 }
 
-export function createV8InteractiveRenderer(options: V8InteractiveRendererOptions): Promise<V8InteractiveRenderer> {
-  return V8InteractiveRenderer.create(options);
+export function createCurrentRoutesInteractiveRenderer(options: CurrentRoutesInteractiveRendererOptions): Promise<CurrentRoutesInteractiveRenderer> {
+  return CurrentRoutesInteractiveRenderer.create(options);
 }
 
-export function createV8Postprocess(exposure: number): RendererPostProcessOptions {
+export function createCurrentRoutesPostprocess(exposure: number): RendererPostProcessOptions {
   return {
     targetFormat: "rgba16f",
     toneMapping: {
@@ -129,9 +129,9 @@ export function createV8Postprocess(exposure: number): RendererPostProcessOption
   };
 }
 
-export function captureV8CanvasScreenshot(canvas: HTMLCanvasElement | OffscreenCanvas): V8Screenshot {
+export function captureCurrentRoutesCanvasScreenshot(canvas: HTMLCanvasElement | OffscreenCanvas): CurrentRoutesScreenshot {
   if (!("toDataURL" in canvas) || typeof canvas.toDataURL !== "function") {
-    throw new Error("V8 screenshot capture requires an HTMLCanvasElement with preserveDrawingBuffer enabled.");
+    throw new Error("CurrentRoutes screenshot capture requires an HTMLCanvasElement with preserveDrawingBuffer enabled.");
   }
   return {
     mimeType: "image/png",
@@ -141,17 +141,17 @@ export function captureV8CanvasScreenshot(canvas: HTMLCanvasElement | OffscreenC
   };
 }
 
-interface V8MetricsRecorder {
+interface CurrentRoutesMetricsRecorder {
   record(sample: {
     readonly frameMs: number;
     readonly renderMs: number;
     readonly diagnostics: RenderDeviceDiagnostics;
     readonly backend: "webgl2" | "webgpu";
   }): void;
-  snapshot(backend: "webgl2" | "webgpu"): V8RuntimeMetrics;
+  snapshot(backend: "webgl2" | "webgpu"): CurrentRoutesRuntimeMetrics;
 }
 
-function createV8RuntimeMetrics(): V8MetricsRecorder {
+function createCurrentRoutesRuntimeMetrics(): CurrentRoutesMetricsRecorder {
   let frameCount = 0;
   let lastFrameMs = 0;
   let averageFrameMs = 0;

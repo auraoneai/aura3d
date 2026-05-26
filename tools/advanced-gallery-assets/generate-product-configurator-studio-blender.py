@@ -8,7 +8,7 @@ import bpy
 
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "product-configurator-studio-blender"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "product-configurator-studio-blender"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "product-configurator-studio-blender.glb"
 MANIFEST = OUT_DIR / "manifest.json"
@@ -108,12 +108,12 @@ def write_manifest():
         "routeUse": "product-configurator",
         "routeLinkage": {
             "routeId": "product-configurator",
-            "app": "apps/v9-advanced-examples-gallery",
+            "app": "apps/threejs-parity-advanced-examples-gallery",
             "catalogAssetId": "product-configurator-studio-blender",
             "runtimeRole": "support scenery, hotspot markers, swatch stations, and stage/context only",
         },
         "source": {
-            "sourceScript": "tools/v9-advanced-gallery-assets/generate-product-configurator-studio-blender.py",
+            "sourceScript": "tools/advanced-gallery-assets/generate-product-configurator-studio-blender.py",
             "generator": "Blender Python procedural mesh generator",
             "inputAssets": [],
             "derivativeOfExternalAsset": False,
@@ -123,7 +123,7 @@ def write_manifest():
             "glb": file_info(OUT),
             "manifest": {"path": rel(MANIFEST)},
         },
-        "generator": "tools/v9-advanced-gallery-assets/generate-product-configurator-studio-blender.py",
+        "generator": "tools/advanced-gallery-assets/generate-product-configurator-studio-blender.py",
         "asset": rel(OUT),
         "status": {
             "generated": True,
@@ -212,7 +212,7 @@ def mat(name, color, metallic=0.0, roughness=0.55, emission=None, strength=0.0, 
         material.alpha_threshold = 0.02
     else:
         material.blend_method = "OPAQUE"
-    material["v9_fixture_role"] = "product_configurator_studio_material"
+    material["advanced_gallery_fixture_role"] = "product_configurator_studio_material"
     return material
 
 
@@ -342,15 +342,15 @@ def cyclorama(material):
     bpy.context.collection.objects.link(obj)
     assign(obj, material)
     obj.modifiers.new("weighted studio normals", "WEIGHTED_NORMAL")
-    obj["v9_fixture_role"] = "studio_backdrop"
+    obj["advanced_gallery_fixture_role"] = "studio_backdrop"
     return obj
 
 
 def add_hotspot(index, label, loc, accent, glass):
     hotspot_extras = {
-        "v9_hotspot": label,
-        "v9_fixture_role": "configurator_hotspot_marker",
-        "v9_configurator_binding": "authored GLB marker; route projects imported marker model matrices for screen-space picking"
+        "advanced_gallery_hotspot": label,
+        "advanced_gallery_fixture_role": "configurator_hotspot_marker",
+        "advanced_gallery_configurator_binding": "authored GLB marker; route projects imported marker model matrices for screen-space picking"
     }
     marker = sphere(
         f"hotspot marker {index:02d} {label}",
@@ -367,7 +367,7 @@ def add_hotspot(index, label, loc, accent, glass):
         0.008,
         glass,
         rot=(math.radians(90), 0, 0),
-        extras={**hotspot_extras, "v9_fixture_role": "configurator_hotspot_ring"},
+        extras={**hotspot_extras, "advanced_gallery_fixture_role": "configurator_hotspot_ring"},
     )
     cube(
         f"hotspot leader line {index:02d} {label}",
@@ -375,7 +375,7 @@ def add_hotspot(index, label, loc, accent, glass):
         (0.012, 0.38, 0.012),
         glass,
         0.004,
-        extras={**hotspot_extras, "v9_fixture_role": "configurator_hotspot_leader"},
+        extras={**hotspot_extras, "advanced_gallery_fixture_role": "configurator_hotspot_leader"},
     )
     return marker
 
@@ -411,7 +411,7 @@ def text_label(name, body, loc, material, size=0.08, rot=(0, 0, 0), extras=None)
 
 
 def add_component_nameplate(index, label, loc, target, width, mats):
-    plate_extras = {"v9_fixture_role": "configurator_component_label", "v9_component_label": label}
+    plate_extras = {"advanced_gallery_fixture_role": "configurator_component_label", "advanced_gallery_component_label": label}
     cube(f"named component plate {index:02d} {label}", loc, (width, 0.018, 0.16), mats["plinth_trim"], 0.008, extras=plate_extras)
     text_label(
         f"named component text {index:02d} {label}",
@@ -446,10 +446,10 @@ def add_component_nameplate(index, label, loc, target, width, mats):
 
 def add_material_swatch_station(index, label, part, loc, target, material, mats):
     extras = {
-        "v9_fixture_role": "configurator_material_swatch_station",
-        "v9_material_swatch": label,
-        "v9_target_part": part,
-        "v9_configurator_binding": "authored station; route Finish control mutates material uniforms; no KHR_materials_variants in this fixture"
+        "advanced_gallery_fixture_role": "configurator_material_swatch_station",
+        "advanced_gallery_material_swatch": label,
+        "advanced_gallery_target_part": part,
+        "advanced_gallery_configurator_binding": "authored station; route Finish control mutates material uniforms; no KHR_materials_variants in this fixture"
     }
     x, y, z = loc
     cube(f"material swatch station {index:02d} {label} base", (x, y, z), (0.34, 0.045, 0.26), mats["plinth_trim"], 0.014, extras=extras)
@@ -469,7 +469,7 @@ def add_material_swatch_station(index, label, part, loc, target, material, mats)
         (x, y + 0.044, z + 0.19),
         mats["label"],
         0.035,
-        extras={**extras, "v9_fixture_role": "material_swatch_label"},
+        extras={**extras, "advanced_gallery_fixture_role": "material_swatch_label"},
     )
     tx, ty, tz = target
     leader_y = max(y + 0.12, ty - 0.08)
@@ -480,7 +480,7 @@ def add_material_swatch_station(index, label, part, loc, target, material, mats)
             (abs(tx - x), 0.018, 0.012),
             mats["holo"],
             0.003,
-            extras={**extras, "v9_fixture_role": "configurator_swatch_target_leader"},
+            extras={**extras, "advanced_gallery_fixture_role": "configurator_swatch_target_leader"},
         )
     if abs(tz - z) > 0.04:
         cube(
@@ -489,16 +489,16 @@ def add_material_swatch_station(index, label, part, loc, target, material, mats)
             (0.012, 0.018, abs(tz - z)),
             mats["holo"],
             0.003,
-            extras={**extras, "v9_fixture_role": "configurator_swatch_target_leader"},
+            extras={**extras, "advanced_gallery_fixture_role": "configurator_swatch_target_leader"},
         )
 
 
 def add_hotspot_target(index, label, loc, target, mats):
     extras = {
-        "v9_fixture_role": "configurator_hotspot_target",
-        "v9_hotspot": label,
-        "v9_target_part": label,
-        "v9_configurator_binding": "authored target; route projects imported marker model matrices for screen-space picking"
+        "advanced_gallery_fixture_role": "configurator_hotspot_target",
+        "advanced_gallery_hotspot": label,
+        "advanced_gallery_target_part": label,
+        "advanced_gallery_configurator_binding": "authored target; route projects imported marker model matrices for screen-space picking"
     }
     x, y, z = loc
     torus(
@@ -525,9 +525,9 @@ def add_hotspot_target(index, label, loc, target, mats):
 
 def add_separation_marker(index, label, loc, scale, mats, accent_key="accent"):
     extras = {
-        "v9_fixture_role": "configurator_exploded_separation_marker",
-        "v9_exploded_part": label,
-        "v9_explode_ready": "authored named marker for route explode diagnostics"
+        "advanced_gallery_fixture_role": "configurator_exploded_separation_marker",
+        "advanced_gallery_exploded_part": label,
+        "advanced_gallery_explode_ready": "authored named marker for route explode diagnostics"
     }
     x, y, z = loc
     sx, sy, sz = scale
@@ -563,7 +563,7 @@ def add_product_surface_detail(mats, product_extras):
             accent if i % 10 == 0 else dark,
             0.001,
             rot=(0, 0, a),
-            extras={**product_extras, "v9_fixture_role": "configurator_lens_calibration_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_lens_calibration_detail"},
         )
 
     for i in range(20):
@@ -576,7 +576,7 @@ def add_product_surface_detail(mats, product_extras):
             black if i % 2 else copper,
             0.001,
             rot=(0, 0, a),
-            extras={**product_extras, "v9_fixture_role": "configurator_fastener_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_fastener_detail"},
         )
 
     for i, x in enumerate((-0.31, -0.21, -0.11, 0.0, 0.11, 0.21, 0.31)):
@@ -586,7 +586,7 @@ def add_product_surface_detail(mats, product_extras):
             (0.006, 0.66 - abs(x) * 0.48, 0.012),
             dark,
             0.001,
-            extras={**product_extras, "v9_fixture_role": "configurator_chassis_machining_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_chassis_machining_detail"},
         )
     for i, y in enumerate((0.92, 1.02, 1.12, 1.32, 1.42, 1.52)):
         cube(
@@ -595,7 +595,7 @@ def add_product_surface_detail(mats, product_extras):
             (0.66 - abs(y - 1.22) * 0.58, 0.006, 0.012),
             dark,
             0.001,
-            extras={**product_extras, "v9_fixture_role": "configurator_chassis_machining_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_chassis_machining_detail"},
         )
 
     for i in range(18):
@@ -609,7 +609,7 @@ def add_product_surface_detail(mats, product_extras):
             copper if i % 4 else accent,
             0.001,
             rot=(0, 0, math.radians(8 if i % 2 else -6)),
-            extras={**product_extras, "v9_fixture_role": "configurator_pcb_trace_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_pcb_trace_detail"},
         )
     for i in range(12):
         cube(
@@ -618,7 +618,7 @@ def add_product_surface_detail(mats, product_extras):
             (0.044, 0.009, 0.006),
             [mats["screen"], accent, amber][i % 3],
             0.001,
-            extras={**product_extras, "v9_fixture_role": "configurator_display_pixel_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_display_pixel_detail"},
         )
 
     for side, x in (("left", -0.985), ("right", 0.985)):
@@ -629,7 +629,7 @@ def add_product_surface_detail(mats, product_extras):
                 (0.026, 0.018, 0.29),
                 black if i % 2 else dark,
                 0.004,
-                extras={**product_extras, "v9_fixture_role": "configurator_grip_texture_detail"},
+                extras={**product_extras, "advanced_gallery_fixture_role": "configurator_grip_texture_detail"},
             )
 
     for i in range(16):
@@ -641,7 +641,7 @@ def add_product_surface_detail(mats, product_extras):
             light if i % 4 == 0 else black,
             0.001,
             rot=(0, 0, a),
-            extras={**product_extras, "v9_fixture_role": "configurator_control_knurl_detail"},
+            extras={**product_extras, "advanced_gallery_fixture_role": "configurator_control_knurl_detail"},
         )
 
 
@@ -657,14 +657,14 @@ def add_turntable_detail(mats):
             material,
             0.001,
             rot=(0, -a, 0),
-            extras={"v9_fixture_role": "configurator_turntable_detail"},
+            extras={"advanced_gallery_fixture_role": "configurator_turntable_detail"},
         )
 
 
 def add_rear_measurement_grid(mats):
     extras = {
-        "v9_fixture_role": "configurator_non_occluding_measurement_grid",
-        "v9_configurator_binding": "authored background detail; does not drive runtime controls"
+        "advanced_gallery_fixture_role": "configurator_non_occluding_measurement_grid",
+        "advanced_gallery_configurator_binding": "authored background detail; does not drive runtime controls"
     }
     for i in range(18):
         y = 0.84 + i * 0.072
@@ -722,7 +722,7 @@ def make_product_parts(mats):
     black = mats["black"]
     amber = mats["amber"]
 
-    product_extras = {"v9_fixture_role": "exploded_product_part", "v9_product_configurator": "true"}
+    product_extras = {"advanced_gallery_fixture_role": "exploded_product_part", "advanced_gallery_product_configurator": "true"}
 
     cylinder("machined silver main chassis shell", (0, 1.22, 0.02), 0.43, 0.52, aluminum, 96, rot=(math.pi / 2, 0, 0), extras=product_extras)
     cylinder("recessed carbon optical core", (0, 1.22, 0.18), 0.34, 0.58, carbon, 96, rot=(math.pi / 2, 0, 0), extras=product_extras)
@@ -853,8 +853,8 @@ def make_scene():
         "walnut": mat("dark walnut material tray", (0.25, 0.14, 0.075, 1), roughness=0.4),
     }
 
-    bpy.context.scene["v9_fixture"] = "product-configurator-studio-blender"
-    bpy.context.scene["v9_gallery_target"] = "advanced gallery product configurator"
+    bpy.context.scene["advanced_gallery_fixture"] = "product-configurator-studio-blender"
+    bpy.context.scene["advanced_gallery_gallery_target"] = "advanced gallery product configurator"
 
     # Keep the studio shell segmented and low-profile. A full cyclorama sweep
     # dominated A3D camera bounds and made the product read as a tiny prop.
@@ -915,7 +915,7 @@ def make_scene():
             (x, 0.602, 1.435),
             mats["label"],
             0.042,
-            extras={"v9_fixture_role": "material_swatch_label", "v9_material_swatch": label},
+            extras={"advanced_gallery_fixture_role": "material_swatch_label", "advanced_gallery_material_swatch": label},
         )
     add_material_swatch_station(1, "alloy", "chassis shell", (-1.46, 0.68, 1.04), (-0.54, 1.22, 0.02), mats["aluminum"], mats)
     add_material_swatch_station(2, "carbon", "optical core", (-0.58, 0.7, 1.08), (0, 1.22, 0.18), mats["carbon"], mats)

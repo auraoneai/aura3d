@@ -5,7 +5,7 @@ import { createGLTFRenderResources, GLTFLoader, LoadContext, loadRenderableAsset
 
 const root = join(process.cwd(), "fixtures/workflow-assets/assets");
 
-describe("V3 glTF render resources", () => {
+describe("Foundation glTF render resources", () => {
   it("creates render resources with bounds, geometry, materials, and textures", async () => {
     const loader = new GLTFLoader();
     const asset = await loader.load({ url: jsonDataUri(readFileSync(join(root, "product-camera/product-camera.gltf"), "utf8")) }, new LoadContext());

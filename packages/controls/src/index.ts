@@ -22,7 +22,7 @@ export type {
   InteractionRootProvider
 } from "./InteractionControls";
 export { Picking } from "./Picking";
-export type { PickingDiagnostics, PickingOptions, PickingReport, V5PickResult } from "./Picking";
+export type { PickingDiagnostics, PickingOptions, PickingReport, ThreeCompatPickResult } from "./Picking";
 export {
   annotationFromPickHit,
   createDistrictPickingAnnotations,
@@ -55,4 +55,4 @@ export type {
 export { ControlVector3 } from "./NativeControlTypes";
 export type { ControlObject3DLike, ControlPickMetadata, Vector3Like } from "./NativeControlTypes";
 export { createDefaultControlState } from "./ControlState";
-export type { V5ControlEvent, V5ControlState } from "./ControlState";
+export type { ThreeCompatControlEvent, ThreeCompatControlState } from "./ControlState";

@@ -3,10 +3,10 @@ import { dirname, resolve } from "node:path";
 
 const requiredFiles = [
   "README.md",
-  "docs/project/v3-roadmap-product-positioning.md",
-  "docs/project/v3-roadmap-threejs-competitor-status.md",
-  "docs/project/v3-roadmap-supported-workflows.md",
-  "docs/project/v3-roadmap-known-gaps.md",
+  "docs/project/competitive-positioning.md",
+  "docs/project/threejs-parity-status.md",
+  "docs/project/compatibility.md",
+  "docs/project/known-limits.md",
   "docs/api/public-api.md",
   "docs/project/tutorials-basic-app.md",
   "docs/project/tutorials-asset-viewer.md",
@@ -49,7 +49,7 @@ const forbiddenHits = forbiddenPositivePatterns
   .filter((item) => item.hit);
 
 const report = {
-  schema: "a3d-foundation-docs-readiness/v1",
+  schema: "a3d-foundation-docs-readiness",
   generatedAt: new Date().toISOString(),
   pass: fileChecks.every((file) => file.exists)
     && evidenceChecks.every((check) => check.mentioned)

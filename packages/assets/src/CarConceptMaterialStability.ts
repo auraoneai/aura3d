@@ -406,7 +406,7 @@ export interface CarConceptMaterialVisualRoleContext {
 }
 
 export function carConceptMaterialRenderStateOverrides(
-  context: "product-configurator" | "v8-flagship" = "product-configurator"
+  context: "product-configurator" | "current-routes-flagship" = "product-configurator"
 ): readonly GLTFMaterialRenderStateOverride[] {
   const product = context === "product-configurator";
   return [
@@ -415,7 +415,7 @@ export function carConceptMaterialRenderStateOverrides(
       renderState: { cullMode: "back", blend: false, depthTest: true, depthWrite: true },
       reason: product
         ? "Product car body panels are double-sided in the source GLB; culling back faces prevents subpixel bright seam halos without hiding the original car asset."
-        : "Concept-car body panels must not render as double-sided HDR edge overlays in the v8 flagship viewer."
+        : "Concept-car body panels must not render as double-sided HDR edge overlays in the currentRoutes flagship viewer."
     },
     {
       materialName: GLASS_PATTERN,

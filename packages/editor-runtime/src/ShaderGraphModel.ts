@@ -36,7 +36,7 @@ export interface ShaderGraphDiagnostic {
 }
 
 export interface ShaderGraphFixture {
-  readonly id: "v4-old-branch-shader-graph-fixture";
+  readonly id: "external-parity-old-branch-shader-graph-fixture";
   readonly source: "origin-master-shader-graph-adapted";
   readonly sourceFiles: readonly [
     "origin/master:src/shaders/graph/ShaderGraph.ts",
@@ -128,7 +128,7 @@ export function createOldBranchShaderGraphFixture(): ShaderGraphFixture {
   const glslHash = hashStrings(previewFragmentLines);
   const wgslHash = hashStrings(previewFragmentLines.map((line) => line.replaceAll("vec", "vec").replaceAll("texture(", "textureSample(")));
   return {
-    id: "v4-old-branch-shader-graph-fixture",
+    id: "external-parity-old-branch-shader-graph-fixture",
     source: "origin-master-shader-graph-adapted",
     sourceFiles,
     nodes,

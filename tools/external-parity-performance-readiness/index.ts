@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { V4_PERFORMANCE_BASELINE } from "../../tests/performance/external-parity-performance-baselines";
+import { EXTERNAL_PARITY_PERFORMANCE_BASELINE } from "../../tests/performance/external-parity-performance-baselines";
 
 type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }
@@ -27,18 +27,18 @@ const browser = json("tests/reports/external-parity-large-scene-browser.json");
 const state = browser?.state as Obj | undefined;
 check("browser-large-scene", browser?.ok === true && Number(state?.objectCount ?? 0) >= 600 && Number(state?.drawCalls ?? 0) > 0, "Browser large-scene report must prove object count, draw calls, and frame diagnostics.");
 check("screenshot", existsSync(resolve("tests/reports/external-gallery/performance/large-scene-performance.png")) && statSync(resolve("tests/reports/external-gallery/performance/large-scene-performance.png")).size > 8_000, "Large-scene screenshot must exist and be non-placeholder.");
-check("baseline-stats", V4_PERFORMANCE_BASELINE.stats.objectCount >= 600 && V4_PERFORMANCE_BASELINE.stats.drawCalls > 0, "Performance baseline must include object count and draw calls.");
-check("resource-budget", V4_PERFORMANCE_BASELINE.budget.withinBudget === true && V4_PERFORMANCE_BASELINE.budget.warnings.length === 0, "Resource budget must pass without exceeded warnings.");
-check("sorting-lod", V4_PERFORMANCE_BASELINE.sortedIds[0] === "opaque-case" && V4_PERFORMANCE_BASELINE.lod.id === "lod1", "Render sorting and LOD selection must be deterministic.");
-check("feature-coverage", V4_PERFORMANCE_BASELINE.featureCoverage.includes("frustum-culling") && V4_PERFORMANCE_BASELINE.featureCoverage.includes("memory-diagnostics"), "Performance baseline must name the required performance capabilities.");
+check("baseline-stats", EXTERNAL_PARITY_PERFORMANCE_BASELINE.stats.objectCount >= 600 && EXTERNAL_PARITY_PERFORMANCE_BASELINE.stats.drawCalls > 0, "Performance baseline must include object count and draw calls.");
+check("resource-budget", EXTERNAL_PARITY_PERFORMANCE_BASELINE.budget.withinBudget === true && EXTERNAL_PARITY_PERFORMANCE_BASELINE.budget.warnings.length === 0, "Resource budget must pass without exceeded warnings.");
+check("sorting-lod", EXTERNAL_PARITY_PERFORMANCE_BASELINE.sortedIds[0] === "opaque-case" && EXTERNAL_PARITY_PERFORMANCE_BASELINE.lod.id === "lod1", "Render sorting and LOD selection must be deterministic.");
+check("feature-coverage", EXTERNAL_PARITY_PERFORMANCE_BASELINE.featureCoverage.includes("frustum-culling") && EXTERNAL_PARITY_PERFORMANCE_BASELINE.featureCoverage.includes("memory-diagnostics"), "Performance baseline must name the required performance capabilities.");
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-performance-readiness/v1",
+  schema: "a3d-external-parity-performance-readiness",
   generatedAt: new Date().toISOString(),
   pass,
-  summary: pass ? "V4 renderer performance and large-scene proof is ready." : "V4 renderer performance proof is incomplete.",
-  baseline: V4_PERFORMANCE_BASELINE,
+  summary: pass ? "External parity renderer performance and large-scene proof is ready." : "External parity renderer performance proof is incomplete.",
+  baseline: EXTERNAL_PARITY_PERFORMANCE_BASELINE,
   checkedFiles: requiredFiles,
   checks
 };

@@ -1,6 +1,6 @@
-export type V3ComparisonSceneId = "product" | "material" | "asset" | "interactive";
+export type FoundationComparisonSceneId = "product" | "material" | "asset" | "interactive";
 
-export interface V3ComparisonObject {
+export interface FoundationComparisonObject {
   readonly label: string;
   readonly geometry: "sphere" | "cube" | "cylinder";
   readonly color: readonly [number, number, number];
@@ -10,11 +10,11 @@ export interface V3ComparisonObject {
   readonly scale: readonly [number, number, number];
 }
 
-export interface V3ComparisonScene {
-  readonly id: V3ComparisonSceneId;
+export interface FoundationComparisonScene {
+  readonly id: FoundationComparisonSceneId;
   readonly title: string;
   readonly intent: string;
   readonly assetUrl?: string;
   readonly animated?: boolean;
-  readonly objects: readonly V3ComparisonObject[];
+  readonly objects: readonly FoundationComparisonObject[];
 }

@@ -6,7 +6,7 @@ interface ProgressItem {
   readonly checked: boolean;
 }
 
-const progressPath = resolve("docs/project/v3-roadmap-progress.md");
+const progressPath = resolve("docs/project/verification-evidence.md");
 const progress = existsSync(progressPath) ? readFileSync(progressPath, "utf8") : "";
 const items = parseChecklist(progress);
 const completedMilestones = items.filter((item) => item.checked && /^Milestone \d+/.test(item.text));
@@ -24,14 +24,14 @@ const milestoneCoverage = requiredMilestones.map((milestone) => ({
 const activeItems = activeSectionItems(progress, "## Active Milestone");
 
 const report = {
-  schema: "a3d-foundation-progress/v1",
+  schema: "a3d-foundation-progress",
   generatedAt: new Date().toISOString(),
   pass: existsSync(progressPath)
     && (currentStatus === "in-progress" || currentStatus === "complete")
     && (activeMilestone.startsWith("Milestone") || activeMilestone === "complete")
     && milestoneCoverage.every((entry) => entry.present)
     && (activeItems.length > 0 || currentStatus === "complete"),
-  progressPath: "docs/project/v3-roadmap-progress.md",
+  progressPath: "docs/project/verification-evidence.md",
   currentStatus,
   activeMilestone,
   lastVerifiedCommand,

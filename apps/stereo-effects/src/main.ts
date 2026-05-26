@@ -15,13 +15,13 @@ import { bindStereoControls, DEFAULT_STEREO_CONTROLS, type StereoControlState } 
 
 declare global {
   interface Window {
-    __a3dV8StereoEffects?: V8StereoRuntime;
+    __a3dCurrentRoutesStereoEffects?: CurrentRoutesStereoRuntime;
   }
 }
 
 type RuntimeStatus = "loading" | "ready" | "running" | "error";
 
-interface V8StereoRuntime {
+interface CurrentRoutesStereoRuntime {
   readonly status: RuntimeStatus;
   readonly appId: "stereo-effects";
   readonly statusLabel: string;
@@ -64,7 +64,7 @@ async function run(): Promise<void> {
 
   const startedAt = performance.now();
   let controls: StereoControlState = DEFAULT_STEREO_CONTROLS;
-  let runtime: V8StereoRuntime = {
+  let runtime: CurrentRoutesStereoRuntime = {
     status: "loading",
     appId: APP_ID,
     statusLabel: "Loading",
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
     rendererStatus: "pending",
     elapsedMs: 0
   };
-  const update = (patch: Partial<V8StereoRuntime>): void => {
+  const update = (patch: Partial<CurrentRoutesStereoRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
     publish(root, runtime, controls);
   };
@@ -123,7 +123,7 @@ async function run(): Promise<void> {
     });
     const metadata = {
       assetId: APP_ID,
-      assetName: "V8 Stereo Fixture",
+      assetName: "CurrentRoutes Stereo Fixture",
       assetUri: "/apps/stereo-effects/",
       meshCount: 11,
       primitiveCount: 11,
@@ -196,7 +196,7 @@ async function run(): Promise<void> {
           effectComposition: effectPlan.composition,
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__a3dV8StereoEffects = runtime;
+        window.__a3dCurrentRoutesStereoEffects = runtime;
         if (nextFrame === 1 || nextFrame % 10 === 0) publish(root, runtime, controls);
         requestAnimationFrame(render);
       } catch (error) {
@@ -254,10 +254,10 @@ function createItems(resources: StereoResources, frameCount: number, mode: strin
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-stereo-key");
+  const key = new DirectionalLight("current-routes-stereo-key");
   key.intensity = 3.2;
   key.color = [1, 0.94, 0.86];
-  const rim = new DirectionalLight("v8-stereo-rim");
+  const rim = new DirectionalLight("current-routes-stereo-rim");
   rim.intensity = 1.7;
   rim.color = [0.58, 0.72, 1];
   return [
@@ -266,13 +266,13 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function publish(root: HTMLElement, runtime: V8StereoRuntime, controls: StereoControlState): void {
-  window.__a3dV8StereoEffects = runtime;
+function publish(root: HTMLElement, runtime: CurrentRoutesStereoRuntime, controls: StereoControlState): void {
+  window.__a3dCurrentRoutesStereoEffects = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "loading" ? "is-loading" : "is-running";
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Stereo Effects</h1>
+        <h1>CurrentRoutes Stereo Effects</h1>
         <p>Dual A3D WebGL2 renderers draw a stereo camera rig with live IPD and parallax controls.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>

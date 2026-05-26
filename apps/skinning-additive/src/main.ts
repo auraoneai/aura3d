@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationMixer, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationMixer, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
@@ -20,11 +20,11 @@ import {
 
 declare global {
   interface Window {
-    __a3dV8SkinningAdditive?: SkinningAdditiveRuntime;
+    __a3dCurrentRoutesSkinningAdditive?: SkinningAdditiveRuntime;
   }
 }
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
 interface SkinningAdditiveRuntime {
   readonly appId: "skinning-additive";
@@ -94,7 +94,7 @@ async function run(): Promise<void> {
 
   const publish = (patch: Partial<SkinningAdditiveRuntime>): void => {
     runtime = { ...runtime, ...patch, controls: patch.controls ?? controls };
-    window.__a3dV8SkinningAdditive = runtime;
+    window.__a3dCurrentRoutesSkinningAdditive = runtime;
     renderUi(root, runtime, controller, setControls);
   };
   const setControls = (next: AdditiveLayerControls): void => {
@@ -114,7 +114,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.007, 0.009, 0.013, 1]
     });
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: ASSET_URL,
       assetId: "skinning-additive-robot",
       assetName: "Robot Expressive Additive Layers",
@@ -191,7 +191,7 @@ async function run(): Promise<void> {
           camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
           metadata: {
             assetId: APP_ID,
-            assetName: "V8 Skinning Additive",
+            assetName: "CurrentRoutes Skinning Additive",
             assetUri: "/apps/skinning-additive/",
             meshCount: pipeline.metadata.meshCount,
             primitiveCount: pipeline.metadata.primitiveCount,
@@ -202,7 +202,7 @@ async function run(): Promise<void> {
             skinCount: pipeline.metadata.skinCount,
             morphTargetCount: pipeline.metadata.morphTargetCount,
             extensionsUsed: pipeline.metadata.extensionsUsed,
-            environmentId: "v8-fast-studio",
+            environmentId: "current-routes-fast-studio",
             hdrEnvironmentUri: "deferred"
           }
         });
@@ -214,7 +214,7 @@ async function run(): Promise<void> {
           fpsLast = now;
         }
         runtime = createRunningRuntime(frameCount === 1 ? "ready" : "running", result.diagnostics.drawCalls, fps, animationTime, controls, selection, apply.tracksApplied, apply.skinningPalettesUpdated, motion);
-        window.__a3dV8SkinningAdditive = runtime;
+        window.__a3dCurrentRoutesSkinningAdditive = runtime;
         if (frameCount === 1 || now - lastPublish > 250) {
           renderUi(root, runtime, controller, setControls);
           lastPublish = now;
@@ -302,7 +302,7 @@ function renderUi(
   root.innerHTML = `
     <section class="panel">
       <div class="header">
-        <h1>V8 Skinning Additive</h1>
+        <h1>CurrentRoutes Skinning Additive</h1>
         <span class="status ${runtime.status}">${runtime.status}</span>
       </div>
       <div class="metrics">
@@ -382,7 +382,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v8-additive:${node.name}`,
+      label: `current-routes-additive:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -396,23 +396,23 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
 
 function createStageItems(): { readonly items: (weight: number) => readonly RenderItem[] } {
   const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({ name: "v8-additive-floor", baseColor: [0.065, 0.075, 0.085, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
-  const base = new PBRMaterial({ name: "v8-additive-base-marker", baseColor: [0.18, 0.31, 0.5, 1], roughness: 0.32, metallic: 0.18, environmentIntensity: 0.8 });
-  const layer = new PBRMaterial({ name: "v8-additive-layer-marker", baseColor: [0.94, 0.58, 0.14, 1], roughness: 0.28, metallic: 0.1, environmentIntensity: 0.8 });
+  const floor = new PBRMaterial({ name: "current-routes-additive-floor", baseColor: [0.065, 0.075, 0.085, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.75 });
+  const base = new PBRMaterial({ name: "current-routes-additive-base-marker", baseColor: [0.18, 0.31, 0.5, 1], roughness: 0.32, metallic: 0.18, environmentIntensity: 0.8 });
+  const layer = new PBRMaterial({ name: "current-routes-additive-layer-marker", baseColor: [0.94, 0.58, 0.14, 1], roughness: 0.28, metallic: 0.1, environmentIntensity: 0.8 });
   return {
     items: (weight) => [
-      { label: "v8-additive-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
-      { label: "v8-additive-base-marker", geometry: cube, material: base, modelMatrix: composeMat4([-1.18, 0.34, -0.62], [0, 0, 0, 1], [0.06, 0.85, 0.06]) },
-      { label: "v8-additive-layer-marker", geometry: cube, material: layer, modelMatrix: composeMat4([1.18, 0.18 + weight * 0.38, -0.62], [0, 0, 0, 1], [0.08, 0.32 + weight * 0.55, 0.08]) }
+      { label: "current-routes-additive-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
+      { label: "current-routes-additive-base-marker", geometry: cube, material: base, modelMatrix: composeMat4([-1.18, 0.34, -0.62], [0, 0, 0, 1], [0.06, 0.85, 0.06]) },
+      { label: "current-routes-additive-layer-marker", geometry: cube, material: layer, modelMatrix: composeMat4([1.18, 0.18 + weight * 0.38, -0.62], [0, 0, 0, 1], [0.08, 0.32 + weight * 0.55, 0.08]) }
     ]
   };
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-additive-key");
+  const key = new DirectionalLight("current-routes-additive-key");
   key.intensity = 4.5;
   key.color = [1, 0.94, 0.82];
-  const fill = new DirectionalLight("v8-additive-fill");
+  const fill = new DirectionalLight("current-routes-additive-fill");
   fill.intensity = 2.2;
   fill.color = [0.62, 0.8, 1];
   return [

@@ -15,7 +15,7 @@ import {
   workflows
 } from "@aura3d/engine";
 
-test("V4 root package exposes the developer product API", () => {
+test("ExternalParity root package exposes the developer product API", () => {
   expect(typeof createA3DApp).toBe("function");
   expect(typeof loadAsset).toBe("function");
   expect(typeof createEnvironment).toBe("function");
@@ -43,7 +43,7 @@ test("V4 root package exposes the developer product API", () => {
   ]);
 });
 
-test("V4 quality presets and environment API expose production defaults", () => {
+test("ExternalParity quality presets and environment API expose production defaults", () => {
   expect(resolveA3DAppQualityPreset("production")).toMatchObject({
     preset: "production",
     width: 1600,
@@ -66,7 +66,7 @@ test("V4 quality presets and environment API expose production defaults", () => 
   expect(environment.releaseBlockers.join(" ")).toContain("Three.js");
 });
 
-test("V4 diagnostics and material variant helpers are stable", () => {
+test("ExternalParity diagnostics and material variant helpers are stable", () => {
   const variants = createMaterialVariantController(["brushed", "anodized", "ceramic"] as const, "brushed");
   expect(variants.current).toBe("brushed");
   expect(variants.setVariant("ceramic")).toBe("ceramic");
@@ -85,7 +85,7 @@ test("V4 diagnostics and material variant helpers are stable", () => {
   expect(panel.snapshot().render.warnings[0]).toContain("No render diagnostics");
 });
 
-test("V4 package manifest exposes installable product paths", () => {
+test("ExternalParity package manifest exposes installable product paths", () => {
   const manifest = JSON.parse(readFileSync("package.json", "utf8")) as {
     exports: Record<string, string>;
     files: string[];

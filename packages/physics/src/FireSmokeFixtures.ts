@@ -6,7 +6,7 @@ export interface FireSmokeFixtureOptions {
 }
 
 export interface FireSmokeFixture {
-  readonly id: "v4-old-branch-fire-smoke-fixture";
+  readonly id: "external-parity-old-branch-fire-smoke-fixture";
   readonly source: "origin-master-fire-smoke-volume-adapted";
   readonly sourceFiles: readonly [
     "origin/master:src/simulation/fire/FireSimulation.ts",
@@ -243,7 +243,7 @@ export function sampleFireSmokeFixture(options: FireSmokeFixtureOptions = {}): F
   const alpha = 1 - transmittance;
 
   return {
-    id: "v4-old-branch-fire-smoke-fixture",
+    id: "external-parity-old-branch-fire-smoke-fixture",
     source: "origin-master-fire-smoke-volume-adapted",
     sourceFiles,
     config: {

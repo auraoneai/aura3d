@@ -13,13 +13,13 @@ import {
   createEnvironmentMapResourceSet,
   createPhysicalMaterialPreset,
   createProceduralTextureFixture,
-  createV4RenderPresetEvidence,
+  createExternalParityRenderPresetEvidence,
   listPhysicalMaterialPresets,
-  v4ActiveFeature,
-  v4BlockedFeature,
+  externalParityActiveFeature,
+  externalParityBlockedFeature,
   type EnvironmentLightingOptions,
   type ProceduralTextureFixture,
-  type V4RenderPresetEvidence
+  type ExternalParityRenderPresetEvidence
 } from "@aura3d/rendering";
 
 declare global {
@@ -47,7 +47,7 @@ interface MaterialShowroomState {
     readonly brdfLutSize: readonly [number, number];
   };
   readonly screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png";
-  readonly featureEvidence?: V4RenderPresetEvidence;
+  readonly featureEvidence?: ExternalParityRenderPresetEvidence;
   readonly claimBoundary: string;
   readonly materials?: readonly string[];
   readonly oldBranchPhysicalMaterialPresets?: readonly string[];
@@ -96,7 +96,7 @@ const materialNames = [
   "physical-toon"
 ] as const;
 
-const claimBoundary = "V4 material-showroom evidence is limited to bounded WebGL2 PBR material response, generated RGBA8 environment resources, and browser pixel checks; HDR IBL and production PBR parity are not claimed.";
+const claimBoundary = "ExternalParity material-showroom evidence is limited to bounded WebGL2 PBR material response, generated RGBA8 environment resources, and browser pixel checks; HDR IBL and production PBR parity are not claimed.";
 
 if (typeof document !== "undefined") {
   void run().catch((error) => {
@@ -148,21 +148,21 @@ async function run(): Promise<void> {
       environmentResources: environmentLighting.resources,
       screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",
       claimBoundary,
-      featureEvidence: createV4RenderPresetEvidence({
+      featureEvidence: createExternalParityRenderPresetEvidence({
         exampleId: "material-showroom",
         screenshotPath: "tests/reports/external-parity-example-screenshots/material-showroom.png",
         toneMapper: "bounded-direct",
         exposure: preset === "sunset" ? 1.08 : 1,
         whitePoint: 1,
         features: [
-          v4ActiveFeature("color-management", "PBR shaders use linear material inputs and sRGB texture/color output evidence is validated by browser pixels."),
-          v4ActiveFeature("tone-mapping", "Material response is bounded in the direct PBR shader and bloom preview uses shared LDR postprocess readback."),
-          v4ActiveFeature("exposure", "Preset records exposure metadata for screenshot/report evidence."),
-          v4ActiveFeature("bounded-pbr", "Browser pixels validate dielectric, metal, rough, glossy, normal-mapped, emissive, alpha, double-sided, clearcoat-like, transmission-like, sheen-like, anisotropy-like, iridescence-like, and old-branch physical material preset ports including terrain and toon intent."),
-          v4ActiveFeature("environment-reflections", "Generated RGBA8 environment map, mip resources, and BRDF LUT are bound to metallic/rough materials."),
-          v4ActiveFeature("postprocess-bloom", "Shared PostProcessPass.bloomPixels changes emissive readback pixels in the preview."),
-          v4BlockedFeature("directional-shadows", "Material showroom is a material response scene; directional shadow evidence is owned by shadow-lab."),
-          v4BlockedFeature("hdr", "HDR render targets and HDR IBL remain blocked; this scene uses generated RGBA8 environment resources.")
+          externalParityActiveFeature("color-management", "PBR shaders use linear material inputs and sRGB texture/color output evidence is validated by browser pixels."),
+          externalParityActiveFeature("tone-mapping", "Material response is bounded in the direct PBR shader and bloom preview uses shared LDR postprocess readback."),
+          externalParityActiveFeature("exposure", "Preset records exposure metadata for screenshot/report evidence."),
+          externalParityActiveFeature("bounded-pbr", "Browser pixels validate dielectric, metal, rough, glossy, normal-mapped, emissive, alpha, double-sided, clearcoat-like, transmission-like, sheen-like, anisotropy-like, iridescence-like, and old-branch physical material preset ports including terrain and toon intent."),
+          externalParityActiveFeature("environment-reflections", "Generated RGBA8 environment map, mip resources, and BRDF LUT are bound to metallic/rough materials."),
+          externalParityActiveFeature("postprocess-bloom", "Shared PostProcessPass.bloomPixels changes emissive readback pixels in the preview."),
+          externalParityBlockedFeature("directional-shadows", "Material showroom is a material response scene; directional shadow evidence is owned by shadow-lab."),
+          externalParityBlockedFeature("hdr", "HDR render targets and HDR IBL remain blocked; this scene uses generated RGBA8 environment resources.")
         ]
       }),
       materials: [...materialNames],

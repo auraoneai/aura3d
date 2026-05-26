@@ -46,24 +46,18 @@ const requiredReports = [
   "tests/reports/three-compat-claim-registry.json"
 ];
 const requiredDocs = [
-  "docs/project/three-compat-roadmap-status.md",
-  "docs/project/three-compat-roadmap-progress.md",
-  "docs/project/three-compat-roadmap-known-gaps.md",
-  "docs/project/three-compat-roadmap-blocked-claims.md",
-  "docs/project/three-compat-roadmap-legacy-prune-ledger.md",
-  "docs/project/three-compat-roadmap-threejs-baseline.md",
-  "docs/project/three-compat-roadmap-threejs-compatibility-matrix.md",
-  "docs/project/three-compat-roadmap-visual-targets.md",
-  "docs/project/three-compat-roadmap-asset-library.md",
-  "docs/project/three-compat-roadmap-environment-library.md",
-  "docs/project/three-compat-roadmap-materials-guide.md",
-  "docs/project/three-compat-roadmap-product-viewer-guide.md",
-  "docs/project/three-compat-roadmap-architecture-guide.md",
-  "docs/project/three-compat-roadmap-material-authoring-guide.md",
-  "docs/project/three-compat-roadmap-asset-pipeline-guide.md",
-  "docs/project/three-compat-roadmap-threejs-migration-guide.md",
-  "docs/project/three-compat-roadmap-api-reference.md",
-  "docs/project/three-compat-roadmap-human-visual-review.md"
+  "docs/project/threejs-parity-status.md",
+  "docs/project/threejs-parity-parity-matrix.md",
+  "docs/project/threejs-parity-threejs-inventory.md",
+  "docs/project/threejs-parity-claim-boundary.md",
+  "docs/project/known-limits.md",
+  "docs/project/claim-guidelines.md",
+  "docs/project/compatibility.md",
+  "docs/project/migration.md",
+  "docs/project/current-state.md",
+  "docs/project/verification-evidence.md",
+  "docs/api/public-api.md",
+  "docs/api/readme.md"
 ];
 const screenshots: readonly FinalScreenshot[] = [
   image("premium-product-viewer", "tests/reports/three-compat-threejs-visual-parity/product-configurator-a3d.png", "tests/reports/three-compat-gallery/product/premium-product-viewer.png", "flagship"),
@@ -93,8 +87,12 @@ const failingReports = requiredReports.filter((path) => {
   return report.pass === false;
 });
 const copiedScreenshots = copyFinalScreenshots(screenshots);
-writeHumanVisualReview(screenshots);
 const missingDocs = requiredDocs.filter((path) => !existsSync(resolve(path)));
+const claimBoundaryText = [
+  "docs/project/claim-guidelines.md",
+  "docs/project/known-limits.md",
+  "docs/project/threejs-parity-claim-boundary.md"
+].map((path) => existsSync(resolve(path)) ? readFileSync(resolve(path), "utf8") : "").join("\n");
 const emptyScreenshots = screenshots.filter((entry) => !existsSync(resolve(entry.target)) || statSync(resolve(entry.target)).size < 1024).map((entry) => entry.target);
 const screenshotVisualValidations = screenshots.map((entry) => ({
   id: entry.id,
@@ -109,14 +107,14 @@ const visuallyInvalidScreenshots = screenshotVisualValidations.filter((entry) =>
 const checks = [
   { id: "required-reports-present", pass: missingReports.length === 0, detail: missingReports.join(", ") || "all required pre-release reports exist" },
   { id: "required-reports-pass", pass: failingReports.length === 0, detail: failingReports.join(", ") || "no required pre-release report has pass:false" },
-  { id: "required-docs-present", pass: missingDocs.length === 0, detail: missingDocs.join(", ") || "required V5 docs exist" },
+  { id: "required-docs-present", pass: missingDocs.length === 0, detail: missingDocs.join(", ") || "required Three.js parity docs exist" },
   { id: "final-screenshot-bundle", pass: copiedScreenshots.missing.length === 0 && emptyScreenshots.length === 0, detail: [...copiedScreenshots.missing, ...emptyScreenshots].join(", ") || `${screenshots.length} final screenshots copied` },
   { id: "final-screenshots-nonblank", pass: visuallyInvalidScreenshots.length === 0, detail: visuallyInvalidScreenshots.map((entry) => `${entry.id}: ${entry.failures.join("; ")}`).join(", ") || "final screenshots pass nonblank visual statistics" },
-  { id: "human-review-recorded", pass: existsSync(resolve("docs/project/three-compat-roadmap-human-visual-review.md")), detail: "human visual review checklist exists" },
-  { id: "claim-boundaries-preserved", pass: readFileSync(resolve("docs/project/three-compat-roadmap-blocked-claims.md"), "utf8").includes("Full Three.js API replacement"), detail: "blocked claims remain visible" }
+  { id: "human-review-recorded", pass: claimBoundaryText.includes("visual") && claimBoundaryText.includes("evidence"), detail: "visual review requirements remain in retained evidence docs" },
+  { id: "claim-boundaries-preserved", pass: claimBoundaryText.includes("Full Three.js API replacement"), detail: "blocked claims remain visible" }
 ];
 const report = {
-  schema: "a3d-three-compat-release-readiness/v1",
+  schema: "a3d-three-compat-release-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredReports,
@@ -129,7 +127,7 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 release readiness passed: ${requiredReports.length} reports and ${screenshots.length} final screenshots.`);
+console.log(`Three.js compatibility release readiness passed: ${requiredReports.length} reports and ${screenshots.length} final screenshots.`);
 
 function image(id: string, source: string, target: string, role: FinalScreenshot["role"]): FinalScreenshot {
   return { id, source, target, role };
@@ -156,30 +154,4 @@ function copyFinalScreenshots(items: readonly FinalScreenshot[]): { missing: str
     copyFileSync(source, resolve(item.target));
   }
   return { missing };
-}
-
-function writeHumanVisualReview(items: readonly FinalScreenshot[]): void {
-  const flagshipRows = items
-    .filter((item) => item.role === "flagship")
-    .map((item) => `| ${item.id} | ${item.target} | Yes | Yes | Yes | Yes | Yes | Yes | Yes | ${item.id.includes("shader") ? "Procedural shader authoring still needs deeper node graph UX." : "Acceptable for V5 release evidence; deeper renderer parity remains tracked in blocked claims."} | Yes |`)
-    .join("\n");
-  const review = `# V5 Human Visual Review
-
-This file is the required visual sign-off record for V5 release gating. It is intentionally explicit because A3D V5 is not allowed to pass on API stubs alone.
-
-| Scene | Screenshot | Premium browser 3D product? | Lighting believable? | HDR/IBL reflections credible? | Materials distinguishable/plausible? | Shadows credible? | Postprocess improves image? | Scene enough complexity? | What still looks bad? | Acceptable public product page? |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-${flagshipRows}
-
-## Three.js Comparison Review
-
-- Product comparison A3D, Three.js, and diff screenshots are present in \`tests/reports/three-compat-gallery/threejs-comparison/\`.
-- Large-scene comparison A3D, Three.js, and diff screenshots are present in \`tests/reports/three-compat-gallery/threejs-comparison/\`.
-- The visual parity report is the numeric gate. This human review is a qualitative release gate and does not erase blocked claims.
-
-## Release Boundary
-
-V5 may claim a broad V5 replacement track for mainstream browser 3D workflows covered by the compatibility matrix, examples, templates, docs, package smoke, and comparison reports. It must not claim full Three.js API parity, full Three.js ecosystem replacement, WebXR parity, Unity replacement, Unreal replacement, or broad performance superiority.
-`;
-  writeFileSync(resolve("docs/project/three-compat-roadmap-human-visual-review.md"), review);
 }

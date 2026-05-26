@@ -35,7 +35,7 @@ const app = new WorkflowWorkbenchApp(root, {
   appId: "asset-lab",
   title: "Asset Lab",
   subtitle: "A real asset inspection surface for loading, framing, lighting, and rendering production glTF fixtures.",
-  suiteLabel: "V3 App Suite",
+  suiteLabel: "Foundation App Suite",
   accent: "#57b984",
   scenarios,
   defaultScenarioId: "product-camera",

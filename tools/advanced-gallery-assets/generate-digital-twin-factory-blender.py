@@ -5,7 +5,7 @@ import bpy
 
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "digital-twin-factory-blender"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "digital-twin-factory-blender"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "digital-twin-factory-blender.glb"
 BLEND_OUT = OUT_DIR / "digital-twin-factory-blender.blend"

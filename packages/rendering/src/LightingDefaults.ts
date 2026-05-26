@@ -1,4 +1,4 @@
-import { createV4EnvironmentLighting } from "./V4RenderPreset";
+import { createExternalParityEnvironmentLighting } from "./ExternalParityRenderPreset";
 import type { EnvironmentLightingOptions } from "./ForwardPass";
 import type { RendererPostProcessOptions, RendererShadowOptions } from "./Renderer";
 
@@ -14,7 +14,7 @@ export interface LightingDefault {
 }
 
 export function createLightingDefault(preset: LightingDefaultPreset = "studioProduct"): LightingDefault {
-  const environment = createV4EnvironmentLighting(environmentPresetFor(preset)).lighting;
+  const environment = createExternalParityEnvironmentLighting(environmentPresetFor(preset)).lighting;
   return {
     id: preset,
     environmentLighting: environment,
@@ -52,7 +52,7 @@ export function createLightingDefault(preset: LightingDefaultPreset = "studioPro
   };
 }
 
-function environmentPresetFor(preset: LightingDefaultPreset): Parameters<typeof createV4EnvironmentLighting>[0] {
+function environmentPresetFor(preset: LightingDefaultPreset): Parameters<typeof createExternalParityEnvironmentLighting>[0] {
   switch (preset) {
     case "outdoorDay":
       return "inspection";

@@ -18,17 +18,17 @@ import { DecalGeometry } from "/node_modules/three/examples/jsm/geometries/Decal
 
 declare global {
   interface Window {
-    __V9_DECALS_PARITY__?: V9DecalsParityResult;
+    __THREEJS_PARITY_DECALS_PARITY__?: ThreeJsParityDecalsParityResult;
   }
 }
 
 export {};
 
-type V9DecalsParityResult = V9DecalsParityReady | V9DecalsParityError;
+type ThreeJsParityDecalsParityResult = ThreeJsParityDecalsParityReady | ThreeJsParityDecalsParityError;
 
-interface V9DecalsParityReady {
+interface ThreeJsParityDecalsParityReady {
   readonly status: "ready";
-  readonly schema: "a3d-threejs-parity-decals-parity/v1";
+  readonly schema: "a3d-threejs-parity-decals-parity";
   readonly purpose: "same-scene A3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline";
   readonly generatedInBrowserAt: string;
   readonly scene: typeof SCENE;
@@ -67,9 +67,9 @@ interface V9DecalsParityReady {
   readonly humanNotes: readonly string[];
 }
 
-interface V9DecalsParityError {
+interface ThreeJsParityDecalsParityError {
   readonly status: "error";
-  readonly schema: "a3d-threejs-parity-decals-parity/v1";
+  readonly schema: "a3d-threejs-parity-decals-parity";
   readonly generatedInBrowserAt: string;
   readonly error: string;
   readonly expectedRenderer: "THREE.WebGLRenderer";
@@ -108,7 +108,7 @@ interface DecalRenderEntry {
 }
 
 const SCENE = {
-  id: "v9-decals",
+  id: "threejs-parity-decals",
   width: 640,
   height: 480,
   targetRadius: 0.88,
@@ -141,9 +141,9 @@ async function run(): Promise<void> {
     const diff = computeDiff(a3dPixels, threePixels);
     const projectorSemantics = compareProjectorSemantics(a3d.entries, threejs.semanticHits, a3dCanvas);
     const sideBySide = await drawSideBySide(sideBySideCanvas, a3d.dataUrl, threejs.dataUrl, diff);
-    const ready: V9DecalsParityReady = {
+    const ready: ThreeJsParityDecalsParityReady = {
       status: "ready",
-      schema: "a3d-threejs-parity-decals-parity/v1",
+      schema: "a3d-threejs-parity-decals-parity",
       purpose: "same-scene A3D ProjectedDecalGeometry vs Three.js DecalGeometry baseline",
       generatedInBrowserAt: new Date().toISOString(),
       scene: SCENE,
@@ -195,18 +195,18 @@ async function run(): Promise<void> {
         "This artifact proves a bounded same-scene decals comparison and projector semantics. It is not a blanket visual equality claim."
       ]
     };
-    window.__V9_DECALS_PARITY__ = ready;
+    window.__THREEJS_PARITY_DECALS_PARITY__ = ready;
     if (status) status.textContent = JSON.stringify({ status: ready.status, diff: ready.diff, projectorSemantics }, null, 2);
   } catch (error) {
-    const failure: V9DecalsParityError = {
+    const failure: ThreeJsParityDecalsParityError = {
       status: "error",
-      schema: "a3d-threejs-parity-decals-parity/v1",
+      schema: "a3d-threejs-parity-decals-parity",
       generatedInBrowserAt: new Date().toISOString(),
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       expectedRenderer: "THREE.WebGLRenderer",
       expectedReferenceGeometry: "DecalGeometry"
     };
-    window.__V9_DECALS_PARITY__ = failure;
+    window.__THREEJS_PARITY_DECALS_PARITY__ = failure;
     if (status) status.textContent = JSON.stringify(failure, null, 2);
   }
 }

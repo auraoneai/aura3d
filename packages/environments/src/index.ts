@@ -1,40 +1,40 @@
 export {
-  findV5EnvironmentPreset,
-  listV5EnvironmentPresets,
-  loadV5EnvironmentManifest,
-  createV5EnvironmentGalleryModel,
-  summarizeV5EnvironmentLibrary
+  findThreeCompatEnvironmentPreset,
+  listThreeCompatEnvironmentPresets,
+  loadThreeCompatEnvironmentManifest,
+  createThreeCompatEnvironmentGalleryModel,
+  summarizeThreeCompatEnvironmentLibrary
 } from "./EnvironmentRegistry";
 export type {
-  V5EnvironmentLibrarySummary,
-  V5EnvironmentManifest
+  ThreeCompatEnvironmentLibrarySummary,
+  ThreeCompatEnvironmentManifest
 } from "./EnvironmentRegistry";
 export {
-  createV5EnvironmentDiagnostics,
-  verifyV5HdriFile
+  createThreeCompatEnvironmentDiagnostics,
+  verifyThreeCompatHdriFile
 } from "./HDRIEnvironment";
 export type {
-  V5EnvironmentDiagnostics,
-  V5EnvironmentKind,
-  V5EnvironmentProbeType,
-  V5HDRIEnvironmentPreset
+  ThreeCompatEnvironmentDiagnostics,
+  ThreeCompatEnvironmentKind,
+  ThreeCompatEnvironmentProbeType,
+  ThreeCompatHDRIEnvironmentPreset
 } from "./HDRIEnvironment";
-export { createV5PMREMDiagnostics } from "./PMREMPreset";
-export type { V5PMREMDiagnostics, V5PMREMPreset } from "./PMREMPreset";
-export { createV5EnvironmentProbePreviews } from "./EnvironmentPreview";
-export type { V5EnvironmentProbePreview } from "./EnvironmentPreview";
+export { createThreeCompatPMREMDiagnostics } from "./PMREMPreset";
+export type { ThreeCompatPMREMDiagnostics, ThreeCompatPMREMPreset } from "./PMREMPreset";
+export { createThreeCompatEnvironmentProbePreviews } from "./EnvironmentPreview";
+export type { ThreeCompatEnvironmentProbePreview } from "./EnvironmentPreview";
 export {
-  createV6EnvironmentCorpusSummary,
-  inspectV6HDR,
-  loadV6EnvironmentManifest
-} from "./production-runtime/V6EnvironmentCorpus";
+  createProductionEnvironmentCorpusSummary,
+  inspectProductionHDR,
+  loadProductionEnvironmentManifest
+} from "./production-runtime/ProductionEnvironmentCorpus";
 export type {
-  V6HDREnvironment,
-  V6HDRInspection,
-  V6EnvironmentCorpusSummary,
-  V6EnvironmentManifest,
-  V6EnvironmentProbeType,
-  V6EnvironmentReadinessEntry,
-  V6EnvironmentRequirements,
-  V6PMREMPreset
-} from "./production-runtime/V6EnvironmentCorpus";
+  ProductionHDREnvironment,
+  ProductionHDRInspection,
+  ProductionEnvironmentCorpusSummary,
+  ProductionEnvironmentManifest,
+  ProductionEnvironmentProbeType,
+  ProductionEnvironmentReadinessEntry,
+  ProductionEnvironmentRequirements,
+  ProductionPMREMPreset
+} from "./production-runtime/ProductionEnvironmentCorpus";

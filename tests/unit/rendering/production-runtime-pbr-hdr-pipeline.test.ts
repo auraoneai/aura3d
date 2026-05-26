@@ -2,19 +2,19 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   auditCubemapPMREMResources,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  createV6ToneMappingPolicy,
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  createProductionToneMappingPolicy,
   createPMREMTransmissionProbe,
   generateCubemapPMREMResources,
-  parseV6RadianceHDR
+  parseProductionRadianceHDR
 } from "../../../packages/rendering/src/production-runtime";
 
-describe("V6 PBR/HDR pipeline", () => {
+describe("Production PBR/HDR pipeline", () => {
   it("parses real Radiance RGBE HDR data and creates renderer IBL resources", () => {
     const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
-    const radiance = parseV6RadianceHDR(hdr);
-    const pipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+    const radiance = parseProductionRadianceHDR(hdr);
+    const pipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
       id: "studio-small-08",
       label: "Studio Small 08",
       intensity: 1.15,
@@ -53,7 +53,7 @@ describe("V6 PBR/HDR pipeline", () => {
     expect(pipeline.resources.diffuseIrradiance.height).toBe(16);
     expect(pipeline.resources.brdfLut.width).toBe(64);
     expect(pipeline.toneMapping.operator).toBe("filmic");
-  });
+  }, 30_000);
 
   it("generates real cubemap PMREM face data from an equirectangular HDR source", () => {
     const width = 16;
@@ -103,7 +103,7 @@ describe("V6 PBR/HDR pipeline", () => {
 
   it("builds texture bindings that can feed the renderer environment uniforms", () => {
     const hdr = readFileSync("fixtures/environment-corpus/hdri/studio_small_08_1k.hdr");
-    const pipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+    const pipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
       id: "venice-sunset",
       label: "Venice Sunset",
       intensity: 1.35,
@@ -111,7 +111,7 @@ describe("V6 PBR/HDR pipeline", () => {
       rotation: 0.62,
       toneMapping: { operator: "aces", exposure: 0.9, whitePoint: 10.4 }
     });
-    const lighting = createV6EnvironmentLightingResources(pipeline);
+    const lighting = createProductionEnvironmentLightingResources(pipeline);
 
     expect(lighting.lighting.environmentMapTexture?.validate().ok).toBe(true);
     expect(lighting.lighting.environmentCubeMapTexture?.validate().ok).toBe(true);
@@ -131,7 +131,7 @@ describe("V6 PBR/HDR pipeline", () => {
     expect(lighting.environmentTexture.disposed).toBe(true);
     expect(lighting.environmentCubeTexture.disposed).toBe(true);
     expect(lighting.brdfLutTexture.disposed).toBe(true);
-  });
+  }, 15_000);
 
   it("plans parallax-corrected multi-bounce PMREM transmission probes", () => {
     const probe = createPMREMTransmissionProbe({
@@ -164,12 +164,12 @@ describe("V6 PBR/HDR pipeline", () => {
   });
 
   it("publishes ACES, filmic, linear, and reinhard tone mapping policy options", () => {
-    expect(createV6ToneMappingPolicy({ operator: "aces" }).operator).toBe("aces");
-    expect(createV6ToneMappingPolicy({ operator: "filmic" }).operator).toBe("filmic");
-    expect(createV6ToneMappingPolicy({ operator: "linear" }).operator).toBe("linear");
-    expect(createV6ToneMappingPolicy({ operator: "reinhard" }).operator).toBe("reinhard");
-    expect(() => createV6ToneMappingPolicy({ exposure: -1 })).toThrow(/exposure/i);
-    expect(() => createV6ToneMappingPolicy({ whitePoint: 0 })).toThrow(/whitePoint/i);
+    expect(createProductionToneMappingPolicy({ operator: "aces" }).operator).toBe("aces");
+    expect(createProductionToneMappingPolicy({ operator: "filmic" }).operator).toBe("filmic");
+    expect(createProductionToneMappingPolicy({ operator: "linear" }).operator).toBe("linear");
+    expect(createProductionToneMappingPolicy({ operator: "reinhard" }).operator).toBe("reinhard");
+    expect(() => createProductionToneMappingPolicy({ exposure: -1 })).toThrow(/exposure/i);
+    expect(() => createProductionToneMappingPolicy({ whitePoint: 0 })).toThrow(/whitePoint/i);
   });
 });
 

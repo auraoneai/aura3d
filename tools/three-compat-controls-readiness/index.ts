@@ -16,7 +16,7 @@ import {
   Vector3Compat
 } from "../../packages/three-compat/src";
 
-interface V5ControlsCheck {
+interface ThreeCompatControlsCheck {
   readonly name: string;
   readonly pass: boolean;
   readonly detail: string;
@@ -36,10 +36,10 @@ const requiredFiles = [
   "packages/three-compat/src/controls/index.ts",
   "tests/unit/controls/three-compat-controls.test.ts",
   "tests/browser/three-compat-controls.spec.ts",
-  "docs/project/three-compat-roadmap-controls-guide.md"
+  "docs/project/threejs-parity-status.md"
 ] as const;
 
-function check(name: string, pass: boolean, detail: string): V5ControlsCheck {
+function check(name: string, pass: boolean, detail: string): ThreeCompatControlsCheck {
   return { name, pass, detail };
 }
 
@@ -73,19 +73,19 @@ const hit = new Picking().pick(scene);
 const selection = new SelectionManager();
 if (hit) selection.select(hit.object);
 
-const checks: V5ControlsCheck[] = [
-  check("required-files-present", requiredFiles.every((file) => existsSync(resolve(file))), requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all V5 controls files exist"),
+const checks: ThreeCompatControlsCheck[] = [
+  check("required-files-present", requiredFiles.every((file) => existsSync(resolve(file))), requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility controls files exist"),
   check("orbit-pan-zoom", orbit.state.rotation.x > 0 && orbit.state.target.x === 1 && orbit.state.position.z < 5, JSON.stringify(orbit.state)),
   check("trackball-fly-first-person-map", trackball.state.rotation.z > 0 && fly.state.position.z < 5 && firstPerson.state.rotation.x > 0 && map.state.target.z === 1, "trackball, fly, first-person, map controls passed"),
   check("pointer-lock", pointerLock.locked, "pointer lock state is active"),
   check("drag-transform", mesh.position.x === 1 && mesh.scale.x === 2, JSON.stringify({ position: mesh.position, scale: mesh.scale })),
   check("picking-selection", hit?.object === mesh && selection.selected.has(mesh), `${selection.selected.size} selected`),
-  check("docs", existsSync(resolve("docs/project/three-compat-roadmap-controls-guide.md")), "controls guide exists")
+  check("docs", existsSync(resolve("docs/project/threejs-parity-status.md")), "controls guide exists")
 ];
 
 const pass = checks.every((item) => item.pass);
 const report = {
-  schema: "a3d-three-compat-controls-readiness/v1",
+  schema: "a3d-three-compat-controls-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   modes: ["orbit", "pan", "zoom", "trackball", "fly", "first-person", "map", "pointer-lock", "drag", "translate", "rotate", "scale", "picking", "selection"],
@@ -101,4 +101,4 @@ if (!pass) {
   process.exit(1);
 }
 
-console.log("V5 controls readiness passed: controls, picking, transform, selection, and docs are wired.");
+console.log("Three.js compatibility controls readiness passed: controls, picking, transform, selection, and docs are wired.");

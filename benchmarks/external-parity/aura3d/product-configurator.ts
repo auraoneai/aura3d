@@ -1,4 +1,4 @@
-export const v4Aura3DProductConfiguratorBenchmark = {
+export const externalParityAura3DProductConfiguratorBenchmark = {
   engine: "a3d",
   scene: "premium-boom-box-product-configurator",
   publicApi: "createProductConfiguratorWorkflow",

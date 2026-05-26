@@ -1,4 +1,4 @@
-export interface V5ShadowSystemStatus {
+export interface ThreeCompatShadowSystemStatus {
   readonly cascadedDirectional: boolean;
   readonly pointLightCubemap: boolean;
   readonly spotLightDepth: boolean;
@@ -6,8 +6,8 @@ export interface V5ShadowSystemStatus {
   readonly atlasResize: boolean;
 }
 
-export class V5ShadowSystem {
-  getStatus(): V5ShadowSystemStatus {
+export class ThreeCompatShadowSystem {
+  getStatus(): ThreeCompatShadowSystemStatus {
     return {
       cascadedDirectional: true,
       pointLightCubemap: true,

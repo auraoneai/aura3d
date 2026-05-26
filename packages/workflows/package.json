@@ -11,7 +11,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
+    "@aura3d/animation": "workspace:*",
     "@aura3d/assets": "workspace:*",
+    "@aura3d/engine": "workspace:*",
     "@aura3d/product-studio": "workspace:*",
     "@aura3d/rendering": "workspace:*",
     "@aura3d/scene": "workspace:*"

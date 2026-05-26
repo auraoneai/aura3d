@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 
-export interface V9InventoryReport {
+export interface ThreeJsParityInventoryReport {
   readonly totals: {
     readonly examples: number;
     readonly highPriorityOpen: number;
@@ -27,11 +27,11 @@ export function fileExists(path: string): boolean {
   return existsSync(path);
 }
 
-export function readInventory(path = "tests/reports/threejs-parity/threejs-inventory.json"): V9InventoryReport {
+export function readInventory(path = "tests/reports/threejs-parity/threejs-inventory.json"): ThreeJsParityInventoryReport {
   if (!existsSync(path)) {
-    throw new Error(`Missing V9 inventory report: ${path}. Run pnpm v9:inventory first.`);
+    throw new Error(`Missing Three.js parity inventory report: ${path}. Run pnpm threejs-parity:inventory first.`);
   }
-  return JSON.parse(readFileSync(path, "utf8")) as V9InventoryReport;
+  return JSON.parse(readFileSync(path, "utf8")) as ThreeJsParityInventoryReport;
 }
 
 export function writeJson(path: string, value: unknown): void {
@@ -39,14 +39,16 @@ export function writeJson(path: string, value: unknown): void {
   writeFileSync(path, `${JSON.stringify(value, null, 2)}\n`);
 }
 
-export function listUncheckedChecklist(path = "docs/project/v9-roadmap-three-js-parity-plan.md"): readonly string[] {
+export function listUncheckedChecklist(path = "docs/project/threejs-parity-status.md"): readonly string[] {
+  if (!existsSync(path)) return [];
   return readText(path)
     .split(/\r?\n/)
     .filter((line) => line.startsWith("- [ ] "))
     .map((line) => line.slice("- [ ] ".length).trim());
 }
 
-export function countChecklist(path = "docs/project/v9-roadmap-three-js-parity-plan.md"): { readonly checked: number; readonly unchecked: number } {
+export function countChecklist(path = "docs/project/threejs-parity-status.md"): { readonly checked: number; readonly unchecked: number } {
+  if (!existsSync(path)) return { checked: 0, unchecked: 0 };
   const text = readText(path);
   return {
     checked: (text.match(/- \[x\]/g) ?? []).length,

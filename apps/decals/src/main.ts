@@ -15,13 +15,13 @@ import { placeDecalFromPointer, seededDecals, type DecalPlacement } from "./deca
 
 declare global {
   interface Window {
-    __a3dV8Decals?: V8DecalsRuntime;
+    __a3dCurrentRoutesDecals?: CurrentRoutesDecalsRuntime;
   }
 }
 
 type RuntimeStatus = "loading" | "ready" | "running" | "error";
 
-interface V8DecalsRuntime {
+interface CurrentRoutesDecalsRuntime {
   readonly status: RuntimeStatus;
   readonly appId: "decals";
   readonly statusLabel: string;
@@ -69,7 +69,7 @@ async function run(): Promise<void> {
   let renderSize = syncCanvasRenderSize(canvas);
 
   const startedAt = performance.now();
-  let runtime: V8DecalsRuntime = {
+  let runtime: CurrentRoutesDecalsRuntime = {
     status: "loading",
     appId: APP_ID,
     statusLabel: "Loading",
@@ -90,7 +90,7 @@ async function run(): Promise<void> {
     elapsedMs: 0
   };
 
-  const update = (patch: Partial<V8DecalsRuntime>): void => {
+  const update = (patch: Partial<CurrentRoutesDecalsRuntime>): void => {
     runtime = { ...runtime, ...patch, elapsedMs: Math.round(performance.now() - startedAt) };
     publish(root, runtime);
   };
@@ -140,7 +140,7 @@ async function run(): Promise<void> {
           ...decalMaterialStats(resources),
           elapsedMs: Math.round(performance.now() - startedAt)
         };
-        window.__a3dV8Decals = runtime;
+        window.__a3dCurrentRoutesDecals = runtime;
         if (nextFrame === 1 || nextFrame % 8 === 0) publish(root, runtime);
         requestAnimationFrame(render);
       } catch (error) {
@@ -317,7 +317,7 @@ function createRenderItems(resources: DecalResources, decals: readonly DecalRend
       modelMatrix: composeMat4([0, 0.36, -1.08], [0, 0, 0, 1], [2.95, 1.82, 0.05])
     },
     ...decals.map((decal) => ({
-      label: `v8-decal-${decal.placement.id}`,
+      label: `current-routes-decal-${decal.placement.id}`,
       geometry: decal.geometry,
       material: resources.decalMaterials[decal.placement.id % resources.decalMaterials.length],
       modelMatrix: composeMat4([0, 0, 0], [0, 0, 0, 1], [1, 1, 1])
@@ -376,14 +376,14 @@ function toVec3(values: readonly number[], label: string): [number, number, numb
   return [values[0]!, values[1]!, values[2]!];
 }
 
-function decalStats(decals: readonly DecalRenderEntry[]): Pick<V8DecalsRuntime, "projectedDecalVertices" | "projectedDecalTriangles"> {
+function decalStats(decals: readonly DecalRenderEntry[]): Pick<CurrentRoutesDecalsRuntime, "projectedDecalVertices" | "projectedDecalTriangles"> {
   return {
     projectedDecalVertices: decals.reduce((sum, decal) => sum + decal.vertexCount, 0),
     projectedDecalTriangles: decals.reduce((sum, decal) => sum + decal.clippedTriangleCount, 0)
   };
 }
 
-function decalMaterialStats(resources: DecalResources): Pick<V8DecalsRuntime, "decalBlendMode" | "blendedDecalMaterials" | "decalDepthWriteDisabled" | "decalCullMode" | "decalPolygonOffsetEnabled"> {
+function decalMaterialStats(resources: DecalResources): Pick<CurrentRoutesDecalsRuntime, "decalBlendMode" | "blendedDecalMaterials" | "decalDepthWriteDisabled" | "decalCullMode" | "decalPolygonOffsetEnabled"> {
   const materials = resources.decalMaterials;
   const blended = materials.filter((material) => material.renderState.blend && !material.renderState.depthWrite);
   const cullModes = new Set(materials.map((material) => material.renderState.cullMode));
@@ -409,13 +409,13 @@ function createLights(): readonly CollectedLight[] {
   ];
 }
 
-function publish(root: HTMLElement, runtime: V8DecalsRuntime): void {
-  window.__a3dV8Decals = runtime;
+function publish(root: HTMLElement, runtime: CurrentRoutesDecalsRuntime): void {
+  window.__a3dCurrentRoutesDecals = runtime;
   const statusClass = runtime.status === "error" ? "is-error" : runtime.status === "loading" ? "is-loading" : "is-running";
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Decals</h1>
+        <h1>CurrentRoutes Decals</h1>
         <p>Click the curved fixture to add A3D-rendered decals from a pointer raycast.</p>
       </div>
       <button id="runtime-state" class="${statusClass}" type="button" disabled>${escapeHtml(runtime.statusLabel)}</button>

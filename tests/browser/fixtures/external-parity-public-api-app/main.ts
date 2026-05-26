@@ -2,7 +2,7 @@ import { createA3DApp } from "@aura3d/apps";
 
 declare global {
   interface Window {
-    __A3D_V4_PUBLIC_API_APP__?: unknown;
+    __A3D_EXTERNAL_PARITY_PUBLIC_API_APP__?: unknown;
   }
 }
 
@@ -13,7 +13,7 @@ if (!canvas || !state) throw new Error("Missing public API test app DOM.");
 const app = await createA3DApp({ canvas, quality: "balanced", width: 960, height: 540 });
 const workflow = await app.renderWorkflow("scene-showcase", { preset: "gallery" });
 const diagnostics = app.diagnostics();
-window.__A3D_V4_PUBLIC_API_APP__ = {
+window.__A3D_EXTERNAL_PARITY_PUBLIC_API_APP__ = {
   status: "ready",
   workflowKind: workflow.kind,
   appState: diagnostics.appState,
@@ -23,4 +23,4 @@ window.__A3D_V4_PUBLIC_API_APP__ = {
   drawCalls: diagnostics.lastRender?.drawCalls ?? 0,
   claimBoundary: "Milestone 13 public API proof only; installable templates, external package proof, and Three.js parity remain required."
 };
-state.textContent = JSON.stringify(window.__A3D_V4_PUBLIC_API_APP__, null, 2);
+state.textContent = JSON.stringify(window.__A3D_EXTERNAL_PARITY_PUBLIC_API_APP__, null, 2);

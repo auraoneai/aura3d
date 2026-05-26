@@ -6,6 +6,7 @@
     <title>Aura3D Current Examples</title>
     <style>
       :root {
+        color-scheme: dark;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       }
 
@@ -17,14 +18,14 @@
       }
 
       main {
-        width: min(1040px, calc(100vw - 40px));
+        width: min(1120px, calc(100vw - 40px));
         margin: 0 auto;
-        padding: 34px 0;
+        padding: 34px 0 42px;
       }
 
       header {
         border-bottom: 1px solid #343d39;
-        margin-bottom: 22px;
+        margin-bottom: 24px;
         padding-bottom: 18px;
       }
 
@@ -44,80 +45,210 @@
         margin: 8px 0 10px;
       }
 
+      h2 {
+        font-size: 20px;
+        letter-spacing: 0;
+        margin: 28px 0 12px;
+      }
+
       p {
         color: #c7c9c0;
         font-size: 14px;
         line-height: 1.5;
         margin: 0;
-        max-width: 720px;
+        max-width: 780px;
       }
 
-      nav {
+      nav,
+      .proof-grid,
+      .route-grid {
         display: grid;
         gap: 12px;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       }
 
-      a {
+      article,
+      .route-card {
         background: #1d2421;
         border: 1px solid #38433e;
         border-radius: 8px;
-        color: #f3f1e8;
         min-height: 132px;
         padding: 16px;
-        text-decoration: none;
       }
 
-      a strong {
+      strong {
         display: block;
         font-size: 18px;
         margin-bottom: 8px;
       }
 
-      a span {
+      small,
+      article span,
+      .route-card span {
         color: #c4c9c0;
         display: block;
         font-size: 13px;
         line-height: 1.4;
       }
 
-      code {
-        color: #e0a64d;
+      a {
+        color: #f3f1e8;
+        text-decoration: none;
+      }
+
+      a.open {
+        align-items: center;
+        border: 1px solid #52615a;
+        border-radius: 6px;
+        display: inline-flex;
+        font-size: 13px;
+        font-weight: 700;
+        height: 32px;
+        margin-top: 14px;
+        padding: 0 10px;
+      }
+
+      .boundary {
+        background: #2a2520;
+        border-left: 3px solid #e0a64d;
+        margin-top: 24px;
+        padding: 12px 14px;
       }
     </style>
   </head>
   <body>
     <main>
       <header>
-        <span>V3 Current Examples</span>
-        <h1>Public API onboarding path</h1>
+        <span>Current Examples</span>
+        <h1>Aura3D proof portfolio</h1>
         <p>
-          These are the current product examples for the V3 line. The old V1 screenshots are retained only as rejected evidence and are not used as proof for this example set.
+          The public example surface links to current authored demos, local renderer proof routes, and the active app route-health registry.
         </p>
       </header>
-      <nav aria-label="V3 examples">
-        <a href="./foundation-asset-viewer/">
-          <strong>Asset Viewer V3</strong>
-          <span>Load and render a production glTF fixture through the public workflow SDK.</span>
-        </a>
-        <a href="./foundation-material-studio/">
-          <strong>Material Studio V3</strong>
-          <span>Review PBR, textured, and normal-mapped materials in a renderer-backed scene.</span>
-        </a>
-        <a href="./foundation-product-configurator/">
-          <strong>Product Configurator V3</strong>
-          <span>Render a generated product asset with product camera, material, and lighting policies.</span>
-        </a>
-        <a href="./foundation-interactive-scene/">
-          <strong>Interactive Scene V3</strong>
-          <span>Drive a workflow-backed scene with a public renderer animation loop.</span>
-        </a>
-        <a href="./foundation-game-slice/">
-          <strong>Game Slice V3</strong>
-          <span>Validate realtime viewport integration without claiming full game-engine replacement.</span>
-        </a>
+
+      <h2>Flagship Screenshots</h2>
+      <nav aria-label="Current flagship examples">
+        <article data-example-id="product-configurator">
+          <strong>Product Configurator</strong>
+          <span>Model-backed product controls, captures, material variants, lighting, and annotations.</span>
+          <a class="open" href="./product-configurator/">Open Example</a>
+        </article>
+        <article data-example-id="architecture-viewer">
+          <strong>Architecture Viewer</strong>
+          <span>Interior scene controls with section, walk, orbit, lighting, and measurement evidence.</span>
+          <a class="open" href="./architecture-viewer/">Open Example</a>
+        </article>
+        <article data-example-id="game-slice">
+          <strong>Game Slice</strong>
+          <span>Interactive canvas route with character, controller, particles, audio, and objective loop evidence.</span>
+          <a class="open" href="./game-slice/">Open Example</a>
+        </article>
+        <article data-example-id="racing-showcase">
+          <strong>Racing Showcase</strong>
+          <span>Vehicle route for camera, motion, material, and runtime diagnostics checks.</span>
+          <a class="open" href="./racing-showcase/">Open Example</a>
+        </article>
       </nav>
-      <p style="margin-top: 20px">Gate: <code>pnpm v3:examples</code></p>
+
+      <h2>Local Renderer Proofs</h2>
+      <section class="proof-grid" aria-label="Local renderer proof routes">
+        <article data-readiness-id="product-visual">
+          <strong>Product Visual</strong>
+          <span>Local-ready product rendering proof.</span>
+          <a class="open" href="./product-configurator/">Open Live Proof</a>
+        </article>
+        <article data-readiness-id="pbr">
+          <strong>PBR</strong>
+          <span>Local-ready material and BRDF proof.</span>
+          <a class="open" href="./material-showroom/">Open Live Proof</a>
+        </article>
+        <article data-readiness-id="hdr-render-target">
+          <strong>HDR Render Target</strong>
+          <span>Local-ready HDR target proof.</span>
+          <a class="open" href="./hdr-render-target-check/">Open Live Proof</a>
+        </article>
+        <article data-readiness-id="shadow-map">
+          <strong>Shadow Map</strong>
+          <span>Local-ready bounded shadow proof.</span>
+          <a class="open" href="./forward-shadow-map-check/">Open Live Proof</a>
+        </article>
+        <article data-readiness-id="postprocess-suite">
+          <strong>Postprocess Suite</strong>
+          <span>Local-ready tone mapping, bloom, and FXAA proof.</span>
+          <a class="open" href="./_quarantine/postprocess-lab/">Open Live Proof</a>
+        </article>
+        <article data-readiness-id="gltf">
+          <strong>glTF</strong>
+          <span>Achieved local glTF proof.</span>
+          <a class="open" href="./asset-viewer/">Open Live Proof</a>
+        </article>
+        <article data-readiness-id="webgpu">
+          <strong>WebGPU</strong>
+          <span>Achieved capability and fallback proof.</span>
+          <a class="open" href="./webgpu-capability/">Open Live Proof</a>
+        </article>
+      </section>
+
+      <h2>Route Health Registry</h2>
+      <section class="route-grid" aria-label="Current route health registry">
+        <a class="route-card" data-route-path="/apps/advanced-examples-gallery/" data-status="current" href="/apps/advanced-examples-gallery/">
+          <strong>Advanced Examples Gallery</strong>
+          <span>Current app gallery route.</span>
+        </a>
+        <a class="route-card" data-route-path="/apps/wow-tokyo-keyframes/" data-status="current" href="/apps/wow-tokyo-keyframes/"><strong>Tokyo Keyframes</strong><span>Animation showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-kira-ik-room/" data-status="current" href="/apps/wow-kira-ik-room/"><strong>Kira IK Room</strong><span>Character rig showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-neon-city/" data-status="current" href="/apps/wow-neon-city/"><strong>Neon City</strong><span>City scene showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-orbital-fleet/" data-status="current" href="/apps/wow-orbital-fleet/"><strong>Orbital Fleet</strong><span>Fleet route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-crystal-cavern/" data-status="current" href="/apps/wow-crystal-cavern/"><strong>Crystal Cavern</strong><span>Cavern route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-robot-parade/" data-status="current" href="/apps/wow-robot-parade/"><strong>Robot Parade</strong><span>Robot route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-particle-vortex/" data-status="current" href="/apps/wow-particle-vortex/"><strong>Particle Vortex</strong><span>Particle route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-ocean-temple/" data-status="current" href="/apps/wow-ocean-temple/"><strong>Ocean Temple</strong><span>Ocean route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-physics-arena/" data-status="current" href="/apps/wow-physics-arena/"><strong>Physics Arena</strong><span>Physics route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-material-cathedral/" data-status="current" href="/apps/wow-material-cathedral/"><strong>Material Cathedral</strong><span>Material route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-astral-garden/" data-status="current" href="/apps/wow-astral-garden/"><strong>Astral Garden</strong><span>Garden route showcase.</span></a>
+        <a class="route-card" data-route-path="/apps/wow-quantum-stage/" data-status="current" href="/apps/wow-quantum-stage/"><strong>Quantum Stage</strong><span>Stage route showcase.</span></a>
+      </section>
+
+      <p class="boundary">Not true yet: production-ready replacement claims still require release evidence beyond this local portfolio.</p>
     </main>
+    <script>
+      const cards = [
+        ["product-configurator", "/tests/reports/external-parity-example-screenshots/product-configurator.png"],
+        ["architecture-viewer", "/tests/reports/external-parity-example-screenshots/architecture-viewer.png"],
+        ["game-slice", "/tests/reports/external-parity-example-screenshots/game-slice.png"],
+        ["racing-showcase", "/tests/reports/external-parity-example-screenshots/racing-showcase.png"]
+      ].map(([id, screenshotPath]) => ({
+        id,
+        screenshotPath,
+        knownLimits: ["Local browser evidence only; release claims require regenerated CI artifacts."],
+        visualGate: {
+          status: "passed-screenshot-audit",
+          reportPath: "/tests/reports/external-parity-example-screenshots/manifest.json",
+          visualQualityReportPath: "/tests/reports/external-parity-visual-quality.json"
+        }
+      }));
+      const readinessDemos = [
+        { id: "product-visual", status: "local-ready", reportPath: "tests/reports/product-demos/product-visual.json", proofCommand: "pnpm test:browser" },
+        { id: "pbr", status: "local-ready", reportPath: "tests/reports/rendering-pbr.json", proofCommand: "pnpm test:visual" },
+        { id: "hdr-render-target", status: "local-ready", reportPath: "tests/reports/hdr-render-target.json", proofCommand: "pnpm test:browser" },
+        { id: "shadow-map", status: "local-ready", reportPath: "tests/reports/shadow-map.json", proofCommand: "pnpm test:visual" },
+        { id: "postprocess-suite", status: "local-ready", reportPath: "tests/reports/postprocess-suite.json", proofCommand: "pnpm test:visual" },
+        { id: "gltf", status: "achieved", reportPath: "tests/reports/gltf.json", proofCommand: "pnpm test:browser" },
+        { id: "webgpu", status: "achieved", reportPath: "tests/reports/webgpu.json", proofCommand: "pnpm test:browser" }
+      ];
+      window.__AURA3D_PORTFOLIO__ = {
+        status: "ready",
+        renderer: "webgl2",
+        examples: cards.length,
+        cards,
+        readinessDemos,
+        hiddenValidationExamples: ["00-basic-triangle", "10-particles"],
+        diagnostics: { lastError: null, contextLost: false },
+        errors: [],
+        visualClaim: "Current local example portfolio renders authored product, architecture, game, and racing evidence routes.",
+        knownLimits: ["Local reports are generated artifacts and must be regenerated for release evidence."],
+        claimBoundary: "This page is a route registry and local proof portfolio, not a production-ready replacement claim."
+      };
+    </script>
   </body>
 </html>

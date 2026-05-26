@@ -62,8 +62,8 @@ export interface ProductVisualAssetPipelineDescriptor {
 }
 
 export interface ProductVisualParitySceneDescriptor {
-  readonly schemaVersion: "external-parity-product-visual-parity-scene-v1";
-  readonly id: "v4-deterministic-product-visual-parity";
+  readonly schemaVersion: "external-parity-product-visual-parity-scene";
+  readonly id: "external-parity-deterministic-product-visual-parity";
   readonly viewport: {
     readonly width: 720;
     readonly height: 480;
@@ -157,8 +157,8 @@ function studioMicroPanelParts(): ProductVisualPartDescriptor[] {
 }
 
 export const productVisualParityScene: ProductVisualParitySceneDescriptor = {
-  schemaVersion: "external-parity-product-visual-parity-scene-v1",
-  id: "v4-deterministic-product-visual-parity",
+  schemaVersion: "external-parity-product-visual-parity-scene",
+  id: "external-parity-deterministic-product-visual-parity",
   viewport: {
     width: 720,
     height: 480,

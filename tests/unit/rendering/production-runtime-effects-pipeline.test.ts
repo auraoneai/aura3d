@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  createV6EffectsRenderSource,
-  summarizeV6EffectsProof,
-  type V6RenderProof
+  createProductionEffectsRenderSource,
+  summarizeProductionEffectsProof,
+  type ProductionRenderProof
 } from "../../../packages/rendering/src/production-runtime";
 
-describe("V6 production effects pipeline", () => {
+describe("Production production effects pipeline", () => {
   it("adds renderer-owned shadows and postprocess settings to a real render source", () => {
-    const source = createV6EffectsRenderSource({ renderItems: [], cameraPolicy: "require" });
+    const source = createProductionEffectsRenderSource({ renderItems: [], cameraPolicy: "require" });
 
     expect(source.shadow).toMatchObject({ enabled: true, size: 512 });
     expect(source.postprocess).toMatchObject({
@@ -19,7 +19,7 @@ describe("V6 production effects pipeline", () => {
   });
 
   it("requires shadows, transparency declaration, postprocess pixels, and real WebGL2 proof", () => {
-    const proof: V6RenderProof = {
+    const proof: ProductionRenderProof = {
       backend: "webgl2",
       realWebGL2: true,
       mockDevice: false,
@@ -59,8 +59,8 @@ describe("V6 production effects pipeline", () => {
       }
     };
 
-    expect(summarizeV6EffectsProof(proof, { transparentItemCount: 1 }).pass).toBe(true);
-    expect(summarizeV6EffectsProof({ ...proof, diagnostics: { ...proof.diagnostics, drawCalls: 1 } }, { transparentItemCount: 1 }).pass).toBe(false);
-    expect(summarizeV6EffectsProof(proof, { transparentItemCount: 0 }).pass).toBe(false);
+    expect(summarizeProductionEffectsProof(proof, { transparentItemCount: 1 }).pass).toBe(true);
+    expect(summarizeProductionEffectsProof({ ...proof, diagnostics: { ...proof.diagnostics, drawCalls: 1 } }, { transparentItemCount: 1 }).pass).toBe(false);
+    expect(summarizeProductionEffectsProof(proof, { transparentItemCount: 0 }).pass).toBe(false);
   });
 });

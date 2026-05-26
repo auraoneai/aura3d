@@ -1,9 +1,9 @@
-import { runV6Example } from "@aura3d/engine/workflows/production";
+import { runProductionExample } from "@aura3d/engine/workflows/production";
 
-void runV6Example({
+void runProductionExample({
   appId: "production-runtime-template-material-studio",
   sceneId: "material-studio",
-  title: "V6 Material Studio",
+  title: "Production Material Studio",
   workflow: "starter material workflow for glTF extension assets with HDR lighting and postprocess",
   assets: [
     { id: "clear-coat-test", label: "Clear Coat Test", file: "clear-coat-test.glb", role: "primary" },

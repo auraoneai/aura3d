@@ -7,8 +7,8 @@ from mathutils import Vector
 
 
 ROOT = Path(__file__).resolve().parents[2]
-SOURCE = ROOT / "fixtures" / "v9" / "assets" / "khronos-showcase" / "sponza-packed" / "sponza-packed.glb"
-OUT_DIR = ROOT / "fixtures" / "v9" / "assets" / "khronos-showcase" / "sponza-cathedral-crop"
+SOURCE = ROOT / "fixtures" / "threejs-parity" / "assets" / "khronos-showcase" / "sponza-packed" / "sponza-packed.glb"
+OUT_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "khronos-showcase" / "sponza-cathedral-crop"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 OUT = OUT_DIR / "sponza-cathedral-crop.glb"
 BLEND_OUT = OUT_DIR / "sponza-cathedral-crop.blend"

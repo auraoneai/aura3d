@@ -1,15 +1,26 @@
 import { expect, test } from "@playwright/test";
 import {
-  V8_ROUTE_HEALTH_ORIGIN,
-  discoverV8RootLinks,
-  evaluateV8Route,
-  newV8RouteHealthPage
+  CURRENT_ROUTE_HEALTH_ORIGIN,
+  discoverCurrentRootLinks,
+  evaluateCurrentRoute,
+  newCurrentRouteHealthPage
 } from "../../tools/current-routes-route-health/index";
+import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V8 V7 animation startup truth", () => {
-  test("keeps the historical V7 animation route hidden unless it has full route-health evidence", async ({ browser }) => {
-    const rootPage = await newV8RouteHealthPage(browser);
-    const root = await discoverV8RootLinks(rootPage, V8_ROUTE_HEALTH_ORIGIN);
+test.describe("animation startup route health truth", () => {
+  let server: ExampleDevServer;
+
+  test.beforeAll(async () => {
+    server = await startExampleDevServer();
+  });
+
+  test.afterAll(async () => {
+    await server.close();
+  });
+
+  test("keeps the historical animation route hidden unless it has full route-health evidence", async ({ browser }) => {
+    const rootPage = await newCurrentRouteHealthPage(browser);
+    const root = await discoverCurrentRootLinks(rootPage, process.env.A3D_ROUTE_HEALTH_ORIGIN ?? server.origin ?? CURRENT_ROUTE_HEALTH_ORIGIN);
     await rootPage.close();
 
     const visibleRoute = root.links.find((link) => link.path === "/apps/regression-animation-keyframes/");
@@ -18,8 +29,8 @@ test.describe("V8 V7 animation startup truth", () => {
       return;
     }
 
-    const page = await newV8RouteHealthPage(browser);
-    const result = await evaluateV8Route(page, visibleRoute);
+    const page = await newCurrentRouteHealthPage(browser);
+    const result = await evaluateCurrentRoute(page, visibleRoute);
     await page.close();
 
     expect(result.visible, result.failures.join("\n")).toBe(true);

@@ -4,7 +4,7 @@ import {
 } from "./EnvironmentMapResources";
 import type { TextureMipLevelDescriptor } from "./Texture";
 
-export interface V4PmremLevel {
+export interface ExternalParityPmremLevel {
   readonly level: number;
   readonly width: number;
   readonly height: number;
@@ -12,10 +12,10 @@ export interface V4PmremLevel {
   readonly byteLength: number;
 }
 
-export interface V4Pmrem {
+export interface ExternalParityPmrem {
   readonly textureLabel: string;
   readonly mipLevels: readonly TextureMipLevelDescriptor[];
-  readonly levels: readonly V4PmremLevel[];
+  readonly levels: readonly ExternalParityPmremLevel[];
   readonly diagnostics: {
     readonly mipCount: number;
     readonly maxRoughness: number;
@@ -24,10 +24,10 @@ export interface V4Pmrem {
   };
 }
 
-export function createV4Pmrem(
+export function createExternalParityPmrem(
   source: Rgba8EnvironmentMapSource,
   options: { readonly levels?: number; readonly blurRadius?: number; readonly textureLabel?: string } = {}
-): V4Pmrem {
+): ExternalParityPmrem {
   const mipLevels = generateSpecularPrefilterMipLevels(source, {
     levels: options.levels ?? 6,
     blurRadius: options.blurRadius ?? 3
@@ -40,7 +40,7 @@ export function createV4Pmrem(
     byteLength: level.data.byteLength
   }));
   return {
-    textureLabel: options.textureLabel ?? "v4-pmrem-specular",
+    textureLabel: options.textureLabel ?? "external-parity-pmrem-specular",
     mipLevels,
     levels,
     diagnostics: {

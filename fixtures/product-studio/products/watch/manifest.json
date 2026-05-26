@@ -1,5 +1,5 @@
 {
-  "schema": "a3d-v2-product-manifest/v1",
+  "schema": "a3d-product-studio-product-manifest",
   "id": "watch",
   "title": "Chronograph Watch",
   "category": "wearable",
@@ -163,6 +163,6 @@
       "normalTexture",
       "emissiveTexture"
     ],
-    "generatedFor": "A3D Product Studio V1"
+    "generatedFor": "A3D Product Studio Legacy"
   }
 }

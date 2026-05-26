@@ -1,67 +1,34 @@
 # glTF Compression Decoder Status
 
-This page records the current asset-pipeline compression behavior. The code supports bounded Draco, Meshopt, and KTX2/Basis paths, but the claim remains narrower than full production asset compatibility.
+Version: `1.0.0`
 
-## Geometry Compression
+Aura3D has public hooks for mesh and texture compression paths in the asset pipeline.
 
-- `EXT_meshopt_compression` is wired through `GLTFLoaderOptions.meshoptDecoder`.
-- `KHR_draco_mesh_compression` is wired through `GLTFLoaderOptions.dracoDecoder`.
-- `createMeshoptDecoder()` adapts the `meshoptimizer` package `MeshoptDecoder.decodeGltfBuffer()` API to `GLTFLoaderOptions.meshoptDecoder`.
-- `createDracoDecoder()` adapts a `draco3d.createDecoderModule()` result to `GLTFLoaderOptions.dracoDecoder`.
-- The loader validates extension declaration, source buffer ranges, descriptor fields, decoded byte lengths, decoded attribute rows, and decoded index bounds before exposing mesh data.
-- No decoder package is bundled by `@aura3d/assets`. Applications must install and inject decoder packages explicitly. The repository dev environment pins `draco3d` and `meshoptimizer` so package-backed integration tests run instead of skipping.
+## Current Code
 
-Example package-backed setup:
+- `packages/assets/src/GLTFCompressionDecoders.ts`
+- `packages/assets/src/GLTFLoader.ts`
+- `packages/assets/src/KTX2BasisTextureTranscoder.ts`
+- `apps/loader-compression/`
+- `apps/loader-ktx2/`
 
-```ts
-import { GLTFLoader, createDracoDecoder, createMeshoptDecoder } from "@aura3d/assets";
-import { MeshoptDecoder } from "meshoptimizer";
-import draco3d from "draco3d";
+## Supported Paths
 
-const dracoModule = await draco3d.createDecoderModule();
-const loader = new GLTFLoader({
-  meshoptDecoder: createMeshoptDecoder(MeshoptDecoder),
-  dracoDecoder: createDracoDecoder(dracoModule)
-});
-```
-
-## KTX2/Basis
-
-`KHR_texture_basisu` and `image/ktx2` sources are accepted as glTF image and texture metadata. `createGLTFRenderResources()` now uses `transcodeKTX2BasisTexture()` for KTX2/Basis images when the default image decoder is used.
-
-Current supported path:
-
-- The loader preserves embedded KTX2 bytes and texture source references.
-- The render-resource layer transcodes KTX2/Basis payloads through `@loaders.gl/textures`.
-- The default target is `etc2-rgba8unorm`, which WebGL2 can upload without an extension.
-- `createGLTFRenderResources({ ktx2BasisTargetFormat })` can request `etc2-rgba8unorm`, `bc3-rgba-unorm`, `astc-4x4-rgba-unorm`, or `rgba8`.
-- Compressed targets include RGBA8 fallback mip levels for devices that cannot upload the requested compressed format.
-
-## Current Route Evidence
-
-The v8 loader route set includes:
-
-- `apps/loader-compression`;
-- `apps/loader-ktx2`;
-- `apps/loader-instancing`;
-- `apps/loader-material-extensions`;
-- `apps/loader-gltf-variants`;
-- `apps/loader-obj`.
-
-Screenshots for those routes are included under `tests/reports/v8/loaders`, and `tests/reports/current-routes-visual-review.json` accepts them as route evidence. This proves routes exist and render meaningful output; it is not broad loader parity.
-
-## Current limits
-
-- This is a bounded runtime texture path, not a broad production asset-pipeline claim.
-- Renderer capability-driven GPU format choice is not yet integrated into the asset path.
-- Browser deployments must make the loaders.gl Basis encoder WASM assets reachable, either through the default CDN behavior or bundler-specific asset hosting.
-- Current verification uses a small real Khronos KTX2 fixture, not a broad KTX2/Basis corpus or visual parity matrix.
-- Native FBX, USD/USDZ, DAE, and full DCC pipeline compatibility are not implemented. OBJ is a bounded geometry-only native loader path.
+- `KHR_draco_mesh_compression` through a configured Draco decoder.
+- `EXT_meshopt_compression` through a configured Meshopt decoder.
+- `KHR_texture_basisu` / KTX2-facing texture transcoding helpers.
+- Loader diagnostics for required extensions that cannot be decoded in the current environment.
 
 ## Verification
 
-- `tests/assets/gltf-compression-decoders.test.ts` proves Meshopt and Draco hook routing, missing-decoder diagnostics, and KTX2/Basis transcoding into renderer texture resources with compressed mips and RGBA8 fallback mips.
-- `tests/assets/gltf-optional-external-decoders.test.ts` is an executable package-backed integration test. In the checked-in dev environment it loads pinned Khronos Meshopt and Draco assets through `meshoptimizer` and `draco3d`. It still skips honestly if a downstream installation removes either optional package.
-- `tests/assets/asset-cache-scale.test.ts` proves cache diagnostics, duplicate in-flight load sharing, retry recovery, dependency cleanup, and aborted-load cleanup at bounded scale.
-- `tests/reports/v8-assets.json`
-- `tests/reports/current-routes-visual-review.json`
+Useful focused checks:
+
+```sh
+pnpm exec vitest run tests/assets
+pnpm exec playwright test tests/browser/asset-compression-browser.spec.ts
+pnpm threejs-parity:inventory
+```
+
+## Boundaries
+
+Compression support depends on decoder availability and browser/runtime environment. Do not document universal Draco, Meshopt, KTX2, or Basis behavior without a passing route, unit test, and report for that exact path.

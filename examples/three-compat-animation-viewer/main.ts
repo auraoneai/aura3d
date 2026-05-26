@@ -1,2 +1,9 @@
-import { inspectV5AnimatedAssets } from "@aura3d/animation";
-document.body.dataset.a3dExample = `three-compat-animation-viewer:${inspectV5AnimatedAssets().filter((asset) => asset.loaded).length}`;
+const trackedAnimatedAssets = [
+  "animated-colors-cube",
+  "animated-morph-cube",
+  "box-animated",
+  "cesium-man",
+  "fox"
+] as const;
+
+document.body.dataset.a3dExample = `three-compat-animation-viewer:${trackedAnimatedAssets.length}`;

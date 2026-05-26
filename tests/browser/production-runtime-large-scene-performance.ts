@@ -8,7 +8,7 @@ import {
   type RenderItem
 } from "@aura3d/rendering";
 
-interface V6BrowserPerformanceReport {
+interface ProductionBrowserPerformanceReport {
   readonly status: "ready" | "error";
   readonly error?: string;
   readonly realWebGL2: boolean;
@@ -34,7 +34,7 @@ interface V6BrowserPerformanceReport {
 
 declare global {
   interface Window {
-    __a3dV6Performance?: V6BrowserPerformanceReport;
+    __a3dProductionPerformance?: ProductionBrowserPerformanceReport;
   }
 }
 
@@ -77,7 +77,7 @@ async function run(): Promise<void> {
     const diagnostics = renderer.render(renderItems);
     const frameMs = Number((performance.now() - frameStart).toFixed(3));
     const pixels = analyzePixels(renderer.device.readPixels(0, 0, canvas.width, canvas.height));
-    window.__a3dV6Performance = {
+    window.__a3dProductionPerformance = {
       status: "ready",
       realWebGL2: renderer.device.kind === "webgl2",
       frameMs,
@@ -96,7 +96,7 @@ async function run(): Promise<void> {
       ...readMemory()
     };
   } catch (error) {
-    window.__a3dV6Performance = {
+    window.__a3dProductionPerformance = {
       status: "error",
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       realWebGL2: false,
@@ -154,7 +154,7 @@ function analyzePixels(pixels: Uint8Array): { readonly nonBlackPixels: number; r
   return { nonBlackPixels, uniqueColorBuckets: buckets.size };
 }
 
-function readMemory(): { readonly memory?: V6BrowserPerformanceReport["memory"] } {
-  const memory = (performance as Performance & { readonly memory?: V6BrowserPerformanceReport["memory"] }).memory;
+function readMemory(): { readonly memory?: ProductionBrowserPerformanceReport["memory"] } {
+  const memory = (performance as Performance & { readonly memory?: ProductionBrowserPerformanceReport["memory"] }).memory;
   return memory ? { memory } : {};
 }

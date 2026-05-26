@@ -1,12 +1,12 @@
 import { createDepthTextureBinding, ssaoPixels, type DepthTextureBinding, type SSAOOptions, type SSAOResult } from "../PostProcessPass";
 
-export function createV4DepthBinding(width: number, height: number, data?: Float32Array): DepthTextureBinding {
+export function createExternalParityDepthBinding(width: number, height: number, data?: Float32Array): DepthTextureBinding {
   const depth = data ?? defaultDepth(width, height);
-  return createDepthTextureBinding({ label: "v4-depth", width, height, data: depth });
+  return createDepthTextureBinding({ label: "external-parity-depth", width, height, data: depth });
 }
 
-export function runV4SSAO(pixels: Uint8Array, width: number, height: number, options: Omit<SSAOOptions, "depth"> & { readonly depth?: DepthTextureBinding } = {}): SSAOResult {
-  return ssaoPixels(pixels, width, height, { ...options, depth: options.depth ?? createV4DepthBinding(width, height) });
+export function runExternalParitySSAO(pixels: Uint8Array, width: number, height: number, options: Omit<SSAOOptions, "depth"> & { readonly depth?: DepthTextureBinding } = {}): SSAOResult {
+  return ssaoPixels(pixels, width, height, { ...options, depth: options.depth ?? createExternalParityDepthBinding(width, height) });
 }
 
 function defaultDepth(width: number, height: number): Float32Array {

@@ -16,7 +16,7 @@ export interface FractureFragmentSample {
 }
 
 export interface FractureFixture {
-  readonly id: "v4-old-branch-fracture-fixture";
+  readonly id: "external-parity-old-branch-fracture-fixture";
   readonly source: "origin-master-voronoi-hierarchical-fracture-adapted";
   readonly sourceFiles: readonly [
     "origin/master:src/simulation/fracture/VoronoiFractureSystem.ts",
@@ -150,7 +150,7 @@ export function sampleFractureFixture(options: FractureFixtureOptions = {}): Fra
   const nodeCount = 1 + fragmentCount + activatedChildren * 2;
 
   return {
-    id: "v4-old-branch-fracture-fixture",
+    id: "external-parity-old-branch-fracture-fixture",
     source: "origin-master-voronoi-hierarchical-fracture-adapted",
     sourceFiles,
     config: {

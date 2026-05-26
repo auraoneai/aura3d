@@ -6,11 +6,11 @@ import {
   createGLTFSceneAnimationMixer,
   createGLTFSceneAnimationRuntime,
   GLTFLoader,
-  loadV8AssetManifest
+  loadCurrentRoutesAssetManifest
 } from "../../packages/assets/src";
 import { LoadContext } from "../../packages/assets/src/LoadContext";
 
-describe("V8 GLTF animation runtime", () => {
+describe("CurrentRoutes GLTF animation runtime", () => {
   it("samples imported skinned keyframes continuously and updates skinning palettes", async () => {
     const soldier = await loadAsset("soldier");
     const scene = soldier.createScene();
@@ -159,7 +159,7 @@ describe("V8 GLTF animation runtime", () => {
 
     const profile = asset.loaderDiagnostics.loadProfile;
     expect(profile).toBeDefined();
-    expect(profile?.schemaVersion).toBe("gltf-loader-load-profile-v1");
+    expect(profile?.schemaVersion).toBe("gltf-loader-load-profile");
     expect(profile?.accessorReadCount).toBe(2);
     expect(profile?.uniqueAccessorReadCount).toBe(1);
     expect(profile?.accessorCacheHitCount).toBe(1);
@@ -286,7 +286,7 @@ describe("V8 GLTF animation runtime", () => {
 });
 
 async function loadAsset(id: string) {
-  const manifest = loadV8AssetManifest();
+  const manifest = loadCurrentRoutesAssetManifest();
   const asset = manifest.assets.find((entry) => entry.id === id);
   expect(asset).toBeDefined();
   return await new GLTFLoader().load({ url: toGlbDataUri(asset!.localPath), type: "gltf" }, new LoadContext());

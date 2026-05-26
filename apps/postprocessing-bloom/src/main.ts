@@ -7,11 +7,11 @@ import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 
 declare global {
   interface Window {
-    __a3dV8PostprocessingBloom?: V8PostprocessingBloomRuntime;
+    __a3dCurrentRoutesPostprocessingBloom?: CurrentRoutesPostprocessingBloomRuntime;
   }
 }
 
-interface V8PostprocessingBloomRuntime {
+interface CurrentRoutesPostprocessingBloomRuntime {
   readonly appId: "postprocessing-bloom";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -45,7 +45,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8PostprocessingBloom = runtime;
+    window.__a3dCurrentRoutesPostprocessingBloom = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -114,7 +114,7 @@ async function run(): Promise<void> {
           outputNonDarkPixels: metrics.nonDark,
           outputBrightPixels: metrics.bright
         });
-        window.__a3dV8PostprocessingBloom = runtime;
+        window.__a3dCurrentRoutesPostprocessingBloom = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -148,9 +148,9 @@ function pixelMetrics(pixels: Uint8Array): { readonly nonDark: number; readonly 
 
 function createRuntime(
   startedAt: number,
-  status: V8PostprocessingBloomRuntime["status"],
-  patch: Partial<Omit<V8PostprocessingBloomRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "postprocessChain" | "bloomEnabled">> = {}
-): V8PostprocessingBloomRuntime {
+  status: CurrentRoutesPostprocessingBloomRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesPostprocessingBloomRuntime, "appId" | "status" | "renderer" | "elapsedMs" | "postprocessChain" | "bloomEnabled">> = {}
+): CurrentRoutesPostprocessingBloomRuntime {
   return {
     appId: APP_ID,
     status,
@@ -189,11 +189,11 @@ function multiply(left: Float32Array, right: Float32Array): Float32Array {
   return output;
 }
 
-function renderUi(root: HTMLElement, runtime: V8PostprocessingBloomRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesPostprocessingBloomRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Postprocessing Bloom</h1>
+        <h1>CurrentRoutes Postprocessing Bloom</h1>
         <p>Renderer-owned bloom, tone mapping, and FXAA over real scene pixels.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

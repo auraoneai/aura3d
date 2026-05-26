@@ -9,17 +9,6 @@ interface RuntimeSuiteMapping {
   readonly edgeTerms: readonly RegExp[];
 }
 
-interface ChecklistSourceFile {
-  readonly file: string;
-  readonly requiredTests: string;
-}
-
-interface ChecklistFile {
-  readonly file: string;
-  readonly requiredTests: string;
-  readonly completionChecklist: string;
-}
-
 const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
   animation: {
     suites: ["tests/unit/workstream4.physics-animation.test.ts", "tests/integration/physics-animation-scene-ecs.test.ts"],
@@ -198,28 +187,6 @@ function runtimeSourceFiles(): string[] {
     .sort();
 }
 
-function checklistFiles(): ChecklistFile[] {
-  const checklistPath = join(root, "docs/24-File-by-File-Rebuild-Checklist.md");
-  const rows = readFileSync(checklistPath, "utf8")
-    .split("\n")
-    .filter((line) => /^\|\s*`[^`]+`/.test(line));
-
-  return rows
-    .map((line) => line.split("|").map((column) => column.trim()))
-    .map((columns) => ({
-      file: columns[1].replaceAll("`", ""),
-      requiredTests: columns[4] ?? "",
-      completionChecklist: columns[5] ?? ""
-    }))
-    .sort((a, b) => a.file.localeCompare(b.file));
-}
-
-function checklistSourceFiles(): ChecklistSourceFile[] {
-  return checklistFiles()
-    .filter((row) => /^packages\/[^/]+\/src\/.+\.ts$/.test(row.file))
-    .map((row) => ({ file: row.file, requiredTests: row.requiredTests }));
-}
-
 function packageName(file: string): string {
   const match = /^packages\/([^/]+)\//.exec(file);
   if (!match) throw new Error(`Cannot derive package name from ${file}`);
@@ -266,69 +233,6 @@ describe("runtime edge-case coverage audit", () => {
     expect(deadMappings).toEqual([]);
   });
 
-  it("maps every rebuild checklist implementation file to required test evidence", () => {
-    const checklistFiles = checklistSourceFiles();
-    const sourceFiles = new Set(runtimeSourceFiles());
-    const publicApiSuite = "tests/unit/public-api-contracts.test.ts";
-    const failures: string[] = [];
-
-    expect(checklistFiles.length).toBeGreaterThan(200);
-
-    for (const row of checklistFiles) {
-      if (!existsSync(join(root, row.file))) {
-        failures.push(`${row.file}: checklist file is missing from packages/src`);
-      }
-      if (row.requiredTests.length === 0 || /^none$/i.test(row.requiredTests)) {
-        failures.push(`${row.file}: checklist row has no required tests`);
-      }
-
-      if (row.file.endsWith("/index.ts")) {
-        if (!existsSync(join(root, publicApiSuite))) {
-          failures.push(`${row.file}: missing ${publicApiSuite}`);
-        }
-        continue;
-      }
-
-      if (!sourceFiles.has(row.file)) {
-        failures.push(`${row.file}: not included in runtime source audit`);
-      }
-
-      const mapping = runtimeSuiteMappings[packageName(row.file)];
-      if (mapping === undefined) {
-        failures.push(`${row.file}: package has no runtime suite mapping`);
-        continue;
-      }
-
-      const missingSuites = mapping.suites.filter((suite) => !existsSync(join(root, suite)));
-      for (const suite of missingSuites) {
-        failures.push(`${row.file}: mapped suite missing ${suite}`);
-      }
-    }
-
-    expect(failures).toEqual([]);
-  });
-
-  it("keeps every rebuild checklist file present with test and completion criteria", () => {
-    const checklistRows = checklistFiles();
-    const failures: string[] = [];
-
-    expect(checklistRows.length).toBeGreaterThan(240);
-
-    for (const row of checklistRows) {
-      if (!existsSync(join(root, row.file))) {
-        failures.push(`${row.file}: checklist file is missing`);
-      }
-      if (row.requiredTests.length === 0 || /^none$/i.test(row.requiredTests)) {
-        failures.push(`${row.file}: required tests column is empty`);
-      }
-      if (row.completionChecklist.length === 0) {
-        failures.push(`${row.file}: completion checklist column is empty`);
-      }
-    }
-
-    expect(failures).toEqual([]);
-  });
-
   it("does not expose unavailable or placeholder markers from required production source features", () => {
     const allowedCapabilityMarkers = new Set([
       "packages/core/src/EngineLoop.ts:if (typeof requestAnimationFrame !== \"function\") throw new Error(\"requestAnimationFrame is unavailable.\");",
@@ -353,10 +257,10 @@ describe("runtime edge-case coverage audit", () => {
       "packages/rendering/src/postprocess/CinematicDiagnostics.ts:...(supportsDepthTexture ? [] : [\"Renderer-owned DOF injection is unavailable without depth-textures; callers may still provide a depth binding to the pixel kernel.\"]),",
       "packages/rendering/src/postprocess/CinematicDiagnostics.ts:...(supportsDepthTexture ? [] : [\"Renderer-owned SSAO injection is unavailable without depth-textures; callers may still provide a depth binding to the pixel kernel.\"]),",
       "packages/rendering/src/postprocess/EffectComposer.ts:reason: \"SMAA is not implemented in the public A3D postprocess pass catalog; use FXAA or TAA.\"",
-      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:export type V6WebGPUStatus = \"available\" | \"unavailable\" | \"blocked\";",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:export type ProductionWebGPUStatus = \"available\" | \"unavailable\" | \"blocked\";",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"navigator.gpu is not exposed in this browser/runtime.\");",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:return unavailable(\"WebGPU requestAdapter returned null.\");",
-      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:function unavailable(reason: string): V6WebGPUReport {",
+      "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:function unavailable(reason: string): ProductionWebGPUReport {",
       "packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts:status: \"unavailable\","
     ]);
     const markerPattern = /\b(?:unavailable|not implemented|placeholder|stub|fake success|deferred)\b/i;

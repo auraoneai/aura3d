@@ -5,8 +5,8 @@ import bpy
 
 
 ROOT = Path(__file__).resolve().parents[2]
-WATER_DIR = ROOT / "fixtures" / "v9" / "assets" / "water-cinematic-marina-blender"
-OCEAN_DIR = ROOT / "fixtures" / "v9" / "assets" / "ocean-observatory-cinematic-blender"
+WATER_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "water-cinematic-marina-blender"
+OCEAN_DIR = ROOT / "fixtures" / "threejs-parity" / "assets" / "ocean-observatory-cinematic-blender"
 WATER_OUT = WATER_DIR / "water-cinematic-marina-blender.glb"
 OCEAN_OUT = OCEAN_DIR / "ocean-observatory-cinematic-blender.glb"
 

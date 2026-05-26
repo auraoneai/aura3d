@@ -3,43 +3,43 @@ import { LoadContext } from "/packages/assets/src/LoadContext.js";
 import { createGLTFRenderResources } from "/packages/assets/src/GLTFRenderResources.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
 import {
-  createV6ComposedProductionStageScene,
-  createV6HeroShaderLibrary,
-  createV6PbrReferenceItems
+  createProductionComposedProductionStageScene,
+  createProductionHeroShaderLibrary,
+  createProductionPbrReferenceItems
 } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
   interface Window {
-    __V6_HD_MATERIALS__?: unknown;
+    __PRODUCTION_HD_MATERIALS__?: unknown;
   }
 }
 
 async function run(): Promise<void> {
   const canvas = document.getElementById("production-runtime-hd-materials");
   if (!(canvas instanceof HTMLCanvasElement)) {
-    throw new Error("V6 HD materials harness canvas is missing.");
+    throw new Error("Production HD materials harness canvas is missing.");
   }
-  const hdrUri = `${location.origin}/fixtures/environment-corpus/hdri/industrial_high_contrast_1k.hdr`;
+  const hdrUri = `${location.origin}/fixtures/environment-corpus/hdri/kloppenheim_06_puresky_1k.hdr`;
   const hdr = await fetchBytes(hdrUri);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
-    id: "industrial-high-contrast",
-    label: "Industrial High Contrast",
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
+    id: "kloppenheim-puresky",
+    label: "Kloppenheim Pure Sky",
     intensity: 1.32,
     backgroundIntensity: 0.9,
     rotation: 0.34,
     toneMapping: { operator: "filmic", exposure: 0.98, whitePoint: 10.8 }
   });
-  const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+  const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
   const assets = await Promise.all([
-    loadSceneAsset("damaged-helmet", "damaged-helmet.glb", "Damaged Helmet", canvas, lighting.lighting),
-    loadSceneAsset("clear-coat-test", "clear-coat-test.glb", "Clear Coat Test", canvas, lighting.lighting),
-    loadSceneAsset("sheen-test-grid", "sheen-test-grid.glb", "Sheen Test Grid", canvas, lighting.lighting),
-    loadSceneAsset("specular-test", "specular-test.glb", "Specular Test", canvas, lighting.lighting)
+    loadSceneAsset("damaged-helmet", "/fixtures/asset-corpus/damaged-helmet.glb", "Damaged Helmet", canvas, lighting.lighting),
+    loadSceneAsset("clear-coat-test", "/fixtures/asset-corpus/clear-coat-test.glb", "Clear Coat Test", canvas, lighting.lighting),
+    loadSceneAsset("sheen-test-grid", "/fixtures/asset-corpus/sheen-test-grid.glb", "Sheen Test Grid", canvas, lighting.lighting),
+    loadSceneAsset("specular-glossiness-card", "/fixtures/external-parity-assets/materials/external-parity-specular-glossiness-card/external-parity-specular-glossiness-card.gltf", "Specular Glossiness Card", canvas, lighting.lighting)
   ]);
   const renderer = await ProductionWebGL2Renderer.create({
     canvas,
@@ -47,13 +47,13 @@ async function run(): Promise<void> {
     height: canvas.height,
     preserveDrawingBuffer: true,
     clearColor: [0.012, 0.014, 0.018, 1],
-    shaderLibrary: createV6HeroShaderLibrary()
+    shaderLibrary: createProductionHeroShaderLibrary()
   });
   const skyboxTexture = lighting.lighting.environmentMapTexture;
   if (!skyboxTexture) {
-    throw new Error("V6 HD materials requires a sampled HDR environment texture for the visible skybox.");
+    throw new Error("Production HD materials requires a sampled HDR environment texture for the visible skybox.");
   }
-  const staged = createV6ComposedProductionStageScene([assets[0]!.pipeline], {
+  const staged = createProductionComposedProductionStageScene([assets[0]!.pipeline], {
     width: canvas.width,
     height: canvas.height
   }, {
@@ -70,7 +70,7 @@ async function run(): Promise<void> {
       exposure: 0.72
     }
   });
-  const materialReferenceItems = createV6PbrReferenceItems(staged.frameBounds, lighting.lighting);
+  const materialReferenceItems = createProductionPbrReferenceItems(staged.frameBounds, lighting.lighting);
   const extensionsUsed = [...new Set(assets.flatMap((item) => item.asset.loaderDiagnostics.extensionsUsed))];
   const renderedReferenceVertexCount = materialReferenceItems.reduce((total, item) => total + item.geometry.vertexBuffer.vertexCount, 0);
   const renderedReferenceIndexCount = materialReferenceItems.reduce((total, item) => total + (item.geometry.indexBuffer?.count ?? 0), 0);
@@ -93,7 +93,7 @@ async function run(): Promise<void> {
     referenceVertexCount: renderedReferenceVertexCount,
     referenceIndexCount: renderedReferenceIndexCount,
     extensionsUsed,
-    environmentId: "industrial-high-contrast",
+    environmentId: "kloppenheim-puresky",
     hdrEnvironmentUri: hdrUri
   };
   const proof = renderer.renderImportedAsset({
@@ -105,11 +105,11 @@ async function run(): Promise<void> {
     metadata
   });
 
-  window.__V6_HD_MATERIALS__ = {
+  window.__PRODUCTION_HD_MATERIALS__ = {
     status: "ready",
     assetIds: assets.map((asset) => asset.id),
     proof,
-    summary: summarizeV6WebGL2Proof(proof),
+    summary: summarizeProductionWebGL2Proof(proof),
     hdrPipeline: hdrPipeline.diagnostics,
     materialExtensionCoverage: extensionsUsed.filter((extension) => extension.startsWith("KHR_materials_"))
   };
@@ -120,9 +120,9 @@ async function loadSceneAsset(
   file: string,
   label: string,
   canvas: HTMLCanvasElement,
-  environmentLighting: NonNullable<Parameters<typeof createV6ComposedProductionStageScene>[2]["environmentLighting"]>
+  environmentLighting: NonNullable<Parameters<typeof createProductionComposedProductionStageScene>[2]["environmentLighting"]>
 ) {
-  const assetUri = `${location.origin}/fixtures/asset-corpus/${file}`;
+  const assetUri = file.startsWith("/") ? `${location.origin}${file}` : `${location.origin}/fixtures/asset-corpus/${file}`;
   const asset = await new GLTFLoader().load({ url: assetUri }, new LoadContext());
   const resources = await createGLTFRenderResources(asset);
   const input = resources.toRendererInput({ width: canvas.width, height: canvas.height }, {
@@ -151,7 +151,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_HD_MATERIALS__ = {
+  window.__PRODUCTION_HD_MATERIALS__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

@@ -1,19 +1,19 @@
 import {
-  createV8FlagshipViewer,
-  type V8EnvironmentId,
-  type V8FlagshipAssetId,
-  type V8FlagshipViewer,
-  type V8ViewerControls,
-  type V8ViewerSnapshot
+  createCurrentRoutesFlagshipViewer,
+  type CurrentRoutesEnvironmentId,
+  type CurrentRoutesFlagshipAssetId,
+  type CurrentRoutesFlagshipViewer,
+  type CurrentRoutesViewerControls,
+  type CurrentRoutesViewerSnapshot
 } from "../../../packages/engine/src/threejs-example-parity/index";
 
 export interface WowShowcaseConfig {
   readonly appId: string;
   readonly title: string;
   readonly subtitle: string;
-  readonly assetId: V8FlagshipAssetId;
-  readonly environmentId: V8EnvironmentId;
-  readonly controls?: Partial<V8ViewerControls>;
+  readonly assetId: CurrentRoutesFlagshipAssetId;
+  readonly environmentId: CurrentRoutesEnvironmentId;
+  readonly controls?: Partial<CurrentRoutesViewerControls>;
   readonly orbitSpeed?: number;
   readonly pitchDrift?: number;
 }
@@ -56,8 +56,8 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   }
 
   let renderSize = syncCanvasRenderSize(canvas);
-  let viewer: V8FlagshipViewer | undefined;
-  let snapshot: V8ViewerSnapshot | undefined;
+  let viewer: CurrentRoutesFlagshipViewer | undefined;
+  let snapshot: CurrentRoutesViewerSnapshot | undefined;
   let pointer: { readonly x: number; readonly y: number } | undefined;
   let fps = 0;
   let fpsFrames = 0;
@@ -98,7 +98,7 @@ export async function startWowShowcase(config: WowShowcaseConfig): Promise<void>
   publish("loading", undefined, true);
 
   try {
-    viewer = await createV8FlagshipViewer({
+    viewer = await createCurrentRoutesFlagshipViewer({
       canvas,
       width: renderSize.width,
       height: renderSize.height,

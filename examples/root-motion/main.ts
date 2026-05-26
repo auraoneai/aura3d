@@ -48,7 +48,7 @@ if (typeof document !== "undefined") {
         const dt = 1 / 60;
         previousTime = clipTime;
         clipTime += dt;
-        latestSample = extractRootMotion(clip, { target: "runner.root.position", fromTime: previousTime, toTime: clipTime, loop: true });
+        latestSample = extractRootMotion(clip, { target: "root.position", fromTime: previousTime, toTime: clipTime, loop: true });
         applyRootMotion(sceneTarget, latestSample, 1);
         applyRootMotion(ecsTarget, latestSample, 1);
         mixer.update(dt);
@@ -90,7 +90,7 @@ function createRootMotionRunClip(): AnimationClip {
     duration: 1,
     tracks: [
       new AnimationTrack({
-        target: "runner.root.position",
+        target: "root.position",
         valueType: "vector3",
         keyframes: [
           { time: 0, value: [0, 0, 0] },

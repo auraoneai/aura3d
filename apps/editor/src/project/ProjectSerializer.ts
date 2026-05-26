@@ -231,15 +231,15 @@ export class ProjectSerializer {
     };
   }
 
-  createV4StarterProject(now = new Date("2026-05-08T00:00:00.000Z")): EditorProject {
+  createExternalParityStarterProject(now = new Date("2026-05-08T00:00:00.000Z")): EditorProject {
     const asset: EditorAssetRecord = {
-      id: "asset-v4-fox",
+      id: "asset-external-parity-fox",
       name: "Fox.glb",
       type: "gltf",
       uri: "../../tests/assets/corpus/khronos/Fox/Fox.glb",
       importedAt: now.toISOString(),
       preview: "real glTF asset reference with animation clips",
-      diagnostics: ["V4 starter imported with embedded textures, animation clips, and material variants enabled"],
+      diagnostics: ["ExternalParity starter imported with embedded textures, animation clips, and material variants enabled"],
       folder: "Imported/glTF",
       status: "imported",
       thumbnailColor: "#ff8844",
@@ -256,20 +256,20 @@ export class ProjectSerializer {
     return {
       version: EDITOR_PROJECT_VERSION,
       metadata: {
-        name: "V4 Editor Authored Starter",
+        name: "ExternalParity Editor Authored Starter",
         savedAt: now.toISOString(),
         provenance: this.createEditorProvenance([
-          { id: "v4-starter-project", runtimeApi: "ProjectSerializer.createV4StarterProject", target: "project.json" },
-          { id: "import-v4-fox", runtimeApi: "EditorRuntime.executeCommand", target: asset.id },
-          { id: "select-v4-fox", runtimeApi: "EditorRuntime.select", target: "node-v4-fox" },
-          { id: "configure-v4-play", runtimeApi: "EditorRuntime.enterPlayMode", target: "node-v4-fox" }
+          { id: "external-parity-starter-project", runtimeApi: "ProjectSerializer.createExternalParityStarterProject", target: "project.json" },
+          { id: "import-external-parity-fox", runtimeApi: "EditorRuntime.executeCommand", target: asset.id },
+          { id: "select-external-parity-fox", runtimeApi: "EditorRuntime.select", target: "node-external-parity-fox" },
+          { id: "configure-external-parity-play", runtimeApi: "EditorRuntime.enterPlayMode", target: "node-external-parity-fox" }
         ])
       },
       scene: {
         nodes: [
           createProjectNode({
-            id: "node-v4-stage",
-            name: "V4 Stage Root",
+            id: "node-external-parity-stage",
+            name: "ExternalParity Stage Root",
             parentId: null,
             position: [0, -0.25, 0],
             material: { name: "Stage Contact Material", baseColor: "#172033", metallic: 0.1, roughness: 0.72 },
@@ -279,12 +279,12 @@ export class ProjectSerializer {
             physics: { body: "static", collider: "box", friction: 0.8, restitution: 0.05 }
           }),
           createProjectNode({
-            id: "node-v4-fox",
+            id: "node-external-parity-fox",
             name: "Imported Fox Hero",
-            parentId: "node-v4-stage",
+            parentId: "node-external-parity-stage",
             position: [0.7, 0.35, 0],
             material: {
-              name: "Edited V4 Fox Material",
+              name: "Edited ExternalParity Fox Material",
               baseColor: "#ff8844",
               metallic: 0.15,
               roughness: 0.36,
@@ -302,8 +302,8 @@ export class ProjectSerializer {
             script: { behavior: "BounceBehavior", enabled: true }
           }),
           createProjectNode({
-            id: "node-v4-key-light",
-            name: "V4 Key Light",
+            id: "node-external-parity-key-light",
+            name: "ExternalParity Key Light",
             parentId: null,
             position: [-1.2, 1.25, 0],
             material: { name: "Light Gizmo Material", baseColor: "#facc15", metallic: 0, roughness: 0.2 },
@@ -311,8 +311,8 @@ export class ProjectSerializer {
             script: { behavior: "PulseLightBehavior", enabled: true }
           }),
           createProjectNode({
-            id: "node-v4-camera",
-            name: "V4 Export Camera",
+            id: "node-external-parity-camera",
+            name: "ExternalParity Export Camera",
             parentId: null,
             position: [1.65, 0.85, 0],
             material: { name: "Camera Gizmo Material", baseColor: "#67e8f9", metallic: 0, roughness: 0.4 },
@@ -335,8 +335,8 @@ export class ProjectSerializer {
       },
       plugins: ["aura3d.default-authoring"],
       export: {
-        title: "Aura3D V4 Editor Export",
-        entryNodeId: "node-v4-camera"
+        title: "Aura3D ExternalParity Editor Export",
+        entryNodeId: "node-external-parity-camera"
       }
     };
   }

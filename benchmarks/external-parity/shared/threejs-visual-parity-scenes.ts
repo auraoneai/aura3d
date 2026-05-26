@@ -1,4 +1,4 @@
-export interface V4ThreeJsParityScene {
+export interface ExternalParityThreeJsParityScene {
   readonly id: string;
   readonly title: string;
   readonly a3dWorkflow: "product-configurator" | "asset-viewer" | "material-studio" | "scene-showcase" | "interactive-scene";
@@ -9,7 +9,7 @@ export interface V4ThreeJsParityScene {
   readonly requiredGaps: readonly string[];
 }
 
-export const V4_THREEJS_PARITY_SCENES: readonly V4ThreeJsParityScene[] = [
+export const EXTERNAL_PARITY_THREEJS_PARITY_SCENES: readonly ExternalParityThreeJsParityScene[] = [
   {
     id: "product-configurator",
     title: "Premium Product Configurator",

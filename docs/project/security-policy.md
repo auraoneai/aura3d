@@ -2,32 +2,28 @@
 
 Version: 1.0.0
 
-## Supported Security Scope
+## Scope
 
-Aura3D is currently an production TypeScript-first browser 3D engine package. Security handling applies to the source tree, verification tooling, examples, package metadata, and generated release artifacts for version `1.0.0`.
+Security policy covers the source, packages, examples, templates, and generated artifacts in this repository.
 
-## Reporting A Vulnerability
+## Supported Version
 
-Do not open public issues for suspected vulnerabilities. Send a private report to the repository maintainer with:
+The current documented version is `1.0.0`.
 
-- affected package, example, tool, or workflow path;
-- exact version or commit SHA;
-- reproduction steps from a clean checkout;
-- observed impact;
-- any exploitability notes and suggested remediation.
+## Reporting
 
-The maintainer should acknowledge receipt within 5 business days, triage severity, and publish a fix or documented mitigation before making details public.
+Report vulnerabilities with:
 
-## Security Release Rules
+- affected package or route;
+- version or commit;
+- reproduction steps;
+- browser/OS/runtime details when relevant;
+- whether the issue affects package consumers, local examples, or generated reports.
 
-- A security fix must include a regression test or documented reason why a test is not feasible.
-- Release notes in `CHANGELOG.md` must mention security-impacting changes without disclosing active exploit details before mitigation.
-- Public security claims must remain within `docs/project/claim-guidelines.md`, `docs/project/v9-roadmap-claim-boundary.md`, and the historical `docs/project/v2-claim-registry.md`.
-- Production-readiness, full WebGPU, Unity/Unreal, full Three.js parity, or Three.js superiority wording is not allowed unless the current V9 claim boundary and release gates permit the exact wording.
+## Boundaries
 
-## Dependency And Supply Chain Policy
+- Local demo routes are development artifacts unless separately deployed and verified.
+- Generated reports can include environment details; avoid publishing sensitive local paths or secrets.
+- Third-party asset and template dependencies should be reviewed before publishing a release artifact.
 
-- New runtime dependencies require a maintainer review for license, maintenance status, and browser compatibility.
-- Release verification must be run from a clean checkout before a release candidate is tagged.
-- Generated reports under `tests/reports` must be current for the release-run ID being evaluated.
-- Runtime code must not import Three.js into A3D product packages as an implementation shortcut; Three.js remains allowed only in comparison, benchmark, migration, and reference harnesses described by the V9 boundary docs.
+Security wording and public-claim boundaries are governed by `docs/project/product-studio-claim-registry.md`.

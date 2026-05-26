@@ -2,12 +2,12 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { baseReport, isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
 
-export interface V4PbrGltfReadinessReport {
+export interface ExternalParityPbrGltfReadinessReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly pbrParity: boolean;
   readonly gltfParity: boolean;
-  readonly gltfParityDimensions: readonly V4GltfParityDimension[];
+  readonly gltfParityDimensions: readonly ExternalParityGltfParityDimension[];
   readonly gltfExtensionParity: {
     readonly localCoveredExtensions: readonly string[];
     readonly browserVisualCoveredExtensions: readonly string[];
@@ -28,7 +28,7 @@ export interface V4PbrGltfReadinessReport {
   readonly violations: readonly string[];
 }
 
-export interface V4GltfParityDimension {
+export interface ExternalParityGltfParityDimension {
   readonly id: string;
   readonly ready: boolean;
   readonly evidence: readonly string[];
@@ -71,7 +71,7 @@ const sourceFiles = [
   "tests/browser/rendering-external-parity-visuals.spec.ts",
 ] as const;
 
-export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfReadinessReport {
+export function createExternalParityPbrGltfReadinessReport(root = process.cwd()): ExternalParityPbrGltfReadinessReport {
   const rendering = readJson(root, "tests/reports/external-parity-rendering.json");
   const assets = readJson(root, "tests/reports/external-parity-asset-corpus.json");
   const assetCompression = readJson(root, "tests/reports/external-parity-asset-compression.json");
@@ -85,7 +85,7 @@ export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfR
   const pbrReference = readJson(root, "tests/reports/external-parity-pbr-reference-readiness.json");
   const gltfLoaderVisualParity = readJson(root, "tests/reports/external-parity-gltf-loader-visual-parity.json");
   const validations = Array.isArray(rendering?.validations) ? rendering.validations : [];
-  const materialShowroom = validations.find((entry) => isRecord(entry) && entry.name === "material-showroom-v4-preset");
+  const materialShowroom = validations.find((entry) => isRecord(entry) && entry.name === "material-showroom-external-parity-preset");
   const materialChecks = isRecord(materialShowroom) && isRecord(materialShowroom.checks) ? materialShowroom.checks : {};
   const materialMetrics = isRecord(materialShowroom) && isRecord(materialShowroom.metrics) ? materialShowroom.metrics : {};
   const assetList = Array.isArray(assets?.assets) ? assets.assets.filter(isRecord) : [];
@@ -184,8 +184,8 @@ export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfR
     ...(advancedPbrCombinedTextureVariantBrowserEvidence ? ["browser-rendered-combined-advanced-pbr-texture-map-variants"] : []),
   ];
   const gltfEvidence = [
-    ...(assets?.ok === true ? ["v4-asset-corpus-report-passing"] : []),
-    ...(Number(assets?.assetCount ?? 0) >= 7 ? ["generated-v4-gltf-corpus"] : []),
+    ...(assets?.ok === true ? ["external-parity-asset-corpus-report-passing"] : []),
+    ...(Number(assets?.assetCount ?? 0) >= 7 ? ["generated-external-parity-gltf-corpus"] : []),
     ...(assetFeatures.has("skin") ? ["skinned-gltf-asset"] : []),
     ...(assetFeatures.has("skin") && !unsupportedAssetFeatures.has("lit-skinning-render-application") ? ["skinned-gltf-render-palette-evidence"] : []),
     ...(assetFeatures.has("animated-morph-weights") ? ["animated-morph-weight-gltf-asset"] : []),
@@ -201,15 +201,15 @@ export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfR
     ...(assetFeatures.has("texture-transform") ? ["texture-transform-gltf-asset"] : []),
     ...(materialFeatures.has("pbr-specular-glossiness") ? ["pbr-specular-glossiness-gltf-extension-asset"] : []),
     ...(boundedGltfLoaderVisualParity ? ["bounded-same-source-gltf-loader-visual-parity-threejs-babylon"] : []),
-    ...(localCoveredExtensions.length >= 15 ? ["local-v4-gltf-extension-coverage-matrix"] : []),
+    ...(localCoveredExtensions.length >= 15 ? ["local-external-parity-gltf-extension-coverage-matrix"] : []),
     ...(browserVisualCoveredExtensions.includes("EXT_meshopt_compression") ? ["browser-visual-meshopt-extension-coverage"] : []),
     ...(browserVisualCoveredExtensions.includes("KHR_draco_mesh_compression") ? ["browser-visual-draco-extension-coverage"] : []),
     ...(browserVisualCoveredExtensions.includes("KHR_texture_basisu") ? ["browser-visual-basisu-extension-coverage"] : []),
   ];
   const pbrBlockers = [
-    ...(unsupportedAssetFeatures.has("physically-accurate-ibl") ? ["physically accurate IBL remains unsupported in V4 asset corpus"] : []),
-    ...(hdrIblMaterialEvidence ? [] : ["linear HDR IBL resource evidence is not proven on the V4 material asset"]),
-    ...(assetFeatures.has("hdr-studio-environment-resource") ? [] : ["HDR studio environment parity remains unsupported in V4 product corpus"]),
+    ...(unsupportedAssetFeatures.has("physically-accurate-ibl") ? ["physically accurate IBL remains unsupported in External parity asset corpus"] : []),
+    ...(hdrIblMaterialEvidence ? [] : ["linear HDR IBL resource evidence is not proven on the External parity material asset"]),
+    ...(assetFeatures.has("hdr-studio-environment-resource") ? [] : ["HDR studio environment parity remains unsupported in External parity product corpus"]),
     ...(comparison?.pbrParity === true ? [] : boundedPbrVisualParity
       ? boundedPbrReferenceEvidence
         ? [localReferenceSuiteEvidence
@@ -238,7 +238,7 @@ export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfR
     ...(khronosVisuals?.fullCorpusVisualParity === true ? [] : [
       khronosVisualCoverageComplete
         ? boundedGltfLoaderVisualParity
-          ? "pinned Khronos browser visual coverage and local V4 corpus same-source Three.js/Babylon visual-loader coverage pass with bounded render-only caveats, but full glTF visual parity remains blocked by broader upstream corpus and competitor coverage"
+          ? "pinned Khronos browser visual coverage and local External parity corpus same-source Three.js/Babylon visual-loader coverage pass with bounded render-only caveats, but full glTF visual parity remains blocked by broader upstream corpus and competitor coverage"
           : "pinned Khronos browser visual coverage is complete, but full glTF visual parity remains blocked by extension coverage and competitor parity gaps"
         : `full Khronos glTF sample model visual parity is not complete${khronosVisuals?.ok === true ? ` (${Number(khronosVisuals.visualAssetCount ?? 0)}/${Number(khronosVisuals.sourceAssetCount ?? 0)} browser-rendered slice)` : ""}`
     ]),
@@ -272,13 +272,13 @@ export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfR
     ]),
     validation("full-pbr-parity-boundary", pbrParity, "tests/reports/external-parity-pbr-gltf-readiness.json:pbrParity", pbrBlockers),
     validation("gltf-local-corpus-and-khronos-visuals", hasEvidence(gltfEvidence, [
-      "v4-asset-corpus-report-passing",
-      "generated-v4-gltf-corpus",
+      "external-parity-asset-corpus-report-passing",
+      "generated-external-parity-gltf-corpus",
       "supported-khronos-glb-browser-visual-slice",
       "khronos-100-source-classification-corpus",
       "pinned-khronos-corpus-browser-visual-coverage",
     ]), "tests/reports/external-parity-asset-corpus.json + tests/reports/external-parity-khronos-gltf-visuals.json", [
-      "local V4 glTF corpus, pinned Khronos browser visual coverage, and 100-entry source classification coverage are not all passing.",
+      "local External parity glTF corpus, pinned Khronos browser visual coverage, and 100-entry source classification coverage are not all passing.",
     ]),
     validation("gltf-animation-skin-morph-root-motion-evidence", hasEvidence(gltfEvidence, [
       "skinned-gltf-asset",
@@ -287,13 +287,13 @@ export function createV4PbrGltfReadinessReport(root = process.cwd()): V4PbrGltfR
       "root-motion-animation-gltf-asset",
       "root-motion-controller-evidence",
     ]), "tests/reports/external-parity-asset-corpus.json", [
-      "skinning, animated morph weights, and root-motion evidence are not all present in the V4 asset corpus.",
+      "skinning, animated morph weights, and root-motion evidence are not all present in the External parity asset corpus.",
     ]),
     validation("gltf-compression-extension-browser-evidence", hasEvidence(gltfEvidence, [
       "browser-visual-meshopt-extension-coverage",
       "browser-visual-draco-extension-coverage",
       "browser-visual-basisu-extension-coverage",
-      "local-v4-gltf-extension-coverage-matrix",
+      "local-external-parity-gltf-extension-coverage-matrix",
     ]) && extensionParityReady, "tests/reports/external-parity-asset-compression.json + tests/reports/external-parity-khronos-gltf-visuals.json", [
       `tracked browser extension coverage is incomplete; missing browser visual coverage for: ${missingForFullParity.join(", ") || "none"}, unsupported local corpus extensions: ${unsupportedInLocalCorpus.join(", ") || "none"}.`,
     ]),
@@ -352,7 +352,7 @@ function createGltfParityDimensions(options: {
   readonly khronosVisualCoverageComplete: boolean;
   readonly boundedGltfLoaderVisualParity: boolean;
   readonly extensionParityReady: boolean;
-}): V4GltfParityDimension[] {
+}): ExternalParityGltfParityDimension[] {
   const khronos100Summary = isRecord(options.khronos100Classification?.summary) ? options.khronos100Classification.summary : {};
   const khronos100Source = isRecord(options.khronos100Classification?.sourceManifest) ? options.khronos100Classification.sourceManifest : {};
   const comparisonUnsupported = stringArray(options.comparison?.unsupportedByThisReport);
@@ -410,12 +410,12 @@ function createGltfParityDimensions(options: {
     Number(blenderValidationSummary.fail ?? 0) === 0;
 
   return [
-    gltfDimension("local-v4-corpus-render-evidence", options.assets?.ok === true && options.assetCount >= 7 && !options.unsupportedAssetFeatures.has("lit-skinning-render-application"), [
-      "V4 generated corpus report passes.",
+    gltfDimension("local-external-parity-corpus-render-evidence", options.assets?.ok === true && options.assetCount >= 7 && !options.unsupportedAssetFeatures.has("lit-skinning-render-application"), [
+      "External parity generated corpus report passes.",
       "Local corpus includes skinning, animated morph weights, root-motion, material variants, texture transforms, compression, and extension fixtures.",
     ], [
-      options.assets?.ok === true ? "" : "V4 asset corpus report is missing or failing.",
-      options.assetCount >= 7 ? "" : `V4 asset corpus is too small for parity gating (${options.assetCount}/7).`,
+      options.assets?.ok === true ? "" : "External parity asset corpus report is missing or failing.",
+      options.assetCount >= 7 ? "" : `External parity asset corpus is too small for parity gating (${options.assetCount}/7).`,
       options.unsupportedAssetFeatures.has("lit-skinning-render-application") ? "local asset corpus still marks lit skinning render application unsupported." : "",
     ], {
       assetCount: options.assetCount,
@@ -433,7 +433,7 @@ function createGltfParityDimensions(options: {
     }),
     gltfDimension("tracked-extension-browser-coverage", options.extensionParityReady, [
       "Tracked required glTF extensions have browser visual or browser decode evidence.",
-      "No unsupported extensions remain in the local V4 corpus report.",
+      "No unsupported extensions remain in the local External parity corpus report.",
     ], [
       options.missingForFullParity.length === 0 ? "" : `missing browser visual coverage for: ${options.missingForFullParity.join(", ")}.`,
       options.unsupportedInLocalCorpus.length === 0 ? "" : `unsupported local corpus extensions: ${options.unsupportedInLocalCorpus.join(", ")}.`,
@@ -458,7 +458,7 @@ function createGltfParityDimensions(options: {
     ], [
       options.gltfLoaderVisualParity?.fullGltfLoaderVisualParity === true ? "" : "external-parity-gltf-loader-visual-parity does not set fullGltfLoaderVisualParity=true.",
       options.gltfLoaderVisualParity?.fullGltfLoaderVisualParity === true ? "" : `strict external visual parity is ${Number(loaderExternalCorpus.visualParityAssetCount ?? 0)}/${Number(loaderExternalCorpus.sourceAssetCount ?? 0)} assets.`,
-      comparisonUnsupported.includes("full-corpus and extension visual pixel parity for external Three.js/Babylon.js glTF loader output") ? "v4-engine-comparison still blocks full-corpus external Three.js/Babylon glTF visual parity." : "",
+      comparisonUnsupported.includes("full-corpus and extension visual pixel parity for external Three.js/Babylon.js glTF loader output") ? "external-parity-engine-comparison still blocks full-corpus external Three.js/Babylon glTF visual parity." : "",
       ...loaderReportViolations.map((violation) => `loader visual parity report caveat: ${violation}`),
     ], {
       fullGltfLoaderVisualParity: options.gltfLoaderVisualParity?.fullGltfLoaderVisualParity === true,
@@ -487,7 +487,7 @@ function createGltfParityDimensions(options: {
     }),
     gltfDimension("same-corpus-loader-compatibility", sameCorpusLoaderCompatibilityReady, [
       "Aura3D, Three.js, and Babylon.js all run the same pinned Khronos compatibility corpus with no not-run entries.",
-      "Legacy Aura3D expected-fail entries have browser visual recovery evidence in the V4 Khronos visual report.",
+      "Legacy Aura3D expected-fail entries have browser visual recovery evidence in the External parity Khronos visual report.",
     ], [
       aura3dExpectedFailCount === 0 ? "" : assetCompatibilityEntries.length === 0 ? "asset compatibility entries are missing, so Aura3D expected-fail recovery cannot be verified." : unrecoveredAura3DExpectedFailIds.length === 0 ? "" : `Aura3D has ${unrecoveredAura3DExpectedFailIds.length} unrecovered expected-fail compatibility entries: ${unrecoveredAura3DExpectedFailIds.join(", ")}.`,
       Number(aura3dCompatibility["not-run"] ?? 0) === 0 ? "" : `Aura3D has ${Number(aura3dCompatibility["not-run"] ?? 0)} not-run compatibility entries.`,
@@ -528,7 +528,7 @@ function blenderSameCorpusExternalToolFailures(report: Record<string, unknown> |
   readonly expectedFailCount: number;
   readonly ids: readonly string[];
 } {
-  if (report?.schemaVersion !== "blender-same-corpus-export-v1" || !Array.isArray(report.assets)) {
+  if (report?.schemaVersion !== "blender-same-corpus-export" || !Array.isArray(report.assets)) {
     return { expectedFailCount: 0, ids: [] };
   }
   const failures = report.assets.filter((asset): asset is Record<string, unknown> => {
@@ -552,7 +552,7 @@ function gltfDimension(
   evidence: readonly string[],
   blockers: readonly string[],
   metrics: Record<string, number | string | boolean>
-): V4GltfParityDimension {
+): ExternalParityGltfParityDimension {
   return {
     id,
     ready,
@@ -831,7 +831,7 @@ function hasBrowserCompressionExtension(report: Record<string, unknown> | null, 
 function hasHdrIblMaterialEvidence(report: Record<string, unknown> | null): boolean {
   if (report?.ok !== true || !Array.isArray(report.validations)) return false;
   return report.validations.some((validation) => {
-    if (!isRecord(validation) || validation.name !== "v4-material-fidelity-card" || validation.ok !== true || !isRecord(validation.evidence)) return false;
+    if (!isRecord(validation) || validation.name !== "external-parity-material-fidelity-card" || validation.ok !== true || !isRecord(validation.evidence)) return false;
     const evidence = validation.evidence;
     return evidence.environmentResourceSet === "generated-local-linear-hdr-environment" &&
       evidence.hdrSource === true &&
@@ -844,7 +844,7 @@ function hasHdrIblMaterialEvidence(report: Record<string, unknown> | null): bool
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4PbrGltfReadinessReport();
+  const report = createExternalParityPbrGltfReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

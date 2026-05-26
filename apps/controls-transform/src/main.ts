@@ -5,11 +5,11 @@ import { Renderable, Scene, quatFromEuler } from "@aura3d/scene";
 
 declare global {
   interface Window {
-    __a3dV8TransformControls?: V8TransformControlsRuntime;
+    __a3dCurrentRoutesTransformControls?: CurrentRoutesTransformControlsRuntime;
   }
 }
 
-interface V8TransformControlsRuntime {
+interface CurrentRoutesTransformControlsRuntime {
   readonly appId: "controls-transform";
   readonly status: "ready" | "running" | "error";
   readonly frameCount: number;
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
   const startedAt = performance.now();
   let runtime = createRuntime(startedAt, "ready");
   const publish = (): void => {
-    window.__a3dV8TransformControls = runtime;
+    window.__a3dCurrentRoutesTransformControls = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -120,7 +120,7 @@ async function run(): Promise<void> {
           rotateSamples,
           scaleSamples
         });
-        window.__a3dV8TransformControls = runtime;
+        window.__a3dCurrentRoutesTransformControls = runtime;
         if (runtime.frameCount === 1 || runtime.frameCount % 15 === 0) publish();
         requestAnimationFrame(render);
       } catch (error) {
@@ -165,9 +165,9 @@ function syncTarget(target: ReturnType<Scene["createNode"]>, object: {
 
 function createRuntime(
   startedAt: number,
-  status: V8TransformControlsRuntime["status"],
-  patch: Partial<Omit<V8TransformControlsRuntime, "appId" | "status" | "renderer" | "controls" | "elapsedMs">> = {}
-): V8TransformControlsRuntime {
+  status: CurrentRoutesTransformControlsRuntime["status"],
+  patch: Partial<Omit<CurrentRoutesTransformControlsRuntime, "appId" | "status" | "renderer" | "controls" | "elapsedMs">> = {}
+): CurrentRoutesTransformControlsRuntime {
   return {
     appId: APP_ID,
     status,
@@ -188,11 +188,11 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8TransformControlsRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesTransformControlsRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div>
-        <h1>V8 Transform Controls</h1>
+        <h1>CurrentRoutes Transform Controls</h1>
         <p>Public TransformControls applying translate, rotate, and scale to a A3D scene object.</p>
       </div>
       <button id="runtime-state" class="is-${runtime.status}" type="button">${escapeHtml(runtime.status)}</button>

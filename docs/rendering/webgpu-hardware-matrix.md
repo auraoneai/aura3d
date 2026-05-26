@@ -1,51 +1,29 @@
 # WebGPU Hardware Matrix
 
-Version: 0.1.0-alpha.0
+Version: `1.0.0`
 
-Aura3D separates real WebGPU evidence from injected adapter evidence. Browser tests that use injected adapters prove the renderer contract, fallback behavior, and submission shape. They do not prove hardware support.
+This page records how WebGPU evidence should be interpreted.
 
-The real-device probe is `tests/browser/webgpu-real-device.spec.ts`. It uses `navigator.gpu` directly when the browser exposes it and writes `tests/reports/webgpu-hardware-matrix.json` with:
+## Current Evidence Sources
 
-- browser name and Playwright project name;
-- operating system platform and release;
-- browser user agent;
-- whether `navigator.gpu` exists;
-- adapter request status;
-- device request status;
-- adapter info, features, and limits when the browser exposes them;
-- unsupported cases such as missing `navigator.gpu`, null adapter, missing `requestDevice`, or thrown adapter/device errors.
+- WebGPU implementation: `packages/rendering/src/WebGPUDevice.ts`
+- WebGPU route apps: `apps/webgpu-rtt/`, `apps/webgpu-compute/`, `apps/webgpu-materials/`, `apps/webgpu-instance-uniform/`, `apps/webgpu-lab/`
+- Browser tests: `tests/browser/production-runtime-webgpu-capability.spec.ts`, `tests/browser/rendering-webgpu.spec.ts`, `tests/browser/webgpu-real-device.spec.ts`
+- Report target used by release tooling: `tests/reports/webgpu-hardware-matrix.json`
 
-The matrix is cumulative for a release run. Re-running the probe on another Playwright project, browser, OS, or GPU adapter replaces only the matching browser/project/OS/user-agent entry and preserves the other collected entries. That is required before any broad hardware claim can be reviewed; a single local headless run is not enough.
+`tests/reports/` is ignored by git, so the matrix may be absent in a clean checkout until the relevant browser test or release tool runs.
 
-If `navigator.gpu` is unavailable, the report is still valid fallback evidence for that browser/runtime. It must be read as unsupported hardware evidence, not as a passing WebGPU hardware result.
+## Supported Interpretation
 
-`tests/browser/webgpu-parity.spec.ts` also attempts a real `createRenderDevice({ backend: "webgpu" })` render-target/readback pass when the browser exposes a real adapter. If no real adapter exists, that case is recorded as unsupported while injected adapter contract tests continue to run.
+- A report with `navigator.gpu` unavailable proves fallback diagnostics for that browser/environment.
+- `tests/browser/webgpu-real-device.spec.ts` uses `navigator.gpu` directly and records browser user agent plus operating system platform and release.
+- A report with adapter/device availability proves WebGPU can be requested in that local browser/environment. They do not prove hardware support outside the recorded environment.
+- Route screenshots prove the named route behavior only.
 
-The current parity reports distinguish:
+## Not Supported
 
-- the hardware matrix includes real adapter/device results across the browsers, operating systems, and GPU adapters named in the release notes;
-- injected adapter render/compute contracts;
-- real `navigator.gpu` adapter/device evidence;
-- real WebGPU render-target/readback evidence through the current Aura3D `RenderDevice` API;
-- real WebGPU/WebGL2 feature-matrix conformance for triangle, indexed draw, line, point, vertex-color, instancing, texture, and morph paths;
-- native WebGPU render-pass submission evidence;
-- native WebGPU texture-to-buffer readback evidence through `WebGPUDevice.readPixelsAsync()`;
-- real WebGPU high-level `Renderer`/`ForwardPass`/`PBRMaterial` submission evidence;
-- real WebGPU high-level textured PBR material submission evidence with validated texture binding;
-- real WebGPU high-level environment-lit PBR submission evidence with generated environment resources and BRDF LUT validation;
-- real WebGPU high-level instanced PBR submission evidence;
-- real WebGPU high-level skinned render-item submission evidence through `Renderer`/`ForwardPass`/`SkinnedUnlitMaterial`;
-- real WebGPU high-level morph render-item submission evidence through `Renderer`/`ForwardPass`/`MorphUnlitMaterial`;
-- real WebGPU HDR render-target, float readback, and tone-mapping postprocess evidence;
-- real WebGPU compute-particle evidence.
-
-The v8 app surface adds route evidence for:
-
-- `apps/webgpu-rtt`;
-- `apps/webgpu-materials`;
-- `apps/webgpu-instance-uniform`;
-- `apps/webgpu-compute`.
-
-Those routes should be read as implementation and diagnostic evidence, not as complete hardware coverage. Full WebGPU parity remains blocked even when local rows pass because the current matrix is still a focused conformance scene plus selected production-renderer paths, not a broad production-renderer matrix. The synchronous `WebGPUDevice.readPixels()` path remains CPU-shadowed for deterministic tests; native GPU texture-to-buffer readback is exposed through `readPixelsAsync()`.
-
-Public claims must not say "full WebGPU support" until real hardware rows cover the target browsers/OS/GPU adapters, the visual routes are approved for that release, and the broad-parity gate says the claim is complete. Injected adapter reports are allowed only as contract evidence.
+- Full WebGPU browser/device matrix coverage.
+- Mobile GPU support.
+- Driver-level performance claims.
+- A claim that WebGPU behavior matches WebGL2 or Three.js in every route.
+- Public claims must not say "full WebGPU support" without a complete hardware matrix.

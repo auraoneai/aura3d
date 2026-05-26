@@ -1,5 +1,5 @@
 import { ProductionWebGL2Renderer, type ProductionWebGL2RendererOptions } from '../ProductionWebGL2Renderer';
-import type { V6RenderProof, V6RendererFeature, V6RendererInput } from "../ProductionRendererTypes";
+import type { ProductionRenderProof, ProductionRendererFeature, ProductionRendererInput } from "../ProductionRendererTypes";
 import type { RendererBackend, RendererBackendDiagnostics } from './RendererBackend';
 
 export class WebGL2RendererBackend implements RendererBackend {
@@ -12,11 +12,11 @@ export class WebGL2RendererBackend implements RendererBackend {
     return new WebGL2RendererBackend(await ProductionWebGL2Renderer.create(options));
   }
 
-  renderImportedAsset(input: V6RendererInput): V6RenderProof {
+  renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof {
     return this.renderer.renderImportedAsset(input);
   }
 
-  getFeatures(): readonly V6RendererFeature[] {
+  getFeatures(): readonly ProductionRendererFeature[] {
     return this.renderer.getFeatures();
   }
 

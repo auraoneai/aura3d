@@ -1,8 +1,14 @@
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
+
+declare global {
+  interface Window {
+    __AURA3D_THREEJS_PARITY__?: unknown;
+  }
+}
 
 const REPORT_PATH = "tests/reports/current-routes-threejs-parity.json";
 const ARTIFACTS = {
@@ -13,7 +19,7 @@ const ARTIFACTS = {
 const MAX_ACCEPTABLE_MEAN_DELTA = 55;
 const MIN_ACCEPTABLE_STRUCTURAL_SIMILARITY = 0.8;
 
-test.describe("V8 same-scene Three.js parity artifact", () => {
+test.describe("Current same-scene Three.js parity artifact", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -42,17 +48,17 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V8_THREEJS_PARITY__ as { status?: string } | undefined;
+          const result = window.__AURA3D_THREEJS_PARITY__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 150_000 }
       );
     } catch (error) {
-      throw new Error(`V8 Three.js parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Three.js parity harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V8_THREEJS_PARITY__) as V8ThreejsParityResult;
+    const result = await page.evaluate(() => window.__AURA3D_THREEJS_PARITY__) as CurrentThreejsParityResult;
     const reportResult = result.status === "ready" ? stripReportDataUrls(result) : result;
     const report = {
       ...reportResult,
@@ -65,7 +71,7 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
     expect(result.status, result.status === "error" ? result.error : undefined).toBe("ready");
     if (result.status !== "ready") return;
 
-    expect(result.schema).toBe("a3d-current-routes-threejs-parity/v1");
+    expect(result.schema).toBe("a3d-current-routes-threejs-parity");
     expect(result.purpose).toBe("same-scene flagship A3D vs Three.js competitor baseline");
     expect(result.assertions.fakeEqualityClaimed).toBe(false);
     expect(result.assertions.sameAsset).toBe(true);
@@ -96,7 +102,7 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
       const dataUrl = result.dataUrls[kind as keyof typeof ARTIFACTS];
       expect(dataUrl).toMatch(/^data:image\/png;base64,/);
       writePng(path, dataUrl);
-      const stats = readV6PngStats(resolve(path));
+      const stats = readProductionPngStats(resolve(path));
       const size = statSync(resolve(path)).size;
       expect(stats.width, `${kind} width`).toBe(kind === "sideBySide" ? 2560 : 1280);
       expect(stats.height, `${kind} height`).toBe(kind === "sideBySide" ? 800 : 720);
@@ -112,7 +118,7 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
         {
           path,
           size: statSync(resolve(path)).size,
-          pixels: readV6PngStats(resolve(path))
+          pixels: readProductionPngStats(resolve(path))
         }
       ]))
     });
@@ -120,7 +126,7 @@ test.describe("V8 same-scene Three.js parity artifact", () => {
 });
 
 function assertNoThreeJsInA3DRuntimeSource(): void {
-  const sourcePath = "benchmarks/aura3d/src/scenes/flagship-viewer.ts";
+  const sourcePath = "benchmarks/aura3d/src/scenes/current-routes-flagship-viewer.ts";
   const source = readFileSync(resolve(sourcePath), "utf8");
   const forbidden = /from\s+["'][^"']*three|node_modules\/three|new\s+THREE\.|THREE\./i;
   expect(forbidden.test(source), `${sourcePath} must not import or instantiate Three.js`).toBe(false);
@@ -136,10 +142,10 @@ function writeJsonReport(path: string, value: unknown): void {
   writeFileSync(resolve(path), `${JSON.stringify(value, null, 2)}\n`);
 }
 
-type V8ThreejsParityResult =
+type CurrentThreejsParityResult =
   | {
       readonly status: "ready";
-      readonly schema: "a3d-current-routes-threejs-parity/v1";
+      readonly schema: "a3d-current-routes-threejs-parity";
       readonly purpose: string;
       readonly scene: { readonly width: number; readonly height: number };
       readonly a3d: {
@@ -168,13 +174,13 @@ type V8ThreejsParityResult =
     }
   | {
       readonly status: "error";
-      readonly schema: "a3d-current-routes-threejs-parity/v1";
+      readonly schema: "a3d-current-routes-threejs-parity";
       readonly missingDependency: boolean;
       readonly error: string;
       readonly report: unknown;
     };
 
-function stripReportDataUrls(result: Extract<V8ThreejsParityResult, { readonly status: "ready" }>): Omit<typeof result, "dataUrls"> {
+function stripReportDataUrls(result: Extract<CurrentThreejsParityResult, { readonly status: "ready" }>): Omit<typeof result, "dataUrls"> {
   const { dataUrls: _dataUrls, ...rest } = result;
   return rest;
 }

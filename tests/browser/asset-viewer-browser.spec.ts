@@ -35,7 +35,9 @@ test.describe("asset viewer browser runtime", () => {
     expect(result?.publicApis).toEqual(["AssetManager", "AssetBundleCacheEvidence", "GLTFLoader", "GLTFSceneAnalysisEvidence", "createGLTFRenderResources", "inspectGLTFAsset"]);
     expect(result?.inspection?.meshes[0]?.topology).toBe("triangles");
     expect(result?.inspection?.sceneHierarchy.some((node) => node.hasRenderable)).toBe(true);
-    expect(result?.warnings).toEqual([]);
+    expect(result?.warnings).toEqual([
+      expect.objectContaining({ code: "GLTF_RENDER_RESOURCE_FALLBACK_WHITE", severity: "warning" })
+    ]);
     expect(result?.bounds?.min?.[0]).toBeCloseTo(-0.7);
     expect(result?.bounds?.min?.[1]).toBeCloseTo(-0.45);
     expect(result?.bounds?.min?.[2]).toBe(0);

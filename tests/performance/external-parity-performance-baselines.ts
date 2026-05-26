@@ -1,12 +1,12 @@
 import {
-  createV4DefaultLodLevels,
-  createV4RendererStats,
-  evaluateV4ResourceBudget,
-  selectV4LodLevel,
-  sortV4RenderItems
+  createDefaultPerformanceLodLevels,
+  createRendererStats,
+  evaluateResourceBudget,
+  selectPerformanceLodLevel,
+  sortRenderItems
 } from "@aura3d/rendering";
 
-const stats = createV4RendererStats({
+const stats = createRendererStats({
   objectCount: 640,
   visibleObjectCount: 418,
   drawCalls: 146,
@@ -14,19 +14,19 @@ const stats = createV4RendererStats({
   cpuFrameMs: 13.8,
   textureMemoryBytes: 184 * 1024 * 1024
 });
-const budget = evaluateV4ResourceBudget(
+const budget = evaluateResourceBudget(
   { textureBudgetBytes: 256 * 1024 * 1024, geometryBudgetBytes: 160 * 1024 * 1024, drawCallBudget: 220 },
   { textureBytes: stats.textureMemoryBytes, geometryBytes: 92 * 1024 * 1024, drawCalls: stats.drawCalls }
 );
-const lod = selectV4LodLevel(createV4DefaultLodLevels(120_000), 18);
-const sorted = sortV4RenderItems([
+const lod = selectPerformanceLodLevel(createDefaultPerformanceLodLevels(120_000), 18);
+const sorted = sortRenderItems([
   { id: "glass-front", materialBucket: "transparent", pipelineKey: "glass", depth: 2 },
   { id: "opaque-case", materialBucket: "opaque", pipelineKey: "pbr", depth: 5 },
   { id: "alpha-label", materialBucket: "mask", pipelineKey: "pbr", depth: 3 }
 ]);
 
-export const V4_PERFORMANCE_BASELINE = {
-  schema: "a3d-v4-performance-baseline/v1",
+export const EXTERNAL_PARITY_PERFORMANCE_BASELINE = {
+  schema: "a3d-external-parity-performance-baseline",
   stats,
   budget,
   lod,
@@ -35,5 +35,5 @@ export const V4_PERFORMANCE_BASELINE = {
 } as const;
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  console.log(JSON.stringify(V4_PERFORMANCE_BASELINE, null, 2));
+  console.log(JSON.stringify(EXTERNAL_PARITY_PERFORMANCE_BASELINE, null, 2));
 }

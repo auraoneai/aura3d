@@ -14,17 +14,17 @@ const requiredFiles = [
   "examples/external-interactive-showcase/index.html",
   "examples/external-hdr-ibl/index.html",
   "examples/external-postprocess/index.html",
-  "docs/project/tutorials-v4-hdr-ibl.md",
-  "docs/project/tutorials-v4-product-configurator.md",
+  "docs/project/tutorials-getting-started-real-scene.md",
+  "docs/project/tutorials-product-configurator.md",
   "docs/project/tutorials-external-parity-material-studio.md",
   "docs/project/tutorials-external-parity-asset-gallery.md",
-  "docs/project/tutorials-v4-interior-scene.md",
-  "docs/project/tutorials-v4-character-viewer.md",
-  "docs/project/tutorials-v4-performance.md",
-  "docs/project/v4-roadmap-tutorials-product-viewer.md",
-  "docs/project/v4-roadmap-tutorials-material-studio.md",
-  "docs/project/v4-roadmap-tutorials-asset-gallery.md",
-  "docs/project/v4-roadmap-tutorials-interactive-scene.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/tutorials-getting-started-real-scene.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/getting-started.md",
+  "docs/project/tutorials-getting-started-real-scene.md",
   "tests/browser/external-parity-examples.spec.ts",
   "tools/external-parity-examples-readiness/index.ts",
   "tools/external-parity-screenshot-gallery/index.ts",
@@ -52,17 +52,17 @@ const visual = json("tests/reports/external-parity-visual-quality.json");
 check("visual-quality", visual?.pass === true && arr(visual.scores).length >= 10, "Visual QA report must pass for gallery screenshots.");
 
 const tutorialText = [
-  "docs/project/tutorials-v4-hdr-ibl.md",
-  "docs/project/tutorials-v4-product-configurator.md",
+  "docs/project/tutorials-getting-started-real-scene.md",
+  "docs/project/tutorials-product-configurator.md",
   "docs/project/tutorials-external-parity-material-studio.md",
   "docs/project/tutorials-external-parity-asset-gallery.md",
-  "docs/project/tutorials-v4-interior-scene.md",
-  "docs/project/tutorials-v4-character-viewer.md",
-  "docs/project/tutorials-v4-performance.md",
-  "docs/project/v4-roadmap-tutorials-product-viewer.md",
-  "docs/project/v4-roadmap-tutorials-material-studio.md",
-  "docs/project/v4-roadmap-tutorials-asset-gallery.md",
-  "docs/project/v4-roadmap-tutorials-interactive-scene.md"
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/tutorials-getting-started-real-scene.md",
+  "docs/project/verification-evidence.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/getting-started.md",
+  "docs/project/tutorials-getting-started-real-scene.md"
 ].map((path) => text(path)).join("\n");
 check(
   "tutorial-public-api",
@@ -70,24 +70,24 @@ check(
   "Tutorials must use public SDK imports and explicitly cite evidence plus claim boundaries."
 );
 check(
-  "required-v4-example-set",
+  "required-external-parity-example-set",
   ["examples/external-hdr-ibl/main.ts", "examples/external-postprocess/main.ts"].every((file) => existsSync(resolve(file)) && text(file).includes("@aura3d/engine")),
   "HDR/IBL and postprocess examples must exist and import the public package."
 );
 check(
   "package-script",
-  text("package.json").includes("\"v4:examples\""),
-  "package.json must expose v4:examples."
+  text("package.json").includes("\"external-parity:examples\""),
+  "package.json must expose external-parity:examples."
 );
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-examples-readiness/v1",
+  schema: "a3d-external-parity-examples-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 16 examples, tutorials, gallery, and visual QA are ready."
-    : "V4 Milestone 16 examples, tutorials, gallery, and visual QA are incomplete.",
+    ? "External parity Milestone 16 examples, tutorials, gallery, and visual QA are ready."
+    : "External parity Milestone 16 examples, tutorials, gallery, and visual QA are incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

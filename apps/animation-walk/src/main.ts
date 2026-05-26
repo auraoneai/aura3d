@@ -2,7 +2,7 @@ import { AnimationMotionQualityTracker, LocomotionController, createRootMotionWa
 import {
   DEFAULT_GLTF_STUDIO_PREVIEW_ENVIRONMENT_LIGHTING,
   createGLTFSceneAnimationRuntime,
-  loadV6GLTFRenderPipeline
+  loadProductionGLTFRenderPipeline
 } from "@aura3d/assets";
 import {
   Geometry,
@@ -17,11 +17,11 @@ import { DirectionalLight, composeMat4, multiplyMat4, type Mat4 } from "@aura3d/
 
 declare global {
   interface Window {
-    __a3dV8AnimationWalk?: V8AnimationWalkRuntime;
+    __a3dCurrentRoutesAnimationWalk?: CurrentRoutesAnimationWalkRuntime;
   }
 }
 
-interface V8AnimationWalkRuntime {
+interface CurrentRoutesAnimationWalkRuntime {
   appId: "animation-walk";
   status: "loading" | "ready" | "running" | "error";
   statusLabel: string;
@@ -85,7 +85,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.006, 0.008, 0.012, 1]
     });
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: SOLDIER_URL,
       assetId: "animation-walk-soldier",
       assetName: "Soldier Walk",
@@ -112,7 +112,7 @@ async function run(): Promise<void> {
       asset: pipeline.asset
     });
     const walkClip = pipeline.asset.animations.find((candidate) => /^walk$/i.test(candidate.name)) ?? pipeline.asset.animations[0];
-    if (!walkClip) throw new Error("V8 Animation Walk requires an imported Soldier walk clip.");
+    if (!walkClip) throw new Error("CurrentRoutes Animation Walk requires an imported Soldier walk clip.");
     const importedLocomotion = new LocomotionController({
       clip: createRootMotionWalkClip({ duration: walkClip.duration > 0 ? walkClip.duration : 1.2, distance: 1.28 }),
       speed: state.speed,
@@ -190,7 +190,7 @@ async function run(): Promise<void> {
           poseDiversityScore: motion.poseDiversityScore,
           motionHealthy: motion.healthy
         });
-        window.__a3dV8AnimationWalk = runtime;
+        window.__a3dCurrentRoutesAnimationWalk = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish(root, runtime, state);
           bindUi(root, state, () => publish(root, runtime, state));
@@ -211,14 +211,14 @@ async function run(): Promise<void> {
 }
 
 function createRuntime(
-  status: V8AnimationWalkRuntime["status"],
+  status: CurrentRoutesAnimationWalkRuntime["status"],
   statusLabel: string,
   startedAt: number,
   state: LocomotionControllerState,
   clipName: string,
   sample: LocomotionControllerSample,
-  counters: Partial<Pick<V8AnimationWalkRuntime, "frameCount" | "drawCalls" | "fps" | "motionSamples" | "motionTimeRange" | "poseDiversityScore" | "motionHealthy">> = {}
-): V8AnimationWalkRuntime {
+  counters: Partial<Pick<CurrentRoutesAnimationWalkRuntime, "frameCount" | "drawCalls" | "fps" | "motionSamples" | "motionTimeRange" | "poseDiversityScore" | "motionHealthy">> = {}
+): CurrentRoutesAnimationWalkRuntime {
   return {
     appId: APP_ID,
     status,
@@ -268,7 +268,7 @@ function createWalkItems(fixture: ReturnType<typeof createWalkFixture>, sample: 
   return items;
 }
 
-function collectImportedItems(pipeline: Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>, placement: Mat4): readonly RenderItem[] {
+function collectImportedItems(pipeline: Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>, placement: Mat4): readonly RenderItem[] {
   const items: RenderItem[] = [];
   pipeline.resources.scene.updateWorldTransforms();
   for (const { node, renderable } of pipeline.resources.scene.collectRenderables()) {
@@ -299,11 +299,11 @@ function sampleImportedLocomotion(controller: LocomotionController, state: Locom
   return controller.sample(elapsedSeconds);
 }
 
-function publish(root: HTMLElement, runtime: V8AnimationWalkRuntime, state: LocomotionControllerState): void {
-  window.__a3dV8AnimationWalk = runtime;
+function publish(root: HTMLElement, runtime: CurrentRoutesAnimationWalkRuntime, state: LocomotionControllerState): void {
+  window.__a3dCurrentRoutesAnimationWalk = runtime;
   root.innerHTML = `
     <section class="panel">
-      <h1>V8 Animation Walk</h1>
+      <h1>CurrentRoutes Animation Walk</h1>
       <span class="status" data-state="${runtime.status}">${escapeHtml(runtime.statusLabel)}</span>
       <div class="metrics">
         ${metric("Frames", runtime.frameCount)}
@@ -344,10 +344,10 @@ function bindRange(root: HTMLElement, selector: string, update: (value: number) 
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-walk-key");
+  const key = new DirectionalLight("current-routes-walk-key");
   key.intensity = 4.4;
   key.color = [1, 0.94, 0.82];
-  const rim = new DirectionalLight("v8-walk-rim");
+  const rim = new DirectionalLight("current-routes-walk-rim");
   rim.intensity = 2;
   rim.color = [0.68, 0.8, 1];
   return [

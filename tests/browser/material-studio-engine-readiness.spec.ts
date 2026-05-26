@@ -3,7 +3,7 @@ import { dirname } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("material studio v1", () => {
+test.describe("material studio legacy", () => {
   let server: ExampleDevServer;
 
   test.beforeAll(async () => {
@@ -16,8 +16,8 @@ test.describe("material studio v1", () => {
 
   test("renders visibly distinct material presets without a debug grid", async ({ page }) => {
     await page.goto(`${server.origin}/examples/legacy-material-studio/index.html`, { waitUntil: "domcontentloaded" });
-    await expect.poll(() => page.evaluate(() => window.__A3D_MATERIAL_STUDIO_V1__?.status)).toBe("ready");
-    const state = await page.evaluate(() => window.__A3D_MATERIAL_STUDIO_V1__);
+    await expect.poll(() => page.evaluate(() => window.__A3D_MATERIAL_STUDIO_LEGACY__?.status)).toBe("ready");
+    const state = await page.evaluate(() => window.__A3D_MATERIAL_STUDIO_LEGACY__);
     const screenshot = "tests/reports/legacy-material-studio/material-studio.png";
     mkdirSync(dirname(screenshot), { recursive: true });
     await page.locator("[data-testid='legacy-material-studio-canvas']").screenshot({ path: screenshot });

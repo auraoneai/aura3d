@@ -1,16 +1,16 @@
-export interface V4LodLevel {
+export interface PerformanceLodLevel {
   readonly id: string;
   readonly maxDistance: number;
   readonly triangleBudget: number;
 }
 
-export function selectV4LodLevel(levels: readonly V4LodLevel[], distance: number): V4LodLevel {
-  if (levels.length === 0) throw new Error("selectV4LodLevel requires at least one LOD level.");
+export function selectPerformanceLodLevel(levels: readonly PerformanceLodLevel[], distance: number): PerformanceLodLevel {
+  if (levels.length === 0) throw new Error("selectPerformanceLodLevel requires at least one LOD level.");
   const sorted = [...levels].sort((a, b) => a.maxDistance - b.maxDistance);
   return sorted.find((level) => distance <= level.maxDistance) ?? sorted[sorted.length - 1]!;
 }
 
-export function createV4DefaultLodLevels(baseTriangles: number): readonly V4LodLevel[] {
+export function createDefaultPerformanceLodLevels(baseTriangles: number): readonly PerformanceLodLevel[] {
   const triangles = Math.max(1, Math.floor(baseTriangles));
   return [
     { id: "lod0", maxDistance: 8, triangleBudget: triangles },

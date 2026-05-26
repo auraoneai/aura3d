@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createContactShadowPass } from "../../../packages/rendering/src/production-runtime";
 
-describe("V7 contact shadow pass", () => {
+describe("RuntimeParity contact shadow pass", () => {
   it("creates reusable layered contact-shadow proxy render items with honest parity diagnostics", () => {
     const pass = createContactShadowPass({
       bounds: { min: [-1, -0.5, -0.4], max: [1, 0.7, 0.6] },

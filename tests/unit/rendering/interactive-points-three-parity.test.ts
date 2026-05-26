@@ -14,7 +14,7 @@ const POINT_POSITIONS = [
 ] as const;
 
 describe("interactive points Three.js parity", () => {
-  it("matches Three.js Raycaster point threshold hits for the V8 picking scene", () => {
+  it("matches Three.js Raycaster point threshold hits for the CurrentRoutes picking scene", () => {
     const a3d = createA3DScene();
     const three = createThreePoints();
     const threshold = 0.12;

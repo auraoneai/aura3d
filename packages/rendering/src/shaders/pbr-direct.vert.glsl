@@ -1,5 +1,5 @@
 #version 300 es
-// @aura3d-shader:pbr-direct-v1
+// @aura3d-shader:pbr-direct
 precision highp float;
 layout(location = 0) in vec3 a_position;
 layout(location = 1) in vec3 a_normal;

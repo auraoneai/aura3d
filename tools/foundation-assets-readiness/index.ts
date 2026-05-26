@@ -57,7 +57,7 @@ const captureChecks: AssetCaptureCheck[] = (browserManifest?.captures ?? []).map
 const requiredCoverage = ["gltf", "glb", "data-uri", "external-buffer", "external-image"] as const;
 
 const report = {
-  schema: "a3d-foundation-assets-readiness/v1",
+  schema: "a3d-foundation-assets-readiness",
   generatedAt: new Date().toISOString(),
   pass: sourceFiles.every((file) => file.exists)
     && fixtureChecks.every((fixture) => fixture.exists && fixture.manifestExists && fixture.gltfExists && fixture.glbExists && fixture.externalExists && requiredCoverage.every((item) => fixture.coverage.includes(item)))

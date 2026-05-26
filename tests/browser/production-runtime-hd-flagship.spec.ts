@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 HD flagship renderer", () => {
+test.describe("Production HD flagship renderer", () => {
   test.setTimeout(90_000);
 
   let server: ExampleDevServer;
@@ -32,17 +32,17 @@ test.describe("V6 HD flagship renderer", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V6_WEBGL2__ as { status?: string } | undefined;
+          const result = window.__PRODUCTION_WEBGL2__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 45_000 }
       );
     } catch (error) {
-      throw new Error(`V6 HD flagship harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Production HD flagship harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V6_WEBGL2__) as {
+    const result = await page.evaluate(() => window.__PRODUCTION_WEBGL2__) as {
       status: "ready" | "error";
       error?: string;
       assetIds?: readonly string[];
@@ -90,7 +90,7 @@ test.describe("V6 HD flagship renderer", () => {
     const screenshotPath = "tests/reports/production-runtime-hd-flagship/composed-product-hd.png";
     mkdirSync(dirname(resolve(screenshotPath)), { recursive: true });
     await page.locator("#production-runtime-webgl2").screenshot({ path: screenshotPath });
-    const pixelStats = readV6PngStats(resolve(screenshotPath));
+    const pixelStats = readProductionPngStats(resolve(screenshotPath));
     const fileSize = statSync(resolve(screenshotPath)).size;
     expect(pixelStats.width).toBe(1920);
     expect(pixelStats.height).toBe(1080);
@@ -103,7 +103,7 @@ test.describe("V6 HD flagship renderer", () => {
 
     const reportPath = "tests/reports/production-runtime-hd-flagship.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "a3d-production-runtime-hd-flagship/v1",
+      schema: "a3d-production-runtime-hd-flagship",
       generatedAt: new Date().toISOString(),
       pass: true,
       screenshot: screenshotPath,

@@ -7,7 +7,7 @@ const commands = [
   "verify:external-parity-code",
   "verify:external-parity-rendering",
   "verify:external-parity-assets",
-  "verify:v4-khronos-visuals",
+  "verify:external-parity-khronos-visuals",
   "verify:external-parity-editor",
   "verify:external-parity-runtime",
   "verify:external-parity-examples",
@@ -30,12 +30,12 @@ const commands = [
   "audit:external-parity-ecosystem-readiness",
   "audit:external-parity-production-readiness",
   "audit:external-parity-external-evidence-readiness",
-  "audit:v4-broad-parity",
-  "audit:v4-completion",
+  "audit:external-parity-broad-parity",
+  "audit:external-parity-completion",
   "verify:external-parity-report-freshness",
 ] as const;
 
-export function runV4Verification(): number {
+export function runExternalParityVerification(): number {
   const results = commands.map((script) => {
     const result = spawnSync("pnpm", ["--silent", script], { stdio: "inherit", env: process.env });
     return {
@@ -47,7 +47,7 @@ export function runV4Verification(): number {
   const report = {
     ...baseReport(root, {
       ok: violations.length === 0,
-      command: "pnpm verify:v4",
+      command: "pnpm verify:external-parity",
       runIdPrefix: "external-parity-verify",
       sourceFiles: ["package.json", "tools/external-parity-verify/index.ts"],
       violations,
@@ -61,5 +61,5 @@ export function runV4Verification(): number {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  process.exitCode = runV4Verification();
+  process.exitCode = runExternalParityVerification();
 }

@@ -86,7 +86,7 @@ const requiredImports = [
   `${packageName}/workflows`
 ];
 const report = {
-  schema: "a3d-foundation-external-consumer/v1",
+  schema: "a3d-foundation-external-consumer",
   generatedAt: new Date().toISOString(),
   pass: violations.length === 0
     && state?.status === "ready"

@@ -10,7 +10,7 @@ type Check = {
   readonly blockers: readonly string[];
 };
 
-type V4EcosystemReadinessReport = {
+type ExternalParityEcosystemReadinessReport = {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly boundedEcosystemDocsAccessibilityDeviceMatrix: boolean;
@@ -61,14 +61,14 @@ const sourceFiles = [
   "tests/reports/external-parity-visual-quality.json",
 ] as const;
 
-export function createV4EcosystemReadinessReport(root = process.cwd()): V4EcosystemReadinessReport {
+export function createExternalParityEcosystemReadinessReport(root = process.cwd()): ExternalParityEcosystemReadinessReport {
   const currentCapability = readJson(root, "tests/reports/external-parity-current-capability.json");
   const visualQuality = readJson(root, "tests/reports/external-parity-visual-quality.json");
   const browserMatrix = readJson(root, "tests/reports/browser-hardware-matrix.json");
 
   const documentationCoverage = [
     check("docs-required-files-exist", documentationFiles.every((path) => existsSync(join(root, path))), documentationFiles, ["required API, tutorial, example, compatibility, claim, and known-limit docs must exist"]),
-    check("api-docs-v4-public-exports", textIncludes(root, "docs/api/public-api.md", ["createV4RenderPresetEvidence", "createV4EnvironmentLighting", "sampleV4LdrPostprocessReadback"]), ["docs/api/public-api.md"], ["public API docs must list current V4 render preset and environment helpers"]),
+    check("api-docs-external-parity-public-exports", textIncludes(root, "docs/api/public-api.md", ["createExternalParityRenderPresetEvidence", "createExternalParityEnvironmentLighting", "sampleExternalParityLdrPostprocessReadback"]), ["docs/api/public-api.md"], ["public API docs must list current External parity render preset and environment helpers"]),
     check("tutorials-link-running-browser-evidence", documentationFiles.filter((path) => path.startsWith("docs/project/tutorials-")).every((path) => textIncludes(root, path, ["pnpm"])), documentationFiles.filter((path) => path.startsWith("docs/project/tutorials-")), ["tutorial docs must include runnable verification or serve commands"]),
     check("compatibility-and-claim-boundary-docs", textIncludes(root, "docs/project/compatibility.md", ["Do not claim broad browser or device compatibility"]) && textIncludes(root, "docs/project/claim-guidelines.md", ["claim"]), ["docs/project/compatibility.md", "docs/project/claim-guidelines.md"], ["compatibility and claim-boundary docs must explicitly block broad unsupported wording"]),
   ] as const;
@@ -90,7 +90,7 @@ export function createV4EcosystemReadinessReport(root = process.cwd()): V4Ecosys
   const deviceMatrixCoverage = [
     check("bounded-browser-hardware-matrix-present", browserMatrix?.ok === true && testedRows.length >= 1, ["tests/reports/browser-hardware-matrix.json", "docs/project/browser-hardware-matrix.md"], ["browser hardware matrix must include at least one tested browser row"]),
     check("browser-matrix-records-os-user-agent-and-gpu-status", testedRows.some((row) => isRecord(row.os) && typeof row.userAgent === "string" && isRecord(row.gpu) && typeof row.gpu.adapterStatus === "string" && typeof row.gpu.deviceStatus === "string"), ["tests/reports/browser-hardware-matrix.json"], ["tested browser rows must record OS, user agent, adapter status, and device status"]),
-    check("v4-local-capability-and-visual-quality-reports-present", currentCapability?.ok === true && visualQuality?.ok === true, ["tests/reports/external-parity-current-capability.json", "tests/reports/external-parity-visual-quality.json"], ["current capability and visual quality reports must be present before ecosystem readiness is counted"]),
+    check("external-parity-local-capability-and-visual-quality-reports-present", currentCapability?.ok === true && visualQuality?.ok === true, ["tests/reports/external-parity-current-capability.json", "tests/reports/external-parity-visual-quality.json"], ["current capability and visual quality reports must be present before ecosystem readiness is counted"]),
   ] as const;
 
   const allChecks = [...documentationCoverage, ...accessibilityCoverage, ...deviceMatrixCoverage];
@@ -142,7 +142,7 @@ function textIncludes(root: string, path: string, markers: readonly string[]): b
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4EcosystemReadinessReport();
+  const report = createExternalParityEcosystemReadinessReport();
   writeJson(process.cwd(), reportPath, report);
   console.log(JSON.stringify({
     ok: report.ok,

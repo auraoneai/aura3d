@@ -1,17 +1,17 @@
-import type { V8AnimationKeyframesRuntime, V8KeyframeControls } from "./state.js";
+import type { CurrentRoutesAnimationKeyframesRuntime, CurrentRoutesKeyframeControls } from "./state.js";
 
-export interface V8KeyframeUiOptions {
-  readonly runtime: V8AnimationKeyframesRuntime;
+export interface CurrentRoutesKeyframeUiOptions {
+  readonly runtime: CurrentRoutesAnimationKeyframesRuntime;
   readonly clips: readonly string[];
-  readonly onControls: (controls: V8KeyframeControls) => void;
+  readonly onControls: (controls: CurrentRoutesKeyframeControls) => void;
 }
 
-export function renderKeyframeUi(root: HTMLElement, options: V8KeyframeUiOptions): void {
+export function renderKeyframeUi(root: HTMLElement, options: CurrentRoutesKeyframeUiOptions): void {
   const { runtime, clips } = options;
   root.innerHTML = `
     <section class="panel">
       <div class="header">
-        <h1>V8 Animation Keyframes</h1>
+        <h1>CurrentRoutes Animation Keyframes</h1>
         <span class="status ${runtime.status}">${escapeHtml(runtime.status)}</span>
       </div>
       <div class="metrics">
@@ -49,7 +49,7 @@ export function renderKeyframeUi(root: HTMLElement, options: V8KeyframeUiOptions
   bind(root, options);
 }
 
-function bind(root: HTMLElement, options: V8KeyframeUiOptions): void {
+function bind(root: HTMLElement, options: CurrentRoutesKeyframeUiOptions): void {
   const controls = options.runtime.controls;
   root.querySelector("#play-toggle")?.addEventListener("click", () => {
     options.onControls({ ...controls, playing: !controls.playing });

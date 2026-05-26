@@ -1,11 +1,11 @@
 import {
   composeEnvironmentLighting,
   computePerspectiveCameraFrame,
-  loadV6HdrEnvironment,
+  loadProductionHdrEnvironment,
   type EnvironmentLightingOptions,
   type RenderDeviceDiagnostics,
   type RenderItem,
-  type V6LoadedHdrEnvironment
+  type ProductionLoadedHdrEnvironment
 } from "@aura3d/rendering";
 import { A3DRenderer } from "@aura3d/engine/advanced-runtime";
 import { DEMOS, getDemo, type DemoDefinition } from "./metadata";
@@ -47,7 +47,7 @@ import "./styles.css";
 
 declare global {
   interface Window {
-    __A3D_V9_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime;
+    __A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__?: AdvancedGalleryRuntime;
   }
 }
 
@@ -67,7 +67,7 @@ interface AdvancedGalleryRuntime {
   readonly renderer: "a3d-webgl2";
   readonly postprocess: boolean;
   readonly environmentBackground?: {
-    readonly source: "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
+    readonly source: "loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass";
     readonly routeId: string;
     readonly enabled: true;
     readonly rendererField: "source.environmentBackground";
@@ -87,7 +87,7 @@ interface AdvancedGalleryRuntime {
     readonly lightingIntensity: number;
     readonly backgroundIntensity: number;
     readonly hdr: {
-      readonly loader: "loadV6HdrEnvironment";
+      readonly loader: "loadProductionHdrEnvironment";
       readonly uri: string;
       readonly id: string;
       readonly label: string;
@@ -103,7 +103,7 @@ interface AdvancedGalleryRuntime {
     readonly claimBoundary: string;
   };
   readonly environmentLighting?: {
-    readonly source: "loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture";
+    readonly source: "loadProductionHdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture";
     readonly routeId: string;
     readonly enabled: true;
     readonly rendererField: "source.environmentLighting";
@@ -310,7 +310,7 @@ interface CaptureOverheadState {
 interface RendererEnvironmentBackgroundLoadState {
   readonly definition: RendererEnvironmentBackgroundDefinition;
   readonly startedAt: number;
-  environment?: V6LoadedHdrEnvironment;
+  environment?: ProductionLoadedHdrEnvironment;
   loadMs?: number;
   error?: string;
   promise?: Promise<void>;
@@ -965,7 +965,7 @@ async function loadRendererEnvironmentBackground(state: RendererEnvironmentBackg
       throw new Error(`Failed to load HDR environment ${state.definition.hdrUri}: ${response.status} ${response.statusText}`);
     }
     const buffer = await response.arrayBuffer();
-    state.environment = loadV6HdrEnvironment(buffer, {
+    state.environment = loadProductionHdrEnvironment(buffer, {
       id: state.definition.environmentId,
       label: state.definition.environmentLabel,
       intensity: state.definition.lightingIntensity,
@@ -1478,7 +1478,7 @@ function countRenderItemInstances(items: readonly RenderItem[]): number {
 }
 
 function publish(value: AdvancedGalleryRuntime): void {
-  window.__A3D_V9_ADVANCED_EXAMPLES_GALLERY__ = value;
+  window.__A3D_THREEJS_PARITY_ADVANCED_EXAMPLES_GALLERY__ = value;
 }
 
 function showError(message: string): void {

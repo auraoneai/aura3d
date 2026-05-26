@@ -1,10 +1,10 @@
 import { mkdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
-import { readV6PngStats } from "../../tools/production-runtime-report-bridge/pngStats";
+import { readProductionPngStats } from "../../tools/production-runtime-report-bridge/pngStats";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V7 WebGPU imported asset artifact", () => {
+test.describe("WebGPU imported asset artifact", () => {
   test.setTimeout(180_000);
 
   let server: ExampleDevServer;
@@ -36,7 +36,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
         { LoadContext },
         { createGLTFRenderResources },
         { Renderer },
-        { createV6PbrHdrPipelineFromRadiance, createV6EnvironmentLightingResources }
+        { createProductionPbrHdrPipelineFromRadiance, createProductionEnvironmentLightingResources }
       ] = await Promise.all([
         import("/packages/assets/src/GLTFLoader.js"),
         import("/packages/assets/src/LoadContext.js"),
@@ -45,11 +45,11 @@ test.describe("V7 WebGPU imported asset artifact", () => {
         import("/packages/rendering/src/production-runtime/index.js")
       ]);
 
-      const availability = await (await import("/packages/rendering/src/production-runtime/index.js")).createV6WebGPUReport(navigator.gpu);
+      const availability = await (await import("/packages/rendering/src/production-runtime/index.js")).createProductionWebGPUReport(navigator.gpu);
       if (availability.status !== "available") {
         return {
           status: "blocked",
-          schema: "a3d-v7-webgpu-imported-asset/v1",
+          schema: "a3d-runtime-webgpu-imported-asset",
           availability,
           productionClaim: "not-claimed",
           reason: "Browser did not expose a usable WebGPU adapter/device."
@@ -65,15 +65,15 @@ test.describe("V7 WebGPU imported asset artifact", () => {
         ]);
         if (!hdrResponse.ok) throw new Error(`Failed to fetch HDR ${hdrUrl}: ${hdrResponse.status}`);
         const hdrBytes = await hdrResponse.arrayBuffer();
-        const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdrBytes, {
-          id: "v7-webgpu-imported-asset-hdr",
-          label: "V7 WebGPU Imported Asset HDR",
+        const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdrBytes, {
+          id: "runtime-webgpu-imported-asset-hdr",
+          label: "WebGPU Imported Asset HDR",
           intensity: 1.12,
           backgroundIntensity: 0.72,
           rotation: 0.18,
           toneMapping: { operator: "filmic", exposure: 0.96, whitePoint: 11.2 }
         });
-        const lighting = createV6EnvironmentLightingResources(hdrPipeline);
+        const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
         const resources = await createGLTFRenderResources(asset);
         const webgl2Resources = await createGLTFRenderResources(asset);
         const input = resources.toRendererInput({ width: WIDTH, height: HEIGHT }, {
@@ -98,7 +98,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
         const renderTarget = renderer.device.createRenderTarget({
           width: WIDTH,
           height: HEIGHT,
-          label: "v7-webgpu-imported-asset-target",
+          label: "runtime-webgpu-imported-asset-target",
           format: "rgba8",
           depth: true
         });
@@ -146,10 +146,10 @@ test.describe("V7 WebGPU imported asset artifact", () => {
         lighting.dispose();
         return {
           status: visualReady ? "ready" : "blocked",
-          schema: "a3d-v7-webgpu-imported-asset/v1",
+          schema: "a3d-runtime-webgpu-imported-asset",
           productionClaim: "not-claimed",
           reason: visualReady
-            ? "This is low-level Renderer WebGPU imported-asset evidence. It is not the public V6 SDK production backend."
+            ? "This is low-level Renderer WebGPU imported-asset evidence. It is not the public production SDK production backend."
             : "Low-level WebGPU submitted a native imported-asset PBR draw, but the readback lacks enough visual detail to count as product-rendering proof.",
           availability,
           asset: {
@@ -176,7 +176,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
       } catch (error) {
         return {
           status: "blocked",
-          schema: "a3d-v7-webgpu-imported-asset/v1",
+          schema: "a3d-runtime-webgpu-imported-asset",
           availability,
           productionClaim: "not-claimed",
           reason: error instanceof Error ? error.stack ?? error.message : String(error)
@@ -287,7 +287,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
     const screenshotPath = `${reportDir}/webgpu-imported-damaged-helmet.png`;
     if (dataUrl) {
       writeFileSync(resolve(screenshotPath), Buffer.from(dataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
-      const pngStats = readV6PngStats(resolve(screenshotPath));
+      const pngStats = readProductionPngStats(resolve(screenshotPath));
       const fileSize = statSync(resolve(screenshotPath)).size;
       Object.assign(report, { screenshot: screenshotPath, fileSize, pngStats });
     }
@@ -296,7 +296,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
       writeFileSync(resolve(cpuShadowScreenshotPath), Buffer.from(cpuShadowDataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         cpuShadowScreenshot: cpuShadowScreenshotPath,
-        cpuShadowPngStats: readV6PngStats(resolve(cpuShadowScreenshotPath))
+        cpuShadowPngStats: readProductionPngStats(resolve(cpuShadowScreenshotPath))
       });
     }
     if (webgl2DataUrl) {
@@ -304,7 +304,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
       writeFileSync(resolve(webgl2ScreenshotPath), Buffer.from(webgl2DataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         webgl2Screenshot: webgl2ScreenshotPath,
-        webgl2PngStats: readV6PngStats(resolve(webgl2ScreenshotPath))
+        webgl2PngStats: readProductionPngStats(resolve(webgl2ScreenshotPath))
       });
     }
     if (webgpuVsWebgl2DiffDataUrl) {
@@ -312,7 +312,7 @@ test.describe("V7 WebGPU imported asset artifact", () => {
       writeFileSync(resolve(webgpuVsWebgl2DiffPath), Buffer.from(webgpuVsWebgl2DiffDataUrl.replace(/^data:image\/png;base64,/, ""), "base64"));
       Object.assign(report, {
         webgpuVsWebgl2DiffScreenshot: webgpuVsWebgl2DiffPath,
-        webgpuVsWebgl2DiffPngStats: readV6PngStats(resolve(webgpuVsWebgl2DiffPath))
+        webgpuVsWebgl2DiffPngStats: readProductionPngStats(resolve(webgpuVsWebgl2DiffPath))
       });
     }
     writeFileSync(resolve(reportPath), `${JSON.stringify({

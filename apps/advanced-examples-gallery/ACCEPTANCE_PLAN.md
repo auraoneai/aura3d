@@ -1,6 +1,6 @@
 # Advanced Examples Gallery 10/10 Acceptance Plan
 
-This is the operating contract for keeping the V9 advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
+This is the operating contract for keeping the ThreejsParity advanced examples gallery at accepted showcase quality. It is intentionally stricter than route smoke tests.
 
 A route is not accepted because it runs, has many objects, or has a good title. A route is accepted only when the current screenshot, runtime telemetry, source implementation, review metadata, and human visual review prove that it belongs beside the named advanced Three.js-style category.
 
@@ -8,7 +8,7 @@ A route is not accepted because it runs, has many objects, or has a good title. 
 
 Preserve this truth until evidence changes it:
 
-- Full V9 route runtime/screenshot coverage passes for all ten routes.
+- Full ThreejsParity route runtime/screenshot coverage passes for all ten routes.
 - `pnpm advanced-gallery:review` reports `Release gate: accepted (10/10 accepted)`.
 - Current accepted demo count is `10/10`.
 - `pnpm advanced-gallery:audit` passes with zero blockers and zero warnings.
@@ -62,7 +62,7 @@ This table must be updated from source evidence only, not from desired copy.
 | Area | Native A3D / Repo Capability | Local Helper Approximation | Not Yet Acceptable As Native | Demo Risk |
 | --- | --- | --- | --- | --- |
 | WebGL2 rendering | A3D render items, geometry, materials, lights, depth, transparency, readback, diagnostics. | Route scene builders, camera presets, composition helpers. | Film-quality renderer parity is not proven by smoke tests. | All demos. |
-| WebGPU | Existing WebGPU examples and proof routes exist. | Gallery currently routes through WebGL2-oriented runtime paths. | WebGPU water/compute showcase is not proven in V9 gallery. | Ocean, water, particles. |
+| WebGPU | Existing WebGPU examples and proof routes exist. | Gallery currently routes through WebGL2-oriented runtime paths. | WebGPU water/compute showcase is not proven in ThreejsParity gallery. | Ocean, water, particles. |
 | PBR/materials | PBR-style materials, emissive, metallic/roughness, and supported loader/material paths. | Asset-specific material corrections and route material presets. | Premium glass/transmission sorting and perfect configurator material response are not proven. | Product, reactor, fog, ocean. |
 | GLB/glTF loading | Authored GLB fixtures and browser loading are active in multiple routes. | Asset exclusion, framing, material correction, node inspection layers. | Bad imported assets cannot become accepted evidence without diagnosis. | Product, robotics, smart city, fog. |
 | Animation | Animation mixer/clip playback is used in animated GLB routes. | Deterministic prop, camera, and overlay motion. | IK solver parity and full state-machine quality are not proven. | Robotics, smart city. |
@@ -71,7 +71,7 @@ This table must be updated from source evidence only, not from desired copy.
 | Postprocess | Bloom/postprocess-style controls and FXAA/color/vignette effects exist in routes. | CSS/canvas/compositor overlays and route-specific toggles where needed. | Effects-composer-class bloom/DOF/motion blur quality and cost are not accepted. | Reactor. |
 | Fog/light shafts | Transparent geometry, haze cards, dust particles, lighting choreography. | Layered fog cards and god-ray approximations. | True volumetric raymarch fog/light scattering is not exposed. | Fog cathedral. |
 | Water | Procedural mesh waves/ripples and pointer disturbance can be implemented. | CPU ripple fields, normal/foam/color approximations. | Native GPGPU water, SSR, refraction, FFT ocean stack is not exposed as complete. | Water lab, ocean. |
-| Physics | `@aura3d/physics` exists and V9 playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
+| Physics | `@aura3d/physics` exists and ThreejsParity playground uses route-level rigid-body/contact behavior. | Primitive/proxy colliders and kinematic pusher keep route deterministic. | Mesh colliders and articulated robot dynamics are not accepted unless solved or explicitly bounded. | Physics playground, digital twin. |
 | Controls/UI | Orbit/camera presets, panels, toggles, sliders, capture, reset, status HUD. | Route dashboards and labels. | Controls must be visually tested per route, not inferred from UI existence. | All demos. |
 | Screenshots/review | Playwright capture and visual-review tooling exist. | Human acceptance metadata and screenshot hashes. | Runtime pass cannot promote visual status by itself. | All demos. |
 

@@ -1,14 +1,14 @@
-import { AnimationActionV5 } from "./AnimationAction";
-import type { AnimationClipV5 } from "./AnimationClip";
+import { AnimationActionThreeCompat } from "./AnimationAction";
+import type { AnimationClipThreeCompat } from "./AnimationClip";
 
-export class AnimationMixerV5 {
-  readonly actions: AnimationActionV5[] = [];
+export class AnimationMixerThreeCompat {
+  readonly actions: AnimationActionThreeCompat[] = [];
   time = 0;
 
-  clipAction(clip: AnimationClipV5): AnimationActionV5 {
+  clipAction(clip: AnimationClipThreeCompat): AnimationActionThreeCompat {
     const existing = this.actions.find((action) => action.clip === clip);
     if (existing) return existing;
-    const action = new AnimationActionV5(clip);
+    const action = new AnimationActionThreeCompat(clip);
     this.actions.push(action);
     return action;
   }

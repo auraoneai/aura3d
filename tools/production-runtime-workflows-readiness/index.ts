@@ -1,11 +1,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  createV6AssetPreflight,
-  createV6ProductionRendererDefaults,
-  createV6VisualQAResult,
-  createV6WorkflowPlan,
-  listV6WorkflowDefinitions
+  createProductionAssetPreflight,
+  createProductionRendererDefaults,
+  createProductionVisualQAResult,
+  createProductionWorkflowPlan,
+  listProductionWorkflowDefinitions
 } from "../../packages/workflows/src";
 
 const reportPath = resolve("tests/reports/production-runtime-workflows-readiness.json");
@@ -32,10 +32,10 @@ const galleryManifest = JSON.parse(readFileSync(resolve("tests/reports/productio
     pixelStats?: { width: number; height: number; nonBlackPixels: number; uniqueColorBuckets: number };
   }[];
 };
-const workflows = listV6WorkflowDefinitions();
-const plans = workflows.map((workflow) => createV6WorkflowPlan(workflow.id));
-const preflights = (assetManifest.assets ?? []).map(createV6AssetPreflight);
-const qaResults = (galleryManifest.entries ?? []).map((entry) => createV6VisualQAResult({
+const workflows = listProductionWorkflowDefinitions();
+const plans = workflows.map((workflow) => createProductionWorkflowPlan(workflow.id));
+const preflights = (assetManifest.assets ?? []).map(createProductionAssetPreflight);
+const qaResults = (galleryManifest.entries ?? []).map((entry) => createProductionVisualQAResult({
   screenshotPath: entry.screenshot,
   rendererBackend: entry.rendererBackend,
   realRendererProof: entry.realAssetIds.length > 0 && entry.drawCalls > 0 && entry.realHdrEnvironmentId.length > 0,
@@ -46,7 +46,7 @@ const qaResults = (galleryManifest.entries ?? []).map((entry) => createV6VisualQ
   drawCalls: entry.drawCalls,
   textureMemory: entry.textureMemory
 }));
-const defaults = workflows.map((workflow) => createV6ProductionRendererDefaults(workflow.id));
+const defaults = workflows.map((workflow) => createProductionRendererDefaults(workflow.id));
 const requiredWorkflowIds = ["product", "asset", "material", "architecture", "cinematic"];
 const checks = [
   { id: "workflow-count", pass: workflows.length === 5 && requiredWorkflowIds.every((id) => workflows.some((workflow) => workflow.id === id)), detail: workflows.map((workflow) => workflow.id).join(", ") },
@@ -58,7 +58,7 @@ const checks = [
   { id: "gallery-manifest-exists", pass: existsSync(resolve("tests/reports/production-runtime-gallery/manifest.json")), detail: "tests/reports/production-runtime-gallery/manifest.json" }
 ];
 const report = {
-  schema: "a3d-production-runtime-workflows-readiness/v1",
+  schema: "a3d-production-runtime-workflows-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   checks,

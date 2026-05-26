@@ -14,7 +14,7 @@ export interface SoftBodySampleVertex {
 }
 
 export interface SoftBodyFixture {
-  readonly id: "v4-old-branch-soft-body-fixture";
+  readonly id: "external-parity-old-branch-soft-body-fixture";
   readonly source: "origin-master-softbody-tet-pbd-adapted";
   readonly sourceFiles: readonly [
     "origin/master:src/simulation/softbody/SoftBody.ts",
@@ -154,20 +154,20 @@ export function sampleSoftBodyFixture(options: SoftBodyFixtureOptions = {}): Sof
   for (let z = 0; z < divisions; z += 1) {
     for (let y = 0; y < divisions; y += 1) {
       for (let x = 0; x < divisions; x += 1) {
-        const v000 = vertexIndex(x, y, z, gridSize);
-        const v100 = vertexIndex(x + 1, y, z, gridSize);
-        const v010 = vertexIndex(x, y + 1, z, gridSize);
-        const v110 = vertexIndex(x + 1, y + 1, z, gridSize);
-        const v001 = vertexIndex(x, y, z + 1, gridSize);
-        const v101 = vertexIndex(x + 1, y, z + 1, gridSize);
-        const v011 = vertexIndex(x, y + 1, z + 1, gridSize);
-        const v111 = vertexIndex(x + 1, y + 1, z + 1, gridSize);
+        const cornerOrigin = vertexIndex(x, y, z, gridSize);
+        const cornerX = vertexIndex(x + 1, y, z, gridSize);
+        const cornerY = vertexIndex(x, y + 1, z, gridSize);
+        const cornerXY = vertexIndex(x + 1, y + 1, z, gridSize);
+        const cornerZ = vertexIndex(x, y, z + 1, gridSize);
+        const cornerXZ = vertexIndex(x + 1, y, z + 1, gridSize);
+        const cornerYZ = vertexIndex(x, y + 1, z + 1, gridSize);
+        const cornerXYZ = vertexIndex(x + 1, y + 1, z + 1, gridSize);
         tets.push(
-          [v000, v100, v010, v001],
-          [v100, v110, v010, v111],
-          [v100, v001, v101, v111],
-          [v010, v001, v011, v111],
-          [v100, v010, v001, v111]
+          [cornerOrigin, cornerX, cornerY, cornerZ],
+          [cornerX, cornerXY, cornerY, cornerXYZ],
+          [cornerX, cornerZ, cornerXZ, cornerXYZ],
+          [cornerY, cornerZ, cornerYZ, cornerXYZ],
+          [cornerX, cornerY, cornerZ, cornerXYZ]
         );
       }
     }
@@ -188,7 +188,7 @@ export function sampleSoftBodyFixture(options: SoftBodyFixtureOptions = {}): Sof
   const attachmentCount = attachedIndices.size;
 
   return {
-    id: "v4-old-branch-soft-body-fixture",
+    id: "external-parity-old-branch-soft-body-fixture",
     source: "origin-master-softbody-tet-pbd-adapted",
     sourceFiles,
     config: {

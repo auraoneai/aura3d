@@ -5,11 +5,11 @@ import {
   type EnvironmentLightingOptions,
   type RenderDeviceDiagnostics,
   type TextureDimension,
-  type V6LoadedHdrEnvironment
+  type ProductionLoadedHdrEnvironment
 } from "@aura3d/rendering";
 
-export const RENDERER_ENVIRONMENT_BACKGROUND_SOURCE = "loadV6HdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass" as const;
-export const RENDERER_ENVIRONMENT_LIGHTING_SOURCE = "loadV6HdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture" as const;
+export const RENDERER_ENVIRONMENT_BACKGROUND_SOURCE = "loadProductionHdrEnvironment -> Renderer.environmentBackground -> EnvironmentBackgroundPass" as const;
+export const RENDERER_ENVIRONMENT_LIGHTING_SOURCE = "loadProductionHdrEnvironment -> Renderer.environmentLighting -> ForwardPass.environmentCubeMapTexture" as const;
 
 export type RendererEnvironmentBackgroundRouteId = "product-configurator" | "data-galaxy";
 
@@ -47,7 +47,7 @@ export interface RendererEnvironmentBackgroundEvidence {
   readonly lightingIntensity: number;
   readonly backgroundIntensity: number;
   readonly hdr: {
-    readonly loader: "loadV6HdrEnvironment";
+    readonly loader: "loadProductionHdrEnvironment";
     readonly uri: string;
     readonly id: string;
     readonly label: string;
@@ -96,7 +96,7 @@ const DEFINITIONS: Readonly<Record<RendererEnvironmentBackgroundRouteId, Rendere
     routeId: "product-configurator",
     projection: "equirect",
     hdrUri: "/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr",
-    environmentId: "v9-product-studio-small-08",
+    environmentId: "threejs-parity-product-studio-small-08",
     environmentLabel: "Studio Small 08 HDR product lighting",
     lightingIntensity: 0.68,
     backgroundIntensity: 0.24,
@@ -110,7 +110,7 @@ const DEFINITIONS: Readonly<Record<RendererEnvironmentBackgroundRouteId, Rendere
     routeId: "data-galaxy",
     projection: "cubemap",
     hdrUri: "/fixtures/advanced-gallery/environments/hdri/data_galaxy_deep_space_1k.hdr",
-    environmentId: "v9-data-galaxy-deep-space-cubemap",
+    environmentId: "threejs-parity-data-galaxy-deep-space-cubemap",
     environmentLabel: "Generated Deep Space HDR cubemap lighting",
     lightingIntensity: 0.38,
     backgroundIntensity: 0.2,
@@ -130,7 +130,7 @@ export function getRendererEnvironmentBackgroundDefinition(routeId: string): Ren
 
 export function createRendererEnvironmentBackgroundEvidence(
   definition: RendererEnvironmentBackgroundDefinition,
-  environment: V6LoadedHdrEnvironment
+  environment: ProductionLoadedHdrEnvironment
 ): RendererEnvironmentBackgroundEvidence {
   const texture = definition.projection === "cubemap"
     ? environment.resources.environmentCubeTexture
@@ -160,7 +160,7 @@ export function createRendererEnvironmentBackgroundEvidence(
     lightingIntensity: definition.lightingIntensity,
     backgroundIntensity: definition.backgroundIntensity,
     hdr: {
-      loader: "loadV6HdrEnvironment",
+      loader: "loadProductionHdrEnvironment",
       uri: definition.hdrUri,
       id: environment.id,
       label: environment.label,
@@ -187,7 +187,7 @@ export function createRendererEnvironmentBackgroundEvidence(
     },
     rendererEvidence: [
       RENDERER_ENVIRONMENT_BACKGROUND_SOURCE,
-      "loadV6HdrEnvironment decoded a real Radiance/RGBE .hdr fixture into V6 renderer resources.",
+      "loadProductionHdrEnvironment decoded a real Radiance/RGBE .hdr fixture into Production renderer resources.",
       "Renderer.render receives source.environmentBackground only during explicit diagnostic proof capture when the route marks the HDRI as diagnostic-only.",
       "EnvironmentBackgroundPass renders before ForwardPass so scene geometry draws over the background."
     ],
@@ -197,7 +197,7 @@ export function createRendererEnvironmentBackgroundEvidence(
 
 export function createRendererEnvironmentLightingEvidence(
   definition: RendererEnvironmentBackgroundDefinition,
-  environment: V6LoadedHdrEnvironment,
+  environment: ProductionLoadedHdrEnvironment,
   diagnostics: RenderDeviceDiagnostics,
   activeLighting: EnvironmentLightingOptions = environment.lighting
 ): RendererEnvironmentLightingEvidence {
@@ -253,7 +253,7 @@ export function createRendererEnvironmentLightingEvidence(
     materialSchemaContract: "MaterialUniformKind.textureCube",
     rendererEvidence: [
       RENDERER_ENVIRONMENT_LIGHTING_SOURCE,
-      "loadV6HdrEnvironment returns V6 renderer EnvironmentLightingOptions with environmentCubeMapTexture.",
+      "loadProductionHdrEnvironment returns Production renderer EnvironmentLightingOptions with environmentCubeMapTexture.",
       "Renderer.render receives source.environmentLighting for this route.",
       "ForwardPass accepts cube-only sampled environment lighting and binds u_environmentCubeMapTexture for reflected/specular environment response.",
       "TextureBinding validates cube texture dimensions before renderer binding."

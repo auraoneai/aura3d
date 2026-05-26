@@ -25,7 +25,7 @@ test.describe("editor prefab reusable object workflow", () => {
 
     const prefab = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.shell.project.prefabs[0]);
     expect(prefab).toMatchObject({
-      schemaVersion: "aura3d-prefab-v1",
+      schemaVersion: "aura3d-prefab",
       name: "Hero Cube Prefab",
       rootNodeId: "node-hero",
       sourceNodeId: "node-hero"
@@ -50,7 +50,7 @@ test.describe("editor prefab reusable object workflow", () => {
     await page.getByRole("button", { name: "Save", exact: true }).click();
     const savedProjectJson = await page.evaluate(() => window.__AURA3D_EDITOR_APP__!.getState().savedProjectJson);
     expect(savedProjectJson).toContain('"prefabs"');
-    expect(savedProjectJson).toContain('"aura3d-prefab-v1"');
+    expect(savedProjectJson).toContain('"aura3d-prefab"');
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await waitForEditor(page);
@@ -91,7 +91,7 @@ function writeEditorReport(evidence: { readonly prefabId: string; readonly prefa
     ...existing,
     ok: true,
     generatedAt: new Date().toISOString(),
-    schemaVersion: "a3d-external-parity-editor-prefab-workflow-report-v1",
+    schemaVersion: "a3d-external-parity-editor-prefab-workflow-report",
     subsystem: "browser-editor-authoring",
     command: "pnpm exec playwright test tests/browser/editor-prefab-workflow.spec.ts",
     checks: [

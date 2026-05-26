@@ -1,9 +1,9 @@
-import { UniformsV5 } from "./Uniforms";
-import { diagnoseV5Shader, type V5ShaderDiagnostic } from "./ShaderDiagnostics";
+import { UniformsThreeCompat } from "./Uniforms";
+import { diagnoseThreeCompatShader, type ThreeCompatShaderDiagnostic } from "./ShaderDiagnostics";
 
-export class ShaderMaterialV5 {
+export class ShaderMaterialThreeCompat {
   readonly type: string = "ShaderMaterial";
-  readonly uniforms = new UniformsV5();
+  readonly uniforms = new UniformsThreeCompat();
 
   constructor(public vertexShader: string, public fragmentShader: string) {}
 
@@ -12,7 +12,7 @@ export class ShaderMaterialV5 {
     return this;
   }
 
-  diagnose(): V5ShaderDiagnostic {
-    return diagnoseV5Shader(this.vertexShader, this.fragmentShader);
+  diagnose(): ThreeCompatShaderDiagnostic {
+    return diagnoseThreeCompatShader(this.vertexShader, this.fragmentShader);
   }
 }

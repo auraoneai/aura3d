@@ -1,2 +1,2 @@
-import { BloomPassV5, EffectComposerV5, RenderPassV5, createV5BaseFrame } from "@aura3d/rendering";
-document.body.dataset.a3dExample = `three-compat-postprocess-cinema:${new EffectComposerV5().addPass(new RenderPassV5()).addPass(new BloomPassV5()).render(createV5BaseFrame()).bloom}`;
+import { BloomPassThreeCompat, EffectComposerThreeCompat, RenderPassThreeCompat, createThreeCompatBaseFrame } from "@aura3d/rendering";
+document.body.dataset.a3dExample = `three-compat-postprocess-cinema:${new EffectComposerThreeCompat().addPass(new RenderPassThreeCompat()).addPass(new BloomPassThreeCompat()).render(createThreeCompatBaseFrame()).bloom}`;

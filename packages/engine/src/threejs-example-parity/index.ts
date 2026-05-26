@@ -19,53 +19,53 @@ import {
   carConceptMaterialRenderStateOverrides
 } from "../../../assets/src/CarConceptMaterialStability";
 import {
-  createV8InteractiveRenderer,
-  type V8InteractiveRenderer,
-  type V8RuntimeMetrics,
-  type V8Screenshot
+  createCurrentRoutesInteractiveRenderer,
+  type CurrentRoutesInteractiveRenderer,
+  type CurrentRoutesRuntimeMetrics,
+  type CurrentRoutesScreenshot
 } from "../../../rendering/src/threejs-example-parity/index";
 import {
-  v8AssetUrl,
-  listV8FlagshipAssets,
-  resolveV8FlagshipAsset,
-  type V8FlagshipAsset,
-  type V8FlagshipAssetId
+  currentRoutesAssetUrl,
+  listCurrentRoutesFlagshipAssets,
+  resolveCurrentRoutesFlagshipAsset,
+  type CurrentRoutesFlagshipAsset,
+  type CurrentRoutesFlagshipAssetId
 } from "../../../assets/src/threejs-example-parity/index";
 import {
-  v8EnvironmentUrl,
-  listV8Environments,
-  resolveV8Environment,
-  type V8EnvironmentId,
-  type V8EnvironmentPreset
+  currentRoutesEnvironmentUrl,
+  listCurrentRoutesEnvironments,
+  resolveCurrentRoutesEnvironment,
+  type CurrentRoutesEnvironmentId,
+  type CurrentRoutesEnvironmentPreset
 } from "../../../environments/src/threejs-example-parity/index";
 
 export {
-  listV8FlagshipAssets,
-  resolveV8FlagshipAsset,
-  listV8Environments,
-  resolveV8Environment
+  listCurrentRoutesFlagshipAssets,
+  resolveCurrentRoutesFlagshipAsset,
+  listCurrentRoutesEnvironments,
+  resolveCurrentRoutesEnvironment
 };
 export type {
-  V8EnvironmentId,
-  V8EnvironmentPreset,
-  V8FlagshipAsset,
-  V8FlagshipAssetId,
-  V8RuntimeMetrics,
-  V8Screenshot
+  CurrentRoutesEnvironmentId,
+  CurrentRoutesEnvironmentPreset,
+  CurrentRoutesFlagshipAsset,
+  CurrentRoutesFlagshipAssetId,
+  CurrentRoutesRuntimeMetrics,
+  CurrentRoutesScreenshot
 };
 
-export type V8ViewerStatus = "loading" | "ready" | "running" | "error";
+export type CurrentRoutesViewerStatus = "loading" | "ready" | "running" | "error";
 
-export interface V8FlagshipViewerOptions {
+export interface CurrentRoutesFlagshipViewerOptions {
   readonly canvas: HTMLCanvasElement;
   readonly width: number;
   readonly height: number;
   readonly origin?: string;
-  readonly assetId?: V8FlagshipAssetId;
-  readonly environmentId?: V8EnvironmentId;
+  readonly assetId?: CurrentRoutesFlagshipAssetId;
+  readonly environmentId?: CurrentRoutesEnvironmentId;
 }
 
-export interface V8ViewerControls {
+export interface CurrentRoutesViewerControls {
   readonly yaw: number;
   readonly pitch: number;
   readonly zoom: number;
@@ -80,10 +80,10 @@ export interface V8ViewerControls {
   readonly clearcoatBoost: number;
 }
 
-export interface V8ViewerSnapshot {
-  readonly status: V8ViewerStatus;
+export interface CurrentRoutesViewerSnapshot {
+  readonly status: CurrentRoutesViewerStatus;
   readonly asset: {
-    readonly id: V8FlagshipAssetId;
+    readonly id: CurrentRoutesFlagshipAssetId;
     readonly name: string;
     readonly meshCount: number;
     readonly primitiveCount: number;
@@ -92,14 +92,14 @@ export interface V8ViewerSnapshot {
     readonly warnings: readonly string[];
   };
   readonly environment: {
-    readonly id: V8EnvironmentId;
+    readonly id: CurrentRoutesEnvironmentId;
     readonly label: string;
     readonly exposure: number;
     readonly rotation: number;
   };
-  readonly controls: V8ViewerControls;
+  readonly controls: CurrentRoutesViewerControls;
   readonly camera: A3DCameraFrame["diagnostics"];
-  readonly metrics: V8RuntimeMetrics;
+  readonly metrics: CurrentRoutesRuntimeMetrics;
   readonly loading: {
     readonly assetMs: number;
     readonly environmentMs: number;
@@ -116,15 +116,15 @@ type MaterialBaseline = ReadonlyMap<Material, {
   readonly clearcoat?: number;
 }>;
 
-export class V8FlagshipViewer {
-  private status: V8ViewerStatus = "ready";
+export class CurrentRoutesFlagshipViewer {
+  private status: CurrentRoutesViewerStatus = "ready";
   private viewport: A3DViewport;
   private readonly origin: string;
   private scene: A3DGltfScene;
   private environment: A3DHdrEnvironment | undefined;
-  private environmentPreset: V8EnvironmentPreset;
+  private environmentPreset: CurrentRoutesEnvironmentPreset;
   private stage: A3DGroundedStage;
-  private renderer: V8InteractiveRenderer;
+  private renderer: CurrentRoutesInteractiveRenderer;
   private materialBaseline: MaterialBaseline;
   private screenshotCount = 0;
   private cameraFrame: A3DCameraFrame;
@@ -132,7 +132,7 @@ export class V8FlagshipViewer {
   private environmentLoadSerial = 0;
   private environmentLoadScheduled = false;
 
-  private controls: V8ViewerControls = {
+  private controls: CurrentRoutesViewerControls = {
     yaw: 0,
     pitch: 0,
     zoom: 1,
@@ -151,10 +151,10 @@ export class V8FlagshipViewer {
     readonly origin: string;
     readonly viewport: A3DViewport;
     readonly scene: A3DGltfScene;
-    readonly environmentPreset: V8EnvironmentPreset;
+    readonly environmentPreset: CurrentRoutesEnvironmentPreset;
     readonly stage: A3DGroundedStage;
-    readonly renderer: V8InteractiveRenderer;
-    readonly loading: V8ViewerSnapshot["loading"];
+    readonly renderer: CurrentRoutesInteractiveRenderer;
+    readonly loading: CurrentRoutesViewerSnapshot["loading"];
   }) {
     this.origin = options.origin;
     this.viewport = options.viewport;
@@ -172,21 +172,21 @@ export class V8FlagshipViewer {
     this.loading = options.loading;
   }
 
-  private loading: V8ViewerSnapshot["loading"];
+  private loading: CurrentRoutesViewerSnapshot["loading"];
 
-  static async create(options: V8FlagshipViewerOptions): Promise<V8FlagshipViewer> {
+  static async create(options: CurrentRoutesFlagshipViewerOptions): Promise<CurrentRoutesFlagshipViewer> {
     const viewport = { width: options.width, height: options.height };
     const origin = options.origin ?? "";
-    const asset = resolveV8FlagshipAsset(options.assetId);
-    const environmentPreset = resolveV8Environment(options.environmentId);
+    const asset = resolveCurrentRoutesFlagshipAsset(options.assetId);
+    const environmentPreset = resolveCurrentRoutesEnvironment(options.environmentId);
     const sceneTask = timeAsync(() => loadGltfScene({
-      url: v8AssetUrl(asset, origin),
+      url: currentRoutesAssetUrl(asset, origin),
       assetId: asset.id,
       assetName: asset.name,
       viewport,
-      ...materialCreationOptionsForV8Asset(asset.id)
+      ...materialCreationOptionsForCurrentRoutesAsset(asset.id)
     }));
-    const rendererTask = timeAsync(() => createV8InteractiveRenderer({
+    const rendererTask = timeAsync(() => createCurrentRoutesInteractiveRenderer({
       canvas: options.canvas,
       width: options.width,
       height: options.height,
@@ -206,7 +206,7 @@ export class V8FlagshipViewer {
       shadowLightDirection: [-0.42, -0.82, -0.38]
     });
     stage.update({ backgroundBlur: 0.08, backgroundVisible: true });
-    const viewer = new V8FlagshipViewer({
+    const viewer = new CurrentRoutesFlagshipViewer({
       origin,
       viewport,
       scene,
@@ -223,14 +223,14 @@ export class V8FlagshipViewer {
     return viewer;
   }
 
-  async setAsset(id: V8FlagshipAssetId): Promise<void> {
-    const asset = resolveV8FlagshipAsset(id);
+  async setAsset(id: CurrentRoutesFlagshipAssetId): Promise<void> {
+    const asset = resolveCurrentRoutesFlagshipAsset(id);
     const nextScene = await loadGltfScene({
-      url: v8AssetUrl(asset, this.origin),
+      url: currentRoutesAssetUrl(asset, this.origin),
       assetId: asset.id,
       assetName: asset.name,
       viewport: this.viewport,
-      ...materialCreationOptionsForV8Asset(asset.id)
+      ...materialCreationOptionsForCurrentRoutesAsset(asset.id)
     });
     const nextStage = createGroundedStage(nextScene.resources.bounds, {
       labelPrefix: "flagship-viewer",
@@ -246,12 +246,12 @@ export class V8FlagshipViewer {
     this.cameraFrame = this.createCamera();
   }
 
-  async setEnvironment(id: V8EnvironmentId): Promise<void> {
-    const preset = resolveV8Environment(id);
+  async setEnvironment(id: CurrentRoutesEnvironmentId): Promise<void> {
+    const preset = resolveCurrentRoutesEnvironment(id);
     const serial = this.environmentLoadSerial + 1;
     this.environmentLoadSerial = serial;
     this.loading = { ...this.loading, environmentMs: 0, environmentStatus: "loading" };
-    const { value: nextEnvironment, ms } = await timeAsync(() => loadV8Environment(preset, this.origin));
+    const { value: nextEnvironment, ms } = await timeAsync(() => loadCurrentRoutesEnvironment(preset, this.origin));
     if (serial !== this.environmentLoadSerial) {
       nextEnvironment.dispose();
       return;
@@ -267,7 +267,7 @@ export class V8FlagshipViewer {
     };
   }
 
-  orbit(deltaYaw: number, deltaPitch: number): V8ViewerControls {
+  orbit(deltaYaw: number, deltaPitch: number): CurrentRoutesViewerControls {
     this.controls = {
       ...this.controls,
       yaw: clamp(this.controls.yaw + deltaYaw, -Math.PI, Math.PI),
@@ -277,7 +277,7 @@ export class V8FlagshipViewer {
     return this.controls;
   }
 
-  pan(deltaX: number, deltaY: number): V8ViewerControls {
+  pan(deltaX: number, deltaY: number): CurrentRoutesViewerControls {
     this.controls = {
       ...this.controls,
       target: [
@@ -290,7 +290,7 @@ export class V8FlagshipViewer {
     return this.controls;
   }
 
-  zoom(scale: number): V8ViewerControls {
+  zoom(scale: number): CurrentRoutesViewerControls {
     this.controls = {
       ...this.controls,
       zoom: clamp(this.controls.zoom * scale, 0.55, 1.65)
@@ -299,7 +299,7 @@ export class V8FlagshipViewer {
     return this.controls;
   }
 
-  resize(width: number, height: number): V8ViewerSnapshot {
+  resize(width: number, height: number): CurrentRoutesViewerSnapshot {
     const nextWidth = Math.max(1, Math.round(width));
     const nextHeight = Math.max(1, Math.round(height));
     if (this.viewport.width === nextWidth && this.viewport.height === nextHeight) return this.snapshot();
@@ -309,7 +309,7 @@ export class V8FlagshipViewer {
     return this.snapshot();
   }
 
-  updateControls(next: Partial<V8ViewerControls>): V8ViewerControls {
+  updateControls(next: Partial<CurrentRoutesViewerControls>): CurrentRoutesViewerControls {
     this.controls = {
       ...this.controls,
       ...next,
@@ -332,7 +332,7 @@ export class V8FlagshipViewer {
     return this.controls;
   }
 
-  async renderFrame(): Promise<V8ViewerSnapshot> {
+  async renderFrame(): Promise<CurrentRoutesViewerSnapshot> {
     try {
       const environmentLighting = this.environment
         ? createEnvironmentLighting(this.environment.environmentLighting, this.controls, this.scene.metadata.assetId)
@@ -366,7 +366,7 @@ export class V8FlagshipViewer {
           morphTargetCount: this.scene.metadata.morphTargetCount,
           extensionsUsed: this.scene.metadata.extensionsUsed,
           environmentId: this.environmentPreset.id,
-          hdrEnvironmentUri: this.environment?.url ?? v8EnvironmentUrl(this.environmentPreset, this.origin)
+          hdrEnvironmentUri: this.environment?.url ?? currentRoutesEnvironmentUrl(this.environmentPreset, this.origin)
         }
       });
       this.status = this.renderer.getMetrics().frameCount <= 1 ? "ready" : "running";
@@ -380,17 +380,17 @@ export class V8FlagshipViewer {
     }
   }
 
-  screenshot(): V8Screenshot {
+  screenshot(): CurrentRoutesScreenshot {
     const screenshot = this.renderer.screenshot();
     this.screenshotCount += 1;
     return screenshot;
   }
 
-  snapshot(): V8ViewerSnapshot {
+  snapshot(): CurrentRoutesViewerSnapshot {
     return {
       status: this.status,
       asset: {
-        id: this.scene.metadata.assetId as V8FlagshipAssetId,
+        id: this.scene.metadata.assetId as CurrentRoutesFlagshipAssetId,
         name: this.scene.metadata.assetName,
         meshCount: this.scene.metadata.meshCount,
         primitiveCount: this.scene.metadata.primitiveCount,
@@ -420,10 +420,10 @@ export class V8FlagshipViewer {
     this.scene.dispose();
   }
 
-  private startEnvironmentLoad(preset: V8EnvironmentPreset): void {
+  private startEnvironmentLoad(preset: CurrentRoutesEnvironmentPreset): void {
     const serial = this.environmentLoadSerial + 1;
     this.environmentLoadSerial = serial;
-    void timeAsync(() => loadV8Environment(preset, this.origin))
+    void timeAsync(() => loadCurrentRoutesEnvironment(preset, this.origin))
       .then(({ value, ms }) => {
         if (serial !== this.environmentLoadSerial) {
           value.dispose();
@@ -469,15 +469,15 @@ export class V8FlagshipViewer {
   }
 }
 
-export function createV8FlagshipViewer(options: V8FlagshipViewerOptions): Promise<V8FlagshipViewer> {
-  return V8FlagshipViewer.create(options);
+export function createCurrentRoutesFlagshipViewer(options: CurrentRoutesFlagshipViewerOptions): Promise<CurrentRoutesFlagshipViewer> {
+  return CurrentRoutesFlagshipViewer.create(options);
 }
 
-async function loadV8Environment(preset: V8EnvironmentPreset, origin: string): Promise<A3DHdrEnvironment> {
+async function loadCurrentRoutesEnvironment(preset: CurrentRoutesEnvironmentPreset, origin: string): Promise<A3DHdrEnvironment> {
   return loadHdrEnvironment({
     id: preset.id,
     label: preset.label,
-    url: v8EnvironmentUrl(preset, origin),
+    url: currentRoutesEnvironmentUrl(preset, origin),
     quality: "interactive",
     intensity: preset.intensity,
     backgroundIntensity: preset.backgroundIntensity,
@@ -490,7 +490,7 @@ async function loadV8Environment(preset: V8EnvironmentPreset, origin: string): P
   });
 }
 
-function createEnvironmentLighting(base: EnvironmentLightingOptions, controls: V8ViewerControls, assetId?: string): EnvironmentLightingOptions {
+function createEnvironmentLighting(base: EnvironmentLightingOptions, controls: CurrentRoutesViewerControls, assetId?: string): EnvironmentLightingOptions {
   const exposure = controls.exposure;
   const carConcept = assetId === "car-concept";
   const intensity = base.intensity * exposure;
@@ -525,7 +525,7 @@ function createEnvironmentLighting(base: EnvironmentLightingOptions, controls: V
   };
 }
 
-function createFallbackEnvironmentLighting(controls: V8ViewerControls, assetId?: string): EnvironmentLightingOptions {
+function createFallbackEnvironmentLighting(controls: CurrentRoutesViewerControls, assetId?: string): EnvironmentLightingOptions {
   const exposure = controls.exposure;
   if (assetId === "car-concept") {
     return {
@@ -569,7 +569,7 @@ function captureMaterialBaseline(scene: A3DGltfScene): MaterialBaseline {
   return baseline;
 }
 
-function applyMaterialControls(scene: A3DGltfScene, baseline: MaterialBaseline, controls: V8ViewerControls): void {
+function applyMaterialControls(scene: A3DGltfScene, baseline: MaterialBaseline, controls: CurrentRoutesViewerControls): void {
   const carConcept = scene.metadata.assetId === "car-concept";
   for (const material of scene.resources.materialLibrary.values()) {
     const initial = baseline.get(material);
@@ -590,12 +590,12 @@ function applyMaterialControls(scene: A3DGltfScene, baseline: MaterialBaseline, 
   }
 }
 
-function materialCreationOptionsForV8Asset(assetId: V8FlagshipAssetId): {
+function materialCreationOptionsForCurrentRoutesAsset(assetId: CurrentRoutesFlagshipAssetId): {
   readonly materialRenderStateOverrides?: readonly GLTFMaterialRenderStateOverride[];
 } {
   if (assetId !== "car-concept") return {};
   return {
-    materialRenderStateOverrides: carConceptMaterialRenderStateOverrides("v8-flagship")
+    materialRenderStateOverrides: carConceptMaterialRenderStateOverrides("current-routes-flagship")
   };
 }
 

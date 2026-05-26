@@ -1,4 +1,4 @@
-import { createGLTFSceneAnimationRuntime, loadV6GLTFRenderPipeline } from "@aura3d/assets";
+import { createGLTFSceneAnimationRuntime, loadProductionGLTFRenderPipeline } from "@aura3d/assets";
 import { AnimationMotionQualityTracker } from "@aura3d/animation";
 import {
   Geometry,
@@ -20,13 +20,13 @@ import {
 
 declare global {
   interface Window {
-    __a3dV8SkinningMorph?: V8SkinningMorphRuntime;
+    __a3dCurrentRoutesSkinningMorph?: CurrentRoutesSkinningMorphRuntime;
   }
 }
 
-type LoadedPipeline = Awaited<ReturnType<typeof loadV6GLTFRenderPipeline>>;
+type LoadedPipeline = Awaited<ReturnType<typeof loadProductionGLTFRenderPipeline>>;
 
-interface V8SkinningMorphRuntime {
+interface CurrentRoutesSkinningMorphRuntime {
   appId: "skinning-morph";
   status: "loading" | "ready" | "running" | "error";
   statusLabel: string;
@@ -88,7 +88,7 @@ async function run(): Promise<void> {
   });
 
   const publish = (): void => {
-    window.__a3dV8SkinningMorph = runtime;
+    window.__a3dCurrentRoutesSkinningMorph = runtime;
     renderUi(root, runtime, state);
     bindUi(root, state, publish);
   };
@@ -102,7 +102,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.006, 0.008, 0.012, 1]
     });
-    const pipeline = await loadV6GLTFRenderPipeline({
+    const pipeline = await loadProductionGLTFRenderPipeline({
       url: ASSET_URL,
       assetId: "skinning-morph-robot-expressive",
       assetName: "Robot Expressive Skinning Morph",
@@ -175,7 +175,7 @@ async function run(): Promise<void> {
           camera: { viewProjectionMatrix: frame.viewProjectionMatrix, viewMatrix: frame.viewMatrix, projectionMatrix: frame.projectionMatrix },
           metadata: {
             assetId: APP_ID,
-            assetName: "V8 Skinning Morph",
+            assetName: "CurrentRoutes Skinning Morph",
             assetUri: "/apps/skinning-morph/",
             meshCount: pipeline.metadata.meshCount,
             primitiveCount: pipeline.metadata.primitiveCount,
@@ -186,7 +186,7 @@ async function run(): Promise<void> {
             skinCount: pipeline.metadata.skinCount,
             morphTargetCount: pipeline.metadata.morphTargetCount,
             extensionsUsed: pipeline.metadata.extensionsUsed,
-            environmentId: "v8-fast-studio",
+            environmentId: "current-routes-fast-studio",
             hdrEnvironmentUri: "deferred"
           }
         });
@@ -212,7 +212,7 @@ async function run(): Promise<void> {
           poseDiversityScore: motion.poseDiversityScore,
           motionHealthy: motion.healthy
         });
-        window.__a3dV8SkinningMorph = runtime;
+        window.__a3dCurrentRoutesSkinningMorph = runtime;
         if (frameCount === 1 || now - lastUi > 220) {
           publish();
           lastUi = now;
@@ -233,13 +233,13 @@ async function run(): Promise<void> {
 }
 
 function createRuntime(
-  status: V8SkinningMorphRuntime["status"],
+  status: CurrentRoutesSkinningMorphRuntime["status"],
   statusLabel: string,
   startedAt: number,
   state: MorphControlState,
   weights: readonly [number, number, number],
-  counters: Partial<Pick<V8SkinningMorphRuntime, "frameCount" | "drawCalls" | "fps" | "morphTargetCount" | "clipName" | "tracksApplied" | "morphWeightTracksApplied" | "skinningPalettesUpdated" | "motionSamples" | "motionTimeRange" | "poseDiversityScore" | "motionHealthy">> = {}
-): V8SkinningMorphRuntime {
+  counters: Partial<Pick<CurrentRoutesSkinningMorphRuntime, "frameCount" | "drawCalls" | "fps" | "morphTargetCount" | "clipName" | "tracksApplied" | "morphWeightTracksApplied" | "skinningPalettesUpdated" | "motionSamples" | "motionTimeRange" | "poseDiversityScore" | "motionHealthy">> = {}
+): CurrentRoutesSkinningMorphRuntime {
   return {
     appId: APP_ID,
     status,
@@ -284,7 +284,7 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
     if (!geometry || !material) continue;
     const morphTargets = pipeline.resources.morphTargetLibrary.get(renderable.geometry);
     items.push({
-      label: `v8-morph:${node.name}`,
+      label: `current-routes-morph:${node.name}`,
       geometry,
       material,
       modelMatrix: multiplyMat4(placement, node.transform.worldMatrix),
@@ -298,26 +298,26 @@ function collectImportedItems(pipeline: LoadedPipeline, placement: Mat4): readon
 
 function createStageItems(): { readonly materialCount: number; readonly items: (weights: readonly [number, number, number]) => readonly RenderItem[] } {
   const cube = Geometry.litCube(1);
-  const floor = new PBRMaterial({ name: "v8-morph-floor", baseColor: [0.06, 0.075, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.72 });
-  const smile = new PBRMaterial({ name: "v8-morph-smile-meter", baseColor: [0.2, 0.68, 0.88, 1], roughness: 0.28, metallic: 0.12, environmentIntensity: 0.78 });
-  const blink = new PBRMaterial({ name: "v8-morph-blink-meter", baseColor: [0.94, 0.58, 0.12, 1], roughness: 0.28, metallic: 0.12, environmentIntensity: 0.78 });
-  const jaw = new PBRMaterial({ name: "v8-morph-jaw-meter", baseColor: [0.34, 0.88, 0.56, 1], roughness: 0.28, metallic: 0.12, environmentIntensity: 0.78 });
+  const floor = new PBRMaterial({ name: "current-routes-morph-floor", baseColor: [0.06, 0.075, 0.09, 1], roughness: 0.42, metallic: 0.04, environmentIntensity: 0.72 });
+  const smile = new PBRMaterial({ name: "current-routes-morph-smile-meter", baseColor: [0.2, 0.68, 0.88, 1], roughness: 0.28, metallic: 0.12, environmentIntensity: 0.78 });
+  const blink = new PBRMaterial({ name: "current-routes-morph-blink-meter", baseColor: [0.94, 0.58, 0.12, 1], roughness: 0.28, metallic: 0.12, environmentIntensity: 0.78 });
+  const jaw = new PBRMaterial({ name: "current-routes-morph-jaw-meter", baseColor: [0.34, 0.88, 0.56, 1], roughness: 0.28, metallic: 0.12, environmentIntensity: 0.78 });
   return {
     materialCount: 4,
     items: ([smileWeight, blinkWeight, jawWeight]) => [
-      { label: "v8-morph-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
-      { label: "v8-morph-smile-meter", geometry: cube, material: smile, modelMatrix: composeMat4([-1.18, 0.13 + smileWeight * 0.32, -0.64], [0, 0, 0, 1], [0.07, 0.28 + smileWeight * 0.55, 0.07]) },
-      { label: "v8-morph-blink-meter", geometry: cube, material: blink, modelMatrix: composeMat4([-1.02, 0.13 + blinkWeight * 0.32, -0.64], [0, 0, 0, 1], [0.07, 0.28 + blinkWeight * 0.55, 0.07]) },
-      { label: "v8-morph-jaw-meter", geometry: cube, material: jaw, modelMatrix: composeMat4([-0.86, 0.13 + jawWeight * 0.32, -0.64], [0, 0, 0, 1], [0.07, 0.28 + jawWeight * 0.55, 0.07]) }
+      { label: "current-routes-morph-floor", geometry: cube, material: floor, modelMatrix: composeMat4([0, -0.07, 0], [0, 0, 0, 1], [3.1, 0.04, 2.1]) },
+      { label: "current-routes-morph-smile-meter", geometry: cube, material: smile, modelMatrix: composeMat4([-1.18, 0.13 + smileWeight * 0.32, -0.64], [0, 0, 0, 1], [0.07, 0.28 + smileWeight * 0.55, 0.07]) },
+      { label: "current-routes-morph-blink-meter", geometry: cube, material: blink, modelMatrix: composeMat4([-1.02, 0.13 + blinkWeight * 0.32, -0.64], [0, 0, 0, 1], [0.07, 0.28 + blinkWeight * 0.55, 0.07]) },
+      { label: "current-routes-morph-jaw-meter", geometry: cube, material: jaw, modelMatrix: composeMat4([-0.86, 0.13 + jawWeight * 0.32, -0.64], [0, 0, 0, 1], [0.07, 0.28 + jawWeight * 0.55, 0.07]) }
     ]
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8SkinningMorphRuntime, state: MorphControlState): void {
-  window.__a3dV8SkinningMorph = runtime;
+function renderUi(root: HTMLElement, runtime: CurrentRoutesSkinningMorphRuntime, state: MorphControlState): void {
+  window.__a3dCurrentRoutesSkinningMorph = runtime;
   root.innerHTML = `
     <section class="panel">
-      <h1>V8 Skinning Morph</h1>
+      <h1>CurrentRoutes Skinning Morph</h1>
       <span class="status" data-state="${runtime.status}">${escapeHtml(runtime.statusLabel)}</span>
       <div class="metrics">
         ${metric("Frames", runtime.frameCount)}
@@ -361,10 +361,10 @@ function bindRange(root: HTMLElement, selector: string, update: (value: number) 
 }
 
 function createLights(): readonly CollectedLight[] {
-  const key = new DirectionalLight("v8-morph-key");
+  const key = new DirectionalLight("current-routes-morph-key");
   key.intensity = 4.6;
   key.color = [1, 0.94, 0.84];
-  const rim = new DirectionalLight("v8-morph-rim");
+  const rim = new DirectionalLight("current-routes-morph-rim");
   rim.intensity = 2.2;
   rim.color = [0.68, 0.8, 1];
   return [

@@ -1,5 +1,5 @@
 #version 300 es
-// @aura3d-shader:unlit-v1
+// @aura3d-shader:unlit
 precision highp float;
 uniform vec4 u_baseColor;
 uniform float u_alphaCutoff;

@@ -1,12 +1,12 @@
-export interface V5InstancingSystemStatus {
+export interface ThreeCompatInstancingSystemStatus {
   readonly hardwareInstancing: boolean;
   readonly perInstanceTransforms: boolean;
   readonly perInstanceMaterialOverrides: boolean;
   readonly instanceCountLimit: number;
 }
 
-export class V5InstancingSystem {
-  getStatus(): V5InstancingSystemStatus {
+export class ThreeCompatInstancingSystem {
+  getStatus(): ThreeCompatInstancingSystemStatus {
     return {
       hardwareInstancing: true,
       perInstanceTransforms: true,

@@ -9,10 +9,10 @@ const rejectedInputs = [
 ] as const;
 
 const report = {
-  schema: "a3d-product-studio-truth/v1",
+  schema: "a3d-product-studio-truth",
   generatedAt: new Date().toISOString(),
   verdict: "build-product-studio",
-  productTarget: "A3D Product Studio V1",
+  productTarget: "A3D Product Studio Legacy",
   rejectedInputs,
   buildFirstFiles: [
     "tools/product-studio-generate-products/index.ts",
@@ -22,7 +22,7 @@ const report = {
     "packages/product-studio/src/ProductStudio.ts",
     "apps/product-studio/src/ProductStudioApp.ts"
   ],
-  statement: "V2 does not accept the V1 screenshots as proof. It builds a product studio, assets, SDK, app, tests, and evidence around new product files."
+  statement: "Product studio does not accept the Legacy screenshots as proof. It builds a product studio, assets, SDK, app, tests, and evidence around new product files."
 };
 
 mkdirSync(resolve("tests/reports"), { recursive: true });

@@ -141,7 +141,7 @@ for (const mesh of meshes) {
 const bin = Buffer.concat(buffers);
 writeFileSync(join(outDir, "ocean-observatory-deck.bin"), bin);
 writeFileSync(join(outDir, "ocean-observatory-deck.gltf"), `${JSON.stringify({
-  asset: { version: "2.0", generator: "A3D v9 advanced gallery authored ocean observatory generator" },
+  asset: { version: "2.0", generator: "A3D threejs-parity advanced gallery authored ocean observatory generator" },
   scene: 0,
   scenes: [{ name: "Ocean Observatory Deck", nodes: nodes.map((_, index) => index) }],
   nodes,

@@ -10,11 +10,11 @@ import {
 
 declare global {
   interface Window {
-    __a3dV8WebGPURtt?: V8WebGPURttRuntime;
+    __a3dCurrentRoutesWebGPURtt?: CurrentRoutesWebGPURttRuntime;
   }
 }
 
-interface V8WebGPURttRuntime {
+interface CurrentRoutesWebGPURttRuntime {
   readonly appId: "webgpu-rtt";
   readonly status: "ready" | "running" | "error";
   readonly statusLabel: string;
@@ -58,7 +58,7 @@ async function run(): Promise<void> {
   let runtime = createRuntime("ready", "Ready", startedAt);
 
   const publish = (): void => {
-    window.__a3dV8WebGPURtt = runtime;
+    window.__a3dCurrentRoutesWebGPURtt = runtime;
     renderUi(root, runtime);
   };
   publish();
@@ -99,7 +99,7 @@ async function run(): Promise<void> {
         disposedRenderTargets: proof.disposedRenderTargets,
         disposedTextures: proof.disposedTextures
       });
-      window.__a3dV8WebGPURtt = runtime;
+      window.__a3dCurrentRoutesWebGPURtt = runtime;
       if (frameCount === 1 || frameCount % 12 === 0) publish();
       requestAnimationFrame(render);
     };
@@ -179,11 +179,11 @@ function drawPreview(canvas: HTMLCanvasElement, pixels: Uint8Array, width: numbe
 }
 
 function createRuntime(
-  status: V8WebGPURttRuntime["status"],
+  status: CurrentRoutesWebGPURttRuntime["status"],
   statusLabel: string,
   startedAt: number,
-  patch: Partial<Omit<V8WebGPURttRuntime, "appId" | "status" | "statusLabel" | "renderer" | "evidenceMode" | "elapsedMs">> = {}
-): V8WebGPURttRuntime {
+  patch: Partial<Omit<CurrentRoutesWebGPURttRuntime, "appId" | "status" | "statusLabel" | "renderer" | "evidenceMode" | "elapsedMs">> = {}
+): CurrentRoutesWebGPURttRuntime {
   return {
     appId: APP_ID,
     status,
@@ -207,12 +207,12 @@ function createRuntime(
   };
 }
 
-function renderUi(root: HTMLElement, runtime: V8WebGPURttRuntime): void {
+function renderUi(root: HTMLElement, runtime: CurrentRoutesWebGPURttRuntime): void {
   root.innerHTML = `
     <section class="panel">
       <div class="panel-heading">
         <div>
-          <h1>V8 WebGPU RTT</h1>
+          <h1>CurrentRoutes WebGPU RTT</h1>
           <p>Public WebGPU render device creates an offscreen render target, draws into it, reads it back, presents it, and disposes resources.</p>
         </div>
         <span id="runtime-state" class="status is-${runtime.status}">${runtime.statusLabel}</span>

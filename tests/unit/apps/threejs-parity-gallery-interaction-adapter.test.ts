@@ -7,7 +7,7 @@ import {
   routePointerCreatesRipple
 } from "../../../apps/advanced-examples-gallery/src/galleryInteractionAdapter";
 
-describe("v9 gallery interaction adapter", () => {
+describe("threejsParity gallery interaction adapter", () => {
   it("routes product pointer-down to hotspot picking and water routes to ripples", () => {
     expect(resolveGalleryPointerDownAction("product-configurator")).toBe("product-hotspot");
     expect(resolveGalleryPointerDownAction("data-galaxy")).toBe("scene-ripple-or-select");

@@ -1,4 +1,4 @@
-# Product Configurator V3
+# Product Configurator Foundation
 
 This example shows the public workflow for a product configurator surface.
 

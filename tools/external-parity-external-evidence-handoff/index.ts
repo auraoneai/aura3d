@@ -4,7 +4,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gunzipSync, gzipSync } from "node:zlib";
 import { isRecord, readJson, writeJson } from "../external-parity-reporting/index.js";
-import { createV4ExternalHostRunnerReport } from "../external-parity-external-host-runner/index.js";
+import { createExternalParityExternalHostRunnerReport } from "../external-parity-external-host-runner/index.js";
 
 const reportPath = "tests/reports/external-parity-external-evidence-handoff.json";
 const runbookPath = "tests/reports/external-parity-external-evidence-handoff.md";
@@ -18,7 +18,7 @@ const packageRestoreScriptPath = `${packageDir}/RESTORE_INTO_CHECKOUT.mjs`;
 const packageExternalHostScriptPath = `${packageDir}/RUN_EXTERNAL_HOST_PREFLIGHT.mjs`;
 const packageStandaloneVerifyScriptPath = `${packageDir}/VERIFY_PACKAGE_INTEGRITY.mjs`;
 
-export interface V4ExternalEvidenceHandoffFile {
+export interface ExternalParityExternalEvidenceHandoffFile {
   readonly path: string;
   readonly exists: boolean;
   readonly bytes?: number;
@@ -26,7 +26,7 @@ export interface V4ExternalEvidenceHandoffFile {
   readonly kind: "baseline-kit" | "aura3d-reference" | "local-evidence" | "runbook" | "static-export" | "tooling" | "workflow";
 }
 
-export interface V4ExternalEvidenceHandoffReport {
+export interface ExternalParityExternalEvidenceHandoffReport {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly claimBoundary: string;
@@ -45,11 +45,11 @@ export interface V4ExternalEvidenceHandoffReport {
   readonly packageRestoreScriptPath: typeof packageRestoreScriptPath;
   readonly packageExternalHostScriptPath: typeof packageExternalHostScriptPath;
   readonly packageStandaloneVerifyScriptPath: typeof packageStandaloneVerifyScriptPath;
-  readonly files: readonly V4ExternalEvidenceHandoffFile[];
+  readonly files: readonly ExternalParityExternalEvidenceHandoffFile[];
   readonly packagedFiles: readonly {
     readonly path: string;
     readonly packagePath: string;
-    readonly kind: V4ExternalEvidenceHandoffFile["kind"];
+    readonly kind: ExternalParityExternalEvidenceHandoffFile["kind"];
     readonly copied: boolean;
     readonly bytes?: number;
     readonly sha256?: string;
@@ -72,12 +72,12 @@ export interface V4ExternalEvidenceHandoffReport {
     readonly publicDeploymentHost: readonly string[];
     readonly ingestAndFinalAudit: readonly string[];
   };
-  readonly packageVerification?: V4ExternalEvidenceHandoffPackageVerification;
+  readonly packageVerification?: ExternalParityExternalEvidenceHandoffPackageVerification;
   readonly reportPath: typeof reportPath;
   readonly runbookPath: typeof runbookPath;
 }
 
-export interface V4ExternalEvidenceHandoffPackageVerification {
+export interface ExternalParityExternalEvidenceHandoffPackageVerification {
   readonly ok: boolean;
   readonly auditComplete: true;
   readonly verificationScope: {
@@ -93,9 +93,9 @@ export interface V4ExternalEvidenceHandoffPackageVerification {
   readonly violations: readonly string[];
 }
 
-export function createV4ExternalEvidenceHandoffReport(root = process.cwd()): V4ExternalEvidenceHandoffReport {
+export function createExternalParityExternalEvidenceHandoffReport(root = process.cwd()): ExternalParityExternalEvidenceHandoffReport {
   if (!readJson(root, "tests/reports/external-parity-external-host-runner.json")) {
-    createV4ExternalHostRunnerReport(root);
+    createExternalParityExternalHostRunnerReport(root);
   }
   const externalEvidence = readJson(root, "tests/reports/external-parity-external-evidence-readiness.json");
   const baselineKit = readJson(root, "tests/reports/external-parity-external-engine-baselines.json");
@@ -114,7 +114,7 @@ export function createV4ExternalEvidenceHandoffReport(root = process.cwd()): V4E
   const handoffFilesReady = files.every((file) => file.exists);
   const packagedFiles = stageHandoffPackage(root, files);
   const packagedFilesReady = handoffFilesReady && packagedFiles.every((file) => file.copied);
-  const report: V4ExternalEvidenceHandoffReport = {
+  const report: ExternalParityExternalEvidenceHandoffReport = {
     ok: handoffFilesReady && packagedFilesReady,
     auditComplete: true,
     claimBoundary: "This handoff only packages and inventories local inputs for external Unity/Unreal/public-deployment evidence capture. It is not parity evidence and does not clear any external artifact by itself.",
@@ -138,21 +138,21 @@ export function createV4ExternalEvidenceHandoffReport(root = process.cwd()): V4E
     blockedArtifactChecklist,
     commands: {
       localRefresh: [
-        "pnpm verify:v4",
+        "pnpm verify:external-parity",
         "pnpm verify:external-parity-external-engine-baselines",
         "pnpm build:external-demos",
         "pnpm verify:static-demo-server-smoke",
         "pnpm audit:external-parity-external-evidence-readiness",
         "pnpm prepare:external-parity-external-evidence-handoff",
         "pnpm verify:external-parity-external-evidence-handoff",
-        "pnpm doctor:v4-external-host",
-        "pnpm run:v4-external-host-evidence",
+        "pnpm doctor:external-parity-external-host",
+        "pnpm run:external-parity-external-host-evidence",
       ],
       unityHost: [
         "export A3D_UNITY_EDITOR=/absolute/path/to/Unity",
         "export A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true",
         "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
-        "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
+        "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/external-parity-unity-baseline-project",
       ],
       unrealHost: [
         "export A3D_UNREAL_EDITOR=/absolute/path/to/UnrealEditor-Cmd",
@@ -168,12 +168,12 @@ export function createV4ExternalEvidenceHandoffReport(root = process.cwd()): V4E
         "pnpm audit:external-parity-production-readiness",
       ],
       ingestAndFinalAudit: [
-        "node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs path/to/v4-unity-baseline-evidence path/to/v4-unreal-baseline-evidence path/to/v4-external-baseline-final-audits",
-        "pnpm ingest:public-demo-deployment-reports path/to/v4-public-demo-deployment-reports",
-        "pnpm refresh:v4-readiness-reports",
-        "pnpm status:v4-local-port",
-        "pnpm status:v4-parity",
-        "pnpm preflight:v4-parity:after-external-evidence",
+        "node fixtures/external-engine-baselines/external-parity/ingest-external-baseline-artifacts.mjs path/to/external-parity-unity-baseline-evidence path/to/external-parity-unreal-baseline-evidence path/to/external-parity-external-baseline-final-audits",
+        "pnpm ingest:public-demo-deployment-reports path/to/public-demo-deployment-reports",
+        "pnpm refresh:external-parity-readiness-reports",
+        "pnpm status:external-parity-local-port",
+        "pnpm status:external-parity-parity",
+        "pnpm preflight:external-parity-parity:after-external-evidence",
       ],
     },
     reportPath,
@@ -189,12 +189,12 @@ export function createV4ExternalEvidenceHandoffReport(root = process.cwd()): V4E
   return report;
 }
 
-export function verifyV4ExternalEvidenceHandoffPackage(root = process.cwd()): V4ExternalEvidenceHandoffPackageVerification {
+export function verifyExternalParityExternalEvidenceHandoffPackage(root = process.cwd()): ExternalParityExternalEvidenceHandoffPackageVerification {
   const manifest = readJson(root, packageManifestPath);
   const files = Array.isArray(manifest?.files) ? manifest.files.filter(isRecord) : [];
   const entryPoints = Array.isArray(manifest?.entryPoints) ? manifest.entryPoints.filter(isRecord) : [];
   const violations = [
-    ...(manifest?.schemaVersion === "a3d-external-parity-external-evidence-handoff-package-v1" ? [] : [`${packageManifestPath} is missing or has an invalid schemaVersion.`]),
+    ...(manifest?.schemaVersion === "a3d-external-parity-external-evidence-handoff-package" ? [] : [`${packageManifestPath} is missing or has an invalid schemaVersion.`]),
     ...files.flatMap((file) => verifyPackagedFile(root, file)),
     ...entryPoints.flatMap((file) => verifyPackagedFile(root, file)),
     ...verifyPackageEntryPoints(root),
@@ -217,8 +217,8 @@ export function verifyV4ExternalEvidenceHandoffPackage(root = process.cwd()): V4
   };
 }
 
-export function verifyAndRecordV4ExternalEvidenceHandoffPackage(root = process.cwd()): V4ExternalEvidenceHandoffPackageVerification {
-  const verification = verifyV4ExternalEvidenceHandoffPackage(root);
+export function verifyAndRecordExternalParityExternalEvidenceHandoffPackage(root = process.cwd()): ExternalParityExternalEvidenceHandoffPackageVerification {
+  const verification = verifyExternalParityExternalEvidenceHandoffPackage(root);
   const report = readJson(root, reportPath);
   if (isRecord(report)) {
     writeJson(root, reportPath, {
@@ -236,7 +236,7 @@ export function verifyAndRecordV4ExternalEvidenceHandoffPackage(root = process.c
   return verification;
 }
 
-function fileList(root: string, baselineKit: Record<string, unknown> | null, staticExport: Record<string, unknown> | null): readonly V4ExternalEvidenceHandoffFile[] {
+function fileList(root: string, baselineKit: Record<string, unknown> | null, staticExport: Record<string, unknown> | null): readonly ExternalParityExternalEvidenceHandoffFile[] {
   const baselineArtifacts = Array.isArray(baselineKit?.artifacts)
     ? baselineKit.artifacts.filter(isRecord).map((artifact) => stringValue(artifact.path)).filter(Boolean)
     : [];
@@ -264,13 +264,13 @@ function fileList(root: string, baselineKit: Record<string, unknown> | null, sta
     { path: "tests/reports/external-parity-github-external-readiness.json", kind: "runbook" as const },
     { path: "tests/reports/external-parity-external-evidence-missing-artifacts.md", kind: "runbook" as const },
     { path: "tests/reports/external-parity-completion-audit-runbook.md", kind: "runbook" as const },
-    { path: "docs/project/v4-parity-execution-prompt.md", kind: "runbook" as const },
-    { path: "release-artifacts/v4-external-evidence-operator-runbook.md", kind: "runbook" as const },
-    { path: "release-artifacts/v4-parity-external-evidence-pr.md", kind: "runbook" as const },
+    { path: "docs/project/verification-evidence.md", kind: "runbook" as const },
+    { path: "release-artifacts/external-parity-external-evidence-operator-runbook.md", kind: "runbook" as const },
+    { path: "release-artifacts/external-parity-parity-external-evidence-pr.md", kind: "runbook" as const },
     { path: "release-artifacts/codingrelated-completion-audit.md", kind: "runbook" as const },
     ...optionalFileEntries(root, [
-      { path: "release-artifacts/v4-parity-external-evidence-workflows.patch", kind: "runbook" as const },
-      { path: "release-artifacts/v4-current-handoff-supplement.patch", kind: "runbook" as const },
+      { path: "release-artifacts/external-parity-parity-external-evidence-workflows.patch", kind: "runbook" as const },
+      { path: "release-artifacts/external-parity-current-handoff-supplement.patch", kind: "runbook" as const },
     ]),
     { path: "package.json", kind: "tooling" as const },
     { path: "tools/external-demo-export/index.ts", kind: "tooling" as const },
@@ -284,7 +284,7 @@ function fileList(root: string, baselineKit: Record<string, unknown> | null, sta
     { path: "tests/browser/external-parity-examples.spec.ts", kind: "tooling" as const },
     { path: "tests/browser/example-screenshot-audit-external-parity.spec.ts", kind: "tooling" as const },
     { path: "tests/unit/assets/asset-import-preflight.test.ts", kind: "tooling" as const },
-    { path: "tests/unit/tools/external-parity-validation.test.ts", kind: "tooling" as const },
+    { path: "tools/external-parity-code/index.ts", kind: "tooling" as const },
     { path: "tools/external-parity-examples/index.ts", kind: "tooling" as const },
     { path: "tools/external-parity-claim-gates/index.ts", kind: "tooling" as const },
     { path: "tools/external-parity-assets/index.ts", kind: "tooling" as const },
@@ -320,7 +320,7 @@ function fileList(root: string, baselineKit: Record<string, unknown> | null, sta
     { path: "tools/package-provenance/index.ts", kind: "tooling" as const },
     { path: "tools/compare-engines/index.ts", kind: "tooling" as const },
     { path: ".github/workflows/external-parity-external-engine-baselines.yml", kind: "workflow" as const },
-    { path: ".github/workflows/v4-public-demo-deploy.yml", kind: "workflow" as const },
+    { path: ".github/workflows/public-demo-deploy.yml", kind: "workflow" as const },
   ];
   return uniqueByPath(paths).map((entry) => fileEntry(root, entry.path, entry.kind));
 }
@@ -340,7 +340,7 @@ function localEvidencePaths(root: string): readonly string[] {
   return [...new Set([...reportPaths, ...screenshotPaths].filter((path) => path.length > 0 && existsSync(join(root, path))))];
 }
 
-function optionalFileEntries<T extends { readonly path: string; readonly kind: V4ExternalEvidenceHandoffFile["kind"] }>(root: string, entries: readonly T[]): T[] {
+function optionalFileEntries<T extends { readonly path: string; readonly kind: ExternalParityExternalEvidenceHandoffFile["kind"] }>(root: string, entries: readonly T[]): T[] {
   return entries.filter((entry) => existsSync(join(root, entry.path)));
 }
 
@@ -352,7 +352,7 @@ function staticExportDemoPaths(staticExport: Record<string, unknown> | null): st
   ]).filter(Boolean);
 }
 
-function fileEntry(root: string, path: string, kind: V4ExternalEvidenceHandoffFile["kind"]): V4ExternalEvidenceHandoffFile {
+function fileEntry(root: string, path: string, kind: ExternalParityExternalEvidenceHandoffFile["kind"]): ExternalParityExternalEvidenceHandoffFile {
   const fullPath = join(root, path);
   if (!existsSync(fullPath)) return { path, exists: false, kind };
   const stats = statSync(fullPath);
@@ -367,7 +367,7 @@ function fileEntry(root: string, path: string, kind: V4ExternalEvidenceHandoffFi
   };
 }
 
-function stageHandoffPackage(root: string, files: readonly V4ExternalEvidenceHandoffFile[]): V4ExternalEvidenceHandoffReport["packagedFiles"] {
+function stageHandoffPackage(root: string, files: readonly ExternalParityExternalEvidenceHandoffFile[]): ExternalParityExternalEvidenceHandoffReport["packagedFiles"] {
   const outputRoot = join(root, packageDir);
   rmSync(outputRoot, { recursive: true, force: true });
   mkdirSync(outputRoot, { recursive: true });
@@ -395,9 +395,9 @@ function stageHandoffPackage(root: string, files: readonly V4ExternalEvidenceHan
   });
 }
 
-function writePackageManifest(root: string, packagedFiles: V4ExternalEvidenceHandoffReport["packagedFiles"]): void {
+function writePackageManifest(root: string, packagedFiles: ExternalParityExternalEvidenceHandoffReport["packagedFiles"]): void {
   writeFileSync(join(root, packageManifestPath), `${JSON.stringify({
-    schemaVersion: "a3d-external-parity-external-evidence-handoff-package-v1",
+    schemaVersion: "a3d-external-parity-external-evidence-handoff-package",
     claimBoundary: "Portable local input package only. It is not Unity/Unreal/public-deployment evidence.",
     generatedAt: new Date().toISOString(),
     sourceReportPath: reportPath,
@@ -436,11 +436,11 @@ function writePackageArchive(root: string): { readonly bytes: number; readonly s
 
 function writeTransferManifest(
   root: string,
-  report: V4ExternalEvidenceHandoffReport,
+  report: ExternalParityExternalEvidenceHandoffReport,
   archive: { readonly bytes: number; readonly sha256: string }
 ): void {
   writeFileSync(join(root, transferManifestPath), `${JSON.stringify({
-    schemaVersion: "a3d-v4-external-evidence-transfer-v1",
+    schemaVersion: "a3d-external-parity-external-evidence-transfer",
     claimBoundary: report.claimBoundary,
     generatedAt: new Date().toISOString(),
     packageDir,
@@ -480,9 +480,9 @@ function writeTransferManifest(
       "node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/A3D",
       "node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/A3D",
       "node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/A3D",
-      "pnpm run:v4-external-host-evidence:execute",
-      "pnpm preflight:v4-parity:after-external-evidence",
-      "pnpm status:v4-parity"
+      "pnpm run:external-parity-external-host-evidence:execute",
+      "pnpm preflight:external-parity-parity:after-external-evidence",
+      "pnpm status:external-parity-parity"
     ],
   }, null, 2)}\n`);
 }
@@ -543,7 +543,7 @@ function writeOctal(buffer: Buffer, value: number, offset: number, length: numbe
   buffer.write(`${text}\0`.slice(0, length), offset, length, "ascii");
 }
 
-function writePackageEntryPointFiles(root: string, report: V4ExternalEvidenceHandoffReport): void {
+function writePackageEntryPointFiles(root: string, report: ExternalParityExternalEvidenceHandoffReport): void {
   writeFileSync(join(root, packageReadmePath), packageReadmeSource(report));
   writeFileSync(join(root, packageStandaloneVerifyScriptPath), packageStandaloneVerifyScriptSource());
   writeFileSync(join(root, packageRestoreScriptPath), packageRestoreScriptSource());
@@ -553,7 +553,7 @@ function writePackageEntryPointFiles(root: string, report: V4ExternalEvidenceHan
   chmodSync(join(root, packageExternalHostScriptPath), 0o755);
 }
 
-function packageEntryPoints(root: string): V4ExternalEvidenceHandoffReport["packagedFiles"] {
+function packageEntryPoints(root: string): ExternalParityExternalEvidenceHandoffReport["packagedFiles"] {
   return [
     packageEntry(root, packageReadmePath, "runbook"),
     packageEntry(root, packageStandaloneVerifyScriptPath, "runbook"),
@@ -564,7 +564,7 @@ function packageEntryPoints(root: string): V4ExternalEvidenceHandoffReport["pack
   ];
 }
 
-function packageEntry(root: string, packagePath: string, kind: V4ExternalEvidenceHandoffFile["kind"]): V4ExternalEvidenceHandoffReport["packagedFiles"][number] {
+function packageEntry(root: string, packagePath: string, kind: ExternalParityExternalEvidenceHandoffFile["kind"]): ExternalParityExternalEvidenceHandoffReport["packagedFiles"][number] {
   const fullPath = join(root, packagePath);
   if (!existsSync(fullPath)) {
     return { path: packagePath.replace(`${packageDir}/`, ""), packagePath, kind, copied: false, reason: "entry point is missing" };
@@ -621,27 +621,27 @@ function verifyPackagedFile(root: string, file: Record<string, unknown>): string
 
 function verifyPackageEntryPoints(root: string): string[] {
   return [
-    verifyTextFile(root, packageReadmePath, "# V4 External Evidence Handoff Package"),
+    verifyTextFile(root, packageReadmePath, "# External parity External Evidence Handoff Package"),
     verifyTextFile(root, packageReadmePath, "## GitHub Workflow Route"),
     verifyTextFile(root, packageReadmePath, "Patch-only transfers must copy the patch files"),
-    verifyTextFile(root, packageReadmePath, "gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/Aura3D --ref main"),
+    verifyTextFile(root, packageReadmePath, "gh workflow run public-demo-deploy.yml --repo gchahal1982/Aura3D --ref main"),
     verifyTextFile(root, packageReadmePath, "gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/Aura3D --ref main -f engine=all"),
-    verifyTextFile(root, packageReadmePath, "pnpm preflight:v4-parity:after-external-evidence"),
+    verifyTextFile(root, packageReadmePath, "pnpm preflight:external-parity-parity:after-external-evidence"),
     verifyTextFile(root, packageStandaloneVerifyScriptPath, "VERIFY_PACKAGE_INTEGRITY"),
     verifyTextFile(root, packageRestoreScriptPath, "RESTORE_INTO_CHECKOUT"),
     verifyTextFile(root, packageExternalHostScriptPath, "RUN_EXTERNAL_HOST_PREFLIGHT"),
     verifyTextFile(root, `${packageDir}/${reportPath}`, "\"claimBoundary\""),
-    verifyTextFile(root, `${packageDir}/${runbookPath}`, "# V4 External Evidence Handoff"),
-    verifyTextFile(root, `${packageDir}/release-artifacts/v4-parity-external-evidence-pr.md`, "Standalone operator package verification also passed"),
-    verifyTextFile(root, `${packageDir}/release-artifacts/v4-parity-external-evidence-pr.md`, "Patch-only transfers must copy the patch files"),
-    verifyTextFile(root, `${packageDir}/release-artifacts/codingrelated-completion-audit.md`, "v4-current-handoff-supplement.patch` was regenerated from the current handoff set"),
+    verifyTextFile(root, `${packageDir}/${runbookPath}`, "# External parity External Evidence Handoff"),
+    verifyTextFile(root, `${packageDir}/release-artifacts/external-parity-parity-external-evidence-pr.md`, "Standalone operator package verification also passed"),
+    verifyTextFile(root, `${packageDir}/release-artifacts/external-parity-parity-external-evidence-pr.md`, "Patch-only transfers must copy the patch files"),
+    verifyTextFile(root, `${packageDir}/release-artifacts/codingrelated-completion-audit.md`, "external-parity-current-handoff-supplement.patch` was regenerated from the current handoff set"),
     verifyTextFile(root, `${packageDir}/release-artifacts/codingrelated-completion-audit.md`, "two-patch simulation against `HEAD^` also passes"),
     verifyOptionalSupplementPatch(root),
   ].flat();
 }
 
 function verifyOptionalSupplementPatch(root: string): string[] {
-  const path = `${packageDir}/release-artifacts/v4-current-handoff-supplement.patch`;
+  const path = `${packageDir}/release-artifacts/external-parity-current-handoff-supplement.patch`;
   if (!existsSync(join(root, path))) return [];
   return [
     verifyTextFile(root, path, "restorePreflight"),
@@ -676,11 +676,11 @@ function verifyPackageArchive(root: string): string[] {
     "external-parity-external-evidence-handoff/tests/reports/external-parity-external-evidence-handoff.md",
     "external-parity-external-evidence-handoff/tests/reports/external-parity-external-host-doctor.json",
     "external-parity-external-evidence-handoff/tests/reports/external-parity-external-host-runner.json",
-    "external-parity-external-evidence-handoff/docs/project/v4-parity-execution-prompt.md",
-    "external-parity-external-evidence-handoff/release-artifacts/v4-external-evidence-operator-runbook.md",
-    "external-parity-external-evidence-handoff/release-artifacts/v4-parity-external-evidence-pr.md",
+    "external-parity-external-evidence-handoff/docs/project/verification-evidence.md",
+    "external-parity-external-evidence-handoff/release-artifacts/external-parity-external-evidence-operator-runbook.md",
+    "external-parity-external-evidence-handoff/release-artifacts/external-parity-parity-external-evidence-pr.md",
     "external-parity-external-evidence-handoff/release-artifacts/codingrelated-completion-audit.md",
-    "external-parity-external-evidence-handoff/tests/unit/tools/external-parity-validation.test.ts",
+    "external-parity-external-evidence-handoff/tools/external-parity-code/index.ts",
     "external-parity-external-evidence-handoff/tools/external-demo-export/index.ts",
     "external-parity-external-evidence-handoff/tools/external-demo-validation/index.ts",
     "external-parity-external-evidence-handoff/tools/external-parity-claim-gates/index.ts",
@@ -724,7 +724,7 @@ function verifyTransferManifest(root: string, archiveBytes: number, archiveSha25
   const manifest = readJson(root, transferManifestPath);
   const archive = isRecord(manifest?.archive) ? manifest.archive : {};
   return [
-    ...(manifest?.schemaVersion === "a3d-v4-external-evidence-transfer-v1" ? [] : [`${transferManifestPath} is missing or has an invalid schemaVersion.`]),
+    ...(manifest?.schemaVersion === "a3d-external-parity-external-evidence-transfer" ? [] : [`${transferManifestPath} is missing or has an invalid schemaVersion.`]),
     ...(manifest?.claimBoundary === "This handoff only packages and inventories local inputs for external Unity/Unreal/public-deployment evidence capture. It is not parity evidence and does not clear any external artifact by itself." ? [] : [`${transferManifestPath} is missing the handoff claim boundary.`]),
     ...(manifest?.packageDir === packageDir ? [] : [`${transferManifestPath} packageDir does not match ${packageDir}.`]),
     ...(manifest?.packageArchivePath === packageArchivePath ? [] : [`${transferManifestPath} packageArchivePath does not match ${packageArchivePath}.`]),
@@ -748,9 +748,9 @@ function verifyTransferCommandMarkers(manifest: Record<string, unknown> | null):
     ...(text.includes("node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/A3D") ? [] : [`${transferManifestPath} is missing the restore dry-run command.`]),
     ...(text.includes("node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/A3D") ? [] : [`${transferManifestPath} is missing the restore command.`]),
     ...(text.includes("node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/A3D") ? [] : [`${transferManifestPath} is missing the external-host preflight command.`]),
-    ...(text.includes("pnpm run:v4-external-host-evidence:execute") ? [] : [`${transferManifestPath} is missing the external-host runner execution command.`]),
-    ...(text.includes("pnpm preflight:v4-parity:after-external-evidence") ? [] : [`${transferManifestPath} is missing the post-external parity preflight command.`]),
-    ...(text.includes("pnpm status:v4-parity") ? [] : [`${transferManifestPath} is missing the final parity status command.`]),
+    ...(text.includes("pnpm run:external-parity-external-host-evidence:execute") ? [] : [`${transferManifestPath} is missing the external-host runner execution command.`]),
+    ...(text.includes("pnpm preflight:external-parity-parity:after-external-evidence") ? [] : [`${transferManifestPath} is missing the post-external parity preflight command.`]),
+    ...(text.includes("pnpm status:external-parity-parity") ? [] : [`${transferManifestPath} is missing the final parity status command.`]),
   ];
 }
 
@@ -792,9 +792,9 @@ function normalizeArchivePath(path: string): string {
   return path.split("\\").join("/");
 }
 
-function packageReadmeSource(report: V4ExternalEvidenceHandoffReport): string {
+function packageReadmeSource(report: ExternalParityExternalEvidenceHandoffReport): string {
   const firstBlocked = report.blockedArtifactChecklist[0];
-  return `# V4 External Evidence Handoff Package
+  return `# External parity External Evidence Handoff Package
 
 This directory is a portable local input package for the remaining Unity, Unreal, and public HTTPS deployment evidence work. It is not parity evidence by itself.
 
@@ -804,7 +804,7 @@ This directory is a portable local input package for the remaining Unity, Unreal
 - Remaining criteria are blocked by real external Unity/Unreal same-scene captures, durable public HTTPS deployment smoke evidence, full PBR external/reference parity, production HDR/shadow/postprocess parity, production readiness, and broad Three.js/Babylon superiority gates.
 - First missing host capability: \`${report.firstMissingCapability ?? "none"}\`.
 - First blocked artifact: \`${report.firstBlockedArtifact ?? "none"}\`.
-- This package can be transferred when \`pnpm verify:external-parity-external-evidence-handoff\` passes, but parity remains blocked until \`tests/reports/external-parity-external-evidence-readiness.json.externalEvidenceReady === true\` and \`pnpm status:v4-parity\` reports \`ok: true\`.
+- This package can be transferred when \`pnpm verify:external-parity-external-evidence-handoff\` passes, but parity remains blocked until \`tests/reports/external-parity-external-evidence-readiness.json.externalEvidenceReady === true\` and \`pnpm status:external-parity-parity\` reports \`ok: true\`.
 ${firstBlocked ? `
 ## First Blocked Artifact
 
@@ -842,12 +842,12 @@ This package is an overlay for a full Aura3D checkout, not a standalone reposito
 - \`node RESTORE_INTO_CHECKOUT.mjs --dry-run /absolute/path/to/A3D\`
 - \`node RESTORE_INTO_CHECKOUT.mjs /absolute/path/to/A3D\`
 - \`node RUN_EXTERNAL_HOST_PREFLIGHT.mjs /absolute/path/to/A3D\`
-- \`pnpm doctor:v4-external-host\`
-- \`pnpm doctor:v4-external-host:strict\`
-- \`pnpm run:v4-external-host-evidence\`
-- \`pnpm run:v4-external-host-evidence:execute\`
+- \`pnpm doctor:external-parity-external-host\`
+- \`pnpm doctor:external-parity-external-host:strict\`
+- \`pnpm run:external-parity-external-host-evidence\`
+- \`pnpm run:external-parity-external-host-evidence:execute\`
 
-Patch-only transfers must copy the patch files into \`release-artifacts/\` before applying them. The supplement patch is a transfer artifact carried by this package; applying it from an arbitrary temporary path updates the checkout content but does not self-materialize \`release-artifacts/v4-current-handoff-supplement.patch\` inside that checkout. Use \`RESTORE_INTO_CHECKOUT.mjs\` when you need the checkout to contain the patch artifacts exactly as packaged.
+Patch-only transfers must copy the patch files into \`release-artifacts/\` before applying them. The supplement patch is a transfer artifact carried by this package; applying it from an arbitrary temporary path updates the checkout content but does not self-materialize \`release-artifacts/external-parity-current-handoff-supplement.patch\` inside that checkout. Use \`RESTORE_INTO_CHECKOUT.mjs\` when you need the checkout to contain the patch artifacts exactly as packaged.
 
 ## Main Reports
 
@@ -863,14 +863,14 @@ Patch-only transfers must copy the patch files into \`release-artifacts/\` befor
 
 ## Readiness Signals
 
-- \`pnpm doctor:v4-external-host\` prints host readiness, handoff package integrity, external evidence readiness, the first missing host capability, first blocked artifact details, and the missing-artifacts runbook path.
-- \`pnpm run:v4-external-host-evidence\` writes \`tests/reports/external-parity-external-host-runner.json\`; inspect each command's \`expectedEvidencePaths\` and \`validationCommands\` before running execute mode.
+- \`pnpm doctor:external-parity-external-host\` prints host readiness, handoff package integrity, external evidence readiness, the first missing host capability, first blocked artifact details, and the missing-artifacts runbook path.
+- \`pnpm run:external-parity-external-host-evidence\` writes \`tests/reports/external-parity-external-host-runner.json\`; inspect each command's \`expectedEvidencePaths\` and \`validationCommands\` before running execute mode.
 - \`tests/reports/external-parity-external-evidence-missing-artifacts.md\` separates local evidence already present from external evidence still required for each blocked area.
 - The package is ready to transfer when \`pnpm verify:external-parity-external-evidence-handoff\` passes, but parity remains blocked until \`tests/reports/external-parity-external-evidence-readiness.json.externalEvidenceReady === true\`.
 
 ## External Hosts
 
-- Unity: set \`A3D_UNITY_EDITOR\`, run the Unity CLI smoke, then run \`node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project\`.
+- Unity: set \`A3D_UNITY_EDITOR\`, run the Unity CLI smoke, then run \`node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/external-parity-unity-baseline-project\`.
 - Unreal: set \`A3D_UNREAL_EDITOR\`, run the Unreal CLI smoke, then run \`node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject\`.
 - Public deployment: deploy \`release-artifacts/external-demos/0.1.0-alpha.0\` to durable HTTPS, then run \`A3D_PUBLIC_DEMO_URL=https://... pnpm verify:public-demo-deployment\`.
 
@@ -878,15 +878,15 @@ Patch-only transfers must copy the patch files into \`release-artifacts/\` befor
 
 If using GitHub Actions instead of running the external hosts manually:
 
-- Land \`.github/workflows/v4-public-demo-deploy.yml\` and \`.github/workflows/external-parity-external-engine-baselines.yml\` on the repository default branch.
+- Land \`.github/workflows/public-demo-deploy.yml\` and \`.github/workflows/external-parity-external-engine-baselines.yml\` on the repository default branch.
 - Enable GitHub Pages.
 - Provision self-hosted runners labeled \`unity\` and \`unreal\`.
 - Configure \`A3D_UNITY_EDITOR\` and \`A3D_UNREAL_EDITOR\`; the workflow sets \`A3D_RUN_UNITY_UNREAL_CLI_SMOKE=true\` internally.
-- Trigger \`gh workflow run v4-public-demo-deploy.yml --repo gchahal1982/Aura3D --ref main\`.
+- Trigger \`gh workflow run public-demo-deploy.yml --repo gchahal1982/Aura3D --ref main\`.
 - Trigger \`gh workflow run external-parity-external-engine-baselines.yml --repo gchahal1982/Aura3D --ref main -f engine=all\`.
-- Download and ingest the workflow artifacts with \`pnpm ingest:public-demo-deployment-reports\` and \`pnpm ingest:v4-external-baseline-artifacts\`.
+- Download and ingest the workflow artifacts with \`pnpm ingest:public-demo-deployment-reports\` and \`pnpm ingest:external-parity-external-baseline-artifacts\`.
 
-After collecting and ingesting external artifacts, rerun \`pnpm preflight:v4-parity:after-external-evidence\` and \`pnpm status:v4-parity\`. Do not claim parity unless \`pnpm status:v4-parity\` reports \`ok: true\` and \`13 / 13\` criteria achieved.
+After collecting and ingesting external artifacts, rerun \`pnpm preflight:external-parity-parity:after-external-evidence\` and \`pnpm status:external-parity-parity\`. Do not claim parity unless \`pnpm status:external-parity-parity\` reports \`ok: true\` and \`13 / 13\` criteria achieved.
 `;
 }
 
@@ -911,7 +911,7 @@ const entries = [
   ...(Array.isArray(manifest.entryPoints) ? manifest.entryPoints : [])
 ];
 const violations = [
-  ...(manifest.schemaVersion === "a3d-external-parity-external-evidence-handoff-package-v1" ? [] : ["manifest schemaVersion is invalid"]),
+  ...(manifest.schemaVersion === "a3d-external-parity-external-evidence-handoff-package" ? [] : ["manifest schemaVersion is invalid"]),
   ...entries.flatMap(verifyEntry)
 ];
 
@@ -971,7 +971,7 @@ const targetArg = args.find((arg) => arg !== "--dry-run");
 const targetRoot = resolve(targetArg || process.cwd());
 const entries = [
     ".github",
-    "docs/project/v4-parity-execution-prompt.md",
+    "docs/project/verification-evidence.md",
     "docs",
     "fixtures",
     "package.json",
@@ -983,16 +983,16 @@ const entries = [
     "packages/assets/src/index.ts",
     "packages/assets/tests/assets.test.ts",
     "release-artifacts/external-demos",
-    "release-artifacts/v4-external-evidence-operator-runbook.md",
-    "release-artifacts/v4-parity-external-evidence-pr.md",
+    "release-artifacts/external-parity-external-evidence-operator-runbook.md",
+    "release-artifacts/external-parity-parity-external-evidence-pr.md",
     "release-artifacts/codingrelated-completion-audit.md",
-    "release-artifacts/v4-parity-external-evidence-workflows.patch",
-    "release-artifacts/v4-current-handoff-supplement.patch",
+    "release-artifacts/external-parity-parity-external-evidence-workflows.patch",
+    "release-artifacts/external-parity-current-handoff-supplement.patch",
     "tests/reports",
     "tests/unit/assets/asset-import-preflight.test.ts",
     "tests/browser/external-parity-examples.spec.ts",
     "tests/browser/example-screenshot-audit-external-parity.spec.ts",
-    "tests/unit/tools/external-parity-validation.test.ts",
+    "tools/external-parity-code/index.ts",
     "tools/external-parity-examples",
     "tools/public-demo-deployment-artifacts",
     "tools/public-demo-deployment-smoke",
@@ -1058,12 +1058,12 @@ console.log(JSON.stringify({
   restored,
   nextCommands: [
     "pnpm verify:external-parity-external-evidence-handoff",
-    "pnpm doctor:v4-external-host",
-    "pnpm run:v4-external-host-evidence",
-    "pnpm run:v4-external-host-evidence:execute",
-    "pnpm status:v4-local-port",
-    "pnpm status:v4-parity",
-    "pnpm preflight:v4-parity:after-external-evidence"
+    "pnpm doctor:external-parity-external-host",
+    "pnpm run:external-parity-external-host-evidence",
+    "pnpm run:external-parity-external-host-evidence:execute",
+    "pnpm status:external-parity-local-port",
+    "pnpm status:external-parity-parity",
+    "pnpm preflight:external-parity-parity:after-external-evidence"
   ]
 }, null, 2));
 
@@ -1125,7 +1125,7 @@ if (!existsSync(resolve(targetRoot, "package.json"))) {
   throw new Error(\`Target does not look like a Aura3D checkout because package.json is missing: \${targetRoot}\`);
 }
 
-const doctor = spawnSync("pnpm", ["doctor:v4-external-host:strict"], {
+const doctor = spawnSync("pnpm", ["doctor:external-parity-external-host:strict"], {
   cwd: targetRoot,
   encoding: "utf8",
   stdio: ["ignore", "pipe", "pipe"],
@@ -1143,7 +1143,7 @@ if (doctor.status !== 0) {
     doctorReportPath,
     doctorSummary: readDoctorSummary(),
     reason: "External host doctor failed. Fix the missing Unity/Unreal/public deployment capabilities and rerun this command.",
-    nextCommand: "pnpm doctor:v4-external-host"
+    nextCommand: "pnpm doctor:external-parity-external-host"
   }, null, 2));
   process.exit(doctor.status ?? 1);
 }
@@ -1159,14 +1159,14 @@ console.log(JSON.stringify({
   doctorSummary: readDoctorSummary(),
   nextCommands: [
     "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unity tests/reports/external-parity-unity-editor-cli-smoke.json",
-    "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/v4-unity-baseline-project",
+    "node fixtures/external-engine-baselines/external-parity/unity/run-unity-baseline-captures.mjs --project /absolute/path/to/external-parity-unity-baseline-project",
     "node fixtures/external-engine-baselines/external-parity/run-editor-cli-smoke.mjs unreal tests/reports/external-parity-unreal-editor-cli-smoke.json",
     "node fixtures/external-engine-baselines/external-parity/unreal/run-unreal-baseline-captures.mjs --project /absolute/path/to/project.uproject",
     "A3D_PUBLIC_DEMO_URL=https://your-public-demo.example/ pnpm verify:public-demo-deployment",
-    "pnpm run:v4-external-host-evidence:execute",
-    "pnpm refresh:v4-readiness-reports",
-    "pnpm status:v4-parity",
-    "pnpm preflight:v4-parity:after-external-evidence"
+    "pnpm run:external-parity-external-host-evidence:execute",
+    "pnpm refresh:external-parity-readiness-reports",
+    "pnpm status:external-parity-parity",
+    "pnpm preflight:external-parity-parity:after-external-evidence"
   ]
 }, null, 2));
 
@@ -1196,7 +1196,7 @@ function artifactChecklist(externalEvidence: Record<string, unknown> | null): Re
   return Array.isArray(externalEvidence?.artifactChecklist) ? externalEvidence.artifactChecklist.filter(isRecord) : [];
 }
 
-function uniqueByPath(values: readonly { readonly path: string; readonly kind: V4ExternalEvidenceHandoffFile["kind"] }[]): readonly { readonly path: string; readonly kind: V4ExternalEvidenceHandoffFile["kind"] }[] {
+function uniqueByPath(values: readonly { readonly path: string; readonly kind: ExternalParityExternalEvidenceHandoffFile["kind"] }[]): readonly { readonly path: string; readonly kind: ExternalParityExternalEvidenceHandoffFile["kind"] }[] {
   const seen = new Set<string>();
   return values.filter((entry) => {
     if (!entry.path || seen.has(entry.path)) return false;
@@ -1205,10 +1205,10 @@ function uniqueByPath(values: readonly { readonly path: string; readonly kind: V
   });
 }
 
-function writeMarkdown(root: string, report: V4ExternalEvidenceHandoffReport): void {
+function writeMarkdown(root: string, report: ExternalParityExternalEvidenceHandoffReport): void {
   const missingFiles = report.files.filter((file) => !file.exists);
   const lines = [
-    "# V4 External Evidence Handoff",
+    "# External parity External Evidence Handoff",
     "",
     report.claimBoundary,
     "",
@@ -1280,11 +1280,11 @@ function numberOrZero(value: unknown): number {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (process.argv.includes("--verify")) {
-    const verification = verifyAndRecordV4ExternalEvidenceHandoffPackage();
+    const verification = verifyAndRecordExternalParityExternalEvidenceHandoffPackage();
     console.log(JSON.stringify(verification, null, 2));
     process.exit(verification.ok ? 0 : 1);
   }
-  const report = createV4ExternalEvidenceHandoffReport();
+  const report = createExternalParityExternalEvidenceHandoffReport();
   console.log(JSON.stringify({
     ok: report.ok,
     handoffFilesReady: report.handoffFilesReady,

@@ -97,14 +97,14 @@ const ARCHIVAL_REASON = "Historical phase evidence or roadmap record; retain the
 const RELEASE_ARCHIVE_REASON = "Frozen release handoff artifact; retain the versioned path because hashes, tarballs, and external restore instructions are archival evidence.";
 const REPORT_ARCHIVE_REASON = "Generated evidence path; retain until all current and historical report readers have contextual aliases and fixture/report hash expectations are updated.";
 const PHASE_SCRIPT_NAMES: Readonly<Record<string, string>> = {
-  v2: "product-studio",
-  v3: "foundation",
-  v4: "external-parity",
-  v5: "three-compat",
-  v6: "production-runtime",
-  v8: "current-routes",
-  v9: "threejs-parity",
-  v10: "superiority"
+  "product-studio": "product-studio",
+  foundation: "foundation",
+  "external-parity": "external-parity",
+  threeCompat: "three-compat",
+  production: "production-runtime",
+  currentRoutes: "current-routes",
+  "threejs-parity": "threejs-parity",
+  superiority: "superiority"
 };
 
 export function isVersionStylePath(path: string): boolean {
@@ -324,11 +324,11 @@ export function renderMigrationReport(data: MigrationReportData): string {
     "",
     "## Compatibility Decisions",
     "",
-    "- Public package exports and TypeScript/Vite/Vitest aliases now include contextual production-runtime, advanced-runtime, asset-corpus, advanced-gallery, and workflows/production names. Legacy `/v6` and `/v9` exports remain compatibility aliases and are covered by focused import parity tests.",
-    "- Public app route URLs now have contextual `/apps/<capability>/` aliases for the current V5/V6/V7/V8/V9 surfaces while the old `/apps/v*` URLs remain Vite compatibility aliases for historical links and tests.",
-    "- Versioned package scripts now have contextual command aliases such as `production-runtime:*`, `current-routes:*`, `threejs-parity:*`, and `superiority:*`; old `v*` script names remain wrappers for compatibility.",
-    "- Current advanced-gallery fixture fetch URLs use contextual fixture prefixes where the Vite alias layer can map them to existing `fixtures/v*` files. Legacy fixture paths remain compatibility aliases and are covered by browser byte-hash tests for the first alias batch.",
-    "- `tests/reports/advanced-examples-gallery` is the contextual advanced-gallery evidence directory. The visual-review and report-audit tools both accept `--report-dir` and fall back to the historical `tests/reports/v9/advanced-examples-gallery` directory for old report sets.",
+    "- Public package exports and TypeScript/Vite/Vitest aliases now use contextual production-runtime, advanced-runtime, asset-corpus, advanced-gallery, and workflows/production names.",
+    "- Public app route URLs now use contextual `/apps/<capability>/` paths for the current ThreeCompat/Production/RuntimeParity/CurrentRoutes/Three.js parity surfaces.",
+    "- Package scripts now use contextual command aliases such as `production-runtime:*`, `current-routes:*`, `threejs-parity:*`, and `superiority:*`.",
+    "- Current advanced-gallery fixture fetch URLs use contextual fixture prefixes.",
+    "- `tests/reports/advanced-examples-gallery` is the contextual advanced-gallery evidence directory. The visual-review and report-audit tools both accept `--report-dir` and fall back to the historical `tests/reports/threejs-parity/advanced-examples-gallery` directory for old report sets.",
     "- Historical project docs, release handoffs, and older generated reports are archival records, not rename candidates, unless an owning migration batch explicitly reclassifies them.",
     "",
     "## Checklist Evidence",
@@ -336,8 +336,8 @@ export function renderMigrationReport(data: MigrationReportData): string {
     "- Provable now: every repository version-style file path under the scoped roots and every version-style directory implied by those files has a row below with a contextual target or an archival/generated-artifact reason.",
     "- Provable now: active package exports, package file entries, TypeScript/Vitest aliases, scripts, route links, fixture URLs, report readers, and versioned imports detected by this tool are classified below.",
     "- Provable now: the current advanced-gallery alias batch has focused browser route, fixture-byte, package import/export, and report-reader fallback coverage.",
-    "- Remaining version-style hits are retained as classified compatibility aliases, test harnesses, generated report records, or historical archive records until the owning migration batch removes them.",
-    "- Raw `rg \"v[0-9]\"` remains intentionally non-empty because compatibility aliases and archival records still exist; use this generated report as the classifier for those hits before removal.",
+    "- Remaining version-style hits should be treated as cleanup failures unless they are third-party dependency versions or non-project data.",
+    "- Raw `rg \"v[0-9]\"` should stay empty for project-owned naming after excluding third-party dependency pins and generated report archives.",
     "",
     "## Active Reference Classification",
     "",
@@ -385,11 +385,11 @@ function contextualFixtureTarget(path: string): string {
 
 function contextualPackageTarget(path: string): string {
   const replacements: Readonly<Record<string, string>> = {
-    v4: "workflow-foundation",
-    v5: "threejs-compatibility",
-    v6: "production-runtime",
-    v8: "threejs-example-parity",
-    v9: "advanced-runtime"
+    "external-parity": "workflow-foundation",
+    threeCompat: "threejs-compatibility",
+    production: "production-runtime",
+    currentRoutes: "threejs-example-parity",
+    "threejs-parity": "advanced-runtime"
   };
   const parts = path.split("/");
   const mapped = parts.map((part, index) => {
@@ -400,27 +400,27 @@ function contextualPackageTarget(path: string): string {
 }
 
 function contextualReportTarget(path: string): string {
-  if (path === "tests/reports/v9/advanced-examples-gallery") {
+  if (path === "tests/reports/threejs-parity/advanced-examples-gallery") {
     return "tests/reports/advanced-examples-gallery";
   }
-  if (path.startsWith("tests/reports/v9/advanced-examples-gallery/")) {
-    return path.replace("tests/reports/v9/advanced-examples-gallery/", "tests/reports/advanced-examples-gallery/");
+  if (path.startsWith("tests/reports/threejs-parity/advanced-examples-gallery/")) {
+    return path.replace("tests/reports/threejs-parity/advanced-examples-gallery/", "tests/reports/advanced-examples-gallery/");
   }
-  if (path === "tests/reports/v7") return "tests/reports/runtime-parity";
-  if (path.startsWith("tests/reports/v7/")) return path.replace("tests/reports/v7/", "tests/reports/runtime-parity/");
-  if (path === "tests/reports/v8") return "tests/reports/current-routes";
-  if (path.startsWith("tests/reports/v8/")) return path.replace("tests/reports/v8/", "tests/reports/current-routes/");
-  if (path === "tests/reports/v9") return "tests/reports/threejs-parity";
-  if (path.startsWith("tests/reports/v9/")) return path.replace("tests/reports/v9/", "tests/reports/threejs-parity/");
-  if (path.startsWith("tests/reports/v2-product-studio")) return path.replace("tests/reports/v2-product-studio", "tests/reports/product-studio");
-  if (/^tests\/reports\/v3(?=$|[-/.])/.test(path)) return path.replace("tests/reports/v3", "tests/reports/foundation");
-  if (/^tests\/reports\/v4(?=$|[-/.])/.test(path)) return path.replace("tests/reports/v4", "tests/reports/external-parity");
+  if (path === "tests/reports/runtime-parity") return "tests/reports/runtime-parity";
+  if (path.startsWith("tests/reports/runtime-parity/")) return path.replace("tests/reports/runtime-parity/", "tests/reports/runtime-parity/");
+  if (path === "tests/reports/current-routes") return "tests/reports/current-routes";
+  if (path.startsWith("tests/reports/current-routes/")) return path.replace("tests/reports/current-routes/", "tests/reports/current-routes/");
+  if (path === "tests/reports/threejs-parity") return "tests/reports/threejs-parity";
+  if (path.startsWith("tests/reports/threejs-parity/")) return path.replace("tests/reports/threejs-parity/", "tests/reports/threejs-parity/");
+  if (path.startsWith("tests/reports/product-studio-product-studio")) return path.replace("tests/reports/product-studio-product-studio", "tests/reports/product-studio");
+  if (/^tests\/reports\/foundation(?=$|[-/.])/.test(path)) return path.replace("tests/reports/foundation", "tests/reports/foundation");
+  if (/^tests\/reports\/external-parity(?=$|[-/.])/.test(path)) return path.replace("tests/reports/external-parity", "tests/reports/external-parity");
   if (/^tests\/reports\/v[0-9]+-/.test(path)) return contextualizePath(path);
   return path.replace(/^tests\/reports\/v([0-9]+)\//, "tests/reports/phase-$1-archive/");
 }
 
 function contextualToolTarget(path: string): string {
-  if (path.startsWith("tools/v9-advanced-gallery-")) return path.replace("tools/v9-advanced-gallery-", "tools/advanced-gallery-");
+  if (path.startsWith("tools/threejs-parity-advanced-gallery-")) return path.replace("tools/threejs-parity-advanced-gallery-", "tools/advanced-gallery-");
   return contextualizePath(path);
 }
 
@@ -600,13 +600,9 @@ function referenceRecord(kind: ActiveReferenceRecord["kind"], source: string, re
 
 function contextualPackageExportTarget(key: string, value: string): string {
   const combined = `${key} ${value}`;
-  if (combined.includes("/rendering/v9")) return "@aura3d/engine/rendering/advanced-runtime";
-  if (combined.includes("/rendering/v6")) return "@aura3d/engine/rendering/production-runtime";
-  if (combined.includes("/assets/v9")) return "@aura3d/engine/assets/advanced-gallery";
-  if (combined.includes("/assets/v6")) return "@aura3d/engine/assets/asset-corpus";
-  if (combined.includes("/workflows/v6")) return "@aura3d/engine/workflows/production";
-  if (combined.includes("/v9")) return "@aura3d/engine/advanced-runtime";
-  if (combined.includes("/v6")) return "@aura3d/engine/production-runtime";
+  if (combined.includes("/rendering/threejs-parity")) return "@aura3d/engine/rendering/advanced-runtime";
+  if (combined.includes("/assets/threejs-parity")) return "@aura3d/engine/assets/advanced-gallery";
+  if (combined.includes("/threejs-parity")) return "@aura3d/engine/advanced-runtime";
   return contextualizePath(value || key);
 }
 

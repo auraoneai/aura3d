@@ -50,7 +50,7 @@ export class TorusGeometryCompat extends BufferGeometryCompat { override readonl
 export class ConeGeometryCompat extends CylinderGeometryCompat { override readonly type = "ConeGeometry"; constructor(radius = 1, height = 1) { super(0, radius, height); } }
 export class CircleGeometryCompat extends BufferGeometryCompat { override readonly type = "CircleGeometry"; constructor(public radius = 1, public segments = 32) { super(); } }
 
-export const V5_COMPAT_GEOMETRY_TYPES = [
+export const THREE_COMPAT_COMPAT_GEOMETRY_TYPES = [
   "BoxGeometry",
   "SphereGeometry",
   "PlaneGeometry",

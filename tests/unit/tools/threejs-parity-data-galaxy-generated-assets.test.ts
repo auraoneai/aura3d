@@ -71,7 +71,7 @@ type GlbInspection = {
   readonly scaffoldRoleNodeCount: number;
 };
 
-describe("v9 Data Galaxy generated asset manifests", () => {
+describe("threejsParity Data Galaxy generated asset manifests", () => {
   it("keeps the Blender data core manifest support-only with generated texture-backed provenance and no hero claim", () => {
     const manifest = readJson<GeneratedAssetManifest>("fixtures/advanced-gallery/assets/data-galaxy-core-blender/manifest.json");
     const glb = manifest.outputs.glb;

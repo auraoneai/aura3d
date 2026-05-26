@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V9 interactive cubes parity evidence", () => {
+test.describe("ThreejsParity interactive cubes parity evidence", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -29,7 +29,7 @@ test.describe("V9 interactive cubes parity evidence", () => {
     const response = await page.goto(`${server.origin}/apps/interactive-picking/`, { waitUntil: "domcontentloaded" });
     expect(response?.status()).toBe(200);
     await page.waitForFunction(() => {
-      const runtime = window.__a3dV8InteractivePicking as { readonly status?: string; readonly cubePickHits?: number } | undefined;
+      const runtime = window.__a3dCurrentRoutesInteractivePicking as { readonly status?: string; readonly cubePickHits?: number } | undefined;
       return (runtime?.status === "ready" || runtime?.status === "running") && (runtime.cubePickHits ?? 0) > 0;
     }, undefined, { timeout: 20_000 });
 
@@ -41,7 +41,7 @@ test.describe("V9 interactive cubes parity evidence", () => {
       for (const yRatio of [0.34, 0.46, 0.58, 0.7]) {
         await page.mouse.move(box.x + box.width * xRatio, box.y + box.height * yRatio);
         const hit = await page.evaluate(() => {
-          const runtime = window.__a3dV8InteractivePicking as {
+          const runtime = window.__a3dCurrentRoutesInteractivePicking as {
             readonly pointerPickHits?: number;
             readonly lastPointerHit?: string;
           } | undefined;
@@ -57,7 +57,7 @@ test.describe("V9 interactive cubes parity evidence", () => {
       }
     }
 
-    const runtime = await page.evaluate(() => window.__a3dV8InteractivePicking);
+    const runtime = await page.evaluate(() => window.__a3dCurrentRoutesInteractivePicking);
     expect(runtime, "expected pointer sweep to hit at least one cube").toMatchObject({
       pointerPickHits: expect.any(Number)
     });

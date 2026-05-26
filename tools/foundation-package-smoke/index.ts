@@ -22,7 +22,7 @@ const filesChecks = ["dist/rendering", "dist/assets", "dist/product-studio", "di
 }));
 
 const report = {
-  schema: "a3d-foundation-package-smoke/v1",
+  schema: "a3d-foundation-package-smoke",
   generatedAt: new Date().toISOString(),
   pass: installSmoke.ok && exportChecks.every((check) => check.exists) && distChecks.every((check) => check.exists) && filesChecks.every((check) => check.included),
   installSmoke,

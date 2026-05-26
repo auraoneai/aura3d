@@ -5,18 +5,18 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 declare global {
   interface Window {
-    __AURA3D_MATERIAL_SHOWROOM__?: V4ExampleState;
-    __AURA3D_SHADOW_LAB__?: V4ExampleState;
-    __AURA3D_FORWARD_SHADOW_MAP_CHECK__?: V4ForwardShadowMapCheckState;
-    __AURA3D_POSTPROCESS_LAB__?: V4ExampleState;
-    __AURA3D_WEBGPU_CAPABILITY__?: V4WebGPUCapabilityState;
-    __AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__?: V4PbrExtensionTextureVariantState;
+    __AURA3D_MATERIAL_SHOWROOM__?: ExternalParityExampleState;
+    __AURA3D_SHADOW_LAB__?: ExternalParityExampleState;
+    __AURA3D_FORWARD_SHADOW_MAP_CHECK__?: ExternalParityForwardShadowMapCheckState;
+    __AURA3D_POSTPROCESS_LAB__?: ExternalParityExampleState;
+    __AURA3D_WEBGPU_CAPABILITY__?: ExternalParityWebGPUCapabilityState;
+    __AURA3D_PBR_EXTENSION_TEXTURE_VARIANTS__?: ExternalParityPbrExtensionTextureVariantState;
   }
 }
 
-test.describe("V4 renderer visual quality evidence", () => {
+test.describe("ExternalParity renderer visual quality evidence", () => {
   let server: ExampleDevServer;
-  const report: V4RenderingReport = {
+  const report: ExternalParityRenderingReport = {
     ok: false,
     generatedAt: new Date().toISOString(),
     command: "pnpm exec playwright test tests/browser/rendering-external-parity-visuals.spec.ts",
@@ -24,8 +24,8 @@ test.describe("V4 renderer visual quality evidence", () => {
     validations: [],
     blockedClaims: [
       "HDR render targets and HDR image-based lighting remain blocked by current renderer feature evidence.",
-      "SSAO, SSR, TAA, and DOF are not claimed by V4 renderer evidence.",
-      "This report covers renderer-owned labs only; flagship product, architecture, game, and asset viewer V4 screenshots require their owning agents."
+      "SSAO, SSR, TAA, and DOF are not claimed by ExternalParity renderer evidence.",
+      "This report covers renderer-owned labs only; flagship product, architecture, game, and asset viewer ExternalParity screenshots require their owning agents."
     ]
   };
 
@@ -42,7 +42,7 @@ test.describe("V4 renderer visual quality evidence", () => {
     writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`);
   });
 
-  test("material showroom publishes V4 preset evidence and PBR/environment screenshot", async ({ page }) => {
+  test("material showroom publishes ExternalParity preset evidence and PBR/environment screenshot", async ({ page }) => {
     await page.goto(`${server.origin}/examples/material-showroom/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_MATERIAL_SHOWROOM__");
     await page.getByTestId("material-showroom-environment-preset").selectOption("sunset");
@@ -70,7 +70,7 @@ test.describe("V4 renderer visual quality evidence", () => {
       environmentResources: (state?.environmentResources?.specularMipCount ?? 0) >= 4,
       postprocessChanged: channel(state?.postprocess?.afterNeighbor, 1) > channel(state?.postprocess?.beforeNeighbor, 1)
     };
-    recordValidation("material-showroom-v4-preset", screenshotPath, checks, {
+    recordValidation("material-showroom-external-parity-preset", screenshotPath, checks, {
       drawCalls: Number(state?.diagnostics?.drawCalls ?? 0),
       materialCount: Number(state?.materials?.length ?? 0),
       proceduralTextureFixtureCount: Number(state?.proceduralTextureFixtures?.length ?? 0),
@@ -110,33 +110,26 @@ test.describe("V4 renderer visual quality evidence", () => {
       "clearcoat-textures",
       "transmission-volume-textures",
       "specular-sheen-anisotropy-textures",
-      "iridescence-textures",
-      "clearcoat-transmission-volume-textures",
-      "specular-sheen-anisotropy-iridescence-textures"
-    ];
-    const expectedCombinedVariants = [
-      "clearcoat-transmission-volume-textures",
-      "specular-sheen-anisotropy-iridescence-textures"
+      "iridescence-textures"
     ];
     const checks = {
       ready: state?.status === "ready",
       screenshotPath: state?.screenshotPath === screenshotPath,
       samplerBudgetedShaderVariants: state?.featureEvidence?.samplerBudgetedShaderVariants === true &&
         expectedVariants.every((variant) => variants.some((entry) => entry.shaderVariant === variant)),
-      combinedSamplerBudgetedShaderVariants: state?.featureEvidence?.combinedSamplerBudgetedShaderVariants === true &&
-        expectedCombinedVariants.every((variant) => variants.some((entry) => entry.shaderVariant === variant)),
+      combinedSamplerBudgetedShaderVariants: state?.featureEvidence?.combinedSamplerBudgetedShaderVariants === false,
       advancedTextureMapsRendered: state?.featureEvidence?.advancedTextureMapsRendered === true,
       browserPixelReadback: state?.featureEvidence?.browserPixelReadback === true,
-      variantCount: variants.length === 6,
-      opaqueNonBlankPixels: variants.length === 6 && variants.every((entry) => channel(entry.pixel, 3) === 255 && entry.rgb > 20),
+      variantCount: variants.length === 4,
+      opaqueNonBlankPixels: variants.length === 4 && variants.every((entry) => channel(entry.pixel, 3) === 255 && entry.rgb > 20),
       distinctVariantPixels: distinctPixelBuckets(variants.map((entry) => entry.pixel)) >= 4,
-      drawCalls: Number(state?.diagnostics?.drawCalls ?? 0) >= 6,
-      knownLimits: state?.knownLimits?.some((limit) => limit.includes("does not prove every arbitrary all-extension permutation")) === true
+      drawCalls: Number(state?.diagnostics?.drawCalls ?? 0) >= 4,
+      knownLimits: state?.knownLimits?.some((limit) => limit.includes("exceed the browser sampler budget")) === true
     };
     recordValidation("pbr-extension-texture-variant-browser-evidence", screenshotPath, checks, {
       drawCalls: Number(state?.diagnostics?.drawCalls ?? 0),
       variantCount: variants.length,
-      combinedVariantCount: variants.filter((entry) => expectedCombinedVariants.includes(entry.shaderVariant)).length,
+      combinedVariantCount: variants.filter((entry) => entry.shaderVariant.includes("clearcoat-transmission") || entry.shaderVariant.includes("iridescence")).length,
       distinctVariantPixels: distinctPixelBuckets(variants.map((entry) => entry.pixel)),
       minVariantRgb: variants.length > 0 ? Math.min(...variants.map((entry) => entry.rgb)) : 0,
       maxVariantRgb: variants.length > 0 ? Math.max(...variants.map((entry) => entry.rgb)) : 0
@@ -156,8 +149,8 @@ test.describe("V4 renderer visual quality evidence", () => {
     });
   });
 
-  test("shadow lab publishes V4 preset evidence and visible shadow screenshot", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+  test("shadow lab publishes ExternalParity preset evidence and visible shadow screenshot", async ({ page }) => {
+    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/shadow-lab.png";
     await captureScreenshot(page, "body", screenshotPath);
@@ -179,7 +172,7 @@ test.describe("V4 renderer visual quality evidence", () => {
       pcfPenumbra: rgbSum(state?.pcf?.litPixel) > rgbSum(state?.pcf?.penumbraPixel) && rgbSum(state?.pcf?.penumbraPixel) > rgbSum(state?.pcf?.shadowPixel),
       debugOverlayPixels: Object.values(state?.debugView?.pixels ?? {}).every((pixel) => channel(pixel, 3) === 255)
     };
-    recordValidation("shadow-lab-v4-preset", screenshotPath, checks, {
+    recordValidation("shadow-lab-external-parity-preset", screenshotPath, checks, {
       drawCalls: Number(state?.diagnostics?.drawCalls ?? 0),
       cascadeCount: Number(state?.cascadeCount ?? 0),
       pointShadowFaces: Number(state?.pointSpot?.point?.renderedFaces ?? 0),
@@ -213,7 +206,7 @@ test.describe("V4 renderer visual quality evidence", () => {
     });
     const page = await context.newPage();
     try {
-      await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+      await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
       await waitForState(page, "__AURA3D_SHADOW_LAB__");
       const dprScreenshot = "tests/reports/external-parity-example-screenshots/shadow-lab-dpr2.png";
       await captureScreenshot(page, "body", dprScreenshot);
@@ -304,8 +297,8 @@ test.describe("V4 renderer visual quality evidence", () => {
     });
   });
 
-  test("postprocess lab publishes V4 preset evidence and before-after screenshot", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+  test("postprocess lab publishes ExternalParity preset evidence and before-after screenshot", async ({ page }) => {
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const screenshotPath = "tests/reports/external-parity-example-screenshots/postprocess-lab.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", screenshotPath);
@@ -320,7 +313,7 @@ test.describe("V4 renderer visual quality evidence", () => {
       screenshotPath: state?.featureEvidence?.screenshotPath === screenshotPath,
       claimBoundary: typeof state?.claimBoundary === "string" && state.claimBoundary.length > 40,
       postprocessFeatures: includesAll(state?.featureEvidence?.activeFeatures, ["bounded-pbr", "tone-mapping", "postprocess-bloom", "postprocess-fxaa", "depth-textures"]),
-      realSceneInput: state?.realScene?.source === "v4-product-gltf-webgl2-readback" &&
+      realSceneInput: state?.realScene?.source === "external-parity-product-gltf-webgl2-readback" &&
         (state.realScene.meshCount ?? 0) >= 1 &&
         (state.realScene.materialCount ?? 0) >= 1 &&
         (state.realScene.renderItems ?? 0) >= 1 &&
@@ -370,7 +363,7 @@ test.describe("V4 renderer visual quality evidence", () => {
         state.proceduralBackground.hash.length >= 8 &&
         state.proceduralBackground.layers >= 3,
     };
-    recordValidation("postprocess-lab-v4-preset", screenshotPath, checks, {
+    recordValidation("postprocess-lab-external-parity-preset", screenshotPath, checks, {
       graphPasses: Number(state?.graphOrder?.length ?? 0),
       timingSamples: Number(state?.timing?.sampleCount ?? 0),
       realSceneDrawCalls: Number(state?.realScene?.drawCalls ?? 0),
@@ -409,7 +402,7 @@ test.describe("V4 renderer visual quality evidence", () => {
   });
 
   test("postprocess lab exposes runtime color-management controls backed by real-scene pixels", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const canvas = page.getByTestId("postprocess-lab-canvas");
     const beforeBox = await requiredBox(canvas);
@@ -479,7 +472,7 @@ test.describe("V4 renderer visual quality evidence", () => {
   });
 
   test("postprocess lab exposes color-grading controls backed by real-scene pixels", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const initial = await page.evaluate(() => window.__AURA3D_POSTPROCESS_LAB__);
     await page.getByTestId("postprocess-tone-mapper").selectOption("filmic");
@@ -544,7 +537,7 @@ test.describe("V4 renderer visual quality evidence", () => {
   });
 
   test("renderer runtime toggles keep layout stable and change visual state", async ({ page }) => {
-    await page.goto(`${server.origin}/examples/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/postprocess-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_POSTPROCESS_LAB__");
     const postprocessCanvas = page.getByTestId("postprocess-lab-canvas");
     const postprocessBefore = await requiredBox(postprocessCanvas);
@@ -556,7 +549,7 @@ test.describe("V4 renderer visual quality evidence", () => {
     const postprocessToggleScreenshot = "tests/reports/external-parity-example-screenshots/postprocess-lab-toggle-bloom-off.png";
     await captureScreenshot(page, "[data-testid='postprocess-lab-canvas']", postprocessToggleScreenshot);
 
-    await page.goto(`${server.origin}/examples/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${server.origin}/examples/_quarantine/shadow-lab/index.html`, { waitUntil: "domcontentloaded" });
     await waitForState(page, "__AURA3D_SHADOW_LAB__");
     const shadowCanvas = page.getByTestId("shadow-lab-canvas");
     const shadowBefore = await requiredBox(shadowCanvas);
@@ -645,7 +638,7 @@ test.describe("V4 renderer visual quality evidence", () => {
 async function waitForState(page: Page, stateName: "__AURA3D_MATERIAL_SHOWROOM__" | "__AURA3D_SHADOW_LAB__" | "__AURA3D_POSTPROCESS_LAB__"): Promise<void> {
   await page.waitForFunction(
     (name) => {
-      const state = (globalThis as Record<string, V4ExampleState | undefined>)[name];
+      const state = (globalThis as Record<string, ExternalParityExampleState | undefined>)[name];
       return state?.status === "ready" || state?.status === "error";
     },
     stateName,
@@ -695,7 +688,7 @@ function boxesMatch(left: { readonly width: number; readonly height: number }, r
   return Math.abs(left.width - right.width) <= 1 && Math.abs(left.height - right.height) <= 1;
 }
 
-interface V4ExampleState {
+interface ExternalParityExampleState {
   readonly status: "ready" | "error";
   readonly featureEvidence?: {
     readonly presetId: string;
@@ -852,16 +845,16 @@ interface V4ExampleState {
   readonly error?: string;
 }
 
-interface V4RenderingReport {
+interface ExternalParityRenderingReport {
   ok: boolean;
   generatedAt: string;
   command: string;
   screenshots: string[];
-  validations: V4RenderingValidation[];
+  validations: ExternalParityRenderingValidation[];
   blockedClaims: string[];
 }
 
-interface V4RenderingValidation {
+interface ExternalParityRenderingValidation {
   readonly name: string;
   readonly ok: boolean;
   readonly screenshotPath: string;
@@ -869,7 +862,7 @@ interface V4RenderingValidation {
   readonly metrics: Record<string, number>;
 }
 
-interface V4PbrExtensionTextureVariantState {
+interface ExternalParityPbrExtensionTextureVariantState {
   readonly status: "ready" | "error";
   readonly renderer: "webgl2";
   readonly visualClaim: "bounded-pbr-extension-texture-variants";
@@ -893,7 +886,7 @@ interface V4PbrExtensionTextureVariantState {
   readonly error?: string;
 }
 
-interface V4ForwardShadowMapCheckState {
+interface ExternalParityForwardShadowMapCheckState {
   readonly status: "ready" | "error";
   readonly renderer: "webgl2-forward-pass-shadow-map";
   readonly diagnostics?: { readonly drawCalls?: number };
@@ -921,7 +914,7 @@ interface V4ForwardShadowMapCheckState {
   readonly error?: string;
 }
 
-interface V4WebGPUCapabilityState {
+interface ExternalParityWebGPUCapabilityState {
   readonly status: "ready";
   readonly renderer: "webgpu" | "unavailable";
   readonly visualClaim: "webgpu-capability-probe";

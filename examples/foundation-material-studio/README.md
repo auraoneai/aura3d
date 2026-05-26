@@ -1,4 +1,4 @@
-# Material Studio V3
+# Material Studio Foundation
 
 This example demonstrates the public material workflow for PBR review.
 

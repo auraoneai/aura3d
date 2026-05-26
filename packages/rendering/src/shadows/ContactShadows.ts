@@ -1,11 +1,11 @@
-export interface V4ContactShadowOptions {
+export interface ExternalParityContactShadowOptions {
   readonly casterRadius: number;
   readonly receiverDistance: number;
   readonly softness?: number;
   readonly opacity?: number;
 }
 
-export interface V4ContactShadowLayer {
+export interface ExternalParityContactShadowLayer {
   readonly index: number;
   readonly radius: number;
   readonly scale: readonly [number, number];
@@ -14,7 +14,7 @@ export interface V4ContactShadowLayer {
   readonly yOffset: number;
 }
 
-export interface V4ContactShadow {
+export interface ExternalParityContactShadow {
   readonly radius: number;
   readonly opacity: number;
   readonly softness: number;
@@ -23,21 +23,21 @@ export interface V4ContactShadow {
   readonly diagnostic: string;
 }
 
-export interface V4ContactShadowPlanOptions extends V4ContactShadowOptions {
+export interface ExternalParityContactShadowPlanOptions extends ExternalParityContactShadowOptions {
   readonly layerCount?: number;
   readonly anisotropy?: number;
   readonly yOffset?: number;
 }
 
-export interface V4ContactShadowPlan {
-  readonly shadow: V4ContactShadow;
-  readonly layers: readonly V4ContactShadowLayer[];
+export interface ExternalParityContactShadowPlan {
+  readonly shadow: ExternalParityContactShadow;
+  readonly layers: readonly ExternalParityContactShadowLayer[];
   readonly fallback: "layered-receiver-geometry";
   readonly unsupportedRendererFeatures: readonly string[];
   readonly claimBoundary: string;
 }
 
-export function createV4ContactShadow(options: V4ContactShadowOptions): V4ContactShadow {
+export function createExternalParityContactShadow(options: ExternalParityContactShadowOptions): ExternalParityContactShadow {
   if (!Number.isFinite(options.casterRadius) || options.casterRadius <= 0) throw new RangeError("Contact shadow casterRadius must be positive.");
   if (!Number.isFinite(options.receiverDistance) || options.receiverDistance <= 0) throw new RangeError("Contact shadow receiverDistance must be positive.");
   const softness = clamp(options.softness ?? 0.45, 0, 1);
@@ -53,12 +53,12 @@ export function createV4ContactShadow(options: V4ContactShadowOptions): V4Contac
   };
 }
 
-export function createV4ContactShadowPlan(options: V4ContactShadowPlanOptions): V4ContactShadowPlan {
-  const shadow = createV4ContactShadow(options);
+export function createExternalParityContactShadowPlan(options: ExternalParityContactShadowPlanOptions): ExternalParityContactShadowPlan {
+  const shadow = createExternalParityContactShadow(options);
   const layerCount = integerInRange(options.layerCount ?? 3, 1, 6, "Contact shadow layerCount");
   const anisotropy = positive(options.anisotropy ?? 1.28, "Contact shadow anisotropy");
   const yOffset = finite(options.yOffset ?? 0.002, "Contact shadow yOffset");
-  const layers = Array.from({ length: layerCount }, (_, index): V4ContactShadowLayer => {
+  const layers = Array.from({ length: layerCount }, (_, index): ExternalParityContactShadowLayer => {
     const t = layerCount === 1 ? 0 : index / (layerCount - 1);
     const radius = Number((shadow.radius * (1 + t * (0.38 + shadow.softness * 0.26))).toFixed(4));
     return {

@@ -1,3 +1,3 @@
-import { mountCharacterViewerV4 } from "../../../examples/external-character-viewer/CharacterViewerV4";
+import { mountExternalCharacterViewer } from "../../../examples/external-character-viewer/ExternalCharacterViewer";
 
-void mountCharacterViewerV4("animation-studio-pro");
+void mountExternalCharacterViewer("animation-studio-pro");

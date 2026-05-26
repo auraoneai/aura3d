@@ -1,3 +1,3 @@
-# A3D V6 Material Studio
+# A3D Production Material Studio
 
-Real V6 app for PBR material-extension inspection using imported GLB assets, HDR lighting, runtime metrics, and an HDR-selection interaction.
+Real Production app for PBR material-extension inspection using imported GLB assets, HDR lighting, runtime metrics, and an HDR-selection interaction.

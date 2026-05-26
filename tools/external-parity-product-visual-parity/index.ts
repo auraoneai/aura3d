@@ -118,7 +118,7 @@ export interface ProductExternalBaselineValidation {
   readonly violations: readonly string[];
 }
 
-export interface V4ProductVisualParityReport {
+export interface ExternalParityProductVisualParityReport {
   readonly ok: boolean;
   readonly screenshotPaths: readonly string[];
   readonly visualParityReady: boolean;
@@ -160,12 +160,12 @@ const sourceFiles = [
   "packages/rendering/src/Geometry.ts",
   "packages/rendering/src/PBRMaterial.ts",
   "packages/rendering/src/ProductTurntableFixtures.ts",
-  "packages/rendering/src/V4RenderPreset.ts",
+  "packages/rendering/src/ExternalParityRenderPreset.ts",
   "tests/reports/external-parity-unity-product-visual-baseline.json",
   "tests/reports/external-parity-unreal-product-visual-baseline.json",
 ] as const;
 
-export async function createV4ProductVisualParityReport(root = process.cwd()): Promise<V4ProductVisualParityReport> {
+export async function createExternalParityProductVisualParityReport(root = process.cwd()): Promise<ExternalParityProductVisualParityReport> {
   mkdirSync(join(root, artifactDir), { recursive: true });
   const unityProductBaseline = readJson(root, "tests/reports/external-parity-unity-product-visual-baseline.json");
   const unrealProductBaseline = readJson(root, "tests/reports/external-parity-unreal-product-visual-baseline.json");
@@ -259,7 +259,7 @@ export async function createV4ProductVisualParityReport(root = process.cwd()): P
   }
 }
 
-export function collectProductVisualEvidencePaths(report: Pick<V4ProductVisualParityReport, "renders" | "diffs" | "externalBaselines">): readonly string[] {
+export function collectProductVisualEvidencePaths(report: Pick<ExternalParityProductVisualParityReport, "renders" | "diffs" | "externalBaselines">): readonly string[] {
   const paths = [
     ...report.renders.map((render) => render.screenshotPath),
     ...report.diffs.flatMap((diff) => [diff.baselinePath, diff.comparedPath, diff.diffPath]),
@@ -939,7 +939,7 @@ function sharedBrowserHelpers(): string {
 
 function aura3dBundleSource(): string {
   return `
-    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createV4EnvironmentLighting } from "./packages/rendering/src/index.ts";
+    import { Geometry, PBRMaterial, Renderer, UnlitMaterial, createExternalParityEnvironmentLighting } from "./packages/rendering/src/index.ts";
     const descriptor = ${productSceneLiteral()};
     ${sharedBrowserHelpers()}
     export async function renderProductVisualParity(canvas) {
@@ -949,7 +949,7 @@ function aura3dBundleSource(): string {
         ["sphere", Geometry.uvSphere(0.5, 32, 16)],
         ["cylinder", Geometry.cylinder({ radius: 0.5, height: 1, segments: 32 })],
       ]);
-      const lighting = createV4EnvironmentLighting("studio").lighting;
+      const lighting = createExternalParityEnvironmentLighting("studio").lighting;
       const materials = new Map(descriptor.materials.map((material) => {
         if (material.kind === "unlit") return [material.id, new UnlitMaterial({
           name: "parity-" + material.id,
@@ -1205,13 +1205,13 @@ async (input) => {
 }
 `;
 
-function writeReport(root: string, report: V4ProductVisualParityReport): void {
+function writeReport(root: string, report: ExternalParityProductVisualParityReport): void {
   writeJson(root, reportPath, report);
 }
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = await createV4ProductVisualParityReport();
+  const report = await createExternalParityProductVisualParityReport();
   writeReport(process.cwd(), report);
   console.log(JSON.stringify({
     ok: report.ok,

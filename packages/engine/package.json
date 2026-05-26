@@ -10,10 +10,6 @@
     "./advanced-runtime": {
       "types": "./dist/advanced-runtime/index.d.ts",
       "import": "./dist/advanced-runtime/index.js"
-    },
-    "./v9": {
-      "types": "./dist/advanced-runtime/index.d.ts",
-      "import": "./dist/advanced-runtime/index.js"
     }
   },
   "main": "./dist/index.js",

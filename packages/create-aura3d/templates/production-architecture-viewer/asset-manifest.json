@@ -1,6 +1,6 @@
 {
-  "schema": "a3d-production-runtime-template-assets/v1",
-  "fetchInstructions": "Serve the V6 fixture assets at /fixtures/production-runtime or copy the listed files into that same public path before running the template.",
+  "schema": "a3d-production-runtime-template-assets",
+  "fetchInstructions": "Serve the production fixture assets at /fixtures/production-runtime or copy the listed files into that same public path before running the template.",
   "assets": [
     { "id": "antique-camera", "path": "fixtures/asset-corpus/antique-camera.glb", "sha256": "7480f9bed3918fe63ce1da0e54dcd235bd11fe54c5006fa0f7a0a31ddcc274c1" },
     { "id": "avocado", "path": "fixtures/asset-corpus/avocado.glb", "sha256": "2713a264e3e16f3850028f5a10db9f18e38257965ad2ca5caff693d1a1991a1e" },

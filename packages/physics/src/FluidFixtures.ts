@@ -14,7 +14,7 @@ export interface FluidParticleSample {
 }
 
 export interface FluidFixture {
-  readonly id: "v4-old-branch-fluid-fixture";
+  readonly id: "external-parity-old-branch-fluid-fixture";
   readonly source: "origin-master-sph-mpm-fluid-adapted";
   readonly sourceFiles: readonly [
     "origin/master:src/simulation/sph/SPHFluidFramework.ts",
@@ -187,7 +187,7 @@ export function sampleFluidFixture(options: FluidFixtureOptions = {}): FluidFixt
   const activeCells = new Set(positions.map((position) => `${Math.floor((position[0] + 0.6) / 0.16)}:${Math.floor((position[1] + 0.4) / 0.16)}:${Math.floor((position[2] + 0.6) / 0.16)}`)).size;
 
   return {
-    id: "v4-old-branch-fluid-fixture",
+    id: "external-parity-old-branch-fluid-fixture",
     source: "origin-master-sph-mpm-fluid-adapted",
     sourceFiles,
     config: {

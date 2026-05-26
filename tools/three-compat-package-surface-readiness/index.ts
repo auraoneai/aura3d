@@ -55,16 +55,16 @@ const checks = [
   {
     id: "three-compat-templates-packaged",
     pass: missingTemplateFiles.length === 0,
-    detail: missingTemplateFiles.join(", ") || "required V5 templates are included in package files"
+    detail: missingTemplateFiles.join(", ") || "required Three.js compatibility templates are included in package files"
   },
   {
     id: "templates-are-external-consumer-safe",
     pass: workspaceTemplateDeps.length === 0,
-    detail: workspaceTemplateDeps.join(", ") || "V5 template package.json files do not use workspace:*"
+    detail: workspaceTemplateDeps.join(", ") || "Three.js compatibility template package.json files do not use workspace:*"
   }
 ];
 const report = {
-  schema: "a3d-three-compat-package-surface-readiness/v1",
+  schema: "a3d-three-compat-package-surface-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   requiredExports,
@@ -78,4 +78,4 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 package surface readiness passed: ${requiredExports.length} exports, ${requiredTemplateFiles.length} V5 templates.`);
+console.log(`Three.js compatibility package surface readiness passed: ${requiredExports.length} exports, ${requiredTemplateFiles.length} Three.js compatibility templates.`);

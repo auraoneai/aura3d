@@ -21,7 +21,7 @@ function publish() {
     renderer: "canvas2d",
     visualClaim: "bounded-foundation-editor-authored-interactive-static-export",
     knownLimits: [
-      "This exported app proves the bounded V3 editor static export path, not a full Unity/Unreal replacement.",
+      "This exported app proves the bounded editor static export path, not a full Unity/Unreal replacement.",
       "The exported runtime uses canvas2D project-data visualization instead of the full editor code path.",
     ],
     errors: [],

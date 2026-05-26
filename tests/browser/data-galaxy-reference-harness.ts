@@ -10,6 +10,7 @@ import {
   createDataGalaxyBudgetPlan,
   createDataGalaxyCompositionProfile
 } from "/apps/advanced-examples-gallery/src/dataGalaxyBudgets.js";
+import { getPointCloud } from "/apps/advanced-examples-gallery/src/dataGalaxyScene.js";
 import {
   createDataGalaxyEvidence,
   createDataGalaxyGeometryEvidence
@@ -20,7 +21,6 @@ import {
 import {
   createResources,
   env,
-  getPointCloud,
   lights,
   mat
 } from "/apps/advanced-examples-gallery/src/sceneBuilders.js";
@@ -46,7 +46,7 @@ interface PixelStats {
 
 interface DataGalaxyReferenceReport {
   readonly status: "ready" | "error";
-  readonly schema: "a3d-data-galaxy-reference/v1";
+  readonly schema: "a3d-data-galaxy-reference";
   readonly error?: string;
   readonly route: "data-galaxy";
   readonly harness: {
@@ -220,7 +220,7 @@ async function run(): Promise<void> {
 
     window.__DATA_GALAXY_REFERENCE__ = {
       status: "ready",
-      schema: "a3d-data-galaxy-reference/v1",
+      schema: "a3d-data-galaxy-reference",
       route: "data-galaxy",
       harness: {
         purpose: "same-system Data Galaxy reference harness outside the advanced gallery shell",
@@ -297,7 +297,7 @@ async function run(): Promise<void> {
   } catch (error) {
     window.__DATA_GALAXY_REFERENCE__ = {
       status: "error",
-      schema: "a3d-data-galaxy-reference/v1",
+      schema: "a3d-data-galaxy-reference",
       error: error instanceof Error ? error.stack ?? error.message : String(error),
       route: "data-galaxy",
       harness: {

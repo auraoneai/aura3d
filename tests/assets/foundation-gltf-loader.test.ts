@@ -7,12 +7,12 @@ import { GLTFLoader, LoadContext } from "@aura3d/assets";
 const root = join(process.cwd(), "fixtures/workflow-assets/assets");
 const originalFetch = globalThis.fetch;
 
-describe("V3 glTF loader fixtures", () => {
+describe("Foundation glTF loader fixtures", () => {
   afterEach(() => {
     vi.stubGlobal("fetch", originalFetch);
   });
 
-  it("loads V3 .gltf, .glb, data URI, and external buffer/image fixtures", async () => {
+  it("loads Foundation .gltf, .glb, data URI, and external buffer/image fixtures", async () => {
     stubFileFetch();
     const loader = new GLTFLoader();
     const context = new LoadContext();
@@ -34,7 +34,7 @@ describe("V3 glTF loader fixtures", () => {
   it("ships required fixture directories with manifests", () => {
     for (const id of ["product-camera", "material-spheres", "animated-character", "variant-product", "compressed-product"]) {
       const manifest = JSON.parse(readFileSync(join(root, id, "manifest.json"), "utf8"));
-      expect(manifest.schema).toBe("a3d-v3-asset-fixture/v1");
+      expect(manifest.schema).toBe("a3d-foundation-asset-fixture");
       expect(manifest.coverage).toEqual(expect.arrayContaining(["gltf", "glb", "data-uri", "external-buffer", "external-image"]));
       expect(manifest.partCount).toBeGreaterThan(0);
       expect(manifest.materialCount).toBeGreaterThan(0);

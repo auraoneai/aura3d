@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 WebGPU report", () => {
+test.describe("WebGPU report", () => {
   test.setTimeout(30_000);
 
   let server: ExampleDevServer;
@@ -20,7 +20,7 @@ test.describe("V6 WebGPU report", () => {
     await page.goto(`${server.origin}/tests/browser/production-runtime-webgl2-real-renderer.html`, { waitUntil: "domcontentloaded" });
     const report = await page.evaluate(async () => {
       const module = await import("/packages/rendering/src/production-runtime/index.js");
-      return module.createV6WebGPUReport(navigator.gpu);
+      return module.createProductionWebGPUReport(navigator.gpu);
     }) as {
       schema: string;
       status: "available" | "unavailable" | "blocked";
@@ -29,7 +29,7 @@ test.describe("V6 WebGPU report", () => {
       doesNotBlockWebGL2Production: boolean;
       warnings: readonly string[];
     };
-    expect(report.schema).toBe("a3d-production-runtime-webgpu-report/v1");
+    expect(report.schema).toBe("a3d-production-runtime-webgpu-report");
     expect(["available", "unavailable", "blocked"]).toContain(report.status);
     expect(report.realHardwareRequiredForParity).toBe(true);
     expect(report.doesNotBlockWebGL2Production).toBe(true);
@@ -48,7 +48,7 @@ test.describe("V6 WebGPU report", () => {
 
     const readiness = await page.evaluate(async () => {
       const module = await import("/packages/rendering/src/production-runtime/index.js");
-      return module.createV7WebGPUReadinessReport(navigator.gpu);
+      return module.createProductionWebGPUReadinessReport(navigator.gpu);
     }) as {
       schema: string;
       productionBackend: "webgpu-production-sdk-path";
@@ -57,7 +57,7 @@ test.describe("V6 WebGPU report", () => {
       requiredForCompletion: readonly { id: string; status: "ready" | "missing" | "blocked"; evidence: string }[];
       blockers: readonly string[];
     };
-    expect(readiness.schema).toBe("a3d-v7-webgpu-readiness/v1");
+    expect(readiness.schema).toBe("a3d-production-runtime-webgpu-readiness");
     expect(readiness.productionBackend).toBe("webgpu-production-sdk-path");
     expect(readiness.primaryRendererClaim).toBe(true);
     expect(readiness.safetyChecks.find((item) => item.id === "renderer-production-runtime-webgpu-uses-production-webgpu-path")?.status).toBe("ready");

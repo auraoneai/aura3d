@@ -1,4 +1,4 @@
-# Interactive Scene V3
+# Interactive Scene Foundation
 
 This example demonstrates a public interactive workflow with a realtime update loop.
 

@@ -13,7 +13,7 @@ const baseReport = createSubsystemReport(root, {
   reportPath: "tests/reports/foundation-runtime-systems.json",
   runIdPrefix: "foundation-runtime",
   sourceFiles: [
-    "docs/project/foundation-runtime-systems-plan.md",
+    "docs/project/implementation-plan.md",
     "examples/game-slice/main.ts",
     "examples/physics-sandbox/main.ts",
     "examples/animated-character/main.ts",
@@ -76,15 +76,15 @@ const baseReport = createSubsystemReport(root, {
       id: "runtime-conditional-claim-boundaries",
       description: "Runtime-only-if-claimed features are explicitly blocked unless implemented.",
       passed: conditionalClaimBoundaries.every((entry) => entry.status === "blocked-unclaimed"),
-      evidencePaths: ["docs/project/foundation-runtime-systems-plan.md", "tests/reports/foundation-runtime-systems.json"],
+      evidencePaths: ["docs/project/implementation-plan.md", "tests/reports/foundation-runtime-systems.json"],
       blocker: "Runtime conditional claim boundaries are missing.",
     },
     {
-      id: "v3-integrated-game-scene",
-      description: "v3 game scene uses real assets with rendering, physics, animation, input, particles, audio, and scripting together.",
+      id: "foundation-integrated-game-scene",
+      description: "foundation game scene uses real assets with rendering, physics, animation, input, particles, audio, and scripting together.",
       passed: Boolean(hasRuntimeGameEvidence),
       evidencePaths: ["tests/reports/foundation-runtime-browser.json", "tests/browser/runtime-systems.spec.ts"],
-      blocker: "Integrated real-asset v3 runtime game scene is not fully proven yet.",
+      blocker: "Integrated real-asset foundation runtime game scene is not fully proven yet.",
     },
   ],
 });
@@ -105,7 +105,7 @@ function createConditionalClaimBoundaries() {
     {
       feature: "continuous-collision-detection",
       status: "blocked-unclaimed",
-      reason: "CCD is not implemented and no CCD advantage claim is allowed by v3 runtime docs."
+      reason: "CCD is not implemented and no CCD advantage claim is allowed by foundation runtime docs."
     },
     {
       feature: "physics-benchmarks-against-rapier-ammo-cannon",

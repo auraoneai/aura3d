@@ -4,11 +4,11 @@ import { MaterialInstance } from "../MaterialInstance";
 import type { RenderSource } from "../Renderer";
 import { Texture } from "../Texture";
 import { TextureBinding } from "../TextureBinding";
-import type { V6RendererInput, V7TransmissionBackdropCaptureOptions } from "./ProductionRendererTypes";
+import type { ProductionRendererInput, RuntimeParityTransmissionBackdropCaptureOptions } from "./ProductionRendererTypes";
 
 export function normalizeTransmissionBackdropCapture(
-  options: V6RendererInput["transmissionBackdropCapture"]
-): Required<V7TransmissionBackdropCaptureOptions> | null {
+  options: ProductionRendererInput["transmissionBackdropCapture"]
+): Required<RuntimeParityTransmissionBackdropCaptureOptions> | null {
   if (!options) return null;
   const mode = options.mode ?? "scene-color-readback";
   if (mode !== "scene-color-readback") {
@@ -28,7 +28,7 @@ export function normalizeTransmissionBackdropCapture(
 export function bindTransmissionBackdropCapture(
   source: RenderSource,
   texture: Texture,
-  options: Required<V7TransmissionBackdropCaptureOptions>
+  options: Required<RuntimeParityTransmissionBackdropCaptureOptions>
 ): number {
   const binding = new TextureBinding({
     name: "u_transmissionBackdropTexture",
@@ -87,7 +87,7 @@ export function createSceneColorMipLevels(source: Uint8Array, width: number, hei
 function setMaterialTransmissionBackdrop(
   material: RenderMaterial,
   binding: TextureBinding,
-  options: Required<V7TransmissionBackdropCaptureOptions>
+  options: Required<RuntimeParityTransmissionBackdropCaptureOptions>
 ): void {
   const target = material instanceof MaterialInstance ? material : material instanceof Material ? material : null;
   if (!target) return;

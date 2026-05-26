@@ -15,7 +15,7 @@ import {
   Vector3Compat
 } from "../../../packages/three-compat/src";
 
-describe("V5 controls", () => {
+describe("ThreeCompat controls", () => {
   it("covers orbit, pan, zoom, fly, first-person, drag, transform, picking, and selection", () => {
     const scene = new SceneCompat();
     const mesh = new MeshCompat();

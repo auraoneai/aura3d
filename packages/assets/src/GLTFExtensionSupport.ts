@@ -24,7 +24,7 @@ export interface GLTFExtensionSupportEntry {
 }
 
 export interface GLTFExtensionSupportEvaluation {
-  readonly schemaVersion: "gltf-extension-support-v1";
+  readonly schemaVersion: "gltf-extension-support";
   readonly requested: readonly GLTFExtensionSupportEntry[];
   readonly supported: readonly GLTFExtensionSupportEntry[];
   readonly runtimeSupported: readonly GLTFExtensionSupportEntry[];
@@ -99,7 +99,7 @@ export function evaluateGLTFExtensionSupport(
   const unsupportedRequired = extensionsRequired.filter((name) => !getGLTFExtensionSupport(name).requiredAccepted).sort();
   const notAcceptedUsed = extensionsUsed.filter((name) => !getGLTFExtensionSupport(name).requiredAccepted).sort();
   return {
-    schemaVersion: "gltf-extension-support-v1",
+    schemaVersion: "gltf-extension-support",
     requested: requestedEntries,
     supported,
     runtimeSupported: supported.filter((entry) => entry.status === "runtime-supported"),

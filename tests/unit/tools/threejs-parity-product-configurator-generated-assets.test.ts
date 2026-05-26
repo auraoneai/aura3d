@@ -46,7 +46,7 @@ type GlbInspection = {
   readonly materialNames?: readonly string[];
 };
 
-describe("v9 Product Configurator generated/support asset manifests", () => {
+describe("threejsParity Product Configurator generated/support asset manifests", () => {
   it("keeps the generated studio GLB support-only with zero texture-backed hero evidence", () => {
     const manifest = readJson<GeneratedAssetManifest>("fixtures/advanced-gallery/assets/product-configurator-studio-blender/manifest.json");
     const glb = manifest.outputs.glb;

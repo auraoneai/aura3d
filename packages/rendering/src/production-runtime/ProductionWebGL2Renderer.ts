@@ -7,16 +7,16 @@ import {
   normalizeTransmissionBackdropCapture
 } from "./TransmissionBackdropCapture";
 import {
-  V6_WEBGL2_REQUIRED_FEATURES,
-  V7_WEBGPU_REQUIRED_FEATURES,
-  type V6PixelMetrics,
-  type V6RenderProof,
-  type V6RendererFeature,
-  type V6RendererInput,
-  type V8ProductionRenderer,
-  type V8RendererTimingDiagnostics,
-  type V7FrameRenderResult,
-  type V7TransmissionBackdropCaptureProof
+  PRODUCTION_WEBGL2_REQUIRED_FEATURES,
+  RUNTIME_PARITY_WEBGPU_REQUIRED_FEATURES,
+  type ProductionPixelMetrics,
+  type ProductionRenderProof,
+  type ProductionRendererFeature,
+  type ProductionRendererInput,
+  type CurrentRoutesProductionRenderer,
+  type CurrentRoutesRendererTimingDiagnostics,
+  type RuntimeParityFrameRenderResult,
+  type RuntimeParityTransmissionBackdropCaptureProof
 } from "./ProductionRendererTypes";
 
 export interface ProductionWebGL2RendererOptions extends Omit<RendererOptions, "backend"> {
@@ -25,7 +25,7 @@ export interface ProductionWebGL2RendererOptions extends Omit<RendererOptions, "
   readonly height: number;
 }
 
-export class ProductionWebGL2Renderer implements V8ProductionRenderer {
+export class ProductionWebGL2Renderer implements CurrentRoutesProductionRenderer {
   readonly backend = "webgl2" as const;
 
   private constructor(private readonly renderer: Renderer, private width: number, private height: number) {}
@@ -38,14 +38,14 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
     });
     if (renderer.device.kind !== "webgl2") {
       renderer.dispose();
-      throw new Error(`V6 production renderer requires a real WebGL2 device, got ${renderer.device.kind}.`);
+      throw new Error(`Production production renderer requires a real WebGL2 device, got ${renderer.device.kind}.`);
     }
     return new ProductionWebGL2Renderer(renderer, options.width, options.height);
   }
 
-  renderInteractiveFrame(input: V6RendererInput): V7FrameRenderResult {
+  renderInteractiveFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     this.validateImportedAsset(input);
-    const timing = createV8TimingAccumulator();
+    const timing = createCurrentRoutesTimingAccumulator();
     const renderStart = timing.now();
     const diagnostics = this.renderer.render(input.source, input.camera);
     timing.addRender(renderStart);
@@ -57,7 +57,7 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
     };
   }
 
-  renderFrame(input: V6RendererInput): V7FrameRenderResult {
+  renderFrame(input: ProductionRendererInput): RuntimeParityFrameRenderResult {
     return this.renderInteractiveFrame(input);
   }
 
@@ -67,10 +67,10 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
     this.renderer.resize(width, height);
   }
 
-  captureProof(input: V6RendererInput): V6RenderProof {
+  captureProof(input: ProductionRendererInput): ProductionRenderProof {
     this.validateImportedAsset(input);
-    const timing = createV8TimingAccumulator();
-    let transmissionBackdropCapture: V7TransmissionBackdropCaptureProof | undefined;
+    const timing = createCurrentRoutesTimingAccumulator();
+    let transmissionBackdropCapture: RuntimeParityTransmissionBackdropCaptureProof | undefined;
     let transmissionBackdropTexture: Texture | undefined;
     const captureOptions = normalizeTransmissionBackdropCapture(input.transmissionBackdropCapture);
     if (captureOptions) {
@@ -127,13 +127,13 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
     };
   }
 
-  renderImportedAsset(input: V6RendererInput): V6RenderProof {
+  renderImportedAsset(input: ProductionRendererInput): ProductionRenderProof {
     return this.captureProof(input);
   }
 
-  getFeatures(diagnostics = this.getDiagnostics(), input?: V6RendererInput, pixels?: V6PixelMetrics): readonly V6RendererFeature[] {
+  getFeatures(diagnostics = this.getDiagnostics(), input?: ProductionRendererInput, pixels?: ProductionPixelMetrics): readonly ProductionRendererFeature[] {
     const capabilities = new Set(this.renderer.device.info.capabilities ?? []);
-    const feature = (id: string, state: V6RendererFeature["state"], detail: string): V6RendererFeature => ({ id, state, detail });
+    const feature = (id: string, state: ProductionRendererFeature["state"], detail: string): ProductionRendererFeature => ({ id, state, detail });
     return [
       feature("real-webgl2-context", this.renderer.device.kind === "webgl2" ? "supported" : "blocked", `backend=${this.renderer.device.kind}`),
       feature("no-canvas2d-proof", "supported", "Render proof is produced by Renderer/WebGL2 and readPixels, not Canvas 2D drawing."),
@@ -164,22 +164,22 @@ export class ProductionWebGL2Renderer implements V8ProductionRenderer {
     this.renderer.dispose();
   }
 
-  private validateImportedAsset(input: V6RendererInput): void {
+  private validateImportedAsset(input: ProductionRendererInput): void {
     if (input.metadata.primitiveCount <= 0 || input.metadata.meshCount <= 0) {
-      throw new Error("V6 imported-asset render path requires real glTF mesh primitives.");
+      throw new Error("Production imported-asset render path requires real glTF mesh primitives.");
     }
     if (input.metadata.materialCount <= 0) {
-      throw new Error("V6 imported-asset render path requires real material data.");
+      throw new Error("Production imported-asset render path requires real material data.");
     }
   }
 
-  private getInteractiveFeatures(diagnostics: RenderDeviceDiagnostics, input: V6RendererInput): readonly V6RendererFeature[] {
+  private getInteractiveFeatures(diagnostics: RenderDeviceDiagnostics, input: ProductionRendererInput): readonly ProductionRendererFeature[] {
     return this.getFeatures(diagnostics, input).filter((feature) => feature.id !== "pixel-readback" && feature.id !== "scene-color-transmission-capture");
   }
 }
 
-export function summarizeV6WebGL2Proof(proof: V6RenderProof) {
-  const missing = V6_WEBGL2_REQUIRED_FEATURES.filter((feature) => {
+export function summarizeProductionWebGL2Proof(proof: ProductionRenderProof) {
+  const missing = PRODUCTION_WEBGL2_REQUIRED_FEATURES.filter((feature) => {
     const state = proof.features.find((item) => item.id === feature)?.state;
     return state !== "supported";
   });
@@ -196,10 +196,10 @@ export function summarizeV6WebGL2Proof(proof: V6RenderProof) {
   };
 }
 
-export function summarizeV6ProductionProof(proof: V6RenderProof) {
+export function summarizeProductionProductionProof(proof: ProductionRenderProof) {
   const requiredFeatures = proof.backend === "webgpu"
-    ? V7_WEBGPU_REQUIRED_FEATURES
-    : V6_WEBGL2_REQUIRED_FEATURES;
+    ? RUNTIME_PARITY_WEBGPU_REQUIRED_FEATURES
+    : PRODUCTION_WEBGL2_REQUIRED_FEATURES;
   const missing = requiredFeatures.filter((feature) => {
     const state = proof.features.find((item) => item.id === feature)?.state;
     return state !== "supported";
@@ -218,7 +218,7 @@ export function summarizeV6ProductionProof(proof: V6RenderProof) {
   };
 }
 
-export function analyzePixels(pixels: Uint8Array, width: number, height: number): V6PixelMetrics {
+export function analyzePixels(pixels: Uint8Array, width: number, height: number): ProductionPixelMetrics {
   let nonTransparentPixels = 0;
   let nonBlackPixels = 0;
   let lumaTotal = 0;
@@ -254,18 +254,18 @@ export function analyzePixels(pixels: Uint8Array, width: number, height: number)
   };
 }
 
-interface V8TimingAccumulator {
+interface CurrentRoutesTimingAccumulator {
   now(): number;
   addRender(start: number): void;
   addReadback(start: number): void;
   addPixelAnalysis(start: number): void;
   addTransmissionBackdropCapture(start: number): void;
-  snapshot(): V8RendererTimingDiagnostics;
+  snapshot(): CurrentRoutesRendererTimingDiagnostics;
 }
 
-function createV8TimingAccumulator(): V8TimingAccumulator {
+function createCurrentRoutesTimingAccumulator(): CurrentRoutesTimingAccumulator {
   const source = hasPerformanceNow() ? "performance-now" : "date-now";
-  const startedAt = readV8Now(source);
+  const startedAt = readCurrentRoutesNow(source);
   let renderMs = 0;
   let readbackMs = 0;
   let pixelAnalysisMs = 0;
@@ -273,9 +273,9 @@ function createV8TimingAccumulator(): V8TimingAccumulator {
   let hasReadback = false;
   let hasPixelAnalysis = false;
   let hasTransmissionBackdropCapture = false;
-  const elapsed = (start: number) => Math.max(0, readV8Now(source) - start);
+  const elapsed = (start: number) => Math.max(0, readCurrentRoutesNow(source) - start);
   return {
-    now: () => readV8Now(source),
+    now: () => readCurrentRoutesNow(source),
     addRender(start) {
       renderMs += elapsed(start);
     },
@@ -308,6 +308,6 @@ function hasPerformanceNow(): boolean {
   return typeof globalThis.performance?.now === "function";
 }
 
-function readV8Now(source: V8RendererTimingDiagnostics["source"]): number {
+function readCurrentRoutesNow(source: CurrentRoutesRendererTimingDiagnostics["source"]): number {
   return source === "performance-now" ? globalThis.performance.now() : Date.now();
 }

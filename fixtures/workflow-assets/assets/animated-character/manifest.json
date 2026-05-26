@@ -1,8 +1,8 @@
 {
-  "schema": "a3d-v3-asset-fixture/v1",
+  "schema": "a3d-foundation-asset-fixture",
   "id": "animated-character",
   "source": "speaker",
-  "description": "V3 animation placeholder fixture used to validate loader summaries and warnings.",
+  "description": "Foundation animation placeholder fixture used to validate loader summaries and warnings.",
   "gltf": "animated-character.gltf",
   "glb": "animated-character.glb",
   "externalGltf": "animated-character-external.gltf",

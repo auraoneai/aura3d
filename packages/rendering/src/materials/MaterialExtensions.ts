@@ -1,4 +1,4 @@
-export type V4MaterialExtension =
+export type ExternalParityMaterialExtension =
   | "clearcoat"
   | "sheen"
   | "specular"
@@ -11,13 +11,13 @@ export type V4MaterialExtension =
   | "texture-transform"
   | "multi-uv";
 
-export interface V4MaterialExtensionState {
-  readonly extension: V4MaterialExtension;
+export interface ExternalParityMaterialExtensionState {
+  readonly extension: ExternalParityMaterialExtension;
   readonly support: "supported" | "bounded" | "unsupported";
   readonly diagnostic: string;
 }
 
-export const V4_MATERIAL_EXTENSION_SUPPORT: readonly V4MaterialExtensionState[] = [
+export const EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT: readonly ExternalParityMaterialExtensionState[] = [
   { extension: "clearcoat", support: "bounded", diagnostic: "Clearcoat factor and roughness are modeled; layered multiple scattering remains bounded." },
   { extension: "sheen", support: "bounded", diagnostic: "Sheen color/roughness intent is modeled for fabric review; exact renderer parity requires visual comparison." },
   { extension: "specular", support: "bounded", diagnostic: "Specular factor/color are modeled for material diagnostics and matrix proof." },
@@ -31,12 +31,12 @@ export const V4_MATERIAL_EXTENSION_SUPPORT: readonly V4MaterialExtensionState[] 
   { extension: "multi-uv", support: "bounded", diagnostic: "Multiple UV intent is tracked; fallback diagnostics are required when a shader path cannot bind the requested UV set." }
 ];
 
-export function getV4MaterialExtensionState(extension: V4MaterialExtension): V4MaterialExtensionState {
-  return V4_MATERIAL_EXTENSION_SUPPORT.find((entry) => entry.extension === extension)!;
+export function getExternalParityMaterialExtensionState(extension: ExternalParityMaterialExtension): ExternalParityMaterialExtensionState {
+  return EXTERNAL_PARITY_MATERIAL_EXTENSION_SUPPORT.find((entry) => entry.extension === extension)!;
 }
 
-export function createV4MaterialExtensionDiagnostics(
-  requested: readonly V4MaterialExtension[]
-): readonly V4MaterialExtensionState[] {
-  return requested.map(getV4MaterialExtensionState);
+export function createExternalParityMaterialExtensionDiagnostics(
+  requested: readonly ExternalParityMaterialExtension[]
+): readonly ExternalParityMaterialExtensionState[] {
+  return requested.map(getExternalParityMaterialExtensionState);
 }

@@ -1,16 +1,16 @@
-import type { V4CascadedShadowPipeline } from "./CascadedShadowPipeline";
-import type { V4ContactShadow } from "./ContactShadows";
+import type { ExternalParityCascadedShadowPipeline } from "./CascadedShadowPipeline";
+import type { ExternalParityContactShadow } from "./ContactShadows";
 
-export interface V4ShadowDebugView {
+export interface ExternalParityShadowDebugView {
   readonly id: "shadow-atlas" | "cascade-splits" | "contact-shadow";
   readonly label: string;
   readonly metrics: Record<string, number | string | boolean>;
 }
 
-export function createV4ShadowDebugViews(input: {
-  readonly cascade: V4CascadedShadowPipeline;
-  readonly contact: V4ContactShadow;
-}): readonly V4ShadowDebugView[] {
+export function createExternalParityShadowDebugViews(input: {
+  readonly cascade: ExternalParityCascadedShadowPipeline;
+  readonly contact: ExternalParityContactShadow;
+}): readonly ExternalParityShadowDebugView[] {
   return [
     {
       id: "shadow-atlas",

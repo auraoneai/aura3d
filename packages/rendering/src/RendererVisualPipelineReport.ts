@@ -1,5 +1,5 @@
 import {
-  createV4ColorManagementPolicy,
+  createExternalParityColorManagementPolicy,
   type A3DColorManagementPolicy,
   type A3DColorSpace,
   type A3DTextureSemantic
@@ -29,7 +29,7 @@ import {
   type RendererPostprocessExecutionMode,
   type RendererPostprocessPlanDiagnostics
 } from "./RendererPostprocessPlan";
-import { listV4ToneMappingPresets } from "./ToneMapping";
+import { listExternalParityToneMappingPresets } from "./ToneMapping";
 import type {
   RenderDevice,
   RenderDeviceCapability,
@@ -304,7 +304,7 @@ export function createRendererVisualPipelineReport(
 
   const capabilities = [...(options.device.info.capabilities ?? [])];
   const capabilitySet = new Set<RenderDeviceCapability>(capabilities);
-  const colorManagement = options.colorManagement ?? createV4ColorManagementPolicy();
+  const colorManagement = options.colorManagement ?? createExternalParityColorManagementPolicy();
   const postprocess = normalizePostprocess(options.postprocess);
   const postprocessEnabled = postprocess !== undefined;
   const passNames = postprocess ? collectPostprocessPassNames(postprocess) : [];
@@ -636,7 +636,7 @@ function createToneMappingReport(
   postprocess: RendererVisualPostprocessDescriptor | undefined,
   targetFormat: RendererVisualTargetFormat
 ): RendererVisualToneMappingReport {
-  const availablePresets = listV4ToneMappingPresets().map((preset) => preset.name);
+  const availablePresets = listExternalParityToneMappingPresets().map((preset) => preset.name);
   if (!postprocess || postprocess.toneMapping === false) {
     const warnings = HDR_FORMATS.includes(targetFormat)
       ? [`HDR target ${targetFormat} cannot be presented honestly without tone mapping.`]

@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 import { startExampleDevServer, type ExampleDevServer } from "./example-dev-server";
 
-test.describe("V6 WebGL2 real renderer", () => {
+test.describe("Production WebGL2 real renderer", () => {
   test.setTimeout(60_000);
 
   let server: ExampleDevServer;
@@ -29,17 +29,17 @@ test.describe("V6 WebGL2 real renderer", () => {
     try {
       await page.waitForFunction(
         () => {
-          const result = window.__V6_WEBGL2__ as { status?: string } | undefined;
+          const result = window.__PRODUCTION_WEBGL2__ as { status?: string } | undefined;
           return result?.status === "ready" || result?.status === "error";
         },
         undefined,
         { timeout: 30_000 }
       );
     } catch (error) {
-      throw new Error(`V6 WebGL2 harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
+      throw new Error(`Production WebGL2 harness did not report ready/error. Page errors:\n${pageErrors.join("\n") || "(none captured)"}`, { cause: error });
     }
 
-    const result = await page.evaluate(() => window.__V6_WEBGL2__) as {
+    const result = await page.evaluate(() => window.__PRODUCTION_WEBGL2__) as {
       status: "ready" | "error";
       error?: string;
       proof?: {
@@ -79,7 +79,7 @@ test.describe("V6 WebGL2 real renderer", () => {
     await canvas.screenshot({ path: screenshotPath });
     const reportPath = "tests/reports/production-runtime-webgl2-real-renderer.json";
     writeFileSync(resolve(reportPath), `${JSON.stringify({
-      schema: "a3d-production-runtime-webgl2-real-renderer/v1",
+      schema: "a3d-production-runtime-webgl2-real-renderer",
       generatedAt: new Date().toISOString(),
       screenshot: screenshotPath,
       ...result

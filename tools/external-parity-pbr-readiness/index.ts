@@ -52,13 +52,13 @@ const index = readText("packages/rendering/src/index.ts");
 check(
   "public-rendering-exports",
   includesAll(index, [
-    "V4PhysicalMaterial",
-    "analyzeV4MaterialMatrix",
-    "createV4MaterialExtensionDiagnostics",
-    "sortV4AlphaItems",
-    "evaluateV4Transmission"
+    "ExternalParityPhysicalMaterial",
+    "analyzeExternalParityMaterialMatrix",
+    "createExternalParityMaterialExtensionDiagnostics",
+    "sortExternalParityAlphaItems",
+    "evaluateExternalParityTransmission"
   ]),
-  "Rendering package index must export V4 physical material APIs."
+  "Rendering package index must export External parity physical material APIs."
 );
 
 const physical = readText("packages/rendering/src/materials/PhysicalMaterial.ts");
@@ -108,7 +108,7 @@ check(
     "texture-transform",
     "multi-uv"
   ]),
-  "Material extension diagnostics must cover required V4 glTF material extensions."
+  "Material extension diagnostics must cover required External parity glTF material extensions."
 );
 
 const alpha = readText("packages/rendering/src/materials/AlphaSorting.ts");
@@ -121,15 +121,15 @@ check(
 const transmission = readText("packages/rendering/src/materials/TransmissionPass.ts");
 check(
   "transmission-pass",
-  includesAll(transmission, ["bounded", "toneMapV4HdrPixels", "full refraction/caustics parity is not claimed"]),
+  includesAll(transmission, ["bounded", "toneMapExternalParityHdrPixels", "full refraction/caustics parity is not claimed"]),
   "Transmission pass must be bounded, tone-mapped, and honest about refraction/caustics gaps."
 );
 
 const browser = readJson("tests/reports/external-parity-material-matrix-browser.json");
-const v4Materials = isRecord(browser?.v4Materials) ? browser.v4Materials : {};
-const materialIds = Array.isArray(v4Materials.materialIds) ? v4Materials.materialIds : [];
-const boundedDiagnostics = Array.isArray(v4Materials.boundedDiagnostics) ? v4Materials.boundedDiagnostics : [];
-const transmissionResult = isRecord(v4Materials.transmission) ? v4Materials.transmission : {};
+const externalParityMaterials = isRecord(browser?.externalParityMaterials) ? browser.externalParityMaterials : {};
+const materialIds = Array.isArray(externalParityMaterials.materialIds) ? externalParityMaterials.materialIds : [];
+const boundedDiagnostics = Array.isArray(externalParityMaterials.boundedDiagnostics) ? externalParityMaterials.boundedDiagnostics : [];
+const transmissionResult = isRecord(externalParityMaterials.transmission) ? externalParityMaterials.transmission : {};
 check(
   "browser-material-evidence",
   browser?.ok === true &&
@@ -151,12 +151,12 @@ check(
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-pbr-readiness/v1",
+  schema: "a3d-external-parity-pbr-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 4 physical material matrix is ready as a renderer/product API foundation. Three.js material parity screenshots remain required later."
-    : "V4 Milestone 4 physical material matrix is incomplete.",
+    ? "External parity Milestone 4 physical material matrix is ready as a renderer/product API foundation. Three.js material parity screenshots remain required later."
+    : "External parity Milestone 4 physical material matrix is incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

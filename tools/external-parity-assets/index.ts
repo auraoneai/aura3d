@@ -6,7 +6,7 @@ const existing = readJson(root, "tests/reports/external-parity-asset-corpus.json
 const browser = readJson(root, "tests/reports/external-parity-asset-viewer-browser.json");
 const packageJson = readJson(root, "package.json");
 const packageScripts = isRecord(packageJson?.scripts) ? packageJson.scripts : {};
-const verifyV4AssetsScript = typeof packageScripts["verify:external-parity-assets"] === "string"
+const verifyExternalParityAssetsScript = typeof packageScripts["verify:external-parity-assets"] === "string"
   ? packageScripts["verify:external-parity-assets"]
   : "";
 const lifecycleScript = typeof process.env.npm_lifecycle_script === "string" ? process.env.npm_lifecycle_script : "";
@@ -17,28 +17,28 @@ const browserTasks = new Set(
 );
 const checks = [
   {
-    id: "v4-asset-corpus-report-produced-by-asset-agent",
+    id: "external-parity-asset-corpus-report-produced-by-asset-agent",
     passed: existing?.ok === true,
     evidencePaths: ["tests/reports/external-parity-asset-corpus.json"],
-    blocker: "V4 asset corpus report is not yet passing.",
+    blocker: "External parity asset corpus report is not yet passing.",
   },
   {
-    id: "v4-asset-viewer-browser-report-passing",
+    id: "external-parity-asset-viewer-browser-report-passing",
     passed: browser?.ok === true,
     evidencePaths: ["tests/reports/external-parity-asset-viewer-browser.json"],
-    blocker: "V4 asset viewer browser report is not yet passing.",
+    blocker: "External parity asset viewer browser report is not yet passing.",
   },
   {
-    id: "v4-asset-viewer-controls-export-dragdrop-evidence",
-    passed: browserTasks.has("Allow drag/drop local glTF import in the V4 asset viewer.") &&
-      browserTasks.has("Allow material/environment/postprocess controls in the V4 asset viewer.") &&
-      browserTasks.has("Add same-asset comparison export data from the V4 asset viewer."),
+    id: "external-parity-asset-viewer-controls-export-dragdrop-evidence",
+    passed: browserTasks.has("Allow drag/drop local glTF import in the External parity asset viewer.") &&
+      browserTasks.has("Allow material/environment/postprocess controls in the External parity asset viewer.") &&
+      browserTasks.has("Add same-asset comparison export data from the External parity asset viewer."),
     evidencePaths: ["examples/asset-viewer/main.ts", "tests/browser/asset-viewer-external-parity.spec.ts", "tests/reports/external-parity-asset-viewer-browser.json"],
-    blocker: "V4 asset viewer report does not prove controls, comparison export, and drag/drop evidence.",
+    blocker: "External parity asset viewer report does not prove controls, comparison export, and drag/drop evidence.",
   },
   {
-    id: "v4-asset-viewer-local-dependency-browser-spec-in-v4-command",
-    passed: verifyV4AssetsScript.includes("tests/browser/asset-viewer-browser.spec.ts") ||
+    id: "external-parity-asset-viewer-local-dependency-browser-spec-in-external-parity-command",
+    passed: verifyExternalParityAssetsScript.includes("tests/browser/asset-viewer-browser.spec.ts") ||
       lifecycleScript.includes("tests/browser/asset-viewer-browser.spec.ts"),
     evidencePaths: ["package.json", "tests/browser/asset-viewer-browser.spec.ts"],
     blocker: "pnpm verify:external-parity-assets does not include the browser asset-viewer dependency coverage for dropped glTF/GLB/bin/image/KTX2 paths.",

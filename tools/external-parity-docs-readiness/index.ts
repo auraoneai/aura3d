@@ -5,18 +5,18 @@ type Obj = Record<string, unknown>;
 interface Check { readonly id: string; readonly pass: boolean; readonly detail: string; }
 
 const requiredFiles = [
-  "docs/project/v4-roadmap-product-positioning.md",
-  "docs/project/v4-roadmap-getting-started.md",
-  "docs/project/v4-roadmap-product-viewer-guide.md",
-  "docs/project/v4-roadmap-material-authoring-guide.md",
-  "docs/project/v4-roadmap-asset-pipeline-guide.md",
-  "docs/project/v4-roadmap-hdr-ibl-guide.md",
-  "docs/project/v4-roadmap-threejs-migration-guide.md",
-  "docs/project/external-parity-roadmap-visual-quality-status.md",
-  "docs/project/v4-roadmap-threejs-parity-status.md",
-  "docs/project/v4-roadmap-supported-workflows.md",
-  "docs/project/v4-roadmap-known-gaps.md",
-  "docs/project/v4-roadmap-release-notes.md",
+  "docs/project/competitive-positioning.md",
+  "docs/project/getting-started.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/tutorials-product-configurator.md",
+  "docs/project/getting-started.md",
+  "docs/project/threejs-parity-parity-matrix.md",
+  "docs/project/migration.md",
+  "docs/project/threejs-superiority-status.md",
+  "docs/project/threejs-parity-status.md",
+  "docs/project/compatibility.md",
+  "docs/project/known-limits.md",
+  "docs/project/release-process.md",
   "docs/api/app-api.md",
   "README.md",
   "tools/external-parity-docs-readiness/index.ts",
@@ -33,7 +33,7 @@ for (const file of requiredFiles) check(`file:${file}`, existsSync(resolve(file)
 
 const docs = requiredFiles.filter((file) => file.endsWith(".md") || file === "README.md").map(read).join("\n");
 const normalizedDocs = docs.toLowerCase();
-check("product-positioning", docs.includes("A3D Visual Engine V4") && docs.includes("@aura3d/engine") && docs.includes("createA3DApp"), "Docs must state the product, package, and runtime API.");
+check("product-positioning", docs.includes("A3D Visual Engine External parity") && docs.includes("@aura3d/engine") && docs.includes("createA3DApp"), "Docs must state the product, package, and runtime API.");
 check(
   "named-product-docs",
   [
@@ -45,7 +45,7 @@ check(
     "Three.js Migration Guide",
     "Release Notes"
   ].every((phrase) => normalizedDocs.includes(phrase.toLowerCase())),
-  "Docs must include the named V4 product docs."
+  "Docs must include the named External parity product docs."
 );
 check("evidence-paths", [
   "tests/reports/external-parity-threejs-visual-parity.json",
@@ -53,20 +53,20 @@ check("evidence-paths", [
   "tests/reports/external-parity-visual-quality.json"
 ].every((path) => docs.includes(path)), "Docs must cite current evidence reports.");
 check("claim-boundary", normalizedDocs.includes("full three.js api compatibility remains blocked") && normalizedDocs.includes("unity replacement remains blocked") && normalizedDocs.includes("unreal replacement remains blocked"), "Docs must preserve blocked claim boundaries.");
-check("readme-v4", read("README.md").includes("pnpm v4:release") && read("README.md").includes("v4:package") && read("README.md").includes("v4:docs"), "README must document the V4 gates and release boundary.");
+check("readme-external-parity", read("README.md").includes("pnpm external-parity:release") && read("README.md").includes("external-parity:package") && read("README.md").includes("external-parity:docs"), "README must document the External parity gates and release boundary.");
 
 const claimRegistry = json("tests/reports/external-parity-claim-registry.json");
 check("claim-registry", claimRegistry?.pass === true, "Claim registry report must pass.");
-check("package-script", read("package.json").includes("\"v4:docs\""), "package.json must expose v4:docs.");
+check("package-script", read("package.json").includes("\"external-parity:docs\""), "package.json must expose external-parity:docs.");
 
 const pass = checks.every((entry) => entry.pass);
 const report = {
-  schema: "a3d-external-parity-docs-readiness/v1",
+  schema: "a3d-external-parity-docs-readiness",
   generatedAt: new Date().toISOString(),
   pass,
   summary: pass
-    ? "V4 Milestone 18 documentation and claim registry are ready."
-    : "V4 Milestone 18 documentation and claim registry are incomplete.",
+    ? "External parity Milestone 18 documentation and claim registry are ready."
+    : "External parity Milestone 18 documentation and claim registry are incomplete.",
   checkedFiles: requiredFiles,
   checks
 };

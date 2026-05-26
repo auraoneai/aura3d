@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
-  V6_WEBGL2_REQUIRED_FEATURES,
+  PRODUCTION_WEBGL2_REQUIRED_FEATURES,
   analyzePixels,
-  summarizeV6WebGL2Proof,
-  type V6RenderProof
+  summarizeProductionWebGL2Proof,
+  type ProductionRenderProof
 } from "../../../packages/rendering/src/production-runtime";
 
-describe("V6 WebGL2 production renderer contract", () => {
+describe("Production WebGL2 production renderer contract", () => {
   it("defines the required real-renderer gates and excludes mock/canvas proof", () => {
-    expect(V6_WEBGL2_REQUIRED_FEATURES).toEqual([
+    expect(PRODUCTION_WEBGL2_REQUIRED_FEATURES).toEqual([
       "real-webgl2-context",
       "no-canvas2d-proof",
       "no-mock-device",
@@ -30,7 +30,7 @@ describe("V6 WebGL2 production renderer contract", () => {
       12, 12, 12, 255
     ]);
     const metrics = analyzePixels(pixels, 2, 2);
-    const proof: V6RenderProof = {
+    const proof: ProductionRenderProof = {
       backend: "webgl2",
       realWebGL2: true,
       mockDevice: false,
@@ -59,7 +59,7 @@ describe("V6 WebGL2 production renderer contract", () => {
         lastError: null,
         contextLost: false
       },
-      features: V6_WEBGL2_REQUIRED_FEATURES.map((id) => ({
+      features: PRODUCTION_WEBGL2_REQUIRED_FEATURES.map((id) => ({
         id,
         state: "supported",
         detail: "unit contract"
@@ -69,13 +69,13 @@ describe("V6 WebGL2 production renderer contract", () => {
 
     expect(metrics.nonBlackPixels).toBeGreaterThan(0);
     expect(metrics.uniqueColorBuckets).toBeGreaterThan(1);
-    expect(summarizeV6WebGL2Proof(proof)).toMatchObject({
+    expect(summarizeProductionWebGL2Proof(proof)).toMatchObject({
       pass: true,
       drawCalls: 1,
       liveTextures: 5,
       nonBlackPixels: metrics.nonBlackPixels
     });
-    expect(summarizeV6WebGL2Proof({ ...proof, mockDevice: true }).pass).toBe(false);
-    expect(summarizeV6WebGL2Proof({ ...proof, canvas2dProof: true }).pass).toBe(false);
+    expect(summarizeProductionWebGL2Proof({ ...proof, mockDevice: true }).pass).toBe(false);
+    expect(summarizeProductionWebGL2Proof({ ...proof, canvas2dProof: true }).pass).toBe(false);
   });
 });

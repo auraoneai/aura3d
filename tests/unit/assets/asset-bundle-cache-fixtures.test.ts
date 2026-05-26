@@ -4,7 +4,7 @@ import { createAssetBundleCacheEvidence } from "../../../packages/assets/src";
 describe("asset bundle cache fixtures", () => {
   it("builds deterministic bundle, dependency, and cache evidence for a loaded glTF asset", () => {
     const evidence = createAssetBundleCacheEvidence({
-      assetId: "V4 Product Speaker",
+      assetId: "External Parity Product Speaker",
       url: "/fixtures/product-studio/products/speaker/speaker.gltf",
       meshCount: 5,
       materialCount: 4,
@@ -18,12 +18,12 @@ describe("asset bundle cache fixtures", () => {
     expect(evidence).toMatchObject({
       source: "origin-master-asset-bundle-cache-adapted",
       manifest: {
-        id: "v4-product-speaker-bundle",
-        version: "v4-generated",
+        id: "external-parity-product-speaker-bundle",
+        version: "external-parity-generated",
         assetCount: 8
       },
       dependencyGraph: {
-        rootAssetId: "v4-product-speaker",
+        rootAssetId: "external-parity-product-speaker",
         cycleDetected: false
       },
       cache: {
@@ -37,21 +37,21 @@ describe("asset bundle cache fixtures", () => {
         inFlightDeduplicationBoundary: true
       }
     });
-    expect(evidence.dependencyGraph.loadOrder.at(-1)).toBe("v4-product-speaker");
-    expect(evidence.dependencyGraph.releaseOrder[0]).toBe("v4-product-speaker");
+    expect(evidence.dependencyGraph.loadOrder.at(-1)).toBe("external-parity-product-speaker");
+    expect(evidence.dependencyGraph.releaseOrder[0]).toBe("external-parity-product-speaker");
     expect(evidence.dependencyGraph.directDependencies).toEqual([
-      "v4-product-speaker:geometry-buffer",
-      "v4-product-speaker:material-manifest",
-      "v4-product-speaker:metadata",
-      "v4-product-speaker:animation"
+      "external-parity-product-speaker:geometry-buffer",
+      "external-parity-product-speaker:material-manifest",
+      "external-parity-product-speaker:metadata",
+      "external-parity-product-speaker:animation"
     ]);
     expect(evidence.dependencyGraph.transitiveDependencies).toEqual(expect.arrayContaining([
-      "v4-product-speaker:geometry-buffer",
-      "v4-product-speaker:material-manifest",
-      "v4-product-speaker:texture-1",
-      "v4-product-speaker:texture-2",
-      "v4-product-speaker:texture-3",
-      "v4-product-speaker:animation"
+      "external-parity-product-speaker:geometry-buffer",
+      "external-parity-product-speaker:material-manifest",
+      "external-parity-product-speaker:texture-1",
+      "external-parity-product-speaker:texture-2",
+      "external-parity-product-speaker:texture-3",
+      "external-parity-product-speaker:animation"
     ]));
     expect(evidence.manifest.totalBytes).toBeGreaterThan(0);
     expect(evidence.cache.cachedEntries).toBeGreaterThan(0);
@@ -66,7 +66,7 @@ describe("asset bundle cache fixtures", () => {
     expect(evidence.hash).toMatch(/^[0-9a-f]{8}$/);
 
     expect(createAssetBundleCacheEvidence({
-      assetId: "V4 Product Speaker",
+      assetId: "External Parity Product Speaker",
       url: "/fixtures/product-studio/products/speaker/speaker.gltf",
       meshCount: 5,
       materialCount: 4,

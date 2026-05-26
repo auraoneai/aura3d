@@ -11,14 +11,14 @@ const templates = [
   { id: "external-parity-interactive-scene", globalName: "__A3D_TEMPLATE_INTERACTIVE_SCENE__", workflowKind: "interactive-scene" }
 ] as const;
 
-test.describe("V4 V4 product viewer template", () => {
+test.describe("ExternalParity ExternalParity product viewer template", () => {
   test.setTimeout(90_000);
   let server: ExampleDevServer;
 
   test.beforeAll(async () => { server = await startExampleDevServer(); });
   test.afterAll(async () => { await server.close(); });
 
-  test("renders every V4 template through the public root package API", async ({ page }) => {
+  test("renders every ExternalParity template through the public root package API", async ({ page }) => {
     const errors = captureErrors(page);
     mkdirSync(join(process.cwd(), "tests/reports/external-gallery/templates"), { recursive: true });
     const captures = [];

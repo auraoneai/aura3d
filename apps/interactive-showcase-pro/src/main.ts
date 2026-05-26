@@ -1,3 +1,3 @@
-import { mountInteractiveShowcaseV4 } from "../../../examples/external-interactive-showcase/InteractiveShowcaseV4";
+import { mountExternalInteractiveShowcase } from "../../../examples/external-interactive-showcase/ExternalInteractiveShowcase";
 
-void mountInteractiveShowcaseV4("interactive-showcase-pro");
+void mountExternalInteractiveShowcase("interactive-showcase-pro");

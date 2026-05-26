@@ -36,6 +36,10 @@ function writePackage(root: string, name: string, source: string): void {
   }));
 }
 
+function expectedPackageName(packageName: string): string {
+  return packageName === "engine" ? "@aura3d/engine-runtime" : `@aura3d/${packageName}`;
+}
+
 describe("verification tools", () => {
   it("boundary verifier passes valid imports and fails invalid/private imports", () => {
     const valid = fixtureRoot();
@@ -103,12 +107,21 @@ describe("verification tools", () => {
       "scene",
       "ecs",
       "rendering",
+      "controls",
+      "environments",
+      "materials",
+      "engine",
+      "apps",
       "physics",
+      "product-studio",
       "animation",
       "assets",
       "input",
       "audio",
+      "create-aura3d",
+      "three-compat",
       "scripting",
+      "workflows",
       "editor-runtime",
       "editor",
       "debug",
@@ -118,7 +131,7 @@ describe("verification tools", () => {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
       writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: `@aura3d/${packageName}`,
+        name: expectedPackageName(packageName),
         private: packageName === "test-utils" ? true : undefined
       }));
     }
@@ -154,7 +167,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "package.json"), JSON.stringify({ scripts, exports: exportsMap }));
     writeFileSync(join(root, "tsconfig.base.json"), JSON.stringify({
       compilerOptions: {
-        paths: Object.fromEntries(packages.map((packageName) => [`@aura3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
+        paths: Object.fromEntries(packages.map((packageName) => [expectedPackageName(packageName), [`packages/${packageName}/src/index.ts`]]))
       }
     }));
 
@@ -199,12 +212,21 @@ describe("verification tools", () => {
       "scene",
       "ecs",
       "rendering",
+      "controls",
+      "environments",
+      "materials",
+      "engine",
+      "apps",
       "physics",
+      "product-studio",
       "animation",
       "assets",
       "input",
       "audio",
+      "create-aura3d",
+      "three-compat",
       "scripting",
+      "workflows",
       "editor-runtime",
       "editor",
       "debug",
@@ -214,7 +236,7 @@ describe("verification tools", () => {
       mkdirSync(join(root, "packages", packageName, "src"), { recursive: true });
       writeFileSync(join(root, "packages", packageName, "src", "index.ts"), "export {};\n");
       writeFileSync(join(root, "packages", packageName, "package.json"), JSON.stringify({
-        name: `@aura3d/${packageName}`,
+        name: expectedPackageName(packageName),
         private: packageName === "test-utils" ? true : undefined
       }));
     }
@@ -250,7 +272,7 @@ describe("verification tools", () => {
     writeFileSync(join(root, "package.json"), JSON.stringify({ scripts, exports: exportsMap }));
     writeFileSync(join(root, "tsconfig.base.json"), JSON.stringify({
       compilerOptions: {
-        paths: Object.fromEntries(packages.map((packageName) => [`@aura3d/${packageName}`, [`packages/${packageName}/src/index.ts`]]))
+        paths: Object.fromEntries(packages.map((packageName) => [expectedPackageName(packageName), [`packages/${packageName}/src/index.ts`]]))
       }
     }));
 
@@ -450,8 +472,8 @@ describe("verification tools", () => {
 
   it("doc contradiction scan rejects GO audit language mixed with incomplete status and stale totals", () => {
     const root = fixtureRoot();
-    mkdirSync(join(root, "docs"), { recursive: true });
-    writeFileSync(join(root, "docs", "completion-audit.md"), [
+    mkdirSync(join(root, "docs", "project"), { recursive: true });
+    writeFileSync(join(root, "docs", "project", "completion-audit.md"), [
       "# Completion Audit",
       "",
       "The final status is GO.",
@@ -469,7 +491,7 @@ describe("verification tools", () => {
       "stale-trace-total"
     ]);
 
-    writeFileSync(join(root, "docs", "completion-audit.md"), [
+    writeFileSync(join(root, "docs", "project", "completion-audit.md"), [
       "# Completion Audit",
       "",
       "Current status: NO-GO.",
@@ -481,26 +503,26 @@ describe("verification tools", () => {
     expect(scanDocContradictions(root, ["docs/project/completion-audit.md"]).ok).toBe(true);
   });
 
-  it("doc contradiction scan rejects disagreement between audit, final plan, and v2 decision gate status", () => {
+  it("doc contradiction scan rejects disagreement between audit, plan, and decision gate status", () => {
     const root = fixtureRoot();
-    mkdirSync(join(root, "docs", "v2"), { recursive: true });
-    writeFileSync(join(root, "docs", "completion-audit.md"), "Current status: NO-GO.\n");
-    writeFileSync(join(root, "docs", "implementation-plan-final.md"), "Current status: GO.\n");
-    writeFileSync(join(root, "docs", "v2", "decision-gates.md"), "Current status: **not met**.\n");
+    mkdirSync(join(root, "docs", "project"), { recursive: true });
+    writeFileSync(join(root, "docs", "project", "completion-audit.md"), "Current status: NO-GO.\n");
+    writeFileSync(join(root, "docs", "project", "implementation-plan.md"), "Current status: GO.\n");
+    writeFileSync(join(root, "docs", "project", "product-studio-decision-gates.md"), "Current status: **not met**.\n");
 
     const failed = scanDocContradictions(root, [
       "docs/project/completion-audit.md",
       "docs/project/implementation-plan.md",
-      "docs/project/v2-decision-gates.md"
+      "docs/project/product-studio-decision-gates.md"
     ]);
     expect(failed.ok).toBe(false);
     expect(failed.violations.some((violation) => violation.kind === "status-disagreement")).toBe(true);
 
-    writeFileSync(join(root, "docs", "implementation-plan-final.md"), "Current status: NO-GO.\n");
+    writeFileSync(join(root, "docs", "project", "implementation-plan.md"), "Current status: NO-GO.\n");
     expect(scanDocContradictions(root, [
       "docs/project/completion-audit.md",
       "docs/project/implementation-plan.md",
-      "docs/project/v2-decision-gates.md"
+      "docs/project/product-studio-decision-gates.md"
     ]).ok).toBe(true);
   });
 
@@ -693,7 +715,7 @@ describe("verification tools", () => {
       }
       const deploymentCommandPlan = JSON.parse(readFileSync(join(process.cwd(), report.deploymentCommandPlanPath), "utf8"));
       expect(deploymentCommandPlan).toMatchObject({
-        schemaVersion: "a3d-public-demo-deployment-command-plan-v1",
+        schemaVersion: "a3d-public-demo-deployment-command-plan",
         outputDir: report.outputDir,
         validationCommands: expect.arrayContaining([
           "pnpm build:external-demos",
@@ -701,7 +723,7 @@ describe("verification tools", () => {
           "A3D_PUBLIC_DEMO_URL=https://demo.your-real-domain.com/ pnpm verify:public-demo-deployment",
           "pnpm audit:external-parity-production-readiness",
         ]),
-        githubPagesWorkflow: ".github/workflows/v4-public-demo-deploy.yml",
+        githubPagesWorkflow: ".github/workflows/public-demo-deploy.yml",
         githubPagesWorkflowNotes: expect.arrayContaining([
           expect.stringContaining("verify:public-demo-deployment"),
         ]),
@@ -715,7 +737,7 @@ describe("verification tools", () => {
       expect(deploymentCommandPlan.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
       const publicDeploymentManifest = JSON.parse(readFileSync(join(process.cwd(), report.publicDeploymentManifestPath), "utf8"));
       expect(publicDeploymentManifest.sourceFileHashes.length).toBe(report.sourceFileHashes.length);
-      const workflow = readFileSync(join(process.cwd(), ".github", "workflows", "v4-public-demo-deploy.yml"), "utf8");
+      const workflow = readFileSync(join(process.cwd(), ".github", "workflows", "public-demo-deploy.yml"), "utf8");
       expect(workflow).toContain("pnpm/action-setup@v4");
       expect(workflow).toContain("version: 8");
       expect(workflow).toContain("pnpm verify:public-demo-deployment");
@@ -869,7 +891,7 @@ describe("verification tools", () => {
     });
 
     expect(report.complete).toBe(false);
-    expect(report.weakEvidenceRows.map((row) => row.id)).toEqual(["FINAL-0001", "FINAL-0002"]);
+    expect(report.weakEvidenceRows.map((row) => row.id)).toEqual(["FINAL-0001"]);
   });
 
   it("verify trace CLI fails against a stale generated-evidence fixture root", () => {

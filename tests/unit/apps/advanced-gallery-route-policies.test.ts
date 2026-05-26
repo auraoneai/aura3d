@@ -14,7 +14,7 @@ import {
   visibleProceduralItemsForRoute
 } from "../../../apps/advanced-examples-gallery/src/galleryRoutePolicies";
 
-describe("v9 advanced gallery route policies", () => {
+describe("threejsParity advanced gallery route policies", () => {
   it("keeps product and data postprocess bounded while reactor stays opt-in", () => {
     const base = {
       bloom: { threshold: 0.2, intensity: 0.5, radius: 4 },

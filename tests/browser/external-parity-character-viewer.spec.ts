@@ -28,7 +28,7 @@ type CharacterState = {
   readonly claimBoundary?: string;
 };
 
-test.describe("V4 character viewer", () => {
+test.describe("ExternalParity character viewer", () => {
   test.setTimeout(120_000);
   let server: ExampleDevServer;
 
@@ -59,7 +59,7 @@ test.describe("V4 character viewer", () => {
       ok: errors.length === 0 && statePasses(exampleState, "external-character-viewer") && statePasses(scrubState, "external-character-viewer") && statePasses(appState, "animation-studio-pro") && scrubState.playing === false,
       generatedAt: new Date().toISOString(),
       screenshots: [`${screenshotDir}/external-character-viewer.png`, `${screenshotDir}/external-character-viewer-scrubbed.png`, `${screenshotDir}/animation-studio-pro.png`],
-      productBoundary: "Milestone 11 proves Character Viewer V4 and Animation Studio Pro timeline state. Full V4 release still requires real skinned glTF rendered animation parity against Three.js and license review.",
+      productBoundary: "Milestone 11 proves Character Viewer ExternalParity and Animation Studio Pro timeline state. Full ExternalParity release still requires real skinned glTF rendered animation parity against Three.js and license review.",
       requiredNextProof: ["real skinned glTF character render", "same character animation in Three.js", "visual diff for animation poses", "license review"],
       errors,
       states: { example: exampleState, scrubbed: scrubState, app: appState }
@@ -76,7 +76,7 @@ test.describe("V4 character viewer", () => {
 
 async function waitForCharacterState(page: Page, id: string): Promise<CharacterState> {
   await page.waitForFunction((expectedId) => {
-    const state = window.__A3D_V4_CHARACTER_VIEWER__ as CharacterState | undefined;
+    const state = window.__A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__ as CharacterState | undefined;
     return state?.status === "ready" && state.id === expectedId;
   }, id, { timeout: 60_000 });
   const state = await characterState(page);
@@ -85,7 +85,7 @@ async function waitForCharacterState(page: Page, id: string): Promise<CharacterS
 }
 
 async function characterState(page: Page): Promise<CharacterState | undefined> {
-  return page.evaluate(() => window.__A3D_V4_CHARACTER_VIEWER__ as CharacterState | undefined);
+  return page.evaluate(() => window.__A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__ as CharacterState | undefined);
 }
 
 function statePasses(state: CharacterState, id: string): boolean {
@@ -119,6 +119,6 @@ function captureErrors(page: Page): string[] {
 
 declare global {
   interface Window {
-    __A3D_V4_CHARACTER_VIEWER__?: CharacterState;
+    __A3D_EXTERNAL_PARITY_CHARACTER_VIEWER__?: CharacterState;
   }
 }

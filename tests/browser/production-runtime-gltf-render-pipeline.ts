@@ -1,21 +1,21 @@
-import { loadV6GLTFRenderPipeline } from "/packages/assets/src/asset-corpus/V6GLTFRenderPipeline.js";
+import { loadProductionGLTFRenderPipeline } from "/packages/assets/src/asset-corpus/ProductionGLTFRenderPipeline.js";
 import {
   ProductionWebGL2Renderer,
-  createV6EnvironmentLightingResources,
-  createV6PbrHdrPipelineFromRadiance,
-  summarizeV6WebGL2Proof
+  createProductionEnvironmentLightingResources,
+  createProductionPbrHdrPipelineFromRadiance,
+  summarizeProductionWebGL2Proof
 } from "/packages/rendering/src/production-runtime/index.js";
-import { createV6ProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
+import { createProductionProductionStageScene } from "/tests/browser/production-runtime-production-scene-tools.js";
 
 declare global {
   interface Window {
-    __V6_GLTF_RENDER__?: unknown;
+    __PRODUCTION_GLTF_RENDER__?: unknown;
   }
 }
 
 async function run(): Promise<void> {
   const hdr = await fetchBytes(`${location.origin}/fixtures/environment-corpus/hdri/studio_small_08_1k.hdr`);
-  const hdrPipeline = createV6PbrHdrPipelineFromRadiance(hdr, {
+  const hdrPipeline = createProductionPbrHdrPipelineFromRadiance(hdr, {
     id: "studio-small-08",
     label: "Studio Small 08",
     intensity: 1.15,
@@ -24,16 +24,16 @@ async function run(): Promise<void> {
     toneMapping: { operator: "filmic", exposure: 1, whitePoint: 11.2 }
   });
   const assets = [
-    { id: "damaged-helmet", name: "Damaged Helmet", path: "damaged-helmet.glb", canvas: "damaged-helmet" },
-    { id: "clear-coat-test", name: "Clear Coat Test", path: "clear-coat-test.glb", canvas: "clearcoat" },
-    { id: "cesium-man", name: "Cesium Man", path: "cesium-man.glb", canvas: "cesium-man" }
+    { id: "damaged-helmet", name: "Damaged Helmet", url: `${location.origin}/fixtures/asset-corpus/damaged-helmet.glb`, canvas: "damaged-helmet" },
+    { id: "clear-coat-test", name: "Clear Coat Test", url: `${location.origin}/fixtures/asset-corpus/clear-coat-test.glb`, canvas: "clearcoat" },
+    { id: "cesium-man", name: "Cesium Man", url: `${location.origin}/fixtures/three-compat/assets/corpus/cesium-man.glb`, canvas: "cesium-man" }
   ] as const;
   const results = [];
   for (const item of assets) {
     const canvas = requireCanvas(item.canvas);
-    const lighting = createV6EnvironmentLightingResources(hdrPipeline);
-    const pipeline = await loadV6GLTFRenderPipeline({
-      url: `${location.origin}/fixtures/asset-corpus/${item.path}`,
+    const lighting = createProductionEnvironmentLightingResources(hdrPipeline);
+    const pipeline = await loadProductionGLTFRenderPipeline({
+      url: item.url,
       assetId: item.id,
       assetName: item.name,
       width: canvas.width,
@@ -51,7 +51,7 @@ async function run(): Promise<void> {
       preserveDrawingBuffer: true,
       clearColor: [0.015, 0.018, 0.024, 1]
     });
-    const staged = createV6ProductionStageScene(pipeline.source, pipeline.resources.bounds, {
+    const staged = createProductionProductionStageScene(pipeline.source, pipeline.resources.bounds, {
       width: canvas.width,
       height: canvas.height
     }, {
@@ -86,11 +86,11 @@ async function run(): Promise<void> {
     results.push({
       id: item.id,
       metadata: pipeline.metadata,
-      summary: summarizeV6WebGL2Proof(proof),
+      summary: summarizeProductionWebGL2Proof(proof),
       proof
     });
   }
-  window.__V6_GLTF_RENDER__ = {
+  window.__PRODUCTION_GLTF_RENDER__ = {
     status: "ready",
     hdr: hdrPipeline.diagnostics,
     results
@@ -112,7 +112,7 @@ async function fetchBytes(url: string): Promise<ArrayBuffer> {
 }
 
 run().catch((error) => {
-  window.__V6_GLTF_RENDER__ = {
+  window.__PRODUCTION_GLTF_RENDER__ = {
     status: "error",
     error: error instanceof Error ? error.stack ?? error.message : String(error)
   };

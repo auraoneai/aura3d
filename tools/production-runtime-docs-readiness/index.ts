@@ -2,26 +2,18 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const docs = [
-  "renderer-architecture.md",
-  "webgl2-backend.md",
-  "webgpu-backend.md",
-  "gltf-pipeline.md",
-  "pbr-materials.md",
-  "hdr-ibl.md",
-  "shadows.md",
-  "postprocess.md",
-  "animation.md",
-  "asset-pipeline.md",
-  "threejs-parity.md",
-  "visual-quality-gates.md",
-  "product-workflows.md",
-  "api-reference.md",
+  "current-state.md",
+  "threejs-parity-status.md",
+  "threejs-parity-parity-matrix.md",
+  "threejs-parity-claim-boundary.md",
+  "known-limits.md",
+  "claim-guidelines.md",
+  "compatibility.md",
+  "migration.md",
   "getting-started.md",
-  "templates.md",
-  "examples.md",
-  "known-gaps.md",
-  "blocked-claims.md",
-  "release-notes.md"
+  "verification-evidence.md",
+  "release-process.md",
+  "release-checklist.md"
 ];
 const requiredMarkers = [
   "real renderer",
@@ -35,7 +27,7 @@ const requiredMarkers = [
   "performance",
   "blocked"
 ];
-const docPath = (doc: string) => resolve("docs/project", `production-runtime-roadmap-${doc}`);
+const docPath = (doc: string) => resolve("docs/project", doc);
 const docReports = docs.map((doc) => {
   const path = docPath(doc);
   const content = existsSync(path) ? readFileSync(path, "utf8") : "";
@@ -56,11 +48,11 @@ const checks = [
   { id: "claim-registry", pass: claimRegistry.pass === true && Array.isArray(claimRegistry.allowedClaims) && Array.isArray(claimRegistry.blockedClaims), detail: "tests/reports/production-runtime-claim-registry.json" },
   { id: "blocked-claims-visible", pass: allDocsContent.includes("Full Three.js API replacement") && allDocsContent.includes("Full WebGPU parity") && allDocsContent.includes("Unity replacement"), detail: "blocked claim names are present" },
   { id: "no-overclaim", pass: !/full Three\.js replacement is complete/i.test(allDocsContent) && !/full WebGPU parity is complete/i.test(allDocsContent), detail: "docs avoid completion language for blocked claims" },
-  { id: "real-app-code", pass: allDocsContent.includes("runV6Example") && allDocsContent.includes("@aura3d/engine/workflows/production"), detail: "getting-started and API docs include real app code" },
+  { id: "real-app-code", pass: allDocsContent.includes("runProductionExample") && allDocsContent.includes("@aura3d/engine/workflows/production"), detail: "getting-started and API docs include real app code" },
   { id: "profiling-workflow", pass: allDocsContent.includes("tests/reports/production-runtime-performance-readiness.json"), detail: "performance profiling evidence linked" }
 ];
 const report = {
-  schema: "a3d-production-runtime-docs-readiness/v1",
+  schema: "a3d-production-runtime-docs-readiness",
   generatedAt: new Date().toISOString(),
   pass: checks.every((check) => check.pass),
   docs: docReports,

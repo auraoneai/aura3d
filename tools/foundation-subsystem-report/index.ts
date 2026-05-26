@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { baseReport, readJson, writeJson } from "../foundation-reporting/index.js";
 
-export interface V3EvidenceCheck {
+export interface FoundationEvidenceCheck {
   readonly id: string;
   readonly description: string;
   readonly passed: boolean;
@@ -9,7 +9,7 @@ export interface V3EvidenceCheck {
   readonly blocker: string;
 }
 
-export interface V3SubsystemReport {
+export interface FoundationSubsystemReport {
   readonly ok: boolean;
   readonly generatedAt: string;
   readonly commit: string;
@@ -20,7 +20,7 @@ export interface V3SubsystemReport {
   readonly screenshotPaths: readonly string[];
   readonly violations: readonly string[];
   readonly subsystem: string;
-  readonly checks: readonly V3EvidenceCheck[];
+  readonly checks: readonly FoundationEvidenceCheck[];
 }
 
 export function createSubsystemReport(
@@ -32,9 +32,9 @@ export function createSubsystemReport(
     readonly runIdPrefix: string;
     readonly sourceFiles: readonly string[];
     readonly screenshotPaths?: readonly string[];
-    readonly checks: readonly V3EvidenceCheck[];
+    readonly checks: readonly FoundationEvidenceCheck[];
   },
-): V3SubsystemReport {
+): FoundationSubsystemReport {
   const violations = options.checks.filter((check) => !check.passed).map((check) => check.blocker);
   const base = baseReport(root, {
     ok: violations.length === 0,

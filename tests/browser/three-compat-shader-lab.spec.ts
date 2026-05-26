@@ -1,8 +1,8 @@
 import { test, expect } from "@playwright/test";
-import { ShaderMaterialV5 } from "../../packages/rendering/src";
+import { ShaderMaterialThreeCompat } from "../../packages/rendering/src";
 
-test("V5 shader lab renders custom shader material and diagnostics", async ({ page }) => {
-  const material = new ShaderMaterialV5(
+test("ThreeCompat shader lab renders custom shader material and diagnostics", async ({ page }) => {
+  const material = new ShaderMaterialThreeCompat(
     "void main() { gl_Position = vec4(0.0, 0.0, 0.0, 1.0); }",
     "precision highp float; out vec4 fragColor; void main() { fragColor = vec4(0.2, 0.7, 1.0, 1.0); }"
   ).setUniform("uTime", 2).setUniform("uIntensity", 0.85);

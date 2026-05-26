@@ -1,24 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
-  V4_REQUIRED_DEBUG_VIEWS,
+  EXTERNAL_PARITY_REQUIRED_DEBUG_VIEWS,
   MockRenderDevice,
-  analyzeV4Exposure,
+  analyzeExternalParityExposure,
   convertColorSpace,
   createColorConversionSamples,
-  createV4ColorManagementPolicy,
-  createV4DebugViewSet,
-  createV4ExposurePolicy,
-  createV4HdrPipeline,
-  createV4ToneMappingPolicy,
-  executeV4ToneMapPass,
+  createExternalParityColorManagementPolicy,
+  createExternalParityDebugViewSet,
+  createExternalParityExposurePolicy,
+  createExternalParityHdrPipeline,
+  createExternalParityToneMappingPolicy,
+  executeExternalParityToneMapPass,
   srgbToLinearChannel,
-  toneMapV4HdrPixels,
+  toneMapExternalParityHdrPixels,
   validateTextureColorSpace
 } from "../../../packages/rendering/src";
 
-describe("V4 color management and HDR pipeline", () => {
+describe("ExternalParity color management and HDR pipeline", () => {
   it("defines a real linear lighting and texture color-space policy", () => {
-    const policy = createV4ColorManagementPolicy();
+    const policy = createExternalParityColorManagementPolicy();
 
     expect(policy.lightingColorSpace).toBe("linear");
     expect(policy.outputColorSpace).toBe("srgb");
@@ -46,15 +46,15 @@ describe("V4 color management and HDR pipeline", () => {
     expect(srgb[2]).toBeCloseTo(0.75, 5);
   });
 
-  it("tone maps overbright HDR input with a V4 product policy", () => {
-    const policy = createV4ToneMappingPolicy("product-catalog", {
+  it("tone maps overbright HDR input with a ExternalParity product policy", () => {
+    const policy = createExternalParityToneMappingPolicy("product-catalog", {
       exposure: 1,
       whitePoint: 1,
       gamma: 1,
       operator: "reinhard",
       outputColorSpace: "srgb"
     });
-    const result = toneMapV4HdrPixels(new Float32Array([4, 0.5, 0.125, 1]), 1, 1, policy);
+    const result = toneMapExternalParityHdrPixels(new Float32Array([4, 0.5, 0.125, 1]), 1, 1, policy);
 
     expect(result.inputOverbrightPixels).toBe(1);
     expect(result.maxInputValue).toBe(4);
@@ -70,7 +70,7 @@ describe("V4 color management and HDR pipeline", () => {
       138, 138, 138, 255,
       148, 148, 148, 255
     ]);
-    const analysis = analyzeV4Exposure(pixels, 2, 2, createV4ExposurePolicy({ histogramBins: 32 }));
+    const analysis = analyzeExternalParityExposure(pixels, 2, 2, createExternalParityExposurePolicy({ histogramBins: 32 }));
 
     expect(analysis.histogram.pixelCount).toBe(4);
     expect(analysis.histogram.binCount).toBe(32);
@@ -81,7 +81,7 @@ describe("V4 color management and HDR pipeline", () => {
 
   it("creates HDR render targets, tone maps to display, and records fallback policy", () => {
     const device = new MockRenderDevice();
-    const pipeline = createV4HdrPipeline(device, {
+    const pipeline = createExternalParityHdrPipeline(device, {
       width: 2,
       height: 1,
       intent: "product-catalog",
@@ -95,7 +95,7 @@ describe("V4 color management and HDR pipeline", () => {
     device.beginFrame(2, 1);
     device.setRenderTarget(pipeline.colorTarget);
     device.clear([3, 0.5, 0.125, 1]);
-    const pass = executeV4ToneMapPass(device, pipeline);
+    const pass = executeExternalParityToneMapPass(device, pipeline);
     device.setRenderTarget(pipeline.displayTarget);
     const pixels = device.readPixels(0, 0, 1, 1);
     device.endFrame();
@@ -106,9 +106,9 @@ describe("V4 color management and HDR pipeline", () => {
   });
 
   it("creates all required debug views with deterministic fallback buffers", () => {
-    const views = createV4DebugViewSet({ width: 1, height: 1 });
+    const views = createExternalParityDebugViewSet({ width: 1, height: 1 });
 
-    expect(views.map((view) => view.view)).toEqual(V4_REQUIRED_DEBUG_VIEWS);
+    expect(views.map((view) => view.view)).toEqual(EXTERNAL_PARITY_REQUIRED_DEBUG_VIEWS);
     expect(views).toHaveLength(9);
     expect(views.every((view) => view.source === "diagnostic-fallback")).toBe(true);
     expect(views.every((view) => view.pixels.length === 4 && view.pixels[3] === 255)).toBe(true);

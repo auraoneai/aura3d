@@ -34,7 +34,7 @@ if (latest) {
   execFileSync("npm", ["install", "--ignore-scripts", "--package-lock=false"], { cwd: installDir, stdio: "pipe" });
 }
 const report = {
-  schema: "a3d-three-compat-package-smoke/v1",
+  schema: "a3d-three-compat-package-smoke",
   generatedAt: new Date().toISOString(),
   pass: Boolean(latest) && existsSync(join(installDir, "node_modules/@aura3d/engine/package.json")),
   tarball: latest ? `tests/reports/three-compat-external-consumer/${latest}` : null,
@@ -47,4 +47,4 @@ if (!report.pass) {
   console.error(JSON.stringify(report, null, 2));
   process.exit(1);
 }
-console.log(`V5 package smoke passed: ${report.tarball}`);
+console.log(`Three.js compatibility package smoke passed: ${report.tarball}`);

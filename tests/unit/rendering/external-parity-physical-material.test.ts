@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  V4_PHYSICAL_MATERIAL_MATRIX,
-  analyzeV4MaterialMatrix,
-  createV4MaterialExtensionDiagnostics,
-  createV4PhysicalMaterial,
-  evaluateV4Transmission,
-  sortV4AlphaItems
+  EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX,
+  analyzeExternalParityMaterialMatrix,
+  createExternalParityMaterialExtensionDiagnostics,
+  createExternalParityPhysicalMaterial,
+  evaluateExternalParityTransmission,
+  sortExternalParityAlphaItems
 } from "../../../packages/rendering/src";
 
-describe("V4 physical material matrix", () => {
+describe("ExternalParity physical material matrix", () => {
   it("defines the required twelve material targets", () => {
-    expect(V4_PHYSICAL_MATERIAL_MATRIX.map((material) => material.id)).toEqual([
+    expect(EXTERNAL_PARITY_PHYSICAL_MATERIAL_MATRIX.map((material) => material.id)).toEqual([
       "chrome",
       "brushed-metal",
       "gold",
@@ -27,7 +27,7 @@ describe("V4 physical material matrix", () => {
   });
 
   it("classifies materials and reports bounded extension diagnostics", () => {
-    const matrix = analyzeV4MaterialMatrix();
+    const matrix = analyzeExternalParityMaterialMatrix();
     const chrome = matrix.find((entry) => entry.descriptor.id === "chrome")!;
     const glass = matrix.find((entry) => entry.descriptor.id === "glass-transmission")!;
     const fabric = matrix.find((entry) => entry.descriptor.id === "fabric-sheen")!;
@@ -44,7 +44,7 @@ describe("V4 physical material matrix", () => {
   });
 
   it("creates individual physical material instances", () => {
-    const material = createV4PhysicalMaterial("clearcoat-car-paint");
+    const material = createExternalParityPhysicalMaterial("clearcoat-car-paint");
     const analysis = material.analyze();
 
     expect(analysis.descriptor.extensions).toContain("clearcoat");
@@ -54,7 +54,7 @@ describe("V4 physical material matrix", () => {
   });
 
   it("reports material extension support boundaries", () => {
-    const diagnostics = createV4MaterialExtensionDiagnostics(["clearcoat", "emissive-strength", "transmission", "iridescence"]);
+    const diagnostics = createExternalParityMaterialExtensionDiagnostics(["clearcoat", "emissive-strength", "transmission", "iridescence"]);
 
     expect(diagnostics.find((entry) => entry.extension === "emissive-strength")?.support).toBe("supported");
     expect(diagnostics.find((entry) => entry.extension === "clearcoat")?.support).toBe("bounded");
@@ -63,7 +63,7 @@ describe("V4 physical material matrix", () => {
   });
 
   it("sorts alpha items with blended surfaces back-to-front", () => {
-    const sorted = sortV4AlphaItems([
+    const sorted = sortExternalParityAlphaItems([
       { id: "glass-near", depth: 2, alphaMode: "blend" },
       { id: "opaque-mid", depth: 5, alphaMode: "opaque" },
       { id: "glass-far", depth: 8, alphaMode: "blend" },
@@ -74,7 +74,7 @@ describe("V4 physical material matrix", () => {
   });
 
   it("evaluates bounded transmission into display color", () => {
-    const result = evaluateV4Transmission({
+    const result = evaluateExternalParityTransmission({
       baseColor: [0.8, 0.95, 1],
       thickness: 0.2,
       attenuationColor: [0.95, 0.98, 1],

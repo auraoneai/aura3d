@@ -1,4 +1,4 @@
-# A3D V7 Example Parity Lab
+# A3D Example Parity Lab
 
 Runtime app for building toward the Three.js example categories that the product must match or exceed:
 

@@ -1,18 +1,18 @@
 import { fileURLToPath } from "node:url";
-import { validateV4ClaimGates } from "../external-parity-claim-gates/index.js";
-import { createV4CurrentCapabilityReport } from "../external-parity-current-capability/index.js";
+import { validateExternalParityClaimGates } from "../external-parity-claim-gates/index.js";
+import { createExternalParityCurrentCapabilityReport } from "../external-parity-current-capability/index.js";
 import { baseReport, writeJson } from "../external-parity-reporting/index.js";
 
 const root = process.cwd();
 
-export function createV4CodeReport() {
-  const claimGates = validateV4ClaimGates(root);
+export function createExternalParityCodeReport() {
+  const claimGates = validateExternalParityClaimGates(root);
   writeJson(root, "tests/reports/external-parity-claim-gates.json", claimGates);
-  const capability = createV4CurrentCapabilityReport(root);
+  const capability = createExternalParityCurrentCapabilityReport(root);
   writeJson(root, "tests/reports/external-parity-current-capability.json", capability);
   const violations = [
-    ...(claimGates.ok ? [] : ["v4 claim gates failed"]),
-    ...(capability.ok ? [] : ["v4 current capability report failed"]),
+    ...(claimGates.ok ? [] : ["external-parity claim gates failed"]),
+    ...(capability.ok ? [] : ["external-parity current capability report failed"]),
   ];
   const report = {
     ...baseReport(root, {
@@ -23,8 +23,8 @@ export function createV4CodeReport() {
         "tools/external-parity-code/index.ts",
         "tools/external-parity-claim-gates/index.ts",
         "tools/external-parity-current-capability/index.ts",
-        "docs/project/v4-decision-gates.md",
-        "docs/project/v4-master-code-checklist.md",
+        "docs/project/product-studio-decision-gates.md",
+        "docs/project/implementation-plan.md",
       ],
       violations,
     }),
@@ -39,7 +39,7 @@ export function createV4CodeReport() {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
-  const report = createV4CodeReport();
+  const report = createExternalParityCodeReport();
   console.log(JSON.stringify({ ok: report.ok, violations: report.violations.length }, null, 2));
   if (!report.ok) process.exitCode = 1;
 }

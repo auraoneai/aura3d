@@ -49,19 +49,19 @@ try {
   try {
     const page = await browser.newPage({ viewport: { width: 980, height: 620 } });
     await page.goto(server.origin, { waitUntil: "domcontentloaded" });
-    await page.waitForFunction(() => (window as typeof window & { __A3D_V4_EXTERNAL_CONSUMER__?: { readonly status?: string } }).__A3D_V4_EXTERNAL_CONSUMER__?.status === "ready", undefined, { timeout: 90_000 });
+    await page.waitForFunction(() => (window as typeof window & { __A3D_EXTERNAL_PARITY_EXTERNAL_CONSUMER__?: { readonly status?: string } }).__A3D_EXTERNAL_PARITY_EXTERNAL_CONSUMER__?.status === "ready", undefined, { timeout: 90_000 });
     await page.locator("[data-testid='external-consumer-canvas']").screenshot({ path: screenshotPath });
-    const state = await page.evaluate(() => (window as typeof window & { __A3D_V4_EXTERNAL_CONSUMER__?: {
+    const state = await page.evaluate(() => (window as typeof window & { __A3D_EXTERNAL_PARITY_EXTERNAL_CONSUMER__?: {
       readonly status?: string;
       readonly publicApiOnly?: boolean;
       readonly assetKind?: string;
       readonly textureCount?: number;
       readonly drawCalls?: number;
       readonly screenshotPrefix?: string;
-    } }).__A3D_V4_EXTERNAL_CONSUMER__);
+    } }).__A3D_EXTERNAL_PARITY_EXTERNAL_CONSUMER__);
     const outputFiles = listFiles(staticDir).map((file) => file.slice(staticDir.length + 1).replaceAll("\\", "/"));
     const report = {
-      schema: "a3d-external-parity-external-consumer/v1",
+      schema: "a3d-external-parity-external-consumer",
       generatedAt: new Date().toISOString(),
       ok: state?.status === "ready" &&
         state.publicApiOnly === true &&
@@ -101,7 +101,7 @@ import { captureScreenshot, createAssetDiagnostics, createDiagnosticsPanel, crea
 
 declare global {
   interface Window {
-    __A3D_V4_EXTERNAL_CONSUMER__?: unknown;
+    __A3D_EXTERNAL_PARITY_EXTERNAL_CONSUMER__?: unknown;
   }
 }
 
@@ -117,7 +117,7 @@ const assetDiagnostics = createAssetDiagnostics(asset);
 const panel = createDiagnosticsPanel({ render, asset: assetDiagnostics });
 const screenshot = captureScreenshot(canvas);
 
-window.__A3D_V4_EXTERNAL_CONSUMER__ = {
+window.__A3D_EXTERNAL_PARITY_EXTERNAL_CONSUMER__ = {
   status: "ready",
   publicApiOnly: true,
   workflowKind: workflow.kind,

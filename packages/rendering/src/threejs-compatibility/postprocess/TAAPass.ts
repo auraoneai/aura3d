@@ -1,7 +1,7 @@
-import type { V5PostProcessFrame, V5PostProcessPass } from "./PostProcessTypes";
+import type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
 
-export class TAAPassV5 implements V5PostProcessPass {
+export class TAAPassThreeCompat implements ThreeCompatPostProcessPass {
   readonly name = "TAAPass";
   readonly enabled = true;
-  apply(frame: V5PostProcessFrame): V5PostProcessFrame { return { ...frame, sharpness: frame.sharpness + 0.18 }; }
+  apply(frame: ThreeCompatPostProcessFrame): ThreeCompatPostProcessFrame { return { ...frame, sharpness: frame.sharpness + 0.18 }; }
 }

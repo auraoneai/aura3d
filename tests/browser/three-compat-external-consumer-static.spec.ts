@@ -1,7 +1,17 @@
 import { test, expect } from "@playwright/test";
+import { existsSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 
-test("V5 external consumer static preview renders built output", async ({ page }) => {
-  await page.goto(`file://${process.cwd()}/tests/reports/three-compat-external-consumer/static-preview/index.html`);
+test("three-compat external consumer static preview renders built output", async ({ page }) => {
+  const previewPath = `${process.cwd()}/tests/reports/three-compat-external-consumer/static-preview/index.html`;
+  if (!existsSync(previewPath)) {
+    const result = spawnSync("pnpm", ["exec", "tsx", "--tsconfig", "tsconfig.base.json", "tools/three-compat-static-preview-smoke/index.ts"], {
+      cwd: process.cwd(),
+      encoding: "utf8"
+    });
+    expect(result.status, result.stderr || result.stdout).toBe(0);
+  }
+  await page.goto(`file://${previewPath}`);
   await expect.poll(async () => page.evaluate(() => window.__a3dStaticPreview)).toBe(true);
   await page.screenshot({ path: "tests/reports/three-compat-external-consumer/static-preview.png" });
   const litPixels = await page.evaluate(() => {

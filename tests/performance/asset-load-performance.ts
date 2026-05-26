@@ -15,7 +15,7 @@ interface LoadSample {
 }
 
 interface AssetLoadPerformanceReport {
-  readonly schemaVersion: "asset-load-performance-v1";
+  readonly schemaVersion: "asset-load-performance";
   readonly generatedAt: string;
   readonly environment: {
     readonly runtime: string;
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   const repeated = await measure("asset-corpus-32-inline-repeated-loads", 32, repeatedLoadBudgetMs);
   const samples = [cold, repeated];
   const report: AssetLoadPerformanceReport = {
-    schemaVersion: "asset-load-performance-v1",
+    schemaVersion: "asset-load-performance",
     generatedAt: new Date().toISOString(),
     environment: {
       runtime: "node",

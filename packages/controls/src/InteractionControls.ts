@@ -1,7 +1,7 @@
 import { InputSnapshot } from "@aura3d/input";
 import { FlyControls } from "./FlyControls";
 import { OrbitControls } from "./OrbitControls";
-import { Picking, type PickingOptions, type PickingReport, type V5PickResult } from "./Picking";
+import { Picking, type PickingOptions, type PickingReport, type ThreeCompatPickResult } from "./Picking";
 import { ControlVector3, type ControlObject3DLike, type Vector3Like } from "./NativeControlTypes";
 
 export type InteractionControlMode = "orbit" | "fly";
@@ -20,7 +20,7 @@ export interface InteractionRay {
 export type InteractionRayProvider = (snapshot: InputSnapshot) => InteractionRay;
 export type InteractionRootProvider = () => ControlObject3DLike | undefined;
 export type InteractionControlsListener = (event: InteractionControlsEvent) => void;
-export type HotspotHandler = (event: InteractionControlsEvent & { readonly hit: V5PickResult }) => void;
+export type HotspotHandler = (event: InteractionControlsEvent & { readonly hit: ThreeCompatPickResult }) => void;
 
 export interface InteractionControlsOptions {
   readonly mode?: InteractionControlMode;
@@ -42,14 +42,14 @@ export interface InteractionControlsEvent {
   readonly type: InteractionControlsEventType;
   readonly mode: InteractionControlMode;
   readonly snapshot: InputSnapshot;
-  readonly hit?: V5PickResult;
-  readonly previousHit?: V5PickResult;
+  readonly hit?: ThreeCompatPickResult;
+  readonly previousHit?: ThreeCompatPickResult;
 }
 
 export interface InteractionControlsUpdate {
   readonly mode: InteractionControlMode;
   readonly pickReport?: PickingReport;
-  readonly hit: V5PickResult | null;
+  readonly hit: ThreeCompatPickResult | null;
 }
 
 export class InteractionControls {
@@ -65,7 +65,7 @@ export class InteractionControls {
   private pickOptions: PickingOptions;
   private readonly listeners = new Set<InteractionControlsListener>();
   private readonly hotspotHandlers = new Map<string, Set<HotspotHandler>>();
-  private hoverHit: V5PickResult | null = null;
+  private hoverHit: ThreeCompatPickResult | null = null;
   private disposed = false;
 
   private readonly rotateButton: number;
@@ -197,7 +197,7 @@ export class InteractionControls {
     return pickReport;
   }
 
-  private emitHotspot(event: InteractionControlsEvent & { readonly hit: V5PickResult }): void {
+  private emitHotspot(event: InteractionControlsEvent & { readonly hit: ThreeCompatPickResult }): void {
     const id = event.hit.metadata?.id ?? event.hit.object.name;
     if (!id) return;
     const hotspotEvent = { ...event, type: "hotspot-click" as const };

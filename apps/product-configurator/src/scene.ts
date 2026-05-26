@@ -1,7 +1,7 @@
 import { assets } from "./assets";
-import type { V6AppSceneDefinition } from "./types";
+import type { ProductionAppSceneDefinition } from "./types";
 
-export const scene: V6AppSceneDefinition = {
+export const scene: ProductionAppSceneDefinition = {
   appId: "production-product-configurator",
   sceneId: "product-configurator",
   title: "Product Configurator",

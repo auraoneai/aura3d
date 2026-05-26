@@ -1,6 +1,6 @@
-import type { V3ComparisonScene } from "./scene-types";
+import type { FoundationComparisonScene } from "./scene-types";
 
-export const productComparisonScene: V3ComparisonScene = {
+export const productComparisonScene: FoundationComparisonScene = {
   id: "product",
   title: "Product Scene",
   intent: "Catalog-style product composition with multiple object parts, PBR materials, and a front three-quarter camera.",
