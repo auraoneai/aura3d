@@ -2,7 +2,7 @@
 
 Version: 1.0.0
 
-A3D includes workflow packages and apps for product viewers, configurators, asset inspection, material studios, animation labs, comparison scenes, and authoring/runtime bridges. These features were created from the product-workflow and advanced-gallery execution records and now live in `@aura3d/workflows`, `@aura3d/product-studio`, `@aura3d/editor-runtime`, and app routes.
+A3D includes workflow packages for product viewers, configurators, asset inspection, material studios, animation labs, comparison scenes, and authoring/runtime bridges. These features were created from the product-workflow and advanced-gallery execution records and now live in `@aura3d/workflows`, `@aura3d/product-studio`, `@aura3d/editor-runtime`, and the consolidated root route registry.
 
 ## Package Surfaces
 
@@ -18,9 +18,9 @@ A3D includes workflow packages and apps for product viewers, configurators, asse
 - Workflow definitions: `packages/workflows/src/*`
 - Production workflow helpers: `packages/workflows/src/production-runtime/*`
 - Product studio package: `packages/product-studio/src/*`
-- Product studio app: `apps/product-studio/src/*`
-- Product route examples: `apps/product-configurator/`, `apps/product-studio-pro/`, `apps/asset-inspector/`, `apps/material-studio/`, `apps/material-studio-pro/`
-- Advanced configurator route: `apps/advanced-examples-gallery/src/productConfigurator*.ts`
+- Product studio package: `packages/product-studio/src/*`
+- Product route examples: `/apps/advanced-examples-gallery/#product-configurator`, `apps/wow-standard-product-camera/`, `apps/wow-additional-variant-product/`, `apps/wow-additional-transmission-sample/`
+- Advanced configurator source: `apps/advanced-examples-gallery/src/productConfigurator*.ts`
 
 ## Current Workflows
 

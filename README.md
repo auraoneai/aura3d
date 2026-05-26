@@ -79,7 +79,10 @@ The root page is the allowlisted local route registry. It links only:
 
 - ten advanced gallery deep links under `/apps/advanced-examples-gallery/#...`;
 - four focused Aura3D library examples under `/apps/wow-*`;
-- twelve authored showcase apps under `/apps/wow-*`;
+- three standard Aura3D examples under `/apps/wow-*`;
+- four simple graphics examples under `/apps/wow-*`;
+- three additional Aura3D examples under `/apps/wow-*`;
+- eight authored showcase apps under `/apps/wow-*`;
 - shared runtime code under `/apps/wow-common/` that is not a standalone route.
 
 The legacy `examples/` tree and older app route folders have been pruned from the checkout. Do not document, test, or link local examples outside the root registry unless they are intentionally restored and added to the allowlist.

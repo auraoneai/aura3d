@@ -11,7 +11,7 @@ Texture compression support is split between asset decoding/transcoding and rend
 - `packages/rendering/src/Texture.ts`
 - `packages/rendering/src/WebGL2Device.ts`
 - `packages/rendering/src/WebGPUDevice.ts`
-- `apps/loader-ktx2/`
+- `tests/browser/asset-compression-browser.spec.ts`
 - `tests/assets/corpus/ktx2/Rib_N.ktx2`
 
 ## Current Behavior

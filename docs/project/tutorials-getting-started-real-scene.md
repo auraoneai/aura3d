@@ -14,7 +14,7 @@ pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
 Open a related running example:
 
 ```text
-http://127.0.0.1:5180/apps/advanced-examples-gallery/index.html#product-configurator
+http://127.0.0.1:5180/apps/advanced-examples-gallery/#product-configurator
 ```
 
 ## Minimal Code

@@ -70,5 +70,5 @@ This file is the deployment manifest for the current documentation set.
 
 - [Advanced examples gallery](../examples/advanced-gallery.md)
 - Root local route registry: `../../index.html`
-- Advanced gallery route app: `../../apps/advanced-examples-gallery/index.html`
+- Advanced gallery route app: `../../apps/advanced-examples-gallery/`
 - Authored showcase route apps: `../../apps/wow-*`

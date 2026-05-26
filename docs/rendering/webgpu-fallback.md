@@ -8,11 +8,8 @@ Aura3D has WebGPU device code and WebGPU app routes, but browser/device availabi
 
 - `packages/rendering/src/WebGPUDevice.ts`
 - `packages/rendering/src/WebGPURenderToTextureProof.ts`
-- `apps/webgpu-rtt/`
-- `apps/webgpu-compute/`
-- `apps/webgpu-materials/`
-- `apps/webgpu-instance-uniform/`
-- `apps/webgpu-lab/`
+- `packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`
+- `packages/create-aura3d/templates/production-webgpu-starter/`
 
 ## Current Behavior
 

@@ -585,8 +585,7 @@ function variantKey(materialVariant: string | undefined): string {
 }
 
 const DRACO_COMPRESSED_ASSET_IDS = new Set<AuthoredAssetCandidateId>([
-  "littlest-tokyo",
-  "kira-ik-room"
+  "littlest-tokyo"
 ]);
 
 function needsBrowserDracoDecoder(candidate: AuthoredAssetCandidateRecord): boolean {

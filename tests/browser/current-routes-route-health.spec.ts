@@ -13,21 +13,27 @@ import { startExampleDevServer, type ExampleDevServer } from "./example-dev-serv
 
 const EXPECTED_CURRENT_WOW_ROUTES = [
   "/apps/wow-tokyo-keyframes/",
-  "/apps/wow-kira-ik-room/",
-  "/apps/wow-neon-city/",
-  "/apps/wow-orbital-fleet/",
-  "/apps/wow-crystal-cavern/",
-  "/apps/wow-robot-parade/",
-  "/apps/wow-particle-vortex/",
-  "/apps/wow-ocean-temple/",
-  "/apps/wow-physics-arena/",
-  "/apps/wow-material-cathedral/",
-  "/apps/wow-astral-garden/",
-  "/apps/wow-quantum-stage/",
+  "/apps/wow-robot-expressive-rig/",
+  "/apps/wow-concept-car-cinema/",
+  "/apps/wow-damaged-helmet-pbr-detail/",
+  "/apps/wow-antique-camera-viewer/",
+  "/apps/wow-duck-prop-studio/",
+  "/apps/wow-cesium-milk-truck-viewer/",
+  "/apps/wow-soldier-animation-viewer/",
   "/apps/wow-boombox-texture-lab/",
   "/apps/wow-avocado-pbr-study/",
   "/apps/wow-clearcoat-material-sample/",
-  "/apps/wow-sheen-material-grid/"
+  "/apps/wow-sheen-material-grid/",
+  "/apps/wow-standard-animated-cube/",
+  "/apps/wow-standard-product-camera/",
+  "/apps/wow-standard-material-spheres/",
+  "/apps/wow-simple-triangle/",
+  "/apps/wow-simple-transforms/",
+  "/apps/wow-simple-material-lighting/",
+  "/apps/wow-simple-points-lines/",
+  "/apps/wow-additional-variant-product/",
+  "/apps/wow-additional-transmission-sample/",
+  "/apps/wow-additional-cesium-man-animation/"
 ] as const;
 
 const EXPECTED_ADVANCED_GALLERY_ROUTES = [

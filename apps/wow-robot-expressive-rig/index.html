@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>A3D Robot Expressive Rig</title>
+    <link rel="stylesheet" href="/apps/wow-common/src/showcase.css">
+    <script>
+      // Marketing iframe embeds load with ?chrome=hidden — tag the
+      // document at parse time so the inline rules below apply before
+      // any CSS or DOM paints.
+      (function () {
+        try {
+          if (new URLSearchParams(location.search).get("chrome") === "hidden") {
+            document.documentElement.setAttribute("data-chrome", "hidden");
+          }
+        } catch (_e) { /* ignore */ }
+      })();
+    </script>
+    <style>
+      html[data-chrome="hidden"],
+      html[data-chrome="hidden"] body { background: #000 !important; }
+      html[data-chrome="hidden"] body::before { background: transparent !important; }
+      html[data-chrome="hidden"] #app { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <canvas id="viewport" width="1280" height="720" aria-label="A3D Robot Expressive Rig"></canvas>
+    <main id="app"></main>
+    <script type="module" src="/apps/wow-robot-expressive-rig/src/main.ts"></script>
+  </body>
+</html>

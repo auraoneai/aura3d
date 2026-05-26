@@ -84,21 +84,27 @@ interface WowRouteReport {
 
 const CURRENT_WOW_ROUTES: readonly WowRoute[] = [
   { slug: "wow-tokyo-keyframes", label: "Tokyo Keyframes", path: "/apps/wow-tokyo-keyframes/" },
-  { slug: "wow-kira-ik-room", label: "Robot Expressive Room", path: "/apps/wow-kira-ik-room/" },
-  { slug: "wow-neon-city", label: "Neon City", path: "/apps/wow-neon-city/" },
-  { slug: "wow-orbital-fleet", label: "Orbital Fleet", path: "/apps/wow-orbital-fleet/" },
-  { slug: "wow-crystal-cavern", label: "Crystal Cavern", path: "/apps/wow-crystal-cavern/" },
-  { slug: "wow-robot-parade", label: "Robot Parade", path: "/apps/wow-robot-parade/" },
-  { slug: "wow-particle-vortex", label: "Particle Vortex", path: "/apps/wow-particle-vortex/" },
-  { slug: "wow-ocean-temple", label: "Ocean Temple", path: "/apps/wow-ocean-temple/" },
-  { slug: "wow-physics-arena", label: "Physics Arena", path: "/apps/wow-physics-arena/" },
-  { slug: "wow-material-cathedral", label: "Material Cathedral", path: "/apps/wow-material-cathedral/" },
-  { slug: "wow-astral-garden", label: "Astral Garden", path: "/apps/wow-astral-garden/" },
-  { slug: "wow-quantum-stage", label: "Quantum Stage", path: "/apps/wow-quantum-stage/" },
+  { slug: "wow-robot-expressive-rig", label: "Robot Expressive Rig", path: "/apps/wow-robot-expressive-rig/" },
+  { slug: "wow-concept-car-cinema", label: "Concept Car Cinema", path: "/apps/wow-concept-car-cinema/" },
+  { slug: "wow-damaged-helmet-pbr-detail", label: "Damaged Helmet PBR Detail", path: "/apps/wow-damaged-helmet-pbr-detail/" },
+  { slug: "wow-antique-camera-viewer", label: "Antique Camera Viewer", path: "/apps/wow-antique-camera-viewer/" },
+  { slug: "wow-duck-prop-studio", label: "Duck Prop Studio", path: "/apps/wow-duck-prop-studio/" },
+  { slug: "wow-cesium-milk-truck-viewer", label: "Cesium Milk Truck Viewer", path: "/apps/wow-cesium-milk-truck-viewer/" },
+  { slug: "wow-soldier-animation-viewer", label: "Soldier Animation Viewer", path: "/apps/wow-soldier-animation-viewer/" },
   { slug: "wow-boombox-texture-lab", label: "Boom Box Texture Lab", path: "/apps/wow-boombox-texture-lab/" },
   { slug: "wow-avocado-pbr-study", label: "Avocado PBR Study", path: "/apps/wow-avocado-pbr-study/" },
   { slug: "wow-clearcoat-material-sample", label: "Clearcoat Material Sample", path: "/apps/wow-clearcoat-material-sample/" },
-  { slug: "wow-sheen-material-grid", label: "Sheen Material Grid", path: "/apps/wow-sheen-material-grid/" }
+  { slug: "wow-sheen-material-grid", label: "Sheen Material Grid", path: "/apps/wow-sheen-material-grid/" },
+  { slug: "wow-standard-animated-cube", label: "Standard Animated Cube", path: "/apps/wow-standard-animated-cube/" },
+  { slug: "wow-standard-product-camera", label: "Standard Product Camera", path: "/apps/wow-standard-product-camera/" },
+  { slug: "wow-standard-material-spheres", label: "Standard Material Spheres", path: "/apps/wow-standard-material-spheres/" },
+  { slug: "wow-simple-triangle", label: "Simple Triangle", path: "/apps/wow-simple-triangle/" },
+  { slug: "wow-simple-transforms", label: "Simple Transforms", path: "/apps/wow-simple-transforms/" },
+  { slug: "wow-simple-material-lighting", label: "Simple Material Lighting", path: "/apps/wow-simple-material-lighting/" },
+  { slug: "wow-simple-points-lines", label: "Simple Points And Lines", path: "/apps/wow-simple-points-lines/" },
+  { slug: "wow-additional-variant-product", label: "Additional Variant Product", path: "/apps/wow-additional-variant-product/" },
+  { slug: "wow-additional-transmission-sample", label: "Additional Transmission Sample", path: "/apps/wow-additional-transmission-sample/" },
+  { slug: "wow-additional-cesium-man-animation", label: "Additional Cesium Man Animation", path: "/apps/wow-additional-cesium-man-animation/" }
 ];
 
 const REPORT_DIR = "tests/reports/wow-showcase";

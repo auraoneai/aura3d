@@ -9,8 +9,8 @@ Aura3D has public hooks for mesh and texture compression paths in the asset pipe
 - `packages/assets/src/GLTFCompressionDecoders.ts`
 - `packages/assets/src/GLTFLoader.ts`
 - `packages/assets/src/KTX2BasisTextureTranscoder.ts`
-- `apps/loader-compression/`
-- `apps/loader-ktx2/`
+- `tests/browser/asset-compression-browser.spec.ts`
+- `tests/assets/`
 
 ## Supported Paths
 

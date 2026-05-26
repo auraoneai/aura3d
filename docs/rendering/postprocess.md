@@ -10,9 +10,9 @@ Postprocess support exists in the renderer package and current app routes.
 - `packages/rendering/src/PostProcessPass.ts`
 - `packages/rendering/src/production-runtime/resources/RenderTarget.ts`
 - `packages/rendering/src/Renderer.ts`
-- `apps/postprocessing-bloom/`
-- `apps/postprocessing-depth-outline/`
-- `apps/cinematic-postprocess/`
+- `/apps/advanced-examples-gallery/#reactor-post`
+- `/apps/advanced-examples-gallery/#fog-cathedral`
+- `apps/wow-clearcoat-material-sample/`
 
 ## Implemented Areas
 

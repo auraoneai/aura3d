@@ -28,7 +28,10 @@ Current route groups:
 
 - ten advanced gallery demos under `/apps/advanced-examples-gallery/#...`;
 - four focused Aura3D library examples under `/apps/wow-*`;
-- twelve authored showcase apps under `/apps/wow-*`.
+- three standard Aura3D examples under `/apps/wow-*`;
+- four simple graphics examples under `/apps/wow-*`;
+- three additional Aura3D examples under `/apps/wow-*`;
+- eight authored showcase apps under `/apps/wow-*`.
 
 The legacy `examples/` tree and older standalone app route folders are pruned from the current checkout.
 

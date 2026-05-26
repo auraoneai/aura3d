@@ -16,7 +16,7 @@ The current checked character corpus is small and local. It is useful for loader
 - Imported glTF animation clips.
 - Skeleton and skin data import.
 - Motion and pose diagnostics in route tests.
-- Selected browser-visible character routes such as `apps/character-viewer/` and the animation/skinning route set.
+- Selected browser-visible character routes such as `apps/wow-soldier-animation-viewer/`, `apps/wow-additional-cesium-man-animation/`, and `apps/wow-robot-expressive-rig/`.
 
 ## What It Does Not Support
 

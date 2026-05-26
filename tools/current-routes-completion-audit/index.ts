@@ -5,7 +5,7 @@ const REPORT_PATH = "tests/reports/current-routes-completion-audit.json";
 
 const requiredReports = [
   { id: "assets", path: "tests/reports/current-routes-assets.json", pass: (json: any) => json.pass === true },
-  { id: "route-health", path: "tests/reports/current-routes-route-health.json", pass: (json: any) => json.pass === true && json.root?.routeCount === 22 },
+  { id: "route-health", path: "tests/reports/current-routes-route-health.json", pass: (json: any) => json.pass === true && json.root?.routeCount === 32 },
   { id: "visual-review", path: "tests/reports/current-routes-visual-review.json", pass: (json: any) => json.pass === true },
   { id: "runtime-import-audit", path: "tests/reports/current-routes-runtime-import-audit.json", pass: (json: any) => json.pass === true && json.scannedFiles > 0 },
   { id: "legacy-prune", path: "tests/reports/current-routes-legacy-prune.json", pass: (json: any) => json.pass === true }
@@ -15,7 +15,7 @@ const requiredScreenshots = [
   "tests/reports/current-route-health/screenshots/apps-advanced-examples-gallery.png",
   "tests/reports/current-route-health/screenshots/apps-advanced-examples-gallery-product-configurator.png",
   "tests/reports/current-route-health/screenshots/apps-wow-tokyo-keyframes.png",
-  "tests/reports/current-route-health/screenshots/apps-wow-quantum-stage.png"
+  "tests/reports/current-route-health/screenshots/apps-wow-soldier-animation-viewer.png"
 ] as const;
 
 const reportResults = requiredReports.map((report) => {

@@ -12,7 +12,7 @@ Aura3D physics code lives in `packages/physics` and is used by routes and workfl
 - `packages/physics/src/Constraints.ts`
 - `packages/physics/src/CharacterController.ts`
 - `packages/physics/src/Raycast.ts`
-- `apps/physics-showcase/`
+- `/apps/advanced-examples-gallery/#physics-playground`
 
 ## Current Areas
 

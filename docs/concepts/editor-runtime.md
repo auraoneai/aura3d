@@ -2,13 +2,12 @@
 
 Version: `1.0.0`
 
-Editor-runtime code provides reusable browser authoring primitives. It is separate from the full `apps/editor` shell.
+Editor-runtime code provides reusable browser authoring primitives. It is separate from any product editor shell.
 
 ## Code
 
 - `packages/editor-runtime/src/index.ts`
 - `packages/editor/src/index.ts`
-- `apps/editor/`
 - `tests/unit/tools/editor*` and editor browser specs under `tests/browser/`
 
 ## Current Areas
@@ -21,7 +20,7 @@ Editor-runtime code provides reusable browser authoring primitives. It is separa
 
 ## Boundary
 
-The editor runtime is a package surface, not a complete product guarantee for a Unity/Unreal-style editor. UI behavior must be verified against `apps/editor/` and browser tests before being documented as supported.
+The editor runtime is a package surface, not a complete product guarantee for a Unity/Unreal-style editor. UI behavior must be verified against browser tests before being documented as supported.
 
 ## Current Limits
 

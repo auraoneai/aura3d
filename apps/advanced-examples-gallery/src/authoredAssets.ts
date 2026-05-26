@@ -980,25 +980,6 @@ export const AUTHORED_ASSET_CANDIDATES = [
       "Imported animated characters remain the visual subject instead of procedural crates or debug geometry.",
       "The route keeps animation diagnostics and motion gates active."
     ]
-  },
-  {
-    id: "kira-ik-room",
-    title: "Kira IK Room",
-    localUrl: "/fixtures/threejs-parity/assets/showcase/kira-ik-room.glb",
-    routeUse: "robotics-lab",
-    threeReferenceCategory: "glTF showcase scene",
-    visualRole: "showcase environment",
-    animated: false,
-    knownLimitations: [
-      "The local Kira fixture contains a skinned character and room content but no animation clips, so it cannot be accepted as an animated-character demo.",
-      "IK-specific behavior needs route-level support and should not be implied by static glTF loading.",
-      "Room plus character composition requires custom camera bounds, material validation, and load-time diagnostics."
-    ],
-    acceptanceFocus: [
-      "Authored room and character content load from the local showcase fixture.",
-      "The route reports zero animation clips honestly instead of presenting the room as animated IK content.",
-      "Robotics-lab framing shows both the character context and the surrounding room."
-    ]
   }
 ] as const satisfies readonly AuthoredAssetCandidate[];
 

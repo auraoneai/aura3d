@@ -7,7 +7,6 @@ Editor diagnostics should be treated as runtime evidence for specific editor sta
 ## Current Sources
 
 - `packages/editor-runtime/src/index.ts`
-- `apps/editor/`
 - `packages/debug/src/index.ts`
 - `tests/browser/editor-*.spec.ts`
 

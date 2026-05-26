@@ -7,6 +7,12 @@ export type CurrentRoutesFlagshipAssetId =
   | "avocado"
   | "clear-coat-test"
   | "sheen-test-grid"
+  | "product-camera"
+  | "material-spheres"
+  | "variant-product"
+  | "transmission-material-sample"
+  | "animated-colors-cube"
+  | "cesium-man"
   | "lantern"
   | "chronograph-watch"
   | "car-concept"
@@ -70,6 +76,54 @@ export const CURRENT_ROUTES_FLAGSHIP_ASSETS: readonly CurrentRoutesFlagshipAsset
     role: "flagship-sheen-materials",
     license: "CC-BY-4.0",
     expectedFeatures: ["KHR_materials_sheen", "baseColorTexture", "materialGrid", "fabricResponse", "hdrIbl"]
+  },
+  {
+    id: "product-camera",
+    name: "Product Camera",
+    localPath: "fixtures/workflow-assets/assets/product-camera/product-camera.glb",
+    role: "standard-product-asset",
+    license: "local-fixture-corpus",
+    expectedFeatures: ["productAsset", "pbrMaterials", "textureMaterials", "hdrIbl"]
+  },
+  {
+    id: "material-spheres",
+    name: "Material Spheres",
+    localPath: "fixtures/workflow-assets/assets/material-spheres/material-spheres.glb",
+    role: "standard-material-comparison",
+    license: "local-fixture-corpus",
+    expectedFeatures: ["materialGrid", "roughnessVariation", "metallicVariation", "hdrIbl"]
+  },
+  {
+    id: "variant-product",
+    name: "Variant Product",
+    localPath: "fixtures/workflow-assets/assets/variant-product/variant-product.glb",
+    role: "additional-product-variant",
+    license: "local-fixture-corpus",
+    expectedFeatures: ["productVariant", "multiMaterialProduct", "pbrMaterials", "hdrIbl"]
+  },
+  {
+    id: "transmission-material-sample",
+    name: "Transmission Material Sample",
+    localPath: "fixtures/threejs-parity/assets/materials/compare-transmission.glb",
+    role: "additional-transmission-material",
+    license: "local-fixture-corpus",
+    expectedFeatures: ["transmission", "glassMaterial", "materialComparison", "hdrIbl"]
+  },
+  {
+    id: "animated-colors-cube",
+    name: "Animated Colors Cube",
+    localPath: "fixtures/three-compat/assets/corpus/animated-colors-cube.glb",
+    role: "standard-animation-asset",
+    license: "local-fixture-corpus",
+    expectedFeatures: ["animationClip", "vertexColors", "starterAsset", "hdrIbl"]
+  },
+  {
+    id: "cesium-man",
+    name: "Cesium Man",
+    localPath: "fixtures/three-compat/assets/corpus/cesium-man.glb",
+    role: "additional-character-animation",
+    license: "local-fixture-corpus",
+    expectedFeatures: ["skinning", "animationClip", "characterAsset", "hdrIbl"]
   },
   {
     id: "lantern",

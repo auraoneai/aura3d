@@ -137,7 +137,7 @@ The gallery cannot reach `10/10` if these are handled as route cosmetics.
 | --- | --- | --- |
 | P0 | Product material artifacts: watch white strip, car edge/halo/specular artifacts, glass/transmission sorting. | Fix material import/binding if engine-side; otherwise route-side corrections must document source asset/material limitations. |
 | P0 | Slow authored GLB first visible frame and poor frame cadence on heavy routes. | Cache decoders/assets, reduce re-render/readback churn, split load state from accepted runtime stats. |
-| P0 | Animated/skinned asset material fidelity, including Kira-style white/default material failures. | Align skinned textured path with normal textured PBR path or exclude failing assets from accepted demos. |
+| P0 | Animated/skinned asset material fidelity, including default-material failures on character assets. | Align skinned textured path with normal textured PBR path or exclude failing assets from accepted demos. |
 | P1 | Reactor/postprocess noise and cost. | Rework effect stack and scene lighting so postprocess is demonstrably additive and performant. |
 | P1 | Fog/cathedral crop and non-volumetric approximation. | Reframe/rebuild authored environment or keep the route unaccepted until the screenshot and audit evidence support it. |
 | P1 | Water/ocean shader quality. | Implement best procedural material possible and keep native GPGPU/WebGPU gaps explicit. |

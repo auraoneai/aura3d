@@ -636,7 +636,7 @@ function isLegacySurfacePath(path: string): boolean {
 
 function routeImpliesMotion(route: CurrentRootRouteLink): boolean {
   const text = `${route.path} ${route.label}`.toLowerCase();
-  return /animation|keyframes|skinning|ik|walk|morph|additive|blending|multiple|soldier|tokyo|quantum-stage|astral-garden|robot-parade|kira/.test(text);
+  return /animation|keyframes|skinning|walk|morph|additive|blending|multiple|soldier|tokyo|robot-expressive|cesium-man/.test(text);
 }
 
 function slugifyRoutePath(path: string): string {
@@ -645,6 +645,7 @@ function slugifyRoutePath(path: string): string {
 }
 
 function routeBudgetForPath(path: string): number {
+  if (path.startsWith("/apps/advanced-examples-gallery/")) return Number(process.env.A3D_ROUTE_HEALTH_ADVANCED_GALLERY_ROUTE_BUDGET_MS ?? 30_000);
   return CURRENT_ROUTE_BUDGET_MS;
 }
 

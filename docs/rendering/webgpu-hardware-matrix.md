@@ -7,7 +7,7 @@ This page records how WebGPU evidence should be interpreted.
 ## Current Evidence Sources
 
 - WebGPU implementation: `packages/rendering/src/WebGPUDevice.ts`
-- WebGPU route apps: `apps/webgpu-rtt/`, `apps/webgpu-compute/`, `apps/webgpu-materials/`, `apps/webgpu-instance-uniform/`, `apps/webgpu-lab/`
+- WebGPU implementation and template surfaces: `packages/rendering/src/WebGPUDevice.ts`, `packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`, and `packages/create-aura3d/templates/production-webgpu-starter/`
 - Browser tests: `tests/browser/production-runtime-webgpu-capability.spec.ts`, `tests/browser/rendering-webgpu.spec.ts`, `tests/browser/webgpu-real-device.spec.ts`
 - Report target used by release tooling: `tests/reports/webgpu-hardware-matrix.json`
 
@@ -18,7 +18,7 @@ This page records how WebGPU evidence should be interpreted.
 - A report with `navigator.gpu` unavailable proves fallback diagnostics for that browser/environment.
 - `tests/browser/webgpu-real-device.spec.ts` uses `navigator.gpu` directly and records browser user agent plus operating system platform and release.
 - A report with adapter/device availability proves WebGPU can be requested in that local browser/environment. They do not prove hardware support outside the recorded environment.
-- Route screenshots prove the named route behavior only.
+- Route screenshots prove the named current registry route behavior only. WebGPU package/template evidence is separate from the current root example registry.
 
 ## Not Supported
 

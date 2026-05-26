@@ -8,7 +8,7 @@ import "./styles.css";
 // ─────────────────────────────────────────────────────────────
 
 const DEMO_BASE = (window as unknown as { DEMO_BASE?: string }).DEMO_BASE
-  ?? "http://127.0.0.1:5180/apps/advanced-examples-gallery/";
+  ?? "http://127.0.0.1:5181/apps/advanced-examples-gallery/";
 
 const loadObserver = new IntersectionObserver((entries) => {
   for (const entry of entries) {

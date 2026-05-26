@@ -228,61 +228,6 @@ describe("CurrentRoutes GLTF animation runtime", () => {
     }
   });
 
-  it("diagnoses Kira animation, skinning, texture, and static mesh limitations", async () => {
-    expect(readGlbJson("fixtures/threejs-parity/assets/showcase/kira-ik-room.glb").animations ?? []).toEqual([]);
-    const kira = await new GLTFLoader().load({
-      url: toGlbDataUri("fixtures/threejs-parity/assets/showcase/kira-ik-room-animated.glb"),
-      type: "gltf"
-    }, new LoadContext());
-    const scene = kira.createScene();
-    const runtime = createGLTFSceneAnimationRuntime({
-      scene,
-      clips: kira.animations,
-      asset: kira
-    });
-    const clip = kira.animations.find((candidate) => candidate.name === "Kira_Attention_Reach");
-
-    expect(clip).toBeDefined();
-    expect(kira.skins[0]?.name).toBe("Kira");
-    expect(runtime.snapshot().skinningBindingCount).toBe(3);
-    expect(runtime.inspectClipBindings("Kira_Attention_Reach")[0]).toMatchObject({
-      clipName: "Kira_Attention_Reach",
-      trackCount: 70,
-      boundTrackCount: 70,
-      missingTargetCount: 0,
-      unsupportedTrackCount: 0,
-      skinningBindingCount: 3,
-      animatesSkeleton: true
-    });
-
-    const sample = runtime.applyClip(clip!, 0.35);
-    expect(sample.tracksApplied).toBeGreaterThan(0);
-    expect(sample.skinningPalettesUpdated).toBe(3);
-    expect(sample.missingTargets).toEqual([]);
-
-    const resources = await createGLTFRenderResources(kira, { imageDecoder: decodeDiagnosticTexture });
-    try {
-      const diagnostics = createGLTFRenderResourceDiagnostics(resources, {
-        label: "kira-ik-room-animated",
-        suspectStaticNodePattern: /^Kira_/i
-      });
-
-      expect(diagnostics.skinnedDrawItems).toBe(3);
-      expect(diagnostics.texturedSkinnedDrawItems).toBe(3);
-      expect(diagnostics.missingGeometryDrawItems).toBe(0);
-      expect(diagnostics.missingMaterialDrawItems).toBe(0);
-      expect(diagnostics.missingGeometryLabels).toEqual([]);
-      expect(diagnostics.missingMaterialLabels).toEqual([]);
-      expect(diagnostics.fallbackWhiteLabels).toEqual(["boule:Sphere.003"]);
-      expect(diagnostics.suspectStaticLabels).toEqual([
-        "Kira_Feet:Kira_Feet.002",
-        "Kira_Pants_B:Kira_Pants_B.001",
-        "Kira_Shirt_right:Kira_Shirt.001"
-      ]);
-    } finally {
-      resources.dispose();
-    }
-  }, 20000);
 });
 
 async function loadAsset(id: string) {
@@ -302,23 +247,6 @@ function dataGltf(gltf: Record<string, unknown>): string {
 
 function bufferDataUri(bytes: Uint8Array): string {
   return `data:application/octet-stream;base64,${Buffer.from(bytes).toString("base64")}`;
-}
-
-function decodeDiagnosticTexture() {
-  return {
-    width: 1,
-    height: 1,
-    colorSpace: "srgb" as const,
-    data: new Uint8Array([180, 120, 90, 255])
-  };
-}
-
-function readGlbJson(localPath: string): { readonly animations?: readonly unknown[] } {
-  const bytes = readFileSync(localPath);
-  const magic = bytes.toString("utf8", 0, 4);
-  if (magic !== "glTF") throw new Error(`${localPath} is not a GLB file`);
-  const jsonLength = bytes.readUInt32LE(12);
-  return JSON.parse(bytes.toString("utf8", 20, 20 + jsonLength).trim()) as { readonly animations?: readonly unknown[] };
 }
 
 function firstSkinningPalette(scene: ReturnType<Awaited<ReturnType<typeof loadAsset>>["createScene"]>): readonly number[] {

@@ -12,10 +12,40 @@
 </head>
 <body>
 
+<!-- Brand mark symbol — referenced by <use> in nav + footer ─── -->
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;pointer-events:none">
+  <defs>
+    <symbol id="aura-mark" viewBox="0 0 32 32">
+      <defs>
+        <radialGradient id="aura-mark__orb" cx="34%" cy="30%" r="64%">
+          <stop offset="0%" stop-color="#F4FFF9"/>
+          <stop offset="24%" stop-color="#C7F5E5"/>
+          <stop offset="62%" stop-color="#5EEAD4"/>
+          <stop offset="100%" stop-color="#082E2A"/>
+        </radialGradient>
+      </defs>
+      <!-- aura ring · back half (above + behind the sphere) -->
+      <g transform="translate(16 16) rotate(-22)">
+        <path d="M -14 0 A 14 4.4 0 0 0 14 0" fill="none"
+              stroke="#C7F5E5" stroke-width="0.85" stroke-opacity="0.4" stroke-linecap="round"/>
+      </g>
+      <!-- sphere -->
+      <circle cx="16" cy="16" r="9" fill="url(#aura-mark__orb)"/>
+      <!-- specular hot-spot -->
+      <ellipse cx="13.2" cy="13.4" rx="2.4" ry="1.6" fill="#FFFFFF" fill-opacity="0.55" transform="rotate(-30 13.2 13.4)"/>
+      <!-- aura ring · front half (below + in front of sphere) -->
+      <g transform="translate(16 16) rotate(-22)">
+        <path d="M -14 0 A 14 4.4 0 0 1 14 0" fill="none"
+              stroke="#C7F5E5" stroke-width="0.95" stroke-opacity="0.95" stroke-linecap="round"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
 <header class="nav" id="nav">
   <a href="#" class="nav__brand">
-    <span class="nav__mark"></span>
-    <span>Aura3D</span>
+    <svg class="aura-mark" aria-hidden="true" focusable="false"><use href="#aura-mark"/></svg>
+    <span class="brand-word">Aura<span class="brand-word__dim">3D</span></span>
   </a>
   <nav class="nav__links">
     <a href="#capabilities">Engine</a>
@@ -29,18 +59,20 @@
 
   <!-- HERO ─────────────────────────────────────────── -->
   <section class="hero">
-    <div class="hero__head reveal">
-      <span class="eyebrow">Aura3D · Version 1.0</span>
-      <h1>Browser&nbsp;3D,<br>with the work done.</h1>
-      <p class="hero__lede">A production 3D engine and workflow SDK. Renderer, scene, assets, animation, physics, diagnostics — first&#8209;party, end to end, written in TypeScript.</p>
-      <div class="hero__actions">
-        <a href="#start" class="btn btn--primary">Get started <span class="btn__arrow">→</span></a>
-        <a href="#gallery" class="btn btn--ghost">See the proof</a>
+    <div class="hero__inner">
+      <div class="hero__copy reveal">
+        <span class="eyebrow">Aura3D · Version 1.0</span>
+        <h1>Browser&nbsp;3D,<br>with the work<br>done.</h1>
+        <p class="hero__lede">A production 3D engine and workflow SDK. Renderer, scene, assets, animation, physics, diagnostics — first&#8209;party, end to end, written in TypeScript.</p>
+        <div class="hero__actions">
+          <a href="#start" class="btn btn--primary">Get started <span class="btn__arrow">→</span></a>
+          <a href="#gallery" class="btn btn--ghost">See the proof</a>
+        </div>
       </div>
-    </div>
-    <div class="stage stage--wide stage--16x9 reveal" style="margin-top: clamp(48px, 6vw, 96px);">
-      <iframe data-demo="product-configurator" title="Physically based product configurator — live"></iframe>
-      <span class="stage__caption">Physically based product configurator · live</span>
+      <div class="stage hero__stage reveal">
+        <iframe data-url="http://127.0.0.1:5181/apps/wow-robot-expressive-rig/" title="Authored Robot Expressive Rig — live"></iframe>
+        <span class="stage__caption">Authored robot · animated rig · live</span>
+      </div>
     </div>
   </section>
 
@@ -62,8 +94,8 @@
     </header>
     <div class="cap__stage-wrap">
       <div class="stage stage--wide stage--16x9 reveal">
-        <iframe data-demo="reactor-post" title="Cinematic post-processing pipeline — live"></iframe>
-        <span class="stage__caption">Cinematic post-processing pipeline · live</span>
+        <iframe data-demo="product-configurator" title="Physically based product configurator — live"></iframe>
+        <span class="stage__caption">Physically based product configurator · live</span>
       </div>
     </div>
     <div class="cap__details reveal">
@@ -128,7 +160,7 @@
     </header>
     <div class="cap__stage-wrap">
       <div class="stage stage--wide stage--16x9 reveal">
-        <iframe data-url="http://127.0.0.1:5180/apps/wow-tokyo-keyframes/" title="Littlest Tokyo animated glTF scene — live"></iframe>
+        <iframe data-url="http://127.0.0.1:5181/apps/wow-tokyo-keyframes/" title="Littlest Tokyo animated glTF scene — live"></iframe>
         <span class="stage__caption">Littlest Tokyo · authored glTF + animation · live</span>
       </div>
     </div>
@@ -192,7 +224,7 @@
     </div>
 
     <div class="gallery__foot reveal">
-      <a href="http://127.0.0.1:5180/apps/advanced-examples-gallery/" target="_blank" rel="noopener">Open the full gallery</a>
+      <a href="http://127.0.0.1:5181/apps/advanced-examples-gallery/" target="_blank" rel="noopener">Open the full gallery</a>
     </div>
   </section>
 
@@ -258,8 +290,8 @@
   <div class="foot">
     <div>
       <a href="#" class="foot__brand">
-        <span class="nav__mark"></span>
-        <span>Aura3D</span>
+        <svg class="aura-mark aura-mark--sm" aria-hidden="true" focusable="false"><use href="#aura-mark"/></svg>
+        <span class="brand-word">Aura<span class="brand-word__dim">3D</span></span>
       </a>
       <p class="foot__claim">A production browser 3D engine and workflow SDK. First-party packages for rendering, assets, animation, physics, diagnostics, and migration from Three.js.</p>
     </div>

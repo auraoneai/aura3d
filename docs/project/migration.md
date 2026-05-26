@@ -8,8 +8,8 @@ Migration support lives primarily in:
 
 - `packages/three-compat/src/index.ts`
 - `packages/three-compat/src/migration/`
-- `apps/three-compat-threejs-migration-lab/`
-- `apps/threejs-parity-lab/`
+- `packages/create-aura3d/templates/three-compat-custom-threejs-migration/`
+- `packages/create-aura3d/templates/three-compat-asset-inspector/`
 - `tests/unit/three-compat/`
 - `tests/browser/three-compat-*.spec.ts`
 
