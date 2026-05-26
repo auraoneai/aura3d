@@ -239,6 +239,19 @@ Use these mappings consistently. Do not use a blind global search/replace where 
 
 Compatibility aliases may be used inside intermediate migration commits to keep tests passing, but the final state for this objective requires removing those legacy aliases before completion.
 
+### Scope, Brand Asset, And Collision Decisions
+
+- npm package names and import specifiers must use `@aura3d/*`. Do not introduce `@a3d/*` as an npm scope unless a registry decision explicitly creates it.
+- `@g3d/*` import specifiers are legacy package scope references, not canonical shader/test marker namespaces. Rewrite them to `@aura3d/*` or externalize the historical file that contains them.
+- Keep `@a3d-*` only for intentionally non-npm marker namespaces such as shader/test markers where the `@g3d-*` family already existed.
+- Human-facing copy, page titles, social cards, legal notices, and product metadata use `Aura3D`.
+- Public TypeScript short symbols use `A3D`.
+- Runtime ids, schemas, globals, CSS prefixes, DOM ids, telemetry values, and machine-readable report ids use `a3d` unless a human-facing field needs `Aura3D`.
+- Benchmark engine ids should use one canonical value, preferably `aura3d`; do not mix `aura3d` and `a3d` as competing engine ids.
+- Before any source edit, create a machine-readable rename ledger outside the final audited tree that lists canonical old-to-new identifiers, package names, paths, env vars, schemas, public symbols, globals, and generated artifact stems. Use it as the source of truth for codemods, structured JSON updates, and final evidence.
+- Before path renames, run a case-normalized path collision audit. On case-insensitive filesystems, detect collisions such as `g3d` vs `G3D`, `Aura3D` vs `A3D`, and case-only filename changes before `git mv` so Git history and local checkout behavior remain sane.
+- Inventory brand assets before public metadata edits: logos, favicons, app icons, splash images, social card images, generated thumbnails, docs screenshots, SVG ids/classes/titles/descriptions, and binary design assets. Define the final logo/icon/social-preview filenames and visible alt/title text before regeneration.
+
 ## Direct Filesystem Renames
 
 These are source/control paths that should be renamed with `git mv` or equivalent so history is preserved.
@@ -371,6 +384,13 @@ Generated source/declaration maps need special handling. Do not treat old names 
   - `pnpm-workspace.yaml` must be audited with the same strictness as package manifests. If package globs or workspace aliases change during the directory rename, update them before regenerating the lockfile.
   - If `.npmrc`, `.yarnrc*`, `.pnp.*`, `package-lock.json`, `npm-shrinkwrap.json`, or `yarn.lock` appear during the migration, include them in the same manifest/lockfile gate rather than treating them as unrelated generated files.
   - After package and directory renames, run the package manager from a clean state so `pnpm-lock.yaml` records `packages/create-aura3d` links and `@aura3d/*` package keys only.
+- Package-manager and toolchain policy:
+  - Pin the root `packageManager` field, for example `pnpm@<exact-version>`, and document Corepack usage before regenerating `pnpm-lock.yaml`.
+  - Use one package manager for the release branch. Do not leave `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `.pnp.*`, or Bun lockfiles unless the release policy intentionally adopts that manager.
+  - Decide `engines`/Node support policy before publish so renamed packages do not install under unsupported runtimes.
+  - Treat `pnpm-workspace.yaml` as an explicit topology decision. If templates, benchmarks, or release-artifact manifests remain standalone packages, document that they are not workspace packages; if they become workspace packages, add globs deliberately and regenerate the lockfile.
+  - Verify every renamed `workspace:*` dependency key corresponds to an actual renamed workspace package.
+  - Run `pnpm install --lockfile-only` to regenerate the lockfile, then `pnpm install --frozen-lockfile` to prove the committed lockfile is reproducible with the pinned package manager.
 - Root scripts:
   - `G3D_DISABLE_SYSTEM_WEBGPU_BROWSER` -> `A3D_DISABLE_SYSTEM_WEBGPU_BROWSER`.
   - `G3D_ADVANCED_GALLERY_EVIDENCE_MODE` -> `A3D_ADVANCED_GALLERY_EVIDENCE_MODE`.
@@ -451,7 +471,29 @@ This is intentionally separate from tracked source changes. Broad repo scans exc
 - [ ] Check branches, tags, worktree paths, and submodule metadata before the final publish run; repository text scans do not cover these Git states.
 - [ ] Confirm GitHub Actions secrets, package publish tokens, Codecov project slugs, Pages settings, and release automation target the Aura3D repository before publishing renamed packages.
 
+### Public URL, Redirect, And External Service Plan
+
+- Decide the redirect policy for old docs, demos, package pages, Pages routes, and custom domains before deployment: hard redirect, deprecation page, or removal.
+- Inventory inbound public URLs: GitHub Pages, custom demo domains, README links, package `homepage`/`repository`/`bugs` links, release notes, badges, docs deep links, examples route URLs, support/security links, CDN URLs, and social preview URLs.
+- Add a link-check gate for active docs/site pages after rename. It must verify HTTP status, canonical target, final URL text, and redirect destination text contain only Aura3D/A3D naming.
+- Treat stale public caches as launch work: GitHub Pages caches, npm package pages, social preview caches, search snippets, Codecov badges, docs deploy caches, CDN assets, and GitHub release assets.
+- External service settings are not discoverable from repository text. Manually rename or recreate GitHub Actions secrets/variables, Pages settings, Codecov project/flags, npm provenance settings, analytics dashboards, Sentry/DataDog/OpenTelemetry service names, status-page labels, and release automation settings.
+- Update support/security surfaces together: `docs/project/support-policy.md`, `docs/project/security-policy.md`, issue templates, README support sections, package `bugs.url`, GitHub Security settings docs, vulnerability reporting instructions, support email/domain references, and Discussions links.
+- Do not publish packages, tags, release notes, or deploy public sites from a mixed-identity state. Treat old remotes, old secrets, or old external service slugs as release blockers.
+
 ## Package Scope And Public API Work
+
+### Publish Topology, Compatibility, And Consumer Migration Policy
+
+- Decide publish topology before manifest edits: root aggregate package only, every `packages/*` workspace package, selected packages only, or a staged combination. The package list below does not by itself mean every package is public.
+- For each publishable package, define package-local `files`/`.npmignore` behavior. Root `.npmignore` does not control workspace package publishes.
+- For each publishable package, verify `main`, `module`, `types`, `bin`, `exports`, `imports`, and `typesVersions` targets exist after build both in the repo and inside the packed tarball.
+- Decide whether `./package.json` is exported for each package. Removing package metadata access can be a breaking change independent of the rename.
+- Treat removal of `@galileo3d/*`, `create-g3d`, `G3D*`, old globals, and old env vars as a breaking consumer change. Decide semver policy before publish: major release if post-1.0, or an explicit pre-1.0 breaking rename notice if still alpha.
+- Old packages should be deprecated with exact migration messages or intentionally left untouched; do not republish old package names from renamed Aura3D source.
+- A migration codemod necessarily contains old strings and conflicts with the strict zero-legacy final gate. If a codemod ships, host it outside this strict-clean repository or generate its old-name fixtures outside the tracked final tree. If no codemod ships, publish a migration guide and do not leave codemod stubs/tests in tree.
+- Add a consumer migration guide covering install command replacements, import path replacements including subpaths, public symbol replacements from `G3D*` to `A3D*`, CLI command replacements, editor/project schema migration notes, and the removed compatibility alias list.
+- Add a temp-consumer validation matrix outside the monorepo. Install packed Aura3D tarballs into a fresh project and verify ESM import, Node import, TypeScript resolution, Vite build, package subpath imports, and create-tool execution against packed artifacts rather than workspace links.
 
 ### Package Manifests
 
@@ -504,6 +546,14 @@ For every manifest, inspect these JSON fields explicitly because they control in
 - Automation metadata: `scripts`, `config`, `engines`, `packageManager`, and any local tool-specific keys.
 
 Do not ship any compatibility package alias in the final state. Temporary aliases can exist only on intermediate commits and must be removed before the broad legacy gate.
+
+### Legal, License, And Copyright Notices
+
+- Audit `LICENSE`, `NOTICE`, package license headers, generated file banners, source-map banners, docs footers, website footers, package README legal copy, release archive notices, and generated API docs.
+- Decide whether copyright holder text changes from the old product brand to Aura3D or remains a legal entity/person. Do not blindly replace legal owner names when they are not product branding.
+- Keep SPDX identifiers valid and unchanged unless the license itself changes.
+- Audit third-party asset/license manifests so upstream license names and trademarks are preserved accurately while project-generated provenance strings move to Aura3D.
+- Add a legal review checkpoint for old package deprecation messages, migration wording, trademark availability, domain/repo/npm scope usage, logo usage, and public claim language.
 
 Subpath import/export inventory from the third pass:
 
@@ -561,6 +611,8 @@ Required symbol families:
 | `G3DDiagnosticsPanel` | `A3DDiagnosticsPanel` |
 | `isG3DApp` | `isA3DApp` |
 
+`packages/apps/src/index.ts` is a first-class public API owner, not just an implementation detail. Rename `G3DAppQualityPreset`, `G3DAppWorkflowPreset`, `G3DAppQualitySettings`, `G3DAppOptions`, `G3DAppRendererLike`, `G3DAppDiagnostics`, `G3DApp`, `G3D_APP_WORKFLOW_PRESETS`, `resolveG3DAppQualityPreset`, and `createG3DApp` in lockstep with engine re-exports and imports.
+
 Runtime values in these files:
 
 - `g3d-diagnostics-panel` -> `a3d-diagnostics-panel`.
@@ -580,6 +632,16 @@ Third-pass public/runtime symbol families that must also be covered:
 - Scene/asset/render helper types: `G3DVec3`, `G3DGltfScene`, `G3DGltfSceneOptions`, `G3DGltfRendererInputOptions`, `G3DGLTFLoader`, `G3DGroundedStage*`, `G3DCameraFrame*`, `G3DEnvironment*`, `G3DHdrEnvironment*`, `G3DNavigationControls*`, and `G3DOrbitControls*` -> `A3D*`.
 - Render helper functions: `renderG3D`, `renderG3DTexturedParallaxTransmission`, `renderG3DFlagshipViewer`, `actualG3DRenderer`, `createG3DItems`, `createG3DStageItems`, `createG3DLights`, and `createG3DScene` -> `renderA3D*`, `actualA3DRenderer`, and `createA3D*`.
 - Negative/assertion identifiers such as `noG3DRuntimeThreeImport` must also be renamed; do not leave old terms in test names or assertion names.
+
+### Product Studio Public Serialization
+
+Product Studio schema strings are public data contracts, not incidental report labels. Rename and test them as serialized API:
+
+- `packages/product-studio/src/ProductAssetLoader.ts`: `g3d-product-manifest/fallback` -> `a3d-product-manifest/fallback`.
+- `packages/product-studio/src/ProductShowcaseLayout.ts`: `g3d-product-showcase-layout/v1` -> `a3d-product-showcase-layout/v1`.
+- `packages/product-studio/src/ProductTypes.ts`: `g3d-product-studio-scene/v1` -> `a3d-product-studio-scene/v1`.
+- `packages/product-studio/src/ProductExport.ts`: `g3d-product-studio-scene/v1` -> `a3d-product-studio-scene/v1`.
+- Add serialization tests that newly exported product scenes/manifests contain only `a3d`/`aura3d` ids.
 
 ### Rendering, Shader, And GPU Identifiers
 
@@ -729,6 +791,9 @@ Required renames:
 - `migrateThreeToG3D` -> `migrateThreeToA3D`.
 - `V5MigrationResult` can remain if it is version-oriented, but any G3D fields inside it must become A3D fields.
 - Documentation/examples should describe migrating Three.js code to Aura3D/A3D.
+- `packages/three-compat/src/migration/ImportMap.ts` target values must move from `@galileo3d/three-compat*` to `@aura3d/three-compat`, `@aura3d/three-compat/controls`, `@aura3d/three-compat/loaders`, and `@aura3d/three-compat/postprocessing`.
+- Compatibility warning text such as "mapped to G3D controls" must become A3D/Aura3D wording.
+- Migrator tests must prove transformed Three.js code imports only `@aura3d/*` package specifiers.
 
 ## Create Tool And Template Work
 
@@ -755,6 +820,9 @@ Required renames:
 - Package name `@galileo3d/create-g3d` -> `@aura3d/create-aura3d`.
 - Bin `create-g3d` -> `create-aura3d`.
 - Preserve the CLI shebang and executable behavior while changing the bin name. Verify generated `dist/cli.js`, package `bin`, `npm create aura3d@latest`, `npm exec create-aura3d`, `npx create-aura3d`, `pnpm create aura3d`, and `pnpm dlx create-aura3d` examples/tests all agree.
+- Verify the final invocation matrix explicitly: `npm create aura3d@latest`, `npm exec create-aura3d@latest`, `npx create-aura3d@latest`, `pnpm create aura3d`, `pnpm dlx create-aura3d`, and direct `create-aura3d`.
+- Confirm `npm create aura3d` resolves to the intended `create-aura3d` package naming convention before publishing. If it cannot, adjust docs and package naming before release.
+- Final source must not ship a `create-g3d` bin alias. If a transition package or deprecated old bin exists, it must live outside this strict-clean repository and be documented in the migration/deprecation plan.
 - Root package export `./create-g3d` -> `./create-aura3d`.
 - `CreateG3DTemplate` -> `CreateA3DTemplate`.
 - `CreateG3DProjectOptions` -> `CreateA3DProjectOptions`.
@@ -862,6 +930,14 @@ Required actions:
 - Update route registry HTML such as root `index.html`, `examples/index.html`, and tool route pages so browser tests, Playwright locators, and screenshot names use the new ids consistently.
 - Treat HTML generated by the create tool or release demos as generated output. Update source templates first, regenerate, then scan the generated HTML.
 
+### Website, SEO, And Social Metadata
+
+- Audit every public HTML entrypoint for `<title>`, `<meta name="description">`, `<meta name="keywords">`, `<meta name="author">`, canonical URLs, `robots`, `theme-color`, web app manifest links, favicon links, Apple touch icons, and structured data.
+- Add or update Open Graph and Twitter card metadata on public site/demo pages: `og:title`, `og:description`, `og:site_name`, `og:url`, `og:image`, `og:image:alt`, `twitter:card`, `twitter:title`, `twitter:description`, `twitter:image`, and `twitter:image:alt`.
+- Update or create `robots.txt`, `sitemap.xml`, `site.webmanifest`, `manifest.webmanifest`, `CNAME`, `404.html`, redirect pages, RSS/feed files, and canonical route mappings if the public site moves from old GitHub Pages or custom domains.
+- Verify social card image filenames, embedded metadata, dimensions, cache-busting/versioning, public URLs, and alt text use Aura3D/A3D only.
+- Validate deployed page source, not just source files, after build/deploy so generated metadata cannot keep old names.
+
 ### Editor App And Saved Project Contracts
 
 Files:
@@ -939,6 +1015,8 @@ Required renames:
 - App evidence/proof copy `G3D can ...` -> `A3D can ...`.
 
 Final tests should inspect only new Aura3D/A3D globals. Temporary dual writes may be useful, but the old writes must be removed before final completion.
+
+Maintain a single pre-rename inventory of all `declare global interface Window` additions, `window.__*` assignments, Playwright `waitForFunction` calls, and `page.evaluate` references. Final tests should fail if any `Window` augmentation, assignment, selector, or route-specific harness still contains `GALILEO3D`, `G3D`, `galileo`, or `g3d`.
 
 ### App Import Specifiers
 
@@ -1055,6 +1133,9 @@ Primary tool groups:
 Required renames:
 
 - Package imports and generated package references.
+- `tools/api-docs/index.ts` must render Aura3D titles/prose and regenerated public API docs.
+- `tools/verify-exports/index.ts` must parse `@aura3d/` package scopes instead of deriving package short names from the old scope.
+- Verify root export short-name generation still works after package scope rename.
 - Tool output schemas from `g3d-*` to `a3d-*`.
 - Report reader/writer paths from `g3d-*` to `a3d-*`.
 - Env var names from `G3D_*` to `A3D_*`.
@@ -1090,6 +1171,17 @@ The raw `g3d-*` token inventory is too broad to manage manually; use automated s
 - Screenshot/report artifact stems: `g3d-templates.*`, `g3d-cubemap-pmrem-atlas.png`, `g3d-transmission-pmrem.png`, `g3d-textured-*`, `g3d-hdr-skybox.png`, `g3d-pmrem-*`, `g3d-loader-material-extensions.png`, `g3d-flagship-viewer.png`, and every route screenshot stem beginning with `g3d-`.
 
 Do not rely on this list as exhaustive. The final raw gates remain authoritative.
+
+### Serialized Contract Migration Matrix
+
+Inventory every runtime-loaded JSON contract, not just generated reports. Search code paths that use `JSON.parse`, `JSON.stringify`, `schema`, `schemaVersion`, `toJSON`, and `fromJSON`, then classify each contract as one of:
+
+- Rename only.
+- Schema id bump.
+- One-time migrator.
+- Externalize historical data outside the strict final tree.
+
+The matrix must include editor projects, prefabs, product scenes, product manifests, asset manifests, environment manifests, workflow reports, static export manifests, visual parity reports, package smoke reports, release handoff manifests, and generated docs manifests. Old schema ids may be accepted only inside a dedicated migration tool during implementation; final runtime validators should reject or omit old schema ids if the zero-legacy gate remains strict.
 
 ### Docs
 
@@ -1133,6 +1225,29 @@ Required renames:
 - Roadmap, claim, comparison, and evidence docs must be updated to the latest completed work and latest known gaps. Do not keep old V2/V3/V4/V5/V6/V7/V8/V9/V10 status language if the current codebase has moved beyond it, unless the file is intentionally archived outside the strict final gate.
 - If documentation is intentionally retained as historical record, place it outside the repository or under a clearly excluded external archive. Keeping old names in tracked Markdown means the final broad, raw, and Markdown-specific gates cannot pass.
 
+### Package README And Registry Presentation
+
+- Treat every `packages/*/README.md`, template README, app/example README, and the root README as package-discovery surfaces, not just Markdown rename surfaces.
+- For each publishable package, verify README title, first paragraph, install command, import examples, badges, support/security links, license text, repository links, changelog links, screenshots, and alt text match the final npm package name.
+- Run `npm pack --dry-run` or equivalent and inspect the README bundled into each tarball, because npm renders the packed README.
+- Verify npm package page metadata from `package.json` plus README: `description`, `keywords`, `homepage`, `repository`, `bugs`, `funding`, `author`, `license`, `bin`, and old-package deprecation guidance.
+
+### Badges, Changelog, And Release Notes
+
+- Update badge URLs, labels, alt text, query params, branch names, workflow names, package names, Codecov flags, npm version badges, license badges, docs/deploy badges, and GitHub Actions badge paths.
+- Verify badges render after repo/workflow/package rename; broken root README or package README badges are launch blockers.
+- Update any shields.io static label text such as `G3D`, `Galileo3D`, old repo slug, old npm scope, old branch, or old docs URL.
+- Decide whether `CHANGELOG.md` is rewritten as Aura3D-only, split into an archived pre-rename history outside the strict repo, or summarized with sanitized migration language.
+- Update release note templates, generated GitHub release bodies, changelog links, compare links, old tag names, old package names, install snippets, and artifact filenames.
+- Add a launch changelog entry for the rename itself: new package names, CLI command changes, repo URL changes, old package deprecation status, migration steps, and support path.
+
+### Screenshot And Media Metadata
+
+- Rename screenshot filenames, captions, Markdown image alt text, HTML `alt`, `title`, `aria-label`, `figcaption`, gallery labels, visual report titles, and screenshot manifest display names together.
+- Inspect PNG/JPEG/WebP metadata chunks where tooling writes title, author, comment, or software fields; regenerate generated screenshots rather than binary-patching them.
+- Update visual-regression baselines and report viewers so old screenshot names do not remain as expected artifact stems.
+- Add a gate that scans Markdown image syntax and HTML image/media tags for old brand text in path, alt, title, caption, and surrounding copy.
+
 Docs pass order:
 
 - [ ] Enumerate all Markdown files with `find . ... -name '*.md' -o -name '*.mdx'`.
@@ -1161,6 +1276,9 @@ Generated artifacts dominate the legacy count. Do not rely on source renames alo
 - Source maps containing old source paths
 - `pnpm-lock.yaml`
 - Any package-local `node_modules` or symlinked dependency tree
+- Generated data/report formats such as `*.csv`, `*.tsv`, `*.ndjson`, `*.log`, `*.txt`, and machine-readable report manifests.
+
+Build scripts must clean stale output before regeneration. Do not rely on TypeScript, Vite, or bundlers to remove old `dist/**` files automatically; stale files can survive a successful build and still ship in package tarballs.
 
 Explicit generated path inventory from the second pass:
 
@@ -1213,8 +1331,10 @@ Explicit generated path inventory from the second pass:
 - [ ] Commit or stash unrelated work before rename implementation starts.
 - [ ] Record current `git status --short`.
 - [ ] Run the broad inventory commands in this PRD and save outputs as local artifacts outside the repo.
+- [ ] Create the rename ledger outside the final audited tree and use it as the source of truth for path, package, public API, env var, schema, global, and generated-artifact renames.
 - [ ] Run an extension inventory and assign an owner/action for every extension that contains a legacy hit; do not assume only TypeScript and Markdown matter.
 - [ ] Create an implementation branch and keep the rename isolated from unrelated functional refactors.
+- [ ] Run a case-normalized path and package collision audit before file moves, especially on macOS/APFS case-insensitive checkouts.
 - [ ] Use `git mv` for tracked path renames. On case-insensitive filesystems, use a temporary intermediate path when needed so Git records the rename cleanly.
 - [ ] Treat generated output, lockfiles, and release bundles as regeneration targets rather than source files.
 - [ ] Use structured parsers for JSON, package manifests, lockfiles, glTF, and tarball metadata wherever practical.
@@ -1225,10 +1345,13 @@ Explicit generated path inventory from the second pass:
 - [ ] Decide the target GitHub repository slug and Pages URL before rewriting `G3D2025` references.
 - [ ] Decide whether local Git remotes/upstreams and GitHub project settings move immediately with this rename or in a coordinated release step; record the chosen order before publishing.
 - [ ] Decide npm registry ownership, package deprecation, dist-tag, provenance, and migration-package policy before the first Aura3D publish attempt.
+- [ ] Decide codemod policy before implementation. Codemods or old-name fixtures cannot remain in the final strict-clean tracked tree unless the zero-legacy policy changes.
 - [ ] Inventory every `*.md` and `*.mdx` file, including docs, package READMEs, app/example READMEs, template READMEs, fixture READMEs, and release-artifact Markdown reports.
 
 ### Phase 1: Root Identity And Package Scope
 
+- [ ] Decide publish topology and mark every package manifest as public package, internal workspace package, standalone sample/template package, or historical artifact.
+- [ ] Pin `packageManager`, confirm Corepack/pnpm version, and document the single package-manager policy.
 - [ ] Rename root package name to `@aura3d/engine`.
 - [ ] Rename every workspace package manifest to `@aura3d/*`.
 - [ ] Rename `@galileo3d/create-g3d` to `@aura3d/create-aura3d`.
@@ -1239,6 +1362,8 @@ Explicit generated path inventory from the second pass:
 - [ ] Update `tsconfig.base.json`, `vite.config.ts`, `vitest.config.ts`, `eslint.config.js`, `playwright.config.ts`.
 - [ ] Update root `package.json` exports/files/scripts.
 - [ ] Regenerate `pnpm-lock.yaml` and verify old workspace link keys such as `packages/create-g3d` are gone.
+- [ ] Run `pnpm install --frozen-lockfile` after lockfile regeneration to prove the committed lockfile is reproducible.
+- [ ] Validate `workspace:*` dependency integrity after every package rename.
 - [ ] Run package/import gate.
 
 ### Phase 2: Source Path Renames
@@ -1265,12 +1390,16 @@ Explicit generated path inventory from the second pass:
 
 ### Phase 3: Public API Symbol Rename
 
+- [ ] Prefer TypeScript-aware codemods or compiler/AST tooling for imports, exports, public symbols, and declaration-facing identifiers; use regex only for controlled text surfaces.
 - [ ] Rename all `G3D*` public symbols to `A3D*`.
 - [ ] Rename all `createG3D*` public functions to `createA3D*`.
 - [ ] Rename all `CreateG3D*` public types to `CreateA3D*`.
 - [ ] Rename all `migrateThreeToG3D` APIs to `migrateThreeToA3D`.
+- [ ] Update `tools/api-docs/index.ts` and `tools/verify-exports/index.ts` for Aura3D scope/title assumptions.
 - [ ] Update docs/api generated public API reference.
+- [ ] Generate an export inventory from root `package.json` and package manifests so every documented import corresponds to an actual export and every export is documented or intentionally internal.
 - [ ] Update public API tests.
+- [ ] Compare public exports before/after and ensure every renamed `G3D*` export has exactly one `A3D*` replacement with no accidental dropped exports.
 - [ ] Remove temporary old symbol aliases before final gate.
 
 ### Phase 4: Runtime IDs, Schemas, Shaders, And Asset Contracts
@@ -1325,6 +1454,8 @@ Explicit generated path inventory from the second pass:
 - [ ] Update master-gate evidence tests that reference old release artifact filenames.
 - [ ] Update `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `FinalPRD.md`, `execute.md`, `prompt.md`, all active `docs/**`, and every package/app/example/template Markdown file.
 - [ ] Update Markdown URLs, badges, install snippets, package import snippets, claim language, and evidence paths; externalize historical Markdown that must preserve old wording.
+- [ ] Update website SEO/social metadata, public URL redirects, badges, support/security links, changelog/release-note templates, and deployed page metadata.
+- [ ] Confirm GitHub repo settings, Pages settings, Actions secrets/variables, Codecov/project integrations, npm provenance, analytics/observability service names, and status/support surfaces point at Aura3D.
 - [ ] Decide and execute archive handling for historical `docs/project/**` and `release-artifacts/**`.
 - [ ] Regenerate or rewrite generated naming-taxonomy reports that still preserve old alias decisions.
 - [ ] Update docs generation tests and generated API docs.
@@ -1342,6 +1473,8 @@ Explicit generated path inventory from the second pass:
 - [ ] Rebuild or remove external demo bundles and source maps.
 - [ ] Inspect rebuilt tarballs for both filename and internal package metadata.
 - [ ] Run `npm pack --dry-run --json` and inspect the packed file list before any publish step.
+- [ ] Run package-local `npm pack --dry-run --json` for every publishable package, especially `packages/create-aura3d`.
+- [ ] Run a temp-consumer smoke test from packed tarballs for Node import, ESM import, TypeScript resolution, Vite build, package subpath imports, and create-tool execution.
 - [ ] Run tracked-only, archive/checksum, and Git remote config gates in addition to the broad whole-worktree gates.
 - [ ] Run absolute path, environment/repo slug, static non-TS text, component/vector/shader source, binary asset/cache, package-manager metadata, and raw text/binary-aware gates after generated reports are regenerated.
 - [ ] Remove `.DS_Store`, `__pycache__/**/*.pyc`, stale `test-results/**` files, and package-local `node_modules` artifacts from the final audited tree unless intentionally untracked and ignored.
@@ -1466,6 +1599,32 @@ find . \( -path './.git' -o -path './node_modules' -o -path './*/node_modules' \
   -o -name '*create-g3d*' -o -name '*.g3d*' \) -print
 ```
 
+### Path Collision Gate
+
+Expected final result: no output. Run before and after filesystem renames to catch case-only or normalized path collisions that are easy to miss on macOS/APFS.
+
+```bash
+node - <<'NODE'
+const { execSync } = require("node:child_process");
+const paths = execSync("git ls-files -z", { encoding: "utf8" }).split("\0").filter(Boolean);
+const seen = new Map();
+let failed = false;
+for (const p of paths) {
+  const key = p.normalize("NFC").toLowerCase();
+  const prior = seen.get(key);
+  if (prior && prior !== p) {
+    console.error(`${prior}\n${p}\n`);
+    failed = true;
+  } else {
+    seen.set(key, p);
+  }
+}
+process.exit(failed ? 1 : 0);
+NODE
+```
+
+Also check package names, binary names, export keys, schema ids, and generated artifact stems for collisions between `Aura3D`, `A3D`, `aura3d`, and `a3d`.
+
 ### Package And Import Gate
 
 Expected final result: zero lines.
@@ -1477,6 +1636,20 @@ rg --hidden --no-ignore -n -F \
   -e 'G3D2025' -e 'gchahal1982/G3D2025' \
   . -g '!**/.git/**' -g '!**/node_modules/**'
 ```
+
+### Public Declaration And API Surface Gate
+
+Expected final result: zero legacy lines in generated public declarations and API docs, plus no dropped public exports.
+
+```bash
+pnpm build
+rg -n -F \
+  -e 'G3D' -e 'g3d' -e 'Galileo' -e 'galileo' \
+  -e '@galileo3d' -e '@g3d' -e 'create-g3d' \
+  dist packages/*/dist docs/api/public-api.md
+```
+
+Generate a structured before/after export inventory from root `package.json`, package manifests, `packages/*/src/index.ts`, and generated `.d.ts` files. Every documented import must map to an actual `exports` entry, every `exports` entry must resolve to existing JS and `.d.ts` files, and every renamed `G3D*` public export must have exactly one `A3D*` replacement. Verify TypeScript resolution with `moduleResolution: node16`, `nodenext`, and `bundler` if those modes are supported by consumers.
 
 ### Environment And Repo Slug Gate
 
@@ -1543,6 +1716,15 @@ node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync("/tmp/aura3d
 tar -tzf "/tmp/$(node -e 'const fs=require("fs"); process.stdout.write(JSON.parse(fs.readFileSync("/tmp/aura3d-pack.json","utf8"))[0].filename)')" | rg -F -e galileo -e g3d -e G3D -e create-g3d
 ```
 
+Extend this gate beyond the root package:
+
+- Run from the repository root for the aggregate package.
+- Run from each publishable `packages/*` directory.
+- Run from `packages/create-aura3d` specifically and inspect the packed `bin` target for shebang, executable mode where preserved, and no old package/template names.
+- Run for any release handoff package that remains tracked.
+- For each packed tarball, inspect tarball filename, `package/package.json`, `name`, `bin`, `exports`, `main`, `types`, `files`, tar member paths, README contents, extracted text, and temp-consumer importability of every exported subpath.
+- If provenance is required, run `npm publish --dry-run --provenance` or the registry-approved equivalent before real publish.
+
 ### Registry And Release Management Gate
 
 Expected final result: every external release target is Aura3D/A3D, and old package names have an explicit migration/deprecation plan before any publish.
@@ -1550,10 +1732,11 @@ Expected final result: every external release target is Aura3D/A3D, and old pack
 Manual checklist:
 
 - [ ] Confirm npm organization/scope access for `@aura3d/*` and the create package name.
-- [ ] Confirm `publishConfig`, package access level, provenance/signature settings, and 2FA requirements match the Aura3D release policy.
+- [ ] Confirm `publishConfig`, scoped package `access: public` policy or CLI flags, package access level, provenance/signature settings, and 2FA requirements match the Aura3D release policy.
 - [ ] Confirm dist-tags such as `latest`, `next`, and any alpha/beta tags will be applied to Aura3D packages only.
+- [ ] Publish Aura3D packages first under `next` or an alpha tag, validate temp-consumer installs from the registry/tarballs, then promote to `latest`.
 - [ ] Confirm old `@galileo3d/*`, `@galileo3d/create-g3d`, `g3d`, or `create-g3d` packages are not accidentally republished from renamed code.
-- [ ] Decide whether old packages are deprecated with migration messages, kept as non-shipping stubs, or left untouched; record the decision before release.
+- [ ] Decide whether old packages are deprecated with exact migration messages, kept as non-shipping stubs, or left untouched; record the decision before release.
 - [ ] Confirm GitHub release names, release tags, changelog links, package provenance links, Codecov project/flags, Pages URL, CDN URLs, and docs deployment targets all use the chosen Aura3D slugs.
 - [ ] Confirm any migration script, codemod, or compatibility package uses Aura3D/A3D names and does not preserve old aliases in final shipping source.
 
@@ -1822,22 +2005,40 @@ A3D_DISABLE_SYSTEM_WEBGPU_BROWSER=true pnpm exec playwright test tests/browser/w
 pnpm exec playwright test tests/browser/v5-templates.spec.ts tests/browser/v6-templates.spec.ts tests/browser/v8-route-health.spec.ts tests/browser/v9-advanced-examples-gallery.spec.ts --reporter=line
 ```
 
+### Launch Readiness Gate
+
+- [ ] Public site deploy passes and deployed page source contains only Aura3D/A3D metadata.
+- [ ] Social previews render correct title, description, image, and alt text for root site, docs, demo/gallery pages, package pages, and release pages.
+- [ ] Root README and every published package README render correctly on GitHub and npm with working badges, links, screenshots, install commands, support links, and license display.
+- [ ] Old package deprecation or migration plan is published, staged, or explicitly deferred with owner approval.
+- [ ] GitHub repo settings, Pages settings, Actions badges, Codecov/project integrations, npm provenance, release tags, docs links, support/security policies, issue templates, and external observability labels all point to Aura3D identity.
+- [ ] Final link check, metadata check, per-package pack check, temp-consumer smoke check, deploy smoke check, and broad legacy scan are attached to the release evidence outside the final strict-clean tree.
+- [ ] No old-import negative tests or codemod fixtures remain in tracked final source. If old-import failure testing is required, generate those fixtures in `/tmp` during release validation or keep them in an external migration-test repository.
+
 ## Definition Of Done
 
 - [ ] The repository root has been renamed to Aura3D or all tracked references to the old root have been removed.
+- [ ] The rename ledger has been completed, used for implementation evidence, and removed or kept outside the final audited tree.
+- [ ] Path/package/export/bin collision audits pass on case-normalized names.
 - [ ] No tracked source path contains Galileo, Galileo3D, G3D, g3d, `@galileo3d`, `@g3d`, `.g3d`, or `create-g3d`.
 - [ ] No tracked file contents contain legacy terms under the broad gate.
 - [ ] `renamePRD.md` has been moved outside the repo, removed, or replaced by a sanitized completion artifact before the final strict scan.
 - [ ] Root hidden/config files, including `.gitignore`, `.github/**`, and `CHANGELOG.md`, have been migrated.
 - [ ] Package-manager workspace/config files, including `pnpm-workspace.yaml`, `.pnpmfile.cjs`, `.npmignore`, and any npm/yarn/pnp lock/config files that exist, contain only Aura3D/A3D identifiers.
+- [ ] The release branch has a pinned `packageManager`, single package-manager policy, reproducible frozen lockfile, and verified workspace dependency integrity.
 - [ ] Every tracked `*.md` and `*.mdx` file has been migrated, regenerated, sanitized, or moved outside the repository; no active docs, package READMEs, examples, templates, release runbooks, badges, URLs, or claim language retain old identifiers.
+- [ ] Public website metadata, SEO/social tags, redirects, support/security links, badges, changelog/release templates, and external service settings are Aura3D/A3D-only.
+- [ ] Legal/copyright/license surfaces have been reviewed so product branding changes do not corrupt legal owner names, SPDX identifiers, third-party attribution, or trademark-sensitive language.
 - [ ] Static non-TypeScript text files, including HTML, CSS, workflow YAML, Python/MJS/C#/shell fixtures, browser harnesses, tool pages, and external-engine scripts, have been migrated, regenerated, sanitized, or moved outside the repository.
 - [ ] Package scope is fully `@aura3d/*`.
 - [ ] Create package is fully `create-aura3d`/`@aura3d/create-aura3d`.
 - [ ] The create-tool CLI contract works under the renamed bin and package-manager entrypoints, including `npm create`, `npm exec`, `npx`, `pnpm create`, and `pnpm dlx` usage.
 - [ ] Package subpath exports and aliases are fully `@aura3d/*`, including engine/runtime/rendering/assets/workflows and three-compat subpaths.
 - [ ] No package manifest, template manifest, benchmark manifest, release handoff manifest, or extracted tarball manifest contains old package names.
+- [ ] Publish topology is decided and every publishable package passes package-local pack inspection.
+- [ ] A fresh temp-consumer project can install packed Aura3D artifacts and verify runtime imports, TypeScript resolution, Vite build, subpath imports, and create-tool execution.
 - [ ] Public symbols are fully `A3D*`.
+- [ ] Public declaration/API-surface gates pass, including generated `.d.ts`, docs/api output, export existence, and no dropped renamed exports.
 - [ ] No old compatibility aliases for `@galileo3d/*`, `create-g3d`, `G3D*`, or `g3d*` ship in final source.
 - [ ] Runtime globals are fully Aura3D/A3D.
 - [ ] Env vars are fully `A3D_*`.
@@ -1849,6 +2050,7 @@ pnpm exec playwright test tests/browser/v5-templates.spec.ts tests/browser/v6-te
 - [ ] Absolute local paths and placeholders no longer contain `/Users/gurbakshchahal/G3D` or `/absolute/path/to/G3D`.
 - [ ] Shader markers and shader helper names are fully Aura3D/A3D.
 - [ ] Schemas, report names, telemetry values, CSS classes, DOM ids, provenance ids, and screenshot names are fully `a3d-*`.
+- [ ] Every runtime-loaded serialized contract has a recorded final action: rename only, schema bump, one-time migrator, or externalized historical data.
 - [ ] Fixtures, asset corpora, and glTF metadata use Aura3D/A3D identifiers.
 - [ ] GLB JSON chunks, Blender source metadata, SVG metadata/ids/classes, image/texture metadata, and generated screenshots have been migrated, regenerated, replaced, or moved outside the final audited tree.
 - [ ] Asset generator scripts have been renamed before fixture regeneration, including Python/MJS helper names and generated material/generator metadata.
@@ -1860,6 +2062,7 @@ pnpm exec playwright test tests/browser/v5-templates.spec.ts tests/browser/v6-te
 - [ ] Generated outputs and reports have been removed or regenerated.
 - [ ] Source maps, declaration maps, declarations, and generated `dist/**` output have been rebuilt from renamed source and contain no old `sources`, `sourcesContent`, declaration paths, package names, or absolute paths.
 - [ ] Release artifacts, handoff patch files, and nested historical handoff bundles have been rebuilt, sanitized, or moved outside the tracked repository.
+- [ ] No codemod stubs, old-import negative tests, or old-name migration fixtures remain in the final tracked tree unless the zero-legacy policy has been explicitly changed.
 - [ ] Compressed archives and checksum sidecars have Aura3D/A3D filenames, member paths, extracted text, and regenerated hashes.
 - [ ] External demo bundles have been rebuilt or removed so minified bundle text contains no old runtime strings.
 - [ ] `npm pack --dry-run --json` and any actual release tarball file list/package metadata contain no legacy names.

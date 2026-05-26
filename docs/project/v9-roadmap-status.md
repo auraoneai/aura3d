@@ -6,7 +6,7 @@ The next work remains code construction, not more claim machinery.
 
 ## Current Evidence
 
-- Inventory report: `tests/reports/v9/threejs-inventory.json`
+- Inventory report: `tests/reports/threejs-parity/threejs-inventory.json`
 - Code backlog: `docs/project/v9-roadmap-code-backlog.md`
 - Inventory doc: `docs/project/v9-roadmap-threejs-inventory.md`
 - Parity matrix: `docs/project/v9-roadmap-parity-matrix.md`

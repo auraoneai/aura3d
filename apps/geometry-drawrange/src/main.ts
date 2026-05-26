@@ -34,8 +34,8 @@ interface V8GeometryDrawRangeRuntime {
 const APP_ID = "geometry-drawrange" as const;
 const WIDTH = 1280;
 const HEIGHT = 720;
-const INDEXED_RANGE: RenderItemDrawRange = { start: 0, count: 24 };
-const ARRAY_RANGE: RenderItemDrawRange = { start: 0, count: 6 };
+const INDEXED_RANGE: RenderItemDrawRange = { start: 6, count: 24 };
+const ARRAY_RANGE: RenderItemDrawRange = { start: 6, count: 6 };
 
 void run();
 
