@@ -33,7 +33,13 @@ const EXPECTED_CURRENT_WOW_ROUTES = [
   "/apps/wow-simple-points-lines/",
   "/apps/wow-additional-variant-product/",
   "/apps/wow-additional-transmission-sample/",
-  "/apps/wow-additional-cesium-man-animation/"
+  "/apps/wow-additional-cesium-man-animation/",
+  "/apps/wow-webgpu-triangle/",
+  "/apps/wow-webgpu-render-target/",
+  "/apps/wow-webgpu-pbr-asset/",
+  "/apps/wow-webgpu-product-viewer/",
+  "/apps/wow-webgpu-instancing/",
+  "/apps/wow-webgpu-compute-particles/"
 ] as const;
 
 const EXPECTED_ADVANCED_GALLERY_ROUTES = [
@@ -85,9 +91,14 @@ test.describe("current route health", () => {
       await page.close();
 
       await test.step(`${route.path} reaches ready and draws`, async () => {
+        const webgpuRoute = route.path.startsWith("/apps/wow-webgpu-");
         expect(result.settled, formatRouteFailure(result.failures)).toBe(true);
-        expect(result.status, formatRouteFailure(result.failures)).toBe("ready");
-        expect(result.drawCalls ?? 0, formatRouteFailure(result.failures)).toBeGreaterThan(0);
+        if (webgpuRoute && result.status === "unsupported") {
+          expect(result.errorText ?? "", formatRouteFailure(result.failures)).toMatch(/webgpu|navigator\.gpu|adapter|device|unsupported/i);
+        } else {
+          expect(result.status, formatRouteFailure(result.failures)).toBe("ready");
+          expect(result.drawCalls ?? 0, formatRouteFailure(result.failures)).toBeGreaterThan(0);
+        }
         expect(result.consoleErrors, formatRouteFailure(result.failures)).toEqual([]);
         expect(result.pageErrors, formatRouteFailure(result.failures)).toEqual([]);
         expect(result.responseErrors, formatRouteFailure(result.failures)).toEqual([]);

@@ -29,6 +29,12 @@ const allowedAppDirs = new Set([
   "wow-additional-variant-product",
   "wow-additional-transmission-sample",
   "wow-additional-cesium-man-animation",
+  "wow-webgpu-triangle",
+  "wow-webgpu-render-target",
+  "wow-webgpu-pbr-asset",
+  "wow-webgpu-product-viewer",
+  "wow-webgpu-instancing",
+  "wow-webgpu-compute-particles",
 ]);
 
 const allowedRoutePrefixes = [
@@ -55,6 +61,12 @@ const allowedRoutePrefixes = [
   "/apps/wow-additional-variant-product/",
   "/apps/wow-additional-transmission-sample/",
   "/apps/wow-additional-cesium-man-animation/",
+  "/apps/wow-webgpu-triangle/",
+  "/apps/wow-webgpu-render-target/",
+  "/apps/wow-webgpu-pbr-asset/",
+  "/apps/wow-webgpu-product-viewer/",
+  "/apps/wow-webgpu-instancing/",
+  "/apps/wow-webgpu-compute-particles/",
 ] as const;
 
 export function createCurrentRoutesLegacyPruneReport(): Record<string, unknown> {

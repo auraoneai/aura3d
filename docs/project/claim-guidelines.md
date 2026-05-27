@@ -29,6 +29,30 @@ Do not use unqualified language such as:
 - every official Three.js example exceeded;
 - production-ready for every browser 3D use case.
 
+## WebGPU Claim Language
+
+Allowed before a complete browser/device matrix:
+
+- A3D includes WebGPU backend paths with explicit availability diagnostics.
+- WebGPU support is conditional on browser/device availability.
+- Named WebGPU workflows have generated route and hardware evidence.
+- WebGL2 remains the broadly available default backend.
+
+Allowed only for rows marked supported in `tests/reports/webgpu-feature-matrix.json`:
+
+- A3D supports WebGPU for the named feature matrix rows marked supported.
+- A3D can render the approved product-viewer and PBR asset workflows through WebGPU on verified hardware.
+
+Do not use WebGPU wording such as:
+
+- unqualified end-to-end WebGPU coverage;
+- complete WebGPU/WebGL2 parity;
+- every Aura3D example supports WebGPU;
+- WebGPU works across all browsers and GPUs;
+- WebGPU is always faster than WebGL2.
+
+Before using first-class WebGPU language, run `pnpm webgpu` and confirm `tests/reports/webgpu-hardware-matrix.json` records the browser/device being claimed.
+
 ## Review Checklist
 
 - Does the claim cite current package code, test files, route evidence, or generated reports?

@@ -21,13 +21,13 @@ For repository development:
 
 ```sh
 pnpm install
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
+pnpm exec vite --host 127.0.0.1 --port 5181 --strictPort
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:5180/
+http://127.0.0.1:5181/
 ```
 
 For package consumers, the intended dependency is:
@@ -123,6 +123,31 @@ scene.createRenderableMesh({ geometry: "cube", material: "paint" });
 
 renderer.render(scene);
 renderer.dispose();
+```
+
+WebGPU uses the same direct renderer entrypoint when a browser/device exposes `navigator.gpu`:
+
+```ts
+const renderer = await A3DRenderer.create({
+  backend: "webgpu",
+  canvas,
+  width: 1280,
+  height: 720
+});
+
+await renderer.renderAsync(scene);
+console.log(renderer.device.info.backend, renderer.device.info.renderer);
+renderer.dispose();
+```
+
+Use `renderAsync()` for WebGPU route and readback paths. When using production runtime auto-selection, inspect the selected backend before making a claim:
+
+```ts
+import { ProductionRuntimeRenderer } from "@aura3d/engine/production-runtime";
+
+const renderer = new ProductionRuntimeRenderer({ backend: "auto", width: 1280, height: 720 });
+const diagnostics = renderer.getDiagnostics();
+console.log(diagnostics.backendSelection.selected, diagnostics.backendSelection.reason);
 ```
 
 ## Asset Loading

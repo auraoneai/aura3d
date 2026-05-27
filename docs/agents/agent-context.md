@@ -15,16 +15,27 @@ A3D is not a Three.js wrapper. Three.js appears in this repo as a reference targ
 ```sh
 pnpm install
 pnpm typecheck
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
+pnpm exec vite --host 127.0.0.1 --port 5181 --strictPort
 ```
 
 Open the local registry:
 
 ```text
-http://127.0.0.1:5180/
+http://127.0.0.1:5181/
 ```
 
 If the port is busy, use another local Vite port and keep links rooted at `/`.
+
+## Marketing Site
+
+The local developer-facing marketing app lives in `marketing/`. It is a separate Vite app that embeds live examples from the root registry. Run the root registry on `http://127.0.0.1:5181/`, then:
+
+```sh
+cd marketing
+npm run dev
+```
+
+The marketing loader composes root routes from `data-route`, advanced-gallery routes from `data-demo`, and optional deployment overrides from `window.DEMO_ORIGIN` or `window.DEMO_BASE`. Embedded previews should use `data-quality="marketing"` so `apps/wow-common/src/route-quality.ts` caps render resolution without changing standalone route defaults. See `docs/project/marketing-site.md`.
 
 ## Current Route Surface
 
@@ -63,6 +74,12 @@ Only these local browser examples are allowed:
 - `/apps/wow-additional-variant-product/`
 - `/apps/wow-additional-transmission-sample/`
 - `/apps/wow-additional-cesium-man-animation/`
+- `/apps/wow-webgpu-triangle/`
+- `/apps/wow-webgpu-render-target/`
+- `/apps/wow-webgpu-pbr-asset/`
+- `/apps/wow-webgpu-product-viewer/`
+- `/apps/wow-webgpu-instancing/`
+- `/apps/wow-webgpu-compute-particles/`
 
 `apps/wow-common/` is shared support code, not a standalone route. The old `examples/` tree is pruned.
 

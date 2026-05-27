@@ -117,6 +117,31 @@ renderer.dispose();
 
 The `advanced-runtime` subpath is the stable public entrypoint for direct renderer control.
 
+For explicit WebGPU, request the backend directly and surface any failure to the caller:
+
+```ts
+try {
+  const renderer = await A3DRenderer.create({ backend: "webgpu", canvas });
+  await renderer.renderAsync(scene);
+  console.log(renderer.device.info.backend, renderer.device.info.renderer);
+  renderer.dispose();
+} catch (error) {
+  console.error("WebGPU unavailable", error);
+}
+```
+
+For automatic selection in production-runtime workflows, inspect diagnostics:
+
+```ts
+import { ProductionRuntimeRenderer } from "@aura3d/engine/production-runtime";
+
+const renderer = new ProductionRuntimeRenderer({ backend: "auto", width: 1280, height: 720 });
+const diagnostics = renderer.getDiagnostics();
+console.log(diagnostics.backendSelection.selected, diagnostics.backendSelection.reason);
+```
+
+Unsupported WebGPU states should remain explicit. Do not convert a failed explicit `backend: "webgpu"` request into a successful WebGL2 result.
+
 ## Boundaries
 
 The app API proves that routes and templates can consume public package exports. It does not, by itself, prove every renderer feature, every asset format, every WebGPU device, or every Three.js example category. Keep app claims tied to the workflows, package exports, tests, routes, and generated reports that actually exist.

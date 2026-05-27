@@ -15,7 +15,8 @@ Aura3D rendering is implemented in the first-party `@aura3d/rendering` package a
 
 ## Current Areas
 
-- WebGL2 and WebGPU-facing device implementations.
+- WebGL2 is the broadly available default backend for most routes.
+- WebGPU has explicit device, production-runtime, render-target, PBR asset, instancing, and compute-particle routes with device-dependent availability.
 - Geometry, vertex/index buffers, textures, render targets, materials, shaders, render queues, and diagnostics.
 - PBR, environment resources, shadows, postprocess, instancing, culling, stereo/effects, decals, and resource disposal.
 - Route coverage across material, loader, shadow, postprocess, camera, controls, WebGPU, and parity apps.
@@ -26,8 +27,6 @@ Renderer docs must distinguish package capability, route evidence, generated rep
 
 ## Current Limits
 
-Rendering support is bounded by the implemented WebGL2/WebGPU device paths, route coverage, and generated reports. Broad claims about all materials, postprocess chains, browsers, GPUs, or Three.js parity need dedicated evidence.
-
-## Current Limits
-
-- Rendering support is bounded to documented APIs, routes, and reports; it is not a blanket parity claim for every renderer feature or hardware target.
+- Rendering support is bounded by documented APIs, route coverage, and generated reports; it is not a blanket parity claim for every renderer feature or hardware target.
+- WebGPU support is conditional on `navigator.gpu`, adapter/device availability, and the rows in `tests/reports/webgpu-feature-matrix.json`.
+- Hardware claims should follow [WebGPU hardware matrix](../rendering/webgpu-hardware-matrix.md) and fallback behavior should follow [WebGPU availability and fallback behavior](../rendering/webgpu-fallback.md).

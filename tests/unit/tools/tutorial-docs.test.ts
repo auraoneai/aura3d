@@ -10,8 +10,8 @@ describe("tutorial docs", () => {
   it("link every tutorial to a running example and verification command", () => {
     for (const path of tutorialPaths) {
       const docs = readFileSync(path, "utf8");
-      expect(docs, `${path} should link to a running example`).toMatch(/\/examples\/[a-z0-9-]+\/index\.html/);
-      expect(docs, `${path} should include a runnable verification command`).toContain("pnpm exec playwright test");
+      expect(docs, `${path} should link to a running example`).toMatch(/\/apps\/(?:advanced-examples-gallery\/#[a-z0-9-]+|wow-[a-z0-9-]+\/)/);
+      expect(docs, `${path} should include a runnable verification command`).toMatch(/pnpm (?:exec playwright test|advanced-gallery|current-routes)/);
     }
   });
 

@@ -299,20 +299,18 @@ describe("RuntimeParity production public SDK", () => {
   });
 
 
-  it("wires the flagship product configurator to the public production SDK", () => {
+  it("wires the current product viewer route to public production SDK-adjacent helpers", () => {
     const appFiles = [
-      "apps/product-configurator/src/main.ts",
-      "apps/product-configurator/src/assets.ts",
-      "apps/product-configurator/src/scene.ts",
-      "apps/product-configurator/src/ui.ts"
+      "apps/wow-webgpu-product-viewer/src/main.ts",
+      "templates/production-product-viewer/src/main.ts"
     ];
     const sources = appFiles.map((file) => readFileSync(resolve(file), "utf8")).join("\n");
-    const main = readFileSync(resolve("apps/product-configurator/src/main.ts"), "utf8");
+    const main = readFileSync(resolve("apps/wow-webgpu-product-viewer/src/main.ts"), "utf8");
 
-    expect(main).toContain("@aura3d/engine/production-runtime");
+    expect(main).toContain("ProductionRuntimeRenderer");
     expect(main).toContain("loadGltfScene");
     expect(main).toContain("loadHdrEnvironment");
-    expect(main).toContain("createProductViewer");
+    expect(main).toContain("createCurrentRoutesInteractiveRenderer");
     expect(sources).not.toContain("production-runtime-common/src/runtime");
     expect(sources).not.toMatch(/from\s+["']three(?:\/[^"']*)?["']/);
     expect(sources).not.toMatch(/from\s+["']@aura3d\/three-compat(?:\/[^"']*)?["']/);
@@ -399,7 +397,7 @@ describe("RuntimeParity production public SDK", () => {
 
   it("writes a bounded SDK replacement-readiness artifact instead of claiming broad Three.js ecosystem parity", () => {
     const engineSource = readFileSync(resolve("packages/engine/src/production-runtime/index.ts"), "utf8");
-    const flagshipSource = readFileSync(resolve("apps/product-configurator/src/main.ts"), "utf8");
+    const flagshipSource = readFileSync(resolve("apps/wow-webgpu-product-viewer/src/main.ts"), "utf8");
     const templateSource = readFileSync(resolve("templates/production-product-viewer/src/main.ts"), "utf8");
     const controlsPackage = readFileSync(resolve("packages/controls/package.json"), "utf8");
     const controlsSources = [
@@ -445,12 +443,12 @@ describe("RuntimeParity production public SDK", () => {
         evidence: "packages/engine/src/production-runtime/index.ts has no Three.js runtime import or THREE namespace use."
       },
       {
-        id: "flagship-app-uses-public-sdk",
-        pass: flagshipSource.includes("@aura3d/engine/production-runtime")
+        id: "current-product-route-uses-production-runtime-adjacent-path",
+        pass: flagshipSource.includes("ProductionRuntimeRenderer")
           && flagshipSource.includes("loadGltfScene")
           && flagshipSource.includes("loadHdrEnvironment")
-          && flagshipSource.includes("createProductViewer"),
-        evidence: "apps/product-configurator/src/main.ts imports and uses public production SDK APIs."
+          && flagshipSource.includes("createCurrentRoutesInteractiveRenderer"),
+        evidence: "apps/wow-webgpu-product-viewer/src/main.ts uses the current product-viewer route path after legacy product-configurator pruning."
       },
       {
         id: "template-uses-public-sdk",

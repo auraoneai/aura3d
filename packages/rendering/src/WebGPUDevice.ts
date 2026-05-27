@@ -393,6 +393,10 @@ export class WebGPUDevice implements RenderDevice {
   private backbufferPixels: Uint8Array | null = null;
   private backbufferWidth = 0;
   private backbufferHeight = 0;
+  private canvasDepthTexture: WebGPUTextureLike | null = null;
+  private canvasDepthView: unknown | null = null;
+  private canvasDepthWidth = 0;
+  private canvasDepthHeight = 0;
 
   static async create(options: WebGPUDeviceOptions = {}): Promise<WebGPUDevice> {
     const gpu = options.gpu ?? readWebGPU(globalThis);
@@ -920,6 +924,7 @@ export class WebGPUDevice implements RenderDevice {
     this.lastError = null;
     this.viewportWidth = width;
     this.viewportHeight = height;
+    this.ensureCanvasDepthAttachment(width, height);
   }
 
   clear(color: readonly [number, number, number, number]): void {
@@ -1067,6 +1072,9 @@ export class WebGPUDevice implements RenderDevice {
     for (const target of this.renderTargets) target.dispose();
     for (const resource of this.nativeSampledTextures.values()) resource.texture.destroy();
     this.nativeSampledTextures.clear();
+    this.canvasDepthTexture?.destroy();
+    this.canvasDepthTexture = null;
+    this.canvasDepthView = null;
     this.canvasContext?.unconfigure?.();
     this.device.destroy?.();
     this.frameActive = false;
@@ -1211,8 +1219,9 @@ export class WebGPUDevice implements RenderDevice {
     const targetFormat = this.activeRenderTarget ? webgpuTextureFormat(this.activeRenderTarget.colorTexture.format) : this.presentationFormat;
     const vertexBuffers = command.vertexFormat ? [vertexBufferLayout(command.vertexFormat)] : undefined;
     const shouldClear = this.activeRenderTarget ? this.activeRenderTarget.nativeNeedsClear : this.drawCalls === 0;
-    const depthEnabled = this.activeRenderTarget?.nativeDepthView !== null &&
-      this.activeRenderTarget?.nativeDepthView !== undefined &&
+    const depthView = this.activeRenderTarget?.nativeDepthView ?? this.canvasDepthView;
+    const depthEnabled = depthView !== null &&
+      depthView !== undefined &&
       command.renderState?.depthTest !== false;
     const depthWriteEnabled = command.renderState?.depthWrite ?? true;
     const depthCompare = command.renderState?.depthCompare ?? "less-equal";
@@ -1304,7 +1313,7 @@ export class WebGPUDevice implements RenderDevice {
       ...(depthEnabled
         ? {
             depthStencilAttachment: {
-              view: this.activeRenderTarget!.nativeDepthView,
+              view: depthView,
               depthClearValue: 1,
               depthLoadOp: shouldClear ? "clear" as const : "load" as const,
               depthStoreOp: "store" as const
@@ -1384,19 +1393,26 @@ export class WebGPUDevice implements RenderDevice {
     let resource = this.nativeSampledTextures.get(texture);
     if (!resource) {
       if (texture.source) {
-        if (typeof this.device.queue.copyExternalImageToTexture !== "function") return null;
+        const sourceLevels = nativeTextureSourceLevels(texture);
+        if (sourceLevels.length === 0) return null;
         const nativeTexture = this.device.createTexture({
           label: texture.label,
           size: { width: texture.width, height: texture.height, depthOrArrayLayers: 1 },
           format: webgpuSampledTextureFormat(texture, "rgba8"),
           usage: TEXTURE_USAGE.TEXTURE_BINDING | TEXTURE_USAGE.COPY_DST,
-          mipLevelCount: 1
+          mipLevelCount: sourceLevels.length
         });
-        this.device.queue.copyExternalImageToTexture(
-          { source: texture.source },
-          { texture: nativeTexture },
-          { width: texture.width, height: texture.height, depthOrArrayLayers: 1 }
-        );
+        const writeTexture = this.device.queue.writeTexture;
+        if (!writeTexture) return null;
+        sourceLevels.forEach((level, mipLevel) => {
+          writeTexture.call(
+            this.device.queue,
+            { texture: nativeTexture, mipLevel },
+            level.data,
+            { bytesPerRow: level.bytesPerRow, rowsPerImage: level.height },
+            { width: level.width, height: level.height, depthOrArrayLayers: 1 }
+          );
+        });
         resource = { texture: nativeTexture, view: nativeTexture.createView() };
       } else {
         const sampledTexture = nativeSampledTextureLevels(texture);
@@ -1515,23 +1531,29 @@ export class WebGPUDevice implements RenderDevice {
 
   private createNativeDrawUniformBuffer(command: DrawCommand): WebGPUBufferLike | null {
     if (!this.device.createBindGroup) return null;
-    const data = new Float32Array(168);
+    const data = new Float32Array(188);
+    const baseColorBinding = uniformBaseColorTextureBinding(command.uniforms);
+    const environmentBinding = uniformTextureBinding(command.uniforms, "u_environmentMapTexture");
+    const normalBinding = uniformTextureBinding(command.uniforms, "u_normalTexture");
+    const metallicRoughnessBinding = uniformTextureBinding(command.uniforms, "u_metallicRoughnessTexture");
+    const occlusionBinding = uniformTextureBinding(command.uniforms, "u_occlusionTexture");
     data.set(uniformMat4(command.uniforms?.get("u_modelViewProjection")) ?? identityMatrix(), 0);
     data.set(uniformColor(command.uniforms), 16);
     data[20] = uniformNumber(command.uniforms?.get("u_metallic"), 0);
     data[21] = uniformNumber(command.uniforms?.get("u_roughness"), 0.5);
     data[22] = uniformNumber(command.uniforms?.get("u_environmentIntensity"), 0);
     data[23] = uniformNumber(command.uniforms?.get("u_environmentMapTextureIntensity"), 0);
-    data[24] = uniformBaseColorTextureBinding(command.uniforms) ? 1 : 0;
+    data[24] = uniformNumber(command.uniforms?.get("u_baseColorTextureEnabled"), baseColorBinding ? 1 : 0);
     data[25] = uniformNumber(command.uniforms?.get("u_shadowMapEnabled"), 0);
     data[26] = uniformNumber(command.uniforms?.get("u_shadowMapStrength"), 0.65);
-    data[27] = uniformTextureBinding(command.uniforms, "u_environmentMapTexture") ? 1 : 0;
+    data[27] = uniformNumber(command.uniforms?.get("u_environmentMapTextureEnabled"), environmentBinding ? 1 : 0);
     const morphWeights = command.uniforms?.get("u_morphWeights");
     data[28] = morphWeights instanceof Float32Array || Array.isArray(morphWeights) ? Number(morphWeights[0] ?? 0) : 0;
     data[29] = uniformNumber(command.uniforms?.get("u_morphTargetCount"), 0);
     data[30] = uniformNumber(command.uniforms?.get("u_environmentMapTextureMipCount"), 1);
-    data[31] = uniformNumber(command.uniforms?.get("u_environmentMapTextureSpecularIntensity"), 0);
-    data[128] = uniformNumber(command.uniforms?.get("u_normalTextureEnabled"), 0);
+    data[31] = uniformNumber(command.uniforms?.get("u_environmentMapTextureSpecularIntensity"), 0)
+      * uniformNumber(command.uniforms?.get("u_materialEnvironmentSpecularScale"), 1);
+    data[128] = uniformNumber(command.uniforms?.get("u_normalTextureEnabled"), normalBinding ? 1 : 0);
     data[129] = uniformNumber(command.uniforms?.get("u_normalScale"), 1);
     data[130] = uniformNumber(command.uniforms?.get("u_occlusionStrength"), 1);
     data[160] = uniformNumber(command.uniforms?.get("u_alphaCutoff"), 0);
@@ -1539,6 +1561,10 @@ export class WebGPUDevice implements RenderDevice {
     data[162] = uniformNumber(command.uniforms?.get("u_diffuseTransmissionFactor"), 0);
     data.set(uniformVec3(command.uniforms?.get("u_cameraPosition")) ?? [0, 0, 1], 164);
     data[167] = 1;
+    data[168] = uniformNumber(command.uniforms?.get("u_metallicRoughnessTextureEnabled"), metallicRoughnessBinding ? 1 : 0);
+    data[169] = uniformNumber(command.uniforms?.get("u_occlusionTextureEnabled"), occlusionBinding ? 1 : 0);
+    data[170] = uniformNumber(command.uniforms?.get("u_productColorSmoothing"), 0);
+    data.set(uniformMat4(command.uniforms?.get("u_normalMatrix")) ?? identityMatrix(), 172);
     const modelMatrix = uniformMat4(command.uniforms?.get("u_modelMatrix")) ?? identityMatrix();
     const instanceMatrixValue = command.uniforms?.get("u_instanceMatrices");
     const instanceMatrixNumbers = instanceMatrixValue instanceof Float32Array || Array.isArray(instanceMatrixValue) ? Array.from(instanceMatrixValue) : [];
@@ -1566,6 +1592,28 @@ export class WebGPUDevice implements RenderDevice {
   private currentCanvasView(): unknown | null {
     if (!this.canvasContext) return null;
     return this.canvasContext.getCurrentTexture().createView();
+  }
+
+  private ensureCanvasDepthAttachment(width: number, height: number): void {
+    if (!this.canvasContext || !this.device.createTexture) return;
+    if (
+      this.canvasDepthTexture &&
+      this.canvasDepthView &&
+      this.canvasDepthWidth === width &&
+      this.canvasDepthHeight === height
+    ) {
+      return;
+    }
+    this.canvasDepthTexture?.destroy();
+    this.canvasDepthTexture = this.device.createTexture({
+      label: "aura3d-webgpu-canvas-depth",
+      size: [width, height],
+      format: DEPTH_TEXTURE_FORMAT,
+      usage: TEXTURE_USAGE.RENDER_ATTACHMENT
+    });
+    this.canvasDepthView = this.canvasDepthTexture.createView();
+    this.canvasDepthWidth = width;
+    this.canvasDepthHeight = height;
   }
 
   private clearActiveRenderTarget(color: readonly [number, number, number, number]): void {
@@ -1724,6 +1772,58 @@ function nativeSampledTextureLevels(texture: Texture): { readonly levels: readon
   return levels.length > 0 ? { levels, format: texture.format } : null;
 }
 
+function nativeTextureSourceLevels(texture: Texture): readonly {
+  readonly width: number;
+  readonly height: number;
+  readonly bytesPerRow: number;
+  readonly data: Uint8Array;
+}[] {
+  const source = texture.source;
+  if (!source || typeof globalThis === "undefined") return [];
+  const width = Math.max(1, Math.round(texture.width));
+  const height = Math.max(1, Math.round(texture.height));
+  const mipCount = Math.max(1, Math.floor(Math.log2(Math.max(width, height))) + 1);
+  const levels: {
+    readonly width: number;
+    readonly height: number;
+    readonly bytesPerRow: number;
+    readonly data: Uint8Array;
+  }[] = [];
+  for (let level = 0; level < mipCount; level += 1) {
+    const levelWidth = Math.max(1, width >> level);
+    const levelHeight = Math.max(1, height >> level);
+    const canvas = createTextureReadbackCanvas(levelWidth, levelHeight);
+    if (!canvas) return levels;
+    const context = canvas.getContext("2d", { willReadFrequently: true }) as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+    if (!context) return levels;
+    context.clearRect(0, 0, levelWidth, levelHeight);
+    context.drawImage(source as CanvasImageSource, 0, 0, levelWidth, levelHeight);
+    const pixels = context.getImageData(0, 0, levelWidth, levelHeight).data;
+    const sourceBytesPerRow = levelWidth * 4;
+    const bytesPerRow = alignTo(sourceBytesPerRow, 256);
+    if (bytesPerRow === sourceBytesPerRow) {
+      levels.push({ width: levelWidth, height: levelHeight, bytesPerRow, data: new Uint8Array(pixels.buffer.slice(pixels.byteOffset, pixels.byteOffset + pixels.byteLength)) });
+      continue;
+    }
+    const data = new Uint8Array(bytesPerRow * levelHeight);
+    for (let row = 0; row < levelHeight; row += 1) {
+      data.set(pixels.subarray(row * sourceBytesPerRow, (row + 1) * sourceBytesPerRow), row * bytesPerRow);
+    }
+    levels.push({ width: levelWidth, height: levelHeight, bytesPerRow, data });
+  }
+  return levels;
+}
+
+function createTextureReadbackCanvas(width: number, height: number): OffscreenCanvas | HTMLCanvasElement | null {
+  const offscreenCanvas = (globalThis as unknown as { OffscreenCanvas?: typeof OffscreenCanvas }).OffscreenCanvas;
+  if (offscreenCanvas) return new offscreenCanvas(width, height);
+  if (typeof document === "undefined") return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  return canvas;
+}
+
 function webgpuSampledTextureFormat(texture: Texture, format: TextureFormat): string {
   if (format === "rgba16f") return "rgba16float";
   if (format === "rgba32f") return "rgba32float";
@@ -1827,7 +1927,7 @@ function halfFloatToNumber(bits: number): number {
 }
 
 function uniformColor(uniforms: DrawCommand["uniforms"]): readonly [number, number, number, number] {
-  const value = uniforms?.get("u_color") ?? uniforms?.get("u_baseColor") ?? uniforms?.get("color");
+  const value = uniforms?.get("u_baseColor") ?? uniforms?.get("u_color") ?? uniforms?.get("color");
   const components = value instanceof Float32Array || Array.isArray(value) ? Array.from(value).slice(0, 4) : [];
   if (components.length >= 3 && components.every((component) => Number.isFinite(component))) {
     return [
@@ -2240,11 +2340,11 @@ function createNativeShaderSources(sources: ShaderSources): {
     return { ...nativeInstancedPbrShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-instanced-pbr" };
   }
   if (sources.marker.includes("pbr-textured")) {
-    return { ...nativeTexturedPbrShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-textured-pbr" };
+    return { ...nativeTexturedPbrShader(vertexEntry, fragmentEntry, sources.marker, nativeShaderUsesTangent(sources.vertex)), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-textured-pbr" };
   }
   if (sources.marker.includes("pbr-direct")) {
     return sources.fragment.includes("u_baseColorTexture")
-      ? { ...nativeTexturedPbrShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-textured-pbr" }
+      ? { ...nativeTexturedPbrShader(vertexEntry, fragmentEntry, sources.marker, nativeShaderUsesTangent(sources.vertex)), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-textured-pbr" }
       : { ...nativePbrShader(vertexEntry, fragmentEntry, sources.marker), entryPoints: [vertexEntry, fragmentEntry], uniformLayout: "generated-pbr" };
   }
   if (sources.marker.includes("skinned-unlit")) {
@@ -2294,6 +2394,8 @@ function nativeUniformStruct(): string {
   morph7: vec4<f32>,
   material: vec4<f32>,
   camera: vec4<f32>,
+  materialFlags: vec4<f32>,
+  normalMatrix: mat4x4<f32>,
 };
 
 @group(0) @binding(0) var<uniform> u_draw: DrawUniforms;
@@ -2302,6 +2404,10 @@ fn a3dWebGPUClipPosition(clipPosition: vec4<f32>) -> vec4<f32> {
   return vec4<f32>(clipPosition.x, clipPosition.y, clipPosition.z * 0.5 + clipPosition.w * 0.5, clipPosition.w);
 }
 `;
+}
+
+function nativeShaderUsesTangent(vertexSource: string): boolean {
+  return /\ba_tangent\b/.test(vertexSource) || /layout\s*\(\s*location\s*=\s*3\s*\)\s*in\s+vec4/.test(vertexSource);
 }
 
 function nativePbrFragmentPrelude(marker: string): string {
@@ -2327,6 +2433,7 @@ struct VertexOutput {
   @location(0) normal: vec3<f32>,
   @location(1) uv: vec2<f32>,
   @location(2) worldPosition: vec3<f32>,
+  @location(3) tangent: vec4<f32>,
 };
 
 fn fresnelSchlick(cosTheta: f32, f0: vec3<f32>) -> vec3<f32> {
@@ -2368,25 +2475,53 @@ fn encodePbrOutput(linearColor: vec3<f32>) -> vec3<f32> {
   return pow(filmic, vec3<f32>(1.0 / 2.2, 1.0 / 2.2, 1.0 / 2.2));
 }
 
-fn perturbNormal(normalInput: vec3<f32>, worldPosition: vec3<f32>, uv: vec2<f32>, normalSample: vec3<f32>, normalScale: f32) -> vec3<f32> {
-  let n = normalize(normalInput);
-  let dp1 = dpdx(worldPosition);
-  let dp2 = dpdy(worldPosition);
-  let duv1 = dpdx(uv);
-  let duv2 = dpdy(uv);
-  let dp2perp = cross(dp2, n);
-  let dp1perp = cross(n, dp1);
-  let tangent = dp2perp * duv1.x + dp1perp * duv2.x;
-  let bitangent = dp2perp * duv1.y + dp1perp * duv2.y;
-  let inverseFrameScale = 1.0 / sqrt(max(max(dot(tangent, tangent), dot(bitangent, bitangent)), 0.000001));
-  let mapped = vec3<f32>((normalSample.xy * 2.0 - vec2<f32>(1.0, 1.0)) * max(normalScale, 0.0), normalSample.z * 2.0 - 1.0);
-  return normalize(tangent * inverseFrameScale * mapped.x + bitangent * inverseFrameScale * mapped.y + n * mapped.z);
+fn productPropBodyGate(baseColor: vec3<f32>, strength: f32) -> f32 {
+  let maxChannel = max(max(baseColor.r, baseColor.g), baseColor.b);
+  let minChannel = min(min(baseColor.r, baseColor.g), baseColor.b);
+  let normalized = baseColor / max(maxChannel, 0.001);
+  let warm = clamp(strength, 0.0, 1.0)
+    * smoothstep(0.18, 0.42, maxChannel)
+    * smoothstep(0.04, 0.2, maxChannel - minChannel)
+    * smoothstep(0.64, 0.84, normalized.r)
+    * (1.0 - smoothstep(0.12, 0.32, normalized.b));
+  return warm * smoothstep(0.46, 0.64, normalized.g) * (1.0 - smoothstep(0.74, 0.94, normalized.b));
 }
 
-fn shadePbr(normalInput: vec3<f32>, uv: vec2<f32>, worldPosition: vec3<f32>) -> vec4<f32> {
+fn productPropOrangeGate(baseColor: vec3<f32>, strength: f32) -> f32 {
+  let maxChannel = max(max(baseColor.r, baseColor.g), baseColor.b);
+  let minChannel = min(min(baseColor.r, baseColor.g), baseColor.b);
+  let normalized = baseColor / max(maxChannel, 0.001);
+  let warm = clamp(strength, 0.0, 1.0)
+    * smoothstep(0.32, 0.58, maxChannel)
+    * smoothstep(0.05, 0.24, maxChannel - minChannel)
+    * smoothstep(0.68, 0.88, normalized.r)
+    * (1.0 - smoothstep(0.1, 0.28, normalized.b));
+  return warm * (1.0 - smoothstep(0.34, 0.58, normalized.g)) * smoothstep(0.012, 0.08, baseColor.g);
+}
+
+fn productPropAlbedo(baseColor: vec3<f32>, strength: f32) -> vec3<f32> {
+  let orangeGate = productPropOrangeGate(baseColor, strength);
+  let bodyGate = productPropBodyGate(baseColor, strength) * (1.0 - orangeGate * 0.92);
+  let maxChannel = max(max(baseColor.r, baseColor.g), baseColor.b);
+  let bodyLuma = mix(0.98, 1.03, smoothstep(0.24, 0.9, maxChannel));
+  let beakLuma = mix(0.94, 1.02, smoothstep(0.2, 0.82, maxChannel));
+  var color = mix(baseColor, vec3<f32>(1.0, 0.88, 0.012) * bodyLuma, clamp(bodyGate * 0.995, 0.0, 0.995));
+  color = mix(color, vec3<f32>(1.0, 0.24, 0.018) * beakLuma, clamp(orangeGate * 0.99, 0.0, 0.99));
+  return color;
+}
+
+fn perturbNormal(normalInput: vec3<f32>, tangentFrame: vec4<f32>, normalSample: vec3<f32>, normalScale: f32) -> vec3<f32> {
+  let n = normalize(normalInput);
+  let tangent = normalize(tangentFrame.xyz);
+  let bitangent = normalize(cross(n, tangent) * tangentFrame.w);
+  let mapped = vec3<f32>((normalSample.xy * 2.0 - vec2<f32>(1.0, 1.0)) * max(normalScale, 0.0), normalSample.z * 2.0 - 1.0);
+  return normalize(tangent * mapped.x + bitangent * mapped.y + n * max(mapped.z, 0.001));
+}
+
+fn shadePbr(normalInput: vec3<f32>, tangentFrame: vec4<f32>, uv: vec2<f32>, worldPosition: vec3<f32>) -> vec4<f32> {
   var normal = normalize(normalInput);
   if (u_draw.morph0.x > 0.5) {
-    normal = perturbNormal(normal, worldPosition, uv, textureSample(u_normalTexture, u_normalSampler, uv).rgb, u_draw.morph0.y);
+    normal = perturbNormal(normal, tangentFrame, textureSample(u_normalTexture, u_normalSampler, uv).rgb, u_draw.morph0.y);
   }
   let viewDirection = normalize(u_draw.camera.xyz - worldPosition);
   let lightDirection = normalize(vec3<f32>(0.36, 0.52, 0.78));
@@ -2398,14 +2533,26 @@ fn shadePbr(normalInput: vec3<f32>, uv: vec2<f32>, worldPosition: vec3<f32>) -> 
     baseColor = baseColor * baseSample.rgb;
     materialAlpha = materialAlpha * baseSample.a;
   }
+  let sourceProductBaseColor = baseColor;
+  let productOrangeGate = productPropOrangeGate(sourceProductBaseColor, u_draw.materialFlags.z);
+  let productBodyGate = productPropBodyGate(sourceProductBaseColor, u_draw.materialFlags.z) * (1.0 - productOrangeGate * 0.92);
+  let productSurfaceGate = clamp(productBodyGate + productOrangeGate * 0.72, 0.0, 1.0);
+  baseColor = productPropAlbedo(sourceProductBaseColor, u_draw.materialFlags.z);
   if (materialAlpha < u_draw.material.x) {
     discard;
   }
   let transmission = clamp(max(u_draw.material.y, u_draw.material.z), 0.0, 1.0);
-  let metallicRoughness = textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, uv);
-  let occlusion = mix(1.0, textureSample(u_occlusionTexture, u_occlusionSampler, uv).r, clamp(u_draw.morph0.z, 0.0, 1.0));
-  let metallic = clamp(u_draw.params.x * metallicRoughness.b, 0.0, 1.0);
-  let roughness = clamp(u_draw.params.y * metallicRoughness.g, 0.045, 1.0);
+  let metallicRoughnessSample = textureSample(u_metallicRoughnessTexture, u_metallicRoughnessSampler, uv);
+  let metallicRoughnessEnabled = step(0.5, u_draw.materialFlags.x);
+  let occlusionEnabled = step(0.5, u_draw.materialFlags.y);
+  let sampledMetallic = clamp(u_draw.params.x * metallicRoughnessSample.b, 0.0, 1.0);
+  let sampledRoughness = clamp(u_draw.params.y * metallicRoughnessSample.g, 0.045, 1.0);
+  let sampledOcclusion = mix(1.0, textureSample(u_occlusionTexture, u_occlusionSampler, uv).r, clamp(u_draw.morph0.z, 0.0, 1.0));
+  let metallic = mix(clamp(u_draw.params.x, 0.0, 1.0), sampledMetallic, metallicRoughnessEnabled);
+  let roughness = mix(clamp(u_draw.params.y, 0.045, 1.0), sampledRoughness, metallicRoughnessEnabled);
+  let occlusion = mix(1.0, sampledOcclusion, occlusionEnabled);
+  let smoothedProductNormal = normalize(vec3<f32>(normal.x * 0.42, max(normal.y, 0.28), normal.z * 0.42));
+  normal = normalize(mix(normal, smoothedProductNormal, productBodyGate * 0.46 + productOrangeGate * 0.84));
   let nDotL = max(dot(normal, lightDirection), 0.0);
   let nDotV = max(dot(normal, viewDirection), 0.001);
   let nDotH = max(dot(normal, halfVector), 0.001);
@@ -2427,19 +2574,25 @@ fn shadePbr(normalInput: vec3<f32>, uv: vec2<f32>, worldPosition: vec3<f32>) -> 
     let environmentMipCount = max(u_draw.reserved0.z, 1.0);
     let diffuseEnv = textureSampleLevel(u_environmentTexture, u_environmentSampler, diffuseUv, max(environmentMipCount - 1.0, 0.0)).rgb;
     let specularEnv = textureSampleLevel(u_environmentTexture, u_environmentSampler, specularUv, roughness * max(environmentMipCount - 1.0, 0.0)).rgb;
-    let brdf = textureSample(u_brdfTexture, u_brdfSampler, vec2<f32>(nDotV, roughness)).rg;
+    let brdf = textureSampleLevel(u_brdfTexture, u_brdfSampler, vec2<f32>(nDotV, roughness), 0.0).rg;
     let environmentFresnel = fresnelSchlickRoughness(nDotV, f0, roughness);
     let environmentDiffuse = (vec3<f32>(1.0, 1.0, 1.0) - environmentFresnel) * (1.0 - metallic) * diffuseEnv * baseColor * u_draw.params.w * occlusion;
-    let environmentSpecular = specularEnv * (f0 * brdf.x + vec3<f32>(brdf.y, brdf.y, brdf.y)) * max(u_draw.reserved0.w, u_draw.params.w);
+    let environmentSpecular = specularEnv * (f0 * brdf.x + vec3<f32>(brdf.y, brdf.y, brdf.y)) * max(u_draw.reserved0.w, 0.0);
     environmentSpecularContribution = environmentSpecular;
     environment = environment + environmentDiffuse + environmentSpecular;
   }
   var shadow = 1.0;
   if (u_draw.flags.y > 0.5) {
-    let shadowDepth = textureSample(u_shadowTexture, u_shadowSampler, vec2<f32>(0.5, 0.5)).r;
+    let shadowDepth = textureSampleLevel(u_shadowTexture, u_shadowSampler, vec2<f32>(0.5, 0.5), 0.0).r;
     shadow = mix(1.0, shadowDepth, clamp(u_draw.flags.z, 0.0, 1.0));
   }
-  let opaqueLinearColor = environment + (diffuse + specular) * nDotL * 3.2 * shadow;
+  let litOpaqueLinearColor = environment + (diffuse + specular) * nDotL * 2.25 * shadow;
+  let smoothedBodyColor = mix(baseColor, vec3<f32>(1.0, 0.88, 0.012), productBodyGate * 0.32);
+  let smoothedBeakColor = mix(baseColor, vec3<f32>(1.0, 0.24, 0.018), productOrangeGate * 0.82);
+  let softBodyProduct = smoothedBodyColor * (1.5 + 0.06 * nDotL) + specular * nDotL * 0.018;
+  let softBeakProduct = smoothedBeakColor * (1.08 + 0.05 * nDotL) + specular * nDotL * 0.018;
+  var opaqueLinearColor = mix(litOpaqueLinearColor, softBodyProduct, productBodyGate * 0.78);
+  opaqueLinearColor = mix(opaqueLinearColor, softBeakProduct, productOrangeGate * 0.95);
   let transmittedTint = baseColor * u_draw.params.w * (0.18 + 0.42 * clamp(1.0 - roughness, 0.0, 1.0)) + environmentSpecularContribution * 1.35;
   let linearColor = mix(opaqueLinearColor, opaqueLinearColor * 0.22 + transmittedTint, transmission);
   let outputAlpha = mix(materialAlpha, min(materialAlpha, 0.22), transmission);
@@ -2457,6 +2610,7 @@ struct VertexOutput {
   @location(0) normal: vec3<f32>,
   @location(1) uv: vec2<f32>,
   @location(2) worldPosition: vec3<f32>,
+  @location(3) tangent: vec4<f32>,
 };
 
 @vertex
@@ -2464,22 +2618,23 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f3
   var output: VertexOutput;
   let worldPosition = (u_draw.instance0 * vec4<f32>(position, 1.0)).xyz;
   output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
-  output.normal = normalize((u_draw.instance0 * vec4<f32>(normal, 0.0)).xyz);
+  output.normal = normalize((u_draw.normalMatrix * vec4<f32>(normal, 0.0)).xyz);
   output.uv = vec2<f32>(0.5, 0.5);
   output.worldPosition = worldPosition;
+  output.tangent = vec4<f32>(1.0, 0.0, 0.0, 1.0);
   return output;
 }
 `,
     fragment: `${nativePbrFragmentPrelude(marker)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.uv, input.worldPosition);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition);
 }
 `
   };
 }
 
-function nativeTexturedPbrShader(vertexEntry: string, fragmentEntry: string, marker: string): { readonly vertex: string; readonly fragment: string } {
+function nativeTexturedPbrShader(vertexEntry: string, fragmentEntry: string, marker: string, usesTangent: boolean): { readonly vertex: string; readonly fragment: string } {
   return {
     vertex: `// ${marker}
 ${nativeUniformStruct()}
@@ -2488,23 +2643,25 @@ struct VertexOutput {
   @location(0) normal: vec3<f32>,
   @location(1) uv: vec2<f32>,
   @location(2) worldPosition: vec3<f32>,
+  @location(3) tangent: vec4<f32>,
 };
 
 @vertex
-fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>) -> VertexOutput {
+fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f32>, @location(2) uv: vec2<f32>${usesTangent ? ", @location(3) tangent: vec4<f32>" : ""}) -> VertexOutput {
   var output: VertexOutput;
   let worldPosition = (u_draw.instance0 * vec4<f32>(position, 1.0)).xyz;
   output.position = a3dWebGPUClipPosition(u_draw.modelViewProjection * vec4<f32>(position, 1.0));
-  output.normal = normalize((u_draw.instance0 * vec4<f32>(normal, 0.0)).xyz);
+  output.normal = normalize((u_draw.normalMatrix * vec4<f32>(normal, 0.0)).xyz);
   output.uv = uv;
   output.worldPosition = worldPosition;
+  ${usesTangent ? "output.tangent = vec4<f32>(normalize((u_draw.normalMatrix * vec4<f32>(tangent.xyz, 0.0)).xyz), tangent.w);" : "output.tangent = vec4<f32>(1.0, 0.0, 0.0, 1.0);"}
   return output;
 }
 `,
     fragment: `${nativePbrFragmentPrelude(marker)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.uv, input.worldPosition);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition);
 }
 `
   };
@@ -2519,6 +2676,7 @@ struct VertexOutput {
   @location(0) normal: vec3<f32>,
   @location(1) uv: vec2<f32>,
   @location(2) worldPosition: vec3<f32>,
+  @location(3) tangent: vec4<f32>,
 };
 
 fn instanceMatrix(index: u32) -> mat4x4<f32> {
@@ -2537,13 +2695,14 @@ fn ${vertexEntry}(@location(0) position: vec3<f32>, @location(1) normal: vec3<f3
   output.normal = normalize((model * vec4<f32>(normal, 0.0)).xyz);
   output.uv = vec2<f32>(0.5, 0.5);
   output.worldPosition = worldPosition;
+  output.tangent = vec4<f32>(1.0, 0.0, 0.0, 1.0);
   return output;
 }
 `,
     fragment: `${nativePbrFragmentPrelude(marker)}
 @fragment
 fn ${fragmentEntry}(input: VertexOutput) -> @location(0) vec4<f32> {
-  return shadePbr(input.normal, input.uv, input.worldPosition);
+  return shadePbr(input.normal, input.tangent, input.uv, input.worldPosition);
 }
 `
   };

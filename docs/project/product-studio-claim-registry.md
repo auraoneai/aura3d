@@ -18,7 +18,7 @@ This file is retained because `pnpm verify:claims` reads it as the public claim 
 |---|---|---|
 | A3D is better than Three.js. | Full measured Three.js superiority claim-defense gate | The generated Three.js superiority audit and claim-defense reports must exist and pass, and the public wording must match the measured categories exactly. |
 | A3D is production-ready for every browser 3D use case. | Release, browser, and support matrix gates | Current release, browser, package, route, and support reports must pass for the exact claim. |
-| A3D has full WebGPU support. | WebGPU hardware and route matrix | `tests/reports/webgpu-hardware-matrix.json` plus route reports must prove the named browsers/devices. |
+| A3D has unqualified WebGPU support across browsers and devices. | WebGPU hardware and route matrix | `tests/reports/webgpu-hardware-matrix.json` plus route reports must prove the named browsers/devices. |
 | A3D is Unity/Unreal for the web. | Out of scope | No current gate supports this claim. |
 
 ## Notes

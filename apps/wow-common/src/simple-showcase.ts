@@ -8,6 +8,7 @@ import {
   type RendererPostProcessOptions,
   type RenderDeviceDiagnostics
 } from "/packages/rendering/src/index.ts";
+import { applyRouteChromeMode, routeRenderQuality } from "./route-quality";
 
 export interface SimpleGraphicsFrame {
   readonly renderItems: readonly RenderItem[];
@@ -70,6 +71,7 @@ export async function startSimpleGraphicsShowcase(config: SimpleGraphicsShowcase
   if (!(root instanceof HTMLElement) || !(canvas instanceof HTMLCanvasElement)) {
     throw new Error(`${config.appId} requires #app and canvas#viewport.`);
   }
+  const chromeHidden = applyRouteChromeMode();
 
   let renderSize = syncCanvasRenderSize(canvas);
   let renderer: Renderer | undefined;
@@ -105,7 +107,7 @@ export async function startSimpleGraphicsShowcase(config: SimpleGraphicsShowcase
     window.__a3dWowRuntime = runtime;
     (window as unknown as Record<string, Runtime>)[`__a3d${config.appId.replaceAll("-", "")}`] = runtime;
     const now = performance.now();
-    if (force || now - lastUi > 250) {
+    if (!chromeHidden && (force || now - lastUi > 250)) {
       renderUi(root, runtime);
       lastUi = now;
     }
@@ -189,8 +191,9 @@ function syncCanvasRenderSize(canvas: HTMLCanvasElement): { readonly width: numb
   const rect = canvas.getBoundingClientRect();
   const cssWidth = rect.width > 0 ? rect.width : FALLBACK_WIDTH;
   const cssHeight = rect.height > 0 ? rect.height : FALLBACK_HEIGHT;
-  const pixelRatio = Math.min(MAX_PIXEL_RATIO, Math.max(1, window.devicePixelRatio || 1));
-  const edgeScale = Math.min(1, MAX_RENDER_EDGE / Math.max(cssWidth * pixelRatio, cssHeight * pixelRatio));
+  const quality = routeRenderQuality({ maxPixelRatio: MAX_PIXEL_RATIO, maxRenderEdge: MAX_RENDER_EDGE });
+  const pixelRatio = Math.min(quality.maxPixelRatio, Math.max(1, window.devicePixelRatio || 1));
+  const edgeScale = Math.min(1, quality.maxRenderEdge / Math.max(cssWidth * pixelRatio, cssHeight * pixelRatio));
   const width = Math.max(1, Math.round(cssWidth * pixelRatio * edgeScale));
   const height = Math.max(1, Math.round(cssHeight * pixelRatio * edgeScale));
   if (canvas.width !== width) canvas.width = width;

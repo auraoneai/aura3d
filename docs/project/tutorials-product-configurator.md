@@ -8,13 +8,13 @@ This tutorial points to the current allowlisted product configurator surface ins
 
 ```sh
 pnpm install
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
+pnpm exec vite --host 127.0.0.1 --port 5181 --strictPort
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:5180/apps/advanced-examples-gallery/#product-configurator
+http://127.0.0.1:5181/apps/advanced-examples-gallery/#product-configurator
 ```
 
 ## Source

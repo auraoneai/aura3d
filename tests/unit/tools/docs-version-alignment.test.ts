@@ -28,7 +28,6 @@ describe("docs version alignment", () => {
     expect(report.linkedPaths).toEqual(expect.arrayContaining([
       "docs/api/public-api.md",
       "docs/project/tutorials-getting-started-real-scene.md",
-      "apps/advanced-examples-gallery/index.html",
       "CHANGELOG.md"
     ]));
   });

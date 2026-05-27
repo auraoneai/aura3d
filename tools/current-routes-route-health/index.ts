@@ -32,7 +32,7 @@ export interface CurrentRouteHealthResult {
   readonly label: string;
   readonly href: string;
   readonly path: string;
-  readonly status: "ready" | "error" | "loading" | "unknown";
+  readonly status: "ready" | "unsupported" | "error" | "loading" | "unknown";
   readonly working: boolean;
   readonly settled: boolean;
   readonly visible: boolean;
@@ -129,7 +129,7 @@ export interface CurrentRouteMotionEvidence {
 }
 
 interface RuntimeProbe {
-  readonly status: "ready" | "error" | "loading" | "unknown";
+  readonly status: "ready" | "unsupported" | "error" | "loading" | "unknown";
   readonly runtimeKey: string | null;
   readonly drawCalls: number | null;
   readonly frameCount: number | null;
@@ -264,20 +264,28 @@ export async function evaluateCurrentRoute(
   while (
     Date.now() < deadline &&
     probe.status !== "error" &&
+    probe.status !== "unsupported" &&
     (probe.status !== "ready" || (probe.drawCalls ?? 0) <= 0)
   ) {
     await page.waitForTimeout(150);
     probe = await readRouteProbe(page);
   }
   const readyTimeMs = probe.status === "ready" ? Date.now() - startedAt : null;
-  const settled = probe.status === "ready" || probe.status === "error";
+  const settled = probe.status === "ready" || probe.status === "unsupported" || probe.status === "error";
   const working = probe.status === "ready" && (probe.drawCalls ?? 0) > 0;
+  const webgpuRoute = isWebGPURoutePath(route.path);
 
   if (!settled) {
     failures.push(`${route.path} stayed ${probe.status} for ${Date.now() - startedAt}ms; expected ready or visible error under ${routeBudgetMs}ms`);
   }
   if (probe.status === "error") {
     failures.push(`${route.path} reached visible error: ${probe.errorText ?? "(no error text)"}`);
+  }
+  if (probe.status === "unsupported" && !webgpuRoute) {
+    failures.push(`${route.path} reported unsupported outside the WebGPU route family`);
+  }
+  if (probe.status === "unsupported" && webgpuRoute && !probe.errorText) {
+    failures.push(`${route.path} reported unsupported without a WebGPU diagnostic reason`);
   }
   if (probe.status === "ready" && (probe.drawCalls ?? 0) <= 0) {
     failures.push(`${route.path} reported ready with ${probe.drawCalls ?? 0} draw calls`);
@@ -414,6 +422,7 @@ async function readRouteProbe(page: Page): Promise<RuntimeProbe> {
       return status === "ready"
         || status === "running"
         || status === "first-frame"
+        || status === "unsupported"
         || status === "error"
         || status === "loading"
         || status === "booting"
@@ -439,13 +448,17 @@ async function readRouteProbe(page: Page): Promise<RuntimeProbe> {
     ]);
     const errorText = typeof runtime?.error === "string"
       ? runtime.error
-      : typeof runtime?.runtime?.error === "string"
-        ? runtime.runtime.error
-        : null;
+      : typeof runtime?.unsupportedReason === "string"
+        ? runtime.unsupportedReason
+        : typeof runtime?.failureReason === "string"
+          ? runtime.failureReason
+          : typeof runtime?.runtime?.error === "string"
+            ? runtime.runtime.error
+            : null;
     const canvas = document.querySelector("canvas");
     const bodyText = document.body?.innerText ?? "";
     const hasVisibleError = status === "error" && /error|failed|exception/i.test(bodyText);
-    const visible = Boolean(canvas && canvas.clientWidth > 0 && canvas.clientHeight > 0) || hasVisibleError || status === "ready";
+    const visible = Boolean(canvas && canvas.clientWidth > 0 && canvas.clientHeight > 0) || hasVisibleError || status === "ready" || status === "unsupported";
     return {
       status,
       runtimeKey: preferred?.[0] ?? null,
@@ -459,8 +472,9 @@ async function readRouteProbe(page: Page): Promise<RuntimeProbe> {
       return typeof value === "object" && value !== null && "status" in value;
     }
 
-    function normalizeStatus(value: unknown): "ready" | "error" | "loading" | "unknown" {
+    function normalizeStatus(value: unknown): "ready" | "unsupported" | "error" | "loading" | "unknown" {
       if (value === "ready" || value === "running" || value === "first-frame") return "ready";
+      if (value === "unsupported") return "unsupported";
       if (value === "error") return "error";
       if (
         value === "loading"
@@ -639,6 +653,10 @@ function routeImpliesMotion(route: CurrentRootRouteLink): boolean {
   return /animation|keyframes|skinning|walk|morph|additive|blending|multiple|soldier|tokyo|robot-expressive|cesium-man/.test(text);
 }
 
+function isWebGPURoutePath(path: string): boolean {
+  return path.startsWith("/apps/wow-webgpu-");
+}
+
 function slugifyRoutePath(path: string): string {
   const slug = path.replace(/^\/+|\/+$/g, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase();
   return slug.length > 0 ? slug : "root";
@@ -680,6 +698,8 @@ type RuntimeRecord = {
     readonly animationFrameCount?: unknown;
     readonly error?: unknown;
   };
+  readonly unsupportedReason?: unknown;
+  readonly failureReason?: unknown;
   readonly proof?: {
     readonly diagnostics?: {
       readonly drawCalls?: unknown;

@@ -37,7 +37,7 @@ Read these when the requested change touches the matching area:
 
 ## Current Local Route Rule
 
-The root `index.html` is the single local example registry. It links only ten advanced gallery deep links under `/apps/advanced-examples-gallery/#...`, four focused Aura3D library examples under `/apps/wow-*`, three standard Aura3D examples under `/apps/wow-*`, four simple graphics examples under `/apps/wow-*`, three additional Aura3D examples under `/apps/wow-*`, and eight authored showcase app routes under `/apps/wow-*`.
+The root `index.html` is the single local example registry. It links only ten advanced gallery deep links under `/apps/advanced-examples-gallery/#...`, four focused Aura3D library examples under `/apps/wow-*`, three standard Aura3D examples under `/apps/wow-*`, four simple graphics examples under `/apps/wow-*`, three additional Aura3D examples under `/apps/wow-*`, six WebGPU examples under `/apps/wow-webgpu-*`, and eight authored showcase app routes under `/apps/wow-*`.
 
 The legacy `examples/` tree and older standalone app route folders are intentionally pruned. Do not recreate or document extra local examples unless the user explicitly asks to restore the route surface and the allowlist, route-health tests, docs, and tools are updated together.
 

@@ -5,13 +5,13 @@ Advanced A3D examples gallery scaffold for scene composition, authored GLB integ
 Run it locally:
 
 ```bash
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
+pnpm exec vite --host 127.0.0.1 --port 5181 --strictPort
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:5180/apps/advanced-examples-gallery/
+http://127.0.0.1:5181/apps/advanced-examples-gallery/
 ```
 
 Direct demo routes:
@@ -81,7 +81,7 @@ The current authored-asset layer loads GLB content for water-lab, ocean-observat
 | Capability area | Native A3D / repo capability used here | Gallery helper approximation | Not claimed as native | Primary risk |
 | --- | --- | --- | --- | --- |
 | Rendering | WebGL2 render path, render items, geometry, materials, lights, depth, transparency, diagnostics, screenshot readback. | Route-specific camera presets, scene composition helpers, dashboard overlays. | Film-quality renderer parity from smoke tests alone. | All routes. |
-| WebGPU / compute | WebGPU proof routes exist elsewhere in the repo. | The advanced gallery currently uses WebGL2-oriented showcase routes. | WebGPU water, WebGPU ocean, and GPU compute particles. | Water, ocean, data galaxy. |
+| WebGPU / compute | First-class root WebGPU routes now exist for triangle, render target, PBR asset, product viewer, instancing, and compute particles. | The advanced gallery currently uses WebGL2-oriented showcase routes. | WebGPU water/ocean inside the advanced gallery, or GPU compute particles inside the gallery data-galaxy route. | Water, ocean, data galaxy. |
 | Materials | PBR-style material properties, emissive, metallic/roughness, clearcoat/transmission where loader/material path supports them. | Route-side material correction for assets that render poorly in the current path. | Perfect glass/transmission sorting or premium configurator material response. | Product, reactor, fog, ocean. |
 | glTF / GLB assets | Browser GLB loading, authored fixture layering, material variants where supported by the imported asset path. | Asset exclusions, route-side material overrides, camera framing, local Blender fixtures. | Any imported asset as accepted evidence until screenshot-reviewed. | Product, robotics, smart city, fog. |
 | Animation | Animation mixer/clip playback is used by animated GLB candidates and route motion systems. | Deterministic prop, camera, overlay, timeline, and simulation motion. | Full IK parity, root-motion production state machines, or character controller parity in this gallery. | Robotics, smart city. |
@@ -95,7 +95,7 @@ The current authored-asset layer loads GLB content for water-lab, ocean-observat
 | Review evidence | Playwright screenshots, runtime JSON, contact sheet, visual review report. | Human review metadata and screenshot-hash promotion rules. | Smoke/runtime pass as showcase acceptance. | All routes. |
 
 - Water and ocean demos use CPU/procedural wave geometry. A3D does not currently expose a complete native GPGPU water solver.
-- Particle demos use A3D point geometry and animated transforms. A3D does not currently expose a public GPU-compute particle update API.
+- Particle demos in this gallery use A3D point geometry and animated transforms. Native WebGPU compute particles are proven separately by `/apps/wow-webgpu-compute-particles/` and are not claimed by the gallery data-galaxy route.
 - Fog and light shafts are translucent geometry and particle approximations. A true volumetric raymarch pass is not exposed; the active fog-cathedral route uses curated Sponza/cathedral staging and needs current screenshot/review/audit evidence before any accepted claim is reused.
 - The robotics character demo now layers imported Soldier and Robot Expressive GLBs over authored lab context; XBot remains available as a fixture but is not active in this route because it did not meet the accepted screenshot-quality bar.
 - The physics playground now uses `@aura3d/physics` rigid bodies and contacts for runtime objects; mesh-derived colliders and full articulated robotics dynamics remain out of scope for this gallery route.

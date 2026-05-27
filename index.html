@@ -367,6 +367,45 @@
         }
       ];
 
+      const WEBGPU_EXAMPLE_ROUTES = [
+        {
+          path: "/apps/wow-webgpu-triangle/",
+          label: "A3D WebGPU Triangle",
+          summary: "Smallest explicit WebGPU route with a visible triangle, native backend diagnostics, and structured unsupported state.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-webgpu-render-target/",
+          label: "A3D WebGPU Render Target",
+          summary: "Offscreen WebGPU render-target route with presentation, readback reporting, and resource lifecycle diagnostics.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-webgpu-pbr-asset/",
+          label: "A3D WebGPU PBR Asset",
+          summary: "Damaged Helmet GLB loaded through the current Aura3D asset pipeline and rendered through explicit WebGPU PBR paths.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-webgpu-product-viewer/",
+          label: "A3D WebGPU Product Viewer",
+          summary: "ProductionRuntimeRenderer-backed Boom Box product route with explicit WebGPU mode and optional backend=auto diagnostics.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-webgpu-instancing/",
+          label: "A3D WebGPU Instancing",
+          summary: "Repeated-geometry workload for WebGPU native submission, draw-call, and frame-time diagnostics.",
+          alwaysVisible: true
+        },
+        {
+          path: "/apps/wow-webgpu-compute-particles/",
+          label: "A3D WebGPU Compute Particles",
+          summary: "Native WebGPU compute-particle route using storage-buffer dispatches, readback diagnostics, and explicit unsupported state.",
+          alwaysVisible: true
+        }
+      ];
+
       const ADVANCED_GALLERY_ROUTES = ADVANCED_GALLERY_DEMOS.map((demo) => ({
         path: `/apps/advanced-examples-gallery/#${demo.id}`,
         label: demo.title,
@@ -408,6 +447,12 @@
           kicker: "Additional Aura3D example",
           statusText: "open additional example"
         }));
+      const webgpuExampleRoutes = WEBGPU_EXAMPLE_ROUTES
+        .map((route) => ({
+          ...route,
+          kicker: "WebGPU example",
+          statusText: "open WebGPU route"
+        }));
       const routeGroups = [
         {
           id: "advanced-gallery-demos",
@@ -440,6 +485,12 @@
           routes: additionalAura3dExampleRoutes
         },
         {
+          id: "webgpu-examples",
+          title: "WebGPU Examples",
+          summary: "Explicit WebGPU routes that either render through a native WebGPU backend or show structured unsupported diagnostics on unavailable browsers/devices.",
+          routes: webgpuExampleRoutes
+        },
+        {
           id: "authored-showcase-routes",
           title: "Authored Showcase Routes",
           summary: "Current standalone app routes for authored assets, animation, materials, and production-style visual checks.",
@@ -466,6 +517,7 @@
         renderSummaryItem(standardAura3dExampleRoutes.length, "standard Aura3D examples"),
         renderSummaryItem(simpleGraphicsExampleRoutes.length, "simple graphics examples"),
         renderSummaryItem(additionalAura3dExampleRoutes.length, "additional Aura3D examples"),
+        renderSummaryItem(webgpuExampleRoutes.length, "WebGPU examples"),
         renderSummaryItem(authoredShowcaseRoutes.length, "authored showcase routes"),
         renderSummaryItem(routeGroups.reduce((sum, group) => sum + group.routes.length, 0), "live links")
       );

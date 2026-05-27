@@ -49,7 +49,7 @@ Current implementation includes:
 - First-party math engine: Vector/Matrix/Quaternion transform math, projection, rays, bounds, frustums, and camera helpers.
 - Scene graph: Object3D-style parent/child transforms, matrix auto-update, cameras, lights, renderables, instancing, serialization, and renderer traversal.
 - WebGL2 renderer: shader/material binding, state caching, render queues, opaque/transparent sorting, culling, draw ranges, instanced rendering, render targets, postprocess, shadows, and disposal.
-- WebGPU backend: render-target workflows, compute particles, PBR material rendering, instanced uniform submission, texture/readback paths, and real `navigator.gpu` hardware evidence.
+- WebGPU backend: named render-target, compute-particle, PBR material, product-viewer, instancing, texture/readback, and real `navigator.gpu` hardware evidence, scoped to generated feature and hardware reports.
 - Asset pipeline: glTF/GLB, skins, morphs, animations, variants, material extensions, compressed mesh paths, KTX2/Basis hooks, HDR/EXR, OBJ/MTL, render-resource conversion, and diagnostics.
 - Animation: imported GLB clips, mixer actions, skinning palettes, shader skinning, additive layers, blending, IK, morph targets, root motion, clone sampling, and motion-quality reports.
 - Physics and interaction: rigid bodies, colliders, constraints, raycast queries, character controller helpers, debug route evidence, scene picking, decals, WebXR controller/AR hit-test paths, and controls.
@@ -66,13 +66,13 @@ pnpm install
 Start the local app registry and routes:
 
 ```sh
-pnpm exec vite --host 127.0.0.1 --port 5180 --strictPort
+pnpm exec vite --host 127.0.0.1 --port 5181 --strictPort
 ```
 
 Open:
 
 ```text
-http://127.0.0.1:5180/
+http://127.0.0.1:5181/
 ```
 
 The root page is the allowlisted local route registry. It links only:
@@ -82,10 +82,20 @@ The root page is the allowlisted local route registry. It links only:
 - three standard Aura3D examples under `/apps/wow-*`;
 - four simple graphics examples under `/apps/wow-*`;
 - three additional Aura3D examples under `/apps/wow-*`;
+- six WebGPU examples under `/apps/wow-webgpu-*`;
 - eight authored showcase apps under `/apps/wow-*`;
 - shared runtime code under `/apps/wow-common/` that is not a standalone route.
 
 The legacy `examples/` tree and older app route folders have been pruned from the checkout. Do not document, test, or link local examples outside the root registry unless they are intentionally restored and added to the allowlist.
+
+Run the local marketing site after the root route registry is available:
+
+```sh
+cd marketing
+npm run dev
+```
+
+The marketing app embeds live root routes and advanced-gallery routes from `http://127.0.0.1:5181` by default, lazy-loads below-fold iframes, caps active iframe startup, and requests `quality=marketing` for embedded route previews. See [docs/project/marketing-site.md](docs/project/marketing-site.md).
 
 ## Basic SDK Shape
 

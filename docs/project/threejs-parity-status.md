@@ -27,6 +27,12 @@ Aura3D no longer keeps a broad backlog of local route examples under `examples/`
 - `apps/wow-additional-variant-product/`
 - `apps/wow-additional-transmission-sample/`
 - `apps/wow-additional-cesium-man-animation/`
+- `apps/wow-webgpu-triangle/`
+- `apps/wow-webgpu-render-target/`
+- `apps/wow-webgpu-pbr-asset/`
+- `apps/wow-webgpu-product-viewer/`
+- `apps/wow-webgpu-instancing/`
+- `apps/wow-webgpu-compute-particles/`
 
 `apps/wow-common/` is shared route support code, not a standalone route.
 
