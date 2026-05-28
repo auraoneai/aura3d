@@ -119,6 +119,7 @@ function runScaffoldSmoke(): {
         rootDir: resolve("packages/create-aura3d")
       });
       writeWorkspaceViteConfig(targetDir);
+      writeWorkspacePlaywrightConfig(targetDir);
       run("pnpm", ["exec", "vite", "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
       run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line"], targetDir);
       const routeReportPath = resolve(targetDir, "tests/reports/route-health.json");
@@ -143,6 +144,24 @@ function runScaffoldSmoke(): {
   }
 
   return { pass: failures.length === 0, results, failures };
+}
+
+function writeWorkspacePlaywrightConfig(targetDir: string): void {
+  writeFileSync(resolve(targetDir, "playwright.config.ts"), `import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  use: {
+    baseURL: "http://127.0.0.1:4173"
+  },
+  webServer: {
+    command: "pnpm exec vite --host 127.0.0.1 --port 4173 --strictPort",
+    url: "http://127.0.0.1:4173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000
+  }
+});
+`);
 }
 
 function writeWorkspaceViteConfig(targetDir: string): void {

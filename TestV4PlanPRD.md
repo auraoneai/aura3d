@@ -96,16 +96,28 @@ context evidence matrix.
 
 Current local automated evidence:
 
-- `docs/project/product-context-evidence.md` reports 23/23 product claims with
-  evidence and 15/15 automated checks passing.
+- `docs/project/product-context-evidence.md` reports every current product
+  claim with evidence and the automated product-context checks passing.
 - `docs/project/agent-dogfood-results.md` records the Codex self-test: compiles
-  yes, runs yes, API hallucinations 0, asset path errors 0, turns 1.
+  yes, runs yes, API hallucinations 0, asset path errors 0, turns 1. Its
+  screenshot check now verifies visual signals, not only PNG byte size.
+- `docs/project/fresh-codex-agent-context-results.md` records a separate fresh
+  Codex context-only run using copied context files, local package tarballs, and
+  copied GLB assets. It compiled, ran, rendered WebGL2, swapped from `product`
+  to `hero` on click, reported API hallucination count 0 and asset path error
+  count 0, and produced a prompt-aligned screenshot profile.
 - `docs/project/asset-corpus-results.md` records 11 generated asset cases with
   expected success/failure behavior.
 - `BUNDLE_SIZES.md` records built, minified, gzipped bundle measurements.
 - `tests/reports/package-tarball-audit.json` verifies the packed packages do
   not include archive, product-plan, image, or CSV leakage and include required
   public files.
+- `docs/project/clean-install-results.md` records clean npm installs from packed
+  artifacts for `@aura3d/engine`, `@aura3d/react`, `@aura3d/cli`,
+  `create-aura3d`, and all three starter templates.
+- `docs/project/public-api-contract.md` records packed-package public exports,
+  valid API compilation, negative type tests, archived import rejection, and docs
+  named-import checks.
 
 ### Still Not Proven By Local Automation
 
@@ -120,19 +132,25 @@ completed user proof:
 - Marketing comprehension interviews with people who do not know the codebase.
 - Outside beta dogfood and issue intake from real users.
 
-The current gate proves local automated product shape and one Codex dogfood run.
-It does not yet prove broad market confidence.
+The current gate proves local automated product shape, one deterministic Codex
+self-test, and one fresh Codex context-only dogfood run. It does not yet prove
+broad market confidence.
 
 ## Deliverables
 
 - `docs/project/product-context-evidence.md`
+- `docs/project/clean-install-results.md`
+- `docs/project/public-api-contract.md`
 - `docs/project/dogfood-rubric.md`
 - `docs/project/agent-dogfood-results.md`
+- `docs/project/fresh-codex-agent-context-results.md`
 - `docs/project/asset-corpus-results.md`
 - `docs/project/marketing-comprehension-results.md`
 - `BUNDLE_SIZES.md`
 - `tests/reports/product-context-evidence.json`
 - `tests/reports/package-tarball-audit.json`
+- `tests/reports/package-clean-install.json`
+- `tests/reports/public-api-contract.json`
 - `tests/reports/docs-codeblocks.json`
 - `tests/reports/asset-corpus.json`
 - `tests/reports/marketing-link-audit.json`
@@ -145,7 +163,9 @@ Add these scripts after the manual plan is approved:
 ```json
 {
   "check:product-context": "pnpm exec tsx --tsconfig tsconfig.base.json tools/product-context-evidence/index.ts",
+  "check:public-api": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts",
   "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",
+  "check:clean-install": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts",
   "check:docs-codeblocks": "pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts",
   "check:asset-corpus": "pnpm exec tsx --tsconfig tsconfig.base.json tools/asset-corpus/index.ts",
   "check:marketing-links": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-link-audit/index.ts",
@@ -417,7 +437,7 @@ For each task and agent, record:
 
 - [ ] Did it compile?
 - [ ] Did it run?
-- [ ] Did it render a nonblank canvas?
+- [ ] Did it render a prompt-aligned canvas with scene-specific visual signals?
 - [ ] Did it hallucinate an API?
 - [ ] Did it invent an asset path?
 - [ ] Did it use typed asset refs?
@@ -430,11 +450,23 @@ For each task and agent, record:
 
 - [ ] Codex self-test is completed before testing the other agents.
 - [ ] Codex self-test uses only the allowed context while generating the app.
+- [ ] Codex screenshot verification checks prompt-aligned visual signals, not
+      only that a PNG file is non-empty.
 - [ ] Each agent completes at least four of five tasks.
 - [ ] No agent uses archived runtime APIs.
 - [ ] API hallucination count is recorded and below the agreed threshold.
 - [ ] Asset-path invention count is recorded and below the agreed threshold.
 - [ ] Agent-generated apps pass build and route-health checks.
+
+### Current Result
+
+- Deterministic Codex self-test: pass. See
+  `docs/project/agent-dogfood-results.md`.
+- Fresh Codex context-only run: pass. See
+  `docs/project/fresh-codex-agent-context-results.md`.
+- Claude Code: not run.
+- Cursor: not run.
+- GitHub Copilot: not run.
 
 ## Round 8: Raw Three.js Baseline
 
@@ -464,7 +496,7 @@ Run the same five agent tasks using:
 
 - [ ] Aura3D has fewer hallucinated APIs than raw Three.js.
 - [ ] Aura3D has fewer asset-path mistakes than raw Three.js.
-- [ ] Aura3D reaches nonblank render in fewer turns.
+- [ ] Aura3D reaches prompt-aligned render in fewer turns.
 - [ ] Aura3D deploys with less manual intervention.
 
 ## Round 9: Asset Corpus Validation
@@ -591,7 +623,7 @@ npm test
 - [ ] Run preview.
 - [ ] Capture screenshot.
 - [ ] Run route-health.
-- [ ] Replace starter asset with a real GLB.
+- [ ] Replace starter asset with a real glTF/GLB.
 - [ ] Verify new asset appears.
 - [ ] Delete an asset file and verify error quality.
 - [ ] Invent an asset ID and verify type/validation failure.
@@ -601,7 +633,7 @@ npm test
 ### Pass Criteria
 
 - [ ] Template installs without source-code edits.
-- [ ] Template renders a nonblank canvas.
+- [ ] Template renders a prompt-aligned canvas.
 - [ ] Template builds for static deployment.
 - [ ] Template emits useful errors when intentionally broken.
 - [ ] A normal developer can recover without reading package internals.
@@ -616,7 +648,7 @@ Prove diagnostics and screenshots are useful product features.
 
 - [ ] Run route-health on all starter templates.
 - [ ] Run screenshot capture on all starter templates.
-- [ ] Verify screenshots are nonblank.
+- [ ] Verify screenshots contain scene-specific visual signals.
 - [ ] Verify canvas dimensions are recorded.
 - [ ] Verify diagnostics include asset readiness.
 - [ ] Verify diagnostics include route readiness.
@@ -909,7 +941,7 @@ Get feedback from users who were not involved in building the repo.
 
 - [ ] Public package tarballs include archived runtime code.
 - [ ] Clean install cannot scaffold and build at least one starter.
-- [ ] All three starters fail to render nonblank screenshots.
+- [ ] All three starters fail to render prompt-aligned screenshots.
 - [ ] Agent docs consistently cause agents to hallucinate archived APIs.
 - [ ] Asset CLI cannot produce typed refs for normal valid GLBs.
 - [ ] Marketing users think the product is a hidden prompt-to-scene runtime.

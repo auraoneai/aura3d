@@ -51,7 +51,7 @@ for (const file of allowedContextFiles) {
 writeProjectFiles();
 const assetResult = addAsset({
   projectDir: workspace,
-  file: "assets/product/agent-product.gltf",
+  file: "assets/product/agent-product.glb",
   name: "agentProduct"
 });
 const validation = validateAssets({ projectDir: workspace });
@@ -63,14 +63,14 @@ const buildResult = runCommand("pnpm", ["exec", "vite", "build", "--config", res
 const browserResult = buildResult.ok
   ? runCommand("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(workspace, "playwright.config.ts"), "--reporter=line"], workspace)
   : { ok: false, output: "Skipped because build failed." };
-const routeReport = readOptionalJson<{ ready?: boolean; drawCalls?: number }>(resolve(workspace, "tests/reports/route-health.json"));
-const screenshotReport = readOptionalJson<{ bytes?: number }>(resolve(workspace, "tests/reports/screenshot.json"));
+const routeReport = readOptionalJson<{ ready?: boolean; backend?: string; drawCalls?: number }>(resolve(workspace, "tests/reports/route-health.json"));
+const screenshotReport = readOptionalJson<{ bytes?: number; profile?: Record<string, number> }>(resolve(workspace, "tests/reports/screenshot.json"));
 const screenshotPath = resolve(workspace, "tests/reports/screenshot.png");
 
 const score: AgentDogfoodScore = {
   agent: "Codex",
   compiles: buildResult.ok,
-  runs: browserResult.ok && routeReport?.ready === true,
+  runs: browserResult.ok && routeReport?.ready === true && routeReport.backend === "webgl2",
   apiHallucinations: apiHallucinations.length,
   assetPathErrors: assetPathErrors.length,
   turns: 1,
@@ -113,13 +113,21 @@ const checks: ReleaseCheck[] = [
   },
   {
     id: "codex-generated-app-route-health",
-    pass: browserResult.ok && routeReport?.ready === true && Number(routeReport.drawCalls ?? 0) > 0,
-    detail: browserResult.ok ? `ready=${routeReport?.ready ?? false}, drawCalls=${routeReport?.drawCalls ?? 0}` : browserResult.output
+    pass: browserResult.ok && routeReport?.ready === true && routeReport.backend === "webgl2" && Number(routeReport.drawCalls ?? 0) > 0,
+    detail: browserResult.ok ? `ready=${routeReport?.ready ?? false}, backend=${routeReport?.backend ?? "unknown"}, drawCalls=${routeReport?.drawCalls ?? 0}` : browserResult.output
   },
   {
-    id: "codex-generated-app-screenshot-nonblank",
-    pass: existsSync(screenshotPath) && statSync(screenshotPath).size > 1000 && Number(screenshotReport?.bytes ?? 0) > 1000,
-    detail: existsSync(screenshotPath) ? `screenshot bytes=${statSync(screenshotPath).size}` : "screenshot missing"
+    id: "codex-generated-app-screenshot-profile",
+    pass:
+      existsSync(screenshotPath) &&
+      statSync(screenshotPath).size > 1000 &&
+      Number(screenshotReport?.bytes ?? 0) > 1000 &&
+      Number(screenshotReport?.profile?.yellowPixels ?? 0) > 800 &&
+      Number(screenshotReport?.profile?.rainPixels ?? 0) > 70 &&
+      Number(screenshotReport?.profile?.centerObjectPixels ?? 0) > 900,
+    detail: existsSync(screenshotPath)
+      ? `screenshot bytes=${statSync(screenshotPath).size}, profile=${JSON.stringify(screenshotReport?.profile ?? {})}`
+      : "screenshot missing"
   }
 ];
 
@@ -171,25 +179,32 @@ function writeProjectFiles(): void {
 </html>
 `);
 
-  writeFileSync(resolve(workspace, "src/main.ts"), `import { camera, createAuraApp, effects, interactions, lights, material, model, scene, timeline } from "@aura3d/engine";
+  writeFileSync(resolve(workspace, "src/main.ts"), `import { camera, createAuraApp, effects, interactions, lights, material, model, primitives, scene, timeline } from "@aura3d/engine";
 import { assets } from "./aura-assets";
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: true, assetPanel: true, performancePanel: true },
   scene: scene()
     .background("#071016")
+    .add(primitives.plane({
+      name: "wet studio floor",
+      width: 7,
+      height: 5,
+      material: material.pbr({ color: "#13242b", roughness: 0.18, metallic: 0.12 })
+    }).position(0, -0.58, -0.6).rotate(-1.5708, 0, 0))
     .add(model(assets.agentProduct, {
       material: material.pbr({
-        color: "#8fb4ff",
-        roughness: 0.36,
-        metallic: 0.18,
+        color: "#ffe166",
+        roughness: 0.42,
+        metallic: 0.08,
         texture: assets.agentTexture
       })
-    }).position(0, 0.2, -0.7).scale(1.15))
+    }).position(0, 0.02, -0.7).scale(1.3))
     .add(lights.studio({ intensity: 1.2 }))
+    .add(effects.rain({ intensity: 0.24, speed: 0.3 }))
     .add(effects.bloom({ intensity: 0.18 }))
     .add(interactions.orbit())
-    .camera(camera.dolly({ from: [0, 1.35, 5.2], to: [0, 1.1, 3.5], target: [0, 0.7, -0.7], seconds: 7 }))
+    .camera(camera.dolly({ from: [0, 1.15, 4.2], to: [0, 1.0, 3.1], target: [0, 0.25, -0.7], seconds: 7 }))
     .timeline(timeline.loop({ seconds: 7 }))
 });
 
@@ -200,15 +215,7 @@ declare global {
 window.auraApp = app;
 `);
 
-  writeFileSync(resolve(workspace, "assets/product/agent-product.gltf"), JSON.stringify({
-    asset: { version: "2.0", generator: "Aura3D Codex self-test" },
-    buffers: [{ uri: "agent-product.bin", byteLength: 4 }],
-    materials: [{ name: "agent-product-blue" }],
-    animations: [{ name: "slow-turntable" }],
-    images: [{ uri: "agent-texture.webp", name: "agent-texture" }],
-    accessors: [{ min: [-0.8, 0, -0.8], max: [0.8, 1.4, 0.8] }]
-  }, null, 2));
-  writeFileSync(resolve(workspace, "assets/product/agent-product.bin"), Buffer.from([0, 1, 2, 3]));
+  writeFileSync(resolve(workspace, "assets/product/agent-product.glb"), readFileSync("fixtures/asset-corpus/duck.glb"));
   writeFileSync(resolve(workspace, "assets/product/agent-texture.webp"), Buffer.from("aura3d-agent-texture"));
   addAsset({ projectDir: workspace, file: "assets/product/agent-texture.webp", name: "agentTexture" });
 
@@ -247,9 +254,11 @@ test("generated Aura3D app reaches ready state", async ({ page }) => {
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
   const drawCalls = Number(await page.locator("body").getAttribute("data-aura3d-draw-calls"));
+  const diagnostics = await page.evaluate(() => window.__AURA3D_ROUTE_READY__?.diagnostics);
+  expect(diagnostics?.backend).toBe("webgl2");
   expect(drawCalls).toBeGreaterThan(0);
   mkdirSync(resolve("tests/reports"), { recursive: true });
-  writeFileSync(resolve("tests/reports/route-health.json"), JSON.stringify({ ready: true, drawCalls }, null, 2));
+  writeFileSync(resolve("tests/reports/route-health.json"), JSON.stringify({ ready: true, backend: diagnostics?.backend, drawCalls }, null, 2));
 });
 `);
 
@@ -262,11 +271,42 @@ test("generated Aura3D app screenshot is non-empty", async ({ page }) => {
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
+  const profile = await canvas.evaluate((element) => {
+    const target = element as HTMLCanvasElement;
+    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
+    if (!gl) return { error: "missing-webgl2", yellowPixels: 0, rainPixels: 0, centerObjectPixels: 0, uniqueBuckets: 0 };
+    const pixels = new Uint8Array(target.width * target.height * 4);
+    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const buckets = new Set<string>();
+    let yellowPixels = 0;
+    let rainPixels = 0;
+    let centerObjectPixels = 0;
+    for (let y = 0; y < target.height; y += 4) {
+      for (let x = 0; x < target.width; x += 4) {
+        if (x > target.width * 0.76 && y > target.height * 0.74) continue;
+        const offset = (y * target.width + x) * 4;
+        const r = pixels[offset] ?? 0;
+        const g = pixels[offset + 1] ?? 0;
+        const b = pixels[offset + 2] ?? 0;
+        const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+        if (luminance > 32) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
+        if (r > 135 && g > 125 && b < 170 && r > b * 1.08 && g > b * 1.04) yellowPixels += 1;
+        if (r > 165 && g > 185 && b > 205) rainPixels += 1;
+        if (x > target.width * 0.28 && x < target.width * 0.68 && y > target.height * 0.28 && y < target.height * 0.84 && luminance > 70) centerObjectPixels += 1;
+      }
+    }
+    return { yellowPixels, rainPixels, centerObjectPixels, uniqueBuckets: buckets.size };
+  });
+  expect(profile.error).toBeUndefined();
+  expect(profile.yellowPixels).toBeGreaterThan(800);
+  expect(profile.rainPixels).toBeGreaterThan(70);
+  expect(profile.centerObjectPixels).toBeGreaterThan(900);
+  expect(profile.uniqueBuckets).toBeGreaterThan(18);
   const screenshot = await canvas.screenshot();
   expect(screenshot.byteLength).toBeGreaterThan(1000);
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
-  writeFileSync(resolve("tests/reports/screenshot.json"), JSON.stringify({ bytes: screenshot.byteLength }, null, 2));
+  writeFileSync(resolve("tests/reports/screenshot.json"), JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2));
 });
 `);
 }
@@ -286,7 +326,7 @@ function viteAliasEntries(): string {
 }
 
 function findApiHallucinations(source: string): string[] {
-  const allowed = new Set(["camera", "createAuraApp", "effects", "interactions", "lights", "material", "model", "scene", "timeline"]);
+  const allowed = new Set(["camera", "createAuraApp", "effects", "interactions", "lights", "material", "model", "primitives", "scene", "timeline"]);
   const match = source.match(/import\s+\{([^}]+)\}\s+from\s+["']@aura3d\/engine["']/);
   if (!match) return ["missing @aura3d/engine named import"];
   return match[1]

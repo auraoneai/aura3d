@@ -146,8 +146,11 @@ export function scanAssets(options: { readonly projectDir?: string; readonly dir
 export function validateAssets(options: { readonly projectDir?: string } = {}): AssetValidationResult {
   const projectDir = resolve(options.projectDir ?? process.cwd());
   const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
+  const manifestMissing = !existsSync(manifestPath);
   const manifest = readAssetManifest(projectDir);
-  const failures: string[] = [];
+  const failures: string[] = manifestMissing
+    ? [`Missing ${DEFAULT_AURA_ASSET_MANIFEST}. Suggested fix: run aura3d assets add ./asset.glb --name product or aura3d assets scan ./assets.`]
+    : [];
   const warnings: string[] = [];
   for (const asset of manifest.assets) {
     const outputPath = resolve(projectDir, asset.outputPath);

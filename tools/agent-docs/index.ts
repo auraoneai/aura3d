@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { createA3DProject, type CreateA3DTemplate } from "../../packages/create-aura3d/src/index";
 import { existsCheck, fileIncludes, noFileMatches, writeReport, type ReleaseCheck } from "../check-common";
@@ -182,25 +182,35 @@ function runAgentSimulation(): { readonly pass: boolean; readonly detail: string
       template,
       rootDir: resolve("packages/create-aura3d")
     });
+    copyFileSync(
+      resolve("fixtures/threejs-parity/assets/character/robot-expressive.glb"),
+      resolve(appDir, "public/aura-assets/robot.glb")
+    );
     writeFileSync(resolve(appDir, "src/aura-assets.ts"), `import { defineAuraAssets } from "@aura3d/engine";
 
 export const assets = defineAuraAssets({
   robot: {
     type: "model",
-    format: "gltf",
-    url: "/aura-assets/product-fixture.gltf"
+    format: "glb",
+    url: "/aura-assets/robot.glb",
+    hash: "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
+    bounds: [1.8, 2.1, 1.0]
   }
 } as const);
 `);
     writeFileSync(resolve(appDir, "src/main.ts"), `${helloWorld[1]?.trim()}\n`);
+    writeAgentSimulationScreenshotSpec(appDir);
     writeWorkspaceViteConfig(appDir);
     run("pnpm", ["exec", "vite", "build", "--config", resolve(appDir, "vite.config.ts")], appDir);
     run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(appDir, "playwright.config.ts"), "--reporter=line"], appDir);
     const screenshotPath = resolve(appDir, "tests/reports/screenshot.png");
+    const screenshotReport = JSON.parse(readFileSync(resolve(appDir, "tests/reports/screenshot.json"), "utf8")) as {
+      readonly profile?: Record<string, unknown>;
+    };
     const screenshotBytes = statSync(screenshotPath).size;
     return {
       pass: screenshotBytes > 1000,
-      detail: `agent simulation scaffolded ${template}, built it, ran route health, and wrote ${screenshotBytes} screenshot bytes`,
+      detail: `agent simulation scaffolded ${template}, built it, ran route health, and wrote ${screenshotBytes} screenshot bytes with profile=${JSON.stringify(screenshotReport.profile ?? {})}`,
       appDir,
       template,
       screenshotBytes
@@ -213,6 +223,57 @@ export const assets = defineAuraAssets({
       template
     };
   }
+}
+
+function writeAgentSimulationScreenshotSpec(targetDir: string): void {
+  writeFileSync(resolve(targetDir, "tests/screenshot.spec.ts"), `import { mkdirSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { expect, test } from "@playwright/test";
+
+test("agent docs hello-world scene renders the typed robot asset", async ({ page }) => {
+  await page.goto("/");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
+  const canvas = page.locator("canvas");
+  await expect(canvas).toBeVisible();
+  const profile = await canvas.evaluate((element) => {
+    const target = element as HTMLCanvasElement;
+    const gl = target.getContext("webgl2", { preserveDrawingBuffer: true });
+    if (!gl) return { error: "missing-webgl2", centerObjectPixels: 0, assetReady: false, uniqueBuckets: 0 };
+    const pixels = new Uint8Array(target.width * target.height * 4);
+    gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    const buckets = new Set<string>();
+    let centerObjectPixels = 0;
+    for (let y = 0; y < target.height; y += 4) {
+      for (let x = 0; x < target.width; x += 4) {
+        if (x > target.width * 0.76 && y > target.height * 0.74) continue;
+        const offset = (y * target.width + x) * 4;
+        const r = pixels[offset] ?? 0;
+        const g = pixels[offset + 1] ?? 0;
+        const b = pixels[offset + 2] ?? 0;
+        const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+        if (luminance > 28) buckets.add(\`\${r >> 5}-\${g >> 5}-\${b >> 5}\`);
+        const inCenter = x > target.width * 0.32 && x < target.width * 0.68 && y > target.height * 0.22 && y < target.height * 0.82;
+        if (inCenter && luminance > 34) centerObjectPixels += 1;
+      }
+    }
+    const route = (window as unknown as { __AURA3D_ROUTE_READY__?: { diagnostics?: { assets?: Array<{ id: string; status: string }> } } }).__AURA3D_ROUTE_READY__;
+    return {
+      centerObjectPixels,
+      assetReady: route?.diagnostics?.assets?.some((asset) => asset.id === "robot" && asset.status === "ready") ?? false,
+      uniqueBuckets: buckets.size
+    };
+  });
+  expect(profile.error).toBeUndefined();
+  expect(profile.assetReady).toBe(true);
+  expect(profile.centerObjectPixels).toBeGreaterThan(600);
+  expect(profile.uniqueBuckets).toBeGreaterThan(10);
+  const screenshot = await canvas.screenshot();
+  expect(screenshot.byteLength).toBeGreaterThan(1000);
+  mkdirSync(resolve("tests/reports"), { recursive: true });
+  writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
+  writeFileSync(resolve("tests/reports/screenshot.json"), \`\${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\\n\`);
+});
+`);
 }
 
 function writeWorkspaceViteConfig(targetDir: string): void {

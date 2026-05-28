@@ -34,6 +34,15 @@ const cases: ErrorCase[] = [
     expectedTerms: ["Unsupported Aura3D asset manifest schema"]
   },
   {
+    id: "missing-asset-manifest",
+    run: () => {
+      rmSync(resolve(outRoot, "aura.assets.json"), { force: true });
+      rmSync(resolve(outRoot, "src"), { recursive: true, force: true });
+      return validateAssets({ projectDir: outRoot });
+    },
+    expectedTerms: ["Missing aura.assets.json", "Suggested fix", "aura3d assets add"]
+  },
+  {
     id: "missing-package-json-doctor",
     run: () => {
       writeAssetManifest(outRoot, { schema: "aura3d.assets/1.0", assetBasePath: "/aura-assets/", outputDir: "public/aura-assets", typegen: "src/aura-assets.ts", assets: [] });
@@ -108,4 +117,3 @@ function createMinimalGlb(name: string): Buffer {
   header.write("JSON", 16, "utf8");
   return Buffer.concat([header, jsonChunk]);
 }
-

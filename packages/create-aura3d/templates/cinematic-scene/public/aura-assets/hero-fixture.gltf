@@ -1,9 +1,0 @@
-{
-  "asset": { "version": "2.0", "generator": "Aura3D template fixture" },
-  "scene": 0,
-  "scenes": [{ "nodes": [] }],
-  "nodes": [],
-  "materials": [{ "name": "rain coat" }],
-  "animations": [{ "name": "idle" }],
-  "accessors": [{ "min": [-0.5, 0, -0.35], "max": [0.5, 1.8, 0.35] }]
-}

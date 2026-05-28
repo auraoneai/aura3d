@@ -52,15 +52,15 @@ try {
     console.log(`Aura3D CLI
 
 Commands:
-  npx @aura3d/cli@latest assets add ./model.glb --name robot
-  npx @aura3d/cli@latest assets scan ./assets
-  npx @aura3d/cli@latest assets validate
-  npx @aura3d/cli@latest assets list
-  npx @aura3d/cli@latest assets typegen
-  npx @aura3d/cli@latest assets thumbnail
-  npx @aura3d/cli@latest doctor
-  npx @aura3d/cli@latest check-deploy --dist dist
-  npx @aura3d/cli@latest init --agent all`);
+  aura3d assets add ./model.glb --name robot
+  aura3d assets scan ./assets
+  aura3d assets validate
+  aura3d assets list
+  aura3d assets typegen
+  aura3d assets thumbnail
+  aura3d doctor
+  aura3d check-deploy --dist dist
+  aura3d init --agent all`);
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : String(error));

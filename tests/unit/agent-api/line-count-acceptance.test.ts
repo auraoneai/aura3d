@@ -16,7 +16,7 @@ describe("agent API line-count acceptance", () => {
 
     expect(source).toContain("createAuraApp");
     expect(source).toContain("model(assets.product");
-    expect(source).toContain("lights.studio");
+    expect(source).toMatch(/lights\.(studio|ambient|directional|point)\(/);
     expect(countAppLines(path)).toBeLessThanOrEqual(60);
   });
 

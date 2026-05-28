@@ -1,9 +1,0 @@
-{
-  "asset": { "version": "2.0", "generator": "Aura3D example fixture" },
-  "scene": 0,
-  "scenes": [{ "nodes": [] }],
-  "nodes": [],
-  "materials": [{ "name": "blue shell" }],
-  "animations": [{ "name": "idle" }],
-  "accessors": [{ "min": [-0.5, 0, -0.4], "max": [0.5, 1.6, 0.4] }]
-}

@@ -59,6 +59,8 @@ const appsClassification = readText("docs/project/apps-classification.md");
 const rootPackage = readJson<{ files?: string[]; scripts?: Record<string, string> }>("package.json");
 const createPackage = readJson<{ files?: string[]; name?: string; bin?: Record<string, string> }>("packages/create-aura3d/package.json");
 const cliPackage = readJson<{ bin?: Record<string, string> }>("packages/aura3d-cli/package.json");
+const codexScreenshotProfile = readJson<{ profile?: Record<string, number> }>("tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json");
+const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
 
 const versionTerms = [/\bV[234]\b/i, /Path A/i, /Path B/i, /path-a/i, /path-b/i, /check:v4/i, /__v4/i, /aura3d-v4/i];
 const draftTerms = [
@@ -144,6 +146,25 @@ const checks: ReleaseCheck[] = [
     id: "root-package-ships-only-starter-templates",
     pass: (rootPackage.files ?? []).filter((file) => file.startsWith("templates/")).every((file) => starterTemplates.some((template) => file === `templates/${template}`)),
     detail: `root template files: ${(rootPackage.files ?? []).filter((file) => file.startsWith("templates/")).join(", ")}`
+  },
+  {
+    id: "codex-dogfood-screenshot-profile-present",
+    pass:
+      Number(codexScreenshotProfile.profile?.yellowPixels ?? 0) > 800 &&
+      Number(codexScreenshotProfile.profile?.rainPixels ?? 0) > 70 &&
+      Number(codexScreenshotProfile.profile?.centerObjectPixels ?? 0) > 900 &&
+      Number(codexScreenshotProfile.profile?.uniqueBuckets ?? 0) > 18,
+    detail: `codex profile=${JSON.stringify(codexScreenshotProfile.profile ?? {})}`
+  },
+  {
+    id: "fresh-codex-context-result-documented",
+    pass:
+      freshCodexResult.includes("API hallucination count | 0") &&
+      freshCodexResult.includes("Asset path error count | 0") &&
+      freshCodexResult.includes("Browser backend | `webgl2`") &&
+      freshCodexResult.includes("Initial model | `product`") &&
+      freshCodexResult.includes("Click-swapped model | `hero`"),
+    detail: freshCodexResult ? "fresh Codex context-only result is documented" : "missing docs/project/fresh-codex-agent-context-results.md"
   }
 ];
 
@@ -153,17 +174,22 @@ const claims: ClaimEvidence[] = [
   claim("Users bring their own assets.", statusFromReport("tests/reports/asset-corpus.json"), ["tools/asset-corpus/index.ts", "tests/reports/asset-corpus.json"], "Run and expand asset corpus against real external GLBs."),
   claim("Aura3D provides typed asset references.", statusFrom("check:assets-cli"), ["pnpm run check:assets-cli", "tests/unit/aura3d-cli/assets.test.ts"]),
   claim("Aura3D provides starter templates.", statusFrom("check:templates"), ["pnpm run check:templates", "packages/create-aura3d/templates"]),
+  claim("Starter templates render through WebGL2 and have scene-specific screenshot profile checks.", statusFrom("check:templates"), ["packages/create-aura3d/templates/*/tests/screenshot.spec.ts", "tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json"]),
   claim("Aura3D provides diagnostics.", statusFrom("check:devtools"), ["pnpm run check:devtools", "packages/engine/src/devtools"]),
   claim("Aura3D provides screenshots.", statusFrom("check:examples"), ["pnpm run check:examples", "tests/browser/examples-route-health.spec.ts"]),
   claim("Aura3D provides static deployment checks.", statusFrom("check:deployment"), ["pnpm run check:deployment", "packages/aura3d-cli/src/index.ts"]),
-  claim("@aura3d/engine exposes the public engine surface.", statusFrom("check:agent-api"), ["packages/engine/src/agent-api/index.ts", "tools/agent-api-surface/index.ts"]),
-  claim("@aura3d/react is an optional thin React adapter.", statusFrom("check:agent-api"), ["packages/react/src/index.ts", "tests/unit/react-adapter/react-adapter.test.ts"]),
+  claim("Public packages work from packed artifacts in clean npm projects.", statusFrom("check:clean-install"), ["pnpm run check:clean-install", "tests/reports/package-clean-install.json"]),
+  claim("@aura3d/engine exposes the public engine surface.", statusFrom("check:public-api"), ["packages/engine/src/agent-api/index.ts", "tools/public-api-contract/index.ts"]),
+  claim("@aura3d/react is an optional thin React adapter.", statusFrom("check:public-api"), ["packages/react/src/index.ts", "tools/public-api-contract/index.ts"]),
   claim("@aura3d/cli supports asset, doctor, deployment, serve, and agent-file flows.", statusFrom("check:assets-cli"), ["packages/aura3d-cli/src/cli.ts", "packages/aura3d-cli/src/index.ts"]),
-  claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"], "Align package name with public npx command or update every public command."),
-  claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Codex self-test, then Claude Code, Cursor, and Copilot."),
+  claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
+  claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
+  claim("A fresh Codex context-only run can build a prompt-aligned WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run."),
+  claim("Codex dogfood screenshots are prompt-aligned by pixel profile, not only nonblank.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
-  claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md"], "Verify with generated app and typed assets."),
+  claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
   claim("The active starter-template directory contains only the three starter templates.", checkStatus("active-template-directory-exactly-three"), ["packages/create-aura3d/templates"]),
+  claim("The three starter templates install, build, render, preview, and recover from common asset errors in clean directories.", statusFrom("check:clean-install"), ["docs/project/clean-install-results.md", "tests/reports/package-clean-install.json"]),
   claim("Held-back template experiments are outside the active starter-template directory and documented in archive.", checkStatus("held-back-template-archive-present"), ["archive/held-back-create-aura3d-templates/README.md"]),
   claim("Active apps directories are classified.", checkStatus("apps-classification-covers-active-apps"), ["docs/project/apps-classification.md"]),
   claim("Marketing speaks in product and workflow language.", statusFrom("check:marketing-truth"), ["marketing/index.html", "tools/marketing-truth/index.ts"]),
@@ -194,6 +220,7 @@ function checkStatus(id: string): EvidenceStatus {
 function statusFrom(scriptName: string): EvidenceStatus {
   const reportHints: Record<string, string> = {
     "check:agent-api": "tests/reports/agent-api-surface.json",
+    "check:public-api": "tests/reports/public-api-contract.json",
     "check:assets-cli": "tests/reports/asset-cli.json",
     "check:templates": "tests/reports/agent-templates.json",
     "check:examples": "tests/reports/agent-examples.json",
@@ -201,7 +228,8 @@ function statusFrom(scriptName: string): EvidenceStatus {
     "check:deployment": "tests/reports/agent-deployment.json",
     "check:docs-site": "tests/reports/docs-site.json",
     "check:bundle-size": "tests/reports/bundle-size.json",
-    "check:marketing-truth": "tests/reports/marketing-truth.json"
+    "check:marketing-truth": "tests/reports/marketing-truth.json",
+    "check:clean-install": "tests/reports/package-clean-install.json"
   };
   return statusFromReport(reportHints[scriptName] ?? "");
 }
@@ -285,7 +313,8 @@ function readText(path: string): string {
 }
 
 function readJson<T>(path: string): T {
-  return JSON.parse(readText(path)) as T;
+  const text = readText(path);
+  return (text ? JSON.parse(text) : {}) as T;
 }
 
 function sameSet(a: readonly string[], b: readonly string[]): boolean {

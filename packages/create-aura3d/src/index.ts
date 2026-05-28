@@ -1,5 +1,5 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const CREATE_AURA3D_TEMPLATES = ["product-viewer", "cinematic-scene", "mini-game"] as const;
@@ -30,7 +30,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   mkdirSync(targetDir, { recursive: true });
   cpSync(templateDir, targetDir, {
     recursive: true,
-    filter: (source) => !source.split(/[\\/]/).some((part) => part === "node_modules" || part === "dist")
+    filter: (source) => !relative(templateDir, source).split(/[\\/]/).some((part) => part === "node_modules" || part === "dist")
   });
   const packagePath = resolve(targetDir, "package.json");
   const packageJson = JSON.parse(readFileSync(packagePath, "utf8")) as {

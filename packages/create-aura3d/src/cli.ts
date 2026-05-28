@@ -2,6 +2,17 @@
 import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "./index.js";
 
 const args = process.argv.slice(2);
+if (args.includes("--help") || args.includes("-h")) {
+  console.log(`create-aura3d
+
+Usage:
+  create-aura3d demo --template product-viewer
+
+Templates:
+  ${CREATE_AURA3D_TEMPLATES.join("\n  ")}
+`);
+  process.exit(0);
+}
 const targetDir = args.find((arg) => !arg.startsWith("-")) ?? "aura3d-app";
 const template = readOption("--template") ?? "product-viewer";
 if (!CREATE_AURA3D_TEMPLATES.includes(template as CreateA3DTemplate)) {

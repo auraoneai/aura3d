@@ -470,7 +470,7 @@ export function scene(): AuraSceneBuilder {
   return new AuraSceneBuilder();
 }
 
-export type AuraBackend = "canvas2d" | "headless";
+export type AuraBackend = "webgl2" | "webgpu" | "canvas2d" | "headless";
 
 export interface AuraDiagnostics {
   readonly backend: AuraBackend;
@@ -539,7 +539,9 @@ export function createAuraApp(target: string | HTMLElement | HTMLCanvasElement, 
   const snapshot = normalizeSceneSnapshot(options.scene);
   const diagnosticsState = createInitialDiagnostics(snapshot);
   const canvas = resolveCanvas(target);
-  const backend: AuraBackend = canvas ? "canvas2d" : "headless";
+  const productionNodes = snapshot.nodes.filter(isWebGLRenderableNode);
+  const shouldUseProductionRenderer = Boolean(canvas && productionNodes.length > 0 && typeof window !== "undefined");
+  const backend: AuraBackend = shouldUseProductionRenderer ? "webgl2" : canvas ? "canvas2d" : "headless";
   const warnings = collectGeneratedCodeWarnings(snapshot);
   validateSceneAssets(snapshot, diagnosticsState.assets);
   diagnosticsState.warnings.push(...warnings);
@@ -550,6 +552,7 @@ export function createAuraApp(target: string | HTMLElement | HTMLCanvasElement, 
   const overlay = canvas && shouldRenderOverlay(options.diagnostics, snapshot) ? createDiagnosticsOverlay(canvas, diagnosticsState) : undefined;
   let disposed = false;
   let animationHandle = 0;
+  let productionController: { dispose(): void } | undefined;
   let lastTime = 0;
   const render = (time = performanceNow()) => {
     if (disposed) return;
@@ -563,12 +566,28 @@ export function createAuraApp(target: string | HTMLElement | HTMLCanvasElement, 
       animationHandle = requestAnimationFrame(render);
     }
   };
-  render();
-  markRouteReady(snapshot, diagnosticsState);
+  if (shouldUseProductionRenderer && canvas) {
+    void startProductionRender(canvas, snapshot, diagnosticsState, options, overlay)
+      .then((controller) => {
+        productionController = controller;
+        if (!disposed) markRouteReady(snapshot, diagnosticsState);
+      })
+      .catch((error: unknown) => {
+        diagnosticsState.backend = "webgl2";
+        diagnosticsState.errors.push(productionRenderErrorMessage(error));
+        overlay?.update();
+        markRouteError(snapshot, diagnosticsState);
+      });
+  } else {
+    render();
+    markRouteReady(snapshot, diagnosticsState);
+  }
   return {
     canvas,
     scene: snapshot,
-    backend,
+    get backend() {
+      return diagnosticsState.backend;
+    },
     diagnostics() {
       return snapshotDiagnostics(diagnosticsState);
     },
@@ -578,6 +597,7 @@ export function createAuraApp(target: string | HTMLElement | HTMLCanvasElement, 
     dispose() {
       disposed = true;
       if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      productionController?.dispose();
       overlay?.dispose();
     }
   };
@@ -622,8 +642,1043 @@ export function captureAuraScreenshot(target?: HTMLCanvasElement): AuraScreensho
 export function createAuraAssetLoadError(asset: AuraAssetRef<"model">, reason: string): AuraRuntimeError {
   return new AuraRuntimeError(
     "failed-glb-load",
-    `Aura3D failed to load GLB asset "${asset.id}" from "${asset.url}": ${reason}. Suggested fix: run npx @aura3d/cli@latest assets validate and confirm the URL is served by your app.`
+    `Aura3D failed to load GLB asset "${asset.id}" from "${asset.url}": ${reason}. Suggested fix: run aura3d assets validate and confirm the URL is served by your app.`
   );
+}
+
+interface WebGLRenderController {
+  dispose(): void;
+}
+
+function isRenderableModelNode(node: AuraSceneNode): node is AuraModelNode {
+  return node.kind === "model" && node.visible !== false && Boolean(node.asset.url) && ["glb", "gltf"].includes(node.asset.format);
+}
+
+function isWebGLRenderableNode(node: AuraSceneNode): node is AuraModelNode | AuraPrimitiveNode {
+  return isRenderableModelNode(node) || node.kind === "primitive";
+}
+
+async function startProductionRender(
+  canvas: HTMLCanvasElement,
+  snapshot: AuraSceneSnapshot,
+  diagnosticsState: MutableDiagnostics,
+  options: AuraCreateAppOptions,
+  overlay?: { update(): void }
+): Promise<WebGLRenderController> {
+  const renderableNode = snapshot.nodes.find(isWebGLRenderableNode);
+  if (!renderableNode) {
+    throw new AuraRuntimeError(
+      "missing-asset",
+      "Aura3D production rendering requires at least one typed model asset or primitive. Suggested fix: add model(assets.product), primitives.box(), primitives.sphere(), or primitives.plane()."
+      );
+  }
+
+  const renderer = await createWebGLSceneRenderer(canvas, snapshot);
+
+  let disposed = false;
+  let animationHandle = 0;
+  const renderFrame = (time = performanceNow()) => {
+    if (disposed) return;
+    const drawCalls = renderer.render(time);
+    diagnosticsState.backend = "webgl2";
+    diagnosticsState.fps = diagnosticsState.fps || 60;
+    diagnosticsState.drawCalls = drawCalls;
+    diagnosticsState.renderSize = [canvas.width, canvas.height];
+    overlay?.update();
+    if (options.autoStart !== false && typeof requestAnimationFrame !== "undefined") {
+      animationHandle = requestAnimationFrame(renderFrame);
+    }
+  };
+
+  renderFrame();
+
+  return {
+    dispose() {
+      disposed = true;
+      if (animationHandle && typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(animationHandle);
+      renderer.dispose();
+    }
+  };
+}
+
+function colorToClearColor(color: AuraColor): readonly [number, number, number, number] {
+  if (typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color)) {
+    const value = Number.parseInt(color.slice(1), 16);
+    return [((value >> 16) & 0xff) / 255, ((value >> 8) & 0xff) / 255, (value & 0xff) / 255, 1];
+  }
+  return [0.02, 0.025, 0.035, 1];
+}
+
+interface WebGLSceneRenderer {
+  render(time: number): number;
+  dispose(): void;
+}
+
+interface WebGLPrimitive {
+  readonly position: WebGLBuffer;
+  readonly normal: WebGLBuffer;
+  readonly index?: WebGLBuffer;
+  readonly count: number;
+  readonly mode: number;
+  readonly indexType?: number;
+  readonly color?: readonly [number, number, number];
+}
+
+interface WebGLModel {
+  readonly node?: AuraModelNode | AuraPrimitiveNode;
+  readonly primitives: readonly WebGLPrimitive[];
+  readonly bounds: GltfBounds;
+  readonly color: readonly [number, number, number];
+  readonly normalizeToUnit: boolean;
+  readonly modelMatrix?: Float32Array;
+}
+
+interface GltfPrimitive {
+  readonly positions: Float32Array;
+  readonly normals: Float32Array;
+  readonly indices?: Uint16Array | Uint32Array;
+  readonly mode: number;
+  readonly color?: readonly [number, number, number];
+}
+
+interface GltfModel {
+  readonly primitives: readonly GltfPrimitive[];
+  readonly bounds: GltfBounds;
+}
+
+interface GltfBounds {
+  readonly min: AuraVec3;
+  readonly max: AuraVec3;
+}
+
+interface GltfJson {
+  readonly scene?: number;
+  readonly scenes?: readonly {
+    readonly nodes?: readonly number[];
+  }[];
+  readonly nodes?: readonly {
+    readonly name?: string;
+    readonly mesh?: number;
+    readonly children?: readonly number[];
+    readonly matrix?: readonly number[];
+    readonly translation?: readonly number[];
+    readonly rotation?: readonly number[];
+    readonly scale?: readonly number[];
+  }[];
+  readonly buffers?: readonly { readonly uri?: string; readonly byteLength?: number }[];
+  readonly bufferViews?: readonly { readonly buffer: number; readonly byteOffset?: number; readonly byteLength: number; readonly byteStride?: number }[];
+  readonly accessors?: readonly {
+    readonly bufferView?: number;
+    readonly byteOffset?: number;
+    readonly componentType: number;
+    readonly count: number;
+    readonly type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT4";
+    readonly normalized?: boolean;
+    readonly min?: readonly number[];
+    readonly max?: readonly number[];
+  }[];
+  readonly meshes?: readonly {
+    readonly primitives?: readonly {
+      readonly attributes?: Record<string, number>;
+      readonly indices?: number;
+      readonly mode?: number;
+      readonly material?: number;
+    }[];
+  }[];
+  readonly materials?: readonly {
+    readonly pbrMetallicRoughness?: {
+      readonly baseColorFactor?: readonly number[];
+    };
+    readonly emissiveFactor?: readonly number[];
+  }[];
+}
+
+async function createWebGLSceneRenderer(canvas: HTMLCanvasElement, snapshot: AuraSceneSnapshot): Promise<WebGLSceneRenderer> {
+  const gl = canvas.getContext("webgl2", { antialias: true, preserveDrawingBuffer: true });
+  if (!gl) {
+    throw new AuraRuntimeError("backend-fallback", "Aura3D could not create a WebGL2 renderer. Suggested fix: use a WebGL2-capable browser.");
+  }
+  const backdrop = createWebGLBackdrop(gl, snapshot);
+  const program = createWebGLProgram(gl);
+  const modelNodes = snapshot.nodes.filter(isRenderableModelNode);
+  const assetModels = await Promise.all(modelNodes.map(async (node) => createWebGLModel(gl, node, await loadGltfForWebGL(node.asset.url))));
+  const primitiveModels = snapshot.nodes
+    .filter((node): node is AuraPrimitiveNode => node.kind === "primitive")
+    .map((node) => createWebGLPrimitiveModel(gl, node));
+  const rainModels = snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")
+    ? [createWebGLRainModel(gl)]
+    : [];
+  const models = [...assetModels, ...primitiveModels, ...rainModels];
+  const background = colorToClearColor(snapshot.background);
+  gl.enable(gl.DEPTH_TEST);
+  gl.disable(gl.CULL_FACE);
+
+  return {
+    render(time) {
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.clearColor(background[0], background[1], background[2], background[3]);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      let drawCalls = backdrop.render();
+      gl.useProgram(program.program);
+      gl.enable(gl.DEPTH_TEST);
+      const viewProjection = createViewProjection(snapshot.camera, canvas.width / Math.max(1, canvas.height), time);
+      gl.uniformMatrix4fv(program.uniforms.viewProjection, false, viewProjection);
+      gl.uniform3fv(program.uniforms.lightDirection, new Float32Array(normalize3([0.45, 0.82, 0.36])));
+      for (const modelEntry of models) {
+        const modelMatrix = modelEntry.modelMatrix ?? createModelMatrix(modelEntry.node, modelEntry.bounds, modelEntry.normalizeToUnit);
+        gl.uniformMatrix4fv(program.uniforms.model, false, modelMatrix);
+        for (const primitiveEntry of modelEntry.primitives) {
+          gl.uniform3fv(program.uniforms.color, new Float32Array(primitiveEntry.color ?? modelEntry.color));
+          gl.bindBuffer(gl.ARRAY_BUFFER, primitiveEntry.position);
+          gl.enableVertexAttribArray(program.attributes.position);
+          gl.vertexAttribPointer(program.attributes.position, 3, gl.FLOAT, false, 0, 0);
+          gl.bindBuffer(gl.ARRAY_BUFFER, primitiveEntry.normal);
+          gl.enableVertexAttribArray(program.attributes.normal);
+          gl.vertexAttribPointer(program.attributes.normal, 3, gl.FLOAT, false, 0, 0);
+          if (primitiveEntry.index && primitiveEntry.indexType) {
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, primitiveEntry.index);
+            gl.drawElements(primitiveEntry.mode, primitiveEntry.count, primitiveEntry.indexType, 0);
+          } else {
+            gl.drawArrays(primitiveEntry.mode, 0, primitiveEntry.count);
+          }
+          drawCalls += 1;
+        }
+      }
+      return drawCalls;
+    },
+    dispose() {
+      for (const modelEntry of models) {
+        for (const primitiveEntry of modelEntry.primitives) {
+          gl.deleteBuffer(primitiveEntry.position);
+          gl.deleteBuffer(primitiveEntry.normal);
+          if (primitiveEntry.index) gl.deleteBuffer(primitiveEntry.index);
+        }
+      }
+      gl.deleteProgram(program.program);
+      backdrop.dispose();
+    }
+  };
+}
+
+function createWebGLBackdrop(gl: WebGL2RenderingContext, snapshot: AuraSceneSnapshot): { render(): number; dispose(): void } {
+  const program = createBackdropProgram(gl);
+  const palette = createBackdropPalette(snapshot);
+  const vertices = createBuffer(gl, gl.ARRAY_BUFFER, new Float32Array([
+    -1, -1,
+    1, -1,
+    -1, 1,
+    1, 1
+  ]));
+  return {
+    render() {
+      gl.disable(gl.DEPTH_TEST);
+      gl.depthMask(false);
+      gl.useProgram(program.program);
+      gl.uniform3fv(program.uniforms.low, new Float32Array(palette.low));
+      gl.uniform3fv(program.uniforms.mid, new Float32Array(palette.mid));
+      gl.uniform3fv(program.uniforms.high, new Float32Array(palette.high));
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
+      gl.enableVertexAttribArray(program.attribute);
+      gl.vertexAttribPointer(program.attribute, 2, gl.FLOAT, false, 0, 0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.depthMask(true);
+      return 1;
+    },
+    dispose() {
+      gl.deleteBuffer(vertices);
+      gl.deleteProgram(program.program);
+    }
+  };
+}
+
+function createBackdropProgram(gl: WebGL2RenderingContext): {
+  readonly program: WebGLProgram;
+  readonly attribute: number;
+  readonly uniforms: {
+    readonly low: WebGLUniformLocation;
+    readonly mid: WebGLUniformLocation;
+    readonly high: WebGLUniformLocation;
+  };
+} {
+  const vertex = compileShader(gl, gl.VERTEX_SHADER, `#version 300 es
+precision highp float;
+in vec2 a_position;
+out vec2 v_uv;
+void main() {
+  v_uv = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`);
+  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, `#version 300 es
+precision highp float;
+in vec2 v_uv;
+uniform vec3 u_low;
+uniform vec3 u_mid;
+uniform vec3 u_high;
+out vec4 outColor;
+void main() {
+  float band = smoothstep(0.05, 0.78, v_uv.y);
+  vec3 color = mix(u_low, u_mid, band);
+  float stageGlow = smoothstep(0.62, 0.0, abs(v_uv.x - 0.50)) * smoothstep(0.08, 0.74, v_uv.y);
+  color += u_mid * stageGlow * 0.18;
+  float vignette = smoothstep(0.98, 0.24, distance(v_uv, vec2(0.50, 0.46)));
+  color = mix(u_high, color, vignette);
+  outColor = vec4(color, 1.0);
+}`);
+  const program = gl.createProgram();
+  if (!program) throw new AuraRuntimeError("backend-fallback", "Aura3D WebGL2 backdrop program allocation failed.");
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new AuraRuntimeError("backend-fallback", `Aura3D WebGL2 backdrop shader link failed: ${gl.getProgramInfoLog(program) ?? "unknown error"}`);
+  }
+  return {
+    program,
+    attribute: gl.getAttribLocation(program, "a_position"),
+    uniforms: {
+      low: requiredUniform(gl, program, "u_low"),
+      mid: requiredUniform(gl, program, "u_mid"),
+      high: requiredUniform(gl, program, "u_high")
+    }
+  };
+}
+
+function createBackdropPalette(snapshot: AuraSceneSnapshot): {
+  readonly low: readonly [number, number, number];
+  readonly mid: readonly [number, number, number];
+  readonly high: readonly [number, number, number];
+} {
+  const base = colorToRgb(snapshot.background);
+  const effectColor = snapshot.nodes.find((node): node is AuraEffectNode => node.kind === "effect" && Boolean(node.color))?.color;
+  const accent = effectColor ? colorToRgb(effectColor) : base;
+  return {
+    low: scaleRgb(base, 0.72),
+    mid: clampRgb(mixRgb(scaleRgb(base, 1.55), accent, 0.28)),
+    high: scaleRgb(base, 0.16)
+  };
+}
+
+function createWebGLModel(gl: WebGL2RenderingContext, node: AuraModelNode, modelData: GltfModel): WebGLModel {
+  return {
+    node,
+    bounds: modelData.bounds,
+    color: colorToRgb(node.material?.color ?? "#8fb4ff"),
+    normalizeToUnit: true,
+    primitives: modelData.primitives.map((primitiveEntry) => {
+      const position = createBuffer(gl, gl.ARRAY_BUFFER, primitiveEntry.positions);
+      const normal = createBuffer(gl, gl.ARRAY_BUFFER, primitiveEntry.normals);
+      const index = primitiveEntry.indices ? createBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, primitiveEntry.indices) : undefined;
+      return {
+        position,
+        normal,
+        ...(index ? { index } : {}),
+        count: primitiveEntry.indices?.length ?? primitiveEntry.positions.length / 3,
+        mode: webglDrawMode(gl, primitiveEntry.mode),
+        color: node.material?.color ? colorToRgb(node.material.color) : primitiveEntry.color,
+        ...(primitiveEntry.indices ? { indexType: primitiveEntry.indices instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT } : {})
+      };
+    })
+  };
+}
+
+function createWebGLPrimitiveModel(gl: WebGL2RenderingContext, node: AuraPrimitiveNode): WebGLModel {
+  const primitive = node.primitive === "sphere" ? createSphereGeometry() : node.primitive === "box" ? createBoxGeometry() : createPlaneGeometry();
+  return {
+    node,
+    bounds: primitive.bounds,
+    color: colorToRgb(node.material?.emissive ?? node.material?.color ?? "#d7dee8"),
+    normalizeToUnit: false,
+    primitives: [{
+      position: createBuffer(gl, gl.ARRAY_BUFFER, primitive.positions),
+      normal: createBuffer(gl, gl.ARRAY_BUFFER, primitive.normals),
+      index: createBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, primitive.indices),
+      count: primitive.indices.length,
+      mode: gl.TRIANGLES,
+      indexType: gl.UNSIGNED_SHORT
+    }]
+  };
+}
+
+function createWebGLRainModel(gl: WebGL2RenderingContext): WebGLModel {
+  const lineCount = 90;
+  const positions = new Float32Array(lineCount * 2 * 3);
+  const normals = new Float32Array(lineCount * 2 * 3);
+  const indices = new Uint16Array(lineCount * 2);
+  for (let index = 0; index < lineCount; index += 1) {
+    const x = ((index * 37) % 100) / 18 - 2.8;
+    const z = ((index * 53) % 100) / 20 - 2.5;
+    const y = 0.65 + ((index * 29) % 100) / 45;
+    const base = index * 6;
+    positions.set([x, y, z, x - 0.08, y - 0.42, z + 0.04], base);
+    normals.set([0, 1, 0, 0, 1, 0], base);
+    indices[index * 2] = index * 2;
+    indices[index * 2 + 1] = index * 2 + 1;
+  }
+  return {
+    bounds: { min: [-3, 0, -3], max: [3, 3, 3] },
+    color: [0.62, 0.82, 1],
+    normalizeToUnit: false,
+    modelMatrix: identity4(),
+    primitives: [{
+      position: createBuffer(gl, gl.ARRAY_BUFFER, positions),
+      normal: createBuffer(gl, gl.ARRAY_BUFFER, normals),
+      index: createBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, indices),
+      count: indices.length,
+      mode: gl.LINES,
+      indexType: gl.UNSIGNED_SHORT
+    }]
+  };
+}
+
+function createBuffer(gl: WebGL2RenderingContext, target: number, data: Float32Array | Uint16Array | Uint32Array): WebGLBuffer {
+  const buffer = gl.createBuffer();
+  if (!buffer) throw new AuraRuntimeError("backend-fallback", "Aura3D WebGL2 buffer allocation failed. Suggested fix: reload the page or reduce asset complexity.");
+  gl.bindBuffer(target, buffer);
+  gl.bufferData(target, data as unknown as BufferSource, gl.STATIC_DRAW);
+  return buffer;
+}
+
+function createWebGLProgram(gl: WebGL2RenderingContext): {
+  readonly program: WebGLProgram;
+  readonly attributes: { readonly position: number; readonly normal: number };
+  readonly uniforms: {
+    readonly model: WebGLUniformLocation;
+    readonly viewProjection: WebGLUniformLocation;
+    readonly color: WebGLUniformLocation;
+    readonly lightDirection: WebGLUniformLocation;
+  };
+} {
+  const vertex = compileShader(gl, gl.VERTEX_SHADER, `#version 300 es
+precision highp float;
+in vec3 a_position;
+in vec3 a_normal;
+uniform mat4 u_model;
+uniform mat4 u_viewProjection;
+out vec3 v_normal;
+out vec3 v_world;
+void main() {
+  vec4 world = u_model * vec4(a_position, 1.0);
+  v_world = world.xyz;
+  v_normal = normalize(mat3(u_model) * a_normal);
+  gl_Position = u_viewProjection * world;
+}`);
+  const fragment = compileShader(gl, gl.FRAGMENT_SHADER, `#version 300 es
+precision highp float;
+in vec3 v_normal;
+in vec3 v_world;
+uniform vec3 u_color;
+uniform vec3 u_lightDirection;
+out vec4 outColor;
+void main() {
+  vec3 normal = normalize(v_normal);
+  float key = max(dot(normal, normalize(u_lightDirection)), 0.0);
+  float rim = pow(1.0 - max(dot(normal, normalize(vec3(0.0, 0.35, 1.0))), 0.0), 2.0);
+  vec3 color = u_color * (0.28 + key * 0.74) + vec3(0.35, 0.65, 1.0) * rim * 0.22;
+  outColor = vec4(pow(color, vec3(1.0 / 2.2)), 1.0);
+}`);
+  const program = gl.createProgram();
+  if (!program) throw new AuraRuntimeError("backend-fallback", "Aura3D WebGL2 program allocation failed.");
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new AuraRuntimeError("backend-fallback", `Aura3D WebGL2 shader link failed: ${gl.getProgramInfoLog(program) ?? "unknown error"}`);
+  }
+  const uniforms = {
+    model: requiredUniform(gl, program, "u_model"),
+    viewProjection: requiredUniform(gl, program, "u_viewProjection"),
+    color: requiredUniform(gl, program, "u_color"),
+    lightDirection: requiredUniform(gl, program, "u_lightDirection")
+  };
+  return {
+    program,
+    attributes: {
+      position: gl.getAttribLocation(program, "a_position"),
+      normal: gl.getAttribLocation(program, "a_normal")
+    },
+    uniforms
+  };
+}
+
+function compileShader(gl: WebGL2RenderingContext, type: number, source: string): WebGLShader {
+  const shader = gl.createShader(type);
+  if (!shader) throw new AuraRuntimeError("backend-fallback", "Aura3D WebGL2 shader allocation failed.");
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    throw new AuraRuntimeError("backend-fallback", `Aura3D WebGL2 shader compile failed: ${gl.getShaderInfoLog(shader) ?? "unknown error"}`);
+  }
+  return shader;
+}
+
+function requiredUniform(gl: WebGL2RenderingContext, program: WebGLProgram, name: string): WebGLUniformLocation {
+  const location = gl.getUniformLocation(program, name);
+  if (!location) throw new AuraRuntimeError("backend-fallback", `Aura3D WebGL2 shader is missing uniform ${name}.`);
+  return location;
+}
+
+function webglDrawMode(gl: WebGL2RenderingContext, mode: number): number {
+  if (mode === 0) return gl.POINTS;
+  if (mode === 1) return gl.LINES;
+  if (mode === 3) return gl.LINE_STRIP;
+  if (mode === 5) return gl.TRIANGLE_STRIP;
+  return gl.TRIANGLES;
+}
+
+async function loadGltfForWebGL(url: string): Promise<GltfModel> {
+  const absoluteUrl = new URL(url, document.baseURI).href;
+  const response = await fetch(absoluteUrl);
+  if (!response.ok) {
+    throw new AuraRuntimeError("failed-glb-load", `Aura3D failed to fetch model "${url}" (${response.status}). Suggested fix: confirm the asset is in public/aura-assets and run aura3d assets validate.`);
+  }
+  const bytes = await response.arrayBuffer();
+  const loaded = isGlb(bytes) ? parseGlb(bytes) : { json: JSON.parse(new TextDecoder().decode(bytes)) as GltfJson, buffers: [] as ArrayBuffer[] };
+  const buffers = loaded.buffers.length > 0 ? loaded.buffers : await loadExternalGltfBuffers(loaded.json, absoluteUrl);
+  return createGltfModel(loaded.json, buffers);
+}
+
+function isGlb(bytes: ArrayBuffer): boolean {
+  return new DataView(bytes).getUint32(0, true) === 0x46546c67;
+}
+
+function parseGlb(bytes: ArrayBuffer): { readonly json: GltfJson; readonly buffers: readonly ArrayBuffer[] } {
+  const view = new DataView(bytes);
+  if (view.getUint32(4, true) !== 2) {
+    throw new AuraRuntimeError("failed-glb-load", "Aura3D only supports glTF 2.0 GLB assets in the browser renderer.");
+  }
+  let offset = 12;
+  let json: GltfJson | undefined;
+  const buffers: ArrayBuffer[] = [];
+  while (offset + 8 <= bytes.byteLength) {
+    const chunkLength = view.getUint32(offset, true);
+    const chunkType = view.getUint32(offset + 4, true);
+    const chunk = bytes.slice(offset + 8, offset + 8 + chunkLength);
+    if (chunkType === 0x4e4f534a) json = JSON.parse(new TextDecoder().decode(chunk)) as GltfJson;
+    if (chunkType === 0x004e4942) buffers.push(chunk);
+    offset += 8 + chunkLength;
+  }
+  if (!json) throw new AuraRuntimeError("failed-glb-load", "Aura3D could not find a JSON chunk in the GLB asset.");
+  return { json, buffers };
+}
+
+async function loadExternalGltfBuffers(json: GltfJson, modelUrl: string): Promise<readonly ArrayBuffer[]> {
+  return await Promise.all((json.buffers ?? []).map(async (buffer) => {
+    if (!buffer.uri) return new ArrayBuffer(0);
+    if (buffer.uri.startsWith("data:")) return dataUriToArrayBuffer(buffer.uri);
+    const response = await fetch(new URL(buffer.uri, modelUrl).href);
+    if (!response.ok) throw new AuraRuntimeError("failed-glb-load", `Aura3D failed to fetch glTF buffer "${buffer.uri}" (${response.status}).`);
+    return await response.arrayBuffer();
+  }));
+}
+
+function dataUriToArrayBuffer(uri: string): ArrayBuffer {
+  const [, data = ""] = uri.split(",", 2);
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes.buffer;
+}
+
+function createGltfModel(json: GltfJson, buffers: readonly ArrayBuffer[]): GltfModel {
+  const primitives: GltfPrimitive[] = [];
+  let bounds: GltfBounds | undefined;
+
+  const pushMesh = (meshIndex: number, matrix: Float32Array): void => {
+    const mesh = json.meshes?.[meshIndex];
+    if (!mesh) return;
+    for (const primitive of mesh.primitives ?? []) {
+      const positionAccessor = primitive.attributes?.POSITION;
+      if (positionAccessor === undefined) continue;
+      const sourcePositions = readAccessor(json, buffers, positionAccessor, 3);
+      const sourceNormals = primitive.attributes?.NORMAL === undefined
+        ? createDefaultNormals(sourcePositions.length / 3)
+        : readAccessor(json, buffers, primitive.attributes.NORMAL, 3);
+      const positions = transformPositions(sourcePositions, matrix);
+      const normals = transformNormals(sourceNormals, matrix);
+      const indices = primitive.indices === undefined ? undefined : readIndices(json, buffers, primitive.indices);
+      const primitiveBounds = boundsFromPositions(positions);
+      bounds = bounds ? mergeBounds(bounds, primitiveBounds) : primitiveBounds;
+      primitives.push({
+        positions,
+        normals,
+        ...(indices ? { indices } : {}),
+        mode: primitive.mode ?? 4,
+        color: materialColor(json, primitive.material)
+      });
+    }
+  };
+
+  const visitNode = (nodeIndex: number, parentMatrix: Float32Array, stack: Set<number>): void => {
+    if (stack.has(nodeIndex)) return;
+    const node = json.nodes?.[nodeIndex];
+    if (!node) return;
+    const localMatrix = gltfNodeMatrix(node);
+    const worldMatrix = multiply4(parentMatrix, localMatrix);
+    const nextStack = new Set(stack);
+    nextStack.add(nodeIndex);
+    if (node.mesh !== undefined) pushMesh(node.mesh, worldMatrix);
+    for (const childIndex of node.children ?? []) visitNode(childIndex, worldMatrix, nextStack);
+  };
+
+  const sceneRoots = json.scenes?.[json.scene ?? 0]?.nodes;
+  if (json.nodes?.length && sceneRoots?.length) {
+    for (const nodeIndex of sceneRoots) visitNode(nodeIndex, identity4(), new Set());
+  } else if (json.nodes?.length) {
+    const childNodes = new Set<number>();
+    for (const node of json.nodes) for (const childIndex of node.children ?? []) childNodes.add(childIndex);
+    const roots = json.nodes.map((_, nodeIndex) => nodeIndex).filter((nodeIndex) => !childNodes.has(nodeIndex));
+    for (const nodeIndex of roots.length > 0 ? roots : json.nodes.map((_, nodeIndex) => nodeIndex)) visitNode(nodeIndex, identity4(), new Set());
+  } else {
+    for (let meshIndex = 0; meshIndex < (json.meshes?.length ?? 0); meshIndex += 1) pushMesh(meshIndex, identity4());
+  }
+
+  if (primitives.length === 0) {
+    throw new AuraRuntimeError("failed-glb-load", "Aura3D found no mesh primitives with POSITION data in the model. Suggested fix: export a visible mesh to GLB/glTF.");
+  }
+  return { primitives, bounds: bounds ?? { min: [-1, -1, -1], max: [1, 1, 1] } };
+}
+
+function materialColor(json: GltfJson, materialIndex: number | undefined): readonly [number, number, number] | undefined {
+  if (materialIndex === undefined) return undefined;
+  const materialEntry = json.materials?.[materialIndex];
+  const base = materialEntry?.pbrMetallicRoughness?.baseColorFactor;
+  if (base && base.length >= 3) return [clamp01(base[0]!), clamp01(base[1]!), clamp01(base[2]!)];
+  const emissive = materialEntry?.emissiveFactor;
+  if (emissive && emissive.length >= 3) return [clamp01(emissive[0]!), clamp01(emissive[1]!), clamp01(emissive[2]!)];
+  return undefined;
+}
+
+function createPlaneGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+  return {
+    positions: new Float32Array([
+      -0.5, 0, -0.5,
+      0.5, 0, -0.5,
+      0.5, 0, 0.5,
+      -0.5, 0, 0.5
+    ]),
+    normals: new Float32Array([
+      0, 1, 0,
+      0, 1, 0,
+      0, 1, 0,
+      0, 1, 0
+    ]),
+    indices: new Uint16Array([0, 1, 2, 0, 2, 3]),
+    bounds: { min: [-0.5, 0, -0.5], max: [0.5, 0, 0.5] }
+  };
+}
+
+function createBoxGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+  const positions = new Float32Array([
+    -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5,
+    0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5,
+    -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5,
+    -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5,
+    0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5,
+    -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5
+  ]);
+  const normals = new Float32Array([
+    0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1,
+    0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+    0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0,
+    0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+    1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+    -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0
+  ]);
+  return {
+    positions,
+    normals,
+    indices: new Uint16Array([
+      0, 1, 2, 0, 2, 3,
+      4, 5, 6, 4, 6, 7,
+      8, 9, 10, 8, 10, 11,
+      12, 13, 14, 12, 14, 15,
+      16, 17, 18, 16, 18, 19,
+      20, 21, 22, 20, 22, 23
+    ]),
+    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }
+  };
+}
+
+function createSphereGeometry(): { readonly positions: Float32Array; readonly normals: Float32Array; readonly indices: Uint16Array; readonly bounds: GltfBounds } {
+  const rows = 12;
+  const columns = 16;
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const indices: number[] = [];
+  for (let row = 0; row <= rows; row += 1) {
+    const v = row / rows;
+    const theta = v * Math.PI;
+    for (let column = 0; column <= columns; column += 1) {
+      const u = column / columns;
+      const phi = u * Math.PI * 2;
+      const x = Math.sin(theta) * Math.cos(phi);
+      const y = Math.cos(theta);
+      const z = Math.sin(theta) * Math.sin(phi);
+      positions.push(x * 0.5, y * 0.5, z * 0.5);
+      normals.push(x, y, z);
+    }
+  }
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const a = row * (columns + 1) + column;
+      const b = a + columns + 1;
+      indices.push(a, b, a + 1, b, b + 1, a + 1);
+    }
+  }
+  return {
+    positions: new Float32Array(positions),
+    normals: new Float32Array(normals),
+    indices: new Uint16Array(indices),
+    bounds: { min: [-0.5, -0.5, -0.5], max: [0.5, 0.5, 0.5] }
+  };
+}
+
+function readAccessor(json: GltfJson, buffers: readonly ArrayBuffer[], accessorIndex: number, expectedComponents: number): Float32Array {
+  const accessor = json.accessors?.[accessorIndex];
+  if (!accessor || accessor.bufferView === undefined) throw new AuraRuntimeError("failed-glb-load", `Aura3D could not read glTF accessor ${accessorIndex}.`);
+  const componentCount = componentCountForAccessor(accessor.type);
+  const output = new Float32Array(accessor.count * expectedComponents);
+  const view = json.bufferViews?.[accessor.bufferView];
+  if (!view) throw new AuraRuntimeError("failed-glb-load", `Aura3D could not read glTF bufferView ${accessor.bufferView}.`);
+  const buffer = buffers[view.buffer];
+  if (!buffer) throw new AuraRuntimeError("failed-glb-load", `Aura3D could not read glTF buffer ${view.buffer}.`);
+  const data = new DataView(buffer);
+  const componentBytes = componentByteLength(accessor.componentType);
+  const stride = view.byteStride ?? componentBytes * componentCount;
+  const start = (view.byteOffset ?? 0) + (accessor.byteOffset ?? 0);
+  for (let row = 0; row < accessor.count; row += 1) {
+    for (let component = 0; component < expectedComponents; component += 1) {
+      output[row * expectedComponents + component] = component < componentCount
+        ? readAccessorComponent(data, start + row * stride + component * componentBytes, accessor.componentType, Boolean(accessor.normalized))
+        : component === 1 ? 1 : 0;
+    }
+  }
+  return output;
+}
+
+function readIndices(json: GltfJson, buffers: readonly ArrayBuffer[], accessorIndex: number): Uint16Array | Uint32Array {
+  const values = readAccessor(json, buffers, accessorIndex, 1);
+  const max = values.reduce((largest, value) => Math.max(largest, value), 0);
+  return max > 65535 ? Uint32Array.from(values) : Uint16Array.from(values);
+}
+
+function readAccessorComponent(data: DataView, offset: number, componentType: number, normalized: boolean): number {
+  if (componentType === 5126) return data.getFloat32(offset, true);
+  if (componentType === 5125) return normalizeComponent(data.getUint32(offset, true), 4294967295, normalized);
+  if (componentType === 5123) return normalizeComponent(data.getUint16(offset, true), 65535, normalized);
+  if (componentType === 5121) return normalizeComponent(data.getUint8(offset), 255, normalized);
+  if (componentType === 5122) return normalizeSignedComponent(data.getInt16(offset, true), 32767, normalized);
+  if (componentType === 5120) return normalizeSignedComponent(data.getInt8(offset), 127, normalized);
+  throw new AuraRuntimeError("failed-glb-load", `Aura3D does not support glTF component type ${componentType}.`);
+}
+
+function normalizeComponent(value: number, max: number, normalized: boolean): number {
+  return normalized ? value / max : value;
+}
+
+function normalizeSignedComponent(value: number, max: number, normalized: boolean): number {
+  return normalized ? Math.max(-1, value / max) : value;
+}
+
+function componentByteLength(componentType: number): number {
+  if (componentType === 5120 || componentType === 5121) return 1;
+  if (componentType === 5122 || componentType === 5123) return 2;
+  if (componentType === 5125 || componentType === 5126) return 4;
+  throw new AuraRuntimeError("failed-glb-load", `Aura3D does not support glTF component type ${componentType}.`);
+}
+
+function componentCountForAccessor(type: string): number {
+  if (type === "SCALAR") return 1;
+  if (type === "VEC2") return 2;
+  if (type === "VEC3") return 3;
+  if (type === "VEC4") return 4;
+  if (type === "MAT4") return 16;
+  return 1;
+}
+
+function createDefaultNormals(count: number): Float32Array {
+  const normals = new Float32Array(count * 3);
+  for (let index = 0; index < count; index += 1) {
+    normals[index * 3 + 1] = 1;
+  }
+  return normals;
+}
+
+function gltfNodeMatrix(node: NonNullable<GltfJson["nodes"]>[number]): Float32Array {
+  if (node.matrix?.length === 16) return new Float32Array(node.matrix);
+  const translate = node.translation ?? [0, 0, 0];
+  const rotate = node.rotation ?? [0, 0, 0, 1];
+  const scale = node.scale ?? [1, 1, 1];
+  return multiply4(
+    translation(translate[0] ?? 0, translate[1] ?? 0, translate[2] ?? 0),
+    multiply4(
+      rotationQuaternion(rotate),
+      scaling(scale[0] ?? 1, scale[1] ?? 1, scale[2] ?? 1)
+    )
+  );
+}
+
+function rotationQuaternion(rotation: readonly number[]): Float32Array {
+  const length = Math.hypot(rotation[0] ?? 0, rotation[1] ?? 0, rotation[2] ?? 0, rotation[3] ?? 1) || 1;
+  const x = (rotation[0] ?? 0) / length;
+  const y = (rotation[1] ?? 0) / length;
+  const z = (rotation[2] ?? 0) / length;
+  const w = (rotation[3] ?? 1) / length;
+  const xx = x * x;
+  const yy = y * y;
+  const zz = z * z;
+  const xy = x * y;
+  const xz = x * z;
+  const yz = y * z;
+  const wx = w * x;
+  const wy = w * y;
+  const wz = w * z;
+  return new Float32Array([
+    1 - 2 * (yy + zz), 2 * (xy + wz), 2 * (xz - wy), 0,
+    2 * (xy - wz), 1 - 2 * (xx + zz), 2 * (yz + wx), 0,
+    2 * (xz + wy), 2 * (yz - wx), 1 - 2 * (xx + yy), 0,
+    0, 0, 0, 1
+  ]);
+}
+
+function transformPositions(positions: Float32Array, matrix: Float32Array): Float32Array {
+  const output = new Float32Array(positions.length);
+  for (let index = 0; index < positions.length; index += 3) {
+    const x = positions[index]!;
+    const y = positions[index + 1]!;
+    const z = positions[index + 2]!;
+    output[index] = matrix[0]! * x + matrix[4]! * y + matrix[8]! * z + matrix[12]!;
+    output[index + 1] = matrix[1]! * x + matrix[5]! * y + matrix[9]! * z + matrix[13]!;
+    output[index + 2] = matrix[2]! * x + matrix[6]! * y + matrix[10]! * z + matrix[14]!;
+  }
+  return output;
+}
+
+function transformNormals(normals: Float32Array, matrix: Float32Array): Float32Array {
+  const output = new Float32Array(normals.length);
+  for (let index = 0; index < normals.length; index += 3) {
+    const x = normals[index]!;
+    const y = normals[index + 1]!;
+    const z = normals[index + 2]!;
+    const nx = matrix[0]! * x + matrix[4]! * y + matrix[8]! * z;
+    const ny = matrix[1]! * x + matrix[5]! * y + matrix[9]! * z;
+    const nz = matrix[2]! * x + matrix[6]! * y + matrix[10]! * z;
+    const length = Math.hypot(nx, ny, nz) || 1;
+    output[index] = nx / length;
+    output[index + 1] = ny / length;
+    output[index + 2] = nz / length;
+  }
+  return output;
+}
+
+function boundsFromPositions(positions: Float32Array): GltfBounds {
+  const min: [number, number, number] = [Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY];
+  const max: [number, number, number] = [Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY];
+  for (let index = 0; index < positions.length; index += 3) {
+    min[0] = Math.min(min[0], positions[index]!);
+    min[1] = Math.min(min[1], positions[index + 1]!);
+    min[2] = Math.min(min[2], positions[index + 2]!);
+    max[0] = Math.max(max[0], positions[index]!);
+    max[1] = Math.max(max[1], positions[index + 1]!);
+    max[2] = Math.max(max[2], positions[index + 2]!);
+  }
+  return { min, max };
+}
+
+function mergeBounds(a: GltfBounds, b: GltfBounds): GltfBounds {
+  return {
+    min: [Math.min(a.min[0], b.min[0]), Math.min(a.min[1], b.min[1]), Math.min(a.min[2], b.min[2])],
+    max: [Math.max(a.max[0], b.max[0]), Math.max(a.max[1], b.max[1]), Math.max(a.max[2], b.max[2])]
+  };
+}
+
+function createViewProjection(cameraSpec: AuraCameraSpec, aspect: number, time: number): Float32Array {
+  const target = cameraSpec.target ?? [0, 0.7, 0];
+  let eye: AuraVec3 = cameraSpec.position ?? [0, 1.4, cameraSpec.distance ?? 4];
+  if (cameraSpec.mode === "orbit") {
+    const distance = cameraSpec.distance ?? 4;
+    eye = [target[0], target[1] + 0.55, target[2] + distance];
+  }
+  if (cameraSpec.mode === "dolly") {
+    const seconds = cameraSpec.seconds ?? 6;
+    const phase = (time / 1000 % seconds) / seconds;
+    const eased = 0.5 - Math.cos(phase * Math.PI * 2) * 0.5;
+    const from = cameraSpec.from ?? [0, 1.4, 5];
+    const to = cameraSpec.to ?? [0, 1.2, 3.4];
+    eye = mix3(from, to, eased);
+  }
+  const view = lookAt(eye, target, [0, 1, 0]);
+  const projection = perspective(((cameraSpec.fov ?? 45) * Math.PI) / 180, aspect, 0.05, 100);
+  return multiply4(projection, view);
+}
+
+function createModelMatrix(node: AuraModelNode | AuraPrimitiveNode | undefined, bounds: GltfBounds, normalizeToUnit: boolean): Float32Array {
+  const extent = [
+    Math.max(0.001, bounds.max[0] - bounds.min[0]),
+    Math.max(0.001, bounds.max[1] - bounds.min[1]),
+    Math.max(0.001, bounds.max[2] - bounds.min[2])
+  ] as const;
+  const fitScale = normalizeToUnit ? 1.55 / Math.max(extent[0], extent[1], extent[2]) : 1;
+  const centerX = (bounds.min[0] + bounds.max[0]) / 2;
+  const centerZ = (bounds.min[2] + bounds.max[2]) / 2;
+  const baseSize = node?.kind === "primitive" ? primitiveSize(node) : [1, 1, 1] as const;
+  const nodeScale = typeof node?.scale === "number" ? [node.scale, node.scale, node.scale] as const : node?.scale ?? [1, 1, 1] as const;
+  const position = node?.position ?? [0, 0, 0];
+  return multiply4(
+    translation(position[0], position[1], position[2]),
+    multiply4(
+      rotationXYZ(node?.rotation ?? [0, 0, 0]),
+      multiply4(
+        scaling(nodeScale[0] * baseSize[0] * fitScale, nodeScale[1] * baseSize[1] * fitScale, nodeScale[2] * baseSize[2] * fitScale),
+        normalizeToUnit ? translation(-centerX, -bounds.min[1], -centerZ) : identity4()
+      )
+    )
+  );
+}
+
+function primitiveSize(node: AuraPrimitiveNode): AuraVec3 {
+  if (typeof node.size === "number") return [node.size, node.size, node.size];
+  return node.size ?? [1, 1, 1];
+}
+
+function perspective(fovRadians: number, aspect: number, near: number, far: number): Float32Array {
+  const f = 1 / Math.tan(fovRadians / 2);
+  const nf = 1 / (near - far);
+  return new Float32Array([
+    f / aspect, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (far + near) * nf, -1,
+    0, 0, 2 * far * near * nf, 0
+  ]);
+}
+
+function lookAt(eye: AuraVec3, target: AuraVec3, up: AuraVec3): Float32Array {
+  const z = normalize3([eye[0] - target[0], eye[1] - target[1], eye[2] - target[2]]);
+  const x = normalize3(cross3(up, z));
+  const y = cross3(z, x);
+  return new Float32Array([
+    x[0], y[0], z[0], 0,
+    x[1], y[1], z[1], 0,
+    x[2], y[2], z[2], 0,
+    -dot3(x, eye), -dot3(y, eye), -dot3(z, eye), 1
+  ]);
+}
+
+function multiply4(a: Float32Array, b: Float32Array): Float32Array {
+  const output = new Float32Array(16);
+  for (let column = 0; column < 4; column += 1) {
+    for (let row = 0; row < 4; row += 1) {
+      output[column * 4 + row] =
+        a[row]! * b[column * 4]! +
+        a[4 + row]! * b[column * 4 + 1]! +
+        a[8 + row]! * b[column * 4 + 2]! +
+        a[12 + row]! * b[column * 4 + 3]!;
+    }
+  }
+  return output;
+}
+
+function translation(x: number, y: number, z: number): Float32Array {
+  return new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    x, y, z, 1
+  ]);
+}
+
+function identity4(): Float32Array {
+  return new Float32Array([
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+  ]);
+}
+
+function scaling(x: number, y: number, z: number): Float32Array {
+  return new Float32Array([
+    x, 0, 0, 0,
+    0, y, 0, 0,
+    0, 0, z, 0,
+    0, 0, 0, 1
+  ]);
+}
+
+function rotationXYZ(rotation: AuraVec3): Float32Array {
+  const [x, y, z] = rotation;
+  const cx = Math.cos(x); const sx = Math.sin(x);
+  const cy = Math.cos(y); const sy = Math.sin(y);
+  const cz = Math.cos(z); const sz = Math.sin(z);
+  const rx = new Float32Array([1, 0, 0, 0, 0, cx, sx, 0, 0, -sx, cx, 0, 0, 0, 0, 1]);
+  const ry = new Float32Array([cy, 0, -sy, 0, 0, 1, 0, 0, sy, 0, cy, 0, 0, 0, 0, 1]);
+  const rz = new Float32Array([cz, sz, 0, 0, -sz, cz, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]);
+  return multiply4(rz, multiply4(ry, rx));
+}
+
+function colorToRgb(color: AuraColor): readonly [number, number, number] {
+  const clear = colorToClearColor(color);
+  return [clear[0], clear[1], clear[2]];
+}
+
+function mixRgb(
+  a: readonly [number, number, number],
+  b: readonly [number, number, number],
+  t: number
+): readonly [number, number, number] {
+  return [
+    a[0] + (b[0] - a[0]) * t,
+    a[1] + (b[1] - a[1]) * t,
+    a[2] + (b[2] - a[2]) * t
+  ];
+}
+
+function scaleRgb(value: readonly [number, number, number], scale: number): readonly [number, number, number] {
+  return clampRgb([value[0] * scale, value[1] * scale, value[2] * scale]);
+}
+
+function clampRgb(value: readonly [number, number, number]): readonly [number, number, number] {
+  return [
+    clamp01(value[0]),
+    clamp01(value[1]),
+    clamp01(value[2])
+  ];
+}
+
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+function normalize3(value: AuraVec3): AuraVec3 {
+  const length = Math.hypot(value[0], value[1], value[2]) || 1;
+  return [value[0] / length, value[1] / length, value[2] / length];
+}
+
+function cross3(a: AuraVec3, b: AuraVec3): AuraVec3 {
+  return [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0]
+  ];
+}
+
+function dot3(a: AuraVec3, b: AuraVec3): number {
+  return a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+}
+
+function mix3(a: AuraVec3, b: AuraVec3, t: number): AuraVec3 {
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+}
+
+function productionRenderErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return `${error.name}: ${error.message}`;
+  }
+  return String(error);
 }
 
 function normalizeSceneSnapshot(value: AuraSceneBuilder | AuraSceneSnapshot): AuraSceneSnapshot {
@@ -683,7 +1738,7 @@ function validateSceneAssets(snapshot: AuraSceneSnapshot, assets: AuraAssetLoadS
     if (!asset.url && !asset.optional) {
       throw new AuraRuntimeError(
         "missing-asset",
-        `Aura3D asset "${asset.id}" is missing a URL. Suggested fix: run npx @aura3d/cli@latest assets add ./asset.glb --name ${asset.id}.`
+        `Aura3D asset "${asset.id}" is missing a URL. Suggested fix: run aura3d assets add ./asset.glb --name ${asset.id}.`
       );
     }
     if (asset.type === "model" && !["glb", "gltf"].includes(asset.format)) {
@@ -932,13 +1987,21 @@ function createDiagnosticsOverlay(canvas: HTMLCanvasElement, diagnosticsState: M
 }
 
 function markRouteReady(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
+  markRouteState("ready", snapshot, diagnostics);
+}
+
+function markRouteError(snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
+  markRouteState("error", snapshot, diagnostics);
+}
+
+function markRouteState(status: "ready" | "error", snapshot: AuraSceneSnapshot, diagnostics: MutableDiagnostics): void {
   if (typeof document !== "undefined") {
-    document.body.dataset.aura3dReady = "true";
+    document.body.dataset.aura3dReady = status === "ready" ? "true" : "error";
     document.body.dataset.aura3dDrawCalls = String(diagnostics.drawCalls);
   }
   if (typeof window !== "undefined") {
     (window as unknown as { __AURA3D_ROUTE_READY__?: unknown }).__AURA3D_ROUTE_READY__ = {
-      status: "ready",
+      status,
       scene: snapshot,
       diagnostics: snapshotDiagnostics(diagnostics)
     };

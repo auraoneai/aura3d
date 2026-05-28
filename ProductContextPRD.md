@@ -24,6 +24,14 @@ diagnostics, screenshots, and static deployment checks.
 - The public authoring model is source code plus typed assets.
 - The create-aura3d active template directory contains only the three starter
   templates.
+- The three starter templates render through WebGL2 and have screenshot tests
+  with scene-specific pixel profiles, not only non-empty PNG checks.
+- `product-viewer` renders a real glTF speaker product on a studio setup, not
+  a placeholder polygon.
+- `cinematic-scene` renders a real GLB hero asset with rain, colored practicals,
+  a wet floor, and WebGL2 diagnostics.
+- `mini-game` renders a distinct WebGL2 arena scene with player, trail, hazard,
+  coins, and goal portal primitives.
 - Held-back template experiments are outside the active starter-template
   directory and documented under `archive/held-back-create-aura3d-templates/`.
 - All active `apps/*` directories are classified in
@@ -32,17 +40,29 @@ diagnostics, screenshots, and static deployment checks.
   release-cycle language.
 - The public site checks reject draft-copy, internal-status, and version-cycle
   wording on the public pages.
+- Codex self-dogfood and a fresh Codex context-only run both compiled, ran,
+  rendered WebGL2 screenshots, used typed asset refs, and reported zero API
+  hallucinations and zero asset-path errors.
 
 ## Known Gaps To Keep Honest
 
-- The starter template coverage is real at scaffold/build/route-health level,
-  but broad product confidence still depends on the focused release checks, not
-  on aggregate monorepo test counts.
+- The starter template coverage is real at scaffold/build/route-health,
+  clean-install, and scene-specific screenshot-profile level, but broad product
+  confidence still depends on focused dogfood and user evidence, not aggregate
+  monorepo test counts.
+- The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
+  and richer scene
+  composition, but it is still a compact Aura3D renderer, not a full physically
+  based Three.js replacement. GLB material/texture fidelity needs more corpus
+  testing before it can be marketed as production-grade asset parity.
 - Extra `apps/*` routes remain active as classified engine evidence. They are
   not the starter registry and must not be marketed as the primary getting
   started path.
 - Bundle-size proof must continue to measure built bundles with size-limit,
   including starter apps, rather than source-file byte counts.
+- Claude Code, Cursor, Copilot, outside developers, real Vercel/Cloudflare/
+  Netlify deployments, and wild third-party GLB assets remain external dogfood
+  work. The local evidence must not be presented as broad market proof.
 
 ## Release Gate
 
