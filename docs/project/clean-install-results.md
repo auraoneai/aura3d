@@ -1,6 +1,6 @@
 # Clean Install Results
 
-Generated: 2026-05-28T21:13:50.948Z
+Generated: 2026-05-28T21:32:59.798Z
 
 ## Summary
 
@@ -11,8 +11,8 @@ Generated: 2026-05-28T21:13:50.948Z
 
 | Template | Install | Build | Dev Route | Preview Route | Asset Replacement | Dev Screenshot | Dev Profile | Preview Screenshot |
 |---|---:|---:|---:|---:|---:|---:|---|---:|
-| `product-viewer` | yes | yes | yes | yes | yes | 164737 | cabinetPixels=215, grillePixels=635, metalPixels=2110, softboxPixels=4594, warmReflectionPixels=132, centerObjectPixels=6873, uniqueBuckets=70 | 177684 |
-| `cinematic-scene` | yes | yes | yes | yes | yes | 443112 | cyanPixels=3908, amberPixels=517, rainPixels=1904, wetReflectionPixels=168, centerHeroPixels=3355, darkAlleyPixels=5946, uniqueBuckets=137 | 378561 |
+| `product-viewer` | yes | yes | yes | yes | yes | 192853 | cabinetPixels=279, grillePixels=628, metalPixels=2450, softboxPixels=4180, warmReflectionPixels=120, centerObjectPixels=7270, uniqueBuckets=71 | 182288 |
+| `cinematic-scene` | yes | yes | yes | yes | yes | 379033 | cyanPixels=4399, amberPixels=490, rainPixels=2126, wetReflectionPixels=165, centerHeroPixels=3357, darkAlleyPixels=6470, uniqueBuckets=135 | 441815 |
 | `mini-game` | yes | yes | yes | yes | yes | 202543 | robotArmorPixels=1120, robotJointPixels=1459, boostPixels=45, coinPixels=602, hazardPixels=463, portalPixels=1736, cyanTrailPixels=2965, arenaPixels=5522, uniqueBuckets=126 | 202543 |
 
 ## Checks

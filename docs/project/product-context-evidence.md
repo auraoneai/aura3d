@@ -1,6 +1,6 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T21:17:28.796Z
+Generated: 2026-05-28T21:34:01.731Z
 
 ## Summary
 
@@ -47,7 +47,7 @@ Generated: 2026-05-28T21:17:28.796Z
 |---|---|---|---|
 | Prompt-to-visual product quality is not proven. | Product/Runtime QA | Replace object-plus-cue screenshot checks with a prompt-fidelity gate that rejects scenes made from one imported asset plus symbolic effects. Add art-directed scene recipes, stronger camera/light/material/environment helpers, and human-reviewed acceptance screenshots before claiming prompt-to-visual quality. | `docs/project/prompt-visual-quality-gap.md`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json` |
 | Claude Code, Cursor, and Copilot context-only agent runs are not complete. | Product QA | Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/*.json` |
-| Licensed wild-asset corpus is not broad enough. | Assets QA | The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, Blender-export, animation, textured-PBR, and KTX2 local fixtures. Add separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
+| Licensed wild-asset corpus is not broad enough. | Assets QA | The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, product-form, material-extension, Blender-export, animation, textured-PBR, and KTX2 local fixtures. Add separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
 | Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Vercel deploy was attempted but blocked by HTTP 401 deployment protection; disable protection or provide a public smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
 | Marketing comprehension interviews are not complete. | Product Marketing | Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric. | `docs/project/marketing-comprehension-results.md` |
 | Outside beta dogfood is not complete. | Product/Community | Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs. | `docs/project/outside-beta-dogfood-results.md`<br>`.github/ISSUE_TEMPLATE` |
@@ -70,7 +70,7 @@ Generated: 2026-05-28T21:17:28.796Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1781,"rainPixels":194,"centerObjectPixels":2188,"uniqueBuckets":38} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1783,"rainPixels":197,"centerObjectPixels":2190,"uniqueBuckets":37} |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and product-quality boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |

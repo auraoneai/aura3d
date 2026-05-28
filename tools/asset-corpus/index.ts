@@ -207,6 +207,91 @@ const cases: CorpusCase[] = [
     }
   },
   {
+    id: "real-antique-camera-product-glb",
+    file: "assets/real/antique-camera.glb",
+    name: "antiqueCamera",
+    setup: (dir) => copyFixture(dir, "fixtures/asset-corpus/antique-camera.glb", "assets/real/antique-camera.glb"),
+    expect: "success",
+    source: {
+      kind: "pinned-local-fixture",
+      source: "fixtures/asset-corpus/antique-camera.glb",
+      license: "Khronos glTF Sample Assets license metadata; local fixture used for importer validation only",
+      notes: "Large product-form GLB fixture used to verify typed refs and validation on a realistic inspectable object."
+    },
+    verify: (dir) => {
+      const asset = validateAssets({ projectDir: dir }).manifest.assets.find((entry) => entry.id === "antiqueCamera");
+      return asset?.format === "glb" && Number(asset.bounds?.[0] ?? 0) > 0 ? undefined : "antique camera product metadata missing";
+    }
+  },
+  {
+    id: "real-boom-box-cc0-product-glb",
+    file: "assets/real/boom-box.glb",
+    name: "boomBox",
+    setup: (dir) => copyFixture(dir, "fixtures/asset-corpus/boom-box.glb", "assets/real/boom-box.glb"),
+    expect: "success",
+    source: {
+      kind: "pinned-local-fixture",
+      source: "fixtures/asset-corpus/boom-box.glb",
+      license: "CC0-1.0",
+      notes: "CC0 Khronos Boom Box fixture used to verify a larger textured product asset through add/validate/typegen."
+    },
+    verify: (dir) => {
+      const asset = validateAssets({ projectDir: dir }).manifest.assets.find((entry) => entry.id === "boomBox");
+      return asset && asset.materials.length > 0 && asset.textures.length > 0 ? undefined : "boom box materials/textures were not detected";
+    }
+  },
+  {
+    id: "real-avocado-cc0-organic-glb",
+    file: "assets/real/avocado.glb",
+    name: "avocado",
+    setup: (dir) => copyFixture(dir, "fixtures/asset-corpus/avocado.glb", "assets/real/avocado.glb"),
+    expect: "success",
+    source: {
+      kind: "pinned-local-fixture",
+      source: "fixtures/asset-corpus/avocado.glb",
+      license: "CC0-1.0",
+      notes: "CC0 Khronos Avocado fixture used to verify an organic PBR asset with texture metadata."
+    },
+    verify: (dir) => {
+      const asset = validateAssets({ projectDir: dir }).manifest.assets.find((entry) => entry.id === "avocado");
+      return asset && asset.materials.length > 0 && asset.textures.length > 0 ? undefined : "avocado materials/textures were not detected";
+    }
+  },
+  {
+    id: "real-clear-coat-material-glb",
+    file: "assets/real/clear-coat-test.glb",
+    name: "clearCoatTest",
+    setup: (dir) => copyFixture(dir, "fixtures/asset-corpus/clear-coat-test.glb", "assets/real/clear-coat-test.glb"),
+    expect: "success",
+    source: {
+      kind: "pinned-local-fixture",
+      source: "fixtures/asset-corpus/clear-coat-test.glb",
+      license: "Khronos glTF Sample Assets license metadata; local fixture used for importer validation only",
+      notes: "Clearcoat material-extension fixture used to verify metadata extraction on non-basic PBR material coverage."
+    },
+    verify: (dir) => {
+      const asset = validateAssets({ projectDir: dir }).manifest.assets.find((entry) => entry.id === "clearCoatTest");
+      return asset && asset.materials.length > 0 ? undefined : "clear coat material metadata missing";
+    }
+  },
+  {
+    id: "real-sheen-material-grid-glb",
+    file: "assets/real/sheen-test-grid.glb",
+    name: "sheenGrid",
+    setup: (dir) => copyFixture(dir, "fixtures/asset-corpus/sheen-test-grid.glb", "assets/real/sheen-test-grid.glb"),
+    expect: "success",
+    source: {
+      kind: "pinned-local-fixture",
+      source: "fixtures/asset-corpus/sheen-test-grid.glb",
+      license: "Khronos glTF Sample Assets license metadata; local fixture used for importer validation only",
+      notes: "Sheen material-extension grid used to verify metadata extraction on non-basic PBR material coverage."
+    },
+    verify: (dir) => {
+      const asset = validateAssets({ projectDir: dir }).manifest.assets.find((entry) => entry.id === "sheenGrid");
+      return asset && asset.materials.length > 0 ? undefined : "sheen material metadata missing";
+    }
+  },
+  {
     id: "real-khronos-fox-animation-glb",
     file: "assets/real/Fox.glb",
     name: "foxAnimation",
@@ -376,7 +461,7 @@ function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: re
     "",
     "## Remaining External Corpus Work",
     "",
-    "- The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, Blender-export, animation, textured-PBR, and KTX2 local fixtures.",
+    "- The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, product-form, material-extension, Blender-export, animation, textured-PBR, and KTX2 local fixtures.",
     "- Still add separately licensed wild assets from Sketchfab CC0, Poly Haven, and Meshy exports before stable release confidence.",
     "- Run the same add/validate/typegen/render flow against that external wild corpus before claiming broad asset compatibility.",
     ""

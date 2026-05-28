@@ -49,7 +49,39 @@ The problem is both implementation and validation.
 This test plan therefore treats existing screenshot passes as
 `technical-render-pass` unless they also meet the prompt-fidelity bar.
 
+The reset decision is:
+
+- Animation polish alone will not fix the product. The runtime needs higher
+  level visual systems: recipes, staging, cameras, lighting, materials,
+  environments, effects, interaction states, and asset normalization.
+- Better prompting alone will not fix the product. Agents need a constrained
+  prompt-plan contract, a recipe vocabulary, concrete examples, and a visual
+  review loop that rejects generic output.
+- A demo is not done when it compiles, serves, or produces a nonblank canvas.
+  It is done only when the screenshot visibly satisfies the prompt and is
+  marked `product-quality-pass`.
+
 ## Still-To-Build Checklist
+
+### P0 Prompt-To-Visual Reset
+
+- [ ] Define `PromptPlan`: subject, asset refs, scene type, visual style,
+  environment, camera, lighting, effects, interaction, acceptance criteria, and
+  negative visual anti-patterns.
+- [ ] Implement a `PromptPlan` to Aura3D recipe compiler for the supported
+  starter scene types.
+- [ ] Add approved recipe APIs for product viewer, cinematic scene, mini-game,
+  and material studio outputs.
+- [ ] Update agent context files so agents generate a prompt plan first, then
+  compile through recipes, then run screenshot review.
+- [ ] Add fixture prompts for at least three release-facing demos and require
+  them to reach `product-quality-pass`.
+- [ ] Add failing fixtures for the current bad pattern: one imported asset on a
+  grid with labels, rain lines, colored bars, or unrelated primitives.
+- [ ] Add report output that ties prompt -> plan -> generated Aura3D code ->
+  screenshot -> review label -> pass/fail reason.
+- [ ] Remove or quarantine any public demo that remains only
+  `technical-render-pass` or `partial`.
 
 ### Runtime And Template Visual Quality
 

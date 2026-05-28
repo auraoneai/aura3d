@@ -23,7 +23,19 @@ diagnostics, screenshots, and static deployment checks.
 The current repo proves useful Aura3D plumbing, but not the full product
 promise implied by "AI prompt to visual result."
 
-There are two separate problems:
+The diagnosis is **both**, not one or the other:
+
+- It is **not only** that Aura3D needs "fancier animation." Animation matters,
+  but the larger missing runtime layer is art direction: scene composition,
+  lighting rigs, environment structure, material fidelity, asset-aware camera
+  framing, believable effects, and product-ready defaults.
+- It is also **not only** that the AI prompt was formed badly. The current
+  prompt-to-visual workflow does not give an agent a strong enough planning
+  contract, recipe vocabulary, or visual acceptance loop. It can generate code
+  that compiles, but it is not yet forced to generate a scene whose screenshot
+  honestly matches the prompt.
+
+There are therefore two separate problems to fix:
 
 - The Aura3D runtime and template layer does not yet provide enough
   art-directed visual primitives for agents to reliably create polished scenes.
@@ -45,6 +57,26 @@ So the honest current product state is:
   visual cues.
 - **Not proven:** polished prompt-to-visual output, broad asset visual fidelity,
   cinematic composition quality, or user-desirable generated demos.
+
+## Product-Quality Definition
+
+A prompt-to-visual result is not product-quality unless a human reviewer can
+look at the screenshot before reading diagnostics and say the requested scene is
+visibly present.
+
+For Aura3D, that means:
+
+- The subject asset is recognizable, correctly scaled, and framed as the focal
+  point.
+- The environment, lighting, effects, camera, and interaction state match the
+  prompt instead of merely being labeled as matching it.
+- Visual effects are embodied in the scene. Rain should read as rain, a game
+  should read as a playable arena, a product viewer should read as a product
+  inspection surface, and a material demo should visibly compare materials.
+- The scene has depth, contrast, contact, and composition. A lone GLB on a grid
+  with decorative lines or colored primitives is not enough.
+- The implementation compiles, runs, and deploys, but those technical checks are
+  only prerequisites. They are not visual proof.
 
 ## Completed Work
 
@@ -120,6 +152,26 @@ So the honest current product state is:
   presented as broad market proof.
 
 ## Build Checklist Still Required
+
+### P0 Reset Work
+
+- [ ] Build a prompt-plan schema that captures subject, asset refs, desired
+  scene type, visual style, environment, camera, lighting, effects,
+  interaction, and screenshot acceptance criteria.
+- [ ] Add a prompt-plan compiler that maps the schema to approved Aura3D scene
+  recipes instead of letting agents improvise unrelated primitives.
+- [ ] Build product-quality scene recipes for the three public starter promises:
+  product viewer, cinematic scene, and mini-game.
+- [ ] Replace or withhold release-facing screenshots that remain
+  `technical-render-pass` or `partial`; only `product-quality-pass` screenshots
+  should be used as marketing/product proof.
+- [ ] Add before/after evidence for each fixed starter showing the source
+  prompt, generated code path, screenshot, human verdict, and failure mode that
+  was corrected.
+- [ ] Update agent docs so a context-only agent chooses recipes, assets, camera,
+  lighting, effects, and acceptance criteria deliberately.
+- [ ] Add a product-quality review gate that blocks promotion when screenshots
+  still look like one GLB plus symbolic decorations.
 
 ### Visual Runtime And Scene Quality
 
