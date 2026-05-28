@@ -118,6 +118,11 @@ For Aura3D, that means:
   sheet, and `docs/project/prompt-fidelity-quality-results.md`. It classifies
   current screenshots as technical/partial evidence and rejects
   object-plus-symbolic-effect negative fixtures.
+- The public agent API now includes `definePromptPlan`, `compilePromptPlan`,
+  `promptPlanToScene`, and `promptRecipes` so agents can select an approved
+  scene recipe before rendering. The three starter templates use that prompt
+  plan flow. This is prompt-plumbing progress, not proof of product-quality
+  visuals.
 
 ## Known Gaps To Keep Honest
 
@@ -155,10 +160,10 @@ For Aura3D, that means:
 
 ### P0 Reset Work
 
-- [ ] Build a prompt-plan schema that captures subject, asset refs, desired
+- [x] Build a prompt-plan schema that captures subject, asset refs, desired
   scene type, visual style, environment, camera, lighting, effects,
   interaction, and screenshot acceptance criteria.
-- [ ] Add a prompt-plan compiler that maps the schema to approved Aura3D scene
+- [x] Add a prompt-plan compiler that maps the schema to approved Aura3D scene
   recipes instead of letting agents improvise unrelated primitives.
 - [ ] Build product-quality scene recipes for the three public starter promises:
   product viewer, cinematic scene, and mini-game.
@@ -168,7 +173,7 @@ For Aura3D, that means:
 - [ ] Add before/after evidence for each fixed starter showing the source
   prompt, generated code path, screenshot, human verdict, and failure mode that
   was corrected.
-- [ ] Update agent docs so a context-only agent chooses recipes, assets, camera,
+- [x] Update agent docs so a context-only agent chooses recipes, assets, camera,
   lighting, effects, and acceptance criteria deliberately.
 - [ ] Add a product-quality review gate that blocks promotion when screenshots
   still look like one GLB plus symbolic decorations.

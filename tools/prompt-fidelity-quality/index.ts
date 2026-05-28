@@ -9,8 +9,10 @@ interface PromptArtifact {
   readonly id: string;
   readonly family: "starter-template" | "starter-example" | "agent-context";
   readonly prompt: string;
+  readonly sourceFile?: string;
   readonly screenshot: string;
   readonly report: string;
+  readonly routeHealth?: string;
   readonly expectedCriteria: readonly string[];
   readonly reviewLabel: ReviewLabel;
   readonly productQualityPass: boolean;
@@ -38,8 +40,10 @@ const artifacts: PromptArtifact[] = [
     id: "starter-product-viewer",
     family: "starter-template",
     prompt: "Product viewer starter with a product centered in a studio setup.",
+    sourceFile: "packages/create-aura3d/templates/product-viewer/src/main.ts",
     screenshot: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/screenshot.png",
     report: "tests/reports/package-clean-install.json",
+    routeHealth: "tests/reports/package-clean-install-workspace/templates/product-viewer/demo/tests/reports/route-health.json",
     expectedCriteria: ["hero product visible", "studio lighting", "product-viewer controls", "diagnostics"],
     reviewLabel: "technical-render-pass",
     productQualityPass: false,
@@ -54,8 +58,10 @@ const artifacts: PromptArtifact[] = [
     id: "starter-cinematic-scene",
     family: "starter-template",
     prompt: "Cinematic rainy hero scene with wet floor, practical lights, and camera dolly.",
+    sourceFile: "packages/create-aura3d/templates/cinematic-scene/src/main.ts",
     screenshot: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/screenshot.png",
     report: "tests/reports/package-clean-install.json",
+    routeHealth: "tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/tests/reports/route-health.json",
     expectedCriteria: ["hero asset visible", "rain", "wet floor", "colored practicals", "environment depth"],
     reviewLabel: "technical-render-pass",
     productQualityPass: false,
@@ -70,8 +76,10 @@ const artifacts: PromptArtifact[] = [
     id: "starter-mini-game",
     family: "starter-template",
     prompt: "Mini-game arena with player, collectibles, hazards, goal, and readable game state.",
+    sourceFile: "packages/create-aura3d/templates/mini-game/src/main.ts",
     screenshot: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/screenshot.png",
     report: "tests/reports/package-clean-install.json",
+    routeHealth: "tests/reports/package-clean-install-workspace/templates/mini-game/demo/tests/reports/route-health.json",
     expectedCriteria: ["player visible", "arena visible", "collectibles", "hazards", "goal", "game state"],
     reviewLabel: "technical-render-pass",
     productQualityPass: false,
@@ -86,6 +94,7 @@ const artifacts: PromptArtifact[] = [
     id: "example-typed-asset",
     family: "starter-example",
     prompt: "Typed asset example route.",
+    sourceFile: "apps/hello-world-typed-asset/src/main.ts",
     screenshot: "tests/reports/agent-examples/screenshots/hello-world-typed-asset.png",
     report: "tests/reports/agent-examples-playwright.json",
     expectedCriteria: ["typed GLB asset visible", "lighting cues", "diagnostics"],
@@ -99,6 +108,7 @@ const artifacts: PromptArtifact[] = [
     id: "example-material-lighting",
     family: "starter-example",
     prompt: "Material and lighting comparison route.",
+    sourceFile: "apps/material-lighting/src/main.ts",
     screenshot: "tests/reports/agent-examples/screenshots/material-lighting.png",
     report: "tests/reports/agent-examples-playwright.json",
     expectedCriteria: ["multiple material swatches", "lighting contrast", "diagnostics"],
@@ -112,6 +122,7 @@ const artifacts: PromptArtifact[] = [
     id: "example-camera-path",
     family: "starter-example",
     prompt: "Camera path route with start and finish state.",
+    sourceFile: "apps/camera-path/src/main.ts",
     screenshot: "tests/reports/agent-examples/screenshots/camera-path.png",
     report: "tests/reports/agent-examples-playwright.json",
     expectedCriteria: ["camera path", "start marker", "finish marker", "visual route"],
@@ -125,8 +136,10 @@ const artifacts: PromptArtifact[] = [
     id: "codex-context-self-test",
     family: "agent-context",
     prompt: "Fresh agent context app with product asset, rain, wet floor, dolly, and diagnostics.",
+    sourceFile: "tests/reports/agent-context/codex-self-test-workspace/src/main.ts",
     screenshot: "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.png",
     report: "tests/reports/agent-context/codex-self-test.json",
+    routeHealth: "tests/reports/agent-context/codex-self-test-workspace/tests/reports/route-health.json",
     expectedCriteria: ["typed asset", "rain cue", "wet floor cue", "camera dolly", "diagnostics"],
     reviewLabel: "partial",
     productQualityPass: false,
@@ -162,8 +175,15 @@ const releaseFacingArtifacts = artifacts.filter((artifact) => artifact.family ==
 const releaseFacingProductQualityPasses = releaseFacingArtifacts.filter((artifact) => artifact.productQualityPass).length;
 const missingScreenshots = artifacts.filter((artifact) => !existsSync(resolve(artifact.screenshot)));
 const missingReports = artifacts.filter((artifact) => !existsSync(resolve(artifact.report)));
+const missingRouteHealthReports = artifacts.filter((artifact) => artifact.routeHealth && !existsSync(resolve(artifact.routeHealth)));
 const overclaimedArtifacts = artifacts.filter((artifact) => artifact.productQualityPass && artifact.reviewLabel !== "product-quality-pass");
 const labelGaps = artifacts.filter((artifact) => !artifact.reviewLabel || artifact.expectedCriteria.length === 0 || artifact.limitations.length === 0);
+const starterTemplatePromptPlanGaps = artifacts
+  .filter((artifact) => artifact.family === "starter-template")
+  .filter((artifact) => !artifact.sourceFile || !sourceUsesPromptPlan(artifact.sourceFile));
+const routeBackendGaps = artifacts
+  .filter((artifact) => artifact.routeHealth)
+  .filter((artifact) => routeBackend(artifact.routeHealth as string) !== "webgl2");
 const rejectedNegativeFixtures = negativeFixtures.filter((fixture) => fixture.rejected).length;
 const contactSheet = writeContactSheet(artifacts.map((artifact) => artifact.screenshot).filter((path) => existsSync(resolve(path))));
 
@@ -177,6 +197,22 @@ const checks: ReleaseCheck[] = [
     id: "prompt-fidelity-artifacts-have-source-reports",
     pass: missingReports.length === 0,
     detail: missingReports.length === 0 ? `${artifacts.length} source reports found` : `missing: ${missingReports.map((artifact) => artifact.report).join(", ")}`
+  },
+  {
+    id: "prompt-fidelity-route-health-is-webgl2",
+    pass: missingRouteHealthReports.length === 0 && routeBackendGaps.length === 0,
+    detail: missingRouteHealthReports.length > 0
+      ? `missing route-health reports: ${missingRouteHealthReports.map((artifact) => artifact.routeHealth).join(", ")}`
+      : routeBackendGaps.length === 0
+        ? `${artifacts.filter((artifact) => artifact.routeHealth).length} release-facing route-health reports use webgl2`
+        : `non-webgl2 routes: ${routeBackendGaps.map((artifact) => `${artifact.id}:${routeBackend(artifact.routeHealth as string) ?? "missing"}`).join(", ")}`
+  },
+  {
+    id: "starter-templates-use-prompt-plans",
+    pass: starterTemplatePromptPlanGaps.length === 0,
+    detail: starterTemplatePromptPlanGaps.length === 0
+      ? "three starter templates use definePromptPlan and promptPlanToScene"
+      : `missing prompt-plan usage: ${starterTemplatePromptPlanGaps.map((artifact) => artifact.id).join(", ")}`
   },
   {
     id: "prompt-fidelity-review-labels-complete",
@@ -231,6 +267,21 @@ function classifyNegativeFixture(input: {
   };
 }
 
+function sourceUsesPromptPlan(sourceFile: string): boolean {
+  if (!existsSync(resolve(sourceFile))) return false;
+  const source = readFileSync(resolve(sourceFile), "utf8");
+  return source.includes("definePromptPlan") && source.includes("promptPlanToScene") && source.includes("acceptanceCriteria");
+}
+
+function routeBackend(routeHealthPath: string): string | undefined {
+  if (!existsSync(resolve(routeHealthPath))) return undefined;
+  try {
+    return JSON.parse(readFileSync(resolve(routeHealthPath), "utf8")).backend;
+  } catch {
+    return undefined;
+  }
+}
+
 function writeContactSheet(screenshots: readonly string[]): { readonly ok: boolean; readonly detail: string } {
   if (screenshots.length === 0) return { ok: false, detail: "no screenshots available for contact sheet" };
   const magick = findCommand("magick");
@@ -282,9 +333,9 @@ function writeMarkdown(): void {
     "",
     "## Artifact Review",
     "",
-    "| Artifact | Family | Review Label | Product-Quality Pass | Main Limitation | Next Action |",
-    "|---|---|---:|---:|---|---|",
-    ...artifacts.map((artifact) => `| \`${artifact.id}\` | \`${artifact.family}\` | \`${artifact.reviewLabel}\` | ${artifact.productQualityPass ? "yes" : "no"} | ${escapeTable(artifact.limitations[0] ?? "")} | ${escapeTable(artifact.nextAction)} |`),
+    "| Artifact | Family | Backend | Prompt Plan | Review Label | Product-Quality Pass | Main Limitation | Next Action |",
+    "|---|---|---:|---:|---:|---:|---|---|",
+    ...artifacts.map((artifact) => `| \`${artifact.id}\` | \`${artifact.family}\` | \`${artifact.routeHealth ? routeBackend(artifact.routeHealth) ?? "missing" : "n/a"}\` | ${artifact.sourceFile && sourceUsesPromptPlan(artifact.sourceFile) ? "yes" : "no"} | \`${artifact.reviewLabel}\` | ${artifact.productQualityPass ? "yes" : "no"} | ${escapeTable(artifact.limitations[0] ?? "")} | ${escapeTable(artifact.nextAction)} |`),
     "",
     "## Negative Fixtures",
     "",

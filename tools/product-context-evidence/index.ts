@@ -77,6 +77,11 @@ const promptFidelityReport = readJson<{
   readonly releaseFacingProductQualityPasses?: number;
   readonly negativeFixtures?: readonly { readonly rejected?: boolean }[];
 }>("tests/reports/prompt-fidelity-quality.json");
+const agentApiSource = readText("packages/engine/src/agent-api/index.ts");
+const promptPlanTemplateSources = [
+  ...starterTemplates.map((template) => `packages/create-aura3d/templates/${template}/src/main.ts`),
+  ...starterTemplates.map((template) => `templates/${template}/src/main.ts`)
+];
 
 const versionTerms = [/\bV[234]\b/i, /Path A/i, /Path B/i, /path-a/i, /path-b/i, /check:v4/i, /__v4/i, /aura3d-v4/i];
 const draftTerms = [
@@ -219,6 +224,21 @@ const checks: ReleaseCheck[] = [
     detail: promptFidelityReport.pass === true
       ? `productQualityReady=${String(promptFidelityReport.productQualityReady)}, releaseFacingPasses=${promptFidelityReport.releaseFacingProductQualityPasses ?? "missing"}`
       : "missing or failing tests/reports/prompt-fidelity-quality.json"
+  },
+  {
+    id: "prompt-plan-api-and-starters-present",
+    pass:
+      ["definePromptPlan", "compilePromptPlan", "promptPlanToScene", "promptRecipes"].every((name) => agentApiSource.includes(`export ${name === "promptRecipes" ? "const" : "function"} ${name}`)) &&
+      promptPlanTemplateSources.every((path) => {
+        const source = readText(path);
+        return source.includes("definePromptPlan") && source.includes("promptPlanToScene") && source.includes("acceptanceCriteria");
+      }),
+    detail: promptPlanTemplateSources.every((path) => readText(path).includes("definePromptPlan") && readText(path).includes("promptPlanToScene"))
+      ? "prompt-plan API exports and active packaged starters are present"
+      : `missing prompt-plan source: ${promptPlanTemplateSources.filter((path) => {
+        const source = readText(path);
+        return !source.includes("definePromptPlan") || !source.includes("promptPlanToScene");
+      }).join(", ")}`
   }
 ];
 
@@ -240,6 +260,7 @@ const claims: ClaimEvidence[] = [
   claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
   claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
   claim("Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
+  claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
   claim("The active starter-template directory contains only the three starter templates.", checkStatus("active-template-directory-exactly-three"), ["packages/create-aura3d/templates"]),

@@ -22,6 +22,8 @@ Public imports:
 ```ts
 import {
   createAuraApp,
+  definePromptPlan,
+  promptPlanToScene,
   scene,
   model,
   camera,
@@ -41,6 +43,21 @@ Typed asset rule:
 - Use `unsafeModelUrl(...)` only as an explicit temporary escape hatch.
 
 Common scenes:
+```ts
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.product },
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  interaction: "orbit",
+  acceptanceCriteria: ["product centered", "studio lighting visible"]
+} as const);
+
+createAuraApp("#app", { scene: promptPlanToScene(plan) });
+```
+
+Lower-level scene helpers remain available:
 ```ts
 scene()
   .background("#08111f")
@@ -66,6 +83,11 @@ Templates:
 - `product-viewer`: product or asset inspection scenes.
 - `cinematic-scene`: camera path, lighting, rain/fog/bloom scenes.
 - `mini-game`: primitive interactive game slice.
+
+Visual acceptance:
+- Use prompt plans and recipe scenes before custom primitive placement.
+- A nonblank screenshot is not enough. The image must visibly match the prompt.
+- Reject one-asset-plus-symbolic-effect output as product-quality proof.
 
 Verification:
 ```bash

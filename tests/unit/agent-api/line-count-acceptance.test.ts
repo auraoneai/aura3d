@@ -15,8 +15,10 @@ describe("agent API line-count acceptance", () => {
     const source = readFileSync(path, "utf8");
 
     expect(source).toContain("createAuraApp");
-    expect(source).toContain("model(assets.product");
-    expect(source).toMatch(/lights\.(studio|ambient|directional|point)\(/);
+    expect(source).toContain("definePromptPlan");
+    expect(source).toContain("promptPlanToScene");
+    expect(source).toContain("asset: assets.product");
+    expect(source).toContain('sceneType: "product-viewer"');
     expect(countAppLines(path)).toBeLessThanOrEqual(60);
   });
 
@@ -25,11 +27,27 @@ describe("agent API line-count acceptance", () => {
     const source = readFileSync(path, "utf8");
 
     expect(source).toContain("createAuraApp");
-    expect(source).toContain("model(assets.hero");
-    expect(source).toContain("camera.dolly");
-    expect(source).toContain("effects.rain");
-    expect(source).toContain("effects.fog");
-    expect(source).toContain("effects.bloom");
+    expect(source).toContain("definePromptPlan");
+    expect(source).toContain("promptPlanToScene");
+    expect(source).toContain("asset: assets.hero");
+    expect(source).toContain('sceneType: "cinematic-scene"');
+    expect(source).toContain('"rain"');
+    expect(source).toContain('"fog"');
+    expect(source).toContain('"bloom"');
     expect(countAppLines(path)).toBeLessThanOrEqual(120);
+  });
+
+  it("keeps the mini-game template compact through prompt recipe selection", () => {
+    const path = "packages/create-aura3d/templates/mini-game/src/main.ts";
+    const source = readFileSync(path, "utf8");
+
+    expect(source).toContain("createAuraApp");
+    expect(source).toContain("definePromptPlan");
+    expect(source).toContain("promptPlanToScene");
+    expect(source).toContain("asset: assets.playerModel");
+    expect(source).toContain('sceneType: "mini-game"');
+    expect(source).toContain('"motion-trail"');
+    expect(source).toContain('"hud"');
+    expect(countAppLines(path)).toBeLessThanOrEqual(80);
   });
 });

@@ -1,5 +1,18 @@
 import { describe, expect, test } from "vitest";
-import { camera, defineAuraAssets, effects, lights, material, model, primitives, scene, timeline } from "../../../packages/engine/src";
+import {
+  camera,
+  compilePromptPlan,
+  defineAuraAssets,
+  definePromptPlan,
+  effects,
+  lights,
+  material,
+  model,
+  primitives,
+  promptPlanToScene,
+  scene,
+  timeline
+} from "../../../packages/engine/src";
 
 const assets = defineAuraAssets({
   robot: {
@@ -48,11 +61,41 @@ describe("agent API", () => {
     expect(snapshot.nodes[0]).toMatchObject({ kind: "primitive", primitive: "sphere" });
     expect(snapshot.camera.mode).toBe("follow");
   });
+
+  test("compiles prompt plans into approved visual recipes", () => {
+    const plan = definePromptPlan({
+      sceneType: "cinematic-scene",
+      subject: { asset: assets.robot, label: "robot hero" },
+      style: "rainy neon alley",
+      camera: { preset: "cinematic-dolly" },
+      lighting: { preset: "neon-practicals" },
+      effects: ["rain", "fog", "bloom", "wet-reflection"],
+      interaction: "orbit",
+      acceptanceCriteria: ["hero asset visible", "rain visible", "wet floor visible"]
+    } as const);
+    const compiled = compilePromptPlan(plan);
+    const snapshot = promptPlanToScene(plan).toJSON();
+
+    expect(compiled.report).toMatchObject({
+      schema: "aura3d-prompt-plan-report/1.0",
+      sceneType: "cinematic-scene",
+      subjectAssetId: "robot",
+      cameraPreset: "cinematic-dolly",
+      lightingPreset: "neon-practicals"
+    });
+    expect(compiled.report.visualSystems).toContain("cinematic-scene recipe");
+    expect(snapshot.camera.mode).toBe("dolly");
+    expect(snapshot.nodes.some((node) => node.kind === "model" && node.asset.id === "robot")).toBe(true);
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")).toBe(true);
+    expect(snapshot.nodes.filter((node) => node.kind === "primitive").length).toBeGreaterThan(4);
+  });
 });
 
 if (false) {
   // @ts-expect-error The safe API requires typed AuraAssetRef values.
   model("robot");
+  // @ts-expect-error Prompt plans must use typed AuraAssetRef values for subject assets.
+  definePromptPlan({ sceneType: "product-viewer", subject: { asset: "robot" }, acceptanceCriteria: [] });
   // @ts-expect-error Unknown generated asset ids fail at compile time.
   assets.madeUpRobot;
   // @ts-expect-error Invalid option shapes fail at compile time.

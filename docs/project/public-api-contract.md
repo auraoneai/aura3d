@@ -1,13 +1,13 @@
 # Public API Contract
 
-Generated: 2026-05-28T21:28:26.845Z
+Generated: 2026-05-28T22:43:16.983Z
 
 ## Summary
 
 - Checks passing: 7/7
-- Engine exports: 58
+- Engine exports: 62
 - React exports: 8
-- Docs named imports checked: 15
+- Docs named imports checked: 13
 
 ## Checks
 
@@ -18,13 +18,17 @@ Generated: 2026-05-28T21:28:26.845Z
 | `react-required-exports` | pass | all required exports present |
 | `public-valid-examples-compile` | pass | valid public API examples compile from packed packages |
 | `public-invalid-examples-fail-as-expected` | pass | invalid model string, missing asset, archived imports, and archived package imports are rejected by TypeScript |
-| `docs-named-imports-are-exported` | pass | 15 documented named imports resolve |
+| `docs-named-imports-are-exported` | pass | 13 documented named imports resolve |
 | `archived-runtime-not-exported` | pass | archived runtime names are absent from public engine exports |
 
 ## Required Engine Exports
 
 - `createAuraApp`
 - `defineAuraAssets`
+- `definePromptPlan`
+- `compilePromptPlan`
+- `promptPlanToScene`
+- `promptRecipes`
 - `model`
 - `scene`
 - `camera`

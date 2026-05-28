@@ -255,7 +255,9 @@ function replaceTemplateAsset(appDir: string, template: string, assetId: string)
   if (template === "mini-game") {
     const mainPath = resolve(appDir, "src/main.ts");
     const source = readFileSync(mainPath, "utf8");
-    if (source.includes("model(assets.playerModel")) return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
+    if (source.includes("model(assets.playerModel") || source.includes("asset: assets.playerModel")) {
+      return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
+    }
     const next = source
       .replace("import { camera, createAuraApp, effects, interactions, lights, material, primitives, scene, timeline } from \"@aura3d/engine\";", "import { camera, createAuraApp, effects, interactions, lights, material, model, primitives, scene, timeline } from \"@aura3d/engine\";\nimport { assets } from \"./aura-assets\";")
       .replace(".add(primitives.sphere({ name: \"player\", material: material.emissive({ color: \"#c4f35a\", emissive: \"#c4f35a\" }) }).position(-1.45, 0.42, 0.55).scale(0.5))", ".add(model(assets.playerModel, { material: material.emissive({ color: \"#c4f35a\", emissive: \"#c4f35a\" }) }).position(-1.45, 0.42, 0.55).scale(0.5))");

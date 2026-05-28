@@ -13,3 +13,16 @@ Primary active areas:
   `apps/camera-path/` for starter examples
 
 Do not use archived `archive/legacy-ai-runtime/` files from active code.
+
+Prompt-to-visual workflow:
+
+- Start with `definePromptPlan(...)`.
+- Use one supported `sceneType`: `product-viewer`, `cinematic-scene`,
+  `mini-game`, or `material-studio`.
+- Put the user asset in `subject.asset` from generated typed refs, such as
+  `assets.product`. Do not use raw strings or invented URLs.
+- Include camera, lighting, effects, interaction, acceptance criteria, and
+  negative criteria when the prompt gives them.
+- Render with `promptPlanToScene(plan)`.
+- Reject output that is only one imported asset on a grid with symbolic lines,
+  labels, or unrelated primitives.

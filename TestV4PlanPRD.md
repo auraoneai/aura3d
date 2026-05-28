@@ -65,18 +65,18 @@ The reset decision is:
 
 ### P0 Prompt-To-Visual Reset
 
-- [ ] Define `PromptPlan`: subject, asset refs, scene type, visual style,
+- [x] Define `PromptPlan`: subject, asset refs, scene type, visual style,
   environment, camera, lighting, effects, interaction, acceptance criteria, and
   negative visual anti-patterns.
-- [ ] Implement a `PromptPlan` to Aura3D recipe compiler for the supported
+- [x] Implement a `PromptPlan` to Aura3D recipe compiler for the supported
   starter scene types.
-- [ ] Add approved recipe APIs for product viewer, cinematic scene, mini-game,
+- [x] Add approved recipe APIs for product viewer, cinematic scene, mini-game,
   and material studio outputs.
-- [ ] Update agent context files so agents generate a prompt plan first, then
+- [x] Update agent context files so agents generate a prompt plan first, then
   compile through recipes, then run screenshot review.
 - [ ] Add fixture prompts for at least three release-facing demos and require
   them to reach `product-quality-pass`.
-- [ ] Add failing fixtures for the current bad pattern: one imported asset on a
+- [x] Add failing fixtures for the current bad pattern: one imported asset on a
   grid with labels, rain lines, colored bars, or unrelated primitives.
 - [ ] Add report output that ties prompt -> plan -> generated Aura3D code ->
   screenshot -> review label -> pass/fail reason.
@@ -108,11 +108,11 @@ The reset decision is:
 
 ### Prompt-To-Visual Workflow
 
-- [ ] Define a prompt contract with subject, asset IDs, style, environment,
+- [x] Define a prompt contract with subject, asset IDs, style, environment,
   camera, lighting, effects, interaction, and acceptance criteria.
-- [ ] Add recipe selection so agents choose product hero, cinematic, game arena,
+- [x] Add recipe selection so agents choose product hero, cinematic, game arena,
   or material studio structures instead of improvising random primitives.
-- [ ] Add agent docs with prompt-to-recipe examples and anti-patterns.
+- [x] Add agent docs with prompt-to-recipe examples and anti-patterns.
 - [ ] Add repair guidance for low-quality visuals: tiny subject, bad framing,
   flat lighting, missing environment, symbolic effects, low contrast, or no
   visible interaction state.

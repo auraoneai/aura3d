@@ -36,7 +36,22 @@ const validCompile = install.ok ? run("npm", ["exec", "tsc", "--", "--noEmit", "
 const negativeCompile = install.ok ? run("npm", ["exec", "tsc", "--", "--noEmit", "-p", "tsconfig.negative.json"], workspace) : install;
 const docsImportCheck = checkDocsNamedImports(engineExports, reactExports);
 
-const requiredEngineExports = ["createAuraApp", "defineAuraAssets", "model", "scene", "camera", "lights", "material", "effects", "timeline", "interactions"];
+const requiredEngineExports = [
+  "createAuraApp",
+  "defineAuraAssets",
+  "definePromptPlan",
+  "compilePromptPlan",
+  "promptPlanToScene",
+  "promptRecipes",
+  "model",
+  "scene",
+  "camera",
+  "lights",
+  "material",
+  "effects",
+  "timeline",
+  "interactions"
+];
 const requiredReactExports = ["AuraCanvas", "Scene", "Model", "Camera", "Lights", "Effect", "productViewerScene"];
 const checks: ReleaseCheck[] = [
   {
@@ -128,7 +143,7 @@ function writeTsconfig(): void {
 }
 
 function writeSources(): void {
-  writeFileSync(resolve(workspace, "valid.ts"), `import { camera, createAuraApp, defineAuraAssets, effects, interactions, lights, material, model, scene, timeline } from "@aura3d/engine";
+  writeFileSync(resolve(workspace, "valid.ts"), `import { camera, compilePromptPlan, createAuraApp, defineAuraAssets, definePromptPlan, effects, interactions, lights, material, model, promptPlanToScene, scene, timeline } from "@aura3d/engine";
 import { AuraCanvas, Camera, Effect, Lights, Model, Scene, productViewerScene } from "@aura3d/react";
 
 const assets = defineAuraAssets({
@@ -144,9 +159,21 @@ scene()
   .camera(camera.dolly({ from: [0, 1, 4], to: [0, 1, 2], seconds: 4 }))
   .timeline(timeline.loop({ seconds: 4 }));
 
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.product },
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  acceptanceCriteria: ["product visible", "studio lighting visible"]
+} as const);
+
+promptPlanToScene(plan).toJSON();
+compilePromptPlan(plan).report.visualSystems;
+
 console.log(typeof createAuraApp, typeof AuraCanvas, typeof Scene, typeof Model, typeof Camera, typeof Lights, typeof Effect, typeof productViewerScene);
 `);
-  writeFileSync(resolve(workspace, "negative.ts"), `import { camera, defineAuraAssets, model } from "@aura3d/engine";
+  writeFileSync(resolve(workspace, "negative.ts"), `import { camera, defineAuraAssets, definePromptPlan, model } from "@aura3d/engine";
 
 const assets = defineAuraAssets({
   product: { type: "model", format: "glb", url: "/product.glb", bounds: [1, 1, 1], hash: "sha256-product" }
@@ -160,6 +187,9 @@ model(assets.missingAsset);
 
 // @ts-expect-error Invalid option shapes must fail at compile time.
 camera.orbit({ distance: "near" });
+
+// @ts-expect-error Prompt plans require typed AuraAssetRef values, not raw strings.
+definePromptPlan({ sceneType: "product-viewer", subject: { asset: "product" }, acceptanceCriteria: [] });
 
 // @ts-expect-error Archived runtime names must not be exported.
 import { ${archivedSceneTypeName}, ${archivedProviderName} } from "@aura3d/engine";

@@ -358,7 +358,7 @@
     "check:marketing-truth": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-truth/index.ts",
     "check:product-context": "pnpm exec tsx --tsconfig tsconfig.base.json tools/product-context-evidence/index.ts",
     "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",
-    "check:public-api": "pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts",
+    "check:public-api": "pnpm build && pnpm exec tsx --tsconfig tsconfig.base.json tools/public-api-contract/index.ts",
     "check:clean-install": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-clean-install/index.ts",
     "check:asset-corpus": "pnpm exec tsx --tsconfig tsconfig.base.json tools/asset-corpus/index.ts",
     "check:docs-codeblocks": "pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts",
@@ -368,7 +368,7 @@
     "check:test-plan-status": "pnpm exec tsx --tsconfig tsconfig.base.json tools/test-plan-execution-status/index.ts",
     "dogfood:templates": "pnpm run check:templates",
     "dogfood:agent": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-dogfood/index.ts",
-    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:product-context && pnpm check:test-plan-status"
+    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:product-context && pnpm check:test-plan-status"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",

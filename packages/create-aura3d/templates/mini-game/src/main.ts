@@ -1,35 +1,27 @@
-import { camera, createAuraApp, effects, interactions, lights, material, model, primitives, scene, timeline } from "@aura3d/engine";
+import { createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
+
+const plan = definePromptPlan({
+  sceneType: "mini-game",
+  subject: { asset: assets.playerModel, label: "player" },
+  style: "readable neon collect-and-dodge arena",
+  environment: "bounded board with rails, lane markings, coins, hazards, and portal goal",
+  camera: { preset: "game-board" },
+  lighting: { preset: "game-readable" },
+  effects: ["motion-trail", "hud", "bloom"],
+  interaction: "keyboard",
+  acceptanceCriteria: [
+    "player, coins, hazards, and portal are all visible",
+    "arena boundaries and lane direction are readable",
+    "motion trail and shield communicate active game state"
+  ],
+  negativeCriteria: [
+    "do not accept random primitives without readable game state",
+    "do not accept a character on an empty grid as a mini-game"
+  ]
+} as const);
 
 createAuraApp("#app", {
   diagnostics: { overlay: true, performancePanel: true },
-  scene: scene()
-    .background("#030711")
-    .add(primitives.plane({ name: "neon game board", material: material.pbr({ color: "#10222d", roughness: 0.5, metallic: 0.16 }) }).position(0, -0.08, -0.35).scale([5.8, 1, 4.05]))
-    .add(primitives.box({ name: "north glass rail", material: material.emissive({ color: "#1b5e70", emissive: "#228aa4" }) }).position(0, 0.18, -2.18).scale([5.85, 0.32, 0.14]))
-    .add(primitives.box({ name: "south glass rail", material: material.pbr({ color: "#18313e", roughness: 0.42, metallic: 0.12 }) }).position(0, 0.18, 1.52).scale([5.85, 0.32, 0.14]))
-    .add(primitives.box({ name: "left glass rail", material: material.pbr({ color: "#172f3c", roughness: 0.42, metallic: 0.12 }) }).position(-2.76, 0.18, -0.35).scale([0.14, 0.32, 3.86]))
-    .add(primitives.box({ name: "right glass rail", material: material.emissive({ color: "#1b5e70", emissive: "#228aa4" }) }).position(2.76, 0.18, -0.35).scale([0.14, 0.32, 3.86]))
-    .add(primitives.box({ name: "start lane glow", material: material.emissive({ color: "#55e7ff", emissive: "#55e7ff" }) }).position(-1.98, 0.03, 0.62).scale([0.94, 0.045, 0.15]))
-    .add(primitives.box({ name: "center lane stripe", material: material.emissive({ color: "#225f75", emissive: "#2c91ad" }) }).position(0.1, 0.025, 0.3).rotate(0, -0.28, 0).scale([1.75, 0.035, 0.08]))
-    .add(model(assets.playerModel, { name: "player" }).position(-1.42, 0.02, 0.54).rotate(0, 0.72, 0).scale(0.74))
-    .add(primitives.box({ name: "orange boost pack", material: material.emissive({ color: "#ff8a4c", emissive: "#ff8a4c" }) }).position(-1.08, 0.42, 0.48).rotate(0, 0.52, 0).scale([0.28, 0.08, 0.12]))
-    .add(primitives.sphere({ name: "player shield ring", material: material.emissive({ color: "#7dfcff", emissive: "#7dfcff" }) }).position(-1.42, 0.08, 0.54).scale([0.72, 0.06, 0.72]))
-    .add(primitives.box({ name: "cyan motion trail", material: material.emissive({ color: "#4fd7ff", emissive: "#4fd7ff" }) }).position(-2.08, 0.1, 0.58).scale([0.82, 0.075, 0.16]))
-    .add(primitives.box({ name: "moving red hazard", material: material.emissive({ color: "#ff445f", emissive: "#ff445f" }) }).position(-0.18, 0.34, -0.18).rotate(0, 0.56, 0).scale([0.76, 0.52, 0.34]))
-    .add(primitives.box({ name: "laser gate lower", material: material.emissive({ color: "#ff3159", emissive: "#ff3159" }) }).position(0.95, 0.22, -0.9).rotate(0, -0.14, 0).scale([1.02, 0.055, 0.08]))
-    .add(primitives.box({ name: "laser gate upper", material: material.emissive({ color: "#ff3159", emissive: "#ff3159" }) }).position(0.95, 0.58, -0.9).rotate(0, -0.14, 0).scale([1.02, 0.055, 0.08]))
-    .add(primitives.sphere({ name: "coin 1", material: material.emissive({ color: "#ffd84a", emissive: "#ffd84a" }) }).position(-0.42, 0.48, 0.8).scale(0.34))
-    .add(primitives.sphere({ name: "coin 2", material: material.emissive({ color: "#ffd84a", emissive: "#ffd84a" }) }).position(0.48, 0.48, 0.18).scale(0.34))
-    .add(primitives.sphere({ name: "coin 3", material: material.emissive({ color: "#ffd84a", emissive: "#ffd84a" }) }).position(1.26, 0.48, -0.62).scale(0.34))
-    .add(primitives.box({ name: "goal portal left", material: material.emissive({ color: "#ff8a4c", emissive: "#ff8a4c" }) }).position(1.72, 0.48, -1.22).scale([0.14, 0.92, 0.18]))
-    .add(primitives.box({ name: "goal portal right", material: material.emissive({ color: "#ff8a4c", emissive: "#ff8a4c" }) }).position(2.12, 0.48, -1.22).scale([0.14, 0.92, 0.18]))
-    .add(primitives.box({ name: "goal portal top", material: material.emissive({ color: "#ffbd68", emissive: "#ffbd68" }) }).position(1.92, 0.94, -1.22).scale([0.52, 0.12, 0.18]))
-    .add(lights.ambient({ intensity: 0.16, color: "#b3f7ff" }))
-    .add(lights.point({ name: "arena key", position: [-1.55, 2.1, 1.6], color: "#8ef6ff", intensity: 2.25 }))
-    .add(lights.point({ name: "goal glow", position: [2.0, 1.16, -1.2], color: "#ff9d5c", intensity: 2.0 }))
-    .add(effects.bloom({ intensity: 0.28, color: "#9af0ff" }))
-    .add(interactions.keyboard({ target: "player" }))
-    .camera(camera.perspective({ position: [0, 3.05, 4.55], target: [0, 0.22, -0.35], fov: 41 }))
-    .timeline(timeline.loop({ seconds: 6 }))
+  scene: promptPlanToScene(plan)
 });

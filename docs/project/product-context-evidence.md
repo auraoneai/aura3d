@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T21:34:01.731Z
+Generated: 2026-05-28T22:47:13.263Z
 
 ## Summary
 
-- Claims with evidence: 28/28
+- Claims with evidence: 29/29
 - Known gaps tracked: 6/6
-- Automated checks passing: 22/22
+- Automated checks passing: 23/23
 
 ## Claim Matrix
 
@@ -29,6 +29,7 @@ Generated: 2026-05-28T21:34:01.731Z
 | Agent-readable context is useful. | `automated-pass` | `docs/agents/*`<br>`tests/reports/agent-context/codex-self-test.json` | Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed. |
 | A fresh Codex context-only run can build a compiling WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity. |
 | Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof. | `automated-pass` | `tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |
+| The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`packages/create-aura3d/templates/*/src/main.ts`<br>`templates/*/src/main.ts`<br>`tools/prompt-fidelity-quality/index.ts` |  |
 | Legacy AI-runtime code is outside the active workspace. | `automated-pass` | `archive/legacy-ai-runtime`<br>`tools/product-context-evidence/index.ts` |  |
 | The public authoring model is source code plus typed assets. | `automated-pass` | `README.md`<br>`docs/agents/build-playbook.md`<br>`docs/project/fresh-codex-agent-context-results.md` |  |
 | The active starter-template directory contains only the three starter templates. | `automated-pass` | `packages/create-aura3d/templates` |  |
@@ -58,7 +59,7 @@ Generated: 2026-05-28T21:34:01.731Z
 |---|---:|---|
 | `product-context-prd-exists` | pass | ProductContextPRD.md is present |
 | `test-plan-prd-exists` | pass | TestV4PlanPRD.md is present |
-| `release-gate-script-exists` | pass | check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:product-context && pnpm check:test-plan-status |
+| `release-gate-script-exists` | pass | check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:prompt-fidelity && pnpm check:product-context && pnpm check:test-plan-status |
 | `product-context-script-registered` | pass | check:product-context=pnpm exec tsx --tsconfig tsconfig.base.json tools/product-context-evidence/index.ts |
 | `active-template-directory-exactly-three` | pass | active template dirs: cinematic-scene, mini-game, product-viewer |
 | `held-back-template-archive-present` | pass | archive/held-back-create-aura3d-templates/README.md documents held-back templates |
@@ -70,12 +71,13 @@ Generated: 2026-05-28T21:34:01.731Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1783,"rainPixels":197,"centerObjectPixels":2190,"uniqueBuckets":37} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1799,"rainPixels":196,"centerObjectPixels":2197,"uniqueBuckets":38} |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and product-quality boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |
 | `prompt-visual-quality-gap-tracked` | pass | prompt-to-visual quality gap is documented as unresolved |
 | `prompt-fidelity-quality-report-present` | pass | productQualityReady=false, releaseFacingPasses=0 |
+| `prompt-plan-api-and-starters-present` | pass | prompt-plan API exports and active packaged starters are present |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 6/6 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 28/28 completed claims have pass evidence; 6/6 known gaps are tracked |
+| `claim-evidence-matrix-complete` | pass | 29/29 completed claims have pass evidence; 6/6 known gaps are tracked |
 

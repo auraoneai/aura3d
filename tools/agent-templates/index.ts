@@ -51,7 +51,8 @@ const checks: ReleaseCheck[] = [
     existsCheck(`templates/${template}/src/main.ts`, `${template} packaged root template main`),
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/route-health.spec.ts`, ["tests/reports/route-health.json"], `${template} route health report`),
     fileIncludes(`packages/create-aura3d/templates/${template}/tests/screenshot.spec.ts`, ["tests/reports/screenshot.png", "tests/reports/screenshot.json"], `${template} screenshot report`),
-    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["@aura3d/engine"], `${template} public api`)
+    fileIncludes(`packages/create-aura3d/templates/${template}/src/main.ts`, ["@aura3d/engine", "definePromptPlan", "promptPlanToScene"], `${template} public prompt-plan api`),
+    fileIncludes(`templates/${template}/src/main.ts`, ["@aura3d/engine", "definePromptPlan", "promptPlanToScene"], `${template} packaged root prompt-plan api`)
   ]),
   fileIncludes("packages/create-aura3d/src/index.ts", templates, "create command templates"),
   {
@@ -121,7 +122,7 @@ function runScaffoldSmoke(): {
       writeWorkspaceViteConfig(targetDir);
       writeWorkspacePlaywrightConfig(targetDir);
       run("pnpm", ["exec", "vite", "build", "--config", resolve(targetDir, "vite.config.ts")], targetDir);
-      run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line"], targetDir);
+      run("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(targetDir, "playwright.config.ts"), "--reporter=line", "--workers=1"], targetDir);
       const routeReportPath = resolve(targetDir, "tests/reports/route-health.json");
       const screenshotReportPath = resolve(targetDir, "tests/reports/screenshot.json");
       const screenshotPath = resolve(targetDir, "tests/reports/screenshot.png");
@@ -151,6 +152,7 @@ function writeWorkspacePlaywrightConfig(targetDir: string): void {
   writeFileSync(resolve(targetDir, "playwright.config.ts"), `import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
+  workers: 1,
   testDir: "./tests",
   use: {
     baseURL: "http://127.0.0.1:4173"
