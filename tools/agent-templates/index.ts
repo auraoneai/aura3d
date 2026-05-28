@@ -126,7 +126,7 @@ function runScaffoldSmoke(): {
       const screenshotReportPath = resolve(targetDir, "tests/reports/screenshot.json");
       const screenshotPath = resolve(targetDir, "tests/reports/screenshot.png");
       const routeReport = JSON.parse(readFileSync(routeReportPath, "utf8")) as { drawCalls?: number };
-      const screenshotReport = JSON.parse(readFileSync(screenshotReportPath, "utf8")) as { bytes?: number };
+      const screenshotReport = JSON.parse(readFileSync(screenshotReportPath, "utf8")) as { bytes?: number; profile?: Record<string, unknown> };
       results.push({
         template,
         files: scaffold.files.length,
@@ -135,6 +135,7 @@ function runScaffoldSmoke(): {
         screenshot: existsSync(screenshotPath),
         drawCalls: routeReport.drawCalls,
         screenshotBytes: screenshotReport.bytes,
+        screenshotProfile: screenshotReport.profile,
         screenshotFileBytes: statSync(screenshotPath).size
       });
     } catch (error) {

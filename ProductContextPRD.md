@@ -30,8 +30,8 @@ diagnostics, screenshots, and static deployment checks.
   a placeholder polygon.
 - `cinematic-scene` renders a real GLB hero asset with rain, colored practicals,
   a wet floor, and WebGL2 diagnostics.
-- `mini-game` renders a distinct WebGL2 arena scene with player, trail, hazard,
-  coins, and goal portal primitives.
+- `mini-game` renders a distinct WebGL2 arena scene with a typed GLB player,
+  motion trail, hazards, coins, and a goal portal.
 - Held-back template experiments are outside the active starter-template
   directory and documented under `archive/held-back-create-aura3d-templates/`.
 - All active `apps/*` directories are classified in
@@ -43,6 +43,8 @@ diagnostics, screenshots, and static deployment checks.
 - Codex self-dogfood and a fresh Codex context-only run both compiled, ran,
   rendered WebGL2 screenshots, used typed asset refs, and reported zero API
   hallucinations and zero asset-path errors.
+- The first raw Three.js baseline comparison is recorded in
+  `docs/project/agent-baseline-comparison.md`.
 
 ## Known Gaps To Keep Honest
 
@@ -51,10 +53,10 @@ diagnostics, screenshots, and static deployment checks.
   confidence still depends on focused dogfood and user evidence, not aggregate
   monorepo test counts.
 - The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
-  and richer scene
-  composition, but it is still a compact Aura3D renderer, not a full physically
-  based Three.js replacement. GLB material/texture fidelity needs more corpus
-  testing before it can be marketed as production-grade asset parity.
+  and richer scene composition, but it is still a compact Aura3D renderer, not
+  a full physically based Three.js replacement. GLB material/texture fidelity
+  needs more corpus testing before it can be marketed as production-grade asset
+  parity.
 - Extra `apps/*` routes remain active as classified engine evidence. They are
   not the starter registry and must not be marketed as the primary getting
   started path.

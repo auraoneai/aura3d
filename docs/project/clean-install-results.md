@@ -1,6 +1,6 @@
 # Clean Install Results
 
-Generated: 2026-05-28T15:54:31.253Z
+Generated: 2026-05-28T16:32:37.472Z
 
 ## Summary
 
@@ -11,9 +11,9 @@ Generated: 2026-05-28T15:54:31.253Z
 
 | Template | Install | Build | Dev Route | Preview Route | Asset Replacement | Dev Screenshot | Dev Profile | Preview Screenshot |
 |---|---:|---:|---:|---:|---:|---:|---|---:|
-| `product-viewer` | yes | yes | yes | yes | yes | 106468 | cabinetPixels=1393, grillePixels=1931, metalPixels=17, studioPixels=14316, centerObjectPixels=10377, uniqueBuckets=31 | 106352 |
-| `cinematic-scene` | yes | yes | yes | yes | yes | 165711 | cyanPixels=24638, amberPixels=39, rainPixels=1670, centerHeroPixels=7821, uniqueBuckets=41 | 169183 |
-| `mini-game` | yes | yes | yes | yes | yes | 133162 | limePixels=664, goldPixels=42, redPixels=692, orangePixels=665, cyanPixels=1339, uniqueBuckets=56 | 133162 |
+| `product-viewer` | yes | yes | yes | yes | yes | 105759 | cabinetPixels=1658, grillePixels=1985, metalPixels=145, softboxPixels=772, warmReflectionPixels=960, centerObjectPixels=10408, uniqueBuckets=32 | 105661 |
+| `cinematic-scene` | yes | yes | yes | yes | yes | 147439 | cyanPixels=7077, amberPixels=68, rainPixels=1032, wetReflectionPixels=18068, centerHeroPixels=8095, darkAlleyPixels=372, uniqueBuckets=46 | 147439 |
+| `mini-game` | yes | yes | yes | yes | yes | 140109 | playerPixels=128, coinPixels=102, hazardPixels=708, portalPixels=754, cyanTrailPixels=3687, arenaPixels=20581, uniqueBuckets=55 | 140109 |
 
 ## Checks
 
@@ -31,7 +31,7 @@ Generated: 2026-05-28T15:54:31.253Z
 | `product-viewer-missing-asset-output-actionable` | pass | passed |
 | `product-viewer-invented-asset-id-type-fails` | pass | passed |
 | `product-viewer-missing-manifest-actionable` | pass | passed |
-| `product-viewer-dev-screenshot-profile-preview-nonblank` | pass | passed |
+| `product-viewer-dev-screenshot-profile-prompt-aligned` | pass | passed |
 | `cinematic-scene-clean-install` | pass | passed |
 | `cinematic-scene-build` | pass | passed |
 | `cinematic-scene-dev-route-health` | pass | passed |
@@ -40,7 +40,7 @@ Generated: 2026-05-28T15:54:31.253Z
 | `cinematic-scene-missing-asset-output-actionable` | pass | passed |
 | `cinematic-scene-invented-asset-id-type-fails` | pass | passed |
 | `cinematic-scene-missing-manifest-actionable` | pass | passed |
-| `cinematic-scene-dev-screenshot-profile-preview-nonblank` | pass | passed |
+| `cinematic-scene-dev-screenshot-profile-prompt-aligned` | pass | passed |
 | `mini-game-clean-install` | pass | passed |
 | `mini-game-build` | pass | passed |
 | `mini-game-dev-route-health` | pass | passed |
@@ -49,4 +49,4 @@ Generated: 2026-05-28T15:54:31.253Z
 | `mini-game-missing-asset-output-actionable` | pass | passed |
 | `mini-game-invented-asset-id-type-fails` | pass | passed |
 | `mini-game-missing-manifest-actionable` | pass | passed |
-| `mini-game-dev-screenshot-profile-preview-nonblank` | pass | passed |
+| `mini-game-dev-screenshot-profile-prompt-aligned` | pass | passed |

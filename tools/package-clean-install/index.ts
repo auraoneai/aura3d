@@ -75,11 +75,7 @@ const checks: ReleaseCheck[] = [
     check(`${result.template}-missing-asset-output-actionable`, !result.missingAssetOutput.ok && includesAll(result.missingAssetOutput.output, ["Missing asset output", "product"]), result.missingAssetOutput.output),
     check(`${result.template}-invented-asset-id-type-fails`, !result.inventedAssetId.ok && includesAll(result.inventedAssetId.output, ["missingAsset"]), result.inventedAssetId.output),
     check(`${result.template}-missing-manifest-actionable`, !result.missingManifest.ok && includesAll(result.missingManifest.output, ["Missing aura.assets.json", "Suggested fix"]), result.missingManifest.output),
-    check(
-      `${result.template}-dev-screenshot-profile-preview-nonblank`,
-      result.screenshotBytes > 1000 && Object.keys(result.screenshotProfile).length > 0 && result.previewScreenshotBytes > 1000,
-      `dev=${result.screenshotBytes}, profile=${JSON.stringify(result.screenshotProfile)}, preview=${result.previewScreenshotBytes}`
-    )
+    screenshotProfileCheck(result)
   ])
 ];
 
@@ -245,6 +241,7 @@ function replaceTemplateAsset(appDir: string, template: string, assetId: string)
   if (template === "mini-game") {
     const mainPath = resolve(appDir, "src/main.ts");
     const source = readFileSync(mainPath, "utf8");
+    if (source.includes("model(assets.playerModel")) return run("npm", ["exec", "aura3d", "--", "assets", "validate"], appDir);
     const next = source
       .replace("import { camera, createAuraApp, effects, interactions, lights, material, primitives, scene, timeline } from \"@aura3d/engine\";", "import { camera, createAuraApp, effects, interactions, lights, material, model, primitives, scene, timeline } from \"@aura3d/engine\";\nimport { assets } from \"./aura-assets\";")
       .replace(".add(primitives.sphere({ name: \"player\", material: material.emissive({ color: \"#c4f35a\", emissive: \"#c4f35a\" }) }).position(-1.45, 0.42, 0.55).scale(0.5))", ".add(model(assets.playerModel, { material: material.emissive({ color: \"#c4f35a\", emissive: \"#c4f35a\" }) }).position(-1.45, 0.42, 0.55).scale(0.5))");
@@ -357,6 +354,58 @@ function run(command: string, args: readonly string[], cwd: string): CommandResu
 
 function check(id: string, pass: boolean, detail: string): ReleaseCheck {
   return { id, pass, detail: pass ? "passed" : detail };
+}
+
+function screenshotProfileCheck(result: TemplateResult): ReleaseCheck {
+  const profile = result.screenshotProfile;
+  const profileResult = sceneProfilePass(result.template, profile);
+  return check(
+    `${result.template}-dev-screenshot-profile-prompt-aligned`,
+    result.screenshotBytes > 1000 && result.previewScreenshotBytes > 1000 && profileResult.pass,
+    `dev=${result.screenshotBytes}, profile=${JSON.stringify(profile)}, preview=${result.previewScreenshotBytes}, ${profileResult.detail}`
+  );
+}
+
+function sceneProfilePass(template: string, profile: Record<string, unknown>): { readonly pass: boolean; readonly detail: string } {
+  const checks: readonly [string, number][] =
+    template === "product-viewer"
+      ? [
+          ["cabinetPixels", 120],
+          ["grillePixels", 60],
+          ["metalPixels", 5],
+          ["softboxPixels", 180],
+          ["warmReflectionPixels", 20],
+          ["centerObjectPixels", 650],
+          ["uniqueBuckets", 18]
+        ]
+      : template === "cinematic-scene"
+        ? [
+            ["cyanPixels", 320],
+            ["amberPixels", 20],
+            ["rainPixels", 90],
+            ["wetReflectionPixels", 60],
+            ["centerHeroPixels", 600],
+            ["darkAlleyPixels", 180],
+            ["uniqueBuckets", 22]
+          ]
+        : [
+            ["playerPixels", 30],
+            ["coinPixels", 35],
+            ["hazardPixels", 45],
+            ["portalPixels", 45],
+            ["cyanTrailPixels", 90],
+            ["arenaPixels", 600],
+            ["uniqueBuckets", 22]
+          ];
+  const failures = checks.filter(([key, threshold]) => numberValue(profile[key]) <= threshold);
+  return {
+    pass: failures.length === 0,
+    detail: failures.length === 0 ? "scene-specific profile passed" : `profile thresholds failed: ${failures.map(([key, threshold]) => `${key}>${threshold}`).join(", ")}`
+  };
+}
+
+function numberValue(value: unknown): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
 }
 
 function readScreenshotBytes(appDir: string, path: string): number {

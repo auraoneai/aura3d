@@ -364,9 +364,10 @@
     "check:docs-codeblocks": "pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts",
     "check:marketing-links": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-link-audit/index.ts",
     "check:error-quality": "pnpm exec tsx --tsconfig tsconfig.base.json tools/error-message-quality/index.ts",
+    "check:test-plan-status": "pnpm exec tsx --tsconfig tsconfig.base.json tools/test-plan-execution-status/index.ts",
     "dogfood:templates": "pnpm run check:templates",
     "dogfood:agent": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-dogfood/index.ts",
-    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:product-context"
+    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:product-context && pnpm check:test-plan-status"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",

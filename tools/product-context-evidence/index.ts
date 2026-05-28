@@ -11,6 +11,13 @@ interface ClaimEvidence {
   readonly nextAction?: string;
 }
 
+interface KnownGapEvidence {
+  readonly gap: string;
+  readonly owner: string;
+  readonly nextAction: string;
+  readonly targetEvidence: readonly string[];
+}
+
 const starterTemplates = ["product-viewer", "cinematic-scene", "mini-game"] as const;
 const publicProductFiles = [
   "ProductContextPRD.md",
@@ -199,15 +206,62 @@ const claims: ClaimEvidence[] = [
   claim("Bundle-size proof measures built bundles, including starter apps.", statusFrom("check:bundle-size"), ["tools/bundle-size/index.ts", "tests/reports/bundle-size.json"])
 ];
 
+const knownGaps: KnownGapEvidence[] = [
+  {
+    gap: "Claude Code, Cursor, and Copilot context-only agent runs are not complete.",
+    owner: "Product QA",
+    nextAction: "Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments.",
+    targetEvidence: ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/*.json"]
+  },
+  ...statusFromReport("tests/reports/agent-baseline-comparison.json") === "automated-pass"
+    ? []
+    : [{
+        gap: "Raw Three.js baseline comparison is not complete.",
+        owner: "Product QA",
+        nextAction: "Run the same agent task set with raw Three.js-only context and compare hallucinations, asset-path mistakes, repair turns, route health, screenshots, and deploy checks.",
+        targetEvidence: ["docs/project/agent-baseline-comparison.md", "tests/reports/agent-baseline-comparison.json"]
+      }],
+  {
+    gap: "Licensed wild-asset corpus is not broad enough.",
+    owner: "Assets QA",
+    nextAction: "Add licensed Sketchfab CC0, Poly Haven, Meshy, Blender-exported, Draco-compressed, and KTX2-heavy assets with source/license notes, then run add/validate/typegen/render.",
+    targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"]
+  },
+  {
+    gap: "Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify.",
+    owner: "Release Engineering",
+    nextAction: "Deploy at least one starter to each host with authenticated project credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output.",
+    targetEvidence: ["docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"]
+  },
+  {
+    gap: "Marketing comprehension interviews are not complete.",
+    owner: "Product Marketing",
+    nextAction: "Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric.",
+    targetEvidence: ["docs/project/marketing-comprehension-results.md"]
+  },
+  {
+    gap: "Outside beta dogfood is not complete.",
+    owner: "Product/Community",
+    nextAction: "Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs.",
+    targetEvidence: ["docs/project/outside-beta-dogfood-results.md", ".github/ISSUE_TEMPLATE"]
+  }
+];
+
 const completeClaims = claims.filter((entry) => entry.status !== "known-gap").length;
+const trackedKnownGaps = knownGaps.filter((entry) => entry.owner && entry.nextAction && entry.targetEvidence.length > 0).length;
+checks.push({
+  id: "known-gaps-have-owners-next-actions-and-target-evidence",
+  pass: trackedKnownGaps === knownGaps.length,
+  detail: `${trackedKnownGaps}/${knownGaps.length} known gaps have owner, next action, and target evidence`
+});
 checks.push({
   id: "claim-evidence-matrix-complete",
-  pass: claims.every((entry) => entry.status !== "known-gap"),
-  detail: `${completeClaims}/${claims.length} claims have pass evidence; known gaps: ${claims.filter((entry) => entry.status === "known-gap").map((entry) => entry.claim).join(" | ") || "none"}`
+  pass: claims.every((entry) => entry.status !== "known-gap") && trackedKnownGaps === knownGaps.length,
+  detail: `${completeClaims}/${claims.length} completed claims have pass evidence; ${trackedKnownGaps}/${knownGaps.length} known gaps are tracked`
 });
 
-writeEvidenceMarkdown(claims, checks);
-writeReport("tests/reports/product-context-evidence.json", "aura3d-product-context-evidence", checks, { claims });
+writeEvidenceMarkdown(claims, knownGaps, checks);
+writeReport("tests/reports/product-context-evidence.json", "aura3d-product-context-evidence", checks, { claims, knownGaps });
 
 function claim(claimText: string, status: EvidenceStatus, evidence: readonly string[], nextAction?: string): ClaimEvidence {
   return { claim: claimText, status, evidence, nextAction };
@@ -244,7 +298,7 @@ function statusFromReport(path: string): EvidenceStatus {
   }
 }
 
-function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], checks: readonly ReleaseCheck[]): void {
+function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], knownGaps: readonly KnownGapEvidence[], checks: readonly ReleaseCheck[]): void {
   const lines = [
     "# Product Context Evidence",
     "",
@@ -253,6 +307,7 @@ function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], checks: readonl
     "## Summary",
     "",
     `- Claims with evidence: ${claims.filter((entry) => entry.status !== "known-gap").length}/${claims.length}`,
+    `- Known gaps tracked: ${knownGaps.filter((entry) => entry.owner && entry.nextAction && entry.targetEvidence.length > 0).length}/${knownGaps.length}`,
     `- Automated checks passing: ${checks.filter((check) => check.pass).length}/${checks.length}`,
     "",
     "## Claim Matrix",
@@ -260,6 +315,12 @@ function writeEvidenceMarkdown(claims: readonly ClaimEvidence[], checks: readonl
     "| Claim | Status | Evidence | Next Action |",
     "|---|---|---|---|",
     ...claims.map((entry) => `| ${escapeTable(entry.claim)} | \`${entry.status}\` | ${entry.evidence.map((item) => `\`${item}\``).join("<br>")} | ${escapeTable(entry.nextAction ?? "")} |`),
+    "",
+    "## Known Gaps",
+    "",
+    "| Gap | Owner | Next Action | Target Evidence |",
+    "|---|---|---|---|",
+    ...knownGaps.map((entry) => `| ${escapeTable(entry.gap)} | ${escapeTable(entry.owner)} | ${escapeTable(entry.nextAction)} | ${entry.targetEvidence.map((item) => `\`${item}\``).join("<br>")} |`),
     "",
     "## Automated Checks",
     "",

@@ -1,11 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T15:54:34.425Z
+Generated: 2026-05-28T16:32:41.238Z
 
 ## Summary
 
 - Claims with evidence: 28/28
-- Automated checks passing: 17/17
+- Known gaps tracked: 5/5
+- Automated checks passing: 18/18
 
 ## Claim Matrix
 
@@ -40,13 +41,23 @@ Generated: 2026-05-28T15:54:34.425Z
 | Extra apps routes are evidence and not the primary getting-started path. | `automated-pass` | `docs/project/apps-classification.md`<br>`marketing/index.html` |  |
 | Bundle-size proof measures built bundles, including starter apps. | `automated-pass` | `tools/bundle-size/index.ts`<br>`tests/reports/bundle-size.json` |  |
 
+## Known Gaps
+
+| Gap | Owner | Next Action | Target Evidence |
+|---|---|---|---|
+| Claude Code, Cursor, and Copilot context-only agent runs are not complete. | Product QA | Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/*.json` |
+| Licensed wild-asset corpus is not broad enough. | Assets QA | Add licensed Sketchfab CC0, Poly Haven, Meshy, Blender-exported, Draco-compressed, and KTX2-heavy assets with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
+| Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Deploy at least one starter to each host with authenticated project credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
+| Marketing comprehension interviews are not complete. | Product Marketing | Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric. | `docs/project/marketing-comprehension-results.md` |
+| Outside beta dogfood is not complete. | Product/Community | Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs. | `docs/project/outside-beta-dogfood-results.md`<br>`.github/ISSUE_TEMPLATE` |
+
 ## Automated Checks
 
 | Check | Result | Detail |
 |---|---:|---|
 | `product-context-prd-exists` | pass | ProductContextPRD.md is present |
 | `test-plan-prd-exists` | pass | TestV4PlanPRD.md is present |
-| `release-gate-script-exists` | pass | check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:product-context |
+| `release-gate-script-exists` | pass | check:release=pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:public-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:clean-install && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:product-context && pnpm check:test-plan-status |
 | `product-context-script-registered` | pass | check:product-context=pnpm exec tsx --tsconfig tsconfig.base.json tools/product-context-evidence/index.ts |
 | `active-template-directory-exactly-three` | pass | active template dirs: cinematic-scene, mini-game, product-viewer |
 | `held-back-template-archive-present` | pass | archive/held-back-create-aura3d-templates/README.md documents held-back templates |
@@ -58,7 +69,8 @@ Generated: 2026-05-28T15:54:34.425Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":4968,"rainPixels":126,"centerObjectPixels":9433,"uniqueBuckets":40} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":5114,"rainPixels":136,"centerObjectPixels":9496,"uniqueBuckets":39} |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
-| `claim-evidence-matrix-complete` | pass | 28/28 claims have pass evidence; known gaps: none |
+| `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 5/5 known gaps have owner, next action, and target evidence |
+| `claim-evidence-matrix-complete` | pass | 28/28 completed claims have pass evidence; 5/5 known gaps are tracked |
 

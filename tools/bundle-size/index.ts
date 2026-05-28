@@ -131,6 +131,7 @@ writeReport("tests/reports/bundle-size.json", "aura3d-real-bundle-size", checks,
   measurement: "esbuild bundle + minify + gzip artifact + size-limit",
   targets: results
 });
+writeBundleSizeMarkdown(results);
 
 async function bundleTarget(target: BundleTarget): Promise<BundleResult> {
   const buildResult = await build({
@@ -202,4 +203,34 @@ function runSizeLimit(path: string, budget: number): { readonly passed: boolean;
       return { passed: false, size: -1 };
     }
   }
+}
+
+function writeBundleSizeMarkdown(results: readonly BundleResult[]): void {
+  const lines = [
+    "# Aura3D Bundle Sizes",
+    "",
+    `Generated from \`tests/reports/bundle-size.json\` on ${new Date().toISOString().slice(0, 10)}.`,
+    "",
+    "Measurement method: esbuild bundle, minify, gzip artifact, and `size-limit`",
+    "against the gzip artifact.",
+    "",
+    "| Target | JavaScript Bytes | Gzip Bytes | Budget | Result |",
+    "|---|---:|---:|---:|---:|",
+    ...results.map((result) => [
+      `\`${result.label}\``,
+      formatBytes(result.jsBytes),
+      formatBytes(result.gzipBytes),
+      formatBytes(result.budget),
+      result.gzipBytes <= result.budget && result.sizeLimitPassed ? "pass" : "fail"
+    ].join(" | ")).map((row) => `| ${row} |`),
+    "",
+    "The authoritative machine-readable report is",
+    "`tests/reports/bundle-size.json`.",
+    ""
+  ];
+  writeFileSync("BUNDLE_SIZES.md", lines.join("\n"));
+}
+
+function formatBytes(value: number): string {
+  return new Intl.NumberFormat("en-US").format(value);
 }

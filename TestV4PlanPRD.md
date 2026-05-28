@@ -106,6 +106,10 @@ Current local automated evidence:
   copied GLB assets. It compiled, ran, rendered WebGL2, swapped from `product`
   to `hero` on click, reported API hallucination count 0 and asset path error
   count 0, and produced a prompt-aligned screenshot profile.
+- `docs/project/agent-baseline-comparison.md` records the first raw Three.js
+  Codex baseline for the same task class. It built, ran, passed route health,
+  passed static preview, produced prompt-aligned screenshot evidence, and
+  reported zero API hallucinations and zero asset-path errors.
 - `docs/project/asset-corpus-results.md` records 11 generated asset cases with
   expected success/failure behavior.
 - `BUNDLE_SIZES.md` records built, minified, gzipped bundle measurements.
@@ -125,7 +129,6 @@ These remain external or manual evidence items and must not be represented as
 completed user proof:
 
 - Claude Code, Cursor, and Copilot context-only agent runs.
-- Raw Three.js baseline comparison against the same agent tasks.
 - Licensed wild-asset corpus from outside sources, including real user-exported
   assets and failure cases.
 - Static deployment to real Vercel, Cloudflare Pages, and Netlify projects.

@@ -1,0 +1,59 @@
+{
+  "schema": "aura3d-agent-baseline-comparison",
+  "generatedAt": "2026-05-28T09:05:00.000Z",
+  "pass": true,
+  "checks": [
+    {
+      "id": "raw-three-baseline-built",
+      "pass": true,
+      "detail": "fresh Codex subagent built the same-task raw Three.js app under /tmp/aura3d-raw-three-baseline"
+    },
+    {
+      "id": "raw-three-baseline-route-health",
+      "pass": true,
+      "detail": "dev route and static preview route health passed"
+    },
+    {
+      "id": "raw-three-baseline-prompt-aligned-screenshot",
+      "pass": true,
+      "detail": "screenshot profile detected yellow product pixels, rain pixels, reflective floor pixels, and click swap to second model"
+    },
+    {
+      "id": "raw-three-baseline-no-hallucinated-api",
+      "pass": true,
+      "detail": "API hallucination count 0; asset path error count 0"
+    }
+  ],
+  "failures": [],
+  "baseline": {
+    "agent": "Codex",
+    "workspace": "/tmp/aura3d-raw-three-baseline",
+    "rawThreeOnly": true,
+    "sourceRepoCodeRead": false,
+    "status": "pass",
+    "score": 100,
+    "maxScore": 100,
+    "turns": 1,
+    "apiHallucinationCount": 0,
+    "assetPathErrorCount": 0,
+    "features": {
+      "viteTypeScript": true,
+      "orbitControls": true,
+      "studioLighting": true,
+      "slowCameraDolly": true,
+      "rainEffect": true,
+      "reflectiveFloor": true,
+      "clickModelSwap": true,
+      "staticDeploymentReady": true
+    },
+    "metrics": {
+      "linesOfAppCode": 261,
+      "linesOfCss": 60,
+      "linesOfTests": 74,
+      "distSize": "4.7M",
+      "mainJsMinified": "573.89 kB",
+      "mainJsGzip": "147.36 kB"
+    },
+    "screenshotPath": "/tmp/aura3d-raw-three-baseline/test-results/viewer-ready.png"
+  }
+}
