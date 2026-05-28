@@ -71,9 +71,9 @@ all of these checks:
   calls rather than placing random primitives.
 - [ ] Add repair instructions for low-quality outputs: bad framing, flat
   lighting, missing environment, symbolic effects, tiny subject, or low contrast.
-- [ ] Record prompt, selected recipe, asset IDs, and visual criteria in each
+- [x] Record prompt, selected recipe, asset IDs, and visual criteria in each
   generated report.
-- [ ] Re-run the Codex context-only self-test through `definePromptPlan` and
+- [x] Re-run the Codex context-only self-test through `definePromptPlan` and
   `promptPlanToScene`.
 
 ### Evaluation
@@ -97,7 +97,7 @@ all of these checks:
 |---|---|---|
 | Starter template screenshots | `technical-render-pass` | They show real assets and scene cues, but not polished prompt fidelity. |
 | Active public example screenshots | `technical-render-pass` | They prove distinct routes and rendering behavior, not visual quality. |
-| Codex dogfood screenshot | `partial` | It compiles, runs, uses typed assets, and renders cues, but the visual result still reads as object-plus-symbolic-effect output. |
+| Codex dogfood screenshot | `partial` | It compiles, runs, uses typed assets, renders through the prompt-plan path, and records the compiled prompt-plan report, but the visual result is still not product-quality proof. |
 | External user proof | `not-run` | No outside users have proven prompt-to-visual quality. |
 
 ## Stop-Ship Rule

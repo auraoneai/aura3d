@@ -111,9 +111,12 @@ For Aura3D, that means:
   release-cycle language.
 - The public site checks reject draft-copy, internal-status, and version-cycle
   wording on the public pages.
-- Codex self-dogfood and a fresh Codex context-only run both compiled, ran,
-  rendered WebGL2 screenshots, used typed asset refs, and reported zero API
-  hallucinations and zero asset-path errors.
+- Codex self-dogfood now generates through `definePromptPlan`,
+  `compilePromptPlan`, and `promptPlanToScene`; it compiles, runs, renders a
+  WebGL2 screenshot, uses typed asset refs, records the compiled prompt-plan
+  report, and reports zero API hallucinations and zero asset-path errors. A
+  separate fresh Codex context-only run also compiled and ran, but remains
+  partial visual evidence.
 - The first raw Three.js baseline comparison is recorded in
   `docs/project/agent-baseline-comparison.md`.
 - `tools/prompt-fidelity-quality/index.ts` now writes
@@ -183,7 +186,7 @@ For Aura3D, that means:
   lighting, effects, and acceptance criteria deliberately.
 - [ ] Add a product-quality review gate that blocks promotion when screenshots
   still look like one GLB plus symbolic decorations.
-- [ ] Re-run the Codex context-only self-test through the prompt-plan flow and
+- [x] Re-run the Codex context-only self-test through the prompt-plan flow and
   record whether the generated screenshot improves beyond `partial`.
 
 ### Visual Runtime And Scene Quality

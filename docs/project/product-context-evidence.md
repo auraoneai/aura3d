@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T23:06:14.075Z
+Generated: 2026-05-28T23:30:52.479Z
 
 ## Summary
 
 - Claims with evidence: 29/29
 - Known gaps tracked: 6/6
-- Automated checks passing: 23/23
+- Automated checks passing: 24/24
 
 ## Claim Matrix
 
@@ -28,7 +28,7 @@ Generated: 2026-05-28T23:06:14.075Z
 | create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game. | `automated-pass` | `packages/create-aura3d`<br>`tools/agent-templates/index.ts` |  |
 | Agent-readable context is useful. | `automated-pass` | `docs/agents/*`<br>`tests/reports/agent-context/codex-self-test.json` | Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed. |
 | A fresh Codex context-only run can build a compiling WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity. |
-| Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof. | `automated-pass` | `tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |
+| Codex dogfood uses prompt-plan helpers, typed assets, route health, and screenshot profile checks, but remains partial visual proof. | `automated-pass` | `tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |
 | The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`packages/create-aura3d/templates/*/src/main.ts`<br>`templates/*/src/main.ts`<br>`tools/prompt-fidelity-quality/index.ts` |  |
 | Legacy AI-runtime code is outside the active workspace. | `automated-pass` | `archive/legacy-ai-runtime`<br>`tools/product-context-evidence/index.ts` |  |
 | The public authoring model is source code plus typed assets. | `automated-pass` | `README.md`<br>`docs/agents/build-playbook.md`<br>`docs/project/fresh-codex-agent-context-results.md` |  |
@@ -71,7 +71,8 @@ Generated: 2026-05-28T23:06:14.075Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1758,"rainPixels":185,"centerObjectPixels":2160,"uniqueBuckets":38} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":3891,"rainPixels":1249,"centerObjectPixels":8927,"uniqueBuckets":153} |
+| `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7 |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and product-quality boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |

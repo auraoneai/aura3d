@@ -14,6 +14,28 @@ interface AgentDogfoodScore {
   readonly notes: readonly string[];
 }
 
+const codexPromptPlan = {
+  sceneType: "cinematic-scene",
+  subjectLabel: "agent product",
+  style: "rainy cinematic product reveal",
+  environment: "wet neon studio with reflections, rain, fog, and practical lights",
+  cameraPreset: "cinematic-dolly",
+  lightingPreset: "neon-practicals",
+  effects: ["rain", "fog", "bloom", "wet-reflection"],
+  interaction: "orbit",
+  acceptanceCriteria: [
+    "typed GLB product is the hero subject",
+    "rain and fog are visible in the scene",
+    "wet floor and reflections are visible",
+    "camera uses a slow dolly toward the subject",
+    "diagnostics report WebGL2 readiness"
+  ],
+  negativeCriteria: [
+    "Do not count a lone GLB on a grid as prompt fidelity.",
+    "Do not rely on text labels to explain rain, cinematic lighting, or wet reflections."
+  ]
+} as const;
+
 const allowedContextFiles = [
   "llms.txt",
   "AGENTS.md",
@@ -63,7 +85,17 @@ const buildResult = runCommand("pnpm", ["exec", "vite", "build", "--config", res
 const browserResult = buildResult.ok
   ? runCommand("pnpm", ["exec", "playwright", "test", "tests/route-health.spec.ts", "tests/screenshot.spec.ts", "--config", resolve(workspace, "playwright.config.ts"), "--reporter=line"], workspace)
   : { ok: false, output: "Skipped because build failed." };
-const routeReport = readOptionalJson<{ ready?: boolean; backend?: string; drawCalls?: number }>(resolve(workspace, "tests/reports/route-health.json"));
+const routeReport = readOptionalJson<{
+  ready?: boolean;
+  backend?: string;
+  drawCalls?: number;
+  promptPlanReport?: {
+    recipe?: string;
+    visualSystems?: readonly string[];
+    acceptanceCriteria?: readonly string[];
+    negativeCriteria?: readonly string[];
+  };
+}>(resolve(workspace, "tests/reports/route-health.json"));
 const screenshotReport = readOptionalJson<{ bytes?: number; profile?: Record<string, number> }>(resolve(workspace, "tests/reports/screenshot.json"));
 const screenshotPath = resolve(workspace, "tests/reports/screenshot.png");
 
@@ -75,7 +107,7 @@ const score: AgentDogfoodScore = {
   assetPathErrors: assetPathErrors.length,
   turns: 1,
   notes: [
-    "Generated app uses only the public engine import surface and typed assets emitted by aura assets add.",
+    "Generated app uses the public prompt-plan engine surface and typed assets emitted by aura assets add.",
     "Verification used the local repo toolchain; Claude Code, Cursor, and Copilot remain separate external runs."
   ]
 };
@@ -88,8 +120,17 @@ const checks: ReleaseCheck[] = [
   },
   {
     id: "codex-generated-app-uses-typed-assets",
-    pass: mainSource.includes("model(assets.agentProduct") && !mainSource.includes("unsafeModelUrl"),
-    detail: "src/main.ts imports assets from ./aura-assets and calls model(assets.agentProduct)"
+    pass: mainSource.includes("asset: assets.agentProduct") && !mainSource.includes("unsafeModelUrl"),
+    detail: "src/main.ts imports assets from ./aura-assets and uses assets.agentProduct as the prompt-plan subject"
+  },
+  {
+    id: "codex-generated-app-uses-prompt-plan",
+    pass:
+      mainSource.includes("definePromptPlan") &&
+      mainSource.includes("compilePromptPlan") &&
+      mainSource.includes("promptPlanToScene") &&
+      mainSource.includes("acceptanceCriteria"),
+    detail: "src/main.ts defines a prompt plan, compiles its report, and renders through promptPlanToScene"
   },
   {
     id: "codex-generated-asset-manifest-validates",
@@ -135,6 +176,18 @@ writeMarkdown(checks, score);
 writeReport(reportPath, "aura3d-agent-context-codex-self-test", checks, {
   workspace,
   allowedContextFiles,
+  promptPlan: {
+    sceneType: codexPromptPlan.sceneType,
+    selectedRecipe: codexPromptPlan.sceneType,
+    subjectAssetRef: "assets.agentProduct",
+    assetRefs: ["assets.agentProduct"],
+    cameraPreset: codexPromptPlan.cameraPreset,
+    lightingPreset: codexPromptPlan.lightingPreset,
+    effects: codexPromptPlan.effects,
+    acceptanceCriteria: codexPromptPlan.acceptanceCriteria,
+    negativeCriteria: codexPromptPlan.negativeCriteria
+  },
+  compiledPromptPlanReport: routeReport?.promptPlanReport,
   score,
   buildOutput: buildResult.output,
   browserOutput: browserResult.output,
@@ -179,54 +232,36 @@ function writeProjectFiles(): void {
 </html>
 `);
 
-  writeFileSync(resolve(workspace, "src/main.ts"), `import { camera, createAuraApp, effects, interactions, lights, material, model, primitives, scene, timeline } from "@aura3d/engine";
+  writeFileSync(resolve(workspace, "src/main.ts"), `import { compilePromptPlan, createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
 import { assets } from "./aura-assets";
+
+const promptPlan = definePromptPlan({
+  sceneType: "${codexPromptPlan.sceneType}",
+  subject: { asset: assets.agentProduct, label: "${codexPromptPlan.subjectLabel}" },
+  style: "${codexPromptPlan.style}",
+  environment: "${codexPromptPlan.environment}",
+  camera: { preset: "${codexPromptPlan.cameraPreset}" },
+  lighting: { preset: "${codexPromptPlan.lightingPreset}" },
+  effects: ${JSON.stringify(codexPromptPlan.effects)},
+  interaction: "${codexPromptPlan.interaction}",
+  acceptanceCriteria: ${JSON.stringify(codexPromptPlan.acceptanceCriteria, null, 2)},
+  negativeCriteria: ${JSON.stringify(codexPromptPlan.negativeCriteria, null, 2)}
+} as const);
+
+const compiledPromptPlan = compilePromptPlan(promptPlan);
 
 const app = createAuraApp("#app", {
   diagnostics: { overlay: true, assetPanel: true, performancePanel: true },
-  scene: scene()
-    .background("#071016")
-    .add(primitives.plane({
-      name: "wet studio floor",
-      width: 7,
-      height: 5,
-      material: material.pbr({ color: "#13242b", roughness: 0.18, metallic: 0.12 })
-    }).position(0, -0.58, -0.6).rotate(-1.5708, 0, 0))
-    .add(primitives.plane({
-      name: "rainy studio backdrop",
-      width: 6.8,
-      height: 3.2,
-      material: material.pbr({ color: "#10202a", roughness: 0.72, metallic: 0 })
-    }).position(0, 0.86, -2.15))
-    .add(primitives.box({
-      name: "cyan product edge light",
-      material: material.emissive({ color: "#49ddff", emissive: "#49ddff" })
-    }).position(-1.5, 0.48, -1.24).scale([0.06, 0.74, 0.06]))
-    .add(primitives.box({
-      name: "warm product edge light",
-      material: material.emissive({ color: "#ffd08a", emissive: "#ffd08a" })
-    }).position(1.5, 0.42, -1.24).scale([0.06, 0.62, 0.06]))
-    .add(model(assets.agentProduct, {
-      material: material.pbr({
-        color: "#ffe166",
-        roughness: 0.42,
-        metallic: 0.08,
-        texture: assets.agentTexture
-      })
-    }).position(0, -0.06, -0.72).rotate(0, -0.28, 0).scale(0.78))
-    .add(lights.studio({ intensity: 1.2 }))
-    .add(effects.rain({ intensity: 0.24, speed: 0.3 }))
-    .add(effects.bloom({ intensity: 0.18 }))
-    .add(interactions.orbit())
-    .camera(camera.dolly({ from: [0, 1.18, 4.95], to: [0, 1.06, 3.72], target: [0, 0.28, -0.72], seconds: 7, fov: 39 }))
-    .timeline(timeline.loop({ seconds: 7 }))
+  scene: promptPlanToScene(promptPlan)
 });
 
 declare global {
   interface Window { auraApp: typeof app; }
+  interface Window { auraPromptPlanReport: typeof compiledPromptPlan.report; }
 }
 
 window.auraApp = app;
+window.auraPromptPlanReport = compiledPromptPlan.report;
 `);
 
   writeFileSync(resolve(workspace, "assets/product/agent-product.glb"), readFileSync("fixtures/asset-corpus/duck.glb"));
@@ -269,10 +304,12 @@ test("generated Aura3D app reaches ready state", async ({ page }) => {
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
   const drawCalls = Number(await page.locator("body").getAttribute("data-aura3d-draw-calls"));
   const diagnostics = await page.evaluate(() => window.__AURA3D_ROUTE_READY__?.diagnostics);
+  const promptPlanReport = await page.evaluate(() => window.auraPromptPlanReport);
   expect(diagnostics?.backend).toBe("webgl2");
+  expect(promptPlanReport?.recipe).toBe("cinematic-scene");
   expect(drawCalls).toBeGreaterThan(0);
   mkdirSync(resolve("tests/reports"), { recursive: true });
-  writeFileSync(resolve("tests/reports/route-health.json"), JSON.stringify({ ready: true, backend: diagnostics?.backend, drawCalls }, null, 2));
+  writeFileSync(resolve("tests/reports/route-health.json"), JSON.stringify({ ready: true, backend: diagnostics?.backend, drawCalls, promptPlanReport }, null, 2));
 });
 `);
 
@@ -340,7 +377,7 @@ function viteAliasEntries(): string {
 }
 
 function findApiHallucinations(source: string): string[] {
-  const allowed = new Set(["camera", "createAuraApp", "effects", "interactions", "lights", "material", "model", "primitives", "scene", "timeline"]);
+  const allowed = new Set(["compilePromptPlan", "createAuraApp", "definePromptPlan", "promptPlanToScene"]);
   const match = source.match(/import\s+\{([^}]+)\}\s+from\s+["']@aura3d\/engine["']/);
   if (!match) return ["missing @aura3d/engine named import"];
   return match[1]
@@ -354,7 +391,7 @@ function findAssetPathErrors(source: string, validationResult: ReturnType<typeof
   if (/unsafeModelUrl|["'][^"']+\.(?:glb|gltf)["']/.test(source)) {
     errors.push("generated app used a raw model URL instead of typed asset refs");
   }
-  if (!source.includes("assets.agentProduct") || !source.includes("assets.agentTexture")) {
+  if (!source.includes("assets.agentProduct")) {
     errors.push("generated app did not use expected typed asset refs");
   }
   return errors;

@@ -80,13 +80,13 @@ The reset decision is:
   them to reach `product-quality-pass`.
 - [x] Add failing fixtures for the current bad pattern: one imported asset on a
   grid with labels, rain lines, colored bars, or unrelated primitives.
-- [ ] Add report output that ties prompt -> plan -> generated Aura3D code ->
+- [x] Add report output that ties prompt -> plan -> generated Aura3D code ->
   screenshot -> review label -> pass/fail reason.
 - [ ] Remove or quarantine any public demo that remains only
   `technical-render-pass` or `partial`.
-- [ ] Re-run the Codex context-only self-test after the prompt-plan reset and
+- [x] Re-run the Codex context-only self-test after the prompt-plan reset and
   require the generated app to use `definePromptPlan` and `promptPlanToScene`.
-- [ ] Record whether the Codex prompt-plan screenshot is still
+- [x] Record whether the Codex prompt-plan screenshot is still
   object-plus-symbolic-effect output or has improved to `product-quality-pass`.
 
 ### Runtime And Template Visual Quality
@@ -122,9 +122,9 @@ The reset decision is:
 - [ ] Add repair guidance for low-quality visuals: tiny subject, bad framing,
   flat lighting, missing environment, symbolic effects, low contrast, or no
   visible interaction state.
-- [ ] Include source prompt, selected recipe, asset refs, expected visual
+- [x] Include source prompt, selected recipe, asset refs, expected visual
   criteria, and screenshot path in every generated report.
-- [ ] Include the generated plan report from `compilePromptPlan`, including
+- [x] Include the generated plan report from `compilePromptPlan`, including
   selected recipe, visual systems, repair hints, and negative anti-patterns.
 
 ### Visual Quality Gates
@@ -254,9 +254,10 @@ Current local automated evidence:
   classifications, a contact sheet path, human review labels, and negative
   fixtures that reject object-plus-symbolic-effect output. The report still
   says product-quality readiness is false.
-- The starter templates now generate scenes from `definePromptPlan` and
-  `promptPlanToScene`, but the Codex context-only dogfood output still needs to
-  be rerun through that same prompt-plan path and reviewed for visual quality.
+- The starter templates and Codex self-test now generate scenes from
+  `definePromptPlan` and `promptPlanToScene`. The Codex self-test also records
+  the compiled prompt-plan report from the running app. Visual review still
+  classifies the output as partial rather than product-quality proof.
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
@@ -274,9 +275,8 @@ completed user proof:
 - Outside beta dogfood and issue intake from real users.
 - Product-quality prompt-to-visual fidelity. Current screenshots prove
   rendering and basic cues, not polished scene generation.
-- Context-only agent prompt-plan adoption. Starter templates use prompt plans,
-  but the dogfood agent output must be regenerated and verified against that
-  path.
+- Cross-agent prompt-plan adoption. Codex self-test uses prompt plans now, but
+  Claude Code, Cursor, and Copilot still need separate runs when available.
 
 The current gate proves local automated product shape, one deterministic Codex
 self-test, and one fresh Codex context-only dogfood run. It does not yet prove

@@ -1,12 +1,12 @@
 # Agent Dogfood Results
 
-Generated: 2026-05-28T23:03:58.851Z
+Generated: 2026-05-28T23:28:17.740Z
 
 ## Codex Self-Test
 
 | Agent | Compiles | Runs | API Hallucinations | Asset Path Errors | Turns | Notes |
 |---|---:|---:|---:|---:|---:|---|
-| Codex | yes | yes | 0 | 0 | 1 | Generated app uses only the public engine import surface and typed assets emitted by aura assets add. Verification used the local repo toolchain; Claude Code, Cursor, and Copilot remain separate external runs. |
+| Codex | yes | yes | 0 | 0 | 1 | Generated app uses the public prompt-plan engine surface and typed assets emitted by aura assets add. Verification used the local repo toolchain; Claude Code, Cursor, and Copilot remain separate external runs. |
 
 ## Context Input
 
@@ -26,13 +26,14 @@ Generated: 2026-05-28T23:03:58.851Z
 | Check | Result | Detail |
 |---|---:|---|
 | `agent-context-files-present` | pass | 10 context files copied |
-| `codex-generated-app-uses-typed-assets` | pass | src/main.ts imports assets from ./aura-assets and calls model(assets.agentProduct) |
+| `codex-generated-app-uses-typed-assets` | pass | src/main.ts imports assets from ./aura-assets and uses assets.agentProduct as the prompt-plan subject |
+| `codex-generated-app-uses-prompt-plan` | pass | src/main.ts defines a prompt plan, compiles its report, and renders through promptPlanToScene |
 | `codex-generated-asset-manifest-validates` | pass | 2 typed asset validates |
 | `codex-generated-app-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
 | `codex-generated-app-no-asset-path-errors` | pass | no raw model URL or missing typed asset dependency |
 | `codex-generated-app-builds` | pass | vite build passed |
-| `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=6 |
-| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=72165, profile={"yellowPixels":1758,"rainPixels":185,"centerObjectPixels":2160,"uniqueBuckets":38} |
+| `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=11 |
+| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=271358, profile={"yellowPixels":3891,"rainPixels":1249,"centerObjectPixels":8927,"uniqueBuckets":153} |
 
 ## Remaining Agent Runs
 

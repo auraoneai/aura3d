@@ -67,6 +67,12 @@ const rootPackage = readJson<{ files?: string[]; scripts?: Record<string, string
 const createPackage = readJson<{ files?: string[]; name?: string; bin?: Record<string, string> }>("packages/create-aura3d/package.json");
 const cliPackage = readJson<{ bin?: Record<string, string> }>("packages/aura3d-cli/package.json");
 const codexScreenshotProfile = readJson<{ profile?: Record<string, number> }>("tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json");
+const codexAgentReport = readJson<{
+  readonly pass?: boolean;
+  readonly promptPlan?: { readonly selectedRecipe?: string; readonly assetRefs?: readonly string[] };
+  readonly compiledPromptPlanReport?: { readonly recipe?: string; readonly visualSystems?: readonly string[] };
+  readonly checks?: readonly { readonly id?: string; readonly pass?: boolean }[];
+}>("tests/reports/agent-context/codex-self-test.json");
 const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
 const starterExampleVisualReview = readText("docs/project/starter-example-visual-review.md");
@@ -178,6 +184,19 @@ const checks: ReleaseCheck[] = [
     detail: `codex profile=${JSON.stringify(codexScreenshotProfile.profile ?? {})}`
   },
   {
+    id: "codex-dogfood-prompt-plan-evidence-present",
+    pass:
+      codexAgentReport.pass === true &&
+      codexAgentReport.promptPlan?.selectedRecipe === "cinematic-scene" &&
+      (codexAgentReport.promptPlan?.assetRefs ?? []).includes("assets.agentProduct") &&
+      codexAgentReport.compiledPromptPlanReport?.recipe === "cinematic-scene" &&
+      (codexAgentReport.compiledPromptPlanReport?.visualSystems ?? []).length > 0 &&
+      (codexAgentReport.checks ?? []).some((check) => check.id === "codex-generated-app-uses-prompt-plan" && check.pass === true),
+    detail: codexAgentReport.pass === true
+      ? `recipe=${codexAgentReport.compiledPromptPlanReport?.recipe ?? "missing"}, visualSystems=${codexAgentReport.compiledPromptPlanReport?.visualSystems?.length ?? 0}`
+      : "missing or failing tests/reports/agent-context/codex-self-test.json prompt-plan evidence"
+  },
+  {
     id: "fresh-codex-context-result-documented",
     pass:
       freshCodexResult.includes("API hallucination count | 0") &&
@@ -259,7 +278,7 @@ const claims: ClaimEvidence[] = [
   claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
   claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
   claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
-  claim("Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
+  claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, and screenshot profile checks, but remains partial visual proof.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
