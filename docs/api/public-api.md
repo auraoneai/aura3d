@@ -17,21 +17,23 @@ pnpm verify:api-docs
 | `@aura3d/apps` | `1.0.0` | `packages/apps/src/index.ts` | 10 |
 | `@aura3d/assets` | `1.0.0` | `packages/assets/src/index.ts` | 81 |
 | `@aura3d/audio` | `1.0.0` | `packages/audio/src/index.ts` | 24 |
+| `@aura3d/cli` | `1.0.0` | `packages/aura3d-cli/src/index.ts` | 21 |
 | `@aura3d/controls` | `1.0.0` | `packages/controls/src/index.ts` | 20 |
 | `@aura3d/core` | `1.0.0` | `packages/core/src/index.ts` | 14 |
-| `@aura3d/create-aura3d` | `1.0.0` | `packages/create-aura3d/src/index.ts` | 5 |
+| `@aura3d/create-aura3d` | `1.0.0` | `packages/create-aura3d/src/index.ts` | 6 |
 | `@aura3d/debug` | `1.0.0` | `packages/debug/src/index.ts` | 30 |
 | `@aura3d/ecs` | `1.0.0` | `packages/ecs/src/index.ts` | 21 |
 | `@aura3d/editor` | `1.0.0` | `packages/editor/src/index.ts` | 1 |
 | `@aura3d/editor-runtime` | `1.0.0` | `packages/editor-runtime/src/index.ts` | 46 |
-| `@aura3d/engine-runtime` | `1.0.0` | `packages/engine/src/index.ts` | 27 |
+| `@aura3d/engine` | `1.0.0` | `packages/engine/src/index.ts` | 33 |
 | `@aura3d/environments` | `1.0.0` | `packages/environments/src/index.ts` | 10 |
 | `@aura3d/input` | `1.0.0` | `packages/input/src/index.ts` | 46 |
 | `@aura3d/materials` | `1.0.0` | `packages/materials/src/index.ts` | 10 |
 | `@aura3d/math` | `1.0.0` | `packages/math/src/index.ts` | 18 |
 | `@aura3d/physics` | `1.0.0` | `packages/physics/src/index.ts` | 24 |
 | `@aura3d/product-studio` | `1.0.0` | `packages/product-studio/src/index.ts` | 12 |
-| `@aura3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 258 |
+| `@aura3d/react` | `1.0.0` | `packages/react/src/index.ts` | 14 |
+| `@aura3d/rendering` | `1.0.0` | `packages/rendering/src/index.ts` | 259 |
 | `@aura3d/scene` | `1.0.0` | `packages/scene/src/index.ts` | 20 |
 | `@aura3d/scripting` | `1.0.0` | `packages/scripting/src/index.ts` | 49 |
 | `@aura3d/three-compat` | `1.0.0` | `packages/three-compat/src/index.ts` | 31 |
@@ -219,6 +221,38 @@ export { FilterEffect } from "./effects/Filter";
 export { ReverbEffect } from "./effects/Reverb";
 ```
 
+## @aura3d/cli
+
+- Version: `1.0.0`
+- Package manifest: `packages/aura3d-cli/package.json`
+- Public entrypoint: `packages/aura3d-cli/src/index.ts`
+
+### Export Declarations
+
+```ts
+export type AuraCliAssetType = "model" | "texture" | "environment" | "audio";
+export interface AuraCliAssetManifest { readonly schema: "aura3d.assets/1.0";
+export interface AuraCliAssetEntry { readonly id: string;
+export interface AddAssetOptions { readonly projectDir?: string;
+export interface AssetCliResult { readonly ok: boolean;
+export interface AssetValidationResult extends AssetCliResult { readonly failures: readonly string[];
+export const DEFAULT_AURA_ASSET_MANIFEST = "aura.assets.json";
+export const DEFAULT_AURA_ASSET_OUTPUT_DIR = "public/aura-assets";
+export const DEFAULT_AURA_ASSET_PUBLIC_PATH = "/aura-assets/";
+export const DEFAULT_AURA_ASSET_TYPEGEN = "src/aura-assets.ts";
+export function addAsset(options: AddAssetOptions): AssetCliResult { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function scanAssets(options: { readonly projectDir?: string; readonly directory: string }): AssetCliResult { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function validateAssets(options: { readonly projectDir?: string } = {}): AssetValidationResult { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function writeTypedAssets(projectDir: string, manifest = readAssetManifest(projectDir)): string { const path = resolve(projectDir, manifest.typegen);
+export function listAssets(options: { readonly projectDir?: string } = {}): readonly AuraCliAssetEntry[] { return readAssetManifest(resolve(options.projectDir ?? process.cwd())).assets;
+export function createAssetThumbnails(options: { readonly projectDir?: string } = {}): AssetCliResult { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function doctor(options: { readonly projectDir?: string } = {}): AssetValidationResult { const validation = validateAssets(options);
+export function checkDeploy(options: { readonly projectDir?: string; readonly distDir?: string } = {}): AssetValidationResult { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function initAgentFiles(options: { readonly projectDir?: string; readonly agent: "claude" | "cursor" | "copilot" | "generic" | "all" }): readonly string[] { const projectDir = resolve(options.projectDir ?? process.cwd());
+export function readAssetManifest(projectDir: string): AuraCliAssetManifest { const manifestPath = resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST);
+export function writeAssetManifest(projectDir: string, manifest: AuraCliAssetManifest): void { writeFileSync(resolve(projectDir, DEFAULT_AURA_ASSET_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
+```
+
 ## @aura3d/controls
 
 - Version: `1.0.0`
@@ -284,10 +318,11 @@ export * from "./VersionedSerialization.js";
 ### Export Declarations
 
 ```ts
-export type CreateA3DTemplate =
+export const CREATE_AURA3D_TEMPLATES = ["product-viewer", "cinematic-scene", "mini-game"] as const;
+export type CreateA3DTemplate = (typeof CREATE_AURA3D_TEMPLATES)[number];
 export interface CreateA3DProjectOptions { readonly targetDir: string;
 export interface CreateA3DProjectResult { readonly targetDir: string;
-export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult { const template = options.template ?? "external-parity-product-viewer";
+export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DProjectResult { const template = options.template ?? "product-viewer";
 export function writeCreateA3DReport(path: string, result: CreateA3DProjectResult): void { mkdirSync(dirname(resolve(path)), { recursive: true });
 ```
 
@@ -433,10 +468,10 @@ export { TransformCommand } from "./commands/TransformCommand";
 export type { SceneTransformTargetLike, TransformLike, TransformTarget } from "./commands/TransformCommand";
 ```
 
-## @aura3d/engine-runtime
+## @aura3d/engine
 
 - Version: `1.0.0`
-- Package manifest: `packages/engine/package.json`
+- Package manifest: `package.json`
 - Public entrypoint: `packages/engine/src/index.ts`
 
 ### Export Declarations
@@ -450,6 +485,12 @@ export { GLTFLoader, createAssetCompatibilityReport, inspectGLTFAsset, loadRende
 export { loadProductAsset } from "@aura3d/product-studio";
 export { createAnimationLabWorkflow, createAssetViewerWorkflow, createComparisonWorkflow, createInteractiveSceneWorkflow, createMaterialStudioWorkflow, createProductConfiguratorWorkflow, createSceneShowcaseWorkflow } from "@aura3d/workflows";
 export { A3DRenderer, A3DScene, A3DAppLifecycle } from "./advanced-runtime/index.js";
+export * from "./agent-api/index.js";
+export * from "./devtools/AuraDiagnosticsOverlay.js";
+export * from "./devtools/AuraAssetPanel.js";
+export * from "./devtools/AuraPerformancePanel.js";
+export * from "./testing/screenshot.js";
+export * from "./testing/routeHealth.js";
 export type { A3DAppLifecycleSnapshot, A3DDisposable, A3DRendererOptions, A3DSceneMeshOptions, A3DSceneRenderSourceOptions } from "./advanced-runtime/index.js";
 export const workflows = { assetViewer: createAssetViewerWorkflow, productConfigurator: createProductConfiguratorWorkflow, materialStudio: createMaterialStudioWorkflow, sceneShowcase: createSceneShowcaseWorkflow, interactiveScene: createInteractiveSceneWorkflow, animationLab: createAnimationLabWorkflow, comparison: createComparisonWorkflow } as const;
 export type A3DWorkflowApi = typeof workflows;
@@ -657,6 +698,31 @@ export type * from "./ProductTypes";
 export type * from "./ProductShowcaseLayout";
 ```
 
+## @aura3d/react
+
+- Version: `1.0.0`
+- Package manifest: `packages/react/package.json`
+- Public entrypoint: `packages/react/src/index.ts`
+
+### Export Declarations
+
+```ts
+export interface AuraCanvasProps { readonly children?: ReactNode;
+export interface SceneProps { readonly children?: ReactNode;
+export interface ModelProps extends AuraModelOptions { readonly asset: AuraAssetRef<"model">;
+export interface CameraProps extends Omit<AuraCameraSpec, "mode"> { readonly mode?: AuraCameraSpec["mode"];
+export interface LightsProps { readonly preset?: "studio";
+export interface EffectProps extends Omit<AuraEffectNode, "kind" | "effect"> { readonly type: AuraEffectNode["effect"];
+export function AuraCanvas(props: AuraCanvasProps): ReactElement { const ref = useRef<HTMLCanvasElement | null>(null);
+export function Scene(_props: SceneProps): null { return null;
+export function Model(_props: ModelProps): null { return null;
+export function Camera(_props: CameraProps): null { return null;
+export function Lights(_props: LightsProps): null { return null;
+export function Effect(_props: EffectProps): null { return null;
+export function buildSceneFromChildren(children: ReactNode): AuraSceneBuilder { let builder = scene();
+export function productViewerScene(asset: AuraAssetRef<"model">, material?: AuraMaterialSpec): AuraSceneBuilder { return scene() .background("#08111f") .add(model(asset, { material }).position(0, 0, 0).scale(1)) .add(lights.studio({ intensity: 1.1 })) .camera(camera.orbit({ distance: 4 })) .diagnostics(true);
+```
+
 ## @aura3d/rendering
 
 - Version: `1.0.0`
@@ -826,6 +892,7 @@ export type { CameraFrameBounds, CameraFrameViewport, PerspectiveCameraFrame, Pe
 export { createStereoCameraRig } from "./StereoCameraRig";
 export type { StereoCameraRig, StereoCameraRigOptions, StereoEye, StereoEyeView, StereoLayout, StereoViewport } from "./StereoCameraRig";
 export { createAnaglyphCompositePlan, createAnaglyphPixelComposite, createParallaxBarrierInterleavePlan, createParallaxBarrierPixelComposite, createStereoEffectPlan } from "./StereoEffects";
+export * from "./cinematic/index";
 export type { AnaglyphCompositePlan, AnaglyphPixelComposite, AnaglyphPixelCompositeOptions, ParallaxBarrierInterleavePlan, ParallaxBarrierPixelComposite, ParallaxBarrierPixelCompositeOptions, StereoEffectMode, StereoEffectPlan, StereoEffectPlanOptions } from "./StereoEffects";
 export { analyzeRgbaFrameVisualMetrics, evaluateFrameVisualQuality } from "./FrameVisualMetrics";
 export type { FrameVisualBounds, FrameVisualMetrics, FrameVisualMetricsOptions, FrameVisualQualityResult, FrameVisualQualityThresholds } from "./FrameVisualMetrics";

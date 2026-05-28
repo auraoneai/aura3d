@@ -1,0 +1,60 @@
+import { describe, expect, test } from "vitest";
+import { camera, defineAuraAssets, effects, lights, material, model, primitives, scene, timeline } from "../../../packages/engine/src";
+
+const assets = defineAuraAssets({
+  robot: {
+    type: "model",
+    format: "glb",
+    url: "/aura-assets/robot.12345678.glb",
+    bounds: [1, 2, 1],
+    hash: "sha256-test"
+  },
+  color: {
+    type: "texture",
+    format: "png",
+    url: "/aura-assets/color.12345678.png",
+    hash: "sha256-texture"
+  }
+} as const);
+
+describe("agent API", () => {
+  test("builds the five-line typed asset scene", () => {
+    const snapshot = scene().add(model(assets.robot)).add(lights.studio()).toJSON();
+    expect(snapshot.nodes.map((node) => node.kind)).toEqual(["model", "light"]);
+    expect(snapshot.nodes[0]).toMatchObject({ kind: "model", asset: { id: "robot" } });
+  });
+
+  test("builds a compact cinematic scene", () => {
+    const snapshot = scene()
+      .background("#05070d")
+      .add(model(assets.robot, { material: material.pbr({ texture: assets.color }) }).position(0, 0, -1).scale(1.1))
+      .add(lights.point({ position: [-2, 2.4, 1], color: "#38d6ff", intensity: 2.4 }))
+      .add(effects.rain({ intensity: 0.45 }))
+      .add(effects.fog({ density: 0.18 }))
+      .add(effects.bloom({ intensity: 0.4 }))
+      .camera(camera.dolly({ from: [0, 1.4, 6], to: [0, 1.2, 2], seconds: 8 }))
+      .timeline(timeline.loop({ seconds: 8 }))
+      .toJSON();
+    expect(snapshot.camera.mode).toBe("dolly");
+    expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")).toBe(true);
+  });
+
+  test("supports primitives and interactions for mini games", () => {
+    const snapshot = scene()
+      .add(primitives.sphere({ name: "player" }).position(0, 0.5, 0))
+      .add(lights.studio())
+      .camera(camera.follow({ targetNode: "player" }))
+      .toJSON();
+    expect(snapshot.nodes[0]).toMatchObject({ kind: "primitive", primitive: "sphere" });
+    expect(snapshot.camera.mode).toBe("follow");
+  });
+});
+
+if (false) {
+  // @ts-expect-error The safe API requires typed AuraAssetRef values.
+  model("robot");
+  // @ts-expect-error Unknown generated asset ids fail at compile time.
+  assets.madeUpRobot;
+  // @ts-expect-error Invalid option shapes fail at compile time.
+  camera.orbit({ distance: "near" });
+}

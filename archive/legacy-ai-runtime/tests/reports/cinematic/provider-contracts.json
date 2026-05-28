@@ -1,0 +1,184 @@
+{
+  "schema": "a3d-cinematic-live-provider-contracts",
+  "generatedAt": "2026-05-27T19:38:57.985Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "backend": "provider-contract",
+    "requiredFiles": [
+      "packages/ai-scene/src/providers/MockProvider.ts",
+      "packages/ai-scene/src/providers/OpenAIAdapter.ts",
+      "packages/ai-scene/src/providers/AnthropicAdapter.ts",
+      "packages/ai-scene/src/providers/GeminiAdapter.ts",
+      "apps/cinematic-prompt-to-scene/index.html"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    },
+    "enabledProviders": []
+  },
+  "evidence": [
+    {
+      "id": "fixture-provider",
+      "path": "apps/cinematic-prompt-to-scene/index.html",
+      "present": true,
+      "status": "present",
+      "detail": "Fixture provider data is deterministic and available without API keys.",
+      "deterministic": true,
+      "providerMode": "fixture"
+    },
+    {
+      "id": "mock-provider",
+      "path": "packages/ai-scene/src/providers/MockProvider.ts",
+      "present": true,
+      "status": "present",
+      "detail": "Mock provider returns deterministic cinematic IR without network.",
+      "deterministic": true,
+      "providerMode": "mock"
+    },
+    {
+      "id": "openai",
+      "path": "packages/ai-scene/src/providers/OpenAIAdapter.ts",
+      "present": true,
+      "status": "present",
+      "detail": "OpenAI remains disabled without explicit server-side transport.",
+      "adapter": {
+        "id": "openai",
+        "displayName": "OpenAI",
+        "providerMode": "mock",
+        "enabled": false,
+        "defaultModel": "gpt-5.1",
+        "serverSideProxy": true,
+        "noNetworkDefault": true,
+        "resultOk": false,
+        "validIR": false,
+        "networkUsed": false,
+        "failureCode": "TRANSPORT_NOT_CONFIGURED"
+      }
+    },
+    {
+      "id": "anthropic",
+      "path": "packages/ai-scene/src/providers/AnthropicAdapter.ts",
+      "present": true,
+      "status": "present",
+      "detail": "Anthropic remains disabled without explicit server-side transport.",
+      "adapter": {
+        "id": "anthropic",
+        "displayName": "Anthropic",
+        "providerMode": "mock",
+        "enabled": false,
+        "defaultModel": "claude-sonnet-4.5",
+        "serverSideProxy": true,
+        "noNetworkDefault": true,
+        "resultOk": false,
+        "validIR": false,
+        "networkUsed": false,
+        "failureCode": "TRANSPORT_NOT_CONFIGURED"
+      }
+    },
+    {
+      "id": "gemini",
+      "path": "packages/ai-scene/src/providers/GeminiAdapter.ts",
+      "present": true,
+      "status": "present",
+      "detail": "Gemini remains disabled without explicit server-side transport.",
+      "adapter": {
+        "id": "gemini",
+        "displayName": "Gemini",
+        "providerMode": "mock",
+        "enabled": false,
+        "defaultModel": "gemini-2.5-pro",
+        "serverSideProxy": true,
+        "noNetworkDefault": true,
+        "resultOk": false,
+        "validIR": false,
+        "networkUsed": false,
+        "failureCode": "TRANSPORT_NOT_CONFIGURED"
+      }
+    },
+    {
+      "id": "local",
+      "path": "packages/ai-scene/src/providers/LocalModelAdapter.ts",
+      "present": true,
+      "status": "present",
+      "detail": "Local Model remains disabled without explicit server-side transport.",
+      "adapter": {
+        "id": "local",
+        "displayName": "Local Model",
+        "providerMode": "mock",
+        "enabled": false,
+        "defaultModel": "local-json-scene-model",
+        "serverSideProxy": true,
+        "noNetworkDefault": true,
+        "resultOk": false,
+        "validIR": false,
+        "networkUsed": false,
+        "failureCode": "LOCAL_TRANSPORT_NOT_CONFIGURED"
+      }
+    }
+  ],
+  "providerMode": "mock",
+  "backend": "provider-contract",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": [],
+  "adapters": [
+    {
+      "id": "openai",
+      "displayName": "OpenAI",
+      "providerMode": "mock",
+      "enabled": false,
+      "defaultModel": "gpt-5.1",
+      "serverSideProxy": true,
+      "noNetworkDefault": true,
+      "resultOk": false,
+      "validIR": false,
+      "networkUsed": false,
+      "failureCode": "TRANSPORT_NOT_CONFIGURED"
+    },
+    {
+      "id": "anthropic",
+      "displayName": "Anthropic",
+      "providerMode": "mock",
+      "enabled": false,
+      "defaultModel": "claude-sonnet-4.5",
+      "serverSideProxy": true,
+      "noNetworkDefault": true,
+      "resultOk": false,
+      "validIR": false,
+      "networkUsed": false,
+      "failureCode": "TRANSPORT_NOT_CONFIGURED"
+    },
+    {
+      "id": "gemini",
+      "displayName": "Gemini",
+      "providerMode": "mock",
+      "enabled": false,
+      "defaultModel": "gemini-2.5-pro",
+      "serverSideProxy": true,
+      "noNetworkDefault": true,
+      "resultOk": false,
+      "validIR": false,
+      "networkUsed": false,
+      "failureCode": "TRANSPORT_NOT_CONFIGURED"
+    },
+    {
+      "id": "local",
+      "displayName": "Local Model",
+      "providerMode": "mock",
+      "enabled": false,
+      "defaultModel": "local-json-scene-model",
+      "serverSideProxy": true,
+      "noNetworkDefault": true,
+      "resultOk": false,
+      "validIR": false,
+      "networkUsed": false,
+      "failureCode": "LOCAL_TRANSPORT_NOT_CONFIGURED"
+    }
+  ]
+}

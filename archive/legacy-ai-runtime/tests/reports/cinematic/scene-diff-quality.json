@@ -1,0 +1,101 @@
+{
+  "schema": "a3d-cinematic-scene-diff-quality",
+  "generatedAt": "2026-05-27T19:37:41.026Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "fixture",
+    "backend": "webgl2",
+    "requiredFiles": [
+      "tests/reports/cinematic/screenshots/cinematic-scene-before.png",
+      "tests/reports/cinematic/screenshots/cinematic-scene-after.png"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "before",
+      "path": "tests/reports/cinematic/screenshots/cinematic-scene-before.png",
+      "present": true,
+      "status": "present",
+      "detail": "Cinematic scene diff screenshot was analyzed.",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1283502,
+        "uniqueColorBuckets": 361,
+        "averageLuma": 54.81995,
+        "averageSaturation": 0.250589,
+        "foregroundAverageSaturation": 0.215743,
+        "saturatedPixelCoverage": 0.417714,
+        "foregroundPixels": 862309,
+        "foregroundCoverage": 0.665362,
+        "largestForegroundComponentPixels": 857874,
+        "largestForegroundComponentCoverage": 0.66194,
+        "centerForegroundCoverage": 0.994469,
+        "foregroundBoundsCoverage": 0.892,
+        "detailEdgeDensity": 0.005851,
+        "localContrast": 41.36864
+      }
+    },
+    {
+      "id": "after",
+      "path": "tests/reports/cinematic/screenshots/cinematic-scene-after.png",
+      "present": true,
+      "status": "present",
+      "detail": "Cinematic scene diff screenshot was analyzed.",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1287273,
+        "uniqueColorBuckets": 357,
+        "averageLuma": 80.395724,
+        "averageSaturation": 0.173561,
+        "foregroundAverageSaturation": 0.167349,
+        "saturatedPixelCoverage": 0.328649,
+        "foregroundPixels": 970685,
+        "foregroundCoverage": 0.748985,
+        "largestForegroundComponentPixels": 968734,
+        "largestForegroundComponentCoverage": 0.74748,
+        "centerForegroundCoverage": 0.998201,
+        "foregroundBoundsCoverage": 0.930074,
+        "detailEdgeDensity": 0.006548,
+        "localContrast": 53.220523
+      }
+    },
+    {
+      "id": "scene-diff-delta",
+      "path": "tests/reports/cinematic/scene-diff-quality.json",
+      "present": true,
+      "status": "present",
+      "detail": "Pixel-stat delta between before and after cinematic patch screenshots.",
+      "statsDelta": {
+        "uniqueColorBuckets": -4,
+        "localContrast": 11.851883,
+        "foregroundCoverage": 0.083623
+      }
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "webgl2",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": [
+    {
+      "path": "tests/reports/cinematic/screenshots/cinematic-scene-before.png",
+      "present": true
+    },
+    {
+      "path": "tests/reports/cinematic/screenshots/cinematic-scene-after.png",
+      "present": true
+    }
+  ]
+}

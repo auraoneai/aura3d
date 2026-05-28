@@ -10,10 +10,5 @@ export default defineConfig({
     target: "es2022",
     sourcemap: true,
     assetsInlineLimit: 0
-  },
-  optimizeDeps: {
-    include: [
-      "@aura3d/engine/production-runtime"
-    ]
   }
 });

@@ -1,0 +1,20 @@
+{
+  "name": "@aura3d/react",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "peerDependencies": {
+    "@aura3d/engine": "^1.0.0",
+    "react": "^19.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    "@aura3d/engine": "workspace:*"
+  }
+}

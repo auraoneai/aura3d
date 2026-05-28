@@ -5,6 +5,12 @@
   "bin": {
     "create-aura3d": "./dist/cli.js"
   },
+  "files": [
+    "dist",
+    "templates/product-viewer",
+    "templates/cinematic-scene",
+    "templates/mini-game"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

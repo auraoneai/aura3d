@@ -47,6 +47,12 @@
       "@aura3d/engine": [
         "packages/engine/src/index.ts"
       ],
+      "@aura3d/cli": [
+        "packages/aura3d-cli/src/index.ts"
+      ],
+      "@aura3d/react": [
+        "packages/react/src/index.ts"
+      ],
       "@aura3d/engine-runtime": [
         "packages/engine/src/index.ts"
       ],

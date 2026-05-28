@@ -1,0 +1,172 @@
+{
+  "schema": "a3d-cinematic-runtime-readiness",
+  "generatedAt": "2026-05-27T19:37:03.643Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "fixture",
+    "backend": "webgl2",
+    "requiredFiles": [
+      "apps/cinematic-prompt-to-scene/index.html",
+      "apps/cinematic-prompt-to-scene/src/main.ts"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "runtime-probe",
+      "path": "apps/cinematic-prompt-to-scene/",
+      "present": true,
+      "status": "present",
+      "detail": "Browser runtime diagnostics for the cinematic route.",
+      "runtime": {
+        "status": "running",
+        "frameCount": 64,
+        "drawCalls": 74,
+        "textures": 3,
+        "renderer": "a3d-webgl2",
+        "backend": "webgl2",
+        "renderWidth": 1616,
+        "renderHeight": 1010,
+        "consoleErrors": [],
+        "pageErrors": [],
+        "cameraAnimationAdvanced": true
+      }
+    },
+    {
+      "id": "source-evidence",
+      "path": "apps/cinematic-prompt-to-scene",
+      "present": true,
+      "status": "present",
+      "detail": "Static source evidence for renderer-owned assets, props, VFX, and framing.",
+      "sourceEvidence": {
+        "routePath": "apps/cinematic-prompt-to-scene",
+        "providerMode": "fixture",
+        "backend": "webgl2",
+        "domOverlayCount": 10,
+        "cssOverlaySelectors": [
+          "rain",
+          "fog",
+          "neon",
+          "story-flower",
+          "alley-wall"
+        ],
+        "rendererOwnedHeroProps": [
+          "glowing-flower"
+        ],
+        "rendererOwnedEnvironment": [
+          "procedural-neon-alley"
+        ],
+        "rendererOwnedVfx": [
+          "procedural-neon-alley",
+          "glowing-flower",
+          "renderer-rain-particles",
+          "source-renderer-owned-vfx"
+        ],
+        "realAssets": [
+          "robot-expressive",
+          "procedural-neon-alley",
+          "glowing-flower",
+          "renderer-rain-particles",
+          "fixtures/threejs-parity/assets/character/robot-expressive.glb"
+        ],
+        "placeholderAssets": [],
+        "productTurntableSignals": []
+      }
+    },
+    {
+      "id": "route-ready",
+      "pass": true,
+      "detail": "runtime.status=running"
+    },
+    {
+      "id": "webgl-or-webgpu-backend",
+      "pass": true,
+      "detail": "backend=webgl2"
+    },
+    {
+      "id": "draw-calls",
+      "pass": true,
+      "detail": "drawCalls=74"
+    },
+    {
+      "id": "real-asset-count",
+      "pass": true,
+      "detail": "realAssets=robot-expressive,procedural-neon-alley,glowing-flower,renderer-rain-particles,fixtures/threejs-parity/assets/character/robot-expressive.glb"
+    },
+    {
+      "id": "zero-hero-placeholders",
+      "pass": true,
+      "detail": "placeholderAssets=none"
+    },
+    {
+      "id": "required-hero-prop",
+      "pass": true,
+      "detail": "rendererOwnedHeroProps=glowing-flower"
+    },
+    {
+      "id": "required-environment-geometry",
+      "pass": true,
+      "detail": "rendererOwnedEnvironment=procedural-neon-alley"
+    },
+    {
+      "id": "required-renderer-vfx",
+      "pass": true,
+      "detail": "rendererOwnedVfx=procedural-neon-alley,glowing-flower,renderer-rain-particles,source-renderer-owned-vfx"
+    },
+    {
+      "id": "dom-overlays-not-evidence",
+      "pass": true,
+      "detail": "domOverlayCount=10"
+    },
+    {
+      "id": "texture-count",
+      "pass": true,
+      "detail": "textures=3"
+    },
+    {
+      "id": "material-count",
+      "pass": true,
+      "detail": "materials=5"
+    },
+    {
+      "id": "camera-animation-advances",
+      "pass": true,
+      "detail": "cameraAnimationAdvanced=true"
+    },
+    {
+      "id": "timeline-duration",
+      "pass": true,
+      "detail": "durationSeconds=12"
+    },
+    {
+      "id": "no-console-errors",
+      "pass": true,
+      "detail": "consoleErrors=0"
+    },
+    {
+      "id": "no-page-errors",
+      "pass": true,
+      "detail": "pageErrors=0"
+    },
+    {
+      "id": "not-product-turntable",
+      "pass": true,
+      "detail": "signals=none"
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "webgl2",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": [
+    "tests/reports/cinematic/screenshots/cinematic-route-health.png",
+    "tests/reports/cinematic/screenshots/cinematic-prompt-to-scene.png"
+  ]
+}

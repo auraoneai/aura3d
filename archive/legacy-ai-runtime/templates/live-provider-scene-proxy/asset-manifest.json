@@ -1,0 +1,55 @@
+{
+  "schema": "aura3d-cinematic-asset-manifest/0.1",
+  "library": "live-provider-scene-proxy",
+  "description": "No-key procedural assets for the server-proxy cinematic starter.",
+  "assets": [
+    {
+      "id": "rooftop-signal-set",
+      "role": "environment",
+      "kind": "procedural-set",
+      "path": "procedural://rooftop-signal-set",
+      "tags": ["rooftop", "city", "rain", "cinematic"],
+      "quality": "hero"
+    },
+    {
+      "id": "signal-antenna",
+      "role": "hero-prop",
+      "kind": "procedural-geometry",
+      "path": "procedural://signal-antenna",
+      "tags": ["antenna", "beacon", "hero-prop", "emissive"],
+      "quality": "hero"
+    },
+    {
+      "id": "city-depth-cards",
+      "role": "set-dressing",
+      "kind": "procedural-cards",
+      "path": "procedural://city-depth-cards",
+      "tags": ["city", "depth", "silhouette"],
+      "quality": "shot"
+    },
+    {
+      "id": "rain-haze-stack",
+      "role": "vfx",
+      "kind": "procedural-particles",
+      "path": "procedural://rain-haze-stack",
+      "tags": ["rain", "fog", "haze", "atmosphere"],
+      "quality": "shot"
+    },
+    {
+      "id": "beacon-emissive-material",
+      "role": "material",
+      "kind": "procedural-material",
+      "path": "procedural://beacon-emissive-material",
+      "tags": ["emissive", "beacon", "glow"],
+      "quality": "shot"
+    },
+    {
+      "id": "storm-rim-light-rig",
+      "role": "light",
+      "kind": "procedural-light-rig",
+      "path": "procedural://storm-rim-light-rig",
+      "tags": ["rim-light", "storm", "practical"],
+      "quality": "shot"
+    }
+  ]
+}

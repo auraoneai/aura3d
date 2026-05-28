@@ -1,0 +1,19 @@
+{
+  "name": "a3d-cinematic-prompt-to-scene",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "quality": "node scripts/quality-gate.mjs"
+  },
+  "dependencies": {
+    "@aura3d/engine": "0.1.0-alpha.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.3.2"
+  }
+}

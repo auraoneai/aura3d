@@ -2,31 +2,24 @@
 
 Version: `1.0.0`
 
-Aura3D rendering is implemented in the first-party `@aura3d/rendering` package and exposed through root package subpaths.
+The public authoring layer is `createAuraApp` plus declarative scene helpers.
+The runtime supplies defaults for canvas setup, pixel ratio, resize, render
+loop, camera, lights, diagnostics, screenshots, and disposal.
 
-## Code
-
-- `packages/rendering/src/index.ts`
-- `packages/rendering/src/Renderer.ts`
-- `packages/rendering/src/WebGL2Device.ts`
-- `packages/rendering/src/WebGPUDevice.ts`
-- `packages/rendering/src/ForwardPass.ts`
-- `packages/rendering/src/ShaderLibrary.ts`
-
-## Current Areas
-
-- WebGL2 is the broadly available default backend for most routes.
-- WebGPU has explicit device, production-runtime, render-target, PBR asset, instancing, and compute-particle routes with device-dependent availability.
-- Geometry, vertex/index buffers, textures, render targets, materials, shaders, render queues, and diagnostics.
-- PBR, environment resources, shadows, postprocess, instancing, culling, stereo/effects, decals, and resource disposal.
-- Route coverage across material, loader, shadow, postprocess, camera, controls, WebGPU, and parity apps.
+Advanced renderer packages remain available for lower-level engine work, but
+templates and agent docs should start with the small public agent API.
 
 ## Boundary
 
-Renderer docs must distinguish package capability, route evidence, generated report status, and public claims. A route screenshot does not prove broad renderer parity by itself.
+The authoring boundary is `@aura3d/engine` for normal app code and
+`@aura3d/rendering` for lower-level renderer work. Agent templates should use
+`createAuraApp`, scene helpers, and declared assets first. Direct renderer APIs
+remain available when a package consumer intentionally needs framegraph,
+material, render-target, postprocess, or backend-level control.
 
 ## Current Limits
 
-- Rendering support is bounded by documented APIs, route coverage, and generated reports; it is not a blanket parity claim for every renderer feature or hardware target.
-- WebGPU support is conditional on `navigator.gpu`, adapter/device availability, and the rows in `tests/reports/webgpu-feature-matrix.json`.
-- Hardware claims should follow [WebGPU hardware matrix](../rendering/webgpu-hardware-matrix.md) and fallback behavior should follow [WebGPU availability and fallback behavior](../rendering/webgpu-fallback.md).
+Rendering docs must only claim features that are backed by package exports,
+routes, tests, or reports. Aura3D does not claim a hidden prompt renderer, automatic
+scene compiler, or universal asset substitution layer; unsupported backends,
+missing canvas state, and missing assets remain explicit diagnostics.

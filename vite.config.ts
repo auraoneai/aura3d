@@ -16,6 +16,8 @@ const aliasEntries = [
   ["@aura3d/engine/engine", "./packages/engine/src/index.ts"],
   ["@aura3d/engine/production-runtime", "./packages/engine/src/production-runtime/index.ts"],
   ["@aura3d/engine/advanced-runtime", "./packages/engine/src/advanced-runtime/index.ts"],
+  ["@aura3d/cli", "./packages/aura3d-cli/src/index.ts"],
+  ["@aura3d/react", "./packages/react/src/index.ts"],
   ["@aura3d/math", "./packages/math/src/index.ts"],
   ["@aura3d/core", "./packages/core/src/index.ts"],
   ["@aura3d/scene", "./packages/scene/src/index.ts"],

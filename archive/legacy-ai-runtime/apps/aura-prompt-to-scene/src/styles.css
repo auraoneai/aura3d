@@ -1,0 +1,276 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #020407;
+  color: #f6f8fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  background: #020407;
+}
+
+#viewport {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  background: #020407;
+}
+
+.shell {
+  position: fixed;
+  inset: 20px;
+  display: grid;
+  grid-template-columns: minmax(330px, 430px) minmax(320px, 460px);
+  justify-content: space-between;
+  gap: 18px;
+  pointer-events: none;
+}
+
+.prompt-panel,
+.inspector section {
+  border: 1px solid rgba(210, 224, 246, 0.22);
+  border-radius: 8px;
+  background: rgba(7, 10, 17, 0.72);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(18px);
+  pointer-events: auto;
+}
+
+.prompt-panel {
+  align-self: start;
+  padding: 18px;
+}
+
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #2d6f51;
+  color: #eafff5;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-pill.is-error {
+  background: #8a2f3d;
+}
+
+.provider-label {
+  overflow: hidden;
+  color: #95a4b8;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+h1 {
+  margin: 14px 0 16px;
+  font-size: 25px;
+  letter-spacing: 0;
+}
+
+h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  letter-spacing: 0;
+}
+
+.route-summary {
+  margin: 0 0 14px;
+  color: #c7d3e3;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.metric {
+  min-width: 0;
+  border: 1px solid rgba(210, 224, 246, 0.18);
+  border-radius: 6px;
+  background: rgba(2, 4, 7, 0.58);
+  padding: 10px;
+}
+
+.metric span {
+  display: block;
+  overflow: hidden;
+  color: #95a4b8;
+  font-size: 10px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.metric strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 4px;
+  color: #f6f8fb;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+label {
+  display: block;
+  margin: 12px 0 7px;
+  color: #aab8cb;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+textarea,
+input {
+  width: 100%;
+  border: 1px solid rgba(210, 224, 246, 0.22);
+  border-radius: 6px;
+  background: rgba(2, 4, 7, 0.78);
+  color: #f6f8fb;
+  font: inherit;
+  outline: none;
+}
+
+textarea:focus,
+input:focus {
+  border-color: rgba(56, 214, 255, 0.68);
+}
+
+textarea {
+  min-height: 132px;
+  resize: vertical;
+  padding: 11px;
+  line-height: 1.45;
+}
+
+input {
+  min-height: 42px;
+  padding: 0 11px;
+}
+
+.button-row,
+.edit-row {
+  display: grid;
+  gap: 8px;
+}
+
+.button-row {
+  grid-template-columns: 1fr 0.75fr 0.6fr;
+  margin-top: 10px;
+}
+
+.edit-row {
+  grid-template-columns: 1fr 112px;
+}
+
+button {
+  min-height: 38px;
+  border: 1px solid rgba(210, 224, 246, 0.22);
+  border-radius: 6px;
+  background: #172033;
+  color: #f6f8fb;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: rgba(56, 214, 255, 0.62);
+  background: #1d2b44;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.patch-log {
+  min-height: 28px;
+  margin-top: 12px;
+  color: #a8f5d0;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.inspector {
+  display: grid;
+  align-self: stretch;
+  grid-template-rows: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+.inspector section {
+  min-height: 0;
+  overflow: hidden;
+  padding: 14px;
+}
+
+pre {
+  height: calc(100% - 26px);
+  margin: 0;
+  overflow: auto;
+  border: 1px solid rgba(210, 224, 246, 0.14);
+  border-radius: 6px;
+  background: rgba(2, 4, 7, 0.66);
+  color: #d6e3f5;
+  font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  padding: 10px;
+  white-space: pre-wrap;
+}
+
+.download-link {
+  position: fixed;
+  left: -10000px;
+  top: auto;
+}
+
+@media (max-width: 980px) {
+  body {
+    overflow: auto;
+  }
+
+  #viewport {
+    position: relative;
+    height: 58vh;
+  }
+
+  .shell {
+    position: relative;
+    inset: auto;
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .inspector {
+    grid-template-rows: 360px 280px;
+  }
+}

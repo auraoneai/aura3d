@@ -35,6 +35,12 @@ export {
   A3DScene,
   A3DAppLifecycle
 } from "./advanced-runtime/index.js";
+export * from "./agent-api/index.js";
+export * from "./devtools/AuraDiagnosticsOverlay.js";
+export * from "./devtools/AuraAssetPanel.js";
+export * from "./devtools/AuraPerformancePanel.js";
+export * from "./testing/screenshot.js";
+export * from "./testing/routeHealth.js";
 export type {
   A3DAppLifecycleSnapshot,
   A3DDisposable,

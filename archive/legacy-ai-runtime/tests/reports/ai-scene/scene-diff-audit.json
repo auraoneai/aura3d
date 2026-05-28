@@ -1,0 +1,471 @@
+{
+  "schema": "a3d-scene-diff-audit",
+  "generatedAt": "2026-05-27T08:28:38.751Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [
+      "packages/ai-scene/src/AuraScenePatch.ts",
+      "packages/ai-scene/src/AuraSceneDiff.ts"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "scene-diff",
+      "path": "diffAuraSceneIR",
+      "present": true,
+      "status": "present",
+      "detail": "2 diff entries generated."
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": [],
+  "patch": {
+    "patchId": "patch-mpnsy9r3",
+    "prompt": "Make the hero smaller for a wider shot.",
+    "provider": "mock",
+    "model": "aura-mock-scene-v1",
+    "generatedAt": "2026-05-26T00:00:00.000Z",
+    "operations": [
+      {
+        "id": "op-hero-scale",
+        "op": "merge",
+        "targetKind": "object",
+        "targetId": "obj-robot-helper",
+        "value": {
+          "transform": {
+            "scale": [
+              0.85,
+              0.85,
+              0.85
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "applied": {
+    "scene": {
+      "schemaVersion": "aura-scene-ir/1.0",
+      "sceneId": "mock-tiny-robot-greenhouse",
+      "title": "Tiny Robot Greenhouse",
+      "brief": "A small robot tends luminous plants inside a warm greenhouse, rendered as real-time previs. Prompt: Create a robot and flower previs scene.",
+      "mood": [
+        "warm",
+        "hopeful",
+        "cinematic"
+      ],
+      "environment": {
+        "id": "env-greenhouse",
+        "label": "Warm Greenhouse Stage",
+        "kind": "interior",
+        "timeOfDay": "golden-hour",
+        "moodTags": [
+          "warm",
+          "organic",
+          "previs"
+        ],
+        "backgroundColor": [
+          0.07,
+          0.09,
+          0.1
+        ],
+        "ground": {
+          "enabled": true,
+          "sizeMeters": 8,
+          "materialId": "mat-warm-concrete"
+        }
+      },
+      "objects": [
+        {
+          "id": "obj-robot-helper",
+          "label": "Robot helper",
+          "role": "hero",
+          "kind": "asset",
+          "assetRequirementId": "asset-robot",
+          "materialId": "mat-brushed-saffron",
+          "transform": {
+            "position": [
+              0,
+              0.6,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              0.85,
+              0.85,
+              0.85
+            ]
+          },
+          "semanticTags": [
+            "robot",
+            "character",
+            "hero"
+          ],
+          "animation": {
+            "id": "anim-robot-idle",
+            "kind": "idle",
+            "durationSeconds": 6
+          }
+        },
+        {
+          "id": "obj-glow-planter",
+          "label": "Luminous planter",
+          "role": "support",
+          "kind": "primitive",
+          "primitive": "sphere",
+          "materialId": "mat-leaf-glow",
+          "transform": {
+            "position": [
+              -1.2,
+              0.35,
+              -0.5
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              0.7,
+              0.7,
+              0.7
+            ]
+          },
+          "semanticTags": [
+            "plant",
+            "light",
+            "prop"
+          ]
+        },
+        {
+          "id": "obj-glass-wall",
+          "label": "Greenhouse glass wall",
+          "role": "set",
+          "kind": "primitive",
+          "primitive": "cube",
+          "materialId": "mat-glass-panel",
+          "transform": {
+            "position": [
+              0,
+              1.25,
+              -1.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              3.5,
+              2.5,
+              0.08
+            ]
+          },
+          "semanticTags": [
+            "architecture",
+            "glass",
+            "set"
+          ]
+        }
+      ],
+      "characters": [],
+      "materials": [
+        {
+          "id": "mat-brushed-saffron",
+          "label": "Brushed saffron metal",
+          "baseColor": [
+            0.92,
+            0.72,
+            0.28,
+            1
+          ],
+          "metallic": 0.55,
+          "roughness": 0.34,
+          "source": "prompt"
+        },
+        {
+          "id": "mat-leaf-glow",
+          "label": "Soft leaf glow",
+          "baseColor": [
+            0.3,
+            0.95,
+            0.48,
+            1
+          ],
+          "metallic": 0.02,
+          "roughness": 0.52,
+          "emissive": [
+            0.08,
+            0.45,
+            0.18
+          ],
+          "emissiveStrength": 1.4,
+          "source": "prompt"
+        },
+        {
+          "id": "mat-glass-panel",
+          "label": "Greenhouse glass",
+          "baseColor": [
+            0.62,
+            0.86,
+            0.92,
+            0.42
+          ],
+          "metallic": 0,
+          "roughness": 0.08,
+          "transmission": 0.55,
+          "source": "prompt"
+        },
+        {
+          "id": "mat-warm-concrete",
+          "label": "Warm concrete",
+          "baseColor": [
+            0.52,
+            0.5,
+            0.45,
+            1
+          ],
+          "metallic": 0,
+          "roughness": 0.68,
+          "source": "default"
+        }
+      ],
+      "lighting": {
+        "id": "light-golden-stage",
+        "label": "Golden greenhouse lighting",
+        "mood": "warm cinematic key with soft fill",
+        "exposure": 1.12,
+        "keyLight": {
+          "direction": [
+            -0.5,
+            -0.9,
+            -0.4
+          ],
+          "color": [
+            1,
+            0.82,
+            0.56
+          ],
+          "intensity": 1.45
+        },
+        "fillLight": {
+          "direction": [
+            0.6,
+            -0.5,
+            0.2
+          ],
+          "color": [
+            0.45,
+            0.7,
+            1
+          ],
+          "intensity": 0.32
+        },
+        "rimLight": {
+          "direction": [
+            0.1,
+            -0.4,
+            0.95
+          ],
+          "color": [
+            0.75,
+            1,
+            0.8
+          ],
+          "intensity": 0.42
+        }
+      },
+      "cameras": [
+        {
+          "id": "cam-hero-push",
+          "stableId": "cam-hero-push",
+          "label": "Hero push-in",
+          "kind": "perspective",
+          "position": [
+            2.9,
+            1.6,
+            3.4
+          ],
+          "target": [
+            0,
+            0.7,
+            0
+          ],
+          "focalLengthMm": 45,
+          "fovDegrees": 42
+        }
+      ],
+      "shots": [
+        {
+          "id": "shot-opening",
+          "label": "Opening push",
+          "cameraId": "cam-hero-push",
+          "startSeconds": 0,
+          "endSeconds": 5,
+          "movement": "push-in",
+          "notes": "Slow push toward the robot and glowing planter."
+        }
+      ],
+      "timeline": [
+        {
+          "id": "cue-camera-opening",
+          "startSeconds": 0,
+          "endSeconds": 5,
+          "kind": "camera",
+          "targetId": "cam-hero-push",
+          "action": "push-in"
+        },
+        {
+          "id": "cue-plant-glow",
+          "startSeconds": 1,
+          "endSeconds": 5,
+          "kind": "vfx",
+          "targetId": "obj-glow-planter",
+          "action": "pulse glow"
+        }
+      ],
+      "vfx": [
+        {
+          "id": "vfx-dust-motes",
+          "kind": "dust",
+          "intensity": 0.4,
+          "notes": "Floating greenhouse dust motes approximated with particles."
+        }
+      ],
+      "physics": [
+        {
+          "id": "phys-ground",
+          "kind": "static-collider",
+          "targetId": "env-greenhouse",
+          "approximation": "single ground plane"
+        }
+      ],
+      "audio": [
+        {
+          "id": "aud-greenhouse-ambience",
+          "kind": "ambient",
+          "prompt": "quiet greenhouse hum",
+          "startSeconds": 0,
+          "endSeconds": 5
+        }
+      ],
+      "assetRequirements": [
+        {
+          "id": "asset-robot",
+          "label": "Friendly compact robot",
+          "type": "gltf",
+          "semanticTags": [
+            "robot",
+            "character"
+          ],
+          "styleTags": [
+            "friendly",
+            "previs"
+          ],
+          "required": false,
+          "preferredUri": "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+          "source": "fixture",
+          "license": "repository fixture"
+        }
+      ],
+      "backendPreference": "auto",
+      "qualityTarget": "L3",
+      "unresolved": [],
+      "provenance": {
+        "provider": "mock",
+        "model": "aura-mock-scene-v1",
+        "promptHash": "sha256:3a21d5722051f2c97b0cda413934aa53fe022f2b158da50468414a6b79efcd0c",
+        "generatedAt": "2026-05-26T00:00:00.000Z",
+        "networkUsed": false,
+        "promptPreview": "Create a robot and flower previs scene.",
+        "patches": [
+          {
+            "patchId": "patch-mpnsy9r3",
+            "changeCount": 1,
+            "promptHash": "sha256:ff7256124091d0205e57d830a367653db0d43a36a64c0d54c25b1a1e6333d7a0",
+            "provider": "mock",
+            "generatedAt": "2026-05-26T00:00:00.000Z"
+          }
+        ]
+      }
+    },
+    "issues": [],
+    "applied": [
+      "op-hero-scale"
+    ],
+    "changes": [
+      {
+        "path": "objects[obj-robot-helper].transform.scale",
+        "before": [
+          1.1,
+          1.1,
+          1.1
+        ],
+        "after": [
+          0.85,
+          0.85,
+          0.85
+        ]
+      }
+    ],
+    "beforeSummary": "mock-tiny-robot-greenhouse: 3 entities, 0 patches",
+    "afterSummary": "mock-tiny-robot-greenhouse: 3 entities, 1 patches"
+  },
+  "diffs": [
+    {
+      "path": "$.objects.obj-robot-helper.transform",
+      "before": {
+        "position": [
+          0,
+          0.6,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          1.1,
+          1.1,
+          1.1
+        ]
+      },
+      "after": {
+        "position": [
+          0,
+          0.6,
+          0
+        ],
+        "rotation": [
+          0,
+          0,
+          0
+        ],
+        "scale": [
+          0.85,
+          0.85,
+          0.85
+        ]
+      }
+    },
+    {
+      "path": "$.provenance.patches.length",
+      "before": 0,
+      "after": 1
+    }
+  ]
+}

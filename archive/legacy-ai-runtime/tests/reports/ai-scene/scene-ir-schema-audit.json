@@ -1,0 +1,520 @@
+{
+  "schema": "a3d-scene-ir-schema-audit",
+  "generatedAt": "2026-05-27T08:28:21.129Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [
+      "packages/ai-scene/src/AuraSceneIR.ts",
+      "packages/ai-scene/src/AuraSceneSchema.ts",
+      "packages/ai-scene/src/AuraSceneValidator.ts"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "schemaVersion",
+      "path": "AuraSceneIR.schemaVersion",
+      "present": true,
+      "status": "present",
+      "detail": "schemaVersion present in fixture."
+    },
+    {
+      "id": "sceneId",
+      "path": "AuraSceneIR.sceneId",
+      "present": true,
+      "status": "present",
+      "detail": "sceneId present in fixture."
+    },
+    {
+      "id": "title",
+      "path": "AuraSceneIR.title",
+      "present": true,
+      "status": "present",
+      "detail": "title present in fixture."
+    },
+    {
+      "id": "brief",
+      "path": "AuraSceneIR.brief",
+      "present": true,
+      "status": "present",
+      "detail": "brief present in fixture."
+    },
+    {
+      "id": "mood",
+      "path": "AuraSceneIR.mood",
+      "present": true,
+      "status": "present",
+      "detail": "mood present in fixture."
+    },
+    {
+      "id": "environment",
+      "path": "AuraSceneIR.environment",
+      "present": true,
+      "status": "present",
+      "detail": "environment present in fixture."
+    },
+    {
+      "id": "objects",
+      "path": "AuraSceneIR.objects",
+      "present": true,
+      "status": "present",
+      "detail": "objects present in fixture."
+    },
+    {
+      "id": "characters",
+      "path": "AuraSceneIR.characters",
+      "present": true,
+      "status": "present",
+      "detail": "characters present in fixture."
+    },
+    {
+      "id": "materials",
+      "path": "AuraSceneIR.materials",
+      "present": true,
+      "status": "present",
+      "detail": "materials present in fixture."
+    },
+    {
+      "id": "lighting",
+      "path": "AuraSceneIR.lighting",
+      "present": true,
+      "status": "present",
+      "detail": "lighting present in fixture."
+    },
+    {
+      "id": "cameras",
+      "path": "AuraSceneIR.cameras",
+      "present": true,
+      "status": "present",
+      "detail": "cameras present in fixture."
+    },
+    {
+      "id": "shots",
+      "path": "AuraSceneIR.shots",
+      "present": true,
+      "status": "present",
+      "detail": "shots present in fixture."
+    },
+    {
+      "id": "timeline",
+      "path": "AuraSceneIR.timeline",
+      "present": true,
+      "status": "present",
+      "detail": "timeline present in fixture."
+    },
+    {
+      "id": "vfx",
+      "path": "AuraSceneIR.vfx",
+      "present": true,
+      "status": "present",
+      "detail": "vfx present in fixture."
+    },
+    {
+      "id": "physics",
+      "path": "AuraSceneIR.physics",
+      "present": true,
+      "status": "present",
+      "detail": "physics present in fixture."
+    },
+    {
+      "id": "audio",
+      "path": "AuraSceneIR.audio",
+      "present": true,
+      "status": "present",
+      "detail": "audio present in fixture."
+    },
+    {
+      "id": "assetRequirements",
+      "path": "AuraSceneIR.assetRequirements",
+      "present": true,
+      "status": "present",
+      "detail": "assetRequirements present in fixture."
+    },
+    {
+      "id": "backendPreference",
+      "path": "AuraSceneIR.backendPreference",
+      "present": true,
+      "status": "present",
+      "detail": "backendPreference present in fixture."
+    },
+    {
+      "id": "qualityTarget",
+      "path": "AuraSceneIR.qualityTarget",
+      "present": true,
+      "status": "present",
+      "detail": "qualityTarget present in fixture."
+    },
+    {
+      "id": "unresolved",
+      "path": "AuraSceneIR.unresolved",
+      "present": true,
+      "status": "present",
+      "detail": "unresolved present in fixture."
+    },
+    {
+      "id": "provenance",
+      "path": "AuraSceneIR.provenance",
+      "present": true,
+      "status": "present",
+      "detail": "provenance present in fixture."
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": [],
+  "schemaVersion": "aura-scene-ir/1.0",
+  "validation": {
+    "ok": true,
+    "valid": true,
+    "value": {
+      "schemaVersion": "aura-scene-ir/1.0",
+      "sceneId": "mock-tiny-robot-greenhouse",
+      "title": "Tiny Robot Greenhouse",
+      "brief": "A small robot tends luminous plants inside a warm greenhouse, rendered as real-time previs. Prompt: Create an AI scene schema audit fixture with objects, materials, cameras, shots, timeline, vfx, physics, assets, and provenance.",
+      "mood": [
+        "warm",
+        "hopeful",
+        "cinematic"
+      ],
+      "environment": {
+        "id": "env-greenhouse",
+        "label": "Warm Greenhouse Stage",
+        "kind": "interior",
+        "timeOfDay": "golden-hour",
+        "moodTags": [
+          "warm",
+          "organic",
+          "previs"
+        ],
+        "backgroundColor": [
+          0.07,
+          0.09,
+          0.1
+        ],
+        "ground": {
+          "enabled": true,
+          "sizeMeters": 8,
+          "materialId": "mat-warm-concrete"
+        }
+      },
+      "objects": [
+        {
+          "id": "obj-robot-helper",
+          "label": "Robot helper",
+          "role": "hero",
+          "kind": "asset",
+          "assetRequirementId": "asset-robot",
+          "materialId": "mat-brushed-saffron",
+          "transform": {
+            "position": [
+              0,
+              0.6,
+              0
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              1.1,
+              1.1,
+              1.1
+            ]
+          },
+          "semanticTags": [
+            "robot",
+            "character",
+            "hero"
+          ],
+          "animation": {
+            "id": "anim-robot-idle",
+            "kind": "idle",
+            "durationSeconds": 6
+          }
+        },
+        {
+          "id": "obj-glow-planter",
+          "label": "Luminous planter",
+          "role": "support",
+          "kind": "primitive",
+          "primitive": "sphere",
+          "materialId": "mat-leaf-glow",
+          "transform": {
+            "position": [
+              -1.2,
+              0.35,
+              -0.5
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              0.7,
+              0.7,
+              0.7
+            ]
+          },
+          "semanticTags": [
+            "plant",
+            "light",
+            "prop"
+          ]
+        },
+        {
+          "id": "obj-glass-wall",
+          "label": "Greenhouse glass wall",
+          "role": "set",
+          "kind": "primitive",
+          "primitive": "cube",
+          "materialId": "mat-glass-panel",
+          "transform": {
+            "position": [
+              0,
+              1.25,
+              -1.6
+            ],
+            "rotation": [
+              0,
+              0,
+              0
+            ],
+            "scale": [
+              3.5,
+              2.5,
+              0.08
+            ]
+          },
+          "semanticTags": [
+            "architecture",
+            "glass",
+            "set"
+          ]
+        }
+      ],
+      "characters": [],
+      "materials": [
+        {
+          "id": "mat-brushed-saffron",
+          "label": "Brushed saffron metal",
+          "baseColor": [
+            0.92,
+            0.72,
+            0.28,
+            1
+          ],
+          "metallic": 0.55,
+          "roughness": 0.34,
+          "source": "prompt"
+        },
+        {
+          "id": "mat-leaf-glow",
+          "label": "Soft leaf glow",
+          "baseColor": [
+            0.3,
+            0.95,
+            0.48,
+            1
+          ],
+          "metallic": 0.02,
+          "roughness": 0.52,
+          "emissive": [
+            0.08,
+            0.45,
+            0.18
+          ],
+          "emissiveStrength": 1.4,
+          "source": "prompt"
+        },
+        {
+          "id": "mat-glass-panel",
+          "label": "Greenhouse glass",
+          "baseColor": [
+            0.62,
+            0.86,
+            0.92,
+            0.42
+          ],
+          "metallic": 0,
+          "roughness": 0.08,
+          "transmission": 0.55,
+          "source": "prompt"
+        },
+        {
+          "id": "mat-warm-concrete",
+          "label": "Warm concrete",
+          "baseColor": [
+            0.52,
+            0.5,
+            0.45,
+            1
+          ],
+          "metallic": 0,
+          "roughness": 0.68,
+          "source": "default"
+        }
+      ],
+      "lighting": {
+        "id": "light-golden-stage",
+        "label": "Golden greenhouse lighting",
+        "mood": "warm cinematic key with soft fill",
+        "exposure": 1.12,
+        "keyLight": {
+          "direction": [
+            -0.5,
+            -0.9,
+            -0.4
+          ],
+          "color": [
+            1,
+            0.82,
+            0.56
+          ],
+          "intensity": 1.45
+        },
+        "fillLight": {
+          "direction": [
+            0.6,
+            -0.5,
+            0.2
+          ],
+          "color": [
+            0.45,
+            0.7,
+            1
+          ],
+          "intensity": 0.32
+        },
+        "rimLight": {
+          "direction": [
+            0.1,
+            -0.4,
+            0.95
+          ],
+          "color": [
+            0.75,
+            1,
+            0.8
+          ],
+          "intensity": 0.42
+        }
+      },
+      "cameras": [
+        {
+          "id": "cam-hero-push",
+          "stableId": "cam-hero-push",
+          "label": "Hero push-in",
+          "kind": "perspective",
+          "position": [
+            2.9,
+            1.6,
+            3.4
+          ],
+          "target": [
+            0,
+            0.7,
+            0
+          ],
+          "focalLengthMm": 45,
+          "fovDegrees": 42
+        }
+      ],
+      "shots": [
+        {
+          "id": "shot-opening",
+          "label": "Opening push",
+          "cameraId": "cam-hero-push",
+          "startSeconds": 0,
+          "endSeconds": 5,
+          "movement": "push-in",
+          "notes": "Slow push toward the robot and glowing planter."
+        }
+      ],
+      "timeline": [
+        {
+          "id": "cue-camera-opening",
+          "startSeconds": 0,
+          "endSeconds": 5,
+          "kind": "camera",
+          "targetId": "cam-hero-push",
+          "action": "push-in"
+        },
+        {
+          "id": "cue-plant-glow",
+          "startSeconds": 1,
+          "endSeconds": 5,
+          "kind": "vfx",
+          "targetId": "obj-glow-planter",
+          "action": "pulse glow"
+        }
+      ],
+      "vfx": [
+        {
+          "id": "vfx-dust-motes",
+          "kind": "dust",
+          "intensity": 0.4,
+          "notes": "Floating greenhouse dust motes approximated with particles."
+        }
+      ],
+      "physics": [
+        {
+          "id": "phys-ground",
+          "kind": "static-collider",
+          "targetId": "env-greenhouse",
+          "approximation": "single ground plane"
+        }
+      ],
+      "audio": [
+        {
+          "id": "aud-greenhouse-ambience",
+          "kind": "ambient",
+          "prompt": "quiet greenhouse hum",
+          "startSeconds": 0,
+          "endSeconds": 5
+        }
+      ],
+      "assetRequirements": [
+        {
+          "id": "asset-robot",
+          "label": "Friendly compact robot",
+          "type": "gltf",
+          "semanticTags": [
+            "robot",
+            "character"
+          ],
+          "styleTags": [
+            "friendly",
+            "previs"
+          ],
+          "required": false,
+          "preferredUri": "fixtures/threejs-parity/assets/character/robot-expressive.glb",
+          "source": "fixture",
+          "license": "repository fixture"
+        }
+      ],
+      "backendPreference": "auto",
+      "qualityTarget": "L3",
+      "unresolved": [],
+      "provenance": {
+        "provider": "mock",
+        "model": "aura-mock-scene-v1",
+        "promptHash": "sha256:de5f5a71efe16d87dae70646c894a87a52c465bae1bb9267b4c2f9c94a309653",
+        "generatedAt": "2026-05-26T00:00:00.000Z",
+        "networkUsed": false,
+        "promptPreview": "Create an AI scene schema audit fixture with objects, materials, cameras, shots, timeline, vfx, ",
+        "patches": []
+      }
+    },
+    "errors": [],
+    "issues": []
+  }
+}

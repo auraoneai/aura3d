@@ -1,0 +1,17 @@
+{
+  "name": "@aura3d/ai-scene",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@aura3d/rendering": "workspace:*",
+    "@aura3d/scene": "workspace:*"
+  }
+}

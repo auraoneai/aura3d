@@ -1,0 +1,19 @@
+{
+  "name": "aura3d-product-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "test": "playwright test tests/route-health.spec.ts tests/screenshot.spec.ts"
+  },
+  "dependencies": {
+    "@aura3d/engine": "1.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.2"
+  }
+}

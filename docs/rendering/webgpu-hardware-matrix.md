@@ -2,16 +2,16 @@
 
 Version: `1.0.0`
 
-This page records how WebGPU evidence should be interpreted.
+This page records how WebGPU hardware evidence should be interpreted. Route and report coverage is documented separately in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 
 First-class WebGPU claims require both route evidence and hardware evidence. A passing local route on one browser/device proves that named environment only.
 
 ## Current Evidence Sources
 
-- WebGPU implementation and template surfaces: `packages/rendering/src/WebGPUDevice.ts`, `packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`, `packages/rendering/src/effects/GPUParticleBackend.ts`, and `packages/create-aura3d/templates/production-webgpu-starter/`
+- WebGPU implementation and template surfaces: `packages/rendering/src/WebGPUDevice.ts`, `packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`, `packages/rendering/src/effects/GPUParticleBackend.ts`, and `templates/production-webgpu-starter/`
 - Root WebGPU routes: `/apps/wow-webgpu-triangle/`, `/apps/wow-webgpu-render-target/`, `/apps/wow-webgpu-pbr-asset/`, `/apps/wow-webgpu-product-viewer/`, `/apps/wow-webgpu-instancing/`, and `/apps/wow-webgpu-compute-particles/`
 - Browser tests: `tests/browser/production-runtime-webgpu-capability.spec.ts`, `tests/browser/rendering-webgpu.spec.ts`, `tests/browser/webgpu-real-device.spec.ts`
-- Report target used by release tooling: `tests/reports/webgpu-hardware-matrix.json`
+- Report targets used by release tooling: `tests/reports/webgpu-hardware-matrix.json` and `tests/reports/webgpu-hardware-matrix-validation.json`
 
 `tests/reports/` is ignored by git, so the matrix may be absent in a clean checkout until the relevant browser test or release tool runs.
 
@@ -22,6 +22,7 @@ First-class WebGPU claims require both route evidence and hardware evidence. A p
 - A report with adapter/device availability proves WebGPU can be requested in that local browser/environment. They do not prove hardware support outside the recorded environment.
 - Route screenshots prove the named current registry route behavior only.
 - Injected WebGPU runtimes are useful for unit and contract tests, but they are not real hardware evidence.
+- `tools/webgpu-hardware-matrix/index.ts` validates that the matrix exists, has `status: "pass"`, uses `evidenceType: "real-navigator-gpu-probe"`, and contains at least one browser/device row.
 
 ## Report Shape
 
@@ -45,6 +46,13 @@ Before saying WebGPU is first-class for a named browser/device, regenerate the m
 - root WebGPU route health passes or reports structured unsupported states;
 - `pnpm webgpu` passes in the same workspace;
 - docs do not claim broader browser/GPU coverage than the matrix records.
+
+Useful commands:
+
+```sh
+pnpm exec playwright test tests/browser/webgpu-real-device.spec.ts --reporter=line
+pnpm webgpu:hardware-matrix
+```
 
 ## Not Supported
 

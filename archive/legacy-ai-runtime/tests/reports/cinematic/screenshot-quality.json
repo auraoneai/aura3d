@@ -1,0 +1,222 @@
+{
+  "schema": "a3d-cinematic-screenshot-quality",
+  "generatedAt": "2026-05-27T19:36:54.858Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "fixture",
+    "backend": "webgl2",
+    "requiredFiles": [
+      "tests/reports/cinematic/screenshots/cinematic-prompt-to-scene.png"
+    ],
+    "requiredReports": [],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "cinematic-source-evidence",
+      "path": "apps/cinematic-prompt-to-scene",
+      "present": true,
+      "status": "present",
+      "detail": "Audited route source for renderer-owned cinematic evidence versus DOM/CSS overlays.",
+      "sourceEvidence": {
+        "routePath": "apps/cinematic-prompt-to-scene",
+        "providerMode": "fixture",
+        "backend": "webgl2",
+        "domOverlayCount": 10,
+        "cssOverlaySelectors": [
+          "rain",
+          "fog",
+          "neon",
+          "story-flower",
+          "alley-wall"
+        ],
+        "rendererOwnedHeroProps": [
+          "glowing-flower"
+        ],
+        "rendererOwnedEnvironment": [
+          "procedural-neon-alley"
+        ],
+        "rendererOwnedVfx": [
+          "procedural-neon-alley",
+          "glowing-flower",
+          "renderer-rain-particles",
+          "source-renderer-owned-vfx"
+        ],
+        "realAssets": [
+          "robot-expressive",
+          "procedural-neon-alley",
+          "glowing-flower",
+          "renderer-rain-particles",
+          "fixtures/threejs-parity/assets/character/robot-expressive.glb"
+        ],
+        "placeholderAssets": [],
+        "productTurntableSignals": []
+      }
+    },
+    {
+      "id": "tests-reports-cinematic-screenshots-cinematic-prompt-to-scene-png",
+      "path": "tests/reports/cinematic/screenshots/cinematic-prompt-to-scene.png",
+      "present": true,
+      "status": "present",
+      "detail": "Captured cinematic route screenshot and evaluated cinematic previs visual gates.",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1283544,
+        "uniqueColorBuckets": 351,
+        "averageLuma": 54.637299,
+        "averageSaturation": 0.249622,
+        "foregroundAverageSaturation": 0.214381,
+        "saturatedPixelCoverage": 0.415277,
+        "foregroundPixels": 862093,
+        "foregroundCoverage": 0.665195,
+        "largestForegroundComponentPixels": 858001,
+        "largestForegroundComponentCoverage": 0.662038,
+        "centerForegroundCoverage": 0.994389,
+        "foregroundBoundsCoverage": 0.889935,
+        "detailEdgeDensity": 0.006057,
+        "localContrast": 40.876586
+      },
+      "gates": [
+        {
+          "id": "non-black-pixels",
+          "pass": true,
+          "actual": 0.990389,
+          "threshold": 0.16,
+          "detail": "Screenshot has enough non-black rendered pixels."
+        },
+        {
+          "id": "color-variety",
+          "pass": true,
+          "actual": 351,
+          "threshold": 64,
+          "detail": "Screenshot has enough color variety for cinematic evidence."
+        },
+        {
+          "id": "local-contrast",
+          "pass": true,
+          "actual": 40.876586,
+          "threshold": 10,
+          "detail": "Screenshot has readable local contrast."
+        },
+        {
+          "id": "saturation",
+          "pass": true,
+          "actual": 0.415277,
+          "threshold": 0.015,
+          "detail": "Screenshot includes visible colored light/material variation."
+        },
+        {
+          "id": "hero-subject-coverage",
+          "pass": true,
+          "actual": 0.662038,
+          "threshold": 0.035,
+          "detail": "Hero subject is visibly present."
+        },
+        {
+          "id": "center-composition",
+          "pass": true,
+          "actual": 0.994389,
+          "threshold": 0.025,
+          "detail": "Subject/story beat is readable in the central frame."
+        },
+        {
+          "id": "environment-coverage",
+          "pass": true,
+          "actual": 0.889935,
+          "threshold": 0.18,
+          "detail": "Frame includes readable environment/set coverage."
+        },
+        {
+          "id": "real-rendered-asset",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "At least one real renderer asset is present."
+        },
+        {
+          "id": "renderer-owned-story-prop",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "Required story prop is renderer-owned, not DOM/CSS."
+        },
+        {
+          "id": "renderer-owned-environment",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "Required environment/set geometry is renderer-owned, not DOM/CSS."
+        },
+        {
+          "id": "renderer-owned-vfx",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "Rain/fog/glow evidence is renderer-owned, not DOM/CSS."
+        },
+        {
+          "id": "not-placeholder-only",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "Public cinematic route is not placeholder-only."
+        },
+        {
+          "id": "not-dom-css-only",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "DOM/CSS overlays cannot satisfy cinematic VFX, prop, or environment evidence."
+        },
+        {
+          "id": "not-product-turntable",
+          "pass": true,
+          "actual": true,
+          "threshold": true,
+          "detail": "North-star cinematic route cannot use product-turntable orbit framing as the shot."
+        }
+      ],
+      "pass": true,
+      "failures": []
+    }
+  ],
+  "providerMode": "fixture",
+  "backend": "webgl2",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "failures": [],
+  "unsupportedCases": [],
+  "screenshots": [
+    {
+      "path": "tests/reports/cinematic/screenshots/cinematic-prompt-to-scene.png",
+      "present": true,
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1283544,
+        "uniqueColorBuckets": 351,
+        "averageLuma": 54.637299,
+        "averageSaturation": 0.249622,
+        "foregroundAverageSaturation": 0.214381,
+        "saturatedPixelCoverage": 0.415277,
+        "foregroundPixels": 862093,
+        "foregroundCoverage": 0.665195,
+        "largestForegroundComponentPixels": 858001,
+        "largestForegroundComponentCoverage": 0.662038,
+        "centerForegroundCoverage": 0.994389,
+        "foregroundBoundsCoverage": 0.889935,
+        "detailEdgeDensity": 0.006057,
+        "localContrast": 40.876586
+      },
+      "pass": true,
+      "failures": []
+    }
+  ]
+}

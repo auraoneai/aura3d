@@ -16,6 +16,8 @@ const packageEntryPoints = new Map<string, string>([
   ["@aura3d/ecs", "/packages/ecs/src/index.ts"],
   ["@aura3d/rendering", "/packages/rendering/src/index.ts"],
   ["@aura3d/engine", "/packages/engine/src/index.ts"],
+  ["@aura3d/cli", "/packages/aura3d-cli/src/index.ts"],
+  ["@aura3d/react", "/packages/react/src/index.ts"],
   ["@aura3d/engine/production-runtime", "/packages/engine/src/production-runtime/index.ts"],
   ["@aura3d/engine/advanced-runtime", "/packages/engine/src/advanced-runtime/index.ts"],
   ["@aura3d/apps", "/packages/apps/src/index.ts"],

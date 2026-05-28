@@ -1,0 +1,8 @@
+{
+  "asset": { "version": "2.0", "generator": "Aura3D template fixture" },
+  "scene": 0,
+  "scenes": [{ "nodes": [] }],
+  "nodes": [],
+  "materials": [{ "name": "brushed graphite" }],
+  "accessors": [{ "min": [-0.7, 0, -0.7], "max": [0.7, 1, 0.7] }]
+}

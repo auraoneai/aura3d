@@ -2,7 +2,7 @@
 
 Version: `1.0.0`
 
-Aura3D has WebGPU implementation, production-runtime, template, proof-test, and current root route surfaces. Browser/device availability remains conditional, so WebGPU routes must either render through `a3d-webgpu` or show a structured unsupported state.
+Aura3D has WebGPU implementation, production-runtime, template, proof-test, and current root route surfaces. Browser/device availability remains conditional, so WebGPU routes must either render through `a3d-webgpu` or show a structured unsupported state. The route, feature, and report inventory lives in [WebGPU route and report evidence](webgpu-route-and-report-evidence.md).
 
 ## Current Code
 
@@ -10,7 +10,7 @@ Aura3D has WebGPU implementation, production-runtime, template, proof-test, and 
 - `packages/rendering/src/WebGPURenderToTextureProof.ts`
 - `packages/rendering/src/production-runtime/ProductionWebGPURenderer.ts`
 - `packages/rendering/src/effects/GPUParticleBackend.ts`
-- `packages/create-aura3d/templates/production-webgpu-starter/`
+- `templates/production-webgpu-starter/`
 - `apps/wow-webgpu-triangle/`
 - `apps/wow-webgpu-render-target/`
 - `apps/wow-webgpu-pbr-asset/`
@@ -59,6 +59,7 @@ Useful focused checks:
 ```sh
 pnpm exec vitest run tests/unit/rendering/webgpu-render-to-texture-proof.test.ts tests/unit/rendering/production-runtime-webgpu-renderer.test.ts
 pnpm exec playwright test tests/browser/production-runtime-webgpu-capability.spec.ts tests/browser/rendering-webgpu.spec.ts
+pnpm webgpu:route-health
 pnpm webgpu
 ```
 

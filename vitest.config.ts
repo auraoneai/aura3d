@@ -27,6 +27,8 @@ export default defineConfig({
       "@aura3d/engine/rendering": new URL("./packages/rendering/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/workflows/production": new URL("./packages/workflows/src/production-runtime/index.ts", import.meta.url).pathname,
       "@aura3d/engine": new URL("./packages/engine/src/index.ts", import.meta.url).pathname,
+      "@aura3d/cli": new URL("./packages/aura3d-cli/src/index.ts", import.meta.url).pathname,
+      "@aura3d/react": new URL("./packages/react/src/index.ts", import.meta.url).pathname,
       "@aura3d/three-compat": new URL("./packages/three-compat/src/index.ts", import.meta.url).pathname,
       "@aura3d/apps": new URL("./packages/apps/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/apps": new URL("./packages/apps/src/index.ts", import.meta.url).pathname,

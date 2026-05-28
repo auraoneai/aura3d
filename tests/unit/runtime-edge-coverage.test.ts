@@ -22,6 +22,10 @@ const runtimeSuiteMappings: Record<string, RuntimeSuiteMapping> = {
     suites: ["tests/unit/workstream5-input-audio-scripting-editor.test.ts", "tests/browser/audio-browser.spec.ts"],
     edgeTerms: [/unavailable/i, /dispose/i, /spatial/i, /context/i, /lifecycle/i]
   },
+  "aura3d-cli": {
+    suites: ["tests/unit/aura3d-cli/assets.test.ts", "tests/unit/aura3d-cli/deployment.test.ts"],
+    edgeTerms: [/missing/i, /failed/i, /manifest/i, /warnings?/i, /deployment/i]
+  },
   core: {
     suites: [
       "tests/unit/core/config-time.test.ts",

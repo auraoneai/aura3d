@@ -1,6 +1,17 @@
 #!/usr/bin/env node
-import { createA3DProject } from "./index.js";
+import { CREATE_AURA3D_TEMPLATES, createA3DProject, type CreateA3DTemplate } from "./index.js";
 
-const [, , targetDir = "a3d-app", template = "external-parity-product-viewer"] = process.argv;
-const result = createA3DProject({ targetDir, template: template as Parameters<typeof createA3DProject>[0]["template"] });
+const args = process.argv.slice(2);
+const targetDir = args.find((arg) => !arg.startsWith("-")) ?? "aura3d-app";
+const template = readOption("--template") ?? "product-viewer";
+if (!CREATE_AURA3D_TEMPLATES.includes(template as CreateA3DTemplate)) {
+  console.error(`Unknown template "${template}". Available templates: ${CREATE_AURA3D_TEMPLATES.join(", ")}`);
+  process.exit(1);
+}
+const result = createA3DProject({ targetDir, template: template as CreateA3DTemplate });
 console.log(JSON.stringify(result, null, 2));
+
+function readOption(name: string): string | undefined {
+  const index = args.indexOf(name);
+  return index >= 0 ? args[index + 1] : undefined;
+}

@@ -1,0 +1,105 @@
+{
+  "schema": "a3d-ai-scene-quality",
+  "generatedAt": "2026-05-27T08:28:40.718Z",
+  "pass": true,
+  "inputs": {
+    "root": ".",
+    "providerMode": "mock",
+    "requiredFiles": [
+      "tests/reports/ai-scene/screenshots/prompt-to-scene.png",
+      "tests/reports/ai-scene/screenshots/scene-patch-before.png",
+      "tests/reports/ai-scene/screenshots/scene-patch-after.png"
+    ],
+    "requiredReports": [
+      "tests/reports/ai-scene/prompt-to-scene-evidence.json"
+    ],
+    "environment": {
+      "A3D_AI_SCENE_PROVIDER_MODE": "mock",
+      "A3D_AI_SCENE_NETWORK": "disabled"
+    }
+  },
+  "evidence": [
+    {
+      "id": "tests-reports-ai-scene-screenshots-prompt-to-scene-png",
+      "path": "tests/reports/ai-scene/screenshots/prompt-to-scene.png",
+      "present": true,
+      "status": "present",
+      "detail": "Screenshot passed AI scene visual quality thresholds.",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1295900,
+        "uniqueColorBuckets": 341,
+        "averageLuma": 21.803849,
+        "averageSaturation": 0.58808,
+        "foregroundAverageSaturation": 0.370809,
+        "saturatedPixelCoverage": 0.132069,
+        "foregroundPixels": 210344,
+        "foregroundCoverage": 0.162302,
+        "largestForegroundComponentPixels": 82025,
+        "largestForegroundComponentCoverage": 0.063291,
+        "centerForegroundCoverage": 0.338503,
+        "foregroundBoundsCoverage": 0.938735,
+        "detailEdgeDensity": 0.045419,
+        "localContrast": 38.201076
+      }
+    },
+    {
+      "id": "tests-reports-ai-scene-screenshots-scene-patch-before-png",
+      "path": "tests/reports/ai-scene/screenshots/scene-patch-before.png",
+      "present": true,
+      "status": "present",
+      "detail": "Screenshot passed AI scene visual quality thresholds.",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1295399,
+        "uniqueColorBuckets": 285,
+        "averageLuma": 19.353164,
+        "averageSaturation": 0.604111,
+        "foregroundAverageSaturation": 0.310492,
+        "saturatedPixelCoverage": 0.048703,
+        "foregroundPixels": 88551,
+        "foregroundCoverage": 0.068326,
+        "largestForegroundComponentPixels": 25837,
+        "largestForegroundComponentCoverage": 0.019936,
+        "centerForegroundCoverage": 0.141809,
+        "foregroundBoundsCoverage": 0.977778,
+        "detailEdgeDensity": 0.036233,
+        "localContrast": 33.365877
+      }
+    },
+    {
+      "id": "tests-reports-ai-scene-screenshots-scene-patch-after-png",
+      "path": "tests/reports/ai-scene/screenshots/scene-patch-after.png",
+      "present": true,
+      "status": "present",
+      "detail": "Screenshot passed AI scene visual quality thresholds.",
+      "stats": {
+        "width": 1440,
+        "height": 900,
+        "nonTransparentPixels": 1296000,
+        "nonBlackPixels": 1296000,
+        "uniqueColorBuckets": 190,
+        "averageLuma": 22.005694,
+        "averageSaturation": 0.545356,
+        "foregroundAverageSaturation": 0.34109,
+        "saturatedPixelCoverage": 0.048382,
+        "foregroundPixels": 82587,
+        "foregroundCoverage": 0.063725,
+        "largestForegroundComponentPixels": 18481,
+        "largestForegroundComponentCoverage": 0.01426,
+        "centerForegroundCoverage": 0.094506,
+        "foregroundBoundsCoverage": 0.957946,
+        "detailEdgeDensity": 0.037753,
+        "localContrast": 29.146819
+      }
+    }
+  ],
+  "providerMode": "mock",
+  "networkUsed": false,
+  "blockedClaims": [],
+  "unsupportedCases": []
+}
