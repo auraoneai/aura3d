@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T19:59:54.865Z
+Generated: 2026-05-28T20:54:55.046Z
 
 ## Summary
 
 - Claims with evidence: 28/28
-- Known gaps tracked: 5/5
-- Automated checks passing: 20/20
+- Known gaps tracked: 6/6
+- Automated checks passing: 21/21
 
 ## Claim Matrix
 
@@ -17,7 +17,7 @@ Generated: 2026-05-28T19:59:54.865Z
 | Users bring their own assets. | `automated-pass` | `tools/asset-corpus/index.ts`<br>`tests/reports/asset-corpus.json` | Run and expand asset corpus against real external GLBs. |
 | Aura3D provides typed asset references. | `automated-pass` | `pnpm run check:assets-cli`<br>`tests/unit/aura3d-cli/assets.test.ts` |  |
 | Aura3D provides starter templates. | `automated-pass` | `pnpm run check:templates`<br>`packages/create-aura3d/templates` |  |
-| Starter templates render through WebGL2 and have scene-specific screenshot profile checks. | `automated-pass` | `packages/create-aura3d/templates/*/tests/screenshot.spec.ts`<br>`tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json`<br>`docs/project/starter-template-visual-review.md` |  |
+| Starter templates render through WebGL2 and have scene-specific render-plumbing screenshot profile checks. | `automated-pass` | `packages/create-aura3d/templates/*/tests/screenshot.spec.ts`<br>`tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json`<br>`docs/project/starter-template-visual-review.md` |  |
 | Aura3D provides diagnostics. | `automated-pass` | `pnpm run check:devtools`<br>`packages/engine/src/devtools` |  |
 | Aura3D provides screenshots. | `automated-pass` | `pnpm run check:examples`<br>`tests/browser/examples-route-health.spec.ts`<br>`docs/project/starter-example-visual-review.md` |  |
 | Aura3D provides static deployment checks. | `automated-pass` | `pnpm run check:deployment`<br>`packages/aura3d-cli/src/index.ts` |  |
@@ -27,8 +27,8 @@ Generated: 2026-05-28T19:59:54.865Z
 | @aura3d/cli supports asset, doctor, deployment, serve, and agent-file flows. | `automated-pass` | `packages/aura3d-cli/src/cli.ts`<br>`packages/aura3d-cli/src/index.ts` |  |
 | create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game. | `automated-pass` | `packages/create-aura3d`<br>`tools/agent-templates/index.ts` |  |
 | Agent-readable context is useful. | `automated-pass` | `docs/agents/*`<br>`tests/reports/agent-context/codex-self-test.json` | Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed. |
-| A fresh Codex context-only run can build a prompt-aligned WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run. |
-| Codex dogfood screenshots are prompt-aligned by pixel profile, not only nonblank. | `automated-pass` | `tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts` |  |
+| A fresh Codex context-only run can build a compiling WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity. |
+| Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof. | `automated-pass` | `tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md` |  |
 | Legacy AI-runtime code is outside the active workspace. | `automated-pass` | `archive/legacy-ai-runtime`<br>`tools/product-context-evidence/index.ts` |  |
 | The public authoring model is source code plus typed assets. | `automated-pass` | `README.md`<br>`docs/agents/build-playbook.md`<br>`docs/project/fresh-codex-agent-context-results.md` |  |
 | The active starter-template directory contains only the three starter templates. | `automated-pass` | `packages/create-aura3d/templates` |  |
@@ -45,8 +45,9 @@ Generated: 2026-05-28T19:59:54.865Z
 
 | Gap | Owner | Next Action | Target Evidence |
 |---|---|---|---|
+| Prompt-to-visual product quality is not proven. | Product/Runtime QA | Replace object-plus-cue screenshot checks with a prompt-fidelity gate that rejects scenes made from one imported asset plus symbolic effects. Add art-directed scene recipes, stronger camera/light/material/environment helpers, and human-reviewed acceptance screenshots before claiming prompt-to-visual quality. | `docs/project/prompt-visual-quality-gap.md`<br>`docs/project/starter-template-visual-review.md`<br>`tests/reports/prompt-fidelity-quality.json` |
 | Claude Code, Cursor, and Copilot context-only agent runs are not complete. | Product QA | Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/*.json` |
-| Licensed wild-asset corpus is not broad enough. | Assets QA | Add licensed Sketchfab CC0, Poly Haven, Meshy, Blender-exported, Draco-compressed, and KTX2-heavy assets with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
+| Licensed wild-asset corpus is not broad enough. | Assets QA | The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, Blender-export, animation, textured-PBR, and KTX2 local fixtures. Add separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
 | Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Vercel deploy was attempted but blocked by HTTP 401 deployment protection; disable protection or provide a public smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
 | Marketing comprehension interviews are not complete. | Product Marketing | Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric. | `docs/project/marketing-comprehension-results.md` |
 | Outside beta dogfood is not complete. | Product/Community | Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs. | `docs/project/outside-beta-dogfood-results.md`<br>`.github/ISSUE_TEMPLATE` |
@@ -69,10 +70,11 @@ Generated: 2026-05-28T19:59:54.865Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1662,"rainPixels":182,"centerObjectPixels":2041,"uniqueBuckets":39} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1666,"rainPixels":198,"centerObjectPixels":2036,"uniqueBuckets":38} |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
-| `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and caveat |
-| `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and caveats |
-| `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 5/5 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 28/28 completed claims have pass evidence; 5/5 known gaps are tracked |
+| `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and product-quality boundary |
+| `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |
+| `prompt-visual-quality-gap-tracked` | pass | prompt-to-visual quality gap is documented as unresolved |
+| `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 6/6 known gaps have owner, next action, and target evidence |
+| `claim-evidence-matrix-complete` | pass | 28/28 completed claims have pass evidence; 6/6 known gaps are tracked |
 

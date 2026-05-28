@@ -324,7 +324,7 @@ interface AssetInspection {
 
 function inspectAssetFile(path: string, format: string): AssetInspection {
   if (format === "gltf") return inspectGltf(JSON.parse(readFileSync(path, "utf8")) as GltfJson, dirname(path));
-  if (format === "glb") return inspectGlb(readFileSync(path));
+  if (format === "glb") return inspectGlb(readFileSync(path), dirname(path));
   return {
     materials: [],
     animations: [],
@@ -342,7 +342,7 @@ interface GltfJson {
   readonly buffers?: readonly { readonly uri?: string }[];
 }
 
-function inspectGlb(buffer: Buffer): AssetInspection {
+function inspectGlb(buffer: Buffer, baseDir?: string): AssetInspection {
   if (buffer.toString("utf8", 0, 4) !== "glTF") throw new Error("Invalid GLB header. Suggested fix: re-export the asset as binary glTF (.glb).");
   const length = buffer.readUInt32LE(8);
   if (length > buffer.length) throw new Error("Invalid GLB length. Suggested fix: run assets validate on the original export.");
@@ -350,7 +350,7 @@ function inspectGlb(buffer: Buffer): AssetInspection {
   const chunkType = buffer.toString("utf8", 16, 20);
   if (chunkType !== "JSON") throw new Error("Invalid GLB JSON chunk. Suggested fix: re-export the GLB.");
   const json = JSON.parse(buffer.toString("utf8", 20, 20 + chunkLength).trim()) as GltfJson;
-  return inspectGltf(json);
+  return inspectGltf(json, baseDir);
 }
 
 function inspectGltf(json: GltfJson, baseDir?: string): AssetInspection {

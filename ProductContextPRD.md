@@ -18,6 +18,34 @@ diagnostics, screenshots, and static deployment checks.
 - `llms.txt`, `AGENTS.md`, `.claude/CLAUDE.md`, Cursor rules, Copilot
   instructions, and `docs/agents/*`: agent-readable context.
 
+## Product Reset
+
+The current repo proves useful Aura3D plumbing, but not the full product
+promise implied by "AI prompt to visual result."
+
+There are two separate problems:
+
+- The Aura3D runtime and template layer does not yet provide enough
+  art-directed visual primitives for agents to reliably create polished scenes.
+  It can load GLBs, create canvases, place objects, add lights/effects, and run
+  diagnostics. It does not yet give agents a strong enough composition,
+  lighting, material, environment, animation, and effect system to make the
+  output look desirable by default.
+- The prompt-to-visual validation was aimed at the wrong target. It rewarded
+  "the app compiled and rendered recognizable cues" instead of "the final image
+  looks like the prompt asked for." That let object-plus-symbolic-effect scenes
+  pass even when the human visual result was not good enough.
+
+So the honest current product state is:
+
+- **Proven:** agent-readable API surface, typed assets, clean starter
+  scaffolding, GLB render path, diagnostics, screenshots, route health, package
+  audits, and local dogfood.
+- **Partially proven:** starter scenes can display real assets with basic
+  visual cues.
+- **Not proven:** polished prompt-to-visual output, broad asset visual fidelity,
+  cinematic composition quality, or user-desirable generated demos.
+
 ## Completed Work
 
 - Legacy AI-runtime code is outside the active workspace.
@@ -26,7 +54,8 @@ diagnostics, screenshots, and static deployment checks.
   templates.
 - The three starter templates render through WebGL2 using the compact Aura3D
   scene API and the lazy Three.js glTF render path, and have screenshot tests
-  with scene-specific pixel profiles, not only non-empty PNG checks.
+  with scene-specific pixel profiles, not only non-empty PNG checks. These are
+  render-plumbing checks, not product-quality prompt-to-visual proof.
 - `product-viewer` renders a real glTF speaker product on a studio setup, not
   a placeholder polygon.
 - `cinematic-scene` renders a real GLB hero asset with rain, colored practicals,
@@ -59,17 +88,21 @@ diagnostics, screenshots, and static deployment checks.
   clean-install, and scene-specific screenshot-profile level, but broad product
   confidence still depends on focused dogfood and user evidence, not aggregate
   monorepo test counts.
+- Prompt-to-visual product quality is not proven. Current screenshots show real
+  GLB loading and basic scene cues, but several still read as one imported
+  object plus symbolic effects. Do not present them as proof that a natural
+  language prompt produces a polished visual result.
 - The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
   richer scene composition, and lazy Three.js-backed material loading, but it is
   still a compact Aura3D render path, not a full physically based Three.js
   replacement. GLB material/texture fidelity needs more corpus testing before it
   can be marketed as production-grade asset parity.
-- The `product-viewer` starter is prompt-aligned and clean-install proven, but
-  it remains a stylized starter render, not a photoreal product-marketing render.
+- The `product-viewer` starter is clean-install proven with product-viewer
+  visual cues, but it remains a stylized starter render, not a polished
+  product-marketing render.
   Do not oversell it externally.
-- The active example routes are prompt-aligned and distinct, but
-  `hello-world-typed-asset` and `camera-path` are compact examples, not
-  photoreal showcase demos.
+- The active example routes are visually distinct, but `hello-world-typed-asset`
+  and `camera-path` are compact examples, not polished showcase demos.
 - Extra `apps/*` routes remain active as classified engine evidence. They are
   not the starter registry and must not be marketed as the primary getting
   started path.
@@ -77,8 +110,82 @@ diagnostics, screenshots, and static deployment checks.
   apps. The compact core API budget excludes the lazy Three.js renderer chunk;
   the starter-template bundle budgets include that renderer cost.
 - Claude Code, Cursor, Copilot, outside developers, real Vercel/Cloudflare/
-  Netlify deployments, and wild third-party GLB assets remain external dogfood
-  work. The local evidence must not be presented as broad market proof.
+  Netlify deployments, and separately licensed Sketchfab/Poly Haven/Meshy/Draco
+  wild-asset runs remain external dogfood work. The local evidence must not be
+  presented as broad market proof.
+
+## Build Checklist Still Required
+
+### Visual Runtime And Scene Quality
+
+- [ ] Add art-directed scene recipes for product hero, cinematic rain scene,
+  material studio, and game arena outputs.
+- [ ] Add camera rig presets for product orbit, dolly push-in, turntable,
+  top-down game board, and hero close-up framing.
+- [ ] Add lighting rigs that create real visual structure: key/fill/rim,
+  studio softbox, practical neon, product reflection cards, and game arena
+  readability.
+- [ ] Add environment helpers for plinths, backdrops, alleys, rooms, arenas,
+  shelves, rails, portals, and staged foreground/background depth.
+- [ ] Improve materials so product assets do not look flat: PBR defaults,
+  environment reflections, contact shadows, wet floors, emissive surfaces, and
+  texture-preserving GLB material handling.
+- [ ] Replace symbolic weather/effects with believable visual systems where
+  relevant: rain volume, splash/reflection response, fog/haze, glow, bloom,
+  depth of field, and motion trails.
+- [ ] Add animation helpers for idle product motion, camera dolly, object
+  reveals, game-loop movement, collection feedback, and interaction states.
+- [ ] Add asset normalization: auto-scale, auto-center, ground alignment,
+  bounds-aware camera framing, missing-texture warnings, and material fallback
+  summaries.
+- [ ] Add performance budgets for these richer visual presets so starter scenes
+  remain usable in a browser.
+
+### Prompt-To-Visual Product Layer
+
+- [ ] Define a prompt contract that separates intent, subject asset, style,
+  camera, environment, lighting, interaction, and acceptance criteria.
+- [ ] Build a scene-planning layer that turns that contract into Aura3D code or
+  validated scene recipe calls.
+- [ ] Give agents a visual vocabulary and examples that map prompts to concrete
+  scene recipes instead of ad hoc primitive placement.
+- [ ] Add repair guidance when output is generic, badly framed, too dark,
+  missing the subject, or just an object plus decorative cues.
+- [ ] Add support for prompt-specific expected artifacts, such as HUD for a
+  game prompt, wet reflections for a rain prompt, and inspection controls for a
+  product-viewer prompt.
+- [ ] Make generated scenes expose their prompt, visual intent, and diagnostic
+  evidence in reports.
+
+### Quality Gates And Evidence
+
+- [ ] Add a `prompt-fidelity` gate that fails screenshots which look like one
+  imported asset plus symbolic effects.
+- [ ] Store source prompt, expected visual criteria, screenshot, route-health,
+  asset manifest, and human verdict for every demo.
+- [ ] Require human review labels: `product-quality-pass`,
+  `technical-render-pass`, `partial`, or `fail`.
+- [ ] Require every public demo to pass both technical rendering checks and
+  visual prompt-fidelity checks before it is marketed.
+- [ ] Build a contact-sheet report for all release-facing screenshots so visual
+  regressions are reviewed together.
+- [ ] Add before/after fixtures proving that the old generic grid/polygon output
+  fails and the new art-directed scene passes.
+- [ ] Compare Aura3D prompt outputs against raw Three.js agent outputs on the
+  same prompts and assets.
+
+### Product Proof
+
+- [ ] Run the context-only agent eval with Codex, Claude Code, Cursor, and
+  Copilot when available.
+- [ ] Run a wild asset corpus with separately licensed Sketchfab CC0, Poly
+  Haven, Meshy, and real Draco-compressed assets.
+- [ ] Deploy at least one polished prompt-fidelity demo publicly to Vercel,
+  Cloudflare Pages, and Netlify without authentication walls.
+- [ ] Run marketing comprehension interviews after the marketing site only
+  shows visuals that meet the product-quality bar.
+- [ ] Run outside beta dogfood with real users and record whether they can turn
+  prompts and assets into scenes they would actually use.
 
 ## Release Gate
 

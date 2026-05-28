@@ -16,6 +16,9 @@ Can a developer or AI coding agent use the documented Aura3D surface to create,
 modify, validate, screenshot, and deploy browser 3D apps without relying on
 archived runtime code, internal release-cycle language, or undocumented APIs?
 
+The current answer is partial. The repo proves technical rendering and agent
+plumbing. It does not prove that a prompt creates a visually compelling result.
+
 ## Non-Negotiable Outcomes
 
 - Every product claim in `ProductContextPRD.md` has evidence.
@@ -24,10 +27,78 @@ archived runtime code, internal release-cycle language, or undocumented APIs?
 - AI agents can build useful apps from the agent context without hallucinating
   archived or non-existent APIs.
 - User-owned assets can be added, typed, validated, rendered, and debugged.
+- Prompt output must be judged by visual fidelity, not only by compile success,
+  nonblank screenshots, or pixel counters.
+- Screenshots that read as one imported object plus symbolic effects must fail
+  product-quality review.
 - Marketing and docs explain the product accurately to people who do not know
   the codebase.
 - Archived runtime code remains inert and cannot leak into active packages,
   apps, docs, or npm artifacts.
+
+## Product Quality Reset
+
+The problem is both implementation and validation.
+
+| Area | What Exists | What Is Missing |
+|---|---|---|
+| Aura3D runtime and API | Compact authoring surface, typed assets, GLB render path, lights, materials, effects, timeline, interactions, diagnostics, screenshots. | Higher-level art-directed scene recipes, better material/lighting defaults, believable environment/effect systems, stronger animation helpers, and asset-aware camera/framing. |
+| Agent workflow | Agents can write valid Aura3D code from context and avoid hallucinated APIs in local Codex tests. | A visual planning contract that maps prompt intent to scene recipes, expected visual criteria, and repair steps when output looks generic. |
+| Evidence and tests | Route health, screenshots, pixel profiles, clean installs, package audits, and local dogfood. | Prompt-fidelity gates that reject object-plus-symbolic-effect scenes and require human product-quality review. |
+
+This test plan therefore treats existing screenshot passes as
+`technical-render-pass` unless they also meet the prompt-fidelity bar.
+
+## Still-To-Build Checklist
+
+### Runtime And Template Visual Quality
+
+- [ ] Product hero scene recipe with auto-framed asset, plinth, backdrop,
+  reflection cards, studio softboxes, contact shadow, and orbit controls.
+- [ ] Cinematic scene recipe with environment depth, wet surface, believable
+  rain volume, fog/haze, practical lights, bloom, and camera dolly.
+- [ ] Mini-game recipe with readable arena, player state, collectibles, hazards,
+  goal, HUD, animation feedback, and clear interaction affordances.
+- [ ] Material studio recipe with controlled lighting, environment reflections,
+  texture preview, swatches, labels, and material comparison layout.
+- [ ] Camera presets for product orbit, dolly push-in, turntable, top-down game
+  board, hero close-up, and inspection mode.
+- [ ] Lighting presets for key/fill/rim, product studio, neon alley, game arena,
+  material inspection, and warm/cool contrast.
+- [ ] Environment primitives that create real scene structure: walls, floors,
+  alleys, shelves, rails, portals, plinths, backgrounds, and depth layers.
+- [ ] Material fidelity improvements for GLB/PBR assets, texture preservation,
+  fallback reporting, wet floors, emissive materials, and reflections.
+- [ ] Effect systems that look like the effect they claim: rain, fog, glow,
+  trails, impact pulses, hover/click state, and collection feedback.
+- [ ] Asset normalization for scale, origin, bounds, ground alignment, camera
+  distance, and missing material/texture diagnostics.
+
+### Prompt-To-Visual Workflow
+
+- [ ] Define a prompt contract with subject, asset IDs, style, environment,
+  camera, lighting, effects, interaction, and acceptance criteria.
+- [ ] Add recipe selection so agents choose product hero, cinematic, game arena,
+  or material studio structures instead of improvising random primitives.
+- [ ] Add agent docs with prompt-to-recipe examples and anti-patterns.
+- [ ] Add repair guidance for low-quality visuals: tiny subject, bad framing,
+  flat lighting, missing environment, symbolic effects, low contrast, or no
+  visible interaction state.
+- [ ] Include source prompt, selected recipe, asset refs, expected visual
+  criteria, and screenshot path in every generated report.
+
+### Visual Quality Gates
+
+- [ ] Add `prompt-fidelity-quality.json`.
+- [ ] Add a release screenshot contact sheet.
+- [ ] Require human review labels: `product-quality-pass`,
+  `technical-render-pass`, `partial`, or `fail`.
+- [ ] Add negative fixtures that intentionally render object-plus-symbolic-effect
+  scenes and require the gate to fail them.
+- [ ] Require at least three release-facing prompts to pass product-quality
+  review before marketing the product as prompt-to-visual.
+- [ ] Compare Aura3D prompt output to raw Three.js agent output on the same
+  prompts and assets.
 
 ## Source Claims Under Test
 
@@ -100,18 +171,22 @@ Current local automated evidence:
   claim with evidence and the automated product-context checks passing.
 - `docs/project/agent-dogfood-results.md` records the Codex self-test: compiles
   yes, runs yes, API hallucinations 0, asset path errors 0, turns 1. Its
-  screenshot check now verifies visual signals, not only PNG byte size.
+  screenshot check verifies basic visual signals, not only PNG byte size, but
+  those signals are not product-quality prompt-to-visual proof.
 - `docs/project/fresh-codex-agent-context-results.md` records a separate fresh
   Codex context-only run using copied context files, local package tarballs, and
   copied GLB assets. It compiled, ran, rendered WebGL2, swapped from `product`
   to `hero` on click, reported API hallucination count 0 and asset path error
-  count 0, and produced a prompt-aligned screenshot profile.
+  count 0, and produced a screenshot profile with the expected basic cues. Human
+  review now classifies that visual evidence as partial because it still reads
+  like an imported object plus symbolic effects.
 - `docs/project/agent-baseline-comparison.md` records the first raw Three.js
   Codex baseline for the same task class. It built, ran, passed route health,
-  passed static preview, produced prompt-aligned screenshot evidence, and
-  reported zero API hallucinations and zero asset-path errors.
-- `docs/project/asset-corpus-results.md` records 11 generated asset cases with
-  expected success/failure behavior.
+  passed static preview, produced basic screenshot evidence, and reported zero
+  API hallucinations and zero asset-path errors.
+- `docs/project/asset-corpus-results.md` records generated/adversarial cases
+  plus selected pinned Khronos, Blender-export, animation, textured-PBR, and
+  KTX2 local fixtures with expected success/failure behavior.
 - `BUNDLE_SIZES.md` records built, minified, gzipped bundle measurements.
 - `tests/reports/package-tarball-audit.json` verifies the packed packages do
   not include archive, product-plan, image, or CSV leakage and include required
@@ -123,11 +198,14 @@ Current local automated evidence:
   review for the clean-install starter artifacts. It explicitly notes that the
   mini-game screenshot now shows a robot arena with coins, hazards, laser gate,
   and portal instead of the previous generic grid/primitive output; it also
-  keeps the product-viewer photorealism caveat visible.
+  keeps the product-quality caveat visible.
 - `docs/project/starter-example-visual-review.md` records the human screenshot
   review for the active public examples. `check:examples` now saves PNGs,
   records distinct hashes, and checks route-specific visual profiles instead of
   only asserting that a canvas is nonblank.
+- `docs/project/prompt-visual-quality-gap.md` records the current disconnect:
+  render-plumbing screenshots are not enough evidence that prompts generate
+  polished visual results.
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
@@ -138,11 +216,13 @@ These remain external or manual evidence items and must not be represented as
 completed user proof:
 
 - Claude Code, Cursor, and Copilot context-only agent runs.
-- Licensed wild-asset corpus from outside sources, including real user-exported
-  assets and failure cases.
+- Separately licensed wild-asset corpus from outside sources, especially
+  Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants.
 - Static deployment to real Vercel, Cloudflare Pages, and Netlify projects.
 - Marketing comprehension interviews with people who do not know the codebase.
 - Outside beta dogfood and issue intake from real users.
+- Product-quality prompt-to-visual fidelity. Current screenshots prove
+  rendering and basic cues, not polished scene generation.
 
 The current gate proves local automated product shape, one deterministic Codex
 self-test, and one fresh Codex context-only dogfood run. It does not yet prove
@@ -449,7 +529,9 @@ For each task and agent, record:
 
 - [ ] Did it compile?
 - [ ] Did it run?
-- [ ] Did it render a prompt-aligned canvas with scene-specific visual signals?
+- [ ] Did it render a canvas with the requested scene-specific visual cues?
+- [ ] Did a human reviewer classify the screenshot as product-quality rather
+  than only technical-render-pass?
 - [ ] Did it hallucinate an API?
 - [ ] Did it invent an asset path?
 - [ ] Did it use typed asset refs?
@@ -462,8 +544,10 @@ For each task and agent, record:
 
 - [ ] Codex self-test is completed before testing the other agents.
 - [ ] Codex self-test uses only the allowed context while generating the app.
-- [ ] Codex screenshot verification checks prompt-aligned visual signals, not
-      only that a PNG file is non-empty.
+- [ ] Codex screenshot verification checks visual cues, not only that a PNG file
+      is non-empty.
+- [ ] Codex output fails product-quality review if it is just one imported
+      object plus symbolic effects.
 - [ ] Each agent completes at least four of five tasks.
 - [ ] No agent uses archived runtime APIs.
 - [ ] API hallucination count is recorded and below the agreed threshold.
@@ -508,7 +592,7 @@ Run the same five agent tasks using:
 
 - [ ] Aura3D has fewer hallucinated APIs than raw Three.js.
 - [ ] Aura3D has fewer asset-path mistakes than raw Three.js.
-- [ ] Aura3D reaches prompt-aligned render in fewer turns.
+- [ ] Aura3D reaches a product-quality visual result in fewer turns.
 - [ ] Aura3D deploys with less manual intervention.
 
 ## Round 9: Asset Corpus Validation
@@ -645,7 +729,8 @@ npm test
 ### Pass Criteria
 
 - [ ] Template installs without source-code edits.
-- [ ] Template renders a prompt-aligned canvas.
+- [ ] Template renders a canvas with the requested visual cues.
+- [ ] Template is separately reviewed for product-quality prompt fidelity.
 - [ ] Template builds for static deployment.
 - [ ] Template emits useful errors when intentionally broken.
 - [ ] A normal developer can recover without reading package internals.
@@ -662,6 +747,9 @@ Prove diagnostics and screenshots are useful product features.
 - [ ] Run screenshot capture on all starter templates.
 - [ ] Verify screenshots contain scene-specific visual signals.
 - [ ] Perform human visual review against the prompt, not only pixel counters.
+- [ ] Fail screenshots that read as one imported object plus symbolic effects.
+- [ ] Require product-quality prompt fidelity before using screenshots as
+  product evidence.
 - [ ] Verify canvas dimensions are recorded.
 - [ ] Verify diagnostics include asset readiness.
 - [ ] Verify diagnostics include route readiness.
@@ -675,6 +763,8 @@ Prove diagnostics and screenshots are useful product features.
 - [ ] Broken routes fail.
 - [ ] Reports are machine-readable.
 - [ ] Failure messages identify the broken route and likely cause.
+- [ ] Screenshots are classified separately as render-plumbing evidence or
+  product-quality prompt evidence.
 
 ## Round 13: Static Deployment Checks
 
@@ -954,10 +1044,14 @@ Get feedback from users who were not involved in building the repo.
 
 - [ ] Public package tarballs include archived runtime code.
 - [ ] Clean install cannot scaffold and build at least one starter.
-- [ ] All three starters fail to render prompt-aligned screenshots.
+- [ ] All three starters fail to render screenshots with the requested visual
+  cues.
+- [ ] All three starters remain technical-render-pass only after product-quality
+  review.
 - [ ] Agent docs consistently cause agents to hallucinate archived APIs.
 - [ ] Asset CLI cannot produce typed refs for normal valid GLBs.
-- [ ] Marketing users think the product is a hidden prompt-to-scene runtime.
+- [ ] Marketing users think the product is a hidden natural-language generator
+  runtime instead of an agent-facing browser 3D SDK.
 - [ ] Bundle proof measures source files instead of built bundles.
 - [ ] Public docs reference APIs that do not exist.
 

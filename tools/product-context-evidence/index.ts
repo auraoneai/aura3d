@@ -70,6 +70,7 @@ const codexScreenshotProfile = readJson<{ profile?: Record<string, number> }>("t
 const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
 const starterExampleVisualReview = readText("docs/project/starter-example-visual-review.md");
+const promptVisualQualityGap = readText("docs/project/prompt-visual-quality-gap.md");
 
 const versionTerms = [/\bV[234]\b/i, /Path A/i, /Path B/i, /path-a/i, /path-b/i, /check:v4/i, /__v4/i, /aura3d-v4/i];
 const draftTerms = [
@@ -181,9 +182,9 @@ const checks: ReleaseCheck[] = [
       starterVisualReview.includes("product-viewer") &&
       starterVisualReview.includes("cinematic-scene") &&
       starterVisualReview.includes("mini-game") &&
-      starterVisualReview.includes("pass with caveat") &&
-      starterVisualReview.includes("not a photoreal product-marketing render"),
-    detail: starterVisualReview ? "starter-template visual review documents current screenshots and caveat" : "missing docs/project/starter-template-visual-review.md"
+      starterVisualReview.includes("technical pass") &&
+      starterVisualReview.includes("not product-quality proof"),
+    detail: starterVisualReview ? "starter-template visual review documents current screenshots and product-quality boundary" : "missing docs/project/starter-template-visual-review.md"
   },
   {
     id: "starter-example-visual-review-present",
@@ -191,8 +192,16 @@ const checks: ReleaseCheck[] = [
       starterExampleVisualReview.includes("hello-world-typed-asset") &&
       starterExampleVisualReview.includes("material-lighting") &&
       starterExampleVisualReview.includes("camera-path") &&
-      starterExampleVisualReview.includes("not accepted release-facing example evidence"),
-    detail: starterExampleVisualReview ? "starter-example visual review documents active example screenshots and caveats" : "missing docs/project/starter-example-visual-review.md"
+      starterExampleVisualReview.includes("not product-quality proof"),
+    detail: starterExampleVisualReview ? "starter-example visual review documents active example screenshots and product-quality boundary" : "missing docs/project/starter-example-visual-review.md"
+  },
+  {
+    id: "prompt-visual-quality-gap-tracked",
+    pass:
+      promptVisualQualityGap.includes("not product-quality proof") &&
+      promptVisualQualityGap.includes("object plus symbolic effects") &&
+      promptVisualQualityGap.includes("Prompt Fidelity Acceptance Bar"),
+    detail: promptVisualQualityGap ? "prompt-to-visual quality gap is documented as unresolved" : "missing docs/project/prompt-visual-quality-gap.md"
   }
 ];
 
@@ -202,7 +211,7 @@ const claims: ClaimEvidence[] = [
   claim("Users bring their own assets.", statusFromReport("tests/reports/asset-corpus.json"), ["tools/asset-corpus/index.ts", "tests/reports/asset-corpus.json"], "Run and expand asset corpus against real external GLBs."),
   claim("Aura3D provides typed asset references.", statusFrom("check:assets-cli"), ["pnpm run check:assets-cli", "tests/unit/aura3d-cli/assets.test.ts"]),
   claim("Aura3D provides starter templates.", statusFrom("check:templates"), ["pnpm run check:templates", "packages/create-aura3d/templates"]),
-  claim("Starter templates render through WebGL2 and have scene-specific screenshot profile checks.", statusFrom("check:templates"), ["packages/create-aura3d/templates/*/tests/screenshot.spec.ts", "tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json", "docs/project/starter-template-visual-review.md"]),
+  claim("Starter templates render through WebGL2 and have scene-specific render-plumbing screenshot profile checks.", statusFrom("check:templates"), ["packages/create-aura3d/templates/*/tests/screenshot.spec.ts", "tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json", "docs/project/starter-template-visual-review.md"]),
   claim("Aura3D provides diagnostics.", statusFrom("check:devtools"), ["pnpm run check:devtools", "packages/engine/src/devtools"]),
   claim("Aura3D provides screenshots.", statusFrom("check:examples"), ["pnpm run check:examples", "tests/browser/examples-route-health.spec.ts", "docs/project/starter-example-visual-review.md"]),
   claim("Aura3D provides static deployment checks.", statusFrom("check:deployment"), ["pnpm run check:deployment", "packages/aura3d-cli/src/index.ts"]),
@@ -212,8 +221,8 @@ const claims: ClaimEvidence[] = [
   claim("@aura3d/cli supports asset, doctor, deployment, serve, and agent-file flows.", statusFrom("check:assets-cli"), ["packages/aura3d-cli/src/cli.ts", "packages/aura3d-cli/src/index.ts"]),
   claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
   claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
-  claim("A fresh Codex context-only run can build a prompt-aligned WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run."),
-  claim("Codex dogfood screenshots are prompt-aligned by pixel profile, not only nonblank.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts"]),
+  claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
+  claim("Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
   claim("The active starter-template directory contains only the three starter templates.", checkStatus("active-template-directory-exactly-three"), ["packages/create-aura3d/templates"]),
@@ -228,6 +237,12 @@ const claims: ClaimEvidence[] = [
 ];
 
 const knownGaps: KnownGapEvidence[] = [
+  {
+    gap: "Prompt-to-visual product quality is not proven.",
+    owner: "Product/Runtime QA",
+    nextAction: "Replace object-plus-cue screenshot checks with a prompt-fidelity gate that rejects scenes made from one imported asset plus symbolic effects. Add art-directed scene recipes, stronger camera/light/material/environment helpers, and human-reviewed acceptance screenshots before claiming prompt-to-visual quality.",
+    targetEvidence: ["docs/project/prompt-visual-quality-gap.md", "docs/project/starter-template-visual-review.md", "tests/reports/prompt-fidelity-quality.json"]
+  },
   {
     gap: "Claude Code, Cursor, and Copilot context-only agent runs are not complete.",
     owner: "Product QA",
@@ -245,7 +260,7 @@ const knownGaps: KnownGapEvidence[] = [
   {
     gap: "Licensed wild-asset corpus is not broad enough.",
     owner: "Assets QA",
-    nextAction: "Add licensed Sketchfab CC0, Poly Haven, Meshy, Blender-exported, Draco-compressed, and KTX2-heavy assets with source/license notes, then run add/validate/typegen/render.",
+    nextAction: "The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, Blender-export, animation, textured-PBR, and KTX2 local fixtures. Add separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants with source/license notes, then run add/validate/typegen/render.",
     targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"]
   },
   {

@@ -11,23 +11,26 @@ evidence.
 
 | Host | Status | Evidence | Result |
 |---|---|---|---|
-| Vercel | attempted | `vercel deploy --yes --cwd tests/reports/package-clean-install-workspace/templates/cinematic-scene/demo/dist` | deploy succeeded, but public smoke failed because the URL returns HTTP 401 deployment protection |
+| Vercel | attempted | `vercel deploy --yes --cwd .../cinematic-scene/demo/dist`; `vercel deploy --prod --yes --force --cwd .../cinematic-scene/demo/dist` | preview and production deploys succeeded, but public smoke failed because every URL returns HTTP 401 deployment protection |
 | Cloudflare Pages | not run | environment check | missing `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` |
 | Netlify | not run | environment check | missing `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` |
 
 ## Vercel Attempt
 
 The machine is authenticated to Vercel as `gchahal1982`. The first upload hit a
-transient TLS upload error, then a retry succeeded.
+transient TLS upload error, then a retry succeeded. A later production deploy
+also succeeded, but production remains behind deployment protection.
 
 Created deployment URLs:
 
 - `https://dist-oi5ldvhus-veerone.vercel.app`
 - `https://dist-n022d0avm-veerone.vercel.app`
+- `https://dist-3n5lgxoky-veerone.vercel.app`
 
-Both URLs return HTTP 401 before the Aura3D app can load. A redeploy with
+All tested URLs return HTTP 401 before the Aura3D app can load. A redeploy with
 `vercel deploy --yes --public --force` also returned HTTP 401; the CLI reported
-that `--public` is deprecated and ignored for this protection setting.
+that `--public` is deprecated and ignored for this protection setting. A
+production deploy with `--prod --yes --force` also returned HTTP 401.
 
 ## Current Verdict
 

@@ -1,0 +1,78 @@
+name: Aura3D beta dogfood
+description: Report an install, scaffold, asset, agent, render, or deploy result from beta testing.
+title: "[Dogfood]: "
+labels: ["dogfood", "beta"]
+body:
+  - type: input
+    id: tester-profile
+    attributes:
+      label: Tester profile
+      description: Role and relevant background, for example React developer, Three.js developer, 3D artist, or product manager.
+      placeholder: "React developer using Cursor"
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version or commit
+      description: npm version, tarball, or commit SHA used for the test.
+      placeholder: "0405927"
+    validations:
+      required: true
+  - type: dropdown
+    id: test-path
+    attributes:
+      label: Test path
+      description: What did you try first?
+      options:
+        - create-aura3d product-viewer
+        - create-aura3d cinematic-scene
+        - create-aura3d mini-game
+        - Bring-your-own GLB asset
+        - Agent-generated scene
+        - Static deployment
+        - Marketing/docs comprehension
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands and prompt
+      description: Paste the exact commands and, if an agent was used, the exact prompt.
+      placeholder: |
+        npx create-aura3d@latest demo --template product-viewer
+        cd demo
+        npm install
+        npm run dev
+    validations:
+      required: true
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: Outcome
+      options:
+        - Installed and rendered successfully
+        - Installed but did not render
+        - Build failed
+        - Asset pipeline failed
+        - Agent hallucinated an API
+        - Deployment failed
+        - Docs or marketing were confusing
+        - Other failure
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Screenshots, route-health output, browser console errors, deployment URL, or report paths.
+    validations:
+      required: true
+  - type: textarea
+    id: recovery
+    attributes:
+      label: Recovery and confusion
+      description: What helped you recover, and what was still unclear?
+    validations:
+      required: false

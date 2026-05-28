@@ -21,7 +21,8 @@ the hero object on a studio plinth with studio lighting, a wet/reflective floor,
 rain, a slow camera dolly, diagnostics overlay, and a click handler path that
 swaps/uses `assets/hero.glb` as an alternate model. The output should compile,
 run, render visually in WebGL2, and include Playwright route-health and
-screenshot tests that prove the canvas is nonblank and visually prompt-aligned.
+screenshot tests that prove the canvas is nonblank and contains the requested
+basic visual cues.
 
 ## Output
 
@@ -49,7 +50,7 @@ screenshot tests that prove the canvas is nonblank and visually prompt-aligned.
 |---|---:|
 | TypeScript/Vite build | pass |
 | Playwright route health | pass |
-| Playwright screenshot profile | pass |
+| Playwright screenshot profile | technical render pass |
 | Asset validation | pass |
 | Deploy check | pass |
 | API hallucination count | 0 |
@@ -62,7 +63,7 @@ screenshot tests that prove the canvas is nonblank and visually prompt-aligned.
 ## Visual Evidence
 
 The screenshot is not only nonblank. The generated test measured the rendered
-canvas for prompt-aligned visual elements:
+canvas for basic visual cues:
 
 | Visual Signal | Count |
 |---|---:|
@@ -77,7 +78,9 @@ canvas for prompt-aligned visual elements:
 Manual visual inspection confirmed that the screenshot shows a product GLB on a
 plinth with rain, a blue studio wall, cyan strip light/reflection, amber
 practical/reflection, diagnostics overlay, and WebGL2 output. This is materially
-different from the earlier placeholder/grid screenshots.
+different from the earlier generic grid screenshots, but it is still classified
+as partial visual evidence because it does not prove polished prompt-to-visual
+quality.
 
 ## Boundaries
 
@@ -85,5 +88,6 @@ different from the earlier placeholder/grid screenshots.
   Copilot, or outside-user dogfood.
 - This proves local tarball usage and local Playwright rendering, not a real
   Vercel, Cloudflare Pages, or Netlify deployment.
-- This proves prompt-aligned composition for the provided GLBs, not broad GLB
-  material/texture fidelity across arbitrary third-party assets.
+- This proves technical rendering with the requested basic cues for the provided
+  GLBs, not polished prompt-to-visual quality or broad GLB material/texture
+  fidelity across arbitrary third-party assets.

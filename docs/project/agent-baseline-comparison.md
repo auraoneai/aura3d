@@ -36,7 +36,7 @@ Build the same developer-facing scene without Aura3D:
 | Static preview route health | pass |
 | Static preview root HTTP | 200 |
 | Screenshot nonblank | pass |
-| Prompt-aligned pixels | pass |
+| Basic visual cue pixels | pass |
 | Click model swap | pass |
 
 ## Metrics
@@ -61,3 +61,7 @@ Build the same developer-facing scene without Aura3D:
 - Screenshot evidence exists outside the repo at
   `/tmp/aura3d-raw-three-baseline/test-results/viewer-ready.png`; it is not
   committed because image artifacts are excluded from commits.
+- This baseline is not product-quality prompt evidence. It proves that raw
+  Three.js can also create a compiling rendered scene with the requested basic
+  cues, which means Aura3D still needs better visual recipes and agent guidance
+  to be meaningfully better for prompt-to-visual work.

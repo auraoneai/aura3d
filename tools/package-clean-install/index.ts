@@ -374,7 +374,7 @@ function screenshotProfileCheck(result: TemplateResult): ReleaseCheck {
   const profile = result.screenshotProfile;
   const profileResult = sceneProfilePass(result.template, profile);
   return check(
-    `${result.template}-dev-screenshot-profile-prompt-aligned`,
+    `${result.template}-dev-screenshot-profile-visual-cues`,
     result.screenshotBytes > 1000 && result.previewScreenshotBytes > 1000 && profileResult.pass,
     `dev=${result.screenshotBytes}, profile=${JSON.stringify(profile)}, preview=${result.previewScreenshotBytes}, ${profileResult.detail}`
   );
