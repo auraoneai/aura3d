@@ -35,9 +35,6 @@ importers:
       '@aura3d/core':
         specifier: workspace:*
         version: link:packages/core
-      '@aura3d/create-aura3d':
-        specifier: workspace:*
-        version: link:packages/create-aura3d
       '@aura3d/debug':
         specifier: workspace:*
         version: link:packages/debug
@@ -104,6 +101,9 @@ importers:
       cannon-es:
         specifier: 0.20.0
         version: 0.20.0
+      create-aura3d:
+        specifier: workspace:*
+        version: link:packages/create-aura3d
       draco3d:
         specifier: ^1.5.7
         version: 1.5.7

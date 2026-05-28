@@ -356,7 +356,15 @@
     "check:docs-site": "pnpm exec playwright test tests/browser/docs-site.spec.ts --reporter=line && pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-site/index.ts",
     "check:bundle-size": "pnpm exec tsx --tsconfig tsconfig.base.json tools/bundle-size/index.ts",
     "check:marketing-truth": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-truth/index.ts",
-    "check:release": "pnpm check:product-cutover && pnpm check:agent-api && pnpm check:assets-cli && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth"
+    "check:product-context": "pnpm exec tsx --tsconfig tsconfig.base.json tools/product-context-evidence/index.ts",
+    "check:tarballs": "pnpm exec tsx --tsconfig tsconfig.base.json tools/package-tarball-audit/index.ts",
+    "check:asset-corpus": "pnpm exec tsx --tsconfig tsconfig.base.json tools/asset-corpus/index.ts",
+    "check:docs-codeblocks": "pnpm exec tsx --tsconfig tsconfig.base.json tools/docs-codeblocks/index.ts",
+    "check:marketing-links": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-link-audit/index.ts",
+    "check:error-quality": "pnpm exec tsx --tsconfig tsconfig.base.json tools/error-message-quality/index.ts",
+    "dogfood:templates": "pnpm run check:templates",
+    "dogfood:agent": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-dogfood/index.ts",
+    "check:release": "pnpm typecheck && pnpm check:product-cutover && pnpm check:agent-api && pnpm check:assets-cli && pnpm check:asset-corpus && pnpm check:agent-docs && pnpm check:templates && pnpm check:examples && pnpm check:devtools && pnpm check:deployment && pnpm check:docs-site && pnpm check:bundle-size && pnpm check:marketing-truth && pnpm dogfood:agent && pnpm build && pnpm check:tarballs && pnpm check:docs-codeblocks && pnpm check:marketing-links && pnpm check:error-quality && pnpm check:product-context"
   },
   "devDependencies": {
     "@aura3d/animation": "workspace:*",
@@ -365,7 +373,7 @@
     "@aura3d/audio": "workspace:*",
     "@aura3d/cli": "workspace:*",
     "@aura3d/core": "workspace:*",
-    "@aura3d/create-aura3d": "workspace:*",
+    "create-aura3d": "workspace:*",
     "@aura3d/debug": "workspace:*",
     "@aura3d/ecs": "workspace:*",
     "@aura3d/editor": "workspace:*",

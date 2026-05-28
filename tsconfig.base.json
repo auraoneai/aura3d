@@ -89,6 +89,9 @@
       "@aura3d/create-aura3d": [
         "packages/create-aura3d/src/index.ts"
       ],
+      "create-aura3d": [
+        "packages/create-aura3d/src/index.ts"
+      ],
       "@aura3d/physics": [
         "packages/physics/src/index.ts"
       ],

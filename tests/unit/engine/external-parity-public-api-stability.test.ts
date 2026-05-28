@@ -108,6 +108,6 @@ test("ExternalParity package manifest exposes installable product paths", () => 
   expect(manifest.devDependencies).toMatchObject({
     "@aura3d/apps": "workspace:*",
     "@aura3d/engine-runtime": "workspace:*",
-    "@aura3d/create-aura3d": "workspace:*"
+    "create-aura3d": "workspace:*"
   });
 });

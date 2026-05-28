@@ -21,7 +21,7 @@ try {
     if (action === "add") {
       const file = args[2];
       const name = readOption("--name");
-      if (!file || !name) throw new Error("Usage: aura assets add ./model.glb --name robot");
+      if (!file || !name) throw new Error("Usage: aura3d assets add ./model.glb --name robot");
       print(addAsset({ file, name, publicPath: readOption("--public-path"), outputDir: readOption("--output") }));
     } else if (action === "scan") {
       print(scanAssets({ directory: args[2] ?? "assets" }));

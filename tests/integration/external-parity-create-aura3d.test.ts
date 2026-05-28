@@ -2,7 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { expect, test } from "vitest";
-import { CREATE_AURA3D_TEMPLATES, createA3DProject, writeCreateA3DReport } from "@aura3d/create-aura3d";
+import { CREATE_AURA3D_TEMPLATES, createA3DProject, writeCreateA3DReport } from "create-aura3d";
 
 test("create-aura3d scaffolds every starter template from public package imports", () => {
   const tempRoot = mkdtempSync(join(tmpdir(), "a3d-create-"));

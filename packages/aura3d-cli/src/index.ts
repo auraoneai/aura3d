@@ -25,6 +25,7 @@ export interface AuraCliAssetEntry {
   readonly materials: readonly string[];
   readonly animations: readonly string[];
   readonly textures: readonly string[];
+  readonly dependencies?: readonly string[];
   readonly thumbnailUrl?: string;
   readonly warnings: readonly string[];
 }
@@ -71,13 +72,14 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
   const hash = hashFile(sourcePath);
   const format = extname(sourcePath).slice(1).toLowerCase();
   const type = options.type ?? inferAssetType(format);
+  const inspection = inspectAssetFile(sourcePath, format);
   const outputFileName = `${options.name}.${hash.slice(0, 8)}.${format}`;
   const outputPath = join(outputDir, outputFileName);
   if (options.copy !== false) {
     mkdirSync(resolve(projectDir, outputDir), { recursive: true });
     copyFileSync(sourcePath, resolve(projectDir, outputPath));
+    copyAssetDependencies(projectDir, sourcePath, outputDir, inspection.dependencies);
   }
-  const inspection = inspectAssetFile(sourcePath, format);
   const thumbnailUrl = writeThumbnail(projectDir, outputDir, publicPath, options.name, inspection.bounds);
   const entry: AuraCliAssetEntry = {
     id: options.name,
@@ -92,6 +94,7 @@ export function addAsset(options: AddAssetOptions): AssetCliResult {
     materials: inspection.materials,
     animations: inspection.animations,
     textures: inspection.textures,
+    dependencies: inspection.dependencies,
     thumbnailUrl,
     warnings: createAssetWarnings(sourcePath, inspection)
   };
@@ -128,7 +131,7 @@ export function scanAssets(options: { readonly projectDir?: string; readonly dir
     const path = join(directory, file);
     if (!statSync(path).isFile()) continue;
     const format = extname(path).slice(1).toLowerCase();
-    if (!["glb", "gltf", "png", "jpg", "jpeg", "webp", "hdr", "exr", "mp3", "wav", "ogg"].includes(format)) continue;
+    if (!["glb", "gltf", "png", "jpg", "jpeg", "webp", "ktx2", "hdr", "exr", "mp3", "wav", "ogg"].includes(format)) continue;
     const name = sanitizeAssetId(file.replace(/\.[^.]+$/, ""));
     result = addAsset({ projectDir, file: relative(projectDir, path), name });
   }
@@ -156,10 +159,13 @@ export function validateAssets(options: { readonly projectDir?: string } = {}): 
     if (actualHash !== asset.hash) failures.push(`Hash mismatch for "${asset.id}": expected ${asset.hash}, found ${actualHash}`);
     warnings.push(...asset.warnings.map((warning) => `${asset.id}: ${warning}`));
     if (asset.format === "gltf") {
-      for (const texture of asset.textures) {
-        if (texture.startsWith("data:")) continue;
-        const texturePath = resolve(dirname(resolve(projectDir, asset.source)), texture);
-        if (!existsSync(texturePath)) warnings.push(`${asset.id}: missing referenced texture ${texture}`);
+      for (const dependency of asset.dependencies ?? asset.textures) {
+        if (dependency.startsWith("data:")) continue;
+        const sourceDependencyPath = resolve(dirname(resolve(projectDir, asset.source)), dependency);
+        const outputDependencyPath = resolve(dirname(resolve(projectDir, asset.outputPath)), dependency);
+        if (!existsSync(sourceDependencyPath) && !existsSync(outputDependencyPath)) {
+          failures.push(`Missing referenced asset dependency for "${asset.id}": ${dependency}`);
+        }
       }
     }
   }
@@ -187,6 +193,7 @@ export function writeTypedAssets(projectDir: string, manifest = readAssetManifes
         materials: asset.materials,
         animations: asset.animations,
         textures: asset.textures,
+        dependencies: asset.dependencies ?? [],
         thumbnailUrl: asset.thumbnailUrl
       };
       const fields = [
@@ -309,15 +316,17 @@ interface AssetInspection {
   readonly materials: readonly string[];
   readonly animations: readonly string[];
   readonly textures: readonly string[];
+  readonly dependencies: readonly string[];
 }
 
 function inspectAssetFile(path: string, format: string): AssetInspection {
-  if (format === "gltf") return inspectGltf(JSON.parse(readFileSync(path, "utf8")) as GltfJson);
+  if (format === "gltf") return inspectGltf(JSON.parse(readFileSync(path, "utf8")) as GltfJson, dirname(path));
   if (format === "glb") return inspectGlb(readFileSync(path));
   return {
     materials: [],
     animations: [],
     textures: [],
+    dependencies: [],
     bounds: undefined
   };
 }
@@ -327,6 +336,7 @@ interface GltfJson {
   readonly materials?: readonly { readonly name?: string }[];
   readonly animations?: readonly { readonly name?: string }[];
   readonly images?: readonly { readonly uri?: string; readonly name?: string }[];
+  readonly buffers?: readonly { readonly uri?: string }[];
 }
 
 function inspectGlb(buffer: Buffer): AssetInspection {
@@ -340,13 +350,28 @@ function inspectGlb(buffer: Buffer): AssetInspection {
   return inspectGltf(json);
 }
 
-function inspectGltf(json: GltfJson): AssetInspection {
+function inspectGltf(json: GltfJson, baseDir?: string): AssetInspection {
+  const dependencies = [
+    ...(json.images ?? []).map((image) => image.uri).filter(isExternalUri),
+    ...(json.buffers ?? []).map((buffer) => buffer.uri).filter(isExternalUri)
+  ];
+  if (baseDir) {
+    const missing = dependencies.filter((dependency) => !existsSync(resolve(baseDir, dependency)));
+    if (missing.length > 0) {
+      throw new Error(`Aura3D assets add failed: referenced asset file missing: ${missing.join(", ")}. Suggested fix: keep external .bin and texture files beside the .gltf or export as .glb.`);
+    }
+  }
   return {
     bounds: extractBounds(json),
     materials: (json.materials ?? []).map((material, index) => material.name ?? `material-${index}`),
     animations: (json.animations ?? []).map((animation, index) => animation.name ?? `clip-${index}`),
-    textures: (json.images ?? []).map((image, index) => image.uri ?? image.name ?? `image-${index}`)
+    textures: (json.images ?? []).map((image, index) => image.uri ?? image.name ?? `image-${index}`),
+    dependencies
   };
+}
+
+function isExternalUri(uri: string | undefined): uri is string {
+  return typeof uri === "string" && uri.length > 0 && !uri.startsWith("data:");
 }
 
 function extractBounds(json: GltfJson): readonly [number, number, number] | undefined {
@@ -369,6 +394,17 @@ function createAssetWarnings(path: string, inspection: AssetInspection): readonl
   return warnings;
 }
 
+function copyAssetDependencies(projectDir: string, sourcePath: string, outputDir: string, dependencies: readonly string[]): void {
+  const sourceDir = dirname(sourcePath);
+  for (const dependency of dependencies) {
+    if (dependency.startsWith("data:")) continue;
+    const sourceDependencyPath = resolve(sourceDir, dependency);
+    const outputDependencyPath = resolve(projectDir, outputDir, dependency);
+    mkdirSync(dirname(outputDependencyPath), { recursive: true });
+    copyFileSync(sourceDependencyPath, outputDependencyPath);
+  }
+}
+
 function writeThumbnail(projectDir: string, outputDir: string, publicPath: string, id: string, bounds?: readonly [number, number, number]): string {
   const fileName = `${id}.thumb.svg`;
   const outputPath = resolve(projectDir, outputDir, fileName);
@@ -382,7 +418,8 @@ function inferAssetType(format: string): AuraCliAssetType {
   if (["glb", "gltf"].includes(format)) return "model";
   if (["png", "jpg", "jpeg", "webp", "ktx2"].includes(format)) return "texture";
   if (["hdr", "exr"].includes(format)) return "environment";
-  return "audio";
+  if (["mp3", "wav", "ogg"].includes(format)) return "audio";
+  throw new Error(`Unsupported Aura3D asset format: ${format || "unknown"}. Suggested fix: use glb, gltf, png, jpg, webp, ktx2, hdr, exr, mp3, wav, or ogg.`);
 }
 
 function hashFile(path: string): string {

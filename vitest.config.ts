@@ -34,6 +34,7 @@ export default defineConfig({
       "@aura3d/engine/apps": new URL("./packages/apps/src/index.ts", import.meta.url).pathname,
       "@aura3d/engine/engine": new URL("./packages/engine/src/index.ts", import.meta.url).pathname,
       "@aura3d/create-aura3d": new URL("./packages/create-aura3d/src/index.ts", import.meta.url).pathname,
+      "create-aura3d": new URL("./packages/create-aura3d/src/index.ts", import.meta.url).pathname,
       "@aura3d/product-studio": new URL("./packages/product-studio/src/index.ts", import.meta.url).pathname,
       "@aura3d/physics": new URL("./packages/physics/src/index.ts", import.meta.url).pathname,
       "@aura3d/animation": new URL("./packages/animation/src/index.ts", import.meta.url).pathname,

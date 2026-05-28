@@ -15,7 +15,7 @@ describe("public API docs", () => {
       "@aura3d/cli",
       "@aura3d/controls",
       "@aura3d/core",
-      "@aura3d/create-aura3d",
+      "create-aura3d",
       "@aura3d/debug",
       "@aura3d/ecs",
       "@aura3d/editor",

@@ -69,7 +69,14 @@ function listActiveSourceFiles(): string[] {
     .filter(Boolean)
     .filter((path) => existsSync(resolve(path)))
     .filter((path) => !path.startsWith("archive/"))
-    .filter((path) => !["RuntimeScenePRD.md", "CinematicPrevisPRD.md", "ProductContextPRD.md"].includes(path))
+    .filter((path) => ![
+      "RuntimeScenePRD.md",
+      "CinematicPrevisPRD.md",
+      "ProductContextPRD.md",
+      "TestV4PlanPRD.md",
+      "tools/package-tarball-audit/index.ts",
+      "tools/product-context-evidence/index.ts"
+    ].includes(path))
     .filter((path) => isTextSource(path));
 }
 

@@ -20,7 +20,7 @@ pnpm verify:api-docs
 | `@aura3d/cli` | `1.0.0` | `packages/aura3d-cli/src/index.ts` | 21 |
 | `@aura3d/controls` | `1.0.0` | `packages/controls/src/index.ts` | 20 |
 | `@aura3d/core` | `1.0.0` | `packages/core/src/index.ts` | 14 |
-| `@aura3d/create-aura3d` | `1.0.0` | `packages/create-aura3d/src/index.ts` | 6 |
+| `create-aura3d` | `1.0.0` | `packages/create-aura3d/src/index.ts` | 6 |
 | `@aura3d/debug` | `1.0.0` | `packages/debug/src/index.ts` | 30 |
 | `@aura3d/ecs` | `1.0.0` | `packages/ecs/src/index.ts` | 21 |
 | `@aura3d/editor` | `1.0.0` | `packages/editor/src/index.ts` | 1 |
@@ -309,7 +309,7 @@ export * from "./ResourceScope.js";
 export * from "./VersionedSerialization.js";
 ```
 
-## @aura3d/create-aura3d
+## create-aura3d
 
 - Version: `1.0.0`
 - Package manifest: `packages/create-aura3d/package.json`

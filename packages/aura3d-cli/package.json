@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "bin": {
+    "aura3d": "./dist/cli.js",
+    "aura": "./dist/cli.js",
     "cli": "./dist/cli.js"
   },
   "exports": {

@@ -1,5 +1,5 @@
 {
-  "name": "@aura3d/create-aura3d",
+  "name": "create-aura3d",
   "version": "1.0.0",
   "type": "module",
   "bin": {

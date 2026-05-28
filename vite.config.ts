@@ -29,6 +29,7 @@ const aliasEntries = [
   ["@aura3d/engine", "./packages/engine/src/index.ts"],
   ["@aura3d/apps", "./packages/apps/src/index.ts"],
   ["@aura3d/create-aura3d", "./packages/create-aura3d/src/index.ts"],
+  ["create-aura3d", "./packages/create-aura3d/src/index.ts"],
   ["@aura3d/physics", "./packages/physics/src/index.ts"],
   ["@aura3d/product-studio", "./packages/product-studio/src/index.ts"],
   ["@aura3d/animation", "./packages/animation/src/browser-index.ts"],

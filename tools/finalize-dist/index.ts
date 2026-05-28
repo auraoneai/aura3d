@@ -10,6 +10,7 @@ const packageNames = readdirSync(packageRoot, { withFileTypes: true })
   .map((entry) => entry.name)
   .sort();
 const packageNameSet = new Set(packageNames);
+const rootPackageSurfacePackages = new Set(["engine"]);
 const publicPackageNames = packageNames.filter((packageName) => {
   const manifestPath = join(packageRoot, packageName, "package.json");
   if (!existsSync(manifestPath)) return true;
@@ -40,7 +41,7 @@ for (const packageName of packageNames) {
   if (publicPackageNames.includes(packageName)) {
     rootIndexLines.push(`export * from "./${packageName}/index.js";`);
     rootTypeLines.push(`export * from "./${packageName}/index.js";`);
-  } else {
+  } else if (!rootPackageSurfacePackages.has(packageName)) {
     rmSync(rootPackageDist, { recursive: true, force: true });
   }
 }
