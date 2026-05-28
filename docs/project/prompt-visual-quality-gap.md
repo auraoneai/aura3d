@@ -22,8 +22,8 @@ This is both a runtime/product problem and an evaluation problem.
 | Layer | Current State | Gap |
 |---|---|---|
 | Runtime and templates | Can load assets, create scenes, add lights/effects, capture screenshots, and run diagnostics. | Missing enough art-directed presets, visual composition helpers, material fidelity, animation helpers, and believable environment/effect systems. |
-| Agent prompt workflow | Agents can write valid Aura3D code from context and typed assets. | Agents are not guided by a strong visual planning contract or prompt-fidelity rubric. |
-| Tests and evidence | Pixel profiles check for nonblank, route-specific visual cues. | Tests do not reject low-quality object-plus-symbolic-effect output. |
+| Agent prompt workflow | Agents can write valid Aura3D code from context and typed assets; the public API now includes first-pass `PromptPlan` recipe helpers. | Agents still need to prove they consistently use the prompt-plan path, follow repair guidance, and produce screenshots that meet the prompt. |
+| Tests and evidence | Pixel profiles check for route-specific visual cues, and prompt-fidelity reports now reject object-plus-symbolic-effect negative fixtures. | Positive release-facing screenshots still need to reach `product-quality-pass`. |
 
 ## Prompt Fidelity Acceptance Bar
 
@@ -64,24 +64,28 @@ all of these checks:
 
 ### Prompt Workflow
 
-- [ ] Define a prompt contract: subject, assets, style, camera, environment,
+- [x] Define a prompt contract: subject, assets, style, camera, environment,
   lighting, effects, interaction, and acceptance criteria.
-- [ ] Add scene recipe selection from prompt intent.
-- [ ] Add agent-facing examples that show how to move from prompt to recipe
+- [x] Add scene recipe selection from prompt intent.
+- [x] Add agent-facing examples that show how to move from prompt to recipe
   calls rather than placing random primitives.
 - [ ] Add repair instructions for low-quality outputs: bad framing, flat
   lighting, missing environment, symbolic effects, tiny subject, or low contrast.
 - [ ] Record prompt, selected recipe, asset IDs, and visual criteria in each
   generated report.
+- [ ] Re-run the Codex context-only self-test through `definePromptPlan` and
+  `promptPlanToScene`.
 
 ### Evaluation
 
-- [ ] Add `tests/reports/prompt-fidelity-quality.json`.
-- [ ] Add a contact-sheet artifact for all release-facing screenshots.
-- [ ] Add human review fields: `product-quality-pass`,
+- [x] Add `tests/reports/prompt-fidelity-quality.json`.
+- [x] Add a contact-sheet artifact for all release-facing screenshots.
+- [x] Add human review fields: `product-quality-pass`,
   `technical-render-pass`, `partial`, `fail`.
-- [ ] Add negative fixtures for object-plus-symbolic-effect scenes and require
+- [x] Add negative fixtures for object-plus-symbolic-effect scenes and require
   the new gate to fail them.
+- [ ] Add positive fixtures that prove three release-facing prompt outputs pass
+  `product-quality-pass`.
 - [ ] Compare Aura3D prompt output against raw Three.js agent output on the same
   prompts and assets.
 - [ ] Re-run Codex context-only eval after the visual recipe layer is built.

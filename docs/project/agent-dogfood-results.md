@@ -1,6 +1,6 @@
 # Agent Dogfood Results
 
-Generated: 2026-05-28T22:44:46.444Z
+Generated: 2026-05-28T23:03:58.851Z
 
 ## Codex Self-Test
 
@@ -32,7 +32,7 @@ Generated: 2026-05-28T22:44:46.444Z
 | `codex-generated-app-no-asset-path-errors` | pass | no raw model URL or missing typed asset dependency |
 | `codex-generated-app-builds` | pass | vite build passed |
 | `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=6 |
-| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=71089, profile={"yellowPixels":1799,"rainPixels":196,"centerObjectPixels":2197,"uniqueBuckets":38} |
+| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=72165, profile={"yellowPixels":1758,"rainPixels":185,"centerObjectPixels":2160,"uniqueBuckets":38} |
 
 ## Remaining Agent Runs
 

@@ -43,8 +43,8 @@ The problem is both implementation and validation.
 | Area | What Exists | What Is Missing |
 |---|---|---|
 | Aura3D runtime and API | Compact authoring surface, typed assets, GLB render path, lights, materials, effects, timeline, interactions, diagnostics, screenshots. | Higher-level art-directed scene recipes, better material/lighting defaults, believable environment/effect systems, stronger animation helpers, and asset-aware camera/framing. |
-| Agent workflow | Agents can write valid Aura3D code from context and avoid hallucinated APIs in local Codex tests. | A visual planning contract that maps prompt intent to scene recipes, expected visual criteria, and repair steps when output looks generic. |
-| Evidence and tests | Route health, screenshots, pixel profiles, clean installs, package audits, and local dogfood. | Prompt-fidelity gates that reject object-plus-symbolic-effect scenes and require human product-quality review. |
+| Agent workflow | Agents can write valid Aura3D code from context, avoid hallucinated APIs in local Codex tests, and starter templates now use first-pass `PromptPlan` recipes. | Proof that context-only agents consistently use those recipes, plus repair guidance when output looks generic or visually misses the prompt. |
+| Evidence and tests | Route health, screenshots, pixel profiles, clean installs, package audits, local dogfood, contact sheets, negative prompt-fidelity fixtures, and human review labels. | Positive prompt-fidelity fixtures where release-facing screenshots pass `product-quality-pass`, not only `technical-render-pass` or `partial`. |
 
 This test plan therefore treats existing screenshot passes as
 `technical-render-pass` unless they also meet the prompt-fidelity bar.
@@ -56,7 +56,9 @@ The reset decision is:
   environments, effects, interaction states, and asset normalization.
 - Better prompting alone will not fix the product. Agents need a constrained
   prompt-plan contract, a recipe vocabulary, concrete examples, and a visual
-  review loop that rejects generic output.
+  review loop that rejects generic output. The first-pass contract exists; it
+  still needs proof that agents follow it and that the resulting visuals are
+  desirable.
 - A demo is not done when it compiles, serves, or produces a nonblank canvas.
   It is done only when the screenshot visibly satisfies the prompt and is
   marked `product-quality-pass`.
@@ -82,6 +84,10 @@ The reset decision is:
   screenshot -> review label -> pass/fail reason.
 - [ ] Remove or quarantine any public demo that remains only
   `technical-render-pass` or `partial`.
+- [ ] Re-run the Codex context-only self-test after the prompt-plan reset and
+  require the generated app to use `definePromptPlan` and `promptPlanToScene`.
+- [ ] Record whether the Codex prompt-plan screenshot is still
+  object-plus-symbolic-effect output or has improved to `product-quality-pass`.
 
 ### Runtime And Template Visual Quality
 
@@ -118,6 +124,8 @@ The reset decision is:
   visible interaction state.
 - [ ] Include source prompt, selected recipe, asset refs, expected visual
   criteria, and screenshot path in every generated report.
+- [ ] Include the generated plan report from `compilePromptPlan`, including
+  selected recipe, visual systems, repair hints, and negative anti-patterns.
 
 ### Visual Quality Gates
 
@@ -131,6 +139,9 @@ The reset decision is:
   review before marketing the product as prompt-to-visual.
 - [ ] Compare Aura3D prompt output to raw Three.js agent output on the same
   prompts and assets.
+- [ ] Fail the gate if a release-facing screenshot lacks prompt, plan, source
+  code path, asset refs, route-health report, screenshot path, review label,
+  failure reason, and next action.
 
 ## Source Claims Under Test
 
@@ -243,6 +254,9 @@ Current local automated evidence:
   classifications, a contact sheet path, human review labels, and negative
   fixtures that reject object-plus-symbolic-effect output. The report still
   says product-quality readiness is false.
+- The starter templates now generate scenes from `definePromptPlan` and
+  `promptPlanToScene`, but the Codex context-only dogfood output still needs to
+  be rerun through that same prompt-plan path and reviewed for visual quality.
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
@@ -260,6 +274,9 @@ completed user proof:
 - Outside beta dogfood and issue intake from real users.
 - Product-quality prompt-to-visual fidelity. Current screenshots prove
   rendering and basic cues, not polished scene generation.
+- Context-only agent prompt-plan adoption. Starter templates use prompt plans,
+  but the dogfood agent output must be regenerated and verified against that
+  path.
 
 The current gate proves local automated product shape, one deterministic Codex
 self-test, and one fresh Codex context-only dogfood run. It does not yet prove

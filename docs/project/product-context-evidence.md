@@ -1,6 +1,6 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T22:47:13.263Z
+Generated: 2026-05-28T23:06:14.075Z
 
 ## Summary
 
@@ -71,7 +71,7 @@ Generated: 2026-05-28T22:47:13.263Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1799,"rainPixels":196,"centerObjectPixels":2197,"uniqueBuckets":38} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1758,"rainPixels":185,"centerObjectPixels":2160,"uniqueBuckets":38} |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and product-quality boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |

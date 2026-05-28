@@ -29,11 +29,10 @@ The diagnosis is **both**, not one or the other:
   but the larger missing runtime layer is art direction: scene composition,
   lighting rigs, environment structure, material fidelity, asset-aware camera
   framing, believable effects, and product-ready defaults.
-- It is also **not only** that the AI prompt was formed badly. The current
-  prompt-to-visual workflow does not give an agent a strong enough planning
-  contract, recipe vocabulary, or visual acceptance loop. It can generate code
-  that compiles, but it is not yet forced to generate a scene whose screenshot
-  honestly matches the prompt.
+- It is also **not only** that the AI prompt was formed badly. The repo now has
+  a first-pass `PromptPlan` contract, but that contract is only plumbing until
+  it forces recipe selection, repair steps, and visual acceptance criteria that
+  make the screenshot honestly match the prompt.
 
 There are therefore two separate problems to fix:
 
@@ -46,7 +45,9 @@ There are therefore two separate problems to fix:
 - The prompt-to-visual validation was aimed at the wrong target. It rewarded
   "the app compiled and rendered recognizable cues" instead of "the final image
   looks like the prompt asked for." That let object-plus-symbolic-effect scenes
-  pass even when the human visual result was not good enough.
+  pass even when the human visual result was not good enough. The new
+  prompt-fidelity report catches that failure mode, but the positive
+  product-quality screenshots still do not pass.
 
 So the honest current product state is:
 
@@ -54,9 +55,11 @@ So the honest current product state is:
   scaffolding, GLB render path, diagnostics, screenshots, route health, package
   audits, and local dogfood.
 - **Partially proven:** starter scenes can display real assets with basic
-  visual cues.
+  visual cues; the starter templates now use `definePromptPlan` and
+  `promptPlanToScene`.
 - **Not proven:** polished prompt-to-visual output, broad asset visual fidelity,
-  cinematic composition quality, or user-desirable generated demos.
+  cinematic composition quality, recipe-driven agent dogfood, or
+  user-desirable generated demos.
 
 ## Product-Quality Definition
 
@@ -123,6 +126,9 @@ For Aura3D, that means:
   scene recipe before rendering. The three starter templates use that prompt
   plan flow. This is prompt-plumbing progress, not proof of product-quality
   visuals.
+- The reset evidence now distinguishes prompt-plumbing success from
+  product-quality visual success. A screenshot can pass WebGL2, route-health,
+  and pixel-profile checks while still failing the product promise.
 
 ## Known Gaps To Keep Honest
 
@@ -177,6 +183,8 @@ For Aura3D, that means:
   lighting, effects, and acceptance criteria deliberately.
 - [ ] Add a product-quality review gate that blocks promotion when screenshots
   still look like one GLB plus symbolic decorations.
+- [ ] Re-run the Codex context-only self-test through the prompt-plan flow and
+  record whether the generated screenshot improves beyond `partial`.
 
 ### Visual Runtime And Scene Quality
 
@@ -205,12 +213,17 @@ For Aura3D, that means:
 
 ### Prompt-To-Visual Product Layer
 
-- [ ] Define a prompt contract that separates intent, subject asset, style,
-  camera, environment, lighting, interaction, and acceptance criteria.
-- [ ] Build a scene-planning layer that turns that contract into Aura3D code or
-  validated scene recipe calls.
-- [ ] Give agents a visual vocabulary and examples that map prompts to concrete
-  scene recipes instead of ad hoc primitive placement.
+- [x] Define a first-pass prompt contract that separates intent, subject asset,
+  style, camera, environment, lighting, interaction, and acceptance criteria.
+- [x] Build a first-pass scene-planning layer that turns that contract into
+  Aura3D recipe calls.
+- [x] Give agents initial visual vocabulary and examples that map prompts to
+  concrete scene recipes instead of ad hoc primitive placement.
+- [ ] Prove the prompt contract is strong enough by generating at least three
+  prompt-plan scenes that pass `product-quality-pass`.
+- [ ] Make the recipe compiler reject or warn on vague plans that cannot produce
+  visible prompt fidelity, such as "make it cinematic" without subject,
+  environment, lighting, camera, and acceptance criteria.
 - [ ] Add repair guidance when output is generic, badly framed, too dark,
   missing the subject, or just an object plus decorative cues.
 - [ ] Add support for prompt-specific expected artifacts, such as HUD for a
