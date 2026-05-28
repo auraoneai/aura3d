@@ -119,6 +119,15 @@ Current local automated evidence:
 - `docs/project/clean-install-results.md` records clean npm installs from packed
   artifacts for `@aura3d/engine`, `@aura3d/react`, `@aura3d/cli`,
   `create-aura3d`, and all three starter templates.
+- `docs/project/starter-template-visual-review.md` records the human screenshot
+  review for the clean-install starter artifacts. It explicitly notes that the
+  mini-game screenshot now shows a robot arena with coins, hazards, laser gate,
+  and portal instead of the previous generic grid/primitive output; it also
+  keeps the product-viewer photorealism caveat visible.
+- `docs/project/starter-example-visual-review.md` records the human screenshot
+  review for the active public examples. `check:examples` now saves PNGs,
+  records distinct hashes, and checks route-specific visual profiles instead of
+  only asserting that a canvas is nonblank.
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
@@ -652,6 +661,7 @@ Prove diagnostics and screenshots are useful product features.
 - [ ] Run route-health on all starter templates.
 - [ ] Run screenshot capture on all starter templates.
 - [ ] Verify screenshots contain scene-specific visual signals.
+- [ ] Perform human visual review against the prompt, not only pixel counters.
 - [ ] Verify canvas dimensions are recorded.
 - [ ] Verify diagnostics include asset readiness.
 - [ ] Verify diagnostics include route readiness.

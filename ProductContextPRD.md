@@ -24,7 +24,8 @@ diagnostics, screenshots, and static deployment checks.
 - The public authoring model is source code plus typed assets.
 - The create-aura3d active template directory contains only the three starter
   templates.
-- The three starter templates render through WebGL2 and have screenshot tests
+- The three starter templates render through WebGL2 using the compact Aura3D
+  scene API and the lazy Three.js glTF render path, and have screenshot tests
   with scene-specific pixel profiles, not only non-empty PNG checks.
 - `product-viewer` renders a real glTF speaker product on a studio setup, not
   a placeholder polygon.
@@ -32,6 +33,12 @@ diagnostics, screenshots, and static deployment checks.
   a wet floor, and WebGL2 diagnostics.
 - `mini-game` renders a distinct WebGL2 arena scene with a typed GLB player,
   motion trail, hazards, coins, and a goal portal.
+- `docs/project/starter-template-visual-review.md` records the current human
+  screenshot review. The mini-game clean-install screenshot now shows the robot
+  arena prompt instead of the previous generic grid/primitive output.
+- `docs/project/starter-example-visual-review.md` records the current human
+  review for the active public example routes. The example gate now writes PNGs
+  and rejects identical or route-generic screenshots.
 - Held-back template experiments are outside the active starter-template
   directory and documented under `archive/held-back-create-aura3d-templates/`.
 - All active `apps/*` directories are classified in
@@ -53,15 +60,22 @@ diagnostics, screenshots, and static deployment checks.
   confidence still depends on focused dogfood and user evidence, not aggregate
   monorepo test counts.
 - The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
-  and richer scene composition, but it is still a compact Aura3D renderer, not
-  a full physically based Three.js replacement. GLB material/texture fidelity
-  needs more corpus testing before it can be marketed as production-grade asset
-  parity.
+  richer scene composition, and lazy Three.js-backed material loading, but it is
+  still a compact Aura3D render path, not a full physically based Three.js
+  replacement. GLB material/texture fidelity needs more corpus testing before it
+  can be marketed as production-grade asset parity.
+- The `product-viewer` starter is prompt-aligned and clean-install proven, but
+  it remains a stylized starter render, not a photoreal product-marketing render.
+  Do not oversell it externally.
+- The active example routes are prompt-aligned and distinct, but
+  `hello-world-typed-asset` and `camera-path` are compact examples, not
+  photoreal showcase demos.
 - Extra `apps/*` routes remain active as classified engine evidence. They are
   not the starter registry and must not be marketed as the primary getting
   started path.
-- Bundle-size proof must continue to measure built bundles with size-limit,
-  including starter apps, rather than source-file byte counts.
+- Bundle-size proof measures built bundles with size-limit, including starter
+  apps. The compact core API budget excludes the lazy Three.js renderer chunk;
+  the starter-template bundle budgets include that renderer cost.
 - Claude Code, Cursor, Copilot, outside developers, real Vercel/Cloudflare/
   Netlify deployments, and wild third-party GLB assets remain external dogfood
   work. The local evidence must not be presented as broad market proof.

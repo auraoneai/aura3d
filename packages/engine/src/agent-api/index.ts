@@ -673,7 +673,7 @@ async function startProductionRender(
       );
   }
 
-  const renderer = await createWebGLSceneRenderer(canvas, snapshot);
+  const renderer = await createProductionSceneRenderer(canvas, snapshot);
 
   let disposed = false;
   let animationHandle = 0;
@@ -701,6 +701,15 @@ async function startProductionRender(
   };
 }
 
+async function createProductionSceneRenderer(canvas: HTMLCanvasElement, snapshot: AuraSceneSnapshot): Promise<WebGLSceneRenderer> {
+  try {
+    return await createThreeSceneRenderer(canvas, snapshot);
+  } catch (error) {
+    if (typeof console !== "undefined") console.warn("Aura3D Three.js renderer fallback:", error);
+    return await createWebGLSceneRenderer(canvas, snapshot);
+  }
+}
+
 function colorToClearColor(color: AuraColor): readonly [number, number, number, number] {
   if (typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color)) {
     const value = Number.parseInt(color.slice(1), 16);
@@ -712,6 +721,232 @@ function colorToClearColor(color: AuraColor): readonly [number, number, number, 
 interface WebGLSceneRenderer {
   render(time: number): number;
   dispose(): void;
+}
+
+async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: AuraSceneSnapshot): Promise<WebGLSceneRenderer> {
+  const THREE = await import("three");
+  const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: false,
+    preserveDrawingBuffer: true,
+    powerPreference: "high-performance"
+  });
+  renderer.setPixelRatio(1);
+  renderer.setSize(canvas.width, canvas.height, false);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.18;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  const threeScene = new THREE.Scene();
+  threeScene.background = new THREE.Color(snapshot.background);
+  const fog = snapshot.nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "fog");
+  if (fog) {
+    threeScene.fog = new THREE.FogExp2(new THREE.Color(fog.color ?? "#9fb7d9"), Math.max(0.004, (fog.density ?? 0.1) * 0.045));
+  }
+
+  addThreeLights(THREE, threeScene, snapshot.nodes);
+  const loader = new GLTFLoader();
+  const disposables: any[] = [];
+
+  for (const node of snapshot.nodes) {
+    if (node.kind === "model" && isRenderableModelNode(node)) {
+      const gltf = await loader.loadAsync(new URL(node.asset.url, document.baseURI).href);
+      const modelRoot = gltf.scene ?? gltf.scenes?.[0];
+      if (!modelRoot) {
+        throw createAuraAssetLoadError(node.asset, "the GLB loaded but did not contain a default scene");
+      }
+      modelRoot.traverse((child: any) => {
+        if (!child.isMesh) return;
+        child.castShadow = node.castShadow;
+        child.receiveShadow = node.receiveShadow;
+        if (node.material) child.material = createThreeMaterial(THREE, node.material);
+        else if (child.material) enhanceLoadedMaterial(child.material);
+        disposables.push(child.geometry, child.material);
+      });
+      const pivot = normalizeThreeModel(THREE, modelRoot, node);
+      threeScene.add(pivot);
+      disposables.push(modelRoot);
+      continue;
+    }
+    if (node.kind === "primitive") {
+      const mesh = createThreePrimitive(THREE, node);
+      threeScene.add(mesh);
+      disposables.push(mesh.geometry, mesh.material);
+      continue;
+    }
+  }
+
+  if (snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")) {
+    const rain = createThreeRain(THREE);
+    threeScene.add(rain);
+    disposables.push(rain.geometry, rain.material);
+  }
+
+  const cameraObject = new THREE.PerspectiveCamera(snapshot.camera.fov ?? 45, canvas.width / Math.max(1, canvas.height), 0.05, 100);
+
+  return {
+    render(time) {
+      if (renderer.domElement.width !== canvas.width || renderer.domElement.height !== canvas.height) {
+        renderer.setSize(canvas.width, canvas.height, false);
+      }
+      updateThreeCamera(THREE, cameraObject, snapshot.camera, canvas, time);
+      renderer.render(threeScene, cameraObject);
+      return Math.max(1, renderer.info.render.calls);
+    },
+    dispose() {
+      for (const item of disposables) disposeThreeResource(item);
+      renderer.dispose();
+    }
+  };
+}
+
+function addThreeLights(THREE: typeof import("three"), threeScene: any, nodes: readonly AuraSceneNode[]): void {
+  const lightNodes = nodes.filter((node): node is AuraLightNode => node.kind === "light");
+  if (lightNodes.length === 0) {
+    threeScene.add(new THREE.HemisphereLight("#dfefff", "#071019", 1.35));
+    const key = new THREE.DirectionalLight("#ffffff", 2.4);
+    key.position.set(3.8, 5.6, 4.2);
+    key.castShadow = true;
+    threeScene.add(key);
+    return;
+  }
+  for (const node of lightNodes) {
+    const color = new THREE.Color(node.color ?? "#ffffff");
+    if (node.light === "ambient") {
+      threeScene.add(new THREE.HemisphereLight(color, new THREE.Color("#05070b"), Math.max(0.05, node.intensity * 1.8)));
+      continue;
+    }
+    if (node.light === "point") {
+      const light = new THREE.PointLight(color, Math.max(0.1, node.intensity * 26), 16, 1.65);
+      const position = node.position ?? [2, 2.5, 1.5];
+      light.position.set(position[0], position[1], position[2]);
+      light.castShadow = true;
+      threeScene.add(light);
+      continue;
+    }
+    const light = new THREE.DirectionalLight(color, Math.max(0.1, node.intensity * 2.1));
+    const position = node.position ?? [3, 4, 3];
+    light.position.set(position[0], position[1], position[2]);
+    light.castShadow = true;
+    threeScene.add(light);
+  }
+}
+
+function createThreePrimitive(THREE: typeof import("three"), node: AuraPrimitiveNode): any {
+  const geometry = node.primitive === "sphere"
+    ? new THREE.SphereGeometry(0.5, 40, 24)
+    : node.primitive === "box"
+      ? new THREE.BoxGeometry(1, 1, 1)
+      : new THREE.PlaneGeometry(1, 1, 1, 1).rotateX(-Math.PI / 2);
+  const materialValue = createThreeMaterial(THREE, node.material ?? material.pbr());
+  const mesh = new THREE.Mesh(geometry, materialValue);
+  mesh.castShadow = node.primitive !== "plane" && !node.material?.emissive;
+  mesh.receiveShadow = true;
+  applyThreeTransform(mesh, node, primitiveSize(node));
+  return mesh;
+}
+
+function createThreeMaterial(THREE: typeof import("three"), spec: AuraMaterialSpec): any {
+  const color = new THREE.Color(spec.color ?? "#d7dee8");
+  const materialValue = new THREE.MeshStandardMaterial({
+    color,
+    roughness: spec.roughness ?? 0.54,
+    metalness: spec.metallic ?? 0
+  });
+  if (spec.emissive) {
+    materialValue.emissive = new THREE.Color(spec.emissive);
+    materialValue.emissiveIntensity = 1.55;
+  }
+  return materialValue;
+}
+
+function enhanceLoadedMaterial(materialValue: any): void {
+  const materials = Array.isArray(materialValue) ? materialValue : [materialValue];
+  for (const entry of materials) {
+    if (!entry || typeof entry !== "object") continue;
+    if ("roughness" in entry && typeof entry.roughness === "number") entry.roughness = Math.min(entry.roughness, 0.82);
+    if ("metalness" in entry && typeof entry.metalness === "number") entry.metalness = Math.max(entry.metalness, 0.02);
+    entry.needsUpdate = true;
+  }
+}
+
+function normalizeThreeModel(THREE: typeof import("three"), modelRoot: any, node: AuraModelNode): any {
+  const box = new THREE.Box3().setFromObject(modelRoot);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const fitScale = 1.55 / Math.max(0.001, size.x, size.y, size.z);
+  modelRoot.position.sub(new THREE.Vector3(center.x, box.min.y, center.z));
+  const pivot = new THREE.Group();
+  pivot.add(modelRoot);
+  applyThreeTransform(pivot, node, [fitScale, fitScale, fitScale]);
+  return pivot;
+}
+
+function applyThreeTransform(object: any, node: AuraTransformSpec, baseScale: AuraVec3): void {
+  const position = node.position ?? [0, 0, 0];
+  const rotation = node.rotation ?? [0, 0, 0];
+  const scaleValue = typeof node.scale === "number"
+    ? [node.scale, node.scale, node.scale] as const
+    : node.scale ?? [1, 1, 1] as const;
+  object.position.set(position[0], position[1], position[2]);
+  object.rotation.set(rotation[0], rotation[1], rotation[2]);
+  object.scale.set(baseScale[0] * scaleValue[0], baseScale[1] * scaleValue[1], baseScale[2] * scaleValue[2]);
+  if (node.lookAt) object.lookAt(node.lookAt[0], node.lookAt[1], node.lookAt[2]);
+}
+
+function createThreeRain(THREE: typeof import("three")): any {
+  const lineCount = 150;
+  const vertices: number[] = [];
+  for (let index = 0; index < lineCount; index += 1) {
+    const x = ((index * 37) % 100) / 16 - 3.1;
+    const z = ((index * 53) % 100) / 17 - 2.9;
+    const y = 0.52 + ((index * 29) % 100) / 36;
+    vertices.push(x, y, z, x - 0.08, y - 0.52, z + 0.035);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+  return new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: "#c9e8ff", transparent: true, opacity: 0.74 }));
+}
+
+function updateThreeCamera(THREE: typeof import("three"), cameraObject: any, cameraSpec: AuraCameraSpec, canvas: HTMLCanvasElement, time: number): void {
+  const target = cameraSpec.target ?? [0, 0.7, 0];
+  let eye: AuraVec3 = cameraSpec.position ?? [0, 1.4, cameraSpec.distance ?? 4];
+  if (cameraSpec.mode === "orbit") {
+    const distance = cameraSpec.distance ?? 4;
+    eye = [target[0], target[1] + 0.55, target[2] + distance];
+  }
+  if (cameraSpec.mode === "dolly") {
+    const seconds = cameraSpec.seconds ?? 6;
+    const phase = (time / 1000 % seconds) / seconds;
+    const eased = 0.5 - Math.cos(phase * Math.PI * 2) * 0.5;
+    const from = cameraSpec.from ?? [0, 1.4, 5];
+    const to = cameraSpec.to ?? [0, 1.2, 3.4];
+    eye = mix3(from, to, eased);
+  }
+  cameraObject.aspect = canvas.width / Math.max(1, canvas.height);
+  cameraObject.fov = cameraSpec.fov ?? 45;
+  cameraObject.position.set(eye[0], eye[1], eye[2]);
+  cameraObject.lookAt(new THREE.Vector3(target[0], target[1], target[2]));
+  cameraObject.updateProjectionMatrix();
+}
+
+function disposeThreeResource(item: any): void {
+  if (!item) return;
+  if (Array.isArray(item)) {
+    for (const entry of item) disposeThreeResource(entry);
+    return;
+  }
+  if (typeof item.traverse === "function") {
+    item.traverse((child: any) => {
+      disposeThreeResource(child.geometry);
+      disposeThreeResource(child.material);
+    });
+  }
+  if (typeof item.dispose === "function") item.dispose();
 }
 
 interface WebGLPrimitive {

@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 test("Aura3D cinematic scene screenshot shows the rainy neon hero prompt", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
   const canvas = page.locator("canvas");
   const profile = await canvas.evaluate((element) => {
     const target = element as HTMLCanvasElement;

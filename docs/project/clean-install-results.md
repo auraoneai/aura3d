@@ -1,19 +1,19 @@
 # Clean Install Results
 
-Generated: 2026-05-28T16:32:37.472Z
+Generated: 2026-05-28T19:59:52.412Z
 
 ## Summary
 
-- Checks passing: 31/31
+- Checks passing: 33/33
 - Workspace: `tests/reports/package-clean-install-workspace`
 
 ## Template Lifecycle
 
 | Template | Install | Build | Dev Route | Preview Route | Asset Replacement | Dev Screenshot | Dev Profile | Preview Screenshot |
 |---|---:|---:|---:|---:|---:|---:|---|---:|
-| `product-viewer` | yes | yes | yes | yes | yes | 105759 | cabinetPixels=1658, grillePixels=1985, metalPixels=145, softboxPixels=772, warmReflectionPixels=960, centerObjectPixels=10408, uniqueBuckets=32 | 105661 |
-| `cinematic-scene` | yes | yes | yes | yes | yes | 147439 | cyanPixels=7077, amberPixels=68, rainPixels=1032, wetReflectionPixels=18068, centerHeroPixels=8095, darkAlleyPixels=372, uniqueBuckets=46 | 147439 |
-| `mini-game` | yes | yes | yes | yes | yes | 140109 | playerPixels=128, coinPixels=102, hazardPixels=708, portalPixels=754, cyanTrailPixels=3687, arenaPixels=20581, uniqueBuckets=55 | 140109 |
+| `product-viewer` | yes | yes | yes | yes | yes | 193044 | cabinetPixels=282, grillePixels=611, metalPixels=2456, softboxPixels=4184, warmReflectionPixels=120, centerObjectPixels=7283, uniqueBuckets=70 | 185789 |
+| `cinematic-scene` | yes | yes | yes | yes | yes | 431930 | cyanPixels=4402, amberPixels=513, rainPixels=2114, wetReflectionPixels=168, centerHeroPixels=3399, darkAlleyPixels=6410, uniqueBuckets=134 | 449257 |
+| `mini-game` | yes | yes | yes | yes | yes | 202543 | robotArmorPixels=1120, robotJointPixels=1459, boostPixels=45, coinPixels=602, hazardPixels=463, portalPixels=1736, cyanTrailPixels=2965, arenaPixels=5522, uniqueBuckets=126 | 202543 |
 
 ## Checks
 
@@ -50,3 +50,5 @@ Generated: 2026-05-28T16:32:37.472Z
 | `mini-game-invented-asset-id-type-fails` | pass | passed |
 | `mini-game-missing-manifest-actionable` | pass | passed |
 | `mini-game-dev-screenshot-profile-prompt-aligned` | pass | passed |
+| `starter-screenshot-files-distinct` | pass | passed |
+| `starter-screenshot-profile-keys-distinct` | pass | passed |

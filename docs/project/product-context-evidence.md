@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T16:32:41.238Z
+Generated: 2026-05-28T19:59:54.865Z
 
 ## Summary
 
 - Claims with evidence: 28/28
 - Known gaps tracked: 5/5
-- Automated checks passing: 18/18
+- Automated checks passing: 20/20
 
 ## Claim Matrix
 
@@ -17,9 +17,9 @@ Generated: 2026-05-28T16:32:41.238Z
 | Users bring their own assets. | `automated-pass` | `tools/asset-corpus/index.ts`<br>`tests/reports/asset-corpus.json` | Run and expand asset corpus against real external GLBs. |
 | Aura3D provides typed asset references. | `automated-pass` | `pnpm run check:assets-cli`<br>`tests/unit/aura3d-cli/assets.test.ts` |  |
 | Aura3D provides starter templates. | `automated-pass` | `pnpm run check:templates`<br>`packages/create-aura3d/templates` |  |
-| Starter templates render through WebGL2 and have scene-specific screenshot profile checks. | `automated-pass` | `packages/create-aura3d/templates/*/tests/screenshot.spec.ts`<br>`tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json` |  |
+| Starter templates render through WebGL2 and have scene-specific screenshot profile checks. | `automated-pass` | `packages/create-aura3d/templates/*/tests/screenshot.spec.ts`<br>`tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json`<br>`docs/project/starter-template-visual-review.md` |  |
 | Aura3D provides diagnostics. | `automated-pass` | `pnpm run check:devtools`<br>`packages/engine/src/devtools` |  |
-| Aura3D provides screenshots. | `automated-pass` | `pnpm run check:examples`<br>`tests/browser/examples-route-health.spec.ts` |  |
+| Aura3D provides screenshots. | `automated-pass` | `pnpm run check:examples`<br>`tests/browser/examples-route-health.spec.ts`<br>`docs/project/starter-example-visual-review.md` |  |
 | Aura3D provides static deployment checks. | `automated-pass` | `pnpm run check:deployment`<br>`packages/aura3d-cli/src/index.ts` |  |
 | Public packages work from packed artifacts in clean npm projects. | `automated-pass` | `pnpm run check:clean-install`<br>`tests/reports/package-clean-install.json` |  |
 | @aura3d/engine exposes the public engine surface. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`tools/public-api-contract/index.ts` |  |
@@ -32,13 +32,13 @@ Generated: 2026-05-28T16:32:41.238Z
 | Legacy AI-runtime code is outside the active workspace. | `automated-pass` | `archive/legacy-ai-runtime`<br>`tools/product-context-evidence/index.ts` |  |
 | The public authoring model is source code plus typed assets. | `automated-pass` | `README.md`<br>`docs/agents/build-playbook.md`<br>`docs/project/fresh-codex-agent-context-results.md` |  |
 | The active starter-template directory contains only the three starter templates. | `automated-pass` | `packages/create-aura3d/templates` |  |
-| The three starter templates install, build, render, preview, and recover from common asset errors in clean directories. | `automated-pass` | `docs/project/clean-install-results.md`<br>`tests/reports/package-clean-install.json` |  |
+| The three starter templates install, build, render, preview, and recover from common asset errors in clean directories. | `automated-pass` | `docs/project/clean-install-results.md`<br>`docs/project/starter-template-visual-review.md`<br>`tests/reports/package-clean-install.json` |  |
 | Held-back template experiments are outside the active starter-template directory and documented in archive. | `automated-pass` | `archive/held-back-create-aura3d-templates/README.md` |  |
 | Active apps directories are classified. | `automated-pass` | `docs/project/apps-classification.md` |  |
 | Marketing speaks in product and workflow language. | `automated-pass` | `marketing/index.html`<br>`tools/marketing-truth/index.ts` |  |
 | Public site checks reject draft-copy, internal-status, and version-cycle wording. | `automated-pass` | `tools/docs-site/index.ts`<br>`tools/marketing-truth/index.ts` |  |
 | Broad product confidence depends on focused release checks and dogfood, not aggregate monorepo test counts. | `automated-pass` | `ProductContextPRD.md`<br>`TestV4PlanPRD.md` |  |
-| Extra apps routes are evidence and not the primary getting-started path. | `automated-pass` | `docs/project/apps-classification.md`<br>`marketing/index.html` |  |
+| Extra apps routes are evidence and not the primary getting-started path. | `automated-pass` | `docs/project/apps-classification.md`<br>`marketing/index.html`<br>`docs/project/starter-example-visual-review.md` |  |
 | Bundle-size proof measures built bundles, including starter apps. | `automated-pass` | `tools/bundle-size/index.ts`<br>`tests/reports/bundle-size.json` |  |
 
 ## Known Gaps
@@ -47,7 +47,7 @@ Generated: 2026-05-28T16:32:41.238Z
 |---|---|---|---|
 | Claude Code, Cursor, and Copilot context-only agent runs are not complete. | Product QA | Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/*.json` |
 | Licensed wild-asset corpus is not broad enough. | Assets QA | Add licensed Sketchfab CC0, Poly Haven, Meshy, Blender-exported, Draco-compressed, and KTX2-heavy assets with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
-| Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Deploy at least one starter to each host with authenticated project credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
+| Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Vercel deploy was attempted but blocked by HTTP 401 deployment protection; disable protection or provide a public smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
 | Marketing comprehension interviews are not complete. | Product Marketing | Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric. | `docs/project/marketing-comprehension-results.md` |
 | Outside beta dogfood is not complete. | Product/Community | Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs. | `docs/project/outside-beta-dogfood-results.md`<br>`.github/ISSUE_TEMPLATE` |
 
@@ -69,8 +69,10 @@ Generated: 2026-05-28T16:32:41.238Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":5114,"rainPixels":136,"centerObjectPixels":9496,"uniqueBuckets":39} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":1662,"rainPixels":182,"centerObjectPixels":2041,"uniqueBuckets":39} |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
+| `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and caveat |
+| `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and caveats |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 5/5 known gaps have owner, next action, and target evidence |
 | `claim-evidence-matrix-complete` | pass | 28/28 completed claims have pass evidence; 5/5 known gaps are tracked |
 

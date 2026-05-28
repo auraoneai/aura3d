@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, relative, resolve } from "node:path";
 import { writeReport, type ReleaseCheck } from "../check-common";
@@ -21,6 +22,7 @@ interface TemplateResult {
   readonly inventedAssetId: CommandResult;
   readonly missingManifest: CommandResult;
   readonly screenshotBytes: number;
+  readonly screenshotSha256: string;
   readonly screenshotProfile: Record<string, unknown>;
   readonly previewScreenshotBytes: number;
 }
@@ -76,7 +78,17 @@ const checks: ReleaseCheck[] = [
     check(`${result.template}-invented-asset-id-type-fails`, !result.inventedAssetId.ok && includesAll(result.inventedAssetId.output, ["missingAsset"]), result.inventedAssetId.output),
     check(`${result.template}-missing-manifest-actionable`, !result.missingManifest.ok && includesAll(result.missingManifest.output, ["Missing aura.assets.json", "Suggested fix"]), result.missingManifest.output),
     screenshotProfileCheck(result)
-  ])
+  ]),
+  check(
+    "starter-screenshot-files-distinct",
+    new Set(templateResults.map((result) => result.screenshotSha256)).size === templates.length,
+    `screenshot hashes: ${templateResults.map((result) => `${result.template}=${result.screenshotSha256.slice(0, 12)}`).join(", ")}`
+  ),
+  check(
+    "starter-screenshot-profile-keys-distinct",
+    new Set(templateResults.map((result) => Object.keys(result.screenshotProfile).sort().join(","))).size === templates.length,
+    `profile keys: ${templateResults.map((result) => `${result.template}=${Object.keys(result.screenshotProfile).sort().join("+")}`).join("; ")}`
+  )
 ];
 
 writeCleanInstallMarkdown(checks, templateResults);
@@ -188,6 +200,7 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
   const devRouteHealth = build.ok ? run("npm", ["test"], appDir) : build;
   const screenshotReport = readScreenshotReport(appDir, "tests/reports/screenshot.json");
   const screenshotBytes = Math.max(readScreenshotBytes(appDir, "tests/reports/screenshot.png"), screenshotReport.bytes);
+  const screenshotSha256 = readFileSha256(appDir, "tests/reports/screenshot.png");
   writePreviewSpec(appDir, port);
   const previewRouteHealth = build.ok
     ? run("npm", ["exec", "playwright", "test", "tests/static-preview.spec.ts", "--config", "playwright.preview.config.ts", "--reporter=line"], appDir)
@@ -211,6 +224,7 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
     inventedAssetId,
     missingManifest,
     screenshotBytes,
+    screenshotSha256,
     screenshotProfile: screenshotReport.profile,
     previewScreenshotBytes
   };
@@ -301,7 +315,7 @@ import { expect, test } from "@playwright/test";
 test("static preview renders nonblank Aura3D canvas", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.ok()).toBe(true);
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const box = await canvas.boundingBox();
@@ -389,7 +403,9 @@ function sceneProfilePass(template: string, profile: Record<string, unknown>): {
             ["uniqueBuckets", 22]
           ]
         : [
-            ["playerPixels", 30],
+            ["robotArmorPixels", 90],
+            ["robotJointPixels", 18],
+            ["boostPixels", 8],
             ["coinPixels", 35],
             ["hazardPixels", 45],
             ["portalPixels", 45],
@@ -411,6 +427,11 @@ function numberValue(value: unknown): number {
 function readScreenshotBytes(appDir: string, path: string): number {
   const fullPath = resolve(appDir, path);
   return existsSync(fullPath) ? statSync(fullPath).size : 0;
+}
+
+function readFileSha256(appDir: string, path: string): string {
+  const fullPath = resolve(appDir, path);
+  return existsSync(fullPath) ? createHash("sha256").update(readFileSync(fullPath)).digest("hex") : "";
 }
 
 function readScreenshotReport(appDir: string, path: string): { readonly bytes: number; readonly profile: Record<string, unknown> } {

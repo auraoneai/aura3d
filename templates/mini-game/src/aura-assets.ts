@@ -5,10 +5,10 @@ export const assets = defineAuraAssets({
     type: "model",
     format: "glb",
     url: "/aura-assets/player-fixture.glb",
-    bounds: [1.3, 1.1, 1.2],
-    hash: "sha256-65bf938f54d6073e619e76e007820bbf980cdc3dc0daec0d94830ffc4ae54ab5",
+    bounds: [1.2, 1.9, 0.8],
+    hash: "sha256-047f5e5fb3bb6d378bd1df16ca6137f2a596c99b3a1b5690b4020c05aaf6f319",
     metadata: {
-      materials: ["yellow body", "orange bill", "game-ready simple mesh"],
+      materials: ["painted robot body", "black joints", "white armor"],
       animations: [],
       textures: [],
       thumbnailUrl: "/aura-assets/player.thumb.svg"

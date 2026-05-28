@@ -3,14 +3,14 @@ import { defineAuraAssets } from "@aura3d/engine";
 export const assets = defineAuraAssets({
   product: {
     type: "model",
-    format: "gltf",
-    url: "/aura-assets/product-fixture.gltf",
+    format: "glb",
+    url: "/aura-assets/product-fixture.glb",
     bounds: [1.9, 2.9, 1.1],
-    hash: "sha256-45702ca0c78c9911c839f664101b3b4d4a67c164f1ef5238b7b3834190ed463d",
+    hash: "sha256-5613d5ad4ddc538b02c147faf2f87777bfd5a79580297cc6a103fdb7556580d3",
     metadata: {
       materials: ["satin cabinet", "patterned grille", "rubber cone", "metallic knobs"],
       animations: [],
-      textures: ["embedded base-color swatches"],
+      textures: ["embedded product material swatches"],
       thumbnailUrl: "/aura-assets/product.thumb.svg"
     }
   }

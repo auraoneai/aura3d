@@ -376,7 +376,6 @@
     "@aura3d/audio": "workspace:*",
     "@aura3d/cli": "workspace:*",
     "@aura3d/core": "workspace:*",
-    "create-aura3d": "workspace:*",
     "@aura3d/debug": "workspace:*",
     "@aura3d/ecs": "workspace:*",
     "@aura3d/editor": "workspace:*",
@@ -397,15 +396,16 @@
     "@size-limit/file": "^12.1.0",
     "@types/node": "^22.15.3",
     "@types/react": "^19.0.0",
+    "@types/three": "^0.165.0",
     "babylonjs-gltf2interface": "7.16.1",
     "cannon-es": "0.20.0",
+    "create-aura3d": "workspace:*",
     "draco3d": "^1.5.7",
     "esbuild": "^0.28.0",
     "eslint": "^9.26.0",
     "meshoptimizer": "^1.1.1",
     "react": "^19.0.0",
     "size-limit": "^12.1.0",
-    "three": "^0.165.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vite": "^7.3.2",
@@ -413,6 +413,7 @@
   },
   "dependencies": {
     "@loaders.gl/core": "4.4.1",
-    "@loaders.gl/textures": "4.4.1"
+    "@loaders.gl/textures": "4.4.1",
+    "three": "^0.165.0"
   }
 }

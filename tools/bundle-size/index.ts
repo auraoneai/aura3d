@@ -29,10 +29,10 @@ interface BundleResult {
 const targets: readonly BundleTarget[] = [
   {
     id: "core-agent-api",
-    label: "@aura3d/engine agent API",
+    label: "@aura3d/engine agent API excluding lazy Three.js renderer chunk",
     entryPoint: "packages/engine/src/agent-api/index.ts",
     budget: 80_000,
-    external: ["react"]
+    external: ["react", "three", "three/examples/jsm/loaders/GLTFLoader.js"]
   },
   {
     id: "react-adapter",

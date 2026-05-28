@@ -1,6 +1,6 @@
 # Test Plan Execution Status
 
-Generated: 2026-05-28T16:32:42.108Z
+Generated: 2026-05-28T19:59:55.521Z
 
 This document tracks `TestV4PlanPRD.md` round coverage. It is intentionally
 stricter than `check:release`: local automation can pass while external
@@ -28,8 +28,8 @@ dogfood, external deployments, and human comprehension work remain open.
 | Round 9: Asset Corpus Validation | `partial` | `docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` | Generated/adversarial corpus is proven; licensed wild Sketchfab/Poly Haven/Meshy/Blender/Draco assets remain external corpus work. |
 | Round 10: Typed Asset Reference IDE Test | `automated-pass` | `tests/reports/asset-cli.json`<br>`tests/reports/public-api-contract.json` |  |
 | Round 11: Template Lifecycle Dogfood | `automated-pass` | `docs/project/clean-install-results.md`<br>`tests/reports/package-clean-install.json` |  |
-| Round 12: Diagnostics And Screenshot Quality | `automated-pass` | `tests/reports/package-clean-install.json`<br>`tests/reports/agent-devtools.json`<br>`tests/reports/error-message-quality.json` |  |
-| Round 13: Static Deployment Checks | `partial` | `tests/reports/agent-deployment.json`<br>`tests/reports/package-clean-install.json` | Local static/deploy checks are proven; real Vercel, Cloudflare Pages, and Netlify deployments remain external account work. |
+| Round 12: Diagnostics And Screenshot Quality | `automated-pass` | `tests/reports/package-clean-install.json`<br>`tests/reports/agent-devtools.json`<br>`tests/reports/error-message-quality.json`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/starter-example-visual-review.md` |  |
+| Round 13: Static Deployment Checks | `partial` | `tests/reports/agent-deployment.json`<br>`tests/reports/package-clean-install.json`<br>`docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` | Local static/deploy checks are proven. Vercel deploy was attempted but blocked by HTTP 401 deployment protection; Cloudflare Pages and Netlify credentials are missing. |
 | Round 14: Built Bundle Size Proof | `automated-pass` | `BUNDLE_SIZES.md`<br>`tests/reports/bundle-size.json` |  |
 | Round 15: Docs Codeblock Execution | `automated-pass` | `tests/reports/docs-codeblocks.json` |  |
 | Round 16: Error Message Quality | `automated-pass` | `tests/reports/error-message-quality.json` |  |

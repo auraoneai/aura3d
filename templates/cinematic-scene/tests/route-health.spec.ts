@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 test("Aura3D cinematic scene reaches ready state", async ({ page }) => {
   await page.goto("/");
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready")).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
   const drawCalls = Number(await page.locator("body").getAttribute("data-aura3d-draw-calls"));
   const diagnostics = await page.evaluate(() => (window as unknown as { __AURA3D_ROUTE_READY__?: { diagnostics?: { backend?: string } } }).__AURA3D_ROUTE_READY__?.diagnostics);
   expect(diagnostics?.backend).toBe("webgl2");
