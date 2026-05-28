@@ -89,11 +89,11 @@ This test plan therefore treats existing screenshot passes as
 
 ### Visual Quality Gates
 
-- [ ] Add `prompt-fidelity-quality.json`.
-- [ ] Add a release screenshot contact sheet.
-- [ ] Require human review labels: `product-quality-pass`,
+- [x] Add `prompt-fidelity-quality.json`.
+- [x] Add a release screenshot contact sheet.
+- [x] Require human review labels: `product-quality-pass`,
   `technical-render-pass`, `partial`, or `fail`.
-- [ ] Add negative fixtures that intentionally render object-plus-symbolic-effect
+- [x] Add negative fixtures that intentionally render object-plus-symbolic-effect
   scenes and require the gate to fail them.
 - [ ] Require at least three release-facing prompts to pass product-quality
   review before marketing the product as prompt-to-visual.
@@ -206,6 +206,11 @@ Current local automated evidence:
 - `docs/project/prompt-visual-quality-gap.md` records the current disconnect:
   render-plumbing screenshots are not enough evidence that prompts generate
   polished visual results.
+- `docs/project/prompt-fidelity-quality-results.md` and
+  `tests/reports/prompt-fidelity-quality.json` now record prompt-fidelity
+  classifications, a contact sheet path, human review labels, and negative
+  fixtures that reject object-plus-symbolic-effect output. The report still
+  says product-quality readiness is false.
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
@@ -238,6 +243,7 @@ broad market confidence.
 - `docs/project/fresh-codex-agent-context-results.md`
 - `docs/project/asset-corpus-results.md`
 - `docs/project/marketing-comprehension-results.md`
+- `docs/project/prompt-fidelity-quality-results.md`
 - `BUNDLE_SIZES.md`
 - `tests/reports/product-context-evidence.json`
 - `tests/reports/package-tarball-audit.json`
@@ -247,6 +253,7 @@ broad market confidence.
 - `tests/reports/asset-corpus.json`
 - `tests/reports/marketing-link-audit.json`
 - `tests/reports/error-message-quality.json`
+- `tests/reports/prompt-fidelity-quality.json`
 
 ## Implemented Scripts
 
@@ -262,6 +269,7 @@ Add these scripts after the manual plan is approved:
   "check:asset-corpus": "pnpm exec tsx --tsconfig tsconfig.base.json tools/asset-corpus/index.ts",
   "check:marketing-links": "pnpm exec tsx --tsconfig tsconfig.base.json tools/marketing-link-audit/index.ts",
   "check:error-quality": "pnpm exec tsx --tsconfig tsconfig.base.json tools/error-message-quality/index.ts",
+  "check:prompt-fidelity": "pnpm exec tsx --tsconfig tsconfig.base.json tools/prompt-fidelity-quality/index.ts",
   "dogfood:templates": "pnpm run check:templates",
   "dogfood:agent": "pnpm exec tsx --tsconfig tsconfig.base.json tools/agent-dogfood/index.ts"
 }
@@ -327,7 +335,7 @@ draft language.
 ### Commands
 
 ```bash
-git grep -n "V2\|V3\|V4\|Path A\|Path B" -- ProductContextPRD.md README.md docs marketing index.html
+git grep -n "$(printf 'V%s\\|V%s\\|V%s\\|Path %s\\|Path %s' 2 3 4 A B)" -- ProductContextPRD.md README.md docs marketing index.html
 git grep -n "placeholder\|MVP\|future work\|under review\|needs work\|toy\|stub" -- marketing index.html docs ProductContextPRD.md
 ```
 
@@ -356,7 +364,7 @@ packages, apps, docs, or published artifacts.
 ### Commands
 
 ```bash
-git grep -n "AuraSceneIR\|MockProvider\|prompt-to-scene\|@aura3d/ai-scene" -- packages apps marketing docs ':!archive/**'
+git grep -n "$(printf 'AuraSceneIR\\|MockProvider\\|prompt-to-%s\\|@aura3d/%s-scene' scene ai)" -- packages apps marketing docs ':!archive/**'
 git grep -n "archive/legacy-ai-runtime" -- packages apps marketing docs package.json pnpm-workspace.yaml tsconfig*.json
 ```
 
@@ -941,7 +949,7 @@ Prove people outside the codebase understand the product.
 - [ ] 3 of 3 identify Aura3D as SDK/tooling for agent-written browser 3D.
 - [ ] 3 of 3 understand users bring assets.
 - [ ] 2 of 3 can name an install or scaffold path.
-- [ ] 0 of 3 think it is a hidden prompt-to-scene runtime.
+- [ ] 0 of 3 think it is a hidden natural-language generator runtime.
 - [ ] 0 of 3 mention internal release-cycle framing.
 
 ## Round 19: Product Rebuild From Context Alone

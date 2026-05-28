@@ -71,6 +71,12 @@ const freshCodexResult = readText("docs/project/fresh-codex-agent-context-result
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
 const starterExampleVisualReview = readText("docs/project/starter-example-visual-review.md");
 const promptVisualQualityGap = readText("docs/project/prompt-visual-quality-gap.md");
+const promptFidelityReport = readJson<{
+  readonly pass?: boolean;
+  readonly productQualityReady?: boolean;
+  readonly releaseFacingProductQualityPasses?: number;
+  readonly negativeFixtures?: readonly { readonly rejected?: boolean }[];
+}>("tests/reports/prompt-fidelity-quality.json");
 
 const versionTerms = [/\bV[234]\b/i, /Path A/i, /Path B/i, /path-a/i, /path-b/i, /check:v4/i, /__v4/i, /aura3d-v4/i];
 const draftTerms = [
@@ -202,6 +208,17 @@ const checks: ReleaseCheck[] = [
       promptVisualQualityGap.includes("object plus symbolic effects") &&
       promptVisualQualityGap.includes("Prompt Fidelity Acceptance Bar"),
     detail: promptVisualQualityGap ? "prompt-to-visual quality gap is documented as unresolved" : "missing docs/project/prompt-visual-quality-gap.md"
+  },
+  {
+    id: "prompt-fidelity-quality-report-present",
+    pass:
+      promptFidelityReport.pass === true &&
+      promptFidelityReport.productQualityReady === false &&
+      Number(promptFidelityReport.releaseFacingProductQualityPasses ?? -1) < 3 &&
+      (promptFidelityReport.negativeFixtures ?? []).every((fixture) => fixture.rejected === true),
+    detail: promptFidelityReport.pass === true
+      ? `productQualityReady=${String(promptFidelityReport.productQualityReady)}, releaseFacingPasses=${promptFidelityReport.releaseFacingProductQualityPasses ?? "missing"}`
+      : "missing or failing tests/reports/prompt-fidelity-quality.json"
   }
 ];
 
@@ -222,7 +239,7 @@ const claims: ClaimEvidence[] = [
   claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
   claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
   claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
-  claim("Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md"]),
+  claim("Codex dogfood screenshots contain basic visual cues by pixel profile, not product-quality proof.", checkStatus("codex-dogfood-screenshot-profile-present"), ["tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),
   claim("The active starter-template directory contains only the three starter templates.", checkStatus("active-template-directory-exactly-three"), ["packages/create-aura3d/templates"]),
@@ -241,7 +258,7 @@ const knownGaps: KnownGapEvidence[] = [
     gap: "Prompt-to-visual product quality is not proven.",
     owner: "Product/Runtime QA",
     nextAction: "Replace object-plus-cue screenshot checks with a prompt-fidelity gate that rejects scenes made from one imported asset plus symbolic effects. Add art-directed scene recipes, stronger camera/light/material/environment helpers, and human-reviewed acceptance screenshots before claiming prompt-to-visual quality.",
-    targetEvidence: ["docs/project/prompt-visual-quality-gap.md", "docs/project/starter-template-visual-review.md", "tests/reports/prompt-fidelity-quality.json"]
+    targetEvidence: ["docs/project/prompt-visual-quality-gap.md", "docs/project/starter-template-visual-review.md", "docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json"]
   },
   {
     gap: "Claude Code, Cursor, and Copilot context-only agent runs are not complete.",

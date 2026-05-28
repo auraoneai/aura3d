@@ -81,6 +81,11 @@ So the honest current product state is:
   hallucinations and zero asset-path errors.
 - The first raw Three.js baseline comparison is recorded in
   `docs/project/agent-baseline-comparison.md`.
+- `tools/prompt-fidelity-quality/index.ts` now writes
+  `tests/reports/prompt-fidelity-quality.json`, a release screenshot contact
+  sheet, and `docs/project/prompt-fidelity-quality-results.md`. It classifies
+  current screenshots as technical/partial evidence and rejects
+  object-plus-symbolic-effect negative fixtures.
 
 ## Known Gaps To Keep Honest
 
@@ -159,18 +164,18 @@ So the honest current product state is:
 
 ### Quality Gates And Evidence
 
-- [ ] Add a `prompt-fidelity` gate that fails screenshots which look like one
+- [x] Add a `prompt-fidelity` gate that fails screenshots which look like one
   imported asset plus symbolic effects.
-- [ ] Store source prompt, expected visual criteria, screenshot, route-health,
-  asset manifest, and human verdict for every demo.
-- [ ] Require human review labels: `product-quality-pass`,
+- [x] Store source prompt, expected visual criteria, screenshot, source report,
+  and human verdict for every audited demo.
+- [x] Require human review labels: `product-quality-pass`,
   `technical-render-pass`, `partial`, or `fail`.
 - [ ] Require every public demo to pass both technical rendering checks and
   visual prompt-fidelity checks before it is marketed.
-- [ ] Build a contact-sheet report for all release-facing screenshots so visual
+- [x] Build a contact-sheet report for all release-facing screenshots so visual
   regressions are reviewed together.
-- [ ] Add before/after fixtures proving that the old generic grid/polygon output
-  fails and the new art-directed scene passes.
+- [x] Add negative fixtures proving object-plus-symbolic-effect output fails.
+- [ ] Add positive fixtures proving new art-directed scenes pass.
 - [ ] Compare Aura3D prompt outputs against raw Three.js agent outputs on the
   same prompts and assets.
 

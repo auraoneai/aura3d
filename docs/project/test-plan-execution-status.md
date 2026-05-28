@@ -1,6 +1,6 @@
 # Test Plan Execution Status
 
-Generated: 2026-05-28T20:54:57.018Z
+Generated: 2026-05-28T21:17:30.187Z
 
 This document tracks `TestV4PlanPRD.md` round coverage. It is intentionally
 stricter than `check:release`: local automation can pass while external
@@ -28,7 +28,7 @@ dogfood, external deployments, and human comprehension work remain open.
 | Round 9: Asset Corpus Validation | `partial` | `docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` | Generated/adversarial assets plus pinned Khronos, Blender-export, animation, textured-PBR, and KTX2 local fixtures are proven; separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants remain external corpus work. |
 | Round 10: Typed Asset Reference IDE Test | `automated-pass` | `tests/reports/asset-cli.json`<br>`tests/reports/public-api-contract.json` |  |
 | Round 11: Template Lifecycle Dogfood | `automated-pass` | `docs/project/clean-install-results.md`<br>`tests/reports/package-clean-install.json` |  |
-| Round 12: Diagnostics And Screenshot Quality | `partial` | `tests/reports/package-clean-install.json`<br>`tests/reports/agent-devtools.json`<br>`tests/reports/error-message-quality.json`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/starter-example-visual-review.md`<br>`docs/project/prompt-visual-quality-gap.md` | Current screenshots prove rendering, diagnostics, and basic visual cues. They do not prove product-quality prompt-to-visual fidelity. |
+| Round 12: Diagnostics And Screenshot Quality | `partial` | `tests/reports/package-clean-install.json`<br>`tests/reports/agent-devtools.json`<br>`tests/reports/error-message-quality.json`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/starter-example-visual-review.md`<br>`docs/project/prompt-visual-quality-gap.md`<br>`docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json` | Current screenshots prove rendering, diagnostics, and basic visual cues. Prompt-fidelity audit now rejects object-plus-symbolic-effect fixtures, but current screenshots do not prove product-quality prompt-to-visual fidelity. |
 | Round 13: Static Deployment Checks | `partial` | `tests/reports/agent-deployment.json`<br>`tests/reports/package-clean-install.json`<br>`docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` | Local static/deploy checks are proven. Vercel deploy was attempted but blocked by HTTP 401 deployment protection; Cloudflare Pages and Netlify credentials are missing. |
 | Round 14: Built Bundle Size Proof | `automated-pass` | `BUNDLE_SIZES.md`<br>`tests/reports/bundle-size.json` |  |
 | Round 15: Docs Codeblock Execution | `automated-pass` | `tests/reports/docs-codeblocks.json` |  |
