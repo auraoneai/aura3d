@@ -100,6 +100,35 @@ const codexAgentReport = readJson<{
       readonly after?: string;
     };
   };
+  readonly repairEval?: {
+    readonly summary?: {
+      readonly compiles?: boolean;
+      readonly runs?: boolean;
+      readonly apiHallucinations?: number;
+      readonly assetPathErrors?: number;
+    };
+    readonly failedLabel?: string;
+    readonly repairedLabel?: string;
+    readonly repairTurnCount?: number;
+    readonly appliedRepairHints?: readonly string[];
+    readonly initialRouteReport?: { readonly ready?: boolean; readonly backend?: string; readonly hasPromptPlan?: boolean };
+    readonly initialScreenshotReport?: {
+      readonly productQualityPass?: boolean;
+      readonly reviewLabel?: string;
+      readonly profile?: Record<string, number>;
+    };
+    readonly repairedRouteReport?: {
+      readonly ready?: boolean;
+      readonly backend?: string;
+      readonly hasPromptPlan?: boolean;
+      readonly compiledRepairHints?: readonly string[];
+    };
+    readonly repairedScreenshotReport?: {
+      readonly productQualityPass?: boolean;
+      readonly reviewLabel?: string;
+      readonly profile?: Record<string, number>;
+    };
+  };
 }>("tests/reports/agent-context/codex-self-test.json");
 const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
@@ -251,6 +280,34 @@ const checks: ReleaseCheck[] = [
       : "missing fiveTaskEval evidence in tests/reports/agent-context/codex-self-test.json"
   },
   {
+    id: "codex-repair-eval-present",
+    pass:
+      codexAgentReport.pass === true &&
+      codexAgentReport.repairEval?.summary?.compiles === true &&
+      codexAgentReport.repairEval?.summary?.runs === true &&
+      codexAgentReport.repairEval?.summary?.apiHallucinations === 0 &&
+      codexAgentReport.repairEval?.summary?.assetPathErrors === 0 &&
+      codexAgentReport.repairEval?.failedLabel === "fail" &&
+      codexAgentReport.repairEval?.repairedLabel === "product-quality-pass" &&
+      codexAgentReport.repairEval?.repairTurnCount === 1 &&
+      (codexAgentReport.repairEval?.appliedRepairHints ?? []).length > 0 &&
+      codexAgentReport.repairEval?.initialRouteReport?.ready === true &&
+      codexAgentReport.repairEval?.initialRouteReport?.backend === "webgl2" &&
+      codexAgentReport.repairEval?.initialScreenshotReport?.productQualityPass === false &&
+      codexAgentReport.repairEval?.repairedRouteReport?.ready === true &&
+      codexAgentReport.repairEval?.repairedRouteReport?.backend === "webgl2" &&
+      codexAgentReport.repairEval?.repairedRouteReport?.hasPromptPlan === true &&
+      (codexAgentReport.repairEval?.repairedRouteReport?.compiledRepairHints ?? []).length > 0 &&
+      codexAgentReport.repairEval?.repairedScreenshotReport?.productQualityPass === true &&
+      Number(codexAgentReport.repairEval?.repairedScreenshotReport?.profile?.subjectPixels ?? 0) > Number(codexAgentReport.repairEval?.initialScreenshotReport?.profile?.subjectPixels ?? 0) &&
+      Number(codexAgentReport.repairEval?.repairedScreenshotReport?.profile?.rainPixels ?? 0) > Number(codexAgentReport.repairEval?.initialScreenshotReport?.profile?.rainPixels ?? 0) &&
+      Number(codexAgentReport.repairEval?.repairedScreenshotReport?.profile?.reflectionPixels ?? 0) > Number(codexAgentReport.repairEval?.initialScreenshotReport?.profile?.reflectionPixels ?? 0) &&
+      (codexAgentReport.checks ?? []).some((check) => check.id === "codex-repair-screenshot-improves-to-product-quality" && check.pass === true),
+    detail: codexAgentReport.repairEval?.summary
+      ? `initial=${codexAgentReport.repairEval.initialScreenshotReport?.reviewLabel ?? "missing"}, repaired=${codexAgentReport.repairEval.repairedScreenshotReport?.reviewLabel ?? "missing"}, turns=${codexAgentReport.repairEval.repairTurnCount ?? "missing"}`
+      : "missing repairEval evidence in tests/reports/agent-context/codex-self-test.json"
+  },
+  {
     id: "fresh-codex-context-result-documented",
     pass:
       freshCodexResult.includes("API hallucination count | 0") &&
@@ -349,6 +406,7 @@ const claims: ClaimEvidence[] = [
   claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
   claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" && checkStatus("prompt-fidelity-quality-report-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
   claim("Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations.", checkStatus("codex-five-task-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof."),
+  claim("Codex repair eval improves a failed screenshot to product-quality by applying prompt-plan repair hints with a recorded repair turn.", checkStatus("codex-repair-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-repair-workspace/tests/reports/initial-screenshot.json", "tests/reports/agent-context/codex-repair-workspace/tests/reports/repaired-screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run external agent repair turns separately before claiming broad repair-loop behavior."),
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
   claim("Prompt-plan reports warn when required visual information is missing from vague plans.", checkStatus("prompt-plan-vague-plan-warnings-tested"), ["packages/engine/src/agent-api/index.ts", "tests/unit/agent-api/agent-api.test.ts"]),
   claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),

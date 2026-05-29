@@ -1,6 +1,6 @@
 # Test Plan Execution Status
 
-Generated: 2026-05-29T04:00:28.142Z
+Generated: 2026-05-29T04:22:01.962Z
 
 This document tracks `TestV4PlanPRD.md` round coverage. It is intentionally
 stricter than `check:release`: local automation can pass while external
@@ -23,7 +23,7 @@ dogfood, external deployments, and human comprehension work remain open.
 | Round 4: Package Tarball Audit | `automated-pass` | `tests/reports/package-tarball-audit.json` |  |
 | Round 5: Clean Install Smoke | `automated-pass` | `docs/project/clean-install-results.md`<br>`tests/reports/package-clean-install.json` |  |
 | Round 6: Public API Compactness And Correctness | `automated-pass` | `docs/project/public-api-contract.md`<br>`tests/reports/public-api-contract.json` |  |
-| Round 7: Agent Context Evaluation | `partial` | `docs/project/agent-dogfood-results.md`<br>`docs/project/fresh-codex-agent-context-results.md`<br>`tests/reports/agent-context/codex-self-test.json` | Codex prompt-plan self-test and Codex five-task eval are proven with product-quality visual review, typed assets, click swap, and static preview; Claude Code, Cursor, and Copilot remain external/subscription runs. |
+| Round 7: Agent Context Evaluation | `partial` | `docs/project/agent-dogfood-results.md`<br>`docs/project/fresh-codex-agent-context-results.md`<br>`tests/reports/agent-context/codex-self-test.json` | Codex prompt-plan self-test, Codex five-task eval, and Codex repair eval are recorded; Claude Code, Cursor, and Copilot remain external/subscription runs. |
 | Round 8: Raw Three.js Baseline | `manual-pass` | `tests/reports/agent-baseline-comparison.json`<br>`docs/project/agent-baseline-comparison.md` |  |
 | Round 9: Asset Corpus Validation | `partial` | `docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` | Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, and downloaded Khronos Draco glTF are proven; authenticated Sketchfab CC0 downloads and Meshy exports remain external corpus work. |
 | Round 10: Typed Asset Reference IDE Test | `automated-pass` | `tests/reports/asset-cli.json`<br>`tests/reports/public-api-contract.json` |  |

@@ -1,6 +1,6 @@
 # Agent Dogfood Results
 
-Generated: 2026-05-29T03:58:13.262Z
+Generated: 2026-05-29T04:19:52.317Z
 
 ## Codex Self-Test
 
@@ -8,6 +8,7 @@ Generated: 2026-05-29T03:58:13.262Z
 |---|---:|---:|---:|---:|---:|---|
 | Codex | yes | yes | 0 | 0 | 1 | Generated app uses the public prompt-plan engine surface and typed assets emitted by aura assets add. Verification used the local repo toolchain; Claude Code, Cursor, and Copilot remain separate external runs. |
 | Codex five-task eval | yes | yes | 0 | 0 | 1 | 5/5 requested tasks passed product-quality or deploy-bundle verification. This strengthens the Codex-local baseline only; Claude Code, Cursor, and Copilot remain separate external runs. |
+| Codex repair eval | yes | yes | 0 | 0 | 1 | A controlled failed screenshot was generated first, then repaired through prompt-plan recipe guidance without using raw model URLs. This remains local Codex evidence; it does not replace external agent repair runs. |
 
 ## Codex Five-Task Eval
 
@@ -20,6 +21,14 @@ Asset source: Khronos glTF Sample Assets: MaterialsVariantsShoe/glTF-Binary/Mate
 | `reflective-floor` | Make the floor reflective. | yes | yes | yes | yes | 0 | 0 | 1 | 0 | Verified from the generated app route health, screenshot profile, or click-swap report. |
 | `click-swap` | Add a click handler that changes the model to shoe2.glb. | yes | yes | yes | yes | 0 | 0 | 1 | 0 | Verified from the generated app route health, screenshot profile, or click-swap report. |
 | `static-deploy-bundle` | Deploy the app to a static host or produce a valid static deployment bundle. | yes | yes | yes | yes | 0 | 0 | 1 | 0 | Verified against vite preview from the production dist bundle. |
+
+## Codex Repair Eval
+
+Source prompt: Repair a failed rainy product reveal that currently looks like one model with symbolic rain marks.
+
+| Initial Label | Repaired Label | Repair Turns | Applied Repair Hints |
+|---:|---:|---:|---|
+| `fail` | `product-quality-pass` | 1 | Add foreground, midground, and background structure before promoting the scene. Replace symbolic rain marks with a cinematic recipe that includes layered rain, wet reflections, fog, bloom, and practical lights. Use a tighter dolly camera and record the compiled prompt-plan repair hints in the route report. |
 
 ## Context Input
 
@@ -46,16 +55,25 @@ Asset source: Khronos glTF Sample Assets: MaterialsVariantsShoe/glTF-Binary/Mate
 | `codex-generated-app-no-asset-path-errors` | pass | no raw model URL or missing typed asset dependency |
 | `codex-generated-app-builds` | pass | vite build passed |
 | `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=21 |
-| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=302859, profile={"yellowPixels":6430,"rainPixels":1946,"centerObjectPixels":11409,"uniqueBuckets":154} |
+| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=300668, profile={"yellowPixels":6404,"rainPixels":1930,"centerObjectPixels":11366,"uniqueBuckets":151} |
 | `codex-five-task-context-files-copied` | pass | 10 context files copied |
 | `codex-five-task-assets-validate` | pass | 2 typed assets validate |
 | `codex-five-task-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
 | `codex-five-task-no-asset-path-errors` | pass | uses assets.sneaker and assets.shoe2 typed refs; no raw GLB URLs |
 | `codex-five-task-builds` | pass | vite build passed |
 | `codex-five-task-static-preview-runs` | pass | ready=true, backend=webgl2, staticPreview=true |
-| `codex-five-task-screenshot-product-quality` | pass | screenshot bytes=272360, profile={"subjectPixels":9711,"softboxPixels":9364,"rainPixels":8525,"reflectionPixels":2884,"uniqueBuckets":84} |
+| `codex-five-task-screenshot-product-quality` | pass | screenshot bytes=282486, profile={"subjectPixels":9770,"softboxPixels":9759,"rainPixels":8912,"reflectionPixels":3013,"uniqueBuckets":83} |
 | `codex-five-task-click-swap` | pass | before=sneaker, after=shoe2 |
 | `codex-five-task-completes-at-least-four-of-five` | pass | 5/5 tasks passed |
+| `codex-repair-context-files-copied` | pass | 10 context files copied |
+| `codex-repair-asset-validates` | pass | 1 typed asset validates |
+| `codex-repair-initial-screenshot-fails-quality` | pass | initial label=fail, profile={"subjectPixels":786,"rainPixels":204,"reflectionPixels":49,"environmentPixels":0,"uniqueBuckets":36} |
+| `codex-repair-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
+| `codex-repair-no-asset-path-errors` | pass | uses assets.repairProduct typed ref with no raw GLB URLs |
+| `codex-repair-repaired-app-builds-and-runs` | pass | ready=true, backend=webgl2 |
+| `codex-repair-applies-prompt-plan-repair-hints` | pass | 6 compiled repair hints recorded |
+| `codex-repair-screenshot-improves-to-product-quality` | pass | initial={"subjectPixels":786,"rainPixels":204,"reflectionPixels":49,"environmentPixels":0,"uniqueBuckets":36}; repaired={"subjectPixels":10307,"rainPixels":3480,"reflectionPixels":3386,"environmentPixels":13065,"uniqueBuckets":100} |
+| `codex-repair-turn-count-recorded` | pass | 1 repair turn recorded |
 
 ## Remaining Agent Runs
 

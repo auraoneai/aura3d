@@ -195,6 +195,12 @@ For Aura3D, that means:
   errors, runs from a production static preview bundle, and has screenshot-level
   product-quality evidence. This is still local Codex evidence, not proof that
   Claude Code, Cursor, Copilot, or outside users will produce the same result.
+- A controlled Codex repair eval now starts from a deliberately failed rainy
+  product screenshot, applies prompt-plan repair hints, rebuilds the generated
+  app, reruns route health and screenshot capture, and records one repair turn.
+  The initial screenshot is labeled `fail`; the repaired screenshot is labeled
+  `product-quality-pass`. This proves the local repair loop, not external-agent
+  repair behavior.
 - The first raw Three.js baseline comparison is recorded in
   `docs/project/agent-baseline-comparison.md`.
 - `tools/prompt-fidelity-quality/index.ts` now writes
@@ -331,7 +337,7 @@ For Aura3D, that means:
 - [x] Add support for prompt-specific expected artifacts, such as HUD for a
   game prompt, wet reflections for a rain prompt, and inspection controls for a
   product-viewer prompt.
-- [ ] Make generated scenes expose their prompt, visual intent, and diagnostic
+- [x] Make generated scenes expose their prompt, visual intent, and diagnostic
   evidence in reports.
 
 ### Quality Gates And Evidence

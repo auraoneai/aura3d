@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T04:00:27.355Z
+Generated: 2026-05-29T04:22:01.331Z
 
 ## Summary
 
-- Claims with evidence: 32/32
+- Claims with evidence: 33/33
 - Known gaps tracked: 6/6
-- Automated checks passing: 26/26
+- Automated checks passing: 27/27
 
 ## Claim Matrix
 
@@ -30,6 +30,7 @@ Generated: 2026-05-29T04:00:27.355Z
 | A fresh Codex context-only run can build a compiling WebGL2 app with typed assets. | `manual-pass` | `docs/project/fresh-codex-agent-context-results.md` | Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity. |
 | Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test. | `automated-pass` | `tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |
 | Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations. | `automated-pass` | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts` | This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof. |
+| Codex repair eval improves a failed screenshot to product-quality by applying prompt-plan repair hints with a recorded repair turn. | `automated-pass` | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-repair-workspace/tests/reports/initial-screenshot.json`<br>`tests/reports/agent-context/codex-repair-workspace/tests/reports/repaired-screenshot.json`<br>`tools/agent-dogfood/index.ts` | This is local Codex evidence only; run external agent repair turns separately before claiming broad repair-loop behavior. |
 | The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`packages/create-aura3d/templates/*/src/main.ts`<br>`templates/*/src/main.ts`<br>`tools/prompt-fidelity-quality/index.ts` |  |
 | Prompt-plan reports warn when required visual information is missing from vague plans. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`tests/unit/agent-api/agent-api.test.ts` |  |
 | The three release-facing starter prompt recipes pass product-quality screenshot review. | `automated-pass` | `docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json`<br>`tests/reports/prompt-fidelity/contact-sheet.png` |  |
@@ -74,9 +75,10 @@ Generated: 2026-05-29T04:00:27.355Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6430,"rainPixels":1946,"centerObjectPixels":11409,"uniqueBuckets":154} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6404,"rainPixels":1930,"centerObjectPixels":11366,"uniqueBuckets":151} |
 | `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `codex-five-task-eval-present` | pass | tasks=5/5, backend=webgl2, swap=sneaker->shoe2 |
+| `codex-repair-eval-present` | pass | initial=fail, repaired=product-quality-pass, turns=1 |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current starter product-quality screenshots and boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |
@@ -85,5 +87,5 @@ Generated: 2026-05-29T04:00:27.355Z
 | `prompt-plan-api-and-starters-present` | pass | prompt-plan API exports and active packaged starters are present |
 | `prompt-plan-vague-plan-warnings-tested` | pass | agent API test covers warnings for vague prompt plans |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 6/6 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 32/32 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
+| `claim-evidence-matrix-complete` | pass | 33/33 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
 

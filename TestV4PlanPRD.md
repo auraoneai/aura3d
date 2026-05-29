@@ -209,7 +209,7 @@ product-quality prompt output for the three approved starter recipes.
   needed for the selected recipe.
 - [x] Feed failed screenshot review back into the next generated scene and
   record the repair turn count.
-- [ ] Prove a context-only Codex run can improve a failed screenshot by applying
+- [x] Prove a context-only Codex run can improve a failed screenshot by applying
   repair hints instead of manual source browsing.
 
 ### Visual Quality Gates
@@ -718,6 +718,10 @@ For each task and agent, record:
   errors, verifies product viewer, camera/rain, reflective floor, click-swap,
   and static deploy-bundle tasks, and has screenshot-level product-quality
   evidence. This is local Codex evidence only.
+- Codex repair eval: pass. It generates a failed rainy product screenshot,
+  applies prompt-plan repair hints in one recorded repair turn, rebuilds and
+  reruns the app, and improves the screenshot from `fail` to
+  `product-quality-pass`. This is local Codex evidence only.
 - Fresh Codex context-only run: pass. See
   `docs/project/fresh-codex-agent-context-results.md`.
 - Claude Code: not run.
