@@ -537,7 +537,7 @@ const knownGaps: KnownGapEvidence[] = [
     gap: "Cursor and Copilot context-only agent runs are not complete.",
     owner: "Product QA",
     nextAction: "Codex five-task local evidence and Claude Code external-agent evidence now pass. Run the same five-task context-only script against subscribed Cursor and Copilot environments.",
-    targetEvidence: ["docs/project/agent-dogfood-results.md", "docs/project/claude-code-agent-context-results.md", "tests/reports/agent-context/*.json"]
+    targetEvidence: ["docs/project/agent-dogfood-results.md", "docs/project/claude-code-agent-context-results.md", "docs/project/external-proof-readiness.md", "tests/reports/agent-context/*.json"]
   },
   ...statusFromReport("tests/reports/agent-baseline-comparison.json") === "automated-pass"
     ? []
@@ -551,7 +551,7 @@ const knownGaps: KnownGapEvidence[] = [
     gap: "Licensed wild-asset corpus is not broad enough.",
     owner: "Assets QA",
     nextAction: "The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render.",
-    targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"]
+    targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "docs/project/external-proof-readiness.md", "tests/reports/asset-corpus.json"]
   },
   {
     gap: "Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify.",
@@ -559,7 +559,7 @@ const knownGaps: KnownGapEvidence[] = [
     nextAction: (externalDeploymentReport.checks ?? []).some((check) => check.id === "vercel-public-smoke" && check.pass === true)
       ? "Vercel public smoke now renders a WebGL2 Aura3D canvas from a deployed product-viewer artifact. Provide Cloudflare Pages and Netlify credentials or project targets, then record public URLs, route health, screenshots, MIME checks, and deployment-check output for those hosts."
       : "Vercel public smoke is not yet passing. Provide or repair a public Vercel smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output.",
-    targetEvidence: ["docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"]
+    targetEvidence: ["docs/project/external-deployment-results.md", "docs/project/external-proof-readiness.md", "tests/reports/external-deployment-smoke.json"]
   },
   {
     gap: "Marketing comprehension interviews are not complete.",
@@ -571,7 +571,7 @@ const knownGaps: KnownGapEvidence[] = [
     gap: "Outside beta dogfood is not complete.",
     owner: "Product/Community",
     nextAction: "Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs.",
-    targetEvidence: ["docs/project/outside-beta-dogfood-results.md", ".github/ISSUE_TEMPLATE"]
+    targetEvidence: ["docs/project/outside-beta-dogfood-results.md", "docs/project/external-proof-readiness.md", ".github/ISSUE_TEMPLATE"]
   }
 ];
 

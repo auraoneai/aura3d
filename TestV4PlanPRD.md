@@ -388,21 +388,31 @@ Current local automated evidence:
   `data-aura3d-ready="true"`, renders WebGL2 with draw calls, serves the GLB
   with `model/gltf-binary`, and has screenshot pixel evidence. Cloudflare Pages
   and Netlify are still blocked by missing credentials/project targets.
+- `docs/project/external-proof-readiness.md` records current blocker probes for
+  remaining external items: Cursor agent exits with a usage-limit error,
+  `gh copilot` is not installed, Sketchfab CC0 search works but authenticated
+  download returns HTTP 401 without credentials, Meshy credentials are absent,
+  Cloudflare/Netlify credentials are absent, npm publish auth returns E401, and
+  the beta GitHub issue template is present.
 
 ### Still Not Proven By Local Automation
 
 These remain external or manual evidence items and must not be represented as
 completed user proof:
 
-- Cursor and Copilot context-only agent runs.
+- Cursor and Copilot context-only agent runs. Current probes show Cursor agent
+  usage is exhausted on this machine and no `gh copilot` command is installed.
 - Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
   and real Draco-compressed variants are now covered locally; authenticated
-  Sketchfab CC0 downloads and Meshy exports remain.
+  Sketchfab CC0 downloads and Meshy exports remain. Current probes show
+  Sketchfab public search works but the download endpoint requires auth, and no
+  Meshy credentials are present.
 - Static deployment to real Cloudflare Pages and Netlify projects. Vercel public
   smoke now passes for the product-viewer artifact, but the full three-host
   Round 13 requirement is still incomplete.
 - Marketing comprehension interviews with people who do not know the codebase.
-- Outside beta dogfood and issue intake from real users.
+- Outside beta dogfood and issue intake from real users. GitHub issue intake is
+  ready, but npm publish auth is absent and no outside tester evidence exists.
 - Broad product-quality prompt-to-visual fidelity beyond the approved starter
   recipes. Current starter screenshots prove a narrow recipe set, not arbitrary
   scene generation.

@@ -278,6 +278,11 @@ For Aura3D, that means:
   one host is not enough to claim complete external deployment proof. The local
   Codex and Claude Code five-task passes must not be presented as broad market
   proof.
+- `docs/project/external-proof-readiness.md` records current external-service
+  probes: Cursor agent is usage-limited, Copilot CLI is not installed, Sketchfab
+  CC0 download requires auth, Meshy credentials are absent, Cloudflare/Netlify
+  credentials are absent, npm publish auth is absent, and GitHub beta issue
+  intake is ready but unexercised by outside users.
 
 ## Build Checklist Still Required
 
