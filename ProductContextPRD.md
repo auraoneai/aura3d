@@ -236,9 +236,9 @@ For Aura3D, that means:
   apps. The compact core API budget excludes the lazy Three.js renderer chunk;
   the starter-template bundle budgets include that renderer cost.
 - Claude Code, Cursor, Copilot, outside developers, real Vercel/Cloudflare/
-  Netlify deployments, and separately licensed Sketchfab/Poly Haven/Meshy/Draco
-  wild-asset runs remain external dogfood work. The local evidence must not be
-  presented as broad market proof.
+  Netlify deployments, authenticated Sketchfab CC0 downloads, and Meshy export
+  runs remain external dogfood work. The local evidence must not be presented as
+  broad market proof.
 
 ## Build Checklist Still Required
 
@@ -350,8 +350,9 @@ For Aura3D, that means:
 
 - [ ] Run the context-only agent eval with Codex, Claude Code, Cursor, and
   Copilot when available.
-- [ ] Run a wild asset corpus with separately licensed Sketchfab CC0, Poly
-  Haven, Meshy, and real Draco-compressed assets.
+- [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0
+  and real Draco-compressed assets now pass the executable corpus; authenticated
+  Sketchfab CC0 downloads and Meshy exports remain.
 - [ ] Deploy at least one polished prompt-fidelity demo publicly to Vercel,
   Cloudflare Pages, and Netlify without authentication walls.
 - [ ] Run marketing comprehension interviews after the marketing site only

@@ -1,6 +1,6 @@
 # Asset Corpus Results
 
-Generated: 2026-05-29T02:26:17.078Z
+Generated: 2026-05-29T02:57:29.990Z
 
 | Case | Expected | Result | Message |
 |---|---|---:|---|
@@ -19,6 +19,8 @@ Generated: 2026-05-29T02:26:17.078Z
 | `duplicate-asset-id` | success | pass | Added duplicateModel -> /aura-assets/duplicateModel.0fe67e10.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts |
 | `nested-directory-asset` | success | pass | Added nestedModel -> /aura-assets/nestedModel.ce6f1067.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts |
 | `ktx2-texture-extension` | success | pass | Added ktxTexture -> /aura-assets/ktxTexture.23035988.ktx2; Wrote aura.assets.json; Wrote src/aura-assets.ts |
+| `external-polyhaven-armchair-cc0-gltf` | success | pass | Added polyhavenArmChair -> /aura-assets/polyhavenArmChair.91e39d5b.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts |
+| `external-khronos-draco-box-gltf` | success | pass | Added khronosDracoBox -> /aura-assets/khronosDracoBox.3c46acec.gltf; Wrote aura.assets.json; Wrote src/aura-assets.ts |
 | `real-khronos-duck-glb` | success | pass | Added realDuck -> /aura-assets/realDuck.65bf938f.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts |
 | `real-damaged-helmet-glb` | success | pass | Added damagedHelmet -> /aura-assets/damagedHelmet.4028ccbc.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts |
 | `real-antique-camera-product-glb` | success | pass | Added antiqueCamera -> /aura-assets/antiqueCamera.7480f9be.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts |
@@ -38,6 +40,7 @@ Generated: 2026-05-29T02:26:17.078Z
 - duplicateModel: no texture references detected
 - externalBin: no texture references detected
 - fileWithSpaces: no texture references detected
+- khronosDracoBox: no texture references detected
 - ktxTexture: bounds could not be extracted
 - largeModel: asset exceeds 25 MB; consider compression before deployment
 - largeModel: no texture references detected
@@ -48,6 +51,8 @@ Generated: 2026-05-29T02:26:17.078Z
 
 ## Source And License Notes
 
+- `external-polyhaven-armchair-cc0-gltf`: Poly Haven API/files: ArmChair_01 1k glTF; CC0; Downloaded at test time into tests/reports only; verifies a real external CC0 model with .gltf, .bin, and external JPG texture dependencies.
+- `external-khronos-draco-box-gltf`: Khronos glTF Sample Models: Box/glTF-Draco; CC-BY-4.0; Downloaded at test time into tests/reports only; verifies a real glTF using KHR_draco_mesh_compression and an external .bin buffer.
 - `real-khronos-duck-glb`: fixtures/asset-corpus/duck.glb; Khronos glTF Sample Assets metadata; local fixture used for importer validation only; Small real GLB fixture used to verify the CLI handles non-synthetic product/prop assets.
 - `real-damaged-helmet-glb`: fixtures/asset-corpus/damaged-helmet.glb; Khronos glTF Sample Assets metadata; local fixture used for importer validation only; Textured PBR GLB fixture used to verify real-material metadata, typed refs, and validation.
 - `real-antique-camera-product-glb`: fixtures/asset-corpus/antique-camera.glb; Khronos glTF Sample Assets license metadata; local fixture used for importer validation only; Large product-form GLB fixture used to verify typed refs and validation on a realistic inspectable object.
@@ -61,6 +66,6 @@ Generated: 2026-05-29T02:26:17.078Z
 
 ## Remaining External Corpus Work
 
-- The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, product-form, material-extension, Blender-export, animation, textured-PBR, and KTX2 local fixtures.
-- Still add separately licensed wild assets from Sketchfab CC0, Poly Haven, and Meshy exports before stable release confidence.
-- Run the same add/validate/typegen/render flow against that external wild corpus before claiming broad asset compatibility.
+- The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 model, and a downloaded Khronos Draco-compressed glTF.
+- Sketchfab CC0 direct model downloads require authenticated API access, and Meshy exports require a generated/exported user asset or API credential.
+- Run the same add/validate/typegen/render flow against Sketchfab CC0 and Meshy exports when credentials or licensed files are available before claiming broad asset compatibility.

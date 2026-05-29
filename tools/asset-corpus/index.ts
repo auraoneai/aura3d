@@ -1,4 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { addAsset, validateAssets } from "../../packages/aura3d-cli/src/index";
 import { writeReport, type ReleaseCheck } from "../check-common";
@@ -24,11 +26,52 @@ interface CorpusResult {
 }
 
 interface CorpusSourceNote {
-  readonly kind: "generated" | "pinned-local-fixture";
+  readonly kind: "generated" | "pinned-local-fixture" | "external-download";
   readonly source: string;
   readonly license: string;
   readonly notes: string;
 }
+
+const polyHavenArmChair1k = {
+  gltf: {
+    path: "assets/external/polyhaven-armchair/ArmChair_01_1k.gltf",
+    url: "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ArmChair_01/ArmChair_01_1k.gltf",
+    md5: "39d1e4b0ffdde688c98335c9621e3aae"
+  },
+  include: [
+    {
+      path: "assets/external/polyhaven-armchair/ArmChair_01.bin",
+      url: "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/ArmChair_01/ArmChair_01.bin",
+      md5: "fbd842795fdec75d94f1335c28acfc0e"
+    },
+    {
+      path: "assets/external/polyhaven-armchair/textures/Armchair_01_diff_1k.jpg",
+      url: "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ArmChair_01/Armchair_01_diff_1k.jpg",
+      md5: "9166f2c24f2114a5fa5513950ed9b9ae"
+    },
+    {
+      path: "assets/external/polyhaven-armchair/textures/Armchair_01_nor_gl_1k.jpg",
+      url: "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ArmChair_01/Armchair_01_nor_gl_1k.jpg",
+      md5: "8541821edd6dcb319b7f9841d849fbbe"
+    },
+    {
+      path: "assets/external/polyhaven-armchair/textures/Armchair_01_arm_1k.jpg",
+      url: "https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/ArmChair_01/Armchair_01_arm_1k.jpg",
+      md5: "2ea528244dd6fc0deb2af1a555c0a312"
+    }
+  ]
+};
+
+const khronosDracoBox = [
+  {
+    path: "assets/external/khronos-draco-box/Box.gltf",
+    url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Draco/Box.gltf"
+  },
+  {
+    path: "assets/external/khronos-draco-box/Box.bin",
+    url: "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Box/glTF-Draco/Box.bin"
+  }
+];
 
 const workspace = resolve("tests/reports/asset-corpus-workspace");
 rmSync(workspace, { recursive: true, force: true });
@@ -171,6 +214,52 @@ const cases: CorpusCase[] = [
     name: "ktxTexture",
     setup: (dir) => writeAsset(dir, "assets/texture.ktx2", Buffer.from("ktx2-placeholder")),
     expect: "success"
+  },
+  {
+    id: "external-polyhaven-armchair-cc0-gltf",
+    file: polyHavenArmChair1k.gltf.path,
+    name: "polyhavenArmChair",
+    setup: (dir) => {
+      downloadAsset(dir, polyHavenArmChair1k.gltf.path, polyHavenArmChair1k.gltf.url, polyHavenArmChair1k.gltf.md5);
+      for (const include of polyHavenArmChair1k.include) downloadAsset(dir, include.path, include.url, include.md5);
+    },
+    expect: "success",
+    source: {
+      kind: "external-download",
+      source: "Poly Haven API/files: ArmChair_01 1k glTF",
+      license: "CC0",
+      notes: "Downloaded at test time into tests/reports only; verifies a real external CC0 model with .gltf, .bin, and external JPG texture dependencies."
+    },
+    verify: (dir) => {
+      const validation = validateAssets({ projectDir: dir });
+      const asset = validation.manifest.assets.find((entry) => entry.id === "polyhavenArmChair");
+      if (!asset || asset.format !== "gltf") return "Poly Haven glTF manifest entry missing";
+      if (asset.textures.length < 3) return `Poly Haven texture metadata incomplete: ${asset.textures.length}`;
+      if (!statSync(resolve(dir, "public/aura-assets/ArmChair_01.bin")).isFile()) return "Poly Haven external bin was not copied";
+      if (!statSync(resolve(dir, "public/aura-assets/textures/Armchair_01_diff_1k.jpg")).isFile()) return "Poly Haven external texture directory was not copied";
+      return undefined;
+    }
+  },
+  {
+    id: "external-khronos-draco-box-gltf",
+    file: "assets/external/khronos-draco-box/Box.gltf",
+    name: "khronosDracoBox",
+    setup: (dir) => {
+      for (const fixture of khronosDracoBox) downloadAsset(dir, fixture.path, fixture.url);
+    },
+    expect: "success",
+    source: {
+      kind: "external-download",
+      source: "Khronos glTF Sample Models: Box/glTF-Draco",
+      license: "CC-BY-4.0",
+      notes: "Downloaded at test time into tests/reports only; verifies a real glTF using KHR_draco_mesh_compression and an external .bin buffer."
+    },
+    verify: (dir) => {
+      const asset = validateAssets({ projectDir: dir }).manifest.assets.find((entry) => entry.id === "khronosDracoBox");
+      if (!asset || asset.format !== "gltf") return "Khronos Draco glTF manifest entry missing";
+      if (!statSync(resolve(dir, "public/aura-assets/Box.bin")).isFile()) return "Khronos Draco external bin was not copied";
+      return undefined;
+    }
   },
   {
     id: "real-khronos-duck-glb",
@@ -404,6 +493,15 @@ function copyFixture(projectDir: string, source: string, target: string): void {
   writeAsset(projectDir, target, readFileSync(source));
 }
 
+function downloadAsset(projectDir: string, path: string, url: string, expectedMd5?: string): void {
+  const contents = execFileSync("curl", ["-L", "--fail", "--silent", "--show-error", "--max-time", "60", url], { maxBuffer: 50 * 1024 * 1024 });
+  if (expectedMd5) {
+    const actualMd5 = createHash("md5").update(contents).digest("hex");
+    if (actualMd5 !== expectedMd5) throw new Error(`Downloaded asset checksum mismatch for ${url}: expected ${expectedMd5}, got ${actualMd5}`);
+  }
+  writeAsset(projectDir, path, contents);
+}
+
 function createGltfJson(name: string, bin: string, images: readonly string[] = []): Record<string, unknown> {
   return {
     asset: { version: "2.0", generator: "Aura3D asset corpus" },
@@ -461,9 +559,9 @@ function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: re
     "",
     "## Remaining External Corpus Work",
     "",
-    "- The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, product-form, material-extension, Blender-export, animation, textured-PBR, and KTX2 local fixtures.",
-    "- Still add separately licensed wild assets from Sketchfab CC0, Poly Haven, and Meshy exports before stable release confidence.",
-    "- Run the same add/validate/typegen/render flow against that external wild corpus before claiming broad asset compatibility.",
+    "- The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 model, and a downloaded Khronos Draco-compressed glTF.",
+    "- Sketchfab CC0 direct model downloads require authenticated API access, and Meshy exports require a generated/exported user asset or API credential.",
+    "- Run the same add/validate/typegen/render flow against Sketchfab CC0 and Meshy exports when credentials or licensed files are available before claiming broad asset compatibility.",
     ""
   ];
   mkdirSync("docs/project", { recursive: true });

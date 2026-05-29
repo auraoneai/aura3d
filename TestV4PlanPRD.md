@@ -363,8 +363,9 @@ These remain external or manual evidence items and must not be represented as
 completed user proof:
 
 - Claude Code, Cursor, and Copilot context-only agent runs.
-- Separately licensed wild-asset corpus from outside sources, especially
-  Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants.
+- Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
+  and real Draco-compressed variants are now covered locally; authenticated
+  Sketchfab CC0 downloads and Meshy exports remain.
 - Static deployment to real Vercel, Cloudflare Pages, and Netlify projects.
 - Marketing comprehension interviews with people who do not know the codebase.
 - Outside beta dogfood and issue intake from real users.
@@ -759,7 +760,7 @@ rendered output.
 
 - [ ] Valid small GLB.
 - [ ] Large GLB over budget.
-- [ ] Draco-compressed GLB.
+- [x] Draco-compressed glTF.
 - [ ] KTX2 texture GLB.
 - [ ] GLTF with external `.bin`.
 - [ ] GLTF with missing `.bin`.
@@ -773,7 +774,7 @@ rendered output.
 - [ ] Blender export.
 - [ ] Meshy generation.
 - [ ] Sketchfab CC0 asset.
-- [ ] Poly Haven asset.
+- [x] Poly Haven asset.
 
 ### Commands Per Asset
 

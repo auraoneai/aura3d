@@ -319,7 +319,7 @@ const knownGaps: KnownGapEvidence[] = [
   {
     gap: "Licensed wild-asset corpus is not broad enough.",
     owner: "Assets QA",
-    nextAction: "The asset corpus now covers generated/adversarial assets plus selected pinned Khronos, product-form, material-extension, Blender-export, animation, textured-PBR, and KTX2 local fixtures. Add separately licensed Sketchfab CC0, Poly Haven, Meshy, and real Draco-compressed variants with source/license notes, then run add/validate/typegen/render.",
+    nextAction: "The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render.",
     targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"]
   },
   {
