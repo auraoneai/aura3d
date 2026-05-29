@@ -92,6 +92,7 @@ const routeReport = readOptionalJson<{
   promptPlanReport?: {
     recipe?: string;
     visualSystems?: readonly string[];
+    repairHints?: readonly string[];
     acceptanceCriteria?: readonly string[];
     negativeCriteria?: readonly string[];
   };
@@ -307,6 +308,7 @@ test("generated Aura3D app reaches ready state", async ({ page }) => {
   const promptPlanReport = await page.evaluate(() => window.auraPromptPlanReport);
   expect(diagnostics?.backend).toBe("webgl2");
   expect(promptPlanReport?.recipe).toBe("cinematic-scene");
+  expect(promptPlanReport?.repairHints?.length ?? 0).toBeGreaterThan(0);
   expect(drawCalls).toBeGreaterThan(0);
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/route-health.json"), JSON.stringify({ ready: true, backend: diagnostics?.backend, drawCalls, promptPlanReport }, null, 2));

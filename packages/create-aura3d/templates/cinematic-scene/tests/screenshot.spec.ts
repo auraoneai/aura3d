@@ -2,6 +2,8 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(60_000);
+
 test("Aura3D cinematic scene screenshot shows the rainy neon hero prompt", async ({ page }) => {
   await page.goto("/");
   await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");

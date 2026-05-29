@@ -54,7 +54,9 @@ const plan = definePromptPlan({
   acceptanceCriteria: ["product centered", "studio lighting visible"]
 } as const);
 
+const compiled = compilePromptPlan(plan);
 createAuraApp("#app", { scene: promptPlanToScene(plan) });
+console.log(compiled.report.visualSystems, compiled.report.repairHints);
 ```
 
 Lower-level scene helpers remain available:
@@ -88,6 +90,8 @@ Visual acceptance:
 - Use prompt plans and recipe scenes before custom primitive placement.
 - A nonblank screenshot is not enough. The image must visibly match the prompt.
 - Reject one-asset-plus-symbolic-effect output as product-quality proof.
+- If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
+  before changing the scene or review label.
 
 Verification:
 ```bash

@@ -170,6 +170,7 @@ const plan = definePromptPlan({
 
 promptPlanToScene(plan).toJSON();
 compilePromptPlan(plan).report.visualSystems;
+compilePromptPlan(plan).report.repairHints;
 
 console.log(typeof createAuraApp, typeof AuraCanvas, typeof Scene, typeof Model, typeof Camera, typeof Lights, typeof Effect, typeof productViewerScene);
 `);

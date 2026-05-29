@@ -70,7 +70,7 @@ const codexScreenshotProfile = readJson<{ profile?: Record<string, number> }>("t
 const codexAgentReport = readJson<{
   readonly pass?: boolean;
   readonly promptPlan?: { readonly selectedRecipe?: string; readonly assetRefs?: readonly string[] };
-  readonly compiledPromptPlanReport?: { readonly recipe?: string; readonly visualSystems?: readonly string[] };
+  readonly compiledPromptPlanReport?: { readonly recipe?: string; readonly visualSystems?: readonly string[]; readonly repairHints?: readonly string[] };
   readonly checks?: readonly { readonly id?: string; readonly pass?: boolean }[];
 }>("tests/reports/agent-context/codex-self-test.json");
 const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
@@ -191,9 +191,10 @@ const checks: ReleaseCheck[] = [
       (codexAgentReport.promptPlan?.assetRefs ?? []).includes("assets.agentProduct") &&
       codexAgentReport.compiledPromptPlanReport?.recipe === "cinematic-scene" &&
       (codexAgentReport.compiledPromptPlanReport?.visualSystems ?? []).length > 0 &&
+      (codexAgentReport.compiledPromptPlanReport?.repairHints ?? []).length > 0 &&
       (codexAgentReport.checks ?? []).some((check) => check.id === "codex-generated-app-uses-prompt-plan" && check.pass === true),
     detail: codexAgentReport.pass === true
-      ? `recipe=${codexAgentReport.compiledPromptPlanReport?.recipe ?? "missing"}, visualSystems=${codexAgentReport.compiledPromptPlanReport?.visualSystems?.length ?? 0}`
+      ? `recipe=${codexAgentReport.compiledPromptPlanReport?.recipe ?? "missing"}, visualSystems=${codexAgentReport.compiledPromptPlanReport?.visualSystems?.length ?? 0}, repairHints=${codexAgentReport.compiledPromptPlanReport?.repairHints?.length ?? 0}`
       : "missing or failing tests/reports/agent-context/codex-self-test.json prompt-plan evidence"
   },
   {
@@ -341,6 +342,8 @@ const knownGaps: KnownGapEvidence[] = [
 ];
 
 const completeClaims = claims.filter((entry) => entry.status !== "known-gap").length;
+const trackedClaimGaps = claims.filter((entry) => entry.status === "known-gap" && entry.nextAction && entry.evidence.length > 0).length;
+const claimGaps = claims.filter((entry) => entry.status === "known-gap").length;
 const trackedKnownGaps = knownGaps.filter((entry) => entry.owner && entry.nextAction && entry.targetEvidence.length > 0).length;
 checks.push({
   id: "known-gaps-have-owners-next-actions-and-target-evidence",
@@ -349,8 +352,8 @@ checks.push({
 });
 checks.push({
   id: "claim-evidence-matrix-complete",
-  pass: claims.every((entry) => entry.status !== "known-gap") && trackedKnownGaps === knownGaps.length,
-  detail: `${completeClaims}/${claims.length} completed claims have pass evidence; ${trackedKnownGaps}/${knownGaps.length} known gaps are tracked`
+  pass: trackedClaimGaps === claimGaps && trackedKnownGaps === knownGaps.length,
+  detail: `${completeClaims}/${claims.length} claims have pass evidence; ${trackedClaimGaps}/${claimGaps} claim gaps and ${trackedKnownGaps}/${knownGaps.length} known gaps are tracked`
 });
 
 writeEvidenceMarkdown(claims, knownGaps, checks);

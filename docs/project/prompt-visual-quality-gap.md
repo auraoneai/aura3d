@@ -69,7 +69,7 @@ all of these checks:
 - [x] Add scene recipe selection from prompt intent.
 - [x] Add agent-facing examples that show how to move from prompt to recipe
   calls rather than placing random primitives.
-- [ ] Add repair instructions for low-quality outputs: bad framing, flat
+- [x] Add repair instructions for low-quality outputs: bad framing, flat
   lighting, missing environment, symbolic effects, tiny subject, or low contrast.
 - [x] Record prompt, selected recipe, asset IDs, and visual criteria in each
   generated report.

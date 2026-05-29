@@ -1,6 +1,6 @@
 # Product Context Evidence
 
-Generated: 2026-05-28T23:30:52.479Z
+Generated: 2026-05-29T01:10:51.812Z
 
 ## Summary
 
@@ -71,8 +71,8 @@ Generated: 2026-05-28T23:30:52.479Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":3891,"rainPixels":1249,"centerObjectPixels":8927,"uniqueBuckets":153} |
-| `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7 |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":3139,"rainPixels":1102,"centerObjectPixels":7688,"uniqueBuckets":147} |
+| `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
 | `starter-template-visual-review-present` | pass | starter-template visual review documents current screenshots and product-quality boundary |
 | `starter-example-visual-review-present` | pass | starter-example visual review documents active example screenshots and product-quality boundary |
@@ -80,5 +80,5 @@ Generated: 2026-05-28T23:30:52.479Z
 | `prompt-fidelity-quality-report-present` | pass | productQualityReady=false, releaseFacingPasses=0 |
 | `prompt-plan-api-and-starters-present` | pass | prompt-plan API exports and active packaged starters are present |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 6/6 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 29/29 completed claims have pass evidence; 6/6 known gaps are tracked |
+| `claim-evidence-matrix-complete` | pass | 29/29 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
 

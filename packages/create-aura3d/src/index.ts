@@ -30,7 +30,7 @@ export function createA3DProject(options: CreateA3DProjectOptions): CreateA3DPro
   mkdirSync(targetDir, { recursive: true });
   cpSync(templateDir, targetDir, {
     recursive: true,
-    filter: (source) => !relative(templateDir, source).split(/[\\/]/).some((part) => part === "node_modules" || part === "dist")
+    filter: (source) => !relative(templateDir, source).split(/[\\/]/).some((part) => part === "node_modules" || part === "dist" || part === "test-results")
   });
   const packagePath = resolve(targetDir, "package.json");
   const packageJson = JSON.parse(readFileSync(packagePath, "utf8")) as {

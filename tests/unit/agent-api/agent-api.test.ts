@@ -84,6 +84,8 @@ describe("agent API", () => {
       lightingPreset: "neon-practicals"
     });
     expect(compiled.report.visualSystems).toContain("cinematic-scene recipe");
+    expect(compiled.report.repairHints.length).toBeGreaterThan(3);
+    expect(compiled.report.repairHints.join(" ")).toContain("cinematic");
     expect(snapshot.camera.mode).toBe("dolly");
     expect(snapshot.nodes.some((node) => node.kind === "model" && node.asset.id === "robot")).toBe(true);
     expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")).toBe(true);

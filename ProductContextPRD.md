@@ -49,17 +49,37 @@ There are therefore two separate problems to fix:
   prompt-fidelity report catches that failure mode, but the positive
   product-quality screenshots still do not pass.
 
+### Current Technical Gate State
+
+The product is not release-ready as a prompt-to-visual product.
+
+The latest clean-install blocker was reproduced and fixed in the test harness
+and package contents:
+
+- Generated templates no longer ship stale Playwright `test-results`.
+- The clean-install preview command now forwards Playwright flags correctly
+  through `npm exec --`.
+- Clean-install template checks now use isolated ports instead of depending on
+  default template ports.
+- `pnpm run check:clean-install` now passes 33/33 checks.
+
+That resolves the technical clean-install blocker. It does **not** resolve the
+product-quality gap: prompt-to-visual output still needs to be judged by
+whether the screenshots look like the requested scene, not only by route health
+or pixel-profile counters.
+
 So the honest current product state is:
 
 - **Proven:** agent-readable API surface, typed assets, clean starter
-  scaffolding, GLB render path, diagnostics, screenshots, route health, package
-  audits, and local dogfood.
-- **Partially proven:** starter scenes can display real assets with basic
-  visual cues; the starter templates now use `definePromptPlan` and
-  `promptPlanToScene`.
+  scaffolding path, GLB render path, diagnostics, screenshots, package audits,
+  and local dogfood for the pieces that passed their focused checks.
+- **Partially proven:** `product-viewer`, `cinematic-scene`, and `mini-game`
+  currently pass clean-install render checks with real assets and
+  scene-specific visual cues; the starter templates now use `definePromptPlan`
+  and `promptPlanToScene`.
 - **Not proven:** polished prompt-to-visual output, broad asset visual fidelity,
-  cinematic composition quality, recipe-driven agent dogfood, or
-  user-desirable generated demos.
+  cinematic composition quality, recipe-driven agent dogfood across multiple
+  agents, or user-desirable generated demos.
 
 ## Product-Quality Definition
 
@@ -94,7 +114,8 @@ For Aura3D, that means:
 - `product-viewer` renders a real glTF speaker product on a studio setup, not
   a placeholder polygon.
 - `cinematic-scene` renders a real GLB hero asset with rain, colored practicals,
-  a wet floor, and WebGL2 diagnostics.
+  a wet floor, WebGL2 diagnostics, and clean-install screenshot-profile
+  evidence. Treat this as render-plumbing proof, not product-quality proof.
 - `mini-game` renders a distinct WebGL2 arena scene with a typed GLB player,
   motion trail, hazards, coins, and a goal portal.
 - `docs/project/starter-template-visual-review.md` records the current human
@@ -123,12 +144,14 @@ For Aura3D, that means:
   `tests/reports/prompt-fidelity-quality.json`, a release screenshot contact
   sheet, and `docs/project/prompt-fidelity-quality-results.md`. It classifies
   current screenshots as technical/partial evidence and rejects
-  object-plus-symbolic-effect negative fixtures.
+  object-plus-symbolic-effect negative fixtures. The report also stores repair
+  guidance for low-quality screenshots.
 - The public agent API now includes `definePromptPlan`, `compilePromptPlan`,
   `promptPlanToScene`, and `promptRecipes` so agents can select an approved
-  scene recipe before rendering. The three starter templates use that prompt
-  plan flow. This is prompt-plumbing progress, not proof of product-quality
-  visuals.
+  scene recipe before rendering. `compilePromptPlan` reports visual systems,
+  negative criteria, and repair hints. The three starter templates use that
+  prompt plan flow. This is prompt-plumbing progress, not proof of
+  product-quality visuals.
 - The reset evidence now distinguishes prompt-plumbing success from
   product-quality visual success. A screenshot can pass WebGL2, route-health,
   and pixel-profile checks while still failing the product promise.
@@ -143,6 +166,10 @@ For Aura3D, that means:
   GLB loading and basic scene cues, but several still read as one imported
   object plus symbolic effects. Do not present them as proof that a natural
   language prompt produces a polished visual result.
+- The previous cinematic clean-install blocker has been fixed, but it was a
+  harness/package-content issue rather than product-quality proof. The current
+  clean-install pass still must not be marketed as proof of polished
+  prompt-to-visual generation.
 - The browser renderer now proves real glTF/GLB geometry, glTF node transforms,
   richer scene composition, and lazy Three.js-backed material loading, but it is
   still a compact Aura3D render path, not a full physically based Three.js
@@ -174,6 +201,9 @@ For Aura3D, that means:
   interaction, and screenshot acceptance criteria.
 - [x] Add a prompt-plan compiler that maps the schema to approved Aura3D scene
   recipes instead of letting agents improvise unrelated primitives.
+- [x] Restore `cinematic-scene` clean-install readiness: dev route health,
+  static preview route health, screenshot bytes, and cinematic visual profile
+  must pass from the packed `create-aura3d` and `@aura3d/engine` tarballs.
 - [ ] Build product-quality scene recipes for the three public starter promises:
   product viewer, cinematic scene, and mini-game.
 - [ ] Replace or withhold release-facing screenshots that remain
@@ -191,6 +221,10 @@ For Aura3D, that means:
 
 ### Visual Runtime And Scene Quality
 
+- [ ] Decide the renderer strategy for product-quality visuals: either extend
+  the compact Aura3D renderer enough for polished demos, expose a first-class
+  Three.js-backed recipe layer, or clearly scope Aura3D as typed scene
+  orchestration over external renderers.
 - [ ] Add art-directed scene recipes for product hero, cinematic rain scene,
   material studio, and game arena outputs.
 - [ ] Add camera rig presets for product orbit, dolly push-in, turntable,
@@ -227,7 +261,7 @@ For Aura3D, that means:
 - [ ] Make the recipe compiler reject or warn on vague plans that cannot produce
   visible prompt fidelity, such as "make it cinematic" without subject,
   environment, lighting, camera, and acceptance criteria.
-- [ ] Add repair guidance when output is generic, badly framed, too dark,
+- [x] Add repair guidance when output is generic, badly framed, too dark,
   missing the subject, or just an object plus decorative cues.
 - [ ] Add support for prompt-specific expected artifacts, such as HUD for a
   game prompt, wet reflections for a rain prompt, and inspection controls for a

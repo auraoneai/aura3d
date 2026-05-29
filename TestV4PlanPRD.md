@@ -63,6 +63,32 @@ The reset decision is:
   It is done only when the screenshot visibly satisfies the prompt and is
   marked `product-quality-pass`.
 
+## Current Technical Gate Finding
+
+The latest `check:clean-install` blocker was reproduced and fixed.
+
+What failed before the fix:
+
+- `cinematic-scene-dev-route-health`: the clean-installed generated app never
+  reached `data-aura3d-ready="true"`.
+- `cinematic-scene-preview-route-health`: the static preview also never reached
+  route-ready state.
+- `cinematic-scene-dev-screenshot-profile-visual-cues`: screenshot bytes were
+  zero and the cinematic profile was empty.
+
+What changed:
+
+- Generated templates no longer ship stale Playwright `test-results`.
+- `tools/package-clean-install` patches generated Playwright configs to use
+  isolated dev ports and `reuseExistingServer: false`.
+- The static preview check now calls `npm exec -- playwright ...` so Playwright
+  receives `--config` and `--reporter`.
+- `pnpm run check:clean-install` now passes 33/33 checks.
+
+This is separate from the broader visual-quality gap. The clean-install pass
+proves the starter can build, run, preview, and capture scene-specific pixels.
+It does not prove the screenshot is product-quality prompt-to-visual output.
+
 ## Still-To-Build Checklist
 
 ### P0 Prompt-To-Visual Reset
@@ -76,6 +102,9 @@ The reset decision is:
   and material studio outputs.
 - [x] Update agent context files so agents generate a prompt plan first, then
   compile through recipes, then run screenshot review.
+- [x] Fix the clean-install cinematic starter failure from packed artifacts:
+  route-ready state, preview route-ready state, nonzero screenshot, and
+  scene-specific cinematic visual profile.
 - [ ] Add fixture prompts for at least three release-facing demos and require
   them to reach `product-quality-pass`.
 - [x] Add failing fixtures for the current bad pattern: one imported asset on a
@@ -91,6 +120,10 @@ The reset decision is:
 
 ### Runtime And Template Visual Quality
 
+- [ ] Choose and document the visual-runtime strategy: compact renderer only,
+  Three.js-backed recipe layer, or hybrid orchestration. The decision must
+  explain how product-quality lighting, materials, camera movement,
+  environment depth, and effects are implemented instead of implied.
 - [ ] Product hero scene recipe with auto-framed asset, plinth, backdrop,
   reflection cards, studio softboxes, contact shadow, and orbit controls.
 - [ ] Cinematic scene recipe with environment depth, wet surface, believable
@@ -119,7 +152,7 @@ The reset decision is:
 - [x] Add recipe selection so agents choose product hero, cinematic, game arena,
   or material studio structures instead of improvising random primitives.
 - [x] Add agent docs with prompt-to-recipe examples and anti-patterns.
-- [ ] Add repair guidance for low-quality visuals: tiny subject, bad framing,
+- [x] Add repair guidance for low-quality visuals: tiny subject, bad framing,
   flat lighting, missing environment, symbolic effects, low contrast, or no
   visible interaction state.
 - [x] Include source prompt, selected recipe, asset refs, expected visual
@@ -142,6 +175,10 @@ The reset decision is:
 - [ ] Fail the gate if a release-facing screenshot lacks prompt, plan, source
   code path, asset refs, route-health report, screenshot path, review label,
   failure reason, and next action.
+- [ ] Fail release promotion if any starter is route-ready but still has a
+  human review label below `product-quality-pass`.
+- [ ] Fail release promotion if any starter is not route-ready from a clean
+  install, regardless of visual review status.
 
 ## Source Claims Under Test
 
@@ -252,8 +289,9 @@ Current local automated evidence:
 - `docs/project/prompt-fidelity-quality-results.md` and
   `tests/reports/prompt-fidelity-quality.json` now record prompt-fidelity
   classifications, a contact sheet path, human review labels, and negative
-  fixtures that reject object-plus-symbolic-effect output. The report still
-  says product-quality readiness is false.
+  fixtures that reject object-plus-symbolic-effect output. The report includes
+  repair guidance for each low-quality visual. It still says product-quality
+  readiness is false.
 - The starter templates and Codex self-test now generate scenes from
   `definePromptPlan` and `promptPlanToScene`. The Codex self-test also records
   the compiled prompt-plan report from the running app. Visual review still

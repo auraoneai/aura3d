@@ -511,6 +511,7 @@ export interface AuraPromptPlanReport {
   readonly acceptanceCriteria: readonly string[];
   readonly negativeCriteria: readonly string[];
   readonly visualSystems: readonly string[];
+  readonly repairHints: readonly string[];
 }
 
 export interface AuraCompiledPromptPlan {
@@ -539,7 +540,8 @@ export function compilePromptPlan(plan: AuraPromptPlan): AuraCompiledPromptPlan 
         "Do not ship a lone GLB on a grid as product-quality prompt proof.",
         "Do not rely on labels or diagnostics to explain missing visual intent."
       ],
-      visualSystems: visualSystemsForPromptPlan(plan)
+      visualSystems: visualSystemsForPromptPlan(plan),
+      repairHints: repairHintsForPromptPlan(plan)
     }
   };
 }
@@ -676,6 +678,41 @@ function visualSystemsForPromptPlan(plan: AuraPromptPlan): readonly string[] {
     systems.push(`${effect} effect`);
   }
   return systems;
+}
+
+function repairHintsForPromptPlan(plan: AuraPromptPlan): readonly string[] {
+  const shared = [
+    "If the screenshot reads as one asset plus decoration, add foreground, midground, and background structure before promoting it.",
+    "If the subject is small or off-center, use a tighter camera preset, move the subject into the focal area, and recapture the screenshot.",
+    "If lighting is flat, add a key, fill, and rim light with visibly different color or intensity.",
+    "If the prompt effect is only symbolic, replace it with layered scene geometry, reflections, fog, glow, or state feedback that is visible in the screenshot."
+  ];
+  if (plan.sceneType === "product-viewer") {
+    return [
+      ...shared,
+      "For product viewers, add plinth/table contact, reflection cards, a clean backdrop, and inspection/orbit controls.",
+      "Do not mark product quality until the asset reads as a deliberate product hero without diagnostics text."
+    ];
+  }
+  if (plan.sceneType === "cinematic-scene") {
+    return [
+      ...shared,
+      "For cinematic scenes, add depth layers, practical light sources, wet floor response, fog/haze separation, and a composed dolly camera.",
+      "Do not mark product quality if rain is only a few lines over a centered model."
+    ];
+  }
+  if (plan.sceneType === "mini-game") {
+    return [
+      ...shared,
+      "For mini-games, add visible player state, HUD-like score/health cues, hazards, collectibles, a goal, and interaction feedback.",
+      "Do not mark product quality if the scene is just a character plus random primitive obstacles."
+    ];
+  }
+  return [
+    ...shared,
+    "For material studios, add controlled swatches, labels or layout cues, reflection environment, texture previews, and consistent inspection lighting.",
+    "Do not mark product quality until material differences are visible without reading code."
+  ];
 }
 
 export type AuraBackend = "webgl2" | "webgpu" | "canvas2d" | "headless";

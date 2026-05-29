@@ -21,6 +21,7 @@ interface PromptArtifact {
   readonly productQualityPass: boolean;
   readonly objectPlusSymbolicEffectRisk: boolean;
   readonly limitations: readonly string[];
+  readonly repairGuidance: readonly string[];
   readonly nextAction: string;
 }
 
@@ -57,6 +58,11 @@ const artifacts: PromptArtifact[] = [
       "Starter shows a valid GLB product and studio cues, but not a polished product hero.",
       "Composition is useful as scaffold proof, not marketing-grade prompt output."
     ],
+    repairGuidance: [
+      "Tighten the camera around the product so it fills the hero area without diagnostics carrying the story.",
+      "Add visible contact shadow, reflection cards, and material highlights that make the product feel staged rather than placed.",
+      "Add inspection affordances or a visible orbit state before using this as a product-viewer proof."
+    ],
     nextAction: "Replace starter composition with product-hero recipe using auto-framing, real reflection cards, contact shadows, and stronger material presentation."
   },
   {
@@ -76,6 +82,11 @@ const artifacts: PromptArtifact[] = [
     limitations: [
       "The scene has rain and lighting cues, but rain can still read as lines.",
       "The composition still depends on one imported asset plus symbolic effects."
+    ],
+    repairGuidance: [
+      "Layer rain into foreground, subject, and background depth rather than only overlaying long streaks.",
+      "Increase wet-surface response with reflected practical lights and visible floor bounce around the hero asset.",
+      "Add stronger alley depth and camera blocking so the screenshot reads as a composed cinematic shot."
     ],
     nextAction: "Build a cinematic recipe with volumetric rain layers, fog, spatial depth, believable reflections, and art-directed camera blocking."
   },
@@ -97,6 +108,11 @@ const artifacts: PromptArtifact[] = [
       "The arena is distinct and functional, but still reads as simple props around a robot.",
       "HUD, state, animation feedback, and play affordances are not strong enough for product-quality proof."
     ],
+    repairGuidance: [
+      "Add HUD-like score, health, timer, or objective state that is visible in the screenshot.",
+      "Make player pathing, hazards, collectibles, and goal affordances readable without reading object names.",
+      "Add animated feedback markers for collection, damage, boost, or goal progress before product-quality review."
+    ],
     nextAction: "Build a game-arena recipe with HUD, clear state, animated feedback, readable pathing, and interaction proof."
   },
   {
@@ -113,6 +129,10 @@ const artifacts: PromptArtifact[] = [
     productQualityPass: false,
     objectPlusSymbolicEffectRisk: true,
     limitations: ["API smoke example, not a release-facing visual demo."],
+    repairGuidance: [
+      "Keep this route as API evidence or rebuild it as a product-hero recipe with typed asset trace.",
+      "Do not promote it as prompt fidelity until it has prompt, plan, route-health, and product-quality review evidence."
+    ],
     nextAction: "Keep as API evidence or replace with an art-directed typed-asset example."
   },
   {
@@ -129,6 +149,10 @@ const artifacts: PromptArtifact[] = [
     productQualityPass: false,
     objectPlusSymbolicEffectRisk: false,
     limitations: ["Useful material cue proof, but not a prompt-generated polished scene."],
+    repairGuidance: [
+      "Convert the route to a material-studio prompt plan with asset refs, swatches, and expected visual criteria.",
+      "Add stronger environment reflections and texture previews before treating it as product-quality proof."
+    ],
     nextAction: "Move toward a material-studio recipe with environment reflections, labels, and texture previews."
   },
   {
@@ -145,6 +169,10 @@ const artifacts: PromptArtifact[] = [
     productQualityPass: false,
     objectPlusSymbolicEffectRisk: true,
     limitations: ["Compact route proof, not a cinematic camera-path demo."],
+    repairGuidance: [
+      "Replace marker-only proof with a visible camera rig, path staging, keyframes, and before/after framing evidence.",
+      "Add prompt-plan trace and visual review before using this as a camera-path product demo."
+    ],
     nextAction: "Use camera rig presets with visible path staging, keyframes, and before/after framing evidence."
   },
   {
@@ -166,7 +194,11 @@ const artifacts: PromptArtifact[] = [
       "The app compiles, runs, and uses typed assets.",
       "Visual output still reads as object plus symbolic effects, so it is not product-quality prompt evidence."
     ],
-    nextAction: "Rerun after visual recipes and prompt-fidelity repair guidance exist."
+    repairGuidance: [
+      "Use the compiled prompt-plan repair hints to add scene depth, stronger wet reflection response, and believable rain layers.",
+      "Keep the label `partial` until a human review can identify the requested rainy product reveal from the screenshot alone."
+    ],
+    nextAction: "Apply compiled repair hints, upgrade cinematic recipe depth/effects, then rerun human product-quality review."
   }
 ];
 
@@ -196,6 +228,7 @@ const missingReports = artifacts.filter((artifact) => !existsSync(resolve(artifa
 const missingRouteHealthReports = artifacts.filter((artifact) => artifact.routeHealth && !existsSync(resolve(artifact.routeHealth)));
 const overclaimedArtifacts = artifacts.filter((artifact) => artifact.productQualityPass && artifact.reviewLabel !== "product-quality-pass");
 const labelGaps = artifacts.filter((artifact) => !artifact.reviewLabel || artifact.expectedCriteria.length === 0 || artifact.limitations.length === 0);
+const repairGuidanceGaps = artifacts.filter((artifact) => artifact.repairGuidance.length === 0);
 const traceGaps = artifacts.filter((artifact) => !hasCompleteTrace(artifact));
 const releaseFacingTraceGaps = releaseFacingArtifacts.filter((artifact) => !hasCompleteReleaseFacingTrace(artifact));
 const starterTemplatePromptPlanGaps = artifacts
@@ -207,6 +240,7 @@ const agentContextPromptPlanGaps = artifacts
 const routeBackendGaps = artifacts
   .filter((artifact) => artifact.routeHealth)
   .filter((artifact) => routeBackend(artifact.routeHealth as string) !== "webgl2");
+const codexCompiledRepairHints = readCompiledRepairHints("tests/reports/agent-context/codex-self-test.json");
 const rejectedNegativeFixtures = negativeFixtures.filter((fixture) => fixture.rejected).length;
 const contactSheet = writeContactSheet(artifacts.map((artifact) => artifact.screenshot).filter((path) => existsSync(resolve(path))));
 
@@ -248,6 +282,20 @@ const checks: ReleaseCheck[] = [
     id: "prompt-fidelity-review-labels-complete",
     pass: labelGaps.length === 0,
     detail: labelGaps.length === 0 ? `${artifacts.length} artifacts have prompt, criteria, review label, limitations, and next action` : `label gaps: ${labelGaps.map((artifact) => artifact.id).join(", ")}`
+  },
+  {
+    id: "prompt-fidelity-repair-guidance-complete",
+    pass: repairGuidanceGaps.length === 0,
+    detail: repairGuidanceGaps.length === 0
+      ? `${artifacts.length} artifacts include low-quality visual repair guidance`
+      : `repair guidance gaps: ${repairGuidanceGaps.map((artifact) => artifact.id).join(", ")}`
+  },
+  {
+    id: "agent-context-compiled-repair-hints-present",
+    pass: codexCompiledRepairHints.length > 0,
+    detail: codexCompiledRepairHints.length > 0
+      ? `${codexCompiledRepairHints.length} compiled prompt-plan repair hints recorded for Codex self-test`
+      : "Codex self-test report is missing compiled prompt-plan repair hints"
   },
   {
     id: "prompt-fidelity-trace-fields-complete",
@@ -328,6 +376,7 @@ function hasCompleteTrace(artifact: PromptArtifact): boolean {
     artifact.expectedCriteria.length > 0 &&
     artifact.reviewLabel &&
     artifact.limitations.length > 0 &&
+    artifact.repairGuidance.length > 0 &&
     artifact.nextAction
   );
 }
@@ -345,6 +394,18 @@ function routeBackend(routeHealthPath: string): string | undefined {
     return JSON.parse(readFileSync(resolve(routeHealthPath), "utf8")).backend;
   } catch {
     return undefined;
+  }
+}
+
+function readCompiledRepairHints(path: string): readonly string[] {
+  if (!existsSync(resolve(path))) return [];
+  try {
+    const report = JSON.parse(readFileSync(resolve(path), "utf8")) as {
+      readonly compiledPromptPlanReport?: { readonly repairHints?: readonly string[] };
+    };
+    return report.compiledPromptPlanReport?.repairHints ?? [];
+  } catch {
+    return [];
   }
 }
 
@@ -402,6 +463,12 @@ function writeMarkdown(): void {
     "| Artifact | Family | Recipe | Asset Refs | Backend | Prompt Plan | Review Label | Product-Quality Pass | Main Limitation | Next Action |",
     "|---|---|---|---|---:|---:|---:|---:|---|---|",
     ...artifacts.map((artifact) => `| \`${artifact.id}\` | \`${artifact.family}\` | \`${artifact.selectedRecipe}\` | ${artifact.assetRefs.map((ref) => `\`${ref}\``).join(", ") || "`none`"} | \`${artifact.routeHealth ? routeBackend(artifact.routeHealth) ?? "missing" : "n/a"}\` | ${artifact.sourceFile && sourceUsesPromptPlan(artifact.sourceFile) ? "yes" : "no"} | \`${artifact.reviewLabel}\` | ${artifact.productQualityPass ? "yes" : "no"} | ${escapeTable(artifact.limitations[0] ?? "")} | ${escapeTable(artifact.nextAction)} |`),
+    "",
+    "## Repair Guidance",
+    "",
+    "| Artifact | Repair Hints |",
+    "|---|---|",
+    ...artifacts.map((artifact) => `| \`${artifact.id}\` | ${escapeTable(artifact.repairGuidance.join(" "))} |`),
     "",
     "## Negative Fixtures",
     "",

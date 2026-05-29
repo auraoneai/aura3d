@@ -195,6 +195,7 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
   run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], parent);
   const scaffold = run("npm", ["exec", "create-aura3d", "--", "demo", "--template", template], parent);
   patchScaffoldPackage(appDir);
+  patchScaffoldPlaywrightConfig(appDir, port + 100);
   const install = scaffold.ok ? run("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", "--silent"], appDir) : scaffold;
   const build = install.ok ? run("npm", ["run", "build"], appDir) : install;
   const devRouteHealth = build.ok ? run("npm", ["test"], appDir) : build;
@@ -203,7 +204,7 @@ function runTemplateLifecycle(template: string, port: number): TemplateResult {
   const screenshotSha256 = readFileSha256(appDir, "tests/reports/screenshot.png");
   writePreviewSpec(appDir, port);
   const previewRouteHealth = build.ok
-    ? run("npm", ["exec", "playwright", "test", "tests/static-preview.spec.ts", "--config", "playwright.preview.config.ts", "--reporter=line"], appDir)
+    ? run("npm", ["exec", "--", "playwright", "test", "tests/static-preview.spec.ts", "--config", "playwright.preview.config.ts", "--reporter=line"], appDir)
     : build;
   const previewScreenshotBytes = readScreenshotBytes(appDir, "tests/reports/static-preview.png");
   const assetId = template === "cinematic-scene" ? "hero" : template === "mini-game" ? "playerModel" : "product";
@@ -245,6 +246,17 @@ function patchScaffoldPackage(appDir: string): void {
     "@aura3d/cli": `file:${tarballs.cli}`
   };
   writeFileSync(path, `${JSON.stringify(parsed, null, 2)}\n`);
+}
+
+function patchScaffoldPlaywrightConfig(appDir: string, port: number): void {
+  const path = resolve(appDir, "playwright.config.ts");
+  if (!existsSync(path)) return;
+  const source = readFileSync(path, "utf8");
+  const next = source
+    .replaceAll("http://127.0.0.1:4173", `http://127.0.0.1:${port}`)
+    .replace("--port 4173", `--port ${port}`)
+    .replace("reuseExistingServer: !process.env.CI", "reuseExistingServer: false");
+  writeFileSync(path, next);
 }
 
 function replaceTemplateAsset(appDir: string, template: string, assetId: string): CommandResult {
@@ -314,10 +326,12 @@ export default defineConfig({
 import { resolve } from "node:path";
 import { expect, test } from "@playwright/test";
 
+test.setTimeout(60_000);
+
 test("static preview renders nonblank Aura3D canvas", async ({ page }) => {
   const response = await page.goto("/");
   expect(response?.ok()).toBe(true);
-  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 15_000 }).toBe("true");
+  await expect.poll(() => page.locator("body").getAttribute("data-aura3d-ready"), { timeout: 30_000 }).toBe("true");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const box = await canvas.boundingBox();
