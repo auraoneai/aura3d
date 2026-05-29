@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-test-plan-execution-status",
-  "generatedAt": "2026-05-29T07:54:44.381Z",
+  "generatedAt": "2026-05-29T08:17:52.030Z",
   "pass": true,
   "checks": [
     {
@@ -106,7 +106,7 @@
         "tests/reports/asset-corpus.json",
         "tests/reports/sketchfab-asset-corpus.json"
       ],
-      "remaining": "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB are proven; Meshy exports remain external corpus work."
+      "remaining": "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB browser render are proven; Meshy exports remain external corpus work."
     },
     {
       "round": "Round 10: Typed Asset Reference IDE Test",

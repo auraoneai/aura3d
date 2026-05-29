@@ -276,8 +276,9 @@ For Aura3D, that means:
   runs remain external dogfood work. Vercel and Cloudflare Pages public smoke
   now render the product-viewer artifact, but Netlify is still missing, so the
   full three-host external deployment proof is incomplete. Authenticated
-  Sketchfab CC0 download/add/validate/typegen proof now passes. The local Codex
-  and Claude Code five-task passes must not be presented as broad market proof.
+  Sketchfab CC0 download/add/validate/typegen/browser-render proof now passes.
+  The local Codex and Claude Code five-task passes must not be presented as
+  broad market proof.
 - `docs/project/external-proof-readiness.md` records current external-service
   probes: Cursor agent is usage-limited, Copilot CLI is not installed,
   Sketchfab CC0 proof now passes with authenticated API access, Meshy API access
@@ -404,9 +405,9 @@ For Aura3D, that means:
   Codex and Claude Code are recorded as passes; the remaining subscribed-agent
   surfaces are not complete.
 - [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0,
-  real Draco-compressed assets, and authenticated Sketchfab CC0 downloads now
-  pass executable corpus checks; Meshy exports remain unavailable from the
-  current free-user account.
+  real Draco-compressed assets, and authenticated Sketchfab CC0 download/import/
+  typegen/browser-render checks now pass; Meshy exports remain unavailable from
+  the current free-user account.
 - [ ] Deploy at least one polished prompt-fidelity demo publicly to Netlify
   without authentication walls. Vercel and Cloudflare Pages public smoke are now
   recorded as rendered WebGL2 canvases for the product-viewer artifact.

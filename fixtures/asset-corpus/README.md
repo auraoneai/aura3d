@@ -47,7 +47,7 @@ textures are not committed:
 |---|---|---|---|
 | Poly Haven Arm Chair 01 1k glTF | Poly Haven API/files | CC0 | real external `.gltf` with `.bin` plus nested JPG texture dependencies |
 | Khronos Box glTF-Draco | Khronos glTF Sample Models | CC-BY-4.0 | real Draco-compressed glTF using `KHR_draco_mesh_compression` and an external `.bin` |
-| Sketchfab Mermaid2 GLB | Sketchfab API authenticated download, model `01371cd3990f4d9587d40244b5e2a0a8` | CC0 Public Domain | authenticated external GLB download, `assets add`, validation, and typegen evidence in `docs/project/sketchfab-asset-corpus-results.md` |
+| Sketchfab Mermaid2 GLB | Sketchfab API authenticated download, model `01371cd3990f4d9587d40244b5e2a0a8` | CC0 Public Domain | authenticated external GLB download, `assets add`, validation, typegen, build, and browser-render evidence in `docs/project/sketchfab-asset-corpus-results.md` |
 
 External wild-asset confidence is still not complete. Authenticated Sketchfab
 CC0 proof now passes, but Meshy coverage still requires a generated/exported

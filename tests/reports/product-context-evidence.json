@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-product-context-evidence",
-  "generatedAt": "2026-05-29T07:54:43.007Z",
+  "generatedAt": "2026-05-29T08:17:49.636Z",
   "pass": true,
   "checks": [
     {
@@ -187,7 +187,7 @@
         "tests/reports/asset-corpus.json",
         "tests/reports/sketchfab-asset-corpus.json"
       ],
-      "nextAction": "Asset corpus includes authenticated Sketchfab CC0 proof; Meshy exports remain external."
+      "nextAction": "Asset corpus includes authenticated Sketchfab CC0 download/import/typegen/browser-render proof; Meshy exports remain external."
     },
     {
       "claim": "Aura3D provides typed asset references.",
@@ -521,7 +521,7 @@
     {
       "gap": "Licensed wild-asset corpus is not broad enough.",
       "owner": "Assets QA",
-      "nextAction": "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB. Add Meshy exports with source/license notes, then run add/validate/typegen/render.",
+      "nextAction": "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB with browser render proof. Add Meshy exports with source/license notes, then run add/validate/typegen/render.",
       "targetEvidence": [
         "fixtures/asset-corpus/README.md",
         "docs/project/asset-corpus-results.md",

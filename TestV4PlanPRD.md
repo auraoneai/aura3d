@@ -392,9 +392,9 @@ Current local automated evidence:
 - `docs/project/external-proof-readiness.md` records current blocker probes for
   remaining external items: Cursor agent exits with a usage-limit error,
   `gh copilot` is not installed, authenticated Sketchfab CC0 corpus proof now
-  passes, Meshy API access is unavailable for the current free-user account,
-  Netlify credentials are absent, npm publish auth returns E401, and the beta
-  GitHub issue template is present.
+  passes through browser render, Meshy API access is unavailable for the
+  current free-user account, Netlify credentials are absent, npm publish auth
+  returns E401, and the beta GitHub issue template is present.
 
 ### Still Not Proven By Local Automation
 
@@ -405,8 +405,8 @@ completed user proof:
   usage is exhausted on this machine and no `gh copilot` command is installed.
 - Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
   and real Draco-compressed variants are now covered locally; authenticated
-  Sketchfab CC0 download/add/validate/typegen now passes; Meshy exports remain
-  unavailable from the current free-user account.
+  Sketchfab CC0 download/add/validate/typegen/browser-render now passes; Meshy
+  exports remain unavailable from the current free-user account.
 - Static deployment to a real Netlify project. Vercel and Cloudflare Pages
   public smoke now pass for the product-viewer artifact, but the full three-host
   Round 13 requirement is still incomplete until Netlify is proven.

@@ -13,7 +13,7 @@ specific and reproducible instead of vague.
 |---|---|---|
 | Cursor agent eval | `cursor agent --trust 'Reply with exactly: cursor-agent-ready'` exits with `You've hit your usage limit`. | blocked by Cursor usage/subscription limit |
 | GitHub Copilot eval | `gh copilot --help` exits with `unknown command "copilot"`. | blocked by missing Copilot CLI/extension path |
-| Sketchfab CC0 corpus | Authenticated Sketchfab API access downloaded a CC0 GLB, then Aura3D `assets add`, `assets validate`, and typegen passed. | pass |
+| Sketchfab CC0 corpus | Authenticated Sketchfab API access downloaded a CC0 GLB, then Aura3D `assets add`, `assets validate`, typegen, build, and browser render passed. | pass |
 | Meshy corpus | Meshy does not provide API access for the current free-user account. | blocked by unavailable Meshy auth/API access |
 | Cloudflare Pages deployment | Authenticated Cloudflare Pages deployment and public browser smoke passed at `https://aura3d-product-context-smoke.pages.dev`. | pass |
 | Netlify deployment | No `NETLIFY_AUTH_TOKEN` or `NETLIFY_SITE_ID` is present. | blocked by missing Netlify credentials/project target |
@@ -67,7 +67,8 @@ Authenticated download and import now pass:
     "sketchfab-download",
     "sketchfab-assets-add",
     "sketchfab-assets-validate",
-    "sketchfab-typegen-created"
+    "sketchfab-typegen-created",
+    "sketchfab-browser-render"
   ]
 }
 ```

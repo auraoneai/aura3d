@@ -1,6 +1,7 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { basename, dirname, relative, resolve } from "node:path";
+import { chromium } from "@playwright/test";
 import { addAsset, validateAssets } from "../../packages/aura3d-cli/src/index";
 import { writeReport, type ReleaseCheck } from "../check-common";
 
@@ -11,6 +12,22 @@ interface SketchfabDownloadInfo {
   readonly assetPath: string;
   readonly format: "glb" | "gltf";
   readonly downloadedBytes: number;
+}
+
+interface RenderSmokeResult {
+  readonly pass: boolean;
+  readonly url: string;
+  readonly ready: boolean;
+  readonly backend: string | null;
+  readonly drawCalls: number | null;
+  readonly screenshotPath: string;
+  readonly screenshotBytes: number;
+  readonly profile: {
+    readonly litPixels: number;
+    readonly uniqueBuckets: number;
+    readonly centerObjectPixels: number;
+  };
+  readonly consoleErrors: readonly string[];
 }
 
 type SketchfabDownloadResponse = Record<string, { readonly url?: string; readonly size?: number } | undefined>;
@@ -68,6 +85,15 @@ if (!token) {
     detail: "src/aura-assets.ts generated for the Sketchfab asset."
   });
 
+  const renderSmoke = await runSketchfabRenderSmoke(workspace);
+  checks.push({
+    id: "sketchfab-browser-render",
+    pass: renderSmoke.pass,
+    detail: renderSmoke.pass
+      ? `browser render ready=${renderSmoke.ready}, backend=${renderSmoke.backend ?? "unknown"}, drawCalls=${renderSmoke.drawCalls ?? "unknown"}, litPixels=${renderSmoke.profile.litPixels}, centerObjectPixels=${renderSmoke.profile.centerObjectPixels}, buckets=${renderSmoke.profile.uniqueBuckets}`
+      : `browser render failed: ready=${renderSmoke.ready}, backend=${renderSmoke.backend ?? "unknown"}, drawCalls=${renderSmoke.drawCalls ?? "unknown"}, litPixels=${renderSmoke.profile.litPixels}, centerObjectPixels=${renderSmoke.profile.centerObjectPixels}, buckets=${renderSmoke.profile.uniqueBuckets}, consoleErrors=${renderSmoke.consoleErrors.join(" | ")}`
+  });
+
   writeSketchfabMarkdown(download, checks);
   writeReport("tests/reports/sketchfab-asset-corpus.json", "aura3d-sketchfab-asset-corpus", checks, {
     workspace: repoRelative(workspace),
@@ -77,7 +103,8 @@ if (!token) {
     assetPath: download.assetPath,
     format: download.format,
     manifestAsset,
-    validationWarnings: validation.warnings
+    validationWarnings: validation.warnings,
+    renderSmoke
   });
 }
 
@@ -148,6 +175,188 @@ function downloadFile(url: string, target: string): number {
     maxBuffer: 20 * 1024 * 1024
   });
   return statSync(target).size;
+}
+
+async function runSketchfabRenderSmoke(projectDir: string): Promise<RenderSmokeResult> {
+  const port = 4797;
+  const url = `http://127.0.0.1:${port}`;
+  const screenshotPath = "tests/reports/sketchfab-asset-corpus-render.png";
+  writeRenderApp(projectDir);
+  execFileSync(resolve("node_modules/.bin/vite"), ["build"], {
+    cwd: projectDir,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    maxBuffer: 20 * 1024 * 1024
+  });
+
+  const server = spawn(resolve("node_modules/.bin/vite"), ["--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+    cwd: projectDir,
+    env: process.env,
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+  try {
+    await waitForServer(url, server);
+    const browser = await chromium.launch();
+    try {
+      const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+      const consoleErrors: string[] = [];
+      page.on("console", (message) => {
+        if (message.type() === "error") consoleErrors.push(message.text());
+      });
+      page.on("pageerror", (error) => consoleErrors.push(error.message));
+      try {
+        await page.goto(url, { waitUntil: "networkidle", timeout: 30_000 });
+        await page.waitForSelector("canvas", { timeout: 30_000 });
+      } catch (error) {
+        consoleErrors.push(error instanceof Error ? error.message : String(error));
+        return {
+          pass: false,
+          url,
+          ready: false,
+          backend: null,
+          drawCalls: null,
+          screenshotPath,
+          screenshotBytes: 0,
+          profile: { litPixels: 0, uniqueBuckets: 0, centerObjectPixels: 0 },
+          consoleErrors
+        };
+      }
+      const ready = await page.locator("body").getAttribute("data-aura3d-ready", { timeout: 30_000 }).then((value) => value === "true").catch(() => false);
+      const diagnosticsText = await page.getByText(/backend:|draw calls:/).allTextContents().catch(() => []);
+      const canvas = page.locator("canvas").first();
+      const profile = await canvas.evaluate((element) => {
+        const target = element as HTMLCanvasElement;
+        const gl = target.getContext("webgl2", { preserveDrawingBuffer: true }) ?? target.getContext("webgl", { preserveDrawingBuffer: true });
+        if (!gl) return { litPixels: 0, uniqueBuckets: 0, centerObjectPixels: 0 };
+        const pixels = new Uint8Array(target.width * target.height * 4);
+        gl.readPixels(0, 0, target.width, target.height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+        const buckets = new Set<string>();
+        let litPixels = 0;
+        let centerObjectPixels = 0;
+        for (let y = 0; y < target.height; y += 4) {
+          for (let x = 0; x < target.width; x += 4) {
+            const offset = (y * target.width + x) * 4;
+            const r = pixels[offset] ?? 0;
+            const g = pixels[offset + 1] ?? 0;
+            const b = pixels[offset + 2] ?? 0;
+            const luminance = r * 0.2126 + g * 0.7152 + b * 0.0722;
+            if (luminance > 35) {
+              litPixels += 1;
+              buckets.add(`${r >> 5}-${g >> 5}-${b >> 5}`);
+              if (x > target.width * 0.25 && x < target.width * 0.75 && y > target.height * 0.2 && y < target.height * 0.8) {
+                centerObjectPixels += 1;
+              }
+            }
+          }
+        }
+        return { litPixels, uniqueBuckets: buckets.size, centerObjectPixels };
+      });
+      const screenshot = await page.screenshot({ fullPage: false });
+      writeFileSync(resolve(screenshotPath), screenshot);
+      const backend = parseDiagnostics(diagnosticsText, "backend");
+      const drawCalls = Number(parseDiagnostics(diagnosticsText, "draw calls")) || null;
+      return {
+        pass: ready && profile.litPixels > 2_000 && profile.centerObjectPixels > 400 && profile.uniqueBuckets > 16 && consoleErrors.length === 0,
+        url,
+        ready,
+        backend,
+        drawCalls,
+        screenshotPath,
+        screenshotBytes: screenshot.byteLength,
+        profile,
+        consoleErrors
+      };
+    } finally {
+      await browser.close();
+    }
+  } finally {
+    stopServer(server);
+  }
+}
+
+function writeRenderApp(projectDir: string): void {
+  const engineLink = resolve(projectDir, "node_modules/@aura3d/engine");
+  mkdirSync(dirname(engineLink), { recursive: true });
+  symlinkSync(process.cwd(), engineLink, "dir");
+  writeFileSync(resolve(projectDir, "index.html"), `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura3D Sketchfab Asset Smoke</title>
+    <style>
+      html, body, #app { margin: 0; width: 100%; height: 100%; background: #080d15; }
+      body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+`);
+  writeFileSync(resolve(projectDir, "src/main.ts"), `import { createAuraApp, definePromptPlan, promptPlanToScene } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.sketchfabCc0, label: "Sketchfab CC0 asset" },
+  style: "studio asset inspection",
+  environment: "charcoal sweep, plinth, softbox reflection cards",
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  interaction: "orbit",
+  acceptanceCriteria: [
+    "downloaded Sketchfab asset is visible",
+    "asset is centered and lit",
+    "canvas reports asset readiness"
+  ]
+} as const);
+
+createAuraApp("#app", {
+  diagnostics: { overlay: true, assetPanel: true, performancePanel: true },
+  scene: promptPlanToScene(plan)
+});
+`);
+}
+
+async function waitForServer(url: string, server: ChildProcess): Promise<void> {
+  const started = Date.now();
+  let lastError = "";
+  while (Date.now() - started < 30_000) {
+    if (server.exitCode !== null) {
+      throw new Error(`Vite server exited early with code ${server.exitCode}: ${await collectProcessOutput(server)}`);
+    }
+    try {
+      const response = await fetch(url);
+      if (response.ok) return;
+      lastError = `HTTP ${response.status}`;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+    }
+    await new Promise((resolveWait) => setTimeout(resolveWait, 250));
+  }
+  throw new Error(`Vite server did not become ready at ${url}: ${lastError}`);
+}
+
+function stopServer(server: ChildProcess): void {
+  if (server.exitCode !== null) return;
+  server.kill("SIGTERM");
+}
+
+async function collectProcessOutput(server: ChildProcess): Promise<string> {
+  const chunks: string[] = [];
+  server.stdout?.on("data", (chunk) => chunks.push(String(chunk)));
+  server.stderr?.on("data", (chunk) => chunks.push(String(chunk)));
+  await new Promise((resolveWait) => setTimeout(resolveWait, 50));
+  return chunks.join("\n").slice(-2000);
+}
+
+function parseDiagnostics(textParts: readonly string[], key: string): string | null {
+  const text = textParts.join("\n");
+  const match = new RegExp(`${key}:\\s*([^\\n]+)`, "i").exec(text);
+  return match?.[1]?.trim() ?? null;
 }
 
 function normalizeGltfArchive(projectDir: string, sourceDir: string, targetDir: string): string {
@@ -230,6 +439,7 @@ function writeSketchfabMarkdown(download: SketchfabDownloadInfo | undefined, cur
           `- License: ${download.license}.`,
           `- Imported asset path: \`${download.assetPath}\`.`,
           `- Format tested: ${download.format}.`,
+          "- Browser render proof: `tests/reports/sketchfab-asset-corpus-render.png` is generated locally and `tests/reports/sketchfab-asset-corpus.json` records readiness, backend, draw calls, and screenshot pixel profile.",
           `- Local workspace: \`${relative(process.cwd(), workspace)}\`.`
         ]
       : ["- Not run because `SKETCHFAB_API_TOKEN` was not supplied."]),
@@ -237,7 +447,7 @@ function writeSketchfabMarkdown(download: SketchfabDownloadInfo | undefined, cur
     "## Verdict",
     "",
     download && currentChecks.every((check) => check.pass)
-      ? "Authenticated Sketchfab CC0 download, asset add, validation, and typegen pass."
+      ? "Authenticated Sketchfab CC0 download, asset add, validation, typegen, build, and browser render pass."
       : "Authenticated Sketchfab CC0 corpus proof is not complete.",
     ""
   ];

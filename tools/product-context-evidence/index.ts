@@ -492,7 +492,7 @@ const checks: ReleaseCheck[] = [
 const claims: ClaimEvidence[] = [
   claim("Aura3D is the editable scene layer for agent-written browser 3D.", "automated-pass", ["ProductContextPRD.md", "README.md", "marketing/index.html"]),
   claim("AI coding agents write TypeScript or JavaScript against a compact public API.", statusFrom("check:agent-api"), ["pnpm run check:agent-api", "tests/reports/agent-api-surface.json"]),
-  claim("Users bring their own assets.", statusFromReport("tests/reports/asset-corpus.json"), ["tools/asset-corpus/index.ts", "tools/sketchfab-asset-corpus/index.ts", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"], sketchfabAssetCorpusPassed ? "Asset corpus includes authenticated Sketchfab CC0 proof; Meshy exports remain external." : "Run and expand asset corpus against real external GLBs."),
+  claim("Users bring their own assets.", statusFromReport("tests/reports/asset-corpus.json"), ["tools/asset-corpus/index.ts", "tools/sketchfab-asset-corpus/index.ts", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"], sketchfabAssetCorpusPassed ? "Asset corpus includes authenticated Sketchfab CC0 download/import/typegen/browser-render proof; Meshy exports remain external." : "Run and expand asset corpus against real external GLBs."),
   claim("Aura3D provides typed asset references.", statusFrom("check:assets-cli"), ["pnpm run check:assets-cli", "tests/unit/aura3d-cli/assets.test.ts"]),
   claim("Aura3D provides starter templates.", statusFrom("check:templates"), ["pnpm run check:templates", "packages/create-aura3d/templates"]),
   claim("Starter templates render through WebGL2 and have scene-specific render-plumbing screenshot profile checks.", statusFrom("check:templates"), ["packages/create-aura3d/templates/*/tests/screenshot.spec.ts", "tests/reports/create-aura3d-scaffold-smoke/*/tests/reports/screenshot.json", "docs/project/starter-template-visual-review.md"]),
@@ -560,7 +560,7 @@ const knownGaps: KnownGapEvidence[] = [
     gap: "Licensed wild-asset corpus is not broad enough.",
     owner: "Assets QA",
     nextAction: sketchfabAssetCorpusPassed
-      ? "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB. Add Meshy exports with source/license notes, then run add/validate/typegen/render."
+      ? "The asset corpus now covers generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco-compressed glTF, and an authenticated Sketchfab CC0 GLB with browser render proof. Add Meshy exports with source/license notes, then run add/validate/typegen/render."
       : "The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render.",
     targetEvidence: ["fixtures/asset-corpus/README.md", "docs/project/asset-corpus-results.md", "docs/project/sketchfab-asset-corpus-results.md", "docs/project/external-proof-readiness.md", "tests/reports/asset-corpus.json", "tests/reports/sketchfab-asset-corpus.json"]
   },

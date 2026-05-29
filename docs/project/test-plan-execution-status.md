@@ -1,6 +1,6 @@
 # Test Plan Execution Status
 
-Generated: 2026-05-29T07:54:44.379Z
+Generated: 2026-05-29T08:17:52.028Z
 
 This document tracks `TestV4PlanPRD.md` round coverage. It is intentionally
 stricter than `check:release`: local automation can pass while external
@@ -25,7 +25,7 @@ dogfood, external deployments, and human comprehension work remain open.
 | Round 6: Public API Compactness And Correctness | `automated-pass` | `docs/project/public-api-contract.md`<br>`tests/reports/public-api-contract.json` |  |
 | Round 7: Agent Context Evaluation | `partial` | `docs/project/agent-dogfood-results.md`<br>`docs/project/fresh-codex-agent-context-results.md`<br>`docs/project/claude-code-agent-context-results.md`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/claude-code-eval.json` | Codex prompt-plan self-test, Codex five-task eval, Codex repair eval, and Claude Code five-task eval are recorded; Cursor and Copilot remain external/subscription runs. |
 | Round 8: Raw Three.js Baseline | `manual-pass` | `tests/reports/agent-baseline-comparison.json`<br>`docs/project/agent-baseline-comparison.md` |  |
-| Round 9: Asset Corpus Validation | `partial` | `docs/project/asset-corpus-results.md`<br>`docs/project/sketchfab-asset-corpus-results.md`<br>`tests/reports/asset-corpus.json`<br>`tests/reports/sketchfab-asset-corpus.json` | Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB are proven; Meshy exports remain external corpus work. |
+| Round 9: Asset Corpus Validation | `partial` | `docs/project/asset-corpus-results.md`<br>`docs/project/sketchfab-asset-corpus-results.md`<br>`tests/reports/asset-corpus.json`<br>`tests/reports/sketchfab-asset-corpus.json` | Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, downloaded Khronos Draco glTF, and authenticated Sketchfab CC0 GLB browser render are proven; Meshy exports remain external corpus work. |
 | Round 10: Typed Asset Reference IDE Test | `automated-pass` | `tests/reports/asset-cli.json`<br>`tests/reports/public-api-contract.json` |  |
 | Round 11: Template Lifecycle Dogfood | `automated-pass` | `docs/project/clean-install-results.md`<br>`tests/reports/package-clean-install.json` |  |
 | Round 12: Diagnostics And Screenshot Quality | `automated-pass` | `tests/reports/package-clean-install.json`<br>`tests/reports/agent-devtools.json`<br>`tests/reports/error-message-quality.json`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/starter-example-visual-review.md`<br>`docs/project/prompt-visual-quality-gap.md`<br>`docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |

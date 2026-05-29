@@ -546,7 +546,7 @@ function writeAssetCorpusMarkdown(results: readonly CorpusResult[], warnings: re
   } | undefined;
   const sketchfabLines = sketchfabReport?.pass === true
     ? [
-        `- Authenticated Sketchfab CC0 download proof passes in \`tests/reports/sketchfab-asset-corpus.json\` and \`docs/project/sketchfab-asset-corpus-results.md\`: \`${sketchfabReport.modelName ?? "Sketchfab model"}\` (\`${sketchfabReport.modelUid ?? "unknown uid"}\`) as ${sketchfabReport.format ?? "model"} through add/validate/typegen.`,
+        `- Authenticated Sketchfab CC0 download proof passes in \`tests/reports/sketchfab-asset-corpus.json\` and \`docs/project/sketchfab-asset-corpus-results.md\`: \`${sketchfabReport.modelName ?? "Sketchfab model"}\` (\`${sketchfabReport.modelUid ?? "unknown uid"}\`) as ${sketchfabReport.format ?? "model"} through add/validate/typegen/build/browser-render.`,
         "- Meshy exports still require a generated/exported user asset or API credential."
       ]
     : [

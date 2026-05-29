@@ -1,6 +1,6 @@
 # Sketchfab Asset Corpus Results
 
-Generated: 2026-05-29T07:54:41.187Z
+Generated: 2026-05-29T08:15:54.523Z
 
 This document records authenticated Sketchfab CC0 asset evidence for the
 `ProductContextPRD.md` bring-your-own-assets claim. Downloaded model files
@@ -16,6 +16,7 @@ committed.
 | `sketchfab-assets-add` | pass | Added sketchfabCc0 -> /aura-assets/sketchfabCc0.3b9749a3.glb; Wrote aura.assets.json; Wrote src/aura-assets.ts |
 | `sketchfab-assets-validate` | pass | manifest asset format=glb, materials=1, textures=2, animations=0 |
 | `sketchfab-typegen-created` | pass | src/aura-assets.ts generated for the Sketchfab asset. |
+| `sketchfab-browser-render` | pass | browser render ready=true, backend=webgl2, drawCalls=23, litPixels=46864, centerObjectPixels=16753, buckets=59 |
 
 ## Source And License
 
@@ -23,9 +24,10 @@ committed.
 - License: CC0 Public Domain.
 - Imported asset path: `assets/external/sketchfab-cc0/model.glb`.
 - Format tested: glb.
+- Browser render proof: `tests/reports/sketchfab-asset-corpus-render.png` is generated locally and `tests/reports/sketchfab-asset-corpus.json` records readiness, backend, draw calls, and screenshot pixel profile.
 - Local workspace: `tests/reports/sketchfab-asset-corpus-workspace`.
 
 ## Verdict
 
-Authenticated Sketchfab CC0 download, asset add, validation, and typegen pass.
+Authenticated Sketchfab CC0 download, asset add, validation, typegen, build, and browser render pass.
 

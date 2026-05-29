@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-sketchfab-asset-corpus",
-  "generatedAt": "2026-05-29T07:54:41.189Z",
+  "generatedAt": "2026-05-29T08:15:54.525Z",
   "pass": true,
   "checks": [
     {
@@ -27,6 +27,11 @@
       "id": "sketchfab-typegen-created",
       "pass": true,
       "detail": "src/aura-assets.ts generated for the Sketchfab asset."
+    },
+    {
+      "id": "sketchfab-browser-render",
+      "pass": true,
+      "detail": "browser render ready=true, backend=webgl2, drawCalls=23, litPixels=46864, centerObjectPixels=16753, buckets=59"
     }
   ],
   "failures": [],
@@ -62,5 +67,20 @@
     "thumbnailUrl": "/aura-assets/sketchfabCc0.thumb.svg",
     "warnings": []
   },
-  "validationWarnings": []
+  "validationWarnings": [],
+  "renderSmoke": {
+    "pass": true,
+    "url": "http://127.0.0.1:4797",
+    "ready": true,
+    "backend": "webgl2",
+    "drawCalls": 23,
+    "screenshotPath": "tests/reports/sketchfab-asset-corpus-render.png",
+    "screenshotBytes": 399546,
+    "profile": {
+      "litPixels": 46864,
+      "uniqueBuckets": 59,
+      "centerObjectPixels": 16753
+    },
+    "consoleErrors": []
+  }
 }
