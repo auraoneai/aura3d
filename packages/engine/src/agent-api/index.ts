@@ -510,6 +510,7 @@ export interface AuraPromptPlanReport {
   readonly effects: readonly AuraPromptEffectId[];
   readonly acceptanceCriteria: readonly string[];
   readonly negativeCriteria: readonly string[];
+  readonly warnings: readonly string[];
   readonly visualSystems: readonly string[];
   readonly repairHints: readonly string[];
 }
@@ -540,6 +541,7 @@ export function compilePromptPlan(plan: AuraPromptPlan): AuraCompiledPromptPlan 
         "Do not ship a lone GLB on a grid as product-quality prompt proof.",
         "Do not rely on labels or diagnostics to explain missing visual intent."
       ],
+      warnings: promptPlanWarnings(plan),
       visualSystems: visualSystemsForPromptPlan(plan),
       repairHints: repairHintsForPromptPlan(plan)
     }
@@ -736,6 +738,39 @@ function repairHintsForPromptPlan(plan: AuraPromptPlan): readonly string[] {
     "For material studios, add controlled swatches, labels or layout cues, reflection environment, texture previews, and consistent inspection lighting.",
     "Do not mark product quality until material differences are visible without reading code."
   ];
+}
+
+function promptPlanWarnings(plan: AuraPromptPlan): readonly string[] {
+  const warnings: string[] = [];
+  const acceptanceCriteria = plan.acceptanceCriteria.map((item) => item.trim()).filter(Boolean);
+  if (!plan.subject.label?.trim()) {
+    warnings.push("PromptPlan subject is missing a human-readable label; add one so reports and diagnostics describe the visible subject.");
+  }
+  if (!plan.style?.trim()) {
+    warnings.push("PromptPlan style is missing; specify the visual tone so the recipe does not rely only on defaults.");
+  }
+  if (!plan.environment?.trim()) {
+    warnings.push("PromptPlan environment is missing; specify the surrounding space so the output is not a lone asset.");
+  }
+  if (!plan.camera?.preset) {
+    warnings.push(`PromptPlan camera preset is missing; defaulted to ${defaultCameraPreset(plan.sceneType)}.`);
+  }
+  if (!plan.lighting?.preset) {
+    warnings.push(`PromptPlan lighting preset is missing; defaulted to ${defaultLightingPreset(plan.sceneType)}.`);
+  }
+  if (!plan.effects || plan.effects.length === 0) {
+    warnings.push(`PromptPlan effects are missing; defaulted to ${defaultPromptEffects(plan.sceneType).join(", ")}.`);
+  }
+  if (!plan.interaction) {
+    warnings.push("PromptPlan interaction is missing; defaulted to the recipe interaction.");
+  }
+  if (acceptanceCriteria.length < 3) {
+    warnings.push("PromptPlan needs at least three concrete screenshot acceptance criteria before it can be used as product-quality proof.");
+  }
+  if ((plan.negativeCriteria ?? []).map((item) => item.trim()).filter(Boolean).length === 0) {
+    warnings.push("PromptPlan negative criteria are missing; default anti-patterns were applied.");
+  }
+  return warnings;
 }
 
 export type AuraBackend = "webgl2" | "webgpu" | "canvas2d" | "headless";

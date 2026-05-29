@@ -1,6 +1,6 @@
 # Agent Dogfood Results
 
-Generated: 2026-05-29T03:35:14.889Z
+Generated: 2026-05-29T03:48:45.616Z
 
 ## Codex Self-Test
 
@@ -46,14 +46,14 @@ Asset source: Khronos glTF Sample Assets: MaterialsVariantsShoe/glTF-Binary/Mate
 | `codex-generated-app-no-asset-path-errors` | pass | no raw model URL or missing typed asset dependency |
 | `codex-generated-app-builds` | pass | vite build passed |
 | `codex-generated-app-route-health` | pass | ready=true, backend=webgl2, drawCalls=21 |
-| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=301304, profile={"yellowPixels":6420,"rainPixels":1934,"centerObjectPixels":11401,"uniqueBuckets":147} |
+| `codex-generated-app-screenshot-profile` | pass | screenshot bytes=303351, profile={"yellowPixels":6422,"rainPixels":1950,"centerObjectPixels":11392,"uniqueBuckets":151} |
 | `codex-five-task-context-files-copied` | pass | 10 context files copied |
 | `codex-five-task-assets-validate` | pass | 2 typed assets validate |
 | `codex-five-task-no-api-hallucinations` | pass | no invented @aura3d/engine imports |
 | `codex-five-task-no-asset-path-errors` | pass | uses assets.sneaker and assets.shoe2 typed refs; no raw GLB URLs |
 | `codex-five-task-builds` | pass | vite build passed |
 | `codex-five-task-static-preview-runs` | pass | ready=true, backend=webgl2, staticPreview=true |
-| `codex-five-task-screenshot-product-quality` | pass | screenshot bytes=286794, profile={"subjectPixels":9488,"softboxPixels":7124,"rainPixels":6383,"reflectionPixels":2265,"uniqueBuckets":81} |
+| `codex-five-task-screenshot-product-quality` | pass | screenshot bytes=270878, profile={"subjectPixels":9716,"softboxPixels":9489,"rainPixels":8668,"reflectionPixels":2911,"uniqueBuckets":84} |
 | `codex-five-task-click-swap` | pass | before=sneaker, after=shoe2 |
 | `codex-five-task-completes-at-least-four-of-five` | pass | 5/5 tasks passed |
 

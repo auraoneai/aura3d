@@ -91,6 +91,30 @@ describe("agent API", () => {
     expect(snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")).toBe(true);
     expect(snapshot.nodes.filter((node) => node.kind === "primitive").length).toBeGreaterThan(4);
   });
+
+  test("warns when prompt plans omit minimum visual information", () => {
+    const vaguePlan = definePromptPlan({
+      sceneType: "product-viewer",
+      subject: { asset: assets.robot },
+      acceptanceCriteria: []
+    } as const);
+    const compiled = compilePromptPlan(vaguePlan);
+
+    expect(compiled.report.warnings).toEqual(expect.arrayContaining([
+      expect.stringContaining("subject is missing"),
+      expect.stringContaining("style is missing"),
+      expect.stringContaining("environment is missing"),
+      expect.stringContaining("camera preset is missing"),
+      expect.stringContaining("lighting preset is missing"),
+      expect.stringContaining("effects are missing"),
+      expect.stringContaining("interaction is missing"),
+      expect.stringContaining("at least three concrete screenshot acceptance criteria"),
+      expect.stringContaining("negative criteria are missing")
+    ]));
+    expect(compiled.report.cameraPreset).toBe("product-orbit");
+    expect(compiled.report.lightingPreset).toBe("studio-softbox");
+    expect(compiled.scene.toJSON().nodes.some((node) => node.kind === "model" && node.asset.id === "robot")).toBe(true);
+  });
 });
 
 if (false) {

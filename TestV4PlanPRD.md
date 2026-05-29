@@ -205,7 +205,7 @@ product-quality prompt output for the three approved starter recipes.
   criteria, and screenshot path in every generated report.
 - [x] Include the generated plan report from `compilePromptPlan`, including
   selected recipe, visual systems, repair hints, and negative anti-patterns.
-- [ ] Reject or warn on prompt plans that omit the minimum visual information
+- [x] Reject or warn on prompt plans that omit the minimum visual information
   needed for the selected recipe.
 - [ ] Feed failed screenshot review back into the next generated scene and
   record the repair turn count.

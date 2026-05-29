@@ -321,7 +321,7 @@ For Aura3D, that means:
   concrete scene recipes instead of ad hoc primitive placement.
 - [x] Prove the prompt contract is strong enough by generating at least three
   prompt-plan scenes that pass `product-quality-pass`.
-- [ ] Make the recipe compiler reject or warn on vague plans that cannot produce
+- [x] Make the recipe compiler reject or warn on vague plans that cannot produce
   visible prompt fidelity, such as "make it cinematic" without subject,
   environment, lighting, camera, and acceptance criteria.
 - [x] Add repair guidance when output is generic, badly framed, too dark,

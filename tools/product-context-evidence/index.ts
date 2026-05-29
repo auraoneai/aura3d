@@ -112,6 +112,7 @@ const promptFidelityReport = readJson<{
   readonly negativeFixtures?: readonly { readonly rejected?: boolean }[];
 }>("tests/reports/prompt-fidelity-quality.json");
 const agentApiSource = readText("packages/engine/src/agent-api/index.ts");
+const agentApiTestSource = readText("tests/unit/agent-api/agent-api.test.ts");
 const promptPlanTemplateSources = [
   ...starterTemplates.map((template) => `packages/create-aura3d/templates/${template}/src/main.ts`),
   ...starterTemplates.map((template) => `templates/${template}/src/main.ts`)
@@ -311,6 +312,21 @@ const checks: ReleaseCheck[] = [
         const source = readText(path);
         return !source.includes("definePromptPlan") || !source.includes("promptPlanToScene");
       }).join(", ")}`
+  },
+  {
+    id: "prompt-plan-vague-plan-warnings-tested",
+    pass:
+      agentApiSource.includes("warnings: promptPlanWarnings(plan)") &&
+      agentApiSource.includes("function promptPlanWarnings") &&
+      agentApiSource.includes("at least three concrete screenshot acceptance criteria") &&
+      agentApiTestSource.includes("warns when prompt plans omit minimum visual information") &&
+      agentApiTestSource.includes("style is missing") &&
+      agentApiTestSource.includes("environment is missing") &&
+      agentApiTestSource.includes("camera preset is missing") &&
+      agentApiTestSource.includes("lighting preset is missing"),
+    detail: agentApiTestSource.includes("warns when prompt plans omit minimum visual information")
+      ? "agent API test covers warnings for vague prompt plans"
+      : "missing vague prompt-plan warning test"
   }
 ];
 
@@ -334,6 +350,7 @@ const claims: ClaimEvidence[] = [
   claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" && checkStatus("prompt-fidelity-quality-report-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
   claim("Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations.", checkStatus("codex-five-task-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof."),
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
+  claim("Prompt-plan reports warn when required visual information is missing from vague plans.", checkStatus("prompt-plan-vague-plan-warnings-tested"), ["packages/engine/src/agent-api/index.ts", "tests/unit/agent-api/agent-api.test.ts"]),
   claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
   claim("The public authoring model is source code plus typed assets.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["README.md", "docs/agents/build-playbook.md", "docs/project/fresh-codex-agent-context-results.md"]),

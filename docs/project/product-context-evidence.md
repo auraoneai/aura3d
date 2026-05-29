@@ -1,12 +1,12 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T03:38:27.431Z
+Generated: 2026-05-29T03:50:50.632Z
 
 ## Summary
 
-- Claims with evidence: 31/31
+- Claims with evidence: 32/32
 - Known gaps tracked: 6/6
-- Automated checks passing: 25/25
+- Automated checks passing: 26/26
 
 ## Claim Matrix
 
@@ -31,6 +31,7 @@ Generated: 2026-05-29T03:38:27.431Z
 | Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test. | `automated-pass` | `tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts`<br>`docs/project/prompt-visual-quality-gap.md`<br>`tests/reports/prompt-fidelity-quality.json` |  |
 | Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations. | `automated-pass` | `docs/project/agent-dogfood-results.md`<br>`tests/reports/agent-context/codex-self-test.json`<br>`tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json`<br>`tools/agent-dogfood/index.ts` | This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof. |
 | The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`packages/create-aura3d/templates/*/src/main.ts`<br>`templates/*/src/main.ts`<br>`tools/prompt-fidelity-quality/index.ts` |  |
+| Prompt-plan reports warn when required visual information is missing from vague plans. | `automated-pass` | `packages/engine/src/agent-api/index.ts`<br>`tests/unit/agent-api/agent-api.test.ts` |  |
 | The three release-facing starter prompt recipes pass product-quality screenshot review. | `automated-pass` | `docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json`<br>`tests/reports/prompt-fidelity/contact-sheet.png` |  |
 | Legacy AI-runtime code is outside the active workspace. | `automated-pass` | `archive/legacy-ai-runtime`<br>`tools/product-context-evidence/index.ts` |  |
 | The public authoring model is source code plus typed assets. | `automated-pass` | `README.md`<br>`docs/agents/build-playbook.md`<br>`docs/project/fresh-codex-agent-context-results.md` |  |
@@ -73,7 +74,7 @@ Generated: 2026-05-29T03:38:27.431Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6420,"rainPixels":1934,"centerObjectPixels":11401,"uniqueBuckets":147} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":6422,"rainPixels":1950,"centerObjectPixels":11392,"uniqueBuckets":151} |
 | `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `codex-five-task-eval-present` | pass | tasks=5/5, backend=webgl2, swap=sneaker->shoe2 |
 | `fresh-codex-context-result-documented` | pass | fresh Codex context-only result is documented |
@@ -82,6 +83,7 @@ Generated: 2026-05-29T03:38:27.431Z
 | `prompt-visual-quality-gap-tracked` | pass | prompt-to-visual quality boundary is documented with starter pass and broad remaining gaps |
 | `prompt-fidelity-quality-report-present` | pass | productQualityReady=true, releaseFacingPasses=4 |
 | `prompt-plan-api-and-starters-present` | pass | prompt-plan API exports and active packaged starters are present |
+| `prompt-plan-vague-plan-warnings-tested` | pass | agent API test covers warnings for vague prompt plans |
 | `known-gaps-have-owners-next-actions-and-target-evidence` | pass | 6/6 known gaps have owner, next action, and target evidence |
-| `claim-evidence-matrix-complete` | pass | 31/31 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
+| `claim-evidence-matrix-complete` | pass | 32/32 claims have pass evidence; 0/0 claim gaps and 6/6 known gaps are tracked |
 
