@@ -72,6 +72,34 @@ const codexAgentReport = readJson<{
   readonly promptPlan?: { readonly selectedRecipe?: string; readonly assetRefs?: readonly string[] };
   readonly compiledPromptPlanReport?: { readonly recipe?: string; readonly visualSystems?: readonly string[]; readonly repairHints?: readonly string[] };
   readonly checks?: readonly { readonly id?: string; readonly pass?: boolean }[];
+  readonly fiveTaskEval?: {
+    readonly summary?: {
+      readonly compiles?: boolean;
+      readonly runs?: boolean;
+      readonly apiHallucinations?: number;
+      readonly assetPathErrors?: number;
+    };
+    readonly taskScores?: readonly {
+      readonly id?: string;
+      readonly compiles?: boolean;
+      readonly runs?: boolean;
+      readonly productQualityPass?: boolean;
+      readonly apiHallucinations?: number;
+      readonly assetPathErrors?: number;
+    }[];
+    readonly routeReport?: {
+      readonly ready?: boolean;
+      readonly backend?: string;
+      readonly staticPreview?: boolean;
+    };
+    readonly screenshotReport?: {
+      readonly profile?: Record<string, number>;
+    };
+    readonly swapReport?: {
+      readonly before?: string;
+      readonly after?: string;
+    };
+  };
 }>("tests/reports/agent-context/codex-self-test.json");
 const freshCodexResult = readText("docs/project/fresh-codex-agent-context-results.md");
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
@@ -198,6 +226,30 @@ const checks: ReleaseCheck[] = [
       : "missing or failing tests/reports/agent-context/codex-self-test.json prompt-plan evidence"
   },
   {
+    id: "codex-five-task-eval-present",
+    pass:
+      codexAgentReport.pass === true &&
+      codexAgentReport.fiveTaskEval?.summary?.compiles === true &&
+      codexAgentReport.fiveTaskEval?.summary?.runs === true &&
+      codexAgentReport.fiveTaskEval?.summary?.apiHallucinations === 0 &&
+      codexAgentReport.fiveTaskEval?.summary?.assetPathErrors === 0 &&
+      (codexAgentReport.fiveTaskEval?.taskScores ?? []).length === 5 &&
+      (codexAgentReport.fiveTaskEval?.taskScores ?? []).every((task) => task.compiles === true && task.runs === true && task.productQualityPass === true && task.apiHallucinations === 0 && task.assetPathErrors === 0) &&
+      codexAgentReport.fiveTaskEval?.routeReport?.ready === true &&
+      codexAgentReport.fiveTaskEval?.routeReport?.backend === "webgl2" &&
+      codexAgentReport.fiveTaskEval?.routeReport?.staticPreview === true &&
+      codexAgentReport.fiveTaskEval?.swapReport?.before === "sneaker" &&
+      codexAgentReport.fiveTaskEval?.swapReport?.after === "shoe2" &&
+      Number(codexAgentReport.fiveTaskEval?.screenshotReport?.profile?.subjectPixels ?? 0) > 900 &&
+      Number(codexAgentReport.fiveTaskEval?.screenshotReport?.profile?.softboxPixels ?? 0) > 180 &&
+      Number(codexAgentReport.fiveTaskEval?.screenshotReport?.profile?.rainPixels ?? 0) > 20 &&
+      Number(codexAgentReport.fiveTaskEval?.screenshotReport?.profile?.reflectionPixels ?? 0) > 80 &&
+      (codexAgentReport.checks ?? []).some((check) => check.id === "codex-five-task-completes-at-least-four-of-five" && check.pass === true),
+    detail: codexAgentReport.fiveTaskEval?.summary
+      ? `tasks=${codexAgentReport.fiveTaskEval.taskScores?.filter((task) => task.productQualityPass === true).length ?? 0}/5, backend=${codexAgentReport.fiveTaskEval.routeReport?.backend ?? "missing"}, swap=${String(codexAgentReport.fiveTaskEval.swapReport?.before ?? "missing")}->${String(codexAgentReport.fiveTaskEval.swapReport?.after ?? "missing")}`
+      : "missing fiveTaskEval evidence in tests/reports/agent-context/codex-self-test.json"
+  },
+  {
     id: "fresh-codex-context-result-documented",
     pass:
       freshCodexResult.includes("API hallucination count | 0") &&
@@ -277,9 +329,10 @@ const claims: ClaimEvidence[] = [
   claim("@aura3d/react is an optional thin React adapter.", statusFrom("check:public-api"), ["packages/react/src/index.ts", "tools/public-api-contract/index.ts"]),
   claim("@aura3d/cli supports asset, doctor, deployment, serve, and agent-file flows.", statusFrom("check:assets-cli"), ["packages/aura3d-cli/src/cli.ts", "packages/aura3d-cli/src/index.ts"]),
   claim("create-aura3d scaffolds product-viewer, cinematic-scene, and mini-game.", createPackage.name === "create-aura3d" ? statusFrom("check:templates") : "known-gap", ["packages/create-aura3d", "tools/agent-templates/index.ts"]),
-  claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Run Claude Code, Cursor, and Copilot separately; Codex self-test already passed."),
+  claim("Agent-readable context is useful.", statusFromReport("tests/reports/agent-context/codex-self-test.json"), ["docs/agents/*", "tests/reports/agent-context/codex-self-test.json"], "Codex self-test and Codex five-task eval pass locally; run Claude Code, Cursor, and Copilot separately when available."),
   claim("A fresh Codex context-only run can build a compiling WebGL2 app with typed assets.", checkStatus("fresh-codex-context-result-documented") === "automated-pass" ? "manual-pass" : "known-gap", ["docs/project/fresh-codex-agent-context-results.md"], "Run Claude Code, Cursor, and Copilot separately; this only proves a fresh Codex run and not product-quality visual fidelity."),
   claim("Codex dogfood uses prompt-plan helpers, typed assets, route health, screenshot profile checks, and product-quality visual review for the deterministic self-test.", checkStatus("codex-dogfood-screenshot-profile-present") === "automated-pass" && checkStatus("codex-dogfood-prompt-plan-evidence-present") === "automated-pass" && checkStatus("prompt-fidelity-quality-report-present") === "automated-pass" ? "automated-pass" : "known-gap", ["tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-self-test-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts", "docs/project/prompt-visual-quality-gap.md", "tests/reports/prompt-fidelity-quality.json"]),
+  claim("Codex five-task context eval completes product viewer, camera/rain, reflective floor, click-swap, and static preview tasks with typed assets and no API hallucinations.", checkStatus("codex-five-task-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-five-task-workspace/tests/reports/screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run the same five-task eval with external agents before claiming cross-agent proof."),
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
   claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
@@ -305,7 +358,7 @@ const knownGaps: KnownGapEvidence[] = [
   {
     gap: "Claude Code, Cursor, and Copilot context-only agent runs are not complete.",
     owner: "Product QA",
-    nextAction: "Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments.",
+    nextAction: "Codex five-task local evidence now passes. Run the same five-task context-only script against subscribed Claude Code, Cursor, and Copilot environments.",
     targetEvidence: ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/*.json"]
   },
   ...statusFromReport("tests/reports/agent-baseline-comparison.json") === "automated-pass"

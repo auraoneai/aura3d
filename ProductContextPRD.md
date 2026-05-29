@@ -188,6 +188,13 @@ For Aura3D, that means:
   deterministic self-test. A separate fresh Codex context-only run also
   compiled and ran, but it remains separate local evidence rather than
   cross-agent proof.
+- A separate Codex five-task context eval now completes the product viewer,
+  camera/rain, reflective floor, click-swap, and static deploy-bundle tasks
+  against a real Khronos shoe GLB written as `sneaker.glb` and `shoe2.glb`.
+  It uses typed asset refs, reports zero API hallucinations and zero asset-path
+  errors, runs from a production static preview bundle, and has screenshot-level
+  product-quality evidence. This is still local Codex evidence, not proof that
+  Claude Code, Cursor, Copilot, or outside users will produce the same result.
 - The first raw Three.js baseline comparison is recorded in
   `docs/project/agent-baseline-comparison.md`.
 - `tools/prompt-fidelity-quality/index.ts` now writes
@@ -237,8 +244,8 @@ For Aura3D, that means:
   the starter-template bundle budgets include that renderer cost.
 - Claude Code, Cursor, Copilot, outside developers, real Vercel/Cloudflare/
   Netlify deployments, authenticated Sketchfab CC0 downloads, and Meshy export
-  runs remain external dogfood work. The local evidence must not be presented as
-  broad market proof.
+  runs remain external dogfood work. The local Codex five-task pass must not be
+  presented as broad market proof.
 
 ## Build Checklist Still Required
 

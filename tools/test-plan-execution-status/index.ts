@@ -13,6 +13,7 @@ interface RoundEvidence {
 const rawThreeBaselinePassed = reportPass("tests/reports/agent-baseline-comparison.json");
 const marketingComprehensionPassed = marketingComprehensionComplete();
 const promptFidelityProductQualityReady = promptFidelityReady();
+const codexFiveTaskEvalPassed = reportCheckPass("tests/reports/agent-context/codex-self-test.json", "codex-five-task-completes-at-least-four-of-five");
 
 const rounds: RoundEvidence[] = [
   round("Round 0: Product Context Evidence Matrix", "automated-pass", ["docs/project/product-context-evidence.md", "tests/reports/product-context-evidence.json"]),
@@ -22,7 +23,9 @@ const rounds: RoundEvidence[] = [
   round("Round 4: Package Tarball Audit", reportPass("tests/reports/package-tarball-audit.json") ? "automated-pass" : "partial", ["tests/reports/package-tarball-audit.json"]),
   round("Round 5: Clean Install Smoke", reportPass("tests/reports/package-clean-install.json") ? "automated-pass" : "partial", ["docs/project/clean-install-results.md", "tests/reports/package-clean-install.json"]),
   round("Round 6: Public API Compactness And Correctness", reportPass("tests/reports/public-api-contract.json") ? "automated-pass" : "partial", ["docs/project/public-api-contract.md", "tests/reports/public-api-contract.json"]),
-  round("Round 7: Agent Context Evaluation", reportPass("tests/reports/agent-context/codex-self-test.json") && existsSync("docs/project/fresh-codex-agent-context-results.md") ? "partial" : "external-gap", ["docs/project/agent-dogfood-results.md", "docs/project/fresh-codex-agent-context-results.md", "tests/reports/agent-context/codex-self-test.json"], "Codex prompt-plan self-test is proven with product-quality visual review; Claude Code, Cursor, and Copilot remain external/subscription runs."),
+  round("Round 7: Agent Context Evaluation", reportPass("tests/reports/agent-context/codex-self-test.json") && existsSync("docs/project/fresh-codex-agent-context-results.md") ? "partial" : "external-gap", ["docs/project/agent-dogfood-results.md", "docs/project/fresh-codex-agent-context-results.md", "tests/reports/agent-context/codex-self-test.json"], codexFiveTaskEvalPassed
+    ? "Codex prompt-plan self-test and Codex five-task eval are proven with product-quality visual review, typed assets, click swap, and static preview; Claude Code, Cursor, and Copilot remain external/subscription runs."
+    : "Codex prompt-plan self-test is proven with product-quality visual review, but the Codex five-task eval is missing or failing; Claude Code, Cursor, and Copilot remain external/subscription runs."),
   round("Round 8: Raw Three.js Baseline", rawThreeBaselinePassed ? "manual-pass" : "partial", ["tests/reports/agent-baseline-comparison.json", "docs/project/agent-baseline-comparison.md"], rawThreeBaselinePassed ? undefined : "Complete the same-task raw Three.js baseline and compare against Aura3D dogfood."),
   round("Round 9: Asset Corpus Validation", reportPass("tests/reports/asset-corpus.json") ? "partial" : "external-gap", ["docs/project/asset-corpus-results.md", "tests/reports/asset-corpus.json"], "Generated/adversarial assets, pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, downloaded Poly Haven CC0 glTF, and downloaded Khronos Draco glTF are proven; authenticated Sketchfab CC0 downloads and Meshy exports remain external corpus work."),
   round("Round 10: Typed Asset Reference IDE Test", reportPass("tests/reports/asset-cli.json") && reportPass("tests/reports/public-api-contract.json") ? "automated-pass" : "partial", ["tests/reports/asset-cli.json", "tests/reports/public-api-contract.json"]),
@@ -77,6 +80,16 @@ function reportPass(path: string): boolean {
   try {
     const parsed = JSON.parse(readFileSync(path, "utf8")) as { readonly pass?: unknown };
     return parsed.pass === true;
+  } catch {
+    return false;
+  }
+}
+
+function reportCheckPass(path: string, id: string): boolean {
+  if (!existsSync(path)) return false;
+  try {
+    const parsed = JSON.parse(readFileSync(path, "utf8")) as { readonly checks?: readonly { readonly id?: unknown; readonly pass?: unknown }[] };
+    return (parsed.checks ?? []).some((check) => check.id === id && check.pass === true);
   } catch {
     return false;
   }

@@ -712,6 +712,12 @@ For each task and agent, record:
 
 - Deterministic Codex self-test: pass. See
   `docs/project/agent-dogfood-results.md`.
+- Codex five-task eval: pass. It uses a real Khronos shoe GLB as
+  `sneaker.glb` and `shoe2.glb`, uses typed asset refs, compiles, runs from a
+  static preview bundle, records zero API hallucinations and zero asset-path
+  errors, verifies product viewer, camera/rain, reflective floor, click-swap,
+  and static deploy-bundle tasks, and has screenshot-level product-quality
+  evidence. This is local Codex evidence only.
 - Fresh Codex context-only run: pass. See
   `docs/project/fresh-codex-agent-context-results.md`.
 - Claude Code: not run.
