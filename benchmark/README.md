@@ -14,12 +14,17 @@ The benchmark answers one question:
 - `prompts/manifest.md` freezes prompt order and filenames.
 - `rubric.md` defines the frozen scoring rubric.
 - `protocol.md` defines the run protocol and anti-drift rules.
+- `context/` contains frozen Aura3D and Three.js context bundles.
+- `runner/README.md` defines the machine, setup, prompt-delivery, runtime, and failure rules.
+- `metrics/README.md` defines every metric and winner calculation.
 - `engine/README.md` defines the non-agent engine parity benchmark.
 - `runs/README.md` defines the required output directory structure.
 - `scoring/README.md` defines the neutral scoring handoff.
 - `assets/README.md` documents the required product-viewer GLB fixture.
 - `assets/sneaker.glb` is required before Phase A can exit.
 - `results/template.md` is the required results format.
+- `results/engine-template.md` is the required engine result format.
+- `results/decision-template.md` is the required Phase C decision format.
 - `results/phase-a-signoff-template.md` is the required user sign-off format before Round 1 starts.
 - `results/amendment-template.md` is the required format for later PRD amendments.
 
@@ -31,4 +36,7 @@ The prompt benchmark measures agent productivity and visual outcomes. The engine
 
 ## Status
 
-Phase A is not complete until every required file above exists, `assets/sneaker.glb` is committed from a clearly licensed source, and `gchahal1982` signs off in writing that the benchmark package is ready to run.
+Phase A is not complete until every required file above exists, the context
+bundle hashes match, `assets/sneaker.glb` is committed from a clearly licensed
+source, and `gchahal1982` signs off in writing that the benchmark package is
+ready to run.

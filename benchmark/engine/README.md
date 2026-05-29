@@ -23,6 +23,9 @@ The two implementations must aim for the same visual target. Do not simplify the
 
 Scene 5 uses only `benchmark/assets/sneaker.glb`.
 
+Use the same machine, viewport, warmup, and sampling window defined in
+`../runner/README.md` and `../metrics/README.md`.
+
 ## Metrics
 
 Record these for Aura3D and Three.js:
@@ -39,6 +42,9 @@ Record these for Aura3D and Three.js:
 - build output gzip bytes
 - source lines of code
 - visual parity score from neutral reviewer, 1 to 5
+
+The same route-health, gzip, source-line, and failure-sentinel rules from the
+prompt benchmark apply here.
 
 ## Pass Criteria
 
@@ -63,4 +69,6 @@ Write results to:
 benchmark/results/round-N-engine.md
 ```
 
-The result must include the raw metrics table, screenshots, visual parity notes, scorer signature, user signature `gchahal1982`, date, and commit SHA.
+Use `benchmark/results/engine-template.md`. The result must include the raw
+metrics table, screenshots, visual parity notes, scorer signature, user
+signature `gchahal1982`, date, and commit SHA.

@@ -18,6 +18,9 @@ Each prompt is scored separately for Aura3D and raw Three.js.
 10. **Bundle size**: gzipped JS bytes of the built app.
 11. **Modifiability**: 1 to 5, neutral reviewer score for a reasonable follow-up change.
 
+Use `metrics/README.md` for exact metric definitions, failure sentinel values,
+and winner calculations.
+
 ## Visual Match Scale
 
 - **1**: Fails the prompt. Blank, broken, unrelated, or only a symbolic placeholder.
@@ -28,7 +31,8 @@ Each prompt is scored separately for Aura3D and raw Three.js.
 
 ## Prompt Result
 
-Aura3D wins a prompt when it scores strictly better than raw Three.js on a majority of metrics and its visual match score is at least as high.
+Aura3D wins a prompt when it scores strictly better than raw Three.js on a
+majority of non-tied metrics and its visual match score is at least as high.
 
 Aura3D ties a prompt when the metrics split evenly or the visual quality difference is not material.
 

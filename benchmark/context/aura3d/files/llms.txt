@@ -1,0 +1,117 @@
+Aura3D quick patterns for AI coding agents.
+
+Scaffold:
+```bash
+npx create-aura3d@latest my-scene --template product-viewer
+cd my-scene
+npx @aura3d/cli@latest assets add ./assets/robot.glb --name robot
+npm run dev
+```
+
+Hello world:
+```ts
+import { createAuraApp, scene, model, lights } from "@aura3d/engine";
+import { assets } from "./aura-assets";
+
+createAuraApp("#app", {
+  scene: scene().add(model(assets.robot)).add(lights.studio())
+});
+```
+
+Public imports:
+```ts
+import {
+  createAuraApp,
+  definePromptPlan,
+  promptPlanToScene,
+  scene,
+  model,
+  camera,
+  lights,
+  material,
+  effects,
+  timeline,
+  interactions,
+  defineAuraAssets
+} from "@aura3d/engine";
+```
+
+Typed asset rule:
+- Use `model(assets.robot)` from generated `src/aura-assets.ts`.
+- Do not use `model("robot")`; the safe API rejects string asset ids.
+- Do not invent asset paths. Run `assets add`, then read the generated module.
+- Use `unsafeModelUrl(...)` only as an explicit temporary escape hatch.
+
+Common scenes:
+```ts
+const plan = definePromptPlan({
+  sceneType: "product-viewer",
+  subject: { asset: assets.product },
+  camera: { preset: "product-orbit" },
+  lighting: { preset: "studio-softbox" },
+  effects: ["bloom"],
+  interaction: "orbit",
+  acceptanceCriteria: ["product centered", "studio lighting visible"]
+} as const);
+
+const compiled = compilePromptPlan(plan);
+createAuraApp("#app", { scene: promptPlanToScene(plan) });
+console.log(compiled.report.visualSystems, compiled.report.repairHints);
+```
+
+Lower-level scene helpers remain available:
+```ts
+scene()
+  .background("#08111f")
+  .add(model(assets.product).scale(1.1))
+  .add(lights.studio({ intensity: 1.2 }))
+  .add(interactions.orbit())
+  .camera(camera.orbit({ distance: 4 }));
+```
+
+```ts
+scene()
+  .background("#05070d")
+  .add(model(assets.hero).position(0, 0, -1))
+  .add(lights.point({ position: [-2, 2.4, 1], color: "#38d6ff", intensity: 2.4 }))
+  .add(effects.rain({ intensity: 0.45 }))
+  .add(effects.fog({ density: 0.18 }))
+  .add(effects.bloom({ intensity: 0.42 }))
+  .camera(camera.dolly({ from: [0, 1.4, 6], to: [0, 1.2, 2.2], seconds: 8 }))
+  .timeline(timeline.loop({ seconds: 8 }));
+```
+
+Templates:
+- `product-viewer`: product or asset inspection scenes.
+- `cinematic-scene`: camera path, lighting, rain/fog/bloom scenes.
+- `mini-game`: primitive interactive game slice.
+
+Visual acceptance:
+- Use prompt plans and recipe scenes before custom primitive placement.
+- A nonblank screenshot is not enough. The image must visibly match the prompt.
+- Reject one-asset-plus-symbolic-effect output as product-quality proof.
+- If visual review fails, apply `compilePromptPlan(plan).report.repairHints`
+  before changing the scene or review label.
+
+Verification:
+```bash
+npm run build
+npm run test
+npx @aura3d/cli@latest assets validate
+npx @aura3d/cli@latest check-deploy
+```
+
+Agent docs:
+- `docs/agents/README.md`
+- `docs/agents/api-surface.md`
+- `docs/agents/asset-workflow.md`
+- `docs/agents/templates.md`
+- `docs/agents/deployment.md`
+- `docs/agents/troubleshooting.md`
+- `docs/agents/anti-hallucination-rules.md`
+
+Non-goals:
+- Aura3D is not the AI model.
+- Aura3D does not source, license, or host a universal asset catalog.
+- Aura3D does not eval arbitrary generated code in the browser.
+- Source code is the scene description; provider JSON is not the public authoring API.

@@ -17,11 +17,17 @@ User signature: `gchahal1982`
 - [ ] `benchmark/prompts/manifest.md` matches the prompt files and order.
 - [ ] `benchmark/rubric.md` is complete and frozen.
 - [ ] `benchmark/protocol.md` is complete and frozen.
+- [ ] `benchmark/context/aura3d/manifest.sha256` matches the Aura3D context files.
+- [ ] `benchmark/context/threejs/manifest.sha256` matches the Three.js context files.
+- [ ] `benchmark/runner/README.md` is complete and frozen.
+- [ ] `benchmark/metrics/README.md` is complete and frozen.
 - [ ] `benchmark/engine/README.md` is complete and frozen.
 - [ ] `benchmark/runs/README.md` is complete and frozen.
 - [ ] `benchmark/scoring/README.md` is complete and frozen.
 - [ ] `benchmark/assets/sneaker.glb` exists and the hash matches `benchmark/assets/README.md`.
 - [ ] `benchmark/results/template.md` is ready for Round 1.
+- [ ] `benchmark/results/engine-template.md` is ready for Round 1.
+- [ ] `benchmark/results/decision-template.md` is ready for Phase C.
 - [ ] `benchmark/results/amendment-template.md` is ready for future amendments.
 
 ## Sign-Off Statement

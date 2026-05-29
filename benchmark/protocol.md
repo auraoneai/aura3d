@@ -11,7 +11,10 @@ Run the same 10 prompts four times:
 3. Claude Code with Aura3D context.
 4. Claude Code with raw Three.js context.
 
-Each run starts from a clean directory. Do not reuse generated code, screenshots, fixes, or notes from another run.
+Each run starts from a clean directory. Do not reuse generated code,
+screenshots, fixes, or notes from another run. Use `runner/README.md` for the
+exact machine, clean-directory setup, package installation, prompt-delivery,
+runtime-capture, and failure-sentinel rules.
 
 After the prompt runs, run the engine parity benchmark in `engine/README.md`.
 That benchmark does not use agents; it compares hand-authored Aura3D and
@@ -19,16 +22,14 @@ Three.js reference scenes.
 
 ## Context Bundles
 
-Aura3D context may include:
+Aura3D context is frozen under:
 
-- `llms.txt`
-- `AGENTS.md`
-- `.claude/CLAUDE.md`
-- `.cursor/rules/aura3d.mdc`
-- `.github/copilot-instructions.md`
-- `docs/agents/*`
-- public package READMEs and public API docs
-- the starter templates as examples
+```text
+benchmark/context/aura3d/
+```
+
+Before a round starts, verify `benchmark/context/aura3d/manifest.sha256`
+matches the files under `benchmark/context/aura3d/files/`.
 
 Aura3D context may not include:
 
@@ -36,18 +37,25 @@ Aura3D context may not include:
 - prior generated benchmark outputs
 - hidden repair hints not committed before the run
 - edited prompts or rubric
+- any file outside `benchmark/context/aura3d/files/` unless a `PRD-AMENDMENT:`
+  commit changes the bundle and restarts the round
 
-Raw Three.js context may include:
+Raw Three.js context is frozen under:
 
-- official Three.js docs
-- official Three.js examples
-- package installation instructions
+```text
+benchmark/context/threejs/
+```
+
+Before a round starts, verify `benchmark/context/threejs/manifest.sha256`
+matches the files under `benchmark/context/threejs/files/`.
 
 Raw Three.js context may not include Aura3D source, Aura3D examples, or Aura3D agent rules.
+Raw Three.js context may not include online browsing during Round 1.
 
 ## Agent Rules
 
-- Give the agent exactly one prompt at a time.
+- Give the agent exactly one prompt at a time using the message shape in
+  `runner/README.md`.
 - Do not provide extra hints after seeing failures.
 - Do not hand-edit generated code.
 - If the agent asks for a fix turn, record it as a repair turn.
@@ -73,6 +81,7 @@ For each prompt and each run, capture:
 - scorer identity and scoring date
 
 Artifacts must follow the directory contract in `runs/README.md`.
+Metric meanings and winner calculations must follow `metrics/README.md`.
 
 ## Scoring
 
@@ -92,7 +101,8 @@ The scorer must not receive:
 - prior in-repo evidence reports
 - hidden notes about which output is expected to win
 
-Use `scoring/README.md` for the scoring handoff.
+Use `scoring/README.md` for the scoring handoff. The scorer must produce the
+per-metric winner table needed to support the majority-of-metrics result.
 
 ## Anti-Drift
 
@@ -126,14 +136,22 @@ does not change the release standard.
 
 ## Results
 
-Use `results/template.md` for every round. Commit final results as:
+Use `results/template.md` for every prompt round. Commit final prompt and
+engine results as:
 
 ```text
 benchmark/results/round-N.md
+benchmark/results/round-N-engine.md
+```
+
+After Phase C, commit the decision as:
+
+```text
 benchmark/results/round-N-decision.md
 ```
 
-Do not edit a committed result file after the round is complete. If a correction is required, add a new amendment section or run a new round.
+Do not edit a committed result file after the round is complete. If a
+correction is required, add a new amendment section or run a new round.
 
 Every completed round must include:
 

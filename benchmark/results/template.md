@@ -33,6 +33,9 @@ User signature: `gchahal1982`
 | 09 Primitive humanoid |  |  |  |  |  |  |  |
 | 10 Sneaker viewer |  |  |  |  |  |  |  |
 
+Numeric score cells are visual match scores. Result cells are `Aura3D win`,
+`tie`, or `Aura3D loss`.
+
 ## Metric Detail
 
 Copy this table once per prompt and run.
@@ -51,7 +54,7 @@ Copy this table once per prompt and run.
 | Bundle size |  |  |  |  |
 | Modifiability |  |  |  |  |
 
-## Final Decision
+## Round Summary
 
 - Codex Aura3D wins:
 - Claude Aura3D wins:
@@ -60,9 +63,7 @@ Copy this table once per prompt and run.
 - Aura3D visual scores of 4 or higher:
 - Aura3D visual scores below 3:
 - Engine parity result:
-- Pass criteria met: yes/no
-
-Decision:
+- Pass criteria met before Phase C decision: yes/no
 
 Follow-up library work:
 

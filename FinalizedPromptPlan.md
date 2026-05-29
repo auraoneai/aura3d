@@ -389,12 +389,19 @@ the required files and their owners:
 | `benchmark/prompts/10-product-viewer-sneaker.md` | Frozen prompt 10 with the only allowed asset path. | Phase A exit |
 | `benchmark/rubric.md` | Frozen scoring rubric and pass thresholds. | Phase A exit |
 | `benchmark/protocol.md` | Run protocol, context rules, artifact rules, and neutral scoring rules. | Phase A exit |
+| `benchmark/context/README.md` | Frozen context-bundle rules for Aura3D and raw Three.js runs. | Phase A exit |
+| `benchmark/context/aura3d/manifest.sha256` | Hash manifest for the Aura3D context bundle. | Phase A exit |
+| `benchmark/context/threejs/manifest.sha256` | Hash manifest for the raw Three.js context bundle. | Phase A exit |
+| `benchmark/runner/README.md` | Machine, setup, prompt-delivery, runtime-capture, and failure rules. | Phase A exit |
+| `benchmark/metrics/README.md` | Exact metric definitions and winner calculations. | Phase A exit |
 | `benchmark/engine/README.md` | Engine parity benchmark for Aura3D versus hand-authored Three.js reference scenes. | Phase A exit |
 | `benchmark/runs/README.md` | Required output directory and per-prompt artifact contract. | Phase A exit |
 | `benchmark/scoring/README.md` | Neutral scorer input and output contract. | Phase A exit |
 | `benchmark/assets/README.md` | License and hash record for the required sneaker fixture. | Phase A exit |
 | `benchmark/assets/sneaker.glb` | Provided asset for prompt 10. Agents must not search for substitutes. | Phase A exit |
 | `benchmark/results/template.md` | Required result format for every round. | Phase A exit |
+| `benchmark/results/engine-template.md` | Required engine result format for every round. | Phase A exit |
+| `benchmark/results/decision-template.md` | Required Phase C decision format. | Phase A exit |
 | `benchmark/results/phase-a-signoff-template.md` | Required user sign-off format before Round 1 can start. | Phase A exit |
 | `benchmark/results/amendment-template.md` | Required PRD amendment format. | Phase A exit |
 | `benchmark/results/round-1.md` | Signed, dated Round 1 benchmark result. | Phase B exit |
@@ -428,22 +435,28 @@ checkbox is invalid and must be reset to `[ ]`.
 Goal: the benchmark can be run and scored without writing any new code in the
 core library.
 
-- [ ] Commit this PRD as the source of truth.
-- [ ] Commit the prompt manifest under `benchmark/prompts/manifest.md`.
-- [ ] Commit the 10 prompts as plain-text files under `benchmark/prompts/`.
-- [ ] Commit the rubric as a plain-text file under `benchmark/rubric.md`.
-- [ ] Commit the run protocol under `benchmark/protocol.md`: how to set up the
+- [x] Commit this PRD as the source of truth.
+- [x] Commit the prompt manifest under `benchmark/prompts/manifest.md`.
+- [x] Commit the 10 prompts as plain-text files under `benchmark/prompts/`.
+- [x] Commit the rubric as a plain-text file under `benchmark/rubric.md`.
+- [x] Commit the run protocol under `benchmark/protocol.md`: how to set up the
       clean directory, how to give the agent its context bundle, how to record
       results.
-- [ ] Commit the engine parity benchmark under `benchmark/engine/README.md`.
-- [ ] Commit the run artifact contract under `benchmark/runs/README.md`.
-- [ ] Commit the neutral scoring handoff under `benchmark/scoring/README.md`.
-- [ ] Commit a `sneaker.glb` fixture under `benchmark/assets/sneaker.glb` from
+- [x] Commit the frozen context bundles under `benchmark/context/`.
+- [x] Commit the runner contract under `benchmark/runner/README.md`.
+- [x] Commit the metric definitions under `benchmark/metrics/README.md`.
+- [x] Commit the engine parity benchmark under `benchmark/engine/README.md`.
+- [x] Commit the run artifact contract under `benchmark/runs/README.md`.
+- [x] Commit the neutral scoring handoff under `benchmark/scoring/README.md`.
+- [x] Commit a `sneaker.glb` fixture under `benchmark/assets/sneaker.glb` from
       a clearly-licensed source.
-- [ ] Set up a results template at `benchmark/results/template.md`.
-- [ ] Set up Phase A sign-off template at
+- [x] Set up a results template at `benchmark/results/template.md`.
+- [x] Set up an engine results template at
+      `benchmark/results/engine-template.md`.
+- [x] Set up a decision template at `benchmark/results/decision-template.md`.
+- [x] Set up Phase A sign-off template at
       `benchmark/results/phase-a-signoff-template.md`.
-- [ ] Set up amendment template at `benchmark/results/amendment-template.md`.
+- [x] Set up amendment template at `benchmark/results/amendment-template.md`.
 - [ ] Get written Phase A approval from `gchahal1982` before starting Round 1.
 
 Exit: a third party who has not seen this repo can run the benchmark using

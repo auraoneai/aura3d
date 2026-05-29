@@ -24,10 +24,18 @@ benchmark/runs/round-N/
   engine/
     engine-01-material-grid/
       aura3d/
+        source/
+        build.log
+        run.log
+        metrics.json
+        screenshot.png
       threejs/
-      metrics.json
-      screenshot-aura3d.png
-      screenshot-threejs.png
+        source/
+        build.log
+        run.log
+        metrics.json
+        screenshot.png
+      scorer-notes.md
       notes.md
 ```
 
@@ -58,6 +66,33 @@ Each `metrics.json` must include:
 
 These metrics can be gathered by scripts, but scripts must not score visual match, modifiability, prompt wins, or release readiness.
 
+Use `null` for unavailable numeric fields after a failure. Do not use `0` as a
+failure placeholder.
+
+## Engine `metrics.json`
+
+Each engine-side `metrics.json` must include:
+
+```json
+{
+  "scene": "engine-01-material-grid",
+  "library": "Aura3D",
+  "routeHealth": "pass",
+  "firstUsableRenderMs": 0,
+  "p50Fps": 0,
+  "p95FrameTimeMs": 0,
+  "drawCalls": 0,
+  "triangleCount": 0,
+  "jsHeapPeakBytes": 0,
+  "gpuMemoryBytes": null,
+  "bundleSizeGzipBytes": 0,
+  "sourceLoc": 0,
+  "screenshot": "screenshot.png"
+}
+```
+
+Use `metrics/README.md` for measurement definitions.
+
 ## `notes.md`
 
 Each `notes.md` must record:
@@ -72,3 +107,14 @@ Each `notes.md` must record:
 - any agent questions or assumptions
 
 Do not rewrite notes after scoring except by adding a dated correction section.
+
+## Runtime Evidence
+
+When the prompt depends on motion or interaction, keep the required
+`screenshot.png` and add one of:
+
+- `runtime-notes.md` describing the observed interaction or animation.
+- extra screenshots named `screenshot-02.png`, `screenshot-03.png`.
+- a Playwright trace path recorded in `notes.md`.
+
+Runtime evidence can support scoring but cannot replace the main screenshot.
