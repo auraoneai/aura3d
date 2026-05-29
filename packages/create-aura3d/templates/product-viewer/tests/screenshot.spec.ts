@@ -42,7 +42,7 @@ test("Aura3D product viewer screenshot shows a prompt-aligned studio product", a
     }
     return { cabinetPixels, grillePixels, metalPixels, softboxPixels, warmReflectionPixels, centerObjectPixels, uniqueBuckets: buckets.size };
   });
-  const screenshot = await canvas.screenshot();
+  const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\n`);

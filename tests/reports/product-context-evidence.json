@@ -1,6 +1,6 @@
 {
   "schema": "aura3d-product-context-evidence",
-  "generatedAt": "2026-05-29T08:17:49.636Z",
+  "generatedAt": "2026-05-29T08:51:47.483Z",
   "pass": true,
   "checks": [
     {
@@ -76,7 +76,7 @@
     {
       "id": "codex-dogfood-screenshot-profile-present",
       "pass": true,
-      "detail": "codex profile={\"yellowPixels\":5342,\"rainPixels\":4149,\"centerObjectPixels\":11684,\"uniqueBuckets\":162}"
+      "detail": "codex profile={\"yellowPixels\":4879,\"rainPixels\":5002,\"centerObjectPixels\":11692,\"uniqueBuckets\":160}"
     },
     {
       "id": "codex-dogfood-prompt-plan-evidence-present",

@@ -1,6 +1,6 @@
 # Test Plan Execution Status
 
-Generated: 2026-05-29T08:17:52.028Z
+Generated: 2026-05-29T08:51:50.030Z
 
 This document tracks `TestV4PlanPRD.md` round coverage. It is intentionally
 stricter than `check:release`: local automation can pass while external

@@ -43,7 +43,7 @@ test("Aura3D mini game screenshot shows a playable collect-and-dodge scene", asy
     }
     return { robotArmorPixels, robotJointPixels, boostPixels, coinPixels, hazardPixels, portalPixels, cyanTrailPixels, arenaPixels, uniqueBuckets: buckets.size };
   });
-  const screenshot = await canvas.screenshot();
+  const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\n`);

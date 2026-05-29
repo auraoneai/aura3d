@@ -40,7 +40,7 @@ test("Aura3D cinematic scene screenshot shows the rainy neon hero prompt", async
     }
     return { cyanPixels, amberPixels, rainPixels, wetReflectionPixels, centerHeroPixels, darkAlleyPixels, uniqueBuckets: buckets.size };
   });
-  const screenshot = await canvas.screenshot();
+  const screenshot = await page.screenshot({ fullPage: false });
   mkdirSync(resolve("tests/reports"), { recursive: true });
   writeFileSync(resolve("tests/reports/screenshot.png"), screenshot);
   writeFileSync(resolve("tests/reports/screenshot.json"), `${JSON.stringify({ bytes: screenshot.byteLength, profile }, null, 2)}\n`);

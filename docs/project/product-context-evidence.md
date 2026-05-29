@@ -1,6 +1,6 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T08:17:49.631Z
+Generated: 2026-05-29T08:51:47.424Z
 
 ## Summary
 
@@ -80,7 +80,7 @@ Generated: 2026-05-29T08:17:49.631Z
 | `create-aura3d-public-install-name` | pass | packages/create-aura3d/package.json name is create-aura3d |
 | `aura3d-cli-user-facing-bin` | pass | @aura3d/cli bin entries: aura3d, aura, cli |
 | `root-package-ships-only-starter-templates` | pass | root template files: templates/product-viewer, templates/cinematic-scene, templates/mini-game |
-| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":5342,"rainPixels":4149,"centerObjectPixels":11684,"uniqueBuckets":162} |
+| `codex-dogfood-screenshot-profile-present` | pass | codex profile={"yellowPixels":4879,"rainPixels":5002,"centerObjectPixels":11692,"uniqueBuckets":160} |
 | `codex-dogfood-prompt-plan-evidence-present` | pass | recipe=cinematic-scene, visualSystems=7, repairHints=6 |
 | `codex-five-task-eval-present` | pass | tasks=5/5, backend=webgl2, swap=sneaker->shoe2 |
 | `codex-repair-eval-present` | pass | initial=fail, repaired=product-quality-pass, turns=1 |
