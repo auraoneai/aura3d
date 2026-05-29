@@ -11,5 +11,5 @@ export { MotionBlurPassThreeCompat } from "./MotionBlurPass";
 export { ColorGradingPassThreeCompat } from "./ColorGradingPass";
 export { VignettePassThreeCompat } from "./VignettePass";
 export { OutlinePassThreeCompat } from "./OutlinePass";
-export { createThreeCompatBaseFrame } from "./PostProcessTypes";
-export type { ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";
+export { createThreeCompatBaseFrame, createThreeCompatDemoFrame } from "./PostProcessTypes";
+export type { ThreeCompatBaseFrameOptions, ThreeCompatPostProcessFrame, ThreeCompatPostProcessPass } from "./PostProcessTypes";

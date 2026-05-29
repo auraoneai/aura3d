@@ -25,7 +25,7 @@ This is both a runtime/product problem and an evaluation problem.
 |---|---|---|
 | Runtime and templates | Can load assets, create scenes, add lights/effects, capture screenshots, run diagnostics, and produce product-quality starter screenshots for product viewer, cinematic scene, and mini-game recipes. | Needs broader recipe coverage, material fidelity, richer animation helpers, and corpus evidence across arbitrary assets. |
 | Agent prompt workflow | Agents can write valid Aura3D code from context and typed assets; the public API includes `PromptPlan` recipe helpers; deterministic Codex dogfood now passes product-quality visual review. | Claude Code, Cursor, Copilot, repair-loop turns, and outside-user agent runs remain unproven. |
-| Tests and evidence | Pixel profiles check route-specific visual cues, prompt-fidelity rejects object-plus-symbolic-effect negative fixtures, and positive starter screenshots now reach `product-quality-pass`. | More positive fixtures, broad asset coverage, external deployment, marketing comprehension, and beta dogfood remain open. |
+| Tests and evidence | Pixel profiles check route-specific visual cues, prompt-fidelity rejects object-plus-symbolic-effect negative fixtures, positive starter screenshots now reach `product-quality-pass`, and the effects/VFX audit now catches no-op/stub/metric-only surfaces while producing a browser contact sheet. | More positive fixtures, broad asset coverage, external deployment, marketing comprehension, beta dogfood, and route-level VFX polish screenshots remain open. |
 
 ## Prompt Fidelity Acceptance Bar
 
@@ -63,6 +63,12 @@ all of these checks:
   product presentation.
 - [ ] Animation helpers for camera movement, idle motion, collection feedback,
   hover/click state, and scene reveals.
+- [x] Broader VFX/postprocess starter/helper audit: production-runtime
+  postprocess classes execute pixel kernels, three-compat postprocess can run
+  pixel kernels, and particle/cinematic VFX have a browser contact sheet.
+- [ ] Route-level premium VFX proof: add screenshots and human review before
+  claiming particle, fog, glow, wet reflection, or compatibility VFX as polished
+  production systems.
 
 ### Prompt Workflow
 

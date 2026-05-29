@@ -184,8 +184,15 @@ product-quality prompt output for the three approved starter recipes.
   alleys, shelves, rails, portals, plinths, backgrounds, and depth layers.
 - [ ] Material fidelity improvements for GLB/PBR assets, texture preservation,
   fallback reporting, wet floors, emissive materials, and reflections.
-- [x] Effect systems that look like the effect they claim: rain, fog, glow,
-  trails, impact pulses, hover/click state, and collection feedback.
+- [x] Prompt-facing starter effect systems that look like the effect they claim:
+  rain, fog, glow, trails, impact pulses, hover/click state, and collection
+  feedback for the approved starter recipes.
+- [x] Broader exported effects/VFX/postprocess systems have starter/helper-level
+  visual proof. Current audit result: production-runtime postprocess classes run
+  pixel kernels, three-compat postprocess runs pixel kernels when frames include
+  pixels, and particle/cinematic VFX have a browser contact sheet.
+- [ ] Route-level VFX polish proof remains open before any of these surfaces are
+  marketed as premium production VFX.
 - [ ] Asset normalization for scale, origin, bounds, ground alignment, camera
   distance, and missing material/texture diagnostics.
 - [ ] Renderer/report metadata for recipe ID, camera preset, lighting preset,
@@ -237,6 +244,13 @@ product-quality prompt output for the three approved starter recipes.
 - [x] Fail release promotion if
   `tests/reports/prompt-fidelity-quality.json` reports fewer than three
   release-facing `product-quality-pass` artifacts.
+- [x] Add an effects/VFX visual audit that distinguishes renderer-owned visual
+  output from API names, metric-only compatibility wrappers, option-holder
+  stubs, and screenshot-unproven particle/cinematic helpers.
+- [x] Make `pnpm run check:effects-vfx` pass before marketing the broader
+  VFX/postprocess surface as starter/helper-level proof.
+- [ ] Add route-level screenshots and human review before marketing the broader
+  VFX/postprocess surface as premium production VFX.
 
 ## Source Claims Under Test
 
@@ -1228,6 +1242,8 @@ Get feedback from users who were not involved in building the repo.
   runtime instead of an agent-facing browser 3D SDK.
 - [ ] Bundle proof measures source files instead of built bundles.
 - [ ] Public docs reference APIs that do not exist.
+- [ ] Public docs or marketing present starter/helper-level effects/VFX audit
+  surfaces as premium polished production VFX.
 
 ## Final Release Confidence Criteria
 

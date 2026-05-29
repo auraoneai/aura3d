@@ -13,7 +13,8 @@ import {
   SSAOPassThreeCompat,
   TAAPassThreeCompat,
   VignettePassThreeCompat,
-  createThreeCompatBaseFrame
+  createThreeCompatBaseFrame,
+  createThreeCompatDemoFrame
 } from "../../packages/rendering/src";
 
 interface ThreeCompatPostprocessCheck {
@@ -59,10 +60,12 @@ const composer = new EffectComposerThreeCompat()
   .addPass(new VignettePassThreeCompat())
   .addPass(new OutlinePassThreeCompat());
 const output = composer.render(createThreeCompatBaseFrame());
+const visualOutput = composer.render(createThreeCompatDemoFrame("visual-source"));
 const checks: ThreeCompatPostprocessCheck[] = [
   check("required-files-present", requiredFiles.every((file) => existsSync(resolve(file))), requiredFiles.filter((file) => !existsSync(resolve(file))).join(", ") || "all Three.js compatibility postprocess files exist"),
   check("composer-chain", composer.passes.length >= 11 && output.label === "rendered-scene", `${composer.passes.length} passes`),
   check("cinematic-effects", output.bloom > 0 && output.ambientOcclusion > 0 && output.blur > 0 && output.contrast > 1 && output.vignette > 0, JSON.stringify(output)),
+  check("pixel-kernel-output", (visualOutput.visualChangedPixels ?? 0) > 1000 && (visualOutput.visualPasses?.length ?? 0) >= 8, `visualChangedPixels=${visualOutput.visualChangedPixels ?? 0}; passes=${visualOutput.visualPasses?.join(",") ?? ""}`),
   check("antialiasing", output.sharpness > 0.4, `sharpness=${output.sharpness}`),
   check("migration-doc", existsSync(resolve("docs/project/migration.md")), "postprocess migration doc exists"),
   check("browser-screenshots", existsSync(resolve("tests/reports/three-compat-postprocess-before.png")) && existsSync(resolve("tests/reports/three-compat-postprocess-after.png")), "before/after screenshots exist")
@@ -74,6 +77,11 @@ const report = {
   generatedAt: new Date().toISOString(),
   pass,
   output,
+  visualOutput: {
+    visualChangedPixels: visualOutput.visualChangedPixels,
+    visualPasses: visualOutput.visualPasses,
+    visualDiagnostics: visualOutput.visualDiagnostics
+  },
   passNames: composer.passes.map((item) => item.name),
   checks
 };

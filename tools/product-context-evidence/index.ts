@@ -134,6 +134,21 @@ const freshCodexResult = readText("docs/project/fresh-codex-agent-context-result
 const starterVisualReview = readText("docs/project/starter-template-visual-review.md");
 const starterExampleVisualReview = readText("docs/project/starter-example-visual-review.md");
 const promptVisualQualityGap = readText("docs/project/prompt-visual-quality-gap.md");
+const effectsVfxVisualAuditDoc = readText("docs/project/effects-vfx-visual-audit.md");
+const effectsVfxAuditReport = readJson<{
+  readonly pass?: boolean;
+  readonly summary?: {
+    readonly total?: number;
+    readonly pass?: number;
+    readonly partial?: number;
+    readonly fail?: number;
+  };
+  readonly visualProof?: {
+    readonly pass?: boolean;
+    readonly screenshotPath?: string;
+  };
+  readonly findings?: readonly { readonly id?: string; readonly status?: string }[];
+}>("tests/reports/effects-vfx-visual-audit.json");
 const promptFidelityReport = readJson<{
   readonly pass?: boolean;
   readonly productQualityReady?: boolean;
@@ -415,6 +430,32 @@ const checks: ReleaseCheck[] = [
     detail: agentApiTestSource.includes("warns when prompt plans omit minimum visual information")
       ? "agent API test covers warnings for vague prompt plans"
       : "missing vague prompt-plan warning test"
+  },
+  {
+    id: "prompt-facing-effects-upgraded",
+    pass:
+      agentApiSource.includes("function createThreeBloom") &&
+      agentApiSource.includes("function createThreeRain") &&
+      agentApiSource.includes("InstancedMesh") &&
+      agentApiSource.includes("aura-rain-floor-splash-ripples") &&
+      agentApiSource.includes("aura-rain-mist-bank"),
+    detail: "public prompt-facing rain and bloom have renderer-owned Three paths beyond symbolic lines/no-op"
+  },
+  {
+    id: "effects-vfx-visual-audit-present",
+    pass:
+      (effectsVfxAuditReport.summary?.total ?? 0) > 0 &&
+      effectsVfxAuditReport.pass === true &&
+      (effectsVfxAuditReport.summary?.partial ?? 1) === 0 &&
+      (effectsVfxAuditReport.summary?.fail ?? 1) === 0 &&
+      effectsVfxAuditReport.visualProof?.pass === true &&
+      effectsVfxVisualAuditDoc.includes("Effects/VFX Visual Audit") &&
+      effectsVfxVisualAuditDoc.toLowerCase().includes("production-runtime") &&
+      effectsVfxVisualAuditDoc.toLowerCase().includes("three-compat postprocess") &&
+      effectsVfxVisualAuditDoc.includes("effects.rain()"),
+    detail: effectsVfxAuditReport.summary
+      ? `effects audit total=${effectsVfxAuditReport.summary.total ?? 0}, pass=${effectsVfxAuditReport.summary.pass ?? 0}, partial=${effectsVfxAuditReport.summary.partial ?? 0}, fail=${effectsVfxAuditReport.summary.fail ?? 0}, contactSheet=${effectsVfxAuditReport.visualProof?.screenshotPath ?? "missing"}`
+      : "missing tests/reports/effects-vfx-visual-audit.json or docs/project/effects-vfx-visual-audit.md"
   }
 ];
 
@@ -440,6 +481,8 @@ const claims: ClaimEvidence[] = [
   claim("Codex repair eval improves a failed screenshot to product-quality by applying prompt-plan repair hints with a recorded repair turn.", checkStatus("codex-repair-eval-present"), ["docs/project/agent-dogfood-results.md", "tests/reports/agent-context/codex-self-test.json", "tests/reports/agent-context/codex-repair-workspace/tests/reports/initial-screenshot.json", "tests/reports/agent-context/codex-repair-workspace/tests/reports/repaired-screenshot.json", "tools/agent-dogfood/index.ts"], "This is local Codex evidence only; run external agent repair turns separately before claiming broad repair-loop behavior."),
   claim("The public agent API includes prompt-plan helpers and the three starter templates use that prompt-plan flow.", checkStatus("prompt-plan-api-and-starters-present"), ["packages/engine/src/agent-api/index.ts", "packages/create-aura3d/templates/*/src/main.ts", "templates/*/src/main.ts", "tools/prompt-fidelity-quality/index.ts"]),
   claim("Prompt-plan reports warn when required visual information is missing from vague plans.", checkStatus("prompt-plan-vague-plan-warnings-tested"), ["packages/engine/src/agent-api/index.ts", "tests/unit/agent-api/agent-api.test.ts"]),
+  claim("Prompt-facing rain and bloom effects have renderer-owned visual implementations beyond the previous symbolic/no-op path.", checkStatus("prompt-facing-effects-upgraded"), ["packages/engine/src/agent-api/index.ts", "docs/project/effects-vfx-visual-audit.md", "tests/reports/effects-vfx-visual-audit.json"], "Keep screenshot regression review on the starter and dogfood routes; this does not prove premium VFX parity."),
+  claim("The effects/VFX surface is audited for visual acceptability instead of assuming named effects are finished.", checkStatus("effects-vfx-visual-audit-present"), ["docs/project/effects-vfx-visual-audit.md", "tests/reports/effects-vfx-visual-audit.json", "tools/effects-vfx-visual-audit/index.ts"], "The audit passes at starter/helper level; route-level screenshots and human review are still required for premium VFX claims."),
   claim("The three release-facing starter prompt recipes pass product-quality screenshot review.", checkStatus("prompt-fidelity-quality-report-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/contact-sheet.png"]),
   claim("Each fixed starter has before/after prompt-fidelity evidence with source prompt, corrected failure mode, code path, screenshots, route health, and human verdict.", checkStatus("starter-before-after-evidence-present"), ["docs/project/prompt-fidelity-quality-results.md", "tests/reports/prompt-fidelity-quality.json", "tests/reports/prompt-fidelity/before-after-contact-sheet.png"]),
   claim("Legacy AI-runtime code is outside the active workspace.", checkStatus("active-code-no-archived-runtime-surface"), ["archive/legacy-ai-runtime", "tools/product-context-evidence/index.ts"]),
@@ -456,6 +499,12 @@ const claims: ClaimEvidence[] = [
 ];
 
 const knownGaps: KnownGapEvidence[] = [
+  {
+    gap: "The broader effects/VFX/postprocess surface is contact-sheet proven only at starter/helper level.",
+    owner: "Runtime/VFX QA",
+    nextAction: "Keep check:effects-vfx passing, then add route-level screenshots and human review before marketing particle presets, cinematic approximations, or compatibility VFX as premium production VFX.",
+    targetEvidence: ["docs/project/effects-vfx-visual-audit.md", "tests/reports/effects-vfx-visual-audit.json", "tools/effects-vfx-visual-audit/index.ts"]
+  },
   {
     gap: "Broad prompt-to-visual product quality beyond approved starter recipes is not fully proven.",
     owner: "Product/Runtime QA",

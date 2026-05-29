@@ -1,0 +1,513 @@
+{
+  "schema": "a3d-effects-vfx-visual-audit",
+  "generatedAt": "2026-05-29T06:07:12.788Z",
+  "pass": true,
+  "summary": {
+    "total": 25,
+    "pass": 25,
+    "partial": 0,
+    "fail": 0,
+    "blockers": 18
+  },
+  "visualProof": {
+    "screenshotPath": "tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+    "metrics": {
+      "particle-fire": {
+        "litPixels": 27573,
+        "uniqueBuckets": 114,
+        "brightPixels": 13915
+      },
+      "particle-fountain": {
+        "litPixels": 14844,
+        "uniqueBuckets": 104,
+        "brightPixels": 5935
+      },
+      "particle-collision-burst": {
+        "litPixels": 11933,
+        "uniqueBuckets": 67,
+        "brightPixels": 3564
+      },
+      "particle-spark-shower": {
+        "litPixels": 6921,
+        "uniqueBuckets": 65,
+        "brightPixels": 2153
+      },
+      "cinematic-rain": {
+        "litPixels": 135180,
+        "uniqueBuckets": 60,
+        "brightPixels": 10638
+      },
+      "cinematic-approximations": {
+        "litPixels": 143561,
+        "uniqueBuckets": 53,
+        "brightPixels": 18302
+      },
+      "three-compat-vfx": {
+        "litPixels": 52873,
+        "uniqueBuckets": 141,
+        "brightPixels": 21511
+      }
+    },
+    "pass": true,
+    "warnings": []
+  },
+  "kernelChecks": [
+    {
+      "id": "postprocess-tone-mapping",
+      "status": "pass",
+      "metrics": {
+        "changedPixels": 3071,
+        "monotonic": true
+      },
+      "summary": "Tone mapping changes a high-contrast frame with monotonic calibration."
+    },
+    {
+      "id": "postprocess-color-grade",
+      "status": "pass",
+      "metrics": {
+        "changedPixels": 3072,
+        "vignetteDarkenedPixels": 2696,
+        "sharpenedPixels": 526
+      },
+      "summary": "Color grade changes frame contrast/color and records vignette/sharpening evidence."
+    },
+    {
+      "id": "postprocess-bloom",
+      "status": "pass",
+      "metrics": {
+        "changedPixels": 1377,
+        "brightPixelCount": 730,
+        "maxNeighborBoost": 79.5
+      },
+      "summary": "Bloom detects bright regions and spreads energy to neighbors."
+    },
+    {
+      "id": "postprocess-chromatic-aberration",
+      "status": "pass",
+      "metrics": {
+        "changedPixels": 967,
+        "maxChannelOffsetPixels": 2
+      },
+      "summary": "Chromatic aberration offsets color channels on visible edges."
+    },
+    {
+      "id": "postprocess-film-grain",
+      "status": "pass",
+      "metrics": {
+        "changedPixels": 1499,
+        "intensity": 0.035,
+        "monochrome": true
+      },
+      "summary": "Film grain is visible but bounded below the noisy screenshot threshold."
+    },
+    {
+      "id": "postprocess-depth-of-field",
+      "status": "pass",
+      "metrics": {
+        "blurredPixels": 2749,
+        "maxBlurRadius": 3
+      },
+      "summary": "Depth of field blurs out-of-focus regions when given depth."
+    },
+    {
+      "id": "postprocess-motion-blur",
+      "status": "pass",
+      "metrics": {
+        "blurredPixels": 1200,
+        "maxVelocityPixels": 2.2652372498708644
+      },
+      "summary": "Motion blur reacts to a velocity buffer."
+    },
+    {
+      "id": "postprocess-ssao",
+      "status": "pass",
+      "metrics": {
+        "occludedPixels": 382,
+        "averageOcclusion": 0.023461
+      },
+      "summary": "SSAO darkens depth discontinuities."
+    },
+    {
+      "id": "postprocess-contact-shadow",
+      "status": "pass",
+      "metrics": {
+        "contactPixels": 38,
+        "averageContactDarkening": 0.115763
+      },
+      "summary": "Contact shadow creates screen-space grounding from depth."
+    },
+    {
+      "id": "postprocess-ssr",
+      "status": "pass",
+      "metrics": {
+        "reflectedPixels": 2877,
+        "maxReflectionBoost": 0.455153
+      },
+      "summary": "SSR reflects bright source pixels into shallow receiver regions."
+    },
+    {
+      "id": "postprocess-taa",
+      "status": "pass",
+      "metrics": {
+        "blendedPixels": 3072,
+        "blend": 0.24
+      },
+      "summary": "TAA blends against a distinct history buffer."
+    },
+    {
+      "id": "postprocess-outline",
+      "status": "pass",
+      "metrics": {
+        "outlinedPixels": 1723,
+        "changedPixels": 1723,
+        "maxGradient": 3.383687
+      },
+      "summary": "Outline detects high-contrast edges and changes pixels."
+    },
+    {
+      "id": "postprocess-fxaa",
+      "status": "pass",
+      "metrics": {
+        "changedPixels": 649,
+        "edgePixels": 649
+      },
+      "summary": "FXAA smooths detected edge pixels."
+    }
+  ],
+  "findings": [
+    {
+      "id": "prompt-effect-fog",
+      "surface": "Public prompt API / effects.fog",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Fog has a real Three.js atmosphere path and Canvas2D fallback.",
+      "evidence": [
+        "Three renderer maps fog to THREE.FogExp2.",
+        "Canvas2D fallback paints an atmospheric overlay."
+      ],
+      "requiredAction": "Keep fog tied to renderer atmosphere and screenshot contrast checks; do not replace it with a label or DOM overlay."
+    },
+    {
+      "id": "prompt-effect-bloom",
+      "surface": "Public prompt API / effects.bloom",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Bloom now has visible renderer-owned glow in the public Three path, but this remains a stylized bloom proxy rather than full HDR postprocess.",
+      "evidence": [
+        "Three renderer creates additive bloom sprites anchored to emissive primitives, point lights, and the hero model.",
+        "Canvas2D fallback already has a radial bloom overlay."
+      ],
+      "requiredAction": "Add screenshot acceptance for bloom halos and keep the claim scoped as prompt-facing glow until full HDR postprocess is wired into createAuraApp."
+    },
+    {
+      "id": "prompt-effect-rain",
+      "surface": "Public prompt API / effects.rain",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Rain now uses layered instanced streaks, floor splash ripples, and mist in the public Three path.",
+      "evidence": [
+        "The old sparse line-segment path has been replaced for the primary Three renderer.",
+        "Canvas2D fallback now draws layered rain, mist, and splash ellipses."
+      ],
+      "requiredAction": "Run starter and agent screenshots after this change; fail any route that visually collapses to a lone asset plus sparse rain marks."
+    },
+    {
+      "id": "postprocess-tone-mapping",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Tone mapping changes a high-contrast frame with monotonic calibration.",
+      "evidence": [
+        "changedPixels=3071",
+        "monotonic=true"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-color-grade",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Color grade changes frame contrast/color and records vignette/sharpening evidence.",
+      "evidence": [
+        "changedPixels=3072",
+        "vignetteDarkenedPixels=2696",
+        "sharpenedPixels=526"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-bloom",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Bloom detects bright regions and spreads energy to neighbors.",
+      "evidence": [
+        "changedPixels=1377",
+        "brightPixelCount=730",
+        "maxNeighborBoost=79.5"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-chromatic-aberration",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Chromatic aberration offsets color channels on visible edges.",
+      "evidence": [
+        "changedPixels=967",
+        "maxChannelOffsetPixels=2"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-film-grain",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Film grain is visible but bounded below the noisy screenshot threshold.",
+      "evidence": [
+        "changedPixels=1499",
+        "intensity=0.035",
+        "monochrome=true"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-depth-of-field",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Depth of field blurs out-of-focus regions when given depth.",
+      "evidence": [
+        "blurredPixels=2749",
+        "maxBlurRadius=3"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-motion-blur",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Motion blur reacts to a velocity buffer.",
+      "evidence": [
+        "blurredPixels=1200",
+        "maxVelocityPixels=2.2652372498708644"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-ssao",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "SSAO darkens depth discontinuities.",
+      "evidence": [
+        "occludedPixels=382",
+        "averageOcclusion=0.023461"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-contact-shadow",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Contact shadow creates screen-space grounding from depth.",
+      "evidence": [
+        "contactPixels=38",
+        "averageContactDarkening=0.115763"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-ssr",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "SSR reflects bright source pixels into shallow receiver regions.",
+      "evidence": [
+        "reflectedPixels=2877",
+        "maxReflectionBoost=0.455153"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-taa",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "TAA blends against a distinct history buffer.",
+      "evidence": [
+        "blendedPixels=3072",
+        "blend=0.24"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-outline",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Outline detects high-contrast edges and changes pixels.",
+      "evidence": [
+        "outlinedPixels=1723",
+        "changedPixels=1723",
+        "maxGradient=3.383687"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "postprocess-fxaa",
+      "surface": "Renderer postprocess pixel kernels",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "FXAA smooths detected edge pixels.",
+      "evidence": [
+        "changedPixels=649",
+        "edgePixels=649"
+      ],
+      "requiredAction": "Keep this kernel in screenshot-backed routes before marketing it."
+    },
+    {
+      "id": "particle-preset-fire",
+      "surface": "Renderer particle presets",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "fire produces renderer sprite batches and passes the browser contact-sheet pixel proof.",
+      "evidence": [
+        "liveCount=169",
+        "uploadedBytes=6084",
+        "colorBuckets=22",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=27573",
+        "uniqueBuckets=114"
+      ],
+      "requiredAction": "Keep the particle contact sheet under review; these are sprite-preset VFX, not full fluid/fire simulation claims."
+    },
+    {
+      "id": "particle-preset-fountain",
+      "surface": "Renderer particle presets",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "fountain produces renderer sprite batches and passes the browser contact-sheet pixel proof.",
+      "evidence": [
+        "liveCount=149",
+        "uploadedBytes=5364",
+        "colorBuckets=14",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=14844",
+        "uniqueBuckets=104"
+      ],
+      "requiredAction": "Keep the particle contact sheet under review; these are sprite-preset VFX, not full fluid/fire simulation claims."
+    },
+    {
+      "id": "particle-preset-collision-burst",
+      "surface": "Renderer particle presets",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "collision-burst produces renderer sprite batches and passes the browser contact-sheet pixel proof.",
+      "evidence": [
+        "liveCount=42",
+        "uploadedBytes=1512",
+        "colorBuckets=4",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=11933",
+        "uniqueBuckets=67"
+      ],
+      "requiredAction": "Keep the particle contact sheet under review; these are sprite-preset VFX, not full fluid/fire simulation claims."
+    },
+    {
+      "id": "particle-preset-spark-shower",
+      "surface": "Renderer particle presets",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "spark-shower produces renderer sprite batches and passes the browser contact-sheet pixel proof.",
+      "evidence": [
+        "liveCount=48",
+        "uploadedBytes=1728",
+        "colorBuckets=4",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=6921",
+        "uniqueBuckets=65"
+      ],
+      "requiredAction": "Keep the particle contact sheet under review; these are sprite-preset VFX, not full fluid/fire simulation claims."
+    },
+    {
+      "id": "cinematic-rain-system",
+      "surface": "Cinematic VFX helpers",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "Cinematic rain helper emits renderer-owned wide streak geometry, splash ripple geometry, and mist bank geometry.",
+      "evidence": [
+        "RainParticleSystem no longer uses point-only geometry.",
+        "RainParticleSystem exposes renderItems for streaks, splash-ripples, and mist-banks.",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=135180",
+        "uniqueBuckets=60"
+      ],
+      "requiredAction": "Add browser contact-sheet review for cinematic rain before treating it as a premium weather simulation; it is now visually acceptable as a starter-level rain helper."
+    },
+    {
+      "id": "cinematic-fog-glow-wet-reflection",
+      "surface": "Cinematic VFX helpers",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "Fog, glow cards, and wet reflection helpers have screenshot-backed approximation proof, with explicit non-planar/non-volumetric claim boundaries.",
+      "evidence": [
+        "Renderer evidence flags reject DOM/CSS overlays.",
+        "Wet reflection explicitly says planarReflection=false.",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=143561",
+        "uniqueBuckets=53"
+      ],
+      "requiredAction": "Keep these claims scoped as visual approximations unless true volumetric fog or planar reflection systems are added."
+    },
+    {
+      "id": "production-runtime-postprocess-named-classes",
+      "surface": "Production runtime named postprocess classes",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Exported production-runtime postprocess classes now run real renderer pixel kernels instead of only storing options.",
+      "evidence": [
+        "no option-holder stubs detected",
+        "passOutputs=production-color-grading,production-bloom,production-ssao,production-depth-of-field,production-fxaa",
+        "totalChangedPixels=6946"
+      ],
+      "requiredAction": "Keep these adapters under pixel-delta unit tests and browser screenshot checks before using them in polished production-runtime demos."
+    },
+    {
+      "id": "three-compat-postprocess-metric-only",
+      "surface": "Three compatibility postprocess",
+      "status": "pass",
+      "severity": "blocker",
+      "summary": "Three-compat postprocess classes now preserve compatibility metrics and run real pixel kernels when a frame provides pixels.",
+      "evidence": [
+        "no metric-only postprocess files detected",
+        "visualChangedPixels=16262",
+        "visualPasses=BloomPass,SSAOPass,TAAPass,FXAAPass,DepthOfFieldPass,MotionBlurPass,ColorGradingPass,VignettePass,OutlinePass"
+      ],
+      "requiredAction": "Keep the Three-compat visual claim scoped to pixel-buffer compatibility until browser before/after screenshots prove the full route quality."
+    },
+    {
+      "id": "three-compat-vfx-data-only",
+      "surface": "Three compatibility VFX",
+      "status": "pass",
+      "severity": "warning",
+      "summary": "Three-compat VFX structures are compatibility data containers with browser contact-sheet proof for particles, sprites, lines, trails, and point clouds.",
+      "evidence": [
+        "packages/rendering/src/threejs-compatibility/vfx/ParticleSystem.ts",
+        "packages/rendering/src/threejs-compatibility/vfx/SpriteSystem.ts",
+        "packages/rendering/src/threejs-compatibility/vfx/LineRenderer.ts",
+        "packages/rendering/src/threejs-compatibility/vfx/TrailRenderer.ts",
+        "packages/rendering/src/threejs-compatibility/vfx/GPUPointCloud.ts",
+        "contactSheet=tests/reports/effects-vfx-visual-audit-contact-sheet.png",
+        "litPixels=52873",
+        "uniqueBuckets=141"
+      ],
+      "requiredAction": "Keep this scoped as compatibility VFX proof; do not market it as a standalone high-end VFX renderer without route screenshots."
+    }
+  ]
+}

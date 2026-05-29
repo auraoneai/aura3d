@@ -222,6 +222,14 @@ For Aura3D, that means:
 - The reset evidence now distinguishes prompt-plumbing success from
   product-quality visual success. A screenshot can pass WebGL2, route-health,
   and pixel-profile checks while still failing the product promise.
+- `docs/project/effects-vfx-visual-audit.md` now inventories the prompt-facing
+  effects, renderer postprocess kernels, particle presets, cinematic helpers,
+  production-runtime postprocess class files, and three-compat VFX/postprocess
+  surfaces. It confirms the public prompt-facing `effects.rain()` and
+  `effects.bloom()` paths were upgraded beyond the previous sparse-line/no-op
+  behavior, verifies production-runtime and three-compat postprocess through
+  real pixel kernels, and records a browser contact-sheet proof for particle and
+  cinematic VFX surfaces.
 
 ## Known Gaps To Keep Honest
 
@@ -241,6 +249,11 @@ For Aura3D, that means:
   still a compact Aura3D render path, not a full physically based Three.js
   replacement. GLB material/texture fidelity needs more corpus testing before it
   can be marketed as production-grade asset parity.
+- The broader effects/VFX/postprocess surface now passes the contact-sheet audit
+  at starter/helper level, but that is not permission to market premium VFX
+  parity. Particle presets are sprite-preset VFX, cinematic fog/glow/wet
+  reflection are scoped approximations, and route-level screenshots plus human
+  review are still required before any effect is called polished production VFX.
 - The `product-viewer` starter is clean-install and product-quality reviewed,
   but it remains a stylized starter recipe, not a guarantee that every product
   asset will become a polished product-marketing render.
@@ -307,9 +320,16 @@ For Aura3D, that means:
 - [ ] Improve materials so product assets do not look flat: PBR defaults,
   environment reflections, contact shadows, wet floors, emissive surfaces, and
   texture-preserving GLB material handling.
-- [x] Replace symbolic weather/effects with believable visual systems where
-  relevant: rain volume, splash/reflection response, fog/haze, glow, bloom,
-  depth of field, and motion trails.
+- [x] Replace symbolic prompt-facing starter effects where relevant: public
+  `effects.rain()` now renders layered rain streaks, splash ripples, and mist in
+  the primary Three path, and public `effects.bloom()` now renders
+  renderer-owned additive glow instead of being ignored.
+- [x] Finish the broader effects/VFX surface audit blockers: production-runtime
+  postprocess classes now execute pixel kernels, three-compat postprocess runs
+  pixel kernels when frames include pixels, particle presets have a browser
+  contact sheet, and cinematic rain has streak/splash/mist geometry.
+- [ ] Add route-level screenshot QA before marketing any VFX surface as premium
+  production VFX rather than starter/helper-level visual proof.
 - [ ] Add animation helpers for idle product motion, camera dolly, object
   reveals, game-loop movement, collection feedback, and interaction states.
 - [ ] Add asset normalization: auto-scale, auto-center, ground alignment,

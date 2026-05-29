@@ -147,6 +147,11 @@ export interface AuraEffectNode {
   readonly intensity?: number;
   readonly density?: number;
   readonly color?: AuraColor;
+  readonly speed?: number;
+  readonly wind?: AuraVec3;
+  readonly particleCount?: number;
+  readonly splashes?: boolean;
+  readonly mist?: boolean;
 }
 
 export interface AuraInteractionNode {
@@ -384,7 +389,13 @@ export const effects = {
       kind: "effect",
       effect: "rain",
       intensity: options.intensity ?? 0.4,
-      color: options.color ?? "#bcd7ff"
+      density: options.density ?? 0.72,
+      color: options.color ?? "#bcd7ff",
+      speed: options.speed ?? 1,
+      wind: options.wind ?? [-0.32, -5.4, -0.16],
+      particleCount: options.particleCount,
+      splashes: options.splashes ?? true,
+      mist: options.mist ?? true
     })
 } as const;
 
@@ -1054,6 +1065,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
   addThreeLights(THREE, threeScene, snapshot.nodes);
   const loader = new GLTFLoader();
   const disposables: any[] = [];
+  const frameUpdaters: Array<(time: number) => void> = [];
 
   for (const node of snapshot.nodes) {
     if (node.kind === "model" && isRenderableModelNode(node)) {
@@ -1083,10 +1095,20 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
     }
   }
 
-  if (snapshot.nodes.some((node) => node.kind === "effect" && node.effect === "rain")) {
-    const rain = createThreeRain(THREE);
+  const bloomEffect = snapshot.nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "bloom");
+  if (bloomEffect) {
+    const bloom = createThreeBloom(THREE, snapshot, bloomEffect);
+    threeScene.add(bloom);
+    disposables.push(bloom, bloom.userData.texture);
+    if (typeof bloom.userData.update === "function") frameUpdaters.push(bloom.userData.update);
+  }
+
+  const rainEffect = snapshot.nodes.find((node): node is AuraEffectNode => node.kind === "effect" && node.effect === "rain");
+  if (rainEffect) {
+    const rain = createThreeRain(THREE, rainEffect);
     threeScene.add(rain);
-    disposables.push(rain);
+    disposables.push(rain, rain.userData.mistTexture);
+    if (typeof rain.userData.update === "function") frameUpdaters.push(rain.userData.update);
   }
 
   const cameraObject = new THREE.PerspectiveCamera(snapshot.camera.fov ?? 45, canvas.width / Math.max(1, canvas.height), 0.05, 100);
@@ -1096,6 +1118,7 @@ async function createThreeSceneRenderer(canvas: HTMLCanvasElement, snapshot: Aur
       if (renderer.domElement.width !== canvas.width || renderer.domElement.height !== canvas.height) {
         renderer.setSize(canvas.width, canvas.height, false);
       }
+      for (const update of frameUpdaters) update(time);
       updateThreeCamera(THREE, cameraObject, snapshot.camera, canvas, time);
       renderer.render(threeScene, cameraObject);
       return Math.max(1, renderer.info.render.calls);
@@ -1201,40 +1224,240 @@ function applyThreeTransform(object: any, node: AuraTransformSpec, baseScale: Au
   if (node.lookAt) object.lookAt(node.lookAt[0], node.lookAt[1], node.lookAt[2]);
 }
 
-function createThreeRain(THREE: typeof import("three")): any {
+function createThreeBloom(THREE: typeof import("three"), snapshot: AuraSceneSnapshot, effect: AuraEffectNode): any {
   const group = new THREE.Group();
-  const makeStreaks = (lineCount: number, yBase: number, yRange: number, zOffset: number, length: number, opacity: number) => {
-    const vertices: number[] = [];
-    for (let index = 0; index < lineCount; index += 1) {
-      const x = ((index * 37) % 120) / 15 - 4.0;
-      const z = ((index * 53) % 120) / 17 - 3.5 + zOffset;
-      const y = yBase + ((index * 29) % 120) / yRange;
-      vertices.push(x, y, z, x - 0.08, y - length, z + 0.035);
+  const intensity = Math.max(0.05, Math.min(1.4, effect.intensity ?? 0.35));
+  const texture = createThreeRadialTexture(THREE, effect.color ?? "#ffffff");
+  group.userData.texture = texture;
+  const anchors = collectBloomAnchors(snapshot);
+  anchors.forEach((anchor, index) => {
+    const materialValue = new THREE.SpriteMaterial({
+      map: texture,
+      color: new THREE.Color(anchor.color ?? effect.color ?? "#ffffff"),
+      transparent: true,
+      opacity: Math.min(0.46, 0.12 + intensity * anchor.opacity),
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending
+    });
+    const sprite = new THREE.Sprite(materialValue);
+    sprite.name = `aura-bloom-halo-${index}`;
+    sprite.position.set(anchor.position[0], anchor.position[1], anchor.position[2]);
+    sprite.scale.setScalar(anchor.size * (0.85 + intensity * 1.4));
+    group.add(sprite);
+  });
+  group.userData.update = (time: number) => {
+    const pulse = 1 + Math.sin(time * 0.0012) * 0.035 * intensity;
+    group.children.forEach((child: any, index: number) => {
+      const base = anchors[index]?.size ?? 1;
+      child.scale.setScalar(base * (0.85 + intensity * 1.4) * pulse);
+    });
+  };
+  return group;
+}
+
+function collectBloomAnchors(snapshot: AuraSceneSnapshot): readonly {
+  readonly position: AuraVec3;
+  readonly size: number;
+  readonly opacity: number;
+  readonly color?: AuraColor;
+}[] {
+  const anchors: Array<{ position: AuraVec3; size: number; opacity: number; color?: AuraColor }> = [];
+  for (const node of snapshot.nodes) {
+    if (node.kind === "primitive" && node.material?.emissive) {
+      const size = primitiveSize(node);
+      const scaleValue = typeof node.scale === "number" ? [node.scale, node.scale, node.scale] as const : node.scale ?? [1, 1, 1] as const;
+      anchors.push({
+        position: node.position ?? [0, 0.65, -0.6],
+        size: Math.max(0.34, Math.max(size[0] * scaleValue[0], size[1] * scaleValue[1], size[2] * scaleValue[2]) * 1.45),
+        opacity: 0.24,
+        color: node.material.emissive
+      });
     }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
-    return new THREE.LineSegments(
-      geometry,
-      new THREE.LineBasicMaterial({ color: "#c9e8ff", transparent: true, opacity })
-    );
+    if (node.kind === "light" && node.light === "point") {
+      anchors.push({
+        position: node.position ?? [0, 1.4, 0.6],
+        size: Math.max(0.55, 0.28 + node.intensity * 0.32),
+        opacity: 0.18,
+        color: node.color
+      });
+    }
+  }
+  const modelNode = snapshot.nodes.find((node): node is AuraModelNode => node.kind === "model");
+  if (modelNode) {
+    const position = modelNode.position ?? [0, 0.42, -0.65];
+    anchors.push({
+      position: [position[0], position[1] + 0.42, position[2] + 0.08],
+      size: 1.2,
+      opacity: 0.12
+    });
+  }
+  return anchors.length > 0 ? anchors.slice(0, 10) : [{ position: [0, 0.75, -0.75], size: 1.6, opacity: 0.16 }];
+}
+
+function createThreeRadialTexture(THREE: typeof import("three"), color: AuraColor): any {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const context = canvas.getContext("2d");
+  if (context) {
+    const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, toAlphaColor(String(color), 0.95));
+    gradient.addColorStop(0.18, toAlphaColor(String(color), 0.42));
+    gradient.addColorStop(0.52, toAlphaColor(String(color), 0.14));
+    gradient.addColorStop(1, toAlphaColor(String(color), 0));
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function createThreeRain(THREE: typeof import("three"), effect: AuraEffectNode): any {
+  const group = new THREE.Group();
+  const density = Math.max(0.2, Math.min(1.6, effect.density ?? effect.intensity ?? 0.72));
+  const intensity = Math.max(0.1, Math.min(1.4, effect.intensity ?? 0.4));
+  const color = effect.color ?? "#c9e8ff";
+  const wind = effect.wind ?? [-0.32, -5.4, -0.16];
+  const requestedCount = effect.particleCount ?? Math.round(520 * density);
+  const dummy = new THREE.Object3D();
+  const layers: any[] = [];
+  const makeLayer = (name: string, count: number, zMin: number, zMax: number, length: number, width: number, opacity: number, speed: number) => {
+    const geometry = new THREE.PlaneGeometry(width, length);
+    const materialValue = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(color),
+      transparent: true,
+      opacity,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+      blending: THREE.AdditiveBlending
+    });
+    const mesh = new THREE.InstancedMesh(geometry, materialValue, count);
+    mesh.name = name;
+    mesh.userData.entries = [];
+    for (let index = 0; index < count; index += 1) {
+      const entry = {
+        x: seededRange(index, 11, -4.2, 4.2),
+        y: seededRange(index, 23, 0.22, 3.25),
+        z: seededRange(index, 37, zMin, zMax),
+        scale: seededRange(index, 41, 0.72, 1.32),
+        phase: seededRange(index, 53, 0, 1)
+      };
+      mesh.userData.entries.push(entry);
+      applyRainInstance(dummy, mesh, index, entry, 0, length, wind, speed);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+    layers.push({ mesh, length, speed });
+    group.add(mesh);
   };
 
-  group.add(makeStreaks(110, 0.75, 42, -1.35, 0.38, 0.46));
-  group.add(makeStreaks(70, 0.46, 34, 0.15, 0.58, 0.72));
-  group.add(makeStreaks(36, 0.2, 30, 1.05, 0.78, 0.86));
+  makeLayer("aura-rain-background-volume", Math.round(requestedCount * 0.42), -3.8, -1.1, 0.36, 0.018, Math.min(0.34, intensity * 0.36), 0.6);
+  makeLayer("aura-rain-midground-volume", Math.round(requestedCount * 0.36), -1.3, 0.9, 0.58, 0.026, Math.min(0.48, intensity * 0.54), 0.92);
+  makeLayer("aura-rain-foreground-streaks", Math.round(requestedCount * 0.22), 0.75, 2.35, 0.82, 0.034, Math.min(0.66, intensity * 0.72), 1.22);
 
-  const splashVertices: number[] = [];
-  for (let index = 0; index < 56; index += 1) {
-    splashVertices.push(((index * 31) % 100) / 18 - 2.75, 0.018, ((index * 47) % 100) / 20 - 1.9);
+  const splashMaterial = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(color),
+    transparent: true,
+    opacity: effect.splashes === false ? 0 : 0.48,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending
+  });
+  const splashGeometry = new THREE.RingGeometry(0.028, 0.046, 20);
+  const splashCount = effect.splashes === false ? 0 : Math.round(64 * density);
+  const splashes = new THREE.InstancedMesh(splashGeometry, splashMaterial, splashCount);
+  splashes.name = "aura-rain-floor-splash-ripples";
+  splashes.userData.entries = [];
+  for (let index = 0; index < splashCount; index += 1) {
+    const entry = {
+      x: seededRange(index, 71, -3.2, 3.2),
+      z: seededRange(index, 89, -1.95, 1.5),
+      scale: seededRange(index, 97, 0.58, 1.65),
+      phase: seededRange(index, 109, 0, 1)
+    };
+    splashes.userData.entries.push(entry);
+    applySplashInstance(dummy, splashes, index, entry, 0);
   }
-  const splashGeometry = new THREE.BufferGeometry();
-  splashGeometry.setAttribute("position", new THREE.Float32BufferAttribute(splashVertices, 3));
-  group.add(new THREE.Points(
-    splashGeometry,
-    new THREE.PointsMaterial({ color: "#d6f6ff", size: 0.035, transparent: true, opacity: 0.72 })
-  ));
+  splashes.instanceMatrix.needsUpdate = true;
+  group.add(splashes);
+
+  if (effect.mist !== false) {
+    const mistTexture = createThreeRadialTexture(THREE, color);
+    group.userData.mistTexture = mistTexture;
+    const mistMaterial = new THREE.SpriteMaterial({
+      map: mistTexture,
+      color: new THREE.Color(color),
+      transparent: true,
+      opacity: Math.min(0.18, 0.08 + intensity * 0.08),
+      depthWrite: false,
+      depthTest: false,
+      blending: THREE.AdditiveBlending
+    });
+    for (let index = 0; index < 5; index += 1) {
+      const sprite = new THREE.Sprite(mistMaterial.clone());
+      sprite.name = `aura-rain-mist-bank-${index}`;
+      sprite.position.set(-2.4 + index * 1.2, 0.32 + (index % 2) * 0.12, -1.5 + (index % 3) * 0.48);
+      sprite.scale.set(1.4 + index * 0.18, 0.42, 1);
+      group.add(sprite);
+    }
+  }
+
+  group.userData.update = (time: number) => {
+    const seconds = time / 1000;
+    for (const layer of layers) {
+      const entries = layer.mesh.userData.entries as Array<{ x: number; y: number; z: number; scale: number; phase: number }>;
+      entries.forEach((entry, index) => {
+        applyRainInstance(dummy, layer.mesh, index, entry, seconds, layer.length, wind, layer.speed * (effect.speed ?? 1));
+      });
+      layer.mesh.instanceMatrix.needsUpdate = true;
+    }
+    const splashEntries = splashes.userData.entries as Array<{ x: number; z: number; scale: number; phase: number }>;
+    splashEntries.forEach((entry, index) => applySplashInstance(dummy, splashes, index, entry, seconds));
+    splashes.instanceMatrix.needsUpdate = true;
+  };
 
   return group;
+}
+
+function applyRainInstance(
+  dummy: { position: { set(x: number, y: number, z: number): void }; rotation: { set(x: number, y: number, z: number): void }; scale: { set(x: number, y: number, z: number): void }; updateMatrix(): void; matrix: unknown },
+  mesh: { setMatrixAt(index: number, matrix: unknown): void },
+  index: number,
+  entry: { readonly x: number; readonly y: number; readonly z: number; readonly scale: number; readonly phase: number },
+  seconds: number,
+  length: number,
+  wind: AuraVec3,
+  speed: number
+): void {
+  const fall = ((seconds * speed + entry.phase) % 1) * 3.6;
+  const y = 3.15 - ((3.15 - entry.y + fall) % 3.4);
+  dummy.position.set(entry.x + wind[0] * fall * 0.06, y, entry.z + wind[2] * fall * 0.08);
+  dummy.rotation.set(0, 0, -0.17 + wind[0] * 0.055);
+  dummy.scale.set(entry.scale, entry.scale, entry.scale);
+  dummy.updateMatrix();
+  mesh.setMatrixAt(index, dummy.matrix);
+}
+
+function applySplashInstance(
+  dummy: { position: { set(x: number, y: number, z: number): void }; rotation: { set(x: number, y: number, z: number): void }; scale: { set(x: number, y: number, z: number): void }; updateMatrix(): void; matrix: unknown },
+  mesh: { setMatrixAt(index: number, matrix: unknown): void },
+  index: number,
+  entry: { readonly x: number; readonly z: number; readonly scale: number; readonly phase: number },
+  seconds: number
+): void {
+  const ripple = 0.35 + (((seconds * 1.8 + entry.phase) % 1) * 1.25);
+  dummy.position.set(entry.x, 0.022, entry.z);
+  dummy.rotation.set(-Math.PI / 2, 0, seededRange(index, 131, 0, Math.PI));
+  dummy.scale.set(entry.scale * ripple, entry.scale * ripple, entry.scale * ripple);
+  dummy.updateMatrix();
+  mesh.setMatrixAt(index, dummy.matrix);
+}
+
+function seededRange(index: number, salt: number, min: number, max: number): number {
+  const value = Math.sin((index + 1) * 12.9898 + salt * 78.233) * 43758.5453;
+  const normalized = value - Math.floor(value);
+  return min + (max - min) * normalized;
 }
 
 function updateThreeCamera(THREE: typeof import("three"), cameraObject: any, cameraSpec: AuraCameraSpec, canvas: HTMLCanvasElement, time: number): void {
@@ -2484,15 +2707,41 @@ function drawEffect(context: CanvasRenderingContext2D, width: number, height: nu
     context.fillRect(0, 0, width, height);
   }
   if (node.effect === "rain") {
-    context.strokeStyle = toAlphaColor(node.color ?? "#bcd7ff", Math.min(0.6, node.intensity ?? 0.4));
-    context.lineWidth = 1;
-    for (let i = 0; i < 80; i += 1) {
-      const x = (i * 47 + time * 0.08) % width;
-      const y = (i * 89 + time * 0.42) % height;
-      context.beginPath();
-      context.moveTo(x, y);
-      context.lineTo(x - 9, y + 28);
-      context.stroke();
+    const density = Math.max(0.2, Math.min(1.6, node.density ?? node.intensity ?? 0.72));
+    const intensity = Math.max(0.1, Math.min(1.4, node.intensity ?? 0.4));
+    const color = node.color ?? "#bcd7ff";
+    const mist = context.createLinearGradient(0, height * 0.24, 0, height * 0.78);
+    mist.addColorStop(0, toAlphaColor(color, node.mist === false ? 0 : 0.02 * intensity));
+    mist.addColorStop(0.62, toAlphaColor(color, node.mist === false ? 0 : 0.09 * intensity));
+    mist.addColorStop(1, "rgba(0,0,0,0)");
+    context.fillStyle = mist;
+    context.fillRect(0, height * 0.2, width, height * 0.72);
+    const drawLayer = (count: number, length: number, alpha: number, lineWidth: number, speed: number, spread: number) => {
+      context.strokeStyle = toAlphaColor(color, alpha);
+      context.lineWidth = lineWidth;
+      for (let i = 0; i < count; i += 1) {
+        const x = (i * 47 + time * 0.045 * speed + spread) % width;
+        const y = (i * 89 + time * 0.22 * speed) % (height * 0.82);
+        context.beginPath();
+        context.moveTo(x, y);
+        context.lineTo(x - length * 0.27, y + length);
+        context.stroke();
+      }
+    };
+    drawLayer(Math.round(80 * density), 24, Math.min(0.24, intensity * 0.18), 1, 0.65, 11);
+    drawLayer(Math.round(58 * density), 38, Math.min(0.42, intensity * 0.28), 1.2, 0.95, 37);
+    drawLayer(Math.round(34 * density), 58, Math.min(0.62, intensity * 0.38), 1.6, 1.28, 73);
+    if (node.splashes !== false) {
+      context.strokeStyle = toAlphaColor(color, Math.min(0.32, intensity * 0.24));
+      context.lineWidth = 1;
+      for (let i = 0; i < Math.round(36 * density); i += 1) {
+        const x = ((i * 83) % 100) / 100 * width;
+        const y = height * (0.64 + ((i * 41) % 28) / 100);
+        const radius = 3 + ((i * 17) % 8);
+        context.beginPath();
+        context.ellipse(x, y, radius * 1.9, radius * 0.42, 0, 0, Math.PI * 2);
+        context.stroke();
+      }
     }
   }
   context.restore();
