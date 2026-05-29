@@ -1,0 +1,153 @@
+{
+  "schema": "aura3d-external-deployment-smoke-summary",
+  "generatedAt": "2026-05-29T07:07:52.642Z",
+  "pass": false,
+  "checks": [
+    {
+      "id": "vercel-public-smoke",
+      "pass": true,
+      "detail": "protected https://dist-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | protected https://dist-gchahal1982-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | protected https://dist-3n5lgxoky-veerone.vercel.app: Vercel deployment exists but is blocked by deployment protection before Aura3D can render. | public-smoke-pass https://aura3d-vercel-smoke.vercel.app: Public Vercel route rendered Aura3D canvas with 35498 lit sample pixels and 80 color buckets. | failed https://dist-gray-iota-68.vercel.app: Public Vercel route failed visual or MIME checks: visualPass=false, mimePass=true."
+    },
+    {
+      "id": "cloudflare-pages-public-smoke",
+      "pass": false,
+      "detail": "credential-blocked: Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded."
+    },
+    {
+      "id": "netlify-public-smoke",
+      "pass": false,
+      "detail": "credential-blocked: Missing NETLIFY_AUTH_TOKEN and/or NETLIFY_SITE_ID; no secret values were inspected or recorded."
+    }
+  ],
+  "attempts": [
+    {
+      "host": "vercel",
+      "status": "protected",
+      "url": "https://dist-veerone.vercel.app",
+      "httpStatus": 401,
+      "detail": "Vercel deployment exists but is blocked by deployment protection before Aura3D can render."
+    },
+    {
+      "host": "vercel",
+      "status": "protected",
+      "url": "https://dist-gchahal1982-veerone.vercel.app",
+      "httpStatus": 401,
+      "detail": "Vercel deployment exists but is blocked by deployment protection before Aura3D can render."
+    },
+    {
+      "host": "vercel",
+      "status": "protected",
+      "url": "https://dist-3n5lgxoky-veerone.vercel.app",
+      "httpStatus": 401,
+      "detail": "Vercel deployment exists but is blocked by deployment protection before Aura3D can render."
+    },
+    {
+      "host": "vercel",
+      "status": "public-smoke-pass",
+      "url": "https://aura3d-vercel-smoke.vercel.app",
+      "httpStatus": 200,
+      "detail": "Public Vercel route rendered Aura3D canvas with 35498 lit sample pixels and 80 color buckets.",
+      "evidence": {
+        "httpStatus": 200,
+        "title": "Aura3D Product Viewer",
+        "ready": true,
+        "backend": "webgl2",
+        "drawCalls": 32,
+        "diagnosticsVisible": true,
+        "canvasBytes": 343059,
+        "screenshotPath": "tests/reports/external-deployment-smoke/aura3d-vercel-smoke-vercel-app.png",
+        "profile": {
+          "litPixels": 35498,
+          "uniqueBuckets": 80,
+          "centerObjectPixels": 10496
+        },
+        "resources": {
+          "js": [
+            {
+              "url": "https://aura3d-vercel-smoke.vercel.app/assets/index-BSOQ-vkz.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8"
+            },
+            {
+              "url": "https://aura3d-vercel-smoke.vercel.app/assets/three.module-Du6oIqpS.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8"
+            },
+            {
+              "url": "https://aura3d-vercel-smoke.vercel.app/assets/GLTFLoader-CeMWdL2l.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8"
+            }
+          ],
+          "css": [],
+          "models": [
+            {
+              "url": "https://aura3d-vercel-smoke.vercel.app/aura-assets/product-fixture.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "host": "vercel",
+      "status": "failed",
+      "url": "https://dist-gray-iota-68.vercel.app",
+      "httpStatus": 200,
+      "detail": "Public Vercel route failed visual or MIME checks: visualPass=false, mimePass=true.",
+      "evidence": {
+        "httpStatus": 200,
+        "title": "Aura3D Cinematic Scene",
+        "ready": false,
+        "backend": "webgl2",
+        "drawCalls": null,
+        "diagnosticsVisible": true,
+        "canvasBytes": 15939,
+        "screenshotPath": "tests/reports/external-deployment-smoke/dist-gray-iota-68-vercel-app.png",
+        "profile": {
+          "litPixels": 0,
+          "uniqueBuckets": 0,
+          "centerObjectPixels": 0
+        },
+        "resources": {
+          "js": [
+            {
+              "url": "https://dist-gray-iota-68.vercel.app/assets/index-p4pQTLXn.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8"
+            },
+            {
+              "url": "https://dist-gray-iota-68.vercel.app/assets/three.module-Du6oIqpS.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8"
+            },
+            {
+              "url": "https://dist-gray-iota-68.vercel.app/assets/GLTFLoader-CeMWdL2l.js",
+              "status": 200,
+              "contentType": "application/javascript; charset=utf-8"
+            }
+          ],
+          "css": [],
+          "models": [
+            {
+              "url": "https://dist-gray-iota-68.vercel.app/aura-assets/hero.9ffe96f4.glb",
+              "status": 200,
+              "contentType": "model/gltf-binary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "host": "cloudflare-pages",
+      "status": "credential-blocked",
+      "detail": "Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded."
+    },
+    {
+      "host": "netlify",
+      "status": "credential-blocked",
+      "detail": "Missing NETLIFY_AUTH_TOKEN and/or NETLIFY_SITE_ID; no secret values were inspected or recorded."
+    }
+  ]
+}

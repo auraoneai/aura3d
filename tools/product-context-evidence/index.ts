@@ -154,6 +154,9 @@ const effectsVfxAuditReport = readJson<{
   };
   readonly findings?: readonly { readonly id?: string; readonly status?: string }[];
 }>("tests/reports/effects-vfx-visual-audit.json");
+const externalDeploymentReport = readJson<{
+  readonly checks?: readonly { readonly id?: string; readonly pass?: boolean; readonly detail?: string }[];
+}>("tests/reports/external-deployment-smoke.json");
 const promptFidelityReport = readJson<{
   readonly pass?: boolean;
   readonly productQualityReady?: boolean;
@@ -553,7 +556,9 @@ const knownGaps: KnownGapEvidence[] = [
   {
     gap: "Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify.",
     owner: "Release Engineering",
-    nextAction: "Vercel deploy was attempted but blocked by HTTP 401 deployment protection; disable protection or provide a public smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output.",
+    nextAction: (externalDeploymentReport.checks ?? []).some((check) => check.id === "vercel-public-smoke" && check.pass === true)
+      ? "Vercel public smoke now renders a WebGL2 Aura3D canvas from a deployed product-viewer artifact. Provide Cloudflare Pages and Netlify credentials or project targets, then record public URLs, route health, screenshots, MIME checks, and deployment-check output for those hosts."
+      : "Vercel public smoke is not yet passing. Provide or repair a public Vercel smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output.",
     targetEvidence: ["docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"]
   },
   {

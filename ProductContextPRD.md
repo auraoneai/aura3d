@@ -272,10 +272,12 @@ For Aura3D, that means:
 - Bundle-size proof measures built bundles with size-limit, including starter
   apps. The compact core API budget excludes the lazy Three.js renderer chunk;
   the starter-template bundle budgets include that renderer cost.
-- Cursor, Copilot, outside developers, real Vercel/Cloudflare/Netlify
-  deployments, authenticated Sketchfab CC0 downloads, and Meshy export runs
-  remain external dogfood work. The local Codex and Claude Code five-task passes
-  must not be presented as broad market proof.
+- Cursor, Copilot, outside developers, Cloudflare/Netlify deployments,
+  authenticated Sketchfab CC0 downloads, and Meshy export runs remain external
+  dogfood work. Vercel public smoke now renders the product-viewer artifact, but
+  one host is not enough to claim complete external deployment proof. The local
+  Codex and Claude Code five-task passes must not be presented as broad market
+  proof.
 
 ## Build Checklist Still Required
 
@@ -398,8 +400,9 @@ For Aura3D, that means:
 - [ ] Run a wild asset corpus with separately licensed assets. Poly Haven CC0
   and real Draco-compressed assets now pass the executable corpus; authenticated
   Sketchfab CC0 downloads and Meshy exports remain.
-- [ ] Deploy at least one polished prompt-fidelity demo publicly to Vercel,
-  Cloudflare Pages, and Netlify without authentication walls.
+- [ ] Deploy at least one polished prompt-fidelity demo publicly to Cloudflare
+  Pages and Netlify without authentication walls. Vercel public smoke is now
+  recorded as a rendered WebGL2 canvas for the product-viewer artifact.
 - [ ] Run marketing comprehension interviews after the marketing site only
   shows visuals that meet the product-quality bar.
 - [ ] Run outside beta dogfood with real users and record whether they can turn

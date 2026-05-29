@@ -16,6 +16,7 @@ const promptFidelityProductQualityReady = promptFidelityReady();
 const codexFiveTaskEvalPassed = reportCheckPass("tests/reports/agent-context/codex-self-test.json", "codex-five-task-completes-at-least-four-of-five");
 const codexRepairEvalPassed = reportCheckPass("tests/reports/agent-context/codex-self-test.json", "codex-repair-screenshot-improves-to-product-quality");
 const claudeCodeEvalPassed = reportPass("tests/reports/agent-context/claude-code-eval.json") && existsSync("docs/project/claude-code-agent-context-results.md");
+const vercelPublicSmokePassed = reportCheckPass("tests/reports/external-deployment-smoke.json", "vercel-public-smoke");
 
 const rounds: RoundEvidence[] = [
   round("Round 0: Product Context Evidence Matrix", "automated-pass", ["docs/project/product-context-evidence.md", "tests/reports/product-context-evidence.json"]),
@@ -40,7 +41,9 @@ const rounds: RoundEvidence[] = [
       ? undefined
       : "Current screenshots prove rendering, diagnostics, and basic visual cues, but fewer than three release-facing prompt artifacts have product-quality review labels."
   ),
-  round("Round 13: Static Deployment Checks", reportPass("tests/reports/agent-deployment.json") ? "partial" : "external-gap", ["tests/reports/agent-deployment.json", "tests/reports/package-clean-install.json", "docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"], "Local static/deploy checks are proven. Vercel deploy was attempted but blocked by HTTP 401 deployment protection; Cloudflare Pages and Netlify credentials are missing."),
+  round("Round 13: Static Deployment Checks", reportPass("tests/reports/agent-deployment.json") ? "partial" : "external-gap", ["tests/reports/agent-deployment.json", "tests/reports/package-clean-install.json", "docs/project/external-deployment-results.md", "tests/reports/external-deployment-smoke.json"], vercelPublicSmokePassed
+    ? "Local static/deploy checks are proven and Vercel public smoke now renders a WebGL2 Aura3D canvas. Cloudflare Pages and Netlify credentials/project targets are still missing."
+    : "Local static/deploy checks are proven. Vercel public smoke is missing or failing; Cloudflare Pages and Netlify credentials are missing."),
   round("Round 14: Built Bundle Size Proof", reportPass("tests/reports/bundle-size.json") ? "automated-pass" : "partial", ["BUNDLE_SIZES.md", "tests/reports/bundle-size.json"]),
   round("Round 15: Docs Codeblock Execution", reportPass("tests/reports/docs-codeblocks.json") ? "automated-pass" : "partial", ["tests/reports/docs-codeblocks.json"]),
   round("Round 16: Error Message Quality", reportPass("tests/reports/error-message-quality.json") ? "automated-pass" : "partial", ["tests/reports/error-message-quality.json"]),

@@ -1,6 +1,6 @@
 # Product Context Evidence
 
-Generated: 2026-05-29T06:43:20.712Z
+Generated: 2026-05-29T07:07:53.863Z
 
 ## Summary
 
@@ -58,7 +58,7 @@ Generated: 2026-05-29T06:43:20.712Z
 | Broad prompt-to-visual product quality beyond approved starter recipes is not fully proven. | Product/Runtime QA | Keep the starter product-quality screenshots under regression review, then add more positive prompt fixtures, broader asset coverage, repair-loop evidence, and external agent/user dogfood before claiming broad arbitrary prompt-to-visual quality. | `docs/project/prompt-visual-quality-gap.md`<br>`docs/project/starter-template-visual-review.md`<br>`docs/project/prompt-fidelity-quality-results.md`<br>`tests/reports/prompt-fidelity-quality.json` |
 | Cursor and Copilot context-only agent runs are not complete. | Product QA | Codex five-task local evidence and Claude Code external-agent evidence now pass. Run the same five-task context-only script against subscribed Cursor and Copilot environments. | `docs/project/agent-dogfood-results.md`<br>`docs/project/claude-code-agent-context-results.md`<br>`tests/reports/agent-context/*.json` |
 | Licensed wild-asset corpus is not broad enough. | Assets QA | The asset corpus now covers generated/adversarial assets, selected pinned Khronos/product-form/material-extension/Blender-export/animation/textured-PBR/KTX2 fixtures, a downloaded Poly Haven CC0 glTF, and a downloaded Khronos Draco-compressed glTF. Add authenticated Sketchfab CC0 downloads and Meshy exports with source/license notes, then run add/validate/typegen/render. | `fixtures/asset-corpus/README.md`<br>`docs/project/asset-corpus-results.md`<br>`tests/reports/asset-corpus.json` |
-| Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Vercel deploy was attempted but blocked by HTTP 401 deployment protection; disable protection or provide a public smoke project, then provide Cloudflare Pages and Netlify credentials and record public URLs, route health, screenshots, MIME checks, and deployment-check output. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
+| Real external deployment smoke is not complete across Vercel, Cloudflare Pages, and Netlify. | Release Engineering | Vercel public smoke now renders a WebGL2 Aura3D canvas from a deployed product-viewer artifact. Provide Cloudflare Pages and Netlify credentials or project targets, then record public URLs, route health, screenshots, MIME checks, and deployment-check output for those hosts. | `docs/project/external-deployment-results.md`<br>`tests/reports/external-deployment-smoke.json` |
 | Marketing comprehension interviews are not complete. | Product Marketing | Show the marketing site to an indie React developer, a Three.js-experienced 3D artist, and a non-technical product manager, then record answers to the comprehension rubric. | `docs/project/marketing-comprehension-results.md` |
 | Outside beta dogfood is not complete. | Product/Community | Publish beta artifacts, recruit at least five external install/scaffold attempts, record feedback in issues or dogfood docs, and fix or document critical bugs. | `docs/project/outside-beta-dogfood-results.md`<br>`.github/ISSUE_TEMPLATE` |
 

@@ -381,6 +381,13 @@ Current local automated evidence:
 - `docs/project/public-api-contract.md` records packed-package public exports,
   valid API compilation, negative type tests, archived import rejection, and docs
   named-import checks.
+- `docs/project/external-deployment-results.md` and
+  `tests/reports/external-deployment-smoke.json` now record a real public
+  Vercel smoke pass for the deployed product-viewer artifact:
+  `https://aura3d-vercel-smoke.vercel.app` returns HTTP 200, reaches
+  `data-aura3d-ready="true"`, renders WebGL2 with draw calls, serves the GLB
+  with `model/gltf-binary`, and has screenshot pixel evidence. Cloudflare Pages
+  and Netlify are still blocked by missing credentials/project targets.
 
 ### Still Not Proven By Local Automation
 
@@ -391,7 +398,9 @@ completed user proof:
 - Separately licensed wild-asset corpus from outside sources. Poly Haven CC0
   and real Draco-compressed variants are now covered locally; authenticated
   Sketchfab CC0 downloads and Meshy exports remain.
-- Static deployment to real Vercel, Cloudflare Pages, and Netlify projects.
+- Static deployment to real Cloudflare Pages and Netlify projects. Vercel public
+  smoke now passes for the product-viewer artifact, but the full three-host
+  Round 13 requirement is still incomplete.
 - Marketing comprehension interviews with people who do not know the codebase.
 - Outside beta dogfood and issue intake from real users.
 - Broad product-quality prompt-to-visual fidelity beyond the approved starter

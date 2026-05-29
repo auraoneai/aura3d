@@ -1,48 +1,44 @@
 # External Deployment Results
 
-Generated: 2026-05-28
+Generated: 2026-05-29T07:07:52.642Z
 
-This document records the real external deployment smoke attempts for Round 13
-of `TestV4PlanPRD.md`. Local static preview is already covered by
-`tests/reports/package-clean-install.json`; this file is only for public-host
-evidence.
+This document records real external deployment smoke evidence for Round 13
+of `TestV4PlanPRD.md`. Local static preview remains covered by
+`tests/reports/package-clean-install.json`; this file records public-host
+evidence only.
 
 ## Summary
 
 | Host | Status | Evidence | Result |
 |---|---|---|---|
-| Vercel | attempted | `vercel deploy --yes --cwd .../cinematic-scene/demo/dist`; `vercel deploy --prod --yes --force --cwd .../cinematic-scene/demo/dist` | preview and production deploys succeeded, but public smoke failed because every URL returns HTTP 401 deployment protection |
-| Cloudflare Pages | not run | environment check | missing `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` |
-| Netlify | not run | environment check | missing `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID` |
+| vercel | protected | `https://dist-veerone.vercel.app` | Vercel deployment exists but is blocked by deployment protection before Aura3D can render. |
+| vercel | protected | `https://dist-gchahal1982-veerone.vercel.app` | Vercel deployment exists but is blocked by deployment protection before Aura3D can render. |
+| vercel | protected | `https://dist-3n5lgxoky-veerone.vercel.app` | Vercel deployment exists but is blocked by deployment protection before Aura3D can render. |
+| vercel | public-smoke-pass | `https://aura3d-vercel-smoke.vercel.app` | Public Vercel route rendered Aura3D canvas with 35498 lit sample pixels and 80 color buckets. |
+| vercel | failed | `https://dist-gray-iota-68.vercel.app` | Public Vercel route failed visual or MIME checks: visualPass=false, mimePass=true. |
+| cloudflare-pages | credential-blocked | environment check | Missing CLOUDFLARE_API_TOKEN and/or CLOUDFLARE_ACCOUNT_ID; no secret values were inspected or recorded. |
+| netlify | credential-blocked | environment check | Missing NETLIFY_AUTH_TOKEN and/or NETLIFY_SITE_ID; no secret values were inspected or recorded. |
 
-## Vercel Attempt
+## Public Vercel Smoke Detail
 
-The machine is authenticated to Vercel as `gchahal1982`. The first upload hit a
-transient TLS upload error, then a retry succeeded. A later production deploy
-also succeeded, but production remains behind deployment protection.
-
-Created deployment URLs:
-
-- `https://dist-oi5ldvhus-veerone.vercel.app`
-- `https://dist-n022d0avm-veerone.vercel.app`
-- `https://dist-3n5lgxoky-veerone.vercel.app`
-
-All tested URLs return HTTP 401 before the Aura3D app can load. A redeploy with
-`vercel deploy --yes --public --force` also returned HTTP 401; the CLI reported
-that `--public` is deprecated and ignored for this protection setting. A
-production deploy with `--prod --yes --force` also returned HTTP 401.
+- URL: `https://aura3d-vercel-smoke.vercel.app`
+- Ready: true
+- Backend: webgl2
+- Draw calls: 32
+- Canvas screenshot bytes: 343059
+- Pixel profile: lit=35498, center=10496, buckets=80
+- Model resources: 200 model/gltf-binary https://aura3d-vercel-smoke.vercel.app/aura-assets/product-fixture.glb
+- Diagnostics overlay visible: true. This is acceptable for deployment smoke evidence only; polished public demos should decide explicitly whether diagnostics are shown.
+- Local screenshot evidence: `tests/reports/external-deployment-smoke/aura3d-vercel-smoke-vercel-app.png`
 
 ## Current Verdict
 
-External deployment smoke is not complete. Vercel reached a real external host
-but did not produce a publicly readable rendered canvas. Cloudflare Pages and
-Netlify could not be executed from this machine because the required account
-credentials are not present.
+External deployment smoke is not complete. Vercel now has public rendered-canvas smoke evidence, but Cloudflare Pages and Netlify remain blocked by missing credentials or project targets.
 
 ## Next Action
 
-Disable Vercel deployment protection for the smoke project or provide a project
-that allows unauthenticated preview access, then rerun the same cinematic-scene
-public smoke. Provide Cloudflare Pages and Netlify credentials or pre-created
-project targets, then run the same build/deploy/HTTP/canvas/screenshot/MIME
-checks for those hosts.
+Provide Cloudflare Pages and Netlify credentials or pre-created project
+targets, then run the same build/deploy/HTTP/canvas/screenshot/MIME checks
+for those hosts. Keep the Vercel public URL smoke green while those hosts
+are added.
+
