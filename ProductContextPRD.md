@@ -49,6 +49,46 @@ There are therefore two separate problems to fix:
   prompt-fidelity report catches that failure mode, but the positive
   product-quality screenshots still do not pass.
 
+### Root Cause Breakdown
+
+The current failure mode is not a single missing animation helper. It is a full
+prompt-to-visual product gap:
+
+| Root Cause | Current Behavior | Required Behavior |
+|---|---|---|
+| Runtime expressiveness | Agents can place assets, primitives, lights, cameras, and simple effects. | Agents can call high-level visual recipes that create a composed scene with staging, depth, lighting, material response, camera motion, and interaction state. |
+| Visual defaults | Starter scenes can look like one imported GLB with decorative cues. | Starter scenes should look like intentional product, cinematic, or game compositions before any manual polish. |
+| Asset handling | GLBs load and can be typed, but scale, framing, grounding, and material fidelity are still not broadly proven. | Assets should auto-center, auto-scale, sit on a believable surface, keep useful material/texture data, and produce actionable warnings when fidelity is degraded. |
+| Effects | Effects can be present as simple visual markers, such as rain lines or glow primitives. | Effects should read as the requested phenomenon in the screenshot: rain volume, wet response, fog depth, motion feedback, collection feedback, or material comparison. |
+| Prompt planning | `PromptPlan` exists and can compile to a starter recipe. | Prompt plans must reject vague requests, select the right recipe, declare expected visual artifacts, and carry repair hints into the generated app/report. |
+| Evaluation | Technical checks prove build, route health, diagnostics, and non-generic pixels. | Product checks must fail any release-facing demo until the screenshot itself matches the prompt and receives `product-quality-pass`. |
+
+### Reset Build Contract
+
+The product should now be rebuilt around two parallel tracks:
+
+- **Visual runtime track:** build the missing Aura3D visual systems so a compact
+  public API can create product-quality scenes without agents hand-authoring a
+  full Three.js production setup every time.
+- **Prompt workflow track:** constrain agents to plan, render, inspect, repair,
+  and report. The agent path must not be considered successful just because the
+  code compiles.
+
+Every release-facing prompt demo must produce this evidence bundle:
+
+- Source prompt.
+- Selected `PromptPlan` and compiled recipe report.
+- Asset refs and asset validation report.
+- Generated code path.
+- Route-health result.
+- Screenshot file and contact-sheet placement.
+- Human review label.
+- Failure reason and next action when the label is not `product-quality-pass`.
+
+Until at least three release-facing prompt demos pass that bundle, Aura3D should
+be described as agent-facing browser 3D SDK/tooling with prompt-planning
+plumbing, not as proven prompt-to-visual generation.
+
 ### Current Technical Gate State
 
 The product is not release-ready as a prompt-to-visual product.
@@ -225,8 +265,13 @@ For Aura3D, that means:
   the compact Aura3D renderer enough for polished demos, expose a first-class
   Three.js-backed recipe layer, or clearly scope Aura3D as typed scene
   orchestration over external renderers.
+- [ ] Implement the selected renderer strategy in code, not only in docs, and
+  update starter templates to use it.
 - [ ] Add art-directed scene recipes for product hero, cinematic rain scene,
   material studio, and game arena outputs.
+- [ ] Make recipe output visually opinionated by default: focal subject,
+  foreground/background structure, environment depth, contact, contrast, and
+  clear interaction state must be visible before custom edits.
 - [ ] Add camera rig presets for product orbit, dolly push-in, turntable,
   top-down game board, and hero close-up framing.
 - [ ] Add lighting rigs that create real visual structure: key/fill/rim,
@@ -245,6 +290,9 @@ For Aura3D, that means:
 - [ ] Add asset normalization: auto-scale, auto-center, ground alignment,
   bounds-aware camera framing, missing-texture warnings, and material fallback
   summaries.
+- [ ] Add screenshot-oriented quality metadata from the renderer: subject bounds,
+  apparent subject size, asset readiness, effect systems active, camera preset,
+  lighting preset, and recipe ID.
 - [ ] Add performance budgets for these richer visual presets so starter scenes
   remain usable in a browser.
 
@@ -263,6 +311,8 @@ For Aura3D, that means:
   environment, lighting, camera, and acceptance criteria.
 - [x] Add repair guidance when output is generic, badly framed, too dark,
   missing the subject, or just an object plus decorative cues.
+- [ ] Feed repair guidance back into the generated scene and rerun the screenshot
+  review until the artifact either passes or is explicitly marked blocked.
 - [ ] Add support for prompt-specific expected artifacts, such as HUD for a
   game prompt, wet reflections for a rain prompt, and inspection controls for a
   product-viewer prompt.
@@ -283,6 +333,8 @@ For Aura3D, that means:
   regressions are reviewed together.
 - [x] Add negative fixtures proving object-plus-symbolic-effect output fails.
 - [ ] Add positive fixtures proving new art-directed scenes pass.
+- [ ] Block release-facing promotion when `releaseFacingProductQualityPasses` is
+  below three in `tests/reports/prompt-fidelity-quality.json`.
 - [ ] Compare Aura3D prompt outputs against raw Three.js agent outputs on the
   same prompts and assets.
 

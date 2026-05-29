@@ -63,6 +63,47 @@ The reset decision is:
   It is done only when the screenshot visibly satisfies the prompt and is
   marked `product-quality-pass`.
 
+### Reset Execution Model
+
+The next work must be executed as a rebuild of the prompt-to-visual product
+loop, not as a cosmetic pass over the existing demos.
+
+| Track | Build Work | Test Work | Exit Criteria |
+|---|---|---|---|
+| Runtime visual systems | Product hero, cinematic rain, mini-game, and material-studio recipes with camera, lighting, environment, effect, animation, material, and asset-normalization helpers. | Capture screenshots from clean installs, review contact sheets, and compare against source prompts. | Three release-facing prompts are marked `product-quality-pass`; no starter screenshot looks like one GLB plus symbolic effects. |
+| Prompt planning | Strengthen `PromptPlan` so each plan declares subject, asset refs, recipe, environment, camera, lighting, effects, interactions, acceptance criteria, and negative anti-patterns. | Generate apps from context-only agent input and inspect the compiled prompt-plan report. | Agents use recipe APIs without source browsing, avoid archived APIs, and generate visuals that match the plan. |
+| Repair loop | Convert review failures into concrete scene repairs: bigger subject, tighter camera, stronger lighting, environment depth, believable effects, HUD/state, or material fidelity fixes. | Rerun route health, screenshot capture, contact sheet, and human review after every repair. | No failed screenshot remains without a specific failure reason and next implementation action. |
+| Evidence gate | Promote only artifacts with prompt, plan, source path, asset refs, route health, screenshot, review label, failure reason, and next action. | Run `check:prompt-fidelity`, `check:clean-install`, `check:product-context`, and `check:test-plan-status`. | Product claims stay classified as `known-gap` until evidence exists; release-facing promotion is blocked below three product-quality passes. |
+
+### Prompt-To-Visual Acceptance Contract
+
+Every release-facing prompt demo must be tested as a single traceable artifact:
+
+- [ ] Source prompt is stored.
+- [ ] Prompt plan and selected recipe are stored.
+- [ ] Asset refs and asset validation status are stored.
+- [ ] Generated code path is stored.
+- [ ] Route-health report is stored.
+- [ ] Screenshot path is stored.
+- [ ] Screenshot appears in the contact sheet.
+- [ ] Human review label is stored.
+- [ ] Failure reason is stored when the label is not `product-quality-pass`.
+- [ ] Next action is stored when the label is not `product-quality-pass`.
+
+The artifact fails product proof if any of the following is true:
+
+- [ ] The subject asset is tiny, hidden, ungrounded, or visually incidental.
+- [ ] The scene depends on labels or diagnostics to explain what it is.
+- [ ] Effects are only symbolic marks instead of visible scene behavior.
+- [ ] A game prompt lacks readable player state, hazards, collectibles, goal, or
+  HUD/state cues.
+- [ ] A product prompt lacks product framing, contact, material highlights, or
+  inspection/orbit affordance.
+- [ ] A cinematic prompt lacks spatial depth, motivated lighting, believable
+  atmosphere, or camera blocking.
+- [ ] A material prompt lacks visible comparison, reflection/material response,
+  or controlled lighting.
+
 ## Current Technical Gate Finding
 
 The latest `check:clean-install` blocker was reproduced and fixed.
@@ -124,6 +165,8 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
   Three.js-backed recipe layer, or hybrid orchestration. The decision must
   explain how product-quality lighting, materials, camera movement,
   environment depth, and effects are implemented instead of implied.
+- [ ] Implement the selected strategy in the public runtime or template layer so
+  starter outputs improve through product APIs rather than one-off demo hacks.
 - [ ] Product hero scene recipe with auto-framed asset, plinth, backdrop,
   reflection cards, studio softboxes, contact shadow, and orbit controls.
 - [ ] Cinematic scene recipe with environment depth, wet surface, believable
@@ -144,6 +187,8 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
   trails, impact pulses, hover/click state, and collection feedback.
 - [ ] Asset normalization for scale, origin, bounds, ground alignment, camera
   distance, and missing material/texture diagnostics.
+- [ ] Renderer/report metadata for recipe ID, camera preset, lighting preset,
+  apparent subject size, asset bounds, effect systems, and visual repair hints.
 
 ### Prompt-To-Visual Workflow
 
@@ -159,6 +204,12 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
   criteria, and screenshot path in every generated report.
 - [x] Include the generated plan report from `compilePromptPlan`, including
   selected recipe, visual systems, repair hints, and negative anti-patterns.
+- [ ] Reject or warn on prompt plans that omit the minimum visual information
+  needed for the selected recipe.
+- [ ] Feed failed screenshot review back into the next generated scene and
+  record the repair turn count.
+- [ ] Prove a context-only Codex run can improve a failed screenshot by applying
+  repair hints instead of manual source browsing.
 
 ### Visual Quality Gates
 
@@ -179,6 +230,9 @@ It does not prove the screenshot is product-quality prompt-to-visual output.
   human review label below `product-quality-pass`.
 - [ ] Fail release promotion if any starter is not route-ready from a clean
   install, regardless of visual review status.
+- [ ] Fail release promotion if
+  `tests/reports/prompt-fidelity-quality.json` reports fewer than three
+  release-facing `product-quality-pass` artifacts.
 
 ## Source Claims Under Test
 
@@ -860,6 +914,8 @@ Prove diagnostics and screenshots are useful product features.
 - [ ] Failure messages identify the broken route and likely cause.
 - [ ] Screenshots are classified separately as render-plumbing evidence or
   product-quality prompt evidence.
+- [ ] Release-facing screenshots below `product-quality-pass` retain an
+  implementation next action and cannot be used as marketing/product proof.
 
 ## Round 13: Static Deployment Checks
 
@@ -1143,6 +1199,10 @@ Get feedback from users who were not involved in building the repo.
   cues.
 - [ ] All three starters remain technical-render-pass only after product-quality
   review.
+- [ ] Fewer than three release-facing prompt artifacts reach
+  `product-quality-pass`.
+- [ ] A release-facing demo needs diagnostics, labels, or explanation text for a
+  reviewer to understand the requested scene.
 - [ ] Agent docs consistently cause agents to hallucinate archived APIs.
 - [ ] Asset CLI cannot produce typed refs for normal valid GLBs.
 - [ ] Marketing users think the product is a hidden natural-language generator
@@ -1159,6 +1219,8 @@ Aura3D can move from PRD compliance to product confidence when:
 - [ ] Package tarball audit passes.
 - [ ] Clean install smoke passes.
 - [ ] All three templates scaffold, build, render, and preview.
+- [ ] All three release-facing starter prompts have traceable prompt-plan-code-
+  screenshot-review evidence and `product-quality-pass` labels.
 - [ ] Asset corpus results are recorded.
 - [ ] At least one real static deployment succeeds.
 - [ ] Agent dogfood results show fewer mistakes than raw Three.js baseline.
