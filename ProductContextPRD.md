@@ -93,7 +93,7 @@ assets, external agents, deployments, and outside users pass the same standard.
 
 ### Current Technical Gate State
 
-The product is not release-ready as a prompt-to-visual product.
+The product is not release-ready as a broad prompt-to-visual product.
 
 The latest clean-install blocker was reproduced and fixed in the test harness
 and package contents:

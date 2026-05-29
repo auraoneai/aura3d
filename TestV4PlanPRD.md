@@ -44,7 +44,7 @@ The problem is both implementation and validation.
 |---|---|---|
 | Aura3D runtime and API | Compact authoring surface, typed assets, GLB render path, lights, materials, effects, timeline, interactions, diagnostics, screenshots. | Higher-level art-directed scene recipes, better material/lighting defaults, believable environment/effect systems, stronger animation helpers, and asset-aware camera/framing. |
 | Agent workflow | Agents can write valid Aura3D code from context, avoid hallucinated APIs in local Codex tests, and starter templates now use first-pass `PromptPlan` recipes. | Proof that context-only agents consistently use those recipes, plus repair guidance when output looks generic or visually misses the prompt. |
-| Evidence and tests | Route health, screenshots, pixel profiles, clean installs, package audits, local dogfood, contact sheets, negative prompt-fidelity fixtures, and human review labels. | Positive prompt-fidelity fixtures where release-facing screenshots pass `product-quality-pass`, not only `technical-render-pass` or `partial`. |
+| Evidence and tests | Route health, screenshots, pixel profiles, clean installs, package audits, local dogfood, contact sheets, negative prompt-fidelity fixtures, starter positive fixtures, and human review labels. | More positive prompt-fidelity fixtures beyond the approved starter recipes, plus external-agent, external-asset, deployment, comprehension, and outside-user proof. |
 
 This test plan therefore treats existing screenshot passes as
 `technical-render-pass` unless they also meet the prompt-fidelity bar.
